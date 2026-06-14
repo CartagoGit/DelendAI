@@ -365,4 +365,76 @@ El plugin `proposals` es el más complejo del repo (~25 ficheros, ~120KB de cód
 
 ---
 
+## 🚀 ¿Qué faltaría para llegar al 10/10?
+
+No son cambios menores — son los que transformarían este proyecto de "muy bueno" a **referencia de la industria para frameworks MCP**. Agrupados por bloque:
+
+### 1. Cierre de la deuda técnica existente (los P0/P1 del plan)
+
+Sin esto el potencial queda hipotecado. Concretamente:
+
+- **Eliminar todos los `process.cwd()`** de los engines (sync-proposal-registry, lock engine). Mientras exista uno solo, la garantía de "project-agnostic" es mentira.
+- **Escritura atómica en `syncProposalRegistry`**. El patrón `tmp + rename` ya existe en `persistQueue` — aplicarlo aquí es cuestión de minutos, pero hasta que no se haga el sistema no es seguro bajo concurrencia real.
+- **Migración de schema de lock a formato único**. Eliminar el compat layer `files`/`claimed_at` → `ownership`/`started_at`. Los sistemas de producción no deberían tener capas de compatibilidad con formatos "históricos" de hace meses.
+- **`IProposalTrack` extensible por el host**. Cambiar el closed union a un string abierto con validation opt-in, o permitir que el host inyecte su propio set de tracks en el contexto del plugin. Sin esto, cualquier usuario externo tiene que adoptar el vocabulario de Cartago.
+
+### 2. Cobertura de tests verificable y suficiente
+
+Actualmente la estructura de tests existe pero la cobertura es una caja negra. Para ser 10/10:
+
+- **Coverage mínimo del 85%** en los engines críticos: `persistent-task-queue`, `agent-lock-engine`, `round-context`, `continuity-enforcer`, `evaluateParallelism`.
+- **Tests de concurrencia** para los ficheros compartidos (lock.json, queue.json, index.json). Simular dos agentes escribiendo simultáneamente y verificar que no hay corrupción.
+- **Tests de integración** end-to-end que arranquen un servidor MCP real con plugins y validen el flujo `overview → auto_work → claim → sync → release`.
+- **Mutation testing** o al menos property-based tests para `parseQueue` (los 6 niveles de validación merecen fuzzing).
+
+### 3. Auto-reparación de estados inconsistentes
+
+El sistema actual **detecta** problemas pero no los **resuelve**:
+
+- `waiterOrphans` — detectados por `backpressure`, pero el agente tiene que leer el report y actuar manualmente. Debería existir un `proposals_repair` tool que, dado un backpressure report con `waiterOrphans > 0`, los resuelva de forma segura y atómica.
+- **Lock claim sin release posterior** — el GC existe pero la ventana es `stale_after_minutes` (10 min por defecto). Debería haber un evento de "lease heartbeat" que los agentes activos refresquen periódicamente, reduciendo la ventana de locks fantasma.
+- **Index corrupto** — si `index.json` queda corrupto (ej. por un kill en medio de un write), no hay ningún mecanismo de recovery. `syncProposalRegistry` debería detectar un JSON malformado previo y emitir una advertencia estructurada antes de sobreescribir.
+
+### 4. Genericidad real (desacoplar del host Cartago completamente)
+
+El proyecto dice ser "project-agnostic" pero hay residuos del host original por limpiar:
+
+- **`paused/demos` subtree hardcodeado** en `round-context.ts` y `sync-proposal-registry.ts`. La estructura de carpetas del store de proposals debería ser 100% configurable por el host.
+- **Modelo de agente hardcoded** (`MiniMax-M3 (customendpoint)`) en el scaffolder. Debería ser `'<provider>/<model>'` o similar.
+- **`AGENT_SLOTS`** en `persistent-task-queue.ts` (`orchestrator`, `proposal_guardian`, `implementation_runner`, etc.) — son roles del host original, no del framework. El framework debería permitir slots arbitrarios definidos por el host.
+- **El `coreToolRegistrations` vacío** debería eliminarse o rellenarse. Su presencia crea una expectativa falsa de que el core registra tools propias aparte de los plugins.
+
+### 5. Observabilidad y debugging para operadores
+
+Un 10/10 es también operable en producción:
+
+- **Telemetría opcional** — un mecanismo (sin romper el model-agnostic) para que el host emita eventos de ciclo de vida (plugin loaded, tool called, lock claimed/released). No tiene que ser OTEL, puede ser un simple array de `IStatusCollector` (la interfaz ya existe en `IMcpCoreHostConfig` pero no tiene implementación concreta).
+- **`--verbose` flag** — actualmente los errores van a stderr de forma básica. Un modo verbose con timestamps, plugin lifecycle y tool call log sería invaluable para debugging.
+- **`proposals_health_check` tool** — que en runtime valide la coherencia del estado (locks activos vs. registry vs. queue) y devuelva un reporte estructurado, equivalente al `--check` de la CLI pero consultable desde el propio servidor sin reiniciarlo.
+
+### 6. Publicación y ecosistema
+
+El proyecto es privado/monorepo ahora, pero para ser referencia necesita:
+
+- **Changelogs semánticos** — actualmente todos los paquetes están en `0.1.0` sin historial. Un sistema de versionado (changesets, conventional commits) haría las actualizaciones trazables.
+- **Documentación de API pública generada** — los tipos de `public/index.ts` merecen una doc site (TypeDoc o similar) para que usuarios externos sepan qué es estable.
+- **Al menos 2-3 plugins de ejemplo publicados** por la comunidad — el verdadero test de un framework plugin-based es que terceros puedan extenderlo sin fricción. Un `plugin-template` de referencia con CI preconfigurado sería el empujón.
+
+---
+
+### Tabla de cierre: de 8/10 a 10/10
+
+| Bloque | Esfuerzo estimado | Impacto en nota |
+|---|---|---|
+| Cerrar deuda técnica P0/P1 | ~2-3 días | +0.5 pts |
+| Tests con cobertura verificable | ~1-2 semanas | +0.5 pts |
+| Auto-reparación de estados | ~3-5 días | +0.3 pts |
+| Genericidad total (desacoplar host) | ~3-5 días | +0.4 pts |
+| Observabilidad operacional | ~1 semana | +0.2 pts |
+| Ecosistema y publicación | ongoing | +0.1 pts |
+
+> En resumen: los 2 puntos que faltan son **todos alcanzables** — no requieren rediseño arquitectónico, sino completar lo que ya está empezado. La base es tan sólida que llegar al 10/10 es cuestión de disciplina de ingeniería, no de inspiración.
+
+---
+
 *Auditoría generada el 14/06/2026 mediante análisis estático completo del código fuente.*

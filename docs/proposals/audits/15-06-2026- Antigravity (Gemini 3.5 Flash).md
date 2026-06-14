@@ -244,6 +244,31 @@ Sin embargo, hay espacio para mejorar la estructura interna:
 
 ---
 
+## 🚀 El Camino al 10/10 (Excelencia Absoluta)
+
+Para elevar la valoración del framework a una puntuación perfecta de **10/10**, se deben resolver las siguientes brechas de diseño y deuda técnica identificadas en la auditoría:
+
+1. **Garantía Total de Atomicidad y Evitación de Corrupciones (Control de Concurrencia 10/10)**:
+   - Implementar el patrón atómico de escritura (`tmp + rename`) tanto en el motor de locks ([agent-lock-engine.ts](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/locks/agent-lock-engine.ts)) como en el sincronizador del índice ([sync-proposal-registry.ts](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts)). Esto inmunizará al sistema contra interferencias o truncamientos JSON cuando múltiples agentes escriben a la vez.
+
+2. **Aislamiento Hermético de Sandbox (Aislamiento de Entorno 10/10)**:
+   - Eliminar radicalmente todas las llamadas implícitas y explícitas a `process.cwd()` en la lógica interna del motor de propuestas, delegando al 100% las resoluciones de rutas relativas y absolutas al proveedor de rutas inyectado `ctx.workspace`. Esto asegura el comportamiento esperado bajo cualquier entorno de host sin "fugas de contexto".
+
+3. **Generalización Completa de Configuración (Independencia del Proyecto 10/10)**:
+   - Desacoplar las convenciones rígidas del host original de los plugins del monorepo. Para ello, los tracks (como `ui-demo` o `game-demo`) y las carpetas específicas a escanear (como `paused/demos`) deben ser opciones dinámicas inyectadas desde el archivo [mcp-core.config.json](file:///home/cartago/_projects/mcp-core/README-MCP-CORE.md#L63-L77) del cliente en lugar de constantes internas.
+   - Modificar la plantilla de scaffolding en [scaffold-host.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/scaffold/scaffold-host.ts) para evitar defaults hardcodeados de endpoints de autoría privada.
+
+4. **Auto-Sanación Activa (Resiliencia de Swarm 10/10)**:
+   - Diseñar y añadir un agente/herramienta de reparación automática (`proposals_heal`) en la cola. La contrapresión `amber`/`red` no solo debe alertar de un bloqueo por `waiterOrphans`, sino que el sistema debe ser capaz de liberar locks o tareas cancelando/replanificando dependencias rotas autónomamente sin atascar a otros subagentes en bucles infinitos de espera.
+
+5. **Cumplimiento Estricto del Principio DRY (Calidad de Código 10/10)**:
+   - Centralizar la utilidad básica de combinación de rutas `joinRel` en el núcleo exportable de [@cartago-git/mcp-core/public](file:///home/cartago/_projects/mcp-core/packages/core/package.json#L16), erradicando las tres copias redundantes presentes en el repositorio.
+
+6. **I/O 100% No Bloqueante (Eficiencia Operacional 10/10)**:
+   - Sustituir las APIs síncronas de lectura y comprobación del sistema de archivos (`readFileSync` y `existsSync`) por promesas asíncronas en todas las operaciones que involucren archivos calientes o de registro frecuente (como la cola de tareas).
+
+---
+
 ## 🎯 Valoración Global
 
 | Dimensión | Puntuación | Comentario |
@@ -256,5 +281,5 @@ Sin embargo, hay espacio para mejorar la estructura interna:
 | **Eficiencia de Contexto (Tokens)** | 9/10 | Optimización estelar de la ventana de contexto a través de resúmenes (`overview`) y hashes. |
 | **Independencia de Proyecto** | 7/10 | Tracks e itinerarios de carpetas del host original todavía acoplados a plugins nucleares. |
 
-### Nota Global: 7.9/10
+### Nota Global: 7.9/10 (Potencial 10/10)
 **Una plataforma MCP avanzada y de alta calidad conceptual, que requiere resolver deuda técnica en el manejo seguro de archivos y en la eliminación completa del contexto de ejecución global (`process.cwd()`) para alcanzar la excelencia operativa.**
