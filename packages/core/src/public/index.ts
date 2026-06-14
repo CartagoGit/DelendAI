@@ -109,6 +109,12 @@ export type {
 	IScaffoldToolOptions,
 } from '../lib/scaffold/scaffold-tool';
 
+// --- shared filesystem helpers ---------------------------------------------
+export {
+	writeFileAtomic,
+	writeFileAtomicSync,
+} from '../lib/shared/atomic-write';
+
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {
 	toolJson,
