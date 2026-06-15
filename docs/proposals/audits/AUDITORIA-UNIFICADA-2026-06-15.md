@@ -29,6 +29,8 @@
 >
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
+> **➡️ La cola viva de trabajo ahora está en la [§0 SEGUNDA RONDA](#0-segunda-ronda-de-auditoría-post-p0p1--camino-real-al-1110)** (hallazgos N1–N23 de las 2 auditorías nuevas del estado actual). Lo de abajo es el historial de lo ya cerrado.
+>
 > **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
 > M7, M4, M5, M8, M9, R12 y R13 cerrados con tests** en esta sesión (336 verdes;
 > M6 ya estaba). **Cerrados: todos los FATAL, todos los MUY MAL (M1–M10) y los
@@ -153,6 +155,67 @@
 > **Nota de consenso: ~7,3/10** (Sonnet 8 · Gemini 7,9 · Opus 4.8 7,5 · Codex 6,8).
 > Arquitectura excelente; el techo lo marca la **persistencia/concurrencia** del
 > plugin `proposals` y residuos del host original.
+
+---
+
+## 0. SEGUNDA RONDA DE AUDITORÍA (post P0/P1) — camino real al 11/10
+
+> **Fecha:** 15-06-2026 (tarde/noche). Dos auditorías **nuevas e independientes**
+> del estado ACTUAL (tras cerrar F1–F5, M1–M10 y los REGULAR accionables):
+> Antigravity·Sonnet 4.6 Thinking (**8,4/10**) y Antigravity·Gemini 3.5 Flash
+> (**8,5/10**). Originales archivadas en `docs/proposals/done/…[estado-actual].md`.
+> Consenso: la fiabilización P0/P1 fue un éxito; el techo ahora son **bugs de
+> concurrencia/IO residuales + deuda de calidad de output (tokens) + capacidades
+> de plataforma**. Esta sección es la **cola viva de trabajo** (sustituye al punto
+> de continuación de arriba).
+
+Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
+
+### 🔴/🟠 P0–P1 — Correctitud y concurrencia (cerrar ANTES de publicar)
+
+| # | Hallazgo (verificado en código) | Sev | Quién | Estado |
+|---|---|---|---|---|
+| N1 | **`memory` sin mutex**: `saveNote`/`removeNote` hacen read-modify-write sync sin `withFileMutex` → *lost update* con 2 agentes | MAL | S·G (2/2) | ⬜ |
+| N2 | **`syncProposalRegistry` sin mutex**: regenera `index.json` (read FS → writeFileAtomic) sin exclusión → sync concurrente pierde propuestas | FATAL(G) | G | ⬜ |
+| N3 | **`git` error silencioso** (`catch → ''`): git ausente/timeout = repo limpio falso → un agente podría cerrar propuesta con cambios sin commitear | REG/FATAL | S·G (2/2) | ⬜ |
+| N4 | **`git.ts` síncrono** (`execFileSync`, hasta 15s) bloquea el event loop del server MCP | MAL | S·G (2/2) | ⬜ |
+| N5 | **`search` engine síncrono** (`readdirSync`/`statSync`/`readFileSync`) bloquea el event loop en árboles grandes | REG | G | ⬜ |
+| N6 | **`resolveWorkspacePath` fallback `process.cwd()`** (líneas 33/40): rompe hermeticidad del sandbox (último rastro de cwd) | REG | G·O | ⬜ |
+| N7 | **`scaffold-host` genera `process.cwd()`** en el host boilerplate → bug latente en el código que generamos para terceros | MAL | S | ⬜ |
+| N8 | **`prepareServerBlueprintOnStart` síncrono** en el boot (`writeFileSync`) → server no responde hasta acabar análisis/IO | MAL | S | ⬜ |
+| N9 | **`auto_work`/`continue_proposal` no excluye `in_progress` con lock ajeno** → mini-bucle claim→conflict→auto_work→misma propuesta (= R11) | REG | S | ⬜ |
+| N10 | **`memory` quotas incompletas**: hay cap título(200)/body(8000) pero NO tags ni total de notas | REG menor | S | ⬜ |
+
+### 🟡 P2 — Tokens y UX de agente
+
+| # | Hallazgo | Quién | Estado |
+|---|---|---|---|
+| N11 | **Pretty-print `\t`** en payloads persistidos/salida de `memory`/`blueprint`/varias de `proposals` → desperdicio de tokens; compactar en producción | S·G (2/2) | ⬜ |
+| N12 | **`overview` sin `compact:true`** (enumera todas las tools siempre) | S | ⬜ |
+| N13 | **Sin `fields[]`/paginación** en `analyze_project`, `round_context`, `continue_proposal`, `memory_list` | S·G | ⬜ |
+
+### 🟢 P3 — Capacidades que cambian de categoría / plataforma
+
+| # | Capacidad | Quién | Estado |
+|---|---|---|---|
+| N14 | **Plugin `notification`** (MCP `notifications/message`): mata el polling de locks/cola en swarm (–40% llamadas estimado). *El de mayor impacto.* | S·G (2/2) | ⬜ |
+| N15 | **`state_health` + `state_repair`** (dry-run/execute con backup): auto-heal de `waiterOrphans`, locks >TTL, assignments huérfanas | S·G (2/2) | ⬜ |
+| N16 | **`outputSchema` Zod por tool** (structuredContent ya está; falta declarar el schema → validación/UMI en clientes) | S | ⬜ |
+| N17 | **`compact_status`** (git+locks+queue+quality en 1 llamada con `fields`) | S | ⬜ |
+| N18 | **Presets de scaffold `minimal`/`standard`/`swarm`** | S | ⬜ |
+| N19 | **Plugins `docs` y `deps/security`** (autocontenidos, como `search`) | (orig.) | ⬜ |
+| N20 | **Refactor `round-context.ts`** (884 líneas → 3-4 módulos) (= R15) | S | ⬜ |
+| N21 | **Doctor: unificar doble lectura de config** (= R3) | S | ⬜ |
+| N22 | **`git`/`search` async runner compartido**; **memoria semántica** (FTS) en `memory_recall` | S·G | ⬜ |
+| N23 | **Excelencia demostrada**: tests de caos/adversarial, observabilidad `IStatusCollector` real + `--verbose`, **benchmarks de tokens** documentados, skills versionadas, semver real + publish automatizado, **SDK de tipos generados** de `outputSchema` | S (2/2 parcial) | ⬜ |
+
+### Orden de ejecución acordado (esta sesión, autónoma)
+**Tanda P0/P1 (correctitud)** → N1, N2, N6 (concurrencia/hermeticidad) · N3+N4 (git async+estructurado) · N5 (search async) · N7 (scaffold cwd) · N8 (blueprint async) · N9 (auto_work exclusión) · N10 (quotas).
+**Tanda P2 (tokens)** → N11 (compactar) · N12 (`overview compact`) · N13 (`fields`).
+**Tanda P3 (plataforma)** → N15 (state_health/repair) · N16 (outputSchema) · N17 (compact_status) · N18 (presets) · N19 (docs/deps) · N14 (**notification**, requiere validar arquitectura de push con el usuario) · N20/N21/N22 · N23 (excelencia).
+**Último:** npm publish (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
+
+> **Estimación de las auditorías:** prereqs N1–N10 → ~9,0; +notification/state_repair → ~9,5; +outputSchema/compact_status/presets → ~9,8; +caos/observabilidad/benchmarks → ~10,3; +docs-referencia/semver/publish → ~10,7; +SDK tipos generados → **11,0**.
 
 ---
 

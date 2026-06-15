@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import {
 	CorruptFileError,
 	quarantineCorruptFileSync,
+	withFileMutex,
 	writeFileAtomicSync,
 } from '@cartago-git/mcp-core/public';
 
@@ -21,6 +22,13 @@ const kebab = (value: string): string =>
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
+
+/** Maximum number of notes the store keeps (total-store quota). */
+export const MAX_NOTES = 1000;
+
+/** Derive a note's stable id from its title (so saves upsert by title). */
+export const deriveNoteId = (title: string): string =>
+	kebab(title) || `note-${Date.now().toString(36)}`;
 
 const quarantine = (absPath: string, detail: string): never => {
 	const backup = quarantineCorruptFileSync(absPath);
@@ -64,25 +72,28 @@ export const saveNote = (
 	absPath: string,
 	input: { title: string; body: string; tags?: readonly string[] },
 	now: () => string = () => new Date().toISOString()
-): INote => {
-	const id = kebab(input.title) || `note-${Date.now().toString(36)}`;
-	const notes = readStore(absPath);
-	const existing = notes.find((note) => note.id === id);
-	const stamp = now();
-	const note: INote = {
-		id,
-		title: input.title,
-		body: input.body,
-		tags: input.tags ?? [],
-		createdAt: existing?.createdAt ?? stamp,
-		updatedAt: stamp,
-	};
-	const next = existing
-		? notes.map((candidate) => (candidate.id === id ? note : candidate))
-		: [...notes, note];
-	writeStore(absPath, next);
-	return note;
-};
+): Promise<INote> =>
+	// Cross-process critical section: a single read-modify-write so two
+	// agents saving concurrently can't clobber each other's note.
+	withFileMutex(absPath, async () => {
+		const id = deriveNoteId(input.title);
+		const notes = readStore(absPath);
+		const existing = notes.find((note) => note.id === id);
+		const stamp = now();
+		const note: INote = {
+			id,
+			title: input.title,
+			body: input.body,
+			tags: input.tags ?? [],
+			createdAt: existing?.createdAt ?? stamp,
+			updatedAt: stamp,
+		};
+		const next = existing
+			? notes.map((candidate) => (candidate.id === id ? note : candidate))
+			: [...notes, note];
+		writeStore(absPath, next);
+		return note;
+	});
 
 /** Recall notes by free-text query and/or tags. Newest first. */
 export const recall = (
@@ -105,10 +116,11 @@ export const recall = (
 	return matches.slice(0, options.limit ?? 10);
 };
 
-export const removeNote = (absPath: string, id: string): boolean => {
-	const notes = readStore(absPath);
-	const next = notes.filter((note) => note.id !== id);
-	if (next.length === notes.length) return false;
-	writeStore(absPath, next);
-	return true;
-};
+export const removeNote = (absPath: string, id: string): Promise<boolean> =>
+	withFileMutex(absPath, async () => {
+		const notes = readStore(absPath);
+		const next = notes.filter((note) => note.id !== id);
+		if (next.length === notes.length) return false;
+		writeStore(absPath, next);
+		return true;
+	});
