@@ -324,7 +324,7 @@ backpressure.
 19. **Plugins nuevos**: `notification` (mata polling), `search`/index, `docs`, `deps/security`. [gaps]
 20. **Skills versionadas** (authoring/recovery/concurrency/security/token-budgeting) + `multi-agent-loop`/`orchestrate`. [gaps]
 21. **Observabilidad** (`IStatusCollector` real, `--verbose`), **benchmarks de tokens**, **caos/multiplataforma**. [S·C]
-22. **`outputSchema`/`structuredContent`** en tools (MCP moderno). [O]
+22. 🟡 **`structuredContent` HECHO** (MCP moderno): helpers compartidos `toolJson`/`toolOk`/`toolError` + `json()` de agent-names + `runTaskQueueMcp` reflejan el payload-objeto en `structuredContent`. Spec `tool-response`. Pendiente: declarar `outputSchema` (Zod) por tool. [O]
 
 ---
 

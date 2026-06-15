@@ -571,17 +571,21 @@ export async function runTaskQueueMcp(
 					text: JSON.stringify(result, null, '\t'),
 				},
 			],
+			// MCP modern structuredContent mirror of the text payload.
+			structuredContent: result as unknown as Record<string, unknown>,
 		};
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
+		const envelope = { error: message };
 		return {
 			isError: true,
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify({ error: message }, null, '\t'),
+					text: JSON.stringify(envelope, null, '\t'),
 				},
 			],
+			structuredContent: envelope,
 		};
 	}
 }
