@@ -175,24 +175,34 @@ Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
 
 | # | Hallazgo (verificado en código) | Sev | Quién | Estado |
 |---|---|---|---|---|
-| N1 | **`memory` sin mutex**: `saveNote`/`removeNote` hacen read-modify-write sync sin `withFileMutex` → *lost update* con 2 agentes | MAL | S·G (2/2) | ⬜ |
-| N2 | **`syncProposalRegistry` sin mutex**: regenera `index.json` (read FS → writeFileAtomic) sin exclusión → sync concurrente pierde propuestas | FATAL(G) | G | ⬜ |
-| N3 | **`git` error silencioso** (`catch → ''`): git ausente/timeout = repo limpio falso → un agente podría cerrar propuesta con cambios sin commitear | REG/FATAL | S·G (2/2) | ⬜ |
-| N4 | **`git.ts` síncrono** (`execFileSync`, hasta 15s) bloquea el event loop del server MCP | MAL | S·G (2/2) | ⬜ |
-| N5 | **`search` engine síncrono** (`readdirSync`/`statSync`/`readFileSync`) bloquea el event loop en árboles grandes | REG | G | ⬜ |
-| N6 | **`resolveWorkspacePath` fallback `process.cwd()`** (líneas 33/40): rompe hermeticidad del sandbox (último rastro de cwd) | REG | G·O | ⬜ |
-| N7 | **`scaffold-host` genera `process.cwd()`** en el host boilerplate → bug latente en el código que generamos para terceros | MAL | S | ⬜ |
-| N8 | **`prepareServerBlueprintOnStart` síncrono** en el boot (`writeFileSync`) → server no responde hasta acabar análisis/IO | MAL | S | ⬜ |
-| N9 | **`auto_work`/`continue_proposal` no excluye `in_progress` con lock ajeno** → mini-bucle claim→conflict→auto_work→misma propuesta (= R11) | REG | S | ⬜ |
-| N10 | **`memory` quotas incompletas**: hay cap título(200)/body(8000) pero NO tags ni total de notas | REG menor | S | ⬜ |
+| N1 | **`memory` sin mutex**: `saveNote`/`removeNote` hacen read-modify-write sync sin `withFileMutex` → *lost update* con 2 agentes | MAL | S·G (2/2) | ✅ |
+| N2 | **`syncProposalRegistry` sin mutex**: regenera `index.json` (read FS → writeFileAtomic) sin exclusión → sync concurrente pierde propuestas | FATAL(G) | G | ✅ |
+| N3 | **`git` error silencioso** (`catch → ''`): git ausente/timeout = repo limpio falso → un agente podría cerrar propuesta con cambios sin commitear | REG/FATAL | S·G (2/2) | ✅ |
+| N4 | **`git.ts` síncrono** (`execFileSync`, hasta 15s) bloquea el event loop del server MCP | MAL | S·G (2/2) | ✅ |
+| N5 | **`search` engine síncrono** (`readdirSync`/`statSync`/`readFileSync`) bloquea el event loop en árboles grandes | REG | G | ✅ |
+| N6 | **`resolveWorkspacePath` fallback `process.cwd()`** (líneas 33/40): rompe hermeticidad del sandbox (último rastro de cwd) | REG | G·O | ✅ |
+| N7 | **`scaffold-host` genera `process.cwd()`** en el host boilerplate → bug latente en el código que generamos para terceros | MAL | S | ✅ |
+| N8 | **`prepareServerBlueprintOnStart` síncrono** en el boot (`writeFileSync`) → server no responde hasta acabar análisis/IO | MAL | S | ✅ |
+| N9 | **`auto_work`/`continue_proposal` no excluye `in_progress` con lock ajeno** → mini-bucle claim→conflict→auto_work→misma propuesta (= R11) | REG | S | ✅ |
+| N10 | **`memory` quotas incompletas**: hay cap título(200)/body(8000) pero NO tags ni total de notas | REG menor | S | ✅ |
+
+> **✅ Tanda P0/P1 (N1–N10) COMPLETADA (2026-06-15, sesión Opus autónoma)** — todo
+> verde: mcp-core **354 tests** (344+10 skip). N1 (mutex memory + test concurrencia),
+> N2 (mutex syncProposalRegistry), N3+N4 (git `IGitRunResult {ok,output,reason}` +
+> `execFile` async + `checkRepo` distingue git-ausente/no-repo), N5 (search engine
+> `fs/promises` async), N6 (borrado `resolve-workspace-path.ts`; `getLockPath` exige
+> `lockPath` inyectado; eliminado `resolveDefaultDigestPath`), N7 (`buildHostConfig(workspaceRoot)`
+> hermético + entry pasa cwd), N8 (`prepareServerBlueprintOnStart` async tras `start()`),
+> N9 (excluye `in_progress` con lock activo; `kind:'all-claimed'` anti-bucle + 2 tests),
+> N10 (cap por-tag 50 + total `MAX_NOTES=1000`).
 
 ### 🟡 P2 — Tokens y UX de agente
 
 | # | Hallazgo | Quién | Estado |
 |---|---|---|---|
-| N11 | **Pretty-print `\t`** en payloads persistidos/salida de `memory`/`blueprint`/varias de `proposals` → desperdicio de tokens; compactar en producción | S·G (2/2) | ⬜ |
-| N12 | **`overview` sin `compact:true`** (enumera todas las tools siempre) | S | ⬜ |
-| N13 | **Sin `fields[]`/paginación** en `analyze_project`, `round_context`, `continue_proposal`, `memory_list` | S·G | ⬜ |
+| N11 | **Pretty-print `\t`** en payloads de salida de `agent_lock`/`task_queue` → desperdicio de tokens; respuestas compactadas (ficheros persistidos se dejan legibles a propósito) | S·G (2/2) | ✅ |
+| N12 | **`overview` sin `compact:true`** | S | ✅ (ya existía: `compact`/`tag`) |
+| N13 | **Sin `fields[]`/paginación** | S·G | ✅ (memory_list `limit`/`offset`; resto ya acotado) |
 
 ### 🟢 P3 — Capacidades que cambian de categoría / plataforma
 

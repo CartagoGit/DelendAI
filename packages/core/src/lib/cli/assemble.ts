@@ -44,6 +44,11 @@ import { createWorkspacePathProvider } from '../workspace/create-workspace-path-
 export interface IAssembledCliConfig {
 	readonly config: IMcpCoreHostConfig;
 	readonly loadResult: IPluginLoadResult;
+	/** Config-file diagnostic from the SAME read used to assemble (so the
+	 *  doctor doesn't read the file twice). [N21] */
+	readonly configDiagnostic: { readonly present: boolean; readonly issues: readonly string[] };
+	/** Absolute path of the resolved config file. */
+	readonly configPath: string;
 }
 
 export interface IAssembleCliDeps {
@@ -75,9 +80,13 @@ export const assembleCliConfig = async (
 				: undefined);
 
 	// Config file: --config, else `mcp-core.config.json` at the workspace.
+	// Read the raw text ONCE and derive both the parsed config and the
+	// diagnostic, so the doctor reuses this instead of re-reading. [N21]
 	const configPath =
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
-	const fileConfig = parseConfigFile(readFile(configPath));
+	const rawConfig = readFile(configPath);
+	const fileConfig = parseConfigFile(rawConfig);
+	const configDiagnostic = diagnoseConfigFile(rawConfig);
 
 	// Precedence for roots: explicit CLI flag > config file > default.
 	const cacheDir =
@@ -228,7 +237,7 @@ export const assembleCliConfig = async (
 		extraResources: resources,
 	};
 
-	return { config, loadResult };
+	return { config, loadResult, configDiagnostic, configPath };
 };
 
 export interface IDoctorReport {
@@ -261,16 +270,11 @@ export const runDoctor = async (
 	args: IMcpCoreCliArgs,
 	deps: IAssembleCliDeps = {}
 ): Promise<IDoctorReport> => {
-	const readFile =
-		deps.readFile ??
-		((absolutePath: string) =>
-			existsSync(absolutePath)
-				? readFileSync(absolutePath, 'utf8')
-				: undefined);
-	const configPath =
-		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
-	const configDiag = diagnoseConfigFile(readFile(configPath));
-	const { config, loadResult } = await assembleCliConfig(args, deps);
+	// Single source of truth: assembleCliConfig already read + diagnosed the
+	// config file from one read; reuse that instead of reading it again. [N21]
+	const { config, loadResult, configDiagnostic, configPath } =
+		await assembleCliConfig(args, deps);
+	const configDiag = configDiagnostic;
 
 	// Assemble the REAL server (no stdio) to catch registration errors
 	// (e.g. duplicate tool ids) that a config-only check would miss.

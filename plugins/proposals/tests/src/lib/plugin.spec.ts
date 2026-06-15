@@ -41,6 +41,8 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'create_proposal',
 			'close_slice',
 			'proposal_board',
+			'state_health',
+			'state_repair',
 		]);
 		expect(
 			registrations.knowledge?.map((k) => k.id)

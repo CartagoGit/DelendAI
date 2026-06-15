@@ -160,8 +160,6 @@ export async function runAgentLockEngine(
 								'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
 							summary: `invalid-input: ${v.error}`,
 						},
-						null,
-						'\t'
 					),
 				},
 			],
@@ -208,8 +206,6 @@ async function executeLockAction(
 								ownership_count: existing.ownership.length,
 								summary: `refreshed ${taskId}`,
 							},
-							null,
-							'\t'
 						),
 					},
 				],
@@ -240,8 +236,6 @@ async function executeLockAction(
 										'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
 									summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
 								},
-								null,
-								'\t'
 							),
 						},
 					],
@@ -276,8 +270,6 @@ async function executeLockAction(
 							claimed: true,
 							summary: `claimed ${taskId} (${files.length} files)`,
 						},
-						null,
-						'\t'
 					),
 				},
 			],
@@ -307,8 +299,6 @@ async function executeLockAction(
 									? `released ${taskId}`
 									: `no active claim for ${taskId}`,
 						},
-						null,
-						'\t'
 					),
 				},
 			],
@@ -331,8 +321,6 @@ async function executeLockAction(
 							summary: `${lock.in_flight.length} active write lane(s)`,
 							...lock,
 						},
-						null,
-						'\t'
 					),
 				},
 			],
@@ -359,8 +347,6 @@ async function executeLockAction(
 							dropped,
 							summary: `gc dropped ${dropped} stale claim(s)`,
 						},
-						null,
-						'\t'
 					),
 				},
 			],
@@ -371,7 +357,7 @@ async function executeLockAction(
 		content: [
 			{
 				type: 'text',
-				text: JSON.stringify({ error: 'unreachable' }, null, '\t'),
+				text: JSON.stringify({ error: 'unreachable' }),
 			},
 		],
 		isError: true,

@@ -568,7 +568,7 @@ export async function runTaskQueueMcp(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(result, null, '\t'),
+					text: JSON.stringify(result),
 				},
 			],
 			// MCP modern structuredContent mirror of the text payload.
@@ -582,7 +582,7 @@ export async function runTaskQueueMcp(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(envelope, null, '\t'),
+					text: JSON.stringify(envelope),
 				},
 			],
 			structuredContent: envelope,

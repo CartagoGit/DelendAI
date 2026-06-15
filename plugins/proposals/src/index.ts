@@ -21,6 +21,11 @@ import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-w
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
+import {
+	buildStateHealthRegistration,
+	buildStateRepairRegistration,
+} from './lib/tools/state-tools.tool';
+import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 
 /**
  * The proposals workflow plugin. It turns mcp-core into a multi-agent
@@ -80,6 +85,14 @@ export default definePlugin({
 			...(Array.isArray(ctx.options['namePool'])
 				? { pool: ctx.options['namePool'] as string[] }
 				: {}),
+		};
+
+		const stateOptions: IStateToolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			lockPathAbs: abs(layout.lockFile),
+			queuePathAbs: abs(layout.taskQueueFile),
+			closedTasksPathAbs: abs(layout.closedTasksFile),
+			registryPathAbs: abs(layout.agentRegistryFile),
 		};
 
 		const authoringOptions: IAuthoringToolOptions = {
@@ -173,6 +186,8 @@ export default definePlugin({
 				buildCreateProposalRegistration(authoringOptions),
 				buildCloseSliceRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
+				buildStateHealthRegistration(stateOptions),
+				buildStateRepairRegistration(stateOptions),
 			],
 			prompts: [
 				{

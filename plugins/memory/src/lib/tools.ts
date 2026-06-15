@@ -165,27 +165,49 @@ export const buildMemoryToolRegistrations = (
 		},
 		{
 			id: 'memory_list',
-			summary: 'List all note ids, titles and tags (cheap index).',
+			summary: 'List note ids, titles and tags (cheap index; paginated).',
 			tags: ['memory', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_memory_list`,
 					{
 						description:
-							'List every note as {id,title,tags}. Read a body with memory_recall.',
+							'List notes as {id,title,tags}, newest first. Paginated: `limit` (default 50, max 200) + `offset`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall.',
+						inputSchema: z.object({
+							limit: z.number().optional(),
+							offset: z.number().optional(),
+						}),
 					},
-					async () =>
-						guardCorrupt(() =>
-							toolJson({
-								notes: readStore(options.storePathAbs).map(
-									(note) => ({
-										id: note.id,
-										title: note.title,
-										tags: note.tags,
-									})
-								),
-							})
-						)
+					async (args: {
+						limit?: number | undefined;
+						offset?: number | undefined;
+					}) =>
+						guardCorrupt(() => {
+							const all = readStore(options.storePathAbs)
+								.slice()
+								.sort((a, b) =>
+									b.updatedAt.localeCompare(a.updatedAt)
+								);
+							const limit = Math.max(
+								1,
+								Math.min(200, Math.floor(args.limit ?? 50))
+							);
+							const offset = Math.max(0, Math.floor(args.offset ?? 0));
+							const page = all.slice(offset, offset + limit);
+							const nextOffset = offset + page.length;
+							return toolJson({
+								notes: page.map((note) => ({
+									id: note.id,
+									title: note.title,
+									tags: note.tags,
+								})),
+								total: all.length,
+								offset,
+								...(nextOffset < all.length
+									? { nextOffset }
+									: {}),
+							});
+						})
 				);
 			},
 		},
