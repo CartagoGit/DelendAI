@@ -11,8 +11,8 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — M8, R12, R13, Tier3/plataforma,
-> npm publish. **R14, M7, M4 y M5 también HECHOS** (sesión Opus). Detalle en
+> ⏸️ pendientes — R12, R13, Tier3/plataforma,
+> npm publish. **R14, M7, M4, M5 y M8 también HECHOS** (sesión Opus). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -29,9 +29,9 @@
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
 > **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
-> M7, M4 y M5 cerrados con tests** en esta sesión (322 verdes). Siguiente
-> sugerido: **M8** (acceptance exec: cwd, parser argv, process groups) o
-> M6/M9 (scaffold agnóstico) para cerrar el grupo de agnosticismo.
+> M7, M4, M5 y M8 cerrados con tests** en esta sesión (334 verdes). Siguiente
+> sugerido: M6/M9 (scaffold agnóstico) o R12/R13 (IDs por namespace, cerrar
+> `exports ./lib/*` + semver). Luego Tier3 y npm publish (lo ejecuta el usuario).
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
@@ -188,7 +188,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M5 | ✅ **HECHO** — `paused/demos` ya no hardcoded; `syncProposalRegistry`/`scanLiveProposalEntries`/`collectRoundContextSnapshot` aceptan `extraFolders` inyectado por el plugin desde `ctx.options['proposalFolders']`. Spec `proposal-folders-injection` | S·G | hecho |
 | M6 | **Modelo `MiniMax-M3 (customendpoint)` hardcoded** en scaffold-host | S·G·C | omitir o pedir como opción `<provider/model>` |
 | M7 | ✅ **HECHO** — schema de lock único: `ILockEntry`/`LockEntrySchema` en `persistent-task-queue` usan el formato canónico del writer (`ownership`/`started_at`/`last_seen`); `.transform()` de compat eliminado; consumidores (`promote`/`reportBackpressure`) y `zombie-reconcile` alineados. Spec `loadLockSnapshot` (M7) | S·G | hecho |
-| M8 | **Acceptance commands** sin `cwd` inyectado, `split(/\s+/)` rompe comillas/pipes, timeout no mata descendientes (zombies) | C | `cwd=workspace`, shell declarada/parser argv, process groups |
+| M8 | ✅ **HECHO** — acceptance runner reescrito sobre `node:child_process` con `detached:true`: `cwd` inyectable (`runAcceptanceCriteria(criteria, {cwd})`), tokenizer argv que respeta comillas + shell para pipes/redirects, y timeout que mata el **grupo entero** (`process.kill(-pid)`) — sin zombies. Spec `acceptance-exec` (incl. test de descendiente muerto) | C | hecho |
 | M9 | **Scaffold de agentes incoherente** con el host generado (ordena llamar tools que el host no registra; no integra `proposals`) | C | generar solo tools existentes / wirear proposals |
 | M10 | ✅ **HECHO** — corrupto ≠ vacío: helper `quarantineCorruptFile` + `CorruptFileError`; estado crítico (queue/registry/memory) preserva + error estructurado en capa de tool; closed-tasks preserva + warning + sigue. Specs en core/proposals/memory | C | hecho |
 
@@ -273,7 +273,7 @@ backpressure.
 **Posibles (a cerrar):**
 1. Plugin colgado en import/register (sin timeout) — M3.
 2. `quality` síncrono congela el server — R8.
-3. Acceptance deja procesos hijos vivos — M8.
+3. ✅ Acceptance deja procesos hijos vivos — M8 HECHO (process-group kill).
 4. *Lost update* del lock (no transaccional) — F4.
 5. `waiterOrphans` sin promoción/auto-heal fiable — state_repair.
 6. Estado corrupto tratado como vacío → ciclos de reasignación — M10.
@@ -300,7 +300,7 @@ backpressure.
 
 ### P1 — Operativa fiable
 6. **Doctor real**: ensambla el server (sin stdio), valida nombres/URIs duplicados; loader dedup. [M2]
-7. **Timeouts** de import/register; subprocess async/cancelable con process groups. [M3·M8·R8]
+7. **Timeouts** de import/register; subprocess async/cancelable con process groups. [M3·R8] — ✅ **M8 (acceptance: cwd + argv/shell + process groups) HECHO.**
 8. ✅ **Corrupto ≠ vacío**: preservar + error estructurado + backup. [M10] — HECHO con tests.
 9. **`state_health` + `state_repair`** (auto-heal de waiterOrphans/locks). [gaps]
 

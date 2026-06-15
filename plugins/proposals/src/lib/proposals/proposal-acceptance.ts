@@ -13,10 +13,16 @@
  * `the proposal-workflow knowledge` skill and locked by
  * `tests/src/lib/proposals/executable-acceptance.spec.ts`.
  *
- * Runtime: `Bun.spawn`. The script NEVER shells out via `node:child_process`
- * so the run inherits Bun's `BUN_BIN` resolution and respects
- * `bunfig.toml`. We use `bun -e` for inline one-liners (e.g. `process.exit(1)`)
- * to keep the test commands self-contained.
+ * Runtime: `node:child_process.spawn` with `detached: true` so each
+ * criterion is its own process group. That is what lets the timeout path
+ * kill the WHOLE tree (`process.kill(-pid)`), not just the leader — a
+ * pipeline like `a | b` must not leave `b` running as a zombie. [M8]
+ * `bun` is resolved from PATH exactly as before (we keep the `Bun.which`
+ * availability pre-check); commands with shell metacharacters (`|`, `>`,
+ * `&&`, …) run through the shell, the rest are tokenised with a
+ * quote-aware parser so a single quoted argument keeps its spaces.
+ * The working directory is injectable via `runAcceptanceCriteria`'s
+ * `cwd` option instead of inheriting the server's cwd.
  *
  * Policy (the original design proposal §T3 point 10):
  *   - `exit0`  → exit code must be 0.
@@ -36,6 +42,8 @@
  * so that the caller's batch loop is the single source of truth for
  * "all passed?" / "any failed?".
  */
+
+import { spawn } from 'node:child_process';
 
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';
@@ -60,6 +68,15 @@ export interface IAcceptanceRunResult {
 	readonly totalDurationMs: number;
 }
 
+export interface IAcceptanceRunOptions {
+	/**
+	 * Working directory each criterion runs in. Inject the workspace root
+	 * so commands resolve paths against it rather than the server's cwd.
+	 * Omitted → inherits the current process cwd (back-compat). [M8]
+	 */
+	readonly cwd?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -78,7 +95,8 @@ const MAX_CAPTURED_BYTES = 64 * 1024; // 64 KiB per stream; truncate beyond.
  * criterion, not the sum.
  */
 export const runAcceptanceCriteria = async (
-	criteria: readonly IAcceptanceCriterion[]
+	criteria: readonly IAcceptanceCriterion[],
+	options: IAcceptanceRunOptions = {}
 ): Promise<IAcceptanceRunResult> => {
 	const startedAt = Date.now();
 	const results: IAcceptanceResult[] = [];
@@ -115,7 +133,7 @@ export const runAcceptanceCriteria = async (
 		//    with a clear reason. The spec at
 		//    `tests/src/lib/proposals/executable-acceptance.spec.ts` adds
 		//    a `skipIf(!Bun.which('bun'))` guard for that case.
-		const result = await runOne(criterion);
+		const result = await runOne(criterion, options);
 		results.push(result);
 	}
 
@@ -152,168 +170,195 @@ const truncateCaptured = (raw: string): string => {
 };
 
 /**
+ * Tokenise a command line into argv, honouring single and double quotes
+ * and backslash escapes — so `echo "a b"` yields `['echo', 'a b']`, not
+ * `['echo', '"a', 'b"']`. Used for the non-shell path; pipelines and
+ * redirects go through the shell instead. [M8]
+ */
+export const tokenizeArgv = (input: string): string[] => {
+	const tokens: string[] = [];
+	let current = '';
+	let hasToken = false;
+	let quote: "'" | '"' | null = null;
+	for (let i = 0; i < input.length; i += 1) {
+		const ch = input[i] as string;
+		if (quote === "'") {
+			if (ch === "'") quote = null;
+			else current += ch;
+			continue;
+		}
+		if (quote === '"') {
+			if (ch === '"') quote = null;
+			else if (ch === '\\' && (input[i + 1] === '"' || input[i + 1] === '\\')) {
+				current += input[i + 1];
+				i += 1;
+			} else current += ch;
+			continue;
+		}
+		if (ch === "'" || ch === '"') {
+			quote = ch;
+			hasToken = true;
+		} else if (ch === '\\' && i + 1 < input.length) {
+			current += input[i + 1];
+			i += 1;
+			hasToken = true;
+		} else if (/\s/.test(ch)) {
+			if (hasToken) {
+				tokens.push(current);
+				current = '';
+				hasToken = false;
+			}
+		} else {
+			current += ch;
+			hasToken = true;
+		}
+	}
+	if (hasToken) tokens.push(current);
+	return tokens;
+};
+
+/**
+ * A command needs a real shell when it carries pipes, redirects, command
+ * chaining or subshells. Quotes alone do NOT need a shell — the argv
+ * tokenizer handles those. [M8]
+ */
+export const commandNeedsShell = (command: string): boolean =>
+	/[|&;<>`]|\$\(/.test(command);
+
+/**
+ * Kill the criterion's whole process group (negative pid) so no child
+ * outlives the timeout — e.g. the right-hand side of a pipe. Falls back
+ * to killing just the leader if the group signal fails (already exited,
+ * or a platform without POSIX process groups). [M8]
+ */
+const killProcessGroup = (pid: number | undefined): void => {
+	if (pid === undefined) return;
+	try {
+		process.kill(-pid, 'SIGKILL');
+	} catch {
+		try {
+			process.kill(pid, 'SIGKILL');
+		} catch {
+			// already gone
+		}
+	}
+};
+
+/**
  * Runs a single criterion to completion (or timeout). Returns a structured
  * `IAcceptanceResult`. The function never throws for a spawn failure; it
  * returns `passed: false` with a descriptive `reason`.
  */
 const runOne = async (
-	criterion: IAcceptanceCriterion
+	criterion: IAcceptanceCriterion,
+	options: IAcceptanceRunOptions
 ): Promise<IAcceptanceResult> => {
 	const startedAt = Date.now();
 	const timeoutMs = criterion.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-
-	// Bun availability check. `Bun.which` returns null when the binary is
-	// not on PATH (or when running in a host that has no `Bun` global at
-	// all). We surface this as a per-criterion failure rather than a
-	// module-load crash so the caller can still see a coherent report.
-	if (typeof Bun === 'undefined' || Bun.which('bun') === null) {
-		return {
-			command: criterion.command,
-			expect: criterion.expect,
-			passed: false,
-			actual: '',
-			exitCode: null,
-			reason: 'Bun is not available in this host',
-			durationMs: Date.now() - startedAt,
-		};
-	}
-
-	// Use `bun -c <command>` to run the command via Bun's shell-less exec.
-	// We split the command on whitespace; this is a deliberate trade-off —
-	// full shell parsing is out of scope for this round, and the
-	// proposal convention is to keep acceptance commands as single
-	// `bun <args>` invocations.
-	const parts = criterion.command.split(/\s+/).filter((p) => p.length > 0);
-	if (parts.length === 0) {
-		// Re-checked at the public API level, but defensive.
-		return {
-			command: criterion.command,
-			expect: criterion.expect,
-			passed: false,
-			actual: '',
-			exitCode: null,
-			reason: 'command is empty after tokenisation',
-			durationMs: Date.now() - startedAt,
-		};
-	}
-	const [cmd, ...args] = parts as [string, ...string[]];
-
-	let proc: ReturnType<typeof Bun.spawn>;
-	try {
-		proc = Bun.spawn({
-			cmd: [cmd, ...args],
-			stdout: 'pipe',
-			stderr: 'pipe',
-			env: process.env,
-		});
-	} catch (e) {
-		return {
-			command: criterion.command,
-			expect: criterion.expect,
-			passed: false,
-			actual: '',
-			exitCode: null,
-			reason: `spawn failed: ${e instanceof Error ? e.message : String(e)}`,
-			durationMs: Date.now() - startedAt,
-		};
-	}
-
-	// Read both streams concurrently so a slow stderr doesn't deadlock a
-	// process that fills its stdout buffer. We cap the read at
-	// MAX_CAPTURED_BYTES by destroying the stream after the first chunk
-	// beyond the cap. We narrow the stream type explicitly because
-	// `Bun.spawn` types stdout/stderr as `number | ReadableStream<Uint8Array>
-	// | undefined` (the number branch is the fd case, not relevant here).
-	const stdoutStream = proc.stdout as
-		| ReadableStream<Uint8Array<ArrayBufferLike>>
-		| undefined;
-	const stderrStream = proc.stderr as
-		| ReadableStream<Uint8Array<ArrayBufferLike>>
-		| undefined;
-	const readStreamCapped = async (
-		stream: ReadableStream<Uint8Array<ArrayBufferLike>> | undefined
-	): Promise<string> => {
-		if (!stream) return '';
-		const reader = stream.getReader();
-		const chunks: Uint8Array[] = [];
-		let total = 0;
-		try {
-			while (true) {
-				const { value, done } = await reader.read();
-				if (done) break;
-				if (value === undefined) break;
-				total += value.byteLength;
-				if (total > MAX_CAPTURED_BYTES) {
-					chunks.push(value);
-					break;
-				}
-				chunks.push(value);
-			}
-		} finally {
-			try {
-				await reader.cancel();
-			} catch {
-				// ignore
-			}
-		}
-		const buf = new Uint8Array(
-			chunks.reduce((acc, c) => acc + c.byteLength, 0)
-		);
-		let offset = 0;
-		for (const c of chunks) {
-			buf.set(c, offset);
-			offset += c.byteLength;
-		}
-		return truncateCaptured(new TextDecoder().decode(buf));
-	};
-
-	const stdoutPromise = readStreamCapped(stdoutStream);
-	const stderrPromise = readStreamCapped(stderrStream);
-
-	// Race the process exit against a timeout. The timer is cleared in
-	// both branches so we don't leak handles.
-	let timer: ReturnType<typeof setTimeout> | null = null;
-	const timeoutPromise = new Promise<number>((resolve) => {
-		timer = setTimeout(() => {
-			try {
-				proc.kill();
-			} catch {
-				// ignore — the process may have just exited
-			}
-			resolve(-1);
-		}, timeoutMs);
+	const fail = (reason: string, exitCode: number | null = null): IAcceptanceResult => ({
+		command: criterion.command,
+		expect: criterion.expect,
+		passed: false,
+		actual: '',
+		exitCode,
+		reason,
+		durationMs: Date.now() - startedAt,
 	});
 
-	const exitCode = await Promise.race([
-		proc.exited.then(() => {
-			if (timer !== null) clearTimeout(timer);
-			return proc.exitCode;
-		}),
-		timeoutPromise,
-	]);
+	// Runtime-agnostic: the command is resolved from PATH by spawn. A
+	// missing binary surfaces as a spawn 'error' (ENOENT) → structured
+	// `fail`, not a crash. (M8 dropped the old hard Bun pre-check so any
+	// host command — bun, npm, vitest, a shell script — can be a criterion.)
+	const useShell = commandNeedsShell(criterion.command);
+	const cwd = options.cwd;
 
-	const [stdout, stderr] = await Promise.all([stdoutPromise, stderrPromise]);
+	let child;
+	try {
+		if (useShell) {
+			child = spawn(criterion.command, {
+				...(cwd !== undefined ? { cwd } : {}),
+				env: process.env,
+				shell: true,
+				detached: true,
+				stdio: ['ignore', 'pipe', 'pipe'],
+			});
+		} else {
+			const argv = tokenizeArgv(criterion.command);
+			if (argv.length === 0) {
+				return fail('command is empty after tokenisation');
+			}
+			const [cmd, ...args] = argv as [string, ...string[]];
+			child = spawn(cmd, args, {
+				...(cwd !== undefined ? { cwd } : {}),
+				env: process.env,
+				detached: true,
+				stdio: ['ignore', 'pipe', 'pipe'],
+			});
+		}
+	} catch (e) {
+		return fail(
+			`spawn failed: ${e instanceof Error ? e.message : String(e)}`
+		);
+	}
 
-	if (exitCode === -1) {
-		// Timed out. The process was killed; exitCode is whatever the
-		// signal returned (null on some platforms). We synthesise a
-		// negative code so the reason string is unambiguous.
+	// Capture stdout + stderr, capped at MAX_CAPTURED_BYTES per stream so a
+	// runaway command can't exhaust memory.
+	let stdout = '';
+	let stderr = '';
+	const append = (existing: string, chunk: Buffer): string =>
+		existing.length >= MAX_CAPTURED_BYTES
+			? existing
+			: existing + chunk.toString('utf8');
+	child.stdout?.on('data', (d: Buffer) => {
+		stdout = append(stdout, d);
+	});
+	child.stderr?.on('data', (d: Buffer) => {
+		stderr = append(stderr, d);
+	});
+
+	// Race exit against the timeout. On timeout, kill the whole group.
+	let timedOut = false;
+	let spawnError: Error | null = null;
+	const exitCode = await new Promise<number | null>((resolve) => {
+		const timer = setTimeout(() => {
+			timedOut = true;
+			killProcessGroup(child.pid);
+		}, timeoutMs);
+		child.on('error', (err: Error) => {
+			clearTimeout(timer);
+			spawnError = err;
+			resolve(null);
+		});
+		child.on('close', (code: number | null) => {
+			clearTimeout(timer);
+			resolve(code);
+		});
+	});
+
+	if (spawnError !== null) {
+		return fail(
+			`spawn failed: ${(spawnError as Error).message}`
+		);
+	}
+
+	const stdoutText = truncateCaptured(stdout);
+	const stderrText = truncateCaptured(stderr);
+	const combined = stdoutText + (stderrText ? `\n${stderrText}` : '');
+
+	if (timedOut) {
 		return {
 			command: criterion.command,
 			expect: criterion.expect,
 			passed: false,
-			actual: stdout + (stderr ? `\n${stderr}` : ''),
+			actual: combined,
 			exitCode: null,
 			reason: `timeout: command did not exit within ${timeoutMs}ms`,
 			durationMs: Date.now() - startedAt,
 		};
 	}
 
-	const combined = stdout + (stderr ? `\n${stderr}` : '');
-
 	if (criterion.expect === 'contains:') {
-		// Edge case: empty substring. We treat this as "always pass when
-		// exit 0" so the criterion is still meaningful.
+		// Empty substring: pass when exit 0 so the criterion stays meaningful.
 		if (exitCode === 0) {
 			return {
 				command: criterion.command,
