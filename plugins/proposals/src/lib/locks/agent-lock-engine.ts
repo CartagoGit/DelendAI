@@ -161,6 +161,19 @@ export async function runAgentLockEngine(
 		};
 	}
 
+	// Cross-process critical section: the whole read → mutate → write runs
+	// under a file mutex so two concurrent agents can't lose each other's
+	// updates (atomic writes alone prevent torn files, not lost updates).
+	return withFileMutex(lockPath, () => executeLockAction(args, deps));
+}
+
+async function executeLockAction(
+	args: IAgentLockArgs,
+	deps: IAgentLockDeps
+): Promise<IAgentLockResponse> {
+	const lockPath = getLockPath(deps);
+	const toolName = getToolName(deps);
+	const lockFileLabel = getLockFileLabel(deps);
 	const lock = removeStale(await readLock(deps));
 
 	if (args.action === 'claim') {
