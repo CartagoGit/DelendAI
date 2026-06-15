@@ -11,8 +11,8 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — M4, M5, M8, R12, R13, Tier3/plataforma,
-> npm publish. **R14 y M7 también HECHOS** (sesión Opus). Detalle en
+> ⏸️ pendientes — M8, R12, R13, Tier3/plataforma,
+> npm publish. **R14, M7, M4 y M5 también HECHOS** (sesión Opus). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -28,9 +28,10 @@
 >
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
-> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14
-> y M7 cerrados con tests** en esta sesión (316 verdes). Siguiente sugerido:
-> M4/M5 (agnosticismo) u M8 (acceptance exec).
+> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
+> M7, M4 y M5 cerrados con tests** en esta sesión (322 verdes). Siguiente
+> sugerido: **M8** (acceptance exec: cwd, parser argv, process groups) o
+> M6/M9 (scaffold agnóstico) para cerrar el grupo de agnosticismo.
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
@@ -50,6 +51,23 @@
 >
 > **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-core
 > (ver corrección de premisa arriba).
+>
+> **M4 + M5 (agnosticismo de tracks y carpetas) — HECHO (sesión Opus):**
+> - **M4**: `IProposalTrack` dejó de ser un union cerrado con vocabulario del
+>   host (`ui-demo`/`game-demo`/`scaffold`…) y es ahora `string`. La validación
+>   de tracks (`KNOWN_TRACKS`/`isKnownTrack` hardcoded) se sustituyó por un
+>   `knownTracks?: ReadonlySet<string>` opcional en
+>   `extractParallelismFromFrontmatter`: sin él, agnóstico (cualquier string no
+>   vacío); con él, typo-guard. `evaluateParallelism` recibe `auditLanes`
+>   configurable (default `['audit']`).
+> - **M5**: la carpeta `paused/demos` (host policy) ya no está hardcoded.
+>   `syncProposalRegistry`, `scanLiveProposalEntries` y
+>   `collectRoundContextSnapshot` aceptan `extraFolders` (rutas relativas a
+>   `proposalsDir`); el plugin las lee de `ctx.options['proposalFolders']` y las
+>   pasa a sync-proposals/authoring/round-context. Las subtrees genéricas del
+>   modelo de propuestas (audits/fixes/historical/paused/revised) se mantienen.
+> - Specs: `extract-parallelism-from-frontmatter` (modo agnóstico + typo-guard),
+>   `proposal-folders-injection`. 322 verdes.
 >
 > **M7 (schema de lock único) — HECHO (sesión Opus):** el lector
 > `persistent-task-queue` aceptaba DOS formatos (`files`/`claimed_at` viejo y
@@ -166,8 +184,8 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M1 | **EXDEV**: escrituras "atómicas" crean el temp en `os.tmpdir()` y `rename` al workspace → falla si están en FS distintos | C | temp en el **mismo directorio** del destino |
 | M2 | **Doctor falso positivo**: `--plugins=memory,memory` → `--check` dice `ok:true`, pero el arranque real falla con `duplicate registration id` | C | doctor debe correr `planRegistrationOrder` + validar nombres/URIs reales; loader dedup por specifier |
 | M3 | **Sin timeout de `import()`/`register()`** de plugin → boot infinito (la tolerancia solo cubre excepciones, no promesas colgadas) | C | timeout configurable + diagnóstico del plugin culpable |
-| M4 | **`IProposalTrack` con vocabulario del host** (`ui-demo`, `game-demo`, `scaffold`…) → rompe agnosticismo | S·G | tracks configurables por `mcp-core.config.json` |
-| M5 | **`paused/demos` hardcodeado** (TODO sin resolver) en round-context/sync | S·G | carpetas inyectables vía opciones del plugin |
+| M4 | ✅ **HECHO** — `IProposalTrack` es `string` (agnóstico); `extractParallelismFromFrontmatter` acepta `knownTracks?` inyectable (typo-guard opt-in); `evaluateParallelism` con `auditLanes` configurable (default `['audit']`). Vocabulario del host fuera del módulo | S·G | hecho |
+| M5 | ✅ **HECHO** — `paused/demos` ya no hardcoded; `syncProposalRegistry`/`scanLiveProposalEntries`/`collectRoundContextSnapshot` aceptan `extraFolders` inyectado por el plugin desde `ctx.options['proposalFolders']`. Spec `proposal-folders-injection` | S·G | hecho |
 | M6 | **Modelo `MiniMax-M3 (customendpoint)` hardcoded** en scaffold-host | S·G·C | omitir o pedir como opción `<provider/model>` |
 | M7 | ✅ **HECHO** — schema de lock único: `ILockEntry`/`LockEntrySchema` en `persistent-task-queue` usan el formato canónico del writer (`ownership`/`started_at`/`last_seen`); `.transform()` de compat eliminado; consumidores (`promote`/`reportBackpressure`) y `zombie-reconcile` alineados. Spec `loadLockSnapshot` (M7) | S·G | hecho |
 | M8 | **Acceptance commands** sin `cwd` inyectado, `split(/\s+/)` rompe comillas/pipes, timeout no mata descendientes (zombies) | C | `cwd=workspace`, shell declarada/parser argv, process groups |
@@ -288,7 +306,7 @@ backpressure.
 
 ### P2 — Calidad de producto
 10. **`proposals`: `create_proposal` + `close_slice` + `proposal_board`** (flujo de slices exhaustivo y claro). [O]
-11. **Agnosticismo**: tracks y carpetas configurables; quitar modelo hardcoded; scaffolds que solo prometan tools existentes. [M4·M5·M6·M9]
+11. **Agnosticismo**: ✅ tracks (M4) y carpetas (M5) configurables — HECHO; quitar modelo hardcoded; scaffolds que solo prometan tools existentes. [M6·M9 pendientes]
 12. **`rules`**: regenerar manifest por hash, validar deps eslint, añadir typecheck. [R5·R6·R7]
 13. **Endurecer plugins**: `git` errores+timeout+clamp, `memory` quotas+atomic, `quality` async+cancelable. [R8·R9·R10]
 14. **Tokens**: envelope compacto en proposals, paginado/`fields`, `overview compact:true`. [§4]

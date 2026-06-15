@@ -62,6 +62,15 @@ export default definePlugin({
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
+		// Host-specific proposal subfolders (relative to proposalsDir),
+		// e.g. `['paused/demos']`. mcp-core bakes none — the host injects
+		// its folder policy via ctx.options. [M5]
+		const extraProposalFolders = Array.isArray(
+			ctx.options['proposalFolders']
+		)
+			? (ctx.options['proposalFolders'] as string[])
+			: [];
+
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			registryPathAbs: abs(layout.agentRegistryFile),
@@ -83,6 +92,7 @@ export default definePlugin({
 				proposalsDir: layout.proposalsDir,
 				proposalIndexFile: layout.proposalIndexFile,
 			},
+			extraFolders: extraProposalFolders,
 		};
 
 		return {
@@ -107,6 +117,7 @@ export default definePlugin({
 						proposalsDir: layout.proposalsDir,
 						proposalIndexFile: layout.proposalIndexFile,
 					},
+					extraFolders: extraProposalFolders,
 				}),
 				buildGetProposalWorkflowRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -119,6 +130,7 @@ export default definePlugin({
 					digestPathAbs: abs(layout.roundContextDigestFile),
 					coreDocs: ['README.md', layout.proposalIndexFile],
 					layout,
+					extraFolders: extraProposalFolders,
 				}),
 				buildAgentNamesRegistration(agentNamesOptions),
 				buildContinueProposalRegistration({

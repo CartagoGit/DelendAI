@@ -12,6 +12,11 @@ export interface ISyncProposalsToolOptions {
 	 * Defaults to `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
 	 */
 	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
+	/**
+	 * Host-specific proposal subfolders (relative to proposalsDir) to scan
+	 * beyond the generic ones, e.g. `['paused/demos']`. [M5]
+	 */
+	readonly extraFolders?: readonly string[];
 }
 
 /**
@@ -37,7 +42,8 @@ export const buildSyncProposalsRegistration = (
 			async () => {
 				const result = await syncProposalRegistry(
 					options.workspaceRoot,
-					options.layout
+					options.layout,
+					options.extraFolders ?? []
 				);
 				return {
 					content: [

@@ -340,13 +340,15 @@ interface IScannedProposalEntry {
 
 const scanLiveProposalEntries = (
 	monorepoRoot: string,
-	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
+	// Host folder policy (e.g. `paused/demos`) is injected, not baked in:
+	// paths relative to `proposalsDir`. mcp-core stays agnostic. [M5]
+	extraFolders: readonly string[] = []
 ): IScannedProposalEntry[] => {
+	const proposalsDir = join(monorepoRoot, layout.proposalsDir);
 	const roots = [
-		join(monorepoRoot, layout.proposalsDir),
-		// TODO: the paused-demos subfolder is host folder policy;
-		// inject it via IProposalStoreConfig.folders when tools migrate.
-		join(monorepoRoot, layout.proposalsDir, 'paused/demos'),
+		proposalsDir,
+		...extraFolders.map((folder) => join(proposalsDir, folder)),
 	];
 	const entries: IScannedProposalEntry[] = [];
 	for (const root of roots) {
@@ -558,7 +560,10 @@ export const buildOperationalSources = (
 
 export const collectRoundContextSnapshot = (
 	monorepoRoot: string,
-	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
+	// Extra host proposal folders (relative to proposalsDir) scanned when
+	// no index.json is present. Injected by the plugin from ctx.options. [M5]
+	extraFolders: readonly string[] = []
 ): IRoundContextOperationalSnapshot => {
 	const chat = readJsonSource<IJsonChatContext>(
 		join(monorepoRoot, layout.orchestratorChatContextFile),
@@ -604,7 +609,7 @@ export const collectRoundContextSnapshot = (
 	const activePortfolioSource =
 		proposalIndex.state === 'ok' && proposalIndex.value !== null
 			? (proposalIndex.value.proposals ?? [])
-			: scanLiveProposalEntries(monorepoRoot, layout);
+			: scanLiveProposalEntries(monorepoRoot, layout, extraFolders);
 	const activePortfolio = activePortfolioSource.filter((entry) => {
 		const status = entry.status;
 		return status !== 'done' && status !== 'retired' && status !== 'paused';
