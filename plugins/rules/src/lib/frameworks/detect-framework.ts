@@ -44,6 +44,12 @@ export const detectPresetForArea = (
 ): IDetectResult => {
 	const deps = readDeps(reader, areaDir);
 	const ts = hasTypeScript(reader, areaDir, deps);
+	if (
+		reader.exists(joinRel(areaDir, 'artisan')) ||
+		reader.exists(joinRel(areaDir, 'composer.json'))
+	) {
+		return { presetId: 'laravel', reason: 'PHP/Laravel (composer.json/artisan)' };
+	}
 	if ('@angular/core' in deps) {
 		return { presetId: 'angular', reason: 'dependency @angular/core' };
 	}

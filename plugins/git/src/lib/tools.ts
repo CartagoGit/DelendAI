@@ -1,10 +1,16 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolJson } from '@cartago-git/mcp-core/public';
+import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
-import { gitChanged, gitDiffStat, gitLog, gitStatus } from './git';
+import { gitChanged, gitDiffStat, gitLog, gitStatus, isGitRepo } from './git';
 import type { IGitRunner } from './git';
+
+const NOT_A_REPO = () =>
+	toolError(
+		'not a git repository (or git is unavailable here)',
+		'Run inside a git working tree.'
+	);
 
 export interface IGitToolOptions {
 	readonly namespacePrefix: string;
@@ -32,7 +38,10 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns the current branch, whether the tree is clean, and the changed entries (status + path). Read-only.',
 					},
-					async () => toolJson(gitStatus(options.run))
+					async () =>
+						isGitRepo(options.run)
+							? toolJson(gitStatus(options.run))
+							: NOT_A_REPO()
 				);
 			},
 		},
@@ -47,7 +56,10 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns just the list of changed file paths. Cheapest way to see what you have touched. Read-only.',
 					},
-					async () => toolJson({ changed: gitChanged(options.run) })
+					async () =>
+						isGitRepo(options.run)
+							? toolJson({ changed: gitChanged(options.run) })
+							: NOT_A_REPO()
 				);
 			},
 		},
@@ -70,7 +82,9 @@ export const buildGitToolRegistrations = (
 						staged?: boolean | undefined;
 						path?: string | undefined;
 					}) =>
-						toolJson({
+						!isGitRepo(options.run)
+							? NOT_A_REPO()
+							: toolJson({
 							stat: gitDiffStat(options.run, {
 								...(args.staged !== undefined
 									? { staged: args.staged }
@@ -95,8 +109,14 @@ export const buildGitToolRegistrations = (
 							'Returns the most recent commits as {hash, subject}. Read-only.',
 						inputSchema: z.object({ limit: z.number().optional() }),
 					},
-					async (args: { limit?: number | undefined }) =>
-						toolJson({ commits: gitLog(options.run, args.limit ?? 10) })
+					async (args: { limit?: number | undefined }) => {
+						if (!isGitRepo(options.run)) return NOT_A_REPO();
+						const limit = Math.max(
+							1,
+							Math.min(100, Math.floor(args.limit ?? 10))
+						);
+						return toolJson({ commits: gitLog(options.run, limit) });
+					}
 				);
 			},
 		},

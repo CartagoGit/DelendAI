@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';
 
@@ -43,9 +45,33 @@ export const buildOverviewToolRegistration = (
 			`${namespacePrefix}_overview`,
 			{
 				description:
-					'Cold-start map of this MCP server: identity, loaded plugins, every tool with a one-line summary, available knowledge ids, resolved paths and a recommended next action. Read-only. Call this FIRST to orient yourself in one round-trip.',
+					'Cold-start map of this MCP server: identity, loaded plugins, every tool with a one-line summary, available knowledge ids, resolved paths and a recommended next action. Read-only. Call this FIRST. Use compact:true (names only) or tag to shrink the payload when there are many tools.',
+				inputSchema: z.object({
+					compact: z.boolean().optional(),
+					tag: z.string().optional(),
+				}),
 			},
-			async () => toolJson(snapshot())
+			async (args: {
+				compact?: boolean | undefined;
+				tag?: string | undefined;
+			}) => {
+				const snap = snapshot();
+				let tools = snap.tools;
+				if (args.tag !== undefined) {
+					tools = tools.filter((t) => (t.tags ?? []).includes(args.tag!));
+				}
+				if (args.compact === true) {
+					return toolJson({
+						server: snap.server,
+						namespacePrefix: snap.namespacePrefix,
+						plugins: snap.plugins.map((p) => p.name),
+						tools: tools.map((t) => t.name),
+						knowledge: snap.knowledge.map((k) => k.id),
+						recommendedNextAction: snap.recommendedNextAction,
+					});
+				}
+				return toolJson({ ...snap, tools });
+			}
 		);
 	},
 });

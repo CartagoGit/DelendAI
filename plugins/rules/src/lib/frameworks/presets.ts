@@ -284,6 +284,29 @@ export default [
 		conventions: ['TS in `<script lang="ts">`; follow svelte recommended.'],
 	},
 	{
+		id: 'laravel',
+		framework: 'laravel',
+		language: 'php',
+		linter: 'pint',
+		eslintConfigFile: 'laravel.pint.json',
+		eslintConfigContent: `${JSON.stringify(
+			{
+				preset: 'laravel',
+				rules: {
+					declare_strict_types: true,
+					ordered_imports: { sort_algorithm: 'alpha' },
+					no_unused_imports: true,
+				},
+			},
+			null,
+			'\t'
+		)}\n`,
+		conventions: [
+			'PHP/Laravel: format with Pint (preset laravel); `declare(strict_types=1)`.',
+			'Run `./vendor/bin/pint --test` to check, `./vendor/bin/pint` to fix.',
+		],
+	},
+	{
 		id: 'jquery',
 		framework: 'jquery',
 		language: 'js',
@@ -312,6 +335,30 @@ export default [
 		],
 	},
 ];
+
+/** npm packages each preset's materialised ESLint config imports. */
+export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> = {
+	'vanilla-js': ['@eslint/js'],
+	'vanilla-ts': ['@eslint/js', 'typescript-eslint'],
+	angular: ['typescript-eslint', 'angular-eslint'],
+	'react-ts': [
+		'@eslint/js',
+		'typescript-eslint',
+		'eslint-plugin-react',
+		'eslint-plugin-react-hooks',
+		'eslint-plugin-jsx-a11y',
+	],
+	'react-js': [
+		'@eslint/js',
+		'eslint-plugin-react',
+		'eslint-plugin-react-hooks',
+		'eslint-plugin-jsx-a11y',
+	],
+	vue: ['@eslint/js', 'eslint-plugin-vue', 'typescript-eslint'],
+	svelte: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-svelte'],
+	jquery: ['@eslint/js', 'globals'],
+	laravel: [],
+};
 
 export const PRESET_BY_ID: ReadonlyMap<string, IRulePreset> = new Map(
 	RULE_PRESETS.map((preset) => [preset.id, preset])

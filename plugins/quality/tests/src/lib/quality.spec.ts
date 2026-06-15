@@ -46,12 +46,12 @@ describe('resolveScopes', () => {
 });
 
 describe('runScope', () => {
-	it('reports per-command results and overall ok', () => {
-		const run: ICommandRunner = (cmd) =>
+	it('reports per-command results and overall ok', async () => {
+		const run: ICommandRunner = async (cmd) =>
 			cmd.includes('fail')
-				? { code: 1, output: 'boom' }
-				: { code: 0, output: 'ok' };
-		const result = runScope(
+				? { code: 1, output: 'boom', timedOut: false }
+				: { code: 0, output: 'ok', timedOut: false };
+		const result = await runScope(
 			'full',
 			[{ command: 'pass' }, { command: 'fail' }],
 			'/ws',

@@ -80,7 +80,7 @@ export const buildQualityToolRegistrations = (
 							);
 						}
 						return toolJson(
-							runScope(
+							await runScope(
 								scope,
 								commands,
 								options.workspaceRoot,

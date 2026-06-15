@@ -104,11 +104,11 @@ export const buildCreateProposalRegistration = (
 			async (args: {
 				id: string;
 				title: string;
-				goal?: string;
-				status?: string;
-				track?: string;
-				globalGate?: string;
-				slices?: Array<z.infer<typeof SLICE_IN>>;
+				goal?: string | undefined;
+				status?: string | undefined;
+				track?: string | undefined;
+				globalGate?: string | undefined;
+				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
 				const slices = args.slices ?? [];
 				// Validate disjointness before writing.
@@ -205,7 +205,7 @@ export const buildCloseSliceRegistration = (
 			async (args: {
 				proposalId: string;
 				sliceId: string;
-				releaseLock?: boolean;
+				releaseLock?: boolean | undefined;
 			}) => {
 				if (!existsSync(options.indexPathAbs)) {
 					return toolError(

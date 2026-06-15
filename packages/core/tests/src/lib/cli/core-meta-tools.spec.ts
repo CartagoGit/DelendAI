@@ -83,4 +83,12 @@ describe('core meta-tools', () => {
 		const matrix = await callTool(byId('get_validation_matrix'));
 		expect(matrix.scopes.full[0].command).toBe('bun test');
 	});
+
+	it('overview compact:true returns only names (low-token)', async () => {
+		const { byId } = await assemble();
+		const compact = await callTool(byId('overview'), { compact: true });
+		expect(Array.isArray(compact.tools)).toBe(true);
+		expect(typeof compact.tools[0]).toBe('string'); // names, not objects
+		expect(compact.plugins).toContain('demo');
+	});
 });
