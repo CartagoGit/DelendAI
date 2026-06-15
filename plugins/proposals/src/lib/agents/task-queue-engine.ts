@@ -21,13 +21,13 @@
  */
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
-import { mkdir, readFile, rename } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { z } from 'zod';
 
-import { withFileMutex } from '@cartago-git/mcp-core/public';
+import { quarantineCorruptFile, withFileMutex } from '@cartago-git/mcp-core/public';
 
 import {
 	enqueue,
@@ -239,20 +239,18 @@ const loadOrEmptyQueue = async (
 	try {
 		parsed = JSON.parse(raw);
 	} catch (err) {
-		const backup = `${queuePath}.corrupt-${Date.now()}`;
-		try { await rename(queuePath, backup); } catch { /* best effort */ }
+		const backup = await quarantineCorruptFile(queuePath);
 		throw new TaskQueueActionError(
 			'load',
-			`Queue file at "${queuePath}" has corrupt JSON; backed up to "${backup}": ${String(err)}`
+			`Queue file at "${queuePath}" has corrupt JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`
 		);
 	}
 	const p = parsed as { version?: number; entries?: unknown[] };
 	if (!p || !Array.isArray(p.entries)) {
-		const backup = `${queuePath}.corrupt-${Date.now()}`;
-		try { await rename(queuePath, backup); } catch { /* best effort */ }
+		const backup = await quarantineCorruptFile(queuePath);
 		throw new TaskQueueActionError(
 			'load',
-			`Queue file at "${queuePath}" has invalid schema; backed up to "${backup}".`
+			`Queue file at "${queuePath}" has invalid schema; preserved at "${backup ?? '<rename failed>'}".`
 		);
 	}
 	return parsed as IPersistentTaskQueue;

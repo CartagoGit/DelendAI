@@ -16,17 +16,6 @@ export interface IMcpCoreServer {
 }
 
 /**
- * Core registrations owned by the framework. Empty until the tool
- * engines migrate from the host project; the sequence is data
- * so the semantically load-bearing order survives the move.
- */
-export function coreToolRegistrations(
-	_config: IMcpCoreHostConfig
-): readonly IToolRegistration[] {
-	return [];
-}
-
-/**
  * Compute the final registration sequence: core registrations first
  * (in declared order), then each extra appended at the end — or, when
  * `registerAfter` names an anchor, inserted immediately after it.
@@ -88,10 +77,7 @@ export async function createMcpServer(
 		name: config.metadata.name,
 		version: config.metadata.version,
 	});
-	const ordered = planRegistrationOrder(
-		coreToolRegistrations(config),
-		config.extraTools ?? []
-	);
+	const ordered = planRegistrationOrder([], config.extraTools ?? []);
 	for (const registration of ordered) {
 		await registration.register(server);
 	}

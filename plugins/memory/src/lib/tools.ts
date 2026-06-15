@@ -1,9 +1,37 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolError, toolJson, toolOk } from '@cartago-git/mcp-core/public';
+import {
+	CorruptFileError,
+	toolError,
+	toolJson,
+	toolOk,
+} from '@cartago-git/mcp-core/public';
+import type { IToolTextResult } from '@cartago-git/mcp-core/public';
 
 import { readStore, recall, removeNote, saveNote } from './store';
+
+/**
+ * Run a memory operation, translating a corrupt-store error into a
+ * structured tool error that names the preserved backup, so an agent
+ * never silently reads (or overwrites) an empty store. Other errors
+ * propagate to the SDK unchanged.
+ */
+const guardCorrupt = (fn: () => IToolTextResult): IToolTextResult => {
+	try {
+		return fn();
+	} catch (err) {
+		if (err instanceof CorruptFileError) {
+			return toolError(
+				`memory store is corrupt: ${err.message}`,
+				err.backupPath
+					? `The corrupt file was preserved at "${err.backupPath}". Inspect or delete it, then retry.`
+					: 'Could not back up the corrupt store; inspect it manually before retrying.'
+			);
+		}
+		throw err;
+	}
+};
 
 export interface IMemoryToolOptions {
 	readonly namespacePrefix: string;
@@ -57,13 +85,15 @@ export const buildMemoryToolRegistrations = (
 						if ((args.tags?.length ?? 0) > 20) {
 							return toolError('too many tags (max 20)');
 						}
-						return toolOk({
-							saved: saveNote(options.storePathAbs, {
-								title: args.title,
-								body: args.body,
-								...(args.tags ? { tags: args.tags } : {}),
-							}),
-						});
+						return guardCorrupt(() =>
+							toolOk({
+								saved: saveNote(options.storePathAbs, {
+									title: args.title,
+									body: args.body,
+									...(args.tags ? { tags: args.tags } : {}),
+								}),
+							})
+						);
 					}
 				);
 			},
@@ -89,18 +119,20 @@ export const buildMemoryToolRegistrations = (
 						tags?: string[] | undefined;
 						limit?: number | undefined;
 					}) =>
-						toolJson({
-							notes: recall(options.storePathAbs, {
-								...(args.query !== undefined
-									? { query: args.query }
-									: {}),
-								...(args.tags ? { tags: args.tags } : {}),
-								limit: Math.max(
-									1,
-									Math.min(50, Math.floor(args.limit ?? 10))
-								),
-							}),
-						})
+						guardCorrupt(() =>
+							toolJson({
+								notes: recall(options.storePathAbs, {
+									...(args.query !== undefined
+										? { query: args.query }
+										: {}),
+									...(args.tags ? { tags: args.tags } : {}),
+									limit: Math.max(
+										1,
+										Math.min(50, Math.floor(args.limit ?? 10))
+									),
+								}),
+							})
+						)
 				);
 			},
 		},
@@ -116,13 +148,17 @@ export const buildMemoryToolRegistrations = (
 							'List every note as {id,title,tags}. Read a body with memory_recall.',
 					},
 					async () =>
-						toolJson({
-							notes: readStore(options.storePathAbs).map((note) => ({
-								id: note.id,
-								title: note.title,
-								tags: note.tags,
-							})),
-						})
+						guardCorrupt(() =>
+							toolJson({
+								notes: readStore(options.storePathAbs).map(
+									(note) => ({
+										id: note.id,
+										title: note.title,
+										tags: note.tags,
+									})
+								),
+							})
+						)
 				);
 			},
 		},
@@ -137,15 +173,19 @@ export const buildMemoryToolRegistrations = (
 						description: 'Delete a note by id (from memory_list).',
 						inputSchema: z.object({ id: z.string() }),
 					},
-					async (args: { id: string }) => {
-						const removed = removeNote(options.storePathAbs, args.id);
-						return removed
-							? toolOk({ removed: args.id })
-							: toolError(
-									`no note "${args.id}"`,
-									'Call memory_list to see ids.'
-								);
-					}
+					async (args: { id: string }) =>
+						guardCorrupt(() => {
+							const removed = removeNote(
+								options.storePathAbs,
+								args.id
+							);
+							return removed
+								? toolOk({ removed: args.id })
+								: toolError(
+										`no note "${args.id}"`,
+										'Call memory_list to see ids.'
+									);
+						})
 				);
 			},
 		},
