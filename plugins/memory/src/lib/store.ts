@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync } from 'node:fs';
 
 import { writeFileAtomicSync } from '@cartago-git/mcp-core/public';
 
@@ -18,17 +18,38 @@ const kebab = (value: string): string =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-/** Read the note store (JSON array). Missing/corrupt → empty. */
+const quarantineSync = (absPath: string, detail: string): never => {
+	const backup = `${absPath}.corrupt-${Date.now()}`;
+	try { renameSync(absPath, backup); } catch { /* best effort */ }
+	throw new Error(
+		`Memory store at "${absPath}" is corrupt (${detail}); backed up to "${backup}".`
+	);
+};
+
+/** Read the note store (JSON array). Missing → empty; corrupt → throw after renaming backup. */
 export const readStore = (absPath: string): INote[] => {
 	if (!existsSync(absPath)) return [];
+	let raw: string;
 	try {
-		const parsed = JSON.parse(readFileSync(absPath, 'utf8')) as {
-			notes?: INote[];
-		};
-		return Array.isArray(parsed.notes) ? parsed.notes : [];
-	} catch {
-		return [];
+		raw = readFileSync(absPath, 'utf8');
+	} catch (err) {
+		throw new Error(`Cannot read memory store at "${absPath}": ${String(err)}`);
 	}
+	if (!raw.trim()) return [];
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch (err) {
+		return quarantineSync(absPath, `invalid JSON: ${String(err)}`);
+	}
+	if (
+		typeof parsed !== 'object' ||
+		parsed === null ||
+		!Array.isArray((parsed as { notes?: unknown }).notes)
+	) {
+		return quarantineSync(absPath, 'expected { notes: [...] }');
+	}
+	return (parsed as { notes: INote[] }).notes;
 };
 
 export const writeStore = (absPath: string, notes: readonly INote[]): void => {
