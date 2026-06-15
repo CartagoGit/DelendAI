@@ -1,11 +1,17 @@
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 
 export interface ISyncProposalsToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute workspace root the engine resolves proposal paths under. */
 	readonly workspaceRoot: string;
+	/**
+	 * Workspace-relative layout for the proposals dir + index file.
+	 * Defaults to `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
+	 */
+	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
 }
 
 /**
@@ -29,7 +35,10 @@ export const buildSyncProposalsRegistration = (
 					'Regenerate the proposal index from the .md files under the proposals dir. Idempotent. Invoke after any create or rename under the proposals dir. Returns { changed, count, indexPath, errors }.',
 			},
 			async () => {
-				const result = await syncProposalRegistry(options.workspaceRoot);
+				const result = await syncProposalRegistry(
+					options.workspaceRoot,
+					options.layout
+				);
 				return {
 					content: [
 						{

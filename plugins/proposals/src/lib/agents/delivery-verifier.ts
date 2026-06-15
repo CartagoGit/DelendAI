@@ -253,8 +253,8 @@ export const verifyClosure = async (
  * `.cache/agent-queue/closed-tasks.json` paths are the canonical home
  * of the queue (the original design).
  */
-export const defaultVerifyPaths = (): IVerifyPaths => ({
-	queuePath: join(process.cwd(), DEFAULT_PATH_LAYOUT.taskQueueFile),
-	closedTasksPath: join(process.cwd(), DEFAULT_PATH_LAYOUT.closedTasksFile),
-	lockPath: join(process.cwd(), DEFAULT_PATH_LAYOUT.lockFile),
+export const defaultVerifyPaths = (root: string): IVerifyPaths => ({
+	queuePath: join(root, DEFAULT_PATH_LAYOUT.taskQueueFile),
+	closedTasksPath: join(root, DEFAULT_PATH_LAYOUT.closedTasksFile),
+	lockPath: join(root, DEFAULT_PATH_LAYOUT.lockFile),
 });

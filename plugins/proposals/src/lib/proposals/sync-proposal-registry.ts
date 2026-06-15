@@ -14,6 +14,7 @@ import {
 	isProposalSwarmBudget,
 } from './proposal-policy-guards';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 
 type IProposalStatus =
 	| 'pending'
@@ -308,10 +309,14 @@ const reconcileAndArchiveCompletedRootProposals = async (
 };
 
 export async function syncProposalRegistry(
-	root: string = process.cwd()
+	root: string,
+	layout: Pick<
+		IHostPathLayout,
+		'proposalsDir' | 'proposalIndexFile'
+	> = DEFAULT_PATH_LAYOUT
 ): Promise<IProposalRegistrySyncResult> {
-	const proposalsDir = resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir);
-	const indexPath = resolve(root, DEFAULT_PATH_LAYOUT.proposalIndexFile);
+	const proposalsDir = resolve(root, layout.proposalsDir);
+	const indexPath = resolve(root, layout.proposalIndexFile);
 	await reconcileAndArchiveCompletedRootProposals(proposalsDir);
 	const subtrees: ReadonlyArray<{ absolute: string }> = [
 		{ absolute: proposalsDir },

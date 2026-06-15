@@ -8,6 +8,7 @@ import { toolError, toolJson, toolOk, writeFileAtomic } from '@cartago-git/mcp-c
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
@@ -23,6 +24,12 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
+	/**
+	 * Workspace-relative layout (proposals dir + index) the post-create
+	 * sync uses, so a relocated store stays coherent. Defaults to
+	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
+	 */
+	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
 }
 
 const kebab = (value: string): string =>
@@ -166,7 +173,10 @@ export const buildCreateProposalRegistration = (
 				const fileRel = `${args.id}-${kebab(args.title)}.md`;
 				const absPath = join(options.proposalsDirAbs, fileRel);
 				await writeFileAtomic(absPath, body);
-				const sync = await syncProposalRegistry(options.workspaceRoot);
+				const sync = await syncProposalRegistry(
+					options.workspaceRoot,
+					options.layout
+				);
 				return toolOk({
 					file: fileRel,
 					path: absPath,
