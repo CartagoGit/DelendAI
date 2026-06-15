@@ -1,7 +1,7 @@
 # @cartago-git/mcp-proposals
 
 The **proposals workflow** plugin for
-[`@cartago-git/mcp-core`](../../README-MCP-CORE.md): a file-based proposal store,
+[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md): a file-based proposal store,
 file-level agent locks, a persistent task queue and multi-agent ("swarm")
 coordination — including naming the whole agent tree (orchestrator included).
 

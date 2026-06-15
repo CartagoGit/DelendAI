@@ -1,7 +1,7 @@
 # @cartago-git/mcp-quality
 
 Quality-gate **runner** plugin for
-[`@cartago-git/mcp-core`](../../README-MCP-CORE.md). Executes the project's
+[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Executes the project's
 validation commands (lint/test/build/typecheck) per scope and returns a
 structured pass/fail report.
 

@@ -21,6 +21,6 @@ turn on capability with plugins (`mcp-core --plugins=...`).
 - Plugins implement `IMcpPlugin`; load them by name via `--plugins`.
 - Usable as a plain library too (import from `@cartago-git/mcp-core/public`).
 
-Full guide: **README-MCP-CORE.md** · Plugins: **PLUGINS-MCP-CORE.md** (repo root).
+Full guide: **README-MCP-CORE.md** · Plugins: **PLUGINS-MCP-CORE.md** (docs folder).
 
 MIT © Cartago

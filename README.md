@@ -3,9 +3,9 @@
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
 [@cartago-git](https://www.npmjs.com/org/cartago-git).
 
-- **[README-MCP-CORE.md](./README-MCP-CORE.md)** — what it is, how to use it,
+- **[README-MCP-CORE.md](./docs/README-MCP-CORE.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
-- **[PLUGINS-MCP-CORE.md](./PLUGINS-MCP-CORE.md)** — how to create plugins.
+- **[PLUGINS-MCP-CORE.md](./docs/PLUGINS-MCP-CORE.md)** — how to create plugins.
 
 ## Layout
 

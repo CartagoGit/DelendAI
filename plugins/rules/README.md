@@ -1,7 +1,7 @@
 # @cartago-git/mcp-rules
 
 Lint/type **rules** plugin for
-[`@cartago-git/mcp-core`](../../README-MCP-CORE.md). Ships per-framework default
+[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Ships per-framework default
 ESLint + TypeScript presets, detects each project area's framework, materialises
 the defaults to cache, and lets any agent apply them with a configurable
 enforcement mode — **the project's own config always wins**.
