@@ -1,9 +1,7 @@
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin, joinRel } from '@cartago-git/mcp-core/public';
 
 import { buildMemoryToolRegistrations } from './lib/tools';
 
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 /**
  * Persistent project memory. Save/recall/list/forget small notes stored

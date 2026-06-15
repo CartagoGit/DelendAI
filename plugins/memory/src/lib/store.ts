@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+
+import { writeFileAtomicSync } from '@cartago-git/mcp-core/public';
 
 export interface INote {
 	readonly id: string;
@@ -31,12 +32,7 @@ export const readStore = (absPath: string): INote[] => {
 };
 
 export const writeStore = (absPath: string, notes: readonly INote[]): void => {
-	mkdirSync(dirname(absPath), { recursive: true });
-	writeFileSync(
-		absPath,
-		`${JSON.stringify({ notes }, null, '\t')}\n`,
-		'utf8'
-	);
+	writeFileAtomicSync(absPath, `${JSON.stringify({ notes }, null, '\t')}\n`);
 };
 
 /**

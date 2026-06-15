@@ -1,7 +1,6 @@
 import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
+import { joinRel } from '@cartago-git/mcp-core/public';
 
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 /**
  * Derive the full swarm path layout from a cache root and a docs root.

@@ -24,9 +24,8 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { writeFile, rename } from 'node:fs/promises';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+
+import { writeFileAtomic } from '@cartago-git/mcp-core/public';
 
 import type {
 	IPersistentTaskEntry,
@@ -105,13 +104,7 @@ const persistQueue = async (
 	queue: IPersistentTaskQueue,
 	queuePath: string
 ): Promise<void> => {
-	const tmpPath = join(
-		tmpdir(),
-		`mcp-queue-promote-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
-	);
-	const content = JSON.stringify(queue, null, 2);
-	await writeFile(tmpPath, content, 'utf8');
-	await rename(tmpPath, queuePath);
+	await writeFileAtomic(queuePath, JSON.stringify(queue, null, 2));
 };
 
 // ---------------------------------------------------------------------------

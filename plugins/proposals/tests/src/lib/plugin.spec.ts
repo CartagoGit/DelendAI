@@ -38,8 +38,13 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'auto_work',
 			'plan',
 			'delegate',
+			'create_proposal',
+			'close_slice',
+			'proposal_board',
 		]);
-		expect(registrations.knowledge?.[0]?.id).toBe('proposals-workflow');
+		expect(
+			registrations.knowledge?.map((k) => k.id)
+		).toContain('multi-agent-loop');
 	});
 
 	it('namespaces tool registration by the context prefix', async () => {
@@ -71,6 +76,9 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'work_auto_work',
 			'work_plan',
 			'work_delegate',
+			'work_create_proposal',
+			'work_close_slice',
+			'work_proposal_board',
 		]);
 	});
 });

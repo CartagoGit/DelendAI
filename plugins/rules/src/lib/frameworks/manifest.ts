@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { joinRel } from '@cartago-git/mcp-core/public';
 import { dirname } from 'node:path';
 
 import type { IFileReader } from '@cartago-git/mcp-core/public';
@@ -7,8 +8,6 @@ import { detectPresetForArea } from './detect-framework';
 import { PRESET_BY_ID, RULE_PRESETS } from './presets';
 import type { IAreaRules, IRulesManifest, IRulesMode } from './types';
 
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 const ESLINT_CONFIG_NAMES = [
 	'eslint.config.mjs',
