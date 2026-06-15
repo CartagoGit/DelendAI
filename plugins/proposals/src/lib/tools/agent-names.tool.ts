@@ -52,11 +52,17 @@ export interface IAgentNamesArgs {
 
 type IResult = {
 	content: Array<{ type: 'text'; text: string }>;
+	structuredContent?: Record<string, unknown>;
 	isError?: boolean;
 };
 
 const json = (value: unknown, isError = false): IResult => ({
 	content: [{ type: 'text', text: JSON.stringify(value) }],
+	// MCP modern structuredContent for object payloads (every json() call
+	// here passes an object).
+	...(typeof value === 'object' && value !== null && !Array.isArray(value)
+		? { structuredContent: value as Record<string, unknown> }
+		: {}),
 	...(isError ? { isError: true } : {}),
 });
 
