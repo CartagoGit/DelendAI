@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import { CorruptFileError } from '@cartago-git/mcp-core/public';
 
 import {
 	enqueue,
@@ -90,6 +91,32 @@ const cooldownNames = (
  * registry-store, tree, zombie-gc and queue engines.
  */
 export const runAgentNames = async (
+	args: IAgentNamesArgs,
+	options: IAgentNamesToolOptions
+): Promise<IResult> => {
+	try {
+		return await runAgentNamesImpl(args, options);
+	} catch (err) {
+		if (err instanceof CorruptFileError) {
+			// corrupt ≠ empty: surface it instead of acting on a blank
+			// registry, which would let the orchestrator re-issue names
+			// already held by live agents.
+			return json(
+				{
+					error: `agent registry is corrupt: ${err.message}`,
+					backup: err.backupPath,
+					nextAction: err.backupPath
+						? `Corrupt registry preserved at "${err.backupPath}". Inspect or delete it, then retry.`
+						: 'Could not back up the corrupt registry; inspect it manually before retrying.',
+				},
+				true
+			);
+		}
+		throw err;
+	}
+};
+
+const runAgentNamesImpl = async (
 	args: IAgentNamesArgs,
 	options: IAgentNamesToolOptions
 ): Promise<IResult> => {
