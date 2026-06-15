@@ -41,15 +41,19 @@ describe('scaffold-host generators (p97)', () => {
 		);
 		expect(file.content).toContain('id: acme-level-design');
 		expect(file.content).toContain('- Before editing rooms.');
-		expect(file.content).toContain('acme_check_project_state');
+		expect(file.content).toContain('acme_overview');
 	});
 
 	it('agent adapters always delegate to the HOST MCP server', () => {
 		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
 		expect(orchestrator.path).toBe('.github/agents/orchestrator.agent.md');
 		expect(orchestrator.content).toContain('mcp-server-acme/*');
-		expect(orchestrator.content).toContain('acme_check_project_state');
+		expect(orchestrator.content).toContain('acme_overview');
 		expect(orchestrator.content).toContain('user-invocable: true');
+		// M9: the proposal-workflow tools are shown as conditional on the
+		// plugin, never promised as always-present.
+		expect(orchestrator.content).toContain('--plugins=proposals');
+		expect(orchestrator.content).not.toContain('acme_check_project_state');
 		const runner = scaffoldAgentFile(HOST, 'implementation_runner');
 		expect(runner.content).toContain('user-invocable: false');
 		expect(runner.content).not.toContain('affairs_');
