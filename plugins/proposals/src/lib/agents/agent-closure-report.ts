@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
 import { appendToClosedTasks } from './closed-tasks-log';
-import { SUBAGENT_CANONICAL_ROLES } from '../shared/subagent-conventions';
+import { AGENT_CANONICAL_ROLES } from '../shared/agent-conventions';
 
 /**
  * Host vocabulary for closure-report validation. The framework owns
@@ -18,7 +18,7 @@ export interface IAgentClosureVocabulary {
 }
 
 export const DEFAULT_AGENT_CLOSURE_VOCABULARY: IAgentClosureVocabulary = {
-	slots: SUBAGENT_CANONICAL_ROLES,
+	slots: AGENT_CANONICAL_ROLES,
 };
 
 const SELF_REVIEW_VALUES = ['pass', 'fail'] as const;
@@ -40,7 +40,7 @@ export interface IAgentClosureReportError {
 
 export interface IAgentClosureReport {
 	readonly agentName: string;
-	readonly agentSlot: (typeof SUBAGENT_CANONICAL_ROLES)[number];
+	readonly agentSlot: (typeof AGENT_CANONICAL_ROLES)[number];
 	readonly model: string;
 	readonly selfReview: (typeof SELF_REVIEW_VALUES)[number];
 	readonly filesReRead: number;

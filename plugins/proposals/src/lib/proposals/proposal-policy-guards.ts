@@ -26,7 +26,7 @@
  */
 export const SWARM_BUDGET_KEYS = [
 	'maxSessionsActive',
-	'maxSubagentsPerSession',
+	'maxAgentsPerSession',
 	'maxToolRetriesPerSession',
 	'maxCoreDocRereadsPerSession',
 ] as const;

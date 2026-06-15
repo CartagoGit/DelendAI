@@ -1,21 +1,21 @@
 import type {
-	ISubagentAssignment,
-	ISubagentRegistry,
-} from './subagent-registry-store';
+	IAgentAssignment,
+	IAgentRegistry,
+} from './agent-registry-store';
 
-export type ISubagentNode = ISubagentAssignment & {
-	children?: ISubagentNode[];
+export type IAgentNode = IAgentAssignment & {
+	children?: IAgentNode[];
 };
 
-export type ISubagentNodeInput = ISubagentAssignment;
+export type IAgentNodeInput = IAgentAssignment;
 
 const buildNode = (
-	a: ISubagentAssignment,
-	byId: Map<string, ISubagentNode>
-): ISubagentNode => {
+	a: IAgentAssignment,
+	byId: Map<string, IAgentNode>
+): IAgentNode => {
 	const existing = byId.get(a.task_id);
 	if (existing) return existing;
-	const node: ISubagentNode = { ...a, children: [] };
+	const node: IAgentNode = { ...a, children: [] };
 	byId.set(a.task_id, node);
 	return node;
 };
@@ -28,17 +28,17 @@ const buildNode = (
  * exist in the registry, it is treated as a root (defensive: registry
  * can be in an inconsistent state during a race; we still render it).
  */
-export const buildSubagentTree = (
-	registry: ISubagentRegistry
-): ISubagentNode[] => {
-	const byId = new Map<string, ISubagentNode>();
+export const buildAgentTree = (
+	registry: IAgentRegistry
+): IAgentNode[] => {
+	const byId = new Map<string, IAgentNode>();
 	const all = registry.assignments.map((a) => {
 		const node = buildNode(a, byId);
 		node.children = node.children ?? [];
 		return node;
 	});
 
-	const roots: ISubagentNode[] = [];
+	const roots: IAgentNode[] = [];
 	for (const node of all) {
 		const parent = node.parent_task_id
 			? byId.get(node.parent_task_id)

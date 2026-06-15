@@ -10,13 +10,13 @@ import {
 } from '../agents/persistent-task-queue';
 import { gcZombies } from '../agents/zombie-reconcile';
 import {
-	SUBAGENT_CANONICAL_ROLES,
-	SUBAGENT_CONVENTIONS,
-} from '../shared/subagent-conventions';
-import type { ISubagentCanonicalRole } from '../shared/subagent-conventions';
-import { createSubagentRegistryStore } from '../shared/subagent-registry-store';
-import type { ISubagentAssignment } from '../shared/subagent-registry-store';
-import { buildSubagentTree } from '../shared/subagent-tree';
+	AGENT_CANONICAL_ROLES,
+	AGENT_CONVENTIONS,
+} from '../shared/agent-conventions';
+import type { IAgentCanonicalRole } from '../shared/agent-conventions';
+import { createAgentRegistryStore } from '../shared/agent-registry-store';
+import type { IAgentAssignment } from '../shared/agent-registry-store';
+import { buildAgentTree } from '../shared/agent-tree';
 import { DEFAULT_AGENT_NAME_POOL, pickFromPool } from '../knowledge/agent-name-pool';
 
 export interface IAgentNamesToolOptions {
@@ -60,16 +60,16 @@ const json = (value: unknown, isError = false): IResult => ({
 	...(isError ? { isError: true } : {}),
 });
 
-const isCanonicalRole = (value: string): value is ISubagentCanonicalRole =>
-	(SUBAGENT_CANONICAL_ROLES as readonly string[]).includes(value);
+const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
+	(AGENT_CANONICAL_ROLES as readonly string[]).includes(value);
 
-const activeNames = (assignments: readonly ISubagentAssignment[]): Set<string> =>
+const activeNames = (assignments: readonly IAgentAssignment[]): Set<string> =>
 	new Set(
 		assignments.filter((a) => a.status === 'active').map((a) => a.agent_name)
 	);
 
 const cooldownNames = (
-	assignments: readonly ISubagentAssignment[],
+	assignments: readonly IAgentAssignment[],
 	atIso: string
 ): Set<string> =>
 	new Set(
@@ -120,7 +120,7 @@ const runAgentNamesImpl = async (
 	args: IAgentNamesArgs,
 	options: IAgentNamesToolOptions
 ): Promise<IResult> => {
-	const store = createSubagentRegistryStore(options.registryPathAbs);
+	const store = createAgentRegistryStore(options.registryPathAbs);
 	const pool = options.pool ?? DEFAULT_AGENT_NAME_POOL;
 	const poolNames = new Set(pool);
 	const at = args.now ?? new Date().toISOString();
@@ -170,7 +170,7 @@ const runAgentNamesImpl = async (
 
 		case 'tree': {
 			const r = await store.read();
-			return json(buildSubagentTree(r));
+			return json(buildAgentTree(r));
 		}
 
 		case 'who_uses': {
@@ -229,7 +229,7 @@ const runAgentNamesImpl = async (
 			if (!args.task_id) return json({ error: 'task_id required' }, true);
 			const cooldownUntil = new Date(
 				new Date(at).getTime() +
-					SUBAGENT_CONVENTIONS.cooldown_days * 86_400_000
+					AGENT_CONVENTIONS.cooldown_days * 86_400_000
 			).toISOString();
 			await store.release(args.task_id, cooldownUntil);
 			const r = await store.read();
@@ -259,7 +259,7 @@ const runAgentNamesImpl = async (
 			const r = await store.read();
 			const cutoff =
 				new Date(at).getTime() -
-				SUBAGENT_CONVENTIONS.heartbeat_ttl_minutes * 60_000;
+				AGENT_CONVENTIONS.heartbeat_ttl_minutes * 60_000;
 			let freed = 0;
 			for (const a of r.assignments) {
 				if (a.status !== 'active') continue;
@@ -267,7 +267,7 @@ const runAgentNamesImpl = async (
 					a.status = 'orphan';
 					a.cooldown_until = new Date(
 						new Date(at).getTime() +
-							SUBAGENT_CONVENTIONS.cooldown_days * 86_400_000
+							AGENT_CONVENTIONS.cooldown_days * 86_400_000
 					).toISOString();
 					freed += 1;
 				}
@@ -281,7 +281,7 @@ const runAgentNamesImpl = async (
 					{
 						dryRun: false,
 						staleAfterMinutes:
-							SUBAGENT_CONVENTIONS.heartbeat_ttl_minutes,
+							AGENT_CONVENTIONS.heartbeat_ttl_minutes,
 						now: new Date(at),
 						queueEmitter: emitQueueEvent,
 					}
@@ -317,7 +317,7 @@ const runAgentNamesImpl = async (
 				return json(
 					{
 						error: 'agent_slot must be a canonical role',
-						allowed: SUBAGENT_CANONICAL_ROLES,
+						allowed: AGENT_CANONICAL_ROLES,
 					},
 					true
 				);
@@ -328,14 +328,14 @@ const runAgentNamesImpl = async (
 					) ?? null)
 				: null;
 			const depth = parent ? parent.depth + 1 : 0;
-			if (depth >= SUBAGENT_CONVENTIONS.max_depth)
+			if (depth >= AGENT_CONVENTIONS.max_depth)
 				return json(
 					{
 						blocked: true,
 						blockerType: 'name-conflict',
 						reason: 'max_depth_exceeded',
 						depth,
-						max_depth: SUBAGENT_CONVENTIONS.max_depth,
+						max_depth: AGENT_CONVENTIONS.max_depth,
 						nextAction:
 							'Continue as a root-level handoff or ask the orchestrator to reattach the child; do not retry the same parent/depth.',
 					},
@@ -385,7 +385,7 @@ const runAgentNamesImpl = async (
 				agentName = picked;
 			}
 
-			const assignment: ISubagentAssignment = {
+			const assignment: IAgentAssignment = {
 				task_id: args.task_id,
 				agent_name: agentName,
 				agent_slot: args.agent_slot,

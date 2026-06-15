@@ -15,7 +15,7 @@ export const buildSwarmPaths = (
 	docsDir: string
 ): IHostPathLayout => ({
 	lockFile: joinRel(cacheDir, 'agents.lock.json'),
-	subagentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
+	agentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
 	roundContextDigestFile: joinRel(cacheDir, 'round-context.digest.json'),
 	taskQueueDir: joinRel(cacheDir, 'agent-queue'),
 	taskQueueFile: joinRel(cacheDir, 'agent-queue/queue.json'),

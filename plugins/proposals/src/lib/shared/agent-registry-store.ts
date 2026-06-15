@@ -8,11 +8,11 @@ import {
 	writeFileAtomic,
 } from '@cartago-git/mcp-core/public';
 
-import { SUBAGENT_CONVENTIONS } from './subagent-conventions';
+import { AGENT_CONVENTIONS } from './agent-conventions';
 
-export type ISubagentAssignmentStatus = 'active' | 'cooldown' | 'orphan';
+export type IAgentAssignmentStatus = 'active' | 'cooldown' | 'orphan';
 
-export type ISubagentAssignment = {
+export type IAgentAssignment = {
 	task_id: string;
 	agent_name: string;
 	agent_slot: string;
@@ -23,57 +23,57 @@ export type ISubagentAssignment = {
 	assigned_at: string;
 	last_seen: string;
 	cooldown_until: string | null;
-	status: ISubagentAssignmentStatus;
+	status: IAgentAssignmentStatus;
 };
 
-export type ISubagentAdoption = {
+export type IAgentAdoption = {
 	name: string;
 	task_id: string;
 };
 
-export type ISubagentRegistry = {
+export type IAgentRegistry = {
 	version: number;
-	adopted: ISubagentAdoption[];
-	assignments: ISubagentAssignment[];
+	adopted: IAgentAdoption[];
+	assignments: IAgentAssignment[];
 };
 
-export interface ISubagentRegistryStore {
+export interface IAgentRegistryStore {
 	readonly path: string;
-	read(): Promise<ISubagentRegistry>;
-	write(registry: ISubagentRegistry): Promise<void>;
-	upsert(assignment: ISubagentAssignment): Promise<ISubagentRegistry>;
+	read(): Promise<IAgentRegistry>;
+	write(registry: IAgentRegistry): Promise<void>;
+	upsert(assignment: IAgentAssignment): Promise<IAgentRegistry>;
 	remove(task_id: string): Promise<boolean>;
 	release(task_id: string, cooldown_until: string): Promise<boolean>;
-	markAdopted(adoption: ISubagentAdoption): Promise<ISubagentRegistry>;
+	markAdopted(adoption: IAgentAdoption): Promise<IAgentRegistry>;
 }
 
-const emptyRegistry = (): ISubagentRegistry => ({
-	version: SUBAGENT_CONVENTIONS.registry_version,
+const emptyRegistry = (): IAgentRegistry => ({
+	version: AGENT_CONVENTIONS.registry_version,
 	adopted: [],
 	assignments: [],
 });
 
-const migrate = (raw: unknown): ISubagentRegistry => {
+const migrate = (raw: unknown): IAgentRegistry => {
 	if (typeof raw !== 'object' || raw === null) return emptyRegistry();
-	const r = raw as Partial<ISubagentRegistry>;
+	const r = raw as Partial<IAgentRegistry>;
 	return {
 		version:
 			typeof r.version === 'number'
 				? r.version
-				: SUBAGENT_CONVENTIONS.registry_version,
+				: AGENT_CONVENTIONS.registry_version,
 		adopted: Array.isArray(r.adopted)
-			? (r.adopted as ISubagentAdoption[])
+			? (r.adopted as IAgentAdoption[])
 			: [],
 		assignments: Array.isArray(r.assignments)
-			? (r.assignments as ISubagentAssignment[])
+			? (r.assignments as IAgentAssignment[])
 			: [],
 	};
 };
 
-export const createSubagentRegistryStore = (
+export const createAgentRegistryStore = (
 	path: string
-): ISubagentRegistryStore => {
-	const read = async (): Promise<ISubagentRegistry> => {
+): IAgentRegistryStore => {
+	const read = async (): Promise<IAgentRegistry> => {
 		if (!existsSync(path)) return emptyRegistry();
 		let raw: string;
 		try {
@@ -96,7 +96,7 @@ export const createSubagentRegistryStore = (
 	// Atomic write: temp-in-same-dir + rename, so a reader never sees a
 	// torn registry. The read-modify-write methods below wrap their whole
 	// critical section in a file mutex so two agents can't lose updates.
-	const write = async (registry: ISubagentRegistry): Promise<void> => {
+	const write = async (registry: IAgentRegistry): Promise<void> => {
 		await writeFileAtomic(
 			path,
 			`${JSON.stringify(registry, null, '    ')}\n`
@@ -104,8 +104,8 @@ export const createSubagentRegistryStore = (
 	};
 
 	const upsert = async (
-		assignment: ISubagentAssignment
-	): Promise<ISubagentRegistry> =>
+		assignment: IAgentAssignment
+	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();
 			const idx = r.assignments.findIndex(
@@ -147,8 +147,8 @@ export const createSubagentRegistryStore = (
 		});
 
 	const markAdopted = async (
-		adoption: ISubagentAdoption
-	): Promise<ISubagentRegistry> =>
+		adoption: IAgentAdoption
+	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();
 			if (!r.adopted.some((a) => a.name === adoption.name)) {

@@ -5,7 +5,7 @@
  *
  * 5 cases from the proposal:
  *  1. Valid swarmBudget + continuityPolicy → ISwarmProposalExtension
- *  2. swarmBudget.maxSubagentsPerSession: -1 → INVALID_SWARM_BUDGET
+ *  2. swarmBudget.maxAgentsPerSession: -1 → INVALID_SWARM_BUDGET
  *  3. continuityPolicy.maxToolRetriesPerTool: 0 → INVALID_CONTINUITY_POLICY
  *  4. continuityPolicy.forbidReReadOnUnchangedDigest: false → valid (allow-list)
  *  5. Reuses parseProposalDocument from p34 (base errors propagate unchanged)
@@ -56,7 +56,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 			[
 				VALID_FRONTMATTER_BASE,
 				'swarmBudget:',
-				'  maxSubagentsPerSession: 3',
+				'  maxAgentsPerSession: 3',
 				'  maxToolRetriesPerSession: 5',
 				'  maxCoreDocRereadsPerSession: 1',
 				'  maxTurnTokens: 4096',
@@ -75,7 +75,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 		const result = await parseSwarmFrontmatter(path);
 
 		expect(result.swarmBudget).toBeDefined();
-		expect(result.swarmBudget?.maxSubagentsPerSession).toBe(3);
+		expect(result.swarmBudget?.maxAgentsPerSession).toBe(3);
 		expect(result.swarmBudget?.maxToolRetriesPerSession).toBe(5);
 		expect(result.swarmBudget?.maxCoreDocRereadsPerSession).toBe(1);
 		expect(result.swarmBudget?.maxTurnTokens).toBe(4096);
@@ -92,16 +92,16 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 });
 
 // ---------------------------------------------------------------------------
-// Case 2: swarmBudget.maxSubagentsPerSession: -1 → INVALID_SWARM_BUDGET
+// Case 2: swarmBudget.maxAgentsPerSession: -1 → INVALID_SWARM_BUDGET
 // ---------------------------------------------------------------------------
 describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
-	it('throws ProposalParseError with INVALID_SWARM_BUDGET for negative maxSubagentsPerSession', async () => {
+	it('throws ProposalParseError with INVALID_SWARM_BUDGET for negative maxAgentsPerSession', async () => {
 		const path = writeProposal(
 			'p99-negative-budget.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'swarmBudget:',
-				'  maxSubagentsPerSession: -1',
+				'  maxAgentsPerSession: -1',
 				'---',
 				'',
 				'# [PROPOSAL] Negative budget',

@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { runSwarmClosure } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 import type {
 	ICloseSwarmInput,
-	ISubagentTreeSummary,
+	IAgentTreeSummary,
 } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 import type {
 	IContinuityPolicy,
@@ -39,7 +39,7 @@ import type { ILockSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/swarm-c
 const STALE_LOCK_TIMESTAMP = '2026-06-05T00:00:00.000Z';
 const FRESH_LOCK_TIMESTAMP = '2026-06-05T08:00:00.000Z';
 
-const emptyTree = (): ISubagentTreeSummary => ({
+const emptyTree = (): IAgentTreeSummary => ({
 	totalAssignments: 0,
 	activeCount: 0,
 	cooldownCount: 0,
@@ -47,7 +47,7 @@ const emptyTree = (): ISubagentTreeSummary => ({
 	adoptedCount: 0,
 });
 
-const healthyTree = (): ISubagentTreeSummary => ({
+const healthyTree = (): IAgentTreeSummary => ({
 	totalAssignments: 1,
 	activeCount: 0,
 	cooldownCount: 1,
@@ -66,7 +66,7 @@ const inputWith = (
 	},
 	swarmBudget: {
 		maxSessionsActive: 1,
-		maxSubagentsPerSession: 2,
+		maxAgentsPerSession: 2,
 		maxToolRetriesPerSession: 3,
 		maxCoreDocRereadsPerSession: 1,
 	},
@@ -83,10 +83,10 @@ const inputWith = (
 	observedContinuity: {
 		tasksCompletedInSession: 3,
 		newProposalsOpenedInSession: 0,
-		subagentSpawnsInSession: 1,
+		agentSpawnsInSession: 1,
 		willReReadUnchangedDoc: false,
 	},
-	subagentTree: healthyTree(),
+	agentTree: healthyTree(),
 	locks: [],
 	checkpointPresent: true,
 	nowIso: FRESH_LOCK_TIMESTAMP,
@@ -150,14 +150,14 @@ describe('runSwarmClosure — case 2: block violation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Case 3: subagentTree.orphanCount > 0 → open_fix
+// Case 3: agentTree.orphanCount > 0 → open_fix
 // ---------------------------------------------------------------------------
 
 describe('runSwarmClosure — case 3: orphan subagents', () => {
 	it('returns closureDecision: "open_fix" when the subagent registry has orphans', () => {
 		const result = runSwarmClosure(
 			inputWith({
-				subagentTree: {
+				agentTree: {
 					totalAssignments: 2,
 					activeCount: 0,
 					cooldownCount: 1,
