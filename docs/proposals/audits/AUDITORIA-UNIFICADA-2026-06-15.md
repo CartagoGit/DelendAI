@@ -209,13 +209,13 @@ Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
 | # | Capacidad | Quién | Estado |
 |---|---|---|---|
 | N14 | **Plugin `notification`** (MCP `notifications/message`): mata el polling de locks/cola en swarm (–40% llamadas estimado). *El de mayor impacto.* | S·G (2/2) | ⬜ |
-| N15 | **`state_health` + `state_repair`** (dry-run/execute con backup): auto-heal de `waiterOrphans`, locks >TTL, assignments huérfanas | S·G (2/2) | ⬜ |
+| N15 | **`state_health` + `state_repair`** (dry-run/execute con backup): auto-heal de `waiterOrphans`, locks >TTL, assignments huérfanas | S·G (2/2) | ✅ (2 tools nuevas en proposals + specs; reusa gc/expireSweep/gcZombies) |
 | N16 | **`outputSchema` Zod por tool** (structuredContent ya está; falta declarar el schema → validación/UMI en clientes) | S | ⬜ |
 | N17 | **`compact_status`** (git+locks+queue+quality en 1 llamada con `fields`) | S | ⬜ |
 | N18 | **Presets de scaffold `minimal`/`standard`/`swarm`** | S | ⬜ |
 | N19 | **Plugins `docs` y `deps/security`** (autocontenidos, como `search`) | (orig.) | ⬜ |
 | N20 | **Refactor `round-context.ts`** (884 líneas → 3-4 módulos) (= R15) | S | ⬜ |
-| N21 | **Doctor: unificar doble lectura de config** (= R3) | S | ⬜ |
+| N21 | **Doctor: unificar doble lectura de config** (= R3) | S | ✅ (`assembleCliConfig` devuelve `configDiagnostic` de la única lectura) |
 | N22 | **`git`/`search` async runner compartido**; **memoria semántica** (FTS) en `memory_recall` | S·G | ⬜ |
 | N23 | **Excelencia demostrada**: tests de caos/adversarial, observabilidad `IStatusCollector` real + `--verbose`, **benchmarks de tokens** documentados, skills versionadas, semver real + publish automatizado, **SDK de tipos generados** de `outputSchema` | S (2/2 parcial) | ⬜ |
 
