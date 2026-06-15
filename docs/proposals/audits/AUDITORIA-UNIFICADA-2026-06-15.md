@@ -12,7 +12,8 @@
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
 > ⏸️ pendientes — R12, R13, Tier3/plataforma,
-> npm publish. **R14, M7, M4, M5 y M8 también HECHOS** (sesión Opus). Detalle en
+> npm publish. **R14, M7, M4, M5, M8 y M9 también HECHOS** (sesión Opus; M6 ya
+> estaba). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -29,8 +30,9 @@
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
 > **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
-> M7, M4, M5 y M8 cerrados con tests** en esta sesión (334 verdes). Siguiente
-> sugerido: M6/M9 (scaffold agnóstico) o R12/R13 (IDs por namespace, cerrar
+> M7, M4, M5, M8 y M9 cerrados con tests** en esta sesión (334 verdes; M6 ya
+> estaba). **Todo el grupo de agnosticismo (M4·M5·M6·M9) cerrado.** Siguiente
+> sugerido: R12 (IDs por namespace en `planRegistrationOrder`) o R13 (cerrar
 > `exports ./lib/*` + semver). Luego Tier3 y npm publish (lo ejecuta el usuario).
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
@@ -186,10 +188,10 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M3 | **Sin timeout de `import()`/`register()`** de plugin → boot infinito (la tolerancia solo cubre excepciones, no promesas colgadas) | C | timeout configurable + diagnóstico del plugin culpable |
 | M4 | ✅ **HECHO** — `IProposalTrack` es `string` (agnóstico); `extractParallelismFromFrontmatter` acepta `knownTracks?` inyectable (typo-guard opt-in); `evaluateParallelism` con `auditLanes` configurable (default `['audit']`). Vocabulario del host fuera del módulo | S·G | hecho |
 | M5 | ✅ **HECHO** — `paused/demos` ya no hardcoded; `syncProposalRegistry`/`scanLiveProposalEntries`/`collectRoundContextSnapshot` aceptan `extraFolders` inyectado por el plugin desde `ctx.options['proposalFolders']`. Spec `proposal-folders-injection` | S·G | hecho |
-| M6 | **Modelo `MiniMax-M3 (customendpoint)` hardcoded** en scaffold-host | S·G·C | omitir o pedir como opción `<provider/model>` |
+| M6 | ✅ **HECHO** (sesión autónoma previa) — `scaffold-host` usa `options.defaultModel ?? '<your-model>'`, sin modelo hardcoded | S·G·C | hecho |
 | M7 | ✅ **HECHO** — schema de lock único: `ILockEntry`/`LockEntrySchema` en `persistent-task-queue` usan el formato canónico del writer (`ownership`/`started_at`/`last_seen`); `.transform()` de compat eliminado; consumidores (`promote`/`reportBackpressure`) y `zombie-reconcile` alineados. Spec `loadLockSnapshot` (M7) | S·G | hecho |
 | M8 | ✅ **HECHO** — acceptance runner reescrito sobre `node:child_process` con `detached:true`: `cwd` inyectable (`runAcceptanceCriteria(criteria, {cwd})`), tokenizer argv que respeta comillas + shell para pipes/redirects, y timeout que mata el **grupo entero** (`process.kill(-pid)`) — sin zombies. Spec `acceptance-exec` (incl. test de descendiente muerto) | C | hecho |
-| M9 | **Scaffold de agentes incoherente** con el host generado (ordena llamar tools que el host no registra; no integra `proposals`) | C | generar solo tools existentes / wirear proposals |
+| M9 | ✅ **HECHO** — scaffold de agentes/instrucciones/skill coherente: entry point `<prefix>_overview` (entry canónico de mcp-core, no el inexistente `check_project_state`); el workflow de proposals (`agent_lock`/`continue_proposal`/`get_validation_matrix`) se muestra condicional a `--plugins=proposals`. Spec actualizado | C | hecho |
 | M10 | ✅ **HECHO** — corrupto ≠ vacío: helper `quarantineCorruptFile` + `CorruptFileError`; estado crítico (queue/registry/memory) preserva + error estructurado en capa de tool; closed-tasks preserva + warning + sigue. Specs en core/proposals/memory | C | hecho |
 
 ### 🟡 REGULAR
@@ -306,7 +308,7 @@ backpressure.
 
 ### P2 — Calidad de producto
 10. **`proposals`: `create_proposal` + `close_slice` + `proposal_board`** (flujo de slices exhaustivo y claro). [O]
-11. **Agnosticismo**: ✅ tracks (M4) y carpetas (M5) configurables — HECHO; quitar modelo hardcoded; scaffolds que solo prometan tools existentes. [M6·M9 pendientes]
+11. ✅ **Agnosticismo HECHO**: tracks (M4), carpetas (M5), modelo no-hardcoded (M6), scaffolds que solo prometen tools existentes (M9). [M4·M5·M6·M9]
 12. **`rules`**: regenerar manifest por hash, validar deps eslint, añadir typecheck. [R5·R6·R7]
 13. **Endurecer plugins**: `git` errores+timeout+clamp, `memory` quotas+atomic, `quality` async+cancelable. [R8·R9·R10]
 14. **Tokens**: envelope compacto en proposals, paginado/`fields`, `overview compact:true`. [§4]

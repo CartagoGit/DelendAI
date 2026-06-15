@@ -3,8 +3,11 @@
 // `<prefix>_scaffold` MCP tool) to create its OWN MCP server,
 // orchestrator and subagent adapters, instructions file, tools,
 // prompts and skills — all templated so every agent DELEGATES to the
-// project's own MCP server (`<prefix>_check_project_state` first),
-// never to a hardcoded host.
+// project's own MCP server (`<prefix>_overview` first — the universal
+// mcp-core entry point), never to a hardcoded host. Templates only name
+// tools that exist: `overview` (always, via the mcp-core CLI) and the
+// generated scaffold tool; proposal-workflow tools are shown as
+// conditional on loading the `proposals` plugin. [M9]
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -164,7 +167,7 @@ ${bullets}
 
 ## Quick reference
 
-1. Call \`${prefix}_check_project_state\` first; the MCP payload is the source of truth.
+1. Call \`${prefix}_overview\` first; the MCP payload is the source of truth.
 2. TODO: the skill body.
 
 ## Checklist
@@ -203,9 +206,9 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-server-
 
 ## Compact lane
 
-1. First call \`${prefix}_check_project_state\` once per turn (tool: \`mcp-server-${prefix}/${prefix}_check_project_state\`) and follow \`agentContracts.${slot}\`.
+1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-server-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-3. Claim files before writing with \`${prefix}_agent_lock\`; report \`lock-conflict\` instead of retrying.
+3. When the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
 `,
 	};
@@ -223,8 +226,8 @@ export const scaffoldInstructionsFile = (
 
 The MCP server \`mcp-server-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
-- State + contracts: \`${prefix}_check_project_state\` (ALWAYS the first call).
-- Next slice: \`${prefix}_continue_proposal\`. Quality gates: \`${prefix}_get_validation_matrix\`.
+- Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
+- The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`).
 
 ## Lane
 
