@@ -27,6 +27,7 @@ import {
 	dequeue,
 	enqueue,
 	expireSweep,
+	loadLockSnapshot,
 	parseQueue,
 	persistQueue,
 	promote,
@@ -412,8 +413,8 @@ describe('promote — blocked when file in use by in_flight', () => {
 				{
 					task_id: 'another-task',
 					agent: 'some_agent',
-					files: [reservedFile],
-					claimed_at: '2026-06-05T10:00:00.000Z',
+					ownership: [reservedFile],
+					started_at: '2026-06-05T10:00:00.000Z',
 				} satisfies ILockEntry,
 			],
 			recentReleases: [],
@@ -668,5 +669,63 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 		).rejects.toMatchObject({ code: 'DUPLICATE_TASK_ID' });
 		expect(existsSync(queuePath)).toBe(true);
 		expect(backupExists(dir)).toBe(false);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// M7: single canonical lock schema. loadLockSnapshot reads exactly what
+// `<prefix>_agent_lock` writes (`ownership` + `started_at`). The old dual
+// `files`/`claimed_at` shape is no longer accepted (compat layer removed).
+// ---------------------------------------------------------------------------
+describe('loadLockSnapshot — canonical lock schema (M7)', () => {
+	it('reads the canonical ownership/started_at shape', async () => {
+		const lockPath = join(workDir, 'agents.lock.json');
+		writeFileSync(
+			lockPath,
+			JSON.stringify({
+				version: 1,
+				stale_after_minutes: 10,
+				in_flight: [
+					{
+						task_id: 't1',
+						agent: 'aquila',
+						ownership: ['src/a.ts', 'src/b.ts'],
+						started_at: '2026-06-05T10:00:00.000Z',
+						last_seen: '2026-06-05T10:01:00.000Z',
+					},
+				],
+			}),
+			'utf8'
+		);
+
+		const snap = await loadLockSnapshot(lockPath);
+		expect(snap.in_flight).toHaveLength(1);
+		expect(snap.in_flight[0]?.ownership).toEqual(['src/a.ts', 'src/b.ts']);
+		expect(snap.in_flight[0]?.started_at).toBe('2026-06-05T10:00:00.000Z');
+	});
+
+	it('rejects the legacy files/claimed_at shape (treated as no lock)', async () => {
+		const lockPath = join(workDir, 'agents.lock.json');
+		writeFileSync(
+			lockPath,
+			JSON.stringify({
+				version: 1,
+				in_flight: [
+					{
+						task_id: 't1',
+						agent: 'aquila',
+						files: ['src/a.ts'],
+						claimed_at: '2026-06-05T10:00:00.000Z',
+					},
+				],
+			}),
+			'utf8'
+		);
+
+		// The legacy entry fails schema validation, so the whole file is
+		// ignored (loadLockSnapshot returns an empty in_flight rather than
+		// silently inventing an ownership-less lock).
+		const snap = await loadLockSnapshot(lockPath);
+		expect(snap.in_flight).toEqual([]);
 	});
 });
