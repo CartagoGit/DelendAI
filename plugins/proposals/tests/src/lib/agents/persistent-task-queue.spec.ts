@@ -8,9 +8,11 @@
  */
 
 import {
+	existsSync,
 	mkdtempSync,
 	mkdirSync,
 	readFileSync,
+	readdirSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -624,5 +626,47 @@ describe('round-trip — enqueue + persist + reparse', () => {
 		expect(reparsed.entries).toHaveLength(1);
 		expect(reparsed.entries[0]?.taskId).toBe('roundtrip-task');
 		expect(reparsed.entries[0]?.priority).toBe(5);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// M10: corrupt ≠ empty. A torn queue file must NOT parse as an empty queue
+// (that would let two agents re-claim the same slice). parseQueue throws a
+// PARSE_ERROR and preserves the bytes to a .corrupt-<ts> backup.
+// ---------------------------------------------------------------------------
+describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
+	const backupExists = (dir: string): boolean =>
+		readdirSync(dir).some((f) => f.startsWith('queue.json.corrupt-'));
+
+	it('throws PARSE_ERROR and preserves the corrupt bytes', async () => {
+		const dir = workDir;
+		const queuePath = join(dir, 'queue.json');
+		writeFileSync(queuePath, '{ "version": 1, "entries": [', 'utf8');
+
+		await expect(
+			parseQueue(queuePath, closedTasksPath(dir))
+		).rejects.toMatchObject({
+			name: 'TaskQueueParseError',
+			code: 'PARSE_ERROR',
+		});
+		expect(existsSync(queuePath)).toBe(false);
+		expect(backupExists(dir)).toBe(true);
+	});
+
+	it('does NOT quarantine a structurally valid but business-invalid queue', async () => {
+		// A duplicate taskId is bad content, not a torn file — the bytes
+		// must stay intact so an operator can fix them in place.
+		const dir = workDir;
+		const queuePath = join(dir, 'queue.json');
+		writeQueue(queuePath, {
+			version: 1,
+			entries: [makeEntry({ taskId: 'dup' }), makeEntry({ taskId: 'dup' })],
+		});
+
+		await expect(
+			parseQueue(queuePath, closedTasksPath(dir))
+		).rejects.toMatchObject({ code: 'DUPLICATE_TASK_ID' });
+		expect(existsSync(queuePath)).toBe(true);
+		expect(backupExists(dir)).toBe(false);
 	});
 });

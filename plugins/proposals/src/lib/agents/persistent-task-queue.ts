@@ -11,7 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
 
 import { z } from 'zod';
 
@@ -256,10 +256,15 @@ export const parseQueue = async (
 	try {
 		parsed = JSON.parse(raw);
 	} catch (err) {
+		// Broken JSON syntax = a torn/corrupt file. Preserve the bytes
+		// (corrupt ≠ empty) before reporting, so they aren't overwritten
+		// by the next persist. Schema/business validations below keep the
+		// file intact — they signal bad content, not a corrupt file.
+		const backup = await quarantineCorruptFile(absolutePath);
 		throw new TaskQueueParseError(
 			'PARSE_ERROR',
 			absolutePath,
-			`Cannot parse queue JSON: ${String(err)}`
+			`Cannot parse queue JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`
 		);
 	}
 
