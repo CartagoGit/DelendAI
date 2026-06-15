@@ -81,6 +81,8 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'work_create_proposal',
 			'work_close_slice',
 			'work_proposal_board',
+			'work_state_health',
+			'work_state_repair',
 		]);
 	});
 });

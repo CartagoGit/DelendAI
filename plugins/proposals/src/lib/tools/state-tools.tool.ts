@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 import { z } from 'zod';
 
@@ -6,6 +6,19 @@ import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 import { toolJson } from '@cartago-git/mcp-core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+
+/** In-flight claim count straight from the lock file (0 if missing/corrupt). */
+const rawInFlightCount = (lockPath: string): number => {
+	if (!existsSync(lockPath)) return 0;
+	try {
+		const parsed = JSON.parse(readFileSync(lockPath, 'utf8')) as {
+			in_flight?: unknown[];
+		};
+		return Array.isArray(parsed.in_flight) ? parsed.in_flight.length : 0;
+	} catch {
+		return 0;
+	}
+};
 import {
 	expireSweep,
 	loadLockSnapshot,
@@ -158,14 +171,16 @@ export const buildStateRepairRegistration = (
 					});
 				}
 
-				// 1) GC stale write locks (engine drops entries past TTL).
-				const gcRaw = await runAgentLockEngine(
+				// 1) GC stale write locks (engine drops entries past TTL). Count
+				// honestly via the on-disk file before/after, because the engine
+				// strips stale entries in-memory before its own `dropped` tally.
+				const lockedBefore = rawInFlightCount(options.lockPathAbs);
+				await runAgentLockEngine(
 					{ action: 'gc' },
 					{ lockPath: options.lockPathAbs }
 				);
-				const gc = JSON.parse(gcRaw.content[0]?.text ?? '{}') as {
-					dropped?: number;
-				};
+				const staleLocksCleaned =
+					lockedBefore - rawInFlightCount(options.lockPathAbs);
 
 				// 2) Expire due queue entries.
 				let expiredCount = 0;
@@ -193,7 +208,7 @@ export const buildStateRepairRegistration = (
 				return toolJson({
 					mode: 'execute',
 					repaired: {
-						staleLocks: gc.dropped ?? 0,
+						staleLocks: staleLocksCleaned,
 						expiredQueueEntries: expiredCount,
 						orphanAssignments: zombies.orphans.length,
 					},
