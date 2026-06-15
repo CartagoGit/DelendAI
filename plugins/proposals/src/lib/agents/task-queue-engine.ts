@@ -27,6 +27,8 @@ import { dirname } from 'node:path';
 
 import { z } from 'zod';
 
+import { withFileMutex } from '@cartago-git/mcp-core/public';
+
 import {
 	enqueue,
 	loadLockSnapshot,
@@ -373,88 +375,94 @@ export async function runTaskQueueAction(
 
 		const finalParams = IEnqueueWithFileCheck.parse(action.params);
 
-		await ensureQueueFile(paths.queuePath);
+		// Serialize the read → mutate → write across processes.
+		return withFileMutex(paths.queuePath, async () => {
+			await ensureQueueFile(paths.queuePath);
 
-		const queue = await loadOrEmptyQueue(paths.queuePath);
-		const newEntry: IPersistentTaskEntry = {
-			taskId: finalParams.taskId,
-			enqueuedAt: new Date().toISOString(),
-			priority: finalParams.priority,
-			waitFor: finalParams.waitFor,
-			owner: {
+			const queue = await loadOrEmptyQueue(paths.queuePath);
+			const newEntry: IPersistentTaskEntry = {
 				taskId: finalParams.taskId,
-				agentName: finalParams.agentName,
-				agentSlot: finalParams.agentSlot,
-			},
-			observe: finalParams.observe,
-			status: 'queued',
-		};
+				enqueuedAt: new Date().toISOString(),
+				priority: finalParams.priority,
+				waitFor: finalParams.waitFor,
+				owner: {
+					taskId: finalParams.taskId,
+					agentName: finalParams.agentName,
+					agentSlot: finalParams.agentSlot,
+				},
+				observe: finalParams.observe,
+				status: 'queued',
+			};
 
-		const updated = enqueue(queue, newEntry);
-		await persistQueue(updated, paths.queuePath);
+			const updated = enqueue(queue, newEntry);
+			await persistQueue(updated, paths.queuePath);
 
-		return {
-			taskId: finalParams.taskId,
-			status: 'queued',
-			queueLength: updated.entries.length,
-			position: computePosition(updated, finalParams.taskId),
-		};
+			return {
+				taskId: finalParams.taskId,
+				status: 'queued',
+				queueLength: updated.entries.length,
+				position: computePosition(updated, finalParams.taskId),
+			};
+		});
 	}
 
 	if (action.action === 'dequeue') {
 		const params = IDequeueParamsSchema.parse(action.params);
 
-		await ensureQueueFile(paths.queuePath);
-		const queue = await loadOrEmptyQueue(paths.queuePath);
+		// Serialize the read → mutate → write across processes.
+		return withFileMutex(paths.queuePath, async () => {
+			await ensureQueueFile(paths.queuePath);
+			const queue = await loadOrEmptyQueue(paths.queuePath);
 
-		const idx = queue.entries.findIndex((e) => e.taskId === params.taskId);
-		if (idx === -1) {
-			throw new TaskQueueActionError(
-				'dequeue',
-				`task "${params.taskId}" not found in queue`
-			);
-		}
-
-		const entry = queue.entries[idx]!;
-		const consumedAt = new Date().toISOString();
-		const updated: IPersistentTaskEntry = {
-			...entry,
-			status: 'consumed',
-			consumedAt,
-		};
-		const entries = [...queue.entries];
-		entries[idx] = updated;
-		await persistQueue({ ...queue, entries }, paths.queuePath);
-
-		// If observe is non-empty, populate digest from closedTasks.json
-		let digest: IDequeueDigestPayload | undefined;
-		if (entry.observe && entry.observe.length > 0) {
-			const closed = await readClosedTasks(paths.closedTasksPath);
-			const closedMap = new Map(closed.map((c) => [c.taskId, c]));
-			const digests: IClosedTaskDigest[] = [];
-			for (const target of entry.observe) {
-				const c = closedMap.get(target);
-				if (c) {
-					digests.push({
-						taskId: c.taskId,
-						closedAt: c.closedAt,
-						...(c.filesOwned && c.filesOwned.length > 0
-							? {
-									diffSummary: `Files: ${c.filesOwned.join(', ')}`,
-								}
-							: {}),
-					});
-				}
+			const idx = queue.entries.findIndex((e) => e.taskId === params.taskId);
+			if (idx === -1) {
+				throw new TaskQueueActionError(
+					'dequeue',
+					`task "${params.taskId}" not found in queue`
+				);
 			}
-			digest = { digests };
-		}
 
-		return {
-			taskId: params.taskId,
-			status: 'consumed',
-			consumedAt,
-			...(digest ? { digest } : {}),
-		};
+			const entry = queue.entries[idx]!;
+			const consumedAt = new Date().toISOString();
+			const updated: IPersistentTaskEntry = {
+				...entry,
+				status: 'consumed',
+				consumedAt,
+			};
+			const entries = [...queue.entries];
+			entries[idx] = updated;
+			await persistQueue({ ...queue, entries }, paths.queuePath);
+
+			// If observe is non-empty, populate digest from closedTasks.json
+			let digest: IDequeueDigestPayload | undefined;
+			if (entry.observe && entry.observe.length > 0) {
+				const closed = await readClosedTasks(paths.closedTasksPath);
+				const closedMap = new Map(closed.map((c) => [c.taskId, c]));
+				const digests: IClosedTaskDigest[] = [];
+				for (const target of entry.observe) {
+					const c = closedMap.get(target);
+					if (c) {
+						digests.push({
+							taskId: c.taskId,
+							closedAt: c.closedAt,
+							...(c.filesOwned && c.filesOwned.length > 0
+								? {
+										diffSummary: `Files: ${c.filesOwned.join(', ')}`,
+									}
+								: {}),
+						});
+					}
+				}
+				digest = { digests };
+			}
+
+			return {
+				taskId: params.taskId,
+				status: 'consumed',
+				consumedAt,
+				...(digest ? { digest } : {}),
+			};
+		});
 	}
 
 	if (action.action === 'subscribe') {
