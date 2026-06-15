@@ -30,6 +30,11 @@ export interface IAuthoringToolOptions {
 	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
 	 */
 	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
+	/**
+	 * Host-specific proposal subfolders (relative to proposalsDir) the
+	 * post-mutation sync should also scan, e.g. `['paused/demos']`. [M5]
+	 */
+	readonly extraFolders?: readonly string[];
 }
 
 const kebab = (value: string): string =>
@@ -175,7 +180,8 @@ export const buildCreateProposalRegistration = (
 				await writeFileAtomic(absPath, body);
 				const sync = await syncProposalRegistry(
 					options.workspaceRoot,
-					options.layout
+					options.layout,
+					options.extraFolders ?? []
 				);
 				return toolOk({
 					file: fileRel,
@@ -272,7 +278,11 @@ export const buildCloseSliceRegistration = (
 					);
 					lockReleased = true;
 				}
-				await syncProposalRegistry(options.workspaceRoot);
+				await syncProposalRegistry(
+						options.workspaceRoot,
+						options.layout,
+						options.extraFolders ?? []
+					);
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,

@@ -29,6 +29,11 @@ export interface IRoundContextToolOptions {
 	 * Defaults to `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
 	 */
 	readonly layout?: IHostPathLayout;
+	/**
+	 * Host-specific proposal subfolders (relative to proposalsDir) scanned
+	 * when no index.json exists, e.g. `['paused/demos']`. [M5]
+	 */
+	readonly extraFolders?: readonly string[];
 }
 
 export interface IRoundContextOutput {
@@ -58,7 +63,8 @@ export const buildRoundContextOutput = async (
 	]);
 	const liveSnapshot = collectRoundContextSnapshot(
 		options.workspaceRoot,
-		options.layout
+		options.layout,
+		options.extraFolders ?? []
 	);
 
 	if (input.forceRefresh === true) {

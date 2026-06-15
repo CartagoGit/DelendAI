@@ -26,21 +26,20 @@
 // ---------------------------------------------------------------------------
 
 /**
- * A canonical the host project track. Mirrors the `track` field of
- * `IProposalFrontmatter`. Kept as a closed union so a stray typo in
- * the frontmatter fails at parse time.
+ * A proposal track (write lane). Mirrors the `track` field of
+ * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-core is
+ * agnostic, so this is an open `string`, not a closed union baked with
+ * one host's tracks. A host that wants typo-guarding passes its own set
+ * of known tracks to `extractParallelismFromFrontmatter`. [M4]
  */
-export type IProposalTrack =
-	| 'bootstrap'
-	| 'scaffold'
-	| 'engine'
-	| 'editor'
-	| 'ui-demo'
-	| 'game-demo'
-	| 'meta'
-	| 'audit'
-	| 'audit-meta'
-	| 'retired';
+export type IProposalTrack = string;
+
+/**
+ * The conventional audit carve-out lane. A host may override the
+ * carve-out set when calling `evaluateParallelism`; this is only the
+ * default so existing single-audit-lane setups keep working.
+ */
+export const DEFAULT_AUDIT_LANES: ReadonlySet<string> = new Set(['audit']);
 
 /**
  * The lane declaration a proposal carries in its frontmatter.
@@ -69,7 +68,10 @@ export interface IParallelismResult {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const isAuditLane = (lane: IProposalTrack): boolean => lane === 'audit';
+const makeIsAuditLane =
+	(auditLanes: ReadonlySet<string>) =>
+	(lane: IProposalTrack): boolean =>
+		auditLanes.has(lane);
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -86,12 +88,14 @@ const isAuditLane = (lane: IProposalTrack): boolean => lane === 'audit';
  *     members that are mutually exclusive. Each pair is reported once.
  */
 export const evaluateParallelism = (
-	actives: readonly IProposalParallelism[]
+	actives: readonly IProposalParallelism[],
+	auditLanes: ReadonlySet<string> = DEFAULT_AUDIT_LANES
 ): IParallelismResult => {
 	if (actives.length === 0) {
 		return { withinPolicy: true, violations: [] };
 	}
 
+	const isAuditLane = makeIsAuditLane(auditLanes);
 	const violations: IParallelismViolation[] = [];
 
 	// Group by mainWriteLane.
@@ -224,21 +228,18 @@ export const evaluateParallelism = (
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type { IYamlValue } from './frontmatter-parser';
 
-const KNOWN_TRACKS: ReadonlySet<string> = new Set<string>([
-	'bootstrap',
-	'scaffold',
-	'engine',
-	'editor',
-	'ui-demo',
-	'game-demo',
-	'meta',
-	'audit',
-	'audit-meta',
-	'retired',
-]);
-
-const isKnownTrack = (v: unknown): v is IProposalTrack =>
-	typeof v === 'string' && KNOWN_TRACKS.has(v);
+/**
+ * A track is valid when it is a non-empty string. If the caller supplies
+ * a `knownTracks` set, the track must also be a member (typo-guard for
+ * hosts that enumerate their tracks); without it, mcp-core stays agnostic
+ * and accepts any host track. [M4]
+ */
+const makeIsValidTrack =
+	(knownTracks?: ReadonlySet<string>) =>
+	(v: unknown): v is IProposalTrack =>
+		typeof v === 'string' &&
+		v.length > 0 &&
+		(knownTracks === undefined || knownTracks.has(v));
 
 const parseInlineBracketList = (v: IYamlValue): string[] | null => {
 	if (typeof v !== 'string') return null;
@@ -286,14 +287,16 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
  * Behaviour:
  *   - Missing or malformed frontmatter → `null` (the audit pipeline
  *     skips the proposal; the next call evaluates the rest).
- *   - `mainWriteLane` present but not in the canonical track union →
- *     `null` (a typo in the frontmatter must NOT silently degrade to
- *     'meta' or 'engine'; the safer default is "no record, no claim").
+ *   - `mainWriteLane` present but invalid (empty, or — when `knownTracks`
+ *     is supplied — not a member) → `null` (a typo must NOT silently
+ *     degrade to a default lane; the safer default is "no record, no
+ *     claim").
  *   - `parallelismLanes` missing → treated as `[]` (strict: the
  *     proposal does not permit ANY parallel track).
- *   - `parallelismLanes` containing unknown tracks → those entries are
- *     silently dropped from the permission set. The proposal is
- *     recorded with the intersection of declared-known tracks only.
+ *   - `parallelismLanes` containing invalid tracks → those entries are
+ *     silently dropped from the permission set.
+ *   - `knownTracks` omitted → mcp-core is track-agnostic: any non-empty
+ *     string is a valid track (the host owns the vocabulary). [M4]
  *
  * This function is the single seam between the proposal's textual
  * representation and the runtime `evaluateParallelism` evaluator. It
@@ -303,19 +306,21 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
  */
 export const extractParallelismFromFrontmatter = (
 	raw: string,
-	proposalId: string
+	proposalId: string,
+	knownTracks?: ReadonlySet<string>
 ): IProposalParallelism | null => {
 	const block = extractYamlBlock(raw);
 	if (block === null) {
 		return null;
 	}
+	const isValidTrack = makeIsValidTrack(knownTracks);
 	const fm = parseFrontmatterBlock(block);
 	const lane = fm['mainWriteLane'];
-	if (!isKnownTrack(lane)) {
+	if (!isValidTrack(lane)) {
 		return null;
 	}
 	const permitted = asStringArray(fm['parallelismLanes']).filter(
-		isKnownTrack
+		isValidTrack
 	);
 	return {
 		proposalId,

@@ -313,21 +313,29 @@ export async function syncProposalRegistry(
 	layout: Pick<
 		IHostPathLayout,
 		'proposalsDir' | 'proposalIndexFile'
-	> = DEFAULT_PATH_LAYOUT
+	> = DEFAULT_PATH_LAYOUT,
+	// Host-specific proposal subfolders (relative to proposalsDir), e.g.
+	// `paused/demos`. Injected from ctx.options so mcp-core's generic
+	// proposal model carries no host vocabulary. [M5]
+	extraFolders: readonly string[] = []
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
 	await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+	// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
+	// arrive via `extraFolders`.
 	const subtrees: ReadonlyArray<{ absolute: string }> = [
 		{ absolute: proposalsDir },
 		{ absolute: join(proposalsDir, 'audits') },
 		{ absolute: join(proposalsDir, 'fixes') },
 		{ absolute: join(proposalsDir, 'historical') },
 		{ absolute: join(proposalsDir, 'paused') },
-		{ absolute: join(proposalsDir, 'paused', 'demos') },
 		{ absolute: join(proposalsDir, 'revised') },
 		{ absolute: join(proposalsDir, 'revised', 'audits') },
 		{ absolute: join(proposalsDir, 'revised', 'retired') },
+		...extraFolders.map((folder) => ({
+			absolute: join(proposalsDir, folder),
+		})),
 	];
 	const entries: IProposalEntry[] = [];
 	const warnings: string[] = [];

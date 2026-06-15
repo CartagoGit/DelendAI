@@ -43,11 +43,14 @@ describe('extractParallelismFromFrontmatter', () => {
 		});
 	});
 
-	it('drops unknown track names from parallelismLanes (typo guard)', () => {
+	// M4: typo-guard is opt-in — the host supplies its own known tracks.
+	const HOST_TRACKS = new Set(['editor', 'meta', 'audit']);
+
+	it('drops unknown track names from parallelismLanes when knownTracks is given (typo guard)', () => {
 		const raw = wrap(
 			'mainWriteLane: editor\nparallelismLanes: [meta, banana, audit]\n'
 		);
-		const got = extractParallelismFromFrontmatter(raw, 'p31');
+		const got = extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS);
 		expect(got).toEqual({
 			proposalId: 'p31',
 			mainWriteLane: 'editor',
@@ -55,8 +58,28 @@ describe('extractParallelismFromFrontmatter', () => {
 		});
 	});
 
-	it('returns null when mainWriteLane is not in the canonical track union (typo guard)', () => {
+	it('returns null when mainWriteLane is not in the supplied knownTracks (typo guard)', () => {
 		const raw = wrap('mainWriteLane: bananas\nparallelismLanes: [meta]\n');
+		expect(
+			extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS)
+		).toBeNull();
+	});
+
+	// M4: without knownTracks, mcp-core is track-agnostic — any non-empty
+	// string is a valid host track, so no vocabulary is imposed.
+	it('accepts arbitrary host tracks when no knownTracks set is supplied', () => {
+		const raw = wrap(
+			'mainWriteLane: my-custom-lane\nparallelismLanes: [whatever, another]\n'
+		);
+		expect(extractParallelismFromFrontmatter(raw, 'p31')).toEqual({
+			proposalId: 'p31',
+			mainWriteLane: 'my-custom-lane',
+			parallelismLanes: ['whatever', 'another'],
+		});
+	});
+
+	it('still rejects an empty mainWriteLane even in agnostic mode', () => {
+		const raw = wrap('mainWriteLane: ""\nparallelismLanes: [meta]\n');
 		expect(extractParallelismFromFrontmatter(raw, 'p31')).toBeNull();
 	});
 
