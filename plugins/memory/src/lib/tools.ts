@@ -9,7 +9,14 @@ import {
 } from '@cartago-git/mcp-core/public';
 import type { IToolTextResult } from '@cartago-git/mcp-core/public';
 
-import { readStore, recall, removeNote, saveNote } from './store';
+import {
+	MAX_NOTES,
+	deriveNoteId,
+	readStore,
+	recall,
+	removeNote,
+	saveNote,
+} from './store';
 
 /**
  * Run a memory operation, translating a corrupt-store error into a
@@ -17,9 +24,11 @@ import { readStore, recall, removeNote, saveNote } from './store';
  * never silently reads (or overwrites) an empty store. Other errors
  * propagate to the SDK unchanged.
  */
-const guardCorrupt = (fn: () => IToolTextResult): IToolTextResult => {
+const guardCorrupt = async (
+	fn: () => IToolTextResult | Promise<IToolTextResult>
+): Promise<IToolTextResult> => {
 	try {
-		return fn();
+		return await fn();
 	} catch (err) {
 		if (err instanceof CorruptFileError) {
 			return toolError(
@@ -85,15 +94,33 @@ export const buildMemoryToolRegistrations = (
 						if ((args.tags?.length ?? 0) > 20) {
 							return toolError('too many tags (max 20)');
 						}
-						return guardCorrupt(() =>
-							toolOk({
-								saved: saveNote(options.storePathAbs, {
+						if (args.tags?.some((tag) => tag.length > 50)) {
+							return toolError(
+								'tag too long (max 50 chars each)',
+								'Use short, keyword-like tags.'
+							);
+						}
+						return guardCorrupt(async () => {
+							// Total-store quota: bound the note count so a runaway
+							// agent can't grow the store unboundedly. Updates to an
+							// existing note are always allowed.
+							const id = deriveNoteId(args.title);
+							const notes = readStore(options.storePathAbs);
+							const isNew = !notes.some((note) => note.id === id);
+							if (isNew && notes.length >= MAX_NOTES) {
+								return toolError(
+									`note store is full (max ${MAX_NOTES} notes)`,
+									'Forget stale notes with memory_forget before adding new ones.'
+								);
+							}
+							return toolOk({
+								saved: await saveNote(options.storePathAbs, {
 									title: args.title,
 									body: args.body,
 									...(args.tags ? { tags: args.tags } : {}),
 								}),
-							})
-						);
+							});
+						});
 					}
 				);
 			},
@@ -174,8 +201,8 @@ export const buildMemoryToolRegistrations = (
 						inputSchema: z.object({ id: z.string() }),
 					},
 					async (args: { id: string }) =>
-						guardCorrupt(() => {
-							const removed = removeNote(
+						guardCorrupt(async () => {
+							const removed = await removeNote(
 								options.storePathAbs,
 								args.id
 							);

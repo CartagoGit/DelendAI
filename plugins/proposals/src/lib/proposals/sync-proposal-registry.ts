@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { withFileMutex, writeFileAtomic } from '@cartago-git/mcp-core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type {
@@ -321,48 +321,52 @@ export async function syncProposalRegistry(
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
-	await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-	// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
-	// arrive via `extraFolders`.
-	const subtrees: ReadonlyArray<{ absolute: string }> = [
-		{ absolute: proposalsDir },
-		{ absolute: join(proposalsDir, 'audits') },
-		{ absolute: join(proposalsDir, 'fixes') },
-		{ absolute: join(proposalsDir, 'historical') },
-		{ absolute: join(proposalsDir, 'paused') },
-		{ absolute: join(proposalsDir, 'revised') },
-		{ absolute: join(proposalsDir, 'revised', 'audits') },
-		{ absolute: join(proposalsDir, 'revised', 'retired') },
-		...extraFolders.map((folder) => ({
-			absolute: join(proposalsDir, folder),
-		})),
-	];
-	const entries: IProposalEntry[] = [];
-	const warnings: string[] = [];
-	for (const subtree of subtrees) {
-		const result = await scanSubtree(subtree.absolute, indexPath);
-		result.entries.sort((a, b) => a.id.localeCompare(b.id));
-		entries.push(...result.entries);
-		warnings.push(...result.warnings);
-	}
-	const index = {
-		generated_at: new Date().toISOString(),
-		count: entries.length,
-		proposals: entries,
-		errors: warnings,
-	};
-	const nextText = `${JSON.stringify(index, null, '\t')}\n`;
-	let changed = true;
-	try {
-		const current = await readFile(indexPath, 'utf8');
-		changed = current !== nextText;
-	} catch {
-		// Missing or unreadable index means the generated file will be new.
-	}
-	await writeFileAtomic(indexPath, nextText);
-	return {
-		...index,
-		changed,
-		indexPath,
-	};
+	// Cross-process critical section: a concurrent sync regenerating
+	// the same index must not lose entries (read FS → write index).
+	return withFileMutex(indexPath, async () => {
+		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
+		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
+		// arrive via `extraFolders`.
+		const subtrees: ReadonlyArray<{ absolute: string }> = [
+			{ absolute: proposalsDir },
+			{ absolute: join(proposalsDir, 'audits') },
+			{ absolute: join(proposalsDir, 'fixes') },
+			{ absolute: join(proposalsDir, 'historical') },
+			{ absolute: join(proposalsDir, 'paused') },
+			{ absolute: join(proposalsDir, 'revised') },
+			{ absolute: join(proposalsDir, 'revised', 'audits') },
+			{ absolute: join(proposalsDir, 'revised', 'retired') },
+			...extraFolders.map((folder) => ({
+				absolute: join(proposalsDir, folder),
+			})),
+		];
+		const entries: IProposalEntry[] = [];
+		const warnings: string[] = [];
+		for (const subtree of subtrees) {
+			const result = await scanSubtree(subtree.absolute, indexPath);
+			result.entries.sort((a, b) => a.id.localeCompare(b.id));
+			entries.push(...result.entries);
+			warnings.push(...result.warnings);
+		}
+		const index = {
+			generated_at: new Date().toISOString(),
+			count: entries.length,
+			proposals: entries,
+			errors: warnings,
+		};
+		const nextText = `${JSON.stringify(index, null, '\t')}\n`;
+		let changed = true;
+		try {
+			const current = await readFile(indexPath, 'utf8');
+			changed = current !== nextText;
+		} catch {
+			// Missing or unreadable index means the generated file will be new.
+		}
+		await writeFileAtomic(indexPath, nextText);
+		return {
+			...index,
+			changed,
+			indexPath,
+		};
+	});
 }

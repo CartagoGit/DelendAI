@@ -46,19 +46,28 @@ describe('memory store', () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('upserts by title and recalls by query/tags', () => {
-		saveNote(store, { title: 'DB choice', body: 'we use mysql', tags: ['db'] });
-		saveNote(store, { title: 'DB choice', body: 'we use mysql2', tags: ['db'] });
+	it('upserts by title and recalls by query/tags', async () => {
+		await saveNote(store, { title: 'DB choice', body: 'we use mysql', tags: ['db'] });
+		await saveNote(store, { title: 'DB choice', body: 'we use mysql2', tags: ['db'] });
 		expect(readStore(store)).toHaveLength(1); // upsert, not duplicate
 		expect(recall(store, { query: 'mysql2' })[0]?.title).toBe('DB choice');
 		expect(recall(store, { tags: ['db'] })).toHaveLength(1);
 		expect(recall(store, { tags: ['missing'] })).toHaveLength(0);
 	});
 
-	it('forgets by id', () => {
-		const note = saveNote(store, { title: 'Temp', body: 'x' });
-		expect(removeNote(store, note.id)).toBe(true);
+	it('forgets by id', async () => {
+		const note = await saveNote(store, { title: 'Temp', body: 'x' });
+		expect(await removeNote(store, note.id)).toBe(true);
 		expect(readStore(store)).toHaveLength(0);
+	});
+
+	it('keeps every note when saved concurrently (mutex, no lost update)', async () => {
+		await Promise.all(
+			['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map((title) =>
+				saveNote(store, { title, body: title })
+			)
+		);
+		expect(readStore(store)).toHaveLength(5);
 	});
 
 	it('treats missing/empty store as empty, not corrupt', () => {
@@ -113,18 +122,18 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 		}
 	});
 
-	it('saveNote refuses to overwrite a corrupt store (no data loss)', () => {
+	it('saveNote refuses to overwrite a corrupt store (no data loss)', async () => {
 		writeFileSync(store, '{{{');
-		expect(() =>
+		await expect(
 			saveNote(store, { title: 'X', body: 'y' })
-		).toThrow(CorruptFileError);
+		).rejects.toThrow(CorruptFileError);
 	});
 
-	it('recovers after the corrupt backup is moved aside', () => {
+	it('recovers after the corrupt backup is moved aside', async () => {
 		writeFileSync(store, 'broken');
 		expect(() => readStore(store)).toThrow(CorruptFileError);
 		// the original path is now free; a fresh save works
-		const note = saveNote(store, { title: 'Fresh', body: 'ok' });
+		const note = await saveNote(store, { title: 'Fresh', body: 'ok' });
 		expect(readStore(store)).toHaveLength(1);
 		expect(note.title).toBe('Fresh');
 	});
