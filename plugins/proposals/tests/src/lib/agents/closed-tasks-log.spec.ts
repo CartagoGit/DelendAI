@@ -12,7 +12,14 @@
  * Run: bun test libs/mcp-server -- closed-tasks-log
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -161,6 +168,50 @@ describe('readClosedTasks — parse defensivo', () => {
 
 		const result = await readClosedTasks(logPath);
 		expect(result).toEqual([]);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// M10: corrupt ≠ silently empty. This diagnostic log must not block
+// coordination, so it still returns [] — but it PRESERVES the corrupt
+// bytes to a .corrupt-<ts> backup rather than letting them be overwritten.
+// ---------------------------------------------------------------------------
+describe('readClosedTasks — quarantine on corruption (M10)', () => {
+	const backupOf = (logPath: string): string | undefined =>
+		readdirSync(workDir).find((f) => f.startsWith('closed-tasks.json.corrupt-'));
+
+	it('preserves invalid JSON to a backup and removes the original', async () => {
+		const logPath = join(workDir, 'closed-tasks.json');
+		writeFileSync(logPath, '{ not json', 'utf8');
+
+		expect(await readClosedTasks(logPath)).toEqual([]);
+		expect(existsSync(logPath)).toBe(false);
+		const backup = backupOf(logPath);
+		expect(backup).toBeDefined();
+		expect(readFileSync(join(workDir, backup!), 'utf8')).toBe('{ not json');
+	});
+
+	it('preserves schema-invalid content to a backup', async () => {
+		const logPath = join(workDir, 'closed-tasks.json');
+		writeFileSync(
+			logPath,
+			JSON.stringify([{ taskId: '', closedAt: 'x', agentName: 'a', filesOwned: [] }]),
+			'utf8'
+		);
+
+		expect(await readClosedTasks(logPath)).toEqual([]);
+		expect(backupOf(logPath)).toBeDefined();
+	});
+
+	it('lets a fresh append recover after quarantine', async () => {
+		const logPath = join(workDir, 'closed-tasks.json');
+		writeFileSync(logPath, 'garbage', 'utf8');
+		await readClosedTasks(logPath); // quarantines
+
+		await appendToClosedTasks(logPath, makeRecord({ taskId: 'after-heal' }));
+		const result = await readClosedTasks(logPath);
+		expect(result).toHaveLength(1);
+		expect(result[0]?.taskId).toBe('after-heal');
 	});
 });
 
