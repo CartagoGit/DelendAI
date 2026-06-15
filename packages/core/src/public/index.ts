@@ -115,6 +115,8 @@ export {
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
 export { joinRel } from '../lib/shared/paths';
+export { withFileMutex } from '../lib/shared/with-file-mutex';
+export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {

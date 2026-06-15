@@ -31,6 +31,7 @@ import { dirname, join } from 'node:path';
 
 import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import { CLOSED_CHECKPOINT_STATUSES } from './runtime-recovery';
 import type { ISubagentAssignment } from '../shared/subagent-registry-store';
 import { CONTINUITY_STALE_WINDOW_MS } from './runtime-recovery';
@@ -338,13 +339,14 @@ interface IScannedProposalEntry {
 }
 
 const scanLiveProposalEntries = (
-	monorepoRoot: string
+	monorepoRoot: string,
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
 ): IScannedProposalEntry[] => {
 	const roots = [
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.proposalsDir),
+		join(monorepoRoot, layout.proposalsDir),
 		// TODO: the paused-demos subfolder is host folder policy;
 		// inject it via IProposalStoreConfig.folders when tools migrate.
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.proposalsDir, 'paused/demos'),
+		join(monorepoRoot, layout.proposalsDir, 'paused/demos'),
 	];
 	const entries: IScannedProposalEntry[] = [];
 	for (const root of roots) {
@@ -507,19 +509,20 @@ export const readSubagentSummary = (
 };
 
 export const buildOperationalSources = (
-	monorepoRoot: string
+	monorepoRoot: string,
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
 ): IRoundContextSources => {
 	const chat = readJsonSource<IJsonChatContext>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.orchestratorChatContextFile)
+		join(monorepoRoot, layout.orchestratorChatContextFile)
 	);
 	const checkpoint = readJsonSource<IJsonCheckpoint>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.orchestratorCheckpointFile)
+		join(monorepoRoot, layout.orchestratorCheckpointFile)
 	);
 	const lock = readJsonSource<IJsonLockFile>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.lockFile)
+		join(monorepoRoot, layout.lockFile)
 	);
 	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.subagentRegistryFile)
+		join(monorepoRoot, layout.subagentRegistryFile)
 	);
 	return {
 		chatContext: {
@@ -554,26 +557,27 @@ export const buildOperationalSources = (
 };
 
 export const collectRoundContextSnapshot = (
-	monorepoRoot: string
+	monorepoRoot: string,
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
 ): IRoundContextOperationalSnapshot => {
 	const chat = readJsonSource<IJsonChatContext>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.orchestratorChatContextFile),
+		join(monorepoRoot, layout.orchestratorChatContextFile),
 		(value) => value.lastUpdated ?? null,
 		CONTINUITY_STALE_WINDOW_MS / 60_000
 	);
 	const checkpoint = readJsonSource<IJsonCheckpoint>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.orchestratorCheckpointFile),
+		join(monorepoRoot, layout.orchestratorCheckpointFile),
 		(value) => value.updatedAt ?? value.lastUpdated ?? null,
 		CONTINUITY_STALE_WINDOW_MS / 60_000
 	);
 	const lock = readJsonSource<IJsonLockFile>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.lockFile)
+		join(monorepoRoot, layout.lockFile)
 	);
 	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.subagentRegistryFile)
+		join(monorepoRoot, layout.subagentRegistryFile)
 	);
 	const proposalIndex = readJsonSource<IJsonProposalIndex>(
-		join(monorepoRoot, DEFAULT_PATH_LAYOUT.proposalIndexFile),
+		join(monorepoRoot, layout.proposalIndexFile),
 		extractProposalTimestamp,
 		CONTINUITY_STALE_WINDOW_MS / 60_000
 	);
@@ -600,7 +604,7 @@ export const collectRoundContextSnapshot = (
 	const activePortfolioSource =
 		proposalIndex.state === 'ok' && proposalIndex.value !== null
 			? (proposalIndex.value.proposals ?? [])
-			: scanLiveProposalEntries(monorepoRoot);
+			: scanLiveProposalEntries(monorepoRoot, layout);
 	const activePortfolio = activePortfolioSource.filter((entry) => {
 		const status = entry.status;
 		return status !== 'done' && status !== 'retired' && status !== 'paused';

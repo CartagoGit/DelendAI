@@ -19,7 +19,7 @@
 ## 1. Validar antes de publicar (desde la raíz del repo `/_projects/mcp-core`)
 ```bash
 bun install
-bun run validate            # typecheck + 283 tests (debe acabar en verde)
+bun run validate            # typecheck + 286 tests (debe acabar en verde)
 ```
 
 ## 2. Orden de publicación (IMPORTANTE)

@@ -13,6 +13,7 @@ import {
 	writeRoundContextDigest,
 } from '../swarm/round-context';
 import type { IRoundContextDigest } from '../swarm/round-context';
+import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 
 export interface IRoundContextToolOptions {
 	readonly namespacePrefix: string;
@@ -22,6 +23,12 @@ export interface IRoundContextToolOptions {
 	readonly digestPathAbs: string;
 	/** Workspace-relative docs whose hashes detect staleness. */
 	readonly coreDocs: readonly string[];
+	/**
+	 * Workspace-relative path layout for the sidecar files the snapshot
+	 * reads (lock, checkpoint, chat-context, registry, proposal index).
+	 * Defaults to `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
+	 */
+	readonly layout?: IHostPathLayout;
 }
 
 export interface IRoundContextOutput {
@@ -49,7 +56,10 @@ export const buildRoundContextOutput = async (
 	const liveHashes = computeCoreDocHashes(options.workspaceRoot, [
 		...options.coreDocs,
 	]);
-	const liveSnapshot = collectRoundContextSnapshot(options.workspaceRoot);
+	const liveSnapshot = collectRoundContextSnapshot(
+		options.workspaceRoot,
+		options.layout
+	);
 
 	if (input.forceRefresh === true) {
 		const { checkpoint, chatContext, proposalPortfolio, activeLocks, activeSubagents } =

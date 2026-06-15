@@ -1,7 +1,7 @@
 import { definePlugin } from '@cartago-git/mcp-core/public';
 import { z } from 'zod';
 
-import { DEFAULT_PATH_LAYOUT } from './lib/contracts/constants/default-path-layout.constant';
+import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
@@ -51,11 +51,14 @@ export default definePlugin({
 	}),
 	register(ctx) {
 		// All path-bearing tools share ONE layout so locks, queue,
-		// round-context and the proposal store always agree. The engines
-		// in this package bake this same DEFAULT_PATH_LAYOUT, so the
-		// plugin uses it too (rather than ctx.pluginCacheDir) to stay
-		// coherent. Relocating it is programmatic (buildSwarmPaths).
-		const layout = DEFAULT_PATH_LAYOUT;
+		// round-context and the proposal store always agree. The layout
+		// is derived from the core's resolved roots (`--cacheDir` /
+		// `--docsDir`), so the whole store relocates as one when the host
+		// reconfigures them: cache/state under `<cacheDir>`, human-edited
+		// proposals under `<docsDir>`. Engines that bake DEFAULT_PATH_LAYOUT
+		// receive this layout explicitly (sync/round-context), so a
+		// relocated store stays coherent end to end.
+		const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
@@ -76,6 +79,10 @@ export default definePlugin({
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			layout: {
+				proposalsDir: layout.proposalsDir,
+				proposalIndexFile: layout.proposalIndexFile,
+			},
 		};
 
 		return {
@@ -96,6 +103,10 @@ export default definePlugin({
 				buildSyncProposalsRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRoot: ctx.workspace.root,
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
 				}),
 				buildGetProposalWorkflowRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -107,6 +118,7 @@ export default definePlugin({
 					workspaceRoot: ctx.workspace.root,
 					digestPathAbs: abs(layout.roundContextDigestFile),
 					coreDocs: ['README.md', layout.proposalIndexFile],
+					layout,
 				}),
 				buildAgentNamesRegistration(agentNamesOptions),
 				buildContinueProposalRegistration({
