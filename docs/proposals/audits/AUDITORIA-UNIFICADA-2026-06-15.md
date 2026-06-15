@@ -8,19 +8,48 @@
 >
 > **ESTADO DE EJECUCIÓN (2026-06-15, sesión autónoma):** ✅ hechos y verdes —
 > F1, **F2**, **F3**, **F4**, M1, F5, M2, M3, #10 (create_proposal/close_slice/
-> proposal_board + knowledge multi-agent + prompt orchestrate), R1, M6, R5, R6,
-> R7, R8, R9, R10, tokens (overview compact/tag), rules-laravel (linter agnóstico).
-> ⏸️ pendientes — M4, M5, M7, M8, M10, R2, R12, R13, R14, Tier3/plataforma,
+> proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
+> R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
+> (linter agnóstico).
+> ⏸️ pendientes — M4, M5, M7, M8, R12, R13, R14, Tier3/plataforma,
 > npm publish. Detalle en
-> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 290 tests
-> (280+10 skip) + Affairs 1184, ambos verdes.**
+> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
+> (304+10 skip), verdes.**
+>
+> **⚠️ CORRECCIÓN DE PREMISA (2026-06-15, sesión Opus):** el "invariante crítico"
+> de re-validar Affairs tras tocar engines **está obsoleto**. Verificado: Affairs
+> (`/home/cartago/_proyectos/propios/affairs`) **NO importa nada de mcp-core**
+> (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig). Son proyectos
+> independientes; mcp-core fue extraído pero Affairs conserva su propia copia.
+> Cambios en mcp-core no pueden afectar a Affairs. Sus ~14 tests rojos actuales
+> son pre-existentes y ajenos (snapshots, skills docs, baseline MiniMax M3).
 >
 > ---
 >
-> ### 🔖 PUNTO DE CONTINUACIÓN (parada 2026-06-15 ~08:05, usuario va a oficina)
+> ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
-> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Lo último cerrado en esta
-> sesión: **F2, F3, F4**. Repo en punto estable; nada a medias.
+> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10 y R2
+> cerrados con tests** en esta sesión (314 verdes). Siguiente: **R14** (rename
+> cosmético) y **M7** (schema de lock).
+>
+> **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
+> - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
+>   clase `CorruptFileError` en `@cartago-git/mcp-core/public`
+>   ([packages/core/src/lib/shared/quarantine-corrupt-file.ts](../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts)),
+>   con sufijo `.corrupt-<ts>-<rand>` anti-colisión.
+> - **Estado crítico** (queue `parseQueue`/`loadOrEmptyQueue`, `subagent-registry-store.read`,
+>   `memory` store): JSON corrupto → preserva bytes + lanza error; la **capa de tool**
+>   lo traduce a error estructurado nombrando el backup (`runTaskQueueMcp`,
+>   `runAgentNames`, los 4 handlers de `memory`). Validaciones de negocio (dup id,
+>   waitFor, etc.) NO renombran: el fichero queda intacto.
+> - **closed-tasks-log** (diagnóstico): preserva + warning a stderr + continúa con
+>   `[]` (no bloquea coordinación). Decisión confirmada por el usuario.
+> - Specs: `quarantine-corrupt-file.spec.ts` (core), `task-queue-engine.corrupt.spec.ts`,
+>   `persistent-task-queue.spec.ts` (parseQueue), `agent-names.spec.ts` (registry),
+>   `memory.spec.ts` (store + capa de tool), `closed-tasks-log.spec.ts`.
+>
+> **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-core
+> (ver corrección de premisa arriba).
 >
 > **Lo que se hizo en F2/F3/F4 (para no re-derivarlo):**
 > - **F2** — `syncProposalRegistry(root)` y `defaultVerifyPaths(root)` ya NO usan
@@ -48,13 +77,9 @@
 >   `locks/concurrent-claims.spec.ts` (proposals).
 >
 > **Cómo continuar (orden sugerido, todo de bajo riesgo salvo donde se indica):**
-> 1. **M10 (corrupto ≠ vacío)** — `parseQueue`/`loadOrEmptyQueue`,
->    `subagent-registry-store.read` (catch → emptyRegistry), `memory` store y
->    `closed-tasks-log` tratan JSON corrupto como `[]`/vacío → preservar el fichero
->    (renombrar a `.corrupt-<ts>`) + devolver error estructurado. **Riesgo Affairs:**
->    medio (cambia comportamiento de recuperación) → re-validar 1184.
-> 2. **R2** (trivial) — borrar `coreToolRegistrations()` vacío en
->    `packages/core/src/lib/server/create-mcp-server.ts` + su uso.
+> 1. ✅ **M10 (corrupto ≠ vacío)** — HECHO con tests (ver bloque de arriba).
+> 2. ✅ **R2 (trivial)** — `coreToolRegistrations()` vacío eliminado de
+>    `create-mcp-server.ts` y de `public/index.ts`.
 > 3. **R14** (cosmético, amplio) — renombrar interno `subagent-*` → `agent-*`
 >    (la tool pública ya es `agent_names`). Cuidado: `subagent-registry-store`,
 >    `SUBAGENT_CONVENTIONS`, campos `subagent*` en round-context/digest. Mantener
@@ -130,14 +155,14 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M7 | **Schema de lock dual** (`files`/`claimed_at` vs `ownership`/`started_at`) con `.transform()` de compat | S·G | migrar a formato único, quitar capa de compat |
 | M8 | **Acceptance commands** sin `cwd` inyectado, `split(/\s+/)` rompe comillas/pipes, timeout no mata descendientes (zombies) | C | `cwd=workspace`, shell declarada/parser argv, process groups |
 | M9 | **Scaffold de agentes incoherente** con el host generado (ordena llamar tools que el host no registra; no integra `proposals`) | C | generar solo tools existentes / wirear proposals |
-| M10 | **Corrupción silenciosa → estado vacío** (memory/queue/registry tratan JSON corrupto como `[]`) → pérdida de datos, reasignaciones dobles | C | preservar fichero corrupto + error estructurado + recovery |
+| M10 | ✅ **HECHO** — corrupto ≠ vacío: helper `quarantineCorruptFile` + `CorruptFileError`; estado crítico (queue/registry/memory) preserva + error estructurado en capa de tool; closed-tasks preserva + warning + sigue. Specs en core/proposals/memory | C | hecho |
 
 ### 🟡 REGULAR
 
 | # | Hallazgo | Quién | Fix |
 |---|---|---|---|
 | R1 | **`joinRel` duplicado** en core/rules/memory | S·G | mover a `@cartago-git/mcp-core/public` |
-| R2 | **`coreToolRegistrations` vacío** perpetuo | S·G | eliminar o rellenar |
+| R2 | ✅ **HECHO** — `coreToolRegistrations()` vacío eliminado de `create-mcp-server.ts` y `public/index.ts` (`planRegistrationOrder([], extras)`) | S·G | hecho |
 | R3 | **Doctor re-lee config** (diagnose + assemble) | S·G | unificar (assemble devuelve diagnóstico) |
 | R4 | **Mezcla sync/async I/O** en `persistent-task-queue` | S·G·C | async en rutas calientes |
 | R5 | **`rules`: deps eslint del framework no verificadas** → `check_rules` propone comando que fallará | O | detectar/avisar deps ausentes o degradar a core-only |
@@ -235,13 +260,13 @@ backpressure.
 3. ✅ **`proposals` deriva rutas de `ctx`** (`--cacheDir`/`--docsDir` reales). [F3]
 4. ✅ **`task_queue` recibe `lockPath` inyectado** en `report`. [F5]
 5. ✅ **Tests de concurrencia** de claims y escrituras simultáneas
-   (`with-file-mutex.spec.ts`, `concurrent-claims.spec.ts`). — *queda M10
-   (corrupto≠vacío), siguiente en la cola.*
+   (`with-file-mutex.spec.ts`, `concurrent-claims.spec.ts`). — ✅ **M10
+   (corrupto≠vacío) también HECHO** con tests.
 
 ### P1 — Operativa fiable
 6. **Doctor real**: ensambla el server (sin stdio), valida nombres/URIs duplicados; loader dedup. [M2]
 7. **Timeouts** de import/register; subprocess async/cancelable con process groups. [M3·M8·R8]
-8. **Corrupto ≠ vacío**: preservar + error estructurado + backup antes de reparar. [M10]
+8. ✅ **Corrupto ≠ vacío**: preservar + error estructurado + backup. [M10] — HECHO con tests.
 9. **`state_health` + `state_repair`** (auto-heal de waiterOrphans/locks). [gaps]
 
 ### P2 — Calidad de producto
