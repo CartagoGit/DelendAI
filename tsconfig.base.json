@@ -50,7 +50,12 @@
 			"@cartago-git/mcp-quality/public": [
 				"./plugins/quality/src/public/index.ts"
 			],
-			"@cartago-git/mcp-quality/*": ["./plugins/quality/src/*"]
+			"@cartago-git/mcp-quality/*": ["./plugins/quality/src/*"],
+			"@cartago-git/mcp-search": ["./plugins/search/src/index.ts"],
+			"@cartago-git/mcp-search/public": [
+				"./plugins/search/src/public/index.ts"
+			],
+			"@cartago-git/mcp-search/*": ["./plugins/search/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]

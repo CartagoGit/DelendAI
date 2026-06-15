@@ -239,7 +239,7 @@ continuity-enforcer (anti-loop conceptual) · tsconfig estricto · empaquetado.
 
 **Plugins nuevos:**
 - **`notification`** (S·G·C) — usar `notifications/message` de MCP para avisar de release de locks → mata el polling.
-- **`search`/index** (S·G) — búsqueda textual/semántica sobre workspace/proposals/memory.
+- ✅ **`search`/index** (S·G) — HECHO: plugin `@cartago-git/mcp-search`, búsqueda textual grep-like sobre el workspace (roots/extensiones/ignore configurables). Semántica/índice persistente quedan como evolución.
 - **`docs`** (O), **`deps`/`security`** (O) — y la integración del `securecoder` externo con `proposals` (S·G; está **fuera** de mcp-core).
 
 **Skills (knowledge versionado, materializable, no cargar todas):**
@@ -321,7 +321,7 @@ backpressure.
 ### P3 — Evolución / plataforma de referencia
 17. **`proposals` por capacidades** (store/locks/queue/swarm) + presets `minimal/standard/swarm`. [C]
 18. ✅ **`/lib/*` cerrado** (R13). Pendiente: semver real (bump al publicar) + migraciones de formatos persistidos. [R13]
-19. **Plugins nuevos**: `notification` (mata polling), `search`/index, `docs`, `deps/security`. [gaps]
+19. **Plugins nuevos**: ✅ **`search` HECHO** (plugin `@cartago-git/mcp-search`: tool `search` grep-like de bajo token, agnóstico vía options, 8 tests). Pendientes: `notification` (mata polling), `docs`, `deps/security`. [gaps]
 20. **Skills versionadas** (authoring/recovery/concurrency/security/token-budgeting) + `multi-agent-loop`/`orchestrate`. [gaps]
 21. **Observabilidad** (`IStatusCollector` real, `--verbose`), **benchmarks de tokens**, **caos/multiplataforma**. [S·C]
 22. 🟡 **`structuredContent` HECHO** (MCP moderno): helpers compartidos `toolJson`/`toolOk`/`toolError` + `json()` de agent-names + `runTaskQueueMcp` reflejan el payload-objeto en `structuredContent`. Spec `tool-response`. Pendiente: declarar `outputSchema` (Zod) por tool. [O]
