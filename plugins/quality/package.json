@@ -25,8 +25,7 @@
 	],
 	"exports": {
 		".": "./src/index.ts",
-		"./public": "./src/public/index.ts",
-		"./lib/*": "./src/lib/*.ts"
+		"./public": "./src/public/index.ts"
 	},
 	"scripts": {
 		"test": "vitest run",

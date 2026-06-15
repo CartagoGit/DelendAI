@@ -11,9 +11,9 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — R13, Tier3/plataforma,
-> npm publish. **R14, M7, M4, M5, M8, M9 y R12 también HECHOS** (sesión Opus; M6
-> ya estaba). Detalle en
+> ⏸️ pendientes — Tier3/plataforma,
+> npm publish. **R14, M7, M4, M5, M8, M9, R12 y R13 también HECHOS** (sesión
+> Opus; M6 ya estaba). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -30,10 +30,13 @@
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
 > **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
-> M7, M4, M5, M8 y M9 cerrados con tests** en esta sesión (334 verdes; M6 ya
-> estaba). **Todo el grupo de agnosticismo (M4·M5·M6·M9) cerrado.** Siguiente
-> sugerido: R13 (cerrar `exports ./lib/*` + semver). Luego Tier3 y npm publish
-> (lo ejecuta el usuario).
+> M7, M4, M5, M8, M9, R12 y R13 cerrados con tests** en esta sesión (336 verdes;
+> M6 ya estaba). **Cerrados: todos los FATAL, todos los MUY MAL (M1–M10) y los
+> REGULAR accionables (R1·R2·R5–R10·R12·R13·R14).** De la cola original solo
+> quedan **Tier3/plataforma** (outputSchema, plugins nuevos, CI, observabilidad)
+> y **npm publish** (lo ejecuta el usuario). Abiertos por diseño/menor: R3
+> (doctor re-lee config), R4 (sync/async I/O), R11 (auto_work progreso), R15
+> (round-context 875 líneas).
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
@@ -210,7 +213,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | R10 | **`memory` sin quotas** (título/cuerpo/tags/total) ni atomicidad ni redacción de secretos | C | límites + escritura atómica |
 | R11 | **`auto_work`/`continue_proposal` sin detección de progreso**: puede re-elegir la misma `in_progress` en bucle | O | excluir in-progress ajenas; `idle` claro |
 | R12 | ✅ **HECHO** — `assembleCliConfig` cualifica el `id` de cada tool de plugin a `<ns>_<id>` (su nombre MCP real) antes del registro, así la unicidad de `planRegistrationOrder` es por-namespace; 2 plugins pueden tener una tool interna homónima. Spec `plugin-id-collision` | C | hecho |
-| R13 | **`/lib/*` demasiado abierto** (wildcard) → dificulta semver; consumidores (affairs) dependen masivamente | C | cerrar gradualmente + semver real |
+| R13 | ✅ **HECHO** — wildcard `./lib/*` eliminado del `exports` de los 6 paquetes (core + 5 plugins); superficie publicada = `.` (= `./public`) + `./public`. Ningún `src` importa `/lib/*` en runtime; los tests siguen vía alias de vitest. Cambios bajo `src/lib` ya no son semver-breaking | C | hecho |
 | R14 | ✅ **HECHO** — internos `subagent-*` → `agent-*` (tipos, constantes, funciones, campos, 3 ficheros vía `git mv`); filename `subagent-registry.json` y terminología conceptual preservados | O | hecho |
 | R15 | **`round-context.ts` (875 líneas)** hace demasiado | S·G | dividir (hashing/snapshot/resume) |
 
@@ -317,7 +320,7 @@ backpressure.
 
 ### P3 — Evolución / plataforma de referencia
 17. **`proposals` por capacidades** (store/locks/queue/swarm) + presets `minimal/standard/swarm`. [C]
-18. **Semver real**, cerrar `/lib/*`, migraciones de formatos persistidos. [R13]
+18. ✅ **`/lib/*` cerrado** (R13). Pendiente: semver real (bump al publicar) + migraciones de formatos persistidos. [R13]
 19. **Plugins nuevos**: `notification` (mata polling), `search`/index, `docs`, `deps/security`. [gaps]
 20. **Skills versionadas** (authoring/recovery/concurrency/security/token-budgeting) + `multi-agent-loop`/`orchestrate`. [gaps]
 21. **Observabilidad** (`IStatusCollector` real, `--verbose`), **benchmarks de tokens**, **caos/multiplataforma**. [S·C]
