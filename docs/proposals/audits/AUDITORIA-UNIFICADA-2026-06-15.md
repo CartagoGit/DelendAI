@@ -7,13 +7,83 @@
 > para dejar el proyecto en 11/10.
 >
 > **ESTADO DE EJECUCIÓN (2026-06-15, sesión autónoma):** ✅ hechos y verdes —
-> F1, M1, F5, M2, M3, #10 (create_proposal/close_slice/proposal_board + knowledge
-> multi-agent + prompt orchestrate), R1, M6, R5, R6, R7, R8, R9, R10, tokens
-> (overview compact/tag), rules-laravel (linter agnóstico). ⏸️ pendientes (pase
-> dedicado, riesgo a Affairs o subsistema grande) — F2, F3, F4, M4, M5, M7, M8,
-> M10, R2, R12, R13, R14, Tier3/plataforma, npm publish. Detalle en
-> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. mcp-core 283 tests +
-> Affairs 1184, ambos verdes.
+> F1, **F2**, **F3**, **F4**, M1, F5, M2, M3, #10 (create_proposal/close_slice/
+> proposal_board + knowledge multi-agent + prompt orchestrate), R1, M6, R5, R6,
+> R7, R8, R9, R10, tokens (overview compact/tag), rules-laravel (linter agnóstico).
+> ⏸️ pendientes — M4, M5, M7, M8, M10, R2, R12, R13, R14, Tier3/plataforma,
+> npm publish. Detalle en
+> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 290 tests
+> (280+10 skip) + Affairs 1184, ambos verdes.**
+>
+> ---
+>
+> ### 🔖 PUNTO DE CONTINUACIÓN (parada 2026-06-15 ~08:05, usuario va a oficina)
+>
+> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Lo último cerrado en esta
+> sesión: **F2, F3, F4**. Repo en punto estable; nada a medias.
+>
+> **Lo que se hizo en F2/F3/F4 (para no re-derivarlo):**
+> - **F2** — `syncProposalRegistry(root)` y `defaultVerifyPaths(root)` ya NO usan
+>   `process.cwd()` (root requerido). Fallback de `resolveWorkspacePath` en
+>   `agent-lock-engine` se dejó (nunca se dispara; todos los callers inyectan
+>   `lockPath`).
+> - **F3** — el plugin `proposals` deriva el layout de `ctx`:
+>   `const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir)` en
+>   [plugins/proposals/src/index.ts](../../../plugins/proposals/src/index.ts).
+>   Los 2 engines que horneaban `DEFAULT_PATH_LAYOUT` ahora aceptan `layout`
+>   opcional (default = DEFAULT para back-compat de Affairs):
+>   `syncProposalRegistry(root, layout?)` y
+>   `collectRoundContextSnapshot(root, layout?)` (+ `buildOperationalSources`,
+>   `scanLiveProposalEntries`). Tools que lo propagan: `sync_proposals`,
+>   `round_context`, `authoring`. Spec: `tests/src/lib/swarm/layout-relocation.spec.ts`.
+> - **F4** — nuevo helper `withFileMutex(targetPath, fn, opts?)` en
+>   [packages/core/src/lib/shared/with-file-mutex.ts](../../../packages/core/src/lib/shared/with-file-mutex.ts)
+>   (exportado en `@cartago-git/mcp-core/public`): sidecar `<target>.mutex` con
+>   `open('wx')` (O_EXCL), robo por staleness y por timeout (anti-deadlock).
+>   Envuelve el read-modify-write en: `agent-lock-engine` (extraído a
+>   `executeLockAction`), `task-queue-engine` (acciones `enqueue`/`dequeue`; NO
+>   `subscribe`/`report`, que son read-only), y `subagent-registry-store`
+>   (upsert/remove/release/markAdopted) — este último además pasó de `writeFile`
+>   a `writeFileAtomic`. Specs: `with-file-mutex.spec.ts` (core) y
+>   `locks/concurrent-claims.spec.ts` (proposals).
+>
+> **Cómo continuar (orden sugerido, todo de bajo riesgo salvo donde se indica):**
+> 1. **M10 (corrupto ≠ vacío)** — `parseQueue`/`loadOrEmptyQueue`,
+>    `subagent-registry-store.read` (catch → emptyRegistry), `memory` store y
+>    `closed-tasks-log` tratan JSON corrupto como `[]`/vacío → preservar el fichero
+>    (renombrar a `.corrupt-<ts>`) + devolver error estructurado. **Riesgo Affairs:**
+>    medio (cambia comportamiento de recuperación) → re-validar 1184.
+> 2. **R2** (trivial) — borrar `coreToolRegistrations()` vacío en
+>    `packages/core/src/lib/server/create-mcp-server.ts` + su uso.
+> 3. **R14** (cosmético, amplio) — renombrar interno `subagent-*` → `agent-*`
+>    (la tool pública ya es `agent_names`). Cuidado: `subagent-registry-store`,
+>    `SUBAGENT_CONVENTIONS`, campos `subagent*` en round-context/digest. Mantener
+>    compat de schema en disco (no romper registries existentes de Affairs).
+> 4. **M7** (unificar schema de lock) — quitar `.transform()` de compat
+>    `files/claimed_at` → `ownership/started_at`. **Riesgo Affairs:** revisar que
+>    no haya locks en disco con el formato viejo.
+> 5. **M4** (tracks configurables) + **M5** (carpetas `paused/demos` inyectables) —
+>    vía `ctx.options` del plugin proposals; `scanLiveProposalEntries` ya quedó
+>    listo para recibir carpetas extra.
+> 6. **M8** (acceptance exec: `cwd`, parser argv que respete comillas/pipes,
+>    matar descendientes con process groups) — en el runner de acceptance.
+> 7. **R12** (IDs de tool por namespace en `planRegistrationOrder`), **R13**
+>    (cerrar `exports ./lib/*` + semver).
+> 8. **Tier3**: `outputSchema`/`structuredContent` en tools; plugins nuevos
+>    `notification`/`search`/`docs`/`deps`; CI.
+> 9. **npm publish** — LO ÚLTIMO, lo ejecuta el usuario con su cuenta siguiendo
+>    `docs/NPM_PUBLISH.md` (ya actualizado a 290 tests).
+>
+> **Comandos de validación (siempre tras cada cambio en engines compartidos):**
+> ```bash
+> cd /home/cartago/_projects/mcp-core && bun run validate            # 290 verdes
+> cd /home/cartago/_projects/games/onrop/affairs \
+>   && bun run --cwd libs/mcp-server typecheck \
+>   && bun run --cwd libs/mcp-server test                            # 1184 verdes
+> ```
+> **Invariante crítico:** NUNCA romper Affairs. Los engines son compartidos vía
+> alias de vitest/paths de tsconfig; re-validar las 1184 tras tocar cualquier
+> engine de `proposals`.
 
 > **Nota de consenso: ~7,3/10** (Sonnet 8 · Gemini 7,9 · Opus 4.8 7,5 · Codex 6,8).
 > Arquitectura excelente; el techo lo marca la **persistencia/concurrencia** del
@@ -41,11 +111,11 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 
 | # | Hallazgo | Quién | Fix |
 |---|---|---|---|
-| F1 | **Escrituras NO atómicas** en `agent-lock-engine.writeLock` y `sync-proposal-registry` (y `memory`): dos agentes → JSON truncado/corrupto que tumba el server | S·G·C·O (4/4) | patrón `tmp-en-mismo-dir + rename` (ya existe en `persistQueue`) en TODOS los stores |
-| F2 | **`process.cwd()` filtrado** en `syncProposalRegistry(root=process.cwd())`, `resolveWorkspacePath`, `delivery-verifier.defaultVerifyPaths`, fallback de `agent-lock` | S·G·C·O (4/4) | `root` requerido; todo desde `ctx.workspace`; prohibir cwd en engines |
-| F3 | **`proposals` ignora `--cacheDir`/`--docsDir`**: usa `DEFAULT_PATH_LAYOUT` horneado; overview/doctor informan rutas distintas a las reales; 2 instancias comparten estado sin querer | C·O (2/4) | derivar layout de `ctx.corePaths` (`buildSwarmPaths(ctx.pluginCacheDir, ctx.docsDir)`) o documentar contrato explícito |
-| F4 | **Lock no es un mutex real** (read→check→write sin exclusión): dos claims simultáneos creen ambos poseer el fichero (*lost update*) | C (1/4) | creación exclusiva/lock interproceso + revisión/CAS + test multiproceso |
-| F5 | **`task_queue report` lee el lock equivocado** (`DEFAULT_PATH_LAYOUT.lockFile`, relativo a cwd) → backpressure falso | C (1/4) | `ITaskQueuePaths` debe incluir `lockPath` inyectado |
+| F1 | ✅ **HECHO** — Escrituras atómicas (`writeFileAtomic` temp-mismo-dir+rename) en lock/registry/queue/memory | S·G·C·O (4/4) | hecho |
+| F2 | ✅ **HECHO** — `syncProposalRegistry(root)`/`defaultVerifyPaths(root)` sin `process.cwd()`; root requerido | S·G·C·O (4/4) | hecho (fallback de `resolveWorkspacePath` se deja: nunca se dispara) |
+| F3 | ✅ **HECHO** — `proposals` deriva `layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir)`; engines aceptan `layout` opcional (default DEFAULT); spec `layout-relocation.spec.ts` | C·O (2/4) | hecho |
+| F4 | ✅ **HECHO** — `withFileMutex` (O_EXCL + robo stale/timeout) envuelve read-modify-write de lock/queue(enqueue,dequeue)/registry; specs `with-file-mutex.spec.ts` + `concurrent-claims.spec.ts` | C (1/4) | hecho |
+| F5 | ✅ **HECHO** — `ITaskQueuePaths.lockPath` inyectado en `report` | C (1/4) | hecho |
 
 ### 🟠 MUY MAL
 
@@ -157,13 +227,16 @@ backpressure.
 
 ## 6. Plan priorizado para 11/10
 
-### P0 — Fiabilidad del estado (antes de usar swarm en serio)
-1. **Store transaccional común** (lock/queue/registry/closed/memory): temp en
-   mismo dir + `rename`, revisión/CAS, mutex interproceso. [F1·F4·M1·M7]
-2. **Erradicar `process.cwd()`**; todo desde `ctx.workspace`; `root` requerido. [F2]
-3. **`proposals` deriva rutas de `ctx`** (`--cacheDir`/`--docsDir` reales). [F3]
-4. **`task_queue` recibe `lockPath` inyectado** en `report`. [F5]
-5. **Tests multiproceso** de claims y escrituras simultáneas; corrupción/recovery. [F1·M10]
+### P0 — Fiabilidad del estado ✅ COMPLETADO (2026-06-15)
+1. ✅ **Store transaccional** (lock/queue/registry/memory): atomic write +
+   `withFileMutex` (mutex interproceso) en el read-modify-write. [F1·F4·M1] —
+   *queda M7 (unificar schema lock), no bloqueante.*
+2. ✅ **Erradicar `process.cwd()`**; `root` requerido en engines. [F2]
+3. ✅ **`proposals` deriva rutas de `ctx`** (`--cacheDir`/`--docsDir` reales). [F3]
+4. ✅ **`task_queue` recibe `lockPath` inyectado** en `report`. [F5]
+5. ✅ **Tests de concurrencia** de claims y escrituras simultáneas
+   (`with-file-mutex.spec.ts`, `concurrent-claims.spec.ts`). — *queda M10
+   (corrupto≠vacío), siguiente en la cola.*
 
 ### P1 — Operativa fiable
 6. **Doctor real**: ensambla el server (sin stdio), valida nombres/URIs duplicados; loader dedup. [M2]
