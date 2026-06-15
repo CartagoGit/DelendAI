@@ -9,8 +9,9 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
+import { writeFileAtomic } from '@cartago-git/mcp-core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
@@ -84,8 +85,7 @@ const writeLock = async (
 	deps: IAgentLockDeps = {}
 ): Promise<void> => {
 	const lockPath = getLockPath(deps);
-	await mkdir(dirname(lockPath), { recursive: true });
-	await writeFile(lockPath, `${JSON.stringify(lock, null, '\t')}\n`, 'utf8');
+	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
 };
 
 const isStale = (e: ILockEntry, thresholdMinutes: number): boolean => {

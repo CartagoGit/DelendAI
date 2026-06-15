@@ -179,7 +179,7 @@ export const scaffoldAgentFile = (
 	slot: IScaffoldAgentSlot
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
-	const model = options.defaultModel ?? 'MiniMax-M3 (customendpoint)';
+	const model = options.defaultModel ?? '<your-model>';
 	const isRoot = slot === 'orchestrator';
 	const tools = isRoot
 		? `[read, search, edit, execute, todo, agent, mcp-server-${prefix}/*]`
@@ -228,7 +228,7 @@ The MCP server \`mcp-server-${prefix}\` rules. Do NOT re-derive workflow from do
 
 ## Lane
 
-- Default model: \`${options.defaultModel ?? 'MiniMax-M3 (customendpoint)'}\`.
+- Default model: \`${options.defaultModel ?? '<your-model>'}\`.
 - MCP payload first, one atomic slice, minimal validation, serial continuity.
 - Every final message ends with ONE close marker line (see the close-markers constant of this host).
 `,

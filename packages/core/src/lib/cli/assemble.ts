@@ -28,6 +28,7 @@ import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpCoreCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { createMcpServer } from '../server/create-mcp-server';
+import { joinRel } from '../shared/paths';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
@@ -38,9 +39,6 @@ import type {
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
-
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpCoreHostConfig;
@@ -234,6 +232,9 @@ export interface IDoctorReport {
 		readonly prompts: number;
 		readonly resources: number;
 	};
+	/** True if the real MCP server assembled without registration errors. */
+	readonly assembles: boolean;
+	readonly assemblyError?: string;
 }
 
 /**
@@ -256,8 +257,23 @@ export const runDoctor = async (
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
 	const configDiag = diagnoseConfigFile(readFile(configPath));
 	const { config, loadResult } = await assembleCliConfig(args, deps);
+
+	// Assemble the REAL server (no stdio) to catch registration errors
+	// (e.g. duplicate tool ids) that a config-only check would miss.
+	let assembles = true;
+	let assemblyError: string | undefined;
+	try {
+		await createMcpServer(config);
+	} catch (error) {
+		assembles = false;
+		assemblyError = error instanceof Error ? error.message : String(error);
+	}
+
 	return {
-		ok: configDiag.issues.length === 0 && loadResult.errors.length === 0,
+		ok:
+			configDiag.issues.length === 0 &&
+			loadResult.errors.length === 0 &&
+			assembles,
 		configPath,
 		config: configDiag,
 		paths: config.corePaths ?? { cacheDir: args.cacheDir, docsDir: args.docsDir },
@@ -271,6 +287,8 @@ export const runDoctor = async (
 			prompts: config.extraPrompts?.length ?? 0,
 			resources: config.extraResources?.length ?? 0,
 		},
+		assembles,
+		...(assemblyError !== undefined ? { assemblyError } : {}),
 	};
 };
 

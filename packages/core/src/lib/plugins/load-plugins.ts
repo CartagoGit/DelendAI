@@ -27,7 +27,28 @@ export interface ILoadPluginsOptions {
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
 	/** Injectable importer (default: dynamic `import`). For tests. */
 	readonly import?: (specifier: string) => Promise<unknown>;
+	/** Per-step timeout (ms) for import and register. Default 15000. */
+	readonly timeoutMs?: number;
 }
+
+const withTimeout = async <T>(
+	promise: Promise<T>,
+	ms: number,
+	label: string
+): Promise<T> => {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const timeout = new Promise<never>((_resolve, reject) => {
+		timer = setTimeout(
+			() => reject(new Error(`${label} timed out after ${ms}ms`)),
+			ms
+		);
+	});
+	try {
+		return await Promise.race([promise, timeout]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+	}
+};
 
 /**
  * Turn a short plugin name into the module specifiers to try, in
@@ -78,17 +99,33 @@ export const loadPlugins = async (
 ): Promise<IPluginLoadResult> => {
 	const importer =
 		options.import ?? ((specifier: string) => import(specifier));
+	const timeoutMs = options.timeoutMs ?? 15_000;
 	const loaded: ILoadedPlugin[] = [];
 	const errors: Array<{ specifier: string; message: string }> = [];
+	const loadedNames = new Set<string>();
+	const seenSpecifiers = new Set<string>();
 
 	for (const specifier of options.specifiers) {
+		// Dedup identical specifiers up front (e.g. `--plugins=memory,memory`).
+		if (seenSpecifiers.has(specifier)) {
+			errors.push({
+				specifier,
+				message: `duplicate plugin specifier "${specifier}" ignored.`,
+			});
+			continue;
+		}
+		seenSpecifiers.add(specifier);
 		const candidates = resolvePluginSpecifier(specifier);
 		let plugin: IMcpPlugin | undefined;
 		let resolved = '';
 		const attemptErrors: string[] = [];
 		for (const candidate of candidates) {
 			try {
-				const mod = await importer(candidate);
+				const mod = await withTimeout(
+					Promise.resolve(importer(candidate)),
+					timeoutMs,
+					`import("${candidate}")`
+				);
 				const found = asPlugin(mod);
 				if (found) {
 					plugin = found;
@@ -109,6 +146,14 @@ export const loadPlugins = async (
 			});
 			continue;
 		}
+		// Dedup by resolved plugin name (two specifiers → same plugin).
+		if (loadedNames.has(plugin.name)) {
+			errors.push({
+				specifier,
+				message: `plugin "${plugin.name}" already loaded (duplicate ignored).`,
+			});
+			continue;
+		}
 		try {
 			const ctx = options.buildContext(plugin.name);
 			if (plugin.optionsSchema) {
@@ -121,8 +166,13 @@ export const loadPlugins = async (
 					continue;
 				}
 			}
-			const registrations = await plugin.register(ctx);
+			const registrations = await withTimeout(
+				Promise.resolve(plugin.register(ctx)),
+				timeoutMs,
+				`plugin "${plugin.name}" register()`
+			);
 			loaded.push({ specifier, resolved, plugin, registrations });
+			loadedNames.add(plugin.name);
 		} catch (error) {
 			errors.push({
 				specifier,

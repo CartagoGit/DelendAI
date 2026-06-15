@@ -71,6 +71,12 @@ export {
 } from '../lib/tools/orchestration.tool';
 export type { IDelegateToolOptions } from '../lib/tools/orchestration.tool';
 export {
+	buildCreateProposalRegistration,
+	buildCloseSliceRegistration,
+	buildProposalBoardRegistration,
+} from '../lib/tools/authoring.tool';
+export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';
+export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';

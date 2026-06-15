@@ -10,6 +10,12 @@ import {
 	buildDelegateRegistration,
 	buildPlanRegistration,
 } from './lib/tools/orchestration.tool';
+import {
+	buildCloseSliceRegistration,
+	buildCreateProposalRegistration,
+	buildProposalBoardRegistration,
+} from './lib/tools/authoring.tool';
+import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
@@ -62,6 +68,14 @@ export default definePlugin({
 			...(Array.isArray(ctx.options['namePool'])
 				? { pool: ctx.options['namePool'] as string[] }
 				: {}),
+		};
+
+		const authoringOptions: IAuthoringToolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRoot: ctx.workspace.root,
+			proposalsDirAbs: abs(layout.proposalsDir),
+			indexPathAbs: abs(layout.proposalIndexFile),
+			lockPathAbs: abs(layout.lockFile),
 		};
 
 		return {
@@ -131,6 +145,9 @@ export default definePlugin({
 					agentNames: agentNamesOptions,
 					lockPathAbs: abs(layout.lockFile),
 				}),
+				buildCreateProposalRegistration(authoringOptions),
+				buildCloseSliceRegistration(authoringOptions),
+				buildProposalBoardRegistration(authoringOptions),
 			],
 			prompts: [
 				{
@@ -160,8 +177,51 @@ export default definePlugin({
 						);
 					},
 				},
+				{
+					id: 'orchestrate',
+					register: async (server) => {
+						server.registerPrompt(
+							`${ctx.namespacePrefix}_orchestrate`,
+							{
+								description:
+									'Coordinate multiple subagents over a proposal split into disjoint slices.',
+							},
+							async () => ({
+								messages: [
+									{
+										role: 'user' as const,
+										content: {
+											type: 'text' as const,
+											text: [
+												`Call \`${ctx.namespacePrefix}_proposal_board\` to see proposals, slices and claims.`,
+												`Use \`${ctx.namespacePrefix}_plan\` to validate disjoint slices, then \`${ctx.namespacePrefix}_delegate\` one claimable slice per subagent (assigns name + lock).`,
+												`Each subagent does its slice then \`${ctx.namespacePrefix}_close_slice\` (marks done + releases lock). When all close, run the global gate once.`,
+												'Keep slices file-disjoint; never give two agents overlapping files.',
+											].join('\n'),
+										},
+									},
+								],
+							}),
+						);
+					},
+				},
 			],
 			knowledge: [
+				{
+					id: 'multi-agent-loop',
+					title: 'Multi-agent slice loop',
+					body: [
+						'# Multi-agent slice loop',
+						'',
+						'Several agents work a proposal in parallel without stepping on each other:',
+						'1. create_proposal with file-disjoint ## Slices (validated on create).',
+						'2. Orchestrator: proposal_board to see slices + claimable; plan to re-check disjointness.',
+						'3. delegate one claimable slice per subagent (assigns a name + claims its files).',
+						'4. Each subagent edits ONLY its files, validates, then close_slice (done + release lock).',
+						'5. When all slices are done, run the global gate once; archive the proposal.',
+						'Disjointness is the contract; report lock-conflict instead of retrying.',
+					].join('\n'),
+				},
 				{
 					id: 'proposals-workflow',
 					title: 'Proposals workflow',

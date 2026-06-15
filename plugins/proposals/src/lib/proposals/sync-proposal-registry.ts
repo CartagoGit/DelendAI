@@ -1,6 +1,8 @@
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
+import { writeFileAtomic } from '@cartago-git/mcp-core/public';
+
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type {
 	IAcceptanceCriterion,
@@ -344,7 +346,7 @@ export async function syncProposalRegistry(
 	} catch {
 		// Missing or unreadable index means the generated file will be new.
 	}
-	await writeFile(indexPath, nextText, 'utf8');
+	await writeFileAtomic(indexPath, nextText);
 	return {
 		...index,
 		changed,

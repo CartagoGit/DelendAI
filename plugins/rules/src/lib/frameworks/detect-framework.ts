@@ -1,12 +1,11 @@
 import type { IFileReader } from '@cartago-git/mcp-core/public';
+import { joinRel } from '@cartago-git/mcp-core/public';
 
 export interface IDetectResult {
 	readonly presetId: string;
 	readonly reason: string;
 }
 
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 const readDeps = (
 	reader: IFileReader,

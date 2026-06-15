@@ -8,9 +8,10 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { readFile, rename, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+
+import { writeFileAtomic } from '@cartago-git/mcp-core/public';
 
 import { z } from 'zod';
 
@@ -387,13 +388,9 @@ export const persistQueue = async (
 	queue: IPersistentTaskQueue,
 	absolutePath: string
 ): Promise<void> => {
-	const tmpPath = join(
-		tmpdir(),
-		`mcp-queue-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
-	);
-	const content = JSON.stringify(queue, null, 2);
-	await writeFile(tmpPath, content, 'utf8');
-	await rename(tmpPath, absolutePath);
+	// Atomic write with the temp IN THE SAME DIRECTORY (never os.tmpdir),
+	// so `rename` can't fail with EXDEV across filesystems.
+	await writeFileAtomic(absolutePath, JSON.stringify(queue, null, 2));
 };
 
 // ---------------------------------------------------------------------------

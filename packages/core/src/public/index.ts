@@ -114,6 +114,7 @@ export {
 	writeFileAtomic,
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
+export { joinRel } from '../lib/shared/paths';
 
 // --- shared tool-response helpers (compact JSON + error envelope) ----------
 export {

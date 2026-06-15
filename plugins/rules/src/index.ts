@@ -1,6 +1,7 @@
 import {
 	createWorkspaceFileReader,
 	definePlugin,
+	joinRel,
 } from '@cartago-git/mcp-core/public';
 import { z } from 'zod';
 
@@ -16,8 +17,6 @@ import {
 } from './lib/tools/rules-tools';
 import type { IRulesToolOptions } from './lib/tools/rules-tools';
 
-const joinRel = (base: string, child: string): string =>
-	base.length === 0 ? child : `${base.replace(/\/+$/, '')}/${child}`;
 
 const projectNameFrom = (
 	reader: { readFile(p: string): string | undefined },
