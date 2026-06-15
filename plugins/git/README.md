@@ -1,7 +1,7 @@
 # @cartago-git/mcp-git
 
 Read-only **git orientation** plugin for
-[`@cartago-git/mcp-core`](../../README-MCP-CORE.md). Status, changed files, diff
+[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Status, changed files, diff
 stat and recent log as structured JSON, so agents cheaply see what changed —
 agnostic of language or framework. It never modifies the repo.
 

@@ -484,7 +484,7 @@ ${safeDescription}
 }
 \`\`\`
 
-See \`PLUGINS-MCP-CORE.md\` at the repo root for the full plugin guide.
+See \`PLUGINS-MCP-CORE.md\` at the docs folder for the full plugin guide.
 `,
 		},
 	];
