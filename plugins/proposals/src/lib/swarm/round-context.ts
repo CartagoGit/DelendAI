@@ -33,9 +33,9 @@ import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import { CLOSED_CHECKPOINT_STATUSES } from './runtime-recovery';
-import type { ISubagentAssignment } from '../shared/subagent-registry-store';
+import type { IAgentAssignment } from '../shared/agent-registry-store';
 import { CONTINUITY_STALE_WINDOW_MS } from './runtime-recovery';
-import { SUBAGENT_CONVENTIONS } from '../shared/subagent-conventions';
+import { AGENT_CONVENTIONS } from '../shared/agent-conventions';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
@@ -77,7 +77,7 @@ export interface IRoundContextLock {
 	readonly parentTaskId?: string;
 }
 
-export interface IRoundContextSubagent {
+export interface IRoundContextAgent {
 	readonly agent: string;
 	readonly taskId: string;
 	readonly slot: string;
@@ -139,7 +139,7 @@ export interface IRoundContextDigest {
 	readonly activeProposalId: string;
 	readonly currentTaskId: string;
 	readonly activeLocks: readonly IRoundContextLock[];
-	readonly activeSubagents: readonly IRoundContextSubagent[];
+	readonly activeAgents: readonly IRoundContextAgent[];
 	readonly coreDocHashes: Readonly<Record<string, string>>;
 	readonly sources: IRoundContextSources;
 	readonly chatContext: IRoundContextChatContext;
@@ -155,7 +155,7 @@ export interface IRoundContextDigestInput {
 	readonly activeProposalId: string;
 	readonly currentTaskId: string;
 	readonly activeLocks: readonly IRoundContextLock[];
-	readonly activeSubagents: readonly IRoundContextSubagent[];
+	readonly activeAgents: readonly IRoundContextAgent[];
 	readonly coreDocHashes: Readonly<Record<string, string>>;
 	readonly sources: IRoundContextSources;
 	readonly chatContext: IRoundContextChatContext;
@@ -199,7 +199,7 @@ export const buildRoundContextDigest = (
 	activeProposalId: input.activeProposalId,
 	currentTaskId: input.currentTaskId,
 	activeLocks: input.activeLocks,
-	activeSubagents: input.activeSubagents,
+	activeAgents: input.activeAgents,
 	coreDocHashes: input.coreDocHashes,
 	sources: input.sources,
 	chatContext: input.chatContext,
@@ -249,7 +249,7 @@ interface IJsonLockFile {
 }
 
 interface IJsonRegistry {
-	readonly assignments?: readonly ISubagentAssignment[];
+	readonly assignments?: readonly IAgentAssignment[];
 }
 
 interface IJsonSourceRead<T> {
@@ -267,7 +267,7 @@ export interface IRoundContextOperationalSnapshot {
 	readonly checkpoint: IRoundContextCheckpoint;
 	readonly proposalPortfolio: IRoundContextProposalPortfolio;
 	readonly activeLocks: readonly IRoundContextLock[];
-	readonly activeSubagents: readonly IRoundContextSubagent[];
+	readonly activeAgents: readonly IRoundContextAgent[];
 }
 
 const computeFingerprint = (text: string): string => {
@@ -378,7 +378,7 @@ export const buildRoundId = (input: {
 	readonly coreDocHashes: Readonly<Record<string, string>>;
 	readonly sources: IRoundContextSources;
 	readonly activeLocks: readonly IRoundContextLock[];
-	readonly activeSubagents: readonly IRoundContextSubagent[];
+	readonly activeAgents: readonly IRoundContextAgent[];
 }): string => {
 	const raw = JSON.stringify({
 		proposal: input.activeProposalId,
@@ -386,7 +386,7 @@ export const buildRoundId = (input: {
 		core: input.coreDocHashes,
 		sources: input.sources,
 		locks: input.activeLocks.map((lock) => lock.taskId),
-		subagents: input.activeSubagents.map((subagent) => subagent.taskId),
+		agents: input.activeAgents.map((agent) => agent.taskId),
 	});
 	return `round-${computeFingerprint(raw)}`;
 };
@@ -397,13 +397,13 @@ export const buildResumeHint = (input: {
 	readonly chatContext: IRoundContextChatContext;
 	readonly checkpoint: IRoundContextCheckpoint;
 	readonly activeLocks: readonly IRoundContextLock[];
-	readonly activeSubagents: readonly IRoundContextSubagent[];
+	readonly activeAgents: readonly IRoundContextAgent[];
 }): IRoundContextResumeHint => {
 	const inferredTaskId =
 		input.currentTaskId !== 'unknown'
 			? input.currentTaskId
 			: (input.activeLocks[0]?.taskId ??
-				input.activeSubagents[0]?.taskId);
+				input.activeAgents[0]?.taskId);
 	const inferredProposalIdFromTask =
 		inferredTaskId?.match(/^([pga]\d+[a-z]?)/)?.[1];
 	const proposalId =
@@ -495,16 +495,16 @@ export const readLockSummary = (
 	};
 };
 
-export const readSubagentSummary = (
+export const readAgentSummary = (
 	monorepoRoot: string
 ): {
 	readonly source: IRoundContextSourceMeta;
-	readonly subagents: readonly IRoundContextSubagent[];
+	readonly agents: readonly IRoundContextAgent[];
 } => {
 	const snapshot = collectRoundContextSnapshot(monorepoRoot);
 	return {
 		source: snapshot.sources.registry,
-		subagents: snapshot.activeSubagents,
+		agents: snapshot.activeAgents,
 	};
 };
 
@@ -522,7 +522,7 @@ export const buildOperationalSources = (
 		join(monorepoRoot, layout.lockFile)
 	);
 	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, layout.subagentRegistryFile)
+		join(monorepoRoot, layout.agentRegistryFile)
 	);
 	return {
 		chatContext: {
@@ -574,7 +574,7 @@ export const collectRoundContextSnapshot = (
 		join(monorepoRoot, layout.lockFile)
 	);
 	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, layout.subagentRegistryFile)
+		join(monorepoRoot, layout.agentRegistryFile)
 	);
 	const proposalIndex = readJsonSource<IJsonProposalIndex>(
 		join(monorepoRoot, layout.proposalIndexFile),
@@ -591,7 +591,7 @@ export const collectRoundContextSnapshot = (
 			? { parentTaskId: entry.parent_task_id }
 			: {}),
 	}));
-	const activeSubagents = (registry.value?.assignments ?? [])
+	const activeAgents = (registry.value?.assignments ?? [])
 		.filter((assignment) => assignment.status === 'active')
 		.map((assignment) => ({
 			agent: assignment.agent_name,
@@ -617,7 +617,7 @@ export const collectRoundContextSnapshot = (
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
 		null
 	);
-	const latestSubagentSeen = activeSubagents.reduce<string | null>(
+	const latestAgentSeen = activeAgents.reduce<string | null>(
 		(latest, item) =>
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
 		null
@@ -659,21 +659,21 @@ export const collectRoundContextSnapshot = (
 			registry: {
 				state: registry.state,
 				fingerprint: registry.fingerprint,
-				timestamp: latestSubagentSeen,
+				timestamp: latestAgentSeen,
 				ageMinutes:
-					activeSubagents.length > 0
+					activeAgents.length > 0
 						? Math.max(
-								...activeSubagents.map(
+								...activeAgents.map(
 									(item) =>
 										computeAgeMinutes(item.lastSeen) ?? 0
 								)
 							)
 						: null,
-				temporallyStale: activeSubagents.some((item) => {
+				temporallyStale: activeAgents.some((item) => {
 					const age = computeAgeMinutes(item.lastSeen);
 					return (
 						age !== null &&
-						age >= SUBAGENT_CONVENTIONS.heartbeat_ttl_minutes
+						age >= AGENT_CONVENTIONS.heartbeat_ttl_minutes
 					);
 				}),
 			},
@@ -729,7 +729,7 @@ export const collectRoundContextSnapshot = (
 			).length,
 		},
 		activeLocks,
-		activeSubagents,
+		activeAgents,
 	};
 };
 

@@ -62,10 +62,10 @@ export const buildRoundContextOutput = async (
 	);
 
 	if (input.forceRefresh === true) {
-		const { checkpoint, chatContext, proposalPortfolio, activeLocks, activeSubagents } =
+		const { checkpoint, chatContext, proposalPortfolio, activeLocks, activeAgents } =
 			liveSnapshot;
 		const fallbackTaskId =
-			activeLocks[0]?.taskId ?? activeSubagents[0]?.taskId ?? 'unknown';
+			activeLocks[0]?.taskId ?? activeAgents[0]?.taskId ?? 'unknown';
 		const activeProposalId =
 			checkpoint.proposalId ??
 			chatContext.proposalIds[0] ??
@@ -78,14 +78,14 @@ export const buildRoundContextOutput = async (
 			chatContext,
 			checkpoint,
 			activeLocks,
-			activeSubagents,
+			activeAgents,
 		});
 		const seedDigest = buildRoundContextDigest({
 			roundId: 'pending-round-id',
 			activeProposalId,
 			currentTaskId,
 			activeLocks,
-			activeSubagents,
+			activeAgents,
 			coreDocHashes: liveHashes,
 			sources: liveSnapshot.sources,
 			chatContext,

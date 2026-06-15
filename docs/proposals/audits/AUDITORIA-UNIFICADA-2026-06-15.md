@@ -11,8 +11,8 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — M4, M5, M7, M8, R12, R13, R14, Tier3/plataforma,
-> npm publish. Detalle en
+> ⏸️ pendientes — M4, M5, M7, M8, R12, R13, Tier3/plataforma,
+> npm publish. **R14 también HECHO** (sesión Opus). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -50,6 +50,18 @@
 >
 > **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-core
 > (ver corrección de premisa arriba).
+>
+> **R14 (rename subagent-* → agent-*) — HECHO (sesión Opus):** identificadores de
+> código del subsistema de registry renombrados (`ISubagent*`→`IAgent*`,
+> `SUBAGENT_*`→`AGENT_*`, `createSubagentRegistryStore`→`createAgentRegistryStore`,
+> `buildSubagentTree`→`buildAgentTree`, `readSubagentSummary`→`readAgentSummary`,
+> campos `activeSubagents`/`subagents`→`activeAgents`/`agents`, source-tag
+> `subagent-tree`→`agent-tree`). Archivos renombrados con `git mv`:
+> `shared/{agent-registry-store,agent-tree,agent-conventions}.ts`.
+> **Preservado a propósito** (compat de schema en disco): el filename
+> `subagent-registry.json` (en `registry_filename` y `agentRegistryFile` del
+> layout) y la terminología conceptual "subagent"/"subagente" en descripciones
+> de tool, prompts y comentarios. 314 tests verdes, typecheck limpio.
 >
 > **Lo que se hizo en F2/F3/F4 (para no re-derivarlo):**
 > - **F2** — `syncProposalRegistry(root)` y `defaultVerifyPaths(root)` ya NO usan
@@ -174,7 +186,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | R11 | **`auto_work`/`continue_proposal` sin detección de progreso**: puede re-elegir la misma `in_progress` en bucle | O | excluir in-progress ajenas; `idle` claro |
 | R12 | **`planRegistrationOrder` exige IDs globales únicos** (impide 2 plugins con tool interna homónima) | C | identidad por plugin/namespace o reescritura de IDs |
 | R13 | **`/lib/*` demasiado abierto** (wildcard) → dificulta semver; consumidores (affairs) dependen masivamente | C | cerrar gradualmente + semver real |
-| R14 | **Nombres internos `subagent-*`** aunque la tool es `agent_names` | O | renombrar a `agent-*` |
+| R14 | ✅ **HECHO** — internos `subagent-*` → `agent-*` (tipos, constantes, funciones, campos, 3 ficheros vía `git mv`); filename `subagent-registry.json` y terminología conceptual preservados | O | hecho |
 | R15 | **`round-context.ts` (875 líneas)** hace demasiado | S·G | dividir (hashing/snapshot/resume) |
 
 ### 🟢/🌟/💎 LO QUE ESTÁ BIEN (consenso 4/4)

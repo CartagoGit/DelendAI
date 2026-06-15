@@ -57,7 +57,7 @@ export interface ILockSnapshot {
  * Subagent registry summary at closure time. The orchestrator collects
  * this from `<prefix>_agent_names` / `.cache/subagent-registry.json`.
  */
-export interface ISubagentTreeSummary {
+export interface IAgentTreeSummary {
 	readonly totalAssignments: number;
 	readonly activeCount: number;
 	readonly cooldownCount: number;
@@ -80,11 +80,11 @@ export interface ICloseSwarmInput {
 	readonly observedContinuity: Partial<{
 		tasksCompletedInSession: number;
 		newProposalsOpenedInSession: number;
-		subagentSpawnsInSession: number;
+		agentSpawnsInSession: number;
 		toolRetriesForTool: number;
 		willReReadUnchangedDoc: boolean;
 	}>;
-	readonly subagentTree: ISubagentTreeSummary;
+	readonly agentTree: IAgentTreeSummary;
 	readonly locks: readonly ILockSnapshot[];
 	/** True iff a checkpoint file was emitted for the most recent task. */
 	readonly checkpointPresent: boolean;
@@ -103,7 +103,7 @@ export interface ISwarmViolation {
 	readonly source:
 		| 'budget'
 		| 'continuity-policy'
-		| 'subagent-tree'
+		| 'agent-tree'
 		| 'locks'
 		| 'checkpoint';
 }
@@ -197,12 +197,12 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	}
 
 	// 3. Subagent tree: any orphan in the registry rejects closure.
-	if (input.subagentTree.orphanCount > 0) {
+	if (input.agentTree.orphanCount > 0) {
 		violations.push({
-			field: 'subagentRegistry.orphanCount',
-			message: `Subagent registry reports ${input.subagentTree.orphanCount} orphan(s). The registry must be clean before closure.`,
+			field: 'agentRegistry.orphanCount',
+			message: `Agent registry reports ${input.agentTree.orphanCount} orphan(s). The registry must be clean before closure.`,
 			severity: 'block',
-			source: 'subagent-tree',
+			source: 'agent-tree',
 		});
 	}
 
@@ -238,7 +238,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	);
 	const withinContinuityPolicy =
 		continuityResult.withinPolicy &&
-		input.subagentTree.orphanCount === 0 &&
+		input.agentTree.orphanCount === 0 &&
 		staleLocks.length === 0 &&
 		!(
 			input.continuityPolicy.requireCheckpointAfterTask === true &&

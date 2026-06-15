@@ -19,7 +19,7 @@
  * with `blockerType: 'name-conflict'` and a next action to route around.
  */
 
-export const SUBAGENT_CANONICAL_ROLES = [
+export const AGENT_CANONICAL_ROLES = [
 	'orchestrator',
 	'technical_investigator',
 	'proposal_guardian',
@@ -27,9 +27,9 @@ export const SUBAGENT_CANONICAL_ROLES = [
 	'implementation_runner',
 ] as const;
 
-export type ISubagentCanonicalRole = (typeof SUBAGENT_CANONICAL_ROLES)[number];
+export type IAgentCanonicalRole = (typeof AGENT_CANONICAL_ROLES)[number];
 
-export const SUBAGENT_CONVENTIONS = {
+export const AGENT_CONVENTIONS = {
 	cooldown_days: 7,
 	heartbeat_ttl_minutes: 10,
 	max_depth: 3,
@@ -37,4 +37,4 @@ export const SUBAGENT_CONVENTIONS = {
 	registry_version: 1,
 } as const;
 
-export type ISubagentConventions = typeof SUBAGENT_CONVENTIONS;
+export type IAgentConventions = typeof AGENT_CONVENTIONS;

@@ -18,7 +18,7 @@ export interface ISwarmBudget {
 	/** Maximum number of active sessions at once (across all users/agents). */
 	readonly maxSessionsActive?: number;
 	/** Maximum number of subagents spawnable within a single session. */
-	readonly maxSubagentsPerSession?: number;
+	readonly maxAgentsPerSession?: number;
 	/** Maximum number of total tool retries allowed within a single session. */
 	readonly maxToolRetriesPerSession?: number;
 	/** Maximum number of reads of core docs (README, index.json, etc.) per session. */
@@ -40,7 +40,7 @@ export interface IContinuityPolicy {
 	/** When true, the session must not open new proposals. */
 	readonly forbidNewProposals?: boolean;
 	/** Maximum number of subagent spawns across the full session. */
-	readonly maxSubagentSpawnsPerSession?: number;
+	readonly maxAgentSpawnsPerSession?: number;
 	/**
 	 * Minimum number of retries allowed per tool invocation.
 	 * Must be >= 1 when declared; 0 disables the policy without value (invalid).

@@ -10,7 +10,7 @@
  *
  * Defaults to the orchestrator's hard policy declared in
  * `.github/agents/orchestrator.agent.md`:
- *   - maxSubagentsPerSession: 2
+ *   - maxAgentsPerSession: 2
  *   - maxToolRetriesPerSession: 3
  *   - forbidReReadOnUnchangedDigest: true
  *   - requireCheckpointAfterTask: true
@@ -82,7 +82,7 @@ export interface IEnforceOutput {
  * when callers don't pass `policy`.
  */
 export const ORCHESTRATOR_DEFAULT_POLICY: IContinuityPolicy = {
-	maxSubagentSpawnsPerSession: 2,
+	maxAgentSpawnsPerSession: 2,
 	maxToolRetriesPerTool: 3,
 	forbidReReadOnUnchangedDigest: true,
 	requireCheckpointAfterTask: true,

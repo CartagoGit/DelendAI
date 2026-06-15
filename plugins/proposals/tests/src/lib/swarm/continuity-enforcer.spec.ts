@@ -4,7 +4,7 @@
  * Pure unit tests for `enforceContinuity`. Verifies:
  *  1. Empty policy → no downgrade, no annotation.
  *  2. Within-policy observed → no downgrade.
- *  3. block violation (maxSubagentSpawnsPerSession exceeded) → mode='reset',
+ *  3. block violation (maxAgentSpawnsPerSession exceeded) → mode='reset',
  *     reason includes `continuity-reset:`.
  *  4. warn-only violation → reason includes `continuity-warn:`, mode preserved.
  *  5. forbidReReadOnUnchangedDigest + willReReadUnchangedDoc → block.
@@ -46,11 +46,11 @@ describe('enforceContinuity — no-op branches', () => {
 
 	it('returns the decision unchanged when observed is within policy', () => {
 		const policy: IContinuityPolicy = {
-			maxSubagentSpawnsPerSession: 2,
+			maxAgentSpawnsPerSession: 2,
 		};
 		const result = enforceContinuity({
 			policy,
-			observed: { subagentSpawnsInSession: 1 },
+			observed: { agentSpawnsInSession: 1 },
 			decision: baseDecision,
 		});
 		expect(result.decision.mode).toBe('resume');
@@ -59,18 +59,18 @@ describe('enforceContinuity — no-op branches', () => {
 });
 
 describe('enforceContinuity — block violations', () => {
-	it('downgrades to mode=reset when maxSubagentSpawnsPerSession exceeded', () => {
+	it('downgrades to mode=reset when maxAgentSpawnsPerSession exceeded', () => {
 		const policy: IContinuityPolicy = {
-			maxSubagentSpawnsPerSession: 2,
+			maxAgentSpawnsPerSession: 2,
 		};
 		const result = enforceContinuity({
 			policy,
-			observed: { subagentSpawnsInSession: 3 },
+			observed: { agentSpawnsInSession: 3 },
 			decision: baseDecision,
 		});
 		expect(result.decision.mode).toBe('reset');
 		expect(result.decision.reason).toContain('continuity-reset:');
-		expect(result.decision.reason).toContain('maxSubagentSpawnsPerSession');
+		expect(result.decision.reason).toContain('maxAgentSpawnsPerSession');
 		expect(result.annotated).toBe(true);
 		expect(result.check.withinPolicy).toBe(false);
 	});
@@ -152,7 +152,7 @@ describe('enforceContinuity — cross-session resume annotation', () => {
 
 describe('ORCHESTRATOR_DEFAULT_POLICY', () => {
 	it('mirrors the hard policy declared in orchestrator.agent.md', () => {
-		expect(ORCHESTRATOR_DEFAULT_POLICY.maxSubagentSpawnsPerSession).toBe(2);
+		expect(ORCHESTRATOR_DEFAULT_POLICY.maxAgentSpawnsPerSession).toBe(2);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.maxToolRetriesPerTool).toBe(3);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.forbidReReadOnUnchangedDigest).toBe(
 			true

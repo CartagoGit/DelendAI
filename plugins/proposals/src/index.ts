@@ -64,7 +64,7 @@ export default definePlugin({
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
-			registryPathAbs: abs(layout.subagentRegistryFile),
+			registryPathAbs: abs(layout.agentRegistryFile),
 			lockPathAbs: abs(layout.lockFile),
 			queuePathAbs: abs(layout.taskQueueFile),
 			closedTasksPathAbs: abs(layout.closedTasksFile),

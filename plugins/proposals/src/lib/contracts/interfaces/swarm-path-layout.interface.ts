@@ -9,7 +9,7 @@ export interface IHostPathLayout {
 	/** File-level mutex with heartbeat (agent lock subsystem). */
 	readonly lockFile: string;
 	/** Registry of spawned subagents. */
-	readonly subagentRegistryFile: string;
+	readonly agentRegistryFile: string;
 	/** Round-context digest cache (staleness detection). */
 	readonly roundContextDigestFile: string;
 	/** Directory holding the persistent task queue artefacts. */

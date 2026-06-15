@@ -18,12 +18,12 @@ describe('evaluateContinuityPolicy — withinPolicy: true', () => {
 	it('returns withinPolicy: true when all observed values are within policy', () => {
 		const policy: IContinuityPolicy = {
 			maxTasksPerSession: 5,
-			maxSubagentSpawnsPerSession: 3,
+			maxAgentSpawnsPerSession: 3,
 			maxToolRetriesPerTool: 2,
 		};
 		const observed: IObservedContinuity = {
 			tasksCompletedInSession: 2,
-			subagentSpawnsInSession: 1,
+			agentSpawnsInSession: 1,
 			toolRetriesForTool: 1,
 		};
 
@@ -144,12 +144,12 @@ describe('evaluateContinuityPolicy — multiple violations', () => {
 		const policy: IContinuityPolicy = {
 			maxTasksPerSession: 2,
 			forbidNewProposals: true,
-			maxSubagentSpawnsPerSession: 1,
+			maxAgentSpawnsPerSession: 1,
 		};
 		const observed: IObservedContinuity = {
 			tasksCompletedInSession: 5,
 			newProposalsOpenedInSession: 2,
-			subagentSpawnsInSession: 3,
+			agentSpawnsInSession: 3,
 		};
 
 		const result = evaluateContinuityPolicy(policy, observed);

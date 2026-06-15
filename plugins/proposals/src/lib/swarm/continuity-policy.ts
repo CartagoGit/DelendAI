@@ -22,7 +22,7 @@ import type {
 export interface IObservedContinuity {
 	readonly tasksCompletedInSession?: number;
 	readonly newProposalsOpenedInSession?: number;
-	readonly subagentSpawnsInSession?: number;
+	readonly agentSpawnsInSession?: number;
 	readonly toolRetriesForTool?: number;
 	/** true when the caller intends to re-read a doc whose digest is unchanged */
 	readonly willReReadUnchangedDoc?: boolean;
@@ -50,12 +50,12 @@ const FIELD_DEFS: readonly IFieldDef[] = [
 			`Tasks completed (${observed}) exceeds maxTasksPerSession (${limit}).`,
 	},
 	{
-		policyKey: 'maxSubagentSpawnsPerSession',
-		observedKey: 'subagentSpawnsInSession',
-		field: 'maxSubagentSpawnsPerSession',
+		policyKey: 'maxAgentSpawnsPerSession',
+		observedKey: 'agentSpawnsInSession',
+		field: 'maxAgentSpawnsPerSession',
 		severity: 'block',
 		getMessage: (limit, observed) =>
-			`Subagent spawns (${observed}) exceeds maxSubagentSpawnsPerSession (${limit}).`,
+			`Agent spawns (${observed}) exceeds maxAgentSpawnsPerSession (${limit}).`,
 	},
 	{
 		policyKey: 'maxToolRetriesPerTool',

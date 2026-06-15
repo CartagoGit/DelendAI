@@ -41,7 +41,7 @@ import type {
 
 const swarmBudgetSchema = z.object({
 	maxSessionsActive: z.number().int().min(1).optional(),
-	maxSubagentsPerSession: z.number().int().min(1).optional(),
+	maxAgentsPerSession: z.number().int().min(1).optional(),
 	maxToolRetriesPerSession: z.number().int().min(1).optional(),
 	maxCoreDocRereadsPerSession: z.number().int().min(1).optional(),
 	maxTurnTokens: z.number().int().min(1).optional(),
@@ -50,7 +50,7 @@ const swarmBudgetSchema = z.object({
 const continuityPolicySchema = z.object({
 	maxTasksPerSession: z.number().int().min(1).optional(),
 	forbidNewProposals: z.boolean().optional(),
-	maxSubagentSpawnsPerSession: z.number().int().min(1).optional(),
+	maxAgentSpawnsPerSession: z.number().int().min(1).optional(),
 	maxToolRetriesPerTool: z.number().int().min(1).optional(),
 	requireCheckpointAfterTask: z.boolean().optional(),
 	forbidReReadOnUnchangedDigest: z.boolean().optional(),

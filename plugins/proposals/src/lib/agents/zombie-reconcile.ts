@@ -1,13 +1,13 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { createSubagentRegistryStore } from '../shared/subagent-registry-store';
-import type { ISubagentRegistry } from '../shared/subagent-registry-store';
+import { createAgentRegistryStore } from '../shared/agent-registry-store';
+import type { IAgentRegistry } from '../shared/agent-registry-store';
 
-export type ISubagentSlot = string;
+export type IAgentSlot = string;
 
 export interface IZombieOrphanEntry {
 	readonly agentName: string;
 	readonly taskId: string;
-	readonly agentSlot: ISubagentSlot;
+	readonly agentSlot: IAgentSlot;
 	readonly lastSeen: string; // ISO8601
 	readonly ageMinutes: number;
 	readonly reason: IZombieReason;
@@ -75,7 +75,7 @@ export function thresholdFromOrphans(count: number): IZombieThreshold {
 }
 
 export function classifyZombies(
-	registry: ISubagentRegistry,
+	registry: IAgentRegistry,
 	lockSnapshot: {
 		in_flight: ReadonlyArray<{
 			readonly task_id: string;
@@ -168,7 +168,7 @@ export async function gcZombies(
 		queueEmitter?: IQueueEventEmitter | undefined;
 	}
 ): Promise<IZombieReconcileReport> {
-	const store = createSubagentRegistryStore(registryPath);
+	const store = createAgentRegistryStore(registryPath);
 	const registry = await store.read();
 	const lockSnapshot = loadLockSnapshotLocal(lockPath);
 
