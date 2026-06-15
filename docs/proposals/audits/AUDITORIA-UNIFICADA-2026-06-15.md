@@ -11,9 +11,9 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — R12, R13, Tier3/plataforma,
-> npm publish. **R14, M7, M4, M5, M8 y M9 también HECHOS** (sesión Opus; M6 ya
-> estaba). Detalle en
+> ⏸️ pendientes — R13, Tier3/plataforma,
+> npm publish. **R14, M7, M4, M5, M8, M9 y R12 también HECHOS** (sesión Opus; M6
+> ya estaba). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -32,8 +32,8 @@
 > **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14,
 > M7, M4, M5, M8 y M9 cerrados con tests** en esta sesión (334 verdes; M6 ya
 > estaba). **Todo el grupo de agnosticismo (M4·M5·M6·M9) cerrado.** Siguiente
-> sugerido: R12 (IDs por namespace en `planRegistrationOrder`) o R13 (cerrar
-> `exports ./lib/*` + semver). Luego Tier3 y npm publish (lo ejecuta el usuario).
+> sugerido: R13 (cerrar `exports ./lib/*` + semver). Luego Tier3 y npm publish
+> (lo ejecuta el usuario).
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
@@ -209,7 +209,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | R9 | **`git` oculta errores** (no-repo/timeout = salida vacía = repo limpio); `git_log.limit` sin límites | C·O | `{ok:false,reason}` + timeout + clamp 1..100 |
 | R10 | **`memory` sin quotas** (título/cuerpo/tags/total) ni atomicidad ni redacción de secretos | C | límites + escritura atómica |
 | R11 | **`auto_work`/`continue_proposal` sin detección de progreso**: puede re-elegir la misma `in_progress` en bucle | O | excluir in-progress ajenas; `idle` claro |
-| R12 | **`planRegistrationOrder` exige IDs globales únicos** (impide 2 plugins con tool interna homónima) | C | identidad por plugin/namespace o reescritura de IDs |
+| R12 | ✅ **HECHO** — `assembleCliConfig` cualifica el `id` de cada tool de plugin a `<ns>_<id>` (su nombre MCP real) antes del registro, así la unicidad de `planRegistrationOrder` es por-namespace; 2 plugins pueden tener una tool interna homónima. Spec `plugin-id-collision` | C | hecho |
 | R13 | **`/lib/*` demasiado abierto** (wildcard) → dificulta semver; consumidores (affairs) dependen masivamente | C | cerrar gradualmente + semver real |
 | R14 | ✅ **HECHO** — internos `subagent-*` → `agent-*` (tipos, constantes, funciones, campos, 3 ficheros vía `git mv`); filename `subagent-registry.json` y terminología conceptual preservados | O | hecho |
 | R15 | **`round-context.ts` (875 líneas)** hace demasiado | S·G | dividir (hashing/snapshot/resume) |

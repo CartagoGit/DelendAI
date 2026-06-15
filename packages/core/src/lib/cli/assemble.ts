@@ -113,6 +113,12 @@ export const assembleCliConfig = async (
 	const resources: IResourceRegistration[] = [];
 	const knowledge: IKnowledgeEntry[] = [];
 	const pluginToolEntries: IOverviewToolEntry[] = [];
+	// Plugin tools, with their id namespaced to the plugin's prefix. Two
+	// plugins may legitimately ship a tool with the same internal id (e.g.
+	// `status`); the MCP names (`a_status`, `b_status`) never collide, so
+	// the registration-order uniqueness check must run on the qualified id,
+	// not the raw one. [R12]
+	const qualifiedPluginTools: IToolRegistration[] = [];
 
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const ns = pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
@@ -124,6 +130,14 @@ export const assembleCliConfig = async (
 				name: `${ns}_${tool.id}`,
 				summary: tool.summary,
 				tags: tool.tags,
+			});
+			qualifiedPluginTools.push({
+				...tool,
+				id: `${ns}_${tool.id}`,
+				// A same-plugin anchor must point at the qualified id too.
+				...(tool.registerAfter !== undefined
+					? { registerAfter: `${ns}_${tool.registerAfter}` }
+					: {}),
 			});
 		}
 	}
@@ -185,10 +199,9 @@ export const assembleCliConfig = async (
 		}),
 	];
 
-	const tools: IToolRegistration[] = [...coreTools];
-	for (const { registrations } of loadResult.loaded) {
-		if (registrations.tools) tools.push(...registrations.tools);
-	}
+	// Core tools keep their bare id (single namespace); plugin tools are
+	// already qualified above so the uniqueness check is per-namespace. [R12]
+	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
 
 	// Surface knowledge as native MCP resources too (list/read/cache).
 	resources.push(...buildKnowledgeResourceRegistrations(knowledge));
