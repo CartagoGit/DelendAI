@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { joinRel } from '@cartago-git/mcp-core/public';
 import { dirname } from 'node:path';
 
@@ -108,18 +108,29 @@ export const buildRulesManifest = (
 			reason,
 		};
 	}
+	const fingerprint = computeFingerprint(options.mode, areas);
 	return {
 		generatedAt: new Date().toISOString(),
+		fingerprint,
 		mode: options.mode,
 		projects: { [options.projectName]: areas },
 	};
 };
 
-const writeIfAbsent = (absPath: string, content: string): boolean => {
-	if (existsSync(absPath)) return false;
-	mkdirSync(dirname(absPath), { recursive: true });
-	writeFileSync(absPath, content, 'utf8');
-	return true;
+/** Stable fingerprint of the resolution (mode + per-area presets). */
+const computeFingerprint = (
+	mode: string,
+	areas: Readonly<Record<string, IAreaRules>>
+): string => {
+	const shape = `${mode}|${Object.entries(areas)
+		.map(([k, v]) => `${k}:${v.presetId}`)
+		.sort()
+		.join(',')}`;
+	let hash = 0;
+	for (let i = 0; i < shape.length; i += 1) {
+		hash = (hash * 31 + shape.charCodeAt(i)) | 0;
+	}
+	return `rm-${Math.abs(hash).toString(36)}`;
 };
 
 const writeAlways = (absPath: string, content: string): void => {
@@ -160,10 +171,30 @@ export const ensureRulesCache = (
 			materialized.push(tsRel);
 		}
 	}
-	const manifestWritten = writeIfAbsent(
-		options.resolve(options.manifestRelPath),
-		`${JSON.stringify(options.manifest, null, '\t')}\n`
-	);
+	// Regenerate the manifest when absent OR when its fingerprint drifts
+	// (mode/overrides/detected presets changed). A matching fingerprint is
+	// left untouched so human edits to the mapping survive.
+	const manifestAbs = options.resolve(options.manifestRelPath);
+	let manifestWritten = false;
+	let existingFingerprint: string | undefined;
+	if (existsSync(manifestAbs)) {
+		try {
+			existingFingerprint = (
+				JSON.parse(readFileSync(manifestAbs, 'utf8')) as {
+					fingerprint?: string;
+				}
+			).fingerprint;
+		} catch {
+			existingFingerprint = undefined; // corrupt → regenerate
+		}
+	}
+	if (existingFingerprint !== options.manifest.fingerprint) {
+		writeAlways(
+			manifestAbs,
+			`${JSON.stringify(options.manifest, null, '\t')}\n`
+		);
+		manifestWritten = true;
+	}
 	return {
 		materialized,
 		manifestWritten,

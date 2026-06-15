@@ -48,6 +48,28 @@ describe('loadPlugins', () => {
 		expect(result.loaded[0]?.registrations.tools?.[0]?.id).toBe('demo_x');
 	});
 
+	it('dedups a plugin requested twice (loads once, notes the dup)', async () => {
+		const p = { name: 'demo', register: () => ({}) };
+		const result = await loadPlugins({
+			specifiers: ['demo', 'demo'],
+			buildContext: ctx,
+			import: async () => ({ default: p }),
+		});
+		expect(result.loaded).toHaveLength(1);
+		expect(result.errors[0]?.message).toMatch(/duplicate/);
+	});
+
+	it('times out a hanging import instead of blocking forever', async () => {
+		const result = await loadPlugins({
+			specifiers: ['slow'],
+			buildContext: ctx,
+			timeoutMs: 20,
+			import: () => new Promise(() => {}), // never resolves
+		});
+		expect(result.loaded).toHaveLength(0);
+		expect(result.errors[0]?.message).toMatch(/timed out/);
+	});
+
 	it('collects errors without aborting the rest', async () => {
 		const ok = {
 			name: 'ok',

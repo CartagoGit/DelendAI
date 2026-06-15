@@ -48,10 +48,20 @@ describe('detectPresetForArea', () => {
 		expect(detectPresetForArea(reader({}), '').presetId).toBe('vanilla-js');
 	});
 
-	it('exposes the supported preset ids', () => {
+	it('exposes the supported preset ids incl. the non-eslint laravel preset', () => {
 		expect(SUPPORTED_PRESET_IDS).toContain('angular');
 		expect(SUPPORTED_PRESET_IDS).toContain('vue');
 		expect(SUPPORTED_PRESET_IDS).toContain('jquery');
+		expect(SUPPORTED_PRESET_IDS).toContain('laravel');
+	});
+
+	it('detects a Laravel (PHP) area via composer.json', () => {
+		expect(
+			detectPresetForArea(
+				reader({ 'composer.json': '{"require":{"laravel/framework":"^11"}}' }),
+				''
+			).presetId
+		).toBe('laravel');
 	});
 });
 

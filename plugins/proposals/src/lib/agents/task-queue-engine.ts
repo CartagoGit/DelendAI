@@ -129,6 +129,10 @@ export const IActionSchema = z.enum([
 export interface ITaskQueuePaths {
 	readonly queuePath: string;
 	readonly closedTasksPath: string;
+	/** Absolute lock path for the `report` action. Falls back to the
+	 * default layout (cwd-relative) when omitted — pass it to avoid
+	 * reading the wrong lock when cwd ≠ workspace. */
+	readonly lockPath?: string;
 }
 
 // The action param interfaces use the Zod *input* type so that optional
@@ -495,7 +499,7 @@ export async function runTaskQueueAction(
 		await ensureQueueFile(paths.queuePath);
 		const queue = await loadOrEmptyQueue(paths.queuePath);
 		const lock = await loadLockSnapshot(
-			DEFAULT_PATH_LAYOUT.lockFile,
+			paths.lockPath ?? DEFAULT_PATH_LAYOUT.lockFile,
 			paths.closedTasksPath
 		);
 		const baseReport = reportBackpressure(queue, lock);

@@ -90,6 +90,7 @@ export default definePlugin({
 					paths: {
 						queuePath: abs(layout.taskQueueFile),
 						closedTasksPath: abs(layout.closedTasksFile),
+						lockPath: abs(layout.lockFile),
 					},
 				}),
 				buildSyncProposalsRegistration({

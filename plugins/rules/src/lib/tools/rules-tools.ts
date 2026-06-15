@@ -8,7 +8,11 @@ import type {
 import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
 import { buildRulesManifest } from '../frameworks/manifest';
-import { PRESET_BY_ID, SUPPORTED_PRESET_IDS } from '../frameworks/presets';
+import {
+	PRESET_BY_ID,
+	REQUIRED_ESLINT_DEPS,
+	SUPPORTED_PRESET_IDS,
+} from '../frameworks/presets';
 import type { IAreaRules, IRulesManifest, IRulesMode } from '../frameworks/types';
 import { RULES_MODE_GUIDANCE } from '../frameworks/types';
 
@@ -73,6 +77,62 @@ const eslintCommand = (areaDir: string, rules: IAreaRules): string => {
 	return projectOwns
 		? `eslint ${target}`
 		: `eslint ${target} --config ${rules.eslint[0]}`;
+};
+
+/** Lint check/fix commands, branching on the preset's linter. */
+const lintCheckCommand = (areaDir: string, rules: IAreaRules): string => {
+	const preset = PRESET_BY_ID.get(rules.presetId);
+	if (preset?.linter === 'pint') return './vendor/bin/pint --test';
+	return eslintCommand(areaDir, rules);
+};
+const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
+	const preset = PRESET_BY_ID.get(rules.presetId);
+	if (preset?.linter === 'pint') return './vendor/bin/pint';
+	return `${eslintCommand(areaDir, rules)} --fix`;
+};
+
+const readDeps = (
+	reader: IRulesToolOptions['reader'],
+	areaDir: string
+): Record<string, string> => {
+	const out: Record<string, string> = {};
+	for (const rel of ['package.json', areaDir === 'root' || areaDir === '' ? '' : `${areaDir}/package.json`]) {
+		if (rel === '') continue;
+		const raw = reader.readFile(rel);
+		if (raw === undefined) continue;
+		try {
+			const pkg = JSON.parse(raw) as {
+				dependencies?: Record<string, string>;
+				devDependencies?: Record<string, string>;
+			};
+			Object.assign(out, pkg.dependencies ?? {}, pkg.devDependencies ?? {});
+		} catch {
+			// ignore
+		}
+	}
+	return out;
+};
+
+/** Required ESLint packages the area is missing (so check won't run). */
+const missingEslintDeps = (
+	reader: IRulesToolOptions['reader'],
+	areaDir: string,
+	presetId: string
+): readonly string[] => {
+	const required = REQUIRED_ESLINT_DEPS[presetId] ?? [];
+	if (required.length === 0) return [];
+	const deps = readDeps(reader, areaDir);
+	return required.filter((d) => !(d in deps));
+};
+
+/** Typecheck command for an area, or undefined if it isn't a TS area. */
+const typecheckCommand = (rules: IAreaRules): string | undefined => {
+	if (rules.typecheck.length === 0) return undefined;
+	// Prefer the project's own tsconfig (entries not under the cache dir).
+	const projectTsconfig = rules.typecheck.find(
+		(p) => !p.includes('.cache/')
+	);
+	return `tsc --noEmit -p ${projectTsconfig ?? rules.typecheck[0]}`;
 };
 
 /** get_rules — the map of which rules apply where, + mode + conventions. */
@@ -146,7 +206,13 @@ export const buildCheckRulesRegistration = (
 						framework: entry.rules.framework,
 						eslintConfigs: entry.rules.eslint,
 						typecheckConfigs: entry.rules.typecheck,
-						command: eslintCommand(entry.area, entry.rules),
+						command: lintCheckCommand(entry.area, entry.rules),
+						typecheckCommand: typecheckCommand(entry.rules),
+						missingEslintDeps: missingEslintDeps(
+							options.reader,
+							entry.area,
+							entry.rules.presetId
+						),
 					})),
 				});
 			}
@@ -187,8 +253,8 @@ export const buildApplyRulesRegistration = (
 					);
 				}
 				const mode = manifest.mode;
-				const command = eslintCommand(entry.area, entry.rules);
-				const fixCommand = `${command} --fix`;
+				const command = lintCheckCommand(entry.area, entry.rules);
+				const fixCommand = lintFixCommand(entry.area, entry.rules);
 				const scope =
 					args.files && args.files.length > 0
 						? args.files.join(' ')
@@ -210,7 +276,7 @@ export const buildApplyRulesRegistration = (
 										`Re-run \`${command}\` until clean.`,
 									]
 								: [
-										`For the files you touched (${scope}): run \`eslint ${scope} --fix\`.`,
+										`For the files you touched (${scope}): run \`${fixCommand}\`.`,
 										'Align only those files; leave untouched files as-is.',
 									];
 				return toolJson({

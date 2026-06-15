@@ -8,6 +8,7 @@ export { default } from '../index';
 export {
 	RULE_PRESETS,
 	PRESET_BY_ID,
+	REQUIRED_ESLINT_DEPS,
 	SUPPORTED_PRESET_IDS,
 } from '../lib/frameworks/presets';
 export {

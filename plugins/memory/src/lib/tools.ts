@@ -41,14 +41,30 @@ export const buildMemoryToolRegistrations = (
 						title: string;
 						body: string;
 						tags?: string[] | undefined;
-					}) =>
-						toolOk({
+					}) => {
+						if (args.title.length > 200) {
+							return toolError(
+								'title too long (max 200 chars)',
+								'Shorten the title; put detail in the body.'
+							);
+						}
+						if (args.body.length > 8000) {
+							return toolError(
+								'body too long (max 8000 chars)',
+								'Summarise; memory is for durable notes, not logs.'
+							);
+						}
+						if ((args.tags?.length ?? 0) > 20) {
+							return toolError('too many tags (max 20)');
+						}
+						return toolOk({
 							saved: saveNote(options.storePathAbs, {
 								title: args.title,
 								body: args.body,
 								...(args.tags ? { tags: args.tags } : {}),
 							}),
-						})
+						});
+					}
 				);
 			},
 		},
@@ -79,9 +95,10 @@ export const buildMemoryToolRegistrations = (
 									? { query: args.query }
 									: {}),
 								...(args.tags ? { tags: args.tags } : {}),
-								...(args.limit !== undefined
-									? { limit: args.limit }
-									: {}),
+								limit: Math.max(
+									1,
+									Math.min(50, Math.floor(args.limit ?? 10))
+								),
 							}),
 						})
 				);

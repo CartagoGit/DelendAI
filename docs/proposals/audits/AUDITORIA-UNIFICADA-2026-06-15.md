@@ -6,6 +6,15 @@
 > `docs/proposals/done/`. Este documento es la **propuesta de auditoría completa**
 > para dejar el proyecto en 11/10.
 >
+> **ESTADO DE EJECUCIÓN (2026-06-15, sesión autónoma):** ✅ hechos y verdes —
+> F1, M1, F5, M2, M3, #10 (create_proposal/close_slice/proposal_board + knowledge
+> multi-agent + prompt orchestrate), R1, M6, R5, R6, R7, R8, R9, R10, tokens
+> (overview compact/tag), rules-laravel (linter agnóstico). ⏸️ pendientes (pase
+> dedicado, riesgo a Affairs o subsistema grande) — F2, F3, F4, M4, M5, M7, M8,
+> M10, R2, R12, R13, R14, Tier3/plataforma, npm publish. Detalle en
+> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. mcp-core 283 tests +
+> Affairs 1184, ambos verdes.
+
 > **Nota de consenso: ~7,3/10** (Sonnet 8 · Gemini 7,9 · Opus 4.8 7,5 · Codex 6,8).
 > Arquitectura excelente; el techo lo marca la **persistencia/concurrencia** del
 > plugin `proposals` y residuos del host original.

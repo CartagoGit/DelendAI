@@ -7,6 +7,7 @@ export { default } from '../index';
 
 export {
 	createGitRunner,
+	isGitRepo,
 	parseStatus,
 	parseLog,
 	gitStatus,

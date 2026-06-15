@@ -5,18 +5,27 @@ export type IGitRunner = (args: readonly string[]) => string;
 
 /** Default runner: invoke the real `git` in `cwd` (read-only commands). */
 export const createGitRunner =
-	(cwd: string): IGitRunner =>
+	(cwd: string, timeoutMs = 15_000): IGitRunner =>
 	(args) => {
 		try {
 			return execFileSync('git', [...args], {
 				cwd,
 				encoding: 'utf8',
 				stdio: ['ignore', 'pipe', 'ignore'],
+				timeout: timeoutMs,
+				maxBuffer: 8 * 1024 * 1024,
 			});
 		} catch {
 			return '';
 		}
 	};
+
+/**
+ * Distinguish "not a git repo / git missing" from a clean repo (an
+ * empty status would otherwise look identical). Tools call this first.
+ */
+export const isGitRepo = (run: IGitRunner): boolean =>
+	run(['rev-parse', '--is-inside-work-tree']).trim() === 'true';
 
 export interface IGitStatusEntry {
 	readonly status: string;

@@ -28,9 +28,9 @@ export interface IRulePreset {
 	readonly id: string;
 	/** Framework family, e.g. `angular`, `react`, `vue`, `vanilla`. */
 	readonly framework: string;
-	readonly language: 'ts' | 'js';
-	/** The linter the preset targets (eslint for v1). */
-	readonly linter: 'eslint';
+	readonly language: 'ts' | 'js' | 'php';
+	/** The linter the preset targets (eslint for JS/TS, pint for PHP…). */
+	readonly linter: 'eslint' | 'pint';
 	/** Cache filename for the materialised ESLint config. */
 	readonly eslintConfigFile: string;
 	/** Cache filename for the materialised tsconfig (TS presets only). */
@@ -41,6 +41,8 @@ export interface IRulePreset {
 	readonly tsconfigContent?: string;
 	/** Short, agent-facing convention bullets. */
 	readonly conventions: readonly string[];
+	/** npm packages the materialised ESLint config needs installed. */
+	readonly requiredEslintDeps?: readonly string[];
 }
 
 /** Per-area resolution in the cache manifest. Arrays are priority-ordered. */
@@ -61,6 +63,8 @@ export interface IAreaRules {
  */
 export interface IRulesManifest {
 	readonly generatedAt: string;
+	/** Hash of mode + overrides + detected presets; regenerate on change. */
+	readonly fingerprint: string;
 	readonly mode: IRulesMode;
 	readonly projects: Readonly<Record<string, Readonly<Record<string, IAreaRules>>>>;
 }
