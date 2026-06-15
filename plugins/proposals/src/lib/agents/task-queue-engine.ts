@@ -21,7 +21,7 @@
  */
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile, rename } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
@@ -220,28 +220,42 @@ const ensureQueueFile = async (queuePath: string): Promise<void> => {
 };
 
 /**
- * Internal: load the queue, validating it. If the file does not exist
- * or is empty, returns an empty queue.
+ * Internal: load the queue. Missing/empty → empty queue.
+ * Corrupt JSON → rename to .corrupt-<ts> backup and throw.
  */
 const loadOrEmptyQueue = async (
 	queuePath: string
 ): Promise<IPersistentTaskQueue> => {
-	if (!existsSync(queuePath)) {
-		return { version: 1, entries: [] };
-	}
+	if (!existsSync(queuePath)) return { version: 1, entries: [] };
+	let raw: string;
 	try {
-		const raw = readFileSync(queuePath, 'utf8');
-		const parsed = JSON.parse(raw) as {
-			version?: number;
-			entries?: unknown[];
-		};
-		if (!parsed || !Array.isArray(parsed.entries)) {
-			return { version: 1, entries: [] };
-		}
-		return parsed as IPersistentTaskQueue;
-	} catch {
-		return { version: 1, entries: [] };
+		raw = await readFile(queuePath, 'utf8');
+	} catch (err: unknown) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return { version: 1, entries: [] };
+		throw err;
 	}
+	if (!raw.trim()) return { version: 1, entries: [] };
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch (err) {
+		const backup = `${queuePath}.corrupt-${Date.now()}`;
+		try { await rename(queuePath, backup); } catch { /* best effort */ }
+		throw new TaskQueueActionError(
+			'load',
+			`Queue file at "${queuePath}" has corrupt JSON; backed up to "${backup}": ${String(err)}`
+		);
+	}
+	const p = parsed as { version?: number; entries?: unknown[] };
+	if (!p || !Array.isArray(p.entries)) {
+		const backup = `${queuePath}.corrupt-${Date.now()}`;
+		try { await rename(queuePath, backup); } catch { /* best effort */ }
+		throw new TaskQueueActionError(
+			'load',
+			`Queue file at "${queuePath}" has invalid schema; backed up to "${backup}".`
+		);
+	}
+	return parsed as IPersistentTaskQueue;
 };
 
 const computePosition = (

@@ -12,10 +12,9 @@
  * include a digest without scanning the queue itself.
  */
 
-import { readFile, rename, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { readFile, rename } from 'node:fs/promises';
 
+import { writeFileAtomic } from '@cartago-git/mcp-core/public';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -49,23 +48,38 @@ const ClosedTaskRecordSchema = z.object({
 const ClosedTasksLogSchema = z.array(ClosedTaskRecordSchema);
 
 // ---------------------------------------------------------------------------
-// readClosedTasks — defensive read, returns empty array on any error
+// readClosedTasks — returns empty on ENOENT; renames corrupt file + returns []
 // ---------------------------------------------------------------------------
+
+const quarantineCorruptLog = async (logPath: string): Promise<void> => {
+	const backup = `${logPath}.corrupt-${Date.now()}`;
+	try { await rename(logPath, backup); } catch { /* best effort */ }
+};
 
 export const readClosedTasks = async (
 	logPath: string
 ): Promise<IClosedTaskRecord[]> => {
+	let raw: string;
 	try {
-		const raw = await readFile(logPath, 'utf8');
-		const parsed = JSON.parse(raw) as unknown;
-		const result = ClosedTasksLogSchema.safeParse(parsed);
-		if (!result.success) {
-			return [];
-		}
-		return result.data as IClosedTaskRecord[];
+		raw = await readFile(logPath, 'utf8');
+	} catch (err: unknown) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
+		throw err;
+	}
+	if (!raw.trim()) return [];
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
 	} catch {
+		await quarantineCorruptLog(logPath);
 		return [];
 	}
+	const result = ClosedTasksLogSchema.safeParse(parsed);
+	if (!result.success) {
+		await quarantineCorruptLog(logPath);
+		return [];
+	}
+	return result.data as IClosedTaskRecord[];
 };
 
 // ---------------------------------------------------------------------------
@@ -91,11 +105,5 @@ export const appendToClosedTasks = async (
 			? updated.slice(updated.length - MAX_ENTRIES)
 			: updated;
 
-	// Atomic write: tmp + rename
-	const tmpPath = join(
-		tmpdir(),
-		`mcp-core-ctl-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
-	);
-	await writeFile(tmpPath, JSON.stringify(trimmed, null, 2), 'utf8');
-	await rename(tmpPath, logPath);
+	await writeFileAtomic(logPath, JSON.stringify(trimmed, null, 2));
 };

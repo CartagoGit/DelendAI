@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, rename } from 'node:fs/promises';
 
 import { withFileMutex, writeFileAtomic } from '@cartago-git/mcp-core/public';
 
@@ -70,12 +70,25 @@ export const createSubagentRegistryStore = (
 ): ISubagentRegistryStore => {
 	const read = async (): Promise<ISubagentRegistry> => {
 		if (!existsSync(path)) return emptyRegistry();
+		let raw: string;
 		try {
-			const raw = await readFile(path, 'utf8');
-			return migrate(JSON.parse(raw) as unknown);
-		} catch {
-			return emptyRegistry();
+			raw = await readFile(path, 'utf8');
+		} catch (err: unknown) {
+			if ((err as NodeJS.ErrnoException).code === 'ENOENT') return emptyRegistry();
+			throw err;
 		}
+		if (!raw.trim()) return emptyRegistry();
+		let parsed: unknown;
+		try {
+			parsed = JSON.parse(raw);
+		} catch (err) {
+			const backup = `${path}.corrupt-${Date.now()}`;
+			try { await rename(path, backup); } catch { /* best effort */ }
+			throw new Error(
+				`Agent registry at "${path}" is corrupt (invalid JSON: ${String(err)}); backed up to "${backup}".`
+			);
+		}
+		return migrate(parsed);
 	};
 
 	// Atomic write: temp-in-same-dir + rename, so a reader never sees a
