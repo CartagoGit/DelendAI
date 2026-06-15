@@ -231,11 +231,35 @@ export const runContinueProposal = async (
 			nextAction:
 				'Create a proposal under the proposals dir and run sync_proposals.',
 		});
+	// Anti-loop [N9]: an `in_progress` proposal already covered by an active
+	// lock is being worked by someone. Selecting it again only produces a
+	// claim→lock-conflict→auto_work→same-proposal mini-loop, so exclude it
+	// from the primary pick. `proposalIdOf` maps a lock's task_id (e.g.
+	// `p81-slice-2`) back to its proposal base id (`p81`).
+	const proposalIdOf = (value: string): string =>
+		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
+	const lockedProposalIds = new Set(
+		readActiveLocks(options.lockPathAbs).map((lock) =>
+			proposalIdOf(lock.taskId)
+		)
+	);
+	const isClaimedElsewhere = (entry: IIndexEntry): boolean =>
+		entry.status === 'in_progress' &&
+		lockedProposalIds.has(proposalIdOf(entry.id));
+	const free = actionable.filter((entry) => !isClaimedElsewhere(entry));
+	if (free.length === 0)
+		return json({
+			kind: 'all-claimed',
+			reason:
+				'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
+			nextAction:
+				'Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or stop and report that all work is claimed.',
+		});
 	const rank = (id: string): number => {
 		const index = cascade.indexOf(familyOf(id));
 		return index < 0 ? cascade.length : index;
 	};
-	const next = [...actionable].sort((a, b) => {
+	const next = [...free].sort((a, b) => {
 		const byFamily = rank(a.id) - rank(b.id);
 		return byFamily !== 0 ? byFamily : a.id.localeCompare(b.id);
 	})[0];

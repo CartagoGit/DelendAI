@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
@@ -313,9 +314,9 @@ export const runDoctor = async (
  * If a server already exists, the blueprint's notes explain how to
  * integrate it with mcp-core organically.
  */
-export const prepareServerBlueprintOnStart = (
+export const prepareServerBlueprintOnStart = async (
 	args: IMcpCoreCliArgs
-): { written: boolean; path: string } => {
+): Promise<{ written: boolean; path: string }> => {
 	const cacheDir = args.tokens['cacheDir'] ?? DEFAULT_CORE_PATHS.cacheDir;
 	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
 	const absPath = join(args.workspace, relPath);
@@ -328,8 +329,8 @@ export const prepareServerBlueprintOnStart = (
 	const blueprint = buildServerBlueprint(analysis, {
 		tests: args.mcpServerTests,
 	});
-	mkdirSync(dirname(absPath), { recursive: true });
-	writeFileSync(
+	await mkdir(dirname(absPath), { recursive: true });
+	await writeFile(
 		absPath,
 		`${JSON.stringify({ generatedAt: new Date().toISOString(), blueprint }, null, '\t')}\n`,
 		'utf8'
@@ -352,20 +353,6 @@ export const runCli = async (
 		return;
 	}
 
-	// First start: prepare the project-specific server blueprint.
-	if (args.mcpServerCreate) {
-		try {
-			const result = prepareServerBlueprintOnStart(args);
-			if (result.written) {
-				process.stderr.write(
-					`[mcp-core] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
-				);
-			}
-		} catch {
-			// best-effort; never block boot.
-		}
-	}
-
 	const { config, loadResult } = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
@@ -373,4 +360,19 @@ export const runCli = async (
 	}
 	const assembled = await createMcpServer(config);
 	await assembled.start();
+
+	// Fast boot: the one-time server blueprint is prepared AFTER the server
+	// is live and off the critical path — analysing the repo + writing the
+	// cache file must never delay the first MCP response. Best-effort. [N8]
+	if (args.mcpServerCreate) {
+		void prepareServerBlueprintOnStart(args)
+			.then((result) => {
+				if (result.written) {
+					process.stderr.write(
+						`[mcp-core] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
+					);
+				}
+			})
+			.catch(() => undefined);
+	}
 };

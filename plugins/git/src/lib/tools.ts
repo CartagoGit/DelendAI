@@ -3,13 +3,15 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
-import { gitChanged, gitDiffStat, gitLog, gitStatus, isGitRepo } from './git';
+import { checkRepo, gitChanged, gitDiffStat, gitLog, gitStatus } from './git';
 import type { IGitRunner } from './git';
 
-const NOT_A_REPO = () =>
+const NOT_A_REPO = (reason = 'not a git repository') =>
 	toolError(
-		'not a git repository (or git is unavailable here)',
-		'Run inside a git working tree.'
+		reason,
+		reason.includes('not available')
+			? 'Install git or run where git is on PATH.'
+			: 'Run inside a git working tree.'
 	);
 
 export interface IGitToolOptions {
@@ -38,10 +40,12 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns the current branch, whether the tree is clean, and the changed entries (status + path). Read-only.',
 					},
-					async () =>
-						isGitRepo(options.run)
-							? toolJson(gitStatus(options.run))
-							: NOT_A_REPO()
+					async () => {
+						const repo = await checkRepo(options.run);
+						return repo.ok
+							? toolJson(await gitStatus(options.run))
+							: NOT_A_REPO(repo.reason);
+					}
 				);
 			},
 		},
@@ -56,10 +60,12 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns just the list of changed file paths. Cheapest way to see what you have touched. Read-only.',
 					},
-					async () =>
-						isGitRepo(options.run)
-							? toolJson({ changed: gitChanged(options.run) })
-							: NOT_A_REPO()
+					async () => {
+						const repo = await checkRepo(options.run);
+						return repo.ok
+							? toolJson({ changed: await gitChanged(options.run) })
+							: NOT_A_REPO(repo.reason);
+					}
 				);
 			},
 		},
@@ -81,11 +87,11 @@ export const buildGitToolRegistrations = (
 					async (args: {
 						staged?: boolean | undefined;
 						path?: string | undefined;
-					}) =>
-						!isGitRepo(options.run)
-							? NOT_A_REPO()
-							: toolJson({
-							stat: gitDiffStat(options.run, {
+					}) => {
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
+						return toolJson({
+							stat: await gitDiffStat(options.run, {
 								...(args.staged !== undefined
 									? { staged: args.staged }
 									: {}),
@@ -93,7 +99,8 @@ export const buildGitToolRegistrations = (
 									? { path: args.path }
 									: {}),
 							}),
-						})
+						});
+					}
 				);
 			},
 		},
@@ -110,12 +117,15 @@ export const buildGitToolRegistrations = (
 						inputSchema: z.object({ limit: z.number().optional() }),
 					},
 					async (args: { limit?: number | undefined }) => {
-						if (!isGitRepo(options.run)) return NOT_A_REPO();
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
 						const limit = Math.max(
 							1,
 							Math.min(100, Math.floor(args.limit ?? 10))
 						);
-						return toolJson({ commits: gitLog(options.run, limit) });
+						return toolJson({
+							commits: await gitLog(options.run, limit),
+						});
 					}
 				);
 			},

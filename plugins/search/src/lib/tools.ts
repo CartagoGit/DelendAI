@@ -48,7 +48,7 @@ export const buildSearchToolRegistrations = (
 						maxResults?: number | undefined;
 						caseSensitive?: boolean | undefined;
 					}) => {
-						const result = searchWorkspace(
+						const result = await searchWorkspace(
 							options.workspaceRootAbs,
 							args.query,
 							{

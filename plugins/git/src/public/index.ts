@@ -7,7 +7,7 @@ export { default } from '../index';
 
 export {
 	createGitRunner,
-	isGitRepo,
+	checkRepo,
 	parseStatus,
 	parseLog,
 	gitStatus,
@@ -17,6 +17,8 @@ export {
 } from '../lib/git';
 export type {
 	IGitRunner,
+	IGitRunResult,
+	IRepoCheck,
 	IGitStatus,
 	IGitStatusEntry,
 	IGitCommit,

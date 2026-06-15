@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 /** One matching line. `file` is relative to the workspace root. */
@@ -61,11 +61,11 @@ const clampMaxResults = (value: number | undefined): number => {
  * MCP host serves. mcp-core stays agnostic: roots/extensions/ignored
  * dirs are all injectable.
  */
-export const searchWorkspace = (
+export const searchWorkspace = async (
 	workspaceRootAbs: string,
 	query: string,
 	options: ISearchOptions = {}
-): ISearchResult => {
+): Promise<ISearchResult> => {
 	const trimmed = query.trim();
 	const maxResults = clampMaxResults(options.maxResults);
 	if (trimmed.length === 0) {
@@ -87,13 +87,13 @@ export const searchWorkspace = (
 	let scanned = 0;
 	let truncated = false;
 
-	const visitFile = (absPath: string): void => {
+	const visitFile = async (absPath: string): Promise<void> => {
 		if (truncated) return;
 		let raw: string;
 		try {
-			const st = statSync(absPath);
+			const st = await stat(absPath);
 			if (!st.isFile() || st.size > MAX_FILE_BYTES) return;
-			raw = readFileSync(absPath, 'utf8');
+			raw = await readFile(absPath, 'utf8');
 		} catch {
 			return;
 		}
@@ -119,11 +119,11 @@ export const searchWorkspace = (
 		}
 	};
 
-	const walk = (absDir: string): void => {
+	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
 		let entries;
 		try {
-			entries = readdirSync(absDir, { withFileTypes: true });
+			entries = await readdir(absDir, { withFileTypes: true });
 		} catch {
 			return;
 		}
@@ -133,10 +133,10 @@ export const searchWorkspace = (
 			if (truncated) return;
 			if (entry.isDirectory()) {
 				if (ignoreDirs.has(entry.name)) continue;
-				walk(join(absDir, entry.name));
+				await walk(join(absDir, entry.name));
 			} else if (entry.isFile()) {
 				if (extensions.has(extensionOf(entry.name))) {
-					visitFile(join(absDir, entry.name));
+					await visitFile(join(absDir, entry.name));
 				}
 			}
 		}
@@ -145,16 +145,9 @@ export const searchWorkspace = (
 	for (const root of roots) {
 		if (truncated) break;
 		const absRoot = join(workspaceRootAbs, root);
-		if (!existsSync(absRoot)) continue;
-		const st = (() => {
-			try {
-				return statSync(absRoot);
-			} catch {
-				return null;
-			}
-		})();
-		if (st?.isFile()) visitFile(absRoot);
-		else if (st?.isDirectory()) walk(absRoot);
+		const st = await stat(absRoot).catch(() => null);
+		if (st?.isFile()) await visitFile(absRoot);
+		else if (st?.isDirectory()) await walk(absRoot);
 	}
 
 	return { query, hits, truncated, scanned };
