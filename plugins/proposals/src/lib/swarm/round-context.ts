@@ -29,7 +29,6 @@ import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { mkdir, rename, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import { CLOSED_CHECKPOINT_STATUSES } from './runtime-recovery';
@@ -823,14 +822,6 @@ export const computeCoreDocHashes = (
 	return result;
 };
 
-/**
- * Resolve the default digest path against the current workspace.
- *
- * Public so the tool layer can call it for logging; the internal
- * `writeRoundContextDigest` / `readRoundContextDigest` accept any path.
- */
-export const resolveDefaultDigestPath = (): string =>
-	resolveWorkspacePath(DEFAULT_ROUND_CONTEXT_PATH);
 
 /**
  * Read a digest from disk.

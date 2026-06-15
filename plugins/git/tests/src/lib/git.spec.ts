@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	checkRepo,
 	gitChanged,
 	gitLog,
 	gitStatus,
@@ -35,15 +36,34 @@ describe('git parsers', () => {
 		]);
 	});
 
-	it('threads an injected runner through the helpers', () => {
-		const run: IGitRunner = (args) => {
-			if (args[0] === 'status') return '## dev\n M f.ts';
-			if (args[0] === 'log') return 'h1\ts1';
-			return '';
+	it('threads an injected runner through the helpers', async () => {
+		const run: IGitRunner = async (args) => {
+			if (args[0] === 'status') return { ok: true, output: '## dev\n M f.ts' };
+			if (args[0] === 'log') return { ok: true, output: 'h1\ts1' };
+			return { ok: true, output: '' };
 		};
-		expect(gitStatus(run).branch).toBe('dev');
-		expect(gitChanged(run)).toEqual(['f.ts']);
-		expect(gitLog(run, 5)[0]?.subject).toBe('s1');
+		expect((await gitStatus(run)).branch).toBe('dev');
+		expect(await gitChanged(run)).toEqual(['f.ts']);
+		expect((await gitLog(run, 5))[0]?.subject).toBe('s1');
+	});
+
+	it('distinguishes git-unavailable from not-a-repo (structured result)', async () => {
+		const missing: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: 'git is not installed or not on PATH',
+		});
+		expect((await checkRepo(missing)).reason).toBe('git is not available here');
+
+		const notRepo: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: "fatal: not a git repository (or any of the parent directories): .git",
+		});
+		expect((await checkRepo(notRepo)).reason).toBe('not a git repository');
+
+		const clean: IGitRunner = async () => ({ ok: true, output: 'true\n' });
+		expect(await checkRepo(clean)).toEqual({ ok: true });
 	});
 });
 

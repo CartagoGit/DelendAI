@@ -253,8 +253,12 @@ import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/public';
 // The core is project-agnostic. Add domain behaviour (e.g. a proposal
 // workflow) by loading a plugin via the mcp-core CLI
 // (\`mcp-core --plugins=proposals\`) rather than wiring it here.
-export const buildHostConfig = (): IMcpCoreHostConfig => {
-	const workspace = createWorkspacePathProvider(process.cwd());
+// Hermetic: the workspace root is injected by the caller (the server
+// entry point), never read from \`process.cwd()\` here — a lib must not
+// guess where the project lives, so this stays correct under CI,
+// containers and tests.
+export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
+	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {
 		metadata: {
 			name: 'mcp-server-${prefix}',
@@ -289,8 +293,11 @@ export const scaffoldServerEntryFiles = (
 
 import { buildHostConfig } from './lib/shared/host-config';
 
-export async function startServer(): Promise<void> {
-	const assembled = await createMcpServer(buildHostConfig());
+// The entry point is the ONE place allowed to read the launch directory
+// (like mcp-core's own CLI). It resolves the workspace root and injects
+// it into the (hermetic) host config.
+export async function startServer(workspaceRoot = process.cwd()): Promise<void> {
+	const assembled = await createMcpServer(buildHostConfig(workspaceRoot));
 	await assembled.start();
 }
 `,

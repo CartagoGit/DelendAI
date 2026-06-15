@@ -30,13 +30,23 @@ export const runAutoWork = async (
 	const next = JSON.parse(
 		(await runContinueProposal({ mode: 'auto' }, options)).content[0]?.text ??
 			'{}'
-	) as { kind: string; proposalId?: string; file?: string };
+	) as {
+		kind: string;
+		proposalId?: string;
+		file?: string;
+		reason?: string;
+		nextAction?: string;
+	};
 
 	if (next.kind !== 'next-proposal') {
+		// `all-claimed` [N9]: every actionable proposal is in_progress under
+		// an active lock. Surface the anti-loop guidance verbatim so the
+		// agent stops instead of re-calling auto_work on the same proposal.
 		return json({
 			state: 'idle',
-			reason: 'no actionable proposal',
+			reason: next.reason ?? 'no actionable proposal',
 			nextAction:
+				next.nextAction ??
 				'Create a proposal under the proposals dir and run sync_proposals.',
 		});
 	}

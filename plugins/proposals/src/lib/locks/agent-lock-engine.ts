@@ -14,7 +14,6 @@ import { readFile } from 'node:fs/promises';
 import { writeFileAtomic, withFileMutex } from '@cartago-git/mcp-core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
-import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
 
 export type IAgentLockAction = 'claim' | 'release' | 'status' | 'gc';
 
@@ -57,8 +56,17 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
-const getLockPath = (deps: IAgentLockDeps = {}): string =>
-	deps.lockPath ?? resolveWorkspacePath(DEFAULT_PATH_LAYOUT.lockFile);
+const getLockPath = (deps: IAgentLockDeps = {}): string => {
+	// Hermetic: the absolute lock path must be injected from the host's
+	// `ctx.workspace`. No `process.cwd()` fallback — an engine never guesses
+	// where the workspace is. [N6]
+	if (!deps.lockPath) {
+		throw new Error(
+			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.'
+		);
+	}
+	return deps.lockPath;
+};
 
 const getToolName = (deps: IAgentLockDeps = {}): string =>
 	deps.toolName ?? 'agent_lock';

@@ -57,4 +57,42 @@ describe('continue_proposal (serial cascade)', () => {
 		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
 		expect(out.kind).toBe('slice-mode-error');
 	});
+
+	it('skips in_progress proposals locked by another agent (anti-loop) [N9]', async () => {
+		// f1 is in_progress AND locked → must not be re-selected; p2 (free) wins.
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
+					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
+				],
+			})
+		);
+		writeFileSync(
+			options.lockPathAbs,
+			JSON.stringify({ in_flight: [{ task_id: 'f1-fix-slice-1', agent: 'falcon' }] })
+		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('p2-second');
+	});
+
+	it('returns all-claimed (no loop) when every actionable proposal is locked [N9]', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
+				],
+			})
+		);
+		writeFileSync(
+			options.lockPathAbs,
+			JSON.stringify({ in_flight: [{ task_id: 'f1-fix', agent: 'owl' }] })
+		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('all-claimed');
+		expect(out.nextAction).toContain('Do NOT retry');
+	});
 });

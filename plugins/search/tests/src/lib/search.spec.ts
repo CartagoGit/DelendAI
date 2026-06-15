@@ -29,8 +29,8 @@ describe('searchWorkspace', () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('finds matches with file (relative) and 1-based line numbers', () => {
-		const res = searchWorkspace(root, 'foo');
+	it('finds matches with file (relative) and 1-based line numbers', async () => {
+		const res = await searchWorkspace(root, 'foo');
 		const files = res.hits.map((h) => h.file);
 		expect(files).toContain('src/a.ts');
 		expect(files).toContain('src/b.md');
@@ -39,35 +39,35 @@ describe('searchWorkspace', () => {
 		expect(first?.text).toContain('foo');
 	});
 
-	it('skips node_modules and non-text extensions by default', () => {
-		const res = searchWorkspace(root, 'foo');
+	it('skips node_modules and non-text extensions by default', async () => {
+		const res = await searchWorkspace(root, 'foo');
 		const files = res.hits.map((h) => h.file);
 		expect(files.some((f) => f.includes('node_modules'))).toBe(false);
 		expect(files).not.toContain('data.bin.png');
 	});
 
-	it('is case-insensitive by default and case-sensitive on request', () => {
-		expect(searchWorkspace(root, 'FOO').hits.length).toBeGreaterThan(0);
-		expect(searchWorkspace(root, 'FOO', { caseSensitive: true }).hits).toEqual(
-			[]
-		);
+	it('is case-insensitive by default and case-sensitive on request', async () => {
+		expect((await searchWorkspace(root, 'FOO')).hits.length).toBeGreaterThan(0);
+		expect(
+			(await searchWorkspace(root, 'FOO', { caseSensitive: true })).hits
+		).toEqual([]);
 	});
 
-	it('returns empty for a blank query without scanning', () => {
-		const res = searchWorkspace(root, '   ');
+	it('returns empty for a blank query without scanning', async () => {
+		const res = await searchWorkspace(root, '   ');
 		expect(res.hits).toEqual([]);
 		expect(res.scanned).toBe(0);
 	});
 
-	it('caps results and flags truncated', () => {
+	it('caps results and flags truncated', async () => {
 		write(root, 'many.txt', Array.from({ length: 10 }, () => 'foo').join('\n'));
-		const res = searchWorkspace(root, 'foo', { maxResults: 3 });
+		const res = await searchWorkspace(root, 'foo', { maxResults: 3 });
 		expect(res.hits).toHaveLength(3);
 		expect(res.truncated).toBe(true);
 	});
 
-	it('honours injected roots', () => {
-		const res = searchWorkspace(root, 'foo', { roots: ['src'] });
+	it('honours injected roots', async () => {
+		const res = await searchWorkspace(root, 'foo', { roots: ['src'] });
 		expect(res.hits.every((h) => h.file.startsWith('src/'))).toBe(true);
 	});
 });
