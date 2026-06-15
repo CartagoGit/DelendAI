@@ -11,8 +11,8 @@
 > proposal_board + knowledge multi-agent + prompt orchestrate), R1, **R2**, M6, R5,
 > R6, R7, R8, R9, R10, **M10**, tokens (overview compact/tag), rules-laravel
 > (linter agnóstico).
-> ⏸️ pendientes — M4, M5, M7, M8, R12, R13, Tier3/plataforma,
-> npm publish. **R14 también HECHO** (sesión Opus). Detalle en
+> ⏸️ pendientes — M4, M5, M8, R12, R13, Tier3/plataforma,
+> npm publish. **R14 y M7 también HECHOS** (sesión Opus). Detalle en
 > `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
 > (304+10 skip), verdes.**
 >
@@ -28,9 +28,9 @@
 >
 > ### 🔖 PUNTO DE CONTINUACIÓN (act. 2026-06-15, sesión Opus desde oficina)
 >
-> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10 y R2
-> cerrados con tests** en esta sesión (314 verdes). Siguiente: **R14** (rename
-> cosmético) y **M7** (schema de lock).
+> **Toda la capa P0 FATAL está cerrada y verde** (F1–F5). Además **M10, R2, R14
+> y M7 cerrados con tests** en esta sesión (316 verdes). Siguiente sugerido:
+> M4/M5 (agnosticismo) u M8 (acceptance exec).
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
@@ -50,6 +50,16 @@
 >
 > **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-core
 > (ver corrección de premisa arriba).
+>
+> **M7 (schema de lock único) — HECHO (sesión Opus):** el lector
+> `persistent-task-queue` aceptaba DOS formatos (`files`/`claimed_at` viejo y
+> `ownership`/`started_at` canónico) vía un `.transform()` de Zod. Ahora
+> `ILockEntry` y `LockEntrySchema` usan SOLO el formato canónico que escribe
+> `<prefix>_agent_lock` (agent-lock-engine): `{ task_id, agent, ownership[],
+> started_at, last_seen? }`. Consumidores `promote`/`reportBackpressure`
+> migrados de `.files`→`.ownership`; `zombie-reconcile.loadLockSnapshotLocal`
+> dejó de aceptar el campo `claimed_at` del disco (lee `started_at ?? last_seen`).
+> Specs: `loadLockSnapshot` canónico + rechazo del formato viejo. 316 verdes.
 >
 > **R14 (rename subagent-* → agent-*) — HECHO (sesión Opus):** identificadores de
 > código del subsistema de registry renombrados (`ISubagent*`→`IAgent*`,
@@ -92,13 +102,8 @@
 > 1. ✅ **M10 (corrupto ≠ vacío)** — HECHO con tests (ver bloque de arriba).
 > 2. ✅ **R2 (trivial)** — `coreToolRegistrations()` vacío eliminado de
 >    `create-mcp-server.ts` y de `public/index.ts`.
-> 3. **R14** (cosmético, amplio) — renombrar interno `subagent-*` → `agent-*`
->    (la tool pública ya es `agent_names`). Cuidado: `subagent-registry-store`,
->    `SUBAGENT_CONVENTIONS`, campos `subagent*` en round-context/digest. Mantener
->    compat de schema en disco (no romper registries existentes de Affairs).
-> 4. **M7** (unificar schema de lock) — quitar `.transform()` de compat
->    `files/claimed_at` → `ownership/started_at`. **Riesgo Affairs:** revisar que
->    no haya locks en disco con el formato viejo.
+> 3. ✅ **R14** (cosmético, amplio) — HECHO (ver bloque de arriba).
+> 4. ✅ **M7** (unificar schema de lock) — HECHO (ver bloque de arriba).
 > 5. **M4** (tracks configurables) + **M5** (carpetas `paused/demos` inyectables) —
 >    vía `ctx.options` del plugin proposals; `scanLiveProposalEntries` ya quedó
 >    listo para recibir carpetas extra.
@@ -164,7 +169,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M4 | **`IProposalTrack` con vocabulario del host** (`ui-demo`, `game-demo`, `scaffold`…) → rompe agnosticismo | S·G | tracks configurables por `mcp-core.config.json` |
 | M5 | **`paused/demos` hardcodeado** (TODO sin resolver) en round-context/sync | S·G | carpetas inyectables vía opciones del plugin |
 | M6 | **Modelo `MiniMax-M3 (customendpoint)` hardcoded** en scaffold-host | S·G·C | omitir o pedir como opción `<provider/model>` |
-| M7 | **Schema de lock dual** (`files`/`claimed_at` vs `ownership`/`started_at`) con `.transform()` de compat | S·G | migrar a formato único, quitar capa de compat |
+| M7 | ✅ **HECHO** — schema de lock único: `ILockEntry`/`LockEntrySchema` en `persistent-task-queue` usan el formato canónico del writer (`ownership`/`started_at`/`last_seen`); `.transform()` de compat eliminado; consumidores (`promote`/`reportBackpressure`) y `zombie-reconcile` alineados. Spec `loadLockSnapshot` (M7) | S·G | hecho |
 | M8 | **Acceptance commands** sin `cwd` inyectado, `split(/\s+/)` rompe comillas/pipes, timeout no mata descendientes (zombies) | C | `cwd=workspace`, shell declarada/parser argv, process groups |
 | M9 | **Scaffold de agentes incoherente** con el host generado (ordena llamar tools que el host no registra; no integra `proposals`) | C | generar solo tools existentes / wirear proposals |
 | M10 | ✅ **HECHO** — corrupto ≠ vacío: helper `quarantineCorruptFile` + `CorruptFileError`; estado crítico (queue/registry/memory) preserva + error estructurado en capa de tool; closed-tasks preserva + warning + sigue. Specs en core/proposals/memory | C | hecho |
@@ -267,7 +272,7 @@ backpressure.
 ### P0 — Fiabilidad del estado ✅ COMPLETADO (2026-06-15)
 1. ✅ **Store transaccional** (lock/queue/registry/memory): atomic write +
    `withFileMutex` (mutex interproceso) en el read-modify-write. [F1·F4·M1] —
-   *queda M7 (unificar schema lock), no bloqueante.*
+   ✅ **M7 (schema de lock único) también HECHO.**
 2. ✅ **Erradicar `process.cwd()`**; `root` requerido en engines. [F2]
 3. ✅ **`proposals` deriva rutas de `ctx`** (`--cacheDir`/`--docsDir` reales). [F3]
 4. ✅ **`task_queue` recibe `lockPath` inyectado** en `report`. [F5]

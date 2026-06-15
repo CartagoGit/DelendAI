@@ -123,11 +123,15 @@ export interface IPersistentTaskQueue {
 // Lock snapshot types (used by promote / reportBackpressure)
 // ---------------------------------------------------------------------------
 
+// Single source of truth: the on-disk lock shape written by
+// `<prefix>_agent_lock` (agent-lock-engine). No compat alias for the old
+// `files`/`claimed_at` shape — that dual schema was M7's debt.
 export interface ILockEntry {
 	readonly task_id: string;
 	readonly agent: string;
-	readonly files: readonly string[];
-	readonly claimed_at: string;
+	readonly ownership: readonly string[];
+	readonly started_at: string;
+	readonly last_seen?: string;
 }
 
 export interface ILockRelease {
@@ -500,7 +504,7 @@ export const promote = async (
 
 	// Check if any waitFor file is in the lock's in_flight
 	const inFlightFiles = new Set(
-		lockSnapshot.in_flight.flatMap((lockEntry) => lockEntry.files)
+		lockSnapshot.in_flight.flatMap((lockEntry) => lockEntry.ownership)
 	);
 
 	const blockedBy: Array<{ file: string; blockingTaskId: string | null }> =
@@ -509,7 +513,7 @@ export const promote = async (
 		if (inFlightFiles.has(wf.file)) {
 			// find which task holds it
 			const holder = lockSnapshot.in_flight.find((le) =>
-				le.files.includes(wf.file)
+				le.ownership.includes(wf.file)
 			);
 			blockedBy.push({
 				file: wf.file,
@@ -663,7 +667,7 @@ export const reportBackpressure = (
 	// Release signal backlog: queued entries whose waitFor files are all free
 	// (not in any in_flight task)
 	const inFlightFiles = new Set(
-		lockSnapshot.in_flight.flatMap((le) => le.files)
+		lockSnapshot.in_flight.flatMap((le) => le.ownership)
 	);
 	const releaseSignalBacklog = queuedEntries.filter((entry) => {
 		if (entry.waitFor.length === 0) return false;
@@ -742,29 +746,18 @@ export const subscribe = (
 // loadLockSnapshot — reads .cache/agents.lock.json + closedTasks.json
 // ---------------------------------------------------------------------------
 
-// The actual `<prefix>_agent_lock` writes `ownership` (not `files`) and
-// `started_at` / `last_seen` (not `claimed_at`). The schema below is
-// tolerant of both the historical shape (T1/T2 fixtures used `files` +
-// `claimed_at`) and the current shape (T3 and later, used by
-// `<prefix>_agent_lock` in production).
-const LockEntrySchema = z
-	.object({
-		task_id: z.string(),
-		agent: z.string(),
-		files: z.array(z.string()).optional(),
-		ownership: z.array(z.string()).optional(),
-		claimed_at: z.string().optional(),
-		started_at: z.string().optional(),
-		last_seen: z.string().optional(),
-	})
-	.transform(
-		(raw): ILockEntry => ({
-			task_id: raw.task_id,
-			agent: raw.agent,
-			files: raw.files ?? raw.ownership ?? [],
-			claimed_at: raw.claimed_at ?? raw.started_at ?? raw.last_seen ?? '',
-		})
-	);
+// Single canonical lock shape, matching exactly what `<prefix>_agent_lock`
+// (agent-lock-engine) writes: `ownership` + `started_at` (+ optional
+// `last_seen`/`parent_task_id`). The historical `files`/`claimed_at` shape is
+// no longer accepted — M7 removed that compat layer.
+const LockEntrySchema = z.object({
+	task_id: z.string(),
+	agent: z.string(),
+	ownership: z.array(z.string()),
+	started_at: z.string(),
+	last_seen: z.string().optional(),
+	parent_task_id: z.string().optional(),
+});
 
 const LockFileSchema = z.object({
 	version: z.number(),

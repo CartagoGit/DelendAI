@@ -57,9 +57,11 @@ const loadLockSnapshotLocal = (
 			return {
 				task_id: typeof item.task_id === 'string' ? item.task_id : '',
 				agent: typeof item.agent === 'string' ? item.agent : '',
-				claimed_at: String(
-					item.claimed_at ?? item.started_at ?? item.last_seen ?? ''
-				),
+				// `claimed_at` here is a local abstraction for "lock claim
+				// time"; on disk the canonical field is `started_at` (M7
+				// dropped the old `claimed_at` disk field). `last_seen` is a
+				// last-resort fallback for a lock missing `started_at`.
+				claimed_at: String(item.started_at ?? item.last_seen ?? ''),
 			};
 		});
 		return { in_flight };
