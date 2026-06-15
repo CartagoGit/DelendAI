@@ -316,7 +316,7 @@ backpressure.
 13. **Endurecer plugins**: `git` errores+timeout+clamp, `memory` quotas+atomic, `quality` async+cancelable. [R8·R9·R10]
 14. **Tokens**: envelope compacto en proposals, paginado/`fields`, `overview compact:true`. [§4]
 15. **DRY/limpieza**: `joinRel` a public, eliminar `coreToolRegistrations` vacío, renombrar `subagent-*`. [R1·R2·R14]
-16. **CI**: typecheck + tests + pack/install smoke + cobertura mínima por paquete. [R17]
+16. ✅ **CI HECHO** (`.github/workflows/ci.yml`): job `validate` (typecheck + tests con Bun + frozen lockfile) y job `pack-smoke` (`npm pack --dry-run` por paquete, valida la superficie `exports` cerrada de R13) en push/PR a main. Pendiente: cobertura mínima. [R17]
 
 ### P3 — Evolución / plataforma de referencia
 17. **`proposals` por capacidades** (store/locks/queue/swarm) + presets `minimal/standard/swarm`. [C]
