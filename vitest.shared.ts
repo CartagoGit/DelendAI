@@ -14,6 +14,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const memory = resolve(workspaceRoot, 'plugins/memory/src');
 	const git = resolve(workspaceRoot, 'plugins/git/src');
 	const quality = resolve(workspaceRoot, 'plugins/quality/src');
+	const search = resolve(workspaceRoot, 'plugins/search/src');
 	return [
 		{
 			find: '@cartago-git/mcp-core/public',
@@ -83,6 +84,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@cartago-git/mcp-quality',
 			replacement: resolve(quality, 'index.ts'),
+		},
+		{
+			find: '@cartago-git/mcp-search/public',
+			replacement: resolve(search, 'public/index.ts'),
+		},
+		{
+			find: /^@cartago-git\/mcp-search\/lib\/(.*)$/,
+			replacement: resolve(search, 'lib') + '/$1',
+		},
+		{
+			find: '@cartago-git/mcp-search',
+			replacement: resolve(search, 'index.ts'),
 		},
 	];
 };
