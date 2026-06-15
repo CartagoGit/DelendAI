@@ -12,9 +12,9 @@
  * include a digest without scanning the queue itself.
  */
 
-import { readFile, rename } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -48,12 +48,21 @@ const ClosedTaskRecordSchema = z.object({
 const ClosedTasksLogSchema = z.array(ClosedTaskRecordSchema);
 
 // ---------------------------------------------------------------------------
-// readClosedTasks — returns empty on ENOENT; renames corrupt file + returns []
+// readClosedTasks — returns empty on ENOENT.
+//
+// This is a diagnostic tail log (digests only), read inside dequeue/report/
+// subscribe. Unlike the critical state stores, a corrupt log must NOT block
+// coordination: we preserve the bytes (.corrupt-<ts>), warn on stderr, and
+// continue with an empty log. "corrupt ≠ silently empty" is still honoured —
+// the file is kept, not discarded.
 // ---------------------------------------------------------------------------
 
-const quarantineCorruptLog = async (logPath: string): Promise<void> => {
-	const backup = `${logPath}.corrupt-${Date.now()}`;
-	try { await rename(logPath, backup); } catch { /* best effort */ }
+const quarantineCorruptLog = async (logPath: string, detail: string): Promise<void> => {
+	const backup = await quarantineCorruptFile(logPath);
+	process.stderr.write(
+		`[proposals] closed-tasks log "${logPath}" is corrupt (${detail}); ` +
+			`preserved at "${backup ?? '<rename failed>'}", continuing with empty log.\n`
+	);
 };
 
 export const readClosedTasks = async (
@@ -70,13 +79,13 @@ export const readClosedTasks = async (
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(raw);
-	} catch {
-		await quarantineCorruptLog(logPath);
+	} catch (err) {
+		await quarantineCorruptLog(logPath, `invalid JSON: ${String(err)}`);
 		return [];
 	}
 	const result = ClosedTasksLogSchema.safeParse(parsed);
 	if (!result.success) {
-		await quarantineCorruptLog(logPath);
+		await quarantineCorruptLog(logPath, 'schema validation failed');
 		return [];
 	}
 	return result.data as IClosedTaskRecord[];

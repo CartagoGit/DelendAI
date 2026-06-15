@@ -1,6 +1,10 @@
-import { existsSync, readFileSync, renameSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
-import { writeFileAtomicSync } from '@cartago-git/mcp-core/public';
+import {
+	CorruptFileError,
+	quarantineCorruptFileSync,
+	writeFileAtomicSync,
+} from '@cartago-git/mcp-core/public';
 
 export interface INote {
 	readonly id: string;
@@ -18,36 +22,32 @@ const kebab = (value: string): string =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-const quarantineSync = (absPath: string, detail: string): never => {
-	const backup = `${absPath}.corrupt-${Date.now()}`;
-	try { renameSync(absPath, backup); } catch { /* best effort */ }
-	throw new Error(
-		`Memory store at "${absPath}" is corrupt (${detail}); backed up to "${backup}".`
-	);
+const quarantine = (absPath: string, detail: string): never => {
+	const backup = quarantineCorruptFileSync(absPath);
+	throw new CorruptFileError(absPath, backup, detail);
 };
 
-/** Read the note store (JSON array). Missing → empty; corrupt → throw after renaming backup. */
+/**
+ * Read the note store (JSON array). Missing/empty → empty list.
+ * Corrupt → preserve the bytes (.corrupt-<ts>) and throw CorruptFileError
+ * so the caller surfaces it instead of silently losing every note.
+ */
 export const readStore = (absPath: string): INote[] => {
 	if (!existsSync(absPath)) return [];
-	let raw: string;
-	try {
-		raw = readFileSync(absPath, 'utf8');
-	} catch (err) {
-		throw new Error(`Cannot read memory store at "${absPath}": ${String(err)}`);
-	}
+	const raw = readFileSync(absPath, 'utf8');
 	if (!raw.trim()) return [];
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(raw);
 	} catch (err) {
-		return quarantineSync(absPath, `invalid JSON: ${String(err)}`);
+		return quarantine(absPath, `invalid JSON: ${String(err)}`);
 	}
 	if (
 		typeof parsed !== 'object' ||
 		parsed === null ||
 		!Array.isArray((parsed as { notes?: unknown }).notes)
 	) {
-		return quarantineSync(absPath, 'expected { notes: [...] }');
+		return quarantine(absPath, 'expected { notes: [...] }');
 	}
 	return (parsed as { notes: INote[] }).notes;
 };

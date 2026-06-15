@@ -1,7 +1,12 @@
 import { existsSync } from 'node:fs';
-import { readFile, rename } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 
-import { withFileMutex, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import {
+	CorruptFileError,
+	quarantineCorruptFile,
+	withFileMutex,
+	writeFileAtomic,
+} from '@cartago-git/mcp-core/public';
 
 import { SUBAGENT_CONVENTIONS } from './subagent-conventions';
 
@@ -82,11 +87,8 @@ export const createSubagentRegistryStore = (
 		try {
 			parsed = JSON.parse(raw);
 		} catch (err) {
-			const backup = `${path}.corrupt-${Date.now()}`;
-			try { await rename(path, backup); } catch { /* best effort */ }
-			throw new Error(
-				`Agent registry at "${path}" is corrupt (invalid JSON: ${String(err)}); backed up to "${backup}".`
-			);
+			const backup = await quarantineCorruptFile(path);
+			throw new CorruptFileError(path, backup, `invalid JSON: ${String(err)}`);
 		}
 		return migrate(parsed);
 	};
