@@ -68,6 +68,11 @@ const json = (value: unknown) => ({
 	content: [
 		{ type: 'text' as const, text: JSON.stringify(value) },
 	],
+	// MCP modern structuredContent so the declared outputSchema is satisfied
+	// (the SDK validates it on success). Object payloads only.
+	...(typeof value === 'object' && value !== null && !Array.isArray(value)
+		? { structuredContent: value as Record<string, unknown> }
+		: {}),
 });
 
 /**

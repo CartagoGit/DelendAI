@@ -194,18 +194,21 @@ export const buildScaffoldToolRegistration = (
 					'Generate host artefacts from mcp-core templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,
 			},
-			async (args: IScaffoldArgs) => ({
-				content: [
-					{
-						type: 'text' as const,
-						text: JSON.stringify(
-							buildScaffoldReport(options, args),
-							null,
-							'\t'
-						),
-					},
-				],
-			})
+			async (args: IScaffoldArgs) => {
+				const report = buildScaffoldReport(options, args);
+				return {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(report, null, '\t'),
+						},
+					],
+					structuredContent: report as unknown as Record<
+						string,
+						unknown
+					>,
+				};
+			}
 		);
 	},
 });
