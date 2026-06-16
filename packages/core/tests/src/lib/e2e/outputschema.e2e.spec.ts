@@ -95,6 +95,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'mcpcore_overview', args: { compact: true } },
 		{ name: 'mcpcore_knowledge' },
 		{ name: 'mcpcore_get_validation_matrix' },
+		{ name: 'mcpcore_status' },
 		{ name: 'mcpcore_analyze_project' },
 		{ name: 'git_status' },
 		{ name: 'git_changed' },
