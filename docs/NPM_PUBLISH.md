@@ -17,10 +17,31 @@
 3. (Recomendado) 2FA en modo "Authorization and Publishing" → tendrás que meter
    el OTP en cada publish, o crea un *Automation token* para CI.
 
+## 0. Vía automatizada (recomendada): `bun run release`
+Un único comando versiona los 10 paquetes **en lockstep** (todos a la misma
+versión, reescribiendo el `peerDependency` `^x.y.z` del core en los 9 plugins) y
+publica en el orden correcto. Por defecto es **dry-run** (no escribe nada):
+
+```bash
+bun run release                       # muestra versiones actuales + plan de publicación
+bun run release --bump=patch          # planifica un bump lockstep (dry-run)
+bun run release --bump=minor --write  # aplica el bump a cada package.json
+bun run release --set=0.2.0 --write   # fija una versión lockstep explícita
+bun run release --publish             # valida (bun run validate) + publica en orden
+bun run release --bump=patch --write --publish   # release completo de una pasada
+```
+Flags: `--bump=patch|minor|major` · `--set=X.Y.Z` (excluyentes) · `--write`
+(aplica; por defecto dry-run) · `--publish` · `--no-validate` · `--tool=bun|npm`
+(por defecto `bun`, que reescribe `workspace:*`). El 2FA/OTP de npm se introduce
+de forma interactiva en cada paquete (stdio heredado).
+
+Los pasos manuales de abajo (§1–§2) siguen siendo válidos como referencia o si
+prefieres controlar cada publish a mano.
+
 ## 1. Validar antes de publicar (desde la raíz del repo `/_projects/mcp-core`)
 ```bash
 bun install
-bun run validate            # typecheck + 360 tests (debe acabar en verde)
+bun run validate            # typecheck + tests (debe acabar en verde)
 ```
 
 ## 2. Orden de publicación (IMPORTANTE)
