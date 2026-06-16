@@ -188,4 +188,4 @@ from any other repo.
 
 ## License
 
-MIT © Cartago
+BSD-3-Clause © Cartago

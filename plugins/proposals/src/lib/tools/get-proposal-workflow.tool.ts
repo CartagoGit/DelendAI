@@ -25,7 +25,19 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: z.object({
+					families: z.array(
+						z.object({
+							prefix: z.string(),
+							description: z.string(),
+							cascadePriority: z.number(),
+						})
+					),
+					locations: z.record(z.string(), z.string()),
+					naming: z.string(),
+					rules: z.array(z.string()),
+					template: z.string(),
+				}),
 				description:
 					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
 			},

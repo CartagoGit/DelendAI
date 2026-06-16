@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Read-only git orientation plugin for @cartago-git/mcp-core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `mcp-core --plugins=git`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

@@ -124,7 +124,20 @@ export const buildStateHealthRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_health`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: z.object({
+					locks: z.object({ active: z.number() }),
+					queue: z
+						.object({
+							queueLength: z.number(),
+							queuedCount: z.number(),
+							waiterOrphans: z.number(),
+							oldestAgeMinutes: z.number(),
+							threshold: z.string(),
+						})
+						.nullable(),
+					registry: z.object({ orphans: z.number(), threshold: z.string() }),
+					healthy: z.boolean(),
+				}),
 				description:
 					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
 			},

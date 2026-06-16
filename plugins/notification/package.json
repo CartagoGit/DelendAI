@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Lock-release notification plugin for @cartago-git/mcp-core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-core --plugins=notification`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

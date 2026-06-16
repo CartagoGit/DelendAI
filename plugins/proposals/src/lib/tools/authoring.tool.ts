@@ -312,7 +312,22 @@ export const buildProposalBoardRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_board`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: z.object({
+					proposals: z.array(
+						z.object({
+							id: z.string(),
+							status: z.string(),
+							slices: z.array(
+								z.object({
+									sliceId: z.string(),
+									status: z.string(),
+									owner: z.string().nullable(),
+								})
+							),
+							claimableSliceIds: z.array(z.string()).optional(),
+						})
+					),
+				}),
 				description:
 					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work.',
 			},

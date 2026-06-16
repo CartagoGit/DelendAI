@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Proposals workflow plugin for @cartago-git/mcp-core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-core --plugins=proposals`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

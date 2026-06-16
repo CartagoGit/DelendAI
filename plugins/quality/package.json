@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Quality-gate runner plugin for @cartago-git/mcp-core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `mcp-core --plugins=quality`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

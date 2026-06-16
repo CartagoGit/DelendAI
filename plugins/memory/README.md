@@ -29,4 +29,4 @@ continuity across sessions with minimal tokens.
 
 Notes persist in `.cache/mcp-core/memory/notes.json`.
 
-MIT © Cartago
+BSD-3-Clause © Cartago

@@ -31,4 +31,4 @@ structured pass/fail report.
 2. `mcp-core.config.json` → `validationMatrix.scopes`
 3. detected `package.json` scripts (as one `all` scope)
 
-MIT © Cartago
+BSD-3-Clause © Cartago

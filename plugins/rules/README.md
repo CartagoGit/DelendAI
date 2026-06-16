@@ -79,4 +79,4 @@ the config.
 }
 ```
 
-MIT © Cartago
+BSD-3-Clause © Cartago

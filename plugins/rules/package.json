@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Lint/type rules plugin for @cartago-git/mcp-core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `mcp-core --plugins=rules`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

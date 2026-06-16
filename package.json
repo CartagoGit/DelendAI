@@ -5,7 +5,7 @@
 	"type": "module",
 	"description": "Project-agnostic MCP server core + CLI plugin loader. Publishes @cartago-git/mcp-core and its plugins.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"workspaces": ["packages/*", "plugins/*"],
 	"scripts": {
 		"test": "vitest run",

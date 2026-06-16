@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Project documentation plugin for @cartago-git/mcp-core: catalogue + read the repo markdown (docs_list / docs_read). Load with `mcp-core --plugins=docs`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

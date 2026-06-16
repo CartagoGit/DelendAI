@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Textual workspace search plugin for @cartago-git/mcp-core: a grep-like `search` tool returning low-token {file,line,text} hits over allow-listed text files. Load with `mcp-core --plugins=search`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

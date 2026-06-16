@@ -29,4 +29,4 @@ agnostic of language or framework. It never modifies the repo.
 
 All read-only — no add/commit/push.
 
-MIT © Cartago
+BSD-3-Clause © Cartago

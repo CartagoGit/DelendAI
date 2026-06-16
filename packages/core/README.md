@@ -23,4 +23,4 @@ turn on capability with plugins (`mcp-core --plugins=...`).
 
 Full guide: **README-MCP-CORE.md** · Plugins: **PLUGINS-MCP-CORE.md** (docs folder).
 
-MIT © Cartago
+BSD-3-Clause © Cartago

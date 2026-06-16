@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Persistent project memory plugin for @cartago-git/mcp-core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `mcp-core --plugins=memory`.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
