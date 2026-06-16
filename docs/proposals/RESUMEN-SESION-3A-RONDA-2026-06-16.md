@@ -5,7 +5,7 @@
 > 06-15) en `done/RESUMEN-SESION-2A-RONDA-2026-06-15.md`.
 >
 > **Repo:** `/home/cartago/_proyectos/propios/mcp-core`.
-> **Estado al cerrar: 391 tests (381 + 10 skip), typecheck limpio, TODO VERDE.**
+> **Estado al cerrar: 397 tests (387 + 10 skip), typecheck limpio, TODO VERDE.**
 > Árbol git limpio. Nivel estimado ~9,9/10. Nada a medias. **10 paquetes.**
 >
 > **Continuación (misma sesión, 09:49 → ~13:50):** además de N16/N17/N19-docs/
@@ -64,7 +64,7 @@
 | **N18** | Presets `minimal`/`standard`/`swarm` | ✅ **HECHO** — presets de **plugins** (`--preset`, aditivos, fusiona con `--plugins`). |
 | **N19** | Plugins `docs` y `deps` | ✅ **HECHO** — `docs` (navegación markdown) + `deps` (inventario + salud offline, SIN red/CVE a propósito). |
 | **N20** | Split `round-context.ts` (884 → módulos) (= R15) | 🟡 **parcial** — tipos extraídos (884→~760, barrel `export *`). Falta separar funciones (digest/snapshot/store; comparten helpers privados → fiddly). |
-| **N22** | Memoria semántica (FTS/SQLite) en `memory_recall` | ⬜ Alcance grande + dependencia. **El mayor pendiente real.** |
+| **N22** | Memoria semántica en `memory_recall` | ✅ **HECHO (léxico)** — ranking BM25-lite en JS puro (`rank.ts`), cero deps. NO embeddings/SQLite a propósito (romperían agnóstico/offline). git/search async ya estaban. |
 | **N23** (resto) | Tests de caos/adversarial, `IStatusCollector`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` | 🟡 e2e real estricto ✅ + benchmarks ✅ + **`--verbose` ✅** + doble-prefijos arreglados ✅. Resto (caos/IStatusCollector/SDK/semver) ⬜. |
 | **N16** (refinar) | `z.record` permisivos de los tools *action-multiplexed* → **uniones por-acción** | mejora futura; los read-only ya son precisos; alimenta el SDK de tipos de N23. |
 
@@ -74,7 +74,7 @@
 ```bash
 cd /home/cartago/_proyectos/propios/mcp-core
 bun install
-bun run validate     # typecheck + 391 tests (381 + 10 skip) → verde
+bun run validate     # typecheck + 397 tests (387 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
 bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 ```
@@ -85,13 +85,13 @@ bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 **3. Premisa clave:** **Affairs ya NO consume mcp-core** (independientes). Ignora
 cualquier nota antigua de "re-validar 1184".
 
-**4. Siguiente recomendado (lo que queda):**
-- **N22 memoria semántica** (FTS/SQLite en `memory_recall`) — el mayor pendiente
-  real; alcance grande + decidir dependencia (¿`bun:sqlite` nativo? ¿FTS puro JS?).
+**4. Siguiente recomendado (lo que queda, todo de menor valor/alcance grande):**
 - **N20 resto** (split de funciones de `round-context`) — decision-free, fiddly, bajo valor.
-- **N23 resto**: `IStatusCollector`, tests de caos, **SDK de tipos generados** desde
-  `outputSchema` (refinar antes los `z.record` de los action-multiplexed a uniones
-  por-acción), semver + publish automatizado.
+- **N23 resto**: `IStatusCollector` + tests de caos/adversarial, **SDK de tipos
+  generados** desde `outputSchema` (refinar antes los `z.record` de los
+  action-multiplexed a uniones por-acción), semver + publish automatizado.
+- **N22 vectorial** (embeddings) sólo si se acepta dependencia/red — fuera del
+  core agnóstico; iría como herramienta/plugin externo.
 
 **5. Artefactos nuevos de esta sesión (3ª ronda):**
 - `plugins/docs/**` (9º paquete) y `plugins/deps/**` (10º paquete).
