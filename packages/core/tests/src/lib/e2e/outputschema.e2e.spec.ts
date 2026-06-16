@@ -138,4 +138,28 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		}
 		expect(broken, 'tools whose outputSchema is unsatisfied').toEqual([]);
 	});
+
+	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
+		const created = await client.callTool({
+			name: 'proposals_create_proposal',
+			arguments: {
+				id: 'p1',
+				title: 'demo',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			},
+		});
+		expect(created.isError, 'create_proposal').toBeFalsy();
+		const cs = created.structuredContent as { ok: boolean; file: string };
+		expect(cs.ok).toBe(true);
+		expect(cs.file).toContain('p1');
+
+		const closed = await client.callTool({
+			name: 'proposals_close_slice',
+			arguments: { proposalId: 'p1', sliceId: 's1' },
+		});
+		expect(closed.isError, 'close_slice').toBeFalsy();
+		expect(
+			(closed.structuredContent as { closed: boolean }).closed
+		).toBe(true);
+	});
 });
