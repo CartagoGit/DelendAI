@@ -18,6 +18,7 @@ import gitPlugin from '@cartago-git/mcp-git';
 import qualityPlugin from '@cartago-git/mcp-quality';
 import searchPlugin from '@cartago-git/mcp-search';
 import notificationPlugin from '@cartago-git/mcp-notification';
+import docsPlugin from '@cartago-git/mcp-docs';
 
 /**
  * N16 net: assemble the REAL server with every plugin and call each
@@ -34,6 +35,7 @@ const PLUGINS = {
 	'mcp-quality': qualityPlugin,
 	'mcp-search': searchPlugin,
 	'mcp-notification': notificationPlugin,
+	'mcp-docs': docsPlugin,
 } as const;
 
 describe('e2e: outputSchema validation over the protocol (N16)', () => {
@@ -53,7 +55,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 
 		const args = parseCliArgs(
 			[
-				'--plugins=proposals,rules,memory,git,quality,search,notification',
+				'--plugins=proposals,rules,memory,git,quality,search,notification,docs',
 				`--workspace=${workspace}`,
 			],
 			workspace
@@ -100,6 +102,8 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'memory_list' },
 		{ name: 'search_search', args: { query: 'e2e' } },
 		{ name: 'notification_notify_status' },
+		{ name: 'docs_docs_list' },
+		{ name: 'docs_docs_read', args: { path: 'README.md' } },
 		{ name: 'proposals_state_health' },
 		{ name: 'proposals_proposal_board' },
 		{ name: 'proposals_compact_status' },
