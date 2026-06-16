@@ -1,10 +1,10 @@
 # Publicar `@cartago-git/mcp-*` en npm — guía paso a paso
 
 > Todo queda **preparado** para que solo ejecutes estos pasos con tu cuenta.
-> Paquetes (9): `@cartago-git/mcp-core`, `@cartago-git/mcp-proposals`,
+> Paquetes (10): `@cartago-git/mcp-core`, `@cartago-git/mcp-proposals`,
 > `@cartago-git/mcp-rules`, `@cartago-git/mcp-memory`, `@cartago-git/mcp-git`,
 > `@cartago-git/mcp-quality`, `@cartago-git/mcp-search`,
-> `@cartago-git/mcp-notification`, `@cartago-git/mcp-docs`. Todos en `0.1.0`,
+> `@cartago-git/mcp-notification`, `@cartago-git/mcp-docs`, `@cartago-git/mcp-deps`. Todos en `0.1.0`,
 > `publishConfig.access=public`, `files` limitado a `src` + README + LICENSE.
 
 ## 0. Requisitos (una vez)
@@ -24,7 +24,7 @@ bun run validate            # typecheck + 360 tests (debe acabar en verde)
 ```
 
 ## 2. Orden de publicación (IMPORTANTE)
-`mcp-core` PRIMERO (los plugins lo declaran como `peerDependency`). Luego los 7
+`mcp-core` PRIMERO (los plugins lo declaran como `peerDependency`). Luego los 9
 plugins en cualquier orden.
 
 ```bash
@@ -39,6 +39,7 @@ cd plugins/quality      && npm publish && cd -
 cd plugins/search       && npm publish && cd -
 cd plugins/notification && npm publish && cd -
 cd plugins/docs         && npm publish && cd -
+cd plugins/deps         && npm publish && cd -
 ```
 - `publishConfig.access=public` ya está, así que NO necesitas `--access public`.
 - Si usas 2FA te pedirá el OTP en cada uno (`npm publish --otp=123456`).
@@ -58,7 +59,7 @@ Los plugins tienen `"@cartago-git/mcp-core": "workspace:*"` en **devDependencies
 ## 3. Verificar lo publicado
 ```bash
 npm view @cartago-git/mcp-core version
-bunx @cartago-git/mcp-core --plugins=proposals,rules,memory,git,quality,search,notification --check
+bunx @cartago-git/mcp-core --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps --check
 # Debe imprimir "ok": true y "assembles": true
 ```
 
