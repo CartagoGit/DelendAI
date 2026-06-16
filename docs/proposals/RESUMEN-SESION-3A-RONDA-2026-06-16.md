@@ -52,7 +52,7 @@
 |---|---|---|
 | **N18** | Presets de scaffold `minimal`/`standard`/`swarm` | ⬜ **Decisión de diseño** (¿presets de plugins o de agentes?). |
 | **N19** (resto) | Plugin `deps`/`security` (auditar package.json/lockfile/CVEs) | ⬜ Contrato sin definir (¿solo outdated/licencias, o CVEs con red?). |
-| **N20** | Split `round-context.ts` (884 líneas → 3-4 módulos) (= R15) | ⬜ Refactor interno **decision-free, bajo riesgo** (red: los tests de round-context). **El más seguro para avanzar solo.** |
+| **N20** | Split `round-context.ts` (884 líneas → 3-4 módulos) (= R15) | 🟡 **parcial** — tipos+constantes ya extraídos a `round-context-types.ts` (884→~760, barrel `export *`). Falta separar funciones (digest/snapshot/store; comparten helpers privados → más fiddly). |
 | **N22** | Memoria semántica (FTS/SQLite) en `memory_recall` | ⬜ Alcance grande + dependencia. |
 | **N23** (resto) | Tests de caos/adversarial, observabilidad `IStatusCollector`+`--verbose`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` (N16 ya lo habilita) | 🟡 e2e real ✅ + benchmarks de tokens ✅ (sesión previa); resto ⬜, multi-semana. |
 | **N16** (refinar) | Convertir los `z.record` permisivos de proposals a **uniones por-acción** | mejora futura; alimenta el SDK de tipos de N23. |
