@@ -101,6 +101,13 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'notification_notify_status' },
 		{ name: 'proposals_state_health' },
 		{ name: 'proposals_proposal_board' },
+		// action-multiplexed (read-only actions) — permissive object schema
+		{ name: 'proposals_task_queue', args: { action: 'report' } },
+		{ name: 'proposals_agent_names', args: { action: 'list' } },
+		{ name: 'proposals_agent_lock', args: { action: 'status' } },
+		{ name: 'proposals_round_context' },
+		{ name: 'proposals_sync_proposals' },
+		{ name: 'proposals_get_proposal_workflow' },
 	];
 
 	it('every read-only tool returns schema-valid structuredContent', async () => {
