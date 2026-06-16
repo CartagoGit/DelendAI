@@ -115,6 +115,18 @@ describe('parseQueue — happy path', () => {
 		expect(queue.entries[0]?.taskId).toBe('test-task-1');
 		expect(queue.entries[0]?.status).toBe('queued');
 	});
+
+	it('accepts a non-canonical agent slot (project-agnostic roles)', async () => {
+		const dir = workDir;
+		const queuePath = join(dir, 'queue.json');
+		const entry = makeEntry({
+			owner: { taskId: 'p40c-t1', agentName: 'ext', agentSlot: 'custom_reviewer' },
+		});
+		writeQueue(queuePath, { version: 1, entries: [entry] });
+
+		const queue = await parseQueue(queuePath, closedTasksPath(dir));
+		expect(queue.entries[0]?.owner.agentSlot).toBe('custom_reviewer');
+	});
 });
 
 // ---------------------------------------------------------------------------

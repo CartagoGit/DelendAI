@@ -57,7 +57,7 @@ export const buildSyncProposalsRegistration = (
 					content: [
 						{
 							type: 'text' as const,
-							text: JSON.stringify(payload, null, '\t'),
+							text: JSON.stringify(payload),
 						},
 					],
 					structuredContent: payload,

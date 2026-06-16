@@ -35,8 +35,8 @@ describe('docs engine', () => {
 		expect(extractTitle('no title at all', 'fallback.md')).toBe('fallback.md');
 	});
 
-	it('lists markdown under default roots (docs + README) with titles', () => {
-		const { docs } = listDocs(root);
+	it('lists markdown under default roots (docs + README) with titles', async () => {
+		const { docs } = await listDocs(root);
 		const byPath = Object.fromEntries(docs.map((d) => [d.path, d.title]));
 		expect(byPath['README.md']).toBe('The Project');
 		expect(byPath['docs/guide.md']).toBe('Guide');
@@ -45,26 +45,26 @@ describe('docs engine', () => {
 		expect(byPath['src/code.ts']).toBeUndefined(); // outside default roots
 	});
 
-	it('honours injected roots', () => {
-		const { docs } = listDocs(root, { roots: ['docs'] });
+	it('honours injected roots', async () => {
+		const { docs } = await listDocs(root, { roots: ['docs'] });
 		expect(docs.every((d) => d.path.startsWith('docs/'))).toBe(true);
 	});
 
-	it('reads a doc by path and returns its title + content', () => {
-		const d = readDoc(root, 'docs/guide.md');
+	it('reads a doc by path and returns its title + content', async () => {
+		const d = await readDoc(root, 'docs/guide.md');
 		expect(d.found).toBe(true);
 		expect(d.title).toBe('Guide');
 		expect(d.content).toContain('body');
 	});
 
-	it('refuses path traversal outside the workspace', () => {
-		const d = readDoc(root, '../../../etc/passwd');
+	it('refuses path traversal outside the workspace', async () => {
+		const d = await readDoc(root, '../../../etc/passwd');
 		expect(d.found).toBe(false);
 		expect(d.content).toBe('');
 	});
 
-	it('reports found:false for a missing doc', () => {
-		expect(readDoc(root, 'docs/nope.md').found).toBe(false);
+	it('reports found:false for a missing doc', async () => {
+		expect((await readDoc(root, 'docs/nope.md')).found).toBe(false);
 	});
 });
 

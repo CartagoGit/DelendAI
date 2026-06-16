@@ -55,6 +55,33 @@ describe('withFileMutex — cross-process critical section', () => {
 		expect(existsSync(sidecar)).toBe(false);
 	});
 
+	it('does NOT delete the lock if it was stolen by another holder', async () => {
+		// Regression for the steal-and-delete race: A holds the lock, its
+		// fn() overruns, B steals it (replacing the sidecar with B's token).
+		// When A finally returns, its release must NOT remove B's lock.
+		const sidecar = `${target}.mutex`;
+		let release: () => void = () => undefined;
+		const held = new Promise<void>((r) => {
+			release = r;
+		});
+
+		const aDone = withFileMutex(target, async () => {
+			await held;
+		});
+
+		// Wait until A has acquired (sidecar written), then simulate B stealing.
+		while (!existsSync(sidecar)) await new Promise((r) => setTimeout(r, 5));
+		const stolenToken = '12345\n0\nb-owns-this-now';
+		writeFileSync(sidecar, stolenToken);
+
+		release();
+		await aDone;
+
+		// B's lock must survive A's release.
+		expect(existsSync(sidecar)).toBe(true);
+		expect(readFileSync(sidecar, 'utf8')).toBe(stolenToken);
+	});
+
 	it('steals an abandoned (stale) lock instead of deadlocking', async () => {
 		const sidecar = `${target}.mutex`;
 		// Simulate a crashed holder: a stale sidecar left on disk.

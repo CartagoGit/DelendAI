@@ -63,15 +63,11 @@ export class TaskQueueActionError extends Error {
 // Zod schemas
 // ---------------------------------------------------------------------------
 
-const AGENT_SLOTS = [
-	'orchestrator',
-	'proposal_guardian',
-	'implementation_runner',
-	'delivery_verifier',
-	'technical_investigator',
-] as const;
-
-const IAgentSlotSchema = z.enum(AGENT_SLOTS);
+// Agent slots are project-agnostic: any non-empty role name is accepted so
+// external swarms can define their own roles. The canonical 5-role set lives
+// in `persistent-task-queue` as `DEFAULT_AGENT_SLOTS` (a documented default,
+// not an enforced enum).
+const IAgentSlotSchema = z.string().min(1);
 
 const IWaitForFileSchema = z.object({
 	file: z.string().min(1),
