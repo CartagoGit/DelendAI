@@ -62,6 +62,23 @@
         "@cartago-git/mcp-core": "^0.1.0",
       },
     },
+    "plugins/notification": {
+      "name": "@cartago-git/mcp-notification",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@cartago-git/mcp-core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.8",
+      },
+      "peerDependencies": {
+        "@cartago-git/mcp-core": "^0.1.0",
+      },
+    },
     "plugins/proposals": {
       "name": "@cartago-git/mcp-proposals",
       "version": "0.1.0",
@@ -137,6 +154,8 @@
     "@cartago-git/mcp-git": ["@cartago-git/mcp-git@workspace:plugins/git"],
 
     "@cartago-git/mcp-memory": ["@cartago-git/mcp-memory@workspace:plugins/memory"],
+
+    "@cartago-git/mcp-notification": ["@cartago-git/mcp-notification@workspace:plugins/notification"],
 
     "@cartago-git/mcp-proposals": ["@cartago-git/mcp-proposals@workspace:plugins/proposals"],
 

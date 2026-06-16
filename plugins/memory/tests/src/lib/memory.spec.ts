@@ -147,10 +147,10 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 			regs.find((r) => r.id === id)!;
 
 		const cases: Array<[string, unknown]> = [
-			['memory_recall', {}],
-			['memory_list', {}],
-			['memory_save', { title: 'X', body: 'y' }],
-			['memory_forget', { id: 'x' }],
+			['recall', {}],
+			['list', {}],
+			['save', { title: 'X', body: 'y' }],
+			['forget', { id: 'x' }],
 		];
 
 		for (const [id, args] of cases) {
@@ -185,11 +185,13 @@ describe('memory plugin', () => {
 		} satisfies IMcpPluginContext;
 		const reg = await plugin.register(ctx);
 		expect(reg.tools?.map((t) => t.id)).toEqual([
-			'memory_save',
-			'memory_recall',
-			'memory_list',
-			'memory_forget',
+			'save',
+			'recall',
+			'list',
+			'forget',
 		]);
+		// The registered MCP names are single-prefixed (`memory_save`, …),
+		// not double-prefixed (`memory_memory_save`). [e2e regression guard]
 		expect(reg.knowledge?.[0]?.id).toBe('memory-usage');
 	});
 });

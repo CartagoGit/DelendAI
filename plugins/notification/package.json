@@ -1,0 +1,53 @@
+{
+	"name": "@cartago-git/mcp-notification",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Lock-release notification plugin for @cartago-git/mcp-core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-core --plugins=notification`.",
+	"author": "Cartago",
+	"license": "MIT",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"notification",
+		"lock",
+		"swarm",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./src/index.ts",
+	"files": [
+		"src",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": "./src/index.ts",
+		"./public": "./src/public/index.ts"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"peerDependencies": {
+		"@cartago-git/mcp-core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@cartago-git/mcp-core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cartago-git/mcp-core"
+	}
+}
