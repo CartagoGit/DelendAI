@@ -87,7 +87,7 @@ export const buildAutoWorkRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_auto_work`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → release), or an explicit idle state. Low-token: a tight action list, not prose.',
 				inputSchema: z.object({}),

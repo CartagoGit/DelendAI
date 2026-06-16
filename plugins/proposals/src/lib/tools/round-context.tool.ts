@@ -136,25 +136,22 @@ export const buildRoundContextRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_round_context`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Round digest only: return the persisted multi-agent round context and whether it is stale. forceRefresh recomputes and persists it. Use for resumed swarm work, not normal single-slice execution.',
 				inputSchema: z.object({
 					forceRefresh: z.boolean().optional(),
 				}),
 			},
-			async (args: { forceRefresh?: boolean | undefined }) => ({
-				content: [
-					{
-						type: 'text' as const,
-						text: JSON.stringify(
-							await buildRoundContextOutput(args ?? {}, options),
-							null,
-							'\t'
-						),
-					},
-				],
-			})
+			async (args: { forceRefresh?: boolean | undefined }) => {
+				const out = await buildRoundContextOutput(args ?? {}, options);
+				return {
+					content: [
+						{ type: 'text' as const, text: JSON.stringify(out, null, '\t') },
+					],
+					structuredContent: out as unknown as Record<string, unknown>,
+				};
+			}
 		);
 	},
 });

@@ -30,12 +30,12 @@ export const buildGitToolRegistrations = (
 	const prefix = options.namespacePrefix;
 	return [
 		{
-			id: 'git_status',
+			id: 'status',
 			summary: 'Branch + working-tree status (clean flag + entries).',
 			tags: ['git', 'orientation'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_git_status`,
+					`${prefix}_status`,
 					{
 						description:
 							'Returns the current branch, whether the tree is clean, and the changed entries (status + path). Read-only.',
@@ -51,12 +51,12 @@ export const buildGitToolRegistrations = (
 			},
 		},
 		{
-			id: 'git_changed',
+			id: 'changed',
 			summary: 'List of changed file paths in the working tree.',
 			tags: ['git', 'orientation'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_git_changed`,
+					`${prefix}_changed`,
 					{
 						description:
 							'Returns just the list of changed file paths. Cheapest way to see what you have touched. Read-only.',
@@ -72,12 +72,12 @@ export const buildGitToolRegistrations = (
 			},
 		},
 		{
-			id: 'git_diff',
+			id: 'diff',
 			summary: 'Diff --stat (optionally staged or scoped to a path).',
 			tags: ['git'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_git_diff`,
+					`${prefix}_diff`,
 					{
 						description:
 							'Returns `git diff --stat` (file/line change summary). Optionally staged-only or scoped to a path. Low-token; read-only.',
@@ -108,12 +108,12 @@ export const buildGitToolRegistrations = (
 			},
 		},
 		{
-			id: 'git_log',
+			id: 'log',
 			summary: 'Recent commits (hash + subject).',
 			tags: ['git', 'orientation'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_git_log`,
+					`${prefix}_log`,
 					{
 						description:
 							'Returns the most recent commits as {hash, subject}. Read-only.',
