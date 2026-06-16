@@ -210,7 +210,7 @@ Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
 |---|---|---|---|
 | N14 | **Plugin `notification`** (MCP `notifications/message`): mata el polling de locks/cola en swarm (–40% llamadas estimado). *El de mayor impacto.* | S·G (2/2) | ✅ (`@cartago-git/mcp-notification`: watch del lock + `sendLoggingMessage` `lock-released`; fs.watch+poll; +tool `notify_status` + knowledge + 4 tests) |
 | N15 | **`state_health` + `state_repair`** (dry-run/execute con backup): auto-heal de `waiterOrphans`, locks >TTL, assignments huérfanas | S·G (2/2) | ✅ (2 tools nuevas en proposals + specs; reusa gc/expireSweep/gcZombies) |
-| N16 | **`outputSchema` Zod por tool** (structuredContent ya está; falta declarar el schema → validación/UMI en clientes) | S | ⬜ |
+| N16 | **`outputSchema` Zod por tool** (structuredContent ya está; falta declarar el schema → validación/UMI en clientes) | S | 🟡 parcial — **memory (4 tools) + search HECHOS** con red e2e (el SDK valida `structuredContent` sólo en éxito; `isError` exento, confirmado en `server/mcp.js:193`). Patrón establecido. Pendiente: core meta-tools (`overview` tiene shape compact/full → requiere schema permisivo/unión), git/quality/notification y los ~13 de proposals (board/round_context/etc., shapes ricos) |
 | N17 | **`compact_status`** (git+locks+queue+quality en 1 llamada con `fields`) | S | ⬜ |
 | N18 | **Presets de scaffold `minimal`/`standard`/`swarm`** | S | ⬜ |
 | N19 | **Plugins `docs` y `deps/security`** (autocontenidos, como `search`) | (orig.) | ⬜ |
