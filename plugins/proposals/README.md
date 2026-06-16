@@ -65,4 +65,4 @@ import {
 } from '@cartago-git/mcp-proposals/public';
 ```
 
-MIT © Cartago
+BSD-3-Clause © Cartago

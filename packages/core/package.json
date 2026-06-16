@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
 	"author": "Cartago",
-	"license": "MIT",
+	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",

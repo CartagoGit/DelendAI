@@ -25,4 +25,4 @@ bun install
 bun run validate   # typecheck + tests
 ```
 
-MIT © Cartago
+BSD-3-Clause © Cartago
