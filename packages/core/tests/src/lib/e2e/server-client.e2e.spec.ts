@@ -1,0 +1,103 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
+import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
+import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
+import memoryPlugin from '@cartago-git/mcp-memory';
+
+/**
+ * End-to-end: assemble the REAL server (core meta-tools + a real plugin)
+ * and drive it through the REAL MCP protocol from a real Client over an
+ * in-memory transport pair — not by calling handlers directly. This
+ * proves the whole assembly (registration, request routing, result
+ * shaping) works over the wire, complementing the unit tests. [N23]
+ */
+describe('e2e: real MCP client ↔ assembled server', () => {
+	let workspace = '';
+	let client: Client;
+	let close: () => Promise<void>;
+
+	beforeEach(async () => {
+		workspace = mkdtempSync(join(tmpdir(), 'e2e-'));
+		const args = parseCliArgs(
+			['--plugins=memory', `--workspace=${workspace}`],
+			workspace
+		);
+		const { config } = await assembleCliConfig(args, {
+			// Inject the real memory plugin (no dynamic resolution in tests).
+			import: async () => ({ default: memoryPlugin }),
+			readFile: () => undefined,
+		});
+		const assembled = await createMcpServer(config);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await assembled.server.connect(serverTransport);
+		client = new Client(
+			{ name: 'e2e-test', version: '0.0.0' },
+			{ capabilities: {} }
+		);
+		await client.connect(clientTransport);
+		close = async () => {
+			await client.close();
+			await assembled.server.close();
+		};
+	});
+
+	afterEach(async () => {
+		await close();
+		rmSync(workspace, { recursive: true, force: true });
+	});
+
+	it('lists the core + plugin tools over the protocol', async () => {
+		const { tools } = await client.listTools();
+		const names = tools.map((t) => t.name);
+		expect(names).toContain('mcpcore_overview');
+		expect(names).toContain('memory_save');
+		expect(names).toContain('memory_recall');
+	});
+
+	it('overview (callTool) maps the loaded memory plugin', async () => {
+		const res = await client.callTool({
+			name: 'mcpcore_overview',
+			arguments: {},
+		});
+		const text = (res.content as Array<{ type: string; text: string }>)[0]
+			?.text;
+		const snap = JSON.parse(text ?? '{}');
+		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
+			'memory'
+		);
+	});
+
+	it('round-trips a note through save → recall over the protocol', async () => {
+		await client.callTool({
+			name: 'memory_save',
+			arguments: { title: 'E2E decision', body: 'we ship via in-memory', tags: ['e2e'] },
+		});
+		const res = await client.callTool({
+			name: 'memory_recall',
+			arguments: { query: 'in-memory' },
+		});
+		const text = (res.content as Array<{ type: string; text: string }>)[0]
+			?.text;
+		const recalled = JSON.parse(text ?? '{}');
+		expect(recalled.notes[0]?.title).toBe('E2E decision');
+	});
+
+	it('reports an unknown tool as a protocol error', async () => {
+		const res = await client.callTool({
+			name: 'mcpcore_does_not_exist',
+			arguments: {},
+		});
+		expect(res.isError).toBe(true);
+		const text = (res.content as Array<{ type: string; text: string }>)[0]
+			?.text;
+		expect(text).toContain('not found');
+	});
+});

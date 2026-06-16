@@ -33,21 +33,41 @@
    - **N12** `overview compact`/`tag` — ya existía.
    - **N13** `memory_list` paginado (`limit`/`offset` + `total`/`nextOffset`).
 
-4. **P3 (2 ítems self-contained) ✅:**
+4. **P3 ✅:**
    - **N15** `state_health` + `state_repair` (dry-run/execute) en `proposals`:
      diagnostica locks activos, backpressure de cola (waiterOrphans/threshold) y
      assignments huérfanas; repara reusando `gc`/`expireSweep`/`gcZombies`. +specs.
    - **N21** doctor: una sola lectura del config (`assembleCliConfig` devuelve
      `configDiagnostic`). (= R3)
+   - **N14** plugin **`@cartago-git/mcp-notification`** (8º paquete). Decisión del
+     usuario: canal `notifications/message` (`sendLoggingMessage`) + `fs.watch` con
+     fallback a polling. Cada server vigila el lock compartido y emite
+     `{event:"lock-released",taskId,agent,files}` al liberarse → mata el polling de
+     `agent_lock status` en swarm. Tool `notify_status` + knowledge `lock-notifications`
+     + 4 tests. Registrado en tsconfig.base/vitest.shared/NPM_PUBLISH. Doctor con
+     los 7 plugins: ok/assembles, 37 tools.
 
-**Estado:** mcp-core **356 tests** (346 + 10 skip), typecheck limpio, todo verde.
-Nivel estimado por las auditorías tras esta tanda: **~9,5/10**.
+5. **N23 (parcial) — excelencia demostrada:**
+   - **Harness e2e real** cliente↔servidor MCP por `InMemoryTransport`
+     (`packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts`): arranca el
+     server ensamblado + plugin real y llama tools por el protocolo (listTools,
+     callTool, errores). **Destapó y arregló un bug real** que los unit tests no
+     veían: los tools de `memory` se registraban con **doble prefijo**
+     (`memory_memory_save`) porque sus `id` ya incluían `memory_` → ahora ids
+     `save/recall/list/forget` y nombres `memory_save` etc. (nada publicado → seguro).
+   - **Benchmark de tokens documentado** (`docs/TOKEN-BUDGETS.md` +
+     `e2e/token-budget.e2e.spec.ts`): medido sobre el protocolo real con 26 tools —
+     `overview` full **4 868 B** (~1 220 tok), `compact` **882 B** (~220 tok, 5,5×
+     más barato), `auto_work` **144 B** (~36 tok). Cold-start completo <300 tokens.
+     Budgets con guard de regresión.
+
+**Estado:** mcp-core **366 tests** (356 + 10 skip), typecheck limpio, todo verde.
+Nivel estimado por las auditorías tras esta tanda: **~9,6-9,8/10**.
 
 ## Pendiente para 11/10 (requiere decisión o es alcance grande)
 
 | # | Qué | Por qué no se hizo aún |
 |---|---|---|
-| **N14** | Plugin `notification` (mata polling de locks/cola con `notifications/message`) | **Decisión de arquitectura** (push del transport MCP) — el de mayor impacto, conviene acordarlo. |
 | **N16** | `outputSchema` Zod por tool (≈25 tools) | Mecánico pero superficie grande; `structuredContent` ya cubre lo práctico. |
 | **N17** | `compact_status` (git+locks+queue+quality en 1 llamada) | **Cross-plugin**: necesita decidir quién lo posee (core no conoce a proposals/git). |
 | **N18** | Presets de scaffold `minimal`/`standard`/`swarm` | **Decisión de diseño** (presets de plugins vs de agentes). |

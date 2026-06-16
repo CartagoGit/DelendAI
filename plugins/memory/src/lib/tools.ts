@@ -59,12 +59,12 @@ export const buildMemoryToolRegistrations = (
 	const prefix = options.namespacePrefix;
 	return [
 		{
-			id: 'memory_save',
+			id: 'save',
 			summary: 'Save (or update) a titled note with optional tags.',
 			tags: ['memory'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_memory_save`,
+					`${prefix}_save`,
 					{
 						description:
 							'Save a small, durable note (upserts by title). Use for decisions, gotchas and continuity an agent should remember next session.',
@@ -126,12 +126,12 @@ export const buildMemoryToolRegistrations = (
 			},
 		},
 		{
-			id: 'memory_recall',
+			id: 'recall',
 			summary: 'Recall notes by free-text query and/or tags (newest first).',
 			tags: ['memory', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_memory_recall`,
+					`${prefix}_recall`,
 					{
 						description:
 							'Recall durable notes by query and/or tags. Low-token: returns only matches, newest first.',
@@ -164,12 +164,12 @@ export const buildMemoryToolRegistrations = (
 			},
 		},
 		{
-			id: 'memory_list',
+			id: 'list',
 			summary: 'List note ids, titles and tags (cheap index; paginated).',
 			tags: ['memory', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_memory_list`,
+					`${prefix}_list`,
 					{
 						description:
 							'List notes as {id,title,tags}, newest first. Paginated: `limit` (default 50, max 200) + `offset`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall.',
@@ -212,12 +212,12 @@ export const buildMemoryToolRegistrations = (
 			},
 		},
 		{
-			id: 'memory_forget',
+			id: 'forget',
 			summary: 'Delete a note by id.',
 			tags: ['memory'],
 			register: async (server) => {
 				server.registerTool(
-					`${prefix}_memory_forget`,
+					`${prefix}_forget`,
 					{
 						description: 'Delete a note by id (from memory_list).',
 						inputSchema: z.object({ id: z.string() }),
