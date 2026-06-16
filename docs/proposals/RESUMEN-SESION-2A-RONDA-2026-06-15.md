@@ -1,8 +1,12 @@
-# Resumen de sesión — 2ª ronda de auditoría (2026-06-15, noche, Opus)
+# Resumen de sesión — 2ª ronda de auditoría (2026-06-15 noche → 06-16, Opus)
 
 > Continuación tras la sesión de oficina. El usuario aportó **dos auditorías
 > nuevas del estado actual** (Antigravity·Sonnet 4.6 = 8,4/10, Antigravity·Gemini
 > 3.5 = 8,5/10) y pidió: consolidarlas en la propuesta viva y seguir hacia 11/10.
+>
+> **Repo:** `/home/cartago/_projects/mcp-core`. **Estado al cerrar: mcp-core 366
+> tests (356 + 10 skip), typecheck limpio, TODO VERDE.** Nivel estimado ~9,6-9,8/10.
+> Nada a medias; punto estable para retomar en la oficina.
 
 ## Qué se hizo
 
@@ -76,4 +80,46 @@ Nivel estimado por las auditorías tras esta tanda: **~9,6-9,8/10**.
 | **N22** | Memoria semántica (FTS/SQLite) en `memory_recall` | Alcance grande + dependencia. |
 | **N23** | Excelencia demostrada: tests de caos, observabilidad `IStatusCollector`, benchmarks de tokens, semver+publish automatizado, **SDK de tipos generados** | Multi-semana (estimación de las propias auditorías). |
 
-**npm publish**: lo ejecuta el usuario (`docs/NPM_PUBLISH.md`).
+## 🔖 Cómo continuar en la oficina
+
+**1. Validar que todo sigue verde (siempre tras cada cambio):**
+```bash
+cd /home/cartago/_projects/mcp-core
+bun install
+bun run validate            # typecheck + 366 tests (356 + 10 skip) → verde
+# doctor end-to-end con los 7 plugins:
+bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search,notification --check
+# → ok:true, assembles:true, 37 tools
+```
+
+**2. Dónde está la cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md`
+**§0 (N1–N23)** con el estado ✅/🟡/⬜ de cada hallazgo. Esto manda; lo de arriba en
+ese doc es historial.
+
+**3. Premisa clave (no la olvides):** **Affairs ya NO consume mcp-core** (proyectos
+independientes; mcp-core se extrajo y Affairs conserva su copia). Cambios aquí NO
+afectan a Affairs — ignora cualquier nota antigua de "re-validar 1184".
+
+**4. Siguiente paso recomendado** (lo que quedó pendiente de TU decisión):
+- **N16 outputSchema** (~25 tools) — hacerlo *tool a tool* usando el harness e2e
+  como red (el SDK valida `structuredContent` contra el schema; un desajuste rompe
+  clientes reales, por eso no se hizo a ciegas).
+- **N17 compact_status** — decidir dueño: ¿`proposals` agregando solo su estado
+  (locks/queue/board), o core agregando lo que haya?
+- **N18 presets** `minimal/standard/swarm` — decisión de diseño (presets de
+  plugins vs de agentes).
+- **N19 plugins `docs`/`deps`** — definir su contrato (¿`deps`=auditar
+  package.json/CVEs? ¿`docs`=indexar/servir docs?).
+- **N20** split de `round-context.ts` (884 líneas) — refactor interno, decisión-libre.
+- **N22** memoria semántica (FTS/SQLite) · **resto N23** (tests de caos,
+  observabilidad `IStatusCollector`, semver+publish auto, SDK de tipos generados).
+
+Mi recomendación para retomar: **N16 con red e2e** + pedirme el **contrato de N19**.
+
+**5. Artefactos nuevos de esta sesión** (por si quieres revisarlos):
+- `plugins/notification/**` (8º paquete).
+- `packages/core/tests/src/lib/e2e/{server-client,token-budget}.e2e.spec.ts`.
+- `docs/TOKEN-BUDGETS.md` (benchmark medido).
+- `plugins/proposals/src/lib/tools/state-tools.tool.ts` (state_health/repair).
+
+**npm publish**: lo ejecuta el usuario (`docs/NPM_PUBLISH.md`, ya con los 8 paquetes).
