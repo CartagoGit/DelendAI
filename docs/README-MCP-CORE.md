@@ -12,7 +12,7 @@ Two ideas:
    agent writes the files).
 2. **Compose capability with plugins**: register `mcp-core` once in your editor
    and turn features on with `--plugins=...`. The core knows how to create new
-   plugins too (see [PLUGINS-MCP-CORE.md](./docs/PLUGINS-MCP-CORE.md)).
+   plugins too (see [PLUGINS-MCP-CORE.md](./PLUGINS-MCP-CORE.md)).
 
 It is designed to work the same under **any agent or model** (Claude, GPT,
 local…): MCP is model-agnostic, tools use strict zod schemas and return
@@ -44,6 +44,8 @@ scaffolding tools.
 | Argument | Default | Purpose |
 |---|---|---|
 | `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@cartago-git/mcp-<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
+| `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped): `minimal` (git, search), `standard` (git, search, memory, docs, rules, quality, deps), `swarm` (standard + proposals, notification). |
+| `--verbose` | off | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup. |
 | `--cacheDir=DIR` | `.cache/mcp-core` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
 | `--docsDir=DIR` | `docs/mcp-core` | Human-edited document root (e.g. proposals). |
 | `--workspace=DIR` | current dir | Workspace root all paths resolve against. |
@@ -90,6 +92,9 @@ never crashes the server.
   Lazy: read a doc only when needed.
 - **`<prefix>_get_validation_matrix`** — the quality-gate commands per scope
   (how to validate work here), from `mcp-core.config.json`.
+- **`<prefix>_status`** — read-only live runtime status aggregated from every
+  registered `IStatusCollector` (the built-in mcp-core collector with loaded
+  plugins + counts, plus any host collector). Returns `{ collectors, errors }`.
 - **`<prefix>_analyze_project`** — read-only. Inspects the project and returns a
   structured analysis **plus a recommended server plan** (project type incl.
   python/go/rust/monorepo, tools, plugins, validation commands, detected CI and
@@ -154,11 +159,20 @@ import {
 } from '@cartago-git/mcp-proposals/public';
 ```
 
-Two stable import surfaces per package:
+Each package has a single published import surface: **`<pkg>` (= `<pkg>/public`)**
+— the curated, stable API. Everything under `src/lib` is internal and is not
+exported from the published package, so it can change without a breaking bump.
 
-- **`<pkg>/public`** — the curated, stable API (recommended).
-- **`<pkg>/lib/*`** — deep internal modules (engines, helpers) for advanced
-  reuse; less stable across versions.
+That public surface also re-exports the **generated tool-output types**: a
+`<Pkg>ToolOutputs` map (MCP tool name → `structuredContent` type) plus a
+`<Tool>Output` interface per tool, generated from each tool's Zod `outputSchema`
+(`bun run types:generate`). MCP clients can type responses without restating the
+schema:
+
+```ts
+import type { GitToolOutputs } from '@cartago-git/mcp-git/public';
+const status: GitToolOutputs['git_status'] = result.structuredContent;
+```
 
 So the same code that powers the MCP server is callable as an ordinary library
 from any other repo.
@@ -176,6 +190,15 @@ from any other repo.
   status / changed / diff / log).
 - `plugins/quality` → **`@cartago-git/mcp-quality`** (runs the project quality
   gates per scope and returns structured pass/fail).
+- `plugins/search` → **`@cartago-git/mcp-search`** (grep-like, low-token textual
+  `search` over allow-listed workspace files).
+- `plugins/notification` → **`@cartago-git/mcp-notification`** (watches the
+  shared lock file and pushes an MCP `notifications/message` on release, so
+  agents stop polling).
+- `plugins/docs` → **`@cartago-git/mcp-docs`** (catalogue + read the repo
+  markdown: `docs_list` / `docs_read`, anti-traversal).
+- `plugins/deps` → **`@cartago-git/mcp-deps`** (dependency inventory + offline
+  health: `deps_list` / `deps_check`; no network).
 
 ## Design principles (model/agent-agnostic, low-token)
 
