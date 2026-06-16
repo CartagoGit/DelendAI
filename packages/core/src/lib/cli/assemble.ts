@@ -38,7 +38,9 @@ import type {
 	IOverviewToolEntry,
 } from '../tools/overview-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
+import { buildStatusToolRegistration } from '../tools/status-tool';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
+import type { IStatusCollector } from '../contracts/interfaces/status-collector.interface';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 
 export interface IAssembledCliConfig {
@@ -193,10 +195,23 @@ export const assembleCliConfig = async (
 		recommendedNextAction,
 	});
 
+	// Built-in collector so `<prefix>_status` is useful even without host
+	// collectors: reports the live plugin-load result. A programmatic host
+	// adds its own collectors (e.g. a game loop) via the same tool. [N23]
+	const coreCollector: IStatusCollector = {
+		id: 'mcp-core',
+		collect: async () => ({
+			requestedPlugins: args.plugins,
+			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
+			pluginErrors: loadResult.errors.length,
+		}),
+	};
+
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
 		buildValidationMatrixToolRegistration(corePrefix, () => validationMatrix),
+		buildStatusToolRegistration(corePrefix, [coreCollector]),
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,

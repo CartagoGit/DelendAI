@@ -139,6 +139,11 @@ export type {
 } from '../lib/tools/overview-tool';
 export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
 export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
+export {
+	buildStatusToolRegistration,
+	collectStatus,
+} from '../lib/tools/status-tool';
+export type { IStatusResult } from '../lib/tools/status-tool';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
 

@@ -13,15 +13,15 @@ import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
 import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
 import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
 
-const pluginWithStatusTool = (name: string) => ({
+const pluginWithPingTool = (name: string) => ({
 	name,
 	version: '1.0.0',
 	describe: `${name} plugin`,
 	register: () => ({
 		tools: [
 			{
-				id: 'status',
-				summary: `${name} status`,
+				id: 'ping',
+				summary: `${name} ping`,
 				register: async () => {},
 			},
 		],
@@ -34,8 +34,8 @@ const assembleTwoPlugins = () => {
 		readFile: () => undefined,
 		import: async (specifier: string) => ({
 			default: specifier.includes('beta')
-				? pluginWithStatusTool('beta')
-				: pluginWithStatusTool('alpha'),
+				? pluginWithPingTool('beta')
+				: pluginWithPingTool('alpha'),
 		}),
 	});
 };
@@ -46,16 +46,16 @@ describe('R12 — same internal tool id across plugins', () => {
 		expect(loadResult.errors).toEqual([]);
 
 		const ids = config.extraTools!.map((t) => t.id);
-		expect(ids).toContain('alpha_status');
-		expect(ids).toContain('beta_status');
+		expect(ids).toContain('alpha_ping');
+		expect(ids).toContain('beta_ping');
 		// The raw, ambiguous id must not survive into the global sequence.
-		expect(ids).not.toContain('status');
+		expect(ids).not.toContain('ping');
 	});
 
 	it('builds the real MCP server without throwing a duplicate-id error', async () => {
 		const { config } = await assembleTwoPlugins();
 		const assembled = await createMcpServer(config);
-		expect(assembled.registrationOrder).toContain('alpha_status');
-		expect(assembled.registrationOrder).toContain('beta_status');
+		expect(assembled.registrationOrder).toContain('alpha_ping');
+		expect(assembled.registrationOrder).toContain('beta_ping');
 	});
 });
