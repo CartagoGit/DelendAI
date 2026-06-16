@@ -93,6 +93,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_analyze_project`,
 				{
+						outputSchema: z.record(z.string(), z.unknown()),
 					description:
 						'Read-only. Inspect this project and return a structured analysis plus a recommended MCP server plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
 					inputSchema: ANALYZE_SCHEMA,
@@ -131,6 +132,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_create_server`,
 				{
+						outputSchema: z.record(z.string(), z.unknown()),
 					description:
 						'Generate the files for a project-specific MCP server (or a new plugin) from a plan. Returns the files for YOU to write — it does not touch disk. Run analyze_project first to get a plan, edit it if needed, then call this.',
 					inputSchema: CREATE_SCHEMA,
@@ -177,6 +179,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_plan_mcp_server`,
 				{
+						outputSchema: z.record(z.string(), z.unknown()),
 					description:
 						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-core instead of replacing it.',
 					inputSchema: z.object({
