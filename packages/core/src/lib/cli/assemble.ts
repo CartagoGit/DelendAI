@@ -343,6 +343,73 @@ export const prepareServerBlueprintOnStart = async (
 };
 
 /** Entry point for the `mcp-core` bin. */
+// ---------------------------------------------------------------------------
+// `--verbose` observability [N23]
+// ---------------------------------------------------------------------------
+
+export interface IAssemblyDiagnostics {
+	readonly workspace: string;
+	readonly cacheDir: string;
+	readonly docsDir: string;
+	readonly plugins: {
+		readonly requested: readonly string[];
+		readonly loaded: ReadonlyArray<{
+			readonly name: string;
+			readonly version?: string;
+		}>;
+		readonly errors: readonly string[];
+	};
+	readonly counts: {
+		readonly tools: number;
+		readonly prompts: number;
+		readonly resources: number;
+	};
+	readonly registrationOrder: readonly string[];
+}
+
+/** Pure: assemble a diagnostics snapshot of what the server will expose. */
+export const buildAssemblyDiagnostics = (
+	args: IMcpCoreCliArgs,
+	loadResult: IPluginLoadResult,
+	config: IMcpCoreHostConfig,
+	registrationOrder: readonly string[]
+): IAssemblyDiagnostics => ({
+	workspace: args.workspace,
+	cacheDir: args.cacheDir,
+	docsDir: args.docsDir,
+	plugins: {
+		requested: args.plugins,
+		loaded: loadResult.loaded.map((e) => ({
+			name: e.plugin.name,
+			...(e.plugin.version !== undefined
+				? { version: e.plugin.version }
+				: {}),
+		})),
+		errors: loadResult.errors.map((e) => e.message),
+	},
+	counts: {
+		tools: config.extraTools?.length ?? 0,
+		prompts: config.extraPrompts?.length ?? 0,
+		resources: config.extraResources?.length ?? 0,
+	},
+	registrationOrder,
+});
+
+/** Pure: render diagnostics as stderr lines (stdout is the MCP transport). */
+export const formatVerbose = (d: IAssemblyDiagnostics): string => {
+	const loaded = d.plugins.loaded
+		.map((p) => (p.version ? `${p.name}@${p.version}` : p.name))
+		.join(', ');
+	return (
+		[
+			`[mcp-core] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
+			`[mcp-core] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
+			`[mcp-core] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
+			`[mcp-core] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
+		].join('\n') + '\n'
+	);
+};
+
 export const runCli = async (
 	argv: readonly string[],
 	cwd: string
@@ -363,6 +430,19 @@ export const runCli = async (
 		process.stderr.write(`[mcp-core] plugin error: ${error.message}\n`);
 	}
 	const assembled = await createMcpServer(config);
+	// `--verbose`: dump an assembly diagnostic to stderr before going live.
+	if (args.tokens['verbose'] !== undefined) {
+		process.stderr.write(
+			formatVerbose(
+				buildAssemblyDiagnostics(
+					args,
+					loadResult,
+					config,
+					assembled.registrationOrder
+				)
+			)
+		);
+	}
 	await assembled.start();
 
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
