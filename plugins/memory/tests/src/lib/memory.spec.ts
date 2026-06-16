@@ -77,6 +77,65 @@ describe('memory store', () => {
 	});
 });
 
+describe('memory recall — relevance ranking (N22)', () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-rank-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('ranks the more relevant note first (not just recency)', async () => {
+		// Older note is highly relevant; newer note barely mentions the term.
+		await saveNote(
+			store,
+			{ title: 'Postgres indexing', body: 'index index index on postgres' },
+			() => '2026-01-01T00:00:00.000Z'
+		);
+		await saveNote(
+			store,
+			{ title: 'Deploy notes', body: 'we mention index once' },
+			() => '2026-06-01T00:00:00.000Z'
+		);
+		const hits = recall(store, { query: 'index' });
+		expect(hits[0]?.title).toBe('Postgres indexing'); // relevance > recency
+		expect(hits).toHaveLength(2);
+	});
+
+	it('weights title matches over body matches', async () => {
+		await saveNote(store, { title: 'auth flow', body: 'unrelated text here' });
+		await saveNote(store, { title: 'misc', body: 'a passing mention of auth' });
+		const hits = recall(store, { query: 'auth' });
+		expect(hits[0]?.title).toBe('auth flow');
+	});
+
+	it('keeps a substring floor (partial-token match)', async () => {
+		await saveNote(store, { title: 'DB', body: 'we use mysql2 here' });
+		// "mysql" is not a standalone token (the body has "mysql2") — the
+		// substring floor must still surface it.
+		expect(recall(store, { query: 'mysql' })[0]?.title).toBe('DB');
+	});
+
+	it('tags remain a hard filter alongside a query', async () => {
+		await saveNote(store, { title: 'A', body: 'cache strategy', tags: ['ops'] });
+		await saveNote(store, { title: 'B', body: 'cache strategy', tags: ['dev'] });
+		const hits = recall(store, { query: 'cache', tags: ['ops'] });
+		expect(hits.map((h) => h.title)).toEqual(['A']);
+	});
+
+	it('returns nothing when no note matches the query', async () => {
+		await saveNote(store, { title: 'A', body: 'nothing relevant' });
+		expect(recall(store, { query: 'zzzznomatch' })).toEqual([]);
+	});
+
+	it('with no query, falls back to newest-first', async () => {
+		await saveNote(store, { title: 'old', body: 'x' }, () => '2026-01-01T00:00:00.000Z');
+		await saveNote(store, { title: 'new', body: 'y' }, () => '2026-06-01T00:00:00.000Z');
+		expect(recall(store, {})[0]?.title).toBe('new');
+	});
+});
+
 describe('memory store — corrupt ≠ empty (M10)', () => {
 	let dir = '';
 	let store = '';
