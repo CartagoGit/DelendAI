@@ -76,10 +76,20 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 	});
 
 	it('round-trips a note through save → recall over the protocol', async () => {
-		await client.callTool({
+		const saved = await client.callTool({
 			name: 'memory_save',
 			arguments: { title: 'E2E decision', body: 'we ship via in-memory', tags: ['e2e'] },
 		});
+		// N16: memory_save declares an outputSchema, so the SDK validated the
+		// structuredContent on the way out, and a modern client reads it
+		// directly. A wrong schema would have thrown McpError here.
+		const savedStructured = saved.structuredContent as {
+			ok: boolean;
+			saved: { title: string };
+		};
+		expect(savedStructured.ok).toBe(true);
+		expect(savedStructured.saved.title).toBe('E2E decision');
+
 		const res = await client.callTool({
 			name: 'memory_recall',
 			arguments: { query: 'in-memory' },
@@ -88,6 +98,10 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 			?.text;
 		const recalled = JSON.parse(text ?? '{}');
 		expect(recalled.notes[0]?.title).toBe('E2E decision');
+		expect(
+			(res.structuredContent as { notes: Array<{ title: string }> })
+				.notes[0]?.title
+		).toBe('E2E decision');
 	});
 
 	it('reports an unknown tool as a protocol error', async () => {

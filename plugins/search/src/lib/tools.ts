@@ -41,6 +41,19 @@ export const buildSearchToolRegistrations = (
 							maxResults: z.number().optional(),
 							caseSensitive: z.boolean().optional(),
 						}),
+						outputSchema: z.object({
+							query: z.string(),
+							count: z.number(),
+							truncated: z.boolean(),
+							scanned: z.number(),
+							hits: z.array(
+								z.object({
+									file: z.string(),
+									line: z.number(),
+									text: z.string(),
+								})
+							),
+						}),
 					},
 					async (args: {
 						query: string;

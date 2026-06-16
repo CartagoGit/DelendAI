@@ -18,6 +18,22 @@ import {
 	saveNote,
 } from './store';
 
+// MCP modern outputSchema shapes (N16). Error envelopes are exempt from
+// SDK validation (isError:true), so these describe only the success path.
+const NoteSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	body: z.string(),
+	tags: z.array(z.string()),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+const NoteIndexEntrySchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	tags: z.array(z.string()),
+});
+
 /**
  * Run a memory operation, translating a corrupt-store error into a
  * structured tool error that names the preserved backup, so an agent
@@ -73,7 +89,11 @@ export const buildMemoryToolRegistrations = (
 							body: z.string(),
 							tags: z.array(z.string()).optional(),
 						}),
-						},
+							outputSchema: z.object({
+								ok: z.literal(true),
+								saved: NoteSchema,
+							}),
+							},
 					async (args: {
 						title: string;
 						body: string;
@@ -140,6 +160,7 @@ export const buildMemoryToolRegistrations = (
 							tags: z.array(z.string()).optional(),
 							limit: z.number().optional(),
 						}),
+							outputSchema: z.object({ notes: z.array(NoteSchema) }),
 					},
 					async (args: {
 						query?: string | undefined;
@@ -177,6 +198,7 @@ export const buildMemoryToolRegistrations = (
 							limit: z.number().optional(),
 							offset: z.number().optional(),
 						}),
+							outputSchema: z.object({ notes: z.array(NoteIndexEntrySchema), total: z.number(), offset: z.number(), nextOffset: z.number().optional() }),
 					},
 					async (args: {
 						limit?: number | undefined;
@@ -221,6 +243,7 @@ export const buildMemoryToolRegistrations = (
 					{
 						description: 'Delete a note by id (from memory_list).',
 						inputSchema: z.object({ id: z.string() }),
+							outputSchema: z.object({ ok: z.literal(true), removed: z.string() }),
 					},
 					async (args: { id: string }) =>
 						guardCorrupt(async () => {
