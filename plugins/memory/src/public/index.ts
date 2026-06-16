@@ -17,3 +17,6 @@ export { rankNotes, tokenize } from '../lib/rank';
 export type { IRankedNote } from '../lib/rank';
 export { buildMemoryToolRegistrations } from '../lib/tools';
 export type { IMemoryToolOptions } from '../lib/tools';
+
+// --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
+export type * from '../generated/tool-outputs';

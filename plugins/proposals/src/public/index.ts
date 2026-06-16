@@ -80,3 +80,6 @@ export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';
+
+// --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
+export type * from '../generated/tool-outputs';

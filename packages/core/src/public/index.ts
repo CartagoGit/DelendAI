@@ -167,3 +167,6 @@ export type {
 	IBlueprintArtifact,
 	IBlueprintOptions,
 } from '../lib/bootstrap/index';
+
+// --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
+export type * from '../generated/tool-outputs';

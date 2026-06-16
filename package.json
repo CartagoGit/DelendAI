@@ -11,6 +11,7 @@
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"validate": "bun run typecheck && bun run test",
+		"types:generate": "bun scripts/generate-tool-types.ts",
 		"release": "bun scripts/release.ts"
 	},
 	"devDependencies": {
