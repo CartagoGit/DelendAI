@@ -99,7 +99,19 @@ export const buildCreateProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_proposal`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: z.object({
+					ok: z.literal(true),
+					file: z.string(),
+					path: z.string(),
+					disjointnessIssues: z.array(
+						z.object({
+							first: z.string(),
+							second: z.string(),
+							file: z.string(),
+						})
+					),
+					indexCount: z.number(),
+				}),
 				description:
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
 				inputSchema: z.object({
@@ -211,7 +223,13 @@ export const buildCloseSliceRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_close_slice`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: z.object({
+					ok: z.literal(true),
+					proposalId: z.string(),
+					sliceId: z.string(),
+					closed: z.boolean(),
+					lockReleased: z.boolean(),
+				}),
 				description:
 					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
