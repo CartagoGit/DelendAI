@@ -26,6 +26,7 @@ import {
 	buildStateRepairRegistration,
 } from './lib/tools/state-tools.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
+import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 
 /**
  * The proposals workflow plugin. It turns mcp-core into a multi-agent
@@ -188,6 +189,13 @@ export default definePlugin({
 				buildProposalBoardRegistration(authoringOptions),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
+				buildCompactStatusRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					lockPathAbs: abs(layout.lockFile),
+					queuePathAbs: abs(layout.taskQueueFile),
+					closedTasksPathAbs: abs(layout.closedTasksFile),
+					indexPathAbs: abs(layout.proposalIndexFile),
+				}),
 			],
 			prompts: [
 				{
