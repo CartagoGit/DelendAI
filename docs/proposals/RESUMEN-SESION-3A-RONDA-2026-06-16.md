@@ -1,12 +1,23 @@
-# Resumen de sesión — 3ª ronda (2026-06-16, **08:27 → 09:49**, oficina, Opus)
+# Resumen de sesión — 3ª ronda (2026-06-16, **08:27 → ~13:50**, oficina, Opus)
 
 > Continúa la cola viva **§0 (N1–N23)** de
 > `audits/AUDITORIA-UNIFICADA-2026-06-15.md`. Sesión anterior (2ª ronda, noche
 > 06-15) en `done/RESUMEN-SESION-2A-RONDA-2026-06-15.md`.
 >
 > **Repo:** `/home/cartago/_proyectos/propios/mcp-core`.
-> **Estado al cerrar: 379 tests (369 + 10 skip), typecheck limpio, TODO VERDE.**
-> Árbol git limpio. Nivel estimado ~9,8/10. Nada a medias.
+> **Estado al cerrar: 391 tests (381 + 10 skip), typecheck limpio, TODO VERDE.**
+> Árbol git limpio. Nivel estimado ~9,9/10. Nada a medias. **10 paquetes.**
+>
+> **Continuación (misma sesión, 09:49 → ~13:50):** además de N16/N17/N19-docs/
+> N20-parcial de la mañana, se cerró mucho más:
+> - **N16 endurecido y CORREGIDO**: una **red e2e estricta** (`outputschema.e2e.spec.ts`,
+>   asserta no-isError + structuredContent por el protocolo) destapó 2 regresiones
+>   que los unit tests ocultaban (`z.record` no vale como outputSchema → `z.object().catchall`;
+>   tools con content manual sin structuredContent) y un bug real **`git_git_*`→`git_*`**
+>   (doble-prefijo, como el `memory_memory_*` previo). Además schemas **precisos**
+>   en state_health/proposal_board/get_proposal_workflow.
+> - **N17** compact_status, **N18** presets de plugins (`--preset`), **N19** completo
+>   (plugins `docs` + `deps`), **N23** `--verbose`.
 
 ## Qué se hizo (todo ✅ con tests, commiteado)
 
@@ -50,12 +61,12 @@
 
 | # | Qué | Estado / por qué no se hizo |
 |---|---|---|
-| **N18** | Presets de scaffold `minimal`/`standard`/`swarm` | ⬜ **Decisión de diseño** (¿presets de plugins o de agentes?). |
-| **N19** (resto) | Plugin `deps`/`security` (auditar package.json/lockfile/CVEs) | ⬜ Contrato sin definir (¿solo outdated/licencias, o CVEs con red?). |
-| **N20** | Split `round-context.ts` (884 líneas → 3-4 módulos) (= R15) | 🟡 **parcial** — tipos+constantes ya extraídos a `round-context-types.ts` (884→~760, barrel `export *`). Falta separar funciones (digest/snapshot/store; comparten helpers privados → más fiddly). |
-| **N22** | Memoria semántica (FTS/SQLite) en `memory_recall` | ⬜ Alcance grande + dependencia. |
-| **N23** (resto) | Tests de caos/adversarial, observabilidad `IStatusCollector`+`--verbose`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` (N16 ya lo habilita) | 🟡 e2e real ✅ + benchmarks de tokens ✅ (sesión previa); resto ⬜, multi-semana. |
-| **N16** (refinar) | Convertir los `z.record` permisivos de proposals a **uniones por-acción** | mejora futura; alimenta el SDK de tipos de N23. |
+| **N18** | Presets `minimal`/`standard`/`swarm` | ✅ **HECHO** — presets de **plugins** (`--preset`, aditivos, fusiona con `--plugins`). |
+| **N19** | Plugins `docs` y `deps` | ✅ **HECHO** — `docs` (navegación markdown) + `deps` (inventario + salud offline, SIN red/CVE a propósito). |
+| **N20** | Split `round-context.ts` (884 → módulos) (= R15) | 🟡 **parcial** — tipos extraídos (884→~760, barrel `export *`). Falta separar funciones (digest/snapshot/store; comparten helpers privados → fiddly). |
+| **N22** | Memoria semántica (FTS/SQLite) en `memory_recall` | ⬜ Alcance grande + dependencia. **El mayor pendiente real.** |
+| **N23** (resto) | Tests de caos/adversarial, `IStatusCollector`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` | 🟡 e2e real estricto ✅ + benchmarks ✅ + **`--verbose` ✅** + doble-prefijos arreglados ✅. Resto (caos/IStatusCollector/SDK/semver) ⬜. |
+| **N16** (refinar) | `z.record` permisivos de los tools *action-multiplexed* → **uniones por-acción** | mejora futura; los read-only ya son precisos; alimenta el SDK de tipos de N23. |
 
 ## 🔖 Cómo continuar
 
@@ -63,7 +74,7 @@
 ```bash
 cd /home/cartago/_proyectos/propios/mcp-core
 bun install
-bun run validate     # typecheck + 379 tests (369 + 10 skip) → verde
+bun run validate     # typecheck + 391 tests (381 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
 bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search,notification,docs --check
 ```
