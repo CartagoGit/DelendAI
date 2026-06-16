@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
+import {
+	parseCliArgs,
+	resolvePreset,
+} from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
 
 describe('parseCliArgs', () => {
 	it('applies defaults when nothing is passed', () => {
@@ -39,5 +42,30 @@ describe('parseCliArgs', () => {
 		);
 		expect(args.workspace).toBe('/ws');
 		expect(args.extra['proposalsDir']).toBe('docs/p');
+	});
+
+	// N18: plugin presets
+	it('expands --preset=swarm into its plugin set', () => {
+		const args = parseCliArgs(['--preset=swarm'], '/cwd');
+		expect(args.plugins).toEqual([...resolvePreset('swarm')]);
+		expect(args.plugins).toContain('proposals');
+		expect(args.plugins).toContain('deps');
+		// `preset` is a known key, not forwarded to extra
+		expect(args.extra['preset']).toBeUndefined();
+	});
+
+	it('merges --preset with explicit --plugins, de-duped, preset first', () => {
+		const args = parseCliArgs(
+			['--preset=minimal', '--plugins=memory,git'],
+			'/cwd'
+		);
+		// minimal = [git, search]; + memory (git de-duped)
+		expect(args.plugins).toEqual(['git', 'search', 'memory']);
+	});
+
+	it('ignores an unknown preset', () => {
+		expect(parseCliArgs(['--preset=nope'], '/cwd').plugins).toEqual([]);
+		expect(resolvePreset('nope')).toEqual([]);
+		expect(resolvePreset(undefined)).toEqual([]);
 	});
 });
