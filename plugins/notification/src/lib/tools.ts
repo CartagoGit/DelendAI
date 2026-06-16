@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
@@ -75,6 +76,7 @@ export const buildNotifyRegistration = (
 				{
 					description:
 						'Report the lock-release notifier: the watched lock file, how many lock-released notifications it has pushed, and the most recent releases. The notifier emits notifications/message {event:"lock-released",taskId,agent,files} so agents react to freed files instead of polling agent_lock.',
+						outputSchema: z.object({ watching: z.string(), emitted: z.number(), lastReleases: z.array(z.object({ taskId: z.string(), agent: z.string(), files: z.array(z.string()) })) }),
 				},
 				async () =>
 					toolJson({

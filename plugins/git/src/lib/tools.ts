@@ -39,6 +39,7 @@ export const buildGitToolRegistrations = (
 					{
 						description:
 							'Returns the current branch, whether the tree is clean, and the changed entries (status + path). Read-only.',
+						outputSchema: z.object({ branch: z.string().optional(), clean: z.boolean(), entries: z.array(z.object({ status: z.string(), path: z.string() })) }),
 					},
 					async () => {
 						const repo = await checkRepo(options.run);
@@ -59,6 +60,7 @@ export const buildGitToolRegistrations = (
 					{
 						description:
 							'Returns just the list of changed file paths. Cheapest way to see what you have touched. Read-only.',
+						outputSchema: z.object({ changed: z.array(z.string()) }),
 					},
 					async () => {
 						const repo = await checkRepo(options.run);
@@ -83,6 +85,7 @@ export const buildGitToolRegistrations = (
 							staged: z.boolean().optional(),
 							path: z.string().optional(),
 						}),
+						outputSchema: z.object({ stat: z.string() }),
 					},
 					async (args: {
 						staged?: boolean | undefined;
@@ -115,6 +118,7 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns the most recent commits as {hash, subject}. Read-only.',
 						inputSchema: z.object({ limit: z.number().optional() }),
+						outputSchema: z.object({ commits: z.array(z.object({ hash: z.string(), subject: z.string() })) }),
 					},
 					async (args: { limit?: number | undefined }) => {
 						const repo = await checkRepo(options.run);
