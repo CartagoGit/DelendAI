@@ -5,7 +5,7 @@
 > 06-15) en `done/RESUMEN-SESION-2A-RONDA-2026-06-15.md`.
 >
 > **Repo:** `/home/cartago/_proyectos/propios/mcp-core`.
-> **Estado al cerrar: 397 tests (387 + 10 skip), typecheck limpio, TODO VERDE.**
+> **Estado al cerrar: 398 tests (388 + 10 skip), typecheck limpio, TODO VERDE.**
 > Árbol git limpio. Nivel estimado ~9,9/10. Nada a medias. **10 paquetes.**
 >
 > **Continuación (misma sesión, 09:49 → ~13:50):** además de N16/N17/N19-docs/
@@ -74,7 +74,7 @@
 ```bash
 cd /home/cartago/_proyectos/propios/mcp-core
 bun install
-bun run validate     # typecheck + 397 tests (387 + 10 skip) → verde
+bun run validate     # typecheck + 398 tests (388 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
 bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 ```
