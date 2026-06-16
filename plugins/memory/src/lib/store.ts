@@ -7,6 +7,8 @@ import {
 	writeFileAtomicSync,
 } from '@cartago-git/mcp-core/public';
 
+import { rankNotes } from './rank';
+
 export interface INote {
 	readonly id: string;
 	readonly title: string;
@@ -95,25 +97,39 @@ export const saveNote = (
 		return note;
 	});
 
-/** Recall notes by free-text query and/or tags. Newest first. */
+/**
+ * Recall notes by free-text query and/or tags.
+ * - `tags` is a hard filter (a note must carry all of them).
+ * - With a `query`, results are ranked by lexical relevance (BM25-lite,
+ *   see `rank.ts`), tie-broken by recency. Without one, newest first.
+ */
 export const recall = (
 	absPath: string,
 	options: { query?: string; tags?: readonly string[]; limit?: number } = {}
 ): INote[] => {
-	const query = options.query?.toLowerCase().trim();
+	const rawQuery = options.query?.trim() ?? '';
 	const tags = options.tags ?? [];
-	const matches = readStore(absPath).filter((note) => {
-		const textOk =
-			query === undefined ||
-			query.length === 0 ||
-			note.title.toLowerCase().includes(query) ||
-			note.body.toLowerCase().includes(query);
-		const tagsOk =
-			tags.length === 0 || tags.every((tag) => note.tags.includes(tag));
-		return textOk && tagsOk;
-	});
-	matches.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-	return matches.slice(0, options.limit ?? 10);
+	const limit = options.limit ?? 10;
+
+	const filtered = readStore(absPath).filter(
+		(note) => tags.length === 0 || tags.every((tag) => note.tags.includes(tag))
+	);
+
+	if (rawQuery.length === 0) {
+		return [...filtered]
+			.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+			.slice(0, limit);
+	}
+
+	return rankNotes(filtered, rawQuery)
+		.filter((r) => r.score > 0)
+		.sort(
+			(a, b) =>
+				b.score - a.score ||
+				b.note.updatedAt.localeCompare(a.note.updatedAt)
+		)
+		.slice(0, limit)
+		.map((r) => r.note);
 };
 
 export const removeNote = (absPath: string, id: string): Promise<boolean> =>

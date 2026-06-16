@@ -13,5 +13,7 @@ export {
 	removeNote,
 } from '../lib/store';
 export type { INote } from '../lib/store';
+export { rankNotes, tokenize } from '../lib/rank';
+export type { IRankedNote } from '../lib/rank';
 export { buildMemoryToolRegistrations } from '../lib/tools';
 export type { IMemoryToolOptions } from '../lib/tools';
