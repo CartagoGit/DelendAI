@@ -425,6 +425,7 @@ export const buildAgentNamesRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_agent_names`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Agent name registry for the whole agent tree — the root orchestrator (slot "orchestrator", depth 0) included, not only subagents. Actions: assign/release/heartbeat/list/tree/who_uses/gc/reconcile. Use for named/delegated agents, not normal single-slice work.',
 				inputSchema: z.object({

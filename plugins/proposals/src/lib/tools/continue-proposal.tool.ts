@@ -289,6 +289,7 @@ export const buildContinueProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_continue_proposal`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Resolve the next proposal to work on. mode "auto" (default) returns the next actionable proposal by family cascade; mode "plan" returns the parsed ## Slices plan with claimable slices; mode "claim" claims a slice via the agent lock. Structured JSON.',
 				inputSchema: z.object({

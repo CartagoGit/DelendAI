@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 
 import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
@@ -24,6 +25,7 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
 			},

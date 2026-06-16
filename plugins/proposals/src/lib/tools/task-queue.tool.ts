@@ -31,6 +31,7 @@ export const buildTaskQueueRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_task_queue`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Swarm coordination only: enqueue/dequeue/subscribe/report for waitFor, observe, or backpressure. Root orchestrator owns queue writes.',
 				inputSchema: z.object({

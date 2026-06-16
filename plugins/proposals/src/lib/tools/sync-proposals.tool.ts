@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
@@ -36,6 +37,7 @@ export const buildSyncProposalsRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_sync_proposals`,
 			{
+						outputSchema: z.object({ changed: z.boolean(), count: z.number(), indexPath: z.string(), errors: z.array(z.string()) }),
 				description:
 					'Regenerate the proposal index from the .md files under the proposals dir. Idempotent. Invoke after any create or rename under the proposals dir. Returns { changed, count, indexPath, errors }.',
 			},
