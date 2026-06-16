@@ -10,7 +10,8 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"validate": "bun run typecheck && bun run test"
+		"validate": "bun run typecheck && bun run test",
+		"release": "bun scripts/release.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
