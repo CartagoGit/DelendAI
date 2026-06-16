@@ -43,6 +43,7 @@ export const DEFAULT_CLI_ARGS = {
 
 const KNOWN_KEYS = new Set([
 	'plugins',
+	'preset',
 	'cacheDir',
 	'docsDir',
 	'workspace',
@@ -52,9 +53,34 @@ const KNOWN_KEYS = new Set([
 	'config',
 	'check',
 	'doctor',
+	'verbose',
 	'mcp-server-create',
 	'mcp-server-tests',
 ]);
+
+// Curated plugin presets (additive). `--preset=standard` saves typing the
+// full `--plugins` list; it merges with any explicit `--plugins`. [N18]
+const STANDARD_PRESET = [
+	'git',
+	'search',
+	'memory',
+	'docs',
+	'rules',
+	'quality',
+	'deps',
+] as const;
+export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> = {
+	// read-only orientation, lightweight
+	minimal: ['git', 'search'],
+	// full single-agent toolkit
+	standard: STANDARD_PRESET,
+	// standard + multi-agent coordination
+	swarm: [...STANDARD_PRESET, 'proposals', 'notification'],
+};
+
+/** Plugins for a preset name, or `[]` when the name is unknown. */
+export const resolvePreset = (name: string | undefined): readonly string[] =>
+	name === undefined ? [] : (PLUGIN_PRESETS[name] ?? []);
 
 const isFalse = (value: string | undefined): boolean =>
 	value === 'false' || value === '0' || value === 'no';
@@ -105,8 +131,15 @@ export const parseCliArgs = (
 	for (const [key, value] of Object.entries(tokens)) {
 		if (!KNOWN_KEYS.has(key)) extra[key] = value;
 	}
+	// Preset plugins first, then explicit --plugins; de-duped, order preserved.
+	const plugins = [
+		...new Set([
+			...resolvePreset(tokens['preset']),
+			...splitList(tokens['plugins']),
+		]),
+	];
 	return {
-		plugins: splitList(tokens['plugins']),
+		plugins,
 		cacheDir: tokens['cacheDir'] ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens['docsDir'] ?? DEFAULT_CLI_ARGS.docsDir,
 		workspace: tokens['workspace'] ?? cwd,
