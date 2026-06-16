@@ -64,9 +64,18 @@ export const collectCompactStatus = async (
 ): Promise<ICompactStatus> => {
 	const want = new Set(fields);
 	const out: {
-		locks?: ICompactStatus['locks'];
-		queue?: ICompactStatus['queue'];
-		proposals?: ICompactStatus['proposals'];
+		locks?: { active: number };
+		queue?: {
+			queued: number;
+			promoted: number;
+			waiterOrphans: number;
+			threshold: string;
+		};
+		proposals?: {
+			total: number;
+			actionable: number;
+			byStatus: Record<string, number>;
+		};
 	} = {};
 
 	if (want.has('locks') || want.has('queue')) {
@@ -155,7 +164,9 @@ export const buildCompactStatusRegistration = (
 						.optional(),
 				}),
 			},
-			async (args: { fields?: Array<'locks' | 'queue' | 'proposals'> }) => {
+			async (args: {
+				fields?: Array<'locks' | 'queue' | 'proposals'> | undefined;
+			}) => {
 				const fields =
 					args.fields && args.fields.length > 0
 						? args.fields

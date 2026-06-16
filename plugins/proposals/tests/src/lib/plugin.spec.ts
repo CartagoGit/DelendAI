@@ -43,6 +43,7 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'proposal_board',
 			'state_health',
 			'state_repair',
+			'compact_status',
 		]);
 		expect(
 			registrations.knowledge?.map((k) => k.id)
@@ -83,6 +84,7 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'work_proposal_board',
 			'work_state_health',
 			'work_state_repair',
+			'work_compact_status',
 		]);
 	});
 });
