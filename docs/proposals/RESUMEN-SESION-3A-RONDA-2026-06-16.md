@@ -76,7 +76,7 @@ cd /home/cartago/_proyectos/propios/mcp-core
 bun install
 bun run validate     # typecheck + 391 tests (381 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
-bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search,notification,docs --check
+bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 ```
 
 **2. Cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0
