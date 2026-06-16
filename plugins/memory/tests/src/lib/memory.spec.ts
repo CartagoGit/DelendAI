@@ -136,6 +136,39 @@ describe('memory recall — relevance ranking (N22)', () => {
 	});
 });
 
+describe('memory recall — adversarial inputs (N23)', () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-adv-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('regex-special queries are treated literally, never as regex (no throw)', async () => {
+		await saveNote(store, { title: 'Globs', body: 'pattern a.*b (group) [set] $end' });
+		for (const q of ['.*', '(', '[', '\\', '$end', 'a.*b', '(group)']) {
+			expect(() => recall(store, { query: q })).not.toThrow();
+		}
+		// the literal substring `a.*b` is present → surfaced via the floor
+		expect(recall(store, { query: 'a.*b' })[0]?.title).toBe('Globs');
+	});
+
+	it('handles unicode and a very long query without throwing', async () => {
+		await saveNote(store, { title: 'café', body: '☕ über naïve façade' });
+		expect(recall(store, { query: 'café' })[0]?.title).toBe('café');
+		expect(() =>
+			recall(store, { query: 'x'.repeat(50_000) })
+		).not.toThrow();
+	});
+
+	it('round-trips unicode/control-ish content through save+recall', async () => {
+		await saveNote(store, { title: 'Tab\tnote', body: 'line1\nline2 — emoji 🚀' });
+		const hits = recall(store, { query: 'emoji' });
+		expect(hits[0]?.body).toContain('🚀');
+	});
+});
+
 describe('memory store — corrupt ≠ empty (M10)', () => {
 	let dir = '';
 	let store = '';
