@@ -5,7 +5,7 @@
 > 06-15) en `done/RESUMEN-SESION-2A-RONDA-2026-06-15.md`.
 >
 > **Repo:** `/home/cartago/_proyectos/propios/mcp-core`.
-> **Estado al cerrar: 405 tests (395 + 10 skip), typecheck limpio, TODO VERDE.**
+> **Estado al cerrar: 408 tests (398 + 10 skip), typecheck limpio, TODO VERDE.**
 > Árbol git limpio. Nivel estimado ~9,9/10. Nada a medias. **10 paquetes.**
 >
 > **Continuación (misma sesión, 09:49 → ~13:50):** además de N16/N17/N19-docs/
@@ -65,7 +65,7 @@
 | **N19** | Plugins `docs` y `deps` | ✅ **HECHO** — `docs` (navegación markdown) + `deps` (inventario + salud offline, SIN red/CVE a propósito). |
 | **N20** | Split `round-context.ts` (884 → módulos) (= R15) | 🟡 **parcial** — tipos extraídos (884→~760, barrel `export *`). Falta separar funciones (digest/snapshot/store; comparten helpers privados → fiddly). |
 | **N22** | Memoria semántica en `memory_recall` | ✅ **HECHO (léxico)** — ranking BM25-lite en JS puro (`rank.ts`), cero deps. NO embeddings/SQLite a propósito (romperían agnóstico/offline). git/search async ya estaban. |
-| **N23** (resto) | Tests de caos/adversarial, `IStatusCollector`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` | 🟡 e2e real estricto ✅ + benchmarks ✅ + **`--verbose` ✅** + doble-prefijos ✅ + **tests de caos/adversarial ✅**. Resto (IStatusCollector/SDK/semver) ⬜. |
+| **N23** (resto) | Tests de caos/adversarial, `IStatusCollector`, skills versionadas, semver+publish auto, **SDK de tipos generados** desde `outputSchema` | 🟡 e2e real estricto ✅ + benchmarks ✅ + **`--verbose` ✅** + doble-prefijos ✅ + **caos/adversarial ✅** + **IStatusCollector ✅** (meta-tool `status`). Resto (SDK de tipos/semver+publish auto) ⬜. |
 | **N16** (refinar) | `z.record` permisivos de los tools *action-multiplexed* → **uniones por-acción** | mejora futura; los read-only ya son precisos; alimenta el SDK de tipos de N23. |
 
 ## 🔖 Cómo continuar
@@ -74,7 +74,7 @@
 ```bash
 cd /home/cartago/_proyectos/propios/mcp-core
 bun install
-bun run validate     # typecheck + 405 tests (395 + 10 skip) → verde
+bun run validate     # typecheck + 408 tests (398 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
 bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 ```
