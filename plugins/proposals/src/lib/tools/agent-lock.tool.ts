@@ -31,7 +31,7 @@ export const buildAgentLockRegistration = (
 			server.registerTool(
 				toolName,
 				{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
 					inputSchema: z.object({
@@ -42,12 +42,39 @@ export const buildAgentLockRegistration = (
 						parent_task_id: z.string().optional(),
 					}),
 				},
-				async (args) =>
-					runAgentLockEngine(args, {
+				async (args) => {
+					const res = await runAgentLockEngine(args, {
 						lockPath: options.lockPathAbs,
 						toolName,
 						lockFileLabel: options.lockFileLabel,
-					})
+					});
+					// The engine returns text-only; mirror its JSON payload into
+					// structuredContent so the declared outputSchema is satisfied
+					// (the SDK validates it on success).
+					if (!res.isError) {
+						try {
+							const parsed = JSON.parse(
+								res.content[0]?.text ?? 'null'
+							) as unknown;
+							if (
+								typeof parsed === 'object' &&
+								parsed !== null &&
+								!Array.isArray(parsed)
+							) {
+								return {
+									...res,
+									structuredContent: parsed as Record<
+										string,
+										unknown
+									>,
+								};
+							}
+						} catch {
+							// fall through: return as-is
+						}
+					}
+					return res;
+				}
 			);
 		},
 	};

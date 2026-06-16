@@ -189,7 +189,7 @@ export const buildScaffoldToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_scaffold`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Generate host artefacts from mcp-core templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,

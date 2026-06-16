@@ -26,7 +26,7 @@ export default definePlugin({
 					body: [
 						'# Git orientation',
 						'',
-						`Tools: \`${ctx.namespacePrefix}_git_status\` / \`_git_changed\` / \`_git_diff\` / \`_git_log\` (all read-only).`,
+						`Tools: \`${ctx.namespacePrefix}_status\` / \`_changed\` / \`_diff\` / \`_log\` (all read-only).`,
 						'',
 						'- Start a turn with `git_changed` to see what you touched, cheaply.',
 						'- Use `git_diff` (--stat) before composing a commit message; write the message yourself.',

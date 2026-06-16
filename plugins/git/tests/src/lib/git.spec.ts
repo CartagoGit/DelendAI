@@ -81,11 +81,13 @@ describe('git plugin', () => {
 			args: {},
 		} satisfies IMcpPluginContext;
 		const reg = await plugin.register(ctx);
+		// ids are bare verbs; registered MCP names are `git_status` etc.
+		// (prefix + id), avoiding the old double-prefix `git_git_status`.
 		expect(reg.tools?.map((t) => t.id)).toEqual([
-			'git_status',
-			'git_changed',
-			'git_diff',
-			'git_log',
+			'status',
+			'changed',
+			'diff',
+			'log',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
 	});

@@ -124,7 +124,7 @@ export const buildStateHealthRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_health`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
 			},
@@ -150,7 +150,7 @@ export const buildStateRepairRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_repair`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
 				inputSchema: z.object({

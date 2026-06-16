@@ -118,13 +118,20 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 	];
 
 	it('every read-only tool returns schema-valid structuredContent', async () => {
+		const broken: string[] = [];
 		for (const call of READONLY_CALLS) {
 			const res = await client.callTool({
 				name: call.name,
 				arguments: (call.args as Record<string, unknown>) ?? {},
 			});
-			if (res.isError) continue; // error envelopes are schema-exempt
-			expect(res.structuredContent, `${call.name} structuredContent`).toBeDefined();
+			// These read-only calls must SUCCEED with structuredContent. A
+			// tool with an outputSchema that returns no structuredContent
+			// makes the SDK fail output validation → isError.
+			if (res.isError || res.structuredContent === undefined) {
+				const txt = (res.content as Array<{ text?: string }>)?.[0]?.text ?? '';
+				broken.push(`${call.name}: ${txt.slice(0, 120)}`);
+			}
 		}
+		expect(broken, 'tools whose outputSchema is unsatisfied').toEqual([]);
 	});
 });

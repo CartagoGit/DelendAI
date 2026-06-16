@@ -47,22 +47,20 @@ export const buildSyncProposalsRegistration = (
 					options.layout,
 					options.extraFolders ?? []
 				);
+				const payload = {
+					changed: result.changed,
+					count: result.count,
+					indexPath: result.indexPath,
+					errors: result.errors,
+				};
 				return {
 					content: [
 						{
 							type: 'text' as const,
-							text: JSON.stringify(
-								{
-									changed: result.changed,
-									count: result.count,
-									indexPath: result.indexPath,
-									errors: result.errors,
-								},
-								null,
-								'\t'
-							),
+							text: JSON.stringify(payload, null, '\t'),
 						},
 					],
+					structuredContent: payload,
 				};
 			}
 		);

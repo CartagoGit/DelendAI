@@ -115,7 +115,7 @@ export const buildDelegateRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_delegate`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Delegate a slice to a subagent: assigns it a symbolic name (agent registry) and claims its files (agent lock) atomically, returning the handoff packet {agent, taskId, files, locked, instruction}. If the files are already locked it reports the conflict instead of claiming.',
 				inputSchema: z.object({

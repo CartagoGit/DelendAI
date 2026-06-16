@@ -25,25 +25,28 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
-						outputSchema: z.record(z.string(), z.unknown()),
+						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
 			},
-			async () => ({
-				content: [
-					{
-						type: 'text' as const,
-						text: JSON.stringify(
-							buildProposalWorkflow(
-								options.proposalsDir,
-								options.indexFile
-							),
-							null,
-							'\t'
-						),
-					},
-				],
-			})
+			async () => {
+				const workflow = buildProposalWorkflow(
+					options.proposalsDir,
+					options.indexFile
+				);
+				return {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(workflow, null, '\t'),
+						},
+					],
+					structuredContent: workflow as unknown as Record<
+						string,
+						unknown
+					>,
+				};
+			}
 		);
 	},
 });
