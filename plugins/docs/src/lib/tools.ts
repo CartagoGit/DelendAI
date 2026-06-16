@@ -45,7 +45,7 @@ export const buildDocsToolRegistrations = (
 						}),
 					},
 					async (args: { roots?: string[] | undefined }) => {
-						const { docs, truncated } = listDocs(
+						const { docs, truncated } = await listDocs(
 							options.workspaceRootAbs,
 							{
 								...defaults,
@@ -77,7 +77,7 @@ export const buildDocsToolRegistrations = (
 						}),
 					},
 					async (args: { path: string }) =>
-						toolJson(readDoc(options.workspaceRootAbs, args.path))
+						toolJson(await readDoc(options.workspaceRootAbs, args.path))
 				);
 			},
 		},

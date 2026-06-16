@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 
 /** One catalogued doc. `path` is relative to the workspace root. */
@@ -52,12 +52,13 @@ const rel = (rootAbs: string, abs: string): string =>
  * Catalogue the project's markdown docs under the configured roots:
  * `{ path, title }` per file (title from the first heading/frontmatter).
  * Pure over the injected workspace root; agnostic — roots/extensions are
- * injectable. Low-token: titles only, count-capped. [N19]
+ * injectable. Low-token: titles only, count-capped. Async I/O throughout so
+ * cataloguing never blocks the MCP server's event loop. [N19, M4]
  */
-export const listDocs = (
+export const listDocs = async (
 	workspaceRootAbs: string,
 	options: IDocsOptions = {}
-): { docs: IDocEntry[]; truncated: boolean } => {
+): Promise<{ docs: IDocEntry[]; truncated: boolean }> => {
 	const roots = options.roots && options.roots.length > 0 ? options.roots : DEFAULT_DOC_ROOTS;
 	const extensions = new Set(
 		(options.extensions && options.extensions.length > 0
@@ -71,14 +72,14 @@ export const listDocs = (
 	const docs: IDocEntry[] = [];
 	let truncated = false;
 
-	const addFile = (abs: string): void => {
+	const addFile = async (abs: string): Promise<void> => {
 		if (truncated) return;
 		if (!extensions.has(extOf(abs))) return;
 		let raw: string;
 		try {
-			const st = statSync(abs);
+			const st = await stat(abs);
 			if (!st.isFile() || st.size > MAX_READ_BYTES) return;
-			raw = readFileSync(abs, 'utf8');
+			raw = await readFile(abs, 'utf8');
 		} catch {
 			return;
 		}
@@ -87,20 +88,20 @@ export const listDocs = (
 		if (docs.length >= max) truncated = true;
 	};
 
-	const walk = (absDir: string): void => {
+	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
 		let entries;
 		try {
-			entries = readdirSync(absDir, { withFileTypes: true });
+			entries = await readdir(absDir, { withFileTypes: true });
 		} catch {
 			return;
 		}
 		for (const e of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
 			if (truncated) return;
 			if (e.isDirectory()) {
-				if (!ignore.has(e.name)) walk(join(absDir, e.name));
+				if (!ignore.has(e.name)) await walk(join(absDir, e.name));
 			} else if (e.isFile()) {
-				addFile(join(absDir, e.name));
+				await addFile(join(absDir, e.name));
 			}
 		}
 	};
@@ -108,11 +109,10 @@ export const listDocs = (
 	for (const root of roots) {
 		if (truncated) break;
 		const abs = join(workspaceRootAbs, root);
-		if (!existsSync(abs)) continue;
 		try {
-			statSync(abs).isDirectory() ? walk(abs) : addFile(abs);
+			(await stat(abs)).isDirectory() ? await walk(abs) : await addFile(abs);
 		} catch {
-			// ignore unreadable root
+			// missing or unreadable root: skip
 		}
 	}
 	docs.sort((a, b) => a.path.localeCompare(b.path));
@@ -131,23 +131,22 @@ export interface IDocContent {
  * Read one doc by its workspace-relative path. Refuses paths that escape
  * the workspace root (no `..` traversal). Content is capped.
  */
-export const readDoc = (
+export const readDoc = async (
 	workspaceRootAbs: string,
 	relPath: string
-): IDocContent => {
+): Promise<IDocContent> => {
+	const miss = (): IDocContent => ({
+		path: relPath, title: relPath, content: '', truncated: false, found: false,
+	});
 	const abs = resolve(workspaceRootAbs, relPath);
 	const within = abs === workspaceRootAbs || abs.startsWith(workspaceRootAbs + sep);
-	if (!within || !existsSync(abs)) {
-		return { path: relPath, title: relPath, content: '', truncated: false, found: false };
-	}
+	if (!within) return miss();
 	let raw: string;
 	try {
-		if (!statSync(abs).isFile()) {
-			return { path: relPath, title: relPath, content: '', truncated: false, found: false };
-		}
-		raw = readFileSync(abs, 'utf8');
+		if (!(await stat(abs)).isFile()) return miss();
+		raw = await readFile(abs, 'utf8');
 	} catch {
-		return { path: relPath, title: relPath, content: '', truncated: false, found: false };
+		return miss();
 	}
 	const truncated = raw.length > MAX_READ_BYTES;
 	const content = truncated ? raw.slice(0, MAX_READ_BYTES) : raw;

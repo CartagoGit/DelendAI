@@ -65,10 +65,16 @@ export class TaskQueueParseError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Agent slot types (mirror from agent-closure-report.ts for consistency)
+// Agent slot types
 // ---------------------------------------------------------------------------
 
-const AGENT_SLOTS = [
+/**
+ * The canonical swarm roles, kept as the documented DEFAULT set — NOT an
+ * enforced enum. `agentSlot` accepts any non-empty string so external projects
+ * can use their own role vocabulary (the project-agnostic contract). These five
+ * are what the bundled scaffold/agents use out of the box.
+ */
+export const DEFAULT_AGENT_SLOTS = [
 	'orchestrator',
 	'proposal_guardian',
 	'implementation_runner',
@@ -76,7 +82,7 @@ const AGENT_SLOTS = [
 	'technical_investigator',
 ] as const;
 
-export type IAgentSlot = (typeof AGENT_SLOTS)[number];
+export type IAgentSlot = string;
 
 // ---------------------------------------------------------------------------
 // Core interfaces
@@ -191,7 +197,7 @@ const WaitForFileSchema = z.object({
 const TaskQueueOwnerSchema = z.object({
 	taskId: z.string().min(1),
 	agentName: z.string().min(1),
-	agentSlot: z.enum(AGENT_SLOTS),
+	agentSlot: z.string().min(1),
 });
 
 const VALID_PRIORITIES = [1, 2, 3, 4, 5] as const;

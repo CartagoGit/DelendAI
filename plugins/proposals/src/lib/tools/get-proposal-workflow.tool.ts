@@ -50,7 +50,7 @@ export const buildGetProposalWorkflowRegistration = (
 					content: [
 						{
 							type: 'text' as const,
-							text: JSON.stringify(workflow, null, '\t'),
+							text: JSON.stringify(workflow),
 						},
 					],
 					structuredContent: workflow as unknown as Record<

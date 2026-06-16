@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { toolJson } from '@cartago-git/mcp-core/public';
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 
 import {
@@ -145,12 +146,7 @@ export const buildRoundContextRegistration = (
 			},
 			async (args: { forceRefresh?: boolean | undefined }) => {
 				const out = await buildRoundContextOutput(args ?? {}, options);
-				return {
-					content: [
-						{ type: 'text' as const, text: JSON.stringify(out, null, '\t') },
-					],
-					structuredContent: out as unknown as Record<string, unknown>,
-				};
+				return toolJson(out as unknown as Record<string, unknown>);
 			}
 		);
 	},
