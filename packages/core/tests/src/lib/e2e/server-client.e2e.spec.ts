@@ -104,6 +104,23 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 		).toBe('E2E decision');
 	});
 
+	it('validates core meta-tool outputSchemas over the protocol (N16)', async () => {
+		// A wrong outputSchema would make the SDK throw on these calls.
+		const vm = await client.callTool({
+			name: 'mcpcore_get_validation_matrix',
+			arguments: {},
+		});
+		expect((vm.structuredContent as { scopes: unknown }).scopes).toBeDefined();
+
+		const kn = await client.callTool({
+			name: 'mcpcore_knowledge',
+			arguments: {},
+		});
+		expect(
+			Array.isArray((kn.structuredContent as { entries: unknown }).entries)
+		).toBe(true);
+	});
+
 	it('reports an unknown tool as a protocol error', async () => {
 		const res = await client.callTool({
 			name: 'mcpcore_does_not_exist',

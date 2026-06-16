@@ -25,6 +25,12 @@ export const buildKnowledgeToolRegistration = (
 				description:
 					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Read-only and low-token (fetch only what you need).',
 				inputSchema: z.object({ id: z.string().optional() }),
+					outputSchema: z.object({
+						entries: z.array(z.object({ id: z.string(), title: z.string() })).optional(),
+						id: z.string().optional(),
+						title: z.string().optional(),
+						body: z.string().optional(),
+					}),
 			},
 			async (args: { id?: string | undefined }) => {
 				const entries = knowledge();

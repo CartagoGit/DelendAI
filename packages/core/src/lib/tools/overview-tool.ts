@@ -50,6 +50,15 @@ export const buildOverviewToolRegistration = (
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),
 				}),
+					outputSchema: z.object({
+						server: z.object({ name: z.string(), version: z.string() }),
+						namespacePrefix: z.string(),
+						corePaths: z.object({ cacheDir: z.string(), docsDir: z.string() }).optional(),
+						plugins: z.array(z.union([z.string(), z.object({ name: z.string(), version: z.string().optional(), describe: z.string().optional() })])),
+						tools: z.array(z.union([z.string(), z.object({ name: z.string(), summary: z.string().optional(), tags: z.array(z.string()).optional() })])),
+						knowledge: z.array(z.union([z.string(), z.object({ id: z.string(), title: z.string() })])),
+						recommendedNextAction: z.string(),
+					}),
 			},
 			async (args: {
 				compact?: boolean | undefined;
