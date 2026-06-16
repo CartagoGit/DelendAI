@@ -136,6 +136,7 @@ export const buildRoundContextRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_round_context`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Round digest only: return the persisted multi-agent round context and whether it is stale. forceRefresh recomputes and persists it. Use for resumed swarm work, not normal single-slice execution.',
 				inputSchema: z.object({

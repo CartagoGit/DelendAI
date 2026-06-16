@@ -99,6 +99,7 @@ export const buildCreateProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_proposal`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
 				inputSchema: z.object({
@@ -210,6 +211,7 @@ export const buildCloseSliceRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_close_slice`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
@@ -310,6 +312,7 @@ export const buildProposalBoardRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_board`,
 			{
+						outputSchema: z.record(z.string(), z.unknown()),
 				description:
 					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work.',
 			},

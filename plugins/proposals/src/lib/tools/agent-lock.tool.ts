@@ -31,6 +31,7 @@ export const buildAgentLockRegistration = (
 			server.registerTool(
 				toolName,
 				{
+						outputSchema: z.record(z.string(), z.unknown()),
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
 					inputSchema: z.object({
