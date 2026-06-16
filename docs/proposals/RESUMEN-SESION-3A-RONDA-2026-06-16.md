@@ -85,15 +85,22 @@ bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search
 **3. Premisa clave:** **Affairs ya NO consume mcp-core** (independientes). Ignora
 cualquier nota antigua de "re-validar 1184".
 
-**4. Siguiente recomendado:**
-- **N20** (split `round-context.ts`) si quieres avance seguro sin decisión.
-- **N18** (presets) o **N19-`deps`** si me das el contrato/decisión.
-- Refinar N16 (uniones por-acción) habilita el **SDK de tipos** de N23.
+**4. Siguiente recomendado (lo que queda):**
+- **N22 memoria semántica** (FTS/SQLite en `memory_recall`) — el mayor pendiente
+  real; alcance grande + decidir dependencia (¿`bun:sqlite` nativo? ¿FTS puro JS?).
+- **N20 resto** (split de funciones de `round-context`) — decision-free, fiddly, bajo valor.
+- **N23 resto**: `IStatusCollector`, tests de caos, **SDK de tipos generados** desde
+  `outputSchema` (refinar antes los `z.record` de los action-multiplexed a uniones
+  por-acción), semver + publish automatizado.
 
-**5. Artefactos nuevos de esta sesión:**
-- `plugins/docs/**` (9º paquete).
-- `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts` (red de validación de schemas).
-- `plugins/proposals/src/lib/tools/compact-status.tool.ts` + spec.
-- `outputSchema` declarado en ~32 tools (core + 8 plugins).
+**5. Artefactos nuevos de esta sesión (3ª ronda):**
+- `plugins/docs/**` (9º paquete) y `plugins/deps/**` (10º paquete).
+- `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts` (red ESTRICTA: valida
+  structuredContent vs outputSchema de cada tool por el protocolo).
+- `plugins/proposals/src/lib/tools/compact-status.tool.ts` (N17) + spec.
+- `--preset` (N18) en `parse-cli-args` (`PLUGIN_PRESETS`/`resolvePreset`).
+- `--verbose` (N23) en el CLI (`buildAssemblyDiagnostics`/`formatVerbose`).
+- `round-context-types.ts` (N20 parcial).
+- `outputSchema` en ~32 tools; fix `git_git_*`→`git_*`.
 
-**npm publish**: lo ejecuta el usuario (`docs/NPM_PUBLISH.md`, ya con 9 paquetes).
+**npm publish**: lo ejecuta el usuario (`docs/NPM_PUBLISH.md`, ya con 10 paquetes).
