@@ -1,10 +1,10 @@
 # Publicar `@cartago-git/mcp-*` en npm — guía paso a paso
 
 > Todo queda **preparado** para que solo ejecutes estos pasos con tu cuenta.
-> Paquetes (8): `@cartago-git/mcp-core`, `@cartago-git/mcp-proposals`,
+> Paquetes (9): `@cartago-git/mcp-core`, `@cartago-git/mcp-proposals`,
 > `@cartago-git/mcp-rules`, `@cartago-git/mcp-memory`, `@cartago-git/mcp-git`,
 > `@cartago-git/mcp-quality`, `@cartago-git/mcp-search`,
-> `@cartago-git/mcp-notification`. Todos en `0.1.0`,
+> `@cartago-git/mcp-notification`, `@cartago-git/mcp-docs`. Todos en `0.1.0`,
 > `publishConfig.access=public`, `files` limitado a `src` + README + LICENSE.
 
 ## 0. Requisitos (una vez)
@@ -38,6 +38,7 @@ cd plugins/git          && npm publish && cd -
 cd plugins/quality      && npm publish && cd -
 cd plugins/search       && npm publish && cd -
 cd plugins/notification && npm publish && cd -
+cd plugins/docs         && npm publish && cd -
 ```
 - `publishConfig.access=public` ya está, así que NO necesitas `--access public`.
 - Si usas 2FA te pedirá el OTP en cada uno (`npm publish --otp=123456`).

@@ -62,7 +62,10 @@
 			"@cartago-git/mcp-notification/public": [
 				"./plugins/notification/src/public/index.ts"
 			],
-			"@cartago-git/mcp-notification/*": ["./plugins/notification/src/*"]
+			"@cartago-git/mcp-notification/*": ["./plugins/notification/src/*"],
+			"@cartago-git/mcp-docs": ["./plugins/docs/src/index.ts"],
+			"@cartago-git/mcp-docs/public": ["./plugins/docs/src/public/index.ts"],
+			"@cartago-git/mcp-docs/*": ["./plugins/docs/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
