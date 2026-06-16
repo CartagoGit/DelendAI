@@ -9,3 +9,6 @@ export { listDocs, readDoc, extractTitle, DEFAULT_DOC_ROOTS } from '../lib/engin
 export type { IDocEntry, IDocContent, IDocsOptions } from '../lib/engine';
 export { buildDocsToolRegistrations } from '../lib/tools';
 export type { IDocsToolOptions } from '../lib/tools';
+
+// --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
+export type * from '../generated/tool-outputs';
