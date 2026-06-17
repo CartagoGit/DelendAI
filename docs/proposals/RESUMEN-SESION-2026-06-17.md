@@ -108,18 +108,46 @@
   la push-protection de GitHub; historia local reescrita limpia y `develop` pusheado.
 - **Estado: 441 tests (431 + 10 skip), typecheck + lint + coverage verdes.**
 
-> ⚠️ **Lockfile gitignorado vs `--frozen-lockfile`**: `.gitignore` ignora
-> `bun.lock`/`bun.lockb` pero el CI hace `bun install --frozen-lockfile` (que
-> requiere un lockfile commiteado). O se commitea el lockfile, o se quita
-> `--frozen-lockfile`. Decisión pendiente del usuario (no la revierto solo).
+## 🔍 Auditoría independiente 17-06 (Copilot · MiniMax-M3) — integrada
 
-## ⏭️ Punto de continuación (en orden) — empezar por M10/M11
+Cuarta auditoría externa (`audits/17-06-2026- Auditoría Independiente…`, movida a
+`done/`). Coincide casi al decimal con la Maestra (techo = disciplina de cierre,
+no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 
-### 1. P2 (calidad de producto) — del doc maestro
-- **M9 ✅** (hecho arriba).
-- **M10** Cobertura pareja en los plugins satélite (hoy `proposals` acapara 34/63).
-- **M11** Plugins best-in-class: `search` regex/glob; `memory` TTL+redacción de
-  secretos; `rules` detección+`compact`; `docs` paginación; `deps_outdated`.
+- **H1 (publicabilidad de plugins) — FALSO/ya hecho.** La auditoría leyó estado
+  viejo: los 9 plugins YA tienen `main/module/types`→`dist` + `exports`
+  condicional (igual que el core). `grep` no encuentra ningún `src/` en
+  `main/bin/exports`. No se añade.
+- **H2 (I/O síncrono residual) — REAL, nuevo respecto a M5.** M5 cerró `agents/`;
+  quedan **~40 `*Sync`** en `proposals/lib/tools/` (authoring 11, continue 7,
+  state-tools 5, compact-status 5) y `proposals/lib/swarm/` (sources 6, digest 3,
+  hash 3). Bajo FS lento/red congelan el event loop. **→ nueva tarea H2 (P1).**
+- **H3 (pretty-print residual) — a verificar/cerrar.** M8 cerró las 3 tools
+  grandes; faltarían respuestas que re-emiten JSON pretty (`sync-proposal-registry`,
+  `agent-lock-engine` al re-leer, `scaffold-tool` report). **→ tarea H3 (P2).**
+- **H9 (biome `recommended` deprecado) — REAL, mío, trivial.** `biome.json` usa el
+  campo `recommended` deprecado → 1 info en cada lint. `bunx biome migrate`. **→ H9.**
+- **H10 (`.claude/settings.local.json` trackeado con `bypassPermissions`).** Es
+  config personal de IDE. PERO el usuario trabaja en varias máquinas; quizá lo
+  quiere versionado a propósito → **decisión del usuario** (no lo quito solo).
+- **H11 (M6 solo unit-test).** Falta un e2e de reinicio que verifique no-re-entrega.
+  Menor. **→ tarea P2.**
+- Menores nuevos: guarda anti-symlink-cíclico en walks de `search`/`docs`;
+  documentar en README de `quality` la frontera de confianza del `spawn`.
+
+## ⏭️ Punto de continuación (en orden) — empezar por M10/M11 + H2/H9
+
+### 1. P2 (calidad de producto) — del doc maestro + auditoría 17-06
+- **M9 ✅** · **M11 search ✅** · **M11 memory ✅** (hechos arriba).
+- **H9** `bunx biome migrate` (cierra la info `recommended` deprecado). Trivial, mío.
+- **H2** Migrar I/O síncrono de `proposals/lib/tools/` + `swarm/` a `fs/promises`
+  (patrón M4). Mecánico, mismo test set verde.
+- **M11 restante**: `rules` detección Next/Nuxt/Astro/Remix/Solid (**H6**) +
+  `compact`; `docs` paginación `limit`/`offset` (**H7**); `deps_outdated` (**H8**,
+  ⚠️ red → decisión: implementar tras `--network` o documentar offline-by-design).
+- **M10 / H4** Cobertura pareja: subir `quality`/`docs`/`notification` de 1 a ≥3 specs.
+- **H3** Pasar respuestas de tools que re-emiten JSON por `toolJson` (no pretty).
+- **H11** e2e de `subscribe` cross-restart. **H10** decisión settings.local.json.
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
