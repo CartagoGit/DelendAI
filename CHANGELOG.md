@@ -18,6 +18,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   returns a clear tool error.
 - **Docs pagination** (M11/H7): `docs_list` accepts `limit`/`offset` and returns
   `{count,total,offset,nextOffset?,truncated}` — agents can page large doc trees.
+- **Quality runner coverage** (M10/H4): real-spawn tests for the command
+  runner's timeout→SIGKILL (code 124), non-zero exit and spawn-error (code 127)
+  branches, plus a `runScope` timed-out-command case.
 - **Framework detection** (M11/H6): `rules` now recognises **Next, Remix, Nuxt,
   Astro and Solid** (by dep or config file) *before* the generic react/vue check,
   so a Next app is no longer silently classified as plain `react-ts`. New presets
