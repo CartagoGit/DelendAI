@@ -296,8 +296,10 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   de `mcp-core.config.json`** (generado del Zod, drift-guard, publicado, `$schema` en
   el config del repo), **`quality_cancel`** (aborta runs por PID/todos con kill de
   grupo) y **freno duro anti-idle en `auto_work`** (`stop:true` tras 3 idles
-  consecutivos, reset al haber trabajo). *Pendiente:* TypeDoc de `public/`,
-  `/examples` (minimal/swarm/custom-plugin), skills/prompts versionados.
+  consecutivos, reset al haber trabajo). **`/examples` HECHO** —
+  `examples/custom-plugin` (plugin de ejemplo **auto-testeado**: el contrato completo
+  en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). *Pendiente:*
+  TypeDoc de `public/`, skills/prompts versionados.
 - **🟡 A3 (P3) · W3 sitio web profesional** sin empezar (solo el `build-site.ts`
   mínimo). Spec en el RESUMEN.
 - **🔵 A4 (nit) · DX:** el typecheck raíz incluye el generador del sitio
@@ -324,8 +326,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
    trozo grande y de cara al usuario — segundo.*
 3. ✅ **A2 quick wins** (HECHO 17-06): JSON Schema del config, `quality_cancel`,
    freno duro anti-idle en `auto_work`.
-4. **A2 onboarding:** TypeDoc de `public/`, `/examples` (minimal/swarm/custom-plugin),
-   skills/prompts versionados.
+4. **A2 onboarding:** ✅ `/examples` (custom-plugin tested + minimal/swarm) HECHO;
+   *pendiente:* TypeDoc de `public/`, skills/prompts versionados.
 5. **A4** (nit): desacoplar el typecheck de `apps/` del SDK.
 6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.
 
