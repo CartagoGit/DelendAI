@@ -80,33 +80,35 @@
 
 ---
 
-## ⏭️ Punto de continuación (en orden) — empezar por M6
+## ✅ Continuación 2026-06-17 (oficina, Opus) — M6 + hardening + M9 HECHOS
 
-### 1. M6 — Persistir `deliveredDigests` (idempotencia cross-session)
-**Dónde:** [`task-queue-engine.ts:303`](../../plugins/proposals/src/lib/agents/task-queue-engine.ts)
-`const deliveredDigests = new Set<string>();` (in-memory). Al reiniciar el server,
-el primer `subscribe` re-entrega todos los digests → trabajo duplicado.
-**Plan:** persistir en un sidecar `.subscribe-delivered.json` junto a la queue, bajo
-`withFileMutex`, keyed por `deliveredKey(taskId, observedTaskId)`. La acción
-`subscribe` (≈líneas 478-512) lee/añade al set; cambiar a leer el sidecar + escribir
-atómico bajo mutex. Mantener `__resetDeliveredDigestsForTesting` o sustituirlo por
-borrar el sidecar. Añadir test de "reinicio no re-entrega".
-**Nota:** `ITaskQueuePaths` ya tiene `queuePath`; derivar el sidecar de ahí. No hace
-falta nueva inyección de rutas.
+- **M6 ✅** `deliveredDigests` persistido en sidecar `.subscribe-delivered.json`
+  bajo `withFileMutex` (read-modify-write serializado); un reinicio ya no
+  re-entrega. Eliminado el Set en memoria + `__resetDeliveredDigestsForTesting`.
+  Test `task-queue-subscribe-idempotency.spec.ts`.
+- **Release/CI hardening ✅** `CHANGELOG.md` raíz; pin de versiones (typescript
+  6.0.3, vitest 4.1.8, biome 2.5.0; `bun-version` CI → 1.3.14); coverage gate en
+  CI (`@vitest/coverage-v8`, `test:coverage`, umbrales no-regresión 72/55/75/73).
+- **M9 ✅** Biome como linter (`bun run lint` = `biome ci`, en `validate` + job CI
+  `lint`); recomendado con `noNonNullAssertion`/`noExplicitAny` off; formatter off
+  de momento. Además: **eliminados 36 `.d.ts` sueltos** commiteados dentro de
+  `src/` (emits de `tsc`; el build va a `dist/`) + regla `.gitignore` anti-recaída.
+- **Estado: 430 tests (420 + 10 skip), typecheck + lint + coverage verdes.**
 
-### 2. Release/CI hardening (P1 robustez)
-- `CHANGELOG.md` (por paquete o raíz; el release ya hace bump lockstep).
-- Pinnar versiones inestables: `typescript: ^6.0.3` y `vitest: ^4.1.8` → estable (o
-  RC con comentario); `ci.yml` `bun-version: latest` → versión fija.
-- Coverage gate en CI (`vitest --coverage` con umbral; hoy `coverage=false`).
+> ⚠️ **Lockfile gitignorado vs `--frozen-lockfile`**: `.gitignore` ignora
+> `bun.lock`/`bun.lockb` pero el CI hace `bun install --frozen-lockfile` (que
+> requiere un lockfile commiteado). O se commitea el lockfile, o se quita
+> `--frozen-lockfile`. Decisión pendiente del usuario (no la revierto solo).
 
-### 3. P2 (calidad de producto) — del doc maestro
-- **M9** Biome + job CI `lint` (el repo no tiene linter — incoherente con `rules`).
+## ⏭️ Punto de continuación (en orden) — empezar por M10/M11
+
+### 1. P2 (calidad de producto) — del doc maestro
+- **M9 ✅** (hecho arriba).
 - **M10** Cobertura pareja en los plugins satélite (hoy `proposals` acapara 34/63).
 - **M11** Plugins best-in-class: `search` regex/glob; `memory` TTL+redacción de
   secretos; `rules` detección+`compact`; `docs` paginación; `deps_outdated`.
 
-### 4. P3 (plataforma) — del doc maestro
+### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
   migraciones de estado · **M15** blueprint sin drift de `cacheDir`.
 - Freno duro anti-idle en `auto_work`; `quality_cancel`; skills versionadas; TypeDoc;
