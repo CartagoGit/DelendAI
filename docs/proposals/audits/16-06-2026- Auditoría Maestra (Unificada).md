@@ -300,12 +300,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `examples/custom-plugin` (plugin de ejemplo **auto-testeado**: el contrato completo
   en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). *Pendiente:*
   TypeDoc de `public/`, skills/prompts versionados.
-- **🟡 A3 (P3) · W3 sitio web profesional** sin empezar (solo el `build-site.ts`
-  mínimo). Spec en el RESUMEN.
-- **🔵 A4 (nit) · DX:** el typecheck raíz incluye el generador del sitio
-  (`apps/web/src/build-site.ts`), que importa el SDK → un `pull` sin `bun install`
-  deja el typecheck rojo (en CI no, por `--frozen-lockfile`). Desacoplar o typecheck
-  propio para `apps/`.
+- **✅ A3 (P3) · W3 sitio web profesional** — **FOUNDATION HECHA (17-06)** con
+  **Astro** (estático, GitHub Pages): `apps/web` es ahora una app Astro real con
+  Layout + Hero + **marquesinas duales** (sentidos opuestos, hover-pausa, zoom +
+  nombre al pasar sobre cada icono), **i18n en/es**, sección de tools desde
+  `capabilities.json` (registro vivo), benchmarks y SCSS responsive. Build estático
+  con `base=/mcp-core`, 2 páginas, lint/build verdes; `pages.yml` despliega
+  `apps/web/dist`. *Pendiente (iterativo):* contenido más rico, logos SVG reales en
+  las marquesinas, más idiomas.
+- **✅ A4 (nit) · DX** — CERRADO: al pasar `apps/web` a app Astro con su propio
+  tsconfig, se quitó `apps/*/src` del tsconfig raíz, así que el typecheck del repo
+  ya no se acopla al SDK del generador del sitio.
 
 #### ✅ Cerrado el 17-06 (tras la auditoría de estado)
 - **Infra/release:** warnings de los 4 workflows saneados (inyección `${{ }}`→`env`,
@@ -320,15 +325,16 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 #### Orden de ejecución priorizado (decidido 17-06)
 1. ✅ **A1 — barrido async** (`memory/store`, `deps/engine`, `core/scaffold` apply):
    HECHO 17-06. `core/bootstrap` queda como carve-out razonado (pure-fn one-shot).
-2. **W3 — sitio web profesional con Astro** (decisión 17-06: estático para GitHub
-   Pages, componentes SCSS+TS+HTML, i18n, marquesinas duales, benchmarks, responsive;
-   consume `capabilities.json`). Sustituye el generador mínimo de `apps/web`. *El
-   trozo grande y de cara al usuario — segundo.*
+2. ✅ **W3 — sitio web profesional con Astro** — FOUNDATION HECHA 17-06 (app Astro
+   real en `apps/web`: hero, marquesinas duales, i18n en/es, tools del registro vivo,
+   benchmarks, responsive; build estático para Pages). *Pendiente iterativo:* más
+   contenido/idiomas + logos SVG reales.
 3. ✅ **A2 quick wins** (HECHO 17-06): JSON Schema del config, `quality_cancel`,
    freno duro anti-idle en `auto_work`.
 4. **A2 onboarding:** ✅ `/examples` (custom-plugin tested + minimal/swarm) HECHO;
    *pendiente:* TypeDoc de `public/`, skills/prompts versionados.
-5. **A4** (nit): desacoplar el typecheck de `apps/` del SDK.
+5. ✅ **A4** (nit): CERRADO — `apps/web` (Astro) tiene su propio tsconfig; el
+   typecheck raíz ya no se acopla al SDK del generador.
 6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.
 
 > **Camino:** A1 → ~9,8; +A2 → ~10,0; +A3 + publish → **11/10**.
