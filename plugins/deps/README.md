@@ -36,3 +36,8 @@ Intentionally **offline**: no network calls and no vulnerability database.
 Security/CVE scanning needs an external vuln source and is out of scope for an
 agnostic core plugin — use a dedicated tool (e.g. `npm audit`, `osv-scanner`)
 for that.
+
+Likewise there is **no `deps_outdated`**: checking for newer *published*
+versions requires hitting the registry (network), which would break the
+offline/agnostic contract. Run `npm outdated` / `bun outdated` when you need it.
+This is a deliberate design decision, not a missing feature.
