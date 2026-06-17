@@ -9,6 +9,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **State-migration safety net** (M14): `runMigrations` applies an ordered
+  migrator chain to bring a versioned store up to the current version (refuses
+  downgrades and incomplete chains), and `migrateJsonFile` reads → migrates →
+  backs up the original (`.bak-<ts>`) → writes atomically, with a `dryRun` mode.
+  So a future on-disk shape change has a tested, backed-up upgrade path.
 - **Command allow/deny policy for `quality`** (M13): `run_quality` executes
   host-configured commands via `spawn`; an optional `commandPolicy`
   (`{ allow?, deny? }`) gates which binaries may run, enforced before any spawn

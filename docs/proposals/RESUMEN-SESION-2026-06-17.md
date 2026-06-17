@@ -170,8 +170,12 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 - **M13 ✅** allow/deny de comandos en `quality` (`commandPolicy {allow,deny}`,
   enforce antes del spawn → bloqueado = code 126; frontera de confianza documentada
   en el README). Bridge securecoder descartado (artefacto indefinido).
-- Pendiente: **H11** e2e `subscribe` cross-restart (el unit ya cubre la semántica);
-  **M14** migraciones de estado (`version` + migrate v1→v2 + doctor --migrate).
+- **M14 ✅** Red de seguridad de migraciones: `runMigrations` (cadena ordenada
+  v→v+1, rechaza downgrade y cadenas incompletas) + `migrateJsonFile` (lee →
+  migra → backup `.bak-<ts>` → escribe atómico, con `dryRun`). Framework testeado
+  para cuando cambie un shape persistido (hoy no hay v2 → no se inventan migradores).
+- Pendiente (opcional/menor): **H11** e2e `subscribe` cross-restart (el unit ya
+  cubre la semántica). **Todo el resto del backlog M*/H* de las auditorías: HECHO.**
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
