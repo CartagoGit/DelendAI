@@ -2,6 +2,7 @@ import type { ICorePaths } from './core-paths.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IMcpCoreServerMetadata } from './server-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
+import type { IMetricsRegistry } from '../../metrics/metrics-registry';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -39,6 +40,12 @@ export interface IMcpCoreHostConfig {
 	readonly validationMatrix?: IValidationMatrix | undefined;
 	/** Host runtime status seams (anything with `collect()`). */
 	readonly statusCollectors?: readonly IStatusCollector[] | undefined;
+	/**
+	 * Optional metrics registry. When set, every tool handler is wrapped to
+	 * record latency/bytes/errors into it (M12). The CLI wires this to the
+	 * `<prefix>_metrics` tool; programmatic hosts opt in by passing one.
+	 */
+	readonly metricsRegistry?: IMetricsRegistry | undefined;
 	/**
 	 * Tool registrations appended to (or anchored inside) the core
 	 * registration sequence. See `IToolRegistration.registerAfter`.

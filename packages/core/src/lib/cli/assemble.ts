@@ -39,6 +39,8 @@ import type {
 } from '../tools/overview-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
+import { createMetricsRegistry } from '../metrics/metrics-registry';
+import { buildMetricsToolRegistration } from '../metrics/metrics-tool';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import type { IStatusCollector } from '../contracts/interfaces/status-collector.interface';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
@@ -207,11 +209,15 @@ export const assembleCliConfig = async (
 		}),
 	};
 
+	// Metrics registry instruments every tool (M12); the `metrics` tool reads it.
+	const metricsRegistry = createMetricsRegistry();
+
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
 		buildValidationMatrixToolRegistration(corePrefix, () => validationMatrix),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
+		buildMetricsToolRegistration(corePrefix, metricsRegistry),
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,
@@ -247,6 +253,7 @@ export const assembleCliConfig = async (
 		corePaths,
 		validationMatrix,
 		knowledge,
+		metricsRegistry,
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,

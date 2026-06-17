@@ -3,6 +3,55 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
 import type { IMcpCoreHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import {
+	estimateResultBytes,
+	type IMetricsRegistry,
+} from '../metrics/metrics-registry';
+
+/**
+ * Wrap `server.registerTool` so every tool handler records latency, response
+ * bytes and error flag into the metrics registry (M12). Transparent: the tool
+ * contract is unchanged; instrumentation is pure measurement around the call.
+ */
+const instrumentToolMetrics = (
+	server: McpServer,
+	registry: IMetricsRegistry
+): void => {
+	type RegisterTool = McpServer['registerTool'];
+	const original = server.registerTool.bind(server) as RegisterTool;
+	const wrap = (name: string, handler: unknown): unknown => {
+		if (typeof handler !== 'function') return handler;
+		const fn = handler as (...args: unknown[]) => unknown;
+		return async (...args: unknown[]): Promise<unknown> => {
+			const start = performance.now();
+			try {
+				const result = await fn(...args);
+				registry.record(name, {
+					ms: performance.now() - start,
+					bytes: estimateResultBytes(result),
+					isError: (result as { isError?: boolean })?.isError === true,
+				});
+				return result;
+			} catch (err) {
+				registry.record(name, {
+					ms: performance.now() - start,
+					bytes: 0,
+					isError: true,
+				});
+				throw err;
+			}
+		};
+	};
+	// registerTool is heavily overloaded; the handler is always the last arg.
+	(server as { registerTool: (...a: unknown[]) => unknown }).registerTool = (
+		...callArgs: unknown[]
+	) => {
+		const name = callArgs[0] as string;
+		const last = callArgs.length - 1;
+		callArgs[last] = wrap(name, callArgs[last]);
+		return (original as (...a: unknown[]) => unknown)(...callArgs);
+	};
+};
 
 /**
  * An assembled (but not yet connected) MCP server. `start()` connects
@@ -77,6 +126,10 @@ export async function createMcpServer(
 		name: config.metadata.name,
 		version: config.metadata.version,
 	});
+	// Instrument BEFORE registering tools so every handler is wrapped (M12).
+	if (config.metricsRegistry) {
+		instrumentToolMetrics(server, config.metricsRegistry);
+	}
 	const ordered = planRegistrationOrder([], config.extraTools ?? []);
 	for (const registration of ordered) {
 		await registration.register(server);

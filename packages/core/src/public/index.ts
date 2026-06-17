@@ -144,6 +144,17 @@ export {
 	collectStatus,
 } from '../lib/tools/status-tool';
 export type { IStatusResult } from '../lib/tools/status-tool';
+export {
+	createMetricsRegistry,
+	estimateResultBytes,
+} from '../lib/metrics/metrics-registry';
+export type {
+	IMetricsRegistry,
+	IMetricsSnapshot,
+	IMetricRecord,
+	IToolMetric,
+} from '../lib/metrics/metrics-registry';
+export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
 
