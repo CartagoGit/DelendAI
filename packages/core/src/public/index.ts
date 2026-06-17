@@ -155,6 +155,20 @@ export type {
 	IToolMetric,
 } from '../lib/metrics/metrics-registry';
 export { buildMetricsToolRegistration } from '../lib/metrics/metrics-tool';
+export {
+	runMigrations,
+	MigrationError,
+} from '../lib/migrations/migrate';
+export type {
+	IVersioned,
+	IMigrator,
+	IMigrationResult,
+} from '../lib/migrations/migrate';
+export { migrateJsonFile } from '../lib/migrations/migrate-file';
+export type {
+	IMigrateFileOptions,
+	IMigrateFileResult,
+} from '../lib/migrations/migrate-file';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
 
