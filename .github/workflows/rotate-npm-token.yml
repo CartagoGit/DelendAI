@@ -66,28 +66,14 @@ jobs:
           fi
           echo "should_open=true" >> "$GITHUB_OUTPUT"
 
-      - name: Comprobar que NPM_TOKEN existe
-        id: secret
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # `gh secret list` no muestra valores, solo nombres. Si el secret
-          # está, lo confirmamos; si no, advertimos pero seguimos.
-          if gh secret list --json name --jq '.[].name' | grep -qx 'NPM_TOKEN'; then
-            echo "has_secret=true" >> "$GITHUB_OUTPUT"
-            echo "NPM_TOKEN está presente en los secrets del repo."
-          else
-            echo "has_secret=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::NPM_TOKEN no está definido en este repo."
-          fi
-
       - name: Abrir issue recordatorio
         if: steps.decide.outputs.should_open == 'true'
         uses: actions/github-script@v7
+        env:
+          LAST_URL: ${{ steps.last.outputs.last_url }}
         with:
           script: |
-            const hasSecret = '${{ steps.secret.outputs.has_secret }}' === 'true';
-            const lastUrl = '${{ steps.last.outputs.last_url }}' || null;
+            const lastUrl = process.env.LAST_URL || null;
             const today = new Date().toISOString().slice(0, 10);
             const expiresAt = new Date(Date.now() + 90 * 24 * 3600 * 1000)
               .toISOString().slice(0, 10);
@@ -118,7 +104,6 @@ jobs:
               '  caducan a los **90 días** como máximo legal (ver [docs npm](https://docs.npmjs.com/about-access-tokens)).',
               '- El `Bypass 2FA` evita que GitHub Actions tenga que introducir un',
               '  OTP en cada `npm publish`.',
-              hasSecret ? '' : '- ⚠️ Al ejecutar este workflow, el secret `NPM_TOKEN` no estaba definido; revisa que el repo lo tenga configurado.',
               lastUrl ? `- Recordatorio anterior: ${lastUrl}` : '',
             ].filter(Boolean).join('\n');
             const issue = await github.rest.issues.create({
@@ -133,8 +118,10 @@ jobs:
 
       - name: Resumen
         if: always()
+        env:
+          SHOULD_OPEN: ${{ steps.decide.outputs.should_open }}
         run: |
-          if [ "${{ steps.decide.outputs.should_open }}" = "true" ]; then
+          if [ "$SHOULD_OPEN" = "true" ]; then
             echo "::notice::Se abrió un issue recordatorio para renovar NPM_TOKEN."
           else
             echo "::notice::Aún no toca renovar (último recordatorio < 75 días)."

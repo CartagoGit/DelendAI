@@ -68,9 +68,10 @@ jobs:
 
       - name: Tag the release commit
         if: steps.decide.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
         run: |
           set -euo pipefail
-          VERSION="${{ steps.decide.outputs.version }}"
           git tag "v$VERSION"
           git push origin "v$VERSION"
 
@@ -78,9 +79,9 @@ jobs:
         if: steps.decide.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.decide.outputs.version }}
         run: |
           set -euo pipefail
-          VERSION="${{ steps.decide.outputs.version }}"
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --generate-notes
