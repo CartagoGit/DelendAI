@@ -174,8 +174,14 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
   v→v+1, rechaza downgrade y cadenas incompletas) + `migrateJsonFile` (lee →
   migra → backup `.bak-<ts>` → escribe atómico, con `dryRun`). Framework testeado
   para cuando cambie un shape persistido (hoy no hay v2 → no se inventan migradores).
+- **M15/H5 ✅** El blueprint usa el `cacheDir` resuelto (flag → config → default),
+  sin drift cuando viene solo del config. Tests.
+- **Menor (symlink-cycle en walks de search/docs):** NO es problema —
+  `readdir(withFileTypes)` da el Dirent del enlace, `isDirectory()` es `false`
+  para symlinks, así que nunca se recursa en ellos. Verificado, sin código extra.
 - Pendiente (opcional/menor): **H11** e2e `subscribe` cross-restart (el unit ya
-  cubre la semántica). **Todo el resto del backlog M*/H* de las auditorías: HECHO.**
+  cubre la semántica). **Todo el resto del backlog M1–M15 / H1–H10 de las
+  auditorías: HECHO.**
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**

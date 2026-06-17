@@ -341,9 +341,14 @@ export const runDoctor = async (
  * integrate it with mcp-core organically.
  */
 export const prepareServerBlueprintOnStart = async (
-	args: IMcpCoreCliArgs
+	args: IMcpCoreCliArgs,
+	// The already-resolved cacheDir (CLI flag → config file → default). Passing
+	// it avoids drift: the blueprint must land under the SAME cacheDir as the
+	// rest of the store, including when it comes from mcp-core.config.json. [M15]
+	resolvedCacheDir?: string
 ): Promise<{ written: boolean; path: string }> => {
-	const cacheDir = args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
+	const cacheDir =
+		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
 	const absPath = join(args.workspace, relPath);
 	if (existsSync(absPath)) return { written: false, path: relPath };
@@ -471,7 +476,7 @@ export const runCli = async (
 	// is live and off the critical path — analysing the repo + writing the
 	// cache file must never delay the first MCP response. Best-effort. [N8]
 	if (args.mcpServerCreate) {
-		void prepareServerBlueprintOnStart(args)
+		void prepareServerBlueprintOnStart(args, config.corePaths?.cacheDir)
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
