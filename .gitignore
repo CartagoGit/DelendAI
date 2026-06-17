@@ -7,8 +7,9 @@ coverage/
 .DS_Store
 pack/
 
+# Track the text lockfile (bun.lock) for reproducible installs across machines
+# + CI --frozen-lockfile; ignore only the legacy binary form.
 bun.lockb
-bun.lock
 
 # Stray TypeScript declaration emits inside source trees. The build emits
 # declarations to dist/; a .d.ts next to a .ts source is always an accident.
