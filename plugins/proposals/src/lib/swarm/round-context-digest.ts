@@ -18,8 +18,7 @@
  * `round-context-hash.ts` / `round-context-sources.ts` modules.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { mkdir, rename, rm } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
@@ -95,8 +94,12 @@ export const isDigestStale = (
 export const readRoundContextDigest = async (
 	path: string
 ): Promise<IRoundContextDigest | null> => {
-	if (!existsSync(path)) return null;
-	const raw = readFileSync(path, 'utf8');
+	let raw: string;
+	try {
+		raw = await readFile(path, 'utf8');
+	} catch {
+		return null;
+	}
 	return JSON.parse(raw) as IRoundContextDigest;
 };
 
@@ -116,7 +119,7 @@ export const writeRoundContextDigest = async (
 ): Promise<void> => {
 	const tmpPath = `${path}.tmp`;
 	await mkdir(dirname(path), { recursive: true });
-	writeFileSync(tmpPath, JSON.stringify(digest, null, 2), 'utf8');
+	await writeFile(tmpPath, JSON.stringify(digest, null, 2), 'utf8');
 	try {
 		await rename(tmpPath, path);
 	} catch (err) {

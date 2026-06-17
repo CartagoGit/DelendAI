@@ -59,14 +59,14 @@ export const buildRoundContextOutput = async (
 ): Promise<IRoundContextOutput> => {
 	const recomputedAt = new Date().toISOString();
 	const digestPath = options.digestPathAbs;
-	const liveHashes = computeCoreDocHashes(options.workspaceRoot, [
-		...options.coreDocs,
+	const [liveHashes, liveSnapshot] = await Promise.all([
+		computeCoreDocHashes(options.workspaceRoot, [...options.coreDocs]),
+		collectRoundContextSnapshot(
+			options.workspaceRoot,
+			options.layout,
+			options.extraFolders ?? []
+		),
 	]);
-	const liveSnapshot = collectRoundContextSnapshot(
-		options.workspaceRoot,
-		options.layout,
-		options.extraFolders ?? []
-	);
 
 	if (input.forceRefresh === true) {
 		const { checkpoint, chatContext, proposalPortfolio, activeLocks, activeAgents } =

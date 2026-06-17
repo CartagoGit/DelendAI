@@ -13,7 +13,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { CORE_DOCS } from './round-context-types';
@@ -55,25 +55,27 @@ export const computeAgeMinutes = (timestamp: string | null): number | null => {
  * on its first recompute. That is acceptable: digests are advisory
  * caches, not authoritative state.
  */
-export const computeCoreDocHashes = (
+export const computeCoreDocHashes = async (
 	monorepoRoot: string,
 	// the doc list is host policy; the default keeps the
 	// historical the host project set for compatibility, hosts may inject
 	// their own (e.g. extra skill docs).
 	coreDocs: readonly string[] = CORE_DOCS
-): Record<string, string> => {
+): Promise<Record<string, string>> => {
 	const result: Record<string, string> = {};
-	for (const rel of coreDocs) {
-		const abs = join(monorepoRoot, rel);
-		if (!existsSync(abs)) {
-			result[rel] = 'rh-missing';
-			continue;
-		}
-		const content = readFileSync(abs, 'utf8');
-		// SHA-256 -> take the first 8 bytes (16 hex chars) -> prefix
-		// with `rh-` to keep the previous wire format.
-		const full = createHash('sha256').update(content).digest('hex');
-		result[rel] = formatRapidHash(full.slice(0, 16));
-	}
+	await Promise.all(
+		coreDocs.map(async (rel) => {
+			const abs = join(monorepoRoot, rel);
+			const content = await readFile(abs, 'utf8').catch(() => null);
+			if (content === null) {
+				result[rel] = 'rh-missing';
+				return;
+			}
+			// SHA-256 -> take the first 8 bytes (16 hex chars) -> prefix
+			// with `rh-` to keep the previous wire format.
+			const full = createHash('sha256').update(content).digest('hex');
+			result[rel] = formatRapidHash(full.slice(0, 16));
+		})
+	);
 	return result;
 };

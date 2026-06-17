@@ -45,6 +45,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed
+- **No synchronous I/O left in `proposals`** (H2, extends M5): migrated the
+  residual `*Sync` calls in the proposals tools (`authoring`, `continue-proposal`,
+  `compact-status`, `state-tools`), the `swarm/round-context-*` readers, and the
+  `agent-lock-engine`/`agent-registry-store` hot paths to `fs/promises` — a tool
+  call can no longer block the event loop on a slow/network filesystem.
 - **Biome config migrated** (H9): `linter.rules.recommended: true` →
   `preset: "recommended"` (no more deprecation info on every lint).
 - **`subscribe` idempotency is now persisted** (`.subscribe-delivered.json`
