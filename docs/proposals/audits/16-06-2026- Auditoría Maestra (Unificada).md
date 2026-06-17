@@ -343,6 +343,52 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 ---
 
+## 7-bis. W3 — Requisitos vivos de la web (anotaciones del usuario)
+
+> **Regla:** toda anotación del usuario sobre la web se registra AQUÍ para que se
+> cumpla. Estado: ✅ hecho · 🟡 parcial · ⬜ pendiente. (18-06-2026)
+
+**Marquesinas (logos):**
+- ✅ Logos de marca reales (simple-icons), icono centrado, monocromo visible.
+- ✅ Centradas en la **zona de contenido** (no a todo el ancho de pantalla).
+- ✅ **Loop continuo y sin saltos**: cuando sale el último, entra el primero
+  (técnica de dos sets idénticos + `translateX(-50%)`); **siempre llena**.
+- ✅ Fade (máscara) en los **bordes de su zona**; aparecen/desaparecen ahí.
+- ✅ Al hacer hover el icono escala **sin salirse** de la marquesina
+  (`overflow-x:clip; overflow-y:visible`) y muestra el nombre (tooltip), sin reflujo.
+- ✅ Suficientes elementos para llenar; ⬜ revisar densidad/velocidad por breakpoint.
+
+**Configuración (persistida en `localStorage`):**
+- ✅ Botón de engranaje → **modal**; **5 temas** (dark/light/midnight/solarized/nord);
+  panel de **idiomas con banderas**; toggle de **animación**. ⬜ más opciones de config.
+
+**Idiomas:**
+- ✅ en, es, fr, de, pt, it (traducción completa, incl. plugins por idioma).
+- ⬜ **Muchos más, mínimo los más hablados**: zh (chino), ar (árabe, **RTL**),
+  hi (hindi), ja (japonés), th (tailandés), vi (vietnamita), ru, ko, id, bn…
+- 🔴 **REGLA DE MANTENIMIENTO:** cada vez que se cree/renombre una tool **o** se
+  actualice la web, hay que **añadir/actualizar TODAS las traducciones**. (Idealmente
+  un check de build que avise de claves faltantes por idioma.)
+
+**Contenido / textos:**
+- ✅ Sección **Plugins como último campo** (los 10 paquetes + versión + descripción por idioma).
+- 🟡 Textos en general **más comprensivos**; ✅ explicación de plugins por idioma.
+- ⬜ **Benchmarks con gráficas** comparando con otras herramientas similares
+  (con datos honestos; no inventar cifras de terceros sin medir).
+
+**Responsive:**
+- 🔴 **TODO** debe ser responsive (ordenador/tablet/móvil) — invariante permanente
+  a verificar en cada componente nuevo.
+
+**Publicación / naming:**
+- ⬜ **Rename de scope a `@mcp-server`**: core → `@mcp-server/core`, plugins →
+  `@mcp-server/proposals`, `@mcp-server/git`, … (hoy `@cartago-git/mcp-*`). Toca
+  todos los `package.json`, imports, `tsconfig` paths, alias de vitest, `build.ts`,
+  generadores y la web. Tarea mecánica amplia, en commit aislado; requiere poseer el
+  scope `@mcp-server` en npm.
+
+---
+
 ## 8. Scoreboard de las 8 auditorías
 
 | Ronda | Revisor | Nota | FATAL señalados |
