@@ -1,0 +1,53 @@
+/**
+ * Public surface of `@cartago-git/mcp-core`. This barrel is the ONLY
+ * stable import surface of the package. Everything under `src/lib` is
+ * internal and may change without notice.
+ *
+ * The core is project-agnostic and knows nothing about proposals,
+ * swarms or any domain. Domain behaviour ships as plugins loaded by
+ * the CLI (`mcp-core --plugins=...`) that implement `IMcpPlugin`.
+ */
+export { createMcpServer, planRegistrationOrder, } from '../lib/server/create-mcp-server';
+export type { IMcpCoreServer } from '../lib/server/create-mcp-server';
+export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
+export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
+export { DEFAULT_CORE_PATHS, } from '../lib/contracts/interfaces/core-paths.interface';
+export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
+export type { IMcpCoreHostConfig } from '../lib/contracts/interfaces/host-config.interface';
+export type { IMcpCoreServerMetadata } from '../lib/contracts/interfaces/server-metadata.interface';
+export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
+export type { IPromptRegistration, IResourceRegistration, IToolRegistration, } from '../lib/contracts/interfaces/tool-registration.interface';
+export type { IValidationCommand, IValidationMatrix, } from '../lib/contracts/interfaces/validation-matrix.interface';
+export type { IKnowledgeEntry, ISkillEntry, } from '../lib/contracts/interfaces/knowledge.interface';
+export { definePlugin } from '../lib/plugins/plugin-contract';
+export type { IMcpPlugin, IMcpPluginContext, IMcpPluginRegistrations, } from '../lib/plugins/plugin-contract';
+export { loadPlugins, resolvePluginSpecifier, } from '../lib/plugins/load-plugins';
+export type { ILoadedPlugin, IPluginLoadResult } from '../lib/plugins/load-plugins';
+export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
+export type { IMcpCoreCliArgs } from '../lib/plugins/parse-cli-args';
+export { DEFAULT_CONFIG_FILENAME, CONFIG_FILE_SCHEMA, diagnoseConfigFile, parseConfigFile, pluginConfigFor, } from '../lib/plugins/load-config-file';
+export { assembleCliConfig, runCli, runDoctor, } from '../lib/cli/assemble';
+export type { IAssembledCliConfig, IAssembleCliDeps, IDoctorReport, } from '../lib/cli/assemble';
+export type { IMcpCoreConfigFile, IMcpCorePluginConfig, } from '../lib/plugins/load-config-file';
+export { scaffoldAgentFile, scaffoldClientFiles, scaffoldHostConfigFile, scaffoldHostProject, scaffoldInstructionsFile, scaffoldPluginFiles, scaffoldPromptFile, scaffoldServerEntryFiles, scaffoldSkillFile, scaffoldToolFile, } from '../lib/scaffold/scaffold-host';
+export type { IScaffoldAgentSlot, IScaffoldClientOptions, IScaffoldHostOptions, IScaffoldPluginOptions, IScaffoldedFile, } from '../lib/scaffold/scaffold-host';
+export { SCAFFOLD_INPUT_SCHEMA, buildScaffoldReport, buildScaffoldToolRegistration, } from '../lib/scaffold/scaffold-tool';
+export type { IScaffoldArgs, IScaffoldReport, IScaffoldToolOptions, } from '../lib/scaffold/scaffold-tool';
+export { writeFileAtomic, writeFileAtomicSync, } from '../lib/shared/atomic-write';
+export { joinRel } from '../lib/shared/paths';
+export { withFileMutex } from '../lib/shared/with-file-mutex';
+export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
+export { CorruptFileError, quarantineCorruptFile, quarantineCorruptFileSync, } from '../lib/shared/quarantine-corrupt-file';
+export { toolJson, toolOk, toolError, } from '../lib/shared/tool-response';
+export type { IToolTextResult } from '../lib/shared/tool-response';
+export { buildOverviewToolRegistration } from '../lib/tools/overview-tool';
+export type { IOverviewSnapshot, IOverviewToolEntry, IOverviewPlugin, } from '../lib/tools/overview-tool';
+export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
+export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
+export { buildStatusToolRegistration, collectStatus, } from '../lib/tools/status-tool';
+export type { IStatusResult } from '../lib/tools/status-tool';
+export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
+export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
+export { analyzeProject, recommendServerPlan, PROJECT_PATTERN_CATALOG, buildBootstrapToolRegistrations, createWorkspaceFileReader, buildServerBlueprint, buildBlueprintFiles, } from '../lib/bootstrap/index';
+export type { IProjectAnalysis, IServerPlan, IProjectPattern, IFileReader, IBootstrapToolOptions, IServerBlueprint, IBlueprintArtifact, IBlueprintOptions, } from '../lib/bootstrap/index';
+export type * from '../generated/tool-outputs';

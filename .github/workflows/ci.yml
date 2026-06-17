@@ -46,6 +46,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Compile publishable dist/ (Node-runnable .js + .d.ts). `files: ["dist"]`
+      # means the tarball is empty unless this runs first.
+      - name: Build dist
+        run: bun run build
+
+      # The published CLI must run under plain Node (npx/npm/pnpm/yarn), not
+      # only bun — guard that the compiled bin starts and resolves its deps.
+      - name: Smoke — Node runs the compiled CLI
+        run: node packages/core/dist/cli.js --check --plugins= | grep -q '"ok": true'
+
       # `npm pack --dry-run` resolves each package's `files`/`exports` and
       # fails if a published tarball would be missing or malformed — a cheap
       # guard that the closed `exports` surface (R13) still packs cleanly.
