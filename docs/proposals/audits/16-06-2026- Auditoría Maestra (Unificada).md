@@ -233,12 +233,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 ## 7. Plan priorizado hacia el "magistral"
 
-**P0 — Correctitud, genericidad y adopción (2–4 días)**
-- [ ] **M1** Token de propiedad en `withFileMutex` + borrado condicional (+ test de robo concurrente que falle hoy).
-- [ ] **M2** `agentSlot` extensible (`z.string()` o slots inyectables) — desbloquea adopción externa de `proposals`.
-- [ ] **M3** Decidir runtime: `build → dist/` **o** contrato "requiere bun" documentado.
-- [ ] **M4** `plugins/docs` → `fs/promises`.
-- [ ] **M8** `round_context` y demás tools calientes → `toolJson`; ampliar guard a `swarm`.
+**P0 — Correctitud, genericidad y adopción (2–4 días) ✅ HECHO (2026-06-17)**
+- [x] **M1** Token de propiedad (`pid\nts\nUUID`) en `withFileMutex` + borrado condicional + heartbeat de `mtime`; test de robo concurrente (`with-file-mutex.spec.ts`).
+- [x] **M2** `agentSlot` → `z.string().min(1)` en los 2 schemas (task-queue-engine + persistent-task-queue); 5 roles canónicos quedan como `DEFAULT_AGENT_SLOTS` (default, no enum); test de slot no-canónico.
+- [x] **M3** Runtime: **build a `dist/`** (`bun build` ESM + `tsc --emitDeclarationOnly`) en los 10 paquetes; manifests con `exports` condicional (`types`+`import`) + `bin` a `dist/cli.js` (shebang node). Corre bajo Node/npm/pnpm/yarn, Deno y bun. `scripts/build.ts`; release y CI compilan antes de publicar; smoke `node dist/cli.js` en CI.
+- [x] **M4** `plugins/docs` engine → `fs/promises` (sin I/O síncrono); callers/specs a `await`.
+- [x] **M8** `round_context` (vía `toolJson`), `sync_proposals` y `get_proposal_workflow` sin pretty-print (conservan `structuredContent`). *Pendiente menor:* ampliar el guard de budget a `--preset=swarm`.
 
 **P1 — Robustez operativa (3–5 días)**
 - [ ] **M5** Erradicar I/O síncrono residual (enqueue refine, zombie-reconcile, promote).
