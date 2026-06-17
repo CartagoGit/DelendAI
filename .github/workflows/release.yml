@@ -1,10 +1,14 @@
 name: Release
 
-# Cuts a release when the lockstep version in packages/core/package.json does
-# not yet have a matching `vX.Y.Z` tag. To release: bump the version
-# (`bun run release --bump=patch --write`) and push to main — this workflow then
-# validates, builds, publishes the 10 packages to npm (in dependency order),
-# tags the commit and opens a GitHub Release with auto-generated notes.
+# Auto-release on every push to main — el usuario no hace nada. `derive-version`
+# reads the Conventional Commits since the last `vX.Y.Z` tag and decides the next
+# version (feat→minor, fix/perf→patch, BREAKING→major; only docs/chore → no
+# release; non-conventional with content → patch). If there is something to
+# release it validates, builds, publishes the 10 packages to npm (in dependency
+# order) at the derived version, tags `vX.Y.Z` and opens a GitHub Release.
+#
+# Tag-driven: the bump is NOT committed back to main (no CI loop, no fight with
+# branch protection) — the tag is the source of truth for the next derivation.
 #
 # Requires the `NPM_TOKEN` repository secret (Granular access token with
 # Bypass 2FA enabled). Since November 2025, npm removed legacy/automation
@@ -31,26 +35,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # need tags to decide whether this version is new
+          fetch-depth: 0 # need full history + tags to derive the next version
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
 
-      - name: Decide whether to release
+      - name: Derive next version from Conventional Commits
         id: decide
-        run: |
-          set -euo pipefail
-          VERSION="$(node -p "require('./packages/core/package.json').version")"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::v$VERSION already tagged — nothing to release."
-          else
-            echo "release=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::v$VERSION is new — will publish + tag + release."
-          fi
+        run: bun scripts/derive-version.ts --github-output
 
       - name: Install dependencies
         if: steps.decide.outputs.release == 'true'
@@ -62,9 +56,11 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Validate, build and publish (10 packages, in order)
+      - name: Set version, validate, build and publish (10 packages, in order)
         if: steps.decide.outputs.release == 'true'
-        run: bun run release --publish
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: bun run release --set="$VERSION" --write --publish
 
       - name: Tag the release commit
         if: steps.decide.outputs.release == 'true'
