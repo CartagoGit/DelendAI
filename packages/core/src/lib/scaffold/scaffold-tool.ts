@@ -200,7 +200,9 @@ export const buildScaffoldToolRegistration = (
 					content: [
 						{
 							type: 'text' as const,
-							text: JSON.stringify(report, null, '\t'),
+							// Compact (H3): the response is agent-context tokens;
+							// structuredContent below carries the typed payload.
+							text: JSON.stringify(report),
 						},
 					],
 					structuredContent: report as unknown as Record<
