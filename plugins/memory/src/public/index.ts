@@ -12,7 +12,9 @@ export {
 	recall,
 	removeNote,
 } from '../lib/store';
-export type { INote } from '../lib/store';
+export type { INote, ISaveResult } from '../lib/store';
+export { redactSecrets } from '../lib/redact';
+export type { IRedactResult } from '../lib/redact';
 export { rankNotes, tokenize } from '../lib/rank';
 export type { IRankedNote } from '../lib/rank';
 export { buildMemoryToolRegistrations } from '../lib/tools';

@@ -27,6 +27,7 @@ const NoteSchema = z.object({
 	tags: z.array(z.string()),
 	createdAt: z.string(),
 	updatedAt: z.string(),
+	expiresAt: z.string().optional(),
 });
 const NoteIndexEntrySchema = z.object({
 	id: z.string(),
@@ -83,21 +84,24 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_save`,
 					{
 						description:
-							'Save a small, durable note (upserts by title). Use for decisions, gotchas and continuity an agent should remember next session.',
+							'Save a small, durable note (upserts by title). Use for decisions, gotchas and continuity an agent should remember next session. Secrets (API keys, tokens, private keys) are auto-redacted; pass ttlSeconds for a self-expiring note.',
 						inputSchema: z.object({
 							title: z.string(),
 							body: z.string(),
 							tags: z.array(z.string()).optional(),
+							ttlSeconds: z.number().int().positive().optional(),
 						}),
 							outputSchema: z.object({
 								ok: z.literal(true),
 								saved: NoteSchema,
+								redactedSecrets: z.number(),
 							}),
 							},
 					async (args: {
 						title: string;
 						body: string;
 						tags?: string[] | undefined;
+						ttlSeconds?: number | undefined;
 					}) => {
 						if (args.title.length > 200) {
 							return toolError(
@@ -120,6 +124,13 @@ export const buildMemoryToolRegistrations = (
 								'Use short, keyword-like tags.'
 							);
 						}
+						const MAX_TTL = 31_536_000; // 1 year
+						if (args.ttlSeconds !== undefined && args.ttlSeconds > MAX_TTL) {
+							return toolError(
+								`ttlSeconds too large (max ${MAX_TTL} = 1 year)`,
+								'Omit ttlSeconds for a permanent note.'
+							);
+						}
 						return guardCorrupt(async () => {
 							// Total-store quota: bound the note count so a runaway
 							// agent can't grow the store unboundedly. Updates to an
@@ -133,13 +144,18 @@ export const buildMemoryToolRegistrations = (
 									'Forget stale notes with memory_forget before adding new ones.'
 								);
 							}
-							return toolOk({
-								saved: await saveNote(options.storePathAbs, {
+							const { note, redactions } = await saveNote(
+								options.storePathAbs,
+								{
 									title: args.title,
 									body: args.body,
 									...(args.tags ? { tags: args.tags } : {}),
-								}),
-							});
+									...(args.ttlSeconds !== undefined
+										? { ttlSeconds: args.ttlSeconds }
+										: {}),
+								}
+							);
+							return toolOk({ saved: note, redactedSecrets: redactions });
 						});
 					}
 				);

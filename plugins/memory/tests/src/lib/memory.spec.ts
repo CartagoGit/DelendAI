@@ -56,7 +56,7 @@ describe('memory store', () => {
 	});
 
 	it('forgets by id', async () => {
-		const note = await saveNote(store, { title: 'Temp', body: 'x' });
+		const { note } = await saveNote(store, { title: 'Temp', body: 'x' });
 		expect(await removeNote(store, note.id)).toBe(true);
 		expect(readStore(store)).toHaveLength(0);
 	});
@@ -225,7 +225,7 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 		writeFileSync(store, 'broken');
 		expect(() => readStore(store)).toThrow(CorruptFileError);
 		// the original path is now free; a fresh save works
-		const note = await saveNote(store, { title: 'Fresh', body: 'ok' });
+		const { note } = await saveNote(store, { title: 'Fresh', body: 'ok' });
 		expect(readStore(store)).toHaveLength(1);
 		expect(note.title).toBe('Fresh');
 	});
