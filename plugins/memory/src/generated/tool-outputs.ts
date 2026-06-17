@@ -36,6 +36,7 @@ export interface MemoryRecallOutput {
 		tags: string[];
 		createdAt: string;
 		updatedAt: string;
+		expiresAt?: string;
 	}[];
 }
 
@@ -48,7 +49,9 @@ export interface MemorySaveOutput {
 		tags: string[];
 		createdAt: string;
 		updatedAt: string;
+		expiresAt?: string;
 	};
+	redactedSecrets: number;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

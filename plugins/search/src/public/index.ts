@@ -5,7 +5,7 @@
  */
 export { default } from '../index';
 
-export { searchWorkspace } from '../lib/engine';
+export { searchWorkspace, InvalidSearchPatternError } from '../lib/engine';
 export type {
 	ISearchHit,
 	ISearchResult,

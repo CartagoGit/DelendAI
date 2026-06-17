@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolJson } from '@cartago-git/mcp-core/public';
+import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
-import { searchWorkspace } from './engine';
+import { InvalidSearchPatternError, searchWorkspace } from './engine';
 import type { ISearchOptions } from './engine';
 
 export interface ISearchToolOptions {
@@ -34,12 +34,15 @@ export const buildSearchToolRegistrations = (
 					`${prefix}_search`,
 					{
 						description:
-							'Search the workspace text files for a substring and return matching {file,line,text} hits. Low-token: results and per-line previews are capped. Use to locate code, proposals or notes without reading whole files.',
+							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Low-token: results and per-line previews are capped.',
 						inputSchema: z.object({
 							query: z.string(),
 							roots: z.array(z.string()).optional(),
 							maxResults: z.number().optional(),
 							caseSensitive: z.boolean().optional(),
+							regex: z.boolean().optional(),
+							include: z.array(z.string()).optional(),
+							exclude: z.array(z.string()).optional(),
 						}),
 						outputSchema: z.object({
 							query: z.string(),
@@ -60,28 +63,46 @@ export const buildSearchToolRegistrations = (
 						roots?: string[] | undefined;
 						maxResults?: number | undefined;
 						caseSensitive?: boolean | undefined;
+						regex?: boolean | undefined;
+						include?: string[] | undefined;
+						exclude?: string[] | undefined;
 					}) => {
-						const result = await searchWorkspace(
-							options.workspaceRootAbs,
-							args.query,
-							{
-								...defaults,
-								...(args.roots ? { roots: args.roots } : {}),
-								...(args.maxResults !== undefined
-									? { maxResults: args.maxResults }
-									: {}),
-								...(args.caseSensitive !== undefined
-									? { caseSensitive: args.caseSensitive }
-									: {}),
+						try {
+							const result = await searchWorkspace(
+								options.workspaceRootAbs,
+								args.query,
+								{
+									...defaults,
+									...(args.roots ? { roots: args.roots } : {}),
+									...(args.maxResults !== undefined
+										? { maxResults: args.maxResults }
+										: {}),
+									...(args.caseSensitive !== undefined
+										? { caseSensitive: args.caseSensitive }
+										: {}),
+									...(args.regex !== undefined
+										? { regex: args.regex }
+										: {}),
+									...(args.include ? { include: args.include } : {}),
+									...(args.exclude ? { exclude: args.exclude } : {}),
+								}
+							);
+							return toolJson({
+								query: result.query,
+								count: result.hits.length,
+								truncated: result.truncated,
+								scanned: result.scanned,
+								hits: result.hits,
+							});
+						} catch (err) {
+							if (err instanceof InvalidSearchPatternError) {
+								return toolError(
+									err.message,
+									'Fix the regex or drop regex:true to search literally.'
+								);
 							}
-						);
-						return toolJson({
-							query: result.query,
-							count: result.hits.length,
-							truncated: result.truncated,
-							scanned: result.scanned,
-							hits: result.hits,
-						});
+							throw err;
+						}
 					}
 				);
 			},

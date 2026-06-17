@@ -8,6 +8,7 @@ import {
 } from '@cartago-git/mcp-core/public';
 
 import { rankNotes } from './rank';
+import { redactSecrets } from './redact';
 
 export interface INote {
 	readonly id: string;
@@ -16,6 +17,14 @@ export interface INote {
 	readonly tags: readonly string[];
 	readonly createdAt: string;
 	readonly updatedAt: string;
+	/** ISO timestamp after which the note is expired (TTL). Absent = never. */
+	readonly expiresAt?: string;
+}
+
+export interface ISaveResult {
+	readonly note: INote;
+	/** How many secrets were redacted from title/body/tags before saving. */
+	readonly redactions: number;
 }
 
 const kebab = (value: string): string =>
@@ -59,7 +68,12 @@ export const readStore = (absPath: string): INote[] => {
 	) {
 		return quarantine(absPath, 'expected { notes: [...] }');
 	}
-	return (parsed as { notes: INote[] }).notes;
+	// Lazy TTL: expired notes are dropped on read (and so pruned the next time
+	// the store is rewritten), so recall/list never surface a stale note.
+	const nowIso = new Date().toISOString();
+	return (parsed as { notes: INote[] }).notes.filter(
+		(note) => note.expiresAt === undefined || note.expiresAt > nowIso
+	);
 };
 
 export const writeStore = (absPath: string, notes: readonly INote[]): void => {
@@ -72,29 +86,50 @@ export const writeStore = (absPath: string, notes: readonly INote[]): void => {
  */
 export const saveNote = (
 	absPath: string,
-	input: { title: string; body: string; tags?: readonly string[] },
+	input: {
+		title: string;
+		body: string;
+		tags?: readonly string[];
+		/** Time-to-live in seconds. The note expires (and is pruned) after it. */
+		ttlSeconds?: number;
+	},
 	now: () => string = () => new Date().toISOString()
-): Promise<INote> =>
+): Promise<ISaveResult> =>
 	// Cross-process critical section: a single read-modify-write so two
 	// agents saving concurrently can't clobber each other's note.
 	withFileMutex(absPath, async () => {
-		const id = deriveNoteId(input.title);
+		// Scrub secrets BEFORE anything touches disk (M11): memory is durable.
+		const titleR = redactSecrets(input.title);
+		const bodyR = redactSecrets(input.body);
+		const tagsR = (input.tags ?? []).map((tag) => redactSecrets(tag));
+		const redactions =
+			titleR.redactions +
+			bodyR.redactions +
+			tagsR.reduce((sum, t) => sum + t.redactions, 0);
+
+		const id = deriveNoteId(titleR.text);
 		const notes = readStore(absPath);
 		const existing = notes.find((note) => note.id === id);
 		const stamp = now();
+		// A fresh ttl wins; otherwise an update keeps the prior expiry.
+		const expiresAt =
+			input.ttlSeconds !== undefined
+				? new Date(Date.parse(stamp) + input.ttlSeconds * 1000).toISOString()
+				: existing?.expiresAt;
 		const note: INote = {
 			id,
-			title: input.title,
-			body: input.body,
-			tags: input.tags ?? [],
+			title: titleR.text,
+			body: bodyR.text,
+			tags: tagsR.map((t) => t.text),
 			createdAt: existing?.createdAt ?? stamp,
 			updatedAt: stamp,
+			...(expiresAt !== undefined ? { expiresAt } : {}),
 		};
 		const next = existing
 			? notes.map((candidate) => (candidate.id === id ? note : candidate))
 			: [...notes, note];
 		writeStore(absPath, next);
-		return note;
+		return { note, redactions };
 	});
 
 /**

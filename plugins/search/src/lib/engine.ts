@@ -27,7 +27,66 @@ export interface ISearchOptions {
 	readonly caseSensitive?: boolean;
 	/** Directory names to skip entirely. Default: build/vcs/dep dirs. */
 	readonly ignoreDirs?: readonly string[];
+	/** Treat `query` as a JS regular expression instead of a literal substring. */
+	readonly regex?: boolean;
+	/**
+	 * Glob(s) on the relative file path a file must match to be searched
+	 * (e.g. `src/**\/*.ts`). When given, this REPLACES the extension allow-list.
+	 */
+	readonly include?: readonly string[];
+	/** Glob(s) on the relative file path to exclude (takes priority). */
+	readonly exclude?: readonly string[];
 }
+
+/** Thrown when `regex: true` and `query` is not a valid regular expression. */
+export class InvalidSearchPatternError extends Error {
+	constructor(
+		readonly pattern: string,
+		readonly detail: string
+	) {
+		super(`invalid regex "${pattern}": ${detail}`);
+		this.name = 'InvalidSearchPatternError';
+	}
+}
+
+/**
+ * Convert a path glob to an anchored RegExp. Supports `**` (any path span,
+ * including `/`), `*` (any run within a path segment), and `?` (one non-`/`
+ * char). Everything else is matched literally.
+ */
+const globToRegExp = (glob: string): RegExp => {
+	let re = '';
+	for (let i = 0; i < glob.length; i += 1) {
+		const c = glob[i] as string;
+		if (c === '*') {
+			if (glob[i + 1] === '*') {
+				if (glob[i + 2] === '/') {
+					// `**/` = zero or more path segments (so `src/**/*.ts`
+					// also matches `src/a.ts`).
+					re += '(?:.*/)?';
+					i += 2;
+				} else {
+					re += '.*';
+					i += 1;
+				}
+			} else {
+				re += '[^/]*';
+			}
+		} else if (c === '?') {
+			re += '[^/]';
+		} else if ('.+^()|[]{}$\\'.includes(c)) {
+			re += `\\${c}`;
+		} else {
+			re += c;
+		}
+	}
+	return new RegExp(`^${re}$`);
+};
+
+const matchesAnyGlob = (
+	relPath: string,
+	globs: readonly RegExp[]
+): boolean => globs.some((re) => re.test(relPath));
 
 const DEFAULT_EXTENSIONS: readonly string[] = [
 	'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'json', 'md', 'mdx', 'txt',
@@ -81,7 +140,34 @@ export const searchWorkspace = async (
 	);
 	const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 	const caseSensitive = options.caseSensitive ?? false;
-	const needle = caseSensitive ? trimmed : trimmed.toLowerCase();
+
+	// Line matcher: regex (compiled once) or literal substring.
+	let matches: (line: string) => boolean;
+	if (options.regex) {
+		let re: RegExp;
+		try {
+			re = new RegExp(trimmed, caseSensitive ? '' : 'i');
+		} catch (err) {
+			throw new InvalidSearchPatternError(trimmed, String(err));
+		}
+		matches = (line) => re.test(line);
+	} else {
+		const needle = caseSensitive ? trimmed : trimmed.toLowerCase();
+		matches = (line) =>
+			(caseSensitive ? line : line.toLowerCase()).includes(needle);
+	}
+
+	// Path filters: include globs REPLACE the extension allow-list; exclude
+	// globs always win. Compiled once.
+	const includeGlobs = (options.include ?? []).map(globToRegExp);
+	const excludeGlobs = (options.exclude ?? []).map(globToRegExp);
+	const shouldSearch = (rel: string, name: string): boolean => {
+		if (excludeGlobs.length > 0 && matchesAnyGlob(rel, excludeGlobs)) {
+			return false;
+		}
+		if (includeGlobs.length > 0) return matchesAnyGlob(rel, includeGlobs);
+		return extensions.has(extensionOf(name));
+	};
 
 	const hits: ISearchHit[] = [];
 	let scanned = 0;
@@ -102,8 +188,7 @@ export const searchWorkspace = async (
 		const lines = raw.split('\n');
 		for (let i = 0; i < lines.length; i += 1) {
 			const line = lines[i] as string;
-			const haystack = caseSensitive ? line : line.toLowerCase();
-			if (!haystack.includes(needle)) continue;
+			if (!matches(line)) continue;
 			hits.push({
 				file: rel,
 				line: i + 1,
@@ -133,8 +218,10 @@ export const searchWorkspace = async (
 				if (ignoreDirs.has(entry.name)) continue;
 				await walk(join(absDir, entry.name));
 			} else if (entry.isFile()) {
-				if (extensions.has(extensionOf(entry.name))) {
-					await visitFile(join(absDir, entry.name));
+				const absPath = join(absDir, entry.name);
+				const rel = relative(workspaceRootAbs, absPath).split(sep).join('/');
+				if (shouldSearch(rel, entry.name)) {
+					await visitFile(absPath);
 				}
 			}
 		}
