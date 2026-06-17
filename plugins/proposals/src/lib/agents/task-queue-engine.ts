@@ -20,10 +20,8 @@
  *     friendly message.
  */
 
-import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
-import { mkdir, readFile } from 'node:fs/promises';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { mkdir, readFile, stat } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 
 import { z } from 'zod';
 
@@ -127,10 +125,12 @@ export const IActionSchema = z.enum([
 export interface ITaskQueuePaths {
 	readonly queuePath: string;
 	readonly closedTasksPath: string;
-	/** Absolute lock path for the `report` action. Falls back to the
-	 * default layout (cwd-relative) when omitted — pass it to avoid
-	 * reading the wrong lock when cwd ≠ workspace. */
-	readonly lockPath?: string;
+	/** Absolute lock path (required) — read by the `report` action. */
+	readonly lockPath: string;
+	/** Absolute workspace root. `waitFor.file` paths resolve against this,
+	 * not the process cwd, so a host launched from another directory never
+	 * gets a false WAIT_FOR_FILE_MISSING. */
+	readonly workspaceRoot: string;
 }
 
 // The action param interfaces use the Zod *input* type so that optional

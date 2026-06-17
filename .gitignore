@@ -5,3 +5,6 @@ build/
 *.tsbuildinfo
 .DS_Store
 pack/
+
+bun.lockb
+bun.lock
