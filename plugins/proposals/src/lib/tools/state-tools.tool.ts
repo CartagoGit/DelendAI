@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile, stat } from 'node:fs/promises';
 
 import { z } from 'zod';
 
@@ -7,11 +7,20 @@ import { toolJson } from '@cartago-git/mcp-core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 
-/** In-flight claim count straight from the lock file (0 if missing/corrupt). */
-const rawInFlightCount = (lockPath: string): number => {
-	if (!existsSync(lockPath)) return 0;
+/** Async existence check (H2): never blocks the event loop. */
+const fileExists = async (path: string): Promise<boolean> => {
 	try {
-		const parsed = JSON.parse(readFileSync(lockPath, 'utf8')) as {
+		await stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+/** In-flight claim count straight from the lock file (0 if missing/corrupt). */
+const rawInFlightCount = async (lockPath: string): Promise<number> => {
+	try {
+		const parsed = JSON.parse(await readFile(lockPath, 'utf8')) as {
 			in_flight?: unknown[];
 		};
 		return Array.isArray(parsed.in_flight) ? parsed.in_flight.length : 0;
@@ -72,7 +81,7 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 	};
 
 	let queue: IStateDiagnosis['queue'] = null;
-	if (existsSync(options.queuePathAbs)) {
+	if (await fileExists(options.queuePathAbs)) {
 		const loaded = await parseQueue(
 			options.queuePathAbs,
 			options.closedTasksPathAbs,
@@ -192,17 +201,17 @@ export const buildStateRepairRegistration = (
 				// 1) GC stale write locks (engine drops entries past TTL). Count
 				// honestly via the on-disk file before/after, because the engine
 				// strips stale entries in-memory before its own `dropped` tally.
-				const lockedBefore = rawInFlightCount(options.lockPathAbs);
+				const lockedBefore = await rawInFlightCount(options.lockPathAbs);
 				await runAgentLockEngine(
 					{ action: 'gc' },
 					{ lockPath: options.lockPathAbs }
 				);
 				const staleLocksCleaned =
-					lockedBefore - rawInFlightCount(options.lockPathAbs);
+					lockedBefore - (await rawInFlightCount(options.lockPathAbs));
 
 				// 2) Expire due queue entries.
 				let expiredCount = 0;
-				if (existsSync(options.queuePathAbs)) {
+				if (await fileExists(options.queuePathAbs)) {
 					const loaded = await parseQueue(
 						options.queuePathAbs,
 						options.closedTasksPathAbs,

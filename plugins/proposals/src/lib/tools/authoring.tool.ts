@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
@@ -44,18 +44,34 @@ const kebab = (value: string): string =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-const readActiveLocks = (lockPath: string): readonly ILockSnapshotEntry[] => {
-	if (!existsSync(lockPath)) return [];
+// Async file helpers (H2): never block the event loop on a tool call. A
+// missing/corrupt file resolves to null/[], same semantics as the old
+// existsSync-guarded sync reads.
+const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
 	try {
-		const lock = JSON.parse(readFileSync(lockPath, 'utf8')) as {
-			in_flight?: Array<{ task_id?: string; agent?: string }>;
-		};
-		return (lock.in_flight ?? [])
-			.filter((e) => typeof e.task_id === 'string')
-			.map((e) => ({ taskId: e.task_id ?? '', agent: e.agent ?? 'unknown' }));
+		return JSON.parse(await readFile(path, 'utf8')) as T;
 	} catch {
-		return [];
+		return null;
 	}
+};
+const readTextOrNull = async (path: string): Promise<string | null> => {
+	try {
+		return await readFile(path, 'utf8');
+	} catch {
+		return null;
+	}
+};
+
+const readActiveLocks = async (
+	lockPath: string
+): Promise<readonly ILockSnapshotEntry[]> => {
+	const lock = await readJsonOrNull<{
+		in_flight?: Array<{ task_id?: string; agent?: string }>;
+	}>(lockPath);
+	if (lock === null) return [];
+	return (lock.in_flight ?? [])
+		.filter((e) => typeof e.task_id === 'string')
+		.map((e) => ({ taskId: e.task_id ?? '', agent: e.agent ?? 'unknown' }));
 };
 
 const SLICE_IN = z.object({
@@ -243,15 +259,15 @@ export const buildCloseSliceRegistration = (
 				sliceId: string;
 				releaseLock?: boolean | undefined;
 			}) => {
-				if (!existsSync(options.indexPathAbs)) {
+				const index = await readJsonOrNull<{
+					proposals: Array<{ id: string; file: string }>;
+				}>(options.indexPathAbs);
+				if (index === null) {
 					return toolError(
 						'proposal index not found',
 						'Run sync_proposals first.'
 					);
 				}
-				const index = JSON.parse(
-					readFileSync(options.indexPathAbs, 'utf8')
-				) as { proposals: Array<{ id: string; file: string }> };
 				const entry = index.proposals.find(
 					(p) =>
 						p.id === args.proposalId ||
@@ -264,10 +280,10 @@ export const buildCloseSliceRegistration = (
 					);
 				}
 				const docPath = join(dirname(options.indexPathAbs), entry.file);
-				if (!existsSync(docPath)) {
+				const md = await readTextOrNull(docPath);
+				if (md === null) {
 					return toolError(`proposal file missing: ${docPath}`);
 				}
-				const md = readFileSync(docPath, 'utf8');
 				// Flip the slice block's status to done (add or replace).
 				const blockRe = new RegExp(
 					`(^### ${args.sliceId}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
@@ -350,26 +366,23 @@ export const buildProposalBoardRegistration = (
 					'Returns each actionable proposal with its slices (status, owner) and the slices claimable right now. Read-only; the orchestrator board for planning multi-agent work.',
 			},
 			async () => {
-				if (!existsSync(options.indexPathAbs)) {
+				const index = await readJsonOrNull<{
+					proposals: Array<{ id: string; file: string; status: string }>;
+				}>(options.indexPathAbs);
+				if (index === null) {
 					return toolJson({ proposals: [] });
 				}
-				const index = JSON.parse(
-					readFileSync(options.indexPathAbs, 'utf8')
-				) as {
-					proposals: Array<{ id: string; file: string; status: string }>;
-				};
-				const locks = readActiveLocks(options.lockPathAbs);
+				const locks = await readActiveLocks(options.lockPathAbs);
 				const actionable = index.proposals.filter((p) =>
 					['pending', 'ready', 'in_progress'].includes(p.status)
 				);
-				const board = actionable.map((p) => {
+				const board = await Promise.all(
+					actionable.map(async (p) => {
 					const docPath = join(
 						dirname(options.indexPathAbs),
 						p.file
 					);
-					const md = existsSync(docPath)
-						? readFileSync(docPath, 'utf8')
-						: '';
+					const md = (await readTextOrNull(docPath)) ?? '';
 					const parsed = parseProposalSlicePlan(p.id, md);
 					if (parsed === null) {
 						return { id: p.id, status: p.status, slices: [] };
@@ -387,7 +400,8 @@ export const buildProposalBoardRegistration = (
 							.filter((s) => validateClaim(plan, s.sliceId).ok)
 							.map((s) => s.sliceId),
 					};
-				});
+					})
+				);
 				return toolJson({ proposals: board });
 			}
 		);

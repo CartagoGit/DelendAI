@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 import { z } from 'zod';
 
@@ -37,16 +37,22 @@ export interface ICompactStatus {
 	};
 }
 
-const readQueueTolerant = (path: string): IPersistentTaskQueue => {
-	if (!existsSync(path)) return { version: 1, entries: [] };
+// Async file read (H2): tolerant — missing/corrupt → null.
+const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
 	try {
-		const p = JSON.parse(readFileSync(path, 'utf8')) as { entries?: unknown };
-		return Array.isArray(p.entries)
-			? (p as IPersistentTaskQueue)
-			: { version: 1, entries: [] };
+		return JSON.parse(await readFile(path, 'utf8')) as T;
 	} catch {
-		return { version: 1, entries: [] };
+		return null;
 	}
+};
+
+const readQueueTolerant = async (
+	path: string
+): Promise<IPersistentTaskQueue> => {
+	const p = await readJsonOrNull<{ entries?: unknown }>(path);
+	return p && Array.isArray(p.entries)
+		? (p as IPersistentTaskQueue)
+		: { version: 1, entries: [] };
 };
 
 const ACTIONABLE = ['pending', 'ready', 'in_progress'];
@@ -88,7 +94,7 @@ export const collectCompactStatus = async (
 		}
 		if (want.has('queue')) {
 			const bp = reportBackpressure(
-				readQueueTolerant(options.queuePathAbs),
+				await readQueueTolerant(options.queuePathAbs),
 				snapshot
 			);
 			out.queue = {
@@ -103,21 +109,18 @@ export const collectCompactStatus = async (
 	if (want.has('proposals')) {
 		let byStatus: Record<string, number> = {};
 		let total = 0;
-		if (existsSync(options.indexPathAbs)) {
-			try {
-				const index = JSON.parse(
-					readFileSync(options.indexPathAbs, 'utf8')
-				) as { proposals?: Array<{ status?: string }> };
-				const list = index.proposals ?? [];
-				total = list.length;
-				byStatus = list.reduce<Record<string, number>>((acc, p) => {
-					const k = p.status ?? 'unknown';
-					acc[k] = (acc[k] ?? 0) + 1;
-					return acc;
-				}, {});
-			} catch {
-				// torn index → zeros (state_health surfaces corruption)
-			}
+		// torn/missing index → zeros (state_health surfaces corruption)
+		const index = await readJsonOrNull<{
+			proposals?: Array<{ status?: string }>;
+		}>(options.indexPathAbs);
+		if (index !== null) {
+			const list = index.proposals ?? [];
+			total = list.length;
+			byStatus = list.reduce<Record<string, number>>((acc, p) => {
+				const k = p.status ?? 'unknown';
+				acc[k] = (acc[k] ?? 0) + 1;
+				return acc;
+			}, {});
 		}
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
@@ -46,42 +46,52 @@ interface IIndexEntry {
 	readonly status: string;
 }
 
-const readIndex = (indexPath: string): readonly IIndexEntry[] => {
-	if (!existsSync(indexPath)) return [];
+// Async file helpers (H2): a missing/corrupt file resolves to null, matching
+// the old existsSync-guarded sync reads — never blocks the event loop.
+const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
 	try {
-		const parsed = JSON.parse(readFileSync(indexPath, 'utf8')) as {
-			proposals?: IIndexEntry[];
-		};
-		return parsed.proposals ?? [];
+		return JSON.parse(await readFile(path, 'utf8')) as T;
 	} catch {
-		return [];
+		return null;
 	}
+};
+const readTextOrNull = async (path: string): Promise<string | null> => {
+	try {
+		return await readFile(path, 'utf8');
+	} catch {
+		return null;
+	}
+};
+
+const readIndex = async (indexPath: string): Promise<readonly IIndexEntry[]> => {
+	const parsed = await readJsonOrNull<{ proposals?: IIndexEntry[] }>(indexPath);
+	return parsed?.proposals ?? [];
 };
 
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
 
-const readActiveLocks = (lockPath: string): readonly ILockSnapshotEntry[] => {
-	if (!existsSync(lockPath)) return [];
-	try {
-		const lock = JSON.parse(readFileSync(lockPath, 'utf8')) as {
-			in_flight?: Array<{ task_id?: string; agent?: string }>;
-		};
-		return (lock.in_flight ?? [])
-			.filter((entry) => typeof entry.task_id === 'string')
-			.map((entry) => ({
-				taskId: entry.task_id ?? '',
-				agent: entry.agent ?? 'unknown',
-			}));
-	} catch {
-		return [];
-	}
+const readActiveLocks = async (
+	lockPath: string
+): Promise<readonly ILockSnapshotEntry[]> => {
+	const lock = await readJsonOrNull<{
+		in_flight?: Array<{ task_id?: string; agent?: string }>;
+	}>(lockPath);
+	if (lock === null) return [];
+	return (lock.in_flight ?? [])
+		.filter((entry) => typeof entry.task_id === 'string')
+		.map((entry) => ({
+			taskId: entry.task_id ?? '',
+			agent: entry.agent ?? 'unknown',
+		}));
 };
 
-const resolveDoc = (
+const resolveDoc = async (
 	indexPath: string,
 	proposalId: string
-): { id: string; markdown: string } | { error: string; nextAction: string } => {
-	const entries = readIndex(indexPath);
+): Promise<
+	{ id: string; markdown: string } | { error: string; nextAction: string }
+> => {
+	const entries = await readIndex(indexPath);
 	if (entries.length === 0)
 		return {
 			error: `proposal index not found or empty at ${indexPath}`,
@@ -98,12 +108,13 @@ const resolveDoc = (
 			nextAction: 'Pass an existing proposalId.',
 		};
 	const docPath = join(dirname(indexPath), entry.file);
-	if (!existsSync(docPath))
+	const md = await readTextOrNull(docPath);
+	if (md === null)
 		return {
 			error: `proposal file missing on disk: ${docPath}`,
 			nextAction: 'Run sync_proposals to reconcile the index.',
 		};
-	return { id: entry.id, markdown: readFileSync(docPath, 'utf8') };
+	return { id: entry.id, markdown: md };
 };
 
 /**
@@ -127,7 +138,7 @@ export const runContinueProposal = async (
 				reason: 'slice modes require an explicit proposalId',
 				nextAction: 'Call mode:"plan" with a proposalId.',
 			});
-		const doc = resolveDoc(options.indexPathAbs, args.proposalId);
+		const doc = await resolveDoc(options.indexPathAbs, args.proposalId);
 		if ('error' in doc)
 			return json({ kind: 'slice-mode-error', ...doc });
 		const parsed = parseProposalSlicePlan(doc.id, doc.markdown);
@@ -140,7 +151,7 @@ export const runContinueProposal = async (
 			});
 		const plan = deriveSliceStatuses(
 			parsed,
-			readActiveLocks(options.lockPathAbs)
+			await readActiveLocks(options.lockPathAbs)
 		);
 		const relaunchCommand = `${options.namespacePrefix}_continue_proposal { proposalId: "${doc.id}", mode: "plan" }`;
 
@@ -222,7 +233,7 @@ export const runContinueProposal = async (
 	}
 
 	// mode === 'auto' (serial): next actionable proposal by cascade.
-	const entries = readIndex(options.indexPathAbs);
+	const entries = await readIndex(options.indexPathAbs);
 	const actionable = entries.filter((entry) => ACTIONABLE.has(entry.status));
 	if (actionable.length === 0)
 		return json({
@@ -239,7 +250,7 @@ export const runContinueProposal = async (
 	const proposalIdOf = (value: string): string =>
 		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
 	const lockedProposalIds = new Set(
-		readActiveLocks(options.lockPathAbs).map((lock) =>
+		(await readActiveLocks(options.lockPathAbs)).map((lock) =>
 			proposalIdOf(lock.taskId)
 		)
 	);
