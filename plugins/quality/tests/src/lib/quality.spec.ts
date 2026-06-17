@@ -79,6 +79,7 @@ describe('quality plugin', () => {
 		expect(reg.tools?.map((t) => t.id)).toEqual([
 			'get_quality_scopes',
 			'run_quality',
+			'quality_cancel',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('quality-gates');
 	});
