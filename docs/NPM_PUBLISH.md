@@ -17,16 +17,21 @@
 3. (Recomendado) 2FA en modo "Authorization and Publishing" → tendrás que meter
    el OTP en cada publish, o crea un *Automation token* para CI.
 
-## 0.0 Vía CI (lo más automático): push a `main`
+## 0.0 Vía CI (el usuario no hace nada): push a `main`
 
-Con los workflows `release.yml` y `pages.yml` el ciclo es automático:
+Con los workflows `release.yml` y `pages.yml` el ciclo es **totalmente automático
+y dirigido por los commits** — no hay que bumpear versiones a mano:
 
-1. Bump de versión: `bun run release --bump=patch --write` (versiona los 10
-   paquetes en lockstep) y commitea.
-2. Push a `main`. El workflow **Release** detecta que la `version` de
-   `packages/core/package.json` no tiene aún tag `vX.Y.Z` →
-   valida + build + `bun run release --publish` (publica los 10 en orden) +
-   crea el **tag** + un **GitHub Release** con notas autogeneradas.
+1. Haz merge/push a `main` con commits **Conventional Commits**
+   (`feat:`/`fix:`/`perf:`/`feat!:`…).
+2. El workflow **Release** ejecuta `scripts/derive-version.ts`, que lee los commits
+   desde el último tag `vX.Y.Z` y decide el salto: `feat`→minor, `fix`/`perf`→patch,
+   `!`/`BREAKING CHANGE`→major. Solo `docs`/`chore`/`ci`/`test`/`style`/`build`/
+   `refactor` → **no publica**. Un commit no convencional con contenido → patch
+   (default seguro). Si hay algo que publicar: valida + build +
+   `bun run release --set=<versión derivada> --write --publish` (10 paquetes en
+   orden) + crea el **tag** `vX.Y.Z` + un **GitHub Release** con notas autogeneradas.
+   *Tag-driven:* el bump NO se commitea de vuelta a `main` (sin bucles de CI).
 3. El workflow **Pages** regenera y despliega el sitio (web de la doc) desde la
    lista viva de tools (modo `--strict`: si una tool no tiene descripción, falla).
 
@@ -38,8 +43,9 @@ Con los workflows `release.yml` y `pages.yml` el ciclo es automático:
   abre un issue recordatorio cada ~3 meses (ver §0.1).
 - *Settings → Pages → Source = "GitHub Actions"*.
 
-Si no hay bump de versión, el push a `main` NO publica (idempotente: el tag ya
-existe). Lo de abajo (§0/§1/§2) es la vía manual equivalente.
+Si los commits desde el último tag son todos no-releasables (`docs`/`chore`/…),
+el push a `main` NO publica. Lo de abajo (§0/§1/§2) es la vía manual equivalente
+(`bun run release --bump=… --write --publish`), por si quieres forzar una release.
 
 ### 0.1 Granular token con Bypass 2FA (lo que se usa hoy)
 npm retiró los *Legacy* y *Automation* tokens en noviembre 2025. El único tipo
