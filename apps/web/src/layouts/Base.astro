@@ -25,6 +25,17 @@ const {
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta name="theme-color" content="#0d1117" />
+		<script is:inline>
+			// Apply the saved theme/motion before paint (no flash of default theme).
+			(() => {
+				try {
+					const t = localStorage.getItem('mcpcore-theme');
+					if (t) document.documentElement.dataset.theme = t;
+					if (localStorage.getItem('mcpcore-motion') === 'off')
+						document.documentElement.dataset.motion = 'off';
+				} catch {}
+			})();
+		</script>
 	</head>
 	<body>
 		<slot />

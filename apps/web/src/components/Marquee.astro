@@ -8,28 +8,30 @@ interface Props {
 }
 
 const { items, label, reverse = false } = Astro.props;
-// Duplicate the items so the -50% keyframe loops seamlessly.
+// Duplicate so the -50% keyframe loops seamlessly and the row stays filled.
 const doubled = [...items, ...items];
 ---
 
-<div class:list={['marquee', { 'marquee--reverse': reverse }]}>
-	<div class="marquee__label">{label}</div>
-	<div class="marquee__track">
-		{
-			doubled.map((it) => (
-				<div class="chip" title={it.name} aria-label={it.name}>
-					{it.path ? (
-						<span class="chip__badge">
-							<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-								<path d={it.path} />
-							</svg>
+<div class:list={['mq', { 'mq--reverse': reverse }]}>
+	<span class="mq__label">{label}</span>
+	<div class="mq__viewport">
+		<div class="mq__track">
+			{
+				doubled.map((it) => (
+					<div class="chip" tabindex="0" aria-label={it.name}>
+						<span class="chip__icon">
+							{it.path ? (
+								<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+									<path d={it.path} />
+								</svg>
+							) : (
+								<span class="chip__mono">{it.mono}</span>
+							)}
 						</span>
-					) : (
-						<span class="chip__badge chip__badge--mono">{it.mono}</span>
-					)}
-					<span class="chip__label">{it.name}</span>
-				</div>
-			))
-		}
+						<span class="chip__tip">{it.name}</span>
+					</div>
+				))
+			}
+		</div>
 	</div>
 </div>

@@ -1,5 +1,6 @@
 ---
 import Marquee from './Marquee.astro';
+import Config from './Config.astro';
 import { runtimes, clients } from '../data/marquees';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
@@ -10,22 +11,13 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, ''); // normalise → "/mcp-core"
-const enHref = `${base}/`;
-const esHref = `${base}/es/`;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-core';
 
 const NS_LABEL: Record<string, string> = {
-	mcpcore: 'core',
-	proposals: 'proposals',
-	git: 'git',
-	memory: 'memory',
-	search: 'search',
-	rules: 'rules',
-	quality: 'quality',
-	docs: 'docs',
-	deps: 'deps',
-	notification: 'notification',
+	mcpcore: 'core', proposals: 'proposals', git: 'git', memory: 'memory',
+	search: 'search', rules: 'rules', quality: 'quality', docs: 'docs',
+	deps: 'deps', notification: 'notification',
 };
 
 type ITool = { name: string; namespace: string; description: string };
@@ -33,6 +25,9 @@ const tools = capabilities.tools as ITool[];
 const groups: Record<string, ITool[]> = {};
 for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
 const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+
+const packages = capabilities.packages as Array<{ name: string; version: string }>;
+const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
 ---
 
 <nav class="nav">
@@ -43,19 +38,22 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 			<a href="#install">{t('nav.install')}</a>
 			<a href="#tools">{t('nav.tools')}</a>
 			<a href="#benchmarks">{t('nav.benchmarks')}</a>
+			<a href="#plugins">{t('nav.plugins')}</a>
 			<a href={`${base}/api/`}>API</a>
 			<a href={repo}>{t('nav.github')}</a>
-			<span class="lang">
-				<a href={enHref} aria-current={lang === 'en'}>EN</a>
-				<a href={esHref} aria-current={lang === 'es'}>ES</a>
-			</span>
+			<button class="gear" id="cfg-open" aria-label={t('cfg.title')}>
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="3"></circle>
+					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+				</svg>
+			</button>
 		</div>
 	</div>
 </nav>
 
 <header class="hero">
 	<div class="container">
-		<h1>The <span class="grad">agnostic</span> MCP server core</h1>
+		<h1>{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
 		<p class="tagline">{t('hero.tagline')}</p>
 		<div class="ctas">
 			<a class="btn btn--primary" href="#install">{t('hero.ctaInstall')}</a>
@@ -65,7 +63,7 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 	</div>
 </header>
 
-<section class="marquees container">
+<section class="marquees">
 	<Marquee items={runtimes} label={t('marquee.runtimes')} />
 	<Marquee items={clients} label={t('marquee.clients')} reverse />
 </section>
@@ -111,16 +109,10 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 		{
 			namespaces.map(([ns, list]) => (
 				<div class="ns">
-					<div class="ns__head">
-						<h3>{NS_LABEL[ns] ?? ns}</h3>
-						<span class="ns__count">{list.length}</span>
-					</div>
+					<div class="ns__head"><h3>{NS_LABEL[ns] ?? ns}</h3><span class="ns__count">{list.length}</span></div>
 					<div class="tools-grid">
 						{list.map((tool) => (
-							<div class="tool">
-								<code>{tool.name}</code>
-								<p>{tool.description}</p>
-							</div>
+							<div class="tool"><code>{tool.name}</code><p>{tool.description}</p></div>
 						))}
 					</div>
 				</div>
@@ -141,8 +133,28 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 	</div>
 </section>
 
+<section id="plugins" class="section">
+	<div class="container">
+		<h2>{t('plugins.title')}</h2>
+		<p class="lead">{t('plugins.lead')}</p>
+		{
+			packages.map((pkg) => (
+				<div class="pkg">
+					<div class="pkg__main">
+						<code>{pkg.name}</code>
+						<p>{t(`plugin.${shortName(pkg.name)}`)}</p>
+					</div>
+					<span class="v">v{pkg.version}</span>
+				</div>
+			))
+		}
+	</div>
+</section>
+
 <footer>
 	<div class="container">
 		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-core</a> · BSD-3-Clause
 	</div>
 </footer>
+
+<Config lang={lang} />
