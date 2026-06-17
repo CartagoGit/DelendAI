@@ -1,4 +1,3 @@
-import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 import {
@@ -74,7 +73,6 @@ export const createAgentRegistryStore = (
 	path: string
 ): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {
-		if (!existsSync(path)) return emptyRegistry();
 		let raw: string;
 		try {
 			raw = await readFile(path, 'utf8');

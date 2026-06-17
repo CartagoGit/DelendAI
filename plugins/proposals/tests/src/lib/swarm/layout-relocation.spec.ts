@@ -50,7 +50,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 		expect(index.proposals.map((p: { id: string }) => p.id)).toContain('p01');
 	});
 
-	it('collectRoundContextSnapshot reads the lock under the custom cache root', () => {
+	it('collectRoundContextSnapshot reads the lock under the custom cache root', async () => {
 		const layout = buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
 		writeFileEnsured(
 			join(root, layout.lockFile),
@@ -66,7 +66,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 			})
 		);
 
-		const snapshot = collectRoundContextSnapshot(root, layout);
+		const snapshot = await collectRoundContextSnapshot(root, layout);
 
 		expect(snapshot.activeLocks.map((l) => l.taskId)).toContain('t1');
 	});

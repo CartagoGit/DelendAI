@@ -8,8 +8,7 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 
 import { writeFileAtomic, withFileMutex } from '@cartago-git/mcp-core/public';
 
@@ -77,12 +76,24 @@ const getLockFileLabel = (deps: IAgentLockDeps = {}): string =>
 const getNow = (deps: IAgentLockDeps = {}): string =>
 	(deps.now ?? (() => new Date().toISOString()))();
 
+/** Async existence check (H2): never blocks the event loop. */
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const readLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	const lockPath = getLockPath(deps);
-	if (!existsSync(lockPath)) {
+	let raw: string;
+	try {
+		raw = await readFile(lockPath, 'utf8');
+	} catch {
 		return { version: 1, stale_after_minutes: 10, in_flight: [] };
 	}
-	const raw = await readFile(lockPath, 'utf8');
 	const parsed = JSON.parse(raw) as ILockFile;
 	if (!Array.isArray(parsed.in_flight)) parsed.in_flight = [];
 	return parsed;
@@ -316,7 +327,7 @@ async function executeLockAction(
 							action: 'status',
 							path: lockFileLabel,
 							lock_path: lockPath,
-							exists: existsSync(lockPath),
+							exists: await fileExists(lockPath),
 							active_write_lanes: lock.in_flight.length,
 							summary: `${lock.in_flight.length} active write lane(s)`,
 							...lock,

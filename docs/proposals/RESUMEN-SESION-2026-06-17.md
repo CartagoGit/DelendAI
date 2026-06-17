@@ -144,8 +144,11 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 - **H6 ✅** `rules` detecta Next/Remix/Nuxt/Astro/Solid (dep o config) ANTES de
   react/vue; presets nuevos reutilizan base verificada + conventions + plugin
   ESLint del framework en `requiredEslintDeps`. Tests.
-- **H2** Migrar I/O síncrono de `proposals/lib/tools/` + `swarm/` a `fs/promises`
-  (patrón M4). Mecánico, mismo test set verde. ← siguiente.
+- **H2 ✅** Cero I/O síncrono en `proposals/lib`: migradas las 4 tools
+  (authoring/continue-proposal/compact-status/state-tools), los `swarm/
+  round-context-*` y los hot paths `agent-lock-engine`/`agent-registry-store`
+  a `fs/promises`. `buildRoundContextDigest` queda puro (sync). `grep` de
+  `*Sync(` en `proposals/lib` → 0. Tests verdes.
 - **M11 restante**: `deps_outdated` (**H8**, ⚠️ red → decisión: implementar tras
   `--network` o documentar offline-by-design); `rules compact` (menor).
 - **M10 / H4** Cobertura pareja: subir `quality`/`docs`/`notification` de 1 a ≥3 specs.
