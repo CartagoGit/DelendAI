@@ -209,7 +209,12 @@ export type ITaskQueueResult =
  * (atomic write via persistQueue).
  */
 const ensureQueueFile = async (queuePath: string): Promise<void> => {
-	if (existsSync(queuePath)) return;
+	try {
+		await stat(queuePath);
+		return;
+	} catch {
+		// missing — create an empty queue below
+	}
 	await mkdir(dirname(queuePath), { recursive: true });
 	const empty: IPersistentTaskQueue = { version: 1, entries: [] };
 	await persistQueue(empty, queuePath);
@@ -222,7 +227,6 @@ const ensureQueueFile = async (queuePath: string): Promise<void> => {
 const loadOrEmptyQueue = async (
 	queuePath: string
 ): Promise<IPersistentTaskQueue> => {
-	if (!existsSync(queuePath)) return { version: 1, entries: [] };
 	let raw: string;
 	try {
 		raw = await readFile(queuePath, 'utf8');
