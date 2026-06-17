@@ -156,7 +156,7 @@ const resolveReport = async (
 		// unexpected errors (e.g. permission denied, disk full). Surface
 		// the error as a synthetic green report so the verifier does not
 		// false-positive on infrastructure noise.
-		if (process.env['NODE_ENV'] !== 'production') {
+		if (process.env.NODE_ENV !== 'production') {
 			console.error(
 				`[verifyClosure] runTaskQueueAction(report) failed; falling back to synthetic green: ${String(err)}`
 			);

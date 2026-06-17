@@ -90,7 +90,7 @@ const minimalProposalWithTaskQueue = (
 	},
 });
 
-const minimalProposalWithoutTaskQueue = (
+const _minimalProposalWithoutTaskQueue = (
 	proposalId: string
 ): IMinimalProposalForVerifier => ({
 	proposalId,

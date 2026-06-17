@@ -87,21 +87,21 @@ export default definePlugin({
 		const projectName = projectNameFrom(reader, ctx.workspace.root);
 
 		const rawMode =
-			(ctx.options['mode'] as string | undefined) ??
+			(ctx.options.mode as string | undefined) ??
 			ctx.args['rules-mode'];
 		const mode: IRulesMode = RULES_MODES.includes(rawMode as IRulesMode)
 			? (rawMode as IRulesMode)
 			: 'mixed';
 
 		const overrides: Record<string, string> = {
-			...((ctx.options['overrides'] as Record<string, string>) ?? {}),
+			...((ctx.options.overrides as Record<string, string>) ?? {}),
 		};
 		const forced = presetIdFor(
-			ctx.options['framework'] as string | undefined,
-			ctx.options['language'] as string | undefined
+			ctx.options.framework as string | undefined,
+			ctx.options.language as string | undefined
 		);
 		if (forced !== undefined && PRESET_BY_ID.has(forced)) {
-			overrides['root'] = forced;
+			overrides.root = forced;
 		}
 
 		const toolOptions: IRulesToolOptions = {

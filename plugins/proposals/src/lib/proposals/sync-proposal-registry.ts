@@ -112,39 +112,39 @@ const buildId = (filename: string): string => filename.replace(/\.md$/, '');
 const extractExtras = (
 	parsed: Record<string, unknown>
 ): IProposalExtras | undefined => {
-	const rawBudget = parsed['budget'];
+	const rawBudget = parsed.budget;
 	const budget =
 		rawBudget !== null &&
 		typeof rawBudget === 'object' &&
 		!Array.isArray(rawBudget)
 			? (rawBudget as IProposalBudget)
 			: undefined;
-	const rawAC = parsed['acceptanceCriteria'];
+	const rawAC = parsed.acceptanceCriteria;
 	const acceptanceCriteria = Array.isArray(rawAC)
 		? (rawAC as IAcceptanceCriterion[])
 		: undefined;
-	const rawOwnership = parsed['ownership'];
+	const rawOwnership = parsed.ownership;
 	const ownership = Array.isArray(rawOwnership)
 		? rawOwnership.filter((v): v is string => typeof v === 'string')
 		: undefined;
-	const rawReserved = parsed['reservedFiles'];
+	const rawReserved = parsed.reservedFiles;
 	const reservedFiles = Array.isArray(rawReserved)
 		? rawReserved.filter((v): v is string => typeof v === 'string')
 		: undefined;
-	const rawAgentClosureReportPath = parsed['agentClosureReportPath'];
+	const rawAgentClosureReportPath = parsed.agentClosureReportPath;
 	const agentClosureReportPath =
 		typeof rawAgentClosureReportPath === 'string'
 			? rawAgentClosureReportPath
 			: undefined;
-	const rawSwarmBudget = parsed['swarmBudget'];
+	const rawSwarmBudget = parsed.swarmBudget;
 	const swarmBudget = isProposalSwarmBudget(rawSwarmBudget)
 		? (rawSwarmBudget as ISwarmBudget)
 		: undefined;
-	const rawContinuityPolicy = parsed['continuityPolicy'];
+	const rawContinuityPolicy = parsed.continuityPolicy;
 	const continuityPolicy = isProposalContinuityPolicy(rawContinuityPolicy)
 		? (rawContinuityPolicy as IContinuityPolicy)
 		: undefined;
-	const rawTaskQueue = parsed['taskQueue'];
+	const rawTaskQueue = parsed.taskQueue;
 	const taskQueue = rawTaskQueue === true;
 	if (
 		!budget &&

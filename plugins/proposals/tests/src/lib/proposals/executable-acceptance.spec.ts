@@ -33,7 +33,7 @@
  *      reason mentioning timeout.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { runAcceptanceCriteria } from '@cartago-git/mcp-proposals/lib/proposals/proposal-acceptance';
 import { ProposalParseError } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';

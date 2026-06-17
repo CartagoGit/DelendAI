@@ -19,7 +19,7 @@ describe('resolveScopes', () => {
 		const map = resolveScopes(reader({}), {
 			scopes: { feature: ['a', 'b'] },
 		});
-		expect(map['feature']).toEqual([{ command: 'a' }, { command: 'b' }]);
+		expect(map.feature).toEqual([{ command: 'a' }, { command: 'b' }]);
 	});
 	it('falls back to the config validationMatrix, then scripts', () => {
 		const fromConfig = resolveScopes(
@@ -31,14 +31,14 @@ describe('resolveScopes', () => {
 				}),
 			})
 		);
-		expect(fromConfig['full']?.[0]?.command).toBe('bun test');
+		expect(fromConfig.full?.[0]?.command).toBe('bun test');
 		const fromScripts = resolveScopes(
 			reader({
 				'package.json': JSON.stringify({ scripts: { lint: 'x', test: 'y' } }),
 				'bun.lock': '',
 			})
 		);
-		expect(fromScripts['all']?.map((c) => c.command)).toEqual([
+		expect(fromScripts.all?.map((c) => c.command)).toEqual([
 			'bun run lint',
 			'bun run test',
 		]);

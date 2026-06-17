@@ -8,7 +8,7 @@
  */
 
 import { readFile, stat } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 
 import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
 

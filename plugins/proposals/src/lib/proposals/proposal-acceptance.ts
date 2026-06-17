@@ -272,7 +272,7 @@ const runOne = async (
 	const useShell = commandNeedsShell(criterion.command);
 	const cwd = options.cwd;
 
-	let child;
+	let child: ReturnType<typeof spawn>;
 	try {
 		if (useShell) {
 			child = spawn(criterion.command, {

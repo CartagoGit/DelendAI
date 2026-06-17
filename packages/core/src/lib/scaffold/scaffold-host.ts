@@ -317,6 +317,7 @@ void startServer();
 					[`mcp-server-${options.namespacePrefix}`]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
+						// biome-ignore lint/suspicious/noTemplateCurlyInString: literal VSCode ${workspaceFolder} variable, not a JS template
 						cwd: '${workspaceFolder}/libs/mcp-server',
 					},
 				},

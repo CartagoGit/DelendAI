@@ -90,12 +90,10 @@ export const listDocs = async (
 
 	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
-		let entries;
-		try {
-			entries = await readdir(absDir, { withFileTypes: true });
-		} catch {
-			return;
-		}
+		const entries = await readdir(absDir, { withFileTypes: true }).catch(
+			() => null
+		);
+		if (entries === null) return;
 		for (const e of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
 			if (truncated) return;
 			if (e.isDirectory()) {

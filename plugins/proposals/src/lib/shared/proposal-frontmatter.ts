@@ -66,9 +66,9 @@ export function proposalAgeHours(
 	now: number = Date.now()
 ): number | null {
 	const raw =
-		frontmatter['opened'] ??
-		frontmatter['updated'] ??
-		frontmatter['created'];
+		frontmatter.opened ??
+		frontmatter.updated ??
+		frontmatter.created;
 	if (raw === undefined) return null;
 	const ts = Date.parse(raw);
 	if (Number.isNaN(ts)) return null;

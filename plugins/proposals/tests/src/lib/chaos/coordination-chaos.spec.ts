@@ -1,5 +1,4 @@
 import {
-	existsSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,

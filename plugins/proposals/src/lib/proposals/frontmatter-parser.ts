@@ -39,7 +39,7 @@ const parseScalar = (raw: string): IYamlScalar => {
 	if (v === 'true') return true;
 	if (v === 'false') return false;
 	const n = Number(v);
-	if (v !== '' && !isNaN(n) && isFinite(n)) return n;
+	if (v !== '' && !Number.isNaN(n) && Number.isFinite(n)) return n;
 	// Strip matching surrounding quotes.
 	if (
 		(v.startsWith('"') && v.endsWith('"')) ||

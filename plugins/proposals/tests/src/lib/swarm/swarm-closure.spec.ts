@@ -20,17 +20,6 @@ import type {
 	ICloseSwarmInput,
 	IAgentTreeSummary,
 } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
-import type {
-	IContinuityPolicy,
-	ISwarmBudget,
-} from '@cartago-git/mcp-proposals/lib/swarm/swarm-types';
-import type {
-	IBudgetViolation,
-	IObservedUsage,
-	IProposalBudget,
-} from '@cartago-git/mcp-proposals/lib/proposals/proposal-budget';
-import type { IObservedContinuity } from '@cartago-git/mcp-proposals/lib/swarm/continuity-policy';
-import type { ILockSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -39,7 +28,7 @@ import type { ILockSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/swarm-c
 const STALE_LOCK_TIMESTAMP = '2026-06-05T00:00:00.000Z';
 const FRESH_LOCK_TIMESTAMP = '2026-06-05T08:00:00.000Z';
 
-const emptyTree = (): IAgentTreeSummary => ({
+const _emptyTree = (): IAgentTreeSummary => ({
 	totalAssignments: 0,
 	activeCount: 0,
 	cooldownCount: 0,

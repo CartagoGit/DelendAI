@@ -17,6 +17,7 @@
 		"release": "bun scripts/release.ts"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.5.0",
 		"@types/bun": "latest",
 		"@types/node": "^20.11.0",
 		"@vitest/coverage-v8": "4.1.8",

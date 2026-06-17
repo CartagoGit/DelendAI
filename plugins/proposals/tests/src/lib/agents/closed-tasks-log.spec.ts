@@ -177,7 +177,7 @@ describe('readClosedTasks — parse defensivo', () => {
 // bytes to a .corrupt-<ts> backup rather than letting them be overwritten.
 // ---------------------------------------------------------------------------
 describe('readClosedTasks — quarantine on corruption (M10)', () => {
-	const backupOf = (logPath: string): string | undefined =>
+	const backupOf = (_logPath: string): string | undefined =>
 		readdirSync(workDir).find((f) => f.startsWith('closed-tasks.json.corrupt-'));
 
 	it('preserves invalid JSON to a backup and removes the original', async () => {

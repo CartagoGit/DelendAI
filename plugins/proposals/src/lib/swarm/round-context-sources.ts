@@ -146,7 +146,7 @@ const readJsonSource = <T>(
 
 const extractProposalTimestamp = (value: IJsonProposalIndex): string | null => {
 	const record = value as Record<string, unknown>;
-	const generatedAt = record['generated_at'];
+	const generatedAt = record.generated_at;
 	return typeof generatedAt === 'string' ? generatedAt : null;
 };
 
@@ -177,8 +177,8 @@ const scanLiveProposalEntries = (
 			const block = extractYamlBlock(raw);
 			const parsed = block ? parseFrontmatterBlock(block) : {};
 			const parsedRecord = parsed as Record<string, IYamlValue>;
-			const idValue = parsedRecord['id'];
-			const statusValue = parsedRecord['status'];
+			const idValue = parsedRecord.id;
+			const statusValue = parsedRecord.status;
 			const id =
 				typeof idValue === 'string'
 					? idValue

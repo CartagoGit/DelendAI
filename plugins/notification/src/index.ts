@@ -27,8 +27,8 @@ export default definePlugin({
 	}),
 	register(ctx) {
 		const lockRel =
-			typeof ctx.options['watchLockFile'] === 'string'
-				? (ctx.options['watchLockFile'] as string)
+			typeof ctx.options.watchLockFile === 'string'
+				? (ctx.options.watchLockFile as string)
 				: joinRel(ctx.cacheDir, 'agents.lock.json');
 
 		return {
@@ -36,8 +36,8 @@ export default definePlugin({
 				buildNotifyRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					lockFileAbs: ctx.workspace.resolve(lockRel),
-					...(typeof ctx.options['intervalMs'] === 'number'
-						? { intervalMs: ctx.options['intervalMs'] as number }
+					...(typeof ctx.options.intervalMs === 'number'
+						? { intervalMs: ctx.options.intervalMs as number }
 						: {}),
 				}),
 			],
