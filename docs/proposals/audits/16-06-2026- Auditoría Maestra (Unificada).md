@@ -274,6 +274,33 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > freno anti-idle, H11 e2e). **npm publish + deploy: pendientes de `NPM_TOKEN` y
 > merge `develop→main` (los hace el usuario).** 471 tests verdes.
 
+### 🆕 Auditoría de estado actual (17-06, Opus) — cola viva tras todo lo cerrado
+
+> Revisión independiente del estado ACTUAL (en `done/17-06-2026- Claude Code (Opus
+> 4.8) [estado-actual].md`). Veredicto **9,6/10**. Higiene verificada: **0
+> `@ts-ignore`, 0 `any` real en `src`, `console.*` limpio, los `TODO` son plantillas
+> del scaffold**. Hallazgos abiertos (todos no-bloqueantes, ninguno rearquitectura):
+
+- **🟠 A1 (P1) · I/O síncrono residual FUERA de `proposals/lib`** — *el hallazgo
+  nuevo más relevante.* H2/M4/M5 barrieron `proposals`/`docs`/`git`/`search`, pero
+  sigue el patrón en: **`plugins/memory/src/lib/store.ts` (store 100% síncrono —
+  `readFileSync`+`writeFileAtomicSync` DENTRO del mutex async → bloquea el event loop
+  en cada `memory_save`)**, `core/bootstrap-tool.ts`, `core/scaffold-tool.ts` (camino
+  de aplicado `--write`) y `deps/engine.ts`. *Fix:* completar la migración async
+  (mismo invariante que H2: ningún handler de tool bloquea el event loop). Las
+  lecturas de **boot** (`assemble.ts`) y `writeFileAtomicSync` son aceptables.
+- **🟡 A2 (P2) · Onboarding/plataforma ausente** (verificado): TypeDoc, `/examples`,
+  **JSON Schema de `mcp-core.config.json`**, skills/prompts versionados,
+  `quality_cancel`, freno duro anti-idle en `auto_work` (hoy `idle` es guía, no
+  enforcement).
+- **🟡 A3 (P3) · W3 sitio web profesional** sin empezar (solo el `build-site.ts`
+  mínimo). Spec en el RESUMEN.
+- **🔵 A4 (nit) · DX:** el typecheck raíz incluye `scripts/build-site.ts`, que importa
+  el SDK → un `pull` sin `bun install` deja el typecheck rojo (en CI no, por
+  `--frozen-lockfile`). Desacoplar o typecheck propio para `scripts/`.
+
+> **Camino:** A1 → ~9,8; +A2 → ~10,0; +A3 + publish → **11/10**.
+
 ---
 
 ## 8. Scoreboard de las 8 auditorías
