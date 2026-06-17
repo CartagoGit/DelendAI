@@ -9,6 +9,7 @@
 	"workspaces": ["packages/*", "plugins/*"],
 	"scripts": {
 		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"build": "bun scripts/build.ts",
 		"validate": "bun run typecheck && bun run test",
@@ -18,8 +19,9 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"@types/node": "^20.11.0",
-		"typescript": "^6.0.3",
-		"vitest": "^4.1.8",
+		"@vitest/coverage-v8": "4.1.8",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8",
 		"zod": "^4.4.3"
 	}
 }

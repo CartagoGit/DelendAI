@@ -1,0 +1,47 @@
+# Changelog
+
+All notable changes to `@cartago-git/mcp-core` and its plugins are documented
+here. The 10 packages are versioned **in lockstep** (`bun run release` bumps
+them together; see [docs/NPM_PUBLISH.md](docs/NPM_PUBLISH.md)). The format
+follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- **Release automation** (`bun run release`): lockstep version bump across the
+  10 packages + `@cartago-git/mcp-core` peerDependency rewrite, publish in
+  dependency order (core first). Dry-run by default; `--write` / `--publish`.
+- **Publishable `dist/` build** (`bun run build`): per-package `bun build`
+  (Node-runnable ESM) + `tsc --emitDeclarationOnly` (`.d.ts`); the CLI runs
+  under plain Node/Deno/bun. CI builds `dist/` and smoke-runs the compiled CLI.
+- **`status` meta-tool** backed by a real `IStatusCollector` host seam, plus a
+  built-in `mcp-core` collector.
+- **`--verbose`** assembly diagnostics and **plugin presets**
+  (`--preset=minimal|standard|swarm`).
+- New plugins **`docs`** (`docs_list` / `docs_read`) and **`deps`**
+  (`deps_list` / `deps_check`, offline health — no network/CVE DB).
+- Chaos/adversarial coordination tests and a strict end-to-end net that
+  validates every read-only tool's `outputSchema` over the real MCP protocol.
+
+### Changed
+- **`subscribe` idempotency is now persisted** (`.subscribe-delivered.json`
+  sidecar, mutated under a file mutex): a server restart no longer re-delivers
+  already-delivered digests (M6).
+- Hardened the file mutex against a steal race (ownership token + heartbeat);
+  hermetic path resolution (`waitFor.file` resolves against the injected
+  workspace root, not the process cwd); removed synchronous I/O from the hot
+  `proposals` paths (M1, M5, M7).
+- `agentSlot` is project-agnostic (`z.string().min(1)`); the canonical 5-role
+  set remains as a documented default, not an enforced enum (M2).
+- `plugins/docs` engine moved to `fs/promises` (M4).
+
+### Fixed
+- Double tool-id prefixes (`memory_memory_*` → `memory_*`, `git_git_*` →
+  `git_*`) and two `outputSchema` mismatches surfaced by the strict e2e net.
+
+## [0.1.0] — unreleased
+
+Initial project-agnostic MCP server core + CLI plugin loader and the nine
+first-party plugins (`proposals`, `rules`, `memory`, `git`, `quality`,
+`search`, `notification`, `docs`, `deps`). Not yet published to npm.
