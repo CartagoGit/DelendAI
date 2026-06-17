@@ -18,7 +18,15 @@ const doubled = [...items, ...items];
 		{
 			doubled.map((it) => (
 				<div class="chip" title={it.name} aria-label={it.name}>
-					<span class="chip__badge" style={`background:${it.color}`}>{it.mono}</span>
+					{it.path ? (
+						<span class="chip__badge">
+							<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+								<path d={it.path} />
+							</svg>
+						</span>
+					) : (
+						<span class="chip__badge chip__badge--mono">{it.mono}</span>
+					)}
 					<span class="chip__label">{it.name}</span>
 				</div>
 			))
