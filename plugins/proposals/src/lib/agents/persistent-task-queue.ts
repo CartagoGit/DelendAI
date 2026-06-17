@@ -7,9 +7,8 @@
  * Depends on: Zod (already in stack), Bun.write (built-in), fs/promises.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, stat } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 
 import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
 
@@ -249,7 +248,8 @@ const PersistentTaskQueueSchema = z.object({
  */
 export const parseQueue = async (
 	absolutePath: string,
-	closedTasksPath: string
+	closedTasksPath: string,
+	workspaceRoot?: string
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
@@ -337,10 +337,15 @@ export const parseQueue = async (
 		seenIds.add(entry.taskId);
 	}
 
-	// Check waitFor files exist on disk
+	// Check waitFor files exist on disk. Paths resolve against the injected
+	// workspace root (when given) rather than the process cwd, so a host
+	// launched from another directory does not abort on false misses.
 	for (const entry of queue.entries) {
 		for (const wf of entry.waitFor) {
-			if (!existsSync(wf.file)) {
+			const target = workspaceRoot ? resolve(workspaceRoot, wf.file) : wf.file;
+			try {
+				await stat(target);
+			} catch {
 				throw new TaskQueueParseError(
 					'WAIT_FOR_FILE_MISSING',
 					absolutePath,
@@ -354,7 +359,7 @@ export const parseQueue = async (
 	// Load closedTasks to validate observe[]
 	let closedTaskIds: Set<string> = new Set();
 	try {
-		const ctRaw = readFileSync(closedTasksPath, 'utf8');
+		const ctRaw = await readFile(closedTasksPath, 'utf8');
 		const ctParsed = JSON.parse(ctRaw) as Array<{ taskId: string }>;
 		if (Array.isArray(ctParsed)) {
 			closedTaskIds = new Set(ctParsed.map((t) => t.taskId));

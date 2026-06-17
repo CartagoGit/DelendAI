@@ -89,7 +89,7 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 	});
 
 	it('30 concurrent queue enqueues: all present, file never torn', async () => {
-		const paths: ITaskQueuePaths = { queuePath, closedTasksPath, lockPath };
+		const paths: ITaskQueuePaths = { queuePath, closedTasksPath, lockPath, workspaceRoot: dir };
 		const n = 30;
 		await Promise.all(
 			Array.from({ length: n }, (_, i) =>
@@ -115,6 +115,7 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 			lockPathAbs: lockPath,
 			queuePathAbs: queuePath,
 			closedTasksPathAbs: closedTasksPath,
+			workspaceRoot: dir,
 			pool,
 		};
 		// `assign` is heavy (registry upsert + adoption + queue emit, several

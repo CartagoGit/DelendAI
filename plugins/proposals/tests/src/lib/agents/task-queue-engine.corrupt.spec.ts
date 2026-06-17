@@ -34,6 +34,7 @@ describe('task-queue engine — corrupt queue (M10)', () => {
 			queuePath: join(dir, 'queue.json'),
 			closedTasksPath: join(dir, 'closed.json'),
 			lockPath: join(dir, 'agents.lock.json'),
+			workspaceRoot: dir,
 		};
 		writeFileSync(paths.closedTasksPath, JSON.stringify([]));
 	});

@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentRegistry } from '../shared/agent-registry-store';
 
@@ -39,16 +39,19 @@ export type IQueueEventEmitter = (
 	priority: number
 ) => Promise<void>;
 
-const loadLockSnapshotLocal = (
+const loadLockSnapshotLocal = async (
 	lockPath: string
-): {
+): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
-} => {
-	if (!existsSync(lockPath)) {
+}> => {
+	let raw: string;
+	try {
+		raw = await readFile(lockPath, 'utf8');
+	} catch {
+		// Missing/unreadable lock → no in-flight claims.
 		return { in_flight: [] };
 	}
 	try {
-		const raw = readFileSync(lockPath, 'utf8');
 		const parsed = JSON.parse(raw);
 		const in_flight = (
 			Array.isArray(parsed?.in_flight) ? parsed.in_flight : []
@@ -172,7 +175,7 @@ export async function gcZombies(
 ): Promise<IZombieReconcileReport> {
 	const store = createAgentRegistryStore(registryPath);
 	const registry = await store.read();
-	const lockSnapshot = loadLockSnapshotLocal(lockPath);
+	const lockSnapshot = await loadLockSnapshotLocal(lockPath);
 
 	const now = options?.now || new Date();
 	const staleAfterMinutes = options?.staleAfterMinutes ?? 10;

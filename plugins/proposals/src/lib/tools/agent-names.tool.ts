@@ -26,6 +26,8 @@ export interface IAgentNamesToolOptions {
 	readonly lockPathAbs: string;
 	readonly queuePathAbs: string;
 	readonly closedTasksPathAbs: string;
+	/** Absolute workspace root — anchors `waitFor.file` resolution. */
+	readonly workspaceRoot: string;
 	/** Symbolic name pool (defaults to the constellation pool). */
 	readonly pool?: readonly string[];
 }
@@ -135,7 +137,8 @@ const runAgentNamesImpl = async (
 		try {
 			const queue = await parseQueue(
 				options.queuePathAbs,
-				options.closedTasksPathAbs
+				options.closedTasksPathAbs,
+				options.workspaceRoot
 			);
 			const updated = enqueue(queue, {
 				taskId,

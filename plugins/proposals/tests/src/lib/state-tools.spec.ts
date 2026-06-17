@@ -37,6 +37,7 @@ describe('state_health / state_repair [N15]', () => {
 			queuePathAbs: join(dir, '.cache/agent-queue/queue.json'),
 			closedTasksPathAbs: join(dir, '.cache/agent-queue/closed-tasks.json'),
 			registryPathAbs: join(dir, '.cache/agent-registry.json'),
+			workspaceRoot: dir,
 		};
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
