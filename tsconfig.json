@@ -5,7 +5,6 @@
 		"packages/*/tests/**/*",
 		"plugins/*/src/**/*",
 		"plugins/*/tests/**/*",
-		"apps/*/src/**/*",
 		"examples/*/src/**/*",
 		"examples/*/tests/**/*",
 		"scripts/**/*"

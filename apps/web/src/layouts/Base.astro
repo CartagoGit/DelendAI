@@ -1,0 +1,32 @@
+---
+import '../styles/global.scss';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+	lang: Lang;
+	title?: string;
+	description?: string;
+}
+
+const {
+	lang,
+	title = '@cartago-git/mcp-core — agnostic MCP server core',
+	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta name="theme-color" content="#0d1117" />
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>

@@ -1,0 +1,147 @@
+---
+import Marquee from './Marquee.astro';
+import { runtimes, clients } from '../data/marquees';
+import { useTranslations, type Lang } from '../i18n/ui';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, ''); // normalise → "/mcp-core"
+const enHref = `${base}/`;
+const esHref = `${base}/es/`;
+const repo = 'https://github.com/CartagoGit/mcp-core';
+
+const NS_LABEL: Record<string, string> = {
+	mcpcore: 'core',
+	proposals: 'proposals',
+	git: 'git',
+	memory: 'memory',
+	search: 'search',
+	rules: 'rules',
+	quality: 'quality',
+	docs: 'docs',
+	deps: 'deps',
+	notification: 'notification',
+};
+
+type ITool = { name: string; namespace: string; description: string };
+const tools = capabilities.tools as ITool[];
+const groups: Record<string, ITool[]> = {};
+for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
+const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<nav class="nav">
+	<div class="container nav__inner">
+		<span class="nav__brand">@cartago-git/mcp-core</span>
+		<div class="nav__links">
+			<a href="#concept">{t('nav.concept')}</a>
+			<a href="#install">{t('nav.install')}</a>
+			<a href="#tools">{t('nav.tools')}</a>
+			<a href="#benchmarks">{t('nav.benchmarks')}</a>
+			<a href={repo}>{t('nav.github')}</a>
+			<span class="lang">
+				<a href={enHref} aria-current={lang === 'en'}>EN</a>
+				<a href={esHref} aria-current={lang === 'es'}>ES</a>
+			</span>
+		</div>
+	</div>
+</nav>
+
+<header class="hero">
+	<div class="container">
+		<h1>The <span class="grad">agnostic</span> MCP server core</h1>
+		<p class="tagline">{t('hero.tagline')}</p>
+		<div class="ctas">
+			<a class="btn btn--primary" href="#install">{t('hero.ctaInstall')}</a>
+			<a class="btn btn--ghost" href="#tools">{t('hero.ctaTools')}</a>
+		</div>
+		<p class="runs">{t('hero.runsOn')} · v{capabilities.coreVersion}</p>
+	</div>
+</header>
+
+<section class="marquees container">
+	<Marquee items={runtimes} label={t('marquee.runtimes')} />
+	<Marquee items={clients} label={t('marquee.clients')} reverse />
+</section>
+
+<section id="concept" class="section">
+	<div class="container">
+		<h2>{t('concept.title')}</h2>
+		<p class="lead">{t('concept.body')}</p>
+		<div class="grid">
+			<div class="feature"><h3>{t('concept.f1.t')}</h3><p>{t('concept.f1.b')}</p></div>
+			<div class="feature"><h3>{t('concept.f2.t')}</h3><p>{t('concept.f2.b')}</p></div>
+			<div class="feature"><h3>{t('concept.f3.t')}</h3><p>{t('concept.f3.b')}</p></div>
+			<div class="feature"><h3>{t('concept.f4.t')}</h3><p>{t('concept.f4.b')}</p></div>
+		</div>
+	</div>
+</section>
+
+<section id="install" class="section">
+	<div class="container">
+		<h2>{t('install.title')}</h2>
+		<p class="lead">{t('install.lead')}</p>
+		<pre><code>bun add @cartago-git/mcp-core</code></pre>
+		<pre><code>{`{
+  "servers": {
+    "mcp-core": {
+      "command": "bunx",
+      "args": ["@cartago-git/mcp-core", "--preset=standard"]
+    }
+  }
+}`}</code></pre>
+		<p class="lead">{t('install.config')}</p>
+	</div>
+</section>
+
+<section id="tools" class="section">
+	<div class="container">
+		<h2>{t('tools.title')}</h2>
+		<p class="lead">{t('tools.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t('tools.count')}</span></div>
+			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t('tools.packages')}</span></div>
+		</div>
+		{
+			namespaces.map(([ns, list]) => (
+				<div class="ns">
+					<div class="ns__head">
+						<h3>{NS_LABEL[ns] ?? ns}</h3>
+						<span class="ns__count">{list.length}</span>
+					</div>
+					<div class="tools-grid">
+						{list.map((tool) => (
+							<div class="tool">
+								<code>{tool.name}</code>
+								<p>{tool.description}</p>
+							</div>
+						))}
+					</div>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<section id="benchmarks" class="section">
+	<div class="container">
+		<h2>{t('bench.title')}</h2>
+		<p class="lead">{t('bench.lead')}</p>
+		<div class="grid">
+			<div class="feature"><h3>&lt;300 · {t('bench.b1.t')}</h3><p>{t('bench.b1.b')}</p></div>
+			<div class="feature"><h3>0 · {t('bench.b2.t')}</h3><p>{t('bench.b2.b')}</p></div>
+			<div class="feature"><h3>✓ {t('bench.b3.t')}</h3><p>{t('bench.b3.b')}</p></div>
+		</div>
+	</div>
+</section>
+
+<footer>
+	<div class="container">
+		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-core</a> · BSD-3-Clause
+	</div>
+</footer>
