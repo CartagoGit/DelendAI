@@ -1,10 +1,10 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 import {
 	CorruptFileError,
-	quarantineCorruptFileSync,
+	quarantineCorruptFile,
 	withFileMutex,
-	writeFileAtomicSync,
+	writeFileAtomic,
 } from '@cartago-git/mcp-core/public';
 
 import { rankNotes } from './rank';
@@ -41,8 +41,8 @@ export const MAX_NOTES = 1000;
 export const deriveNoteId = (title: string): string =>
 	kebab(title) || `note-${Date.now().toString(36)}`;
 
-const quarantine = (absPath: string, detail: string): never => {
-	const backup = quarantineCorruptFileSync(absPath);
+const quarantine = async (absPath: string, detail: string): Promise<never> => {
+	const backup = await quarantineCorruptFile(absPath);
 	throw new CorruptFileError(absPath, backup, detail);
 };
 
@@ -50,10 +50,16 @@ const quarantine = (absPath: string, detail: string): never => {
  * Read the note store (JSON array). Missing/empty → empty list.
  * Corrupt → preserve the bytes (.corrupt-<ts>) and throw CorruptFileError
  * so the caller surfaces it instead of silently losing every note.
+ * Async I/O so the read never blocks the MCP server's event loop. [A1]
  */
-export const readStore = (absPath: string): INote[] => {
-	if (!existsSync(absPath)) return [];
-	const raw = readFileSync(absPath, 'utf8');
+export const readStore = async (absPath: string): Promise<INote[]> => {
+	let raw: string;
+	try {
+		raw = await readFile(absPath, 'utf8');
+	} catch (err) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
+		throw err;
+	}
 	if (!raw.trim()) return [];
 	let parsed: unknown;
 	try {
@@ -76,8 +82,11 @@ export const readStore = (absPath: string): INote[] => {
 	);
 };
 
-export const writeStore = (absPath: string, notes: readonly INote[]): void => {
-	writeFileAtomicSync(absPath, `${JSON.stringify({ notes }, null, '\t')}\n`);
+export const writeStore = async (
+	absPath: string,
+	notes: readonly INote[]
+): Promise<void> => {
+	await writeFileAtomic(absPath, `${JSON.stringify({ notes }, null, '\t')}\n`);
 };
 
 /**
@@ -108,7 +117,7 @@ export const saveNote = (
 			tagsR.reduce((sum, t) => sum + t.redactions, 0);
 
 		const id = deriveNoteId(titleR.text);
-		const notes = readStore(absPath);
+		const notes = await readStore(absPath);
 		const existing = notes.find((note) => note.id === id);
 		const stamp = now();
 		// A fresh ttl wins; otherwise an update keeps the prior expiry.
@@ -128,7 +137,7 @@ export const saveNote = (
 		const next = existing
 			? notes.map((candidate) => (candidate.id === id ? note : candidate))
 			: [...notes, note];
-		writeStore(absPath, next);
+		await writeStore(absPath, next);
 		return { note, redactions };
 	});
 
@@ -138,15 +147,15 @@ export const saveNote = (
  * - With a `query`, results are ranked by lexical relevance (BM25-lite,
  *   see `rank.ts`), tie-broken by recency. Without one, newest first.
  */
-export const recall = (
+export const recall = async (
 	absPath: string,
 	options: { query?: string; tags?: readonly string[]; limit?: number } = {}
-): INote[] => {
+): Promise<INote[]> => {
 	const rawQuery = options.query?.trim() ?? '';
 	const tags = options.tags ?? [];
 	const limit = options.limit ?? 10;
 
-	const filtered = readStore(absPath).filter(
+	const filtered = (await readStore(absPath)).filter(
 		(note) => tags.length === 0 || tags.every((tag) => note.tags.includes(tag))
 	);
 
@@ -169,9 +178,9 @@ export const recall = (
 
 export const removeNote = (absPath: string, id: string): Promise<boolean> =>
 	withFileMutex(absPath, async () => {
-		const notes = readStore(absPath);
+		const notes = await readStore(absPath);
 		const next = notes.filter((note) => note.id !== id);
 		if (next.length === notes.length) return false;
-		writeStore(absPath, next);
+		await writeStore(absPath, next);
 		return true;
 	});

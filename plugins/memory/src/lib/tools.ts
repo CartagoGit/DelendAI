@@ -136,7 +136,7 @@ export const buildMemoryToolRegistrations = (
 							// agent can't grow the store unboundedly. Updates to an
 							// existing note are always allowed.
 							const id = deriveNoteId(args.title);
-							const notes = readStore(options.storePathAbs);
+							const notes = await readStore(options.storePathAbs);
 							const isNew = !notes.some((note) => note.id === id);
 							if (isNew && notes.length >= MAX_NOTES) {
 								return toolError(
@@ -183,9 +183,9 @@ export const buildMemoryToolRegistrations = (
 						tags?: string[] | undefined;
 						limit?: number | undefined;
 					}) =>
-						guardCorrupt(() =>
+						guardCorrupt(async () =>
 							toolJson({
-								notes: recall(options.storePathAbs, {
+								notes: await recall(options.storePathAbs, {
 									...(args.query !== undefined
 										? { query: args.query }
 										: {}),
@@ -220,8 +220,8 @@ export const buildMemoryToolRegistrations = (
 						limit?: number | undefined;
 						offset?: number | undefined;
 					}) =>
-						guardCorrupt(() => {
-							const all = readStore(options.storePathAbs)
+						guardCorrupt(async () => {
+							const all = (await readStore(options.storePathAbs))
 								.slice()
 								.sort((a, b) =>
 									b.updatedAt.localeCompare(a.updatedAt)

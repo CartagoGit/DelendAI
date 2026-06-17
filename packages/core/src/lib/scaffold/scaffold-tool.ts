@@ -4,7 +4,7 @@
 // overwrite existing files (scaffolds are starting points, not
 // migrations).
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdir, stat, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 import { z } from 'zod';
@@ -73,10 +73,10 @@ export interface IScaffoldReport {
 	readonly errors: readonly string[];
 }
 
-export const buildScaffoldReport = (
+export const buildScaffoldReport = async (
 	options: IScaffoldToolOptions,
 	args: IScaffoldArgs
-): IScaffoldReport => {
+): Promise<IScaffoldReport> => {
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
@@ -159,13 +159,21 @@ export const buildScaffoldReport = (
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
-			if (existsSync(absolute)) {
+			// Refuse to overwrite: scaffolds are starting points, not migrations.
+			let alreadyExists = false;
+			try {
+				await stat(absolute);
+				alreadyExists = true;
+			} catch {
+				// missing — safe to write
+			}
+			if (alreadyExists) {
 				skipped.push(file.path);
 				continue;
 			}
 			try {
-				mkdirSync(dirname(absolute), { recursive: true });
-				writeFileSync(absolute, file.content, 'utf8');
+				await mkdir(dirname(absolute), { recursive: true });
+				await writeFile(absolute, file.content, 'utf8');
 				written.push(file.path);
 			} catch (error) {
 				errors.push(
@@ -195,7 +203,7 @@ export const buildScaffoldToolRegistration = (
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,
 			},
 			async (args: IScaffoldArgs) => {
-				const report = buildScaffoldReport(options, args);
+				const report = await buildScaffoldReport(options, args);
 				return {
 					content: [
 						{
