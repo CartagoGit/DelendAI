@@ -172,6 +172,11 @@ function main(): void {
 			console.log('Validating before publish (bun run validate)…\n');
 			run('bun', ['run', 'validate'], ROOT);
 		}
+		// Compile every package to publishable `dist/` (Node-runnable .js +
+		// .d.ts) before publishing. Core builds first so plugins resolve its
+		// types. `files: ["dist"]` is what ends up on the registry.
+		console.log('Building dist before publish (bun run build)…\n');
+		run('bun', ['run', 'build'], ROOT);
 		publishAll(flags.tool);
 	} else {
 		console.log('Pass --publish to publish in order:');

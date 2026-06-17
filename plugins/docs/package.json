@@ -15,19 +15,26 @@
 		"cartago",
 		"plugin"
 	],
-	"main": "./src/index.ts",
+	"main": "./dist/index.js",
 	"files": [
-		"src",
+		"dist",
 		"README.md",
 		"LICENSE"
 	],
 	"exports": {
-		".": "./src/index.ts",
-		"./public": "./src/public/index.ts"
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
 	},
 	"scripts": {
 		"test": "vitest run",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../scripts/build.ts plugins/docs"
 	},
 	"peerDependencies": {
 		"@cartago-git/mcp-core": "^0.1.0"
@@ -48,5 +55,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/cartago-git/mcp-core"
-	}
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
 }
