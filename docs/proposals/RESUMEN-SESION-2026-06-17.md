@@ -225,3 +225,75 @@ Tres piezas para que el paquete sea consumible y se publique solo:
   plugin, con intro + snippet de instalación. **Aviso de cobertura:** si una tool
   no tiene descripción, avisa; en CI corre en modo `--strict` y **falla el build**
   para forzar documentarla. Se despliega a Pages en cada push a `main`.
+
+- **NPM token rotation** (`.github/workflows/rotate-npm-token.yml` + verificación
+  de CLI compilado en `ci.yml`, commit `55a9ed6`): recordatorio/rotación del
+  `NPM_TOKEN`. Documentado en `NPM_PUBLISH.md`.
+
+---
+
+## 🌐 W3 — Sitio web profesional (PENDIENTE — spec completo, esto es el punto de continuación)
+
+> Recogido literal de la última conversación en la oficina (la sesión expiró justo
+> al dárseme este encargo; ver el difunto `last-session-expired.md`). El
+> `build-site.ts` actual (W1) es un `index.html` autocontenido mínimo — **W3 lo
+> sustituye** por una web de producto profesional. **Sin desplegar todavía** (el
+> usuario no tiene el `NPM_TOKEN`/setup aquí; el deploy se hará después).
+
+**Arquitectura pedida:** cada cosa en su componente por separado — **SCSS + TS +
+HTML** por componente. Algo **ligero**; valorar framework (Lit + Vite es la opción
+recomendada: web components nativos, SCSS por componente, i18n y build estático
+fáciles; decisión final del usuario pendiente — preguntó "no sé si querrías meterle
+un framework"). Debe **parecer una página profesional mostrando un producto
+profesional**.
+
+**Secciones (todas con ejemplos donde aplique):**
+- Introducción / explicación del concepto (qué es un core MCP agnóstico + plugins).
+- Instalación (`bun add`, `mcp.json`, presets `--preset=minimal|standard|swarm`).
+- Ejemplos por capacidad / por plugin (uso real de las tools).
+- **Benchmarks** (token budgets, cold-start <300 tok, ahorro de polling, etc.).
+- Cambio de **idioma (i18n a varios idiomas)**.
+- Todo lo más explícito posible (lo que se nos ocurra: badges versión/CI, etc.).
+
+**Dos marquesinas bajo la introducción** (SVGs de frameworks soportados / modelos de
+IA / lo que aplique):
+- Fila 1 se desplaza **lentamente** hacia un lado; fila 2 hacia **el contrario**.
+- **Hover sobre la marquesina → se pausa** el desplazamiento.
+- **Hover sobre un icono → se amplía un mínimo y muestra el nombre** del framework.
+
+**Responsive completo:** ordenador, tablet y móvil.
+
+**Plan de ataque sugerido (lo que el agente de oficina iba a hacer):**
+1. Andamiaje de web ejecutable (p. ej. `web/` con Vite + Lit + SCSS + i18n + la
+   marquesina dual) — fundación que arranque en local.
+2. Alimentar la lista de tools desde el registro vivo (reusar la idea de
+   `build-site.ts`: ensamblar el server real → `listTools`).
+3. Integrar con el deploy de Pages (sustituir el `site/` mínimo por el build de `web/`).
+
+---
+
+## 🔍 Revisión de proyecto pendiente (encargo de la oficina)
+
+Revisar **todo el proyecto + las auditorías/propuestas (incluido `done/`)** y aplicar
+lo que falte. Backlog abierto conocido (del doc maestro, todo no-bloqueante):
+- **Nice-to-haves de plataforma:** TypeDoc de `public/`, `/examples` (minimal/swarm/
+  custom-plugin), **JSON Schema** de `mcp-core.config.json`, **skills/prompts
+  versionados** (operator, swarm-runner, plugin-author), prompt `finish`,
+  `quality_cancel`, freno duro anti-idle en `auto_work`.
+- **W3** (web profesional, arriba) — el grande.
+- **H11** e2e de `subscribe` cross-restart (el unit ya cubre la semántica de M6).
+
+---
+
+## 🏁 Estado y continuación (casa, 2026-06-17)
+
+- **Rama `develop` == `origin/develop`**, árbol limpio. **471 tests** (461 + 10 skip),
+  typecheck + lint (Biome) + coverage verdes. `testTimeout`/`hookTimeout` a **30s**.
+- **Hecho hasta aquí (commiteado + pusheado):** todo P0–P1 + M5–M15, H1–H10,
+  auditoría MiniMax integrada, y **W1/W2** (auto-release + Pages) + rotación NPM.
+- **Setup que necesita el usuario (cuando despliegue):** secreto `NPM_TOKEN`,
+  `Settings → Pages → Source = GitHub Actions`, y **merge `develop → main`** (los
+  workflows disparan en `main`). **No se despliega ahora** (sin token).
+- **Próximo en casa:** decidir framework de **W3** y construir la web; luego cerrar
+  los nice-to-haves de plataforma. La decisión de "auto-release version-triggered vs
+  auto-bump en cada push" sigue abierta (hoy: version-triggered).
