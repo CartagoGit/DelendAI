@@ -71,20 +71,21 @@ a:hover { text-decoration: underline; }
 .btn--ghost { border-color: var(--line); color: var(--fg); }
 .btn--ghost:hover { border-color: var(--accent); text-decoration: none; }
 
-/* ---- marquees (full-bleed: span the viewport, fade at the edges) ---- */
-.marquees { width: 100%; padding: 1.25rem 0 2.75rem; display: grid; gap: 1.5rem; overflow: hidden; }
-.mq { display: grid; gap: 0.65rem; }
-.mq__label { text-align: center; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; padding: 0 1rem; }
+/* ---- marquees (centred in the content area; seamless continuous loop) ---- */
+.marquees { padding: 1.25rem 0 2.75rem; display: grid; gap: 1.5rem; }
+.mq { display: grid; gap: 0.65rem; min-width: 0; }
+.mq__label { text-align: center; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; }
 .mq__viewport {
 	overflow-x: clip; overflow-y: visible; padding-block: 0.6rem; width: 100%;
-	-webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-	mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
-.mq__track { display: flex; gap: clamp(0.5rem, 1.4vw, 0.85rem); width: max-content; will-change: transform; animation: scroll-left 70s linear infinite; }
-.mq--reverse .mq__track { animation-name: scroll-right; animation-duration: 82s; }
+/* Track = two identical sets; -50% scrolls exactly one set → no jump, always full. */
+.mq__track { display: flex; width: max-content; will-change: transform; animation: scroll 70s linear infinite; }
+.mq--reverse .mq__track { animation-direction: reverse; animation-duration: 82s; }
+.mq__set { display: flex; flex: 0 0 auto; gap: clamp(0.5rem, 1.4vw, 0.85rem); padding-right: clamp(0.5rem, 1.4vw, 0.85rem); }
 .mq__viewport:hover .mq__track, .mq__viewport:focus-within .mq__track { animation-play-state: paused; }
-@keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .chip {
 	position: relative; flex: 0 0 auto;
