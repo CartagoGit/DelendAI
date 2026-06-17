@@ -97,9 +97,16 @@
   API, tokens, claves privadas PEM, JWT, asignaciones `clave=valor`) antes de
   escribir y devuelve `redactedSecrets`; `ttlSeconds` opcional → nota
   autoexpirable (las caducadas se filtran al leer y se podan al siguiente write).
-  `redact.ts` + tests. (Resto de M11 —search regex/glob, rules detección/compact,
-  docs paginación, deps_outdated— pendiente.)
-- **Estado: 436 tests (426 + 10 skip), typecheck + lint + coverage verdes.**
+  `redact.ts` + tests.
+- **M11 (search) ✅** `search_search` con `regex:true` (regex JS) e `include`/
+  `exclude` (globs de ruta, p.ej. `src/**/*.ts`); error claro si la regex es
+  inválida. `globToRegExp` soporta `**/` = cero o más segmentos. Tests nuevos.
+  (Resto de M11 —rules detección/compact, docs paginación, deps_outdated (⚠️ red)—
+  pendiente.)
+- **Lockfile + secretos:** `bun.lock` ahora trackeado (reproducible + CI frozen).
+  Fixtures de secretos en tests reescritos por partes (`tok()`) para no disparar
+  la push-protection de GitHub; historia local reescrita limpia y `develop` pusheado.
+- **Estado: 441 tests (431 + 10 skip), typecheck + lint + coverage verdes.**
 
 > ⚠️ **Lockfile gitignorado vs `--frozen-lockfile`**: `.gitignore` ignora
 > `bun.lock`/`bun.lockb` pero el CI hace `bun install --frozen-lockfile` (que

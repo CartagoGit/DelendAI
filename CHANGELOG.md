@@ -13,6 +13,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   secrets (API keys, tokens, PEM private keys, JWTs, `key=value` assignments)
   before writing and reports `redactedSecrets`; optional `ttlSeconds` gives a
   self-expiring note (expired notes are dropped on read and pruned on next write).
+- **Search power-ups** (M11): `search_search` accepts `regex: true` (JS regex)
+  and `include`/`exclude` path globs (e.g. `src/**/*.ts`); an invalid regex
+  returns a clear tool error.
 - **Linting** (M9): Biome as the project linter (`bun run lint` → `biome ci`),
   wired into `validate` and a dedicated CI `lint` job. Recommended ruleset with
   two project-deliberate rules disabled (`noNonNullAssertion`, `noExplicitAny`).
