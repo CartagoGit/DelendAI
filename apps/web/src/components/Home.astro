@@ -43,6 +43,7 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 			<a href="#install">{t('nav.install')}</a>
 			<a href="#tools">{t('nav.tools')}</a>
 			<a href="#benchmarks">{t('nav.benchmarks')}</a>
+			<a href={`${base}/api/`}>API</a>
 			<a href={repo}>{t('nav.github')}</a>
 			<span class="lang">
 				<a href={enHref} aria-current={lang === 'en'}>EN</a>

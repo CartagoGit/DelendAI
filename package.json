@@ -18,8 +18,9 @@
 		"types:generate": "bun scripts/generate-tool-types.ts",
 		"config:schema": "bun scripts/generate-config-schema.ts",
 		"release": "bun scripts/release.ts",
-		"site": "cd apps/web && bun run build",
-		"site:strict": "cd apps/web && bun run build:strict"
+		"docs:api": "typedoc",
+		"site": "bun run docs:api && cd apps/web && bun run build",
+		"site:strict": "bun run docs:api && cd apps/web && bun run build:strict"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",
@@ -27,6 +28,7 @@
 		"@types/bun": "latest",
 		"@types/node": "^20.11.0",
 		"@vitest/coverage-v8": "4.1.8",
+		"typedoc": "^0.28.19",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8",
 		"zod": "^4.4.3"

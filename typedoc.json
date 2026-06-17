@@ -1,0 +1,15 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["packages/core/src/public/index.ts"],
+	"tsconfig": "tsconfig.json",
+	"out": "apps/web/public/api",
+	"name": "@cartago-git/mcp-core — public API",
+	"readme": "none",
+	"hideGenerator": true,
+	"excludeInternal": true,
+	"validation": { "notExported": false, "invalidLink": true },
+	"navigationLinks": {
+		"Site": "https://cartagogit.github.io/mcp-core/",
+		"GitHub": "https://github.com/CartagoGit/mcp-core"
+	}
+}

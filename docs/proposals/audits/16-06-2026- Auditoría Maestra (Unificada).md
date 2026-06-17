@@ -298,8 +298,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   grupo) y **freno duro anti-idle en `auto_work`** (`stop:true` tras 3 idles
   consecutivos, reset al haber trabajo). **`/examples` HECHO** —
   `examples/custom-plugin` (plugin de ejemplo **auto-testeado**: el contrato completo
-  en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). *Pendiente:*
-  TypeDoc de `public/`, skills/prompts versionados.
+  en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). **TypeDoc HECHO**
+  — API navegable de `public/` (`typedoc` → `apps/web/public/api`, desplegada en la
+  web bajo `/api`, enlazada en el nav). *Pendiente:* skills/prompts versionados.
 - **✅ A3 (P3) · W3 sitio web profesional** — **FOUNDATION HECHA (17-06)** con
   **Astro** (estático, GitHub Pages): `apps/web` es ahora una app Astro real con
   Layout + Hero + **marquesinas duales** (sentidos opuestos, hover-pausa, zoom +
@@ -331,8 +332,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
    contenido/idiomas + logos SVG reales.
 3. ✅ **A2 quick wins** (HECHO 17-06): JSON Schema del config, `quality_cancel`,
    freno duro anti-idle en `auto_work`.
-4. **A2 onboarding:** ✅ `/examples` (custom-plugin tested + minimal/swarm) HECHO;
-   *pendiente:* TypeDoc de `public/`, skills/prompts versionados.
+4. **A2 onboarding:** ✅ `/examples` (custom-plugin tested + minimal/swarm) **y
+   TypeDoc** (API de `public/` en la web bajo `/api`) HECHOS; *solo pendiente:*
+   skills/prompts versionados.
 5. ✅ **A4** (nit): CERRADO — `apps/web` (Astro) tiene su propio tsconfig; el
    typecheck raíz ya no se acopla al SDK del generador.
 6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.

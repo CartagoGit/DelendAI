@@ -6,6 +6,7 @@ coverage/
 site/
 .astro/
 apps/web/src/data/capabilities.json
+apps/web/public/api/
 *.tsbuildinfo
 .DS_Store
 pack/
