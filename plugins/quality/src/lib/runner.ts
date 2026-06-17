@@ -1,6 +1,49 @@
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
+
+// In-flight spawned children, so `quality_cancel` can abort a long-running scope
+// instead of waiting for the timeout (A2). Each child is spawned `detached` so
+// killing `-pid` reaps the whole process group (shell + the real command),
+// leaving no orphans — same technique as the acceptance runner (M8).
+const activeChildren = new Set<ChildProcess>();
+
+/** Kill the child's whole process group; never throws. */
+const killGroup = (child: ChildProcess, signal: NodeJS.Signals = 'SIGKILL'): void => {
+	if (child.pid === undefined) return;
+	try {
+		process.kill(-child.pid, signal);
+	} catch {
+		// already gone / no group — best effort
+		try {
+			child.kill(signal);
+		} catch {
+			// ignore
+		}
+	}
+};
+
+/** PIDs of quality commands currently running in this process. */
+export const activeRunPids = (): number[] =>
+	[...activeChildren]
+		.map((c) => c.pid)
+		.filter((pid): pid is number => pid !== undefined);
+
+/**
+ * Abort running quality commands. With `pid`, only that one; otherwise all of
+ * them. Returns the PIDs that were signalled (SIGKILL on the process group).
+ */
+export const cancelActiveRuns = (pid?: number): number[] => {
+	const killed: number[] = [];
+	for (const child of activeChildren) {
+		if (pid !== undefined && child.pid !== pid) continue;
+		if (child.pid !== undefined) {
+			killGroup(child);
+			killed.push(child.pid);
+		}
+	}
+	return killed;
+};
 
 export interface ICommandResult {
 	readonly command: string;
@@ -43,8 +86,14 @@ export const createCommandRunner =
 			const child = spawn(command, {
 				cwd,
 				shell: true,
+				detached: true, // own process group → `quality_cancel`/timeout reap the whole tree
 				stdio: ['ignore', 'pipe', 'pipe'],
 			});
+			activeChildren.add(child);
+			const done = (outcome: IRunOutcome): void => {
+				activeChildren.delete(child);
+				resolve(outcome);
+			};
 			const capture = (chunk: Buffer): void => {
 				if (output.length < maxOutputBytes) output += chunk.toString();
 			};
@@ -52,19 +101,15 @@ export const createCommandRunner =
 			child.stderr?.on('data', capture);
 			const timer = setTimeout(() => {
 				timedOut = true;
-				child.kill('SIGKILL');
+				killGroup(child);
 			}, timeoutMs);
 			child.on('close', (code) => {
 				clearTimeout(timer);
-				resolve({
-					code: timedOut ? 124 : (code ?? 1),
-					output,
-					timedOut,
-				});
+				done({ code: timedOut ? 124 : (code ?? 1), output, timedOut });
 			});
 			child.on('error', (error) => {
 				clearTimeout(timer);
-				resolve({ code: 127, output: String(error), timedOut: false });
+				done({ code: 127, output: String(error), timedOut: false });
 			});
 		});
 

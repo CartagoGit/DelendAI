@@ -292,10 +292,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   que las lecturas de **boot** de `assemble.ts`; volverla async ripplearía por todo
   el analizador con mal cost/benefit. Invariante "ningún handler de tool en bucle/
   hot-path bloquea el event loop": **cumplido**.
-- **🟡 A2 (P2) · Onboarding/plataforma ausente** (verificado): TypeDoc, `/examples`,
-  **JSON Schema de `mcp-core.config.json`**, skills/prompts versionados,
-  `quality_cancel`, freno duro anti-idle en `auto_work` (hoy `idle` es guía, no
-  enforcement).
+- **🟡 A2 (P2) · Onboarding/plataforma** — *quick wins HECHOS (17-06):* **JSON Schema
+  de `mcp-core.config.json`** (generado del Zod, drift-guard, publicado, `$schema` en
+  el config del repo), **`quality_cancel`** (aborta runs por PID/todos con kill de
+  grupo) y **freno duro anti-idle en `auto_work`** (`stop:true` tras 3 idles
+  consecutivos, reset al haber trabajo). *Pendiente:* TypeDoc de `public/`,
+  `/examples` (minimal/swarm/custom-plugin), skills/prompts versionados.
 - **🟡 A3 (P3) · W3 sitio web profesional** sin empezar (solo el `build-site.ts`
   mínimo). Spec en el RESUMEN.
 - **🔵 A4 (nit) · DX:** el typecheck raíz incluye el generador del sitio
@@ -320,9 +322,10 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
    Pages, componentes SCSS+TS+HTML, i18n, marquesinas duales, benchmarks, responsive;
    consume `capabilities.json`). Sustituye el generador mínimo de `apps/web`. *El
    trozo grande y de cara al usuario — segundo.*
-3. **A2 quick wins:** **JSON Schema de `mcp-core.config.json`** (alimenta también la
-   web/onboarding), `quality_cancel`, freno duro anti-idle en `auto_work`.
-4. **A2 onboarding:** TypeDoc de `public/`, `/examples` (minimal/swarm/custom-plugin).
+3. ✅ **A2 quick wins** (HECHO 17-06): JSON Schema del config, `quality_cancel`,
+   freno duro anti-idle en `auto_work`.
+4. **A2 onboarding:** TypeDoc de `public/`, `/examples` (minimal/swarm/custom-plugin),
+   skills/prompts versionados.
 5. **A4** (nit): desacoplar el typecheck de `apps/` del SDK.
 6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.
 

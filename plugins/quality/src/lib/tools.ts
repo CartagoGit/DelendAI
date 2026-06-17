@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IFileReader, IToolRegistration } from '@cartago-git/mcp-core/public';
 import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
-import { runScope } from './runner';
+import { cancelActiveRuns, runScope } from './runner';
 import type { ICommandRunner } from './runner';
 import type { ICommandPolicy } from './command-policy';
 import { resolveScopes } from './scopes';
@@ -93,6 +93,30 @@ export const buildQualityToolRegistrations = (
 								options.commandPolicy
 							)
 						);
+					}
+				);
+			},
+		},
+		{
+			id: 'quality_cancel',
+			summary:
+				'Abort running quality commands (by PID or all) instead of waiting for the timeout.',
+			tags: ['quality'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_quality_cancel`,
+					{
+						description:
+							'Abort quality commands currently running in this server. With `pid`, cancels only that one; otherwise cancels every in-flight run (SIGKILL on the whole process group). Returns the cancelled PIDs. Use when a run_quality scope is taking too long.',
+						inputSchema: z.object({ pid: z.number().optional() }),
+						outputSchema: z.object({
+							cancelled: z.array(z.number()),
+							count: z.number(),
+						}),
+					},
+					async (args: { pid?: number | undefined }) => {
+						const cancelled = cancelActiveRuns(args.pid);
+						return toolJson({ cancelled, count: cancelled.length });
 					}
 				);
 			},

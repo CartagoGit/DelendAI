@@ -12,6 +12,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	activeRunPids,
+	cancelActiveRuns,
 	createCommandRunner,
 	runScope,
 	type ICommandRunner,
@@ -45,6 +47,19 @@ describe('createCommandRunner (real spawn)', () => {
 		expect(out.timedOut).toBe(true);
 		expect(out.code).toBe(124);
 	});
+
+	it('cancelActiveRuns aborts an in-flight command without waiting for the timeout', async () => {
+		const run = createCommandRunner(30_000); // long budget: only cancel ends it
+		const pending = run('sleep 30', cwd);
+		// Wait until the child is registered as active.
+		await new Promise((r) => setTimeout(r, 150));
+		expect(activeRunPids().length).toBeGreaterThanOrEqual(1);
+		const killed = cancelActiveRuns();
+		expect(killed.length).toBeGreaterThanOrEqual(1);
+		const out = await pending; // resolves because the group was killed
+		expect(out.timedOut).toBe(false);
+		expect(activeRunPids()).toHaveLength(0);
+	}, 10_000);
 
 	it('reports code 127 when the process cannot be spawned (bad cwd)', async () => {
 		const run = createCommandRunner();

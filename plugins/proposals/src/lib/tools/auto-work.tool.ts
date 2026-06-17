@@ -16,6 +16,18 @@ const json = (value: unknown): IResult => ({
 	content: [{ type: 'text', text: JSON.stringify(value) }],
 });
 
+// Hard anti-idle brake: the `idle` state is guidance, but a model can ignore it
+// and re-call auto_work in a tight loop. After this many CONSECUTIVE idle
+// responses we escalate to `stop: true` so a wrapper/agent halts deterministically.
+// Any actionable ('work') response resets the streak.
+const IDLE_STOP_THRESHOLD = 3;
+let consecutiveIdle = 0;
+
+/** Test-only: reset the consecutive-idle streak. */
+export const __resetIdleStreakForTesting = (): void => {
+	consecutiveIdle = 0;
+};
+
 /**
  * One-call "what should I do now?" for autonomous work. Resolves the
  * next proposal (serial cascade) and returns a compact, ordered plan
@@ -42,14 +54,27 @@ export const runAutoWork = async (
 		// `all-claimed` [N9]: every actionable proposal is in_progress under
 		// an active lock. Surface the anti-loop guidance verbatim so the
 		// agent stops instead of re-calling auto_work on the same proposal.
+		consecutiveIdle += 1;
+		const stop = consecutiveIdle >= IDLE_STOP_THRESHOLD;
 		return json({
 			state: 'idle',
+			idleStreak: consecutiveIdle,
 			reason: next.reason ?? 'no actionable proposal',
-			nextAction:
-				next.nextAction ??
-				'Create a proposal under the proposals dir and run sync_proposals.',
+			...(stop
+				? {
+						stop: true,
+						nextAction: `STOP — auto_work has returned idle ${consecutiveIdle}× in a row. Do NOT call auto_work again until new work exists; enqueue/create a proposal (or wait for a lock-released notification) first.`,
+					}
+				: {
+						nextAction:
+							next.nextAction ??
+							'Create a proposal under the proposals dir and run sync_proposals.',
+					}),
 		});
 	}
+
+	// Actionable work → reset the idle streak.
+	consecutiveIdle = 0;
 
 	const prefix = options.namespacePrefix;
 	const steps = [
