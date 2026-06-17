@@ -44,7 +44,8 @@ export const buildAgentTree = (
 			? byId.get(node.parent_task_id)
 			: null;
 		if (parent) {
-			(parent.children = parent.children ?? []).push(node);
+			parent.children = parent.children ?? [];
+			parent.children.push(node);
 		} else {
 			roots.push(node);
 		}

@@ -9,7 +9,6 @@ import { buildSearchToolRegistrations } from '@cartago-git/mcp-search/lib/tools'
 import plugin from '@cartago-git/mcp-search';
 import type {
 	IMcpPluginContext,
-	IToolRegistration,
 } from '@cartago-git/mcp-core/public';
 
 const write = (root: string, rel: string, body: string): void => {

@@ -165,7 +165,7 @@ export function classifyZombies(
 export async function gcZombies(
 	registryPath: string,
 	lockPath: string,
-	queuePath: string,
+	_queuePath: string,
 	options?: {
 		dryRun?: boolean | undefined;
 		staleAfterMinutes?: number | undefined;

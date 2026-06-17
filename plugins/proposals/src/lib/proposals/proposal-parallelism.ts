@@ -315,11 +315,11 @@ export const extractParallelismFromFrontmatter = (
 	}
 	const isValidTrack = makeIsValidTrack(knownTracks);
 	const fm = parseFrontmatterBlock(block);
-	const lane = fm['mainWriteLane'];
+	const lane = fm.mainWriteLane;
 	if (!isValidTrack(lane)) {
 		return null;
 	}
-	const permitted = asStringArray(fm['parallelismLanes']).filter(
+	const permitted = asStringArray(fm.parallelismLanes).filter(
 		isValidTrack
 	);
 	return {

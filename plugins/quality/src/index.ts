@@ -26,7 +26,7 @@ export default definePlugin({
 	}),
 	register(ctx) {
 		const reader = createWorkspaceFileReader(ctx.workspace);
-		const timeoutMs = ctx.options['timeoutMs'];
+		const timeoutMs = ctx.options.timeoutMs;
 		return {
 			tools: buildQualityToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
@@ -35,9 +35,9 @@ export default definePlugin({
 				run: createCommandRunner(
 					typeof timeoutMs === 'number' ? timeoutMs : undefined
 				),
-				...(ctx.options['scopes']
+				...(ctx.options.scopes
 					? {
-							optionScopes: ctx.options['scopes'] as Record<
+							optionScopes: ctx.options.scopes as Record<
 								string,
 								readonly string[]
 							>,

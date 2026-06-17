@@ -25,7 +25,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-core\/lib\/(.*)$/,
-			replacement: resolve(core, 'lib') + '/$1',
+			replacement: `${resolve(core, 'lib')}/$1`,
 		},
 		{ find: '@cartago-git/mcp-core', replacement: resolve(core, 'index.ts') },
 		{
@@ -34,7 +34,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-proposals\/lib\/(.*)$/,
-			replacement: resolve(proposals, 'lib') + '/$1',
+			replacement: `${resolve(proposals, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-proposals',
@@ -46,7 +46,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-rules\/lib\/(.*)$/,
-			replacement: resolve(rules, 'lib') + '/$1',
+			replacement: `${resolve(rules, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-rules',
@@ -58,7 +58,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-memory\/lib\/(.*)$/,
-			replacement: resolve(memory, 'lib') + '/$1',
+			replacement: `${resolve(memory, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-memory',
@@ -70,7 +70,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-git\/lib\/(.*)$/,
-			replacement: resolve(git, 'lib') + '/$1',
+			replacement: `${resolve(git, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-git',
@@ -82,7 +82,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-quality\/lib\/(.*)$/,
-			replacement: resolve(quality, 'lib') + '/$1',
+			replacement: `${resolve(quality, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-quality',
@@ -94,7 +94,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-search\/lib\/(.*)$/,
-			replacement: resolve(search, 'lib') + '/$1',
+			replacement: `${resolve(search, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-search',
@@ -106,7 +106,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-notification\/lib\/(.*)$/,
-			replacement: resolve(notification, 'lib') + '/$1',
+			replacement: `${resolve(notification, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-notification',
@@ -118,7 +118,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-docs\/lib\/(.*)$/,
-			replacement: resolve(docs, 'lib') + '/$1',
+			replacement: `${resolve(docs, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-docs',
@@ -130,7 +130,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		},
 		{
 			find: /^@cartago-git\/mcp-deps\/lib\/(.*)$/,
-			replacement: resolve(deps, 'lib') + '/$1',
+			replacement: `${resolve(deps, 'lib')}/$1`,
 		},
 		{
 			find: '@cartago-git/mcp-deps',

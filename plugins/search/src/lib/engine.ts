@@ -121,12 +121,10 @@ export const searchWorkspace = async (
 
 	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
-		let entries;
-		try {
-			entries = await readdir(absDir, { withFileTypes: true });
-		} catch {
-			return;
-		}
+		const entries = await readdir(absDir, { withFileTypes: true }).catch(
+			() => null
+		);
+		if (entries === null) return;
 		// Deterministic order so results are stable across runs.
 		const sorted = [...entries].sort((a, b) => a.name.localeCompare(b.name));
 		for (const entry of sorted) {

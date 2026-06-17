@@ -9,3 +9,8 @@ pack/
 
 bun.lockb
 bun.lock
+
+# Stray TypeScript declaration emits inside source trees. The build emits
+# declarations to dist/; a .d.ts next to a .ts source is always an accident.
+packages/*/src/**/*.d.ts
+plugins/*/src/**/*.d.ts

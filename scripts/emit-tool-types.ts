@@ -221,7 +221,7 @@ export const emitToolOutputsModule = (
 	blocks.push(
 		`/** Map of this package's MCP tool names to their \`structuredContent\` type. */\nexport interface ${label}ToolOutputs {\n${mapLines.join('\n')}\n}`
 	);
-	return blocks.join('\n\n') + '\n';
+	return `${blocks.join('\n\n')}\n`;
 };
 
 /**

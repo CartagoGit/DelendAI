@@ -79,12 +79,12 @@ describe('buildRulesManifest', () => {
 			cacheRelDir: '.cache/mcp-core/rules',
 			mode: 'mixed',
 		});
-		const web = manifest.projects['demo']?.['apps/web'];
+		const web = manifest.projects.demo?.['apps/web'];
 		expect(web?.framework).toBe('vue');
 		// project's own config first, ours behind
 		expect(web?.eslint[0]).toBe('apps/web/eslint.config.mjs');
 		expect(web?.eslint[1]).toBe('.cache/mcp-core/rules/vue.eslint.config.mjs');
-		const api = manifest.projects['demo']?.['apps/api'];
+		const api = manifest.projects.demo?.['apps/api'];
 		expect(api?.framework).toBe('angular');
 		expect(manifest.mode).toBe('mixed');
 	});
@@ -97,7 +97,7 @@ describe('buildRulesManifest', () => {
 			mode: 'strict',
 			overrides: { root: 'react-ts' },
 		});
-		expect(manifest.projects['demo']?.['root']?.presetId).toBe('react-ts');
-		expect(manifest.projects['demo']?.['root']?.reason).toMatch(/forced/);
+		expect(manifest.projects.demo?.root?.presetId).toBe('react-ts');
+		expect(manifest.projects.demo?.root?.reason).toMatch(/forced/);
 	});
 });

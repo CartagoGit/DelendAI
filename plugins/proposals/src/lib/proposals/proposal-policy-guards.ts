@@ -121,7 +121,7 @@ export function isProposalBudgetPolicy(
 	}
 	const record = value as Record<string, unknown>;
 	return (
-		isProposalSwarmBudget(record['swarmBudget']) &&
-		isProposalContinuityPolicy(record['continuityPolicy'])
+		isProposalSwarmBudget(record.swarmBudget) &&
+		isProposalContinuityPolicy(record.continuityPolicy)
 	);
 }

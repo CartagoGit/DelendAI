@@ -1,18 +1,12 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	classifyZombies,
 	gcZombies,
 	thresholdFromOrphans,
-} from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
-import type {
-	IAgentSlot,
-	IZombieOrphanEntry,
-	IZombieReconcileReport,
-	IZombieThreshold,
 } from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
 import { createAgentRegistryStore } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';
 import type { IAgentRegistry } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';

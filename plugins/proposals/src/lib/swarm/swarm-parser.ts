@@ -98,7 +98,7 @@ export const parseSwarmFrontmatter = async (
 	// swarmBudget extraction and validation
 	// ---------------------------------------------------------------------------
 	let swarmBudget: ISwarmBudget | undefined;
-	const rawSwarmBudget = parsed['swarmBudget'];
+	const rawSwarmBudget = parsed.swarmBudget;
 
 	if (rawSwarmBudget !== undefined && rawSwarmBudget !== null) {
 		const result = swarmBudgetSchema.safeParse(rawSwarmBudget);
@@ -116,7 +116,7 @@ export const parseSwarmFrontmatter = async (
 	// continuityPolicy extraction and validation
 	// ---------------------------------------------------------------------------
 	let continuityPolicy: IContinuityPolicy | undefined;
-	const rawContinuityPolicy = parsed['continuityPolicy'];
+	const rawContinuityPolicy = parsed.continuityPolicy;
 
 	if (rawContinuityPolicy !== undefined && rawContinuityPolicy !== null) {
 		const result = continuityPolicySchema.safeParse(rawContinuityPolicy);

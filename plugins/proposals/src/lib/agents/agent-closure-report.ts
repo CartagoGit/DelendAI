@@ -111,7 +111,7 @@ const hasOwn = <T extends string>(
 	value: object,
 	key: T
 ): value is Record<T, unknown> =>
-	Object.prototype.hasOwnProperty.call(value, key);
+	Object.hasOwn(value, key);
 
 const ensureObject = (
 	value: unknown,
@@ -293,19 +293,19 @@ export const parseAgentClosureReport = async (
 		absolutePath
 	);
 	const proposalId = optionalString(
-		parsed['proposalId'],
+		parsed.proposalId,
 		'proposalId',
 		absolutePath
 	);
-	const taskId = optionalString(parsed['taskId'], 'taskId', absolutePath);
-	const summary = optionalString(parsed['summary'], 'summary', absolutePath);
+	const taskId = optionalString(parsed.taskId, 'taskId', absolutePath);
+	const summary = optionalString(parsed.summary, 'summary', absolutePath);
 	const startedAt = ensureTimestamp(
-		parsed['startedAt'],
+		parsed.startedAt,
 		'startedAt',
 		absolutePath
 	);
 	const closedAt = ensureTimestamp(
-		parsed['closedAt'],
+		parsed.closedAt,
 		'closedAt',
 		absolutePath
 	);

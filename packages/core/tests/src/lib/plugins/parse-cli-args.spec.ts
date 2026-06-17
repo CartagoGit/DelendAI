@@ -41,7 +41,7 @@ describe('parseCliArgs', () => {
 			'/cwd'
 		);
 		expect(args.workspace).toBe('/ws');
-		expect(args.extra['proposalsDir']).toBe('docs/p');
+		expect(args.extra.proposalsDir).toBe('docs/p');
 	});
 
 	// N18: plugin presets
@@ -51,7 +51,7 @@ describe('parseCliArgs', () => {
 		expect(args.plugins).toContain('proposals');
 		expect(args.plugins).toContain('deps');
 		// `preset` is a known key, not forwarded to extra
-		expect(args.extra['preset']).toBeUndefined();
+		expect(args.extra.preset).toBeUndefined();
 	});
 
 	it('merges --preset with explicit --plugins, de-duped, preset first', () => {

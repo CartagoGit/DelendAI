@@ -92,11 +92,11 @@ export const assembleCliConfig = async (
 
 	// Precedence for roots: explicit CLI flag > config file > default.
 	const cacheDir =
-		args.tokens['cacheDir'] ??
+		args.tokens.cacheDir ??
 		fileConfig.cacheDir ??
 		DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir =
-		args.tokens['docsDir'] ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
+		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
 	const corePrefix = args.namespacePrefix ?? 'mcpcore';
 
@@ -336,7 +336,7 @@ export const runDoctor = async (
 export const prepareServerBlueprintOnStart = async (
 	args: IMcpCoreCliArgs
 ): Promise<{ written: boolean; path: string }> => {
-	const cacheDir = args.tokens['cacheDir'] ?? DEFAULT_CORE_PATHS.cacheDir;
+	const cacheDir = args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
 	const absPath = join(args.workspace, relPath);
 	if (existsSync(absPath)) return { written: false, path: relPath };
@@ -416,12 +416,12 @@ export const formatVerbose = (d: IAssemblyDiagnostics): string => {
 		.map((p) => (p.version ? `${p.name}@${p.version}` : p.name))
 		.join(', ');
 	return (
-		[
+		`${[
 			`[mcp-core] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
 			`[mcp-core] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
 			`[mcp-core] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
 			`[mcp-core] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
-		].join('\n') + '\n'
+		].join('\n')}\n`
 	);
 };
 
@@ -432,7 +432,7 @@ export const runCli = async (
 	const args = parseCliArgs(argv, cwd);
 
 	// `--check`/`--doctor`: print a diagnostic report and exit (no stdio).
-	if (args.tokens['check'] !== undefined || args.tokens['doctor'] !== undefined) {
+	if (args.tokens.check !== undefined || args.tokens.doctor !== undefined) {
 		const report = await runDoctor(args);
 		process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 		if (!report.ok) process.exitCode = 1;
@@ -446,7 +446,7 @@ export const runCli = async (
 	}
 	const assembled = await createMcpServer(config);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
-	if (args.tokens['verbose'] !== undefined) {
+	if (args.tokens.verbose !== undefined) {
 		process.stderr.write(
 			formatVerbose(
 				buildAssemblyDiagnostics(

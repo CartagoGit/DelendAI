@@ -134,19 +134,19 @@ export const parseCliArgs = (
 	// Preset plugins first, then explicit --plugins; de-duped, order preserved.
 	const plugins = [
 		...new Set([
-			...resolvePreset(tokens['preset']),
-			...splitList(tokens['plugins']),
+			...resolvePreset(tokens.preset),
+			...splitList(tokens.plugins),
 		]),
 	];
 	return {
 		plugins,
-		cacheDir: tokens['cacheDir'] ?? DEFAULT_CLI_ARGS.cacheDir,
-		docsDir: tokens['docsDir'] ?? DEFAULT_CLI_ARGS.docsDir,
-		workspace: tokens['workspace'] ?? cwd,
-		serverName: tokens['name'] ?? DEFAULT_CLI_ARGS.serverName,
-		serverVersion: tokens['serverVersion'] ?? DEFAULT_CLI_ARGS.serverVersion,
-		namespacePrefix: tokens['prefix'],
-		configPath: tokens['config'],
+		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
+		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
+		workspace: tokens.workspace ?? cwd,
+		serverName: tokens.name ?? DEFAULT_CLI_ARGS.serverName,
+		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
+		namespacePrefix: tokens.prefix,
+		configPath: tokens.config,
 		mcpServerCreate: !isFalse(tokens['mcp-server-create']),
 		mcpServerTests: !isFalse(tokens['mcp-server-tests']),
 		extra,

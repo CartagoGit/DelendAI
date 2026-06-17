@@ -216,8 +216,8 @@ export const parseProposalDocument = async (
 
 	// --- Budget validation ---
 	let budget: IProposalBudget | undefined;
-	if (parsed['budget'] !== undefined && parsed['budget'] !== null) {
-		const result = budgetSchema.safeParse(parsed['budget']);
+	if (parsed.budget !== undefined && parsed.budget !== null) {
+		const result = budgetSchema.safeParse(parsed.budget);
 		if (!result.success) {
 			throw new ProposalParseError(
 				'INVALID_BUDGET',
@@ -233,8 +233,8 @@ export const parseProposalDocument = async (
 
 	// --- Acceptance criteria validation ---
 	let acceptanceCriteria: readonly IAcceptanceCriterion[] | undefined;
-	if (parsed['acceptanceCriteria'] !== undefined) {
-		if (!Array.isArray(parsed['acceptanceCriteria'])) {
+	if (parsed.acceptanceCriteria !== undefined) {
+		if (!Array.isArray(parsed.acceptanceCriteria)) {
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				absolutePath,
@@ -243,7 +243,7 @@ export const parseProposalDocument = async (
 		}
 		const result = z
 			.array(criterionSchema)
-			.safeParse(parsed['acceptanceCriteria']);
+			.safeParse(parsed.acceptanceCriteria);
 		if (!result.success) {
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
@@ -257,18 +257,18 @@ export const parseProposalDocument = async (
 	}
 
 	// --- Ownership / reserved files ---
-	const ownership = Array.isArray(parsed['ownership'])
-		? (parsed['ownership'] as IYamlValue[])
+	const ownership = Array.isArray(parsed.ownership)
+		? (parsed.ownership as IYamlValue[])
 				.filter(
 					(v): v is Record<string, IYamlValue> =>
 						typeof v === 'object' && v !== null && !Array.isArray(v)
 				)
 				.map((item) => ({
-					agent: String(item['agent'] ?? ''),
-					task: String(item['task'] ?? ''),
-					...(Array.isArray(item['files'])
+					agent: String(item.agent ?? ''),
+					task: String(item.task ?? ''),
+					...(Array.isArray(item.files)
 						? {
-								files: (item['files'] as IYamlValue[]).filter(
+								files: (item.files as IYamlValue[]).filter(
 									(v): v is string => typeof v === 'string'
 								),
 							}
@@ -276,17 +276,17 @@ export const parseProposalDocument = async (
 				}))
 		: undefined;
 
-	const reservedFiles = Array.isArray(parsed['reservedFiles'])
-		? (parsed['reservedFiles'] as string[]).filter(
+	const reservedFiles = Array.isArray(parsed.reservedFiles)
+		? (parsed.reservedFiles as string[]).filter(
 				(v): v is string => typeof v === 'string'
 			)
 		: undefined;
 
 	const frontmatter: IProposalFrontmatter = {
-		id: String(parsed['id'] ?? ''),
-		type: String(parsed['type'] ?? 'unspecified'),
-		status: String(parsed['status'] ?? 'pending'),
-		track: String(parsed['track'] ?? 'unspecified'),
+		id: String(parsed.id ?? ''),
+		type: String(parsed.type ?? 'unspecified'),
+		status: String(parsed.status ?? 'pending'),
+		track: String(parsed.track ?? 'unspecified'),
 		...(budget !== undefined ? { budget } : {}),
 		...(acceptanceCriteria !== undefined ? { acceptanceCriteria } : {}),
 		...(ownership !== undefined ? { ownership } : {}),

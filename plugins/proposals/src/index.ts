@@ -72,9 +72,9 @@ export default definePlugin({
 		// e.g. `['paused/demos']`. mcp-core bakes none — the host injects
 		// its folder policy via ctx.options. [M5]
 		const extraProposalFolders = Array.isArray(
-			ctx.options['proposalFolders']
+			ctx.options.proposalFolders
 		)
-			? (ctx.options['proposalFolders'] as string[])
+			? (ctx.options.proposalFolders as string[])
 			: [];
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
@@ -84,8 +84,8 @@ export default definePlugin({
 			queuePathAbs: abs(layout.taskQueueFile),
 			closedTasksPathAbs: abs(layout.closedTasksFile),
 			workspaceRoot: ctx.workspace.root,
-			...(Array.isArray(ctx.options['namePool'])
-				? { pool: ctx.options['namePool'] as string[] }
+			...(Array.isArray(ctx.options.namePool)
+				? { pool: ctx.options.namePool as string[] }
 				: {}),
 		};
 
@@ -154,11 +154,9 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					lockPathAbs: abs(layout.lockFile),
-					...(Array.isArray(ctx.options['familyCascade'])
+					...(Array.isArray(ctx.options.familyCascade)
 						? {
-								familyCascade: ctx.options[
-									'familyCascade'
-								] as string[],
+								familyCascade: ctx.options.familyCascade as string[],
 							}
 						: {}),
 				}),
@@ -166,18 +164,14 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					lockPathAbs: abs(layout.lockFile),
-					...(Array.isArray(ctx.options['familyCascade'])
+					...(Array.isArray(ctx.options.familyCascade)
 						? {
-								familyCascade: ctx.options[
-									'familyCascade'
-								] as string[],
+								familyCascade: ctx.options.familyCascade as string[],
 							}
 						: {}),
-					...(typeof ctx.options['validationCommand'] === 'string'
+					...(typeof ctx.options.validationCommand === 'string'
 						? {
-								validationCommand: ctx.options[
-									'validationCommand'
-								] as string,
+								validationCommand: ctx.options.validationCommand as string,
 							}
 						: {}),
 				}),

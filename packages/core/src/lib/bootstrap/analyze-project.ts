@@ -107,7 +107,7 @@ const detectTestRunner = (
 ): IProjectAnalysis['testRunner'] => {
 	if ('vitest' in deps) return 'vitest';
 	if ('jest' in deps) return 'jest';
-	const testScript = scripts['test'] ?? '';
+	const testScript = scripts.test ?? '';
 	if (/\bvitest\b/.test(testScript)) return 'vitest';
 	if (/\bjest\b/.test(testScript)) return 'jest';
 	if (/\bbun test\b/.test(testScript)) return 'bun';
@@ -125,8 +125,8 @@ const pickScripts = (
 		if (scripts[role] !== undefined) out[role] = scripts[role] as string;
 	}
 	// common aliases
-	if (out['typecheck'] === undefined && scripts['type-check'] !== undefined) {
-		out['typecheck'] = scripts['type-check'] as string;
+	if (out.typecheck === undefined && scripts['type-check'] !== undefined) {
+		out.typecheck = scripts['type-check'] as string;
 	}
 	return out;
 };
