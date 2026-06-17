@@ -16,10 +16,13 @@
 		"build": "bun scripts/build.ts",
 		"validate": "bun run typecheck && bun run lint && bun run test",
 		"types:generate": "bun scripts/generate-tool-types.ts",
-		"release": "bun scripts/release.ts"
+		"release": "bun scripts/release.ts",
+		"site": "bun scripts/build-site.ts",
+		"site:strict": "bun scripts/build-site.ts --strict"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",
+		"@modelcontextprotocol/sdk": "1.29.0",
 		"@types/bun": "latest",
 		"@types/node": "^20.11.0",
 		"@vitest/coverage-v8": "4.1.8",

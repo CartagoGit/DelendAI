@@ -34,7 +34,7 @@ export const evaluateCommandPolicy = (
 ): IPolicyVerdict => {
 	if (policy === undefined) return { allowed: true };
 	const bin = commandBinary(command);
-	if (policy.deny && policy.deny.includes(bin)) {
+	if (policy.deny?.includes(bin)) {
 		return { allowed: false, reason: `command "${bin}" is in the deny list` };
 	}
 	if (policy.allow && policy.allow.length > 0 && !policy.allow.includes(bin)) {

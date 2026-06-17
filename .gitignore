@@ -3,6 +3,7 @@ dist/
 build/
 .cache/
 coverage/
+site/
 *.tsbuildinfo
 .DS_Store
 pack/

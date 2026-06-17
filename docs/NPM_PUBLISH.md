@@ -17,7 +17,28 @@
 3. (Recomendado) 2FA en modo "Authorization and Publishing" → tendrás que meter
    el OTP en cada publish, o crea un *Automation token* para CI.
 
-## 0. Vía automatizada (recomendada): `bun run release`
+## 0.0 Vía CI (lo más automático): push a `main`
+
+Con los workflows `release.yml` y `pages.yml` el ciclo es automático:
+
+1. Bump de versión: `bun run release --bump=patch --write` (versiona los 10
+   paquetes en lockstep) y commitea.
+2. Push a `main`. El workflow **Release** detecta que la `version` de
+   `packages/core/package.json` no tiene aún tag `vX.Y.Z` →
+   valida + build + `bun run release --publish` (publica los 10 en orden) +
+   crea el **tag** + un **GitHub Release** con notas autogeneradas.
+3. El workflow **Pages** regenera y despliega el sitio (web de la doc) desde la
+   lista viva de tools (modo `--strict`: si una tool no tiene descripción, falla).
+
+**Setup único (una vez):**
+- Secreto `NPM_TOKEN` (npm *automation token*) en *Settings → Secrets → Actions*.
+- *Settings → Pages → Source = "GitHub Actions"*.
+- npm 2FA: usa un *automation token* (no pide OTP interactivo en CI).
+
+Si no hay bump de versión, el push a `main` NO publica (idempotente: el tag ya
+existe). Lo de abajo (§0/§1/§2) es la vía manual equivalente.
+
+## 0. Vía manual asistida: `bun run release`
 Un único comando versiona los 10 paquetes **en lockstep** (todos a la misma
 versión, reescribiendo el `peerDependency` `^x.y.z` del core en los 9 plugins) y
 publica en el orden correcto. Por defecto es **dry-run** (no escribe nada):

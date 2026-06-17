@@ -200,3 +200,28 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 - **No** commitear `dist/` (gitignored; se genera con `bun run build`).
 
 — Cierre de sesión 2026-06-17 (casa). Continúa por **M6**.
+
+---
+
+## 🌐 Nuevo workstream — distribución + web (W1/W2), 2026-06-17
+
+Tres piezas para que el paquete sea consumible y se publique solo:
+
+- **Uso como dependencia (verificado, ya funciona):** `bun add @cartago-git/mcp-core`
+  expone el bin `mcp-core` (`dist/cli.js`, shebang node). En `mcp.json`:
+  `{ "command": "bunx", "args": ["@cartago-git/mcp-core", "--plugins=..."] }`
+  (o `npx`, o `node_modules/.bin/mcp-core`). Documentado en el sitio web.
+
+- **W2 · Auto-release en push a `main`** (`.github/workflows/release.yml`):
+  cuando la `version` de `packages/core/package.json` no tiene aún su tag
+  `vX.Y.Z`, el workflow valida + build + **`bun run release --publish`** (los 10
+  paquetes en orden), crea el **tag**, y un **GitHub Release** con notas
+  autogeneradas. Cortar release = `bun run release --bump=patch --write` + push.
+  Requiere el secreto **`NPM_TOKEN`** en el repo (lo añade el usuario).
+
+- **W1 · Sitio GitHub Pages** (`scripts/build-site.ts` + `.github/workflows/pages.yml`):
+  genera un `site/index.html` agradable y autocontenido a partir de la **lista
+  viva de tools** (ensambla el server real y hace `listTools`), agrupadas por
+  plugin, con intro + snippet de instalación. **Aviso de cobertura:** si una tool
+  no tiene descripción, avisa; en CI corre en modo `--strict` y **falla el build**
+  para forzar documentarla. Se despliega a Pages en cada push a `main`.
