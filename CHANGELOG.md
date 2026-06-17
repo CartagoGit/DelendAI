@@ -64,6 +64,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `plugins/docs` engine moved to `fs/promises` (M4).
 
 ### Fixed
+- **Scaffold tool response compacted** (H3): `scaffold` emitted a tab-indented
+  report as its text content (agent-context tokens); now compact JSON (the typed
+  payload still rides in `structuredContent`).
+- **CI test flakiness**: the I/O + mutex concurrency tests could exceed the 5s
+  default under heavy parallel-suite CPU load; `testTimeout`/`hookTimeout` raised
+  to 20s across all packages (a real hang still fails — the wait is just scheduling).
 - Double tool-id prefixes (`memory_memory_*` → `memory_*`, `git_git_*` →
   `git_*`) and two `outputSchema` mismatches surfaced by the strict e2e net.
 
