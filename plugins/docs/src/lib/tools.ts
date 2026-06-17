@@ -32,19 +32,28 @@ export const buildDocsToolRegistrations = (
 					`${prefix}_docs_list`,
 					{
 						description:
-							'List the project documentation: every markdown file under the configured roots as {path, title}. Low-token index — read one with docs_read. Read-only.',
+							'List the project documentation: markdown under the configured roots as {path, title}. Low-token index — read one with docs_read. Paginated: `limit` (default 50, max 200) + `offset`; returns {docs,count,total,offset,nextOffset?,truncated}. Read-only.',
 						inputSchema: z.object({
 							roots: z.array(z.string()).optional(),
+							limit: z.number().optional(),
+							offset: z.number().optional(),
 						}),
 						outputSchema: z.object({
 							count: z.number(),
+							total: z.number(),
+							offset: z.number(),
+							nextOffset: z.number().optional(),
 							truncated: z.boolean(),
 							docs: z.array(
 								z.object({ path: z.string(), title: z.string() })
 							),
 						}),
 					},
-					async (args: { roots?: string[] | undefined }) => {
+					async (args: {
+						roots?: string[] | undefined;
+						limit?: number | undefined;
+						offset?: number | undefined;
+					}) => {
 						const { docs, truncated } = await listDocs(
 							options.workspaceRootAbs,
 							{
@@ -52,7 +61,18 @@ export const buildDocsToolRegistrations = (
 								...(args.roots ? { roots: args.roots } : {}),
 							}
 						);
-						return toolJson({ count: docs.length, truncated, docs });
+						const limit = Math.max(1, Math.min(200, Math.floor(args.limit ?? 50)));
+						const offset = Math.max(0, Math.floor(args.offset ?? 0));
+						const page = docs.slice(offset, offset + limit);
+						const nextOffset = offset + page.length;
+						return toolJson({
+							count: page.length,
+							total: docs.length,
+							offset,
+							...(nextOffset < docs.length ? { nextOffset } : {}),
+							truncated,
+							docs: page,
+						});
 					}
 				);
 			},

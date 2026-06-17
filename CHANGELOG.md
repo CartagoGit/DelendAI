@@ -16,6 +16,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Search power-ups** (M11): `search_search` accepts `regex: true` (JS regex)
   and `include`/`exclude` path globs (e.g. `src/**/*.ts`); an invalid regex
   returns a clear tool error.
+- **Docs pagination** (M11/H7): `docs_list` accepts `limit`/`offset` and returns
+  `{count,total,offset,nextOffset?,truncated}` — agents can page large doc trees.
+- **Framework detection** (M11/H6): `rules` now recognises **Next, Remix, Nuxt,
+  Astro and Solid** (by dep or config file) *before* the generic react/vue check,
+  so a Next app is no longer silently classified as plain `react-ts`. New presets
+  reuse the verified base lint/tsconfig and carry framework-specific conventions
+  plus the framework's ESLint plugin in `requiredEslintDeps`.
 - **Linting** (M9): Biome as the project linter (`bun run lint` → `biome ci`),
   wired into `validate` and a dedicated CI `lint` job. Recommended ruleset with
   two project-deliberate rules disabled (`noNonNullAssertion`, `noExplicitAny`).
@@ -38,6 +45,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed
+- **Biome config migrated** (H9): `linter.rules.recommended: true` →
+  `preset: "recommended"` (no more deprecation info on every lint).
 - **`subscribe` idempotency is now persisted** (`.subscribe-delivered.json`
   sidecar, mutated under a file mutex): a server restart no longer re-delivers
   already-delivered digests (M6).

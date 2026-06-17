@@ -139,12 +139,15 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 
 ### 1. P2 (calidad de producto) — del doc maestro + auditoría 17-06
 - **M9 ✅** · **M11 search ✅** · **M11 memory ✅** (hechos arriba).
-- **H9** `bunx biome migrate` (cierra la info `recommended` deprecado). Trivial, mío.
+- **H9 ✅** `biome migrate` (recommended→preset; sin deprecation info).
+- **H7 ✅** `docs_list` con `limit`/`offset` + `{total,nextOffset?}`. Tests.
+- **H6 ✅** `rules` detecta Next/Remix/Nuxt/Astro/Solid (dep o config) ANTES de
+  react/vue; presets nuevos reutilizan base verificada + conventions + plugin
+  ESLint del framework en `requiredEslintDeps`. Tests.
 - **H2** Migrar I/O síncrono de `proposals/lib/tools/` + `swarm/` a `fs/promises`
-  (patrón M4). Mecánico, mismo test set verde.
-- **M11 restante**: `rules` detección Next/Nuxt/Astro/Remix/Solid (**H6**) +
-  `compact`; `docs` paginación `limit`/`offset` (**H7**); `deps_outdated` (**H8**,
-  ⚠️ red → decisión: implementar tras `--network` o documentar offline-by-design).
+  (patrón M4). Mecánico, mismo test set verde. ← siguiente.
+- **M11 restante**: `deps_outdated` (**H8**, ⚠️ red → decisión: implementar tras
+  `--network` o documentar offline-by-design); `rules compact` (menor).
 - **M10 / H4** Cobertura pareja: subir `quality`/`docs`/`notification` de 1 a ≥3 specs.
 - **H3** Pasar respuestas de tools que re-emiten JSON por `toolJson` (no pretty).
 - **H11** e2e de `subscribe` cross-restart. **H10** decisión settings.local.json.

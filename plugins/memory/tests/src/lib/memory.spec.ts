@@ -61,6 +61,10 @@ describe('memory store', () => {
 		expect(readStore(store)).toHaveLength(0);
 	});
 
+	// Mutex serialises 5 concurrent saves with O_EXCL + polling backoff; under
+	// heavy parallel-suite CPU load that can exceed the 5s default, so this
+	// inherently-slow contention test gets a wider timeout. (Correctness is
+	// the assertion below; the wait is just scheduling, not a hang.)
 	it('keeps every note when saved concurrently (mutex, no lost update)', async () => {
 		await Promise.all(
 			['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map((title) =>
@@ -68,7 +72,7 @@ describe('memory store', () => {
 			)
 		);
 		expect(readStore(store)).toHaveLength(5);
-	});
+	}, 20_000);
 
 	it('treats missing/empty store as empty, not corrupt', () => {
 		expect(readStore(store)).toEqual([]);
