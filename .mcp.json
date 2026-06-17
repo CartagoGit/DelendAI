@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"mcp-core": {
+			"command": "bun",
+			"args": ["packages/core/src/cli.ts", "--preset=swarm"]
+		}
+	}
+}
