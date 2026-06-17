@@ -16,6 +16,7 @@
 		"build": "bun scripts/build.ts",
 		"validate": "bun run typecheck && bun run lint && bun run test",
 		"types:generate": "bun scripts/generate-tool-types.ts",
+		"config:schema": "bun scripts/generate-config-schema.ts",
 		"release": "bun scripts/release.ts",
 		"site": "bun apps/web/src/build-site.ts",
 		"site:strict": "bun apps/web/src/build-site.ts --strict"

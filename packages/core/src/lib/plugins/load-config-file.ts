@@ -23,6 +23,8 @@ export interface IMcpCorePluginConfig {
 }
 
 export interface IMcpCoreConfigFile {
+	/** Optional editor hint pointing at the published JSON Schema. */
+	readonly $schema?: string;
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
 	/** Quality-gate commands per scope, surfaced by `get_validation_matrix`. */
@@ -40,6 +42,7 @@ export const DEFAULT_CONFIG_FILENAME = 'mcp-core.config.json';
 /** Structural schema for the config file (used by `--check`). */
 export const CONFIG_FILE_SCHEMA = z
 	.object({
+		$schema: z.string().optional(),
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
 		validationMatrix: z
