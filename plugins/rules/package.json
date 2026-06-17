@@ -47,8 +47,8 @@
 	"devDependencies": {
 		"@cartago-git/mcp-core": "workspace:*",
 		"@types/bun": "latest",
-		"typescript": "^6.0.3",
-		"vitest": "^4.1.8"
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
 	},
 	"publishConfig": {
 		"access": "public"
