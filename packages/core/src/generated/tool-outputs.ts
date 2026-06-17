@@ -37,6 +37,22 @@ export interface McpcoreKnowledgeOutput {
 	body?: string;
 }
 
+export interface McpcoreMetricsOutput {
+	tools: Record<string, {
+		calls: number;
+		errors: number;
+		totalMs: number;
+		maxMs: number;
+		totalBytes: number;
+	}>;
+	totals: {
+		calls: number;
+		errors: number;
+		totalMs: number;
+		totalBytes: number;
+	};
+}
+
 export interface McpcoreOverviewOutput {
 	server: {
 		name: string;
@@ -86,6 +102,7 @@ export interface McpCoreToolOutputs {
 	"mcpcore_create_server": McpcoreCreateServerOutput;
 	"mcpcore_get_validation_matrix": McpcoreGetValidationMatrixOutput;
 	"mcpcore_knowledge": McpcoreKnowledgeOutput;
+	"mcpcore_metrics": McpcoreMetricsOutput;
 	"mcpcore_overview": McpcoreOverviewOutput;
 	"mcpcore_plan_mcp_server": McpcorePlanMcpServerOutput;
 	"mcpcore_scaffold": McpcoreScaffoldOutput;

@@ -158,10 +158,17 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 - **Flakiness CI ✅** testTimeout/hookTimeout 20s en los 10 vitest.config.
 - **H8 ✅** Decisión tomada (coherente con la filosofía offline): NO se añade
   `deps_outdated` (requiere red). Documentado explícito en `plugins/deps/README.md`.
+- **H10 ✅** Decisión del usuario: `.claude/settings.local.json` se **mantiene
+  versionado** a propósito (Claude trabaja igual en todas sus máquinas). No se toca.
+- **M13** El "bridge securecoder" era artefacto de las auditorías (indefinido) →
+  se descarta el bridge externo; se implementa la parte concreta y agnóstica:
+  **allow/deny de comandos en `quality`** (que hoy hace `spawn` de cualquier binario).
+- **M12 ✅** Métricas por tool: registry en proceso que instrumenta cada handler
+  (calls/errors/latencia/bytes) + meta-tool `<prefix>_metrics` (`reset` opcional).
+  Opt-in vía `IMcpCoreHostConfig.metricsRegistry`; el CLI lo cablea solo. Tests
+  unit + instrumentación e2e sobre el protocolo.
 - Pendiente: **H11** e2e `subscribe` cross-restart (el unit ya cubre la semántica);
-  **H10** `.claude/settings.local.json` (decisión usuario: ¿versionar para
-  multi-máquina o gitignore?); **M12–M15** plataforma (M13 security necesita
-  contexto del usuario sobre el bridge securecoder).
+  **M14** migraciones de estado · **M13** allow/deny de comandos en `quality`.
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
