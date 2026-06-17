@@ -9,6 +9,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Command allow/deny policy for `quality`** (M13): `run_quality` executes
+  host-configured commands via `spawn`; an optional `commandPolicy`
+  (`{ allow?, deny? }`) gates which binaries may run, enforced before any spawn
+  (blocked → code 126, never executed). The trust boundary is now documented in
+  the plugin README. (The audit's "securecoder bridge" was an undefined artifact
+  and is intentionally out of scope — this is the concrete, agnostic piece.)
 - **Tool metrics** (M12): an in-process metrics registry instruments every tool
   handler (calls, errors, total/max latency, response bytes) and a
   `<prefix>_metrics` meta-tool reports the snapshot (`reset:true` to zero it).

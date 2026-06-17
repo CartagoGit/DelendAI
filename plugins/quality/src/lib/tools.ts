@@ -5,6 +5,7 @@ import { toolError, toolJson } from '@cartago-git/mcp-core/public';
 
 import { runScope } from './runner';
 import type { ICommandRunner } from './runner';
+import type { ICommandPolicy } from './command-policy';
 import { resolveScopes } from './scopes';
 import type { IScopeMap } from './scopes';
 
@@ -14,6 +15,8 @@ export interface IQualityToolOptions {
 	readonly workspaceRoot: string;
 	readonly run: ICommandRunner;
 	readonly optionScopes?: Readonly<Record<string, readonly string[]>>;
+	/** Optional allow/deny policy enforced before any command is spawned. */
+	readonly commandPolicy?: ICommandPolicy;
 }
 
 const scopesOf = (options: IQualityToolOptions): IScopeMap =>
@@ -86,7 +89,8 @@ export const buildQualityToolRegistrations = (
 								scope,
 								commands,
 								options.workspaceRoot,
-								options.run
+								options.run,
+								options.commandPolicy
 							)
 						);
 					}

@@ -17,6 +17,11 @@ export type {
 } from '../lib/runner';
 export { resolveScopes } from '../lib/scopes';
 export type { IScopeMap } from '../lib/scopes';
+export {
+	evaluateCommandPolicy,
+	commandBinary,
+} from '../lib/command-policy';
+export type { ICommandPolicy, IPolicyVerdict } from '../lib/command-policy';
 export { buildQualityToolRegistrations } from '../lib/tools';
 export type { IQualityToolOptions } from '../lib/tools';
 
