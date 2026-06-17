@@ -1,0 +1,75 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"cacheDir": {
+			"type": "string"
+		},
+		"docsDir": {
+			"type": "string"
+		},
+		"validationMatrix": {
+			"type": "object",
+			"properties": {
+				"scopes": {
+					"type": "object",
+					"propertyNames": {
+						"type": "string"
+					},
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"command": {
+									"type": "string"
+								},
+								"expect": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"command",
+								"expect"
+							],
+							"additionalProperties": false
+						}
+					}
+				}
+			},
+			"required": [
+				"scopes"
+			],
+			"additionalProperties": false
+		},
+		"plugins": {
+			"type": "object",
+			"propertyNames": {
+				"type": "string"
+			},
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"prefix": {
+						"type": "string"
+					},
+					"options": {
+						"type": "object",
+						"propertyNames": {
+							"type": "string"
+						},
+						"additionalProperties": {}
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"additionalProperties": false,
+	"$id": "https://cartago-git.github.io/mcp-core/mcp-core.config.schema.json",
+	"title": "mcp-core.config.json",
+	"description": "Configuration for @cartago-git/mcp-core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options."
+}

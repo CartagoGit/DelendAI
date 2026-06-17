@@ -1,4 +1,5 @@
 {
+	"$schema": "./packages/core/schema/mcp-core.config.schema.json",
 	"cacheDir": ".cache/mcp-core",
 	"docsDir": "docs/mcp-core",
 	"plugins": {
