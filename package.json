@@ -6,7 +6,7 @@
 	"description": "Project-agnostic MCP server core + CLI plugin loader. Publishes @cartago-git/mcp-core and its plugins.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
-	"workspaces": ["packages/*", "plugins/*"],
+	"workspaces": ["packages/*", "plugins/*", "apps/*"],
 	"scripts": {
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
@@ -17,8 +17,8 @@
 		"validate": "bun run typecheck && bun run lint && bun run test",
 		"types:generate": "bun scripts/generate-tool-types.ts",
 		"release": "bun scripts/release.ts",
-		"site": "bun scripts/build-site.ts",
-		"site:strict": "bun scripts/build-site.ts --strict"
+		"site": "bun apps/web/src/build-site.ts",
+		"site:strict": "bun apps/web/src/build-site.ts --strict"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",

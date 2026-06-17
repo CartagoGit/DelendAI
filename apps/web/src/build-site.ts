@@ -1,18 +1,27 @@
 /**
- * build-site.ts — generate the GitHub Pages site (W1).
+ * apps/web — generate the product/docs site (lives under apps/, like plugins/).
  *
  * Assembles the REAL server with every plugin, enumerates the live tools over
- * the MCP protocol (`listTools`), and renders a self-contained `site/index.html`
- * that documents the project + every tool, grouped by plugin namespace.
+ * the MCP protocol (`listTools`), and renders a self-contained
+ * `apps/web/dist/index.html` + a machine-readable `capabilities.json` (tools +
+ * packages + versions) so every release records exactly what mcp-core ships.
+ * Generated from the LIVE registry, so the site can never silently drift behind
+ * the code.
  *
  * Coverage guard: any tool without a description is reported. With `--strict`
- * (used in CI) an undocumented tool fails the build, so the web never silently
- * drifts behind the code — you are told to document the new tool.
+ * (used in CI) an undocumented tool fails the build.
  *
- *   bun scripts/build-site.ts            # generate, warn on gaps
- *   bun scripts/build-site.ts --strict   # generate, FAIL on gaps (CI)
+ *   bun run site            # generate, warn on gaps
+ *   bun run site:strict     # generate, FAIL on gaps (CI)
  */
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,7 +47,9 @@ import notificationPlugin from '@cartago-git/mcp-notification';
 import docsPlugin from '@cartago-git/mcp-docs';
 import depsPlugin from '@cartago-git/mcp-deps';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/src
+const ROOT = resolve(HERE, '..', '..', '..'); // repo root
+const OUT_DIR = resolve(HERE, '..', 'dist'); // apps/web/dist
 const PLUGIN_LIST =
 	'proposals,rules,memory,git,quality,search,notification,docs,deps';
 const PLUGINS: Record<string, unknown> = {
@@ -202,6 +213,26 @@ ${sections}
 `;
 };
 
+/** Enumerate the published packages and their (lockstep) versions. */
+const collectPackages = (): Array<{ name: string; version: string }> => {
+	const out: Array<{ name: string; version: string }> = [];
+	for (const group of ['packages', 'plugins']) {
+		for (const dir of readdirSync(join(ROOT, group))) {
+			const pkgPath = join(ROOT, group, dir, 'package.json');
+			try {
+				const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+					name?: string;
+					version?: string;
+				};
+				if (pkg.name && pkg.version) out.push({ name: pkg.name, version: pkg.version });
+			} catch {
+				// not a package dir
+			}
+		}
+	}
+	return out.sort((a, b) => a.name.localeCompare(b.name));
+};
+
 const main = async (): Promise<void> => {
 	const strict = process.argv.includes('--strict');
 	const version = (
@@ -222,13 +253,28 @@ const main = async (): Promise<void> => {
 		console.warn(`⚠ build-site: ${msg} — document them (their tool description).`);
 	}
 
-	const outDir = join(ROOT, 'site');
-	mkdirSync(outDir, { recursive: true });
-	writeFileSync(join(outDir, 'index.html'), renderHtml(tools, version));
+	// Machine-readable manifest of what THIS release ships (kept in sync with
+	// mcp-core + plugins because it is harvested from the live registry).
+	const packages = collectPackages();
+	const capabilities = {
+		generatedAt: new Date().toISOString(),
+		coreVersion: version,
+		counts: { tools: tools.length, packages: packages.length },
+		packages,
+		tools: tools.map((t) => ({
+			name: t.name,
+			namespace: namespaceOf(t.name),
+			description: t.description,
+		})),
+	};
+
+	mkdirSync(OUT_DIR, { recursive: true });
+	writeFileSync(join(OUT_DIR, 'index.html'), renderHtml(tools, version));
+	writeFileSync(join(OUT_DIR, 'capabilities.json'), `${JSON.stringify(capabilities, null, 2)}\n`);
 	// `.nojekyll` so GitHub Pages serves the files as-is.
-	writeFileSync(join(outDir, '.nojekyll'), '');
+	writeFileSync(join(OUT_DIR, '.nojekyll'), '');
 	console.log(
-		`site/index.html written — ${tools.length} tools, ${undocumented.length} undocumented.`
+		`apps/web/dist written — ${tools.length} tools, ${packages.length} packages, ${undocumented.length} undocumented.`
 	);
 };
 

@@ -1,0 +1,7 @@
+{
+	"cacheDir": ".cache/mcp-core",
+	"docsDir": "docs/mcp-core",
+	"plugins": {
+		"docs": { "options": { "roots": ["docs", "README.md"] } }
+	}
+}

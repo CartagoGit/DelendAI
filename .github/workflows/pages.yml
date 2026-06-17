@@ -1,9 +1,9 @@
 name: Pages
 
 # Builds and deploys the documentation site to GitHub Pages on every push to
-# main. The site is generated from the LIVE tool registry (scripts/build-site.ts)
-# in --strict mode, so an undocumented tool fails the build and the web can
-# never silently drift behind the code.
+# main. The site (apps/web) is generated from the LIVE tool registry in --strict
+# mode, so an undocumented tool fails the build and the web can never silently
+# drift behind the code.
 #
 # One-time setup: repo Settings → Pages → Source = "GitHub Actions".
 
@@ -48,7 +48,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: apps/web/dist
 
   deploy:
     name: deploy

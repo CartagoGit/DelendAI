@@ -1,0 +1,11 @@
+{
+	"name": "@cartago-git/web",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Product/documentation site for @cartago-git/mcp-core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
+	"scripts": {
+		"build": "bun src/build-site.ts",
+		"build:strict": "bun src/build-site.ts --strict"
+	}
+}
