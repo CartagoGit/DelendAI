@@ -16,16 +16,16 @@
 		"simple-icons": "^16.23.0"
 	},
 	"devDependencies": {
-		"@modelcontextprotocol/sdk": "1.29.0",
 		"@cartago-git/mcp-core": "workspace:*",
-		"@cartago-git/mcp-proposals": "workspace:*",
-		"@cartago-git/mcp-rules": "workspace:*",
-		"@cartago-git/mcp-memory": "workspace:*",
-		"@cartago-git/mcp-git": "workspace:*",
-		"@cartago-git/mcp-quality": "workspace:*",
-		"@cartago-git/mcp-search": "workspace:*",
-		"@cartago-git/mcp-notification": "workspace:*",
+		"@cartago-git/mcp-deps": "workspace:*",
 		"@cartago-git/mcp-docs": "workspace:*",
-		"@cartago-git/mcp-deps": "workspace:*"
+		"@cartago-git/mcp-git": "workspace:*",
+		"@cartago-git/mcp-memory": "workspace:*",
+		"@cartago-git/mcp-notification": "workspace:*",
+		"@cartago-git/mcp-proposals": "workspace:*",
+		"@cartago-git/mcp-quality": "workspace:*",
+		"@cartago-git/mcp-rules": "workspace:*",
+		"@cartago-git/mcp-search": "workspace:*",
+		"@modelcontextprotocol/sdk": "1.29.0"
 	}
 }

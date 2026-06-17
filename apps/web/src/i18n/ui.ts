@@ -4,20 +4,22 @@ export interface ILangMeta {
 	readonly flag: string;
 }
 
-/** Languages with a full translation (selectable in the config modal). */
+/** Languages with a full translation (selectable in the config modal). The
+ * `country` maps to a flag SVG under `public/flags/<country>.svg` (emoji flags
+ * don't render on Windows, so we ship real images). */
 export const languages = [
-	{ code: 'en', label: 'English', flag: '🇬🇧' },
-	{ code: 'es', label: 'Español', flag: '🇪🇸' },
-	{ code: 'zh', label: '中文', flag: '🇨🇳' },
-	{ code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
-	{ code: 'ar', label: 'العربية', flag: '🇸🇦' },
-	{ code: 'pt', label: 'Português', flag: '🇧🇷' },
-	{ code: 'fr', label: 'Français', flag: '🇫🇷' },
-	{ code: 'ja', label: '日本語', flag: '🇯🇵' },
-	{ code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-	{ code: 'it', label: 'Italiano', flag: '🇮🇹' },
-	{ code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
-	{ code: 'th', label: 'ไทย', flag: '🇹🇭' },
+	{ code: 'en', label: 'English', country: 'gb' },
+	{ code: 'es', label: 'Español', country: 'es' },
+	{ code: 'zh', label: '中文', country: 'cn' },
+	{ code: 'hi', label: 'हिन्दी', country: 'in' },
+	{ code: 'ar', label: 'العربية', country: 'sa' },
+	{ code: 'pt', label: 'Português', country: 'br' },
+	{ code: 'fr', label: 'Français', country: 'fr' },
+	{ code: 'ja', label: '日本語', country: 'jp' },
+	{ code: 'de', label: 'Deutsch', country: 'de' },
+	{ code: 'it', label: 'Italiano', country: 'it' },
+	{ code: 'vi', label: 'Tiếng Việt', country: 'vn' },
+	{ code: 'th', label: 'ไทย', country: 'th' },
 ] as const;
 
 export type Lang = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'it' | 'zh' | 'hi' | 'ar' | 'ja' | 'vi' | 'th';
