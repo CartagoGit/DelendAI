@@ -83,6 +83,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `plugins/docs` engine moved to `fs/promises` (M4).
 
 ### Fixed
+- **Blueprint cacheDir drift** (M15/H5): the one-time server blueprint now lands
+  under the resolved `cacheDir` (CLI flag → `mcp-core.config.json` → default),
+  matching the rest of the store; previously a config-only `cacheDir` was ignored
+  and the blueprint drifted to `.cache/mcp-core`.
 - **Scaffold tool response compacted** (H3): `scaffold` emitted a tab-indented
   report as its text content (agent-context tokens); now compact JSON (the typed
   payload still rides in `structuredContent`).
