@@ -14,6 +14,9 @@
 
 export interface DocsDocsListOutput {
 	count: number;
+	total: number;
+	offset: number;
+	nextOffset?: number;
 	truncated: boolean;
 	docs: {
 		path: string;

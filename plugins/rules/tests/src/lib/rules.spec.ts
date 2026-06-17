@@ -63,6 +63,70 @@ describe('detectPresetForArea', () => {
 			).presetId
 		).toBe('laravel');
 	});
+
+	it('detects meta-frameworks BEFORE the generic react/vue checks (H6)', () => {
+		// Next ships react transitively → must win over the plain react-ts rule.
+		expect(
+			detectPresetForArea(
+				reader({
+					'package.json': JSON.stringify({
+						dependencies: { next: '^15', react: '^19' },
+					}),
+					'tsconfig.json': '{}',
+				}),
+				''
+			).presetId
+		).toBe('next-ts');
+		// Next via config file, no dep.
+		expect(
+			detectPresetForArea(
+				reader({ 'next.config.mjs': '', 'tsconfig.json': '{}' }),
+				''
+			).presetId
+		).toBe('next-ts');
+		// Nuxt wins over vue.
+		expect(
+			detectPresetForArea(
+				reader({
+					'package.json': JSON.stringify({ dependencies: { nuxt: '^3', vue: '^3' } }),
+				}),
+				''
+			).presetId
+		).toBe('nuxt');
+		// Astro / Remix / Solid.
+		expect(
+			detectPresetForArea(
+				reader({ 'astro.config.ts': '', 'tsconfig.json': '{}' }),
+				''
+			).presetId
+		).toBe('astro');
+		expect(
+			detectPresetForArea(
+				reader({
+					'package.json': JSON.stringify({
+						dependencies: { '@remix-run/react': '^2' },
+					}),
+					'tsconfig.json': '{}',
+				}),
+				''
+			).presetId
+		).toBe('remix');
+		expect(
+			detectPresetForArea(
+				reader({
+					'package.json': JSON.stringify({ dependencies: { 'solid-js': '^1' } }),
+					'tsconfig.json': '{}',
+				}),
+				''
+			).presetId
+		).toBe('solid-ts');
+	});
+
+	it('exposes the new meta-framework preset ids', () => {
+		for (const id of ['next-ts', 'remix', 'nuxt', 'astro', 'solid-ts']) {
+			expect(SUPPORTED_PRESET_IDS).toContain(id);
+		}
+	});
 });
 
 describe('buildRulesManifest', () => {

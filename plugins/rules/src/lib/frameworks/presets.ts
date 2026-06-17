@@ -51,7 +51,7 @@ const ANGULAR_TSCONFIG = `${JSON.stringify(
  * a flat-config file the project's ESLint consumes; this plugin never
  * imports those ESLint packages itself (stays dependency-light).
  */
-export const RULE_PRESETS: readonly IRulePreset[] = [
+const BASE_PRESETS: readonly IRulePreset[] = [
 	{
 		id: 'vanilla-js',
 		framework: 'vanilla',
@@ -336,6 +336,102 @@ export default [
 	},
 ];
 
+// --- meta-frameworks (H6) --------------------------------------------------
+// Next/Nuxt/Astro/Remix/Solid ship React/Vue transitively, so a plain dep
+// check misclassifies them. These presets REUSE the verified base lint/tsconfig
+// (no fabricated config) and carry the framework-specific conventions + the
+// framework's own ESLint plugin (see REQUIRED_ESLINT_DEPS) so a project layers
+// it on top. TS-first (these ecosystems are TS-dominant); a JS project falls
+// back to the react/vanilla JS base via detect-framework.
+const base = (id: string): IRulePreset => {
+	const p = BASE_PRESETS.find((preset) => preset.id === id);
+	if (p === undefined) throw new Error(`base preset "${id}" not found`);
+	return p;
+};
+
+const META_PRESETS: readonly IRulePreset[] = [
+	{
+		id: 'next-ts',
+		framework: 'next',
+		language: 'ts',
+		linter: 'eslint',
+		eslintConfigFile: 'next-ts.eslint.config.mjs',
+		tsconfigFile: 'next-ts.tsconfig.json',
+		eslintConfigContent: base('react-ts').eslintConfigContent,
+		tsconfigContent: STRICT_TSCONFIG,
+		conventions: [
+			'App Router: Server Components by default; opt into client with `"use client"`.',
+			'Use `next/image` and `next/link` (no raw `<img>`/`<a>` for internal nav).',
+			'Fetch data in Server Components/route handlers, not `useEffect`.',
+			'Layer `@next/eslint-plugin-next` (core-web-vitals) on top of this base.',
+		],
+	},
+	{
+		id: 'remix',
+		framework: 'remix',
+		language: 'ts',
+		linter: 'eslint',
+		eslintConfigFile: 'remix.eslint.config.mjs',
+		tsconfigFile: 'remix.tsconfig.json',
+		eslintConfigContent: base('react-ts').eslintConfigContent,
+		tsconfigContent: STRICT_TSCONFIG,
+		conventions: [
+			'Data via `loader`/`action`; mutate with `<Form>`, not client fetch.',
+			'Nested routes + `useLoaderData`; keep components server-friendly.',
+		],
+	},
+	{
+		id: 'nuxt',
+		framework: 'nuxt',
+		language: 'ts',
+		linter: 'eslint',
+		eslintConfigFile: 'nuxt.eslint.config.mjs',
+		tsconfigFile: 'nuxt.tsconfig.json',
+		eslintConfigContent: base('vue').eslintConfigContent,
+		tsconfigContent: STRICT_TSCONFIG,
+		conventions: [
+			'Auto-imports for components/composables; `<script setup>` + Composition API.',
+			'Server routes under `server/`; data via `useFetch`/`useAsyncData`.',
+			'Layer `@nuxt/eslint` on top of this Vue base.',
+		],
+	},
+	{
+		id: 'astro',
+		framework: 'astro',
+		language: 'ts',
+		linter: 'eslint',
+		eslintConfigFile: 'astro.eslint.config.mjs',
+		tsconfigFile: 'astro.tsconfig.json',
+		eslintConfigContent: base('vanilla-ts').eslintConfigContent,
+		tsconfigContent: STRICT_TSCONFIG,
+		conventions: [
+			'HTML-first `.astro` components; ship zero JS by default.',
+			'Hydrate islands explicitly (`client:load`/`client:visible`).',
+			'Layer `eslint-plugin-astro` (for `.astro` files) on top of this base.',
+		],
+	},
+	{
+		id: 'solid-ts',
+		framework: 'solid',
+		language: 'ts',
+		linter: 'eslint',
+		eslintConfigFile: 'solid-ts.eslint.config.mjs',
+		tsconfigFile: 'solid-ts.tsconfig.json',
+		eslintConfigContent: base('vanilla-ts').eslintConfigContent,
+		tsconfigContent: STRICT_TSCONFIG,
+		conventions: [
+			'Reactivity is via signals/stores — NOT React hooks rules.',
+			'Components run once; put reactive reads inside JSX or effects.',
+			'Layer `eslint-plugin-solid` on top of this base.',
+		],
+	},
+];
+
+export const RULE_PRESETS: readonly IRulePreset[] = [
+	...BASE_PRESETS,
+	...META_PRESETS,
+];
+
 /** npm packages each preset's materialised ESLint config imports. */
 export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> = {
 	'vanilla-js': ['@eslint/js'],
@@ -358,6 +454,25 @@ export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> =
 	svelte: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-svelte'],
 	jquery: ['@eslint/js', 'globals'],
 	laravel: [],
+	// Meta-frameworks (H6): base deps + the framework's own ESLint plugin.
+	'next-ts': [
+		'@eslint/js',
+		'typescript-eslint',
+		'eslint-plugin-react',
+		'eslint-plugin-react-hooks',
+		'eslint-plugin-jsx-a11y',
+		'@next/eslint-plugin-next',
+	],
+	remix: [
+		'@eslint/js',
+		'typescript-eslint',
+		'eslint-plugin-react',
+		'eslint-plugin-react-hooks',
+		'eslint-plugin-jsx-a11y',
+	],
+	nuxt: ['@eslint/js', 'eslint-plugin-vue', 'typescript-eslint', '@nuxt/eslint'],
+	astro: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-astro'],
+	'solid-ts': ['@eslint/js', 'typescript-eslint', 'eslint-plugin-solid'],
 };
 
 export const PRESET_BY_ID: ReadonlyMap<string, IRulePreset> = new Map(
