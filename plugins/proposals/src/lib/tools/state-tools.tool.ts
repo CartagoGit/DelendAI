@@ -34,6 +34,8 @@ export interface IStateToolOptions {
 	readonly queuePathAbs: string;
 	readonly closedTasksPathAbs: string;
 	readonly registryPathAbs: string;
+	/** Absolute workspace root — anchors `waitFor.file` resolution. */
+	readonly workspaceRoot: string;
 }
 
 interface IStateDiagnosis {
@@ -73,7 +75,8 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 	if (existsSync(options.queuePathAbs)) {
 		const loaded = await parseQueue(
 			options.queuePathAbs,
-			options.closedTasksPathAbs
+			options.closedTasksPathAbs,
+			options.workspaceRoot
 		);
 		const lockSnapshot = await loadLockSnapshot(
 			options.lockPathAbs,
@@ -202,7 +205,8 @@ export const buildStateRepairRegistration = (
 				if (existsSync(options.queuePathAbs)) {
 					const loaded = await parseQueue(
 						options.queuePathAbs,
-						options.closedTasksPathAbs
+						options.closedTasksPathAbs,
+						options.workspaceRoot
 					);
 					const swept = await expireSweep(
 						loaded,

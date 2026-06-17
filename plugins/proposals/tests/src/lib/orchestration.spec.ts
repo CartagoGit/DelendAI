@@ -55,6 +55,7 @@ describe('delegate tool', () => {
 			lockPathAbs: join(root, 'lock.json'),
 			queuePathAbs: join(root, 'queue.json'),
 			closedTasksPathAbs: join(root, 'closed.json'),
+			workspaceRoot: root,
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));

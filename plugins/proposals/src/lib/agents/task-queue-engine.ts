@@ -344,10 +344,34 @@ export async function runTaskQueueAction(
 		// validation errors). Priority itself is constrained by the
 		// schema's union of literal 1-5, so `priority: 6` fails the
 		// base schema with a ZodError before the refines even run.
+		// Resolve the disk-dependent facts ASYNCHRONOUSLY before validating,
+		// so the (synchronous) Zod refine never blocks the event loop. Paths
+		// resolve against the injected workspace root — not the process cwd —
+		// so a host launched elsewhere does not see false missing files.
+		const rawWaitFor = (action.params as { waitFor?: Array<{ file: string }> })
+			.waitFor ?? [];
+		const missingWaitFor = new Set<string>();
+		await Promise.all(
+			rawWaitFor.map(async (wf) => {
+				try {
+					await stat(resolve(paths.workspaceRoot, wf.file));
+				} catch {
+					missingWaitFor.add(wf.file);
+				}
+			})
+		);
+		let closedTaskIds = new Set<string>();
+		try {
+			const closed = await readClosedTasks(paths.closedTasksPath);
+			closedTaskIds = new Set(closed.map((c) => c.taskId));
+		} catch {
+			// closedTasks unreadable/corrupt → treat as empty (defensive).
+		}
+
 		const IEnqueueWithFileCheck = IEnqueueParamsSchema.superRefine(
 			(value, ctx) => {
 				for (const wf of value.waitFor ?? []) {
-					if (!existsSync(wf.file)) {
+					if (missingWaitFor.has(wf.file)) {
 						ctx.addIssue({
 							code: 'custom',
 							path: ['waitFor'],
@@ -357,24 +381,7 @@ export async function runTaskQueueAction(
 				}
 			}
 		).superRefine((value, ctx) => {
-			if (!value.observe || value.observe.length === 0) return;
-			let closedTaskIds: Set<string> = new Set();
-			try {
-				const raw = readFileSync(paths.closedTasksPath, 'utf8');
-				const parsed = JSON.parse(raw) as unknown;
-				if (Array.isArray(parsed)) {
-					closedTaskIds = new Set(
-						(parsed as Array<{ taskId?: string }>)
-							.map((t) => t.taskId)
-							.filter(
-								(id): id is string => typeof id === 'string'
-							)
-					);
-				}
-			} catch {
-				closedTaskIds = new Set();
-			}
-			for (const target of value.observe) {
+			for (const target of value.observe ?? []) {
 				if (!closedTaskIds.has(target)) {
 					ctx.addIssue({
 						code: 'custom',
@@ -519,7 +526,7 @@ export async function runTaskQueueAction(
 		await ensureQueueFile(paths.queuePath);
 		const queue = await loadOrEmptyQueue(paths.queuePath);
 		const lock = await loadLockSnapshot(
-			paths.lockPath ?? DEFAULT_PATH_LAYOUT.lockFile,
+			paths.lockPath,
 			paths.closedTasksPath
 		);
 		const baseReport = reportBackpressure(queue, lock);

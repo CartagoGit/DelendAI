@@ -145,6 +145,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 
@@ -177,6 +178,7 @@ describe('verifyClosure — green / amber threshold', () => {
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 
@@ -220,6 +222,7 @@ describe('verifyClosure — green / amber threshold', () => {
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 
@@ -264,6 +267,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 
@@ -291,6 +295,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 
@@ -321,6 +326,7 @@ describe('verifyClosure — missing queue file is treated as empty', () => {
 				queuePath,
 				closedTasksPath,
 				lockPath: join(tmpdir(), 'fake-lock.json'),
+				workspaceRoot: tmpdir(),
 			},
 		});
 

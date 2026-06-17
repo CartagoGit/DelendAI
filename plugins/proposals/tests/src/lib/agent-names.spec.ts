@@ -32,6 +32,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 			lockPathAbs: join(root, 'agents.lock.json'),
 			queuePathAbs: join(root, 'queue.json'),
 			closedTasksPathAbs: join(root, 'closed.json'),
+			workspaceRoot: root,
 		};
 	});
 

@@ -65,6 +65,8 @@ export interface IVerifyPaths {
 	readonly closedTasksPath: string;
 	/** Absolute path to `.cache/agents.lock.json` (used by `reportBackpressure`). */
 	readonly lockPath: string;
+	/** Absolute workspace root (anchors task-queue path resolution). */
+	readonly workspaceRoot: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,6 +144,8 @@ const resolveReport = async (
 			{
 				queuePath: paths.queuePath,
 				closedTasksPath: paths.closedTasksPath,
+				lockPath: paths.lockPath,
+				workspaceRoot: paths.workspaceRoot,
 			}
 		);
 		return parseBackpressureReport(result);
@@ -257,4 +261,5 @@ export const defaultVerifyPaths = (root: string): IVerifyPaths => ({
 	queuePath: join(root, DEFAULT_PATH_LAYOUT.taskQueueFile),
 	closedTasksPath: join(root, DEFAULT_PATH_LAYOUT.closedTasksFile),
 	lockPath: join(root, DEFAULT_PATH_LAYOUT.lockFile),
+	workspaceRoot: root,
 });

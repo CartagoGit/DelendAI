@@ -83,6 +83,7 @@ export default definePlugin({
 			lockPathAbs: abs(layout.lockFile),
 			queuePathAbs: abs(layout.taskQueueFile),
 			closedTasksPathAbs: abs(layout.closedTasksFile),
+			workspaceRoot: ctx.workspace.root,
 			...(Array.isArray(ctx.options['namePool'])
 				? { pool: ctx.options['namePool'] as string[] }
 				: {}),
@@ -94,6 +95,7 @@ export default definePlugin({
 			queuePathAbs: abs(layout.taskQueueFile),
 			closedTasksPathAbs: abs(layout.closedTasksFile),
 			registryPathAbs: abs(layout.agentRegistryFile),
+			workspaceRoot: ctx.workspace.root,
 		};
 
 		const authoringOptions: IAuthoringToolOptions = {
@@ -122,6 +124,7 @@ export default definePlugin({
 						queuePath: abs(layout.taskQueueFile),
 						closedTasksPath: abs(layout.closedTasksFile),
 						lockPath: abs(layout.lockFile),
+						workspaceRoot: ctx.workspace.root,
 					},
 				}),
 				buildSyncProposalsRegistration({

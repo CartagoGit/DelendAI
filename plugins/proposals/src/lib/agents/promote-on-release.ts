@@ -23,7 +23,7 @@
  * auto-promoter only touches 'queued' entries.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 import { writeFileAtomic } from '@cartago-git/mcp-core/public';
 
@@ -111,12 +111,17 @@ const persistQueue = async (
 // loadOrEmptyQueue
 // ---------------------------------------------------------------------------
 
-const loadOrEmptyQueue = (queuePath: string): IPersistentTaskQueue => {
-	if (!existsSync(queuePath)) {
+const loadOrEmptyQueue = async (
+	queuePath: string
+): Promise<IPersistentTaskQueue> => {
+	let raw: string;
+	try {
+		raw = await readFile(queuePath, 'utf8');
+	} catch {
+		// Missing/unreadable queue → empty.
 		return { version: 1, entries: [] };
 	}
 	try {
-		const raw = readFileSync(queuePath, 'utf8');
 		const parsed = JSON.parse(raw) as {
 			version?: number;
 			entries?: unknown[];
@@ -138,7 +143,7 @@ export const promoteOnRelease = async (
 	params: IPromoteOnReleaseParams
 ): Promise<IPromoteOnReleaseResult> => {
 	return withMutex(params.queuePath, async () => {
-		const queue = loadOrEmptyQueue(params.queuePath);
+		const queue = await loadOrEmptyQueue(params.queuePath);
 		if (queue.entries.length === 0) {
 			return { promotedCount: 0, promotedTaskIds: [], skippedCount: 0 };
 		}
