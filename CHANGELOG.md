@@ -9,6 +9,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Linting** (M9): Biome as the project linter (`bun run lint` → `biome ci`),
+  wired into `validate` and a dedicated CI `lint` job. Recommended ruleset with
+  two project-deliberate rules disabled (`noNonNullAssertion`, `noExplicitAny`).
+  The formatter is intentionally left off for now (no mass reflow).
+- **Coverage gate** in CI (`bun run test:coverage`, `@vitest/coverage-v8`) with
+  no-regression thresholds.
 - **Release automation** (`bun run release`): lockstep version bump across the
   10 packages + `@cartago-git/mcp-core` peerDependency rewrite, publish in
   dependency order (core first). Dry-run by default; `--write` / `--publish`.
@@ -39,6 +45,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - Double tool-id prefixes (`memory_memory_*` → `memory_*`, `git_git_*` →
   `git_*`) and two `outputSchema` mismatches surfaced by the strict e2e net.
+
+### Removed
+- 36 stray `.d.ts` declaration files accidentally committed inside `src/`
+  trees (the build emits declarations to `dist/`); a `.gitignore` rule now
+  prevents the recurrence.
 
 ## [0.1.0] — unreleased
 
