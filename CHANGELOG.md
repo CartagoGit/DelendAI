@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Memory hardening** (M11): `memory_save` auto-redacts high-confidence
+  secrets (API keys, tokens, PEM private keys, JWTs, `key=value` assignments)
+  before writing and reports `redactedSecrets`; optional `ttlSeconds` gives a
+  self-expiring note (expired notes are dropped on read and pruned on next write).
 - **Linting** (M9): Biome as the project linter (`bun run lint` → `biome ci`),
   wired into `validate` and a dedicated CI `lint` job. Recommended ruleset with
   two project-deliberate rules disabled (`noNonNullAssertion`, `noExplicitAny`).

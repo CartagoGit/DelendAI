@@ -93,7 +93,13 @@
   `lint`); recomendado con `noNonNullAssertion`/`noExplicitAny` off; formatter off
   de momento. Además: **eliminados 36 `.d.ts` sueltos** commiteados dentro de
   `src/` (emits de `tsc`; el build va a `dist/`) + regla `.gitignore` anti-recaída.
-- **Estado: 430 tests (420 + 10 skip), typecheck + lint + coverage verdes.**
+- **M11 (memory) ✅** `memory_save` redacta secretos de alta confianza (claves
+  API, tokens, claves privadas PEM, JWT, asignaciones `clave=valor`) antes de
+  escribir y devuelve `redactedSecrets`; `ttlSeconds` opcional → nota
+  autoexpirable (las caducadas se filtran al leer y se podan al siguiente write).
+  `redact.ts` + tests. (Resto de M11 —search regex/glob, rules detección/compact,
+  docs paginación, deps_outdated— pendiente.)
+- **Estado: 436 tests (426 + 10 skip), typecheck + lint + coverage verdes.**
 
 > ⚠️ **Lockfile gitignorado vs `--frozen-lockfile`**: `.gitignore` ignora
 > `bun.lock`/`bun.lockb` pero el CI hace `bun install --frozen-lockfile` (que
