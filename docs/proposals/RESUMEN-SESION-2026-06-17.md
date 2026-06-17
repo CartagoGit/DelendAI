@@ -151,9 +151,14 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
   `*Sync(` en `proposals/lib` → 0. Tests verdes.
 - **M11 restante**: `deps_outdated` (**H8**, ⚠️ red → decisión: implementar tras
   `--network` o documentar offline-by-design); `rules compact` (menor).
-- **M10 / H4** Cobertura pareja: subir `quality`/`docs`/`notification` de 1 a ≥3 specs.
-- **H3** Pasar respuestas de tools que re-emiten JSON por `toolJson` (no pretty).
-- **H11** e2e de `subscribe` cross-restart. **H10** decisión settings.local.json.
+- **M10 / H4 ✅ (parcial)** `quality` con tests de spawn reales (timeout→SIGKILL
+  124, exit no-cero, spawn-error 127) + `runScope` timeout; `docs` con paginación.
+  `notification` ya tenía 4 tests de watcher. Resto satélite: opcional.
+- **H3 ✅** scaffold response compacto (verificado: el resto era disco o ya compacto).
+- **Flakiness CI ✅** testTimeout/hookTimeout 20s en los 10 vitest.config.
+- Pendiente: **H11** e2e `subscribe` cross-restart (el unit ya cubre la semántica);
+  **H8** `deps_outdated` (decisión red); **H10** `.claude/settings.local.json`
+  (decisión: ¿versionar para multi-máquina o gitignore?); **M12–M15** plataforma.
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
