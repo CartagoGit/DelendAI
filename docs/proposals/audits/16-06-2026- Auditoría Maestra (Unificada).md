@@ -262,6 +262,18 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > ~9,7-9,8; +P2 (lint + cobertura + plugins best-in-class) → ~10,0; +P3
 > (observabilidad/seguridad/migraciones/replay + skills oficiales) → **11/10**.
 
+> **✅ Estado de ejecución (2026-06-17):** P0 completo; **P1/P2/P3 prácticamente
+> cerrados** — M5, M7, M9, M10, M11, **M12 (metrics), M13 (allow/deny de comandos en
+> quality — NO el bridge securecoder, descartado por indefinido), M14 (migraciones
+> de estado), M15/H5 (blueprint sin drift)** hechos con tests, más toda la serie
+> H1–H10 de la 4ª auditoría (Copilot·MiniMax) y el workstream **W1/W2** (auto-release
+> en push a `main` + sitio GitHub Pages). Detalle en `../RESUMEN-SESION-2026-06-17.md`.
+> **Backlog abierto:** **W3 — sitio web profesional** (i18n, marquesinas duales,
+> benchmarks, responsive; spec en el RESUMEN) y nice-to-haves de plataforma (TypeDoc,
+> `/examples`, JSON Schema de config, skills/prompts versionados, `quality_cancel`,
+> freno anti-idle, H11 e2e). **npm publish + deploy: pendientes de `NPM_TOKEN` y
+> merge `develop→main` (los hace el usuario).** 471 tests verdes.
+
 ---
 
 ## 8. Scoreboard de las 8 auditorías
