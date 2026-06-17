@@ -6,7 +6,10 @@ name: Release
 # validates, builds, publishes the 10 packages to npm (in dependency order),
 # tags the commit and opens a GitHub Release with auto-generated notes.
 #
-# Requires the `NPM_TOKEN` repository secret (npm automation token).
+# Requires the `NPM_TOKEN` repository secret (Granular access token with
+# Bypass 2FA enabled). Since November 2025, npm removed legacy/automation
+# tokens and caps write tokens at 90 days — rotate via
+# `.github/workflows/rotate-npm-token.yml`.
 
 on:
   push:

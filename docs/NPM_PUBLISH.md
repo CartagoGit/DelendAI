@@ -31,12 +31,32 @@ Con los workflows `release.yml` y `pages.yml` el ciclo es automático:
    lista viva de tools (modo `--strict`: si una tool no tiene descripción, falla).
 
 **Setup único (una vez):**
-- Secreto `NPM_TOKEN` (npm *automation token*) en *Settings → Secrets → Actions*.
+- Secreto `NPM_TOKEN` (npm *Granular access token* con **Bypass 2FA** activado) en
+  *Settings → Secrets → Actions*. Desde **noviembre 2025** los tokens de
+  escritura caducan a los 90 días como máximo legal; el workflow
+  [`.github/workflows/rotate-npm-token.yml`](../.github/workflows/rotate-npm-token.yml)
+  abre un issue recordatorio cada ~3 meses (ver §0.1).
 - *Settings → Pages → Source = "GitHub Actions"*.
-- npm 2FA: usa un *automation token* (no pide OTP interactivo en CI).
 
 Si no hay bump de versión, el push a `main` NO publica (idempotente: el tag ya
 existe). Lo de abajo (§0/§1/§2) es la vía manual equivalente.
+
+### 0.1 Granular token con Bypass 2FA (lo que se usa hoy)
+npm retiró los *Legacy* y *Automation* tokens en noviembre 2025. El único tipo
+de token es **Granular**, y se configura así:
+- Name: `mcp-core-release-ci`
+- Packages/Scopes: `@cartago-git`
+- Permissions: *Read and write*
+- Organizations: *No access*
+- Expiration: 90 días (máximo legal)
+- **Bypass 2FA**: ✅ activado ← clave para que CI no pida OTP
+
+### 0.2 Rotación trimestral automática
+El workflow [`rotate-npm-token.yml`](../.github/workflows/rotate-npm-token.yml)
+corre el día 1 de cada 3 meses (`cron: "0 9 1 */3 *"`). Si han pasado más de
+75 días desde el último recordatorio, abre un issue con la etiqueta
+`npm-token-rotation` y los pasos exactos para regenerar el token. También puede
+lanzarse manualmente desde la pestaña *Actions*.
 
 ## 0. Vía manual asistida: `bun run release`
 Un único comando versiona los 10 paquetes **en lockstep** (todos a la misma

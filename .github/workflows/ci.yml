@@ -70,8 +70,16 @@ jobs:
 
       # The published CLI must run under plain Node (npx/npm/pnpm/yarn), not
       # only bun — guard that the compiled bin starts and resolves its deps.
+      # Use a literal block + JSON variable so the YAML parser doesn't read
+      # the inner `:` as a nested mapping key.
       - name: Smoke — Node runs the compiled CLI
-        run: node packages/core/dist/cli.js --check --plugins= | grep -q '"ok": true'
+        env:
+          EXPECTED: '"ok": true'
+        run: |
+          set -euo pipefail
+          output="$(node packages/core/dist/cli.js --check --plugins=)"
+          echo "$output"
+          echo "$output" | grep -qF "$EXPECTED"
 
       # `npm pack --dry-run` resolves each package's `files`/`exports` and
       # fails if a published tarball would be missing or malformed — a cheap
