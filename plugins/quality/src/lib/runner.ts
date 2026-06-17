@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
 
+import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
+
 export interface ICommandResult {
 	readonly command: string;
 	readonly ok: boolean;
@@ -74,15 +76,31 @@ export interface IScopeCommand {
 	readonly expect?: string;
 }
 
-/** Run every command of a scope in order; ok only if all succeed. */
+/**
+ * Run every command of a scope in order; ok only if all succeed. A command
+ * blocked by `policy` is NOT spawned — it is recorded as a failed result
+ * (code 126) so the agent sees why (M13).
+ */
 export const runScope = async (
 	scope: string,
 	commands: readonly IScopeCommand[],
 	cwd: string,
-	run: ICommandRunner
+	run: ICommandRunner,
+	policy?: ICommandPolicy
 ): Promise<IScopeResult> => {
 	const results: ICommandResult[] = [];
 	for (const entry of commands) {
+		const verdict = evaluateCommandPolicy(entry.command, policy);
+		if (!verdict.allowed) {
+			results.push({
+				command: entry.command,
+				ok: false,
+				code: 126,
+				timedOut: false,
+				tail: `blocked by command policy: ${verdict.reason}`,
+			});
+			continue;
+		}
 		const r = await run(entry.command, cwd);
 		results.push({
 			command: entry.command,

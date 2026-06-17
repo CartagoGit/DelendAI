@@ -167,8 +167,11 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
   (calls/errors/latencia/bytes) + meta-tool `<prefix>_metrics` (`reset` opcional).
   Opt-in vía `IMcpCoreHostConfig.metricsRegistry`; el CLI lo cablea solo. Tests
   unit + instrumentación e2e sobre el protocolo.
+- **M13 ✅** allow/deny de comandos en `quality` (`commandPolicy {allow,deny}`,
+  enforce antes del spawn → bloqueado = code 126; frontera de confianza documentada
+  en el README). Bridge securecoder descartado (artefacto indefinido).
 - Pendiente: **H11** e2e `subscribe` cross-restart (el unit ya cubre la semántica);
-  **M14** migraciones de estado · **M13** allow/deny de comandos en `quality`.
+  **M14** migraciones de estado (`version` + migrate v1→v2 + doctor --migrate).
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**

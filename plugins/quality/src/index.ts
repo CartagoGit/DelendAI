@@ -23,6 +23,13 @@ export default definePlugin({
 		/** scope name → ordered shell commands. */
 		scopes: z.record(z.string(), z.array(z.string())).optional(),
 		timeoutMs: z.number().optional(),
+		/** Allow/deny which binaries `run_quality` may spawn (trust boundary). */
+		commandPolicy: z
+			.object({
+				allow: z.array(z.string()).optional(),
+				deny: z.array(z.string()).optional(),
+			})
+			.optional(),
 	}),
 	register(ctx) {
 		const reader = createWorkspaceFileReader(ctx.workspace);
@@ -42,6 +49,9 @@ export default definePlugin({
 								readonly string[]
 							>,
 						}
+					: {}),
+				...(ctx.options.commandPolicy
+					? { commandPolicy: ctx.options.commandPolicy }
 					: {}),
 			}),
 			knowledge: [
