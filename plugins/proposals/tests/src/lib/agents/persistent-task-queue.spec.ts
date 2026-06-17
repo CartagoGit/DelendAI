@@ -219,6 +219,27 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 		const queue = await parseQueue(queuePath, closedTasksPath(dir));
 		expect(queue.entries[0]?.waitFor[0]?.file).toBe(realFile);
 	});
+
+	it('resolves a workspace-relative waitFor.file against the injected root (M7)', async () => {
+		const dir = workDir;
+		const queuePath = join(dir, 'queue.json');
+		// The waitFor path is RELATIVE; only resolving it against the injected
+		// root finds it. Without the root it would resolve against cwd and fail.
+		writeFileSync(join(dir, 'gate.ts'), '// ok', 'utf8');
+		const entry = makeEntry({
+			waitFor: [{ file: 'gate.ts', releasedBy: null }],
+		});
+		writeQueue(queuePath, { version: 1, entries: [entry] });
+
+		// With the root: accepted.
+		const queue = await parseQueue(queuePath, closedTasksPath(dir), dir);
+		expect(queue.entries[0]?.waitFor[0]?.file).toBe('gate.ts');
+
+		// Without the root, the relative path misses (resolved vs cwd).
+		await expect(
+			parseQueue(queuePath, closedTasksPath(dir))
+		).rejects.toMatchObject({ code: 'WAIT_FOR_FILE_MISSING' });
+	});
 });
 
 // ---------------------------------------------------------------------------
