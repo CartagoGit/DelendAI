@@ -241,11 +241,21 @@ Tres piezas para que el paquete sea consumible y se publique solo:
 > usuario no tiene el `NPM_TOKEN`/setup aquí; el deploy se hará después).
 
 **Arquitectura pedida:** cada cosa en su componente por separado — **SCSS + TS +
-HTML** por componente. Algo **ligero**; valorar framework (Lit + Vite es la opción
-recomendada: web components nativos, SCSS por componente, i18n y build estático
-fáciles; decisión final del usuario pendiente — preguntó "no sé si querrías meterle
-un framework"). Debe **parecer una página profesional mostrando un producto
+HTML** por componente. Debe **parecer una página profesional mostrando un producto
 profesional**.
+
+**✅ Framework decidido (2026-06-17): Astro** (el usuario delegó la elección con la
+condición de que sea **independiente y estático para GitHub Pages**). Razones:
+sitio de producto/docs = mayormente estático con islas de interactividad
+(marquesinas, selector de idioma) → Astro envía **0 JS por defecto** (ideal para
+Pages), componentes `.astro` con **SCSS scoped**, **i18n** de rutas integrado,
+salida 100% estática (`astro build` → `dist`), y permite **islas** (Svelte/Vue) para
+las marquesinas si hacen falta. Vive en **`apps/web`** (ya es workspace) y consume
+**`apps/web/dist/capabilities.json`** (generado de la lista viva de tools) para que
+las tools/secciones nunca se desincronicen del código. *Hoy `apps/web` tiene un
+generador mínimo (vanilla) que ya produce `capabilities.json` + un `index.html`
+desplegable; W3 = sustituirlo por la app Astro.* Runner-up si se prefiere un solo
+framework de los listados: **SvelteKit (adapter static)**.
 
 **Secciones (todas con ejemplos donde aplique):**
 - Introducción / explicación del concepto (qué es un core MCP agnóstico + plugins).
