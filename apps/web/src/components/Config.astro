@@ -1,0 +1,128 @@
+---
+import { languages, themes, useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const hrefFor = (code: Lang) => (code === 'en' ? `${base}/` : `${base}/${code}/`);
+
+const THEME_BG: Record<string, string> = {
+	dark: '#0d1117', light: '#ffffff', midnight: '#0b0f1a', solarized: '#002b36', nord: '#2e3440',
+};
+const THEME_ACCENT: Record<string, string> = {
+	dark: '#58a6ff', light: '#0969da', midnight: '#7c93ff', solarized: '#2aa198', nord: '#88c0d0',
+};
+---
+
+<div class="modal" id="cfg-modal" role="dialog" aria-modal="true" aria-label={t('cfg.title')} hidden>
+	<div class="modal__backdrop" data-cfg-close></div>
+	<div class="modal__panel">
+		<div class="modal__head">
+			<h2>{t('cfg.title')}</h2>
+			<button class="modal__close" data-cfg-close aria-label="Close">×</button>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t('cfg.theme')}</h3>
+			<div class="swatches" id="cfg-themes">
+				{
+					themes.map((th) => (
+						<button
+							class="swatch"
+							data-theme-value={th}
+							style={`background:${THEME_BG[th]}`}
+							title={th}
+							aria-label={th}
+						>
+							<span style={`background:${THEME_ACCENT[th]}`} />
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t('cfg.language')}</h3>
+			<div class="langs">
+				{
+					languages.map((l) => (
+						<a
+							class="lang-opt"
+							href={hrefFor(l.code)}
+							aria-current={l.code === lang ? 'true' : undefined}
+						>
+							<span class="flag">{l.flag}</span>
+							{l.label}
+						</a>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t('cfg.motion')}</h3>
+			<label class="toggle">
+				<span>{t('cfg.motionLabel')}</span>
+				<input type="checkbox" id="cfg-motion" />
+			</label>
+		</div>
+	</div>
+</div>
+
+<script>
+	const KEY_THEME = 'mcpcore-theme';
+	const KEY_MOTION = 'mcpcore-motion';
+	const root = document.documentElement;
+	const modal = document.getElementById('cfg-modal');
+	const openBtn = document.getElementById('cfg-open');
+	const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
+
+	const markActiveTheme = () => {
+		const current = root.dataset.theme || 'dark';
+		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+			el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
+		}
+	};
+
+	const open = () => {
+		modal?.removeAttribute('hidden');
+		modal?.classList.add('is-open');
+		if (motion) motion.checked = root.dataset.motion !== 'off';
+		markActiveTheme();
+	};
+	const close = () => {
+		modal?.setAttribute('hidden', '');
+		modal?.classList.remove('is-open');
+	};
+
+	openBtn?.addEventListener('click', open);
+	for (const el of document.querySelectorAll('[data-cfg-close]')) {
+		el.addEventListener('click', close);
+	}
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') close();
+	});
+
+	for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+		el.addEventListener('click', () => {
+			const value = el.dataset.themeValue!;
+			root.dataset.theme = value;
+			localStorage.setItem(KEY_THEME, value);
+			markActiveTheme();
+		});
+	}
+
+	motion?.addEventListener('change', () => {
+		if (motion.checked) {
+			root.removeAttribute('data-motion');
+			localStorage.setItem(KEY_MOTION, 'on');
+		} else {
+			root.dataset.motion = 'off';
+			localStorage.setItem(KEY_MOTION, 'off');
+		}
+	});
+</script>
