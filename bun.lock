@@ -5,7 +5,8 @@
     "": {
       "name": "@cartago-git/mcp-core-monorepo",
       "devDependencies": {
-        "@biomejs/biome": "^2.5.0",
+        "@biomejs/biome": "2.5.0",
+        "@modelcontextprotocol/sdk": "1.29.0",
         "@types/bun": "latest",
         "@types/node": "^20.11.0",
         "@vitest/coverage-v8": "4.1.8",

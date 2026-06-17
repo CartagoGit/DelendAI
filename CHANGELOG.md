@@ -9,6 +9,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Auto-release on push to `main`** (CI): when the lockstep version is new
+  (no `vX.Y.Z` tag yet), the `release` workflow validates, builds, publishes the
+  10 packages to npm, tags the commit and opens a GitHub Release with generated
+  notes. Cut a release by bumping the version and pushing. Needs `NPM_TOKEN`.
+- **GitHub Pages site** (`scripts/build-site.ts` + `pages` workflow): a
+  self-contained page generated from the live tool registry — project intro,
+  install/`mcp.json` snippets, and every tool grouped by plugin. CI runs it
+  `--strict`, so an undocumented tool fails the build (the web can't silently
+  drift behind the code).
 - **State-migration safety net** (M14): `runMigrations` applies an ordered
   migrator chain to bring a versioned store up to the current version (refuses
   downgrades and incomplete chains), and `migrateJsonFile` reads → migrates →
