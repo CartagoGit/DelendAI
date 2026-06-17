@@ -25,7 +25,11 @@ import { dirname, resolve } from 'node:path';
 
 import { z } from 'zod';
 
-import { quarantineCorruptFile, withFileMutex } from '@cartago-git/mcp-core/public';
+import {
+	quarantineCorruptFile,
+	withFileMutex,
+	writeFileAtomic,
+} from '@cartago-git/mcp-core/public';
 
 import {
 	enqueue,
@@ -293,31 +297,56 @@ const buildRecommendation = (report: IBackpressureReport): string => {
 };
 
 // ---------------------------------------------------------------------------
-// Idempotency tracking (in-memory only — not persisted across sessions)
+// Idempotency tracking (persisted — survives process restarts) — M6
 // ---------------------------------------------------------------------------
-// We track which (taskId, observedTaskId) pairs have been delivered
-// in the current process. The spec requires `subscribe` to be idempotent
-// within a session: the second call with the same taskId does not
-// duplicate the digests.
-//
-// Cross-session idempotency is out of scope for T2: a process restart
-// re-delivers the digests once. The proposal marks this as a follow-up
-// for a future task-graph-validator where the digests would be stored
-// in a side-file keyed by the observer taskId.
-const deliveredDigests = new Set<string>();
+// We track which (taskId, observedTaskId) pairs have already been delivered
+// so `subscribe` is idempotent: a repeated call (within OR across sessions)
+// never re-delivers the same digest. The set lives in a sidecar JSON next to
+// the queue, mutated under `withFileMutex` so concurrent subscribers cannot
+// lose updates. A process restart no longer re-delivers (the bug M6 fixes).
 
 const deliveredKey = (taskId: string, observedTaskId: string): string =>
 	`${taskId}::${observedTaskId}`;
 
+/** Sidecar path for the delivered-digests set, derived from the queue path. */
+const deliveredSidecarPath = (queuePath: string): string =>
+	resolve(dirname(queuePath), '.subscribe-delivered.json');
+
 /**
- * Test-only: reset the in-memory idempotency tracker. Specs that
- * exercise the idempotency contract in isolation MUST call this in
- * their setup hook. Production code does not need to call it.
- *
- * Exported with the `__` prefix to flag it as a test escape hatch.
+ * Load the persisted delivered-keys set. Missing/empty → empty set. Corrupt
+ * JSON → quarantine + empty (defensive: idempotency is best-effort, never a
+ * reason to fail a subscribe — at worst a stale digest re-delivers once).
  */
-export const __resetDeliveredDigestsForTesting = (): void => {
-	deliveredDigests.clear();
+const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
+	let raw: string;
+	try {
+		raw = await readFile(sidecarPath, 'utf8');
+	} catch (err: unknown) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return new Set();
+		throw err;
+	}
+	if (!raw.trim()) return new Set();
+	try {
+		const parsed = JSON.parse(raw) as { delivered?: unknown };
+		if (Array.isArray(parsed.delivered)) {
+			return new Set(parsed.delivered.filter((k): k is string => typeof k === 'string'));
+		}
+	} catch {
+		await quarantineCorruptFile(sidecarPath);
+	}
+	return new Set();
+};
+
+/** Atomically persist the delivered-keys set (kept readable on disk — N11). */
+const saveDeliveredSet = async (
+	sidecarPath: string,
+	set: ReadonlySet<string>
+): Promise<void> => {
+	await mkdir(dirname(sidecarPath), { recursive: true });
+	await writeFileAtomic(
+		sidecarPath,
+		`${JSON.stringify({ delivered: [...set].sort() }, null, 2)}\n`
+	);
 };
 
 // ---------------------------------------------------------------------------
@@ -493,31 +522,43 @@ export async function runTaskQueueAction(
 		const closedMap = new Map(closed.map((c) => [c.taskId, c]));
 
 		const entry = queue.entries.find((e) => e.taskId === params.taskId);
-		const digests: IClosedTaskDigest[] = [];
-		const pendingTargets: string[] = [];
 		const observeTargets = entry?.observe ?? [];
 
-		for (const target of observeTargets) {
-			if (deliveredDigests.has(deliveredKey(params.taskId, target))) {
-				// Already delivered in this session — skip
-				continue;
-			}
-			const c = closedMap.get(target);
-			if (c) {
-				digests.push({
-					taskId: c.taskId,
-					closedAt: c.closedAt,
-					...(c.filesOwned && c.filesOwned.length > 0
-						? { diffSummary: `Files: ${c.filesOwned.join(', ')}` }
-						: {}),
-				});
-				deliveredDigests.add(deliveredKey(params.taskId, target));
-			} else {
-				pendingTargets.push(target);
-			}
-		}
+		// The delivered-set read-modify-write runs under a mutex so two
+		// concurrent subscribers can never both deliver the same digest
+		// (and the set is persisted, so a restart does not re-deliver — M6).
+		const sidecarPath = deliveredSidecarPath(paths.queuePath);
+		return await withFileMutex(sidecarPath, async () => {
+			const delivered = await loadDeliveredSet(sidecarPath);
+			const digests: IClosedTaskDigest[] = [];
+			const pendingTargets: string[] = [];
+			let mutated = false;
 
-		return { digests, pendingTargets };
+			for (const target of observeTargets) {
+				const key = deliveredKey(params.taskId, target);
+				if (delivered.has(key)) {
+					// Already delivered (this session or a previous one) — skip.
+					continue;
+				}
+				const c = closedMap.get(target);
+				if (c) {
+					digests.push({
+						taskId: c.taskId,
+						closedAt: c.closedAt,
+						...(c.filesOwned && c.filesOwned.length > 0
+							? { diffSummary: `Files: ${c.filesOwned.join(', ')}` }
+							: {}),
+					});
+					delivered.add(key);
+					mutated = true;
+				} else {
+					pendingTargets.push(target);
+				}
+			}
+
+			if (mutated) await saveDeliveredSet(sidecarPath, delivered);
+			return { digests, pendingTargets };
+		});
 	}
 
 	if (action.action === 'report') {
