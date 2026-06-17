@@ -4,6 +4,8 @@ build/
 .cache/
 coverage/
 site/
+.astro/
+apps/web/src/data/capabilities.json
 *.tsbuildinfo
 .DS_Store
 pack/

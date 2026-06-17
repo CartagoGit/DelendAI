@@ -1,0 +1,27 @@
+---
+import type { IMarqueeItem } from '../data/marquees';
+
+interface Props {
+	items: readonly IMarqueeItem[];
+	label: string;
+	reverse?: boolean;
+}
+
+const { items, label, reverse = false } = Astro.props;
+// Duplicate the items so the -50% keyframe loops seamlessly.
+const doubled = [...items, ...items];
+---
+
+<div class:list={['marquee', { 'marquee--reverse': reverse }]}>
+	<div class="marquee__label">{label}</div>
+	<div class="marquee__track">
+		{
+			doubled.map((it) => (
+				<div class="chip" title={it.name} aria-label={it.name}>
+					<span class="chip__badge" style={`background:${it.color}`}>{it.mono}</span>
+					<span class="chip__label">{it.name}</span>
+				</div>
+			))
+		}
+	</div>
+</div>

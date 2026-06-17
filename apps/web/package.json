@@ -5,7 +5,13 @@
 	"type": "module",
 	"description": "Product/documentation site for @cartago-git/mcp-core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
-		"build": "bun src/build-site.ts",
-		"build:strict": "bun src/build-site.ts --strict"
+		"dev": "astro dev",
+		"preview": "astro preview",
+		"build": "bun scripts/gen-capabilities.ts && astro build",
+		"build:strict": "bun scripts/gen-capabilities.ts --strict && astro build"
+	},
+	"dependencies": {
+		"astro": "^6.4.8",
+		"sass": "^1.101.0"
 	}
 }

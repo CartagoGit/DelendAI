@@ -43,6 +43,8 @@ jobs:
         run: bun run build
 
       - name: Generate site (strict — fails on an undocumented tool)
+        env:
+          ASTRO_TELEMETRY_DISABLED: '1'
         run: bun run site:strict
 
       - name: Upload Pages artifact
