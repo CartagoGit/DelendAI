@@ -295,9 +295,34 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   enforcement).
 - **🟡 A3 (P3) · W3 sitio web profesional** sin empezar (solo el `build-site.ts`
   mínimo). Spec en el RESUMEN.
-- **🔵 A4 (nit) · DX:** el typecheck raíz incluye `scripts/build-site.ts`, que importa
-  el SDK → un `pull` sin `bun install` deja el typecheck rojo (en CI no, por
-  `--frozen-lockfile`). Desacoplar o typecheck propio para `scripts/`.
+- **🔵 A4 (nit) · DX:** el typecheck raíz incluye el generador del sitio
+  (`apps/web/src/build-site.ts`), que importa el SDK → un `pull` sin `bun install`
+  deja el typecheck rojo (en CI no, por `--frozen-lockfile`). Desacoplar o typecheck
+  propio para `apps/`.
+
+#### ✅ Cerrado el 17-06 (tras la auditoría de estado)
+- **Infra/release:** warnings de los 4 workflows saneados (inyección `${{ }}`→`env`,
+  `gh secret list` roto eliminado, `configure-pages`); **auto-versionado por
+  Conventional Commits** (`scripts/derive-version.ts`, tag-driven, el usuario no
+  hace nada) con tests.
+- **`apps/` + dogfooding:** carpeta `apps/` (workspace) con `apps/web` (genera
+  `index.html` + **`capabilities.json`** de la lista viva → cada release sabe qué
+  trae); `.mcp.json` + `mcp-core.config.json` → el repo usa **mcp-core como su
+  propio servidor MCP** (preset swarm). **480 tests verdes.**
+
+#### Orden de ejecución priorizado (decidido 17-06)
+1. **A1 — barrido async** (`memory/store`, `core/bootstrap`, `core/scaffold` apply,
+   `deps/engine`): mecánico, cierra el invariante "ningún handler bloquea el event
+   loop". *Primero — barato y de correctitud.*
+2. **W3 — sitio web profesional con Astro** (decisión 17-06: estático para GitHub
+   Pages, componentes SCSS+TS+HTML, i18n, marquesinas duales, benchmarks, responsive;
+   consume `capabilities.json`). Sustituye el generador mínimo de `apps/web`. *El
+   trozo grande y de cara al usuario — segundo.*
+3. **A2 quick wins:** **JSON Schema de `mcp-core.config.json`** (alimenta también la
+   web/onboarding), `quality_cancel`, freno duro anti-idle en `auto_work`.
+4. **A2 onboarding:** TypeDoc de `public/`, `/examples` (minimal/swarm/custom-plugin).
+5. **A4** (nit): desacoplar el typecheck de `apps/` del SDK.
+6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.
 
 > **Camino:** A1 → ~9,8; +A2 → ~10,0; +A3 + publish → **11/10**.
 
