@@ -56,7 +56,7 @@ export const buildDepsToolRegistrations = (
 					},
 					async (args: { manifest?: string | undefined }) =>
 						toolJson(
-							listDeps(
+							await listDeps(
 								options.workspaceRootAbs,
 								args.manifest ?? manifest
 							)
@@ -94,7 +94,7 @@ export const buildDepsToolRegistrations = (
 					},
 					async (args: { manifest?: string | undefined }) =>
 						toolJson(
-							checkDeps(
+							await checkDeps(
 								options.workspaceRootAbs,
 								args.manifest ?? manifest
 							)

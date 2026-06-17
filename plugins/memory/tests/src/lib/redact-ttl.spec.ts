@@ -80,7 +80,7 @@ describe('TTL expiry + redaction on save (M11)', () => {
 	it('saveNote with ttlSeconds sets a future expiresAt and the note survives', async () => {
 		const { note } = await saveNote(store, { title: 'temp', body: 'x', ttlSeconds: 3600 });
 		expect(note.expiresAt).toBeDefined();
-		expect(recall(store, {})).toHaveLength(1);
+		expect(await recall(store, {})).toHaveLength(1);
 	});
 
 	it('expired notes are dropped on read (lazy TTL) and pruned on next write', async () => {
@@ -93,8 +93,8 @@ describe('TTL expiry + redaction on save (M11)', () => {
 			updatedAt: '2020-01-01T00:00:00.000Z',
 			expiresAt: '2020-01-02T00:00:00.000Z',
 		};
-		writeStore(store, [expired]);
-		expect(readStore(store)).toHaveLength(0); // lazily filtered
+		await writeStore(store, [expired]);
+		expect(await readStore(store)).toHaveLength(0); // lazily filtered
 
 		// A subsequent save persists only the live set (expired pruned).
 		await saveNote(store, { title: 'fresh', body: 'y' });

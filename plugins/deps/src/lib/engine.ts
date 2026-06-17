@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export type IDepSection =
@@ -29,14 +29,13 @@ export interface IDepsInventory {
 
 type IManifest = Partial<Record<IDepSection, Record<string, string>>>;
 
-const readManifest = (
+const readManifest = async (
 	rootAbs: string,
 	manifestRel: string
-): { found: boolean; manifest: IManifest } => {
+): Promise<{ found: boolean; manifest: IManifest }> => {
 	const abs = join(rootAbs, manifestRel);
-	if (!existsSync(abs)) return { found: false, manifest: {} };
 	try {
-		const parsed = JSON.parse(readFileSync(abs, 'utf8')) as IManifest;
+		const parsed = JSON.parse(await readFile(abs, 'utf8')) as IManifest;
 		return { found: true, manifest: parsed ?? {} };
 	} catch {
 		return { found: false, manifest: {} };
@@ -59,11 +58,11 @@ const sectionEntries = (
  * with their version ranges. Pure over the injected workspace root; the
  * manifest path is injectable. Read-only, offline, agnostic. [N19]
  */
-export const listDeps = (
+export const listDeps = async (
 	rootAbs: string,
 	manifestRel = 'package.json'
-): IDepsInventory => {
-	const { found, manifest } = readManifest(rootAbs, manifestRel);
+): Promise<IDepsInventory> => {
+	const { found, manifest } = await readManifest(rootAbs, manifestRel);
 	const deps: IDepEntry[] = [];
 	const counts = {
 		dependencies: 0,
@@ -121,9 +120,16 @@ const isLooseRange = (range: string): boolean => {
 	return r === '' || r === '*' || r === 'latest' || r === 'x';
 };
 
-const detectLockfile = (rootAbs: string): { present: boolean; kind: string | null } => {
+const detectLockfile = async (
+	rootAbs: string
+): Promise<{ present: boolean; kind: string | null }> => {
 	for (const { file, kind } of LOCKFILES) {
-		if (existsSync(join(rootAbs, file))) return { present: true, kind };
+		try {
+			await stat(join(rootAbs, file));
+			return { present: true, kind };
+		} catch {
+			// not this lockfile
+		}
 	}
 	return { present: false, kind: null };
 };
@@ -134,11 +140,11 @@ const detectLockfile = (rootAbs: string): { present: boolean; kind: string | nul
  * (that would need an external vuln source — out of scope for an agnostic
  * core plugin). [N19]
  */
-export const checkDeps = (
+export const checkDeps = async (
 	rootAbs: string,
 	manifestRel = 'package.json'
-): IDepsHealth => {
-	const inventory = listDeps(rootAbs, manifestRel);
+): Promise<IDepsHealth> => {
+	const inventory = await listDeps(rootAbs, manifestRel);
 	const findings: IDepsFinding[] = [];
 
 	if (!inventory.found) {
@@ -154,7 +160,7 @@ export const checkDeps = (
 		};
 	}
 
-	const lockfile = detectLockfile(rootAbs);
+	const lockfile = await detectLockfile(rootAbs);
 	if (!lockfile.present) {
 		findings.push({
 			kind: 'no-lockfile',

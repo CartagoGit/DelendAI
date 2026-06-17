@@ -281,14 +281,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > `@ts-ignore`, 0 `any` real en `src`, `console.*` limpio, los `TODO` son plantillas
 > del scaffold**. Hallazgos abiertos (todos no-bloqueantes, ninguno rearquitectura):
 
-- **🟠 A1 (P1) · I/O síncrono residual FUERA de `proposals/lib`** — *el hallazgo
-  nuevo más relevante.* H2/M4/M5 barrieron `proposals`/`docs`/`git`/`search`, pero
-  sigue el patrón en: **`plugins/memory/src/lib/store.ts` (store 100% síncrono —
-  `readFileSync`+`writeFileAtomicSync` DENTRO del mutex async → bloquea el event loop
-  en cada `memory_save`)**, `core/bootstrap-tool.ts`, `core/scaffold-tool.ts` (camino
-  de aplicado `--write`) y `deps/engine.ts`. *Fix:* completar la migración async
-  (mismo invariante que H2: ningún handler de tool bloquea el event loop). Las
-  lecturas de **boot** (`assemble.ts`) y `writeFileAtomicSync` son aceptables.
+- **✅ A1 (P1) · I/O síncrono residual FUERA de `proposals/lib`** — HECHO (17-06).
+  Migrados a async: **`plugins/memory/src/lib/store.ts`** (era 100% síncrono dentro
+  del mutex → ahora `readFile`/`writeFileAtomic`; el más importante, hot path),
+  **`plugins/deps/src/lib/engine.ts`** (manifest + lockfiles) y **`core/scaffold-tool.ts`**
+  (el write-loop del aplicado `--write` → `mkdir`/`writeFile`/`stat`). *Carve-out
+  aceptado:* `core/bootstrap` (`createWorkspaceFileReader` + `analyzeProject`) se
+  deja síncrono — es una **función pura sobre un reader inyectado**, one-shot y
+  acotada a un set fijo de ficheros conocidos (lockfiles/configs), misma categoría
+  que las lecturas de **boot** de `assemble.ts`; volverla async ripplearía por todo
+  el analizador con mal cost/benefit. Invariante "ningún handler de tool en bucle/
+  hot-path bloquea el event loop": **cumplido**.
 - **🟡 A2 (P2) · Onboarding/plataforma ausente** (verificado): TypeDoc, `/examples`,
   **JSON Schema de `mcp-core.config.json`**, skills/prompts versionados,
   `quality_cancel`, freno duro anti-idle en `auto_work` (hoy `idle` es guía, no
@@ -311,9 +314,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   propio servidor MCP** (preset swarm). **480 tests verdes.**
 
 #### Orden de ejecución priorizado (decidido 17-06)
-1. **A1 — barrido async** (`memory/store`, `core/bootstrap`, `core/scaffold` apply,
-   `deps/engine`): mecánico, cierra el invariante "ningún handler bloquea el event
-   loop". *Primero — barato y de correctitud.*
+1. ✅ **A1 — barrido async** (`memory/store`, `deps/engine`, `core/scaffold` apply):
+   HECHO 17-06. `core/bootstrap` queda como carve-out razonado (pure-fn one-shot).
 2. **W3 — sitio web profesional con Astro** (decisión 17-06: estático para GitHub
    Pages, componentes SCSS+TS+HTML, i18n, marquesinas duales, benchmarks, responsive;
    consume `capabilities.json`). Sustituye el generador mínimo de `apps/web`. *El

@@ -100,8 +100,8 @@ describe('scaffold tool report (p97)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('dry-run returns the files without touching the disk', () => {
-		const report = buildScaffoldReport(options, {
+	it('dry-run returns the files without touching the disk', async () => {
+		const report = await buildScaffoldReport(options, {
 			kind: 'host',
 			dryRun: true,
 		});
@@ -110,8 +110,8 @@ describe('scaffold tool report (p97)', () => {
 		expect(existsSync(join(root, 'libs'))).toBe(false);
 	});
 
-	it('write mode creates files once and refuses overwrites', () => {
-		const first = buildScaffoldReport(options, {
+	it('write mode creates files once and refuses overwrites', async () => {
+		const first = await buildScaffoldReport(options, {
 			kind: 'skill',
 			name: 'combat',
 			description: 'Combat rules.',
@@ -126,7 +126,7 @@ describe('scaffold tool report (p97)', () => {
 				'utf8'
 			)
 		).toContain('id: acme-combat');
-		const second = buildScaffoldReport(options, {
+		const second = await buildScaffoldReport(options, {
 			kind: 'skill',
 			name: 'combat',
 			description: 'Combat rules.',
@@ -138,8 +138,8 @@ describe('scaffold tool report (p97)', () => {
 		]);
 	});
 
-	it('reports input errors instead of writing partial artefacts', () => {
-		const report = buildScaffoldReport(options, {
+	it('reports input errors instead of writing partial artefacts', async () => {
+		const report = await buildScaffoldReport(options, {
 			kind: 'tool',
 			dryRun: false,
 		});
@@ -147,8 +147,8 @@ describe('scaffold tool report (p97)', () => {
 		expect(report.written).toEqual([]);
 	});
 
-	it('scaffolds a plugin and an MCP client', () => {
-		const plugin = buildScaffoldReport(options, {
+	it('scaffolds a plugin and an MCP client', async () => {
+		const plugin = await buildScaffoldReport(options, {
 			kind: 'plugin',
 			name: 'pepegrillo',
 			description: 'Conscience plugin.',
@@ -157,7 +157,7 @@ describe('scaffold tool report (p97)', () => {
 		expect(plugin.files.map((f) => f.path)).toContain(
 			'plugins/pepegrillo/src/index.ts'
 		);
-		const client = buildScaffoldReport(options, {
+		const client = await buildScaffoldReport(options, {
 			kind: 'client',
 			name: 'acme',
 			description: 'Acme MCP client.',

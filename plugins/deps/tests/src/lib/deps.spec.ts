@@ -21,12 +21,12 @@ describe('deps engine', () => {
 	const manifest = (obj: unknown): void =>
 		writeFileSync(join(root, 'package.json'), JSON.stringify(obj), 'utf8');
 
-	it('lists deps across sections with ranges and counts', () => {
+	it('lists deps across sections with ranges and counts', async () => {
 		manifest({
 			dependencies: { zod: '^4.0.0', a: '1.2.3' },
 			devDependencies: { vitest: '^4.0.0' },
 		});
-		const inv = listDeps(root);
+		const inv = await listDeps(root);
 		expect(inv.found).toBe(true);
 		expect(inv.counts.dependencies).toBe(2);
 		expect(inv.counts.devDependencies).toBe(1);
@@ -35,44 +35,44 @@ describe('deps engine', () => {
 		expect(inv.deps[0]?.name).toBe('a');
 	});
 
-	it('reports found:false for a missing/torn manifest', () => {
-		expect(listDeps(root).found).toBe(false);
+	it('reports found:false for a missing/torn manifest', async () => {
+		expect((await listDeps(root)).found).toBe(false);
 		writeFileSync(join(root, 'package.json'), '{ not json', 'utf8');
-		expect(listDeps(root).found).toBe(false);
+		expect((await listDeps(root)).found).toBe(false);
 	});
 
-	it('checkDeps flags a missing lockfile', () => {
+	it('checkDeps flags a missing lockfile', async () => {
 		manifest({ dependencies: { zod: '^4.0.0' } });
-		const h = checkDeps(root);
+		const h = await checkDeps(root);
 		expect(h.lockfile.present).toBe(false);
 		expect(h.findings.some((f) => f.kind === 'no-lockfile')).toBe(true);
 		expect(h.healthy).toBe(false);
 	});
 
-	it('checkDeps is healthy with a lockfile and pinned ranges', () => {
+	it('checkDeps is healthy with a lockfile and pinned ranges', async () => {
 		manifest({ dependencies: { zod: '^4.0.0' } });
 		writeFileSync(join(root, 'bun.lock'), '');
-		const h = checkDeps(root);
+		const h = await checkDeps(root);
 		expect(h.lockfile).toEqual({ present: true, kind: 'bun' });
 		expect(h.healthy).toBe(true);
 		expect(h.findings).toEqual([]);
 	});
 
-	it('flags unpinned ranges and cross-section duplicates', () => {
+	it('flags unpinned ranges and cross-section duplicates', async () => {
 		manifest({
 			dependencies: { a: '*', b: 'latest', shared: '^1.0.0' },
 			devDependencies: { shared: '^1.0.0' },
 		});
 		writeFileSync(join(root, 'package-lock.json'), '{}');
-		const h = checkDeps(root);
+		const h = await checkDeps(root);
 		const kinds = h.findings.map((f) => f.kind);
 		expect(kinds).toContain('loose-range'); // a:* and b:latest
 		expect(kinds).toContain('duplicate-section'); // shared
 		expect(h.findings.filter((f) => f.kind === 'loose-range')).toHaveLength(2);
 	});
 
-	it('reports no-manifest when absent', () => {
-		const h = checkDeps(root);
+	it('reports no-manifest when absent', async () => {
+		const h = await checkDeps(root);
 		expect(h.findings[0]?.kind).toBe('no-manifest');
 		expect(h.healthy).toBe(false);
 	});
