@@ -25,7 +25,7 @@ The benchmark spec fails if a change regresses these ceilings:
 
 | Payload | Budget (bytes) |
 |---|---:|
-| `overview` full | 6 000 |
+| `overview` full | 6 500 |
 | `overview` compact | 1 600 |
 | `auto_work` | 1 600 |
 

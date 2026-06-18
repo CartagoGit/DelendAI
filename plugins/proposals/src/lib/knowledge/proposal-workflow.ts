@@ -37,6 +37,8 @@ export const buildProposalWorkflow = (
 		'Fixes (f) cascade before proposals (p).',
 		'Claim files with agent_lock before editing; release when the slice closes.',
 		'A proposal may declare a `## Slices` section to parallelise disjoint work.',
+		'Layout under <docsDir>/proposals (default docs/mcp-vertex/proposals): index.json (registry), README.md (guide), p<N>-*.md / f<N>-*.md (proposals/fixes), done/ (archived), optional host buckets via extraFolders.',
+		'Adopting a project that already has a proposals folder? Call proposal_adopt — it returns the canonical layout, scans the folder and gives a plan to organize it; then you run the steps.',
 		'Run sync_proposals after creating or renaming files under the proposals dir.',
 		'Mark a slice done by flipping `- status: done`; archive completed proposals to historical/.',
 		'Peer review: instead of closing your own slice, proposal_review action=submit (it stays NOT done). A DIFFERENT agent reviews: action=approve → done + lock released, or action=request_changes (with a note) → reworkable. The fixer re-submits and another agent reviews the fix. Loop until a reviewer has no objection. Reviewer must differ from the implementer.',

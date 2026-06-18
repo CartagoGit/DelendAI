@@ -77,6 +77,9 @@ export {
 	buildProposalBoardRegistration,
 } from '../lib/tools/authoring.tool';
 export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';
+export { buildAdoptRegistration } from '../lib/tools/adopt.tool';
+export { analyzeProposals, PROPOSALS_LAYOUT } from '../lib/proposals/adopt';
+export type { IAdoptionReport, IScanEntry } from '../lib/proposals/adopt';
 export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
