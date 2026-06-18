@@ -2,7 +2,8 @@
 
 Coordinate several agents over one repo with the `swarm` preset — it adds the
 `proposals` engine (locks, a persistent task queue, round-context, slice
-disjointness) and `notification` (push on lock-release, so agents don't poll) on
+disjointness), `notification` (push on lock-release, so agents don't poll) and
+`status-marker` (mandatory coloured close marker for every agent response) on
 top of `standard`.
 
 ## mcp.json
@@ -17,6 +18,40 @@ top of `standard`.
   }
 }
 ```
+
+### Drop a plugin from the preset
+
+Use `--exclude-plugins=` (or the camelCase alias `--excludePlugins=`) to
+subtract one or more plugins from the resolved set:
+
+```jsonc
+{
+  "servers": {
+    "mcp-vertex": {
+      "command": "bunx",
+      "args": [
+        "@mcp-vertex/core",
+        "--preset=swarm",
+        "--exclude-plugins=notification,quality"
+      ]
+    }
+  }
+}
+```
+
+This is useful when a preset ships with something you don't need (for example,
+the `notification` plugin is moot for a single-agent session) or when you want
+to test against a reduced surface. The exclusion is applied AFTER the preset
+and any explicit `--plugins=` are merged, so the order of flags is irrelevant.
+
+## What the swarm preset includes
+
+| Plugin          | Why                                                                  |
+|-----------------|----------------------------------------------------------------------|
+| `standard` base | `git`, `search`, `memory`, `docs`, `rules`, `quality`, `deps`        |
+| `proposals`     | Multi-agent coordination: locks, task queue, round-context, slices.  |
+| `notification`  | Push on lock-release so waiting agents stop polling.                 |
+| `status-marker` | Forces the canonical close marker on every response (8 states).      |
 
 Optional config (`mcp-vertex.config.json` at the workspace root):
 
@@ -40,6 +75,8 @@ Optional config (`mcp-vertex.config.json` at the workspace root):
 3. Claim files with `proposals_agent_lock`; on `lock-conflict`, **do not retry** —
    wait for the `lock-released` notification, then retry once.
 4. `proposals_sync_proposals` / `proposals_compact_status` to keep state coherent.
+5. Every response ends with a `<status-marker>_close { state, reason? }` line
+   (`🟩 [HECHO]`, `🟨 [CAP] — <reason>`, `🟥 [BLOQUEADO] — <reason>`, …).
 
 > This repo dogfoods exactly this setup — see [`.mcp.json`](../../.mcp.json) and
 > [`mcp-vertex.config.json`](../../mcp-vertex.config.json) at the root.

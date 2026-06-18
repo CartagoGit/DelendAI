@@ -68,4 +68,51 @@ describe('parseCliArgs', () => {
 		expect(resolvePreset('nope')).toEqual([]);
 		expect(resolvePreset(undefined)).toEqual([]);
 	});
+
+	// --exclude-plugins: subtract a plugin (or several) from the resolved set
+	it('subtracts --exclude-plugins from a preset (single)', () => {
+		const args = parseCliArgs(
+			['--preset=swarm', '--exclude-plugins=notification'],
+			'/cwd',
+		);
+		expect(args.plugins).toContain('proposals');
+		expect(args.plugins).toContain('status-marker');
+		expect(args.plugins).not.toContain('notification');
+		expect(args.excludePlugins).toEqual(['notification']);
+	});
+
+	it('subtracts --exclude-plugins from a preset (comma list)', () => {
+		const args = parseCliArgs(
+			['--preset=swarm', '--exclude-plugins=notification,quality'],
+			'/cwd',
+		);
+		expect(args.plugins).not.toContain('notification');
+		expect(args.plugins).not.toContain('quality');
+		expect(args.plugins).toContain('status-marker');
+	});
+
+	it('accepts the camelCase alias --excludePlugins', () => {
+		const args = parseCliArgs(
+			['--preset=swarm', '--excludePlugins=notification'],
+			'/cwd',
+		);
+		expect(args.plugins).not.toContain('notification');
+		expect(args.excludePlugins).toEqual(['notification']);
+	});
+
+	it('subtracts an explicit --plugins entry', () => {
+		const args = parseCliArgs(
+			[
+				'--plugins=git,search,status-marker',
+				'--exclude-plugins=status-marker',
+			],
+			'/cwd',
+		);
+		expect(args.plugins).toEqual(['git', 'search']);
+	});
+
+	it('swarm preset now includes status-marker (close-marker convention)', () => {
+		const args = parseCliArgs(['--preset=swarm'], '/cwd');
+		expect(args.plugins).toContain('status-marker');
+	});
 });
