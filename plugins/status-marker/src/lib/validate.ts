@@ -13,7 +13,6 @@
  */
 
 import {
-	CLOSE_SEPARATOR,
 	EMOJI_TO_STATE,
 	MAX_LINE_LEN,
 	MARKERS,

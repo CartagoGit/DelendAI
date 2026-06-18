@@ -29,6 +29,7 @@
 		"@mcp-vertex/quality": "workspace:*",
 		"@mcp-vertex/rules": "workspace:*",
 		"@mcp-vertex/search": "workspace:*",
+		"@mcp-vertex/status-marker": "workspace:*",
 		"@modelcontextprotocol/sdk": "1.29.0"
 	}
 }

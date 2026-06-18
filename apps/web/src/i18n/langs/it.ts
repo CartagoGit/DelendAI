@@ -53,6 +53,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'Rileva il tuo IDE e aggiunge mcp-vertex — senza toccare gli altri server MCP.',
 		config: "Scegli un preset (minimal · standard · swarm) o elenca i plugin. Esegui con --check per l'autodiagnosi.",
+		excludeHelp:
+			'Sottrai plugin dall’insieme risolto con --exclude-plugins= (alias: --excludePlugins=). Utile per togliere un plugin da un preset senza biforcarlo — es. --preset=swarm --exclude-plugins=notification per una sessione single-agent.',
 	},
 	tools: {
 		title: 'Strumenti',
@@ -111,6 +113,8 @@ const dict: LangDict = {
 		deps: 'Inventario offline delle dipendenze + salute (lockfile, range laschi, duplicati).',
 		notification:
 			'Invia eventi di rilascio lock così gli agenti smettono di fare polling.',
+		'status-marker':
+			'Marker di chiusura colorato obbligatorio per ogni risposta dell’agente: 8 stati canonici, strumenti helper + validatore.',
 		core: 'Il core agnostico: overview, scaffold, metriche, doctor e il loader di plugin.',
 	},
 	knowledge: {

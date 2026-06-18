@@ -72,7 +72,7 @@ describe('validate — single line', () => {
 	});
 
 	it('reports too-long when the line exceeds MAX_LINE_LEN', () => {
-		const long = '🟨 [CAP] — ' + 'x'.repeat(MAX_LINE_LEN);
+		const long = `🟨 [CAP] — ${'x'.repeat(MAX_LINE_LEN)}`;
 		const result = validateCloseMarker(long);
 		expect(result.ok).toBe(false);
 		expect(result.violations ?? []).toContain('too-long');
@@ -86,13 +86,12 @@ describe('validate — single line', () => {
 
 describe('validate — full response', () => {
 	it('accepts a response whose final line is the marker', () => {
-		const text = 'Algo de prosa antes...\n\n' + formatCloseMarker('HECHO');
+		const text = `Algo de prosa antes...\n\n${formatCloseMarker('HECHO')}`;
 		expect(validateResponseClose(text).ok).toBe(true);
 	});
 
 	it('rejects extra prose after the marker', () => {
-		const text =
-			'Prosa\n' + formatCloseMarker('HECHO') + '\nY más prosa después';
+		const text = `Prosa\n${formatCloseMarker('HECHO')}\nY más prosa después`;
 		const result = validateResponseClose(text);
 		// Once prose lands AFTER the marker, that prose becomes the
 		// candidate last line and the marker is no longer the close.
@@ -114,7 +113,7 @@ describe('validate — full response', () => {
 	});
 
 	it('rejects extra lines after the marker', () => {
-		const text = formatCloseMarker('HECHO') + '\nAnother line';
+		const text = `${formatCloseMarker('HECHO')}\nAnother line`;
 		const result = validateResponseClose(text);
 		expect(result.ok).toBe(false);
 	});

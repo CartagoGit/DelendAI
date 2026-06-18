@@ -52,6 +52,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'Tự phát hiện IDE và thêm mcp-vertex — không đụng tới các MCP server khác của bạn.',
 		config: 'Chọn một preset (minimal · standard · swarm) hoặc liệt kê plugin tường minh. Chạy với --check để tự chẩn đoán.',
+		excludeHelp:
+			'Trừ plugin khỏi tập đã giải bằng --exclude-plugins= (bí danh: --excludePlugins=). Hữu ích để loại một plugin khỏi preset mà không fork — ví dụ --preset=swarm --exclude-plugins=notification cho phiên đơn tác tử.',
 	},
 	tools: {
 		title: 'Công cụ',
@@ -106,6 +108,8 @@ const dict: LangDict = {
 		deps: 'Kiểm kê phụ thuộc ngoại tuyến + sức khỏe (lockfile, phạm vi lỏng, trùng lặp).',
 		notification:
 			'Đẩy sự kiện giải phóng khóa để các tác tử ngừng polling.',
+		'status-marker':
+			'Đánh dấu kết thúc màu bắt buộc cho mỗi phản hồi của tác tử: 8 trạng thái chuẩn, công cụ helper + validator.',
 		core: 'Lõi bất khả tri: overview, scaffold, số liệu, doctor và trình tải plugin.',
 	},
 	knowledge: {

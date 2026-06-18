@@ -132,6 +132,7 @@ export interface IInstallTranslations {
 	readonly oneCmd: string;
 	readonly oneCmdNote: string;
 	readonly config: string;
+	readonly excludeHelp: string;
 }
 
 export interface IToolsTranslations {
@@ -194,6 +195,7 @@ export type PluginKey =
 	| 'docs'
 	| 'deps'
 	| 'notification'
+	| 'status-marker'
 	| 'core';
 
 export type IPluginTranslations = Readonly<Record<PluginKey, string>>;

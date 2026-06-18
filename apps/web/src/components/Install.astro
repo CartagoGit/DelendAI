@@ -67,6 +67,8 @@ const defaultPm = 'npm';
 			<p class="install__foot">
 				{t.install.presets} <code>{`${PACKAGE} --preset=minimal|standard|swarm`}</code> · <code>--check</code>
 			</p>
+			<p class="install__sub">{t.install.excludeHelp}</p>
+			<pre><code>{`${PACKAGE} --preset=swarm --exclude-plugins=notification`}</code></pre>
 		</div>
 	</div>
 </section>

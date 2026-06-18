@@ -53,6 +53,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'IDE を自動検出して mcp-vertex を追加 — 他の MCP サーバーには一切触れません。',
 		config: 'プリセット（minimal · standard · swarm）を選ぶか、プラグインを明示的に列挙します。--check で自己診断。',
+		excludeHelp:
+			'--exclude-plugins=（別名：--excludePlugins=）で解決済みセットからプラグインを除外できます。フォークせずにプリセットから外すのに便利 — 例：--preset=swarm --exclude-plugins=notification は単一エージェントセッション向け。',
 	},
 	tools: {
 		title: 'ツール',
@@ -107,6 +109,8 @@ const dict: LangDict = {
 		deps: 'オフライン依存関係の棚卸し + 健全性（lockfile、緩い範囲、重複）。',
 		notification:
 			'ロック解放イベントをプッシュし、エージェントのポーリングを止めます。',
+		'status-marker':
+			'エージェント応答ごとに必須のカラー終了マーカー：8 つの正規状態、ヘルパーとバリデータのツール。',
 		core: '非依存のコア：overview、scaffold、メトリクス、doctor、プラグインローダー。',
 	},
 	knowledge: {

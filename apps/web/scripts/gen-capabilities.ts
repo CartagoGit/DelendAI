@@ -39,6 +39,7 @@ import gitPlugin from '@mcp-vertex/git';
 import qualityPlugin from '@mcp-vertex/quality';
 import searchPlugin from '@mcp-vertex/search';
 import notificationPlugin from '@mcp-vertex/notification';
+import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
 
@@ -46,7 +47,7 @@ const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
 const OUT = resolve(HERE, '..', 'src', 'data', 'capabilities.json');
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps';
+	'proposals,rules,memory,git,quality,search,notification,status-marker,docs,deps';
 const PLUGINS: Record<string, unknown> = {
 	'mcp-proposals': proposalsPlugin,
 	'mcp-rules': rulesPlugin,
@@ -55,6 +56,7 @@ const PLUGINS: Record<string, unknown> = {
 	'mcp-quality': qualityPlugin,
 	'mcp-search': searchPlugin,
 	'mcp-notification': notificationPlugin,
+	'mcp-status-marker': statusMarkerPlugin,
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
 };

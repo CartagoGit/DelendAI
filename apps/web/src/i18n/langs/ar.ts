@@ -49,6 +49,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'يكتشف الـ IDE ويضيف mcp-vertex — دون المساس بخوادم MCP الأخرى لديك.',
 		config: 'اختر إعدادًا مسبقًا (minimal · standard · swarm) أو اسرد الإضافات صراحةً. شغّل مع --check للتشخيص الذاتي.',
+		excludeHelp:
+			'احذف إضافات من المجموعة المُحوَّلة باستخدام --exclude-plugins= (الاسم البديل: --excludePlugins=). مفيد لاستبعاد إضافة من مجموعة دون تفرّعها — مثلًا --preset=swarm --exclude-plugins=notification لجلسة وكيل واحد.',
 	},
 	tools: {
 		title: 'الأدوات',
@@ -102,6 +104,8 @@ const dict: LangDict = {
 		docs: 'فهرسة وقراءة وثائق markdown للمشروع، تنقّل مُنسّق منخفض التكلفة.',
 		deps: 'جرد تبعيات دون اتصال + صحة (lockfile، نطاقات فضفاضة، تكرارات).',
 		notification: 'يدفع أحداث تحرير القفل ليتوقف الوكلاء عن الاستطلاع.',
+		'status-marker':
+			'علامة إغلاق ملوّنة إلزامية لكل ردّ وكيل: 8 حالات مرجعية، أدوات مساعدة ومُحقِّق.',
 		core: 'النواة المحايدة: overview، scaffold، مقاييس، doctor، ومُحمّل الإضافات.',
 	},
 	knowledge: {

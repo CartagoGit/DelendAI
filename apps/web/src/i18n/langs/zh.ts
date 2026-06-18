@@ -49,6 +49,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'自动检测你的 IDE 并加入 mcp-vertex——绝不动你其它的 MCP 服务器。',
 		config: '选择一个预设（minimal · standard · swarm）或显式列出插件。用 --check 自检。',
+		excludeHelp:
+			'使用 --exclude-plugins=（别名 --excludePlugins=）从解析结果中移除插件。便于在不复刻的情况下从预设中去掉某个插件——例如 --preset=swarm --exclude-plugins=notification 用于单智能体会话。',
 	},
 	tools: {
 		title: '工具',
@@ -101,6 +103,8 @@ const dict: LangDict = {
 		docs: '编目并阅读项目 markdown 文档，低成本的精选导航。',
 		deps: '离线依赖清单 + 健康检查（lockfile、宽松范围、重复）。',
 		notification: '推送锁释放事件，让智能体停止轮询。',
+		'status-marker':
+			'每个智能体回复必须以彩色结束标记收尾：8 个标准状态、辅助与校验工具。',
 		core: '与项目无关的内核：overview、scaffold、指标、doctor 和插件加载器。',
 	},
 	knowledge: {
