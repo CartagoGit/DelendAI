@@ -584,6 +584,14 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ℹ️ **i18n página-por-idioma** — ver §7-bis (decisión: se mantiene el pre-render estático;
   la fuente ya es DRY con `lang` como prop).
 
+- 🔵 **M40 · Plugin de auditoría multi-modelo `@mcp-vertex/audit`** (IDEA del usuario, a
+  decidir) — auditar con varios modelos de distintas empresas en el formato del repo.
+  Diseño escrito en [p99](../p99-feat-multi-model-audit-plugin.md): A) "audit kit" sin
+  claves (brief canónico + **consolidación automática** de las auditorías que produce cada
+  IDE/modelo) ⭐; B) fan-out por API (OpenRouter = 1 clave, multi-empresa, opt-in con
+  `effects:['network']`); C) roster declarado. Realidad: un server MCP no puede saber el
+  modelo del host por sí solo; el descubrimiento solo existe por claves API o declarado.
+
 > **Lectura:** ninguna de las 3 encontró nada FATAL en el código. La única "rojo de
 > verdad" era el `validate` por SVG (ya cerrado). Lo demás es endurecimiento y
 > acabado de plataforma. Camino corto al ~9,5: M22 + M23 + M24 + M26 + M27.
