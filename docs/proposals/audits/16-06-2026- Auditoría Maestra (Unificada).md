@@ -525,11 +525,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),
   `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
   `memory` (export/import, stemming ES), `docs` (`docs_search`, árbol jerárquico).
-- 🟡 **M34 · OSS hygiene** —
-  ✅ `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + diagrama Mermaid),
-  `CONTRIBUTING.md`, `SECURITY.md` (modelo de seguridad real + límites), enlazados desde
-  el README. ⬜ Falta `CODEOWNERS`, CHANGELOG enlazado con fechas/comparadores,
-  `register()` siempre async en el tipo público.
+- ✅ **M34 · OSS hygiene** —
+  `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + Mermaid),
+  `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, y **CHANGELOG enlazado** (Keep a
+  Changelog: highlights de la sesión + footer de comparadores). Todo enlazado desde el
+  README. *`register()` siempre-async: deferido a propósito* — forzar `Promise` en el
+  tipo público del plugin rompería los plugins síncronos por una ganancia cosmética; se
+  mantiene `sync | async` (retrocompat > estética).
 
 **Nuevas peticiones del usuario (18-06):**
 - ✅ **M35 · Ciclo de revisión por pares en `proposals`** — tool `proposal_review`
