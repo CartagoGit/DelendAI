@@ -103,6 +103,6 @@ The dependency arrow only ever points **plugin → core**, never the reverse.
 - **CI:** lint · typecheck+coverage · pack-smoke (`npm pack --dry-run` + a functional
   stdio smoke of the compiled CLI) · Pages (site in `--strict`).
 
-See [`README-MCP-CORE.md`](README-MCP-CORE.md) (host authors),
-[`PLUGINS-MCP-CORE.md`](PLUGINS-MCP-CORE.md) (plugin authors) and
+See [`README-MCP-VERTEX.md`](README-MCP-VERTEX.md) (host authors),
+[`PLUGINS-MCP-VERTEX.md`](PLUGINS-MCP-VERTEX.md) (plugin authors) and
 [`TOKEN-BUDGETS.md`](TOKEN-BUDGETS.md) (the measured low-token proof).
