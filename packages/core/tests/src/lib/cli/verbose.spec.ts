@@ -23,7 +23,7 @@ const loadResult = {
 
 const config = {
 	metadata: { name: 's', version: '0' },
-	namespacePrefix: 'mcpvertex',
+	namespacePrefix: 'mcp-vertex',
 	extraTools: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
 	extraPrompts: [{ id: 'p' }],
 	extraResources: [],
@@ -32,7 +32,7 @@ const config = {
 describe('--verbose diagnostics (N23)', () => {
 	it('buildAssemblyDiagnostics snapshots plugins, counts and order', () => {
 		const d = buildAssemblyDiagnostics(args, loadResult, config, [
-			'mcpvertex_overview',
+			'mcp-vertex_overview',
 			'demo_x',
 		]);
 		expect(d.workspace).toBe('/ws');
@@ -44,7 +44,7 @@ describe('--verbose diagnostics (N23)', () => {
 		]);
 		expect(d.plugins.errors).toEqual(['boom']);
 		expect(d.counts).toEqual({ tools: 3, prompts: 1, resources: 0 });
-		expect(d.registrationOrder).toEqual(['mcpvertex_overview', 'demo_x']);
+		expect(d.registrationOrder).toEqual(['mcp-vertex_overview', 'demo_x']);
 	});
 
 	it('formatVerbose renders stderr lines with version + counts + order', () => {

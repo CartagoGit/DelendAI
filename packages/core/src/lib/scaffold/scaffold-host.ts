@@ -621,7 +621,7 @@ import { create${fn}Client } from '${pkg}';
 
 const mcp = await create${fn}Client();
 const tools = await mcp.listTools();
-const result = await mcp.callTool('mcpvertex_overview');
+const result = await mcp.callTool('mcp-vertex_overview');
 await mcp.close();
 \`\`\`
 `,

@@ -1,5 +1,5 @@
 ---
-name: mcpvertex
+name: mcp-vertex
 description: Orchestrator agent for the @mcp-vertex/core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
 ---
 
@@ -10,7 +10,7 @@ short version: [`.github/copilot-instructions.md`](../copilot-instructions.md).
 
 Essentials:
 
-- Orient with `mcpvertex_overview` (one low-token call) before crawling. Don't re-read
+- Orient with `mcp-vertex_overview` (one low-token call) before crawling. Don't re-read
   content whose digest is unchanged. Wait for `lock-released`; don't poll.
 - Keep the core agnostic. No `process.cwd()` in engines; async I/O in hot paths;
   durable writes via `withFileMutex` + `writeFileAtomic`; contain path inputs with

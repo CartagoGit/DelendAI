@@ -424,7 +424,7 @@ Publicar un JSON Schema para `mcp-vertex.config.json` y añadirlo al `$schema` d
 
 ### 8.12 Integración securecoder ↔ mcp-vertex
 
-Que el securecoder pueda usar las herramientas de mcp-vertex directamente (e.g., `mcpvertex_overview` antes de escanear para saber qué plugins están activos, `memory_save` para persistir hallazgos de seguridad). Actualmente son sistemas paralelos sin bridge.
+Que el securecoder pueda usar las herramientas de mcp-vertex directamente (e.g., `mcp-vertex_overview` antes de escanear para saber qué plugins están activos, `memory_save` para persistir hallazgos de seguridad). Actualmente son sistemas paralelos sin bridge.
 
 ---
 

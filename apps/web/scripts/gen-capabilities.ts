@@ -134,8 +134,8 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 			}
 		};
 		const measured = await Promise.all([
-			measure('overview_full', 'overview (full)', 'mcpvertex_overview'),
-			measure('overview_compact', 'overview (compact)', 'mcpvertex_overview', {
+			measure('overview_full', 'overview (full)', 'mcp-vertex_overview'),
+			measure('overview_compact', 'overview (compact)', 'mcp-vertex_overview', {
 				compact: true,
 			}),
 			measure('auto_work', 'auto_work', 'proposals_auto_work'),
@@ -155,7 +155,7 @@ const collectTools = async (): Promise<ICollected> => {
 		// Side effects (M31) live in overview, not the MCP tool definition — merge
 		// them in so the site can badge write/spawn/destructive tools.
 		const overview = (await client.callTool({
-			name: 'mcpvertex_overview',
+			name: 'mcp-vertex_overview',
 			arguments: {},
 		})) as { structuredContent?: { tools?: Array<{ name: string; effects?: string[] }> } };
 		const effectsByName = new Map<string, string[]>(

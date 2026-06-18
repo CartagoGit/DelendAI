@@ -338,7 +338,7 @@ Los 6 niveles de validación (`PARSE_ERROR`, `INVALID_TASK_QUEUE`, `INVALID_PRIO
 
 | Mecanismo | Impacto |
 |---|---|
-| `mcpvertex_overview` como cold-start | ✅ **Excelente** — 1 call orienta al agente completo |
+| `mcp-vertex_overview` como cold-start | ✅ **Excelente** — 1 call orienta al agente completo |
 | Knowledge lazy (load on demand) | ✅ **Excelente** — el agente paga solo lo que lee |
 | Outputs JSON estructurado (no prosa) | ✅ **Excelente** — sin parseo semántico necesario |
 | `roundContext` digest con SHA-256 truncado | ✅ **Excelente** — evita re-reads de docs no modificados |

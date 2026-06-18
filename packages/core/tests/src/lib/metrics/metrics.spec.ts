@@ -61,7 +61,7 @@ describe('metrics tool — persist snapshots (M29)', () => {
 	const capture = async (persistDir?: string) => {
 		const registry = createMetricsRegistry();
 		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
-		const reg = buildMetricsToolRegistration('mcpvertex', registry, persistDir);
+		const reg = buildMetricsToolRegistration('mcp-vertex', registry, persistDir);
 		let handler: (a: unknown) => Promise<{ structuredContent?: Record<string, unknown> }>;
 		await reg.register({
 			registerTool: (_n: string, _d: unknown, fn: typeof handler) => {

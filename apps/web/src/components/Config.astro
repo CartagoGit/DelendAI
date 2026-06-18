@@ -18,7 +18,7 @@ const THEME_ACCENT: Record<string, string> = {
 };
 ---
 
-<div class="modal" id="cfg-modal" role="dialog" aria-modal="true" aria-label={t('cfg.title')} hidden>
+<div class="modal" id="cfg-modal" role="dialog" aria-modal="true" aria-label={t('cfg.title')} hidden transition:persist transition:name="cfg-modal">
 	<div class="modal__backdrop" data-cfg-close></div>
 	<div class="modal__panel">
 		<div class="modal__head">
@@ -74,55 +74,82 @@ const THEME_ACCENT: Record<string, string> = {
 </div>
 
 <script>
+	// Settings modal: theme + language + motion. Re-runs after every Astro view
+	// transition (the `astro:page-load` event) so listeners don't accumulate.
+	// We use an AbortController to revoke the previous batch cleanly.
 	const KEY_THEME = 'mcpvertex-theme';
 	const KEY_MOTION = 'mcpvertex-motion';
 	const root = document.documentElement;
-	const modal = document.getElementById('cfg-modal');
-	const openBtn = document.getElementById('cfg-open');
-	const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
+	let cfgAbort: AbortController | undefined;
 
-	const markActiveTheme = () => {
-		const current = root.dataset.theme || 'dark';
-		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
-			el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
-		}
-	};
+	const setupConfig = () => {
+		cfgAbort?.abort();
+		cfgAbort = new AbortController();
+		const { signal } = cfgAbort;
 
-	const open = () => {
-		modal?.removeAttribute('hidden');
-		modal?.classList.add('is-open');
-		if (motion) motion.checked = root.dataset.motion !== 'off';
-		markActiveTheme();
-	};
-	const close = () => {
-		modal?.setAttribute('hidden', '');
-		modal?.classList.remove('is-open');
-	};
+		const modal = document.getElementById('cfg-modal');
+		const openBtn = document.getElementById('cfg-open');
+		const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
 
-	openBtn?.addEventListener('click', open);
-	for (const el of document.querySelectorAll('[data-cfg-close]')) {
-		el.addEventListener('click', close);
-	}
-	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape') close();
-	});
+		const markActiveTheme = () => {
+			const current = root.dataset.theme || 'dark';
+			for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+				el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
+			}
+		};
 
-	for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
-		el.addEventListener('click', () => {
-			const value = el.dataset.themeValue!;
-			root.dataset.theme = value;
-			localStorage.setItem(KEY_THEME, value);
+		const open = () => {
+			modal?.removeAttribute('hidden');
+			modal?.classList.add('is-open');
+			if (motion) motion.checked = root.dataset.motion !== 'off';
 			markActiveTheme();
-		});
-	}
+		};
+		const close = () => {
+			modal?.setAttribute('hidden', '');
+			modal?.classList.remove('is-open');
+		};
 
-	motion?.addEventListener('change', () => {
-		if (motion.checked) {
-			root.removeAttribute('data-motion');
-			localStorage.setItem(KEY_MOTION, 'on');
-		} else {
-			root.dataset.motion = 'off';
-			localStorage.setItem(KEY_MOTION, 'off');
+		openBtn?.addEventListener('click', open, { signal });
+		for (const el of document.querySelectorAll('[data-cfg-close]')) {
+			el.addEventListener('click', close, { signal });
 		}
-	});
+		document.addEventListener(
+			'keydown',
+			(e) => {
+				if (e.key === 'Escape') close();
+			},
+			{ signal }
+		);
+
+		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+			el.addEventListener(
+				'click',
+				() => {
+					const value = el.dataset.themeValue!;
+					root.dataset.theme = value;
+					localStorage.setItem(KEY_THEME, value);
+					markActiveTheme();
+				},
+				{ signal }
+			);
+		}
+
+		motion?.addEventListener(
+			'change',
+			() => {
+				if (motion.checked) {
+					root.removeAttribute('data-motion');
+					localStorage.setItem(KEY_MOTION, 'on');
+				} else {
+					root.dataset.motion = 'off';
+					localStorage.setItem(KEY_MOTION, 'off');
+				}
+			},
+			{ signal }
+		);
+	};
+
+	// Run on initial load AND after every Astro view transition.
+	setupConfig();
+	document.addEventListener('astro:page-load', setupConfig);
 </script>

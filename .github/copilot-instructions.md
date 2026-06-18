@@ -5,7 +5,7 @@ This repo is a project-agnostic MCP server core + plugin loader. Full rules live
 
 ## Orient first, cheaply
 
-- If the `mcp-vertex` server is loaded, call **`mcpvertex_overview`** first — it returns
+- If the `mcp-vertex` server is loaded, call **`mcp-vertex_overview`** first — it returns
   the whole map (tools, plugins, workspace) in one low-token call. Don't crawl the
   filesystem to rediscover what `overview` already tells you.
 - **Never re-read a doc whose digest hasn't changed.** `round_context` and the docs

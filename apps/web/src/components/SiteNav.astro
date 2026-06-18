@@ -17,7 +17,7 @@ const sectionHref = (section: string) =>
 	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
 ---
 
-<nav class="nav">
+<nav class="nav" transition:persist transition:name="site-nav">
 	<div class="container nav__inner">
 		<a class="nav__brand" href={homeHref}>
 			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />

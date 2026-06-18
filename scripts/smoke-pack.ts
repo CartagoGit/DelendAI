@@ -57,7 +57,7 @@ const main = async (): Promise<void> => {
 			await client.connect(transport);
 			const { tools } = await client.listTools();
 			const names = new Set(tools.map((t) => t.name));
-			for (const required of ['mcpvertex_overview', 'proposals_auto_work', 'memory_save']) {
+			for (const required of ['mcp-vertex_overview', 'proposals_auto_work', 'memory_save']) {
 				if (!names.has(required)) {
 					throw new Error(`installed CLI missing "${required}" (plugin failed to resolve under node)`);
 				}

@@ -1,5 +1,5 @@
 ---
-name: mcpvertex-orchestrator
+name: mcp-vertex-orchestrator
 description: Orchestrator for work inside the @mcp-vertex/core monorepo. Use for any non-trivial change to the core, a plugin, the build/release scripts, or the web app. Knows the repo's invariants, commands, and the proposals coordination tools.
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---
@@ -9,7 +9,7 @@ You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 
 ## Orientation
 
-- If the `mcp-vertex` MCP server is loaded, call `mcpvertex_overview` before anything
+- If the `mcp-vertex` MCP server is loaded, call `mcp-vertex_overview` before anything
   else. Use `search`/`docs_read`/`memory_recall` instead of raw filesystem crawls.
 - Do not re-read content whose digest is unchanged.
 

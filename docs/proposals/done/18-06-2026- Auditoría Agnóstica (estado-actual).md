@@ -601,15 +601,15 @@ de fuera va a notar que el vendor no dogfooda su propio sistema.
 
 **Lo que debe haber (mínimo para 4/5):**
 
-- `.github/copilot-instructions.md` con la regla “llama `mcpvertex_overview`
+- `.github/copilot-instructions.md` con la regla “llama `mcp-vertex_overview`
   primero; los plugins cargados viven en el MCP; la regla dura de bucles
   es: nunca re-leer docs cuyo digest no cambió”.
-- `.github/agents/mcp-vertex.agent.md` con un slot `mcpvertex-orchestrator`
+- `.github/agents/mcp-vertex.agent.md` con un slot `mcp-vertex-orchestrator`
   que sepa leer `proposals_*` cuando están cargados.
-- `.claude/agents/mcpvertex-orchestrator.md` (el equivalente para Claude
+- `.claude/agents/mcp-vertex-orchestrator.md` (el equivalente para Claude
   Code).
 - 1 skill de “mcp-vertex-budgets” (cómo leer `metrics` y reducir tokens).
-- 1 skill de “mcpvertex-failure-modes” (qué hacer si un tool devuelve
+- 1 skill de “mcp-vertex-failure-modes” (qué hacer si un tool devuelve
   `lock-conflict`, `corrupt-file`, `state-inconsistency`).
 
 ### 3.15 Model-routing / `defaultModel`
