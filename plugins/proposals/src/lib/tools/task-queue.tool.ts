@@ -24,6 +24,7 @@ export const buildTaskQueueRegistration = (
 	options: ITaskQueueToolOptions
 ): IToolRegistration => ({
 	id: 'task_queue',
+	effects: ['write'],
 	summary:
 		'Multi-agent coordination queue: enqueue/dequeue/subscribe/report (waitFor, observe, backpressure).',
 	tags: ['coordination'],

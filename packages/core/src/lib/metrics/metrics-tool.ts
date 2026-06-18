@@ -45,6 +45,8 @@ export const buildMetricsToolRegistration = (
 	id: 'metrics',
 	summary: 'Per-tool call metrics: calls, errors, latency (ms) and response bytes.',
 	tags: ['observability', 'lazy'],
+	// `persist: true` writes a snapshot file; read-only otherwise.
+	effects: ['write'],
 	register: async (server) => {
 		server.registerTool(
 			`${namespacePrefix}_metrics`,

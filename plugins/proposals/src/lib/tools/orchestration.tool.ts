@@ -108,6 +108,7 @@ export const buildDelegateRegistration = (
 	options: IDelegateToolOptions
 ): IToolRegistration => ({
 	id: 'delegate',
+	effects: ['write'],
 	summary:
 		'Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.',
 	tags: ['orchestration', 'coordination'],

@@ -168,6 +168,7 @@ export const buildStateRepairRegistration = (
 	options: IStateToolOptions
 ): IToolRegistration => ({
 	id: 'state_repair',
+	effects: ['write'],
 	summary:
 		'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
 	tags: ['coordination'],

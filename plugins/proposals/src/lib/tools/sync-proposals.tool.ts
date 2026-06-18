@@ -30,6 +30,7 @@ export const buildSyncProposalsRegistration = (
 	options: ISyncProposalsToolOptions
 ): IToolRegistration => ({
 	id: 'sync_proposals',
+	effects: ['write'],
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],

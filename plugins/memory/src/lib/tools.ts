@@ -77,6 +77,7 @@ export const buildMemoryToolRegistrations = (
 	return [
 		{
 			id: 'save',
+			effects: ['write'],
 			summary: 'Save (or update) a titled note with optional tags.',
 			tags: ['memory'],
 			register: async (server) => {
@@ -251,6 +252,7 @@ export const buildMemoryToolRegistrations = (
 		},
 		{
 			id: 'forget',
+			effects: ['write', 'destructive'],
 			summary: 'Delete a note by id.',
 			tags: ['memory'],
 			register: async (server) => {

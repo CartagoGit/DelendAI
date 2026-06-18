@@ -502,8 +502,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   **instalado** por stdio bajo node y verifica que `proposals_*`/`memory_*` resuelven
   (el peer `@cartago-git/mcp-core ^0.1.0` lo satisface el tarball del core). Cableado en
   CI. **M30 completo.** Verificado local: 29 tools servidas desde la instalación.
-- ⬜ **M31 · `riskLevel`/`effects` por tool** (read-only/write/spawn/network/destructive)
-  expuesto en `overview`, para que el host distinga capacidades peligrosas.
+- 🟡 **M31 · `effects` por tool** — `IToolEffect = 'write'|'spawn'|'network'|'destructive'`
+  añadido al contrato (`IToolRegistration.effects`, opcional ⇒ read-only por defecto) y
+  **expuesto en `overview`** por tool. Clasificadas las 17 tools no-read: `write` (proposals
+  authoring/lock/queue/sync/round/names/state_repair/delegate, memory_save, scaffold,
+  metrics-persist), `write+destructive` (memory_forget), `spawn` (quality run/cancel); el
+  resto read-only sin `effects`. Test e2e que verifica que `overview` declara los efectos.
+  ⬜ Falta surfacearlo en la web (badges por tool).
 - ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
   (`frontmatter-parser`, `redactSecrets`), test de concurrencia dedicado para `memory`.
 - ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),

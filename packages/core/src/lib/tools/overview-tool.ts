@@ -1,12 +1,17 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type {
+	IToolEffect,
+	IToolRegistration,
+} from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/** Side effects (M31); absent ⇒ read-only. */
+	readonly effects?: readonly IToolEffect[] | undefined;
 }
 
 export interface IOverviewPlugin {
@@ -55,7 +60,7 @@ export const buildOverviewToolRegistration = (
 						namespacePrefix: z.string(),
 						corePaths: z.object({ cacheDir: z.string(), docsDir: z.string() }).optional(),
 						plugins: z.array(z.union([z.string(), z.object({ name: z.string(), version: z.string().optional(), describe: z.string().optional() })])),
-						tools: z.array(z.union([z.string(), z.object({ name: z.string(), summary: z.string().optional(), tags: z.array(z.string()).optional() })])),
+						tools: z.array(z.union([z.string(), z.object({ name: z.string(), summary: z.string().optional(), tags: z.array(z.string()).optional(), effects: z.array(z.enum(['write', 'spawn', 'network', 'destructive'])).optional() })])),
 						knowledge: z.array(z.union([z.string(), z.object({ id: z.string(), title: z.string() })])),
 						recommendedNextAction: z.string(),
 					}),

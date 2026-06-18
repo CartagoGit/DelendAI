@@ -190,6 +190,7 @@ export const buildScaffoldToolRegistration = (
 	options: IScaffoldToolOptions
 ): IToolRegistration => ({
 	id: 'scaffold',
+	effects: ['write'],
 	summary:
 		'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
 	tags: ['bootstrap'],

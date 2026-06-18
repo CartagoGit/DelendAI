@@ -74,6 +74,7 @@ export interface McpcoreOverviewOutput {
 		name: string;
 		summary?: string;
 		tags?: string[];
+		effects?: Array<"write" | "spawn" | "network" | "destructive">;
 	}>;
 	knowledge: Array<string | {
 		id: string;

@@ -293,6 +293,7 @@ export const buildContinueProposalRegistration = (
 	options: IContinueProposalToolOptions
 ): IToolRegistration => ({
 	id: 'continue_proposal',
+	effects: ['write'],
 	summary:
 		'Next proposal by cascade (mode auto), or a parallel slice plan/claim (modes plan/claim).',
 	tags: ['work'],

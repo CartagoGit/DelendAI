@@ -119,6 +119,7 @@ export const buildCreateProposalRegistration = (
 	options: IAuthoringToolOptions
 ): IToolRegistration => ({
 	id: 'create_proposal',
+	effects: ['write'],
 	summary:
 		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 	tags: ['proposals'],
@@ -245,6 +246,7 @@ export const buildCloseSliceRegistration = (
 	options: IAuthoringToolOptions
 ): IToolRegistration => ({
 	id: 'close_slice',
+	effects: ['write'],
 	summary:
 		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 	tags: ['proposals'],
@@ -355,6 +357,7 @@ export const buildReviewRegistration = (
 	options: IAuthoringToolOptions
 ): IToolRegistration => ({
 	id: 'proposal_review',
+	effects: ['write'],
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],
