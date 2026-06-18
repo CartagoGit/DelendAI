@@ -357,18 +357,26 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ✅ Al hacer hover el icono escala **sin salirse** de la marquesina
   (`overflow-x:clip; overflow-y:visible`) y muestra el nombre (tooltip), sin reflujo.
 - ✅ Suficientes elementos para llenar; ⬜ revisar densidad/velocidad por breakpoint.
+- 🟡 **El usuario reporta que la marquesina "sigue viéndose mal" (18-06)** pese a los
+  cambios estructurales → pendiente de pulido visual fino (contraste de chips, encaje
+  con el ancho real, comportamiento en el primer frame). Verificar en vivo por breakpoint.
 
 **Configuración (persistida en `localStorage`):**
 - ✅ Botón de engranaje → **modal**; **5 temas** (dark/light/midnight/solarized/nord);
   panel de **idiomas con banderas**; toggle de **animación**. ⬜ más opciones de config.
 
 **Idiomas:**
-- ✅ en, es, fr, de, pt, it (traducción completa, incl. plugins por idioma).
-- ⬜ **Muchos más, mínimo los más hablados**: zh (chino), ar (árabe, **RTL**),
-  hi (hindi), ja (japonés), th (tailandés), vi (vietnamita), ru, ko, id, bn…
+- ✅ en, es, **zh, hi, ar (RTL), pt, fr, ja, de, it, vi, th** — **12 idiomas** con
+  traducción completa (incl. plugins por idioma). `astro.config` locales + páginas por
+  locale + `dir="rtl"` para árabe en `Base.astro`.
+- ✅ **Banderas reales (SVG en `public/flags/`), NO emojis** — los emoji de bandera
+  no se renderizan en Windows (salían las letras "GB/ES/CN"); ahora `<img>` por idioma.
 - 🔴 **REGLA DE MANTENIMIENTO:** cada vez que se cree/renombre una tool **o** se
-  actualice la web, hay que **añadir/actualizar TODAS las traducciones**. (Idealmente
-  un check de build que avise de claves faltantes por idioma.)
+  actualice la web, hay que **añadir/actualizar TODAS las traducciones**.
+  ✅ **Implementada como gate:** `apps/web/scripts/check-i18n.ts` falla el build si
+  algún idioma no cubre todas las claves de `en` (o tiene claves obsoletas). Corre en
+  `build` y `build:strict`.
+- ⬜ Ampliables más adelante: ru, ko, id, bn, … (el gate los obligará a estar completos).
 
 **Contenido / textos:**
 - ✅ Sección **Plugins como último campo** (los 10 paquetes + versión + descripción por idioma).
@@ -389,10 +397,85 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 ---
 
-## 8. Scoreboard de las 8 auditorías
+## 7-ter. Tercera ronda agnóstica (18-06) — hallazgos asimilados
+
+> **Tres auditorías independientes y agnósticas del 18-06** (Codex·GPT-5 → 8,4;
+> Agnóstica·GPT-5.4 → "Muy bien"; Agnóstica estado-actual → 8,8). No consultaron
+> las previas; convergen en lo mismo: **el core es excelente; la grieta al 11/10 es
+> plataforma + producto público + dogfooding, no arquitectura.** Lo correcto y
+> verificado se asimila aquí. Estado: ✅ hecho · 🟡 parcial · ⬜ pendiente.
+
+**P0 — correctitud / regresión (cerrado en esta sesión):**
+- ✅ **M21 · `validate` estaba ROJO por lint** — los 12 SVG de banderas
+  (`apps/web/public/flags/*.svg`) disparaban `biome lint/a11y/noSvgWithoutTitle`.
+  **Fix:** Biome excluye `**/public` (assets estáticos no se lintan). `validate` verde
+  (typecheck + lint + 476 tests). *Lo cazó Codex; era regresión de esta misma sesión.*
+
+**P1 — seguridad de rutas (read-only plugins):**
+- ⬜ **M22 · Containment de rutas.** `search` (`roots` → `join(root, userInput)` con
+  `..` escapa del workspace), `docs_list` (no aplica el `within` que sí usa `docs_read`),
+  `deps` (`manifestRel` con `..`). **Fix:** helper único en core
+  `resolveWorkspaceContained(root, rel) → {ok, abs, reason}` aplicado en search/docs/deps
+  + tests de traversal (`..`, rutas absolutas, symlinks). *(3/3 lo señalan; real.)*
+
+**P1 — hermeticidad de secretos:**
+- ⬜ **M23 · `redactSecrets` solo vive en `memory`.** Si un agente guarda una API key en
+  el `body` de una proposal, se persiste tal cual. **Fix:** promover a
+  `core/lib/shared/redact.ts` y aplicarlo en el save de `proposal-document.ts`.
+
+**P2 — contratos / outputSchema:**
+- ⬜ **M24 · Schemas abiertos** `z.object({}).catchall(z.unknown())` en `bootstrap-tool`,
+  `scaffold-tool` y tools complejas de `proposals`; `rules` sin `outputSchema` parejo.
+  **Fix:** cerrar donde el shape es determinista; que `types:generate` falle si una tool
+  pública no declara `outputSchema` (excepción documentada para action-multiplexed).
+
+**P2 — dedupe / calidad interna:**
+- ⬜ **M25 · Command runner compartido** `core/lib/commands/runner.ts` reusado por
+  `git`, `quality` y `proposal-acceptance` (hoy cada uno reimplementa child-process
+  con timeout). Idem `core/lib/shared/walk.ts` para unificar el `walk()` de `search` y `docs`.
+
+**Plataforma / producto (la grieta principal, consenso 3/3):**
+- ⬜ **M26 · Dogfooding del propio repo** — falta `AGENTS.md`,
+  `.github/copilot-instructions.md`, `.github/agents/*.agent.md`, `.claude/agents/` y
+  `skills/`. El proyecto es meta-herramienta para agentes y **no se aplica a sí mismo**.
+  *(Esto absorbe y concreta el viejo pendiente "skills/prompts versionados".)*
+- ⬜ **M27 · Web profunda** — páginas por plugin/tool (con riesgos, opciones, ejemplos),
+  "primeros 5 minutos", `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting,
+  búsqueda interna (pagefind). *(Se cruza con W3 §7-bis.)*
+- ⬜ **M28 · Endurecer `proposals` bajo contención** — circuit-breaker de lock
+  (`steal | fail | waitForNotification` configurable + `lock-contention-budget-exceeded`),
+  stress tests concurrentes, y `await_lock` en `notification` (suscribe+resume → cierra el
+  bucle "wait, don't poll" que el knowledge ya promete).
+
+**Observabilidad / release / tests (P2-P3):**
+- ⬜ **M29 · Métricas persistentes** — snapshots a `.cache/mcp-core/metrics/*.json` +
+  gate de regresión longitudinal entre releases (hoy los counters mueren con el proceso).
+- ⬜ **M30 · Smoke funcional en CI** — lanzar el CLI compilado con `--plugins=standard`
+  y ejecutar una tool real (`overview`); + e2e de instalación desde tarball
+  (`npm pack` → install → `mcp-core --check`). Hoy el smoke solo valida `--check ok`.
+- ⬜ **M31 · `riskLevel`/`effects` por tool** (read-only/write/spawn/network/destructive)
+  expuesto en `overview`, para que el host distinga capacidades peligrosas.
+- ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
+  (`frontmatter-parser`, `redactSecrets`), test de concurrencia dedicado para `memory`.
+- ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),
+  `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
+  `memory` (export/import, stemming ES), `docs` (`docs_search`, árbol jerárquico).
+- ⬜ **M34 · OSS hygiene** — `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, CHANGELOG
+  enlazado con fechas/comparadores, `register()` siempre async en el tipo público.
+
+> **Lectura:** ninguna de las 3 encontró nada FATAL en el código. La única "rojo de
+> verdad" era el `validate` por SVG (ya cerrado). Lo demás es endurecimiento y
+> acabado de plataforma. Camino corto al ~9,5: M22 + M23 + M24 + M26 + M27.
+
+---
+
+## 8. Scoreboard de las 11 auditorías
 
 | Ronda | Revisor | Nota | FATAL señalados |
 |---|---|---|---|
+| 3ª | Agnóstica · estado-actual | 8,8 | ninguno (skills/agentes propios "grave") |
+| 3ª | Agnóstica · Codex GPT-5 | 8,4 | ninguno (`validate` rojo por SVG) |
+| 3ª | Agnóstica · GPT-5.4 | "Muy bien" | ninguno |
 | 2ª | Codex · GPT-5 | 9,1 | ninguno |
 | 2ª | Claude Code · Opus 4.8 | 9,0 | ninguno (TOCTOU mutex como "residual") |
 | 2ª | Antigravity · Gemini 3.5 Flash | 8,9 | mutex race, docs sync |
@@ -402,9 +485,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 | 1ª | Sonnet (por dimensiones) | 8,5 | — |
 | 1ª | Síntesis multi-modelo 15-06 | ~7,3→8,5 | (P0/P1 ya cerrados) |
 
-**Consenso: 8,9 – 9,1 / 10.** Cuatro fixes P0 (M1 mutex, M2 slots, M3 runtime,
-M4 docs) + el cierre del pretty-print (M8) desbloquean la categoría. Lo demás es
-disciplina incremental sobre una arquitectura que los 8 coinciden en calificar de
-referencia. **No hay rediseño en el camino al 11/10 — solo acabados.**
+**Consenso: 8,4 – 9,3 / 10.** Las P0 de las rondas 1ª-2ª (M1 mutex, M2 slots,
+M3 runtime, M4 docs, M8 pretty-print) están cerradas. La 3ª ronda agnóstica
+(que no consultó las previas) baja un poco la nota porque mira la **plataforma y el
+producto público**, no solo el core: su único "rojo" real (`validate` por SVG) ya
+está cerrado en esta sesión (M21). El resto (M22-M34) es endurecimiento + dogfooding
++ web. **Los 11 revisores coinciden: arquitectura de referencia, sin rediseño en el
+camino al 11/10 — solo acabados de plataforma.**
 
 — Auditoría maestra unificada, 16-06-2026. Hallazgos 🔴/🟠 re-verificados contra el código.

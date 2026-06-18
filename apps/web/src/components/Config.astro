@@ -55,7 +55,7 @@ const THEME_ACCENT: Record<string, string> = {
 							href={hrefFor(l.code)}
 							aria-current={l.code === lang ? 'true' : undefined}
 						>
-							<span class="flag">{l.flag}</span>
+							<img class="flag" src={`${base}/flags/${l.country}.svg`} alt="" width="22" height="16" loading="lazy" />
 							{l.label}
 						</a>
 					))

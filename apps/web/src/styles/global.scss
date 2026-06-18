@@ -170,7 +170,10 @@ footer { border-top: 1px solid var(--line); padding: 2rem 0; color: var(--muted)
 .lang-opt { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 8px; border: 1px solid var(--line); color: var(--fg); background: var(--card); }
 .lang-opt:hover { border-color: var(--accent); text-decoration: none; }
 .lang-opt[aria-current='true'] { border-color: var(--accent); }
-.lang-opt .flag { font-size: 1.1rem; }
+.lang-opt .flag {
+	width: 22px; height: 16px; border-radius: 3px; object-fit: cover;
+	flex: 0 0 auto; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+}
 .toggle { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .toggle input { width: 2.6rem; height: 1.5rem; }
 

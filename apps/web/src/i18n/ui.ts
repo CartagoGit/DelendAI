@@ -478,6 +478,9 @@ const th: Dict = {
 
 const dicts: Record<Lang, Dict> = { en, es, fr, de, pt, it, zh, hi, ar, ja, vi, th };
 
+/** Exposed for the i18n completeness gate (`scripts/check-i18n.ts`). */
+export const dictsByLang = dicts;
+
 export const useTranslations = (lang: Lang) => {
 	const dict = dicts[lang] ?? en;
 	return (key: string): string => dict[key] ?? en[key] ?? key;
