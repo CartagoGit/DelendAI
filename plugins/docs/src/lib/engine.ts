@@ -1,5 +1,6 @@
+import { resolveWorkspaceContained } from '@cartago-git/mcp-core/public';
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { join, relative, resolve, sep } from 'node:path';
+import { join, relative, sep } from 'node:path';
 
 /** One catalogued doc. `path` is relative to the workspace root. */
 export interface IDocEntry {
@@ -106,7 +107,11 @@ export const listDocs = async (
 
 	for (const root of roots) {
 		if (truncated) break;
-		const abs = join(workspaceRootAbs, root);
+		// Containment: `docs_list` must apply the same guard as `docs_read` — a
+		// root that escapes the workspace (`..`, absolute) is skipped.
+		const contained = resolveWorkspaceContained(workspaceRootAbs, root);
+		if (!contained.ok) continue;
+		const abs = contained.abs;
 		try {
 			(await stat(abs)).isDirectory() ? await walk(abs) : await addFile(abs);
 		} catch {
@@ -136,9 +141,9 @@ export const readDoc = async (
 	const miss = (): IDocContent => ({
 		path: relPath, title: relPath, content: '', truncated: false, found: false,
 	});
-	const abs = resolve(workspaceRootAbs, relPath);
-	const within = abs === workspaceRootAbs || abs.startsWith(workspaceRootAbs + sep);
-	if (!within) return miss();
+	const contained = resolveWorkspaceContained(workspaceRootAbs, relPath);
+	if (!contained.ok) return miss();
+	const abs = contained.abs;
 	let raw: string;
 	try {
 		if (!(await stat(abs)).isFile()) return miss();

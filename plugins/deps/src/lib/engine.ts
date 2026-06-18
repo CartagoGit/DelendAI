@@ -1,3 +1,4 @@
+import { resolveWorkspaceContained } from '@cartago-git/mcp-core/public';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -33,9 +34,12 @@ const readManifest = async (
 	rootAbs: string,
 	manifestRel: string
 ): Promise<{ found: boolean; manifest: IManifest }> => {
-	const abs = join(rootAbs, manifestRel);
+	// Containment: the manifest path must stay inside the workspace — a
+	// `manifest: '../../etc/...'` must not read outside what the host exposes.
+	const contained = resolveWorkspaceContained(rootAbs, manifestRel);
+	if (!contained.ok) return { found: false, manifest: {} };
 	try {
-		const parsed = JSON.parse(await readFile(abs, 'utf8')) as IManifest;
+		const parsed = JSON.parse(await readFile(contained.abs, 'utf8')) as IManifest;
 		return { found: true, manifest: parsed ?? {} };
 	} catch {
 		return { found: false, manifest: {} };
