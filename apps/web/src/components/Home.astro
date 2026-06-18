@@ -31,9 +31,9 @@ const featured = packages
 	<div class="container">
 		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-vertex" />
 		<a class="hero__pkg" href="https://www.npmjs.com/package/@mcp-vertex/core">@mcp-vertex</a>
-		<h1 transition:name="page-title" transition:animate="fade">{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
-		<p class="hero__sub">{t('hero.subheader')}</p>
-		<p class="tagline">{t('hero.tagline')}</p>
+		<h1 transition:name="page-title" transition:animate="fade">{t.hero.title.a}<span class="grad">{t.hero.title.b}</span>{t.hero.title.c}</h1>
+		<p class="hero__sub">{t.hero.subheader}</p>
+		<p class="tagline">{t.hero.tagline}</p>
 		<div class="ctas">
 			<a class="btn btn--primary" href={sectionHref('install')}>{t('hero.ctaInstall')}</a>
 			<a class="btn btn--ghost" href={sectionHref('tools')}>{t('hero.ctaTools')}</a>
@@ -43,16 +43,16 @@ const featured = packages
 </header>
 
 <section class="marquees container">
-	<Marquee items={runtimes} label={t('marquee.runtimes')} />
-	<Marquee items={clients} label={t('marquee.clients')} reverse />
+	<Marquee items={runtimes} label={t.marquee.runtimes} />
+	<Marquee items={clients} label={t.marquee.clients} reverse />
 </section>
 
 <ConceptSection lang={lang} />
 
 <section class="section section--featured">
 	<div class="container">
-		<h2>{t('plugins.title')}</h2>
-		<p class="lead">{t('plugins.lead')}</p>
+		<h2>{t.plugins.title}</h2>
+		<p class="lead">{t.plugins.lead}</p>
 		<div class="featured-grid">
 			{featured.map((pkg) => (
 				<a class="pkg" href={pluginHref(shortName(pkg.name))}>
@@ -66,11 +66,11 @@ const featured = packages
 			))}
 		</div>
 		<p class="section__more">
-			<a href={sectionHref('plugins')}>{t('plugins.title')} →</a>
+			<a href={sectionHref('plugins')}>{t.plugins.title} →</a>
 			·
-			<a href={sectionHref('tools')}>{t('tools.title')} →</a>
+			<a href={sectionHref('tools')}>{t.tools.title} →</a>
 			·
-			<a href={sectionHref('prompts')}>{t('nav.prompts')} →</a>
+			<a href={sectionHref('prompts')}>{t.nav.prompts} →</a>
 		</p>
 	</div>
 </section>

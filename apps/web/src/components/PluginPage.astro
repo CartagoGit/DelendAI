@@ -35,9 +35,9 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 <section class="subhero">
 	<div class="container">
 		<nav class="subhero__crumb" aria-label="breadcrumb">
-			<a href={homeHref}>{t('nav.concept')}</a>
+			<a href={homeHref}>{t.nav.concept}</a>
 			<span aria-hidden="true">›</span>
-			<a href={pluginsHref}>{t('nav.plugins')}</a>
+			<a href={pluginsHref}>{t.nav.plugins}</a>
 			<span aria-hidden="true">›</span>
 			<span aria-current="page"><code>{title}</code></span>
 		</nav>
@@ -45,11 +45,11 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 		<p class="subhero__lead">{description}</p>
 		<div class="subhero__meta">
 			{pkg && <span><b>v{pkg.version}</b></span>}
-			<span><b>{tools.length}</b>{t('pluginpage.tools')}</span>
+			<span><b>{tools.length}</b>{t.pluginpage.tools}</span>
 		</div>
 		<div class="subhero__ctas">
-			<a class="btn btn--primary" href={`${base}/install`}>{t('pluginpage.install')} →</a>
-			<a class="btn btn--ghost" href={pluginsHref}>← {t('nav.plugins')}</a>
+			<a class="btn btn--primary" href={`${base}/install`}>{t.pluginpage.install} →</a>
+			<a class="btn btn--ghost" href={pluginsHref}>← {t.nav.plugins}</a>
 			<a class="btn btn--ghost" href={repo} rel="external">GitHub ↗</a>
 		</div>
 	</div>
@@ -57,7 +57,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 
 <section class="section">
 	<div class="container">
-		<h2>{t('pluginpage.install')}</h2>
+		<h2>{t.pluginpage.install}</h2>
 		<div class="install__cmd-grid">
 			<div class="install__cmd-card">
 				<span class="install__cmd-label">bun</span>
@@ -69,7 +69,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 			</div>
 		</div>
 
-		<h2>{t('pluginpage.tools')}</h2>
+		<h2>{t.pluginpage.tools}</h2>
 		<div class="tools-grid">
 			{tools.map((tool) => (
 				<div class="tool">

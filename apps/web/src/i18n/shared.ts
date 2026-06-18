@@ -196,7 +196,7 @@ const walkPath = (dict: unknown, path: ReadonlyArray<string>): string | undefine
  * visible at runtime rather than swallowed.
  *
  * Accepts both the variadic form (`t('nav', 'concept')`) and the dot-string
- * form (`t('nav.concept')`); the dot-string form is kept for one release so the
+ * form (`t.nav.concept`); the dot-string form is kept for one release so the
  * migration of legacy `.astro` pages stays low-ceremony.
  */
 export const makeTranslator = (dict: LangDict, fallback: LangDict) => {

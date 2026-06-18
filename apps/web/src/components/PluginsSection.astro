@@ -17,8 +17,8 @@ const pluginHref = (slug: string) =>
 
 <section id="plugins" class="section">
 	<div class="container">
-		<h2>{t('plugins.title')}</h2>
-		<p class="lead">{t('plugins.lead')}</p>
+		<h2>{t.plugins.title}</h2>
+		<p class="lead">{t.plugins.lead}</p>
 		{
 			packages.map((pkg) => (
 				<a class="pkg" href={pluginHref(shortName(pkg.name))}>
