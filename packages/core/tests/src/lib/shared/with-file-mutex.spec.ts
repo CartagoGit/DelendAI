@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { withFileMutex } from '@cartago-git/mcp-core/public';
+import { LockContentionError, withFileMutex } from '@cartago-git/mcp-core/public';
 
 describe('withFileMutex — cross-process critical section', () => {
 	let dir = '';
@@ -16,6 +16,41 @@ describe('withFileMutex — cross-process critical section', () => {
 	});
 	afterEach(() => {
 		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('onContention:fail throws LockContentionError on a live holder instead of stealing (M28)', async () => {
+		writeFileSync(target, '{}');
+		// Simulate a live holder: a fresh sidecar that is NOT stale.
+		const lockPath = `${target}.mutex`;
+		writeFileSync(lockPath, `${process.pid}\n${Date.now()}\nmanual`);
+
+		let ran = false;
+		await expect(
+			withFileMutex(
+				target,
+				async () => {
+					ran = true;
+				},
+				{ onContention: 'fail', timeoutMs: 120, staleMs: 30_000, pollMs: 20 }
+			)
+		).rejects.toBeInstanceOf(LockContentionError);
+		expect(ran).toBe(false);
+		// The live holder's lock was left intact (not stolen).
+		expect(existsSync(lockPath)).toBe(true);
+	});
+
+	it('default (steal) still reclaims a live lock past the timeout', async () => {
+		writeFileSync(target, '{}');
+		writeFileSync(`${target}.mutex`, `${process.pid}\n${Date.now()}\nmanual`);
+		let ran = false;
+		await withFileMutex(
+			target,
+			async () => {
+				ran = true;
+			},
+			{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 }
+		);
+		expect(ran).toBe(true);
 	});
 
 	it('serializes concurrent read → mutate → write (no lost updates)', async () => {
