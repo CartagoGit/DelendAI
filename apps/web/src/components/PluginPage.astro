@@ -43,29 +43,6 @@ const description = t(`plugin.${slug}`);
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
 
-<section class="subhero">
-	<div class="container">
-		<nav class="subhero__crumb" aria-label="breadcrumb">
-			<a href={homeHref}>{t.nav.concept}</a>
-			<span aria-hidden="true">›</span>
-			<a href={pluginsHref}>{t.nav.plugins}</a>
-			<span aria-hidden="true">›</span>
-			<span aria-current="page"><code>{title}</code></span>
-		</nav>
-		<h1 transition:name="page-title" transition:animate="fade"><code>{title}</code></h1>
-		<p class="subhero__lead">{description}</p>
-		<div class="subhero__meta">
-			{pkg && <span><b>v{pkg.version}</b></span>}
-			<span><b>{tools.length}</b>{t.pluginpage.tools}</span>
-		</div>
-		<div class="subhero__ctas">
-			<a class="btn btn--primary" href={`${base}/install`}>{t.pluginpage.install} →</a>
-			<a class="btn btn--ghost" href={pluginsHref}>← {t.nav.plugins}</a>
-			<a class="btn btn--ghost" href={repo} rel="external">GitHub ↗</a>
-		</div>
-	</div>
-</section>
-
 <section class="section">
 	<div class="container">
 		<h2>{t.pluginpage.install}</h2>

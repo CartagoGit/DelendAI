@@ -52,7 +52,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	</head>
 	<body>
 		<SiteNav lang={lang} />
-		<main id="main"><slot /></main>
+		<main id="main" transition:animate="fade"><slot /></main>
 		<SiteFooter lang={lang} />
 		<Config lang={lang} />
 	</body>
