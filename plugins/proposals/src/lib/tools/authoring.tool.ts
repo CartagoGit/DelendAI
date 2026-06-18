@@ -22,6 +22,11 @@ import {
 	validateClaim,
 } from '../swarm/proposal-slice-plan';
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
+import {
+	parseReviewState,
+	renderReviewLines,
+	reviewTransition,
+} from '../swarm/proposal-review';
 
 export interface IAuthoringToolOptions {
 	readonly namespacePrefix: string;
@@ -331,6 +336,149 @@ export const buildCloseSliceRegistration = (
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					closed: true,
+					lockReleased,
+				});
+			}
+		);
+	},
+});
+
+/**
+ * `proposal_review` — peer-review loop for a slice (M35). An implementer
+ * `submit`s a finished slice for review (it is NOT done yet); a DIFFERENT
+ * agent `approve`s it (→ done + lock released) or `request_changes` with an
+ * objection (→ reworkable, lock released). The fixer re-`submit`s and another
+ * agent reviews the fix — the loop repeats until a reviewer has no objection.
+ * `status` reads the current review state without changing it.
+ */
+export const buildReviewRegistration = (
+	options: IAuthoringToolOptions
+): IToolRegistration => ({
+	id: 'proposal_review',
+	summary:
+		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
+	tags: ['proposals'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_proposal_review`,
+			{
+				description:
+					'Peer-review loop for a slice. action=submit: an implementer marks a finished slice ready for review (not done yet). action=approve: a DIFFERENT agent verifies and approves it → slice is set done + lock released. action=request_changes (note required): a different agent records an objection → slice becomes reworkable + lock released; the fixer re-submits and another agent reviews the fix. action=status: read current state. Enforces reviewer ≠ implementer (independent verification).',
+				inputSchema: z.object({
+					proposalId: z.string(),
+					sliceId: z.string(),
+					action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+					agent: z.string().min(1),
+					note: z.string().optional(),
+				}),
+				outputSchema: z.object({
+					ok: z.literal(true),
+					proposalId: z.string(),
+					sliceId: z.string(),
+					action: z.string(),
+					status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
+					implementer: z.string().nullable(),
+					reviewer: z.string().nullable(),
+					rounds: z.array(
+						z.object({
+							verdict: z.enum(['requested_changes', 'approved']),
+							agent: z.string(),
+							note: z.string(),
+						})
+					),
+					lockReleased: z.boolean(),
+				}),
+			},
+			async (args: {
+				proposalId: string;
+				sliceId: string;
+				action: 'submit' | 'approve' | 'request_changes' | 'status';
+				agent: string;
+				note?: string | undefined;
+			}) => {
+				const index = await readJsonOrNull<{
+					proposals: Array<{ id: string; file: string }>;
+				}>(options.indexPathAbs);
+				if (index === null) {
+					return toolError('proposal index not found', 'Run sync_proposals first.');
+				}
+				const entry = index.proposals.find(
+					(p) => p.id === args.proposalId || p.id.startsWith(`${args.proposalId}-`)
+				);
+				if (entry === undefined) {
+					return toolError(`proposal "${args.proposalId}" not in index`, 'Pass an existing proposalId.');
+				}
+				const docPath = join(dirname(options.indexPathAbs), entry.file);
+				const md = await readTextOrNull(docPath);
+				if (md === null) return toolError(`proposal file missing: ${docPath}`);
+
+				const blockRe = new RegExp(
+					`(^### ${args.sliceId}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
+					'm'
+				);
+				const m = md.match(blockRe);
+				if (m === null) {
+					return toolError(
+						`slice "${args.sliceId}" not found in ${entry.file}`,
+						'Call proposal_board to list slices.'
+					);
+				}
+				const body = m[2] ?? '';
+				const state = parseReviewState(body);
+
+				if (args.action === 'status') {
+					return toolOk({
+						proposalId: entry.id,
+						sliceId: args.sliceId,
+						action: 'status',
+						status: state.status,
+						implementer: state.implementer,
+						reviewer: state.reviewer,
+						rounds: state.rounds,
+						lockReleased: false,
+					});
+				}
+
+				const result = reviewTransition(state, args.action, args.agent, args.note ?? '');
+				if (!result.ok || result.next === undefined) {
+					return toolError(result.reason ?? 'invalid review transition');
+				}
+				const next = result.next;
+
+				// Rewrite the slice block: replace the review lines, and on approval
+				// also flip `- status: done`.
+				let block = body.replace(/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm, '');
+				block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
+				if (next.status === 'done') {
+					block = /^[-*]\s*status:/m.test(block)
+						? block.replace(/^[-*]\s*status:.*$/m, '- status: done')
+						: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+				}
+				const updated = md.replace(blockRe, `${m[1]}${block}`);
+				await writeFileAtomic(docPath, updated);
+
+				// approve/request_changes free the slice (done, or reworkable).
+				let lockReleased = false;
+				if (next.status === 'done' || next.status === 'changes_requested') {
+					await runAgentLockEngine(
+						{ action: 'release', task_id: args.sliceId },
+						{ lockPath: options.lockPathAbs, toolName: `${options.namespacePrefix}_agent_lock` }
+					);
+					lockReleased = true;
+				}
+				await syncProposalRegistry(
+					options.workspaceRoot,
+					options.layout,
+					options.extraFolders ?? []
+				);
+				return toolOk({
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					action: args.action,
+					status: next.status,
+					implementer: next.implementer,
+					reviewer: next.reviewer,
+					rounds: next.rounds,
 					lockReleased,
 				});
 			}

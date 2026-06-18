@@ -73,6 +73,7 @@ export type { IDelegateToolOptions } from '../lib/tools/orchestration.tool';
 export {
 	buildCreateProposalRegistration,
 	buildCloseSliceRegistration,
+	buildReviewRegistration,
 	buildProposalBoardRegistration,
 } from '../lib/tools/authoring.tool';
 export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';

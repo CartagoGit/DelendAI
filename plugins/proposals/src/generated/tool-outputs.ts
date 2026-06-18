@@ -100,6 +100,22 @@ export interface ProposalsProposalBoardOutput {
 	}>;
 }
 
+export interface ProposalsProposalReviewOutput {
+	ok: true;
+	proposalId: string;
+	sliceId: string;
+	action: string;
+	status: "none" | "in_review" | "changes_requested" | "done";
+	implementer: string | null;
+	reviewer: string | null;
+	rounds: Array<{
+		verdict: "requested_changes" | "approved";
+		agent: string;
+		note: string;
+	}>;
+	lockReleased: boolean;
+}
+
 export interface ProposalsRoundContextOutput {
 	[key: string]: unknown;
 }
@@ -150,6 +166,7 @@ export interface ProposalsToolOutputs {
 	"proposals_get_proposal_workflow": ProposalsGetProposalWorkflowOutput;
 	"proposals_plan": ProposalsPlanOutput;
 	"proposals_proposal_board": ProposalsProposalBoardOutput;
+	"proposals_proposal_review": ProposalsProposalReviewOutput;
 	"proposals_round_context": ProposalsRoundContextOutput;
 	"proposals_state_health": ProposalsStateHealthOutput;
 	"proposals_state_repair": ProposalsStateRepairOutput;
