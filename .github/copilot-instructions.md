@@ -24,7 +24,7 @@ This repo is a project-agnostic MCP server core + plugin loader. Full rules live
 
 - `bun run validate` (typecheck + lint + tests) is green. Never leave it red.
 - Conventional Commits (`fix:`/`feat:`/`feat!:`) — versioning is automatic on `main`.
-- Touched a tool? Keep its `outputSchema`. Touched site copy? Add ALL translations.
+- Touched a tool? Keep its `outputSchema`.
 
 ## Invariants you must not break
 

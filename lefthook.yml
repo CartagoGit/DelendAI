@@ -15,6 +15,9 @@ front_globs: &front_globs >-
   apps/web/scripts/**/*.{ts,mjs,cjs,json}
   apps/web/astro.config.mjs
 
+# Glob for SCSS files staged for commit — used by the lint:scss-staged hook.
+scss_globs: &scss_globs "apps/web/src/**/*.scss"
+
 pre-commit:
   parallel: true
   commands:
@@ -33,6 +36,15 @@ pre-commit:
       run: bun x @biomejs/biome format --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
 
+    # Validate BEM + nested SCSS rules on staged SCSS files.  Fails the
+    # commit if any selector violates the convention, so violations are
+    # caught at commit time instead of at `bun run validate` / CI.
+    # Skips silently when no SCSS files are staged.
+    lint-scss-staged:
+      glob_filter: *scss_globs
+      run: bun run lint:scss
+      stage_fixed: false
+
 pre-push:
   parallel: false
   commands:
@@ -42,6 +54,9 @@ pre-push:
       run: bun run format:all:check
     format-check-web:
       run: bun run format:web:check
+    # Full-site SCSS BEM lint (matches what `bun run validate` runs in CI).
+    lint-scss-all:
+      run: bun run lint:scss
 
 # Manual hooks (run with `lefthook run <name>`).
 format_web:
