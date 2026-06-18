@@ -6,6 +6,11 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 - **[README-MCP-CORE.md](./docs/README-MCP-CORE.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
 - **[PLUGINS-MCP-CORE.md](./docs/PLUGINS-MCP-CORE.md)** — how to create plugins.
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — layers, contracts, request flow,
+  invariants (with a diagram).
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** · **[SECURITY.md](./SECURITY.md)** ·
+  **[AGENTS.md](./AGENTS.md)** — how to contribute, report vulnerabilities, and the
+  rules agents follow.
 
 ## Layout
 
