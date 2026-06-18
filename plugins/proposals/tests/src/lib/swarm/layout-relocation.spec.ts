@@ -31,7 +31,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 	};
 
 	it('syncProposalRegistry writes the index under the custom docs root', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
+		const layout = buildSwarmPaths('.cache/relocated', 'docs/relocated');
 		writeFileEnsured(
 			join(root, layout.proposalsDir, 'p01-demo.md'),
 			['---', 'id: p01', 'type: feature', 'status: pending', '---', '# Demo'].join(
@@ -43,7 +43,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 
 		// Index lands under the relocated docs root, NOT under docs/proposals.
 		expect(result.indexPath).toBe(join(root, layout.proposalIndexFile));
-		expect(existsSync(join(root, 'docs/proposals/index.json'))).toBe(false);
+		expect(existsSync(join(root, 'docs/mcp-vertex/proposals/index.json'))).toBe(false);
 		const index = JSON.parse(
 			readFileSync(join(root, layout.proposalIndexFile), 'utf8')
 		);
@@ -51,7 +51,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 	});
 
 	it('collectRoundContextSnapshot reads the lock under the custom cache root', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
+		const layout = buildSwarmPaths('.cache/relocated', 'docs/relocated');
 		writeFileEnsured(
 			join(root, layout.lockFile),
 			JSON.stringify({
@@ -73,7 +73,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 
 	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (Affairs back-compat)', async () => {
 		writeFileEnsured(
-			join(root, 'docs/proposals/p02-default.md'),
+			join(root, 'docs/mcp-vertex/proposals/p02-default.md'),
 			['---', 'id: p02', 'type: feature', 'status: pending', '---', '# Def'].join(
 				'\n'
 			)
@@ -81,6 +81,6 @@ describe('F3 — engines honor a relocated path layout', () => {
 
 		const result = await syncProposalRegistry(root);
 
-		expect(result.indexPath).toBe(join(root, 'docs/proposals/index.json'));
+		expect(result.indexPath).toBe(join(root, 'docs/mcp-vertex/proposals/index.json'));
 	});
 });
