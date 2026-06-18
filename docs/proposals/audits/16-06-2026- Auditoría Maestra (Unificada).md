@@ -623,3 +623,41 @@ está cerrado en esta sesión (M21). El resto (M22-M34) es endurecimiento + dogf
 camino al 11/10 — solo acabados de plataforma.**
 
 — Auditoría maestra unificada, 16-06-2026. Hallazgos 🔴/🟠 re-verificados contra el código.
+
+---
+
+## 9. Sesión 18-06 (tarde) — rename `mcp-project` + `agent_worktree` + auto-hospedaje
+
+- **✅ M41 · Prefijo de tools `mcpcore_` → `mcpvertex_`** — el usuario señaló que tras
+  el rebrand a `@mcp-vertex` el prefijo técnico debía seguirlo (override consciente de
+  la decisión previa de mantenerlo, que era nuestra, no del usuario). Renombrado en
+  tools, tipos públicos `IMcpCore*`→`IMcpVertex*` y SDK de tipos generado. Breaking
+  change. 525/525 tests, build, smoke y smoke:pack verdes.
+- **✅ M42 · El artefacto del bootstrap pasa de "mcp-server" a "mcp-project"** —
+  `create_server`/`plan_mcp_server` → `create_project`/`plan_mcp_project`;
+  `serverPackageName`→`projectPackageName`; rutas generadas `libs/mcp-server/*` →
+  `libs/mcp-project/*`; flags `--mcp-server-create/-tests` →
+  `--mcp-project-create/-tests`. No toca `createMcpServer` (función real de protocolo)
+  ni la detección de servidores de terceros. 525/525 tests verdes.
+- **✅ M43 · `agent_worktree` (proposals)** — nueva tool (`create`/`list`/`remove`)
+  que aísla a cada agente concurrente en su propio `git worktree` + rama
+  `agent/<nombre>`, motivada por una colisión real detectada en esta misma sesión
+  (dos agentes/sesiones distintas comiteando sobre el mismo `.git/index` se
+  intercalaron commits). 11 tests nuevos (engine con runner inyectado, sin git real).
+  *Pendiente de adopción:* es una herramienta disponible, no un mecanismo forzado —
+  cada agente debe llamarla al empezar sesión si comparte repo con otro.
+- **🟡 M44 · Auto-hospedaje: ¿debe mcp-vertex generarse su propio `mcp-project`?** —
+  el usuario preguntó si, ya que este repo se auto-sirve vía `.mcp.json`
+  (`--preset=swarm`), debería también pasar por su propio bootstrap. Verificado
+  ejecutando `analyzeProject`+`recommendServerPlan` contra este mismo repo: el
+  análisis detecta correctamente `hasMcpServer:true` y devuelve la nota
+  *"this project already has an MCP server: prefer adding the recommended tools to
+  it over scaffolding a new one"* — es decir, el propio bootstrap desaconseja
+  duplicar un host aquí. Lo que sí falta para "trabajar perfectamente sobre sí
+  mismo": este repo lanza su servidor por **CLI + preset** (`.mcp.json`), no por un
+  `host-config.ts` con `extraTools`, así que no tiene forma de añadirse tools
+  *propias* (p. ej. un escáner de referencias `mcp-core` obsoletas — lo que hice a
+  mano por grep varias veces esta sesión). **Decisión pendiente del usuario:**
+  ¿migrar `.mcp.json` de este repo a un `host-config.ts` propio con 1-2 `extraTools`
+  específicas (ej. `rename_audit`), o queda como está (CLI+preset, sin tools propias)?
+  No implementado — análogo a p99, dejado para decidir.
