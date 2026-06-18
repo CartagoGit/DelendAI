@@ -57,14 +57,14 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 	it('lists the core + plugin tools over the protocol', async () => {
 		const { tools } = await client.listTools();
 		const names = tools.map((t) => t.name);
-		expect(names).toContain('mcpcore_overview');
+		expect(names).toContain('mcpvertex_overview');
 		expect(names).toContain('memory_save');
 		expect(names).toContain('memory_recall');
 	});
 
 	it('overview (callTool) maps the loaded memory plugin', async () => {
 		const res = await client.callTool({
-			name: 'mcpcore_overview',
+			name: 'mcpvertex_overview',
 			arguments: {},
 		});
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
@@ -107,13 +107,13 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 	it('validates core meta-tool outputSchemas over the protocol (N16)', async () => {
 		// A wrong outputSchema would make the SDK throw on these calls.
 		const vm = await client.callTool({
-			name: 'mcpcore_get_validation_matrix',
+			name: 'mcpvertex_get_validation_matrix',
 			arguments: {},
 		});
 		expect((vm.structuredContent as { scopes: unknown }).scopes).toBeDefined();
 
 		const kn = await client.callTool({
-			name: 'mcpcore_knowledge',
+			name: 'mcpvertex_knowledge',
 			arguments: {},
 		});
 		expect(
@@ -123,7 +123,7 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 
 	it('reports an unknown tool as a protocol error', async () => {
 		const res = await client.callTool({
-			name: 'mcpcore_does_not_exist',
+			name: 'mcpvertex_does_not_exist',
 			arguments: {},
 		});
 		expect(res.isError).toBe(true);

@@ -52,7 +52,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Tool metrics** (M12): an in-process metrics registry instruments every tool
   handler (calls, errors, total/max latency, response bytes) and a
   `<prefix>_metrics` meta-tool reports the snapshot (`reset:true` to zero it).
-  Opt-in for programmatic hosts via `IMcpCoreHostConfig.metricsRegistry`; the CLI
+  Opt-in for programmatic hosts via `IMcpVertexHostConfig.metricsRegistry`; the CLI
   wires it automatically. Quantifies tool cost / token savings.
 - **Memory hardening** (M11): `memory_save` auto-redacts high-confidence
   secrets (API keys, tokens, PEM private keys, JWTs, `key=value` assignments)

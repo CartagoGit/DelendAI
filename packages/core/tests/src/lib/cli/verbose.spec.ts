@@ -6,7 +6,7 @@ import {
 } from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import type { IPluginLoadResult } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpCoreHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
 
 const args = parseCliArgs(
 	['--plugins=demo,other', '--workspace=/ws', '--cacheDir=.c', '--docsDir=.d'],
@@ -23,16 +23,16 @@ const loadResult = {
 
 const config = {
 	metadata: { name: 's', version: '0' },
-	namespacePrefix: 'mcpcore',
+	namespacePrefix: 'mcpvertex',
 	extraTools: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
 	extraPrompts: [{ id: 'p' }],
 	extraResources: [],
-} as unknown as IMcpCoreHostConfig;
+} as unknown as IMcpVertexHostConfig;
 
 describe('--verbose diagnostics (N23)', () => {
 	it('buildAssemblyDiagnostics snapshots plugins, counts and order', () => {
 		const d = buildAssemblyDiagnostics(args, loadResult, config, [
-			'mcpcore_overview',
+			'mcpvertex_overview',
 			'demo_x',
 		]);
 		expect(d.workspace).toBe('/ws');
@@ -44,7 +44,7 @@ describe('--verbose diagnostics (N23)', () => {
 		]);
 		expect(d.plugins.errors).toEqual(['boom']);
 		expect(d.counts).toEqual({ tools: 3, prompts: 1, resources: 0 });
-		expect(d.registrationOrder).toEqual(['mcpcore_overview', 'demo_x']);
+		expect(d.registrationOrder).toEqual(['mcpvertex_overview', 'demo_x']);
 	});
 
 	it('formatVerbose renders stderr lines with version + counts + order', () => {

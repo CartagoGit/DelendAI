@@ -17,12 +17,12 @@ import { z } from 'zod';
  * }
  * ```
  */
-export interface IMcpCorePluginConfig {
+export interface IMcpVertexPluginConfig {
 	readonly prefix?: string;
 	readonly options?: Readonly<Record<string, unknown>>;
 }
 
-export interface IMcpCoreConfigFile {
+export interface IMcpVertexConfigFile {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
 	readonly cacheDir?: string;
@@ -33,7 +33,7 @@ export interface IMcpCoreConfigFile {
 			Record<string, ReadonlyArray<{ command: string; expect: string }>>
 		>;
 	};
-	readonly plugins?: Readonly<Record<string, IMcpCorePluginConfig>>;
+	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
 }
 
 /** Default config file name looked up at the workspace root. */
@@ -105,12 +105,12 @@ export const diagnoseConfigFile = (
  * (`undefined`) or invalid JSON yields an empty config, so a typo in
  * the file never crashes the server — it just contributes nothing.
  */
-export const parseConfigFile = (raw: string | undefined): IMcpCoreConfigFile => {
+export const parseConfigFile = (raw: string | undefined): IMcpVertexConfigFile => {
 	if (raw === undefined) return {};
 	try {
 		const value = JSON.parse(raw) as unknown;
 		if (value && typeof value === 'object' && !Array.isArray(value)) {
-			return value as IMcpCoreConfigFile;
+			return value as IMcpVertexConfigFile;
 		}
 		return {};
 	} catch {
@@ -120,6 +120,6 @@ export const parseConfigFile = (raw: string | undefined): IMcpCoreConfigFile => 
 
 /** Resolve the per-plugin entry, never undefined. */
 export const pluginConfigFor = (
-	config: IMcpCoreConfigFile,
+	config: IMcpVertexConfigFile,
 	pluginName: string
-): IMcpCorePluginConfig => config.plugins?.[pluginName] ?? {};
+): IMcpVertexPluginConfig => config.plugins?.[pluginName] ?? {};

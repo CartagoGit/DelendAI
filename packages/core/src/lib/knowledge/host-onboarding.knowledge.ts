@@ -3,7 +3,7 @@ import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interfac
 /**
  * How a NEW project adopts mcp-vertex. This is the npm-readiness doc
  *: everything a host must provide lives in
- * `IMcpCoreHostConfig`; nothing project-specific hides inside the
+ * `IMcpVertexHostConfig`; nothing project-specific hides inside the
  * framework.
  */
 export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
@@ -12,7 +12,7 @@ export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 	body: [
 		'# Host onboarding',
 		'',
-		'1. Add the package and create a host-config module that returns an `IMcpCoreHostConfig`:',
+		'1. Add the package and create a host-config module that returns an `IMcpVertexHostConfig`:',
 		'   - `metadata`: name/version/description of YOUR server.',
 		'   - `namespacePrefix`: your tool prefix (e.g. `myproj` → `myproj_*`).',
 		'   - `workspace`: `createWorkspacePathProvider(<workspace root>)`.',

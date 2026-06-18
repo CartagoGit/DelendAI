@@ -19,7 +19,7 @@ import { recommendServerPlan } from './recommend-plan';
 
 export interface IBootstrapToolOptions {
 	readonly workspace: IWorkspacePathProvider;
-	/** Namespace for the bootstrap tools, e.g. `mcpcore`. */
+	/** Namespace for the bootstrap tools, e.g. `mcpvertex`. */
 	readonly namespacePrefix: string;
 	/** Override the reader (tests); default reads from the workspace. */
 	readonly reader?: IFileReader;

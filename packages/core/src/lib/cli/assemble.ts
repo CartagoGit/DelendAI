@@ -10,7 +10,7 @@ import {
 } from '../bootstrap/index';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
-import type { IMcpCoreHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
 	IPromptRegistration,
 	IResourceRegistration,
@@ -26,7 +26,7 @@ import { loadPlugins } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { parseCliArgs } from '../plugins/parse-cli-args';
-import type { IMcpCoreCliArgs } from '../plugins/parse-cli-args';
+import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { createMcpServer } from '../server/create-mcp-server';
 import { joinRel } from '../shared/paths';
@@ -46,7 +46,7 @@ import type { IStatusCollector } from '../contracts/interfaces/status-collector.
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 
 export interface IAssembledCliConfig {
-	readonly config: IMcpCoreHostConfig;
+	readonly config: IMcpVertexHostConfig;
 	readonly loadResult: IPluginLoadResult;
 	/** Config-file diagnostic from the SAME read used to assemble (so the
 	 *  doctor doesn't read the file twice). [N21] */
@@ -72,7 +72,7 @@ export interface IAssembleCliDeps {
  * testable.
  */
 export const assembleCliConfig = async (
-	args: IMcpCoreCliArgs,
+	args: IMcpVertexCliArgs,
 	deps: IAssembleCliDeps = {}
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
@@ -100,7 +100,7 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
-	const corePrefix = args.namespacePrefix ?? 'mcpcore';
+	const corePrefix = args.namespacePrefix ?? 'mcpvertex';
 
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
@@ -246,7 +246,7 @@ export const assembleCliConfig = async (
 		buildStartPromptRegistration(corePrefix, () => recommendedNextAction)
 	);
 
-	const config: IMcpCoreHostConfig = {
+	const config: IMcpVertexHostConfig = {
 		metadata: {
 			name: args.serverName,
 			version: args.serverVersion,
@@ -293,7 +293,7 @@ export interface IDoctorReport {
  * in any environment before wiring it into a client.
  */
 export const runDoctor = async (
-	args: IMcpCoreCliArgs,
+	args: IMcpVertexCliArgs,
 	deps: IAssembleCliDeps = {}
 ): Promise<IDoctorReport> => {
 	// Single source of truth: assembleCliConfig already read + diagnosed the
@@ -345,7 +345,7 @@ export const runDoctor = async (
  * integrate it with mcp-vertex organically.
  */
 export const prepareServerBlueprintOnStart = async (
-	args: IMcpCoreCliArgs,
+	args: IMcpVertexCliArgs,
 	// The already-resolved cacheDir (CLI flag → config file → default). Passing
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
 	// rest of the store, including when it comes from mcp-vertex.config.json. [M15]
@@ -400,9 +400,9 @@ export interface IAssemblyDiagnostics {
 
 /** Pure: assemble a diagnostics snapshot of what the server will expose. */
 export const buildAssemblyDiagnostics = (
-	args: IMcpCoreCliArgs,
+	args: IMcpVertexCliArgs,
 	loadResult: IPluginLoadResult,
-	config: IMcpCoreHostConfig,
+	config: IMcpVertexHostConfig,
 	registrationOrder: readonly string[]
 ): IAssemblyDiagnostics => ({
 	workspace: args.workspace,
@@ -491,7 +491,7 @@ export const runCli = async (
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
+						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpvertex_plan_mcp_server.\n`
 					);
 				}
 			})

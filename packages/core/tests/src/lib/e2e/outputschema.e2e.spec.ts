@@ -91,13 +91,13 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 	// successful (non-error) result must carry structuredContent (the SDK
 	// would have thrown on a schema mismatch before we get here).
 	const READONLY_CALLS: ReadonlyArray<{ name: string; args?: unknown }> = [
-		{ name: 'mcpcore_overview' },
-		{ name: 'mcpcore_overview', args: { compact: true } },
-		{ name: 'mcpcore_knowledge' },
-		{ name: 'mcpcore_get_validation_matrix' },
-		{ name: 'mcpcore_status' },
-		{ name: 'mcpcore_metrics' },
-		{ name: 'mcpcore_analyze_project' },
+		{ name: 'mcpvertex_overview' },
+		{ name: 'mcpvertex_overview', args: { compact: true } },
+		{ name: 'mcpvertex_knowledge' },
+		{ name: 'mcpvertex_get_validation_matrix' },
+		{ name: 'mcpvertex_status' },
+		{ name: 'mcpvertex_metrics' },
+		{ name: 'mcpvertex_analyze_project' },
 		{ name: 'git_status' },
 		{ name: 'git_changed' },
 		{ name: 'git_diff' },
@@ -143,7 +143,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 
 	// M31: overview surfaces per-tool side effects; read-only tools have none.
 	it('overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
-		const res = await client.callTool({ name: 'mcpcore_overview', arguments: {} });
+		const res = await client.callTool({ name: 'mcpvertex_overview', arguments: {} });
 		const tools = (res.structuredContent as { tools: Array<{ name: string; effects?: string[] }> }).tools;
 		const effOf = (name: string) => tools.find((t) => t.name === name)?.effects;
 		expect(effOf('memory_save')).toContain('write');
@@ -153,7 +153,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		// genuinely read-only tools advertise no effects
 		expect(effOf('git_status')).toBeUndefined();
 		expect(effOf('search_search')).toBeUndefined();
-		expect(effOf('mcpcore_overview')).toBeUndefined();
+		expect(effOf('mcpvertex_overview')).toBeUndefined();
 	});
 
 	// M24: every public tool must declare an outputSchema (a permissive

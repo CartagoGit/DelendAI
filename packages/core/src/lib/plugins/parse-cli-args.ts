@@ -4,7 +4,7 @@ import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface
  * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
  * never touch `process.argv` directly.
  */
-export interface IMcpCoreCliArgs {
+export interface IMcpVertexCliArgs {
 	/** Plugin specifiers from `--plugins=a,b` (comma or repeated flag). */
 	readonly plugins: readonly string[];
 	/** Scratch/state root (`--cacheDir`). */
@@ -125,7 +125,7 @@ const splitList = (value: string | undefined): string[] =>
 export const parseCliArgs = (
 	argv: readonly string[],
 	cwd: string
-): IMcpCoreCliArgs => {
+): IMcpVertexCliArgs => {
 	const tokens = tokenize(argv);
 	const extra: Record<string, string> = {};
 	for (const [key, value] of Object.entries(tokens)) {

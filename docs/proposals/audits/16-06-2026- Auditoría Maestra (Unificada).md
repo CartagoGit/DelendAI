@@ -539,7 +539,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   (hoy el token-budget e2e ya cubre los payloads críticos).
 - 🟡 **M30 · Smoke funcional en CI** —
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
-  `node`**, lista tools y llama `mcpcore_overview` (prueba que el artefacto publicado
+  `node`**, lista tools y llama `mcpvertex_overview` (prueba que el artefacto publicado
   *sirve el protocolo*, no solo que el bin arranca). Cableado en `ci.yml` (job pack-smoke)
   y como `bun run smoke`.
   ✅ **e2e de instalación desde tarball** (`scripts/smoke-pack.ts`, `bun run smoke:pack`):

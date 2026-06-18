@@ -32,9 +32,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			// Apply the saved theme/motion before paint (no flash of default theme).
 			(() => {
 				try {
-					const t = localStorage.getItem('mcpcore-theme');
+					const t = localStorage.getItem('mcpvertex-theme');
 					if (t) document.documentElement.dataset.theme = t;
-					if (localStorage.getItem('mcpcore-motion') === 'off')
+					if (localStorage.getItem('mcpvertex-motion') === 'off')
 						document.documentElement.dataset.motion = 'off';
 				} catch {}
 			})();

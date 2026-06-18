@@ -9,7 +9,7 @@ You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 
 ## Orientation
 
-- If the `mcp-vertex` MCP server is loaded, call `mcpcore_overview` before anything
+- If the `mcp-vertex` MCP server is loaded, call `mcpvertex_overview` before anything
   else. Use `search`/`docs_read`/`memory_recall` instead of raw filesystem crawls.
 - Do not re-read content whose digest is unchanged.
 

@@ -33,7 +33,7 @@ Optional config (`mcp-vertex.config.json` at the workspace root):
 
 ## The loop
 
-1. `mcpcore_overview` → see the server + `recommendedNextAction`.
+1. `mcpvertex_overview` → see the server + `recommendedNextAction`.
 2. `proposals_auto_work` → one call returns the next proposal + a compact ordered
    plan (claim → slice → validate → sync → release). When nothing is actionable it
    returns `state: "idle"` and, after repeated idles, a hard `stop`.
