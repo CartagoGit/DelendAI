@@ -48,7 +48,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ──────────────────────────────────────────────────────────────────────────
 
 /** @type {Set<string>} */
-const UTILITY_SELECTORS = new Set([
+const _UTILITY_SELECTORS = new Set([
 	// Modifier-only utilities
 	'btn--primary',
 	'btn--ghost',
@@ -253,7 +253,7 @@ function isAcceptable(selector) {
 		// (class), `:` (pseudo), or `[` (attribute).  After the first
 		// char we accept BEM-style names plus optional trailing pseudo
 		// and attribute predicates.
-		const FIRST = /^[*_\-a-zA-Z.:\[]/;
+		const FIRST = /^[*_\-a-zA-Z.:[]/;
 		const REST =
 			/[-_a-zA-Z0-9]*(?:::[a-z-]+)?(?::[a-z-]+(?:\([^)]*\))?)?(?:\[[^\]]+\])?$/;
 		for (const seg of segments) {
@@ -262,34 +262,31 @@ function isAcceptable(selector) {
 		return true;
 	}
 
-	// Non-`&` selector: it must be a single compound BEM class with
-	// optional attribute and optional trailing pseudo.  No descendant
-	// combinators allowed at the top level (those would be a sign of
-	// "leaking" global selectors — use `&` inside the parent rule).
-	if (/[\s>+~]/.test(sel)) return false;
+	// Non-`&` selector: a small set of "narrow exception" shapes are
+	// allowed at the top level (they cover common responsive / RTL /
+	// global-attribute patterns).  We check them BEFORE the
+	// "no descendant combinators" rule below.
+	//
+	// 1. `.parent__block a[attr...]` — nav links with attribute filters
+	//    (e.g. `.nav__links a[href*='/api']`).
+	// 2. `.parent__block a:not(.x):not(.y)` — `:not()` chains for
+	//    excluding a few specific children at a breakpoint.
+	// 3. `html[attr] .parent__block` — document-level overrides for
+	//    RTL (`html[dir='rtl']`) and reduced motion
+	//    (`html[data-motion='off']`).
+	if (
+		/^(\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|html\[[^\]]+\])\s+([a-z][a-z0-9-]*|\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)(:not\([^)]+\))?(\[[^\]]+\])?(:[a-z-]+(?:\([^)]*\))?)?$/.test(
+			sel,
+		)
+	) {
+		return true;
+	}
 
-	// Allow `.parent__block a[attr...]` and `.parent__block a:not(.x)` —
-	// common pattern for navigation links with attribute filters or
-	// `:not()` state-based visibility.  We accept ONE descendant tag
-	// (or class) with optional attribute / pseudo / :not chain.  This
-	// is the only allowed "descendant at top level" shape; anything more
-	// (two descendants, tag+class, etc.) still fails and forces a refactor
-	// to nest inside the parent rule.
-	if (
-		/^\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\s+a(:not\([^)]+\))?(\[[^\]]+\])?(:[a-z-]+(?:\([^)]*\))?)?$/.test(
-			sel,
-		)
-	) {
-		return true;
-	}
-	// Same with `:` or `[` on the child (e.g. `.parent :not(.gear)`).
-	if (
-		/^\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\s+(:not\([^)]+\)|\[[^\]]+\])$/.test(
-			sel,
-		)
-	) {
-		return true;
-	}
+	// After the narrow exceptions, no descendant combinators / child
+	// combinators are allowed at the top level — those would be a sign of
+	// "leaking" global selectors and the author should nest inside the
+	// parent rule.
+	if (/[\s>+~]/.test(sel)) return false;
 
 	const m = sel.match(
 		/^\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?(?:\[[^\]]+\])?(?::([a-z-]+))?$/,
@@ -338,7 +335,7 @@ const bemRule = stylelint.createPlugin(
 				if (inKeyframes) return;
 
 				// Compute the parent chain (used to expand `&`).
-				const parentChain = findEnclosingSelector(rule);
+				const _parentChain = findEnclosingSelector(rule);
 
 				// Comma-separated selectors are unions; each one is
 				// validated independently.  No expansion: SCSS's `&` is
