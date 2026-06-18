@@ -17,14 +17,24 @@ const sectionHref = (section: string) =>
 
 // Highlight 3 plugins on the home (the most useful first-look at mcp-vertex).
 // The full list lives at /plugins.
-const packages = capabilities.packages as Array<{ name: string; version: string }>;
-const shortName = (name: string) => name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
+const packages = capabilities.packages as Array<{
+	name: string;
+	version: string;
+}>;
+const shortName = (name: string) =>
+	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 const pluginHref = (slug: string) =>
-	lang === 'en' ? `${base}/plugins/${slug}` : `${base}/${lang}/plugins/${slug}`;
+	lang === 'en'
+		? `${base}/plugins/${slug}`
+		: `${base}/${lang}/plugins/${slug}`;
 const featuredSlugs = ['proposals', 'memory', 'quality'];
 const featured = packages
 	.filter((p) => featuredSlugs.includes(shortName(p.name)))
-	.sort((a, b) => featuredSlugs.indexOf(shortName(a.name)) - featuredSlugs.indexOf(shortName(b.name)));
+	.sort(
+		(a, b) =>
+			featuredSlugs.indexOf(shortName(a.name)) -
+			featuredSlugs.indexOf(shortName(b.name)),
+	);
 ---
 
 <header class="hero">

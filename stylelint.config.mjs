@@ -225,21 +225,32 @@ function isAcceptable(selector) {
 
 		// Tokenise the rest by whitespace and validate each segment.
 		// Each segment must be a single simple selector (tag, class,
-		// pseudo, attribute, or compound of those).  This accepts:
-		//   `& a`               (` a`)
-		//   `& a:hover`         (` a:hover`)
-		//   `&:hover`           (`:hover` — joined to `&` for the parent)
-		//   `& a .b`            (` a` + ` .b` — two-level descendant)
-		//   `&:hover .child`    (`:hover` + ` .child`)
-		//   `& h1 .grad`        (` h1` + ` .grad`)
-		//   `& h1 code`         (` h1` + ` code`)
-		// Rejects chains longer than 2 descendants (`:not()` / `,` chains
-		// with more than 2 hops), keeping the rule simple but practical.
+		// pseudo, attribute, BEM shorthand, or compound of those).
+		// This accepts:
+		//   `&__elem`           (BEM element shorthand)
+		//   `&--mod`            (BEM modifier shorthand)
+		//   `&:hover`           (pseudo on parent)
+		//   `&[disabled]`       (attribute on parent)
+		//   `&.is-active`       (extra class on parent)
+		//   `& a`               (descendant tag)
+		//   `& a:hover`         (descendant tag with pseudo)
+		//   `& .inner`          (descendant class)
+		//   `&:hover .child`    (parent pseudo + descendant)
+		//   `& h1 .grad`        (two-level descendant)
+		//   `& h1 code`         (two-level descendant)
+		// Rejects chains longer than 2 descendants.
 		const segments = rest.split(/\s+/).filter(Boolean);
 		if (segments.length > 2) return false;
-		const SIMPLE = /^(?:[*]|[a-z][a-z0-9-]*|\.[a-z][a-z0-9-]+(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|::?[a-z-]+(?:\([^)]*\))?|\[[^\]]+\])(?:::[a-z-]+)?(?::[a-z-]+(?:\([^)]*\))?)?(?:\[[^\]]+\])?$/i;
+		// A segment is valid if it starts with one of: `*` (universal),
+		// `_` / `-` (BEM shorthand `__` / `--`), a letter (tag), `.`
+		// (class), `:` (pseudo), or `[` (attribute).  After the first
+		// char we accept BEM-style names plus optional trailing pseudo
+		// and attribute predicates.
+		const FIRST = /^[*_\-a-zA-Z.:\[]/;
+		const REST =
+			/[-_a-zA-Z0-9]*(?:::[a-z-]+)?(?::[a-z-]+(?:\([^)]*\))?)?(?:\[[^\]]+\])?$/;
 		for (const seg of segments) {
-			if (!SIMPLE.test(seg)) return false;
+			if (!FIRST.test(seg) || !REST.test(seg.slice(1))) return false;
 		}
 		return true;
 	}
@@ -269,10 +280,14 @@ const bemRule = stylelint.createPlugin(
 	/** @returns {import('postcss').Plugin} */
 	() => {
 		return (root, result) => {
-			const validOptions = stylelint.utils.validateOptions(result, RULE_NAME, {
-				actual: true,
-				possible: [true],
-			});
+			const validOptions = stylelint.utils.validateOptions(
+				result,
+				RULE_NAME,
+				{
+					actual: true,
+					possible: [true],
+				},
+			);
 			if (!validOptions) return;
 
 			root.walkRules((rule) => {
@@ -281,7 +296,10 @@ const bemRule = stylelint.createPlugin(
 				let parent = rule.parent;
 				let inKeyframes = false;
 				while (parent) {
-					if (parent.type === 'atrule' && parent.name === 'keyframes') {
+					if (
+						parent.type === 'atrule' &&
+						parent.name === 'keyframes'
+					) {
 						inKeyframes = true;
 						break;
 					}
