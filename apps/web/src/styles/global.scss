@@ -161,11 +161,23 @@ code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
 .tool code { color: var(--accent); font-size: 0.9rem; }
 .tool p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.86rem; }
 
-.pkg { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+.pkg { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--line); border-radius: 8px; color: inherit; text-decoration: none; transition: background 0.15s ease; }
+.pkg:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); text-decoration: none; }
 .pkg code { color: var(--accent); }
 .pkg .v { color: var(--muted); font-size: 0.82rem; }
 .pkg p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.86rem; }
 .pkg__main { min-width: 0; }
+.pkg__arrow { color: var(--muted); font-size: 1rem; flex: 0 0 auto; transition: transform 0.15s ease, color 0.15s ease; }
+.pkg:hover .pkg__arrow { color: var(--accent); transform: translateX(3px); }
+
+/* ---- plugin detail page header ---- */
+.phead { padding: clamp(2rem, 5vw, 3.2rem) 0 1.5rem; border-bottom: 1px solid var(--line); }
+.phead__crumb { display: inline-block; margin-bottom: 1rem; color: var(--muted); font-size: 0.85rem; }
+.phead h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0 0 0.6rem; letter-spacing: -0.02em; }
+.phead h1 code { color: var(--accent); }
+.phead .tagline { color: var(--muted); max-width: 46rem; margin: 0 0 1rem; font-size: clamp(0.98rem, 2vw, 1.1rem); }
+.phead__meta { display: flex; align-items: center; gap: 1rem; }
+.phead__count { color: var(--muted); font-size: 0.85rem; }
 
 .stat-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.3rem; }
