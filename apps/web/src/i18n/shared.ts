@@ -61,6 +61,32 @@ export interface INavTranslations {
 	readonly benchmarks: string;
 	readonly plugins: string;
 	readonly github: string;
+	readonly menu: string;
+	readonly knowledge: string;
+	readonly prompts: string;
+	readonly resources: string;
+	readonly skills: string;
+}
+
+export interface IPageSection {
+	readonly title: string;
+	readonly lead: string;
+	readonly count: string;
+}
+
+export interface IKnowledgeTranslations extends IPageSection {}
+
+export interface IPromptsTranslations extends IPageSection {
+	readonly arg: string;
+}
+
+export interface IResourcesTranslations extends IPageSection {
+	readonly uri: string;
+	readonly mime: string;
+}
+
+export interface ISkillsTranslations extends IPageSection {
+	readonly body: string;
 }
 
 export interface IHeroTitle {
@@ -177,6 +203,10 @@ export interface ITranslations {
 	readonly footer: IFooterTranslations;
 	readonly pluginpage: IPluginPageTranslations;
 	readonly plugin: IPluginTranslations;
+	readonly knowledge: IKnowledgeTranslations;
+	readonly prompts: IPromptsTranslations;
+	readonly resources: IResourcesTranslations;
+	readonly skills: ISkillsTranslations;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */

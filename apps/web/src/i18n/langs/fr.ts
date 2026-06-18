@@ -109,6 +109,30 @@ const dict: LangDict = {
 			'Pousse les événements de libération de verrou pour éviter le polling.',
 		core: 'Le cœur agnostique : overview, scaffold, métriques, doctor et le chargeur de plugins.',
 	},
+	knowledge: {
+		title: 'Knowledge',
+		lead: 'Catalogued documents the core can answer questions about.',
+		count: 'documents',
+	},
+	prompts: {
+		title: 'Prompts',
+		lead: 'Reusable prompt templates exposed by the core.',
+		count: 'prompts',
+		arg: 'arguments',
+	},
+	resources: {
+		title: 'Resources',
+		lead: 'Static resources bundled with the project (URI + MIME).',
+		count: 'resources',
+		uri: 'URI',
+		mime: 'MIME',
+	},
+	skills: {
+		title: 'Skills',
+		lead: 'Domain playbooks the agent can load on demand.',
+		count: 'skills',
+		body: 'Body',
+	},
 };
 
 export default dict;
