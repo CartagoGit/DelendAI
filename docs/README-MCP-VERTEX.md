@@ -12,7 +12,7 @@ Two ideas:
    agent writes the files).
 2. **Compose capability with plugins**: register `mcp-vertex` once in your editor
    and turn features on with `--plugins=...`. The core knows how to create new
-   plugins too (see [PLUGINS-MCP-CORE.md](./PLUGINS-MCP-CORE.md)).
+   plugins too (see [PLUGINS-MCP-VERTEX.md](./PLUGINS-MCP-VERTEX.md)).
 
 It is designed to work the same under **any agent or model** (Claude, GPT,
 local…): MCP is model-agnostic, tools use strict zod schemas and return

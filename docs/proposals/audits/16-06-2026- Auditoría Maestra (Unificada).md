@@ -21,7 +21,7 @@
 
 ## 1. Veredicto unificado
 
-Los 8 revisores coinciden: `mcp-core` es **ingeniería orientada a agentes de
+Los 8 revisores coinciden: `mcp-vertex` es **ingeniería orientada a agentes de
 calidad poco habitual**. Núcleo *project-agnostic* y hermético, plugins que reciben
 todo resuelto por `IMcpPluginContext`, escritura atómica + mutex inter-proceso,
 cuarentena de ficheros corruptos (corrupto ≠ vacío), **presupuesto de tokens medido
@@ -224,7 +224,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Plugins nuevos:** `metrics` (⭐⭐⭐⭐⭐ Codex), `security` (⭐⭐⭐⭐⭐), `events`
 (bus durable), `migrations`, `bench`, y un `web`/`fetch` agnóstico con allow-list.
 
-**Skills/prompts versionados:** `mcp-core-operator`, `proposal-swarm-runner`,
+**Skills/prompts versionados:** `mcp-vertex-operator`, `proposal-swarm-runner`,
 `mcp-plugin-author`, `state-repair-playbook`, `token-budget-playbook`,
 `concurrency-patterns`, `recovery-playbook`; prompt `finish` (cerrar ronda).
 **Agentes:** NO añadir más por defecto (consenso) — 5 roles es el límite saludable.
@@ -293,7 +293,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   el analizador con mal cost/benefit. Invariante "ningún handler de tool en bucle/
   hot-path bloquea el event loop": **cumplido**.
 - **🟡 A2 (P2) · Onboarding/plataforma** — *quick wins HECHOS (17-06):* **JSON Schema
-  de `mcp-core.config.json`** (generado del Zod, drift-guard, publicado, `$schema` en
+  de `mcp-vertex.config.json`** (generado del Zod, drift-guard, publicado, `$schema` en
   el config del repo), **`quality_cancel`** (aborta runs por PID/todos con kill de
   grupo) y **freno duro anti-idle en `auto_work`** (`stop:true` tras 3 idles
   consecutivos, reset al haber trabajo). **`/examples` HECHO** —
@@ -320,7 +320,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   hace nada) con tests.
 - **`apps/` + dogfooding:** carpeta `apps/` (workspace) con `apps/web` (genera
   `index.html` + **`capabilities.json`** de la lista viva → cada release sabe qué
-  trae); `.mcp.json` + `mcp-core.config.json` → el repo usa **mcp-core como su
+  trae); `.mcp.json` + `mcp-vertex.config.json` → el repo usa **mcp-vertex como su
   propio servidor MCP** (preset swarm). **480 tests verdes.**
 
 #### Orden de ejecución priorizado (decidido 17-06)
@@ -505,8 +505,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Plataforma / producto (la grieta principal, consenso 3/3):**
 - ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:
   comandos, invariantes, convenciones), `.github/copilot-instructions.md`,
-  `.github/agents/mcp-core.agent.md`, `.claude/agents/mcp-core-orchestrator.md` y
-  `skills/` (`mcp-core-plugin-authoring`, `mcp-core-failure-modes`). El repo ya se
+  `.github/agents/mcp-vertex.agent.md`, `.claude/agents/mcp-vertex-orchestrator.md` y
+  `skills/` (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`). El repo ya se
   aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
   ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
 - 🟡 **M27 · Web profunda** —

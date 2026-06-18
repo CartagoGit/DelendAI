@@ -492,7 +492,7 @@ ${safeDescription}
 }
 \`\`\`
 
-See \`PLUGINS-MCP-CORE.md\` at the docs folder for the full plugin guide.
+See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
 `,
 		},
 	];

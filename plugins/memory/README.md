@@ -1,7 +1,7 @@
 # @mcp-vertex/memory
 
 Persistent **project memory** plugin for
-[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md). Save/recall/list/forget
+[`@mcp-vertex/core`](../../docs/README-MCP-VERTEX.md). Save/recall/list/forget
 small notes stored in one JSON file under the cache dir, so any agent keeps
 continuity across sessions with minimal tokens.
 

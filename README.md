@@ -3,9 +3,9 @@
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
 [@mcp-vertex](https://www.npmjs.com/org/mcp-vertex).
 
-- **[README-MCP-CORE.md](./docs/README-MCP-CORE.md)** — what it is, how to use it,
+- **[README-MCP-VERTEX.md](./docs/README-MCP-VERTEX.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
-- **[PLUGINS-MCP-CORE.md](./docs/PLUGINS-MCP-CORE.md)** — how to create plugins.
+- **[PLUGINS-MCP-VERTEX.md](./docs/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** · **[SECURITY.md](./SECURITY.md)** ·

@@ -1,7 +1,7 @@
 # @mcp-vertex/quality
 
 Quality-gate **runner** plugin for
-[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md). Executes the project's
+[`@mcp-vertex/core`](../../docs/README-MCP-VERTEX.md). Executes the project's
 validation commands (lint/test/build/typecheck) per scope and returns a
 structured pass/fail report.
 

@@ -21,6 +21,6 @@ turn on capability with plugins (`mcp-vertex --plugins=...`).
 - Plugins implement `IMcpPlugin`; load them by name via `--plugins`.
 - Usable as a plain library too (import from `@mcp-vertex/core/public`).
 
-Full guide: **README-MCP-CORE.md** · Plugins: **PLUGINS-MCP-CORE.md** (docs folder).
+Full guide: **README-MCP-VERTEX.md** · Plugins: **PLUGINS-MCP-VERTEX.md** (docs folder).
 
 BSD-3-Clause © Cartago
