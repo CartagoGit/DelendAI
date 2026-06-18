@@ -209,15 +209,17 @@ export const assembleCliConfig = async (
 		}),
 	};
 
-	// Metrics registry instruments every tool (M12); the `metrics` tool reads it.
+	// Metrics registry instruments every tool (M12); the `metrics` tool reads it
+	// and can persist timestamped snapshots under `<cacheDir>/metrics/` (M29).
 	const metricsRegistry = createMetricsRegistry();
+	const metricsDirAbs = workspace.resolve(joinRel(corePaths.cacheDir, 'metrics'));
 
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
 		buildValidationMatrixToolRegistration(corePrefix, () => validationMatrix),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
-		buildMetricsToolRegistration(corePrefix, metricsRegistry),
+		buildMetricsToolRegistration(corePrefix, metricsRegistry, metricsDirAbs),
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,

@@ -51,6 +51,8 @@ export interface McpcoreMetricsOutput {
 		totalMs: number;
 		totalBytes: number;
 	};
+	persistedTo?: string;
+	snapshots?: number;
 }
 
 export interface McpcoreOverviewOutput {
