@@ -28,8 +28,8 @@
  *   asks the user to paste a string the prefix parser would reject.
  *
  * Relationship with the rest of the project:
- *   - `libs/mcp-server/src/lib/swarm/chat-titling-prefix.ts` (T1)
- *   - `libs/mcp-server/src/lib/agents/agent-closure-report.ts`
+ *   - `libs/mcp-project/src/lib/swarm/chat-titling-prefix.ts` (T1)
+ *   - `libs/mcp-project/src/lib/agents/agent-closure-report.ts`
  *     (consumed by `<prefix>_self_review_gate`).
  *   - the host self-review gate tool
  *     (concatenates the output of this helper to the gate's response).

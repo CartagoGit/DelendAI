@@ -53,8 +53,8 @@ scaffolding tools.
 | `--prefix=NS` | `mcpvertex` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
 | `--config=FILE` | `mcp-vertex.config.json` | Config file with per-plugin values (see below). |
 | `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
-| `--mcp-server-create=false` | (on) | Disable the first-start project-server blueprint. |
-| `--mcp-server-tests=false` | (on) | Omit tests from the generated blueprint. |
+| `--mcp-project-create=false` | (on) | Disable the first-start project-server blueprint. |
+| `--mcp-project-tests=false` | (on) | Omit tests from the generated blueprint. |
 | `--<anything>=value` | — | Forwarded to every plugin via `ctx.args`. |
 
 ```bash
@@ -99,13 +99,13 @@ never crashes the server.
   structured analysis **plus a recommended server plan** (project type incl.
   python/go/rust/monorepo, tools, plugins, validation commands, detected CI and
   agent configs, and a ready-to-paste `mcp.json`).
-- **`<prefix>_plan_mcp_server`** — read-only. Returns an **exhaustive** blueprint
+- **`<prefix>_plan_mcp_project`** — read-only. Returns an **exhaustive** blueprint
   for a project-specific MCP server (every tool/prompt/skill/agent + tests) and
   the files to write. If a server already exists, the notes explain how to
   integrate it with mcp-vertex instead of replacing it. On first start mcp-vertex
   writes this blueprint to the cache automatically (disable with
-  `--mcp-server-create=false`; omit tests with `--mcp-server-tests=false`).
-- **`<prefix>_create_server`** — turns a plan into the files for a
+  `--mcp-project-create=false`; omit tests with `--mcp-project-tests=false`).
+- **`<prefix>_create_project`** — turns a plan into the files for a
   project-specific server, a **plugin**, or an **MCP client** (`kind: host |
   plugin | client`). Returns the files **for the agent to write**; never touches
   disk.
@@ -121,7 +121,7 @@ Every tool returns compact JSON with a uniform envelope
 ### The bootstrap flow
 
 ```
-analyze_project   →   review/edit the plan   →   create_server   →   you write the files   →   register in mcp.json
+analyze_project   →   review/edit the plan   →   create_project   →   you write the files   →   register in mcp.json
 ```
 
 ## Use as a library — the escape hatch (`bun i`)
@@ -139,7 +139,7 @@ bun i @mcp-vertex/core @mcp-vertex/proposals
 import { createMcpServer, createWorkspacePathProvider } from '@mcp-vertex/core/public';
 
 const assembled = await createMcpServer({
-	metadata: { name: 'mcp-server-acme', version: '0.1.0' },
+	metadata: { name: 'mcp-project-acme', version: '0.1.0' },
 	namespacePrefix: 'acme',
 	workspace: createWorkspacePathProvider(process.cwd()),
 	extraTools: [/* your IToolRegistration[] */],

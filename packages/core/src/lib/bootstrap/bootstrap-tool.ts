@@ -58,7 +58,7 @@ const CREATE_SCHEMA = z.object({
 		.describe('What to scaffold.'),
 	projectName: z.string().optional(),
 	namespacePrefix: z.string().optional(),
-	serverPackageName: z.string().optional(),
+	projectPackageName: z.string().optional(),
 	pluginName: z.string().optional().describe('Plugin id (kind "plugin").'),
 	clientName: z.string().optional().describe('Client id (kind "client").'),
 	description: z.string().optional(),
@@ -79,7 +79,7 @@ const json = (value: unknown) => ({
  * The hybrid bootstrap tools. `analyze_project` reads the target repo
  * (read-only) and returns an analysis plus a recommended server plan —
  * "what an optimal MCP server needs here", derived without anyone
- * spelling it out. `create_server` turns a plan into scaffolded files
+ * spelling it out. `create_project` turns a plan into scaffolded files
  * (dry-run: the agent writes them). The server recommends and
  * generates content; the agent decides and writes.
  */
@@ -129,13 +129,13 @@ export const buildBootstrapToolRegistrations = (
 	};
 
 	const create: IToolRegistration = {
-		id: 'create_server',
+		id: 'create_project',
 		summary:
 			'Generate files for a project-specific server, plugin or MCP client from a plan (returns files for you to write).',
 		tags: ['bootstrap'],
 		register: async (server) => {
 			server.registerTool(
-				`${prefix}_create_server`,
+				`${prefix}_create_project`,
 				{
 						outputSchema: z.object({}).catchall(z.unknown()),
 					description:
@@ -165,9 +165,9 @@ export const buildBootstrapToolRegistrations = (
 					const files = scaffoldHostProject({
 						projectName: args.projectName ?? namespacePrefix,
 						namespacePrefix,
-						serverPackageName:
-							args.serverPackageName ??
-							`@${namespacePrefix}/mcp-server`,
+						projectPackageName:
+							args.projectPackageName ??
+							`@${namespacePrefix}/mcp-project`,
 					});
 					return json({ kind: 'host', files });
 				}
@@ -176,13 +176,13 @@ export const buildBootstrapToolRegistrations = (
 	};
 
 	const planServer: IToolRegistration = {
-		id: 'plan_mcp_server',
+		id: 'plan_mcp_project',
 		summary:
 			'EXHAUSTIVE plan for a project-specific MCP server (all tools/prompts/skills/agents + tests) and the files to write.',
 		tags: ['bootstrap'],
 		register: async (server) => {
 			server.registerTool(
-				`${prefix}_plan_mcp_server`,
+				`${prefix}_plan_mcp_project`,
 				{
 						outputSchema: z.object({}).catchall(z.unknown()),
 					description:

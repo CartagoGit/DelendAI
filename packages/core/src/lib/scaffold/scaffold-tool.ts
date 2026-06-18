@@ -30,7 +30,7 @@ export interface IScaffoldToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspace: IWorkspacePathProvider;
 	readonly projectName: string;
-	readonly serverPackageName: string;
+	readonly projectPackageName: string;
 	readonly defaultModel?: string;
 }
 
@@ -80,7 +80,7 @@ export const buildScaffoldReport = async (
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
-		serverPackageName: options.serverPackageName,
+		projectPackageName: options.projectPackageName,
 		...(options.defaultModel !== undefined
 			? { defaultModel: options.defaultModel }
 			: {}),

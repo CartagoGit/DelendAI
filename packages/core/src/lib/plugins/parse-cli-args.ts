@@ -23,11 +23,11 @@ export interface IMcpVertexCliArgs {
 	readonly configPath?: string | undefined;
 	/**
 	 * On first start, analyze the project and prepare a project-specific
-	 * MCP server blueprint. `--mcp-server-create=false` disables it.
+	 * MCP server blueprint. `--mcp-project-create=false` disables it.
 	 */
-	readonly mcpServerCreate: boolean;
-	/** Include tests in the blueprint. `--mcp-server-tests=false` to omit. */
-	readonly mcpServerTests: boolean;
+	readonly mcpProjectCreate: boolean;
+	/** Include tests in the blueprint. `--mcp-project-tests=false` to omit. */
+	readonly mcpProjectTests: boolean;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
 	/** The raw tokenized flags, so callers can detect what was explicit. */
@@ -54,8 +54,8 @@ const KNOWN_KEYS = new Set([
 	'check',
 	'doctor',
 	'verbose',
-	'mcp-server-create',
-	'mcp-server-tests',
+	'mcp-project-create',
+	'mcp-project-tests',
 ]);
 
 // Curated plugin presets (additive). `--preset=standard` saves typing the
@@ -147,8 +147,8 @@ export const parseCliArgs = (
 		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens.prefix,
 		configPath: tokens.config,
-		mcpServerCreate: !isFalse(tokens['mcp-server-create']),
-		mcpServerTests: !isFalse(tokens['mcp-server-tests']),
+		mcpProjectCreate: !isFalse(tokens['mcp-project-create']),
+		mcpProjectTests: !isFalse(tokens['mcp-project-tests']),
 		extra,
 		tokens,
 	};

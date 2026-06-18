@@ -61,7 +61,7 @@ describe('buildServerBlueprint', () => {
 		const bp = buildServerBlueprint(analysis);
 		const files = buildBlueprintFiles(bp);
 		const paths = files.map((f) => f.path);
-		expect(paths).toContain('libs/mcp-server/src/server.ts');
+		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths.some((p) => p.includes('-check-project-state.tool.ts'))).toBe(
 			true
 		);

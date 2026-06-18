@@ -19,8 +19,8 @@ export interface IScaffoldHostOptions {
 	readonly projectName: string;
 	/** Tool namespace, e.g. `acme` → `acme_*` tools. */
 	readonly namespacePrefix: string;
-	/** Package that will hold the host server, e.g. `@acme/mcp-server`. */
-	readonly serverPackageName: string;
+	/** Package that will hold the host server, e.g. `@acme/mcp-project`. */
+	readonly projectPackageName: string;
 	/** Default agent model id. */
 	readonly defaultModel?: string;
 }
@@ -62,7 +62,7 @@ export const scaffoldToolFile = (
 	const fn = pascal(name);
 	const toolName = `${prefix}_${id.replace(/-/g, '_')}`;
 	return {
-		path: `libs/mcp-server/src/lib/tools/${prefix}-${id}.tool.ts`,
+		path: `libs/mcp-project/src/lib/tools/${prefix}-${id}.tool.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
@@ -111,7 +111,7 @@ export const scaffoldPromptFile = (
 	const fn = pascal(name);
 	const promptName = `${prefix}-${id}`;
 	return {
-		path: `libs/mcp-server/src/lib/prompts/${prefix}-${id}.prompt.ts`,
+		path: `libs/mcp-project/src/lib/prompts/${prefix}-${id}.prompt.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 export const ${prefix.toUpperCase()}_${id.replace(/-/g, '_').toUpperCase()}_PROMPT = {
@@ -152,7 +152,7 @@ export const scaffoldSkillFile = (
 			? whenToUse.map((entry) => `- ${entry}`).join('\n')
 			: '- TODO: describe when an agent should read this skill.';
 	return {
-		path: `libs/mcp-server/src/lib/skills/${prefix}-${id}.md`,
+		path: `libs/mcp-project/src/lib/skills/${prefix}-${id}.md`,
 		content: `---
 id: ${prefix}-${id}
 name: ${name}
@@ -185,8 +185,8 @@ export const scaffoldAgentFile = (
 	const model = options.defaultModel ?? '<your-model>';
 	const isRoot = slot === 'orchestrator';
 	const tools = isRoot
-		? `[read, search, edit, execute, todo, agent, mcp-server-${prefix}/*]`
-		: `[read, search, edit, execute, todo, mcp-server-${prefix}/*]`;
+		? `[read, search, edit, execute, todo, agent, mcp-project-${prefix}/*]`
+		: `[read, search, edit, execute, todo, mcp-project-${prefix}/*]`;
 	return {
 		path: `.github/agents/${slot}.agent.md`,
 		content: `---
@@ -202,11 +202,11 @@ user-invocable: ${isRoot ? 'true' : 'false'}
 
 # ${slot}
 
-This file is only the Copilot adapter; the agent contract lives in \`mcp-server-${prefix}\`.
+This file is only the Copilot adapter; the agent contract lives in \`mcp-project-${prefix}\`.
 
 ## Compact lane
 
-1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-server-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-project-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
 3. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
@@ -224,7 +224,7 @@ export const scaffoldInstructionsFile = (
 
 ## Source of truth
 
-The MCP server \`mcp-server-${prefix}\` rules. Do NOT re-derive workflow from docs:
+The MCP server \`mcp-project-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
 - The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
@@ -243,7 +243,7 @@ export const scaffoldHostConfigFile = (
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
-		path: 'libs/mcp-server/src/lib/shared/host-config.ts',
+		path: 'libs/mcp-project/src/lib/shared/host-config.ts',
 		content: `import {
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
@@ -261,7 +261,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {
 		metadata: {
-			name: 'mcp-server-${prefix}',
+			name: 'mcp-project-${prefix}',
 			version: '0.0.1',
 			description: '${options.projectName} workspace MCP server (built on mcp-vertex).',
 		},
@@ -275,7 +275,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 				namespacePrefix: '${prefix}',
 				workspace,
 				projectName: '${options.projectName}',
-				serverPackageName: '${options.serverPackageName}',
+				projectPackageName: '${options.projectPackageName}',
 			}),
 		],
 	};
@@ -288,7 +288,7 @@ export const scaffoldServerEntryFiles = (
 	options: IScaffoldHostOptions
 ): readonly IScaffoldedFile[] => [
 	{
-		path: 'libs/mcp-server/src/server.ts',
+		path: 'libs/mcp-project/src/server.ts',
 		content: `import { createMcpServer } from '@mcp-vertex/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
@@ -303,7 +303,7 @@ export async function startServer(workspaceRoot = process.cwd()): Promise<void> 
 `,
 	},
 	{
-		path: 'libs/mcp-server/src/index.ts',
+		path: 'libs/mcp-project/src/index.ts',
 		content: `import { startServer } from './server';
 
 void startServer();
@@ -314,11 +314,11 @@ void startServer();
 		content: `${JSON.stringify(
 			{
 				servers: {
-					[`mcp-server-${options.namespacePrefix}`]: {
+					[`mcp-project-${options.namespacePrefix}`]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
 						// biome-ignore lint/suspicious/noTemplateCurlyInString: literal VSCode ${workspaceFolder} variable, not a JS template
-						cwd: '${workspaceFolder}/libs/mcp-server',
+						cwd: '${workspaceFolder}/libs/mcp-project',
 					},
 				},
 			},

@@ -12,17 +12,17 @@ describe('parseCliArgs', () => {
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
 		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
-		expect(args.mcpServerCreate).toBe(true);
-		expect(args.mcpServerTests).toBe(true);
+		expect(args.mcpProjectCreate).toBe(true);
+		expect(args.mcpProjectTests).toBe(true);
 	});
 
-	it('parses --mcp-server-create=false and --mcp-server-tests=false', () => {
+	it('parses --mcp-project-create=false and --mcp-project-tests=false', () => {
 		const args = parseCliArgs(
-			['--mcp-server-create=false', '--mcp-server-tests=false'],
+			['--mcp-project-create=false', '--mcp-project-tests=false'],
 			'/cwd'
 		);
-		expect(args.mcpServerCreate).toBe(false);
-		expect(args.mcpServerTests).toBe(false);
+		expect(args.mcpProjectCreate).toBe(false);
+		expect(args.mcpProjectTests).toBe(false);
 	});
 
 	it('parses --plugins as a comma list and overrides dirs', () => {

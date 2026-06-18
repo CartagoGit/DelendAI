@@ -9,7 +9,7 @@
  *   4. parse defensivo (corrupted file → empty array, no throw)
  *   5. round-trip
  *
- * Run: bun test libs/mcp-server -- closed-tasks-log
+ * Run: bun test libs/mcp-project -- closed-tasks-log
  */
 
 import {
@@ -55,7 +55,7 @@ const makeRecord = (
 	taskId: 'p40c-t1',
 	closedAt: '2026-06-05T10:00:00.000Z',
 	agentName: 'observation_tower',
-	filesOwned: ['libs/mcp-server/src/lib/agents/closed-tasks-log.ts'],
+	filesOwned: ['libs/mcp-project/src/lib/agents/closed-tasks-log.ts'],
 	...overrides,
 });
 

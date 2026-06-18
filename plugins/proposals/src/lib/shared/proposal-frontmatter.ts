@@ -1,4 +1,4 @@
-// filepath: libs/mcp-server/src/lib/shared/proposal-frontmatter.ts
+// filepath: libs/mcp-project/src/lib/shared/proposal-frontmatter.ts
 // Tiny frontmatter parser for the orchestrator handoff metrics.
 //
 // the host project proposals use a flat YAML frontmatter with simple

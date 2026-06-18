@@ -4,7 +4,7 @@
  * T3 slice of p34 (Proposal Budget + Execution Plan Tool).
  *
  * Integration spec for `runAcceptanceCriteria` (T3 deliverable in
- * `libs/mcp-server/src/lib/proposals/proposal-acceptance.ts`).
+ * `libs/mcp-project/src/lib/proposals/proposal-acceptance.ts`).
  *
  * The spec uses `Bun.spawn` for real (no mocks): acceptance criteria are
  * the gate between an `implementation_runner` slice and `delivery_verifier`
@@ -20,7 +20,7 @@
  *      → passed: false, reason: 'substring not found'.
  *   3. `runAcceptanceCriteria([{ command: 'exit 1', expect: 'exit0' }])`
  *      → passed: false, reason: 'exit code N'.
- *   4. `runAcceptanceCriteria([{ command: 'bun test libs/mcp-server -- --invalid-flag', expect: 'pass' }])`
+ *   4. `runAcceptanceCriteria([{ command: 'bun test libs/mcp-project -- --invalid-flag', expect: 'pass' }])`
  *      → passed: false, reason contains 'vitest exit code'.
  *   5. `runAcceptanceCriteria` with empty `command` → throws `INVALID_CRITERION`
  *      without spawning anything.
@@ -52,7 +52,7 @@ const describeIfBun = BUN_AVAILABLE ? describe : describe.skip;
 const EXIT_ZERO_CMD = 'bun --version';
 
 // Per-test timeout for the vitest-suite spawn used in case 4. The
-// command runs a real `bun test libs/mcp-server -- --invalid-flag`
+// command runs a real `bun test libs/mcp-project -- --invalid-flag`
 // (the whole vitest suite as a subprocess), which can take 10-15s
 // in this workspace; the default vitest 5s timeout is not enough.
 // We only widen the timeout for that one test, leaving the rest at

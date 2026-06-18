@@ -16,7 +16,7 @@ export interface McpvertexAnalyzeProjectOutput {
 	[key: string]: unknown;
 }
 
-export interface McpvertexCreateServerOutput {
+export interface McpvertexCreateProjectOutput {
 	[key: string]: unknown;
 }
 
@@ -83,7 +83,7 @@ export interface McpvertexOverviewOutput {
 	recommendedNextAction: string;
 }
 
-export interface McpvertexPlanMcpServerOutput {
+export interface McpvertexPlanMcpProjectOutput {
 	[key: string]: unknown;
 }
 
@@ -102,12 +102,12 @@ export interface McpvertexStatusOutput {
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
 	"mcpvertex_analyze_project": McpvertexAnalyzeProjectOutput;
-	"mcpvertex_create_server": McpvertexCreateServerOutput;
+	"mcpvertex_create_project": McpvertexCreateProjectOutput;
 	"mcpvertex_get_validation_matrix": McpvertexGetValidationMatrixOutput;
 	"mcpvertex_knowledge": McpvertexKnowledgeOutput;
 	"mcpvertex_metrics": McpvertexMetricsOutput;
 	"mcpvertex_overview": McpvertexOverviewOutput;
-	"mcpvertex_plan_mcp_server": McpvertexPlanMcpServerOutput;
+	"mcpvertex_plan_mcp_project": McpvertexPlanMcpProjectOutput;
 	"mcpvertex_scaffold": McpvertexScaffoldOutput;
 	"mcpvertex_status": McpvertexStatusOutput;
 }
