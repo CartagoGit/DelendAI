@@ -508,7 +508,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   authoring/lock/queue/sync/round/names/state_repair/delegate, memory_save, scaffold,
   metrics-persist), `write+destructive` (memory_forget), `spawn` (quality run/cancel); el
   resto read-only sin `effects`. Test e2e que verifica que `overview` declara los efectos.
-  ⬜ Falta surfacearlo en la web (badges por tool).
+  ✅ **Surfaceado en la web**: `gen-capabilities` fusiona los `effects` del `overview` en
+  `capabilities.json` y las páginas por plugin muestran **badges** por tool
+  (write/spawn/destructive/read-only). **M31 completo.**
 - ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
   (`frontmatter-parser`, `redactSecrets`), test de concurrencia dedicado para `memory`.
 - ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),
