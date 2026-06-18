@@ -1,6 +1,6 @@
 ---
 id: p104
-status: in_progress
+status: done
 type: proposal
 track: agent-contract
 date: 2026-06-18
@@ -86,4 +86,4 @@ Crear el plugin `@mcp-vertex/status-marker` siguiendo el patrón del repo (`defi
   - "lint verde"
   - "tests verdes"
   - "Propuesta p104 marcada como completada"
-- status: pending
+- status: done
