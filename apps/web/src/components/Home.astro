@@ -28,11 +28,32 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 
 const packages = capabilities.packages as Array<{ name: string; version: string }>;
 const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
+
+// Benchmarks: real payloads measured live (see gen-capabilities.ts) + one
+// clearly-labelled illustrative baseline. Bar width is proportional to tokens.
+type IBench = { id: string; label: string; bytes: number; tokens: number };
+const benches = ((capabilities as { benchmarks?: IBench[] }).benchmarks ?? []) as IBench[];
+const benchById = Object.fromEntries(benches.map((b) => [b.id, b]));
+const compactTok = benchById.overview_compact?.tokens ?? 0;
+const autoTok = benchById.auto_work?.tokens ?? 0;
+const coldStartTok = compactTok + autoTok;
+const BASELINE_TOK = 4000; // illustrative estimate of orienting by hand
+const benchBars = [
+	{ name: 'overview (full)', tokens: benchById.overview_full?.tokens ?? 0, kind: '' },
+	{ name: 'overview (compact)', tokens: compactTok, kind: '' },
+	{ name: 'auto_work', tokens: autoTok, kind: '' },
+	{ name: 'compact + auto_work', tokens: coldStartTok, kind: 'is-hl' },
+	{ name: t('bench.baseline'), tokens: BASELINE_TOK, kind: 'is-base' },
+].filter((b) => b.tokens > 0);
+const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 ---
 
 <nav class="nav">
 	<div class="container nav__inner">
-		<span class="nav__brand">@cartago-git/mcp-core</span>
+		<span class="nav__brand">
+			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
+			@cartago-git/mcp-core
+		</span>
 		<div class="nav__links">
 			<a href="#concept">{t('nav.concept')}</a>
 			<a href="#install">{t('nav.install')}</a>
@@ -53,6 +74,7 @@ const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replac
 
 <header class="hero">
 	<div class="container">
+		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-core" />
 		<h1>{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
 		<p class="tagline">{t('hero.tagline')}</p>
 		<div class="ctas">
@@ -130,6 +152,25 @@ const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replac
 			<div class="feature"><h3>0 · {t('bench.b2.t')}</h3><p>{t('bench.b2.b')}</p></div>
 			<div class="feature"><h3>✓ {t('bench.b3.t')}</h3><p>{t('bench.b3.b')}</p></div>
 		</div>
+		{
+			benchBars.length > 0 && (
+				<div class="bench">
+					<h3 class="bench__title">{t('bench.live.title')}</h3>
+					<div class="bench__chart">
+						{benchBars.map((b) => (
+							<div class={`bar ${b.kind}`}>
+								<span class="bar__label">{b.name}</span>
+								<span class="bar__track">
+									<span class="bar__fill" style={`width:${Math.max(2, (b.tokens / benchMax) * 100)}%`} />
+								</span>
+								<span class="bar__val">{b.tokens.toLocaleString()} tok</span>
+							</div>
+						))}
+					</div>
+					<p class="bench__note">{t('bench.live.note')}</p>
+				</div>
+			)
+		}
 	</div>
 </section>
 
