@@ -17,7 +17,7 @@ const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 // Map a package short-name to its tool namespace (core → mcpcore).
 const nsFor = (s: string): string => (s === 'core' ? 'mcpcore' : s);
 
-type ITool = { name: string; namespace: string; description: string };
+type ITool = { name: string; namespace: string; description: string; effects?: string[] };
 type IPkg = { name: string; version: string };
 
 const pkg = (capabilities.packages as IPkg[]).find(
@@ -73,7 +73,16 @@ const description = t(`plugin.${slug}`);
 		<h2>{t('pluginpage.tools')}</h2>
 		<div class="tools-grid">
 			{tools.map((tool) => (
-				<div class="tool"><code>{tool.name}</code><p>{tool.description}</p></div>
+				<div class="tool">
+					<div class="tool__head">
+						<code>{tool.name}</code>
+						{(tool.effects ?? []).map((e) => (
+							<span class={`fx fx--${e}`}>{e}</span>
+						))}
+						{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
+					</div>
+					<p>{tool.description}</p>
+				</div>
 			))}
 		</div>
 	</div>

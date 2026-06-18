@@ -55,6 +55,7 @@ interface ITool {
 	readonly name: string;
 	readonly namespace: string;
 	readonly description: string;
+	readonly effects?: readonly string[];
 }
 
 /** A measured, real payload size (bytes of the tool result text the agent sees). */
@@ -151,6 +152,17 @@ const collectTools = async (): Promise<ICollected> => {
 	try {
 		const { client, close } = await buildClient(PLUGIN_LIST, workspace);
 		const { tools } = await client.listTools();
+		// Side effects (M31) live in overview, not the MCP tool definition — merge
+		// them in so the site can badge write/spawn/destructive tools.
+		const overview = (await client.callTool({
+			name: 'mcpcore_overview',
+			arguments: {},
+		})) as { structuredContent?: { tools?: Array<{ name: string; effects?: string[] }> } };
+		const effectsByName = new Map<string, string[]>(
+			(overview.structuredContent?.tools ?? [])
+				.filter((t) => t.effects && t.effects.length > 0)
+				.map((t) => [t.name, t.effects as string[]])
+		);
 		await close();
 		return {
 			tools: tools
@@ -158,6 +170,7 @@ const collectTools = async (): Promise<ICollected> => {
 					name: t.name,
 					namespace: namespaceOf(t.name),
 					description: t.description ?? '',
+					...(effectsByName.has(t.name) ? { effects: effectsByName.get(t.name) } : {}),
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name)),
 			benchmarks: await collectBenchmarks(),
