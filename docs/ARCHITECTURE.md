@@ -17,7 +17,7 @@ under any host or model.
 graph TD
     CLI["cli.ts (bin)"] --> ASM["assembleCliConfig"]
     ASM --> LOAD["loadPlugins (timeout, dedupe,<br/>fault-tolerant)"]
-    ASM --> SRV["createMcpServer"]
+    ASM --> SRV["createMcpProject"]
     LOAD -->|"IMcpPluginContext"| PLUGINS
     SRV -->|"registerTool + metrics wrapper"| REG["tool registry"]
 
@@ -75,7 +75,7 @@ The dependency arrow only ever points **plugin → core**, never the reverse.
 1. `cli.ts` parses args (`parseCliArgs`) and calls `assembleCliConfig`.
 2. `loadPlugins` resolves each `--plugins=` specifier (short name, scoped package, path),
    dedupes, and imports under a timeout; a broken plugin is skipped, never fatal.
-3. `createMcpServer` registers every tool deterministically, wrapping each with the
+3. `createMcpProject` registers every tool deterministically, wrapping each with the
    metrics collector (latency, bytes, errors) before exposing it.
 4. The server serves over stdio. `overview` gives a one-call, low-token map; `auto_work`
    gives a tight next-action plan.

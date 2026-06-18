@@ -23,7 +23,7 @@ export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 		'   - `validationMatrix`: the quality-gate commands of YOUR repo, per scope.',
 		'   - `statusCollectors`: optional seams wrapping your runtime (anything with `collect()`).',
 		'   - `extraTools` / `extraPrompts`: your MCP registrations, in deterministic order (use `registerAfter` to anchor).',
-		'2. Boot with `createMcpServer(config)` and call `.start()` (stdio transport).',
+		'2. Boot with `createMcpProject(config)` and call `.start()` (stdio transport).',
 		'3. Register the server in your editor (e.g. `.vscode/mcp.json`) pointing at your entry file.',
 		'4. The framework gives you: deterministic registration, workspace path resolution, the proposal engine (frontmatter, budgets, acceptance, parallelism, registry sync), the swarm runtime (round context, continuity policies, chat titling), file-level agent locks with heartbeat/GC, the persistent task queue, closure-report gates with injectable vocabulary, and the delivery verifier.',
 		'5. Hard rule: mcp-vertex never imports host packages. If you need host data inside an engine, add a parameter to the engine, never an import.',

@@ -136,14 +136,21 @@ const UTILITY_SELECTORS = new Set([
 const IGNORE_SELECTORS = [
 	// `:root[...]` — global theme roots, not BEM blocks.
 	/^:root(\[.+\])?$/,
-	// `html`, `body`, `*`, `pre`, `code`, `footer` — global element resets
-	// that the BEM rule does not govern.  (Most of these are caught by the
-	// `accept` check below too, but the explicit allow-list is clearer.)
-	/^(html|body|\*|pre|code|footer)$/,
+	// `html[attr]`, `html`, `body`, `*`, `pre`, `code`, `footer` — global
+	// element selectors used for document-level overrides (RTL, motion,
+	// reset) that the BEM rule does not govern.  Tag-only selectors are
+	// caught by the `accept` check below too, but the explicit allow-list
+	// is clearer and also covers `html[attr]` style selectors.
+	/^html(\[.+\])?$/,
+	/^(body|\*|pre|code|footer)$/,
 	// Single tag selectors used for global typography / links.
 	/^a(:hover|:focus|:focus-visible|:active|:visited)?$/,
-	// Pseudo-elements and view-transition pseudo-elements.
-	/^::view-transition-[a-z-]+$/,
+	// View-transition pseudo-elements: `::view-transition-old(name)` and
+	// `::view-transition-new(name)`.  The `name` segment is an Astro
+	// `transition:name` value, which we cannot predict, so we match the
+	// full prefix only and let the parent rule accept the parameter.
+	/^::view-transition-(old|new)\(/,
+	// Bare pseudo-elements (no parameter).
 	/^::[a-z-]+$/,
 	// `:not(...)` chains — handled by the surrounding rule.
 	/^:not\(/,
@@ -260,6 +267,29 @@ function isAcceptable(selector) {
 	// combinators allowed at the top level (those would be a sign of
 	// "leaking" global selectors — use `&` inside the parent rule).
 	if (/[\s>+~]/.test(sel)) return false;
+
+	// Allow `.parent__block a[attr...]` and `.parent__block a:not(.x)` —
+	// common pattern for navigation links with attribute filters or
+	// `:not()` state-based visibility.  We accept ONE descendant tag
+	// (or class) with optional attribute / pseudo / :not chain.  This
+	// is the only allowed "descendant at top level" shape; anything more
+	// (two descendants, tag+class, etc.) still fails and forces a refactor
+	// to nest inside the parent rule.
+	if (
+		/^\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\s+a(:not\([^)]+\))?(\[[^\]]+\])?(:[a-z-]+(?:\([^)]*\))?)?$/.test(
+			sel,
+		)
+	) {
+		return true;
+	}
+	// Same with `:` or `[` on the child (e.g. `.parent :not(.gear)`).
+	if (
+		/^\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\s+(:not\([^)]+\)|\[[^\]]+\])$/.test(
+			sel,
+		)
+	) {
+		return true;
+	}
 
 	const m = sel.match(
 		/^\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?(?:\[[^\]]+\])?(?::([a-z-]+))?$/,

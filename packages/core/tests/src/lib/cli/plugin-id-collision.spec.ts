@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 const pluginWithPingTool = (name: string) => ({
@@ -29,7 +29,10 @@ const pluginWithPingTool = (name: string) => ({
 });
 
 const assembleTwoPlugins = () => {
-	const args = parseCliArgs(['--plugins=alpha,beta', '--workspace=/ws'], '/cwd');
+	const args = parseCliArgs(
+		['--plugins=alpha,beta', '--workspace=/ws'],
+		'/cwd',
+	);
 	return assembleCliConfig(args, {
 		readFile: () => undefined,
 		import: async (specifier: string) => ({
@@ -54,7 +57,7 @@ describe('R12 — same internal tool id across plugins', () => {
 
 	it('builds the real MCP server without throwing a duplicate-id error', async () => {
 		const { config } = await assembleTwoPlugins();
-		const assembled = await createMcpServer(config);
+		const assembled = await createMcpProject(config);
 		expect(assembled.registrationOrder).toContain('alpha_ping');
 		expect(assembled.registrationOrder).toContain('beta_ping');
 	});

@@ -1,6 +1,6 @@
 import type { ICorePaths } from './core-paths.interface';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
-import type { IMcpVertexServerMetadata } from './server-metadata.interface';
+import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
 import type { IMetricsRegistry } from '../../metrics/metrics-registry';
 import type {
@@ -21,7 +21,7 @@ import type { IWorkspacePathProvider } from './workspace-paths.interface';
  * tool/prompt/resource/knowledge registrations to expose.
  */
 export interface IMcpVertexHostConfig {
-	readonly metadata: IMcpVertexServerMetadata;
+	readonly metadata: IMcpVertexProjectMetadata;
 	/**
 	 * Prefix for host tool names, e.g. `acme` → `acme_*`. Optional:
 	 * plugins namespace their own tools. mcp-vertex never invents tool

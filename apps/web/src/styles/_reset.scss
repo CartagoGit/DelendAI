@@ -1,0 +1,56 @@
+// _reset.scss — global element resets and base typography.
+//
+// Keeps the BEM linter happy: these are tag-only selectors (html, body, *,
+// pre, code, footer) and are intentionally outside the BEM convention.  The
+// `scoped-bem/selector` rule in stylelint.config.mjs allow-lists them.
+
+* {
+	box-sizing: border-box;
+}
+html {
+	scroll-behavior: smooth;
+}
+body {
+	margin: 0;
+	font:
+		16px/1.65
+		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	background: var(--bg);
+	color: var(--fg);
+	-webkit-font-smoothing: antialiased;
+	transition: background 0.2s ease, color 0.2s ease;
+}
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+pre {
+	background: var(--bg-soft);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+	overflow: auto;
+	font-size: 0.88rem;
+}
+code {
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+}
+:not(pre) > code {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.85em;
+}
+
+footer {
+	border-top: 1px solid var(--line);
+	padding: 2rem 0;
+	color: var(--muted);
+	text-align: center;
+	font-size: 0.88rem;
+}

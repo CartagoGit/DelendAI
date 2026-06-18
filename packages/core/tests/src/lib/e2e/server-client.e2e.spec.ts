@@ -7,7 +7,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import memoryPlugin from '@mcp-vertex/memory';
 
@@ -27,20 +27,20 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 		workspace = mkdtempSync(join(tmpdir(), 'e2e-'));
 		const args = parseCliArgs(
 			['--plugins=memory', `--workspace=${workspace}`],
-			workspace
+			workspace,
 		);
 		const { config } = await assembleCliConfig(args, {
 			// Inject the real memory plugin (no dynamic resolution in tests).
 			import: async () => ({ default: memoryPlugin }),
 			readFile: () => undefined,
 		});
-		const assembled = await createMcpServer(config);
+		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
 		client = new Client(
 			{ name: 'e2e-test', version: '0.0.0' },
-			{ capabilities: {} }
+			{ capabilities: {} },
 		);
 		await client.connect(clientTransport);
 		close = async () => {
@@ -71,14 +71,18 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 			?.text;
 		const snap = JSON.parse(text ?? '{}');
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
-			'memory'
+			'memory',
 		);
 	});
 
 	it('round-trips a note through save → recall over the protocol', async () => {
 		const saved = await client.callTool({
 			name: 'memory_save',
-			arguments: { title: 'E2E decision', body: 'we ship via in-memory', tags: ['e2e'] },
+			arguments: {
+				title: 'E2E decision',
+				body: 'we ship via in-memory',
+				tags: ['e2e'],
+			},
 		});
 		// N16: memory_save declares an outputSchema, so the SDK validated the
 		// structuredContent on the way out, and a modern client reads it
@@ -100,7 +104,7 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 		expect(recalled.notes[0]?.title).toBe('E2E decision');
 		expect(
 			(res.structuredContent as { notes: Array<{ title: string }> })
-				.notes[0]?.title
+				.notes[0]?.title,
 		).toBe('E2E decision');
 	});
 
@@ -110,14 +114,18 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 			name: 'mcp-vertex_get_validation_matrix',
 			arguments: {},
 		});
-		expect((vm.structuredContent as { scopes: unknown }).scopes).toBeDefined();
+		expect(
+			(vm.structuredContent as { scopes: unknown }).scopes,
+		).toBeDefined();
 
 		const kn = await client.callTool({
 			name: 'mcp-vertex_knowledge',
 			arguments: {},
 		});
 		expect(
-			Array.isArray((kn.structuredContent as { entries: unknown }).entries)
+			Array.isArray(
+				(kn.structuredContent as { entries: unknown }).entries,
+			),
 		).toBe(true);
 	});
 

@@ -136,9 +136,9 @@ bun i @mcp-vertex/core @mcp-vertex/proposals
 
 ```ts
 // 1) Assemble your own server in code:
-import { createMcpServer, createWorkspacePathProvider } from '@mcp-vertex/core/public';
+import { createMcpProject, createWorkspacePathProvider } from '@mcp-vertex/core/public';
 
-const assembled = await createMcpServer({
+const assembled = await createMcpProject({
 	metadata: { name: 'mcp-project-acme', version: '0.1.0' },
 	namespacePrefix: 'acme',
 	workspace: createWorkspacePathProvider(process.cwd()),

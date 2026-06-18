@@ -56,7 +56,7 @@ const pascal = (value: string): string =>
 export const scaffoldToolFile = (
 	prefix: string,
 	name: string,
-	description: string
+	description: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
@@ -105,7 +105,7 @@ export async function register${fn}Tool(server: McpServer): Promise<void> {
 export const scaffoldPromptFile = (
 	prefix: string,
 	name: string,
-	description: string
+	description: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
@@ -144,7 +144,7 @@ export const scaffoldSkillFile = (
 	prefix: string,
 	name: string,
 	description: string,
-	whenToUse: readonly string[] = []
+	whenToUse: readonly string[] = [],
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const bullets =
@@ -179,7 +179,7 @@ ${bullets}
 
 export const scaffoldAgentFile = (
 	options: IScaffoldHostOptions,
-	slot: IScaffoldAgentSlot
+	slot: IScaffoldAgentSlot,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	const model = options.defaultModel ?? '<your-model>';
@@ -215,7 +215,7 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 };
 
 export const scaffoldInstructionsFile = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -239,7 +239,7 @@ The MCP server \`mcp-project-${prefix}\` rules. Do NOT re-derive workflow from d
 };
 
 export const scaffoldHostConfigFile = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -285,11 +285,11 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 };
 
 export const scaffoldServerEntryFiles = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => [
 	{
 		path: 'libs/mcp-project/src/server.ts',
-		content: `import { createMcpServer } from '@mcp-vertex/core/public';
+		content: `import { createMcpProject } from '@mcp-vertex/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
 
@@ -297,7 +297,7 @@ import { buildHostConfig } from './lib/shared/host-config';
 // (like mcp-vertex's own CLI). It resolves the workspace root and injects
 // it into the (hermetic) host config.
 export async function startServer(workspaceRoot = process.cwd()): Promise<void> {
-	const assembled = await createMcpServer(buildHostConfig(workspaceRoot));
+	const assembled = await createMcpProject(buildHostConfig(workspaceRoot));
 	await assembled.start();
 }
 `,
@@ -323,7 +323,7 @@ void startServer();
 				},
 			},
 			null,
-			'\t'
+			'\t',
 		)}
 `,
 	},
@@ -335,7 +335,7 @@ void startServer();
  * a starter skill.
  */
 export const scaffoldHostProject = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => [
 	scaffoldHostConfigFile(options),
 	...scaffoldServerEntryFiles(options),
@@ -345,7 +345,7 @@ export const scaffoldHostProject = (
 	scaffoldSkillFile(
 		options.namespacePrefix,
 		'project-standards',
-		`Closed stack and conventions of ${options.projectName}.`
+		`Closed stack and conventions of ${options.projectName}.`,
 	),
 ];
 
@@ -369,7 +369,7 @@ export interface IScaffoldPluginOptions {
  * return structured JSON so any agent/model can consume them.
  */
 export const scaffoldPluginFiles = (
-	options: IScaffoldPluginOptions
+	options: IScaffoldPluginOptions,
 ): readonly IScaffoldedFile[] => {
 	const id = kebab(options.pluginName);
 	const scope = options.scope ?? '@cartago-git';
@@ -395,7 +395,7 @@ export const scaffoldPluginFiles = (
 					},
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -469,7 +469,7 @@ export default definePlugin({
 					include: ['src/**/*', 'tests/**/*'],
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -524,7 +524,7 @@ export interface IScaffoldClientOptions {
  * `kind:client`.
  */
 export const scaffoldClientFiles = (
-	options: IScaffoldClientOptions
+	options: IScaffoldClientOptions,
 ): readonly IScaffoldedFile[] => {
 	const id = kebab(options.clientName);
 	const scope = options.scope ?? '@cartago-git';
@@ -548,7 +548,7 @@ export const scaffoldClientFiles = (
 					dependencies: { '@modelcontextprotocol/sdk': '^1.29.0' },
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -607,7 +607,7 @@ export const create${fn}Client = async (
 					include: ['src/**/*'],
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{

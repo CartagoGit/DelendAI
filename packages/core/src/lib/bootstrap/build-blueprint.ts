@@ -52,7 +52,7 @@ const kebabHead = (name: string | undefined): string => {
 };
 
 const uniqueByName = (
-	items: readonly IBlueprintArtifact[]
+	items: readonly IBlueprintArtifact[],
 ): IBlueprintArtifact[] => {
 	const seen = new Set<string>();
 	const out: IBlueprintArtifact[] = [];
@@ -65,20 +65,31 @@ const uniqueByName = (
 };
 
 const SUBAGENT_SLOTS = [
-	{ slot: 'proposal_guardian', description: 'Curates and validates the backlog.' },
-	{ slot: 'implementation_runner', description: 'Executes one atomic slice.' },
-	{ slot: 'delivery_verifier', description: 'Verifies a closed slice/round.' },
-	{ slot: 'technical_investigator', description: 'Investigates without editing.' },
+	{
+		slot: 'proposal_guardian',
+		description: 'Curates and validates the backlog.',
+	},
+	{
+		slot: 'implementation_runner',
+		description: 'Executes one atomic slice.',
+	},
+	{
+		slot: 'delivery_verifier',
+		description: 'Verifies a closed slice/round.',
+	},
+	{
+		slot: 'technical_investigator',
+		description: 'Investigates without editing.',
+	},
 ] as const;
 
 /** Build the exhaustive blueprint from a project analysis. */
 export const buildServerBlueprint = (
 	analysis: IProjectAnalysis,
-	options: IBlueprintOptions = {}
+	options: IBlueprintOptions = {},
 ): IServerBlueprint => {
 	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
-	const namespacePrefix =
-		options.namespacePrefix ?? kebabHead(analysis.name);
+	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
@@ -88,7 +99,7 @@ export const buildServerBlueprint = (
 		(role) => ({
 			name: `run_${role}`,
 			description: `Run the project's ${role} command and return a structured pass/fail report.`,
-		})
+		}),
 	);
 	const tools = uniqueByName([
 		...pattern.recommendedTools.map((tool) => ({
@@ -99,7 +110,10 @@ export const buildServerBlueprint = (
 	]);
 
 	const prompts: IBlueprintArtifact[] = [
-		{ name: 'start', description: 'Orient and start working in this project.' },
+		{
+			name: 'start',
+			description: 'Orient and start working in this project.',
+		},
 	];
 	if (Object.keys(analysis.scripts).length > 0) {
 		prompts.push({
@@ -128,13 +142,16 @@ export const buildServerBlueprint = (
 	}
 
 	const agents = [
-		{ slot: 'orchestrator', description: 'Root orchestrator for this project.' },
+		{
+			slot: 'orchestrator',
+			description: 'Root orchestrator for this project.',
+		},
 		...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
 	];
 
 	const notes: string[] = [
 		...pattern.knowledgeHints,
-		analysis.hasMcpServer
+		analysis.hasMcpProject
 			? `An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-vertex instead of replacing it — register it alongside, reuse its tools, and adopt mcp-vertex conventions incrementally.`
 			: 'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',
 		tests
@@ -143,7 +160,7 @@ export const buildServerBlueprint = (
 	];
 	if (analysis.agentConfigs.length > 0) {
 		notes.push(
-			`Align with the existing agent config (${analysis.agentConfigs.join(', ')}).`
+			`Align with the existing agent config (${analysis.agentConfigs.join(', ')}).`,
 		);
 	}
 
@@ -157,15 +174,12 @@ export const buildServerBlueprint = (
 		skills,
 		agents,
 		tests,
-		hasExistingServer: analysis.hasMcpServer,
+		hasExistingServer: analysis.hasMcpProject,
 		notes,
 	};
 };
 
-const toolTestFile = (
-	prefix: string,
-	toolName: string
-): IScaffoldedFile => {
+const toolTestFile = (prefix: string, toolName: string): IScaffoldedFile => {
 	const id = toolName.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 	const fn = id
 		.split('-')
@@ -194,15 +208,14 @@ describe('${prefix}_${id.replace(/-/g, '_')}', () => {
  */
 export const buildBlueprintFiles = (
 	blueprint: IServerBlueprint,
-	projectPackageName?: string
+	projectPackageName?: string,
 ): readonly IScaffoldedFile[] => {
 	const prefix = blueprint.namespacePrefix;
 	const files: IScaffoldedFile[] = [
 		...scaffoldHostProject({
 			projectName: blueprint.serverName,
 			namespacePrefix: prefix,
-			projectPackageName:
-				projectPackageName ?? `@${prefix}/mcp-project`,
+			projectPackageName: projectPackageName ?? `@${prefix}/mcp-project`,
 		}),
 	];
 	for (const tool of blueprint.tools) {

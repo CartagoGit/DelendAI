@@ -1,0 +1,65 @@
+// _modal.scss — settings modal (theme / language / motion toggles).
+//
+// BEM root: .modal with __backdrop, __panel, __head, __close, __group.
+// The `.is-open` modifier was renamed to `.modal--open` to follow BEM
+// (the original `.modal.is-open` was a class compound, not BEM).
+
+.modal {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: none;
+
+	&[open],
+	&--open {
+		display: block;
+	}
+}
+.modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 0.55);
+	backdrop-filter: blur(2px);
+}
+.modal__panel {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: min(28rem, calc(100vw - 2rem));
+	max-height: calc(100vh - 2rem);
+	overflow: auto;
+	background: var(--bg);
+	border: 1px solid var(--line);
+	border-radius: 16px;
+	padding: 1.4rem;
+}
+.modal__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+
+	& h2 {
+		margin: 0;
+		font-size: 1.15rem;
+	}
+}
+.modal__close {
+	background: none;
+	border: none;
+	color: var(--muted);
+	font-size: 1.4rem;
+	cursor: pointer;
+	line-height: 1;
+}
+.modal__group {
+	margin: 1.1rem 0;
+}
+.modal__group-title {
+	margin: 0 0 0.6rem;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--muted);
+}

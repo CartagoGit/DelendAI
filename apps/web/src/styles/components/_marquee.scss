@@ -1,0 +1,78 @@
+// _marquee.scss — seamless infinite-scroll logo tracks.
+//
+// BEM root: .mq (with __label, __viewport, __track, __set).  Modifier
+// `--reverse` plays the same animation backwards.
+//
+// `html[data-motion='off'] .mq__track` is a global override for the motion
+// setting; `prefers-reduced-motion` is the system-level equivalent.
+
+.marquees {
+	padding: 1.25rem 0 2.75rem;
+	display: grid;
+	gap: 1.5rem;
+}
+.mq {
+	display: grid;
+	gap: 0.65rem;
+	min-width: 0;
+}
+.mq__label {
+	text-align: center;
+	color: var(--muted);
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+}
+.mq__viewport {
+	// Clip both axes so the wide track never causes page scroll. `overflow-x:clip`
+	// forces `overflow-y` to compute to `auto`, which would cut the hover tooltip —
+	// so we reserve room BELOW (padding-bottom) and let the tooltip live INSIDE the
+	// clip box instead of escaping below it.
+	overflow: clip;
+	padding: 0.85rem 0 2.4rem;
+	width: 100%;
+	max-width: 56rem;
+	margin-inline: auto;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+
+	&:hover .mq__track,
+	&:focus-within .mq__track {
+		animation-play-state: paused;
+	}
+}
+.mq__track {
+	display: flex;
+	width: max-content;
+	will-change: transform;
+	animation: scroll 70s linear infinite;
+}
+.mq--reverse {
+	& .mq__track {
+		animation-direction: reverse;
+		animation-duration: 82s;
+	}
+}
+.mq__set {
+	display: flex;
+	flex: 0 0 auto;
+	gap: clamp(0.5rem, 1.4vw, 0.85rem);
+	padding-right: clamp(0.5rem, 1.4vw, 0.85rem);
+}
+@keyframes scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+html[data-motion="off"] .mq__track {
+	animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+	.mq__track {
+		animation: none;
+	}
+}

@@ -1,0 +1,111 @@
+// _nav.scss — top navigation bar (sticky, glassmorphic).
+//
+// BEM root: .nav (with __inner, __brand, __logo, __brand-text, __links,
+// __link--new).  Tag selectors (a) and attribute selectors are nested with
+// `&` to keep everything in the BEM scope.
+
+.nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	backdrop-filter: blur(10px);
+	background: color-mix(in srgb, var(--bg) 82%, transparent);
+	border-bottom: 1px solid var(--line);
+}
+.nav__inner {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	height: 60px;
+}
+.nav__brand {
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+	border-radius: 999px;
+	transition: background 0.18s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+		text-decoration: none;
+	}
+}
+.nav__logo {
+	display: block;
+	flex: 0 0 auto;
+}
+.nav__brand-text {
+	white-space: nowrap;
+}
+.nav__links {
+	display: flex;
+	gap: 1.1rem;
+	margin-left: auto;
+	align-items: center;
+	flex-wrap: wrap;
+
+	& a {
+		color: var(--muted);
+		font-size: 0.92rem;
+		padding: 0.3rem 0.4rem;
+		border-radius: 6px;
+		transition: color 0.18s ease, background 0.18s ease;
+	}
+	& a:hover {
+		color: var(--fg);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+}
+.nav__link--new {
+	&::after {
+		content: "·";
+		margin-left: 0.4rem;
+		color: var(--accent);
+		font-weight: 700;
+		opacity: 0.7;
+	}
+}
+
+// Decorative utility (icon button)
+.gear {
+	display: inline-grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: var(--card);
+	color: var(--fg);
+	cursor: pointer;
+	transition: transform 0.4s ease, border-color 0.2s ease;
+
+	&:hover {
+		transform: rotate(90deg);
+		border-color: var(--accent);
+	}
+}
+
+// Mobile hamburger (only visible at <= 680px — see _nav-media queries below)
+.hamburger {
+	display: none;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: var(--card);
+	color: var(--fg);
+	cursor: pointer;
+
+	&:hover {
+		border-color: var(--accent);
+	}
+	&[aria-expanded="true"] {
+		background: color-mix(in srgb, var(--accent) 14%, var(--card));
+		border-color: var(--accent);
+	}
+}

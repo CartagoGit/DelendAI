@@ -39,8 +39,8 @@ export interface IProjectAnalysis {
 	/** Monorepo tool detected (e.g. `nx`, `turbo`, `bun-workspaces`). */
 	readonly monorepoTool: string | undefined;
 	/** True if the project already ships (or depends on) an MCP server. */
-	readonly hasMcpServer: boolean;
-	/** Evidence behind `hasMcpServer`. */
+	readonly hasMcpProject: boolean;
+	/** Evidence behind `hasMcpProject`. */
 	readonly mcpEvidence: readonly string[];
 	/** Detected CI systems (file evidence). */
 	readonly ci: readonly string[];
@@ -89,10 +89,13 @@ const detectFramework = (deps: Record<string, string>): string | undefined => {
 };
 
 const detectGame = (deps: Record<string, string>): boolean =>
-	'phaser' in deps || 'three' in deps || 'pixi.js' in deps || 'babylonjs' in deps;
+	'phaser' in deps ||
+	'three' in deps ||
+	'pixi.js' in deps ||
+	'babylonjs' in deps;
 
 const detectPackageManager = (
-	reader: IFileReader
+	reader: IFileReader,
 ): IProjectAnalysis['packageManager'] => {
 	if (reader.exists('bun.lock') || reader.exists('bun.lockb')) return 'bun';
 	if (reader.exists('pnpm-lock.yaml')) return 'pnpm';
@@ -103,7 +106,7 @@ const detectPackageManager = (
 
 const detectTestRunner = (
 	deps: Record<string, string>,
-	scripts: Record<string, string>
+	scripts: Record<string, string>,
 ): IProjectAnalysis['testRunner'] => {
 	if ('vitest' in deps) return 'vitest';
 	if ('jest' in deps) return 'jest';
@@ -118,7 +121,7 @@ const detectTestRunner = (
 const QUALITY_ROLES = ['lint', 'test', 'build', 'typecheck'] as const;
 
 const pickScripts = (
-	scripts: Record<string, string>
+	scripts: Record<string, string>,
 ): Record<string, string> => {
 	const out: Record<string, string> = {};
 	for (const role of QUALITY_ROLES) {
@@ -133,7 +136,7 @@ const pickScripts = (
 
 const detectMonorepoTool = (
 	reader: IFileReader,
-	pkg: IPackageJson | undefined
+	pkg: IPackageJson | undefined,
 ): string | undefined => {
 	if (reader.exists('nx.json')) return 'nx';
 	if (reader.exists('turbo.json')) return 'turbo';
@@ -145,7 +148,7 @@ const detectMonorepoTool = (
 
 const detectLanguage = (
 	reader: IFileReader,
-	pkg: IPackageJson | undefined
+	pkg: IPackageJson | undefined,
 ): IProjectLanguage => {
 	if (reader.exists('tsconfig.json') || reader.exists('tsconfig.base.json')) {
 		return 'typescript';
@@ -165,7 +168,8 @@ const detectLanguage = (
 
 const detectCi = (reader: IFileReader): string[] => {
 	const ci: string[] = [];
-	if (reader.listDir('.github/workflows').length > 0) ci.push('github-actions');
+	if (reader.listDir('.github/workflows').length > 0)
+		ci.push('github-actions');
 	if (reader.exists('.gitlab-ci.yml')) ci.push('gitlab-ci');
 	if (reader.exists('azure-pipelines.yml')) ci.push('azure-pipelines');
 	if (reader.exists('.circleci/config.yml')) ci.push('circleci');
@@ -183,7 +187,8 @@ const detectAgentConfigs = (reader: IFileReader): string[] => {
 	if (reader.exists('.github/copilot-instructions.md')) {
 		configs.push('copilot-instructions');
 	}
-	if (reader.listDir('.github/agents').length > 0) configs.push('github-agents');
+	if (reader.listDir('.github/agents').length > 0)
+		configs.push('github-agents');
 	if (reader.exists('.windsurfrules')) configs.push('windsurf');
 	return configs;
 };
@@ -193,7 +198,7 @@ const detectProjectType = (
 	pkg: IPackageJson | undefined,
 	deps: Record<string, string>,
 	framework: string | undefined,
-	monorepoTool: string | undefined
+	monorepoTool: string | undefined,
 ): IProjectType => {
 	if (monorepoTool !== undefined) return 'monorepo';
 	if (detectGame(deps)) return 'game';
@@ -215,7 +220,7 @@ const detectProjectType = (
 
 const detectMcp = (
 	reader: IFileReader,
-	deps: Record<string, string>
+	deps: Record<string, string>,
 ): { has: boolean; evidence: string[] } => {
 	const evidence: string[] = [];
 	if ('@modelcontextprotocol/sdk' in deps) {
@@ -248,7 +253,7 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 		pkg,
 		deps,
 		framework,
-		monorepoTool
+		monorepoTool,
 	);
 	const ci = detectCi(reader);
 	const agentConfigs = detectAgentConfigs(reader);
@@ -260,16 +265,17 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 	signals.push(
 		mcp.has
 			? 'an MCP server already exists; recommend augmenting, not replacing'
-			: 'no MCP server detected; a fresh one can be scaffolded'
+			: 'no MCP server detected; a fresh one can be scaffolded',
 	);
 	if (framework !== undefined) signals.push(`web framework: ${framework}`);
-	if (monorepoTool !== undefined) signals.push(`monorepo tool: ${monorepoTool}`);
+	if (monorepoTool !== undefined)
+		signals.push(`monorepo tool: ${monorepoTool}`);
 	if (language !== 'typescript' && language !== 'javascript') {
 		signals.push(`non-JS stack: ${language}`);
 	}
 	if (agentConfigs.length > 0) {
 		signals.push(
-			`existing agent config (${agentConfigs.join(', ')}); align with it`
+			`existing agent config (${agentConfigs.join(', ')}); align with it`,
 		);
 	}
 	if (ci.length > 0) signals.push(`CI: ${ci.join(', ')}`);
@@ -283,7 +289,7 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 		framework,
 		testRunner: detectTestRunner(deps, scripts),
 		monorepoTool,
-		hasMcpServer: mcp.has,
+		hasMcpProject: mcp.has,
 		mcpEvidence: mcp.evidence,
 		ci,
 		agentConfigs,

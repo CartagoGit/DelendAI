@@ -7,7 +7,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import proposalsPlugin from '@mcp-vertex/proposals';
 import memoryPlugin from '@mcp-vertex/memory';
@@ -41,7 +41,7 @@ describe('e2e: token budget (cold-start payloads)', () => {
 		workspace = mkdtempSync(join(tmpdir(), 'tok-'));
 		const args = parseCliArgs(
 			['--plugins=proposals,memory', `--workspace=${workspace}`],
-			workspace
+			workspace,
 		);
 		const plugins: Record<string, { default: unknown }> = {
 			'@mcp-vertex/proposals': { default: proposalsPlugin },
@@ -51,11 +51,14 @@ describe('e2e: token budget (cold-start payloads)', () => {
 			import: async (specifier: string) => plugins[specifier]!,
 			readFile: () => undefined,
 		});
-		const assembled = await createMcpServer(config);
+		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
-		client = new Client({ name: 'tok', version: '0' }, { capabilities: {} });
+		client = new Client(
+			{ name: 'tok', version: '0' },
+			{ capabilities: {} },
+		);
 		await client.connect(clientTransport);
 		close = async () => {
 			await client.close();
@@ -70,7 +73,7 @@ describe('e2e: token budget (cold-start payloads)', () => {
 
 	const textBytes = async (
 		name: string,
-		args: Record<string, unknown>
+		args: Record<string, unknown>,
 	): Promise<number> => {
 		const res = await client.callTool({ name, arguments: args });
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
@@ -80,12 +83,14 @@ describe('e2e: token budget (cold-start payloads)', () => {
 
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
 		const full = await textBytes('mcp-vertex_overview', {});
-		const compact = await textBytes('mcp-vertex_overview', { compact: true });
+		const compact = await textBytes('mcp-vertex_overview', {
+			compact: true,
+		});
 
 		// Documented baseline (printed for visibility on failures):
 		expect(
 			full,
-			`overview full = ${full}B, compact = ${compact}B`
+			`overview full = ${full}B, compact = ${compact}B`,
 		).toBeLessThan(BUDGET_BYTES.overviewFull);
 		expect(compact).toBeLessThan(BUDGET_BYTES.overviewCompact);
 		// Compact must be a real saving, not cosmetic.
