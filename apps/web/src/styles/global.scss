@@ -76,9 +76,10 @@ a:hover { text-decoration: underline; }
 .mq { display: grid; gap: 0.65rem; min-width: 0; }
 .mq__label { text-align: center; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; }
 .mq__viewport {
-	overflow-x: clip; overflow-y: visible; padding-block: 0.6rem; width: 100%;
-	-webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-	mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+	overflow-x: clip; overflow-y: visible; padding-block: 0.7rem;
+	width: 100%; max-width: 56rem; margin-inline: auto;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
 /* Track = two identical sets; -50% scrolls exactly one set → no jump, always full. */
 .mq__track { display: flex; width: max-content; will-change: transform; animation: scroll 70s linear infinite; }
@@ -89,16 +90,19 @@ a:hover { text-decoration: underline; }
 
 .chip {
 	position: relative; flex: 0 0 auto;
-	width: clamp(42px, 11vw, 50px); height: clamp(42px, 11vw, 50px); border-radius: 12px;
-	display: grid; place-items: center; background: var(--card); border: 1px solid var(--line);
-	color: var(--fg); outline: none;
+	width: clamp(46px, 11vw, 56px); height: clamp(46px, 11vw, 56px); border-radius: 13px;
+	display: grid; place-items: center; color: var(--fg); outline: none;
+	background: color-mix(in srgb, var(--fg) 5%, var(--card));
+	border: 1px solid color-mix(in srgb, var(--fg) 12%, var(--line));
+	box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
 	transition: transform 0.18s ease, color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 .chip:hover, .chip:focus-visible {
-	transform: scale(1.16); color: var(--accent); border-color: var(--accent);
-	background: color-mix(in srgb, var(--accent) 10%, var(--card)); z-index: 2;
+	transform: scale(1.18) translateY(-2px); color: var(--accent); border-color: var(--accent);
+	background: color-mix(in srgb, var(--accent) 14%, var(--card)); z-index: 2;
+	box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-.chip__icon { display: grid; place-items: center; opacity: 0.82; }
+.chip__icon { display: grid; place-items: center; opacity: 0.92; }
 .chip:hover .chip__icon, .chip:focus-visible .chip__icon { opacity: 1; }
 .chip__mono { font-size: 0.8rem; font-weight: 800; }
 .chip__tip {
