@@ -33,6 +33,22 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `get_proposal_workflow` | Families, locations, naming and template as JSON. |
 | `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock. |
 | `proposal_review` | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection. |
+| `proposal_adopt` | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps). |
+
+### Folder layout (`<docsDir>/proposals`, default `docs/mcp-vertex/proposals`)
+
+```
+docs/mcp-vertex/proposals/
+├─ index.json          machine-readable registry (run sync_proposals to (re)build)
+├─ README.md           human guide to this folder
+├─ p<N>-<title>.md     a proposal (feature/refactor) — frontmatter: id, type, status
+├─ f<N>-<title>.md     a fix (cascades before proposals: f before p)
+└─ done/               completed + verified proposals, archived
+                       (+ optional host buckets via the `extraFolders` option)
+```
+
+Pointing mcp-vertex at a project that already has a proposals folder? Call
+`proposal_adopt` — it explains this layout, scans what you have, and hands you a plan.
 
 ## Configure (`mcp-vertex.config.json`)
 

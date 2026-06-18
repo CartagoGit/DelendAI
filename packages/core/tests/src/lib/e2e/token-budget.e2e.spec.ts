@@ -24,7 +24,10 @@ import memoryPlugin from '@mcp-vertex/memory';
  * overview-full < ~1.5k tokens, overview-compact < ~400 tokens.
  */
 const BUDGET_BYTES = {
-	overviewFull: 6_000,
+	// Full overview lists every tool's summary, so it grows as the toolset does
+	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
+	// path (well under budget) — agents use it when there are many tools.
+	overviewFull: 6_500,
 	overviewCompact: 1_600,
 	autoWork: 1_600,
 } as const;

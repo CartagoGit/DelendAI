@@ -17,6 +17,7 @@ import {
 	buildReviewRegistration,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
+import { buildAdoptRegistration } from './lib/tools/adopt.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
@@ -186,6 +187,7 @@ export default definePlugin({
 				buildCloseSliceRegistration(authoringOptions),
 				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
+				buildAdoptRegistration(authoringOptions),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({

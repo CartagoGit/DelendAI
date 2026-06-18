@@ -87,6 +87,27 @@ export interface ProposalsPlanOutput {
 	claimableSliceIds: string[];
 }
 
+export interface ProposalsProposalAdoptOutput {
+	ok: true;
+	root: string;
+	layout: Record<string, unknown>;
+	scan: {
+		proposals: Array<{
+			file: string;
+			id: string;
+			kind: "proposal" | "fix";
+			status: string;
+		}>;
+		folders: string[];
+		hasIndex: boolean;
+		hasReadme: boolean;
+		unrecognized: string[];
+		other: string[];
+	};
+	plan: string[];
+	ready: boolean;
+}
+
 export interface ProposalsProposalBoardOutput {
 	proposals: Array<{
 		id: string;
@@ -165,6 +186,7 @@ export interface ProposalsToolOutputs {
 	"proposals_delegate": ProposalsDelegateOutput;
 	"proposals_get_proposal_workflow": ProposalsGetProposalWorkflowOutput;
 	"proposals_plan": ProposalsPlanOutput;
+	"proposals_proposal_adopt": ProposalsProposalAdoptOutput;
 	"proposals_proposal_board": ProposalsProposalBoardOutput;
 	"proposals_proposal_review": ProposalsProposalReviewOutput;
 	"proposals_round_context": ProposalsRoundContextOutput;
