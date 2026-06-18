@@ -248,7 +248,7 @@ export const scaffoldHostConfigFile = (
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
-import type { IMcpCoreHostConfig } from '@mcp-vertex/core/public';
+import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
 
 // The core is project-agnostic. Add domain behaviour (e.g. a proposal
 // workflow) by loading a plugin via the mcp-vertex CLI
@@ -257,7 +257,7 @@ import type { IMcpCoreHostConfig } from '@mcp-vertex/core/public';
 // entry point), never read from \`process.cwd()\` here — a lib must not
 // guess where the project lives, so this stays correct under CI,
 // containers and tests.
-export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
+export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => {
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {
 		metadata: {
@@ -621,7 +621,7 @@ import { create${fn}Client } from '${pkg}';
 
 const mcp = await create${fn}Client();
 const tools = await mcp.listTools();
-const result = await mcp.callTool('mcpcore_overview');
+const result = await mcp.callTool('mcpvertex_overview');
 await mcp.close();
 \`\`\`
 `,

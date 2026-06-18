@@ -13,7 +13,7 @@ export {
 	createMcpServer,
 	planRegistrationOrder,
 } from '../lib/server/create-mcp-server';
-export type { IMcpCoreServer } from '../lib/server/create-mcp-server';
+export type { IMcpVertexServer } from '../lib/server/create-mcp-server';
 
 // --- workspace + paths -----------------------------------------------------
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
@@ -24,8 +24,8 @@ export {
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
 
 // --- contracts -------------------------------------------------------------
-export type { IMcpCoreHostConfig } from '../lib/contracts/interfaces/host-config.interface';
-export type { IMcpCoreServerMetadata } from '../lib/contracts/interfaces/server-metadata.interface';
+export type { IMcpVertexHostConfig } from '../lib/contracts/interfaces/host-config.interface';
+export type { IMcpVertexServerMetadata } from '../lib/contracts/interfaces/server-metadata.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,
@@ -54,7 +54,7 @@ export {
 } from '../lib/plugins/load-plugins';
 export type { ILoadedPlugin, IPluginLoadResult } from '../lib/plugins/load-plugins';
 export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
-export type { IMcpCoreCliArgs } from '../lib/plugins/parse-cli-args';
+export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
 export {
 	DEFAULT_CONFIG_FILENAME,
 	CONFIG_FILE_SCHEMA,
@@ -73,8 +73,8 @@ export type {
 	IDoctorReport,
 } from '../lib/cli/assemble';
 export type {
-	IMcpCoreConfigFile,
-	IMcpCorePluginConfig,
+	IMcpVertexConfigFile,
+	IMcpVertexPluginConfig,
 } from '../lib/plugins/load-config-file';
 
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------

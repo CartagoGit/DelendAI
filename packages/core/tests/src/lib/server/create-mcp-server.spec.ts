@@ -5,7 +5,7 @@ import {
 	planRegistrationOrder,
 } from '@mcp-vertex/core/lib/server/create-mcp-server';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpCoreHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const registration = (
@@ -22,7 +22,7 @@ const registration = (
 
 const hostConfig = (
 	extraTools: readonly IToolRegistration[]
-): IMcpCoreHostConfig => ({
+): IMcpVertexHostConfig => ({
 	metadata: {
 		name: 'spec-server',
 		version: '0.0.0',

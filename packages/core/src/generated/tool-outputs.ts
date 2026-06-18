@@ -12,22 +12,22 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface McpcoreAnalyzeProjectOutput {
+export interface McpvertexAnalyzeProjectOutput {
 	[key: string]: unknown;
 }
 
-export interface McpcoreCreateServerOutput {
+export interface McpvertexCreateServerOutput {
 	[key: string]: unknown;
 }
 
-export interface McpcoreGetValidationMatrixOutput {
+export interface McpvertexGetValidationMatrixOutput {
 	scopes: Record<string, {
 		command: string;
 		expect: string;
 	}[]>;
 }
 
-export interface McpcoreKnowledgeOutput {
+export interface McpvertexKnowledgeOutput {
 	entries?: {
 		id: string;
 		title: string;
@@ -37,7 +37,7 @@ export interface McpcoreKnowledgeOutput {
 	body?: string;
 }
 
-export interface McpcoreMetricsOutput {
+export interface McpvertexMetricsOutput {
 	tools: Record<string, {
 		calls: number;
 		errors: number;
@@ -55,7 +55,7 @@ export interface McpcoreMetricsOutput {
 	snapshots?: number;
 }
 
-export interface McpcoreOverviewOutput {
+export interface McpvertexOverviewOutput {
 	server: {
 		name: string;
 		version: string;
@@ -83,15 +83,15 @@ export interface McpcoreOverviewOutput {
 	recommendedNextAction: string;
 }
 
-export interface McpcorePlanMcpServerOutput {
+export interface McpvertexPlanMcpServerOutput {
 	[key: string]: unknown;
 }
 
-export interface McpcoreScaffoldOutput {
+export interface McpvertexScaffoldOutput {
 	[key: string]: unknown;
 }
 
-export interface McpcoreStatusOutput {
+export interface McpvertexStatusOutput {
 	collectors: Record<string, unknown>;
 	errors: {
 		id: string;
@@ -100,14 +100,14 @@ export interface McpcoreStatusOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface McpCoreToolOutputs {
-	"mcpcore_analyze_project": McpcoreAnalyzeProjectOutput;
-	"mcpcore_create_server": McpcoreCreateServerOutput;
-	"mcpcore_get_validation_matrix": McpcoreGetValidationMatrixOutput;
-	"mcpcore_knowledge": McpcoreKnowledgeOutput;
-	"mcpcore_metrics": McpcoreMetricsOutput;
-	"mcpcore_overview": McpcoreOverviewOutput;
-	"mcpcore_plan_mcp_server": McpcorePlanMcpServerOutput;
-	"mcpcore_scaffold": McpcoreScaffoldOutput;
-	"mcpcore_status": McpcoreStatusOutput;
+export interface McpVertexToolOutputs {
+	"mcpvertex_analyze_project": McpvertexAnalyzeProjectOutput;
+	"mcpvertex_create_server": McpvertexCreateServerOutput;
+	"mcpvertex_get_validation_matrix": McpvertexGetValidationMatrixOutput;
+	"mcpvertex_knowledge": McpvertexKnowledgeOutput;
+	"mcpvertex_metrics": McpvertexMetricsOutput;
+	"mcpvertex_overview": McpvertexOverviewOutput;
+	"mcpvertex_plan_mcp_server": McpvertexPlanMcpServerOutput;
+	"mcpvertex_scaffold": McpvertexScaffoldOutput;
+	"mcpvertex_status": McpvertexStatusOutput;
 }

@@ -1,7 +1,7 @@
 /**
  * Functional smoke (M30): drive the COMPILED core CLI over stdio under plain Node
  * and call a real tool. The `--check` smoke only validates config and exits; this
- * actually connects an MCP client, lists tools and calls `mcpcore_overview`,
+ * actually connects an MCP client, lists tools and calls `mcpvertex_overview`,
  * proving the published artifact serves the protocol under `node` (not just bun)
  * — the #1 adoption risk. Run after `bun run build`.
  *
@@ -32,17 +32,17 @@ const main = async (): Promise<void> => {
 
 		const { tools } = await client.listTools();
 		const names = new Set(tools.map((t) => t.name));
-		if (!names.has('mcpcore_overview')) {
-			throw new Error(`mcpcore_overview not registered (got ${tools.length} tools)`);
+		if (!names.has('mcpvertex_overview')) {
+			throw new Error(`mcpvertex_overview not registered (got ${tools.length} tools)`);
 		}
 
 		const res = (await client.callTool({
-			name: 'mcpcore_overview',
+			name: 'mcpvertex_overview',
 			arguments: { compact: true },
 		})) as { content?: Array<{ text?: string }>; isError?: boolean };
 		const text = res.content?.[0]?.text ?? '';
 		if (res.isError || text.length === 0) {
-			throw new Error('mcpcore_overview returned no payload');
+			throw new Error('mcpvertex_overview returned no payload');
 		}
 
 		console.log(

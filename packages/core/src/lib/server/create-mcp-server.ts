@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-import type { IMcpCoreHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import {
 	estimateResultBytes,
@@ -58,7 +58,7 @@ const instrumentToolMetrics = (
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
  */
-export interface IMcpCoreServer {
+export interface IMcpVertexServer {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
@@ -120,8 +120,8 @@ export function planRegistrationOrder(
  * caller starts the stdio transport via `start()`.
  */
 export async function createMcpServer(
-	config: IMcpCoreHostConfig
-): Promise<IMcpCoreServer> {
+	config: IMcpVertexHostConfig
+): Promise<IMcpVertexServer> {
 	const server = new McpServer({
 		name: config.metadata.name,
 		version: config.metadata.version,

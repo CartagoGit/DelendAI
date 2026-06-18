@@ -50,7 +50,7 @@ scaffolding tools.
 | `--docsDir=DIR` | `docs/mcp-vertex` | Human-edited document root (e.g. proposals). |
 | `--workspace=DIR` | current dir | Workspace root all paths resolve against. |
 | `--name=NAME` | `mcp-vertex` | Server name advertised over MCP. |
-| `--prefix=NS` | `mcpcore` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
+| `--prefix=NS` | `mcpvertex` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
 | `--config=FILE` | `mcp-vertex.config.json` | Config file with per-plugin values (see below). |
 | `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
 | `--mcp-server-create=false` | (on) | Disable the first-start project-server blueprint. |

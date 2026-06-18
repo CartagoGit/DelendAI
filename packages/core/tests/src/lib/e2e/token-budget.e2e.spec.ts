@@ -79,8 +79,8 @@ describe('e2e: token budget (cold-start payloads)', () => {
 	};
 
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
-		const full = await textBytes('mcpcore_overview', {});
-		const compact = await textBytes('mcpcore_overview', { compact: true });
+		const full = await textBytes('mcpvertex_overview', {});
+		const compact = await textBytes('mcpvertex_overview', { compact: true });
 
 		// Documented baseline (printed for visibility on failures):
 		expect(

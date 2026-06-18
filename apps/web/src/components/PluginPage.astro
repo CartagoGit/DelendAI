@@ -14,8 +14,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 
-// Map a package short-name to its tool namespace (core → mcpcore).
-const nsFor = (s: string): string => (s === 'core' ? 'mcpcore' : s);
+// Map a package short-name to its tool namespace (core → mcpvertex).
+const nsFor = (s: string): string => (s === 'core' ? 'mcpvertex' : s);
 
 type ITool = { name: string; namespace: string; description: string; effects?: string[] };
 type IPkg = { name: string; version: string };

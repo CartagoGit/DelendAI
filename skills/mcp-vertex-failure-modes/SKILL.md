@@ -43,4 +43,4 @@ than hammering the claim.
 ## General
 
 - Never loop calling tools after `stop: true` — that's the anti-idle brake firing.
-- When unsure of current state, `mcpcore_overview` + `compact_status` re-orient cheaply.
+- When unsure of current state, `mcpvertex_overview` + `compact_status` re-orient cheaply.
