@@ -9,6 +9,7 @@ import {
 	CLOSE_MARKER_STATES,
 	formatCloseMarker,
 	MAX_LINE_LEN,
+	MARKERS,
 } from '../src/lib/markers';
 
 describe('validate — single line', () => {
