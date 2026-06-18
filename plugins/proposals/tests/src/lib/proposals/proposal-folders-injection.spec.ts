@@ -28,29 +28,38 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	const layout = () => buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
+	const layout = () =>
+		buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
 
 	const writeProposal = (abs: string, id: string): void => {
 		mkdirSync(dirname(abs), { recursive: true });
 		writeFileSync(
 			abs,
-			['---', `id: ${id}`, 'type: feature', 'status: pending', '---', '# X'].join(
-				'\n'
-			),
-			'utf8'
+			[
+				'---',
+				`id: ${id}`,
+				'type: feature',
+				'status: pending',
+				'---',
+				'# X',
+			].join('\n'),
+			'utf8',
 		);
 	};
 
 	const indexIds = (l: ReturnType<typeof layout>): string[] => {
 		const index = JSON.parse(
-			readFileSync(join(root, l.proposalIndexFile), 'utf8')
+			readFileSync(join(root, l.proposalIndexFile), 'utf8'),
 		) as { proposals: Array<{ id: string }> };
 		return index.proposals.map((p) => p.id);
 	};
 
 	it('does NOT scan paused/demos by default (no host vocabulary baked in)', async () => {
 		const l = layout();
-		writeProposal(join(root, l.proposalsDir, 'paused/demos/p99-demo.md'), 'p99');
+		writeProposal(
+			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
+			'p99',
+		);
 
 		await syncProposalRegistry(root, l);
 
@@ -59,7 +68,10 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 
 	it('scans an injected extra folder (paused/demos)', async () => {
 		const l = layout();
-		writeProposal(join(root, l.proposalsDir, 'paused/demos/p99-demo.md'), 'p99');
+		writeProposal(
+			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
+			'p99',
+		);
 
 		await syncProposalRegistry(root, l, ['paused/demos']);
 
@@ -80,8 +92,14 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 
 	it('accepts multiple injected host folders', async () => {
 		const l = layout();
-		writeProposal(join(root, l.proposalsDir, 'paused/demos/p99-demo.md'), 'p99');
-		writeProposal(join(root, l.proposalsDir, 'experiments/p98-exp.md'), 'p98');
+		writeProposal(
+			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
+			'p99',
+		);
+		writeProposal(
+			join(root, l.proposalsDir, 'experiments/p98-exp.md'),
+			'p98',
+		);
 
 		await syncProposalRegistry(root, l, ['paused/demos', 'experiments']);
 

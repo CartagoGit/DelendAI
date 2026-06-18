@@ -18,16 +18,24 @@ describe('classifyBump (Conventional Commits → bump)', () => {
 	it('breaking (! or BREAKING CHANGE) → major', () => {
 		expect(classifyBump(['feat!: drop api'])).toBe('major');
 		expect(classifyBump(['fix(core)!: change shape'])).toBe('major');
-		expect(classifyBump(['feat: a\n\nBREAKING CHANGE: removed z'])).toBe('major');
+		expect(classifyBump(['feat: a\n\nBREAKING CHANGE: removed z'])).toBe(
+			'major',
+		);
 	});
 
 	it('only docs/chore/ci/test/style/build/refactor/revert → none', () => {
-		expect(classifyBump(['docs: readme', 'chore: deps', 'ci: tweak'])).toBe('none');
-		expect(classifyBump(['refactor: tidy', 'test: more', 'style: fmt'])).toBe('none');
+		expect(classifyBump(['docs: readme', 'chore: deps', 'ci: tweak'])).toBe(
+			'none',
+		);
+		expect(
+			classifyBump(['refactor: tidy', 'test: more', 'style: fmt']),
+		).toBe('none');
 	});
 
 	it('non-conventional commit with content → patch (safe default)', () => {
-		expect(classifyBump(['Implement feature X to improve things'])).toBe('patch');
+		expect(classifyBump(['Implement feature X to improve things'])).toBe(
+			'patch',
+		);
 	});
 
 	it('takes the strongest bump across a mixed set', () => {
@@ -37,8 +45,12 @@ describe('classifyBump (Conventional Commits → bump)', () => {
 	});
 
 	it('ignores merge commits and blank entries', () => {
-		expect(classifyBump(['Merge branch develop', '   ', 'docs: x'])).toBe('none');
-		expect(classifyBump(['Merge pull request #1', 'feat: real'])).toBe('minor');
+		expect(classifyBump(['Merge branch develop', '   ', 'docs: x'])).toBe(
+			'none',
+		);
+		expect(classifyBump(['Merge pull request #1', 'feat: real'])).toBe(
+			'minor',
+		);
 	});
 });
 

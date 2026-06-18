@@ -15,7 +15,7 @@ import {
 } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
 
 const capture = async (
-	reg: IToolRegistration
+	reg: IToolRegistration,
 ): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
 	let h: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await reg.register({
@@ -51,10 +51,14 @@ describe('proposal authoring (create → board → close)', () => {
 				title: 'Add login',
 				goal: 'Login flow',
 				slices: [
-					{ sliceId: 's1', files: ['src/a.ts'], acceptance: ['bun test'] },
+					{
+						sliceId: 's1',
+						files: ['src/a.ts'],
+						acceptance: ['bun test'],
+					},
 					{ sliceId: 's2', files: ['src/b.ts'] },
 				],
-			})
+			}),
 		);
 		expect(created.ok).toBe(true);
 		expect(created.file).toBe('p1-add-login.md');
@@ -70,10 +74,17 @@ describe('proposal authoring (create → board → close)', () => {
 
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
-			await close({ proposalId: 'p1', sliceId: 's1', releaseLock: false })
+			await close({
+				proposalId: 'p1',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
 		);
 		expect(closed.closed).toBe(true);
-		const doc = readFileSync(join(opts.proposalsDirAbs, 'p1-add-login.md'), 'utf8');
+		const doc = readFileSync(
+			join(opts.proposalsDirAbs, 'p1-add-login.md'),
+			'utf8',
+		);
 		expect(doc).toMatch(/### s1[\s\S]*?- status: done/);
 	});
 
@@ -85,11 +96,14 @@ describe('proposal authoring (create → board → close)', () => {
 				title: 'Wire API',
 				goal: 'Use api_key = "s3cr3tValue123" to call the service',
 				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
-			})
+			}),
 		);
 		expect(created.ok).toBe(true);
 		expect(created.redactedSecrets).toBeGreaterThan(0);
-		const doc = readFileSync(join(opts.proposalsDirAbs, 'p3-wire-api.md'), 'utf8');
+		const doc = readFileSync(
+			join(opts.proposalsDirAbs, 'p3-wire-api.md'),
+			'utf8',
+		);
 		expect(doc).not.toContain('s3cr3tValue123');
 		expect(doc).toContain('[REDACTED]');
 	});
@@ -106,34 +120,72 @@ describe('proposal authoring (create → board → close)', () => {
 		const file = join(opts.proposalsDirAbs, 'p4-review-me.md');
 
 		// Implementer submits for review.
-		const submitted = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'submit', agent: 'falcon' }));
+		const submitted = parse(
+			await review({
+				proposalId: 'p4',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'falcon',
+			}),
+		);
 		expect(submitted.status).toBe('in_review');
 		expect(submitted.implementer).toBe('falcon');
 
 		// The implementer cannot review their own work.
-		const selfReview = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'approve', agent: 'falcon' }));
+		const selfReview = parse(
+			await review({
+				proposalId: 'p4',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'falcon',
+			}),
+		);
 		expect(selfReview.ok).toBe(false);
 		expect(selfReview.error.reason).toMatch(/different agent/i);
 
 		// A different agent finds a fault.
 		const changes = parse(
-			await review({ proposalId: 'p4', sliceId: 's1', action: 'request_changes', agent: 'eagle', note: 'add a test' })
+			await review({
+				proposalId: 'p4',
+				sliceId: 's1',
+				action: 'request_changes',
+				agent: 'eagle',
+				note: 'add a test',
+			}),
 		);
 		expect(changes.status).toBe('changes_requested');
 		expect(readFileSync(file, 'utf8')).not.toMatch(/^- status: done/m);
 
 		// Fixer resubmits; another agent approves the fix.
-		const resubmitted = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'submit', agent: 'falcon' }));
+		const resubmitted = parse(
+			await review({
+				proposalId: 'p4',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'falcon',
+			}),
+		);
 		expect(resubmitted.status).toBe('in_review');
-		const approved = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'approve', agent: 'owl' }));
+		const approved = parse(
+			await review({
+				proposalId: 'p4',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'owl',
+			}),
+		);
 		expect(approved.status).toBe('done');
 		expect(approved.reviewer).toBe('owl');
-		expect(approved.rounds.map((r: { verdict: string }) => r.verdict)).toEqual(['requested_changes', 'approved']);
+		expect(
+			approved.rounds.map((r: { verdict: string }) => r.verdict),
+		).toEqual(['requested_changes', 'approved']);
 
 		// The doc now carries the real done marker + the review log.
 		const doc = readFileSync(file, 'utf8');
 		expect(doc).toMatch(/^- status: done/m);
-		expect(doc).toMatch(/review-log: requested_changes by eagle — add a test/);
+		expect(doc).toMatch(
+			/review-log: requested_changes by eagle — add a test/,
+		);
 		expect(doc).toMatch(/review-log: approved by owl/);
 	});
 
@@ -151,13 +203,28 @@ describe('proposal authoring (create → board → close)', () => {
 			],
 		});
 		const review = await capture(buildReviewRegistration(opts));
-		const r = parse(await review({ proposalId: 'p5', sliceId: 'a.b', action: 'submit', agent: 'falcon' }));
+		const r = parse(
+			await review({
+				proposalId: 'p5',
+				sliceId: 'a.b',
+				action: 'submit',
+				agent: 'falcon',
+			}),
+		);
 		expect(r.status).toBe('in_review');
-		const doc = readFileSync(join(opts.proposalsDirAbs, 'p5-meta.md'), 'utf8');
+		const doc = readFileSync(
+			join(opts.proposalsDirAbs, 'p5-meta.md'),
+			'utf8',
+		);
 		// The literal a.b block got the review line; the earlier axb block did NOT.
-		const axbBlock = doc.slice(doc.indexOf('### axb'), doc.indexOf('### a.b'));
+		const axbBlock = doc.slice(
+			doc.indexOf('### axb'),
+			doc.indexOf('### a.b'),
+		);
 		expect(axbBlock).not.toMatch(/review-state/);
-		expect(doc.slice(doc.indexOf('### a.b'))).toMatch(/review-state: in_review/);
+		expect(doc.slice(doc.indexOf('### a.b'))).toMatch(
+			/review-state: in_review/,
+		);
 	});
 
 	it('rejects overlapping slices', async () => {
@@ -170,7 +237,7 @@ describe('proposal authoring (create → board → close)', () => {
 					{ sliceId: 's1', files: ['x.ts'] },
 					{ sliceId: 's2', files: ['x.ts'] },
 				],
-			})
+			}),
 		);
 		expect(out.ok).toBe(false);
 		expect(out.error.reason).toMatch(/share files/);

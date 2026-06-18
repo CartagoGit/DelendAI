@@ -63,15 +63,19 @@ const readTextOrNull = async (path: string): Promise<string | null> => {
 	}
 };
 
-const readIndex = async (indexPath: string): Promise<readonly IIndexEntry[]> => {
-	const parsed = await readJsonOrNull<{ proposals?: IIndexEntry[] }>(indexPath);
+const readIndex = async (
+	indexPath: string,
+): Promise<readonly IIndexEntry[]> => {
+	const parsed = await readJsonOrNull<{ proposals?: IIndexEntry[] }>(
+		indexPath,
+	);
 	return parsed?.proposals ?? [];
 };
 
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
 
 const readActiveLocks = async (
-	lockPath: string
+	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
 		in_flight?: Array<{ task_id?: string; agent?: string }>;
@@ -87,7 +91,7 @@ const readActiveLocks = async (
 
 const resolveDoc = async (
 	indexPath: string,
-	proposalId: string
+	proposalId: string,
 ): Promise<
 	{ id: string; markdown: string } | { error: string; nextAction: string }
 > => {
@@ -100,7 +104,7 @@ const resolveDoc = async (
 	const entry = entries.find(
 		(candidate) =>
 			candidate.id === proposalId ||
-			candidate.id.startsWith(`${proposalId}-`)
+			candidate.id.startsWith(`${proposalId}-`),
 	);
 	if (entry === undefined)
 		return {
@@ -127,7 +131,7 @@ const resolveDoc = async (
  */
 export const runContinueProposal = async (
 	args: IContinueProposalArgs,
-	options: IContinueProposalToolOptions
+	options: IContinueProposalToolOptions,
 ): Promise<IResult> => {
 	const cascade = options.familyCascade ?? ['f', 'p'];
 
@@ -139,8 +143,7 @@ export const runContinueProposal = async (
 				nextAction: 'Call mode:"plan" with a proposalId.',
 			});
 		const doc = await resolveDoc(options.indexPathAbs, args.proposalId);
-		if ('error' in doc)
-			return json({ kind: 'slice-mode-error', ...doc });
+		if ('error' in doc) return json({ kind: 'slice-mode-error', ...doc });
 		const parsed = parseProposalSlicePlan(doc.id, doc.markdown);
 		if (parsed === null)
 			return json({
@@ -151,7 +154,7 @@ export const runContinueProposal = async (
 			});
 		const plan = deriveSliceStatuses(
 			parsed,
-			await readActiveLocks(options.lockPathAbs)
+			await readActiveLocks(options.lockPathAbs),
 		);
 		const relaunchCommand = `${options.namespacePrefix}_continue_proposal { proposalId: "${doc.id}", mode: "plan" }`;
 
@@ -171,10 +174,12 @@ export const runContinueProposal = async (
 			return json({
 				kind: 'slice-mode-error',
 				reason: 'mode:"claim" requires sliceId',
-				nextAction: 'Call mode:"plan" first and pick a claimable slice.',
+				nextAction:
+					'Call mode:"plan" first and pick a claimable slice.',
 			});
 		const validation = validateClaim(plan, args.sliceId);
-		const slice = plan.slices.find((s) => s.sliceId === args.sliceId) ?? null;
+		const slice =
+			plan.slices.find((s) => s.sliceId === args.sliceId) ?? null;
 		if (!validation.ok || slice === null)
 			return json({
 				kind: 'slice-claim-rejected',
@@ -195,11 +200,11 @@ export const runContinueProposal = async (
 			{
 				lockPath: options.lockPathAbs,
 				toolName: `${options.namespacePrefix}_agent_lock`,
-			}
+			},
 		);
-		const lockPayload = JSON.parse(
-			lockResult.content[0]?.text ?? '{}'
-		) as { blocked?: boolean };
+		const lockPayload = JSON.parse(lockResult.content[0]?.text ?? '{}') as {
+			blocked?: boolean;
+		};
 		if (lockPayload.blocked === true)
 			return json({
 				kind: 'slice-claim-rejected',
@@ -251,8 +256,8 @@ export const runContinueProposal = async (
 		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
 	const lockedProposalIds = new Set(
 		(await readActiveLocks(options.lockPathAbs)).map((lock) =>
-			proposalIdOf(lock.taskId)
-		)
+			proposalIdOf(lock.taskId),
+		),
 	);
 	const isClaimedElsewhere = (entry: IIndexEntry): boolean =>
 		entry.status === 'in_progress' &&
@@ -261,8 +266,7 @@ export const runContinueProposal = async (
 	if (free.length === 0)
 		return json({
 			kind: 'all-claimed',
-			reason:
-				'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
+			reason: 'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
 			nextAction:
 				'Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or stop and report that all work is claimed.',
 		});
@@ -290,7 +294,7 @@ export const runContinueProposal = async (
 
 /** Registration for `<prefix>_continue_proposal`. */
 export const buildContinueProposalRegistration = (
-	options: IContinueProposalToolOptions
+	options: IContinueProposalToolOptions,
 ): IToolRegistration => ({
 	id: 'continue_proposal',
 	effects: ['write'],
@@ -301,7 +305,7 @@ export const buildContinueProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_continue_proposal`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Resolve the next proposal to work on. mode "auto" (default) returns the next actionable proposal by family cascade; mode "plan" returns the parsed ## Slices plan with claimable slices; mode "claim" claims a slice via the agent lock. Structured JSON.',
 				inputSchema: z.object({
@@ -312,7 +316,7 @@ export const buildContinueProposalRegistration = (
 				}),
 			},
 			async (args: IContinueProposalArgs) =>
-				runContinueProposal(args, options)
+				runContinueProposal(args, options),
 		);
 	},
 });

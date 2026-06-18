@@ -38,9 +38,14 @@ describe('compact_status (N17) — aggregates the proposals plugin state', () =>
 			JSON.stringify({
 				version: 1,
 				in_flight: [
-					{ task_id: 't1', agent: 'a', ownership: ['x'], started_at: 'now' },
+					{
+						task_id: 't1',
+						agent: 'a',
+						ownership: ['x'],
+						started_at: 'now',
+					},
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			opts.indexPathAbs,
@@ -50,7 +55,7 @@ describe('compact_status (N17) — aggregates the proposals plugin state', () =>
 					{ id: 'p2', status: 'done' },
 					{ id: 'p3', status: 'ready' },
 				],
-			})
+			}),
 		);
 		const s = await collectCompactStatus(opts);
 		expect(s.locks?.active).toBe(1);

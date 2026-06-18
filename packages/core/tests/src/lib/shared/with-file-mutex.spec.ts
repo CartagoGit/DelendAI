@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -31,8 +37,13 @@ describe('withFileMutex — cross-process critical section', () => {
 				async () => {
 					ran = true;
 				},
-				{ onContention: 'fail', timeoutMs: 120, staleMs: 30_000, pollMs: 20 }
-			)
+				{
+					onContention: 'fail',
+					timeoutMs: 120,
+					staleMs: 30_000,
+					pollMs: 20,
+				},
+			),
 		).rejects.toBeInstanceOf(LockContentionError);
 		expect(ran).toBe(false);
 		// The live holder's lock was left intact (not stolen).
@@ -41,14 +52,17 @@ describe('withFileMutex — cross-process critical section', () => {
 
 	it('default (steal) still reclaims a live lock past the timeout', async () => {
 		writeFileSync(target, '{}');
-		writeFileSync(`${target}.mutex`, `${process.pid}\n${Date.now()}\nmanual`);
+		writeFileSync(
+			`${target}.mutex`,
+			`${process.pid}\n${Date.now()}\nmanual`,
+		);
 		let ran = false;
 		await withFileMutex(
 			target,
 			async () => {
 				ran = true;
 			},
-			{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 }
+			{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 },
 		);
 		expect(ran).toBe(true);
 	});
@@ -85,7 +99,7 @@ describe('withFileMutex — cross-process critical section', () => {
 		await expect(
 			withFileMutex(target, async () => {
 				throw new Error('boom');
-			})
+			}),
 		).rejects.toThrow('boom');
 		expect(existsSync(sidecar)).toBe(false);
 	});
@@ -124,11 +138,10 @@ describe('withFileMutex — cross-process critical section', () => {
 		const old = new Date(Date.now() - 60_000);
 		utimesSync(sidecar, old, old);
 
-		const result = await withFileMutex(
-			target,
-			async () => 'acquired',
-			{ staleMs: 1_000, timeoutMs: 200 }
-		);
+		const result = await withFileMutex(target, async () => 'acquired', {
+			staleMs: 1_000,
+			timeoutMs: 200,
+		});
 		expect(result).toBe('acquired');
 		expect(existsSync(sidecar)).toBe(false);
 	});

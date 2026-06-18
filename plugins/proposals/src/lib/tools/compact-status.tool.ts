@@ -47,7 +47,7 @@ const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
 };
 
 const readQueueTolerant = async (
-	path: string
+	path: string,
 ): Promise<IPersistentTaskQueue> => {
 	const p = await readJsonOrNull<{ entries?: unknown }>(path);
 	return p && Array.isArray(p.entries)
@@ -66,7 +66,7 @@ const ACTIONABLE = ['pending', 'ready', 'in_progress'];
  */
 export const collectCompactStatus = async (
 	options: ICompactStatusOptions,
-	fields: readonly IField[] = ALL_FIELDS
+	fields: readonly IField[] = ALL_FIELDS,
 ): Promise<ICompactStatus> => {
 	const want = new Set(fields);
 	const out: {
@@ -87,7 +87,7 @@ export const collectCompactStatus = async (
 	if (want.has('locks') || want.has('queue')) {
 		const snapshot = await loadLockSnapshot(
 			options.lockPathAbs,
-			options.closedTasksPathAbs
+			options.closedTasksPathAbs,
 		);
 		if (want.has('locks')) {
 			out.locks = { active: snapshot.in_flight.length };
@@ -95,7 +95,7 @@ export const collectCompactStatus = async (
 		if (want.has('queue')) {
 			const bp = reportBackpressure(
 				await readQueueTolerant(options.queuePathAbs),
-				snapshot
+				snapshot,
 			);
 			out.queue = {
 				queued: bp.queuedCount,
@@ -124,7 +124,7 @@ export const collectCompactStatus = async (
 		}
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
-			0
+			0,
 		);
 		out.proposals = { total, actionable, byStatus };
 	}
@@ -133,7 +133,7 @@ export const collectCompactStatus = async (
 };
 
 export const buildCompactStatusRegistration = (
-	options: ICompactStatusOptions
+	options: ICompactStatusOptions,
 ): IToolRegistration => ({
 	id: 'compact_status',
 	summary:
@@ -146,7 +146,9 @@ export const buildCompactStatusRegistration = (
 				description:
 					'Aggregates the proposals plugin state in ONE low-token call: active locks, queue backpressure (queued/promoted/waiterOrphans/threshold) and proposal counts by status. Use `fields` (["locks","queue","proposals"]) to shrink it further. Read-only.',
 				inputSchema: z.object({
-					fields: z.array(z.enum(['locks', 'queue', 'proposals'])).optional(),
+					fields: z
+						.array(z.enum(['locks', 'queue', 'proposals']))
+						.optional(),
 				}),
 				outputSchema: z.object({
 					locks: z.object({ active: z.number() }).optional(),
@@ -175,7 +177,7 @@ export const buildCompactStatusRegistration = (
 						? args.fields
 						: ALL_FIELDS;
 				return toolJson(await collectCompactStatus(options, fields));
-			}
+			},
 		);
 	},
 });

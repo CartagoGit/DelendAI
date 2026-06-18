@@ -51,7 +51,12 @@ function readPkg(dir: string): IRawPackageJson {
 function toReleasePkg(dir: string, pkg: IRawPackageJson): IReleasePkg {
 	const peer = pkg.peerDependencies?.[CORE_PEER];
 	if (peer !== undefined) {
-		return { dir, name: pkg.name, version: pkg.version, peerCoreRange: peer };
+		return {
+			dir,
+			name: pkg.name,
+			version: pkg.version,
+			peerCoreRange: peer,
+		};
 	}
 	return { dir, name: pkg.name, version: pkg.version };
 }
@@ -100,7 +105,11 @@ function parseFlags(argv: readonly string[]): ICliFlags {
 		throw new Error('--bump and --set are mutually exclusive');
 	}
 	const target: ReleaseTarget | undefined =
-		set !== undefined ? { set } : bump !== undefined ? { kind: bump } : undefined;
+		set !== undefined
+			? { set }
+			: bump !== undefined
+				? { kind: bump }
+				: undefined;
 	return { target, write, publish, validate, tool };
 }
 
@@ -122,7 +131,10 @@ function applyPlan(plan: IReleasePlan): void {
 	for (const e of plan.entries) {
 		const pkg = readPkg(e.dir);
 		pkg.version = e.to;
-		if (e.peerCoreTo !== undefined && pkg.peerDependencies?.[CORE_PEER] !== undefined) {
+		if (
+			e.peerCoreTo !== undefined &&
+			pkg.peerDependencies?.[CORE_PEER] !== undefined
+		) {
 			pkg.peerDependencies[CORE_PEER] = e.peerCoreTo;
 		}
 		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
@@ -150,21 +162,25 @@ function main(): void {
 
 	// With no version target, "plan" simply reports current versions (a no-op
 	// lockstep on the core's current version) so the publish plan is visible.
-	const target: ReleaseTarget = flags.target ?? { set: pkgs[0]?.version ?? '0.0.0' };
+	const target: ReleaseTarget = flags.target ?? {
+		set: pkgs[0]?.version ?? '0.0.0',
+	};
 	const plan = computeReleasePlan(pkgs, target);
 
 	const versionChange = flags.target !== undefined;
 	console.log(
 		versionChange
 			? `Release plan (${flags.write ? 'APPLY' : 'dry-run'}):`
-			: 'Current versions (no --bump/--set given):'
+			: 'Current versions (no --bump/--set given):',
 	);
 	printPlan(plan);
 
 	if (versionChange && flags.write) {
 		applyPlan(plan);
 	} else if (versionChange) {
-		console.log('Dry-run: pass --write to apply these changes to package.json.\n');
+		console.log(
+			'Dry-run: pass --write to apply these changes to package.json.\n',
+		);
 	}
 
 	if (flags.publish) {

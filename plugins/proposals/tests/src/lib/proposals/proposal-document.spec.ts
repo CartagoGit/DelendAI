@@ -31,7 +31,7 @@ afterEach(() => {
  */
 const expectParseError = async (
 	promise: Promise<unknown>,
-	code: IProposalErrorCode
+	code: IProposalErrorCode,
 ): Promise<void> => {
 	let caught: unknown;
 	try {
@@ -41,7 +41,7 @@ const expectParseError = async (
 	}
 	expect(
 		caught,
-		`expected a ProposalParseError with code ${code}`
+		`expected a ProposalParseError with code ${code}`,
 	).toBeInstanceOf(ProposalParseError);
 	if (caught instanceof ProposalParseError) {
 		expect(caught.code).toBe(code);
@@ -105,7 +105,7 @@ describe('parseProposalDocument', () => {
 		const path = write('# Just a heading\n\nNo frontmatter here.\n');
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_FRONTMATTER'
+			'INVALID_FRONTMATTER',
 		);
 	});
 
@@ -150,7 +150,7 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
@@ -168,7 +168,7 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
@@ -186,7 +186,7 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
@@ -204,7 +204,7 @@ acceptanceCriteria:
 `);
 		const doc = await parseProposalDocument(path);
 		expect(doc.frontmatter.acceptanceCriteria?.[0]?.expect).toBe(
-			'contains:1.3'
+			'contains:1.3',
 		);
 	});
 
@@ -226,7 +226,7 @@ acceptanceCriteria:
 `);
 		const doc = await parseProposalDocument(path);
 		const expects = doc.frontmatter.acceptanceCriteria?.map(
-			(c) => c.expect
+			(c) => c.expect,
 		);
 		expect(expects).toEqual(['exit0', 'pass', 'synchronized']);
 	});

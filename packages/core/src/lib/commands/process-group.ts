@@ -13,7 +13,7 @@
  */
 export const killProcessGroup = (
 	pid: number | undefined,
-	signal: NodeJS.Signals = 'SIGKILL'
+	signal: NodeJS.Signals = 'SIGKILL',
 ): void => {
 	if (pid === undefined) return;
 	try {

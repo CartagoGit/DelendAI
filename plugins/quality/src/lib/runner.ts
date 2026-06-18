@@ -63,7 +63,7 @@ export interface IRunOutcome {
  */
 export type ICommandRunner = (
 	command: string,
-	cwd: string
+	cwd: string,
 ) => Promise<IRunOutcome>;
 
 export const createCommandRunner =
@@ -103,7 +103,11 @@ export const createCommandRunner =
 		});
 
 const tailOf = (text: string, lines = 20): string =>
-	text.split('\n').filter((l) => l.length > 0).slice(-lines).join('\n');
+	text
+		.split('\n')
+		.filter((l) => l.length > 0)
+		.slice(-lines)
+		.join('\n');
 
 export interface IScopeCommand {
 	readonly command: string;
@@ -120,7 +124,7 @@ export const runScope = async (
 	commands: readonly IScopeCommand[],
 	cwd: string,
 	run: ICommandRunner,
-	policy?: ICommandPolicy
+	policy?: ICommandPolicy,
 ): Promise<IScopeResult> => {
 	const results: ICommandResult[] = [];
 	for (const entry of commands) {

@@ -46,7 +46,7 @@ const createTempQueueDir = (): {
 	writeFileSync(
 		queuePath,
 		JSON.stringify({ version: 1, entries: [] }, null, 2),
-		'utf8'
+		'utf8',
 	);
 	writeFileSync(closedTasksPath, JSON.stringify([], null, 2), 'utf8');
 	return { queuePath, closedTasksPath };
@@ -81,7 +81,7 @@ interface IMinimalProposalForVerifier {
 }
 
 const minimalProposalWithTaskQueue = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -91,7 +91,7 @@ const minimalProposalWithTaskQueue = (
 });
 
 const _minimalProposalWithoutTaskQueue = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -101,7 +101,7 @@ const _minimalProposalWithoutTaskQueue = (
 });
 
 const minimalProposalMissingExtras = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -120,7 +120,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 		const queuedEntries = Array.from({ length: 17 }, (_, i) => ({
 			taskId: `smoke-${i}`,
 			enqueuedAt: new Date(
-				Date.now() - 1000 * 60 * (i + 1)
+				Date.now() - 1000 * 60 * (i + 1),
 			).toISOString(),
 			priority: 3 as const,
 			waitFor: [],
@@ -136,7 +136,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -169,7 +169,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -187,7 +187,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		expect(result.taskQueueReport?.queueLength).toBe(0);
 		// Green threshold does NOT add a blocker
 		expect(
-			result.blockers.some((b) => /threshold/i.test(b) && /red/i.test(b))
+			result.blockers.some((b) => /threshold/i.test(b) && /red/i.test(b)),
 		).toBe(false);
 	});
 
@@ -197,7 +197,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		const queuedEntries = Array.from({ length: 10 }, (_, i) => ({
 			taskId: `amber-${i}`,
 			enqueuedAt: new Date(
-				Date.now() - 1000 * 60 * (i + 1)
+				Date.now() - 1000 * 60 * (i + 1),
 			).toISOString(),
 			priority: 3 as const,
 			waitFor: [],
@@ -213,7 +213,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -258,7 +258,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalMissingExtras(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -317,7 +317,7 @@ describe('verifyClosure — missing queue file is treated as empty', () => {
 		}
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({

@@ -25,14 +25,15 @@ const SECTION_COUNTS = z.object({
  * lockfile, unpinned ranges and cross-section duplicates. No network.
  */
 export const buildDepsToolRegistrations = (
-	options: IDepsToolOptions
+	options: IDepsToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	const manifest = options.manifest ?? 'package.json';
 	return [
 		{
 			id: 'deps_list',
-			summary: 'Inventory the manifest dependencies (name, range, section).',
+			summary:
+				'Inventory the manifest dependencies (name, range, section).',
 			tags: ['deps', 'orientation', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
@@ -40,7 +41,9 @@ export const buildDepsToolRegistrations = (
 					{
 						description:
 							'List the declared dependencies from package.json across dependencies/devDependencies/peerDependencies/optionalDependencies, each with its version range. Read-only, offline.',
-						inputSchema: z.object({ manifest: z.string().optional() }),
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+						}),
 						outputSchema: z.object({
 							manifest: z.string(),
 							found: z.boolean(),
@@ -50,7 +53,7 @@ export const buildDepsToolRegistrations = (
 									name: z.string(),
 									range: z.string(),
 									section: z.string(),
-								})
+								}),
 							),
 						}),
 					},
@@ -58,9 +61,9 @@ export const buildDepsToolRegistrations = (
 						toolJson(
 							await listDeps(
 								options.workspaceRootAbs,
-								args.manifest ?? manifest
-							)
-						)
+								args.manifest ?? manifest,
+							),
+						),
 				);
 			},
 		},
@@ -75,7 +78,9 @@ export const buildDepsToolRegistrations = (
 					{
 						description:
 							'Report offline dependency health: missing lockfile (non-reproducible builds), unpinned ranges (*, latest) and deps declared in more than one section. Returns {manifest, lockfile, findings, healthy}. No network / no CVE database.',
-						inputSchema: z.object({ manifest: z.string().optional() }),
+						inputSchema: z.object({
+							manifest: z.string().optional(),
+						}),
 						outputSchema: z.object({
 							manifest: z.string(),
 							lockfile: z.object({
@@ -87,7 +92,7 @@ export const buildDepsToolRegistrations = (
 									kind: z.string(),
 									dep: z.string().optional(),
 									detail: z.string(),
-								})
+								}),
 							),
 							healthy: z.boolean(),
 						}),
@@ -96,9 +101,9 @@ export const buildDepsToolRegistrations = (
 						toolJson(
 							await checkDeps(
 								options.workspaceRootAbs,
-								args.manifest ?? manifest
-							)
-						)
+								args.manifest ?? manifest,
+							),
+						),
 				);
 			},
 		},

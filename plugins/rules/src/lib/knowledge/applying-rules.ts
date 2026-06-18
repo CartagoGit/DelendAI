@@ -5,7 +5,7 @@ import { RULES_MODE_GUIDANCE } from '../frameworks/types';
 export const buildApplyingRulesKnowledge = (
 	namespacePrefix: string,
 	mode: IRulesMode,
-	cacheRelDir: string
+	cacheRelDir: string,
 ): { id: string; title: string; body: string } => ({
 	id: 'applying-rules',
 	title: 'Applying lint/type rules',

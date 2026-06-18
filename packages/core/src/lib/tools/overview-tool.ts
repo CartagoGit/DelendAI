@@ -26,7 +26,10 @@ export interface IOverviewSnapshot {
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
 	readonly plugins: readonly IOverviewPlugin[];
 	readonly tools: readonly IOverviewToolEntry[];
-	readonly knowledge: ReadonlyArray<{ readonly id: string; readonly title: string }>;
+	readonly knowledge: ReadonlyArray<{
+		readonly id: string;
+		readonly title: string;
+	}>;
 	readonly recommendedNextAction: string;
 }
 
@@ -39,7 +42,7 @@ export interface IOverviewSnapshot {
  */
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
-	snapshot: () => IOverviewSnapshot
+	snapshot: () => IOverviewSnapshot,
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
@@ -55,15 +58,50 @@ export const buildOverviewToolRegistration = (
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),
 				}),
-					outputSchema: z.object({
-						server: z.object({ name: z.string(), version: z.string() }),
-						namespacePrefix: z.string(),
-						corePaths: z.object({ cacheDir: z.string(), docsDir: z.string() }).optional(),
-						plugins: z.array(z.union([z.string(), z.object({ name: z.string(), version: z.string().optional(), describe: z.string().optional() })])),
-						tools: z.array(z.union([z.string(), z.object({ name: z.string(), summary: z.string().optional(), tags: z.array(z.string()).optional(), effects: z.array(z.enum(['write', 'spawn', 'network', 'destructive'])).optional() })])),
-						knowledge: z.array(z.union([z.string(), z.object({ id: z.string(), title: z.string() })])),
-						recommendedNextAction: z.string(),
-					}),
+				outputSchema: z.object({
+					server: z.object({ name: z.string(), version: z.string() }),
+					namespacePrefix: z.string(),
+					corePaths: z
+						.object({ cacheDir: z.string(), docsDir: z.string() })
+						.optional(),
+					plugins: z.array(
+						z.union([
+							z.string(),
+							z.object({
+								name: z.string(),
+								version: z.string().optional(),
+								describe: z.string().optional(),
+							}),
+						]),
+					),
+					tools: z.array(
+						z.union([
+							z.string(),
+							z.object({
+								name: z.string(),
+								summary: z.string().optional(),
+								tags: z.array(z.string()).optional(),
+								effects: z
+									.array(
+										z.enum([
+											'write',
+											'spawn',
+											'network',
+											'destructive',
+										]),
+									)
+									.optional(),
+							}),
+						]),
+					),
+					knowledge: z.array(
+						z.union([
+							z.string(),
+							z.object({ id: z.string(), title: z.string() }),
+						]),
+					),
+					recommendedNextAction: z.string(),
+				}),
 			},
 			async (args: {
 				compact?: boolean | undefined;
@@ -72,7 +110,9 @@ export const buildOverviewToolRegistration = (
 				const snap = snapshot();
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
-					tools = tools.filter((t) => (t.tags ?? []).includes(args.tag!));
+					tools = tools.filter((t) =>
+						(t.tags ?? []).includes(args.tag!),
+					);
 				}
 				if (args.compact === true) {
 					return toolJson({
@@ -85,7 +125,7 @@ export const buildOverviewToolRegistration = (
 					});
 				}
 				return toolJson({ ...snap, tools });
-			}
+			},
 		);
 	},
 });

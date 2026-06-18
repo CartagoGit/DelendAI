@@ -22,7 +22,7 @@ export interface IAgentWorktreeToolOptions {
  * silently folding unrelated, unreviewed changes into the wrong commit.
  */
 export const buildAgentWorktreeRegistration = (
-	options: IAgentWorktreeToolOptions
+	options: IAgentWorktreeToolOptions,
 ): IToolRegistration => {
 	const toolName = `${options.namespacePrefix}_agent_worktree`;
 	const run = options.run ?? createGitRunner(options.workspaceRoot);
@@ -57,11 +57,19 @@ export const buildAgentWorktreeRegistration = (
 						workspaceRoot: options.workspaceRoot,
 					});
 					return {
-						content: [{ type: 'text' as const, text: JSON.stringify(result) }],
-						structuredContent: result as unknown as Record<string, unknown>,
+						content: [
+							{
+								type: 'text' as const,
+								text: JSON.stringify(result),
+							},
+						],
+						structuredContent: result as unknown as Record<
+							string,
+							unknown
+						>,
 						...(result.ok ? {} : { isError: true }),
 					};
-				}
+				},
 			);
 		},
 	};

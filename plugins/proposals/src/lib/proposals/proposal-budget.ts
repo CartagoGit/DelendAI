@@ -110,7 +110,7 @@ const FIELD_DEFS: readonly IFieldDef[] = [
  */
 export const validateBudget = (
 	budget: IProposalBudget,
-	observed: IObservedUsage
+	observed: IObservedUsage,
 ): IBudgetValidationResult => {
 	const violations: IBudgetViolation[] = [];
 

@@ -12,7 +12,9 @@ type IKnowledge = { id: string; title: string; namespace: string };
 const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
 const groups: Record<string, IKnowledge[]> = {};
 for (const k of knowledge) (groups[k.namespace] ??= []).push(k);
-const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+const namespaces = Object.entries(groups).sort((a, b) =>
+	a[0].localeCompare(b[0]),
+);
 ---
 
 <section id="knowledge" class="section">

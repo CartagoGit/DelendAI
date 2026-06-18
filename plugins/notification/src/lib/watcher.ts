@@ -45,7 +45,7 @@ export const readInFlight = (lockFile: string): Map<string, IReleasedClaim> => {
 /** Tasks present in `prev` but absent in `curr` = releases. */
 export const diffReleased = (
 	prev: Map<string, IReleasedClaim>,
-	curr: Map<string, IReleasedClaim>
+	curr: Map<string, IReleasedClaim>,
 ): IReleasedClaim[] => {
 	const released: IReleasedClaim[] = [];
 	for (const [taskId, claim] of prev) {
@@ -92,11 +92,17 @@ export const awaitLockRelease = (params: {
 	const timeoutMs = clampTimeout(params.timeoutMs);
 	const pollMs = Math.max(100, Math.min(5_000, params.pollMs ?? 500));
 	const startedAt = Date.now();
-	const isFree = (): boolean => !readInFlight(params.lockFile).has(params.taskId);
+	const isFree = (): boolean =>
+		!readInFlight(params.lockFile).has(params.taskId);
 
 	return new Promise<IAwaitLockResult>((resolve) => {
 		if (isFree()) {
-			resolve({ released: true, timedOut: false, waitedMs: 0, alreadyFree: true });
+			resolve({
+				released: true,
+				timedOut: false,
+				waitedMs: 0,
+				alreadyFree: true,
+			});
 			return;
 		}
 		let settled = false;

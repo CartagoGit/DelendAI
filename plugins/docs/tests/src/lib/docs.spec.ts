@@ -23,7 +23,11 @@ describe('docs engine', () => {
 		root = mkdtempSync(join(tmpdir(), 'docs-'));
 		write(root, 'README.md', '# The Project\nintro\n');
 		write(root, 'docs/guide.md', '# Guide\nbody\n');
-		write(root, 'docs/sub/ref.md', '---\ntitle: Reference Manual\n---\n# x\n');
+		write(
+			root,
+			'docs/sub/ref.md',
+			'---\ntitle: Reference Manual\n---\n# x\n',
+		);
 		write(root, 'docs/notes.txt', 'not markdown\n');
 		write(root, 'src/code.ts', 'const x = 1;\n');
 	});
@@ -32,7 +36,9 @@ describe('docs engine', () => {
 	it('extractTitle prefers frontmatter title, then first heading, then fallback', () => {
 		expect(extractTitle('---\ntitle: A\n---\n# B', 'f')).toBe('A');
 		expect(extractTitle('# Heading here\ntext', 'f')).toBe('Heading here');
-		expect(extractTitle('no title at all', 'fallback.md')).toBe('fallback.md');
+		expect(extractTitle('no title at all', 'fallback.md')).toBe(
+			'fallback.md',
+		);
 	});
 
 	it('lists markdown under default roots (docs + README) with titles', async () => {
@@ -72,7 +78,10 @@ describe('docs plugin', () => {
 	it('registers docs_list + docs_read + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/docs',

@@ -93,7 +93,7 @@ describe('runtime-recovery helpers', () => {
 				proposalId: 'p40',
 				status: 'in_progress',
 				updatedAt: '2026-06-05T12:00:00.000Z',
-			})
+			}),
 		).toBe(true);
 
 		expect(
@@ -101,7 +101,7 @@ describe('runtime-recovery helpers', () => {
 				proposalId: 'p40',
 				status: 'in_progress',
 				lastUpdated: '2026-06-05T12:00:00.000Z',
-			})
+			}),
 		).toBe(true);
 	});
 });

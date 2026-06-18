@@ -23,7 +23,10 @@ for (const { code } of languages) {
 		continue;
 	}
 	const missing = enKeys.filter((k) => !(k in dict));
-	if (missing.length) problems.push(`[${lang}] missing ${missing.length} keys: ${missing.join(', ')}`);
+	if (missing.length)
+		problems.push(
+			`[${lang}] missing ${missing.length} keys: ${missing.join(', ')}`,
+		);
 }
 
 // Also flag keys present in a translation but unknown in `en` (stale keys).
@@ -32,14 +35,21 @@ for (const { code } of languages) {
 	const dict = dictsByLang[lang];
 	if (!dict || lang === 'en') continue;
 	const extra = Object.keys(dict).filter((k) => !(k in en));
-	if (extra.length) problems.push(`[${lang}] stale keys not in en: ${extra.join(', ')}`);
+	if (extra.length)
+		problems.push(`[${lang}] stale keys not in en: ${extra.join(', ')}`);
 }
 
 if (problems.length) {
-	console.error('✗ i18n incomplete — every language must translate every key:\n');
+	console.error(
+		'✗ i18n incomplete — every language must translate every key:\n',
+	);
 	for (const p of problems) console.error(`  ${p}`);
-	console.error(`\n${languages.length} languages · ${enKeys.length} keys each expected.`);
+	console.error(
+		`\n${languages.length} languages · ${enKeys.length} keys each expected.`,
+	);
 	process.exit(1);
 }
 
-console.log(`✓ i18n complete: ${languages.length} languages × ${enKeys.length} keys.`);
+console.log(
+	`✓ i18n complete: ${languages.length} languages × ${enKeys.length} keys.`,
+);

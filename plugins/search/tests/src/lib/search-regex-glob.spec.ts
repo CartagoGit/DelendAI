@@ -31,27 +31,37 @@ describe('search regex + glob (M11)', () => {
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 	it('matches a JS regex when regex:true', async () => {
-		const res = await searchWorkspace(root, 'const \\w+ =', { regex: true });
+		const res = await searchWorkspace(root, 'const \\w+ =', {
+			regex: true,
+		});
 		const files = res.hits.map((h) => h.file).sort();
 		expect(files).toEqual(['src/a.ts', 'src/b.ts']);
 	});
 
 	it('regex is case-insensitive by default, case-sensitive on request', async () => {
-		expect((await searchWorkspace(root, 'todo', { regex: true })).hits.length).toBe(3);
 		expect(
-			(await searchWorkspace(root, 'todo', { regex: true, caseSensitive: true })).hits
-				.length
+			(await searchWorkspace(root, 'todo', { regex: true })).hits.length,
+		).toBe(3);
+		expect(
+			(
+				await searchWorkspace(root, 'todo', {
+					regex: true,
+					caseSensitive: true,
+				})
+			).hits.length,
 		).toBe(0);
 	});
 
 	it('throws InvalidSearchPatternError on a bad regex', async () => {
-		await expect(searchWorkspace(root, '(', { regex: true })).rejects.toBeInstanceOf(
-			InvalidSearchPatternError
-		);
+		await expect(
+			searchWorkspace(root, '(', { regex: true }),
+		).rejects.toBeInstanceOf(InvalidSearchPatternError);
 	});
 
 	it('include glob replaces the extension allow-list (only matching paths)', async () => {
-		const res = await searchWorkspace(root, 'TODO', { include: ['src/**/*.ts'] });
+		const res = await searchWorkspace(root, 'TODO', {
+			include: ['src/**/*.ts'],
+		});
 		const files = [...new Set(res.hits.map((h) => h.file))].sort();
 		expect(files).toEqual(['src/a.ts', 'src/b.ts']); // docs/c.md excluded by glob
 	});

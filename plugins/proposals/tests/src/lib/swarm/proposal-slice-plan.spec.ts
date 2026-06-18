@@ -54,7 +54,7 @@ Prose after the section.
 describe('parseProposalSlicePlan (p81)', () => {
 	it('returns null for legacy proposals without a Slices section', () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
-			null
+			null,
 		);
 	});
 
@@ -83,7 +83,7 @@ describe('parseProposalSlicePlan (p81)', () => {
 	it('flags overlapping files between slices', () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',
-			'- files: libs/a/tool.ts'
+			'- files: libs/a/tool.ts',
 		);
 		const plan = parseProposalSlicePlan('pX', doc);
 		const issues = planDisjointnessIssues(plan!);
@@ -118,20 +118,20 @@ describe('deriveSliceStatuses + validateClaim (p81)', () => {
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(busy, 'pX.S2').blockerType).toBe(
-			'already-in-progress'
+			'already-in-progress',
 		);
 		const overlapping = parseProposalSlicePlan(
 			'pX',
 			DOC.replace(
 				'- files: docs/pX.md',
-				'- files: libs/a/tool.ts'
-			).replace('- depends_on: [pX.S2]', '- depends_on: []')
+				'- files: libs/a/tool.ts',
+			).replace('- depends_on: [pX.S2]', '- depends_on: []'),
 		)!;
 		const withBusy = deriveSliceStatuses(overlapping, [
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(withBusy, 'pX.S3').blockerType).toBe(
-			'overlap-in-progress'
+			'overlap-in-progress',
 		);
 	});
 });

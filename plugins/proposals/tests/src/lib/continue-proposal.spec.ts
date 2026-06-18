@@ -27,7 +27,7 @@ describe('continue_proposal (serial cascade)', () => {
 					{ id: 'f1-fix', file: 'f1.md', status: 'pending' },
 					{ id: 'p1-done', file: 'p1.md', status: 'done' },
 				],
-			})
+			}),
 		);
 		options = {
 			namespacePrefix: 'proposals',
@@ -47,7 +47,9 @@ describe('continue_proposal (serial cascade)', () => {
 	it('reports no-proposal when nothing is actionable', async () => {
 		writeFileSync(
 			options.indexPathAbs,
-			JSON.stringify({ proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }] })
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
 		);
 		const out = parse(await runContinueProposal({}, options));
 		expect(out.kind).toBe('no-proposal');
@@ -67,11 +69,13 @@ describe('continue_proposal (serial cascade)', () => {
 					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
 					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			options.lockPathAbs,
-			JSON.stringify({ in_flight: [{ task_id: 'f1-fix-slice-1', agent: 'falcon' }] })
+			JSON.stringify({
+				in_flight: [{ task_id: 'f1-fix-slice-1', agent: 'falcon' }],
+			}),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('next-proposal');
@@ -85,11 +89,13 @@ describe('continue_proposal (serial cascade)', () => {
 				proposals: [
 					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			options.lockPathAbs,
-			JSON.stringify({ in_flight: [{ task_id: 'f1-fix', agent: 'owl' }] })
+			JSON.stringify({
+				in_flight: [{ task_id: 'f1-fix', agent: 'owl' }],
+			}),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('all-claimed');

@@ -8,7 +8,6 @@ import { detectPresetForArea } from './detect-framework';
 import { PRESET_BY_ID, RULE_PRESETS } from './presets';
 import type { IAreaRules, IRulesManifest, IRulesMode } from './types';
 
-
 const ESLINT_CONFIG_NAMES = [
 	'eslint.config.mjs',
 	'eslint.config.js',
@@ -19,7 +18,7 @@ const ESLINT_CONFIG_NAMES = [
 
 const findProjectEslint = (
 	reader: IFileReader,
-	areaDir: string
+	areaDir: string,
 ): string | undefined => {
 	for (const name of ESLINT_CONFIG_NAMES) {
 		const rel = joinRel(areaDir, name);
@@ -30,7 +29,7 @@ const findProjectEslint = (
 
 const findProjectTsconfig = (
 	reader: IFileReader,
-	areaDir: string
+	areaDir: string,
 ): string | undefined => {
 	const rel = joinRel(areaDir, 'tsconfig.json');
 	return reader.exists(rel) ? rel : undefined;
@@ -64,7 +63,8 @@ export interface IBuildManifestOptions {
 	readonly overrides?: Readonly<Record<string, string>>;
 }
 
-const areaKey = (areaDir: string): string => (areaDir === '' ? 'root' : areaDir);
+const areaKey = (areaDir: string): string =>
+	areaDir === '' ? 'root' : areaDir;
 
 /**
  * Build the rules manifest (pure). For each area: detect the preset (or
@@ -72,7 +72,7 @@ const areaKey = (areaDir: string): string => (areaDir === '' ? 'root' : areaDir)
  * — the project's own config, then our materialised default behind it.
  */
 export const buildRulesManifest = (
-	options: IBuildManifestOptions
+	options: IBuildManifestOptions,
 ): IRulesManifest => {
 	const { reader, cacheRelDir } = options;
 	const areas: Record<string, IAreaRules> = {};
@@ -86,7 +86,9 @@ export const buildRulesManifest = (
 		const preset = PRESET_BY_ID.get(presetId);
 		if (preset === undefined) continue;
 		const reason =
-			forced !== undefined ? `forced via config (${forced})` : detected.reason;
+			forced !== undefined
+				? `forced via config (${forced})`
+				: detected.reason;
 
 		const eslint: string[] = [];
 		const projectEslint = findProjectEslint(reader, areaDir);
@@ -120,7 +122,7 @@ export const buildRulesManifest = (
 /** Stable fingerprint of the resolution (mode + per-area presets). */
 const computeFingerprint = (
 	mode: string,
-	areas: Readonly<Record<string, IAreaRules>>
+	areas: Readonly<Record<string, IAreaRules>>,
 ): string => {
 	const shape = `${mode}|${Object.entries(areas)
 		.map(([k, v]) => `${k}:${v.presetId}`)
@@ -158,7 +160,7 @@ export interface IEnsureCacheResult {
  * or human can edit the mapping without it being clobbered on boot).
  */
 export const ensureRulesCache = (
-	options: IEnsureCacheOptions
+	options: IEnsureCacheOptions,
 ): IEnsureCacheResult => {
 	const materialized: string[] = [];
 	for (const preset of RULE_PRESETS) {
@@ -191,7 +193,7 @@ export const ensureRulesCache = (
 	if (existingFingerprint !== options.manifest.fingerprint) {
 		writeAlways(
 			manifestAbs,
-			`${JSON.stringify(options.manifest, null, '\t')}\n`
+			`${JSON.stringify(options.manifest, null, '\t')}\n`,
 		);
 		manifestWritten = true;
 	}

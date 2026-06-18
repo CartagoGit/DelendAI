@@ -26,14 +26,19 @@ const main = async (): Promise<void> => {
 		command: 'node',
 		args: [CLI, '--plugins=', `--workspace=${workspace}`],
 	});
-	const client = new Client({ name: 'smoke', version: '0.0.0' }, { capabilities: {} });
+	const client = new Client(
+		{ name: 'smoke', version: '0.0.0' },
+		{ capabilities: {} },
+	);
 	try {
 		await client.connect(transport);
 
 		const { tools } = await client.listTools();
 		const names = new Set(tools.map((t) => t.name));
 		if (!names.has('mcp-vertex_overview')) {
-			throw new Error(`mcp-vertex_overview not registered (got ${tools.length} tools)`);
+			throw new Error(
+				`mcp-vertex_overview not registered (got ${tools.length} tools)`,
+			);
 		}
 
 		const res = (await client.callTool({
@@ -47,7 +52,7 @@ const main = async (): Promise<void> => {
 
 		console.log(
 			`✓ smoke: node serves the compiled CLI over stdio — ${tools.length} core tools, ` +
-				`overview ${Buffer.byteLength(text, 'utf8')} bytes.`
+				`overview ${Buffer.byteLength(text, 'utf8')} bytes.`,
 		);
 	} finally {
 		await client.close().catch(() => undefined);
@@ -56,6 +61,8 @@ const main = async (): Promise<void> => {
 };
 
 main().catch((err: unknown) => {
-	console.error(`✖ smoke failed: ${err instanceof Error ? err.message : String(err)}`);
+	console.error(
+		`✖ smoke failed: ${err instanceof Error ? err.message : String(err)}`,
+	);
 	process.exit(1);
 });

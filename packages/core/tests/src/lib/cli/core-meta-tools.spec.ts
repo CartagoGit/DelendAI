@@ -22,7 +22,7 @@ const fakePlugin = {
 
 const callTool = async (
 	tool: IToolRegistration,
-	args: unknown = {}
+	args: unknown = {},
 ): Promise<any> => {
 	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await tool.register({
@@ -41,7 +41,9 @@ const assemble = async () => {
 		readFile: () =>
 			JSON.stringify({
 				validationMatrix: {
-					scopes: { full: [{ command: 'bun test', expect: 'exit0' }] },
+					scopes: {
+						full: [{ command: 'bun test', expect: 'exit0' }],
+					},
 				},
 			}),
 	});
@@ -55,13 +57,14 @@ describe('core meta-tools', () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
-			'demo'
+			'demo',
 		);
-		expect(snap.tools.find((t: { name: string }) => t.name === 'demo_do')?.summary).toBe(
-			'does the thing'
-		);
+		expect(
+			snap.tools.find((t: { name: string }) => t.name === 'demo_do')
+				?.summary,
+		).toBe('does the thing');
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 	});
@@ -70,7 +73,7 @@ describe('core meta-tools', () => {
 		const { byId } = await assemble();
 		const list = await callTool(byId('knowledge'));
 		expect(list.entries.map((e: { id: string }) => e.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		const got = await callTool(byId('knowledge'), { id: 'demo-guide' });
 		expect(got.body).toBe('BODY');

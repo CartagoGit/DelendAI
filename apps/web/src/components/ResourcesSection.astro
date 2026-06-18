@@ -19,7 +19,9 @@ type IResource = {
 const resources = (capabilities.resources ?? []) as IResource[];
 const groups: Record<string, IResource[]> = {};
 for (const r of resources) (groups[r.namespace] ??= []).push(r);
-const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+const namespaces = Object.entries(groups).sort((a, b) =>
+	a[0].localeCompare(b[0]),
+);
 ---
 
 <section id="resources" class="section">

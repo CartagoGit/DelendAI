@@ -79,7 +79,7 @@ describe('runScope', () => {
 			'type',
 			[{ command: 'tsc' }, { command: 'slow-thing' }],
 			'/ws',
-			fakeRunner
+			fakeRunner,
 		);
 		expect(result.ok).toBe(false);
 		const slow = result.results.find((r) => r.command === 'slow-thing');

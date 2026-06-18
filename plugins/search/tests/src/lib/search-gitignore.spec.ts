@@ -70,7 +70,9 @@ describe('search respects .gitignore (M11)', () => {
 
 	it('respectGitignore:false opts back out', async () => {
 		write(root, '.gitignore', 'generated\nvendor\n');
-		const res = await searchWorkspace(root, 'needle', { respectGitignore: false });
+		const res = await searchWorkspace(root, 'needle', {
+			respectGitignore: false,
+		});
 		expect(res.hits.map((h) => h.file).sort()).toEqual([
 			'generated/b.ts',
 			'logs/app.txt',

@@ -28,8 +28,13 @@ describe('agent-lock — concurrent disjoint claims (mutex)', () => {
 	it('keeps both claims when fired concurrently', async () => {
 		const claim = (taskId: string, file: string): Promise<unknown> =>
 			runAgentLockEngine(
-				{ action: 'claim', task_id: taskId, agent: taskId, files: [file] },
-				{ lockPath }
+				{
+					action: 'claim',
+					task_id: taskId,
+					agent: taskId,
+					files: [file],
+				},
+				{ lockPath },
 			);
 
 		await Promise.all([

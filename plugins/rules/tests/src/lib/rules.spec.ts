@@ -26,24 +26,34 @@ describe('detectPresetForArea', () => {
 	it('detects angular, react+ts/js, and vanilla fallback', () => {
 		expect(
 			detectPresetForArea(
-				reader({ 'package.json': JSON.stringify({ dependencies: { '@angular/core': '^21' } }) }),
-				''
-			).presetId
+				reader({
+					'package.json': JSON.stringify({
+						dependencies: { '@angular/core': '^21' },
+					}),
+				}),
+				'',
+			).presetId,
 		).toBe('angular');
 		expect(
 			detectPresetForArea(
 				reader({
-					'package.json': JSON.stringify({ dependencies: { react: '^19' } }),
+					'package.json': JSON.stringify({
+						dependencies: { react: '^19' },
+					}),
 					'tsconfig.json': '{}',
 				}),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('react-ts');
 		expect(
 			detectPresetForArea(
-				reader({ 'package.json': JSON.stringify({ dependencies: { react: '^19' } }) }),
-				''
-			).presetId
+				reader({
+					'package.json': JSON.stringify({
+						dependencies: { react: '^19' },
+					}),
+				}),
+				'',
+			).presetId,
 		).toBe('react-js');
 		expect(detectPresetForArea(reader({}), '').presetId).toBe('vanilla-js');
 	});
@@ -58,9 +68,11 @@ describe('detectPresetForArea', () => {
 	it('detects a Laravel (PHP) area via composer.json', () => {
 		expect(
 			detectPresetForArea(
-				reader({ 'composer.json': '{"require":{"laravel/framework":"^11"}}' }),
-				''
-			).presetId
+				reader({
+					'composer.json': '{"require":{"laravel/framework":"^11"}}',
+				}),
+				'',
+			).presetId,
 		).toBe('laravel');
 	});
 
@@ -74,31 +86,33 @@ describe('detectPresetForArea', () => {
 					}),
 					'tsconfig.json': '{}',
 				}),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('next-ts');
 		// Next via config file, no dep.
 		expect(
 			detectPresetForArea(
 				reader({ 'next.config.mjs': '', 'tsconfig.json': '{}' }),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('next-ts');
 		// Nuxt wins over vue.
 		expect(
 			detectPresetForArea(
 				reader({
-					'package.json': JSON.stringify({ dependencies: { nuxt: '^3', vue: '^3' } }),
+					'package.json': JSON.stringify({
+						dependencies: { nuxt: '^3', vue: '^3' },
+					}),
 				}),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('nuxt');
 		// Astro / Remix / Solid.
 		expect(
 			detectPresetForArea(
 				reader({ 'astro.config.ts': '', 'tsconfig.json': '{}' }),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('astro');
 		expect(
 			detectPresetForArea(
@@ -108,17 +122,19 @@ describe('detectPresetForArea', () => {
 					}),
 					'tsconfig.json': '{}',
 				}),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('remix');
 		expect(
 			detectPresetForArea(
 				reader({
-					'package.json': JSON.stringify({ dependencies: { 'solid-js': '^1' } }),
+					'package.json': JSON.stringify({
+						dependencies: { 'solid-js': '^1' },
+					}),
 					'tsconfig.json': '{}',
 				}),
-				''
-			).presetId
+				'',
+			).presetId,
 		).toBe('solid-ts');
 	});
 
@@ -134,9 +150,13 @@ describe('buildRulesManifest', () => {
 		const manifest = buildRulesManifest({
 			reader: reader({
 				'package.json': JSON.stringify({ name: 'demo' }),
-				'apps/web/package.json': JSON.stringify({ dependencies: { vue: '^3' } }),
+				'apps/web/package.json': JSON.stringify({
+					dependencies: { vue: '^3' },
+				}),
 				'apps/web/eslint.config.mjs': 'export default [];',
-				'apps/api/package.json': JSON.stringify({ dependencies: { '@angular/core': '^21' } }),
+				'apps/api/package.json': JSON.stringify({
+					dependencies: { '@angular/core': '^21' },
+				}),
 				'apps/api/tsconfig.json': '{}',
 			}),
 			projectName: 'demo',
@@ -147,7 +167,9 @@ describe('buildRulesManifest', () => {
 		expect(web?.framework).toBe('vue');
 		// project's own config first, ours behind
 		expect(web?.eslint[0]).toBe('apps/web/eslint.config.mjs');
-		expect(web?.eslint[1]).toBe('.cache/mcp-vertex/rules/vue.eslint.config.mjs');
+		expect(web?.eslint[1]).toBe(
+			'.cache/mcp-vertex/rules/vue.eslint.config.mjs',
+		);
 		const api = manifest.projects.demo?.['apps/api'];
 		expect(api?.framework).toBe('angular');
 		expect(manifest.mode).toBe('mixed');
@@ -155,7 +177,9 @@ describe('buildRulesManifest', () => {
 
 	it('honours an area override', () => {
 		const manifest = buildRulesManifest({
-			reader: reader({ 'package.json': JSON.stringify({ name: 'demo' }) }),
+			reader: reader({
+				'package.json': JSON.stringify({ name: 'demo' }),
+			}),
 			projectName: 'demo',
 			cacheRelDir: '.cache/mcp-vertex/rules',
 			mode: 'strict',

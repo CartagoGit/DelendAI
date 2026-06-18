@@ -23,7 +23,7 @@ describe('extractParallelismFromFrontmatter', () => {
 
 	it('returns the parallelism record when mainWriteLane and parallelismLanes are well-formed', () => {
 		const raw = wrap(
-			'id: p31\nstatus: in_progress\nmainWriteLane: editor\nparallelismLanes: [meta, audit, ui-demo]\n'
+			'id: p31\nstatus: in_progress\nmainWriteLane: editor\nparallelismLanes: [meta, audit, ui-demo]\n',
 		);
 		const got = extractParallelismFromFrontmatter(raw, 'p31');
 		expect(got).toEqual({
@@ -48,7 +48,7 @@ describe('extractParallelismFromFrontmatter', () => {
 
 	it('drops unknown track names from parallelismLanes when knownTracks is given (typo guard)', () => {
 		const raw = wrap(
-			'mainWriteLane: editor\nparallelismLanes: [meta, banana, audit]\n'
+			'mainWriteLane: editor\nparallelismLanes: [meta, banana, audit]\n',
 		);
 		const got = extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS);
 		expect(got).toEqual({
@@ -61,7 +61,7 @@ describe('extractParallelismFromFrontmatter', () => {
 	it('returns null when mainWriteLane is not in the supplied knownTracks (typo guard)', () => {
 		const raw = wrap('mainWriteLane: bananas\nparallelismLanes: [meta]\n');
 		expect(
-			extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS)
+			extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS),
 		).toBeNull();
 	});
 
@@ -69,7 +69,7 @@ describe('extractParallelismFromFrontmatter', () => {
 	// string is a valid host track, so no vocabulary is imposed.
 	it('accepts arbitrary host tracks when no knownTracks set is supplied', () => {
 		const raw = wrap(
-			'mainWriteLane: my-custom-lane\nparallelismLanes: [whatever, another]\n'
+			'mainWriteLane: my-custom-lane\nparallelismLanes: [whatever, another]\n',
 		);
 		expect(extractParallelismFromFrontmatter(raw, 'p31')).toEqual({
 			proposalId: 'p31',
@@ -104,7 +104,7 @@ describe('extractParallelismFromFrontmatter', () => {
 		]) {
 			const got = extractParallelismFromFrontmatter(
 				wrap(`mainWriteLane: ${t}\n`),
-				'p'
+				'p',
 			);
 			expect(got?.mainWriteLane).toBe(t);
 		}

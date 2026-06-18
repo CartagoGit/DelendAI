@@ -119,7 +119,7 @@ export function extractTaskHint(value: string | undefined): string | undefined {
  * compatible task".
  */
 export function extractCheckpointNextTaskHint(
-	checkpoint: IContinuityCheckpointLike
+	checkpoint: IContinuityCheckpointLike,
 ): string | undefined {
 	return (
 		extractTaskHint(checkpoint.nextAction) ??

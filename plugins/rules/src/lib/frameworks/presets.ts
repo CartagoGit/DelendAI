@@ -20,7 +20,7 @@ const STRICT_TSCONFIG = `${JSON.stringify(
 		},
 	},
 	null,
-	'\t'
+	'\t',
 )}\n`;
 
 const ANGULAR_TSCONFIG = `${JSON.stringify(
@@ -43,7 +43,7 @@ const ANGULAR_TSCONFIG = `${JSON.stringify(
 		},
 	},
 	null,
-	'\t'
+	'\t',
 )}\n`;
 
 /**
@@ -299,7 +299,7 @@ export default [
 				},
 			},
 			null,
-			'\t'
+			'\t',
 		)}\n`,
 		conventions: [
 			'PHP/Laravel: format with Pint (preset laravel); `declare(strict_types=1)`.',
@@ -433,52 +433,58 @@ export const RULE_PRESETS: readonly IRulePreset[] = [
 ];
 
 /** npm packages each preset's materialised ESLint config imports. */
-export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> = {
-	'vanilla-js': ['@eslint/js'],
-	'vanilla-ts': ['@eslint/js', 'typescript-eslint'],
-	angular: ['typescript-eslint', 'angular-eslint'],
-	'react-ts': [
-		'@eslint/js',
-		'typescript-eslint',
-		'eslint-plugin-react',
-		'eslint-plugin-react-hooks',
-		'eslint-plugin-jsx-a11y',
-	],
-	'react-js': [
-		'@eslint/js',
-		'eslint-plugin-react',
-		'eslint-plugin-react-hooks',
-		'eslint-plugin-jsx-a11y',
-	],
-	vue: ['@eslint/js', 'eslint-plugin-vue', 'typescript-eslint'],
-	svelte: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-svelte'],
-	jquery: ['@eslint/js', 'globals'],
-	laravel: [],
-	// Meta-frameworks (H6): base deps + the framework's own ESLint plugin.
-	'next-ts': [
-		'@eslint/js',
-		'typescript-eslint',
-		'eslint-plugin-react',
-		'eslint-plugin-react-hooks',
-		'eslint-plugin-jsx-a11y',
-		'@next/eslint-plugin-next',
-	],
-	remix: [
-		'@eslint/js',
-		'typescript-eslint',
-		'eslint-plugin-react',
-		'eslint-plugin-react-hooks',
-		'eslint-plugin-jsx-a11y',
-	],
-	nuxt: ['@eslint/js', 'eslint-plugin-vue', 'typescript-eslint', '@nuxt/eslint'],
-	astro: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-astro'],
-	'solid-ts': ['@eslint/js', 'typescript-eslint', 'eslint-plugin-solid'],
-};
+export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> =
+	{
+		'vanilla-js': ['@eslint/js'],
+		'vanilla-ts': ['@eslint/js', 'typescript-eslint'],
+		angular: ['typescript-eslint', 'angular-eslint'],
+		'react-ts': [
+			'@eslint/js',
+			'typescript-eslint',
+			'eslint-plugin-react',
+			'eslint-plugin-react-hooks',
+			'eslint-plugin-jsx-a11y',
+		],
+		'react-js': [
+			'@eslint/js',
+			'eslint-plugin-react',
+			'eslint-plugin-react-hooks',
+			'eslint-plugin-jsx-a11y',
+		],
+		vue: ['@eslint/js', 'eslint-plugin-vue', 'typescript-eslint'],
+		svelte: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-svelte'],
+		jquery: ['@eslint/js', 'globals'],
+		laravel: [],
+		// Meta-frameworks (H6): base deps + the framework's own ESLint plugin.
+		'next-ts': [
+			'@eslint/js',
+			'typescript-eslint',
+			'eslint-plugin-react',
+			'eslint-plugin-react-hooks',
+			'eslint-plugin-jsx-a11y',
+			'@next/eslint-plugin-next',
+		],
+		remix: [
+			'@eslint/js',
+			'typescript-eslint',
+			'eslint-plugin-react',
+			'eslint-plugin-react-hooks',
+			'eslint-plugin-jsx-a11y',
+		],
+		nuxt: [
+			'@eslint/js',
+			'eslint-plugin-vue',
+			'typescript-eslint',
+			'@nuxt/eslint',
+		],
+		astro: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-astro'],
+		'solid-ts': ['@eslint/js', 'typescript-eslint', 'eslint-plugin-solid'],
+	};
 
 export const PRESET_BY_ID: ReadonlyMap<string, IRulePreset> = new Map(
-	RULE_PRESETS.map((preset) => [preset.id, preset])
+	RULE_PRESETS.map((preset) => [preset.id, preset]),
 );
 
 export const SUPPORTED_PRESET_IDS: readonly string[] = RULE_PRESETS.map(
-	(preset) => preset.id
+	(preset) => preset.id,
 );

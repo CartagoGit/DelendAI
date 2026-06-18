@@ -6,7 +6,10 @@ import {
 import { z } from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';
-import { buildRulesManifest, ensureRulesCache } from './lib/frameworks/manifest';
+import {
+	buildRulesManifest,
+	ensureRulesCache,
+} from './lib/frameworks/manifest';
 import { PRESET_BY_ID } from './lib/frameworks/presets';
 import type { IRulesMode } from './lib/frameworks/types';
 import { RULES_MODES } from './lib/frameworks/types';
@@ -17,10 +20,9 @@ import {
 } from './lib/tools/rules-tools';
 import type { IRulesToolOptions } from './lib/tools/rules-tools';
 
-
 const projectNameFrom = (
 	reader: { readFile(p: string): string | undefined },
-	root: string
+	root: string,
 ): string => {
 	const raw = reader.readFile('package.json');
 	if (raw !== undefined) {
@@ -39,7 +41,7 @@ const projectNameFrom = (
 
 const presetIdFor = (
 	framework: string | undefined,
-	language: string | undefined
+	language: string | undefined,
 ): string | undefined => {
 	if (framework === undefined) return undefined;
 	const ts = language !== 'js';
@@ -87,8 +89,7 @@ export default definePlugin({
 		const projectName = projectNameFrom(reader, ctx.workspace.root);
 
 		const rawMode =
-			(ctx.options.mode as string | undefined) ??
-			ctx.args['rules-mode'];
+			(ctx.options.mode as string | undefined) ?? ctx.args['rules-mode'];
 		const mode: IRulesMode = RULES_MODES.includes(rawMode as IRulesMode)
 			? (rawMode as IRulesMode)
 			: 'mixed';
@@ -98,7 +99,7 @@ export default definePlugin({
 		};
 		const forced = presetIdFor(
 			ctx.options.framework as string | undefined,
-			ctx.options.language as string | undefined
+			ctx.options.language as string | undefined,
 		);
 		if (forced !== undefined && PRESET_BY_ID.has(forced)) {
 			overrides.root = forced;
@@ -165,7 +166,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -174,7 +175,7 @@ export default definePlugin({
 				buildApplyingRulesKnowledge(
 					ctx.namespacePrefix,
 					mode,
-					cacheRelDir
+					cacheRelDir,
 				),
 			],
 		};

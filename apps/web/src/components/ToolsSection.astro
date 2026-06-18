@@ -9,16 +9,25 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const NS_LABEL: Record<string, string> = {
-	mcpvertex: 'core', proposals: 'proposals', git: 'git', memory: 'memory',
-	search: 'search', rules: 'rules', quality: 'quality', docs: 'docs',
-	deps: 'deps', notification: 'notification',
+	mcpvertex: 'core',
+	proposals: 'proposals',
+	git: 'git',
+	memory: 'memory',
+	search: 'search',
+	rules: 'rules',
+	quality: 'quality',
+	docs: 'docs',
+	deps: 'deps',
+	notification: 'notification',
 };
 
 type ITool = { name: string; namespace: string; description: string };
 const tools = capabilities.tools as ITool[];
 const groups: Record<string, ITool[]> = {};
 for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
-const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+const namespaces = Object.entries(groups).sort((a, b) =>
+	a[0].localeCompare(b[0]),
+);
 ---
 
 <section id="tools" class="section">

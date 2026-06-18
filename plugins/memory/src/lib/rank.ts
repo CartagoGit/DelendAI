@@ -31,7 +31,7 @@ export const tokenize = (text: string): string[] =>
  */
 export const rankNotes = (
 	notes: readonly INote[],
-	query: string
+	query: string,
 ): IRankedNote[] => {
 	const queryTerms = [...new Set(tokenize(query))];
 	const rawQuery = query.toLowerCase().trim();

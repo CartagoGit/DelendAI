@@ -6,7 +6,8 @@ import type { IScopeCommand } from './runner';
 export type IScopeMap = Readonly<Record<string, readonly IScopeCommand[]>>;
 
 const packageManager = (reader: IFileReader): string => {
-	if (reader.exists('bun.lock') || reader.exists('bun.lockb')) return 'bun run';
+	if (reader.exists('bun.lock') || reader.exists('bun.lockb'))
+		return 'bun run';
 	if (reader.exists('pnpm-lock.yaml')) return 'pnpm';
 	if (reader.exists('yarn.lock')) return 'yarn';
 	return 'npm run';
@@ -41,7 +42,7 @@ const fromScripts = (reader: IFileReader): IScopeMap => {
  */
 export const resolveScopes = (
 	reader: IFileReader,
-	options: { scopes?: Readonly<Record<string, readonly string[]>> } = {}
+	options: { scopes?: Readonly<Record<string, readonly string[]>> } = {},
 ): IScopeMap => {
 	if (options.scopes && Object.keys(options.scopes).length > 0) {
 		const out: Record<string, IScopeCommand[]> = {};

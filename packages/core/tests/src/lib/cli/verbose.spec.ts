@@ -9,8 +9,13 @@ import type { IPluginLoadResult } from '@mcp-vertex/core/lib/plugins/load-plugin
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
 
 const args = parseCliArgs(
-	['--plugins=demo,other', '--workspace=/ws', '--cacheDir=.c', '--docsDir=.d'],
-	'/cwd'
+	[
+		'--plugins=demo,other',
+		'--workspace=/ws',
+		'--cacheDir=.c',
+		'--docsDir=.d',
+	],
+	'/cwd',
 );
 
 const loadResult = {
@@ -49,7 +54,7 @@ describe('--verbose diagnostics (N23)', () => {
 
 	it('formatVerbose renders stderr lines with version + counts + order', () => {
 		const out = formatVerbose(
-			buildAssemblyDiagnostics(args, loadResult, config, ['t1'])
+			buildAssemblyDiagnostics(args, loadResult, config, ['t1']),
 		);
 		expect(out).toContain('[mcp-vertex] verbose:');
 		expect(out).toContain('loaded=[demo@1.2.3, other]');

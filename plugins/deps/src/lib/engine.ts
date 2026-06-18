@@ -32,14 +32,16 @@ type IManifest = Partial<Record<IDepSection, Record<string, string>>>;
 
 const readManifest = async (
 	rootAbs: string,
-	manifestRel: string
+	manifestRel: string,
 ): Promise<{ found: boolean; manifest: IManifest }> => {
 	// Containment: the manifest path must stay inside the workspace — a
 	// `manifest: '../../etc/...'` must not read outside what the host exposes.
 	const contained = resolveWorkspaceContained(rootAbs, manifestRel);
 	if (!contained.ok) return { found: false, manifest: {} };
 	try {
-		const parsed = JSON.parse(await readFile(contained.abs, 'utf8')) as IManifest;
+		const parsed = JSON.parse(
+			await readFile(contained.abs, 'utf8'),
+		) as IManifest;
 		return { found: true, manifest: parsed ?? {} };
 	} catch {
 		return { found: false, manifest: {} };
@@ -48,7 +50,7 @@ const readManifest = async (
 
 const sectionEntries = (
 	manifest: IManifest,
-	section: IDepSection
+	section: IDepSection,
 ): IDepEntry[] => {
 	const block = manifest[section];
 	if (typeof block !== 'object' || block === null) return [];
@@ -64,7 +66,7 @@ const sectionEntries = (
  */
 export const listDeps = async (
 	rootAbs: string,
-	manifestRel = 'package.json'
+	manifestRel = 'package.json',
 ): Promise<IDepsInventory> => {
 	const { found, manifest } = await readManifest(rootAbs, manifestRel);
 	const deps: IDepEntry[] = [];
@@ -80,7 +82,8 @@ export const listDeps = async (
 		deps.push(...entries);
 	}
 	deps.sort(
-		(a, b) => a.name.localeCompare(b.name) || a.section.localeCompare(b.section)
+		(a, b) =>
+			a.name.localeCompare(b.name) || a.section.localeCompare(b.section),
 	);
 	return { manifest: manifestRel, found, counts, deps };
 };
@@ -103,7 +106,10 @@ export interface IDepsFinding {
 
 export interface IDepsHealth {
 	readonly manifest: string;
-	readonly lockfile: { readonly present: boolean; readonly kind: string | null };
+	readonly lockfile: {
+		readonly present: boolean;
+		readonly kind: string | null;
+	};
 	readonly findings: readonly IDepsFinding[];
 	readonly healthy: boolean;
 }
@@ -125,7 +131,7 @@ const isLooseRange = (range: string): boolean => {
 };
 
 const detectLockfile = async (
-	rootAbs: string
+	rootAbs: string,
 ): Promise<{ present: boolean; kind: string | null }> => {
 	for (const { file, kind } of LOCKFILES) {
 		try {
@@ -146,7 +152,7 @@ const detectLockfile = async (
  */
 export const checkDeps = async (
 	rootAbs: string,
-	manifestRel = 'package.json'
+	manifestRel = 'package.json',
 ): Promise<IDepsHealth> => {
 	const inventory = await listDeps(rootAbs, manifestRel);
 	const findings: IDepsFinding[] = [];

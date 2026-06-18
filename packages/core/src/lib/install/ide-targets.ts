@@ -31,10 +31,20 @@ export interface IInstallEnv {
 
 const claudeDesktopPath = (ctx: IInstallEnv): string => {
 	if (ctx.platform === 'darwin') {
-		return join(ctx.home, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
+		return join(
+			ctx.home,
+			'Library',
+			'Application Support',
+			'Claude',
+			'claude_desktop_config.json',
+		);
 	}
 	if (ctx.platform === 'win32') {
-		return join(ctx.appData ?? join(ctx.home, 'AppData', 'Roaming'), 'Claude', 'claude_desktop_config.json');
+		return join(
+			ctx.appData ?? join(ctx.home, 'AppData', 'Roaming'),
+			'Claude',
+			'claude_desktop_config.json',
+		);
 	}
 	return join(ctx.home, '.config', 'Claude', 'claude_desktop_config.json');
 };
@@ -56,7 +66,10 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		kind: 'mcpServers',
 		scope: 'project',
 		resolve: (c) => join(c.projectDir, '.cursor', 'mcp.json'),
-		signals: (c) => [join(c.projectDir, '.cursor'), join(c.home, '.cursor')],
+		signals: (c) => [
+			join(c.projectDir, '.cursor'),
+			join(c.home, '.cursor'),
+		],
 	},
 	{
 		id: 'cursor-global',
@@ -72,7 +85,10 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		kind: 'mcpServers',
 		scope: 'global',
 		resolve: (c) => join(c.home, '.codeium', 'windsurf', 'mcp_config.json'),
-		signals: (c) => [join(c.home, '.codeium', 'windsurf'), join(c.home, '.codeium')],
+		signals: (c) => [
+			join(c.home, '.codeium', 'windsurf'),
+			join(c.home, '.codeium'),
+		],
 	},
 	{
 		id: 'claude-code',
@@ -80,7 +96,10 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		kind: 'mcpServers',
 		scope: 'project',
 		resolve: (c) => join(c.projectDir, '.mcp.json'),
-		signals: (c) => [join(c.projectDir, '.mcp.json'), join(c.home, '.claude')],
+		signals: (c) => [
+			join(c.projectDir, '.mcp.json'),
+			join(c.home, '.claude'),
+		],
 	},
 	{
 		id: 'claude-desktop',
@@ -96,7 +115,10 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		kind: 'mcpServers',
 		scope: 'global',
 		resolve: (c) => join(c.home, '.gemini', 'config', 'mcp_config.json'),
-		signals: (c) => [join(c.home, '.gemini', 'config'), join(c.home, '.gemini')],
+		signals: (c) => [
+			join(c.home, '.gemini', 'config'),
+			join(c.home, '.gemini'),
+		],
 	},
 ];
 

@@ -7,9 +7,13 @@ import { languages, type Lang } from '../../../i18n/ui';
 export function getStaticPaths() {
 	const slugOf = (name: string) =>
 		name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
-	const slugs = (capabilities.packages as Array<{ name: string }>).map((p) => slugOf(p.name));
+	const slugs = (capabilities.packages as Array<{ name: string }>).map((p) =>
+		slugOf(p.name),
+	);
 	const langs = languages.map((l) => l.code).filter((c) => c !== 'en');
-	return langs.flatMap((lang) => slugs.map((plugin) => ({ params: { lang, plugin } })));
+	return langs.flatMap((lang) =>
+		slugs.map((plugin) => ({ params: { lang, plugin } })),
+	);
 }
 
 const { lang, plugin } = Astro.params;

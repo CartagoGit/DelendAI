@@ -5,9 +5,7 @@ export type {
 	IProjectLanguage,
 	IProjectType,
 } from './analyze-project';
-export {
-	PROJECT_PATTERN_CATALOG,
-} from './pattern-catalog';
+export { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
 export type { IProjectPattern, IRecommendedTool } from './pattern-catalog';
 export { recommendServerPlan } from './recommend-plan';
 export type { IServerPlan, IServerPlanOptions } from './recommend-plan';

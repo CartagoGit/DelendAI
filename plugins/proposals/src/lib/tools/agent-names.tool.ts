@@ -17,7 +17,10 @@ import type { IAgentCanonicalRole } from '../shared/agent-conventions';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentAssignment } from '../shared/agent-registry-store';
 import { buildAgentTree } from '../shared/agent-tree';
-import { DEFAULT_AGENT_NAME_POOL, pickFromPool } from '../knowledge/agent-name-pool';
+import {
+	DEFAULT_AGENT_NAME_POOL,
+	pickFromPool,
+} from '../knowledge/agent-name-pool';
 
 export interface IAgentNamesToolOptions {
 	readonly namespacePrefix: string;
@@ -73,12 +76,14 @@ const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 
 const activeNames = (assignments: readonly IAgentAssignment[]): Set<string> =>
 	new Set(
-		assignments.filter((a) => a.status === 'active').map((a) => a.agent_name)
+		assignments
+			.filter((a) => a.status === 'active')
+			.map((a) => a.agent_name),
 	);
 
 const cooldownNames = (
 	assignments: readonly IAgentAssignment[],
-	atIso: string
+	atIso: string,
 ): Set<string> =>
 	new Set(
 		assignments
@@ -86,9 +91,9 @@ const cooldownNames = (
 				(a) =>
 					a.status === 'cooldown' &&
 					a.cooldown_until !== null &&
-					a.cooldown_until > atIso
+					a.cooldown_until > atIso,
 			)
-			.map((a) => a.agent_name)
+			.map((a) => a.agent_name),
 	);
 
 /**
@@ -100,7 +105,7 @@ const cooldownNames = (
  */
 export const runAgentNames = async (
 	args: IAgentNamesArgs,
-	options: IAgentNamesToolOptions
+	options: IAgentNamesToolOptions,
 ): Promise<IResult> => {
 	try {
 		return await runAgentNamesImpl(args, options);
@@ -117,7 +122,7 @@ export const runAgentNames = async (
 						? `Corrupt registry preserved at "${err.backupPath}". Inspect or delete it, then retry.`
 						: 'Could not back up the corrupt registry; inspect it manually before retrying.',
 				},
-				true
+				true,
 			);
 		}
 		throw err;
@@ -126,7 +131,7 @@ export const runAgentNames = async (
 
 const runAgentNamesImpl = async (
 	args: IAgentNamesArgs,
-	options: IAgentNamesToolOptions
+	options: IAgentNamesToolOptions,
 ): Promise<IResult> => {
 	const store = createAgentRegistryStore(options.registryPathAbs);
 	const pool = options.pool ?? DEFAULT_AGENT_NAME_POOL;
@@ -138,7 +143,7 @@ const runAgentNamesImpl = async (
 			const queue = await parseQueue(
 				options.queuePathAbs,
 				options.closedTasksPathAbs,
-				options.workspaceRoot
+				options.workspaceRoot,
 			);
 			const updated = enqueue(queue, {
 				taskId,
@@ -166,8 +171,9 @@ const runAgentNamesImpl = async (
 				summary: {
 					active: r.assignments.filter((a) => a.status === 'active')
 						.length,
-					cooldown: r.assignments.filter((a) => a.status === 'cooldown')
-						.length,
+					cooldown: r.assignments.filter(
+						(a) => a.status === 'cooldown',
+					).length,
 					orphan: r.assignments.filter((a) => a.status === 'orphan')
 						.length,
 					adopted: r.adopted.length,
@@ -187,7 +193,7 @@ const runAgentNamesImpl = async (
 			const r = await store.read();
 			if (poolNames.has(args.agent)) {
 				const active = r.assignments.find(
-					(a) => a.agent_name === args.agent && a.status === 'active'
+					(a) => a.agent_name === args.agent && a.status === 'active',
 				);
 				if (active)
 					return json({
@@ -201,7 +207,7 @@ const runAgentNamesImpl = async (
 						a.agent_name === args.agent &&
 						a.status === 'cooldown' &&
 						a.cooldown_until !== null &&
-						a.cooldown_until > at
+						a.cooldown_until > at,
 				);
 				if (held)
 					return json({
@@ -238,7 +244,7 @@ const runAgentNamesImpl = async (
 			if (!args.task_id) return json({ error: 'task_id required' }, true);
 			const cooldownUntil = new Date(
 				new Date(at).getTime() +
-					AGENT_CONVENTIONS.cooldown_days * 86_400_000
+					AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 			).toISOString();
 			await store.release(args.task_id, cooldownUntil);
 			const r = await store.read();
@@ -276,7 +282,7 @@ const runAgentNamesImpl = async (
 					a.status = 'orphan';
 					a.cooldown_until = new Date(
 						new Date(at).getTime() +
-							AGENT_CONVENTIONS.cooldown_days * 86_400_000
+							AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 					).toISOString();
 					freed += 1;
 				}
@@ -293,7 +299,7 @@ const runAgentNamesImpl = async (
 							AGENT_CONVENTIONS.heartbeat_ttl_minutes,
 						now: new Date(at),
 						queueEmitter: emitQueueEvent,
-					}
+					},
 				);
 			} catch {
 				// graceful degradation
@@ -311,29 +317,26 @@ const runAgentNamesImpl = async (
 					staleAfterMinutes: args.stale_after_minutes,
 					now: new Date(at),
 					queueEmitter: emitQueueEvent,
-				}
+				},
 			);
 			return json(report);
 		}
 
 		case 'assign': {
 			if (!args.task_id || !args.agent_slot)
-				return json(
-					{ error: 'task_id and agent_slot required' },
-					true
-				);
+				return json({ error: 'task_id and agent_slot required' }, true);
 			if (!isCanonicalRole(args.agent_slot))
 				return json(
 					{
 						error: 'agent_slot must be a canonical role',
 						allowed: AGENT_CANONICAL_ROLES,
 					},
-					true
+					true,
 				);
 			const r = await store.read();
 			const parent = args.parent_task_id
 				? (r.assignments.find(
-						(a) => a.task_id === args.parent_task_id
+						(a) => a.task_id === args.parent_task_id,
 					) ?? null)
 				: null;
 			const depth = parent ? parent.depth + 1 : 0;
@@ -348,7 +351,7 @@ const runAgentNamesImpl = async (
 						nextAction:
 							'Continue as a root-level handoff or ask the orchestrator to reattach the child; do not retry the same parent/depth.',
 					},
-					true
+					true,
 				);
 
 			const taken = activeNames(r.assignments);
@@ -368,7 +371,7 @@ const runAgentNamesImpl = async (
 								nextAction:
 									'Assign without `agent` or choose another free pool name; do not retry the same requested name.',
 							},
-							true
+							true,
 						);
 					agentName = args.agent;
 				} else {
@@ -384,12 +387,12 @@ const runAgentNamesImpl = async (
 				const picked = pickFromPool(
 					pool,
 					new Set([...taken, ...inCooldown]),
-					args.task_id
+					args.task_id,
 				);
 				if (!picked)
 					return json(
 						{ error: 'pool_exhausted', pool_size: pool.length },
-						true
+						true,
 					);
 				agentName = picked;
 			}
@@ -418,7 +421,7 @@ const runAgentNamesImpl = async (
 
 /** Registration for `<prefix>_agent_names`. */
 export const buildAgentNamesRegistration = (
-	options: IAgentNamesToolOptions
+	options: IAgentNamesToolOptions,
 ): IToolRegistration => ({
 	id: 'agent_names',
 	effects: ['write'],
@@ -429,7 +432,7 @@ export const buildAgentNamesRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_agent_names`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Agent name registry for the whole agent tree — the root orchestrator (slot "orchestrator", depth 0) included, not only subagents. Actions: assign/release/heartbeat/list/tree/who_uses/gc/reconcile. Use for named/delegated agents, not normal single-slice work.',
 				inputSchema: z.object({
@@ -453,7 +456,7 @@ export const buildAgentNamesRegistration = (
 					stale_after_minutes: z.number().optional(),
 				}),
 			},
-			async (args: IAgentNamesArgs) => runAgentNames(args, options)
+			async (args: IAgentNamesArgs) => runAgentNames(args, options),
 		);
 	},
 });

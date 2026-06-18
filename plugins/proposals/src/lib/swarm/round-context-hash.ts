@@ -60,7 +60,7 @@ export const computeCoreDocHashes = async (
 	// the doc list is host policy; the default keeps the
 	// historical the host project set for compatibility, hosts may inject
 	// their own (e.g. extra skill docs).
-	coreDocs: readonly string[] = CORE_DOCS
+	coreDocs: readonly string[] = CORE_DOCS,
 ): Promise<Record<string, string>> => {
 	const result: Record<string, string> = {};
 	await Promise.all(
@@ -75,7 +75,7 @@ export const computeCoreDocHashes = async (
 			// with `rh-` to keep the previous wire format.
 			const full = createHash('sha256').update(content).digest('hex');
 			result[rel] = formatRapidHash(full.slice(0, 16));
-		})
+		}),
 	);
 	return result;
 };

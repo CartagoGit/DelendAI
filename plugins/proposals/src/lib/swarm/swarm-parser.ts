@@ -73,7 +73,7 @@ const continuityPolicySchema = z.object({
  * @param absolutePath Absolute path to the `.md` proposal file.
  */
 export const parseSwarmFrontmatter = async (
-	absolutePath: string
+	absolutePath: string,
 ): Promise<ISwarmProposalExtension> => {
 	// Step 1: Run the base parser. This validates id, type, status, track,
 	// budget, acceptanceCriteria, etc. and throws on any base-level error.
@@ -106,7 +106,7 @@ export const parseSwarmFrontmatter = async (
 			throw new ProposalParseError(
 				'INVALID_SWARM_BUDGET',
 				absolutePath,
-				`Invalid swarmBudget in ${absolutePath}: ${result.error.message}`
+				`Invalid swarmBudget in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		swarmBudget = result.data as ISwarmBudget;
@@ -124,7 +124,7 @@ export const parseSwarmFrontmatter = async (
 			throw new ProposalParseError(
 				'INVALID_CONTINUITY_POLICY',
 				absolutePath,
-				`Invalid continuityPolicy in ${absolutePath}: ${result.error.message}`
+				`Invalid continuityPolicy in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		continuityPolicy = result.data as IContinuityPolicy;

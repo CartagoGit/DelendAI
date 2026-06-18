@@ -36,7 +36,7 @@ export type ISwarmBudgetKey = (typeof SWARM_BUDGET_KEYS)[number];
 const SWARM_BUDGET_KEY_SET: ReadonlySet<string> = new Set(SWARM_BUDGET_KEYS);
 
 export function isProposalSwarmBudget(
-	value: unknown
+	value: unknown,
 ): value is Record<ISwarmBudgetKey, number> & Record<string, unknown> {
 	if (value === null || typeof value !== 'object') {
 		return false;
@@ -73,11 +73,11 @@ export const CONTINUITY_POLICY_KEYS = [
 export type IContinuityPolicyKey = (typeof CONTINUITY_POLICY_KEYS)[number];
 
 const CONTINUITY_POLICY_KEY_SET: ReadonlySet<string> = new Set(
-	CONTINUITY_POLICY_KEYS
+	CONTINUITY_POLICY_KEYS,
 );
 
 export function isProposalContinuityPolicy(
-	value: unknown
+	value: unknown,
 ): value is Record<IContinuityPolicyKey, boolean> & Record<string, unknown> {
 	if (value === null || typeof value !== 'object') {
 		return false;
@@ -114,7 +114,7 @@ export interface IProposalBudgetPolicy {
 }
 
 export function isProposalBudgetPolicy(
-	value: unknown
+	value: unknown,
 ): value is IProposalBudgetPolicy {
 	if (value === null || typeof value !== 'object') {
 		return false;

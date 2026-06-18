@@ -74,9 +74,7 @@ export default definePlugin({
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options. [M5]
-		const extraProposalFolders = Array.isArray(
-			ctx.options.proposalFolders
-		)
+		const extraProposalFolders = Array.isArray(ctx.options.proposalFolders)
 			? (ctx.options.proposalFolders as string[])
 			: [];
 
@@ -163,7 +161,8 @@ export default definePlugin({
 					lockPathAbs: abs(layout.lockFile),
 					...(Array.isArray(ctx.options.familyCascade)
 						? {
-								familyCascade: ctx.options.familyCascade as string[],
+								familyCascade: ctx.options
+									.familyCascade as string[],
 							}
 						: {}),
 				}),
@@ -173,12 +172,14 @@ export default definePlugin({
 					lockPathAbs: abs(layout.lockFile),
 					...(Array.isArray(ctx.options.familyCascade)
 						? {
-								familyCascade: ctx.options.familyCascade as string[],
+								familyCascade: ctx.options
+									.familyCascade as string[],
 							}
 						: {}),
 					...(typeof ctx.options.validationCommand === 'string'
 						? {
-								validationCommand: ctx.options.validationCommand as string,
+								validationCommand: ctx.options
+									.validationCommand as string,
 							}
 						: {}),
 				}),
@@ -227,7 +228,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},

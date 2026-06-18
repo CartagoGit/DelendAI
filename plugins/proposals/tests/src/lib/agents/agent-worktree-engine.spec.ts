@@ -4,13 +4,20 @@ import {
 	parseWorktreeList,
 	runAgentWorktreeEngine,
 } from '../../../../src/lib/agents/agent-worktree-engine';
-import type { IGitRunResult, IGitRunner } from '../../../../src/lib/shared/git-runner';
+import type {
+	IGitRunResult,
+	IGitRunner,
+} from '../../../../src/lib/shared/git-runner';
 
 const ok = (output = ''): IGitRunResult => ({ ok: true, output });
-const fail = (reason: string): IGitRunResult => ({ ok: false, output: '', reason });
+const fail = (reason: string): IGitRunResult => ({
+	ok: false,
+	output: '',
+	reason,
+});
 
 const recordingRunner = (
-	handler: (args: readonly string[]) => IGitRunResult
+	handler: (args: readonly string[]) => IGitRunResult,
 ): { run: IGitRunner; calls: (readonly string[])[] } => {
 	const calls: (readonly string[])[] = [];
 	return {
@@ -42,9 +49,22 @@ describe('parseWorktreeList', () => {
 		const entries = parseWorktreeList(raw);
 
 		expect(entries).toHaveLength(3);
-		expect(entries[0]).toEqual({ path: '/repo', head: 'aaa111', branch: 'main', detached: false, locked: false });
-		expect(entries[1]).toMatchObject({ path: '/repo/.worktrees/orion', branch: 'agent/orion' });
-		expect(entries[2]).toMatchObject({ path: '/repo/.worktrees/stale', detached: true, locked: true });
+		expect(entries[0]).toEqual({
+			path: '/repo',
+			head: 'aaa111',
+			branch: 'main',
+			detached: false,
+			locked: false,
+		});
+		expect(entries[1]).toMatchObject({
+			path: '/repo/.worktrees/orion',
+			branch: 'agent/orion',
+		});
+		expect(entries[2]).toMatchObject({
+			path: '/repo/.worktrees/stale',
+			detached: true,
+			locked: true,
+		});
 	});
 
 	it('returns an empty array for empty output', () => {
@@ -63,13 +83,29 @@ describe('runAgentWorktreeEngine — create', () => {
 
 		const result = await runAgentWorktreeEngine(
 			{ action: 'create', agent: 'Orion' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
 
-		expect(result).toMatchObject({ ok: true, action: 'create', branch: 'agent/orion', created: true });
-		expect(result.ok && result.action === 'create' ? result.path : '').toBe('/repo/.worktrees/orion');
-		const addCall = calls.find((c) => c[0] === 'worktree' && c[1] === 'add');
-		expect(addCall).toEqual(['worktree', 'add', '-b', 'agent/orion', '/repo/.worktrees/orion', 'HEAD']);
+		expect(result).toMatchObject({
+			ok: true,
+			action: 'create',
+			branch: 'agent/orion',
+			created: true,
+		});
+		expect(result.ok && result.action === 'create' ? result.path : '').toBe(
+			'/repo/.worktrees/orion',
+		);
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toEqual([
+			'worktree',
+			'add',
+			'-b',
+			'agent/orion',
+			'/repo/.worktrees/orion',
+			'HEAD',
+		]);
 	});
 
 	it('reuses an existing branch without -b', async () => {
@@ -82,11 +118,18 @@ describe('runAgentWorktreeEngine — create', () => {
 
 		await runAgentWorktreeEngine(
 			{ action: 'create', agent: 'lyra' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
 
-		const addCall = calls.find((c) => c[0] === 'worktree' && c[1] === 'add');
-		expect(addCall).toEqual(['worktree', 'add', '/repo/.worktrees/lyra', 'agent/lyra']);
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toEqual([
+			'worktree',
+			'add',
+			'/repo/.worktrees/lyra',
+			'agent/lyra',
+		]);
 	});
 
 	it('is idempotent: returns the existing worktree without calling add', async () => {
@@ -102,10 +145,14 @@ describe('runAgentWorktreeEngine — create', () => {
 
 		const result = await runAgentWorktreeEngine(
 			{ action: 'create', agent: 'vega' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
 
-		expect(result).toMatchObject({ ok: true, created: false, branch: 'agent/vega' });
+		expect(result).toMatchObject({
+			ok: true,
+			created: false,
+			branch: 'agent/vega',
+		});
 		expect(calls.some((c) => c[1] === 'add')).toBe(false);
 	});
 
@@ -113,9 +160,13 @@ describe('runAgentWorktreeEngine — create', () => {
 		const { run } = recordingRunner(() => ok(''));
 		const result = await runAgentWorktreeEngine(
 			{ action: 'create' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
-		expect(result).toEqual({ ok: false, action: 'create', reason: 'create requires "agent"' });
+		expect(result).toEqual({
+			ok: false,
+			action: 'create',
+			reason: 'create requires "agent"',
+		});
 	});
 
 	it('surfaces a git failure as a structured reason', async () => {
@@ -126,9 +177,13 @@ describe('runAgentWorktreeEngine — create', () => {
 		});
 		const result = await runAgentWorktreeEngine(
 			{ action: 'create', agent: 'orion' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
-		expect(result).toEqual({ ok: false, action: 'create', reason: 'fatal: branch already checked out' });
+		expect(result).toEqual({
+			ok: false,
+			action: 'create',
+			reason: 'fatal: branch already checked out',
+		});
 	});
 });
 
@@ -137,26 +192,42 @@ describe('runAgentWorktreeEngine — remove', () => {
 		const { run, calls } = recordingRunner(() => ok(''));
 		const result = await runAgentWorktreeEngine(
 			{ action: 'remove', agent: 'orion' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
-		expect(result).toEqual({ ok: true, action: 'remove', path: '/repo/.worktrees/orion', removed: true });
-		expect(calls[0]).toEqual(['worktree', 'remove', '/repo/.worktrees/orion']);
+		expect(result).toEqual({
+			ok: true,
+			action: 'remove',
+			path: '/repo/.worktrees/orion',
+			removed: true,
+		});
+		expect(calls[0]).toEqual([
+			'worktree',
+			'remove',
+			'/repo/.worktrees/orion',
+		]);
 	});
 
 	it('passes --force when requested', async () => {
 		const { run, calls } = recordingRunner(() => ok(''));
 		await runAgentWorktreeEngine(
 			{ action: 'remove', agent: 'orion', force: true },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
-		expect(calls[0]).toEqual(['worktree', 'remove', '--force', '/repo/.worktrees/orion']);
+		expect(calls[0]).toEqual([
+			'worktree',
+			'remove',
+			'--force',
+			'/repo/.worktrees/orion',
+		]);
 	});
 
 	it('surfaces a refusal (e.g. dirty tree) as a structured reason', async () => {
-		const { run } = recordingRunner(() => fail('contains modified or untracked files'));
+		const { run } = recordingRunner(() =>
+			fail('contains modified or untracked files'),
+		);
 		const result = await runAgentWorktreeEngine(
 			{ action: 'remove', agent: 'orion' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
 		expect(result).toEqual({
 			ok: false,
@@ -169,25 +240,43 @@ describe('runAgentWorktreeEngine — remove', () => {
 describe('runAgentWorktreeEngine — list', () => {
 	it('returns parsed entries', async () => {
 		const { run } = recordingRunner(() =>
-			ok(['worktree /repo', 'HEAD aaa', 'branch refs/heads/main'].join('\n'))
+			ok(
+				['worktree /repo', 'HEAD aaa', 'branch refs/heads/main'].join(
+					'\n',
+				),
+			),
 		);
 		const result = await runAgentWorktreeEngine(
 			{ action: 'list' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
 		expect(result).toEqual({
 			ok: true,
 			action: 'list',
-			worktrees: [{ path: '/repo', head: 'aaa', branch: 'main', detached: false, locked: false }],
+			worktrees: [
+				{
+					path: '/repo',
+					head: 'aaa',
+					branch: 'main',
+					detached: false,
+					locked: false,
+				},
+			],
 		});
 	});
 
 	it('surfaces a git failure', async () => {
-		const { run } = recordingRunner(() => fail('git is not available here'));
+		const { run } = recordingRunner(() =>
+			fail('git is not available here'),
+		);
 		const result = await runAgentWorktreeEngine(
 			{ action: 'list' },
-			{ run, workspaceRoot: '/repo' }
+			{ run, workspaceRoot: '/repo' },
 		);
-		expect(result).toEqual({ ok: false, action: 'list', reason: 'git is not available here' });
+		expect(result).toEqual({
+			ok: false,
+			action: 'list',
+			reason: 'git is not available here',
+		});
 	});
 });

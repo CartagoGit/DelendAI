@@ -2,7 +2,6 @@ import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 
 import { buildMemoryToolRegistrations } from './lib/tools';
 
-
 /**
  * Persistent project memory. Save/recall/list/forget small notes stored
  * in one JSON file under the cache dir, so any agent keeps continuity
@@ -15,7 +14,7 @@ export default definePlugin({
 		'Persistent project notes (save/recall/list/forget) for cross-session continuity with minimal tokens.',
 	register(ctx) {
 		const storePathAbs = ctx.workspace.resolve(
-			joinRel(ctx.pluginCacheDir, 'notes.json')
+			joinRel(ctx.pluginCacheDir, 'notes.json'),
 		);
 		return {
 			tools: buildMemoryToolRegistrations({

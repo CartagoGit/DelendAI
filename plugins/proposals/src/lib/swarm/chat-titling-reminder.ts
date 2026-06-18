@@ -115,7 +115,7 @@ export type IChatTitlingReminderInput = Omit<
  *     to a markdown payload.
  */
 export function buildChatTitlingReminder(
-	report: IChatTitlingReminderInput
+	report: IChatTitlingReminderInput,
 ): string {
 	const proposalId = normaliseOptionalString(report.proposalId);
 	const taskId = normaliseOptionalString(report.taskId);
@@ -128,7 +128,7 @@ export function buildChatTitlingReminder(
 		const safeTaskId = taskId ?? '<T-taskId>';
 		const safeSummary = summary ?? '<short summary>';
 		const resolvedProposalTemplate = `[${proposalId}] T${stripLeadingT(
-			safeTaskId
+			safeTaskId,
 		)}: ${safeSummary}`;
 
 		// Run the resolved template through the T1 parser to make sure

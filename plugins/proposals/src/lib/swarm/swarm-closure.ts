@@ -136,7 +136,7 @@ const toBudgetViolation = (v: IBudgetViolation): ISwarmViolation => ({
 });
 
 const budgetSeverityToContinuity = (
-	s: IBudgetViolationSeverity
+	s: IBudgetViolationSeverity,
 ): IContinuityViolationSeverity => s;
 
 const continuityToSwarm = (v: IContinuityViolation): ISwarmViolation => ({
@@ -161,10 +161,10 @@ const minutesBetween = (laterIso: string, earlierIso: string): number => {
 
 const findStaleLocks = (
 	locks: readonly ILockSnapshot[],
-	staleAfterMinutes: number
+	staleAfterMinutes: number,
 ): ILockSnapshot[] =>
 	locks.filter(
-		(l) => minutesBetween(l.nowIso, l.lastSeenIso) > staleAfterMinutes
+		(l) => minutesBetween(l.nowIso, l.lastSeenIso) > staleAfterMinutes,
 	);
 
 // ---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	// 2. Continuity policy. Empty policy → no enforcement.
 	const continuityResult: IContinuityCheckResult = evaluateContinuityPolicy(
 		input.continuityPolicy,
-		input.observedContinuity
+		input.observedContinuity,
 	);
 	for (const v of continuityResult.violations) {
 		violations.push(continuityToSwarm(v));
@@ -234,7 +234,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	// 6. Closure decision.
 	const hasBlock = violations.some((v) => v.severity === 'block');
 	const withinSwarmBudget = !budgetResult.violations.some(
-		(v) => v.severity === 'block'
+		(v) => v.severity === 'block',
 	);
 	const withinContinuityPolicy =
 		continuityResult.withinPolicy &&

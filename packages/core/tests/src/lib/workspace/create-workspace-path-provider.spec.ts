@@ -8,7 +8,7 @@ describe('createWorkspacePathProvider', () => {
 	it('resolves workspace-relative paths against the absolute root', () => {
 		const provider = createWorkspacePathProvider('/tmp/spec-root');
 		expect(provider.resolve('.cache/agents.lock.json')).toBe(
-			resolve('/tmp/spec-root', '.cache/agents.lock.json')
+			resolve('/tmp/spec-root', '.cache/agents.lock.json'),
 		);
 	});
 

@@ -120,7 +120,7 @@ const parseBackpressureReport = (raw: unknown): IBackpressureReport => {
 	const result = IBackpressureReportSchema.safeParse(raw);
 	if (!result.success) {
 		throw new Error(
-			`verifyClosure: failed to parse IBackpressureReport: ${result.error.message}`
+			`verifyClosure: failed to parse IBackpressureReport: ${result.error.message}`,
 		);
 	}
 	return result.data;
@@ -136,7 +136,7 @@ const parseBackpressureReport = (raw: unknown): IBackpressureReport => {
 // ---------------------------------------------------------------------------
 
 const resolveReport = async (
-	paths: IVerifyPaths
+	paths: IVerifyPaths,
 ): Promise<IBackpressureReport> => {
 	try {
 		const result = await runTaskQueueAction(
@@ -146,7 +146,7 @@ const resolveReport = async (
 				closedTasksPath: paths.closedTasksPath,
 				lockPath: paths.lockPath,
 				workspaceRoot: paths.workspaceRoot,
-			}
+			},
 		);
 		return parseBackpressureReport(result);
 	} catch (err) {
@@ -158,7 +158,7 @@ const resolveReport = async (
 		// false-positive on infrastructure noise.
 		if (process.env.NODE_ENV !== 'production') {
 			console.error(
-				`[verifyClosure] runTaskQueueAction(report) failed; falling back to synthetic green: ${String(err)}`
+				`[verifyClosure] runTaskQueueAction(report) failed; falling back to synthetic green: ${String(err)}`,
 			);
 		}
 		return {
@@ -203,7 +203,7 @@ export { reportBackpressure };
  *            `verified: true` (the proposal can close).
  */
 export const verifyClosure = async (
-	input: IVerifyInput
+	input: IVerifyInput,
 ): Promise<IVerifyResult> => {
 	const usesTaskQueue = input.proposal.frontmatter.extras?.taskQueue === true;
 

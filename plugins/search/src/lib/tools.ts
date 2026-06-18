@@ -20,14 +20,15 @@ export interface ISearchToolOptions {
  * Low-token: capped result count and per-line preview.
  */
 export const buildSearchToolRegistrations = (
-	options: ISearchToolOptions
+	options: ISearchToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	const defaults = options.defaults ?? {};
 	return [
 		{
 			id: 'search',
-			summary: 'Search workspace text files for a query (grep-like, low-token).',
+			summary:
+				'Search workspace text files for a query (grep-like, low-token).',
 			tags: ['search', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
@@ -54,7 +55,7 @@ export const buildSearchToolRegistrations = (
 									file: z.string(),
 									line: z.number(),
 									text: z.string(),
-								})
+								}),
 							),
 						}),
 					},
@@ -73,7 +74,9 @@ export const buildSearchToolRegistrations = (
 								args.query,
 								{
 									...defaults,
-									...(args.roots ? { roots: args.roots } : {}),
+									...(args.roots
+										? { roots: args.roots }
+										: {}),
 									...(args.maxResults !== undefined
 										? { maxResults: args.maxResults }
 										: {}),
@@ -83,9 +86,13 @@ export const buildSearchToolRegistrations = (
 									...(args.regex !== undefined
 										? { regex: args.regex }
 										: {}),
-									...(args.include ? { include: args.include } : {}),
-									...(args.exclude ? { exclude: args.exclude } : {}),
-								}
+									...(args.include
+										? { include: args.include }
+										: {}),
+									...(args.exclude
+										? { exclude: args.exclude }
+										: {}),
+								},
 							);
 							return toolJson({
 								query: result.query,
@@ -98,12 +105,12 @@ export const buildSearchToolRegistrations = (
 							if (err instanceof InvalidSearchPatternError) {
 								return toolError(
 									err.message,
-									'Fix the regex or drop regex:true to search literally.'
+									'Fix the regex or drop regex:true to search literally.',
 								);
 							}
 							throw err;
 						}
-					}
+					},
 				);
 			},
 		},

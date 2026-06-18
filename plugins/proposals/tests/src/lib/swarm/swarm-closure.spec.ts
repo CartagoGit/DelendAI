@@ -45,7 +45,7 @@ const healthyTree = (): IAgentTreeSummary => ({
 });
 
 const inputWith = (
-	overrides: Partial<ICloseSwarmInput> = {}
+	overrides: Partial<ICloseSwarmInput> = {},
 ): ICloseSwarmInput => ({
 	proposalId: 'p34b',
 	budget: {
@@ -111,12 +111,12 @@ describe('runSwarmClosure — case 2: block violation', () => {
 					premiumCalls: 5,
 					toolCalls: 30,
 				},
-			})
+			}),
 		);
 
 		expect(result.withinSwarmBudget).toBe(false);
 		expect(result.swarmViolations.some((v) => v.severity === 'block')).toBe(
-			true
+			true,
 		);
 		expect(result.closureDecision).toBe('open_fix');
 	});
@@ -129,7 +129,7 @@ describe('runSwarmClosure — case 2: block violation', () => {
 					newProposalsOpenedInSession: 1, // triggers forbidNewProposals
 					willReReadUnchangedDoc: true, // triggers forbidReReadOnUnchangedDigest
 				},
-			})
+			}),
 		);
 
 		expect(result.withinContinuityPolicy).toBe(false);
@@ -153,7 +153,7 @@ describe('runSwarmClosure — case 3: orphan subagents', () => {
 					orphanCount: 1,
 					adoptedCount: 0,
 				},
-			})
+			}),
 		);
 
 		expect(result.closureDecision).toBe('open_fix');
@@ -178,7 +178,7 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 						nowIso: FRESH_LOCK_TIMESTAMP,
 					},
 				],
-			})
+			}),
 		);
 
 		expect(result.closureDecision).toBe('open_fix');
@@ -196,7 +196,7 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 						nowIso: FRESH_LOCK_TIMESTAMP,
 					},
 				],
-			})
+			}),
 		);
 
 		expect(result.closureDecision).toBe('close');
@@ -212,7 +212,7 @@ describe('runSwarmClosure — case 5: missing checkpoint', () => {
 		const result = runSwarmClosure(
 			inputWith({
 				checkpointPresent: false,
-			})
+			}),
 		);
 
 		expect(result.withinContinuityPolicy).toBe(false);
@@ -241,7 +241,7 @@ describe('runSwarmClosure — case 6: no declared budget', () => {
 					newProposalsOpenedInSession: 5,
 				},
 				checkpointPresent: false,
-			})
+			}),
 		);
 
 		expect(result.withinSwarmBudget).toBe(true);

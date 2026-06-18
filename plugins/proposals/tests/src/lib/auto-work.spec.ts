@@ -47,7 +47,9 @@ describe('auto_work (one-call action plan)', () => {
 		// Actionable work resets the streak; idle afterwards no longer stops.
 		writeFileSync(
 			options.indexPathAbs,
-			JSON.stringify({ proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }] })
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
 		);
 		expect(parse(await runAutoWork(options)).state).toBe('work');
 		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
@@ -59,7 +61,7 @@ describe('auto_work (one-call action plan)', () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(options));
 		expect(out.state).toBe('work');

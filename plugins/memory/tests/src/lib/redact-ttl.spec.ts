@@ -43,7 +43,9 @@ describe('redactSecrets (M11)', () => {
 	});
 
 	it('redacts secret-ish assignments but keeps the key', () => {
-		const r = redactSecrets('api_key = "s3cr3tValue123" and password: hunter2hunter');
+		const r = redactSecrets(
+			'api_key = "s3cr3tValue123" and password: hunter2hunter',
+		);
 		expect(r.redactions).toBe(2);
 		expect(r.text).toContain('api_key');
 		expect(r.text).toContain('password');
@@ -67,7 +69,12 @@ describe('TTL expiry + redaction on save (M11)', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('saveNote scrubs secrets and reports the count', async () => {
-		const ghToken = tok('gh', 'p', '_', '0123456789abcdefghijklmnopqrstuvwxyz');
+		const ghToken = tok(
+			'gh',
+			'p',
+			'_',
+			'0123456789abcdefghijklmnopqrstuvwxyz',
+		);
 		const { note, redactions } = await saveNote(store, {
 			title: 'creds',
 			body: `token=${ghToken} here`,
@@ -78,7 +85,11 @@ describe('TTL expiry + redaction on save (M11)', () => {
 	});
 
 	it('saveNote with ttlSeconds sets a future expiresAt and the note survives', async () => {
-		const { note } = await saveNote(store, { title: 'temp', body: 'x', ttlSeconds: 3600 });
+		const { note } = await saveNote(store, {
+			title: 'temp',
+			body: 'x',
+			ttlSeconds: 3600,
+		});
 		expect(note.expiresAt).toBeDefined();
 		expect(await recall(store, {})).toHaveLength(1);
 	});
@@ -98,7 +109,9 @@ describe('TTL expiry + redaction on save (M11)', () => {
 
 		// A subsequent save persists only the live set (expired pruned).
 		await saveNote(store, { title: 'fresh', body: 'y' });
-		const raw = JSON.parse(readFileSync(store, 'utf8')) as { notes: INote[] };
+		const raw = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
 		expect(raw.notes.map((n) => n.id)).toEqual(['fresh']);
 	});
 });

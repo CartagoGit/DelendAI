@@ -49,15 +49,13 @@ export interface IStateToolOptions {
 
 interface IStateDiagnosis {
 	readonly locks: { readonly active: number };
-	readonly queue:
-		| {
-				readonly queueLength: number;
-				readonly queuedCount: number;
-				readonly waiterOrphans: number;
-				readonly oldestAgeMinutes: number;
-				readonly threshold: string;
-		  }
-		| null;
+	readonly queue: {
+		readonly queueLength: number;
+		readonly queuedCount: number;
+		readonly waiterOrphans: number;
+		readonly oldestAgeMinutes: number;
+		readonly threshold: string;
+	} | null;
 	readonly registry: {
 		readonly orphans: number;
 		readonly threshold: string;
@@ -71,10 +69,12 @@ interface IStateDiagnosis {
  * agent assignments. Pure over the injected paths; reuses the same
  * (tested) engines the repair tool calls in execute mode.
  */
-const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> => {
+const diagnose = async (
+	options: IStateToolOptions,
+): Promise<IStateDiagnosis> => {
 	const lockStatusRaw = await runAgentLockEngine(
 		{ action: 'status' },
-		{ lockPath: options.lockPathAbs }
+		{ lockPath: options.lockPathAbs },
 	);
 	const lockStatus = JSON.parse(lockStatusRaw.content[0]?.text ?? '{}') as {
 		active_write_lanes?: number;
@@ -85,11 +85,11 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 		const loaded = await parseQueue(
 			options.queuePathAbs,
 			options.closedTasksPathAbs,
-			options.workspaceRoot
+			options.workspaceRoot,
 		);
 		const lockSnapshot = await loadLockSnapshot(
 			options.lockPathAbs,
-			options.closedTasksPathAbs
+			options.closedTasksPathAbs,
 		);
 		const report = reportBackpressure(loaded, lockSnapshot);
 		queue = {
@@ -105,7 +105,7 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 		options.registryPathAbs,
 		options.lockPathAbs,
 		options.queuePathAbs,
-		{ dryRun: true }
+		{ dryRun: true },
 	);
 
 	const healthy =
@@ -126,7 +126,7 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 
 /** `<prefix>_state_health` — read-only swarm state diagnosis. */
 export const buildStateHealthRegistration = (
-	options: IStateToolOptions
+	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_health',
 	summary:
@@ -136,7 +136,7 @@ export const buildStateHealthRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_health`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					locks: z.object({ active: z.number() }),
 					queue: z
 						.object({
@@ -147,13 +147,16 @@ export const buildStateHealthRegistration = (
 							threshold: z.string(),
 						})
 						.nullable(),
-					registry: z.object({ orphans: z.number(), threshold: z.string() }),
+					registry: z.object({
+						orphans: z.number(),
+						threshold: z.string(),
+					}),
 					healthy: z.boolean(),
 				}),
 				description:
 					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
 			},
-			async () => toolJson(await diagnose(options))
+			async () => toolJson(await diagnose(options)),
 		);
 	},
 });
@@ -165,7 +168,7 @@ export const buildStateHealthRegistration = (
  * orphan assignments (each via the engine's own atomic/mutex write).
  */
 export const buildStateRepairRegistration = (
-	options: IStateToolOptions
+	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_repair',
 	effects: ['write'],
@@ -176,7 +179,7 @@ export const buildStateRepairRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_repair`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
 				inputSchema: z.object({
@@ -202,13 +205,16 @@ export const buildStateRepairRegistration = (
 				// 1) GC stale write locks (engine drops entries past TTL). Count
 				// honestly via the on-disk file before/after, because the engine
 				// strips stale entries in-memory before its own `dropped` tally.
-				const lockedBefore = await rawInFlightCount(options.lockPathAbs);
+				const lockedBefore = await rawInFlightCount(
+					options.lockPathAbs,
+				);
 				await runAgentLockEngine(
 					{ action: 'gc' },
-					{ lockPath: options.lockPathAbs }
+					{ lockPath: options.lockPathAbs },
 				);
 				const staleLocksCleaned =
-					lockedBefore - (await rawInFlightCount(options.lockPathAbs));
+					lockedBefore -
+					(await rawInFlightCount(options.lockPathAbs));
 
 				// 2) Expire due queue entries.
 				let expiredCount = 0;
@@ -216,12 +222,12 @@ export const buildStateRepairRegistration = (
 					const loaded = await parseQueue(
 						options.queuePathAbs,
 						options.closedTasksPathAbs,
-						options.workspaceRoot
+						options.workspaceRoot,
 					);
 					const swept = await expireSweep(
 						loaded,
 						new Date().toISOString(),
-						options.queuePathAbs
+						options.queuePathAbs,
 					);
 					expiredCount = swept.expiredCount;
 				}
@@ -231,7 +237,7 @@ export const buildStateRepairRegistration = (
 					options.registryPathAbs,
 					options.lockPathAbs,
 					options.queuePathAbs,
-					{ dryRun: false }
+					{ dryRun: false },
 				);
 
 				return toolJson({
@@ -243,7 +249,7 @@ export const buildStateRepairRegistration = (
 					},
 					diagnosis: await diagnose(options),
 				});
-			}
+			},
 		);
 	},
 });

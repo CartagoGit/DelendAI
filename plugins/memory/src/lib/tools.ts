@@ -42,7 +42,7 @@ const NoteIndexEntrySchema = z.object({
  * propagate to the SDK unchanged.
  */
 const guardCorrupt = async (
-	fn: () => IToolTextResult | Promise<IToolTextResult>
+	fn: () => IToolTextResult | Promise<IToolTextResult>,
 ): Promise<IToolTextResult> => {
 	try {
 		return await fn();
@@ -52,7 +52,7 @@ const guardCorrupt = async (
 				`memory store is corrupt: ${err.message}`,
 				err.backupPath
 					? `The corrupt file was preserved at "${err.backupPath}". Inspect or delete it, then retry.`
-					: 'Could not back up the corrupt store; inspect it manually before retrying.'
+					: 'Could not back up the corrupt store; inspect it manually before retrying.',
 			);
 		}
 		throw err;
@@ -71,7 +71,7 @@ export interface IMemoryToolOptions {
  * without re-reading the whole repo — recall only what it needs.
  */
 export const buildMemoryToolRegistrations = (
-	options: IMemoryToolOptions
+	options: IMemoryToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	return [
@@ -92,12 +92,12 @@ export const buildMemoryToolRegistrations = (
 							tags: z.array(z.string()).optional(),
 							ttlSeconds: z.number().int().positive().optional(),
 						}),
-							outputSchema: z.object({
-								ok: z.literal(true),
-								saved: NoteSchema,
-								redactedSecrets: z.number(),
-							}),
-							},
+						outputSchema: z.object({
+							ok: z.literal(true),
+							saved: NoteSchema,
+							redactedSecrets: z.number(),
+						}),
+					},
 					async (args: {
 						title: string;
 						body: string;
@@ -107,13 +107,13 @@ export const buildMemoryToolRegistrations = (
 						if (args.title.length > 200) {
 							return toolError(
 								'title too long (max 200 chars)',
-								'Shorten the title; put detail in the body.'
+								'Shorten the title; put detail in the body.',
 							);
 						}
 						if (args.body.length > 8000) {
 							return toolError(
 								'body too long (max 8000 chars)',
-								'Summarise; memory is for durable notes, not logs.'
+								'Summarise; memory is for durable notes, not logs.',
 							);
 						}
 						if ((args.tags?.length ?? 0) > 20) {
@@ -122,14 +122,17 @@ export const buildMemoryToolRegistrations = (
 						if (args.tags?.some((tag) => tag.length > 50)) {
 							return toolError(
 								'tag too long (max 50 chars each)',
-								'Use short, keyword-like tags.'
+								'Use short, keyword-like tags.',
 							);
 						}
 						const MAX_TTL = 31_536_000; // 1 year
-						if (args.ttlSeconds !== undefined && args.ttlSeconds > MAX_TTL) {
+						if (
+							args.ttlSeconds !== undefined &&
+							args.ttlSeconds > MAX_TTL
+						) {
 							return toolError(
 								`ttlSeconds too large (max ${MAX_TTL} = 1 year)`,
-								'Omit ttlSeconds for a permanent note.'
+								'Omit ttlSeconds for a permanent note.',
 							);
 						}
 						return guardCorrupt(async () => {
@@ -142,7 +145,7 @@ export const buildMemoryToolRegistrations = (
 							if (isNew && notes.length >= MAX_NOTES) {
 								return toolError(
 									`note store is full (max ${MAX_NOTES} notes)`,
-									'Forget stale notes with memory_forget before adding new ones.'
+									'Forget stale notes with memory_forget before adding new ones.',
 								);
 							}
 							const { note, redactions } = await saveNote(
@@ -154,17 +157,21 @@ export const buildMemoryToolRegistrations = (
 									...(args.ttlSeconds !== undefined
 										? { ttlSeconds: args.ttlSeconds }
 										: {}),
-								}
+								},
 							);
-							return toolOk({ saved: note, redactedSecrets: redactions });
+							return toolOk({
+								saved: note,
+								redactedSecrets: redactions,
+							});
 						});
-					}
+					},
 				);
 			},
 		},
 		{
 			id: 'recall',
-			summary: 'Recall notes by free-text query and/or tags (newest first).',
+			summary:
+				'Recall notes by free-text query and/or tags (newest first).',
 			tags: ['memory', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
@@ -177,7 +184,7 @@ export const buildMemoryToolRegistrations = (
 							tags: z.array(z.string()).optional(),
 							limit: z.number().optional(),
 						}),
-							outputSchema: z.object({ notes: z.array(NoteSchema) }),
+						outputSchema: z.object({ notes: z.array(NoteSchema) }),
 					},
 					async (args: {
 						query?: string | undefined;
@@ -193,11 +200,14 @@ export const buildMemoryToolRegistrations = (
 									...(args.tags ? { tags: args.tags } : {}),
 									limit: Math.max(
 										1,
-										Math.min(50, Math.floor(args.limit ?? 10))
+										Math.min(
+											50,
+											Math.floor(args.limit ?? 10),
+										),
 									),
 								}),
-							})
-						)
+							}),
+						),
 				);
 			},
 		},
@@ -215,7 +225,12 @@ export const buildMemoryToolRegistrations = (
 							limit: z.number().optional(),
 							offset: z.number().optional(),
 						}),
-							outputSchema: z.object({ notes: z.array(NoteIndexEntrySchema), total: z.number(), offset: z.number(), nextOffset: z.number().optional() }),
+						outputSchema: z.object({
+							notes: z.array(NoteIndexEntrySchema),
+							total: z.number(),
+							offset: z.number(),
+							nextOffset: z.number().optional(),
+						}),
 					},
 					async (args: {
 						limit?: number | undefined;
@@ -225,13 +240,16 @@ export const buildMemoryToolRegistrations = (
 							const all = (await readStore(options.storePathAbs))
 								.slice()
 								.sort((a, b) =>
-									b.updatedAt.localeCompare(a.updatedAt)
+									b.updatedAt.localeCompare(a.updatedAt),
 								);
 							const limit = Math.max(
 								1,
-								Math.min(200, Math.floor(args.limit ?? 50))
+								Math.min(200, Math.floor(args.limit ?? 50)),
 							);
-							const offset = Math.max(0, Math.floor(args.offset ?? 0));
+							const offset = Math.max(
+								0,
+								Math.floor(args.offset ?? 0),
+							);
 							const page = all.slice(offset, offset + limit);
 							const nextOffset = offset + page.length;
 							return toolJson({
@@ -246,7 +264,7 @@ export const buildMemoryToolRegistrations = (
 									? { nextOffset }
 									: {}),
 							});
-						})
+						}),
 				);
 			},
 		},
@@ -261,21 +279,24 @@ export const buildMemoryToolRegistrations = (
 					{
 						description: 'Delete a note by id (from memory_list).',
 						inputSchema: z.object({ id: z.string() }),
-							outputSchema: z.object({ ok: z.literal(true), removed: z.string() }),
+						outputSchema: z.object({
+							ok: z.literal(true),
+							removed: z.string(),
+						}),
 					},
 					async (args: { id: string }) =>
 						guardCorrupt(async () => {
 							const removed = await removeNote(
 								options.storePathAbs,
-								args.id
+								args.id,
 							);
 							return removed
 								? toolOk({ removed: args.id })
 								: toolError(
 										`no note "${args.id}"`,
-										'Call memory_list to see ids.'
+										'Call memory_list to see ids.',
 									);
-						})
+						}),
 				);
 			},
 		},

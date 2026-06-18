@@ -28,7 +28,7 @@ describe('quarantineCorruptFile', () => {
 
 	const backups = (): string[] =>
 		readdirSync(dir).filter((f) =>
-			f.startsWith(`${basename(target)}.corrupt-`)
+			f.startsWith(`${basename(target)}.corrupt-`),
 		);
 
 	it('moves the file aside and returns the backup path (async)', async () => {
@@ -68,7 +68,11 @@ describe('quarantineCorruptFile', () => {
 
 describe('CorruptFileError', () => {
 	it('names the preserved backup in the message', () => {
-		const err = new CorruptFileError('/x/state.json', '/x/state.json.corrupt-1', 'invalid JSON');
+		const err = new CorruptFileError(
+			'/x/state.json',
+			'/x/state.json.corrupt-1',
+			'invalid JSON',
+		);
 		expect(err).toBeInstanceOf(Error);
 		expect(err.name).toBe('CorruptFileError');
 		expect(err.originalPath).toBe('/x/state.json');

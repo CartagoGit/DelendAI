@@ -8,7 +8,13 @@
  * NOT re-deliver a digest that was already handed out.
  */
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,9 +28,12 @@ import {
 
 const subscribe = (
 	paths: ITaskQueuePaths,
-	taskId: string
+	taskId: string,
 ): Promise<ISubscribeActionResult> =>
-	runTaskQueueAction({ action: 'subscribe', params: { taskId } }, paths) as Promise<ISubscribeActionResult>;
+	runTaskQueueAction(
+		{ action: 'subscribe', params: { taskId } },
+		paths,
+	) as Promise<ISubscribeActionResult>;
 
 describe('subscribe idempotency persists across sessions (M6)', () => {
 	let dir = '';
@@ -49,14 +58,19 @@ describe('subscribe idempotency persists across sessions (M6)', () => {
 					agentName: 'a',
 					filesOwned: ['src/a.ts'],
 				},
-			])
+			]),
 		);
 		await runTaskQueueAction(
 			{
 				action: 'enqueue',
-				params: { taskId: 'obs', agentName: 'a', agentSlot: 'orchestrator', observe: ['dep1'] },
+				params: {
+					taskId: 'obs',
+					agentName: 'a',
+					agentSlot: 'orchestrator',
+					observe: ['dep1'],
+				},
 			},
-			paths
+			paths,
 		);
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -68,7 +82,9 @@ describe('subscribe idempotency persists across sessions (M6)', () => {
 
 		// The set is persisted — no in-memory carryover, so this models a restart.
 		expect(existsSync(sidecar())).toBe(true);
-		const persisted = JSON.parse(readFileSync(sidecar(), 'utf8')) as { delivered: string[] };
+		const persisted = JSON.parse(readFileSync(sidecar(), 'utf8')) as {
+			delivered: string[];
+		};
 		expect(persisted.delivered).toContain('obs::dep1');
 
 		const second = await subscribe(paths, 'obs');
@@ -81,9 +97,14 @@ describe('subscribe idempotency persists across sessions (M6)', () => {
 		await runTaskQueueAction(
 			{
 				action: 'enqueue',
-				params: { taskId: 'obs2', agentName: 'a', agentSlot: 'orchestrator', observe: ['dep1'] },
+				params: {
+					taskId: 'obs2',
+					agentName: 'a',
+					agentSlot: 'orchestrator',
+					observe: ['dep1'],
+				},
 			},
-			paths
+			paths,
 		);
 
 		const first = await subscribe(paths, 'obs');
@@ -92,7 +113,9 @@ describe('subscribe idempotency persists across sessions (M6)', () => {
 		const second = await subscribe(paths, 'obs2');
 		expect(second.digests.map((d) => d.taskId)).toEqual(['dep1']);
 
-		const persisted = JSON.parse(readFileSync(sidecar(), 'utf8')) as { delivered: string[] };
+		const persisted = JSON.parse(readFileSync(sidecar(), 'utf8')) as {
+			delivered: string[];
+		};
 		expect(persisted.delivered).toEqual(['obs2::dep1', 'obs::dep1']); // sorted
 	});
 });

@@ -8,7 +8,14 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-type ISkill = { id: string; name: string; description: string; plugin: string; summary: string; path: string };
+type ISkill = {
+	id: string;
+	name: string;
+	description: string;
+	plugin: string;
+	summary: string;
+	path: string;
+};
 const skills = (skillsData.skills ?? []) as ISkill[];
 
 const repo = 'https://github.com/CartagoGit/mcp-vertex';

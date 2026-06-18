@@ -6,7 +6,14 @@
  *   bun scripts/gen-skills.ts            # write, warn on gaps
  *   bun scripts/gen-skills.ts --strict   # FAIL on parse errors
  */
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -69,7 +76,9 @@ const walkSkills = (dir: string): ISkill[] => {
 				name: fm.name ?? entry,
 				description: fm.description ?? '',
 				plugin: slugFromPath(rel),
-				summary: firstSentence(text.split(/^---\n[\s\S]*?\n---\n/)[1] ?? ''),
+				summary: firstSentence(
+					text.split(/^---\n[\s\S]*?\n---\n/)[1] ?? '',
+				),
 				path: rel,
 			});
 		}
@@ -89,7 +98,10 @@ const main = (): void => {
 		console.warn(`⚠ gen-skills: ${msg}`);
 	}
 	mkdirSync(dirname(OUT), { recursive: true });
-	writeFileSync(OUT, `${JSON.stringify({ generatedAt: new Date().toISOString(), skills }, null, 2)}\n`);
+	writeFileSync(
+		OUT,
+		`${JSON.stringify({ generatedAt: new Date().toISOString(), skills }, null, 2)}\n`,
+	);
 	console.log(`wrote ${OUT} — ${skills.length} skill(s).`);
 };
 

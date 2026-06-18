@@ -9,8 +9,7 @@ export const RULES_MODES: readonly IRulesMode[] = [
 ];
 
 export const RULES_MODE_GUIDANCE: Readonly<Record<IRulesMode, string>> = {
-	strict:
-		'Actively bring code into full compliance: run the fixer and make manual edits until check_rules is clean.',
+	strict: 'Actively bring code into full compliance: run the fixer and make manual edits until check_rules is clean.',
 	mixed: 'Only fix/align files you create or touch; leave untouched files as-is.',
 	none: 'Never auto-change code. Report violations only; let the human decide.',
 	proposal:
@@ -66,5 +65,7 @@ export interface IRulesManifest {
 	/** Hash of mode + overrides + detected presets; regenerate on change. */
 	readonly fingerprint: string;
 	readonly mode: IRulesMode;
-	readonly projects: Readonly<Record<string, Readonly<Record<string, IAreaRules>>>>;
+	readonly projects: Readonly<
+		Record<string, Readonly<Record<string, IAreaRules>>>
+	>;
 }

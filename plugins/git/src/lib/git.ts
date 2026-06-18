@@ -55,7 +55,7 @@ export const createGitRunner =
 								.split('\n')[0] ?? 'git command failed';
 					}
 					resolve({ ok: false, output: '', reason });
-				}
+				},
 			);
 		});
 
@@ -111,14 +111,12 @@ export const parseStatus = (raw: string): IGitStatus => {
 export const gitStatus = async (run: IGitRunner): Promise<IGitStatus> =>
 	parseStatus((await run(['status', '--porcelain=v1', '--branch'])).output);
 
-export const gitChanged = async (
-	run: IGitRunner
-): Promise<readonly string[]> =>
+export const gitChanged = async (run: IGitRunner): Promise<readonly string[]> =>
 	(await gitStatus(run)).entries.map((entry) => entry.path);
 
 export const gitDiffStat = async (
 	run: IGitRunner,
-	options: { staged?: boolean; path?: string } = {}
+	options: { staged?: boolean; path?: string } = {},
 ): Promise<string> => {
 	const args = ['diff', '--stat'];
 	if (options.staged === true) args.push('--cached');
@@ -142,9 +140,9 @@ export const parseLog = (raw: string): readonly IGitCommit[] =>
 
 export const gitLog = async (
 	run: IGitRunner,
-	limit = 10
+	limit = 10,
 ): Promise<readonly IGitCommit[]> =>
 	parseLog(
 		(await run(['log', '-n', String(limit), '--pretty=format:%h\t%s']))
-			.output
+			.output,
 	);

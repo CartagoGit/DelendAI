@@ -1,7 +1,6 @@
 import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
 import { joinRel } from '@mcp-vertex/core/public';
 
-
 /**
  * Derive the full swarm path layout from a cache root and a docs root.
  * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
@@ -12,7 +11,7 @@ import { joinRel } from '@mcp-vertex/core/public';
  */
 export const buildSwarmPaths = (
 	cacheDir: string,
-	docsDir: string
+	docsDir: string,
 ): IHostPathLayout => ({
 	lockFile: joinRel(cacheDir, 'agents.lock.json'),
 	agentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
@@ -23,11 +22,11 @@ export const buildSwarmPaths = (
 	closedTasksFile: joinRel(cacheDir, 'agent-queue/closed-tasks.json'),
 	orchestratorCheckpointFile: joinRel(
 		cacheDir,
-		'agent/orchestrator/checkpoint.json'
+		'agent/orchestrator/checkpoint.json',
 	),
 	orchestratorChatContextFile: joinRel(
 		cacheDir,
-		'agent/orchestrator/chat-context.json'
+		'agent/orchestrator/chat-context.json',
 	),
 	finishDayReportFile: joinRel(cacheDir, 'agent/finish-day/last-report.json'),
 	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
@@ -47,5 +46,5 @@ export const buildSwarmPaths = (
  */
 export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
 	'.cache/mcp-vertex',
-	'docs/mcp-vertex'
+	'docs/mcp-vertex',
 );

@@ -4,7 +4,11 @@ import { join } from 'node:path';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { resolveWorkspaceContained, toolError, toolOk } from '@mcp-vertex/core/public';
+import {
+	resolveWorkspaceContained,
+	toolError,
+	toolOk,
+} from '@mcp-vertex/core/public';
 
 import { analyzeProposals, type IScanEntry } from '../proposals/adopt';
 import type { IAuthoringToolOptions } from './authoring.tool';
@@ -36,8 +40,14 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
 			.then((s) => s.isDirectory())
 			.catch(() => false);
 		if (!isDir && name.toLowerCase().endsWith('.md')) {
-			const text = await readFile(join(dirAbs, name), 'utf8').catch(() => '');
-			entries.push({ name, isDir: false, frontmatter: lightFrontmatter(text) });
+			const text = await readFile(join(dirAbs, name), 'utf8').catch(
+				() => '',
+			);
+			entries.push({
+				name,
+				isDir: false,
+				frontmatter: lightFrontmatter(text),
+			});
 		} else {
 			entries.push({ name, isDir });
 		}
@@ -52,7 +62,7 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
  * an actionable plan to bring it in line. Read-only: it advises; the agent acts.
  */
 export const buildAdoptRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_adopt',
 	summary:
@@ -76,7 +86,7 @@ export const buildAdoptRegistration = (
 								id: z.string(),
 								kind: z.enum(['proposal', 'fix']),
 								status: z.string(),
-							})
+							}),
 						),
 						folders: z.array(z.string()),
 						hasIndex: z.boolean(),
@@ -92,9 +102,14 @@ export const buildAdoptRegistration = (
 				let dirAbs = options.proposalsDirAbs;
 				let root = options.proposalsDirAbs;
 				if (args.dir !== undefined && args.dir.length > 0) {
-					const contained = resolveWorkspaceContained(options.workspaceRoot, args.dir);
+					const contained = resolveWorkspaceContained(
+						options.workspaceRoot,
+						args.dir,
+					);
 					if (!contained.ok) {
-						return toolError(contained.reason ?? 'dir escapes the workspace');
+						return toolError(
+							contained.reason ?? 'dir escapes the workspace',
+						);
 					}
 					dirAbs = contained.abs;
 					root = args.dir;
@@ -102,7 +117,7 @@ export const buildAdoptRegistration = (
 				const entries = await scanDir(dirAbs);
 				const report = analyzeProposals(root, entries);
 				return toolOk({ ...report });
-			}
+			},
 		);
 	},
 });

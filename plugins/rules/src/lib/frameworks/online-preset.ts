@@ -11,9 +11,11 @@
  */
 
 /** Minimal HTTP GET abstraction so tests never hit the real network. */
-export type IOnlineFetcher = (
-	url: string
-) => Promise<{ readonly ok: boolean; readonly status: number; readonly body: string }>;
+export type IOnlineFetcher = (url: string) => Promise<{
+	readonly ok: boolean;
+	readonly status: number;
+	readonly body: string;
+}>;
 
 const FETCH_TIMEOUT_MS = 5_000;
 
@@ -73,28 +75,46 @@ interface INpmLatestMetadata {
  */
 export const fetchOnlinePresetInfo = async (
 	presetId: string,
-	fetcher: IOnlineFetcher = defaultOnlineFetcher
+	fetcher: IOnlineFetcher = defaultOnlineFetcher,
 ): Promise<IOnlinePresetInfo> => {
 	const pkg = ONLINE_PACKAGE_BY_PRESET[presetId];
 	if (pkg === undefined) {
-		return { ok: false, package: '', reason: `no online package mapped for preset "${presetId}"` };
+		return {
+			ok: false,
+			package: '',
+			reason: `no online package mapped for preset "${presetId}"`,
+		};
 	}
 	const res = await fetcher(`https://registry.npmjs.org/${pkg}/latest`);
 	if (!res.ok) {
-		return { ok: false, package: pkg, reason: `registry lookup failed (status ${res.status})` };
+		return {
+			ok: false,
+			package: pkg,
+			reason: `registry lookup failed (status ${res.status})`,
+		};
 	}
 	try {
 		const meta = JSON.parse(res.body) as INpmLatestMetadata;
 		if (typeof meta.version !== 'string') {
-			return { ok: false, package: pkg, reason: 'registry response had no version' };
+			return {
+				ok: false,
+				package: pkg,
+				reason: 'registry response had no version',
+			};
 		}
 		return {
 			ok: true,
 			package: pkg,
 			version: meta.version,
-			...(typeof meta.homepage === 'string' ? { homepage: meta.homepage } : {}),
+			...(typeof meta.homepage === 'string'
+				? { homepage: meta.homepage }
+				: {}),
 		};
 	} catch {
-		return { ok: false, package: pkg, reason: 'registry response was not valid JSON' };
+		return {
+			ok: false,
+			package: pkg,
+			reason: 'registry response was not valid JSON',
+		};
 	}
 };

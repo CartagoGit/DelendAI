@@ -11,7 +11,7 @@ import { toolJson } from '../shared/tool-response';
  */
 export const buildValidationMatrixToolRegistration = (
 	namespacePrefix: string,
-	matrix: () => IValidationMatrix
+	matrix: () => IValidationMatrix,
 ): IToolRegistration => ({
 	id: 'get_validation_matrix',
 	summary:
@@ -26,11 +26,16 @@ export const buildValidationMatrixToolRegistration = (
 				outputSchema: z.object({
 					scopes: z.record(
 						z.string(),
-						z.array(z.object({ command: z.string(), expect: z.string() }))
+						z.array(
+							z.object({
+								command: z.string(),
+								expect: z.string(),
+							}),
+						),
 					),
 				}),
 			},
-			async () => toolJson(matrix())
+			async () => toolJson(matrix()),
 		);
 	},
 });

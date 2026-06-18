@@ -58,7 +58,9 @@ export interface IFileMutexOptions {
 export class LockContentionError extends Error {
 	readonly code = 'lock-contention-budget-exceeded';
 	constructor(lockPath: string, timeoutMs: number) {
-		super(`lock contention: "${lockPath}" held past ${timeoutMs}ms by a live holder`);
+		super(
+			`lock contention: "${lockPath}" held past ${timeoutMs}ms by a live holder`,
+		);
 		this.name = 'LockContentionError';
 	}
 }
@@ -69,13 +71,14 @@ const sleep = (ms: number): Promise<void> =>
 export const withFileMutex = async <T>(
 	targetPath: string,
 	fn: () => Promise<T>,
-	options: IFileMutexOptions = {}
+	options: IFileMutexOptions = {},
 ): Promise<T> => {
 	const timeoutMs = options.timeoutMs ?? 5_000;
 	const staleMs = options.staleMs ?? 30_000;
 	const onContention = options.onContention ?? 'steal';
 	const pollMs = options.pollMs ?? 25;
-	const heartbeatMs = options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
+	const heartbeatMs =
+		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
 	const lockPath = `${targetPath}.mutex`;
 	// Unique per acquisition: identifies *this* holder so release never
 	// deletes a lock that was stolen and is now owned by someone else.

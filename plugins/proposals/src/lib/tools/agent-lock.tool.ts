@@ -19,7 +19,7 @@ export interface IAgentLockToolOptions {
  * the plugin injects the resolved path so the engine stays agnostic.
  */
 export const buildAgentLockRegistration = (
-	options: IAgentLockToolOptions
+	options: IAgentLockToolOptions,
 ): IToolRegistration => {
 	const toolName = `${options.namespacePrefix}_agent_lock`;
 	return {
@@ -32,7 +32,7 @@ export const buildAgentLockRegistration = (
 			server.registerTool(
 				toolName,
 				{
-						outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({}).catchall(z.unknown()),
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
 					inputSchema: z.object({
@@ -55,7 +55,7 @@ export const buildAgentLockRegistration = (
 					if (!res.isError) {
 						try {
 							const parsed = JSON.parse(
-								res.content[0]?.text ?? 'null'
+								res.content[0]?.text ?? 'null',
 							) as unknown;
 							if (
 								typeof parsed === 'object' &&
@@ -75,7 +75,7 @@ export const buildAgentLockRegistration = (
 						}
 					}
 					return res;
-				}
+				},
 			);
 		},
 	};

@@ -55,6 +55,6 @@ export const createGitRunner =
 								.split('\n')[0] ?? 'git command failed';
 					}
 					resolve({ ok: false, output: '', reason });
-				}
+				},
 			);
 		});

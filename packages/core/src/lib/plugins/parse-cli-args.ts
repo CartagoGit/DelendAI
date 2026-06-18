@@ -124,7 +124,7 @@ const splitList = (value: string | undefined): string[] =>
  */
 export const parseCliArgs = (
 	argv: readonly string[],
-	cwd: string
+	cwd: string,
 ): IMcpVertexCliArgs => {
 	const tokens = tokenize(argv);
 	const extra: Record<string, string> = {};

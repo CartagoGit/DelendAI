@@ -20,10 +20,14 @@ describe('buildServerBlueprint', () => {
 				'package.json': JSON.stringify({
 					name: '@acme/site',
 					dependencies: { '@angular/core': '^21' },
-					scripts: { lint: 'eslint .', test: 'vitest', build: 'ng build' },
+					scripts: {
+						lint: 'eslint .',
+						test: 'vitest',
+						build: 'ng build',
+					},
 				}),
 				'tsconfig.json': '{}',
-			})
+			}),
 		);
 		const bp = buildServerBlueprint(analysis);
 		expect(bp.namespacePrefix).toBe('site');
@@ -43,7 +47,7 @@ describe('buildServerBlueprint', () => {
 			reader({
 				'package.json': JSON.stringify({ name: 'svc' }),
 				'.vscode/mcp.json': '{}',
-			})
+			}),
 		);
 		const bp = buildServerBlueprint(analysis, { tests: false });
 		expect(bp.tests).toBe(false);
@@ -54,17 +58,21 @@ describe('buildServerBlueprint', () => {
 	it('materialises files: host project + a file (and test) per tool', () => {
 		const analysis = analyzeProject(
 			reader({
-				'package.json': JSON.stringify({ name: 'lib', main: './x.ts', scripts: { test: 'vitest' } }),
+				'package.json': JSON.stringify({
+					name: 'lib',
+					main: './x.ts',
+					scripts: { test: 'vitest' },
+				}),
 				'tsconfig.json': '{}',
-			})
+			}),
 		);
 		const bp = buildServerBlueprint(analysis);
 		const files = buildBlueprintFiles(bp);
 		const paths = files.map((f) => f.path);
 		expect(paths).toContain('libs/mcp-project/src/server.ts');
-		expect(paths.some((p) => p.includes('-check-project-state.tool.ts'))).toBe(
-			true
-		);
+		expect(
+			paths.some((p) => p.includes('-check-project-state.tool.ts')),
+		).toBe(true);
 		expect(paths.some((p) => p.includes('.tool.spec.ts'))).toBe(true);
 	});
 });

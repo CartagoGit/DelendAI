@@ -58,7 +58,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', () => {
 		const marker = dir.split('/').pop()!;
 		const res = await runAcceptanceCriteria(
 			[{ command: 'pwd', expect: `contains:${marker}` }],
-			{ cwd: dir }
+			{ cwd: dir },
 		);
 		expect(res.allPassed).toBe(true);
 		expect(res.results[0]?.actual).toContain(marker);

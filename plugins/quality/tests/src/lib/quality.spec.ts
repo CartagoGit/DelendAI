@@ -26,17 +26,21 @@ describe('resolveScopes', () => {
 			reader({
 				'mcp-vertex.config.json': JSON.stringify({
 					validationMatrix: {
-						scopes: { full: [{ command: 'bun test', expect: 'exit0' }] },
+						scopes: {
+							full: [{ command: 'bun test', expect: 'exit0' }],
+						},
 					},
 				}),
-			})
+			}),
 		);
 		expect(fromConfig.full?.[0]?.command).toBe('bun test');
 		const fromScripts = resolveScopes(
 			reader({
-				'package.json': JSON.stringify({ scripts: { lint: 'x', test: 'y' } }),
+				'package.json': JSON.stringify({
+					scripts: { lint: 'x', test: 'y' },
+				}),
 				'bun.lock': '',
-			})
+			}),
 		);
 		expect(fromScripts.all?.map((c) => c.command)).toEqual([
 			'bun run lint',
@@ -55,7 +59,7 @@ describe('runScope', () => {
 			'full',
 			[{ command: 'pass' }, { command: 'fail' }],
 			'/ws',
-			run
+			run,
 		);
 		expect(result.ok).toBe(false);
 		expect(result.results.map((r) => r.ok)).toEqual([true, false]);
@@ -66,7 +70,10 @@ describe('quality plugin', () => {
 	it('registers the quality tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/quality',

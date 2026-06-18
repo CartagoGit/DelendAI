@@ -56,8 +56,8 @@ export interface MemorySaveOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface MemoryToolOutputs {
-	"memory_forget": MemoryForgetOutput;
-	"memory_list": MemoryListOutput;
-	"memory_recall": MemoryRecallOutput;
-	"memory_save": MemorySaveOutput;
+	memory_forget: MemoryForgetOutput;
+	memory_list: MemoryListOutput;
+	memory_recall: MemoryRecallOutput;
+	memory_save: MemorySaveOutput;
 }

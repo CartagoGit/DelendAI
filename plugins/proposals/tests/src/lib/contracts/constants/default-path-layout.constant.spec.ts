@@ -9,7 +9,9 @@ describe('buildSwarmPaths', () => {
 	it('roots every cache artefact under the given cacheDir', () => {
 		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
 		expect(layout.lockFile).toBe('.cache/x/swarm/agents.lock.json');
-		expect(layout.taskQueueFile).toBe('.cache/x/swarm/agent-queue/queue.json');
+		expect(layout.taskQueueFile).toBe(
+			'.cache/x/swarm/agent-queue/queue.json',
+		);
 		expect(layout.scratchDir).toBe('.cache/x/swarm');
 	});
 
@@ -23,8 +25,12 @@ describe('buildSwarmPaths', () => {
 describe('DEFAULT_PATH_LAYOUT', () => {
 	it('defaults to the mcp-vertex layout (.cache/mcp-vertex + docs/mcp-vertex/proposals)', () => {
 		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-vertex');
-		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe('.cache/mcp-vertex/agents.lock.json');
-		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/mcp-vertex/proposals');
+		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
+			'.cache/mcp-vertex/agents.lock.json',
+		);
+		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe(
+			'docs/mcp-vertex/proposals',
+		);
 	});
 
 	it('keeps every artefact inside the scratch or proposals dirs', () => {

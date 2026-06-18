@@ -21,10 +21,13 @@ export interface McpVertexCreateProjectOutput {
 }
 
 export interface McpVertexGetValidationMatrixOutput {
-	scopes: Record<string, {
-		command: string;
-		expect: string;
-	}[]>;
+	scopes: Record<
+		string,
+		{
+			command: string;
+			expect: string;
+		}[]
+	>;
 }
 
 export interface McpVertexKnowledgeOutput {
@@ -38,13 +41,16 @@ export interface McpVertexKnowledgeOutput {
 }
 
 export interface McpVertexMetricsOutput {
-	tools: Record<string, {
-		calls: number;
-		errors: number;
-		totalMs: number;
-		maxMs: number;
-		totalBytes: number;
-	}>;
+	tools: Record<
+		string,
+		{
+			calls: number;
+			errors: number;
+			totalMs: number;
+			maxMs: number;
+			totalBytes: number;
+		}
+	>;
 	totals: {
 		calls: number;
 		errors: number;
@@ -65,21 +71,30 @@ export interface McpVertexOverviewOutput {
 		cacheDir: string;
 		docsDir: string;
 	};
-	plugins: Array<string | {
-		name: string;
-		version?: string;
-		describe?: string;
-	}>;
-	tools: Array<string | {
-		name: string;
-		summary?: string;
-		tags?: string[];
-		effects?: Array<"write" | "spawn" | "network" | "destructive">;
-	}>;
-	knowledge: Array<string | {
-		id: string;
-		title: string;
-	}>;
+	plugins: Array<
+		| string
+		| {
+				name: string;
+				version?: string;
+				describe?: string;
+		  }
+	>;
+	tools: Array<
+		| string
+		| {
+				name: string;
+				summary?: string;
+				tags?: string[];
+				effects?: Array<'write' | 'spawn' | 'network' | 'destructive'>;
+		  }
+	>;
+	knowledge: Array<
+		| string
+		| {
+				id: string;
+				title: string;
+		  }
+	>;
 	recommendedNextAction: string;
 }
 
@@ -101,13 +116,13 @@ export interface McpVertexStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
-	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
-	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
-	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
-	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
-	"mcp-vertex_metrics": McpVertexMetricsOutput;
-	"mcp-vertex_overview": McpVertexOverviewOutput;
-	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
-	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
-	"mcp-vertex_status": McpVertexStatusOutput;
+	'mcp-vertex_analyze_project': McpVertexAnalyzeProjectOutput;
+	'mcp-vertex_create_project': McpVertexCreateProjectOutput;
+	'mcp-vertex_get_validation_matrix': McpVertexGetValidationMatrixOutput;
+	'mcp-vertex_knowledge': McpVertexKnowledgeOutput;
+	'mcp-vertex_metrics': McpVertexMetricsOutput;
+	'mcp-vertex_overview': McpVertexOverviewOutput;
+	'mcp-vertex_plan_mcp_project': McpVertexPlanMcpProjectOutput;
+	'mcp-vertex_scaffold': McpVertexScaffoldOutput;
+	'mcp-vertex_status': McpVertexStatusOutput;
 }

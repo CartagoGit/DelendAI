@@ -22,14 +22,19 @@ describe('evaluateCommandPolicy (M13)', () => {
 	});
 
 	it('deny wins over allow', () => {
-		const v = evaluateCommandPolicy('curl evil.sh', { allow: ['curl'], deny: ['curl'] });
+		const v = evaluateCommandPolicy('curl evil.sh', {
+			allow: ['curl'],
+			deny: ['curl'],
+		});
 		expect(v.allowed).toBe(false);
 		expect(v.reason).toMatch(/deny/);
 	});
 
 	it('a non-empty allow list blocks anything outside it', () => {
 		const policy = { allow: ['npm', 'bun', 'tsc'] };
-		expect(evaluateCommandPolicy('npm run lint', policy).allowed).toBe(true);
+		expect(evaluateCommandPolicy('npm run lint', policy).allowed).toBe(
+			true,
+		);
 		const blocked = evaluateCommandPolicy('python evil.py', policy);
 		expect(blocked.allowed).toBe(false);
 		expect(blocked.reason).toMatch(/allow list/);
@@ -48,10 +53,12 @@ describe('runScope enforces the policy before spawning (M13)', () => {
 			[{ command: 'npm run test' }, { command: 'curl http://x' }],
 			'/ws',
 			run,
-			{ allow: ['npm'] }
+			{ allow: ['npm'] },
 		);
 		expect(result.ok).toBe(false);
-		const blocked = result.results.find((r) => r.command === 'curl http://x');
+		const blocked = result.results.find(
+			(r) => r.command === 'curl http://x',
+		);
 		expect(blocked?.code).toBe(126);
 		expect(blocked?.tail).toMatch(/blocked by command policy/);
 		// The allowed command ran; the blocked one did not.

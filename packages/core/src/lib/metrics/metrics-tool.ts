@@ -26,13 +26,15 @@ const MetricSchema = z.object({
 /** Persist a metrics snapshot to `dirAbs`; returns the path + total snapshot count. */
 const persistSnapshot = async (
 	dirAbs: string,
-	snapshot: object
+	snapshot: object,
 ): Promise<{ persistedTo: string; snapshots: number }> => {
 	await mkdir(dirAbs, { recursive: true });
 	const at = new Date().toISOString();
 	const file = join(dirAbs, `${at.replace(/[:.]/g, '-')}.json`);
 	await writeFileAtomic(file, `${JSON.stringify({ at, ...snapshot })}\n`);
-	const snapshots = (await readdir(dirAbs)).filter((f) => f.endsWith('.json')).length;
+	const snapshots = (await readdir(dirAbs)).filter((f) =>
+		f.endsWith('.json'),
+	).length;
 	return { persistedTo: file, snapshots };
 };
 
@@ -40,10 +42,11 @@ export const buildMetricsToolRegistration = (
 	namespacePrefix: string,
 	registry: IMetricsRegistry,
 	/** Absolute dir for `persist: true` snapshots. Omit to disable persistence. */
-	persistDirAbs?: string
+	persistDirAbs?: string,
 ): IToolRegistration => ({
 	id: 'metrics',
-	summary: 'Per-tool call metrics: calls, errors, latency (ms) and response bytes.',
+	summary:
+		'Per-tool call metrics: calls, errors, latency (ms) and response bytes.',
 	tags: ['observability', 'lazy'],
 	// `persist: true` writes a snapshot file; read-only otherwise.
 	effects: ['write'],
@@ -69,16 +72,22 @@ export const buildMetricsToolRegistration = (
 					snapshots: z.number().optional(),
 				}),
 			},
-			async (args: { reset?: boolean | undefined; persist?: boolean | undefined }) => {
+			async (args: {
+				reset?: boolean | undefined;
+				persist?: boolean | undefined;
+			}) => {
 				// Snapshot BEFORE an optional reset so the caller sees the data.
 				const snapshot = registry.snapshot();
 				if (args.reset === true) registry.reset();
 				if (args.persist === true && persistDirAbs !== undefined) {
-					const { persistedTo, snapshots } = await persistSnapshot(persistDirAbs, snapshot);
+					const { persistedTo, snapshots } = await persistSnapshot(
+						persistDirAbs,
+						snapshot,
+					);
 					return toolJson({ ...snapshot, persistedTo, snapshots });
 				}
 				return toolJson(snapshot);
-			}
+			},
 		);
 	},
 });

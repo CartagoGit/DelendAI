@@ -37,7 +37,7 @@ export interface IMigrateFileResult<T> extends IMigrationResult<T> {
  */
 export const migrateJsonFile = async <T extends IVersioned>(
 	path: string,
-	options: IMigrateFileOptions
+	options: IMigrateFileOptions,
 ): Promise<IMigrateFileResult<T> | null> => {
 	let raw: string;
 	try {
@@ -54,7 +54,7 @@ export const migrateJsonFile = async <T extends IVersioned>(
 	const result = runMigrations<T>(
 		parsed as IVersioned & Record<string, unknown>,
 		options.migrators,
-		options.targetVersion
+		options.targetVersion,
 	);
 	const changed = result.applied.length > 0;
 	if (!changed || options.dryRun === true) {

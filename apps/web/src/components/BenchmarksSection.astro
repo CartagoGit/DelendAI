@@ -11,15 +11,24 @@ const t = useTranslations(lang);
 const BASELINE_TOK = 4000;
 
 type IBench = { id: string; label: string; bytes: number; tokens: number };
-const benches = ((capabilities as { benchmarks?: IBench[] }).benchmarks ?? []) as IBench[];
+const benches = ((capabilities as { benchmarks?: IBench[] }).benchmarks ??
+	[]) as IBench[];
 const benchById = Object.fromEntries(benches.map((b) => [b.id, b]));
 const compactTok = benchById.overview_compact?.tokens ?? 0;
 const autoTok = benchById.auto_work?.tokens ?? 0;
 const benchBars = [
-	{ name: 'overview (full)', tokens: benchById.overview_full?.tokens ?? 0, kind: '' },
+	{
+		name: 'overview (full)',
+		tokens: benchById.overview_full?.tokens ?? 0,
+		kind: '',
+	},
 	{ name: 'overview (compact)', tokens: compactTok, kind: '' },
 	{ name: 'auto_work', tokens: autoTok, kind: '' },
-	{ name: 'compact + auto_work', tokens: compactTok + autoTok, kind: 'is-hl' },
+	{
+		name: 'compact + auto_work',
+		tokens: compactTok + autoTok,
+		kind: 'is-hl',
+	},
 	{ name: t.bench.baseline, tokens: BASELINE_TOK, kind: 'is-base' },
 ].filter((b) => b.tokens > 0);
 const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));

@@ -38,8 +38,8 @@ export interface GitStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface GitToolOutputs {
-	"git_changed": GitChangedOutput;
-	"git_diff": GitDiffOutput;
-	"git_log": GitLogOutput;
-	"git_status": GitStatusOutput;
+	git_changed: GitChangedOutput;
+	git_diff: GitDiffOutput;
+	git_log: GitLogOutput;
+	git_status: GitStatusOutput;
 }

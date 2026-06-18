@@ -56,9 +56,13 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 	const map = new Map<string, IMutableMetric>();
 	return {
 		record(tool, rec) {
-			const m =
-				map.get(tool) ??
-				{ calls: 0, errors: 0, totalMs: 0, maxMs: 0, totalBytes: 0 };
+			const m = map.get(tool) ?? {
+				calls: 0,
+				errors: 0,
+				totalMs: 0,
+				maxMs: 0,
+				totalBytes: 0,
+			};
 			m.calls += 1;
 			if (rec.isError) m.errors += 1;
 			m.totalMs += rec.ms;
@@ -73,7 +77,7 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 			let totalMs = 0;
 			let totalBytes = 0;
 			for (const [name, m] of [...map.entries()].sort((a, b) =>
-				a[0].localeCompare(b[0])
+				a[0].localeCompare(b[0]),
 			)) {
 				tools[name] = {
 					calls: m.calls,
@@ -87,7 +91,10 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 				totalMs += m.totalMs;
 				totalBytes += m.totalBytes;
 			}
-			return { tools, totals: { calls, errors, totalMs: round(totalMs), totalBytes } };
+			return {
+				tools,
+				totals: { calls, errors, totalMs: round(totalMs), totalBytes },
+			};
 		},
 		reset() {
 			map.clear();

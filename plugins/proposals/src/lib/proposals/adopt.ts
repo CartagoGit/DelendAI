@@ -10,14 +10,19 @@
 export const PROPOSALS_LAYOUT = {
 	root: '<docsDir>/proposals  (default docs/mcp-vertex/proposals)',
 	files: {
-		'index.json': 'machine-readable registry of every proposal (run sync_proposals to (re)build it)',
+		'index.json':
+			'machine-readable registry of every proposal (run sync_proposals to (re)build it)',
 		'README.md': 'human guide to this folder (what each file/bucket is)',
-		'p<N>-<kebab-title>.md': 'a proposal (feature/refactor); frontmatter: id, type, status',
-		'f<N>-<kebab-title>.md': 'a fix; cascades BEFORE proposals (f before p)',
+		'p<N>-<kebab-title>.md':
+			'a proposal (feature/refactor); frontmatter: id, type, status',
+		'f<N>-<kebab-title>.md':
+			'a fix; cascades BEFORE proposals (f before p)',
 	},
 	folders: {
-		'done/': 'completed + verified proposals, archived out of the active set',
-		'<bucket>/': 'optional host buckets (e.g. paused/, audits/) declared via the plugin `extraFolders` option',
+		'done/':
+			'completed + verified proposals, archived out of the active set',
+		'<bucket>/':
+			'optional host buckets (e.g. paused/, audits/) declared via the plugin `extraFolders` option',
 	},
 } as const;
 
@@ -27,7 +32,11 @@ export interface IScanEntry {
 	readonly name: string;
 	readonly isDir: boolean;
 	/** Light frontmatter of a `.md` file, if present. */
-	readonly frontmatter?: { id?: string; status?: string; type?: string } | null;
+	readonly frontmatter?: {
+		id?: string;
+		status?: string;
+		type?: string;
+	} | null;
 }
 
 export interface IScannedProposal {
@@ -55,12 +64,22 @@ export interface IAdoptionReport {
 	readonly ready: boolean;
 }
 
-const DONE_STATES = new Set(['done', 'closed', 'completed', 'merged', 'shipped', 'archived']);
+const DONE_STATES = new Set([
+	'done',
+	'closed',
+	'completed',
+	'merged',
+	'shipped',
+	'archived',
+]);
 const kindOf = (name: string, type: string | undefined): IProposalKind =>
 	/^f\d/i.test(name) || type === 'fix' ? 'fix' : 'proposal';
 
 /** Classify a directory listing against the canonical layout + build the plan. */
-export const analyzeProposals = (root: string, entries: readonly IScanEntry[]): IAdoptionReport => {
+export const analyzeProposals = (
+	root: string,
+	entries: readonly IScanEntry[],
+): IAdoptionReport => {
 	const proposals: IScannedProposal[] = [];
 	const folders: string[] = [];
 	const unrecognized: string[] = [];
@@ -101,24 +120,35 @@ export const analyzeProposals = (root: string, entries: readonly IScanEntry[]): 
 
 	const plan: string[] = [];
 	if (!hasIndex) {
-		plan.push('Run `sync_proposals` to (re)build index.json from the markdown files.');
+		plan.push(
+			'Run `sync_proposals` to (re)build index.json from the markdown files.',
+		);
 	}
 	if (!hasReadme) {
-		plan.push('Add a README.md describing the layout (see get_proposal_workflow for the convention).');
-	}
-	const doneAtTop = proposals.filter((p) => DONE_STATES.has(p.status.toLowerCase()));
-	if (doneAtTop.length > 0 && !folders.some((f) => f.toLowerCase() === 'done')) {
 		plan.push(
-			`Archive ${doneAtTop.length} completed proposal(s) into a done/ folder: ${doneAtTop.map((p) => p.file).join(', ')}.`
+			'Add a README.md describing the layout (see get_proposal_workflow for the convention).',
+		);
+	}
+	const doneAtTop = proposals.filter((p) =>
+		DONE_STATES.has(p.status.toLowerCase()),
+	);
+	if (
+		doneAtTop.length > 0 &&
+		!folders.some((f) => f.toLowerCase() === 'done')
+	) {
+		plan.push(
+			`Archive ${doneAtTop.length} completed proposal(s) into a done/ folder: ${doneAtTop.map((p) => p.file).join(', ')}.`,
 		);
 	}
 	if (unrecognized.length > 0) {
 		plan.push(
-			`Review ${unrecognized.length} markdown file(s) without proposal frontmatter (add id/type/status, or move out): ${unrecognized.join(', ')}.`
+			`Review ${unrecognized.length} markdown file(s) without proposal frontmatter (add id/type/status, or move out): ${unrecognized.join(', ')}.`,
 		);
 	}
 	if (proposals.length === 0 && unrecognized.length === 0) {
-		plan.push('Empty proposals folder — create your first with `create_proposal`.');
+		plan.push(
+			'Empty proposals folder — create your first with `create_proposal`.',
+		);
 	}
 
 	const ready = hasIndex && unrecognized.length === 0;
