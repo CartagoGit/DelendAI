@@ -50,7 +50,7 @@ export interface RulesGetRulesOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface RulesToolOutputs {
-	rules_apply_rules: RulesApplyRulesOutput;
-	rules_check_rules: RulesCheckRulesOutput;
-	rules_get_rules: RulesGetRulesOutput;
+	"rules_apply_rules": RulesApplyRulesOutput;
+	"rules_check_rules": RulesCheckRulesOutput;
+	"rules_get_rules": RulesGetRulesOutput;
 }

@@ -99,7 +99,7 @@ export interface ProposalsProposalAdoptOutput {
 		proposals: Array<{
 			file: string;
 			id: string;
-			kind: 'proposal' | 'fix';
+			kind: "proposal" | "fix";
 			status: string;
 		}>;
 		folders: string[];
@@ -130,11 +130,11 @@ export interface ProposalsProposalReviewOutput {
 	proposalId: string;
 	sliceId: string;
 	action: string;
-	status: 'none' | 'in_review' | 'changes_requested' | 'done';
+	status: "none" | "in_review" | "changes_requested" | "done";
 	implementer: string | null;
 	reviewer: string | null;
 	rounds: Array<{
-		verdict: 'requested_changes' | 'approved';
+		verdict: "requested_changes" | "approved";
 		agent: string;
 		note: string;
 	}>;
@@ -180,23 +180,23 @@ export interface ProposalsTaskQueueOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ProposalsToolOutputs {
-	proposals_agent_lock: ProposalsAgentLockOutput;
-	proposals_agent_names: ProposalsAgentNamesOutput;
-	proposals_agent_worktree: ProposalsAgentWorktreeOutput;
-	proposals_auto_work: ProposalsAutoWorkOutput;
-	proposals_close_slice: ProposalsCloseSliceOutput;
-	proposals_compact_status: ProposalsCompactStatusOutput;
-	proposals_continue_proposal: ProposalsContinueProposalOutput;
-	proposals_create_proposal: ProposalsCreateProposalOutput;
-	proposals_delegate: ProposalsDelegateOutput;
-	proposals_get_proposal_workflow: ProposalsGetProposalWorkflowOutput;
-	proposals_plan: ProposalsPlanOutput;
-	proposals_proposal_adopt: ProposalsProposalAdoptOutput;
-	proposals_proposal_board: ProposalsProposalBoardOutput;
-	proposals_proposal_review: ProposalsProposalReviewOutput;
-	proposals_round_context: ProposalsRoundContextOutput;
-	proposals_state_health: ProposalsStateHealthOutput;
-	proposals_state_repair: ProposalsStateRepairOutput;
-	proposals_sync_proposals: ProposalsSyncProposalsOutput;
-	proposals_task_queue: ProposalsTaskQueueOutput;
+	"proposals_agent_lock": ProposalsAgentLockOutput;
+	"proposals_agent_names": ProposalsAgentNamesOutput;
+	"proposals_agent_worktree": ProposalsAgentWorktreeOutput;
+	"proposals_auto_work": ProposalsAutoWorkOutput;
+	"proposals_close_slice": ProposalsCloseSliceOutput;
+	"proposals_compact_status": ProposalsCompactStatusOutput;
+	"proposals_continue_proposal": ProposalsContinueProposalOutput;
+	"proposals_create_proposal": ProposalsCreateProposalOutput;
+	"proposals_delegate": ProposalsDelegateOutput;
+	"proposals_get_proposal_workflow": ProposalsGetProposalWorkflowOutput;
+	"proposals_plan": ProposalsPlanOutput;
+	"proposals_proposal_adopt": ProposalsProposalAdoptOutput;
+	"proposals_proposal_board": ProposalsProposalBoardOutput;
+	"proposals_proposal_review": ProposalsProposalReviewOutput;
+	"proposals_round_context": ProposalsRoundContextOutput;
+	"proposals_state_health": ProposalsStateHealthOutput;
+	"proposals_state_repair": ProposalsStateRepairOutput;
+	"proposals_sync_proposals": ProposalsSyncProposalsOutput;
+	"proposals_task_queue": ProposalsTaskQueueOutput;
 }

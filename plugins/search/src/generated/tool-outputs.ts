@@ -26,5 +26,5 @@ export interface SearchSearchOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface SearchToolOutputs {
-	search_search: SearchSearchOutput;
+	"search_search": SearchSearchOutput;
 }

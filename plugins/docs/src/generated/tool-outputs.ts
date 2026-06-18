@@ -34,6 +34,6 @@ export interface DocsDocsReadOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DocsToolOutputs {
-	docs_docs_list: DocsDocsListOutput;
-	docs_docs_read: DocsDocsReadOutput;
+	"docs_docs_list": DocsDocsListOutput;
+	"docs_docs_read": DocsDocsReadOutput;
 }

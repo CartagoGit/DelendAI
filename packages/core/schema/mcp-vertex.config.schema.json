@@ -31,13 +31,18 @@
 									"type": "string"
 								}
 							},
-							"required": ["command", "expect"],
+							"required": [
+								"command",
+								"expect"
+							],
 							"additionalProperties": false
 						}
 					}
 				}
 			},
-			"required": ["scopes"],
+			"required": [
+				"scopes"
+			],
 			"additionalProperties": false
 		},
 		"plugins": {
