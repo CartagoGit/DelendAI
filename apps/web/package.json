@@ -7,8 +7,9 @@
 	"scripts": {
 		"dev": "PAGES_BASE='' astro dev",
 		"preview": "astro preview",
-		"build": "bun scripts/gen-capabilities.ts && astro build",
-		"build:strict": "bun scripts/gen-capabilities.ts --strict && astro build"
+		"check:i18n": "bun scripts/check-i18n.ts",
+		"build": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts && astro build",
+		"build:strict": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts --strict && astro build"
 	},
 	"dependencies": {
 		"astro": "^6.4.8",

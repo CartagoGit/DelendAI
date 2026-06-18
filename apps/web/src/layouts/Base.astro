@@ -1,6 +1,6 @@
 ---
 import '../styles/global.scss';
-import type { Lang } from '../i18n/ui';
+import { rtlLangs, type Lang } from '../i18n/ui';
 
 interface Props {
 	lang: Lang;
@@ -13,10 +13,11 @@ const {
 	title = '@cartago-git/mcp-core — agnostic MCP server core',
 	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
 } = Astro.props;
+const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} dir={dir}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
