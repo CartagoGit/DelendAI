@@ -67,7 +67,7 @@ const buildValidationCommands = (
 /**
  * Turn an analysis into a concrete, editable server plan. Pure: the
  * agent reviews the plan, tweaks names/plugins if needed, then asks
- * `create_server` to materialise it. The plan is the "what an optimal
+ * `create_project` to materialise it. The plan is the "what an optimal
  * MCP server needs here" recommendation, derived from the pattern
  * catalog — no human had to spell it out.
  */
@@ -78,7 +78,7 @@ export const recommendServerPlan = (
 	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
 	const namespacePrefix =
 		options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-server-${namespacePrefix}`;
+	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
@@ -93,7 +93,7 @@ export const recommendServerPlan = (
 		...pattern.knowledgeHints,
 		analysis.hasMcpServer
 			? 'This project already has an MCP server: prefer adding the recommended tools to it over scaffolding a new one.'
-			: 'No MCP server found: scaffold a fresh one with `create_server`, then register it in mcp.json.',
+			: 'No MCP server found: scaffold a fresh one with `create_project`, then register it in mcp.json.',
 	];
 
 	return {

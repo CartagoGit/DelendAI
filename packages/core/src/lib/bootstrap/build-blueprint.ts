@@ -79,7 +79,7 @@ export const buildServerBlueprint = (
 	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
 	const namespacePrefix =
 		options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-server-${namespacePrefix}`;
+	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
 
@@ -139,7 +139,7 @@ export const buildServerBlueprint = (
 			: 'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',
 		tests
 			? 'Generate a test alongside each tool.'
-			: 'Tests omitted (--mcp-server-tests=false).',
+			: 'Tests omitted (--mcp-project-tests=false).',
 	];
 	if (analysis.agentConfigs.length > 0) {
 		notes.push(
@@ -172,7 +172,7 @@ const toolTestFile = (
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 	return {
-		path: `libs/mcp-server/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
+		path: `libs/mcp-project/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
 		content: `import { describe, expect, it } from 'vitest';
 
 import { build${fn}Response } from '../../../../src/lib/tools/${prefix}-${id}.tool';
@@ -194,15 +194,15 @@ describe('${prefix}_${id.replace(/-/g, '_')}', () => {
  */
 export const buildBlueprintFiles = (
 	blueprint: IServerBlueprint,
-	serverPackageName?: string
+	projectPackageName?: string
 ): readonly IScaffoldedFile[] => {
 	const prefix = blueprint.namespacePrefix;
 	const files: IScaffoldedFile[] = [
 		...scaffoldHostProject({
 			projectName: blueprint.serverName,
 			namespacePrefix: prefix,
-			serverPackageName:
-				serverPackageName ?? `@${prefix}/mcp-server`,
+			projectPackageName:
+				projectPackageName ?? `@${prefix}/mcp-project`,
 		}),
 	];
 	for (const tool of blueprint.tools) {

@@ -16,7 +16,7 @@
  *   safe to render (it contains no executable code, only guidance).
  *
  *   The helper lives in
- *   `libs/mcp-server/src/lib/swarm/chat-titling-reminder.ts` and
+ *   `libs/mcp-project/src/lib/swarm/chat-titling-reminder.ts` and
  *   reuses the parser from T1 (`parseChatTitlingPrefix`) only to
  *   guard against the legacy alias "FREE" appearing in places where
  *   the proposal id is missing.
@@ -68,7 +68,7 @@ const makeReport = (
 	model: 'MiniMax-M3 (customendpoint)',
 	selfReview: 'pass',
 	filesReRead: 1,
-	reviewEvidence: ['vitest run libs/mcp-server'],
+	reviewEvidence: ['vitest run libs/mcp-project'],
 	...overrides,
 });
 

@@ -67,7 +67,7 @@ export interface IAssembleCliDeps {
  * workspace and core paths (CLI flag > config file > default), load
  * every `--plugins` entry passing each its `mcp-vertex.config.json`
  * options, merge the registrations, and always expose the core
- * meta-tools (scaffold + the hybrid analyze/create_server bootstrap).
+ * meta-tools (scaffold + the hybrid analyze/create_project bootstrap).
  * Pure except for the injectable importer/reader, so it is fully
  * testable.
  */
@@ -230,7 +230,7 @@ export const assembleCliConfig = async (
 			namespacePrefix: corePrefix,
 			workspace,
 			projectName: args.serverName,
-			serverPackageName: '@mcp-vertex/core',
+			projectPackageName: '@mcp-vertex/core',
 		}),
 	];
 
@@ -340,7 +340,7 @@ export const runDoctor = async (
  * First-start hook: analyze the project and persist an EXHAUSTIVE
  * blueprint for a project-specific MCP server to the cache, so an agent
  * can review and materialise it. Idempotent (writes once) and never
- * writes into the repo itself. Skipped by `--mcp-server-create=false`.
+ * writes into the repo itself. Skipped by `--mcp-project-create=false`.
  * If a server already exists, the blueprint's notes explain how to
  * integrate it with mcp-vertex organically.
  */
@@ -362,7 +362,7 @@ export const prepareServerBlueprintOnStart = async (
 	});
 	const analysis = analyzeProject(reader);
 	const blueprint = buildServerBlueprint(analysis, {
-		tests: args.mcpServerTests,
+		tests: args.mcpProjectTests,
 	});
 	await mkdir(dirname(absPath), { recursive: true });
 	await writeFile(
@@ -486,12 +486,12 @@ export const runCli = async (
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
 	// is live and off the critical path — analysing the repo + writing the
 	// cache file must never delay the first MCP response. Best-effort. [N8]
-	if (args.mcpServerCreate) {
+	if (args.mcpProjectCreate) {
 		void prepareServerBlueprintOnStart(args, config.corePaths?.cacheDir)
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpvertex_plan_mcp_server.\n`
+						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpvertex_plan_mcp_project.\n`
 					);
 				}
 			})

@@ -20,8 +20,8 @@
  * This is enforced by the implementation (no other action path exists
  * in this module) and tested by the spec.
  *
- * Spec: libs/mcp-server/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts
- * Skill: libs/mcp-server/src/lib/skills/the delivery-verifier contract
+ * Spec: libs/mcp-project/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts
+ * Skill: libs/mcp-project/src/lib/skills/the delivery-verifier contract
  */
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';

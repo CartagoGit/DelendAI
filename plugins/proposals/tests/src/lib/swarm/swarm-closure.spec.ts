@@ -173,7 +173,7 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 					{
 						taskId: 'p34b-t3',
 						agent: 'forza_motorsport_2023',
-						files: ['libs/mcp-server/src/server.ts'],
+						files: ['libs/mcp-project/src/server.ts'],
 						lastSeenIso: STALE_LOCK_TIMESTAMP,
 						nowIso: FRESH_LOCK_TIMESTAMP,
 					},
@@ -191,7 +191,7 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 					{
 						taskId: 'p34b-t3',
 						agent: 'forza_motorsport_2023',
-						files: ['libs/mcp-server/src/server.ts'],
+						files: ['libs/mcp-project/src/server.ts'],
 						lastSeenIso: FRESH_LOCK_TIMESTAMP,
 						nowIso: FRESH_LOCK_TIMESTAMP,
 					},

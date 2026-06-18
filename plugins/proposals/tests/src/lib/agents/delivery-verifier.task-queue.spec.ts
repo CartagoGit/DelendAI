@@ -3,7 +3,7 @@
  *
  * TDD specs for the p40c T3 deliverable: the new
  * `verifyClosure` entry point in
- * `libs/mcp-server/src/lib/agents/delivery-verifier.ts` that wires
+ * `libs/mcp-project/src/lib/agents/delivery-verifier.ts` that wires
  * the `mcpvertex_task_queue report` into the verifier's verdict.
  *
  * 3 cases as enumerated in the proposal p40c T3:
@@ -21,7 +21,7 @@
  * with `action: 'report'` and never `enqueue` / `dequeue` / `subscribe`.
  * We assert this by spying on the paths-resolver in a no-op scenario.
  *
- * Run: bun test libs/mcp-server -- delivery-verifier.task-queue
+ * Run: bun test libs/mcp-project -- delivery-verifier.task-queue
  */
 
 import { mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';

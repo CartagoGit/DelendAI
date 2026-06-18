@@ -1,5 +1,5 @@
 /**
- * libs/mcp-server/src/lib/proposals/index.ts
+ * libs/mcp-project/src/lib/proposals/index.ts
  *
  * Public barrel for the proposals module. T2 and T3 import from here;
  * they must NOT import directly from the implementation files.

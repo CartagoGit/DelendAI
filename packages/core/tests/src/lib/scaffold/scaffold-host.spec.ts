@@ -17,14 +17,14 @@ import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 const HOST = {
 	projectName: 'Acme Quest',
 	namespacePrefix: 'acme',
-	serverPackageName: '@acme/mcp-server',
+	projectPackageName: '@acme/mcp-project',
 } as const;
 
 describe('scaffold-host generators (p97)', () => {
 	it('generates a registerable tool file in the host namespace', () => {
 		const file = scaffoldToolFile('acme', 'render stats', 'Stats only.');
 		expect(file.path).toBe(
-			'libs/mcp-server/src/lib/tools/acme-render-stats.tool.ts'
+			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts'
 		);
 		expect(file.content).toContain("name: 'acme_render_stats'");
 		expect(file.content).toContain(
@@ -37,7 +37,7 @@ describe('scaffold-host generators (p97)', () => {
 			'Before editing rooms.',
 		]);
 		expect(file.path).toBe(
-			'libs/mcp-server/src/lib/skills/acme-level-design.md'
+			'libs/mcp-project/src/lib/skills/acme-level-design.md'
 		);
 		expect(file.content).toContain('id: acme-level-design');
 		expect(file.content).toContain('- Before editing rooms.');
@@ -47,7 +47,7 @@ describe('scaffold-host generators (p97)', () => {
 	it('agent adapters always delegate to the HOST MCP server', () => {
 		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
 		expect(orchestrator.path).toBe('.github/agents/orchestrator.agent.md');
-		expect(orchestrator.content).toContain('mcp-server-acme/*');
+		expect(orchestrator.content).toContain('mcp-project-acme/*');
 		expect(orchestrator.content).toContain('acme_overview');
 		expect(orchestrator.content).toContain('user-invocable: true');
 		// M9: the proposal-workflow tools are shown as conditional on the
@@ -62,9 +62,9 @@ describe('scaffold-host generators (p97)', () => {
 	it('scaffoldHostProject covers server, config, agents and docs', () => {
 		const files = scaffoldHostProject(HOST);
 		const paths = files.map((file) => file.path);
-		expect(paths).toContain('libs/mcp-server/src/server.ts');
+		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths).toContain(
-			'libs/mcp-server/src/lib/shared/host-config.ts'
+			'libs/mcp-project/src/lib/shared/host-config.ts'
 		);
 		expect(paths).toContain('.vscode/mcp.json');
 		expect(paths).toContain('.github/agents/orchestrator.agent.md');
@@ -118,11 +118,11 @@ describe('scaffold tool report (p97)', () => {
 			dryRun: false,
 		});
 		expect(first.written).toEqual([
-			'libs/mcp-server/src/lib/skills/acme-combat.md',
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
 		expect(
 			readFileSync(
-				join(root, 'libs/mcp-server/src/lib/skills/acme-combat.md'),
+				join(root, 'libs/mcp-project/src/lib/skills/acme-combat.md'),
 				'utf8'
 			)
 		).toContain('id: acme-combat');
@@ -134,7 +134,7 @@ describe('scaffold tool report (p97)', () => {
 		});
 		expect(second.written).toEqual([]);
 		expect(second.skipped).toEqual([
-			'libs/mcp-server/src/lib/skills/acme-combat.md',
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
 	});
 
