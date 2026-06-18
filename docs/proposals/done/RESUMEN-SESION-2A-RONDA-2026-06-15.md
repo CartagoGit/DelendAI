@@ -96,9 +96,9 @@ bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search
 **§0 (N1–N23)** con el estado ✅/🟡/⬜ de cada hallazgo. Esto manda; lo de arriba en
 ese doc es historial.
 
-**3. Premisa clave (no la olvides):** **Affairs ya NO consume mcp-vertex** (proyectos
-independientes; mcp-vertex se extrajo y Affairs conserva su copia). Cambios aquí NO
-afectan a Affairs — ignora cualquier nota antigua de "re-validar 1184".
+**3. Premisa clave (no la olvides):** mcp-vertex es un proyecto **independiente**
+del repositorio del que se extrajo (este ya no importa nada de mcp-vertex).
+Cambios aquí NO le afectan — ignora cualquier nota antigua de "re-validar 1184".
 
 **4. Siguiente paso recomendado** (lo que quedó pendiente de TU decisión):
 - **N16 outputSchema** (~25 tools) — hacerlo *tool a tool* usando el harness e2e

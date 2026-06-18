@@ -18,12 +18,13 @@
 > (304+10 skip), verdes.**
 >
 > **⚠️ CORRECCIÓN DE PREMISA (2026-06-15, sesión Opus):** el "invariante crítico"
-> de re-validar Affairs tras tocar engines **está obsoleto**. Verificado: Affairs
-> (`/home/cartago/_proyectos/propios/affairs`) **NO importa nada de mcp-vertex**
-> (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig). Son proyectos
-> independientes; mcp-vertex fue extraído pero Affairs conserva su propia copia.
-> Cambios en mcp-vertex no pueden afectar a Affairs. Sus ~14 tests rojos actuales
-> son pre-existentes y ajenos (snapshots, skills docs, baseline MiniMax M3).
+> de re-validar el proyecto del que se extrajo el core tras tocar engines
+> **está obsoleto**. Verificado: ese repositorio **NO importa nada de
+> mcp-vertex** (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig).
+> Son proyectos independientes; mcp-vertex fue extraído pero el repositorio
+> original conserva su propia copia. Cambios en mcp-vertex no pueden afectarle.
+> Sus tests rojos actuales son pre-existentes y ajenos (snapshots, skills docs,
+> baseline MiniMax M3).
 >
 > ---
 >
@@ -56,8 +57,9 @@
 >   `persistent-task-queue.spec.ts` (parseQueue), `agent-names.spec.ts` (registry),
 >   `memory.spec.ts` (store + capa de tool), `closed-tasks-log.spec.ts`.
 >
-> **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-vertex
-> (ver corrección de premisa arriba).
+> **NOTA sobre el proyecto del que se extrajo el core:** ignorar el viejo
+> "re-validar 1184" — ese repositorio no consume mcp-vertex (ver corrección de
+> premisa arriba).
 >
 > **M4 + M5 (agnosticismo de tracks y carpetas) — HECHO (sesión Opus):**
 > - **M4**: `IProposalTrack` dejó de ser un union cerrado con vocabulario del
@@ -107,7 +109,7 @@
 >   `const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir)` en
 >   [plugins/proposals/src/index.ts](../../../plugins/proposals/src/index.ts).
 >   Los 2 engines que horneaban `DEFAULT_PATH_LAYOUT` ahora aceptan `layout`
->   opcional (default = DEFAULT para back-compat de Affairs):
+>   opcional (default = DEFAULT para back-compat del consumidor original):
 >   `syncProposalRegistry(root, layout?)` y
 >   `collectRoundContextSnapshot(root, layout?)` (+ `buildOperationalSources`,
 >   `scanLiveProposalEntries`). Tools que lo propagan: `sync_proposals`,
@@ -144,13 +146,10 @@
 > **Comandos de validación (siempre tras cada cambio en engines compartidos):**
 > ```bash
 > cd /home/cartago/_projects/mcp-vertex && bun run validate            # 290 verdes
-> cd /home/cartago/_projects/games/onrop/affairs \
->   && bun run --cwd libs/mcp-server typecheck \
->   && bun run --cwd libs/mcp-server test                            # 1184 verdes
 > ```
-> **Invariante crítico:** NUNCA romper Affairs. Los engines son compartidos vía
-> alias de vitest/paths de tsconfig; re-validar las 1184 tras tocar cualquier
-> engine de `proposals`.
+> El repositorio del que se extrajo el core ya no comparte alias de vitest ni
+> paths de tsconfig con mcp-vertex, así que cualquier cambio en `proposals` se
+> valida con el set de tests del core (no requiere re-validar ese otro repo).
 
 > **Nota de consenso: ~7,3/10** (Sonnet 8 · Gemini 7,9 · Opus 4.8 7,5 · Codex 6,8).
 > Arquitectura excelente; el techo lo marca la **persistencia/concurrencia** del

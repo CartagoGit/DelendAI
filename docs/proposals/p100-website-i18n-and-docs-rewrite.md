@@ -1,7 +1,7 @@
 ---
 id: p100
 type: proposal
-status: todo
+status: in-progress
 track: web+i18n+docs
 date: 2026-06-18
 budget: 4
@@ -9,8 +9,19 @@ budget: 4
 
 # p100 — Web: i18n real de herramientas, estructura por página y docs profundas
 
-> **Estado: TODO para revisión.** Resumen del problema, decisiones validadas con
-> el usuario y plan por slices. Decisiones clave ya tomadas (ver §0).
+> **Estado: EN CURSO — s1 ya cerrado por commit paralelo** (2026-06-18
+> 18:28, hash `5658d55` y `875121d` por `Cartago
+> <cartago.relaxingcup@gmail.com>`). El árbol contiene: componentes
+> `SiteNav`, `SiteFooter`, `ConceptSection`, `ToolsSection`,
+> `BenchmarksSection`, `PluginsSection`; páginas `/install`, `/tools`,
+> `/benchmarks`, `/plugins` en 12 idiomas; `Home.astro` minimalista.
+> `bun run validate` y `bun run site:strict` en verde.
+> Pendientes: s2 (ToolDefinition acepta `description: { key }`),
+> s3 (catálogos i18n en plugins + validador), s4 (render localizado),
+> s5 (tabla de argumentos), s6 (Configuration JSON), s7 (tutoriales),
+> s8 (tabs client-side + limpieza flag legacy).
+
+## 0. Decisiones del usuario (validadas 2026-06-18)
 
 ## 0. Decisiones del usuario (validadas 2026-06-18)
 
@@ -189,7 +200,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
   - files: [apps/web/src/pages/index.astro, apps/web/src/pages/[lang]/*, apps/web/src/components/Home.astro, apps/web/src/components/Layouts/*, apps/web/src/pages/[lang]/install.astro, apps/web/src/pages/[lang]/benchmarks.astro, apps/web/src/pages/[lang]/tools.astro]
   - Crea las rutas nuevas. Mantiene compatibilidad: la home sigue mostrando todo
     si el flag `?legacy=1` está presente, durante 1 release.
-  - status: todo
+  - status: done (commit 5658d55 + 875121d, 2026-06-18 18:28)
 
 - **id: s2** — ToolDefinition acepta `description: string | { key: string }`
   - files: [packages/core/src/lib/tools/*.ts, packages/core/src/public/index.ts (types), plugins/*/src/**/*.ts]
