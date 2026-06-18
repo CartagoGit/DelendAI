@@ -10,6 +10,7 @@ import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildProposalBoardRegistration,
+	buildReviewRegistration,
 	type IAuthoringToolOptions,
 } from '@cartago-git/mcp-proposals/lib/tools/authoring.tool';
 
@@ -91,6 +92,49 @@ describe('proposal authoring (create → board → close)', () => {
 		const doc = readFileSync(join(opts.proposalsDirAbs, 'p3-wire-api.md'), 'utf8');
 		expect(doc).not.toContain('s3cr3tValue123');
 		expect(doc).toContain('[REDACTED]');
+	});
+
+	it('runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'p4',
+			title: 'Review me',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const file = join(opts.proposalsDirAbs, 'p4-review-me.md');
+
+		// Implementer submits for review.
+		const submitted = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'submit', agent: 'falcon' }));
+		expect(submitted.status).toBe('in_review');
+		expect(submitted.implementer).toBe('falcon');
+
+		// The implementer cannot review their own work.
+		const selfReview = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'approve', agent: 'falcon' }));
+		expect(selfReview.ok).toBe(false);
+		expect(selfReview.error.reason).toMatch(/different agent/i);
+
+		// A different agent finds a fault.
+		const changes = parse(
+			await review({ proposalId: 'p4', sliceId: 's1', action: 'request_changes', agent: 'eagle', note: 'add a test' })
+		);
+		expect(changes.status).toBe('changes_requested');
+		expect(readFileSync(file, 'utf8')).not.toMatch(/^- status: done/m);
+
+		// Fixer resubmits; another agent approves the fix.
+		const resubmitted = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'submit', agent: 'falcon' }));
+		expect(resubmitted.status).toBe('in_review');
+		const approved = parse(await review({ proposalId: 'p4', sliceId: 's1', action: 'approve', agent: 'owl' }));
+		expect(approved.status).toBe('done');
+		expect(approved.reviewer).toBe('owl');
+		expect(approved.rounds.map((r: { verdict: string }) => r.verdict)).toEqual(['requested_changes', 'approved']);
+
+		// The doc now carries the real done marker + the review log.
+		const doc = readFileSync(file, 'utf8');
+		expect(doc).toMatch(/^- status: done/m);
+		expect(doc).toMatch(/review-log: requested_changes by eagle — add a test/);
+		expect(doc).toMatch(/review-log: approved by owl/);
 	});
 
 	it('rejects overlapping slices', async () => {

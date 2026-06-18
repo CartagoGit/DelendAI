@@ -14,6 +14,7 @@ import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildProposalBoardRegistration,
+	buildReviewRegistration,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
@@ -183,6 +184,7 @@ export default definePlugin({
 				}),
 				buildCreateProposalRegistration(authoringOptions),
 				buildCloseSliceRegistration(authoringOptions),
+				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),

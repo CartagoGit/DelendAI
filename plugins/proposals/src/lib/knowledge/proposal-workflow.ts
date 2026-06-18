@@ -39,6 +39,7 @@ export const buildProposalWorkflow = (
 		'A proposal may declare a `## Slices` section to parallelise disjoint work.',
 		'Run sync_proposals after creating or renaming files under the proposals dir.',
 		'Mark a slice done by flipping `- status: done`; archive completed proposals to historical/.',
+		'Peer review: instead of closing your own slice, proposal_review action=submit (it stays NOT done). A DIFFERENT agent reviews: action=approve → done + lock released, or action=request_changes (with a note) → reworkable. The fixer re-submits and another agent reviews the fix. Loop until a reviewer has no objection. Reviewer must differ from the implementer.',
 	],
 	template: [
 		'---',

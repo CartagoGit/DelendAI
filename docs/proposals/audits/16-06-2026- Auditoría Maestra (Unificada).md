@@ -393,6 +393,16 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ✅ **Logotipo + favicon** — marca hexagonal "core + nodos de plugin" (`public/logo.svg`),
   en nav, hero y favicon SVG; legible a 16px.
 
+**i18n — página por idioma (decisión, 18-06):**
+- ℹ️ El sitio es **estático** (GitHub Pages, sin servidor) → no se puede "pasar el idioma
+  como argumento" en tiempo de petición. La fuente **no está duplicada**: un único
+  `Home.astro`/`PluginPage.astro` recibe `lang` como prop; lo multiplicado es solo el HTML
+  generado (1 por idioma), lo correcto para estático: URLs reales por idioma (SEO/hreflang),
+  sin flash de idioma, sin requerir JS. Alternativa = SPA con cambio de idioma por JS
+  (menos ficheros pero peor SEO/UX). **Se mantiene el pre-render por idioma** salvo que el
+  usuario prefiera la vía SPA. ⬜ Si se quiere reducir artefactos: evaluar `hreflang` tags
+  + sitemap en vez de cambiar el modelo.
+
 **Responsive:**
 - 🔴 **TODO** debe ser responsive (ordenador/tablet/móvil) — invariante permanente
   a verificar en cada componente nuevo.
@@ -504,6 +514,20 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `CONTRIBUTING.md`, `SECURITY.md` (modelo de seguridad real + límites), enlazados desde
   el README. ⬜ Falta `CODEOWNERS`, CHANGELOG enlazado con fechas/comparadores,
   `register()` siempre async en el tipo público.
+
+**Nuevas peticiones del usuario (18-06):**
+- ✅ **M35 · Ciclo de revisión por pares en `proposals`** — tool `proposal_review`
+  (`submit`/`approve`/`request_changes`/`status`) + máquina de estados pura
+  ([proposal-review.ts](../../../plugins/proposals/src/lib/swarm/proposal-review.ts)):
+  el implementador hace `submit` (queda **in_review**, NO done); un **agente distinto**
+  `approve` (→ `- status: done` + libera lock) o `request_changes` con objeción (→
+  `changes_requested`, reworkable + libera lock); el fixer re-`submit` y **otro** revisa el
+  fix; bucle hasta que un revisor no objeta. Estado en el doc (sin sidecar; líneas
+  `review-state/implementer/reviewer/log`), historial de rondas, y **revisor ≠
+  implementador** forzado. 8 tests (máquina pura + e2e del bucle por el doc); knowledge y
+  README actualizados.
+- ℹ️ **i18n página-por-idioma** — ver §7-bis (decisión: se mantiene el pre-render estático;
+  la fuente ya es DRY con `lang` como prop).
 
 > **Lectura:** ninguna de las 3 encontró nada FATAL en el código. La única "rojo de
 > verdad" era el `validate` por SVG (ya cerrado). Lo demás es endurecimiento y

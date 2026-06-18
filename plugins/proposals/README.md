@@ -31,6 +31,8 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `round_context` | Persisted multi-agent round digest + staleness, for resumed work. |
 | `sync_proposals` | Rebuild the proposal index after creating/renaming files. |
 | `get_proposal_workflow` | Families, locations, naming and template as JSON. |
+| `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock. |
+| `proposal_review` | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection. |
 
 ## Configure (`mcp-core.config.json`)
 
