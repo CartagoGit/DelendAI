@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import PluginPage from '../../components/PluginPage.astro';
+import capabilities from '../../data/capabilities.json';
+
+export function getStaticPaths() {
+	const slugOf = (name: string) =>
+		name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
+	const pkgs = capabilities.packages as Array<{ name: string }>;
+	return pkgs.map((p) => ({ params: { plugin: slugOf(p.name) } }));
+}
+
+const { plugin } = Astro.params;
+---
+
+<Base lang="en">
+	<PluginPage lang="en" slug={plugin!} />
+</Base>

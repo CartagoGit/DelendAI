@@ -28,6 +28,8 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 
 const packages = capabilities.packages as Array<{ name: string; version: string }>;
 const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
+const pluginHref = (slug: string) =>
+	lang === 'en' ? `${base}/plugins/${slug}` : `${base}/${lang}/plugins/${slug}`;
 
 // Benchmarks: real payloads measured live (see gen-capabilities.ts) + one
 // clearly-labelled illustrative baseline. Bar width is proportional to tokens.
@@ -180,13 +182,14 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 		<p class="lead">{t('plugins.lead')}</p>
 		{
 			packages.map((pkg) => (
-				<div class="pkg">
+				<a class="pkg" href={pluginHref(shortName(pkg.name))}>
 					<div class="pkg__main">
 						<code>{pkg.name}</code>
 						<p>{t(`plugin.${shortName(pkg.name)}`)}</p>
 					</div>
 					<span class="v">v{pkg.version}</span>
-				</div>
+					<span class="pkg__arrow" aria-hidden="true">→</span>
+				</a>
 			))
 		}
 	</div>
