@@ -68,6 +68,9 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 	}
 
 	const emoji = [...line][0];
+	if (emoji === undefined) {
+		return { ok: false, violation: 'missing', line };
+	}
 	const state = EMOJI_TO_STATE.get(emoji);
 	if (state === undefined) {
 		return { ok: false, violation: 'bad-format', line };
@@ -92,12 +95,19 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 	if (def.requiresReason && reason === undefined) {
 		violations.push('reason-missing');
 	}
-	if (!def.requiresReason && reason !== undefined) {
-		// Not fatal — the agent may add context. But if the reason is the
-		// literal placeholder token, that is definitely wrong.
-		if (reason === REASON_MISSING_TOKEN) {
-			violations.push('placeholder-reason');
-		}
+	if (reason === REASON_MISSING_TOKEN) {
+		// The helper only inserts the placeholder when a required reason is
+		// missing; reporting it as a violation lets callers grep for broken
+		// conventions without re-implementing the rule.
+		violations.push('placeholder-reason');
+	}
+	if (
+		!def.requiresReason &&
+		reason !== undefined &&
+		reason !== REASON_MISSING_TOKEN
+	) {
+		// Not fatal — the agent may add context. The validator stays
+		// permissive here.
 	}
 	if (line.length > MAX_LINE_LEN) {
 		violations.push('too-long');
@@ -122,15 +132,22 @@ export const validateResponseClose = (text: string): IValidationResult => {
 		return { ok: false, violation: 'missing' };
 	}
 	const lines = normalised.split('\n');
-	const last = lines.at(-1) ?? '';
+	const lastIndex = lines.length - 1;
+	const last = lines[lastIndex] ?? '';
 	const trimmedLast = last.trim();
-	const afterMarker = lines.slice(0, -1).join('\n').trim();
 
 	const result = validateCloseMarker(trimmedLast);
-	if (result.ok) {
-		if (afterMarker === '') return result;
-		// The marker is valid but there is prose after it. Mark it as
-		// `bad-format` (violation of "no extra prose after the line").
+	if (!result.ok) return result;
+
+	// Marker is well-formed. The convention requires the marker to be the
+	// LAST visible line, with NOTHING after it (no trailing prose, no
+	// inline comment on the same line). Prosa BEFORE the marker is allowed.
+	const inlineTrailing = last.slice(trimmedLast.length).trim();
+	const proseAfter = lines
+		.slice(lastIndex + 1)
+		.join('\n')
+		.trim();
+	if (inlineTrailing !== '' || proseAfter !== '') {
 		return {
 			...result,
 			ok: false,

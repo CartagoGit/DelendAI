@@ -95,9 +95,13 @@ describe('close-tools — handler', () => {
 	it('validate reports ok:false with violation for missing reason', async () => {
 		const calls = await captureRegister();
 		const validate = calls.find((c) => c.name === 'sm_validate')!;
-		const out = (await validate.handler({
-			text: formatCloseMarker('BLOQUEADO'),
-		})) as { content: Array<{ text: string }> };
+		// Build the "no reason" line manually so the validator sees the
+		// genuine missing-reason case (the helper would otherwise insert
+		// <reason-missing> and report placeholder-reason instead).
+		const text = '🟥 [BLOQUEADO]';
+		const out = (await validate.handler({ text })) as {
+			content: Array<{ text: string }>;
+		};
 		const parsed = JSON.parse(out.content[0]!.text);
 		expect(parsed.ok).toBe(false);
 		expect(parsed.violations).toContain('reason-missing');

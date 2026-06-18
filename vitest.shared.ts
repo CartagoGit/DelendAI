@@ -18,6 +18,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const docs = resolve(workspaceRoot, 'plugins/docs/src');
 	const deps = resolve(workspaceRoot, 'plugins/deps/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
+	const statusMarker = resolve(workspaceRoot, 'plugins/status-marker/src');
 	return [
 		{
 			find: '@mcp-vertex/core/public',
@@ -135,6 +136,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/deps',
 			replacement: resolve(deps, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/status-marker/public',
+			replacement: resolve(statusMarker, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/status-marker\/lib\/(.*)$/,
+			replacement: `${resolve(statusMarker, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/status-marker',
+			replacement: resolve(statusMarker, 'index.ts'),
 		},
 	];
 };
