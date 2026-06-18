@@ -118,6 +118,7 @@ export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
+export { killProcessGroup } from '../lib/commands/process-group';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 export {
