@@ -1,0 +1,75 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import {
+	PACKAGE,
+	ideTargets,
+	packageManagers,
+	renderConfig,
+} from '../data/install';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const defaultPm = 'npm';
+---
+
+<section id="install" class="section">
+	<div class="container">
+		<h2>{t('install.title')}</h2>
+		<p class="lead">{t('install.lead')}</p>
+
+		<div class="install" data-pm={defaultPm}>
+			{/* Package-manager selector */}
+			<div class="pm-tabs" role="tablist" aria-label="package manager">
+				{packageManagers.map((pm) => (
+					<button class="pm-tab" data-pm={pm.id} type="button" aria-pressed={pm.id === defaultPm ? 'true' : 'false'}>
+						{pm.label}
+					</button>
+				))}
+			</div>
+
+			{/* Verify-it-runs line (per package manager) */}
+			<p class="install__sub">{t('install.verify')}</p>
+			{packageManagers.map((pm) => (
+				<div class="pm-only" data-pm={pm.id}>
+					<pre><code>{pm.run}</code></pre>
+					{pm.note && <p class="install__note">★ {pm.note}</p>}
+				</div>
+			))}
+
+			{/* Per-IDE config cards */}
+			<h3 class="install__h3">{t('install.addto')}</h3>
+			<div class="ide-grid">
+				{ideTargets.map((ide) => (
+					<div class="ide">
+						<div class="ide__head">
+							<span class="ide__name">{ide.label}</span>
+							<code class="ide__file" title={ide.scope}>{ide.file}</code>
+						</div>
+						{packageManagers.map((pm) => (
+							<pre class="cfg" data-pm={pm.id}><code>{renderConfig(ide, pm)}</code></pre>
+						))}
+					</div>
+				))}
+			</div>
+
+			<p class="install__foot">
+				{t('install.presets')} <code>{`${PACKAGE} --preset=minimal|standard|swarm`}</code> · <code>--check</code>
+			</p>
+		</div>
+	</div>
+</section>
+
+<script>
+	for (const root of document.querySelectorAll<HTMLElement>('.install')) {
+		const tabs = root.querySelectorAll<HTMLButtonElement>('.pm-tab');
+		for (const tab of tabs) {
+			tab.addEventListener('click', () => {
+				root.dataset.pm = tab.dataset.pm ?? 'npm';
+				for (const t of tabs) t.setAttribute('aria-pressed', String(t === tab));
+			});
+		}
+	}
+</script>
