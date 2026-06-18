@@ -196,10 +196,10 @@ code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
 .ns__head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.6rem; }
 .ns__head h3 { margin: 0; font-size: 1.05rem; }
 .ns__count { color: var(--muted); font-size: 0.85rem; }
-.tools-grid { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
-.tool { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem 0.9rem; }
-.tool code { color: var(--accent); font-size: 0.9rem; }
-.tool p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.86rem; }
+.tools-grid { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); }
+.tool { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem 0.9rem; min-width: 0; }
+.tool code { color: var(--accent); font-size: 0.9rem; overflow-wrap: anywhere; }
+.tool p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.86rem; overflow-wrap: anywhere; }
 
 .pkg { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--line); border-radius: 8px; color: inherit; text-decoration: none; transition: background 0.15s ease; }
 .pkg:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); text-decoration: none; }
