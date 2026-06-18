@@ -23,7 +23,7 @@ import { parseSwarmFrontmatter } from '@mcp-vertex/proposals/lib/swarm/swarm-par
 let workdir: string;
 
 beforeEach(() => {
-	workdir = mkdtempSync(join(tmpdir(), 'affairs-swarm-budget-'));
+	workdir = mkdtempSync(join(tmpdir(), 'mcp-vertex-swarm-budget-'));
 	mkdirSync(join(workdir, 'docs', 'proposals'), { recursive: true });
 });
 

@@ -131,18 +131,19 @@ bunx @mcp-vertex/core --plugins=proposals,rules,memory,git,quality,search,notifi
 # Debe imprimir "ok": true y "assembles": true
 ```
 
-## 4. Post-publicación: que Affairs use lo publicado (en vez del path local)
-Hoy Affairs consume mcp-vertex por **rutas locales** (tsconfig paths + alias de
-vitest apuntando a `../../../mcp-vertex/...`). Cuando publiques:
-1. En `affairs/libs/mcp-server/package.json` añade dependencias reales:
+## 4. Post-publicación: migrar un consumidor de path local a paquete publicado
+Cualquier consumidor que estuviera enlazando `mcp-vertex` por **rutas locales**
+(tsconfig paths + alias de vitest apuntando a `../../../mcp-vertex/...`)
+debe pasarse a la dependencia real cuando publiques:
+1. En el `package.json` del consumidor añade dependencias reales:
    ```jsonc
    "@mcp-vertex/core": "^0.1.0",
    "@mcp-vertex/proposals": "^0.1.0"
    ```
-2. Quita los `paths` `@mcp-vertex/*` de `affairs/tsconfig.base.json` y los alias
-   `@mcp-vertex/*` de `affairs/libs/mcp-server/vitest.config.ts` (para que
-   resuelvan desde `node_modules`).
-3. `bun install` en affairs y `bun run --cwd libs/mcp-server test` (1184 verdes).
+2. Quita los `paths` `@mcp-vertex/*` del `tsconfig.base.json` del consumidor y
+   los alias `@mcp-vertex/*` de su `vitest.config.ts` (para que resuelvan desde
+   `node_modules`).
+3. `bun install` en el consumidor y su `bun test` (todos verdes).
    - Ojo: los paquetes publican **fuente TS**; vitest/bun la transpilan. Si algún
      consumidor Node puro fallara, habría que añadir un build a `dist` (ver §6).
 
