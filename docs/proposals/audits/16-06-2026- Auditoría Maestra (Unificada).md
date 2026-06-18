@@ -458,9 +458,14 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `skills/` (`mcp-core-plugin-authoring`, `mcp-core-failure-modes`). El repo ya se
   aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
   ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
-- ⬜ **M27 · Web profunda** — páginas por plugin/tool (con riesgos, opciones, ejemplos),
-  "primeros 5 minutos", `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting,
-  búsqueda interna (pagefind). *(Se cruza con W3 §7-bis.)*
+- 🟡 **M27 · Web profunda** —
+  ✅ **Páginas de detalle por plugin** (`/plugins/<slug>` + `/<lang>/plugins/<slug>`,
+  132 páginas: 12 idiomas × 11 paquetes): cada una lista sus tools reales (desde el
+  registro vivo), descripción traducida, snippet de instalación y enlace de vuelta; la
+  sección Plugins del home enlaza a cada una. ✅ logo/favicon + benchmarks con gráficas.
+  ⬜ Falta: páginas por *tool* con riesgos/opciones, "primeros 5 minutos",
+  `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting, búsqueda interna
+  (pagefind). *(Se cruza con W3 §7-bis.)*
 - 🟡 **M28 · Endurecer `proposals` bajo contención** —
   ✅ `await_lock` en `notification` (`<prefix>_await_lock { taskId, timeoutMs? }`
   bloquea hasta que el lock se libera o expira, vía el mismo watch del notifier +
