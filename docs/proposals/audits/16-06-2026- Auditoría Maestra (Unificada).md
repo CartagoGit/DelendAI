@@ -440,10 +440,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   con timeout). Idem `core/lib/shared/walk.ts` para unificar el `walk()` de `search` y `docs`.
 
 **Plataforma / producto (la grieta principal, consenso 3/3):**
-- ⬜ **M26 · Dogfooding del propio repo** — falta `AGENTS.md`,
-  `.github/copilot-instructions.md`, `.github/agents/*.agent.md`, `.claude/agents/` y
-  `skills/`. El proyecto es meta-herramienta para agentes y **no se aplica a sí mismo**.
-  *(Esto absorbe y concreta el viejo pendiente "skills/prompts versionados".)*
+- ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:
+  comandos, invariantes, convenciones), `.github/copilot-instructions.md`,
+  `.github/agents/mcp-core.agent.md`, `.claude/agents/mcp-core-orchestrator.md` y
+  `skills/` (`mcp-core-plugin-authoring`, `mcp-core-failure-modes`). El repo ya se
+  aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
+  ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
 - ⬜ **M27 · Web profunda** — páginas por plugin/tool (con riesgos, opciones, ejemplos),
   "primeros 5 minutos", `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting,
   búsqueda interna (pagefind). *(Se cruza con W3 §7-bis.)*
