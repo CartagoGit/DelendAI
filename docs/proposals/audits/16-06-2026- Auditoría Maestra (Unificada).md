@@ -486,9 +486,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   bloquea hasta que el lock se libera o expira, vía el mismo watch del notifier +
   fallback de polling + abort en server-close; 4 tests). Cierra el bucle
   "wait, don't poll" que el knowledge ya prometía.
-  ⬜ Falta el circuit-breaker de contención configurable
-  (`steal | fail | waitForNotification` + `lock-contention-budget-exceeded`) y los
-  stress tests concurrentes.
+  ✅ **Circuit-breaker de contención** en `withFileMutex`: opción `onContention:
+  'steal' | 'fail'` (default `steal` = comportamiento histórico, **sin cambios**). En
+  `fail`, si un holder **vivo** retiene el lock pasado `timeoutMs`, lanza
+  `LockContentionError` (code `lock-contention-budget-exceeded`) en vez de robarlo, para
+  que el caller haga back-off (p. ej. `await_lock`) — un lock **abandonado** se sigue
+  reclamando siempre. Additivo, 2 tests (fail no roba/ no ejecuta; steal sí reclama).
+  ⬜ Pendiente menor: cablear `agent_lock` para exponer el modo `fail` + stress tests.
 
 **Observabilidad / release / tests (P2-P3):**
 - 🟡 **M29 · Métricas persistentes** —
