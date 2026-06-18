@@ -1,0 +1,86 @@
+import type { Dict } from "../shared";
+
+const dict: Dict = {
+	"nav.concept": "Concept",
+	"nav.install": "Install",
+	"nav.tools": "Tools",
+	"nav.benchmarks": "Benchmarks",
+	"nav.plugins": "Plugins",
+	"nav.github": "GitHub",
+	"hero.title.a": "The agnostic ",
+	"hero.title.b": "MCP Vertex",
+	"hero.title.c": "",
+	"hero.subheader": "An MCP server core + plugin loader for any project.",
+	"hero.tagline":
+		"A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.",
+	"hero.ctaInstall": "Get started",
+	"hero.ctaTools": "Browse the tools",
+	"hero.runsOn": "Runs under Node, Deno & bun · any package manager",
+	"marquee.runtimes": "Built with · runs under",
+	"marquee.clients": "MCP clients & models",
+	"concept.title": "One small core, many plugins",
+	"concept.body":
+		"mcp-vertex is the hermetic core: deterministic tool registration, injected workspace paths, a CLI plugin loader and a token-measured tool surface. Everything domain-specific is a plugin — load only what you need, under any host or model.",
+	"concept.f1.t": "Project-agnostic",
+	"concept.f1.b": "No domain code in the core. The same plugin behaves identically under any host or model.",
+	"concept.f2.t": "Low-token by design",
+	"concept.f2.b": "A single overview, lazy knowledge and compact JSON. A measured budget guards regressions in CI.",
+	"concept.f3.t": "Safe concurrency",
+	"concept.f3.b":
+		"Atomic writes, a cross-process mutex with ownership tokens, and corruption quarantine.",
+	"concept.f4.t": "Multi-agent ready",
+	"concept.f4.b":
+		"The proposals plugin coordinates a swarm: locks, a task queue, slice disjointness and push notifications.",
+	"install.title": "Install & run",
+	"install.lead": "Add it and point your MCP client at the mcp-vertex binary:",
+	"install.verify": "Verify it runs",
+	"install.addto": "Add it to your IDE / agent",
+	"install.presets": "Presets:",
+	"install.oneCmd": "One command · any IDE",
+	"install.oneCmdNote": "Auto-detects your IDE and merges mcp-vertex in — it never touches your other MCP servers.",
+	"install.config":
+		"Pick a preset (minimal · standard · swarm) or list plugins explicitly. Run with --check to self-diagnose.",
+	"tools.title": "Tools",
+	"tools.lead":
+		"Every tool the full plugin set exposes, grouped by namespace — harvested from the live registry, so this page never drifts from the code.",
+	"tools.count": "tools",
+	"tools.packages": "packages",
+	"bench.title": "Measured, not claimed",
+	"bench.lead":
+		"Token efficiency is a guarded invariant — a CI test fails if these ceilings regress.",
+	"bench.b1.t": "cold-start",
+	"bench.b1.b": "overview (compact) + auto_work — full orientation under 300 tokens.",
+	"bench.b2.t": "no polling",
+	"bench.b2.b": "lock-release is pushed (notification plugin), not polled in a loop.",
+	"bench.b3.t": "drift-guarded",
+	"bench.b3.b": "a generated type SDK, token budgets and a strict e2e net over the real protocol.",
+	"bench.live.title": "Orientation cost · measured live",
+	"bench.live.note":
+		"Tokens of the result text an agent sees (≈4 bytes/token), measured live over the protocol with proposals+memory. The baseline is an illustrative estimate of orienting by hand — not a measured third-party tool.",
+	"bench.baseline": "without mcp-vertex (by hand · estimate)",
+	"plugins.title": "Plugins",
+	"plugins.lead": "The published packages. Load only what you need; the core stays tiny.",
+	"cfg.title": "Settings",
+	"cfg.theme": "Theme",
+	"cfg.language": "Language",
+	"cfg.motion": "Motion",
+	"cfg.motionLabel": "Animate the marquees",
+	"footer.built": "Generated from the live tool registry.",
+	"pluginpage.back": "Back",
+	"pluginpage.tools": "Tools",
+	"pluginpage.install": "Install",
+	"plugin.proposals":
+		"Multi-agent coordination: locks, task queue, slices, round-context, state repair.",
+	"plugin.git": "Read-only repository inspection: status, changed files, diff, log.",
+	"plugin.memory": "Durable cross-session notes with BM25 recall, quotas, TTL and secret redaction.",
+	"plugin.search": "Low-token workspace search: substring or regex, glob include/exclude.",
+	"plugin.rules": "Framework detection + lint/convention guidance, project config wins.",
+	"plugin.quality": "Run quality gates (lint/test/build) with allow/deny command policy; cancellable.",
+	"plugin.docs": "Catalogue + read the project markdown docs, low-token curated navigation.",
+	"plugin.deps": "Offline dependency inventory + health (lockfile, loose ranges, duplicates).",
+	"plugin.notification": "Push lock-release events so agents stop polling.",
+	"plugin.core": "The agnostic core: overview, scaffold, metrics, doctor and the plugin loader.",
+};
+
+export default dict;
+export { dict };
