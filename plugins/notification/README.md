@@ -18,6 +18,11 @@ mcp-core --plugins=proposals,notification
   ```
   via `notifications/message` (logger `<prefix>_notification`).
 - Exposes `<prefix>_notify_status` → `{ watching, emitted, lastReleases }`.
+- Exposes `<prefix>_await_lock { taskId, timeoutMs? }` → blocks until that task's
+  lock is released (or the timeout elapses) and returns
+  `{ taskId, released, timedOut, alreadyFree, waitedMs }`. This is the consumer
+  side of the notifier: after `agent_lock` returns `lock-conflict`, call this once
+  and retry the claim when it resolves — **do not poll `agent_lock status`**.
 
 One local watch per server replaces N agents' polling round-trips — that is the
 token saving in real swarms.

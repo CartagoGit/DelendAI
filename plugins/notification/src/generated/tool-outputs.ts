@@ -12,6 +12,14 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface NotificationAwaitLockOutput {
+	taskId: string;
+	released: boolean;
+	timedOut: boolean;
+	alreadyFree: boolean;
+	waitedMs: number;
+}
+
 export interface NotificationNotifyStatusOutput {
 	watching: string;
 	emitted: number;
@@ -24,5 +32,6 @@ export interface NotificationNotifyStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface NotificationToolOutputs {
+	"notification_await_lock": NotificationAwaitLockOutput;
 	"notification_notify_status": NotificationNotifyStatusOutput;
 }

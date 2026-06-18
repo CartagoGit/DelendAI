@@ -61,6 +61,83 @@ export interface IReleaseWatcher {
 	stop(): void;
 }
 
+export interface IAwaitLockResult {
+	/** The lock for `taskId` is free (released, or never held). */
+	readonly released: boolean;
+	/** The wait hit `timeoutMs` before the lock freed. */
+	readonly timedOut: boolean;
+	/** Milliseconds spent waiting. */
+	readonly waitedMs: number;
+	/** True when the lock was already free on entry (no waiting). */
+	readonly alreadyFree: boolean;
+}
+
+const clampTimeout = (ms: number | undefined): number =>
+	Math.max(1_000, Math.min(120_000, Math.floor(ms ?? 30_000)));
+
+/**
+ * Resolve when the lock for `taskId` is released (no longer in-flight), or on
+ * timeout. This closes the "wait, don't poll" loop the knowledge promises: an
+ * agent that hit `lock-conflict` calls this once and is woken by the same
+ * directory watch the notifier uses (with a polling fallback), instead of
+ * burning N `agent_lock status` round-trips. Never throws; always resolves.
+ */
+export const awaitLockRelease = (params: {
+	readonly lockFile: string;
+	readonly taskId: string;
+	readonly timeoutMs?: number;
+	readonly pollMs?: number;
+	readonly signal?: AbortSignal;
+}): Promise<IAwaitLockResult> => {
+	const timeoutMs = clampTimeout(params.timeoutMs);
+	const pollMs = Math.max(100, Math.min(5_000, params.pollMs ?? 500));
+	const startedAt = Date.now();
+	const isFree = (): boolean => !readInFlight(params.lockFile).has(params.taskId);
+
+	return new Promise<IAwaitLockResult>((resolve) => {
+		if (isFree()) {
+			resolve({ released: true, timedOut: false, waitedMs: 0, alreadyFree: true });
+			return;
+		}
+		let settled = false;
+		let timer: ReturnType<typeof setInterval> | undefined;
+		let deadline: ReturnType<typeof setTimeout> | undefined;
+		let fsWatcher: FSWatcher | undefined;
+		const onAbort = (): void => finish(false, false);
+
+		const finish = (released: boolean, timedOut: boolean): void => {
+			if (settled) return;
+			settled = true;
+			if (timer) clearInterval(timer);
+			if (deadline) clearTimeout(deadline);
+			if (fsWatcher) fsWatcher.close();
+			params.signal?.removeEventListener('abort', onAbort);
+			resolve({
+				released,
+				timedOut,
+				waitedMs: Date.now() - startedAt,
+				alreadyFree: false,
+			});
+		};
+		const poll = (): void => {
+			if (isFree()) finish(true, false);
+		};
+
+		timer = setInterval(poll, pollMs);
+		timer.unref?.();
+		deadline = setTimeout(() => finish(false, true), timeoutMs);
+		deadline.unref?.();
+		try {
+			const dir = dirname(params.lockFile);
+			if (existsSync(dir)) fsWatcher = watch(dir, poll);
+		} catch {
+			// fs.watch unsupported here → polling fallback covers it.
+		}
+		if (params.signal?.aborted) finish(false, false);
+		else params.signal?.addEventListener('abort', onAbort);
+	});
+};
+
 /**
  * Watch a shared lock file and report releases. One local watch per
  * server replaces N agents polling `agent_lock status` over MCP — that

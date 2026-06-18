@@ -1,7 +1,7 @@
 import { definePlugin, joinRel } from '@cartago-git/mcp-core/public';
 import { z } from 'zod';
 
-import { buildNotifyRegistration } from './lib/tools';
+import { buildAwaitLockRegistration, buildNotifyRegistration } from './lib/tools';
 
 /**
  * The notification plugin. It turns the swarm's file-based lock release
@@ -31,15 +31,18 @@ export default definePlugin({
 				? (ctx.options.watchLockFile as string)
 				: joinRel(ctx.cacheDir, 'agents.lock.json');
 
+		const toolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			lockFileAbs: ctx.workspace.resolve(lockRel),
+			...(typeof ctx.options.intervalMs === 'number'
+				? { intervalMs: ctx.options.intervalMs as number }
+				: {}),
+		};
+
 		return {
 			tools: [
-				buildNotifyRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					lockFileAbs: ctx.workspace.resolve(lockRel),
-					...(typeof ctx.options.intervalMs === 'number'
-						? { intervalMs: ctx.options.intervalMs as number }
-						: {}),
-				}),
+				buildNotifyRegistration(toolOptions),
+				buildAwaitLockRegistration(toolOptions),
 			],
 			knowledge: [
 				{
@@ -57,9 +60,11 @@ export default definePlugin({
 						'```',
 						'',
 						'When you get `lock-conflict` from `agent_lock`, do NOT poll',
-						'`agent_lock status` in a loop. Wait for the `lock-released`',
-						'notification for the conflicting files, then retry the claim once.',
-						'This replaces N polling round-trips with a single push.',
+						'`agent_lock status` in a loop. Either wait for the `lock-released`',
+						'notification for the conflicting files, or call',
+						'`<prefix>_await_lock { taskId }` — it blocks until that lock frees',
+						'(or times out) and returns, so you retry the claim exactly once.',
+						'This replaces N polling round-trips with a single wait.',
 					].join('\n'),
 				},
 			],

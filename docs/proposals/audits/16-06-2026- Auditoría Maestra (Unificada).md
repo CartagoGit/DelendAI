@@ -398,11 +398,11 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   a verificar en cada componente nuevo.
 
 **Publicación / naming:**
-- ⬜ **Rename de scope a `@mcp-server`**: core → `@mcp-server/core`, plugins →
-  `@mcp-server/proposals`, `@mcp-server/git`, … (hoy `@cartago-git/mcp-*`). Toca
-  todos los `package.json`, imports, `tsconfig` paths, alias de vitest, `build.ts`,
-  generadores y la web. Tarea mecánica amplia, en commit aislado; requiere poseer el
-  scope `@mcp-server` en npm.
+- ⬜ **Rename de scope a `@mcp-core`** (decidido 18-06; **no** `@mcp-server`): core →
+  `@mcp-core/core`, plugins → `@mcp-core/proposals`, `@mcp-core/git`, … (hoy
+  `@cartago-git/mcp-*`). Toca todos los `package.json`, imports, `tsconfig` paths, alias
+  de vitest, `build.ts`, generadores y la web. Tarea mecánica amplia, en commit aislado;
+  requiere poseer la org/scope `@mcp-core` en npm. **Diferido a confirmación del scope.**
 
 ---
 
@@ -461,10 +461,14 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ⬜ **M27 · Web profunda** — páginas por plugin/tool (con riesgos, opciones, ejemplos),
   "primeros 5 minutos", `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting,
   búsqueda interna (pagefind). *(Se cruza con W3 §7-bis.)*
-- ⬜ **M28 · Endurecer `proposals` bajo contención** — circuit-breaker de lock
-  (`steal | fail | waitForNotification` configurable + `lock-contention-budget-exceeded`),
-  stress tests concurrentes, y `await_lock` en `notification` (suscribe+resume → cierra el
-  bucle "wait, don't poll" que el knowledge ya promete).
+- 🟡 **M28 · Endurecer `proposals` bajo contención** —
+  ✅ `await_lock` en `notification` (`<prefix>_await_lock { taskId, timeoutMs? }`
+  bloquea hasta que el lock se libera o expira, vía el mismo watch del notifier +
+  fallback de polling + abort en server-close; 4 tests). Cierra el bucle
+  "wait, don't poll" que el knowledge ya prometía.
+  ⬜ Falta el circuit-breaker de contención configurable
+  (`steal | fail | waitForNotification` + `lock-contention-budget-exceeded`) y los
+  stress tests concurrentes.
 
 **Observabilidad / release / tests (P2-P3):**
 - ⬜ **M29 · Métricas persistentes** — snapshots a `.cache/mcp-core/metrics/*.json` +
