@@ -1,3 +1,4 @@
+import { resolveWorkspaceContained } from '@cartago-git/mcp-core/public';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
@@ -229,7 +230,11 @@ export const searchWorkspace = async (
 
 	for (const root of roots) {
 		if (truncated) break;
-		const absRoot = join(workspaceRootAbs, root);
+		// Containment: a root that escapes the workspace (`..`, absolute) is
+		// skipped — a read-only search must not catalog outside what the host exposes.
+		const contained = resolveWorkspaceContained(workspaceRootAbs, root);
+		if (!contained.ok) continue;
+		const absRoot = contained.abs;
 		const st = await stat(absRoot).catch(() => null);
 		if (st?.isFile()) await visitFile(absRoot);
 		else if (st?.isDirectory()) await walk(absRoot);

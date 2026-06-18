@@ -412,11 +412,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   (typecheck + lint + 476 tests). *Lo cazó Codex; era regresión de esta misma sesión.*
 
 **P1 — seguridad de rutas (read-only plugins):**
-- ⬜ **M22 · Containment de rutas.** `search` (`roots` → `join(root, userInput)` con
-  `..` escapa del workspace), `docs_list` (no aplica el `within` que sí usa `docs_read`),
-  `deps` (`manifestRel` con `..`). **Fix:** helper único en core
-  `resolveWorkspaceContained(root, rel) → {ok, abs, reason}` aplicado en search/docs/deps
-  + tests de traversal (`..`, rutas absolutas, symlinks). *(3/3 lo señalan; real.)*
+- ✅ **M22 · Containment de rutas.** Helper único en core
+  `resolveWorkspaceContained(rootAbs, child) → {ok, abs, rel, reason}`
+  ([contain-path.ts](../../../packages/core/src/lib/shared/contain-path.ts), exportado
+  en `public`), aplicado en `search` (roots), `docs` (`docs_list` **y** `docs_read`,
+  unificando el `within`) y `deps` (`manifest`). Rechaza `..` que escapa y rutas
+  absolutas (contrato = relativo al workspace). 9 tests de traversal. *(Containment es
+  léxico; symlinks fuera del sandbox quedan como follow-up del host.)*
 
 **P1 — hermeticidad de secretos:**
 - ⬜ **M23 · `redactSecrets` solo vive en `memory`.** Si un agente guarda una API key en
