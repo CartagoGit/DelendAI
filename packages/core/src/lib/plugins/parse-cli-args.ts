@@ -7,6 +7,8 @@ import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface
 export interface IMcpVertexCliArgs {
 	/** Plugin specifiers from `--plugins=a,b` (comma or repeated flag). */
 	readonly plugins: readonly string[];
+	/** Plugins to subtract from the resolved set (`--exclude-plugins=a,b`). */
+	readonly excludePlugins: readonly string[];
 	/** Scratch/state root (`--cacheDir`). */
 	readonly cacheDir: string;
 	/** Human-edited docs root (`--docsDir`). */
@@ -44,6 +46,8 @@ export const DEFAULT_CLI_ARGS = {
 const KNOWN_KEYS = new Set([
 	'plugins',
 	'preset',
+	'exclude-plugins',
+	'excludePlugins',
 	'cacheDir',
 	'docsDir',
 	'workspace',
@@ -74,8 +78,9 @@ export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> = {
 	minimal: ['git', 'search'],
 	// full single-agent toolkit
 	standard: STANDARD_PRESET,
-	// standard + multi-agent coordination
-	swarm: [...STANDARD_PRESET, 'proposals', 'notification'],
+	// standard + multi-agent coordination (includes status-marker for the
+	// mandatory coloured close marker convention — see plugin p104).
+	swarm: [...STANDARD_PRESET, 'proposals', 'notification', 'status-marker'],
 };
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */
@@ -132,14 +137,22 @@ export const parseCliArgs = (
 		if (!KNOWN_KEYS.has(key)) extra[key] = value;
 	}
 	// Preset plugins first, then explicit --plugins; de-duped, order preserved.
+	// `--exclude-plugins` is subtracted AFTER the merge, so the user can
+	// strip a plugin from a preset (`--preset=swarm --exclude-plugins=notification`)
+	// or drop an explicit one they don't want.
+	const exclude = new Set([
+		...splitList(tokens['exclude-plugins']),
+		...splitList(tokens.excludePlugins),
+	]);
 	const plugins = [
 		...new Set([
 			...resolvePreset(tokens.preset),
 			...splitList(tokens.plugins),
 		]),
-	];
+	].filter((name) => !exclude.has(name));
 	return {
 		plugins,
+		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
 		workspace: tokens.workspace ?? cwd,
