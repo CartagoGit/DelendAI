@@ -486,9 +486,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
   `node`**, lista tools y llama `mcpcore_overview` (prueba que el artefacto publicado
   *sirve el protocolo*, no solo que el bin arranca). Cableado en `ci.yml` (job pack-smoke)
-  y como `bun run smoke`. ⬜ Falta el e2e de instalación desde **tarball** (`npm pack` →
-  install en proyecto limpio → resolver plugins bajo node), que es lo único que valida la
-  resolución real de los paquetes de plugin (el layout de workspace no es node-resolvable).
+  y como `bun run smoke`.
+  ✅ **e2e de instalación desde tarball** (`scripts/smoke-pack.ts`, `bun run smoke:pack`):
+  `npm pack` de core+proposals+memory → install en proyecto limpio → maneja el CLI
+  **instalado** por stdio bajo node y verifica que `proposals_*`/`memory_*` resuelven
+  (el peer `@cartago-git/mcp-core ^0.1.0` lo satisface el tarball del core). Cableado en
+  CI. **M30 completo.** Verificado local: 29 tools servidas desde la instalación.
 - ⬜ **M31 · `riskLevel`/`effects` por tool** (read-only/write/spawn/network/destructive)
   expuesto en `overview`, para que el host distinga capacidades peligrosas.
 - ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
