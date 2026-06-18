@@ -93,7 +93,12 @@ const dict: LangDict = {
 		motion: 'एनिमेशन',
 		motionLabel: 'मार्की को एनिमेट करें',
 	},
-	footer: { built: 'जीवित टूल रजिस्ट्री से जनित।' },
+	footer: {
+		built: 'जीवित टूल रजिस्ट्री से जनित।',
+		tagline: 'प्रोजेक्ट-अज्ञेयवादी MCP सर्वर कोर + प्लगइन लोडर।',
+		sections: 'अनुभाग',
+		resources: 'संसाधन',
+	},
 	pluginpage: { back: 'वापस', tools: 'टूल', install: 'इंस्टॉल' },
 	plugin: {
 		proposals:

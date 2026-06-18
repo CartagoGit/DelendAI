@@ -29,7 +29,8 @@ const { items, label, reverse = false } = Astro.props;
 									<span class="chip__mono">{it.mono}</span>
 								)}
 							</span>
-							<span class="chip__tip">{it.name}</span>
+							{/* Inline label that expands on hover — see _chip.scss */}
+							<span class="chip__label">{it.name}</span>
 						</div>
 					))}
 				</div>

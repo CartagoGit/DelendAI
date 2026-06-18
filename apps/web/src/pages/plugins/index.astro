@@ -1,34 +1,34 @@
 ---
-import SiteFooter from '../../components/SiteFooter.astro';
 import PluginsSection from '../../components/PluginsSection.astro';
 import Base from '../../layouts/Base.astro';
 import { useTranslations, type Lang } from '../../i18n/ui';
+import capabilities from '../../data/capabilities.json';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
 const homeHref = `${base}/`;
+const count = capabilities.counts.packages;
 ---
-import PluginsSection from '../../components/PluginsSection.astro';
-import Base from '../../layouts/Base.astro';
 
 <Base lang={lang} title={`${t.plugins.title} — @mcp-vertex/core`}>
-	<nav class="nav">
-		<div class="container nav__inner">
-			<a class="nav__brand" href={homeHref}>
-				<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
-				@mcp-vertex/core
-			</a>
-			<div class="nav__links">
-				<a href={homeHref}>← {t.nav.concept}</a>
-				<a href={`${base}/api/`}>API</a>
-				<a href={repo}>{t.nav.github}</a>
+	<section class="subhero">
+		<div class="container">
+			<nav class="subhero__crumb" aria-label="breadcrumb">
+				<a href={homeHref}>{t.nav.concept}</a>
+				<span aria-hidden="true">›</span>
+				<span aria-current="page">{t.plugins.title}</span>
+			</nav>
+			<h1 transition:name="page-title" transition:animate="fade">{t.plugins.title}</h1>
+			<p class="subhero__lead">{t.plugins.lead}</p>
+			<div class="subhero__meta">
+				<span class="subhero__meta-item"><b>{count}</b> {t.tools.packages}</span>
+			</div>
+			<div class="subhero__ctas">
+				<a class="btn btn--ghost" href={`${base}/tools`}>{t.nav.tools} →</a>
+				<a class="btn btn--ghost" href={`${base}/install`}>{t.nav.install} →</a>
 			</div>
 		</div>
-	</nav>
-	<main>
-		<PluginsSection lang={lang} />
-	</main>
-	<SiteFooter lang={lang} />
+	</section>
+	<PluginsSection lang={lang} />
 </Base>

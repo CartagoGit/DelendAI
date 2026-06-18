@@ -94,7 +94,13 @@ const dict: LangDict = {
 		motion: 'Movimento',
 		motionLabel: 'Anima i marquee',
 	},
-	footer: { built: 'Generato dal registro vivo degli strumenti.' },
+	footer: {
+		built: 'Generato dal registro vivo degli strumenti.',
+		tagline:
+			'Un nucleo di server MCP agnostico al progetto + caricatore di plugin.',
+		sections: 'Sezioni',
+		resources: 'Risorse',
+	},
 	pluginpage: {
 		back: 'Indietro',
 		tools: 'Strumenti',

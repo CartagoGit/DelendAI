@@ -27,7 +27,12 @@ const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
 			aria-hidden="true"
 		/>
 		<p class="notfound__code" aria-hidden="true">{t.notFound.code}</p>
-		<h1 id="notfound-title" class="notfound__title" transition:name="page-title" transition:animate="fade">
+		<h1
+			id="notfound-title"
+			class="notfound__title"
+			transition:name="page-title"
+			transition:animate="fade"
+		>
 			{t.notFound.title}
 		</h1>
 		<p class="notfound__lead">{t.notFound.lead}</p>

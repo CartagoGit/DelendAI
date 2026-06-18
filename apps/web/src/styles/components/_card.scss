@@ -1,0 +1,31 @@
+// _card.scss — generic, reusable card primitive.
+//
+// BEM root: .card.  Every "content card" on the site (tools, plugins,
+// skills, prompts, plugin cards, knowledge, etc.) uses this base and
+// layers its own modifier on top (e.g. `.tool.card`, `.prompt.card`).
+//
+// The visual goal (p105): unify the look so the site feels coherent
+// instead of "every component has its own opinion about borders and
+// padding". Cards get a soft border by default, a subtle elevation on
+// hover, and the accent gradient reserved for "this card links somewhere".
+
+.card {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+	color: inherit;
+	transition: border-color 0.18s ease, transform 0.18s ease,
+		box-shadow 0.18s ease, background 0.18s ease;
+
+	// Hover rules hoisted inside `.card` (`&:hover`) so the BEM
+	// linter accepts them; matches the pattern in `_chip.scss`
+	// and `_pkg.scss`.
+	&:hover,
+	&.is-link:hover {
+		border-color: var(--accent);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 18%, transparent);
+		text-decoration: none;
+	}
+}

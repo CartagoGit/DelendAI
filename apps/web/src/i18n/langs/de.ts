@@ -93,7 +93,12 @@ const dict: LangDict = {
 		motion: 'Animation',
 		motionLabel: 'Marquees animieren',
 	},
-	footer: { built: 'Aus dem Live-Tool-Registry generiert.' },
+	footer: {
+		built: 'Aus dem Live-Tool-Registry generiert.',
+		tagline: 'Ein projekt-agnostischer MCP-Server-Kern + Plugin-Loader.',
+		sections: 'Bereiche',
+		resources: 'Ressourcen',
+	},
 	pluginpage: { back: 'Zurück', tools: 'Tools', install: 'Installation' },
 	plugin: {
 		proposals:

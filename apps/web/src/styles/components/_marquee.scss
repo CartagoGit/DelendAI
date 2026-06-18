@@ -24,12 +24,12 @@
 	letter-spacing: 0.12em;
 }
 .mq__viewport {
-	// Clip both axes so the wide track never causes page scroll. `overflow-x:clip`
-	// forces `overflow-y` to compute to `auto`, which would cut the hover tooltip —
-	// so we reserve room BELOW (padding-bottom) and let the tooltip live INSIDE the
-	// clip box instead of escaping below it.
-	overflow: clip;
-	padding: 0.85rem 0 2.4rem;
+	// Clip the X axis so the wide track never causes page scroll. The chip
+	// labels now expand INLINE (right of the icon) instead of being a tooltip
+	// below the chip — so we no longer need the bottom padding reserved for an
+	// overflowing tooltip.
+	overflow-x: clip;
+	padding: 0.85rem 0;
 	width: 100%;
 	max-width: 56rem;
 	margin-inline: auto;

@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { describeTool } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 
 interface Props {
@@ -19,6 +20,7 @@ const NS_LABEL: Record<string, string> = {
 	docs: 'docs',
 	deps: 'deps',
 	notification: 'notification',
+	'status-marker': 'status-marker',
 };
 
 type ITool = { name: string; namespace: string; description: string };
@@ -31,6 +33,8 @@ for (const tool of tools) {
 const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
+// Localized description with graceful fallback: catalogue → English (runtime).
+const desc = (tool: ITool) => describeTool(tool.name, lang) ?? tool.description;
 ---
 
 <section id="tools" class="section">
@@ -47,7 +51,7 @@ const namespaces = Object.entries(groups).sort((a, b) =>
 					<div class="ns__head"><h3>{NS_LABEL[ns] ?? ns}</h3><span class="ns__count">{list.length}</span></div>
 					<div class="tools-grid">
 						{list.map((tool) => (
-							<div class="tool"><code>{tool.name}</code><p>{tool.description}</p></div>
+							<div class="tool card"><code>{tool.name}</code><p>{desc(tool)}</p></div>
 						))}
 					</div>
 				</div>

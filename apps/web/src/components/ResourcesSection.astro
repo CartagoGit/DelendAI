@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { describeResource, describeResourceName } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 
 interface Props {
@@ -25,6 +26,9 @@ for (const r of resources) {
 const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
+const desc = (r: IResource) => describeResource(r.uri, lang) ?? r.description;
+const name = (r: IResource) =>
+	describeResourceName(r.uri, lang) ?? r.name ?? r.uri;
 ---
 
 <section id="resources" class="section">
@@ -53,8 +57,11 @@ const namespaces = Object.entries(groups).sort((a, b) =>
 								{list.map((r) => (
 									<tr>
 										<td><code>{r.uri}</code></td>
-										<td>{r.mimeType ?? <span class="muted">—</span>}</td>
-										<td>{r.description}</td>
+										<td>{r.mimeType ?? '—'}</td>
+										<td>
+											<strong>{name(r)}</strong>
+											<p class="muted">{desc(r)}</p>
+										</td>
 									</tr>
 								))}
 							</tbody>

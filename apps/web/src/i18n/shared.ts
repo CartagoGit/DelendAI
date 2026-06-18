@@ -167,6 +167,9 @@ export interface ICfgTranslations {
 
 export interface IFooterTranslations {
 	readonly built: string;
+	readonly tagline: string;
+	readonly sections: string;
+	readonly resources: string;
 }
 
 export interface IPluginPageTranslations {

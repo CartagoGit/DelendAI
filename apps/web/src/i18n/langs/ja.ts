@@ -94,7 +94,13 @@ const dict: LangDict = {
 		motion: 'アニメーション',
 		motionLabel: 'マーキーをアニメーション',
 	},
-	footer: { built: 'ライブツールレジストリから生成。' },
+	footer: {
+		built: 'ライブツールレジストリから生成。',
+		tagline:
+			'プロジェクトに依存しない MCP サーバーコア + プラグインローダー。',
+		sections: 'セクション',
+		resources: 'リソース',
+	},
 	pluginpage: { back: '戻る', tools: 'ツール', install: 'インストール' },
 	plugin: {
 		proposals:

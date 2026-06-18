@@ -90,7 +90,12 @@ const dict: LangDict = {
 		motion: 'การเคลื่อนไหว',
 		motionLabel: 'เคลื่อนไหวมาร์กี',
 	},
-	footer: { built: 'สร้างจากรีจิสทรีเครื่องมือที่มีชีวิต' },
+	footer: {
+		built: 'สร้างจากรีจิสทรีเครื่องมือที่มีชีวิต',
+		tagline: 'แกนเซิร์ฟเวอร์ MCP ที่ไม่ขึ้นกับโปรเจกต์ + ตัวโหลดปลั๊กอิน',
+		sections: 'ส่วน',
+		resources: 'ทรัพยากร',
+	},
 	pluginpage: { back: 'กลับ', tools: 'เครื่องมือ', install: 'ติดตั้ง' },
 	plugin: {
 		proposals:

@@ -28,7 +28,7 @@ const count = capabilities.counts.knowledge ?? 0;
 			<h1 transition:name="page-title" transition:animate="fade">{t.knowledge.title}</h1>
 			<p class="subhero__lead">{t.knowledge.lead}</p>
 			<div class="subhero__meta">
-				<span><b>{count}</b>{t.knowledge.count}</span>
+				<span class="subhero__meta-item"><b>{count}</b>{t.knowledge.count}</span>
 			</div>
 			<div class="subhero__ctas">
 				<a class="btn btn--ghost" href={`${base}/${lang}/prompts`}>{t.nav.prompts} →</a>

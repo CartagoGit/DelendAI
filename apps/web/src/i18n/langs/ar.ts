@@ -90,7 +90,12 @@ const dict: LangDict = {
 		motion: 'الحركة',
 		motionLabel: 'تحريك الأشرطة',
 	},
-	footer: { built: 'مُولّد من السجل الحي للأدوات.' },
+	footer: {
+		built: 'مُولّد من السجل الحي للأدوات.',
+		tagline: 'نواة خادم MCP لا تعرف عن المشروع + محمّل إضافات.',
+		sections: 'الأقسام',
+		resources: 'الموارد',
+	},
 	pluginpage: { back: 'رجوع', tools: 'الأدوات', install: 'التثبيت' },
 	plugin: {
 		proposals:
