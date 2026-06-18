@@ -137,6 +137,29 @@ describe('proposal authoring (create → board → close)', () => {
 		expect(doc).toMatch(/review-log: approved by owl/);
 	});
 
+	it('targets the exact slice even when the sliceId has regex metacharacters', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'p5',
+			title: 'Meta',
+			goal: 'work',
+			// 'axb' first: an UNescaped /### a.b —/ would match it (`.`=`x`) — the
+			// wrong block. The escape pins the match to the literal 'a.b'.
+			slices: [
+				{ sliceId: 'axb', files: ['src/b.ts'] },
+				{ sliceId: 'a.b', files: ['src/a.ts'] },
+			],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const r = parse(await review({ proposalId: 'p5', sliceId: 'a.b', action: 'submit', agent: 'falcon' }));
+		expect(r.status).toBe('in_review');
+		const doc = readFileSync(join(opts.proposalsDirAbs, 'p5-meta.md'), 'utf8');
+		// The literal a.b block got the review line; the earlier axb block did NOT.
+		const axbBlock = doc.slice(doc.indexOf('### axb'), doc.indexOf('### a.b'));
+		expect(axbBlock).not.toMatch(/review-state/);
+		expect(doc.slice(doc.indexOf('### a.b'))).toMatch(/review-state: in_review/);
+	});
+
 	it('rejects overlapping slices', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const out = parse(

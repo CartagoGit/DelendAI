@@ -48,6 +48,9 @@ export interface IAuthoringToolOptions {
 	readonly extraFolders?: readonly string[];
 }
 
+/** Escape regex metacharacters so a user-supplied sliceId can't alter the match. */
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const kebab = (value: string): string =>
 	value
 		.trim()
@@ -301,7 +304,7 @@ export const buildCloseSliceRegistration = (
 				}
 				// Flip the slice block's status to done (add or replace).
 				const blockRe = new RegExp(
-					`(^### ${args.sliceId}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
+					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
 					'm'
 				);
 				const m = md.match(blockRe);
@@ -416,7 +419,7 @@ export const buildReviewRegistration = (
 				if (md === null) return toolError(`proposal file missing: ${docPath}`);
 
 				const blockRe = new RegExp(
-					`(^### ${args.sliceId}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
+					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
 					'm'
 				);
 				const m = md.match(blockRe);
