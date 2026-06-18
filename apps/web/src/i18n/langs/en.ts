@@ -8,6 +8,11 @@ const dict: LangDict = {
 		benchmarks: 'Benchmarks',
 		plugins: 'Plugins',
 		github: 'GitHub',
+		menu: 'Menu',
+		knowledge: 'Knowledge',
+		prompts: 'Prompts',
+		resources: 'Resources',
+		skills: 'Skills',
 	},
 	hero: {
 		title: { a: 'The agnostic ', b: 'MCP Vertex', c: '' },
@@ -106,6 +111,30 @@ const dict: LangDict = {
 		deps: 'Offline dependency inventory + health (lockfile, loose ranges, duplicates).',
 		notification: 'Push lock-release events so agents stop polling.',
 		core: 'The agnostic core: overview, scaffold, metrics, doctor and the plugin loader.',
+	},
+	knowledge: {
+		title: 'Knowledge',
+		lead: 'Catalogued documents the core can answer questions about.',
+		count: 'documents',
+	},
+	prompts: {
+		title: 'Prompts',
+		lead: 'Reusable prompt templates exposed by the core.',
+		count: 'prompts',
+		arg: 'arguments',
+	},
+	resources: {
+		title: 'Resources',
+		lead: 'Static resources bundled with the project (URI + MIME).',
+		count: 'resources',
+		uri: 'URI',
+		mime: 'MIME',
+	},
+	skills: {
+		title: 'Skills',
+		lead: 'Domain playbooks the agent can load on demand.',
+		count: 'skills',
+		body: 'Body',
 	},
 };
 

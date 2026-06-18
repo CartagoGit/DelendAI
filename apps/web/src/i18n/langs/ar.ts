@@ -104,6 +104,30 @@ const dict: LangDict = {
 		notification: 'يدفع أحداث تحرير القفل ليتوقف الوكلاء عن الاستطلاع.',
 		core: 'النواة المحايدة: overview، scaffold، مقاييس، doctor، ومُحمّل الإضافات.',
 	},
+	knowledge: {
+		title: 'Knowledge',
+		lead: 'Catalogued documents the core can answer questions about.',
+		count: 'documents',
+	},
+	prompts: {
+		title: 'Prompts',
+		lead: 'Reusable prompt templates exposed by the core.',
+		count: 'prompts',
+		arg: 'arguments',
+	},
+	resources: {
+		title: 'Resources',
+		lead: 'Static resources bundled with the project (URI + MIME).',
+		count: 'resources',
+		uri: 'URI',
+		mime: 'MIME',
+	},
+	skills: {
+		title: 'Skills',
+		lead: 'Domain playbooks the agent can load on demand.',
+		count: 'skills',
+		body: 'Body',
+	},
 };
 
 export default dict;
