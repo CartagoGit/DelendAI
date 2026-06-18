@@ -492,8 +492,11 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),
   `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
   `memory` (export/import, stemming ES), `docs` (`docs_search`, árbol jerárquico).
-- ⬜ **M34 · OSS hygiene** — `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, CHANGELOG
-  enlazado con fechas/comparadores, `register()` siempre async en el tipo público.
+- 🟡 **M34 · OSS hygiene** —
+  ✅ `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + diagrama Mermaid),
+  `CONTRIBUTING.md`, `SECURITY.md` (modelo de seguridad real + límites), enlazados desde
+  el README. ⬜ Falta `CODEOWNERS`, CHANGELOG enlazado con fechas/comparadores,
+  `register()` siempre async en el tipo público.
 
 > **Lectura:** ninguna de las 3 encontró nada FATAL en el código. La única "rojo de
 > verdad" era el `validate` por SVG (ya cerrado). Lo demás es endurecimiento y
