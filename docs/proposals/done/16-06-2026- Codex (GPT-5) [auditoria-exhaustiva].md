@@ -1,15 +1,15 @@
-# Auditoria exhaustiva de `mcp-core` y plugins - Codex (GPT-5)
+# Auditoria exhaustiva de `mcp-vertex` y plugins - Codex (GPT-5)
 
 > **Fecha:** 16-06-2026  
 > **Revisor:** Codex (GPT-5)  
-> **Alcance:** Auditoria independiente del workspace `mcp-core` en su estado actual. Se revisan arquitectura, core, plugins, tests, CI, concurrencia, bloqueos, eficiencia de tokens, extensibilidad, scaffold y necesidades futuras de skills/herramientas/agentes.  
+> **Alcance:** Auditoria independiente del workspace `mcp-vertex` en su estado actual. Se revisan arquitectura, core, plugins, tests, CI, concurrencia, bloqueos, eficiencia de tokens, extensibilidad, scaffold y necesidades futuras de skills/herramientas/agentes.  
 > **Nota metodologica:** Se han mirado documentos previos solo para copiar el estilo general de nombre y formato. Las conclusiones de esta auditoria salen del codigo actual, no de las conclusiones anteriores.
 
 ---
 
 ## Veredicto global: **9,1 / 10**
 
-`mcp-core` ya no parece un experimento: parece una base MCP real, modular, testeada y bastante consciente de los problemas que suelen romper sistemas de agentes: rutas globales, escrituras concurrentes, corrupcion de estado, polling, payloads gigantes y bucles de "vuelvo a intentar lo mismo".
+`mcp-vertex` ya no parece un experimento: parece una base MCP real, modular, testeada y bastante consciente de los problemas que suelen romper sistemas de agentes: rutas globales, escrituras concurrentes, corrupcion de estado, polling, payloads gigantes y bucles de "vuelvo a intentar lo mismo".
 
 Lo mas importante: el proyecto esta **bien planteado**. El core es pequeno y agnostico, los plugins cargan por contrato, los paths entran por `ctx.workspace`, hay un `overview` barato para orientar modelos, hay knowledge lazy, hay locks con mutex, hay escritura atomica, hay cuarentena de ficheros corruptos, hay doctor mode, CI y una suite verde de **425 tests** (`415 passed | 10 skipped`) con typecheck limpio.
 
@@ -647,7 +647,7 @@ La parte que falta para perfeccion es pasar de "detecto y reparo" a "prevengo y 
 
 | Skill | Valor | Por que |
 |---|---:|---|
-| `mcp-core-operator` | ⭐⭐⭐⭐⭐ | Guia para arrancar, diagnosticar, reparar y configurar un server real. |
+| `mcp-vertex-operator` | ⭐⭐⭐⭐⭐ | Guia para arrancar, diagnosticar, reparar y configurar un server real. |
 | `proposal-swarm-runner` | ⭐⭐⭐⭐⭐ | Instrucciones compactas para usar `proposals` sin caer en loops. |
 | `mcp-plugin-author` | ⭐⭐⭐⭐½ | Como crear plugins externos usando `IMcpPlugin` y buenas practicas. |
 | `state-repair-playbook` | ⭐⭐⭐⭐ | Cuando usar `state_health`, `state_repair`, `agent_lock gc`, etc. |
@@ -671,7 +671,7 @@ La parte que falta para perfeccion es pasar de "detecto y reparo" a "prevengo y 
 
 | Agente | Valor | Funcion |
 |---|---:|---|
-| `mcp-core-operator` | ⭐⭐⭐⭐⭐ | Mantiene config, salud, releases y reparaciones. |
+| `mcp-vertex-operator` | ⭐⭐⭐⭐⭐ | Mantiene config, salud, releases y reparaciones. |
 | `plugin-curator` | ⭐⭐⭐⭐½ | Revisa consistencia de plugins, schemas, output y docs. |
 | `security-auditor` | ⭐⭐⭐⭐½ | Threat model y hardening de commands/paths/secrets. |
 | `token-economist` | ⭐⭐⭐⭐ | Detecta payloads caros y propone compact modes. |
@@ -763,14 +763,14 @@ La parte que falta para perfeccion es pasar de "detecto y reparo" a "prevengo y 
 | Benchmarks de concurrencia/repos grandes | ⭐⭐⭐⭐ Alto | Demuestra rendimiento real y detecta regresiones. |
 | Release hardening con provenance/changelog | ⭐⭐⭐⭐ Alto | Importante para confianza externa. |
 | Redaccion de secretos en `memory` | ⭐⭐⭐⭐ Alto | Evita que la memoria persistente guarde credenciales por accidente. |
-| Skill `mcp-core-operator` | ⭐⭐⭐⭐½ Muy alto | Ayudaria a usar todo esto correctamente sin releer el repo. |
+| Skill `mcp-vertex-operator` | ⭐⭐⭐⭐½ Muy alto | Ayudaria a usar todo esto correctamente sin releer el repo. |
 | Skill `proposal-swarm-runner` | ⭐⭐⭐⭐½ Muy alto | Reduciria loops humanos/modelo en el flujo mas complejo. |
 
 ---
 
 ## Conclusión
 
-`mcp-core` esta **muy bien construido**. Lo que mas me gusta es que no intenta resolver MCP con magia: lo resuelve con contratos pequenos, paths inyectados, tools descubribles, estado local bien protegido y respuestas estructuradas. Eso es exactamente lo que un framework para agentes necesita.
+`mcp-vertex` esta **muy bien construido**. Lo que mas me gusta es que no intenta resolver MCP con magia: lo resuelve con contratos pequenos, paths inyectados, tools descubribles, estado local bien protegido y respuestas estructuradas. Eso es exactamente lo que un framework para agentes necesita.
 
 Lo que esta "fatal" hoy no es el codigo, sino la ambicion pendiente: si el objetivo es 11/10, ya no basta con que pase tests y coordine agentes; necesita observabilidad, seguridad, replay, migraciones, benchmarks y guias operativas. Esas capas harian que el proyecto dejase de ser "un framework muy bueno" y pasase a ser una plataforma MCP local realmente redonda.
 

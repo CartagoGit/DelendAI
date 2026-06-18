@@ -1,4 +1,4 @@
-# Auditoría Exhaustiva — mcp-core
+# Auditoría Exhaustiva — mcp-vertex
 **Fecha:** 2026-06-16  
 **Versión auditada:** 0.1.0 (monorepo)  
 **Alcance:** core (`packages/core`), 9 plugins, toolchain, CI, documentación, securecoder plugin externo
@@ -190,7 +190,7 @@ Funciona bien. El gap principal: cuando las herramientas de calidad no están in
 
 ### 3.5 Documentación
 
-`README-MCP-CORE.md` y `PLUGINS-MCP-CORE.md` son claros y correctos. `TOKEN-BUDGETS.md` es excelente — es un estándar de transparencia que pocos proyectos tienen.
+`README-MCP-VERTEX.md` y `PLUGINS-MCP-VERTEX.md` son claros y correctos. `TOKEN-BUDGETS.md` es excelente — es un estándar de transparencia que pocos proyectos tienen.
 
 **Lo que falta:**
 - No hay `CHANGELOG.md` ni `CONTRIBUTING.md`.
@@ -236,9 +236,9 @@ Es offline por diseño (sin CVE database), lo cual está bien documentado. Pero:
 - No hay `deps_update` que proponga versiones más recientes — aunque sea offline, podría usar el lockfile para detectar qué hay disponible localmente.
 - La descripción del tool es correcta sobre sus limitaciones, pero para muchos proyectos el plugin es demasiado básico para ser útil en la práctica.
 
-### 4.5 Plugin securecoder (plugin externo a mcp-core)
+### 4.5 Plugin securecoder (plugin externo a mcp-vertex)
 
-Este plugin vive en `/home/cartago/.gemini/config/plugins/Google.securecoder.securecoder` y es consumido por Antigravity (no por mcp-core directamente).
+Este plugin vive en `/home/cartago/.gemini/config/plugins/Google.securecoder.securecoder` y es consumido por Antigravity (no por mcp-vertex directamente).
 
 **Lo que está bien:**
 - Skills claramente separadas por responsabilidad.
@@ -247,7 +247,7 @@ Este plugin vive en `/home/cartago/.gemini/config/plugins/Google.securecoder.sec
 - `securecoder-persona` para el modo "Fix All" — un comportamiento de agente bien encapsulado.
 
 **Problemas detectados:**
-- No hay integración formal entre securecoder y mcp-core. Si un agente está usando mcp-core y quiere escanear, tiene que coordinar manualmente los dos sistemas.
+- No hay integración formal entre securecoder y mcp-vertex. Si un agente está usando mcp-vertex y quiere escanear, tiene que coordinar manualmente los dos sistemas.
 - Las skills usan SKILL.md sin YAML frontmatter validado por schema — cualquier typo en el frontmatter silencia la skill.
 - `run-poc` genera y razona sobre un PoC pero no lo ejecuta en sandbox. Si el PoC requiere ejecución real para verificar el fix, el skill queda incompleto.
 - `mandatory-secure-web-skills` está etiquetada como "CRITICAL: You MUST use this skill for ALL code generation" — esto es un anti-pattern: el agente no puede cumplir un MUST para cada llamada sin un mecanismo de enforcement. Es aspiracional, no ejecutable.
@@ -264,7 +264,7 @@ Este plugin vive en `/home/cartago/.gemini/config/plugins/Google.securecoder.sec
 
 ### 5.2 Falta `CHANGELOG.md`
 
-No hay registro de cambios. Para una librería pública (`@cartago-git/mcp-core`) que se va a publicar en npm, la ausencia de changelog es un problema serio para los consumidores que quieren evaluar si un upgrade es seguro.
+No hay registro de cambios. Para una librería pública (`@cartago-git/mcp-vertex`) que se va a publicar en npm, la ausencia de changelog es un problema serio para los consumidores que quieren evaluar si un upgrade es seguro.
 
 ### 5.3 `typescript: "^6.0.3"` en devDependencies
 
@@ -365,15 +365,15 @@ El step 2 es push, no polling. ✓
 
 ### 8.1 Skills nuevas para el securecoder (impacto alto)
 
-**`mcp-core-plugin-security`** — una skill específica para auditar que los plugins de mcp-core no exponen paths fuera del workspace (`ctx.workspace.resolve` siempre, nunca `process.cwd()` ni paths hardcodeados). Actualmente el securecoder tiene reglas genéricas pero no reglas específicas del contrato de mcp-core.
+**`mcp-vertex-plugin-security`** — una skill específica para auditar que los plugins de mcp-vertex no exponen paths fuera del workspace (`ctx.workspace.resolve` siempre, nunca `process.cwd()` ni paths hardcodeados). Actualmente el securecoder tiene reglas genéricas pero no reglas específicas del contrato de mcp-vertex.
 
 **`token-budget-enforcer`** — una skill que verifique que un tool nuevo no excede los budgets de TOKEN-BUDGETS.md antes de hacer merge. Integrable con el test e2e existente.
 
 ### 8.2 Nuevas herramientas del core
 
-**`mcpcore_events`** — un tool de suscripción que permita a un agente registrarse para recibir notificaciones cuando hay trabajo nuevo en la queue, en lugar de polling `auto_work`. Requiere que el cliente MCP soporte notificaciones, pero el SDK ya lo hace.
+**`mcpvertex_events`** — un tool de suscripción que permita a un agente registrarse para recibir notificaciones cuando hay trabajo nuevo en la queue, en lugar de polling `auto_work`. Requiere que el cliente MCP soporte notificaciones, pero el SDK ya lo hace.
 
-**`mcpcore_explain_error`** — un tool que, dado un error de herramienta (toolError), explique el `nextAction` de forma expandida. Reduce el número de turns de debugging.
+**`mcpvertex_explain_error`** — un tool que, dado un error de herramienta (toolError), explique el `nextAction` de forma expandida. Reduce el número de turns de debugging.
 
 ### 8.3 Plugin `audit` (nuevo)
 
@@ -410,7 +410,7 @@ Generar documentación HTML desde los JSDoc de `src/public/index.ts` y publicarl
 ### 8.9 Ejemplos funcionales
 
 Un directorio `/examples` con:
-- `examples/minimal/` — mcp-core sin plugins, solo bootstrap.
+- `examples/minimal/` — mcp-vertex sin plugins, solo bootstrap.
 - `examples/swarm/` — propuestas + multi-agente con dos agentes reales.
 - `examples/custom-plugin/` — un plugin de ejemplo completo con tests.
 
@@ -418,22 +418,22 @@ Un directorio `/examples` con:
 
 Integrar `conventional-commits` + `changesets` o similar para que el CHANGELOG se genere automáticamente y el release script pueda determinar el bump type desde los commits.
 
-### 8.11 `mcp-core.config.json` JSON Schema
+### 8.11 `mcp-vertex.config.json` JSON Schema
 
-Publicar un JSON Schema para `mcp-core.config.json` y añadirlo al `$schema` del ejemplo en la documentación. Esto habilita autocompletado en VS Code/Cursor sin necesidad de leer el docs.
+Publicar un JSON Schema para `mcp-vertex.config.json` y añadirlo al `$schema` del ejemplo en la documentación. Esto habilita autocompletado en VS Code/Cursor sin necesidad de leer el docs.
 
-### 8.12 Integración securecoder ↔ mcp-core
+### 8.12 Integración securecoder ↔ mcp-vertex
 
-Que el securecoder pueda usar las herramientas de mcp-core directamente (e.g., `mcpcore_overview` antes de escanear para saber qué plugins están activos, `memory_save` para persistir hallazgos de seguridad). Actualmente son sistemas paralelos sin bridge.
+Que el securecoder pueda usar las herramientas de mcp-vertex directamente (e.g., `mcpvertex_overview` antes de escanear para saber qué plugins están activos, `memory_save` para persistir hallazgos de seguridad). Actualmente son sistemas paralelos sin bridge.
 
 ---
 
 ## 9. Resumen ejecutivo
 
-**mcp-core es un proyecto de arquitectura excepcional.** El contrato de plugin, la primitiva de concurrencia, la eficiencia de tokens y la prevención de bucles están en el top 5% de proyectos MCP públicos. La decisión de ser project-agnostic con extensión por plugins es correcta y bien ejecutada.
+**mcp-vertex es un proyecto de arquitectura excepcional.** El contrato de plugin, la primitiva de concurrencia, la eficiencia de tokens y la prevención de bucles están en el top 5% de proyectos MCP públicos. La decisión de ser project-agnostic con extensión por plugins es correcta y bien ejecutada.
 
 **Los problemas reales** son puntuales: el CI usa versiones inestables sin pinning, falta warning cuando el config file tiene errores silenciosos, la carga de plugins es secuencial (riesgo en el worst case), y el `deps` plugin es demasiado básico para proyectos no-JS.
 
-**El camino a 11/10** pasa por: coverage gate, carga paralela de plugins, plugin `audit`, `round_context_compact`, CHANGELOG + semver automático, y la integración formal entre securecoder y mcp-core.
+**El camino a 11/10** pasa por: coverage gate, carga paralela de plugins, plugin `audit`, `round_context_compact`, CHANGELOG + semver automático, y la integración formal entre securecoder y mcp-vertex.
 
 El proyecto tiene bases perfectas. Las mejoras son todas incrementales — ninguna requiere cambio arquitectural. Eso es el mejor indicador de que la arquitectura es correcta.

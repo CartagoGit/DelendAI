@@ -1,4 +1,4 @@
-# Auditoría unificada de `@cartago-git/mcp-core` — Sesión de Auditoría Exhaustiva 2026-06-16
+# Auditoría unificada de `@cartago-git/mcp-vertex` — Sesión de Auditoría Exhaustiva 2026-06-16
 
 > **Fecha:** 16 de Junio de 2026.
 > **Evaluador:** Antigravity (Gemini 3.5 Flash).
@@ -9,7 +9,7 @@
 
 ## §1. VERDICTO CONJUNTO: ¿DÓNDE ESTAMOS?
 
-El monorepo `@cartago-git/mcp-core` es un **ejemplo sobresaliente de ingeniería orientada a agentes (Agent-Oriented Software Engineering)**. A diferencia de los servidores MCP habituales que se limitan a envolver APIs externas, `mcp-core` funciona como una infraestructura de coordinación descentralizada para swarms multi-agente, desacoplada de cualquier lógica de dominio específica gracias a un sistema de plugins puro.
+El monorepo `@cartago-git/mcp-vertex` es un **ejemplo sobresaliente de ingeniería orientada a agentes (Agent-Oriented Software Engineering)**. A diferencia de los servidores MCP habituales que se limitan a envolver APIs externas, `mcp-vertex` funciona como una infraestructura de coordinación descentralizada para swarms multi-agente, desacoplada de cualquier lógica de dominio específica gracias a un sistema de plugins puro.
 
 Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermético de rutas, escrituras atómicas de disco y adición de mutex inter-proceso), el core es extraordinariamente robusto. Sin embargo, un análisis de grano fino de las utilidades de concurrencia y de las capas de I/O de los plugins de catálogo revela que todavía existen condiciones de carrera sutiles en escenarios de alta contención y bloqueos síncronos del bucle de eventos.
 
@@ -22,12 +22,12 @@ Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermét
 
 ### 🔴 FATAL (Crítico / Bloqueante)
 1. **Condición de carrera por robo y eliminación del Mutex (`withFileMutex`):**
-   * **Ubicación:** [with-file-mutex.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/with-file-mutex.ts#L82-L86)
+   * **Ubicación:** [with-file-mutex.ts](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/with-file-mutex.ts#L82-L86)
    * **Detalle:** Si el Agente A adquiere el lock pero la ejecución de su función `fn()` supera el tiempo de contención (`timeoutMs`) o de abandono (`staleMs`), el Agente B robará el mutex eliminando el archivo y creándolo de nuevo con su propio PID. Cuando la función del Agente A finalmente termine, su bloque `finally` ejecutará `await rm(lockPath, { force: true })` de forma incondicional. Esto eliminará el lock que el Agente B *acaba de adquirir*, dejando al Agente B sin protección y permitiendo que un Agente C adquiera el lock y se ejecute en paralelo con el Agente B.
    * **Impacto:** Pérdida de la exclusión mutua en condiciones de sobrecarga del sistema, corrompiendo la cola de tareas o el registro de subagentes.
 
 2. **Bloqueo del Event Loop por I/O síncrono en plugins (`plugins/docs`):**
-   * **Ubicación:** [docs/src/lib/engine.ts](file:///home/cartago/_projects/mcp-core/plugins/docs/src/lib/engine.ts#L94-L106)
+   * **Ubicación:** [docs/src/lib/engine.ts](file:///home/cartago/_projects/mcp-vertex/plugins/docs/src/lib/engine.ts#L94-L106)
    * **Detalle:** A diferencia de `plugins/search` que fue migrado a métodos asíncronos (`readdir`, `stat`), el plugin de documentación utiliza `readdirSync`, `statSync` y `readFileSync` para recorrer e indexar archivos Markdown. En workspaces grandes o en sistemas de archivos montados en red (donde la latencia de disco es alta), estas llamadas bloquean el hilo principal de Node/Bun.
    * **Impacto:** El servidor MCP deja de responder a otras peticiones concurrentes (como peticiones de estado de locks o comprobaciones de salud) mientras cataloga documentos, provocando timeouts falsos.
 
@@ -35,10 +35,10 @@ Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermét
 
 ### 🟠 MAL (Debe corregirse)
 1. **Estancamiento de procesos de verificación en fallo silencioso:**
-   * **Ubicación:** [proposal-acceptance.ts](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/proposal-acceptance.ts)
+   * **Ubicación:** [proposal-acceptance.ts](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/proposal-acceptance.ts)
    * **Detalle:** Aunque el runner de criterios de aceptación utiliza `detached: true` y mata los grupos de procesos en timeout (`process.kill(-pid)`), no hay forma de cancelar de forma cooperativa o forzada una ejecución de calidad (`quality_run_scope`) que consuma demasiados recursos, salvo esperando al timeout configurado (que por defecto en calidad puede ser muy alto).
 2. **Esquema de salida permisivo (`zod.catchall`) por limitaciones del SDK:**
-   * **Ubicación:** [src/index.ts (plugin registry)](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/index.ts)
+   * **Ubicación:** [src/index.ts (plugin registry)](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/index.ts)
    * **Detalle:** Herramientas multiplexadas que cambian su payload de salida según la acción (como `task_queue` o `agent_lock`) declaran un `outputSchema` permisivo del tipo `z.object({}).catchall(z.unknown())`. Esto se debe a que el SDK de MCP exige un objeto plano y rechaza uniones de Zod (`z.union`).
    * **Impacto:** Los clientes MCP pierden type-safety en los payloads estructurados específicos de cada acción, degradando la DX del consumidor.
 
@@ -46,10 +46,10 @@ Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermét
 
 ### 🟡 REGULAR (Aceptable pero mejorable)
 1. **Falta de paginación en el catálogo de documentación (`plugins/docs`):**
-   * **Ubicación:** [docs/src/lib/engine.ts](file:///home/cartago/_projects/mcp-core/plugins/docs/src/lib/engine.ts#L69)
+   * **Ubicación:** [docs/src/lib/engine.ts](file:///home/cartago/_projects/mcp-vertex/plugins/docs/src/lib/engine.ts#L69)
    * **Detalle:** El catalogador de documentación limita los resultados a un máximo (`maxResults`, por defecto 200), pero no ofrece parámetros `limit` ni `offset`. Si el proyecto supera los 200 documentos, los últimos nunca serán accesibles para los agentes.
 2. **Duplicación de lógica de resolución de paths en scaffolds:**
-   * **Ubicación:** [scaffold-host.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/scaffold/scaffold-host.ts#L299)
+   * **Ubicación:** [scaffold-host.ts](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/scaffold/scaffold-host.ts#L299)
    * **Detalle:** La plantilla generada para `startServer` inyecta un fallback `process.cwd()` en el punto de entrada. Aunque esto es aceptable para un CLI wrapper de host, es la única parte que no hereda la inyección limpia del proveedor de rutas del monorepo, creando una ligera inconsistencia con la filosofía "cero process.cwd()".
 
 ---
@@ -72,7 +72,7 @@ Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermét
 
 ### 🟣 MUY BIEN (Por encima de la media)
 1. **Búsqueda SemánticaBM25-lite en Local:**
-   * **Ubicación:** [rank.ts](file:///home/cartago/_projects/mcp-core/plugins/memory/src/lib/memory/rank.ts)
+   * **Ubicación:** [rank.ts](file:///home/cartago/_projects/mcp-vertex/plugins/memory/src/lib/memory/rank.ts)
    * **Detalle:** La implementación de un buscador BM25 puro en JS para `memory_recall` es brillante. Evita dependencias de C++ pesadas (como SQLite) o peticiones a APIs de embeddings externas, manteniendo la promesa de un sistema 100% offline, rápido y respetuoso con el presupuesto de tokens.
 2. **Ejecutor de Criterios con Control de Zombies:**
    * El uso de process groups (`detached: true` y `process.kill(-pid)`) en el runner de aceptación resuelve de raíz el problema clásico de dejar procesos secundarios (como pipelines de Shell) huérfanos cuando expira el timeout del agente.
@@ -81,8 +81,8 @@ Tras la corrección de las vulnerabilidades P0/P1 iniciales (aislamiento hermét
 
 ### 💎 PERFECTO (Insuperable)
 1. **SDK de Tipos Autogenerados sin Deriva:**
-   * **Ubicación:** [generate-tool-types.ts](file:///home/cartago/_projects/mcp-core/scripts/generate-tool-types.ts)
-   * **Detalle:** El pipeline que extrae los esquemas de validación Zod de las herramientas, genera especificaciones JSON-Schema y las compila a interfaces TypeScript (`tool-outputs.ts`) es una obra de arte. Garantiza que cualquier cliente que consuma `@cartago-git/mcp-core` tenga tipos de respuesta idénticos a los del servidor sin mantenimiento manual, con un drift guard automatizado en la suite de tests.
+   * **Ubicación:** [generate-tool-types.ts](file:///home/cartago/_projects/mcp-vertex/scripts/generate-tool-types.ts)
+   * **Detalle:** El pipeline que extrae los esquemas de validación Zod de las herramientas, genera especificaciones JSON-Schema y las compila a interfaces TypeScript (`tool-outputs.ts`) es una obra de arte. Garantiza que cualquier cliente que consuma `@cartago-git/mcp-vertex` tenga tipos de respuesta idénticos a los del servidor sin mantenimiento manual, con un drift guard automatizado en la suite de tests.
 2. **Modularización Cohesiva del Contexto:**
    * El refactor de `round-context.ts` dividiendo un archivo de 800 líneas en submódulos bien enfocados (`-types`, `-hash`, `-sources`, `-resume`, `-digest`) demuestra un altísimo estándar de mantenibilidad del software.
 
@@ -148,10 +148,10 @@ Sería de gran utilidad incluir las siguientes especificaciones de conocimiento 
 
 ## §6. EL CAMINO AL 11/10: CÓMO ALCANZAR LA PERFECCIÓN
 
-Para que `@cartago-git/mcp-core` pase de ser un gran proyecto a convertirse en un **framework perfecto de referencia mundial**, se proponen las siguientes 5 medidas técnicas específicas:
+Para que `@cartago-git/mcp-vertex` pase de ser un gran proyecto a convertirse en un **framework perfecto de referencia mundial**, se proponen las siguientes 5 medidas técnicas específicas:
 
 ### 1. Corregir la carrera de liberación del mutex
-Modificar [with-file-mutex.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/with-file-mutex.ts) para escribir un token único de sesión (un hash aleatorio o un UUID) en el archivo de mutex en lugar de depender únicamente del PID. Al liberar el lock, se debe leer el archivo y confirmar que el token coincide con el generado. Si no coincide (porque fue robado), el agente actual **no debe borrar el archivo**, evitando desproteger al nuevo dueño del lock.
+Modificar [with-file-mutex.ts](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/with-file-mutex.ts) para escribir un token único de sesión (un hash aleatorio o un UUID) en el archivo de mutex en lugar de depender únicamente del PID. Al liberar el lock, se debe leer el archivo y confirmar que el token coincide con el generado. Si no coincide (porque fue robado), el agente actual **no debe borrar el archivo**, evitando desproteger al nuevo dueño del lock.
 
 ```ts
 // En la adquisición:
@@ -176,7 +176,7 @@ if (acquired) {
 Migrar el motor de búsqueda de documentación de `fs` síncrono a promesas de `fs/promises` para erradicar cualquier bloqueo en el Event Loop de Node/Bun.
 
 ### 3. Implementar Hot-Reloading de configuración de plugins
-El core debe re-validar el esquema de opciones y volver a instanciar la configuración de los plugins si detecta cambios (mediante `fs.watch`) en `mcp-core.config.json` sin obligar a reiniciar el servidor MCP.
+El core debe re-validar el esquema de opciones y volver a instanciar la configuración de los plugins si detecta cambios (mediante `fs.watch`) en `mcp-vertex.config.json` sin obligar a reiniciar el servidor MCP.
 
 ### 4. Soporte para uniones de salida en el SDK
 Crear endpoints específicos o wrappers de enrutado en el servidor para evitar esquemas permisivos como `z.object({}).catchall(z.unknown())`. Si una herramienta tiene 3 acciones, es mejor registrar 3 herramientas MCP diferenciadas con esquemas estrictos de Zod en lugar de 1 sola herramienta multiplexada.

@@ -1,6 +1,6 @@
 # Resumen de sesión — 2026-06-17 (casa → oficina, Opus)
 
-> **Repo:** `/home/cartago/_projects/mcp-core` · rama **`main`** ·
+> **Repo:** `/home/cartago/_projects/mcp-vertex` · rama **`main`** ·
 > **`HEAD == origin/main` (todo commiteado y PUSHEADO)** salvo 1 fichero suelto
 > (ver "Estado git" abajo). Hay un **auto-commit+push** corriendo, así que en la
 > oficina basta con **`git pull`** y `bun install` para continuar exactamente aquí.
@@ -165,7 +165,7 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
   **allow/deny de comandos en `quality`** (que hoy hace `spawn` de cualquier binario).
 - **M12 ✅** Métricas por tool: registry en proceso que instrumenta cada handler
   (calls/errors/latencia/bytes) + meta-tool `<prefix>_metrics` (`reset` opcional).
-  Opt-in vía `IMcpCoreHostConfig.metricsRegistry`; el CLI lo cablea solo. Tests
+  Opt-in vía `IMcpVertexHostConfig.metricsRegistry`; el CLI lo cablea solo. Tests
   unit + instrumentación e2e sobre el protocolo.
 - **M13 ✅** allow/deny de comandos en `quality` (`commandPolicy {allow,deny}`,
   enforce antes del spawn → bloqueado = code 126; frontera de confianza documentada
@@ -208,9 +208,9 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 Tres piezas para que el paquete sea consumible y se publique solo:
 
 - **Uso como dependencia (verificado, ya funciona):** `bun add @mcp-vertex/core`
-  expone el bin `mcp-core` (`dist/cli.js`, shebang node). En `mcp.json`:
+  expone el bin `mcp-vertex` (`dist/cli.js`, shebang node). En `mcp.json`:
   `{ "command": "bunx", "args": ["@mcp-vertex/core", "--plugins=..."] }`
-  (o `npx`, o `node_modules/.bin/mcp-core`). Documentado en el sitio web.
+  (o `npx`, o `node_modules/.bin/mcp-vertex`). Documentado en el sitio web.
 
 - **W2 · Auto-release en push a `main`** (`.github/workflows/release.yml`):
   cuando la `version` de `packages/core/package.json` no tiene aún su tag
@@ -287,7 +287,7 @@ IA / lo que aplique):
 Revisar **todo el proyecto + las auditorías/propuestas (incluido `done/`)** y aplicar
 lo que falte. Backlog abierto conocido (del doc maestro, todo no-bloqueante):
 - **Nice-to-haves de plataforma:** TypeDoc de `public/`, `/examples` (minimal/swarm/
-  custom-plugin), **JSON Schema** de `mcp-core.config.json`, **skills/prompts
+  custom-plugin), **JSON Schema** de `mcp-vertex.config.json`, **skills/prompts
   versionados** (operator, swarm-runner, plugin-author), prompt `finish`,
   `quality_cancel`, freno duro anti-idle en `auto_work`.
 - **W3** (web profesional, arriba) — el grande.

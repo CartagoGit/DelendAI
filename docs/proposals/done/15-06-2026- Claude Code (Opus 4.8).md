@@ -1,6 +1,6 @@
-# Auditoría exhaustiva de `@cartago-git/mcp-core` — Claude Code (Opus 4.8)
+# Auditoría exhaustiva de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)
 
-> Fecha: 15-06-2026. Análisis independiente del monorepo `mcp-core`
+> Fecha: 15-06-2026. Análisis independiente del monorepo `mcp-vertex`
 > (`packages/core` + `plugins/proposals|rules|memory|git|quality`),
 > sin tener en cuenta las otras auditorías.
 

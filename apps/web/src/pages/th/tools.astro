@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import ToolsSection from '../../components/ToolsSection.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { useTranslations, type Lang } from '../../i18n/ui';
+
+const lang: Lang = 'th';
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const homeHref = `${base}/th/`;
+---
+
+<Base lang={lang} title={`${t('tools.title')} — @mcp-vertex/core`}>
+	<nav class="nav">
+		<div class="container nav__inner">
+			<a class="nav__brand" href={homeHref}>
+				<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
+				@mcp-vertex/core
+			</a>
+			<div class="nav__links">
+				<a href={homeHref}>← {t('nav.concept')}</a>
+				<a href={`${base}/api/`}>API</a>
+				<a href={repo}>{t('nav.github')}</a>
+			</div>
+		</div>
+	</nav>
+	<main>
+		<ToolsSection lang={lang} />
+	</main>
+	<SiteFooter lang={lang} />
+</Base>

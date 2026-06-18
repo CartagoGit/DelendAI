@@ -1,14 +1,14 @@
-# 18-06-2026 · Auditoría Agnóstica (estado-actual) — `@cartago-git/mcp-core`
+# 18-06-2026 · Auditoría Agnóstica (estado-actual) — `@cartago-git/mcp-vertex`
 
 > **Auditoría independiente y agnóstica** del estado actual del monorepo
-> `mcp-core`. **No consulta, no revalida ni hace referencia a las auditorías
+> `mcp-vertex`. **No consulta, no revalida ni hace referencia a las auditorías
 > previas** (15-06, 16-06, etc.) — es un análisis limpio del workspace tal como
 > está hoy (commit en `develop`, fecha 2026-06-18), verificando cada hallazgo
 > contra el código con cita de archivo:línea. Sirve como segundo punto de
 > referencia para calibrar la diferencia entre el “consenso previo” y lo que un
 > revisor sin contexto encuentra de cero.
 >
-> **Alcance:** 10 paquetes (`@cartago-git/mcp-core` + 9 plugins), `apps/web`
+> **Alcance:** 10 paquetes (`@cartago-git/mcp-vertex` + 9 plugins), `apps/web`
 > (sitio de docs en Astro + i18n), `examples/{minimal,custom-plugin,swarm}`,
 > `scripts/` (build, derive-version, release, generate-*, emit-tool-types), 4
 > workflows en `.github/workflows/`, 1 settings local de `.claude/`, `docs/`
@@ -27,7 +27,7 @@
 
 ## 1. Veredicto agnóstico (resumen ejecutivo)
 
-`mcp-core` es **un framework MCP serio, model-agnostic y medido** — el patrón
+`mcp-vertex` es **un framework MCP serio, model-agnostic y medido** — el patrón
 “core agnóstico + plugin desacoplado + bootstrap híbrido + presupuesto de
 tokens verificado sobre el protocolo real” es exactamente la forma correcta de
 construir esto, y se nota en cada decisión. La estructura de tests (unit +
@@ -102,11 +102,11 @@ los tests es uniforme (`deps.import`, `deps.readFile`).
 **Lo que falta para 5/5:**
 
 - **No hay un diagrama de arquitectura mantenible.** El README
-  ([README-MCP-CORE.md:1-150](../../../docs/README-MCP-CORE.md)) describe el
+  ([README-MCP-VERTEX.md:1-150](../../../docs/README-MCP-VERTEX.md)) describe el
   layout y la “bootstrap flow” pero no hay un `docs/ARCHITECTURE.md` con
   dependencias explícitas entre módulos. Para un 11/10, ese documento +
   diagrama Mermaid debe existir y ser referenciado desde el README.
-- **El `IMcpCoreHostConfig` mezcla “campos requeridos” y “campos opcionales”
+- **El `IMcpVertexHostConfig` mezcla “campos requeridos” y “campos opcionales”
   con un orden heterogéneo**
   ([host-config.interface.ts:9-49](../../../packages/core/src/lib/contracts/interfaces/host-config.interface.ts#L9))
   — el `metadata` está documentado como “the host provides” pero no tiene un
@@ -178,7 +178,7 @@ MCP (no como carga) refuerzan el principio.
   pero **no hay un “cost snapshot” persistente** — los counters se reinician
   por proceso, así que un análisis de regresión de tokens entre releases
   requiere orquestar `bun run validate` y parsear el output. Un dump a
-  `.cache/mcp-core/metrics/<pid>.json` tras cada sesión abriría análisis
+  `.cache/mcp-vertex/metrics/<pid>.json` tras cada sesión abriría análisis
   longitudinales sin coste de LLM extra.
 
 ### 3.5 Diseño libre de bucles / bloqueos
@@ -297,14 +297,14 @@ Lo mismo para `emit-tool-types.ts` (puro) y `generate-tool-types.ts`
 ### 3.9 Documentación (README / docs)
 
 **⭐⭐⭐½ · Bien.** Los READMEs por paquete están bien y son densos
-(ver `mcp-proposals/README.md` y `mcp-core/README.md` como ejemplos).
-`docs/README-MCP-CORE.md` y `docs/PLUGINS-MCP-CORE.md` cubren la cara de
+(ver `mcp-proposals/README.md` y `mcp-vertex/README.md` como ejemplos).
+`docs/README-MCP-VERTEX.md` y `docs/PLUGINS-MCP-VERTEX.md` cubren la cara de
 “autor de host” y “autor de plugin”. `docs/TOKEN-BUDGETS.md` es oro:
 mide la promesa. `docs/NPM_PUBLISH.md` baja a tierra el flujo de release.
 
 **Lo mejorable (es lo que separa del 5/5):**
 
-- **No hay `docs/ARCHITECTURE.md`.** Solo hay un README-MCP-CORE que mezcla
+- **No hay `docs/ARCHITECTURE.md`.** Solo hay un README-MCP-VERTEX que mezcla
   instalación, layout, CLI, bootstrap y contratos. Un documento dedicado
   a arquitectura con un diagrama es la pieza que un 11/10 OSS tiene
   siempre.
@@ -549,10 +549,10 @@ el blueprint completo con tests. Dry-run por defecto, no sobrescribe.
 - **No hay un registro de plugins remotos / marketplace.** Un
   `--plugins=@cartago-git/mcp-X,@other-org/mcp-Y` funciona si el
   resoluble está en npm, pero no hay un descubrimiento tipo
-  `mcp-core plugin search <query>`. Para 11/10, un `plugins.json` o
-  `awesome-mcp-core` sería un primer paso.
+  `mcp-vertex plugin search <query>`. Para 11/10, un `plugins.json` o
+  `awesome-mcp-vertex` sería un primer paso.
 - **No hay un “plugin SDK”** — `definePlugin` y los helpers compartidos
-  son la base, pero **no hay un paquete `@cartago-git/mcp-core/sdk`** que
+  son la base, pero **no hay un paquete `@cartago-git/mcp-vertex/sdk`** que
   el autor de plugin externo importe sin arrastrar el core entero.
 - **No hay un sistema de “hooks” entre tools** (pre/post-tool para
   auditoría / métricas / redaction). El `metrics` wrapper intercepta
@@ -561,7 +561,7 @@ el blueprint completo con tests. Dry-run por defecto, no sobrescribe.
 ### 3.13 Sitios web (`apps/web`) y presencia pública
 
 **⭐⭐½ · Regular-Bien.** El sitio **existe** (Astro 5 con 12 locales, base
-`/mcp-core/`, i18n routing), tiene un `Home.astro` (4 líneas que carga un
+`/mcp-vertex/`, i18n routing), tiene un `Home.astro` (4 líneas que carga un
 `Home.astro` real), un `Marquee.astro` y un `Config.astro` como componentes
 auxiliares. El workflow `pages.yml` lo construye en modo `--strict` (un
 tool sin doc falla la build).
@@ -601,20 +601,20 @@ de fuera va a notar que el vendor no dogfooda su propio sistema.
 
 **Lo que debe haber (mínimo para 4/5):**
 
-- `.github/copilot-instructions.md` con la regla “llama `mcpcore_overview`
+- `.github/copilot-instructions.md` con la regla “llama `mcpvertex_overview`
   primero; los plugins cargados viven en el MCP; la regla dura de bucles
   es: nunca re-leer docs cuyo digest no cambió”.
-- `.github/agents/mcp-core.agent.md` con un slot `mcp-core-orchestrator`
+- `.github/agents/mcp-vertex.agent.md` con un slot `mcp-vertex-orchestrator`
   que sepa leer `proposals_*` cuando están cargados.
-- `.claude/agents/mcp-core-orchestrator.md` (el equivalente para Claude
+- `.claude/agents/mcp-vertex-orchestrator.md` (el equivalente para Claude
   Code).
-- 1 skill de “mcp-core-budgets” (cómo leer `metrics` y reducir tokens).
-- 1 skill de “mcp-core-failure-modes” (qué hacer si un tool devuelve
+- 1 skill de “mcp-vertex-budgets” (cómo leer `metrics` y reducir tokens).
+- 1 skill de “mcp-vertex-failure-modes” (qué hacer si un tool devuelve
   `lock-conflict`, `corrupt-file`, `state-inconsistency`).
 
 ### 3.15 Model-routing / `defaultModel`
 
-**⭐⭐ · Bien (con deuda).** El `IMcpCoreHostConfig` no incluye
+**⭐⭐ · Bien (con deuda).** El `IMcpVertexHostConfig` no incluye
 `defaultModel` ni `modelRouting`; el scaffold lo deja como
 `<your-model>`. Para un orquestador, eso es aceptable; pero el
 `@cartago-git/mcp-proposals` **sí exporta** `IModelRoute` /
@@ -634,7 +634,7 @@ model-routing primero.
 
 **Lo mejorable:**
 
-- No hay un `mcp-core audit` (sub-comando) que vuelque el security
+- No hay un `mcp-vertex audit` (sub-comando) que vuelque el security
   posture de un setup concreto (qué plugins, qué policies, qué
   capFiles).
 - No hay rate-limit declarativo en los plugins (un tool puede ser
@@ -682,20 +682,20 @@ implementación.
 
 | # | Sugerencia | V | C | Por qué |
 |---|---|---|---|---|
-| 1 | Crear `.github/copilot-instructions.md`, `.github/agents/mcp-core.agent.md` y skills para Claude Code. | ⭐⭐⭐ | ⭐½ | Coherencia brutal: el proyecto dogfoodea su propio patrón. Es *barato* y cambia la primera impresión de un contribuidor. |
+| 1 | Crear `.github/copilot-instructions.md`, `.github/agents/mcp-vertex.agent.md` y skills para Claude Code. | ⭐⭐⭐ | ⭐½ | Coherencia brutal: el proyecto dogfoodea su propio patrón. Es *barato* y cambia la primera impresión de un contribuidor. |
 | 2 | Crear `docs/ARCHITECTURE.md` + diagrama Mermaid. | ⭐⭐½ | ⭐½ | El revisor agnóstico lo busca y no lo encuentra. |
 | 3 | Crear `docs/SECURITY.md` y `CONTRIBUTING.md` formales. | ⭐⭐ | ⭐ | Estándar OSS. |
 | 4 | Páginas de detalle por tool/plugin en `apps/web`. | ⭐⭐⭐ | ⭐⭐ | El sitio es el escaparate. Sin páginas por tool, **no se demuestra el valor del proyecto**. |
 | 5 | Búsqueda interna en `apps/web` (pagefind). | ⭐½ | ⭐ | Nice to have; la audiencia es técnica y prefiere el repo. |
 | 6 | Promover `redactSecrets` a `core/lib/shared/redact.ts` y aplicarlo en `proposals/proposal-document.ts` (frontmatter + body). | ⭐⭐ | ⭐ | Cierra una fuga real. |
 | 7 | Añadir `core/lib/commands/runner.ts` y reusar desde `git`, `quality`, `proposal-acceptance`. | ⭐⭐ | ⭐⭐ | Reduce duplicación significativa. |
-| 8 | `mcp-core audit` sub-comando. | ⭐½ | ⭐⭐ | Útil para enterprise; bajo valor para devs. |
+| 8 | `mcp-vertex audit` sub-comando. | ⭐½ | ⭐⭐ | Útil para enterprise; bajo valor para devs. |
 | 9 | Tests property-based para `frontmatter-parser` y `redactSecrets`. | ⭐ | ⭐ | Cierra una clase entera de regresiones. |
 | 10 | Smoke test funcional en CI (server con `--plugins=standard` + tool call real). | ⭐⭐ | ⭐ | 1 minuto de CI, alta garantía. |
 | 11 | `code 124` policy y tests para `proposal-parallelism` con 3+ carriles. | ⭐ | ⭐ | Caso de swarm complejo, baja frecuencia. |
 | 12 | `core/walkAllowedFiles` para unificar `search` + `docs`. | ⭐ | ⭐ | Limpieza. |
-| 13 | SDK separado `@cartago-git/mcp-core/sdk` para autores de plugin. | ⭐ | ⭐⭐ | Mejora la ergonomía de contribuidores externos. |
-| 14 | Marketplace de plugins / `awesome-mcp-core`. | ⭐⭐ | ⭐⭐⭐ | Requiere mantenimiento externo. |
+| 13 | SDK separado `@cartago-git/mcp-vertex/sdk` para autores de plugin. | ⭐ | ⭐⭐ | Mejora la ergonomía de contribuidores externos. |
+| 14 | Marketplace de plugins / `awesome-mcp-vertex`. | ⭐⭐ | ⭐⭐⭐ | Requiere mantenimiento externo. |
 | 15 | Hooks pre/post-tool para auditoría / redacción central. | ⭐⭐ | ⭐⭐ | Pieza que lo convertiría en “plataforma”. |
 | 16 | `modelRouting` consumidor en el core (no solo en proposals). | ⭐½ | ⭐ | Sólo si el proyecto quiere opinar sobre el modelo. |
 | 17 | `await_lock` tool en `notification` (subscribe + resume). | ⭐⭐ | ⭐ | Cierra el bucle “wait, don’t poll” que el knowledge ya promete. |
@@ -712,7 +712,7 @@ en el *core técnico*.
 
 ## 6. Veredicto final agnóstico
 
-`mcp-core` es **ingeniería honesta y medida**: lo que promete está
+`mcp-vertex` es **ingeniería honesta y medida**: lo que promete está
 verificado en código, los tests son serios, la arquitectura está pensada
 para 5 años, los plugins son reusables, y el “model-agnostic” no es
 marketing — los payloads son JSON estricto, los tools no devuelven prosa.

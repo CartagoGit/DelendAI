@@ -4,7 +4,7 @@
 > `audits/AUDITORIA-UNIFICADA-2026-06-15.md`. Sesión anterior (2ª ronda, noche
 > 06-15) en `done/RESUMEN-SESION-2A-RONDA-2026-06-15.md`.
 >
-> **Repo:** `/home/cartago/_proyectos/propios/mcp-core`.
+> **Repo:** `/home/cartago/_proyectos/propios/mcp-vertex`.
 > **Estado al cerrar: 417 tests (407 + 10 skip), typecheck limpio, TODO VERDE.**
 > Árbol git limpio. Nivel estimado ~9,9/10. Nada a medias. **10 paquetes.**
 >
@@ -72,7 +72,7 @@
 
 **1. Validar verde (siempre):**
 ```bash
-cd /home/cartago/_proyectos/propios/mcp-core
+cd /home/cartago/_proyectos/propios/mcp-vertex
 bun install
 bun run validate     # typecheck + 417 tests (407 + 10 skip) → verde
 # doctor e2e con los 8 plugins (lo cubre outputschema.e2e.spec.ts):
@@ -82,7 +82,7 @@ bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 **2. Cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0
 (N1–N23)** con ✅/🟡/⬜. Eso manda; lo de arriba en ese doc es historial.
 
-**3. Premisa clave:** **Affairs ya NO consume mcp-core** (independientes). Ignora
+**3. Premisa clave:** **Affairs ya NO consume mcp-vertex** (independientes). Ignora
 cualquier nota antigua de "re-validar 1184".
 
 **4. Siguiente recomendado (lo que queda, todo de menor valor/alcance grande):**

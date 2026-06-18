@@ -1,7 +1,8 @@
 ---
 import Marquee from './Marquee.astro';
-import Install from './Install.astro';
-import Config from './Config.astro';
+import ConceptSection from './ConceptSection.astro';
+import SiteNav from './SiteNav.astro';
+import SiteFooter from './SiteFooter.astro';
 import { runtimes, clients } from '../data/marquees';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
@@ -13,42 +14,19 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const sectionHref = (section: string) =>
+	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
 
-const NS_LABEL: Record<string, string> = {
-	mcpvertex: 'core', proposals: 'proposals', git: 'git', memory: 'memory',
-	search: 'search', rules: 'rules', quality: 'quality', docs: 'docs',
-	deps: 'deps', notification: 'notification',
-};
-
-type ITool = { name: string; namespace: string; description: string };
-const tools = capabilities.tools as ITool[];
-const groups: Record<string, ITool[]> = {};
-for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
-const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
-
+// Highlight 3 plugins on the home (the most useful first-look at mcp-vertex).
+// The full list lives at /plugins.
 const packages = capabilities.packages as Array<{ name: string; version: string }>;
 const shortName = (name: string) => name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 const pluginHref = (slug: string) =>
 	lang === 'en' ? `${base}/plugins/${slug}` : `${base}/${lang}/plugins/${slug}`;
-
-// Benchmarks: real payloads measured live (see gen-capabilities.ts) + one
-// clearly-labelled illustrative baseline. Bar width is proportional to tokens.
-type IBench = { id: string; label: string; bytes: number; tokens: number };
-const benches = ((capabilities as { benchmarks?: IBench[] }).benchmarks ?? []) as IBench[];
-const benchById = Object.fromEntries(benches.map((b) => [b.id, b]));
-const compactTok = benchById.overview_compact?.tokens ?? 0;
-const autoTok = benchById.auto_work?.tokens ?? 0;
-const coldStartTok = compactTok + autoTok;
-const BASELINE_TOK = 4000; // illustrative estimate of orienting by hand
-const benchBars = [
-	{ name: 'overview (full)', tokens: benchById.overview_full?.tokens ?? 0, kind: '' },
-	{ name: 'overview (compact)', tokens: compactTok, kind: '' },
-	{ name: 'auto_work', tokens: autoTok, kind: '' },
-	{ name: 'compact + auto_work', tokens: coldStartTok, kind: 'is-hl' },
-	{ name: t('bench.baseline'), tokens: BASELINE_TOK, kind: 'is-base' },
-].filter((b) => b.tokens > 0);
-const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
+const featuredSlugs = ['proposals', 'memory', 'quality'];
+const featured = packages
+	.filter((p) => featuredSlugs.includes(shortName(p.name)))
+	.sort((a, b) => featuredSlugs.indexOf(shortName(a.name)) - featuredSlugs.indexOf(shortName(b.name)));
 ---
 
 <SiteNav lang={lang} />

@@ -306,7 +306,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   Layout + Hero + **marquesinas duales** (sentidos opuestos, hover-pausa, zoom +
   nombre al pasar sobre cada icono), **i18n en/es**, sección de tools desde
   `capabilities.json` (registro vivo), benchmarks y SCSS responsive. Build estático
-  con `base=/mcp-core`, 2 páginas, lint/build verdes; `pages.yml` despliega
+  con `base=/mcp-vertex`, 2 páginas, lint/build verdes; `pages.yml` despliega
   `apps/web/dist`. *Pendiente (iterativo):* contenido más rico, logos SVG reales en
   las marquesinas, más idiomas.
 - **✅ A4 (nit) · DX** — CERRADO: al pasar `apps/web` a app Astro con su propio
@@ -409,7 +409,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 **Publicación / naming:**
 - 🔵 **M36 · Rename del proyecto a `@mcp-vertex`** (org npm `mcp-vertex` creada, 18-06;
-  reemplaza a `@mcp-vertex/*` y a los descartados `@mcp-server`/`@mcp-core`): core →
+  reemplaza a `@mcp-vertex/*` y a los descartados `@mcp-server`/`@mcp-vertex`): core →
   `@mcp-vertex/core`, plugins → `@mcp-vertex/proposals`, `@mcp-vertex/git`, …;
   `@mcp-vertex/web` → `@mcp-vertex/web`. Toca todos los `package.json`, imports,
   `tsconfig` paths, alias de vitest, `build.ts`, generadores, scaffold, examples, docs y la

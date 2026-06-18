@@ -1,4 +1,4 @@
-# Auditoría exhaustiva de `@cartago-git/mcp-core` — 2026-06-16
+# Auditoría exhaustiva de `@cartago-git/mcp-vertex` — 2026-06-16
 
 > Revisión independiente del workspace completo (core + 9 plugins + tooling +
 > CI + release). No toma como entrada ninguna auditoría previa: parte del código
@@ -44,9 +44,9 @@ de tirar el servidor. Lo que sigue son riesgos y fricciones, no bloqueos.
 
 1. **Se publica TypeScript fuente; el CLI es de facto bun-only.**
    `packages/core/package.json` declara `"main": "./src/index.ts"`,
-   `"exports": "./src/index.ts"` y `"bin": { "mcp-core": "./src/cli.ts" }`. No hay
+   `"exports": "./src/index.ts"` y `"bin": { "mcp-vertex": "./src/cli.ts" }`. No hay
    `build` ni emisión de `.js`/`.d.ts`. Consecuencia: un host MCP que arranque el
-   servidor con `npx @cartago-git/mcp-core` bajo Node **no puede ejecutar `.ts`** y
+   servidor con `npx @cartago-git/mcp-vertex` bajo Node **no puede ejecutar `.ts`** y
    falla; solo `bunx` funciona. El README solo muestra `bunx`, así que es una
    decisión consciente, pero choca de frente con el titular "funciona igual bajo
    cualquier agente/modelo/host". La mayoría de clientes MCP del mercado (Claude
@@ -215,7 +215,7 @@ consecutivos" que devuelva un `stop: true` más enfático). Barato de añadir.
 
 **El repo no envía ninguna skill ni definición de agente para sí mismo.** El
 `scaffold` del core *sabe* generar tools/prompts/skills/agents/plugins, y hay dos
-MCP *prompts* (`work`, `orchestrate`) bien escritos — pero el propio mcp-core no
+MCP *prompts* (`work`, `orchestrate`) bien escritos — pero el propio mcp-vertex no
 trae un `.claude/` con agentes ni slash-skills que envuelvan su flujo estrella.
 
 Recomendaciones (en orden de impacto):
@@ -277,7 +277,7 @@ servidor.
 
 ## 7. Conclusión
 
-mcp-core está **muy por encima de la media**: hermético, medido, testeado y con
+mcp-vertex está **muy por encima de la media**: hermético, medido, testeado y con
 decisiones de diseño que la mayoría de proyectos descubren tarde y a base de
 incidentes (lost-update vs torn-write, cuarentena de corrupción, budget con guard,
 drift de tipos). Lo que le separa del 11/10 no es deuda estructural sino acabado:

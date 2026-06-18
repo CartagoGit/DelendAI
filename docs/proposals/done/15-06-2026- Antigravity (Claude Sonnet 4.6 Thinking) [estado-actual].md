@@ -1,4 +1,4 @@
-# Auditoría exhaustiva de `@cartago-git/mcp-core` — Antigravity (Claude Sonnet 4.6 Thinking)
+# Auditoría exhaustiva de `@cartago-git/mcp-vertex` — Antigravity (Claude Sonnet 4.6 Thinking)
 
 > **Fecha:** 15-06-2026  
 > **Modelo:** Antigravity · Claude Sonnet 4.6 (Thinking)  
@@ -130,7 +130,7 @@ writeFileAtomicSync(absPath, `${JSON.stringify({ notes }, null, '\t')}\n`);
 Las notas se serializan con tabs. El blueprint también usa `null, '\t'`. Para archivos persisitidos que los agentes no leen directamente (o leen raramente), el pretty-print es aceptable. Pero para payloads de tool en flight deberían ser compactos. Validar caso a caso.
 
 ### 4.7 `vitest.shared.ts` — Alias `./lib/*` en tests
-Los tests importan vía alias `@cartago-git/mcp-core/lib/...` aunque en producción esa ruta no está en `exports`. Esto es correcto para testing (los tests necesitan acceso interno), pero requiere mantener sincronizados el `vitest.shared.ts` y `tsconfig.base.json`. Un test que usa un símbolo interno puede pasar en CI y fallar si alguien elimina el símbolo sin actualizar el alias.
+Los tests importan vía alias `@cartago-git/mcp-vertex/lib/...` aunque en producción esa ruta no está en `exports`. Esto es correcto para testing (los tests necesitan acceso interno), pero requiere mantener sincronizados el `vitest.shared.ts` y `tsconfig.base.json`. Un test que usa un símbolo interno puede pasar en CI y fallar si alguien elimina el símbolo sin actualizar el alias.
 
 ---
 
@@ -261,7 +261,7 @@ Los plugins del IDE (`/home/cartago/.gemini/config/plugins/Google.securecoder.se
 - **Skills como texto plano:** no hay ningún mecanismo de versionado de skills. Si la API de MCP cambia (por ejemplo, `structuredContent` se vuelve obligatorio), las skills que generan código no lo sabrán.
 
 ### 9.3 Lo que está mal en los plugins securecoder
-- **Sin conexión a `mcp-core`:** los plugins del IDE generan código de seguridad pero no verifican si el proyecto tiene un servidor MCP activo que podría ejecutar validaciones automatizadas. Un scan podría desencadenar una tarea en `task_queue` automáticamente.
+- **Sin conexión a `mcp-vertex`:** los plugins del IDE generan código de seguridad pero no verifican si el proyecto tiene un servidor MCP activo que podría ejecutar validaciones automatizadas. Un scan podría desencadenar una tarea en `task_queue` automáticamente.
 - **`mandatory-secure-web-skills` asume tecnología web:** si el proyecto es una CLI Node.js o un servidor MCP en sí mismo, muchas de las reglas (CSRF, XSS) no aplican. Debería detectar el tipo de proyecto (vía `analyzeProject`) antes de aplicar el perfil completo.
 
 ---
@@ -302,7 +302,7 @@ Sin este plugin, todo swarm multi-agente debe pollar `agent_lock status` para sa
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  CLI (mcp-core --plugins=...)                                   │
+│  CLI (mcp-vertex --plugins=...)                                   │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
 │  │ parseCliArgs│→ │assembleConfig│→ │    createMcpServer     │ │
 │  └─────────────┘  │  (loadPlugins │  │  planRegistrationOrder│ │
@@ -386,7 +386,7 @@ Sin este plugin, todo swarm multi-agente debe pollar `agent_lock status` para sa
 
 ## 14. Conclusión
 
-`@cartago-git/mcp-core` en su estado actual (15-06-2026) es un proyecto de calidad de producción en su núcleo: contratos limpios, registro determinista, I/O transaccional, tests que prueban invariantes reales, TypeScript al límite de la strictness. La fase de fiabilización P0/P1 se completó con éxito.
+`@cartago-git/mcp-vertex` en su estado actual (15-06-2026) es un proyecto de calidad de producción en su núcleo: contratos limpios, registro determinista, I/O transaccional, tests que prueban invariantes reales, TypeScript al límite de la strictness. La fase de fiabilización P0/P1 se completó con éxito.
 
 Los pendientes restantes no son deuda técnica acumulada por descuido — son la frontera natural de un sistema en evolución activa. Los más urgentes (mutex en memory, process.cwd() en scaffold, git síncrono) son correcciones de 30 minutos a 2 horas cada una.
 
@@ -400,7 +400,7 @@ El proyecto está listo para publicación como librería. Para usarlo como plata
 - Fiabilidad de concurrencia: **9,0/10**
 - Cobertura de tests: **8,5/10**
 - Documentación y DX: **9,0/10**
-- Plugins securecoder (IDE): **7,0/10** *(funcional pero desconectados del ecosistema mcp-core)*
+- Plugins securecoder (IDE): **7,0/10** *(funcional pero desconectados del ecosistema mcp-vertex)*
 
 **Media ponderada: 8,4 / 10**
 
@@ -481,7 +481,7 @@ El README promete "low-token". ¿Cuántos tokens exactamente? Un 11/10 tiene nú
 Sin benchmarks, "low-token" es marketing. Con benchmarks, es una promesa medible.
 
 #### Documentación como plataforma de referencia
-La documentación actual (README, PLUGINS-MCP-CORE.md) es buena para "cómo usar". Para ser referencia necesita:
+La documentación actual (README, PLUGINS-MCP-VERTEX.md) es buena para "cómo usar". Para ser referencia necesita:
 - **Guía de arquitectura**: por qué `withFileMutex` sobre un lock de BD, por qué `rename` sobre `write`, por qué plugins sobre extensión directa.
 - **Guía de concurrencia para autores de plugins**: cuándo necesitas mutex, cuándo no, cómo testear concurrencia.
 - **Libro de runbooks operativos**: "el swarm se atascó, qué hago", "un plugin no carga, cómo depuro", "el disco está lleno de `.tmp`, por qué".
@@ -499,11 +499,11 @@ La documentación actual (README, PLUGINS-MCP-CORE.md) es buena para "cómo usar
 El nivel verdaderamente excepcional —que ningún sistema MCP hace todavía— sería generar tipos TypeScript del output de cada tool a partir de los `outputSchema` declarados. Esto permitiría que un plugin que consume otro plugin tenga type-safety completa:
 
 ```ts
-import type { IOverviewResult } from '@cartago-git/mcp-core/types';
+import type { IOverviewResult } from '@cartago-git/mcp-vertex/types';
 // IOverviewResult generado automáticamente del outputSchema de overview_tool
 ```
 
-Esto convertiría mcp-core en un framework tipado end-to-end, no solo un runtime.
+Esto convertiría mcp-vertex en un framework tipado end-to-end, no solo un runtime.
 
 ---
 

@@ -1,4 +1,4 @@
-# 🔍 Auditoría Exhaustiva — `mcp-core` y Plugins (Gemini 3.5 Flash)
+# 🔍 Auditoría Exhaustiva — `mcp-vertex` y Plugins (Gemini 3.5 Flash)
 
 > **Fecha**: 15 de junio de 2026
 > **Revisor**: Antigravity (Gemini 3.5 Flash)
@@ -8,7 +8,7 @@
 
 ## 📊 Resumen Ejecutivo y Opinión General
 
-El workspace `@cartago-git/mcp-core` es un framework para servidores MCP (Model Context Protocol) diseñado bajo un enfoque **modular, desacoplado y orientado a swarms de agentes**. La separación entre el núcleo del framework (`packages/core`) y las capacidades específicas (`plugins/*`) es excelente y mantiene el core 100% libre de lógica de dominio.
+El workspace `@cartago-git/mcp-vertex` es un framework para servidores MCP (Model Context Protocol) diseñado bajo un enfoque **modular, desacoplado y orientado a swarms de agentes**. La separación entre el núcleo del framework (`packages/core`) y las capacidades específicas (`plugins/*`) es excelente y mantiene el core 100% libre de lógica de dominio.
 
 Tras las recientes refactorizaciones y correcciones de la sesión autónoma (donde se resolvieron los errores P0 más urgentes), la base del código muestra una madurez de nivel de ingeniería notable. La suite de pruebas de Vitest ejecuta **350 tests (340 verdes y 10 skipped)** en menos de 5 segundos, garantizando estabilidad funcional.
 
@@ -23,7 +23,7 @@ Mi valoración actual del proyecto es de un **8.5 / 10**. Se encuentra muy cerca
 Afortunadamente, los errores de la tanda anterior clasificados como blockbusters absolutos (escrituras no atómicas en `lock`/`queue`, fugas de `process.cwd()` en engines, acoplamiento de layouts, etc.) **fueron corregidos con éxito**. No obstante, en esta nueva auditoría exhaustiva detectamos dos escenarios críticos que actúan como "Lost Updates" (actualizaciones perdidas) bajo concurrencia real:
 
 ### 1. Ausencia de Mutex en la sincronización del índice (`syncProposalRegistry`)
-* **Fichero**: [sync-proposal-registry.ts#L311](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)
+* **Fichero**: [sync-proposal-registry.ts#L311](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)
 * **Problema**: El método `syncProposalRegistry` regenera el archivo `index.json` leyendo el sistema de archivos y escribiendo mediante `writeFileAtomic`. Aunque el método de escritura es atómico (evitando archivos rotos), **no está protegido por exclusión mutua (`withFileMutex`)**. Si dos agentes ejecutan `sync_proposals` de manera simultánea en un swarm paralelo:
   1. El Agente A lee el directorio antes de que el Agente B cree una propuesta.
   2. El Agente B escribe su propuesta y ejecuta `syncProposalRegistry`, guardando un índice con las propuestas `[1, 2]`.
@@ -35,7 +35,7 @@ Afortunadamente, los errores de la tanda anterior clasificados como blockbusters
 ## 🟠 MAL (Muy Mal) — Problemas serios que degradan la consistencia y la fiabilidad
 
 ### 2. Guardado y eliminación en `memory` vulnerables a escrituras concurrentes (RMW)
-* **Fichero**: [store.ts#L63](file:///home/cartago/_projects/mcp-core/plugins/memory/src/lib/store.ts#L63) y [store.ts#L108](file:///home/cartago/_projects/mcp-core/plugins/memory/src/lib/store.ts#L108)
+* **Fichero**: [store.ts#L63](file:///home/cartago/_projects/mcp-vertex/plugins/memory/src/lib/store.ts#L63) y [store.ts#L108](file:///home/cartago/_projects/mcp-vertex/plugins/memory/src/lib/store.ts#L108)
 * **Problema**: El plugin de `memory` utiliza funciones puramente síncronas (`readFileSync` y `writeFileAtomicSync`) para leer y guardar la base de notas. Al igual que el problema de `syncProposalRegistry`, **no utiliza un archivo mutex de exclusión mutua** durante la fase de lectura-modificación-escritura (RMW). 
 * **Impacto**: Si dos agentes intentan guardar notas concurrentemente mediante `memory_save`, el último agente en escribir pisará y borrará la nota guardada por el primero en esa misma fracción de segundo.
 
@@ -45,18 +45,18 @@ Afortunadamente, los errores de la tanda anterior clasificados como blockbusters
 
 ### 3. Operaciones de E/S síncronas bloqueantes en el event loop (`git` y `search`)
 * **Ficheros**:
-  * [git.ts#L11](file:///home/cartago/_projects/mcp-core/plugins/git/src/lib/git.ts#L11) (Uso de `execFileSync` para todas las herramientas de git).
-  * [engine.ts#L90](file:///home/cartago/_projects/mcp-core/plugins/search/src/lib/engine.ts#L90) (Uso de `readdirSync`, `statSync` y `readFileSync` en la herramienta `search`).
+  * [git.ts#L11](file:///home/cartago/_projects/mcp-vertex/plugins/git/src/lib/git.ts#L11) (Uso de `execFileSync` para todas las herramientas de git).
+  * [engine.ts#L90](file:///home/cartago/_projects/mcp-vertex/plugins/search/src/lib/engine.ts#L90) (Uso de `readdirSync`, `statSync` y `readFileSync` en la herramienta `search`).
 * **Problema**: El uso de llamadas síncronas a nivel de sistema de archivos y subprocesos congela el hilo principal único de ejecución de Node/Bun.
 * **Impacto**: Si un comando git se retrasa (ej. por culpa de un lock de git) o la búsqueda de texto barre un árbol de directorios grande, el servidor MCP no procesará ninguna otra petición entrante, causando latencias y timeouts en otros agentes del swarm.
 
 ### 4. Residuos de `process.cwd()` en utilidades compartidas
-* **Fichero**: [resolve-workspace-path.ts#L33](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/shared/resolve-workspace-path.ts#L33)
+* **Fichero**: [resolve-workspace-path.ts#L33](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/shared/resolve-workspace-path.ts#L33)
 * **Problema**: El helper `resolveWorkspacePath` contiene lógica de fallback basada en `process.cwd()` en caso de no poder ascender hasta un package/git root.
 * **Impacto**: Aunque en producción el host inyecta siempre los paths absolutos a través del contexto de plugin, la existencia de fallbacks globales debilita el aislamiento absoluto ("hermeticidad") prometido por la arquitectura del sandbox.
 
 ### 5. Check de dependencias de eslint puramente estático
-* **Fichero**: [rules-tools.ts#L117](file:///home/cartago/_projects/mcp-core/plugins/rules/src/lib/tools/rules-tools.ts#L117)
+* **Fichero**: [rules-tools.ts#L117](file:///home/cartago/_projects/mcp-vertex/plugins/rules/src/lib/tools/rules-tools.ts#L117)
 * **Problema**: `missingEslintDeps` verifica la presencia de dependencias leyendo el `package.json`. No obstante, no garantiza que el binario `eslint` esté realmente instalado en el entorno de ejecución ni que sea invocable.
 
 ---
@@ -103,15 +103,15 @@ Afortunadamente, los errores de la tanda anterior clasificados como blockbusters
 ## 💎 PERFECTO — Diseño ejemplar y de referencia
 
 ### 15. Planificación de orden de registro determinista (`planRegistrationOrder`)
-* **Fichero**: [create-mcp-server.ts#L26](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/server/create-mcp-server.ts#L26)
+* **Fichero**: [create-mcp-server.ts#L26](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L26)
 * El resolvedor de orden calcula de manera determinista y constante la secuencia de inyección de herramientas de los plugins, detectando colisiones y referencias cruzadas circulares de inmediato.
 
 ### 16. Aislamiento del diseño de plugins a través de `definePlugin` y `ctx`
-* **Fichero**: [plugin-contract.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/plugins/plugin-contract.ts)
+* **Fichero**: [plugin-contract.ts](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/plugins/plugin-contract.ts)
 * La interfaz `IMcpPluginContext` obliga a inyectar las dependencias (rutas, options, namespace, workspace) en la llamada `register(ctx)`, previniendo variables globales mutables y permitiendo portar cualquier plugin a hosts externos sin cambios.
 
 ### 17. Cuarentena automática de archivos corruptos (`quarantineCorruptFile`)
-* **Fichero**: [quarantine-corrupt-file.ts](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/quarantine-corrupt-file.ts)
+* **Fichero**: [quarantine-corrupt-file.ts](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/quarantine-corrupt-file.ts)
 * En lugar de vaciar silenciosamente o fallar de manera catastrófica al leer un JSON corrupto (lo cual causaría pérdida de locks/estados y conflictos destructivos de re-reclamación), el framework renombra el archivo agregando un sufijo `.corrupt-<timestamp>-<random>` y lanza un error detallado. Excelente medida de seguridad de datos.
 
 ---
@@ -158,7 +158,7 @@ Para avanzar del estado actual al nivel **11/10 (Excelencia Absoluta)**, conside
 
 ## 🚀 El Camino al 11/10 (Excelencia Absoluta)
 
-Para elevar la valoración técnica de `@cartago-git/mcp-core` de un **8.5 a un 11/10**, es imprescindible dotar a la plataforma de una robustez del 100% ante concurrencias masivas y una eficiencia de tokens óptima. Se deben implementar los siguientes pilares:
+Para elevar la valoración técnica de `@cartago-git/mcp-vertex` de un **8.5 a un 11/10**, es imprescindible dotar a la plataforma de una robustez del 100% ante concurrencias masivas y una eficiencia de tokens óptima. Se deben implementar los siguientes pilares:
 
 ### 1. Transaccionalidad Total en el Estado
 * **Exclusión Mutua Generalizada**: Envolver todas las operaciones del motor de índice (`syncProposalRegistry`) y el almacén del plugin `memory` bajo un control de concurrencia activo (`withFileMutex`). Esto garantiza que el Swarm sea inmune a pérdidas de actualizaciones (*lost updates*), impidiendo que dos agentes re-escriban sus estados a la vez de forma destructiva.
@@ -186,10 +186,10 @@ Para elevar la valoración técnica de `@cartago-git/mcp-core` de un **8.5 a un 
 
 | Severidad / Prioridad | Acción de Mejora | Ubicación sugerida |
 |---|---|---|
-| 🔴 **P0 (Fatal)** | Envolver la escritura y regeneración del índice dentro del motor `syncProposalRegistry` con el bloqueo de exclusión mutua `withFileMutex`. | [`sync-proposal-registry.ts`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts) |
-| 🟠 **P1 (Muy Mal)** | Migrar las herramientas del plugin de `memory` (`saveNote` y `removeNote`) para usar `withFileMutex` asíncronamente en lugar de llamadas síncronas sin bloqueo. | [`store.ts`](file:///home/cartago/_projects/mcp-core/plugins/memory/src/lib/store.ts) |
-| 🟡 **P2 (Regular)** | Refactorizar la ejecución de comandos `git` a un esquema asíncrono basado en Promesas (`execFile` / `spawn`) para evitar congelar el event loop. | [`git.ts`](file:///home/cartago/_projects/mcp-core/plugins/git/src/lib/git.ts) |
-| 🟡 **P2 (Regular)** | Modificar la búsqueda de archivos en `search` para realizar un escaneo asíncrono y evitar bloqueos en directorios masivos. | [`engine.ts`](file:///home/cartago/_projects/mcp-core/plugins/search/src/lib/engine.ts) |
-| 🟡 **P2 (Regular)** | Eliminar por completo el fallback de `process.cwd()` de la utilidad compartida `resolveWorkspacePath`. | [`resolve-workspace-path.ts`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/shared/resolve-workspace-path.ts) |
+| 🔴 **P0 (Fatal)** | Envolver la escritura y regeneración del índice dentro del motor `syncProposalRegistry` con el bloqueo de exclusión mutua `withFileMutex`. | [`sync-proposal-registry.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts) |
+| 🟠 **P1 (Muy Mal)** | Migrar las herramientas del plugin de `memory` (`saveNote` y `removeNote`) para usar `withFileMutex` asíncronamente en lugar de llamadas síncronas sin bloqueo. | [`store.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/memory/src/lib/store.ts) |
+| 🟡 **P2 (Regular)** | Refactorizar la ejecución de comandos `git` a un esquema asíncrono basado en Promesas (`execFile` / `spawn`) para evitar congelar el event loop. | [`git.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/git/src/lib/git.ts) |
+| 🟡 **P2 (Regular)** | Modificar la búsqueda de archivos en `search` para realizar un escaneo asíncrono y evitar bloqueos en directorios masivos. | [`engine.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/search/src/lib/engine.ts) |
+| 🟡 **P2 (Regular)** | Eliminar por completo el fallback de `process.cwd()` de la utilidad compartida `resolveWorkspacePath`. | [`resolve-workspace-path.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/shared/resolve-workspace-path.ts) |
 | 🟢 **P3 (Optimización)** | Reducir el consumo de tokens eliminando el espaciado y tabulación (`\t`) en las serializaciones JSON de salida en las herramientas de propuestas y memoria. | Múltiples herramientas en `proposals` y `memory` |
-| 🟢 **P3 (Nueva Feature)** | Crear el plugin de notificaciones para erradicar el polling de colas y locks. | [`plugins/notification`](file:///home/cartago/_projects/mcp-core/plugins/) |
+| 🟢 **P3 (Nueva Feature)** | Crear el plugin de notificaciones para erradicar el polling de colas y locks. | [`plugins/notification`](file:///home/cartago/_projects/mcp-vertex/plugins/) |
