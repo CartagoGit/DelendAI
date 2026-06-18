@@ -640,11 +640,46 @@ estructura de `en.ts` (fuente de verdad).
 - **id: s9** — Validar: `bun run validate` + `bun run site:strict`.
   - status: todo
 
+- **id: s10** — Fix banderas de idiomas (B12).
+  - files: [Config.astro]
+  - status: todo
+  - note: Cambio de `l.country` → `l.flag` (campo que ya existe en
+    `shared.ts`). Trivial, < 5 líneas.
+
+- **id: s11** — View Transitions en `Base.astro` (B11).
+  - files: [layouts/Base.astro, Config.astro (mark active link)]
+  - status: todo
+  - note: 1 línea en Base; el `<a class="lang-opt">` se intercepta
+    automáticamente. Opcional: añadir `transition:animate="slide"`
+    en las páginas para dirección.
+
+- **id: s12** — Eliminar subhero (B13).
+  - files: [_subhero.scss, styles.scss (import), 16 pages/*.astro +
+    PluginPage.astro, _notfound.scss, _nav-media.scss]
+  - status: todo
+  - note: Refactor grande pero mecánico (borrar y dejar que la
+    `<h1>` y el contenido de la página cobren el protagonismo).
+
+- **id: s13** — Desplegables por plugin con detalle de capabilities
+  (B10).
+  - files: [components/PluginCapabilities.astro (nuevo),
+    pages/plugins/index.astro, opcional pages/capabilities.astro,
+    i18n/tools/index.ts (si se reusa el helper de s5)]
+  - status: todo
+  - note: Usa `<details>` nativa con `interpolate-size: allow-keywords`
+    o `details::details-content` para animación suave. Una sección
+    por plugin, body = tools + prompts + resources + knowledge.
+
+- **id: s14** — Re-validar: `bun run validate` + `bun run site:strict`.
+  - status: todo
+
 ## 5. Acceptance
 
 - [ ] El icono del engranaje abre el modal con animación.
 - [ ] Cambiar idioma en el modal traduce toda la web (probado en
-      `/es/install`, `/es/tools`, `/es/plugins/proposals`).
+      `/es/install`, `/es/tools`, `/es/plugins/proposals`) y lo
+      hace con **transición cross-page** (fade o slide), no salto.
+- [ ] Las **banderas de los 12 idiomas** aparecen en el modal.
 - [ ] `/plugins` no tiene doble header; se ve igual que el resto.
 - [ ] `bun run dev` crea `apps/web/public/api/` antes de levantar
       Astro.
@@ -652,6 +687,9 @@ estructura de `en.ts` (fuente de verdad).
       idioma activo (fallback al inglés si la traducción no existe).
 - [ ] La marquesina muestra solo iconos y expande un badge con el
       nombre al hacer hover.
+- [ ] El subhero está **eliminado**: 0 referencias, 0 estilos.
+- [ ] Hay una vista de **capabilities por plugin** con
+      `<details>` colapsables (tools, prompts, resources, knowledge).
 - [ ] `es.ts` tiene todas las claves con texto en español (no
       inglés).
 - [ ] `bun run validate` verde.
@@ -672,3 +710,13 @@ estructura de `en.ts` (fuente de verdad).
   (12 × ~30 strings). Si bloquea, se cierra solo con `en.ts` +
   `es.ts` completos + el resto con fallback al inglés (que es lo
   que pasa hoy de facto).
+- **View Transitions**: requiere JS. Caer a navegación normal
+  con `<noscript>` y respetar `prefers-reduced-motion` (Astro ya
+  lo hace por defecto).
+- **Eliminar subhero en 16 páginas**: el refactor es mecánico
+  (borrar bloque) pero el `<h1>` actual de algunas páginas es
+  débil (texto plano sin contexto). Habrá que mirar página a
+  página si hace falta mejorar el copy.
+- **Desplegables por plugin**: si la lista de tools crece mucho
+  (>200), el `<details>` nativo puede ser lento. Para los ~52
+  tools actuales,没有问题.
