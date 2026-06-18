@@ -103,7 +103,7 @@ Afortunadamente, los errores de la tanda anterior clasificados como blockbusters
 ## 💎 PERFECTO — Diseño ejemplar y de referencia
 
 ### 15. Planificación de orden de registro determinista (`planRegistrationOrder`)
-* **Fichero**: [create-mcp-server.ts#L26](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L26)
+* **Fichero**: [create-mcp-project.ts#L26](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L26)
 * El resolvedor de orden calcula de manera determinista y constante la secuencia de inyección de herramientas de los plugins, detectando colisiones y referencias cruzadas circulares de inmediato.
 
 ### 16. Aislamiento del diseño de plugins a través de `definePlugin` y `ctx`

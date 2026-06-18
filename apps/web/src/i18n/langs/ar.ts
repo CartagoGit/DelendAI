@@ -128,6 +128,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: 'الصفحة غير موجودة',
+		lead: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها. تبقى النواة محايدة — حتى تجاه روابط URL المعطّلة.',
+		homeCta: 'العودة إلى الرئيسية',
+		toolsCta: 'تصفّح الأدوات',
+		homeAria: 'الذهاب إلى الرئيسية',
+	},
 };
 
 export default dict;

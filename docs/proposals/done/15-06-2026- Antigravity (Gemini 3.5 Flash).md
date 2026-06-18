@@ -103,7 +103,7 @@ El esquema `LockEntrySchema` de Zod realiza un método `.transform()` en la lect
 ## 🟡 REGULAR — Funciona pero mejorable
 
 ### 9. Placeholder perpetuamente vacío `coreToolRegistrations`
-**Fichero**: [`create-mcp-server.ts#L23-L27`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L23-L27)
+**Fichero**: [`create-mcp-project.ts#L23-L27`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L23-L27)
 
 La función encargada de registrar las herramientas por defecto del núcleo del framework retorna un array vacío de manera persistente con la nota "Empty until the tool engines migrate from the host project". Si no hay herramientas del core independientes de los plugins, esta abstracción vacía añade ruido mental.
 
@@ -122,7 +122,7 @@ El comando `--check`/`--doctor` llama a `diagnoseConfigFile` leyendo el archivo 
 ## 🟢 COMO DEBE ESTAR — Correcto y funcional
 
 ### 12. Validación e inserción ordenada de herramientas determinista
-**Fichero**: [`create-mcp-server.ts#L37-L77`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L37-L77)
+**Fichero**: [`create-mcp-project.ts#L37-L77`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L37-L77)
 
 El algoritmo `planRegistrationOrder` está excelentemente diseñado. Valida la unicidad de los identificadores de herramientas, detecta anclajes (`registerAfter`) inexistentes y realiza inserciones en tiempo constante asegurando que el orden semántico se mantiene inalterado entre ejecuciones.
 
@@ -239,7 +239,7 @@ Sin embargo, hay espacio para mejorar la estructura interna:
 | 🟠 **P1 (Muy Mal)** | Consolidar la utilidad duplicada `joinRel` en la carpeta `shared` de core y exportarla en el index público. | Múltiples ficheros (rules, memory y core) |
 | 🟠 **P1 (Muy Mal)** | Configurar el parámetro de tracks de propuestas en la configuración del plugin (`mcp-vertex.config.json`) en lugar de mantenerlos en un tipo estático hardcodeado. | [`proposal-parallelism.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/proposal-parallelism.ts) |
 | 🟠 **P1 (Muy Mal)** | Parametrizar las carpetas de escaneo (como `paused/demos`) mediante las opciones de configuración del plugin proposals. | [`round-context.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/swarm/round-context.ts) |
-| 🟡 **P2 (Regular)** | Eliminar `coreToolRegistrations` o migrar herramientas comunes del framework al núcleo. | [`create-mcp-server.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts) |
+| 🟡 **P2 (Regular)** | Eliminar `coreToolRegistrations` o migrar herramientas comunes del framework al núcleo. | [`create-mcp-project.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts) |
 | 🟡 **P2 (Regular)** | Reemplazar operaciones sincrónicas del sistema de archivos (`readFileSync`, `existsSync`) por sus equivalentes de promesas en rutas calientes. | [`persistent-task-queue.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/persistent-task-queue.ts) |
 
 ---

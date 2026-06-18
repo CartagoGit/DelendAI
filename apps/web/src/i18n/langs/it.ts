@@ -137,6 +137,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: 'Pagina non trovata',
+		lead: 'La pagina che cerchi non esiste o è stata spostata. Il core resta agnostico — anche rispetto agli URL rotti.',
+		homeCta: "Torna all'inizio",
+		toolsCta: 'Vedi gli strumenti',
+		homeAria: "Vai all'inizio",
+	},
 };
 
 export default dict;

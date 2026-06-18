@@ -60,7 +60,7 @@ Puntos muy buenos:
   cual evita que los plugins tengan que adivinar rutas.
 - `loadPlugins` deduplica specifiers, deduplica por nombre de plugin, no tira
   abajo todo el server si un plugin falla, y aplica timeout por import/register.
-- `createMcpServer` registra tools de forma determinista e instrumenta metricas
+- `createMcpProject` registra tools de forma determinista e instrumenta metricas
   antes de exponer herramientas.
 - `overview`, `status`, `metrics`, `knowledge`, `validation_matrix`, `scaffold`
   y bootstrap cubren muy bien el ciclo de orientacion de un agente.

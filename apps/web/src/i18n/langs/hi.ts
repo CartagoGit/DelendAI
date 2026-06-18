@@ -131,6 +131,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: 'पृष्ठ नहीं मिला',
+		lead: 'जिस पृष्ठ को आप खोज रहे हैं वह मौजूद नहीं है या स्थानांतरित हो गया है। कोर निरपेक्ष रहता है — टूटे URL के प्रति भी।',
+		homeCta: 'होम पर वापस',
+		toolsCta: 'टूल देखें',
+		homeAria: 'होम पर जाएँ',
+	},
 };
 
 export default dict;

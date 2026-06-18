@@ -112,7 +112,7 @@ mantenedor no los deshaga al "limpiar":
   pluginCacheDir, namespacePrefix, options, args** de una vez; los
   plugins no leen configuración por su cuenta.
 - **`planRegistrationOrder`**
-  ([`packages/core/src/lib/server/create-mcp-server.ts:26`](../../packages/core/src/lib/server/create-mcp-server.ts#L26))
+  ([`packages/core/src/lib/project/create-mcp-project.ts:26`](../../packages/core/src/lib/project/create-mcp-project.ts#L26))
   — determinista, falla rápido ante ids duplicados y anchors
   desconocidos, soporta `registerAfter` con orden estable.
 - **`writeFileAtomic` + `withFileMutex`**

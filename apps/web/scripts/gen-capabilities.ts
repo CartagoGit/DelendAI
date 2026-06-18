@@ -11,7 +11,14 @@
  *
  * Requires `bun run build` first (the public API resolves to each package's dist).
  */
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +28,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
 import {
 	assembleCliConfig,
-	createMcpServer,
+	createMcpProject,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
@@ -38,7 +45,8 @@ import depsPlugin from '@mcp-vertex/deps';
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
 const OUT = resolve(HERE, '..', 'src', 'data', 'capabilities.json');
-const PLUGIN_LIST = 'proposals,rules,memory,git,quality,search,notification,docs,deps';
+const PLUGIN_LIST =
+	'proposals,rules,memory,git,quality,search,notification,docs,deps';
 const PLUGINS: Record<string, unknown> = {
 	'mcp-proposals': proposalsPlugin,
 	'mcp-rules': rulesPlugin,
@@ -70,7 +78,11 @@ interface IPrompt {
 	readonly name: string;
 	readonly description: string;
 	readonly namespace: string;
-	readonly arguments?: ReadonlyArray<{ readonly name: string; readonly description: string; readonly required?: boolean }>;
+	readonly arguments?: ReadonlyArray<{
+		readonly name: string;
+		readonly description: string;
+		readonly required?: boolean;
+	}>;
 }
 
 interface IResource {
@@ -101,23 +113,28 @@ const namespaceOf = (toolName: string): string =>
 /** Assemble the real server for a plugin list and return a connected client. */
 const buildClient = async (
 	pluginList: string,
-	workspace: string
+	workspace: string,
 ): Promise<{ client: Client; close: () => Promise<void> }> => {
 	const args = parseCliArgs(
 		[`--plugins=${pluginList}`, `--workspace=${workspace}`],
-		workspace
+		workspace,
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async (specifier: string) => {
-			const hit = Object.entries(PLUGINS).find(([k]) => specifier.includes(k));
+			const hit = Object.entries(PLUGINS).find(([k]) =>
+				specifier.includes(k),
+			);
 			return { default: hit ? hit[1] : undefined };
 		},
 		readFile: () => undefined,
 	});
-	const assembled = await createMcpServer(config);
+	const assembled = await createMcpProject(config);
 	const [ct, st] = InMemoryTransport.createLinkedPair();
 	await assembled.server.connect(st);
-	const client = new Client({ name: 'site', version: '0.0.0' }, { capabilities: {} });
+	const client = new Client(
+		{ name: 'site', version: '0.0.0' },
+		{ capabilities: {} },
+	);
 	await client.connect(ct);
 	return {
 		client,
@@ -143,10 +160,13 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 			id: string,
 			label: string,
 			name: string,
-			toolArgs: Record<string, unknown> = {}
+			toolArgs: Record<string, unknown> = {},
 		): Promise<IBenchmark | undefined> => {
 			try {
-				const res = (await client.callTool({ name, arguments: toolArgs })) as {
+				const res = (await client.callTool({
+					name,
+					arguments: toolArgs,
+				})) as {
 					content?: Array<{ text?: string }>;
 				};
 				const text = res.content?.[0]?.text ?? '';
@@ -159,9 +179,14 @@ const collectBenchmarks = async (): Promise<IBenchmark[]> => {
 		};
 		const measured = await Promise.all([
 			measure('overview_full', 'overview (full)', 'mcp-vertex_overview'),
-			measure('overview_compact', 'overview (compact)', 'mcp-vertex_overview', {
-				compact: true,
-			}),
+			measure(
+				'overview_compact',
+				'overview (compact)',
+				'mcp-vertex_overview',
+				{
+					compact: true,
+				},
+			),
 			measure('auto_work', 'auto_work', 'proposals_auto_work'),
 		]);
 		await close();
@@ -180,14 +205,20 @@ const collectTools = async (): Promise<ICollected> => {
 		// just won't render the /prompts page.
 		const [toolsRes, promptsRes, resourcesRes] = await Promise.all([
 			client.listTools(),
-			(client.listPrompts?.() ?? Promise.resolve({ prompts: [] })) as Promise<{
+			(client.listPrompts?.() ??
+				Promise.resolve({ prompts: [] })) as Promise<{
 				prompts: Array<{
 					name: string;
 					description?: string;
-					arguments?: Array<{ name: string; description?: string; required?: boolean }>;
+					arguments?: Array<{
+						name: string;
+						description?: string;
+						required?: boolean;
+					}>;
 				}>;
 			}>,
-			(client.listResources?.() ?? Promise.resolve({ resources: [] })) as Promise<{
+			(client.listResources?.() ??
+				Promise.resolve({ resources: [] })) as Promise<{
 				resources: Array<{
 					uri: string;
 					name: string;
@@ -210,7 +241,7 @@ const collectTools = async (): Promise<ICollected> => {
 		const effectsByName = new Map<string, string[]>(
 			(overview.structuredContent?.tools ?? [])
 				.filter((t) => t.effects && t.effects.length > 0)
-				.map((t) => [t.name, t.effects as string[]])
+				.map((t) => [t.name, t.effects as string[]]),
 		);
 		const knowledgeRaw = overview.structuredContent?.knowledge ?? [];
 		await close();
@@ -220,7 +251,9 @@ const collectTools = async (): Promise<ICollected> => {
 					name: t.name,
 					namespace: namespaceOf(t.name),
 					description: t.description ?? '',
-					...(effectsByName.has(t.name) ? { effects: effectsByName.get(t.name) } : {}),
+					...(effectsByName.has(t.name)
+						? { effects: effectsByName.get(t.name) }
+						: {}),
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name)),
 			prompts: (promptsRes.prompts ?? [])
@@ -244,7 +277,9 @@ const collectTools = async (): Promise<ICollected> => {
 					uri: r.uri,
 					name: r.name,
 					description: r.description ?? '',
-					namespace: namespaceOf(r.uri.replace(/^[a-z]+:\/\//, '').replace(/-/g, '_')),
+					namespace: namespaceOf(
+						r.uri.replace(/^[a-z]+:\/\//, '').replace(/-/g, '_'),
+					),
 					...(r.mimeType ? { mimeType: r.mimeType } : {}),
 				}))
 				.sort((a, b) => a.uri.localeCompare(b.uri)),
@@ -268,9 +303,13 @@ const collectPackages = (): Array<{ name: string; version: string }> => {
 		for (const dir of readdirSync(join(ROOT, group))) {
 			try {
 				const pkg = JSON.parse(
-					readFileSync(join(ROOT, group, dir, 'package.json'), 'utf8')
+					readFileSync(
+						join(ROOT, group, dir, 'package.json'),
+						'utf8',
+					),
 				) as { name?: string; version?: string };
-				if (pkg.name && pkg.version) out.push({ name: pkg.name, version: pkg.version });
+				if (pkg.name && pkg.version)
+					out.push({ name: pkg.name, version: pkg.version });
 			} catch {
 				// not a package dir
 			}
@@ -282,12 +321,15 @@ const collectPackages = (): Array<{ name: string; version: string }> => {
 const main = async (): Promise<void> => {
 	const strict = process.argv.includes('--strict');
 	const coreVersion = (
-		JSON.parse(readFileSync(join(ROOT, 'packages/core/package.json'), 'utf8')) as {
+		JSON.parse(
+			readFileSync(join(ROOT, 'packages/core/package.json'), 'utf8'),
+		) as {
 			version: string;
 		}
 	).version;
 
-	const { tools, prompts, resources, knowledge, benchmarks } = await collectTools();
+	const { tools, prompts, resources, knowledge, benchmarks } =
+		await collectTools();
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
 	if (undocumented.length > 0) {
 		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
@@ -319,7 +361,7 @@ const main = async (): Promise<void> => {
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`
+		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 
