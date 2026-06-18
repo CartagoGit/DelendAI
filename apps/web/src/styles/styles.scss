@@ -50,6 +50,7 @@
 @use "components/toggle";
 @use "components/prompt";
 @use "components/resources-table";
+@use "components/notfound";
 
 // 5. Component-local responsive overrides (kept last so they always win).
 @use "components/nav-media";
