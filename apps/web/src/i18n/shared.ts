@@ -19,31 +19,38 @@ export interface ILangMeta {
 
 /** Languages with a full translation (selectable in the config modal). */
 export const languages = [
-	{ code: "ar", label: "العربية", flag: "sa" },
-	{ code: "de", label: "Deutsch", flag: "de" },
-	{ code: "en", label: "English", flag: "gb" },
-	{ code: "es", label: "Español", flag: "es" },
-	{ code: "fr", label: "Français", flag: "fr" },
-	{ code: "hi", label: "हिन्दी", flag: "in" },
-	{ code: "it", label: "Italiano", flag: "it" },
-	{ code: "ja", label: "日本語", flag: "jp" },
-	{ code: "pt", label: "Português", flag: "pt" },
-	{ code: "th", label: "ไทย", flag: "th" },
-	{ code: "vi", label: "Tiếng Việt", flag: "vn" },
-	{ code: "zh", label: "中文", flag: "cn" },
+	{ code: 'ar', label: 'العربية', flag: 'sa' },
+	{ code: 'de', label: 'Deutsch', flag: 'de' },
+	{ code: 'en', label: 'English', flag: 'gb' },
+	{ code: 'es', label: 'Español', flag: 'es' },
+	{ code: 'fr', label: 'Français', flag: 'fr' },
+	{ code: 'hi', label: 'हिन्दी', flag: 'in' },
+	{ code: 'it', label: 'Italiano', flag: 'it' },
+	{ code: 'ja', label: '日本語', flag: 'jp' },
+	{ code: 'pt', label: 'Português', flag: 'pt' },
+	{ code: 'th', label: 'ไทย', flag: 'th' },
+	{ code: 'vi', label: 'Tiếng Việt', flag: 'vn' },
+	{ code: 'zh', label: '中文', flag: 'cn' },
 ] as const satisfies readonly ILangMeta[];
 
-export type Lang = (typeof languages)[number]["code"];
+export type Lang = (typeof languages)[number]['code'];
 
 /** Right-to-left languages (need `dir="rtl"`). */
-export const rtlLangs: readonly Lang[] = ["ar"];
+export const rtlLangs: readonly Lang[] = ['ar'];
 
-export const defaultLang: Lang = "en";
+export const defaultLang: Lang = 'en';
 
-export const themes = ["dark", "light", "midnight", "solarized", "nord"] as const;
+export const themes = [
+	'dark',
+	'light',
+	'midnight',
+	'solarized',
+	'nord',
+] as const;
 export type Theme = (typeof themes)[number];
 
-export const flagFor = (lang: Lang): string => languages.find((l) => l.code === lang)?.flag ?? "gb";
+export const flagFor = (lang: Lang): string =>
+	languages.find((l) => l.code === lang)?.flag ?? 'gb';
 
 // ─── Translation shape (the contract) ────────────────────────────────────────
 
@@ -143,16 +150,16 @@ export interface IPluginPageTranslations {
 
 /** Plugin descriptor keys: keep in sync with `apps/web/src/data/capabilities.json`. */
 export type PluginKey =
-	| "proposals"
-	| "git"
-	| "memory"
-	| "search"
-	| "rules"
-	| "quality"
-	| "docs"
-	| "deps"
-	| "notification"
-	| "core";
+	| 'proposals'
+	| 'git'
+	| 'memory'
+	| 'search'
+	| 'rules'
+	| 'quality'
+	| 'docs'
+	| 'deps'
+	| 'notification'
+	| 'core';
 
 export type IPluginTranslations = Readonly<Record<PluginKey, string>>;
 
@@ -175,37 +182,51 @@ export interface ITranslations {
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */
 export type LangDict = ITranslations;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Resolving a dictionary for a given language ─────────────────────────────
 
-/** Walk `path` through `dict` and return the leaf string (or `undefined` if missing). */
-const walkPath = (dict: unknown, path: ReadonlyArray<string>): string | undefined => {
-	let cur: unknown = dict;
-	for (const seg of path) {
-		if (cur && typeof cur === "object" && seg in (cur as Record<string, unknown>)) {
-			cur = (cur as Record<string, unknown>)[seg];
-		} else {
-			return undefined;
+/**
+ * Deep-merge `dict` over `fallback` (typically English), so any leaf missing
+ * from `dict` is silently taken from `fallback`. We don't fail loudly here
+ * because the i18n completeness gate (`scripts/check-i18n.ts`) catches
+ * missing keys at build time; runtime just needs something to render.
+ */
+const resolve = (dict: LangDict, fallback: LangDict): ITranslations => {
+	const merge = (a: unknown, b: unknown): unknown => {
+		if (typeof a === 'string') return a;
+		if (typeof b === 'string') return b;
+		if (a && b && typeof a === 'object' && typeof b === 'object') {
+			const out: Record<string, unknown> = {};
+			const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+			for (const k of keys) {
+				out[k] = merge(
+					(a as Record<string, unknown>)[k],
+					(b as Record<string, unknown>)[k],
+				);
+			}
+			return out;
 		}
-	}
-	return typeof cur === "string" ? cur : undefined;
+		return a ?? b;
+	};
+	return merge(dict, fallback) as ITranslations;
 };
 
 /**
- * Build a translator for `dict` that falls back to `fallback` (typically English)
- * when a key is missing, finally returning the joined path so missing keys are
- * visible at runtime rather than swallowed.
- *
- * Accepts both the variadic form (`t('nav', 'concept')`) and the dot-string
- * form (`t.nav.concept`); the dot-string form is kept for one release so the
- * migration of legacy `.astro` pages stays low-ceremony.
+ * Resolve the translations for `lang`. Returns the nested object directly so
+ * templates can write `t.hero.title.a` instead of `t('hero.title.a')` — every
+ * call site is then type-checked against `ITranslations`, autocompleted by
+ * the IDE, and refactor-safe.
  */
-export const makeTranslator = (dict: LangDict, fallback: LangDict) => {
-	return (...raw: ReadonlyArray<string | undefined>): string => {
-		const path = raw
-			.flatMap((p) => (typeof p === "string" ? p.split(".") : []))
-			.filter((s) => s.length > 0);
-		return walkPath(dict, path) ?? walkPath(fallback, path) ?? path.join(".");
-	};
+export const useTranslations = (lang: Lang): ITranslations => {
+	const dict = dictsByLang[lang] ?? dictsByLang[defaultLang];
+	return resolve(dict, dictsByLang[defaultLang]);
 };
 
-export type Translator = ReturnType<typeof makeTranslator>;
+/**
+ * Map of every loaded language to its raw (un-resolved) dictionary. Populated
+ * by `./index.ts` which imports `./langs/<code>.ts` for each entry of
+ * `languages`.
+ */
+export const dictsByLang: Readonly<Record<Lang, LangDict>> = {} as Record<
+	Lang,
+	LangDict
+>;

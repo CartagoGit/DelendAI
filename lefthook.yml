@@ -1,0 +1,50 @@
+# Lefthook — git hooks for @mcp-vertex/core
+# Docs: https://lefthook.dev/configuration/
+#
+# Install: `bun install` runs `prepare` → `lefthook install` automatically.
+# Skip with `LEFTHOOK=0 git commit ...` or `git commit --no-verify`.
+
+min_version: 1.7.0
+no_tty: false
+colors: true
+
+# Glob for files that belong to the "front" surface (apps/web).
+# Matched by hand to keep this fast — Biome's own includes are broader.
+front_globs: &front_globs >-
+  apps/web/src/**/*.{astro,ts,tsx,js,jsx,mjs,cjs,vue,svelte,scss,css,html,json,md,mdx}
+  apps/web/scripts/**/*.{ts,mjs,cjs,json}
+  apps/web/astro.config.mjs
+
+pre-commit:
+  parallel: true
+  commands:
+    # Format the front surface for staged files only — surgical, fast.
+    # Runs Biome in write mode but only touches staged paths.
+    format-web-staged:
+      glob_filter: *front_globs
+      run: bun x @biomejs/biome format --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+    # Also lint/format the rest of the monorepo for any non-front staged files.
+    # (Biome ci already runs in `bun run lint`, but this catches formatting
+    # issues at commit time instead of waiting for CI.)
+    format-other-staged:
+      glob_filter: "!{apps/web/src/**,apps/web/scripts/**,apps/web/astro.config.mjs}"
+      run: bun x @biomejs/biome format --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+pre-push:
+  parallel: false
+  commands:
+    # Full check of the entire repo before pushing.
+    # Fails the push if any file is unformatted — same scope as CI.
+    format-check-all:
+      run: bun run format:all:check
+    format-check-web:
+      run: bun run format:web:check
+
+# Manual hooks (run with `lefthook run <name>`).
+format_web:
+  commands:
+    format-web:
+      run: bun run format:web

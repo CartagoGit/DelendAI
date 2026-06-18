@@ -14,6 +14,32 @@ bun run validate   # typecheck + lint + tests — must be green
 Requires [Bun](https://bun.sh) for development. The published packages run under
 Node (and Deno/bun); the dev toolchain is Bun-only.
 
+`bun install` also installs the git hooks via `lefthook install` (the
+`prepare` script). They format staged files on commit and run a full format
+check on push.
+
+## Formatting
+
+The repo uses [Biome](https://biomejs.dev/) (not Prettier) as its single
+formatter — see [`biome.json`](biome.json). Two scopes:
+
+| Scope | Glob | Commands |
+|---|---|---|
+| **Front** (Astro site) | `apps/web/**` | `bun run format:web` / `format:web:check` |
+| **Whole repo** | `**` | `bun run format:all` / `format:all:check` |
+
+Automation:
+
+- **Editor**: `editor.formatOnSave = true` is set in
+  [`.vscode/settings.json`](.vscode/settings.json) — Biome formats on save.
+- **Pre-commit** (via `lefthook`): reformats staged files in the matching
+  scope and re-stages them. Fast and surgical.
+- **Pre-push**: runs `format:all:check`; push fails if anything is unformatted.
+- **CI**: `bun run lint` runs `biome ci`, which includes format checks.
+
+Skip hooks with `LEFTHOOK=0 git commit …` or `git commit --no-verify`. Don't
+make this a habit — CI will catch it.
+
 ## The loop
 
 1. Branch off `develop`.
