@@ -141,6 +141,18 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		expect(broken, 'tools whose outputSchema is unsatisfied').toEqual([]);
 	});
 
+	// M24: every public tool must declare an outputSchema (a permissive
+	// catchall object is allowed for action-multiplexed tools, but `undefined`
+	// is not). This guard fails the build the moment a new tool ships without one.
+	it('every registered tool declares an outputSchema', async () => {
+		const { tools } = await client.listTools();
+		const missing = tools
+			.filter((t) => (t as { outputSchema?: unknown }).outputSchema === undefined)
+			.map((t) => t.name);
+		expect(missing, 'tools missing an outputSchema').toEqual([]);
+		expect(tools.length).toBeGreaterThan(20);
+	});
+
 	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
 		const created = await client.callTool({
 			name: 'proposals_create_proposal',
