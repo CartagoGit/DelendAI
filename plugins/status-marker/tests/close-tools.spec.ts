@@ -85,7 +85,7 @@ describe('close-tools — handler', () => {
 		const calls = await captureRegister();
 		const validate = calls.find((c) => c.name === 'sm_validate')!;
 		const out = (await validate.handler({
-			text: 'Prosa\n' + formatCloseMarker('HECHO'),
+			text: `Prosa\n${formatCloseMarker('HECHO')}`,
 		})) as { content: Array<{ text: string }> };
 		const parsed = JSON.parse(out.content[0]!.text);
 		expect(parsed.ok).toBe(true);

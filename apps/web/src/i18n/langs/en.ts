@@ -57,6 +57,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'Auto-detects your IDE and merges mcp-vertex in — it never touches your other MCP servers.',
 		config: 'Pick a preset (minimal · standard · swarm) or list plugins explicitly. Run with --check to self-diagnose.',
+		excludeHelp:
+			'Subtract plugins from the resolved set with --exclude-plugins= (alias: --excludePlugins=). Useful to drop a plugin from a preset without forking it — e.g. --preset=swarm --exclude-plugins=notification for a single-agent session.',
 	},
 	tools: {
 		title: 'Tools',
@@ -110,6 +112,8 @@ const dict: LangDict = {
 		docs: 'Catalogue + read the project markdown docs, low-token curated navigation.',
 		deps: 'Offline dependency inventory + health (lockfile, loose ranges, duplicates).',
 		notification: 'Push lock-release events so agents stop polling.',
+		'status-marker':
+			'Mandatory coloured close marker for every agent response: 8 canonical states, helper + validator tools.',
 		core: 'The agnostic core: overview, scaffold, metrics, doctor and the plugin loader.',
 	},
 	knowledge: {

@@ -49,6 +49,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'ตรวจจับ IDE ของคุณและเพิ่ม mcp-vertex — โดยไม่แตะเซิร์ฟเวอร์ MCP อื่นของคุณ',
 		config: 'เลือกพรีเซ็ต (minimal · standard · swarm) หรือระบุปลั๊กอินอย่างชัดเจน รันด้วย --check เพื่อวินิจฉัยตนเอง',
+		excludeHelp:
+			'ลบปลั๊กอินออกจากเซ็ตที่ถูกแก้ด้วย --exclude-plugins= (ชื่อแทน: --excludePlugins=) มีประโยชน์เมื่อต้องการตัดปลั๊กอินออกจากเพรสเซ็ตโดยไม่ fork — เช่น --preset=swarm --exclude-plugins=notification สำหรับเซสชันเอเจนต์เดี่ยว',
 	},
 	tools: {
 		title: 'เครื่องมือ',
@@ -101,6 +103,8 @@ const dict: LangDict = {
 		docs: 'จัดทำแคตตาล็อกและอ่านเอกสาร markdown ของโปรเจกต์ การนำทางที่คัดสรรต้นทุนต่ำ',
 		deps: 'รายการพึ่งพาแบบออฟไลน์ + สุขภาพ (lockfile ช่วงหลวม รายการซ้ำ)',
 		notification: 'พุชเหตุการณ์ปลดล็อกเพื่อให้เอเจนต์หยุดโพล',
+		'status-marker':
+			'เครื่องหมายปิดสีบังคับสำหรับทุกการตอบกลับของเอเจนต์: 8 สถานะมาตรฐาน เครื่องมือ helper + validator',
 		core: 'แกนที่ไม่ผูกกับโปรเจกต์: overview scaffold เมตริก doctor และตัวโหลดปลั๊กอิน',
 	},
 	knowledge: {

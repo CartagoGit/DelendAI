@@ -107,6 +107,8 @@ const dict: LangDict = {
 		deps: 'Inventaire des dépendances hors-ligne + santé (lockfile, plages laxistes, doublons).',
 		notification:
 			'Pousse les événements de libération de verrou pour éviter le polling.',
+		'status-marker':
+			'Marqueur de fermeture coloré obligatoire pour chaque réponse d’agent : 8 états canoniques, outils helper + validateur.',
 		core: 'Le cœur agnostique : overview, scaffold, métriques, doctor et le chargeur de plugins.',
 	},
 	knowledge: {

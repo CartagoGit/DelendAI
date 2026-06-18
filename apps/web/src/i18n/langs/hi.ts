@@ -52,6 +52,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'आपका IDE पहचानकर mcp-vertex जोड़ता है — आपके बाकी MCP सर्वर को छुए बिना।',
 		config: 'एक प्रीसेट चुनें (minimal · standard · swarm) या प्लगइन स्पष्ट रूप से सूचीबद्ध करें। स्व-निदान के लिए --check के साथ चलाएँ।',
+		excludeHelp:
+			'--exclude-plugins= (उपनाम: --excludePlugins=) के साथ हल प्लगइन सेट से प्लगइन्स हटाएँ। प्रीसेट से किसी प्लगइन को फोर्क किए बिना हटाने के लिए उपयोगी — उदा. --preset=swarm --exclude-plugins=notification एकल-एजेंट सत्र के लिए।',
 	},
 	tools: {
 		title: 'टूल',
@@ -105,6 +107,8 @@ const dict: LangDict = {
 		docs: 'प्रोजेक्ट markdown दस्तावेज़ कैटलॉग करें और पढ़ें, कम-लागत क्यूरेटेड नेविगेशन।',
 		deps: 'ऑफ़लाइन निर्भरता सूची + स्वास्थ्य (lockfile, ढीली रेंज, डुप्लिकेट)।',
 		notification: 'लॉक-रिलीज़ इवेंट पुश करता है ताकि एजेंट पोलिंग बंद करें।',
+		'status-marker':
+			'हर एजेंट उत्तर के लिए अनिवार्य रंगीन क्लोज़ मार्कर: 8 कैनोनिकल स्थितियाँ, helper + validator टूल।',
 		core: 'निरपेक्ष कोर: overview, scaffold, मेट्रिक्स, doctor और प्लगइन लोडर।',
 	},
 	knowledge: {
