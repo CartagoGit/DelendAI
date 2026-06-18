@@ -35,7 +35,8 @@ type Dict = Record<string, string>;
 const en: Dict = {
 	'nav.concept': 'Concept', 'nav.install': 'Install', 'nav.tools': 'Tools',
 	'nav.benchmarks': 'Benchmarks', 'nav.plugins': 'Plugins', 'nav.github': 'GitHub',
-	'hero.title.a': 'The ', 'hero.title.b': 'agnostic', 'hero.title.c': ' MCP server core',
+	'hero.title.a': 'The agnostic ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': '',
+	'hero.subheader': 'An MCP server core + plugin loader for any project.',
 	'hero.tagline': 'A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.',
 	'hero.ctaInstall': 'Get started', 'hero.ctaTools': 'Browse the tools',
 	'hero.runsOn': 'Runs under Node, Deno & bun · any package manager',
@@ -77,7 +78,8 @@ const en: Dict = {
 const es: Dict = {
 	'nav.concept': 'Concepto', 'nav.install': 'Instalar', 'nav.tools': 'Herramientas',
 	'nav.benchmarks': 'Benchmarks', 'nav.plugins': 'Plugins', 'nav.github': 'GitHub',
-	'hero.title.a': 'El núcleo de servidor MCP ', 'hero.title.b': 'agnóstico', 'hero.title.c': '',
+	'hero.title.a': 'El ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' agnóstico',
+	'hero.subheader': 'Un núcleo de servidor MCP + cargador de plugins para cualquier proyecto.',
 	'hero.tagline': 'Un núcleo de servidor Model Context Protocol agnóstico al proyecto. El núcleo no sabe nada de tu dominio — las capacidades llegan como plugins que cargas a demanda, todas medidas para gastar pocos tokens.',
 	'hero.ctaInstall': 'Empezar', 'hero.ctaTools': 'Ver las herramientas',
 	'hero.runsOn': 'Corre en Node, Deno y bun · cualquier gestor de paquetes',
@@ -119,7 +121,8 @@ const es: Dict = {
 const fr: Dict = {
 	'nav.concept': 'Concept', 'nav.install': 'Installer', 'nav.tools': 'Outils',
 	'nav.benchmarks': 'Benchmarks', 'nav.plugins': 'Plugins', 'nav.github': 'GitHub',
-	'hero.title.a': 'Le cœur de serveur MCP ', 'hero.title.b': 'agnostique', 'hero.title.c': '',
+	'hero.title.a': 'Le ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' agnostique',
+	'hero.subheader': 'Un cœur de serveur MCP + chargeur de plugins pour tout projet.',
 	'hero.tagline': "Un cœur de serveur Model Context Protocol agnostique au projet. Le cœur ne sait rien de votre domaine — les capacités arrivent sous forme de plugins que vous chargez à la demande, toutes mesurées pour un faible coût en tokens.",
 	'hero.ctaInstall': 'Commencer', 'hero.ctaTools': 'Voir les outils',
 	'hero.runsOn': 'Fonctionne sous Node, Deno et bun · tout gestionnaire de paquets',
@@ -161,7 +164,8 @@ const fr: Dict = {
 const de: Dict = {
 	'nav.concept': 'Konzept', 'nav.install': 'Installieren', 'nav.tools': 'Tools',
 	'nav.benchmarks': 'Benchmarks', 'nav.plugins': 'Plugins', 'nav.github': 'GitHub',
-	'hero.title.a': 'Der ', 'hero.title.b': 'agnostische', 'hero.title.c': ' MCP-Server-Kern',
+	'hero.title.a': 'Der agnostische ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': '',
+	'hero.subheader': 'Ein MCP-Server-Kern + Plugin-Loader für jedes Projekt.',
 	'hero.tagline': 'Ein projektunabhängiger Model-Context-Protocol-Server-Kern. Der Kern weiß nichts über deine Domäne — Fähigkeiten kommen als Plugins, die du bei Bedarf lädst, alle auf geringen Token-Verbrauch gemessen.',
 	'hero.ctaInstall': 'Loslegen', 'hero.ctaTools': 'Tools ansehen',
 	'hero.runsOn': 'Läuft unter Node, Deno & bun · jeder Paketmanager',
@@ -203,7 +207,8 @@ const de: Dict = {
 const pt: Dict = {
 	'nav.concept': 'Conceito', 'nav.install': 'Instalar', 'nav.tools': 'Ferramentas',
 	'nav.benchmarks': 'Benchmarks', 'nav.plugins': 'Plugins', 'nav.github': 'GitHub',
-	'hero.title.a': 'O núcleo de servidor MCP ', 'hero.title.b': 'agnóstico', 'hero.title.c': '',
+	'hero.title.a': 'O ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' agnóstico',
+	'hero.subheader': 'Um núcleo de servidor MCP + carregador de plugins para qualquer projeto.',
 	'hero.tagline': 'Um núcleo de servidor Model Context Protocol agnóstico ao projeto. O núcleo não sabe nada do seu domínio — as capacidades chegam como plugins que você carrega sob demanda, todas medidas para baixo custo de tokens.',
 	'hero.ctaInstall': 'Começar', 'hero.ctaTools': 'Ver as ferramentas',
 	'hero.runsOn': 'Roda em Node, Deno e bun · qualquer gerenciador de pacotes',
@@ -245,7 +250,8 @@ const pt: Dict = {
 const it: Dict = {
 	'nav.concept': 'Concetto', 'nav.install': 'Installa', 'nav.tools': 'Strumenti',
 	'nav.benchmarks': 'Benchmark', 'nav.plugins': 'Plugin', 'nav.github': 'GitHub',
-	'hero.title.a': 'Il core di server MCP ', 'hero.title.b': 'agnostico', 'hero.title.c': '',
+	'hero.title.a': "L'", 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' agnostico',
+	'hero.subheader': 'Un core di server MCP + caricatore di plugin per qualsiasi progetto.',
 	'hero.tagline': 'Un core di server Model Context Protocol agnostico al progetto. Il core non sa nulla del tuo dominio — le capacità arrivano come plugin che carichi su richiesta, tutte misurate per un basso costo in token.',
 	'hero.ctaInstall': 'Inizia', 'hero.ctaTools': 'Vedi gli strumenti',
 	'hero.runsOn': 'Gira su Node, Deno e bun · qualsiasi package manager',
@@ -287,7 +293,8 @@ const it: Dict = {
 const zh: Dict = {
 	'nav.concept': '概念', 'nav.install': '安装', 'nav.tools': '工具',
 	'nav.benchmarks': '基准', 'nav.plugins': '插件', 'nav.github': 'GitHub',
-	'hero.title.a': '与项目无关的 ', 'hero.title.b': 'MCP', 'hero.title.c': ' 服务器内核',
+	'hero.title.a': '与项目无关的 ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': '',
+	'hero.subheader': '适用于任何项目的 MCP 服务器内核 + 插件加载器。',
 	'hero.tagline': '一个与项目无关的 Model Context Protocol 服务器内核。内核对你的领域一无所知——能力以插件形式按需加载，并且都以低 token 成本为目标进行度量。',
 	'hero.ctaInstall': '开始使用', 'hero.ctaTools': '浏览工具',
 	'hero.runsOn': '可在 Node、Deno 和 bun 下运行 · 任意包管理器',
@@ -329,7 +336,8 @@ const zh: Dict = {
 const hi: Dict = {
 	'nav.concept': 'अवधारणा', 'nav.install': 'इंस्टॉल', 'nav.tools': 'टूल',
 	'nav.benchmarks': 'बेंचमार्क', 'nav.plugins': 'प्लगइन', 'nav.github': 'GitHub',
-	'hero.title.a': 'प्रोजेक्ट-निरपेक्ष ', 'hero.title.b': 'MCP', 'hero.title.c': ' सर्वर कोर',
+	'hero.title.a': 'प्रोजेक्ट-निरपेक्ष ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': '',
+	'hero.subheader': 'किसी भी प्रोजेक्ट के लिए MCP सर्वर कोर + प्लगइन लोडर।',
 	'hero.tagline': 'एक प्रोजेक्ट-निरपेक्ष Model Context Protocol सर्वर कोर। कोर को आपके डोमेन के बारे में कुछ नहीं पता — क्षमताएँ प्लगइन के रूप में आती हैं जिन्हें आप माँग पर लोड करते हैं, सभी कम टोकन लागत के लिए मापी गई।',
 	'hero.ctaInstall': 'शुरू करें', 'hero.ctaTools': 'टूल देखें',
 	'hero.runsOn': 'Node, Deno और bun पर चलता है · कोई भी पैकेज मैनेजर',
@@ -371,7 +379,8 @@ const hi: Dict = {
 const ar: Dict = {
 	'nav.concept': 'المفهوم', 'nav.install': 'التثبيت', 'nav.tools': 'الأدوات',
 	'nav.benchmarks': 'القياسات', 'nav.plugins': 'الإضافات', 'nav.github': 'GitHub',
-	'hero.title.a': 'نواة خادم ', 'hero.title.b': 'MCP', 'hero.title.c': ' المحايدة للمشروع',
+	'hero.title.a': '', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' المحايد للمشروع',
+	'hero.subheader': 'نواة خادم MCP + مُحمّل إضافات لأي مشروع.',
 	'hero.tagline': 'نواة خادم Model Context Protocol محايدة للمشروع. النواة لا تعرف شيئًا عن مجالك — تأتي القدرات كإضافات تُحمّلها عند الطلب، وكلها مُقاسة لتكلفة منخفضة من الـ tokens.',
 	'hero.ctaInstall': 'ابدأ الآن', 'hero.ctaTools': 'تصفّح الأدوات',
 	'hero.runsOn': 'يعمل على Node و Deno و bun · أي مدير حزم',
@@ -413,7 +422,8 @@ const ar: Dict = {
 const ja: Dict = {
 	'nav.concept': 'コンセプト', 'nav.install': 'インストール', 'nav.tools': 'ツール',
 	'nav.benchmarks': 'ベンチマーク', 'nav.plugins': 'プラグイン', 'nav.github': 'GitHub',
-	'hero.title.a': 'プロジェクト非依存の ', 'hero.title.b': 'MCP', 'hero.title.c': ' サーバーコア',
+	'hero.title.a': 'プロジェクト非依存の ', 'hero.title.b': 'MCP Vertex', 'hero.title.c': '',
+	'hero.subheader': 'あらゆるプロジェクト向けの MCP サーバーコア + プラグインローダー。',
 	'hero.tagline': 'プロジェクトに依存しない Model Context Protocol サーバーコア。コアはあなたのドメインを何も知りません——機能は必要に応じて読み込むプラグインとして提供され、すべて低トークンコストを目標に計測されています。',
 	'hero.ctaInstall': '始める', 'hero.ctaTools': 'ツールを見る',
 	'hero.runsOn': 'Node・Deno・bun で動作 · 任意のパッケージマネージャ',
@@ -455,7 +465,8 @@ const ja: Dict = {
 const vi: Dict = {
 	'nav.concept': 'Khái niệm', 'nav.install': 'Cài đặt', 'nav.tools': 'Công cụ',
 	'nav.benchmarks': 'Benchmark', 'nav.plugins': 'Plugin', 'nav.github': 'GitHub',
-	'hero.title.a': 'Lõi máy chủ MCP ', 'hero.title.b': 'bất khả tri', 'hero.title.c': ' với dự án',
+	'hero.title.a': '', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' bất khả tri với dự án',
+	'hero.subheader': 'Lõi máy chủ MCP + trình tải plugin cho mọi dự án.',
 	'hero.tagline': 'Một lõi máy chủ Model Context Protocol bất khả tri với dự án. Lõi không biết gì về lĩnh vực của bạn — các khả năng đến dưới dạng plugin bạn tải theo nhu cầu, tất cả đều được đo lường để chi phí token thấp.',
 	'hero.ctaInstall': 'Bắt đầu', 'hero.ctaTools': 'Xem công cụ',
 	'hero.runsOn': 'Chạy trên Node, Deno và bun · mọi trình quản lý gói',
@@ -497,7 +508,8 @@ const vi: Dict = {
 const th: Dict = {
 	'nav.concept': 'แนวคิด', 'nav.install': 'ติดตั้ง', 'nav.tools': 'เครื่องมือ',
 	'nav.benchmarks': 'เบนช์มาร์ก', 'nav.plugins': 'ปลั๊กอิน', 'nav.github': 'GitHub',
-	'hero.title.a': 'แกนเซิร์ฟเวอร์ MCP ', 'hero.title.b': 'ที่ไม่ผูกกับโปรเจกต์', 'hero.title.c': '',
+	'hero.title.a': '', 'hero.title.b': 'MCP Vertex', 'hero.title.c': ' ที่ไม่ผูกกับโปรเจกต์',
+	'hero.subheader': 'แกนเซิร์ฟเวอร์ MCP + ตัวโหลดปลั๊กอินสำหรับทุกโปรเจกต์',
 	'hero.tagline': 'แกนเซิร์ฟเวอร์ Model Context Protocol ที่ไม่ผูกกับโปรเจกต์ แกนไม่รู้อะไรเกี่ยวกับโดเมนของคุณ — ความสามารถมาในรูปปลั๊กอินที่คุณโหลดตามต้องการ ทั้งหมดวัดผลเพื่อต้นทุนโทเคนต่ำ',
 	'hero.ctaInstall': 'เริ่มต้น', 'hero.ctaTools': 'ดูเครื่องมือ',
 	'hero.runsOn': 'ทำงานบน Node, Deno และ bun · ตัวจัดการแพ็กเกจใดก็ได้',
