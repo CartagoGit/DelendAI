@@ -4,8 +4,8 @@ import { joinRel } from '@mcp-vertex/core/public';
 
 /**
  * Derive the full swarm path layout from a cache root and a docs root.
- * The mcp-core CLI resolves `--cacheDir` (default `.cache/mcp-core`)
- * and `--docsDir` (default `docs/mcp-core`) and hands each plugin its
+ * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
+ * and `--docsDir` (default `docs/mcp-vertex`) and hands each plugin its
  * own namespaced sub-roots (`<cacheDir>/<plugin>`); the swarm plugin
  * passes those here. Cache artefacts (locks, queue, checkpoints) live
  * under `cacheDir`; human-edited proposals live under `docsDir`.

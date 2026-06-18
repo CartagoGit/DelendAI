@@ -71,11 +71,11 @@ describe('git plugin', () => {
 	it('registers the read-only git tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/git',
-			pluginDocsDir: 'docs/mcp-core/git',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/git',
+			pluginDocsDir: 'docs/mcp-vertex/git',
 			namespacePrefix: 'git',
 			options: {},
 			args: {},

@@ -12,7 +12,7 @@ enforcement mode — **the project's own config always wins**.
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=rules", "--rules-mode=mixed"]
 		}
@@ -24,15 +24,15 @@ enforcement mode — **the project's own config always wins**.
 
 Rules are resolved **per project area** (a Vue app and a Laravel API in the same
 repo get different rules). On first run the plugin writes
-`.cache/mcp-core/rules/rules-map.json`:
+`.cache/mcp-vertex/rules/rules-map.json`:
 
 ```jsonc
 {
 	"mode": "mixed",
 	"projects": {
 		"demo": {
-			"apps/web":  { "framework": "vue",     "eslint": ["apps/web/eslint.config.mjs", ".cache/mcp-core/rules/vue.eslint.config.mjs"], "typecheck": ["apps/web/tsconfig.json", ".cache/mcp-core/rules/vue.tsconfig.json"] },
-			"apps/admin":{ "framework": "angular", "eslint": [".cache/mcp-core/rules/angular.eslint.config.mjs"], "typecheck": ["apps/admin/tsconfig.json", ".cache/mcp-core/rules/angular.tsconfig.json"] }
+			"apps/web":  { "framework": "vue",     "eslint": ["apps/web/eslint.config.mjs", ".cache/mcp-vertex/rules/vue.eslint.config.mjs"], "typecheck": ["apps/web/tsconfig.json", ".cache/mcp-vertex/rules/vue.tsconfig.json"] },
+			"apps/admin":{ "framework": "angular", "eslint": [".cache/mcp-vertex/rules/angular.eslint.config.mjs"], "typecheck": ["apps/admin/tsconfig.json", ".cache/mcp-vertex/rules/angular.tsconfig.json"] }
 		}
 	}
 }

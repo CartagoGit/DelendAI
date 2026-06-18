@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/deps",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Dependency inventory + offline health plugin for @mcp-vertex/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `mcp-core --plugins=deps`.",
+	"description": "Dependency inventory + offline health plugin for @mcp-vertex/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `mcp-vertex --plugins=deps`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -54,7 +54,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cartago-git/mcp-core"
+		"url": "https://github.com/CartagoGit/mcp-vertex"
 	},
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts"

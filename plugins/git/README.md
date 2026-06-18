@@ -10,7 +10,7 @@ agnostic of language or framework. It never modifies the repo.
 ```jsonc
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=git"]
 		}

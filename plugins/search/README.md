@@ -8,7 +8,7 @@ agent can locate code, proposals or notes without reading whole files.
 ## Load it
 
 ```bash
-mcp-core --plugins=search
+mcp-vertex --plugins=search
 ```
 
 This registers one tool, `<prefix>_search`.
@@ -27,9 +27,9 @@ Returns `{ query, count, truncated, scanned, hits: [{ file, line, text }] }`.
 to 240 chars. Result count is capped at `maxResults` (`truncated: true` when
 hit).
 
-## Configuration (`mcp-core.config.json`)
+## Configuration (`mcp-vertex.config.json`)
 
-mcp-core is agnostic — the host owns what gets searched:
+mcp-vertex is agnostic — the host owns what gets searched:
 
 ```json
 {

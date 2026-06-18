@@ -66,7 +66,7 @@ const presetIdFor = (
  * TypeScript presets, materialises them to the cache, detects each
  * project area's framework into a `rules-map.json` (the project's own
  * config always wins), and exposes mode-aware tools so any agent applies
- * the rules organically. Load with `mcp-core --plugins=rules`.
+ * the rules organically. Load with `mcp-vertex --plugins=rules`.
  */
 export default definePlugin({
 	name: 'rules',

@@ -61,7 +61,7 @@ const ACTIONABLE = ['pending', 'ready', 'in_progress'];
  * Aggregate ONLY the proposals plugin's own coordination state — locks,
  * task queue and the proposal board — into one tiny payload, so an agent
  * checks "where are we" in a single call instead of three. `fields`
- * narrows it further. mcp-core stays agnostic: core doesn't know about
+ * narrows it further. mcp-vertex stays agnostic: core doesn't know about
  * proposals, so this aggregator lives in the plugin that owns the state. [N17]
  */
 export const collectCompactStatus = async (

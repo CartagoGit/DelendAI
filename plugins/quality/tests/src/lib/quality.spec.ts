@@ -24,7 +24,7 @@ describe('resolveScopes', () => {
 	it('falls back to the config validationMatrix, then scripts', () => {
 		const fromConfig = resolveScopes(
 			reader({
-				'mcp-core.config.json': JSON.stringify({
+				'mcp-vertex.config.json': JSON.stringify({
 					validationMatrix: {
 						scopes: { full: [{ command: 'bun test', expect: 'exit0' }] },
 					},
@@ -66,11 +66,11 @@ describe('quality plugin', () => {
 	it('registers the quality tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/quality',
-			pluginDocsDir: 'docs/mcp-core/quality',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/quality',
+			pluginDocsDir: 'docs/mcp-vertex/quality',
 			namespacePrefix: 'quality',
 			options: {},
 			args: {},

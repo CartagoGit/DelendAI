@@ -1,6 +1,6 @@
 /**
- * Identity of an MCP server assembled on top of mcp-core. The host
- * project provides its own metadata; mcp-core never hardcodes a name.
+ * Identity of an MCP server assembled on top of mcp-vertex. The host
+ * project provides its own metadata; mcp-vertex never hardcodes a name.
  */
 export interface IMcpCoreServerMetadata {
 	readonly name: string;

@@ -1,7 +1,7 @@
-# mcp-core monorepo
+# mcp-vertex monorepo
 
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
-[@cartago-git](https://www.npmjs.com/org/cartago-git).
+[@mcp-vertex](https://www.npmjs.com/org/mcp-vertex).
 
 - **[README-MCP-CORE.md](./docs/README-MCP-CORE.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
@@ -16,7 +16,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 
 | Path | Package | What |
 |---|---|---|
-| `packages/core` | `@mcp-vertex/core` | The agnostic core + `mcp-core` CLI. |
+| `packages/core` | `@mcp-vertex/core` | The agnostic core + `mcp-vertex` CLI. |
 | `plugins/proposals` | `@mcp-vertex/proposals` | Proposal store + agent locks + task queue (swarm coordination). |
 | `plugins/rules` | `@mcp-vertex/rules` | Per-framework ESLint/TS presets + per-area detection + enforcement modes (project config wins). |
 | `plugins/memory` | `@mcp-vertex/memory` | Persistent project notes (save/recall/list/forget) for cross-session continuity. |

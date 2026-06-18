@@ -1,4 +1,4 @@
-# Example: a custom mcp-core plugin (`wordcount`)
+# Example: a custom mcp-vertex plugin (`wordcount`)
 
 A minimal, **self-tested** plugin you can copy to author your own. It exposes one
 tool — `<prefix>_wordcount` — that counts the words and characters in `text`.
@@ -11,8 +11,8 @@ the entire contract:
 - **`definePlugin({ name, version, describe, optionsSchema, register })`** — the
   identity helper that gives you full type inference.
 - **`optionsSchema`** (zod) — declarative validation of the options a host passes
-  via `plugins.example-wordcount.options` in `mcp-core.config.json`. The loader
-  rejects bad options *before* `register` runs, and `mcp-core --check` reports them.
+  via `plugins.example-wordcount.options` in `mcp-vertex.config.json`. The loader
+  rejects bad options *before* `register` runs, and `mcp-vertex --check` reports them.
 - **A tool** (`IToolRegistration`) with `inputSchema` + `outputSchema` (zod) and a
   handler returning **`toolJson({...})`** (compact text + MCP `structuredContent`).
 - **A `knowledge` entry** — lazy, on-demand context the agent can fetch.
@@ -29,7 +29,7 @@ Once `@mcp-vertex/core` is installed:
 // mcp.json
 {
   "servers": {
-    "mcp-core": {
+    "mcp-vertex": {
       "command": "bunx",
       "args": ["@mcp-vertex/core", "--plugins=@mcp-vertex/example-wordcount"]
     }
@@ -40,7 +40,7 @@ Once `@mcp-vertex/core` is installed:
 Or pass options through the config file:
 
 ```jsonc
-// mcp-core.config.json
+// mcp-vertex.config.json
 {
   "plugins": {
     "example-wordcount": { "options": { "splitOnPunctuation": false } }

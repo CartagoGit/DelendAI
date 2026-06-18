@@ -1,9 +1,9 @@
 ---
-name: mcp-core-plugin-authoring
-description: How to author or modify an mcp-core plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.
+name: mcp-vertex-plugin-authoring
+description: How to author or modify an mcp-vertex plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.
 ---
 
-# Authoring an mcp-core plugin
+# Authoring an mcp-vertex plugin
 
 A plugin is an opt-in capability the core loads by specifier. The core stays
 agnostic; the plugin receives everything resolved through `IMcpPluginContext`.

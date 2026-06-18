@@ -4,7 +4,7 @@
 
 Please report security issues **privately**, not via a public issue:
 
-- Use GitHub's [private vulnerability reporting](https://github.com/CartagoGit/mcp-core/security/advisories/new)
+- Use GitHub's [private vulnerability reporting](https://github.com/CartagoGit/mcp-vertex/security/advisories/new)
   ("Report a vulnerability" on the Security tab), or
 - email the maintainer (see the `author` field in `package.json`).
 
@@ -19,7 +19,7 @@ please upgrade to the newest version before reporting.
 
 ## Security model — what the design already does
 
-`mcp-core` runs as an MCP server a host (an agent/IDE) drives. Its posture:
+`mcp-vertex` runs as an MCP server a host (an agent/IDE) drives. Its posture:
 
 - **Workspace containment.** Path inputs to read-only plugins (`search` roots,
   `docs` roots/paths, `deps` manifest) are resolved through

@@ -186,7 +186,7 @@ export const buildBootstrapToolRegistrations = (
 				{
 						outputSchema: z.object({}).catchall(z.unknown()),
 					description:
-						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-core instead of replacing it.',
+						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: z.object({
 						tests: z.boolean().optional(),
 						namespacePrefix: z.string().optional(),

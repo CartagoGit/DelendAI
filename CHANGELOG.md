@@ -84,7 +84,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (Node-runnable ESM) + `tsc --emitDeclarationOnly` (`.d.ts`); the CLI runs
   under plain Node/Deno/bun. CI builds `dist/` and smoke-runs the compiled CLI.
 - **`status` meta-tool** backed by a real `IStatusCollector` host seam, plus a
-  built-in `mcp-core` collector.
+  built-in `mcp-vertex` collector.
 - **`--verbose`** assembly diagnostics and **plugin presets**
   (`--preset=minimal|standard|swarm`).
 - New plugins **`docs`** (`docs_list` / `docs_read`) and **`deps`**
@@ -113,9 +113,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - **Blueprint cacheDir drift** (M15/H5): the one-time server blueprint now lands
-  under the resolved `cacheDir` (CLI flag → `mcp-core.config.json` → default),
+  under the resolved `cacheDir` (CLI flag → `mcp-vertex.config.json` → default),
   matching the rest of the store; previously a config-only `cacheDir` was ignored
-  and the blueprint drifted to `.cache/mcp-core`.
+  and the blueprint drifted to `.cache/mcp-vertex`.
 - **Scaffold tool response compacted** (H3): `scaffold` emitted a tab-indented
   report as its text content (agent-context tokens); now compact JSON (the typed
   payload still rides in `structuredContent`).
@@ -137,5 +137,5 @@ first-party plugins (`proposals`, `rules`, `memory`, `git`, `quality`,
 `search`, `notification`, `docs`, `deps`). Not yet published to npm.
 
 <!-- Comparison links (Keep a Changelog). Populated as tags are cut. -->
-[Unreleased]: https://github.com/CartagoGit/mcp-core/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/CartagoGit/mcp-core/releases/tag/v0.1.0
+[Unreleased]: https://github.com/CartagoGit/mcp-vertex/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/CartagoGit/mcp-vertex/releases/tag/v0.1.0

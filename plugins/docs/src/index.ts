@@ -6,7 +6,7 @@ import type { IDocsOptions } from './lib/engine';
 /**
  * Project documentation plugin. Catalogues and serves the repo's markdown
  * (`docs_list` + `docs_read`) so an agent navigates curated docs by
- * title/path without grepping. Load with `mcp-core --plugins=docs`.
+ * title/path without grepping. Load with `mcp-vertex --plugins=docs`.
  * Agnostic: roots/extensions are configurable via `plugins.docs.options`
  * (default roots: `docs/` + `README.md`).
  */

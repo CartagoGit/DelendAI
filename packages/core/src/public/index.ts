@@ -5,7 +5,7 @@
  *
  * The core is project-agnostic and knows nothing about proposals,
  * swarms or any domain. Domain behaviour ships as plugins loaded by
- * the CLI (`mcp-core --plugins=...`) that implement `IMcpPlugin`.
+ * the CLI (`mcp-vertex --plugins=...`) that implement `IMcpPlugin`.
  */
 
 // --- server assembly -------------------------------------------------------

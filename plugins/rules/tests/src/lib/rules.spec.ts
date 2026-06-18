@@ -140,14 +140,14 @@ describe('buildRulesManifest', () => {
 				'apps/api/tsconfig.json': '{}',
 			}),
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-core/rules',
+			cacheRelDir: '.cache/mcp-vertex/rules',
 			mode: 'mixed',
 		});
 		const web = manifest.projects.demo?.['apps/web'];
 		expect(web?.framework).toBe('vue');
 		// project's own config first, ours behind
 		expect(web?.eslint[0]).toBe('apps/web/eslint.config.mjs');
-		expect(web?.eslint[1]).toBe('.cache/mcp-core/rules/vue.eslint.config.mjs');
+		expect(web?.eslint[1]).toBe('.cache/mcp-vertex/rules/vue.eslint.config.mjs');
 		const api = manifest.projects.demo?.['apps/api'];
 		expect(api?.framework).toBe('angular');
 		expect(manifest.mode).toBe('mixed');
@@ -157,7 +157,7 @@ describe('buildRulesManifest', () => {
 		const manifest = buildRulesManifest({
 			reader: reader({ 'package.json': JSON.stringify({ name: 'demo' }) }),
 			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-core/rules',
+			cacheRelDir: '.cache/mcp-vertex/rules',
 			mode: 'strict',
 			overrides: { root: 'react-ts' },
 		});

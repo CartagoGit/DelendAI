@@ -36,7 +36,7 @@ const fromScripts = (reader: IFileReader): IScopeMap => {
 
 /**
  * Resolve the scope→commands map, in precedence order:
- * 1. plugin options (`scopes`), 2. `mcp-core.config.json` validationMatrix,
+ * 1. plugin options (`scopes`), 2. `mcp-vertex.config.json` validationMatrix,
  * 3. detected package.json scripts (as one `all` scope).
  */
 export const resolveScopes = (
@@ -50,7 +50,7 @@ export const resolveScopes = (
 		}
 		return out;
 	}
-	const config = parseConfigFile(reader.readFile('mcp-core.config.json'));
+	const config = parseConfigFile(reader.readFile('mcp-vertex.config.json'));
 	const matrix = config.validationMatrix?.scopes;
 	if (matrix && Object.keys(matrix).length > 0) {
 		return matrix as IScopeMap;

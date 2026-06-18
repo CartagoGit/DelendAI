@@ -16,7 +16,7 @@ export interface IProjectPattern {
 	readonly describe: string;
 	/** Project-specific tools worth scaffolding (namespaced at use). */
 	readonly recommendedTools: readonly IRecommendedTool[];
-	/** mcp-core plugins worth loading via `--plugins`. */
+	/** mcp-vertex plugins worth loading via `--plugins`. */
 	readonly recommendedPlugins: readonly string[];
 	/** Short guidance lines surfaced to the agent. */
 	readonly knowledgeHints: readonly string[];

@@ -1,13 +1,13 @@
-# Creating plugins for mcp-core
+# Creating plugins for mcp-vertex
 
 A **plugin** is an npm package (or a local module) that adds tools, prompts,
-resources and knowledge to an mcp-core server. You enable it at runtime:
+resources and knowledge to an mcp-vertex server. You enable it at runtime:
 
 ```bash
-mcp-core --plugins=myfeature
+mcp-vertex --plugins=myfeature
 ```
 
-mcp-core resolves `myfeature` to a module (see _Resolution_ below), imports it,
+mcp-vertex resolves `myfeature` to a module (see _Resolution_ below), imports it,
 and calls its `register(ctx)`. One plugin failing never aborts the others.
 
 ## The contract
@@ -57,10 +57,10 @@ export default definePlugin({
 | `ctx.pluginCacheDir` | Your private scratch root: `<cacheDir>/<name>`. |
 | `ctx.pluginDocsDir` | Your docs root: `<docsDir>/<name>`. |
 | `ctx.namespacePrefix` | Tool namespace (default `name`, override with `plugins.<name>.prefix` in the config file). |
-| `ctx.options` | **Your typed options** from `mcp-core.config.json` → `plugins.<name>.options` (any JSON). Empty `{}` when absent. This is the structured way to receive values. |
+| `ctx.options` | **Your typed options** from `mcp-vertex.config.json` → `plugins.<name>.options` (any JSON). Empty `{}` when absent. This is the structured way to receive values. |
 | `ctx.args` | Unrecognised global `--key=value` CLI flags, forwarded for you to read. |
 
-### Receiving values (`mcp-core.config.json`)
+### Receiving values (`mcp-vertex.config.json`)
 
 Users pass values to your plugin through the config file at the workspace root:
 
@@ -85,11 +85,11 @@ All optional: `tools`, `prompts`, `resources`, `knowledge`, `skills`.
 
 ## Generate a plugin skeleton
 
-Let mcp-core write the boilerplate for you:
+Let mcp-vertex write the boilerplate for you:
 
 ```bash
 # via the scaffold tool (kind: plugin) or:
-mcp-core_create_server  { "kind": "plugin", "pluginName": "myfeature", "description": "…" }
+mcp-vertex_create_server  { "kind": "plugin", "pluginName": "myfeature", "description": "…" }
 ```
 
 It produces `plugins/myfeature/` with `package.json`, `tsconfig.json`,

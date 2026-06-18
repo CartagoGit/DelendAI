@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Per-plugin configuration loaded from `mcp-core.config.json`. This is
+ * Per-plugin configuration loaded from `mcp-vertex.config.json`. This is
  * the structured way to pass values to plugins: each plugin gets a
  * typed `options` object (any JSON — nested objects, arrays…) plus an
  * optional tool-namespace `prefix`. CLI flags override these roots; the
@@ -9,8 +9,8 @@ import { z } from 'zod';
  *
  * ```jsonc
  * {
- *   "cacheDir": ".cache/mcp-core",
- *   "docsDir": "docs/mcp-core",
+ *   "cacheDir": ".cache/mcp-vertex",
+ *   "docsDir": "docs/mcp-vertex",
  *   "plugins": {
  *     "proposals": { "prefix": "work", "options": { "docsDir": "docs/x" } }
  *   }
@@ -37,7 +37,7 @@ export interface IMcpCoreConfigFile {
 }
 
 /** Default config file name looked up at the workspace root. */
-export const DEFAULT_CONFIG_FILENAME = 'mcp-core.config.json';
+export const DEFAULT_CONFIG_FILENAME = 'mcp-vertex.config.json';
 
 /** Structural schema for the config file (used by `--check`). */
 export const CONFIG_FILE_SCHEMA = z

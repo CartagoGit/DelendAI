@@ -200,7 +200,7 @@ export const buildScaffoldToolRegistration = (
 			{
 						outputSchema: z.object({}).catchall(z.unknown()),
 				description:
-					'Generate host artefacts from mcp-core templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
+					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,
 			},
 			async (args: IScaffoldArgs) => {

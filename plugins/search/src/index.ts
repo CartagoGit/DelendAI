@@ -7,7 +7,7 @@ import type { ISearchOptions } from './lib/engine';
  * Textual workspace search. A grep-like `search` tool over allow-listed
  * text files, with capped output so an agent can locate code, proposals
  * or notes without reading whole files. Load with
- * `mcp-core --plugins=search`. Agnostic: roots/extensions/ignored dirs
+ * `mcp-vertex --plugins=search`. Agnostic: roots/extensions/ignored dirs
  * are configurable via `plugins.search.options`.
  */
 export default definePlugin({

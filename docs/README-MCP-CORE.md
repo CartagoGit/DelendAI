@@ -10,7 +10,7 @@ Two ideas:
    optimal MCP server would need, and generate it — without you spelling it out
    (the *hybrid bootstrap*: the server recommends and generates content, the
    agent writes the files).
-2. **Compose capability with plugins**: register `mcp-core` once in your editor
+2. **Compose capability with plugins**: register `mcp-vertex` once in your editor
    and turn features on with `--plugins=...`. The core knows how to create new
    plugins too (see [PLUGINS-MCP-CORE.md](./PLUGINS-MCP-CORE.md)).
 
@@ -28,7 +28,7 @@ Register the core once in your MCP client (VS Code, Cursor, Claude…):
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=proposals"]
 		}
@@ -46,12 +46,12 @@ scaffolding tools.
 | `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
 | `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped): `minimal` (git, search), `standard` (git, search, memory, docs, rules, quality, deps), `swarm` (standard + proposals, notification). |
 | `--verbose` | off | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup. |
-| `--cacheDir=DIR` | `.cache/mcp-core` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
-| `--docsDir=DIR` | `docs/mcp-core` | Human-edited document root (e.g. proposals). |
+| `--cacheDir=DIR` | `.cache/mcp-vertex` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
+| `--docsDir=DIR` | `docs/mcp-vertex` | Human-edited document root (e.g. proposals). |
 | `--workspace=DIR` | current dir | Workspace root all paths resolve against. |
-| `--name=NAME` | `mcp-core` | Server name advertised over MCP. |
+| `--name=NAME` | `mcp-vertex` | Server name advertised over MCP. |
 | `--prefix=NS` | `mcpcore` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
-| `--config=FILE` | `mcp-core.config.json` | Config file with per-plugin values (see below). |
+| `--config=FILE` | `mcp-vertex.config.json` | Config file with per-plugin values (see below). |
 | `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
 | `--mcp-server-create=false` | (on) | Disable the first-start project-server blueprint. |
 | `--mcp-server-tests=false` | (on) | Omit tests from the generated blueprint. |
@@ -62,7 +62,7 @@ scaffolding tools.
 bunx @mcp-vertex/core --plugins=proposals --check
 ```
 
-## Passing values to plugins — `mcp-core.config.json`
+## Passing values to plugins — `mcp-vertex.config.json`
 
 For anything beyond the global roots, put a config file at the workspace root
 (or point at one with `--config`). Each plugin gets a typed `options` object
@@ -70,8 +70,8 @@ For anything beyond the global roots, put a config file at the workspace root
 
 ```jsonc
 {
-	"cacheDir": ".cache/mcp-core",
-	"docsDir": "docs/mcp-core",
+	"cacheDir": ".cache/mcp-vertex",
+	"docsDir": "docs/mcp-vertex",
 	"plugins": {
 		"proposals": { "prefix": "work", "options": { "docsDir": "docs/x" } }
 	}
@@ -91,9 +91,9 @@ never crashes the server.
 - **`<prefix>_knowledge`** — list knowledge ids/titles, or fetch one by id.
   Lazy: read a doc only when needed.
 - **`<prefix>_get_validation_matrix`** — the quality-gate commands per scope
-  (how to validate work here), from `mcp-core.config.json`.
+  (how to validate work here), from `mcp-vertex.config.json`.
 - **`<prefix>_status`** — read-only live runtime status aggregated from every
-  registered `IStatusCollector` (the built-in mcp-core collector with loaded
+  registered `IStatusCollector` (the built-in mcp-vertex collector with loaded
   plugins + counts, plus any host collector). Returns `{ collectors, errors }`.
 - **`<prefix>_analyze_project`** — read-only. Inspects the project and returns a
   structured analysis **plus a recommended server plan** (project type incl.
@@ -102,7 +102,7 @@ never crashes the server.
 - **`<prefix>_plan_mcp_server`** — read-only. Returns an **exhaustive** blueprint
   for a project-specific MCP server (every tool/prompt/skill/agent + tests) and
   the files to write. If a server already exists, the notes explain how to
-  integrate it with mcp-core instead of replacing it. On first start mcp-core
+  integrate it with mcp-vertex instead of replacing it. On first start mcp-vertex
   writes this blueprint to the cache automatically (disable with
   `--mcp-server-create=false`; omit tests with `--mcp-server-tests=false`).
 - **`<prefix>_create_server`** — turns a plan into the files for a

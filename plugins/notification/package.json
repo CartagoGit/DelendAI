@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/notification",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Lock-release notification plugin for @mcp-vertex/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-core --plugins=notification`.",
+	"description": "Lock-release notification plugin for @mcp-vertex/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-vertex --plugins=notification`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -55,7 +55,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cartago-git/mcp-core"
+		"url": "https://github.com/CartagoGit/mcp-vertex"
 	},
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts"

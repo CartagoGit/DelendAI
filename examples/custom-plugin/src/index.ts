@@ -1,19 +1,19 @@
 /**
- * Example mcp-core plugin: `wordcount`.
+ * Example mcp-vertex plugin: `wordcount`.
  *
  * The whole plugin contract in one readable file — copy this folder to start
  * your own plugin. A real plugin usually splits the engine/tools into `lib/`,
  * but everything here is deliberately inline so you can see the shape:
  *
  *   1. `optionsSchema` (zod) → declarative validation of `plugins.<name>.options`
- *      from `mcp-core.config.json`. The loader rejects bad options BEFORE
- *      `register` runs, and `mcp-core --check` reports them.
+ *      from `mcp-vertex.config.json`. The loader rejects bad options BEFORE
+ *      `register` runs, and `mcp-vertex --check` reports them.
  *   2. a tool (`IToolRegistration`) with `inputSchema` + `outputSchema` (zod) and
  *      a handler that returns a compact `toolJson` payload (also surfaced as
  *      MCP `structuredContent`).
  *   3. a `knowledge` entry — lazy, on-demand context for the agent.
  *
- * Run it:  `mcp-core --plugins=@mcp-vertex/example-wordcount`
+ * Run it:  `mcp-vertex --plugins=@mcp-vertex/example-wordcount`
  * (or point your client's `mcp.json` at the core bin with that `--plugins`).
  */
 import { z } from 'zod';
@@ -39,7 +39,7 @@ const buildWordcountTool = (
 			`${namespacePrefix}_wordcount`,
 			{
 				description:
-					'Count the words and characters in `text`. Pure, no I/O. (Example plugin showing the mcp-core contract.)',
+					'Count the words and characters in `text`. Pure, no I/O. (Example plugin showing the mcp-vertex contract.)',
 				inputSchema: z.object({ text: z.string() }),
 				outputSchema: z.object({
 					words: z.number(),

@@ -1,9 +1,9 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-// Static build for GitHub Pages (project site → served under /mcp-core/).
+// Static build for GitHub Pages (project site → served under /mcp-vertex/).
 // Override the base with PAGES_BASE='' for a user/root deploy.
-const base = process.env.PAGES_BASE ?? '/mcp-core';
+const base = process.env.PAGES_BASE ?? '/mcp-vertex';
 
 export default defineConfig({
 	site: 'https://cartagogit.github.io',

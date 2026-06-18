@@ -6,7 +6,7 @@ import { buildMemoryToolRegistrations } from './lib/tools';
 /**
  * Persistent project memory. Save/recall/list/forget small notes stored
  * in one JSON file under the cache dir, so any agent keeps continuity
- * across sessions with minimal tokens. Load with `mcp-core --plugins=memory`.
+ * across sessions with minimal tokens. Load with `mcp-vertex --plugins=memory`.
  */
 export default definePlugin({
 	name: 'memory',

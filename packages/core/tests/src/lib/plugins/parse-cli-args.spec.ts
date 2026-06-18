@@ -9,8 +9,8 @@ describe('parseCliArgs', () => {
 	it('applies defaults when nothing is passed', () => {
 		const args = parseCliArgs([], '/cwd');
 		expect(args.plugins).toEqual([]);
-		expect(args.cacheDir).toBe('.cache/mcp-core');
-		expect(args.docsDir).toBe('docs/mcp-core');
+		expect(args.cacheDir).toBe('.cache/mcp-vertex');
+		expect(args.docsDir).toBe('docs/mcp-vertex');
 		expect(args.workspace).toBe('/cwd');
 		expect(args.mcpServerCreate).toBe(true);
 		expect(args.mcpServerTests).toBe(true);

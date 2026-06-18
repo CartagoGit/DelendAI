@@ -118,7 +118,7 @@ const clampMaxResults = (value: number | undefined): number => {
  * injected absolute root: walks `roots`, reads allow-listed text files
  * (capped in size), and returns the matching lines (capped in count). No
  * persisted index — cheap and always fresh for the small/medium trees an
- * MCP host serves. mcp-core stays agnostic: roots/extensions/ignored
+ * MCP host serves. mcp-vertex stays agnostic: roots/extensions/ignored
  * dirs are all injectable.
  */
 export const searchWorkspace = async (

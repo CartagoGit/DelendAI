@@ -9,7 +9,7 @@
 	"excludeInternal": true,
 	"validation": { "notExported": false, "invalidLink": true },
 	"navigationLinks": {
-		"Site": "https://cartagogit.github.io/mcp-core/",
-		"GitHub": "https://github.com/CartagoGit/mcp-core"
+		"Site": "https://cartagogit.github.io/mcp-vertex/",
+		"GitHub": "https://github.com/CartagoGit/mcp-vertex"
 	}
 }

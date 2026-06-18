@@ -1,6 +1,6 @@
 /**
  * The example is self-verifying: this spec proves the plugin honours the
- * mcp-core contract (registers a tool + knowledge, and the tool produces the
+ * mcp-vertex contract (registers a tool + knowledge, and the tool produces the
  * documented payload). Examples that aren't tested rot — this one can't.
  */
 import { describe, expect, it } from 'vitest';
@@ -22,11 +22,11 @@ type IToolHandler = (args: Record<string, unknown>) => Promise<{
 const fakeContext = (options: Record<string, unknown> = {}): IMcpPluginContext =>
 	({
 		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-		corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-		cacheDir: '.cache/mcp-core',
-		docsDir: 'docs/mcp-core',
-		pluginCacheDir: '.cache/mcp-core/example-wordcount',
-		pluginDocsDir: 'docs/mcp-core/example-wordcount',
+		corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+		cacheDir: '.cache/mcp-vertex',
+		docsDir: 'docs/mcp-vertex',
+		pluginCacheDir: '.cache/mcp-vertex/example-wordcount',
+		pluginDocsDir: 'docs/mcp-vertex/example-wordcount',
 		namespacePrefix: 'demo',
 		options,
 		args: {},

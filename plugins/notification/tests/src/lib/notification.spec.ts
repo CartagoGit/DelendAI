@@ -103,11 +103,11 @@ describe('notification plugin', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-plug-'));
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/notification',
-			pluginDocsDir: 'docs/mcp-core/notification',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/notification',
+			pluginDocsDir: 'docs/mcp-vertex/notification',
 			namespacePrefix: 'notification',
 			options: {},
 			args: {},

@@ -161,7 +161,7 @@ export const loadPlugins = async (
 				if (!parsed.success) {
 					errors.push({
 						specifier,
-						message: `plugin "${plugin.name}" rejected its options (mcp-core.config.json → plugins.${plugin.name}.options).`,
+						message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
 					});
 					continue;
 				}

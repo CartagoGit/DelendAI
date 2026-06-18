@@ -315,7 +315,7 @@ export async function syncProposalRegistry(
 		'proposalsDir' | 'proposalIndexFile'
 	> = DEFAULT_PATH_LAYOUT,
 	// Host-specific proposal subfolders (relative to proposalsDir), e.g.
-	// `paused/demos`. Injected from ctx.options so mcp-core's generic
+	// `paused/demos`. Injected from ctx.options so mcp-vertex's generic
 	// proposal model carries no host vocabulary. [M5]
 	extraFolders: readonly string[] = []
 ): Promise<IProposalRegistrySyncResult> {

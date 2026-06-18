@@ -13,7 +13,7 @@ import type { IWorkspacePathProvider } from './workspace-paths.interface';
 
 /**
  * Everything a host injects to assemble an MCP server on top of
- * mcp-core. The core is project-agnostic: it owns deterministic
+ * mcp-vertex. The core is project-agnostic: it owns deterministic
  * registration and workspace resolution only. It knows NOTHING about
  * proposals, swarms, models or quality gates — those are plugin
  * concerns (see `IMcpPlugin`). The host (or the CLI plugin loader)
@@ -24,7 +24,7 @@ export interface IMcpCoreHostConfig {
 	readonly metadata: IMcpCoreServerMetadata;
 	/**
 	 * Prefix for host tool names, e.g. `acme` → `acme_*`. Optional:
-	 * plugins namespace their own tools. mcp-core never invents tool
+	 * plugins namespace their own tools. mcp-vertex never invents tool
 	 * names outside a declared namespace.
 	 */
 	readonly namespacePrefix?: string | undefined;

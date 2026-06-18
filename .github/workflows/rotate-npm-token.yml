@@ -86,7 +86,7 @@ jobs:
               '### Pasos',
               '1. Abre https://www.npmjs.com/settings/~/tokens/new.',
               '2. Crea un **Granular Access Token** con:',
-              '   - Name: `mcp-core-release-ci`',
+              '   - Name: `mcp-vertex-release-ci`',
               '   - Packages/Scopes: `@cartago-git`',
               '   - Permissions: *Read and write*',
               '   - Organizations: *No access*',

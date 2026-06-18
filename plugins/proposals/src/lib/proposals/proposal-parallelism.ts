@@ -27,7 +27,7 @@
 
 /**
  * A proposal track (write lane). Mirrors the `track` field of
- * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-core is
+ * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-vertex is
  * agnostic, so this is an open `string`, not a closed union baked with
  * one host's tracks. A host that wants typo-guarding passes its own set
  * of known tracks to `extractParallelismFromFrontmatter`. [M4]
@@ -231,7 +231,7 @@ import type { IYamlValue } from './frontmatter-parser';
 /**
  * A track is valid when it is a non-empty string. If the caller supplies
  * a `knownTracks` set, the track must also be a member (typo-guard for
- * hosts that enumerate their tracks); without it, mcp-core stays agnostic
+ * hosts that enumerate their tracks); without it, mcp-vertex stays agnostic
  * and accepts any host track. [M4]
  */
 const makeIsValidTrack =
@@ -295,7 +295,7 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
  *     proposal does not permit ANY parallel track).
  *   - `parallelismLanes` containing invalid tracks → those entries are
  *     silently dropped from the permission set.
- *   - `knownTracks` omitted → mcp-core is track-agnostic: any non-empty
+ *   - `knownTracks` omitted → mcp-vertex is track-agnostic: any non-empty
  *     string is a valid track (the host owns the vocabulary). [M4]
  *
  * This function is the single seam between the proposal's textual
