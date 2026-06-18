@@ -39,7 +39,7 @@ export interface IPackageRoute {
 }
 
 export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
-	mcpvertex: { dir: 'packages/core', label: 'McpVertex' },
+	'mcp-vertex': { dir: 'packages/core', label: 'McpVertex' },
 	git: { dir: 'plugins/git', label: 'Git' },
 	memory: { dir: 'plugins/memory', label: 'Memory' },
 	search: { dir: 'plugins/search', label: 'Search' },
