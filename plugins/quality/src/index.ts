@@ -12,7 +12,7 @@ import { buildQualityToolRegistrations } from './lib/tools';
  * (lint/test/build/typecheck) per scope and returns a structured
  * pass/fail report. Commands come from plugin options, the config's
  * validationMatrix, or package.json scripts. Load with
- * `mcp-core --plugins=quality`.
+ * `mcp-vertex --plugins=quality`.
  */
 export default definePlugin({
 	name: 'quality',
@@ -64,7 +64,7 @@ export default definePlugin({
 						`Tools: \`${ctx.namespacePrefix}_get_quality_scopes\` (list) and \`${ctx.namespacePrefix}_run_quality\` (execute).`,
 						'',
 						'- Before closing work, run the relevant scope and ensure it passes.',
-						'- Scopes come from plugin options → mcp-core.config.json validationMatrix → package.json scripts.',
+						'- Scopes come from plugin options → mcp-vertex.config.json validationMatrix → package.json scripts.',
 						'- `run_quality` executes real commands; read the per-command `ok`/`tail` to fix failures.',
 					].join('\n'),
 				},

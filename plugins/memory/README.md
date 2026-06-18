@@ -10,7 +10,7 @@ continuity across sessions with minimal tokens.
 ```jsonc
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=memory"]
 		}
@@ -27,6 +27,6 @@ continuity across sessions with minimal tokens.
 | `memory_list` | List ids/titles/tags (cheap index). |
 | `memory_forget` | Delete a note by id. |
 
-Notes persist in `.cache/mcp-core/memory/notes.json`.
+Notes persist in `.cache/mcp-vertex/memory/notes.json`.
 
 BSD-3-Clause © Cartago

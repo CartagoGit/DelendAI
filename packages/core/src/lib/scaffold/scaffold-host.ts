@@ -1,11 +1,11 @@
 // host scaffolding kit: "tools to create tools". A project that
-// imports mcp-core calls these generators (directly or through the
+// imports mcp-vertex calls these generators (directly or through the
 // `<prefix>_scaffold` MCP tool) to create its OWN MCP server,
 // orchestrator and subagent adapters, instructions file, tools,
 // prompts and skills — all templated so every agent DELEGATES to the
 // project's own MCP server (`<prefix>_overview` first — the universal
-// mcp-core entry point), never to a hardcoded host. Templates only name
-// tools that exist: `overview` (always, via the mcp-core CLI) and the
+// mcp-vertex entry point), never to a hardcoded host. Templates only name
+// tools that exist: `overview` (always, via the mcp-vertex CLI) and the
 // generated scaffold tool; proposal-workflow tools are shown as
 // conditional on loading the `proposals` plugin. [M9]
 
@@ -208,7 +208,7 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-server-
 
 1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-server-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
 2. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-3. When the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+3. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
 `,
 	};
@@ -227,7 +227,7 @@ export const scaffoldInstructionsFile = (
 The MCP server \`mcp-server-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
-- The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`).
+- The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
 
 ## Lane
 
@@ -251,8 +251,8 @@ export const scaffoldHostConfigFile = (
 import type { IMcpCoreHostConfig } from '@mcp-vertex/core/public';
 
 // The core is project-agnostic. Add domain behaviour (e.g. a proposal
-// workflow) by loading a plugin via the mcp-core CLI
-// (\`mcp-core --plugins=proposals\`) rather than wiring it here.
+// workflow) by loading a plugin via the mcp-vertex CLI
+// (\`mcp-vertex --plugins=proposals\`) rather than wiring it here.
 // Hermetic: the workspace root is injected by the caller (the server
 // entry point), never read from \`process.cwd()\` here — a lib must not
 // guess where the project lives, so this stays correct under CI,
@@ -263,7 +263,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
 		metadata: {
 			name: 'mcp-server-${prefix}',
 			version: '0.0.1',
-			description: '${options.projectName} workspace MCP server (built on mcp-core).',
+			description: '${options.projectName} workspace MCP server (built on mcp-vertex).',
 		},
 		namespacePrefix: '${prefix}',
 		workspace,
@@ -294,7 +294,7 @@ export const scaffoldServerEntryFiles = (
 import { buildHostConfig } from './lib/shared/host-config';
 
 // The entry point is the ONE place allowed to read the launch directory
-// (like mcp-core's own CLI). It resolves the workspace root and injects
+// (like mcp-vertex's own CLI). It resolves the workspace root and injects
 // it into the (hermetic) host config.
 export async function startServer(workspaceRoot = process.cwd()): Promise<void> {
 	const assembled = await createMcpServer(buildHostConfig(workspaceRoot));
@@ -350,7 +350,7 @@ export const scaffoldHostProject = (
 ];
 
 // ---------------------------------------------------------------------------
-// Plugin generator — "mcp-core knows how to create plugins"
+// Plugin generator — "mcp-vertex knows how to create plugins"
 // ---------------------------------------------------------------------------
 
 export interface IScaffoldPluginOptions {
@@ -364,7 +364,7 @@ export interface IScaffoldPluginOptions {
 
 /**
  * Generate a ready-to-load plugin package implementing `IMcpPlugin`.
- * The result is loadable with `mcp-core --plugins=<pluginName>` once
+ * The result is loadable with `mcp-vertex --plugins=<pluginName>` once
  * published or linked. Tools are namespaced by the plugin name and
  * return structured JSON so any agent/model can consume them.
  */
@@ -406,7 +406,7 @@ import { z } from 'zod';
 /**
  * ${safeDescription}
  *
- * Loaded with \`mcp-core --plugins=${id}\`. Every tool is namespaced by
+ * Loaded with \`mcp-vertex --plugins=${id}\`. Every tool is namespaced by
  * the plugin name and returns structured JSON so any agent or model
  * can consume it deterministically.
  */
@@ -484,7 +484,7 @@ ${safeDescription}
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=${id}"]
 		}
@@ -511,7 +511,7 @@ export interface IScaffoldClientOptions {
 	readonly scope?: string;
 	/** Command the client spawns to reach the server (default `bunx`). */
 	readonly serverCommand?: string;
-	/** Args for that command (default loads mcp-core with no plugins). */
+	/** Args for that command (default loads mcp-vertex with no plugins). */
 	readonly serverArgs?: readonly string[];
 }
 

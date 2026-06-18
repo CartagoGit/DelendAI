@@ -82,11 +82,11 @@ describe('deps plugin', () => {
 	it('registers deps_list + deps_check + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/deps',
-			pluginDocsDir: 'docs/mcp-core/deps',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/deps',
+			pluginDocsDir: 'docs/mcp-vertex/deps',
 			namespacePrefix: 'deps',
 			options: {},
 			args: {},

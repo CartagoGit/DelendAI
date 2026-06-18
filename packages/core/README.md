@@ -2,13 +2,13 @@
 
 Project-agnostic core for building MCP servers + a CLI plugin loader. Drop it
 into any project to analyze the repo and scaffold an optimal MCP server, and
-turn on capability with plugins (`mcp-core --plugins=...`).
+turn on capability with plugins (`mcp-vertex --plugins=...`).
 
 ```jsonc
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=proposals"]
 		}

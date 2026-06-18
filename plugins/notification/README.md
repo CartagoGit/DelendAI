@@ -6,7 +6,7 @@ watches the shared lock file once and emits an MCP `notifications/message` the
 moment a claim is released.
 
 ```bash
-mcp-core --plugins=proposals,notification
+mcp-vertex --plugins=proposals,notification
 ```
 
 ## What it does
@@ -29,7 +29,7 @@ token saving in real swarms.
 
 ## Why a watch and not in-process events
 
-Under stdio, each agent is its own `mcp-core` process. A release in process A
+Under stdio, each agent is its own `mcp-vertex` process. A release in process A
 can't push to process B's client directly, so B's server watches the **shared
 lock file** (the coordination substrate the swarm already uses) and notifies its
 own client. Event-driven via `fs.watch` on the lock's directory (atomic writes

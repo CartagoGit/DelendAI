@@ -65,7 +65,7 @@ export interface IAssembleCliDeps {
 /**
  * Build the full host config from parsed CLI args: resolve the
  * workspace and core paths (CLI flag > config file > default), load
- * every `--plugins` entry passing each its `mcp-core.config.json`
+ * every `--plugins` entry passing each its `mcp-vertex.config.json`
  * options, merge the registrations, and always expose the core
  * meta-tools (scaffold + the hybrid analyze/create_server bootstrap).
  * Pure except for the injectable importer/reader, so it is fully
@@ -83,7 +83,7 @@ export const assembleCliConfig = async (
 				? readFileSync(absolutePath, 'utf8')
 				: undefined);
 
-	// Config file: --config, else `mcp-core.config.json` at the workspace.
+	// Config file: --config, else `mcp-vertex.config.json` at the workspace.
 	// Read the raw text ONCE and derive both the parsed config and the
 	// diagnostic, so the doctor reuses this instead of re-reading. [N21]
 	const configPath =
@@ -203,7 +203,7 @@ export const assembleCliConfig = async (
 	// collectors: reports the live plugin-load result. A programmatic host
 	// adds its own collectors (e.g. a game loop) via the same tool. [N23]
 	const coreCollector: IStatusCollector = {
-		id: 'mcp-core',
+		id: 'mcp-vertex',
 		collect: async () => ({
 			requestedPlugins: args.plugins,
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
@@ -250,7 +250,7 @@ export const assembleCliConfig = async (
 		metadata: {
 			name: args.serverName,
 			version: args.serverVersion,
-			description: 'mcp-core server (CLI plugin loader).',
+			description: 'mcp-vertex server (CLI plugin loader).',
 		},
 		namespacePrefix: corePrefix,
 		workspace,
@@ -342,13 +342,13 @@ export const runDoctor = async (
  * can review and materialise it. Idempotent (writes once) and never
  * writes into the repo itself. Skipped by `--mcp-server-create=false`.
  * If a server already exists, the blueprint's notes explain how to
- * integrate it with mcp-core organically.
+ * integrate it with mcp-vertex organically.
  */
 export const prepareServerBlueprintOnStart = async (
 	args: IMcpCoreCliArgs,
 	// The already-resolved cacheDir (CLI flag → config file → default). Passing
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
-	// rest of the store, including when it comes from mcp-core.config.json. [M15]
+	// rest of the store, including when it comes from mcp-vertex.config.json. [M15]
 	resolvedCacheDir?: string
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
@@ -373,7 +373,7 @@ export const prepareServerBlueprintOnStart = async (
 	return { written: true, path: relPath };
 };
 
-/** Entry point for the `mcp-core` bin. */
+/** Entry point for the `mcp-vertex` bin. */
 // ---------------------------------------------------------------------------
 // `--verbose` observability [N23]
 // ---------------------------------------------------------------------------
@@ -433,10 +433,10 @@ export const formatVerbose = (d: IAssemblyDiagnostics): string => {
 		.join(', ');
 	return (
 		`${[
-			`[mcp-core] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
-			`[mcp-core] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
-			`[mcp-core] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
-			`[mcp-core] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
+			`[mcp-vertex] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
+			`[mcp-vertex] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
+			`[mcp-vertex] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
+			`[mcp-vertex] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
 		].join('\n')}\n`
 	);
 };
@@ -458,7 +458,7 @@ export const runCli = async (
 	const { config, loadResult } = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.
-		process.stderr.write(`[mcp-core] plugin error: ${error.message}\n`);
+		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
 	const assembled = await createMcpServer(config);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
@@ -484,7 +484,7 @@ export const runCli = async (
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-core] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
+						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
 					);
 				}
 			})

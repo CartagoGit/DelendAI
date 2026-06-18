@@ -51,7 +51,7 @@ describe('--verbose diagnostics (N23)', () => {
 		const out = formatVerbose(
 			buildAssemblyDiagnostics(args, loadResult, config, ['t1'])
 		);
-		expect(out).toContain('[mcp-core] verbose:');
+		expect(out).toContain('[mcp-vertex] verbose:');
 		expect(out).toContain('loaded=[demo@1.2.3, other]');
 		expect(out).toContain('errors=1');
 		expect(out).toContain('tools=3 prompts=1 resources=0');

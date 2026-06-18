@@ -69,7 +69,7 @@
 		}
 	},
 	"additionalProperties": false,
-	"$id": "https://cartago-git.github.io/mcp-core/mcp-core.config.schema.json",
-	"title": "mcp-core.config.json",
+	"$id": "https://cartagogit.github.io/mcp-vertex/mcp-vertex.config.schema.json",
+	"title": "mcp-vertex.config.json",
 	"description": "Configuration for @mcp-vertex/core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options."
 }

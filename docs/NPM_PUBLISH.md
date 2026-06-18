@@ -50,7 +50,7 @@ el push a `main` NO publica. Lo de abajo (§0/§1/§2) es la vía manual equival
 ### 0.1 Granular token con Bypass 2FA (lo que se usa hoy)
 npm retiró los *Legacy* y *Automation* tokens en noviembre 2025. El único tipo
 de token es **Granular**, y se configura así:
-- Name: `mcp-core-release-ci`
+- Name: `mcp-vertex-release-ci`
 - Packages/Scopes: `@cartago-git`
 - Permissions: *Read and write*
 - Organizations: *No access*
@@ -85,14 +85,14 @@ de forma interactiva en cada paquete (stdio heredado).
 Los pasos manuales de abajo (§1–§2) siguen siendo válidos como referencia o si
 prefieres controlar cada publish a mano.
 
-## 1. Validar antes de publicar (desde la raíz del repo `/_projects/mcp-core`)
+## 1. Validar antes de publicar (desde la raíz del repo `/_projects/mcp-vertex`)
 ```bash
 bun install
 bun run validate            # typecheck + tests (debe acabar en verde)
 ```
 
 ## 2. Orden de publicación (IMPORTANTE)
-`mcp-core` PRIMERO (los plugins lo declaran como `peerDependency`). Luego los 9
+`mcp-vertex` PRIMERO (los plugins lo declaran como `peerDependency`). Luego los 9
 plugins en cualquier orden.
 
 ```bash
@@ -132,8 +132,8 @@ bunx @mcp-vertex/core --plugins=proposals,rules,memory,git,quality,search,notifi
 ```
 
 ## 4. Post-publicación: que Affairs use lo publicado (en vez del path local)
-Hoy Affairs consume mcp-core por **rutas locales** (tsconfig paths + alias de
-vitest apuntando a `../../../mcp-core/...`). Cuando publiques:
+Hoy Affairs consume mcp-vertex por **rutas locales** (tsconfig paths + alias de
+vitest apuntando a `../../../mcp-vertex/...`). Cuando publiques:
 1. En `affairs/libs/mcp-server/package.json` añade dependencias reales:
    ```jsonc
    "@mcp-vertex/core": "^0.1.0",
@@ -148,7 +148,7 @@ vitest apuntando a `../../../mcp-core/...`). Cuando publiques:
 
 ## 5. Versionado siguiente
 - Sube versión con `npm version patch|minor` en cada paquete que cambie (o usa
-  changesets si quieres automatizarlo). Mantén `mcp-core` y plugins compatibles
+  changesets si quieres automatizarlo). Mantén `mcp-vertex` y plugins compatibles
   por `peerDependency` (`^0.x`).
 
 ## 6. (Opcional, futuro) build a `dist` para consumidores Node puro

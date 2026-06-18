@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/proposals",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Proposals workflow plugin for @mcp-vertex/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-core --plugins=proposals`.",
+	"description": "Proposals workflow plugin for @mcp-vertex/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-vertex --plugins=proposals`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -54,7 +54,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cartago-git/mcp-core"
+		"url": "https://github.com/CartagoGit/mcp-vertex"
 	},
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts"

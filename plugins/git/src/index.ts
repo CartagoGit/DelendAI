@@ -6,7 +6,7 @@ import { buildGitToolRegistrations } from './lib/tools';
 /**
  * Read-only git orientation. Exposes status / changed / diff / log as
  * structured JSON so any agent sees what changed cheaply, in any repo.
- * Load with `mcp-core --plugins=git`.
+ * Load with `mcp-vertex --plugins=git`.
  */
 export default definePlugin({
 	name: 'git',

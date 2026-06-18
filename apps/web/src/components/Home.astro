@@ -12,7 +12,7 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const repo = 'https://github.com/CartagoGit/mcp-core';
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
 
 const NS_LABEL: Record<string, string> = {
 	mcpcore: 'core', proposals: 'proposals', git: 'git', memory: 'memory',
@@ -76,7 +76,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 
 <header class="hero">
 	<div class="container">
-		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-core" />
+		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-vertex" />
 		<h1>{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
 		<p class="tagline">{t('hero.tagline')}</p>
 		<div class="ctas">
@@ -112,7 +112,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 		<pre><code>bun add @mcp-vertex/core</code></pre>
 		<pre><code>{`{
   "servers": {
-    "mcp-core": {
+    "mcp-vertex": {
       "command": "bunx",
       "args": ["@mcp-vertex/core", "--preset=standard"]
     }
@@ -197,7 +197,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 
 <footer>
 	<div class="container">
-		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-core</a> · BSD-3-Clause
+		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-vertex</a> · BSD-3-Clause
 	</div>
 </footer>
 

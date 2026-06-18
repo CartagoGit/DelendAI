@@ -1,7 +1,7 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 
 /**
- * Parsed mcp-core CLI invocation. Pure data so the loader and tests
+ * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
  * never touch `process.argv` directly.
  */
 export interface IMcpCoreCliArgs {
@@ -37,7 +37,7 @@ export interface IMcpCoreCliArgs {
 export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
-	serverName: 'mcp-core',
+	serverName: 'mcp-vertex',
 	serverVersion: '0.1.0',
 } as const;
 
@@ -117,7 +117,7 @@ const splitList = (value: string | undefined): string[] =>
 				.filter((entry) => entry.length > 0);
 
 /**
- * Parse an mcp-core argv (without the `node script` prefix) against a
+ * Parse an mcp-vertex argv (without the `node script` prefix) against a
  * working directory. Unknown `--key=value` flags land in `extra` and
  * are forwarded to every plugin, so a plugin like proposals can read
  * `--proposalsDir` without the core knowing about it.

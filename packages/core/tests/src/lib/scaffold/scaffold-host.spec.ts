@@ -89,7 +89,7 @@ describe('scaffold tool report (p97)', () => {
 	let options: IScaffoldToolOptions;
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-core-scaffold-'));
+		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-scaffold-'));
 		options = {
 			...HOST,
 			workspace: createWorkspacePathProvider(root),

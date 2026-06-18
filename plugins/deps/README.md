@@ -8,7 +8,7 @@ agnostic (no network, no CVE database).
 ## Load it
 
 ```bash
-mcp-core --plugins=deps
+mcp-vertex --plugins=deps
 ```
 
 Registers `<prefix>_deps_list` and `<prefix>_deps_check`.
@@ -24,7 +24,7 @@ Registers `<prefix>_deps_list` and `<prefix>_deps_check`.
   Offline health: missing lockfile (non-reproducible builds), unpinned ranges
   (`*`, `latest`), and deps declared in more than one section.
 
-## Configuration (`mcp-core.config.json`)
+## Configuration (`mcp-vertex.config.json`)
 
 ```json
 { "plugins": { "deps": { "options": { "manifest": "package.json" } } } }

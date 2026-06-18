@@ -135,7 +135,7 @@ export const buildServerBlueprint = (
 	const notes: string[] = [
 		...pattern.knowledgeHints,
 		analysis.hasMcpServer
-			? `An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-core instead of replacing it — register it alongside, reuse its tools, and adopt mcp-core conventions incrementally.`
+			? `An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-vertex instead of replacing it — register it alongside, reuse its tools, and adopt mcp-vertex conventions incrementally.`
 			: 'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',
 		tests
 			? 'Generate a test alongside each tool.'

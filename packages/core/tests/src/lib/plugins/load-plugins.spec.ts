@@ -8,11 +8,11 @@ import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-cont
 
 const ctx = (name: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-	corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-	cacheDir: '.cache/mcp-core',
-	docsDir: 'docs/mcp-core',
-	pluginCacheDir: `.cache/mcp-core/${name}`,
-	pluginDocsDir: `docs/mcp-core/${name}`,
+	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+	cacheDir: '.cache/mcp-vertex',
+	docsDir: 'docs/mcp-vertex',
+	pluginCacheDir: `.cache/mcp-vertex/${name}`,
+	pluginDocsDir: `docs/mcp-vertex/${name}`,
 	namespacePrefix: name,
 	options: {},
 	args: {},

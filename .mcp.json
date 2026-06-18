@@ -1,6 +1,6 @@
 {
 	"mcpServers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bun",
 			"args": ["packages/core/src/cli.ts", "--preset=swarm"]
 		}

@@ -1,9 +1,9 @@
 ---
-name: mcp-core
+name: mcp-vertex
 description: Orchestrator agent for the @mcp-vertex/core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
 ---
 
-# mcp-core orchestrator
+# mcp-vertex orchestrator
 
 Work agent for this monorepo. Authoritative rules: [`AGENTS.md`](../../AGENTS.md);
 short version: [`.github/copilot-instructions.md`](../copilot-instructions.md).

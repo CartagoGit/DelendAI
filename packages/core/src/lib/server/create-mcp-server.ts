@@ -80,13 +80,13 @@ export function planRegistrationOrder(
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
 		throw new Error(
-			'[mcp-core] duplicate registration id in core sequence'
+			'[mcp-vertex] duplicate registration id in core sequence'
 		);
 	}
 	for (const extra of extras) {
 		if (seen.has(extra.id)) {
 			throw new Error(
-				`[mcp-core] duplicate registration id "${extra.id}"`
+				`[mcp-vertex] duplicate registration id "${extra.id}"`
 			);
 		}
 		seen.add(extra.id);
@@ -99,7 +99,7 @@ export function planRegistrationOrder(
 		);
 		if (anchorIndex < 0) {
 			throw new Error(
-				`[mcp-core] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`
+				`[mcp-vertex] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`
 			);
 		}
 		let insertIndex = anchorIndex + 1;

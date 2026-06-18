@@ -72,11 +72,11 @@ describe('docs plugin', () => {
 	it('registers docs_list + docs_read + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/docs',
-			pluginDocsDir: 'docs/mcp-core/docs',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/docs',
+			pluginDocsDir: 'docs/mcp-vertex/docs',
 			namespacePrefix: 'docs',
 			options: {},
 			args: {},

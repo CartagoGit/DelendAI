@@ -7,7 +7,7 @@ markdown so an agent navigates curated docs by title/path instead of grepping.
 ## Load it
 
 ```bash
-mcp-core --plugins=docs
+mcp-vertex --plugins=docs
 ```
 
 Registers two tools, `<prefix>_docs_list` and `<prefix>_docs_read`.
@@ -21,9 +21,9 @@ Registers two tools, `<prefix>_docs_list` and `<prefix>_docs_read`.
   Reads one doc by its workspace-relative path (from `docs_list`). Refuses paths
   outside the workspace (no `..` traversal); content capped at 256 KiB.
 
-## Configuration (`mcp-core.config.json`)
+## Configuration (`mcp-vertex.config.json`)
 
-mcp-core is agnostic — the host owns which docs are served:
+mcp-vertex is agnostic — the host owns which docs are served:
 
 ```json
 {

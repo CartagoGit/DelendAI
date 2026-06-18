@@ -10,7 +10,7 @@ top of `standard`.
 ```jsonc
 {
   "servers": {
-    "mcp-core": {
+    "mcp-vertex": {
       "command": "bunx",
       "args": ["@mcp-vertex/core", "--preset=swarm"]
     }
@@ -18,13 +18,13 @@ top of `standard`.
 }
 ```
 
-Optional config (`mcp-core.config.json` at the workspace root):
+Optional config (`mcp-vertex.config.json` at the workspace root):
 
 ```jsonc
 {
-  "$schema": "./node_modules/@mcp-vertex/core/schema/mcp-core.config.schema.json",
-  "cacheDir": ".cache/mcp-core",
-  "docsDir": "docs/mcp-core",
+  "$schema": "./node_modules/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+  "cacheDir": ".cache/mcp-vertex",
+  "docsDir": "docs/mcp-vertex",
   "plugins": {
     "proposals": { "options": { "proposalFolders": ["paused/demos"] } }
   }
@@ -42,4 +42,4 @@ Optional config (`mcp-core.config.json` at the workspace root):
 4. `proposals_sync_proposals` / `proposals_compact_status` to keep state coherent.
 
 > This repo dogfoods exactly this setup — see [`.mcp.json`](../../.mcp.json) and
-> [`mcp-core.config.json`](../../mcp-core.config.json) at the root.
+> [`mcp-vertex.config.json`](../../mcp-vertex.config.json) at the root.

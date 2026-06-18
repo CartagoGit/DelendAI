@@ -1,6 +1,6 @@
 /**
  * Host-provided knowledge served through the framework (catalogues,
- * conventions, operating modes). mcp-core stores and serves entries;
+ * conventions, operating modes). mcp-vertex stores and serves entries;
  * it never owns their content.
  */
 export interface IKnowledgeEntry {

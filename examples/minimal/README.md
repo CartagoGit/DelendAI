@@ -1,6 +1,6 @@
 # Example: a minimal server
 
-The smallest useful mcp-core server — orientation plus a couple of read-only
+The smallest useful mcp-vertex server — orientation plus a couple of read-only
 plugins, loaded with the `minimal` preset (`git` + `search`).
 
 ## mcp.json
@@ -8,7 +8,7 @@ plugins, loaded with the `minimal` preset (`git` + `search`).
 ```jsonc
 {
   "servers": {
-    "mcp-core": {
+    "mcp-vertex": {
       "command": "bunx",
       "args": ["@mcp-vertex/core", "--preset=minimal"]
     }

@@ -65,7 +65,7 @@ describe('extractParallelismFromFrontmatter', () => {
 		).toBeNull();
 	});
 
-	// M4: without knownTracks, mcp-core is track-agnostic — any non-empty
+	// M4: without knownTracks, mcp-vertex is track-agnostic — any non-empty
 	// string is a valid host track, so no vocabulary is imposed.
 	it('accepts arbitrary host tracks when no knownTracks set is supplied', () => {
 		const raw = wrap(

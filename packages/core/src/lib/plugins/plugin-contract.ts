@@ -34,7 +34,7 @@ export interface IMcpPluginContext {
 	readonly namespacePrefix: string;
 	/**
 	 * Typed, structured options for THIS plugin, read from the
-	 * `mcp-core.config.json` file under `plugins.<name>.options`. May
+	 * `mcp-vertex.config.json` file under `plugins.<name>.options`. May
 	 * hold nested objects/arrays — anything JSON. Empty when no config
 	 * file (or no entry for this plugin) is present.
 	 */
@@ -56,9 +56,9 @@ export interface IMcpPluginRegistrations {
 }
 
 /**
- * The contract every mcp-core plugin implements. A plugin package's
+ * The contract every mcp-vertex plugin implements. A plugin package's
  * entry module must `export default` one of these (or a factory that
- * returns one). Resolved by name via the CLI: `mcp-core --plugins=foo`
+ * returns one). Resolved by name via the CLI: `mcp-vertex --plugins=foo`
  * loads `@mcp-vertex/foo`, a bare npm name, or a local path.
  */
 export interface IMcpPlugin {

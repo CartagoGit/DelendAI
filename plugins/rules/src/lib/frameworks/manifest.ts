@@ -57,7 +57,7 @@ export const discoverAreas = (reader: IFileReader): readonly string[] => {
 export interface IBuildManifestOptions {
 	readonly reader: IFileReader;
 	readonly projectName: string;
-	/** Workspace-relative rules cache dir, e.g. `.cache/mcp-core/rules`. */
+	/** Workspace-relative rules cache dir, e.g. `.cache/mcp-vertex/rules`. */
 	readonly cacheRelDir: string;
 	readonly mode: IRulesMode;
 	/** Force a preset id for an area path (overrides detection). */

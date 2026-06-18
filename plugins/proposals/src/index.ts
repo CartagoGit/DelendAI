@@ -30,11 +30,11 @@ import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 
 /**
- * The proposals workflow plugin. It turns mcp-core into a multi-agent
+ * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
  * proposal runner: a file-based proposal store, file-level write locks
  * and a persistent task queue (the "swarm" coordination layer).
  *
- * Load it with `mcp-core --plugins=proposals`. Paths come from the
+ * Load it with `mcp-vertex --plugins=proposals`. Paths come from the
  * core's resolved roots: cache/state under `<cacheDir>/proposals`,
  * human-edited proposals under `<docsDir>/proposals`. Override the docs
  * root with `--docsDir`, the cache root with `--cacheDir`.
@@ -70,7 +70,7 @@ export default definePlugin({
 			ctx.workspace.resolve(relativePath);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
-		// e.g. `['paused/demos']`. mcp-core bakes none — the host injects
+		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
 		// its folder policy via ctx.options. [M5]
 		const extraProposalFolders = Array.isArray(
 			ctx.options.proposalFolders

@@ -270,11 +270,11 @@ describe('memory plugin', () => {
 	it('registers the four memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/memory',
-			pluginDocsDir: 'docs/mcp-core/memory',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/memory',
+			pluginDocsDir: 'docs/mcp-vertex/memory',
 			namespacePrefix: 'memory',
 			options: {},
 			args: {},

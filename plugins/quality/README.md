@@ -10,7 +10,7 @@ structured pass/fail report.
 ```jsonc
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=quality"]
 		}
@@ -28,7 +28,7 @@ structured pass/fail report.
 ## Where the commands come from (precedence)
 
 1. plugin `options.scopes` (`{ "feature": ["bun run lint", "bun run test"] }`)
-2. `mcp-core.config.json` → `validationMatrix.scopes`
+2. `mcp-vertex.config.json` → `validationMatrix.scopes`
 3. detected `package.json` scripts (as one `all` scope)
 
 ## Trust boundary & command policy (M13)

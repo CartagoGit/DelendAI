@@ -75,11 +75,11 @@ describe('search plugin', () => {
 	const ctx = (root: string): IMcpPluginContext =>
 		({
 			workspace: { root, resolve: (p: string) => join(root, p) },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/search',
-			pluginDocsDir: 'docs/mcp-core/search',
+			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			pluginCacheDir: '.cache/mcp-vertex/search',
+			pluginDocsDir: 'docs/mcp-vertex/search',
 			namespacePrefix: 'search',
 			options: {},
 			args: {},

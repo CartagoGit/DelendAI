@@ -14,7 +14,7 @@ export interface IServerPlan {
 	readonly projectType: IProjectAnalysis['projectType'];
 	readonly serverName: string;
 	readonly namespacePrefix: string;
-	/** mcp-core plugins to load via `--plugins`. */
+	/** mcp-vertex plugins to load via `--plugins`. */
 	readonly plugins: readonly string[];
 	/** Project-specific tools to scaffold. */
 	readonly tools: readonly IRecommendedTool[];

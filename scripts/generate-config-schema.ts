@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * generate-config-schema.ts — emit the JSON Schema for `mcp-core.config.json`
+ * generate-config-schema.ts — emit the JSON Schema for `mcp-vertex.config.json`
  * from the single source of truth (the Zod `CONFIG_FILE_SCHEMA`), so editors
  * get autocomplete + validation and the schema never drifts from the code.
  *
@@ -18,7 +18,7 @@ import { CONFIG_FILE_SCHEMA } from '../packages/core/src/lib/plugins/load-config
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Path of the committed schema, relative to the repo root. */
-export const CONFIG_SCHEMA_PATH = 'packages/core/schema/mcp-core.config.schema.json';
+export const CONFIG_SCHEMA_PATH = 'packages/core/schema/mcp-vertex.config.schema.json';
 
 /** Build the JSON Schema text (the exact bytes written to disk). */
 export const buildConfigSchema = (): string => {
@@ -26,8 +26,8 @@ export const buildConfigSchema = (): string => {
 	const schema = {
 		...body,
 		$schema: 'http://json-schema.org/draft-07/schema#',
-		$id: 'https://cartago-git.github.io/mcp-core/mcp-core.config.schema.json',
-		title: 'mcp-core.config.json',
+		$id: 'https://cartagogit.github.io/mcp-vertex/mcp-vertex.config.schema.json',
+		title: 'mcp-vertex.config.json',
 		description:
 			'Configuration for @mcp-vertex/core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options.',
 	};

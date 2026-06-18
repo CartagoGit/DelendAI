@@ -1,13 +1,13 @@
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 
 /**
- * How a NEW project adopts mcp-core. This is the npm-readiness doc
+ * How a NEW project adopts mcp-vertex. This is the npm-readiness doc
  *: everything a host must provide lives in
  * `IMcpCoreHostConfig`; nothing project-specific hides inside the
  * framework.
  */
 export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
-	id: 'mcp-core-host-onboarding',
+	id: 'mcp-vertex-host-onboarding',
 	title: 'Adopting @mcp-vertex/core in a new project',
 	body: [
 		'# Host onboarding',
@@ -26,6 +26,6 @@ export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 		'2. Boot with `createMcpServer(config)` and call `.start()` (stdio transport).',
 		'3. Register the server in your editor (e.g. `.vscode/mcp.json`) pointing at your entry file.',
 		'4. The framework gives you: deterministic registration, workspace path resolution, the proposal engine (frontmatter, budgets, acceptance, parallelism, registry sync), the swarm runtime (round context, continuity policies, chat titling), file-level agent locks with heartbeat/GC, the persistent task queue, closure-report gates with injectable vocabulary, and the delivery verifier.',
-		'5. Hard rule: mcp-core never imports host packages. If you need host data inside an engine, add a parameter to the engine, never an import.',
+		'5. Hard rule: mcp-vertex never imports host packages. If you need host data inside an engine, add a parameter to the engine, never an import.',
 	].join('\n'),
 };

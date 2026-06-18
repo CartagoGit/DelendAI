@@ -13,11 +13,11 @@ import plugin from '@mcp-vertex/rules';
 
 const makeCtx = (root: string, options: Record<string, unknown> = {}): IMcpPluginContext => ({
 	workspace: { root, resolve: (rel: string) => join(root, rel) },
-	corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-	cacheDir: '.cache/mcp-core',
-	docsDir: 'docs/mcp-core',
-	pluginCacheDir: '.cache/mcp-core/rules',
-	pluginDocsDir: 'docs/mcp-core/rules',
+	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+	cacheDir: '.cache/mcp-vertex',
+	docsDir: 'docs/mcp-vertex',
+	pluginCacheDir: '.cache/mcp-vertex/rules',
+	pluginDocsDir: 'docs/mcp-vertex/rules',
 	namespacePrefix: 'rules',
 	options,
 	args: {},
@@ -59,13 +59,13 @@ describe('@mcp-vertex/rules plugin', () => {
 	it('materialises default presets + a manifest into the cache on register', async () => {
 		await plugin.register(makeCtx(root));
 		expect(
-			existsSync(join(root, '.cache/mcp-core/rules/rules-map.json'))
+			existsSync(join(root, '.cache/mcp-vertex/rules/rules-map.json'))
 		).toBe(true);
 		expect(
-			existsSync(join(root, '.cache/mcp-core/rules/angular.eslint.config.mjs'))
+			existsSync(join(root, '.cache/mcp-vertex/rules/angular.eslint.config.mjs'))
 		).toBe(true);
 		expect(
-			existsSync(join(root, '.cache/mcp-core/rules/vanilla-ts.tsconfig.json'))
+			existsSync(join(root, '.cache/mcp-vertex/rules/vanilla-ts.tsconfig.json'))
 		).toBe(true);
 	});
 

@@ -11,7 +11,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
 			"args": ["@mcp-vertex/core", "--plugins=proposals"]
 		}
@@ -34,7 +34,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock. |
 | `proposal_review` | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection. |
 
-## Configure (`mcp-core.config.json`)
+## Configure (`mcp-vertex.config.json`)
 
 ```jsonc
 {
@@ -53,8 +53,8 @@ coordination — including naming the whole agent tree (orchestrator included).
 
 ## Paths
 
-State under `.cache/mcp-core/proposals/`; human-edited proposals under
-`docs/mcp-core/proposals/`. All tools share one layout so locks, queue,
+State under `.cache/mcp-vertex/proposals/`; human-edited proposals under
+`docs/mcp-vertex/proposals/`. All tools share one layout so locks, queue,
 round-context and the store always agree.
 
 ## Use as a library

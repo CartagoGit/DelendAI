@@ -31,7 +31,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 	};
 
 	it('syncProposalRegistry writes the index under the custom docs root', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
+		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
 		writeFileEnsured(
 			join(root, layout.proposalsDir, 'p01-demo.md'),
 			['---', 'id: p01', 'type: feature', 'status: pending', '---', '# Demo'].join(
@@ -51,7 +51,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 	});
 
 	it('collectRoundContextSnapshot reads the lock under the custom cache root', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
+		const layout = buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
 		writeFileEnsured(
 			join(root, layout.lockFile),
 			JSON.stringify({

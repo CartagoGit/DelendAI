@@ -6,7 +6,7 @@ import { buildDepsToolRegistrations } from './lib/tools';
  * Dependency inventory + offline health plugin. `deps_list` enumerates the
  * manifest's declared dependencies; `deps_check` flags a missing lockfile,
  * unpinned version ranges and cross-section duplicates — all offline,
- * agnostic, no network/CVE database. Load with `mcp-core --plugins=deps`.
+ * agnostic, no network/CVE database. Load with `mcp-vertex --plugins=deps`.
  * Configure the manifest path via `plugins.deps.options.manifest`.
  */
 export default definePlugin({

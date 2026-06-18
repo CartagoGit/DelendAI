@@ -2,7 +2,7 @@
  * proposal-folders-injection.spec.ts
  *
  * M5: host folder policy (e.g. `paused/demos`) is injected via
- * `extraFolders`, not baked into mcp-core. By default the generic
+ * `extraFolders`, not baked into mcp-vertex. By default the generic
  * proposal-model subtrees are scanned; a host adds its own.
  */
 
@@ -28,7 +28,7 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	const layout = () => buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
+	const layout = () => buildSwarmPaths('.cache/mcp-vertex', 'docs/mcp-vertex');
 
 	const writeProposal = (abs: string, id: string): void => {
 		mkdirSync(dirname(abs), { recursive: true });

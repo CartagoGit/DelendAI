@@ -6,7 +6,7 @@ import { toolJson } from '../shared/tool-response';
 /**
  * Returns the project's quality-gate commands per scope so an agent
  * knows exactly how to validate its work here — without guessing
- * `bun run ...` / `npm test`. Sourced from `mcp-core.config.json`
+ * `bun run ...` / `npm test`. Sourced from `mcp-vertex.config.json`
  * (`validationMatrix`). Empty `scopes` means none configured.
  */
 export const buildValidationMatrixToolRegistration = (
