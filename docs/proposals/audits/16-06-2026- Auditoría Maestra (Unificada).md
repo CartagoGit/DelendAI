@@ -457,9 +457,14 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   multiplexadas (excepción documentada, no bloqueante).
 
 **P2 — dedupe / calidad interna:**
-- ⬜ **M25 · Command runner compartido** `core/lib/commands/runner.ts` reusado por
-  `git`, `quality` y `proposal-acceptance` (hoy cada uno reimplementa child-process
-  con timeout). Idem `core/lib/shared/walk.ts` para unificar el `walk()` de `search` y `docs`.
+- 🟡 **M25 · Teardown de procesos compartido** — extraído `killProcessGroup(pid, signal?)`
+  a `core/lib/commands/process-group.ts` (la pieza idéntica, sutil y **crítica**: matar el
+  grupo de procesos `-pid` con fallback al líder), reusado por `quality` y
+  `proposal-acceptance`. *Decisión:* NO se unifican los runners completos porque difieren por
+  diseño (git = `execFile` read-only; quality = shell + registro de cancelación + salida
+  combinada; acceptance = argv + streams separados + `expect`) — un runner único sería una
+  abstracción con fugas. ⬜ Pendiente menor: `core/walkAllowedFiles` para unificar el
+  `walk()` de `search`/`docs`.
 
 **Plataforma / producto (la grieta principal, consenso 3/3):**
 - ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:

@@ -45,6 +45,8 @@
 
 import { spawn } from 'node:child_process';
 
+import { killProcessGroup } from '@cartago-git/mcp-core/public';
+
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';
 
@@ -225,24 +227,6 @@ export const tokenizeArgv = (input: string): string[] => {
 export const commandNeedsShell = (command: string): boolean =>
 	/[|&;<>`]|\$\(/.test(command);
 
-/**
- * Kill the criterion's whole process group (negative pid) so no child
- * outlives the timeout — e.g. the right-hand side of a pipe. Falls back
- * to killing just the leader if the group signal fails (already exited,
- * or a platform without POSIX process groups). [M8]
- */
-const killProcessGroup = (pid: number | undefined): void => {
-	if (pid === undefined) return;
-	try {
-		process.kill(-pid, 'SIGKILL');
-	} catch {
-		try {
-			process.kill(pid, 'SIGKILL');
-		} catch {
-			// already gone
-		}
-	}
-};
 
 /**
  * Runs a single criterion to completion (or timeout). Returns a structured

@@ -1,27 +1,16 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
+import { killProcessGroup } from '@cartago-git/mcp-core/public';
+
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
 
 // In-flight spawned children, so `quality_cancel` can abort a long-running scope
 // instead of waiting for the timeout (A2). Each child is spawned `detached` so
 // killing `-pid` reaps the whole process group (shell + the real command),
-// leaving no orphans — same technique as the acceptance runner (M8).
+// leaving no orphans — same canonical teardown as the acceptance runner (M25).
 const activeChildren = new Set<ChildProcess>();
 
-/** Kill the child's whole process group; never throws. */
-const killGroup = (child: ChildProcess, signal: NodeJS.Signals = 'SIGKILL'): void => {
-	if (child.pid === undefined) return;
-	try {
-		process.kill(-child.pid, signal);
-	} catch {
-		// already gone / no group — best effort
-		try {
-			child.kill(signal);
-		} catch {
-			// ignore
-		}
-	}
-};
+const killGroup = (child: ChildProcess): void => killProcessGroup(child.pid);
 
 /** PIDs of quality commands currently running in this process. */
 export const activeRunPids = (): number[] =>
