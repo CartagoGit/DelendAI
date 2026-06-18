@@ -37,6 +37,8 @@ export interface ISearchOptions {
 	readonly include?: readonly string[];
 	/** Glob(s) on the relative file path to exclude (takes priority). */
 	readonly exclude?: readonly string[];
+	/** Skip paths matched by the workspace root's `.gitignore`. Default true. */
+	readonly respectGitignore?: boolean;
 }
 
 /** Thrown when `regex: true` and `query` is not a valid regular expression. */
@@ -88,6 +90,60 @@ const matchesAnyGlob = (
 	relPath: string,
 	globs: readonly RegExp[]
 ): boolean => globs.some((re) => re.test(relPath));
+
+interface IGitignoreRule {
+	readonly re: RegExp;
+	readonly negate: boolean;
+	readonly dirOnly: boolean;
+}
+
+/**
+ * Compile one `.gitignore` line into a rule. Approximates real git
+ * semantics (good enough for skipping search noise, not a git
+ * reimplementation): a pattern with an internal `/` anchors to the
+ * workspace root; a bare segment (no `/`) matches at any depth. `**`
+ * reuses the same span-matching as `globToRegExp`. `!` negates a
+ * previous match; trailing `/` restricts the rule to directories.
+ */
+const compileGitignoreLine = (rawLine: string): IGitignoreRule | undefined => {
+	let line = rawLine.trim();
+	if (line.length === 0 || line.startsWith('#')) return undefined;
+	const negate = line.startsWith('!');
+	if (negate) line = line.slice(1);
+	const dirOnly = line.endsWith('/');
+	if (dirOnly) line = line.slice(0, -1);
+	if (line.length === 0) return undefined;
+	const anchored = line.startsWith('/');
+	if (anchored) line = line.slice(1);
+	const body = globToRegExp(line).source.slice(1, -1); // strip globToRegExp's ^…$
+	const pattern = anchored || line.includes('/') ? body : `(?:.*/)?${body}`;
+	return { re: new RegExp(`^${pattern}(?:/.*)?$`), negate, dirOnly };
+};
+
+/** Parse a `.gitignore` file's text into compiled rules, in file order. */
+export const parseGitignore = (raw: string): readonly IGitignoreRule[] =>
+	raw
+		.split('\n')
+		.map(compileGitignoreLine)
+		.filter((rule): rule is IGitignoreRule => rule !== undefined);
+
+/**
+ * Last-matching-rule-wins, as git does. `isDir` lets directory-only (`/`
+ * suffixed) rules skip files. Returns false (not ignored) for an empty
+ * rule set, so callers never need to special-case "no .gitignore".
+ */
+export const isGitignored = (
+	relPath: string,
+	isDir: boolean,
+	rules: readonly IGitignoreRule[]
+): boolean => {
+	let ignored = false;
+	for (const rule of rules) {
+		if (rule.dirOnly && !isDir) continue;
+		if (rule.re.test(relPath)) ignored = !rule.negate;
+	}
+	return ignored;
+};
 
 const DEFAULT_EXTENSIONS: readonly string[] = [
 	'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'json', 'md', 'mdx', 'txt',
@@ -141,6 +197,14 @@ export const searchWorkspace = async (
 	);
 	const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 	const caseSensitive = options.caseSensitive ?? false;
+	const gitignoreRules =
+		options.respectGitignore === false
+			? []
+			: parseGitignore(
+					await readFile(join(workspaceRootAbs, '.gitignore'), 'utf8').catch(
+						() => ''
+					)
+				);
 
 	// Line matcher: regex (compiled once) or literal substring.
 	let matches: (line: string) => boolean;
@@ -163,6 +227,9 @@ export const searchWorkspace = async (
 	const includeGlobs = (options.include ?? []).map(globToRegExp);
 	const excludeGlobs = (options.exclude ?? []).map(globToRegExp);
 	const shouldSearch = (rel: string, name: string): boolean => {
+		if (gitignoreRules.length > 0 && isGitignored(rel, false, gitignoreRules)) {
+			return false;
+		}
 		if (excludeGlobs.length > 0 && matchesAnyGlob(rel, excludeGlobs)) {
 			return false;
 		}
@@ -217,6 +284,12 @@ export const searchWorkspace = async (
 			if (truncated) return;
 			if (entry.isDirectory()) {
 				if (ignoreDirs.has(entry.name)) continue;
+				const relDir = relative(workspaceRootAbs, join(absDir, entry.name))
+					.split(sep)
+					.join('/');
+				if (gitignoreRules.length > 0 && isGitignored(relDir, true, gitignoreRules)) {
+					continue;
+				}
 				await walk(join(absDir, entry.name));
 			} else if (entry.isFile()) {
 				const absPath = join(absDir, entry.name);
