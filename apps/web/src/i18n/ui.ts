@@ -8,18 +8,18 @@ export interface ILangMeta {
  * `country` maps to a flag SVG under `public/flags/<country>.svg` (emoji flags
  * don't render on Windows, so we ship real images). */
 export const languages = [
+	{ code: 'ar', label: 'العربية', country: 'sa' },
+	{ code: 'de', label: 'Deutsch', country: 'de' },
 	{ code: 'en', label: 'English', country: 'gb' },
 	{ code: 'es', label: 'Español', country: 'es' },
-	{ code: 'zh', label: '中文', country: 'cn' },
-	{ code: 'hi', label: 'हिन्दी', country: 'in' },
-	{ code: 'ar', label: 'العربية', country: 'sa' },
-	{ code: 'pt', label: 'Português', country: 'br' },
 	{ code: 'fr', label: 'Français', country: 'fr' },
-	{ code: 'ja', label: '日本語', country: 'jp' },
-	{ code: 'de', label: 'Deutsch', country: 'de' },
+	{ code: 'hi', label: 'हिन्दी', country: 'in' },
 	{ code: 'it', label: 'Italiano', country: 'it' },
-	{ code: 'vi', label: 'Tiếng Việt', country: 'vn' },
+	{ code: 'ja', label: '日本語', country: 'jp' },
+	{ code: 'pt', label: 'Português', country: 'pt' },
 	{ code: 'th', label: 'ไทย', country: 'th' },
+	{ code: 'vi', label: 'Tiếng Việt', country: 'vn' },
+	{ code: 'zh', label: '中文', country: 'cn' },
 ] as const;
 
 export type Lang = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'it' | 'zh' | 'hi' | 'ar' | 'ja' | 'vi' | 'th';
