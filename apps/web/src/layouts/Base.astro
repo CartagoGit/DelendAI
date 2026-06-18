@@ -1,5 +1,9 @@
 ---
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import Config from '../components/Config.astro';
 import '../styles/styles.scss';
+import { ClientRouter } from 'astro:transitions';
 import { rtlLangs, type Lang } from '../i18n/ui';
 
 interface Props {
@@ -10,14 +14,10 @@ interface Props {
 
 const {
 	lang,
-	// biome-ignore lint/correctness/noUnusedVariables: consumed by the <head> template below
 	title = '@mcp-vertex/core — agnostic MCP server core',
-	// biome-ignore lint/correctness/noUnusedVariables: consumed by the <head> template below
 	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
 } = Astro.props;
-// biome-ignore lint/correctness/noUnusedVariables: consumed by <html dir> in the template below
 const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
-// biome-ignore lint/correctness/noUnusedVariables: consumed by asset hrefs in the template below
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 

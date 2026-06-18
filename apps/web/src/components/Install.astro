@@ -1,12 +1,18 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import {
+	PACKAGE,
+	ideTargets,
+	packageManagers,
+	renderConfig,
+} from '../data/install';
 
 interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
-const _defaultPm = 'npm';
+const t = useTranslations(lang);
+const defaultPm = 'npm';
 ---
 
 <section id="install" class="section">

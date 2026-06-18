@@ -5,7 +5,7 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 ---
 
 <section id="concept" class="section">

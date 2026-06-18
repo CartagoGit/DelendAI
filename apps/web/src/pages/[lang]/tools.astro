@@ -1,5 +1,8 @@
 ---
+import ToolsSection from '../../components/ToolsSection.astro';
+import Base from '../../layouts/Base.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
+import capabilities from '../../data/capabilities.json';
 
 /** All non-English locales get their own /<lang>/tools. The English copy
  * lives in the root /tools.astro (so the project-site URL stays clean). */
@@ -10,9 +13,9 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const _t = useTranslations(lang as Lang);
+const t = useTranslations(lang as Lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _homeHref = `${base}/${lang}/`;
+const homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.tools.title} — @mcp-vertex/core`}>

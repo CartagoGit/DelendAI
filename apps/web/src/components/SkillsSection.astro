@@ -6,7 +6,7 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
 type ISkill = {
 	id: string;
@@ -16,9 +16,9 @@ type ISkill = {
 	summary: string;
 	path: string;
 };
-const _skills = (skillsData.skills ?? []) as ISkill[];
+const skills = (skillsData.skills ?? []) as ISkill[];
 
-const _repo = 'https://github.com/CartagoGit/mcp-vertex';
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
 
 <section id="skills" class="section">
