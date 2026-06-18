@@ -268,16 +268,22 @@ function isAcceptable(selector) {
 	// "no descendant combinators" rule below.
 	//
 	// 1. `.parent__block a[attr...]` — nav links with attribute filters
-	//    (e.g. `.nav__links a[href*='/api']`).
+	//    (e.g. `.nav__links a[href*='/api']`).  Child must have either
+	//    an attribute, a `:not()` chain, or a trailing pseudo — this is
+	//    what distinguishes the "intentional attribute filter" from a
+	//    generic descendant selector that should be refactored.
 	// 2. `.parent__block a:not(.x):not(.y)` — `:not()` chains for
 	//    excluding a few specific children at a breakpoint.
 	// 3. `html[attr] .parent__block` — document-level overrides for
 	//    RTL (`html[dir='rtl']`) and reduced motion
 	//    (`html[data-motion='off']`).
+	const CHILD_HAS_FILTER =
+		/(:not\([^)]+\)|\[[^\]]+\]|:hover|:focus|:focus-visible|:active|:visited)/;
 	if (
-		/^(\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|html\[[^\]]+\])\s+([a-z][a-z0-9-]*|\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)(:not\([^)]+\))?(\[[^\]]+\])?(:[a-z-]+(?:\([^)]*\))?)?$/.test(
+		/^(\.([a-z][a-z0-9-]*)(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|html\[[^\]]+\])\s+([a-z][a-z0-9-]*|\.[a-z][a-z0-9-]*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?)/.test(
 			sel,
-		)
+		) &&
+		CHILD_HAS_FILTER.test(sel)
 	) {
 		return true;
 	}
