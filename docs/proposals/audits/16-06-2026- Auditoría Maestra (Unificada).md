@@ -385,8 +385,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Contenido / textos:**
 - ✅ Sección **Plugins como último campo** (los 10 paquetes + versión + descripción por idioma).
 - 🟡 Textos en general **más comprensivos**; ✅ explicación de plugins por idioma.
-- ⬜ **Benchmarks con gráficas** comparando con otras herramientas similares
-  (con datos honestos; no inventar cifras de terceros sin medir).
+- ✅ **Benchmarks con gráficas** — `gen-capabilities` **mide en vivo** (sobre el
+  protocolo, config `proposals+memory` de TOKEN-BUDGETS.md) `overview` full/compact y
+  `auto_work`, y la web pinta barras reales (full 1339 / compact 236 / auto_work 32 tok →
+  arranque 268 < 300). Incluye una barra **baseline ilustrativa** *claramente etiquetada*
+  como estimación (no se inventan cifras de terceros). Honesto y a prueba de drift.
+- ✅ **Logotipo + favicon** — marca hexagonal "core + nodos de plugin" (`public/logo.svg`),
+  en nav, hero y favicon SVG; legible a 16px.
 
 **Responsive:**
 - 🔴 **TODO** debe ser responsive (ordenador/tablet/móvil) — invariante permanente

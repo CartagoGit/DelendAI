@@ -57,38 +57,111 @@ interface ITool {
 	readonly description: string;
 }
 
+/** A measured, real payload size (bytes of the tool result text the agent sees). */
+interface IBenchmark {
+	readonly id: string;
+	readonly label: string;
+	readonly bytes: number;
+	readonly tokens: number;
+}
+
+interface ICollected {
+	readonly tools: ITool[];
+	readonly benchmarks: IBenchmark[];
+}
+
 const namespaceOf = (toolName: string): string =>
 	toolName.includes('_') ? (toolName.split('_')[0] as string) : 'core';
 
-const collectTools = async (): Promise<ITool[]> => {
+/** Assemble the real server for a plugin list and return a connected client. */
+const buildClient = async (
+	pluginList: string,
+	workspace: string
+): Promise<{ client: Client; close: () => Promise<void> }> => {
+	const args = parseCliArgs(
+		[`--plugins=${pluginList}`, `--workspace=${workspace}`],
+		workspace
+	);
+	const { config } = await assembleCliConfig(args, {
+		import: async (specifier: string) => {
+			const hit = Object.entries(PLUGINS).find(([k]) => specifier.includes(k));
+			return { default: hit ? hit[1] : undefined };
+		},
+		readFile: () => undefined,
+	});
+	const assembled = await createMcpServer(config);
+	const [ct, st] = InMemoryTransport.createLinkedPair();
+	await assembled.server.connect(st);
+	const client = new Client({ name: 'site', version: '0.0.0' }, { capabilities: {} });
+	await client.connect(ct);
+	return {
+		client,
+		close: async () => {
+			await client.close();
+			await assembled.server.close();
+		},
+	};
+};
+
+// Benchmarks are measured on the documented cold-start config (proposals +
+// memory, matching docs/TOKEN-BUDGETS.md) so the figures line up with the
+// "<300 tokens to orient" promise — the full tool list above still shows all 9.
+const BENCH_PLUGINS = 'proposals,memory';
+
+const collectBenchmarks = async (): Promise<IBenchmark[]> => {
+	const workspace = mkdtempSync(join(tmpdir(), 'mcp-bench-'));
+	try {
+		const { client, close } = await buildClient(BENCH_PLUGINS, workspace);
+		// Measure the REAL payloads over the protocol (bytes of the result text
+		// the agent sees ≈ 4 bytes/token). Honest, live, drift-proof.
+		const measure = async (
+			id: string,
+			label: string,
+			name: string,
+			toolArgs: Record<string, unknown> = {}
+		): Promise<IBenchmark | undefined> => {
+			try {
+				const res = (await client.callTool({ name, arguments: toolArgs })) as {
+					content?: Array<{ text?: string }>;
+				};
+				const text = res.content?.[0]?.text ?? '';
+				const bytes = Buffer.byteLength(text, 'utf8');
+				if (bytes === 0) return undefined;
+				return { id, label, bytes, tokens: Math.round(bytes / 4) };
+			} catch {
+				return undefined;
+			}
+		};
+		const measured = await Promise.all([
+			measure('overview_full', 'overview (full)', 'mcpcore_overview'),
+			measure('overview_compact', 'overview (compact)', 'mcpcore_overview', {
+				compact: true,
+			}),
+			measure('auto_work', 'auto_work', 'proposals_auto_work'),
+		]);
+		await close();
+		return measured.filter((b): b is IBenchmark => b !== undefined);
+	} finally {
+		rmSync(workspace, { recursive: true, force: true });
+	}
+};
+
+const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
-		const args = parseCliArgs(
-			[`--plugins=${PLUGIN_LIST}`, `--workspace=${workspace}`],
-			workspace
-		);
-		const { config } = await assembleCliConfig(args, {
-			import: async (specifier: string) => {
-				const hit = Object.entries(PLUGINS).find(([k]) => specifier.includes(k));
-				return { default: hit ? hit[1] : undefined };
-			},
-			readFile: () => undefined,
-		});
-		const assembled = await createMcpServer(config);
-		const [ct, st] = InMemoryTransport.createLinkedPair();
-		await assembled.server.connect(st);
-		const client = new Client({ name: 'site', version: '0.0.0' }, { capabilities: {} });
-		await client.connect(ct);
+		const { client, close } = await buildClient(PLUGIN_LIST, workspace);
 		const { tools } = await client.listTools();
-		await client.close();
-		await assembled.server.close();
-		return tools
-			.map((t) => ({
-				name: t.name,
-				namespace: namespaceOf(t.name),
-				description: t.description ?? '',
-			}))
-			.sort((a, b) => a.name.localeCompare(b.name));
+		await close();
+		return {
+			tools: tools
+				.map((t) => ({
+					name: t.name,
+					namespace: namespaceOf(t.name),
+					description: t.description ?? '',
+				}))
+				.sort((a, b) => a.name.localeCompare(b.name)),
+			benchmarks: await collectBenchmarks(),
+		};
 	} finally {
 		rmSync(workspace, { recursive: true, force: true });
 	}
@@ -119,7 +192,7 @@ const main = async (): Promise<void> => {
 		}
 	).version;
 
-	const tools = await collectTools();
+	const { tools, benchmarks } = await collectTools();
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
 	if (undocumented.length > 0) {
 		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
@@ -137,11 +210,12 @@ const main = async (): Promise<void> => {
 		counts: { tools: tools.length, packages: packages.length },
 		packages,
 		tools,
+		benchmarks,
 	};
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${packages.length} packages, ${undocumented.length} undocumented.`
+		`wrote ${OUT} — ${tools.length} tools, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`
 	);
 };
 
