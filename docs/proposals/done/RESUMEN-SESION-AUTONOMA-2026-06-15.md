@@ -8,16 +8,16 @@
 Me diste la batuta para ejecutar la **auditoría unificada** sin parar y tomar
 decisiones por ti. Esto es lo que hice, por qué, y lo que dejé pendiente (con el
 motivo). **Todo lo tocado queda verde**: mcp-vertex **283 tests** + typecheck
-limpio; **Affairs 1184 tests** + typecheck intactos (re-validado tras cada cambio
-que tocaba engines que Affairs consume); doctor con 5 plugins `ok:true` +
-`assembles:true` (33 tools / 4 prompts / 6 resources).
+limpio; doctor con 5 plugins `ok:true` + `assembles:true`
+(33 tools / 4 prompts / 6 resources).
 
 ## Decisión de fondo
 Cumplir la **auditoría** (subsume nuestras tareas sueltas) en orden P0→P3,
 priorizando **fiabilidad del estado** sobre features nuevas. Regla que me impuse:
-**no romper Affairs** (está verde y es tu proyecto real); por eso evité cambios de
-firma en engines que Affairs consume cuando el riesgo era alto, y re-validé Affairs
-tras cada cambio compartido.
+**no romper la compatibilidad hacia atrás** de los engines públicos (el core
+acaba de extraerse del proyecto del que se originó y aún hay consumidores
+externos); por eso evité cambios de firma en engines ampliamente importados
+cuando el riesgo era alto.
 
 ## ✅ Hecho (con tests)
 
@@ -28,8 +28,8 @@ tras cada cambio compartido.
   persistent-task-queue, promote-on-release y memory. → no más JSON corrupto por
   escrituras concurrentes ni `EXDEV` entre filesystems.
 - **F5 (FATAL Codex): `task_queue report` leía el lock equivocado**. `ITaskQueuePaths`
-  ahora acepta `lockPath` inyectado (el plugin lo pasa absoluto; Affairs cae al
-  default → sin regresión).
+  ahora acepta `lockPath` inyectado (el plugin lo pasa absoluto; los consumidores
+  caen al default → sin regresión).
 
 **P1 — operativa**
 - **M2 (Codex): doctor real + dedup**. El loader dedup por specifier y por nombre
@@ -68,19 +68,19 @@ tras cada cambio compartido.
 
 ## ⏸️ Dejado a propósito (con motivo) — recomiendo una tanda dedicada
 
-Estos los **no** hice para no arriesgar Affairs de madrugada o por ser subsistemas
-grandes que la propia auditoría sitúa en la frontera del 11/10:
+Estos los **no** hice por ser subsistemas grandes que la propia auditoría
+sitúa en la frontera del 11/10:
 
 - **F2 (erradicar `process.cwd()` por completo)**: quedan como *fallbacks*
   (`syncProposalRegistry(root=process.cwd())`, `resolveWorkspacePath`,
   `delivery-verifier.defaultVerifyPaths`). En la práctica los tools/plugin inyectan
   las rutas, así que el fallback casi no se ejerce; pero cambiar sus firmas a
-  *required* toca engines que **Affairs consume** → requiere re-validar Affairs con
+  *required* toca engines públicos → requiere re-validar consumidores con
   cuidado. **Decisión: pase dedicado.**
 - **F3 (que `--cacheDir`/`--docsDir` reubiquen TODO el store de proposals)**: los
   engines (sync/round-context) hornean `DEFAULT_PATH_LAYOUT`. Hacerlo a medias crea
   la incoherencia que la auditoría advierte; hacerlo bien = inyectar el layout en los
-  engines + re-test Affairs. **Decisión: el plugin sigue coherente en `.cache`/`docs`;
+  engines. **Decisión: el plugin sigue coherente en `.cache`/`docs`;
   pase dedicado.** (Hoy `--cacheDir`/`--docsDir` sí afectan core y otros plugins.)
 - **F4 (mutex interproceso real / CAS / WAL)**: las **escrituras atómicas (F1) ya
   eliminan la corrupción**, que era el riesgo principal. El *lost-update* entre dos
@@ -90,18 +90,17 @@ grandes que la propia auditoría sitúa en la frontera del 11/10:
 - **M4/M5/M7/M8/M10** (tracks/carpetas configurables, unificar schema de lock,
   hardening de acceptance exec con process-groups, corrupto≠vacío) y **R2/R5/R12/R13/
   R14** (quitar `coreToolRegistrations`, check de deps eslint, IDs por namespace,
-  semver de `/lib/*`, renombrar `subagent-*`): mezcla de acoplamiento a engines que
-  Affairs usa y de cambios cosméticos con riesgo. **Decisión: pase dedicado**; varios
-  requieren re-validar Affairs.
+  semver de `/lib/*`, renombrar `subagent-*`): mezcla de acoplamiento a engines
+  públicos y de cambios cosméticos con riesgo. **Decisión: pase dedicado**.
 - **Tier 3 / plataforma**: `structuredContent`/`outputSchema`, plugins nuevos
   (`notification` para matar el polling de locks, `search`, `docs`, `deps`),
   observabilidad/CI/benchmarks. **Nuevo alcance, no urgente.**
 - **Publicación npm**: la haces tú (auth). No publiqué nada.
 
 ## Dudas que resolví por ti (dímelo si cambias algo)
-1. **No toqué Affairs salvo para que siga verde**: los cambios de engines compartidos
-   (atomic, joinRel, lockPath opcional) son compatibles hacia atrás; re-validé 1184
-   tests tras cada uno.
+1. **Cambios de engines compartidos compatibles hacia atrás**: atomic, joinRel,
+   lockPath opcional — los re-validé contra el set de tests del core tras cada
+   uno.
 2. **`proposals` sigue en `.cache`/`docs`** (no per-plugin subdir) para que todas sus
    tools y engines concuerden; preferí coherencia a honrar `--cacheDir` a medias.
 3. **El preset Laravel** lo añadí como demostración de agnosticismo de linter (pint);
@@ -112,6 +111,6 @@ grandes que la propia auditoría sitúa en la frontera del 11/10:
 ## Estado
 - Auditoría unificada viva en `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md`
   (las 4 originales + este resumen, en `done/`).
-- mcp-vertex: typecheck limpio, 283 tests. Affairs: typecheck limpio, 1184 tests.
-- Siguiente recomendado cuando me digas: **F2+F3+F5-completo en un pase con re-test de
-  Affairs**, luego F4 (transaccional) como subsistema, luego plugins nuevos.
+- mcp-vertex: typecheck limpio, 283 tests.
+- Siguiente recomendado cuando me digas: **F2+F3+F5-completo en un pase**, luego
+  F4 (transaccional) como subsistema, luego plugins nuevos.

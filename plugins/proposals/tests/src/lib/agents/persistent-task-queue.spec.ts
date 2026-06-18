@@ -46,7 +46,7 @@ import type {
 const TEMP_DIRS: string[] = [];
 
 const createTempDir = (): string => {
-	const dir = mkdtempSync(join(tmpdir(), 'affairs-ptq-'));
+	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ptq-'));
 	TEMP_DIRS.push(dir);
 	return dir;
 };

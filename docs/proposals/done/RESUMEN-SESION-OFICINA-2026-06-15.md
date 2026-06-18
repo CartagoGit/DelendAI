@@ -24,11 +24,12 @@ modelo inferior (lo pediste explícitamente).
    "error estructurado" no llegaba al usuario (los handlers no capturaban el
    throw) y la lógica de quarantine estaba duplicada con colisión de timestamp.
    **Remediado entero con tests.**
-2. **La premisa "no romper Affairs" está OBSOLETA.** Verifiqué que Affairs
-   (`/home/cartago/_proyectos/propios/affairs`) **no importa nada de mcp-vertex**
-   (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig). Son proyectos
-   independientes; mcp-vertex fue extraído pero Affairs conserva su copia. Sus ~14
-   tests rojos son pre-existentes y ajenos. Corregí esa nota en la auditoría.
+2. **La premisa "no romper el proyecto del que se extrajo el core" está OBSOLETA.**
+   Verifiqué que el repositorio del que se extrajo este core **no importa nada
+   de mcp-vertex** (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig).
+   Son proyectos independientes; mcp-vertex fue extraído pero el repositorio
+   original conserva su copia interna. Sus ~14 tests rojos son pre-existentes y
+   ajenos. Corregí esa nota en la auditoría.
 
 ## ✅ Hecho (con tests) — orden cronológico
 
@@ -102,6 +103,7 @@ modelo inferior (lo pediste explícitamente).
   `search`.
 - mcp-vertex: **typecheck limpio, 350 tests** (340 + 10 skip).
 - Auditoría viva en `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md`
-  (con todas las filas actualizadas a ✅ y la corrección de la premisa Affairs).
+  (con todas las filas actualizadas a ✅ y la corrección de la premisa sobre el
+  proyecto del que se extrajo el core).
 - **Siguiente recomendado**: plugin `docs` (autocontenido, bajo riesgo) o decidir
   el frente de `notification`/presets conmigo.

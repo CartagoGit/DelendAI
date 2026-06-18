@@ -4,7 +4,7 @@
  * TDD specs for the p40c T3 deliverable: the new
  * `verifyClosure` entry point in
  * `libs/mcp-server/src/lib/agents/delivery-verifier.ts` that wires
- * the `affairs_task_queue report` into the verifier's verdict.
+ * the `mcpvertex_task_queue report` into the verifier's verdict.
  *
  * 3 cases as enumerated in the proposal p40c T3:
  *   1. When the proposal declares `extras.taskQueue: true` AND
@@ -39,7 +39,7 @@ const createTempQueueDir = (): {
 	queuePath: string;
 	closedTasksPath: string;
 } => {
-	const dir = mkdtempSync(join(tmpdir(), 'affairs-dv-'));
+	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dv-'));
 	TEMP_DIRS.push(dir);
 	const queuePath = join(dir, 'queue.json');
 	const closedTasksPath = join(dir, 'closed-tasks.json');
@@ -308,7 +308,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 // ---------------------------------------------------------------------------
 describe('verifyClosure — missing queue file is treated as empty', () => {
 	it('returns taskQueueReport with queueLength=0 when the queue file does not exist', async () => {
-		const dir = mkdtempSync(join(tmpdir(), 'affairs-dv-noq-'));
+		const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dv-noq-'));
 		TEMP_DIRS.push(dir);
 		const queuePath = join(dir, 'queue.json'); // intentionally not created
 		const closedTasksPath = join(dir, 'closed-tasks.json');

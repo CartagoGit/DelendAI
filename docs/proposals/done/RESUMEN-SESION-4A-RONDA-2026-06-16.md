@@ -79,7 +79,7 @@ bun run types:generate  # regenera el SDK de tipos (no debe cambiar nada)
 **2. Cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0
 (N1–N23)** — ahora **todo ✅**. Lo de abajo en ese doc es historial.
 
-**3. Premisa clave:** **Affairs ya NO consume mcp-vertex** (independientes).
+**3. Premisa clave:** **mcp-vertex es ahora un proyecto independiente** del que se extrajo (sin consumidores acoplados a esta versión).
 
 **4. Artefactos nuevos de esta sesión (4ª ronda):**
 - `plugins/proposals/src/lib/swarm/round-context-{hash,sources,resume,digest}.ts`

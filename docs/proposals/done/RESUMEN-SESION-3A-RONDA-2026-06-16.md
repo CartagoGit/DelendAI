@@ -82,7 +82,7 @@ bun packages/core/src/cli.ts --preset=swarm --check   # carga los 9 plugins
 **2. Cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0
 (N1–N23)** con ✅/🟡/⬜. Eso manda; lo de arriba en ese doc es historial.
 
-**3. Premisa clave:** **Affairs ya NO consume mcp-vertex** (independientes). Ignora
+**3. Premisa clave:** **mcp-vertex es ahora un proyecto independiente** del que se extrajo (sin consumidores acoplados a esta versión). Ignora
 cualquier nota antigua de "re-validar 1184".
 
 **4. Siguiente recomendado (lo que queda, todo de menor valor/alcance grande):**

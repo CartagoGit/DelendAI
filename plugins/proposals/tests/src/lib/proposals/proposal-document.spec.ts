@@ -17,7 +17,7 @@ const write = (content: string): string => {
 };
 
 beforeEach(() => {
-	tmpDir = mkdtempSync(join(tmpdir(), 'affairs-proposal-doc-'));
+	tmpDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-proposal-doc-'));
 	tmpFile = join(tmpDir, 'p99-fixture.md');
 });
 

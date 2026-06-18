@@ -45,7 +45,7 @@ afterEach(() => {
 
 let workDir: string;
 beforeEach(() => {
-	workDir = mkdtempSync(join(tmpdir(), 'affairs-ctl-'));
+	workDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ctl-'));
 	TEMP_DIRS.push(workDir);
 });
 

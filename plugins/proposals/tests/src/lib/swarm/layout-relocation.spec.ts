@@ -71,7 +71,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 		expect(snapshot.activeLocks.map((l) => l.taskId)).toContain('t1');
 	});
 
-	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (Affairs back-compat)', async () => {
+	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (legacy host back-compat)', async () => {
 		writeFileEnsured(
 			join(root, 'docs/mcp-vertex/proposals/p02-default.md'),
 			['---', 'id: p02', 'type: feature', 'status: pending', '---', '# Def'].join(
