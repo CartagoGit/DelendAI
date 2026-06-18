@@ -1,13 +1,21 @@
 {
-	"generated_at": "2026-06-18T22:24:56.100Z",
-	"count": 1,
+	"generated_at": "2026-06-18T23:21:45.948Z",
+	"count": 2,
 	"proposals": [
 		{
 			"id": "p104",
 			"file": "p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md",
 			"track": "agent-contract",
 			"type": "proposal",
-			"status": "in_progress",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "p105",
+			"file": "p105-fix-web-gen-skills-recurses-into-subdirs-so-skill-md-are-found.md",
+			"track": "web",
+			"type": "proposal",
+			"status": "pending",
 			"date": "2026-06-18"
 		}
 	],
