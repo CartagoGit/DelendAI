@@ -1,6 +1,15 @@
 {
-	"generated_at": "2026-06-18T18:09:05.361Z",
-	"count": 0,
-	"proposals": [],
+	"generated_at": "2026-06-18T22:10:52.185Z",
+	"count": 1,
+	"proposals": [
+		{
+			"id": "p104",
+			"file": "p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md",
+			"track": "agent-contract",
+			"type": "proposal",
+			"status": "in_progress",
+			"date": "2026-06-18"
+		}
+	],
 	"errors": []
 }

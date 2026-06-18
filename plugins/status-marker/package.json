@@ -1,0 +1,60 @@
+{
+	"name": "@mcp-vertex/status-marker",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Cierre obligatorio coloreado para agentes: 8 estados canónicos (HECHO/CAP/RE-PIVOT/CHECKPOINT-REQUIRED/REPAIR-NEEDED/BLOQUEADO/SIN PROPUESTAS LIBRES/SIN PROPUESTA DE NINGUN TIPO), herramientas `close` y `validate`, knowledge entry con la tabla. Load with `mcp-vertex --plugins=status-marker`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"agent",
+		"close-marker",
+		"status",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../scripts/build.ts plugins/status-marker"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}
