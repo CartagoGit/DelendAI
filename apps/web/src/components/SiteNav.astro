@@ -19,15 +19,15 @@ const sectionHref = (section: string) =>
 // Drawer sections (mobile): same links as the desktop nav so users on a
 // phone can reach any section in one tap.
 const drawerLinks = [
-	{ href: homeHref, label: t('nav.concept') },
-	{ href: sectionHref('install'), label: t('nav.install') },
-	{ href: sectionHref('tools'), label: t('nav.tools') },
-	{ href: sectionHref('benchmarks'), label: t('nav.benchmarks') },
-	{ href: sectionHref('plugins'), label: t('nav.plugins') },
-	{ href: sectionHref('prompts'), label: t('nav.prompts') },
-	{ href: sectionHref('resources'), label: t('nav.resources') },
-	{ href: sectionHref('knowledge'), label: t('nav.knowledge') },
-	{ href: sectionHref('skills'), label: t('nav.skills') },
+	{ href: homeHref, label: t.nav.concept },
+	{ href: sectionHref('install'), label: t.nav.install },
+	{ href: sectionHref('tools'), label: t.nav.tools },
+	{ href: sectionHref('benchmarks'), label: t.nav.benchmarks },
+	{ href: sectionHref('plugins'), label: t.nav.plugins },
+	{ href: sectionHref('prompts'), label: t.nav.prompts },
+	{ href: sectionHref('resources'), label: t.nav.resources },
+	{ href: sectionHref('knowledge'), label: t.nav.knowledge },
+	{ href: sectionHref('skills'), label: t.nav.skills },
 	{ href: `${base}/api/`, label: 'API' },
 ];
 ---
@@ -43,23 +43,23 @@ const drawerLinks = [
 			<span class="nav__brand-text">@mcp-vertex/core</span>
 		</a>
 		<div class="nav__links" role="navigation">
-			<a href={sectionHref('install')}>{t('nav.install')}</a>
-			<a href={sectionHref('tools')}>{t('nav.tools')}</a>
-			<a href={sectionHref('benchmarks')}>{t('nav.benchmarks')}</a>
-			<a href={sectionHref('plugins')}>{t('nav.plugins')}</a>
-			<a href={sectionHref('prompts')} class="nav__link--new">{t('nav.prompts')}</a>
-			<a href={sectionHref('resources')} class="nav__link--new">{t('nav.resources')}</a>
-			<a href={sectionHref('knowledge')} class="nav__link--new">{t('nav.knowledge')}</a>
+			<a href={sectionHref('install')}>{t.nav.install}</a>
+			<a href={sectionHref('tools')}>{t.nav.tools}</a>
+			<a href={sectionHref('benchmarks')}>{t.nav.benchmarks}</a>
+			<a href={sectionHref('plugins')}>{t.nav.plugins}</a>
+			<a href={sectionHref('prompts')} class="nav__link--new">{t.nav.prompts}</a>
+			<a href={sectionHref('resources')} class="nav__link--new">{t.nav.resources}</a>
+			<a href={sectionHref('knowledge')} class="nav__link--new">{t.nav.knowledge}</a>
 			<a href={`${base}/api/`}>API</a>
-			<a href={repo} rel="external">{t('nav.github')}</a>
-			<button class="gear" id="cfg-open" aria-label={t('cfg.title')}>
+			<a href={repo} rel="external">{t.nav.github}</a>
+			<button class="gear" id="cfg-open" aria-label={t.cfg.title}>
 				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<circle cx="12" cy="12" r="3"></circle>
 					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
 				</svg>
 			</button>
 			{/* Hamburger only on mobile; CSS hides it on >=680px. */}
-			<button class="hamburger" id="nav-open" aria-label={t('nav.menu')} aria-expanded="false" aria-controls="nav-drawer">
+			<button class="hamburger" id="nav-open" aria-label={t.nav.menu} aria-expanded="false" aria-controls="nav-drawer">
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 					<path d="M3 6h18M3 12h18M3 18h18"></path>
 				</svg>
@@ -75,7 +75,7 @@ const drawerLinks = [
 	id="nav-drawer"
 	role="dialog"
 	aria-modal="true"
-	aria-label={t('nav.menu')}
+	aria-label={t.nav.menu}
 	hidden
 	transition:persist
 	transition:name="nav-drawer"
@@ -85,20 +85,20 @@ const drawerLinks = [
 		<div class="drawer__head">
 			<img class="drawer__logo" src={`${base}/logo.svg`} width="28" height="28" alt="" />
 			<strong>@mcp-vertex/core</strong>
-			<button class="drawer__close" data-drawer-close aria-label={t('nav.menu')}>
+			<button class="drawer__close" data-drawer-close aria-label={t.nav.menu}>
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 					<path d="M6 6l12 12M18 6L6 18"></path>
 				</svg>
 			</button>
 		</div>
-		<nav class="drawer__links" aria-label={t('nav.menu')}>
+		<nav class="drawer__links" aria-label={t.nav.menu}>
 			{drawerLinks.map((l) => (
 				<a href={l.href} data-drawer-link>{l.label}</a>
 			))}
-			<a href={repo} rel="external" data-drawer-link>{t('nav.github')}</a>
+			<a href={repo} rel="external" data-drawer-link>{t.nav.github}</a>
 		</nav>
 		<div class="drawer__foot">
-			<button class="btn btn--ghost drawer__cfg" id="drawer-cfg-open">{t('cfg.title')}</button>
+			<button class="btn btn--ghost drawer__cfg" id="drawer-cfg-open">{t.cfg.title}</button>
 		</div>
 	</aside>
 </div>

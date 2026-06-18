@@ -17,22 +17,22 @@ const homeHref = `${base}/${lang}/`;
 const count = capabilities.counts.prompts ?? 0;
 ---
 
-<Base lang={lang as Lang} title={`${t('prompts.title')} — @mcp-vertex/core`}>
+<Base lang={lang as Lang} title={`${t.prompts.title} — @mcp-vertex/core`}>
 	<section class="subhero">
 		<div class="container">
 			<nav class="subhero__crumb" aria-label="breadcrumb">
-				<a href={homeHref}>{t('nav.concept')}</a>
+				<a href={homeHref}>{t.nav.concept}</a>
 				<span aria-hidden="true">›</span>
-				<span aria-current="page">{t('prompts.title')}</span>
+				<span aria-current="page">{t.prompts.title}</span>
 			</nav>
-			<h1 transition:name="page-title" transition:animate="fade">{t('prompts.title')}</h1>
-			<p class="subhero__lead">{t('prompts.lead')}</p>
+			<h1 transition:name="page-title" transition:animate="fade">{t.prompts.title}</h1>
+			<p class="subhero__lead">{t.prompts.lead}</p>
 			<div class="subhero__meta">
-				<span><b>{count}</b>{t('prompts.count')}</span>
+				<span><b>{count}</b>{t.prompts.count}</span>
 			</div>
 			<div class="subhero__ctas">
-				<a class="btn btn--ghost" href={`${base}/${lang}/tools`}>{t('nav.tools')} →</a>
-				<a class="btn btn--ghost" href={`${base}/${lang}/resources`}>{t('nav.resources')} →</a>
+				<a class="btn btn--ghost" href={`${base}/${lang}/tools`}>{t.nav.tools} →</a>
+				<a class="btn btn--ghost" href={`${base}/${lang}/resources`}>{t.nav.resources} →</a>
 			</div>
 		</div>
 	</section>

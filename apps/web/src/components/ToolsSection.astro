@@ -23,11 +23,11 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 
 <section id="tools" class="section">
 	<div class="container">
-		<h2>{t('tools.title')}</h2>
-		<p class="lead">{t('tools.lead')}</p>
+		<h2>{t.tools.title}</h2>
+		<p class="lead">{t.tools.lead}</p>
 		<div class="stat-row">
-			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t('tools.count')}</span></div>
-			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t('tools.packages')}</span></div>
+			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t.tools.count}</span></div>
+			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t.tools.packages}</span></div>
 		</div>
 		{
 			namespaces.map(([ns, list]) => (

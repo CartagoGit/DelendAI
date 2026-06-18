@@ -11,22 +11,22 @@ const homeHref = `${base}/`;
 const count = (skillsData.skills ?? []).length;
 ---
 
-<Base lang={lang} title={`${t('skills.title')} — @mcp-vertex/core`}>
+<Base lang={lang} title={`${t.skills.title} — @mcp-vertex/core`}>
 	<section class="subhero">
 		<div class="container">
 			<nav class="subhero__crumb" aria-label="breadcrumb">
-				<a href={homeHref}>{t('nav.concept')}</a>
+				<a href={homeHref}>{t.nav.concept}</a>
 				<span aria-hidden="true">›</span>
-				<span aria-current="page">{t('skills.title')}</span>
+				<span aria-current="page">{t.skills.title}</span>
 			</nav>
-			<h1 transition:name="page-title" transition:animate="fade">{t('skills.title')}</h1>
-			<p class="subhero__lead">{t('skills.lead')}</p>
+			<h1 transition:name="page-title" transition:animate="fade">{t.skills.title}</h1>
+			<p class="subhero__lead">{t.skills.lead}</p>
 			<div class="subhero__meta">
-				<span><b>{count}</b>{t('skills.count')}</span>
+				<span><b>{count}</b>{t.skills.count}</span>
 			</div>
 			<div class="subhero__ctas">
-				<a class="btn btn--ghost" href={`${base}/tools`}>{t('nav.tools')} →</a>
-				<a class="btn btn--ghost" href={`${base}/plugins`}>{t('nav.plugins')} →</a>
+				<a class="btn btn--ghost" href={`${base}/tools`}>{t.nav.tools} →</a>
+				<a class="btn btn--ghost" href={`${base}/plugins`}>{t.nav.plugins} →</a>
 			</div>
 		</div>
 	</section>

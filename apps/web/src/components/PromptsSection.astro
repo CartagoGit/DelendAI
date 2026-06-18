@@ -23,14 +23,14 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 
 <section id="prompts" class="section">
 	<div class="container">
-		<h2>{t('prompts.title')}</h2>
-		<p class="lead">{t('prompts.lead')}</p>
+		<h2>{t.prompts.title}</h2>
+		<p class="lead">{t.prompts.lead}</p>
 		<div class="stat-row">
-			<div class="stat"><b>{capabilities.counts.prompts ?? prompts.length}</b><span>{t('prompts.count')}</span></div>
+			<div class="stat"><b>{capabilities.counts.prompts ?? prompts.length}</b><span>{t.prompts.count}</span></div>
 		</div>
 		{
 			namespaces.length === 0 ? (
-				<p class="lead">{t('prompts.lead')}</p>
+				<p class="lead">{t.prompts.lead}</p>
 			) : (
 				namespaces.map(([ns, list]) => (
 					<div class="ns">
@@ -44,7 +44,7 @@ const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]
 									<p>{prompt.description}</p>
 									{prompt.arguments && prompt.arguments.length > 0 && (
 										<details class="prompt__args">
-											<summary>{t('prompts.arg')} ({prompt.arguments.length})</summary>
+											<summary>{t.prompts.arg} ({prompt.arguments.length})</summary>
 											<ul>
 												{prompt.arguments.map((a) => (
 													<li><code>{a.name}</code>{a.required && <span class="prompt__req">*</span>} — {a.description}</li>

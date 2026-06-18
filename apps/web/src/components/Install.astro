@@ -17,8 +17,8 @@ const defaultPm = 'npm';
 
 <section id="install" class="section">
 	<div class="container">
-		<h2>{t('install.title')}</h2>
-		<p class="lead">{t('install.lead')}</p>
+		<h2>{t.install.title}</h2>
+		<p class="lead">{t.install.lead}</p>
 
 		<div class="install" data-pm={defaultPm}>
 			{/* Package-manager selector */}
@@ -41,7 +41,7 @@ const defaultPm = 'npm';
 			<p class="install__sub">{t('install.oneCmdNote')}</p>
 
 			{/* Verify-it-runs line (per package manager) */}
-			<p class="install__sub">{t('install.verify')}</p>
+			<p class="install__sub">{t.install.verify}</p>
 			{packageManagers.map((pm) => (
 				<div class="pm-only" data-pm={pm.id}>
 					<pre><code>{pm.run}</code></pre>
@@ -49,7 +49,7 @@ const defaultPm = 'npm';
 			))}
 
 			{/* Per-IDE config cards */}
-			<h3 class="install__h3">{t('install.addto')}</h3>
+			<h3 class="install__h3">{t.install.addto}</h3>
 			<div class="ide-grid">
 				{ideTargets.map((ide) => (
 					<div class="ide">
@@ -65,7 +65,7 @@ const defaultPm = 'npm';
 			</div>
 
 			<p class="install__foot">
-				{t('install.presets')} <code>{`${PACKAGE} --preset=minimal|standard|swarm`}</code> · <code>--check</code>
+				{t.install.presets} <code>{`${PACKAGE} --preset=minimal|standard|swarm`}</code> · <code>--check</code>
 			</p>
 		</div>
 	</div>

@@ -1,10 +1,11 @@
 ---
 id: p101
 type: proposal
-status: todo
+status: done
 track: web+i18n+docs
 date: 2026-06-18
 budget: 3
+closed: 2026-06-18
 ---
 
 # p101 — Header persistente con transiciones + surface completo en la web

@@ -16,14 +16,14 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 
 <section id="skills" class="section">
 	<div class="container">
-		<h2>{t('skills.title')}</h2>
-		<p class="lead">{t('skills.lead')}</p>
+		<h2>{t.skills.title}</h2>
+		<p class="lead">{t.skills.lead}</p>
 		<div class="stat-row">
-			<div class="stat"><b>{skills.length}</b><span>{t('skills.count')}</span></div>
+			<div class="stat"><b>{skills.length}</b><span>{t.skills.count}</span></div>
 		</div>
 		{
 			skills.length === 0 ? (
-				<p class="lead">{t('skills.lead')}</p>
+				<p class="lead">{t.skills.lead}</p>
 			) : (
 				<div class="skills-grid">
 					{skills.map((s) => (
@@ -33,7 +33,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 								<span class="skill__plugin">{s.plugin}</span>
 							</div>
 							<p class="skill__summary">{s.summary || s.description}</p>
-							<span class="skill__read">{t('skills.body')} →</span>
+							<span class="skill__read">{t.skills.body} →</span>
 						</a>
 					))}
 				</div>
