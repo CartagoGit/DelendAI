@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
+import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import {
@@ -119,6 +120,10 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
+				}),
+				buildAgentWorktreeRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 				}),
 				buildTaskQueueRegistration({
 					namespacePrefix: ctx.namespacePrefix,

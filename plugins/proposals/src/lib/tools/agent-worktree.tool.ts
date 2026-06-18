@@ -1,0 +1,68 @@
+import { z } from 'zod';
+
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+
+import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
+import { createGitRunner } from '../shared/git-runner';
+import type { IGitRunner } from '../shared/git-runner';
+
+export interface IAgentWorktreeToolOptions {
+	/** Tool namespace, e.g. `proposals` → `proposals_agent_worktree`. */
+	readonly namespacePrefix: string;
+	/** Absolute repo root. */
+	readonly workspaceRoot: string;
+	/** Override the git runner (tests); defaults to the real `git` binary. */
+	readonly run?: IGitRunner;
+}
+
+/**
+ * One git worktree (+ branch `agent/<name>`) per concurrent agent, so two
+ * agents working the same repo never share `.git/index` — the failure
+ * mode otherwise is one agent's `git add`/`commit` racing another's and
+ * silently folding unrelated, unreviewed changes into the wrong commit.
+ */
+export const buildAgentWorktreeRegistration = (
+	options: IAgentWorktreeToolOptions
+): IToolRegistration => {
+	const toolName = `${options.namespacePrefix}_agent_worktree`;
+	const run = options.run ?? createGitRunner(options.workspaceRoot);
+	return {
+		id: 'agent_worktree',
+		effects: ['write', 'spawn'],
+		summary:
+			'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Use when 2+ agents share this repo.',
+		tags: ['coordination'],
+		register: async (server) => {
+			server.registerTool(
+				toolName,
+				{
+					outputSchema: z.object({}).catchall(z.unknown()),
+					description:
+						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`.',
+					inputSchema: z.object({
+						action: z.enum(['create', 'list', 'remove']),
+						agent: z.string().optional(),
+						base_branch: z.string().optional(),
+						force: z.boolean().optional(),
+					}),
+				},
+				async (args: {
+					action: 'create' | 'list' | 'remove';
+					agent?: string | undefined;
+					base_branch?: string | undefined;
+					force?: boolean | undefined;
+				}) => {
+					const result = await runAgentWorktreeEngine(args, {
+						run,
+						workspaceRoot: options.workspaceRoot,
+					});
+					return {
+						content: [{ type: 'text' as const, text: JSON.stringify(result) }],
+						structuredContent: result as unknown as Record<string, unknown>,
+						...(result.ok ? {} : { isError: true }),
+					};
+				}
+			);
+		},
+	};
+};

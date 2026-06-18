@@ -26,6 +26,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `auto_work` | One call → next proposal + a compact ordered action plan. Start here. |
 | `continue_proposal` | Next proposal (mode `auto`), or a parallel slice plan/claim (`plan`/`claim`). |
 | `agent_lock` | Claim files before editing, release after (`claim`/`release`/`status`/`gc`). |
+| `agent_worktree` | Isolate a concurrent agent into its own git worktree + branch (`create`/`list`/`remove`) — use when 2+ agents share this repo, so `git add`/`commit` never race on a shared `.git/index`. |
 | `agent_names` | Name the whole agent tree — orchestrator (depth 0) included, not only subagents. |
 | `task_queue` | Multi-agent coordination queue (`enqueue`/`dequeue`/`subscribe`/`report`). |
 | `round_context` | Persisted multi-agent round digest + staleness, for resumed work. |

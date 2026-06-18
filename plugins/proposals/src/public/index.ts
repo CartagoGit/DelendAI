@@ -26,6 +26,15 @@ export type {
 
 export { buildAgentLockRegistration } from '../lib/tools/agent-lock.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
+export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
+export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';
+export { runAgentWorktreeEngine, parseWorktreeList } from '../lib/agents/agent-worktree-engine';
+export type {
+	IAgentWorktreeArgs,
+	IAgentWorktreeOptions,
+	IAgentWorktreeResult,
+	IWorktreeEntry,
+} from '../lib/agents/agent-worktree-engine';
 export { buildTaskQueueRegistration } from '../lib/tools/task-queue.tool';
 export type { ITaskQueueToolOptions } from '../lib/tools/task-queue.tool';
 export { buildSyncProposalsRegistration } from '../lib/tools/sync-proposals.tool';

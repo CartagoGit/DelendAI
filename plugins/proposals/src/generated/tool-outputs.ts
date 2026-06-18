@@ -20,6 +20,10 @@ export interface ProposalsAgentNamesOutput {
 	[key: string]: unknown;
 }
 
+export interface ProposalsAgentWorktreeOutput {
+	[key: string]: unknown;
+}
+
 export interface ProposalsAutoWorkOutput {
 	[key: string]: unknown;
 }
@@ -178,6 +182,7 @@ export interface ProposalsTaskQueueOutput {
 export interface ProposalsToolOutputs {
 	"proposals_agent_lock": ProposalsAgentLockOutput;
 	"proposals_agent_names": ProposalsAgentNamesOutput;
+	"proposals_agent_worktree": ProposalsAgentWorktreeOutput;
 	"proposals_auto_work": ProposalsAutoWorkOutput;
 	"proposals_close_slice": ProposalsCloseSliceOutput;
 	"proposals_compact_status": ProposalsCompactStatusOutput;
