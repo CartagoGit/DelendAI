@@ -238,7 +238,7 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
 - `bun run site:strict` verde al final.
 - Conventional Commits por slice (`feat(web):`, `feat(scripts):`).
 - Sin regresión en i18n (las 9 keys nuevas en 12 idiomas).
-- Documentación en [docs/PLUGINS-MCP-CORE.md](docs/PLUGINS-MCP-CORE.md) si
+- Documentación en [docs/PLUGINS-MCP-VERTEX.md](docs/PLUGINS-MCP-VERTEX.md) si
   cambia el contrato de un plugin.
 
 ## 8. Auditoría post-cierre

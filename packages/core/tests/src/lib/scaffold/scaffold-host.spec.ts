@@ -56,7 +56,7 @@ describe('scaffold-host generators (p97)', () => {
 		expect(orchestrator.content).not.toContain('acme_check_project_state');
 		const runner = scaffoldAgentFile(HOST, 'implementation_runner');
 		expect(runner.content).toContain('user-invocable: false');
-		expect(runner.content).not.toContain('mcpvertex_');
+		expect(runner.content).not.toContain('mcp-vertex_');
 	});
 
 	it('scaffoldHostProject covers server, config, agents and docs', () => {
@@ -79,7 +79,7 @@ describe('scaffold-host generators (p97)', () => {
 		expect(config?.content).toContain('buildScaffoldToolRegistration');
 		// The generated project must not leak the host's own namespace.
 		for (const file of files) {
-			expect(file.content, file.path).not.toContain('mcpvertex_');
+			expect(file.content, file.path).not.toContain('mcp-vertex_');
 		}
 	});
 });

@@ -1,24 +1,24 @@
 ---
-import { languages, themes, useTranslations, type Lang } from '../i18n/ui';
+import { useTranslations, type Lang } from '../i18n/ui';
 
 interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const hrefFor = (code: Lang) =>
+const _hrefFor = (code: Lang) =>
 	code === 'en' ? `${base}/` : `${base}/${code}/`;
 
-const THEME_BG: Record<string, string> = {
+const _THEME_BG: Record<string, string> = {
 	dark: '#0d1117',
 	light: '#ffffff',
 	midnight: '#0b0f1a',
 	solarized: '#002b36',
 	nord: '#2e3440',
 };
-const THEME_ACCENT: Record<string, string> = {
+const _THEME_ACCENT: Record<string, string> = {
 	dark: '#58a6ff',
 	light: '#0969da',
 	midnight: '#7c93ff',
@@ -75,7 +75,7 @@ const THEME_ACCENT: Record<string, string> = {
 		<div class="modal__group">
 			<h3>{t.cfg.motion}</h3>
 			<label class="toggle">
-				<span>{t('cfg.motionLabel')}</span>
+				<span>{t.cfg.motionLabel}</span>
 				<input type="checkbox" id="cfg-motion" />
 			</label>
 		</div>

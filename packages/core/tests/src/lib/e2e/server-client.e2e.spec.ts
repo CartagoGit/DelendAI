@@ -131,7 +131,7 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 
 	it('reports an unknown tool as a protocol error', async () => {
 		const res = await client.callTool({
-			name: 'mcpvertex_does_not_exist',
+			name: 'mcp-vertex_does_not_exist',
 			arguments: {},
 		});
 		expect(res.isError).toBe(true);

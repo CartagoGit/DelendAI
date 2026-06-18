@@ -10,8 +10,8 @@ const { lang, slug } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
-const pluginsHref =
+const _homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const _pluginsHref =
 	lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`;
 
 // Map a package short-name to its tool namespace (core → mcp-vertex).
@@ -30,13 +30,13 @@ const pkg = (capabilities.packages as IPkg[]).find(
 		p.name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '') === slug,
 );
 const ns = nsFor(slug);
-const tools = (capabilities.tools as ITool[])
+const _tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === ns)
 	.sort((a, b) => a.name.localeCompare(b.name));
 
-const title = pkg?.name ?? `@mcp-vertex/${slug}`;
-const description = t(`plugin.${slug}`);
-const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const _title = pkg?.name ?? `@mcp-vertex/${slug}`;
+const _description = t(`plugin.${slug}`);
+const _repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
 
 <section class="subhero">

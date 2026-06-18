@@ -12,14 +12,7 @@
 // `t.nav.concept` work. Remove once every consumer is migrated.
 
 import type { ITranslations, Lang } from './index';
-import {
-	dictsByLang,
-	defaultLang,
-	languages,
-	rtlLangs,
-	themes,
-	useTranslations as _useTranslationsObject,
-} from './index';
+import { useTranslations as _useTranslationsObject } from './index';
 
 export type {
 	ITranslations,

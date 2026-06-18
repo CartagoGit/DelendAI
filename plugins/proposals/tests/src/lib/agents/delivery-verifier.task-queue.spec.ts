@@ -4,7 +4,7 @@
  * TDD specs for the p40c T3 deliverable: the new
  * `verifyClosure` entry point in
  * `libs/mcp-project/src/lib/agents/delivery-verifier.ts` that wires
- * the `mcpvertex_task_queue report` into the verifier's verdict.
+ * the `mcp-vertex_task_queue report` into the verifier's verdict.
  *
  * 3 cases as enumerated in the proposal p40c T3:
  *   1. When the proposal declares `extras.taskQueue: true` AND

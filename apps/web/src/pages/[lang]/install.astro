@@ -1,6 +1,4 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Install from '../../components/Install.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 
 export function getStaticPaths() {
@@ -10,9 +8,9 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
+const _t = useTranslations(lang as Lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/${lang}/`;
+const _homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.install.title} — @mcp-vertex/core`}>

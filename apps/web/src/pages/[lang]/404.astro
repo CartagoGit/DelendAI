@@ -1,6 +1,4 @@
 ---
-import Base from '../../layouts/Base.astro';
-import NotFound from '../../components/NotFound.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 
 /** Localised 404: pre-render one page per non-English locale at /<lang>/404.
@@ -13,7 +11,7 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
+const _t = useTranslations(lang as Lang);
 ---
 
 <Base

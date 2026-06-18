@@ -25,12 +25,7 @@ import vi from './langs/vi';
 import th from './langs/th';
 
 import type { Lang, LangDict } from './shared';
-import {
-	dictsByLang as _dictsByLang,
-	languages,
-	defaultLang,
-	useTranslations,
-} from './shared';
+import { dictsByLang as _dictsByLang } from './shared';
 
 // Populate the shared `dictsByLang` map so `useTranslations()` can resolve any
 // `Lang` to its dictionary. We intentionally mutate the object exported by
