@@ -1,4 +1,6 @@
 ---
+import PluginPage from '../../../components/PluginPage.astro';
+import Base from '../../../layouts/Base.astro';
 import capabilities from '../../../data/capabilities.json';
 import { languages } from '../../../i18n/ui';
 
@@ -14,7 +16,6 @@ export function getStaticPaths() {
 	);
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: consumed by the template below
 const { lang, plugin } = Astro.params;
 ---
 

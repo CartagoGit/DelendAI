@@ -8,7 +8,7 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _repo = 'https://github.com/CartagoGit/mcp-vertex';
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
 const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 
 // One section = one page. Tabs (if any) live on the page itself, not in the
@@ -18,7 +18,7 @@ const sectionHref = (section: string) =>
 
 // Drawer sections (mobile): same links as the desktop nav so users on a
 // phone can reach any section in one tap.
-const _drawerLinks = [
+const drawerLinks = [
 	{ href: homeHref, label: t.nav.concept },
 	{ href: sectionHref('install'), label: t.nav.install },
 	{ href: sectionHref('tools'), label: t.nav.tools },

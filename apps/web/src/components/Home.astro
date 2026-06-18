@@ -1,15 +1,18 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { clients, runtimes } from '../data/marquees';
 import capabilities from '../data/capabilities.json';
+import ConceptSection from './ConceptSection.astro';
+import Marquee from './Marquee.astro';
 
 interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _sectionHref = (section: string) =>
+const sectionHref = (section: string) =>
 	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
 
 // Highlight 3 plugins on the home (the most useful first-look at mcp-vertex).
@@ -20,12 +23,12 @@ const packages = capabilities.packages as Array<{
 }>;
 const shortName = (name: string) =>
 	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
-const _pluginHref = (slug: string) =>
+const pluginHref = (slug: string) =>
 	lang === 'en'
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;
 const featuredSlugs = ['proposals', 'memory', 'quality'];
-const _featured = packages
+const featured = packages
 	.filter((p) => featuredSlugs.includes(shortName(p.name)))
 	.sort(
 		(a, b) =>

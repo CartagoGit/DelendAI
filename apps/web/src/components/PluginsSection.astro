@@ -6,16 +6,16 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _packages = capabilities.packages as Array<{
+const packages = capabilities.packages as Array<{
 	name: string;
 	version: string;
 }>;
-const _shortName = (name: string) =>
+const shortName = (name: string) =>
 	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
-const _pluginHref = (slug: string) =>
+const pluginHref = (slug: string) =>
 	lang === 'en'
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;

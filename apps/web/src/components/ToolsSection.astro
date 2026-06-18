@@ -6,9 +6,9 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
-const _NS_LABEL: Record<string, string> = {
+const NS_LABEL: Record<string, string> = {
 	mcpvertex: 'core',
 	proposals: 'proposals',
 	git: 'git',
@@ -28,7 +28,7 @@ for (const tool of tools) {
 	if (!groups[tool.namespace]) groups[tool.namespace] = [];
 	groups[tool.namespace].push(tool);
 }
-const _namespaces = Object.entries(groups).sort((a, b) =>
+const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
 ---

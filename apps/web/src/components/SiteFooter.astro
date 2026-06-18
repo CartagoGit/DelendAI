@@ -5,11 +5,11 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
-const _base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _repo = 'https://github.com/CartagoGit/mcp-vertex';
-const _year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const year = new Date().getFullYear();
 ---
 
 <footer class="sitefoot" transition:persist transition:name="site-footer">

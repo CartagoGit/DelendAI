@@ -1,4 +1,6 @@
 ---
+import ResourcesSection from '../../components/ResourcesSection.astro';
+import Base from '../../layouts/Base.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 import capabilities from '../../data/capabilities.json';
 
@@ -9,10 +11,10 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const _t = useTranslations(lang as Lang);
+const t = useTranslations(lang as Lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _homeHref = `${base}/${lang}/`;
-const _count = capabilities.counts.resources ?? 0;
+const homeHref = `${base}/${lang}/`;
+const count = capabilities.counts.resources ?? 0;
 ---
 
 <Base lang={lang as Lang} title={`${t.resources.title} — @mcp-vertex/core`}>

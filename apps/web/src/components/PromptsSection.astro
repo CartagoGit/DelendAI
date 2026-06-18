@@ -6,7 +6,7 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const _t = useTranslations(lang);
+const t = useTranslations(lang);
 
 type IPrompt = {
 	name: string;
@@ -25,7 +25,7 @@ for (const p of prompts) {
 	if (!groups[p.namespace]) groups[p.namespace] = [];
 	groups[p.namespace].push(p);
 }
-const _namespaces = Object.entries(groups).sort((a, b) =>
+const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
 ---

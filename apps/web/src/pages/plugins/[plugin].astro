@@ -1,4 +1,6 @@
 ---
+import PluginPage from '../../components/PluginPage.astro';
+import Base from '../../layouts/Base.astro';
 import capabilities from '../../data/capabilities.json';
 
 export function getStaticPaths() {
@@ -8,7 +10,6 @@ export function getStaticPaths() {
 	return pkgs.map((p) => ({ params: { plugin: slugOf(p.name) } }));
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: consumed by the template below
 const { plugin } = Astro.params;
 ---
 

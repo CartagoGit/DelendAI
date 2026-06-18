@@ -1,4 +1,6 @@
 ---
+import BenchmarksSection from '../../components/BenchmarksSection.astro';
+import Base from '../../layouts/Base.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 
 export function getStaticPaths() {
@@ -8,9 +10,9 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const _t = useTranslations(lang as Lang);
+const t = useTranslations(lang as Lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const _homeHref = `${base}/${lang}/`;
+const homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.bench.title} — @mcp-vertex/core`}>
