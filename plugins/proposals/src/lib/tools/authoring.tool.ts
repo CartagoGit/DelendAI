@@ -3,14 +3,14 @@ import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	redactSecrets,
 	toolError,
 	toolJson,
 	toolOk,
 	writeFileAtomic,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';

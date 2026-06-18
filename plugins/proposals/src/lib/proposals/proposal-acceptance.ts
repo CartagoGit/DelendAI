@@ -45,7 +45,7 @@
 
 import { spawn } from 'node:child_process';
 
-import { killProcessGroup } from '@cartago-git/mcp-core/public';
+import { killProcessGroup } from '@mcp-vertex/core/public';
 
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';

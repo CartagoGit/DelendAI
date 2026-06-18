@@ -7,9 +7,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { MigrationError, runMigrations } from '@cartago-git/mcp-core/lib/migrations/migrate';
-import type { IMigrator } from '@cartago-git/mcp-core/lib/migrations/migrate';
-import { migrateJsonFile } from '@cartago-git/mcp-core/lib/migrations/migrate-file';
+import { MigrationError, runMigrations } from '@mcp-vertex/core/lib/migrations/migrate';
+import type { IMigrator } from '@mcp-vertex/core/lib/migrations/migrate';
+import { migrateJsonFile } from '@mcp-vertex/core/lib/migrations/migrate-file';
 
 // v1 → v2 renames `name` → `title`; v2 → v3 adds `tags: []`.
 const migrators: Record<number, IMigrator> = {

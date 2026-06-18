@@ -5,9 +5,9 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { syncProposalRegistry } from '@cartago-git/mcp-proposals/lib/proposals/sync-proposal-registry';
-import { collectRoundContextSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/round-context';
-import { buildSwarmPaths } from '@cartago-git/mcp-proposals/lib/contracts/constants/default-path-layout.constant';
+import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
+import { collectRoundContextSnapshot } from '@mcp-vertex/proposals/lib/swarm/round-context';
+import { buildSwarmPaths } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
 
 /**
  * F3: a relocated store (different `--cacheDir` / `--docsDir`) must stay

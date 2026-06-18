@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
-import { killProcessGroup } from '@cartago-git/mcp-core/public';
+import { killProcessGroup } from '@mcp-vertex/core/public';
 
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
 

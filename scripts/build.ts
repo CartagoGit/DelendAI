@@ -59,9 +59,9 @@ const buildPackage = (rel: string): void => {
 	);
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
-	//    cross-package `@cartago-git/*` types resolve from source.
+	//    cross-package `@mcp-vertex/*` types resolve from source.
 	const dtsConfig = join(dir, 'tsconfig.dts.json');
-	// Cross-package `@cartago-git/*` types resolve to each dependency's BUILT
+	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
 	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
 	// program, so no `rootDir` violation). Core is the only shared dependency;
 	// it is built first. Core itself imports no sibling package.
@@ -69,8 +69,8 @@ const buildPackage = (rel: string): void => {
 		rel === 'packages/core'
 			? {}
 			: {
-					'@cartago-git/mcp-core': ['../../packages/core/dist/index.d.ts'],
-					'@cartago-git/mcp-core/public': [
+					'@mcp-vertex/core': ['../../packages/core/dist/index.d.ts'],
+					'@mcp-vertex/core/public': [
 						'../../packages/core/dist/public/index.d.ts',
 					],
 				};

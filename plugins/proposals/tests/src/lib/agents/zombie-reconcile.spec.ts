@@ -7,9 +7,9 @@ import {
 	classifyZombies,
 	gcZombies,
 	thresholdFromOrphans,
-} from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
-import { createAgentRegistryStore } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';
-import type { IAgentRegistry } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';
+} from '@mcp-vertex/proposals/lib/agents/zombie-reconcile';
+import { createAgentRegistryStore } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
+import type { IAgentRegistry } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
 
 const TEMP_DIRS: string[] = [];
 

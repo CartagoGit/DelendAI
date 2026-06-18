@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 import plugin from '../src/index';
 

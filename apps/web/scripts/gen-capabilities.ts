@@ -23,17 +23,17 @@ import {
 	assembleCliConfig,
 	createMcpServer,
 	parseCliArgs,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
-import proposalsPlugin from '@cartago-git/mcp-proposals';
-import rulesPlugin from '@cartago-git/mcp-rules';
-import memoryPlugin from '@cartago-git/mcp-memory';
-import gitPlugin from '@cartago-git/mcp-git';
-import qualityPlugin from '@cartago-git/mcp-quality';
-import searchPlugin from '@cartago-git/mcp-search';
-import notificationPlugin from '@cartago-git/mcp-notification';
-import docsPlugin from '@cartago-git/mcp-docs';
-import depsPlugin from '@cartago-git/mcp-deps';
+import proposalsPlugin from '@mcp-vertex/proposals';
+import rulesPlugin from '@mcp-vertex/rules';
+import memoryPlugin from '@mcp-vertex/memory';
+import gitPlugin from '@mcp-vertex/git';
+import qualityPlugin from '@mcp-vertex/quality';
+import searchPlugin from '@mcp-vertex/search';
+import notificationPlugin from '@mcp-vertex/notification';
+import docsPlugin from '@mcp-vertex/docs';
+import depsPlugin from '@mcp-vertex/deps';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root

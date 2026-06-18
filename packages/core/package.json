@@ -1,5 +1,5 @@
 {
-	"name": "@cartago-git/mcp-core",
+	"name": "@mcp-vertex/core",
 	"version": "0.1.0",
 	"type": "module",
 	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",

@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-notification",
+	"name": "@mcp-vertex/notification",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Lock-release notification plugin for @cartago-git/mcp-core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-core --plugins=notification`.",
+	"description": "Lock-release notification plugin for @mcp-vertex/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-core --plugins=notification`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -38,14 +38,14 @@
 		"build": "bun ../../scripts/build.ts plugins/notification"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

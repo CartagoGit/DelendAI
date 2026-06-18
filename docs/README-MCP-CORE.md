@@ -1,4 +1,4 @@
-# @cartago-git/mcp-core
+# @mcp-vertex/core
 
 A **project-agnostic core for building MCP servers**, plus a CLI that loads
 **plugins** on demand. The core ships only generic utilities; everything
@@ -30,7 +30,7 @@ Register the core once in your MCP client (VS Code, Cursor, Claude…):
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=proposals"]
+			"args": ["@mcp-vertex/core", "--plugins=proposals"]
 		}
 	}
 }
@@ -43,7 +43,7 @@ scaffolding tools.
 
 | Argument | Default | Purpose |
 |---|---|---|
-| `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@cartago-git/mcp-<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
+| `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
 | `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped): `minimal` (git, search), `standard` (git, search, memory, docs, rules, quality, deps), `swarm` (standard + proposals, notification). |
 | `--verbose` | off | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup. |
 | `--cacheDir=DIR` | `.cache/mcp-core` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
@@ -59,7 +59,7 @@ scaffolding tools.
 
 ```bash
 # Diagnose a setup before wiring it into a client:
-bunx @cartago-git/mcp-core --plugins=proposals --check
+bunx @mcp-vertex/core --plugins=proposals --check
 ```
 
 ## Passing values to plugins — `mcp-core.config.json`
@@ -131,12 +131,12 @@ import the building blocks directly — server assembly, the project analyzer,
 the scaffolder, and (from the proposals plugin) the engines and tool builders.
 
 ```bash
-bun i @cartago-git/mcp-core @cartago-git/mcp-proposals
+bun i @mcp-vertex/core @mcp-vertex/proposals
 ```
 
 ```ts
 // 1) Assemble your own server in code:
-import { createMcpServer, createWorkspacePathProvider } from '@cartago-git/mcp-core/public';
+import { createMcpServer, createWorkspacePathProvider } from '@mcp-vertex/core/public';
 
 const assembled = await createMcpServer({
 	metadata: { name: 'mcp-server-acme', version: '0.1.0' },
@@ -147,7 +147,7 @@ const assembled = await createMcpServer({
 await assembled.start(); // stdio
 
 // 2) Run the analyzer / recommender as plain functions:
-import { analyzeProject, recommendServerPlan } from '@cartago-git/mcp-core/public';
+import { analyzeProject, recommendServerPlan } from '@mcp-vertex/core/public';
 const analysis = analyzeProject(myFileReader);
 const plan = recommendServerPlan(analysis);
 
@@ -156,7 +156,7 @@ import {
 	buildAgentLockRegistration,
 	runContinueProposal,
 	buildSwarmPaths,
-} from '@cartago-git/mcp-proposals/public';
+} from '@mcp-vertex/proposals/public';
 ```
 
 Each package has a single published import surface: **`<pkg>` (= `<pkg>/public`)**
@@ -170,7 +170,7 @@ That public surface also re-exports the **generated tool-output types**: a
 schema:
 
 ```ts
-import type { GitToolOutputs } from '@cartago-git/mcp-git/public';
+import type { GitToolOutputs } from '@mcp-vertex/git/public';
 const status: GitToolOutputs['git_status'] = result.structuredContent;
 ```
 
@@ -179,25 +179,25 @@ from any other repo.
 
 ## Packages in this repo
 
-- `packages/core` → **`@cartago-git/mcp-core`** (this package).
-- `plugins/proposals` → **`@cartago-git/mcp-proposals`** (proposal store +
+- `packages/core` → **`@mcp-vertex/core`** (this package).
+- `plugins/proposals` → **`@mcp-vertex/proposals`** (proposal store +
   agent locks + task queue; the multi-agent "swarm" coordination layer).
-- `plugins/rules` → **`@cartago-git/mcp-rules`** (per-framework ESLint/TS
+- `plugins/rules` → **`@mcp-vertex/rules`** (per-framework ESLint/TS
   presets, per-area detection, enforcement modes; the project's config wins).
-- `plugins/memory` → **`@cartago-git/mcp-memory`** (persistent project notes
+- `plugins/memory` → **`@mcp-vertex/memory`** (persistent project notes
   for cross-session continuity, minimal tokens).
-- `plugins/git` → **`@cartago-git/mcp-git`** (read-only git orientation:
+- `plugins/git` → **`@mcp-vertex/git`** (read-only git orientation:
   status / changed / diff / log).
-- `plugins/quality` → **`@cartago-git/mcp-quality`** (runs the project quality
+- `plugins/quality` → **`@mcp-vertex/quality`** (runs the project quality
   gates per scope and returns structured pass/fail).
-- `plugins/search` → **`@cartago-git/mcp-search`** (grep-like, low-token textual
+- `plugins/search` → **`@mcp-vertex/search`** (grep-like, low-token textual
   `search` over allow-listed workspace files).
-- `plugins/notification` → **`@cartago-git/mcp-notification`** (watches the
+- `plugins/notification` → **`@mcp-vertex/notification`** (watches the
   shared lock file and pushes an MCP `notifications/message` on release, so
   agents stop polling).
-- `plugins/docs` → **`@cartago-git/mcp-docs`** (catalogue + read the repo
+- `plugins/docs` → **`@mcp-vertex/docs`** (catalogue + read the repo
   markdown: `docs_list` / `docs_read`, anti-traversal).
-- `plugins/deps` → **`@cartago-git/mcp-deps`** (dependency inventory + offline
+- `plugins/deps` → **`@mcp-vertex/deps`** (dependency inventory + offline
   health: `deps_list` / `deps_check`; no network).
 
 ## Design principles (model/agent-agnostic, low-token)

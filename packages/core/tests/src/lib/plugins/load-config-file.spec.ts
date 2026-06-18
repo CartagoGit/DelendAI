@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	parseConfigFile,
 	pluginConfigFor,
-} from '@cartago-git/mcp-core/lib/plugins/load-config-file';
-import { assembleCliConfig, runDoctor } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import { diagnoseConfigFile } from '@cartago-git/mcp-core/lib/plugins/load-config-file';
+} from '@mcp-vertex/core/lib/plugins/load-config-file';
+import { assembleCliConfig, runDoctor } from '@mcp-vertex/core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
 
 describe('parseConfigFile', () => {
 	it('returns {} for missing or invalid JSON', () => {

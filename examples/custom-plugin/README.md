@@ -23,7 +23,7 @@ same plugin behaves identically under any host/model.
 
 ## Run it
 
-Once `@cartago-git/mcp-core` is installed:
+Once `@mcp-vertex/core` is installed:
 
 ```jsonc
 // mcp.json
@@ -31,7 +31,7 @@ Once `@cartago-git/mcp-core` is installed:
   "servers": {
     "mcp-core": {
       "command": "bunx",
-      "args": ["@cartago-git/mcp-core", "--plugins=@cartago-git/example-wordcount"]
+      "args": ["@mcp-vertex/core", "--plugins=@mcp-vertex/example-wordcount"]
     }
   }
 }

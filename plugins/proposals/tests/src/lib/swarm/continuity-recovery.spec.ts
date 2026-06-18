@@ -7,11 +7,11 @@ import {
 	extractTaskHint,
 	isStaleLock,
 	isStaleTimestamp,
-} from '@cartago-git/mcp-proposals/lib/swarm/continuity-recovery';
+} from '@mcp-vertex/proposals/lib/swarm/continuity-recovery';
 import type {
 	IContinuityCheckpointLike,
 	IContinuityLockLike,
-} from '@cartago-git/mcp-proposals/lib/swarm/continuity-recovery';
+} from '@mcp-vertex/proposals/lib/swarm/continuity-recovery';
 
 const NOW = new Date('2026-06-05T12:30:00.000Z').getTime();
 

@@ -2,7 +2,7 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 	joinRel,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';

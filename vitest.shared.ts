@@ -3,7 +3,7 @@ import type { Alias } from 'vitest/config';
 
 /**
  * Shared module aliases so specs can import via the public package
- * specifiers (`@cartago-git/mcp-core/...`, `@cartago-git/mcp-proposals/...`)
+ * specifiers (`@mcp-vertex/core/...`, `@mcp-vertex/proposals/...`)
  * without a tsconfig-paths plugin. Mirrors `tsconfig.base.json` paths.
  * Order matters: more specific subpaths must come before the bare name.
  */
@@ -20,120 +20,120 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
 	return [
 		{
-			find: '@cartago-git/mcp-core/public',
+			find: '@mcp-vertex/core/public',
 			replacement: resolve(core, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-core\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/core\/lib\/(.*)$/,
 			replacement: `${resolve(core, 'lib')}/$1`,
 		},
-		{ find: '@cartago-git/mcp-core', replacement: resolve(core, 'index.ts') },
+		{ find: '@mcp-vertex/core', replacement: resolve(core, 'index.ts') },
 		{
-			find: '@cartago-git/mcp-proposals/public',
+			find: '@mcp-vertex/proposals/public',
 			replacement: resolve(proposals, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-proposals\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/proposals\/lib\/(.*)$/,
 			replacement: `${resolve(proposals, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-proposals',
+			find: '@mcp-vertex/proposals',
 			replacement: resolve(proposals, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-rules/public',
+			find: '@mcp-vertex/rules/public',
 			replacement: resolve(rules, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-rules\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/rules\/lib\/(.*)$/,
 			replacement: `${resolve(rules, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-rules',
+			find: '@mcp-vertex/rules',
 			replacement: resolve(rules, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-memory/public',
+			find: '@mcp-vertex/memory/public',
 			replacement: resolve(memory, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-memory\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/memory\/lib\/(.*)$/,
 			replacement: `${resolve(memory, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-memory',
+			find: '@mcp-vertex/memory',
 			replacement: resolve(memory, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-git/public',
+			find: '@mcp-vertex/git/public',
 			replacement: resolve(git, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-git\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/git\/lib\/(.*)$/,
 			replacement: `${resolve(git, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-git',
+			find: '@mcp-vertex/git',
 			replacement: resolve(git, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-quality/public',
+			find: '@mcp-vertex/quality/public',
 			replacement: resolve(quality, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-quality\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/quality\/lib\/(.*)$/,
 			replacement: `${resolve(quality, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-quality',
+			find: '@mcp-vertex/quality',
 			replacement: resolve(quality, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-search/public',
+			find: '@mcp-vertex/search/public',
 			replacement: resolve(search, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-search\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/search\/lib\/(.*)$/,
 			replacement: `${resolve(search, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-search',
+			find: '@mcp-vertex/search',
 			replacement: resolve(search, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-notification/public',
+			find: '@mcp-vertex/notification/public',
 			replacement: resolve(notification, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-notification\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/notification\/lib\/(.*)$/,
 			replacement: `${resolve(notification, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-notification',
+			find: '@mcp-vertex/notification',
 			replacement: resolve(notification, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-docs/public',
+			find: '@mcp-vertex/docs/public',
 			replacement: resolve(docs, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-docs\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/docs\/lib\/(.*)$/,
 			replacement: `${resolve(docs, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-docs',
+			find: '@mcp-vertex/docs',
 			replacement: resolve(docs, 'index.ts'),
 		},
 		{
-			find: '@cartago-git/mcp-deps/public',
+			find: '@mcp-vertex/deps/public',
 			replacement: resolve(deps, 'public/index.ts'),
 		},
 		{
-			find: /^@cartago-git\/mcp-deps\/lib\/(.*)$/,
+			find: /^@mcp-vertex\/deps\/lib\/(.*)$/,
 			replacement: `${resolve(deps, 'lib')}/$1`,
 		},
 		{
-			find: '@cartago-git/mcp-deps',
+			find: '@mcp-vertex/deps',
 			replacement: resolve(deps, 'index.ts'),
 		},
 	];

@@ -17,7 +17,7 @@ import {
 	createCommandRunner,
 	runScope,
 	type ICommandRunner,
-} from '@cartago-git/mcp-quality/lib/runner';
+} from '@mcp-vertex/quality/lib/runner';
 
 describe('createCommandRunner (real spawn)', () => {
 	let cwd = '';

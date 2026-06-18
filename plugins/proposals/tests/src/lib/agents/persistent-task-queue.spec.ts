@@ -31,13 +31,13 @@ import {
 	promote,
 	reportBackpressure,
 	subscribe,
-} from '@cartago-git/mcp-proposals/lib/agents/persistent-task-queue';
+} from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
 import type {
 	IPersistentTaskEntry,
 	IPersistentTaskQueue,
 	ILockEntry,
 	ILockSnapshot,
-} from '@cartago-git/mcp-proposals/lib/agents/persistent-task-queue';
+} from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
 
 // ---------------------------------------------------------------------------
 // Helpers

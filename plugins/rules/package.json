@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-rules",
+	"name": "@mcp-vertex/rules",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Lint/type rules plugin for @cartago-git/mcp-core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `mcp-core --plugins=rules`.",
+	"description": "Lint/type rules plugin for @mcp-vertex/core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `mcp-core --plugins=rules`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -38,14 +38,14 @@
 		"build": "bun ../../scripts/build.ts plugins/rules"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

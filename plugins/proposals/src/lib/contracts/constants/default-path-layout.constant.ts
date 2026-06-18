@@ -1,5 +1,5 @@
 import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
-import { joinRel } from '@cartago-git/mcp-core/public';
+import { joinRel } from '@mcp-vertex/core/public';
 
 
 /**

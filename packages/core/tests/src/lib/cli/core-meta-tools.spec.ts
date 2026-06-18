@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import type { IToolRegistration } from '@cartago-git/mcp-core/lib/contracts/interfaces/tool-registration.interface';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const fakePlugin = {
 	name: 'demo',

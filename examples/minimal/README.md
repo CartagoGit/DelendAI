@@ -10,7 +10,7 @@ plugins, loaded with the `minimal` preset (`git` + `search`).
   "servers": {
     "mcp-core": {
       "command": "bunx",
-      "args": ["@cartago-git/mcp-core", "--preset=minimal"]
+      "args": ["@mcp-vertex/core", "--preset=minimal"]
     }
   }
 }
@@ -20,7 +20,7 @@ That's it — point your MCP client at it and call `mcpcore_overview` to map the
 server in one call. Add `--check` to self-diagnose without starting the server:
 
 ```bash
-bunx @cartago-git/mcp-core --check --preset=minimal
+bunx @mcp-vertex/core --check --preset=minimal
 ```
 
 ## Presets (additive)

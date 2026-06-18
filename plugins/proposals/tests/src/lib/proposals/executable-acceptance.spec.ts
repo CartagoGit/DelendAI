@@ -35,8 +35,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { runAcceptanceCriteria } from '@cartago-git/mcp-proposals/lib/proposals/proposal-acceptance';
-import { ProposalParseError } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';
+import { runAcceptanceCriteria } from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
+import { ProposalParseError } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
 
 // skipIf guard: when Bun is unavailable, the whole suite skips. The
 // vitest run still reports the file as 0/0 with `skipped: true` rather

@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentNames,
 	type IAgentNamesToolOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/agent-names.tool';
+} from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
 const parse = (result: { content: Array<{ text: string }> }): unknown =>
 	JSON.parse(result.content[0]?.text ?? '{}');

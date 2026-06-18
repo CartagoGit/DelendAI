@@ -1,7 +1,7 @@
-# @cartago-git/mcp-git
+# @mcp-vertex/git
 
 Read-only **git orientation** plugin for
-[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Status, changed files, diff
+[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md). Status, changed files, diff
 stat and recent log as structured JSON, so agents cheaply see what changed —
 agnostic of language or framework. It never modifies the repo.
 
@@ -12,7 +12,7 @@ agnostic of language or framework. It never modifies the repo.
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=git"]
+			"args": ["@mcp-vertex/core", "--plugins=git"]
 		}
 	}
 }

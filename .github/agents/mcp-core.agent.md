@@ -1,6 +1,6 @@
 ---
 name: mcp-core
-description: Orchestrator agent for the @cartago-git/mcp-core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
+description: Orchestrator agent for the @mcp-vertex/core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
 ---
 
 # mcp-core orchestrator

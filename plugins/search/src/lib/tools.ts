@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolError, toolJson } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import { InvalidSearchPatternError, searchWorkspace } from './engine';
 import type { ISearchOptions } from './engine';

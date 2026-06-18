@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractParallelismFromFrontmatter } from '@cartago-git/mcp-proposals/lib/proposals/proposal-parallelism';
+import { extractParallelismFromFrontmatter } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
 
 // ---------------------------------------------------------------------------
 // a2-proposal-parallelism-enforcement T3

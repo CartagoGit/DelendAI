@@ -1,10 +1,10 @@
 ---
 name: mcp-core-orchestrator
-description: Orchestrator for work inside the @cartago-git/mcp-core monorepo. Use for any non-trivial change to the core, a plugin, the build/release scripts, or the web app. Knows the repo's invariants, commands, and the proposals coordination tools.
+description: Orchestrator for work inside the @mcp-vertex/core monorepo. Use for any non-trivial change to the core, a plugin, the build/release scripts, or the web app. Knows the repo's invariants, commands, and the proposals coordination tools.
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 
-You orchestrate work in the `@cartago-git/mcp-core` monorepo. Read
+You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 [`AGENTS.md`](../../AGENTS.md) for the full rules; the essentials:
 
 ## Orientation

@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	commandBinary,
 	evaluateCommandPolicy,
-} from '@cartago-git/mcp-quality/lib/command-policy';
-import { runScope, type ICommandRunner } from '@cartago-git/mcp-quality/lib/runner';
+} from '@mcp-vertex/quality/lib/command-policy';
+import { runScope, type ICommandRunner } from '@mcp-vertex/quality/lib/runner';
 
 describe('evaluateCommandPolicy (M13)', () => {
 	it('allows anything when no policy is set', () => {

@@ -17,7 +17,7 @@ import {
 	runAcceptanceCriteria,
 	tokenizeArgv,
 	commandNeedsShell,
-} from '@cartago-git/mcp-proposals/lib/proposals/proposal-acceptance';
+} from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
 
 describe('tokenizeArgv (M8 quote-aware parser)', () => {
 	it('keeps a double-quoted argument with spaces as one token', () => {

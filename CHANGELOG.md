@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@cartago-git/mcp-core` and its plugins are documented
+All notable changes to `@mcp-vertex/core` and its plugins are documented
 here. The 10 packages are versioned **in lockstep** (`bun run release` bumps
 them together; see [docs/NPM_PUBLISH.md](docs/NPM_PUBLISH.md)). The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
@@ -78,7 +78,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Coverage gate** in CI (`bun run test:coverage`, `@vitest/coverage-v8`) with
   no-regression thresholds.
 - **Release automation** (`bun run release`): lockstep version bump across the
-  10 packages + `@cartago-git/mcp-core` peerDependency rewrite, publish in
+  10 packages + `@mcp-vertex/core` peerDependency rewrite, publish in
   dependency order (core first). Dry-run by default; `--write` / `--publish`.
 - **Publishable `dist/` build** (`bun run build`): per-package `bun build`
   (Node-runnable ESM) + `tsc --emitDeclarationOnly` (`.d.ts`); the CLI runs

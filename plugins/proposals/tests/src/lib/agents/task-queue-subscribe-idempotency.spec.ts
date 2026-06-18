@@ -18,7 +18,7 @@ import {
 	runTaskQueueAction,
 	type ISubscribeActionResult,
 	type ITaskQueuePaths,
-} from '@cartago-git/mcp-proposals/lib/agents/task-queue-engine';
+} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
 
 const subscribe = (
 	paths: ITaskQueuePaths,

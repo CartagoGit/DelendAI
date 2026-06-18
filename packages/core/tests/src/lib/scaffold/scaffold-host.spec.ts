@@ -11,8 +11,8 @@ import {
 	scaffoldHostProject,
 	scaffoldSkillFile,
 	scaffoldToolFile,
-} from '@cartago-git/mcp-core/public';
-import type { IScaffoldToolOptions } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 
 const HOST = {
 	projectName: 'Acme Quest',

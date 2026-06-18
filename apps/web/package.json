@@ -1,9 +1,9 @@
 {
-	"name": "@cartago-git/web",
+	"name": "@mcp-vertex/web",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"description": "Product/documentation site for @cartago-git/mcp-core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
+	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
 		"dev": "PAGES_BASE='' astro dev",
 		"preview": "astro preview",
@@ -17,16 +17,16 @@
 		"simple-icons": "^16.23.0"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
-		"@cartago-git/mcp-deps": "workspace:*",
-		"@cartago-git/mcp-docs": "workspace:*",
-		"@cartago-git/mcp-git": "workspace:*",
-		"@cartago-git/mcp-memory": "workspace:*",
-		"@cartago-git/mcp-notification": "workspace:*",
-		"@cartago-git/mcp-proposals": "workspace:*",
-		"@cartago-git/mcp-quality": "workspace:*",
-		"@cartago-git/mcp-rules": "workspace:*",
-		"@cartago-git/mcp-search": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/deps": "workspace:*",
+		"@mcp-vertex/docs": "workspace:*",
+		"@mcp-vertex/git": "workspace:*",
+		"@mcp-vertex/memory": "workspace:*",
+		"@mcp-vertex/notification": "workspace:*",
+		"@mcp-vertex/proposals": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
+		"@mcp-vertex/rules": "workspace:*",
+		"@mcp-vertex/search": "workspace:*",
 		"@modelcontextprotocol/sdk": "1.29.0"
 	}
 }

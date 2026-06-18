@@ -36,7 +36,7 @@
   - `scripts/build.ts` (nuevo): por paquete hace `bun build` (ESM, `--target node`,
     `--packages external`, `--root src`) para el `.js` **node-runnable** +
     `tsc --emitDeclarationOnly` para el `.d.ts`. En la emisión de tipos los
-    `@cartago-git/*` se mapean al **`dist/*.d.ts`** de core (build en orden: core
+    `@mcp-vertex/*` se mapean al **`dist/*.d.ts`** de core (build en orden: core
     primero) para no arrastrar fuente cruzada.
   - 10 `package.json` parcheados: `exports` condicional (`types`+`import`),
     `main`/`module`/`types`/`files`→`dist`, `bin`→`./dist/cli.js`; `scripts.build`.
@@ -207,9 +207,9 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 
 Tres piezas para que el paquete sea consumible y se publique solo:
 
-- **Uso como dependencia (verificado, ya funciona):** `bun add @cartago-git/mcp-core`
+- **Uso como dependencia (verificado, ya funciona):** `bun add @mcp-vertex/core`
   expone el bin `mcp-core` (`dist/cli.js`, shebang node). En `mcp.json`:
-  `{ "command": "bunx", "args": ["@cartago-git/mcp-core", "--plugins=..."] }`
+  `{ "command": "bunx", "args": ["@mcp-vertex/core", "--plugins=..."] }`
   (o `npx`, o `node_modules/.bin/mcp-core`). Documentado en el sitio web.
 
 - **W2 · Auto-release en push a `main`** (`.github/workflows/release.yml`):

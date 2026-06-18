@@ -5,7 +5,7 @@ import capabilities from '../../data/capabilities.json';
 
 export function getStaticPaths() {
 	const slugOf = (name: string) =>
-		name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
+		name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 	const pkgs = capabilities.packages as Array<{ name: string }>;
 	return pkgs.map((p) => ({ params: { plugin: slugOf(p.name) } }));
 }

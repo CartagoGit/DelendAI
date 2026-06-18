@@ -1,4 +1,4 @@
-# 16-06-2026 · Auditoría Maestra (Unificada) — `@cartago-git/mcp-core`
+# 16-06-2026 · Auditoría Maestra (Unificada) — `@mcp-vertex/core`
 
 > **Documento único y vigente.** Consolida **8 auditorías independientes** del
 > estado actual del monorepo en una sola hoja de ruta hacia el "magistral" (11/10).
@@ -93,7 +93,7 @@ verificado y de alto impacto en adopción.
 **M3 · Se publica TypeScript fuente; el CLI es de facto *bun-only*** — (1/8, Gemini-exhaustiva previa)
 [packages/core/package.json](../../../packages/core/package.json): `"main"`,
 `"exports"` → `./src/*.ts` y `"bin": "./src/cli.ts"`, **sin script `build`**. Bajo
-Node, `npx @cartago-git/mcp-core` no ejecuta `.ts` y falla; solo `bunx` arranca.
+Node, `npx @mcp-vertex/core` no ejecuta `.ts` y falla; solo `bunx` arranca.
 Las 4 auditorías nuevas corrieron con bun y no lo notaron, pero limita la adopción
 en Claude Desktop/Cursor/VS Code (lanzan `npx`/`node`).
 **Fix:** `build` a `dist/` (`.js`+`.d.ts`, `exports` condicional, `bin` a `.js`)
@@ -408,11 +408,27 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   a verificar en cada componente nuevo.
 
 **Publicación / naming:**
-- ⬜ **Rename de scope a `@mcp-core`** (decidido 18-06; **no** `@mcp-server`): core →
-  `@mcp-core/core`, plugins → `@mcp-core/proposals`, `@mcp-core/git`, … (hoy
-  `@cartago-git/mcp-*`). Toca todos los `package.json`, imports, `tsconfig` paths, alias
-  de vitest, `build.ts`, generadores y la web. Tarea mecánica amplia, en commit aislado;
-  requiere poseer la org/scope `@mcp-core` en npm. **Diferido a confirmación del scope.**
+- 🔵 **M36 · Rename del proyecto a `@mcp-vertex`** (org npm `mcp-vertex` creada, 18-06;
+  reemplaza a `@mcp-vertex/*` y a los descartados `@mcp-server`/`@mcp-core`): core →
+  `@mcp-vertex/core`, plugins → `@mcp-vertex/proposals`, `@mcp-vertex/git`, …;
+  `@mcp-vertex/web` → `@mcp-vertex/web`. Toca todos los `package.json`, imports,
+  `tsconfig` paths, alias de vitest, `build.ts`, generadores, scaffold, examples, docs y la
+  web. ⚠️ Si el repo de GitHub se renombra a `mcp-vertex`, hay que actualizar también
+  URLs del repo y `PAGES_BASE`.
+
+**Limpieza de comentarios:**
+- 🔵 **M37 · Comentarios sobre el CÓDIGO, no sobre el proceso** — eliminar de los
+  comentarios las referencias a IDs de tareas internas (`[M5]`, `(M12)`, `[N16]`, `(H2)`,
+  `(A2)`, `[R12]`, `[N3/N4]`, …) y a "el agente / trabajo del agente": un comentario debe
+  explicar qué hace el código y por qué, no de qué propuesta interna salió.
+
+**Bugs de la web reportados (18-06, 2ª tanda) — M38:**
+- 🔴 La **página de la API** (`/api/`, TypeDoc) **no funciona**.
+- 🔴 **No se ven las banderas** de idioma.
+- 🔴 La **descripción de cada herramienta sale solo en inglés** aunque se cambie de idioma.
+- 🟠 Algunas descripciones **se salen de su recuadro** (overflow).
+- 🟡 Preferencia: **cada sección = una página individual** (no todo en un único home).
+- 🟡 **Benchmarks más extensos** y **comparando con otras utilidades similares**.
 
 ---
 
@@ -509,7 +525,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   ✅ **e2e de instalación desde tarball** (`scripts/smoke-pack.ts`, `bun run smoke:pack`):
   `npm pack` de core+proposals+memory → install en proyecto limpio → maneja el CLI
   **instalado** por stdio bajo node y verifica que `proposals_*`/`memory_*` resuelven
-  (el peer `@cartago-git/mcp-core ^0.1.0` lo satisface el tarball del core). Cableado en
+  (el peer `@mcp-vertex/core ^0.1.0` lo satisface el tarball del core). Cableado en
   CI. **M30 completo.** Verificado local: 29 tools servidas desde la instalación.
 - 🟡 **M31 · `effects` por tool** — `IToolEffect = 'write'|'spawn'|'network'|'destructive'`
   añadido al contrato (`IToolRegistration.effects`, opcional ⇒ read-only por defecto) y

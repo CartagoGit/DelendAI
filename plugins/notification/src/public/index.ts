@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-notification`. The default export
+ * Public surface of `@mcp-vertex/notification`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the watcher + tool builder for programmatic reuse.
  */

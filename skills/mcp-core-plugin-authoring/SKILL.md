@@ -11,7 +11,7 @@ agnostic; the plugin receives everything resolved through `IMcpPluginContext`.
 ## The contract
 
 ```ts
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
 
 export default definePlugin({
   name: 'example',                 // becomes the tool namespace prefix

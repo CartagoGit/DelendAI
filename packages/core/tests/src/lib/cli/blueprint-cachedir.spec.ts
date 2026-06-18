@@ -12,8 +12,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import { prepareServerBlueprintOnStart } from '@cartago-git/mcp-core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { prepareServerBlueprintOnStart } from '@mcp-vertex/core/lib/cli/assemble';
 
 describe('prepareServerBlueprintOnStart cacheDir (M15/H5)', () => {
 	let ws = '';

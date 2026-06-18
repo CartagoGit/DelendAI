@@ -1,6 +1,6 @@
 # Token budgets — measured baseline
 
-`@cartago-git/mcp-core` promises *low-token*. This is the measured proof, not
+`@mcp-vertex/core` promises *low-token*. This is the measured proof, not
 marketing. Numbers are **payload bytes** of the tool result text an agent sees
 (≈ 4 bytes/token), captured by driving the **real** assembled server over the MCP
 protocol (`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`).

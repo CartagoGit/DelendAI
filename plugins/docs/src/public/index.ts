@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-docs`. The default export (in
+ * Public surface of `@mcp-vertex/docs`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * docs engine + tool builder for programmatic reuse.
  */

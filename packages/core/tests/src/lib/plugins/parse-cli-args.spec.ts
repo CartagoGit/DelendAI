@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	parseCliArgs,
 	resolvePreset,
-} from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
+} from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 describe('parseCliArgs', () => {
 	it('applies defaults when nothing is passed', () => {

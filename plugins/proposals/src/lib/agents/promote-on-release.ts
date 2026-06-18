@@ -25,7 +25,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { writeFileAtomic } from '@mcp-vertex/core/public';
 
 import type {
 	IPersistentTaskEntry,

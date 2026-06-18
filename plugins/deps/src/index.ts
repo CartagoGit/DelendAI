@@ -1,4 +1,4 @@
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
 
 import { buildDepsToolRegistrations } from './lib/tools';
 

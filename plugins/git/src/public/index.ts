@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-git`. The default export (in
+ * Public surface of `@mcp-vertex/git`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * git helpers + tool builder for programmatic reuse.
  */

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-memory`. The default export (in
+ * Public surface of `@mcp-vertex/memory`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * note store + tool builder for programmatic reuse.
  */

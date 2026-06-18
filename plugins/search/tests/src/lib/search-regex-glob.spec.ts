@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	InvalidSearchPatternError,
 	searchWorkspace,
-} from '@cartago-git/mcp-search/lib/engine';
+} from '@mcp-vertex/search/lib/engine';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

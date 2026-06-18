@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildAssemblyDiagnostics,
 	formatVerbose,
-} from '@cartago-git/mcp-core/lib/cli/assemble';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import type { IPluginLoadResult } from '@cartago-git/mcp-core/lib/plugins/load-plugins';
-import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/lib/contracts/interfaces/host-config.interface';
+} from '@mcp-vertex/core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import type { IPluginLoadResult } from '@mcp-vertex/core/lib/plugins/load-plugins';
+import type { IMcpCoreHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
 
 const args = parseCliArgs(
 	['--plugins=demo,other', '--workspace=/ws', '--cacheDir=.c', '--docsDir=.d'],

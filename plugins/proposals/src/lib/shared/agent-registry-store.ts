@@ -5,7 +5,7 @@ import {
 	quarantineCorruptFile,
 	withFileMutex,
 	writeFileAtomic,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 

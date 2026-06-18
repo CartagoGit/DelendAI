@@ -1,9 +1,9 @@
 {
-	"name": "@cartago-git/mcp-core-monorepo",
+	"name": "@mcp-vertex/core-monorepo",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"description": "Project-agnostic MCP server core + CLI plugin loader. Publishes @cartago-git/mcp-core and its plugins.",
+	"description": "Project-agnostic MCP server core + CLI plugin loader. Publishes @mcp-vertex/core and its plugins.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"workspaces": ["packages/*", "plugins/*", "apps/*", "examples/*"],

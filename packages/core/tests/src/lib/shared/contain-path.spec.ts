@@ -1,7 +1,7 @@
 import { resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { resolveWorkspaceContained } from '@cartago-git/mcp-core/public';
+import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
 
 const ROOT = resolve('/work/space');
 

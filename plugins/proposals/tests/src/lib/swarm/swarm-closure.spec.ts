@@ -15,11 +15,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { runSwarmClosure } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
+import { runSwarmClosure } from '@mcp-vertex/proposals/lib/swarm/swarm-closure';
 import type {
 	ICloseSwarmInput,
 	IAgentTreeSummary,
-} from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
+} from '@mcp-vertex/proposals/lib/swarm/swarm-closure';
 
 // ---------------------------------------------------------------------------
 // Test fixtures

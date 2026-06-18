@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolJson } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import {
 	awaitLockRelease,

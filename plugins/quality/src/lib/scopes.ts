@@ -1,5 +1,5 @@
-import type { IFileReader } from '@cartago-git/mcp-core/public';
-import { parseConfigFile } from '@cartago-git/mcp-core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
+import { parseConfigFile } from '@mcp-vertex/core/public';
 
 import type { IScopeCommand } from './runner';
 

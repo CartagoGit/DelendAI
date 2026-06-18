@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
-import { parseProposalDocument } from '@cartago-git/mcp-proposals/lib/proposals/proposal-document';
+import { parseProposalDocument } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
 
 let tmpDir: string;
 let tmpFile: string;

@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	createMcpServer,
 	planRegistrationOrder,
-} from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { createWorkspacePathProvider } from '@cartago-git/mcp-core/lib/workspace/create-workspace-path-provider';
-import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/lib/contracts/interfaces/host-config.interface';
-import type { IToolRegistration } from '@cartago-git/mcp-core/lib/contracts/interfaces/tool-registration.interface';
+} from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+import type { IMcpCoreHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const registration = (
 	id: string,

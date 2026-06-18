@@ -37,7 +37,7 @@ const main = async (): Promise<void> => {
 			tarballs.push(join(proj, out.split('\n').pop()!.trim()));
 		}
 
-		// Clean project that installs the tarballs (peer dep @cartago-git/mcp-core is
+		// Clean project that installs the tarballs (peer dep @mcp-vertex/core is
 		// satisfied by the core tarball; sdk/zod come from the registry).
 		writeFileSync(join(proj, 'package.json'), JSON.stringify({ name: 'smoke', private: true }, null, 2));
 		run('npm', ['install', '--no-audit', '--no-fund', ...tarballs], proj);
@@ -47,7 +47,7 @@ const main = async (): Promise<void> => {
 		const transport = new StdioClientTransport({
 			command: 'node',
 			args: [
-				join(proj, 'node_modules/@cartago-git/mcp-core/dist/cli.js'),
+				join(proj, 'node_modules/@mcp-vertex/core/dist/cli.js'),
 				'--plugins=proposals,memory',
 				`--workspace=${workspace}`,
 			],

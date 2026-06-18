@@ -1,7 +1,7 @@
-# @cartago-git/mcp-docs
+# @mcp-vertex/docs
 
 Project **documentation** plugin for
-[`@cartago-git/mcp-core`](../../packages/core). Catalogues and serves the repo's
+[`@mcp-vertex/core`](../../packages/core). Catalogues and serves the repo's
 markdown so an agent navigates curated docs by title/path instead of grepping.
 
 ## Load it

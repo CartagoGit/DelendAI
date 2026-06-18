@@ -16,7 +16,7 @@ A plugin module **default-exports** an `IMcpPlugin` (or a factory returning
 one). Use `definePlugin` for type-safety:
 
 ```ts
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 export default definePlugin({
@@ -81,7 +81,7 @@ All optional: `tools`, `prompts`, `resources`, `knowledge`, `skills`.
 
 1. `./path` or `/abs` or `file:` → used verbatim (great for local dev).
 2. `@scope/pkg` (contains `/`) → used verbatim.
-3. bare `name` → `@cartago-git/mcp-<name>`, then `mcp-<name>`, then `name`.
+3. bare `name` → `@mcp-vertex/<name>`, then `mcp-<name>`, then `name`.
 
 ## Generate a plugin skeleton
 
@@ -109,6 +109,6 @@ It produces `plugins/myfeature/` with `package.json`, `tsconfig.json`,
 
 ## Example plugin
 
-See `plugins/proposals` (`@cartago-git/mcp-proposals`) for a real plugin: it
+See `plugins/proposals` (`@mcp-vertex/proposals`) for a real plugin: it
 derives its paths from `ctx`, exposes `agent_lock` and `task_queue`, and ships
 a compact workflow knowledge entry.

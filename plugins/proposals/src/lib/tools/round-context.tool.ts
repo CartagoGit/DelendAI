@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { toolJson } from '@cartago-git/mcp-core/public';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import { toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import {
 	buildResumeHint,

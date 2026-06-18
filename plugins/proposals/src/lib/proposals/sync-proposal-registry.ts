@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type {

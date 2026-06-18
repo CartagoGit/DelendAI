@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import {

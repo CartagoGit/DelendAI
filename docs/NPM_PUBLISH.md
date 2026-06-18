@@ -1,10 +1,10 @@
-# Publicar `@cartago-git/mcp-*` en npm — guía paso a paso
+# Publicar `@mcp-vertex/*` en npm — guía paso a paso
 
 > Todo queda **preparado** para que solo ejecutes estos pasos con tu cuenta.
-> Paquetes (10): `@cartago-git/mcp-core`, `@cartago-git/mcp-proposals`,
-> `@cartago-git/mcp-rules`, `@cartago-git/mcp-memory`, `@cartago-git/mcp-git`,
-> `@cartago-git/mcp-quality`, `@cartago-git/mcp-search`,
-> `@cartago-git/mcp-notification`, `@cartago-git/mcp-docs`, `@cartago-git/mcp-deps`. Todos en `0.1.0`,
+> Paquetes (10): `@mcp-vertex/core`, `@mcp-vertex/proposals`,
+> `@mcp-vertex/rules`, `@mcp-vertex/memory`, `@mcp-vertex/git`,
+> `@mcp-vertex/quality`, `@mcp-vertex/search`,
+> `@mcp-vertex/notification`, `@mcp-vertex/docs`, `@mcp-vertex/deps`. Todos en `0.1.0`,
 > `publishConfig.access=public`, `files` limitado a `src` + README + LICENSE.
 
 ## 0. Requisitos (una vez)
@@ -113,7 +113,7 @@ cd plugins/deps         && npm publish && cd -
 - Si usas 2FA te pedirá el OTP en cada uno (`npm publish --otp=123456`).
 
 ### Nota sobre el protocolo `workspace:*`
-Los plugins tienen `"@cartago-git/mcp-core": "workspace:*"` en **devDependencies**.
+Los plugins tienen `"@mcp-vertex/core": "workspace:*"` en **devDependencies**.
 - Con **`bun publish`** se reescribe automáticamente a la versión real → usa
   `bun publish` en lugar de `npm publish` si te da error el protocolo:
   ```bash
@@ -121,13 +121,13 @@ Los plugins tienen `"@cartago-git/mcp-core": "workspace:*"` en **devDependencies
   cd plugins/proposals && bun publish && cd -    # ...y el resto igual
   ```
 - Con `npm publish`, si se queja del `workspace:` en devDependencies, cámbialo a
-  `"@cartago-git/mcp-core": "^0.1.0"` en los 5 plugins antes de publicar (es solo
+  `"@mcp-vertex/core": "^0.1.0"` en los 5 plugins antes de publicar (es solo
   devDependency, no afecta a los consumidores).
 
 ## 3. Verificar lo publicado
 ```bash
-npm view @cartago-git/mcp-core version
-bunx @cartago-git/mcp-core --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps --check
+npm view @mcp-vertex/core version
+bunx @mcp-vertex/core --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps --check
 # Debe imprimir "ok": true y "assembles": true
 ```
 
@@ -136,11 +136,11 @@ Hoy Affairs consume mcp-core por **rutas locales** (tsconfig paths + alias de
 vitest apuntando a `../../../mcp-core/...`). Cuando publiques:
 1. En `affairs/libs/mcp-server/package.json` añade dependencias reales:
    ```jsonc
-   "@cartago-git/mcp-core": "^0.1.0",
-   "@cartago-git/mcp-proposals": "^0.1.0"
+   "@mcp-vertex/core": "^0.1.0",
+   "@mcp-vertex/proposals": "^0.1.0"
    ```
-2. Quita los `paths` `@cartago-git/*` de `affairs/tsconfig.base.json` y los alias
-   `@cartago-git/*` de `affairs/libs/mcp-server/vitest.config.ts` (para que
+2. Quita los `paths` `@mcp-vertex/*` de `affairs/tsconfig.base.json` y los alias
+   `@mcp-vertex/*` de `affairs/libs/mcp-server/vitest.config.ts` (para que
    resuelvan desde `node_modules`).
 3. `bun install` en affairs y `bun run --cwd libs/mcp-server test` (1184 verdes).
    - Ojo: los paquetes publican **fuente TS**; vitest/bun la transpilan. Si algún
@@ -152,7 +152,7 @@ vitest apuntando a `../../../mcp-core/...`). Cuando publiques:
   por `peerDependency` (`^0.x`).
 
 ## 6. (Opcional, futuro) build a `dist` para consumidores Node puro
-Hoy se publica TS (bun-native, como `@cartago-git/keyer`). Si quieres soportar
+Hoy se publica TS (bun-native, como `@mcp-vertex/keyer`). Si quieres soportar
 Node sin transpilación: añadir `tsc` build por paquete, `exports` apuntando a
 `dist/*.js` + `dist/*.d.ts`, y `files: ["dist"]`. No es necesario para uso con
 Bun ni vía `bunx`.

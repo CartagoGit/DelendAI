@@ -12,12 +12,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentLockEngine,
 	type ILockFile,
-} from '@cartago-git/mcp-proposals/lib/locks/agent-lock-engine';
+} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
 	runTaskQueueMcp,
 	type ITaskQueuePaths,
-} from '@cartago-git/mcp-proposals/lib/agents/task-queue-engine';
-import { runAgentNames } from '@cartago-git/mcp-proposals/lib/tools/agent-names.tool';
+} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
+import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
 /**
  * N23 — chaos/adversarial. Stresses the reliability promise (atomic writes +

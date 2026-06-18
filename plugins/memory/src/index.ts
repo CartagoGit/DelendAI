@@ -1,4 +1,4 @@
-import { definePlugin, joinRel } from '@cartago-git/mcp-core/public';
+import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 
 import { buildMemoryToolRegistrations } from './lib/tools';
 

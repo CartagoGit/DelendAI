@@ -29,7 +29,7 @@ export const buildConfigSchema = (): string => {
 		$id: 'https://cartago-git.github.io/mcp-core/mcp-core.config.schema.json',
 		title: 'mcp-core.config.json',
 		description:
-			'Configuration for @cartago-git/mcp-core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options.',
+			'Configuration for @mcp-vertex/core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options.',
 	};
 	return `${JSON.stringify(schema, null, '\t')}\n`;
 };

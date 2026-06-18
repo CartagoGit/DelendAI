@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-proposals`. The default export
+ * Public surface of `@mcp-vertex/proposals`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the building blocks for hosts that wire the engines directly.
  */

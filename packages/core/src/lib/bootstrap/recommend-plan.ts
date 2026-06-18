@@ -83,7 +83,7 @@ export const recommendServerPlan = (
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
 
-	const args = ['@cartago-git/mcp-core'];
+	const args = ['@mcp-vertex/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
 	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir) args.push(`--cacheDir=${cacheDir}`);
 	if (docsDir !== DEFAULT_CORE_PATHS.docsDir) args.push(`--docsDir=${docsDir}`);

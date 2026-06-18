@@ -8,7 +8,7 @@ import {
 	__resetIdleStreakForTesting,
 	runAutoWork,
 	type IAutoWorkToolOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/auto-work.tool';
+} from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
 
 const parse = (result: { content: Array<{ text: string }> }): any =>
 	JSON.parse(result.content[0]?.text ?? '{}');

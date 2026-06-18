@@ -1,7 +1,7 @@
-# @cartago-git/mcp-proposals
+# @mcp-vertex/proposals
 
 The **proposals workflow** plugin for
-[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md): a file-based proposal store,
+[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md): a file-based proposal store,
 file-level agent locks, a persistent task queue and multi-agent ("swarm")
 coordination — including naming the whole agent tree (orchestrator included).
 
@@ -13,7 +13,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=proposals"]
+			"args": ["@mcp-vertex/core", "--plugins=proposals"]
 		}
 	}
 }
@@ -64,7 +64,7 @@ import {
 	buildAgentLockRegistration,
 	runAutoWork,
 	buildSwarmPaths,
-} from '@cartago-git/mcp-proposals/public';
+} from '@mcp-vertex/proposals/public';
 ```
 
 BSD-3-Clause © Cartago

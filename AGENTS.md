@@ -1,4 +1,4 @@
-# AGENTS.md — working in `@cartago-git/mcp-core`
+# AGENTS.md — working in `@mcp-vertex/core`
 
 Canonical instructions for any agent or contributor working in this repo. This
 project is a **project-agnostic MCP server core + plugin loader**; it builds

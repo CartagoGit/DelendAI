@@ -30,8 +30,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { verifyClosure } from '@cartago-git/mcp-proposals/lib/agents/delivery-verifier';
-import type { IProposalExtras } from '@cartago-git/mcp-proposals/lib/agents/delivery-verifier';
+import { verifyClosure } from '@mcp-vertex/proposals/lib/agents/delivery-verifier';
+import type { IProposalExtras } from '@mcp-vertex/proposals/lib/agents/delivery-verifier';
 
 const TEMP_DIRS: string[] = [];
 

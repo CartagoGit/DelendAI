@@ -1,4 +1,4 @@
-import { resolveWorkspaceContained } from '@cartago-git/mcp-core/public';
+import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 

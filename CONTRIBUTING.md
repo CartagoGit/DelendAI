@@ -1,4 +1,4 @@
-# Contributing to `@cartago-git/mcp-core`
+# Contributing to `@mcp-vertex/core`
 
 Thanks for helping. This repo holds itself to the discipline it asks of its
 consumers — the short version is in [`AGENTS.md`](AGENTS.md); this is the

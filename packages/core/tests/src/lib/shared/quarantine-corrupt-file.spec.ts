@@ -15,7 +15,7 @@ import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	quarantineCorruptFileSync,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 describe('quarantineCorruptFile', () => {
 	let dir = '';

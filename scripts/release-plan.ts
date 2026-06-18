@@ -2,13 +2,13 @@
  * Pure release planning for the monorepo (N23 — semver + publish automation).
  *
  * Computes a lockstep version bump across every publishable package plus the
- * `@cartago-git/mcp-core` peerDependency rewrite the plugins carry. Kept fully
+ * `@mcp-vertex/core` peerDependency rewrite the plugins carry. Kept fully
  * side-effect free so it is unit-testable; the filesystem + `bun publish`
  * driver lives next to it in `release.ts`.
  */
 
 /**
- * Publish order: `@cartago-git/mcp-core` FIRST (every plugin declares it as a
+ * Publish order: `@mcp-vertex/core` FIRST (every plugin declares it as a
  * `peerDependency`), then the nine plugins. Mirrors docs/NPM_PUBLISH.md §2.
  */
 export const PUBLISH_ORDER: readonly string[] = [
@@ -25,7 +25,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 ];
 
 /** The peerDependency the plugins pin to the core version. */
-export const CORE_PEER = '@cartago-git/mcp-core';
+export const CORE_PEER = '@mcp-vertex/core';
 
 export type BumpKind = 'patch' | 'minor' | 'major';
 
@@ -65,7 +65,7 @@ export interface IReleasePkg {
 	readonly name: string;
 	/** Current version. */
 	readonly version: string;
-	/** Current `peerDependencies['@cartago-git/mcp-core']`, if the package has one. */
+	/** Current `peerDependencies['@mcp-vertex/core']`, if the package has one. */
 	readonly peerCoreRange?: string;
 }
 
