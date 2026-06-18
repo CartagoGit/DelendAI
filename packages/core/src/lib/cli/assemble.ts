@@ -445,6 +445,13 @@ export const runCli = async (
 	argv: readonly string[],
 	cwd: string
 ): Promise<void> => {
+	// `init`: merge the mcp-vertex server into the detected IDE configs and exit.
+	if (argv[0] === 'init') {
+		const { runInit } = await import('./run-init');
+		await runInit(argv.slice(1), cwd);
+		return;
+	}
+
 	const args = parseCliArgs(argv, cwd);
 
 	// `--check`/`--doctor`: print a diagnostic report and exit (no stdio).

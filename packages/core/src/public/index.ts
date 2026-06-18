@@ -119,6 +119,25 @@ export type { IContainedPath } from '../lib/shared/contain-path';
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
 export { killProcessGroup } from '../lib/commands/process-group';
+
+// --- IDE install helper (`mcp-vertex init`) ---------------------------------
+export { mergeServerEntry } from '../lib/install/merge-config';
+export type { IMcpConfigKind, IMergeAction, IMergeResult } from '../lib/install/merge-config';
+export { IDE_TARGETS, targetById } from '../lib/install/ide-targets';
+export type { IIdeInstallTarget, IInstallEnv } from '../lib/install/ide-targets';
+export {
+	buildServerEntry,
+	detectTargets,
+	installToTarget,
+	runInstall,
+} from '../lib/install/installer';
+export type {
+	IInstallOptions,
+	IInstallReport,
+	IInstallTargetResult,
+	IRunnerVia,
+} from '../lib/install/installer';
+
 export { withFileMutex, LockContentionError } from '../lib/shared/with-file-mutex';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 export {

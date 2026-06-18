@@ -12,24 +12,27 @@ export interface IPackageManager {
 	readonly command: string;
 	/** Args before any `--preset` flag. */
 	readonly args: readonly string[];
-	/** One-line install-it-globally hint shown above the config. */
+	/** The one-command universal installer (`… init`). */
+	readonly init: string;
+	/** One-line verify-it-runs hint. */
 	readonly run: string;
 	readonly note?: string;
 }
 
 export const packageManagers: readonly IPackageManager[] = [
-	{ id: 'npm', label: 'npm', command: 'npx', args: ['-y', PACKAGE], run: `npx -y ${PACKAGE} --check` },
-	{ id: 'pnpm', label: 'pnpm', command: 'pnpm', args: ['dlx', PACKAGE], run: `pnpm dlx ${PACKAGE} --check` },
-	{ id: 'yarn', label: 'yarn', command: 'yarn', args: ['dlx', PACKAGE], run: `yarn dlx ${PACKAGE} --check` },
+	{ id: 'npm', label: 'npm', command: 'npx', args: ['-y', PACKAGE], init: `npx -y ${PACKAGE} init`, run: `npx -y ${PACKAGE} --check` },
+	{ id: 'pnpm', label: 'pnpm', command: 'pnpm', args: ['dlx', PACKAGE], init: `pnpm dlx ${PACKAGE} init`, run: `pnpm dlx ${PACKAGE} --check` },
+	{ id: 'yarn', label: 'yarn', command: 'yarn', args: ['dlx', PACKAGE], init: `yarn dlx ${PACKAGE} init`, run: `yarn dlx ${PACKAGE} --check` },
 	{
 		id: 'bun',
 		label: 'bun',
 		command: 'bunx',
 		args: [PACKAGE],
+		init: `bunx ${PACKAGE} init`,
 		run: `bunx ${PACKAGE} --check`,
 		note: 'mcp-vertex itself is built with bun.',
 	},
-	{ id: 'deno', label: 'deno', command: 'deno', args: ['run', '-A', `npm:${PACKAGE}`], run: `deno run -A npm:${PACKAGE} --check` },
+	{ id: 'deno', label: 'deno', command: 'deno', args: ['run', '-A', `npm:${PACKAGE}`], init: `deno run -A npm:${PACKAGE} init`, run: `deno run -A npm:${PACKAGE} --check` },
 ];
 
 /** The JSON key + shape an IDE expects for an stdio MCP server. */
