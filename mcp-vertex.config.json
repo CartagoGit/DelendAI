@@ -3,6 +3,8 @@
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs/mcp-vertex",
 	"plugins": {
-		"docs": { "options": { "roots": ["docs", "README.md"] } }
+		"docs": { "options": { "roots": ["docs", "README.md"] } },
+		"search": { "options": {} },
+		"git": { "options": {} }
 	}
 }

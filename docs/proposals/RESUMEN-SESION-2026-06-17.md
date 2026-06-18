@@ -15,7 +15,7 @@
 
 ---
 
-## ✅ Hecho esta sesión (con tests, commiteado+pusheado)
+## ✅ Done esta sesión (con tests, commiteado+pusheado)
 
 ### P0 — completo (M1, M2, M3, M4, M8)
 
@@ -55,9 +55,9 @@
 - **M8 · Sin pretty-print en tools calientes** — `round_context` (vía `toolJson`),
   `sync_proposals`, `get_proposal_workflow` (conservan `structuredContent`). Los
   ficheros persistidos se dejan legibles a propósito (decisión N11).
-  *Pendiente menor:* ampliar el guard de budget a `--preset=swarm`.
+  *Pending (minor):* ampliar el guard de budget a `--preset=swarm`.
 
-### P1 — parcial (M5 ✅, M7 ✅)
+### P1 — partial (M5 ✅, M7 ✅)
 
 - **M7 · Hermeticidad de rutas** — `ITaskQueuePaths` ahora exige `lockPath` y añade
   `workspaceRoot`; el `report` ya no cae al fallback cwd-relativo. `waitFor.file` se
@@ -80,7 +80,7 @@
 
 ---
 
-## ✅ Continuación 2026-06-17 (oficina, Opus) — M6 + hardening + M9 HECHOS
+## ✅ Continuación 2026-06-17 (oficina, Opus) — M6 + hardening + M9 DONE
 
 - **M6 ✅** `deliveredDigests` persistido en sidecar `.subscribe-delivered.json`
   bajo `withFileMutex` (read-modify-write serializado); un reinicio ya no
@@ -114,7 +114,7 @@ Cuarta auditoría externa (`audits/17-06-2026- Auditoría Independiente…`, mov
 `done/`). Coincide casi al decimal con la Maestra (techo = disciplina de cierre,
 no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 
-- **H1 (publicabilidad de plugins) — FALSO/ya hecho.** La auditoría leyó estado
+- **H1 (publicabilidad de plugins) — FALSO/ya done.** La auditoría leyó estado
   viejo: los 9 plugins YA tienen `main/module/types`→`dist` + `exports`
   condicional (igual que el core). `grep` no encuentra ningún `src/` en
   `main/bin/exports`. No se añade.
@@ -138,7 +138,7 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 ## ⏭️ Punto de continuación (en orden) — empezar por M10/M11 + H2/H9
 
 ### 1. P2 (calidad de producto) — del doc maestro + auditoría 17-06
-- **M9 ✅** · **M11 search ✅** · **M11 memory ✅** (hechos arriba).
+- **M9 ✅** · **M11 search ✅** · **M11 memory ✅** (done arriba).
 - **H9 ✅** `biome migrate` (recommended→preset; sin deprecation info).
 - **H7 ✅** `docs_list` con `limit`/`offset` + `{total,nextOffset?}`. Tests.
 - **H6 ✅** `rules` detecta Next/Remix/Nuxt/Astro/Solid (dep o config) ANTES de
@@ -151,7 +151,7 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
   `*Sync(` en `proposals/lib` → 0. Tests verdes.
 - **M11 restante**: `deps_outdated` (**H8**, ⚠️ red → decisión: implementar tras
   `--network` o documentar offline-by-design); `rules compact` (menor).
-- **M10 / H4 ✅ (parcial)** `quality` con tests de spawn reales (timeout→SIGKILL
+- **M10 / H4 ✅ (partial)** `quality` con tests de spawn reales (timeout→SIGKILL
   124, exit no-cero, spawn-error 127) + `runScope` timeout; `docs` con paginación.
   `notification` ya tenía 4 tests de watcher. Resto satélite: opcional.
 - **H3 ✅** scaffold response compacto (verificado: el resto era disco o ya compacto).
@@ -179,9 +179,9 @@ no arquitectura; ~9,2/10). **Verifiqué cada hallazgo nuevo contra el código**:
 - **Menor (symlink-cycle en walks de search/docs):** NO es problema —
   `readdir(withFileTypes)` da el Dirent del enlace, `isDirectory()` es `false`
   para symlinks, así que nunca se recursa en ellos. Verificado, sin código extra.
-- Pendiente (opcional/menor): **H11** e2e `subscribe` cross-restart (el unit ya
+- Pending (optional/minor): **H11** e2e `subscribe` cross-restart (el unit ya
   cubre la semántica). **Todo el resto del backlog M1–M15 / H1–H10 de las
-  auditorías: HECHO.**
+  auditorías: DONE.**
 
 ### 2. P3 (plataforma) — del doc maestro
 - **M12** plugin `metrics` · **M13** `security` + bridge securecoder · **M14**
@@ -232,7 +232,7 @@ Tres piezas para que el paquete sea consumible y se publique solo:
 
 ---
 
-## 🌐 W3 — Sitio web profesional (PENDIENTE — spec completo, esto es el punto de continuación)
+## 🌐 W3 — Sitio web profesional (PENDING — spec completo, esto es el punto de continuación)
 
 > Recogido literal de la última conversación en la oficina (la sesión expiró justo
 > al dárseme este encargo; ver el difunto `last-session-expired.md`). El
@@ -299,7 +299,7 @@ lo que falte. Backlog abierto conocido (del doc maestro, todo no-bloqueante):
 
 - **Rama `develop` == `origin/develop`**, árbol limpio. **471 tests** (461 + 10 skip),
   typecheck + lint (Biome) + coverage verdes. `testTimeout`/`hookTimeout` a **30s**.
-- **Hecho hasta aquí (commiteado + pusheado):** todo P0–P1 + M5–M15, H1–H10,
+- **Done hasta aquí (commiteado + pusheado):** todo P0–P1 + M5–M15, H1–H10,
   auditoría MiniMax integrada, y **W1/W2** (auto-release + Pages) + rotación NPM.
 - **Setup que necesita el usuario (cuando despliegue):** secreto `NPM_TOKEN`,
   `Settings → Pages → Source = GitHub Actions`, y **merge `develop → main`** (los

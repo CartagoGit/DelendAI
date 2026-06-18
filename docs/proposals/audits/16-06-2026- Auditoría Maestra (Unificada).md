@@ -233,15 +233,15 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 ## 7. Plan priorizado hacia el "magistral"
 
-**P0 — Correctitud, genericidad y adopción (2–4 días) ✅ HECHO (2026-06-17)**
+**P0 — Correctitud, genericidad y adopción (2–4 días) ✅ DONE (2026-06-17)**
 - [x] **M1** Token de propiedad (`pid\nts\nUUID`) en `withFileMutex` + borrado condicional + heartbeat de `mtime`; test de robo concurrente (`with-file-mutex.spec.ts`).
 - [x] **M2** `agentSlot` → `z.string().min(1)` en los 2 schemas (task-queue-engine + persistent-task-queue); 5 roles canónicos quedan como `DEFAULT_AGENT_SLOTS` (default, no enum); test de slot no-canónico.
 - [x] **M3** Runtime: **build a `dist/`** (`bun build` ESM + `tsc --emitDeclarationOnly`) en los 10 paquetes; manifests con `exports` condicional (`types`+`import`) + `bin` a `dist/cli.js` (shebang node). Corre bajo Node/npm/pnpm/yarn, Deno y bun. `scripts/build.ts`; release y CI compilan antes de publicar; smoke `node dist/cli.js` en CI.
 - [x] **M4** `plugins/docs` engine → `fs/promises` (sin I/O síncrono); callers/specs a `await`.
-- [x] **M8** `round_context` (vía `toolJson`), `sync_proposals` y `get_proposal_workflow` sin pretty-print (conservan `structuredContent`). *Pendiente menor:* ampliar el guard de budget a `--preset=swarm`.
+- [x] **M8** `round_context` (vía `toolJson`), `sync_proposals` y `get_proposal_workflow` sin pretty-print (conservan `structuredContent`). *Pending (minor):* ampliar el guard de budget a `--preset=swarm`.
 
 **P1 — Robustez operativa (3–5 días)**
-- [x] **M5** Erradicado (ver §"Cerrado el 17-06"): `proposals` migrado a `fs/promises`.
+- [x] **M5** Erradicado (ver §"Closed on 17-06"): `proposals` migrado a `fs/promises`.
 - [x] **M6** `deliveredDigests` persistido en `.subscribe-delivered.json` bajo `withFileMutex` (test `task-queue-subscribe-idempotency.spec.ts`). *Nota H11:* el test modela el reinicio (motor sin estado en memoria entre llamadas) — no hay e2e que mate y relance el proceso real; valor marginal bajo dado que el motor es la fuente de verdad y ya está cubierto.
 - [x] **M7** `waitFor.file`/`lockPath` resueltos contra el root inyectado.
 - [x] **M15** Blueprint sin drift de `cacheDir` (ver CHANGELOG "Fixed").
@@ -256,13 +256,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   - ✅ `docs`: paginación (`limit`/`offset`) ya existía (`docs-pagination.spec.ts`).
   - 🟡 `rules`: detecta missing-eslint como campo (`missingEslintDeps`) pero no como *finding* propio ni tiene modo `compact`. *(no implementado — bajo valor/esfuerzo, cosmético)*
   - 🔲 `deps`: sin `deps_outdated` — requeriría red (`effects:['network']`), decisión de alcance no tomada. *(no implementado, fuera de "offline por diseño" actual)*
-- [x] Freno duro anti-idle en `auto_work` + `quality_cancel`: confirmados hechos (§7, "Cerrado el 17-06"). *Pendiente real:* guarda anti-symlink en walks; documentar frontera de confianza de `quality`.
+- [x] Freno duro anti-idle en `auto_work` + `quality_cancel`: confirmados hechos (§7, "Closed on 17-06"). *Pending (real):* guarda anti-symlink en walks; documentar frontera de confianza de `quality`.
 
 **P3 — Plataforma de referencia**
 - [x] **M12** Plugin `metrics`: `packages/core/src/lib/metrics/metrics-tool.ts`, tool `<prefix>_metrics`, `persist:true` con snapshots en `<cacheDir>/metrics/`.
 - [ ] **M13** Plugin `security` + bridge securecoder — descartado explícitamente (alcance indefinido); solo se hizo allow/deny de comandos en `quality`.
 - [ ] 🟡 **M14** Infraestructura de migraciones genérica existe (`packages/core/src/lib/migrations/migrate.ts`, `runMigrations`/`IVersioned`), pero `proposals` (agent-registry-store) sigue con un `migrate()` ad-hoc de normalización, no usa el framework versionado. *(adopción incompleta, no bloqueante — el normalize defensivo ya cubre el caso real)*
-- [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya HECHOS según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
+- [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya DONE según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
 - [ ] **npm publish** (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
 
 > **Estimación combinada de los revisores:** P0 → ~9,5; +P1 (robustez/release) →
@@ -288,7 +288,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > `@ts-ignore`, 0 `any` real en `src`, `console.*` limpio, los `TODO` son plantillas
 > del scaffold**. Hallazgos abiertos (todos no-bloqueantes, ninguno rearquitectura):
 
-- **✅ A1 (P1) · I/O síncrono residual FUERA de `proposals/lib`** — HECHO (17-06).
+- **✅ A1 (P1) · I/O síncrono residual FUERA de `proposals/lib`** — DONE (17-06).
   Migrados a async: **`plugins/memory/src/lib/store.ts`** (era 100% síncrono dentro
   del mutex → ahora `readFile`/`writeFileAtomic`; el más importante, hot path),
   **`plugins/deps/src/lib/engine.ts`** (manifest + lockfiles) y **`core/scaffold-tool.ts`**
@@ -299,28 +299,28 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   que las lecturas de **boot** de `assemble.ts`; volverla async ripplearía por todo
   el analizador con mal cost/benefit. Invariante "ningún handler de tool en bucle/
   hot-path bloquea el event loop": **cumplido**.
-- **🟡 A2 (P2) · Onboarding/plataforma** — *quick wins HECHOS (17-06):* **JSON Schema
+- **🟡 A2 (P2) · Onboarding/plataforma** — *quick wins DONE (17-06):* **JSON Schema
   de `mcp-vertex.config.json`** (generado del Zod, drift-guard, publicado, `$schema` en
   el config del repo), **`quality_cancel`** (aborta runs por PID/todos con kill de
   grupo) y **freno duro anti-idle en `auto_work`** (`stop:true` tras 3 idles
-  consecutivos, reset al haber trabajo). **`/examples` HECHO** —
+  consecutivos, reset al haber trabajo). **`/examples` DONE** —
   `examples/custom-plugin` (plugin de ejemplo **auto-testeado**: el contrato completo
-  en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). **TypeDoc HECHO**
+  en un fichero) + `examples/minimal` y `examples/swarm` (READMEs). **TypeDoc DONE**
   — API navegable de `public/` (`typedoc` → `apps/web/public/api`, desplegada en la
-  web bajo `/api`, enlazada en el nav). *Pendiente:* skills/prompts versionados.
-- **✅ A3 (P3) · W3 sitio web profesional** — **FOUNDATION HECHA (17-06)** con
+  web bajo `/api`, enlazada en el nav). *Pending:* skills/prompts versionados.
+- **✅ A3 (P3) · W3 sitio web profesional** — **FOUNDATION DONE (17-06)** with
   **Astro** (estático, GitHub Pages): `apps/web` es ahora una app Astro real con
   Layout + Hero + **marquesinas duales** (sentidos opuestos, hover-pausa, zoom +
   nombre al pasar sobre cada icono), **i18n en/es**, sección de tools desde
   `capabilities.json` (registro vivo), benchmarks y SCSS responsive. Build estático
   con `base=/mcp-vertex`, 2 páginas, lint/build verdes; `pages.yml` despliega
-  `apps/web/dist`. *Pendiente (iterativo):* contenido más rico, logos SVG reales en
+  `apps/web/dist`. *Pending (iterative):* contenido más rico, logos SVG reales en
   las marquesinas, más idiomas.
-- **✅ A4 (nit) · DX** — CERRADO: al pasar `apps/web` a app Astro con su propio
+- **✅ A4 (nit) · DX** — CLOSED: al pasar `apps/web` a app Astro con su propio
   tsconfig, se quitó `apps/*/src` del tsconfig raíz, así que el typecheck del repo
   ya no se acopla al SDK del generador del sitio.
 
-#### ✅ Cerrado el 17-06 (tras la auditoría de estado)
+#### ✅ Closed on 17-06 (tras la auditoría de estado)
 - **Infra/release:** warnings de los 4 workflows saneados (inyección `${{ }}`→`env`,
   `gh secret list` roto eliminado, `configure-pages`); **auto-versionado por
   Conventional Commits** (`scripts/derive-version.ts`, tag-driven, el usuario no
@@ -332,17 +332,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 #### Orden de ejecución priorizado (decidido 17-06)
 1. ✅ **A1 — barrido async** (`memory/store`, `deps/engine`, `core/scaffold` apply):
-   HECHO 17-06. `core/bootstrap` queda como carve-out razonado (pure-fn one-shot).
-2. ✅ **W3 — sitio web profesional con Astro** — FOUNDATION HECHA 17-06 (app Astro
+   DONE 17-06. `core/bootstrap` queda como carve-out razonado (pure-fn one-shot).
+2. ✅ **W3 — sitio web profesional con Astro** — FOUNDATION DONE 17-06 (app Astro
    real en `apps/web`: hero, marquesinas duales, i18n en/es, tools del registro vivo,
-   benchmarks, responsive; build estático para Pages). *Pendiente iterativo:* más
+   benchmarks, responsive; build estático para Pages). *Pending (iterative):* más
    contenido/idiomas + logos SVG reales.
-3. ✅ **A2 quick wins** (HECHO 17-06): JSON Schema del config, `quality_cancel`,
+3. ✅ **A2 quick wins** (DONE 17-06): JSON Schema del config, `quality_cancel`,
    freno duro anti-idle en `auto_work`.
 4. **A2 onboarding:** ✅ `/examples` (custom-plugin tested + minimal/swarm) **y
-   TypeDoc** (API de `public/` en la web bajo `/api`) HECHOS; *solo pendiente:*
+   TypeDoc** (API de `public/` en la web bajo `/api`) DONE; *only pending:*
    skills/prompts versionados.
-5. ✅ **A4** (nit): CERRADO — `apps/web` (Astro) tiene su propio tsconfig; el
+5. ✅ **A4** (nit): CLOSED — `apps/web` (Astro) tiene su propio tsconfig; el
    typecheck raíz ya no se acopla al SDK del generador.
 6. **Deploy** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge `develop→main`.
 
@@ -353,7 +353,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 ## 7-bis. W3 — Requisitos vivos de la web (anotaciones del usuario)
 
 > **Regla:** toda anotación del usuario sobre la web se registra AQUÍ para que se
-> cumpla. Estado: ✅ hecho · 🟡 parcial · ⬜ pendiente. (18-06-2026)
+> cumpla. Estado: ✅ done · 🟡 partial · ⬜ pending. (18-06-2026)
 
 **Marquesinas (logos):**
 - ✅ Logos de marca reales (simple-icons), icono centrado, monocromo visible.
@@ -465,9 +465,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > Agnóstica·GPT-5.4 → "Muy bien"; Agnóstica estado-actual → 8,8). No consultaron
 > las previas; convergen en lo mismo: **el core es excelente; la grieta al 11/10 es
 > plataforma + producto público + dogfooding, no arquitectura.** Lo correcto y
-> verificado se asimila aquí. Estado: ✅ hecho · 🟡 parcial · ⬜ pendiente.
+> verificado se asimila aquí. Estado: ✅ done · 🟡 partial · ⬜ pending.
 
-**P0 — correctitud / regresión (cerrado en esta sesión):**
+**P0 — correctitud / regresión (closed in this session):**
 - ✅ **M21 · `validate` estaba ROJO por lint** — los 12 SVG de banderas
   (`apps/web/public/flags/*.svg`) disparaban `biome lint/a11y/noSvgWithoutTitle`.
   **Fix:** Biome excluye `**/public` (assets estáticos no se lintan). `validate` verde
@@ -506,7 +506,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `proposal-acceptance`. *Decisión:* NO se unifican los runners completos porque difieren por
   diseño (git = `execFile` read-only; quality = shell + registro de cancelación + salida
   combinada; acceptance = argv + streams separados + `expect`) — un runner único sería una
-  abstracción con fugas. ⬜ Pendiente menor: `core/walkAllowedFiles` para unificar el
+  abstracción con fugas. ⬜ Pending (minor): `core/walkAllowedFiles` para unificar el
   `walk()` de `search`/`docs`.
 
 **Plataforma / producto (la grieta principal, consenso 3/3):**
@@ -535,7 +535,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `LockContentionError` (code `lock-contention-budget-exceeded`) en vez de robarlo, para
   que el caller haga back-off (p. ej. `await_lock`) — un lock **abandonado** se sigue
   reclamando siempre. Additivo, 2 tests (fail no roba/ no ejecuta; steal sí reclama).
-  ⬜ Pendiente menor: cablear `agent_lock` para exponer el modo `fail` + stress tests.
+  ⬜ Pending (minor): cablear `agent_lock` para exponer el modo `fail` + stress tests.
 
 **Observabilidad / release / tests (P2-P3):**
 - 🟡 **M29 · Métricas persistentes** —
