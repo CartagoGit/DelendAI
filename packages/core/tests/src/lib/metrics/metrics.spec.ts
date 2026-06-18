@@ -1,12 +1,17 @@
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { z } from 'zod';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	createMetricsRegistry,
 	estimateResultBytes,
 } from '@cartago-git/mcp-core/lib/metrics/metrics-registry';
+import { buildMetricsToolRegistration } from '@cartago-git/mcp-core/lib/metrics/metrics-tool';
 import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
 import { createWorkspacePathProvider } from '@cartago-git/mcp-core/lib/workspace/create-workspace-path-provider';
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
@@ -48,6 +53,54 @@ describe('createMetricsRegistry (M12)', () => {
 		).toBe(7);
 		expect(estimateResultBytes({})).toBe(0);
 		expect(estimateResultBytes({ content: 'nope' })).toBe(0);
+	});
+});
+
+describe('metrics tool — persist snapshots (M29)', () => {
+	let dir = '';
+	const capture = async (persistDir?: string) => {
+		const registry = createMetricsRegistry();
+		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
+		const reg = buildMetricsToolRegistration('mcpcore', registry, persistDir);
+		let handler: (a: unknown) => Promise<{ structuredContent?: Record<string, unknown> }>;
+		await reg.register({
+			registerTool: (_n: string, _d: unknown, fn: typeof handler) => {
+				handler = fn;
+			},
+		} as never);
+		return handler!;
+	};
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'metrics-'));
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('writes a timestamped snapshot when persist:true', async () => {
+		const metricsDir = join(dir, 'metrics');
+		const handler = await capture(metricsDir);
+		const res = await handler({ persist: true });
+		expect(res.structuredContent?.persistedTo).toBeDefined();
+		expect(res.structuredContent?.snapshots).toBe(1);
+		const files = readdirSync(metricsDir).filter((f) => f.endsWith('.json'));
+		expect(files).toHaveLength(1);
+		const saved = JSON.parse(readFileSync(join(metricsDir, files[0]!), 'utf8'));
+		expect(saved.at).toBeDefined();
+		expect(saved.tools.demo_ping.calls).toBe(1);
+	});
+
+	it('does not write when persist is absent', async () => {
+		const metricsDir = join(dir, 'metrics');
+		const handler = await capture(metricsDir);
+		const res = await handler({});
+		expect(res.structuredContent?.persistedTo).toBeUndefined();
+		expect(() => readdirSync(metricsDir)).toThrow();
+	});
+
+	it('is a no-op persist when no dir is configured', async () => {
+		const handler = await capture(undefined);
+		const res = await handler({ persist: true });
+		expect(res.structuredContent?.persistedTo).toBeUndefined();
+		expect(res.structuredContent?.tools).toBeDefined();
 	});
 });
 

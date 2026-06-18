@@ -476,8 +476,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   stress tests concurrentes.
 
 **Observabilidad / release / tests (P2-P3):**
-- ⬜ **M29 · Métricas persistentes** — snapshots a `.cache/mcp-core/metrics/*.json` +
-  gate de regresión longitudinal entre releases (hoy los counters mueren con el proceso).
+- 🟡 **M29 · Métricas persistentes** —
+  ✅ `metrics { persist: true }` vuelca un snapshot con timestamp a
+  `<cacheDir>/metrics/<ISO>.json` (escritura atómica) y devuelve `persistedTo` +
+  número de snapshots; el dir se inyecta desde `assemble` (`corePaths.cacheDir`). 3 tests.
+  ⬜ Falta el gate de regresión longitudinal que compare snapshots entre releases
+  (hoy el token-budget e2e ya cubre los payloads críticos).
 - 🟡 **M30 · Smoke funcional en CI** —
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
   `node`**, lista tools y llama `mcpcore_overview` (prueba que el artefacto publicado
