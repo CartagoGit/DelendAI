@@ -7,11 +7,35 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const year = new Date().getFullYear();
 ---
 
-<footer transition:persist transition:name="site-footer">
-	<div class="container">
-		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-vertex</a> · BSD-3-Clause
+<footer class="sitefoot" transition:persist transition:name="site-footer">
+	<div class="container sitefoot__inner">
+		<div class="sitefoot__col sitefoot__col--brand">
+			<strong>@mcp-vertex/core</strong>
+			<p>{t('footer.tagline')}</p>
+		</div>
+		<nav class="sitefoot__col" aria-label="Sections">
+			<strong>{t('footer.sections')}</strong>
+			<a href={lang === 'en' ? `${base}/install` : `${base}/${lang}/install`}>{t('nav.install')}</a>
+			<a href={lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`}>{t('nav.tools')}</a>
+			<a href={lang === 'en' ? `${base}/benchmarks` : `${base}/${lang}/benchmarks`}>{t('nav.benchmarks')}</a>
+			<a href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>{t('nav.plugins')}</a>
+			<a href={lang === 'en' ? `${base}/prompts` : `${base}/${lang}/prompts`}>{t('nav.prompts')}</a>
+			<a href={lang === 'en' ? `${base}/resources` : `${base}/${lang}/resources`}>{t('nav.resources')}</a>
+			<a href={lang === 'en' ? `${base}/knowledge` : `${base}/${lang}/knowledge`}>{t('nav.knowledge')}</a>
+		</nav>
+		<nav class="sitefoot__col" aria-label="Resources">
+			<strong>{t('footer.resources')}</strong>
+			<a href={`${base}/api/`}>API (TypeDoc)</a>
+			<a href={repo} rel="external">GitHub</a>
+			<a href="https://www.npmjs.com/package/@mcp-vertex/core" rel="external">npm</a>
+		</nav>
+	</div>
+	<div class="container sitefoot__base">
+		<span>© {year} mcp-vertex · BSD-3-Clause · {t('footer.built')}</span>
 	</div>
 </footer>

@@ -1,8 +1,6 @@
 ---
 import Marquee from './Marquee.astro';
 import ConceptSection from './ConceptSection.astro';
-import SiteNav from './SiteNav.astro';
-import SiteFooter from './SiteFooter.astro';
 import { runtimes, clients } from '../data/marquees';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
@@ -29,13 +27,11 @@ const featured = packages
 	.sort((a, b) => featuredSlugs.indexOf(shortName(a.name)) - featuredSlugs.indexOf(shortName(b.name)));
 ---
 
-<SiteNav lang={lang} />
-
 <header class="hero">
 	<div class="container">
 		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-vertex" />
 		<a class="hero__pkg" href="https://www.npmjs.com/package/@mcp-vertex/core">@mcp-vertex</a>
-		<h1>{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
+		<h1 transition:name="page-title" transition:animate="fade">{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
 		<p class="hero__sub">{t('hero.subheader')}</p>
 		<p class="tagline">{t('hero.tagline')}</p>
 		<div class="ctas">
@@ -73,8 +69,8 @@ const featured = packages
 			<a href={sectionHref('plugins')}>{t('plugins.title')} →</a>
 			·
 			<a href={sectionHref('tools')}>{t('tools.title')} →</a>
+			·
+			<a href={sectionHref('prompts')}>{t('nav.prompts')} →</a>
 		</p>
 	</div>
 </section>
-
-<SiteFooter lang={lang} />
