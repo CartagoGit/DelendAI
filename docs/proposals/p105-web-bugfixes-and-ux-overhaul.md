@@ -189,12 +189,96 @@ por eso pasó.
 otros 11 idiomas (especialmente los más incompletos: `ar`, `zh`,
 `ja`, `hi`, `vi`, `th`).
 
+### B10 · Listado de tools/prompts/knowledge por plugin (desplegable)
+
+Hoy cada plugin tiene una página individual (`/plugins/<name>`) que
+lista sus tools, y en la home `/plugins` hay un índice. Lo que
+**falta** es una vista "qué tiene cada plugin al detalle" con
+**desplegables colapsables** (uno por plugin) que muestren: tools
+(nombre + descripción), prompts (nombre + descripción + args),
+recursos (URI + MIME), knowledge entries. La idea es la misma que
+la sección "el core tiene N tools, M prompts, ..." pero a nivel
+de plugin, para que un usuario descubra capacidades sin tener que
+entrar a 11 páginas.
+
+Diseño (mínimo, sin libs nuevas):
+
+- Reutilizar la `<details>` / `<summary>` nativa del navegador
+  (accesible por defecto, sin JS, animación suave con
+  `details::details-content` o `interpolate-size: allow-keywords`).
+- Una sección por plugin en la página `/plugins` o como una nueva
+  página `/capabilities` (a decidir en slice).
+- Header del `<summary>`: icono del plugin + nombre + badge con
+  número de tools/prompts/resources. Body: lista de items con la
+  traducción del `apps/web/src/i18n/tools/<item>.ts` cuando exista,
+  fallback al inglés.
+
+### B11 · Transición al cambiar de idioma (no salto)
+
+El cambio de idioma hoy es `location.href = ...` — recarga la
+página entera, lo que se siente como un salto. Astro tiene
+**View Transitions** (integrado, opt-in) que permite una transición
+cross-page con animación de fundido. Activarlas es un cambio
+mínimo:
+
+- En `Base.astro` añadir `<ViewTransitions />` (o en
+  `apps/web/src/layouts/Base.astro`).
+- En `Config.astro`, el `<a class="lang-opt">` actual es un link
+  normal; con View Transitions Astro lo intercepta y dispara la
+  transición automáticamente. Sin código nuevo.
+- Ajustar `transition:animate` en cada página si se quiere una
+  dirección específica (slide por ejemplo).
+
+Riesgo: View Transitions requiere JS habilitado y un build
+moderno de Astro. La web ya está en Astro 6, así que es solo
+activarlo. Caer en `prefers-reduced-motion` automáticamente.
+
+### B12 · Banderas de los idiomas no aparecen
+
+`apps/web/src/components/Config.astro:45` referencia
+`l.country` para construir la URL de la bandera, pero
+`apps/web/src/i18n/shared.ts:14-17` define el campo como `flag`
+(no `country`). Las imágenes no se cargan (`<img src=".../flags/undefined.svg">`)
+y el alt queda vacío.
+
+**Fix**: cambiar `l.country` por `l.flag` en `Config.astro` (y en
+cualquier otro consumidor que tenga el mismo error — buscar con
+`grep "l\.country\|\\.country\.svg"`).
+
+### B13 · Eliminar el subhero (es un bloque huérfano)
+
+El subhero (`<section class="subhero">` + `_subhero.scss`) se
+repite en **16 páginas** (home, install, tools, knowledge,
+resources, skills, prompts, benchmarks, plugins — y sus 8
+variantes `/[lang]/`) más el `PluginPage.astro`. Es un bloque
+grande (breadcrumb + título + lead + meta + CTAs) que:
+
+- Duplica información que el nav y la `<h1>` ya dan.
+- Añade 3 reglas BEM (`.subhero__crumb`, `.subhero__meta`,
+  `.subhero__meta-item`, `.subhero__ctas`, `.subhero__lead`)
+  que hay que mantener en cada idioma.
+- En la home, el hero ya cumple la misma función; en las páginas
+  internas el `<h1>` del plugin/herramienta es suficiente.
+
+**Fix**: borrar `_subhero.scss`, su import en `styles.scss`, y
+reemplazar el `<section class="subhero">…</section>` de las 16
+páginas + `PluginPage.astro` por **nada** (dejando que la página
+empiece directamente con su `<h1>` y contenido). Si hace falta
+información de "qué es esta página" se sube al `<title>` y a la
+`<h1>`. El hero de la home se queda como está.
+
+Migración esperada: −1 archivo scss, −16 secciones HTML, −1
+componente. Sin pérdida funcional: el breadcrumb del subhero era
+el único elemento con valor semántico real; si se quiere
+mantener, se mueve a un componente `<Breadcrumb />` ligero
+(mínimo, opcional, decisión para el slice).
+
 ## 1. Goals
 
 1. El modal de configuración abre al pulsar el icono, con animación
    fade + scale.
 2. Cambiar idioma en el modal traduce **toda la web**, no solo la
-   home.
+   home, y lo hace con **transición cross-page** (no salto).
 3. La página `/plugins` usa el mismo layout que el resto (Base +
    una sección), sin dobles headers.
 4. `bun run dev` regenera `apps/web/public/api/` antes de arrancar.
@@ -203,11 +287,16 @@ otros 11 idiomas (especialmente los más incompletos: `ar`, `zh`,
    existe aún).
 6. La marquesina muestra solo iconos por defecto y expande un badge
    con el nombre al hacer hover, con efecto de slide.
-7. Las páginas tienen un look más pulido: hero rediseñado, subhero
-   con stat row, secciones con cards consistentes.
-8. `es.ts` y los demás idiomas están completos en las claves nuevas
-   que introdujo p101.
-9. `bun run validate` y `bun run site:strict` siguen verdes.
+7. Las páginas tienen un look más pulido: hero rediseñado, **sin
+   subhero huérfano** (eliminado B13), secciones con cards
+   consistentes.
+8. Las banderas de los 12 idiomas aparecen en el modal de
+   configuración.
+9. Hay un **desplegable por plugin** con tools/prompts/resources/
+   knowledge que muestra al detalle qué aporta cada uno.
+10. `es.ts` y los demás idiomas están completos en las claves nuevas
+    que introdujo p101.
+11. `bun run validate` y `bun run site:strict` siguen verdes.
 
 ## 2. No-objetivos
 
