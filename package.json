@@ -19,6 +19,7 @@
 		"config:schema": "bun scripts/generate-config-schema.ts",
 		"release": "bun scripts/release.ts",
 		"smoke": "bun scripts/smoke-cli.ts",
+		"smoke:pack": "bun scripts/smoke-pack.ts",
 		"docs:api": "typedoc",
 		"site": "bun run docs:api && cd apps/web && bun run build",
 		"site:strict": "bun run docs:api && cd apps/web && bun run build:strict"
