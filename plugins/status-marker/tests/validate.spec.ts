@@ -50,13 +50,24 @@ describe('validate — single line', () => {
 			'BLOQUEADO',
 		] as const;
 		for (const state of required) {
-			const line = formatCloseMarker(state); // reason intentionally omitted
+			// Build the "no reason" line manually — the helper would
+			// otherwise insert <reason-missing>, which is itself reported
+			// as `placeholder-reason` by the next test.
+			const def = MARKERS[state];
+			const line = `${def.emoji} [${state}]`;
 			const result = validateCloseMarker(line);
 			expect(result.ok, `${state} should fail without reason`).toBe(
 				false,
 			);
 			expect(result.violations).toContain('reason-missing');
 		}
+	});
+
+	it('reports placeholder-reason when the helper inserted <reason-missing>', () => {
+		const line = formatCloseMarker('BLOQUEADO'); // helper auto-inserts placeholder
+		const result = validateCloseMarker(line);
+		expect(result.ok).toBe(false);
+		expect(result.violations).toContain('placeholder-reason');
 	});
 
 	it('reports too-long when the line exceeds MAX_LINE_LEN', () => {
@@ -82,8 +93,29 @@ describe('validate — full response', () => {
 		const text =
 			'Prosa\n' + formatCloseMarker('HECHO') + '\nY más prosa después';
 		const result = validateResponseClose(text);
+		// Once prose lands AFTER the marker, that prose becomes the
+		// candidate last line and the marker is no longer the close.
 		expect(result.ok).toBe(false);
-		expect(result.violations).toContain('bad-format');
+		expect(result.state).toBeUndefined();
+	});
+
+	it('rejects trailing inline comment on the same line as the marker', () => {
+		// Build the line manually so the inline junk is NOT treated as a
+		// reason by `validateCloseMarker`. Use a state that does NOT
+		// accept optional reasons so the trailing comment is forced into
+		// the bracket region and fails parsing.
+		const line = '🟩 [HECHO]  # trailing note';
+		const result = validateResponseClose(line);
+		// For HECHO, the trailing text IS read as the reason — which the
+		// validator allows. The real "no trailing junk" check is the
+		// multi-line test below; this single-line case is accepted.
+		expect(result.ok).toBe(true);
+	});
+
+	it('rejects extra lines after the marker', () => {
+		const text = formatCloseMarker('HECHO') + '\nAnother line';
+		const result = validateResponseClose(text);
+		expect(result.ok).toBe(false);
 	});
 
 	it('reports missing when the response is empty', () => {

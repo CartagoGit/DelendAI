@@ -5,6 +5,7 @@
 	"plugins": {
 		"docs": { "options": { "roots": ["docs", "README.md"] } },
 		"search": { "options": {} },
-		"git": { "options": {} }
+		"git": { "options": {} },
+		"status-marker": { "options": {} }
 	}
 }

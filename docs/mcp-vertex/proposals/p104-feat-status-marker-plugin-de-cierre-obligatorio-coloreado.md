@@ -76,7 +76,7 @@ Crear el plugin `@mcp-vertex/status-marker` siguiendo el patrón del repo (`defi
 - acceptance:
   - "plugins.status-marker añadido a config"
   - "Vitest descubre los tests del nuevo plugin"
-- status: pending
+- status: done
 
 ### s7-validate — bun run validate verde + propuesta cerrada
 - files: docs/proposals/p104-feat-status-marker-plugin.md

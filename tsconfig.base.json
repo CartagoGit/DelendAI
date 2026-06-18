@@ -62,7 +62,14 @@
 			"@mcp-vertex/docs/*": ["./plugins/docs/src/*"],
 			"@mcp-vertex/deps": ["./plugins/deps/src/index.ts"],
 			"@mcp-vertex/deps/public": ["./plugins/deps/src/public/index.ts"],
-			"@mcp-vertex/deps/*": ["./plugins/deps/src/*"]
+			"@mcp-vertex/deps/*": ["./plugins/deps/src/*"],
+			"@mcp-vertex/status-marker": [
+				"./plugins/status-marker/src/index.ts"
+			],
+			"@mcp-vertex/status-marker/public": [
+				"./plugins/status-marker/src/public/index.ts"
+			],
+			"@mcp-vertex/status-marker/*": ["./plugins/status-marker/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
