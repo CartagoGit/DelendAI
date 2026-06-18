@@ -421,9 +421,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   léxico; symlinks fuera del sandbox quedan como follow-up del host.)*
 
 **P1 — hermeticidad de secretos:**
-- ⬜ **M23 · `redactSecrets` solo vive en `memory`.** Si un agente guarda una API key en
-  el `body` de una proposal, se persiste tal cual. **Fix:** promover a
-  `core/lib/shared/redact.ts` y aplicarlo en el save de `proposal-document.ts`.
+- ✅ **M23 · `redactSecrets` centralizado en core.**
+  ([redact.ts](../../../packages/core/src/lib/shared/redact.ts), exportado en `public`);
+  `memory` lo reexporta (shim, sin romper su superficie) y `proposals` lo aplica al
+  **crear una proposal** (`create_proposal` scrubea el body antes de `writeFileAtomic` y
+  reporta `redactedSecrets`). Test de integración añadido. *(El `close_slice` no toca
+  texto nuevo, no redacta.)*
 
 **P2 — contratos / outputSchema:**
 - ⬜ **M24 · Schemas abiertos** `z.object({}).catchall(z.unknown())` en `bootstrap-tool`,

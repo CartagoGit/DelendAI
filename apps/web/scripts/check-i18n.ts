@@ -37,7 +37,7 @@ for (const { code } of languages) {
 
 if (problems.length) {
 	console.error('✗ i18n incomplete — every language must translate every key:\n');
-	for (const p of problems) console.error('  ' + p);
+	for (const p of problems) console.error(`  ${p}`);
 	console.error(`\n${languages.length} languages · ${enKeys.length} keys each expected.`);
 	process.exit(1);
 }

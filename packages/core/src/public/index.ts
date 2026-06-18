@@ -116,6 +116,8 @@ export {
 export { joinRel } from '../lib/shared/paths';
 export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export { redactSecrets } from '../lib/shared/redact';
+export type { IRedactResult } from '../lib/shared/redact';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 export {

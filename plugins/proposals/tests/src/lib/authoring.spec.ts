@@ -76,6 +76,23 @@ describe('proposal authoring (create → board → close)', () => {
 		expect(doc).toMatch(/### s1[\s\S]*?- status: done/);
 	});
 
+	it('redacts secrets pasted into the goal before persisting (M23)', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({
+				id: 'p3',
+				title: 'Wire API',
+				goal: 'Use api_key = "s3cr3tValue123" to call the service',
+				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+			})
+		);
+		expect(created.ok).toBe(true);
+		expect(created.redactedSecrets).toBeGreaterThan(0);
+		const doc = readFileSync(join(opts.proposalsDirAbs, 'p3-wire-api.md'), 'utf8');
+		expect(doc).not.toContain('s3cr3tValue123');
+		expect(doc).toContain('[REDACTED]');
+	});
+
 	it('rejects overlapping slices', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const out = parse(

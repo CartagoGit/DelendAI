@@ -4,7 +4,13 @@ import { dirname, join } from 'node:path';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolError, toolJson, toolOk, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import {
+	redactSecrets,
+	toolError,
+	toolJson,
+	toolOk,
+	writeFileAtomic,
+} from '@cartago-git/mcp-core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
@@ -206,7 +212,8 @@ export const buildCreateProposalRegistration = (
 				].join('\n');
 				const fileRel = `${args.id}-${kebab(args.title)}.md`;
 				const absPath = join(options.proposalsDirAbs, fileRel);
-				await writeFileAtomic(absPath, body);
+				const { text: safeBody, redactions } = redactSecrets(body);
+					await writeFileAtomic(absPath, safeBody);
 				const sync = await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
@@ -217,6 +224,7 @@ export const buildCreateProposalRegistration = (
 					path: absPath,
 					disjointnessIssues: issues,
 					indexCount: sync.count,
+						redactedSecrets: redactions,
 				});
 			}
 		);
