@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"mcp-vertex": {
+			"type": "stdio",
+			"command": "bun",
+			"args": [
+				"${workspaceFolder}/packages/core/src/cli.ts",
+				"--preset=swarm",
+				"--workspace=${workspaceFolder}"
+			]
+		}
+	}
+}

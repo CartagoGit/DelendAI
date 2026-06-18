@@ -430,6 +430,20 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - 🟡 Preferencia: **cada sección = una página individual** (no todo en un único home).
 - 🟡 **Benchmarks más extensos** y **comparando con otras utilidades similares**.
 
+**M39 · Instalación universal + título (18-06, 3ª tanda):**
+- 🔵 **Título de la web**: dejar clarísimo que el proyecto es **`@mcp-vertex`**.
+- 🔵 **Matriz de instalación**: por gestor de paquetes (**npm/yarn/pnpm/deno/bun**) y por
+  IDE/agente. Nota pequeña en la pestaña de **bun**: "desarrollado con bun".
+- 🔵 **Config MCP por IDE** (el `mcp.json` no va en el mismo sitio en todos): VS Code/Copilot
+  `.vscode/mcp.json` (clave `servers`, `type:stdio`); Cursor `.cursor/mcp.json` / `~/.cursor/
+  mcp.json` (`mcpServers`); Windsurf `~/.codeium/windsurf/mcp_config.json` (`mcpServers`);
+  Claude Desktop `claude_desktop_config.json` (`mcpServers`); Claude Code `.mcp.json` o
+  `claude mcp add`; Antigravity `~/.gemini/config/mcp_config.json` (`mcpServers`); Zed
+  `settings.json` (`context_servers`). Forma universal para cualquier agente.
+- ✅ **Dogfooding real en este repo**: el `.mcp.json` (Claude Code) funciona, pero faltaba
+  `.vscode/mcp.json` para VS Code/Copilot → **añadido** (`servers`+`type:stdio`, corre el
+  CLI de src con bun sobre `${workspaceFolder}`).
+
 ---
 
 ## 7-ter. Tercera ronda agnóstica (18-06) — hallazgos asimilados
