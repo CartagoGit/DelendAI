@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Peer-review loop for slices** (`proposals_proposal_review`): submit a finished
+  slice for review (not done yet); a *different* agent approves it (→ done) or
+  requests changes with an objection (→ reworkable). Loops until a reviewer has no
+  objection; reviewer ≠ implementer is enforced.
+- **`notification_await_lock`**: block until a task lock is released (or timeout)
+  instead of polling `agent_lock status`.
+- **Tool side-effects metadata** (`IToolRegistration.effects`:
+  `write`/`spawn`/`network`/`destructive`), surfaced per tool by `overview` and as
+  badges on the site's plugin pages, so a host can gate dangerous tools.
+- **Persistent metrics snapshots** (`metrics { persist: true }`) for longitudinal
+  cost comparison; **lock contention circuit-breaker**
+  (`withFileMutex { onContention: 'fail' }` → `LockContentionError`).
+- **Workspace path containment** (`resolveWorkspaceContained`) in `search`/`docs`/`deps`;
+  **centralized secret redaction** (`redactSecrets` in core) on proposal save;
+  **canonical process-group teardown** (`killProcessGroup`).
+- **Self-dogfooding** artefacts (`AGENTS.md`, copilot-instructions, agents, `skills/`) +
+  `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`.
+- **Site**: logo + SVG favicon, 12 languages (real flag SVGs, RTL, i18n build gate),
+  live-measured benchmark charts, and a detail page per plugin.
+- **CI**: a functional stdio smoke of the compiled CLI + a tarball install e2e.
 - **Auto-release on push to `main`** (CI): when the lockstep version is new
   (no `vX.Y.Z` tag yet), the `release` workflow validates, builds, publishes the
   10 packages to npm, tags the commit and opens a GitHub Release with generated
@@ -115,3 +135,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Initial project-agnostic MCP server core + CLI plugin loader and the nine
 first-party plugins (`proposals`, `rules`, `memory`, `git`, `quality`,
 `search`, `notification`, `docs`, `deps`). Not yet published to npm.
+
+<!-- Comparison links (Keep a Changelog). Populated as tags are cut. -->
+[Unreleased]: https://github.com/CartagoGit/mcp-core/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/CartagoGit/mcp-core/releases/tag/v0.1.0
