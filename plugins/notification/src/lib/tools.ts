@@ -5,6 +5,7 @@ import type { IToolRegistration } from '@cartago-git/mcp-core/public';
 import { toolJson } from '@cartago-git/mcp-core/public';
 
 import {
+	awaitLockRelease,
 	createReleaseWatcher,
 	type IReleasedClaim,
 	type IReleaseWatcher,
@@ -84,6 +85,73 @@ export const buildNotifyRegistration = (
 						emitted,
 						lastReleases,
 					})
+			);
+		},
+	};
+};
+
+/**
+ * `<prefix>_await_lock` — block until the lock for `taskId` is released (or
+ * `timeoutMs` elapses), then return. This is the consumer side of the notifier:
+ * after `agent_lock` returns `lock-conflict`, call this once and retry the claim
+ * when it resolves, instead of polling `agent_lock status` in a loop. Pending
+ * waits are aborted when the server closes.
+ */
+export const buildAwaitLockRegistration = (
+	options: INotifyToolOptions
+): IToolRegistration => {
+	const pending = new Set<AbortController>();
+	return {
+		id: 'await_lock',
+		summary:
+			'Wait until a task lock is released (or timeout), so agents stop polling agent_lock status.',
+		tags: ['coordination', 'lazy'],
+		register: async (server: McpServer) => {
+			const previousOnClose = server.server.onclose;
+			server.server.onclose = (): void => {
+				for (const ac of pending) ac.abort();
+				pending.clear();
+				previousOnClose?.();
+			};
+
+			server.registerTool(
+				`${options.namespacePrefix}_await_lock`,
+				{
+					description:
+						'Block until the lock for `taskId` is released (no longer in-flight) or `timeoutMs` elapses (default 30000, max 120000), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop.',
+					inputSchema: z.object({
+						taskId: z.string().min(1),
+						timeoutMs: z.number().optional(),
+					}),
+					outputSchema: z.object({
+						taskId: z.string(),
+						released: z.boolean(),
+						timedOut: z.boolean(),
+						alreadyFree: z.boolean(),
+						waitedMs: z.number(),
+					}),
+				},
+				async (args: { taskId: string; timeoutMs?: number | undefined }) => {
+					const ac = new AbortController();
+					pending.add(ac);
+					try {
+						const r = await awaitLockRelease({
+							lockFile: options.lockFileAbs,
+							taskId: args.taskId,
+							...(args.timeoutMs !== undefined ? { timeoutMs: args.timeoutMs } : {}),
+							signal: ac.signal,
+						});
+						return toolJson({
+							taskId: args.taskId,
+							released: r.released,
+							timedOut: r.timedOut,
+							alreadyFree: r.alreadyFree,
+							waitedMs: r.waitedMs,
+						});
+					} finally {
+						pending.delete(ac);
+					}
+				}
 			);
 		},
 	};

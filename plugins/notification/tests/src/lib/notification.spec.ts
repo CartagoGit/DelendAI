@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	awaitLockRelease,
 	createReleaseWatcher,
 	diffReleased,
 	readInFlight,
@@ -61,6 +62,40 @@ describe('lock-release watcher [N14]', () => {
 		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
 		expect(seen[0]?.files).toEqual(['src/a.ts']);
 	});
+
+	it('awaitLockRelease returns immediately when the lock is already free', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 'other' }]));
+		const r = await awaitLockRelease({ lockFile, taskId: 't1', pollMs: 100 });
+		expect(r).toMatchObject({ released: true, alreadyFree: true, timedOut: false });
+		expect(r.waitedMs).toBe(0);
+	});
+
+	it('awaitLockRelease resolves when the held lock is later released', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 't1', agent: 'falcon', ownership: ['a.ts'] }]));
+		const waiting = awaitLockRelease({ lockFile, taskId: 't1', pollMs: 100, timeoutMs: 5_000 });
+		setTimeout(() => writeFileSync(lockFile, lock([])), 150);
+		const r = await waiting;
+		expect(r.released).toBe(true);
+		expect(r.timedOut).toBe(false);
+		expect(r.alreadyFree).toBe(false);
+		expect(r.waitedMs).toBeGreaterThan(0);
+	});
+
+	it('awaitLockRelease times out while the lock stays held', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
+		const r = await awaitLockRelease({ lockFile, taskId: 't1', pollMs: 100, timeoutMs: 1_000 });
+		expect(r).toMatchObject({ released: false, timedOut: true, alreadyFree: false });
+	});
+
+	it('awaitLockRelease resolves early when aborted', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
+		const ac = new AbortController();
+		const waiting = awaitLockRelease({ lockFile, taskId: 't1', pollMs: 100, timeoutMs: 5_000, signal: ac.signal });
+		setTimeout(() => ac.abort(), 100);
+		const r = await waiting;
+		expect(r.released).toBe(false);
+		expect(r.timedOut).toBe(false);
+	});
 });
 
 describe('notification plugin', () => {
@@ -79,7 +114,7 @@ describe('notification plugin', () => {
 		} satisfies IMcpPluginContext;
 
 		const reg = await plugin.register(ctx);
-		expect(reg.tools?.map((t) => t.id)).toEqual(['notify_status']);
+		expect(reg.tools?.map((t) => t.id)).toEqual(['notify_status', 'await_lock']);
 		expect(reg.knowledge?.[0]?.id).toBe('lock-notifications');
 
 		// Wire a fake server to capture logging notifications + the tool handler.
