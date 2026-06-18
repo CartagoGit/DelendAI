@@ -1,5 +1,6 @@
 ---
 import Marquee from './Marquee.astro';
+import Install from './Install.astro';
 import Config from './Config.astro';
 import { runtimes, clients } from '../data/marquees';
 import { useTranslations, type Lang } from '../i18n/ui';
@@ -77,6 +78,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 <header class="hero">
 	<div class="container">
 		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-vertex" />
+		<a class="hero__pkg" href="https://www.npmjs.com/package/@mcp-vertex/core">@mcp-vertex</a>
 		<h1>{t('hero.title.a')}<span class="grad">{t('hero.title.b')}</span>{t('hero.title.c')}</h1>
 		<p class="tagline">{t('hero.tagline')}</p>
 		<div class="ctas">
@@ -105,22 +107,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 	</div>
 </section>
 
-<section id="install" class="section">
-	<div class="container">
-		<h2>{t('install.title')}</h2>
-		<p class="lead">{t('install.lead')}</p>
-		<pre><code>bun add @mcp-vertex/core</code></pre>
-		<pre><code>{`{
-  "servers": {
-    "mcp-vertex": {
-      "command": "bunx",
-      "args": ["@mcp-vertex/core", "--preset=standard"]
-    }
-  }
-}`}</code></pre>
-		<p class="lead">{t('install.config')}</p>
-	</div>
-</section>
+<Install lang={lang} />
 
 <section id="tools" class="section">
 	<div class="container">

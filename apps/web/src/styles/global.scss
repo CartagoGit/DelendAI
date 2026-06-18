@@ -46,6 +46,13 @@ a:hover { text-decoration: underline; }
 .nav__brand { font-weight: 700; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 0.5rem; }
 .nav__logo { display: block; flex: 0 0 auto; }
 .hero__logo { width: clamp(56px, 12vw, 76px); height: auto; display: block; margin: 0 auto 1.1rem; filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)); }
+.hero__pkg {
+	display: inline-block; margin: 0 0 0.9rem; padding: 0.25rem 0.85rem; border-radius: 999px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; font-size: 0.92rem;
+	color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+	background: color-mix(in srgb, var(--accent) 12%, transparent); text-decoration: none;
+}
+.hero__pkg:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); text-decoration: none; }
 .nav__links { display: flex; gap: 1.1rem; margin-left: auto; align-items: center; flex-wrap: wrap; }
 .nav__links a { color: var(--muted); font-size: 0.92rem; }
 .nav__links a:hover { color: var(--fg); text-decoration: none; }
@@ -118,6 +125,36 @@ a:hover { text-decoration: underline; }
 	transition: opacity 0.18s ease, transform 0.18s ease;
 }
 .chip:hover .chip__tip, .chip:focus-visible .chip__tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- install matrix (M39) ---- */
+.install { margin-top: 1.5rem; }
+.pm-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+.pm-tab {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; font-weight: 600;
+	padding: 0.35rem 0.85rem; border-radius: 8px; cursor: pointer;
+	color: var(--muted); background: var(--card); border: 1px solid var(--line);
+	transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.pm-tab:hover { color: var(--fg); }
+.pm-tab[aria-pressed='true'] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--card)); }
+.install__sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.4rem; }
+.install__note { color: var(--accent-2); font-size: 0.8rem; margin: 0.35rem 0 0; }
+.install__h3 { margin: 2rem 0 1rem; font-size: 1.05rem; }
+.install__foot { color: var(--muted); font-size: 0.82rem; margin-top: 1.5rem; }
+.install__foot code { color: var(--accent); }
+.ide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
+.ide { border: 1px solid var(--line); border-radius: 12px; background: var(--card); padding: 0.9rem 1rem 1rem; min-width: 0; }
+.ide__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.ide__name { font-weight: 700; }
+.ide__file { font-size: 0.74rem; color: var(--muted); word-break: break-all; }
+.ide .cfg { margin: 0; max-height: 18rem; overflow: auto; font-size: 0.74rem; }
+/* Show only the snippet/run line for the selected package manager. */
+.install .cfg, .install .pm-only { display: none; }
+$pms: npm, pnpm, yarn, bun, deno;
+@each $pm in $pms {
+	.install[data-pm='#{$pm}'] .cfg[data-pm='#{$pm}'],
+	.install[data-pm='#{$pm}'] .pm-only[data-pm='#{$pm}'] { display: block; }
+}
 
 /* ---- benchmark chart ---- */
 .bench { margin-top: 2rem; padding: 1.4rem 1.5rem; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
