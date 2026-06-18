@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 
 import { IDE_TARGETS } from '../install/ide-targets';
@@ -29,9 +30,23 @@ export const parseInitArgs = (argv: readonly string[]): IInstallOptions => {
 	return options;
 };
 
+/** Detect WSL: a Linux userland under Windows reports platform 'linux'. */
+export const detectIsWsl = (): boolean => {
+	if (process.platform !== 'linux') return false;
+	if (process.env.WSL_DISTRO_NAME !== undefined || process.env.WSL_INTEROP !== undefined) {
+		return true;
+	}
+	try {
+		return /microsoft|wsl/i.test(readFileSync('/proc/version', 'utf8'));
+	} catch {
+		return false;
+	}
+};
+
 /** Human-readable + structured install report. */
 export const formatInstallReport = (report: IInstallReport): string => {
-	const lines: string[] = [];
+	const lines: string[] = [`OS: ${report.os.label}`];
+	if (report.os.note) lines.push(`  ${report.os.note}`);
 	if (report.results.length === 0) {
 		lines.push('No IDE/agent config detected here. Re-run with --ide=<id> (or --all):');
 		lines.push(`  available: ${IDE_TARGETS.map((t) => t.id).join(', ')}`);
@@ -58,6 +73,7 @@ export const runInit = async (argv: readonly string[], cwd: string): Promise<voi
 			home: homedir(),
 			platform: process.platform,
 			appData: process.env.APPDATA,
+			isWsl: detectIsWsl(),
 		},
 		options
 	);

@@ -25,6 +25,8 @@ export interface IInstallEnv {
 	readonly home: string;
 	readonly platform: NodeJS.Platform;
 	readonly appData?: string | undefined;
+	/** True when running in WSL (Linux userland under Windows). */
+	readonly isWsl?: boolean | undefined;
 }
 
 const claudeDesktopPath = (ctx: IInstallEnv): string => {

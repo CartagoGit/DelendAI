@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	buildServerEntry,
+	detectOs,
 	installToTarget,
 	runInstall,
 	targetById,
@@ -61,6 +62,21 @@ describe('IDE installer (M39)', () => {
 		expect(report.results.map((r) => r.id)).toContain('vscode');
 		// Claude Desktop (no signal here) is not auto-written.
 		expect(report.results.map((r) => r.id)).not.toContain('claude-desktop');
+	});
+
+	it('detectOs distinguishes WSL from native Linux/macOS/Windows', () => {
+		expect(detectOs('darwin').id).toBe('macos');
+		expect(detectOs('win32').id).toBe('windows');
+		expect(detectOs('linux', false).id).toBe('linux');
+		const wsl = detectOs('linux', true);
+		expect(wsl.id).toBe('wsl');
+		expect(wsl.label).toMatch(/WSL/);
+		expect(wsl.note).toMatch(/mnt\/c/);
+	});
+
+	it('report carries the detected OS', async () => {
+		const report = await runInstall({ ...env(), isWsl: true }, { ide: ['claude-code'] });
+		expect(report.os.id).toBe('wsl');
 	});
 
 	it('explicit --ide list installs exactly those', async () => {
