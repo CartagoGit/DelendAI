@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { CorruptFileError } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { CorruptFileError } from '@mcp-vertex/core/public';
 
 import {
 	enqueue,

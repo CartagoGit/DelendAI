@@ -247,8 +247,8 @@ export const scaffoldHostConfigFile = (
 		content: `import {
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
-} from '@cartago-git/mcp-core/public';
-import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { IMcpCoreHostConfig } from '@mcp-vertex/core/public';
 
 // The core is project-agnostic. Add domain behaviour (e.g. a proposal
 // workflow) by loading a plugin via the mcp-core CLI
@@ -289,7 +289,7 @@ export const scaffoldServerEntryFiles = (
 ): readonly IScaffoldedFile[] => [
 	{
 		path: 'libs/mcp-server/src/server.ts',
-		content: `import { createMcpServer } from '@cartago-git/mcp-core/public';
+		content: `import { createMcpServer } from '@mcp-vertex/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
 
@@ -388,7 +388,7 @@ export const scaffoldPluginFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
-					peerDependencies: { '@cartago-git/mcp-core': '^0.1.0' },
+					peerDependencies: { '@mcp-vertex/core': '^0.1.0' },
 					dependencies: {
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
@@ -400,7 +400,7 @@ export const scaffoldPluginFiles = (
 		},
 		{
 			path: `plugins/${id}/src/index.ts`,
-			content: `import { definePlugin } from '@cartago-git/mcp-core/public';
+			content: `import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 /**
@@ -486,7 +486,7 @@ ${safeDescription}
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=${id}"]
+			"args": ["@mcp-vertex/core", "--plugins=${id}"]
 		}
 	}
 }
@@ -532,7 +532,7 @@ export const scaffoldClientFiles = (
 	const fn = pascal(id);
 	const safeDescription = options.description.replace(/'/g, '');
 	const command = options.serverCommand ?? 'bunx';
-	const args = options.serverArgs ?? ['@cartago-git/mcp-core'];
+	const args = options.serverArgs ?? ['@mcp-vertex/core'];
 	return [
 		{
 			path: `clients/${id}/package.json`,

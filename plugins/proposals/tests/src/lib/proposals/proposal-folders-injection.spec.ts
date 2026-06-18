@@ -18,8 +18,8 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { syncProposalRegistry } from '@cartago-git/mcp-proposals/lib/proposals/sync-proposal-registry';
-import { buildSwarmPaths } from '@cartago-git/mcp-proposals/lib/contracts/constants/default-path-layout.constant';
+import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
+import { buildSwarmPaths } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
 
 describe('M5 — injectable proposal folders (paused/demos no longer baked in)', () => {
 	let root = '';

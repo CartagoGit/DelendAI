@@ -1,5 +1,5 @@
-import type { IFileReader } from '@cartago-git/mcp-core/public';
-import { joinRel } from '@cartago-git/mcp-core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
+import { joinRel } from '@mcp-vertex/core/public';
 
 export interface IDetectResult {
 	readonly presetId: string;

@@ -16,16 +16,16 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 
 | Path | Package | What |
 |---|---|---|
-| `packages/core` | `@cartago-git/mcp-core` | The agnostic core + `mcp-core` CLI. |
-| `plugins/proposals` | `@cartago-git/mcp-proposals` | Proposal store + agent locks + task queue (swarm coordination). |
-| `plugins/rules` | `@cartago-git/mcp-rules` | Per-framework ESLint/TS presets + per-area detection + enforcement modes (project config wins). |
-| `plugins/memory` | `@cartago-git/mcp-memory` | Persistent project notes (save/recall/list/forget) for cross-session continuity. |
-| `plugins/git` | `@cartago-git/mcp-git` | Read-only git orientation: status, changed files, diff stat, log. |
-| `plugins/quality` | `@cartago-git/mcp-quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
-| `plugins/search` | `@cartago-git/mcp-search` | Grep-like, low-token textual `search` over allow-listed workspace files. |
-| `plugins/notification` | `@cartago-git/mcp-notification` | Watches the shared lock file and pushes an MCP `notifications/message` on release, so agents stop polling. |
-| `plugins/docs` | `@cartago-git/mcp-docs` | Catalogue + read the repo markdown (`docs_list` / `docs_read`), anti-traversal. |
-| `plugins/deps` | `@cartago-git/mcp-deps` | Dependency inventory + offline health (`deps_list` / `deps_check`); no network. |
+| `packages/core` | `@mcp-vertex/core` | The agnostic core + `mcp-core` CLI. |
+| `plugins/proposals` | `@mcp-vertex/proposals` | Proposal store + agent locks + task queue (swarm coordination). |
+| `plugins/rules` | `@mcp-vertex/rules` | Per-framework ESLint/TS presets + per-area detection + enforcement modes (project config wins). |
+| `plugins/memory` | `@mcp-vertex/memory` | Persistent project notes (save/recall/list/forget) for cross-session continuity. |
+| `plugins/git` | `@mcp-vertex/git` | Read-only git orientation: status, changed files, diff stat, log. |
+| `plugins/quality` | `@mcp-vertex/quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
+| `plugins/search` | `@mcp-vertex/search` | Grep-like, low-token textual `search` over allow-listed workspace files. |
+| `plugins/notification` | `@mcp-vertex/notification` | Watches the shared lock file and pushes an MCP `notifications/message` on release, so agents stop polling. |
+| `plugins/docs` | `@mcp-vertex/docs` | Catalogue + read the repo markdown (`docs_list` / `docs_read`), anti-traversal. |
+| `plugins/deps` | `@mcp-vertex/deps` | Dependency inventory + offline health (`deps_list` / `deps_check`); no network. |
 
 ## Typed tool outputs (SDK)
 
@@ -33,7 +33,7 @@ Every tool that declares a Zod `outputSchema` ships a generated TypeScript type
 for its `structuredContent`, so MCP clients can consume responses type-safely:
 
 ```ts
-import type { GitToolOutputs } from '@cartago-git/mcp-git/public';
+import type { GitToolOutputs } from '@mcp-vertex/git/public';
 
 const status: GitToolOutputs['git_status'] = result.structuredContent;
 ```

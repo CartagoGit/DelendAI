@@ -1,4 +1,4 @@
-# Copilot / agent instructions — `@cartago-git/mcp-core`
+# Copilot / agent instructions — `@mcp-vertex/core`
 
 This repo is a project-agnostic MCP server core + plugin loader. Full rules live in
 [`AGENTS.md`](../AGENTS.md); this is the short, always-loaded version.

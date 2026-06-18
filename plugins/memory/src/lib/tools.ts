@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
 	CorruptFileError,
 	toolError,
 	toolJson,
 	toolOk,
-} from '@cartago-git/mcp-core/public';
-import type { IToolTextResult } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
 	MAX_NOTES,

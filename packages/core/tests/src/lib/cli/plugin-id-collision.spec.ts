@@ -9,9 +9,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 const pluginWithPingTool = (name: string) => ({
 	name,

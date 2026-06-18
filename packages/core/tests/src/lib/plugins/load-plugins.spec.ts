@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	loadPlugins,
 	resolvePluginSpecifier,
-} from '@cartago-git/mcp-core/lib/plugins/load-plugins';
-import type { IMcpPluginContext } from '@cartago-git/mcp-core/lib/plugins/plugin-contract';
+} from '@mcp-vertex/core/lib/plugins/load-plugins';
+import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
 
 const ctx = (name: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
@@ -21,7 +21,7 @@ const ctx = (name: string): IMcpPluginContext => ({
 describe('resolvePluginSpecifier', () => {
 	it('expands a bare short name to the scoped convention first', () => {
 		expect(resolvePluginSpecifier('proposals')).toEqual([
-			'@cartago-git/mcp-proposals',
+			'@mcp-vertex/proposals',
 			'mcp-proposals',
 			'proposals',
 		]);

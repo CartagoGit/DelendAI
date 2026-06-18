@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runContinueProposal,
 	type IContinueProposalToolOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/continue-proposal.tool';
+} from '@mcp-vertex/proposals/lib/tools/continue-proposal.tool';
 
 const parse = (result: { content: Array<{ text: string }> }): any =>
 	JSON.parse(result.content[0]?.text ?? '{}');

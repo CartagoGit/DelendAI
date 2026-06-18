@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolError, toolJson } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import { checkRepo, gitChanged, gitDiffStat, gitLog, gitStatus } from './git';
 import type { IGitRunner } from './git';

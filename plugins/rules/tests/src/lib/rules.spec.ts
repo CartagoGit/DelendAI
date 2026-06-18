@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@cartago-git/mcp-core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
 
-import { detectPresetForArea } from '@cartago-git/mcp-rules/lib/frameworks/detect-framework';
-import { buildRulesManifest } from '@cartago-git/mcp-rules/lib/frameworks/manifest';
-import { SUPPORTED_PRESET_IDS } from '@cartago-git/mcp-rules/lib/frameworks/presets';
+import { detectPresetForArea } from '@mcp-vertex/rules/lib/frameworks/detect-framework';
+import { buildRulesManifest } from '@mcp-vertex/rules/lib/frameworks/manifest';
+import { SUPPORTED_PRESET_IDS } from '@mcp-vertex/rules/lib/frameworks/presets';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: (p) => files[p],

@@ -1,7 +1,7 @@
-# @cartago-git/mcp-memory
+# @mcp-vertex/memory
 
 Persistent **project memory** plugin for
-[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Save/recall/list/forget
+[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md). Save/recall/list/forget
 small notes stored in one JSON file under the cache dir, so any agent keeps
 continuity across sessions with minimal tokens.
 
@@ -12,7 +12,7 @@ continuity across sessions with minimal tokens.
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=memory"]
+			"args": ["@mcp-vertex/core", "--plugins=memory"]
 		}
 	}
 }

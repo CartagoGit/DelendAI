@@ -29,10 +29,10 @@ describe('nextVersion (N23 release tooling)', () => {
 
 describe('computeReleasePlan (lockstep + peer rewrite)', () => {
 	const pkgs: IReleasePkg[] = [
-		{ dir: 'packages/core', name: '@cartago-git/mcp-core', version: '0.1.0' },
+		{ dir: 'packages/core', name: '@mcp-vertex/core', version: '0.1.0' },
 		{
 			dir: 'plugins/git',
-			name: '@cartago-git/mcp-git',
+			name: '@mcp-vertex/git',
 			version: '0.1.0',
 			peerCoreRange: '^0.1.0',
 		},

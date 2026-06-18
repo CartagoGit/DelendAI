@@ -21,14 +21,14 @@ type ITool = { name: string; namespace: string; description: string; effects?: s
 type IPkg = { name: string; version: string };
 
 const pkg = (capabilities.packages as IPkg[]).find(
-	(p) => p.name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '') === slug
+	(p) => p.name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '') === slug
 );
 const ns = nsFor(slug);
 const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === ns)
 	.sort((a, b) => a.name.localeCompare(b.name));
 
-const title = pkg?.name ?? `@cartago-git/mcp-${slug}`;
+const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 const description = t(`plugin.${slug}`);
 ---
 
@@ -36,7 +36,7 @@ const description = t(`plugin.${slug}`);
 	<div class="container nav__inner">
 		<a class="nav__brand" href={homeHref}>
 			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
-			@cartago-git/mcp-core
+			@mcp-vertex/core
 		</a>
 		<div class="nav__links">
 			<a href={homeHref}>← {t('pluginpage.back')}</a>
@@ -68,7 +68,7 @@ const description = t(`plugin.${slug}`);
 	<div class="container">
 		<h2>{t('pluginpage.install')}</h2>
 		<pre><code>bun add {title}</code></pre>
-		<pre><code>{`{ "args": ["@cartago-git/mcp-core", "--plugins=${slug}"] }`}</code></pre>
+		<pre><code>{`{ "args": ["@mcp-vertex/core", "--plugins=${slug}"] }`}</code></pre>
 
 		<h2>{t('pluginpage.tools')}</h2>
 		<div class="tools-grid">

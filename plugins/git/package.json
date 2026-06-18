@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-git",
+	"name": "@mcp-vertex/git",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Read-only git orientation plugin for @cartago-git/mcp-core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `mcp-core --plugins=git`.",
+	"description": "Read-only git orientation plugin for @mcp-vertex/core: status, changed files, diff stat and recent log as structured JSON, so agents cheaply see what changed. Load with `mcp-core --plugins=git`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -36,14 +36,14 @@
 		"build": "bun ../../scripts/build.ts plugins/git"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

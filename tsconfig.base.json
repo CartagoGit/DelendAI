@@ -23,52 +23,52 @@
 		"allowImportingTsExtensions": true,
 		"types": ["bun", "node"],
 		"paths": {
-			"@cartago-git/mcp-core": ["./packages/core/src/index.ts"],
-			"@cartago-git/mcp-core/public": [
+			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
+			"@mcp-vertex/core/public": [
 				"./packages/core/src/public/index.ts"
 			],
-			"@cartago-git/mcp-core/*": ["./packages/core/src/*"],
-			"@cartago-git/mcp-proposals": ["./plugins/proposals/src/index.ts"],
-			"@cartago-git/mcp-proposals/public": [
+			"@mcp-vertex/core/*": ["./packages/core/src/*"],
+			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
+			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
 			],
-			"@cartago-git/mcp-proposals/*": ["./plugins/proposals/src/*"],
-			"@cartago-git/mcp-rules": ["./plugins/rules/src/index.ts"],
-			"@cartago-git/mcp-rules/public": [
+			"@mcp-vertex/proposals/*": ["./plugins/proposals/src/*"],
+			"@mcp-vertex/rules": ["./plugins/rules/src/index.ts"],
+			"@mcp-vertex/rules/public": [
 				"./plugins/rules/src/public/index.ts"
 			],
-			"@cartago-git/mcp-rules/*": ["./plugins/rules/src/*"],
-			"@cartago-git/mcp-memory": ["./plugins/memory/src/index.ts"],
-			"@cartago-git/mcp-memory/public": [
+			"@mcp-vertex/rules/*": ["./plugins/rules/src/*"],
+			"@mcp-vertex/memory": ["./plugins/memory/src/index.ts"],
+			"@mcp-vertex/memory/public": [
 				"./plugins/memory/src/public/index.ts"
 			],
-			"@cartago-git/mcp-memory/*": ["./plugins/memory/src/*"],
-			"@cartago-git/mcp-git": ["./plugins/git/src/index.ts"],
-			"@cartago-git/mcp-git/public": ["./plugins/git/src/public/index.ts"],
-			"@cartago-git/mcp-git/*": ["./plugins/git/src/*"],
-			"@cartago-git/mcp-quality": ["./plugins/quality/src/index.ts"],
-			"@cartago-git/mcp-quality/public": [
+			"@mcp-vertex/memory/*": ["./plugins/memory/src/*"],
+			"@mcp-vertex/git": ["./plugins/git/src/index.ts"],
+			"@mcp-vertex/git/public": ["./plugins/git/src/public/index.ts"],
+			"@mcp-vertex/git/*": ["./plugins/git/src/*"],
+			"@mcp-vertex/quality": ["./plugins/quality/src/index.ts"],
+			"@mcp-vertex/quality/public": [
 				"./plugins/quality/src/public/index.ts"
 			],
-			"@cartago-git/mcp-quality/*": ["./plugins/quality/src/*"],
-			"@cartago-git/mcp-search": ["./plugins/search/src/index.ts"],
-			"@cartago-git/mcp-search/public": [
+			"@mcp-vertex/quality/*": ["./plugins/quality/src/*"],
+			"@mcp-vertex/search": ["./plugins/search/src/index.ts"],
+			"@mcp-vertex/search/public": [
 				"./plugins/search/src/public/index.ts"
 			],
-			"@cartago-git/mcp-search/*": ["./plugins/search/src/*"],
-			"@cartago-git/mcp-notification": [
+			"@mcp-vertex/search/*": ["./plugins/search/src/*"],
+			"@mcp-vertex/notification": [
 				"./plugins/notification/src/index.ts"
 			],
-			"@cartago-git/mcp-notification/public": [
+			"@mcp-vertex/notification/public": [
 				"./plugins/notification/src/public/index.ts"
 			],
-			"@cartago-git/mcp-notification/*": ["./plugins/notification/src/*"],
-			"@cartago-git/mcp-docs": ["./plugins/docs/src/index.ts"],
-			"@cartago-git/mcp-docs/public": ["./plugins/docs/src/public/index.ts"],
-			"@cartago-git/mcp-docs/*": ["./plugins/docs/src/*"],
-			"@cartago-git/mcp-deps": ["./plugins/deps/src/index.ts"],
-			"@cartago-git/mcp-deps/public": ["./plugins/deps/src/public/index.ts"],
-			"@cartago-git/mcp-deps/*": ["./plugins/deps/src/*"]
+			"@mcp-vertex/notification/*": ["./plugins/notification/src/*"],
+			"@mcp-vertex/docs": ["./plugins/docs/src/index.ts"],
+			"@mcp-vertex/docs/public": ["./plugins/docs/src/public/index.ts"],
+			"@mcp-vertex/docs/*": ["./plugins/docs/src/*"],
+			"@mcp-vertex/deps": ["./plugins/deps/src/index.ts"],
+			"@mcp-vertex/deps/public": ["./plugins/deps/src/public/index.ts"],
+			"@mcp-vertex/deps/*": ["./plugins/deps/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]

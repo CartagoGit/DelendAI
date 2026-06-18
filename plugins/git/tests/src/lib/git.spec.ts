@@ -7,10 +7,10 @@ import {
 	gitStatus,
 	parseLog,
 	parseStatus,
-} from '@cartago-git/mcp-git/lib/git';
-import type { IGitRunner } from '@cartago-git/mcp-git/lib/git';
-import plugin from '@cartago-git/mcp-git';
-import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/git/lib/git';
+import type { IGitRunner } from '@mcp-vertex/git/lib/git';
+import plugin from '@mcp-vertex/git';
+import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 describe('git parsers', () => {
 	it('parses porcelain status with branch', () => {

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-rules`. The default export (in
+ * Public surface of `@mcp-vertex/rules`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * presets, detection and manifest builders for programmatic reuse.
  */

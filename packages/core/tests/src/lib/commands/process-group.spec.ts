@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { killProcessGroup } from '@cartago-git/mcp-core/public';
+import { killProcessGroup } from '@mcp-vertex/core/public';
 
 describe('killProcessGroup (M25)', () => {
 	it('is a no-op for an undefined pid', () => {

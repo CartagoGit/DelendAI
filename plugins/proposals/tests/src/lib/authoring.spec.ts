@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import {
 	buildCloseSliceRegistration,
@@ -12,7 +12,7 @@ import {
 	buildProposalBoardRegistration,
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/authoring.tool';
+} from '@mcp-vertex/proposals/lib/tools/authoring.tool';
 
 const capture = async (
 	reg: IToolRegistration

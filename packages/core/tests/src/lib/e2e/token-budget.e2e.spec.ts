@@ -6,11 +6,11 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import proposalsPlugin from '@cartago-git/mcp-proposals';
-import memoryPlugin from '@cartago-git/mcp-memory';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import proposalsPlugin from '@mcp-vertex/proposals';
+import memoryPlugin from '@mcp-vertex/memory';
 
 /**
  * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
@@ -41,8 +41,8 @@ describe('e2e: token budget (cold-start payloads)', () => {
 			workspace
 		);
 		const plugins: Record<string, { default: unknown }> = {
-			'@cartago-git/mcp-proposals': { default: proposalsPlugin },
-			'@cartago-git/mcp-memory': { default: memoryPlugin },
+			'@mcp-vertex/proposals': { default: proposalsPlugin },
+			'@mcp-vertex/memory': { default: memoryPlugin },
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,

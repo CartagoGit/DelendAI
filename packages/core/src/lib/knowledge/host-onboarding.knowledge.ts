@@ -8,7 +8,7 @@ import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interfac
  */
 export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 	id: 'mcp-core-host-onboarding',
-	title: 'Adopting @cartago-git/mcp-core in a new project',
+	title: 'Adopting @mcp-vertex/core in a new project',
 	body: [
 		'# Host onboarding',
 		'',

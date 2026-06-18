@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-memory",
+	"name": "@mcp-vertex/memory",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Persistent project memory plugin for @cartago-git/mcp-core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `mcp-core --plugins=memory`.",
+	"description": "Persistent project memory plugin for @mcp-vertex/core: save/recall/list/forget small notes under the cache dir, so agents keep continuity across sessions with minimal tokens. Load with `mcp-core --plugins=memory`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -36,14 +36,14 @@
 		"build": "bun ../../scripts/build.ts plugins/memory"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

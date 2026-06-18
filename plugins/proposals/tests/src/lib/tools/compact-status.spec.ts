@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	collectCompactStatus,
 	type ICompactStatusOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/compact-status.tool';
+} from '@mcp-vertex/proposals/lib/tools/compact-status.tool';
 
 describe('compact_status (N17) — aggregates the proposals plugin state', () => {
 	let dir = '';

@@ -4,12 +4,12 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { listDocs, readDoc, extractTitle } from '@cartago-git/mcp-docs/lib/engine';
-import plugin from '@cartago-git/mcp-docs';
+import { listDocs, readDoc, extractTitle } from '@mcp-vertex/docs/lib/engine';
+import plugin from '@mcp-vertex/docs';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

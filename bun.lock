@@ -17,7 +17,7 @@
       },
     },
     "apps/web": {
-      "name": "@cartago-git/web",
+      "name": "@mcp-vertex/web",
       "version": "0.1.0",
       "dependencies": {
         "astro": "^6.4.8",
@@ -25,31 +25,31 @@
         "simple-icons": "^16.23.0",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
-        "@cartago-git/mcp-deps": "workspace:*",
-        "@cartago-git/mcp-docs": "workspace:*",
-        "@cartago-git/mcp-git": "workspace:*",
-        "@cartago-git/mcp-memory": "workspace:*",
-        "@cartago-git/mcp-notification": "workspace:*",
-        "@cartago-git/mcp-proposals": "workspace:*",
-        "@cartago-git/mcp-quality": "workspace:*",
-        "@cartago-git/mcp-rules": "workspace:*",
-        "@cartago-git/mcp-search": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
+        "@mcp-vertex/deps": "workspace:*",
+        "@mcp-vertex/docs": "workspace:*",
+        "@mcp-vertex/git": "workspace:*",
+        "@mcp-vertex/memory": "workspace:*",
+        "@mcp-vertex/notification": "workspace:*",
+        "@mcp-vertex/proposals": "workspace:*",
+        "@mcp-vertex/quality": "workspace:*",
+        "@mcp-vertex/rules": "workspace:*",
+        "@mcp-vertex/search": "workspace:*",
         "@modelcontextprotocol/sdk": "1.29.0",
       },
     },
     "examples/custom-plugin": {
-      "name": "@cartago-git/example-wordcount",
+      "name": "@mcp-vertex/example-wordcount",
       "version": "0.1.0",
       "dependencies": {
         "zod": "^4.4.3",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "packages/core": {
-      "name": "@cartago-git/mcp-core",
+      "name": "@mcp-vertex/core",
       "version": "0.1.0",
       "bin": {
         "mcp-core": "./dist/cli.js",
@@ -65,156 +65,156 @@
       },
     },
     "plugins/deps": {
-      "name": "@cartago-git/mcp-deps",
+      "name": "@mcp-vertex/deps",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/docs": {
-      "name": "@cartago-git/mcp-docs",
+      "name": "@mcp-vertex/docs",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/git": {
-      "name": "@cartago-git/mcp-git",
+      "name": "@mcp-vertex/git",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/memory": {
-      "name": "@cartago-git/mcp-memory",
+      "name": "@mcp-vertex/memory",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/notification": {
-      "name": "@cartago-git/mcp-notification",
+      "name": "@mcp-vertex/notification",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/proposals": {
-      "name": "@cartago-git/mcp-proposals",
+      "name": "@mcp-vertex/proposals",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/quality": {
-      "name": "@cartago-git/mcp-quality",
+      "name": "@mcp-vertex/quality",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/rules": {
-      "name": "@cartago-git/mcp-rules",
+      "name": "@mcp-vertex/rules",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
     "plugins/search": {
-      "name": "@cartago-git/mcp-search",
+      "name": "@mcp-vertex/search",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "@cartago-git/mcp-core": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
         "@types/bun": "latest",
         "typescript": "6.0.3",
         "vitest": "4.1.8",
       },
       "peerDependencies": {
-        "@cartago-git/mcp-core": "^0.1.0",
+        "@mcp-vertex/core": "^0.1.0",
       },
     },
   },
@@ -258,30 +258,6 @@
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.5.0", "", { "os": "win32", "cpu": "x64" }, "sha512-VT/lF+GId+67j8aDfLkxdxNoVApsPSTbyAtB3jJq0IWTrY77WXfbPfpngxq0bA6JCEv/7k8C9qWjDRKRznDlyw=="],
 
     "@capsizecss/unpack": ["@capsizecss/unpack@4.0.1", "", { "dependencies": { "fontkitten": "^1.0.3" } }, "sha512-CuNiSqg7+e1cO/GjffyMOm5Tt2jUF9CWHHnvQ/UkqvtkGfHdgwEC0wpmq7fkN3gxwpRnrAN0WzO3vREKmNolMQ=="],
-
-    "@cartago-git/example-wordcount": ["@cartago-git/example-wordcount@workspace:examples/custom-plugin"],
-
-    "@cartago-git/mcp-core": ["@cartago-git/mcp-core@workspace:packages/core"],
-
-    "@cartago-git/mcp-deps": ["@cartago-git/mcp-deps@workspace:plugins/deps"],
-
-    "@cartago-git/mcp-docs": ["@cartago-git/mcp-docs@workspace:plugins/docs"],
-
-    "@cartago-git/mcp-git": ["@cartago-git/mcp-git@workspace:plugins/git"],
-
-    "@cartago-git/mcp-memory": ["@cartago-git/mcp-memory@workspace:plugins/memory"],
-
-    "@cartago-git/mcp-notification": ["@cartago-git/mcp-notification@workspace:plugins/notification"],
-
-    "@cartago-git/mcp-proposals": ["@cartago-git/mcp-proposals@workspace:plugins/proposals"],
-
-    "@cartago-git/mcp-quality": ["@cartago-git/mcp-quality@workspace:plugins/quality"],
-
-    "@cartago-git/mcp-rules": ["@cartago-git/mcp-rules@workspace:plugins/rules"],
-
-    "@cartago-git/mcp-search": ["@cartago-git/mcp-search@workspace:plugins/search"],
-
-    "@cartago-git/web": ["@cartago-git/web@workspace:apps/web"],
 
     "@clack/core": ["@clack/core@1.4.1", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-FILJa1gGKEFTGZAJE9RpVhrjKz3c3h4ar60dSv6cGuDqufQ84YEIS3GAGvZiN+H6yaLbbvTFNejjCC4tXpZEuw=="],
 
@@ -404,6 +380,30 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
+
+    "@mcp-vertex/deps": ["@mcp-vertex/deps@workspace:plugins/deps"],
+
+    "@mcp-vertex/docs": ["@mcp-vertex/docs@workspace:plugins/docs"],
+
+    "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:examples/custom-plugin"],
+
+    "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
+
+    "@mcp-vertex/memory": ["@mcp-vertex/memory@workspace:plugins/memory"],
+
+    "@mcp-vertex/notification": ["@mcp-vertex/notification@workspace:plugins/notification"],
+
+    "@mcp-vertex/proposals": ["@mcp-vertex/proposals@workspace:plugins/proposals"],
+
+    "@mcp-vertex/quality": ["@mcp-vertex/quality@workspace:plugins/quality"],
+
+    "@mcp-vertex/rules": ["@mcp-vertex/rules@workspace:plugins/rules"],
+
+    "@mcp-vertex/search": ["@mcp-vertex/search@workspace:plugins/search"],
+
+    "@mcp-vertex/web": ["@mcp-vertex/web@workspace:apps/web"],
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.29.0", "", { "dependencies": { "@hono/node-server": "^1.19.9", "ajv": "^8.17.1", "ajv-formats": "^3.0.1", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.2.1", "express-rate-limit": "^8.2.1", "hono": "^4.11.4", "jose": "^6.1.3", "json-schema-typed": "^8.0.2", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.25 || ^4.0", "zod-to-json-schema": "^3.25.1" }, "peerDependencies": { "@cfworker/json-schema": "^4.1.1" }, "optionalPeers": ["@cfworker/json-schema"] }, "sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ=="],
 

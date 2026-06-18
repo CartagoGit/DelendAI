@@ -1,7 +1,7 @@
-# @cartago-git/mcp-quality
+# @mcp-vertex/quality
 
 Quality-gate **runner** plugin for
-[`@cartago-git/mcp-core`](../../docs/README-MCP-CORE.md). Executes the project's
+[`@mcp-vertex/core`](../../docs/README-MCP-CORE.md). Executes the project's
 validation commands (lint/test/build/typecheck) per scope and returns a
 structured pass/fail report.
 
@@ -12,7 +12,7 @@ structured pass/fail report.
 	"servers": {
 		"mcp-core": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=quality"]
+			"args": ["@mcp-vertex/core", "--plugins=quality"]
 		}
 	}
 }

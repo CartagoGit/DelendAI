@@ -10,12 +10,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	createMetricsRegistry,
 	estimateResultBytes,
-} from '@cartago-git/mcp-core/lib/metrics/metrics-registry';
-import { buildMetricsToolRegistration } from '@cartago-git/mcp-core/lib/metrics/metrics-tool';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { createWorkspacePathProvider } from '@cartago-git/mcp-core/lib/workspace/create-workspace-path-provider';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolOk } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/lib/metrics/metrics-registry';
+import { buildMetricsToolRegistration } from '@mcp-vertex/core/lib/metrics/metrics-tool';
+import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolOk } from '@mcp-vertex/core/public';
 
 describe('createMetricsRegistry (M12)', () => {
 	it('aggregates calls, errors, latency and bytes per tool', () => {

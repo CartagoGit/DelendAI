@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-search`. The default export (in
+ * Public surface of `@mcp-vertex/search`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * search engine + tool builder for programmatic reuse.
  */

@@ -2,7 +2,7 @@ import { resolve, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createWorkspacePathProvider } from '@cartago-git/mcp-core/lib/workspace/create-workspace-path-provider';
+import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 
 describe('createWorkspacePathProvider', () => {
 	it('resolves workspace-relative paths against the absolute root', () => {

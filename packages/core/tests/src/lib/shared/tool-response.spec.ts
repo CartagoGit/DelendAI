@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toolJson, toolOk, toolError } from '@cartago-git/mcp-core/public';
+import { toolJson, toolOk, toolError } from '@mcp-vertex/core/public';
 
 describe('tool-response helpers — MCP modern structuredContent', () => {
 	it('toolJson mirrors an object payload into structuredContent', () => {

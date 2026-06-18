@@ -27,7 +27,7 @@ for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
 const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
 
 const packages = capabilities.packages as Array<{ name: string; version: string }>;
-const shortName = (name: string) => name.replace('@cartago-git/mcp-', '').replace('@cartago-git/', '');
+const shortName = (name: string) => name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 const pluginHref = (slug: string) =>
 	lang === 'en' ? `${base}/plugins/${slug}` : `${base}/${lang}/plugins/${slug}`;
 
@@ -54,7 +54,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 	<div class="container nav__inner">
 		<span class="nav__brand">
 			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
-			@cartago-git/mcp-core
+			@mcp-vertex/core
 		</span>
 		<div class="nav__links">
 			<a href="#concept">{t('nav.concept')}</a>
@@ -109,12 +109,12 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 	<div class="container">
 		<h2>{t('install.title')}</h2>
 		<p class="lead">{t('install.lead')}</p>
-		<pre><code>bun add @cartago-git/mcp-core</code></pre>
+		<pre><code>bun add @mcp-vertex/core</code></pre>
 		<pre><code>{`{
   "servers": {
     "mcp-core": {
       "command": "bunx",
-      "args": ["@cartago-git/mcp-core", "--preset=standard"]
+      "args": ["@mcp-vertex/core", "--preset=standard"]
     }
   }
 }`}</code></pre>

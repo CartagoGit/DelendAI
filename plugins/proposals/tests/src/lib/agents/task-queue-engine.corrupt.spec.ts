@@ -23,7 +23,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runTaskQueueMcp,
 	type ITaskQueuePaths,
-} from '@cartago-git/mcp-proposals/lib/agents/task-queue-engine';
+} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
 
 describe('task-queue engine — corrupt queue (M10)', () => {
 	let dir = '';

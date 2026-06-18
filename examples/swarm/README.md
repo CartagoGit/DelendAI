@@ -12,7 +12,7 @@ top of `standard`.
   "servers": {
     "mcp-core": {
       "command": "bunx",
-      "args": ["@cartago-git/mcp-core", "--preset=swarm"]
+      "args": ["@mcp-vertex/core", "--preset=swarm"]
     }
   }
 }
@@ -22,7 +22,7 @@ Optional config (`mcp-core.config.json` at the workspace root):
 
 ```jsonc
 {
-  "$schema": "./node_modules/@cartago-git/mcp-core/schema/mcp-core.config.schema.json",
+  "$schema": "./node_modules/@mcp-vertex/core/schema/mcp-core.config.schema.json",
   "cacheDir": ".cache/mcp-core",
   "docsDir": "docs/mcp-core",
   "plugins": {

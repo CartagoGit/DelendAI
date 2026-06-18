@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
 import {
 	buildBlueprintFiles,
 	buildServerBlueprint,
-} from '@cartago-git/mcp-core/lib/bootstrap/build-blueprint';
+} from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: (p) => files[p],

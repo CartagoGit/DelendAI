@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-deps",
+	"name": "@mcp-vertex/deps",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Dependency inventory + offline health plugin for @cartago-git/mcp-core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `mcp-core --plugins=deps`.",
+	"description": "Dependency inventory + offline health plugin for @mcp-vertex/core: deps_list / deps_check (lockfile, unpinned ranges, cross-section duplicates). No network. Load with `mcp-core --plugins=deps`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -37,14 +37,14 @@
 		"build": "bun ../../scripts/build.ts plugins/deps"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

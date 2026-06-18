@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';

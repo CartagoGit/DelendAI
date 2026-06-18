@@ -1,4 +1,4 @@
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-core`. This barrel is the ONLY
+ * Public surface of `@mcp-vertex/core`. This barrel is the ONLY
  * stable import surface of the package. Everything under `src/lib` is
  * internal and may change without notice.
  *

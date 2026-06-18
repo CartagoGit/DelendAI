@@ -10,7 +10,7 @@
 
 import { readFile, stat } from 'node:fs/promises';
 
-import { writeFileAtomic, withFileMutex } from '@cartago-git/mcp-core/public';
+import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 

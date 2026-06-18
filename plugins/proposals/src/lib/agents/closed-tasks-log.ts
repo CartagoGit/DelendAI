@@ -14,7 +14,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { quarantineCorruptFile, writeFileAtomic } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------

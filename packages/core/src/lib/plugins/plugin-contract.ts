@@ -59,7 +59,7 @@ export interface IMcpPluginRegistrations {
  * The contract every mcp-core plugin implements. A plugin package's
  * entry module must `export default` one of these (or a factory that
  * returns one). Resolved by name via the CLI: `mcp-core --plugins=foo`
- * loads `@cartago-git/mcp-foo`, a bare npm name, or a local path.
+ * loads `@mcp-vertex/foo`, a bare npm name, or a local path.
  */
 export interface IMcpPlugin {
 	/** Stable plugin id; also the default tool namespace and cache dir. */

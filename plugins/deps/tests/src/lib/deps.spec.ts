@@ -4,12 +4,12 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { listDeps, checkDeps } from '@cartago-git/mcp-deps/lib/engine';
-import plugin from '@cartago-git/mcp-deps';
+import { listDeps, checkDeps } from '@mcp-vertex/deps/lib/engine';
+import plugin from '@mcp-vertex/deps';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 describe('deps engine', () => {
 	let root = '';

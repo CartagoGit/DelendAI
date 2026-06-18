@@ -230,7 +230,7 @@ export const assembleCliConfig = async (
 			namespacePrefix: corePrefix,
 			workspace,
 			projectName: args.serverName,
-			serverPackageName: '@cartago-git/mcp-core',
+			serverPackageName: '@mcp-vertex/core',
 		}),
 	];
 

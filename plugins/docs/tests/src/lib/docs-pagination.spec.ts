@@ -11,8 +11,8 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { buildDocsToolRegistrations } from '@cartago-git/mcp-docs/lib/tools';
-import type { IToolTextResult } from '@cartago-git/mcp-core/public';
+import { buildDocsToolRegistrations } from '@mcp-vertex/docs/lib/tools';
+import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<IToolTextResult>;
 

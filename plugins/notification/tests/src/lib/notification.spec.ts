@@ -10,9 +10,9 @@ import {
 	diffReleased,
 	readInFlight,
 	type IReleasedClaim,
-} from '@cartago-git/mcp-notification/lib/watcher';
-import plugin from '@cartago-git/mcp-notification';
-import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/notification/lib/watcher';
+import plugin from '@mcp-vertex/notification';
+import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const lock = (entries: Array<{ task_id: string; agent?: string; ownership?: string[] }>) =>
 	JSON.stringify({ version: 1, stale_after_minutes: 10, in_flight: entries });

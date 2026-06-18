@@ -13,13 +13,13 @@
  *      MCP `structuredContent`).
  *   3. a `knowledge` entry — lazy, on-demand context for the agent.
  *
- * Run it:  `mcp-core --plugins=@cartago-git/example-wordcount`
+ * Run it:  `mcp-core --plugins=@mcp-vertex/example-wordcount`
  * (or point your client's `mcp.json` at the core bin with that `--plugins`).
  */
 import { z } from 'zod';
 
-import { definePlugin, toolJson } from '@cartago-git/mcp-core/public';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import { definePlugin, toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 /** Options for this plugin, read from `plugins.example-wordcount.options`. */
 export const OptionsSchema = z.object({

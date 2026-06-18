@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
-import { recommendServerPlan } from '@cartago-git/mcp-core/lib/bootstrap/recommend-plan';
+import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: (p) => files[p],
@@ -91,6 +91,6 @@ describe('recommendServerPlan', () => {
 		expect(plan.projectType).toBe('monorepo');
 		expect(plan.plugins).toContain('proposals');
 		expect(plan.namespacePrefix).toBe('big');
-		expect(JSON.stringify(plan.mcpJson)).toContain('@cartago-git/mcp-core');
+		expect(JSON.stringify(plan.mcpJson)).toContain('@mcp-vertex/core');
 	});
 });

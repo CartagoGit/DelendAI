@@ -4,8 +4,8 @@ import type {
 	IFileReader,
 	IToolRegistration,
 	IWorkspacePathProvider,
-} from '@cartago-git/mcp-core/public';
-import { toolError, toolJson } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import { toolError, toolJson } from '@mcp-vertex/core/public';
 
 import { buildRulesManifest } from '../frameworks/manifest';
 import {

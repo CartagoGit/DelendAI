@@ -1,4 +1,4 @@
-# Architecture — `@cartago-git/mcp-core`
+# Architecture — `@mcp-vertex/core`
 
 How the monorepo fits together, what the boundaries are, and which invariants hold
 across them. For the working rules see [`AGENTS.md`](../AGENTS.md); for the live
@@ -51,7 +51,7 @@ graph TD
 | Layer | Path | Responsibility | Depends on |
 |---|---|---|---|
 | **Core runtime** | `packages/core` | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
-| **Plugins** | `plugins/*` | One capability each, namespaced. Receive `IMcpPluginContext`. | `@cartago-git/mcp-core/public` |
+| **Plugins** | `plugins/*` | One capability each, namespaced. Receive `IMcpPluginContext`. | `@mcp-vertex/core/public` |
 | **Site** | `apps/web` | Astro product/docs site, generated from the **live** registry. | core + all plugins (build-time only) |
 | **Examples** | `examples/*` | Minimal host, custom plugin, swarm. | core (+ plugins) |
 | **Scripts** | `scripts/*` | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core |

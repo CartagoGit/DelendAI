@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateParallelism } from '@cartago-git/mcp-proposals/lib/proposals/proposal-parallelism';
-import type { IProposalParallelism } from '@cartago-git/mcp-proposals/lib/proposals/proposal-parallelism';
+import { evaluateParallelism } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
+import type { IProposalParallelism } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
 
 // ---------------------------------------------------------------------------
 // a2-proposal-parallelism-enforcement T1

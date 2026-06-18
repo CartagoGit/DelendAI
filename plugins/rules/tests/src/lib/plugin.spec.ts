@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
-import plugin from '@cartago-git/mcp-rules';
+import plugin from '@mcp-vertex/rules';
 
 const makeCtx = (root: string, options: Record<string, unknown> = {}): IMcpPluginContext => ({
 	workspace: { root, resolve: (rel: string) => join(root, rel) },
@@ -35,7 +35,7 @@ const captureTool = async (
 	return handler!;
 };
 
-describe('@cartago-git/mcp-rules plugin', () => {
+describe('@mcp-vertex/rules plugin', () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'rules-'));

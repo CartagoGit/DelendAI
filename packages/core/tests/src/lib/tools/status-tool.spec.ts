@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectStatus } from '@cartago-git/mcp-core/lib/tools/status-tool';
-import type { IStatusCollector } from '@cartago-git/mcp-core/lib/contracts/interfaces/status-collector.interface';
+import { collectStatus } from '@mcp-vertex/core/lib/tools/status-tool';
+import type { IStatusCollector } from '@mcp-vertex/core/lib/contracts/interfaces/status-collector.interface';
 
 const collector = (
 	id: string,

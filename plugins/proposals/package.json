@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-proposals",
+	"name": "@mcp-vertex/proposals",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Proposals workflow plugin for @cartago-git/mcp-core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-core --plugins=proposals`.",
+	"description": "Proposals workflow plugin for @mcp-vertex/core: a file-based proposal store (frontmatter, budgets, acceptance, parallelism, registry sync), file-level agent locks, a persistent task queue and multi-agent (swarm) orchestration. Load with `mcp-core --plugins=proposals`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -37,14 +37,14 @@
 		"build": "bun ../../scripts/build.ts plugins/proposals"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
-import plugin from '@cartago-git/mcp-proposals';
+import plugin from '@mcp-vertex/proposals';
 
 const ctx = (): IMcpPluginContext => ({
 	workspace: {
@@ -19,7 +19,7 @@ const ctx = (): IMcpPluginContext => ({
 	args: {},
 });
 
-describe('@cartago-git/mcp-proposals plugin', () => {
+describe('@mcp-vertex/proposals plugin', () => {
 	it('exposes a valid IMcpPlugin identity', () => {
 		expect(plugin.name).toBe('proposals');
 		expect(typeof plugin.register).toBe('function');

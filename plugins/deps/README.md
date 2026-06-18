@@ -1,7 +1,7 @@
-# @cartago-git/mcp-deps
+# @mcp-vertex/deps
 
 Dependency **inventory + offline health** plugin for
-[`@cartago-git/mcp-core`](../../packages/core). Reports what the project's
+[`@mcp-vertex/core`](../../packages/core). Reports what the project's
 `package.json` declares and flags basic health issues — entirely offline and
 agnostic (no network, no CVE database).
 

@@ -6,10 +6,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import memoryPlugin from '@cartago-git/mcp-memory';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import memoryPlugin from '@mcp-vertex/memory';
 
 /**
  * End-to-end: assemble the REAL server (core meta-tools + a real plugin)

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@cartago-git/mcp-core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
 
-import { runScope } from '@cartago-git/mcp-quality/lib/runner';
-import type { ICommandRunner } from '@cartago-git/mcp-quality/lib/runner';
-import { resolveScopes } from '@cartago-git/mcp-quality/lib/scopes';
-import plugin from '@cartago-git/mcp-quality';
-import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+import { runScope } from '@mcp-vertex/quality/lib/runner';
+import type { ICommandRunner } from '@mcp-vertex/quality/lib/runner';
+import { resolveScopes } from '@mcp-vertex/quality/lib/scopes';
+import plugin from '@mcp-vertex/quality';
+import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: (p) => files[p],

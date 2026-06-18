@@ -10,7 +10,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import { quarantineCorruptFile, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import { z } from 'zod';
 

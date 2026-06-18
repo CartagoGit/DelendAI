@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentLockEngine,
 	type ILockFile,
-} from '@cartago-git/mcp-proposals/lib/locks/agent-lock-engine';
+} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 
 /**
  * F4: the agent-lock engine runs its read → mutate → write under a file

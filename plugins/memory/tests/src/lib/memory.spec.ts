@@ -16,14 +16,14 @@ import {
 	recall,
 	removeNote,
 	saveNote,
-} from '@cartago-git/mcp-memory/lib/store';
-import plugin from '@cartago-git/mcp-memory';
-import { buildMemoryToolRegistrations } from '@cartago-git/mcp-memory/lib/tools';
-import { CorruptFileError } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/memory/lib/store';
+import plugin from '@mcp-vertex/memory';
+import { buildMemoryToolRegistrations } from '@mcp-vertex/memory/lib/tools';
+import { CorruptFileError } from '@mcp-vertex/core/public';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 const captureHandler = async (
 	reg: IToolRegistration

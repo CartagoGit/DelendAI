@@ -54,7 +54,7 @@ const withTimeout = async <T>(
  * Turn a short plugin name into the module specifiers to try, in
  * order. A relative/absolute path or an explicit package path is used
  * verbatim; a bare short name (`proposals`) expands to the scoped
- * convention first (`@cartago-git/mcp-proposals`), then the bare name.
+ * convention first (`@mcp-vertex/proposals`), then the bare name.
  */
 export const resolvePluginSpecifier = (specifier: string): string[] => {
 	if (
@@ -65,7 +65,7 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 		return [specifier];
 	}
 	if (specifier.includes('/')) return [specifier];
-	return [`@cartago-git/mcp-${specifier}`, `mcp-${specifier}`, specifier];
+	return [`@mcp-vertex/${specifier}`, `mcp-${specifier}`, specifier];
 };
 
 const asPlugin = (mod: unknown): IMcpPlugin | undefined => {

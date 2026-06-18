@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { joinRel } from '@cartago-git/mcp-core/public';
+import { joinRel } from '@mcp-vertex/core/public';
 import { dirname } from 'node:path';
 
-import type { IFileReader } from '@cartago-git/mcp-core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
 
 import { detectPresetForArea } from './detect-framework';
 import { PRESET_BY_ID, RULE_PRESETS } from './presets';
