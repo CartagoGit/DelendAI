@@ -81,6 +81,12 @@ jobs:
           echo "$output"
           echo "$output" | grep -qF "$EXPECTED"
 
+      # Functional smoke: connect an MCP client to the compiled CLI over stdio
+      # under Node and call a real tool (overview). Proves the published artifact
+      # serves the protocol, not just that the bin starts.
+      - name: Smoke — Node serves the compiled CLI over stdio
+        run: bun scripts/smoke-cli.ts
+
       # `npm pack --dry-run` resolves each package's `files`/`exports` and
       # fails if a published tarball would be missing or malformed — a cheap
       # guard that the closed `exports` surface (R13) still packs cleanly.

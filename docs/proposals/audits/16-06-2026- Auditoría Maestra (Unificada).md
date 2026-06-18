@@ -473,9 +473,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Observabilidad / release / tests (P2-P3):**
 - ⬜ **M29 · Métricas persistentes** — snapshots a `.cache/mcp-core/metrics/*.json` +
   gate de regresión longitudinal entre releases (hoy los counters mueren con el proceso).
-- ⬜ **M30 · Smoke funcional en CI** — lanzar el CLI compilado con `--plugins=standard`
-  y ejecutar una tool real (`overview`); + e2e de instalación desde tarball
-  (`npm pack` → install → `mcp-core --check`). Hoy el smoke solo valida `--check ok`.
+- 🟡 **M30 · Smoke funcional en CI** —
+  ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
+  `node`**, lista tools y llama `mcpcore_overview` (prueba que el artefacto publicado
+  *sirve el protocolo*, no solo que el bin arranca). Cableado en `ci.yml` (job pack-smoke)
+  y como `bun run smoke`. ⬜ Falta el e2e de instalación desde **tarball** (`npm pack` →
+  install en proyecto limpio → resolver plugins bajo node), que es lo único que valida la
+  resolución real de los paquetes de plugin (el layout de workspace no es node-resolvable).
 - ⬜ **M31 · `riskLevel`/`effects` por tool** (read-only/write/spawn/network/destructive)
   expuesto en `overview`, para que el host distinga capacidades peligrosas.
 - ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
