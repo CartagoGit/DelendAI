@@ -39,6 +39,7 @@ export const buildProposalWorkflow = (
 		'A proposal may declare a `## Slices` section to parallelise disjoint work.',
 		'Layout under <docsDir>/proposals (default docs/mcp-vertex/proposals): index.json (registry), README.md (guide), p<N>-*.md / f<N>-*.md (proposals/fixes), done/ (archived), optional host buckets via extraFolders.',
 		'Adopting a project that already has a proposals folder? Call proposal_adopt — it returns the canonical layout, scans the folder and gives a plan to organize it; then you run the steps.',
+		'2+ agents sharing this repo? Each should call agent_worktree (action: create) once at the start of its session — it isolates the agent into its own git worktree + branch (agent/<name>) so concurrent git add/commit never race on a shared .git/index. List active worktrees with action: list; clean up with action: remove.',
 		'Run sync_proposals after creating or renaming files under the proposals dir.',
 		'Mark a slice done by flipping `- status: done`; archive completed proposals to historical/.',
 		'Peer review: instead of closing your own slice, proposal_review action=submit (it stays NOT done). A DIFFERENT agent reviews: action=approve → done + lock released, or action=request_changes (with a note) → reworkable. The fixer re-submits and another agent reviews the fix. Loop until a reviewer has no objection. Reviewer must differ from the implementer.',
