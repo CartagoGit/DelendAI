@@ -127,6 +127,7 @@ export { IDE_TARGETS, targetById } from '../lib/install/ide-targets';
 export type { IIdeInstallTarget, IInstallEnv } from '../lib/install/ide-targets';
 export {
 	buildServerEntry,
+	detectOs,
 	detectTargets,
 	installToTarget,
 	runInstall,
@@ -135,6 +136,8 @@ export type {
 	IInstallOptions,
 	IInstallReport,
 	IInstallTargetResult,
+	IOsId,
+	IOsInfo,
 	IRunnerVia,
 } from '../lib/install/installer';
 

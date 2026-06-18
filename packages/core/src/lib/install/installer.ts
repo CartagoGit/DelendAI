@@ -8,6 +8,34 @@ import { mergeServerEntry, type IMergeAction } from './merge-config';
 export const SERVER_NAME = 'mcp-vertex';
 export const PACKAGE = '@mcp-vertex/core';
 
+export type IOsId = 'linux' | 'macos' | 'windows' | 'wsl';
+
+export interface IOsInfo {
+	readonly id: IOsId;
+	readonly label: string;
+	/** WSL = a Linux userland under Windows; some IDEs live on the Windows side. */
+	readonly note?: string;
+}
+
+/**
+ * Identify the OS so the installer reports the right context. WSL reports
+ * `platform === 'linux'`; `isWsl` (detected from `/proc/version` or
+ * `WSL_DISTRO_NAME` by the caller) distinguishes "Windows + WSL" from native
+ * Linux, since Windows-side IDEs keep their config under `/mnt/c/Users/...`.
+ */
+export const detectOs = (platform: NodeJS.Platform, isWsl = false): IOsInfo => {
+	if (platform === 'win32') return { id: 'windows', label: 'Windows' };
+	if (platform === 'darwin') return { id: 'macos', label: 'macOS' };
+	if (isWsl) {
+		return {
+			id: 'wsl',
+			label: 'Windows (WSL)',
+			note: 'Using your Linux home. A Windows-side IDE (e.g. Claude Desktop) keeps its config under /mnt/c/Users/<you>/… — pass --ide there if needed.',
+		};
+	}
+	return { id: 'linux', label: 'Linux' };
+};
+
 export type IRunnerVia = 'npx' | 'bunx' | 'pnpm' | 'yarn' | 'deno';
 
 const RUNNERS: Record<IRunnerVia, { command: string; pre: readonly string[]; npmPrefix?: boolean }> = {
@@ -94,6 +122,7 @@ export const detectTargets = async (env: IInstallEnv): Promise<IIdeInstallTarget
 export interface IInstallReport {
 	readonly ok: boolean;
 	readonly detected: boolean;
+	readonly os: IOsInfo;
 	readonly results: readonly IInstallTargetResult[];
 }
 
@@ -116,5 +145,5 @@ export const runInstall = async (
 	for (const target of targets) {
 		results.push(await installToTarget(target, env, options));
 	}
-	return { ok: true, detected, results };
+	return { ok: true, detected, os: detectOs(env.platform, env.isWsl), results };
 };
