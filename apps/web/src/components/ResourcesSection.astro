@@ -1,0 +1,62 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+type IResource = {
+	uri: string;
+	name: string;
+	description: string;
+	namespace: string;
+	mimeType?: string;
+};
+
+const resources = (capabilities.resources ?? []) as IResource[];
+const groups: Record<string, IResource[]> = {};
+for (const r of resources) (groups[r.namespace] ??= []).push(r);
+const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<section id="resources" class="section">
+	<div class="container">
+		<h2>{t('resources.title')}</h2>
+		<p class="lead">{t('resources.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.resources ?? resources.length}</b><span>{t('resources.count')}</span></div>
+		</div>
+		{
+			namespaces.length === 0 ? (
+				<p class="lead">{t('resources.lead')}</p>
+			) : (
+				namespaces.map(([ns, list]) => (
+					<div class="ns">
+						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
+						<table class="resources-table">
+							<thead>
+								<tr>
+									<th>{t('resources.uri')}</th>
+									<th>{t('resources.mime')}</th>
+									<th>{t('resources.title')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{list.map((r) => (
+									<tr>
+										<td><code>{r.uri}</code></td>
+										<td>{r.mimeType ?? <span class="muted">—</span>}</td>
+										<td>{r.description}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				))
+			)
+		}
+	</div>
+</section>

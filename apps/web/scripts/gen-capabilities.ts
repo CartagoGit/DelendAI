@@ -66,8 +66,32 @@ interface IBenchmark {
 	readonly tokens: number;
 }
 
+interface IPrompt {
+	readonly name: string;
+	readonly description: string;
+	readonly namespace: string;
+	readonly arguments?: ReadonlyArray<{ readonly name: string; readonly description: string; readonly required?: boolean }>;
+}
+
+interface IResource {
+	readonly uri: string;
+	readonly name: string;
+	readonly description: string;
+	readonly namespace: string;
+	readonly mimeType?: string;
+}
+
+interface IKnowledgeEntry {
+	readonly id: string;
+	readonly title: string;
+	readonly namespace: string;
+}
+
 interface ICollected {
 	readonly tools: ITool[];
+	readonly prompts: IPrompt[];
+	readonly resources: IResource[];
+	readonly knowledge: IKnowledgeEntry[];
 	readonly benchmarks: IBenchmark[];
 }
 
@@ -151,21 +175,47 @@ const collectTools = async (): Promise<ICollected> => {
 	const workspace = mkdtempSync(join(tmpdir(), 'mcp-site-'));
 	try {
 		const { client, close } = await buildClient(PLUGIN_LIST, workspace);
-		const { tools } = await client.listTools();
+		// Query tools + prompts + resources + knowledge in parallel. Each call
+		// is independently optional: an SDK without listPrompts is fine, we
+		// just won't render the /prompts page.
+		const [toolsRes, promptsRes, resourcesRes] = await Promise.all([
+			client.listTools(),
+			(client.listPrompts?.() ?? Promise.resolve({ prompts: [] })) as Promise<{
+				prompts: Array<{
+					name: string;
+					description?: string;
+					arguments?: Array<{ name: string; description?: string; required?: boolean }>;
+				}>;
+			}>,
+			(client.listResources?.() ?? Promise.resolve({ resources: [] })) as Promise<{
+				resources: Array<{
+					uri: string;
+					name: string;
+					description?: string;
+					mimeType?: string;
+				}>;
+			}>,
+		]);
 		// Side effects (M31) live in overview, not the MCP tool definition — merge
 		// them in so the site can badge write/spawn/destructive tools.
 		const overview = (await client.callTool({
 			name: 'mcp-vertex_overview',
 			arguments: {},
-		})) as { structuredContent?: { tools?: Array<{ name: string; effects?: string[] }> } };
+		})) as {
+			structuredContent?: {
+				tools?: Array<{ name: string; effects?: string[] }>;
+				knowledge?: Array<{ id: string; title: string }>;
+			};
+		};
 		const effectsByName = new Map<string, string[]>(
 			(overview.structuredContent?.tools ?? [])
 				.filter((t) => t.effects && t.effects.length > 0)
 				.map((t) => [t.name, t.effects as string[]])
 		);
+		const knowledgeRaw = overview.structuredContent?.knowledge ?? [];
 		await close();
 		return {
-			tools: tools
+			tools: toolsRes.tools
 				.map((t) => ({
 					name: t.name,
 					namespace: namespaceOf(t.name),
@@ -173,6 +223,38 @@ const collectTools = async (): Promise<ICollected> => {
 					...(effectsByName.has(t.name) ? { effects: effectsByName.get(t.name) } : {}),
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name)),
+			prompts: (promptsRes.prompts ?? [])
+				.map((p) => ({
+					name: p.name,
+					description: p.description ?? '',
+					namespace: namespaceOf(p.name),
+					...(p.arguments && p.arguments.length > 0
+						? {
+								arguments: p.arguments.map((a) => ({
+									name: a.name,
+									description: a.description ?? '',
+									...(a.required ? { required: true } : {}),
+								})),
+							}
+						: {}),
+				}))
+				.sort((a, b) => a.name.localeCompare(b.name)),
+			resources: (resourcesRes.resources ?? [])
+				.map((r) => ({
+					uri: r.uri,
+					name: r.name,
+					description: r.description ?? '',
+					namespace: namespaceOf(r.uri.replace(/^[a-z]+:\/\//, '').replace(/-/g, '_')),
+					...(r.mimeType ? { mimeType: r.mimeType } : {}),
+				}))
+				.sort((a, b) => a.uri.localeCompare(b.uri)),
+			knowledge: knowledgeRaw
+				.map((k) => ({
+					id: k.id,
+					title: k.title,
+					namespace: namespaceOf(k.id.replace(/-/g, '_')),
+				}))
+				.sort((a, b) => a.id.localeCompare(b.id)),
 			benchmarks: await collectBenchmarks(),
 		};
 	} finally {
@@ -205,7 +287,7 @@ const main = async (): Promise<void> => {
 		}
 	).version;
 
-	const { tools, benchmarks } = await collectTools();
+	const { tools, prompts, resources, knowledge, benchmarks } = await collectTools();
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
 	if (undocumented.length > 0) {
 		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
@@ -220,15 +302,24 @@ const main = async (): Promise<void> => {
 	const capabilities = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
-		counts: { tools: tools.length, packages: packages.length },
+		counts: {
+			tools: tools.length,
+			prompts: prompts.length,
+			resources: resources.length,
+			knowledge: knowledge.length,
+			packages: packages.length,
+		},
 		packages,
 		tools,
+		prompts,
+		resources,
+		knowledge,
 		benchmarks,
 	};
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`
+		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`
 	);
 };
 

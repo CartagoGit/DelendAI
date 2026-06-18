@@ -1,0 +1,43 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import skillsData from '../data/skills.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+type ISkill = { id: string; name: string; description: string; plugin: string; summary: string; path: string };
+const skills = (skillsData.skills ?? []) as ISkill[];
+
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+---
+
+<section id="skills" class="section">
+	<div class="container">
+		<h2>{t('skills.title')}</h2>
+		<p class="lead">{t('skills.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{skills.length}</b><span>{t('skills.count')}</span></div>
+		</div>
+		{
+			skills.length === 0 ? (
+				<p class="lead">{t('skills.lead')}</p>
+			) : (
+				<div class="skills-grid">
+					{skills.map((s) => (
+						<a class="skill" href={`${repo}/blob/main/${s.path}`} rel="external">
+							<div class="skill__head">
+								<code>{s.id}</code>
+								<span class="skill__plugin">{s.plugin}</span>
+							</div>
+							<p class="skill__summary">{s.summary || s.description}</p>
+							<span class="skill__read">{t('skills.body')} →</span>
+						</a>
+					))}
+				</div>
+			)
+		}
+	</div>
+</section>
