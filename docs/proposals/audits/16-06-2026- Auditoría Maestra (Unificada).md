@@ -439,7 +439,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   mcp.json` (`mcpServers`); Windsurf `~/.codeium/windsurf/mcp_config.json` (`mcpServers`);
   Claude Desktop `claude_desktop_config.json` (`mcpServers`); Claude Code `.mcp.json` o
   `claude mcp add`; Antigravity `~/.gemini/config/mcp_config.json` (`mcpServers`); Zed
-  `settings.json` (`context_servers`). Forma universal para cualquier agente.
+  `settings.json` (`context_servers`).
+- ✅ **Instalador universal `mcp-vertex init`** (un comando para cualquier IDE):
+  `npx @mcp-vertex/core init` (o bunx/pnpm/yarn/deno) **detecta** los IDEs presentes y
+  **FUSIONA** la entrada `mcp-vertex` en su config con el formato correcto, **sin tocar ni
+  borrar** los demás servidores del usuario. Idempotente (`unchanged` si ya está). `--ide=`,
+  `--via=`, `--preset=`, `--all`. Merge puro y testeado (10 tests). Web: bloque de un comando
+  prominente por gestor.
 - ✅ **Dogfooding real en este repo**: el `.mcp.json` (Claude Code) funciona, pero faltaba
   `.vscode/mcp.json` para VS Code/Copilot → **añadido** (`servers`+`type:stdio`, corre el
   CLI de src con bun sobre `${workspaceFolder}`).

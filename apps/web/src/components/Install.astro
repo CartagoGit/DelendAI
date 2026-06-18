@@ -30,12 +30,21 @@ const defaultPm = 'npm';
 				))}
 			</div>
 
+			{/* One-command universal installer */}
+			<h3 class="install__h3 install__h3--first">{t('install.oneCmd')}</h3>
+			{packageManagers.map((pm) => (
+				<div class="pm-only" data-pm={pm.id}>
+					<pre class="install__init"><code>{pm.init}</code></pre>
+					{pm.note && <p class="install__note">★ {pm.note}</p>}
+				</div>
+			))}
+			<p class="install__sub">{t('install.oneCmdNote')}</p>
+
 			{/* Verify-it-runs line (per package manager) */}
 			<p class="install__sub">{t('install.verify')}</p>
 			{packageManagers.map((pm) => (
 				<div class="pm-only" data-pm={pm.id}>
 					<pre><code>{pm.run}</code></pre>
-					{pm.note && <p class="install__note">★ {pm.note}</p>}
 				</div>
 			))}
 

@@ -140,6 +140,9 @@ a:hover { text-decoration: underline; }
 .install__sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.4rem; }
 .install__note { color: var(--accent-2); font-size: 0.8rem; margin: 0.35rem 0 0; }
 .install__h3 { margin: 2rem 0 1rem; font-size: 1.05rem; }
+.install__h3--first { margin-top: 0.5rem; }
+.install__init { border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+.install__init code { color: var(--fg); font-weight: 600; }
 .install__foot { color: var(--muted); font-size: 0.82rem; margin-top: 1.5rem; }
 .install__foot code { color: var(--accent); }
 .ide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
