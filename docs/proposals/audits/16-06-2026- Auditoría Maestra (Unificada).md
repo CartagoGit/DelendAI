@@ -241,21 +241,28 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - [x] **M8** `round_context` (vía `toolJson`), `sync_proposals` y `get_proposal_workflow` sin pretty-print (conservan `structuredContent`). *Pendiente menor:* ampliar el guard de budget a `--preset=swarm`.
 
 **P1 — Robustez operativa (3–5 días)**
-- [ ] **M5** Erradicar I/O síncrono residual (enqueue refine, zombie-reconcile, promote).
-- [ ] **M6** Persistir `deliveredDigests` (idempotencia cross-session).
-- [ ] **M7** Resolver `waitFor.file` y `lockPath` (report) contra el root inyectado.
-- [ ] **M15** Blueprint sin drift de `cacheDir`; limpiar comentarios obsoletos; sacar `settings.local.json` de git.
-- [ ] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate.
+- [x] **M5** Erradicado (ver §"Cerrado el 17-06"): `proposals` migrado a `fs/promises`.
+- [x] **M6** `deliveredDigests` persistido en `.subscribe-delivered.json` bajo `withFileMutex` (test `task-queue-subscribe-idempotency.spec.ts`). *Nota H11:* el test modela el reinicio (motor sin estado en memoria entre llamadas) — no hay e2e que mate y relance el proceso real; valor marginal bajo dado que el motor es la fuente de verdad y ya está cubierto.
+- [x] **M7** `waitFor.file`/`lockPath` resueltos contra el root inyectado.
+- [x] **M15** Blueprint sin drift de `cacheDir` (ver CHANGELOG "Fixed").
+- [ ] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate. *(sin verificar en esta sesión)*
 
 **P2 — Calidad de producto (1 semana)**
-- [ ] **M9** Biome + job CI `lint`. *(mayor valor/esfuerzo)*
-- [ ] **M10** Suite real en los 6 plugins satélite.
-- [ ] **M11** `search` regex/glob/`.gitignore`; `memory` TTL+redacción de secretos; `rules` detección+`compact`+finding `eslint-not-installed`; `docs` paginación; `deps_outdated`.
-- [ ] Freno duro anti-idle en `auto_work`; `quality_cancel`; guarda anti-symlink en walks; documentar frontera de confianza de `quality`.
+- [x] **M9** `.github/workflows/ci.yml` tiene job `lint` (`bun run lint` → `biome ci`), bloqueante.
+- [x] **M10** Verificado 18-06: los 9 plugins satélite tienen tests reales (deps 7 casos, docs 10, git 6, memory 26, notification 8, quality 15, rules 11, search 18 tras M11). Ninguno trivial/vacío.
+- [ ] 🟡 **M11** Verificado 18-06, parcial:
+  - ✅ `search`: regex + glob ya existían; **`.gitignore` de la raíz añadido hoy** (`isGitignored`/`parseGitignore`, negación `!`, anclaje `/`, `respectGitignore:false` para optar fuera) — `search-gitignore.spec.ts`, 5 casos.
+  - ✅ `memory`: TTL (`expiresAt`) + `redactSecrets` ya existían (`redact-ttl.spec.ts`).
+  - ✅ `docs`: paginación (`limit`/`offset`) ya existía (`docs-pagination.spec.ts`).
+  - 🟡 `rules`: detecta missing-eslint como campo (`missingEslintDeps`) pero no como *finding* propio ni tiene modo `compact`. *(no implementado — bajo valor/esfuerzo, cosmético)*
+  - 🔲 `deps`: sin `deps_outdated` — requeriría red (`effects:['network']`), decisión de alcance no tomada. *(no implementado, fuera de "offline por diseño" actual)*
+- [x] Freno duro anti-idle en `auto_work` + `quality_cancel`: confirmados hechos (§7, "Cerrado el 17-06"). *Pendiente real:* guarda anti-symlink en walks; documentar frontera de confianza de `quality`.
 
 **P3 — Plataforma de referencia**
-- [ ] **M12** Plugin `metrics` (observabilidad). **M13** Plugin `security` + bridge securecoder. **M14** Migraciones de estado. `events` durable; `replay`/snapshots; `bench`.
-- [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config.
+- [x] **M12** Plugin `metrics`: `packages/core/src/lib/metrics/metrics-tool.ts`, tool `<prefix>_metrics`, `persist:true` con snapshots en `<cacheDir>/metrics/`.
+- [ ] **M13** Plugin `security` + bridge securecoder — descartado explícitamente (alcance indefinido); solo se hizo allow/deny de comandos en `quality`.
+- [ ] 🟡 **M14** Infraestructura de migraciones genérica existe (`packages/core/src/lib/migrations/migrate.ts`, `runMigrations`/`IVersioned`), pero `proposals` (agent-registry-store) sigue con un `migrate()` ad-hoc de normalización, no usa el framework versionado. *(adopción incompleta, no bloqueante — el normalize defensivo ya cubre el caso real)*
+- [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya HECHOS según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
 - [ ] **npm publish** (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
 
 > **Estimación combinada de los revisores:** P0 → ~9,5; +P1 (robustez/release) →
@@ -628,11 +635,15 @@ camino al 11/10 — solo acabados de plataforma.**
 
 ## 9. Sesión 18-06 (tarde) — rename `mcp-project` + `agent_worktree` + auto-hospedaje
 
-- **✅ M41 · Prefijo de tools `mcpcore_` → `mcpvertex_`** — el usuario señaló que tras
-  el rebrand a `@mcp-vertex` el prefijo técnico debía seguirlo (override consciente de
-  la decisión previa de mantenerlo, que era nuestra, no del usuario). Renombrado en
-  tools, tipos públicos `IMcpCore*`→`IMcpVertex*` y SDK de tipos generado. Breaking
-  change. 525/525 tests, build, smoke y smoke:pack verdes.
+- **✅ M41 · Prefijo de tools `mcpcore_` → `mcpvertex_` → `mcp-vertex_`** — el usuario
+  señaló que tras el rebrand a `@mcp-vertex` el prefijo técnico debía seguirlo (override
+  consciente de la decisión previa de mantenerlo, que era nuestra, no del usuario).
+  Renombrado en tools, tipos públicos `IMcpCore*`→`IMcpVertex*`→`IMcpVertex*` y SDK de
+  tipos generado. La convención final adoptada es **`mcp-vertex_` (kebab + underscore)**
+  para todos los identificadores lógicos (tools, knowledge ids, prefijos) y nombres de
+  archivo de skills/agents. Archivos de config (`mcp-vertex.config.json`, schema)
+  mantienen kebab-case porque matchean el paquete npm `@mcp-vertex/core`. Breaking
+  change. 525/525 → 537/537 tests, build, smoke y smoke:pack verdes.
 - **✅ M42 · El artefacto del bootstrap pasa de "mcp-server" a "mcp-project"** —
   `create_server`/`plan_mcp_server` → `create_project`/`plan_mcp_project`;
   `serverPackageName`→`projectPackageName`; rutas generadas `libs/mcp-server/*` →
