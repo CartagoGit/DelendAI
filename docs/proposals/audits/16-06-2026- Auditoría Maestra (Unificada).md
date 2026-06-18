@@ -522,9 +522,10 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   (write/spawn/destructive/read-only). **M31 completo.**
 - ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
   (`frontmatter-parser`, `redactSecrets`), test de concurrencia dedicado para `memory`.
-- ⬜ **M33 · Profundidad de plugins** — `git` (blame/show/worktree, porcelain v2),
+- ⬜ **M33 · Profundidad de plugins (mejoras opcionales)** — `git` (blame/show/worktree),
   `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
-  `memory` (export/import, stemming ES), `docs` (`docs_search`, árbol jerárquico).
+  `memory` (export/import), `docs` (`docs_search`). No son *fixes* de auditoría sino
+  enhancements; cada plugin cumple su contrato hoy. Se abordan a demanda.
 - ✅ **M34 · OSS hygiene** —
   `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + Mermaid),
   `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, y **CHANGELOG enlazado** (Keep a
