@@ -505,8 +505,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Plataforma / producto (la grieta principal, consenso 3/3):**
 - ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:
   comandos, invariantes, convenciones), `.github/copilot-instructions.md`,
-  `.github/agents/mcp-vertex.agent.md`, `.claude/agents/mcp-vertex-orchestrator.md` y
-  `skills/` (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`). El repo ya se
+  `.github/agents/mcp-vertex.agent.md`, `.claude/agents/mcpvertex-orchestrator.md` y
+  `skills/` (`mcpvertex-plugin-authoring`, `mcpvertex-failure-modes`). El repo ya se
   aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
   ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
 - 🟡 **M27 · Web profunda** —

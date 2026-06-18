@@ -41,7 +41,7 @@ Scope with the package/plugin you touched. No manual version bumps.
 
 ## Adding a plugin
 
-See the [`mcp-vertex-plugin-authoring`](skills/mcp-vertex-plugin-authoring/SKILL.md)
+See the [`mcpvertex-plugin-authoring`](skills/mcpvertex-plugin-authoring/SKILL.md)
 skill. In short: `definePlugin`, namespace every tool, declare an `outputSchema`,
 resolve paths from `ctx` (never `process.cwd()`), use the shared primitives for
 durable state, and contain path inputs with `resolveWorkspaceContained`.
