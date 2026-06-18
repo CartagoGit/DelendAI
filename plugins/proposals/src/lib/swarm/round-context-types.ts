@@ -12,7 +12,7 @@ import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.
  * The four core documents whose stable hashes anchor the round context.
  *
  * - `README.md` — top-level workspace README.
- * - `docs/proposals/index.json` — proposal registry.
+ * - `docs/mcp-vertex/proposals/index.json` — proposal registry.
  * - `.github/copilot-instructions.md` — root Copilot instructions.
  * - `the proposal-workflow knowledge` — the
  *   proposal workflow skill (the doc subagents consult to understand
@@ -22,7 +22,7 @@ import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.
 // proposal index). Hosts inject their full list (instructions files,
 // skill docs…) through the `coreDocs` parameter of
 // `computeCoreDocHashes`.
-export const CORE_DOCS = ['README.md', 'docs/proposals/index.json'] as const;
+export const CORE_DOCS = ['README.md', 'docs/mcp-vertex/proposals/index.json'] as const;
 
 export type ICoreDocRelPath = string;
 

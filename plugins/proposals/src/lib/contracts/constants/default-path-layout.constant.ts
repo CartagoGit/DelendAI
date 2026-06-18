@@ -37,14 +37,15 @@ export const buildSwarmPaths = (
 });
 
 /**
- * Default proposals layout: cache/state under `.cache`, human-edited
- * proposals under `docs/proposals` — the conventional layout. Every
- * engine in this package and the plugin's tools share this single
- * layout, so locks, queue, round-context and the proposal store always
- * agree on where state lives. Pass different roots to `buildSwarmPaths`
- * for a custom layout (programmatic use / relocating the store).
+ * Default proposals layout, aligned with the mcp-vertex CLI defaults so the
+ * fallback and the live server agree: cache/state under `.cache/mcp-vertex`,
+ * human-edited proposals under `docs/mcp-vertex/proposals`. Everything the
+ * project writes lives under the single `docs/mcp-vertex` root; override it
+ * with `--docsDir` (and `--cacheDir`) — the proposals dir always follows as
+ * `<docsDir>/proposals`. Every engine and tool shares this one layout, so
+ * locks, queue, round-context and the proposal store agree on where state lives.
  */
 export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
-	'.cache',
-	'docs'
+	'.cache/mcp-vertex',
+	'docs/mcp-vertex'
 );
