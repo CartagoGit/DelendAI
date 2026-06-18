@@ -5,11 +5,11 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
-const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
+const _homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const _toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
 ---
 
 <section class="notfound" aria-labelledby="notfound-title">

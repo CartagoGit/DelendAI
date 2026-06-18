@@ -6,13 +6,16 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
 type IKnowledge = { id: string; title: string; namespace: string };
 const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
 const groups: Record<string, IKnowledge[]> = {};
-for (const k of knowledge) (groups[k.namespace] ??= []).push(k);
-const namespaces = Object.entries(groups).sort((a, b) =>
+for (const k of knowledge) {
+	if (!groups[k.namespace]) groups[k.namespace] = [];
+	groups[k.namespace].push(k);
+}
+const _namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
 ---

@@ -1,6 +1,4 @@
 ---
-import Base from '../../layouts/Base.astro';
-import SkillsSection from '../../components/SkillsSection.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 import skillsData from '../../data/skills.json';
 
@@ -11,10 +9,10 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
+const _t = useTranslations(lang as Lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/${lang}/`;
-const count = (skillsData.skills ?? []).length;
+const _homeHref = `${base}/${lang}/`;
+const _count = (skillsData.skills ?? []).length;
 ---
 
 <Base lang={lang as Lang} title={`${t.skills.title} — @mcp-vertex/core`}>

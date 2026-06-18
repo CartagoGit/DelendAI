@@ -1,14 +1,12 @@
 ---
-import Base from '../layouts/Base.astro';
-import PromptsSection from '../components/PromptsSection.astro';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
 
 const lang: Lang = 'en';
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
-const count = capabilities.counts.prompts ?? 0;
+const _homeHref = `${base}/`;
+const _count = capabilities.counts.prompts ?? 0;
 ---
 
 <Base lang={lang} title={`${t.prompts.title} — @mcp-vertex/core`}>

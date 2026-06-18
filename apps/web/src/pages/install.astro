@@ -1,12 +1,10 @@
 ---
-import Base from '../layouts/Base.astro';
-import Install from '../components/Install.astro';
 import { useTranslations, type Lang } from '../i18n/ui';
 
 const lang: Lang = 'en';
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
+const _homeHref = `${base}/`;
 ---
 
 <Base lang={lang} title={`${t.install.title} — @mcp-vertex/core`}>

@@ -6,9 +6,9 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
-const NS_LABEL: Record<string, string> = {
+const _NS_LABEL: Record<string, string> = {
 	mcpvertex: 'core',
 	proposals: 'proposals',
 	git: 'git',
@@ -24,8 +24,11 @@ const NS_LABEL: Record<string, string> = {
 type ITool = { name: string; namespace: string; description: string };
 const tools = capabilities.tools as ITool[];
 const groups: Record<string, ITool[]> = {};
-for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
-const namespaces = Object.entries(groups).sort((a, b) =>
+for (const tool of tools) {
+	if (!groups[tool.namespace]) groups[tool.namespace] = [];
+	groups[tool.namespace].push(tool);
+}
+const _namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
 ---

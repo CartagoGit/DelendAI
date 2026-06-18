@@ -1,7 +1,5 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Home from '../../components/Home.astro';
-import { languages, type Lang } from '../../i18n/ui';
+import { languages } from '../../i18n/ui';
 
 /** All non-English locales get their own /<lang>/. The English copy
  * lives in the root /index.astro (project-site URL stays clean). */
@@ -11,6 +9,7 @@ export function getStaticPaths() {
 		.map((l) => ({ params: { lang: l.code } }));
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: consumed by the template below
 const { lang } = Astro.params;
 ---
 

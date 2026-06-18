@@ -6,7 +6,7 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
 type IResource = {
 	uri: string;
@@ -18,8 +18,11 @@ type IResource = {
 
 const resources = (capabilities.resources ?? []) as IResource[];
 const groups: Record<string, IResource[]> = {};
-for (const r of resources) (groups[r.namespace] ??= []).push(r);
-const namespaces = Object.entries(groups).sort((a, b) =>
+for (const r of resources) {
+	if (!groups[r.namespace]) groups[r.namespace] = [];
+	groups[r.namespace].push(r);
+}
+const _namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
 ---

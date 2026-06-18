@@ -1,7 +1,4 @@
 ---
-import Marquee from './Marquee.astro';
-import ConceptSection from './ConceptSection.astro';
-import { runtimes, clients } from '../data/marquees';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
 
@@ -9,10 +6,10 @@ interface Props {
 	lang: Lang;
 }
 const { lang } = Astro.props;
-const t = useTranslations(lang);
+const _t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const sectionHref = (section: string) =>
+const _sectionHref = (section: string) =>
 	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
 
 // Highlight 3 plugins on the home (the most useful first-look at mcp-vertex).
@@ -23,12 +20,12 @@ const packages = capabilities.packages as Array<{
 }>;
 const shortName = (name: string) =>
 	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
-const pluginHref = (slug: string) =>
+const _pluginHref = (slug: string) =>
 	lang === 'en'
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;
 const featuredSlugs = ['proposals', 'memory', 'quality'];
-const featured = packages
+const _featured = packages
 	.filter((p) => featuredSlugs.includes(shortName(p.name)))
 	.sort(
 		(a, b) =>
@@ -45,10 +42,10 @@ const featured = packages
 		<p class="hero__sub">{t.hero.subheader}</p>
 		<p class="tagline">{t.hero.tagline}</p>
 		<div class="ctas">
-			<a class="btn btn--primary" href={sectionHref('install')}>{t('hero.ctaInstall')}</a>
-			<a class="btn btn--ghost" href={sectionHref('tools')}>{t('hero.ctaTools')}</a>
+			<a class="btn btn--primary" href={sectionHref('install')}>{t.hero.ctaInstall}</a>
+			<a class="btn btn--ghost" href={sectionHref('tools')}>{t.hero.ctaTools}</a>
 		</div>
-		<p class="runs">{t('hero.runsOn')} · v{capabilities.coreVersion}</p>
+		<p class="runs">{t.hero.runsOn} · v{capabilities.coreVersion}</p>
 	</div>
 </header>
 

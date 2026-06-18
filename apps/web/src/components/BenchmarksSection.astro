@@ -31,7 +31,7 @@ const benchBars = [
 	},
 	{ name: t.bench.baseline, tokens: BASELINE_TOK, kind: 'is-base' },
 ].filter((b) => b.tokens > 0);
-const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
+const _benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 ---
 
 <section id="benchmarks" class="section">
@@ -39,9 +39,9 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 		<h2>{t.bench.title}</h2>
 		<p class="lead">{t.bench.lead}</p>
 		<div class="grid">
-			<div class="feature"><h3>&lt;300 · {t('bench.b1.t')}</h3><p>{t('bench.b1.b')}</p></div>
-			<div class="feature"><h3>0 · {t('bench.b2.t')}</h3><p>{t('bench.b2.b')}</p></div>
-			<div class="feature"><h3>✓ {t('bench.b3.t')}</h3><p>{t('bench.b3.b')}</p></div>
+			<div class="feature"><h3>&lt;300 · {t.bench.b1.t}</h3><p>{t.bench.b1.b}</p></div>
+			<div class="feature"><h3>0 · {t.bench.b2.t}</h3><p>{t.bench.b2.b}</p></div>
+			<div class="feature"><h3>✓ {t.bench.b3.t}</h3><p>{t.bench.b3.b}</p></div>
 		</div>
 		{
 			benchBars.length > 0 && (
