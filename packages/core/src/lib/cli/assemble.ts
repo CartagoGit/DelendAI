@@ -100,7 +100,7 @@ export const assembleCliConfig = async (
 	const docsDir =
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
-	const corePrefix = args.namespacePrefix ?? 'mcpvertex';
+	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
@@ -491,7 +491,7 @@ export const runCli = async (
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcpvertex_plan_mcp_project.\n`
+						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcp-vertex_plan_mcp_project.\n`
 					);
 				}
 			})

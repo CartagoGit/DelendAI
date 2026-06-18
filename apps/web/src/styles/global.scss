@@ -274,3 +274,34 @@ footer { border-top: 1px solid var(--line); padding: 2rem 0; color: var(--muted)
 }
 html[data-motion='off'] .mq__track { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .mq__track { animation: none; } }
+
+/* ---- View Transitions (Astro ClientRouter) ----------------------------
+   The header (`SiteNav`), footer (`SiteFooter`) and settings modal
+   (`Config`) carry `transition:persist transition:name="…"` so they stay
+   mounted across navigations. We suppress their default fade animation
+   (no swap → no flash) and only animate the main content slot. */
+::view-transition-old(site-nav),
+::view-transition-new(site-nav) {
+	animation-duration: 0s;
+}
+::view-transition-old(site-footer),
+::view-transition-new(site-footer) {
+	animation-duration: 0s;
+}
+::view-transition-old(cfg-modal),
+::view-transition-new(cfg-modal) {
+	animation-duration: 0s;
+}
+/* The default Astro transition is a 220 ms fade; keep it crisp. */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.18s;
+}
+/* Respect users who prefer no motion (separate from the data-motion
+   setting: this is a system preference). */
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: 0s;
+	}
+}

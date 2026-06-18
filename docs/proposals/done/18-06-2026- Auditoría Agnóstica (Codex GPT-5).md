@@ -229,7 +229,7 @@ No hace falta llenar el repo de ceremonia. Pero si quieres 11/10, añadiria:
 
 - `AGENTS.md` con reglas del repo, comandos, ownership y politica de cambios;
 - `.github/copilot-instructions.md` para GitHub/Copilot;
-- `skills/mcpvertex-plugin-authoring/SKILL.md`;
+- `skills/mcp-vertex-plugin-authoring/SKILL.md`;
 - `skills/mcp-vertex-release/SKILL.md`;
 - `skills/mcp-vertex-audit/SKILL.md`;
 - agentes: `plugin_reviewer`, `contract_guardian`, `release_captain`,

@@ -194,7 +194,7 @@ La clasificación de zombies en `cooldown_null`, `stale_no_lock`, `stale_with_or
 El downgrade a `mode: 'reset'` cuando hay violaciones `block` es el mecanismo correcto para salir de loops de sesión. El `ORCHESTRATOR_DEFAULT_POLICY` hardcodeado con valores concretos (`maxSubagentSpawnsPerSession: 2`, `maxToolRetriesPerTool: 3`) da un piso de seguridad sensato.
 
 ### 24. El `overview` tool como punto de entrada de baja latencia
-La arquitectura de `mcpvertex_overview` como primer tool obligatorio, que devuelve el mapa completo del servidor (plugins, tools, knowledge, next action) en un solo round-trip, es exactamente lo correcto para minimizar tokens. Un agente nuevo paga UNA llamada para orientarse.
+La arquitectura de `mcp-vertex_overview` como primer tool obligatorio, que devuelve el mapa completo del servidor (plugins, tools, knowledge, next action) en un solo round-trip, es exactamente lo correcto para minimizar tokens. Un agente nuevo paga UNA llamada para orientarse.
 
 ### 25. `--check`/`--doctor` mode sin arrancar el servidor
 La separación entre diagnosticar y arrancar es una feature de operaciones realmente útil. `bunx @cartago-git/mcp-vertex --plugins=proposals --check` da un JSON estructurado con errores, counts y paths sin levantar el transport. Permite CI validation del setup MCP.

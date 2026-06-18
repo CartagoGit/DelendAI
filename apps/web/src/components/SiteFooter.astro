@@ -10,7 +10,7 @@ const t = useTranslations(lang);
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
 
-<footer>
+<footer transition:persist transition:name="site-footer">
 	<div class="container">
 		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-vertex</a> · BSD-3-Clause
 	</div>

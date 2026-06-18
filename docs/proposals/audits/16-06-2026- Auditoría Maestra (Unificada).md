@@ -505,8 +505,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Plataforma / producto (la grieta principal, consenso 3/3):**
 - ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:
   comandos, invariantes, convenciones), `.github/copilot-instructions.md`,
-  `.github/agents/mcp-vertex.agent.md`, `.claude/agents/mcpvertex-orchestrator.md` y
-  `skills/` (`mcpvertex-plugin-authoring`, `mcpvertex-failure-modes`). El repo ya se
+  `.github/agents/mcp-vertex.agent.md`, `.claude/agents/mcp-vertex-orchestrator.md` y
+  `skills/` (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`). El repo ya se
   aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
   ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
 - 🟡 **M27 · Web profunda** —
@@ -539,7 +539,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   (hoy el token-budget e2e ya cubre los payloads críticos).
 - 🟡 **M30 · Smoke funcional en CI** —
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
-  `node`**, lista tools y llama `mcpvertex_overview` (prueba que el artefacto publicado
+  `node`**, lista tools y llama `mcp-vertex_overview` (prueba que el artefacto publicado
   *sirve el protocolo*, no solo que el bin arranca). Cableado en `ci.yml` (job pack-smoke)
   y como `bun run smoke`.
   ✅ **e2e de instalación desde tarball** (`scripts/smoke-pack.ts`, `bun run smoke:pack`):

@@ -1,5 +1,5 @@
 ---
-name: mcpvertex-plugin-authoring
+name: mcp-vertex-plugin-authoring
 description: How to author or modify an mcp-vertex plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.
 ---
 

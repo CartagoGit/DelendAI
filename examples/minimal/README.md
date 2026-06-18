@@ -16,7 +16,7 @@ plugins, loaded with the `minimal` preset (`git` + `search`).
 }
 ```
 
-That's it — point your MCP client at it and call `mcpvertex_overview` to map the
+That's it — point your MCP client at it and call `mcp-vertex_overview` to map the
 server in one call. Add `--check` to self-diagnose without starting the server:
 
 ```bash
