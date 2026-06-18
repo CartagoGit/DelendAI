@@ -421,6 +421,7 @@ export const buildAgentNamesRegistration = (
 	options: IAgentNamesToolOptions
 ): IToolRegistration => ({
 	id: 'agent_names',
+	effects: ['write'],
 	summary:
 		'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
 	tags: ['coordination'],

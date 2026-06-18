@@ -141,6 +141,21 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		expect(broken, 'tools whose outputSchema is unsatisfied').toEqual([]);
 	});
 
+	// M31: overview surfaces per-tool side effects; read-only tools have none.
+	it('overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
+		const res = await client.callTool({ name: 'mcpcore_overview', arguments: {} });
+		const tools = (res.structuredContent as { tools: Array<{ name: string; effects?: string[] }> }).tools;
+		const effOf = (name: string) => tools.find((t) => t.name === name)?.effects;
+		expect(effOf('memory_save')).toContain('write');
+		expect(effOf('memory_forget')).toEqual(expect.arrayContaining(['write', 'destructive']));
+		expect(effOf('quality_run_quality')).toContain('spawn');
+		expect(effOf('proposals_create_proposal')).toContain('write');
+		// genuinely read-only tools advertise no effects
+		expect(effOf('git_status')).toBeUndefined();
+		expect(effOf('search_search')).toBeUndefined();
+		expect(effOf('mcpcore_overview')).toBeUndefined();
+	});
+
 	// M24: every public tool must declare an outputSchema (a permissive
 	// catchall object is allowed for action-multiplexed tools, but `undefined`
 	// is not). This guard fails the build the moment a new tool ships without one.

@@ -53,6 +53,7 @@ export const buildQualityToolRegistrations = (
 		},
 		{
 			id: 'run_quality',
+			effects: ['spawn'],
 			summary:
 				'Run a quality scope (lint/test/build/typecheck) and return structured pass/fail.',
 			tags: ['quality'],
@@ -99,6 +100,7 @@ export const buildQualityToolRegistrations = (
 		},
 		{
 			id: 'quality_cancel',
+			effects: ['spawn'],
 			summary:
 				'Abort running quality commands (by PID or all) instead of waiting for the timeout.',
 			tags: ['quality'],

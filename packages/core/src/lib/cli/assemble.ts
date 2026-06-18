@@ -144,6 +144,7 @@ export const assembleCliConfig = async (
 				name: `${ns}_${tool.id}`,
 				summary: tool.summary,
 				tags: tool.tags,
+				...(tool.effects ? { effects: tool.effects } : {}),
 			});
 			qualifiedPluginTools.push({
 				...tool,
@@ -187,6 +188,7 @@ export const assembleCliConfig = async (
 				name: `${corePrefix}_${reg.id}`,
 				summary: reg.summary,
 				tags: reg.tags,
+				...(reg.effects ? { effects: reg.effects } : {}),
 			})),
 			...pluginToolEntries,
 		],

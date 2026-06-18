@@ -130,6 +130,7 @@ export const buildRoundContextRegistration = (
 	options: IRoundContextToolOptions
 ): IToolRegistration => ({
 	id: 'round_context',
+	effects: ['write'],
 	summary:
 		'Persisted multi-agent round digest + staleness (forceRefresh recomputes). For resumed swarm work.',
 	tags: ['coordination', 'lazy'],
