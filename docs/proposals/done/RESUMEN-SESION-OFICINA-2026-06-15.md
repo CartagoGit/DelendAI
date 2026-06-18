@@ -11,7 +11,7 @@
 
 Empecé con **Sonnet 4.6** (08:55–09:45) y a las ~14:00 me pediste revisar lo
 hecho porque «el modelo era inferior»; el resto de la sesión (14:00–20:10) fue
-con **Opus 4.8**. **Todo lo tocado queda verde**: mcp-core **350 tests**
+con **Opus 4.8**. **Todo lo tocado queda verde**: mcp-vertex **350 tests**
 (340 + 10 skip) + typecheck limpio.
 
 ## Decisión de fondo
@@ -25,9 +25,9 @@ modelo inferior (lo pediste explícitamente).
    throw) y la lógica de quarantine estaba duplicada con colisión de timestamp.
    **Remediado entero con tests.**
 2. **La premisa "no romper Affairs" está OBSOLETA.** Verifiqué que Affairs
-   (`/home/cartago/_proyectos/propios/affairs`) **no importa nada de mcp-core**
+   (`/home/cartago/_proyectos/propios/affairs`) **no importa nada de mcp-vertex**
    (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig). Son proyectos
-   independientes; mcp-core fue extraído pero Affairs conserva su copia. Sus ~14
+   independientes; mcp-vertex fue extraído pero Affairs conserva su copia. Sus ~14
    tests rojos son pre-existentes y ajenos. Corregí esa nota en la auditoría.
 
 ## ✅ Hecho (con tests) — orden cronológico
@@ -35,7 +35,7 @@ modelo inferior (lo pediste explícitamente).
 **Deuda de la auditoría (FATAL/MUY MAL/REGULAR)**
 - **M10 — corrupto ≠ vacío** (09:19–09:45 base, remediado 14:00+): helper
   compartido `quarantineCorruptFile`/`Sync` + clase `CorruptFileError` en
-  `@cartago-git/mcp-core/public` (sufijo `.corrupt-<ts>-<rand>` anti-colisión).
+  `@cartago-git/mcp-vertex/public` (sufijo `.corrupt-<ts>-<rand>` anti-colisión).
   Estado crítico (queue/registry/memory) preserva los bytes y la **capa de tool
   devuelve error estructurado nombrando el backup**; `closed-tasks-log`
   (diagnóstico) preserva + warning a stderr + sigue con `[]`. +24 tests.
@@ -100,7 +100,7 @@ modelo inferior (lo pediste explícitamente).
 - **Cerrados: todos los FATAL (F1–F5), todos los MUY MAL (M1–M10) y los REGULAR
   accionables (R1·R2·R5–R10·R12·R13·R14).** Más CI, structuredContent y el plugin
   `search`.
-- mcp-core: **typecheck limpio, 350 tests** (340 + 10 skip).
+- mcp-vertex: **typecheck limpio, 350 tests** (340 + 10 skip).
 - Auditoría viva en `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md`
   (con todas las filas actualizadas a ✅ y la corrección de la premisa Affairs).
 - **Siguiente recomendado**: plugin `docs` (autocontenido, bajo riesgo) o decidir

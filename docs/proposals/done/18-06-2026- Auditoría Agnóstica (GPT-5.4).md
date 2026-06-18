@@ -1,10 +1,10 @@
 # 18-06-2026 · Auditoría Agnóstica MCP-Core (GPT-5.4)
 
-> Auditoría nueva, independiente y agnóstica del workspace `mcp-core`, hecha contra el código y el estado ejecutable actual del repositorio el 2026-06-18. No toma como fuente de verdad las auditorías previas; solo se ha mirado de ellas el patrón de nombre y la forma del documento para mantener coherencia editorial dentro de `docs/proposals/audits`.
+> Auditoría nueva, independiente y agnóstica del workspace `mcp-vertex`, hecha contra el código y el estado ejecutable actual del repositorio el 2026-06-18. No toma como fuente de verdad las auditorías previas; solo se ha mirado de ellas el patrón de nombre y la forma del documento para mantener coherencia editorial dentro de `docs/proposals/audits`.
 
 ## 1. Resumen ejecutivo
 
-`mcp-core` ya es un proyecto serio, técnicamente defendible y claramente por encima de la media de su categoría. El núcleo está bien planteado: contrato de plugins pequeño y estable, carga tolerante a fallos, herramientas con `zod`, salidas estructuradas, bootstrap híbrido, scaffolding real y una obsesión visible por evitar coste de contexto inútil.
+`mcp-vertex` ya es un proyecto serio, técnicamente defendible y claramente por encima de la media de su categoría. El núcleo está bien planteado: contrato de plugins pequeño y estable, carga tolerante a fallos, herramientas con `zod`, salidas estructuradas, bootstrap híbrido, scaffolding real y una obsesión visible por evitar coste de contexto inútil.
 
 Lo mejor del proyecto no es que “tenga muchos plugins”, sino que el core está diseñado para que esos plugins sean deterministas, agnósticos del host y relativamente baratos para cualquier modelo. Esa decisión es correcta y está bastante bien ejecutada.
 
@@ -132,7 +132,7 @@ Especialmente buena es la combinación de:
 
 El core no solo arranca un server; ayuda a diseñarlo. `analyzeProject`, `recommendServerPlan`, `buildBlueprintFiles` y `scaffold` cierran un loop muy potente: inspeccionar, recomendar y generar.
 
-Eso convierte a `mcp-core` en algo más útil que una librería de wiring.
+Eso convierte a `mcp-vertex` en algo más útil que una librería de wiring.
 
 ### Lo que está bien, pero no perfecto
 
@@ -405,7 +405,7 @@ Pero el resultado todavía sabe a capa pública inicial:
 
 En docs pasa algo parecido:
 
-- `README-MCP-CORE.md` y `PLUGINS-MCP-CORE.md` están bien;
+- `README-MCP-VERTEX.md` y `PLUGINS-MCP-VERTEX.md` están bien;
 - los ejemplos son útiles;
 - pero falta una capa de documentación de arquitectura, operación y adopción avanzada que haga el proyecto más imponente para terceros.
 
@@ -486,7 +486,7 @@ Qué echo en falta aquí:
 
 - `.github/copilot-instructions.md` del propio repo;
 - una carpeta real de agentes o al menos un orquestador canónico del proyecto;
-- skills reutilizables del propio ecosistema `mcp-core`;
+- skills reutilizables del propio ecosistema `mcp-vertex`;
 - prompts/versiones de uso del servidor para distintos modos de trabajo;
 - ejemplos de “cómo este repo se usa a sí mismo”.
 

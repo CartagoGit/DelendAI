@@ -7,7 +7,7 @@
 
 Me diste la batuta para ejecutar la **auditoría unificada** sin parar y tomar
 decisiones por ti. Esto es lo que hice, por qué, y lo que dejé pendiente (con el
-motivo). **Todo lo tocado queda verde**: mcp-core **283 tests** + typecheck
+motivo). **Todo lo tocado queda verde**: mcp-vertex **283 tests** + typecheck
 limpio; **Affairs 1184 tests** + typecheck intactos (re-validado tras cada cambio
 que tocaba engines que Affairs consume); doctor con 5 plugins `ok:true` +
 `assembles:true` (33 tools / 4 prompts / 6 resources).
@@ -45,7 +45,7 @@ tras cada cambio compartido.
   **`close_slice`** (marca `status: done` + libera el lock, atómico), **`proposal_board`**
   (vista orquestador: propuestas × slices × claims). + knowledge **`multi-agent-loop`**
   y prompt **`orchestrate`**.
-- **R1: `joinRel` centralizado** en `@cartago-git/mcp-core/public` (eliminadas 5 copias).
+- **R1: `joinRel` centralizado** en `@cartago-git/mcp-vertex/public` (eliminadas 5 copias).
 - **M6: modelo hardcoded** `MiniMax-M3` → `<your-model>` en el scaffold.
 - **R8: `quality` async** (spawn en vez de `execSync`, salida acotada en streaming,
   código de timeout 124) → no congela el server.
@@ -112,6 +112,6 @@ grandes que la propia auditoría sitúa en la frontera del 11/10:
 ## Estado
 - Auditoría unificada viva en `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md`
   (las 4 originales + este resumen, en `done/`).
-- mcp-core: typecheck limpio, 283 tests. Affairs: typecheck limpio, 1184 tests.
+- mcp-vertex: typecheck limpio, 283 tests. Affairs: typecheck limpio, 1184 tests.
 - Siguiente recomendado cuando me digas: **F2+F3+F5-completo en un pase con re-test de
   Affairs**, luego F4 (transaccional) como subsistema, luego plugins nuevos.

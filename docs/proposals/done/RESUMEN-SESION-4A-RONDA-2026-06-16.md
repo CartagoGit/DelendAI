@@ -4,7 +4,7 @@
 > `audits/AUDITORIA-UNIFICADA-2026-06-15.md`. Sesión anterior (3ª ronda) en
 > `done/RESUMEN-SESION-3A-RONDA-2026-06-16.md` (archivada al arrancar).
 >
-> **Repo:** `/home/cartago/_projects/mcp-core`.
+> **Repo:** `/home/cartago/_projects/mcp-vertex`.
 > **Estado al cerrar: 425 tests (415 + 10 skip), typecheck limpio, TODO VERDE.**
 > Árbol git limpio. **Nivel 11/10 alcanzado** según la estimación de las
 > auditorías: era lo único que faltaba (N20 + SDK de tipos generados).
@@ -70,7 +70,7 @@
 
 **1. Validar verde (siempre):**
 ```bash
-cd /home/cartago/_projects/mcp-core
+cd /home/cartago/_projects/mcp-vertex
 bun install
 bun run validate        # typecheck + 425 tests (415 + 10 skip) → verde
 bun run types:generate  # regenera el SDK de tipos (no debe cambiar nada)
@@ -79,7 +79,7 @@ bun run types:generate  # regenera el SDK de tipos (no debe cambiar nada)
 **2. Cola viva:** `docs/proposals/audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0
 (N1–N23)** — ahora **todo ✅**. Lo de abajo en ese doc es historial.
 
-**3. Premisa clave:** **Affairs ya NO consume mcp-core** (independientes).
+**3. Premisa clave:** **Affairs ya NO consume mcp-vertex** (independientes).
 
 **4. Artefactos nuevos de esta sesión (4ª ronda):**
 - `plugins/proposals/src/lib/swarm/round-context-{hash,sources,resume,digest}.ts`

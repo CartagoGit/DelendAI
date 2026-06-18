@@ -1,4 +1,4 @@
-# Auditoría unificada de `@cartago-git/mcp-core` — síntesis de 4 revisiones
+# Auditoría unificada de `@cartago-git/mcp-vertex` — síntesis de 4 revisiones
 
 > **Fecha:** 15-06-2026. Consolida y contrasta 4 auditorías independientes:
 > Antigravity (Claude Sonnet 4.6 Thinking), Antigravity (Gemini 3.5 Flash),
@@ -14,15 +14,15 @@
 > ⏸️ pendientes — Tier3/plataforma,
 > npm publish. **R14, M7, M4, M5, M8, M9, R12 y R13 también HECHOS** (sesión
 > Opus; M6 ya estaba). Detalle en
-> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-core 314 tests
+> `docs/proposals/done/RESUMEN-SESION-AUTONOMA-2026-06-15.md`. **mcp-vertex 314 tests
 > (304+10 skip), verdes.**
 >
 > **⚠️ CORRECCIÓN DE PREMISA (2026-06-15, sesión Opus):** el "invariante crítico"
 > de re-validar Affairs tras tocar engines **está obsoleto**. Verificado: Affairs
-> (`/home/cartago/_proyectos/propios/affairs`) **NO importa nada de mcp-core**
+> (`/home/cartago/_proyectos/propios/affairs`) **NO importa nada de mcp-vertex**
 > (ni `@cartago-git`, ni alias de vitest, ni paths de tsconfig). Son proyectos
-> independientes; mcp-core fue extraído pero Affairs conserva su propia copia.
-> Cambios en mcp-core no pueden afectar a Affairs. Sus ~14 tests rojos actuales
+> independientes; mcp-vertex fue extraído pero Affairs conserva su propia copia.
+> Cambios en mcp-vertex no pueden afectar a Affairs. Sus ~14 tests rojos actuales
 > son pre-existentes y ajenos (snapshots, skills docs, baseline MiniMax M3).
 >
 > ---
@@ -42,7 +42,7 @@
 >
 > **M10 (corrupto ≠ vacío) — HECHO con tests (sesión Opus):**
 > - Helper compartido `quarantineCorruptFile`/`quarantineCorruptFileSync` +
->   clase `CorruptFileError` en `@cartago-git/mcp-core/public`
+>   clase `CorruptFileError` en `@cartago-git/mcp-vertex/public`
 >   ([packages/core/src/lib/shared/quarantine-corrupt-file.ts](../../../packages/core/src/lib/shared/quarantine-corrupt-file.ts)),
 >   con sufijo `.corrupt-<ts>-<rand>` anti-colisión.
 > - **Estado crítico** (queue `parseQueue`/`loadOrEmptyQueue`, `subagent-registry-store.read`,
@@ -56,7 +56,7 @@
 >   `persistent-task-queue.spec.ts` (parseQueue), `agent-names.spec.ts` (registry),
 >   `memory.spec.ts` (store + capa de tool), `closed-tasks-log.spec.ts`.
 >
-> **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-core
+> **NOTA Affairs:** ignorar el viejo "re-validar 1184" — Affairs no consume mcp-vertex
 > (ver corrección de premisa arriba).
 >
 > **M4 + M5 (agnosticismo de tracks y carpetas) — HECHO (sesión Opus):**
@@ -114,7 +114,7 @@
 >   `round_context`, `authoring`. Spec: `tests/src/lib/swarm/layout-relocation.spec.ts`.
 > - **F4** — nuevo helper `withFileMutex(targetPath, fn, opts?)` en
 >   [packages/core/src/lib/shared/with-file-mutex.ts](../../../packages/core/src/lib/shared/with-file-mutex.ts)
->   (exportado en `@cartago-git/mcp-core/public`): sidecar `<target>.mutex` con
+>   (exportado en `@cartago-git/mcp-vertex/public`): sidecar `<target>.mutex` con
 >   `open('wx')` (O_EXCL), robo por staleness y por timeout (anti-deadlock).
 >   Envuelve el read-modify-write en: `agent-lock-engine` (extraído a
 >   `executeLockAction`), `task-queue-engine` (acciones `enqueue`/`dequeue`; NO
@@ -143,7 +143,7 @@
 >
 > **Comandos de validación (siempre tras cada cambio en engines compartidos):**
 > ```bash
-> cd /home/cartago/_projects/mcp-core && bun run validate            # 290 verdes
+> cd /home/cartago/_projects/mcp-vertex && bun run validate            # 290 verdes
 > cd /home/cartago/_projects/games/onrop/affairs \
 >   && bun run --cwd libs/mcp-server typecheck \
 >   && bun run --cwd libs/mcp-server test                            # 1184 verdes
@@ -187,7 +187,7 @@ Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
 | N10 | **`memory` quotas incompletas**: hay cap título(200)/body(8000) pero NO tags ni total de notas | REG menor | S | ✅ |
 
 > **✅ Tanda P0/P1 (N1–N10) COMPLETADA (2026-06-15, sesión Opus autónoma)** — todo
-> verde: mcp-core **354 tests** (344+10 skip). N1 (mutex memory + test concurrencia),
+> verde: mcp-vertex **354 tests** (344+10 skip). N1 (mutex memory + test concurrencia),
 > N2 (mutex syncProposalRegistry), N3+N4 (git `IGitRunResult {ok,output,reason}` +
 > `execFile` async + `checkRepo` distingue git-ausente/no-repo), N5 (search engine
 > `fs/promises` async), N6 (borrado `resolve-workspace-path.ts`; `getLockPath` exige
@@ -217,7 +217,7 @@ Leyenda: ✅ hecho · ⬜ pendiente. Severidad de las 2 auditorías nuevas.
 | N20 | **Refactor `round-context.ts`** (884 líneas → 3-4 módulos) (= R15) | S | ✅ **HECHO** — `round-context.ts` (758) → barrel de 30 líneas que re-exporta 5 módulos cohesivos: `-types` (tipos+constantes), `-hash` (fingerprints/age/core-doc), `-sources` (readers FS + `collectRoundContextSnapshot`), `-resume` (`buildRoundId`/`buildResumeHint` puros) y `-digest` (build/stale/IO atómico). Helpers privados compartidos centralizados en `-hash`. Consumidores intactos (importan del barrel). |
 | N21 | **Doctor: unificar doble lectura de config** (= R3) | S | ✅ (`assembleCliConfig` devuelve `configDiagnostic` de la única lectura) |
 | N22 | **`git`/`search` async runner compartido**; **memoria semántica** (FTS) en `memory_recall` | S·G | ✅ — git/search ya async (2ª ronda). `memory_recall` ahora con **ranking de relevancia BM25-lite** (`rank.ts`, JS puro, título×2 + piso de substring; tags=filtro duro). Decisión: NO embeddings/SQLite (romperían agnóstico/offline; el vectorial real = herramienta externa). +6 tests. |
-| N23 | **Excelencia demostrada**: tests de caos/adversarial, observabilidad `IStatusCollector` real + `--verbose`, **benchmarks de tokens** documentados, skills versionadas, semver real + publish automatizado, **SDK de tipos generados** de `outputSchema` | S (2/2 parcial) | ✅ **HECHO** — **e2e real cliente↔servidor MCP por InMemoryTransport** (`server-client.e2e.spec.ts` + red estricta `outputschema.e2e.spec.ts`); destapó y arregló los doble-prefijos `memory_memory_*`→`memory_*` y `git_git_*`→`git_*`, y 2 regresiones de outputSchema (ver N16). **`--verbose` HECHO**. **Tests de caos/adversarial HECHOS** (`coordination-chaos.spec`: 40/20/30/25 ops concurrentes → sin lost-updates, exclusión mutua por fichero, nunca corrupto; memory adversarial: regex-special literal + unicode + query 50k). **`IStatusCollector` real HECHO** (meta-tool `status` agrega colectores; built-in `mcp-core`). **semver + publish automatizado HECHO** (`bun run release`). **SDK de tipos generados HECHO** — `bun run types:generate` (`scripts/generate-tool-types.ts`) ensambla el server de referencia, harvestea cada `outputSchema` vía `z.toJSONSchema` (Zod v4, cero deps) y emite por paquete `src/generated/tool-outputs.ts` (un interface por tool + mapa `<Pkg>ToolOutputs`), re-exportado por la superficie pública; emisor PURO JSON-Schema→TS (`scripts/emit-tool-types.ts`) + drift-guard + unit tests. Los action-multiplexed permisivos salen como `Record<string, unknown>` (honesto dado el constraint ZodObject del SDK). |
+| N23 | **Excelencia demostrada**: tests de caos/adversarial, observabilidad `IStatusCollector` real + `--verbose`, **benchmarks de tokens** documentados, skills versionadas, semver real + publish automatizado, **SDK de tipos generados** de `outputSchema` | S (2/2 parcial) | ✅ **HECHO** — **e2e real cliente↔servidor MCP por InMemoryTransport** (`server-client.e2e.spec.ts` + red estricta `outputschema.e2e.spec.ts`); destapó y arregló los doble-prefijos `memory_memory_*`→`memory_*` y `git_git_*`→`git_*`, y 2 regresiones de outputSchema (ver N16). **`--verbose` HECHO**. **Tests de caos/adversarial HECHOS** (`coordination-chaos.spec`: 40/20/30/25 ops concurrentes → sin lost-updates, exclusión mutua por fichero, nunca corrupto; memory adversarial: regex-special literal + unicode + query 50k). **`IStatusCollector` real HECHO** (meta-tool `status` agrega colectores; built-in `mcp-vertex`). **semver + publish automatizado HECHO** (`bun run release`). **SDK de tipos generados HECHO** — `bun run types:generate` (`scripts/generate-tool-types.ts`) ensambla el server de referencia, harvestea cada `outputSchema` vía `z.toJSONSchema` (Zod v4, cero deps) y emite por paquete `src/generated/tool-outputs.ts` (un interface por tool + mapa `<Pkg>ToolOutputs`), re-exportado por la superficie pública; emisor PURO JSON-Schema→TS (`scripts/emit-tool-types.ts`) + drift-guard + unit tests. Los action-multiplexed permisivos salen como `Record<string, unknown>` (honesto dado el constraint ZodObject del SDK). |
 
 ### Orden de ejecución acordado (esta sesión, autónoma)
 **Tanda P0/P1 (correctitud)** → N1, N2, N6 (concurrencia/hermeticidad) · N3+N4 (git async+estructurado) · N5 (search async) · N7 (scaffold cwd) · N8 (blueprint async) · N9 (auto_work exclusión) · N10 (quotas).
@@ -267,14 +267,14 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | M6 | ✅ **HECHO** (sesión autónoma previa) — `scaffold-host` usa `options.defaultModel ?? '<your-model>'`, sin modelo hardcoded | S·G·C | hecho |
 | M7 | ✅ **HECHO** — schema de lock único: `ILockEntry`/`LockEntrySchema` en `persistent-task-queue` usan el formato canónico del writer (`ownership`/`started_at`/`last_seen`); `.transform()` de compat eliminado; consumidores (`promote`/`reportBackpressure`) y `zombie-reconcile` alineados. Spec `loadLockSnapshot` (M7) | S·G | hecho |
 | M8 | ✅ **HECHO** — acceptance runner reescrito sobre `node:child_process` con `detached:true`: `cwd` inyectable (`runAcceptanceCriteria(criteria, {cwd})`), tokenizer argv que respeta comillas + shell para pipes/redirects, y timeout que mata el **grupo entero** (`process.kill(-pid)`) — sin zombies. Spec `acceptance-exec` (incl. test de descendiente muerto) | C | hecho |
-| M9 | ✅ **HECHO** — scaffold de agentes/instrucciones/skill coherente: entry point `<prefix>_overview` (entry canónico de mcp-core, no el inexistente `check_project_state`); el workflow de proposals (`agent_lock`/`continue_proposal`/`get_validation_matrix`) se muestra condicional a `--plugins=proposals`. Spec actualizado | C | hecho |
+| M9 | ✅ **HECHO** — scaffold de agentes/instrucciones/skill coherente: entry point `<prefix>_overview` (entry canónico de mcp-vertex, no el inexistente `check_project_state`); el workflow de proposals (`agent_lock`/`continue_proposal`/`get_validation_matrix`) se muestra condicional a `--plugins=proposals`. Spec actualizado | C | hecho |
 | M10 | ✅ **HECHO** — corrupto ≠ vacío: helper `quarantineCorruptFile` + `CorruptFileError`; estado crítico (queue/registry/memory) preserva + error estructurado en capa de tool; closed-tasks preserva + warning + sigue. Specs en core/proposals/memory | C | hecho |
 
 ### 🟡 REGULAR
 
 | # | Hallazgo | Quién | Fix |
 |---|---|---|---|
-| R1 | **`joinRel` duplicado** en core/rules/memory | S·G | mover a `@cartago-git/mcp-core/public` |
+| R1 | **`joinRel` duplicado** en core/rules/memory | S·G | mover a `@cartago-git/mcp-vertex/public` |
 | R2 | ✅ **HECHO** — `coreToolRegistrations()` vacío eliminado de `create-mcp-server.ts` y `public/index.ts` (`planRegistrationOrder([], extras)`) | S·G | hecho |
 | R3 | **Doctor re-lee config** (diagnose + assemble) | S·G | unificar (assemble devuelve diagnóstico) |
 | R4 | **Mezcla sync/async I/O** en `persistent-task-queue` | S·G·C | async en rutas calientes |
@@ -313,7 +313,7 @@ continuity-enforcer (anti-loop conceptual) · tsconfig estricto · empaquetado.
 **Plugins nuevos:**
 - **`notification`** (S·G·C) — usar `notifications/message` de MCP para avisar de release de locks → mata el polling.
 - ✅ **`search`/index** (S·G) — HECHO: plugin `@cartago-git/mcp-search`, búsqueda textual grep-like sobre el workspace (roots/extensiones/ignore configurables). Semántica/índice persistente quedan como evolución.
-- **`docs`** (O), **`deps`/`security`** (O) — y la integración del `securecoder` externo con `proposals` (S·G; está **fuera** de mcp-core).
+- **`docs`** (O), **`deps`/`security`** (O) — y la integración del `securecoder` externo con `proposals` (S·G; está **fuera** de mcp-vertex).
 
 **Skills (knowledge versionado, materializable, no cargar todas):**
 `plugin-authoring`, `state-recovery`, `concurrency`, `token-budgeting`,

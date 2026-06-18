@@ -1,6 +1,6 @@
-# Auditoría exhaustiva de `@cartago-git/mcp-core` — Claude Code (Opus 4.8)
+# Auditoría exhaustiva de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)
 
-> Fecha: 16-06-2026. Análisis independiente del monorepo `mcp-core`
+> Fecha: 16-06-2026. Análisis independiente del monorepo `mcp-vertex`
 > (`packages/core` + 9 plugins: `proposals`, `rules`, `memory`, `git`,
 > `quality`, `search`, `docs`, `deps`, `notification`).
 > Hecho desde cero leyendo el código real (no las auditorías previas).
@@ -70,7 +70,7 @@ plugin satélite), persisten **riesgos finos de TOCTOU** en el robo de locks, y 
   ([assemble.ts:336-358](../../../packages/core/src/lib/cli/assemble.ts#L336-L358))
   **recalcula `cacheDir` a mano** (`args.tokens['cacheDir'] ?? DEFAULT_CORE_PATHS`)
   e **ignora el `cacheDir` del config file**. Si pones `cacheDir` en
-  `mcp-core.config.json` (sin flag), el blueprint se escribe en `.cache/mcp-core`
+  `mcp-vertex.config.json` (sin flag), el blueprint se escribe en `.cache/mcp-vertex`
   mientras el resto va a tu ruta del config. Drift de bajo impacto pero real:
   debería derivar de `assembleCliConfig` en vez de duplicar la precedencia.
 
@@ -135,7 +135,7 @@ plugin satélite), persisten **riesgos finos de TOCTOU** en el robo de locks, y 
 - **Regular:** **`quality` ejecuta shell arbitrario** (`spawn(..., {shell:true})`)
   con comandos que vienen del `validationMatrix` del config. Es **por diseño**
   (el host define la puerta), pero conviene documentar explícitamente que la
-  frontera de confianza es “quien escribe `mcp-core.config.json`”. Hoy no está
+  frontera de confianza es “quien escribe `mcp-vertex.config.json`”. Hoy no está
   dicho en ningún sitio prominente.
 
 ---

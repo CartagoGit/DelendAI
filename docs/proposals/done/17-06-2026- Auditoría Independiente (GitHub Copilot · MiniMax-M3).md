@@ -1,4 +1,4 @@
-# 17-06-2026 · Auditoría Independiente — `@cartago-git/mcp-core`
+# 17-06-2026 · Auditoría Independiente — `@cartago-git/mcp-vertex`
 
 > **Documento independiente.** Hecha desde cero leyendo el código del monorepo
 > en su estado actual (`develop` @ `0f54f33`), **sin consultar las
@@ -23,7 +23,7 @@
 
 ## 1. Veredicto (en una frase)
 
-`mcp-core` es **ingeniería de calidad poco habitual para un proyecto
+`mcp-vertex` es **ingeniería de calidad poco habitual para un proyecto
 relativamente joven**: núcleo *project-agnostic* y pequeño, plugins que
 reciben todo resuelto por `IMcpPluginContext`, escritura atómica + mutex
 cross-proceso, *SDK de tipos* generado con guarda de drift, suite de caos
@@ -75,7 +75,7 @@ best-in-class.
 ### 2.2 Lo que el árbol te dice sin abrir nada
 
 - **Runtime publicable.** `packages/core/package.json` declara
-  `"main": "./dist/index.js"`, `"bin": { "mcp-core": "./dist/cli.js" }`
+  `"main": "./dist/index.js"`, `"bin": { "mcp-vertex": "./dist/cli.js" }`
   y `"exports"` condicional (`types`+`import`); el `cli.ts` lleva
   shebang `#!/usr/bin/env node`. `bun run build` (`scripts/build.ts`)
   compila ESM con `bun build --target node` + `.d.ts` con `tsc
@@ -155,7 +155,7 @@ Maestro si mi lectura del código llega a otra conclusión.
 satélite (residual de M3)** — (nuevo, no en M3)
 `plugins/{git,memory,deps,docs,search,notification,quality,rules}/package.json`
 declaran `"main": "./src/index.ts"` y el `bin` apunta a `./src/cli.ts`:
-solo `@cartago-git/mcp-core` (`packages/core`) está migrado a `dist/`
+solo `@cartago-git/mcp-vertex` (`packages/core`) está migrado a `dist/`
 con `exports` condicional. Bajo `npx @cartago-git/mcp-proposals` (o
 cualquier satélite) en un host Node, **falla igual que el M3 original
 del core** (no hay `.js` compilado). El `scripts/build.ts` sí compila
@@ -244,8 +244,8 @@ truncation, doc-no-encontrado).
 hace `args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir`,
 ignorando `fileConfig.cacheDir` y la precedencia que `assembleCliConfig`
 ya resolvió en [`assemble.ts:94-99`](../../packages/core/src/lib/cli/assemble.ts#L94).
-Si pasas `cacheDir` en `mcp-core.config.json` (sin flag CLI), el
-resto del store va a tu ruta y el blueprint a `.cache/mcp-core`.
+Si pasas `cacheDir` en `mcp-vertex.config.json` (sin flag CLI), el
+resto del store va a tu ruta y el blueprint a `.cache/mcp-vertex`.
 Es de **bajo impacto** (solo `--mcp-server-create=true` y solo la
 primera vez), pero está mal y el grep lo encuentra en 1 minuto.
 
@@ -315,7 +315,7 @@ unitariamente** — (eco de **M6**, no observado en código)
 muta `.subscribe-delivered.json` bajo `withFileMutex`. Está
 correcto. Lo señalo porque el **test e2e** (reinicio del server y
 verificar que no re-entrega) no lo verifiqué en código (no
-encontré un spec que use `mcp-core restart` + dos subscriptions);
+encontré un spec que use `mcp-vertex restart` + dos subscriptions);
 sería sano añadir un test de integración rápido para M6, no solo
 el unitario.
 
@@ -473,7 +473,7 @@ tras N `idle` lo cerraría — eco del Maestro 16-06).
   threat-model por plugin) + bridge securecoder.
 - [ ] M14 migraciones de estado (`version`, `migrate v1→v2`,
   `doctor --migrate --dry-run`, backup pre-migración).
-- [ ] Skills versionadas (`mcp-core-operator`, `swarm-runner`,
+- [ ] Skills versionadas (`mcp-vertex-operator`, `swarm-runner`,
   `plugin-author`, `state-repair-playbook`, `token-budget`).
 - [ ] TypeDoc de `public/`, `/examples`, JSON Schema del
   config. `npm publish` (lo hace el usuario;
@@ -506,7 +506,7 @@ tras N `idle` lo cerraría — eco del Maestro 16-06).
 | Tokens / budgets | 9,0 | M8 cerrado en las tools grandes; residuales (H3) en las medianas. |
 | Test suite | 9,0 | 441 verde + 1 deprecation info; cobertura desigual (H4). |
 | CI / release | 9,5 | 3 jobs (lint/validate/pack-smoke), lockfile trackeado, `bun run release` con semver lockstep. |
-| Documentación | 9,0 | CHANGELOG honesto, README por paquete, `docs/PLUGINS-MCP-CORE.md`, `docs/TOKEN-BUDGETS.md`, `docs/NPM_PUBLISH.md`. Falta TypeDoc/`/examples`. |
+| Documentación | 9,0 | CHANGELOG honesto, README por paquete, `docs/PLUGINS-MCP-VERTEX.md`, `docs/TOKEN-BUDGETS.md`, `docs/NPM_PUBLISH.md`. Falta TypeDoc/`/examples`. |
 | Plataforma (M12-M14) | 5,5 | sin métricas, sin security, sin migraciones. Esto es lo que separa 10 de 11. |
 | **Total (media ponderada)** | **9,2** | techo = disciplina de cierre en P0/P1. |
 
@@ -544,7 +544,7 @@ Las listo para que se vea que **leí el código, no la auditoría**:
    borrado en M6). No es blocker, pero el e2e completa la
    cobertura.
 
-> **Conclusión final:** `mcp-core` está **a una semana de
+> **Conclusión final:** `mcp-vertex` está **a una semana de
 > disciplina de cierre del 10/10** y **a un sprint de 11/10**.
 > El techo lo marcan los P0/P1 míos (H1-H10), no la
 > arquitectura. Y la arquitectura, ya, **es de referencia**.

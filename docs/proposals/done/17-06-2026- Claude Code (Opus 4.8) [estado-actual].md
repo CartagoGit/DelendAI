@@ -1,4 +1,4 @@
-# Auditoría del estado actual de `@cartago-git/mcp-core` — Claude Code (Opus 4.8)
+# Auditoría del estado actual de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)
 
 > Fecha: 17-06-2026 (tarde, casa). Auditoría **del estado ACTUAL** tras cerrar
 > M1–M15, la serie H1–H10 (4ª auditoría MiniMax) y el workstream W1/W2
@@ -77,7 +77,7 @@ Ninguno es bloqueante; son lo que separa "muy bueno" de "referencia de industria
   bien comentada pero no navegable sin leer el source.
 - **`/examples`** — no existe. Un `examples/minimal`, `examples/swarm` y
   `examples/custom-plugin` (con tests) bajarían enormemente la barrera de entrada.
-- **JSON Schema de `mcp-core.config.json`** — no publicado. Daría autocompletado en
+- **JSON Schema de `mcp-vertex.config.json`** — no publicado. Daría autocompletado en
   editores y validación del config sin leer docs.
 - **Skills/prompts versionados** (operator, swarm-runner, plugin-author, `finish`) —
   los prompts `work`/`orchestrate` existen, pero falta el set de skills materializable.

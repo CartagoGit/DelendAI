@@ -1,13 +1,13 @@
 # 18-06-2026 - Codex (GPT-5) [auditoria agnostica 11 de 10]
 
-Auditoria independiente del workspace `mcp-core`, hecha sobre el estado real del
+Auditoria independiente del workspace `mcp-vertex`, hecha sobre el estado real del
 repositorio el 18-06-2026. Solo se ha usado la familia de nombres/formato de los
 informes previos como referencia de presentacion; las conclusiones salen de leer
 codigo, configuracion, plugins, CI, docs, scripts y de ejecutar validaciones.
 
 ## Resumen ejecutivo
 
-`mcp-core` es un proyecto muy por encima de la media para un framework MCP:
+`mcp-vertex` es un proyecto muy por encima de la media para un framework MCP:
 arquitectura limpia, contrato de plugins razonable, tests amplios, build
 publicable, buena historia de tokens y un plugin `proposals` bastante avanzado.
 No parece un experimento suelto; parece una plataforma.
@@ -131,7 +131,7 @@ orientarse primero, leer poco, actuar por slices y validar.
 Lo que falta para 11/10: metricas persistentes de uso por sesion y release. El
 registry actual mide en proceso, pero no deja una historia facil de comparar:
 "version X devolvia N bytes/tokens, version Y devolvia N+30%". Guardaria snapshots
-en `.cache/mcp-core/metrics/*.json` y añadiria un gate de regresion.
+en `.cache/mcp-vertex/metrics/*.json` y añadiria un gate de regresion.
 
 Valoracion de la seccion: ⭐⭐⭐⭐½ Muy bien.
 
@@ -229,9 +229,9 @@ No hace falta llenar el repo de ceremonia. Pero si quieres 11/10, añadiria:
 
 - `AGENTS.md` con reglas del repo, comandos, ownership y politica de cambios;
 - `.github/copilot-instructions.md` para GitHub/Copilot;
-- `skills/mcp-core-plugin-authoring/SKILL.md`;
-- `skills/mcp-core-release/SKILL.md`;
-- `skills/mcp-core-audit/SKILL.md`;
+- `skills/mcp-vertex-plugin-authoring/SKILL.md`;
+- `skills/mcp-vertex-release/SKILL.md`;
+- `skills/mcp-vertex-audit/SKILL.md`;
 - agentes: `plugin_reviewer`, `contract_guardian`, `release_captain`,
   `security_path_auditor`, `docs_cartographer`.
 
@@ -444,7 +444,7 @@ Prioridad alta:
    spawn, network, destructive.
 7. Metricas persistentes de bytes/tokens/latencia por sesion.
 8. E2E de paquete instalado desde tarball: proyecto limpio -> `npm pack` ->
-   instalar -> `mcp-core --check --plugins=...`.
+   instalar -> `mcp-vertex --check --plugins=...`.
 9. Modo de lock contention configurable.
 10. `quality` con cache de resultados y policy de comandos mas robusta.
 

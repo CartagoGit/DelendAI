@@ -1,4 +1,4 @@
-# 🔍 Auditoría Exhaustiva — `mcp-core` y Plugins
+# 🔍 Auditoría Exhaustiva — `mcp-vertex` y Plugins
 
 > **Fecha**: 16 jun 2026 | **Revisor**: Antigravity (Claude Sonnet 4.6 Thinking)
 > **Metodología**: Lectura completa del código fuente, contratos, engines, shared utilities, tests, CI, scripts de release, plugins y documentación. Análisis independiente sin influencia de auditorías anteriores.
@@ -15,7 +15,7 @@ El proyecto ha alcanzado un nivel de madurez que pocas veces se ve en frameworks
 
 ### 1. `AGENT_SLOTS` hardcodeado con roles del host Cartago
 
-**Fichero**: [`task-queue-engine.ts#L66`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/task-queue-engine.ts#L66-L74)
+**Fichero**: [`task-queue-engine.ts#L66`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/task-queue-engine.ts#L66-L74)
 
 ```typescript
 const AGENT_SLOTS = [
@@ -37,7 +37,7 @@ Este es el residuo más grave que queda en el proyecto. Un `enum` cerrado de rol
 
 ### 2. `docs/engine.ts` usa I/O síncrono en el event loop del servidor MCP
 
-**Fichero**: [`docs/src/lib/engine.ts#L1`](file:///home/cartago/_projects/mcp-core/plugins/docs/src/lib/engine.ts#L1)
+**Fichero**: [`docs/src/lib/engine.ts#L1`](file:///home/cartago/_projects/mcp-vertex/plugins/docs/src/lib/engine.ts#L1)
 
 ```typescript
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'; // sync
@@ -55,7 +55,7 @@ El plugin `search` usa correctamente `readdir`, `readFile`, `stat` de `node:fs/p
 
 ### 3. `lockPath` opcional en `ITaskQueuePaths` con fallback al layout hardcoded
 
-**Fichero**: [`task-queue-engine.ts#L131`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/task-queue-engine.ts#L131-L138)
+**Fichero**: [`task-queue-engine.ts#L131`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/task-queue-engine.ts#L131-L138)
 
 ```typescript
 export interface ITaskQueuePaths {
@@ -78,7 +78,7 @@ El comentario en el código dice textualmente "Falls back to the default layout 
 
 ### 4. `readFileSync` síncrono dentro de refine de Zod en un handler async
 
-**Fichero**: [`task-queue-engine.ts#L363`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/task-queue-engine.ts#L363)
+**Fichero**: [`task-queue-engine.ts#L363`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/task-queue-engine.ts#L363)
 
 ```typescript
 const raw = readFileSync(paths.closedTasksPath, 'utf8'); // dentro de .superRefine
@@ -88,7 +88,7 @@ El `superRefine` de Zod se ejecuta dentro del handler del tool `enqueue` (que es
 
 ### 5. `zombie-reconcile.ts` y `promote-on-release.ts` también usan sync I/O
 
-**Ficheros**: [`zombie-reconcile.ts#L51`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/zombie-reconcile.ts#L51), [`promote-on-release.ts#L119`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/promote-on-release.ts#L119)
+**Ficheros**: [`zombie-reconcile.ts#L51`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/zombie-reconcile.ts#L51), [`promote-on-release.ts#L119`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/promote-on-release.ts#L119)
 
 ```typescript
 const raw = readFileSync(lockPath, 'utf8'); // zombie-reconcile
@@ -99,7 +99,7 @@ Ambos son llamados desde paths de ejecución MCP. No son tan críticos como el `
 
 ### 6. `persistent-task-queue.ts` — idempotencia de `subscribe` solo en memoria
 
-**Fichero**: [`task-queue-engine.ts#L307`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/agents/task-queue-engine.ts#L307-L321)
+**Fichero**: [`task-queue-engine.ts#L307`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/agents/task-queue-engine.ts#L307-L321)
 
 ```typescript
 const deliveredDigests = new Set<string>(); // ← in-memory only
@@ -113,7 +113,7 @@ El comentario es honesto: "Cross-session idempotency is out of scope". Pero el r
 
 ### 7. El plugin `deps` usa I/O síncrono también
 
-**Fichero**: [`deps/src/lib/engine.ts#L1`](file:///home/cartago/_projects/mcp-core/plugins/deps/src/lib/engine.ts#L1)
+**Fichero**: [`deps/src/lib/engine.ts#L1`](file:///home/cartago/_projects/mcp-vertex/plugins/deps/src/lib/engine.ts#L1)
 
 ```typescript
 import { existsSync, readFileSync } from 'node:fs';
@@ -123,7 +123,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 ### 8. CI solo tiene un workflow — no hay release automation en CI
 
-**Fichero**: [`.github/workflows/ci.yml`](file:///home/cartago/_projects/mcp-core/.github/workflows/ci.yml)
+**Fichero**: [`.github/workflows/ci.yml`](file:///home/cartago/_projects/mcp-vertex/.github/workflows/ci.yml)
 
 El workflow de CI cubre `typecheck + test` y `pack smoke` (validación de que los paquetes empaquetarían correctamente). Esto es sólido. Sin embargo, **no hay un workflow de release automation**: el proceso de publicar una versión nueva es enteramente manual (ejecutar `bun run release --bump=X --write --publish`). Para un framework que otros proyectos ponen como dependencia, la ausencia de un release workflow en CI (por ejemplo, activado por un tag `v*`) es un riesgo operacional: hay que acordarse de los pasos manuales, lo que introduce errores humanos.
 
@@ -131,7 +131,7 @@ El workflow de CI cubre `typecheck + test` y `pack smoke` (validación de que lo
 
 ### 9. `coreToolRegistrations` eliminado pero `planRegistrationOrder` recibe `[]` siempre
 
-**Fichero**: [`create-mcp-server.ts#L80`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/server/create-mcp-server.ts#L80)
+**Fichero**: [`create-mcp-server.ts#L80`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L80)
 
 ```typescript
 const ordered = planRegistrationOrder([], config.extraTools ?? []);
@@ -141,25 +141,25 @@ const ordered = planRegistrationOrder([], config.extraTools ?? []);
 
 ### 10. `constants/` sigue vacío en el core package
 
-**Directorio**: [`packages/core/src/lib/contracts/constants/`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/contracts/constants)
+**Directorio**: [`packages/core/src/lib/contracts/constants/`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/contracts/constants)
 
 El directorio `constants/` en los contratos del core está vacío. Las constantes equivalentes (e.g. `DEFAULT_PATH_LAYOUT`) existen en el plugin `proposals`. La existencia del directorio vacío en el core sigue generando confusión de estructura para cualquier contribuidor nuevo.
 
 ### 11. Plugin `memory` — sin tamaño máximo ni TTL en las notas
 
-**Fichero**: [`plugins/memory/src/lib/`](file:///home/cartago/_projects/mcp-core/plugins/memory/src)
+**Fichero**: [`plugins/memory/src/lib/`](file:///home/cartago/_projects/mcp-vertex/plugins/memory/src)
 
 El store de memory es un JSON de notas persistentes. No hay ningún límite en el número de notas ni un TTL para las antiguas. En sesiones de larga duración, el archivo puede crecer indefinidamente. Más importante: las notas antiguas siguen apareciendo en el `recall` sin ningún indicador de antigüedad para el agente. Un sistema `maxNotes` (con eviction LRU) o al menos un campo `createdAt` opcional en cada nota mejoraría la higiene de contexto significativamente.
 
 ### 12. Plugin `search` — sin soporte de regex, solo substring match
 
-**Fichero**: [`search/src/lib/engine.ts#L64`](file:///home/cartago/_projects/mcp-core/plugins/search/src/lib/engine.ts#L64)
+**Fichero**: [`search/src/lib/engine.ts#L64`](file:///home/cartago/_projects/mcp-vertex/plugins/search/src/lib/engine.ts#L64)
 
 `searchWorkspace` implementa un `includes(needle)` puro, sin regex. Para un workspace search orientado a código, la incapacidad de buscar por expresiones regulares (e.g. `^export const`, `interface I[A-Z]`) limita notablemente el valor de la herramienta. Un flag `regex?: boolean` en `ISearchOptions` que active `RegExp` en lugar de `includes` sería de bajo costo y alto valor.
 
 ### 13. Plugin `rules` — detección de framework limitada
 
-**Fichero**: [`rules/src/index.ts#L40`](file:///home/cartago/_projects/mcp-core/plugins/rules/src/index.ts#L40-L62)
+**Fichero**: [`rules/src/index.ts#L40`](file:///home/cartago/_projects/mcp-vertex/plugins/rules/src/index.ts#L40-L62)
 
 La función `presetIdFor` soporta: `angular`, `react`, `vue`, `svelte`, `jquery`, `vanilla`. No hay detección para frameworks modernos muy utilizados como `next.js`, `nuxt`, `astro`, `remix`, `solid`, o para entornos Node puro, FastAPI (Python), o similares. El mecanismo de `overrides` permite que el host fuerce un preset, pero la auto-detección es incompleta para el ecosistema actual.
 
@@ -169,25 +169,25 @@ La función `presetIdFor` soporta: `angular`, `react`, `vue`, `svelte`, `jquery`
 
 ### 14. `withFileMutex` — exclusión mutua cross-process sin deadlocks
 
-**Fichero**: [`shared/with-file-mutex.ts`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/with-file-mutex.ts)
+**Fichero**: [`shared/with-file-mutex.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/with-file-mutex.ts)
 
 La implementación de advisory lock via `open(lockPath, 'wx')` (O_CREAT|O_EXCL atómico) es correcta. El steal por stale (`staleMs = 30s`) y por timeout (`timeoutMs = 5s`) garantiza que **ningún holder puede causar un deadlock permanente** en el swarm. El `timer.unref?.()` en el notification watcher es un detalle profesional (no mantiene el proceso vivo solo para el notificador). Esta implementación es de producción.
 
 ### 15. `writeFileAtomic` — temp file en el mismo directorio (evita EXDEV)
 
-**Fichero**: [`shared/atomic-write.ts`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/atomic-write.ts)
+**Fichero**: [`shared/atomic-write.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/atomic-write.ts)
 
 El uso de un temp file junto al destino (no en `os.tmpdir()`) es la decisión correcta: el `rename` en POSIX solo es atómico dentro del mismo filesystem. La variante sync (`writeFileAtomicSync`) es un bonus para contextos donde async no está disponible. La limpieza del temp en caso de error con `.catch(() => undefined)` es correcta (no queremos que un fallo de cleanup tape el error original).
 
 ### 16. `quarantineCorruptFile` — preservación de datos corruptos antes de lanzar
 
-**Fichero**: [`shared/quarantine-corrupt-file.ts`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/shared/quarantine-corrupt-file.ts)
+**Fichero**: [`shared/quarantine-corrupt-file.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/shared/quarantine-corrupt-file.ts)
 
 Mover el archivo corrupto a un sidecar `.corrupt-<ts>-<random>` antes de lanzar el error es una decisión de operaciones excelente: el estado original se preserva para diagnóstico, y el nombre con random suffix previene colisiones si dos lectores concurrentes detectan la corrupción en el mismo milisegundo. El `CorruptFileError` con `backupPath` en el constructor es información de diagnóstico accionable.
 
 ### 17. `syncProposalRegistry` — ahora correctamente atómico y con mutex
 
-**Fichero**: [`proposals/src/lib/proposals/sync-proposal-registry.ts#L326`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L326)
+**Fichero**: [`proposals/src/lib/proposals/sync-proposal-registry.ts#L326`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L326)
 
 ```typescript
 return withFileMutex(indexPath, async () => {
@@ -200,7 +200,7 @@ Problema crítico de versiones anteriores: **resuelto**. La sección crítica `r
 
 ### 18. `getLockPath` lanza si no se inyecta — sin `process.cwd()` fallback
 
-**Fichero**: [`locks/agent-lock-engine.ts#L59`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/locks/agent-lock-engine.ts#L59-L69)
+**Fichero**: [`locks/agent-lock-engine.ts#L59`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/locks/agent-lock-engine.ts#L59-L69)
 
 ```typescript
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
@@ -217,7 +217,7 @@ Problema crítico de versiones anteriores: **resuelto**. El fallback silencioso 
 
 ### 19. `IProposalTrack` es ahora un `string` abierto con `knownTracks` opt-in
 
-**Fichero**: [`proposals/src/lib/proposals/proposal-parallelism.ts#L35`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/proposal-parallelism.ts#L35)
+**Fichero**: [`proposals/src/lib/proposals/proposal-parallelism.ts#L35`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/proposal-parallelism.ts#L35)
 
 ```typescript
 export type IProposalTrack = string;
@@ -227,13 +227,13 @@ Problema crítico de versiones anteriores: **resuelto**. El type es ahora `strin
 
 ### 20. Tests de caos con concurrencia real
 
-**Fichero**: [`chaos/coordination-chaos.spec.ts`](file:///home/cartago/_projects/mcp-core/plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts)
+**Fichero**: [`chaos/coordination-chaos.spec.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts)
 
 40 agentes concurrentes reclamando locks distintos, 20 agentes reclamando el mismo archivo (exactamente uno gana), 30 enqueues simultáneos sin entradas perdidas. Estas pruebas verifican las invariantes de exclusión mutua bajo carga real. Es la batería de tests de concurrencia que diferencia un framework de producción de un prototipo.
 
 ### 21. `planRegistrationOrder` — determinístico, falla rápido, correcto
 
-**Fichero**: [`server/create-mcp-server.ts#L26`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/server/create-mcp-server.ts#L26)
+**Fichero**: [`server/create-mcp-server.ts#L26`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L26)
 
 Detección de IDs duplicados, anchors desconocidos, inserción en orden preservando declaración. `throw` en lugar de silenciar. Función pura y testeable en aislamiento. Exactamente lo correcto.
 
@@ -247,7 +247,7 @@ Con 34 specs solo en `proposals` (incluyendo chaos, locks concurrentes, continui
 
 ### 23. Typed tool outputs SDK generado — y con drift guard
 
-**Fichero**: [`README.md#L37`](file:///home/cartago/_projects/mcp-core/README.md#L37-L39)
+**Fichero**: [`README.md#L37`](file:///home/cartago/_projects/mcp-vertex/README.md#L37-L39)
 
 ```bash
 bun run types:generate  # regenera src/generated/tool-outputs.ts por paquete
@@ -257,19 +257,19 @@ Los clientes MCP pueden consumir las respuestas con tipos TypeScript generados a
 
 ### 24. `notification` plugin — push real en lugar de polling
 
-**Fichero**: [`notification/src/lib/watcher.ts`](file:///home/cartago/_projects/mcp-core/plugins/notification/src/lib/watcher.ts)
+**Fichero**: [`notification/src/lib/watcher.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/notification/src/lib/watcher.ts)
 
 Mecanismo event-driven (`fs.watch` + fallback a polling) sobre el directorio del lock file (watch del dir, no del inode, para sobrevivir el atomic rename). El `check()` puro retorna los releases detectados. Documentado correctamente en el knowledge entry del plugin: "Do NOT poll `agent_lock status` in a loop. Wait for the `lock-released` notification". El design elimina N round-trips de polling por 1 push.
 
 ### 25. Release script completo y con dry-run por defecto
 
-**Fichero**: [`scripts/release.ts`](file:///home/cartago/_projects/mcp-core/scripts/release.ts)
+**Fichero**: [`scripts/release.ts`](file:///home/cartago/_projects/mcp-vertex/scripts/release.ts)
 
 Bump semántico lockstep (todos los paquetes en el mismo número de versión), dry-run por defecto (requiere `--write` para aplicar), validación pre-publish (`bun run validate`), publicación en orden de dependencia. Es un release script de categoría profesional. Lo único que falta es el workflow de CI que lo active (punto 8).
 
 ### 26. Scaffold / Blueprint del core — generación de proyectos y plugins
 
-**Fichero**: [`scaffold/scaffold-host.ts`](file:///home/cartago/_projects/mcp-core/packages/core/src/lib/scaffold/scaffold-host.ts)
+**Fichero**: [`scaffold/scaffold-host.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/scaffold/scaffold-host.ts)
 
 El scaffolder genera: server entry, host config, agent files (.agent.md), copilot-instructions, skill file, plugin template, client template. El modelo por defecto en los agentes generados es `'<your-model>'` (correcto, no hardcoded). La instrucción de `process.cwd()` solo en el entry point está documentada con un comentario explícito en el código generado. Muy bien ejecutado.
 
@@ -283,13 +283,13 @@ El mecanismo de steal a los 30 segundos (stale) o 5 segundos (timeout de espera)
 
 ### 28. `continuity-enforcer.ts` — prevención activa de loops de sesión
 
-**Fichero**: [`swarm/continuity-enforcer.ts`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/swarm/continuity-enforcer.ts)
+**Fichero**: [`swarm/continuity-enforcer.ts`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/swarm/continuity-enforcer.ts)
 
 El downgrade a `mode: 'reset'` cuando hay violaciones `block` impide que un agente entre en un loop de tool calls sin fin. Los umbrales `maxSubagentSpawnsPerSession` y `maxToolRetriesPerTool` están presentes y son accionables. Es el mecanismo correcto para salir de ciclos degenerados sin intervención humana.
 
 ### 29. `swarm/` refactorizado en múltiples módulos cohesivos
 
-**Directorio**: [`proposals/src/lib/swarm/`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/swarm)
+**Directorio**: [`proposals/src/lib/swarm/`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/swarm)
 
 El monolito `round-context.ts` que tenía 875 líneas fue dividido en módulos específicos:
 - `round-context-digest.ts` — computación de hashes
@@ -301,9 +301,9 @@ El monolito `round-context.ts` que tenía 875 líneas fue dividido en módulos e
 
 Esta separación es la arquitectura correcta: cada módulo tiene una responsabilidad única, es testeable en aislamiento y no arrastra carga cognitiva innecesaria.
 
-### 30. Public API surface bien delimitada con `@cartago-git/mcp-core/public`
+### 30. Public API surface bien delimitada con `@cartago-git/mcp-vertex/public`
 
-**Fichero**: [`packages/core/src/public/index.ts`](file:///home/cartago/_projects/mcp-core/packages/core/src/public/index.ts)
+**Fichero**: [`packages/core/src/public/index.ts`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/public/index.ts)
 
 Una sola puerta de entrada estable. `writeFileAtomic`, `withFileMutex`, `quarantineCorruptFile`, `joinRel`, `toolJson`, `toolError`, `toolOk` son parte de la API pública — las shared utilities están disponibles para plugins externos sin acceder a internos. Esto es arquitectura de librería correcta.
 
@@ -317,7 +317,7 @@ Sin I/O, sin estado, sin side effects. Deduplicación de violaciones pairwise (s
 
 ### 32. `syncProposalRegistry` — `extraFolders` inyectable, no hardcoded
 
-**Fichero**: [`proposals/src/lib/proposals/sync-proposal-registry.ts#L320`](file:///home/cartago/_projects/mcp-core/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L320)
+**Fichero**: [`proposals/src/lib/proposals/sync-proposal-registry.ts#L320`](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L320)
 
 ```typescript
 export async function syncProposalRegistry(
@@ -338,7 +338,7 @@ Los 6 niveles de validación (`PARSE_ERROR`, `INVALID_TASK_QUEUE`, `INVALID_PRIO
 
 | Mecanismo | Impacto |
 |---|---|
-| `mcpcore_overview` como cold-start | ✅ **Excelente** — 1 call orienta al agente completo |
+| `mcpvertex_overview` como cold-start | ✅ **Excelente** — 1 call orienta al agente completo |
 | Knowledge lazy (load on demand) | ✅ **Excelente** — el agente paga solo lo que lee |
 | Outputs JSON estructurado (no prosa) | ✅ **Excelente** — sin parseo semántico necesario |
 | `roundContext` digest con SHA-256 truncado | ✅ **Excelente** — evita re-reads de docs no modificados |
@@ -382,7 +382,7 @@ Los 6 niveles de validación (`PARSE_ERROR`, `INVALID_TASK_QUEUE`, `INVALID_PRIO
 
 4. **`--verbose` flag en la CLI** — timestamps, plugin lifecycle, tool call log. Invaluable para debugging. El stderr básico actual es insuficiente para diagnosis de problemas en producción.
 
-5. **Plugin `telemetry` o `IStatusCollector` implementación concreta** — la interfaz `IStatusCollector` ya existe en `IMcpCoreHostConfig` pero no tiene implementación concreta en el core. Un colector simple de eventos de ciclo de vida (plugin loaded, tool called, error) publicado como opcional sería la base para observabilidad.
+5. **Plugin `telemetry` o `IStatusCollector` implementación concreta** — la interfaz `IStatusCollector` ya existe en `IMcpVertexHostConfig` pero no tiene implementación concreta en el core. Un colector simple de eventos de ciclo de vida (plugin loaded, tool called, error) publicado como opcional sería la base para observabilidad.
 
 6. **Plugin `history`** — tracking inmutable de qué herramientas se llamaron y con qué resultado en la sesión actual. Permite al agente hacer "replay" conceptual y detectar ciclos sin depender de la memoria del modelo. Complementa el `memory` plugin pero para datos de sesión corta.
 

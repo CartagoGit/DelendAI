@@ -4,7 +4,7 @@
 > nuevas del estado actual** (Antigravity·Sonnet 4.6 = 8,4/10, Antigravity·Gemini
 > 3.5 = 8,5/10) y pidió: consolidarlas en la propuesta viva y seguir hacia 11/10.
 >
-> **Repo:** `/home/cartago/_projects/mcp-core`. **Estado al cerrar: mcp-core 366
+> **Repo:** `/home/cartago/_projects/mcp-vertex`. **Estado al cerrar: mcp-vertex 366
 > tests (356 + 10 skip), typecheck limpio, TODO VERDE.** Nivel estimado ~9,6-9,8/10.
 > Nada a medias; punto estable para retomar en la oficina.
 
@@ -65,7 +65,7 @@
      más barato), `auto_work` **144 B** (~36 tok). Cold-start completo <300 tokens.
      Budgets con guard de regresión.
 
-**Estado:** mcp-core **366 tests** (356 + 10 skip), typecheck limpio, todo verde.
+**Estado:** mcp-vertex **366 tests** (356 + 10 skip), typecheck limpio, todo verde.
 Nivel estimado por las auditorías tras esta tanda: **~9,6-9,8/10**.
 
 ## Pendiente para 11/10 (requiere decisión o es alcance grande)
@@ -84,7 +84,7 @@ Nivel estimado por las auditorías tras esta tanda: **~9,6-9,8/10**.
 
 **1. Validar que todo sigue verde (siempre tras cada cambio):**
 ```bash
-cd /home/cartago/_projects/mcp-core
+cd /home/cartago/_projects/mcp-vertex
 bun install
 bun run validate            # typecheck + 366 tests (356 + 10 skip) → verde
 # doctor end-to-end con los 7 plugins:
@@ -96,8 +96,8 @@ bun packages/core/src/cli.ts --plugins=proposals,rules,memory,git,quality,search
 **§0 (N1–N23)** con el estado ✅/🟡/⬜ de cada hallazgo. Esto manda; lo de arriba en
 ese doc es historial.
 
-**3. Premisa clave (no la olvides):** **Affairs ya NO consume mcp-core** (proyectos
-independientes; mcp-core se extrajo y Affairs conserva su copia). Cambios aquí NO
+**3. Premisa clave (no la olvides):** **Affairs ya NO consume mcp-vertex** (proyectos
+independientes; mcp-vertex se extrajo y Affairs conserva su copia). Cambios aquí NO
 afectan a Affairs — ignora cualquier nota antigua de "re-validar 1184".
 
 **4. Siguiente paso recomendado** (lo que quedó pendiente de TU decisión):
