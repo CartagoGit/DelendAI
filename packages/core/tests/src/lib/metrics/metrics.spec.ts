@@ -12,7 +12,7 @@ import {
 	estimateResultBytes,
 } from '@mcp-vertex/core/lib/metrics/metrics-registry';
 import { buildMetricsToolRegistration } from '@mcp-vertex/core/lib/metrics/metrics-tool';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolOk } from '@mcp-vertex/core/public';
@@ -49,7 +49,12 @@ describe('createMetricsRegistry (M12)', () => {
 
 	it('estimateResultBytes sums text content lengths', () => {
 		expect(
-			estimateResultBytes({ content: [{ type: 'text', text: 'hello' }, { type: 'text', text: 'hi' }] })
+			estimateResultBytes({
+				content: [
+					{ type: 'text', text: 'hello' },
+					{ type: 'text', text: 'hi' },
+				],
+			}),
 		).toBe(7);
 		expect(estimateResultBytes({})).toBe(0);
 		expect(estimateResultBytes({ content: 'nope' })).toBe(0);
@@ -61,8 +66,14 @@ describe('metrics tool — persist snapshots (M29)', () => {
 	const capture = async (persistDir?: string) => {
 		const registry = createMetricsRegistry();
 		registry.record('demo_ping', { ms: 5, bytes: 10, isError: false });
-		const reg = buildMetricsToolRegistration('mcp-vertex', registry, persistDir);
-		let handler: (a: unknown) => Promise<{ structuredContent?: Record<string, unknown> }>;
+		const reg = buildMetricsToolRegistration(
+			'mcp-vertex',
+			registry,
+			persistDir,
+		);
+		let handler: (
+			a: unknown,
+		) => Promise<{ structuredContent?: Record<string, unknown> }>;
 		await reg.register({
 			registerTool: (_n: string, _d: unknown, fn: typeof handler) => {
 				handler = fn;
@@ -81,9 +92,13 @@ describe('metrics tool — persist snapshots (M29)', () => {
 		const res = await handler({ persist: true });
 		expect(res.structuredContent?.persistedTo).toBeDefined();
 		expect(res.structuredContent?.snapshots).toBe(1);
-		const files = readdirSync(metricsDir).filter((f) => f.endsWith('.json'));
+		const files = readdirSync(metricsDir).filter((f) =>
+			f.endsWith('.json'),
+		);
 		expect(files).toHaveLength(1);
-		const saved = JSON.parse(readFileSync(join(metricsDir, files[0]!), 'utf8'));
+		const saved = JSON.parse(
+			readFileSync(join(metricsDir, files[0]!), 'utf8'),
+		);
 		expect(saved.at).toBeDefined();
 		expect(saved.tools.demo_ping.calls).toBe(1);
 	});
@@ -115,13 +130,16 @@ describe('tool metrics instrumentation over the protocol (M12)', () => {
 					{
 						description: 'ping',
 						inputSchema: z.object({}),
-						outputSchema: z.object({ ok: z.literal(true), pong: z.string() }),
+						outputSchema: z.object({
+							ok: z.literal(true),
+							pong: z.string(),
+						}),
 					},
-					async () => toolOk({ pong: 'hi there' })
+					async () => toolOk({ pong: 'hi there' }),
 				);
 			},
 		};
-		const assembled = await createMcpServer({
+		const assembled = await createMcpProject({
 			metadata: { name: 'demo', version: '0.0.0', description: 'd' },
 			workspace: createWorkspacePathProvider('/tmp'),
 			metricsRegistry: registry,
@@ -129,7 +147,10 @@ describe('tool metrics instrumentation over the protocol (M12)', () => {
 		});
 		const [ct, st] = InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(st);
-		const client = new Client({ name: 't', version: '0' }, { capabilities: {} });
+		const client = new Client(
+			{ name: 't', version: '0' },
+			{ capabilities: {} },
+		);
 		await client.connect(ct);
 
 		await client.callTool({ name: 'demo_ping', arguments: {} });

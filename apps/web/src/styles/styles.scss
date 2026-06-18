@@ -1,0 +1,59 @@
+// styles.scss — composition root for the site stylesheet.
+//
+// 7-1 pattern: each partial owns ONE concern (single responsibility) and is
+// pulled in here in a deliberate order.  Partial order matters because
+// later rules win on equal specificity (e.g. components can override the
+// reset, but the reset must be defined first).
+//
+// To add a new component:
+//   1. Create `components/_<name>.scss` with one BEM block + nested children.
+//   2. Add a single `@use 'components/<name>';` line below, in the slot
+//      that makes sense (related components grouped together).
+//
+// To change a global (tokens, themes, reset), edit the corresponding
+// `_tokens.scss` / `_themes.scss` / `_reset.scss` — never inline values.
+
+// 1. Tokens & themes — define design variables first so everything below
+//    can reference them.
+@use "tokens";
+@use "themes";
+
+// 2. Reset & base — global element styling, tag selectors, typography.
+@use "reset";
+
+// 3. Layout primitive — page shell, container, grid.
+@use "layout";
+
+// 4. Components — one BEM block per file.  Order inside this group is not
+//    semantically significant (BEM keeps specificity flat) but is grouped
+//    for human readability (chrome before content).
+@use "components/nav";
+@use "components/drawer";
+@use "components/btn";
+@use "components/hero";
+@use "components/subhero";
+@use "components/marquee";
+@use "components/chip";
+@use "components/install";
+@use "components/bench";
+@use "components/section";
+@use "components/tool";
+@use "components/pkg";
+@use "components/ns";
+@use "components/fx";
+@use "components/phead";
+@use "components/stat";
+@use "components/sitefoot";
+@use "components/modal";
+@use "components/swatch";
+@use "components/lang-opt";
+@use "components/toggle";
+@use "components/prompt";
+@use "components/resources-table";
+
+// 5. Component-local responsive overrides (kept last so they always win).
+@use "components/nav-media";
+
+// 6. View Transitions — Astro ClientRouter pseudo-elements last so they
+//    override anything else.
+@use "view-transitions";

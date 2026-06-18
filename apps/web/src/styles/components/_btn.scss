@@ -1,0 +1,30 @@
+// _btn.scss — pill-shaped call-to-action buttons.
+//
+// BEM root: .btn with `--primary` and `--ghost` modifiers.
+
+.btn {
+	display: inline-block;
+	padding: 0.7rem 1.3rem;
+	border-radius: 999px;
+	font-weight: 600;
+	border: 1px solid transparent;
+	cursor: pointer;
+}
+.btn--primary {
+	background: var(--accent);
+	color: var(--bg);
+
+	&:hover {
+		filter: brightness(1.08);
+		text-decoration: none;
+	}
+}
+.btn--ghost {
+	border-color: var(--line);
+	color: var(--fg);
+
+	&:hover {
+		border-color: var(--accent);
+		text-decoration: none;
+	}
+}

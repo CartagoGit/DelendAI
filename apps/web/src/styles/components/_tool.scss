@@ -1,0 +1,35 @@
+// _tool.scss — single tool/plugin entry in a tools list.
+//
+// BEM root: .tool with __head (label row holding name + effect badges).
+// Tag selectors (h3) are nested with `&` to keep the BEM scope.
+
+.tools-grid {
+	display: grid;
+	gap: 0.7rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+.tool {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	padding: 0.75rem 0.9rem;
+	min-width: 0;
+
+	& code {
+		color: var(--accent);
+		font-size: 0.9rem;
+		overflow-wrap: anywhere;
+	}
+	& p {
+		margin: 0.35rem 0 0;
+		color: var(--muted);
+		font-size: 0.86rem;
+		overflow-wrap: anywhere;
+	}
+}
+.tool__head {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}

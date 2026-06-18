@@ -53,7 +53,7 @@ const runner = (analysis: IProjectAnalysis): string => {
 };
 
 const buildValidationCommands = (
-	analysis: IProjectAnalysis
+	analysis: IProjectAnalysis,
 ): Record<string, string> => {
 	const prefix = runner(analysis);
 	const out: Record<string, string> = {};
@@ -73,11 +73,10 @@ const buildValidationCommands = (
  */
 export const recommendServerPlan = (
 	analysis: IProjectAnalysis,
-	options: IServerPlanOptions = {}
+	options: IServerPlanOptions = {},
 ): IServerPlan => {
 	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
-	const namespacePrefix =
-		options.namespacePrefix ?? kebabHead(analysis.name);
+	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
@@ -85,13 +84,15 @@ export const recommendServerPlan = (
 
 	const args = ['@mcp-vertex/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
-	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir) args.push(`--cacheDir=${cacheDir}`);
-	if (docsDir !== DEFAULT_CORE_PATHS.docsDir) args.push(`--docsDir=${docsDir}`);
+	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir)
+		args.push(`--cacheDir=${cacheDir}`);
+	if (docsDir !== DEFAULT_CORE_PATHS.docsDir)
+		args.push(`--docsDir=${docsDir}`);
 	if (options.namespacePrefix) args.push(`--prefix=${namespacePrefix}`);
 
 	const notes: string[] = [
 		...pattern.knowledgeHints,
-		analysis.hasMcpServer
+		analysis.hasMcpProject
 			? 'This project already has an MCP server: prefer adding the recommended tools to it over scaffolding a new one.'
 			: 'No MCP server found: scaffold a fresh one with `create_project`, then register it in mcp.json.',
 	];

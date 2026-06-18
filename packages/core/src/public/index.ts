@@ -10,10 +10,10 @@
 
 // --- server assembly -------------------------------------------------------
 export {
-	createMcpServer,
+	createMcpProject,
 	planRegistrationOrder,
-} from '../lib/server/create-mcp-server';
-export type { IMcpVertexServer } from '../lib/server/create-mcp-server';
+} from '../lib/project/create-mcp-project';
+export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
 
 // --- workspace + paths -----------------------------------------------------
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
@@ -25,7 +25,7 @@ export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interfac
 
 // --- contracts -------------------------------------------------------------
 export type { IMcpVertexHostConfig } from '../lib/contracts/interfaces/host-config.interface';
-export type { IMcpVertexServerMetadata } from '../lib/contracts/interfaces/server-metadata.interface';
+export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,

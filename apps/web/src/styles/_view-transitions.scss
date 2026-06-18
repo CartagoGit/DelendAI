@@ -1,0 +1,67 @@
+// _view-transitions.scss — View Transitions API styling (Astro ClientRouter).
+//
+// Header, footer, drawer and settings modal carry `transition:persist` so
+// they stay mounted across navigations — no remount, no jump.  We suppress
+// their default crossfade (animation-duration: 0s) so they look static
+// while only the <main> content swaps.
+//
+// The selectors are pseudo-element functions — they don't follow BEM and
+// are allow-listed in stylelint.config.mjs (IGNORE_SELECTORS).
+
+// Suppress crossfade on persist elements.
+::view-transition-old(site-nav),
+::view-transition-new(site-nav),
+::view-transition-old(site-footer),
+::view-transition-new(site-footer),
+::view-transition-old(cfg-modal),
+::view-transition-new(cfg-modal),
+::view-transition-old(nav-drawer),
+::view-transition-new(nav-drawer) {
+	animation-duration: 0s;
+}
+
+// Default <main> root fade-in with a tiny upward drift.
+::view-transition-old(root) {
+	animation-duration: 0.22s;
+	animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+}
+::view-transition-new(root) {
+	animation-duration: 0.28s;
+	animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+	animation-name: main-in;
+}
+@keyframes main-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+// Hero / page-title morph targets (any element with `transition:name="page-title"`).
+::view-transition-old(page-title),
+::view-transition-new(page-title) {
+	animation-duration: 0.22s;
+	animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+	mix-blend-mode: normal;
+}
+
+// Respect system-level reduced motion (separate from the data-motion setting).
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root),
+	::view-transition-old(page-title),
+	::view-transition-new(page-title) {
+		animation-duration: 0s;
+	}
+	@keyframes main-in {
+		from,
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+}

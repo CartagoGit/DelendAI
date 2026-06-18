@@ -8,7 +8,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 import proposalsPlugin from '@mcp-vertex/proposals';
@@ -49,7 +49,9 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		workspace = mkdtempSync(join(tmpdir(), 'e2e-os-'));
 		// A real git repo so the git tools hit their success path.
 		execFileSync('git', ['init', '-q'], { cwd: workspace });
-		execFileSync('git', ['config', 'user.email', 't@t.t'], { cwd: workspace });
+		execFileSync('git', ['config', 'user.email', 't@t.t'], {
+			cwd: workspace,
+		});
 		execFileSync('git', ['config', 'user.name', 'T'], { cwd: workspace });
 		writeFileSync(join(workspace, 'README.md'), '# e2e\n');
 		execFileSync('git', ['add', '.'], { cwd: workspace });
@@ -60,21 +62,24 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 				'--plugins=proposals,rules,memory,git,quality,search,notification,docs,deps',
 				`--workspace=${workspace}`,
 			],
-			workspace
+			workspace,
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => {
 				const hit = Object.entries(PLUGINS).find(([k]) =>
-					specifier.includes(k)
+					specifier.includes(k),
 				);
 				return { default: hit ? hit[1] : undefined };
 			},
 			readFile: () => undefined,
 		});
-		const assembled = await createMcpServer(config);
+		const assembled = await createMcpProject(config);
 		const [ct, st] = InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(st);
-		client = new Client({ name: 'e2e', version: '0.0.0' }, { capabilities: {} });
+		client = new Client(
+			{ name: 'e2e', version: '0.0.0' },
+			{ capabilities: {} },
+		);
 		await client.connect(ct);
 		close = async () => {
 			await client.close();
@@ -134,7 +139,8 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 			// tool with an outputSchema that returns no structuredContent
 			// makes the SDK fail output validation → isError.
 			if (res.isError || res.structuredContent === undefined) {
-				const txt = (res.content as Array<{ text?: string }>)?.[0]?.text ?? '';
+				const txt =
+					(res.content as Array<{ text?: string }>)?.[0]?.text ?? '';
 				broken.push(`${call.name}: ${txt.slice(0, 120)}`);
 			}
 		}
@@ -143,11 +149,21 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 
 	// M31: overview surfaces per-tool side effects; read-only tools have none.
 	it('overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
-		const res = await client.callTool({ name: 'mcp-vertex_overview', arguments: {} });
-		const tools = (res.structuredContent as { tools: Array<{ name: string; effects?: string[] }> }).tools;
-		const effOf = (name: string) => tools.find((t) => t.name === name)?.effects;
+		const res = await client.callTool({
+			name: 'mcp-vertex_overview',
+			arguments: {},
+		});
+		const tools = (
+			res.structuredContent as {
+				tools: Array<{ name: string; effects?: string[] }>;
+			}
+		).tools;
+		const effOf = (name: string) =>
+			tools.find((t) => t.name === name)?.effects;
 		expect(effOf('memory_save')).toContain('write');
-		expect(effOf('memory_forget')).toEqual(expect.arrayContaining(['write', 'destructive']));
+		expect(effOf('memory_forget')).toEqual(
+			expect.arrayContaining(['write', 'destructive']),
+		);
 		expect(effOf('quality_run_quality')).toContain('spawn');
 		expect(effOf('proposals_create_proposal')).toContain('write');
 		// genuinely read-only tools advertise no effects
@@ -162,7 +178,11 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 	it('every registered tool declares an outputSchema', async () => {
 		const { tools } = await client.listTools();
 		const missing = tools
-			.filter((t) => (t as { outputSchema?: unknown }).outputSchema === undefined)
+			.filter(
+				(t) =>
+					(t as { outputSchema?: unknown }).outputSchema ===
+					undefined,
+			)
 			.map((t) => t.name);
 		expect(missing, 'tools missing an outputSchema').toEqual([]);
 		expect(tools.length).toBeGreaterThan(20);
@@ -187,8 +207,8 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 			arguments: { proposalId: 'p1', sliceId: 's1' },
 		});
 		expect(closed.isError, 'close_slice').toBeFalsy();
-		expect(
-			(closed.structuredContent as { closed: boolean }).closed
-		).toBe(true);
+		expect((closed.structuredContent as { closed: boolean }).closed).toBe(
+			true,
+		);
 	});
 });

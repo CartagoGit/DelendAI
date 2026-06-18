@@ -28,7 +28,7 @@ import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
-import { createMcpServer } from '../server/create-mcp-server';
+import { createMcpProject } from '../project/create-mcp-project';
 import { joinRel } from '../shared/paths';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
@@ -50,7 +50,10 @@ export interface IAssembledCliConfig {
 	readonly loadResult: IPluginLoadResult;
 	/** Config-file diagnostic from the SAME read used to assemble (so the
 	 *  doctor doesn't read the file twice). [N21] */
-	readonly configDiagnostic: { readonly present: boolean; readonly issues: readonly string[] };
+	readonly configDiagnostic: {
+		readonly present: boolean;
+		readonly issues: readonly string[];
+	};
 	/** Absolute path of the resolved config file. */
 	readonly configPath: string;
 }
@@ -73,7 +76,7 @@ export interface IAssembleCliDeps {
  */
 export const assembleCliConfig = async (
 	args: IMcpVertexCliArgs,
-	deps: IAssembleCliDeps = {}
+	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
 	const readFile =
@@ -135,7 +138,8 @@ export const assembleCliConfig = async (
 	const qualifiedPluginTools: IToolRegistration[] = [];
 
 	for (const { plugin, registrations } of loadResult.loaded) {
-		const ns = pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
+		const ns =
+			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
 		if (registrations.prompts) prompts.push(...registrations.prompts);
 		if (registrations.resources) resources.push(...registrations.resources);
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
@@ -214,14 +218,23 @@ export const assembleCliConfig = async (
 	// Metrics registry instruments every tool (M12); the `metrics` tool reads it
 	// and can persist timestamped snapshots under `<cacheDir>/metrics/` (M29).
 	const metricsRegistry = createMetricsRegistry();
-	const metricsDirAbs = workspace.resolve(joinRel(corePaths.cacheDir, 'metrics'));
+	const metricsDirAbs = workspace.resolve(
+		joinRel(corePaths.cacheDir, 'metrics'),
+	);
 
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
-		buildValidationMatrixToolRegistration(corePrefix, () => validationMatrix),
+		buildValidationMatrixToolRegistration(
+			corePrefix,
+			() => validationMatrix,
+		),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
-		buildMetricsToolRegistration(corePrefix, metricsRegistry, metricsDirAbs),
+		buildMetricsToolRegistration(
+			corePrefix,
+			metricsRegistry,
+			metricsDirAbs,
+		),
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,
@@ -243,7 +256,7 @@ export const assembleCliConfig = async (
 
 	// A "start" workflow prompt for one-click orientation in clients.
 	prompts.unshift(
-		buildStartPromptRegistration(corePrefix, () => recommendedNextAction)
+		buildStartPromptRegistration(corePrefix, () => recommendedNextAction),
 	);
 
 	const config: IMcpVertexHostConfig = {
@@ -269,7 +282,10 @@ export const assembleCliConfig = async (
 export interface IDoctorReport {
 	readonly ok: boolean;
 	readonly configPath: string;
-	readonly config: { readonly present: boolean; readonly issues: readonly string[] };
+	readonly config: {
+		readonly present: boolean;
+		readonly issues: readonly string[];
+	};
 	readonly paths: { readonly cacheDir: string; readonly docsDir: string };
 	readonly plugins: {
 		readonly requested: readonly string[];
@@ -294,7 +310,7 @@ export interface IDoctorReport {
  */
 export const runDoctor = async (
 	args: IMcpVertexCliArgs,
-	deps: IAssembleCliDeps = {}
+	deps: IAssembleCliDeps = {},
 ): Promise<IDoctorReport> => {
 	// Single source of truth: assembleCliConfig already read + diagnosed the
 	// config file from one read; reuse that instead of reading it again. [N21]
@@ -307,7 +323,7 @@ export const runDoctor = async (
 	let assembles = true;
 	let assemblyError: string | undefined;
 	try {
-		await createMcpServer(config);
+		await createMcpProject(config);
 	} catch (error) {
 		assembles = false;
 		assemblyError = error instanceof Error ? error.message : String(error);
@@ -320,7 +336,10 @@ export const runDoctor = async (
 			assembles,
 		configPath,
 		config: configDiag,
-		paths: config.corePaths ?? { cacheDir: args.cacheDir, docsDir: args.docsDir },
+		paths: config.corePaths ?? {
+			cacheDir: args.cacheDir,
+			docsDir: args.docsDir,
+		},
 		plugins: {
 			requested: args.plugins,
 			loaded: loadResult.loaded.map((entry) => entry.plugin.name),
@@ -349,7 +368,7 @@ export const prepareServerBlueprintOnStart = async (
 	// The already-resolved cacheDir (CLI flag → config file → default). Passing
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
 	// rest of the store, including when it comes from mcp-vertex.config.json. [M15]
-	resolvedCacheDir?: string
+	resolvedCacheDir?: string,
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
 		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
@@ -368,7 +387,7 @@ export const prepareServerBlueprintOnStart = async (
 	await writeFile(
 		absPath,
 		`${JSON.stringify({ generatedAt: new Date().toISOString(), blueprint }, null, '\t')}\n`,
-		'utf8'
+		'utf8',
 	);
 	return { written: true, path: relPath };
 };
@@ -403,7 +422,7 @@ export const buildAssemblyDiagnostics = (
 	args: IMcpVertexCliArgs,
 	loadResult: IPluginLoadResult,
 	config: IMcpVertexHostConfig,
-	registrationOrder: readonly string[]
+	registrationOrder: readonly string[],
 ): IAssemblyDiagnostics => ({
 	workspace: args.workspace,
 	cacheDir: args.cacheDir,
@@ -431,19 +450,17 @@ export const formatVerbose = (d: IAssemblyDiagnostics): string => {
 	const loaded = d.plugins.loaded
 		.map((p) => (p.version ? `${p.name}@${p.version}` : p.name))
 		.join(', ');
-	return (
-		`${[
-			`[mcp-vertex] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
-			`[mcp-vertex] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
-			`[mcp-vertex] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
-			`[mcp-vertex] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
-		].join('\n')}\n`
-	);
+	return `${[
+		`[mcp-vertex] verbose: workspace=${d.workspace} cacheDir=${d.cacheDir} docsDir=${d.docsDir}`,
+		`[mcp-vertex] verbose: plugins requested=[${d.plugins.requested.join(', ')}] loaded=[${loaded}] errors=${d.plugins.errors.length}`,
+		`[mcp-vertex] verbose: counts tools=${d.counts.tools} prompts=${d.counts.prompts} resources=${d.counts.resources}`,
+		`[mcp-vertex] verbose: registrationOrder=[${d.registrationOrder.join(', ')}]`,
+	].join('\n')}\n`;
 };
 
 export const runCli = async (
 	argv: readonly string[],
-	cwd: string
+	cwd: string,
 ): Promise<void> => {
 	// `init`: merge the mcp-vertex server into the detected IDE configs and exit.
 	if (argv[0] === 'init') {
@@ -467,7 +484,7 @@ export const runCli = async (
 		// stderr only: stdout is the MCP stdio transport.
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
-	const assembled = await createMcpServer(config);
+	const assembled = await createMcpProject(config);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
 	if (args.tokens.verbose !== undefined) {
 		process.stderr.write(
@@ -476,9 +493,9 @@ export const runCli = async (
 					args,
 					loadResult,
 					config,
-					assembled.registrationOrder
-				)
-			)
+					assembled.registrationOrder,
+				),
+			),
 		);
 	}
 	await assembled.start();
@@ -491,7 +508,7 @@ export const runCli = async (
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
-						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcp-vertex_plan_mcp_project.\n`
+						`[mcp-vertex] wrote a project MCP server blueprint to ${result.path}; review it or call mcp-vertex_plan_mcp_project.\n`,
 					);
 				}
 			})

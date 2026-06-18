@@ -21,12 +21,12 @@ describe('analyzeProject', () => {
 					scripts: { test: 'vitest run', typecheck: 'tsc --noEmit' },
 				}),
 				'tsconfig.json': '{}',
-			})
+			}),
 		);
 		expect(analysis.projectType).toBe('library');
 		expect(analysis.language).toBe('typescript');
 		expect(analysis.testRunner).toBe('vitest');
-		expect(analysis.hasMcpServer).toBe(false);
+		expect(analysis.hasMcpProject).toBe(false);
 	});
 
 	it('detects a web app and an existing MCP server', () => {
@@ -40,11 +40,11 @@ describe('analyzeProject', () => {
 					},
 				}),
 				'.vscode/mcp.json': '{}',
-			})
+			}),
 		);
 		expect(analysis.projectType).toBe('webapp');
 		expect(analysis.framework).toBe('angular');
-		expect(analysis.hasMcpServer).toBe(true);
+		expect(analysis.hasMcpProject).toBe(true);
 	});
 
 	it('degrades gracefully without a package.json', () => {
@@ -60,7 +60,7 @@ describe('analyzeProject', () => {
 				'src/main.rs': 'fn main() {}',
 				'.gitlab-ci.yml': 'stages: [test]',
 				'CLAUDE.md': '# guide',
-			})
+			}),
 		);
 		expect(analysis.language).toBe('rust');
 		expect(analysis.projectType).toBe('cli');
@@ -70,7 +70,7 @@ describe('analyzeProject', () => {
 
 	it('detects monorepo tooling (nx/turbo)', () => {
 		const analysis = analyzeProject(
-			reader({ 'package.json': '{"name":"r"}', 'turbo.json': '{}' })
+			reader({ 'package.json': '{"name":"r"}', 'turbo.json': '{}' }),
 		);
 		expect(analysis.monorepoTool).toBe('turbo');
 		expect(analysis.projectType).toBe('monorepo');
@@ -85,7 +85,7 @@ describe('recommendServerPlan', () => {
 					name: 'big',
 					workspaces: ['packages/*'],
 				}),
-			})
+			}),
 		);
 		const plan = recommendServerPlan(analysis);
 		expect(plan.projectType).toBe('monorepo');
