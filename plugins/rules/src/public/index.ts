@@ -34,3 +34,6 @@ export {
 	buildApplyRulesRegistration,
 } from '../lib/tools/rules-tools';
 export type { IRulesToolOptions } from '../lib/tools/rules-tools';
+
+// --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
+export type * from '../generated/tool-outputs';

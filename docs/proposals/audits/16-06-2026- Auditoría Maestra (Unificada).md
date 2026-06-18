@@ -433,10 +433,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   texto nuevo, no redacta.)*
 
 **P2 — contratos / outputSchema:**
-- ⬜ **M24 · Schemas abiertos** `z.object({}).catchall(z.unknown())` en `bootstrap-tool`,
-  `scaffold-tool` y tools complejas de `proposals`; `rules` sin `outputSchema` parejo.
-  **Fix:** cerrar donde el shape es determinista; que `types:generate` falle si una tool
-  pública no declara `outputSchema` (excepción documentada para action-multiplexed).
+- ✅ **M24 · Guard "toda tool declara `outputSchema`".** Nuevo test e2e lista TODAS las
+  tools registradas y falla si alguna no declara `outputSchema` — caza la regresión en
+  el acto. Detectó las 3 tools de `rules` (`get_rules`/`check_rules`/`apply_rules`) sin
+  schema (justo lo que señalaba Codex): añadidos schemas precisos, `rules` enrutado en
+  el generador de tipos (`PACKAGE_ROUTES`) y reexportado en su `public`. 487 tests verde.
+  ⬜ Resta *cerrar* los `catchall` permisivos de `bootstrap`/`scaffold`/proposals
+  multiplexadas (excepción documentada, no bloqueante).
 
 **P2 — dedupe / calidad interna:**
 - ⬜ **M25 · Command runner compartido** `core/lib/commands/runner.ts` reusado por

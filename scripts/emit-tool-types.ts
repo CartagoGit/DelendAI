@@ -47,6 +47,7 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 	notification: { dir: 'plugins/notification', label: 'Notification' },
 	docs: { dir: 'plugins/docs', label: 'Docs' },
 	deps: { dir: 'plugins/deps', label: 'Deps' },
+	rules: { dir: 'plugins/rules', label: 'Rules' },
 	proposals: { dir: 'plugins/proposals', label: 'Proposals' },
 };
 

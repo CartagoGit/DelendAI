@@ -150,6 +150,19 @@ export const buildGetRulesRegistration = (
 				description:
 					'Returns the lint/type rules map: per project area its framework, the ESLint and typecheck configs in priority order (the project’s own config first, our default behind), the enforcement mode, the supported presets and the per-framework conventions. Read-only.',
 				inputSchema: z.object({ area: z.string().optional() }),
+				outputSchema: z.object({
+					mode: z.string(),
+					modeGuidance: z.string(),
+					supported: z.array(z.string()),
+					areas: z.array(
+						z.object({
+							project: z.string(),
+							area: z.string(),
+							rules: z.object({}).catchall(z.unknown()),
+						})
+					),
+					conventions: z.record(z.string(), z.array(z.string())),
+				}),
 			},
 			async (args: { area?: string | undefined }) => {
 				const manifest = loadManifest(options);
@@ -185,6 +198,20 @@ export const buildCheckRulesRegistration = (
 				description:
 					'Returns how to check each area against its rules: the resolved ESLint configs (project first) and the exact command to run. Advisory and agnostic — you run the command; it does not execute or modify anything.',
 				inputSchema: z.object({ area: z.string().optional() }),
+				outputSchema: z.object({
+					checks: z.array(
+						z.object({
+							project: z.string(),
+							area: z.string(),
+							framework: z.string(),
+							eslintConfigs: z.array(z.string()),
+							typecheckConfigs: z.array(z.string()),
+							command: z.string(),
+							typecheckCommand: z.string().optional(),
+							missingEslintDeps: z.array(z.string()),
+						})
+					),
+				}),
 			},
 			async (args: { area?: string | undefined }) => {
 				const manifest = loadManifest(options);
@@ -237,6 +264,16 @@ export const buildApplyRulesRegistration = (
 				inputSchema: z.object({
 					area: z.string().optional(),
 					files: z.array(z.string()).optional(),
+				}),
+				outputSchema: z.object({
+					mode: z.string(),
+					modeGuidance: z.string(),
+					area: z.string(),
+					framework: z.string(),
+					eslintConfigs: z.array(z.string()),
+					command: z.string(),
+					fixCommand: z.string(),
+					steps: z.array(z.string()),
 				}),
 			},
 			async (args: { area?: string | undefined; files?: string[] | undefined }) => {
