@@ -1,0 +1,63 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+type IPrompt = {
+	name: string;
+	description: string;
+	namespace: string;
+	arguments?: Array<{ name: string; description: string; required?: boolean }>;
+};
+
+const prompts = (capabilities.prompts ?? []) as IPrompt[];
+const groups: Record<string, IPrompt[]> = {};
+for (const p of prompts) (groups[p.namespace] ??= []).push(p);
+const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<section id="prompts" class="section">
+	<div class="container">
+		<h2>{t('prompts.title')}</h2>
+		<p class="lead">{t('prompts.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.prompts ?? prompts.length}</b><span>{t('prompts.count')}</span></div>
+		</div>
+		{
+			namespaces.length === 0 ? (
+				<p class="lead">{t('prompts.lead')}</p>
+			) : (
+				namespaces.map(([ns, list]) => (
+					<div class="ns">
+						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
+						<div class="prompts-grid">
+							{list.map((prompt) => (
+								<div class="prompt">
+									<div class="tool__head">
+										<code>{prompt.name}</code>
+									</div>
+									<p>{prompt.description}</p>
+									{prompt.arguments && prompt.arguments.length > 0 && (
+										<details class="prompt__args">
+											<summary>{t('prompts.arg')} ({prompt.arguments.length})</summary>
+											<ul>
+												{prompt.arguments.map((a) => (
+													<li><code>{a.name}</code>{a.required && <span class="prompt__req">*</span>} — {a.description}</li>
+												))}
+											</ul>
+										</details>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
+				))
+			)
+		}
+	</div>
+</section>

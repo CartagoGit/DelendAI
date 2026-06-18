@@ -1,0 +1,45 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+type IKnowledge = { id: string; title: string; namespace: string };
+const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
+const groups: Record<string, IKnowledge[]> = {};
+for (const k of knowledge) (groups[k.namespace] ??= []).push(k);
+const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<section id="knowledge" class="section">
+	<div class="container">
+		<h2>{t('knowledge.title')}</h2>
+		<p class="lead">{t('knowledge.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.knowledge ?? knowledge.length}</b><span>{t('knowledge.count')}</span></div>
+		</div>
+		{
+			namespaces.length === 0 ? (
+				<p class="lead">{t('knowledge.lead')}</p>
+			) : (
+				namespaces.map(([ns, list]) => (
+					<div class="ns">
+						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
+						<div class="tools-grid">
+							{list.map((k) => (
+								<div class="tool">
+									<code>{k.id}</code>
+									<p>{k.title}</p>
+								</div>
+							))}
+						</div>
+					</div>
+				))
+			)
+		}
+	</div>
+</section>
