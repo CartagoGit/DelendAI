@@ -93,7 +93,12 @@ const dict: LangDict = {
 		motion: 'Chuyển động',
 		motionLabel: 'Hoạt họa các marquee',
 	},
-	footer: { built: 'Sinh từ registry công cụ sống.' },
+	footer: {
+		built: 'Sinh từ registry công cụ sống.',
+		tagline: 'Lõi máy chủ MCP không phụ thuộc dự án + bộ nạp plugin.',
+		sections: 'Mục',
+		resources: 'Tài nguyên',
+	},
 	pluginpage: { back: 'Quay lại', tools: 'Công cụ', install: 'Cài đặt' },
 	plugin: {
 		proposals:

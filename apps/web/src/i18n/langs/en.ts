@@ -98,7 +98,12 @@ const dict: LangDict = {
 		motion: 'Motion',
 		motionLabel: 'Animate the marquees',
 	},
-	footer: { built: 'Generated from the live tool registry.' },
+	footer: {
+		built: 'Generated from the live tool registry.',
+		tagline: 'A project-agnostic MCP server core + plugin loader.',
+		sections: 'Sections',
+		resources: 'Resources',
+	},
 	pluginpage: { back: 'Back', tools: 'Tools', install: 'Install' },
 	plugin: {
 		proposals:

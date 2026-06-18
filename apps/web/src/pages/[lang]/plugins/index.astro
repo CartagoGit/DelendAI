@@ -28,7 +28,7 @@ const count = capabilities.counts.packages;
 			<h1 transition:name="page-title" transition:animate="fade">{t.plugins.title}</h1>
 			<p class="subhero__lead">{t.plugins.lead}</p>
 			<div class="subhero__meta">
-				<span><b>{count}</b>{t.tools.packages}</span>
+				<span class="subhero__meta-item"><b>{count}</b>{t.tools.packages}</span>
 			</div>
 			<div class="subhero__ctas">
 				<a class="btn btn--ghost" href={`${base}/${lang}/tools`}>{t.nav.tools} →</a>

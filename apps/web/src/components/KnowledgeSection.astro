@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { describeKnowledge } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 
 interface Props {
@@ -18,6 +19,7 @@ for (const k of knowledge) {
 const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
+const title = (k: IKnowledge) => describeKnowledge(k.id, lang) ?? k.title;
 ---
 
 <section id="knowledge" class="section">
@@ -36,9 +38,9 @@ const namespaces = Object.entries(groups).sort((a, b) =>
 						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
 						<div class="tools-grid">
 							{list.map((k) => (
-								<div class="tool">
+								<div class="tool card">
 									<code>{k.id}</code>
-									<p>{k.title}</p>
+									<p>{title(k)}</p>
 								</div>
 							))}
 						</div>

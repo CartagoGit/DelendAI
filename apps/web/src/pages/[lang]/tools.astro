@@ -28,9 +28,9 @@ const homeHref = `${base}/${lang}/`;
 			</nav>
 			<h1 transition:name="page-title" transition:animate="fade">{t.tools.title}</h1>
 			<p class="subhero__lead">{t.tools.lead}</p>
-			<div class="subhero__meta">
-				<span><b>{capabilities.counts.tools}</b>{t.tools.count}</span>
-				<span><b>{capabilities.counts.packages}</b>{t.tools.packages}</span>
+			
+				<span class="subhero__meta-item"><b>{capabilities.counts.tools}</b>{t.tools.count}</span>
+				<span class="subhero__meta-item"><b>{capabilities.counts.packages}</b>{t.tools.packages}</span>
 			</div>
 			<div class="subhero__ctas">
 				<a class="btn btn--ghost" href={`${base}/${lang}/plugins`}>{t.nav.plugins} →</a>

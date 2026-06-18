@@ -25,6 +25,16 @@
 	height: auto;
 	margin-bottom: 1.2rem;
 	filter: drop-shadow(0 6px 24px color-mix(in srgb, var(--accent) 25%, transparent));
+	animation: notfound-float 5s ease-in-out infinite;
+}
+@keyframes notfound-float {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-2deg);
+	}
+	50% {
+		transform: translateY(-6px) rotate(2deg);
+	}
 }
 .notfound__code {
 	margin: 0 0 0.4rem;

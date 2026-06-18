@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { describeTool } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 
 interface Props {
@@ -33,6 +34,9 @@ const ns = nsFor(slug);
 const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === ns)
 	.sort((a, b) => a.name.localeCompare(b.name));
+// Localized description with graceful English fallback.
+const toolDesc = (tool: ITool) =>
+	describeTool(tool.name, lang) ?? tool.description;
 
 const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 const description = t(`plugin.${slug}`);
@@ -79,7 +83,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 		<h2>{t.pluginpage.tools}</h2>
 		<div class="tools-grid">
 			{tools.map((tool) => (
-				<div class="tool">
+				<div class="tool card">
 					<div class="tool__head">
 						<code>{tool.name}</code>
 						{(tool.effects ?? []).map((e) => (
@@ -87,7 +91,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 						))}
 						{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
 					</div>
-					<p>{tool.description}</p>
+					<p>{toolDesc(tool)}</p>
 				</div>
 			))}
 		</div>

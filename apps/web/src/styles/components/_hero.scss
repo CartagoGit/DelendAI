@@ -53,6 +53,58 @@
 	display: block;
 	margin: 0 auto 1.1rem;
 	filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent));
+	animation: hero-logo-pulse 6s ease-in-out infinite;
+}
+@keyframes hero-logo-pulse {
+	0%,
+	100% {
+		filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent));
+	}
+	50% {
+		filter: drop-shadow(0 6px 22px color-mix(in srgb, var(--accent) 60%, transparent));
+	}
+}
+@keyframes hero-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.hero {
+	& h1,
+	& p.hero__sub,
+	& p.tagline,
+	& .ctas,
+	& .runs,
+	& .hero__logo,
+	& .hero__pkg {
+		animation: hero-fade-up 0.6s ease both;
+	}
+	& h1 {
+		animation-delay: 0.05s;
+	}
+	& p.hero__sub {
+		animation-delay: 0.15s;
+	}
+	& p.tagline {
+		animation-delay: 0.22s;
+	}
+	& .ctas {
+		animation-delay: 0.3s;
+	}
+	& .runs {
+		animation-delay: 0.36s;
+	}
+	& .hero__logo {
+		animation-delay: 0s;
+	}
+	& .hero__pkg {
+		animation-delay: 0.05s;
+	}
 }
 .hero__pkg {
 	display: inline-block;

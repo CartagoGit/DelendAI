@@ -2,7 +2,7 @@
 import PluginPage from '../../../components/PluginPage.astro';
 import Base from '../../../layouts/Base.astro';
 import capabilities from '../../../data/capabilities.json';
-import { languages } from '../../../i18n/ui';
+import { languages, type Lang } from '../../../i18n/ui';
 
 export function getStaticPaths() {
 	const slugOf = (name: string) =>
@@ -17,8 +17,13 @@ export function getStaticPaths() {
 }
 
 const { lang, plugin } = Astro.params;
+// Runtime guard: never render lang="undefined" (was the root cause of "switching
+// language only translates the home page" — Astro fell back to English silently).
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
 ---
 
-<Base lang={lang as Lang}>
-	<PluginPage lang={lang as Lang} slug={plugin!} />
+<Base lang={langCode}>
+	<PluginPage lang={langCode} slug={plugin!} />
 </Base>

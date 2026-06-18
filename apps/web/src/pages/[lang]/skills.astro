@@ -28,7 +28,7 @@ const count = (skillsData.skills ?? []).length;
 			<h1 transition:name="page-title" transition:animate="fade">{t.skills.title}</h1>
 			<p class="subhero__lead">{t.skills.lead}</p>
 			<div class="subhero__meta">
-				<span><b>{count}</b>{t.skills.count}</span>
+				<span class="subhero__meta-item"><b>{count}</b>{t.skills.count}</span>
 			</div>
 			<div class="subhero__ctas">
 				<a class="btn btn--ghost" href={`${base}/${lang}/tools`}>{t.nav.tools} →</a>

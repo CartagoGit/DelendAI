@@ -9,10 +9,27 @@
 	inset: 0;
 	z-index: 50;
 	display: none;
+	pointer-events: none;
 
 	&[open],
 	&--open {
 		display: block;
+		pointer-events: auto;
+	}
+
+	// When NOT open, fade-out animations still need to play (if any).
+	&:not(&--open):not([open]) {
+		display: none;
+	}
+
+	// Open-state animations. Nested inside `.modal` so the selectors stay
+	// `&`-rooted (`&--open .modal__backdrop`) and pass the BEM rule,
+	// which rejects top-level descendant chains.
+	&--open .modal__backdrop {
+		animation: modal-fade-in 0.18s ease both;
+	}
+	&--open .modal__panel {
+		animation: modal-pop-in 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 	}
 }
 .modal__backdrop {
@@ -25,7 +42,7 @@
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%) scale(0.94);
 	width: min(28rem, calc(100vw - 2rem));
 	max-height: calc(100vh - 2rem);
 	overflow: auto;
@@ -33,6 +50,25 @@
 	border: 1px solid var(--line);
 	border-radius: 16px;
 	padding: 1.4rem;
+	opacity: 0;
+}
+@keyframes modal-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes modal-pop-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.94);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
 }
 .modal__head {
 	display: flex;

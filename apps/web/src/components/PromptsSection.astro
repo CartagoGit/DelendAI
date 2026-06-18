@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
+import { describePrompt, describePromptArg } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 
 interface Props {
@@ -28,6 +29,9 @@ for (const p of prompts) {
 const namespaces = Object.entries(groups).sort((a, b) =>
 	a[0].localeCompare(b[0]),
 );
+const desc = (p: IPrompt) => describePrompt(p.name, lang) ?? p.description;
+const argDesc = (p: IPrompt, argName: string, fallback: string) =>
+	describePromptArg(p.name, argName, lang) ?? fallback;
 ---
 
 <section id="prompts" class="section">
@@ -46,17 +50,17 @@ const namespaces = Object.entries(groups).sort((a, b) =>
 						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
 						<div class="prompts-grid">
 							{list.map((prompt) => (
-								<div class="prompt">
+								<div class="prompt card">
 									<div class="tool__head">
 										<code>{prompt.name}</code>
 									</div>
-									<p>{prompt.description}</p>
+									<p>{desc(prompt)}</p>
 									{prompt.arguments && prompt.arguments.length > 0 && (
 										<details class="prompt__args">
 											<summary>{t.prompts.arg} ({prompt.arguments.length})</summary>
 											<ul>
 												{prompt.arguments.map((a) => (
-													<li><code>{a.name}</code>{a.required && <span class="prompt__req">*</span>} — {a.description}</li>
+													<li><code>{a.name}</code>{a.required && <span class="prompt__req">*</span>} — {argDesc(prompt, a.name, a.description)}</li>
 												))}
 											</ul>
 										</details>

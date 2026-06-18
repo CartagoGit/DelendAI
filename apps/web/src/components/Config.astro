@@ -109,13 +109,19 @@ const THEME_ACCENT: Record<string, string> = {
 
 		const open = () => {
 			modal?.removeAttribute('hidden');
-			modal?.classList.add('is-open');
+			modal?.classList.add('modal--open');
 			if (motion) motion.checked = root.dataset.motion !== 'off';
 			markActiveTheme();
 		};
 		const close = () => {
-			modal?.setAttribute('hidden', '');
-			modal?.classList.remove('is-open');
+			modal?.classList.remove('modal--open');
+			// Keep the node in the DOM until the pop-out animation ends so the
+			// transition can play. Then hide it so it disappears from the a11y tree.
+			window.setTimeout(() => {
+				if (!modal?.classList.contains('modal--open')) {
+					modal?.setAttribute('hidden', '');
+				}
+			}, 240);
 		};
 
 		openBtn?.addEventListener('click', open, { signal });
