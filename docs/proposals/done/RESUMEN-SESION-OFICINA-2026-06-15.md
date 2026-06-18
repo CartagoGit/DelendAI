@@ -41,7 +41,7 @@ modelo inferior (lo pediste explícitamente).
   devuelve error estructurado nombrando el backup**; `closed-tasks-log`
   (diagnóstico) preserva + warning a stderr + sigue con `[]`. +24 tests.
 - **R2** (09:01): `coreToolRegistrations()` vacío eliminado de
-  `create-mcp-server.ts` y de `public/index.ts`.
+  `create-mcp-project.ts` y de `public/index.ts`.
 - **R14** (14:26): internos `subagent-*` → `agent-*` (tipos, constantes,
   funciones, campos; 3 ficheros vía `git mv`). Preservado por compat de schema en
   disco: el filename `subagent-registry.json` y la terminología conceptual.

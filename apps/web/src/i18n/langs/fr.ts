@@ -133,6 +133,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: 'Page introuvable',
+		lead: "La page que vous cherchez n'existe pas ou a été déplacée. Le cœur reste agnostique — même des URL cassées.",
+		homeCta: "Retour à l'accueil",
+		toolsCta: 'Voir les outils',
+		homeAria: "Aller à l'accueil",
+	},
 };
 
 export default dict;

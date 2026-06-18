@@ -127,6 +127,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: '页面未找到',
+		lead: '你查找的页面不存在或已被移动。内核保持与项目无关——甚至对损坏的 URL 也一样。',
+		homeCta: '返回首页',
+		toolsCta: '浏览工具',
+		homeAria: '前往首页',
+	},
 };
 
 export default dict;

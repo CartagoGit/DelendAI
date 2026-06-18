@@ -174,6 +174,15 @@ export interface IPluginPageTranslations {
 	readonly install: string;
 }
 
+export interface INotFoundTranslations {
+	readonly code: string;
+	readonly title: string;
+	readonly lead: string;
+	readonly homeCta: string;
+	readonly toolsCta: string;
+	readonly homeAria: string;
+}
+
 /** Plugin descriptor keys: keep in sync with `apps/web/src/data/capabilities.json`. */
 export type PluginKey =
 	| 'proposals'
@@ -203,6 +212,7 @@ export interface ITranslations {
 	readonly footer: IFooterTranslations;
 	readonly pluginpage: IPluginPageTranslations;
 	readonly plugin: IPluginTranslations;
+	readonly notFound: INotFoundTranslations;
 	readonly knowledge: IKnowledgeTranslations;
 	readonly prompts: IPromptsTranslations;
 	readonly resources: IResourcesTranslations;

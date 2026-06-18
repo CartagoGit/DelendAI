@@ -128,7 +128,7 @@
 > **Cómo continuar (orden sugerido, todo de bajo riesgo salvo donde se indica):**
 > 1. ✅ **M10 (corrupto ≠ vacío)** — HECHO con tests (ver bloque de arriba).
 > 2. ✅ **R2 (trivial)** — `coreToolRegistrations()` vacío eliminado de
->    `create-mcp-server.ts` y de `public/index.ts`.
+>    `create-mcp-project.ts` y de `public/index.ts`.
 > 3. ✅ **R14** (cosmético, amplio) — HECHO (ver bloque de arriba).
 > 4. ✅ **M7** (unificar schema de lock) — HECHO (ver bloque de arriba).
 > 5. **M4** (tracks configurables) + **M5** (carpetas `paused/demos` inyectables) —
@@ -274,7 +274,7 @@ Leyenda revisores: S=Sonnet, G=Gemini, C=Codex, O=Opus. (n/4 = cuántos lo viero
 | # | Hallazgo | Quién | Fix |
 |---|---|---|---|
 | R1 | **`joinRel` duplicado** en core/rules/memory | S·G | mover a `@cartago-git/mcp-vertex/public` |
-| R2 | ✅ **HECHO** — `coreToolRegistrations()` vacío eliminado de `create-mcp-server.ts` y `public/index.ts` (`planRegistrationOrder([], extras)`) | S·G | hecho |
+| R2 | ✅ **HECHO** — `coreToolRegistrations()` vacío eliminado de `create-mcp-project.ts` y `public/index.ts` (`planRegistrationOrder([], extras)`) | S·G | hecho |
 | R3 | **Doctor re-lee config** (diagnose + assemble) | S·G | unificar (assemble devuelve diagnóstico) |
 | R4 | **Mezcla sync/async I/O** en `persistent-task-queue` | S·G·C | async en rutas calientes |
 | R5 | **`rules`: deps eslint del framework no verificadas** → `check_rules` propone comando que fallará | O | detectar/avisar deps ausentes o degradar a core-only |

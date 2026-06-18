@@ -648,7 +648,7 @@ camino al 11/10 — solo acabados de plataforma.**
   `create_server`/`plan_mcp_server` → `create_project`/`plan_mcp_project`;
   `serverPackageName`→`projectPackageName`; rutas generadas `libs/mcp-server/*` →
   `libs/mcp-project/*`; flags `--mcp-server-create/-tests` →
-  `--mcp-project-create/-tests`. No toca `createMcpServer` (función real de protocolo)
+  `--mcp-project-create/-tests`. No toca `createMcpProject` (función real de protocolo)
   ni la detección de servidores de terceros. 525/525 tests verdes.
 - **✅ M43 · `agent_worktree` (proposals)** — nueva tool (`create`/`list`/`remove`)
   que aísla a cada agente concurrente en su propio `git worktree` + rama
@@ -661,7 +661,7 @@ camino al 11/10 — solo acabados de plataforma.**
   el usuario preguntó si, ya que este repo se auto-sirve vía `.mcp.json`
   (`--preset=swarm`), debería también pasar por su propio bootstrap. Verificado
   ejecutando `analyzeProject`+`recommendServerPlan` contra este mismo repo: el
-  análisis detecta correctamente `hasMcpServer:true` y devuelve la nota
+  análisis detecta correctamente `hasMcpProject:true` y devuelve la nota
   *"this project already has an MCP server: prefer adding the recommended tools to
   it over scaffolding a new one"* — es decir, el propio bootstrap desaconseja
   duplicar un host aquí. Lo que sí falta para "trabajar perfectamente sobre sí

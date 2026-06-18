@@ -89,7 +89,7 @@ Estos ficheros generan recomendaciones con sesgos hacia Bun/TypeScript que puede
 ## 🟡 REGULAR — Funciona pero mejorable
 
 ### 9. `coreToolRegistrations` retorna siempre array vacío
-**Fichero**: [`create-mcp-server.ts#L23`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L23-L27)
+**Fichero**: [`create-mcp-project.ts#L23`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L23-L27)
 
 ```typescript
 export function coreToolRegistrations(
@@ -141,7 +141,7 @@ El directorio `tests/` existe con estructura `src/lib/{bootstrap,cli,plugins,sca
 ## 🟢 COMO DEBE ESTAR — Correcto y funcional
 
 ### 15. `planRegistrationOrder` es determinístico y falla rápido
-**Fichero**: [`create-mcp-server.ts#L37`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L37-L77)
+**Fichero**: [`create-mcp-project.ts#L37`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L37-L77)
 
 Excelente implementación: detecta IDs duplicados, anchors desconocidos, y la inserción ordenada es correcta. El uso de `throw` en lugar de silenciar errores es la decisión correcta.
 
@@ -339,7 +339,7 @@ El plugin `proposals` es el más complejo del repo (~25 ficheros, ~120KB de cód
 | 🟠 P1 | Migrar schema de lock a un único formato (eliminar compat layer) | `persistent-task-queue.ts` |
 | 🟡 P2 | Mover `joinRel` al `public/index.ts` del core | múltiples ficheros |
 | 🟡 P2 | Cambiar el modelo default en `scaffold-host.ts` | `scaffold-host.ts` |
-| 🟡 P2 | Eliminar o rellenar `coreToolRegistrations` | `create-mcp-server.ts` |
+| 🟡 P2 | Eliminar o rellenar `coreToolRegistrations` | `create-mcp-project.ts` |
 | 🟡 P2 | Añadir tool `proposals_health_check` al plugin | nuevo fichero |
 | 🟢 P3 | Dividir `round-context.ts` (875 líneas) en módulos más pequeños | `round-context.ts` |
 | 🟢 P3 | Añadir auto-resolución de `waiterOrphans` | `task-queue-engine.ts` |

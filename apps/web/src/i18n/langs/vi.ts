@@ -132,6 +132,14 @@ const dict: LangDict = {
 		count: 'skills',
 		body: 'Body',
 	},
+	notFound: {
+		code: '404',
+		title: 'Không tìm thấy trang',
+		lead: 'Trang bạn tìm không tồn tại hoặc đã được di chuyển. Lõi vẫn bất khả tri — ngay cả với các URL hỏng.',
+		homeCta: 'Về trang chủ',
+		toolsCta: 'Xem công cụ',
+		homeAria: 'Đi đến trang chủ',
+	},
 };
 
 export default dict;

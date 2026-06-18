@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpServer } from '@mcp-vertex/core/lib/server/create-mcp-server';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 import proposalsPlugin from '@mcp-vertex/proposals';
@@ -35,10 +35,7 @@ import notificationPlugin from '@mcp-vertex/notification';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
 
-import {
-	buildPackageModules,
-	type IHarvestedTool,
-} from './emit-tool-types';
+import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -65,18 +62,18 @@ const PLUGIN_LIST =
 export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 	const args = parseCliArgs(
 		[`--plugins=${PLUGIN_LIST}`, `--workspace=${REPO_ROOT}`],
-		REPO_ROOT
+		REPO_ROOT,
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async (specifier: string) => {
 			const hit = Object.entries(PLUGIN_SPECIFIERS).find(([key]) =>
-				specifier.includes(key)
+				specifier.includes(key),
 			);
 			return { default: hit ? hit[1] : undefined };
 		},
 		readFile: () => undefined,
 	});
-	const assembled = await createMcpServer(config);
+	const assembled = await createMcpProject(config);
 	try {
 		const registered = (
 			assembled.server as unknown as {

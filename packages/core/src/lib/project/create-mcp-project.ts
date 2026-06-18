@@ -15,7 +15,7 @@ import {
  */
 const instrumentToolMetrics = (
 	server: McpServer,
-	registry: IMetricsRegistry
+	registry: IMetricsRegistry,
 ): void => {
 	type RegisterTool = McpServer['registerTool'];
 	const original = server.registerTool.bind(server) as RegisterTool;
@@ -29,7 +29,8 @@ const instrumentToolMetrics = (
 				registry.record(name, {
 					ms: performance.now() - start,
 					bytes: estimateResultBytes(result),
-					isError: (result as { isError?: boolean })?.isError === true,
+					isError:
+						(result as { isError?: boolean })?.isError === true,
 				});
 				return result;
 			} catch (err) {
@@ -58,7 +59,7 @@ const instrumentToolMetrics = (
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
  */
-export interface IMcpVertexServer {
+export interface IMcpVertexProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
 	start(): Promise<void>;
@@ -74,19 +75,19 @@ export interface IMcpVertexServer {
  */
 export function planRegistrationOrder(
 	core: readonly IToolRegistration[],
-	extras: readonly IToolRegistration[]
+	extras: readonly IToolRegistration[],
 ): readonly IToolRegistration[] {
 	const sequence: IToolRegistration[] = [...core];
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
 		throw new Error(
-			'[mcp-vertex] duplicate registration id in core sequence'
+			'[mcp-vertex] duplicate registration id in core sequence',
 		);
 	}
 	for (const extra of extras) {
 		if (seen.has(extra.id)) {
 			throw new Error(
-				`[mcp-vertex] duplicate registration id "${extra.id}"`
+				`[mcp-vertex] duplicate registration id "${extra.id}"`,
 			);
 		}
 		seen.add(extra.id);
@@ -95,11 +96,11 @@ export function planRegistrationOrder(
 			continue;
 		}
 		const anchorIndex = sequence.findIndex(
-			(registration) => registration.id === extra.registerAfter
+			(registration) => registration.id === extra.registerAfter,
 		);
 		if (anchorIndex < 0) {
 			throw new Error(
-				`[mcp-vertex] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`
+				`[mcp-vertex] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`,
 			);
 		}
 		let insertIndex = anchorIndex + 1;
@@ -119,9 +120,9 @@ export function planRegistrationOrder(
  * registration (core + extras), then prompts, then resources. The
  * caller starts the stdio transport via `start()`.
  */
-export async function createMcpServer(
-	config: IMcpVertexHostConfig
-): Promise<IMcpVertexServer> {
+export async function createMcpProject(
+	config: IMcpVertexHostConfig,
+): Promise<IMcpVertexProject> {
 	const server = new McpServer({
 		name: config.metadata.name,
 		version: config.metadata.version,

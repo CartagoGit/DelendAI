@@ -131,7 +131,7 @@ El workflow de CI cubre `typecheck + test` y `pack smoke` (validación de que lo
 
 ### 9. `coreToolRegistrations` eliminado pero `planRegistrationOrder` recibe `[]` siempre
 
-**Fichero**: [`create-mcp-server.ts#L80`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L80)
+**Fichero**: [`create-mcp-project.ts#L80`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L80)
 
 ```typescript
 const ordered = planRegistrationOrder([], config.extraTools ?? []);
@@ -233,7 +233,7 @@ Problema crítico de versiones anteriores: **resuelto**. El type es ahora `strin
 
 ### 21. `planRegistrationOrder` — determinístico, falla rápido, correcto
 
-**Fichero**: [`server/create-mcp-server.ts#L26`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/server/create-mcp-server.ts#L26)
+**Fichero**: [`project/create-mcp-project.ts#L26`](file:///home/cartago/_projects/mcp-vertex/packages/core/src/lib/project/create-mcp-project.ts#L26)
 
 Detección de IDs duplicados, anchors desconocidos, inserción en orden preservando declaración. `throw` en lugar de silenciar. Función pura y testeable en aislamiento. Exactamente lo correcto.
 
