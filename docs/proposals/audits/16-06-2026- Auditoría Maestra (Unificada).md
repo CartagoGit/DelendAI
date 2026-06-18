@@ -357,9 +357,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ✅ Al hacer hover el icono escala **sin salirse** de la marquesina
   (`overflow-x:clip; overflow-y:visible`) y muestra el nombre (tooltip), sin reflujo.
 - ✅ Suficientes elementos para llenar; ⬜ revisar densidad/velocidad por breakpoint.
-- 🟡 **El usuario reporta que la marquesina "sigue viéndose mal" (18-06)** pese a los
-  cambios estructurales → pendiente de pulido visual fino (contraste de chips, encaje
-  con el ancho real, comportamiento en el primer frame). Verificar en vivo por breakpoint.
+- ✅ **Banda central más legible** (max-width 56rem, chips más grandes/contrastados,
+  fade más amplio).
+- ✅ **Tooltip del hover ya no se corta.** Bug real: `overflow-x:clip` fuerza a
+  `overflow-y` a computar `auto`, así que el tooltip (que salía hacia arriba) se
+  recortaba. Fix: `overflow:clip` en ambos ejes + el tooltip va **hacia abajo** dentro
+  de un `padding-bottom` reservado → visible sin provocar scroll horizontal de página.
+- 🟡 Verificar densidad/velocidad y el conjunto en vivo por breakpoint.
 
 **Configuración (persistida en `localStorage`):**
 - ✅ Botón de engranaje → **modal**; **5 temas** (dark/light/midnight/solarized/nord);
