@@ -57,6 +57,31 @@
 			"formatter": {
 				"lineWidth": 80
 			}
+		},
+		{
+			"includes": ["**/*.astro"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedImports": "off",
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"apps/web/src/data/capabilities.json",
+				"apps/web/src/data/skills.json"
+			],
+			"formatter": { "enabled": false }
+		},
+		{
+			"includes": [
+				"**/src/generated/tool-outputs.ts",
+				"packages/core/schema/mcp-vertex.config.schema.json"
+			],
+			"formatter": { "enabled": false }
 		}
 	],
 	"linter": {

@@ -32,6 +32,6 @@ export interface NotificationNotifyStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface NotificationToolOutputs {
-	notification_await_lock: NotificationAwaitLockOutput;
-	notification_notify_status: NotificationNotifyStatusOutput;
+	"notification_await_lock": NotificationAwaitLockOutput;
+	"notification_notify_status": NotificationNotifyStatusOutput;
 }

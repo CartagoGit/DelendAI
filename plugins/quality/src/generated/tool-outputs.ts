@@ -13,13 +13,10 @@
  */
 
 export interface QualityGetQualityScopesOutput {
-	scopes: Record<
-		string,
-		{
-			command: string;
-			expect?: string;
-		}[]
-	>;
+	scopes: Record<string, {
+		command: string;
+		expect?: string;
+	}[]>;
 }
 
 export interface QualityQualityCancelOutput {
@@ -41,7 +38,7 @@ export interface QualityRunQualityOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface QualityToolOutputs {
-	quality_get_quality_scopes: QualityGetQualityScopesOutput;
-	quality_quality_cancel: QualityQualityCancelOutput;
-	quality_run_quality: QualityRunQualityOutput;
+	"quality_get_quality_scopes": QualityGetQualityScopesOutput;
+	"quality_quality_cancel": QualityQualityCancelOutput;
+	"quality_run_quality": QualityRunQualityOutput;
 }
