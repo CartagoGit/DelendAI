@@ -55,7 +55,7 @@ const firstToken = (value: string): string =>
  */
 export const buildRoundContextOutput = async (
 	input: { forceRefresh?: boolean | undefined },
-	options: IRoundContextToolOptions
+	options: IRoundContextToolOptions,
 ): Promise<IRoundContextOutput> => {
 	const recomputedAt = new Date().toISOString();
 	const digestPath = options.digestPathAbs;
@@ -64,13 +64,18 @@ export const buildRoundContextOutput = async (
 		collectRoundContextSnapshot(
 			options.workspaceRoot,
 			options.layout,
-			options.extraFolders ?? []
+			options.extraFolders ?? [],
 		),
 	]);
 
 	if (input.forceRefresh === true) {
-		const { checkpoint, chatContext, proposalPortfolio, activeLocks, activeAgents } =
-			liveSnapshot;
+		const {
+			checkpoint,
+			chatContext,
+			proposalPortfolio,
+			activeLocks,
+			activeAgents,
+		} = liveSnapshot;
 		const fallbackTaskId =
 			activeLocks[0]?.taskId ?? activeAgents[0]?.taskId ?? 'unknown';
 		const activeProposalId =
@@ -127,7 +132,7 @@ export const buildRoundContextOutput = async (
  * single-slice execution.
  */
 export const buildRoundContextRegistration = (
-	options: IRoundContextToolOptions
+	options: IRoundContextToolOptions,
 ): IToolRegistration => ({
 	id: 'round_context',
 	effects: ['write'],
@@ -138,7 +143,7 @@ export const buildRoundContextRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_round_context`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Round digest only: return the persisted multi-agent round context and whether it is stale. forceRefresh recomputes and persists it. Use for resumed swarm work, not normal single-slice execution.',
 				inputSchema: z.object({
@@ -148,7 +153,7 @@ export const buildRoundContextRegistration = (
 			async (args: { forceRefresh?: boolean | undefined }) => {
 				const out = await buildRoundContextOutput(args ?? {}, options);
 				return toolJson(out as unknown as Record<string, unknown>);
-			}
+			},
 		);
 	},
 });

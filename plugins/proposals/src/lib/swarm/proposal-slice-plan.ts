@@ -68,10 +68,10 @@ const asGate = (value: string | undefined): ISliceGate =>
  */
 export const parseProposalSlicePlan = (
 	proposalId: string,
-	markdown: string
+	markdown: string,
 ): IProposalSlicePlan | null => {
 	const sectionMatch = markdown.match(
-		/^## Slices\s*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/m
+		/^## Slices\s*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/m,
 	);
 	if (sectionMatch === null) return null;
 	const section = sectionMatch[1] ?? '';
@@ -82,7 +82,7 @@ export const parseProposalSlicePlan = (
 	const slices: IProposalSliceContract[] = [];
 	const sliceBlocks = [
 		...section.matchAll(
-			/^### (\S+)\s+—\s+(.+)$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gm
+			/^### (\S+)\s+—\s+(.+)$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gm,
 		),
 	];
 	for (const block of sliceBlocks) {
@@ -126,7 +126,7 @@ export const parseProposalSlicePlan = (
 
 /** Pairs of slices whose `files` overlap (forbidden by construction). */
 export const planDisjointnessIssues = (
-	plan: IProposalSlicePlan
+	plan: IProposalSlicePlan,
 ): readonly ISliceOverlap[] => {
 	const issues: ISliceOverlap[] = [];
 	for (let i = 0; i < plan.slices.length; i += 1) {
@@ -161,7 +161,7 @@ export interface ILockSnapshotEntry {
  */
 export const deriveSliceStatuses = (
 	plan: IProposalSlicePlan,
-	activeLocks: readonly ILockSnapshotEntry[]
+	activeLocks: readonly ILockSnapshotEntry[],
 ): IProposalSlicePlan => {
 	const byTask = new Map(activeLocks.map((lock) => [lock.taskId, lock]));
 	return {
@@ -184,10 +184,10 @@ export const deriveSliceStatuses = (
  */
 export const validateClaim = (
 	plan: IProposalSlicePlan,
-	sliceId: string
+	sliceId: string,
 ): IClaimValidation => {
 	const slice = plan.slices.find(
-		(candidate) => candidate.sliceId === sliceId
+		(candidate) => candidate.sliceId === sliceId,
 	);
 	if (slice === undefined) {
 		return {
@@ -212,7 +212,7 @@ export const validateClaim = (
 	}
 	const byId = new Map(plan.slices.map((s) => [s.sliceId, s]));
 	const missingDeps = slice.dependsOn.filter(
-		(dep) => byId.get(dep)?.status !== 'done'
+		(dep) => byId.get(dep)?.status !== 'done',
 	);
 	if (missingDeps.length > 0) {
 		return {

@@ -27,15 +27,28 @@ export interface IContainedPath {
  * vectors. Symlinks that point outside the workspace are a deeper follow-up and
  * should be guarded by the host's filesystem sandbox.
  */
-export const resolveWorkspaceContained = (rootAbs: string, child: string): IContainedPath => {
+export const resolveWorkspaceContained = (
+	rootAbs: string,
+	child: string,
+): IContainedPath => {
 	const root = resolve(rootAbs);
 	if (isAbsolute(child)) {
-		return { ok: false, abs: child, rel: child, reason: `absolute path not allowed: ${child}` };
+		return {
+			ok: false,
+			abs: child,
+			rel: child,
+			reason: `absolute path not allowed: ${child}`,
+		};
 	}
 	const abs = resolve(root, child);
 	const rel = relative(root, abs).split(sep).join('/');
 	if (rel === '..' || rel.startsWith('../')) {
-		return { ok: false, abs, rel, reason: `path escapes workspace: ${child}` };
+		return {
+			ok: false,
+			abs,
+			rel,
+			reason: `path escapes workspace: ${child}`,
+		};
 	}
 	return { ok: true, abs, rel: rel === '' ? '.' : rel };
 };

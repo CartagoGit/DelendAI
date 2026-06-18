@@ -24,9 +24,7 @@
 		"types": ["bun", "node"],
 		"paths": {
 			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
-			"@mcp-vertex/core/public": [
-				"./packages/core/src/public/index.ts"
-			],
+			"@mcp-vertex/core/public": ["./packages/core/src/public/index.ts"],
 			"@mcp-vertex/core/*": ["./packages/core/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
@@ -34,9 +32,7 @@
 			],
 			"@mcp-vertex/proposals/*": ["./plugins/proposals/src/*"],
 			"@mcp-vertex/rules": ["./plugins/rules/src/index.ts"],
-			"@mcp-vertex/rules/public": [
-				"./plugins/rules/src/public/index.ts"
-			],
+			"@mcp-vertex/rules/public": ["./plugins/rules/src/public/index.ts"],
 			"@mcp-vertex/rules/*": ["./plugins/rules/src/*"],
 			"@mcp-vertex/memory": ["./plugins/memory/src/index.ts"],
 			"@mcp-vertex/memory/public": [
@@ -56,9 +52,7 @@
 				"./plugins/search/src/public/index.ts"
 			],
 			"@mcp-vertex/search/*": ["./plugins/search/src/*"],
-			"@mcp-vertex/notification": [
-				"./plugins/notification/src/index.ts"
-			],
+			"@mcp-vertex/notification": ["./plugins/notification/src/index.ts"],
 			"@mcp-vertex/notification/public": [
 				"./plugins/notification/src/public/index.ts"
 			],

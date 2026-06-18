@@ -38,7 +38,7 @@ const SLICE_INPUT = z.object({
  * splitting work across agents without them stepping on each other.
  */
 export const buildPlanRegistration = (
-	namespacePrefix: string
+	namespacePrefix: string,
 ): IToolRegistration => ({
 	id: 'plan',
 	summary:
@@ -48,7 +48,11 @@ export const buildPlanRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_plan`,
 			{
-						outputSchema: z.object({ plan: z.unknown(), disjointnessIssues: z.array(z.unknown()), claimableSliceIds: z.array(z.string()) }),
+				outputSchema: z.object({
+					plan: z.unknown(),
+					disjointnessIssues: z.array(z.unknown()),
+					claimableSliceIds: z.array(z.string()),
+				}),
 				description:
 					'Turn proposed slices into a validated parallel plan: reports file-overlap (disjointness) issues and which slices are claimable now. Read-only. Use before delegating work to multiple agents.',
 				inputSchema: z.object({
@@ -73,7 +77,7 @@ export const buildPlanRegistration = (
 						gate: asGate(slice.gate),
 						status: 'pending',
 						acceptanceCriteria: slice.acceptanceCriteria ?? [],
-					})
+					}),
 				);
 				const plan: IProposalSlicePlan = {
 					proposalId: args.proposalId ?? 'adhoc',
@@ -84,10 +88,12 @@ export const buildPlanRegistration = (
 					plan,
 					disjointnessIssues: planDisjointnessIssues(plan),
 					claimableSliceIds: slices
-						.filter((slice) => validateClaim(plan, slice.sliceId).ok)
+						.filter(
+							(slice) => validateClaim(plan, slice.sliceId).ok,
+						)
 						.map((slice) => slice.sliceId),
 				});
-			}
+			},
 		);
 	},
 });
@@ -105,7 +111,7 @@ export interface IDelegateToolOptions {
  * registry + lock engines.
  */
 export const buildDelegateRegistration = (
-	options: IDelegateToolOptions
+	options: IDelegateToolOptions,
 ): IToolRegistration => ({
 	id: 'delegate',
 	effects: ['write'],
@@ -116,7 +122,7 @@ export const buildDelegateRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_delegate`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Delegate a slice to a subagent: assigns it a symbolic name (agent registry) and claims its files (agent lock) atomically, returning the handoff packet {agent, taskId, files, locked, instruction}. If the files are already locked it reports the conflict instead of claiming.',
 				inputSchema: z.object({
@@ -147,10 +153,10 @@ export const buildDelegateRegistration = (
 							? { parent_task_id: args.parentTaskId }
 							: {}),
 					},
-					options.agentNames
+					options.agentNames,
 				);
 				const assigned = JSON.parse(
-					assignResult.content[0]?.text ?? '{}'
+					assignResult.content[0]?.text ?? '{}',
 				) as { agent_name?: string; blocked?: boolean; error?: string };
 				if (assigned.agent_name === undefined) {
 					return toolJson({
@@ -169,9 +175,11 @@ export const buildDelegateRegistration = (
 					{
 						lockPath: options.lockPathAbs,
 						toolName: `${options.namespacePrefix}_agent_lock`,
-					}
+					},
 				);
-				const lock = JSON.parse(lockResult.content[0]?.text ?? '{}') as {
+				const lock = JSON.parse(
+					lockResult.content[0]?.text ?? '{}',
+				) as {
 					blocked?: boolean;
 				};
 				if (lock.blocked === true) {
@@ -192,7 +200,7 @@ export const buildDelegateRegistration = (
 					locked: true,
 					instruction: `You are "${assigned.agent_name}". Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
 				});
-			}
+			},
 		);
 	},
 });

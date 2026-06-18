@@ -40,7 +40,7 @@ export default definePlugin({
 				reader,
 				workspaceRoot: ctx.workspace.root,
 				run: createCommandRunner(
-					typeof timeoutMs === 'number' ? timeoutMs : undefined
+					typeof timeoutMs === 'number' ? timeoutMs : undefined,
 				),
 				...(ctx.options.scopes
 					? {

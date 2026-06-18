@@ -13,7 +13,11 @@ import {
 	REQUIRED_ESLINT_DEPS,
 	SUPPORTED_PRESET_IDS,
 } from '../frameworks/presets';
-import type { IAreaRules, IRulesManifest, IRulesMode } from '../frameworks/types';
+import type {
+	IAreaRules,
+	IRulesManifest,
+	IRulesMode,
+} from '../frameworks/types';
 import { RULES_MODE_GUIDANCE } from '../frameworks/types';
 
 export interface IRulesToolOptions {
@@ -47,7 +51,7 @@ const loadManifest = (options: IRulesToolOptions): IRulesManifest => {
 };
 
 const areasOf = (
-	manifest: IRulesManifest
+	manifest: IRulesManifest,
 ): ReadonlyArray<{ project: string; area: string; rules: IAreaRules }> => {
 	const out: Array<{ project: string; area: string; rules: IAreaRules }> = [];
 	for (const [project, areas] of Object.entries(manifest.projects)) {
@@ -59,7 +63,7 @@ const areasOf = (
 };
 
 const conventionsFor = (
-	manifest: IRulesManifest
+	manifest: IRulesManifest,
 ): Readonly<Record<string, readonly string[]>> => {
 	const out: Record<string, readonly string[]> = {};
 	for (const { rules } of areasOf(manifest)) {
@@ -93,10 +97,13 @@ const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
 
 const readDeps = (
 	reader: IRulesToolOptions['reader'],
-	areaDir: string
+	areaDir: string,
 ): Record<string, string> => {
 	const out: Record<string, string> = {};
-	for (const rel of ['package.json', areaDir === 'root' || areaDir === '' ? '' : `${areaDir}/package.json`]) {
+	for (const rel of [
+		'package.json',
+		areaDir === 'root' || areaDir === '' ? '' : `${areaDir}/package.json`,
+	]) {
 		if (rel === '') continue;
 		const raw = reader.readFile(rel);
 		if (raw === undefined) continue;
@@ -105,7 +112,11 @@ const readDeps = (
 				dependencies?: Record<string, string>;
 				devDependencies?: Record<string, string>;
 			};
-			Object.assign(out, pkg.dependencies ?? {}, pkg.devDependencies ?? {});
+			Object.assign(
+				out,
+				pkg.dependencies ?? {},
+				pkg.devDependencies ?? {},
+			);
 		} catch {
 			// ignore
 		}
@@ -117,7 +128,7 @@ const readDeps = (
 const missingEslintDeps = (
 	reader: IRulesToolOptions['reader'],
 	areaDir: string,
-	presetId: string
+	presetId: string,
 ): readonly string[] => {
 	const required = REQUIRED_ESLINT_DEPS[presetId] ?? [];
 	if (required.length === 0) return [];
@@ -129,15 +140,13 @@ const missingEslintDeps = (
 const typecheckCommand = (rules: IAreaRules): string | undefined => {
 	if (rules.typecheck.length === 0) return undefined;
 	// Prefer the project's own tsconfig (entries not under the cache dir).
-	const projectTsconfig = rules.typecheck.find(
-		(p) => !p.includes('.cache/')
-	);
+	const projectTsconfig = rules.typecheck.find((p) => !p.includes('.cache/'));
 	return `tsc --noEmit -p ${projectTsconfig ?? rules.typecheck[0]}`;
 };
 
 /** get_rules — the map of which rules apply where, + mode + conventions. */
 export const buildGetRulesRegistration = (
-	options: IRulesToolOptions
+	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'get_rules',
 	summary:
@@ -159,7 +168,7 @@ export const buildGetRulesRegistration = (
 							project: z.string(),
 							area: z.string(),
 							rules: z.object({}).catchall(z.unknown()),
-						})
+						}),
 					),
 					conventions: z.record(z.string(), z.array(z.string())),
 				}),
@@ -178,14 +187,14 @@ export const buildGetRulesRegistration = (
 					areas: selected,
 					conventions: conventionsFor(manifest),
 				});
-			}
+			},
 		);
 	},
 });
 
 /** check_rules — how to validate an area (resolved configs + command). */
 export const buildCheckRulesRegistration = (
-	options: IRulesToolOptions
+	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'check_rules',
 	summary:
@@ -209,7 +218,7 @@ export const buildCheckRulesRegistration = (
 							command: z.string(),
 							typecheckCommand: z.string().optional(),
 							missingEslintDeps: z.array(z.string()),
-						})
+						}),
 					),
 				}),
 			},
@@ -223,7 +232,7 @@ export const buildCheckRulesRegistration = (
 				if (selected.length === 0) {
 					return toolError(
 						`no area "${args.area}" in the rules map`,
-						'Call get_rules to list areas.'
+						'Call get_rules to list areas.',
 					);
 				}
 				return toolJson({
@@ -238,18 +247,18 @@ export const buildCheckRulesRegistration = (
 						missingEslintDeps: missingEslintDeps(
 							options.reader,
 							entry.area,
-							entry.rules.presetId
+							entry.rules.presetId,
 						),
 					})),
 				});
-			}
+			},
 		);
 	},
 });
 
 /** apply_rules — a mode-aware plan to bring an area into compliance. */
 export const buildApplyRulesRegistration = (
-	options: IRulesToolOptions
+	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'apply_rules',
 	summary:
@@ -276,7 +285,10 @@ export const buildApplyRulesRegistration = (
 					steps: z.array(z.string()),
 				}),
 			},
-			async (args: { area?: string | undefined; files?: string[] | undefined }) => {
+			async (args: {
+				area?: string | undefined;
+				files?: string[] | undefined;
+			}) => {
 				const manifest = loadManifest(options);
 				const all = areasOf(manifest);
 				const entry =
@@ -286,7 +298,7 @@ export const buildApplyRulesRegistration = (
 				if (entry === undefined) {
 					return toolError(
 						'no matching area',
-						'Call get_rules to list areas.'
+						'Call get_rules to list areas.',
 					);
 				}
 				const mode = manifest.mode;
@@ -300,7 +312,9 @@ export const buildApplyRulesRegistration = (
 							: entry.area;
 				const steps =
 					mode === 'none'
-						? [`Run \`${command}\` and report violations. Do not edit.`]
+						? [
+								`Run \`${command}\` and report violations. Do not edit.`,
+							]
 						: mode === 'proposal'
 							? [
 									`Run \`${command}\` to collect violations.`,
@@ -326,7 +340,7 @@ export const buildApplyRulesRegistration = (
 					fixCommand,
 					steps,
 				});
-			}
+			},
 		);
 	},
 });

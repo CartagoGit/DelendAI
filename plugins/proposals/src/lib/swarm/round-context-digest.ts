@@ -36,7 +36,7 @@ import type {
  * filesystem access).
  */
 export const buildRoundContextDigest = (
-	input: IRoundContextDigestInput
+	input: IRoundContextDigestInput,
 ): IRoundContextDigest => ({
 	roundId: input.roundId,
 	activeProposalId: input.activeProposalId,
@@ -64,7 +64,7 @@ export const buildRoundContextDigest = (
 export const isDigestStale = (
 	digest: IRoundContextDigest,
 	currentHashes: Readonly<Record<string, string>>,
-	currentSources: IRoundContextSources = digest.sources
+	currentSources: IRoundContextSources = digest.sources,
 ): boolean => {
 	for (const [key, recorded] of Object.entries(digest.coreDocHashes)) {
 		const live = currentHashes[key];
@@ -92,7 +92,7 @@ export const isDigestStale = (
  * real corruption signal the caller should surface.
  */
 export const readRoundContextDigest = async (
-	path: string
+	path: string,
 ): Promise<IRoundContextDigest | null> => {
 	let raw: string;
 	try {
@@ -115,7 +115,7 @@ export const readRoundContextDigest = async (
  */
 export const writeRoundContextDigest = async (
 	digest: IRoundContextDigest,
-	path: string
+	path: string,
 ): Promise<void> => {
 	const tmpPath = `${path}.tmp`;
 	await mkdir(dirname(path), { recursive: true });

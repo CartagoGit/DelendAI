@@ -16,7 +16,13 @@
  * Usage: `bun run build` (root) or `bun scripts/build.ts [pkgDir ...]`.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, rmSync, writeFileSync, unlinkSync } from 'node:fs';
+import {
+	existsSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+	unlinkSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,8 +35,8 @@ const discover = (): string[] =>
 			.filter(
 				(rel) =>
 					existsSync(join(ROOT, rel, 'package.json')) &&
-					existsSync(join(ROOT, rel, 'src', 'index.ts'))
-			)
+					existsSync(join(ROOT, rel, 'src', 'index.ts')),
+			),
 	);
 
 const run = (cmd: string, args: string[], cwd: string): void => {
@@ -44,18 +50,33 @@ const run = (cmd: string, args: string[], cwd: string): void => {
 const buildPackage = (rel: string): void => {
 	const dir = join(ROOT, rel);
 	const entries = ['src/index.ts'];
-	if (existsSync(join(dir, 'src/public/index.ts'))) entries.push('src/public/index.ts');
+	if (existsSync(join(dir, 'src/public/index.ts')))
+		entries.push('src/public/index.ts');
 	if (existsSync(join(dir, 'src/cli.ts'))) entries.push('src/cli.ts');
 
-	console.log(`\n• ${rel} → dist (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'})`);
+	console.log(
+		`\n• ${rel} → dist (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'})`,
+	);
 	rmSync(join(dir, 'dist'), { recursive: true, force: true });
 
 	// 1. JS bundles (deps external; bundler-style imports resolved here).
 	run(
 		'bun',
-		['build', ...entries, '--target', 'node', '--format', 'esm',
-			'--packages', 'external', '--outdir', 'dist', '--root', 'src'],
-		dir
+		[
+			'build',
+			...entries,
+			'--target',
+			'node',
+			'--format',
+			'esm',
+			'--packages',
+			'external',
+			'--outdir',
+			'dist',
+			'--root',
+			'src',
+		],
+		dir,
 	);
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
@@ -91,8 +112,8 @@ const buildPackage = (rel: string): void => {
 				exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
 			},
 			null,
-			'\t'
-		)
+			'\t',
+		),
 	);
 	try {
 		run('bunx', ['tsc', '-p', 'tsconfig.dts.json'], dir);
@@ -101,6 +122,7 @@ const buildPackage = (rel: string): void => {
 	}
 };
 
-const targets = process.argv.slice(2).length > 0 ? process.argv.slice(2) : discover();
+const targets =
+	process.argv.slice(2).length > 0 ? process.argv.slice(2) : discover();
 for (const rel of targets) buildPackage(rel);
 console.log(`\n✓ Built ${targets.length} package(s).`);

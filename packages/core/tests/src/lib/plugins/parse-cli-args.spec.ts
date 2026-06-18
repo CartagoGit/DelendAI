@@ -19,7 +19,7 @@ describe('parseCliArgs', () => {
 	it('parses --mcp-project-create=false and --mcp-project-tests=false', () => {
 		const args = parseCliArgs(
 			['--mcp-project-create=false', '--mcp-project-tests=false'],
-			'/cwd'
+			'/cwd',
 		);
 		expect(args.mcpProjectCreate).toBe(false);
 		expect(args.mcpProjectTests).toBe(false);
@@ -28,7 +28,7 @@ describe('parseCliArgs', () => {
 	it('parses --plugins as a comma list and overrides dirs', () => {
 		const args = parseCliArgs(
 			['--plugins=proposals,pepegrillo', '--cacheDir=.x', '--docsDir=d'],
-			'/cwd'
+			'/cwd',
 		);
 		expect(args.plugins).toEqual(['proposals', 'pepegrillo']);
 		expect(args.cacheDir).toBe('.x');
@@ -38,7 +38,7 @@ describe('parseCliArgs', () => {
 	it('supports --key value form and forwards unknown flags to extra', () => {
 		const args = parseCliArgs(
 			['--workspace', '/ws', '--proposalsDir', 'docs/p'],
-			'/cwd'
+			'/cwd',
 		);
 		expect(args.workspace).toBe('/ws');
 		expect(args.extra.proposalsDir).toBe('docs/p');
@@ -57,7 +57,7 @@ describe('parseCliArgs', () => {
 	it('merges --preset with explicit --plugins, de-duped, preset first', () => {
 		const args = parseCliArgs(
 			['--preset=minimal', '--plugins=memory,git'],
-			'/cwd'
+			'/cwd',
 		);
 		// minimal = [git, search]; + memory (git de-duped)
 		expect(args.plugins).toEqual(['git', 'search', 'memory']);

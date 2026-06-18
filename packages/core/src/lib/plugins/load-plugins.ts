@@ -34,13 +34,13 @@ export interface ILoadPluginsOptions {
 const withTimeout = async <T>(
 	promise: Promise<T>,
 	ms: number,
-	label: string
+	label: string,
 ): Promise<T> => {
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const timeout = new Promise<never>((_resolve, reject) => {
 		timer = setTimeout(
 			() => reject(new Error(`${label} timed out after ${ms}ms`)),
-			ms
+			ms,
 		);
 	});
 	try {
@@ -95,7 +95,7 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
  * processed in the order requested.
  */
 export const loadPlugins = async (
-	options: ILoadPluginsOptions
+	options: ILoadPluginsOptions,
 ): Promise<IPluginLoadResult> => {
 	const importer =
 		options.import ?? ((specifier: string) => import(specifier));
@@ -124,7 +124,7 @@ export const loadPlugins = async (
 				const mod = await withTimeout(
 					Promise.resolve(importer(candidate)),
 					timeoutMs,
-					`import("${candidate}")`
+					`import("${candidate}")`,
 				);
 				const found = asPlugin(mod);
 				if (found) {
@@ -132,10 +132,12 @@ export const loadPlugins = async (
 					resolved = candidate;
 					break;
 				}
-				attemptErrors.push(`${candidate}: no default IMcpPlugin export`);
+				attemptErrors.push(
+					`${candidate}: no default IMcpPlugin export`,
+				);
 			} catch (error) {
 				attemptErrors.push(
-					`${candidate}: ${error instanceof Error ? error.message : String(error)}`
+					`${candidate}: ${error instanceof Error ? error.message : String(error)}`,
 				);
 			}
 		}
@@ -169,7 +171,7 @@ export const loadPlugins = async (
 			const registrations = await withTimeout(
 				Promise.resolve(plugin.register(ctx)),
 				timeoutMs,
-				`plugin "${plugin.name}" register()`
+				`plugin "${plugin.name}" register()`,
 			);
 			loaded.push({ specifier, resolved, plugin, registrations });
 			loadedNames.add(plugin.name);

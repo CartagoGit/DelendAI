@@ -14,7 +14,10 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { quarantineCorruptFile, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	quarantineCorruptFile,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -57,16 +60,19 @@ const ClosedTasksLogSchema = z.array(ClosedTaskRecordSchema);
 // the file is kept, not discarded.
 // ---------------------------------------------------------------------------
 
-const quarantineCorruptLog = async (logPath: string, detail: string): Promise<void> => {
+const quarantineCorruptLog = async (
+	logPath: string,
+	detail: string,
+): Promise<void> => {
 	const backup = await quarantineCorruptFile(logPath);
 	process.stderr.write(
 		`[proposals] closed-tasks log "${logPath}" is corrupt (${detail}); ` +
-			`preserved at "${backup ?? '<rename failed>'}", continuing with empty log.\n`
+			`preserved at "${backup ?? '<rename failed>'}", continuing with empty log.\n`,
 	);
 };
 
 export const readClosedTasks = async (
-	logPath: string
+	logPath: string,
 ): Promise<IClosedTaskRecord[]> => {
 	let raw: string;
 	try {
@@ -97,7 +103,7 @@ export const readClosedTasks = async (
 
 export const appendToClosedTasks = async (
 	logPath: string,
-	record: IClosedTaskRecord
+	record: IClosedTaskRecord,
 ): Promise<void> => {
 	const existing = await readClosedTasks(logPath);
 

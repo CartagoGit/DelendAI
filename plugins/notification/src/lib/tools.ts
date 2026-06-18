@@ -27,7 +27,7 @@ export interface INotifyToolOptions {
  * react immediately instead of polling `agent_lock status` in a loop.
  */
 export const buildNotifyRegistration = (
-	options: INotifyToolOptions
+	options: INotifyToolOptions,
 ): IToolRegistration => {
 	let watcher: IReleaseWatcher | undefined;
 	let lastReleases: readonly IReleasedClaim[] = [];
@@ -77,14 +77,24 @@ export const buildNotifyRegistration = (
 				{
 					description:
 						'Report the lock-release notifier: the watched lock file, how many lock-released notifications it has pushed, and the most recent releases. The notifier emits notifications/message {event:"lock-released",taskId,agent,files} so agents react to freed files instead of polling agent_lock.',
-						outputSchema: z.object({ watching: z.string(), emitted: z.number(), lastReleases: z.array(z.object({ taskId: z.string(), agent: z.string(), files: z.array(z.string()) })) }),
+					outputSchema: z.object({
+						watching: z.string(),
+						emitted: z.number(),
+						lastReleases: z.array(
+							z.object({
+								taskId: z.string(),
+								agent: z.string(),
+								files: z.array(z.string()),
+							}),
+						),
+					}),
 				},
 				async () =>
 					toolJson({
 						watching: options.lockFileAbs,
 						emitted,
 						lastReleases,
-					})
+					}),
 			);
 		},
 	};
@@ -98,7 +108,7 @@ export const buildNotifyRegistration = (
  * waits are aborted when the server closes.
  */
 export const buildAwaitLockRegistration = (
-	options: INotifyToolOptions
+	options: INotifyToolOptions,
 ): IToolRegistration => {
 	const pending = new Set<AbortController>();
 	return {
@@ -131,14 +141,19 @@ export const buildAwaitLockRegistration = (
 						waitedMs: z.number(),
 					}),
 				},
-				async (args: { taskId: string; timeoutMs?: number | undefined }) => {
+				async (args: {
+					taskId: string;
+					timeoutMs?: number | undefined;
+				}) => {
 					const ac = new AbortController();
 					pending.add(ac);
 					try {
 						const r = await awaitLockRelease({
 							lockFile: options.lockFileAbs,
 							taskId: args.taskId,
-							...(args.timeoutMs !== undefined ? { timeoutMs: args.timeoutMs } : {}),
+							...(args.timeoutMs !== undefined
+								? { timeoutMs: args.timeoutMs }
+								: {}),
 							signal: ac.signal,
 						});
 						return toolJson({
@@ -151,7 +166,7 @@ export const buildAwaitLockRegistration = (
 					} finally {
 						pending.delete(ac);
 					}
-				}
+				},
 			);
 		},
 	};

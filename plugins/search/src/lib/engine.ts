@@ -45,7 +45,7 @@ export interface ISearchOptions {
 export class InvalidSearchPatternError extends Error {
 	constructor(
 		readonly pattern: string,
-		readonly detail: string
+		readonly detail: string,
 	) {
 		super(`invalid regex "${pattern}": ${detail}`);
 		this.name = 'InvalidSearchPatternError';
@@ -86,10 +86,8 @@ const globToRegExp = (glob: string): RegExp => {
 	return new RegExp(`^${re}$`);
 };
 
-const matchesAnyGlob = (
-	relPath: string,
-	globs: readonly RegExp[]
-): boolean => globs.some((re) => re.test(relPath));
+const matchesAnyGlob = (relPath: string, globs: readonly RegExp[]): boolean =>
+	globs.some((re) => re.test(relPath));
 
 interface IGitignoreRule {
 	readonly re: RegExp;
@@ -135,7 +133,7 @@ export const parseGitignore = (raw: string): readonly IGitignoreRule[] =>
 export const isGitignored = (
 	relPath: string,
 	isDir: boolean,
-	rules: readonly IGitignoreRule[]
+	rules: readonly IGitignoreRule[],
 ): boolean => {
 	let ignored = false;
 	for (const rule of rules) {
@@ -146,13 +144,37 @@ export const isGitignored = (
 };
 
 const DEFAULT_EXTENSIONS: readonly string[] = [
-	'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'json', 'md', 'mdx', 'txt',
-	'yml', 'yaml', 'toml', 'css', 'scss', 'html', 'svg', 'sh',
+	'ts',
+	'tsx',
+	'js',
+	'jsx',
+	'mjs',
+	'cjs',
+	'json',
+	'md',
+	'mdx',
+	'txt',
+	'yml',
+	'yaml',
+	'toml',
+	'css',
+	'scss',
+	'html',
+	'svg',
+	'sh',
 ];
 
 const DEFAULT_IGNORE_DIRS: readonly string[] = [
-	'node_modules', '.git', 'dist', 'build', 'coverage', '.cache', '.next',
-	'.turbo', 'out', '.vscode-test',
+	'node_modules',
+	'.git',
+	'dist',
+	'build',
+	'coverage',
+	'.cache',
+	'.next',
+	'.turbo',
+	'out',
+	'.vscode-test',
 ];
 
 // Skip files larger than this (likely generated/binary); keep the scan cheap.
@@ -180,7 +202,7 @@ const clampMaxResults = (value: number | undefined): number => {
 export const searchWorkspace = async (
 	workspaceRootAbs: string,
 	query: string,
-	options: ISearchOptions = {}
+	options: ISearchOptions = {},
 ): Promise<ISearchResult> => {
 	const trimmed = query.trim();
 	const maxResults = clampMaxResults(options.maxResults);
@@ -188,12 +210,13 @@ export const searchWorkspace = async (
 		return { query, hits: [], truncated: false, scanned: 0 };
 	}
 
-	const roots = options.roots && options.roots.length > 0 ? options.roots : ['.'];
+	const roots =
+		options.roots && options.roots.length > 0 ? options.roots : ['.'];
 	const extensions = new Set(
 		(options.extensions && options.extensions.length > 0
 			? options.extensions
 			: DEFAULT_EXTENSIONS
-		).map((e) => e.toLowerCase())
+		).map((e) => e.toLowerCase()),
 	);
 	const ignoreDirs = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 	const caseSensitive = options.caseSensitive ?? false;
@@ -201,9 +224,10 @@ export const searchWorkspace = async (
 		options.respectGitignore === false
 			? []
 			: parseGitignore(
-					await readFile(join(workspaceRootAbs, '.gitignore'), 'utf8').catch(
-						() => ''
-					)
+					await readFile(
+						join(workspaceRootAbs, '.gitignore'),
+						'utf8',
+					).catch(() => ''),
 				);
 
 	// Line matcher: regex (compiled once) or literal substring.
@@ -227,7 +251,10 @@ export const searchWorkspace = async (
 	const includeGlobs = (options.include ?? []).map(globToRegExp);
 	const excludeGlobs = (options.exclude ?? []).map(globToRegExp);
 	const shouldSearch = (rel: string, name: string): boolean => {
-		if (gitignoreRules.length > 0 && isGitignored(rel, false, gitignoreRules)) {
+		if (
+			gitignoreRules.length > 0 &&
+			isGitignored(rel, false, gitignoreRules)
+		) {
 			return false;
 		}
 		if (excludeGlobs.length > 0 && matchesAnyGlob(rel, excludeGlobs)) {
@@ -275,25 +302,35 @@ export const searchWorkspace = async (
 	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
 		const entries = await readdir(absDir, { withFileTypes: true }).catch(
-			() => null
+			() => null,
 		);
 		if (entries === null) return;
 		// Deterministic order so results are stable across runs.
-		const sorted = [...entries].sort((a, b) => a.name.localeCompare(b.name));
+		const sorted = [...entries].sort((a, b) =>
+			a.name.localeCompare(b.name),
+		);
 		for (const entry of sorted) {
 			if (truncated) return;
 			if (entry.isDirectory()) {
 				if (ignoreDirs.has(entry.name)) continue;
-				const relDir = relative(workspaceRootAbs, join(absDir, entry.name))
+				const relDir = relative(
+					workspaceRootAbs,
+					join(absDir, entry.name),
+				)
 					.split(sep)
 					.join('/');
-				if (gitignoreRules.length > 0 && isGitignored(relDir, true, gitignoreRules)) {
+				if (
+					gitignoreRules.length > 0 &&
+					isGitignored(relDir, true, gitignoreRules)
+				) {
 					continue;
 				}
 				await walk(join(absDir, entry.name));
 			} else if (entry.isFile()) {
 				const absPath = join(absDir, entry.name);
-				const rel = relative(workspaceRootAbs, absPath).split(sep).join('/');
+				const rel = relative(workspaceRootAbs, absPath)
+					.split(sep)
+					.join('/');
 				if (shouldSearch(rel, entry.name)) {
 					await visitFile(absPath);
 				}

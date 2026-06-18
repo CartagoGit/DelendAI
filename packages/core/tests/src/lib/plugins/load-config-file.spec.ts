@@ -4,7 +4,10 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '@mcp-vertex/core/lib/plugins/load-config-file';
-import { assembleCliConfig, runDoctor } from '@mcp-vertex/core/lib/cli/assemble';
+import {
+	assembleCliConfig,
+	runDoctor,
+} from '@mcp-vertex/core/lib/cli/assemble';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
 
@@ -20,7 +23,7 @@ describe('parseConfigFile', () => {
 			JSON.stringify({
 				docsDir: 'docs/x',
 				plugins: { proposals: { prefix: 'work', options: { a: 1 } } },
-			})
+			}),
 		);
 		expect(config.docsDir).toBe('docs/x');
 		expect(pluginConfigFor(config, 'proposals')).toEqual({
@@ -47,7 +50,10 @@ describe('assembleCliConfig + config file', () => {
 	};
 
 	it('passes prefix + options from the config file to the plugin', async () => {
-		const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			['--plugins=demo', '--workspace=/ws'],
+			'/cwd',
+		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
 			readFile: () =>
@@ -63,7 +69,7 @@ describe('assembleCliConfig + config file', () => {
 	it('lets an explicit CLI flag win over the config file', async () => {
 		const args = parseCliArgs(
 			['--plugins=demo', '--cacheDir=.cli', '--workspace=/ws'],
-			'/cwd'
+			'/cwd',
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
@@ -73,7 +79,10 @@ describe('assembleCliConfig + config file', () => {
 	});
 
 	it('falls back to the config file when the CLI omits the flag', async () => {
-		const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			['--plugins=demo', '--workspace=/ws'],
+			'/cwd',
+		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
 			readFile: () => JSON.stringify({ cacheDir: '.fromfile' }),
@@ -89,13 +98,13 @@ describe('diagnoseConfigFile', () => {
 			issues: [],
 		});
 		expect(
-			diagnoseConfigFile(JSON.stringify({ cacheDir: '.x' })).issues
+			diagnoseConfigFile(JSON.stringify({ cacheDir: '.x' })).issues,
 		).toEqual([]);
 	});
 	it('reports invalid JSON and unknown keys', () => {
 		expect(diagnoseConfigFile('nope').issues[0]).toMatch(/invalid JSON/);
 		expect(
-			diagnoseConfigFile(JSON.stringify({ bogus: 1 })).issues.length
+			diagnoseConfigFile(JSON.stringify({ bogus: 1 })).issues.length,
 		).toBeGreaterThan(0);
 	});
 });
@@ -105,7 +114,7 @@ describe('runDoctor', () => {
 	it('reports loaded plugins, errors and counts without starting stdio', async () => {
 		const args = parseCliArgs(
 			['--plugins=demo,nope', '--workspace=/ws'],
-			'/cwd'
+			'/cwd',
 		);
 		const report = await runDoctor(args, {
 			import: async (specifier: string) => {
@@ -136,7 +145,10 @@ describe('plugin optionsSchema validation', () => {
 	};
 
 	it('rejects a plugin whose options fail its schema', async () => {
-		const args = parseCliArgs(['--plugins=strict', '--workspace=/ws'], '/cwd');
+		const args = parseCliArgs(
+			['--plugins=strict', '--workspace=/ws'],
+			'/cwd',
+		);
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: strictPlugin }),
 			readFile: () => undefined,

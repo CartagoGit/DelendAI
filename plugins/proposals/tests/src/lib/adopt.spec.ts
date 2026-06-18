@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProposals, type IScanEntry } from '@mcp-vertex/proposals/lib/proposals/adopt';
+import {
+	analyzeProposals,
+	type IScanEntry,
+} from '@mcp-vertex/proposals/lib/proposals/adopt';
 
 const md = (
 	id: string,
 	status: string,
-	type = 'proposal'
+	type = 'proposal',
 ): { id: string; status: string; type: string } => ({ id, status, type });
 
 describe('analyzeProposals (adoption)', () => {
@@ -13,8 +16,16 @@ describe('analyzeProposals (adoption)', () => {
 		const entries: IScanEntry[] = [
 			{ name: 'index.json', isDir: false },
 			{ name: 'README.md', isDir: false },
-			{ name: 'p1-add-login.md', isDir: false, frontmatter: md('p1', 'ready') },
-			{ name: 'f2-fix-crash.md', isDir: false, frontmatter: md('f2', 'ready', 'fix') },
+			{
+				name: 'p1-add-login.md',
+				isDir: false,
+				frontmatter: md('p1', 'ready'),
+			},
+			{
+				name: 'f2-fix-crash.md',
+				isDir: false,
+				frontmatter: md('f2', 'ready', 'fix'),
+			},
 			{ name: 'notes.md', isDir: false, frontmatter: null },
 			{ name: 'done', isDir: true },
 		];
@@ -48,7 +59,9 @@ describe('analyzeProposals (adoption)', () => {
 	});
 
 	it('an empty folder is guided to create_proposal; a clean indexed folder is ready', () => {
-		expect(analyzeProposals('p', []).plan.join(' ')).toMatch(/create_proposal/);
+		expect(analyzeProposals('p', []).plan.join(' ')).toMatch(
+			/create_proposal/,
+		);
 		const clean = analyzeProposals('p', [
 			{ name: 'index.json', isDir: false },
 			{ name: 'README.md', isDir: false },

@@ -24,9 +24,15 @@ export default definePlugin({
 		};
 		const defaults: IDocsOptions = {
 			...(Array.isArray(o.roots) ? { roots: o.roots } : {}),
-			...(Array.isArray(o.extensions) ? { extensions: o.extensions } : {}),
-			...(Array.isArray(o.ignoreDirs) ? { ignoreDirs: o.ignoreDirs } : {}),
-			...(typeof o.maxResults === 'number' ? { maxResults: o.maxResults } : {}),
+			...(Array.isArray(o.extensions)
+				? { extensions: o.extensions }
+				: {}),
+			...(Array.isArray(o.ignoreDirs)
+				? { ignoreDirs: o.ignoreDirs }
+				: {}),
+			...(typeof o.maxResults === 'number'
+				? { maxResults: o.maxResults }
+				: {}),
 		};
 		return {
 			tools: buildDocsToolRegistrations({

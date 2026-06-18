@@ -18,14 +18,15 @@ export interface IDocsToolOptions {
  * by path. Complements `search` (grep) with curated navigation.
  */
 export const buildDocsToolRegistrations = (
-	options: IDocsToolOptions
+	options: IDocsToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	const defaults = options.defaults ?? {};
 	return [
 		{
 			id: 'docs_list',
-			summary: 'Catalogue the project markdown docs (path + title), low-token.',
+			summary:
+				'Catalogue the project markdown docs (path + title), low-token.',
 			tags: ['docs', 'orientation', 'lazy'],
 			register: async (server) => {
 				server.registerTool(
@@ -45,7 +46,10 @@ export const buildDocsToolRegistrations = (
 							nextOffset: z.number().optional(),
 							truncated: z.boolean(),
 							docs: z.array(
-								z.object({ path: z.string(), title: z.string() })
+								z.object({
+									path: z.string(),
+									title: z.string(),
+								}),
 							),
 						}),
 					},
@@ -59,10 +63,16 @@ export const buildDocsToolRegistrations = (
 							{
 								...defaults,
 								...(args.roots ? { roots: args.roots } : {}),
-							}
+							},
 						);
-						const limit = Math.max(1, Math.min(200, Math.floor(args.limit ?? 50)));
-						const offset = Math.max(0, Math.floor(args.offset ?? 0));
+						const limit = Math.max(
+							1,
+							Math.min(200, Math.floor(args.limit ?? 50)),
+						);
+						const offset = Math.max(
+							0,
+							Math.floor(args.offset ?? 0),
+						);
 						const page = docs.slice(offset, offset + limit);
 						const nextOffset = offset + page.length;
 						return toolJson({
@@ -73,7 +83,7 @@ export const buildDocsToolRegistrations = (
 							truncated,
 							docs: page,
 						});
-					}
+					},
 				);
 			},
 		},
@@ -97,7 +107,9 @@ export const buildDocsToolRegistrations = (
 						}),
 					},
 					async (args: { path: string }) =>
-						toolJson(await readDoc(options.workspaceRootAbs, args.path))
+						toolJson(
+							await readDoc(options.workspaceRootAbs, args.path),
+						),
 				);
 			},
 		},

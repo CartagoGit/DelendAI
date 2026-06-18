@@ -18,7 +18,8 @@ import { CONFIG_FILE_SCHEMA } from '../packages/core/src/lib/plugins/load-config
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Path of the committed schema, relative to the repo root. */
-export const CONFIG_SCHEMA_PATH = 'packages/core/schema/mcp-vertex.config.schema.json';
+export const CONFIG_SCHEMA_PATH =
+	'packages/core/schema/mcp-vertex.config.schema.json';
 
 /** Build the JSON Schema text (the exact bytes written to disk). */
 export const buildConfigSchema = (): string => {
@@ -39,7 +40,9 @@ if (import.meta.main) {
 	const content = buildConfigSchema();
 	if (process.argv.includes('--check')) {
 		if (readFileSync(out, 'utf8') !== content) {
-			console.error('✖ config schema is stale — run `bun run config:schema` and commit.');
+			console.error(
+				'✖ config schema is stale — run `bun run config:schema` and commit.',
+			);
 			process.exit(1);
 		}
 		console.log('config schema up to date.');

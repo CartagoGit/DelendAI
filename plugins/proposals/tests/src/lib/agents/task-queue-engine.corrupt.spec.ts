@@ -43,8 +43,9 @@ describe('task-queue engine — corrupt queue (M10)', () => {
 	const backupExists = (): boolean =>
 		readdirSync(dir).some((f) => f.startsWith('queue.json.corrupt-'));
 
-	const body = (res: { content: Array<{ text: string }> }): { error?: string } =>
-		JSON.parse(res.content[0]?.text ?? '{}');
+	const body = (res: {
+		content: Array<{ text: string }>;
+	}): { error?: string } => JSON.parse(res.content[0]?.text ?? '{}');
 
 	it('enqueue surfaces a structured error and preserves the corrupt bytes', async () => {
 		writeFileSync(paths.queuePath, '{ "version": 1, "entries":');
@@ -57,7 +58,7 @@ describe('task-queue engine — corrupt queue (M10)', () => {
 					agentSlot: 'orchestrator',
 				},
 			},
-			paths
+			paths,
 		);
 		expect(res.isError).toBe(true);
 		expect(body(res).error).toContain('corrupt');
@@ -67,7 +68,10 @@ describe('task-queue engine — corrupt queue (M10)', () => {
 
 	it('report (read-only) also refuses a corrupt queue', async () => {
 		writeFileSync(paths.queuePath, 'not json at all');
-		const res = await runTaskQueueMcp({ action: 'report', params: {} }, paths);
+		const res = await runTaskQueueMcp(
+			{ action: 'report', params: {} },
+			paths,
+		);
 		expect(res.isError).toBe(true);
 		expect(body(res).error).toContain('corrupt');
 	});
@@ -84,9 +88,12 @@ describe('task-queue engine — corrupt queue (M10)', () => {
 					agentSlot: 'orchestrator',
 				},
 			},
-			paths
+			paths,
 		);
 		expect(res.isError).toBeUndefined();
-		expect(body(res)).toMatchObject({ taskId: 't-after', status: 'queued' });
+		expect(body(res)).toMatchObject({
+			taskId: 't-after',
+			status: 'queued',
+		});
 	});
 });

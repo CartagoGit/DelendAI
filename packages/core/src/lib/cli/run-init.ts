@@ -13,7 +13,9 @@ const VIAS = new Set<IRunnerVia>(['npx', 'bunx', 'pnpm', 'yarn', 'deno']);
 
 /** Parse `init` flags: --ide=a,b --via=npx --preset=standard --all. */
 export const parseInitArgs = (argv: readonly string[]): IInstallOptions => {
-	const options: { -readonly [K in keyof IInstallOptions]: IInstallOptions[K] } = {};
+	const options: {
+		-readonly [K in keyof IInstallOptions]: IInstallOptions[K];
+	} = {};
 	for (const arg of argv) {
 		if (arg === '--all') options.all = true;
 		else if (arg.startsWith('--ide=')) {
@@ -25,7 +27,8 @@ export const parseInitArgs = (argv: readonly string[]): IInstallOptions => {
 		} else if (arg.startsWith('--via=')) {
 			const via = arg.slice(6).trim();
 			if (VIAS.has(via as IRunnerVia)) options.via = via as IRunnerVia;
-		} else if (arg.startsWith('--preset=')) options.preset = arg.slice(9).trim();
+		} else if (arg.startsWith('--preset='))
+			options.preset = arg.slice(9).trim();
 	}
 	return options;
 };
@@ -33,7 +36,10 @@ export const parseInitArgs = (argv: readonly string[]): IInstallOptions => {
 /** Detect WSL: a Linux userland under Windows reports platform 'linux'. */
 export const detectIsWsl = (): boolean => {
 	if (process.platform !== 'linux') return false;
-	if (process.env.WSL_DISTRO_NAME !== undefined || process.env.WSL_INTEROP !== undefined) {
+	if (
+		process.env.WSL_DISTRO_NAME !== undefined ||
+		process.env.WSL_INTEROP !== undefined
+	) {
 		return true;
 	}
 	try {
@@ -48,24 +54,35 @@ export const formatInstallReport = (report: IInstallReport): string => {
 	const lines: string[] = [`OS: ${report.os.label}`];
 	if (report.os.note) lines.push(`  ${report.os.note}`);
 	if (report.results.length === 0) {
-		lines.push('No IDE/agent config detected here. Re-run with --ide=<id> (or --all):');
+		lines.push(
+			'No IDE/agent config detected here. Re-run with --ide=<id> (or --all):',
+		);
 		lines.push(`  available: ${IDE_TARGETS.map((t) => t.id).join(', ')}`);
 		lines.push('  e.g. npx @mcp-vertex/core init --ide=vscode');
 	} else {
-		lines.push(report.detected ? 'Detected and configured:' : 'Configured:');
+		lines.push(
+			report.detected ? 'Detected and configured:' : 'Configured:',
+		);
 		for (const r of report.results) {
 			const mark = r.action === 'skipped' ? '–' : '✓';
 			const detail = r.reason ? ` (${r.reason})` : '';
-			lines.push(`  ${mark} ${r.label} [${r.action}]${detail}  ${r.path}`);
+			lines.push(
+				`  ${mark} ${r.label} [${r.action}]${detail}  ${r.path}`,
+			);
 		}
 		lines.push('');
-		lines.push('mcp-vertex was merged in WITHOUT touching your other servers. Reload your IDE.');
+		lines.push(
+			'mcp-vertex was merged in WITHOUT touching your other servers. Reload your IDE.',
+		);
 	}
 	return `${lines.join('\n')}\n${JSON.stringify(report, null, 2)}\n`;
 };
 
 /** `mcp-vertex init …`: detect/merge our MCP server into IDE configs. */
-export const runInit = async (argv: readonly string[], cwd: string): Promise<void> => {
+export const runInit = async (
+	argv: readonly string[],
+	cwd: string,
+): Promise<void> => {
 	const options = parseInitArgs(argv);
 	const report = await runInstall(
 		{
@@ -75,7 +92,7 @@ export const runInit = async (argv: readonly string[], cwd: string): Promise<voi
 			appData: process.env.APPDATA,
 			isWsl: detectIsWsl(),
 		},
-		options
+		options,
 	);
 	process.stdout.write(formatInstallReport(report));
 	if (!report.ok) process.exitCode = 1;

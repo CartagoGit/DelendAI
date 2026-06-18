@@ -27,11 +27,20 @@ import { fileURLToPath } from 'node:url';
 export type BumpKind = 'major' | 'minor' | 'patch' | 'none';
 
 const RELEASABLE_NONE = new Set([
-	'docs', 'chore', 'ci', 'test', 'style', 'build', 'refactor', 'revert',
+	'docs',
+	'chore',
+	'ci',
+	'test',
+	'style',
+	'build',
+	'refactor',
+	'revert',
 ]);
 
 /** Parse `type(scope)!: subject` → `{ type, breaking }` (or null if no type). */
-const parseHeader = (subject: string): { type: string; breaking: boolean } | null => {
+const parseHeader = (
+	subject: string,
+): { type: string; breaking: boolean } | null => {
 	const m = subject.match(/^([a-zA-Z]+)(\([^)]*\))?(!)?:/);
 	if (!m) return null;
 	return { type: m[1]!.toLowerCase(), breaking: m[3] === '!' };
@@ -81,9 +90,16 @@ export const applyBump = (version: string, bump: BumpKind): string => {
 	let major = Number(m[1]);
 	let minor = Number(m[2]);
 	let patch = Number(m[3]);
-	if (bump === 'major') { major += 1; minor = 0; patch = 0; }
-	else if (bump === 'minor') { minor += 1; patch = 0; }
-	else if (bump === 'patch') { patch += 1; }
+	if (bump === 'major') {
+		major += 1;
+		minor = 0;
+		patch = 0;
+	} else if (bump === 'minor') {
+		minor += 1;
+		patch = 0;
+	} else if (bump === 'patch') {
+		patch += 1;
+	}
 	return `${major}.${minor}.${patch}`;
 };
 
@@ -108,7 +124,7 @@ const NUL = String.fromCharCode(0);
 /** Compute the release decision for the repo at `root`. */
 export const decideVersion = (root: string): IVersionDecision => {
 	const corePkg = JSON.parse(
-		readFileSync(join(root, 'packages/core/package.json'), 'utf8')
+		readFileSync(join(root, 'packages/core/package.json'), 'utf8'),
 	) as { version: string };
 
 	const lastTag =
@@ -118,12 +134,23 @@ export const decideVersion = (root: string): IVersionDecision => {
 
 	// First release ever → publish the declared version as-is.
 	if (!lastTag) {
-		return { release: true, version: corePkg.version, bump: 'none', lastTag: null };
+		return {
+			release: true,
+			version: corePkg.version,
+			bump: 'none',
+			lastTag: null,
+		};
 	}
 
 	const base = lastTag.replace(/^v/, '');
-	const log = git(['log', `${lastTag}..HEAD`, '--no-merges', '--format=%B%x00'], root);
-	const commits = log.split(NUL).map((c) => c.trim()).filter(Boolean);
+	const log = git(
+		['log', `${lastTag}..HEAD`, '--no-merges', '--format=%B%x00'],
+		root,
+	);
+	const commits = log
+		.split(NUL)
+		.map((c) => c.trim())
+		.filter(Boolean);
 	const bump = classifyBump(commits);
 	if (bump === 'none') {
 		return { release: false, version: base, bump, lastTag };
@@ -139,7 +166,7 @@ if (import.meta.main) {
 	if (process.argv.includes('--github-output') && process.env.GITHUB_OUTPUT) {
 		appendFileSync(
 			process.env.GITHUB_OUTPUT,
-			`release=${decision.release}\nversion=${decision.version}\nbump=${decision.bump}\n`
+			`release=${decision.release}\nversion=${decision.version}\nbump=${decision.bump}\n`,
 		);
 	}
 }

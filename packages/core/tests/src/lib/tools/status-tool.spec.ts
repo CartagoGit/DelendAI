@@ -5,7 +5,7 @@ import type { IStatusCollector } from '@mcp-vertex/core/lib/contracts/interfaces
 
 const collector = (
 	id: string,
-	collect: () => Promise<Record<string, unknown>>
+	collect: () => Promise<Record<string, unknown>>,
 ): IStatusCollector => ({ id, collect });
 
 describe('collectStatus (IStatusCollector, N23)', () => {
@@ -15,7 +15,9 @@ describe('collectStatus (IStatusCollector, N23)', () => {
 			collector('mcp-vertex', async () => ({ loadedPlugins: ['git'] })),
 		]);
 		expect(res.collectors.engine).toEqual({ loop: 'running', fps: 60 });
-		expect(res.collectors['mcp-vertex']).toEqual({ loadedPlugins: ['git'] });
+		expect(res.collectors['mcp-vertex']).toEqual({
+			loadedPlugins: ['git'],
+		});
 		expect(res.errors).toEqual([]);
 	});
 

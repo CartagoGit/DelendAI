@@ -15,7 +15,7 @@ import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 describe('git parsers', () => {
 	it('parses porcelain status with branch', () => {
 		const status = parseStatus(
-			'## main...origin/main\n M src/a.ts\n?? src/b.ts'
+			'## main...origin/main\n M src/a.ts\n?? src/b.ts',
 		);
 		expect(status.branch).toBe('main');
 		expect(status.clean).toBe(false);
@@ -38,7 +38,8 @@ describe('git parsers', () => {
 
 	it('threads an injected runner through the helpers', async () => {
 		const run: IGitRunner = async (args) => {
-			if (args[0] === 'status') return { ok: true, output: '## dev\n M f.ts' };
+			if (args[0] === 'status')
+				return { ok: true, output: '## dev\n M f.ts' };
 			if (args[0] === 'log') return { ok: true, output: 'h1\ts1' };
 			return { ok: true, output: '' };
 		};
@@ -53,12 +54,14 @@ describe('git parsers', () => {
 			output: '',
 			reason: 'git is not installed or not on PATH',
 		});
-		expect((await checkRepo(missing)).reason).toBe('git is not available here');
+		expect((await checkRepo(missing)).reason).toBe(
+			'git is not available here',
+		);
 
 		const notRepo: IGitRunner = async () => ({
 			ok: false,
 			output: '',
-			reason: "fatal: not a git repository (or any of the parent directories): .git",
+			reason: 'fatal: not a git repository (or any of the parent directories): .git',
 		});
 		expect((await checkRepo(notRepo)).reason).toBe('not a git repository');
 
@@ -71,7 +74,10 @@ describe('git plugin', () => {
 	it('registers the read-only git tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/git',

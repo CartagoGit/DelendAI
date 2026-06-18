@@ -13,7 +13,7 @@ import {
 } from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
 
 const capture = async (
-	reg: IToolRegistration
+	reg: IToolRegistration,
 ): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
 	let h: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await reg.register({
@@ -35,7 +35,10 @@ describe('state_health / state_repair [N15]', () => {
 			namespacePrefix: 'proposals',
 			lockPathAbs: join(dir, '.cache/agents.lock.json'),
 			queuePathAbs: join(dir, '.cache/agent-queue/queue.json'),
-			closedTasksPathAbs: join(dir, '.cache/agent-queue/closed-tasks.json'),
+			closedTasksPathAbs: join(
+				dir,
+				'.cache/agent-queue/closed-tasks.json',
+			),
 			registryPathAbs: join(dir, '.cache/agent-registry.json'),
 			workspaceRoot: dir,
 		};
@@ -67,7 +70,7 @@ describe('state_health / state_repair [N15]', () => {
 						last_seen: '2000-01-01T00:00:00.000Z',
 					},
 				],
-			})
+			}),
 		);
 
 		const repair = await capture(buildStateRepairRegistration(opts));

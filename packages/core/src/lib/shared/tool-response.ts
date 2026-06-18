@@ -34,14 +34,13 @@ export const toolJson = (value: unknown): IToolTextResult => ({
 });
 
 /** Compact success envelope: `{ ok: true, ...data }`. */
-export const toolOk = (
-	data: Record<string, unknown> = {}
-): IToolTextResult => toolJson({ ok: true, ...data });
+export const toolOk = (data: Record<string, unknown> = {}): IToolTextResult =>
+	toolJson({ ok: true, ...data });
 
 /** Compact, uniform error envelope with an actionable hint. */
 export const toolError = (
 	reason: string,
-	nextAction?: string
+	nextAction?: string,
 ): IToolTextResult => {
 	const envelope = {
 		ok: false as const,

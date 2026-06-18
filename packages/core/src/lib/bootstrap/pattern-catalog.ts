@@ -39,7 +39,8 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 > = {
 	library: {
 		type: 'library',
-		describe: 'A publishable package; correctness and public API stability matter most.',
+		describe:
+			'A publishable package; correctness and public API stability matter most.',
 		recommendedTools: [
 			...COMMON_TOOLS,
 			{
@@ -55,12 +56,14 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 	},
 	cli: {
 		type: 'cli',
-		describe: 'A command-line tool; argument contracts and help output matter.',
+		describe:
+			'A command-line tool; argument contracts and help output matter.',
 		recommendedTools: [
 			...COMMON_TOOLS,
 			{
 				name: 'run_command',
-				description: 'Executes the CLI in a sandbox and returns structured output.',
+				description:
+					'Executes the CLI in a sandbox and returns structured output.',
 			},
 		],
 		recommendedPlugins: [],
@@ -68,12 +71,14 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 	},
 	webapp: {
 		type: 'webapp',
-		describe: 'A web application; component structure and build/test gates matter.',
+		describe:
+			'A web application; component structure and build/test gates matter.',
 		recommendedTools: [
 			...COMMON_TOOLS,
 			{
 				name: 'run_quality',
-				description: 'Runs lint/test/build and returns a structured pass/fail report.',
+				description:
+					'Runs lint/test/build and returns a structured pass/fail report.',
 			},
 		],
 		recommendedPlugins: ['rules'],
@@ -84,12 +89,14 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 	},
 	game: {
 		type: 'game',
-		describe: 'A game project; scene/asset authoring and a runtime loop matter.',
+		describe:
+			'A game project; scene/asset authoring and a runtime loop matter.',
 		recommendedTools: [
 			...COMMON_TOOLS,
 			{
 				name: 'validate_scene',
-				description: 'Validates a scene/level document against the engine schema.',
+				description:
+					'Validates a scene/level document against the engine schema.',
 			},
 		],
 		recommendedPlugins: ['proposals', 'rules'],
@@ -99,12 +106,14 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 	},
 	monorepo: {
 		type: 'monorepo',
-		describe: 'A multi-package workspace; per-scope gates and coordination matter.',
+		describe:
+			'A multi-package workspace; per-scope gates and coordination matter.',
 		recommendedTools: [
 			...COMMON_TOOLS,
 			{
 				name: 'run_quality',
-				description: 'Runs the per-scope validation matrix across packages.',
+				description:
+					'Runs the per-scope validation matrix across packages.',
 			},
 		],
 		recommendedPlugins: ['proposals', 'rules'],

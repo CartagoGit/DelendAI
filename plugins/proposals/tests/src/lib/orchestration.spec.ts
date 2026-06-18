@@ -13,7 +13,7 @@ import {
 import type { IAgentNamesToolOptions } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
 const capture = async (
-	reg: IToolRegistration
+	reg: IToolRegistration,
 ): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
 	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await reg.register({
@@ -37,7 +37,7 @@ describe('plan tool', () => {
 					{ sliceId: 's2', files: ['a.ts', 'b.ts'] },
 					{ sliceId: 's3', files: ['c.ts'] },
 				],
-			})
+			}),
 		);
 		expect(out.disjointnessIssues.length).toBeGreaterThan(0); // s1/s2 share a.ts
 		expect(out.claimableSliceIds).toContain('s3');
@@ -66,14 +66,14 @@ describe('delegate tool', () => {
 				namespacePrefix: 'proposals',
 				agentNames: opts,
 				lockPathAbs: opts.lockPathAbs,
-			})
+			}),
 		);
 		const out = parse(
 			await handler({
 				taskId: 't1',
 				slot: 'implementation_runner',
 				files: ['src/x.ts'],
-			})
+			}),
 		);
 		expect(out.ok).toBe(true);
 		expect(out.locked).toBe(true);

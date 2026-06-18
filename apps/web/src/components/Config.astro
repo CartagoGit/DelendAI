@@ -8,13 +8,22 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const hrefFor = (code: Lang) => (code === 'en' ? `${base}/` : `${base}/${code}/`);
+const hrefFor = (code: Lang) =>
+	code === 'en' ? `${base}/` : `${base}/${code}/`;
 
 const THEME_BG: Record<string, string> = {
-	dark: '#0d1117', light: '#ffffff', midnight: '#0b0f1a', solarized: '#002b36', nord: '#2e3440',
+	dark: '#0d1117',
+	light: '#ffffff',
+	midnight: '#0b0f1a',
+	solarized: '#002b36',
+	nord: '#2e3440',
 };
 const THEME_ACCENT: Record<string, string> = {
-	dark: '#58a6ff', light: '#0969da', midnight: '#7c93ff', solarized: '#2aa198', nord: '#88c0d0',
+	dark: '#58a6ff',
+	light: '#0969da',
+	midnight: '#7c93ff',
+	solarized: '#2aa198',
+	nord: '#88c0d0',
 };
 ---
 

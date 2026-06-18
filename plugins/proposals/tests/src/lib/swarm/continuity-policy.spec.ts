@@ -70,7 +70,7 @@ describe('evaluateContinuityPolicy — forbidNewProposals', () => {
 		const result = evaluateContinuityPolicy(policy, observed);
 		expect(result.withinPolicy).toBe(false);
 		const v = result.violations.find(
-			(x) => x.field === 'forbidNewProposals'
+			(x) => x.field === 'forbidNewProposals',
 		);
 		expect(v).toBeDefined();
 		expect(v?.severity).toBe('block');
@@ -98,7 +98,7 @@ describe('evaluateContinuityPolicy — maxToolRetriesPerTool', () => {
 		const result = evaluateContinuityPolicy(policy, observed);
 		expect(result.withinPolicy).toBe(false);
 		const v = result.violations.find(
-			(x) => x.field === 'maxToolRetriesPerTool'
+			(x) => x.field === 'maxToolRetriesPerTool',
 		);
 		expect(v).toBeDefined();
 		expect(v?.severity).toBe('warn');
@@ -118,7 +118,7 @@ describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', () => {
 		const result = evaluateContinuityPolicy(policy, observed);
 		expect(result.withinPolicy).toBe(false);
 		const v = result.violations.find(
-			(x) => x.field === 'forbidReReadOnUnchangedDigest'
+			(x) => x.field === 'forbidReReadOnUnchangedDigest',
 		);
 		expect(v).toBeDefined();
 		expect(v?.severity).toBe('block');

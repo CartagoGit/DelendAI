@@ -22,7 +22,12 @@ export interface IDocsOptions {
 export const DEFAULT_DOC_ROOTS: readonly string[] = ['docs', 'README.md'];
 const DEFAULT_EXTENSIONS: readonly string[] = ['md', 'mdx'];
 const DEFAULT_IGNORE_DIRS: readonly string[] = [
-	'node_modules', '.git', 'dist', 'build', 'coverage', '.cache',
+	'node_modules',
+	'.git',
+	'dist',
+	'build',
+	'coverage',
+	'.cache',
 ];
 const MAX_READ_BYTES = 256 * 1024;
 
@@ -31,8 +36,15 @@ const extOf = (name: string): string => {
 	return dot < 0 ? '' : name.slice(dot + 1).toLowerCase();
 };
 
-const clamp = (v: number | undefined, def: number, lo: number, hi: number): number =>
-	v === undefined || Number.isNaN(v) ? def : Math.max(lo, Math.min(hi, Math.floor(v)));
+const clamp = (
+	v: number | undefined,
+	def: number,
+	lo: number,
+	hi: number,
+): number =>
+	v === undefined || Number.isNaN(v)
+		? def
+		: Math.max(lo, Math.min(hi, Math.floor(v)));
 
 /** Title = first `# ` heading, else frontmatter `title:`, else the path. */
 export const extractTitle = (raw: string, fallback: string): string => {
@@ -58,14 +70,17 @@ const rel = (rootAbs: string, abs: string): string =>
  */
 export const listDocs = async (
 	workspaceRootAbs: string,
-	options: IDocsOptions = {}
+	options: IDocsOptions = {},
 ): Promise<{ docs: IDocEntry[]; truncated: boolean }> => {
-	const roots = options.roots && options.roots.length > 0 ? options.roots : DEFAULT_DOC_ROOTS;
+	const roots =
+		options.roots && options.roots.length > 0
+			? options.roots
+			: DEFAULT_DOC_ROOTS;
 	const extensions = new Set(
 		(options.extensions && options.extensions.length > 0
 			? options.extensions
 			: DEFAULT_EXTENSIONS
-		).map((e) => e.toLowerCase())
+		).map((e) => e.toLowerCase()),
 	);
 	const ignore = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
 	const max = clamp(options.maxResults, 200, 1, 1000);
@@ -92,10 +107,12 @@ export const listDocs = async (
 	const walk = async (absDir: string): Promise<void> => {
 		if (truncated) return;
 		const entries = await readdir(absDir, { withFileTypes: true }).catch(
-			() => null
+			() => null,
 		);
 		if (entries === null) return;
-		for (const e of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
+		for (const e of [...entries].sort((a, b) =>
+			a.name.localeCompare(b.name),
+		)) {
 			if (truncated) return;
 			if (e.isDirectory()) {
 				if (!ignore.has(e.name)) await walk(join(absDir, e.name));
@@ -113,7 +130,9 @@ export const listDocs = async (
 		if (!contained.ok) continue;
 		const abs = contained.abs;
 		try {
-			(await stat(abs)).isDirectory() ? await walk(abs) : await addFile(abs);
+			(await stat(abs)).isDirectory()
+				? await walk(abs)
+				: await addFile(abs);
 		} catch {
 			// missing or unreadable root: skip
 		}
@@ -136,10 +155,14 @@ export interface IDocContent {
  */
 export const readDoc = async (
 	workspaceRootAbs: string,
-	relPath: string
+	relPath: string,
 ): Promise<IDocContent> => {
 	const miss = (): IDocContent => ({
-		path: relPath, title: relPath, content: '', truncated: false, found: false,
+		path: relPath,
+		title: relPath,
+		content: '',
+		truncated: false,
+		found: false,
 	});
 	const contained = resolveWorkspaceContained(workspaceRootAbs, relPath);
 	if (!contained.ok) return miss();
@@ -154,5 +177,11 @@ export const readDoc = async (
 	const truncated = raw.length > MAX_READ_BYTES;
 	const content = truncated ? raw.slice(0, MAX_READ_BYTES) : raw;
 	const r = rel(workspaceRootAbs, abs);
-	return { path: r, title: extractTitle(raw, r), content, truncated, found: true };
+	return {
+		path: r,
+		title: extractTitle(raw, r),
+		content,
+		truncated,
+		found: true,
+	};
 };

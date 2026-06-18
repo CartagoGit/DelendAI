@@ -61,7 +61,7 @@ import type { IChatTitlingReminderInput } from '@mcp-vertex/proposals/lib/swarm/
  * default is "no proposal context".
  */
 const makeReport = (
-	overrides: Partial<IChatTitlingReminderInput> = {}
+	overrides: Partial<IChatTitlingReminderInput> = {},
 ): IChatTitlingReminderInput => ({
 	agentName: 'forza_motorsport_2023',
 	agentSlot: 'implementation_runner',
@@ -112,7 +112,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 				proposalId: 'p41',
 				taskId: 'T2',
 				summary: 'rename probe',
-			})
+			}),
 		);
 		expect(reminder).toContain('[p41] T2: rename probe');
 	});
@@ -123,7 +123,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 				proposalId: 'p41',
 				taskId: 'T1',
 				summary: 'titling prefix',
-			})
+			}),
 		);
 		expect(reminder).toContain('[p41] T1: titling prefix');
 	});
@@ -134,7 +134,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 				proposalId: 'p40c',
 				taskId: 'T3',
 				summary: 'persistent queue smoke',
-			})
+			}),
 		);
 		expect(reminder).toContain('[p40c] T3: persistent queue smoke');
 	});
@@ -149,7 +149,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 				proposalId: 'p41',
 				taskId: 'T2',
 				summary: 'rename',
-			})
+			}),
 		);
 		expect(reminder).toContain('[p41] T2: rename');
 		expect(reminder).toContain('## Rename chat session reminder');
@@ -164,7 +164,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 				proposalId: 'p41',
 				taskId: 'T2',
 				summary: 'rename probe',
-			})
+			}),
 		);
 		expect(reminder).not.toContain('proposal-free sessions');
 	});
@@ -177,7 +177,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 describe('buildChatTitlingReminder — [FREE] branch', () => {
 	it('renders the [FREE] branch when proposalId is null', () => {
 		const reminder = buildChatTitlingReminder(
-			makeReport({ proposalId: null, summary: 'ad-hoc debug' })
+			makeReport({ proposalId: null, summary: 'ad-hoc debug' }),
 		);
 		expect(reminder).toContain('[FREE]');
 		expect(reminder).toContain('proposal-free sessions');
@@ -191,7 +191,7 @@ describe('buildChatTitlingReminder — [FREE] branch', () => {
 
 	it('does NOT render the [pNN] template when proposalId is null', () => {
 		const reminder = buildChatTitlingReminder(
-			makeReport({ proposalId: null, summary: 'ad-hoc debug' })
+			makeReport({ proposalId: null, summary: 'ad-hoc debug' }),
 		);
 		// A proposal-bound template would look like "[pNN] T<id>:" with
 		// a colon right after the task id. The [FREE] branch does not
@@ -212,8 +212,8 @@ describe('buildChatTitlingReminder — robustness', () => {
 	it('never throws when taskId / summary are missing on a proposal-bound report', () => {
 		expect(() =>
 			buildChatTitlingReminder(
-				makeReport({ proposalId: 'p41', taskId: null, summary: null })
-			)
+				makeReport({ proposalId: 'p41', taskId: null, summary: null }),
+			),
 		).not.toThrow();
 	});
 
@@ -223,7 +223,7 @@ describe('buildChatTitlingReminder — robustness', () => {
 				proposalId: 'p41',
 				taskId: 'T2',
 				summary: 'rename probe',
-			})
+			}),
 		);
 		expect(reminder.endsWith('\n')).toBe(true);
 	});

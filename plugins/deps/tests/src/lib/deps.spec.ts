@@ -68,7 +68,9 @@ describe('deps engine', () => {
 		const kinds = h.findings.map((f) => f.kind);
 		expect(kinds).toContain('loose-range'); // a:* and b:latest
 		expect(kinds).toContain('duplicate-section'); // shared
-		expect(h.findings.filter((f) => f.kind === 'loose-range')).toHaveLength(2);
+		expect(h.findings.filter((f) => f.kind === 'loose-range')).toHaveLength(
+			2,
+		);
 	});
 
 	it('reports no-manifest when absent', async () => {
@@ -82,7 +84,10 @@ describe('deps plugin', () => {
 	it('registers deps_list + deps_check + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/deps',

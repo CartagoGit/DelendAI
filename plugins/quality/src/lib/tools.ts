@@ -22,7 +22,7 @@ export interface IQualityToolOptions {
 const scopesOf = (options: IQualityToolOptions): IScopeMap =>
 	resolveScopes(
 		options.reader,
-		options.optionScopes ? { scopes: options.optionScopes } : {}
+		options.optionScopes ? { scopes: options.optionScopes } : {},
 	);
 
 /**
@@ -31,7 +31,7 @@ const scopesOf = (options: IQualityToolOptions): IScopeMap =>
  * config's validationMatrix, or the project's package.json scripts.
  */
 export const buildQualityToolRegistrations = (
-	options: IQualityToolOptions
+	options: IQualityToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	return [
@@ -45,9 +45,19 @@ export const buildQualityToolRegistrations = (
 					{
 						description:
 							'List the quality-gate scopes and the commands each runs. Read-only.',
-						outputSchema: z.object({ scopes: z.record(z.string(), z.array(z.object({ command: z.string(), expect: z.string().optional() }))) }),
+						outputSchema: z.object({
+							scopes: z.record(
+								z.string(),
+								z.array(
+									z.object({
+										command: z.string(),
+										expect: z.string().optional(),
+									}),
+								),
+							),
+						}),
 					},
-					async () => toolJson({ scopes: scopesOf(options) })
+					async () => toolJson({ scopes: scopesOf(options) }),
 				);
 			},
 		},
@@ -64,7 +74,19 @@ export const buildQualityToolRegistrations = (
 						description:
 							'Execute a quality scope’s commands and return a structured pass/fail report (per command: ok, exit code, output tail). Without `scope`, runs the first/`all` scope. This DOES execute the project’s commands.',
 						inputSchema: z.object({ scope: z.string().optional() }),
-						outputSchema: z.object({ scope: z.string(), ok: z.boolean(), results: z.array(z.object({ command: z.string(), ok: z.boolean(), code: z.number(), timedOut: z.boolean(), tail: z.string() })) }),
+						outputSchema: z.object({
+							scope: z.string(),
+							ok: z.boolean(),
+							results: z.array(
+								z.object({
+									command: z.string(),
+									ok: z.boolean(),
+									code: z.number(),
+									timedOut: z.boolean(),
+									tail: z.string(),
+								}),
+							),
+						}),
 					},
 					async (args: { scope?: string | undefined }) => {
 						const scopes = scopesOf(options);
@@ -72,17 +94,19 @@ export const buildQualityToolRegistrations = (
 						if (names.length === 0) {
 							return toolError(
 								'no quality scopes configured',
-								'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.'
+								'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
 							);
 						}
 						const scope =
 							args.scope ??
-							(names.includes('all') ? 'all' : (names[0] as string));
+							(names.includes('all')
+								? 'all'
+								: (names[0] as string));
 						const commands = scopes[scope];
 						if (commands === undefined) {
 							return toolError(
 								`unknown scope "${scope}"`,
-								`Available: ${names.join(', ')}.`
+								`Available: ${names.join(', ')}.`,
 							);
 						}
 						return toolJson(
@@ -91,10 +115,10 @@ export const buildQualityToolRegistrations = (
 								commands,
 								options.workspaceRoot,
 								options.run,
-								options.commandPolicy
-							)
+								options.commandPolicy,
+							),
 						);
-					}
+					},
 				);
 			},
 		},
@@ -119,7 +143,7 @@ export const buildQualityToolRegistrations = (
 					async (args: { pid?: number | undefined }) => {
 						const cancelled = cancelActiveRuns(args.pid);
 						return toolJson({ cancelled, count: cancelled.length });
-					}
+					},
 				);
 			},
 		},

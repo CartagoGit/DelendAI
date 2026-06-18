@@ -1,7 +1,10 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { buildAwaitLockRegistration, buildNotifyRegistration } from './lib/tools';
+import {
+	buildAwaitLockRegistration,
+	buildNotifyRegistration,
+} from './lib/tools';
 
 /**
  * The notification plugin. It turns the swarm's file-based lock release

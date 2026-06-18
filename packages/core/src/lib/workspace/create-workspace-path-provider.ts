@@ -9,7 +9,7 @@ import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-p
  * the host project `resolveWorkspacePath` helper.
  */
 export function createWorkspacePathProvider(
-	root: string
+	root: string,
 ): IWorkspacePathProvider {
 	const absoluteRoot = resolve(root);
 	const memo = new Map<string, string>();

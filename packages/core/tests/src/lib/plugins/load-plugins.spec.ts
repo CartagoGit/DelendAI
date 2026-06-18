@@ -36,7 +36,9 @@ describe('loadPlugins', () => {
 	it('loads a plugin via injected importer and merges its registrations', async () => {
 		const fakePlugin = {
 			name: 'demo',
-			register: () => ({ tools: [{ id: 'demo_x', register: async () => {} }] }),
+			register: () => ({
+				tools: [{ id: 'demo_x', register: async () => {} }],
+			}),
 		};
 		const result = await loadPlugins({
 			specifiers: ['demo'],

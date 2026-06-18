@@ -12,7 +12,7 @@ import { toolError, toolJson } from '../shared/tool-response';
  */
 export const buildKnowledgeToolRegistration = (
 	namespacePrefix: string,
-	knowledge: () => readonly IKnowledgeEntry[]
+	knowledge: () => readonly IKnowledgeEntry[],
 ): IToolRegistration => ({
 	id: 'knowledge',
 	summary:
@@ -25,12 +25,14 @@ export const buildKnowledgeToolRegistration = (
 				description:
 					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Read-only and low-token (fetch only what you need).',
 				inputSchema: z.object({ id: z.string().optional() }),
-					outputSchema: z.object({
-						entries: z.array(z.object({ id: z.string(), title: z.string() })).optional(),
-						id: z.string().optional(),
-						title: z.string().optional(),
-						body: z.string().optional(),
-					}),
+				outputSchema: z.object({
+					entries: z
+						.array(z.object({ id: z.string(), title: z.string() }))
+						.optional(),
+					id: z.string().optional(),
+					title: z.string().optional(),
+					body: z.string().optional(),
+				}),
 			},
 			async (args: { id?: string | undefined }) => {
 				const entries = knowledge();
@@ -46,11 +48,11 @@ export const buildKnowledgeToolRegistration = (
 				if (found === undefined) {
 					return toolError(
 						`unknown knowledge id "${args.id}"`,
-						'Call without `id` to list available ids.'
+						'Call without `id` to list available ids.',
 					);
 				}
 				return toolJson(found);
-			}
+			},
 		);
 	},
 });

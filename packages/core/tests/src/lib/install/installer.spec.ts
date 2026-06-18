@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -14,7 +20,12 @@ import {
 
 describe('IDE installer (M39)', () => {
 	let dir = '';
-	const env = () => ({ projectDir: dir, home: dir, platform: 'linux' as const, appData: undefined });
+	const env = () => ({
+		projectDir: dir,
+		home: dir,
+		platform: 'linux' as const,
+		appData: undefined,
+	});
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'install-'));
 	});
@@ -28,17 +39,25 @@ describe('IDE installer (M39)', () => {
 			args: ['-y', '@mcp-vertex/core', '--preset=standard'],
 		});
 		const cursor = targetById('cursor')!;
-		expect(buildServerEntry(cursor, { via: 'bunx', preset: 'swarm' })).toEqual({
+		expect(
+			buildServerEntry(cursor, { via: 'bunx', preset: 'swarm' }),
+		).toEqual({
 			command: 'bunx',
 			args: ['@mcp-vertex/core', '--preset=swarm'],
 		});
-		expect(buildServerEntry(cursor, { via: 'deno' }).args).toContain('npm:@mcp-vertex/core');
+		expect(buildServerEntry(cursor, { via: 'deno' }).args).toContain(
+			'npm:@mcp-vertex/core',
+		);
 	});
 
 	it('installToTarget creates the VS Code config with the servers/type:stdio shape', async () => {
-		const r = await installToTarget(targetById('vscode')!, env(), { via: 'npx' });
+		const r = await installToTarget(targetById('vscode')!, env(), {
+			via: 'npx',
+		});
 		expect(r.action).toBe('created');
-		const cfg = JSON.parse(readFileSync(join(dir, '.vscode/mcp.json'), 'utf8'));
+		const cfg = JSON.parse(
+			readFileSync(join(dir, '.vscode/mcp.json'), 'utf8'),
+		);
 		expect(cfg.servers['mcp-vertex'].type).toBe('stdio');
 	});
 
@@ -46,11 +65,13 @@ describe('IDE installer (M39)', () => {
 		mkdirSync(join(dir, '.cursor'), { recursive: true });
 		writeFileSync(
 			join(dir, '.cursor/mcp.json'),
-			JSON.stringify({ mcpServers: { existing: { command: 'foo' } } })
+			JSON.stringify({ mcpServers: { existing: { command: 'foo' } } }),
 		);
 		const r = await installToTarget(targetById('cursor')!, env(), {});
 		expect(r.action).toBe('added');
-		const cfg = JSON.parse(readFileSync(join(dir, '.cursor/mcp.json'), 'utf8'));
+		const cfg = JSON.parse(
+			readFileSync(join(dir, '.cursor/mcp.json'), 'utf8'),
+		);
 		expect(cfg.mcpServers.existing).toEqual({ command: 'foo' }); // preserved
 		expect(cfg.mcpServers['mcp-vertex']).toBeDefined();
 	});
@@ -75,7 +96,10 @@ describe('IDE installer (M39)', () => {
 	});
 
 	it('report carries the detected OS', async () => {
-		const report = await runInstall({ ...env(), isWsl: true }, { ide: ['claude-code'] });
+		const report = await runInstall(
+			{ ...env(), isWsl: true },
+			{ ide: ['claude-code'] },
+		);
 		expect(report.os.id).toBe('wsl');
 	});
 

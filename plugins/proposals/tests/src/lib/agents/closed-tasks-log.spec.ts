@@ -50,7 +50,7 @@ beforeEach(() => {
 });
 
 const makeRecord = (
-	overrides: Partial<IClosedTaskRecord> = {}
+	overrides: Partial<IClosedTaskRecord> = {},
 ): IClosedTaskRecord => ({
 	taskId: 'p40c-t1',
 	closedAt: '2026-06-05T10:00:00.000Z',
@@ -106,11 +106,11 @@ describe('appendToClosedTasks — max-size eviction', () => {
 			(_, i) => ({
 				taskId: `task-${i}`,
 				closedAt: new Date(
-					Date.parse('2026-06-05T10:00:00.000Z') + i * 1000
+					Date.parse('2026-06-05T10:00:00.000Z') + i * 1000,
 				).toISOString(),
 				agentName: 'agent',
 				filesOwned: [],
-			})
+			}),
 		);
 		writeFileSync(logPath, JSON.stringify(initial), 'utf8');
 
@@ -138,7 +138,7 @@ describe('appendToClosedTasks — idempotency', () => {
 
 		const result = await readClosedTasks(logPath);
 		expect(
-			result.filter((r) => r.taskId === 'idempotent-task')
+			result.filter((r) => r.taskId === 'idempotent-task'),
 		).toHaveLength(1);
 	});
 });
@@ -178,7 +178,9 @@ describe('readClosedTasks — parse defensivo', () => {
 // ---------------------------------------------------------------------------
 describe('readClosedTasks — quarantine on corruption (M10)', () => {
 	const backupOf = (_logPath: string): string | undefined =>
-		readdirSync(workDir).find((f) => f.startsWith('closed-tasks.json.corrupt-'));
+		readdirSync(workDir).find((f) =>
+			f.startsWith('closed-tasks.json.corrupt-'),
+		);
 
 	it('preserves invalid JSON to a backup and removes the original', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
@@ -195,8 +197,10 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		writeFileSync(
 			logPath,
-			JSON.stringify([{ taskId: '', closedAt: 'x', agentName: 'a', filesOwned: [] }]),
-			'utf8'
+			JSON.stringify([
+				{ taskId: '', closedAt: 'x', agentName: 'a', filesOwned: [] },
+			]),
+			'utf8',
 		);
 
 		expect(await readClosedTasks(logPath)).toEqual([]);
@@ -208,7 +212,10 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 		writeFileSync(logPath, 'garbage', 'utf8');
 		await readClosedTasks(logPath); // quarantines
 
-		await appendToClosedTasks(logPath, makeRecord({ taskId: 'after-heal' }));
+		await appendToClosedTasks(
+			logPath,
+			makeRecord({ taskId: 'after-heal' }),
+		);
 		const result = await readClosedTasks(logPath);
 		expect(result).toHaveLength(1);
 		expect(result[0]?.taskId).toBe('after-heal');
@@ -256,15 +263,15 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 		// sequence, which is what eviction and tail diagnostics need.
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'a', closedAt: '2026-06-05T10:00:30.000Z' })
+			makeRecord({ taskId: 'a', closedAt: '2026-06-05T10:00:30.000Z' }),
 		);
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'b', closedAt: '2026-06-05T10:00:10.000Z' })
+			makeRecord({ taskId: 'b', closedAt: '2026-06-05T10:00:10.000Z' }),
 		);
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'c', closedAt: '2026-06-05T10:00:20.000Z' })
+			makeRecord({ taskId: 'c', closedAt: '2026-06-05T10:00:20.000Z' }),
 		);
 
 		const result = await readClosedTasks(logPath);
@@ -283,11 +290,11 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 			(_, i) => ({
 				taskId: `seed-${i}`,
 				closedAt: new Date(
-					Date.parse('2026-06-05T10:00:00.000Z') + (31 - i) * 1000
+					Date.parse('2026-06-05T10:00:00.000Z') + (31 - i) * 1000,
 				).toISOString(),
 				agentName: 'agent',
 				filesOwned: [],
-			})
+			}),
 		);
 		writeFileSync(logPath, JSON.stringify(initial), 'utf8');
 
@@ -296,7 +303,7 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 			makeRecord({
 				taskId: 'fresh',
 				closedAt: '2026-06-05T11:00:00.000Z',
-			})
+			}),
 		);
 
 		const result = await readClosedTasks(logPath);

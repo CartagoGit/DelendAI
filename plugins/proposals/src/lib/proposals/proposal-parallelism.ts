@@ -89,7 +89,7 @@ const makeIsAuditLane =
  */
 export const evaluateParallelism = (
 	actives: readonly IProposalParallelism[],
-	auditLanes: ReadonlySet<string> = DEFAULT_AUDIT_LANES
+	auditLanes: ReadonlySet<string> = DEFAULT_AUDIT_LANES,
 ): IParallelismResult => {
 	if (actives.length === 0) {
 		return { withinPolicy: true, violations: [] };
@@ -150,7 +150,7 @@ export const evaluateParallelism = (
 				const nonAuditMembers = aIsAudit ? membersB : membersA;
 				const auditMembers = aIsAudit ? membersA : membersB;
 				const nonAuditPermitsAudit = nonAuditMembers.every((m) =>
-					m.parallelismLanes.includes('audit')
+					m.parallelismLanes.includes('audit'),
 				);
 				if (nonAuditPermitsAudit) {
 					continue;
@@ -307,7 +307,7 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
 export const extractParallelismFromFrontmatter = (
 	raw: string,
 	proposalId: string,
-	knownTracks?: ReadonlySet<string>
+	knownTracks?: ReadonlySet<string>,
 ): IProposalParallelism | null => {
 	const block = extractYamlBlock(raw);
 	if (block === null) {
@@ -319,9 +319,7 @@ export const extractParallelismFromFrontmatter = (
 	if (!isValidTrack(lane)) {
 		return null;
 	}
-	const permitted = asStringArray(fm.parallelismLanes).filter(
-		isValidTrack
-	);
+	const permitted = asStringArray(fm.parallelismLanes).filter(isValidTrack);
 	return {
 		proposalId,
 		mainWriteLane: lane,

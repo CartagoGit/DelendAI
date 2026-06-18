@@ -53,8 +53,8 @@ export const CONFIG_FILE_SCHEMA = z
 						z.object({
 							command: z.string(),
 							expect: z.string(),
-						})
-					)
+						}),
+					),
 				),
 			})
 			.optional(),
@@ -64,7 +64,7 @@ export const CONFIG_FILE_SCHEMA = z
 				z.object({
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
-				})
+				}),
 			)
 			.optional(),
 	})
@@ -76,7 +76,7 @@ export const CONFIG_FILE_SCHEMA = z
  * or schema violations → human-readable issue strings.
  */
 export const diagnoseConfigFile = (
-	raw: string | undefined
+	raw: string | undefined,
 ): { readonly present: boolean; readonly issues: readonly string[] } => {
 	if (raw === undefined) return { present: false, issues: [] };
 	let parsed: unknown;
@@ -95,7 +95,7 @@ export const diagnoseConfigFile = (
 	return {
 		present: true,
 		issues: result.error.issues.map(
-			(issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`
+			(issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`,
 		),
 	};
 };
@@ -105,7 +105,9 @@ export const diagnoseConfigFile = (
  * (`undefined`) or invalid JSON yields an empty config, so a typo in
  * the file never crashes the server — it just contributes nothing.
  */
-export const parseConfigFile = (raw: string | undefined): IMcpVertexConfigFile => {
+export const parseConfigFile = (
+	raw: string | undefined,
+): IMcpVertexConfigFile => {
 	if (raw === undefined) return {};
 	try {
 		const value = JSON.parse(raw) as unknown;
@@ -121,5 +123,5 @@ export const parseConfigFile = (raw: string | undefined): IMcpVertexConfigFile =
 /** Resolve the per-plugin entry, never undefined. */
 export const pluginConfigFor = (
 	config: IMcpVertexConfigFile,
-	pluginName: string
+	pluginName: string,
 ): IMcpVertexPluginConfig => config.plugins?.[pluginName] ?? {};

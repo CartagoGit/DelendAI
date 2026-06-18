@@ -80,7 +80,7 @@ export interface IMcpPlugin {
 		};
 	};
 	register(
-		ctx: IMcpPluginContext
+		ctx: IMcpPluginContext,
 	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;
 }
 

@@ -52,7 +52,7 @@ export function isStaleLock(lock: IRuntimeRecoveryLock | undefined): boolean {
 }
 
 export function shouldResetFromCheckpoint(
-	checkpoint: IRuntimeRecoveryCheckpoint
+	checkpoint: IRuntimeRecoveryCheckpoint,
 ): boolean {
 	const checkpointStatus = checkpoint.status?.trim().toLowerCase();
 	if (
@@ -73,6 +73,6 @@ export function shouldResetFromCheckpoint(
 	return isStaleTimestamp(
 		checkpoint.recovery?.lastHealthyAt ??
 			checkpoint.updatedAt ??
-			checkpoint.lastUpdated
+			checkpoint.lastUpdated,
 	);
 }

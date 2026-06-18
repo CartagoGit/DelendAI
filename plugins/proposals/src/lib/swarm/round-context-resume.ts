@@ -50,8 +50,7 @@ export const buildResumeHint = (input: {
 	const inferredTaskId =
 		input.currentTaskId !== 'unknown'
 			? input.currentTaskId
-			: (input.activeLocks[0]?.taskId ??
-				input.activeAgents[0]?.taskId);
+			: (input.activeLocks[0]?.taskId ?? input.activeAgents[0]?.taskId);
 	const inferredProposalIdFromTask =
 		inferredTaskId?.match(/^([pga]\d+[a-z]?)/)?.[1];
 	const proposalId =

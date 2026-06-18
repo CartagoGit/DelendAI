@@ -7,9 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { searchWorkspace } from '@mcp-vertex/search/lib/engine';
 import { buildSearchToolRegistrations } from '@mcp-vertex/search/lib/tools';
 import plugin from '@mcp-vertex/search';
-import type {
-	IMcpPluginContext,
-} from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);
@@ -21,7 +19,11 @@ describe('searchWorkspace', () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-'));
-		write(root, 'src/a.ts', 'export const foo = 1;\nconst bar = foo + 2;\n');
+		write(
+			root,
+			'src/a.ts',
+			'export const foo = 1;\nconst bar = foo + 2;\n',
+		);
 		write(root, 'src/b.md', '# Title\nmentions foo in prose\n');
 		write(root, 'node_modules/dep/index.js', 'foo everywhere foo\n');
 		write(root, 'data.bin.png', 'foo binary not matched by ext\n');
@@ -46,9 +48,11 @@ describe('searchWorkspace', () => {
 	});
 
 	it('is case-insensitive by default and case-sensitive on request', async () => {
-		expect((await searchWorkspace(root, 'FOO')).hits.length).toBeGreaterThan(0);
 		expect(
-			(await searchWorkspace(root, 'FOO', { caseSensitive: true })).hits
+			(await searchWorkspace(root, 'FOO')).hits.length,
+		).toBeGreaterThan(0);
+		expect(
+			(await searchWorkspace(root, 'FOO', { caseSensitive: true })).hits,
 		).toEqual([]);
 	});
 
@@ -59,7 +63,11 @@ describe('searchWorkspace', () => {
 	});
 
 	it('caps results and flags truncated', async () => {
-		write(root, 'many.txt', Array.from({ length: 10 }, () => 'foo').join('\n'));
+		write(
+			root,
+			'many.txt',
+			Array.from({ length: 10 }, () => 'foo').join('\n'),
+		);
 		const res = await searchWorkspace(root, 'foo', { maxResults: 3 });
 		expect(res.hits).toHaveLength(3);
 		expect(res.truncated).toBe(true);
@@ -75,7 +83,10 @@ describe('search plugin', () => {
 	const ctx = (root: string): IMcpPluginContext =>
 		({
 			workspace: { root, resolve: (p: string) => join(root, p) },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/search',

@@ -69,15 +69,14 @@ const migrate = (raw: unknown): IAgentRegistry => {
 	};
 };
 
-export const createAgentRegistryStore = (
-	path: string
-): IAgentRegistryStore => {
+export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {
 		let raw: string;
 		try {
 			raw = await readFile(path, 'utf8');
 		} catch (err: unknown) {
-			if ((err as NodeJS.ErrnoException).code === 'ENOENT') return emptyRegistry();
+			if ((err as NodeJS.ErrnoException).code === 'ENOENT')
+				return emptyRegistry();
 			throw err;
 		}
 		if (!raw.trim()) return emptyRegistry();
@@ -86,7 +85,11 @@ export const createAgentRegistryStore = (
 			parsed = JSON.parse(raw);
 		} catch (err) {
 			const backup = await quarantineCorruptFile(path);
-			throw new CorruptFileError(path, backup, `invalid JSON: ${String(err)}`);
+			throw new CorruptFileError(
+				path,
+				backup,
+				`invalid JSON: ${String(err)}`,
+			);
 		}
 		return migrate(parsed);
 	};
@@ -97,17 +100,17 @@ export const createAgentRegistryStore = (
 	const write = async (registry: IAgentRegistry): Promise<void> => {
 		await writeFileAtomic(
 			path,
-			`${JSON.stringify(registry, null, '    ')}\n`
+			`${JSON.stringify(registry, null, '    ')}\n`,
 		);
 	};
 
 	const upsert = async (
-		assignment: IAgentAssignment
+		assignment: IAgentAssignment,
 	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();
 			const idx = r.assignments.findIndex(
-				(a) => a.task_id === assignment.task_id
+				(a) => a.task_id === assignment.task_id,
 			);
 			if (idx >= 0) {
 				const prev = r.assignments[idx];
@@ -131,7 +134,7 @@ export const createAgentRegistryStore = (
 
 	const release = async (
 		task_id: string,
-		cooldown_until: string
+		cooldown_until: string,
 	): Promise<boolean> =>
 		withFileMutex(path, async () => {
 			const r = await read();
@@ -145,7 +148,7 @@ export const createAgentRegistryStore = (
 		});
 
 	const markAdopted = async (
-		adoption: IAgentAdoption
+		adoption: IAgentAdoption,
 	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();

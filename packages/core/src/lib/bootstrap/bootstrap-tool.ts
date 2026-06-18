@@ -11,10 +11,7 @@ import {
 } from '../scaffold/scaffold-host';
 import { analyzeProject } from './analyze-project';
 import type { IFileReader } from './analyze-project';
-import {
-	buildBlueprintFiles,
-	buildServerBlueprint,
-} from './build-blueprint';
+import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import { recommendServerPlan } from './recommend-plan';
 
 export interface IBootstrapToolOptions {
@@ -27,11 +24,13 @@ export interface IBootstrapToolOptions {
 
 /** A read-only reader backed by the workspace filesystem. */
 export const createWorkspaceFileReader = (
-	workspace: IWorkspacePathProvider
+	workspace: IWorkspacePathProvider,
 ): IFileReader => ({
 	readFile: (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
-		return existsSync(absolute) ? readFileSync(absolute, 'utf8') : undefined;
+		return existsSync(absolute)
+			? readFileSync(absolute, 'utf8')
+			: undefined;
 	},
 	exists: (relativePath) => existsSync(workspace.resolve(relativePath)),
 	listDir: (relativePath) => {
@@ -65,9 +64,7 @@ const CREATE_SCHEMA = z.object({
 });
 
 const json = (value: unknown) => ({
-	content: [
-		{ type: 'text' as const, text: JSON.stringify(value) },
-	],
+	content: [{ type: 'text' as const, text: JSON.stringify(value) }],
 	// MCP modern structuredContent so the declared outputSchema is satisfied
 	// (the SDK validates it on success). Object payloads only.
 	...(typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -84,10 +81,11 @@ const json = (value: unknown) => ({
  * generates content; the agent decides and writes.
  */
 export const buildBootstrapToolRegistrations = (
-	options: IBootstrapToolOptions
+	options: IBootstrapToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
-	const reader = options.reader ?? createWorkspaceFileReader(options.workspace);
+	const reader =
+		options.reader ?? createWorkspaceFileReader(options.workspace);
 
 	const analyze: IToolRegistration = {
 		id: 'analyze_project',
@@ -98,7 +96,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_analyze_project`,
 				{
-						outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({}).catchall(z.unknown()),
 					description:
 						'Read-only. Inspect this project and return a structured analysis plus a recommended MCP server plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
 					inputSchema: ANALYZE_SCHEMA,
@@ -123,7 +121,7 @@ export const buildBootstrapToolRegistrations = (
 						analysis,
 						plan: recommendServerPlan(analysis, planOptions),
 					});
-				}
+				},
 			);
 		},
 	};
@@ -137,7 +135,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_create_project`,
 				{
-						outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({}).catchall(z.unknown()),
 					description:
 						'Generate the files for a project-specific MCP server (or a new plugin) from a plan. Returns the files for YOU to write — it does not touch disk. Run analyze_project first to get a plan, edit it if needed, then call this.',
 					inputSchema: CREATE_SCHEMA,
@@ -148,7 +146,8 @@ export const buildBootstrapToolRegistrations = (
 						const files = scaffoldPluginFiles({
 							pluginName: args.pluginName ?? 'example',
 							description:
-								args.description ?? 'TODO: describe this plugin.',
+								args.description ??
+								'TODO: describe this plugin.',
 						});
 						return json({ kind: 'plugin', files });
 					}
@@ -170,7 +169,7 @@ export const buildBootstrapToolRegistrations = (
 							`@${namespacePrefix}/mcp-project`,
 					});
 					return json({ kind: 'host', files });
-				}
+				},
 			);
 		},
 	};
@@ -184,7 +183,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_plan_mcp_project`,
 				{
-						outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({}).catchall(z.unknown()),
 					description:
 						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: z.object({
@@ -200,7 +199,9 @@ export const buildBootstrapToolRegistrations = (
 				}) => {
 					const analysis = analyzeProject(reader);
 					const blueprint = buildServerBlueprint(analysis, {
-						...(args.tests !== undefined ? { tests: args.tests } : {}),
+						...(args.tests !== undefined
+							? { tests: args.tests }
+							: {}),
 						...(args.namespacePrefix !== undefined
 							? { namespacePrefix: args.namespacePrefix }
 							: {}),
@@ -212,7 +213,7 @@ export const buildBootstrapToolRegistrations = (
 						blueprint,
 						files: buildBlueprintFiles(blueprint),
 					});
-				}
+				},
 			);
 		},
 	};

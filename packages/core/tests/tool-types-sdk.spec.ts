@@ -28,22 +28,22 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 
 	it('renders unions (incl. nullable) and dedupes', () => {
 		expect(
-			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'null' }] })
+			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'null' }] }),
 		).toBe('string | null');
 		expect(
-			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'string' }] })
+			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'string' }] }),
 		).toBe('string');
 	});
 
 	it('parenthesises union element types in arrays', () => {
-		expect(jsonSchemaToTs({ type: 'array', items: { type: 'string' } })).toBe(
-			'string[]'
-		);
+		expect(
+			jsonSchemaToTs({ type: 'array', items: { type: 'string' } }),
+		).toBe('string[]');
 		expect(
 			jsonSchemaToTs({
 				type: 'array',
 				items: { anyOf: [{ type: 'string' }, { type: 'number' }] },
-			})
+			}),
 		).toBe('Array<string | number>');
 	});
 
@@ -55,11 +55,15 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 				properties: { a: { type: 'string' } },
 				required: ['a'],
 				additionalProperties: false,
-			})
+			}),
 		).toBe('{\n\ta: string;\n}');
 		// pure permissive record
 		expect(
-			jsonSchemaToTs({ type: 'object', properties: {}, additionalProperties: {} })
+			jsonSchemaToTs({
+				type: 'object',
+				properties: {},
+				additionalProperties: {},
+			}),
 		).toBe('Record<string, unknown>');
 		// record with a value schema
 		expect(
@@ -67,7 +71,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 				type: 'object',
 				properties: {},
 				additionalProperties: { type: 'number' },
-			})
+			}),
 		).toBe('Record<string, number>');
 	});
 
@@ -78,7 +82,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 				properties: { a: { type: 'string' }, b: { type: 'number' } },
 				required: ['a'],
 				additionalProperties: false,
-			})
+			}),
 		).toBe('{\n\ta: string;\n\tb?: number;\n}');
 	});
 
@@ -119,11 +123,15 @@ describe('tool-output SDK drift guard (N23)', () => {
 			try {
 				onDisk = readFileSync(resolve(REPO_ROOT, relPath), 'utf8');
 			} catch {
-				drift.push(`${relPath}: missing (run \`bun run types:generate\`)`);
+				drift.push(
+					`${relPath}: missing (run \`bun run types:generate\`)`,
+				);
 				continue;
 			}
 			if (onDisk !== expected) {
-				drift.push(`${relPath}: stale (run \`bun run types:generate\`)`);
+				drift.push(
+					`${relPath}: stale (run \`bun run types:generate\`)`,
+				);
 			}
 		}
 		expect(drift, 'generated tool-output modules out of sync').toEqual([]);

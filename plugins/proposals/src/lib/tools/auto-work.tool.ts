@@ -37,11 +37,11 @@ export const __resetIdleStreakForTesting = (): void => {
  * it returns an explicit idle state.
  */
 export const runAutoWork = async (
-	options: IAutoWorkToolOptions
+	options: IAutoWorkToolOptions,
 ): Promise<IResult> => {
 	const next = JSON.parse(
-		(await runContinueProposal({ mode: 'auto' }, options)).content[0]?.text ??
-			'{}'
+		(await runContinueProposal({ mode: 'auto' }, options)).content[0]
+			?.text ?? '{}',
 	) as {
 		kind: string;
 		proposalId?: string;
@@ -83,7 +83,9 @@ export const runAutoWork = async (
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [`Validate: run \`${options.validationCommand}\`.`]
-			: ['Validate per the project gate (see get_validation_matrix if present).']),
+			: [
+					'Validate per the project gate (see get_validation_matrix if present).',
+				]),
 		`Mark progress in the proposal, then ${prefix}_sync_proposals.`,
 		`Release: ${prefix}_agent_lock { action: "release", task_id }.`,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
@@ -102,7 +104,7 @@ export const runAutoWork = async (
 
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
-	options: IAutoWorkToolOptions
+	options: IAutoWorkToolOptions,
 ): IToolRegistration => ({
 	id: 'auto_work',
 	summary:
@@ -112,12 +114,12 @@ export const buildAutoWorkRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_auto_work`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → release), or an explicit idle state. Low-token: a tight action list, not prose.',
 				inputSchema: z.object({}),
 			},
-			async () => runAutoWork(options)
+			async () => runAutoWork(options),
 		);
 	},
 });

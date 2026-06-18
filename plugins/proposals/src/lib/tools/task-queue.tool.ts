@@ -21,7 +21,7 @@ export interface ITaskQueueToolOptions {
  * resolved paths.
  */
 export const buildTaskQueueRegistration = (
-	options: ITaskQueueToolOptions
+	options: ITaskQueueToolOptions,
 ): IToolRegistration => ({
 	id: 'task_queue',
 	effects: ['write'],
@@ -32,7 +32,7 @@ export const buildTaskQueueRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_task_queue`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Swarm coordination only: enqueue/dequeue/subscribe/report for waitFor, observe, or backpressure. Root orchestrator owns queue writes.',
 				inputSchema: z.object({
@@ -40,7 +40,7 @@ export const buildTaskQueueRegistration = (
 					params: IParamsSchema.optional().default({}),
 				}),
 			},
-			async (args) => runTaskQueueMcp(args, options.paths)
+			async (args) => runTaskQueueMcp(args, options.paths),
 		);
 	},
 });

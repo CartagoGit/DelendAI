@@ -75,7 +75,7 @@ export interface IScaffoldReport {
 
 export const buildScaffoldReport = async (
 	options: IScaffoldToolOptions,
-	args: IScaffoldArgs
+	args: IScaffoldArgs,
 ): Promise<IScaffoldReport> => {
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
@@ -99,7 +99,7 @@ export const buildScaffoldReport = async (
 					scaffoldToolFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -110,7 +110,7 @@ export const buildScaffoldReport = async (
 					scaffoldPromptFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -121,7 +121,7 @@ export const buildScaffoldReport = async (
 					scaffoldSkillFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -129,7 +129,7 @@ export const buildScaffoldReport = async (
 			files = [
 				scaffoldAgentFile(
 					hostOptions,
-					(args.slot ?? 'orchestrator') as IScaffoldAgentSlot
+					(args.slot ?? 'orchestrator') as IScaffoldAgentSlot,
 				),
 			];
 			break;
@@ -177,7 +177,7 @@ export const buildScaffoldReport = async (
 				written.push(file.path);
 			} catch (error) {
 				errors.push(
-					`${file.path}: ${error instanceof Error ? error.message : String(error)}`
+					`${file.path}: ${error instanceof Error ? error.message : String(error)}`,
 				);
 			}
 		}
@@ -187,7 +187,7 @@ export const buildScaffoldReport = async (
 
 /** Registration for the host's `<prefix>_scaffold` tool. */
 export const buildScaffoldToolRegistration = (
-	options: IScaffoldToolOptions
+	options: IScaffoldToolOptions,
 ): IToolRegistration => ({
 	id: 'scaffold',
 	effects: ['write'],
@@ -198,7 +198,7 @@ export const buildScaffoldToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_scaffold`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
 					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,
@@ -219,7 +219,7 @@ export const buildScaffoldToolRegistration = (
 						unknown
 					>,
 				};
-			}
+			},
 		);
 	},
 });

@@ -105,7 +105,7 @@ const expectSchema = z
 		{
 			message:
 				'expect must be one of: exit0, pass, synchronized, contains:<substring>',
-		}
+		},
 	);
 
 const criterionSchema = z.object({
@@ -170,7 +170,7 @@ const parseBody = (raw: string): IProposalBody => {
 	// Extract the document goal: prefer paragraph directly after H1; fall back
 	// to the ## Description section when nothing sits between H1 and first ##.
 	const h1Match = bodyText.match(
-		/^#\s[^\n]*\n+([\s\S]*?)(?=^##|(?![\s\S]))/m
+		/^#\s[^\n]*\n+([\s\S]*?)(?=^##|(?![\s\S]))/m,
 	);
 	const h1Goal = h1Match ? (h1Match[1]?.trim() ?? '') : '';
 	const goal = h1Goal || extractSection(bodyText, 'Description').join(' ');
@@ -196,7 +196,7 @@ const parseBody = (raw: string): IProposalBody => {
  * @param absolutePath Absolute path to the `.md` file.
  */
 export const parseProposalDocument = async (
-	absolutePath: string
+	absolutePath: string,
 ): Promise<IProposalDocument> => {
 	const raw = await readFile(absolutePath, 'utf8');
 
@@ -205,7 +205,7 @@ export const parseProposalDocument = async (
 		throw new ProposalParseError(
 			'INVALID_FRONTMATTER',
 			absolutePath,
-			`No YAML frontmatter block found in: ${absolutePath}`
+			`No YAML frontmatter block found in: ${absolutePath}`,
 		);
 	}
 
@@ -222,7 +222,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_BUDGET',
 				absolutePath,
-				`Invalid budget in ${absolutePath}: ${result.error.message}`
+				`Invalid budget in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		// Safe cast: Zod has validated the shape; exactOptionalPropertyTypes
@@ -238,7 +238,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				absolutePath,
-				`acceptanceCriteria must be an array in: ${absolutePath}`
+				`acceptanceCriteria must be an array in: ${absolutePath}`,
 			);
 		}
 		const result = z
@@ -248,7 +248,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				absolutePath,
-				`Invalid acceptance criterion in ${absolutePath}: ${result.error.message}`
+				`Invalid acceptance criterion in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		// Safe cast: same reason as budget — Zod optional fields vs
@@ -261,7 +261,9 @@ export const parseProposalDocument = async (
 		? (parsed.ownership as IYamlValue[])
 				.filter(
 					(v): v is Record<string, IYamlValue> =>
-						typeof v === 'object' && v !== null && !Array.isArray(v)
+						typeof v === 'object' &&
+						v !== null &&
+						!Array.isArray(v),
 				)
 				.map((item) => ({
 					agent: String(item.agent ?? ''),
@@ -269,7 +271,7 @@ export const parseProposalDocument = async (
 					...(Array.isArray(item.files)
 						? {
 								files: (item.files as IYamlValue[]).filter(
-									(v): v is string => typeof v === 'string'
+									(v): v is string => typeof v === 'string',
 								),
 							}
 						: {}),
@@ -278,7 +280,7 @@ export const parseProposalDocument = async (
 
 	const reservedFiles = Array.isArray(parsed.reservedFiles)
 		? (parsed.reservedFiles as string[]).filter(
-				(v): v is string => typeof v === 'string'
+				(v): v is string => typeof v === 'string',
 			)
 		: undefined;
 

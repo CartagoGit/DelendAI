@@ -22,7 +22,10 @@ import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.
 // proposal index). Hosts inject their full list (instructions files,
 // skill docs…) through the `coreDocs` parameter of
 // `computeCoreDocHashes`.
-export const CORE_DOCS = ['README.md', 'docs/mcp-vertex/proposals/index.json'] as const;
+export const CORE_DOCS = [
+	'README.md',
+	'docs/mcp-vertex/proposals/index.json',
+] as const;
 
 export type ICoreDocRelPath = string;
 

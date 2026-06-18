@@ -11,7 +11,7 @@ const NOT_A_REPO = (reason = 'not a git repository') =>
 		reason,
 		reason.includes('not available')
 			? 'Install git or run where git is on PATH.'
-			: 'Run inside a git working tree.'
+			: 'Run inside a git working tree.',
 	);
 
 export interface IGitToolOptions {
@@ -25,7 +25,7 @@ export interface IGitToolOptions {
  * agnostic of language or framework. They never modify the repo.
  */
 export const buildGitToolRegistrations = (
-	options: IGitToolOptions
+	options: IGitToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	return [
@@ -39,14 +39,23 @@ export const buildGitToolRegistrations = (
 					{
 						description:
 							'Returns the current branch, whether the tree is clean, and the changed entries (status + path). Read-only.',
-						outputSchema: z.object({ branch: z.string().optional(), clean: z.boolean(), entries: z.array(z.object({ status: z.string(), path: z.string() })) }),
+						outputSchema: z.object({
+							branch: z.string().optional(),
+							clean: z.boolean(),
+							entries: z.array(
+								z.object({
+									status: z.string(),
+									path: z.string(),
+								}),
+							),
+						}),
 					},
 					async () => {
 						const repo = await checkRepo(options.run);
 						return repo.ok
 							? toolJson(await gitStatus(options.run))
 							: NOT_A_REPO(repo.reason);
-					}
+					},
 				);
 			},
 		},
@@ -60,14 +69,18 @@ export const buildGitToolRegistrations = (
 					{
 						description:
 							'Returns just the list of changed file paths. Cheapest way to see what you have touched. Read-only.',
-						outputSchema: z.object({ changed: z.array(z.string()) }),
+						outputSchema: z.object({
+							changed: z.array(z.string()),
+						}),
 					},
 					async () => {
 						const repo = await checkRepo(options.run);
 						return repo.ok
-							? toolJson({ changed: await gitChanged(options.run) })
+							? toolJson({
+									changed: await gitChanged(options.run),
+								})
 							: NOT_A_REPO(repo.reason);
-					}
+					},
 				);
 			},
 		},
@@ -103,7 +116,7 @@ export const buildGitToolRegistrations = (
 									: {}),
 							}),
 						});
-					}
+					},
 				);
 			},
 		},
@@ -118,19 +131,26 @@ export const buildGitToolRegistrations = (
 						description:
 							'Returns the most recent commits as {hash, subject}. Read-only.',
 						inputSchema: z.object({ limit: z.number().optional() }),
-						outputSchema: z.object({ commits: z.array(z.object({ hash: z.string(), subject: z.string() })) }),
+						outputSchema: z.object({
+							commits: z.array(
+								z.object({
+									hash: z.string(),
+									subject: z.string(),
+								}),
+							),
+						}),
 					},
 					async (args: { limit?: number | undefined }) => {
 						const repo = await checkRepo(options.run);
 						if (!repo.ok) return NOT_A_REPO(repo.reason);
 						const limit = Math.max(
 							1,
-							Math.min(100, Math.floor(args.limit ?? 10))
+							Math.min(100, Math.floor(args.limit ?? 10)),
 						);
 						return toolJson({
 							commits: await gitLog(options.run, limit),
 						});
-					}
+					},
 				);
 			},
 		},

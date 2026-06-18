@@ -48,9 +48,9 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'state_repair',
 			'compact_status',
 		]);
-		expect(
-			registrations.knowledge?.map((k) => k.id)
-		).toContain('multi-agent-loop');
+		expect(registrations.knowledge?.map((k) => k.id)).toContain(
+			'multi-agent-loop',
+		);
 	});
 
 	it('namespaces tool registration by the context prefix', async () => {

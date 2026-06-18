@@ -63,7 +63,7 @@ beforeEach(() => {
 });
 
 const makeEntry = (
-	overrides: Partial<IPersistentTaskEntry> = {}
+	overrides: Partial<IPersistentTaskEntry> = {},
 ): IPersistentTaskEntry => ({
 	taskId: 'test-task-1',
 	enqueuedAt: '2026-06-05T10:00:00.000Z',
@@ -118,7 +118,11 @@ describe('parseQueue — happy path', () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
 		const entry = makeEntry({
-			owner: { taskId: 'p40c-t1', agentName: 'ext', agentSlot: 'custom_reviewer' },
+			owner: {
+				taskId: 'p40c-t1',
+				agentName: 'ext',
+				agentSlot: 'custom_reviewer',
+			},
 		});
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
@@ -142,7 +146,7 @@ describe('parseQueue — DUPLICATE_TASK_ID', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry1, entry2] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'DUPLICATE_TASK_ID',
@@ -161,7 +165,7 @@ describe('parseQueue — INVALID_PRIORITY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'INVALID_PRIORITY',
@@ -175,7 +179,7 @@ describe('parseQueue — INVALID_PRIORITY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'INVALID_PRIORITY',
@@ -197,7 +201,7 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'WAIT_FOR_FILE_MISSING',
@@ -235,7 +239,7 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 
 		// Without the root, the relative path misses (resolved vs cwd).
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({ code: 'WAIT_FOR_FILE_MISSING' });
 	});
 });
@@ -259,7 +263,7 @@ describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
 					filesOwned: [],
 				},
 			]),
-			'utf8'
+			'utf8',
 		);
 		const entry = makeEntry({ observe: ['p35c-t99'] });
 		writeQueue(queuePath, { version: 1, entries: [entry] });
@@ -284,7 +288,7 @@ describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
 					filesOwned: [],
 				},
 			]),
-			'utf8'
+			'utf8',
 		);
 		const entry = makeEntry({ observe: ['p35c-t1'] });
 		writeQueue(queuePath, { version: 1, entries: [entry] });
@@ -306,7 +310,7 @@ describe('parseQueue — TEMPORAL_INCONSISTENCY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'TEMPORAL_INCONSISTENCY',
@@ -379,7 +383,7 @@ describe('dequeue — mutates status to consumed', () => {
 		const { queue: updated, entry: consumed } = await dequeue(
 			queue,
 			'to-consume',
-			queuePath
+			queuePath,
 		);
 
 		expect(consumed.status).toBe('consumed');
@@ -412,7 +416,7 @@ describe('promote — succeeds when lock empty', () => {
 			queue,
 			'promotable',
 			emptyLock(),
-			queuePath
+			queuePath,
 		);
 
 		expect(result.promoted).toBe(true);
@@ -475,7 +479,7 @@ describe('cancel — marks entry as cancelled', () => {
 			queue,
 			'cancellable',
 			'test reason',
-			queuePath
+			queuePath,
 		);
 
 		expect(updated.entries[0]?.status).toBe('cancelled');
@@ -511,15 +515,15 @@ describe('expireSweep — expires entries past expiresAt', () => {
 		const { queue: swept, expiredCount } = await expireSweep(
 			queue,
 			now,
-			queuePath
+			queuePath,
 		);
 
 		expect(expiredCount).toBe(1);
 		const expiredEntry = swept.entries.find(
-			(e) => e.taskId === 'will-expire'
+			(e) => e.taskId === 'will-expire',
 		);
 		const activeEntry = swept.entries.find(
-			(e) => e.taskId === 'stays-queued'
+			(e) => e.taskId === 'stays-queued',
 		);
 		expect(expiredEntry?.status).toBe('expired');
 		expect(activeEntry?.status).toBe('queued');
@@ -537,7 +541,7 @@ describe('reportBackpressure — threshold logic', () => {
 	it('returns green when queue is nearly empty', () => {
 		const queue = enqueue(
 			makeEmptyQueue(),
-			makeEntry({ taskId: 'single', enqueuedAt: recentEnqueuedAt })
+			makeEntry({ taskId: 'single', enqueuedAt: recentEnqueuedAt }),
 		);
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 
@@ -551,7 +555,10 @@ describe('reportBackpressure — threshold logic', () => {
 		for (let i = 0; i < 16; i++) {
 			queue = enqueue(
 				queue,
-				makeEntry({ taskId: `task-${i}`, enqueuedAt: recentEnqueuedAt })
+				makeEntry({
+					taskId: `task-${i}`,
+					enqueuedAt: recentEnqueuedAt,
+				}),
 			);
 		}
 		const report = reportBackpressure(queue, emptyLock(), NOW);
@@ -563,7 +570,10 @@ describe('reportBackpressure — threshold logic', () => {
 		for (let i = 0; i < 8; i++) {
 			queue = enqueue(
 				queue,
-				makeEntry({ taskId: `task-${i}`, enqueuedAt: recentEnqueuedAt })
+				makeEntry({
+					taskId: `task-${i}`,
+					enqueuedAt: recentEnqueuedAt,
+				}),
 			);
 		}
 		const report = reportBackpressure(queue, emptyLock(), NOW);
@@ -573,11 +583,11 @@ describe('reportBackpressure — threshold logic', () => {
 	it('returns red when oldestAgeMinutes >= 240', () => {
 		// 241 minutes before NOW
 		const oldEnqueuedAt = new Date(
-			Date.parse(NOW) - 241 * 60 * 1000
+			Date.parse(NOW) - 241 * 60 * 1000,
 		).toISOString();
 		const queue = enqueue(
 			makeEmptyQueue(),
-			makeEntry({ taskId: 'old-task', enqueuedAt: oldEnqueuedAt })
+			makeEntry({ taskId: 'old-task', enqueuedAt: oldEnqueuedAt }),
 		);
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 		expect(report.threshold).toBe('red');
@@ -676,7 +686,7 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 		writeFileSync(queuePath, '{ "version": 1, "entries": [', 'utf8');
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'PARSE_ERROR',
@@ -692,11 +702,14 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 		const queuePath = join(dir, 'queue.json');
 		writeQueue(queuePath, {
 			version: 1,
-			entries: [makeEntry({ taskId: 'dup' }), makeEntry({ taskId: 'dup' })],
+			entries: [
+				makeEntry({ taskId: 'dup' }),
+				makeEntry({ taskId: 'dup' }),
+			],
 		});
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({ code: 'DUPLICATE_TASK_ID' });
 		expect(existsSync(queuePath)).toBe(true);
 		expect(backupExists(dir)).toBe(false);
@@ -726,7 +739,7 @@ describe('loadLockSnapshot — canonical lock schema (M7)', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 
 		const snap = await loadLockSnapshot(lockPath);
@@ -750,7 +763,7 @@ describe('loadLockSnapshot — canonical lock schema (M7)', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 
 		// The legacy entry fails schema validation, so the whole file is

@@ -20,7 +20,9 @@ export default definePlugin({
 			tools: buildDepsToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				workspaceRootAbs: ctx.workspace.root,
-				...(typeof o.manifest === 'string' ? { manifest: o.manifest } : {}),
+				...(typeof o.manifest === 'string'
+					? { manifest: o.manifest }
+					: {}),
 			}),
 			knowledge: [
 				{

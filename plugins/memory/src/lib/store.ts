@@ -78,15 +78,18 @@ export const readStore = async (absPath: string): Promise<INote[]> => {
 	// the store is rewritten), so recall/list never surface a stale note.
 	const nowIso = new Date().toISOString();
 	return (parsed as { notes: INote[] }).notes.filter(
-		(note) => note.expiresAt === undefined || note.expiresAt > nowIso
+		(note) => note.expiresAt === undefined || note.expiresAt > nowIso,
 	);
 };
 
 export const writeStore = async (
 	absPath: string,
-	notes: readonly INote[]
+	notes: readonly INote[],
 ): Promise<void> => {
-	await writeFileAtomic(absPath, `${JSON.stringify({ notes }, null, '\t')}\n`);
+	await writeFileAtomic(
+		absPath,
+		`${JSON.stringify({ notes }, null, '\t')}\n`,
+	);
 };
 
 /**
@@ -102,7 +105,7 @@ export const saveNote = (
 		/** Time-to-live in seconds. The note expires (and is pruned) after it. */
 		ttlSeconds?: number;
 	},
-	now: () => string = () => new Date().toISOString()
+	now: () => string = () => new Date().toISOString(),
 ): Promise<ISaveResult> =>
 	// Cross-process critical section: a single read-modify-write so two
 	// agents saving concurrently can't clobber each other's note.
@@ -123,7 +126,9 @@ export const saveNote = (
 		// A fresh ttl wins; otherwise an update keeps the prior expiry.
 		const expiresAt =
 			input.ttlSeconds !== undefined
-				? new Date(Date.parse(stamp) + input.ttlSeconds * 1000).toISOString()
+				? new Date(
+						Date.parse(stamp) + input.ttlSeconds * 1000,
+					).toISOString()
 				: existing?.expiresAt;
 		const note: INote = {
 			id,
@@ -149,14 +154,15 @@ export const saveNote = (
  */
 export const recall = async (
 	absPath: string,
-	options: { query?: string; tags?: readonly string[]; limit?: number } = {}
+	options: { query?: string; tags?: readonly string[]; limit?: number } = {},
 ): Promise<INote[]> => {
 	const rawQuery = options.query?.trim() ?? '';
 	const tags = options.tags ?? [];
 	const limit = options.limit ?? 10;
 
 	const filtered = (await readStore(absPath)).filter(
-		(note) => tags.length === 0 || tags.every((tag) => note.tags.includes(tag))
+		(note) =>
+			tags.length === 0 || tags.every((tag) => note.tags.includes(tag)),
 	);
 
 	if (rawQuery.length === 0) {
@@ -170,7 +176,7 @@ export const recall = async (
 		.sort(
 			(a, b) =>
 				b.score - a.score ||
-				b.note.updatedAt.localeCompare(a.note.updatedAt)
+				b.note.updatedAt.localeCompare(a.note.updatedAt),
 		)
 		.slice(0, limit)
 		.map((r) => r.note);

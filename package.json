@@ -24,6 +24,8 @@
 		"format:web:check": "biome format \"apps/web/src/**\" \"apps/web/scripts/**\" \"apps/web/astro.config.mjs\"",
 		"format:all": "biome format --write .",
 		"format:all:check": "biome format .",
+		"format": "bun run format:all",
+		"format:check": "bun run format:all:check",
 		"prepare": "lefthook install",
 		"build": "bun scripts/build.ts",
 		"validate": "bun run typecheck && bun run lint && bun run lint:scss && bun run test",

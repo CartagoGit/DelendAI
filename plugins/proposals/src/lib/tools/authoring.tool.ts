@@ -40,7 +40,10 @@ export interface IAuthoringToolOptions {
 	 * sync uses, so a relocated store stays coherent. Defaults to
 	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
 	 */
-	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
+	readonly layout?: Pick<
+		IHostPathLayout,
+		'proposalsDir' | 'proposalIndexFile'
+	>;
 	/**
 	 * Host-specific proposal subfolders (relative to proposalsDir) the
 	 * post-mutation sync should also scan, e.g. `['paused/demos']`. [M5]
@@ -49,7 +52,8 @@ export interface IAuthoringToolOptions {
 }
 
 /** Escape regex metacharacters so a user-supplied sliceId can't alter the match. */
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegExp = (value: string): string =>
+	value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const kebab = (value: string): string =>
 	value
@@ -77,7 +81,7 @@ const readTextOrNull = async (path: string): Promise<string | null> => {
 };
 
 const readActiveLocks = async (
-	lockPath: string
+	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
 		in_flight?: Array<{ task_id?: string; agent?: string }>;
@@ -119,7 +123,7 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
  * re-syncs the index. No more hand-editing fragile markdown.
  */
 export const buildCreateProposalRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
@@ -130,7 +134,7 @@ export const buildCreateProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_proposal`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					ok: z.literal(true),
 					file: z.string(),
 					path: z.string(),
@@ -139,7 +143,7 @@ export const buildCreateProposalRegistration = (
 							first: z.string(),
 							second: z.string(),
 							file: z.string(),
-						})
+						}),
 					),
 					indexCount: z.number(),
 				}),
@@ -153,7 +157,9 @@ export const buildCreateProposalRegistration = (
 						.enum(['pending', 'ready', 'in_progress'])
 						.optional(),
 					track: z.string().optional(),
-					globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
+					globalGate: z
+						.enum(['lint', 'type', 'e2e', 'none'])
+						.optional(),
 					slices: z.array(SLICE_IN).optional(),
 				}),
 			},
@@ -182,7 +188,11 @@ export const buildCreateProposalRegistration = (
 						owner: null,
 						files: s.files,
 						dependsOn: s.dependsOn ?? [],
-						gate: (s.gate ?? 'none') as 'lint' | 'type' | 'e2e' | 'none',
+						gate: (s.gate ?? 'none') as
+							| 'lint'
+							| 'type'
+							| 'e2e'
+							| 'none',
 						status: 'pending' as const,
 						acceptanceCriteria: s.acceptance ?? [],
 					})),
@@ -191,7 +201,7 @@ export const buildCreateProposalRegistration = (
 				if (issues.length > 0) {
 					return toolError(
 						`slices share files: ${issues.map((i) => `${i.first}/${i.second}:${i.file}`).join(', ')}`,
-						'Make each slice edit a disjoint set of files.'
+						'Make each slice edit a disjoint set of files.',
 					);
 				}
 				const date = new Date().toISOString().slice(0, 10);
@@ -216,26 +226,31 @@ export const buildCreateProposalRegistration = (
 					'',
 					...(slices.length > 0
 						? slices.map(renderSlice).join('\n\n').split('\n')
-						: ['### s1 — TODO', '- files: TODO', '- gate: none', '- status: pending']),
+						: [
+								'### s1 — TODO',
+								'- files: TODO',
+								'- gate: none',
+								'- status: pending',
+							]),
 					'',
 				].join('\n');
 				const fileRel = `${args.id}-${kebab(args.title)}.md`;
 				const absPath = join(options.proposalsDirAbs, fileRel);
 				const { text: safeBody, redactions } = redactSecrets(body);
-					await writeFileAtomic(absPath, safeBody);
+				await writeFileAtomic(absPath, safeBody);
 				const sync = await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
-					options.extraFolders ?? []
+					options.extraFolders ?? [],
 				);
 				return toolOk({
 					file: fileRel,
 					path: absPath,
 					disjointnessIssues: issues,
 					indexCount: sync.count,
-						redactedSecrets: redactions,
+					redactedSecrets: redactions,
 				});
-			}
+			},
 		);
 	},
 });
@@ -246,7 +261,7 @@ export const buildCreateProposalRegistration = (
  * accurate state.
  */
 export const buildCloseSliceRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
@@ -257,7 +272,7 @@ export const buildCloseSliceRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_close_slice`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					ok: z.literal(true),
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -283,18 +298,18 @@ export const buildCloseSliceRegistration = (
 				if (index === null) {
 					return toolError(
 						'proposal index not found',
-						'Run sync_proposals first.'
+						'Run sync_proposals first.',
 					);
 				}
 				const entry = index.proposals.find(
 					(p) =>
 						p.id === args.proposalId ||
-						p.id.startsWith(`${args.proposalId}-`)
+						p.id.startsWith(`${args.proposalId}-`),
 				);
 				if (entry === undefined) {
 					return toolError(
 						`proposal "${args.proposalId}" not in index`,
-						'Pass an existing proposalId.'
+						'Pass an existing proposalId.',
 					);
 				}
 				const docPath = join(dirname(options.indexPathAbs), entry.file);
@@ -305,13 +320,13 @@ export const buildCloseSliceRegistration = (
 				// Flip the slice block's status to done (add or replace).
 				const blockRe = new RegExp(
 					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
-					'm'
+					'm',
 				);
 				const m = md.match(blockRe);
 				if (m === null) {
 					return toolError(
 						`slice "${args.sliceId}" not found in ${entry.file}`,
-						'Call proposal_board to list slices.'
+						'Call proposal_board to list slices.',
 					);
 				}
 				let block = m[2] ?? '';
@@ -328,22 +343,22 @@ export const buildCloseSliceRegistration = (
 						{
 							lockPath: options.lockPathAbs,
 							toolName: `${options.namespacePrefix}_agent_lock`,
-						}
+						},
 					);
 					lockReleased = true;
 				}
 				await syncProposalRegistry(
-						options.workspaceRoot,
-						options.layout,
-						options.extraFolders ?? []
-					);
+					options.workspaceRoot,
+					options.layout,
+					options.extraFolders ?? [],
+				);
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
 				});
-			}
+			},
 		);
 	},
 });
@@ -357,7 +372,7 @@ export const buildCloseSliceRegistration = (
  * `status` reads the current review state without changing it.
  */
 export const buildReviewRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
@@ -373,7 +388,12 @@ export const buildReviewRegistration = (
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
-					action: z.enum(['submit', 'approve', 'request_changes', 'status']),
+					action: z.enum([
+						'submit',
+						'approve',
+						'request_changes',
+						'status',
+					]),
 					agent: z.string().min(1),
 					note: z.string().optional(),
 				}),
@@ -382,7 +402,12 @@ export const buildReviewRegistration = (
 					proposalId: z.string(),
 					sliceId: z.string(),
 					action: z.string(),
-					status: z.enum(['none', 'in_review', 'changes_requested', 'done']),
+					status: z.enum([
+						'none',
+						'in_review',
+						'changes_requested',
+						'done',
+					]),
 					implementer: z.string().nullable(),
 					reviewer: z.string().nullable(),
 					rounds: z.array(
@@ -390,7 +415,7 @@ export const buildReviewRegistration = (
 							verdict: z.enum(['requested_changes', 'approved']),
 							agent: z.string(),
 							note: z.string(),
-						})
+						}),
 					),
 					lockReleased: z.boolean(),
 				}),
@@ -406,27 +431,36 @@ export const buildReviewRegistration = (
 					proposals: Array<{ id: string; file: string }>;
 				}>(options.indexPathAbs);
 				if (index === null) {
-					return toolError('proposal index not found', 'Run sync_proposals first.');
+					return toolError(
+						'proposal index not found',
+						'Run sync_proposals first.',
+					);
 				}
 				const entry = index.proposals.find(
-					(p) => p.id === args.proposalId || p.id.startsWith(`${args.proposalId}-`)
+					(p) =>
+						p.id === args.proposalId ||
+						p.id.startsWith(`${args.proposalId}-`),
 				);
 				if (entry === undefined) {
-					return toolError(`proposal "${args.proposalId}" not in index`, 'Pass an existing proposalId.');
+					return toolError(
+						`proposal "${args.proposalId}" not in index`,
+						'Pass an existing proposalId.',
+					);
 				}
 				const docPath = join(dirname(options.indexPathAbs), entry.file);
 				const md = await readTextOrNull(docPath);
-				if (md === null) return toolError(`proposal file missing: ${docPath}`);
+				if (md === null)
+					return toolError(`proposal file missing: ${docPath}`);
 
 				const blockRe = new RegExp(
 					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
-					'm'
+					'm',
 				);
 				const m = md.match(blockRe);
 				if (m === null) {
 					return toolError(
 						`slice "${args.sliceId}" not found in ${entry.file}`,
-						'Call proposal_board to list slices.'
+						'Call proposal_board to list slices.',
 					);
 				}
 				const body = m[2] ?? '';
@@ -445,15 +479,25 @@ export const buildReviewRegistration = (
 					});
 				}
 
-				const result = reviewTransition(state, args.action, args.agent, args.note ?? '');
+				const result = reviewTransition(
+					state,
+					args.action,
+					args.agent,
+					args.note ?? '',
+				);
 				if (!result.ok || result.next === undefined) {
-					return toolError(result.reason ?? 'invalid review transition');
+					return toolError(
+						result.reason ?? 'invalid review transition',
+					);
 				}
 				const next = result.next;
 
 				// Rewrite the slice block: replace the review lines, and on approval
 				// also flip `- status: done`.
-				let block = body.replace(/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm, '');
+				let block = body.replace(
+					/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
+					'',
+				);
 				block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
 				if (next.status === 'done') {
 					block = /^[-*]\s*status:/m.test(block)
@@ -465,17 +509,23 @@ export const buildReviewRegistration = (
 
 				// approve/request_changes free the slice (done, or reworkable).
 				let lockReleased = false;
-				if (next.status === 'done' || next.status === 'changes_requested') {
+				if (
+					next.status === 'done' ||
+					next.status === 'changes_requested'
+				) {
 					await runAgentLockEngine(
 						{ action: 'release', task_id: args.sliceId },
-						{ lockPath: options.lockPathAbs, toolName: `${options.namespacePrefix}_agent_lock` }
+						{
+							lockPath: options.lockPathAbs,
+							toolName: `${options.namespacePrefix}_agent_lock`,
+						},
 					);
 					lockReleased = true;
 				}
 				await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
-					options.extraFolders ?? []
+					options.extraFolders ?? [],
 				);
 				return toolOk({
 					proposalId: entry.id,
@@ -487,7 +537,7 @@ export const buildReviewRegistration = (
 					rounds: next.rounds,
 					lockReleased,
 				});
-			}
+			},
 		);
 	},
 });
@@ -498,7 +548,7 @@ export const buildReviewRegistration = (
  * call to plan multi-agent work.
  */
 export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_board',
 	summary:
@@ -508,7 +558,7 @@ export const buildProposalBoardRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_board`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					proposals: z.array(
 						z.object({
 							id: z.string(),
@@ -518,10 +568,10 @@ export const buildProposalBoardRegistration = (
 									sliceId: z.string(),
 									status: z.string(),
 									owner: z.string().nullable(),
-								})
+								}),
 							),
 							claimableSliceIds: z.array(z.string()).optional(),
-						})
+						}),
 					),
 				}),
 				description:
@@ -529,43 +579,49 @@ export const buildProposalBoardRegistration = (
 			},
 			async () => {
 				const index = await readJsonOrNull<{
-					proposals: Array<{ id: string; file: string; status: string }>;
+					proposals: Array<{
+						id: string;
+						file: string;
+						status: string;
+					}>;
 				}>(options.indexPathAbs);
 				if (index === null) {
 					return toolJson({ proposals: [] });
 				}
 				const locks = await readActiveLocks(options.lockPathAbs);
 				const actionable = index.proposals.filter((p) =>
-					['pending', 'ready', 'in_progress'].includes(p.status)
+					['pending', 'ready', 'in_progress'].includes(p.status),
 				);
 				const board = await Promise.all(
 					actionable.map(async (p) => {
-					const docPath = join(
-						dirname(options.indexPathAbs),
-						p.file
-					);
-					const md = (await readTextOrNull(docPath)) ?? '';
-					const parsed = parseProposalSlicePlan(p.id, md);
-					if (parsed === null) {
-						return { id: p.id, status: p.status, slices: [] };
-					}
-					const plan = deriveSliceStatuses(parsed, locks);
-					return {
-						id: p.id,
-						status: p.status,
-						slices: plan.slices.map((s) => ({
-							sliceId: s.sliceId,
-							status: s.status,
-							owner: s.owner,
-						})),
-						claimableSliceIds: plan.slices
-							.filter((s) => validateClaim(plan, s.sliceId).ok)
-							.map((s) => s.sliceId),
-					};
-					})
+						const docPath = join(
+							dirname(options.indexPathAbs),
+							p.file,
+						);
+						const md = (await readTextOrNull(docPath)) ?? '';
+						const parsed = parseProposalSlicePlan(p.id, md);
+						if (parsed === null) {
+							return { id: p.id, status: p.status, slices: [] };
+						}
+						const plan = deriveSliceStatuses(parsed, locks);
+						return {
+							id: p.id,
+							status: p.status,
+							slices: plan.slices.map((s) => ({
+								sliceId: s.sliceId,
+								status: s.status,
+								owner: s.owner,
+							})),
+							claimableSliceIds: plan.slices
+								.filter(
+									(s) => validateClaim(plan, s.sliceId).ok,
+								)
+								.map((s) => s.sliceId),
+						};
+					}),
 				);
 				return toolJson({ proposals: board });
-			}
+			},
 		);
 	},
 });

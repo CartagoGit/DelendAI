@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -34,20 +40,29 @@ describe('F3 — engines honor a relocated path layout', () => {
 		const layout = buildSwarmPaths('.cache/relocated', 'docs/relocated');
 		writeFileEnsured(
 			join(root, layout.proposalsDir, 'p01-demo.md'),
-			['---', 'id: p01', 'type: feature', 'status: pending', '---', '# Demo'].join(
-				'\n'
-			)
+			[
+				'---',
+				'id: p01',
+				'type: feature',
+				'status: pending',
+				'---',
+				'# Demo',
+			].join('\n'),
 		);
 
 		const result = await syncProposalRegistry(root, layout);
 
 		// Index lands under the relocated docs root, NOT under docs/proposals.
 		expect(result.indexPath).toBe(join(root, layout.proposalIndexFile));
-		expect(existsSync(join(root, 'docs/mcp-vertex/proposals/index.json'))).toBe(false);
+		expect(
+			existsSync(join(root, 'docs/mcp-vertex/proposals/index.json')),
+		).toBe(false);
 		const index = JSON.parse(
-			readFileSync(join(root, layout.proposalIndexFile), 'utf8')
+			readFileSync(join(root, layout.proposalIndexFile), 'utf8'),
 		);
-		expect(index.proposals.map((p: { id: string }) => p.id)).toContain('p01');
+		expect(index.proposals.map((p: { id: string }) => p.id)).toContain(
+			'p01',
+		);
 	});
 
 	it('collectRoundContextSnapshot reads the lock under the custom cache root', async () => {
@@ -63,7 +78,7 @@ describe('F3 — engines honor a relocated path layout', () => {
 						last_seen: new Date().toISOString(),
 					},
 				],
-			})
+			}),
 		);
 
 		const snapshot = await collectRoundContextSnapshot(root, layout);
@@ -74,13 +89,20 @@ describe('F3 — engines honor a relocated path layout', () => {
 	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (legacy host back-compat)', async () => {
 		writeFileEnsured(
 			join(root, 'docs/mcp-vertex/proposals/p02-default.md'),
-			['---', 'id: p02', 'type: feature', 'status: pending', '---', '# Def'].join(
-				'\n'
-			)
+			[
+				'---',
+				'id: p02',
+				'type: feature',
+				'status: pending',
+				'---',
+				'# Def',
+			].join('\n'),
 		);
 
 		const result = await syncProposalRegistry(root);
 
-		expect(result.indexPath).toBe(join(root, 'docs/mcp-vertex/proposals/index.json'));
+		expect(result.indexPath).toBe(
+			join(root, 'docs/mcp-vertex/proposals/index.json'),
+		);
 	});
 });

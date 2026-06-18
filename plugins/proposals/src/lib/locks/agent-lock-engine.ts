@@ -61,7 +61,7 @@ const getLockPath = (deps: IAgentLockDeps = {}): string => {
 	// where the workspace is. [N6]
 	if (!deps.lockPath) {
 		throw new Error(
-			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.'
+			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.',
 		);
 	}
 	return deps.lockPath;
@@ -101,7 +101,7 @@ const readLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 
 const writeLock = async (
 	lock: ILockFile,
-	deps: IAgentLockDeps = {}
+	deps: IAgentLockDeps = {},
 ): Promise<void> => {
 	const lockPath = getLockPath(deps);
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
@@ -115,7 +115,7 @@ const isStale = (e: ILockEntry, thresholdMinutes: number): boolean => {
 
 const removeStale = (lock: ILockFile): ILockFile => {
 	lock.in_flight = lock.in_flight.filter(
-		(e) => !isStale(e, lock.stale_after_minutes)
+		(e) => !isStale(e, lock.stale_after_minutes),
 	);
 	return lock;
 };
@@ -126,7 +126,7 @@ const findOverlap = (a: string[], b: string[]): string[] => {
 };
 
 const validateArgs = (
-	args: IAgentLockArgs
+	args: IAgentLockArgs,
 ): { ok: true; value: IAgentLockArgs } | { ok: false; error: string } => {
 	if (args.action === 'claim') {
 		if (!args.task_id || !args.agent) {
@@ -149,7 +149,7 @@ const validateArgs = (
 
 export async function runAgentLockEngine(
 	args: IAgentLockArgs,
-	deps: IAgentLockDeps = {}
+	deps: IAgentLockDeps = {},
 ): Promise<IAgentLockResponse> {
 	const v = validateArgs(args);
 	const lockPath = getLockPath(deps);
@@ -160,18 +160,16 @@ export async function runAgentLockEngine(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: args.action,
-							path: lockFileLabel,
-							error: v.error,
-							blockerType: 'invalid-input',
-							nextAction:
-								'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
-							summary: `invalid-input: ${v.error}`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: args.action,
+						path: lockFileLabel,
+						error: v.error,
+						blockerType: 'invalid-input',
+						nextAction:
+							'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
+						summary: `invalid-input: ${v.error}`,
+					}),
 				},
 			],
 			isError: true,
@@ -186,7 +184,7 @@ export async function runAgentLockEngine(
 
 async function executeLockAction(
 	args: IAgentLockArgs,
-	deps: IAgentLockDeps
+	deps: IAgentLockDeps,
 ): Promise<IAgentLockResponse> {
 	const lockPath = getLockPath(deps);
 	const toolName = getToolName(deps);
@@ -206,18 +204,16 @@ async function executeLockAction(
 				content: [
 					{
 						type: 'text',
-						text: JSON.stringify(
-							{
-								tool: toolName,
-								action: 'claim',
-								task_id: taskId,
-								refreshed: true,
-								path: lockFileLabel,
-								lock_path: lockPath,
-								ownership_count: existing.ownership.length,
-								summary: `refreshed ${taskId}`,
-							},
-						),
+						text: JSON.stringify({
+							tool: toolName,
+							action: 'claim',
+							task_id: taskId,
+							refreshed: true,
+							path: lockFileLabel,
+							lock_path: lockPath,
+							ownership_count: existing.ownership.length,
+							summary: `refreshed ${taskId}`,
+						}),
 					},
 				],
 			};
@@ -230,24 +226,22 @@ async function executeLockAction(
 					content: [
 						{
 							type: 'text',
-							text: JSON.stringify(
-								{
-									tool: toolName,
-									action: 'claim',
-									task_id: taskId,
-									blocked: true,
-									blockerType: 'lock-conflict',
-									blocked_reason: `overlaps with ${e.task_id}`,
-									conflicting_task: e.task_id,
-									conflicting_agent: e.agent,
-									overlapping_files: overlap,
-									path: lockFileLabel,
-									lock_path: lockPath,
-									nextAction:
-										'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
-									summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
-								},
-							),
+							text: JSON.stringify({
+								tool: toolName,
+								action: 'claim',
+								task_id: taskId,
+								blocked: true,
+								blockerType: 'lock-conflict',
+								blocked_reason: `overlaps with ${e.task_id}`,
+								conflicting_task: e.task_id,
+								conflicting_agent: e.agent,
+								overlapping_files: overlap,
+								path: lockFileLabel,
+								lock_path: lockPath,
+								nextAction:
+									'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
+								summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
+							}),
 						},
 					],
 				};
@@ -269,19 +263,17 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'claim',
-							task_id: taskId,
-							agent,
-							path: lockFileLabel,
-							lock_path: lockPath,
-							ownership_count: files.length,
-							claimed: true,
-							summary: `claimed ${taskId} (${files.length} files)`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'claim',
+						task_id: taskId,
+						agent,
+						path: lockFileLabel,
+						lock_path: lockPath,
+						ownership_count: files.length,
+						claimed: true,
+						summary: `claimed ${taskId} (${files.length} files)`,
+					}),
 				},
 			],
 		};
@@ -297,20 +289,18 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'release',
-							task_id: taskId,
-							path: lockFileLabel,
-							lock_path: lockPath,
-							removed: dropped,
-							summary:
-								dropped > 0
-									? `released ${taskId}`
-									: `no active claim for ${taskId}`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'release',
+						task_id: taskId,
+						path: lockFileLabel,
+						lock_path: lockPath,
+						removed: dropped,
+						summary:
+							dropped > 0
+								? `released ${taskId}`
+								: `no active claim for ${taskId}`,
+					}),
 				},
 			],
 		};
@@ -321,18 +311,16 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'status',
-							path: lockFileLabel,
-							lock_path: lockPath,
-							exists: await fileExists(lockPath),
-							active_write_lanes: lock.in_flight.length,
-							summary: `${lock.in_flight.length} active write lane(s)`,
-							...lock,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'status',
+						path: lockFileLabel,
+						lock_path: lockPath,
+						exists: await fileExists(lockPath),
+						active_write_lanes: lock.in_flight.length,
+						summary: `${lock.in_flight.length} active write lane(s)`,
+						...lock,
+					}),
 				},
 			],
 		};
@@ -341,7 +329,7 @@ async function executeLockAction(
 	if (args.action === 'gc') {
 		const before = lock.in_flight.length;
 		lock.in_flight = lock.in_flight.filter(
-			(e) => !isStale(e, lock.stale_after_minutes)
+			(e) => !isStale(e, lock.stale_after_minutes),
 		);
 		const dropped = before - lock.in_flight.length;
 		await writeLock(lock, deps);
@@ -349,16 +337,14 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'gc',
-							path: lockFileLabel,
-							lock_path: lockPath,
-							dropped,
-							summary: `gc dropped ${dropped} stale claim(s)`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'gc',
+						path: lockFileLabel,
+						lock_path: lockPath,
+						dropped,
+						summary: `gc dropped ${dropped} stale claim(s)`,
+					}),
 				},
 			],
 		};

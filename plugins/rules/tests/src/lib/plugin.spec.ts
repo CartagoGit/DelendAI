@@ -11,7 +11,10 @@ import type {
 
 import plugin from '@mcp-vertex/rules';
 
-const makeCtx = (root: string, options: Record<string, unknown> = {}): IMcpPluginContext => ({
+const makeCtx = (
+	root: string,
+	options: Record<string, unknown> = {},
+): IMcpPluginContext => ({
 	workspace: { root, resolve: (rel: string) => join(root, rel) },
 	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
 	cacheDir: '.cache/mcp-vertex',
@@ -24,9 +27,13 @@ const makeCtx = (root: string, options: Record<string, unknown> = {}): IMcpPlugi
 });
 
 const captureTool = async (
-	registration: IToolRegistration
-): Promise<(args: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
-	let handler: (args: unknown) => Promise<{ content: Array<{ text: string }> }>;
+	registration: IToolRegistration,
+): Promise<
+	(args: unknown) => Promise<{ content: Array<{ text: string }> }>
+> => {
+	let handler: (
+		args: unknown,
+	) => Promise<{ content: Array<{ text: string }> }>;
 	await registration.register({
 		registerTool: (_n: string, _d: unknown, h: typeof handler) => {
 			handler = h;
@@ -39,7 +46,10 @@ describe('@mcp-vertex/rules plugin', () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'rules-'));
-		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'demo' }));
+		writeFileSync(
+			join(root, 'package.json'),
+			JSON.stringify({ name: 'demo' }),
+		);
 		writeFileSync(join(root, 'tsconfig.json'), '{}');
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -59,19 +69,27 @@ describe('@mcp-vertex/rules plugin', () => {
 	it('materialises default presets + a manifest into the cache on register', async () => {
 		await plugin.register(makeCtx(root));
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/rules/rules-map.json'))
+			existsSync(join(root, '.cache/mcp-vertex/rules/rules-map.json')),
 		).toBe(true);
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/rules/angular.eslint.config.mjs'))
+			existsSync(
+				join(root, '.cache/mcp-vertex/rules/angular.eslint.config.mjs'),
+			),
 		).toBe(true);
 		expect(
-			existsSync(join(root, '.cache/mcp-vertex/rules/vanilla-ts.tsconfig.json'))
+			existsSync(
+				join(root, '.cache/mcp-vertex/rules/vanilla-ts.tsconfig.json'),
+			),
 		).toBe(true);
 	});
 
 	it('get_rules returns the area map and the mode (forced framework override)', async () => {
 		const reg = await plugin.register(
-			makeCtx(root, { framework: 'react', language: 'ts', mode: 'strict' })
+			makeCtx(root, {
+				framework: 'react',
+				language: 'ts',
+				mode: 'strict',
+			}),
 		);
 		const getRules = await captureTool(reg.tools![0]!);
 		const out = JSON.parse((await getRules({})).content[0]!.text);

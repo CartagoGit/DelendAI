@@ -86,7 +86,7 @@ describe('enforceContinuity — block violations', () => {
 		});
 		expect(result.decision.mode).toBe('reset');
 		expect(result.decision.reason).toContain(
-			'forbidReReadOnUnchangedDigest'
+			'forbidReReadOnUnchangedDigest',
 		);
 	});
 });
@@ -155,10 +155,10 @@ describe('ORCHESTRATOR_DEFAULT_POLICY', () => {
 		expect(ORCHESTRATOR_DEFAULT_POLICY.maxAgentSpawnsPerSession).toBe(2);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.maxToolRetriesPerTool).toBe(3);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.forbidReReadOnUnchangedDigest).toBe(
-			true
+			true,
 		);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.requireCheckpointAfterTask).toBe(
-			true
+			true,
 		);
 	});
 });

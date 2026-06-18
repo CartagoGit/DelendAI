@@ -43,7 +43,7 @@ describe('resolveWorkspaceContained — workspace containment guard', () => {
 		expect(r.reason).toMatch(/escapes workspace/);
 	});
 
-	it("rejects a child that climbs out then back to a sibling", () => {
+	it('rejects a child that climbs out then back to a sibling', () => {
 		const r = resolveWorkspaceContained(ROOT, 'a/../../space-evil/x');
 		expect(r.ok).toBe(false);
 	});

@@ -39,7 +39,7 @@ import {
 describe('parseChatTitlingPrefix — valid proposal cases', () => {
 	it('accepts [p22] T6.2: loop_status tool MCP', () => {
 		const result = parseChatTitlingPrefix(
-			'[p22] T6.2: loop_status tool MCP'
+			'[p22] T6.2: loop_status tool MCP',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.kind).toBe('proposal');
@@ -52,7 +52,7 @@ describe('parseChatTitlingPrefix — valid proposal cases', () => {
 
 	it('accepts [p41] T1: chat titling prefix rule', () => {
 		const result = parseChatTitlingPrefix(
-			'[p41] T1: chat titling prefix rule'
+			'[p41] T1: chat titling prefix rule',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.kind).toBe('proposal');
@@ -63,7 +63,7 @@ describe('parseChatTitlingPrefix — valid proposal cases', () => {
 
 	it('accepts [p40c] T3: persistent queue smoke (proposalId with letter suffix)', () => {
 		const result = parseChatTitlingPrefix(
-			'[p40c] T3: persistent queue smoke'
+			'[p40c] T3: persistent queue smoke',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.kind).toBe('proposal');
@@ -74,7 +74,7 @@ describe('parseChatTitlingPrefix — valid proposal cases', () => {
 
 	it('accepts [p34b] T2: swarm governor IRoundContextDigest (proposalId with letter suffix)', () => {
 		const result = parseChatTitlingPrefix(
-			'[p34b] T2: swarm governor IRoundContextDigest'
+			'[p34b] T2: swarm governor IRoundContextDigest',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.kind).toBe('proposal');
@@ -109,7 +109,7 @@ describe('parseChatTitlingPrefix — valid free cases', () => {
 
 	it('does NOT split on colon in the summary of a [FREE] case', () => {
 		const result = parseChatTitlingPrefix(
-			'[FREE] notes on editorconfig: keep it'
+			'[FREE] notes on editorconfig: keep it',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.kind).toBe('free');
@@ -165,7 +165,7 @@ describe('parseChatTitlingPrefix — invalid cases', () => {
 		// valid AFTER trimming. This spec enforces the trim contract:
 		// callers do not need to pre-trim, the parser does it.
 		const result = parseChatTitlingPrefix(
-			'   [p22] T1: leading whitespace'
+			'   [p22] T1: leading whitespace',
 		);
 		expect(result.valid).toBe(true);
 		expect(result.proposalId).toBe('p22');
@@ -180,7 +180,7 @@ describe('parseChatTitlingPrefix — invalid cases', () => {
 
 	it('rejects [p22] T6.2 loop_status no colon (missing ": " separator)', () => {
 		const result = parseChatTitlingPrefix(
-			'[p22] T6.2 loop_status no colon'
+			'[p22] T6.2 loop_status no colon',
 		);
 		expect(result.valid).toBe(false);
 		expect(result.kind).toBe('invalid');
@@ -194,25 +194,25 @@ describe('parseChatTitlingPrefix — invalid cases', () => {
 describe('isValidChatTitlingPrefix', () => {
 	it('agrees with parseChatTitlingPrefix on valid inputs', () => {
 		expect(
-			isValidChatTitlingPrefix('[p22] T6.2: loop_status tool MCP')
+			isValidChatTitlingPrefix('[p22] T6.2: loop_status tool MCP'),
 		).toBe(true);
 		expect(
-			isValidChatTitlingPrefix('[p41] T1: chat titling prefix rule')
+			isValidChatTitlingPrefix('[p41] T1: chat titling prefix rule'),
 		).toBe(true);
 		expect(
-			isValidChatTitlingPrefix('[p40c] T3: persistent queue smoke')
+			isValidChatTitlingPrefix('[p40c] T3: persistent queue smoke'),
 		).toBe(true);
 		expect(isValidChatTitlingPrefix('[p34b] T2: swarm governor')).toBe(
-			true
+			true,
 		);
 		expect(isValidChatTitlingPrefix('[FREE] debug vitest config')).toBe(
-			true
+			true,
 		);
 	});
 
 	it('returns false on invalid inputs', () => {
 		expect(isValidChatTitlingPrefix('[FREE]no space after bracket')).toBe(
-			false
+			false,
 		);
 		expect(isValidChatTitlingPrefix('[p] T1: missing number')).toBe(false);
 		expect(isValidChatTitlingPrefix('Tarea: abrir p41')).toBe(false);
@@ -256,7 +256,7 @@ describe('parseChatTitlingPrefix — structural fields', () => {
 		expect(result.valid).toBe(false);
 		expect(result.kind).toBe('invalid');
 		expect(result.reason).toBe(
-			`prefix too long for VS Code sidebar (>${CHAT_TITLING_PREFIX_MAX_LENGTH} chars)`
+			`prefix too long for VS Code sidebar (>${CHAT_TITLING_PREFIX_MAX_LENGTH} chars)`,
 		);
 	});
 

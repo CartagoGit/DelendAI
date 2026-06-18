@@ -28,7 +28,10 @@ const RULES: readonly IRule[] = [
 		re: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g,
 	},
 	// JSON Web Tokens (three base64url segments).
-	{ name: 'jwt', re: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g },
+	{
+		name: 'jwt',
+		re: /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+	},
 	// AWS access key id.
 	{ name: 'aws-access-key', re: /\bAKIA[0-9A-Z]{16}\b/g },
 	// GitHub tokens (classic + fine-grained).

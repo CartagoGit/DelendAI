@@ -26,7 +26,7 @@ import type {
 } from '@mcp-vertex/core/public';
 
 const captureHandler = async (
-	reg: IToolRegistration
+	reg: IToolRegistration,
 ): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
 	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await reg.register({
@@ -47,10 +47,20 @@ describe('memory store', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('upserts by title and recalls by query/tags', async () => {
-		await saveNote(store, { title: 'DB choice', body: 'we use mysql', tags: ['db'] });
-		await saveNote(store, { title: 'DB choice', body: 'we use mysql2', tags: ['db'] });
+		await saveNote(store, {
+			title: 'DB choice',
+			body: 'we use mysql',
+			tags: ['db'],
+		});
+		await saveNote(store, {
+			title: 'DB choice',
+			body: 'we use mysql2',
+			tags: ['db'],
+		});
 		expect(await readStore(store)).toHaveLength(1); // upsert, not duplicate
-		expect((await recall(store, { query: 'mysql2' }))[0]?.title).toBe('DB choice');
+		expect((await recall(store, { query: 'mysql2' }))[0]?.title).toBe(
+			'DB choice',
+		);
 		expect(await recall(store, { tags: ['db'] })).toHaveLength(1);
 		expect(await recall(store, { tags: ['missing'] })).toHaveLength(0);
 	});
@@ -68,8 +78,8 @@ describe('memory store', () => {
 	it('keeps every note when saved concurrently (mutex, no lost update)', async () => {
 		await Promise.all(
 			['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map((title) =>
-				saveNote(store, { title, body: title })
-			)
+				saveNote(store, { title, body: title }),
+			),
 		);
 		expect(await readStore(store)).toHaveLength(5);
 	}, 20_000);
@@ -94,13 +104,16 @@ describe('memory recall — relevance ranking (N22)', () => {
 		// Older note is highly relevant; newer note barely mentions the term.
 		await saveNote(
 			store,
-			{ title: 'Postgres indexing', body: 'index index index on postgres' },
-			() => '2026-01-01T00:00:00.000Z'
+			{
+				title: 'Postgres indexing',
+				body: 'index index index on postgres',
+			},
+			() => '2026-01-01T00:00:00.000Z',
 		);
 		await saveNote(
 			store,
 			{ title: 'Deploy notes', body: 'we mention index once' },
-			() => '2026-06-01T00:00:00.000Z'
+			() => '2026-06-01T00:00:00.000Z',
 		);
 		const hits = await recall(store, { query: 'index' });
 		expect(hits[0]?.title).toBe('Postgres indexing'); // relevance > recency
@@ -108,8 +121,14 @@ describe('memory recall — relevance ranking (N22)', () => {
 	});
 
 	it('weights title matches over body matches', async () => {
-		await saveNote(store, { title: 'auth flow', body: 'unrelated text here' });
-		await saveNote(store, { title: 'misc', body: 'a passing mention of auth' });
+		await saveNote(store, {
+			title: 'auth flow',
+			body: 'unrelated text here',
+		});
+		await saveNote(store, {
+			title: 'misc',
+			body: 'a passing mention of auth',
+		});
 		const hits = await recall(store, { query: 'auth' });
 		expect(hits[0]?.title).toBe('auth flow');
 	});
@@ -122,8 +141,16 @@ describe('memory recall — relevance ranking (N22)', () => {
 	});
 
 	it('tags remain a hard filter alongside a query', async () => {
-		await saveNote(store, { title: 'A', body: 'cache strategy', tags: ['ops'] });
-		await saveNote(store, { title: 'B', body: 'cache strategy', tags: ['dev'] });
+		await saveNote(store, {
+			title: 'A',
+			body: 'cache strategy',
+			tags: ['ops'],
+		});
+		await saveNote(store, {
+			title: 'B',
+			body: 'cache strategy',
+			tags: ['dev'],
+		});
 		const hits = await recall(store, { query: 'cache', tags: ['ops'] });
 		expect(hits.map((h) => h.title)).toEqual(['A']);
 	});
@@ -134,8 +161,16 @@ describe('memory recall — relevance ranking (N22)', () => {
 	});
 
 	it('with no query, falls back to newest-first', async () => {
-		await saveNote(store, { title: 'old', body: 'x' }, () => '2026-01-01T00:00:00.000Z');
-		await saveNote(store, { title: 'new', body: 'y' }, () => '2026-06-01T00:00:00.000Z');
+		await saveNote(
+			store,
+			{ title: 'old', body: 'x' },
+			() => '2026-01-01T00:00:00.000Z',
+		);
+		await saveNote(
+			store,
+			{ title: 'new', body: 'y' },
+			() => '2026-06-01T00:00:00.000Z',
+		);
 		expect((await recall(store, {}))[0]?.title).toBe('new');
 	});
 });
@@ -150,24 +185,32 @@ describe('memory recall — adversarial inputs (N23)', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('regex-special queries are treated literally, never as regex (no throw)', async () => {
-		await saveNote(store, { title: 'Globs', body: 'pattern a.*b (group) [set] $end' });
+		await saveNote(store, {
+			title: 'Globs',
+			body: 'pattern a.*b (group) [set] $end',
+		});
 		for (const q of ['.*', '(', '[', '\\', '$end', 'a.*b', '(group)']) {
 			await expect(recall(store, { query: q })).resolves.toBeDefined();
 		}
 		// the literal substring `a.*b` is present → surfaced via the floor
-		expect((await recall(store, { query: 'a.*b' }))[0]?.title).toBe('Globs');
+		expect((await recall(store, { query: 'a.*b' }))[0]?.title).toBe(
+			'Globs',
+		);
 	});
 
 	it('handles unicode and a very long query without throwing', async () => {
 		await saveNote(store, { title: 'café', body: '☕ über naïve façade' });
 		expect((await recall(store, { query: 'café' }))[0]?.title).toBe('café');
 		await expect(
-			recall(store, { query: 'x'.repeat(50_000) })
+			recall(store, { query: 'x'.repeat(50_000) }),
 		).resolves.toBeDefined();
 	});
 
 	it('round-trips unicode/control-ish content through save+recall', async () => {
-		await saveNote(store, { title: 'Tab\tnote', body: 'line1\nline2 — emoji 🚀' });
+		await saveNote(store, {
+			title: 'Tab\tnote',
+			body: 'line1\nline2 — emoji 🚀',
+		});
 		const hits = await recall(store, { query: 'emoji' });
 		expect(hits[0]?.body).toContain('🚀');
 	});
@@ -183,8 +226,8 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	const backupOf = (): string | undefined =>
-		readdirSync(dir).find(
-			(f) => f.startsWith(`${basename(store)}.corrupt-`)
+		readdirSync(dir).find((f) =>
+			f.startsWith(`${basename(store)}.corrupt-`),
 		);
 
 	it('preserves invalid JSON to a .corrupt backup and throws', async () => {
@@ -195,7 +238,7 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 		const backup = backupOf();
 		expect(backup).toBeDefined();
 		expect(readFileSync(join(dir, backup!), 'utf8')).toBe(
-			'{ this is not json'
+			'{ this is not json',
 		);
 	});
 
@@ -221,7 +264,7 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 	it('saveNote refuses to overwrite a corrupt store (no data loss)', async () => {
 		writeFileSync(store, '{{{');
 		await expect(
-			saveNote(store, { title: 'X', body: 'y' })
+			saveNote(store, { title: 'X', body: 'y' }),
 		).rejects.toThrow(CorruptFileError);
 	});
 
@@ -270,7 +313,10 @@ describe('memory plugin', () => {
 	it('registers the four memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
 			pluginCacheDir: '.cache/mcp-vertex/memory',

@@ -2,7 +2,7 @@
  * promote-on-release.ts
  *
  * Auto-promoter hook for the agent-lock `release` action.
- * 
+ *
  *
  * Behavior:
  *   1. Read the queue (defensively — if the file is missing or empty,
@@ -61,7 +61,7 @@ const mutexRegistry = new Map<string, IMutex>();
 
 const withMutex = async <T>(
 	queuePath: string,
-	fn: () => Promise<T>
+	fn: () => Promise<T>,
 ): Promise<T> => {
 	const existing = mutexRegistry.get(queuePath);
 	if (existing) {
@@ -102,7 +102,7 @@ const withMutex = async <T>(
 
 const persistQueue = async (
 	queue: IPersistentTaskQueue,
-	queuePath: string
+	queuePath: string,
 ): Promise<void> => {
 	await writeFileAtomic(queuePath, JSON.stringify(queue, null, 2));
 };
@@ -112,7 +112,7 @@ const persistQueue = async (
 // ---------------------------------------------------------------------------
 
 const loadOrEmptyQueue = async (
-	queuePath: string
+	queuePath: string,
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
@@ -140,7 +140,7 @@ const loadOrEmptyQueue = async (
 // ---------------------------------------------------------------------------
 
 export const promoteOnRelease = async (
-	params: IPromoteOnReleaseParams
+	params: IPromoteOnReleaseParams,
 ): Promise<IPromoteOnReleaseResult> => {
 	return withMutex(params.queuePath, async () => {
 		const queue = await loadOrEmptyQueue(params.queuePath);
@@ -169,7 +169,7 @@ export const promoteOnRelease = async (
 				// (a waiter only proceeds when ALL its waitFor files are released;
 				//  if even one file is still in_flight, the entry stays queued)
 				const allReleased = entry.waitFor.every((wf) =>
-					releasedSet.has(wf.file)
+					releasedSet.has(wf.file),
 				);
 				if (!allReleased) {
 					skippedCount++;
@@ -182,7 +182,7 @@ export const promoteOnRelease = async (
 					status: 'promoted',
 					promotedAt: now,
 				};
-			}
+			},
 		);
 
 		if (promotedTaskIds.length === 0) {

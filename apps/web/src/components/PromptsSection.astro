@@ -12,13 +12,19 @@ type IPrompt = {
 	name: string;
 	description: string;
 	namespace: string;
-	arguments?: Array<{ name: string; description: string; required?: boolean }>;
+	arguments?: Array<{
+		name: string;
+		description: string;
+		required?: boolean;
+	}>;
 };
 
 const prompts = (capabilities.prompts ?? []) as IPrompt[];
 const groups: Record<string, IPrompt[]> = {};
 for (const p of prompts) (groups[p.namespace] ??= []).push(p);
-const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+const namespaces = Object.entries(groups).sort((a, b) =>
+	a[0].localeCompare(b[0]),
+);
 ---
 
 <section id="prompts" class="section">

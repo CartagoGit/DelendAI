@@ -81,7 +81,7 @@ const isPlainSubset = (node: IJsonSchemaNode | boolean | undefined): boolean =>
  */
 export const jsonSchemaToTs = (
 	node: IJsonSchemaNode | boolean,
-	indent = 0
+	indent = 0,
 ): string => {
 	// `true`/`{}` (no constraints) → unknown.
 	if (node === true) return 'unknown';
@@ -96,7 +96,7 @@ export const jsonSchemaToTs = (
 	const variants = node.anyOf ?? node.oneOf;
 	if (variants !== undefined && variants.length > 0) {
 		return dedupeUnion(
-			variants.map((variant) => jsonSchemaToTs(variant, indent))
+			variants.map((variant) => jsonSchemaToTs(variant, indent)),
 		);
 	}
 
@@ -117,7 +117,10 @@ export const jsonSchemaToTs = (
 			return emitObject(node, indent);
 		default:
 			// No `type` but an object shape (properties/additionalProperties).
-			if (node.properties !== undefined || node.additionalProperties !== undefined) {
+			if (
+				node.properties !== undefined ||
+				node.additionalProperties !== undefined
+			) {
 				return emitObject(node, indent);
 			}
 			return 'unknown';
@@ -136,7 +139,10 @@ const dedupeUnion = (parts: readonly string[]): string => {
 };
 
 const emitArray = (node: IJsonSchemaNode, indent: number): string => {
-	const item = node.items === undefined ? 'unknown' : jsonSchemaToTs(node.items, indent);
+	const item =
+		node.items === undefined
+			? 'unknown'
+			: jsonSchemaToTs(node.items, indent);
 	// Parenthesise unions so `A | B[]` is read as `(A | B)[]`.
 	return /[|&]/.test(item) ? `Array<${item}>` : `${item}[]`;
 };
@@ -148,7 +154,10 @@ const emitObject = (node: IJsonSchemaNode, indent: number): string => {
 		// object with only an index signature).
 		const ap = node.additionalProperties;
 		if (ap === false || ap === undefined) return 'Record<string, never>';
-		if (ap === true || (isPlainSubset(ap) && Object.keys(ap as object).length === 0)) {
+		if (
+			ap === true ||
+			(isPlainSubset(ap) && Object.keys(ap as object).length === 0)
+		) {
 			return 'Record<string, unknown>';
 		}
 		return `Record<string, ${jsonSchemaToTs(ap as IJsonSchemaNode, indent)}>`;
@@ -165,7 +174,7 @@ const emitObject = (node: IJsonSchemaNode, indent: number): string => {
  */
 export const objectMemberLines = (
 	node: IJsonSchemaNode,
-	indent: number
+	indent: number,
 ): string[] => {
 	const pad = '\t'.repeat(indent);
 	const required = new Set(node.required ?? []);
@@ -178,7 +187,8 @@ export const objectMemberLines = (
 	const ap = node.additionalProperties;
 	if (ap !== undefined && ap !== false) {
 		const valueTs =
-			ap === true || (isPlainSubset(ap) && Object.keys(ap as object).length === 0)
+			ap === true ||
+			(isPlainSubset(ap) && Object.keys(ap as object).length === 0)
 				? 'unknown'
 				: jsonSchemaToTs(ap as IJsonSchemaNode, indent);
 		lines.push(`${pad}[key: string]: ${valueTs};`);
@@ -207,7 +217,7 @@ const FILE_HEADER = `/**
  */
 export const emitToolOutputsModule = (
 	label: string,
-	tools: readonly IHarvestedTool[]
+	tools: readonly IHarvestedTool[],
 ): string => {
 	const blocks: string[] = [FILE_HEADER];
 	for (const tool of tools) {
@@ -217,10 +227,11 @@ export const emitToolOutputsModule = (
 		blocks.push(`export interface ${name} {${body}}`);
 	}
 	const mapLines = tools.map(
-		(tool) => `\t${JSON.stringify(tool.name)}: ${outputInterfaceName(tool.name)};`
+		(tool) =>
+			`\t${JSON.stringify(tool.name)}: ${outputInterfaceName(tool.name)};`,
 	);
 	blocks.push(
-		`/** Map of this package's MCP tool names to their \`structuredContent\` type. */\nexport interface ${label}ToolOutputs {\n${mapLines.join('\n')}\n}`
+		`/** Map of this package's MCP tool names to their \`structuredContent\` type. */\nexport interface ${label}ToolOutputs {\n${mapLines.join('\n')}\n}`,
 	);
 	return `${blocks.join('\n\n')}\n`;
 };
@@ -230,7 +241,7 @@ export const emitToolOutputsModule = (
  * `<dir>/<GENERATED_REL_PATH>` → file content, deterministic in tool order.
  */
 export const buildPackageModules = (
-	tools: readonly IHarvestedTool[]
+	tools: readonly IHarvestedTool[],
 ): Map<string, string> => {
 	const byPrefix = new Map<string, IHarvestedTool[]>();
 	for (const tool of tools) {
@@ -244,13 +255,13 @@ export const buildPackageModules = (
 		const route = PACKAGE_ROUTES[prefix];
 		if (route === undefined) {
 			throw new Error(
-				`[types:generate] no PACKAGE_ROUTES entry for prefix "${prefix}" (tool "${bucket[0]?.name}")`
+				`[types:generate] no PACKAGE_ROUTES entry for prefix "${prefix}" (tool "${bucket[0]?.name}")`,
 			);
 		}
 		const sorted = [...bucket].sort((a, b) => a.name.localeCompare(b.name));
 		out.set(
 			`${route.dir}/${GENERATED_REL_PATH}`,
-			emitToolOutputsModule(route.label, sorted)
+			emitToolOutputsModule(route.label, sorted),
 		);
 	}
 	return out;

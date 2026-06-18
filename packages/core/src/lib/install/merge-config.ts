@@ -27,7 +27,7 @@ export const mergeServerEntry = (
 	existing: string | null,
 	kind: IMcpConfigKind,
 	serverName: string,
-	entry: Record<string, unknown>
+	entry: Record<string, unknown>,
 ): IMergeResult => {
 	const root: Record<string, unknown> =
 		existing && existing.trim().length > 0
@@ -39,7 +39,8 @@ export const mergeServerEntry = (
 	) as Record<string, unknown>;
 
 	const had = Object.hasOwn(container, serverName);
-	const same = had && JSON.stringify(container[serverName]) === JSON.stringify(entry);
+	const same =
+		had && JSON.stringify(container[serverName]) === JSON.stringify(entry);
 
 	const action: IMergeAction = same
 		? 'unchanged'

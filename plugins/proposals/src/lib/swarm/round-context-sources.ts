@@ -25,9 +25,7 @@ import type { IAgentAssignment } from '../shared/agent-registry-store';
 import { AGENT_CONVENTIONS } from '../shared/agent-conventions';
 import { CONTINUITY_STALE_WINDOW_MS } from './runtime-recovery';
 import { computeAgeMinutes, computeFingerprint } from './round-context-hash';
-import {
-	ACTIVE_PROPOSAL_PREVIEW_LIMIT,
-} from './round-context-types';
+import { ACTIVE_PROPOSAL_PREVIEW_LIMIT } from './round-context-types';
 import type {
 	IRoundContextAgent,
 	IRoundContextChatContext,
@@ -102,7 +100,7 @@ export interface IRoundContextOperationalSnapshot {
 const readJsonSource = async <T>(
 	path: string,
 	timestampSelector?: (value: T) => string | null,
-	staleAfterMinutes?: number
+	staleAfterMinutes?: number,
 ): Promise<IJsonSourceRead<T>> => {
 	let raw: string;
 	try {
@@ -162,7 +160,7 @@ const scanLiveProposalEntries = async (
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Host folder policy (e.g. `paused/demos`) is injected, not baked in:
 	// paths relative to `proposalsDir`. mcp-vertex stays agnostic. [M5]
-	extraFolders: readonly string[] = []
+	extraFolders: readonly string[] = [],
 ): Promise<IScannedProposalEntry[]> => {
 	const proposalsDir = join(monorepoRoot, layout.proposalsDir);
 	const roots = [
@@ -200,22 +198,22 @@ const scanLiveProposalEntries = async (
 };
 
 export const readChatContextSummary = async (
-	monorepoRoot: string
+	monorepoRoot: string,
 ): Promise<IRoundContextChatContext> =>
 	(await collectRoundContextSnapshot(monorepoRoot)).chatContext;
 
 export const readCheckpointSummary = async (
-	monorepoRoot: string
+	monorepoRoot: string,
 ): Promise<IRoundContextCheckpoint> =>
 	(await collectRoundContextSnapshot(monorepoRoot)).checkpoint;
 
 export const readProposalPortfolioSummary = async (
-	monorepoRoot: string
+	monorepoRoot: string,
 ): Promise<IRoundContextProposalPortfolio> =>
 	(await collectRoundContextSnapshot(monorepoRoot)).proposalPortfolio;
 
 export const readLockSummary = async (
-	monorepoRoot: string
+	monorepoRoot: string,
 ): Promise<{
 	readonly source: IRoundContextSourceMeta;
 	readonly locks: readonly IRoundContextLock[];
@@ -228,7 +226,7 @@ export const readLockSummary = async (
 };
 
 export const readAgentSummary = async (
-	monorepoRoot: string
+	monorepoRoot: string,
 ): Promise<{
 	readonly source: IRoundContextSourceMeta;
 	readonly agents: readonly IRoundContextAgent[];
@@ -242,18 +240,18 @@ export const readAgentSummary = async (
 
 export const buildOperationalSources = async (
 	monorepoRoot: string,
-	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 ): Promise<IRoundContextSources> => {
 	const [chat, checkpoint, lock, registry] = await Promise.all([
 		readJsonSource<IJsonChatContext>(
-			join(monorepoRoot, layout.orchestratorChatContextFile)
+			join(monorepoRoot, layout.orchestratorChatContextFile),
 		),
 		readJsonSource<IJsonCheckpoint>(
-			join(monorepoRoot, layout.orchestratorCheckpointFile)
+			join(monorepoRoot, layout.orchestratorCheckpointFile),
 		),
 		readJsonSource<IJsonLockFile>(join(monorepoRoot, layout.lockFile)),
 		readJsonSource<IJsonRegistry>(
-			join(monorepoRoot, layout.agentRegistryFile)
+			join(monorepoRoot, layout.agentRegistryFile),
 		),
 	]);
 	return {
@@ -293,29 +291,31 @@ export const collectRoundContextSnapshot = async (
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Extra host proposal folders (relative to proposalsDir) scanned when
 	// no index.json is present. Injected by the plugin from ctx.options. [M5]
-	extraFolders: readonly string[] = []
+	extraFolders: readonly string[] = [],
 ): Promise<IRoundContextOperationalSnapshot> => {
-	const [chat, checkpoint, lock, registry, proposalIndex] = await Promise.all([
-		readJsonSource<IJsonChatContext>(
-			join(monorepoRoot, layout.orchestratorChatContextFile),
-			(value) => value.lastUpdated ?? null,
-			CONTINUITY_STALE_WINDOW_MS / 60_000
-		),
-		readJsonSource<IJsonCheckpoint>(
-			join(monorepoRoot, layout.orchestratorCheckpointFile),
-			(value) => value.updatedAt ?? value.lastUpdated ?? null,
-			CONTINUITY_STALE_WINDOW_MS / 60_000
-		),
-		readJsonSource<IJsonLockFile>(join(monorepoRoot, layout.lockFile)),
-		readJsonSource<IJsonRegistry>(
-			join(monorepoRoot, layout.agentRegistryFile)
-		),
-		readJsonSource<IJsonProposalIndex>(
-			join(monorepoRoot, layout.proposalIndexFile),
-			extractProposalTimestamp,
-			CONTINUITY_STALE_WINDOW_MS / 60_000
-		),
-	]);
+	const [chat, checkpoint, lock, registry, proposalIndex] = await Promise.all(
+		[
+			readJsonSource<IJsonChatContext>(
+				join(monorepoRoot, layout.orchestratorChatContextFile),
+				(value) => value.lastUpdated ?? null,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+			readJsonSource<IJsonCheckpoint>(
+				join(monorepoRoot, layout.orchestratorCheckpointFile),
+				(value) => value.updatedAt ?? value.lastUpdated ?? null,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+			readJsonSource<IJsonLockFile>(join(monorepoRoot, layout.lockFile)),
+			readJsonSource<IJsonRegistry>(
+				join(monorepoRoot, layout.agentRegistryFile),
+			),
+			readJsonSource<IJsonProposalIndex>(
+				join(monorepoRoot, layout.proposalIndexFile),
+				extractProposalTimestamp,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+		],
+	);
 	const activeLocks = (lock.value?.in_flight ?? []).map((entry) => ({
 		taskId: entry.task_id ?? 'unknown',
 		agent: entry.agent ?? 'unknown',
@@ -350,12 +350,12 @@ export const collectRoundContextSnapshot = async (
 	const latestLockSeen = activeLocks.reduce<string | null>(
 		(latest, item) =>
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
-		null
+		null,
 	);
 	const latestAgentSeen = activeAgents.reduce<string | null>(
 		(latest, item) =>
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
-		null
+		null,
 	);
 	return {
 		sources: {
@@ -382,8 +382,8 @@ export const collectRoundContextSnapshot = async (
 						? Math.max(
 								...activeLocks.map(
 									(item) =>
-										computeAgeMinutes(item.lastSeen) ?? 0
-								)
+										computeAgeMinutes(item.lastSeen) ?? 0,
+								),
 							)
 						: null,
 				temporallyStale: activeLocks.some((item) => {
@@ -400,8 +400,8 @@ export const collectRoundContextSnapshot = async (
 						? Math.max(
 								...activeAgents.map(
 									(item) =>
-										computeAgeMinutes(item.lastSeen) ?? 0
-								)
+										computeAgeMinutes(item.lastSeen) ?? 0,
+								),
 							)
 						: null,
 				temporallyStale: activeAgents.some((item) => {
@@ -453,14 +453,14 @@ export const collectRoundContextSnapshot = async (
 			activeIds: activeIds.slice(0, ACTIVE_PROPOSAL_PREVIEW_LIMIT),
 			activeOverflowCount: Math.max(
 				activeIds.length - ACTIVE_PROPOSAL_PREVIEW_LIMIT,
-				0
+				0,
 			),
 			activeCount: activeIds.length,
 			pendingCount: activePortfolio.filter(
-				(entry) => entry.status === 'pending'
+				(entry) => entry.status === 'pending',
 			).length,
 			inProgressCount: activePortfolio.filter(
-				(entry) => entry.status === 'in_progress'
+				(entry) => entry.status === 'in_progress',
 			).length,
 		},
 		activeLocks,

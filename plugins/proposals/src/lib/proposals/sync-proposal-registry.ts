@@ -99,7 +99,7 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 	}
 	for (const line of raw.split(/\r?\n/).slice(0, 20)) {
 		const m = line.match(
-			/^\*\*([A-Za-z_][A-Za-z0-9_]*)\*\*\s*:\s*(.*?)\s*$/
+			/^\*\*([A-Za-z_][A-Za-z0-9_]*)\*\*\s*:\s*(.*?)\s*$/,
 		);
 		if (!m) continue;
 		apply(m[1] ?? '', (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim());
@@ -110,7 +110,7 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 const buildId = (filename: string): string => filename.replace(/\.md$/, '');
 
 const extractExtras = (
-	parsed: Record<string, unknown>
+	parsed: Record<string, unknown>,
 ): IProposalExtras | undefined => {
 	const rawBudget = parsed.budget;
 	const budget =
@@ -172,7 +172,7 @@ const extractExtras = (
 
 const readProposalFile = async (
 	absFilepath: string,
-	indexPath: string
+	indexPath: string,
 ): Promise<{ entry: IProposalEntry; warning?: string }> => {
 	const rawStr = await readFile(absFilepath, 'utf8');
 	const fm = parseFrontmatter(rawStr);
@@ -205,7 +205,7 @@ const readProposalFile = async (
 
 const scanSubtree = async (
 	absDir: string,
-	indexPath: string
+	indexPath: string,
 ): Promise<{ entries: IProposalEntry[]; warnings: string[] }> => {
 	const entries: IProposalEntry[] = [];
 	const warnings: string[] = [];
@@ -223,7 +223,7 @@ const scanSubtree = async (
 		if (!name.endsWith('.md') || name === 'README.md') continue;
 		const { entry, warning } = await readProposalFile(
 			join(absDir, name),
-			indexPath
+			indexPath,
 		);
 		entries.push(entry);
 		if (warning) warnings.push(warning);
@@ -275,7 +275,7 @@ const reconcileCompletedProposalMarkdown = (markdown: string): string => {
 };
 
 const reconcileAndArchiveCompletedRootProposals = async (
-	proposalsDir: string
+	proposalsDir: string,
 ): Promise<void> => {
 	let dirents: Array<{ isFile(): boolean; name: string }>;
 	try {
@@ -317,7 +317,7 @@ export async function syncProposalRegistry(
 	// Host-specific proposal subfolders (relative to proposalsDir), e.g.
 	// `paused/demos`. Injected from ctx.options so mcp-vertex's generic
 	// proposal model carries no host vocabulary. [M5]
-	extraFolders: readonly string[] = []
+	extraFolders: readonly string[] = [],
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);

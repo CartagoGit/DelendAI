@@ -15,7 +15,7 @@ export interface IGetProposalWorkflowToolOptions {
  * learn how this project's proposals work.
  */
 export const buildGetProposalWorkflowRegistration = (
-	options: IGetProposalWorkflowToolOptions
+	options: IGetProposalWorkflowToolOptions,
 ): IToolRegistration => ({
 	id: 'get_proposal_workflow',
 	summary:
@@ -25,13 +25,13 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					families: z.array(
 						z.object({
 							prefix: z.string(),
 							description: z.string(),
 							cascadePriority: z.number(),
-						})
+						}),
 					),
 					locations: z.record(z.string(), z.string()),
 					naming: z.string(),
@@ -44,7 +44,7 @@ export const buildGetProposalWorkflowRegistration = (
 			async () => {
 				const workflow = buildProposalWorkflow(
 					options.proposalsDir,
-					options.indexFile
+					options.indexFile,
 				);
 				return {
 					content: [
@@ -58,7 +58,7 @@ export const buildGetProposalWorkflowRegistration = (
 						unknown
 					>,
 				};
-			}
+			},
 		);
 	},
 });

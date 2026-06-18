@@ -114,12 +114,12 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 				expect(r?.passed).toBe(false);
 				expect(r?.reason ?? '').toMatch(/exit code/);
 			},
-			VITEST_SUITE_TIMEOUT_MS
+			VITEST_SUITE_TIMEOUT_MS,
 		);
 
 		it('case 5: empty command throws INVALID_CRITERION without spawning', async () => {
 			await expect(
-				runAcceptanceCriteria([{ command: '', expect: 'exit0' }])
+				runAcceptanceCriteria([{ command: '', expect: 'exit0' }]),
 			).rejects.toBeInstanceOf(ProposalParseError);
 
 			try {
@@ -195,7 +195,7 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 						// runtime guard must still reject this.
 						expect: 'banana' as never,
 					},
-				])
+				]),
 			).rejects.toBeInstanceOf(ProposalParseError);
 		});
 	});

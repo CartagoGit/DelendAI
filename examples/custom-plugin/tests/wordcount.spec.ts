@@ -19,10 +19,15 @@ type IToolHandler = (args: Record<string, unknown>) => Promise<{
 	structuredContent?: Record<string, unknown>;
 }>;
 
-const fakeContext = (options: Record<string, unknown> = {}): IMcpPluginContext =>
+const fakeContext = (
+	options: Record<string, unknown> = {},
+): IMcpPluginContext =>
 	({
 		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-		corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
+		corePaths: {
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+		},
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
 		pluginCacheDir: '.cache/mcp-vertex/example-wordcount',
@@ -33,7 +38,7 @@ const fakeContext = (options: Record<string, unknown> = {}): IMcpPluginContext =
 	}) satisfies IMcpPluginContext;
 
 const registerAndCapture = async (
-	ctx: IMcpPluginContext
+	ctx: IMcpPluginContext,
 ): Promise<{
 	toolIds: string[];
 	handlers: Map<string, IToolHandler>;
@@ -58,7 +63,7 @@ const registerAndCapture = async (
 describe('example wordcount plugin', () => {
 	it('registers the wordcount tool + a knowledge entry', async () => {
 		const { toolIds, knowledgeIds, handlers } = await registerAndCapture(
-			fakeContext()
+			fakeContext(),
 		);
 		expect(toolIds).toEqual(['wordcount']);
 		expect(knowledgeIds).toEqual(['example-wordcount']);
@@ -75,7 +80,7 @@ describe('example wordcount plugin', () => {
 
 	it('honours the splitOnPunctuation option', async () => {
 		const { handlers } = await registerAndCapture(
-			fakeContext({ splitOnPunctuation: false })
+			fakeContext({ splitOnPunctuation: false }),
 		);
 		const result = await handlers.get('demo_wordcount')!({ text: 'a,b c' });
 		// punctuation NOT a boundary → "a,b" and "c" = 2 words

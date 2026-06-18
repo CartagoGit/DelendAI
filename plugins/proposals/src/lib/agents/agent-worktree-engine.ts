@@ -34,10 +34,29 @@ export interface IWorktreeEntry {
 }
 
 export type IAgentWorktreeResult =
-	| { readonly ok: true; readonly action: 'create'; readonly path: string; readonly branch: string; readonly created: boolean }
-	| { readonly ok: true; readonly action: 'list'; readonly worktrees: readonly IWorktreeEntry[] }
-	| { readonly ok: true; readonly action: 'remove'; readonly path: string; readonly removed: boolean }
-	| { readonly ok: false; readonly action: IAgentWorktreeArgs['action']; readonly reason: string };
+	| {
+			readonly ok: true;
+			readonly action: 'create';
+			readonly path: string;
+			readonly branch: string;
+			readonly created: boolean;
+	  }
+	| {
+			readonly ok: true;
+			readonly action: 'list';
+			readonly worktrees: readonly IWorktreeEntry[];
+	  }
+	| {
+			readonly ok: true;
+			readonly action: 'remove';
+			readonly path: string;
+			readonly removed: boolean;
+	  }
+	| {
+			readonly ok: false;
+			readonly action: IAgentWorktreeArgs['action'];
+			readonly reason: string;
+	  };
 
 const slug = (value: string): string =>
 	value
@@ -47,11 +66,18 @@ const slug = (value: string): string =>
 		.replace(/^-+|-+$/g, '') || 'agent';
 
 const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
-	join(options.workspaceRoot, options.worktreesDirRel ?? '.worktrees', agentSlug);
+	join(
+		options.workspaceRoot,
+		options.worktreesDirRel ?? '.worktrees',
+		agentSlug,
+	);
 
 /** Parse `git worktree list --porcelain` into structured entries. */
 export const parseWorktreeList = (raw: string): readonly IWorktreeEntry[] => {
-	const blocks = raw.split('\n\n').map((block) => block.trim()).filter((b) => b.length > 0);
+	const blocks = raw
+		.split('\n\n')
+		.map((block) => block.trim())
+		.filter((b) => b.length > 0);
 	const entries: IWorktreeEntry[] = [];
 	for (const block of blocks) {
 		const lines = block.split('\n');
@@ -61,37 +87,65 @@ export const parseWorktreeList = (raw: string): readonly IWorktreeEntry[] => {
 		let detached = false;
 		let locked = false;
 		for (const line of lines) {
-			if (line.startsWith('worktree ')) path = line.slice('worktree '.length);
-			else if (line.startsWith('HEAD ')) head = line.slice('HEAD '.length);
-			else if (line.startsWith('branch ')) branch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
+			if (line.startsWith('worktree '))
+				path = line.slice('worktree '.length);
+			else if (line.startsWith('HEAD '))
+				head = line.slice('HEAD '.length);
+			else if (line.startsWith('branch '))
+				branch = line
+					.slice('branch '.length)
+					.replace(/^refs\/heads\//, '');
 			else if (line === 'detached') detached = true;
 			else if (line.startsWith('locked')) locked = true;
 		}
 		if (path.length > 0) {
-			entries.push({ path, head, ...(branch !== undefined ? { branch } : {}), detached, locked });
+			entries.push({
+				path,
+				head,
+				...(branch !== undefined ? { branch } : {}),
+				detached,
+				locked,
+			});
 		}
 	}
 	return entries;
 };
 
-const listWorktrees = async (run: IGitRunner): Promise<IAgentWorktreeResult> => {
+const listWorktrees = async (
+	run: IGitRunner,
+): Promise<IAgentWorktreeResult> => {
 	const result = await run(['worktree', 'list', '--porcelain']);
 	if (!result.ok) {
-		return { ok: false, action: 'list', reason: result.reason ?? 'git worktree list failed' };
+		return {
+			ok: false,
+			action: 'list',
+			reason: result.reason ?? 'git worktree list failed',
+		};
 	}
-	return { ok: true, action: 'list', worktrees: parseWorktreeList(result.output) };
+	return {
+		ok: true,
+		action: 'list',
+		worktrees: parseWorktreeList(result.output),
+	};
 };
 
-const branchExists = async (run: IGitRunner, branch: string): Promise<boolean> =>
+const branchExists = async (
+	run: IGitRunner,
+	branch: string,
+): Promise<boolean> =>
 	(await run(['rev-parse', '--verify', '--quiet', branch])).ok;
 
 const createWorktree = async (
 	options: IAgentWorktreeOptions,
 	run: IGitRunner,
-	args: IAgentWorktreeArgs
+	args: IAgentWorktreeArgs,
 ): Promise<IAgentWorktreeResult> => {
 	if (args.agent === undefined || args.agent.trim().length === 0) {
-		return { ok: false, action: 'create', reason: 'create requires "agent"' };
+		return {
+			ok: false,
+			action: 'create',
+			reason: 'create requires "agent"',
+		};
 	}
 	const agentSlug = slug(args.agent);
 	const path = dirFor(options, agentSlug);
@@ -101,7 +155,13 @@ const createWorktree = async (
 	if (existing.ok && existing.action === 'list') {
 		const already = existing.worktrees.find((entry) => entry.path === path);
 		if (already !== undefined) {
-			return { ok: true, action: 'create', path, branch: already.branch ?? branch, created: false };
+			return {
+				ok: true,
+				action: 'create',
+				path,
+				branch: already.branch ?? branch,
+				created: false,
+			};
 		}
 	}
 
@@ -111,7 +171,11 @@ const createWorktree = async (
 		: ['worktree', 'add', '-b', branch, path, args.base_branch ?? 'HEAD'];
 	const result = await run(addArgs);
 	if (!result.ok) {
-		return { ok: false, action: 'create', reason: result.reason ?? 'git worktree add failed' };
+		return {
+			ok: false,
+			action: 'create',
+			reason: result.reason ?? 'git worktree add failed',
+		};
 	}
 	return { ok: true, action: 'create', path, branch, created: true };
 };
@@ -119,23 +183,36 @@ const createWorktree = async (
 const removeWorktree = async (
 	options: IAgentWorktreeOptions,
 	run: IGitRunner,
-	args: IAgentWorktreeArgs
+	args: IAgentWorktreeArgs,
 ): Promise<IAgentWorktreeResult> => {
 	if (args.agent === undefined || args.agent.trim().length === 0) {
-		return { ok: false, action: 'remove', reason: 'remove requires "agent"' };
+		return {
+			ok: false,
+			action: 'remove',
+			reason: 'remove requires "agent"',
+		};
 	}
 	const path = dirFor(options, slug(args.agent));
-	const removeArgs = ['worktree', 'remove', ...(args.force === true ? ['--force'] : []), path];
+	const removeArgs = [
+		'worktree',
+		'remove',
+		...(args.force === true ? ['--force'] : []),
+		path,
+	];
 	const result = await run(removeArgs);
 	if (!result.ok) {
-		return { ok: false, action: 'remove', reason: result.reason ?? 'git worktree remove failed' };
+		return {
+			ok: false,
+			action: 'remove',
+			reason: result.reason ?? 'git worktree remove failed',
+		};
 	}
 	return { ok: true, action: 'remove', path, removed: true };
 };
 
 export const runAgentWorktreeEngine = async (
 	args: IAgentWorktreeArgs,
-	options: IAgentWorktreeOptions
+	options: IAgentWorktreeOptions,
 ): Promise<IAgentWorktreeResult> => {
 	switch (args.action) {
 		case 'create':

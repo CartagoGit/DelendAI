@@ -24,11 +24,11 @@ describe('scaffold-host generators (p97)', () => {
 	it('generates a registerable tool file in the host namespace', () => {
 		const file = scaffoldToolFile('acme', 'render stats', 'Stats only.');
 		expect(file.path).toBe(
-			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts'
+			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts',
 		);
 		expect(file.content).toContain("name: 'acme_render_stats'");
 		expect(file.content).toContain(
-			'export async function registerRenderStatsTool'
+			'export async function registerRenderStatsTool',
 		);
 	});
 
@@ -37,7 +37,7 @@ describe('scaffold-host generators (p97)', () => {
 			'Before editing rooms.',
 		]);
 		expect(file.path).toBe(
-			'libs/mcp-project/src/lib/skills/acme-level-design.md'
+			'libs/mcp-project/src/lib/skills/acme-level-design.md',
 		);
 		expect(file.content).toContain('id: acme-level-design');
 		expect(file.content).toContain('- Before editing rooms.');
@@ -64,16 +64,16 @@ describe('scaffold-host generators (p97)', () => {
 		const paths = files.map((file) => file.path);
 		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths).toContain(
-			'libs/mcp-project/src/lib/shared/host-config.ts'
+			'libs/mcp-project/src/lib/shared/host-config.ts',
 		);
 		expect(paths).toContain('.vscode/mcp.json');
 		expect(paths).toContain('.github/agents/orchestrator.agent.md');
 		expect(paths).toContain('.github/copilot-instructions.md');
 		expect(
-			paths.filter((path) => path.startsWith('.github/agents/'))
+			paths.filter((path) => path.startsWith('.github/agents/')),
 		).toHaveLength(5);
 		const config = files.find((file) =>
-			file.path.endsWith('host-config.ts')
+			file.path.endsWith('host-config.ts'),
 		);
 		expect(config?.content).toContain("namespacePrefix: 'acme'");
 		expect(config?.content).toContain('buildScaffoldToolRegistration');
@@ -123,8 +123,8 @@ describe('scaffold tool report (p97)', () => {
 		expect(
 			readFileSync(
 				join(root, 'libs/mcp-project/src/lib/skills/acme-combat.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).toContain('id: acme-combat');
 		const second = await buildScaffoldReport(options, {
 			kind: 'skill',
@@ -155,7 +155,7 @@ describe('scaffold tool report (p97)', () => {
 			dryRun: true,
 		});
 		expect(plugin.files.map((f) => f.path)).toContain(
-			'plugins/pepegrillo/src/index.ts'
+			'plugins/pepegrillo/src/index.ts',
 		);
 		const client = await buildScaffoldReport(options, {
 			kind: 'client',
@@ -164,10 +164,10 @@ describe('scaffold tool report (p97)', () => {
 			dryRun: true,
 		});
 		expect(client.files.map((f) => f.path)).toContain(
-			'clients/acme/src/index.ts'
+			'clients/acme/src/index.ts',
 		);
 		const entry = client.files.find((f) =>
-			f.path.endsWith('clients/acme/src/index.ts')
+			f.path.endsWith('clients/acme/src/index.ts'),
 		);
 		expect(entry?.content).toContain('createAcmeClient');
 	});

@@ -29,7 +29,7 @@ export const OptionsSchema = z.object({
 
 const buildWordcountTool = (
 	namespacePrefix: string,
-	splitOnPunctuation: boolean
+	splitOnPunctuation: boolean,
 ): IToolRegistration => ({
 	id: 'wordcount',
 	summary: 'Count the words and characters in a piece of text.',
@@ -50,7 +50,7 @@ const buildWordcountTool = (
 				const separator = splitOnPunctuation ? /[\s\p{P}]+/u : /\s+/;
 				const words = args.text.split(separator).filter(Boolean).length;
 				return toolJson({ words, chars: args.text.length });
-			}
+			},
 		);
 	},
 });
@@ -58,14 +58,17 @@ const buildWordcountTool = (
 export default definePlugin({
 	name: 'example-wordcount',
 	version: '0.1.0',
-	describe: 'Example: count words/characters in text (a single `wordcount` tool).',
+	describe:
+		'Example: count words/characters in text (a single `wordcount` tool).',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		// ctx.options is already shaped by OptionsSchema (validated by the loader).
 		const { splitOnPunctuation = true } = OptionsSchema.parse(ctx.options);
 
 		return {
-			tools: [buildWordcountTool(ctx.namespacePrefix, splitOnPunctuation)],
+			tools: [
+				buildWordcountTool(ctx.namespacePrefix, splitOnPunctuation),
+			],
 			knowledge: [
 				{
 					id: 'example-wordcount',

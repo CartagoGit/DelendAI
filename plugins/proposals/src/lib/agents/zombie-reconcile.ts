@@ -36,11 +36,11 @@ export type IZombieRecommendedAction =
 
 export type IQueueEventEmitter = (
 	taskId: string,
-	priority: number
+	priority: number,
 ) => Promise<void>;
 
 const loadLockSnapshotLocal = async (
-	lockPath: string
+	lockPath: string,
 ): Promise<{
 	in_flight: Array<{ task_id: string; agent: string; claimed_at: string }>;
 }> => {
@@ -88,7 +88,7 @@ export function classifyZombies(
 		}>;
 	},
 	now?: Date,
-	staleAfterMinutes = 10
+	staleAfterMinutes = 10,
 ): IZombieReconcileReport {
 	const checkTime = now || new Date();
 	const checkMs = checkTime.getTime();
@@ -110,7 +110,7 @@ export function classifyZombies(
 		}
 
 		const lockEntry = lockSnapshot.in_flight.find(
-			(le) => le.task_id === a.task_id
+			(le) => le.task_id === a.task_id,
 		);
 
 		if (!lockEntry) {
@@ -171,7 +171,7 @@ export async function gcZombies(
 		staleAfterMinutes?: number | undefined;
 		now?: Date | undefined;
 		queueEmitter?: IQueueEventEmitter | undefined;
-	}
+	},
 ): Promise<IZombieReconcileReport> {
 	const store = createAgentRegistryStore(registryPath);
 	const registry = await store.read();
@@ -184,7 +184,7 @@ export async function gcZombies(
 		registry,
 		lockSnapshot,
 		now,
-		staleAfterMinutes
+		staleAfterMinutes,
 	);
 
 	if (options?.dryRun !== true && report.orphans.length > 0) {
@@ -193,7 +193,7 @@ export async function gcZombies(
 			if (orphan.recommendedAction === 'force_release') {
 				const before = registry.assignments.length;
 				registry.assignments = registry.assignments.filter(
-					(a) => a.task_id !== orphan.taskId
+					(a) => a.task_id !== orphan.taskId,
 				);
 				if (registry.assignments.length < before) {
 					mutated = true;

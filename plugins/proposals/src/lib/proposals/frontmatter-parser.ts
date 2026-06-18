@@ -64,7 +64,7 @@ const countIndent = (line: string): number => {
 // ---------------------------------------------------------------------------
 
 const parseBlockObject = (
-	childLines: readonly string[]
+	childLines: readonly string[],
 ): Record<string, IYamlValue> => {
 	const obj: Record<string, IYamlValue> = {};
 	for (const line of childLines) {
@@ -123,7 +123,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
 		} else if (itemContent.includes(':')) {
 			// Possible key: value item, possibly with sibling keys.
 			const m = itemContent.match(
-				/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/
+				/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/,
 			);
 			if (m) {
 				const obj: Record<string, IYamlValue> = {};
@@ -175,7 +175,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
  * their native JS type (string | number | boolean | null).
  */
 export const parseFrontmatterBlock = (
-	block: string
+	block: string,
 ): Record<string, IYamlValue> => {
 	const lines = block.split('\n');
 	const result: Record<string, IYamlValue> = {};

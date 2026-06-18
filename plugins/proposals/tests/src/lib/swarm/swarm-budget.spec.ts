@@ -69,7 +69,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 				'---',
 				'',
 				'# [PROPOSAL] Valid test',
-			].join('\n')
+			].join('\n'),
 		);
 
 		const result = await parseSwarmFrontmatter(path);
@@ -86,7 +86,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 		expect(result.continuityPolicy?.maxToolRetriesPerTool).toBe(2);
 		expect(result.continuityPolicy?.requireCheckpointAfterTask).toBe(true);
 		expect(result.continuityPolicy?.forbidReReadOnUnchangedDigest).toBe(
-			true
+			true,
 		);
 	});
 });
@@ -105,11 +105,11 @@ describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
 				'---',
 				'',
 				'# [PROPOSAL] Negative budget',
-			].join('\n')
+			].join('\n'),
 		);
 
 		await expect(parseSwarmFrontmatter(path)).rejects.toThrow(
-			ProposalParseError
+			ProposalParseError,
 		);
 
 		try {
@@ -117,7 +117,7 @@ describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
 		} catch (err) {
 			expect(err).toBeInstanceOf(ProposalParseError);
 			expect((err as ProposalParseError).code).toBe(
-				'INVALID_SWARM_BUDGET'
+				'INVALID_SWARM_BUDGET',
 			);
 		}
 	});
@@ -137,11 +137,11 @@ describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
 				'---',
 				'',
 				'# [PROPOSAL] Zero retries',
-			].join('\n')
+			].join('\n'),
 		);
 
 		await expect(parseSwarmFrontmatter(path)).rejects.toThrow(
-			ProposalParseError
+			ProposalParseError,
 		);
 
 		try {
@@ -149,7 +149,7 @@ describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
 		} catch (err) {
 			expect(err).toBeInstanceOf(ProposalParseError);
 			expect((err as ProposalParseError).code).toBe(
-				'INVALID_CONTINUITY_POLICY'
+				'INVALID_CONTINUITY_POLICY',
 			);
 		}
 	});
@@ -169,14 +169,14 @@ describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false
 				'---',
 				'',
 				'# [PROPOSAL] Forbid flag false',
-			].join('\n')
+			].join('\n'),
 		);
 
 		const result = await parseSwarmFrontmatter(path);
 
 		expect(result.continuityPolicy).toBeDefined();
 		expect(result.continuityPolicy?.forbidReReadOnUnchangedDigest).toBe(
-			false
+			false,
 		);
 	});
 });
@@ -193,7 +193,7 @@ describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base va
 				'---',
 				'',
 				'# [PROPOSAL] No swarm keys',
-			].join('\n')
+			].join('\n'),
 		);
 
 		const result = await parseSwarmFrontmatter(path);
@@ -206,11 +206,11 @@ describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base va
 	it('propagates ProposalParseError from base parser when frontmatter is missing', async () => {
 		const path = writeProposal(
 			'p99-no-frontmatter.md',
-			'# [PROPOSAL] No frontmatter at all\n\nSome content.'
+			'# [PROPOSAL] No frontmatter at all\n\nSome content.',
 		);
 
 		await expect(parseSwarmFrontmatter(path)).rejects.toThrow(
-			ProposalParseError
+			ProposalParseError,
 		);
 	});
 });

@@ -70,14 +70,14 @@ describe('evaluateParallelism', () => {
 		]);
 		expect(result.withinPolicy).toBe(false);
 		const blockViolations = result.violations.filter(
-			(v) => v.severity === 'block'
+			(v) => v.severity === 'block',
 		);
 		expect(blockViolations.length).toBeGreaterThanOrEqual(1);
 		const editorBucket = blockViolations.find(
 			(v) =>
 				v.field === 'mainWriteLane' &&
 				v.conflictingProposals.includes('p31') &&
-				v.conflictingProposals.includes('pxx-editor-conflict-fixture')
+				v.conflictingProposals.includes('pxx-editor-conflict-fixture'),
 		);
 		expect(editorBucket).toBeDefined();
 		expect(editorBucket?.message).toContain('editor');
@@ -137,8 +137,8 @@ describe('evaluateParallelism', () => {
 		expect(result.withinPolicy).toBe(false);
 		expect(
 			result.violations.some(
-				(v) => v.severity === 'block' && v.field === 'parallelismLanes'
-			)
+				(v) => v.severity === 'block' && v.field === 'parallelismLanes',
+			),
 		).toBe(true);
 	});
 });

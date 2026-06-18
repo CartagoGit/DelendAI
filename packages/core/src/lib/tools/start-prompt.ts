@@ -8,7 +8,7 @@ import type { IPromptRegistration } from '../contracts/interfaces/tool-registrat
  */
 export const buildStartPromptRegistration = (
 	namespacePrefix: string,
-	recommendedNextAction: () => string
+	recommendedNextAction: () => string,
 ): IPromptRegistration => ({
 	id: 'start',
 	register: async (server) => {
@@ -32,7 +32,7 @@ export const buildStartPromptRegistration = (
 						},
 					},
 				],
-			})
+			}),
 		);
 	},
 });

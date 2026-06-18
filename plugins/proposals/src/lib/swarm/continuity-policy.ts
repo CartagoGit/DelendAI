@@ -73,7 +73,7 @@ const FIELD_DEFS: readonly IFieldDef[] = [
 
 const evaluateBooleanChecks = (
 	policy: IContinuityPolicy,
-	observed: IObservedContinuity
+	observed: IObservedContinuity,
 ): IContinuityViolation[] => {
 	const violations: IContinuityViolation[] = [];
 
@@ -117,7 +117,7 @@ const evaluateBooleanChecks = (
  */
 export const evaluateContinuityPolicy = (
 	policy: IContinuityPolicy,
-	observed: IObservedContinuity
+	observed: IObservedContinuity,
 ): IContinuityCheckResult => {
 	const violations: IContinuityViolation[] = [];
 

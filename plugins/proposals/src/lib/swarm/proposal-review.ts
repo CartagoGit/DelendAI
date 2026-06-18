@@ -48,25 +48,36 @@ export const reviewTransition = (
 	state: IReviewState,
 	action: IReviewAction,
 	agent: string,
-	note = ''
+	note = '',
 ): IReviewTransition => {
 	const who = agent.trim();
 	if (who.length === 0) return { ok: false, reason: 'agent is required' };
 
 	if (action === 'submit') {
 		if (state.status === 'done') {
-			return { ok: false, reason: 'slice is already approved (done); open a new slice for further work' };
+			return {
+				ok: false,
+				reason: 'slice is already approved (done); open a new slice for further work',
+			};
 		}
 		// Implementer claims "ready for review"; a fresh reviewer is awaited.
 		return {
 			ok: true,
-			next: { ...state, status: 'in_review', implementer: who, reviewer: null },
+			next: {
+				...state,
+				status: 'in_review',
+				implementer: who,
+				reviewer: null,
+			},
 		};
 	}
 
 	// approve / request_changes are reviewer actions on an in-review slice.
 	if (state.status !== 'in_review') {
-		return { ok: false, reason: `nothing is in review (status: ${state.status}); submit it first` };
+		return {
+			ok: false,
+			reason: `nothing is in review (status: ${state.status}); submit it first`,
+		};
 	}
 	if (who === state.implementer) {
 		return {
@@ -82,7 +93,10 @@ export const reviewTransition = (
 				...state,
 				status: 'done',
 				reviewer: who,
-				rounds: [...state.rounds, { verdict: 'approved', agent: who, note: note.trim() }],
+				rounds: [
+					...state.rounds,
+					{ verdict: 'approved', agent: who, note: note.trim() },
+				],
 			},
 		};
 	}
@@ -90,7 +104,10 @@ export const reviewTransition = (
 	// request_changes
 	const objection = note.trim();
 	if (objection.length === 0) {
-		return { ok: false, reason: 'request_changes needs a note describing the objection' };
+		return {
+			ok: false,
+			reason: 'request_changes needs a note describing the objection',
+		};
 	}
 	return {
 		ok: true,
@@ -98,21 +115,28 @@ export const reviewTransition = (
 			...state,
 			status: 'changes_requested',
 			reviewer: who,
-			rounds: [...state.rounds, { verdict: 'requested_changes', agent: who, note: objection }],
+			rounds: [
+				...state.rounds,
+				{ verdict: 'requested_changes', agent: who, note: objection },
+			],
 		},
 	};
 };
 
-const REVIEW_STATE_RE = /^[-*]\s*review-state:\s*(in_review|changes_requested|done)\b/m;
+const REVIEW_STATE_RE =
+	/^[-*]\s*review-state:\s*(in_review|changes_requested|done)\b/m;
 const IMPLEMENTER_RE = /^[-*]\s*review-implementer:\s*(\S+)/m;
 const REVIEWER_RE = /^[-*]\s*review-reviewer:\s*(\S+)/m;
-const ROUND_RE = /^[-*]\s*review-log:\s*(approved|requested_changes)\s+by\s+(\S+)(?:\s+—\s+(.*))?$/gm;
+const ROUND_RE =
+	/^[-*]\s*review-log:\s*(approved|requested_changes)\s+by\s+(\S+)(?:\s+—\s+(.*))?$/gm;
 
 /** Parse review state from a slice block body. Absent lines → EMPTY_REVIEW. */
 export const parseReviewState = (body: string): IReviewState => {
 	const statusRaw = body.match(REVIEW_STATE_RE)?.[1];
 	const status: IReviewStatus =
-		statusRaw === 'in_review' || statusRaw === 'changes_requested' || statusRaw === 'done'
+		statusRaw === 'in_review' ||
+		statusRaw === 'changes_requested' ||
+		statusRaw === 'done'
 			? statusRaw
 			: 'none';
 	const rounds: IReviewRound[] = [...body.matchAll(ROUND_RE)].map((m) => ({
@@ -132,10 +156,13 @@ export const parseReviewState = (body: string): IReviewState => {
 export const renderReviewLines = (state: IReviewState): string[] => {
 	const lines: string[] = [];
 	if (state.status !== 'none') lines.push(`- review-state: ${state.status}`);
-	if (state.implementer) lines.push(`- review-implementer: ${state.implementer}`);
+	if (state.implementer)
+		lines.push(`- review-implementer: ${state.implementer}`);
 	if (state.reviewer) lines.push(`- review-reviewer: ${state.reviewer}`);
 	for (const r of state.rounds) {
-		lines.push(`- review-log: ${r.verdict} by ${r.agent}${r.note ? ` — ${r.note}` : ''}`);
+		lines.push(
+			`- review-log: ${r.verdict} by ${r.agent}${r.note ? ` — ${r.note}` : ''}`,
+		);
 	}
 	return lines;
 };

@@ -98,7 +98,7 @@ const MAX_CAPTURED_BYTES = 64 * 1024; // 64 KiB per stream; truncate beyond.
  */
 export const runAcceptanceCriteria = async (
 	criteria: readonly IAcceptanceCriterion[],
-	options: IAcceptanceRunOptions = {}
+	options: IAcceptanceRunOptions = {},
 ): Promise<IAcceptanceRunResult> => {
 	const startedAt = Date.now();
 	const results: IAcceptanceResult[] = [];
@@ -114,7 +114,7 @@ export const runAcceptanceCriteria = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				'',
-				'runAcceptanceCriteria: command must be a non-empty string'
+				'runAcceptanceCriteria: command must be a non-empty string',
 			);
 		}
 		if (!isValidExpect(criterion.expect)) {
@@ -122,8 +122,8 @@ export const runAcceptanceCriteria = async (
 				'INVALID_CRITERION',
 				'',
 				`runAcceptanceCriteria: invalid expect value "${String(
-					criterion.expect
-				)}" (must be exit0 | pass | synchronized | contains:<substring>)`
+					criterion.expect,
+				)}" (must be exit0 | pass | synchronized | contains:<substring>)`,
 			);
 		}
 
@@ -152,7 +152,7 @@ export const runAcceptanceCriteria = async (
 // ---------------------------------------------------------------------------
 
 const isValidExpect = (
-	value: unknown
+	value: unknown,
 ): value is IAcceptanceCriterion['expect'] => {
 	if (typeof value !== 'string') return false;
 	if (value === 'exit0' || value === 'pass' || value === 'synchronized') {
@@ -191,7 +191,10 @@ export const tokenizeArgv = (input: string): string[] => {
 		}
 		if (quote === '"') {
 			if (ch === '"') quote = null;
-			else if (ch === '\\' && (input[i + 1] === '"' || input[i + 1] === '\\')) {
+			else if (
+				ch === '\\' &&
+				(input[i + 1] === '"' || input[i + 1] === '\\')
+			) {
 				current += input[i + 1];
 				i += 1;
 			} else current += ch;
@@ -227,7 +230,6 @@ export const tokenizeArgv = (input: string): string[] => {
 export const commandNeedsShell = (command: string): boolean =>
 	/[|&;<>`]|\$\(/.test(command);
 
-
 /**
  * Runs a single criterion to completion (or timeout). Returns a structured
  * `IAcceptanceResult`. The function never throws for a spawn failure; it
@@ -235,11 +237,14 @@ export const commandNeedsShell = (command: string): boolean =>
  */
 const runOne = async (
 	criterion: IAcceptanceCriterion,
-	options: IAcceptanceRunOptions
+	options: IAcceptanceRunOptions,
 ): Promise<IAcceptanceResult> => {
 	const startedAt = Date.now();
 	const timeoutMs = criterion.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-	const fail = (reason: string, exitCode: number | null = null): IAcceptanceResult => ({
+	const fail = (
+		reason: string,
+		exitCode: number | null = null,
+	): IAcceptanceResult => ({
 		command: criterion.command,
 		expect: criterion.expect,
 		passed: false,
@@ -281,7 +286,7 @@ const runOne = async (
 		}
 	} catch (e) {
 		return fail(
-			`spawn failed: ${e instanceof Error ? e.message : String(e)}`
+			`spawn failed: ${e instanceof Error ? e.message : String(e)}`,
 		);
 	}
 
@@ -320,9 +325,7 @@ const runOne = async (
 	});
 
 	if (spawnError !== null) {
-		return fail(
-			`spawn failed: ${(spawnError as Error).message}`
-		);
+		return fail(`spawn failed: ${(spawnError as Error).message}`);
 	}
 
 	const stdoutText = truncateCaptured(stdout);

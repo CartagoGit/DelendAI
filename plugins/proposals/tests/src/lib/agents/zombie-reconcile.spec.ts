@@ -16,7 +16,7 @@ const TEMP_DIRS: string[] = [];
 const createTempPath = (
 	prefix: string,
 	filename: string,
-	content: string
+	content: string,
 ): string => {
 	const dir = mkdtempSync(join(tmpdir(), `mcp-vertex-test-${prefix}-`));
 	TEMP_DIRS.push(dir);
@@ -171,12 +171,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -200,7 +200,9 @@ describe('zombie-reconcile', () => {
 		const store = createAgentRegistryStore(registryPath);
 		const updatedRegistry = await store.read();
 		expect(
-			updatedRegistry.assignments.find((a: any) => a.task_id === 'task-1')
+			updatedRegistry.assignments.find(
+				(a: any) => a.task_id === 'task-1',
+			),
 		).toBeUndefined();
 	});
 
@@ -233,12 +235,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -296,12 +298,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -318,7 +320,7 @@ describe('zombie-reconcile', () => {
 
 		expect(queueEmitter).toHaveBeenCalledWith(
 			expect.stringContaining('zombie-gc-event-'),
-			4
+			4,
 		);
 	});
 

@@ -49,7 +49,11 @@
 	},
 	"overrides": [
 		{
-			"includes": ["apps/web/src/**", "apps/web/scripts/**", "apps/web/astro.config.mjs"],
+			"includes": [
+				"apps/web/src/**",
+				"apps/web/scripts/**",
+				"apps/web/astro.config.mjs"
+			],
 			"formatter": {
 				"lineWidth": 80
 			}

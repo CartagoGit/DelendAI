@@ -48,7 +48,7 @@ adopted: true
 				(i) =>
 					i.path.join('.') === 'continuityPolicy.zombieRecovery' &&
 					i.message ===
-						'proposals with adopted delegation must declare continuityPolicy.zombieRecovery'
+						'proposals with adopted delegation must declare continuityPolicy.zombieRecovery',
 			);
 			expect(issue).toBeDefined();
 		}

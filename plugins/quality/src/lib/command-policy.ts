@@ -30,14 +30,21 @@ export const commandBinary = (command: string): string =>
  */
 export const evaluateCommandPolicy = (
 	command: string,
-	policy?: ICommandPolicy
+	policy?: ICommandPolicy,
 ): IPolicyVerdict => {
 	if (policy === undefined) return { allowed: true };
 	const bin = commandBinary(command);
 	if (policy.deny?.includes(bin)) {
-		return { allowed: false, reason: `command "${bin}" is in the deny list` };
+		return {
+			allowed: false,
+			reason: `command "${bin}" is in the deny list`,
+		};
 	}
-	if (policy.allow && policy.allow.length > 0 && !policy.allow.includes(bin)) {
+	if (
+		policy.allow &&
+		policy.allow.length > 0 &&
+		!policy.allow.includes(bin)
+	) {
 		return {
 			allowed: false,
 			reason: `command "${bin}" is not in the allow list`,

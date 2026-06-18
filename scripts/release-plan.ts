@@ -84,12 +84,16 @@ export interface IReleasePlan {
 	readonly entries: readonly IReleaseEntry[];
 }
 
-export type ReleaseTarget = { readonly kind: BumpKind } | { readonly set: string };
+export type ReleaseTarget =
+	| { readonly kind: BumpKind }
+	| { readonly set: string };
 
 function validateExplicit(version: string): string {
 	const trimmed = version.trim();
 	if (!SEMVER.test(trimmed)) {
-		throw new Error(`--set must be a plain X.Y.Z version, got "${version}"`);
+		throw new Error(
+			`--set must be a plain X.Y.Z version, got "${version}"`,
+		);
 	}
 	return trimmed;
 }
@@ -103,14 +107,16 @@ function validateExplicit(version: string): string {
  */
 export function computeReleasePlan(
 	pkgs: readonly IReleasePkg[],
-	target: ReleaseTarget
+	target: ReleaseTarget,
 ): IReleasePlan {
 	const anchor = pkgs[0];
 	if (anchor === undefined) {
 		throw new Error('no packages to release');
 	}
 	const to =
-		'set' in target ? validateExplicit(target.set) : nextVersion(anchor.version, target.kind);
+		'set' in target
+			? validateExplicit(target.set)
+			: nextVersion(anchor.version, target.kind);
 	const peerTo = `^${to}`;
 	const entries = pkgs.map((p): IReleaseEntry => {
 		if (p.peerCoreRange !== undefined) {

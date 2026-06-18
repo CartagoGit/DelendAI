@@ -22,7 +22,9 @@ describe('nextVersion (N23 release tooling)', () => {
 	});
 
 	it('throws on a non-plain version', () => {
-		expect(() => nextVersion('0.1.0-rc.1', 'patch')).toThrow(/plain X\.Y\.Z/);
+		expect(() => nextVersion('0.1.0-rc.1', 'patch')).toThrow(
+			/plain X\.Y\.Z/,
+		);
 		expect(() => nextVersion('v1', 'patch')).toThrow();
 	});
 });
@@ -60,11 +62,15 @@ describe('computeReleasePlan (lockstep + peer rewrite)', () => {
 	});
 
 	it('rejects a malformed --set', () => {
-		expect(() => computeReleasePlan(pkgs, { set: 'nope' })).toThrow(/X\.Y\.Z/);
+		expect(() => computeReleasePlan(pkgs, { set: 'nope' })).toThrow(
+			/X\.Y\.Z/,
+		);
 	});
 
 	it('throws when there are no packages', () => {
-		expect(() => computeReleasePlan([], { kind: 'patch' })).toThrow(/no packages/);
+		expect(() => computeReleasePlan([], { kind: 'patch' })).toThrow(
+			/no packages/,
+		);
 	});
 });
 

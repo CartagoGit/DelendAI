@@ -19,11 +19,19 @@ export interface IProposalWorkflow {
 
 export const buildProposalWorkflow = (
 	proposalsDir: string,
-	indexFile: string
+	indexFile: string,
 ): IProposalWorkflow => ({
 	families: [
-		{ prefix: 'f', description: 'fixes (highest cascade priority)', cascadePriority: 0 },
-		{ prefix: 'p', description: 'proposals (planned work)', cascadePriority: 1 },
+		{
+			prefix: 'f',
+			description: 'fixes (highest cascade priority)',
+			cascadePriority: 0,
+		},
+		{
+			prefix: 'p',
+			description: 'proposals (planned work)',
+			cascadePriority: 1,
+		},
 	],
 	locations: {
 		proposalsDir,
