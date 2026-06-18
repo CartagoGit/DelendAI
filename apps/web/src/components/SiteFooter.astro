@@ -1,0 +1,17 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+---
+
+<footer>
+	<div class="container">
+		{t('footer.built')} · <a href={repo}>github.com/CartagoGit/mcp-vertex</a> · BSD-3-Clause
+	</div>
+</footer>

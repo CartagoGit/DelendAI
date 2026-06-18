@@ -1,0 +1,45 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const NS_LABEL: Record<string, string> = {
+	mcpcore: 'core', proposals: 'proposals', git: 'git', memory: 'memory',
+	search: 'search', rules: 'rules', quality: 'quality', docs: 'docs',
+	deps: 'deps', notification: 'notification',
+};
+
+type ITool = { name: string; namespace: string; description: string };
+const tools = capabilities.tools as ITool[];
+const groups: Record<string, ITool[]> = {};
+for (const tool of tools) (groups[tool.namespace] ??= []).push(tool);
+const namespaces = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<section id="tools" class="section">
+	<div class="container">
+		<h2>{t('tools.title')}</h2>
+		<p class="lead">{t('tools.lead')}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t('tools.count')}</span></div>
+			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t('tools.packages')}</span></div>
+		</div>
+		{
+			namespaces.map(([ns, list]) => (
+				<div class="ns">
+					<div class="ns__head"><h3>{NS_LABEL[ns] ?? ns}</h3><span class="ns__count">{list.length}</span></div>
+					<div class="tools-grid">
+						{list.map((tool) => (
+							<div class="tool"><code>{tool.name}</code><p>{tool.description}</p></div>
+						))}
+					</div>
+				</div>
+			))
+		}
+	</div>
+</section>
