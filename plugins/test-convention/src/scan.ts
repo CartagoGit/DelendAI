@@ -44,8 +44,12 @@ const findHits = (source: string, re: RegExp): readonly ILineHit[] => {
 
 const isSpec = (path: string, ext: string): boolean => path.endsWith(`.${ext}`);
 
+const SPEC_RE = /\.(?:spec|test)\.tsx?$/u;
+
 const isTsSource = (path: string): boolean =>
-	/^src\/.+\.tsx?$/u.test(path) && !path.endsWith('.d.ts');
+	/^src\/.+\.tsx?$/u.test(path) &&
+	!path.endsWith('.d.ts') &&
+	!SPEC_RE.test(path);
 
 const exportNamesOf = (source: string): readonly string[] => {
 	const out: string[] = [];
@@ -96,19 +100,29 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 	const all = reader.listDir('').filter((p) => !p.includes('node_modules/'));
 	const specFiles = all.filter((p) => isSpec(p, specExt));
 	const sourceFiles = all.filter(isTsSource);
+	// Files that look like specs but use a non-canonical extension
+	// (e.g. `foo.test.ts` when the convention is `*.spec.ts`). They
+	// get scanned so we can flag the wrong extension.
+	const misnamedSpecLike = all.filter(
+		(p) => !isSpec(p, specExt) && SPEC_RE.test(p),
+	);
 
 	const targets =
 		scope === 'src'
 			? sourceFiles
 			: scope === 'tests'
-				? specFiles
-				: [...sourceFiles, ...specFiles];
+				? [...specFiles, ...misnamedSpecLike]
+				: [...sourceFiles, ...specFiles, ...misnamedSpecLike];
 
 	const violations: IDrift[] = [];
 	const seen = new Set<string>();
 	const push = (d: IDrift): void => {
-		if (seen.has(`${d.id}::${d.file}::${d.line ?? 0}`)) return;
-		seen.add(`${d.id}::${d.file}::${d.line ?? 0}`);
+		// Allow multiple IDs per file: each (file,id,line) is unique,
+		// but a single line may legitimately match several rules
+		// (e.g. `.only` + `console.log` in the same line).
+		const key = `${d.id}::${d.file}::${d.line ?? 0}`;
+		if (seen.has(key)) return;
+		seen.add(key);
 		violations.push(d);
 	};
 
@@ -120,17 +134,7 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 		scanned += 1;
 
 		if (isSpec(path, specExt)) {
-			// Wrong-extension: this branch never fires because of the
-			// `isSpec` filter, but the rule is still emitted for files
-			// that look like tests yet end in a different extension.
-			if (!path.endsWith(`.${specExt}`)) {
-				push({
-					id: 'wrong-spec-extension',
-					file: path,
-					severity: 'error',
-					hint: `expected suffix ".${specExt}"`,
-				});
-			}
+			// Spec is correctly named; no extension violation to report.
 
 			if (
 				convention.requireDescribe &&
@@ -172,17 +176,26 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 				});
 			}
 
+			// Precompute the id per pattern from the source string,
+			// matching *substring of the source* (escapes included).
+			// A pattern's `.source` returns the literal regex body, so
+			// `console.log` becomes `console\\.log` and a naive
+			// `includes('console.log')` would miss it. We strip the
+			// backslashes first.
+			const plainSource = (p: RegExp): string =>
+				p.source.replace(/\\/gu, '');
 			for (const pattern of convention.forbiddenPatterns) {
+				const plain = plainSource(pattern);
+				const id = plain.includes('.only')
+					? 'forbidden-only'
+					: plain.includes('xit')
+						? 'forbidden-skip'
+						: plain.includes('@ts-ignore')
+							? 'forbidden-ts-ignore'
+							: plain.includes('console.log')
+								? 'console-residue'
+								: 'forbidden-pattern';
 				for (const hit of findHits(contents, pattern)) {
-					const id = pattern.source.includes('.only')
-						? 'forbidden-only'
-						: pattern.source.includes('xit')
-							? 'forbidden-skip'
-							: pattern.source.includes('@ts-ignore')
-								? 'forbidden-ts-ignore'
-								: pattern.source.includes('console.log')
-									? 'console-residue'
-									: 'forbidden-pattern';
 					push({
 						id,
 						file: path,
@@ -216,6 +229,21 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 					});
 				}
 			}
+		}
+
+		// Files that look like specs (contain a top-level describe/it/expect)
+		// but end in a non-conventional extension: flag them.
+		if (
+			!isSpec(path, specExt) &&
+			!isTsSource(path) &&
+			/(?:^|\n)\s*(?:describe|it|test)\s*\(/u.test(contents)
+		) {
+			push({
+				id: 'wrong-spec-extension',
+				file: path,
+				severity: 'error',
+				hint: `looks like a spec but does not end in ".${specExt}"`,
+			});
 		}
 
 		if (isTsSource(path)) {
