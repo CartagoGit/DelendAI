@@ -2,7 +2,12 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	test: {
-		projects: ['packages/*', 'plugins/*', 'examples/custom-plugin'],
+		projects: [
+			'packages/*',
+			'plugins/*',
+			'examples/custom-plugin',
+			'apps/web',
+		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast. The thresholds are a no-regression gate set
