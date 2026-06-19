@@ -1,0 +1,225 @@
+---
+/**
+ * PluginCapabilities.astro — collapsible "what does each plugin give me?"
+ * view. One native <details> per package, showing its tools, prompts,
+ * resources and knowledge entries. Renders at /capabilities.
+ *
+ * The <details>/<summary> elements are accessible by default (no JS,
+ * no ARIA, no extra CSS reset); a small SCSS file gives them a
+ * consistent look and a smooth height transition.
+ *
+ * Localised descriptions: we route the description of each tool
+ * through `describeTool`, which falls back to the runtime English
+ * string when the catalogue has no entry for it (see p100 s3 for
+ * the catalogue, and p105 B5 for the i18n catalogue infra).
+ */
+import { useTranslations, type Lang } from '../i18n/ui';
+import { describeTool } from '../i18n/tools';
+import capabilities from '../data/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const packages = capabilities.packages as Array<{
+	name: string;
+	version: string;
+}>;
+const tools = capabilities.tools as Array<{
+	name: string;
+	namespace: string;
+	description: string;
+	effects?: string[];
+}>;
+const prompts = capabilities.prompts as Array<{
+	name: string;
+	namespace: string;
+	description: string;
+	arguments?: Array<{
+		name: string;
+		description: string;
+		required?: boolean;
+	}>;
+}>;
+const resources = capabilities.resources as Array<{
+	uri: string;
+	namespace: string;
+	name: string;
+	description: string;
+	mimeType?: string;
+}>;
+const knowledge = capabilities.knowledge as Array<{
+	id: string;
+	namespace: string;
+	title: string;
+}>;
+
+// Map a package short-name to its tool namespace (core → mcp-vertex).
+const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
+const shortName = (name: string) =>
+	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
+
+// Localised tool description with English fallback.
+const toolDesc = (tool: { name: string; description: string }): string =>
+	describeTool(tool.name, lang) ?? tool.description;
+
+const pluginHref = (slug: string): string =>
+	lang === 'en'
+		? `${base}/plugins/${slug}`
+		: `${base}/${lang}/plugins/${slug}`;
+
+// Sort packages alphabetically by short name for stable order.
+const ordered = [...packages].sort((a, b) =>
+	shortName(a.name).localeCompare(shortName(b.name)),
+);
+---
+
+<section id="capabilities" class="section">
+	<div class="container">
+		<h2>{t.plugins.title}</h2>
+		<p class="lead">{t.plugins.lead}</p>
+		<div class="pd">
+			{
+				ordered.map((pkg) => {
+					const slug = shortName(pkg.name);
+					const ns = nsFor(slug);
+					const pkgTools = tools
+						.filter((tool) => tool.namespace === ns)
+						.sort((a, b) => a.name.localeCompare(b.name));
+					const pkgPrompts = prompts
+						.filter((p) => p.namespace === ns)
+						.sort((a, b) => a.name.localeCompare(b.name));
+					const pkgResources = resources
+						.filter((r) => r.namespace === ns)
+						.sort((a, b) => a.uri.localeCompare(b.uri));
+					const pkgKnowledge = knowledge
+						.filter((k) => k.namespace === ns)
+						.sort((a, b) => a.id.localeCompare(b.id));
+					// Skip the section if the plugin has nothing to show.
+					const total =
+						pkgTools.length +
+						pkgPrompts.length +
+						pkgResources.length +
+						pkgKnowledge.length;
+					if (total === 0) return null;
+					return (
+						<details class="pd__row" name="plugin-capabilities">
+							<summary class="pd__summary">
+								<span class="pd__icon" aria-hidden="true">
+									<img
+										src={`/logos/plugin-${slug}.svg`}
+										alt=""
+										width="22"
+										height="22"
+										loading="lazy"
+										onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'pd__icon-fallback',textContent:this.alt||''}))"
+									/>
+								</span>
+								<span class="pd__title">
+									<code class="pd__title-code">{pkg.name}</code>
+									<span class="pd__counts">
+										{pkgTools.length > 0 && (
+											<span class="pd__count">
+												{pkgTools.length} {pkgTools.length === 1 ? 'tool' : 'tools'}
+											</span>
+										)}
+										{pkgPrompts.length > 0 && (
+											<span class="pd__count">
+												{pkgPrompts.length}{' '}
+												{pkgPrompts.length === 1 ? 'prompt' : 'prompts'}
+											</span>
+										)}
+										{pkgResources.length > 0 && (
+											<span class="pd__count">
+												{pkgResources.length}{' '}
+												{pkgResources.length === 1 ? 'resource' : 'resources'}
+											</span>
+										)}
+										{pkgKnowledge.length > 0 && (
+											<span class="pd__count">
+												{pkgKnowledge.length}{' '}
+												{pkgKnowledge.length === 1 ? 'knowledge' : 'knowledge'}
+											</span>
+										)}
+									</span>
+								</span>
+								<span class="pd__chev" aria-hidden="true">▾</span>
+							</summary>
+							<div class="pd__body">
+								{pkgTools.length > 0 && (
+									<div class="pd__group">
+										<h4>{t.tools.title}</h4>
+										<ul class="pd__list">
+											{pkgTools.map((tool) => (
+												<li class="pd__item">
+													<code class="pd__name">{tool.name}</code>
+													<p class="pd__item-body">{toolDesc(tool)}</p>
+													{(tool.effects ?? []).length > 0 && (
+														<div class="pd__effects">
+															{(tool.effects ?? []).map((e) => (
+																<span class={`fx fx--${e}`}>{e}</span>
+															))}
+														</div>
+													)}
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
+								{pkgPrompts.length > 0 && (
+									<div class="pd__group">
+										<h4>{t.prompts.title}</h4>
+										<ul class="pd__list">
+											{pkgPrompts.map((p) => (
+												<li class="pd__item">
+													<code class="pd__name">{p.name}</code>
+													<p class="pd__item-body">{p.description}</p>
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
+								{pkgResources.length > 0 && (
+									<div class="pd__group">
+										<h4>{t.resources.title}</h4>
+										<ul class="pd__list">
+											{pkgResources.map((r) => (
+												<li class="pd__item">
+													<code class="pd__name">{r.uri}</code>
+													<p class="pd__item-body">{r.description}</p>
+													{r.mimeType && (
+														<span class="pd__meta">{r.mimeType}</span>
+													)}
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
+								{pkgKnowledge.length > 0 && (
+									<div class="pd__group">
+										<h4>{t.knowledge.title}</h4>
+										<ul class="pd__list">
+											{pkgKnowledge.map((k) => (
+												<li class="pd__item">
+													<code class="pd__name">{k.id}</code>
+													<p class="pd__item-body">{k.title}</p>
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
+								<a class="pd__more" href={pluginHref(slug)}>
+									{t.pluginpage.install} →
+								</a>
+							</div>
+						</details>
+					);
+				})
+			}
+		</div>
+	</div>
+</section>

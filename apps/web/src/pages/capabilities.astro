@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import PluginCapabilities from '../components/PluginCapabilities.astro';
+import { useTranslations, type Lang } from '../i18n/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+---
+
+<Base
+	lang={lang}
+	title={`${t.plugins.title} · ${t.tools.title} — @mcp-vertex/core`}
+	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the mcp-vertex core + plugins."
+>
+	<PageHeader lang={lang} title={t.plugins.title} />
+	<PluginCapabilities lang={lang} />
+</Base>
