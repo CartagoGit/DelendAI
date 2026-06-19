@@ -565,3 +565,52 @@ humana ("queremos tests así") y la ejecución (quality).
 - [ ] **¿Página web dedicada** en `apps/web/src/pages/plugins/[…]` o
       sección dentro de `/guide`? Recomendado: como cualquier otro
       plugin (`[plugin].astro` lo autogenera si está en capabilities).
+
+## 13. Cierre de slice — refactor SOLID del `scanDrift` (2026-06-19)
+
+**Estado**: primer slice aplicado y commiteado.
+
+**Commit**: `320b951` —
+`refactor(test-convention): apply spec-content rules to misnamed specs (DRY)`.
+
+**Qué cambió** (2 archivos, +17 / −110):
+
+1. `plugins/test-convention/src/scan.ts`:
+   - Extrae toda la aplicación de reglas de contenido (mock API
+     mismatch, forbidden patterns, orphan imports, missing describe)
+     a un único helper `runSpecRules(path, contents, convention, all, push)`.
+   - Elimina el bloque inline duplicado de ~110 líneas en la rama
+     `if (isSpec(path, specExt))` que ahora delega en el helper.
+   - El helper se invoca tanto para **specs canónicos** (`*.spec.ts`)
+     como para **misnamed specs** (`*.test.ts` que contengan
+     `describe`/`it`/`test`). Antes, un archivo `*.test.ts` con
+     `it.only()` solo reportaba `wrong-spec-extension` y silenciaba
+     el `forbidden-only`. Ahora reporta **ambas**.
+   - La rama del `if (isMisnamedSpec)` mantiene la regla
+     `wrong-spec-extension` para guiar el rename.
+
+2. `plugins/test-convention/tsconfig.json`:
+   - Quita `composite: true` (incompatible con
+     `tsconfig.base.json` que define `declaration: false`,
+     emitía `error TS6304`).
+   - Alinea la forma con los otros plugins (quality, status-marker):
+     sólo `extends` + `include` de `src` y `tests`.
+
+**Definition of done** (verificado):
+
+- [x] `bun run validate` verde: typecheck + biome + stylelint + tests.
+- [x] Tests del plugin: 39/39 (incluido
+      `flags wrong-spec-extension and missing-top-level-describe`,
+      que antes fallaba).
+- [x] Tests globales del repo: 618 pasaron, 10 skipped, 0 fallaron
+      (92 archivos, 5.59 s).
+- [x] Conventional commit + rama limpia.
+
+**Pendiente para próximas slices** (no hechos aquí, fuera del scope
+de este slice):
+
+- Cargar el plugin en el swarm preset (§9.3 — `parse-cli-args.ts`).
+- Smoke test en `mcp-vertex --plugins=test-convention` (§10).
+- Página web del plugin (§10) — depende del cierre de p100/p105.
+- i18n del knowledge entry en los 12 idiomas (§10).
+- Adoptar el plugin en la `.mcp.json` raíz (dogfooding).
