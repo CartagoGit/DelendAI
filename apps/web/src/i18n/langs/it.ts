@@ -103,6 +103,9 @@ const dict: LangDict = {
 			'Un nucleo di server MCP agnostico al progetto + caricatore di plugin.',
 		sections: 'Sezioni',
 		resources: 'Risorse',
+		madeBy: 'Realizzato da Cartago · @CartagoGit su GitHub',
+		creatorsRepo: 'Autore su GitHub',
+		creatorsNpm: 'Autore su npm',
 	},
 	pluginpage: {
 		back: 'Indietro',

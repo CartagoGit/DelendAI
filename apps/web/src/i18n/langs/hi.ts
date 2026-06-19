@@ -101,6 +101,9 @@ const dict: LangDict = {
 		tagline: 'प्रोजेक्ट-अज्ञेयवादी MCP सर्वर कोर + प्लगइन लोडर।',
 		sections: 'अनुभाग',
 		resources: 'संसाधन',
+		madeBy: 'Cartago द्वारा निर्मित · @CartagoGit GitHub पर',
+		creatorsRepo: 'निर्माता GitHub पर',
+		creatorsNpm: 'निर्माता npm पर',
 	},
 	pluginpage: { back: 'वापस', tools: 'टूल', install: 'इंस्टॉल' },
 	plugin: {

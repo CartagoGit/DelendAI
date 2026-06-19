@@ -101,6 +101,9 @@ const dict: LangDict = {
 		tagline: 'Lõi máy chủ MCP không phụ thuộc dự án + bộ nạp plugin.',
 		sections: 'Mục',
 		resources: 'Tài nguyên',
+		madeBy: 'Tạo bởi Cartago · @CartagoGit trên GitHub',
+		creatorsRepo: 'Tác giả trên GitHub',
+		creatorsNpm: 'Tác giả trên npm',
 	},
 	pluginpage: { back: 'Quay lại', tools: 'Công cụ', install: 'Cài đặt' },
 	plugin: {

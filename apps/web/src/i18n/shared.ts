@@ -171,6 +171,9 @@ export interface IFooterTranslations {
 	readonly tagline: string;
 	readonly sections: string;
 	readonly resources: string;
+	readonly madeBy: string;
+	readonly creatorsRepo: string;
+	readonly creatorsNpm: string;
 }
 
 export interface IPluginPageTranslations {

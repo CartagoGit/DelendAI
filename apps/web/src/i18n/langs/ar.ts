@@ -98,6 +98,9 @@ const dict: LangDict = {
 		tagline: 'نواة خادم MCP لا تعرف عن المشروع + محمّل إضافات.',
 		sections: 'الأقسام',
 		resources: 'الموارد',
+		madeBy: 'من صنع Cartago · @CartagoGit على GitHub',
+		creatorsRepo: 'المُنشئ على GitHub',
+		creatorsNpm: 'المُنشئ على npm',
 	},
 	pluginpage: { back: 'رجوع', tools: 'الأدوات', install: 'التثبيت' },
 	plugin: {
