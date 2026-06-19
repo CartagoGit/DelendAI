@@ -147,7 +147,7 @@ bunx @mcp-vertex/core --check`}</code></pre>
 					<li><code>get_quality_scopes</code> — list the configured scopes
 					and the exact commands each will run. Read-only.</li>
 					<li><code>run_quality</code> — run a scope and return
-					<code>{ ok, results: [{ command, ok, code, tail }] }</code>.
+					<code>&#123; ok, results: [&#123; command, ok, code, tail &#125;] &#125;</code>.
 					Commands are spawned via <code>shell</code>; the runner
 					measures the real exit code, never throws, and is cancellable.</li>
 					<li><code>quality_cancel</code> — abort any in-flight run by PID
@@ -155,8 +155,8 @@ bunx @mcp-vertex/core --check`}</code></pre>
 				</ul>
 				<p>
 					<strong>The architecture is already language-agnostic.</strong> The
-					core defines <code>IValidationCommand = { command, expect }</code>
-					and <code>IValidationMatrix = { scopes: Record&lt;string, IValidationCommand[]&gt; }</code>
+					core defines <code>IValidationCommand = &#123; command, expect &#125;</code>
+					and <code>IValidationMatrix = &#123; scopes: Record&lt;string, IValidationCommand[]&gt; &#125;</code>
 					(both re-exported from <code>@mcp-vertex/core/public</code>), and the
 					JSON schema in <code>mcp-vertex.config.json</code> validates the
 					shape. Any command that returns exit-code 0 works — <code>tsc</code>,
@@ -165,7 +165,7 @@ bunx @mcp-vertex/core --check`}</code></pre>
 				</p>
 				<p>Three sources of scopes, in precedence order:</p>
 				<ol>
-					<li>Plugin options — <code>quality.scopes = { feature: ["..."] }</code>.</li>
+					<li>Plugin options — <code>quality.scopes = &#123; feature: ["..."] &#125;</code>.</li>
 					<li><code>mcp-vertex.config.json</code> →
 					<code>validationMatrix.scopes</code> (the canonical surface).</li>
 					<li>Detected <code>package.json</code> scripts
