@@ -74,10 +74,7 @@ export const buildScanDrift = (
 					inputSchema: InputSchema,
 					outputSchema: OutputSchema,
 				},
-				async (args: {
-					scope?: 'all' | 'src' | 'tests';
-					maxFiles?: number;
-				}): Promise<IToolTextResult> =>
+				async (args): Promise<IToolTextResult> =>
 					toolJson(
 						scanDrift({
 							convention: options.convention,

@@ -52,6 +52,7 @@ const exportNamesOf = (source: string): readonly string[] => {
 	const re =
 		/export\s+(?:async\s+)?(?:function|const|class)\s+([A-Za-z_$][\w$]*)/gu;
 	let m: RegExpExecArray | null;
+	// biome-ignore lint/suspicious/noAssignInExpressions: re2-style exec loop.
 	while ((m = re.exec(source)) !== null) out.push(m[1] ?? '');
 	return out;
 };
@@ -60,6 +61,7 @@ const importsFrom = (source: string): readonly string[] => {
 	const out: string[] = [];
 	const re = /import\s.+?from\s+['"]([^'"]+)['"]/gu;
 	let m: RegExpExecArray | null;
+	// biome-ignore lint/suspicious/noAssignInExpressions: re2-style exec loop.
 	while ((m = re.exec(source)) !== null) out.push(m[1] ?? '');
 	return out;
 };

@@ -79,8 +79,16 @@ export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> = {
 	// full single-agent toolkit
 	standard: STANDARD_PRESET,
 	// standard + multi-agent coordination (includes status-marker for the
-	// mandatory coloured close marker convention — see plugin p104).
-	swarm: [...STANDARD_PRESET, 'proposals', 'notification', 'status-marker'],
+	// mandatory coloured close marker convention — see plugin p104 — and
+	// test-convention so every agent in the swarm follows the same test
+	// rules; see plugin p108).
+	swarm: [
+		...STANDARD_PRESET,
+		'proposals',
+		'notification',
+		'status-marker',
+		'test-convention',
+	],
 };
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */

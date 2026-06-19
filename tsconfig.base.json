@@ -69,7 +69,14 @@
 			"@mcp-vertex/status-marker/public": [
 				"./plugins/status-marker/src/public/index.ts"
 			],
-			"@mcp-vertex/status-marker/*": ["./plugins/status-marker/src/*"]
+			"@mcp-vertex/status-marker/*": ["./plugins/status-marker/src/*"],
+			"@mcp-vertex/test-convention": [
+				"./plugins/test-convention/src/index.ts"
+			],
+			"@mcp-vertex/test-convention/public": [
+				"./plugins/test-convention/src/public/index.ts"
+			],
+			"@mcp-vertex/test-convention/*": ["./plugins/test-convention/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]

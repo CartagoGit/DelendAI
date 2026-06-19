@@ -1,6 +1,6 @@
 ---
 id: p106
-status: pending
+status: done
 type: proposal
 track: web
 date: 2026-06-18
@@ -28,4 +28,4 @@ Hacer que `apps/web/scripts/gen-skills.ts:walkSkills` recaude en subdirectorios 
   - "apps/web/src/data/skills.json contiene los 2 SKILL.md con path skills/mcp-vertex-…/SKILL.md"
   - "bun run site:strict ya no falla por este motivo"
   - "bun run validate verde (typecheck + lint + scss + tests)"
-- status: pending
+- status: done
