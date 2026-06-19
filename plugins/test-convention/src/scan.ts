@@ -76,6 +76,115 @@ const firstLineOfDescribe = (source: string): string | undefined => {
 	return m?.[1];
 };
 
+/** Returns true if the source has the shape of a spec file. */
+const looksLikeSpec = (source: string): boolean =>
+	/(?:^|\n)\s*(?:describe|it|test|expect)\s*\(/u.test(source);
+
+/**
+ * Map a forbidden pattern to a stable violation id by inspecting its
+ * regex source. We strip the backslashes because `RegExp#source`
+ * returns the literal body (`console\\.log` for `console.log`).
+ */
+const classifyForbiddenPattern = (p: RegExp): string => {
+	const plain = p.source.replace(/\\/gu, '');
+	if (plain.includes('.only')) return 'forbidden-only';
+	if (plain.includes('xit(')) return 'forbidden-skip';
+	if (plain.includes('@ts-ignore')) return 'forbidden-ts-ignore';
+	if (plain.includes('console.log')) return 'console-residue';
+	return 'forbidden-pattern';
+};
+
+type PushFn = (d: IDrift) => void;
+
+/**
+ * Apply all spec-content rules to `path`/`contents`. Shared by the
+ * canonical-spec branch and the misnamed-spec branch so both surface
+ * the same set of inner violations (mock API, forbidden patterns,
+ * orphan imports, …).
+ */
+const runSpecRules = (
+	path: string,
+	contents: string,
+	convention: ITestConvention,
+	all: readonly string[],
+	push: PushFn,
+): void => {
+	if (convention.requireDescribe && !/^\s*describe\(/u.test(contents)) {
+		push({
+			id: 'missing-top-level-describe',
+			file: path,
+			severity: 'error',
+			hint: 'spec must start with a top-level describe(...)',
+		});
+	}
+
+	const describeName = firstLineOfDescribe(contents);
+	if (describeName !== undefined && describeName.length === 0) {
+		push({
+			id: 'describe-it-naming',
+			file: path,
+			severity: 'info',
+			hint: 'describe("…") is empty; name the module under test',
+		});
+	}
+
+	// Mock API mismatch.
+	const mockStyle = effectiveMockStyle(convention);
+	if (mockStyle === 'vi' && /\bjest\.fn\(/u.test(contents)) {
+		push({
+			id: 'wrong-mock-api',
+			file: path,
+			severity: 'error',
+			hint: 'project runs vitest; use vi.fn(), not jest.fn()',
+		});
+	} else if (mockStyle === 'jest' && /\bvi\.fn\(/u.test(contents)) {
+		push({
+			id: 'wrong-mock-api',
+			file: path,
+			severity: 'error',
+			hint: 'project runs jest; use jest.fn(), not vi.fn()',
+		});
+	}
+
+	// Forbidden patterns.
+	for (const pattern of convention.forbiddenPatterns) {
+		const id = classifyForbiddenPattern(pattern);
+		for (const hit of findHits(contents, pattern)) {
+			push({
+				id,
+				file: path,
+				severity: id === 'console-residue' ? 'info' : 'error',
+				hint: `forbidden pattern: ${pattern.source}`,
+				line: hit.line,
+				excerpt: hit.text.slice(0, 120),
+			});
+		}
+	}
+
+	// Orphan imports: spec pulls in a relative path that does not
+	// resolve to any source file under the workspace.
+	for (const spec of importsFrom(contents)) {
+		if (!spec.startsWith('.')) continue;
+		const dir = path.split('/').slice(0, -1).join('/');
+		const resolved = resolveFrom(dir, spec);
+		if (resolved === undefined) {
+			push({
+				id: 'orphan-spec',
+				file: path,
+				severity: 'warning',
+				hint: `import "${spec}" does not resolve`,
+			});
+		} else if (!all.includes(resolved)) {
+			push({
+				id: 'orphan-spec',
+				file: path,
+				severity: 'warning',
+				hint: `import "${spec}" → "${resolved}" not present in workspace tree`,
+			});
+		}
+	}
+};
+
 export interface IScanOptions {
 	readonly convention: ITestConvention;
 	readonly reader: IFileReader;
