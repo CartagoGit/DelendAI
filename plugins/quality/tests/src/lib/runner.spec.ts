@@ -77,7 +77,10 @@ describe('runScope', () => {
 				: { code: 0, output: 'ok', timedOut: false };
 		const result = await runScope(
 			'type',
-			[{ command: 'tsc' }, { command: 'slow-thing' }],
+			[
+				{ command: 'tsc', expect: 'exit0' },
+				{ command: 'slow-thing', expect: 'exit0' },
+			],
 			'/ws',
 			fakeRunner,
 		);
