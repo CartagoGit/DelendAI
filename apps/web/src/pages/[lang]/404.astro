@@ -13,13 +13,20 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
+// Runtime guard: never render lang="undefined" (was the root cause of
+// "switching language only translates the home page" — Astro fell back
+// to English silently). Same pattern as index.astro, guide.astro and
+// plugins/[plugin].astro.
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+const t = useTranslations(langCode);
 ---
 
 <Base
-	lang={lang as Lang}
+	lang={langCode}
 	title={`404 · ${t.notFound.title} — @mcp-vertex/core`}
 	description={t.notFound.lead}
 >
-	<NotFound lang={lang as Lang} />
+	<NotFound lang={langCode} />
 </Base>
