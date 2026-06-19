@@ -1,0 +1,55 @@
+---
+/**
+ * PageHeader.astro — minimal page intro.
+ *
+ * Replaces the old `.subhero` block (removed in p105 slice s12) with a
+ * tighter, BEM-compliant version that ONLY carries the breadcrumb + the
+ * page <h1>. The <h1> keeps `transition:name="page-title"` so the
+ * Astro View Transitions API still morphs the title between pages.
+ *
+ * Lead / meta / CTAs are intentionally NOT rendered here — pages
+ * that need them put those elements inside their first section
+ * (e.g. <section class="section">), where the existing design tokens
+ * already style them.
+ */
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+	lang: Lang;
+	/** Localized title. Use the i18n key directly: `t.tools.title`. */
+	title: string;
+	/** Optional breadcrumb trail. The last element is the current page
+	 * (rendered as <span aria-current="page">). Earlier items are
+	 * rendered as <a> elements. Pass empty array for no breadcrumb. */
+	crumbs?: ReadonlyArray<{ label: string; href: string }>;
+	/** Path prefix used to build the "Home" link. Defaults to `/`. */
+	homeHref?: string;
+}
+
+const { lang, title, crumbs = [], homeHref: homeHrefProp } = Astro.props;
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = homeHrefProp ?? `${base}/`;
+
+const fullCrumbs = [{ label: t.nav.concept, href: homeHref }, ...crumbs];
+---
+
+<header class="page-header">
+	<div class="container">
+		{fullCrumbs.length > 1 && (
+			<nav class="page-header__crumb" aria-label="breadcrumb">
+				{fullCrumbs.map((c, i) => (
+					<>
+						{i > 0 && <span aria-hidden="true">›</span>}
+						{i < fullCrumbs.length - 1 ? (
+							<a href={c.href}>{c.label}</a>
+						) : (
+							<span aria-current="page">{c.label}</span>
+						)}
+					</>
+				))}
+			</nav>
+		)}
+		<h1 transition:name="page-title" transition:animate="fade">{title}</h1>
+	</div>
+</header>

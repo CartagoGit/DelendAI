@@ -1,6 +1,7 @@
 ---
 import Install from '../components/Install.astro';
 import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
 import { useTranslations, type Lang } from '../i18n/ui';
 
 const lang: Lang = 'en';
@@ -10,5 +11,6 @@ const homeHref = `${base}/`;
 ---
 
 <Base lang={lang} title={`${t.install.title} — @mcp-vertex/core`}>
+	<PageHeader lang={lang} title={t.install.title} />
 	<Install lang={lang} />
 </Base>

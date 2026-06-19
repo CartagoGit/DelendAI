@@ -3,7 +3,7 @@
 // These rules were previously inlined at the bottom of the original
 // `global.scss`; moving them here keeps them close to the component they
 // govern (the nav), while still letting them hide/show elements owned by
-// other partials (drawer, hero, subhero, container).
+// other partials (drawer, hero, page-header, container).
 //
 // The `[href*='/api']` / `[href*='/prompts']` etc. selectors are
 // attribute-based and intentionally stay rooted at `.nav__links` (a
@@ -45,7 +45,7 @@
 	.section {
 		padding: 2rem 0;
 	}
-	.subhero {
+	.page-header {
 		padding: 1.6rem 0 1rem;
 	}
 	.hero {

@@ -1,6 +1,7 @@
 ---
 import ToolsSection from '../../components/ToolsSection.astro';
 import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 import capabilities from '../../data/capabilities.json';
 
@@ -19,5 +20,6 @@ const homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.tools.title} — @mcp-vertex/core`}>
+	<PageHeader lang={lang as Lang} title={t.tools.title} />
 	<ToolsSection lang={lang as Lang} />
 </Base>
