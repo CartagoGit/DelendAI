@@ -9,17 +9,20 @@ budget: 4
 
 # p100 — Web: i18n real de herramientas, estructura por página y docs profundas
 
-> **Estado: EN CURSO — s1 ya cerrado por commit paralelo** (2026-06-18
-> 18:28, hash `5658d55` y `875121d` por `Cartago
-> <cartago.relaxingcup@gmail.com>`). El árbol contiene: componentes
-> `SiteNav`, `SiteFooter`, `ConceptSection`, `ToolsSection`,
-> `BenchmarksSection`, `PluginsSection`; páginas `/install`, `/tools`,
-> `/benchmarks`, `/plugins` en 12 idiomas; `Home.astro` minimalista.
-> `bun run validate` y `bun run site:strict` en verde.
-> Pendientes: s2 (ToolDefinition acepta `description: { key }`),
-> s3 (catálogos i18n en plugins + validador), s4 (render localizado),
-> s5 (tabla de argumentos), s6 (Configuration JSON), s7 (tutoriales),
-> s8 (tabs client-side + limpieza flag legacy).
+> **Estado: EN CURSO — s1, s2, s3, s3-bis cerrados** (2026-06-20).
+> s1 por commit paralelo (`5658d55`, `875121d`); s2+s3+s3-bis por
+> commit `6793460` (este agente, 2026-06-20 01:33). El catálogo
+> `apps/web/src/i18n/tools/` está operativo con 3 entradas en 12
+> idiomas (`mcp-vertex_overview`, `proposals_auto_work`,
+> `memory_save`) y `check-i18n.ts` exige 12-lang por entrada. El
+> campo `descriptionKey?: string` en `IToolRegistration` permite a
+> cada tool declarar su clave sin tocar el contrato MCP. El render
+> localizado (`PluginPage.astro` → `describeTool`) ya consume el
+> catálogo. Pendientes: s4 (volcar `descriptionKey` en
+> `capabilities.json` desde `gen-capabilities.ts` — el render ya
+> funciona vía `describeTool` lookup), s5 (tabla de argumentos),
+> s6 (Configuration JSON), s7 (tutoriales), s8 (tabs client-side
+> + limpieza flag legacy).
 
 ## 0. Decisiones del usuario (validadas 2026-06-18)
 
