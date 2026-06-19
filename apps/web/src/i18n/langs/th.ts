@@ -98,6 +98,9 @@ const dict: LangDict = {
 		tagline: 'แกนเซิร์ฟเวอร์ MCP ที่ไม่ขึ้นกับโปรเจกต์ + ตัวโหลดปลั๊กอิน',
 		sections: 'ส่วน',
 		resources: 'ทรัพยากร',
+		madeBy: 'สร้างโดย Cartago · @CartagoGit บน GitHub',
+		creatorsRepo: 'ผู้สร้างบน GitHub',
+		creatorsNpm: 'ผู้สร้างบน npm',
 	},
 	pluginpage: { back: 'กลับ', tools: 'เครื่องมือ', install: 'ติดตั้ง' },
 	plugin: {

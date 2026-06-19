@@ -103,6 +103,9 @@ const dict: LangDict = {
 			'プロジェクトに依存しない MCP サーバーコア + プラグインローダー。',
 		sections: 'セクション',
 		resources: 'リソース',
+		madeBy: 'Cartago が作成 · @CartagoGit (GitHub)',
+		creatorsRepo: '作者 (GitHub)',
+		creatorsNpm: '作者 (npm)',
 	},
 	pluginpage: { back: '戻る', tools: 'ツール', install: 'インストール' },
 	plugin: {

@@ -9,6 +9,8 @@ const t = useTranslations(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const creatorsRepo = 'https://github.com/CartagoGit';
+const creatorsNpm = 'https://www.npmjs.com/~cartago-git';
 const year = new Date().getFullYear();
 ---
 
@@ -17,6 +19,7 @@ const year = new Date().getFullYear();
 		<div class="sitefoot__col sitefoot__col--brand">
 			<strong>@mcp-vertex/core</strong>
 			<p>{t.footer.tagline}</p>
+			<p class="sitefoot__credit">{t.footer.madeBy}</p>
 		</div>
 		<nav class="sitefoot__col" aria-label="Sections">
 			<strong>{t.footer.sections}</strong>
@@ -31,8 +34,10 @@ const year = new Date().getFullYear();
 		<nav class="sitefoot__col" aria-label="Resources">
 			<strong>{t.footer.resources}</strong>
 			<a href={`${base}/api/`}>API (TypeDoc)</a>
-			<a href={repo} rel="external">GitHub</a>
-			<a href="https://www.npmjs.com/package/@mcp-vertex/core" rel="external">npm</a>
+			<a href={repo} rel="external">@mcp-vertex · GitHub</a>
+			<a href="https://www.npmjs.com/package/@mcp-vertex/core" rel="external">@mcp-vertex · npm</a>
+			<a href={creatorsRepo} rel="external">{t.footer.creatorsRepo}</a>
+			<a href={creatorsNpm} rel="external">{t.footer.creatorsNpm}</a>
 		</nav>
 	</div>
 	<div class="container sitefoot__base">

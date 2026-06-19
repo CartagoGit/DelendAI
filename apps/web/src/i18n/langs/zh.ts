@@ -98,6 +98,9 @@ const dict: LangDict = {
 		tagline: '项目无关的 MCP 服务器核心 + 插件加载器。',
 		sections: '章节',
 		resources: '资源',
+		madeBy: '由 Cartago 制作 · @CartagoGit 在 GitHub',
+		creatorsRepo: '作者 GitHub',
+		creatorsNpm: '作者 npm',
 	},
 	pluginpage: { back: '返回', tools: '工具', install: '安装' },
 	plugin: {
