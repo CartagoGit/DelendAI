@@ -1,9 +1,10 @@
 ---
 id: p106
 type: proposal
-status: idea
+status: done
 track: web
 date: 2026-06-19
+closed: 2026-06-19
 related:
   - p100 # website i18n & docs rewrite (lives next to this in the web track)
   - p101 # web header transitions
@@ -178,6 +179,7 @@ Recomiendo la primera (más barata, más directa).
   - `apps/web/src/data/skills.json` (regenerado por el script).
   - **gate**: `lint` (lint + el nuevo test verde + `bun run site`
     sin warnings).
+  - status: done (commit 32bfc9c, 2026-06-19)
 
 Aceptación:
 
