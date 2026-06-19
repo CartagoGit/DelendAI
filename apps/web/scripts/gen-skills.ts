@@ -61,16 +61,46 @@ const firstSentence = (body: string): string => {
 	return first.length > 220 ? `${first.slice(0, 217)}…` : first;
 };
 
+/**
+ * Recursive skill walker. The top-level call is invoked with a
+ * `dir` — typically `<repo>/skills` from the CLI, or any path
+ * under which SKILL.md files are arranged as `<dir>/<name>/SKILL.md`.
+ *
+ * The internal `anchor` is the basename of the original `dir`
+ * (e.g. `skills`) and `relPrefix` is the relative path from the
+ * original `dir` to the current `dir`. Both are threaded through
+ * recursion so the emitted `path` always has the well-known shape
+ * `<anchor>/<plugin>/SKILL.md` (and `<anchor>/<plugin>/sub/SKILL.md`
+ * for nested layouts). That's the shape `slugFromPath` expects
+ * (it splits on `/` and reads the second segment as the plugin
+ * slug) and the shape the GitHub link
+ * `${repo}/blob/main/${s.path}` in `SkillsSection.astro` needs.
+ */
 const walkSkills = (dir: string): ISkill[] => {
+	if (!existsSync(dir)) return [];
+	return walkSkillsInternal(dir, basenameOf(dir), '');
+};
+
+const walkSkillsInternal = (
+	dir: string,
+	anchor: string,
+	relPrefix: string,
+): ISkill[] => {
 	if (!existsSync(dir)) return [];
 	const out: ISkill[] = [];
 	for (const entry of readdirSync(dir)) {
 		const full = join(dir, entry);
 		const st = statSync(full);
+		if (st.isDirectory()) {
+			out.push(
+				...walkSkillsInternal(full, anchor, `${relPrefix}${entry}/`),
+			);
+			continue;
+		}
 		if (st.isFile() && entry === 'SKILL.md') {
 			const text = readFileSync(full, 'utf8');
 			const fm = parseFrontmatter(text);
-			const rel = `skills/${entry}`;
+			const rel = `${anchor}/${relPrefix}${entry}`;
 			out.push({
 				id: fm.id ?? slugFromPath(rel),
 				name: fm.name ?? entry,
@@ -85,6 +115,16 @@ const walkSkills = (dir: string): ISkill[] => {
 	}
 	return out.sort((a, b) => a.name.localeCompare(b.name));
 };
+
+/** Last non-empty path segment of `p`, with back-slashes normalised. */
+const basenameOf = (p: string): string => {
+	const norm = p.replace(/\\/g, '/').replace(/\/+$/, '');
+	const segs = norm.split('/').filter((s) => s.length > 0);
+	return segs[segs.length - 1] ?? '';
+};
+
+/** Exported for tests (p106 s1). Same semantics as the internal walker. */
+export const walkSkillsForTest = walkSkills;
 
 const main = (): void => {
 	const strict = process.argv.includes('--strict');
