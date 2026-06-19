@@ -66,6 +66,7 @@ export interface INavTranslations {
 	readonly prompts: string;
 	readonly resources: string;
 	readonly skills: string;
+	readonly guide: string;
 }
 
 export interface IPageSection {

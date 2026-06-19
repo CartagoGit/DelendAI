@@ -13,6 +13,7 @@ const dict: LangDict = {
 		prompts: 'Prompts',
 		resources: 'Resources',
 		skills: 'Skills',
+		guide: 'Guide',
 	},
 	hero: {
 		title: { a: 'The agnostic ', b: 'MCP Vertex', c: '' },

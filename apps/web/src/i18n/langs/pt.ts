@@ -8,6 +8,9 @@ const dict: LangDict = {
 		benchmarks: 'Benchmarks',
 		plugins: 'Plugins',
 		github: 'GitHub',
+		resources: 'Recursos',
+		skills: 'Habilidades',
+		guide: 'Guia',
 	},
 	hero: {
 		title: { a: 'O ', b: 'MCP Vertex', c: ' agnóstico' },

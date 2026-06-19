@@ -28,6 +28,7 @@ const drawerLinks = [
 	{ href: sectionHref('resources'), label: t.nav.resources },
 	{ href: sectionHref('knowledge'), label: t.nav.knowledge },
 	{ href: sectionHref('skills'), label: t.nav.skills },
+	{ href: sectionHref('guide'), label: t.nav.guide },
 	{ href: `${base}/api/`, label: 'API' },
 ];
 ---
@@ -50,6 +51,7 @@ const drawerLinks = [
 			<a href={sectionHref('prompts')} class="nav__link--new">{t.nav.prompts}</a>
 			<a href={sectionHref('resources')} class="nav__link--new">{t.nav.resources}</a>
 			<a href={sectionHref('knowledge')} class="nav__link--new">{t.nav.knowledge}</a>
+			<a href={sectionHref('guide')} class="nav__link--new">{t.nav.guide}</a>
 			<a href={`${base}/api/`}>API</a>
 			<a href={repo} rel="external">{t.nav.github}</a>
 			<button class="gear" id="cfg-open" aria-label={t.cfg.title}>

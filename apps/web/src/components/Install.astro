@@ -49,6 +49,16 @@ const IDE_HINTS: Record<string, string> = {
 	antigravity: 'Google Antigravity (Gemini-backed).',
 	zed: 'Zed — high-performance editor.',
 };
+
+// Pre-compute every (pm × ide) snippet so the client only needs a
+// dict lookup when a tab changes. Stored as a JSON blob in a data-*
+// attribute on the .install root.
+const snippets: Record<string, string> = {};
+for (const pm of packageManagers) {
+	for (const ide of ideTargets) {
+		snippets[`${pm.id}|${ide.id}`] = renderConfig(ide, pm);
+	}
+}
 ---
 
 <section id="install" class="section">
@@ -56,7 +66,7 @@ const IDE_HINTS: Record<string, string> = {
 		<h2>{t.install.title}</h2>
 		<p class="lead">{t.install.lead}</p>
 
-		<div class="install" data-pm={defaultPm} data-ide={defaultIde}>
+		<div class="install" data-pm={defaultPm} data-ide={defaultIde} data-snippets={JSON.stringify(snippets)}>
 			{/* Row 1: package manager tabs */}
 			<div class="tabs" data-tabs="pm" role="tablist" aria-label="package manager">
 				<div class="tabs__track" aria-hidden="true"></div>
@@ -154,8 +164,13 @@ const IDE_HINTS: Record<string, string> = {
 	// Tab state is local to each .install root. The two groups (pm, ide)
 	// are independent: switching a PM tab does NOT switch the active IDE
 	// panel, and vice versa. When the PM changes, the active IDE panel's
-	// config snippet is re-rendered with the new package manager.
+	// config snippet is re-rendered with the new package manager using
+	// the pre-computed snippets baked into `data-snippets` (a JSON map
+	// keyed by `${pm}|${ide}`).
 	for (const root of document.querySelectorAll<HTMLElement>('.install')) {
+		const snippets: Record<string, string> = JSON.parse(
+			root.dataset.snippets || '{}',
+		);
 		const setActive = (group: 'pm' | 'ide', id: string) => {
 			root.dataset[group] = id;
 			for (const t of root.querySelectorAll<HTMLButtonElement>(
@@ -175,12 +190,11 @@ const IDE_HINTS: Record<string, string> = {
 				p.toggleAttribute('hidden', !match);
 			}
 		};
-		// When the PM changes, re-render the IDE cfg with the new pm.
 		const renderIdeCfg = (pm: string) => {
 			for (const pre of root.querySelectorAll<HTMLPreElement>('pre.cfg[data-ide-cfg]')) {
 				const ideId = pre.dataset.ideCfg!;
 				const code = pre.querySelector('code');
-				if (code) code.textContent = window.__mcpVertexRenderIde(ideId, pm);
+				if (code) code.textContent = snippets[`${pm}|${ideId}`] ?? '';
 			}
 		};
 		for (const tab of root.querySelectorAll<HTMLButtonElement>('.tabs[data-tabs="pm"] .tabs__tab')) {
@@ -197,14 +211,6 @@ const IDE_HINTS: Record<string, string> = {
 				const id = tab.dataset.ide;
 				if (id) setActive('ide', id);
 			});
-		}
-	}
-	// Tiny global hook so the IDE panel can ask for a re-render with a
-	// different PM. (Pre-computed snippets live in a Map; populated
-	// at build-time by a small script tag with the data baked in.)
-	declare global {
-		interface Window {
-			__mcpVertexRenderIde: (ide: string, pm: string) => string;
 		}
 	}
 </script>

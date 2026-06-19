@@ -1,4 +1,12 @@
 ---
+/**
+ * PluginsSection.astro — the home-page / standalone /plugins index.
+ *
+ * Redesigned in p105 s14: each plugin is a card with icon, name,
+ * version, localized description, and a small badge with the
+ * number of capabilities it contributes (tools / prompts / resources).
+ * Hover lifts the card and reveals an accent gradient border.
+ */
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
 
@@ -13,29 +21,58 @@ const packages = capabilities.packages as Array<{
 	name: string;
 	version: string;
 }>;
+const tools = capabilities.tools as Array<{ name: string; namespace: string }>;
 const shortName = (name: string) =>
 	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
 const pluginHref = (slug: string) =>
 	lang === 'en'
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;
+
+// Map a package short-name to its tool namespace (core → mcp-vertex).
+const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
+const capabilityCount = (slug: string) =>
+	tools.filter((tool) => tool.namespace === nsFor(slug)).length;
 ---
 
 <section id="plugins" class="section">
 	<div class="container">
 		<h2>{t.plugins.title}</h2>
 		<p class="lead">{t.plugins.lead}</p>
-		{
-			packages.map((pkg) => (
-				<a class="pkg" href={pluginHref(shortName(pkg.name))}>
-					<div class="pkg__main">
-						<code>{pkg.name}</code>
-						<p>{t(`plugin.${shortName(pkg.name)}`)}</p>
-					</div>
-					<span class="v">v{pkg.version}</span>
-					<span class="pkg__arrow" aria-hidden="true">→</span>
-				</a>
-			))
-		}
+		<div class="plugins-grid">
+			{
+				packages.map((pkg) => {
+					const slug = shortName(pkg.name);
+					const count = capabilityCount(slug);
+					return (
+						<a class="plugin-card card" href={pluginHref(slug)}>
+							<div class="plugin-card__head">
+								<img
+									class="plugin-card__icon"
+									src={`/logos/plugin-${slug}.svg`}
+									alt=""
+									width="36"
+									height="36"
+									loading="lazy"
+									onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:this.alt||''}))"
+								/>
+								<div class="plugin-card__title">
+									<code>{pkg.name}</code>
+									<span class="plugin-card__version">v{pkg.version}</span>
+								</div>
+							</div>
+							<p class="plugin-card__desc">{t(`plugin.${slug}`)}</p>
+							<div class="plugin-card__foot">
+								<span class="plugin-card__badge">
+									{count} {count === 1 ? 'tool' : 'tools'}
+								</span>
+								<span class="plugin-card__arrow" aria-hidden="true">→</span>
+							</div>
+						</a>
+					);
+				})
+			}
+		</div>
 	</div>
 </section>
+
