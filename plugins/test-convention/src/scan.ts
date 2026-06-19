@@ -242,111 +242,24 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 		if (contents === undefined) continue;
 		scanned += 1;
 
-		if (isSpec(path, specExt)) {
-			// Spec is correctly named; no extension violation to report.
+		const looksSpec = looksLikeSpec(contents);
+		const isCanonicalSpec = isSpec(path, specExt);
+		const isMisnamedSpec =
+			!isCanonicalSpec && SPEC_RE.test(path) && looksSpec;
+		const isSpecLike = isCanonicalSpec || isMisnamedSpec;
 
-			if (
-				convention.requireDescribe &&
-				!/^\s*describe\(/u.test(contents)
-			) {
-				push({
-					id: 'missing-top-level-describe',
-					file: path,
-					severity: 'error',
-					hint: 'spec must start with a top-level describe(...)',
-				});
-			}
-
-			const describeName = firstLineOfDescribe(contents);
-			if (describeName !== undefined && describeName.length === 0) {
-				push({
-					id: 'describe-it-naming',
-					file: path,
-					severity: 'info',
-					hint: 'describe("…") is empty; name the module under test',
-				});
-			}
-
-			// Mock API mismatch.
-			const mockStyle = effectiveMockStyle(convention);
-			if (mockStyle === 'vi' && /\bjest\.fn\(/u.test(contents)) {
-				push({
-					id: 'wrong-mock-api',
-					file: path,
-					severity: 'error',
-					hint: 'project runs vitest; use vi.fn(), not jest.fn()',
-				});
-			} else if (mockStyle === 'jest' && /\bvi\.fn\(/u.test(contents)) {
-				push({
-					id: 'wrong-mock-api',
-					file: path,
-					severity: 'error',
-					hint: 'project runs jest; use jest.fn(), not vi.fn()',
-				});
-			}
-
-			// Precompute the id per pattern from the source string,
-			// matching *substring of the source* (escapes included).
-			// A pattern's `.source` returns the literal regex body, so
-			// `console.log` becomes `console\\.log` and a naive
-			// `includes('console.log')` would miss it. We strip the
-			// backslashes first.
-			const plainSource = (p: RegExp): string =>
-				p.source.replace(/\\/gu, '');
-			for (const pattern of convention.forbiddenPatterns) {
-				const plain = plainSource(pattern);
-				const id = plain.includes('.only')
-					? 'forbidden-only'
-					: plain.includes('xit')
-						? 'forbidden-skip'
-						: plain.includes('@ts-ignore')
-							? 'forbidden-ts-ignore'
-							: plain.includes('console.log')
-								? 'console-residue'
-								: 'forbidden-pattern';
-				for (const hit of findHits(contents, pattern)) {
-					push({
-						id,
-						file: path,
-						severity: id === 'console-residue' ? 'info' : 'error',
-						hint: `forbidden pattern: ${pattern.source}`,
-						line: hit.line,
-						excerpt: hit.text.slice(0, 120),
-					});
-				}
-			}
-
-			// Orphan: spec imports from a path that does not resolve
-			// to any source file under the workspace.
-			for (const spec of importsFrom(contents)) {
-				if (!spec.startsWith('.')) continue;
-				const dir = path.split('/').slice(0, -1).join('/');
-				const resolved = resolveFrom(dir, spec);
-				if (resolved === undefined) {
-					push({
-						id: 'orphan-spec',
-						file: path,
-						severity: 'warning',
-						hint: `import "${spec}" does not resolve`,
-					});
-				} else if (!all.includes(resolved)) {
-					push({
-						id: 'orphan-spec',
-						file: path,
-						severity: 'warning',
-						hint: `import "${spec}" → "${resolved}" not present in workspace tree`,
-					});
-				}
-			}
+		// Spec-content rules (missing describe, mock API, forbidden
+		// patterns, orphan imports) apply to BOTH canonical and
+		// misnamed specs so a `*.test.ts` with `it.only()` reports
+		// both `wrong-spec-extension` and `forbidden-only`.
+		if (isSpecLike) {
+			runSpecRules(path, contents, convention, all, push);
 		}
 
-		// Files that look like specs (contain a top-level describe/it/expect)
-		// but end in a non-conventional extension: flag them.
-		if (
-			!isSpec(path, specExt) &&
-			!isTsSource(path) &&
-			/(?:^|\n)\s*(?:describe|it|test)\s*\(/u.test(contents)
-		) {
+		// Wrong-extension rule: only files that look like specs but
+		// use the wrong suffix. `wrong-spec-extension` is the
+		// canonical signal that the file should be renamed.
+		if (isMisnamedSpec) {
 			push({
 				id: 'wrong-spec-extension',
 				file: path,
