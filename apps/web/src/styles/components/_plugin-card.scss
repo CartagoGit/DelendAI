@@ -133,3 +133,30 @@
 	color: var(--muted);
 	transition: transform 0.2s ease, color 0.2s ease;
 }
+
+// p105 B10: small "see tools by plugin" bridge under the plugin grid on
+// the dedicated /plugins page (and any other host that uses it). Points
+// at /capabilities where each plugin's tools/prompts/resources/knowledge
+// are exposed in collapsible <details> per plugin.
+.plugins-bridge {
+	margin-top: 1.6rem;
+	text-align: right;
+}
+.plugins-bridge__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.5rem 0.9rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 10%, var(--card));
+	color: var(--accent);
+	font-weight: 600;
+	font-size: 0.88rem;
+	text-decoration: none;
+	transition: background 0.18s ease, transform 0.18s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 20%, var(--card));
+		transform: translateX(2px);
+	}
+}

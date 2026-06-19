@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PluginCapabilities from '../../components/PluginCapabilities.astro';
+import { languages, useTranslations, type Lang } from '../../i18n/ui';
+
+/** All non-English locales get their own /<lang>/capabilities. The
+ * English copy lives in the root /capabilities.astro (so the
+ * project-site URL stays clean). */
+export function getStaticPaths() {
+	return languages
+		.filter((l) => l.code !== 'en')
+		.map((l) => ({ params: { lang: l.code } }));
+}
+
+const { lang } = Astro.params;
+// Runtime guard: never render lang="undefined" (was the root cause of
+// "switching language only translates the home page" — Astro fell back
+// to English silently). Same pattern as index.astro, guide.astro and
+// plugins/[plugin].astro.
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+const t = useTranslations(langCode);
+---
+
+<Base
+	lang={langCode}
+	title={`${t.plugins.title} · ${t.tools.title} — @mcp-vertex/core`}
+	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the mcp-vertex core + plugins."
+>
+	<PageHeader lang={langCode} title={t.plugins.title} />
+	<PluginCapabilities lang={langCode} />
+</Base>
