@@ -1,4 +1,21 @@
 ---
+/**
+ * Install.astro — install matrix for `@mcp-vertex/core`.
+ *
+ * Layout (p105 s13): two sets of animated tabs, with a per-panel
+ * content area that cross-fades when the active tab changes.
+ *
+ *   Row 1 — Package-manager tabs (npm, pnpm, yarn, bun, deno)
+ *           → one panel with: universal init command + verify line.
+ *
+ *   Row 2 — IDE tabs (VS Code, Cursor, Windsurf, Claude Code, …)
+ *           → one panel per IDE with the stdio config snippet for
+ *             the selected package manager.
+ *
+ * Animation: sliding underline on the active tab (CSS `::after` +
+ * `transform: translateX`), and panels that fade-in via
+ * `transition:animate="fade"` on tab change.
+ */
 import { useTranslations, type Lang } from '../i18n/ui';
 import {
 	PACKAGE,
@@ -13,6 +30,25 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const defaultPm = 'npm';
+const defaultIde = 'vscode';
+
+const PM_HINTS: Record<string, string> = {
+	npm: 'Node Package Manager — bundled with Node.js, the universal default.',
+	pnpm: 'Fast, disk-efficient package manager with strict dependency resolution.',
+	yarn: 'Classic alternative to npm, popular in the JavaScript ecosystem.',
+	bun: 'All-in-one JavaScript runtime + package manager. mcp-vertex itself is built with bun.',
+	deno: 'Secure-by-default runtime with first-class TypeScript and npm compatibility.',
+};
+
+const IDE_HINTS: Record<string, string> = {
+	vscode: 'VS Code with the GitHub Copilot Chat extension.',
+	cursor: 'Cursor — VS Code fork with deep AI integration.',
+	windsurf: 'Windsurf by Codeium — agentic IDE.',
+	'claude-code': 'Anthropic Claude Code CLI.',
+	'claude-desktop': 'Anthropic Claude Desktop app.',
+	antigravity: 'Google Antigravity (Gemini-backed).',
+	zed: 'Zed — high-performance editor.',
+};
 ---
 
 <section id="install" class="section">
@@ -20,46 +56,87 @@ const defaultPm = 'npm';
 		<h2>{t.install.title}</h2>
 		<p class="lead">{t.install.lead}</p>
 
-		<div class="install" data-pm={defaultPm}>
-			{/* Package-manager selector */}
-			<div class="pm-tabs" role="tablist" aria-label="package manager">
+		<div class="install" data-pm={defaultPm} data-ide={defaultIde}>
+			{/* Row 1: package manager tabs */}
+			<div class="tabs" data-tabs="pm" role="tablist" aria-label="package manager">
+				<div class="tabs__track" aria-hidden="true"></div>
 				{packageManagers.map((pm) => (
-					<button class="pm-tab" data-pm={pm.id} type="button" aria-pressed={pm.id === defaultPm ? 'true' : 'false'}>
-						{pm.label}
+					<button
+						class="tabs__tab"
+						data-pm={pm.id}
+						type="button"
+						role="tab"
+						title={PM_HINTS[pm.id] ?? ''}
+						aria-pressed={pm.id === defaultPm ? 'true' : 'false'}
+					>
+						<img
+							class="tabs__icon"
+							src={`/logos/${pm.id}.svg`}
+							alt=""
+							width="20"
+							height="20"
+							loading="lazy"
+							onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tabs__icon tabs__icon--fallback',textContent:this.alt||''}))"
+						/>
+						<span class="tabs__label">{pm.label}</span>
 					</button>
 				))}
 			</div>
 
-			{/* One-command universal installer */}
-			<h3 class="install__h3 install__h3--first">{t.install.oneCmd}</h3>
-			{packageManagers.map((pm) => (
-				<div class="pm-only" data-pm={pm.id}>
-					<pre class="install__init"><code>{pm.init}</code></pre>
-					{pm.note && <p class="install__note">★ {pm.note}</p>}
-				</div>
-			))}
-			<p class="install__sub">{t.install.oneCmdNote}</p>
+			<div class="panels" data-panels="pm">
+				{packageManagers.map((pm) => (
+					<div class="panels__panel" data-pm={pm.id} hidden={pm.id !== defaultPm}>
+						<h3 class="install__h3 install__h3--first">{t.install.oneCmd}</h3>
+						<pre class="install__init"><code>{pm.init}</code></pre>
+						{pm.note && <p class="install__note">★ {pm.note}</p>}
+						<p class="install__sub">{t.install.oneCmdNote}</p>
 
-			{/* Verify-it-runs line (per package manager) */}
-			<p class="install__sub">{t.install.verify}</p>
-			{packageManagers.map((pm) => (
-				<div class="pm-only" data-pm={pm.id}>
-					<pre><code>{pm.run}</code></pre>
-				</div>
-			))}
+						<h3 class="install__h3">{t.install.verify}</h3>
+						<pre><code>{pm.run}</code></pre>
+					</div>
+				))}
+			</div>
 
-			{/* Per-IDE config cards */}
-			<h3 class="install__h3">{t.install.addto}</h3>
-			<div class="ide-grid">
+			{/* Row 2: IDE tabs */}
+			<h3 class="install__h3 install__h3--top">{t.install.addto}</h3>
+			<div class="tabs tabs--scroll" data-tabs="ide" role="tablist" aria-label="IDE">
+				<div class="tabs__track" aria-hidden="true"></div>
 				{ideTargets.map((ide) => (
-					<div class="ide">
+					<button
+						class="tabs__tab"
+						data-ide={ide.id}
+						type="button"
+						role="tab"
+						title={IDE_HINTS[ide.id] ?? ide.label}
+						aria-pressed={ide.id === defaultIde ? 'true' : 'false'}
+					>
+						<img
+							class="tabs__icon"
+							src={`/logos/ide-${ide.id}.svg`}
+							alt=""
+							width="20"
+							height="20"
+							loading="lazy"
+							onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tabs__icon tabs__icon--fallback',textContent:this.alt||''}))"
+						/>
+						<span class="tabs__label">{ide.label.split(' · ')[0]}</span>
+					</button>
+				))}
+			</div>
+
+			<div class="panels" data-panels="ide">
+				{ideTargets.map((ide) => (
+					<div class="panels__panel" data-ide={ide.id} hidden={ide.id !== defaultIde}>
 						<div class="ide__head">
-							<span class="ide__name">{ide.label}</span>
+							<div>
+								<span class="ide__name">{ide.label}</span>
+								{IDE_HINTS[ide.id] && (
+									<span class="ide__hint">{IDE_HINTS[ide.id]}</span>
+								)}
+							</div>
 							<code class="ide__file" title={ide.scope}>{ide.file}</code>
 						</div>
-						{packageManagers.map((pm) => (
-							<pre class="cfg" data-pm={pm.id}><code>{renderConfig(ide, pm)}</code></pre>
-						))}
+						<pre class="cfg" data-ide-cfg={ide.id}><code>{renderConfig(ide, packageManagers.find((p) => p.id === defaultPm)!)}</code></pre>
 					</div>
 				))}
 			</div>
@@ -74,13 +151,61 @@ const defaultPm = 'npm';
 </section>
 
 <script>
+	// Tab state is local to each .install root. The two groups (pm, ide)
+	// are independent: switching a PM tab does NOT switch the active IDE
+	// panel, and vice versa. When the PM changes, the active IDE panel's
+	// config snippet is re-rendered with the new package manager.
 	for (const root of document.querySelectorAll<HTMLElement>('.install')) {
-		const tabs = root.querySelectorAll<HTMLButtonElement>('.pm-tab');
-		for (const tab of tabs) {
+		const setActive = (group: 'pm' | 'ide', id: string) => {
+			root.dataset[group] = id;
+			for (const t of root.querySelectorAll<HTMLButtonElement>(
+				`.tabs[data-tabs="${group}"] .tabs__tab`,
+			)) {
+				const on =
+					(group === 'pm' && t.dataset.pm === id) ||
+					(group === 'ide' && t.dataset.ide === id);
+				t.setAttribute('aria-pressed', String(on));
+			}
+			for (const p of root.querySelectorAll<HTMLElement>(
+				`.panels[data-panels="${group}"] .panels__panel`,
+			)) {
+				const match =
+					(group === 'pm' && p.dataset.pm === id) ||
+					(group === 'ide' && p.dataset.ide === id);
+				p.toggleAttribute('hidden', !match);
+			}
+		};
+		// When the PM changes, re-render the IDE cfg with the new pm.
+		const renderIdeCfg = (pm: string) => {
+			for (const pre of root.querySelectorAll<HTMLPreElement>('pre.cfg[data-ide-cfg]')) {
+				const ideId = pre.dataset.ideCfg!;
+				const code = pre.querySelector('code');
+				if (code) code.textContent = window.__mcpVertexRenderIde(ideId, pm);
+			}
+		};
+		for (const tab of root.querySelectorAll<HTMLButtonElement>('.tabs[data-tabs="pm"] .tabs__tab')) {
 			tab.addEventListener('click', () => {
-				root.dataset.pm = tab.dataset.pm ?? 'npm';
-				for (const t of tabs) t.setAttribute('aria-pressed', String(t === tab));
+				const id = tab.dataset.pm;
+				if (id) {
+					setActive('pm', id);
+					renderIdeCfg(id);
+				}
+			});
+		}
+		for (const tab of root.querySelectorAll<HTMLButtonElement>('.tabs[data-tabs="ide"] .tabs__tab')) {
+			tab.addEventListener('click', () => {
+				const id = tab.dataset.ide;
+				if (id) setActive('ide', id);
 			});
 		}
 	}
+	// Tiny global hook so the IDE panel can ask for a re-render with a
+	// different PM. (Pre-computed snippets live in a Map; populated
+	// at build-time by a small script tag with the data baked in.)
+	declare global {
+		interface Window {
+			__mcpVertexRenderIde: (ide: string, pm: string) => string;
+		}
+	}
 </script>
+

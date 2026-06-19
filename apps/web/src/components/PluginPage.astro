@@ -2,6 +2,7 @@
 import { useTranslations, type Lang } from '../i18n/ui';
 import { describeTool } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
+import PageHeader from './PageHeader.astro';
 
 interface Props {
 	lang: Lang;
@@ -43,6 +44,13 @@ const description = t(`plugin.${slug}`);
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
 
+<PageHeader
+	lang={lang}
+	title={title}
+	crumbs={[
+		{ label: t.nav.plugins, href: pluginsHref },
+	]}
+/>
 <section class="section">
 	<div class="container">
 		<h2>{t.pluginpage.install}</h2>
