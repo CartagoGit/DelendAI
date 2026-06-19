@@ -47,7 +47,9 @@ export const resolveScopes = (
 	if (options.scopes && Object.keys(options.scopes).length > 0) {
 		const out: Record<string, IScopeCommand[]> = {};
 		for (const [scope, cmds] of Object.entries(options.scopes)) {
-			out[scope] = cmds.map((command) => ({ command }));
+			// `expect: 'exit0'` matches the convention used by
+			// `fromScripts` and the core's `IValidationCommand` shape.
+			out[scope] = cmds.map((command) => ({ command, expect: 'exit0' }));
 		}
 		return out;
 	}
