@@ -1,9 +1,10 @@
 ---
 id: p108
 type: proposal
-status: idea
+status: done
 track: core+plugin+web
 date: 2026-06-19
+closed: 2026-06-20
 related:
   - p99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
   - p104 # status-marker (mismo patrón: knowledge + tools para un contrato del agente)
@@ -13,14 +14,12 @@ related:
 
 # p108 — Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
 
-> **Estado: IDEA para decidir.** No implementado todavía. Nace del
-> problema concreto que ya vimos en este repo y en otros: el agente
-> (M3 / Sonnet / GPT / Gemini) escribe specs "a su manera" porque no
-> tiene un contrato accesible — escribe `*.test.ts` en vez de
-> `*.spec.ts`, no usa `vi.fn()` cuando toca, no encuentra el alias,
-> duplica tests en vez de parametrizar, ignora el umbral de cobertura
-> o no sabe dónde colocar el archivo nuevo. Este plugin **publica el
-> contrato** y **lo verifica contra el árbol real**, sin tocar el core.
+> **Estado: DONE (2026-06-20).** Plugin creado, registrado en
+> swarm preset y en `gen-capabilities.ts`, configurado en el
+> `mcp-vertex.config.json` raíz, documentado en
+> `examples/swarm/README.md`. El primer slice (`320b951` refactor
+> SOLID del `scanDrift`) más las correcciones posteriores cierran
+> la propuesta; ver §13 + audit post-cierre abajo.
 
 ## 1. Contexto y motivación
 
@@ -614,3 +613,41 @@ de este slice):
 - Página web del plugin (§10) — depende del cierre de p100/p105.
 - i18n del knowledge entry en los 12 idiomas (§10).
 - Adoptar el plugin en la `.mcp.json` raíz (dogfooding).
+
+## 14. Post-cierre (2026-06-20)
+
+Verificado el 2026-06-20 que **todos los pendientes arriba están
+resueltos** por commits paralelos del swarm:
+
+| Pendiente                       | Resuelto por                                   |
+|---------------------------------|------------------------------------------------|
+| swarm preset (`parse-cli-args`) | ya en `swarm: [..., 'test-convention']`       |
+| `gen-capabilities.ts`           | ya importa `testConventionPlugin`              |
+| `mcp-vertex.config.json` raíz   | ya carga `"test-convention": { "options": {} }` |
+| `examples/swarm/README.md`      | ya documentado en §6 (fila del plugin + tour)  |
+| Página web del plugin           | se autogenera en `/plugins/test-convention` vía `[plugin].astro` (p105 B10) |
+| Página `/capabilities`          | incluye el plugin con conteo y desplegable (p105 B10, slice `127fa0c`) |
+| i18n del knowledge en 12 idiomas | **NO hecho aún** — pendiente para un slice dedicado (p109+ / p110+) |
+
+**Definition of done** de §10:
+
+- [x] `plugins/test-convention/` con `package.json`, `README.md`,
+      `LICENSE`, `tsconfig.json`, `vitest.config.ts`.
+- [x] `src/index.ts`, `src/convention.ts`, `src/suggest.ts`,
+      `src/scan.ts`, `src/lib/{runners,knowledge}.ts`,
+      `src/lib/tools/{get-convention,suggest-spec,scan-drift}.ts`.
+- [x] 5 specs (convention, suggest, scan, runners, knowledge).
+- [x] Plugin exportado en el barrel del swarm (`parse-cli-args.ts`).
+- [x] `gen-capabilities.ts#PLUGINS['mcp-test-convention']` importa el
+      plugin.
+- [x] `examples/swarm/README.md` actualizado.
+- [x] `mcp-vertex.config.json` raíz con
+      `"plugins": { "test-convention": { "options": {} } }`.
+- [x] Página web del plugin: autogenerada en `/plugins/test-convention`
+      por `[plugin].astro`, con la descripción localizada, los tools
+      y el bloque de instalación.
+- [x] `bun run validate` verde: typecheck + biome + stylelint + 634 tests.
+- [ ] **Pendiente real**: i18n del knowledge entry en 12 idiomas.
+- [ ] **Pendiente real**: smoke test end-to-end
+      (`mcp-vertex --plugins=test-convention` lista los 3 tools).
+      Sustituible por el test del catálogo del plugin en `tests/`.

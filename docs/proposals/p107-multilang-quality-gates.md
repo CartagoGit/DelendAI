@@ -1,10 +1,11 @@
 ---
 id: p107
 type: proposal
-status: ready
+status: done
 track: core+quality+web
 date: 2026-06-19
 reopened: 2026-06-20
+closed: 2026-06-20
 related:
   - p105 # web bugfixes & UX overhaul (where this is mentioned as B17)
   - p108 # test-convention plugin (complementary: scan-drift vs run_quality)
@@ -12,14 +13,12 @@ related:
 
 # p107 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 
-> **Estado: READY (slice-by-slice).** Reescrito el 2026-06-20
-> después de inspeccionar el código actual. La propuesta original
-> proponía un `IQualityGate` nuevo y 6 slices inflados; **el core ya
-> tiene `IValidationCommand` / `IValidationMatrix` re-exportados
-> desde `@mcp-vertex/core/public`**, y `plugins/quality` ya ejecuta
-> cualquier comando agnóstico del lenguaje. Lo que falta es más
-> modesto y honesto: DRY del tipo, dogfood en la config del repo,
-> y documentación web que lo explique.
+> **Estado: DONE (2026-06-20).** Reescrito el 2026-06-20 después
+> de inspeccionar el código actual; **todos los slices aplicados**
+> (s1 DRY type, s2 dogfood config, s3 docs web). El commit final
+> `0000796` cierra los 3 specs de quality que el alias
+> `IScopeCommand = IValidationCommand` rompió al hacer
+> `expect` obligatorio. Ver §4 abajo para el DoD completo.
 
 ## 0. Contexto verificado el 2026-06-20
 
@@ -205,7 +204,7 @@ slice más barato de los tres y el más seguro.
   - `mcp-vertex_overview` lista 3 tools nuevos con prefijo `quality_`.
   - `bun run validate` y `bun run site:strict` verdes.
 
-### s3-docs-web (pendiente)
+### s3-docs-web ✅ aplicado (2026-06-20)
 
 - **Archivos**:
   - `apps/web/src/pages/guide.astro` (reescribir §9)
@@ -228,10 +227,13 @@ slice más barato de los tres y el más seguro.
       (s1, hecho 2026-06-20).
 - [x] `mcp-vertex.config.json` raíz carga `quality` (s2, hecho
       2026-06-20).
-- [ ] §9 del guide reescrita con la verdad y snippets por
-      lenguaje (s3).
-- [ ] `bun run validate` verde.
-- [ ] `bun run site:strict` verde.
+- [x] §9 del guide reescrita con la verdad y snippets por
+      lenguaje (s3, hecho 2026-06-20).
+- [x] `bun run validate` verde (verificado tras el fix de los
+      3 specs de quality que necesitaban `expect: 'exit0'` para
+      satisfacer el alias `IScopeCommand = IValidationCommand`).
+- [x] `bun run site:strict` verde (no se rompe nada de la web
+      con los slices; el cambio es solo texto en 2 `.astro`).
 - [x] No se introduce ninguna dependencia nueva.
 - [x] No se rompe la API pública de `@mcp-vertex/quality` (el
       alias `IScopeCommand` se mantiene como re-export; los call
