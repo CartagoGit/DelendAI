@@ -1,6 +1,7 @@
 ---
 import KnowledgeSection from '../components/KnowledgeSection.astro';
 import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
 import { useTranslations, type Lang } from '../i18n/ui';
 import capabilities from '../data/capabilities.json';
 
@@ -12,5 +13,6 @@ const count = capabilities.counts.knowledge ?? 0;
 ---
 
 <Base lang={lang} title={`${t.knowledge.title} — @mcp-vertex/core`}>
+	<PageHeader lang={lang} title={t.knowledge.title} />
 	<KnowledgeSection lang={lang} />
 </Base>

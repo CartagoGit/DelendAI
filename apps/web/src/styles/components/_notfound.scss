@@ -1,8 +1,9 @@
 // _notfound.scss — 404 page centered hero.
 //
 // BEM root: .notfound. Reuses `.btn` / `.container` from the layout primitives
-// and the brand logo from `public/logo.svg`. The accent glow echoes `.subhero`
-// so the page feels like part of the site instead of Astro's stock 404.
+// and the brand logo from `public/logo.svg`. The accent glow echoes the
+// hero gradient so the page feels like part of the site instead of
+// Astro's stock 404.
 
 .notfound {
 	padding: clamp(3rem, 8vw, 6rem) 0 clamp(3rem, 8vw, 6rem);

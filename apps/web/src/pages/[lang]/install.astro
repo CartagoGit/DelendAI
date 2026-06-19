@@ -1,6 +1,7 @@
 ---
 import Install from '../../components/Install.astro';
 import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import { languages, useTranslations, type Lang } from '../../i18n/ui';
 
 export function getStaticPaths() {
@@ -16,5 +17,6 @@ const homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.install.title} — @mcp-vertex/core`}>
+	<PageHeader lang={lang as Lang} title={t.install.title} />
 	<Install lang={lang as Lang} />
 </Base>
