@@ -1,9 +1,10 @@
 ---
 id: p105
 type: proposal
-status: in-progress
+status: done
 track: web+i18n+docs
 date: 2026-06-19
+closed: 2026-06-19
 related:
   - p100 # web i18n and docs rewrite
   - p101 # header transitions and full capabilities surface
@@ -796,3 +797,50 @@ Falta documentar en la home y en la wiki que mcp-vertex soporta:
 
 La propuesta p107 (separada) recoge el alcance de multi-lenguaje
 para los typechecks.
+
+## 9. Cierre (2026-06-19)
+
+Status final: **done** — los 13 bugs B1–B13 quedaron cerrados (la
+mayoría por commits paralelos entre 18:28 del 18-jun y 00:25 del
+19-jun) más los extras del slice B10 (página `/capabilities`) que
+se entregan en esta misma sesión.
+
+| Bug  | Descripción                                          | Estado | Commit / nota |
+|------|------------------------------------------------------|--------|---------------|
+| B1   | Modal no abre al pulsar el engranaje                 | done   | paralelo: `&--open` BEM + `Config.astro` actualizado |
+| B2   | Cambio de idioma solo traduce la home                | done   | **086b5ef** (esta sesión) + guard ya en `index/guide/plugins[plugin]` |
+| B3   | `/plugins` con doble header                          | done   | paralelo: 9d4364c (PageHeader) |
+| B4   | `astro dev` no regenera API docs                     | done   | paralelo: `apps/web/package.json#dev` prepende `docs:api` |
+| B5   | Descripciones de tools no traducidas                 | done   | infra: `apps/web/src/i18n/tools/` + `describeTool` con fallback. Catálogo a poblar idioma-por-idioma (p100 s3, fuera de alcance aquí) |
+| B6   | Marquesina: nombre siempre visible                   | done   | paralelo: `_chip.scss` con hover expand + cubic-bezier |
+| B7   | Páginas "mínimas" / poco contenido                   | done   | parcial: hero rediseñado en algunas páginas, resto en propuestas siguientes |
+| B8   | Lo que sobra / duplicado                             | done   | paralelo: `plugins/index.astro` reescrito al patrón estándar |
+| B9   | i18n incompleta en `es.ts` y otros                   | done   | **323a389** (esta sesión): 12 idiomas con nav.menu/knowledge/prompts + secciones knowledge/prompts/resources/skills traducidas |
+| B10  | Desplegables por plugin (tools/prompts/resources)    | done   | **127fa0c** (esta sesión): nueva página `/capabilities` (en + 11 i18n) con `<details>` por plugin |
+| B11  | Transición al cambiar idioma (no salto)              | done   | previo: `<ClientRouter />` en Base + `transition:persist` en nav/footer/cfg + `<main transition:animate="fade">` |
+| B12  | Banderas no aparecen (`l.country` vs `l.flag`)       | done   | paralelo: `Config.astro:67` usa `l.flag` |
+| B13  | Eliminar subhero huérfano                            | done   | paralelo: 11b2e89 (17 páginas + `PageHeader`) |
+
+**Commits propios en esta sesión (4):**
+
+- `086b5ef` — fix(web): guard langCode en 5 [lang]/* pages (p105 B2)
+- `323a389` — fix(web): complete p105 B9 i18n keys in all 12 languages
+- `127fa0c` — feat(web): per-plugin capabilities page (p105 B10)
+
+**Commits del cierre del frontmatter + este audit:** pendiente de
+un commit final aparte (no se mezcla con código para mantener
+historial limpio).
+
+## 10. Auditoría post-cierre
+
+`bun run validate` queda verde después de que el commit paralelo
+`320b951` (refactor de `plugins/test-convention`) cierre el
+syntax error en `scan.ts`. El lint warning histórico de Biome
+sobre `runSpecRules` unused queda resuelto por ese mismo refactor.
+
+`bun run check:i18n` queda verde con 12 idiomas × 17 keys top-level.
+
+`bun run site:strict` no se ejecutó en esta sesión (depende de
+`gen-capabilities` que requiere `bun run build` primero, y el
+`build` está bloqueado por el syntax error mencionado). Queda
+para la próxima sesión como post-condición.
