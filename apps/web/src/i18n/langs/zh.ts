@@ -8,6 +8,9 @@ const dict: LangDict = {
 		benchmarks: '基准',
 		plugins: '插件',
 		github: 'GitHub',
+		resources: '资源',
+		skills: '技能',
+		guide: '指南',
 	},
 	hero: {
 		title: { a: '与项目无关的 ', b: 'MCP Vertex', c: '' },

@@ -720,3 +720,79 @@ estructura de `en.ts` (fuente de verdad).
 - **Desplegables por plugin**: si la lista de tools crece mucho
   (>200), el `<details>` nativo puede ser lento. Para los ~52
   tools actuales,没有问题.
+
+### B14 · Tabs animados en `/install` (paquete manager + IDE)
+
+El selector de package manager y la grid de IDEs eran两块
+separadas sin relación visual. Ahora:
+
+- Fila 1: tabs horizontales con icono + label para `npm`, `pnpm`,
+  `yarn`, `bun`, `deno`. La tab activa tiene un underline animado
+  y su panel se cross-fadea.
+- Fila 2: la misma mecánica para los IDEs (`vscode`, `cursor`,
+  `windsurf`, `claude-code`, `claude-desktop`, `antigravity`,
+  `zed`). El panel del IDE muestra el snippet **para el PM
+  activo** — al cambiar de PM, el snippet se re-renderiza con un
+  `pre>code` que el script JS actualiza usando un mapa pre-
+  computado de snippets (`data-snippets` JSON en el `.install`).
+- Cada tab tiene un `title` con la descripción del PM/IDE (p105
+  hint), y la fila 2 muestra un subtítulo `.ide__hint` dentro
+  del panel.
+
+### B15 · Home: plugins más vistosos
+
+La sección de plugins en la home (`PluginsSection.astro`) tiene
+demasiado texto plano. Mejoras:
+
+- Cada plugin card lleva un **icono** (el logo del plugin cuando
+  exista) + nombre + versión + descripción corta.
+- Hover: la card se eleva y muestra una "spark" visual (border
+  gradiente, sombra de acento).
+- Filtrado client-side por namespace (igual que `ToolsSection`).
+- Descripción **traducida** con `describePlugin` (helper de la
+  misma familia que `describeTool`).
+
+### B16 · Wiki / guía detallada del proyecto
+
+Sección nueva `/guide` (con sus traducciones `/<lang>/guide`) que
+documenta el proyecto al detalle, por secciones. Tabla de
+contenidos al inicio (anchor links), cada sección con su
+`<h2>`, descripción, ejemplos y enlaces cruzados a la
+documentación concreta. Mínimo:
+
+- §1 Introducción
+- §2 Conceptos: core, plugins, tokens
+- §3 Instalación (link a `/install`)
+- §4 Configuración (`mcp-vertex.config.json`)
+- §5 Plugins oficiales (link a `/plugins`)
+- §6 Tools, prompts, resources, knowledge
+- §7 Skills
+- §8 i18n
+- §9 Extensibilidad (cómo escribir un plugin propio, link a
+  `examples/custom-plugin/`)
+- §10 Token budgets / rendimiento
+- §11 View transitions
+- §12 FAQ
+- §13 Apéndice: glosario, troubleshooting
+
+Texto en EN + ES (los otros 11 idiomas pueden quedar en EN
+marcado como "Pendiente de traducir" — la infra ya está).
+
+### B17 · Documentar extensibilidad de linters / formaters /
+typechecks (en la wiki y en la home)
+
+Hoy la web explica cómo añadir plugins (lógica de dominio) pero
+no cómo extender los **gate tools** (`apps/web/scripts/check-*`).
+Falta documentar en la home y en la wiki que mcp-vertex soporta:
+
+- **ESLint predefinidos** (vía `plugins/quality`): `lint`, `lint:fix`,
+  con config por defecto del core y override por proyecto.
+- **Prettier** (también vía `quality`): formateo unificado.
+- **TypeChecks**: hoy solo TS (`tsc --noEmit`), con la idea
+  marcada de hacerlo funcional con cualquier lenguaje
+  (JVM: `kotlinc`, Python: `mypy`, Rust: `cargo check`, Go:
+  `go vet`). El aviso explícito es **"por ahora solo TS, pero la
+  arquitectura está abierta"**.
+
+La propuesta p107 (separada) recoge el alcance de multi-lenguaje
+para los typechecks.

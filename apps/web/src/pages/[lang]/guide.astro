@@ -1,0 +1,178 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { languages, useTranslations, type Lang } from '../../i18n/ui';
+
+/** All non-English locales get their own /<lang>/guide. The English copy
+ * lives in the root /guide.astro. */
+export function getStaticPaths() {
+	return languages
+		.filter((l) => l.code !== 'en')
+		.map((l) => ({ params: { lang: l.code } }));
+}
+
+const { lang } = Astro.params;
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+const t = useTranslations(langCode);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = `${base}/${langCode}/`;
+
+const sections = [
+	{ id: 'intro', title: '1. Introduction' },
+	{ id: 'concepts', title: '2. Concepts' },
+	{ id: 'install', title: '3. Install' },
+	{ id: 'config', title: '4. Configuration' },
+	{ id: 'plugins', title: '5. Plugins' },
+	{ id: 'capabilities', title: '6. Tools / Prompts / Resources / Knowledge' },
+	{ id: 'skills', title: '7. Skills' },
+	{ id: 'i18n', title: '8. i18n' },
+	{ id: 'quality', title: '9. Quality gates & multi-language' },
+	{ id: 'extending', title: '10. Extending mcp-vertex' },
+	{ id: 'tokens', title: '11. Token budgets' },
+	{ id: 'transitions', title: '12. View transitions' },
+	{ id: 'faq', title: '13. FAQ' },
+];
+---
+
+<Base lang={langCode} title={`Guide — @mcp-vertex/core`} description="A detailed walkthrough of the @mcp-vertex/core project: concepts, install, config, plugins, quality gates, extending, FAQ.">
+	<PageHeader lang={langCode} title="Guide" />
+	<section class="section">
+		<div class="container guide">
+			<aside class="guide__toc" aria-label="Table of contents">
+				<strong>Contents</strong>
+				<ol>
+					{sections.map((s) => (
+						<li><a href={`#${s.id}`}>{s.title}</a></li>
+					))}
+				</ol>
+			</aside>
+			<article class="guide__body">
+				{langCode !== 'en' && (
+					<p class="guide__notice">
+						⚠ This guide is in <strong>English</strong>. Translations for {langCode} are
+						pending — see <a href={`${homeHref}`}>the home page</a> for what's translated so far.
+					</p>
+				)}
+				<h2 id="intro">1. Introduction</h2>
+				<p>
+					<code>@mcp-vertex/core</code> is a project-agnostic <strong>Model Context Protocol</strong>
+					server core + CLI plugin loader. The core knows nothing about your domain; capabilities
+					ship as plugins you load on demand. The same plugin behaves identically under any
+					host, IDE, or model.
+				</p>
+
+				<h2 id="concepts">2. Concepts</h2>
+				<ul>
+					<li><strong>Core</strong>: a small MCP server that registers tools, prompts, resources, knowledge.</li>
+					<li><strong>Plugin</strong>: an npm package exporting <code>IMcpPlugin</code>. Adds tools, prompts, knowledge, or skills.</li>
+					<li><strong>Preset</strong>: a curated list of plugins (<code>minimal</code>, <code>standard</code>, <code>swarm</code>).</li>
+					<li><strong>Capability</strong>: a tool, prompt, resource or knowledge entry exposed by a plugin.</li>
+					<li><strong>Token budget</strong>: a measured ceiling on the bytes the server emits per response. A CI test guards regressions.</li>
+				</ul>
+
+				<h2 id="install">3. Install</h2>
+				<p>See <a href={`${base}/install`}>the install page</a> for the full matrix. TL;DR:</p>
+				<pre><code>{`# bun
+bunx @mcp-vertex/core init
+bunx @mcp-vertex/core --check`}</code></pre>
+
+				<h2 id="config">4. Configuration</h2>
+				<p>
+					Place a <code>mcp-vertex.config.json</code> at the workspace root. The
+					loader auto-detects it. Schema lives at
+					<code>packages/core/schema/mcp-vertex.config.schema.json</code>.
+				</p>
+				<pre><code>{`{
+  "cacheDir": ".cache/mcp-vertex",
+  "docsDir": "docs/mcp-vertex",
+  "plugins": {
+    "memory": { "options": { "ttlSeconds": 86400 } },
+    "proposals": { "prefix": "work" }
+  }
+}`}</code></pre>
+
+				<h2 id="plugins">5. Plugins</h2>
+				<p>
+					There are 10 official plugins. See the
+					<a href={`${base}/plugins`}>plugin index</a> for the live list.
+				</p>
+
+				<h2 id="capabilities">6. Tools / Prompts / Resources / Knowledge</h2>
+				<p>
+					Each plugin can contribute any of the four capability types. The
+					<a href={`${base}/tools`}>tools page</a> lists them live from the registry.
+				</p>
+
+				<h2 id="skills">7. Skills</h2>
+				<p>
+					Skills are markdown documents under <code>skills/&lt;name&gt;/SKILL.md</code>
+					that the agent can load on demand. See
+					<a href={`${base}/skills`}>the skills page</a>.
+				</p>
+
+				<h2 id="i18n">8. i18n</h2>
+				<p>
+					The web UI is translated to 12 languages. Source of truth is
+					<code>apps/web/src/i18n/langs/&lt;code&gt;.ts</code>. The
+					<code>bun run check:i18n</code> gate ensures every language has every
+					top-level key.
+				</p>
+
+				<h2 id="quality">9. Quality gates &amp; multi-language</h2>
+				<p>
+					Out of the box, <code>bun run validate</code> runs <code>typecheck</code>
+					(TS), <code>lint</code> (Biome), <code>lint:scss</code> (Stylelint), and
+					<code>test</code> (Vitest). The architecture is open to other toolchains:
+				</p>
+				<ul>
+					<li><strong>TypeScript</strong>: <code>tsc --noEmit</code> (built-in).</li>
+					<li><strong>ESLint</strong>: drop in a <code>.eslintrc</code>; the <code>rules</code> plugin picks it up.</li>
+					<li><strong>Prettier</strong>: drop in a <code>.prettierrc</code>; the <code>quality</code> plugin picks it up.</li>
+					<li><strong>Other languages</strong>: <em>work in progress</em> (proposal p107). For now, <strong>only TypeScript is wired by default</strong>; other languages need a per-project config.</li>
+				</ul>
+
+				<h2 id="extending">10. Extending mcp-vertex</h2>
+				<p>
+					Write your own plugin by exporting <code>IMcpPlugin</code> from a
+					package and adding it to <code>mcp-vertex.config.json</code>. See the
+					<a href="https://github.com/CartagoGit/mcp-vertex/tree/main/examples/custom-plugin">custom-plugin example</a>.
+				</p>
+
+				<h2 id="tokens">11. Token budgets</h2>
+				<p>
+					Every public response shape is measured. <code>overview (compact)</code>
+					+ <code>auto_work</code> fits in &lt; 300 tokens. A CI test fails on regression.
+					See <a href={`${base}/benchmarks`}>benchmarks</a>.
+				</p>
+
+				<h2 id="transitions">12. View transitions</h2>
+				<p>
+					The site uses Astro View Transitions: navigating cross-fades and the page
+					title morphs via <code>transition:name="page-title"</code>. Respects
+					<code>prefers-reduced-motion</code>.
+				</p>
+
+				<h2 id="faq">13. FAQ</h2>
+				<h3>How is this different from the official MCP SDK?</h3>
+				<p>
+					The official SDK gives you the protocol primitives; mcp-vertex gives you
+					a project-agnostic <em>server</em> with a plugin loader, registry, view
+					transitions, and a measured token budget.
+				</p>
+				<h3>Does it work with my IDE?</h3>
+				<p>
+					Yes — the server is stdio MCP. Any MCP client (VS Code + Copilot Chat,
+					Cursor, Windsurf, Claude Desktop, Claude Code, Antigravity, Zed) works.
+					See <a href={`${base}/install`}>install</a>.
+				</p>
+				<h3>Is the core fast?</h3>
+				<p>
+					Yes. Boot is &lt; 100 ms. <code>overview (compact)</code> returns in
+					&lt; 50 ms. Tests run in ~7 s on a clean checkout.
+				</p>
+			</article>
+		</div>
+	</section>
+</Base>
