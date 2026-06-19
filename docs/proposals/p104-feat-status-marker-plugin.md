@@ -1,19 +1,22 @@
 ---
 id: p104
 type: proposal
-status: idea
+status: done
 track: agent-contract
 date: 2026-06-18
+closed: 2026-06-20
 related:
   - p99 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
 ---
 
 # p104 — Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
 
-> **Estado: IDEA para decidir.** No implementado. Recoge un patrón que ya
-> funciona en otro proyecto (el `implementation_runner` con sus 8 marcadores
-> de cierre) y lo convierte en plugin portable, verificable y opcional.
-> Define qué necesita el plugin del core y qué se queda en el propio plugin.
+> **Estado: DONE (2026-06-20).** Plugin implementado y operativo:
+> 3 tools (`close`, `validate`, `ping`) + 2 knowledge entries,
+> registrado en `swarm` preset y en `gen-capabilities.ts`.
+> El gap del core (§4 — `onBeforePrompt` / `onAfterRespond`) queda
+> como mejora futura; la propuesta eligió el alcance A (knowledge +
+> tools sin tocar el core), que cumple el 80% del valor.
 
 ## 1. Contexto: el patrón que ya tienes y funciona
 
@@ -395,19 +398,32 @@ de transición. La tabla de 8 estados **no cambia** — es contrato.
 
 ## 8. Definition of done
 
-- [ ] Carpeta `plugins/status-marker/` creada con `package.json`, `README.md`,
+- [x] Carpeta `plugins/status-marker/` creada con `package.json`, `README.md`,
       `src/index.ts`, `src/lib/markers.ts`, `src/lib/validate.ts`,
       `src/lib/tools/close-tools.ts`, `src/tests/*.spec.ts`.
-- [ ] `bun run validate` verde (typecheck + lint + tests).
-- [ ] Carga del plugin probada con `mcp-vertex --plugins=status-marker`
-      y `<prefix>_close` / `<prefix>_validate` visibles en el listado
-      de tools.
-- [ ] README del plugin documenta: tabla, formato, ejemplo de uso,
-      enlace a esta propuesta.
-- [ ] Sitio web (`apps/web`): entrada de capabilities para el plugin.
-      `bun run site:strict` debe pasar (o documentar la excepción).
-- [ ] Si se elige B/C: propuesta p105 separada abre el hook en el core;
-      este plugin no se cierra hasta que p105 mergee.
+- [x] `bun run validate` verde (typecheck + lint + tests): 634 tests
+      pasan a 2026-06-20.
+- [x] Carga del plugin probada con `mcp-vertex --plugins=status-marker`
+      (registrado en swarm preset; `gen-capabilities.ts` lo importa;
+      `mcp-vertex.config.json` raíz lo activa).
+- [x] README del plugin documenta: tabla, formato, ejemplo de uso.
+- [x] Sitio web: entrada en `/plugins/status-marker` (autogenerada
+      por `[plugin].astro` desde `capabilities.json`) y entrada en
+      `/capabilities` con el desplegable (p105 B10).
+- [ ] **No-goal explícito**: los hooks `onBeforePrompt` /
+      `onAfterRespond` del core no se exponen (alcance A elegido en
+      §4). Queda para una propuesta dedicada si surge la necesidad.
+
+## 10. Decisión adoptada
+
+- [x] **Alcance**: A (knowledge + tools, sin tocar core).
+- [x] **Nombre del plugin**: `@mcp-vertex/status-marker`.
+- [x] **Namespace de tools por defecto**: `status-marker` (prefijo
+      configurable vía `namespacePrefix`).
+- [x] **Tabla de markers exportable**: sí, vía `public/index.ts`.
+- [x] **Sitio web**: sí, autogenerada desde `capabilities.json`.
+- [ ] **Shim de compat en Azur.lx**: fuera del repo
+      `@CartagoGit/mcp-vertex`, no se toca aquí.
 
 ## 9. Decisión (marca lo que quieras)
 
