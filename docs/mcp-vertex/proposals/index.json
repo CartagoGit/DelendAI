@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-19T00:51:37.739Z",
+	"generated_at": "2026-06-19T22:07:52.976Z",
 	"count": 3,
 	"proposals": [
 		{
@@ -15,7 +15,7 @@
 			"file": "p106-fix-web-gen-skills-recurses-into-subdirs-so-skill-md-are-found.md",
 			"track": "web",
 			"type": "proposal",
-			"status": "pending",
+			"status": "done",
 			"date": "2026-06-18"
 		},
 		{
