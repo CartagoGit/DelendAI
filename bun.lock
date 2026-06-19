@@ -239,6 +239,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/test-convention": {
+      "name": "@mcp-vertex/test-convention",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
   },
   "packages": {
     "@astrojs/compiler": ["@astrojs/compiler@4.0.0", "", {}, "sha512-eouss7G8ygdZqHuke033VMcVw5HTZUu+PXd/h06DGDUg/jt5btPYPqh66ENWw/mU78rBrf/oeC4oqoBwMtDMNA=="],
@@ -450,6 +467,8 @@
     "@mcp-vertex/search": ["@mcp-vertex/search@workspace:plugins/search"],
 
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
+
+    "@mcp-vertex/test-convention": ["@mcp-vertex/test-convention@workspace:plugins/test-convention"],
 
     "@mcp-vertex/web": ["@mcp-vertex/web@workspace:apps/web"],
 

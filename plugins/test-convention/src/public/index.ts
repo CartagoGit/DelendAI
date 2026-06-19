@@ -14,9 +14,9 @@ export {
 } from '../convention';
 export type {
 	ICoverageThreshold,
-	ISpecLayout,
 	ITestConvention,
 	MockStyle,
+	SpecLayout,
 } from '../convention';
 
 export { suggestSpecPath } from '../suggest';

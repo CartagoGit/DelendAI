@@ -6,6 +6,7 @@
 		"docs": { "options": { "roots": ["docs", "README.md"] } },
 		"search": { "options": {} },
 		"git": { "options": {} },
-		"status-marker": { "options": {} }
+		"status-marker": { "options": {} },
+		"test-convention": { "options": {} }
 	}
 }
