@@ -18,6 +18,8 @@ import type {
 	IToolI18n,
 } from './_shape';
 import { mcpVertexOverviewI18n } from './mcp-vertex_overview';
+import { proposalsAutoWorkI18n } from './proposals_auto_work';
+import { memorySaveI18n } from './memory_save';
 
 // ─── Catalogue storage ────────────────────────────────────────────────────────
 // We use a module-level Map so additions via `register*` survive Astro's
@@ -56,6 +58,8 @@ export const registerKnowledgeI18n = (
 // stale entry (key changed without updating the catalogue) is harmless: the
 // runtime description still renders.
 registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
+registerToolI18n('proposals_auto_work', proposalsAutoWorkI18n);
+registerToolI18n('memory_save', memorySaveI18n);
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────
 
@@ -74,6 +78,19 @@ export const describeTool = (name: string, lang: Lang): string | undefined => {
 	const v = pick(dict?.description, lang);
 	return v;
 };
+
+// ─── Validation API ───────────────────────────────────────────────────────────
+// Used by `apps/web/scripts/check-i18n.ts` to enforce 12-lang completeness on
+// every catalogue entry that opted in. Tools NOT in the catalogue are exempt:
+// joining the catalogue is opt-in (each plugin declares its own entries as
+// they get translated). Joining means committing to 12-lang immediately, so
+// the gate cannot drift silently.
+
+/** All catalogue entries that opted in, in insertion order. */
+export const listRegisteredTools = (): ReadonlyArray<{
+	readonly name: string;
+	readonly dict: IToolI18n;
+}> => Array.from(tools.entries()).map(([name, dict]) => ({ name, dict }));
 
 /** Description of a single tool argument, if the catalogue has one. */
 export const describeToolArg = (
