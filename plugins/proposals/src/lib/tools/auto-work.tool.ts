@@ -109,6 +109,7 @@ export const buildAutoWorkRegistration = (
 	id: 'auto_work',
 	summary:
 		'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → release).',
+	descriptionKey: 'proposals_auto_work',
 	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(

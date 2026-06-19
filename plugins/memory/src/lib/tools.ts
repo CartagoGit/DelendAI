@@ -79,6 +79,7 @@ export const buildMemoryToolRegistrations = (
 			id: 'save',
 			effects: ['write'],
 			summary: 'Save (or update) a titled note with optional tags.',
+			descriptionKey: 'memory_save',
 			tags: ['memory'],
 			register: async (server) => {
 				server.registerTool(

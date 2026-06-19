@@ -43,3 +43,22 @@ describe('describeTool (per-tool i18n catalogue)', () => {
 		expect(missing).toBeUndefined();
 	});
 });
+
+describe('listRegisteredTools (check-i18n gate surface)', () => {
+	it('exposes every opted-in catalogue entry with its full dict', async () => {
+		const { listRegisteredTools } = await import('../../src/i18n/tools');
+		const entries = listRegisteredTools();
+		// The catalogue ships with at least one entry (mcp-vertex_overview);
+		// future slices add more, the test must stay green either way.
+		expect(entries.length).toBeGreaterThanOrEqual(1);
+		const overview = entries.find((e) => e.name === 'mcp-vertex_overview');
+		expect(overview).toBeDefined();
+		// Every supported language must be present in the entry — this is the
+		// same invariant `check-i18n.ts` enforces, so the catalogue and the
+		// gate cannot drift apart.
+		const codes = Object.keys(overview?.dict.description ?? {});
+		expect(codes.length).toBe(12);
+		expect(codes).toContain('en');
+		expect(codes).toContain('es');
+	});
+});

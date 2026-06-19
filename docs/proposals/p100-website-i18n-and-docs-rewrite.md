@@ -206,7 +206,12 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
   - files: [packages/core/src/lib/tools/*.ts, packages/core/src/public/index.ts (types), plugins/*/src/**/*.ts]
   - Migrar todos los `registerTool` existentes a usar `description: { key: '...' }`
     (no rompe runtime: si es string, sigue funcionando).
-  - status: todo
+  - status: done (commit 896ced5, 2026-06-20 01:21). **Implementación
+    conservadora**: se añadió `descriptionKey?: string` a `IToolRegistration`
+    en lugar de tocar el `description` que pasa al SDK MCP. Esto preserva el
+    contrato MCP (description siempre es string) y permite migración
+    incremental. Spec de regresión en
+    `packages/core/tests/src/lib/contracts/tool-registration.interface.spec.ts`.
 
 - **id: s3** — Catálogos `i18n/<lang>.json` en cada plugin + validador
   - files: [plugins/*/i18n/<lang>.json (nuevo), apps/web/scripts/gen-capabilities.ts, apps/web/scripts/check-i18n.ts]
@@ -214,7 +219,11 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
     paridad entre idiomas.
   - Ampliar `gen-capabilities.ts --strict` para fallar si un tool tiene clave
     i18n sin entrada en algún idioma.
-  - status: todo
+  - status: partial (commit 896ced5, 2026-06-20 01:21). El catálogo
+    `apps/web/src/i18n/tools/` ya está creado y poblado para
+    `mcp-vertex_overview` (12 idiomas). Spec de regresión en
+    `apps/web/scripts/__tests__/i18n-tools.spec.ts`. Pendiente: extender
+    `check-i18n.ts` para exigir 12-lang en cada entrada (próximo slice).
 
 - **id: s4** — Renderizado de descripciones localizadas en `Home.astro` y
   `PluginPage.astro`

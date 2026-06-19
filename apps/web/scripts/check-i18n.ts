@@ -7,9 +7,15 @@
  * the build. Empty strings are allowed: some keys are sentence fragments that
  * legitimately have no counterpart in a given language (e.g. a trailing clause).
  *
+ * Additionally, every catalogue entry that opted in via
+ * `apps/web/src/i18n/tools/index.ts` (per-tool i18n) must carry 12-lang
+ * `description`. Tools NOT in the catalogue are exempt: joining the catalogue
+ * is opt-in, and once you join you commit to 12-lang. See p100 s3-bis.
+ *
  * Run standalone (`bun scripts/check-i18n.ts`) or as part of `build:strict`.
  */
 import { dictsByLang, languages, type Lang } from '../src/i18n/ui';
+import { listRegisteredTools } from '../src/i18n/tools';
 
 const en = dictsByLang.en;
 const enKeys = Object.keys(en);
@@ -37,6 +43,26 @@ for (const { code } of languages) {
 	const extra = Object.keys(dict).filter((k) => !(k in en));
 	if (extra.length)
 		problems.push(`[${lang}] stale keys not in en: ${extra.join(', ')}`);
+}
+
+// Per-tool catalogue entries (p100 s3-bis): once a tool opts in, every
+// supported language must carry a non-empty `description`.
+for (const { name, dict } of listRegisteredTools()) {
+	const langsWithValue = languages
+		.map((l) => l.code)
+		.filter(
+			(code) =>
+				typeof dict.description[code] === 'string' &&
+				(dict.description[code] as string).trim().length > 0,
+		);
+	const missingLangs = languages
+		.map((l) => l.code)
+		.filter((code) => !langsWithValue.includes(code));
+	if (missingLangs.length > 0) {
+		problems.push(
+			`[tools:${name}] missing ${missingLangs.length} language(s): ${missingLangs.join(', ')}`,
+		);
+	}
 }
 
 if (problems.length) {
