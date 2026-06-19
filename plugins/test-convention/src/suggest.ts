@@ -34,7 +34,7 @@ export const suggestSpecPath = (
 
 	if (!sourcePath.startsWith('src/')) {
 		return {
-			specPath: sourcePath,
+			specPath: sourcePath.replace(/\.tsx?$/u, `.${ext}`),
 			rationale: 'non-src path: place spec next to source (colocate)',
 			skeleton,
 		};
