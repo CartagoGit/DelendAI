@@ -1,5 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
+import type { IValidationCommand } from '@mcp-vertex/core/public';
 import { killProcessGroup } from '@mcp-vertex/core/public';
 
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
@@ -109,10 +110,15 @@ const tailOf = (text: string, lines = 20): string =>
 		.slice(-lines)
 		.join('\n');
 
-export interface IScopeCommand {
-	readonly command: string;
-	readonly expect?: string;
-}
+/**
+ * Alias of the core public type `IValidationCommand`. The plugin used
+ * to redefine this locally with `expect?` optional, but the core
+ * schema requires `expect` and the runner doesn't branch on it
+ * (it just measures the real exit code). Keeping a single source of
+ * truth here means `plugins/quality` and the core's host-config
+ * agree on the shape of a validation command.
+ */
+export type IScopeCommand = IValidationCommand;
 
 /**
  * Run every command of a scope in order; ok only if all succeed. A command

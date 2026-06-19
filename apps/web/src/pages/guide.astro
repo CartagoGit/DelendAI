@@ -139,21 +139,96 @@ bunx @mcp-vertex/core --check`}</code></pre>
 				<p>
 					Out of the box, <code>bun run validate</code> runs <code>typecheck</code>
 					(TS), <code>lint</code> (Biome), <code>lint:scss</code> (Stylelint), and
-					<code>test</code> (Vitest). The architecture is open to other toolchains:
+					<code>test</code> (Vitest). The <code>quality</code> plugin exposes
+					three MCP tools an agent can call at any time to scope and run
+					project-defined gates:
 				</p>
 				<ul>
-					<li><strong>TypeScript</strong>: <code>tsc --noEmit</code> (built-in).</li>
-					<li><strong>ESLint</strong>: drop in a <code>.eslintrc</code> in your project; the gate uses it via the <code>rules</code> plugin.</li>
-					<li><strong>Prettier</strong>: drop in a <code>.prettierrc</code>; the <code>quality</code> plugin picks it up.</li>
-					<li><strong>Other languages</strong>: <em>work in progress</em> (see
-					<a href={`${base}/proposals`}>proposal p107</a>). The core is being refactored
-					to accept any <code>command</code> + exit-code gate, so a Python, Kotlin,
-					Rust or Go project can wire its own typecheck/lint/format.</li>
+					<li><code>get_quality_scopes</code> — list the configured scopes
+					and the exact commands each will run. Read-only.</li>
+					<li><code>run_quality</code> — run a scope and return
+					<code>{ ok, results: [{ command, ok, code, tail }] }</code>.
+					Commands are spawned via <code>shell</code>; the runner
+					measures the real exit code, never throws, and is cancellable.</li>
+					<li><code>quality_cancel</code> — abort any in-flight run by PID
+					(or all) instead of waiting for the timeout.</li>
 				</ul>
 				<p>
-					For now, <strong>only TypeScript is wired by default</strong>. Other
-					languages need a small per-project config (proposal p107 covers the
-					generic mechanism).
+					<strong>The architecture is already language-agnostic.</strong> The
+					core defines <code>IValidationCommand = { command, expect }</code>
+					and <code>IValidationMatrix = { scopes: Record&lt;string, IValidationCommand[]&gt; }</code>
+					(both re-exported from <code>@mcp-vertex/core/public</code>), and the
+					JSON schema in <code>mcp-vertex.config.json</code> validates the
+					shape. Any command that returns exit-code 0 works — <code>tsc</code>,
+					<code>mypy</code>, <code>cargo check</code>, <code>go vet</code>,
+					<code>ruff</code>, <code>detekt</code>, <code>shellcheck</code>, etc.
+				</p>
+				<p>Three sources of scopes, in precedence order:</p>
+				<ol>
+					<li>Plugin options — <code>quality.scopes = { feature: ["..."] }</code>.</li>
+					<li><code>mcp-vertex.config.json</code> →
+					<code>validationMatrix.scopes</code> (the canonical surface).</li>
+					<li>Detected <code>package.json</code> scripts
+					(<code>lint</code>, <code>typecheck</code>, <code>test</code>,
+					<code>build</code>) folded into one <code>all</code> scope.</li>
+				</ol>
+				<p>Example — a polyglot project, with both TypeScript and Python
+				gates in one config:</p>
+				<pre><code>{`{
+  "plugins": {
+    "quality": { "options": {} }
+  },
+  "validationMatrix": {
+    "scopes": {
+      "typecheck": [
+        { "command": "tsc --noEmit", "expect": "exit0" },
+        { "command": "mypy .",      "expect": "exit0" }
+      ],
+      "lint": [
+        { "command": "biome ci .",  "expect": "exit0" },
+        { "command": "ruff check .", "expect": "exit0" }
+      ],
+      "test": [
+        { "command": "vitest run",  "expect": "exit0" },
+        { "command": "pytest -q",   "expect": "exit0" }
+      ]
+    }
+  }
+}`}</code></pre>
+				<p>For Rust and Go, swap the <code>typecheck</code> commands for
+				<code>cargo check --all-targets</code> and
+				<code>go vet ./...</code> respectively — the runner and schema
+				don't care which binary runs, only that exit 0 means "pass". The
+				core <strong>does not install</strong> any toolchain; your CI
+				image or local dev shell is expected to provide them.</p>
+				<p>
+					<strong>Trust boundary (M13):</strong> <code>run_quality</code>
+					executes whatever the host config says. The commands come from
+					<em>your</em> <code>mcp-vertex.config.json</code> or your plugin
+					options — so the trust boundary is the host, not the agent. To
+					harden a setup where a less-trusted agent can call
+					<code>run_quality</code>, restrict which binaries may run with
+					an allow/deny policy (enforced <em>before</em> any spawn; a
+					blocked command is reported as failed with code 126, never
+					executed):
+				</p>
+				<pre><code>{`{
+  "plugins": {
+    "quality": {
+      "options": {
+        "commandPolicy": {
+          "allow": ["bun", "npm", "npx", "tsc", "vitest", "biome", "mypy", "ruff", "pytest"],
+          "deny":  ["curl", "wget", "bash", "sh"]
+        }
+      }
+    }
+  }
+}`}</code></pre>
+				<p>
+					See the <a href={`${base}/plugins`}>plugin index</a> for the
+					<code>quality</code> plugin page, and the
+					<a href={`${base}/tools`}>tools page</a> for the live registry
+					of <code>quality_*</code> tools.
 				</p>
 
 				<h2 id="extending">10. Extending mcp-vertex</h2>

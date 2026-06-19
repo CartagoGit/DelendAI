@@ -33,6 +33,20 @@ export interface IToolRegistration {
 	 * recommended; keep it short and action-oriented.
 	 */
 	readonly summary?: string | undefined;
+	/**
+	 * Optional i18n key the documentation site (apps/web) resolves against
+	 * `apps/web/src/i18n/tools/<key>.ts`. The runtime `description` passed
+	 * to the MCP SDK is always the English string (it must be — the SDK
+	 * rejects anything else); this key only affects how the docs site
+	 * renders the description in non-English locales. Keeping it on the
+	 * registration (vs. on the MCP `description`) preserves the MCP
+	 * contract and lets tools opt in incrementally.
+	 *
+	 * Convention: namespace-qualified (`<plugin>_<tool>`), e.g.
+	 * `proposals_auto_work`. Underscore-separated; matches the
+	 * `IToolI18n` catalogue layout.
+	 */
+	readonly descriptionKey?: string | undefined;
 	/** Optional grouping tags, e.g. `['coordination']`, `['lazy']`. */
 	readonly tags?: readonly string[] | undefined;
 	/**

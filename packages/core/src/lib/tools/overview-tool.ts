@@ -47,6 +47,7 @@ export const buildOverviewToolRegistration = (
 	id: 'overview',
 	summary:
 		'Cold-start map: server identity, plugins, all tools, knowledge ids and the recommended next action. Call this first.',
+	descriptionKey: 'mcp-vertex_overview',
 	tags: ['orientation'],
 	register: async (server) => {
 		server.registerTool(

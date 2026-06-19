@@ -17,6 +17,7 @@ import type {
 	IResourceI18n,
 	IToolI18n,
 } from './_shape';
+import { mcpVertexOverviewI18n } from './mcp-vertex_overview';
 
 // ─── Catalogue storage ────────────────────────────────────────────────────────
 // We use a module-level Map so additions via `register*` survive Astro's
@@ -48,6 +49,13 @@ export const registerKnowledgeI18n = (
 ): void => {
 	knowledge.set(id, dict);
 };
+
+// ─── Catalogue entries (one per tool/prompt/resource/knowledge) ──────────────
+// Each new catalogue file imports its `*I18n` constant above and registers it
+// here. The lookup helpers below fall back to English, then to undefined, so a
+// stale entry (key changed without updating the catalogue) is harmless: the
+// runtime description still renders.
+registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────
 

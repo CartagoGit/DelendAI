@@ -37,6 +37,12 @@ export type {
 	IValidationMatrix,
 } from '../lib/contracts/interfaces/validation-matrix.interface';
 export type {
+	IQualityGate,
+	IQualityGateExpect,
+	IQualityGateLanguage,
+	IQualityGateList,
+} from '../lib/contracts/interfaces/quality-gate.interface';
+export type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../lib/contracts/interfaces/knowledge.interface';
