@@ -4,10 +4,40 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
+import type { IAutoWorkPersistMode } from './auto-work-persist';
+
+/**
+ * Optional persistence step the orchestrator can opt into at slice
+ * close time. Three modes — `'none'` (default, no git), `'commit'`,
+ * `'commit-and-push'`. See p109 §2 for the rationale; the helper
+ * itself lives in `auto-work-persist.ts` and is invoked by the
+ * orchestrator, not by `auto_work` (which only renders the plan).
+ */
+export interface IAutoWorkPersistConfig {
+	readonly mode: IAutoWorkPersistMode;
+	/**
+	 * Conventional-Commits template. Default:
+	 * `<area>(<proposalId>): <sliceId>`. Forwarded to
+	 * `maybePersistAfterSlice`.
+	 */
+	readonly messageTemplate?: string;
+	/**
+	 * Push target. Default: `origin HEAD`. The push to `main` is
+	 * always refused (safety net); use an explicit branch like
+	 * `origin agent/<name>` for worktrees.
+	 */
+	readonly pushTarget?: string;
+}
 
 export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	/** Quality-gate command to run before closing a slice, if any. */
 	readonly validationCommand?: string;
+	/**
+	 * Default persistence mode for this workspace. Configured via
+	 * `mcp-vertex.config.json#plugins.proposals.persist.mode`. The
+	 * orchestrator can still override per call via `args.persist`.
+	 */
+	readonly persist?: IAutoWorkPersistConfig;
 }
 
 type IResult = { content: Array<{ type: 'text'; text: string }> };
@@ -32,12 +62,21 @@ export const __resetIdleStreakForTesting = (): void => {
  * One-call "what should I do now?" for autonomous work. Resolves the
  * next proposal (serial cascade) and returns a compact, ordered plan
  * the agent can execute without extra round-trips: claim → do one
- * slice → validate → sync → release. Designed to be low-token: it
- * returns a tight action list, not prose. When nothing is actionable
- * it returns an explicit idle state.
+ * slice → validate → sync → [persist] → release. Designed to be
+ * low-token: it returns a tight action list, not prose. When nothing
+ * is actionable it returns an explicit idle state.
+ *
+ * When `options.persist.mode !== 'none'` the plan includes an extra
+ * step that tells the orchestrator to invoke
+ * `maybePersistAfterSlice(...)` after `sync_proposals`. The persist
+ * itself is NOT executed inside this tool — `auto_work` is read-only
+ * with respect to the workspace filesystem and git; it only renders
+ * a plan. See p109 s3.
  */
 export const runAutoWork = async (
-	options: IAutoWorkToolOptions,
+	options: IAutoWorkToolOptions & {
+		inputPersist?: IAutoWorkPersistMode | undefined;
+	},
 ): Promise<IResult> => {
 	const next = JSON.parse(
 		(await runContinueProposal({ mode: 'auto' }, options)).content[0]
@@ -76,7 +115,26 @@ export const runAutoWork = async (
 	// Actionable work → reset the idle streak.
 	consecutiveIdle = 0;
 
+	// Resolve the persist mode in priority order: tool input > config >
+	// hard default `'none'`. Keeping this resolver pure and inline keeps
+	// the call graph small; the orchestrator can also inspect the
+	// returned `persist.mode` to decide whether to actually invoke
+	// `maybePersistAfterSlice` later.
+	const resolvedMode: IAutoWorkPersistMode =
+		options.inputPersist ?? options.persist?.mode ?? 'none';
+
 	const prefix = options.namespacePrefix;
+	const persistStep =
+		resolvedMode === 'none'
+			? []
+			: resolvedMode === 'commit'
+				? [
+						'Persist the slice: call the engine helper `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit" })` after `sync_proposals` and before `release`.',
+					]
+				: [
+						'Persist the slice (commit + push): call `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "origin agent/<branch>" })` after `sync_proposals` and before `release`. The helper refuses to push to `main` automatically.',
+					];
+
 	const steps = [
 		`Open ${next.file} and pick the next atomic slice.`,
 		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }.`,
@@ -87,9 +145,24 @@ export const runAutoWork = async (
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
 		`Mark progress in the proposal, then ${prefix}_sync_proposals.`,
+		...persistStep,
 		`Release: ${prefix}_agent_lock { action: "release", task_id }.`,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
 	];
+
+	const persistOut: {
+		mode: IAutoWorkPersistMode;
+		messageTemplate?: string;
+		pushTarget?: string;
+	} = {
+		mode: resolvedMode,
+	};
+	if (options.persist?.messageTemplate !== undefined) {
+		persistOut.messageTemplate = options.persist.messageTemplate;
+	}
+	if (options.persist?.pushTarget !== undefined) {
+		persistOut.pushTarget = options.persist.pushTarget;
+	}
 
 	return json({
 		state: 'work',
@@ -98,9 +171,21 @@ export const runAutoWork = async (
 		...(options.validationCommand
 			? { validationCommand: options.validationCommand }
 			: {}),
+		persist: persistOut,
 		steps,
 	});
 };
+
+const INPUT_SCHEMA = z
+	.object({
+		/**
+		 * Optional per-call override for the persist mode. Resolved with
+		 * priority `args.persist` > `config.persist.mode` > `'none'`.
+		 * See p109 §2 "Prioridad de resolución".
+		 */
+		persist: z.enum(['none', 'commit', 'commit-and-push']).optional(),
+	})
+	.strict();
 
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
@@ -108,7 +193,7 @@ export const buildAutoWorkRegistration = (
 ): IToolRegistration => ({
 	id: 'auto_work',
 	summary:
-		'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → release).',
+		'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → [persist] → release).',
 	descriptionKey: 'proposals_auto_work',
 	tags: ['work'],
 	register: async (server) => {
@@ -117,10 +202,14 @@ export const buildAutoWorkRegistration = (
 			{
 				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
-					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → release), or an explicit idle state. Low-token: a tight action list, not prose.',
-				inputSchema: z.object({}),
+					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
+				inputSchema: INPUT_SCHEMA,
 			},
-			async () => runAutoWork(options),
+			async (args: { persist?: IAutoWorkPersistMode | undefined }) =>
+				runAutoWork({
+					...options,
+					inputPersist: args.persist,
+				}),
 		);
 	},
 });

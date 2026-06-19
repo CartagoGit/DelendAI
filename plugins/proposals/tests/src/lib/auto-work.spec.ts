@@ -69,4 +69,73 @@ describe('auto_work (one-call action plan)', () => {
 		expect(out.validationCommand).toBe('bun run validate');
 		expect(Array.isArray(out.steps)).toBe(true);
 	});
+
+	it("plan with persist mode 'none' has no persist step (default behaviour, p109)", async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(options));
+		expect(out.persist).toEqual({ mode: 'none' });
+		expect(
+			out.steps.some((s: string) => s.includes('Persist the slice')),
+		).toBe(false);
+	});
+
+	it("plan with persist mode 'commit' includes a single persist step", async () => {
+		options.persist = { mode: 'commit' };
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(options));
+		expect(out.persist.mode).toBe('commit');
+		const persistSteps = out.steps.filter((s: string) =>
+			s.includes('Persist the slice'),
+		);
+		expect(persistSteps).toHaveLength(1);
+		expect(persistSteps[0]).toContain('mode: "commit"');
+		expect(persistSteps[0]).toContain('maybePersistAfterSlice');
+	});
+
+	it("plan with persist mode 'commit-and-push' includes the push warning", async () => {
+		options.persist = {
+			mode: 'commit-and-push',
+			pushTarget: 'origin agent/p1',
+		};
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(options));
+		expect(out.persist.mode).toBe('commit-and-push');
+		expect(out.persist.pushTarget).toBe('origin agent/p1');
+		const persistSteps = out.steps.filter((s: string) =>
+			s.includes('Persist the slice'),
+		);
+		expect(persistSteps).toHaveLength(1);
+		expect(persistSteps[0]).toContain('commit + push');
+		expect(persistSteps[0]).toContain('refuses to push to `main`');
+	});
+
+	it('input.persist overrides config.persist.mode (priority chain, p109 §2)', async () => {
+		options.persist = { mode: 'commit' };
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		// input.persist='commit-and-push' must win over config 'commit'.
+		const out = parse(
+			await runAutoWork({ ...options, inputPersist: 'commit-and-push' }),
+		);
+		expect(out.persist.mode).toBe('commit-and-push');
+	});
 });
