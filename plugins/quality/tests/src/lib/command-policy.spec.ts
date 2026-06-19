@@ -50,7 +50,10 @@ describe('runScope enforces the policy before spawning (M13)', () => {
 		}));
 		const result = await runScope(
 			'all',
-			[{ command: 'npm run test' }, { command: 'curl http://x' }],
+			[
+				{ command: 'npm run test', expect: 'exit0' },
+				{ command: 'curl http://x', expect: 'exit0' },
+			],
 			'/ws',
 			run,
 			{ allow: ['npm'] },

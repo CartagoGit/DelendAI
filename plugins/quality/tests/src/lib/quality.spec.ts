@@ -19,7 +19,12 @@ describe('resolveScopes', () => {
 		const map = resolveScopes(reader({}), {
 			scopes: { feature: ['a', 'b'] },
 		});
-		expect(map.feature).toEqual([{ command: 'a' }, { command: 'b' }]);
+		// `expect: 'exit0'` is the default injected by `scopes.ts` since the
+		// `IScopeCommand` → `IValidationCommand` alignment (p107 s1).
+		expect(map.feature).toEqual([
+			{ command: 'a', expect: 'exit0' },
+			{ command: 'b', expect: 'exit0' },
+		]);
 	});
 	it('falls back to the config validationMatrix, then scripts', () => {
 		const fromConfig = resolveScopes(
@@ -57,7 +62,10 @@ describe('runScope', () => {
 				: { code: 0, output: 'ok', timedOut: false };
 		const result = await runScope(
 			'full',
-			[{ command: 'pass' }, { command: 'fail' }],
+			[
+				{ command: 'pass', expect: 'exit0' },
+				{ command: 'fail', expect: 'exit0' },
+			],
 			'/ws',
 			run,
 		);
