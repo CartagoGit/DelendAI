@@ -85,14 +85,17 @@ describe('auto_work (one-call action plan)', () => {
 	});
 
 	it("plan with persist mode 'commit' includes a single persist step", async () => {
-		options.persist = { mode: 'commit' };
+		const commitOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit' },
+		};
 		writeFileSync(
-			options.indexPathAbs,
+			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
-		const out = parse(await runAutoWork(options));
+		const out = parse(await runAutoWork(commitOptions));
 		expect(out.persist.mode).toBe('commit');
 		const persistSteps = out.steps.filter((s: string) =>
 			s.includes('Persist the slice'),
@@ -103,17 +106,17 @@ describe('auto_work (one-call action plan)', () => {
 	});
 
 	it("plan with persist mode 'commit-and-push' includes the push warning", async () => {
-		options.persist = {
-			mode: 'commit-and-push',
-			pushTarget: 'origin agent/p1',
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
 		};
 		writeFileSync(
-			options.indexPathAbs,
+			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
-		const out = parse(await runAutoWork(options));
+		const out = parse(await runAutoWork(pushOptions));
 		expect(out.persist.mode).toBe('commit-and-push');
 		expect(out.persist.pushTarget).toBe('origin agent/p1');
 		const persistSteps = out.steps.filter((s: string) =>
@@ -125,16 +128,22 @@ describe('auto_work (one-call action plan)', () => {
 	});
 
 	it('input.persist overrides config.persist.mode (priority chain, p109 §2)', async () => {
-		options.persist = { mode: 'commit' };
+		const commitOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit' },
+		};
 		writeFileSync(
-			options.indexPathAbs,
+			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
 		// input.persist='commit-and-push' must win over config 'commit'.
 		const out = parse(
-			await runAutoWork({ ...options, inputPersist: 'commit-and-push' }),
+			await runAutoWork({
+				...commitOptions,
+				inputPersist: 'commit-and-push',
+			}),
 		);
 		expect(out.persist.mode).toBe('commit-and-push');
 	});
