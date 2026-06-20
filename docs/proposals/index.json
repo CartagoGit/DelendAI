@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-20T14:39:35.952Z",
-	"count": 13,
+	"generated_at": "2026-06-20T14:58:42.896Z",
+	"count": 14,
 	"proposals": [
 		{
 			"id": "p100",
@@ -95,7 +95,15 @@
 			"file": "p111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
 			"track": "core+proposals",
 			"type": "proposal",
-			"status": "in_progress",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "p112",
+			"file": "p112-derive-site-manifests-and-local-aliases.md",
+			"track": "web",
+			"type": "proposal",
+			"status": "pending",
 			"date": "2026-06-20"
 		},
 		{
