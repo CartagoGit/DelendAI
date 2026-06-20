@@ -1,7 +1,7 @@
 ---
 id: p110
 type: proposal
-status: in-progress
+status: in_progress
 track: web+i18n
 date: 2026-06-20
 related:
