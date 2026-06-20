@@ -3,7 +3,11 @@ import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import {
@@ -32,11 +36,7 @@ export interface IContinueProposalArgs {
 	readonly agentName?: string | undefined;
 }
 
-type IResult = { content: Array<{ type: 'text'; text: string }> };
-
-const json = (value: unknown): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value) }],
-});
+const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
 
@@ -132,7 +132,7 @@ const resolveDoc = async (
 export const runContinueProposal = async (
 	args: IContinueProposalArgs,
 	options: IContinueProposalToolOptions,
-): Promise<IResult> => {
+): Promise<IToolTextResult> => {
 	const cascade = options.familyCascade ?? ['f', 'p'];
 
 	if (args.mode === 'plan' || args.mode === 'claim') {

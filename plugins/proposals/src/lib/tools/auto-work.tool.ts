@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
@@ -41,11 +45,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	readonly loopDetector?: any;
 }
 
-type IResult = { content: Array<{ type: 'text'; text: string }> };
-
-const json = (value: unknown): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value) }],
-});
+const json = toolJson;
 
 // Hard anti-idle brake: the `idle` state is guidance, but a model can ignore it
 // and re-call auto_work in a tight loop. After this many CONSECUTIVE idle
@@ -78,7 +78,7 @@ export const runAutoWork = async (
 	options: IAutoWorkToolOptions & {
 		inputPersist?: IAutoWorkPersistMode | undefined;
 	},
-): Promise<IResult> => {
+): Promise<IToolTextResult> => {
 	if (options.loopDetector) {
 		const stuckInfo = options.loopDetector.isAgentStuck(
 			`${options.namespacePrefix}_auto_work`,

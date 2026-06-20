@@ -10,6 +10,7 @@ export default defineConfig({
 	site: 'https://cartagogit.github.io',
 	base,
 	build: { format: 'directory' },
+	server: { port: 5000, host: true },
 	i18n: {
 		defaultLocale: 'en',
 		locales: [
