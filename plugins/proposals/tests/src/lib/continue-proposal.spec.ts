@@ -112,4 +112,103 @@ describe('continue_proposal (serial cascade)', () => {
 		expect(out.kind).toBe('all-claimed');
 		expect(out.nextAction).toContain('Do NOT retry');
 	});
+
+	// f113 S4: new-system entries (id prefix is one of the 12 live kinds,
+	// status is one of the 7 glossary statuses) are actionable by FOLDER
+	// (derived from the index `file` path), not by status string.
+	describe('folder-aware cascade for new-system (f113) entries', () => {
+		it('picks a new-system entry living in ready/', async () => {
+			writeFileSync(
+				options.indexPathAbs,
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'f200',
+							file: 'ready/f200-x.md',
+							status: 'ready',
+						},
+					],
+				}),
+			);
+			const out = parse(
+				await runContinueProposal({ mode: 'auto' }, options),
+			);
+			expect(out.kind).toBe('next-proposal');
+			expect(out.proposalId).toBe('f200');
+		});
+
+		it('respects (does not re-pick away from) an entry already in review/, even though "review" is not in the legacy ACTIONABLE set', async () => {
+			writeFileSync(
+				options.indexPathAbs,
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'f201',
+							file: 'review/f201-x.md',
+							status: 'review',
+						},
+					],
+				}),
+			);
+			const out = parse(
+				await runContinueProposal({ mode: 'auto' }, options),
+			);
+			expect(out.kind).toBe('next-proposal');
+			expect(out.proposalId).toBe('f201');
+		});
+
+		it.each([
+			'paused',
+			'blocked',
+			'done',
+			'retired',
+		])('skips a new-system entry living in %s/', async (folder) => {
+			writeFileSync(
+				options.indexPathAbs,
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'f202',
+							file: `${folder}/f202-x.md`,
+							status: folder,
+						},
+					],
+				}),
+			);
+			const out = parse(
+				await runContinueProposal({ mode: 'auto' }, options),
+			);
+			expect(out.kind).toBe('no-proposal');
+		});
+
+		it('never reclassifies a legacy (p-prefixed) entry as new-system even when its status+folder match the glossary', async () => {
+			// Same shape as a real new-system "ready" entry, but the id keeps
+			// the retired legacy prefix `p` — must still fall through to the
+			// legacy status-string check (and "ready" IS in the legacy
+			// ACTIONABLE set too, so this stays actionable either way — the
+			// point is which CODE PATH decided that, verified indirectly via
+			// the folder-skip case below, which would NOT skip a legacy id).
+			writeFileSync(
+				options.indexPathAbs,
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'p203',
+							file: 'blocked/p203-x.md',
+							status: 'ready',
+						},
+					],
+				}),
+			);
+			const out = parse(
+				await runContinueProposal({ mode: 'auto' }, options),
+			);
+			// Legacy path looks at `status` ("ready" → actionable), not the
+			// folder — so a legacy id stuck in blocked/ by some accident is
+			// still picked, unlike a real new-system entry (see the %s/ test
+			// above, which correctly skips it).
+			expect(out.kind).toBe('next-proposal');
+			expect(out.proposalId).toBe('p203');
+		});
+	});
 });

@@ -17,6 +17,10 @@ import {
 	validateClaim,
 } from '../swarm/proposal-slice-plan';
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
+import {
+	PROPOSAL_KIND_BY_PREFIX,
+	PROPOSAL_STATUSES,
+} from '../contracts/constants/proposal-glossary.constant';
 
 export interface IContinueProposalToolOptions {
 	readonly namespacePrefix: string;
@@ -39,6 +43,54 @@ export interface IContinueProposalArgs {
 const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
+
+// f113 S4: a proposal already on the new state machine is actionable by
+// FOLDER, not by status string — `review` isn't even in the legacy
+// ACTIONABLE set, and `auto_work` should respect a slice already in
+// `review/` the same way it respects `in-progress/`.
+const NEW_SYSTEM_ACTIONABLE_FOLDERS = new Set([
+	'ready',
+	'in-progress',
+	'review',
+]);
+
+/**
+ * Same dual signal as S5's `isNewSystemFilename` (status alone isn't
+ * safe — `ready` is the *default* status `create_proposal` writes for
+ * any brand-new proposal regardless of kind): a proposal is only on the
+ * new state machine if its id's prefix is one of the 12 live kinds
+ * (explicitly excluding the retired legacy `p`) AND its status resolves
+ * to one of the 7 glossary statuses.
+ */
+const isNewSystemEntry = (entry: IIndexEntry): boolean => {
+	const prefix = entry.id[0] ?? '';
+	return (
+		prefix !== 'p' &&
+		prefix in PROPOSAL_KIND_BY_PREFIX &&
+		entry.status in PROPOSAL_STATUSES
+	);
+};
+
+/** The folder a registry `file` path lives in, or `null` for a flat (root) file. */
+const folderOf = (file: string): string | null => {
+	const idx = file.lastIndexOf('/');
+	return idx === -1 ? null : file.slice(0, idx);
+};
+
+/**
+ * Legacy entries (the 14 not-yet-migrated proposals) keep their EXACT
+ * existing status-string behaviour, untouched. New-system entries are
+ * actionable purely by which of the 7 folders they physically live in
+ * (S5's reconciler keeps that folder in sync with frontmatter `status`,
+ * so this is the operative source of truth post-migration).
+ */
+const isActionable = (entry: IIndexEntry): boolean => {
+	if (isNewSystemEntry(entry)) {
+		const folder = folderOf(entry.file);
+		return folder !== null && NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folder);
+	}
+	return ACTIONABLE.has(entry.status);
+};
 
 interface IIndexEntry {
 	readonly id: string;
@@ -239,7 +291,7 @@ export const runContinueProposal = async (
 
 	// mode === 'auto' (serial): next actionable proposal by cascade.
 	const entries = await readIndex(options.indexPathAbs);
-	const actionable = entries.filter((entry) => ACTIONABLE.has(entry.status));
+	const actionable = entries.filter(isActionable);
 	if (actionable.length === 0)
 		return json({
 			kind: 'no-proposal',
@@ -247,11 +299,11 @@ export const runContinueProposal = async (
 			nextAction:
 				'Create a proposal under the proposals dir and run sync_proposals.',
 		});
-	// Anti-loop [N9]: an `in_progress` proposal already covered by an active
-	// lock is being worked by someone. Selecting it again only produces a
-	// claim→lock-conflict→auto_work→same-proposal mini-loop, so exclude it
-	// from the primary pick. `proposalIdOf` maps a lock's task_id (e.g.
-	// `p81-slice-2`) back to its proposal base id (`p81`).
+	// Anti-loop [N9]: an `in_progress`/`in-progress` proposal already covered
+	// by an active lock is being worked by someone. Selecting it again only
+	// produces a claim→lock-conflict→auto_work→same-proposal mini-loop, so
+	// exclude it from the primary pick. `proposalIdOf` maps a lock's task_id
+	// (e.g. `p81-slice-2`) back to its proposal base id (`p81`).
 	const proposalIdOf = (value: string): string =>
 		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
 	const lockedProposalIds = new Set(
@@ -260,7 +312,7 @@ export const runContinueProposal = async (
 		),
 	);
 	const isClaimedElsewhere = (entry: IIndexEntry): boolean =>
-		entry.status === 'in_progress' &&
+		(entry.status === 'in_progress' || entry.status === 'in-progress') &&
 		lockedProposalIds.has(proposalIdOf(entry.id));
 	const free = actionable.filter((entry) => !isClaimedElsewhere(entry));
 	if (free.length === 0)

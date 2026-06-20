@@ -694,20 +694,42 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S4 — `auto_work` consciente *(excl. `continue-proposal.tool.ts`)*
 
-- **Status**: pending
-- Refactor `continue_proposal` cascade to filter by **folder**, not
-  by date or by status alone:
-  - `ready/` → first priority
-  - `in-progress/` → respect (already claimed)
-  - `review/` → respect (already submitted)
-  - `paused/`, `blocked/`, `done/`, `retired/` → skip
-- Add a subscription on `agent-dead` so a peer dying re-evaluates the
-  cascade within seconds (not on the next `auto_work` call).
-- `continue-proposal.tool.spec.ts` covers: cascade picks `ready` first,
-  cascade respects `in-progress` even if newer, cascade skips
-  `paused`/`blocked`/`done`/`retired`.
-- **Gate**: `bun run test continue-proposal.tool.spec.ts`.
-- **Estimated work**: 0.5 session.
+- **Status**: done
+- `continue_proposal`'s `mode: 'auto'` cascade now filters new-system
+  entries by **folder** (`ready/` → `in-progress/` → `review/`
+  actionable; `paused/`/`blocked/`/`done/`/`retired/` skipped),
+  derived from the index `file` path that S5's reconciler keeps in
+  sync. Legacy entries (the 14 not-yet-migrated) keep their exact
+  existing status-string behaviour — `isNewSystemEntry` uses the same
+  dual signal as S5 (id prefix is one of the 12 live kinds, excluding
+  the retired `p`, AND status resolves to a glossary status), so a
+  legacy id is never reclassified even if its status happens to share
+  a spelling with the glossary (`ready`, `done`, …).
+- Also extended the anti-loop "claimed elsewhere" check (N9) to
+  recognise the new-system spelling `in-progress` (hyphen) alongside
+  the legacy `in_progress` (underscore) — without this, a new-system
+  slice already claimed by a peer wouldn't be excluded from re-pick,
+  reopening the exact mini-loop N9 was written to close.
+- **Deferred (not in this slice): the `agent-dead` subscription.** It
+  depends on S8 (the heartbeat-watcher event emitter), which doesn't
+  exist yet — the original dependency graph listed S4 as depending
+  only on S3, missing this. When S8/S9 land, re-evaluating the cascade
+  on a peer's `agent-dead` event belongs there (or as a thin follow-up
+  here once the event exists to subscribe to); until then, the
+  existing per-call cascade (an agent re-running `auto_work`/
+  `continue_proposal`) is the only re-evaluation path — slower, but
+  correct, not broken.
+- Extended `continue-proposal.spec.ts` (not a new file —
+  `continue-proposal.tool.spec.ts` didn't exist; the existing spec
+  already covered the legacy cascade) with a `describe` block: picks
+  `ready/`, respects `review/` (not even in the legacy `ACTIONABLE`
+  set, so this specifically exercises the new folder-based path),
+  skips all 4 non-actionable folders (`it.each`), and a "never
+  reclassifies a legacy id" case proving the dual-signal guard.
+- **Gate**: `bun run test continue-proposal.spec.ts` (12/12) +
+  `bun run validate` (854 tests) — both green, zero changes needed to
+  any pre-existing legacy-cascade test.
+- **Estimated work**: 0.5 session (matched).
 
 ### S5 — Folder reconciler *(excl. `sync-proposal-registry.ts`)*
 
