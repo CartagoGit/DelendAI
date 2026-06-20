@@ -79,8 +79,8 @@ const invoke = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-/** Test fixture for upcoming tests that exercise the consolidate tool. */
-const _fakeReader: IFileReader = {
+/** Test fixture shared by the suite below. */
+const fakeReader: IFileReader = {
 	readFile: () => undefined,
 	exists: () => false,
 	listDir: () => [],
