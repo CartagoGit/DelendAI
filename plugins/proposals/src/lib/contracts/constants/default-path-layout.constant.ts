@@ -32,6 +32,7 @@ export const buildSwarmPaths = (
 	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
 	proposalsDir: joinRel(docsDir, 'proposals'),
 	proposalIndexFile: joinRel(docsDir, 'proposals/index.json'),
+	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),
 	scratchDir: cacheDir,
 });
 

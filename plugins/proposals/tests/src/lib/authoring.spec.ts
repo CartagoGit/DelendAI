@@ -39,9 +39,33 @@ describe('proposal authoring (create → board → close)', () => {
 			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
 			indexPathAbs: join(root, 'docs/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		};
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	// f113 S13: id is now optional — omit it and pass `kind` to get a
+	// race-safe allocated id instead.
+	it('allocates an id from kind when id is omitted', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const created = parse(
+			await create({ kind: 'feat', title: 'Auto allocated' }),
+		);
+		expect(created.ok).toBe(true);
+		expect(created.file).toBe('f1-auto-allocated.md');
+
+		// A second call with the same kind continues the sequence, not f1 again.
+		const second = parse(
+			await create({ kind: 'feat', title: 'Second one' }),
+		);
+		expect(second.file).toBe('f2-second-one.md');
+	});
+
+	it('errors clearly when neither id nor kind is provided', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		const result = await create({ title: 'No id, no kind' });
+		expect(result).toMatchObject({ isError: true });
+	});
 
 	it('creates a proposal with disjoint slices, lists it on the board, and closes a slice', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));

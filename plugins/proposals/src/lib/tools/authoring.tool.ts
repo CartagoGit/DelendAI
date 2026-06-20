@@ -14,6 +14,10 @@ import {
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import {
+	allocateNextProposalId,
+	prefixForKind,
+} from '../proposals/proposal-id-allocator';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import {
 	deriveSliceStatuses,
@@ -35,6 +39,8 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
+	/** f113 S13: absolute path of the per-kind id counter file. */
+	readonly counterPathAbs: string;
 	/**
 	 * Workspace-relative layout (proposals dir + index) the post-create
 	 * sync uses, so a relocated store stays coherent. Defaults to
@@ -150,7 +156,28 @@ export const buildCreateProposalRegistration = (
 				description:
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
 				inputSchema: z.object({
-					id: z.string(),
+					id: z.string().optional(),
+					// f113 S13: when `id` is omitted, `kind` resolves the
+					// prefix and the race-safe allocator picks the next
+					// number. One of the two is required (checked at runtime
+					// — modelling that as an exclusive-or in Zod is more
+					// machinery than the one resulting error message saves).
+					kind: z
+						.enum([
+							'feat',
+							'breaking',
+							'fix',
+							'refactor',
+							'perf',
+							'audit',
+							'chore',
+							'docs',
+							'test',
+							'infra',
+							'spike',
+							'legacy',
+						])
+						.optional(),
 					title: z.string(),
 					goal: z.string().optional(),
 					status: z
@@ -164,7 +191,8 @@ export const buildCreateProposalRegistration = (
 				}),
 			},
 			async (args: {
-				id: string;
+				id?: string | undefined;
+				kind?: string | undefined;
 				title: string;
 				goal?: string | undefined;
 				status?: string | undefined;
@@ -172,17 +200,38 @@ export const buildCreateProposalRegistration = (
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 			}) => {
+				let id: string;
+				if (args.id !== undefined) {
+					id = args.id;
+				} else if (args.kind !== undefined) {
+					const prefix = prefixForKind(args.kind);
+					if (prefix === null) {
+						return toolError(
+							`unknown kind "${args.kind}"`,
+							'Pass a recognised kind, or pass id explicitly.',
+						);
+					}
+					id = await allocateNextProposalId(prefix, {
+						proposalsDirAbs: options.proposalsDirAbs,
+						counterPathAbs: options.counterPathAbs,
+					});
+				} else {
+					return toolError(
+						'either id or kind is required',
+						'Pass an explicit id, or pass kind to auto-allocate the next one (f113 S13).',
+					);
+				}
 				const slices = args.slices ?? [];
 				// Validate disjointness before writing.
 				const plan = {
-					proposalId: args.id,
+					proposalId: id,
 					globalGate: (args.globalGate ?? 'none') as
 						| 'lint'
 						| 'type'
 						| 'e2e'
 						| 'none',
 					slices: slices.map((s) => ({
-						proposalId: args.id,
+						proposalId: id,
 						sliceId: s.sliceId,
 						title: s.title ?? s.sliceId,
 						owner: null,
@@ -207,14 +256,14 @@ export const buildCreateProposalRegistration = (
 				const date = new Date().toISOString().slice(0, 10);
 				const body = [
 					'---',
-					`id: ${args.id}`,
+					`id: ${id}`,
 					`status: ${args.status ?? 'ready'}`,
 					'type: proposal',
 					`track: ${args.track ?? 'general'}`,
 					`date: ${date}`,
 					'---',
 					'',
-					`# ${args.id} — ${args.title}`,
+					`# ${id} — ${args.title}`,
 					'',
 					'## Goal',
 					'',
@@ -234,7 +283,7 @@ export const buildCreateProposalRegistration = (
 							]),
 					'',
 				].join('\n');
-				const fileRel = `${args.id}-${kebab(args.title)}.md`;
+				const fileRel = `${id}-${kebab(args.title)}.md`;
 				const absPath = join(options.proposalsDirAbs, fileRel);
 				const { text: safeBody, redactions } = redactSecrets(body);
 				await writeFileAtomic(absPath, safeBody);

@@ -100,6 +100,11 @@ export type {
 	IProposalTransitionArgs,
 } from '../lib/tools/proposal-transition.tool';
 export {
+	allocateNextProposalId,
+	prefixForKind,
+} from '../lib/proposals/proposal-id-allocator';
+export type { IProposalIdAllocatorOptions } from '../lib/proposals/proposal-id-allocator';
+export {
 	buildAutoWorkRegistration,
 	runAutoWork,
 } from '../lib/tools/auto-work.tool';
