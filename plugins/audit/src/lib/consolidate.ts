@@ -18,7 +18,12 @@
  *   list of titles in source order; `files` is the deduped union.
  */
 
-import type { AuditSeverity, IConsolidation, IAuditDocument } from './types';
+import type {
+	AuditSeverity,
+	IAuditDocument,
+	IAuditFinding,
+	IConsolidation,
+} from './types';
 import { SEVERITY_ORDER } from './types';
 
 const SEVERITY_RANK: Readonly<Record<AuditSeverity, number>> = (() => {

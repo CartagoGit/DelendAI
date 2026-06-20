@@ -1,9 +1,11 @@
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+
 import { z } from 'zod';
 
 import {
 	toolError,
 	toolJson,
-	type IFileReader,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
@@ -60,7 +62,8 @@ const ConsolidateInputSchema = z.object({
 
 export interface IConsolidateToolOptions {
 	readonly namespacePrefix: string;
-	readonly reader: IFileReader;
+	/** Absolute workspace root, used to resolve relative audit paths. */
+	readonly workspaceRoot: string;
 	/**
 	 * Default audits directory (workspace-relative). Used when the
 	 * tool call does not pass `auditDir`. The host wires this from
@@ -101,38 +104,49 @@ export const buildConsolidateRegistration = (
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},
-				async (args: { auditDir?: string; topActions?: number }) => {
-					const dir = (
+				async (args: {
+					auditDir?: string | undefined;
+					topActions?: number | undefined;
+				}) => {
+					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
-					const files = options.reader
-						.listDir(dir)
-						.filter(
-							(p) =>
-								p.endsWith('.md') && !p.endsWith('README.md'),
-						);
-					if (files.length === 0) {
+					const absDir = path.resolve(options.workspaceRoot, relDir);
+					let entries: readonly string[];
+					try {
+						entries = await readdir(absDir);
+					} catch (err) {
 						return toolError(
-							`no audit files found under "${dir}"`,
+							`cannot read audit dir "${relDir}"`,
+							`Underlying error: ${(err as Error).message}`,
+						);
+					}
+					const mdRel = entries
+						.filter((n) => n.endsWith('.md') && n !== 'README.md')
+						.sort();
+					if (mdRel.length === 0) {
+						return toolError(
+							`no audit files found under "${relDir}"`,
 							'Run several models with `audit_plan` and drop their reports into this directory.',
 						);
 					}
-					const docs = parseAuditFiles(
-						files
-							.map((p) => {
-								const body = options.reader.readFile(p);
-								return body === undefined
-									? undefined
-									: { path: p, body };
-							})
-							.filter(
-								(x): x is { path: string; body: string } =>
-									x !== undefined,
-							),
-					);
-					const result = consolidateAudits(docs, {
-						topActions:
-							args.topActions ?? options.defaultTopActions,
+					const docs: { path: string; body: string }[] = [];
+					for (const name of mdRel) {
+						const abs = path.join(absDir, name);
+						try {
+							const body = await readFile(abs, 'utf8');
+							docs.push({ path: name, body });
+						} catch {
+							// Skip unreadable files but keep going so a single
+							// broken audit doesn't fail the whole consolidation.
+						}
+					}
+					const result = consolidateAudits(parseAuditFiles(docs), {
+						...(args.topActions !== undefined
+							? { topActions: args.topActions }
+							: options.defaultTopActions !== undefined
+								? { topActions: options.defaultTopActions }
+								: {}),
 					});
 					return toolJson({
 						...result,

@@ -60,7 +60,7 @@ export const buildPlanRegistration = (
 					inputSchema: PlanInputSchema,
 					outputSchema: PlanOutputSchema,
 				},
-				async (args: { scope?: AuditScope }) => {
+				async (args: { scope?: AuditScope | undefined }) => {
 					const scope: AuditScope = args.scope ?? 'full';
 					if (!ALL_SCOPES.includes(scope)) {
 						return toolError(
