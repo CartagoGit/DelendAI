@@ -191,7 +191,9 @@ de markdown. La estructura de directorios ya está en su sitio
       `tools`, `configuration` si hay `configExample`, `tutorial`
       si hay tutoriales). Hidden por defecto excepto el primero
       para SEO-friendly SSR.
-- [ ] s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde.
+- [ ] **s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde.
+      DEFERRED a una sesión dedicada de localización asistida —
+      ver §8 más abajo**.
 - [x] `bun run validate` verde (104 files / 689 tests OK, 10
       skipped intencionales).
 - [ ] `bun run site:strict` verde al final.
@@ -248,6 +250,6 @@ self-describing — útil para s2 (la tabla de args referencia
 | Decisión | Elección | Por qué |
 |---|---|---|
 | ¿Una sola propuesta o tres? | Una (p110) | El usuario lo dijo explícitamente en el header de p100. |
-| ¿i18n tutoriales: manual o asistida? | Asistida con script de bootstrap | Manual = 11 sesiones tediosas; auto sin review = riesgo de traducciones que mienten. |
-| ¿s2 SSR-safe? | Sí (script client-side puro, `<section hidden>` inicial, sin hydration) | SEO ve todo el contenido; los usuarios sin JS ven el tab 1 (Overview) por defecto. |
-| ¿s1 incluye arg `i18n` por tool o solo `descriptionKey`? | Solo `descriptionKey` | El `i18n` lookup sigue runtime vía `describeTool`; duplicarlo al JSON artefacto inflaría el file sin beneficio. |
+| ¿i18n tutoriales: manual o asistida? | Asistida con script de bootstrap, **diferida** | Manual = 11 sesiones tediosas; auto sin review = riesgo. s3 se difiere a una sesión dedicada porque el coste (≈6 600 líneas de markdown) no encaja en una iteración corta. |
+| ¿s2 SSR-safe? | Sí (script client-side puro, `<section hidden>` inicial) | SEO ve todo el contenido; usuarios sin JS ven el primer tab por defecto. |
+| ¿s1 incluye `i18n` por tool o solo `descriptionKey`? | **`i18n` completo precomputado** | El bloque `{ en, es, fr, …, vi }` se vuelca a `capabilities.json` para los 5 tools con catálogo; `PluginPage.astro` lo lee directamente sin pasar por `describeTool()` runtime. Ventaja: SSR pinta el idioma activo sin un lookup en runtime (≈0 ms vs. el coste de leer del catálogo en cada render). El `descriptionKey` original queda como redundancia opcional. |
