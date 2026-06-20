@@ -730,3 +730,23 @@ camino al 11/10 — solo acabados de plataforma.**
   directorio eliminado. *Pendiente:* esto requiere reiniciar el proceso del
   servidor MCP para que el nuevo `docsDir` se cargue — el servidor en curso
   cachea las rutas resueltas al arrancar.
+  ⬜ **Follow-up de framework (no implementado, fuera de alcance de esta
+  sesión):** `syncProposalRegistry` (`plugins/proposals/src/lib/proposals/
+  sync-proposal-registry.ts`) escanea el `proposalsDir` resuelto y escribe un
+  índice válido aunque encuentre 0 entradas — no hay señal de "esto huele a
+  `docsDir` mal configurado". El mismo bug (un `docsDir` apuntando a un
+  directorio vacío) se reproduciría sin diagnóstico en cualquier otro repo.
+  Una mejora de framework razonable sería que `sync_proposals` reporte un
+  aviso (no un error duro — un proyecto nuevo legítimamente tiene 0
+  proposals) cuando el recuento cae a 0 tras tener entradas previas, o
+  cuando el `proposalsDir` resuelto no contiene ningún `.md` con frontmatter
+  `type: proposal`. Se deja para una propuesta dedicada al framework, no a
+  este repo.
+
+- **🟢 M47 · `agent_names.tool.ts` seguía duplicando el patrón `json()` local
+  que causó M45** — no crasheaba (sí seteaba `structuredContent`), pero era
+  la última instancia de la clase de anti-patrón identificada en M45.
+  **Fix:** migrado a delegar en `toolJson` (preservando el parámetro
+  `isError`). Spec `agent-names.spec.ts` endurecido con la misma aserción de
+  `structuredContent` que las otras dos. `bun test plugins/proposals` 326/326
+  verde.
