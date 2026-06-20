@@ -2,7 +2,9 @@
 import { useTranslations, type Lang } from '../i18n/ui';
 import { describeTool } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
+import type { ITutorial } from '../../scripts/lib/discover-tutorials';
 import PageHeader from './PageHeader.astro';
+import Tutorial from './Tutorial.astro';
 
 interface Props {
 	lang: Lang;
@@ -46,6 +48,11 @@ const pkg = (capabilities.packages as IPkg[]).find(
 	(p) =>
 		p.name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '') === slug,
 );
+const slugOf = (n: string): string => n.replace('@mcp-vertex/', '');
+// Filter tutorials for this plugin; empty when none exists.
+const pluginTutorials = (
+	(capabilities as { tutorials?: ITutorial[] }).tutorials ?? []
+).filter((t) => slugOf(t.plugin) === slug);
 const ns = nsFor(slug);
 const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === ns)
@@ -147,6 +154,12 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 							null,
 							2,
 						)
+
+		<PluginTutorials
+			tutorials={pluginTutorials}
+			plugin={slug}
+			lang={langCode}
+		/>
 					}</code></pre>
 				</div>
 			</section>

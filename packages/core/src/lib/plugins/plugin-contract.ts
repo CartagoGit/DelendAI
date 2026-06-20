@@ -1,4 +1,5 @@
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
+import type { IPluginConfigExample } from '../contracts/interfaces/plugin-config-example.interface';
 import type {
 	IKnowledgeEntry,
 	ISkillEntry,
@@ -86,10 +87,7 @@ export interface IMcpPlugin {
 	 * `configExample` simply skip the Configuration section on their
 	 * page. See p100 s6 and `IPluginConfigExample`.
 	 */
-	readonly configExample?: {
-		readonly summary: string;
-		readonly options: Readonly<Record<string, unknown>>;
-	};
+	readonly configExample?: IPluginConfigExample;
 	register(
 		ctx: IMcpPluginContext,
 	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;

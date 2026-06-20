@@ -55,6 +55,7 @@ and any explicit `--plugins=` are merged, so the order of flags is irrelevant.
 | `notification`    | Push on lock-release so waiting agents stop polling.                 |
 | `status-marker`   | Forces the canonical close marker on every response (8 states).      |
 | `test-convention` | Publishes the canonical test rules and exposes `suggest_spec_path` + `scan_drift` so every agent writes specs the same way and the orchestrator can gate slice closes. |
+| `audit`           | Multi-model audit plugin (p99 alcance A): canonical brief generator + consolidator. **Not in the swarm preset** — opt-in per project, useful after a round to consolidate findings from N models. |
 
 Optional config (`mcp-vertex.config.json` at the workspace root):
 
