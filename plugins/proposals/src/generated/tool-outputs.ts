@@ -141,6 +141,10 @@ export interface ProposalsProposalReviewOutput {
 	lockReleased: boolean;
 }
 
+export interface ProposalsProposalTransitionOutput {
+	[key: string]: unknown;
+}
+
 export interface ProposalsRoundContextOutput {
 	[key: string]: unknown;
 }
@@ -194,6 +198,7 @@ export interface ProposalsToolOutputs {
 	"proposals_proposal_adopt": ProposalsProposalAdoptOutput;
 	"proposals_proposal_board": ProposalsProposalBoardOutput;
 	"proposals_proposal_review": ProposalsProposalReviewOutput;
+	"proposals_proposal_transition": ProposalsProposalTransitionOutput;
 	"proposals_round_context": ProposalsRoundContextOutput;
 	"proposals_state_health": ProposalsStateHealthOutput;
 	"proposals_state_repair": ProposalsStateRepairOutput;

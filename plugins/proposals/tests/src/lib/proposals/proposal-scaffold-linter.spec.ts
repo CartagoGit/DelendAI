@@ -26,7 +26,7 @@ const TERSE_SLICE = `### S1 — Do the thing
 `;
 
 const NARRATIVE_SLICE = (
-	heading = '### S1 — Do the thing *(excl. \`a.ts\`)*',
+	heading = '### S1 — Do the thing *(excl. `a.ts`)*',
 ): string => `${heading}
 - **Status**: pending
 - Free prose describing the steps.

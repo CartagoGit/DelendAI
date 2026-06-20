@@ -230,7 +230,7 @@ const lintSlice = (
 		issues.push({
 			line: slice.sliceLine,
 			message: `slice "${slice.title}" does not resolve a Files field (no **Files** bullet, no "(excl. ...)" in the heading)`,
-			fix: 'Add `- **Files**: [...]` or list the files in `(excl. \`path\`, ...)` in the heading.',
+			fix: 'Add `- **Files**: [...]` or list the files in `(excl. `path`, ...)` in the heading.',
 		});
 	}
 

@@ -619,21 +619,78 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S3 — Transition tool *(excl. `proposal-transition.tool.ts`)*
 
-- **Status**: pending
-- Create `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
-  exporting `proposal_transition({ id, to, reason })`.
-- Validate the transition against `PROPOSAL_STATUS_TRANSITIONS`.
-- Acquire `withFileMutex` on the proposal path.
-- Update frontmatter `status` via `writeFileAtomic`.
-- `git mv` the file to the new folder.
-- Emit a `proposal-transition` event to the task queue (audit trail).
-- `proposal-transition.tool.spec.ts` covers the 7×7 transition matrix
-  (legal edges pass, illegal edges throw).
-- Add `bun run lint:proposals` script that walks every `.md` under
-  `docs/proposals/` and runs the linter; non-zero exit on failure.
-- **Gate**: `bun run test && bun run lint:proposals` (currently
-  produces warnings on the 14 legacy; that's expected).
-- **Estimated work**: 1 session.
+- **Status**: done
+- Created `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+  exporting `runProposalTransition`/`<prefix>_proposal_transition`,
+  registered in `index.ts` and `public/index.ts`.
+- Validates against `PROPOSAL_STATUS_TRANSITIONS` (S1); refuses
+  cleanly (no flag needed) when the proposal's *current* status isn't
+  one of the new 7 — exactly the 14 legacy files today, until S11/S12.
+- `withFileMutex` on the proposal's own path + `writeFileAtomic` for
+  the frontmatter `status:` line (regex-replaced in place, rest of the
+  file byte-identical).
+- Moves the file via the existing injectable `IGitRunner`
+  (`../shared/git-runner`, already used by `auto-work-persist.ts` —
+  reused, not reinvented) running `git mv`; **no task-queue audit-trail
+  event** (the original bullet) — dropped, see note below.
+- Created `scripts/lint-proposals.ts` (`bun run lint:proposals`):
+  walks `docs/proposals/`, lints every file shaped like a proposal,
+  treats issues on `pNNN-…` filenames as warnings (never fails the
+  build) and issues on anything else as fatal (non-zero exit).
+- **4 real bugs found and fixed before this shipped, in order:**
+  1. **Destination folder didn't exist → `ENOENT`.** The 7 status
+     folders exist in this repo (`.gitkeep`), but nothing guaranteed
+     it for a fresh adopter or a custom folder. Fixed: `mkdir(...,
+     {recursive:true})` before the move.
+  2. **The walker's strict 3-digit filename filter silently *skipped*
+     `p99-feat-multi-model-audit-plugin.md`** (2 digits) instead of
+     reporting it — invisible is worse than flagged. Loosened the
+     walker's inclusion filter to `\d+` (1+ digits); the *linter's*
+     stricter `\d{3,}` rule still correctly flags `p99`'s id as
+     non-conforming once it's actually linted.
+  3. Same loosening needed in the legacy-vs-fatal classifier
+     (`isLegacyFilename`), or `p99` got discovered but then
+     misclassified as a *fatal* new-scaffold violation instead of an
+     expected legacy warning.
+  4. **The walker recursed into `docs/proposals/audits/`** (and other
+     non-proposal documents — `RESUMEN-*` session notes, READMEs) and
+     reported them as fatal scaffold violations. Those were never
+     proposals. Fixed: only files matching the proposal filename shape
+     are even considered.
+  - Verified against the real repo: `15 files checked, 14 legacy
+    warning(s), 0 fatal error(s)`, exit 0 — matches "the 14 legacy"
+    referenced throughout this document exactly.
+- **Dropped from the original bullet list**: "emit a
+  `proposal-transition` event to the task queue (audit trail)". The
+  task queue (`persistent-task-queue.ts`) is a *work* queue (claim/
+  dequeue/observe semantics) — there's no append-only event-log
+  primitive in it to reuse, and bolting one on as a side effect of an
+  unrelated tool is exactly the kind of special-case-on-shared-
+  infrastructure this repo's own audit history (M25 et al.) flags as
+  the wrong altitude. The audit trail this tool actually has: the
+  required `reason` arg, returned in the tool's own JSON output, plus
+  whatever the caller's own commit message records. A real durable
+  audit log is S8/S9's territory (the notification event buffer) if
+  still wanted — not invented here as a one-off.
+- Also fixed (caught by the existing token-budget e2e regression
+  guard, not by a new test): the tool's `description`/`summary` text
+  was too verbose and pushed `overview full` to exactly the 6500B
+  ceiling — trimmed both to terse, matching the rest of the plugin's
+  token discipline.
+- Also fixed: the checked-in generated SDK types
+  (`src/generated/tool-outputs.ts`, N23 drift-guard) and the plugin's
+  own tool-id snapshot tests (`plugin.spec.ts`) needed updating for
+  the new tool — both are now in sync.
+- `proposal-transition.tool.spec.ts`: 49 tests (the full 7×7 matrix +
+  reason/unknown-status/not-found/legacy-refusal/git-mv-fallback
+  cases). `lint-proposals.spec.ts`: 4 tests covering the p99 + non-
+  proposal-document fixes specifically (regression coverage for bugs
+  2-4 above).
+- **Gate**: `bun run test && bun run lint:proposals` — both green;
+  `bun run validate` (typecheck + lint + scss + 837 tests) green.
+- **Estimated work**: 1 session (ran long — 4 real bugs caught via
+  actually running the tool against the real repo, not just unit
+  tests in isolation).
 
 ### S4 — `auto_work` consciente *(excl. `continue-proposal.tool.ts`)*
 
