@@ -61,7 +61,19 @@ const ConsolidateInputSchema = z.object({
 export interface IConsolidateToolOptions {
 	readonly namespacePrefix: string;
 	readonly reader: IFileReader;
+	/**
+	 * Default audits directory (workspace-relative). Used when the
+	 * tool call does not pass `auditDir`. The host wires this from
+	 * `ctx.options.auditDir` when present, defaulting to
+	 * `docs/proposals/audits`.
+	 */
 	readonly defaultAuditDir: string;
+	/**
+	 * Default for `topActions` (1–50). Used when the tool call does
+	 * not pass an override. The host wires this from
+	 * `ctx.options.topActions` when present, defaulting to 5.
+	 */
+	readonly defaultTopActions?: number;
 }
 
 /**
@@ -119,7 +131,8 @@ export const buildConsolidateRegistration = (
 							),
 					);
 					const result = consolidateAudits(docs, {
-						topActions: args.topActions,
+						topActions:
+							args.topActions ?? options.defaultTopActions,
 					});
 					return toolJson({
 						...result,

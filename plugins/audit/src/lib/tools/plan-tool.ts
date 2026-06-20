@@ -28,6 +28,12 @@ const PlanInputSchema = z.object({
 
 export interface IPlanToolOptions {
 	readonly namespacePrefix: string;
+	/**
+	 * Default scoring dimensions surfaced in the brief and in the tool
+	 * output. When omitted, falls back to `SCORE_DIMENSIONS` (canonical).
+	 * The host wires this from `ctx.options.dimensions` when present.
+	 */
+	readonly dimensions?: readonly string[];
 }
 
 /**
@@ -38,6 +44,7 @@ export const buildPlanRegistration = (
 	options: IPlanToolOptions,
 ): IToolRegistration => {
 	const prefix = options.namespacePrefix;
+	const defaultDimensions = options.dimensions;
 	return {
 		id: 'audit_plan',
 		summary:
@@ -61,20 +68,26 @@ export const buildPlanRegistration = (
 							`Allowed scopes: ${ALL_SCOPES.join(', ')}.`,
 						);
 					}
+					// Resolve dimensions per call: explicit config wins, then
+					// the canonical default. We don't pass per-call overrides
+					// here (the input schema has no `dimensions` field on
+					// purpose — rubric tweaks are a host-level config concern,
+					// not a per-tool-call concern).
+					const dimensions = defaultDimensions ?? [
+						'Arquitectura',
+						'Contratos e interfaces',
+						'Eficiencia de tokens',
+						'Anti-deadlock / concurrencia',
+						'Calidad de código fuente',
+						'Documentación',
+						'Tests',
+						'Seguridad operacional',
+						'Genericidad',
+					];
 					return toolJson({
 						scope,
-						markdown: buildBrief(scope),
-						dimensions: [
-							'Arquitectura',
-							'Contratos e interfaces',
-							'Eficiencia de tokens',
-							'Anti-deadlock / concurrencia',
-							'Calidad de código fuente',
-							'Documentación',
-							'Tests',
-							'Seguridad operacional',
-							'Genericidad',
-						],
+						markdown: buildBrief(scope, { dimensions }),
+						dimensions,
 					});
 				},
 			);
