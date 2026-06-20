@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { CorruptFileError } from '@mcp-vertex/core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
+import { CorruptFileError, toolJson } from '@mcp-vertex/core/public';
 
 import {
 	enqueue,
@@ -55,21 +58,13 @@ export interface IAgentNamesArgs {
 	readonly stale_after_minutes?: number | undefined;
 }
 
-type IResult = {
-	content: Array<{ type: 'text'; text: string }>;
-	structuredContent?: Record<string, unknown>;
-	isError?: boolean;
-};
-
-const json = (value: unknown, isError = false): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value) }],
-	// MCP modern structuredContent for object payloads (every json() call
-	// here passes an object).
-	...(typeof value === 'object' && value !== null && !Array.isArray(value)
-		? { structuredContent: value as Record<string, unknown> }
-		: {}),
-	...(isError ? { isError: true } : {}),
-});
+// Delegates to the shared `toolJson` (M45: a hand-rolled duplicate of this
+// helper across proposals tools is what omitted `structuredContent` and
+// crashed `auto_work`/`continue_proposal` on their outputSchema-declared
+// responses). Every call site here passes a plain object, so toolJson's
+// structuredContent derivation always applies.
+const json = (value: unknown, isError = false): IToolTextResult =>
+	isError ? { ...toolJson(value), isError: true } : toolJson(value);
 
 const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 	(AGENT_CANONICAL_ROLES as readonly string[]).includes(value);
@@ -106,7 +101,7 @@ const cooldownNames = (
 export const runAgentNames = async (
 	args: IAgentNamesArgs,
 	options: IAgentNamesToolOptions,
-): Promise<IResult> => {
+): Promise<IToolTextResult> => {
 	try {
 		return await runAgentNamesImpl(args, options);
 	} catch (err) {
@@ -132,7 +127,7 @@ export const runAgentNames = async (
 const runAgentNamesImpl = async (
 	args: IAgentNamesArgs,
 	options: IAgentNamesToolOptions,
-): Promise<IResult> => {
+): Promise<IToolTextResult> => {
 	const store = createAgentRegistryStore(options.registryPathAbs);
 	const pool = options.pool ?? DEFAULT_AGENT_NAME_POOL;
 	const poolNames = new Set(pool);

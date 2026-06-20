@@ -17,8 +17,18 @@ import {
 	type IAgentNamesToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
-const parse = (result: { content: Array<{ text: string }> }): unknown =>
-	JSON.parse(result.content[0]?.text ?? '{}');
+// The tool declares an `outputSchema`, so the MCP SDK requires
+// `structuredContent` on every response (see M45 in the master audit:
+// a sibling tool's local json() helper omitted it and crashed at the
+// transport layer). Assert it here too so a regression fails the suite.
+const parse = (result: {
+	content: Array<{ text: string }>;
+	structuredContent?: unknown;
+}): unknown => {
+	const value = JSON.parse(result.content[0]?.text ?? '{}');
+	expect(result.structuredContent).toEqual(value);
+	return value;
+};
 
 describe('agent_names (covers the orchestrator, not only subagents)', () => {
 	let root = '';
