@@ -1,6 +1,6 @@
 {
 	"generated_at": "2026-06-20T17:49:49.626Z",
-	"count": 14,
+	"count": 15,
 	"proposals": [
 		{
 			"id": "p100",
@@ -113,6 +113,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
+		},
+		{
+			"id": "p113",
+			"file": "p113-fix-audit-types.md",
+			"track": "plugins",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
 		}
 	],
 	"errors": []
