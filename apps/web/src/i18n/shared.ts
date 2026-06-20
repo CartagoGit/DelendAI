@@ -67,6 +67,7 @@ export interface INavTranslations {
 	readonly resources: string;
 	readonly skills: string;
 	readonly guide: string;
+	readonly more: string;
 }
 
 export interface IPageSection {
@@ -180,7 +181,7 @@ export interface IPluginPageTranslations {
 	readonly back: string;
 	readonly tools: string;
 	readonly install: string;
-	/** Tab labels for the plugin page strip (p100 s8). */
+	/** Tab labels for the plugin page strip (l100 s8). */
 	readonly tabInstall: string;
 	readonly tabTools: string;
 	readonly tabConfiguration: string;
