@@ -35,10 +35,11 @@ export default defineConfig({
 		],
 		routing: { prefixDefaultLocale: false },
 	},
-        vite: {
-                // p112 s2: hand the `#MAYÚSCULAS/*` aliases to Vite. Vite does
-                // NOT honour `tsconfig.json#paths` at runtime, so the runtime
-                // config is required in addition to the type-check config in
-                // `tsconfig.json`. The sync test (p112 s6) prevents drift.
-                resolve: { alias: LOCAL_ALIASES },
-        },
+	vite: {
+		// p112 s2: hand the `#MAYÚSCULAS/*` aliases to Vite. Vite does
+		// NOT honour `tsconfig.json#paths` at runtime, so the runtime
+		// config is required in addition to the type-check config in
+		// `tsconfig.json`. The sync test (p112 s6) prevents drift.
+		resolve: { alias: LOCAL_ALIASES },
+	},
+});
