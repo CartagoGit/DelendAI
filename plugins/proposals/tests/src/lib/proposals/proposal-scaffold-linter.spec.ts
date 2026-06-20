@@ -1,0 +1,400 @@
+import { describe, expect, it } from 'vitest';
+
+import { lintProposalMarkdown } from '@mcp-vertex/proposals/lib/proposals/proposal-scaffold-linter';
+
+const FRONTMATTER = (overrides: Record<string, string> = {}): string => {
+	const fields: Record<string, string> = {
+		id: 'f114',
+		kind: 'feat',
+		title: 'A sufficiently long title',
+		status: 'ready',
+		date: '2026-06-20',
+		track: 'proposals',
+		...overrides,
+	};
+	const lines = Object.entries(fields)
+		.filter(([, v]) => v !== '')
+		.map(([k, v]) => `${k}: ${v}`);
+	return `---\n${lines.join('\n')}\n---\n`;
+};
+
+const TERSE_SLICE = `### S1 — Do the thing
+- **Status**: pending
+- **Files**: [\`a.ts\`]
+- **Command**: \`bun run test\`
+- **Expect**: exit0
+`;
+
+const NARRATIVE_SLICE = (
+	heading = '### S1 — Do the thing *(excl. \`a.ts\`)*',
+): string => `${heading}
+- **Status**: pending
+- Free prose describing the steps.
+- **Gate**: \`bun run test\`
+- **Estimated work**: 1 session.
+`;
+
+const BODY = (sliceBlock: string = TERSE_SLICE): string => `
+## Goal
+
+One paragraph.
+
+## Why
+
+1-3 paragraphs.
+
+## Non-goals
+
+- not this.
+
+## Slices
+
+${sliceBlock}
+## Acceptance
+
+- [ ] done.
+`;
+
+const doc = (
+	frontmatterOverrides: Record<string, string> = {},
+	sliceBlock: string = TERSE_SLICE,
+): string => FRONTMATTER(frontmatterOverrides) + BODY(sliceBlock);
+
+describe('lintProposalMarkdown — happy paths', () => {
+	it('accepts a minimal valid proposal with terse slices', () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f114-do-the-thing.md',
+			markdown: doc(),
+		});
+		expect(result.ok).toBe(true);
+		expect(result.issues).toEqual([]);
+	});
+
+	it('accepts the narrative slice form (Gate + excl-files heading)', () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f114-do-the-thing.md',
+			markdown: doc({}, NARRATIVE_SLICE()),
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('accepts numbered headings as equivalent to bare names', () => {
+		const numbered = doc()
+			.replace('## Goal', '## 0. Goal')
+			.replace('## Why\n', '## 1. Why\n');
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f114-do-the-thing.md',
+			markdown: numbered,
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('accepts all four optional sections in their fixed slots', () => {
+		const withOptional = `${FRONTMATTER()}
+## Goal
+
+p.
+
+## Why
+
+p.
+
+## Why this design
+
+p.
+
+## Non-goals
+
+- x
+
+## Architecture
+
+p.
+
+## Slices
+
+${TERSE_SLICE}
+## Dependency graph
+
+p.
+
+## Acceptance
+
+- [ ] done.
+
+## Risks and mitigations
+
+p.
+
+## Notes
+
+p.
+`;
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f114-do-the-thing.md',
+			markdown: withOptional,
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('resolves filename/folder/kind/status consistently', () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/in-progress/x042-fix-the-bug.md',
+			markdown: doc({ id: 'x042', kind: 'fix', status: 'in-progress' }),
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('resolves the retired legacy "p" prefix against kind: legacy', () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/done/p099-old-thing.md',
+			markdown: doc({ id: 'p099', kind: 'legacy', status: 'done' }),
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('ignores illustrative headings/slices written inside a fenced code block (regression: f113 §4.5 documents the scaffold using literal "## Goal" lines inside a ```markdown fence — the linter must not parse those as real structure)', () => {
+		const withExampleFence = `${FRONTMATTER()}
+## Goal
+
+One paragraph.
+
+## Why
+
+p.
+
+Example of the format other proposals should follow:
+
+\`\`\`markdown
+## Goal
+## Why
+## Non-goals
+## Slices
+### S1 — example only, not a real slice
+## Acceptance
+\`\`\`
+
+## Non-goals
+
+- not this.
+
+## Slices
+
+${TERSE_SLICE}
+## Acceptance
+
+- [ ] done.
+`;
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f114-do-the-thing.md',
+			markdown: withExampleFence,
+		});
+		expect(result.ok).toBe(true);
+	});
+});
+
+describe('lintProposalMarkdown — negative cases', () => {
+	const lint = (
+		markdown: string,
+		path = 'docs/proposals/ready/f114-do-the-thing.md',
+	) => lintProposalMarkdown({ path, markdown });
+
+	it('flags a missing required section', () => {
+		const result = lint(doc().replace(/## Acceptance[\s\S]*$/, ''));
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('missing required section "acceptance"'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an out-of-order section', () => {
+		const swapped = `${FRONTMATTER()}
+## Why
+
+p.
+
+## Goal
+
+p.
+
+## Non-goals
+
+- x
+
+## Slices
+
+${TERSE_SLICE}
+## Acceptance
+
+- [ ] done.
+`;
+		const result = lint(swapped);
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('out of canonical order'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an unrecognized section heading', () => {
+		const result = lint(
+			doc().replace('## Non-goals', '## Random Section\n\n## Non-goals'),
+		);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('unrecognized section heading'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a duplicate section', () => {
+		const result = lint(`${doc()}\n## Goal\n\nagain.\n`);
+		expect(
+			result.issues.some((i) => i.message.includes('duplicate section')),
+		).toBe(true);
+	});
+
+	it('flags a missing frontmatter field', () => {
+		const result = lint(doc({ track: '' }));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('missing required field "track"'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an invalid kind', () => {
+		const result = lint(doc({ kind: 'nonsense' }));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('not one of the 12 known kinds'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an invalid status', () => {
+		const result = lint(doc({ status: 'nonsense' }));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('not one of the 7 known statuses'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an invalid id pattern', () => {
+		const result = lint(doc({ id: 'F114' }));
+		expect(
+			result.issues.some((i) => i.message.includes('does not match')),
+		).toBe(true);
+	});
+
+	it('flags a too-short title', () => {
+		const result = lint(doc({ title: 'short' }));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('shorter than 8 characters'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a missing frontmatter block entirely', () => {
+		const result = lint(BODY());
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('no YAML frontmatter block'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a filename prefix that disagrees with frontmatter kind', () => {
+		const result = lint(
+			doc({ kind: 'fix' }),
+			'docs/proposals/ready/f114-do-the-thing.md',
+		);
+		expect(
+			result.issues.some((i) => i.message.includes('frontmatter.kind')),
+		).toBe(true);
+	});
+
+	it('flags a folder that disagrees with frontmatter status', () => {
+		const result = lint(
+			doc({ status: 'done' }),
+			'docs/proposals/ready/f114-do-the-thing.md',
+		);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('expects folder "done"'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a slice with no Status field', () => {
+		const badSlice = `### S1 — Do the thing\n- **Files**: [\`a.ts\`]\n- **Gate**: \`bun run test\`\n`;
+		const result = lint(doc({}, badSlice));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('no **Status** field'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a slice that resolves no Files field', () => {
+		const badSlice = `### S1 — Do the thing\n- **Status**: pending\n- **Gate**: \`bun run test\`\n`;
+		const result = lint(doc({}, badSlice));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('does not resolve a Files field'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a slice that resolves no Command+Expect/Gate', () => {
+		const badSlice = `### S1 — Do the thing *(excl. \`a.ts\`)*\n- **Status**: pending\n`;
+		const result = lint(doc({}, badSlice));
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('does not resolve Command+Expect'),
+			),
+		).toBe(true);
+	});
+
+	it('flags an empty Slices section', () => {
+		const empty = `${FRONTMATTER()}
+## Goal
+
+p.
+
+## Why
+
+p.
+
+## Non-goals
+
+- x
+
+## Slices
+
+(nothing here)
+
+## Acceptance
+
+- [ ] done.
+`;
+		const result = lint(empty);
+		expect(
+			result.issues.some((i) => i.message.includes('no `### S<N>')),
+		).toBe(true);
+	});
+
+	it('flags an unknown filename prefix', () => {
+		const result = lint(doc(), 'docs/proposals/ready/z114-do-the-thing.md');
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('is not a known kind prefix'),
+			),
+		).toBe(true);
+	});
+});

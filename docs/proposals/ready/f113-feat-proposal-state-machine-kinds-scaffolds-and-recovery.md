@@ -579,22 +579,43 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S2 — Scaffold linter *(excl. `proposal-scaffold-linter.ts`)*
 
-- **Status**: pending
-- Create `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`
+- **Status**: done
+- Created `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`
   exporting `lintProposalMarkdown({ path, markdown })`.
-- Validate frontmatter via Zod (S1 schema).
-- Validate body section order: required sections present and in
-  `Goal → Why → Non-goals → Slices → Acceptance` order; `Notes`
-  optional and last.
-- Validate each slice has `Status`, `Files`, `Command`, `Expect`.
-- Validate filename prefix matches `PROPOSAL_PREFIX_BY_KIND[kind]`.
-- Validate folder matches `STATUS_TO_FOLDER[status]`.
-- Refuse with a precise error: file path, line number, what's wrong,
-  what the fix is.
-- `proposal-scaffold-linter.spec.ts` covers 12 happy paths and 15
-  negative cases (each invariant broken).
-- **Gate**: `bun run test proposal-scaffold-linter.spec.ts`.
-- **Estimated work**: 1 session.
+- Frontmatter validated by hand against the glossary (S1) — not a
+  standalone Zod `ProposalFrontmatterSchema` file, since no slice
+  actually owned creating one; the checks (`§4.4`'s required fields,
+  kind∈12, status∈7, id pattern, title length) live directly in
+  `lintFrontmatter`, reusing the existing `extractYamlBlock`/
+  `parseFrontmatterBlock` (no new YAML parser).
+- Validates body section order using the §4.5 **amended** rule
+  (leading numbering stripped before matching; the 4 optional sections
+  — Why this design / Architecture / Dependency graph / Risks and
+  mitigations — accepted in their fixed slot; an unrecognised heading
+  or an out-of-order one is flagged).
+- Validates each slice resolves `Status`/`Files`/`Command`/`Expect`
+  under **either** scaffold format (terse 4-bullet, or narrative
+  `(excl. ...)` + `Gate`) — not just the terse one, per the amended
+  §4.5.
+- Validates filename prefix vs frontmatter `kind` (via
+  `PROPOSAL_KIND_BY_PREFIX`, including the retired `p` legacy alias)
+  and folder vs frontmatter `status` (via `STATUS_TO_FOLDER`).
+- Every issue carries `{ line, message, fix }`.
+- **Found and fixed a real bug via dogfooding**: the first version
+  parsed `## `/`### S<N>` patterns **inside fenced code blocks** as
+  real document structure — this proposal's own §4.5 documents the
+  scaffold using literal `## Goal` lines inside a ` ```markdown ` fence,
+  so the linter initially flagged **f113 against itself** (17 false
+  issues). Fixed with a fence-tracking mask
+  (`computeFencedLineMask`); added a regression test for it.
+  Re-verified: f113 now lints clean (0 issues) against its own rules.
+- `proposal-scaffold-linter.spec.ts`: 24 tests (6 happy paths + 18
+  negative cases, one per invariant including the fence regression) —
+  fewer than the originally estimated "12 happy + 15 negative" but
+  covering every real invariant without padding for a round number.
+- **Gate**: `bun run test proposal-scaffold-linter.spec.ts` — 24/24
+  green; `bun x tsc --noEmit` clean.
+- **Estimated work**: 1 session (matched).
 
 ### S3 — Transition tool *(excl. `proposal-transition.tool.ts`)*
 
