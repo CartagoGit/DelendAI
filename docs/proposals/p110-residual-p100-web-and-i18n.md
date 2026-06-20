@@ -1,7 +1,7 @@
 ---
 id: p110
 type: proposal
-status: ready
+status: in-progress
 track: web+i18n
 date: 2026-06-20
 related:
@@ -180,10 +180,17 @@ de markdown. La estructura de directorios ya está en su sitio
 ## 3. Acceptance (global)
 
 - [x] **s1: `capabilities.json` lleva `i18n` (12-lang) en los 5
-      tools con catálogo (commit pendiente de cierre tras esta
-      sesión)**.
-- [ ] s2: `PluginPage.astro` tiene `<nav role="tablist">` con 4
-      tabs y a11y completa.
+      tools con catálogo (commit `b48de1d`, 2026-06-20 03:36)**.
+- [x] **s2: `PluginPage.astro` tiene tabs client-side con a11y
+      completa (commits `824c5c8` + `e942911`, 2026-06-20)**.
+      Componentes: `PluginTabs.astro` (con ARIA `role="tablist"`,
+      `aria-selected`, `aria-controls`, roving `tabindex`),
+      `plugin-tabs-controller.ts` (módulo puro testeable con fake
+      DOM en `plugin-tabs-controller.spec.ts`, 9 specs), integración
+      en `PluginPage.astro` con tabs condicionales (`install`,
+      `tools`, `configuration` si hay `configExample`, `tutorial`
+      si hay tutoriales). Hidden por defecto excepto el primero
+      para SEO-friendly SSR.
 - [ ] s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde.
 - [x] `bun run validate` verde (104 files / 689 tests OK, 10
       skipped intencionales).
