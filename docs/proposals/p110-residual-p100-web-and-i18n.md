@@ -75,27 +75,44 @@ de markdown. La estructura de directorios ya está en su sitio
 
 ## 2. Slices (orden recomendado, disjuntas)
 
-### s1 — `descriptionKey` en `capabilities.json`
+### s1 — Volcado `i18n` (12-lang) por tool al `capabilities.json`
 
 - **Files**:
-  - `apps/web/scripts/gen-capabilities.ts` (modificar el volcado).
-  - `apps/web/scripts/__tests__/gen-capabilities.spec.ts` (nuevo
-    spec o ampliación del existente).
-  - `apps/web/src/data/capabilities.json` (regenerado, ~43 tools
-    con `descriptionKey` añadido).
+  - `apps/web/scripts/lib/resolve-i18n-descriptions.ts` (nuevo, módulo
+    puro que aplana el catálogo `apps/web/src/i18n/tools/` a un mapa
+    `Record<tool, Record<Lang, string>>`).
+  - `apps/web/scripts/__tests__/resolve-i18n-descriptions.spec.ts`
+    (nuevo, 2 specs que pinchan la forma y la completitud 12-lang).
+  - `apps/web/scripts/gen-capabilities.ts` (integra el resolver y
+    vuelca el bloque `i18n` cuando el tool tiene entrada en el
+    catálogo).
+  - `apps/web/src/components/PluginPage.astro` (render usa el bloque
+    precomputado `tool.i18n[lang]` antes que el runtime lookup
+    `describeTool`).
+  - `apps/web/src/i18n/tools/index.ts` (fix: registra las entradas
+    `audit_audit_plan` / `audit_audit_consolidate` con namespace
+    completo, no `audit_plan` plano — el agente paralelo las había
+    registrado mal y eso impedía el match en `gen-capabilities.ts`).
 - **Cambios**:
-  - Cuando `tool.descriptionKey` está presente, añadir un campo
-    `descriptionKey` al objeto JSON del tool. Si no está, omitir
-    el campo (no es obligatorio).
-  - Actualizar el `outputSchema` del spec (TS type del JSON).
+  - `resolveI18nDescriptions()` devuelve `Record<tool, Record<Lang,
+    string>>` con cada entrada del catálogo aplanada.
+  - `gen-capabilities.ts` invoca el resolver UNA vez fuera del
+    loop de tools (O(1) por tool) y añade `i18n: {...}` cuando la
+    tool tiene entrada.
+  - `PluginPage.astro` consulta primero `tool.i18n[lang]`, luego
+    `tool.i18n.en` (fallback), luego `describeTool()` runtime, luego
+    `tool.description`. SSR-friendly: cero trabajo en runtime para
+    tools con i18n volcada.
 - **DoD**:
-  - `bun run build:web` regenera `capabilities.json` con
-    `descriptionKey` para al menos 3 tools de demo (mcp-vertex_overview,
-    proposals_auto_work, memory_save).
-  - `bun run site:strict` verde.
-  - Spec nuevo pasa.
-- **Coste**: ~20 líneas (volcado + spec). Riesgo bajo (no
-  toca runtime, solo el artefacto JSON).
+  - `bun apps/web/scripts/gen-capabilities.ts` regenera
+    `capabilities.json` con `i18n` (12 langs) en los 5 tools con
+    catálogo hoy: `mcp-vertex_overview`, `proposals_auto_work`,
+    `memory_save`, `audit_audit_plan`, `audit_audit_consolidate`.
+  - `bun run validate` verde.
+  - Los 2 nuevos specs pasan.
+- **Coste**: ~140 líneas (resolver + 2 specs + integración). Sin
+  deps nuevas. SSR gana: el render de `PluginPage` ya no llama a
+  `describeTool` para los 5 tools con catálogo.
 
 ### s2 — Tabs client-side en `PluginPage.astro`
 
@@ -162,14 +179,16 @@ de markdown. La estructura de directorios ya está en su sitio
 
 ## 3. Acceptance (global)
 
-- [ ] s1: `capabilities.json` lleva `descriptionKey` en al menos
-      3 tools.
+- [x] **s1: `capabilities.json` lleva `i18n` (12-lang) en los 5
+      tools con catálogo (commit pendiente de cierre tras esta
+      sesión)**.
 - [ ] s2: `PluginPage.astro` tiene `<nav role="tablist">` con 4
       tabs y a11y completa.
 - [ ] s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde.
-- [ ] `bun run validate` verde en cada slice.
+- [x] `bun run validate` verde (104 files / 689 tests OK, 10
+      skipped intencionales).
 - [ ] `bun run site:strict` verde al final.
-- [ ] No se introducen nuevas deps.
+- [x] No se introdujeron nuevas deps.
 - [ ] CHANGELOG actualizado con el cierre de los residuos de p100.
 
 ## 4. Riesgos y mitigaciones
