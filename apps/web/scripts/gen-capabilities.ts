@@ -32,6 +32,7 @@ import {
 	groupByPluginLang,
 	type ITutorial,
 } from './lib/discover-tutorials';
+import { resolveI18nDescriptions } from './lib/resolve-i18n-descriptions';
 import { languages as supportedLanguages } from '../src/i18n/shared';
 
 import {
@@ -91,6 +92,15 @@ interface ITool {
 			readonly description?: string;
 		}>;
 	};
+	/**
+	 * Optional 12-language description block, precomputed at build time
+	 * from the per-tool i18n catalogue (see `resolveI18nDescriptions`).
+	 * When present, the SSR renderer uses it directly and skips the
+	 * runtime `describeTool()` lookup. Only tools with a `descriptionKey`
+	 * declared on their `IToolRegistration` AND an entry in the catalogue
+	 * will get this block.
+	 */
+	readonly i18n?: Readonly<Record<string, string>>;
 }
 
 /** A measured, real payload size (bytes of the tool result text the agent sees). */
@@ -272,10 +282,14 @@ const collectTools = async (): Promise<ICollected> => {
 		);
 		const knowledgeRaw = overview.structuredContent?.knowledge ?? [];
 		await close();
+		// Precomputed i18n blocks for tools with an entry in the catalogue.
+		// Built once outside the loop so the per-tool map lookup is O(1).
+		const i18nByName = resolveI18nDescriptions();
 		return {
 			tools: toolsRes.tools
 				.map((t) => {
 					const parsedSchema = parseInputSchema(t.inputSchema);
+					const i18nBlock = i18nByName[t.name];
 					return {
 						name: t.name,
 						namespace: namespaceOf(t.name),
@@ -289,6 +303,10 @@ const collectTools = async (): Promise<ICollected> => {
 						...(parsedSchema && parsedSchema.fields.length > 0
 							? { inputSchema: { fields: parsedSchema.fields } }
 							: {}),
+						// Only emit `i18n` when the catalogue has this tool's
+						// 12-lang block. Tools without an entry fall back to
+						// the runtime English description (see s4-bis note).
+						...(i18nBlock ? { i18n: i18nBlock } : {}),
 					};
 				})
 				.sort((a, b) => a.name.localeCompare(b.name)),

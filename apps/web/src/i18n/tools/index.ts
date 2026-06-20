@@ -62,8 +62,14 @@ export const registerKnowledgeI18n = (
 registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
 registerToolI18n('proposals_auto_work', proposalsAutoWorkI18n);
 registerToolI18n('memory_save', memorySaveI18n);
-registerToolI18n('audit_plan', auditPlanI18n);
-registerToolI18n('audit_consolidate', auditConsolidateI18n);
+// The audit plugin registers its tools as `${prefix}_audit_plan` and
+// `${prefix}_audit_consolidate` (see plugins/audit/src/lib/tools/*-tool.ts),
+// which yields the namespaced identifiers `audit_audit_plan` /
+// `audit_audit_consolidate` (default namespace prefix `audit`). The
+// catalogue is keyed on the full MCP tool name, not the plugin's internal
+// slug, so we register under the namespaced form.
+registerToolI18n('audit_audit_plan', auditPlanI18n);
+registerToolI18n('audit_audit_consolidate', auditConsolidateI18n);
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────
 
