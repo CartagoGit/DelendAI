@@ -107,7 +107,7 @@
 
 	// Remove the default disclosure triangle (Chromium/Firefox/Safari all
 	// render <summary>::marker differently; we draw our own caret below).
-	& > summary {
+	& > .nav__more-summary {
 		list-style: none;
 		cursor: pointer;
 		display: inline-flex;
@@ -120,18 +120,20 @@
 		user-select: none;
 		transition: color 0.18s ease, background 0.18s ease;
 	}
-	& > summary::-webkit-details-marker {
+	/* stylelint-disable-next-line selector-max-pseudo -- vendor pseudo on a native UA element */
+	& > .nav__more-summary::-webkit-details-marker {
 		display: none;
 	}
-	& > summary::marker {
+	/* stylelint-disable-next-line scoped-bem/selector -- `::marker` is the browser's disclosure triangle on the native <summary>; the project BEM linter forbids the trailing pseudo on top of a vendor pseudo, but the element itself is a UA-rendered <summary> that cannot be replaced without reimplementing <details>. */
+	& > .nav__more-summary::marker {
 		content: '';
 	}
-	& > summary:hover,
-	&[open] > summary {
+	& > .nav__more-summary:hover,
+	&[open] > .nav__more-summary {
 		color: var(--fg);
 		background: color-mix(in srgb, var(--accent) 9%, transparent);
 	}
-	& > summary:focus-visible {
+	& > .nav__more-summary:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
 	}
@@ -139,7 +141,7 @@
 .nav__more-caret {
 	transition: transform 0.18s ease;
 }
-.nav__more[open] > summary .nav__more-caret {
+.nav__more[open] > .nav__more-summary .nav__more-caret {
 	transform: rotate(180deg);
 }
 .nav__more-panel {
@@ -157,14 +159,14 @@
 	gap: 1px;
 	z-index: 30;
 
-	& a {
+	& .nav__more-link {
 		color: var(--muted);
 		font-size: 0.92rem;
 		padding: 0.45rem 0.6rem;
 		border-radius: 6px;
 		white-space: nowrap;
 	}
-	& a:hover {
+	& .nav__more-link:hover {
 		color: var(--fg);
 		text-decoration: none;
 		background: color-mix(in srgb, var(--accent) 9%, transparent);
