@@ -1,6 +1,12 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+// Local import aliases (`#MAYÚSCULAS/*`, see p112 §1). Single source of truth
+// in `scripts/lib/local-aliases.mjs`; both `vite.resolve.alias` (runtime)
+// and `tsconfig.json#compilerOptions.paths` (type-check) consume it so
+// the two configurations cannot drift.
+import { LOCAL_ALIASES } from './scripts/lib/local-aliases.mjs';
+
 // Static build for GitHub Pages (project site → served under /mcp-vertex/).
 // Override the base with PAGES_BASE='' for a user/root deploy.
 const base = process.env.PAGES_BASE ?? '/mcp-vertex';
@@ -29,4 +35,10 @@ export default defineConfig({
 		],
 		routing: { prefixDefaultLocale: false },
 	},
-});
+        vite: {
+                // p112 s2: hand the `#MAYÚSCULAS/*` aliases to Vite. Vite does
+                // NOT honour `tsconfig.json#paths` at runtime, so the runtime
+                // config is required in addition to the type-check config in
+                // `tsconfig.json`. The sync test (p112 s6) prevents drift.
+                resolve: { alias: LOCAL_ALIASES },
+        },

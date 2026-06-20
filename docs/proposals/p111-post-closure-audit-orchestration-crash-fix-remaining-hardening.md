@@ -14,6 +14,7 @@ shipped-in:
   - 36ac273 # s4: property-based specs for redactSecrets and frontmatter-parser
   - d3b2074 # s4 (chained): BM25 params + property tests + permissions
   - 49a9e28 # s4: store-concurrency spec for memory store (M32)
+  - 440c3ad # s4 (chained): simplify import in store-concurrency.spec.ts
 related:
   - p99 # audit plugin: this proposal records a new finding in its master audit doc
   - p110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
@@ -103,7 +104,7 @@ verificados contra el código y ya corregidos:
     generados.
   - Test de concurrencia de `memory`: N escritores paralelos bajo
     `withFileMutex` no pierden ninguna actualización.
-- status: done — los tres specs (`redact.property.spec.ts`,
+- status: done
   `frontmatter-parser.property.spec.ts`, `store-concurrency.spec.ts`)
   están commiteados y verdes (4/4 tests de concurrencia pasan en
   ~2.9s; el suite total del repo es 113 files / 753 tests / 10
@@ -117,7 +118,9 @@ verificados contra el código y ya corregidos:
   superficie pública del store (`saveNote`/`removeNote`/`readStore`),
   no toca `node:fs` ni `withFileMutex` directamente — el plugin es
   libre de cambiar la implementación (SQLite-WAL, etc.) sin romper
-  este contrato.
+  este contrato. Peer review 2026-06-20 (mcp-core-orchestrator):
+  4/4 tests verdes, typecheck verde, DIP/SRP/ISP confirmados;
+  aprobado como `done`.
 
 ## 2. No-objetivos
 
@@ -133,6 +136,9 @@ verificados contra el código y ya corregidos:
 slice. El registro `docs/proposals/index.json` (si existe) o el
 `sync_proposals` posterior a un reinicio del servidor MCP refleja
 `p111` con sus 4 slices.
-- review-state: in_review
+- review-state: done
 - review-implementer: mcp-core-s4-runner
+- review-reviewer: mcp-core-orchestrator
+- review-log: approved by mcp-core-orchestrator — Verified: 4/4 tests pass under `bunx vitest run plugins/memory/tests/src/lib/store-concurrency.spec.ts` in 3.0s. `bun run typecheck` in plugins/memory is clean. Spec correctly depends only on the public surface (`saveNote`/`removeNote`/`readStore` via `@mcp-vertex/memory/lib/store`, which resolves through `@mcp-vertex/memory/*` tsconfig path → `./plugins/memory/src/lib/store`) — DIP holds, no node:fs/withFileMutex coupling. Tests cover: 32 distinct parallel writes preserved, 16 racing writes to same title converge to 1, sequential vs parallel convergence, mixed saves+deletes preserve expected set. SRP/ISP maintained. Ready to close.
+
 
