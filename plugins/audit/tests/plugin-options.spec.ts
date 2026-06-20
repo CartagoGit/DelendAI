@@ -88,7 +88,11 @@ const _fakeReader: IFileReader = {
 
 const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 	({
-		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
+		workspace: {
+			root: '/ws',
+			resolve: (p: string) => `/ws/${p}`,
+			reader: fakeReader,
+		},
 		corePaths: {
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',

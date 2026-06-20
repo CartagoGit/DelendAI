@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-20T03:38:09.502Z",
+	"generated_at": "2026-06-20T07:10:00.000Z",
 	"count": 12,
 	"proposals": [
 		{
@@ -87,7 +87,7 @@
 			"file": "../../proposals/p110-residual-p100-web-and-i18n.md",
 			"track": "web+i18n",
 			"type": "proposal",
-			"status": "in_progress",
+			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
