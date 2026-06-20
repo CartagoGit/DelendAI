@@ -5,7 +5,7 @@ import {
 	SCORE_DIMENSIONS,
 	SCOPE_LABEL,
 	buildBrief,
-} from '@mcp-vertex/audit/lib/brief';
+} from '../src/lib/brief';
 
 describe('buildBrief', () => {
 	it('returns a non-empty markdown for every scope', () => {

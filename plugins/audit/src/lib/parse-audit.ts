@@ -216,15 +216,17 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 		}
 		if (!inTable) continue;
 		const dim = cells[0] ?? '';
-		const raw = cells[1] ?? '';
+		const scoreCell = cells[1] ?? '';
 		const comment = cells.slice(2).join(' | ');
-		const scoreMatch = /^(\d+)\s*\/\s*10$/u.exec(raw);
+		const scoreMatch = /^(\d+)\s*\/\s*10$/u.exec(scoreCell);
 		const score = scoreMatch?.[1]
 			? Number.parseInt(scoreMatch[1], 10)
-			: raw.trim() === '?'
+			: scoreCell.trim() === '?'
 				? null
 				: (() => {
-						const numeric = /^(\d+(?:\.\d+)?)$/u.exec(raw.trim());
+						const numeric = /^(\d+(?:\.\d+)?)$/u.exec(
+							scoreCell.trim(),
+						);
 						return numeric?.[1]
 							? Number.parseFloat(numeric[1])
 							: null;

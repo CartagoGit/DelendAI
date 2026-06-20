@@ -1,0 +1,18 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"paths": {
+			"@mcp-vertex/core": ["../../packages/core/dist/index.d.ts"],
+			"@mcp-vertex/core/public": [
+				"../../packages/core/dist/public/index.d.ts"
+			]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+}

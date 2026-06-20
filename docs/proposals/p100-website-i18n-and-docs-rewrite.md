@@ -9,20 +9,24 @@ budget: 4
 
 # p100 — Web: i18n real de herramientas, estructura por página y docs profundas
 
-> **Estado: EN CURSO — s1, s2, s3, s3-bis cerrados** (2026-06-20).
-> s1 por commit paralelo (`5658d55`, `875121d`); s2+s3+s3-bis por
-> commit `6793460` (este agente, 2026-06-20 01:33). El catálogo
-> `apps/web/src/i18n/tools/` está operativo con 3 entradas en 12
-> idiomas (`mcp-vertex_overview`, `proposals_auto_work`,
-> `memory_save`) y `check-i18n.ts` exige 12-lang por entrada. El
-> campo `descriptionKey?: string` en `IToolRegistration` permite a
-> cada tool declarar su clave sin tocar el contrato MCP. El render
-> localizado (`PluginPage.astro` → `describeTool`) ya consume el
-> catálogo. Pendientes: s4 (volcar `descriptionKey` en
-> `capabilities.json` desde `gen-capabilities.ts` — el render ya
-> funciona vía `describeTool` lookup), s5 (tabla de argumentos),
-> s6 (Configuration JSON), s7 (tutoriales), s8 (tabs client-side
-> + limpieza flag legacy).
+> **Estado: EN CURSO — s1, s2, s3, s3-bis, s5, s7-parcial cerrados**
+> (2026-06-20). s1 por commit paralelo (`5658d55`, `875121d`); s2+s3
+> +s3-bis por commit `6793460`; s5 por commit `eba8bdf` (este
+> agente, 2026-06-20 ~02:10). El catálogo
+> `apps/web/src/i18n/tools/` está operativo con entradas en 12
+> idiomas y `check-i18n.ts` exige 12-lang por entrada. El campo
+> `descriptionKey?: string` en `IToolRegistration` permite a cada
+> tool declarar su clave sin tocar el contrato MCP. El render
+> localizado (`PluginPage.astro` → `describeTool`) consume el
+> catálogo. La tabla de argumentos por tool (s5) renderiza
+> `inputSchema` con descripciones localizadas. s7 data half
+> landed en commit `a6ce4df` (5 EN walkthroughs en
+> `plugins/<name>/tutorials/en/`, 644 líneas, 0 deps añadidas;
+> `Tutorial.astro` diferido a s8+ por falta de parser markdown
+> en el sitio). Pendientes: s4 (volcar `descriptionKey` en
+> `capabilities.json` — el render ya funciona vía `describeTool`
+> lookup), s6 (Configuration JSON con `configExample`), s8
+> (tabs client-side + `Tutorial.astro` + cleanup flag legacy).
 
 ## 0. Decisiones del usuario (validadas 2026-06-18)
 
@@ -254,7 +258,16 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
   60 archivos). Empezar con `en` para proposals/memory/quality/rules/docs y
   añadir el resto de idiomas en una propuesta posterior.
   - files: [plugins/proposals/tutorials/en/*.md, plugins/memory/tutorials/en/*.md, plugins/quality/tutorials/en/*.md, plugins/rules/tutorials/en/*.md, plugins/docs/tutorials/en/*.md, apps/web/src/components/Tutorial.astro (nuevo)]
-  - status: todo
+  - status: partial (data half landed: commit `a6ce4df` ships 5 EN walkthroughs
+    under `plugins/<name>/tutorials/en/` — 644 lines, 0 deps added.
+    `apps/web/src/components/Tutorial.astro` and the 11 other languages
+    deferred to a follow-up proposal: the component needs a markdown
+    parser (no `marked`/`markdown-it` installed, no Astro Content
+    Collections in use) and `apps/web/package.json` adding a parser
+    is a separate decision that pairs naturally with s8's tab work
+    that mounts the tutorial on the plugin page). The directory layout
+    `plugins/<name>/tutorials/<lang>/` is now in place, so the 11
+    other languages are pure additions, not refactors.)
 
 - **id: s8** — Tabs client-side + cleanup del flag `?legacy=1`
   - files: [apps/web/src/components/PluginPage.astro, apps/web/src/styles/*.css]

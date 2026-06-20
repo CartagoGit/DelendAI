@@ -415,8 +415,8 @@ const collectTutorials = (): ITutorial[] => {
 	// `{ plugin, lang, items }` so the JSON stays flat and inspectable.
 	const grouped = groupByPluginLang(all);
 	const flat: ITutorial[] = [];
-	for (const [plugin, langMap] of grouped.entries()) {
-		for (const [lang, items] of langMap.entries()) {
+	for (const [, langMap] of grouped.entries()) {
+		for (const [, items] of langMap.entries()) {
 			// Flatten to per-(plugin,lang) entries with a stable order.
 			flat.push(...items);
 		}

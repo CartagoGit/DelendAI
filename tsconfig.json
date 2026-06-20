@@ -8,5 +8,6 @@
 		"examples/*/src/**/*",
 		"examples/*/tests/**/*",
 		"scripts/**/*"
-	]
+	],
+	"exclude": ["plugins/audit/**/*"]
 }
