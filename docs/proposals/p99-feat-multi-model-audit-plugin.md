@@ -21,39 +21,38 @@ shipped-in:
 > API) y C (roster declarado) quedan como propuesta futura, alineados con
 > el invariante "network opt-in, aislado".
 >
-> **Pendiente menor (no bloqueante):** algunos specs del plugin fallan
-> por bugs lógicos pre-existentes del propio plugin
-> (`extractScores` shadowing, `parseAuditFiles` empty result, etc.). El
-> plugin está excluido del `tsconfig.json` raíz (`exclude:
-> ["plugins/audit/**/*"]`) y tiene su propio `tsconfig.dts.json` para
-> empaquetar; los specs se typecheckean dentro de su `vitest.config.ts`
-> propio.
+> **Pendiente menor (resuelto 2026-06-20 por el usuario):** los
+> specs del plugin que fallaban por bugs lógicos
+> (`extractScores` shadowing, `parseAuditFiles` empty result, etc.)
+> ya pasan — `bun run validate` reporta 100 test files / 668 tests
+> OK (per p100 §0 "Validación", commiteado 2026-06-20 ~02:24).
+> El `tsconfig.dts.json` del plugin y su `vitest.config.ts` propio
+> siguen en su lugar; el plugin sigue excluido del tsconfig raíz
+> (`exclude: ["plugins/audit/**/*"]`) por su naturaleza
+> experimental (alcance A). Si en un futuro propuesta se quiere
+> re-incluir el plugin en el `tsconfig.json` raíz, ver
+> "Pendiente menor adicional" abajo.
 >
 > **Pendiente menor adicional (2026-06-20, descubierto al validar
-> el gate):** `bun run typecheck` desde la raíz reporta **9 errores**
-> en `plugins/audit/`. El `exclude: ["plugins/audit/**/*"]` del
-> `tsconfig.json` raíz no se está respetando (probable causa:
-> `tsc --noEmit -p tsconfig.json` resuelve a un proyecto que
-> arrastra `plugins/audit/` por los `paths` del
-> `tsconfig.base.json` — `paths` no respeta `exclude`). Errores
-> observados (la lista exacta puede haber cambiado con commits
-> posteriores):
+> el gate, resuelto por el usuario el mismo día):** `bun run typecheck`
+> desde la raíz reportó **9 errores** en `plugins/audit/` durante esta
+> sesión (mientras el plugin estaba recién mergeado). El usuario los
+> arregló en commits posteriores (entre el cierre de p100 y este turno,
+> el header de p100 documenta "Validación: `bun run validate` verde
+> (100 test files / 668 tests OK)"). Errores originales (archivados
+> para referencia):
 >
 > - `src/index.ts(97,26)`: `Property 'reader' does not exist on type
->   'IWorkspacePathProvider'` — usa un field que no expone el contrato
->   público del core. Fix mínimo: quitar la referencia (o añadir
->   `reader?` a `IWorkspacePathProvider` en el core, que es el cambio
->   mayor).
+>   'IWorkspacePathProvider'` — el plugin pedía un field que el
+>   contrato público del core no expone. Resuelto refactorizando para
+>   usar `node:fs/promises` directamente (como hace `plugins/docs`).
 > - `src/lib/parse-audit.ts(201/207/209/210/219)`: cadena de
 >   `implicitly has type 'any'`, `Block-scoped variable 'raw' used
->   before its declaration`, `param 'c' implicitly any` — half-typed
->   helper. Fix: anotaciones explícitas + reorder de la declaración
->   de `raw` (8 líneas aprox).
+>   before its declaration`, `param 'c' implicitly any`. Resuelto
+>   con anotaciones explícitas y reorder de `raw`.
 > - `src/lib/tools/consolidate-tool.ts(92, 121)`:
->   `exactOptionalPropertyTypes: true` mismatch — el handler acepta
->   `{ auditDir?: string }` pero el contrato MCP SDK exige
->   `{ auditDir?: string | undefined }`. Fix: añadir `| undefined`
->   a las dos annotations.
+>   `exactOptionalPropertyTypes: true` mismatch. Resuelto cambiando
+>   la firma del handler a `{ auditDir?: string | undefined; ... }`.
 >
 > Coste estimado del fix combinado: ~20 líneas, sin nuevas deps,
 > todo typecheck-lint. Una vez arreglado, `bun run validate` vuelve
@@ -61,8 +60,7 @@ shipped-in:
 > Un slice futuro (siguiente propuesta o tarea del agente) cierra
 > esos bugs; **no bloquean** el cierre de p99 porque el plugin ya produce
 > los tools correctos y se carga sin errores en runtime (la lógica vive
-> en `src/lib/`, no en los specs). y
-> no es posible, y tres enfoques con una recomendación. Decide tú el alcance.
+> en `src/lib/`, no en los specs).
 
 ## Qué quieres
 
