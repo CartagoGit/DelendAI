@@ -1,9 +1,9 @@
 /**
- * `<prefix>_metrics` meta-tool (M12): report the per-tool metrics collected
+ * `<prefix>_metrics` meta-tool: report the per-tool metrics collected
  * this process (calls, errors, latency, response bytes). Read-only; pass
  * `reset: true` to zero the counters after reading, or `persist: true` to dump a
  * timestamped snapshot under `<cacheDir>/metrics/` for longitudinal comparison
- * across sessions/releases (M29).
+ * across sessions/releases.
  */
 import { mkdir, readdir } from 'node:fs/promises';
 import { join } from 'node:path';

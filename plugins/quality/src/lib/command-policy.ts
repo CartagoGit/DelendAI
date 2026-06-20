@@ -1,5 +1,5 @@
 /**
- * Command allow/deny policy for the quality runner (M13).
+ * Command allow/deny policy for the quality runner.
  *
  * `run_quality` executes commands sourced from the host config. That is a
  * trust boundary: a host that exposes the quality plugin to a less-trusted

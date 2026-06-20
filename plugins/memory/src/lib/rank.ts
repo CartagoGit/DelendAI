@@ -2,7 +2,7 @@ import type { INote } from './store';
 
 /**
  * Lexical relevance ranking for `memory_recall` — a dependency-free,
- * offline BM25-lite scorer over the JSON note store. [N22]
+ * offline BM25-lite scorer over the JSON note store.
  *
  * NOT vector/embedding "semantic" search: that needs an external model
  * (network or a heavy local dep), which would break the agnostic, offline

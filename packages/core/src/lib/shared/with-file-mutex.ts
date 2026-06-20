@@ -42,7 +42,7 @@ export interface IFileMutexOptions {
 	/** How often the holder refreshes its lock mtime while `fn()` runs (ms). Default `staleMs / 3`. */
 	readonly heartbeatMs?: number;
 	/**
-	 * What to do when a **live** holder keeps the lock past `timeoutMs` (M28):
+	 * What to do when a **live** holder keeps the lock past `timeoutMs`:
 	 * - `'steal'` (default): reclaim the lock to avoid deadlock — the historical
 	 *   last-resort behaviour. Safe (the ownership token stops the old holder
 	 *   deleting ours) but it can clobber a slow-but-alive holder under heavy load.

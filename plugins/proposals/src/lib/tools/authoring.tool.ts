@@ -52,7 +52,7 @@ export interface IAuthoringToolOptions {
 	>;
 	/**
 	 * Host-specific proposal subfolders (relative to proposalsDir) the
-	 * post-mutation sync should also scan, e.g. `['paused/demos']`. [M5]
+	 * post-mutation sync should also scan, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
 }
@@ -413,7 +413,7 @@ export const buildCloseSliceRegistration = (
 });
 
 /**
- * `proposal_review` — peer-review loop for a slice (M35). An implementer
+ * `proposal_review` — peer-review loop for a slice. An implementer
  * `submit`s a finished slice for review (it is NOT done yet); a DIFFERENT
  * agent `approve`s it (→ done + lock released) or `request_changes` with an
  * objection (→ reworkable, lock released). The fixer re-`submit`s and another

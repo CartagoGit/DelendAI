@@ -107,7 +107,7 @@ export const runAutoWork = async (
 	};
 
 	if (next.kind !== 'next-proposal') {
-		// `all-claimed` [N9]: every actionable proposal is in_progress under
+		// `all-claimed`: every actionable proposal is in_progress under
 		// an active lock. Surface the anti-loop guidance verbatim so the
 		// agent stops instead of re-calling auto_work on the same proposal.
 		consecutiveIdle += 1;

@@ -43,7 +43,7 @@ export const buildAgentLockRegistration = (
 						parent_task_id: z.string().optional(),
 						/**
 						 * What to do when claim/release/gc contends with a *live*
-						 * holder past the mutex's contention timeout (M28):
+						 * holder past the mutex's contention timeout:
 						 * `'steal'` (default) reclaims as before; `'fail'` rejects
 						 * instead of clobbering a slow-but-alive holder.
 						 */

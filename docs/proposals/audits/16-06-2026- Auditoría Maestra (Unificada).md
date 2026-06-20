@@ -429,11 +429,14 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `(A2)`, `[R12]`, `[N3/N4]`, …) y a "el agente / trabajo del agente": un comentario debe
   explicar qué hace el código y por qué, no de qué propuesta interna salió.
 
-**Bugs de la web reportados (18-06, 2ª tanda) — M38:**
-- 🔴 La **página de la API** (`/api/`, TypeDoc) **no funciona**.
-- 🔴 **No se ven las banderas** de idioma.
-- 🔴 La **descripción de cada herramienta sale solo en inglés** aunque se cambie de idioma.
-- 🟠 Algunas descripciones **se salen de su recuadro** (overflow).
+**Bugs de la web reportados (18-06, 2ª tanda) — M38** (re-verificado 21-06, ver §11):
+- ✅ La **página de la API** (`/api/`, TypeDoc) — funciona, assets relativos.
+- ✅ **Banderas** de idioma — se ven, rutas correctas.
+- 🟡 La **descripción de cada herramienta sale solo en inglés** — arquitectura
+  i18n resuelta (catálogo opt-in + fallback), pero solo 5/68 tools tienen
+  entrada; el resto es backlog de contenido, no bug.
+- ✅ Algunas descripciones **se salían de su recuadro** (overflow) — contenidas
+  con `overflow-wrap`/`text-overflow:ellipsis`.
 - 🟡 Preferencia: **cada sección = una página individual** (no todo en un único home).
 - 🟡 **Benchmarks más extensos** y **comparando con otras utilidades similares**.
 
@@ -506,8 +509,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `proposal-acceptance`. *Decisión:* NO se unifican los runners completos porque difieren por
   diseño (git = `execFile` read-only; quality = shell + registro de cancelación + salida
   combinada; acceptance = argv + streams separados + `expect`) — un runner único sería una
-  abstracción con fugas. ⬜ Pending (minor): `core/walkAllowedFiles` para unificar el
-  `walk()` de `search`/`docs`.
+  abstracción con fugas. ✅ `core/walkAllowedFiles` unifica el `walk()` de
+  `search`/`docs` — cerrado (ver §11, sesión 21-06).
 
 **Plataforma / producto (la grieta principal, consenso 3/3):**
 - ✅ **M26 · Dogfooding del propio repo** — añadidos `AGENTS.md` (guía canónica:
@@ -535,7 +538,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `LockContentionError` (code `lock-contention-budget-exceeded`) en vez de robarlo, para
   que el caller haga back-off (p. ej. `await_lock`) — un lock **abandonado** se sigue
   reclamando siempre. Additivo, 2 tests (fail no roba/ no ejecuta; steal sí reclama).
-  ⬜ Pending (minor): cablear `agent_lock` para exponer el modo `fail` + stress tests.
+  ✅ `agent_lock` ya expone `onContention: 'steal'|'fail'` con test dedicado —
+  cerrado (ver §11, sesión 21-06).
 
 **Observabilidad / release / tests (P2-P3):**
 - 🟡 **M29 · Métricas persistentes** —
@@ -563,8 +567,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   ✅ **Surfaceado en la web**: `gen-capabilities` fusiona los `effects` del `overview` en
   `capabilities.json` y las páginas por plugin muestran **badges** por tool
   (write/spawn/destructive/read-only). **M31 completo.**
-- ⬜ **M32 · Cobertura desigual** (branch 62,5 %) — property-based tests para parsers
-  (`frontmatter-parser`, `redactSecrets`), test de concurrencia dedicado para `memory`.
+- ✅ **M32 · Cobertura desigual** — cerrado (ver §11, sesión 21-06):
+  property-based tests para `frontmatter-parser`/`redactSecrets` y test de
+  concurrencia dedicado para `memory` ya existían, verificados contra código.
 - ⬜ **M33 · Profundidad de plugins (mejoras opcionales)** — `git` (blame/show/worktree),
   `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
   `memory` (export/import), `docs` (`docs_search`). No son *fixes* de auditoría sino
@@ -750,3 +755,91 @@ camino al 11/10 — solo acabados de plataforma.**
   `isError`). Spec `agent-names.spec.ts` endurecido con la misma aserción de
   `structuredContent` que las otras dos. `bun test plugins/proposals` 326/326
   verde.
+
+---
+
+## 11. Sesión 21-06 — cierre de cola viva: re-verificación exhaustiva contra código
+
+> El documento llevaba ítems marcados ⬜/🟡 desde el 17–20/06 que habían sido
+> cerrados por sesiones posteriores sin actualizar este registro. Esta sesión
+> re-verificó **cada hallazgo abierto** línea por línea contra el código actual
+> (no contra lo que decía el documento) antes de tocar nada. Resultado: la
+> mayoría ya estaba resuelta; solo M37 seguía genuinamente pendiente.
+
+- **✅ M25 · Dedupe walk() search/docs** — ya estaba unificado: ambos motores
+  delegan en `walkAllowedFiles`
+  ([walk-allowed-files.ts](../../../packages/core/src/lib/shared/walk-allowed-files.ts)),
+  especializando solo `shouldSkipDir`/`visitFile`. Cerrado sin cambios de código.
+- **✅ M28 · `agent_lock` con modo `fail` cableado** — el schema de
+  [agent-lock.tool.ts:50](../../../plugins/proposals/src/lib/tools/agent-lock.tool.ts#L50)
+  ya expone `onContention: z.enum(['steal','fail']).optional()`, con test
+  dedicado en `agent-lock-contention.spec.ts`. Cerrado sin cambios de código.
+- **✅ M32 · Cobertura property-based** — confirmados ya existentes:
+  `redact.property.spec.ts` (PRNG determinista, 9 patrones de secreto × 50
+  trials) y `frontmatter-parser.property.spec.ts` (round-trip de escalares,
+  arrays bloque/inline) en core/proposals; `store-concurrency.spec.ts` en
+  `memory` (32 escritores paralelos bajo `withFileMutex`). Cerrado sin cambios.
+- **✅ M36 · Rename `@mcp-vertex` sin residuos** — verificado: cero ocurrencias
+  de `@mcp-server`, `mcp-core`, `mcpcore_`, `mcpvertex_` (sin guion) en código
+  fuente. Cerrado sin cambios.
+- **✅ M37 · Comentarios con IDs de auditoría en vez de explicar el código** —
+  **genuinamente pendiente, ahora cerrado.** ~50 comentarios en 38 archivos
+  (`packages/core`, 6 plugins, `apps/web`, `scripts`) llevaban sufijos
+  `(M12)`, `[N21]`, `[R12]`, `(A2)`, `[N3/N4]`, incluyendo dos visibles en la
+  **UI pública** (`guide.astro` en/es: "Trust boundary (M13):"). Reescritos
+  para explicar el qué/por qué sin el código de hallazgo (p. ej. `(M28):` →
+  `:`, `[N9]:` → `:`). *Decisión de alcance:* las referencias a **propuestas de
+  diseño** (`f113 §4.2`, `l107 §3.2`, `l109 s3`, …) se mantienen — son citas a
+  un spec real y estable que documenta el porqué de una decisión, no
+  bookkeeping transitorio de esta auditoría; la regla original apunta
+  explícitamente a los códigos de hallazgo de auditoría, no a citas de spec.
+  Verificado `bun run validate` verde tras el cambio (912 tests).
+- **✅ M38 · Bugs de la web (18-06, 2ª tanda) — re-verificados contra el sitio
+  construido (`apps/web/dist`, no contra el código a ojo):**
+  - ✅ **Página `/api/` (TypeDoc)** funciona: TypeDoc emite assets con rutas
+    relativas (`assets/style.css`, no `/assets/...`), así que es indiferente
+    al `base=/mcp-vertex`; el nav enlaza `/mcp-vertex/api/` y el `index.html`
+    generado existe con sus assets.
+  - ✅ **Banderas de idioma** se ven: los 12 códigos de `languages` en
+    `i18n/shared.ts` resuelven a ficheros reales en `public/flags/*.svg`
+    (verificado 1:1) y el HTML construido referencia
+    `/mcp-vertex/flags/<code>.svg` con el base correcto.
+  - 🟡 **Descripción de herramienta solo en inglés** — la causa raíz (sin
+    mecanismo de i18n) está resuelta desde la sesión 20-06: hay un catálogo
+    opt-in (`apps/web/src/i18n/tools/`) con fallback a inglés, gateado por
+    `check-i18n.ts` para que ninguna entrada que se une quede incompleta en
+    los 12 idiomas. Verificado en el HTML construido que `audit_audit_consolidate`
+    sale en chino en `/zh/plugins/audit/`. **Lo que queda es contenido, no
+    arquitectura:** solo 5 de 68 tools están en el catálogo; las otras 63
+    siguen en inglés por diseño (opt-in, no se traducen automáticamente).
+    Backlog explícito, no bug — cada plugin puede sumar su entrada cuando se
+    decida invertir en ello.
+  - ✅ **Overflow de descripciones** — `_tool.scss` (`overflow-wrap: anywhere`)
+    y `_plugin-card.scss` (`overflow:hidden` + `text-overflow:ellipsis`) ya
+    contienen el contenido dentro de su caja.
+- **🟡 release.yml — re-verificado:** pinning de bun exacto (`1.3.14`),
+  TypeScript/Vitest exactos en `package.json` (sin rango), y coverage gate real
+  (`vitest` thresholds `statements:72/branches:55/functions:75/lines:73` vía
+  `bun run test:coverage` en CI) — esos tres ya estaban bien. `CHANGELOG.md`
+  existe y se mantiene a mano (Keep a Changelog), no autogenerado por release;
+  aceptado por diseño (M34). **Provenance NO implementado y no es un bug
+  nuestro:** `bun publish` (1.3.x) no tiene flag `--provenance` — solo `npm
+  publish` lo soporta. El permiso `id-token: write` del workflow queda sin
+  efecto hasta que `bun publish` lo soporte o se cambie la última fase del
+  release a `npm publish --provenance` (perdiendo el rewrite de
+  `workspace:*` que hace `bun publish`, que es la razón de usar `bun` aquí).
+  Limitación de la herramienta, documentada, no se fuerza un cambio de
+  riesgo alto en el pipeline de publicación real para resolverla.
+
+**Verificado en esta sesión:** `bun run validate` (typecheck + lint + lint:scss
++ test, 912/912), `bun run lint:proposals` (0 fatal), `bun run site:strict`
+(338 páginas) — los tres en verde después de los cambios de M37.
+
+> **Lectura:** de los 8 hallazgos re-abiertos para verificación, 7 ya estaban
+> cerrados por trabajo de sesiones posteriores que no actualizó este
+> documento (M25, M28, M32, M36, y 3 de los 4 sub-bugs de M38); solo M37 era
+> trabajo real pendiente, ahora cerrado. Los ítems explícitamente
+> deprioritizados con razón documentada (M11 `rules`/`deps_outdated`, M14
+> adopción de migraciones, M29 gate longitudinal, M44 decisión de usuario, M40
+> idea de plugin) se confirmaron sin cambios — la razón documentada en su
+> momento sigue siendo válida, no son regresiones.

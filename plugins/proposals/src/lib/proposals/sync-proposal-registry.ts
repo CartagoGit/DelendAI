@@ -510,7 +510,7 @@ export async function syncProposalRegistry(
 	> = DEFAULT_PATH_LAYOUT,
 	// Host-specific proposal subfolders (relative to proposalsDir), e.g.
 	// `paused/demos`. Injected from ctx.options so mcp-vertex's generic
-	// proposal model carries no host vocabulary. [M5]
+	// proposal model carries no host vocabulary.
 	extraFolders: readonly string[] = [],
 	// f113 S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),

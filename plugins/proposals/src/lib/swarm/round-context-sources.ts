@@ -159,7 +159,7 @@ const scanLiveProposalEntries = async (
 	monorepoRoot: string,
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Host folder policy (e.g. `paused/demos`) is injected, not baked in:
-	// paths relative to `proposalsDir`. mcp-vertex stays agnostic. [M5]
+	// paths relative to `proposalsDir`. mcp-vertex stays agnostic.
 	extraFolders: readonly string[] = [],
 ): Promise<IScannedProposalEntry[]> => {
 	const proposalsDir = join(monorepoRoot, layout.proposalsDir);
@@ -290,7 +290,7 @@ export const collectRoundContextSnapshot = async (
 	monorepoRoot: string,
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Extra host proposal folders (relative to proposalsDir) scanned when
-	// no index.json is present. Injected by the plugin from ctx.options. [M5]
+	// no index.json is present. Injected by the plugin from ctx.options.
 	extraFolders: readonly string[] = [],
 ): Promise<IRoundContextOperationalSnapshot> => {
 	const [chat, checkpoint, lock, registry, proposalIndex] = await Promise.all(

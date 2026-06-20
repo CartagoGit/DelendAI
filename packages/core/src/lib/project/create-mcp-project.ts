@@ -7,7 +7,7 @@ import { estimateResultBytes } from '../metrics/metrics-registry';
 
 /**
  * Wrap `server.registerTool` so every tool handler records latency, response
- * bytes and error flag into the metrics registry (M12). Transparent: the tool
+ * bytes and error flag into the metrics registry. Transparent: the tool
  * contract is unchanged; instrumentation is pure measurement around the call.
  */
 const instrumentToolHandlers = (

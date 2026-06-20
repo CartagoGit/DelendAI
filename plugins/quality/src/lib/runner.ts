@@ -6,9 +6,9 @@ import { killProcessGroup } from '@mcp-vertex/core/public';
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
 
 // In-flight spawned children, so `quality_cancel` can abort a long-running scope
-// instead of waiting for the timeout (A2). Each child is spawned `detached` so
+// instead of waiting for the timeout. Each child is spawned `detached` so
 // killing `-pid` reaps the whole process group (shell + the real command),
-// leaving no orphans — same canonical teardown as the acceptance runner (M25).
+// leaving no orphans — same canonical teardown as the acceptance runner.
 const activeChildren = new Set<ChildProcess>();
 
 const killGroup = (child: ChildProcess): void => killProcessGroup(child.pid);
@@ -123,7 +123,7 @@ export type IScopeCommand = IValidationCommand;
 /**
  * Run every command of a scope in order; ok only if all succeed. A command
  * blocked by `policy` is NOT spawned — it is recorded as a failed result
- * (code 126) so the agent sees why (M13).
+ * (code 126) so the agent sees why.
  */
 export const runScope = async (
 	scope: string,

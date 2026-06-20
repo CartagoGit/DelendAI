@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process';
  * Result of running a git subcommand. `ok` is true only when git ran
  * and exited 0; otherwise `reason` explains why (git missing, timeout,
  * stderr) so a caller can distinguish "clean repo" from "git unavailable"
- * instead of treating both as an empty string. [N3/N4]
+ * instead of treating both as an empty string.
  */
 export interface IGitRunResult {
 	readonly ok: boolean;

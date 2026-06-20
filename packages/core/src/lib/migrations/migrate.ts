@@ -1,5 +1,5 @@
 /**
- * Versioned-state migration runner (M14).
+ * Versioned-state migration runner.
  *
  * Every persisted store carries a `version`. When its on-disk shape changes,
  * a migrator from the old version to the next is registered here; this runner

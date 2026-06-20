@@ -1,5 +1,5 @@
 /**
- * In-process per-tool metrics (M12).
+ * In-process per-tool metrics.
  *
  * A tiny, dependency-free counter store: every instrumented tool call records
  * its latency, output size and error flag. Exposed via the `metrics` meta-tool

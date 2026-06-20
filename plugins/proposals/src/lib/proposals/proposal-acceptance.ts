@@ -16,7 +16,7 @@
  * Runtime: `node:child_process.spawn` with `detached: true` so each
  * criterion is its own process group. That is what lets the timeout path
  * kill the WHOLE tree (`process.kill(-pid)`), not just the leader — a
- * pipeline like `a | b` must not leave `b` running as a zombie. [M8]
+ * pipeline like `a | b` must not leave `b` running as a zombie.
  * `bun` is resolved from PATH exactly as before (we keep the `Bun.which`
  * availability pre-check); commands with shell metacharacters (`|`, `>`,
  * `&&`, …) run through the shell, the rest are tokenised with a
@@ -74,7 +74,7 @@ export interface IAcceptanceRunOptions {
 	/**
 	 * Working directory each criterion runs in. Inject the workspace root
 	 * so commands resolve paths against it rather than the server's cwd.
-	 * Omitted → inherits the current process cwd (back-compat). [M8]
+	 * Omitted → inherits the current process cwd (back-compat).
 	 */
 	readonly cwd?: string;
 }
@@ -175,7 +175,7 @@ const truncateCaptured = (raw: string): string => {
  * Tokenise a command line into argv, honouring single and double quotes
  * and backslash escapes — so `echo "a b"` yields `['echo', 'a b']`, not
  * `['echo', '"a', 'b"']`. Used for the non-shell path; pipelines and
- * redirects go through the shell instead. [M8]
+ * redirects go through the shell instead.
  */
 export const tokenizeArgv = (input: string): string[] => {
 	const tokens: string[] = [];
@@ -225,7 +225,7 @@ export const tokenizeArgv = (input: string): string[] => {
 /**
  * A command needs a real shell when it carries pipes, redirects, command
  * chaining or subshells. Quotes alone do NOT need a shell — the argv
- * tokenizer handles those. [M8]
+ * tokenizer handles those.
  */
 export const commandNeedsShell = (command: string): boolean =>
 	/[|&;<>`]|\$\(/.test(command);

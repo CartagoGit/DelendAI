@@ -10,7 +10,7 @@ export interface IOverviewToolEntry {
 	readonly name: string;
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
-	/** Side effects (M31); absent ⇒ read-only. */
+	/** Side effects; absent ⇒ read-only. */
 	readonly effects?: readonly IToolEffect[] | undefined;
 }
 

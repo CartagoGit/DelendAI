@@ -19,7 +19,7 @@ export interface IStatusResult {
  * the consumer that makes the `statusCollectors` host seam real: a host
  * wraps its runtime (e.g. a game loop) in a collector and this tool
  * surfaces it; the CLI also registers a built-in `mcp-vertex` collector
- * reporting loaded plugins + counts. [N23]
+ * reporting loaded plugins + counts.
  */
 export const collectStatus = async (
 	collectors: readonly IStatusCollector[],

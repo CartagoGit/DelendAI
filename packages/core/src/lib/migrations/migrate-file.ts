@@ -1,5 +1,5 @@
 /**
- * Filesystem wrapper around `runMigrations` (M14): read a versioned JSON store,
+ * Filesystem wrapper around `runMigrations`: read a versioned JSON store,
  * migrate it to the current version, and — only if something actually changed
  * or forceBackup is requested — preserve the original bytes in a `.bak-<ts>`
  * sidecar before writing the migrated file atomically. `dryRun` reports the
