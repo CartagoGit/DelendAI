@@ -532,25 +532,50 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S1 — Glosario canónico *(excl. `proposal-glossary.constant.ts`)*
 
-- **Status**: pending
-- Create `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
+- **Status**: done
+- Created `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
   with `PROPOSAL_STATUSES` (7), `PROPOSAL_KINDS` (12), `PROPOSAL_KIND_BY_PREFIX`,
   `PROPOSAL_PREFIX_BY_KIND`, `PROPOSAL_STATUS_TRANSITIONS`, `STATUS_TO_FOLDER`,
-  `PROPOSAL_FLAGS`.
-- Create `proposal-glossary.spec.ts` with the 6 invariant tests
+  `PROPOSAL_FLAGS`. Exported from `public/index.ts` (S6's web i18n work
+  will need it cross-package).
+- Created `proposal-glossary.constant.spec.ts` with the 6 invariant tests
   (every status has a label/folder, every transition target is known,
-  terminal statuses have at most `retire` as outgoing edge, every kind
+  terminal statuses have at most `retired` as outgoing edge, every kind
   has a single-letter prefix, prefixes are unique, the legacy alias
   table is consistent).
-- Refactor `sync-proposal-registry.ts#L17-26` to import from the
-  glosario instead of redefining `IProposalStatus`.
-- Refactor `sync-proposal-registry.ts#L67` `VALID_STATUSES` to be
-  derived from `Object.keys(PROPOSAL_STATUSES)`.
-- Refactor `proposal-document.ts` `IProposalFrontmatter.status` to be
-  `keyof typeof PROPOSAL_STATUSES` (narrowed by Zod).
-- Refactor `adopt.ts#kindOf` to use `PROPOSAL_PREFIX_BY_KIND`.
-- **Gate**: `bun run type && bun run test proposal-glossary.spec.ts`.
-- **Estimated work**: 1 session.
+- **Scope correction (2 of the original 5 bullets deliberately NOT
+  done in this slice):**
+  - **`sync-proposal-registry.ts`'s `VALID_STATUSES`/`IProposalStatus`
+    were NOT switched to this glossary.** That set still validates the
+    OLD 8-status union (`pending`, `in_progress`, `deferred`, …)
+    because the 14 legacy proposals on disk still use it — flipping
+    the validator to the new 7-status set today would make
+    `sync_proposals` reject every proposal currently in the repo. This
+    is exactly the `PROPOSAL_STATE_MACHINE_V2` flag scenario the risk
+    table (§8) already calls out. Wiring happens at the flag-flip
+    point, after S11/S12 migrate the legacy files — folded into S3 or
+    S12, not S1. Same reasoning for `proposal-document.ts`'s
+    `IProposalFrontmatter.status` (still loose `string`, not narrowed
+    yet — narrowing now would make TypeScript reject the legacy
+    statuses this field must keep tolerating until migration).
+  - **`adopt.ts#kindOf` was NOT refactored to use
+    `PROPOSAL_PREFIX_BY_KIND`.** It answers a different question at a
+    different layer: `adopt.ts` is the *generic, project-agnostic*
+    bootstrap helper (`PROPOSALS_LAYOUT`) that analyses an arbitrary
+    host project's pre-existing, ad-hoc proposals folder when
+    mcp-vertex is dropped into it — its `f` prefix means "fix,
+    cascades before proposals" (matching `continue-proposal.tool.ts`'s
+    default `familyCascade: ['f', 'p']`), a convention recommended to
+    *any* new adopter. This glossary's `f` means "feat" — **this
+    repo's own dogfooded taxonomy**, not a new framework-wide default.
+    Wiring `adopt.ts` to `PROPOSAL_PREFIX_BY_KIND` would silently
+    redefine what `f`-prefix means for every other project using the
+    generic bootstrap, just because this repo picked a richer scheme
+    for itself. Left untouched; flagged here so the conflict is a
+    documented decision, not a future surprise.
+- **Gate**: `bun run type && bun run test proposal-glossary.constant.spec.ts`
+  — both green.
+- **Estimated work**: 1 session (matched).
 
 ### S2 — Scaffold linter *(excl. `proposal-scaffold-linter.ts`)*
 
