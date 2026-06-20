@@ -18,9 +18,7 @@ export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
 // --- workspace + paths -----------------------------------------------------
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
 export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
-export {
-	DEFAULT_CORE_PATHS,
-} from '../lib/contracts/interfaces/core-paths.interface';
+export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.interface';
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
 
 // --- contracts -------------------------------------------------------------
@@ -42,9 +40,7 @@ export type {
 	IQualityGateLanguage,
 	IQualityGateList,
 } from '../lib/contracts/interfaces/quality-gate.interface';
-export type {
-	IPluginConfigExample,
-} from '../lib/contracts/interfaces/plugin-config-example.interface';
+export type { IPluginConfigExample } from '../lib/contracts/interfaces/plugin-config-example.interface';
 export type {
 	IKnowledgeEntry,
 	ISkillEntry,
@@ -61,7 +57,10 @@ export {
 	loadPlugins,
 	resolvePluginSpecifier,
 } from '../lib/plugins/load-plugins';
-export type { ILoadedPlugin, IPluginLoadResult } from '../lib/plugins/load-plugins';
+export type {
+	ILoadedPlugin,
+	IPluginLoadResult,
+} from '../lib/plugins/load-plugins';
 export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
 export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
 export {
@@ -133,9 +132,16 @@ export { killProcessGroup } from '../lib/commands/process-group';
 
 // --- IDE install helper (`mcp-vertex init`) ---------------------------------
 export { mergeServerEntry } from '../lib/install/merge-config';
-export type { IMcpConfigKind, IMergeAction, IMergeResult } from '../lib/install/merge-config';
+export type {
+	IMcpConfigKind,
+	IMergeAction,
+	IMergeResult,
+} from '../lib/install/merge-config';
 export { IDE_TARGETS, targetById } from '../lib/install/ide-targets';
-export type { IIdeInstallTarget, IInstallEnv } from '../lib/install/ide-targets';
+export type {
+	IIdeInstallTarget,
+	IInstallEnv,
+} from '../lib/install/ide-targets';
 export {
 	buildServerEntry,
 	detectOs,
@@ -152,7 +158,10 @@ export type {
 	IRunnerVia,
 } from '../lib/install/installer';
 
-export { withFileMutex, LockContentionError } from '../lib/shared/with-file-mutex';
+export {
+	withFileMutex,
+	LockContentionError,
+} from '../lib/shared/with-file-mutex';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 export {
 	CorruptFileError,

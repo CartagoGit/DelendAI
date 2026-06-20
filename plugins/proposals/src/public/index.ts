@@ -28,7 +28,10 @@ export { buildAgentLockRegistration } from '../lib/tools/agent-lock.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';
-export { runAgentWorktreeEngine, parseWorktreeList } from '../lib/agents/agent-worktree-engine';
+export {
+	runAgentWorktreeEngine,
+	parseWorktreeList,
+} from '../lib/agents/agent-worktree-engine';
 export type {
 	IAgentWorktreeArgs,
 	IAgentWorktreeOptions,
@@ -89,9 +92,7 @@ export type { IAuthoringToolOptions } from '../lib/tools/authoring.tool';
 export { buildAdoptRegistration } from '../lib/tools/adopt.tool';
 export { analyzeProposals, PROPOSALS_LAYOUT } from '../lib/proposals/adopt';
 export type { IAdoptionReport, IScanEntry } from '../lib/proposals/adopt';
-export {
-	buildProposalWorkflow,
-} from '../lib/knowledge/proposal-workflow';
+export { buildProposalWorkflow } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---

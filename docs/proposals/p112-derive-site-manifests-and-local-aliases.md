@@ -114,7 +114,8 @@ locally before commit.
   - `bun run build` still produces the same 312 pages (no consumer
     has migrated yet, so this slice is a no-op for the site build,
     but it proves the wiring is correct before we change consumers).
-
+- review-state: in_review
+- review-implementer: mcp-core-p112-s2
 ### s3 — Move the two site manifests to `apps/web/src/data/manifests/`
 
 - files: apps/web/scripts/gen-skills.ts, apps/web/scripts/gen-capabilities.ts, .gitignore
