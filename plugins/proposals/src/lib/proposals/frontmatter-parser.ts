@@ -241,6 +241,22 @@ export const parseFrontmatterBlock = (
 		if (inline === '[]') {
 			result[key] = [];
 			i++;
+		} else if (inline.startsWith('[') && inline.endsWith(']')) {
+			// Flow-sequence of scalars, e.g. `blocked_by: [self:goal-missing, f400]`.
+			// Tokens are split on top-level commas only — nested `[...]`/`{...}`
+			// aren't supported (none of this repo's frontmatter needs them);
+			// a colon inside a token (`self:goal-missing`) stays part of the
+			// scalar instead of being mistaken for a block-mapping key, which
+			// is exactly the ambiguity the block-array parser below has for
+			// the same token shape.
+			const inner = inline.slice(1, -1).trim();
+			result[key] =
+				inner === ''
+					? []
+					: inner
+							.split(',')
+							.map((token) => parseScalar(token.trim()));
+			i++;
 		} else if (inline !== '') {
 			result[key] = parseScalar(inline);
 			i++;

@@ -16,6 +16,7 @@ import {
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import {
+	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
@@ -352,6 +353,27 @@ interface INewSystemFile {
 }
 
 /** Collects every `.md` under the proposalsDir tree whose frontmatter status is on the new state machine. */
+/**
+ * A file is only "on the new state machine" if BOTH hold:
+ * 1. its filename prefix is one of the 12 live f113 kind prefixes
+ *    (explicitly excludes the retired legacy `p` — `p5-meta.md`,
+ *    `p99-…md`, etc. are never reconciled, no matter their status);
+ * 2. frontmatter `status` resolves to one of the 7 glossary statuses.
+ *
+ * Status alone is NOT enough: `ready` is the *default* status
+ * `create_proposal` writes for brand-new proposals regardless of kind
+ * (`status: ${args.status ?? 'ready'}`), so without the prefix check
+ * every freshly created legacy-style proposal (id `p5`, `p100`, …) —
+ * which is the common case, that tool predates f113 and has no notion
+ * of kinds — would get silently relocated into `ready/` the moment
+ * `syncProposalRegistry` next ran. Caught by `authoring.spec.ts`'s
+ * existing "p5-meta.md ends up exactly where it was written" assertion.
+ */
+const isNewSystemFilename = (filename: string): boolean => {
+	const prefix = filename[0] ?? '';
+	return prefix !== 'p' && prefix in PROPOSAL_KIND_BY_PREFIX;
+};
+
 const scanNewSystemFiles = async (
 	proposalsDirAbs: string,
 ): Promise<INewSystemFile[]> => {
@@ -364,6 +386,7 @@ const scanNewSystemFiles = async (
 		);
 		for (const dirent of dirents) {
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
+			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
 			const raw = await readFile(absPath, 'utf8');
 			const block = extractYamlBlock(raw);

@@ -85,6 +85,25 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
+	// f113 S5 regression: `blocked_by: [self:goal-missing]` is the
+	// documented convention (f113 §9). Each token may itself contain a
+	// colon — must stay a single scalar string, not be mistaken for a
+	// nested `key: value` mapping the way the block-array parser would
+	// read the same token shape.
+	it('round-trips an inline non-empty array, including tokens with colons', () => {
+		const rng = mulberry32(2025);
+		for (let i = 0; i < TRIALS; i++) {
+			const items = Array.from(
+				{ length: 1 + Math.floor(rng() * 3) },
+				() => `self:${randomWord(rng)}`,
+			);
+			const parsed = parseFrontmatterBlock(
+				`blocked_by: [${items.join(', ')}]`,
+			);
+			expect(parsed.blocked_by).toEqual(items);
+		}
+	});
+
 	it('extractYamlBlock + parseFrontmatterBlock never throws on arbitrary markdown', () => {
 		const rng = mulberry32(2024);
 		const CHARS = '---\nabc: 123\n  - x\nfoo\n:::***';
