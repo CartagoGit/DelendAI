@@ -4,8 +4,7 @@
 			"type": "stdio",
 			"command": "bun",
 			"args": [
-				"${workspaceFolder}/packages/core/src/cli.ts",
-				"--preset=swarm",
+				"${workspaceFolder}/scripts/host-server.ts",
 				"--workspace=${workspaceFolder}"
 			]
 		}
