@@ -10,6 +10,25 @@ export {
 	buildSwarmPaths,
 } from '../lib/contracts/constants/default-path-layout.constant';
 export type { IHostPathLayout } from '../lib/contracts/interfaces/swarm-path-layout.interface';
+// f113: proposal state-machine glossary (statuses, kinds, transitions).
+// Not yet wired into the live registry/linter — see the constant's own
+// doc comment on the PROPOSAL_STATE_MACHINE_V2 sequencing.
+export {
+	PROPOSAL_STATUSES,
+	STATUS_TO_FOLDER,
+	PROPOSAL_STATUS_TRANSITIONS,
+	PROPOSAL_KINDS,
+	PROPOSAL_PREFIX_BY_KIND,
+	PROPOSAL_KIND_BY_PREFIX,
+	PROPOSAL_FLAGS,
+} from '../lib/contracts/constants/proposal-glossary.constant';
+export type {
+	IProposalStatus,
+	IProposalStatusInfo,
+	IProposalKind,
+	IProposalKindInfo,
+	IProposalFlagInfo,
+} from '../lib/contracts/constants/proposal-glossary.constant';
 // Swarm-domain contracts (moved out of the agnostic core).
 export type {
 	IProposalFamily,
