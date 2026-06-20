@@ -116,3 +116,6 @@ verificados contra el código y ya corregidos:
 slice. El registro `docs/proposals/index.json` (si existe) o el
 `sync_proposals` posterior a un reinicio del servidor MCP refleja
 `p111` con sus 4 slices.
+- review-state: in_review
+- review-implementer: mcp-core-s4-runner
+
