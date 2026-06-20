@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, watch } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, watch } from 'node:fs';
 import type { FSWatcher } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 
 /** A claim that was released (present last scan, gone this scan). */
 export interface IReleasedClaim {
@@ -178,6 +178,109 @@ export const createReleaseWatcher = (params: {
 			const dir = dirname(params.lockFile);
 			if (existsSync(dir)) {
 				fsWatcher = watch(dir, () => {
+					check();
+				});
+			}
+		} catch {
+			// fs.watch unsupported here → polling fallback already covers it.
+		}
+	};
+
+	const stop = (): void => {
+		if (timer) clearInterval(timer);
+		if (fsWatcher) fsWatcher.close();
+		timer = undefined;
+		fsWatcher = undefined;
+	};
+
+	return { check, start, stop };
+};
+
+export interface IHandoffEvent {
+	readonly file: string;
+	readonly agent: string;
+	readonly reason: string;
+	readonly handoffPath: string;
+}
+
+export interface IHandoffWatcher {
+	check(): IHandoffEvent[];
+	start(): void;
+	stop(): void;
+}
+
+export const createHandoffWatcher = (params: {
+	readonly handoffDir: string;
+	readonly onHandoff: (events: readonly IHandoffEvent[]) => void;
+	readonly intervalMs?: number;
+}): IHandoffWatcher => {
+	const seenFiles = new Set<string>();
+	let timer: ReturnType<typeof setInterval> | undefined;
+	let fsWatcher: FSWatcher | undefined;
+
+	// Populate seenFiles on start so we do not notify on pre-existing files
+	if (existsSync(params.handoffDir)) {
+		try {
+			const files = readdirSync(params.handoffDir);
+			for (const file of files) {
+				if (file.endsWith('.json')) {
+					seenFiles.add(file);
+				}
+			}
+		} catch {
+			// Ignored
+		}
+	}
+
+	const check = (): IHandoffEvent[] => {
+		const events: IHandoffEvent[] = [];
+		if (!existsSync(params.handoffDir)) return events;
+
+		try {
+			const files = readdirSync(params.handoffDir);
+			for (const file of files) {
+				if (file.endsWith('.json') && !seenFiles.has(file)) {
+					seenFiles.add(file);
+					const pathAbs = join(params.handoffDir, file);
+					try {
+						const content = readFileSync(pathAbs, 'utf8');
+						const parsed = JSON.parse(content);
+						if (
+							parsed &&
+							typeof parsed.schema === 'string' &&
+							parsed.schema.startsWith('mcp-vertex/handoff/')
+						) {
+							events.push({
+								file,
+								agent: parsed.from?.agent ?? 'unknown',
+								reason: parsed.reason ?? 'unknown',
+								handoffPath: pathAbs,
+							});
+						}
+					} catch {
+						// File might be in the middle of being written, remove from seen
+						seenFiles.delete(file);
+					}
+				}
+			}
+		} catch {
+			// Ignored
+		}
+
+		if (events.length > 0) {
+			params.onHandoff(events);
+		}
+		return events;
+	};
+
+	const start = (): void => {
+		const intervalMs = params.intervalMs ?? 2_000;
+		timer = setInterval(check, intervalMs);
+		timer.unref?.();
+
+		try {
+			if (existsSync(params.handoffDir)) {
+				fsWatcher = watch(params.handoffDir, () => {
 					check();
 				});
 			}

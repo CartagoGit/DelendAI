@@ -3,10 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import {
-	estimateResultBytes,
-	type IMetricsRegistry,
-} from '../metrics/metrics-registry';
+import { estimateResultBytes } from '../metrics/metrics-registry';
 
 /**
  * Wrap `server.registerTool` so every tool handler records latency, response

@@ -7,9 +7,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	awaitLockRelease,
 	createReleaseWatcher,
+	createHandoffWatcher,
 	diffReleased,
 	readInFlight,
 	type IReleasedClaim,
+	type IHandoffEvent,
 } from '@mcp-vertex/notification/lib/watcher';
 import plugin from '@mcp-vertex/notification';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
@@ -137,8 +139,87 @@ describe('lock-release watcher [N14]', () => {
 	});
 });
 
+describe('handoff watcher', () => {
+	let dir = '';
+	let handoffDir = '';
+
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'handoff-'));
+		handoffDir = join(dir, 'handoff');
+		require('node:fs').mkdirSync(handoffDir);
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('ignores pre-existing files in the handoff directory', () => {
+		writeFileSync(
+			join(handoffDir, 'prev.json'),
+			JSON.stringify({
+				schema: 'mcp-vertex/handoff/1',
+				reason: 'exact-repeat',
+				from: { agent: 'a1' },
+			}),
+		);
+
+		const seen: IHandoffEvent[] = [];
+		const watcher = createHandoffWatcher({
+			handoffDir,
+			onHandoff: (e) => seen.push(...e),
+		});
+
+		expect(watcher.check()).toEqual([]);
+		expect(seen).toEqual([]);
+		watcher.stop();
+	});
+
+	it('detects newly created valid handoff files', () => {
+		const seen: IHandoffEvent[] = [];
+		const watcher = createHandoffWatcher({
+			handoffDir,
+			onHandoff: (e) => seen.push(...e),
+		});
+
+		expect(watcher.check()).toEqual([]);
+
+		writeFileSync(
+			join(handoffDir, 'new.json'),
+			JSON.stringify({
+				schema: 'mcp-vertex/handoff/1',
+				reason: 'no-progress',
+				from: { agent: 'a2' },
+			}),
+		);
+
+		const events = watcher.check();
+		watcher.stop();
+
+		expect(events.length).toBe(1);
+		expect(events[0]?.agent).toBe('a2');
+		expect(events[0]?.reason).toBe('no-progress');
+		expect(seen.length).toBe(1);
+		expect(seen[0]?.agent).toBe('a2');
+	});
+
+	it('ignores invalid JSON or non-handoff schema files', () => {
+		const seen: IHandoffEvent[] = [];
+		const watcher = createHandoffWatcher({
+			handoffDir,
+			onHandoff: (e) => seen.push(...e),
+		});
+
+		writeFileSync(join(handoffDir, 'bad1.json'), '{ corrupt json');
+		writeFileSync(
+			join(handoffDir, 'bad2.json'),
+			JSON.stringify({ schema: 'other/schema', reason: 'no-progress' }),
+		);
+
+		expect(watcher.check()).toEqual([]);
+		expect(seen).toEqual([]);
+		watcher.stop();
+	});
+});
+
 describe('notification plugin', () => {
-	it('registers notify_status + knowledge and emits on release', async () => {
+	it('registers notify_status + knowledge and emits on release and handoff', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-plug-'));
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
@@ -151,7 +232,9 @@ describe('notification plugin', () => {
 			pluginCacheDir: '.cache/mcp-vertex/notification',
 			pluginDocsDir: 'docs/mcp-vertex/notification',
 			namespacePrefix: 'notification',
-			options: {},
+			options: {
+				intervalMs: 50,
+			},
 			args: {},
 		} satisfies IMcpPluginContext;
 
@@ -162,8 +245,12 @@ describe('notification plugin', () => {
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('lock-notifications');
 
+		// Create handoff directory
+		const handoffDir = join(dir, '.mcp-vertex/handoff');
+		require('node:fs').mkdirSync(handoffDir, { recursive: true });
+
 		// Wire a fake server to capture logging notifications + the tool handler.
-		const logs: unknown[] = [];
+		const logs: any[] = [];
 		let handler:
 			| (() => Promise<{ content: Array<{ text: string }> }>)
 			| undefined;
@@ -182,6 +269,28 @@ describe('notification plugin', () => {
 		const out = JSON.parse((await handler!()).content[0]?.text ?? '{}');
 		expect(out.emitted).toBe(0);
 		expect(typeof out.watching).toBe('string');
+
+		// Write a new handoff file
+		writeFileSync(
+			join(handoffDir, 'stuck-agent.json'),
+			JSON.stringify({
+				schema: 'mcp-vertex/handoff/1',
+				reason: 'exact-repeat',
+				from: { agent: 'my-agent' },
+			}),
+		);
+
+		// Wait for watcher to poll and trigger
+		await new Promise((resolve) => setTimeout(resolve, 150));
+
+		// Check if stuck-detected event was logged
+		const stuckEvent = logs.find((l) => l.data?.event === 'stuck-detected');
+		expect(stuckEvent).toBeDefined();
+		expect(stuckEvent.level).toBe('warning');
+		expect(stuckEvent.data.agent).toBe('my-agent');
+		expect(stuckEvent.data.handoffPath).toBe(
+			'.mcp-vertex/handoff/stuck-agent.json',
+		);
 
 		// stop the watcher via the server onclose hook (no leaked timer)
 		fakeServer.server.onclose?.();

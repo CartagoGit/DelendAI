@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -7,14 +8,20 @@ import { toolJson } from '@mcp-vertex/core/public';
 import {
 	awaitLockRelease,
 	createReleaseWatcher,
+	createHandoffWatcher,
 	type IReleasedClaim,
 	type IReleaseWatcher,
+	type IHandoffWatcher,
 } from './watcher';
 
 export interface INotifyToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute path of the shared lock file to watch. */
 	readonly lockFileAbs: string;
+	/** Absolute path of the handoff directory to watch. */
+	readonly handoffDirAbs: string;
+	/** Workspace-relative path of the handoff directory. */
+	readonly handoffDirRel: string;
 	/** Polling fallback interval (ms). Default 2000. */
 	readonly intervalMs?: number;
 }
@@ -30,6 +37,7 @@ export const buildNotifyRegistration = (
 	options: INotifyToolOptions,
 ): IToolRegistration => {
 	let watcher: IReleaseWatcher | undefined;
+	let handoffWatcher: IHandoffWatcher | undefined;
 	let lastReleases: readonly IReleasedClaim[] = [];
 	let emitted = 0;
 
@@ -65,10 +73,38 @@ export const buildNotifyRegistration = (
 			});
 			watcher.start();
 
+			handoffWatcher = createHandoffWatcher({
+				handoffDir: options.handoffDirAbs,
+				...(options.intervalMs !== undefined
+					? { intervalMs: options.intervalMs }
+					: {}),
+				onHandoff: (events) => {
+					for (const ev of events) {
+						void server
+							.sendLoggingMessage({
+								level: 'warning',
+								logger: `${options.namespacePrefix}_notification`,
+								data: {
+									event: 'stuck-detected',
+									agent: ev.agent,
+									reason: ev.reason,
+									handoffPath: join(
+										options.handoffDirRel,
+										ev.file,
+									),
+								},
+							})
+							.catch(() => undefined);
+					}
+				},
+			});
+			handoffWatcher.start();
+
 			// Tear the watcher down with the server so we don't leak timers.
 			const previousOnClose = server.server.onclose;
 			server.server.onclose = (): void => {
 				watcher?.stop();
+				handoffWatcher?.stop();
 				previousOnClose?.();
 			};
 
