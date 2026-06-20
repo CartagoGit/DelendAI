@@ -18,13 +18,7 @@
  *   list of titles in source order; `files` is the deduped union.
  */
 
-import type {
-	AuditSeverity,
-	IConsolidation,
-	IAuditDocument,
-	IAuditFinding,
-	IAuditScore,
-} from './types';
+import type { AuditSeverity, IConsolidation, IAuditDocument } from './types';
 import { SEVERITY_ORDER } from './types';
 
 const SEVERITY_RANK: Readonly<Record<AuditSeverity, number>> = (() => {
@@ -43,7 +37,11 @@ const worstSeverity = (a: AuditSeverity, b: AuditSeverity): AuditSeverity =>
 	SEVERITY_RANK[a] <= SEVERITY_RANK[b] ? a : b;
 
 /** Are two findings "the same"? Cheap heuristic, see file header. */
-const isSameFinding = (a: IAuditFinding, b: IAuditFinding): boolean => {
+interface ILikeFinding {
+	readonly title: string;
+	readonly files: readonly string[];
+}
+const isSameFinding = (a: ILikeFinding, b: ILikeFinding): boolean => {
 	const sharedFile = a.files.some((f) => b.files.includes(f));
 	if (!sharedFile) return false;
 	const norm = (s: string): string => s.toLowerCase();
@@ -113,9 +111,7 @@ export const consolidateAudits = (
 	for (const d of parsed) {
 		for (const f of d.findings) {
 			const hit = merged.find(
-				(m) =>
-					m.worstSeverity === f.severity &&
-					isSameFinding(m as unknown as IAuditFinding, f),
+				(m) => m.worstSeverity === f.severity && isSameFinding(m, f),
 			);
 			if (hit) {
 				hit.titles = dedup([...hit.titles, f.title]);

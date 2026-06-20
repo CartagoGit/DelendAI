@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
-} from '@mcp-vertex/audit/lib/consolidate';
-import { parseAuditBody } from '@mcp-vertex/audit/lib/parse-audit';
-import type { IAuditDocument } from '@mcp-vertex/audit/lib/types';
+} from '../src/lib/consolidate';
+import { parseAuditBody } from '../src/lib/parse-audit';
+import type { IAuditDocument } from '../src/lib/types';
 
 const AUDIT_SONNET = `# Auditoría — Sonnet
 

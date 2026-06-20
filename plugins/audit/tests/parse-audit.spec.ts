@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseAuditBody } from '@mcp-vertex/audit/lib/parse-audit';
+import { parseAuditBody } from '../src/lib/parse-audit';
+import type {
+	IAuditDocument,
+	IAuditFinding,
+	IAuditScore,
+} from '../src/lib/types';
 
 const SAMPLE_AUDIT = `# 🔍 Auditoría Exhaustiva — \`mcp-vertex\` y Plugins
 
@@ -89,8 +94,12 @@ describe('parseAuditBody', () => {
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
-		const fatals = doc.findings.filter((f) => f.severity === 'FATAL');
-		const muyMal = doc.findings.filter((f) => f.severity === 'MUY_MAL');
+		const fatals = doc.findings.filter(
+			(f: IAuditFinding) => f.severity === 'FATAL',
+		);
+		const muyMal = doc.findings.filter(
+			(f: IAuditFinding) => f.severity === 'MUY_MAL',
+		);
 		expect(fatals).toHaveLength(2);
 		expect(muyMal).toHaveLength(1);
 		expect(fatals[0]?.title).toContain('syncProposalRegistry');
@@ -104,11 +113,17 @@ describe('parseAuditBody', () => {
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
-		const arch = doc.scores.find((s) => s.dimension === 'Arquitectura');
+		const arch = doc.scores.find(
+			(s: IAuditScore) => s.dimension === 'Arquitectura',
+		);
 		expect(arch?.score).toBe(9);
-		const tests = doc.scores.find((s) => s.dimension === 'Tests');
+		const tests = doc.scores.find(
+			(s: IAuditScore) => s.dimension === 'Tests',
+		);
 		expect(tests?.score).toBeNull();
-		const generic = doc.scores.find((s) => s.dimension === 'Genericidad');
+		const generic = doc.scores.find(
+			(s: IAuditScore) => s.dimension === 'Genericidad',
+		);
 		expect(generic?.score).toBe(6);
 	});
 
@@ -129,15 +144,16 @@ describe('parseAuditBody', () => {
 
 describe('parseAuditFiles', () => {
 	it('skips duplicate paths and tolerates per-file parse errors', async () => {
-		const { parseAuditFiles } = await import(
-			'@mcp-vertex/audit/lib/parse-audit'
-		);
+		const { parseAuditFiles } = await import('../src/lib/parse-audit');
 		const docs = parseAuditFiles([
 			{ path: 'a.md', body: SAMPLE_AUDIT },
 			{ path: 'a.md', body: SAMPLE_AUDIT }, // duplicate
 			{ path: 'b.md', body: 'no findings here' },
 		]);
 		expect(docs).toHaveLength(2);
-		expect(docs.map((d) => d.path)).toEqual(['a.md', 'b.md']);
+		expect(docs.map((d: IAuditDocument) => d.path)).toEqual([
+			'a.md',
+			'b.md',
+		]);
 	});
 });

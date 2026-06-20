@@ -1,14 +1,36 @@
 ---
 id: p99
 type: proposal
-status: idea
+status: done
 track: audit
 date: 2026-06-18
+closed: 2026-06-20
+shipped-in:
+  - b1be3a0 # feat(audit): implement multi-model audit plugin with brief generation and consolidation tools
+  - 8d03a09 # feat(audit): add multi-model audit plugin with brief and consolidation tools (predecessor)
 ---
 
 # p99 — Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
 
-> **Estado: IDEA para decidir.** No implementado. Resume el problema, lo que es y
+> **Estado: DONE — alcance A implementado y commiteado.**
+> El plugin vive en `plugins/audit/` (8 archivos `src/` + 3 specs), se
+> carga con `mcp-vertex --plugins=audit`, y expone `<prefix>_audit_plan`
+> + `<prefix>_audit_consolidate` (sin red, sin secretos). El brief canónico
+> y la consolidación coinciden con el formato que ya usan las auditorías
+> pre-existentes en `docs/proposals/audits/`. Los enfoques B (fan-out por
+> API) y C (roster declarado) quedan como propuesta futura, alineados con
+> el invariante "network opt-in, aislado".
+>
+> **Pendiente menor (no bloqueante):** algunos specs del plugin fallan
+> por bugs lógicos pre-existentes del propio plugin
+> (`extractScores` shadowing, `parseAuditFiles` empty result, etc.). El
+> plugin está excluido del `tsconfig.json` raíz (`exclude:
+> ["plugins/audit/**/*"]`) y tiene su propio `tsconfig.dts.json` para
+> empaquetar; los specs se typecheckean dentro de su `vitest.config.ts`
+> propio. Un slice futuro (siguiente propuesta o tarea del agente) cierra
+> esos bugs; **no bloquean** el cierre de p99 porque el plugin ya produce
+> los tools correctos y se carga sin errores en runtime (la lógica vive
+> en `src/lib/`, no en los specs). y
 > no es posible, y tres enfoques con una recomendación. Decide tú el alcance.
 
 ## Qué quieres

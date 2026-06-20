@@ -20,6 +20,8 @@ import type {
 import { mcpVertexOverviewI18n } from './mcp-vertex_overview';
 import { proposalsAutoWorkI18n } from './proposals_auto_work';
 import { memorySaveI18n } from './memory_save';
+import { auditPlanI18n } from './audit_plan';
+import { auditConsolidateI18n } from './audit_consolidate';
 
 // ─── Catalogue storage ────────────────────────────────────────────────────────
 // We use a module-level Map so additions via `register*` survive Astro's
@@ -60,6 +62,8 @@ export const registerKnowledgeI18n = (
 registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
 registerToolI18n('proposals_auto_work', proposalsAutoWorkI18n);
 registerToolI18n('memory_save', memorySaveI18n);
+registerToolI18n('audit_plan', auditPlanI18n);
+registerToolI18n('audit_consolidate', auditConsolidateI18n);
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────
 
