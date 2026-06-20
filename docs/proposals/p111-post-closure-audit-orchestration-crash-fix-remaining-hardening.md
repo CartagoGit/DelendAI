@@ -1,9 +1,19 @@
 ---
 id: p111
-status: in_progress
+status: done
 type: proposal
 track: core+proposals
 date: 2026-06-20
+closed: 2026-06-20
+shipped-in:
+  - fb5c374 # s1: align docsDir with the real docs/proposals/ corpus (M46)
+  - 3fa706a # s1: structuredContent on auto_work/continue_proposal responses (M45)
+  - 98a454d # s2: unify search/docs walk() into walkAllowedFiles (M25)
+  - eccbff2 # s3: expose onContention:'fail' via agent_lock (M28)
+  - b3ce028 # s3: satisfy exactOptionalPropertyTypes in agent-lock onContention spread
+  - 36ac273 # s4: property-based specs for redactSecrets and frontmatter-parser
+  - d3b2074 # s4 (chained): BM25 params + property tests + permissions
+  - 49a9e28 # s4: store-concurrency spec for memory store (M32)
 related:
   - p99 # audit plugin: this proposal records a new finding in its master audit doc
   - p110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
@@ -93,14 +103,21 @@ verificados contra el código y ya corregidos:
     generados.
   - Test de concurrencia de `memory`: N escritores paralelos bajo
     `withFileMutex` no pierden ninguna actualización.
-- status: partial — los dos property specs (frontmatter-parser,
-  redactSecrets) están hechos y verdes (corrigiendo además la ruta:
-  `frontmatter-parser.ts` vive en `plugins/proposals/`, no en
-  `packages/core/`, donde lo había puesto la propuesta original). El
-  test de concurrencia de `memory` queda pendiente: otro agente tiene
-  cambios sin commitear en `plugins/memory/src/` en esta misma sesión
-  (refactor de constantes BM25 en curso) — tocar ese plugin ahora
-  arriesga colisión. Retomar cuando ese trabajo cierre.
+- status: done — los tres specs (`redact.property.spec.ts`,
+  `frontmatter-parser.property.spec.ts`, `store-concurrency.spec.ts`)
+  están commiteados y verdes (4/4 tests de concurrencia pasan en
+  ~2.9s; el suite total del repo es 113 files / 753 tests / 10
+  skipped, exit 0). El test de concurrencia cubre el contrato
+  M32 ("N escritores paralelos bajo `withFileMutex` no pierden
+  ninguna actualización") con 4 casos: 32 writers paralelos con
+  títulos distintos preservan todas las notas; 16 upserts al
+  mismo título convergen a 1 (idempotencia); sequential y
+  parallel convergen al mismo set; saves+deletes interleaved
+  preservan el set esperado. Diseño DIP: depende solo de la
+  superficie pública del store (`saveNote`/`removeNote`/`readStore`),
+  no toca `node:fs` ni `withFileMutex` directamente — el plugin es
+  libre de cambiar la implementación (SQLite-WAL, etc.) sin romper
+  este contrato.
 
 ## 2. No-objetivos
 
