@@ -1,64 +1,58 @@
 ---
-title: "Saving and recalling memory notes [Français — needs translation]"
+title: Enregistrer et rappeler des notes mémoire
 plugin: memory
-audience: any agent that needs cross-session continuity
+audience: tout agent ayant besoin de continuité entre les sessions
 order: 1
 lang: fr
-auto-translated: true
-needs-human-review: true
-source: plugins/memory/tutorials/en/saving-and-recalling.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# Enregistrer et rappeler des notes mémoire
 
+Ce tutoriel présente les quatre outils `memory_*` en action. Les notes
+sont de petits enregistrements JSON sous `.cache/mcp-vertex/memory/notes.json`
+— assez petits pour être vidés en entier, indexés par id, récupérables
+par tag ou requête plein texte.
 
-# Saving and recalling memory notes
+## 0. Le modèle mental
 
-This walkthrough shows the four `memory_*` tools in action. Notes
-are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
-— small enough to dump in full, indexed by id, retrievable by
-tag or full-text query.
-
-## 0. The mental model
-
-A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
-Titles are unique (case-insensitive) — `memory_save` upserts by
-title. There is no schema for `body`; treat it as a short
-free-text field. Secrets are auto-redacted by `redactSecrets`
-before the note is persisted (see
+Une **note** est `{ id, title, body, tags, createdAt, updatedAt }`.
+Les titres sont uniques (insensible à la casse) — `memory_save` effectue
+un upsert par titre. Il n'y a pas de schéma pour `body` ; traitez-le
+comme un champ de texte libre court. Les secrets sont auto-expurgés par
+`redactSecrets` avant que la note soit persistée (voir
 `packages/core/src/lib/shared/redact.ts`).
 
-## 1. Save a note
+## 1. Enregistrer une note
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "monorepo publish order",
-    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
+    "title": "ordre de publication monorepo",
+    "body": "core en premier, puis les plugins en verrouillage. derive-version.ts lit les Conventional Commits depuis le dernier tag vX.Y.Z.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
-so you can `forget` it later.
+Réponse : `{ id: "<uuid>", createdAt: "..." }`. Save renvoie l'id
+pour pouvoir l'oublier plus tard.
 
-## 2. Recall by query
+## 2. Rappeler par requête
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "publish order",
+    "query": "ordre de publication",
     "limit": 5
   }
 }
 ```
 
-Returns up to `limit` notes that match the query (substring match
-on title + body, ranked by recency). Use `tags` instead of (or
-alongside) `query` to narrow:
+Renvoie jusqu'à `limit` notes correspondant à la requête (correspondance
+de sous-chaîne sur titre + body, classées par récence). Utilisez `tags`
+plutôt que (ou en plus de) `query` pour affiner :
 
 ```json
 {
@@ -67,50 +61,40 @@ alongside) `query` to narrow:
 }
 ```
 
-## 3. List cheaply
+## 3. Lister à faible coût
 
-`memory_list` returns just `{ id, title, tags }` — the index. Use
-it when you don't want to fetch the bodies yet:
+`memory_list` renvoie seulement `{ id, title, tags }` — l'index. À
+utiliser quand vous ne souhaitez pas encore récupérer les bodies :
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. Forget
+## 4. Oublier
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` is hard-delete — there is no soft-delete / archive.
-The id is gone; the title is freed for a future `memory_save`.
+`memory_forget` est une suppression définitive — il n'y a pas de
+suppression douce / archive. L'id disparaît ; le titre est libéré
+pour un futur `memory_save`.
 
-## Common pitfalls
+## Erreurs fréquentes
 
-- **Secrets in `body`**: even though the plugin redacts on save,
-  do not paste raw tokens or `.env`-style values — the redaction
-  is heuristic, not perfect.
-- **Title collisions**: `memory_save` upserts by title. If two
-  agents save the same title in parallel, the second writer wins
-  and the first is lost. Use unique titles per slice / per
-  problem.
-- **Recall gets too many hits**: prefer `tags` over a broad
-  `query`. A query of `""` returns everything sorted by recency
-  — useful for "what did I save last session?" but expensive on a
-  full store.
+- **Secrets dans `body`** : même si le plugin expurge à la sauvegarde,
+  ne collez pas de tokens bruts ou de valeurs de style `.env` — la
+  redaction est heuristique, pas parfaite.
+- **Collisions de titre** : `memory_save` effectue un upsert par titre.
+  Si deux agents sauvegardent le même titre en parallèle, le second
+  écraseur gagne et le premier est perdu. Utilisez des titres uniques
+  par slice / par problème.
+- **Recall trop de résultats** : préférez `tags` à une `query` large.
+  Une query de `""` renvoie tout trié par récence — utile pour
+  « qu'ai-je sauvegardé la dernière session ? » mais coûteux sur un
+  store complet.
 
-## Next step
+## Étape suivante
 
-- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
-- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper Français
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`
-
+- [Comment round_context (proposals) lie les notes mémoire aux propositions actives](../../proposals/tutorials/fr/getting-started.md)
+- [Contrat de redaction des secrets](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
