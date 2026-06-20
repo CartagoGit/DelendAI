@@ -90,6 +90,17 @@ describe('lintProposalsDir', () => {
 		expect(summary.ok).toBe(false);
 	});
 
+	// S11/S12: post-migration legacy (`kind: legacy`, prefix `l`) keeps the
+	// same permanently-lenient tier as pre-migration `p` — never fatal.
+	it('treats a post-migration legacy file (l-prefix) as a warning, not a fatal error', async () => {
+		await write(root, 'done/l99-old-thing.md', '# no frontmatter at all\n');
+		const summary = await lintProposalsDir(root);
+		expect(summary.filesChecked).toBe(1);
+		expect(summary.legacyWarnings).toBe(1);
+		expect(summary.fatalErrors).toBe(0);
+		expect(summary.ok).toBe(true);
+	});
+
 	it('passes a fully valid new-scaffold proposal with zero issues', async () => {
 		await write(root, 'ready/f114-do-the-thing.md', VALID_PROPOSAL);
 		const summary = await lintProposalsDir(root);

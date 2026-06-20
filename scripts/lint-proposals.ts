@@ -3,11 +3,18 @@
  * lint-proposals.ts — f113 S3: walk every `.md` under `docs/proposals/`
  * and run `lintProposalMarkdown` (S2) against it.
  *
- * The 14 legacy proposals (`pNNN-*.md`, predating f113) are EXPECTED to
- * fail today — they're migrated by S11/S12, not by this script. Their
- * issues are printed as warnings but never fail the run. Any other file
- * (the new kind-prefixed scaffold) failing the linter IS a hard error —
- * that's the point of the gate.
+ * The legacy proposals — `pNNN-*.md` (pre-S11) and `lNNN-*.md` (post-
+ * S11/S12, `kind: legacy`) — are warn-only **permanently**, not just
+ * during the migration window. S12's own non-goal is "do NOT rewrite
+ * the prose" — these are historical, mostly `done`, documents that
+ * predate the scaffold; several don't have a 1:1 mapping onto Goal/
+ * Why/Non-goals/Slices/Acceptance at all (one proposal-FOR-a-decision
+ * doc has no Slices section by design), and their slice sub-format
+ * predates the `### S<N> —` heading shape entirely. Forcing 100%
+ * conformance would mean either rewriting meaning into documents that
+ * shouldn't change, or never finishing. `kind: legacy` (prefix `l`) IS
+ * the signal "imported, evaluated leniently" — same tier as the
+ * pre-migration `p` prefix, not a stricter one.
  *
  *   bun scripts/lint-proposals.ts
  */
@@ -18,8 +25,11 @@ import { fileURLToPath } from 'node:url';
 import { lintProposalMarkdown } from '../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
 
 // Loose on purpose, same reasoning as PROPOSAL_FILENAME below: p99 (2
-// digits) must classify as "legacy warning", not "fatal error".
-const isLegacyFilename = (filename: string): boolean => /^p\d+-/.test(filename);
+// digits) must classify as "legacy warning", not "fatal error". `l` is
+// included alongside `p` — post-migration legacy keeps the same
+// permanently-lenient tier, see the module doc comment above.
+const isLegacyFilename = (filename: string): boolean =>
+	/^[pl]\d+-/.test(filename);
 
 // Only files shaped like a proposal (legacy `pNNN-…`, including the
 // 2-digit `p99-…`, or a new kind prefix) are proposals at all.
