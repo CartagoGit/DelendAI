@@ -139,6 +139,7 @@ export default definePlugin({
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			counterPathAbs: abs(layout.proposalIdCountersFile),
 			layout: {
 				proposalsDir: layout.proposalsDir,
 				proposalIndexFile: layout.proposalIndexFile,

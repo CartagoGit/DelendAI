@@ -970,29 +970,44 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S13 — Race-safe ID allocator *(excl. `proposal-id-allocator.ts`, `.cache/mcp-vertex/proposal-id-counters.json`)*
 
-- **Status**: pending
-- Create `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`
-  exporting `allocateNextProposalId(prefix, options)` per §4.9.
-- Seed-from-disk on first read: scan `docs/proposals/**/*.md` (all 7
-  folders) for `^[a-zA-Z]\d{3,}` filenames, group by prefix, take the
-  max per prefix as the seed — covers the 14 legacy + `f113` already
-  on disk with zero manual bootstrap step.
-- Wire into `create_proposal` (`authoring.tool.ts`): `id` becomes
-  optional; when absent, resolve `prefix` from `kind` via
-  `PROPOSAL_PREFIX_BY_KIND` (S1) and call the allocator. Explicit `id`
-  bypasses the allocator untouched (no breaking change).
-- Concurrency test: fire N parallel `allocateNextProposalId('f')` calls
-  in-process; assert N distinct, sequential ids, no gaps, no
-  duplicates (`withFileMutex` serializes them — this is the same
-  guarantee `with-file-mutex.spec.ts` already covers for locks, applied
-  here to a counter).
-- `proposal-id-allocator.spec.ts`: seed-from-empty, seed-from-existing-
-  files, the concurrent-allocation case above, and an explicit-`id`
-  call to `create_proposal` still skipping the allocator.
-- **Gate**: `bun run test proposal-id-allocator.spec.ts`.
-- **Estimated work**: 0.5 session.
-- **Depends on**: S1 (needs `PROPOSAL_PREFIX_BY_KIND`). Otherwise a
-  leaf — parallelisable with S6/S7/S8.
+- **Status**: done
+- Created `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`
+  exporting `allocateNextProposalId(prefix, options)` (the §4.9 design)
+  and `prefixForKind(kind)` (thin wrapper over `PROPOSAL_PREFIX_BY_KIND`).
+- Seed-from-disk on first read: scans `proposalsDirAbs` (root + the 7
+  status folders) for `^([a-z])(\d+)-` filenames — `\d+`, not `\d{3,}`,
+  same reasoning as S5/S2: `p99` (2 digits) must seed correctly, the
+  3-digit minimum is a *future* convention for new ids, not a discovery
+  filter. Covers the 14 legacy + `f113` already on disk with zero
+  manual bootstrap step.
+- **Scope addition beyond the original 2 reserved files** (small,
+  additive, non-conflicting — done solo, no concurrent collision):
+  added `proposalIdCountersFile` to `IHostPathLayout` +
+  `buildSwarmPaths` (`default-path-layout.constant.ts`,
+  `swarm-path-layout.interface.ts`), matching the existing convention
+  every other cache artefact (`lockFile`, `agentRegistryFile`, …)
+  already follows, instead of hardcoding the path separately in
+  `index.ts`.
+- Wired into `create_proposal` (`authoring.tool.ts`): `id` is now
+  optional; a new `kind` enum param (the 12 glossary kinds) lets the
+  caller omit `id` and get the next allocated one. Explicit `id` keeps
+  its exact prior behaviour untouched (verified — zero changes needed
+  to the 5 pre-existing `authoring.spec.ts` cases). Neither `id` nor
+  `kind` provided is a clear `toolError`, not a silent fallback.
+- Concurrency test: 25 parallel `allocateNextProposalId('r')` calls;
+  asserts 25 distinct, sequential ids, no gaps —
+  `withFileMutex` serialises them, the same guarantee
+  `with-file-mutex.spec.ts` already covers for locks, applied here to
+  a counter.
+- `proposal-id-allocator.spec.ts` (8 tests): seed-from-empty,
+  seed-from-existing-files (legacy `p99`/`p112` + `f113` mixed),
+  sequential-no-gaps, independent-per-prefix sequences, the 25-way
+  concurrency case, counter-file-is-valid-JSON, plus 2 `prefixForKind`
+  cases. `authoring.spec.ts` gained 2 new cases (allocates from kind,
+  errors when neither id nor kind given).
+- **Gate**: `bun run test` (864 tests) + `bun run validate` — both
+  green.
+- **Estimated work**: 0.5 session (matched).
 
 ## 6. Dependency graph
 
