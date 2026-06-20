@@ -47,7 +47,7 @@ export interface IMcpVertexHostConfig {
 	readonly statusCollectors?: readonly IStatusCollector[] | undefined;
 	/**
 	 * Optional metrics registry. When set, every tool handler is wrapped to
-	 * record latency/bytes/errors into it (M12). The CLI wires this to the
+	 * record latency/bytes/errors into it. The CLI wires this to the
 	 * `<prefix>_metrics` tool; programmatic hosts opt in by passing one.
 	 */
 	readonly metricsRegistry?: IMetricsRegistry | undefined;

@@ -123,7 +123,7 @@ export const saveNote = (
 	// Cross-process critical section: a single read-modify-write so two
 	// agents saving concurrently can't clobber each other's note.
 	withFileMutex(absPath, async () => {
-		// Scrub secrets BEFORE anything touches disk (M11): memory is durable.
+		// Scrub secrets BEFORE anything touches disk: memory is durable.
 		const titleR = redactSecrets(input.title);
 		const bodyR = redactSecrets(input.body);
 		const tagsR = (input.tags ?? []).map((tag) => redactSecrets(tag));

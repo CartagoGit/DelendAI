@@ -2,7 +2,7 @@ import { readdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 /**
- * Shared recursive-walk shape used by both `search` and `docs` (M25): sorted
+ * Shared recursive-walk shape used by both `search` and `docs`: sorted
  * `readdir`, a truncation guard checked before each step, and the
  * domain-specific "skip this directory?" / "visit this file" decisions left
  * to the caller as injected callbacks. Gitignore matching, extension

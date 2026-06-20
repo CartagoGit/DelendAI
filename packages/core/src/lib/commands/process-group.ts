@@ -1,5 +1,5 @@
 /**
- * Kill a spawned command's whole PROCESS GROUP, not just the leader (M25).
+ * Kill a spawned command's whole PROCESS GROUP, not just the leader.
  *
  * Commands are spawned `detached: true` so each gets its own process group; on
  * timeout or cancellation we must signal the **negative pid** to reap the entire

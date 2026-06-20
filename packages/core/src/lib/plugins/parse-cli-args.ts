@@ -63,7 +63,7 @@ const KNOWN_KEYS = new Set([
 ]);
 
 // Curated plugin presets (additive). `--preset=standard` saves typing the
-// full `--plugins` list; it merges with any explicit `--plugins`. [N18]
+// full `--plugins` list; it merges with any explicit `--plugins`.
 const STANDARD_PRESET = [
 	'git',
 	'search',

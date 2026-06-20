@@ -108,7 +108,7 @@ export default definePlugin({
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
-		// its folder policy via ctx.options. [M5]
+		// its folder policy via ctx.options.
 		const extraProposalFolders = Array.isArray(ctx.options.proposalFolders)
 			? (ctx.options.proposalFolders as string[])
 			: [];

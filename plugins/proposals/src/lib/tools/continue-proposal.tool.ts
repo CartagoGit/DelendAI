@@ -299,7 +299,7 @@ export const runContinueProposal = async (
 			nextAction:
 				'Create a proposal under the proposals dir and run sync_proposals.',
 		});
-	// Anti-loop [N9]: an `in_progress`/`in-progress` proposal already covered
+	// Anti-loop: an `in_progress`/`in-progress` proposal already covered
 	// by an active lock is being worked by someone. Selecting it again only
 	// produces a claim→lock-conflict→auto_work→same-proposal mini-loop, so
 	// exclude it from the primary pick. `proposalIdOf` maps a lock's task_id

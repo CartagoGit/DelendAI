@@ -29,7 +29,7 @@ export type IAgentLockArgs = {
 	parent_task_id?: string | undefined;
 	/**
 	 * What `withFileMutex` should do when a **live** holder keeps the lock
-	 * file past its contention timeout (M28): `'steal'` (default) reclaims
+	 * file past its contention timeout: `'steal'` (default) reclaims
 	 * it as before; `'fail'` rejects instead of clobbering a slow-but-alive
 	 * holder. Forwarded as-is — see `IFileMutexOptions.onContention`.
 	 */
@@ -62,7 +62,7 @@ export type IAgentLockDeps = {
 	lockFileLabel?: string;
 	/**
 	 * Internal `withFileMutex` timing overrides — NOT exposed on the tool's
-	 * inputSchema. Tests use these to exercise contention paths (M28)
+	 * inputSchema. Tests use these to exercise contention paths
 	 * without waiting out the production timeouts.
 	 */
 	mutexTimeoutMs?: number;
@@ -78,7 +78,7 @@ export type IAgentLockResponse = {
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
 	// Hermetic: the absolute lock path must be injected from the host's
 	// `ctx.workspace`. No `process.cwd()` fallback — an engine never guesses
-	// where the workspace is. [N6]
+	// where the workspace is.
 	if (!deps.lockPath) {
 		throw new Error(
 			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.',

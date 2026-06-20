@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 /**
  * What a tool can DO beyond reading, so a host/agent can reason about trust and
- * gate dangerous capabilities (M31). A tool with no declared effects is
+ * gate dangerous capabilities. A tool with no declared effects is
  * read-only (the safe default). Surfaced per tool by `overview`.
  *
  * - `write`       — mutates persisted state (workspace files, store, coordination).
@@ -50,7 +50,7 @@ export interface IToolRegistration {
 	/** Optional grouping tags, e.g. `['coordination']`, `['lazy']`. */
 	readonly tags?: readonly string[] | undefined;
 	/**
-	 * Side effects this tool can have (M31). Omit for read-only tools. Surfaced
+	 * Side effects this tool can have. Omit for read-only tools. Surfaced
 	 * by `overview` so a host can warn on / gate write/spawn/destructive tools.
 	 */
 	readonly effects?: readonly IToolEffect[] | undefined;

@@ -1,4 +1,4 @@
-// Peer-review loop for a slice (M35). A slice is implemented, then submitted
+// Peer-review loop for a slice. A slice is implemented, then submitted
 // for review instead of being closed directly; a DIFFERENT agent verifies it.
 // Approve → done. Find a fault → changes_requested (with an objection), the
 // slice is reworked and re-submitted, and ANOTHER agent reviews the fix. The

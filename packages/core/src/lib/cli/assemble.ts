@@ -49,7 +49,7 @@ export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
 	readonly loadResult: IPluginLoadResult;
 	/** Config-file diagnostic from the SAME read used to assemble (so the
-	 *  doctor doesn't read the file twice). [N21] */
+	 * doctor doesn't read the file twice). */
 	readonly configDiagnostic: {
 		readonly present: boolean;
 		readonly issues: readonly string[];
@@ -88,7 +88,7 @@ export const assembleCliConfig = async (
 
 	// Config file: --config, else `mcp-vertex.config.json` at the workspace.
 	// Read the raw text ONCE and derive both the parsed config and the
-	// diagnostic, so the doctor reuses this instead of re-reading. [N21]
+	// diagnostic, so the doctor reuses this instead of re-reading.
 	const configPath =
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
 	const rawConfig = readFile(configPath);
@@ -136,7 +136,7 @@ export const assembleCliConfig = async (
 	// plugins may legitimately ship a tool with the same internal id (e.g.
 	// `status`); the MCP names (`a_status`, `b_status`) never collide, so
 	// the registration-order uniqueness check must run on the qualified id,
-	// not the raw one. [R12]
+	// not the raw one.
 	const qualifiedPluginTools: IToolRegistration[] = [];
 
 	const onToolCalls: Array<
@@ -226,7 +226,7 @@ export const assembleCliConfig = async (
 
 	// Built-in collector so `<prefix>_status` is useful even without host
 	// collectors: reports the live plugin-load result. A programmatic host
-	// adds its own collectors (e.g. a game loop) via the same tool. [N23]
+	// adds its own collectors (e.g. a game loop) via the same tool.
 	const coreCollector: IStatusCollector = {
 		id: 'mcp-vertex',
 		collect: async () => ({
@@ -236,8 +236,8 @@ export const assembleCliConfig = async (
 		}),
 	};
 
-	// Metrics registry instruments every tool (M12); the `metrics` tool reads it
-	// and can persist timestamped snapshots under `<cacheDir>/metrics/` (M29).
+	// Metrics registry instruments every tool; the `metrics` tool reads it
+	// and can persist timestamped snapshots under `<cacheDir>/metrics/`.
 	const metricsRegistry = createMetricsRegistry();
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
@@ -270,7 +270,7 @@ export const assembleCliConfig = async (
 	];
 
 	// Core tools keep their bare id (single namespace); plugin tools are
-	// already qualified above so the uniqueness check is per-namespace. [R12]
+	// already qualified above so the uniqueness check is per-namespace.
 	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
 
 	// Surface knowledge as native MCP resources too (list/read/cache).
@@ -374,7 +374,7 @@ export const runDoctor = async (
 	deps: IAssembleCliDeps = {},
 ): Promise<IDoctorReport> => {
 	// Single source of truth: assembleCliConfig already read + diagnosed the
-	// config file from one read; reuse that instead of reading it again. [N21]
+	// config file from one read; reuse that instead of reading it again.
 	const { config, loadResult, configDiagnostic, configPath } =
 		await assembleCliConfig(args, deps);
 	const configDiag = configDiagnostic;
@@ -428,7 +428,7 @@ export const prepareServerBlueprintOnStart = async (
 	args: IMcpVertexCliArgs,
 	// The already-resolved cacheDir (CLI flag → config file → default). Passing
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
-	// rest of the store, including when it comes from mcp-vertex.config.json. [M15]
+	// rest of the store, including when it comes from mcp-vertex.config.json.
 	resolvedCacheDir?: string,
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
@@ -455,7 +455,7 @@ export const prepareServerBlueprintOnStart = async (
 
 /** Entry point for the `mcp-vertex` bin. */
 // ---------------------------------------------------------------------------
-// `--verbose` observability [N23]
+// `--verbose` observability
 // ---------------------------------------------------------------------------
 
 export interface IAssemblyDiagnostics {
@@ -563,7 +563,7 @@ export const runCli = async (
 
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
 	// is live and off the critical path — analysing the repo + writing the
-	// cache file must never delay the first MCP response. Best-effort. [N8]
+	// cache file must never delay the first MCP response. Best-effort.
 	if (args.mcpProjectCreate) {
 		void prepareServerBlueprintOnStart(args, config.corePaths?.cacheDir)
 			.then((result) => {

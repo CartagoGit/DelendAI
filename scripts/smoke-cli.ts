@@ -1,5 +1,5 @@
 /**
- * Functional smoke (M30): drive the COMPILED core CLI over stdio under plain Node
+ * Functional smoke: drive the COMPILED core CLI over stdio under plain Node
  * and call a real tool. The `--check` smoke only validates config and exits; this
  * actually connects an MCP client, lists tools and calls `mcp-vertex_overview`,
  * proving the published artifact serves the protocol under `node` (not just bun)

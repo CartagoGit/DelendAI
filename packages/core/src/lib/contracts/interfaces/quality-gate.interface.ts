@@ -20,7 +20,7 @@
  * - `command` + `args` are passed verbatim to a `spawn(..., { shell: true })`
  *   call. The shell stays in the loop on purpose: presets for shell tooling
  *   (`shellcheck`, `shfmt`, etc.) need it. The `commandPolicy` gate on the
- *   consumer side is what enforces allow/deny lists (M13).
+ *   consumer side is what enforces allow/deny lists.
  * - `expect` is a CLOSED union — not a free string — because silent typos
  *   (`'passed'`, `'Pass'`, `'0'`) used to slip into `IValidationCommand`
  *   configurations and the runner only caught them at runtime. Closing the

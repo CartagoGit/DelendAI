@@ -18,7 +18,7 @@ export interface ISyncProposalsToolOptions {
 	>;
 	/**
 	 * Host-specific proposal subfolders (relative to proposalsDir) to scan
-	 * beyond the generic ones, e.g. `['paused/demos']`. [M5]
+	 * beyond the generic ones, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
 }

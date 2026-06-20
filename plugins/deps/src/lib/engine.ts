@@ -62,7 +62,7 @@ const sectionEntries = (
 /**
  * Inventory the manifest's declared dependencies across all four sections,
  * with their version ranges. Pure over the injected workspace root; the
- * manifest path is injectable. Read-only, offline, agnostic. [N19]
+ * manifest path is injectable. Read-only, offline, agnostic.
  */
 export const listDeps = async (
 	rootAbs: string,
@@ -148,7 +148,7 @@ const detectLockfile = async (
  * Offline dependency-health report: missing lockfile, loose version ranges
  * and deps declared in more than one section. No network, no CVE database
  * (that would need an external vuln source — out of scope for an agnostic
- * core plugin). [N19]
+ * core plugin).
  */
 export const checkDeps = async (
 	rootAbs: string,

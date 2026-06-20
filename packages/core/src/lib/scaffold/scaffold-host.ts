@@ -7,7 +7,7 @@
 // mcp-vertex entry point), never to a hardcoded host. Templates only name
 // tools that exist: `overview` (always, via the mcp-vertex CLI) and the
 // generated scaffold tool; proposal-workflow tools are shown as
-// conditional on loading the `proposals` plugin. [M9]
+// conditional on loading the `proposals` plugin.
 
 export interface IScaffoldedFile {
 	readonly path: string;

@@ -32,7 +32,7 @@ export interface IRoundContextToolOptions {
 	readonly layout?: IHostPathLayout;
 	/**
 	 * Host-specific proposal subfolders (relative to proposalsDir) scanned
-	 * when no index.json exists, e.g. `['paused/demos']`. [M5]
+	 * when no index.json exists, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
 }

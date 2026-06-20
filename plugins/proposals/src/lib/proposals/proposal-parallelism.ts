@@ -30,7 +30,7 @@
  * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-vertex is
  * agnostic, so this is an open `string`, not a closed union baked with
  * one host's tracks. A host that wants typo-guarding passes its own set
- * of known tracks to `extractParallelismFromFrontmatter`. [M4]
+ * of known tracks to `extractParallelismFromFrontmatter`.
  */
 export type IProposalTrack = string;
 
@@ -232,7 +232,7 @@ import type { IYamlValue } from './frontmatter-parser';
  * A track is valid when it is a non-empty string. If the caller supplies
  * a `knownTracks` set, the track must also be a member (typo-guard for
  * hosts that enumerate their tracks); without it, mcp-vertex stays agnostic
- * and accepts any host track. [M4]
+ * and accepts any host track.
  */
 const makeIsValidTrack =
 	(knownTracks?: ReadonlySet<string>) =>
@@ -296,7 +296,7 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
  *   - `parallelismLanes` containing invalid tracks → those entries are
  *     silently dropped from the permission set.
  *   - `knownTracks` omitted → mcp-vertex is track-agnostic: any non-empty
- *     string is a valid track (the host owns the vocabulary). [M4]
+ * string is a valid track (the host owns the vocabulary).
  *
  * This function is the single seam between the proposal's textual
  * representation and the runtime `evaluateParallelism` evaluator. It
