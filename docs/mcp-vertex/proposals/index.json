@@ -1,34 +1,42 @@
 {
-	"generated_at": "2026-06-20T04:00:00.000Z",
-	"count": 10,
+	"generated_at": "2026-06-20T03:38:09.502Z",
+	"count": 12,
 	"proposals": [
 		{
-			"id": "p99",
-			"file": "p99-feat-multi-model-audit-plugin.md",
-			"track": "audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
 			"id": "p100",
-			"file": "p100-website-i18n-and-docs-rewrite.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "p101",
-			"file": "p101-web-header-transitions-and-full-capabilities-surface.md",
+			"file": "../../proposals/p100-website-i18n-and-docs-rewrite.md",
 			"track": "web+i18n+docs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
 		},
 		{
+			"id": "p101",
+			"file": "../../proposals/p101-web-header-transitions-and-full-capabilities-surface.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "p102",
+			"file": "../../proposals/p102-keep-legacy-default-false.md",
+			"track": "core+scaffold",
+			"type": "proposal",
+			"status": "deferred",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "p103",
+			"file": "../../proposals/p103-loop-detection-and-handoff.md",
+			"track": "runtime+coordination",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
 			"id": "p104",
-			"file": "p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md",
+			"file": "../../proposals/p104-feat-status-marker-plugin.md",
 			"track": "agent-contract",
 			"type": "proposal",
 			"status": "done",
@@ -36,7 +44,7 @@
 		},
 		{
 			"id": "p105",
-			"file": "p105-web-bugfixes-and-ux-overhaul.md",
+			"file": "../../proposals/p105-web-bugfixes-and-ux-overhaul.md",
 			"track": "web+i18n+docs",
 			"type": "proposal",
 			"status": "done",
@@ -44,31 +52,31 @@
 		},
 		{
 			"id": "p106",
-			"file": "p106-fix-web-gen-skills-recurses-into-subdirs-so-skill-md-are-found.md",
+			"file": "../../proposals/p106-fix-gen-skills-recursion.md",
 			"track": "web",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-18"
+			"date": "2026-06-19"
 		},
 		{
 			"id": "p107",
-			"file": "p107-multilang-quality-gates.md",
-			"track": "core+scaffold",
+			"file": "../../proposals/p107-multilang-quality-gates.md",
+			"track": "core+quality+web",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-20"
+			"date": "2026-06-19"
 		},
 		{
 			"id": "p108",
-			"file": "p108-feat-test-convention-plugin.md",
+			"file": "../../proposals/p108-feat-test-convention-plugin.md",
 			"track": "core+plugin+web",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-20"
+			"date": "2026-06-19"
 		},
 		{
 			"id": "p109",
-			"file": "p109-feat-auto-work-persist-modes.md",
+			"file": "../../proposals/p109-feat-auto-work-persist-modes.md",
 			"track": "plugin",
 			"type": "proposal",
 			"status": "done",
@@ -76,11 +84,19 @@
 		},
 		{
 			"id": "p110",
-			"file": "p110-residual-p100-web-and-i18n.md",
+			"file": "../../proposals/p110-residual-p100-web-and-i18n.md",
 			"track": "web+i18n",
 			"type": "proposal",
-			"status": "ready",
+			"status": "in_progress",
 			"date": "2026-06-20"
+		},
+		{
+			"id": "p99",
+			"file": "../../proposals/p99-feat-multi-model-audit-plugin.md",
+			"track": "audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
 		}
 	],
 	"errors": []

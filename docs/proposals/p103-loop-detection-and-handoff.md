@@ -1,21 +1,22 @@
 ---
 id: p103
 type: proposal
-status: in-progress
+status: done
 track: runtime+coordination
 date: 2026-06-18
-slice-shipped: s1 # agent-loop-detector pure module (this commit)
+closed: 2026-06-20
 ---
 
 # p103 — Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
 
-> **Estado: IN-PROGRESS (s1 shipped 2026-06-20).** La propuesta
+> **Estado: DONE (2026-06-20).** La propuesta
 > documenta el problema, lo que el servidor MCP **sí puede** y
 > **no puede** observar del modelo, y el enfoque recomendado.
 > El primer slice (`s1`) es un módulo puro de detección por hash
 > de args. Los slices `s2` (señal git-diff "intención no ejecutada"),
-> `s3` (handoff packet al disco) y `s4` (CLI flag + integración con
-> `auto_work` brake) se aprueban/cierran por separado.
+> `s3` (handoff packet al disco), `s4` (CLI flag + integración con
+> `auto_work` brake) y `s5` (notification stuck-detected) han sido
+> completamente implementados, verificados y documentados.
 
 ## 0. El problema (en palabras del usuario)
 
@@ -540,11 +541,11 @@ canal existente; cero infra nueva.
 
 ## 6. Estado
 
-- **s1**: ⏳ in-progress (este turno). Módulo puro con tests.
-- **s2**: ⏳ idea. `noProgress` con git diff.
-- **s3**: ⏳ idea. Handoff packet al disco.
-- **s4**: ⏳ idea. CLI flag + integración auto_work.
-- **s5**: ⏳ idea. Notification `stuck-detected` (última milla).
+- **s1**: ✅ done (commit `d6d32c3`, 2026-06-20)
+- **s2**: ✅ done (commit `bf8484c`, 2026-06-20)
+- **s3**: ✅ done (commit `bf8484c`, 2026-06-20)
+- **s4**: ✅ done (commit `bf8484c`, 2026-06-20)
+- **s5**: ✅ done (commit `9ad2715`, 2026-06-20)
 
 ## 7. Decisiones tomadas
 

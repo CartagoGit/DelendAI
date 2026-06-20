@@ -23,7 +23,8 @@ type IProposalStatus =
 	| 'blocked'
 	| 'done'
 	| 'retired'
-	| 'paused';
+	| 'paused'
+	| 'deferred';
 
 interface IProposalFrontmatter {
 	type?: string;
@@ -71,6 +72,7 @@ const VALID_STATUSES: ReadonlySet<IProposalStatus> = new Set([
 	'done',
 	'retired',
 	'paused',
+	'deferred',
 ]);
 
 const isProposalStatus = (s: string | undefined): s is IProposalStatus =>
@@ -221,6 +223,7 @@ const scanSubtree = async (
 		if (!dirent.isFile()) continue;
 		const name = String(dirent.name);
 		if (!name.endsWith('.md') || name === 'README.md') continue;
+		if (!/^[a-z]\d+[a-z]*-.+\.md$/iu.test(name)) continue;
 		const { entry, warning } = await readProposalFile(
 			join(absDir, name),
 			indexPath,
