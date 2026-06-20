@@ -253,3 +253,48 @@ self-describing — útil para s2 (la tabla de args referencia
 | ¿i18n tutoriales: manual o asistida? | Asistida con script de bootstrap, **diferida** | Manual = 11 sesiones tediosas; auto sin review = riesgo. s3 se difiere a una sesión dedicada porque el coste (≈6 600 líneas de markdown) no encaja en una iteración corta. |
 | ¿s2 SSR-safe? | Sí (script client-side puro, `<section hidden>` inicial) | SEO ve todo el contenido; usuarios sin JS ven el primer tab por defecto. |
 | ¿s1 incluye `i18n` por tool o solo `descriptionKey`? | **`i18n` completo precomputado** | El bloque `{ en, es, fr, …, vi }` se vuelca a `capabilities.json` para los 5 tools con catálogo; `PluginPage.astro` lo lee directamente sin pasar por `describeTool()` runtime. Ventaja: SSR pinta el idioma activo sin un lookup en runtime (≈0 ms vs. el coste de leer del catálogo en cada render). El `descriptionKey` original queda como redundancia opcional. |
+
+## 9. Estado (2026-06-20, in-progress)
+
+- **s1 — volcado i18n al `capabilities.json`**: ✅ done en `b48de1d`. El
+  bloque `{ en, es, fr, de, pt, it, zh, hi, ar, ja, vi }` se vuelca
+  para los tools con catálogo. Cubre el s1 original (descriptionKey) y
+  va más allá (i18n completo precomputado, ver §8). Trade-off aceptado:
+  inflar `capabilities.json` por ~30 KB a cambio de SSR sin lookup
+  runtime.
+- **s2 — tabs client-side en `PluginPage.astro`**: ✅ done en `824c5c8`.
+  `<nav role="tablist">` con 4 tabs, `<script>` ligero con a11y completa
+  (roles, ArrowLeft/Right, Home/End, focus). Refactor follow-up en
+  `4a8f4c3` (drop duplicate hydration script) y `e942911` (extract
+  `plugin-tabs-controller` para unit testing). 9/9 tests del
+  controller verde; spec cubre panel-missing case (trigger sin panel
+  → atributos intactos, config error visible al caller).
+- **s3 — i18n de los 5 tutoriales a 11 idiomas**:
+  - ✅ **Infraestructura** en `c71e93c`: 55 skeletons
+    (5 plugins × 11 langs) con frontmatter `auto-translated: true` +
+    `needs-human-review: true` + body verbatim del EN + banner de
+    "TRANSLATION PENDING". `scripts/translate-tutorials.sh` es
+    idempotente.
+  - ✅ **Tutorial gate** (`check-tutorials-i18n.ts` unstaged): parity
+    check (cada plugin con tutorial EN debe tener el mismo set en
+    cada lang) + status report (auto-translated / needs-human-review
+    counts). Translation status es **informational, NOT a hard
+    gate** — se reporta pero no falla el build.
+  - ⏳ **Traducciones reales**: 55 archivos pendientes. **Trabajo
+    humano** (no de un agente). La estructura está lista; el traductor
+    (manual o LLM) reescribe el body y quita los flags
+    `auto-translated: true` / `needs-human-review: true` del
+    frontmatter.
+
+**`bun run validate` exit 0** (105 test files, 698 tests, 10 skipped).
+El tutorial gate (sin commitear) está en `apps/web/scripts/check-tutorials-i18n.ts`
+con un fix de lint `// biome-ignore lint/correctness/noUnusedVariables:
+intentional` aplicado a la variable `autoTranslated` (que es subset
+de `needsHumanReview`).
+
+**Decisión de cierre**: p110 queda `in-progress` con s1+s2 done y
+s3 90% done (infraestructura lista, traducciones pendientes). El
+`status: done` se aplicará cuando los 55 archivos tengan body
+traducido y los flags `auto-translated: true` / `needs-human-review:
+true` se hayan removido. Ese es **trabajo del traductor, no del
+agente**.
