@@ -31,13 +31,11 @@ export const tokenize = (text: string): string[] =>
  * pure helper so {@link rankNotes} stays dependency-free and the same
  * defaults are re-used in tests.
  */
-export const getBm25Params = (
-	overrides?: Partial<{
-		bm25K1: number;
-		bm25B: number;
-		titleWeight: number;
-	}>,
-): {
+export const getBm25Params = (overrides?: {
+	bm25K1?: number | undefined;
+	bm25B?: number | undefined;
+	titleWeight?: number | undefined;
+}): {
 	readonly k1: number;
 	readonly b: number;
 	readonly titleWeight: number;

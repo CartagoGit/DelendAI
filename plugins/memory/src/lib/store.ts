@@ -192,9 +192,11 @@ export const recall = async (
 	}
 
 	return rankNotes(filtered, rawQuery, {
-		bm25K1: options.bm25K1,
-		bm25B: options.bm25B,
-		titleWeight: options.titleWeight,
+		...(options.bm25K1 !== undefined ? { bm25K1: options.bm25K1 } : {}),
+		...(options.bm25B !== undefined ? { bm25B: options.bm25B } : {}),
+		...(options.titleWeight !== undefined
+			? { titleWeight: options.titleWeight }
+			: {}),
 	})
 		.filter((r) => r.score > 0)
 		.sort(

@@ -12,7 +12,9 @@
 			"mcp__mcp-vertex__proposals_agent_lock",
 			"mcp__mcp-vertex__proposals_compact_status",
 			"mcp__mcp-vertex__proposals_continue_proposal",
-			"mcp__mcp-vertex__proposals_close_slice"
+			"mcp__mcp-vertex__proposals_close_slice",
+			"Skill(code-review)",
+			"Skill(code-review:*)"
 		],
 		"deny": []
 	},
