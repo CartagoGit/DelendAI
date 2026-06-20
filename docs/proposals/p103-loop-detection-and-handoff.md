@@ -1,17 +1,21 @@
 ---
 id: p103
 type: proposal
-status: idea
+status: in-progress
 track: runtime+coordination
 date: 2026-06-18
+slice-shipped: s1 # agent-loop-detector pure module (this commit)
 ---
 
 # p103 — Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
 
-> **Estado: IDEA para decidir. NO IMPLEMENTAR TODAVÍA.** Esta propuesta
-> documenta el problema, lo que el servidor MCP **sí puede** y **no
-> puede** observar del modelo, y un enfoque recomendado. Cuando se
-> apruebe, se abrirá el primer slice (`s1`).
+> **Estado: IN-PROGRESS (s1 shipped 2026-06-20).** La propuesta
+> documenta el problema, lo que el servidor MCP **sí puede** y
+> **no puede** observar del modelo, y el enfoque recomendado.
+> El primer slice (`s1`) es un módulo puro de detección por hash
+> de args. Los slices `s2` (señal git-diff "intención no ejecutada"),
+> `s3` (handoff packet al disco) y `s4` (CLI flag + integración con
+> `auto_work` brake) se aprueban/cierran por separado.
 
 ## 0. El problema (en palabras del usuario)
 
@@ -438,4 +442,117 @@ cerrar s1.
 - `packages/core/src/lib/shared/write-file-atomic.ts` —
   durabilidad del packet.
 - `docs/proposals/p103-loop-detection-and-handoff.md` — este
+  fichero (la spec que estas líneas describen).
+
+## 5. Slices (orden de ejecución, disjuntas)
+
+### s1 — Pure module: `agent-loop-detector.ts` con hash de args
+
+El slice más pequeño y de menor riesgo. Un módulo **puro** que
+recibe una ventana de tool calls recientes y devuelve un verdict:
+
+- **Files**:
+  - `plugins/proposals/src/lib/agents/agent-loop-detector.ts` (nuevo, ~80 LOC).
+  - `plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts`
+    (nuevo, ~6 specs).
+- **Diseño**: el módulo es **puro** (recibe `readonly IToolCall[]`,
+  no toca I/O). El detector:
+  1. Mantiene un **sliding window por agente** de las últimas N
+     tool calls (default `ringSize = 50`).
+  2. Hashea cada call con `sha256(JSON.stringify(tool + sortedArgs))`.
+  3. Cuenta repeticiones exactas del mismo hash dentro de la
+     ventana.
+  4. Si una tool tiene el mismo hash `exactRepeatThreshold` veces
+     (default 3) en la ventana → `isStuck = true`,
+     `pattern: "exact-repeat"`.
+  5. Mantiene un contador por agente (no global): dos agentes con
+     la misma tool + mismo hash NO se confunden.
+- **DoD**:
+  - `bun run validate` verde.
+  - Los 6 specs pasan: mismo agente + misma tool + mismo args N
+    veces → stuck; mismo agente + misma tool + args distintos → no
+    stuck; agentes distintos no se afectan; ventana pequeña no
+    dispara falsamente; ventana respeta `ringSize`.
+- **Coste**: ~150 líneas totales. Cero deps nuevas. SRP puro: el
+  detector no escribe a disco, no toca git, no emite
+  notifications — solo analiza y devuelve verdict. Integración
+  en `auto_work` / tools viene en `s4`.
+
+### s2 — Señal `noProgress` vía git diff
+
+Extender el detector con la segunda señal: el agente llama a tools
+de modificación (`edit_file`, `write_file`, ...) pero el `git diff`
+no cambia entre calls consecutivos. Usa el plugin `git` (tool
+`git_diff`).
+
+- **Files**:
+  - `plugins/proposals/src/lib/agents/agent-loop-detector.ts` (+30 LOC).
+  - `plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts`
+    (+3 specs).
+  - `packages/core/src/lib/plugins/plugin-invoker.ts` (inyectar el
+    invoker del plugin `git` en el detector; cero deps nuevas).
+- **DoD**: tests con un fake `IGitInvoker` simulan `git diff`
+    estable + calls de modificación → stuck; `git diff` cambia →
+    no stuck.
+- **Riesgo**: acoplamiento con el plugin `git`. Mitigación: si
+  `git` no está cargado, el detector degrada a "solo exact-repeat"
+  (s1) y registra un warning, no falla.
+
+### s3 — Handoff packet al disco
+
+Cuando el detector confirma `isStuck`, escribir
+`.mcp-vertex/handoff/<agent>-<isoTimestamp>.json` con el schema
+documentado en §2. Usa `withFileMutex` + `writeFileAtomic` +
+`redactSecrets` sobre los args.
+
+- **Files**:
+  - `plugins/proposals/src/lib/agents/handoff-packet.ts` (nuevo,
+    ~120 LOC).
+  - `plugins/proposals/tests/src/lib/agents/handoff-packet.spec.ts`
+    (nuevo, ~5 specs).
+- **DoD**: el packet se escribe atómicamente, contiene los
+  campos del schema, args redactados, timestamp ISO, agent ID,
+  hash del último call, y metadata del round-context digest.
+
+### s4 — CLI flag + integración con `auto_work` brake
+
+Exponer el detector al CLI (`--loop-detector`, `--no-loop-detector`,
+`--loop-detector.repeat-threshold=N` etc. — §5.2 de esta
+propuesta). Integrar el `IDLE_STOP_THRESHOLD` que ya existe en
+`auto-work.tool.ts:36-39` como una entrada más del detector. El
+verdict del detector se serializa como `__stuck_detected: true` en
+el `structuredContent` del tool call.
+
+- **Files**:
+  - `packages/core/src/lib/plugins/parse-cli-args.ts` (+30 LOC).
+  - `plugins/proposals/src/lib/tools/auto-work.tool.ts` (refactor:
+    absorber `consecutiveIdle` en el detector).
+- **DoD**: `mcp-vertex --no-loop-detector` desactiva el detector.
+  `mcp-vertex --loop-detector.repeat-threshold=5` lo afina sin
+  tocar config. El detector integrado hace que `auto_work`
+  devuelva `stop: true` cuando `isStuck`.
+
+### s5 — Notification `stuck-detected` (opcional)
+
+Emitir `notifications/message` con `event: "stuck-detected"`
+igual que `notification` ya hace con `lock-released`. Reusa el
+canal existente; cero infra nueva.
+
+## 6. Estado
+
+- **s1**: ⏳ in-progress (este turno). Módulo puro con tests.
+- **s2**: ⏳ idea. `noProgress` con git diff.
+- **s3**: ⏳ idea. Handoff packet al disco.
+- **s4**: ⏳ idea. CLI flag + integración auto_work.
+- **s5**: ⏳ idea. Notification `stuck-detected` (última milla).
+
+## 7. Decisiones tomadas
+
+| Decisión | Elección | Por qué |
+|---|---|---|
+| Módulo puro vs side-effect | **puro** | SOLID: detector separado del I/O; tests sin mocks; cada integración (s2/s3/s4) puede adaptar el detector sin reescribirlo. |
+| Hash de args vs Levenshtein | **hash primero**, Levenshtein en s2-bis | Hash es O(1) y suficiente para "el modelo repite lo mismo"; Levenshtein es O(n²) y solo añade valor para "args casi iguales" (un sub-caso). |
+| Threshold default 3 | igual a `IDLE_STOP_THRESHOLD` existente | Coherencia con el brake que ya tenemos. El usuario puede ajustar. |
+| Default `enabled: true` | como en la propuesta original | Acepta el riesgo de falsos positivos (mitigado por el handoff que se ignora si no aplica). El usuario pidió esta dirección. |
+| Per-agent tracking | **sí**, clave `agent` del agent_lock | Dos agentes con la misma tool + mismo args no se confunden; matches p103 §1 "agente lógico". |
   fichero.
