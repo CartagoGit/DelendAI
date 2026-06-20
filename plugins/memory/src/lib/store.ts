@@ -34,8 +34,21 @@ const kebab = (value: string): string =>
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-/** Maximum number of notes the store keeps (total-store quota). */
-export const MAX_NOTES = 1000;
+/** Default for the total-store quota when the plugin options don't
+ * override it. Kept as a constant (not `export const MAX_NOTES`) so
+ * callers go through `getMaxNotes(options)` instead of importing the
+ * raw constant — this is the SOLID hook that makes the limit
+ * configurable from `mcp-vertex.config.json#plugins.memory.options.maxNotes`.
+ */
+export const DEFAULT_MAX_NOTES = 1000;
+
+/**
+ * Resolve the effective max-notes limit for one save. Honours an
+ * explicit override from `tools.ts` (passed through from the plugin
+ * `optionsSchema`); falls back to {@link DEFAULT_MAX_NOTES}.
+ */
+export const getMaxNotes = (override?: number): number =>
+	typeof override === 'number' && override > 0 ? override : DEFAULT_MAX_NOTES;
 
 /** Derive a note's stable id from its title (so saves upsert by title). */
 export const deriveNoteId = (title: string): string =>
@@ -154,7 +167,14 @@ export const saveNote = (
  */
 export const recall = async (
 	absPath: string,
-	options: { query?: string; tags?: readonly string[]; limit?: number } = {},
+	options: {
+		query?: string;
+		tags?: readonly string[];
+		limit?: number;
+		bm25K1?: number;
+		bm25B?: number;
+		titleWeight?: number;
+	} = {},
 ): Promise<INote[]> => {
 	const rawQuery = options.query?.trim() ?? '';
 	const tags = options.tags ?? [];
@@ -171,7 +191,11 @@ export const recall = async (
 			.slice(0, limit);
 	}
 
-	return rankNotes(filtered, rawQuery)
+	return rankNotes(filtered, rawQuery, {
+		bm25K1: options.bm25K1,
+		bm25B: options.bm25B,
+		titleWeight: options.titleWeight,
+	})
 		.filter((r) => r.score > 0)
 		.sort(
 			(a, b) =>

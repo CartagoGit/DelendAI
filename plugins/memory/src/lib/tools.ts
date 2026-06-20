@@ -10,7 +10,7 @@ import {
 import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
-	MAX_NOTES,
+	getMaxNotes,
 	deriveNoteId,
 	readStore,
 	recall,
@@ -62,6 +62,25 @@ const guardCorrupt = async (
 export interface IMemoryToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute path of the note store JSON. */
+	/**
+	 * BM25 `k1` parameter (term-frequency saturation).
+	 * Lower = single-occurrence heavy; higher = flatter curve. Default 1.5.
+	 */
+	readonly bm25K1: number;
+	/**
+	 * BM25 `b` parameter (document-length normalisation).
+	 * 0 = length-blind; 1 = full normalisation. Default 0.75.
+	 */
+	readonly bm25B: number;
+	/**
+	 * Title-token weight multiplier in the BM25 corpus.
+	 * Each title token counts `titleWeight` times. Default 2.
+	 */
+	readonly titleWeight: number;
+	/**
+	 * Max notes the store keeps on disk. Default 1000.
+	 */
+	readonly maxNotes: number;
 	readonly storePathAbs: string;
 }
 
@@ -143,9 +162,12 @@ export const buildMemoryToolRegistrations = (
 							const id = deriveNoteId(args.title);
 							const notes = await readStore(options.storePathAbs);
 							const isNew = !notes.some((note) => note.id === id);
-							if (isNew && notes.length >= MAX_NOTES) {
+							if (
+								isNew &&
+								notes.length >= getMaxNotes(options.maxNotes)
+							) {
 								return toolError(
-									`note store is full (max ${MAX_NOTES} notes)`,
+									`note store is full (max ${getMaxNotes(options.maxNotes)} notes)`,
 									'Forget stale notes with memory_forget before adding new ones.',
 								);
 							}
@@ -199,6 +221,9 @@ export const buildMemoryToolRegistrations = (
 										? { query: args.query }
 										: {}),
 									...(args.tags ? { tags: args.tags } : {}),
+									bm25K1: options.bm25K1,
+									bm25B: options.bm25B,
+									titleWeight: options.titleWeight,
 									limit: Math.max(
 										1,
 										Math.min(
