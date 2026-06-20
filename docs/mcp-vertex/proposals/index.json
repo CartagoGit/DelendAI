@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-19T22:07:52.976Z",
-	"count": 3,
+	"generated_at": "2026-06-20T02:05:00.000Z",
+	"count": 4,
 	"proposals": [
 		{
 			"id": "p104",
@@ -22,6 +22,14 @@
 			"id": "p107",
 			"file": "p107-multilang-quality-gates.md",
 			"track": "core+scaffold",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "p109",
+			"file": "p109-feat-auto-work-persist-modes.md",
+			"track": "plugin",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
