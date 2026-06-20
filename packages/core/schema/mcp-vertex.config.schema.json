@@ -11,6 +11,9 @@
 		"docsDir": {
 			"type": "string"
 		},
+		"keepLegacy": {
+			"type": "boolean"
+		},
 		"validationMatrix": {
 			"type": "object",
 			"properties": {

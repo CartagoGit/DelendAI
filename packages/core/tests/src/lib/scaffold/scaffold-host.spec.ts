@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -120,6 +126,8 @@ describe('scaffold tool report (p97)', () => {
 		expect(first.written).toEqual([
 			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
+		expect(first.moved).toEqual([]);
+		expect(first.kept).toEqual([]);
 		expect(
 			readFileSync(
 				join(root, 'libs/mcp-project/src/lib/skills/acme-combat.md'),
@@ -136,6 +144,71 @@ describe('scaffold tool report (p97)', () => {
 		expect(second.skipped).toEqual([
 			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
+		expect(second.kept).toEqual(second.skipped);
+		expect(second.moved).toEqual([]);
+	});
+
+	it('keepLegacy moves the old target to legacy and writes the fresh scaffold', async () => {
+		const target = join(
+			root,
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		);
+		const first = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Combat rules.',
+			dryRun: false,
+		});
+		expect(first.written).toEqual([
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		]);
+		const oldContent = `${readFileSync(target, 'utf8')}\n# local edit\n`;
+		writeFileSync(target, oldContent);
+
+		const second = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Fresh combat rules.',
+			dryRun: false,
+			keepLegacy: true,
+		});
+
+		expect(second.skipped).toEqual([]);
+		expect(second.kept).toEqual([]);
+		expect(second.written).toEqual([
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		]);
+		expect(second.moved).toHaveLength(1);
+		expect(second.moved[0]).toMatch(/^legacy\/acme-combat-[a-z0-9]+\.md$/);
+		expect(readFileSync(join(root, second.moved[0] ?? ''), 'utf8')).toBe(
+			oldContent,
+		);
+		expect(readFileSync(target, 'utf8')).toContain('Fresh combat rules.');
+	});
+
+	it('dry-run with keepLegacy reports files without moving existing targets', async () => {
+		await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Combat rules.',
+			dryRun: false,
+		});
+		const target = join(
+			root,
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		);
+		const before = readFileSync(target, 'utf8');
+		const report = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Fresh combat rules.',
+			dryRun: true,
+			keepLegacy: true,
+		});
+		expect(report.written).toEqual([]);
+		expect(report.moved).toEqual([]);
+		expect(existsSync(join(root, 'legacy'))).toBe(false);
+		expect(readFileSync(target, 'utf8')).toBe(before);
 	});
 
 	it('reports input errors instead of writing partial artefacts', async () => {

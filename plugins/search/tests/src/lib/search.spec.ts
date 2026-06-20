@@ -89,6 +89,7 @@ describe('search plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/search',
 			pluginDocsDir: 'docs/mcp-vertex/search',
 			namespacePrefix: 'search',

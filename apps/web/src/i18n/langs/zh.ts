@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -127,6 +128,7 @@ const dict: LangDict = {
 		docs: '编目并阅读项目 markdown 文档，低成本的精选导航。',
 		deps: '离线依赖清单 + 健康检查（lockfile、宽松范围、重复）。',
 		notification: '推送锁释放事件，让智能体停止轮询。',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'每个智能体回复必须以彩色结束标记收尾：8 个标准状态、辅助与校验工具。',
 		core: '与项目无关的内核：overview、scaffold、指标、doctor 和插件加载器。',
@@ -165,6 +167,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.zh,
 	recovery: recoveryByLang.zh,
+	logs: logsByLang.zh,
 };
 
 export default dict;

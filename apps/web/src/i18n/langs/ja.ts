@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -134,6 +135,7 @@ const dict: LangDict = {
 		deps: 'オフライン依存関係の棚卸し + 健全性（lockfile、緩い範囲、重複）。',
 		notification:
 			'ロック解放イベントをプッシュし、エージェントのポーリングを止めます。',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'エージェント応答ごとに必須のカラー終了マーカー：8 つの正規状態、ヘルパーとバリデータのツール。',
 		core: '非依存のコア：overview、scaffold、メトリクス、doctor、プラグインローダー。',
@@ -172,6 +174,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.ja,
 	recovery: recoveryByLang.ja,
+	logs: logsByLang.ja,
 };
 
 export default dict;

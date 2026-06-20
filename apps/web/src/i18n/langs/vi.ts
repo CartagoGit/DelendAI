@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -132,6 +133,7 @@ const dict: LangDict = {
 		deps: 'Kiểm kê phụ thuộc ngoại tuyến + sức khỏe (lockfile, phạm vi lỏng, trùng lặp).',
 		notification:
 			'Đẩy sự kiện giải phóng khóa để các tác tử ngừng polling.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'Đánh dấu kết thúc màu bắt buộc cho mỗi phản hồi của tác tử: 8 trạng thái chuẩn, công cụ helper + validator.',
 		core: 'Lõi bất khả tri: overview, scaffold, số liệu, doctor và trình tải plugin.',
@@ -170,6 +172,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.vi,
 	recovery: recoveryByLang.vi,
+	logs: logsByLang.vi,
 };
 
 export default dict;

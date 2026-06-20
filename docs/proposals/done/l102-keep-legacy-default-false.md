@@ -1,10 +1,12 @@
 ---
 id: l102
 type: proposal
-status: paused
+status: done
 track: core+scaffold
 date: 2026-06-18
 deferred: 2026-06-18
+completed: 2026-06-20
+unblocked_by: [user:continue-slice-by-slice]
 budget: 4
 kind: legacy
 title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
@@ -12,11 +14,10 @@ title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que
 
 # l102 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 
-> **Estado: NO SE VA A HACER AHORA — solo proposal archivada.** Decisión
-> del usuario 2026-06-18. La propuesta queda escrita para cuando
-> llegue una refactor / migración real en la que se necesite esta
-> garantía. Mientras tanto, sirve de contrato público y de punto de
-> referencia para otras decisiones.
+> **Estado histórico:** esta propuesta quedó pausada por decisión del usuario el
+> 2026-06-18. Se reabrió el 2026-06-20 por instrucción explícita de continuar
+> propuesta tras propuesta y se completó como contrato público de scaffold y
+> migraciones.
 
 ## 0. Contexto y motivación
 
@@ -388,3 +389,26 @@ ahora". Razones para archivarla:
 
 Cuando llegue el próximo refactor / migración real (y va a llegar),
 se reabre l102, se ejecuta s1–s5 en orden y se cierra.
+
+## 8. Cierre 2026-06-20
+
+Implementado:
+
+- `keepLegacy` en `mcp-vertex.config.json`, schema, `IMcpPluginContext`,
+  `IMcpVertexHostConfig`, assemble y scaffold generado.
+- `<prefix>_scaffold` acepta override por llamada; con `keepLegacy: true` mueve
+  targets existentes a `legacy/<basename>-<ts>.<ext>` antes de escribir el
+  template nuevo y reporta `moved`/`kept`.
+- `migrateJsonFile` acepta `forceBackup` para crear `.bak-*` incluso cuando no
+  corre ningún migrador.
+- El blueprint añade `defaults.keepLegacy`, razones y warnings; recomienda
+  `true` ante `extraTools` custom, config existente o intención de migración.
+- Documentación en `packages/core/README.md`, `docs/PLUGINS-MCP-VERTEX.md` y
+  ejemplos públicos.
+
+Verificación:
+
+- `bun run config:schema`
+- `bun run types:generate`
+- Specs enfocadas de scaffold, migraciones, blueprint y config.
+- `bun run validate`

@@ -1,7 +1,8 @@
 /**
- * gen-skills.ts — emit `src/data/skills.json`, the catalogue of scaffold
- * skills the site renders at /skills. Scans the repo's `skills/` directory
- * for SKILL.md files, extracts YAML frontmatter and a one-line summary.
+ * gen-skills.ts — emit `src/data/manifests/skills.json`, the catalogue of
+ * scaffold skills the site renders at /skills. Scans the repo's `skills/`
+ * directory for SKILL.md files, extracts YAML frontmatter and a one-line
+ * summary.
  *
  *   bun scripts/gen-skills.ts            # write, warn on gaps
  *   bun scripts/gen-skills.ts --strict   # FAIL on parse errors
@@ -20,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
 const SKILLS_DIR = join(ROOT, 'skills');
-const OUT = resolve(HERE, '..', 'src', 'data', 'skills.json');
+const OUT = resolve(HERE, '..', 'src', 'data', 'manifests', 'skills.json');
 
 interface ISkill {
 	readonly id: string;

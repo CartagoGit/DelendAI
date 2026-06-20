@@ -10,18 +10,18 @@
 // Lookup convention:
 //   describeTool('deps_deps_check', 'es') → es → en → '' (never throws)
 
-import type { Lang } from '../shared';
+import type { Lang } from '#I18N/shared';
 import type {
 	IKnowledgeI18n,
 	IPromptI18n,
 	IResourceI18n,
 	IToolI18n,
-} from './_shape';
-import { mcpVertexOverviewI18n } from './mcp-vertex_overview';
-import { proposalsAutoWorkI18n } from './proposals_auto_work';
-import { memorySaveI18n } from './memory_save';
-import { auditPlanI18n } from './audit_plan';
-import { auditConsolidateI18n } from './audit_consolidate';
+} from '#I18N/tools/_shape';
+import { mcpVertexOverviewI18n } from '#I18N/tools/mcp-vertex_overview';
+import { proposalsAutoWorkI18n } from '#I18N/tools/proposals_auto_work';
+import { memorySaveI18n } from '#I18N/tools/memory_save';
+import { auditPlanI18n } from '#I18N/tools/audit_plan';
+import { auditConsolidateI18n } from '#I18N/tools/audit_consolidate';
 
 // ─── Catalogue storage ────────────────────────────────────────────────────────
 // We use a module-level Map so additions via `register*` survive Astro's

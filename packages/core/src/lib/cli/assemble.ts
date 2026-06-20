@@ -104,6 +104,7 @@ export const assembleCliConfig = async (
 		args.tokens.docsDir ?? fileConfig.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const corePaths = { cacheDir, docsDir };
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
+	const keepLegacy = fileConfig.keepLegacy ?? false;
 
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
@@ -112,6 +113,7 @@ export const assembleCliConfig = async (
 			corePaths,
 			cacheDir: corePaths.cacheDir,
 			docsDir: corePaths.docsDir,
+			keepLegacy,
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: pluginConfig.prefix ?? pluginName,
@@ -145,6 +147,9 @@ export const assembleCliConfig = async (
 			error?: unknown,
 		) => Promise<void> | void
 	> = [];
+	const onToolStarts: Array<
+		(toolName: string, args: unknown) => Promise<void> | void
+	> = [];
 	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
 
 	for (const { plugin, registrations } of loadResult.loaded) {
@@ -155,6 +160,8 @@ export const assembleCliConfig = async (
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
 		if (registrations.onToolCall)
 			onToolCalls.push(registrations.onToolCall);
+		if (registrations.onToolStart)
+			onToolStarts.push(registrations.onToolStart);
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
 		for (const tool of registrations.tools ?? []) {
@@ -256,6 +263,7 @@ export const assembleCliConfig = async (
 		buildScaffoldToolRegistration({
 			namespacePrefix: corePrefix,
 			workspace,
+			keepLegacy,
 			projectName: args.serverName,
 			projectPackageName: '@mcp-vertex/core',
 		}),
@@ -282,12 +290,28 @@ export const assembleCliConfig = async (
 		namespacePrefix: corePrefix,
 		workspace,
 		corePaths,
+		keepLegacy,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,
+		...(onToolStarts.length > 0
+			? {
+					onToolStart: async (toolName, toolArgs) => {
+						for (const handler of onToolStarts) {
+							try {
+								await handler(toolName, toolArgs);
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] onToolStart error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
+					},
+				}
+			: {}),
 		...(onToolCalls.length > 0
 			? {
 					onToolCall: async (toolName, toolArgs, result, error) => {

@@ -11,21 +11,21 @@
 // one release so older `scripts/*.sh` and any caller still pointing there
 // keeps working without an immediate code change.
 
-import en from './langs/en';
-import es from './langs/es';
-import fr from './langs/fr';
-import de from './langs/de';
-import pt from './langs/pt';
-import it from './langs/it';
-import zh from './langs/zh';
-import hi from './langs/hi';
-import ar from './langs/ar';
-import ja from './langs/ja';
-import vi from './langs/vi';
-import th from './langs/th';
+import en from '#I18N/langs/en';
+import es from '#I18N/langs/es';
+import fr from '#I18N/langs/fr';
+import de from '#I18N/langs/de';
+import pt from '#I18N/langs/pt';
+import it from '#I18N/langs/it';
+import zh from '#I18N/langs/zh';
+import hi from '#I18N/langs/hi';
+import ar from '#I18N/langs/ar';
+import ja from '#I18N/langs/ja';
+import vi from '#I18N/langs/vi';
+import th from '#I18N/langs/th';
 
-import type { Lang, LangDict } from './shared';
-import { dictsByLang as _dictsByLang } from './shared';
+import type { Lang, LangDict } from '#I18N/shared';
+import { dictsByLang as _dictsByLang } from '#I18N/shared';
 
 // Populate the shared `dictsByLang` map so `useTranslations()` can resolve any
 // `Lang` to its dictionary. We intentionally mutate the object exported by
@@ -53,7 +53,7 @@ export {
 	flagFor,
 	rtlLangs,
 	themes,
-} from './shared';
+} from '#I18N/shared';
 export type {
 	Lang,
 	LangDict,
@@ -72,20 +72,22 @@ export type {
 	IFooterTranslations,
 	IPluginPageTranslations,
 	IPluginTranslations,
+	ILogsTranslations,
 	PluginKey,
 	ILangMeta,
 	Theme,
-} from './shared';
-export { proposalGlossaryByLang, recoveryByLang } from './proposals';
-export { default as en } from './langs/en';
-export { default as es } from './langs/es';
-export { default as fr } from './langs/fr';
-export { default as de } from './langs/de';
-export { default as pt } from './langs/pt';
-export { default as it } from './langs/it';
-export { default as zh } from './langs/zh';
-export { default as hi } from './langs/hi';
-export { default as ar } from './langs/ar';
-export { default as ja } from './langs/ja';
-export { default as vi } from './langs/vi';
-export { default as th } from './langs/th';
+} from '#I18N/shared';
+export { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
+export { logsByLang } from '#I18N/logs';
+export { default as en } from '#I18N/langs/en';
+export { default as es } from '#I18N/langs/es';
+export { default as fr } from '#I18N/langs/fr';
+export { default as de } from '#I18N/langs/de';
+export { default as pt } from '#I18N/langs/pt';
+export { default as it } from '#I18N/langs/it';
+export { default as zh } from '#I18N/langs/zh';
+export { default as hi } from '#I18N/langs/hi';
+export { default as ar } from '#I18N/langs/ar';
+export { default as ja } from '#I18N/langs/ja';
+export { default as vi } from '#I18N/langs/vi';
+export { default as th } from '#I18N/langs/th';

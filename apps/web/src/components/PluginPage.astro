@@ -1,11 +1,11 @@
 ---
-import { useTranslations, type Lang } from '../i18n/ui';
-import { describeTool } from '../i18n/tools';
-import capabilities from '../data/capabilities.json';
-import type { ITutorial } from '../../scripts/lib/discover-tutorials';
-import PageHeader from './PageHeader.astro';
-import PluginTabs from './PluginTabs.astro';
-import Tutorial from './Tutorial.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+import { describeTool } from '#I18N/tools';
+import capabilities from '#MANIFESTS/capabilities.json';
+import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import PluginTabs from '#COMPONENTS/PluginTabs.astro';
+import Tutorial from '#COMPONENTS/Tutorial.astro';
 
 interface Props {
 	lang: Lang;

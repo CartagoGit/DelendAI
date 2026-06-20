@@ -25,12 +25,8 @@
  *     convention; `#` cannot collide with any npm package name).
  *   - Workspace imports keep using `@mcp-vertex/...` (unchanged).
  *
- * The `#MANIFESTS/*` alias points to `data/manifests/*`, which is the
- * post-s3 destination for the two site manifests (skills.json,
- * capabilities.json). Until s3 lands, those JSONs still live at
- * `data/skills.json` and `data/capabilities.json`; consumers that try
- * `#MANIFESTS/skills.json` before s3 will fail to resolve. That is
- * the documented expected behaviour (see p112 §1).
+ * The `#MANIFESTS/*` alias points to `data/manifests/*`, the generated
+ * destination for the two site manifests (skills.json, capabilities.json).
  *
  * `REPO_ROOT` is computed as `<this file>/../../../..` (4 levels up:
  * `lib/` → `scripts/` → `web/apps/` → `web/` → repo). Hard-coding
@@ -91,6 +87,6 @@ export const TS_CONFIG_PATHS = Object.fromEntries(
 		// tsconfig is rooted at apps/web/, so the path is relative to
 		// that dir (two levels under REPO_ROOT).
 		const fromTsconfig = `./${relDir.replace(/^apps\/web\//u, '')}/*`;
-		return [alias, [fromTsconfig]];
+		return [`${alias}/*`, [fromTsconfig]];
 	}),
 );

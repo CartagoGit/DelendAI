@@ -1,5 +1,5 @@
 ---
-import { useTranslations, type Lang } from '../i18n/ui';
+import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props {
 	lang: Lang;
@@ -58,7 +58,7 @@ const drawerLinks = [
 			<span class="nav__brand-text">@mcp-vertex/core</span>
 		</a>
 		<div class="nav__links" role="navigation">
-			{navSections.map((l) => <a href={l.href}>{l.label}</a>)}
+			{navSections.map((l) => <a class="nav__link" href={l.href}>{l.label}</a>)}
 			<span class="nav__divider" aria-hidden="true"></span>
 			{/* Core/plugin surfaces live inside a native <details> dropdown so
 			    the row stays on one line on tablet widths. <details>/<summary>
@@ -83,7 +83,7 @@ const drawerLinks = [
 					</svg>
 				</summary>
 				<div class="nav__more-panel" role="menu">
-					{navCore.map((l) => <a href={l.href} role="menuitem">{l.label}</a>)}
+					{navCore.map((l) => <a class="nav__more-link" href={l.href} role="menuitem">{l.label}</a>)}
 				</div>
 			</details>
 			{/* GitHub: icon-only link to keep the row compact. The accessible

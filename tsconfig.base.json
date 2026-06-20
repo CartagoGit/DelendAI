@@ -26,6 +26,11 @@
 			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
 			"@mcp-vertex/core/public": ["./packages/core/src/public/index.ts"],
 			"@mcp-vertex/core/*": ["./packages/core/src/*"],
+			"@mcp-vertex/client": ["./packages/client/src/index.ts"],
+			"@mcp-vertex/client/public": [
+				"./packages/client/src/public/index.ts"
+			],
+			"@mcp-vertex/client/*": ["./packages/client/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
@@ -63,6 +68,9 @@
 			"@mcp-vertex/deps": ["./plugins/deps/src/index.ts"],
 			"@mcp-vertex/deps/public": ["./plugins/deps/src/public/index.ts"],
 			"@mcp-vertex/deps/*": ["./plugins/deps/src/*"],
+			"@mcp-vertex/logs": ["./plugins/logs/src/index.ts"],
+			"@mcp-vertex/logs/public": ["./plugins/logs/src/public/index.ts"],
+			"@mcp-vertex/logs/*": ["./plugins/logs/src/*"],
 			"@mcp-vertex/status-marker": [
 				"./plugins/status-marker/src/index.ts"
 			],

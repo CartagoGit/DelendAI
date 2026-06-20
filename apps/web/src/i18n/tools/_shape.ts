@@ -20,7 +20,7 @@
 // build. A future proposal (l106) will populate it language by language
 // and then tighten the gate to require 12-lang completeness per entry.
 
-import type { Lang } from '../shared';
+import type { Lang } from '#I18N/shared';
 
 export interface IToolI18n {
 	readonly description: Readonly<Record<Lang, string>>;

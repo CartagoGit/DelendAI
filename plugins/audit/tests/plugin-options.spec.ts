@@ -99,6 +99,7 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		},
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
+		keepLegacy: false,
 		pluginCacheDir: '.cache/mcp-vertex/audit',
 		pluginDocsDir: 'docs/mcp-vertex/audit',
 		namespacePrefix: 'audit',

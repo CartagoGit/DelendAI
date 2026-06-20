@@ -25,6 +25,15 @@ const instrumentToolHandlers = (
 			let isError = false;
 			let error: unknown;
 			try {
+				if (config.onToolStart) {
+					try {
+						void Promise.resolve(
+							config.onToolStart(name, args[0]),
+						).catch(() => {});
+					} catch {
+						// Ignored
+					}
+				}
 				result = await fn(...args);
 				isError = (result as { isError?: boolean })?.isError === true;
 

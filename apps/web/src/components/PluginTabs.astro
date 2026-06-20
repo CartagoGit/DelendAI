@@ -102,6 +102,6 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 	// stand-in instead of being trapped inside an Astro `is:inline`
 	// block. Astro bundles this `<script>` automatically; the path is
 	// relative to the `scripts/lib/` directory at build time.
-	import { initPluginTabs } from '../../scripts/lib/plugin-tabs-controller';
+	import { initPluginTabs } from '#SCRIPTS/lib/plugin-tabs-controller';
 	initPluginTabs();
 </script>

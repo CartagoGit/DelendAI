@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 import { workspaceAliases } from '../../vitest.shared';
+import { LOCAL_ALIASES } from './scripts/lib/local-aliases.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -15,7 +16,15 @@ const workspaceRoot = resolve(here, '../..');
  * are not unit-tested today.
  */
 export default defineConfig({
-	resolve: { alias: workspaceAliases(workspaceRoot) },
+	resolve: {
+		alias: [
+			...workspaceAliases(workspaceRoot),
+			...Object.entries(LOCAL_ALIASES).map(([find, replacement]) => ({
+				find,
+				replacement,
+			})),
+		],
+	},
 	test: {
 		name: 'apps-web',
 		include: ['scripts/__tests__/**/*.spec.ts'],

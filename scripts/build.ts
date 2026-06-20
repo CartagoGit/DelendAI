@@ -18,10 +18,11 @@
 import { spawnSync } from 'node:child_process';
 import {
 	existsSync,
+	mkdtempSync,
+	mkdirSync,
 	readdirSync,
 	rmSync,
 	writeFileSync,
-	unlinkSync,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,15 +30,23 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const discover = (): string[] =>
-	['packages', 'plugins'].flatMap((group) =>
-		readdirSync(join(ROOT, group))
-			.map((name) => join(group, name))
-			.filter(
-				(rel) =>
-					existsSync(join(ROOT, rel, 'package.json')) &&
-					existsSync(join(ROOT, rel, 'src', 'index.ts')),
-			),
-	);
+	['packages', 'plugins']
+		.flatMap((group) =>
+			readdirSync(join(ROOT, group))
+				.map((name) => join(group, name))
+				.filter(
+					(rel) =>
+						existsSync(join(ROOT, rel, 'package.json')) &&
+						existsSync(join(ROOT, rel, 'src', 'index.ts')),
+				),
+		)
+		.sort((a, b) => buildRank(a) - buildRank(b) || a.localeCompare(b));
+
+const buildRank = (rel: string): number => {
+	if (rel === 'packages/core') return 0;
+	if (rel.startsWith('packages/')) return 1;
+	return 2;
+};
 
 const run = (cmd: string, args: string[], cwd: string): void => {
 	const r = spawnSync(cmd, args, { cwd, stdio: 'inherit' });
@@ -81,7 +90,10 @@ const buildPackage = (rel: string): void => {
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
 	//    cross-package `@mcp-vertex/*` types resolve from source.
-	const dtsConfig = join(dir, 'tsconfig.dts.json');
+	const dtsCacheDir = join(dir, 'node_modules/.cache/mcp-vertex-dts');
+	mkdirSync(dtsCacheDir, { recursive: true });
+	const dtsTempDir = mkdtempSync(join(dtsCacheDir, 'build-'));
+	const dtsConfig = join(dtsTempDir, 'tsconfig.json');
 	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
 	// `dist/*.d.ts` (declaration inputs — not pulled into this package's
 	// program, so no `rootDir` violation). Core is the only shared dependency;
@@ -90,35 +102,40 @@ const buildPackage = (rel: string): void => {
 		rel === 'packages/core'
 			? {}
 			: {
-					'@mcp-vertex/core': ['../../packages/core/dist/index.d.ts'],
+					'@mcp-vertex/core': [
+						join(ROOT, 'packages/core/dist/index.d.ts'),
+					],
 					'@mcp-vertex/core/public': [
-						'../../packages/core/dist/public/index.d.ts',
+						join(ROOT, 'packages/core/dist/public/index.d.ts'),
 					],
 				};
 	writeFileSync(
 		dtsConfig,
 		JSON.stringify(
 			{
-				extends: '../../tsconfig.base.json',
+				extends: join(ROOT, 'tsconfig.base.json'),
 				compilerOptions: {
 					noEmit: false,
 					declaration: true,
 					emitDeclarationOnly: true,
-					outDir: 'dist',
-					rootDir: 'src',
+					outDir: join(dir, 'dist'),
+					rootDir: join(dir, 'src'),
 					paths: corePaths,
 				},
-				include: ['src/**/*'],
-				exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
+				include: [join(dir, 'src/**/*')],
+				exclude: [
+					join(dir, 'src/**/*.spec.ts'),
+					join(dir, 'src/**/*.test.ts'),
+				],
 			},
 			null,
 			'\t',
 		),
 	);
 	try {
-		run('bunx', ['tsc', '-p', 'tsconfig.dts.json'], dir);
+		run('bunx', ['tsc', '-p', dtsConfig], dir);
 	} finally {
-		unlinkSync(dtsConfig);
+		rmSync(dtsTempDir, { recursive: true, force: true });
 	}
 };
 

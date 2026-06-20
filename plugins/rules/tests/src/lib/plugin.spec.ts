@@ -19,6 +19,7 @@ const makeCtx = (
 	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
 	cacheDir: '.cache/mcp-vertex',
 	docsDir: 'docs/mcp-vertex',
+	keepLegacy: false,
 	pluginCacheDir: '.cache/mcp-vertex/rules',
 	pluginDocsDir: 'docs/mcp-vertex/rules',
 	namespacePrefix: 'rules',

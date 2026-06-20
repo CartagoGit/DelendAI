@@ -29,6 +29,7 @@ describe('AgentLoopDetectorService', () => {
 			},
 			cacheDir: join(dir, '.cache/mcp-vertex'),
 			docsDir: join(dir, 'docs/mcp-vertex'),
+			keepLegacy: false,
 			pluginCacheDir: join(dir, '.cache/mcp-vertex/proposals'),
 			pluginDocsDir: join(dir, 'docs/mcp-vertex/proposals'),
 			namespacePrefix: 'proposals',

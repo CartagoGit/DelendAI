@@ -1,7 +1,7 @@
 ---
 id: l112
 type: proposal
-status: blocked
+status: done
 track: web
 date: 2026-06-20
 related:
@@ -10,7 +10,7 @@ related:
   - l110 # residual web/i18n follow-ups
 kind: legacy
 title: Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
-blocked_by: [self:needs-triage]
+unblocked_by: [self:triaged-and-implemented]
 ---
 
 # l112 — Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
@@ -20,6 +20,11 @@ blocked_by: [self:needs-triage]
 > parallel agent commits your work mid-session`). This proposal is the
 > surviving artefact: a self-contained spec that can be re-attempted
 > slice by slice when the orchestrator's working-tree churn settles.**
+>
+> **Closed 2026-06-20.** Re-attempt completed in one serial pass:
+> aliases were wired from `local-aliases.mjs`, manifests now generate
+> under `src/data/manifests/`, consumers import via `#MANIFESTS` and the
+> site/root gates are green.
 
 ## 0. The problems this proposal solves
 

@@ -11,6 +11,7 @@ const ctx = (name: string): IMcpPluginContext => ({
 	corePaths: { cacheDir: '.cache/mcp-vertex', docsDir: 'docs/mcp-vertex' },
 	cacheDir: '.cache/mcp-vertex',
 	docsDir: 'docs/mcp-vertex',
+	keepLegacy: false,
 	pluginCacheDir: `.cache/mcp-vertex/${name}`,
 	pluginDocsDir: `docs/mcp-vertex/${name}`,
 	namespacePrefix: name,

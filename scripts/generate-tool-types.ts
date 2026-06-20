@@ -34,6 +34,7 @@ import searchPlugin from '@mcp-vertex/search';
 import notificationPlugin from '@mcp-vertex/notification';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
+import logsPlugin from '@mcp-vertex/logs';
 
 import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
 
@@ -49,10 +50,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-notification': notificationPlugin,
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
+	'mcp-logs': logsPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs';
 
 /**
  * Assemble the reference server with every plugin and harvest each

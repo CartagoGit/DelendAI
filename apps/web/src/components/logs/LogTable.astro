@@ -1,0 +1,133 @@
+---
+import type { ILogsTranslations } from '#I18N/shared';
+import OutcomeBadge from '#COMPONENTS/logs/OutcomeBadge.astro';
+
+type Outcome = keyof ILogsTranslations['outcomes'];
+
+interface LogEvent {
+	ts: string;
+	kind: string;
+	agent: string | null;
+	taskId: string | null;
+	outcome: Outcome;
+	summary: string;
+}
+
+interface Props {
+	labels: ILogsTranslations;
+	events?: readonly LogEvent[];
+}
+
+const { labels, events = [] } = Astro.props;
+---
+
+<section class="logs-table" aria-live="polite">
+	<div class="logs-table__filters">
+		<label>
+			<span>{labels.filter_outcome}</span>
+			<select data-log-filter="outcome">
+				<option value="">All</option>
+				{Object.entries(labels.outcomes).map(([value, label]) => (
+					<option value={value}>{label}</option>
+				))}
+			</select>
+		</label>
+		<label>
+			<span>{labels.filter_agent}</span>
+			<input type="search" data-log-filter="agent" />
+		</label>
+		<label>
+			<span>{labels.filter_task}</span>
+			<input type="search" data-log-filter="task" />
+		</label>
+	</div>
+	{events.length === 0 ? (
+		<p class="logs-table__empty">{labels.empty}</p>
+	) : (
+		<table class="resources-table">
+			<thead>
+				<tr>
+					<th>{labels.columns.ts}</th>
+					<th>{labels.columns.kind}</th>
+					<th>{labels.columns.agent}</th>
+					<th>{labels.columns.task}</th>
+					<th>{labels.columns.outcome}</th>
+					<th>{labels.columns.summary}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{events.map((event) => (
+					<tr data-outcome={event.outcome} data-agent={event.agent ?? ''} data-task={event.taskId ?? ''}>
+						<td><time datetime={event.ts}>{event.ts}</time></td>
+						<td><code>{event.kind}</code></td>
+						<td>{event.agent ?? '—'}</td>
+						<td>
+							{event.taskId ? (
+								<button class="logs-table__task" type="button" data-copy={event.taskId} title={labels.copyTask}>
+									<code>{event.taskId}</code>
+								</button>
+							) : '—'}
+						</td>
+						<td><OutcomeBadge outcome={event.outcome} labels={labels} /></td>
+						<td>{event.summary}</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	)}
+</section>
+
+<script>
+	const filters = document.querySelectorAll('[data-log-filter]');
+	const rows = document.querySelectorAll('.logs-table tbody tr');
+	const applyFilters = () => {
+		const outcome = document.querySelector('[data-log-filter="outcome"]')?.value ?? '';
+		const agent = document.querySelector('[data-log-filter="agent"]')?.value?.toLowerCase() ?? '';
+		const task = document.querySelector('[data-log-filter="task"]')?.value?.toLowerCase() ?? '';
+		rows.forEach((row) => {
+			const matchesOutcome = !outcome || row.dataset.outcome === outcome;
+			const matchesAgent = !agent || row.dataset.agent.toLowerCase().includes(agent);
+			const matchesTask = !task || row.dataset.task.toLowerCase().includes(task);
+			row.hidden = !(matchesOutcome && matchesAgent && matchesTask);
+		});
+	};
+	filters.forEach((filter) => filter.addEventListener('input', applyFilters));
+	document.querySelectorAll('[data-copy]').forEach((button) => {
+		button.addEventListener('click', () => {
+			const value = button.getAttribute('data-copy');
+			if (value) void navigator.clipboard?.writeText(value);
+		});
+	});
+</script>
+
+<style>
+	.logs-table__filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-block: 1rem;
+	}
+
+	.logs-table__filters label {
+		display: grid;
+		gap: 0.25rem;
+		font-size: 0.88rem;
+	}
+
+	.logs-table__filters input,
+	.logs-table__filters select {
+		border: 1px solid var(--border, #30363d);
+		border-radius: 6px;
+		padding: 0.45rem 0.6rem;
+		background: var(--surface, transparent);
+		color: inherit;
+	}
+
+	.logs-table__task {
+		border: 0;
+		padding: 0;
+		background: transparent;
+		color: inherit;
+		cursor: copy;
+	}
+</style>

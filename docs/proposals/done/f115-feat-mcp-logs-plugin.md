@@ -2,14 +2,14 @@
 id: f115
 kind: feat
 title: MCP logs plugin — persistent append-only event log + correlation + observability dashboard
-status: blocked
+status: done
 date: 2026-06-20
 track: plugins+notification+memory+web+docs
 budget: { maxInputTokens: 80000, maxOutputTokens: 40000, maxIterations: 100 } # per slice-claim
 triaged: true
-blocked_by:
-  - f113:S8  # agent-alive / agent-idle / agent-dead via withFileMutex mtime
-  - f113:S9  # 5 recovery tools (proposal_stale_list, agent_lock_release_orphan, …)
+unblocked_by:
+  - f113:S8 # agent-alive / agent-idle / agent-dead via withFileMutex mtime
+  - f113:S9 # 5 recovery tools (proposal_stale_list, agent_lock_release_orphan, …)
   - f113:S10 # /status/recovery dashboard with SSE
 ownership:
   - { agent: implementation_runner, task: "S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot" }
@@ -347,7 +347,7 @@ log *does* have everything needed:
 
 ### S1 — Plugin skeleton + persistence + redaction + rotation *(excl. `plugins/logs/`, `.cache/mcp-vertex/logs/`)*
 
-- **Status**: pending
+- **Status**: done
 - Create `plugins/logs/` with `package.json` (no new runtime deps;
   reuses `withFileMutex`, `writeFileAtomic`, `redactSecrets` from
   `packages/core`), `tsconfig.json`, `vitest.config.ts`,
@@ -367,10 +367,13 @@ log *does* have everything needed:
   (`AKIA...`, `ghp_...`, `eyJ...` JWTs), per-line size cap truncates
   with `__truncated__: true`.
 - **Gate**: `bun run type && bun run test plugins/logs`.
+- **Shipped**: `@mcp-vertex/logs` package, append-only JSONL store,
+  mutexed writes, redaction-before-serialization, daily files, GC,
+  truncation flag, docs and persistence tests.
 
 ### S2 — Tool-registry hook *(excl. `plugins/logs/src/lib/tool-hook.ts`)*
 
-- **Status**: pending
+- **Status**: done
 - Create `plugins/logs/src/lib/tool-hook.ts` exporting
   `installToolHook(registry)` that wraps every tool's
   `runTool` call with a try/finally that emits `tool-started` on
@@ -387,10 +390,13 @@ log *does* have everything needed:
   value, hook does not swallow exceptions, hook latency overhead
   ≤ 1 ms per invocation (microbenchmark).
 - **Gate**: `bun run test plugins/logs`.
+- **Shipped**: agnostic `onToolStart` core/plugin hook plus logs
+  `onToolStart`/`onToolCall` capture for started/completed/failed
+  tool events without introducing logs vocabulary into core.
 
 ### S3 — Subscribe to `notifications/message` + correlation *(excl. `plugins/logs/src/lib/correlate.ts`, `plugins/logs/src/lib/subscribe.ts`)*
 
-- **Status**: pending
+- **Status**: done
 - Create `plugins/logs/src/lib/subscribe.ts` exporting
   `subscribeToBus(bus, sink)` that listens for
   `agent-alive`, `agent-idle`, `agent-dead`, `lock-claimed`,
@@ -408,10 +414,13 @@ log *does* have everything needed:
   missing-middle (started without claim); orphan-started
   (started without completion within timeout); gap detection.
 - **Gate**: `bun run test plugins/logs`.
+- **Shipped**: generic event-bus subscriber, event normalization,
+  redacted payload handling, correlation chain builder and gap
+  detection tests.
 
 ### S4 — 5 tools + integration specs *(excl. `plugins/logs/src/lib/tools/`)*
 
-- **Status**: pending
+- **Status**: done
 - Create the 5 tool files (one per tool) under
   `plugins/logs/src/lib/tools/`, each registering the MCP tool
   via the plugin's existing pattern. Every tool declares an
@@ -439,10 +448,13 @@ log *does* have everything needed:
   failure modes (no events match, cursor exhaustion, correlation
   with no chain).
 - **Gate**: `bun run test plugins/logs` + `bun run type`.
+- **Shipped**: `logs_query`, `logs_tail`, `logs_subscribe`,
+  `logs_correlate`, `logs_redact_test`, all with output schemas,
+  generated SDK types and tool tests.
 
 ### S5 — `/status/logs` dashboard + SSE + 12-language i18n *(excl. `apps/web/src/pages/status/logs.astro`, `apps/web/src/components/logs/`, `apps/web/src/pages/api/events/logs.ts`, `apps/web/src/i18n/langs/`)*
 
-- **Status**: pending
+- **Status**: done
 - Create `apps/web/src/pages/status/logs.astro` mirroring
   `apps/web/src/pages/status/recovery.astro` (from `f113` S10).
 - Create `apps/web/src/components/logs/LogTable.astro` with
@@ -459,10 +471,13 @@ log *does* have everything needed:
   confirm the row appears in the dashboard within 2 s.
 - **Gate**: `bun run site:strict` (fails on any missing i18n
   key, per rule 9 of `AGENTS.md`).
+- **Shipped**: `/status/logs`, `/api/events/logs`, log table,
+  outcome badges, copy-task affordance, plugin/site capability
+  generation and 12-language `logs.*` i18n coverage.
 
 ### S6 — Acceptance *(excl. `bun run validate`, `docs/proposals/blocked/f115-feat-mcp-logs-plugin.md`)*
 
-- **Status**: pending
+- **Status**: done
 - Aggregator slice: runs the full monorepo gate end-to-end and confirms
   every line item in the proposal's top-level `acceptance:` frontmatter
   resolves to exit 0. Touches no production source files itself —
@@ -476,6 +491,8 @@ log *does* have everything needed:
   above; expected exit 0; equivalent to passing each individually).
 - **Estimated work**: 0.25 session (a single `bun run validate` run
   plus fixing any incidental lint drift surfaced by the new files).
+- **Shipped**: `bun run validate` and `bun run site:strict` green
+  after the logs package, generated types and web dashboard landed.
 
 ## Dependency graph
 
@@ -503,21 +520,21 @@ state machine).
 
 ## Acceptance
 
-- [ ] `plugins/logs/` builds, lints, tests green.
-- [ ] 5 tools registered with `outputSchema` (rule 8 of `AGENTS.md`).
-- [ ] `.cache/mcp-vertex/logs/<date>.jsonl` appends one line per
+- [x] `plugins/logs/` builds, lints, tests green.
+- [x] 5 tools registered with `outputSchema` (rule 8 of `AGENTS.md`).
+- [x] `.cache/mcp-vertex/logs/<date>.jsonl` appends one line per
       event, with `redactSecrets` applied, per-line size capped at
       8 KB, GC deletes files older than 30 days at boot.
-- [ ] `logs_correlate --taskId <X>` returns the full
+- [x] `logs_correlate --taskId <X>` returns the full
       claim→started→completed chain with gap detection.
-- [ ] `/status/logs` dashboard renders, subscribes via SSE, shows
+- [x] `/status/logs` dashboard renders, subscribes via SSE, shows
       outcome-coloured badges.
-- [ ] All 12 `apps/web/src/i18n/langs/*.ts` have full `logs.*` keys.
-- [ ] `docs/LOGS.md` documents schema, retention, rotation, GC,
+- [x] All 12 `apps/web/src/i18n/langs/*.ts` have full `logs.*` keys.
+- [x] `docs/LOGS.md` documents schema, retention, rotation, GC,
       and the explicit non-coverage of editor-side events.
-- [ ] `bun run validate` (type + test + lint + site:strict +
+- [x] `bun run validate` (type + test + lint + site:strict +
       lint:proposals) green.
-- [ ] Manual smoke: every documented failure mode of every tool
+- [x] Manual smoke: every documented failure mode of every tool
       produces a structured error envelope (per the
       `mcp-vertex-failure-modes` skill convention), not an
       unhandled exception.

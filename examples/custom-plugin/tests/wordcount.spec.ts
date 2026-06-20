@@ -30,6 +30,7 @@ const fakeContext = (
 		},
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
+		keepLegacy: false,
 		pluginCacheDir: '.cache/mcp-vertex/example-wordcount',
 		pluginDocsDir: 'docs/mcp-vertex/example-wordcount',
 		namespacePrefix: 'demo',

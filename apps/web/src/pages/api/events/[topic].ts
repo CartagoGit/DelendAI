@@ -2,6 +2,7 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 
 export const getStaticPaths = (() => [
 	{ params: { topic: 'agent-dead' } },
+	{ params: { topic: 'logs' } },
 ]) satisfies GetStaticPaths;
 
 export const GET: APIRoute = ({ params }) => {

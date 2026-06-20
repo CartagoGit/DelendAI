@@ -1,8 +1,9 @@
 /**
  * Filesystem wrapper around `runMigrations` (M14): read a versioned JSON store,
- * migrate it to the current version, and — only if something actually changed —
- * preserve the original bytes in a `.bak-<ts>` sidecar before writing the
- * migrated file atomically. `dryRun` reports the plan without touching disk.
+ * migrate it to the current version, and — only if something actually changed
+ * or forceBackup is requested — preserve the original bytes in a `.bak-<ts>`
+ * sidecar before writing the migrated file atomically. `dryRun` reports the
+ * plan without touching disk.
  */
 import { readFile } from 'node:fs/promises';
 
@@ -20,6 +21,8 @@ export interface IMigrateFileOptions {
 	readonly targetVersion: number;
 	/** Report the plan without backing up or writing. */
 	readonly dryRun?: boolean;
+	/** Force a backup even when the file is already at the target version. */
+	readonly forceBackup?: boolean;
 }
 
 export interface IMigrateFileResult<T> extends IMigrationResult<T> {
@@ -57,11 +60,18 @@ export const migrateJsonFile = async <T extends IVersioned>(
 		options.targetVersion,
 	);
 	const changed = result.applied.length > 0;
-	if (!changed || options.dryRun === true) {
+	if (options.dryRun === true) {
 		return { ...result, path, changed, backupPath: null };
 	}
+	const shouldBackup = changed || options.forceBackup === true;
+	if (!shouldBackup) return { ...result, path, changed, backupPath: null };
 	const backupPath = `${path}.bak-${Date.now().toString(36)}`;
 	await writeFileAtomic(backupPath, raw); // preserve the original bytes
-	await writeFileAtomic(path, `${JSON.stringify(result.data, null, 2)}\n`);
+	if (changed) {
+		await writeFileAtomic(
+			path,
+			`${JSON.stringify(result.data, null, 2)}\n`,
+		);
+	}
 	return { ...result, path, changed, backupPath };
 };

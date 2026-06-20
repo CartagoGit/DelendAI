@@ -10,7 +10,7 @@
 // docs site. Keep the text aligned with
 // `plugins/audit/src/lib/tools/consolidate-tool.ts`.
 
-import type { IToolI18n } from './_shape';
+import type { IToolI18n } from '#I18N/tools/_shape';
 
 export const auditConsolidateI18n: IToolI18n = {
 	description: {

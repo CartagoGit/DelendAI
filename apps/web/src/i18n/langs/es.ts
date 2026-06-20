@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -134,6 +135,7 @@ const dict: LangDict = {
 		deps: 'Inventario de dependencias offline + salud (lockfile, rangos laxos, duplicados).',
 		notification:
 			'Notifica la liberación de locks para que los agentes dejen de hacer polling.',
+		logs: 'Log redactado append-only con herramientas de query, tail y correlación.',
 		'status-marker':
 			'Cierre obligatorio coloreado para cada respuesta del agente: 8 estados canónicos, herramientas helper + validador.',
 		core: 'El núcleo agnóstico: overview, scaffold, métricas, doctor y el cargador de plugins.',
@@ -172,6 +174,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.es,
 	recovery: recoveryByLang.es,
+	logs: logsByLang.es,
 };
 
 export default dict;

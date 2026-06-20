@@ -3,7 +3,7 @@
 // Second entry of the per-tool i18n catalogue (apps/web/src/i18n/tools/).
 // 12-lang invariant is enforced by `check-i18n.ts` (l100 s3-bis).
 
-import type { IToolI18n } from './_shape';
+import type { IToolI18n } from '#I18N/tools/_shape';
 
 export const proposalsAutoWorkI18n: IToolI18n = {
 	description: {

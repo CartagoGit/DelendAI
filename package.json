@@ -16,7 +16,8 @@
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"lint": "biome ci",
+		"lint": "biome ci && bun run lint:ide",
+		"lint:ide": "cd apps/vscode && bun run check:i18n",
 		"lint:fix": "biome lint --write",
 		"lint:proposals": "bun scripts/lint-proposals.ts",
 		"lint:scaffolds": "bun scripts/lint-scaffolds.ts",
@@ -30,6 +31,7 @@
 		"format:check": "bun run format:all:check",
 		"prepare": "lefthook install",
 		"build": "bun scripts/build.ts",
+		"package": "cd apps/vscode && bun run package",
 		"validate": "bun run typecheck && bun run lint && bun run lint:scss && bun run test",
 		"types:generate": "bun scripts/generate-tool-types.ts",
 		"config:schema": "bun scripts/generate-config-schema.ts",
@@ -37,8 +39,8 @@
 		"smoke": "bun scripts/smoke-cli.ts",
 		"smoke:pack": "bun scripts/smoke-pack.ts",
 		"docs:api": "typedoc",
-		"site": "bun run docs:api && cd apps/web && bun run build",
-		"site:strict": "bun run docs:api && cd apps/web && bun run build:strict"
+		"site": "bun run build && bun run docs:api && cd apps/web && bun run build",
+		"site:strict": "bun run build && bun run docs:api && cd apps/web && bun run build:strict"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",

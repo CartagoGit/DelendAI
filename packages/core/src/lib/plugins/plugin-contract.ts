@@ -27,6 +27,12 @@ export interface IMcpPluginContext {
 	readonly cacheDir: string;
 	/** Shorthand for `corePaths.docsDir`. */
 	readonly docsDir: string;
+	/**
+	 * Global preservation preference from `mcp-vertex.config.json`.
+	 * Default false: generated scaffolds skip existing files. Plugins that
+	 * regenerate durable project files may opt in to legacy snapshots when true.
+	 */
+	readonly keepLegacy: boolean;
 	/** This plugin's private cache root: `<cacheDir>/<plugin>`. */
 	readonly pluginCacheDir: string;
 	/** This plugin's docs root: `<docsDir>/<plugin>`. */
@@ -61,6 +67,9 @@ export interface IMcpPluginRegistrations {
 				result: unknown,
 				error?: unknown,
 		  ) => Promise<void> | void)
+		| undefined;
+	readonly onToolStart?:
+		| ((toolName: string, args: unknown) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
 		| ((

@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -131,6 +132,7 @@ const dict: LangDict = {
 		docs: 'Catalogue + read the project markdown docs, low-token curated navigation.',
 		deps: 'Offline dependency inventory + health (lockfile, loose ranges, duplicates).',
 		notification: 'Push lock-release events so agents stop polling.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'Mandatory coloured close marker for every agent response: 8 canonical states, helper + validator tools.',
 		core: 'The agnostic core: overview, scaffold, metrics, doctor and the plugin loader.',
@@ -169,6 +171,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.en,
 	recovery: recoveryByLang.en,
+	logs: logsByLang.en,
 };
 
 export default dict;

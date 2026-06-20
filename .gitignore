@@ -2,12 +2,15 @@ node_modules/
 dist/
 build/
 .cache/
+.mcp-vertex/
 .worktrees/
 coverage/
 site/
 .astro/
 apps/web/src/data/capabilities.json
+apps/web/src/data/manifests/
 apps/web/public/api/
+docs/mcp-vertex/
 *.tsbuildinfo
 .DS_Store
 pack/

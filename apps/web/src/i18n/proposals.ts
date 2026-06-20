@@ -2,7 +2,7 @@ import type {
 	IProposalGlossaryTranslations,
 	IRecoveryTranslations,
 	Lang,
-} from './shared';
+} from '#I18N/shared';
 
 const en: IProposalGlossaryTranslations = {
 	statuses: {

@@ -1,21 +1,13 @@
 {
-	"generated_at": "2026-06-20T18:33:05.903Z",
-	"count": 17,
+	"generated_at": "2026-06-20T20:20:00.162Z",
+	"count": 18,
 	"proposals": [
 		{
-			"id": "l102",
-			"file": "paused/l102-keep-legacy-default-false.md",
-			"track": "core+scaffold",
-			"type": "proposal",
-			"status": "paused",
-			"date": "2026-06-18"
-		},
-		{
 			"id": "f113",
-			"file": "ready/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
+			"file": "done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
 			"track": "proposals+core+web+notification",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-20",
 			"extras": {
 				"ownership": [
@@ -53,25 +45,15 @@
 		},
 		{
 			"id": "f114",
-			"file": "ready/f114-feat-ide-extension-vscode-and-friends.md",
+			"file": "done/f114-feat-ide-extension-vscode-and-friends.md",
 			"track": "apps+client+docs",
-			"type": "feat",
-			"status": "ready",
+			"type": "unspecified",
+			"status": "done",
 			"date": "2026-06-20",
 			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: \"S1-S3: packages/client (MCP stdio client + OverviewService + NotificationsService + MetricsService + in-memory mock) with full unit tests\" }",
-					"{ agent: implementation_runner, task: \"S4-S7: apps/vscode scaffold + activate + ToolTreeDataProvider + StatusBar + command palette wiring consuming packages/client\" }",
-					"{ agent: implementation_runner, task: \"S8-S10: tool-detail webview + proposals board view + metrics sparkline using generated tool-outputs types\" }",
-					"{ agent: implementation_runner, task: \"S11-S12: i18n (en/es/ja/zh/de/fr) + check-i18n gate + VSIX packaging via vsce + docs/IDE-EXTENSION.md\" }"
-				],
+				"ownership": ["{", "{", "{", "{"],
 				"reservedFiles": [
 					"packages/client/",
-					"packages/client/package.json",
-					"packages/client/src/lib/transport/",
-					"packages/client/src/lib/services/",
-					"packages/client/src/public/",
-					"packages/client/tests/",
 					"apps/vscode/",
 					"apps/vscode/.vscodeignore",
 					"apps/vscode/package.json",
@@ -81,9 +63,40 @@
 					"apps/vscode/src/views/",
 					"apps/vscode/src/test/",
 					"apps/vscode/src/i18n/",
-					"apps/vscode/scripts/check-i18n.ts",
 					"apps/vscode/README.md",
+					"apps/vscode/CHANGELOG.md",
 					"docs/IDE-EXTENSION.md"
+				]
+			}
+		},
+		{
+			"id": "f115",
+			"file": "done/f115-feat-mcp-logs-plugin.md",
+			"track": "plugins+notification+memory+web+docs",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-20",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: \"S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot\" }",
+					"{ agent: implementation_runner, task: \"S2: tool-registry hook for started/completed/failed/timed_out capture\" }",
+					"{ agent: implementation_runner, task: \"S3: subscribe to notifications/message bus + normalize events + correlate claim→started→completed chain\" }",
+					"{ agent: implementation_runner, task: \"S4: 5 tools (logs_query, logs_tail, logs_subscribe, logs_correlate, logs_redact_test) + specs\" }",
+					"{ agent: implementation_runner, task: \"S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f113 S10)\" }",
+					"{ agent: implementation_runner, task: \"S6: acceptance — bun run validate green\" }"
+				],
+				"reservedFiles": [
+					"plugins/logs/",
+					"plugins/logs/src/",
+					"plugins/logs/tests/",
+					"plugins/logs/package.json",
+					"plugins/logs/README.md",
+					".cache/mcp-vertex/logs/",
+					"apps/web/src/pages/status/logs.astro",
+					"apps/web/src/components/logs/",
+					"apps/web/src/pages/api/events/logs.ts",
+					"apps/web/src/i18n/langs/",
+					"docs/LOGS.md"
 				]
 			}
 		},
@@ -99,6 +112,14 @@
 			"id": "l101",
 			"file": "done/l101-web-header-transitions-and-full-capabilities-surface.md",
 			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "l102",
+			"file": "done/l102-keep-legacy-default-false.md",
+			"track": "core+scaffold",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
@@ -176,6 +197,14 @@
 			"date": "2026-06-20"
 		},
 		{
+			"id": "l112",
+			"file": "done/l112-derive-site-manifests-and-local-aliases.md",
+			"track": "web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
 			"id": "l113",
 			"file": "done/l113-fix-audit-types.md",
 			"track": "plugins",
@@ -190,14 +219,6 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
-		},
-		{
-			"id": "l112",
-			"file": "blocked/l112-derive-site-manifests-and-local-aliases.md",
-			"track": "web",
-			"type": "proposal",
-			"status": "blocked",
-			"date": "2026-06-20"
 		}
 	],
 	"errors": []

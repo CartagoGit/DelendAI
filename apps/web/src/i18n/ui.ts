@@ -11,8 +11,8 @@
 // overload that returns a callable proxy: both `t('nav.concept')` and
 // `t.nav.concept` work. Remove once every consumer is migrated.
 
-import type { ITranslations, Lang } from './index';
-import { useTranslations as _useTranslationsObject } from './index';
+import type { ITranslations, Lang } from '#I18N/index';
+import { useTranslations as _useTranslationsObject } from '#I18N/index';
 
 export type {
 	ITranslations,
@@ -30,12 +30,19 @@ export type {
 	IFooterTranslations,
 	IPluginPageTranslations,
 	IPluginTranslations,
+	ILogsTranslations,
 	Lang,
 	LangDict,
 	PluginKey,
-} from './index';
-export type { ILangMeta, Theme } from './index';
-export { dictsByLang, defaultLang, languages, rtlLangs, themes } from './index';
+} from '#I18N/index';
+export type { ILangMeta, Theme } from '#I18N/index';
+export {
+	dictsByLang,
+	defaultLang,
+	languages,
+	rtlLangs,
+	themes,
+} from '#I18N/index';
 
 /**
  * Legacy entry point: returns a `Translator` object that is **also** callable.

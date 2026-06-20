@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -132,6 +133,7 @@ const dict: LangDict = {
 		deps: 'Inventaire des dépendances hors-ligne + santé (lockfile, plages laxistes, doublons).',
 		notification:
 			'Pousse les événements de libération de verrou pour éviter le polling.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'Marqueur de fermeture coloré obligatoire pour chaque réponse d’agent : 8 états canoniques, outils helper + validateur.',
 		core: 'Le cœur agnostique : overview, scaffold, métriques, doctor et le chargeur de plugins.',
@@ -170,6 +172,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.fr,
 	recovery: recoveryByLang.fr,
+	logs: logsByLang.fr,
 };
 
 export default dict;

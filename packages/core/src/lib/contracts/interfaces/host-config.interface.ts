@@ -34,6 +34,11 @@ export interface IMcpVertexHostConfig {
 	 * defaults). Plugins derive their own concrete layout from these.
 	 */
 	readonly corePaths?: ICorePaths | undefined;
+	/**
+	 * Default false. When true, scaffold regeneration preserves existing files
+	 * under legacy/ before writing fresh templates.
+	 */
+	readonly keepLegacy?: boolean | undefined;
 	readonly knowledge?: readonly IKnowledgeEntry[] | undefined;
 	readonly skills?: readonly ISkillEntry[] | undefined;
 	/** Optional quality-gate matrix exposed to agents (host-defined). */
@@ -60,6 +65,9 @@ export interface IMcpVertexHostConfig {
 				result: unknown,
 				error?: unknown,
 		  ) => Promise<void> | void)
+		| undefined;
+	readonly onToolStart?:
+		| ((toolName: string, args: unknown) => Promise<void> | void)
 		| undefined;
 	readonly isAgentStuck?:
 		| ((
