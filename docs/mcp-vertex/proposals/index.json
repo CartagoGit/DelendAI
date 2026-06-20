@@ -1,7 +1,15 @@
 {
-	"generated_at": "2026-06-20T02:05:00.000Z",
-	"count": 4,
+	"generated_at": "2026-06-20T03:00:00.000Z",
+	"count": 5,
 	"proposals": [
+		{
+			"id": "p99",
+			"file": "p99-feat-multi-model-audit-plugin.md",
+			"track": "audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
 		{
 			"id": "p104",
 			"file": "p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md",

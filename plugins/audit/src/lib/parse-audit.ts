@@ -19,7 +19,6 @@ import type {
 	IAuditScore,
 	IAuditSource,
 } from './types';
-import { SEVERITY_ORDER } from './types';
 
 /** Normalised severity tokens the parser maps onto the canonical set. */
 const SEVERITY_PATTERNS: ReadonlyArray<{
@@ -65,33 +64,6 @@ const deriveSourceFromPath = (
 		slug: noExt,
 		source: { host, model: model.trim(), date: dateIso },
 	};
-};
-
-const SEVERITY_RANK: Readonly<Record<AuditSeverity, number>> = (() => {
-	const out: Record<AuditSeverity, number> = {} as Record<
-		AuditSeverity,
-		number
-	>;
-	SEVERITY_ORDER.forEach((s, i) => {
-		out[s] = i;
-	});
-	return out;
-})();
-
-/** Worst-severity helper: lower rank = more urgent. */
-const worstSeverity = (a: AuditSeverity, b: AuditSeverity): AuditSeverity =>
-	SEVERITY_RANK[a] <= SEVERITY_RANK[b] ? a : b;
-
-/** Reduce many severities to the worst one. */
-const worstOf = (
-	severities: readonly AuditSeverity[],
-): AuditSeverity | undefined => {
-	if (severities.length === 0) return undefined;
-	const [head, ...rest] = severities;
-	if (head === undefined) return undefined;
-	let acc = head;
-	for (const s of rest) acc = worstSeverity(acc, s);
-	return acc;
 };
 
 /**
@@ -281,6 +253,3 @@ export const parseAuditFiles = (
 	}
 	return docs;
 };
-
-/** Re-export the worst-of helper so tests can use it directly. */
-export const _internal = { worstOf };

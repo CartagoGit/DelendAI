@@ -2,18 +2,19 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	test: {
+		// Projects run as their own vitest instances; the root shell walks
+		// the listed globs to wire them up. Plugins still in `idea` (e.g.
+		// `plugins/audit/` for p99) intentionally self-exclude runtime
+		// tests, but the root shell still picks up their `*.spec.ts`
+		// files unless we skip the entire project here. Remove the
+		// `!plugins/audit` from the `projects` array (or restore the
+		// simple globs) when p99 flips to `status: done` in
+		// `docs/proposals/index.json`.
 		projects: [
 			'packages/*',
-			// NOTE: `plugins/audit` is intentionally excluded until its
-			// p99 implementation stabilises (currently in `idea` status;
-			// failing tests are tracked in the proposal).
-			'plugins/[!a]*',
-			'plugins/a[!u]*',
-			'plugins/au[!d]*',
-			'plugins/aud[!i]*',
-			'plugins/audi[!t]*',
+			'plugins/!(audit)',
 			'examples/custom-plugin',
-			'aps/web',
+			'apps/web',
 		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
