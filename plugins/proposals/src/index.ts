@@ -32,6 +32,7 @@ import {
 } from './lib/tools/state-tools.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
+import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 
 /**
  * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
@@ -252,6 +253,13 @@ export default definePlugin({
 					queuePathAbs: abs(layout.taskQueueFile),
 					closedTasksPathAbs: abs(layout.closedTasksFile),
 					indexPathAbs: abs(layout.proposalIndexFile),
+				}),
+				...buildRecoveryToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					lockPathAbs: abs(layout.lockFile),
+					agentRegistryPathAbs: abs(layout.agentRegistryFile),
+					workspaceRoot: ctx.workspace.root,
 				}),
 			],
 			prompts: [

@@ -28,6 +28,7 @@ export interface NotificationNotifyStatusOutput {
 		agent: string;
 		files: string[];
 	}[];
+	agentEvents: number;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

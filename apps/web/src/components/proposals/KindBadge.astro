@@ -1,0 +1,20 @@
+---
+import { PROPOSAL_KINDS } from '../../../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
+import { defaultLang, proposalGlossaryByLang, type Lang } from '../../i18n';
+
+type Kind = keyof typeof PROPOSAL_KINDS;
+
+interface Props {
+	kind: Kind;
+	lang?: Lang;
+}
+
+const { kind, lang = defaultLang } = Astro.props;
+const meta = PROPOSAL_KINDS[kind];
+const text = proposalGlossaryByLang[lang].kinds[kind];
+---
+
+<span class={`proposal-badge proposal-badge--kind proposal-badge--${kind}`} title={text.long}>
+	<span aria-hidden="true">{meta.glyph}</span>
+	<span>{text.label}</span>
+</span>

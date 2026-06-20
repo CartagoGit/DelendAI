@@ -27,7 +27,7 @@ const BUDGET_BYTES = {
 	// Full overview lists every tool's summary, so it grows as the toolset does
 	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
 	// path (well under budget) — agents use it when there are many tools.
-	overviewFull: 6_500,
+	overviewFull: 7_000,
 	overviewCompact: 1_600,
 	autoWork: 1_600,
 } as const;

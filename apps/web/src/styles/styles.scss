@@ -55,6 +55,7 @@
 @use "components/prompt";
 @use "components/resources-table";
 @use "components/notfound";
+@use "components/proposal-badge";
 
 // 5. Component-local responsive overrides (kept last so they always win).
 @use "components/nav-media";
