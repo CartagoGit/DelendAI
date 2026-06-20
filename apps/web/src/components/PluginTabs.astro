@@ -96,56 +96,12 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 	}
 </style>
 
-<script is:inline>
-	// Minimal ARIA tabs controller. Inline so it works without an Astro
-	// framework import. The script is idempotent: if the page has no
-	// `[data-plugin-tabs]` element, it does nothing.
-	(function () {
-		const root = document.querySelector('[data-plugin-tabs]');
-		if (!(root instanceof HTMLElement)) return;
-		const defaultTab = root.dataset.defaultTab || '';
-		const triggers = Array.from(root.querySelectorAll('[data-tab-trigger]'));
-		const panels = new Map();
-		for (const trigger of triggers) {
-			if (!(trigger instanceof HTMLElement)) continue;
-			const id = trigger.dataset.tabTrigger || '';
-			const panel = document.getElementById(`panel-${id}`);
-			if (panel) panels.set(id, { trigger, panel });
-		}
-
-		const activate = (id) => {
-			for (const [key, { trigger, panel }] of panels) {
-				const active = key === id;
-				trigger.setAttribute('aria-selected', active ? 'true' : 'false');
-				trigger.setAttribute('tabindex', active ? '0' : '-1');
-				if (active) panel.removeAttribute('hidden');
-				else panel.setAttribute('hidden', '');
-			}
-		};
-
-		const initial = panels.has(defaultTab) ? defaultTab : (panels.keys().next().value || '');
-		if (initial) activate(initial);
-
-		for (const [id, { trigger }] of panels) {
-			trigger.addEventListener('click', () => activate(id));
-			trigger.addEventListener('keydown', (event) => {
-				const keys = Array.from(panels.keys());
-				const idx = keys.indexOf(id);
-				if (idx < 0) return;
-				let next = -1;
-				if (event.key === 'ArrowRight') next = (idx + 1) % keys.length;
-				else if (event.key === 'ArrowLeft') next = (idx - 1 + keys.length) % keys.length;
-				else if (event.key === 'Home') next = 0;
-				else if (event.key === 'End') next = keys.length - 1;
-				if (next < 0) return;
-				event.preventDefault();
-				const nextId = keys[next];
-				const nextEntry = panels.get(nextId);
-				if (nextEntry) {
-					activate(nextId);
-					nextEntry.trigger.focus();
-				}
-			});
-		}
-	})();
+<script>
+	// ARIA tabs controller (p110 s8). Extracted to a module so the
+	// activation / keyboard logic is unit-testable with a minimal DOM
+	// stand-in instead of being trapped inside an Astro `is:inline`
+	// block. Astro bundles this `<script>` automatically; the path is
+	// relative to the `scripts/lib/` directory at build time.
+	import { initPluginTabs } from '../scripts/lib/plugin-tabs-controller';
+	initPluginTabs();
 </script>
