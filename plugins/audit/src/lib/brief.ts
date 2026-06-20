@@ -50,16 +50,38 @@ export const SCORE_DIMENSIONS: readonly string[] = [
 	'Genericidad (project-agnostic)',
 ];
 
-/**
- * Build the brief in markdown. Pure function; the only input is the
- * chosen scope. Keeping it pure means `audit_plan` can be invoked from
- * a unit test without touching the filesystem.
+/** Options that customise {@link buildBrief}'s output. All fields are
+ *  optional; missing fields fall back to the canonical defaults
+ *  ({@link SCORE_DIMENSIONS}, single-column table) so existing
+ *  callers do not need to change.
+ *
+ *  SRP: this module owns the brief's prose + shape. The plugin's
+ *  `optionsSchema` is the only place that builds an
+ *  {@link IBriefOptions} from a host's config; consumers that call
+ *  {@link buildBrief} directly can pass `undefined` and get the same
+ *  output they had before this option was added.
  */
-export const buildBrief = (scope: AuditScope): string => {
+export interface IBriefOptions {
+	/** Custom scoring dimensions to score against. Defaults to
+	 *  {@link SCORE_DIMENSIONS}. The array order is preserved in the
+	 *  rendered markdown table. */
+	readonly dimensions?: readonly string[];
+}
+
+/**
+ * Build the brief in markdown. Pure function; the only required input
+ * is the chosen scope. Optional {@link IBriefOptions} override the
+ * default dimensions for hosts that want a different rubric.
+ * Keeping it pure means `audit_plan` can be invoked from a unit test
+ * without touching the filesystem.
+ */
+export const buildBrief = (
+	scope: AuditScope,
+	options: IBriefOptions = {},
+): string => {
 	const scopeLabel = SCOPE_LABEL[scope];
-	const dimensionsTable = SCORE_DIMENSIONS.map((d) => `| ${d} | /10 |`).join(
-		'\n',
-	);
+	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
+	const dimensionsTable = dimensions.map((d) => `| ${d} | /10 |`).join('\n');
 
 	return `# 📋 Brief de auditoría — \`@mcp-vertex/core\` (alcance: ${scopeLabel})
 
