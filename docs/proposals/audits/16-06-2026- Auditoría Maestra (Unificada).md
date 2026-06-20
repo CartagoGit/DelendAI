@@ -672,3 +672,61 @@ camino al 11/10 — solo acabados de plataforma.**
   ¿migrar `.mcp.json` de este repo a un `host-config.ts` propio con 1-2 `extraTools`
   específicas (ej. `rename_audit`), o queda como está (CLI+preset, sin tools propias)?
   No implementado — análogo a p99, dejado para decidir.
+
+---
+
+## 10. Sesión 20-06 — p111: crash de orquestación + docsDir desalineado
+
+> Dos hallazgos nuevos, verificados contra el código, encontrados al investigar
+> el reporte del usuario de que "el mcp no se está aplicando" y que un agente
+> orquestador "se bloquea sin avanzar". Ambos cerrados en esta sesión.
+
+- **🔴 M45 · `auto_work`/`continue_proposal` lanzaban un crash de validación MCP
+  en el caso idle** —
+  [auto-work.tool.ts:44-48](../../../plugins/proposals/src/lib/tools/auto-work.tool.ts)
+  y
+  [continue-proposal.tool.ts:35-39](../../../plugins/proposals/src/lib/tools/continue-proposal.tool.ts)
+  declaraban `outputSchema: z.object({}).catchall(z.unknown())` pero construían
+  la respuesta con un `json()` local duplicado que **solo devolvía `content`
+  (texto)**, nunca `structuredContent` — a diferencia del resto del plugin, que
+  usa el helper compartido `toolJson` de `packages/core/src/lib/shared/
+  tool-response.ts` (que sí deriva `structuredContent` para payloads objeto).
+  El SDK de MCP exige `structuredContent` cuando hay `outputSchema` declarado;
+  sin él, la llamada lanza `"Output validation error"` en vez de devolver el
+  estado idle/no-proposal. Como `auto_work` es la tool de "qué hago ahora" que
+  cualquier orquestador llama primero, y el caso idle es el **común** tras
+  cerrar p110 (0 proposals actionable), esto explica con alta probabilidad los
+  reportes de agentes que "se bloquean sin avanzar": no es un bucle ni un
+  deadlock, es un crash de protocolo en el camino feliz del idle.
+  **Fix:** ambos archivos delegan ahora en `toolJson` (`const json = toolJson;`)
+  en vez de duplicar un helper roto. Specs (`continue-proposal.spec.ts`,
+  `auto-work.spec.ts`) endurecidas: su helper `parse()` ahora exige
+  `result.structuredContent` igual al texto parseado, así que una regresión a
+  texto-solo rompe la suite en vez de solo manifestarse en runtime.
+  Commits: `fc27bd0` (fix arrastrado por un `git add -A` de otro agente),
+  `3fa706a` (test hardening).
+
+- **🔴 M46 · `docsDir` del propio repo apuntaba a `docs/mcp-vertex`, desconectado
+  de los 13 proposals reales en `docs/proposals/`** —
+  `mcp-vertex.config.json` tenía `"docsDir": "docs/mcp-vertex"` (el default del
+  framework, `DEFAULT_CORE_PATHS.docsDir` en
+  [core-paths.interface.ts](../../../packages/core/src/lib/contracts/interfaces/core-paths.interface.ts)).
+  El plugin `proposals` resuelve su directorio como `<docsDir>/proposals`
+  ([index.ts:103](../../../plugins/proposals/src/index.ts#L103)), así que
+  `create_proposal`/`continue_proposal`/`auto_work`/`proposal_board` operaban
+  sobre `docs/mcp-vertex/proposals/` — un directorio casi vacío que solo
+  contenía **3 borradores abandonados** de p104/p106/p107 (versiones más
+  viejas y menos completas que las reales, confirmado por diff: la versión de
+  `docs/proposals/` de cada uno está `status: done` con narrativa final; la de
+  `docs/mcp-vertex/proposals/` seguía en `status: pending`/borrador). Todo el
+  trabajo real de proposals (`p99`-`p110`, la auditoría maestra) siempre vivió
+  en `docs/proposals/`, fuera del alcance de las tools. Cualquier agente que
+  usara las tools de proposals "correctamente" escribía en el sitio
+  equivocado — el síntoma reportado por el usuario, literal: el MCP no se
+  estaba aplicando al proyecto real.
+  **Fix:** `docsDir` → `"docs"` en `mcp-vertex.config.json` (así
+  `<docsDir>/proposals` resuelve a `docs/proposals`, el real). Verificado que
+  nada más depende de `docs/mcp-vertex/` (estaba vacío salvo `proposals/`);
+  directorio eliminado. *Pendiente:* esto requiere reiniciar el proceso del
+  servidor MCP para que el nuevo `docsDir` se cargue — el servidor en curso
+  cachea las rutas resueltas al arrancar.
