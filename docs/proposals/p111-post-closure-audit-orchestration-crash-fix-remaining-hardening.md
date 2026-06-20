@@ -83,8 +83,8 @@ verificados contra el código y ya corregidos:
 - status: done
 
 ### s4 — M32: tests property-based para frontmatter-parser/redactSecrets + concurrencia de memory
-- files: packages/core/tests/src/lib/shared/frontmatter-parser.property.spec.ts
 - files: packages/core/tests/src/lib/shared/redact.property.spec.ts
+- files: plugins/proposals/tests/src/lib/proposals/frontmatter-parser.property.spec.ts
 - files: plugins/memory/tests/src/lib/store-concurrency.spec.ts
 - gate: type
 - acceptance:
@@ -93,7 +93,14 @@ verificados contra el código y ya corregidos:
     generados.
   - Test de concurrencia de `memory`: N escritores paralelos bajo
     `withFileMutex` no pierden ninguna actualización.
-- status: pending
+- status: partial — los dos property specs (frontmatter-parser,
+  redactSecrets) están hechos y verdes (corrigiendo además la ruta:
+  `frontmatter-parser.ts` vive en `plugins/proposals/`, no en
+  `packages/core/`, donde lo había puesto la propuesta original). El
+  test de concurrencia de `memory` queda pendiente: otro agente tiene
+  cambios sin commitear en `plugins/memory/src/` en esta misma sesión
+  (refactor de constantes BM25 en curso) — tocar ese plugin ahora
+  arriesga colisión. Retomar cuando ese trabajo cierre.
 
 ## 2. No-objetivos
 
