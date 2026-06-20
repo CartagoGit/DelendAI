@@ -204,7 +204,9 @@ export async function runAgentLockEngine(
 			lockPath,
 			() => executeLockAction(args, deps),
 			{
-				onContention: args.onContention,
+				...(args.onContention !== undefined
+					? { onContention: args.onContention }
+					: {}),
 				...(deps.mutexTimeoutMs !== undefined
 					? { timeoutMs: deps.mutexTimeoutMs }
 					: {}),
