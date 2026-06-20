@@ -26,6 +26,8 @@ import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
+import { parseInputSchema } from './lib/parse-input-schema';
+
 import {
 	assembleCliConfig,
 	createMcpProject,
@@ -68,6 +70,19 @@ interface ITool {
 	readonly namespace: string;
 	readonly description: string;
 	readonly effects?: readonly string[];
+	/**
+	 * Parsed argument list (from the MCP `inputSchema`). Omitted when the
+	 * tool declares no input. The site renders it as an "Argument · Type
+	 * · Required · Description" table under each tool.
+	 */
+	readonly inputSchema?: {
+		readonly fields: ReadonlyArray<{
+			readonly name: string;
+			readonly type: string;
+			readonly required: boolean;
+			readonly description?: string;
+		}>;
+	};
 }
 
 /** A measured, real payload size (bytes of the tool result text the agent sees). */
@@ -251,14 +266,23 @@ const collectTools = async (): Promise<ICollected> => {
 		await close();
 		return {
 			tools: toolsRes.tools
-				.map((t) => ({
-					name: t.name,
-					namespace: namespaceOf(t.name),
-					description: t.description ?? '',
-					...(effectsByName.has(t.name)
-						? { effects: effectsByName.get(t.name) }
-						: {}),
-				}))
+				.map((t) => {
+					const parsedSchema = parseInputSchema(t.inputSchema);
+					return {
+						name: t.name,
+						namespace: namespaceOf(t.name),
+						description: t.description ?? '',
+						...(effectsByName.has(t.name)
+							? { effects: effectsByName.get(t.name) }
+							: {}),
+						// Only emit `inputSchema` when the parser actually
+						// returned fields (so the JSON stays minimal for tools
+						// with no args).
+						...(parsedSchema && parsedSchema.fields.length > 0
+							? { inputSchema: { fields: parsedSchema.fields } }
+							: {}),
+					};
+				})
 				.sort((a, b) => a.name.localeCompare(b.name)),
 			prompts: (promptsRes.prompts ?? [])
 				.map((p) => ({
