@@ -1,15 +1,13 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { mkdir, writeFile, readdir, unlink, stat } from 'node:fs/promises';
-import { join, basename, extname } from 'node:path';
+import { mkdir, readdir, unlink, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
 	writeFileAtomic,
-	withFileMutex,
 	redactSecrets,
 	parseConfigFile,
 } from '@mcp-vertex/core/public';
 import type {
 	IMcpVertexConfigFile,
-	IMcpVertexHostConfig,
 	IMcpPluginContext,
 } from '@mcp-vertex/core/public';
 import { createGitRunner } from '../shared/git-runner';
@@ -268,8 +266,8 @@ export class AgentLoopDetectorService {
 	public async onToolCall(
 		toolName: string,
 		args: unknown,
-		result: unknown,
-		error?: unknown,
+		_result: unknown,
+		_error?: unknown,
 	): Promise<void> {
 		if (!this.options.enabled) return;
 
@@ -336,7 +334,7 @@ export class AgentLoopDetectorService {
 		let noProgressStuck = false;
 		for (let i = window.length - 1; i >= 0; i--) {
 			const c = window[i];
-			if (c && c.isModifying) {
+			if (c?.isModifying) {
 				if (!c.madeProgress) {
 					noProgressCount++;
 					if (noProgressCount >= this.options.noProgressThreshold) {
@@ -352,7 +350,7 @@ export class AgentLoopDetectorService {
 		const isStuck = verdict.isStuck || noProgressStuck;
 		if (isStuck && !this.stuckAgents.has(agent)) {
 			// Trigger stuck flow: write handoff and store verdict
-			const ts = new Date().toISOString();
+			const _ts = new Date().toISOString();
 			const sanitizedAgent = agent.replace(/[^a-zA-Z0-9_-]/g, '_');
 			const handoffFileName = `${sanitizedAgent}-${Date.now()}.json`;
 			const handoffPathRel = join(
@@ -402,7 +400,7 @@ export class AgentLoopDetectorService {
 	}
 
 	public isAgentStuck(
-		toolName: string,
+		_toolName: string,
 		args: unknown,
 	): { handoffPath: string; suggestedAction: string } | null {
 		if (!this.options.enabled) return null;

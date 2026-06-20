@@ -25,6 +25,8 @@ export default definePlugin({
 	optionsSchema: z.object({
 		/** Workspace-relative lock file to watch. Default `<cacheDir>/agents.lock.json`. */
 		watchLockFile: z.string().optional(),
+		/** Workspace-relative handoff directory to watch. Default `.mcp-vertex/handoff`. */
+		watchHandoffDir: z.string().optional(),
 		/** Polling fallback interval (ms). Default 2000. */
 		intervalMs: z.number().optional(),
 	}),
@@ -33,10 +35,16 @@ export default definePlugin({
 			typeof ctx.options.watchLockFile === 'string'
 				? (ctx.options.watchLockFile as string)
 				: joinRel(ctx.cacheDir, 'agents.lock.json');
+		const handoffRel =
+			typeof ctx.options.watchHandoffDir === 'string'
+				? (ctx.options.watchHandoffDir as string)
+				: '.mcp-vertex/handoff';
 
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			lockFileAbs: ctx.workspace.resolve(lockRel),
+			handoffDirAbs: ctx.workspace.resolve(handoffRel),
+			handoffDirRel: handoffRel,
 			...(typeof ctx.options.intervalMs === 'number'
 				? { intervalMs: ctx.options.intervalMs as number }
 				: {}),
