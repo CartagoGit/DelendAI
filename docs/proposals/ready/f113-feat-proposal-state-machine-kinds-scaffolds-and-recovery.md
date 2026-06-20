@@ -22,6 +22,8 @@ reservedFiles:
   - plugins/proposals/src/lib/tools/proposal-transition.tool.ts
   - plugins/proposals/src/lib/tools/recovery-tools.ts
   - plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts
+  - plugins/proposals/src/lib/proposals/proposal-id-allocator.ts
+  - .cache/mcp-vertex/proposal-id-counters.json
   - plugins/notification/src/lib/agent-events.ts
   - plugins/notification/src/lib/agent-events-bridge.ts
   - plugins/notification/src/lib/tools.ts
@@ -395,9 +397,49 @@ export const watchAgentHeartbeat = (
 i18n-complete (12 languages) — every UI string is a key in
 `apps/web/src/i18n/langs/*.ts#recovery`.
 
+### 4.9 Race-safe per-kind ID allocation
+
+Each kind keeps its **own** sequence — `f113` is independent from `a006` or
+`r042`. Today an agent would have to list every file under
+`docs/proposals/`, filter by prefix, and compute `max + 1` — racy under
+concurrent agents: two agents creating an `f`-kind proposal in the same
+instant can both read the same stale directory listing and both compute
+`f114`, then one's `git mv`/write clobbers or collides with the other's.
+
+`.cache/mcp-vertex/proposal-id-counters.json` (gitignored machine state,
+alongside the existing `agents.lock.json`) holds one integer per kind
+prefix:
+
+```json
+{ "f": 113, "b": 0, "x": 0, "r": 0, "P": 0, "a": 0, "c": 0, "d": 0, "t": 0, "i": 0, "s": 0, "L": 14 }
+```
+
+`allocateNextProposalId(prefix)`
+(`plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`):
+
+1. Acquires `withFileMutex` on the counter file — the same primitive every
+   other shared-state mutation in this plugin already uses, not a new
+   coordination mechanism.
+2. Reads it; if missing, **seeds** it by scanning `docs/proposals/**/*.md`
+   (all 7 folders) for `^[a-zA-Z]\d{3,}` filenames and taking the max
+   per prefix — so the first call after this ships is safe even with the
+   14 legacy + `f113` already on disk.
+3. Increments the counter for `prefix`, writes atomically, releases.
+4. Returns the zero-padded id (`f114`, never `f1`).
+
+`create_proposal` (`authoring.tool.ts`) makes `id` **optional**: if
+omitted, it derives `prefix` from `kind` via `PROPOSAL_PREFIX_BY_KIND`
+(S1) and calls the allocator. An explicit `id` still works unchanged —
+existing automation and tests are not a breaking change, the allocator
+is opt-in.
+
+Same principle as the rest of the plugin: one mutex-guarded counter, not
+"`ls` + count + hope nobody else creates one between your `ls` and your
+`write`".
+
 ## 5. Slices
 
-The work is split into 12 sequential slices, each independently
+The work is split into 13 sequential slices, each independently
 gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S1 — Glosario canónico *(excl. `proposal-glossary.constant.ts`)*
@@ -638,6 +680,31 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   under `docs/proposals/`.
 - **Estimated work**: 1.5 sessions.
 
+### S13 — Race-safe ID allocator *(excl. `proposal-id-allocator.ts`, `.cache/mcp-vertex/proposal-id-counters.json`)*
+
+- Create `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`
+  exporting `allocateNextProposalId(prefix, options)` per §4.9.
+- Seed-from-disk on first read: scan `docs/proposals/**/*.md` (all 7
+  folders) for `^[a-zA-Z]\d{3,}` filenames, group by prefix, take the
+  max per prefix as the seed — covers the 14 legacy + `f113` already
+  on disk with zero manual bootstrap step.
+- Wire into `create_proposal` (`authoring.tool.ts`): `id` becomes
+  optional; when absent, resolve `prefix` from `kind` via
+  `PROPOSAL_PREFIX_BY_KIND` (S1) and call the allocator. Explicit `id`
+  bypasses the allocator untouched (no breaking change).
+- Concurrency test: fire N parallel `allocateNextProposalId('f')` calls
+  in-process; assert N distinct, sequential ids, no gaps, no
+  duplicates (`withFileMutex` serializes them — this is the same
+  guarantee `with-file-mutex.spec.ts` already covers for locks, applied
+  here to a counter).
+- `proposal-id-allocator.spec.ts`: seed-from-empty, seed-from-existing-
+  files, the concurrent-allocation case above, and an explicit-`id`
+  call to `create_proposal` still skipping the allocator.
+- **Gate**: `bun run test proposal-id-allocator.spec.ts`.
+- **Estimated work**: 0.5 session.
+- **Depends on**: S1 (needs `PROPOSAL_PREFIX_BY_KIND`). Otherwise a
+  leaf — parallelisable with S6/S7/S8.
+
 ## 6. Dependency graph
 
 ```
@@ -651,6 +718,8 @@ S1 ──┬──► S2 ──┬──► S7 ───────────
       │         (DFA)   (folder)    │         │     │
       │                             │         ▼     │
       └──► S6 ──────────────────────┤        S12 ───┘
+      │                             │
+      └──► S13 (leaf, parallel with S6/S7/S8)
                                     │
 S8 ──► S9 ──┬──► S10 ────────────────┘
             │
@@ -658,7 +727,7 @@ S8 ──► S9 ──┬──► S10 ─────────────�
 ```
 
 Critical path: S1 → S3 → S5 → S11 → S12 (≈ 5.5 sessions).
-Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9).
+Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after S1).
 
 ## 7. Acceptance criteria
 
@@ -681,6 +750,10 @@ Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9).
 - [ ] All 14 legacy proposals pass `bun run lint:proposals`.
 - [ ] i18n covers 7 statuses × 12 languages + 12 kinds × 12 languages.
 - [ ] `/status/recovery` dashboard renders and reacts to events via SSE.
+- [ ] `allocateNextProposalId` is race-safe under N concurrent calls for
+      the same kind (no duplicate, no gap, no dependency on directory
+      listing timing); `create_proposal` works both with and without
+      an explicit `id`.
 - [ ] `bun run validate` (type + test + lint + site:strict) green.
 
 ## 8. Risks and mitigations
