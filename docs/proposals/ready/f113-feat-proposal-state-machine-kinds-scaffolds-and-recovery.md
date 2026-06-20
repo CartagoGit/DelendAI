@@ -6,11 +6,11 @@ status: ready
 triaged: true
 date: 2026-06-20
 track: proposals+core+web+notification
-budget: { maxInputTokens: 12000, maxOutputTokens: 8000, maxIterations: 60 }
+budget: { maxInputTokens: 80000, maxOutputTokens: 40000, maxIterations: 100 } # per slice-claim, see §4.10
 ownership:
-  - { agent: implementation-runner, task: state machine + kinds + linters + reconciler + migration }
-  - { agent: notification-author, task: agent-alive/idle/dead events over the heartbeat mtime }
-  - { agent: web-author, task: i18n glossary + status badges + recovery dashboard + SSE }
+  - { agent: implementation_runner, task: "S1-S5, S11-S13: state machine + kinds + linters + reconciler + migration + id allocator" }
+  - { agent: implementation_runner, task: "S8-S9: agent-alive/idle/dead events over the heartbeat mtime + recovery tools" }
+  - { agent: implementation_runner, task: "S6, S10: i18n glossary + status badges + recovery dashboard + SSE" }
 reservedFiles:
   - docs/scaffolds/
   - docs/proposals/
@@ -50,7 +50,15 @@ related:
 
 # f113 — Proposal state machine, kinds, scaffolds, and recovery
 
-## 0. Why this proposal exists
+## 0. Goal
+
+Replace the proposal status union with a clean state machine, link each
+proposal to a kind via filename prefix, enforce a canonical scaffold via
+linter, and replace polling-based stale detection with a notification
+channel that lets any subscriber (agents, orchestrator, dashboard) react
+to agent lifecycle events within `3 × heartbeatMs`.
+
+## 1. Why
 
 Today the proposal workflow has four problems:
 
@@ -79,7 +87,7 @@ This proposal fixes all four by introducing:
 - **7 statuses** (one folder each), with `blocked` and `paused` strictly
   separated and `draft` folded into `blocked-by: [self:*]`.
 - **12 kinds** (one single-letter prefix each), with `pNNN` legacy
-  preserved as `LNNN` after migration.
+  preserved as `lNNN` after migration.
 - **A `docs/scaffolds/` folder** with one `ARCHITECTURE-*.md` per file
   domain. Linters (`proposal-scaffold-linter`, `lint-scaffolds`) enforce
   them on every `bun run validate`.
@@ -87,14 +95,6 @@ This proposal fixes all four by introducing:
   `withFileMutex` heartbeat mtime, emitting `agent-alive`, `agent-idle`,
   and `agent-dead` notifications so agents and the orchestrator react in
   real time instead of polling.
-
-## 1. Goal
-
-Replace the proposal status union with a clean state machine, link each
-proposal to a kind via filename prefix, enforce a canonical scaffold via
-linter, and replace polling-based stale detection with a notification
-channel that lets any subscriber (agents, orchestrator, dashboard) react
-to agent lifecycle events within `3 × heartbeatMs`.
 
 ## 2. Why this design
 
@@ -122,10 +122,11 @@ Result: **5 base statuses + 1 self-block variant + 1 retire terminal = 7
 folders**, with 3 flags (`triaged`, `deferred`, `cancelled`) that refine
 behaviour without being statuses.
 
-### 2.2 Why 12 kinds with single-letter prefixes
+### 2.2 Why 12 kinds with single-letter, single-case prefixes
 
 A proposal's filename prefix tells you its kind without parsing
-frontmatter. The mapping is 1:1:
+frontmatter. The mapping is 1:1, and **every prefix is lowercase** — no
+two prefixes are distinguished only by case:
 
 | Prefix | Kind | Glyph | Conventional Commit | Bump |
 |---|---|---|---|---|
@@ -133,19 +134,31 @@ frontmatter. The mapping is 1:1:
 | `b` | breaking | 💥 | `feat!:` | major |
 | `x` | fix | 🐛 | `fix:` | patch |
 | `r` | refactor | 🛠️ | `refactor:` | patch |
-| `P` | perf | ⚡ | `perf:` | patch |
+| `v` | perf | ⚡ | `perf:` | patch |
 | `a` | audit | 🔬 | `chore(audit):` | patch |
 | `c` | chore | 🧹 | `chore:` | patch |
 | `d` | docs | 📚 | `docs:` | none |
 | `t` | test | 🧪 | `test:` | none |
 | `i` | infra | 🏗️ | `chore(infra):` | none |
 | `s` | spike | 🧭 | — | none |
-| `L` | legacy | 📦 | `feat:` | minor |
+| `l` | legacy | 📦 | `feat:` | minor |
 
-Why `P` (uppercase) for perf: `p` lowercase is reserved for the legacy
-`pNNN-…` naming. Renaming legacy to free `p` would break git history and
-external references. Uppercase `P` keeps `perf` legible without colliding
-with legacy. Same logic for `L` (legacy marker after migration).
+`p` (lowercase) is **retired**: it was the old, undifferentiated
+proposal prefix and is never assigned to a new file again, but the 14
+existing `pNNN-…` files keep that literal prefix on disk until S11
+migrates them (`git mv` to `lNNN-…`, kind `legacy`) — `p` and `l` both
+resolve to `kind: legacy` in `PROPOSAL_KIND_BY_PREFIX` during the
+transition, then `p` drops out of the live mapping once S11 completes.
+
+An earlier draft used uppercase `P` (perf) and `L` (legacy) to dodge
+the collision with `p`. That fails on any case-insensitive filesystem
+(macOS APFS default, Windows NTFS): `P042-x.md` and `p042-x.md` are
+**the same file** there, even though Linux/CI (case-sensitive) would
+treat them as distinct — a contributor on Mac/Windows could silently
+clobber a legacy proposal with a new perf one. Picking `v` (mnemonic:
+*velocity*) for perf instead removes the need for any case trick: all
+12 live prefixes are single, distinct, lowercase letters, so prefix
+uniqueness no longer depends on filesystem case-sensitivity at all.
 
 ### 2.3 Why `docs/scaffolds/` instead of one big `SCAFFOLDS.md`
 
@@ -182,7 +195,7 @@ reconcile` needed to surface zombies.
   frontmatter (Option C from the design discussion).
 - **Not** rewriting the prose of the 14 legacy proposals. Slice S12 is
   a `refactor:` of shape, not content.
-- **Not** removing the `pNNN-…` filenames. They become `LNNN-…` via
+- **Not** removing the `pNNN-…` filenames. They become `lNNN-…` via
   `git mv`, preserving blame and external references.
 
 ## 4. Architecture
@@ -230,10 +243,11 @@ the proposal linter (S2).
 
 ### 4.3 Filename ↔ kind (enforced by S2)
 
-The regex for a valid proposal filename:
+The regex for a valid proposal filename — lowercase only, no case
+ambiguity (§2.2):
 
 ```typescript
-/^[a-zA-Z]\d{3,}-[a-z0-9-]+\.md$/u
+/^[a-z]\d{3,}-[a-z0-9-]+\.md$/u
 ```
 
 Captured groups: `[letter][digits][-][slug].md`.
@@ -256,7 +270,7 @@ if (prefix !== expectedPrefix) {
 
 ```typescript
 const ProposalFrontmatterSchema = z.object({
-  id: z.string().regex(/^[a-zA-Z]\d{3,}$/u),
+  id: z.string().regex(/^[a-z]\d{3,}$/u),
   kind: z.enum([
     'feat', 'breaking', 'fix', 'refactor', 'perf',
     'audit', 'chore', 'docs', 'test', 'infra',
@@ -305,26 +319,83 @@ const ProposalFrontmatterSchema = z.object({
 
 ### 4.5 Canonical body sections (linter-enforced order)
 
+Required core order — always these five, always in this order:
+
 ```markdown
 ## Goal              (required, 1 paragraph)
 ## Why               (required, 1-3 paragraphs, link to the parent audit if any)
 ## Non-goals         (required, bullets)
 ## Slices            (required)
-### S<N> — <title>
+## Acceptance        (required, checkboxes + commands)
+```
+
+A leading `<N>. ` on any `##` heading (`## 0. Goal`, `## 1. Why`, …) is
+accepted as equivalent to the bare name — the linter strips
+`/^\d+\.\s*/` before matching, so numbering is a style choice, not a
+distinct heading. This proposal numbers its own headings end-to-end
+(`## 0. Goal` … `## 9. Notes`) precisely so the numbers stay meaningful
+as cross-reference anchors (`§4.6`, `(S1)`) across a long document —
+the linter must accept that, not force every proposal to drop
+numbering to pass.
+
+Four **optional** sections may additionally appear, each in a fixed
+slot relative to the required five — this is what lets an
+architectural proposal like this one carry the detail it needs without
+inventing an unenforceable, ad-hoc structure:
+
+```markdown
+## Goal
+## Why
+## Why this design   (optional — between Why and Non-goals; deeper
+                       rationale for *this* design over alternatives,
+                       as opposed to Why's "why does this problem
+                       need solving at all")
+## Non-goals
+## Architecture      (optional — between Non-goals and Slices)
+## Slices
+## Dependency graph  (optional — between Slices and Acceptance)
+## Acceptance
+## Risks and mitigations  (optional — between Acceptance and Notes)
+## Notes             (optional, free prose at the end)
+```
+
+Each slice (`### S<N> — <title>`) supports **two** equivalent slice
+formats — small/simple proposals can use the terse one; large
+architectural proposals (like this one) can use the narrative one
+without that being a scaffold violation:
+
+```markdown
+### S<N> — <title>                              (terse form)
   - **Status**: pending | in-progress | review | done
   - **Files**: [`path`, …]
   - **Command**: `bun run …`
   - **Expect**: exit0 | pass | synchronized | contains:<substring>
   - **Depends-on**: S<N-1>           (optional)
   - **Notes**: free text             (optional)
-## Acceptance        (required, checkboxes + commands)
-## Notes             (optional, free prose at the end)
 ```
 
-The linter (`proposal-scaffold-linter.ts`) extracts the section headings
-in order, errors if any required section is missing or if any section
-appears out of order, and validates that each slice has all four
-required fields (`Status`, `Files`, `Command`, `Expect`).
+```markdown
+### S<N> — <title> *(excl. `path`, `path`, …)*    (narrative form)
+  - **Status**: pending | in-progress | review | done
+  - free-prose bullets describing the implementation steps
+  - **Gate**: `bun run …`           (Command + Expect:exit0 combined)
+  - **Estimated work**: <N> session(s)
+  - **Depends on**: S<N-1>          (optional)
+```
+
+The narrative form's `(excl. …)` parenthetical in the heading **is**
+the `Files` field (machine-extractable: everything inside the
+parentheses, comma-split); `Gate` **is** `Command` with an implicit
+`Expect: exit0`. The linter (S2) recognises either form — it does not
+require both `Command` and `Expect` as separate bullets when `Gate`
+already encodes both.
+
+The linter (`proposal-scaffold-linter.ts`) extracts the section
+headings in order (after stripping leading numbering), errors if any
+required section is missing or out of order, errors if an optional
+section appears outside its fixed slot, and validates that each slice
+resolves to all four logical fields (`Status`, `Files`, `Command`,
+`Expect`) under either form.
 
 ### 4.6 Subscribe-based recovery
 
@@ -411,7 +482,7 @@ alongside the existing `agents.lock.json`) holds one integer per kind
 prefix:
 
 ```json
-{ "f": 113, "b": 0, "x": 0, "r": 0, "P": 0, "a": 0, "c": 0, "d": 0, "t": 0, "i": 0, "s": 0, "L": 14 }
+{ "f": 113, "b": 0, "x": 0, "r": 0, "v": 0, "a": 0, "c": 0, "d": 0, "t": 0, "i": 0, "s": 0, "l": 14 }
 ```
 
 `allocateNextProposalId(prefix)`
@@ -437,6 +508,23 @@ Same principle as the rest of the plugin: one mutex-guarded counter, not
 "`ls` + count + hope nobody else creates one between your `ls` and your
 `write`".
 
+### 4.10 `budget` is per slice-claim, not per proposal
+
+The frontmatter `budget` (§4.4) resets **every time an agent claims one
+slice** via `proposal_transition`/`continue_proposal` — it is not a
+single ceiling shared across all 13 slices of this proposal. Each slice
+above is independently estimated at 0.5-2 "sessions"; `80000`
+input / `40000` output tokens / `100` iterations is sized for **one**
+such session (reading a handful of files, several edits, a few
+`bun run test`/`typecheck` round-trips), not for the whole proposal.
+An earlier draft of this frontmatter (`12000`/`8000`/`60`) read as a
+whole-proposal total, which is roughly what a single tool-call exchange
+costs — an agent claiming S7 (2 sessions: 7 new scaffold docs + a
+linter script + 12-language wiring) would have hit it almost
+immediately. If a future tool wants an aggregate-across-all-slices
+cap too, that needs its own field (e.g. `totalBudget`) — not implemented
+here, out of scope until a concrete need shows up.
+
 ## 5. Slices
 
 The work is split into 13 sequential slices, each independently
@@ -444,6 +532,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S1 — Glosario canónico *(excl. `proposal-glossary.constant.ts`)*
 
+- **Status**: pending
 - Create `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
   with `PROPOSAL_STATUSES` (7), `PROPOSAL_KINDS` (12), `PROPOSAL_KIND_BY_PREFIX`,
   `PROPOSAL_PREFIX_BY_KIND`, `PROPOSAL_STATUS_TRANSITIONS`, `STATUS_TO_FOLDER`,
@@ -465,6 +554,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S2 — Scaffold linter *(excl. `proposal-scaffold-linter.ts`)*
 
+- **Status**: pending
 - Create `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`
   exporting `lintProposalMarkdown({ path, markdown })`.
 - Validate frontmatter via Zod (S1 schema).
@@ -483,6 +573,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S3 — Transition tool *(excl. `proposal-transition.tool.ts`)*
 
+- **Status**: pending
 - Create `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
   exporting `proposal_transition({ id, to, reason })`.
 - Validate the transition against `PROPOSAL_STATUS_TRANSITIONS`.
@@ -500,6 +591,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S4 — `auto_work` consciente *(excl. `continue-proposal.tool.ts`)*
 
+- **Status**: pending
 - Refactor `continue_proposal` cascade to filter by **folder**, not
   by date or by status alone:
   - `ready/` → first priority
@@ -516,6 +608,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S5 — Folder reconciler *(excl. `sync-proposal-registry.ts`)*
 
+- **Status**: pending
 - Extend `sync-proposal-registry.ts` with `reconcileFolders()`:
   walks every `.md`, computes the expected folder from frontmatter
   status, moves the file if needed via `git mv`.
@@ -533,6 +626,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S6 — i18n glossary + badges *(excl. `apps/web/src/i18n/langs/`)*
 
+- **Status**: pending
 - Extend `apps/web/src/i18n/langs/*.ts` (12 files) with the tree:
   ```typescript
   proposals: {
@@ -571,6 +665,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S7 — `docs/scaffolds/` *(excl. `docs/scaffolds/`)*
 
+- **Status**: pending
 - Create `docs/scaffolds/README.md` (index of all scaffolds).
 - Create `docs/scaffolds/ARCHITECTURE-PROPOSALS.md` — the full shape
   spec for proposals, slices, transitions, recovery. Source for the
@@ -598,6 +693,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S8 — Notification: agent events *(excl. `plugins/notification/src/lib/agent-events*.ts`)*
 
+- **Status**: pending
 - Create `plugins/notification/src/lib/agent-events.ts` exporting
   `watchAgentHeartbeat(...)` per the sketch in §4.6.
 - Create `plugins/notification/src/lib/agent-events-bridge.ts` that
@@ -613,6 +709,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S9 — Recovery tools *(excl. `plugins/proposals/src/lib/tools/recovery-tools.ts`)*
 
+- **Status**: pending
 - Create the 5 tools from §4.7.
 - `proposal_stale_list` reads from an in-memory buffer fed by the
   S8 bridge; GC entries older than 1 h.
@@ -632,6 +729,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S10 — Recovery dashboard *(excl. `apps/web/src/pages/status/recovery.astro`)*
 
+- **Status**: pending
 - Create `apps/web/src/pages/status/recovery.astro` per §4.8.
 - Create `apps/web/src/components/recovery/RecoveryTable.astro` with
   one row per zombie and one button per suggested action.
@@ -646,9 +744,10 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S11 — Migration script *(excl. `scripts/migrate-legacy-proposals.ts`)*
 
+- **Status**: pending
 - Create `scripts/migrate-legacy-proposals.ts` that:
   1. Lists every `pNNN-*.md` under `docs/proposals/`.
-  2. Computes the new path: `<status>/<L>NNN-legacy-<original-slug>.md`
+  2. Computes the new path: `<status>/lNNN-legacy-<original-slug>.md`
      (strip the old `feat-` / `fix-` / `chore-` prefix from the slug;
      the kind info moves to frontmatter `kind: legacy` + `kind-original`).
   3. Dry-run mode prints a diff (default).
@@ -657,7 +756,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   6. Emits a summary table at the end.
 - Create `scripts/rewrite-proposal-refs.ts` that greps the repo for
   `pNNN` references in `.md`, `.ts`, `.astro`, and rewrites them to
-  `LNNN` (or to the new path). Dry-runnable.
+  `lNNN` (or to the new path). Dry-runnable.
 - Manual test: dry-run on the repo, review the diff, then apply.
 - **Gate**: the 14 legacy files end up in the correct folder with
   the correct name; `git log --follow <file>` still shows the
@@ -666,8 +765,9 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S12 — Legacy normalization *(excl. `scripts/normalize-legacy-proposals.ts`)*
 
+- **Status**: pending
 - Create `scripts/normalize-legacy-proposals.ts` that:
-  1. Reads each `LNNN-*.md` (post-S11).
+  1. Reads each `lNNN-*.md` (post-S11).
   2. Normalises frontmatter: ensures `kind: legacy`, adds
      `kind-original` (inferred from filename), ensures `track`
      present, ensures `date` ISO-8601.
@@ -682,6 +782,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S13 — Race-safe ID allocator *(excl. `proposal-id-allocator.ts`, `.cache/mcp-vertex/proposal-id-counters.json`)*
 
+- **Status**: pending
 - Create `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`
   exporting `allocateNextProposalId(prefix, options)` per §4.9.
 - Seed-from-disk on first read: scan `docs/proposals/**/*.md` (all 7
@@ -729,7 +830,7 @@ S8 ──► S9 ──┬──► S10 ─────────────�
 Critical path: S1 → S3 → S5 → S11 → S12 (≈ 5.5 sessions).
 Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after S1).
 
-## 7. Acceptance criteria
+## 7. Acceptance
 
 - [ ] `proposal-glossary.constant.ts` defines 7 statuses, 12 kinds,
       12 prefix mappings, and a 7×7 transition matrix.
@@ -746,7 +847,7 @@ Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after
 - [ ] `proposal_stale_list` returns zombies from the event buffer,
       not from a polling scan.
 - [ ] All 14 legacy proposals live in one of the 7 folders with a
-      `LNNN-…` filename.
+      `lNNN-…` filename.
 - [ ] All 14 legacy proposals pass `bun run lint:proposals`.
 - [ ] i18n covers 7 statuses × 12 languages + 12 kinds × 12 languages.
 - [ ] `/status/recovery` dashboard renders and reacts to events via SSE.
@@ -761,11 +862,12 @@ Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after
 | Risk | Mitigation |
 |---|---|
 | 14 legacy break `bun run validate` between S3 and S12 | Feature flag `PROPOSAL_STATE_MACHINE_V2`; S3 only flips it on after S12 lands |
-| `pNNN` legacy collides with new prefix regex | The regex `[a-zA-Z]` accepts both; the prefix-mapping table accepts `p → legacy` |
+| `pNNN` legacy filenames pre-date the new single-case scheme | `p` is a recognised (but retired) alias for `kind: legacy` in `PROPOSAL_KIND_BY_PREFIX` until S11 migrates every `pNNN` to `lNNN`; no new file is ever created with `p` |
+| Case-insensitive filesystems (macOS, Windows) silently merge two differently-cased prefixes | Avoided by construction: every live prefix (§2.2) is a distinct lowercase letter, none rely on case to disambiguate |
 | 12-language i18n drift | `bun run site:strict` fails the build if any key is missing; no exceptions |
 | SSE endpoint overloads during incidents | Rate-limit per topic; events are already dedup'd by the bridge (1 event per state change, not per mtime bump) |
 | Agent-dead false positives (slow CI, not crash) | Threshold is `3 × heartbeatMs` (default 30 s), not 1; the dashboard lets a human force-resume if the agent is just slow |
-| `git mv` on the 14 legacy breaks external references | S11's `rewrite-proposal-refs.ts` updates all internal refs; external refs (PR descriptions, docs) keep working because the numeric id is preserved (`p099` → `L099`) |
+| `git mv` on the 14 legacy breaks external references | S11's `rewrite-proposal-refs.ts` updates all internal refs; external refs (PR descriptions, docs) keep working because the numeric id is preserved (`p099` → `l099`) |
 
 ## 9. Notes
 
