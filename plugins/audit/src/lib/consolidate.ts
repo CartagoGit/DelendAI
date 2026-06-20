@@ -198,7 +198,14 @@ export const consolidateAudits = (
 		.map((m) => {
 			const title = m.titles[0] ?? m.id;
 			const file = m.files[0] ?? '<unknown>';
-			return `${m.worstSeverity} · ${title} — see \`${file}\``;
+			// Surface the model roster so the orchestrator can see who
+			// reported the finding without having to cross-reference
+			// `seenBy` separately. Order matches the deduped roster.
+			const seenBy =
+				m.seenBy.length > 0
+					? ` (visto por ${m.seenBy.join(', ')})`
+					: '';
+			return `${m.worstSeverity} · ${title}${seenBy} — see \`${file}\``;
 		});
 
 	return {
