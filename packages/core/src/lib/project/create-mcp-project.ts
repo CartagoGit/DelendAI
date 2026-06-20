@@ -13,9 +13,9 @@ import {
  * bytes and error flag into the metrics registry (M12). Transparent: the tool
  * contract is unchanged; instrumentation is pure measurement around the call.
  */
-const instrumentToolMetrics = (
+const instrumentToolHandlers = (
 	server: McpServer,
-	registry: IMetricsRegistry,
+	config: IMcpVertexHostConfig,
 ): void => {
 	type RegisterTool = McpServer['registerTool'];
 	const original = server.registerTool.bind(server) as RegisterTool;
@@ -24,22 +24,59 @@ const instrumentToolMetrics = (
 		const fn = handler as (...args: unknown[]) => unknown;
 		return async (...args: unknown[]): Promise<unknown> => {
 			const start = performance.now();
+			let result: unknown;
+			let isError = false;
+			let error: unknown;
 			try {
-				const result = await fn(...args);
-				registry.record(name, {
-					ms: performance.now() - start,
-					bytes: estimateResultBytes(result),
-					isError:
-						(result as { isError?: boolean })?.isError === true,
-				});
+				result = await fn(...args);
+				isError = (result as { isError?: boolean })?.isError === true;
+
+				// Inject __stuck_detected if agent is stuck
+				if (
+					config.isAgentStuck &&
+					result &&
+					typeof result === 'object'
+				) {
+					const stuckInfo = config.isAgentStuck(name, args[0]);
+					if (stuckInfo) {
+						const resObj = result as Record<string, unknown>;
+						const structured =
+							(resObj.structuredContent as Record<
+								string,
+								unknown
+							>) ?? {};
+						resObj.structuredContent = {
+							...structured,
+							__stuck_detected: true,
+							handoffPath: stuckInfo.handoffPath,
+							suggestedAction: stuckInfo.suggestedAction,
+						};
+					}
+				}
+
 				return result;
 			} catch (err) {
-				registry.record(name, {
-					ms: performance.now() - start,
-					bytes: 0,
-					isError: true,
-				});
+				isError = true;
+				error = err;
 				throw err;
+			} finally {
+				const ms = performance.now() - start;
+				if (config.metricsRegistry) {
+					config.metricsRegistry.record(name, {
+						ms,
+						bytes: isError ? 0 : estimateResultBytes(result),
+						isError,
+					});
+				}
+				if (config.onToolCall) {
+					try {
+						void Promise.resolve(
+							config.onToolCall(name, args[0], result, error),
+						).catch(() => {});
+					} catch {
+						// Ignored
+					}
+				}
 			}
 		};
 	};
@@ -127,10 +164,8 @@ export async function createMcpProject(
 		name: config.metadata.name,
 		version: config.metadata.version,
 	});
-	// Instrument BEFORE registering tools so every handler is wrapped (M12).
-	if (config.metricsRegistry) {
-		instrumentToolMetrics(server, config.metricsRegistry);
-	}
+	// Instrument BEFORE registering tools so every handler is wrapped.
+	instrumentToolHandlers(server, config);
 	const ordered = planRegistrationOrder([], config.extraTools ?? []);
 	for (const registration of ordered) {
 		await registration.register(server);

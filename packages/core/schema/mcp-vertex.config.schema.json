@@ -66,6 +66,48 @@
 				},
 				"additionalProperties": false
 			}
+		},
+		"loopDetector": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"repeatThreshold": {
+					"type": "number"
+				},
+				"nearRepeatThreshold": {
+					"type": "number"
+				},
+				"similarityThreshold": {
+					"type": "number"
+				},
+				"idleThreshold": {
+					"type": "number"
+				},
+				"noProgressThreshold": {
+					"type": "number"
+				},
+				"ringSize": {
+					"type": "number"
+				},
+				"gitCheckTools": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"handoffDir": {
+					"type": "string"
+				},
+				"handoffTtlDays": {
+					"type": "number"
+				},
+				"notifyOnDetect": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false
 		}
 	},
 	"additionalProperties": false,

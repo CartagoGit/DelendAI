@@ -22,6 +22,20 @@ export interface IMcpVertexPluginConfig {
 	readonly options?: Readonly<Record<string, unknown>>;
 }
 
+export interface ILoopDetectorConfig {
+	readonly enabled?: boolean;
+	readonly repeatThreshold?: number;
+	readonly nearRepeatThreshold?: number;
+	readonly similarityThreshold?: number;
+	readonly idleThreshold?: number;
+	readonly noProgressThreshold?: number;
+	readonly ringSize?: number;
+	readonly gitCheckTools?: readonly string[];
+	readonly handoffDir?: string;
+	readonly handoffTtlDays?: number;
+	readonly notifyOnDetect?: boolean;
+}
+
 export interface IMcpVertexConfigFile {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
@@ -34,6 +48,7 @@ export interface IMcpVertexConfigFile {
 		>;
 	};
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
+	readonly loopDetector?: ILoopDetectorConfig;
 }
 
 /** Default config file name looked up at the workspace root. */
@@ -66,6 +81,22 @@ export const CONFIG_FILE_SCHEMA = z
 					options: z.record(z.string(), z.unknown()).optional(),
 				}),
 			)
+			.optional(),
+		loopDetector: z
+			.object({
+				enabled: z.boolean().optional(),
+				repeatThreshold: z.number().optional(),
+				nearRepeatThreshold: z.number().optional(),
+				similarityThreshold: z.number().optional(),
+				idleThreshold: z.number().optional(),
+				noProgressThreshold: z.number().optional(),
+				ringSize: z.number().optional(),
+				gitCheckTools: z.array(z.string()).optional(),
+				handoffDir: z.string().optional(),
+				handoffTtlDays: z.number().optional(),
+				notifyOnDetect: z.boolean().optional(),
+			})
+			.strict()
 			.optional(),
 	})
 	.strict();

@@ -53,4 +53,18 @@ export interface IMcpVertexHostConfig {
 	readonly extraTools?: readonly IToolRegistration[] | undefined;
 	readonly extraPrompts?: readonly IPromptRegistration[] | undefined;
 	readonly extraResources?: readonly IResourceRegistration[] | undefined;
+	readonly onToolCall?:
+		| ((
+				toolName: string,
+				args: unknown,
+				result: unknown,
+				error?: unknown,
+		  ) => Promise<void> | void)
+		| undefined;
+	readonly isAgentStuck?:
+		| ((
+				toolName: string,
+				args: unknown,
+		  ) => { handoffPath: string; suggestedAction: string } | null)
+		| undefined;
 }
