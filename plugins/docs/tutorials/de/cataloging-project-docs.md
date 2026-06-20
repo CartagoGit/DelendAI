@@ -1,32 +1,26 @@
 ---
-title: "Cataloguing project docs [Deutsch — needs translation]"
+title: Projektdokumentationen katalogisieren
 plugin: docs
-audience: any agent that needs cross-session continuity
+audience: jeder Agent, der ein Dokument nach Thema finden muss
 order: 1
 lang: de
-auto-translated: true
-needs-human-review: true
-source: plugins/docs/tutorials/en/cataloging-project-docs.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# Projektdokumentationen katalogisieren
 
+Das Plugin `docs` beantwortet eine kleine, häufige Frage: „Welche Docs
+hat dieses Projekt, und welches suche ich?" Statt zu greppen, fragt
+der Agent das Plugin. Dieses Tutorial zeigt, wie man aktiviert, auflistet
+und liest.
 
-# Cataloguing project docs
+## 0. Das mentale Modell
 
-The `docs` plugin answers a small, frequent question: "what docs
-does this project have, and which one am I looking for?" Instead
-of grepping, the agent asks the plugin. This walkthrough shows
-how to enable, list, and read.
+Ein **Doc** ist jede `.md`-Datei unter den konfigurierten `roots`. Das
+Plugin zählt sie einmal auf, extrahiert den Titel (aus dem ersten
+`# heading` oder frontmatter `title:`), und liefert einen token-armen
+Index. Der Body wird nur auf Anfrage abgerufen.
 
-## 0. The mental model
-
-A **doc** is any `.md` file under the configured `roots`. The
-plugin enumerates them once, extracts the title (from the first
-`# heading` or frontmatter `title:`), and serves a low-token
-index. The body is only fetched on demand.
-
-Configuration lives in `mcp-vertex.config.json`:
+Die Konfiguration liegt in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -40,17 +34,17 @@ Configuration lives in `mcp-vertex.config.json`:
 }
 ```
 
-`roots` is an array of paths (files or directories). Directories
-are walked recursively. **Paths outside the workspace are
-refused** — no `..` traversal.
+`roots` ist ein Array von Pfaden (Dateien oder Verzeichnisse). Verzeichnisse
+werden rekursiv durchsucht. **Pfade außerhalb des Workspaces werden
+abgelehnt** — keine `..`-Traversierung.
 
-## 1. List (low-token index)
+## 1. Auflisten (token-armer Index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Response (truncated):
+Antwort (gekürzt):
 
 ```json
 {
@@ -59,14 +53,14 @@ Response (truncated):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n real…" },
+    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: echtes i18n…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/proposals"]`):
+Die Liste ist nach Pfad sortiert. Übergeben Sie `roots`, um die Liste
+auf eine Teilmenge zu beschränken (z.B. nur `["docs/proposals"]`):
 
 ```json
 {
@@ -75,7 +69,7 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-## 2. Read one doc
+## 2. Ein Doc lesen
 
 ```json
 {
@@ -84,63 +78,52 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-Response:
+Antwort:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…full body…",
+  "content": "# Architecture\n\n…vollständiger Body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` is capped at 256 KiB. If the doc is bigger, `truncated:
-true` and the body is the first 256 KiB. If the path doesn't
-match any doc under the configured roots, `found: false`.
+`content` ist auf 256 KiB begrenzt. Bei größeren Docs ist `truncated:
+true` und der Body sind die ersten 256 KiB. Wenn der Pfad keinem Doc
+unter den konfigurierten Roots entspricht, `found: false`.
 
-## 3. Why two tools and not one
+## 3. Warum zwei Tools und nicht eines
 
-`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
-`read` is expensive (potentially megabytes per doc). Splitting
-them means the agent can `list` first, then `read` only the ones
-that look relevant — saving tokens on every discovery step.
+`list` ist günstig (wenige Hundert Byte pro Doc, 18 Docs ≈ 4 KiB).
+`read` ist teuer (potenziell Megabytes pro Doc). Die Trennung ermöglicht
+es dem Agenten, zuerst zu `list`-en und dann nur die relevanten zu
+`read`-en — Token bei jedem Discovery-Schritt sparend.
 
-## 4. Path containment (security)
+## 4. Pfadeinschränkung (Sicherheit)
 
-`docs_read` resolves the path with `resolveWorkspaceContained` —
-absolute paths, `..` traversal, and symlinks pointing outside the
-workspace are all refused. The `found: false` response is the
-agent's signal that the path was rejected; the plugin does not
-distinguish "missing" from "outside-workspace" on purpose (to
-avoid leaking filesystem layout).
+`docs_read` löst den Pfad mit `resolveWorkspaceContained` auf —
+absolute Pfade, `..`-Traversierung und Symlinks, die außerhalb des
+Workspaces zeigen, werden alle abgelehnt. Die `found: false`-Antwort
+ist das Signal des Agenten, dass der Pfad abgelehnt wurde; das Plugin
+unterscheidet absichtlich nicht zwischen „fehlt" und „außerhalb des
+Workspaces" (um das Dateisystem-Layout nicht preiszugeben).
 
-## Common pitfalls
+## Häufige Fehler
 
-- **Root doesn't exist**: `docs_list` returns `{ count: 0,
-  truncated: false, docs: [] }`. The plugin does not warn.
-- **Doc not yet committed**: untracked files are still served
-  (the plugin reads from the filesystem, not from git). The
-  `path` you get back is workspace-relative.
-- **Title inference fails**: if the first heading is not `# ` (no
-  space, wrong level) and there's no frontmatter `title:`, the
-  plugin uses the filename basename (e.g. `CHANGELOG.md` →
-  `CHANGELOG.md`). Re-run after fixing the heading.
+- **Root existiert nicht**: `docs_list` gibt `{ count: 0,
+  truncated: false, docs: [] }` zurück. Das Plugin warnt nicht.
+- **Doc noch nicht committed**: ungetrackte Dateien werden trotzdem
+  geliefert (das Plugin liest vom Dateisystem, nicht von git). Der
+  zurückgegebene `path` ist workspace-relativ.
+- **Titelableitung schlägt fehl**: wenn das erste Heading nicht `# `
+  ist (kein Leerzeichen, falsche Ebene) und kein frontmatter `title:`
+  vorhanden ist, verwendet das Plugin den Dateinamen-Basename (z.B.
+  `CHANGELOG.md` → `CHANGELOG.md`). Nach der Korrektur des Headings
+  neu ausführen.
 
-## Next step
+## Nächster Schritt
 
-- [How `docs_list` integrates with `memory_recall` for "what
-  did I save last session + where was it documented?"](#)
-- [Curating a knowledge index with the `knowledge` plugin](#)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper Deutsch
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`
-
+- [Wie `docs_list` mit `memory_recall` für „was habe ich gespeichert + wo war es dokumentiert?" integriert](#)
+- [Einen Wissensindex mit dem `knowledge`-Plugin kuratieren](#)

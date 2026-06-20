@@ -1,46 +1,40 @@
 ---
-title: "Running quality gates for any language [Français — needs translation]"
+title: Exécuter les gates de qualité pour n'importe quel langage
 plugin: quality
-audience: any agent that needs cross-session continuity
+audience: agent qui doit valider l'état du projet
 order: 1
 lang: fr
-auto-translated: true
-needs-human-review: true
-source: plugins/quality/tutorials/en/running-gates.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# Exécuter les gates de qualité pour n'importe quel langage
 
+Le plugin `quality` est **agnostique au langage** par conception : il lance
+la commande que votre `mcp-vertex.config.json` spécifie et rapporte le
+code de sortie. Ce tutoriel montre les trois sources de scopes (par ordre
+de priorité), comment en exécuter un, et comment annuler un processus
+incontrôlé.
 
-# Running quality gates for any language
+## 0. Le modèle mental
 
-The `quality` plugin is **language-agnostic** by design: it spawns
-whatever command your `mcp-vertex.config.json` says and reports
-the exit code. This walkthrough shows the three sources of
-scopes (in precedence order), how to run one, and how to cancel a
-runaway.
-
-## 0. The mental model
-
-A **scope** is a named list of commands. The plugin runs every
-command in the scope, in order, captures stdout/stderr, and
-returns a structured `{ ok, results: [{ command, ok, code, tail }]
-}` report. The `ok` field is the whole scope — if any command
-fails, the scope is not ok.
+Un **scope** est une liste nommée de commandes. Le plugin exécute chaque
+commande du scope, dans l'ordre, capture stdout/stderr, et renvoie un
+rapport structuré `{ ok, results: [{ command, ok, code, tail }] }`. Le
+champ `ok` concerne le scope entier — si une commande échoue, le scope
+n'est pas ok.
 
 ```
-┌─ plugin options.scopes (highest priority)
+┌─ plugin options.scopes (priorité la plus haute)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ detected package.json scripts → "all" (lint, typecheck, test, build)
+└─ scripts package.json détectés → "all" (lint, typecheck, test, build)
 ```
 
-## 1. List the available scopes (read-only)
+## 1. Lister les scopes disponibles (lecture seule)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-Response example (truncated):
+Exemple de réponse (tronquée) :
 
 ```json
 {
@@ -54,13 +48,13 @@ Response example (truncated):
 }
 ```
 
-## 2. Run a scope
+## 2. Exécuter un scope
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-The response is per-command:
+La réponse est par commande :
 
 ```json
 {
@@ -83,24 +77,24 @@ The response is per-command:
 }
 ```
 
-Read `results[N].tail` for the failure context. The `tail` is the
-last 20 non-empty lines (capped at 64 KiB total output) — enough
-to debug without flooding the agent's context.
+Lisez `results[N].tail` pour le contexte de l'échec. Le `tail` correspond
+aux 20 dernières lignes non vides (plafonnées à 64 Kio de sortie totale)
+— assez pour déboguer sans noyer le contexte de l'agent.
 
-## 3. Cancel a runaway
+## 3. Annuler un processus incontrôlé
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-Sends `SIGKILL` to the process group of every in-flight run. Pass
-`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
-the next call's `results` will reflect the kill.
+Envoie `SIGKILL` au groupe de processus de chaque exécution en cours.
+Passez `{ "pid": <number> }` pour en annuler un. L'annulation est
+non-bloquante : le `results` du prochain appel reflètera le kill.
 
-## 4. Make it language-agnostic
+## 4. Rendre agnostique au langage
 
-The core runs whatever your config says. Example for a polyglot
-project (TypeScript + Python):
+Le core exécute ce que votre config dit. Exemple pour un projet polyglotte
+(TypeScript + Python) :
 
 ```jsonc
 // mcp-vertex.config.json
@@ -121,15 +115,15 @@ project (TypeScript + Python):
 }
 ```
 
-`run_quality` will run **all four commands** in `typecheck` /
-`test` scopes, regardless of language. Exit 0 = pass; non-zero =
-fail (regardless of which binary emitted it).
+`run_quality` exécutera **les quatre commandes** dans les scopes `typecheck`
+/ `test`, quel que soit le langage. Exit 0 = succès ; non-zéro = échec
+(peu importe quel binaire l'a émis).
 
-## 5. Harden with a command policy (M13)
+## 5. Renforcer avec une politique de commande (M13)
 
-`run_quality` **executes** whatever the host config says. To
-restrict which binaries may run when a less-trusted agent calls
-the tool, use `commandPolicy`:
+`run_quality` **exécute** ce que la config de l'hôte dit. Pour restreindre
+quels binaires peuvent s'exécuter quand un agent moins fiable appelle
+l'outil, utilisez `commandPolicy` :
 
 ```jsonc
 {
@@ -146,36 +140,27 @@ the tool, use `commandPolicy`:
 }
 ```
 
-A blocked command is reported as `code: 126` with a reason
-("blocked by command policy") and is **never spawned**. `deny`
-wins over `allow`; an empty `allow` means "any binary not denied".
+Une commande bloquée est rapportée avec `code: 126` et une raison
+(« blocked by command policy ») et n'est **jamais lancée**. `deny`
+prend le dessus sur `allow` ; un `allow` vide signifie « tout binaire
+non interdit ».
 
-## Common pitfalls
+## Erreurs fréquentes
 
-- **`run_quality` doesn't replace `bun run validate`**: the core's
-  `validate` script runs the four checks directly. `run_quality`
-  is for **ad-hoc** runs and per-scope introspection from an
-  agent. Both are valid; they don't talk to each other.
-- **A long-running command that exceeds the timeout** is killed
-  with `code: 124` and `timedOut: true`. Default timeout is
-  600 000 ms (10 minutes). Override per runner if needed.
-- **Polling for "is it done yet?"**: don't. `run_quality` is
-  synchronous. If you need to know about long scopes, use
-  `quality_cancel` with the `pid` from `activeRunPids` (via
-  metrics or a follow-up tool call).
+- **`run_quality` ne remplace pas `bun run validate`** : le script
+  `validate` du core exécute les quatre vérifications directement.
+  `run_quality` est pour les exécutions **ad-hoc** et l'introspection
+  par scope depuis un agent. Les deux sont valides et ne communiquent
+  pas entre eux.
+- **Une commande longue qui dépasse le timeout** est tuée avec `code: 124`
+  et `timedOut: true`. Le timeout par défaut est 600 000 ms (10 minutes).
+  Surchargez par runner si nécessaire.
+- **Sonder « est-ce terminé ? »** : ne le faites pas. `run_quality` est
+  synchrone. Si vous avez besoin de connaître les longs scopes, utilisez
+  `quality_cancel` avec le `pid` de `activeRunPids` (via métriques ou
+  un appel d'outil suivant).
 
-## Next step
+## Étape suivante
 
-- [Multi-language quality gates (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper Français
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/quality/tutorials/en/running-gates.md`
-
+- [Gates de qualité multi-langages (p107)](../../p107-multilang-quality-gates.md)
+- [Frontière de confiance & politique de commande (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)

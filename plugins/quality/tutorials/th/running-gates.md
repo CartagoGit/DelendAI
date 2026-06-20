@@ -1,46 +1,38 @@
 ---
-title: "Running quality gates for any language [ไทย — needs translation]"
+title: รัน quality gates สำหรับทุกภาษา
 plugin: quality
-audience: any agent that needs cross-session continuity
+audience: เอเจนต์ที่ต้องการตรวจสอบสถานะโครงการ
 order: 1
 lang: th
-auto-translated: true
-needs-human-review: true
-source: plugins/quality/tutorials/en/running-gates.md
-generated: 2026-06-20T01:53:13Z
 ---
 
+# รัน quality gates สำหรับทุกภาษา
 
+ปลั๊กอิน `quality` **ไม่ขึ้นกับภาษา** ตามการออกแบบ: มันเรียกใช้คำสั่งใดก็ตาม
+ที่ `mcp-vertex.config.json` ระบุและรายงานรหัสออก บทเรียนนี้แสดงแหล่ง
+ที่มาของ scope สามแหล่ง (ตามลำดับความสำคัญ) วิธีรัน scope หนึ่ง และ
+วิธียกเลิกกระบวนการที่ไม่สามารถควบคุมได้
 
-# Running quality gates for any language
+## 0. โมเดลความคิด
 
-The `quality` plugin is **language-agnostic** by design: it spawns
-whatever command your `mcp-vertex.config.json` says and reports
-the exit code. This walkthrough shows the three sources of
-scopes (in precedence order), how to run one, and how to cancel a
-runaway.
-
-## 0. The mental model
-
-A **scope** is a named list of commands. The plugin runs every
-command in the scope, in order, captures stdout/stderr, and
-returns a structured `{ ok, results: [{ command, ok, code, tail }]
-}` report. The `ok` field is the whole scope — if any command
-fails, the scope is not ok.
+**Scope** คือรายการคำสั่งที่มีชื่อ ปลั๊กอินรันคำสั่งทุกตัวใน scope ตามลำดับ
+จับ stdout/stderr และส่งคืนรายงานที่มีโครงสร้าง
+`{ ok, results: [{ command, ok, code, tail }] }` ฟิลด์ `ok` คือสำหรับ
+scope ทั้งหมด — หากคำสั่งใดล้มเหลว scope ไม่ ok
 
 ```
-┌─ plugin options.scopes (highest priority)
+┌─ plugin options.scopes (ความสำคัญสูงสุด)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ detected package.json scripts → "all" (lint, typecheck, test, build)
+└─ scripts package.json ที่ตรวจพบ → "all" (lint, typecheck, test, build)
 ```
 
-## 1. List the available scopes (read-only)
+## 1. แสดงรายการ scope ที่มีอยู่ (อ่านอย่างเดียว)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-Response example (truncated):
+ตัวอย่างการตอบสนอง (ตัดทอน):
 
 ```json
 {
@@ -54,13 +46,13 @@ Response example (truncated):
 }
 ```
 
-## 2. Run a scope
+## 2. รัน scope
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-The response is per-command:
+การตอบสนองเป็นรายคำสั่ง:
 
 ```json
 {
@@ -83,24 +75,24 @@ The response is per-command:
 }
 ```
 
-Read `results[N].tail` for the failure context. The `tail` is the
-last 20 non-empty lines (capped at 64 KiB total output) — enough
-to debug without flooding the agent's context.
+อ่าน `results[N].tail` สำหรับบริบทความล้มเหลว `tail` คือ 20 บรรทัดที่
+ไม่ว่างล่าสุด (จำกัดที่ 64 KiB ของเอาต์พุตทั้งหมด) — เพียงพอสำหรับการ
+แก้ไขข้อบกพร่องโดยไม่ทำให้ context ของเอเจนต์ล้น
 
-## 3. Cancel a runaway
+## 3. ยกเลิกกระบวนการที่ไม่สามารถควบคุมได้
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-Sends `SIGKILL` to the process group of every in-flight run. Pass
-`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
-the next call's `results` will reflect the kill.
+ส่ง `SIGKILL` ไปยังกลุ่มกระบวนการของทุกการรันที่กำลังดำเนินอยู่
+ส่ง `{ "pid": <number> }` เพื่อยกเลิกหนึ่งรายการ การยกเลิกไม่บล็อก:
+`results` ของการเรียกครั้งถัดไปจะสะท้อน kill
 
-## 4. Make it language-agnostic
+## 4. ทำให้ไม่ขึ้นกับภาษา
 
-The core runs whatever your config says. Example for a polyglot
-project (TypeScript + Python):
+Core รันสิ่งที่ config ของคุณบอก ตัวอย่างสำหรับโครงการหลายภาษา
+(TypeScript + Python):
 
 ```jsonc
 // mcp-vertex.config.json
@@ -121,15 +113,15 @@ project (TypeScript + Python):
 }
 ```
 
-`run_quality` will run **all four commands** in `typecheck` /
-`test` scopes, regardless of language. Exit 0 = pass; non-zero =
-fail (regardless of which binary emitted it).
+`run_quality` จะรัน **คำสั่งทั้งสี่** ใน scope `typecheck` / `test`
+โดยไม่คำนึงถึงภาษา Exit 0 = ผ่าน; ไม่ใช่ศูนย์ = ล้มเหลว (ไม่ว่า
+binary ใดจะส่งออก)
 
-## 5. Harden with a command policy (M13)
+## 5. เสริมความแข็งแกร่งด้วยนโยบายคำสั่ง (M13)
 
-`run_quality` **executes** whatever the host config says. To
-restrict which binaries may run when a less-trusted agent calls
-the tool, use `commandPolicy`:
+`run_quality` **ดำเนินการ** สิ่งที่ config ของ host บอก เพื่อจำกัด
+ไบนารีที่สามารถรันได้เมื่อเอเจนต์ที่ไม่น่าเชื่อถือเรียกใช้เครื่องมือ
+ใช้ `commandPolicy`:
 
 ```jsonc
 {
@@ -146,36 +138,25 @@ the tool, use `commandPolicy`:
 }
 ```
 
-A blocked command is reported as `code: 126` with a reason
-("blocked by command policy") and is **never spawned**. `deny`
-wins over `allow`; an empty `allow` means "any binary not denied".
+คำสั่งที่ถูกบล็อกจะถูกรายงานด้วย `code: 126` และเหตุผล ("blocked by
+command policy") และ**ไม่เคยถูกเรียกใช้** `deny` มีผลเหนือกว่า `allow`;
+`allow` ว่างเปล่าหมายความว่า "ไบนารีใดที่ไม่ถูกปฏิเสธ"
 
-## Common pitfalls
+## ข้อผิดพลาดที่พบบ่อย
 
-- **`run_quality` doesn't replace `bun run validate`**: the core's
-  `validate` script runs the four checks directly. `run_quality`
-  is for **ad-hoc** runs and per-scope introspection from an
-  agent. Both are valid; they don't talk to each other.
-- **A long-running command that exceeds the timeout** is killed
-  with `code: 124` and `timedOut: true`. Default timeout is
-  600 000 ms (10 minutes). Override per runner if needed.
-- **Polling for "is it done yet?"**: don't. `run_quality` is
-  synchronous. If you need to know about long scopes, use
-  `quality_cancel` with the `pid` from `activeRunPids` (via
-  metrics or a follow-up tool call).
+- **`run_quality` ไม่แทนที่ `bun run validate`**: script `validate` ของ
+  core รันการตรวจสอบสี่รายการโดยตรง `run_quality` สำหรับการรัน
+  **เฉพาะกิจ** และการตรวจสอบตาม scope จากเอเจนต์ ทั้งสองใช้ได้;
+  พวกมันไม่ติดต่อกัน
+- **คำสั่งที่ใช้เวลานานซึ่งเกินเวลา timeout** ถูก kill ด้วย `code: 124`
+  และ `timedOut: true` Timeout เริ่มต้นคือ 600 000 ms (10 นาที)
+  แทนที่ต่อ runner หากจำเป็น
+- **การ polling "เสร็จหรือยัง?"**: อย่าทำ `run_quality` เป็น synchronous
+  หากคุณต้องการทราบเกี่ยวกับ scope ที่ยาว ใช้ `quality_cancel` พร้อม
+  `pid` จาก `activeRunPids` (ผ่าน metrics หรือการเรียกเครื่องมือ
+  ติดตามผล)
 
-## Next step
+## ขั้นตอนถัดไป
 
-- [Multi-language quality gates (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper ไทย
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/quality/tutorials/en/running-gates.md`
-
+- [Quality gates หลายภาษา (p107)](../../p107-multilang-quality-gates.md)
+- [Trust boundary & นโยบายคำสั่ง (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)

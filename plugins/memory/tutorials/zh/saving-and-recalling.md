@@ -1,64 +1,55 @@
 ---
-title: "Saving and recalling memory notes [中文 — needs translation]"
+title: 保存和调用记忆笔记
 plugin: memory
-audience: any agent that needs cross-session continuity
+audience: 任何需要跨会话连续性的代理
 order: 1
 lang: zh
-auto-translated: true
-needs-human-review: true
-source: plugins/memory/tutorials/en/saving-and-recalling.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# 保存和调用记忆笔记
 
+本教程展示四个 `memory_*` 工具的实际应用。笔记是存储在
+`.cache/mcp-vertex/memory/notes.json` 下的小型 JSON 记录——
+小到足以完整输出，按 id 索引，可通过标签或全文查询检索。
 
-# Saving and recalling memory notes
+## 0. 心理模型
 
-This walkthrough shows the four `memory_*` tools in action. Notes
-are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
-— small enough to dump in full, indexed by id, retrievable by
-tag or full-text query.
+**笔记**是 `{ id, title, body, tags, createdAt, updatedAt }`。
+标题是唯一的（不区分大小写）——`memory_save` 按标题进行 upsert。
+`body` 没有固定模式；将其视为简短的自由文本字段。保存前，`redactSecrets`
+会自动编辑掉秘密（见
+`packages/core/src/lib/shared/redact.ts`）。
 
-## 0. The mental model
-
-A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
-Titles are unique (case-insensitive) — `memory_save` upserts by
-title. There is no schema for `body`; treat it as a short
-free-text field. Secrets are auto-redacted by `redactSecrets`
-before the note is persisted (see
-`packages/core/src/lib/shared/redact.ts`).
-
-## 1. Save a note
+## 1. 保存笔记
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "monorepo publish order",
-    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
+    "title": "monorepo 发布顺序",
+    "body": "先发布 core，然后插件同步发布。derive-version.ts 从最后一个 vX.Y.Z 标签读取 Conventional Commits。",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
-so you can `forget` it later.
+响应：`{ id: "<uuid>", createdAt: "..." }`。Save 返回 id，以便
+稍后可以 `forget`。
 
-## 2. Recall by query
+## 2. 按查询调用
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "publish order",
+    "query": "发布顺序",
     "limit": 5
   }
 }
 ```
 
-Returns up to `limit` notes that match the query (substring match
-on title + body, ranked by recency). Use `tags` instead of (or
-alongside) `query` to narrow:
+返回最多 `limit` 条与查询匹配的笔记（对标题 + body 的子字符串
+匹配，按时间倒序排列）。使用 `tags` 代替（或配合）`query` 缩小范围：
 
 ```json
 {
@@ -67,50 +58,36 @@ alongside) `query` to narrow:
 }
 ```
 
-## 3. List cheaply
+## 3. 低成本列表
 
-`memory_list` returns just `{ id, title, tags }` — the index. Use
-it when you don't want to fetch the bodies yet:
+`memory_list` 只返回 `{ id, title, tags }` ——索引。当你还不想
+获取 body 时使用：
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. Forget
+## 4. 遗忘
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` is hard-delete — there is no soft-delete / archive.
-The id is gone; the title is freed for a future `memory_save`.
+`memory_forget` 是硬删除——没有软删除/归档。id 消失；标题释放
+供未来的 `memory_save` 使用。
 
-## Common pitfalls
+## 常见陷阱
 
-- **Secrets in `body`**: even though the plugin redacts on save,
-  do not paste raw tokens or `.env`-style values — the redaction
-  is heuristic, not perfect.
-- **Title collisions**: `memory_save` upserts by title. If two
-  agents save the same title in parallel, the second writer wins
-  and the first is lost. Use unique titles per slice / per
-  problem.
-- **Recall gets too many hits**: prefer `tags` over a broad
-  `query`. A query of `""` returns everything sorted by recency
-  — useful for "what did I save last session?" but expensive on a
-  full store.
+- **`body` 中的秘密**：即使插件在保存时编辑，也不要粘贴原始令牌或
+  `.env` 风格的值——编辑是启发式的，并不完美。
+- **标题冲突**：`memory_save` 按标题进行 upsert。如果两个代理并行
+  保存同一标题，第二个写入者获胜，第一个丢失。每个切片/问题使用
+  唯一标题。
+- **Recall 结果过多**：优先使用 `tags` 而不是宽泛的 `query`。
+  `""` 的查询返回全部内容按时间倒序——对于"上次我保存了什么？"很有
+  用，但在完整存储上代价高昂。
 
-## Next step
+## 下一步
 
-- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
-- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper 中文
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`
-
+- [round_context (proposals) 如何将记忆笔记链接到活动提案](../../proposals/tutorials/zh/getting-started.md)
+- [秘密编辑合约](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)

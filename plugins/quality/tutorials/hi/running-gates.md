@@ -1,46 +1,39 @@
 ---
-title: "Running quality gates for any language [हिन्दी — needs translation]"
+title: किसी भी भाषा के लिए quality gates चलाना
 plugin: quality
-audience: any agent that needs cross-session continuity
+audience: एजेंट जिसे प्रोजेक्ट की स्थिति मान्य करनी है
 order: 1
 lang: hi
-auto-translated: true
-needs-human-review: true
-source: plugins/quality/tutorials/en/running-gates.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# किसी भी भाषा के लिए quality gates चलाना
 
+`quality` प्लगइन डिज़ाइन से **भाषा-अज्ञेयवादी** है: यह जो भी कमांड
+आपका `mcp-vertex.config.json` निर्दिष्ट करे उसे चलाता है और exit code
+रिपोर्ट करता है। यह ट्यूटोरियल scopes के तीन स्रोत (प्राथमिकता क्रम में),
+एक को कैसे चलाएं, और एक बेकाबू प्रक्रिया को कैसे रद्द करें दिखाता है।
 
-# Running quality gates for any language
+## 0. मानसिक मॉडल
 
-The `quality` plugin is **language-agnostic** by design: it spawns
-whatever command your `mcp-vertex.config.json` says and reports
-the exit code. This walkthrough shows the three sources of
-scopes (in precedence order), how to run one, and how to cancel a
-runaway.
-
-## 0. The mental model
-
-A **scope** is a named list of commands. The plugin runs every
-command in the scope, in order, captures stdout/stderr, and
-returns a structured `{ ok, results: [{ command, ok, code, tail }]
-}` report. The `ok` field is the whole scope — if any command
-fails, the scope is not ok.
+एक **scope** कमांड की एक नामित सूची है। प्लगइन scope में हर कमांड क्रम
+में चलाता है, stdout/stderr कैप्चर करता है, और एक संरचित
+`{ ok, results: [{ command, ok, code, tail }] }` रिपोर्ट लौटाता है।
+`ok` field पूरे scope के लिए है — यदि कोई कमांड विफल होती है, scope
+ok नहीं है।
 
 ```
-┌─ plugin options.scopes (highest priority)
+┌─ plugin options.scopes (उच्चतम प्राथमिकता)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
 └─ detected package.json scripts → "all" (lint, typecheck, test, build)
 ```
 
-## 1. List the available scopes (read-only)
+## 1. उपलब्ध scopes सूचीबद्ध करें (read-only)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-Response example (truncated):
+उदाहरण प्रतिक्रिया (संक्षिप्त):
 
 ```json
 {
@@ -54,13 +47,13 @@ Response example (truncated):
 }
 ```
 
-## 2. Run a scope
+## 2. एक scope चलाएं
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-The response is per-command:
+प्रतिक्रिया प्रति-कमांड है:
 
 ```json
 {
@@ -83,24 +76,24 @@ The response is per-command:
 }
 ```
 
-Read `results[N].tail` for the failure context. The `tail` is the
-last 20 non-empty lines (capped at 64 KiB total output) — enough
-to debug without flooding the agent's context.
+विफलता संदर्भ के लिए `results[N].tail` पढ़ें। `tail` अंतिम 20 non-empty
+lines हैं (कुल 64 KiB output सीमित) — एजेंट के context को overflow
+किए बिना debug के लिए पर्याप्त।
 
-## 3. Cancel a runaway
+## 3. बेकाबू प्रक्रिया रद्द करें
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-Sends `SIGKILL` to the process group of every in-flight run. Pass
-`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
-the next call's `results` will reflect the kill.
+हर in-flight run के process group को `SIGKILL` भेजता है। एक को रद्द
+करने के लिए `{ "pid": <number> }` पास करें। रद्दीकरण non-blocking है:
+अगले call का `results` kill को reflect करेगा।
 
-## 4. Make it language-agnostic
+## 4. भाषा-अज्ञेयवादी बनाएं
 
-The core runs whatever your config says. Example for a polyglot
-project (TypeScript + Python):
+Core जो आपकी config कहती है वही चलाता है। बहुभाषी प्रोजेक्ट
+(TypeScript + Python) के लिए उदाहरण:
 
 ```jsonc
 // mcp-vertex.config.json
@@ -121,15 +114,15 @@ project (TypeScript + Python):
 }
 ```
 
-`run_quality` will run **all four commands** in `typecheck` /
-`test` scopes, regardless of language. Exit 0 = pass; non-zero =
-fail (regardless of which binary emitted it).
+`run_quality` `typecheck` / `test` scopes में **सभी चार कमांड** चलाएगा,
+चाहे भाषा कोई भी हो। Exit 0 = पास; non-zero = विफल (चाहे किसी भी
+binary ने emit किया हो)।
 
-## 5. Harden with a command policy (M13)
+## 5. एक command policy से मजबूत करें (M13)
 
-`run_quality` **executes** whatever the host config says. To
-restrict which binaries may run when a less-trusted agent calls
-the tool, use `commandPolicy`:
+`run_quality` host config जो कहती है वही **execute** करता है। जब
+कम-विश्वसनीय एजेंट tool को call करे तो कौन से binaries चल सकते हैं
+इसे प्रतिबंधित करने के लिए `commandPolicy` उपयोग करें:
 
 ```jsonc
 {
@@ -146,36 +139,25 @@ the tool, use `commandPolicy`:
 }
 ```
 
-A blocked command is reported as `code: 126` with a reason
-("blocked by command policy") and is **never spawned**. `deny`
-wins over `allow`; an empty `allow` means "any binary not denied".
+एक blocked कमांड `code: 126` और एक कारण ("blocked by command policy")
+के साथ रिपोर्ट की जाती है और **कभी नहीं चलाई जाती**। `deny` `allow`
+पर हावी होता है; एक खाली `allow` का मतलब "कोई भी binary जो deny नहीं
+की गई"।
 
-## Common pitfalls
+## सामान्य त्रुटियां
 
-- **`run_quality` doesn't replace `bun run validate`**: the core's
-  `validate` script runs the four checks directly. `run_quality`
-  is for **ad-hoc** runs and per-scope introspection from an
-  agent. Both are valid; they don't talk to each other.
-- **A long-running command that exceeds the timeout** is killed
-  with `code: 124` and `timedOut: true`. Default timeout is
-  600 000 ms (10 minutes). Override per runner if needed.
-- **Polling for "is it done yet?"**: don't. `run_quality` is
-  synchronous. If you need to know about long scopes, use
-  `quality_cancel` with the `pid` from `activeRunPids` (via
-  metrics or a follow-up tool call).
+- **`run_quality` `bun run validate` की जगह नहीं लेता**: core का
+  `validate` script सीधे चार checks चलाता है। `run_quality` **ad-hoc**
+  runs और एजेंट से per-scope introspection के लिए है। दोनों मान्य हैं;
+  वे एक-दूसरे से communicate नहीं करते।
+- **एक long-running कमांड जो timeout exceed करे** `code: 124` और
+  `timedOut: true` के साथ kill की जाती है। डिफ़ॉल्ट timeout 600 000 ms
+  (10 मिनट) है। यदि जरूरी हो तो per-runner override करें।
+- **"क्या यह हो गया?" के लिए polling**: न करें। `run_quality` synchronous
+  है। यदि लंबे scopes के बारे में जानना हो, तो `activeRunPids` से
+  `pid` के साथ `quality_cancel` उपयोग करें।
 
-## Next step
+## अगला कदम
 
-- [Multi-language quality gates (p107)](../../p107-multilang-quality-gates.md)
+- [बहु-भाषा quality gates (p107)](../../p107-multilang-quality-gates.md)
 - [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper हिन्दी
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/quality/tutorials/en/running-gates.md`
-

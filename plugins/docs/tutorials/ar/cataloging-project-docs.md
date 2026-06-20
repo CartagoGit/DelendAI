@@ -1,32 +1,24 @@
 ---
-title: "Cataloguing project docs [العربية — needs translation]"
+title: فهرسة وثائق المشروع
 plugin: docs
-audience: any agent that needs cross-session continuity
+audience: أي عميل يحتاج إلى إيجاد وثيقة حسب الموضوع
 order: 1
 lang: ar
-auto-translated: true
-needs-human-review: true
-source: plugins/docs/tutorials/en/cataloging-project-docs.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# فهرسة وثائق المشروع
 
+يجيب إضافة `docs` على سؤال صغير ومتكرر: "ما الوثائق التي يملكها هذا
+المشروع، وأيُّها أبحث عنه؟" بدلًا من استخدام grep، يسأل العميل الإضافة.
+يُوضح هذا الدليل كيفية التفعيل والإدراج والقراءة.
 
-# Cataloguing project docs
+## 0. النموذج الذهني
 
-The `docs` plugin answers a small, frequent question: "what docs
-does this project have, and which one am I looking for?" Instead
-of grepping, the agent asks the plugin. This walkthrough shows
-how to enable, list, and read.
+**الوثيقة** هي أي ملف `.md` تحت `roots` المُهيَّأة. تُعدِّد الإضافة
+الملفات مرةً واحدة، وتستخرج العنوان (من أول `# heading` أو frontmatter
+`title:`)، وتُقدِّم فهرسًا منخفض التوكن. لا يُجلب الجسم إلا عند الطلب.
 
-## 0. The mental model
-
-A **doc** is any `.md` file under the configured `roots`. The
-plugin enumerates them once, extracts the title (from the first
-`# heading` or frontmatter `title:`), and serves a low-token
-index. The body is only fetched on demand.
-
-Configuration lives in `mcp-vertex.config.json`:
+التهيئة في `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -40,17 +32,16 @@ Configuration lives in `mcp-vertex.config.json`:
 }
 ```
 
-`roots` is an array of paths (files or directories). Directories
-are walked recursively. **Paths outside the workspace are
-refused** — no `..` traversal.
+`roots` مصفوفة من المسارات (ملفات أو مجلدات). تُجتاز المجلدات بشكل
+متكرر. **المسارات خارج مساحة العمل مرفوضة** — لا اجتياز `..`.
 
-## 1. List (low-token index)
+## 1. الإدراج (فهرس منخفض التوكن)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Response (truncated):
+الاستجابة (مختصرة):
 
 ```json
 {
@@ -59,14 +50,14 @@ Response (truncated):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n real…" },
+    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n حقيقي…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/proposals"]`):
+القائمة مرتبة حسب المسار. مرِّر `roots` لتقييد القائمة بمجموعة فرعية
+(مثلًا `["docs/proposals"]` فقط):
 
 ```json
 {
@@ -75,7 +66,7 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-## 2. Read one doc
+## 2. قراءة وثيقة
 
 ```json
 {
@@ -84,63 +75,49 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-Response:
+الاستجابة:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…full body…",
+  "content": "# Architecture\n\n…الجسم كاملًا…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` is capped at 256 KiB. If the doc is bigger, `truncated:
-true` and the body is the first 256 KiB. If the path doesn't
-match any doc under the configured roots, `found: false`.
+يُحدَّد `content` بـ 256 KiB. إذا كانت الوثيقة أكبر، يكون `truncated:
+true` والجسم هو أول 256 KiB. إذا لم يتطابق المسار مع أي وثيقة تحت
+roots المُهيَّأة، `found: false`.
 
-## 3. Why two tools and not one
+## 3. لماذا أداتان وليس واحدة
 
-`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
-`read` is expensive (potentially megabytes per doc). Splitting
-them means the agent can `list` first, then `read` only the ones
-that look relevant — saving tokens on every discovery step.
+`list` رخيص (بضع مئات من البايتات لكل وثيقة، 18 وثيقة ≈ 4 KiB).
+`read` مكلف (ربما ميغابايتات لكل وثيقة). الفصل بينهما يُمكِّن العميل
+من `list` أولًا، ثم `read` المرتبطة فقط — موفِّرًا التوكن في كل
+خطوة اكتشاف.
 
-## 4. Path containment (security)
+## 4. احتواء المسار (الأمان)
 
-`docs_read` resolves the path with `resolveWorkspaceContained` —
-absolute paths, `..` traversal, and symlinks pointing outside the
-workspace are all refused. The `found: false` response is the
-agent's signal that the path was rejected; the plugin does not
-distinguish "missing" from "outside-workspace" on purpose (to
-avoid leaking filesystem layout).
+`docs_read` يُحلِّل المسار بـ `resolveWorkspaceContained` — المسارات
+المطلقة، اجتياز `..`، والروابط الرمزية خارج مساحة العمل كلها مرفوضة.
+استجابة `found: false` هي إشارة العميل بأن المسار رُفض؛ لا تميّز الإضافة
+عمدًا بين "مفقود" و"خارج مساحة العمل" (لتجنب كشف تخطيط نظام الملفات).
 
-## Common pitfalls
+## الأخطاء الشائعة
 
-- **Root doesn't exist**: `docs_list` returns `{ count: 0,
-  truncated: false, docs: [] }`. The plugin does not warn.
-- **Doc not yet committed**: untracked files are still served
-  (the plugin reads from the filesystem, not from git). The
-  `path` you get back is workspace-relative.
-- **Title inference fails**: if the first heading is not `# ` (no
-  space, wrong level) and there's no frontmatter `title:`, the
-  plugin uses the filename basename (e.g. `CHANGELOG.md` →
-  `CHANGELOG.md`). Re-run after fixing the heading.
+- **لا توجد root**: يُعيد `docs_list` `{ count: 0, truncated: false,
+  docs: [] }`. الإضافة لا تُحذِّر.
+- **الوثيقة غير مُلتزَم بها بعد**: الملفات غير المتتبَّعة تُقدَّم أيضًا
+  (الإضافة تقرأ من نظام الملفات لا من git). المسار المُعاد نسبي لمساحة
+  العمل.
+- **استخلاص العنوان يفشل**: إذا لم يكن أول heading `# ` (لا مسافة،
+  مستوى خاطئ) ولا يوجد frontmatter `title:`، تستخدم الإضافة اسم
+  الملف (مثلًا `CHANGELOG.md` → `CHANGELOG.md`). أعِد التشغيل بعد
+  تصحيح الـ heading.
 
-## Next step
+## الخطوة التالية
 
-- [How `docs_list` integrates with `memory_recall` for "what
-  did I save last session + where was it documented?"](#)
-- [Curating a knowledge index with the `knowledge` plugin](#)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper العربية
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`
-
+- [كيف يتكامل `docs_list` مع `memory_recall` لـ "ما الذي حفظته + أين كان موثَّقًا؟"](#)
+- [تنظيم فهرس المعرفة مع إضافة `knowledge`](#)
