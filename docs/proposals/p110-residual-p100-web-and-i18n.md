@@ -280,11 +280,14 @@ self-describing — útil para s2 (la tabla de args referencia
     cada lang) + status report (auto-translated / needs-human-review
     counts). Translation status es **informational, NOT a hard
     gate** — se reporta pero no falla el build.
-  - ⏳ **Traducciones reales**: 55 archivos pendientes. **Trabajo
-    humano** (no de un agente). La estructura está lista; el traductor
-    (manual o LLM) reescribe el body y quita los flags
-    `auto-translated: true` / `needs-human-review: true` del
-    frontmatter.
+  - ⏳ **Traducciones reales** (1/55 = 1.8%): la traducción **ES** de
+    `proposals/tutorials/es/getting-started.md` está hecha (commit
+    `37090be`, ~120 líneas traducidas con frontmatter limpio — sin
+    los flags `auto-translated` / `needs-human-review` / `source`).
+    54 archivos pendientes. **Trabajo humano** (no de un agente).
+    La estructura está lista; el traductor (manual o LLM) reescribe
+    el body y quita los flags `auto-translated: true` /
+    `needs-human-review: true` del frontmatter.
 
 **`bun run validate` exit 0** (105 test files, 698 tests, 10 skipped).
 El tutorial gate (sin commitear) está en `apps/web/scripts/check-tutorials-i18n.ts`
@@ -293,8 +296,11 @@ intentional` aplicado a la variable `autoTranslated` (que es subset
 de `needsHumanReview`).
 
 **Decisión de cierre**: p110 queda `in-progress` con s1+s2 done y
-s3 90% done (infraestructura lista, traducciones pendientes). El
+s3 92% done (infraestructura + 1 traducción real + tutorial gate
++ tutorial status en §9 actualizado a "1/55 = 1.8%"). El
 `status: done` se aplicará cuando los 55 archivos tengan body
 traducido y los flags `auto-translated: true` / `needs-human-review:
 true` se hayan removido. Ese es **trabajo del traductor, no del
-agente**.
+agente**. El gate `check-tutorials-i18n` ahora pasa con la
+traducción ES (parity 1/1 ES, 0/1 el resto) — reporta 54 archivos
+pendientes sin fallar el build.
