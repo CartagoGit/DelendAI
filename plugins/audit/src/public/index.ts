@@ -7,7 +7,10 @@
 export { buildBrief, ALL_SCOPES, SCOPE_LABEL } from '../lib/brief';
 export type { AuditScope } from '../lib/brief';
 export { parseAuditBody, parseAuditFiles } from '../lib/parse-audit';
-export { consolidateAudits, renderConsolidationMarkdown } from '../lib/consolidate';
+export {
+	consolidateAudits,
+	renderConsolidationMarkdown,
+} from '../lib/consolidate';
 export type { IConsolidateOptions } from '../lib/consolidate';
 export type {
 	AuditSeverity,

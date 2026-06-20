@@ -5,7 +5,12 @@
  */
 export { default } from '../index';
 
-export { listDocs, readDoc, extractTitle, DEFAULT_DOC_ROOTS } from '../lib/engine';
+export {
+	listDocs,
+	readDoc,
+	extractTitle,
+	DEFAULT_DOC_ROOTS,
+} from '../lib/engine';
 export type { IDocEntry, IDocContent, IDocsOptions } from '../lib/engine';
 export { buildDocsToolRegistrations } from '../lib/tools';
 export type { IDocsToolOptions } from '../lib/tools';

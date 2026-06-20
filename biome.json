@@ -4,10 +4,26 @@
 	"files": {
 		"includes": [
 			"**",
-			"!**/dist",
-			"!**/node_modules",
+			"!dist",
+			"!build",
 			"!coverage",
-			"!**/public"
+			"!site",
+			"!.astro",
+			"!.cache",
+			"!.worktrees",
+			"!node_modules",
+			"!apps/web/.astro",
+			"!apps/web/dist",
+			"!apps/web/node_modules",
+			"!apps/web/public",
+			"!apps/web/src/data/capabilities.json",
+			"!apps/web/src/data/skills.json",
+			"!apps/web/src/data/manifests",
+			"!examples/custom-plugin/node_modules",
+			"!packages/*/dist",
+			"!packages/*/node_modules",
+			"!plugins/*/dist",
+			"!plugins/*/node_modules"
 		]
 	},
 	"formatter": {
@@ -82,6 +98,11 @@
 				"packages/core/schema/mcp-vertex.config.schema.json"
 			],
 			"formatter": { "enabled": false }
+		},
+		{
+			"includes": ["packages/*/dist/**/*.d.ts"],
+			"formatter": { "enabled": false },
+			"linter": { "enabled": false }
 		}
 	],
 	"linter": {
