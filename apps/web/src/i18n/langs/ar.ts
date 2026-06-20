@@ -1,4 +1,5 @@
 import type { LangDict } from '../shared';
+import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -163,6 +164,8 @@ const dict: LangDict = {
 		toolsCta: 'تصفّح الأدوات',
 		homeAria: 'الذهاب إلى الرئيسية',
 	},
+	proposals: proposalGlossaryByLang.ar,
+	recovery: recoveryByLang.ar,
 };
 
 export default dict;

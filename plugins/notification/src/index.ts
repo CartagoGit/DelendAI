@@ -29,6 +29,8 @@ export default definePlugin({
 		watchHandoffDir: z.string().optional(),
 		/** Polling fallback interval (ms). Default 2000. */
 		intervalMs: z.number().optional(),
+		/** Heartbeat interval (ms) for agent-alive/idle/dead classification. */
+		heartbeatMs: z.number().optional(),
 	}),
 	register(ctx) {
 		const lockRel =
@@ -47,6 +49,9 @@ export default definePlugin({
 			handoffDirRel: handoffRel,
 			...(typeof ctx.options.intervalMs === 'number'
 				? { intervalMs: ctx.options.intervalMs as number }
+				: {}),
+			...(typeof ctx.options.heartbeatMs === 'number'
+				? { heartbeatMs: ctx.options.heartbeatMs as number }
 				: {}),
 		};
 
@@ -76,6 +81,9 @@ export default definePlugin({
 						'`<prefix>_await_lock { taskId }` — it blocks until that lock frees',
 						'(or times out) and returns, so you retry the claim exactly once.',
 						'This replaces N polling round-trips with a single wait.',
+						'The same watcher also emits `agent-alive`, `agent-idle`,',
+						'and `agent-dead` lifecycle messages from the lock-file',
+						'heartbeat so recovery tools can react without scanning.',
 					].join('\n'),
 				},
 			],

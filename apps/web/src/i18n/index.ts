@@ -76,6 +76,7 @@ export type {
 	ILangMeta,
 	Theme,
 } from './shared';
+export { proposalGlossaryByLang, recoveryByLang } from './proposals';
 export { default as en } from './langs/en';
 export { default as es } from './langs/es';
 export { default as fr } from './langs/fr';

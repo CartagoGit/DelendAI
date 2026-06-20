@@ -13,6 +13,10 @@ import {
 	type IReleaseWatcher,
 	type IHandoffWatcher,
 } from './watcher';
+import {
+	startAgentEventsBridge,
+	type IAgentEventsBridge,
+} from './agent-events-bridge';
 
 export interface INotifyToolOptions {
 	readonly namespacePrefix: string;
@@ -24,6 +28,8 @@ export interface INotifyToolOptions {
 	readonly handoffDirRel: string;
 	/** Polling fallback interval (ms). Default 2000. */
 	readonly intervalMs?: number;
+	/** Heartbeat interval used to classify agent alive/idle/dead. Default 10000. */
+	readonly heartbeatMs?: number;
 }
 
 /**
@@ -38,6 +44,7 @@ export const buildNotifyRegistration = (
 ): IToolRegistration => {
 	let watcher: IReleaseWatcher | undefined;
 	let handoffWatcher: IHandoffWatcher | undefined;
+	let agentEventsBridge: IAgentEventsBridge | undefined;
 	let lastReleases: readonly IReleasedClaim[] = [];
 	let emitted = 0;
 
@@ -100,11 +107,21 @@ export const buildNotifyRegistration = (
 			});
 			handoffWatcher.start();
 
+			agentEventsBridge = startAgentEventsBridge(server, {
+				namespacePrefix: options.namespacePrefix,
+				lockFileAbs: options.lockFileAbs,
+				heartbeatMs: options.heartbeatMs ?? 10_000,
+				...(options.intervalMs !== undefined
+					? { intervalMs: options.intervalMs }
+					: {}),
+			});
+
 			// Tear the watcher down with the server so we don't leak timers.
 			const previousOnClose = server.server.onclose;
 			server.server.onclose = (): void => {
 				watcher?.stop();
 				handoffWatcher?.stop();
+				agentEventsBridge?.close();
 				previousOnClose?.();
 			};
 
@@ -123,6 +140,7 @@ export const buildNotifyRegistration = (
 								files: z.array(z.string()),
 							}),
 						),
+						agentEvents: z.number(),
 					}),
 				},
 				async () =>
@@ -130,6 +148,7 @@ export const buildNotifyRegistration = (
 						watching: options.lockFileAbs,
 						emitted,
 						lastReleases,
+						agentEvents: agentEventsBridge?.events.length ?? 0,
 					}),
 			);
 		},

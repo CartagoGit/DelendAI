@@ -197,6 +197,51 @@ export interface INotFoundTranslations {
 	readonly homeAria: string;
 }
 
+export interface IProposalGlossaryEntry {
+	readonly label: string;
+	readonly short: string;
+	readonly long: string;
+}
+
+export interface IProposalGlossaryTranslations {
+	readonly statuses: {
+		readonly ready: IProposalGlossaryEntry;
+		readonly in_progress: IProposalGlossaryEntry;
+		readonly review: IProposalGlossaryEntry;
+		readonly done: IProposalGlossaryEntry;
+		readonly paused: IProposalGlossaryEntry;
+		readonly blocked: IProposalGlossaryEntry;
+		readonly retired: IProposalGlossaryEntry;
+	};
+	readonly kinds: {
+		readonly feat: IProposalGlossaryEntry;
+		readonly breaking: IProposalGlossaryEntry;
+		readonly fix: IProposalGlossaryEntry;
+		readonly refactor: IProposalGlossaryEntry;
+		readonly perf: IProposalGlossaryEntry;
+		readonly audit: IProposalGlossaryEntry;
+		readonly chore: IProposalGlossaryEntry;
+		readonly docs: IProposalGlossaryEntry;
+		readonly test: IProposalGlossaryEntry;
+		readonly infra: IProposalGlossaryEntry;
+		readonly spike: IProposalGlossaryEntry;
+		readonly legacy: IProposalGlossaryEntry;
+	};
+}
+
+export interface IRecoveryTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly empty: string;
+	readonly agent: string;
+	readonly task: string;
+	readonly lastSeen: string;
+	readonly missedBeats: string;
+	readonly actions: string;
+	readonly releaseLock: string;
+	readonly forceReady: string;
+}
+
 /** Plugin descriptor keys: keep in sync with `apps/web/src/data/capabilities.json`. */
 export type PluginKey =
 	| 'proposals'
@@ -232,6 +277,8 @@ export interface ITranslations {
 	readonly prompts: IPromptsTranslations;
 	readonly resources: IResourcesTranslations;
 	readonly skills: ISkillsTranslations;
+	readonly proposals: IProposalGlossaryTranslations;
+	readonly recovery: IRecoveryTranslations;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */

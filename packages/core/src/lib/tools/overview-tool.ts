@@ -125,7 +125,16 @@ export const buildOverviewToolRegistration = (
 						recommendedNextAction: snap.recommendedNextAction,
 					});
 				}
-				return toolJson({ ...snap, tools });
+				return toolJson({
+					...snap,
+					tools: tools.map((tool) =>
+						tool.summary === undefined &&
+						tool.tags === undefined &&
+						tool.effects === undefined
+							? tool.name
+							: tool,
+					),
+				});
 			},
 		);
 	},

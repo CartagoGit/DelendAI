@@ -16,6 +16,10 @@ export interface ProposalsAgentLockOutput {
 	[key: string]: unknown;
 }
 
+export interface ProposalsAgentLockReleaseOrphanOutput {
+	[key: string]: unknown;
+}
+
 export interface ProposalsAgentNamesOutput {
 	[key: string]: unknown;
 }
@@ -125,6 +129,18 @@ export interface ProposalsProposalBoardOutput {
 	}>;
 }
 
+export interface ProposalsProposalDiagnoseOutput {
+	[key: string]: unknown;
+}
+
+export interface ProposalsProposalForceTransitionOutput {
+	[key: string]: unknown;
+}
+
+export interface ProposalsProposalReconcileFolderOutput {
+	[key: string]: unknown;
+}
+
 export interface ProposalsProposalReviewOutput {
 	ok: true;
 	proposalId: string;
@@ -139,6 +155,10 @@ export interface ProposalsProposalReviewOutput {
 		note: string;
 	}>;
 	lockReleased: boolean;
+}
+
+export interface ProposalsProposalStaleListOutput {
+	[key: string]: unknown;
 }
 
 export interface ProposalsProposalTransitionOutput {
@@ -185,6 +205,7 @@ export interface ProposalsTaskQueueOutput {
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface ProposalsToolOutputs {
 	"proposals_agent_lock": ProposalsAgentLockOutput;
+	"proposals_agent_lock_release_orphan": ProposalsAgentLockReleaseOrphanOutput;
 	"proposals_agent_names": ProposalsAgentNamesOutput;
 	"proposals_agent_worktree": ProposalsAgentWorktreeOutput;
 	"proposals_auto_work": ProposalsAutoWorkOutput;
@@ -197,7 +218,11 @@ export interface ProposalsToolOutputs {
 	"proposals_plan": ProposalsPlanOutput;
 	"proposals_proposal_adopt": ProposalsProposalAdoptOutput;
 	"proposals_proposal_board": ProposalsProposalBoardOutput;
+	"proposals_proposal_diagnose": ProposalsProposalDiagnoseOutput;
+	"proposals_proposal_force_transition": ProposalsProposalForceTransitionOutput;
+	"proposals_proposal_reconcile_folder": ProposalsProposalReconcileFolderOutput;
 	"proposals_proposal_review": ProposalsProposalReviewOutput;
+	"proposals_proposal_stale_list": ProposalsProposalStaleListOutput;
 	"proposals_proposal_transition": ProposalsProposalTransitionOutput;
 	"proposals_round_context": ProposalsRoundContextOutput;
 	"proposals_state_health": ProposalsStateHealthOutput;

@@ -48,6 +48,11 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'state_health',
 			'state_repair',
 			'compact_status',
+			'proposal_stale_list',
+			'agent_lock_release_orphan',
+			'proposal_force_transition',
+			'proposal_reconcile_folder',
+			'proposal_diagnose',
 		]);
 		expect(registrations.knowledge?.map((k) => k.id)).toContain(
 			'multi-agent-loop',
@@ -93,6 +98,11 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'work_state_health',
 			'work_state_repair',
 			'work_compact_status',
+			'work_proposal_stale_list',
+			'work_agent_lock_release_orphan',
+			'work_proposal_force_transition',
+			'work_proposal_reconcile_folder',
+			'work_proposal_diagnose',
 		]);
 	});
 });
