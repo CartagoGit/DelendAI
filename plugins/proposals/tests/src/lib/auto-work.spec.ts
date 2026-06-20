@@ -10,8 +10,19 @@ import {
 	type IAutoWorkToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
 
-const parse = (result: { content: Array<{ text: string }> }): any =>
-	JSON.parse(result.content[0]?.text ?? '{}');
+// The tool declares an `outputSchema`, so the MCP SDK requires
+// `structuredContent` on every response — a text-only payload throws
+// "Output validation error" at the transport layer (caught the hard way
+// when the idle branch returned text-only). Assert it here so any branch
+// that regresses to text-only fails the suite, not just runtime.
+const parse = (result: {
+	content: Array<{ text: string }>;
+	structuredContent?: unknown;
+}): any => {
+	const value = JSON.parse(result.content[0]?.text ?? '{}');
+	expect(result.structuredContent).toEqual(value);
+	return value;
+};
 
 describe('auto_work (one-call action plan)', () => {
 	let root = '';
