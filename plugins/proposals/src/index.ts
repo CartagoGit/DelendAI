@@ -1,4 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
@@ -90,6 +91,7 @@ export default definePlugin({
 		},
 	},
 	register(ctx) {
+		const loopDetector = new AgentLoopDetectorService(ctx);
 		// All path-bearing tools share ONE layout so locks, queue,
 		// round-context and the proposal store always agree. The layout
 		// is derived from the core's resolved roots (`--cacheDir` /
@@ -201,6 +203,7 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					lockPathAbs: abs(layout.lockFile),
+					loopDetector,
 					...(Array.isArray(ctx.options.familyCascade)
 						? {
 								familyCascade: ctx.options
@@ -338,6 +341,9 @@ export default definePlugin({
 					].join('\n'),
 				},
 			],
+			onToolCall: (name, args, result, error) =>
+				loopDetector.onToolCall(name, args, result, error),
+			isAgentStuck: (name, args) => loopDetector.isAgentStuck(name, args),
 		};
 	},
 });

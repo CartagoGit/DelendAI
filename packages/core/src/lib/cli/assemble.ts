@@ -137,12 +137,26 @@ export const assembleCliConfig = async (
 	// not the raw one. [R12]
 	const qualifiedPluginTools: IToolRegistration[] = [];
 
+	const onToolCalls: Array<
+		(
+			toolName: string,
+			args: unknown,
+			result: unknown,
+			error?: unknown,
+		) => Promise<void> | void
+	> = [];
+	let isAgentStuckFn: IMcpVertexHostConfig['isAgentStuck'];
+
 	for (const { plugin, registrations } of loadResult.loaded) {
 		const ns =
 			pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
 		if (registrations.prompts) prompts.push(...registrations.prompts);
 		if (registrations.resources) resources.push(...registrations.resources);
 		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
+		if (registrations.onToolCall)
+			onToolCalls.push(registrations.onToolCall);
+		if (registrations.isAgentStuck)
+			isAgentStuckFn = registrations.isAgentStuck;
 		for (const tool of registrations.tools ?? []) {
 			pluginToolEntries.push({
 				name: `${ns}_${tool.id}`,
@@ -274,6 +288,29 @@ export const assembleCliConfig = async (
 		extraTools: tools,
 		extraPrompts: prompts,
 		extraResources: resources,
+		...(onToolCalls.length > 0
+			? {
+					onToolCall: async (toolName, toolArgs, result, error) => {
+						for (const handler of onToolCalls) {
+							try {
+								await handler(
+									toolName,
+									toolArgs,
+									result,
+									error,
+								);
+							} catch (e) {
+								process.stderr.write(
+									`[mcp-vertex] onToolCall error: ${e instanceof Error ? e.message : String(e)}\n`,
+								);
+							}
+						}
+					},
+				}
+			: {}),
+		...(isAgentStuckFn !== undefined
+			? { isAgentStuck: isAgentStuckFn }
+			: {}),
 	};
 
 	return { config, loadResult, configDiagnostic, configPath };

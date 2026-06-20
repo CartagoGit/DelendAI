@@ -38,6 +38,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * orchestrator can still override per call via `args.persist`.
 	 */
 	readonly persist?: IAutoWorkPersistConfig;
+	readonly loopDetector?: any;
 }
 
 type IResult = { content: Array<{ type: 'text'; text: string }> };
@@ -78,6 +79,22 @@ export const runAutoWork = async (
 		inputPersist?: IAutoWorkPersistMode | undefined;
 	},
 ): Promise<IResult> => {
+	if (options.loopDetector) {
+		const stuckInfo = options.loopDetector.isAgentStuck(
+			`${options.namespacePrefix}_auto_work`,
+			{},
+		);
+		if (stuckInfo) {
+			return json({
+				state: 'idle',
+				stop: true,
+				reason: 'stuck-detected',
+				handoffPath: stuckInfo.handoffPath,
+				nextAction: stuckInfo.suggestedAction,
+			});
+		}
+	}
+
 	const next = JSON.parse(
 		(await runContinueProposal({ mode: 'auto' }, options)).content[0]
 			?.text ?? '{}',
