@@ -16,21 +16,34 @@ const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 const sectionHref = (section: string) =>
 	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
 
-// Drawer sections (mobile): same links as the desktop nav so users on a
-// phone can reach any section in one tap.
-const drawerLinks = [
-	{ href: homeHref, label: t.nav.concept },
+// The desktop nav is split in 3 logical groups so it doesn't overflow
+// around 820–1280 px:
+//   - `sections` — primary destinations (visible from the start).
+//   - `core`     — core/plugin surfaces (collapsed into a <details> "More"
+//                  dropdown to keep the row on one line on tablet widths).
+//   - `external` — the GitHub link, shown as an icon-only button so it
+//                  doesn't compete for horizontal space with the labels.
+const navSections = [
 	{ href: sectionHref('install'), label: t.nav.install },
 	{ href: sectionHref('tools'), label: t.nav.tools },
 	{ href: sectionHref('benchmarks'), label: t.nav.benchmarks },
 	{ href: sectionHref('plugins'), label: t.nav.plugins },
-	{ href: sectionHref('capabilities'), label: t.tools.title },
+];
+const navCore = [
 	{ href: sectionHref('prompts'), label: t.nav.prompts },
 	{ href: sectionHref('resources'), label: t.nav.resources },
 	{ href: sectionHref('knowledge'), label: t.nav.knowledge },
-	{ href: sectionHref('skills'), label: t.nav.skills },
 	{ href: sectionHref('guide'), label: t.nav.guide },
 	{ href: `${base}/api/`, label: 'API' },
+];
+
+// Drawer sections (mobile): same links as the desktop nav so users on a
+// phone can reach any section in one tap. Flat list — the dropdown
+// pattern only makes sense on desktop where horizontal space is scarce.
+const drawerLinks = [
+	{ href: homeHref, label: t.nav.concept },
+	...navSections,
+	...navCore,
 ];
 ---
 
@@ -45,16 +58,49 @@ const drawerLinks = [
 			<span class="nav__brand-text">@mcp-vertex/core</span>
 		</a>
 		<div class="nav__links" role="navigation">
-			<a href={sectionHref('install')}>{t.nav.install}</a>
-			<a href={sectionHref('tools')}>{t.nav.tools}</a>
-			<a href={sectionHref('benchmarks')}>{t.nav.benchmarks}</a>
-			<a href={sectionHref('plugins')}>{t.nav.plugins}</a>
-			<a href={sectionHref('prompts')} class="nav__link--new">{t.nav.prompts}</a>
-			<a href={sectionHref('resources')} class="nav__link--new">{t.nav.resources}</a>
-			<a href={sectionHref('knowledge')} class="nav__link--new">{t.nav.knowledge}</a>
-			<a href={sectionHref('guide')} class="nav__link--new">{t.nav.guide}</a>
-			<a href={`${base}/api/`}>API</a>
-			<a href={repo} rel="external">{t.nav.github}</a>
+			{navSections.map((l) => <a href={l.href}>{l.label}</a>)}
+			<span class="nav__divider" aria-hidden="true"></span>
+			{/* Core/plugin surfaces live inside a native <details> dropdown so
+			    the row stays on one line on tablet widths. <details>/<summary>
+			    are keyboard-accessible without JS and the close-on-outside-click
+			    behaviour comes for free in modern browsers. */}
+			<details class="nav__more">
+				<summary class="nav__more-summary">
+					{t.nav.more}
+					<svg
+						class="nav__more-caret"
+						viewBox="0 0 12 12"
+						width="10"
+						height="10"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M3 4.5l3 3 3-3"></path>
+					</svg>
+				</summary>
+				<div class="nav__more-panel" role="menu">
+					{navCore.map((l) => <a href={l.href} role="menuitem">{l.label}</a>)}
+				</div>
+			</details>
+			{/* GitHub: icon-only link to keep the row compact. The accessible
+			    name still comes from `aria-label` so screen readers say "GitHub",
+			    not "GitHub, link". */}
+			<a class="nav__github" href={repo} rel="external" aria-label={t.nav.github} title={t.nav.github}>
+				<svg
+					class="nav__github-icon"
+					viewBox="0 0 16 16"
+					width="20"
+					height="20"
+					fill="currentColor"
+					aria-hidden="true"
+				>
+					<path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.74-3.65 3.94.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+				</svg>
+			</a>
 			<button class="gear" id="cfg-open" aria-label={t.cfg.title}>
 				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<circle cx="12" cy="12" r="3"></circle>

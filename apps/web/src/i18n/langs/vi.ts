@@ -14,6 +14,7 @@ const dict: LangDict = {
 		resources: 'Tài nguyên',
 		skills: 'Kỹ năng',
 		guide: 'Hướng dẫn',
+		more: 'Thêm',
 	},
 	hero: {
 		title: { a: '', b: 'MCP Vertex', c: ' bất khả tri với dự án' },

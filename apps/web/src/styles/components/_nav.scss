@@ -89,6 +89,110 @@
 	}
 }
 
+// Visual separator between the primary sections and the "More" dropdown.
+// One subtle line so the eye reads the nav as [primary | more + github]
+// instead of one undifferentiated row.
+.nav__divider {
+	display: inline-block;
+	width: 1px;
+	height: 18px;
+	background: var(--line);
+	margin: 0 0.15rem;
+}
+
+// "More" dropdown — native <details>/<summary> styled to look like another
+// nav link. No JS, fully keyboard-accessible, and themes follow currentColor.
+.nav__more {
+	position: relative;
+
+	// Remove the default disclosure triangle (Chromium/Firefox/Safari all
+	// render <summary>::marker differently; we draw our own caret below).
+	& > summary {
+		list-style: none;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		color: var(--muted);
+		font-size: 0.92rem;
+		padding: 0.3rem 0.55rem;
+		border-radius: 6px;
+		user-select: none;
+		transition: color 0.18s ease, background 0.18s ease;
+	}
+	& > summary::-webkit-details-marker {
+		display: none;
+	}
+	& > summary::marker {
+		content: '';
+	}
+	& > summary:hover,
+	&[open] > summary {
+		color: var(--fg);
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+	& > summary:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+.nav__more-caret {
+	transition: transform 0.18s ease;
+}
+.nav__more[open] > summary .nav__more-caret {
+	transform: rotate(180deg);
+}
+.nav__more-panel {
+	position: absolute;
+	top: calc(100% + 0.35rem);
+	right: 0;
+	min-width: 200px;
+	padding: 0.35rem;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	z-index: 30;
+
+	& a {
+		color: var(--muted);
+		font-size: 0.92rem;
+		padding: 0.45rem 0.6rem;
+		border-radius: 6px;
+		white-space: nowrap;
+	}
+	& a:hover {
+		color: var(--fg);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+}
+
+// GitHub icon link — same height/gap as the other nav items but icon-only
+// so the row stays compact. `currentColor` makes it follow the theme.
+.nav__github {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	color: var(--muted);
+	transition: color 0.18s ease, background 0.18s ease;
+
+	&:hover {
+		color: var(--fg);
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+		text-decoration: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+
 // Mobile hamburger (only visible at <= 680px — see _nav-media queries below)
 .hamburger {
 	display: none;

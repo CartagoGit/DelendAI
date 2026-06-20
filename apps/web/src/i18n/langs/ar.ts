@@ -14,6 +14,7 @@ const dict: LangDict = {
 		resources: 'الموارد',
 		skills: 'المهارات',
 		guide: 'الدليل',
+		more: 'المزيد',
 	},
 	hero: {
 		title: { a: '', b: 'MCP Vertex', c: ' المحايد للمشروع' },
