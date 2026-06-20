@@ -57,6 +57,28 @@ export default definePlugin({
 		familyCascade: z.array(z.string()).optional(),
 		/** Quality-gate command surfaced by auto_work. */
 		validationCommand: z.string().optional(),
+		/**
+		 * Default persistence mode for `<prefix>_auto_work` (p109).
+		 *   - `none`             — no git interaction (legacy behaviour).
+		 *   - `commit`           — stage claimed files + Conventional Commits
+		 *                          commit locally after `sync_proposals`.
+		 *   - `commit-and-push`  — the above plus `git push <pushTarget>`.
+		 *                          Push to `main` is always refused.
+		 *
+		 * Per-call overrides via `auto_work { persist: '...' }` win over
+		 * this default.
+		 */
+		persist: z
+			.object({
+				mode: z
+					.enum(['none', 'commit', 'commit-and-push'])
+					.default('none'),
+				/** Conventional-Commits template. Default: `<area>(<proposalId>): <sliceId>`. */
+				messageTemplate: z.string().optional(),
+				/** Push target for `commit-and-push`. Default: `origin HEAD`. */
+				pushTarget: z.string().optional(),
+			})
+			.optional(),
 	}),
 	configExample: {
 		summary:
@@ -189,6 +211,15 @@ export default definePlugin({
 						? {
 								validationCommand: ctx.options
 									.validationCommand as string,
+							}
+						: {}),
+					...(ctx.options.persist !== undefined
+						? {
+								persist: ctx.options.persist as {
+									mode: 'none' | 'commit' | 'commit-and-push';
+									messageTemplate?: string;
+									pushTarget?: string;
+								},
 							}
 						: {}),
 				}),
