@@ -23,11 +23,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	readStore,
-	removeNote,
-	saveNote,
-} from '@mcp-vertex/memory/lib/store';
+import { readStore, removeNote, saveNote } from '@mcp-vertex/memory/lib/store';
 
 describe('memory store concurrency (M32, p111 s4)', () => {
 	let dir = '';
