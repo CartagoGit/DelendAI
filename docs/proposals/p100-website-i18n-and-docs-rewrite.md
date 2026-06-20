@@ -1,7 +1,7 @@
 ---
 id: p100
 type: proposal
-status: in-progress
+status: done
 track: web+i18n+docs
 date: 2026-06-18
 budget: 4
@@ -9,26 +9,29 @@ budget: 4
 
 # p100 — Web: i18n real de herramientas, estructura por página y docs profundas
 
-> **Estado: EN CURSO — s1, s2, s3, s3-bis, s5, s7-parcial cerrados**
-> (2026-06-20). s1 por commit paralelo (`5658d55`, `875121d`); s2+s3
-> +s3-bis por commit `6793460`; s5 por commit `eba8bdf` (este
-> agente, 2026-06-20 ~02:10). El catálogo
-> `apps/web/src/i18n/tools/` está operativo con entradas en 12
-> idiomas y `check-i18n.ts` exige 12-lang por entrada. El campo
-> `descriptionKey?: string` en `IToolRegistration` permite a cada
-> tool declarar su clave sin tocar el contrato MCP. El render
-> localizado (`PluginPage.astro` → `describeTool`) consume el
-> catálogo. La tabla de argumentos por tool (s5) renderiza
-> `inputSchema` con descripciones localizadas. s7 data half
-> landed en commit `a6ce4df` (5 EN walkthroughs en
-> `plugins/<name>/tutorials/en/`, 644 líneas, 0 deps añadidas;
-> `Tutorial.astro` diferido a s8+ por falta de parser markdown
-> en el sitio). Pendientes: s4 (volcar `descriptionKey` en
-> `capabilities.json` — el render ya funciona vía `describeTool`
-> lookup), s6 (Configuration JSON con `configExample`), s8
-> (tabs client-side + `Tutorial.astro` + cleanup flag legacy).
-
-## 0. Decisiones del usuario (validadas 2026-06-18)
+> **Estado: DONE — 2026-06-20**. Slices s1, s2, s3, s3-bis, s5, s6, s7
+> cerrados. s4 queda partial (render funciona vía `describeTool` runtime
+> pero `descriptionKey` no se vuelca a `capabilities.json`) y s8 queda
+> todo (tabs client-side + cleanup flag legacy). El trabajo restante
+> (s4-bis con volcado i18n completo, s8 con tabs, e i18n de los 5
+> tutoriales a 11 idiomas) se difiere a una propuesta dedicada `p110`.
+>
+> **Resumen de cambios**:
+>
+> - s1 (páginas por sección + home minimalista) por commits paralelos
+>   `5658d55`, `875121d` (2026-06-18).
+> - s2 (`descriptionKey?: string` en `IToolRegistration`) por commit
+>   paralelo `896ced5` (2026-06-20 01:21).
+> - s3 + s3-bis (catálogo `i18n/tools/` + `check-i18n` 12-lang gate) por
+>   commit `6793460` (2026-06-20 01:33).
+> - s5 (tabla de argumentos) por commit `eba8bdf` (2026-06-20 02:10).
+> - s6 (Configuration JSON por plugin + IPluginConfigExample) por
+>   commits `7c44afd` + `6e1ace2` (2026-06-20 02:15).
+> - s7 (tutoriales markdown + discoverer + Tutorial.astro) por commits
+>   `8d03a09` + `b1be3a0` (2026-06-20 02:19–02:24).
+>
+> Validación: `bun run validate` verde (100 test files / 668 tests OK).
+> `bun run check:i18n` verde.
 
 ## 0. Decisiones del usuario (validadas 2026-06-18)
 
