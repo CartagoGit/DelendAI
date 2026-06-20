@@ -1,9 +1,10 @@
 ---
 id: p102
 type: proposal
-status: pending
+status: deferred
 track: core+scaffold
 date: 2026-06-18
+deferred: 2026-06-18
 budget: 4
 ---
 
