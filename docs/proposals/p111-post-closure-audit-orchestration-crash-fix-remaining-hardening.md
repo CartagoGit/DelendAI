@@ -53,7 +53,7 @@ verificados contra el código y ya corregidos:
   - Nueva entrada M45 (crash de structuredContent) y M46 (docsDir
     desalineado) bajo una nueva sección, con causa raíz, commits de
     fix y estado.
-- status: pending
+- status: done
 
 ### s2 — M25: unificar walk() entre search y docs vía helper compartido en core
 - files: packages/core/src/lib/shared/walk-allowed-files.ts
@@ -67,7 +67,7 @@ verificados contra el código y ya corregidos:
     recorrido (mismas exclusiones, mismo guard anti-symlink-cíclico).
   - `bun test plugins/search plugins/docs` verde, sin cambio de
     comportamiento observable.
-- status: pending
+- status: done
 
 ### s3 — M28: exponer onContention:'fail' de withFileMutex en agent_lock
 - files: plugins/proposals/src/lib/tools/agent-lock.tool.ts

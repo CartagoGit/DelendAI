@@ -1,6 +1,9 @@
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import {
+	resolveWorkspaceContained,
+	walkAllowedFiles,
+} from '@mcp-vertex/core/public';
+import { readFile, stat } from 'node:fs/promises';
+import { basename, join, relative, sep } from 'node:path';
 
 /** One matching line. `file` is relative to the workspace root. */
 export interface ISearchHit {
@@ -299,44 +302,28 @@ export const searchWorkspace = async (
 		}
 	};
 
-	const walk = async (absDir: string): Promise<void> => {
-		if (truncated) return;
-		const entries = await readdir(absDir, { withFileTypes: true }).catch(
-			() => null,
-		);
-		if (entries === null) return;
-		// Deterministic order so results are stable across runs.
-		const sorted = [...entries].sort((a, b) =>
-			a.name.localeCompare(b.name),
-		);
-		for (const entry of sorted) {
-			if (truncated) return;
-			if (entry.isDirectory()) {
-				if (ignoreDirs.has(entry.name)) continue;
-				const relDir = relative(
-					workspaceRootAbs,
-					join(absDir, entry.name),
-				)
-					.split(sep)
-					.join('/');
-				if (
+	const walk = (rootAbs: string): Promise<void> =>
+		walkAllowedFiles({
+			workspaceRootAbs,
+			rootAbs,
+			isTruncated: () => truncated,
+			shouldSkipDir: (relDirPath, dirName) => {
+				if (ignoreDirs.has(dirName)) return true;
+				return (
 					gitignoreRules.length > 0 &&
-					isGitignored(relDir, true, gitignoreRules)
-				) {
-					continue;
-				}
-				await walk(join(absDir, entry.name));
-			} else if (entry.isFile()) {
-				const absPath = join(absDir, entry.name);
+					isGitignored(relDirPath, true, gitignoreRules)
+				);
+			},
+			visitFile: async (absPath) => {
+				const name = basename(absPath);
 				const rel = relative(workspaceRootAbs, absPath)
 					.split(sep)
 					.join('/');
-				if (shouldSearch(rel, entry.name)) {
+				if (shouldSearch(rel, name)) {
 					await visitFile(absPath);
 				}
-			}
-		}
-	};
+			},
+		});
 
 	for (const root of roots) {
 		if (truncated) break;
