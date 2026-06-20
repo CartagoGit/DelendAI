@@ -92,6 +92,14 @@ export type {
 	IContinueProposalArgs,
 } from '../lib/tools/continue-proposal.tool';
 export {
+	buildProposalTransitionRegistration,
+	runProposalTransition,
+} from '../lib/tools/proposal-transition.tool';
+export type {
+	IProposalTransitionToolOptions,
+	IProposalTransitionArgs,
+} from '../lib/tools/proposal-transition.tool';
+export {
 	buildAutoWorkRegistration,
 	runAutoWork,
 } from '../lib/tools/auto-work.tool';

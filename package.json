@@ -18,6 +18,7 @@
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "biome ci",
 		"lint:fix": "biome lint --write",
+		"lint:proposals": "bun scripts/lint-proposals.ts",
 		"lint:scss": "stylelint \"apps/web/src/**/*.scss\"",
 		"lint:scss:fix": "stylelint --fix \"apps/web/src/**/*.scss\"",
 		"format:web": "biome format --write \"apps/web/src/**\" \"apps/web/scripts/**\" \"apps/web/astro.config.mjs\"",
