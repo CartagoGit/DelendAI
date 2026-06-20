@@ -1,5 +1,5 @@
 /**
- * Tutorial-i18n completeness gate (p110 s3).
+ * Tutorial-i18n completeness gate (l110 s3).
  *
  * Walks `plugins/<plugin>/tutorials/<lang>/*.md` via `discoverTutorials`
  * and enforces two invariants:
@@ -18,11 +18,11 @@
  *    next translation sprint, not a hard gate.
  *
  * Run standalone (`bun scripts/check-tutorials-i18n.ts`) or as part of
- * `build:strict` once `p110 s3` closes.
+ * `build:strict` once `l110 s3` closes.
  *
  * @see scripts/translate-tutorials.sh — the bootstrap that creates the
  *   skeletons with `auto-translated: true` + `needs-human-review: true`.
- * @see docs/proposals/p110-residual-p100-web-and-i18n.md §2 s3.
+ * @see docs/proposals/l110-residual-l100-web-and-i18n.md §2 s3.
  */
 import { resolve, dirname, join } from 'node:path';
 import { readdirSync, readFileSync } from 'node:fs';

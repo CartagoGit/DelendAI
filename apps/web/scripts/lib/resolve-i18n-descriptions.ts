@@ -1,8 +1,8 @@
 /**
  * `resolveI18nDescriptions` — flatten the per-tool i18n catalogue into a
  * precomputed map the docs site can ship with `capabilities.json` so SSR
- * renders the active language without runtime lookups. See p100 s4-bis /
- * p110 s1.
+ * renders the active language without runtime lookups. See l100 s4-bis /
+ * l110 s1.
  *
  * The catalogue at `apps/web/src/i18n/tools/index.ts` is a runtime registry
  * keyed by `<namespace>_<tool>` (e.g. `mcp-vertex_overview`). Each entry

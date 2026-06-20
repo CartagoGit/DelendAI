@@ -29,8 +29,8 @@ describe('allocateNextProposalId (f113 S13)', () => {
 	});
 
 	it('seeds from disk, taking the max existing number per prefix (legacy + f113 already there)', async () => {
-		await writeFile(join(root, 'p99-feat-multi-model-audit-plugin.md'), '');
-		await writeFile(join(root, 'p112-derive-site-manifests.md'), '');
+		await writeFile(join(root, 'l99-feat-multi-model-audit-plugin.md'), '');
+		await writeFile(join(root, 'l112-derive-site-manifests.md'), '');
 		await mkdir(join(root, 'ready'), { recursive: true });
 		await writeFile(
 			join(root, 'ready', 'f113-feat-proposal-state-machine.md'),

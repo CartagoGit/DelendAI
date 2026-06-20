@@ -133,5 +133,5 @@ Cualquier comando bloqueado se reporta con `code: 126` y un motivo ("blocked by 
 
 ## Siguiente paso
 
-- [Gates de calidad multi-lenguaje (p107)](../../p107-multilang-quality-gates.md)
-- [Frontera de confianza y política de comandos (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Gates de calidad multi-lenguaje (l107)](../../l107-multilang-quality-gates.md)
+- [Frontera de confianza y política de comandos (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

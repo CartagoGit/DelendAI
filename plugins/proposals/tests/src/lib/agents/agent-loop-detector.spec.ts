@@ -1,5 +1,5 @@
 /**
- * `agent-loop-detector` contract guard (p103 s1).
+ * `agent-loop-detector` contract guard (l103 s1).
  *
  * Pins the pure-function contract so the integration layers in
  * s2/s3/s4 can adapt the detector (git-diff signal, handoff

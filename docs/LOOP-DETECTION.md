@@ -52,13 +52,13 @@ When an agent is flagged as stuck, a JSON file is written to `.mcp-vertex/handof
   "workspaceRoot": "/absolute/path/to/workspace",
   "activeLocks": [
     {
-      "task_id": "p103-s7",
+      "task_id": "l103-s7",
       "agent": "my-agent",
       "ownership": ["plugins/notification/src/lib/tools.ts"]
     }
   ],
   "currentProposal": {
-    "id": "p103",
+    "id": "l103",
     "title": "Agent Loop Detection & Handoff",
     "status": "in-progress"
   },

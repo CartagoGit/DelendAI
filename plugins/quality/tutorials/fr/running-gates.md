@@ -162,5 +162,5 @@ non interdit ».
 
 ## Étape suivante
 
-- [Gates de qualité multi-langages (p107)](../../p107-multilang-quality-gates.md)
-- [Frontière de confiance & politique de commande (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Gates de qualité multi-langages (l107)](../../l107-multilang-quality-gates.md)
+- [Frontière de confiance & politique de commande (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

@@ -1,5 +1,5 @@
 ---
-id: p99
+id: l99
 type: proposal
 status: done
 track: audit
@@ -8,9 +8,11 @@ closed: 2026-06-20
 shipped-in:
   - b1be3a0 # feat(audit): implement multi-model audit plugin with brief generation and consolidation tools
   - 8d03a09 # feat(audit): add multi-model audit plugin with brief and consolidation tools (predecessor)
+kind: legacy
+title: Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
 ---
 
-# p99 — Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
+# l99 — Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
 
 > **Estado: DONE — alcance A implementado y commiteado.**
 > El plugin vive en `plugins/audit/` (8 archivos `src/` + 3 specs), se
@@ -25,7 +27,7 @@ shipped-in:
 > specs del plugin que fallaban por bugs lógicos
 > (`extractScores` shadowing, `parseAuditFiles` empty result, etc.)
 > ya pasan — `bun run validate` reporta 100 test files / 668 tests
-> OK (per p100 §0 "Validación", commiteado 2026-06-20 ~02:24).
+> OK (per l100 §0 "Validación", commiteado 2026-06-20 ~02:24).
 > El `tsconfig.dts.json` del plugin y su `vitest.config.ts` propio
 > siguen en su lugar; el plugin sigue excluido del tsconfig raíz
 > (`exclude: ["plugins/audit/**/*"]`) por su naturaleza
@@ -37,8 +39,8 @@ shipped-in:
 > el gate, resuelto por el usuario el mismo día):** `bun run typecheck`
 > desde la raíz reportó **9 errores** en `plugins/audit/` durante esta
 > sesión (mientras el plugin estaba recién mergeado). El usuario los
-> arregló en commits posteriores (entre el cierre de p100 y este turno,
-> el header de p100 documenta "Validación: `bun run validate` verde
+> arregló en commits posteriores (entre el cierre de l100 y este turno,
+> el header de l100 documenta "Validación: `bun run validate` verde
 > (100 test files / 668 tests OK)"). Errores originales (archivados
 > para referencia):
 >
@@ -58,7 +60,7 @@ shipped-in:
 > todo typecheck-lint. Una vez arreglado, `bun run validate` vuelve
 > a verde (los 9 errores son los únicos que rompen el gate hoy).
 > Un slice futuro (siguiente propuesta o tarea del agente) cierra
-> esos bugs; **no bloquean** el cierre de p99 porque el plugin ya produce
+> esos bugs; **no bloquean** el cierre de l99 porque el plugin ya produce
 > los tools correctos y se carga sin errores en runtime (la lógica vive
 > en `src/lib/`, no en los specs).
 

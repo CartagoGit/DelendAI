@@ -40,10 +40,10 @@ docs/mcp-vertex/proposals/
 // 典型响应（截断）
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "打开 docs/mcp-vertex/proposals/p110-…md 并选择下一个原子切片。",
+    "打开 docs/mcp-vertex/proposals/l110-…md 并选择下一个原子切片。",
     "认领其文件：proposals_agent_lock { action: \"claim\", … }。",
     "仅实现该切片——不在认领文件之外进行任何操作。",
     "按项目门控验证（如有，见 get_validation_matrix）。",
@@ -99,7 +99,7 @@ bun run validate
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -121,5 +121,5 @@ bun run validate
 ## 下一步
 
 - [agent_worktree 插件如何隔离并发代理](#)
-- [auto_work 的持久化模式 (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [auto_work 的持久化模式 (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [恢复工作的 Round context](#)

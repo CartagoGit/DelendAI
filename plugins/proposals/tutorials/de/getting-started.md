@@ -45,10 +45,10 @@ Der Plan ist wörtlich auszuführen — ohne Schritte zu improvisieren.
 // Typische Antwort (gekürzt)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "docs/mcp-vertex/proposals/p110-…md öffnen und den nächsten atomaren Slice auswählen.",
+    "docs/mcp-vertex/proposals/l110-…md öffnen und den nächsten atomaren Slice auswählen.",
     "Dateien beanspruchen: proposals_agent_lock { action: \"claim\", … }.",
     "Genau diesen Slice implementieren — nichts außerhalb der beanspruchten Dateien.",
     "Gemäß dem Projekt-Gate validieren (siehe get_validation_matrix, falls vorhanden).",
@@ -111,7 +111,7 @@ günstig und idempotent.
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -137,5 +137,5 @@ erneut `auto_work` auf — es wird den nächsten Slice zurückgeben
 ## Nächster Schritt
 
 - [Wie das Plugin agent_worktree gleichzeitige Agenten isoliert](#)
-- [Persistenzmodi für auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Persistenzmodi für auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context für wiederaufgenommene Arbeit](#)

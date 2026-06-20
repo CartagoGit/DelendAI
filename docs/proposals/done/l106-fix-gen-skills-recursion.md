@@ -1,16 +1,18 @@
 ---
-id: p106
+id: l106
 type: proposal
 status: done
 track: web
 date: 2026-06-19
 closed: 2026-06-19
 related:
-  - p100 # website i18n & docs rewrite (lives next to this in the web track)
-  - p101 # web header transitions
+  - l100 # website i18n & docs rewrite (lives next to this in the web track)
+  - l101 # web header transitions
+kind: legacy
+title: Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
 ---
 
-# p105 — Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
+# l105 — Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
 
 > **Estado: IDEA para decidir. NO IMPLEMENTAR TODAVÍA.** Recoge un
 > bug que bloquea `bun run site:strict` y deja la página `/skills`
@@ -76,7 +78,7 @@ anidado; solo el walker se quedó a medio camino.
 ## 2. Por qué importa
 
 1. **Bloquea `bun run site:strict`** — el guardián de cobertura
-   que la propuesta p100 instauró para "la web nunca miente sobre
+   que la propuesta l100 instauró para "la web nunca miente sobre
    lo que el código expone".
 2. **Pérdida silenciosa de información** — los dos SKILL.md ya
    escritos (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`)

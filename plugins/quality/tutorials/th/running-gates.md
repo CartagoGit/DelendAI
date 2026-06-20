@@ -158,5 +158,5 @@ command policy") และ**ไม่เคยถูกเรียกใช้*
 
 ## ขั้นตอนถัดไป
 
-- [Quality gates หลายภาษา (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & นโยบายคำสั่ง (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Quality gates หลายภาษา (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & นโยบายคำสั่ง (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

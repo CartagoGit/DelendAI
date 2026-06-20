@@ -159,5 +159,5 @@ um `allow` vazio significa "qualquer binário não negado".
 
 ## Próximo passo
 
-- [Gates de qualidade multilíngues (p107)](../../p107-multilang-quality-gates.md)
-- [Fronteira de confiança & política de comando (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Gates de qualidade multilíngues (l107)](../../l107-multilang-quality-gates.md)
+- [Fronteira de confiança & política de comando (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

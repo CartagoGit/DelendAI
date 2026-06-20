@@ -123,7 +123,7 @@ const basenameOf = (p: string): string => {
 	return segs[segs.length - 1] ?? '';
 };
 
-/** Exported for tests (p106 s1). Same semantics as the internal walker. */
+/** Exported for tests (l106 s1). Same semantics as the internal walker. */
 export const walkSkillsForTest = walkSkills;
 
 const main = (): void => {

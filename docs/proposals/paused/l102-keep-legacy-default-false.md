@@ -1,14 +1,16 @@
 ---
-id: p102
+id: l102
 type: proposal
-status: deferred
+status: paused
 track: core+scaffold
 date: 2026-06-18
 deferred: 2026-06-18
 budget: 4
+kind: legacy
+title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 ---
 
-# p102 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
+# l102 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 
 > **Estado: NO SE VA A HACER AHORA — solo proposal archivada.** Decisión
 > del usuario 2026-06-18. La propuesta queda escrita para cuando
@@ -361,7 +363,7 @@ de plugin.
 - **Riesgo**: los plugins existentes (proposals, memory,
   notification) ignoran `ctx.keepLegacy` y siguen sobreescribiendo.
   **Mitigación**: slice s1 expone el campo; los plugins lo
-  consumen en su PR siguiente (out of scope de p102). El doc
+  consumen en su PR siguiente (out of scope de l102). El doc
   `PLUGINS-MCP-VERTEX.md` deja claro que es contrato de autor.
 - **Riesgo**: la heurística del analyzer dispara falsos positivos
   en greenfield. **Mitigación**: solo dispara con evidencia
@@ -385,4 +387,4 @@ ahora". Razones para archivarla:
    releases que ya estén en uso, no con un primer lanzamiento.
 
 Cuando llegue el próximo refactor / migración real (y va a llegar),
-se reabre p102, se ejecuta s1–s5 en orden y se cierra.
+se reabre l102, se ejecuta s1–s5 en orden y se cierra.

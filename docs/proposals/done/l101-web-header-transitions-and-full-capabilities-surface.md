@@ -1,16 +1,18 @@
 ---
-id: p101
+id: l101
 type: proposal
 status: done
 track: web+i18n+docs
 date: 2026-06-18
 budget: 3
 closed: 2026-06-18
+kind: legacy
+title: Header persistente con transiciones + surface completo en la web
 ---
 
-# p101 — Header persistente con transiciones + surface completo en la web
+# l101 — Header persistente con transiciones + surface completo en la web
 
-> **Estado: TODO para revisión.** Continúa p100 con tres frentes: (1)
+> **Estado: TODO para revisión.** Continúa l100 con tres frentes: (1)
 > header persistente con View Transitions de Astro, (2) ampliar el
 > `gen-capabilities.ts` para enumerar prompts/resources/knowledge (no
 > solo tools), y (3) hacer que el dev server regenere la API de TypeDoc
@@ -18,7 +20,7 @@ closed: 2026-06-18
 
 ## 0. Contexto y motivación
 
-Después de p100 la web ya tiene estructura de páginas (home minimalista +
+Después de l100 la web ya tiene estructura de páginas (home minimalista +
 `/install`, `/tools`, `/benchmarks`, `/plugins/[slug]`) y el sitio traduce
 la chrome a 12 idiomas. Pero quedan **3 problemas que rompen la UX y la
 documentación**:
@@ -54,7 +56,7 @@ documentación**:
 ## 2. No-objetivos
 
 - Cambiar el `outputSchema` ni el modelo de ejecución.
-- Internacionalizar los tutoriales (eso queda en p100 slice s7).
+- Internacionalizar los tutoriales (eso queda en l100 slice s7).
 - Reescribir el `gen-capabilities.ts` completo — solo ampliar.
 - Sustituir el theme switcher ni el language switcher.
 - Cambiar el sistema de release ni el versionado.
@@ -121,7 +123,7 @@ Mismo patrón que `/tools` y `/plugins`:
   `KnowledgeSection.astro`. Cada uno itera `capabilities.prompts` /
   `capabilities.resources` / `capabilities.knowledge` agrupados por
   plugin.
-- `gen-section-pages.sh` (existente, creado en p100) se amplía con 3
+- `gen-section-pages.sh` (existente, creado en l100) se amplía con 3
   secciones más.
 - i18n: añadir `prompts.title`, `prompts.lead`, `prompts.count`,
   `resources.title`, `resources.lead`, `resources.count`,
@@ -189,7 +191,7 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
     apps/web/src/components/KnowledgeSection.astro, apps/web/src/pages/prompts.astro,
     apps/web/src/pages/resources.astro, apps/web/src/pages/knowledge.astro, scripts/gen-section-pages.sh,
     apps/web/src/i18n/ui.ts]
-  - Reusar `gen-section-pages.sh` de p100. Añadir las 3 secciones al loop.
+  - Reusar `gen-section-pages.sh` de l100. Añadir las 3 secciones al loop.
   - Añadir 9 i18n keys × 12 idiomas = 108 entradas nuevas.
   - status: todo
 
@@ -212,7 +214,7 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
 - [ ] El header no "salta" al navegar entre páginas; el contenido hace
       fade suave.
 - [ ] `/prompts`, `/resources`, `/knowledge` renderizan datos reales en
-      12 idiomas, con descripciones localizadas (post p100 s4, en este
+      12 idiomas, con descripciones localizadas (post l100 s4, en este
       slice se renderiza en inglés con fallback).
 - [ ] `apps/web/src/data/capabilities.json` contiene los campos
       `prompts`, `resources`, `knowledge` con `count` y lista.
@@ -228,7 +230,7 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
 |---|---|
 | View Transitions rompe en algún navegador | Astro hace fallback automático a full reload. Mantener el sitio funcional sin JS también (el modal/header sin persist funcionan con full reload). |
 | `listPrompts`/`listResources` no existe en SDK viejo | Slice s2 detecta y omite. Build no falla. |
-| 12 × 9 keys i18n nuevas = 108 traducciones a mano | Slice s3 arranca con `en` completo y deja los otros 11 idiomas con `en` como fallback en el dict. Las traducciones se añaden en una propuesta posterior (p102) usando un script de bootstrap (DeepL opcional). |
+| 12 × 9 keys i18n nuevas = 108 traducciones a mano | Slice s3 arranca con `en` completo y deja los otros 11 idiomas con `en` como fallback en el dict. Las traducciones se añaden en una propuesta posterior (l102) usando un script de bootstrap (DeepL opcional). |
 | `gen-skills.ts` no encuentra nada | Fallback al `IBlueprintArtifact[]` del `build-blueprint.ts` que tiene al menos las skills de scaffold del core. La página nunca queda vacía. |
 | `typedoc` tarda >10s en dev | El dev server sigue siendo rápido al recargar; solo el primer arranque paga el coste. Se puede mover a un `predev` separado si molesta. |
 
@@ -244,6 +246,6 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
 ## 8. Auditoría post-cierre
 
 Cuando todos los slices estén `done`, abrir
-`docs/proposals/audits/<fecha>-p101-web-transitions-surface.md` con la
+`docs/proposals/audits/<fecha>-l101-web-transitions-surface.md` con la
 auditoría del plugin `proposals_plugin_review` o manual siguiendo el
 formato del repo.

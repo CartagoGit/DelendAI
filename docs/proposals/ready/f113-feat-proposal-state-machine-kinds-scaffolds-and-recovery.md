@@ -43,9 +43,9 @@ acceptance:
   - { command: bun run lint:proposals, expect: exit0 }
   - { command: bun run lint:scaffolds, expect: exit0 }
 related:
-  - p111 # post-closure audit (the closed reference for prefix conventions)
-  - p112 # parallel proposal; lives in paused/ after this lands
-  - p99 # the audit plugin whose lifecycle this proposal formalises
+  - l111 # post-closure audit (the closed reference for prefix conventions)
+  - l112 # parallel proposal; lives in paused/ after this lands
+  - l99 # the audit plugin whose lifecycle this proposal formalises
 ---
 
 # f113 — Proposal state machine, kinds, scaffolds, and recovery
@@ -643,13 +643,13 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
      it for a fresh adopter or a custom folder. Fixed: `mkdir(...,
      {recursive:true})` before the move.
   2. **The walker's strict 3-digit filename filter silently *skipped*
-     `p99-feat-multi-model-audit-plugin.md`** (2 digits) instead of
+     `l99-feat-multi-model-audit-plugin.md`** (2 digits) instead of
      reporting it — invisible is worse than flagged. Loosened the
      walker's inclusion filter to `\d+` (1+ digits); the *linter's*
-     stricter `\d{3,}` rule still correctly flags `p99`'s id as
+     stricter `\d{3,}` rule still correctly flags `l99`'s id as
      non-conforming once it's actually linted.
   3. Same loosening needed in the legacy-vs-fatal classifier
-     (`isLegacyFilename`), or `p99` got discovered but then
+     (`isLegacyFilename`), or `l99` got discovered but then
      misclassified as a *fatal* new-scaffold violation instead of an
      expected legacy warning.
   4. **The walker recursed into `docs/proposals/audits/`** (and other
@@ -683,7 +683,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   the new tool — both are now in sync.
 - `proposal-transition.tool.spec.ts`: 49 tests (the full 7×7 matrix +
   reason/unknown-status/not-found/legacy-refusal/git-mv-fallback
-  cases). `lint-proposals.spec.ts`: 4 tests covering the p99 + non-
+  cases). `lint-proposals.spec.ts`: 4 tests covering the l99 + non-
   proposal-document fixes specifically (regression coverage for bugs
   2-4 above).
 - **Gate**: `bun run test && bun run lint:proposals` — both green;
@@ -768,7 +768,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   regardless of kind (`authoring.tool.ts`: `status: ${args.status ??
   'ready'}`). Without an additional check, `reconcileFolders` would
   silently relocate *any* freshly created legacy-style proposal (id
-  `p5`, `p100`, …) into `ready/` the instant `syncProposalRegistry`
+  `p5`, `l100`, …) into `ready/` the instant `syncProposalRegistry`
   next ran — caught by the pre-existing `authoring.spec.ts` assertion
   that `p5-meta.md` stays exactly where it was written. Fixed:
   `isNewSystemFilename()` additionally requires the filename's prefix
@@ -976,7 +976,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   and `prefixForKind(kind)` (thin wrapper over `PROPOSAL_PREFIX_BY_KIND`).
 - Seed-from-disk on first read: scans `proposalsDirAbs` (root + the 7
   status folders) for `^([a-z])(\d+)-` filenames — `\d+`, not `\d{3,}`,
-  same reasoning as S5/S2: `p99` (2 digits) must seed correctly, the
+  same reasoning as S5/S2: `l99` (2 digits) must seed correctly, the
   3-digit minimum is a *future* convention for new ids, not a discovery
   filter. Covers the 14 legacy + `f113` already on disk with zero
   manual bootstrap step.
@@ -1000,7 +1000,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   `with-file-mutex.spec.ts` already covers for locks, applied here to
   a counter.
 - `proposal-id-allocator.spec.ts` (8 tests): seed-from-empty,
-  seed-from-existing-files (legacy `p99`/`p112` + `f113` mixed),
+  seed-from-existing-files (legacy `l99`/`l112` + `f113` mixed),
   sequential-no-gaps, independent-per-prefix sequences, the 25-way
   concurrency case, counter-file-is-valid-JSON, plus 2 `prefixForKind`
   cases. `authoring.spec.ts` gained 2 new cases (allocates from kind,

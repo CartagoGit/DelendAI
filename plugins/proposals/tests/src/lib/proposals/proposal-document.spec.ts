@@ -18,7 +18,7 @@ const write = (content: string): string => {
 
 beforeEach(() => {
 	tmpDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-proposal-doc-'));
-	tmpFile = join(tmpDir, 'p99-fixture.md');
+	tmpFile = join(tmpDir, 'l99-fixture.md');
 });
 
 afterEach(() => {
@@ -49,7 +49,7 @@ const expectParseError = async (
 };
 
 const VALID_FIXTURE = `---
-id: p99-test
+id: l99-test
 type: meta
 status: pending
 track: meta
@@ -80,7 +80,7 @@ describe('parseProposalDocument', () => {
 		expect(doc.path).toBe(path);
 
 		// frontmatter scalars
-		expect(doc.frontmatter.id).toBe('p99-test');
+		expect(doc.frontmatter.id).toBe('l99-test');
 		expect(doc.frontmatter.type).toBe('meta');
 		expect(doc.frontmatter.status).toBe('pending');
 		expect(doc.frontmatter.track).toBe('meta');
@@ -111,7 +111,7 @@ describe('parseProposalDocument', () => {
 
 	it('throws INVALID_BUDGET when budget.maxPremiumCalls is negative', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -125,7 +125,7 @@ budget:
 
 	it('throws INVALID_BUDGET when budget.maxIterations is a string', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -139,7 +139,7 @@ budget:
 
 	it('throws INVALID_CRITERION when acceptanceCriteria item has no expect field', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -156,7 +156,7 @@ acceptanceCriteria:
 
 	it('throws INVALID_CRITERION when expect is not in the closed union', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -174,7 +174,7 @@ acceptanceCriteria:
 
 	it('throws INVALID_CRITERION when command is empty', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -192,7 +192,7 @@ acceptanceCriteria:
 
 	it('accepts contains:<substring> as a valid expect value', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -210,7 +210,7 @@ acceptanceCriteria:
 
 	it('accepts all three literal expect values (exit0, pass, synchronized)', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta

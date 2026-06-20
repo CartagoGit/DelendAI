@@ -57,25 +57,25 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 	it('does NOT scan paused/demos by default (no host vocabulary baked in)', async () => {
 		const l = layout();
 		writeProposal(
-			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
-			'p99',
+			join(root, l.proposalsDir, 'paused/demos/l99-demo.md'),
+			'l99',
 		);
 
 		await syncProposalRegistry(root, l);
 
-		expect(indexIds(l)).not.toContain('p99');
+		expect(indexIds(l)).not.toContain('l99');
 	});
 
 	it('scans an injected extra folder (paused/demos)', async () => {
 		const l = layout();
 		writeProposal(
-			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
-			'p99',
+			join(root, l.proposalsDir, 'paused/demos/l99-demo.md'),
+			'l99',
 		);
 
 		await syncProposalRegistry(root, l, ['paused/demos']);
 
-		expect(indexIds(l)).toContain('p99');
+		expect(indexIds(l)).toContain('l99');
 	});
 
 	it('still scans the generic subtrees regardless of extraFolders', async () => {
@@ -93,8 +93,8 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 	it('accepts multiple injected host folders', async () => {
 		const l = layout();
 		writeProposal(
-			join(root, l.proposalsDir, 'paused/demos/p99-demo.md'),
-			'p99',
+			join(root, l.proposalsDir, 'paused/demos/l99-demo.md'),
+			'l99',
 		);
 		writeProposal(
 			join(root, l.proposalsDir, 'experiments/p98-exp.md'),
@@ -104,7 +104,7 @@ describe('M5 — injectable proposal folders (paused/demos no longer baked in)',
 		await syncProposalRegistry(root, l, ['paused/demos', 'experiments']);
 
 		const ids = indexIds(l);
-		expect(ids).toContain('p99');
+		expect(ids).toContain('l99');
 		expect(ids).toContain('p98');
 	});
 });

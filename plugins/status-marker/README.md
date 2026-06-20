@@ -70,7 +70,7 @@ const audit = validateCloseMarker(line);
 
 ## See also
 
-- Proposal [`p104`](../../docs/mcp-vertex/proposals/p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
+- Proposal [`l104`](../../docs/mcp-vertex/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
 - Plugin guide: [`docs/PLUGINS-MCP-VERTEX.md`](../../docs/PLUGINS-MCP-VERTEX.md).
 
 BSD-3-Clause © Cartago

@@ -593,7 +593,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 - 🔵 **M40 · Plugin de auditoría multi-modelo `@mcp-vertex/audit`** (IDEA del usuario, a
   decidir) — auditar con varios modelos de distintas empresas en el formato del repo.
-  Diseño escrito en [p99](../p99-feat-multi-model-audit-plugin.md): A) "audit kit" sin
+  Diseño escrito en [l99](../l99-feat-multi-model-audit-plugin.md): A) "audit kit" sin
   claves (brief canónico + **consolidación automática** de las auditorías que produce cada
   IDE/modelo) ⭐; B) fan-out por API (OpenRouter = 1 clave, multi-empresa, opt-in con
   `effects:['network']`); C) roster declarado. Realidad: un server MCP no puede saber el
@@ -671,11 +671,11 @@ camino al 11/10 — solo acabados de plataforma.**
   mano por grep varias veces esta sesión). **Decisión pendiente del usuario:**
   ¿migrar `.mcp.json` de este repo a un `host-config.ts` propio con 1-2 `extraTools`
   específicas (ej. `rename_audit`), o queda como está (CLI+preset, sin tools propias)?
-  No implementado — análogo a p99, dejado para decidir.
+  No implementado — análogo a l99, dejado para decidir.
 
 ---
 
-## 10. Sesión 20-06 — p111: crash de orquestación + docsDir desalineado
+## 10. Sesión 20-06 — l111: crash de orquestación + docsDir desalineado
 
 > Dos hallazgos nuevos, verificados contra el código, encontrados al investigar
 > el reporte del usuario de que "el mcp no se está aplicando" y que un agente
@@ -695,7 +695,7 @@ camino al 11/10 — solo acabados de plataforma.**
   sin él, la llamada lanza `"Output validation error"` en vez de devolver el
   estado idle/no-proposal. Como `auto_work` es la tool de "qué hago ahora" que
   cualquier orquestador llama primero, y el caso idle es el **común** tras
-  cerrar p110 (0 proposals actionable), esto explica con alta probabilidad los
+  cerrar l110 (0 proposals actionable), esto explica con alta probabilidad los
   reportes de agentes que "se bloquean sin avanzar": no es un bucle ni un
   deadlock, es un crash de protocolo en el camino feliz del idle.
   **Fix:** ambos archivos delegan ahora en `toolJson` (`const json = toolJson;`)
@@ -715,11 +715,11 @@ camino al 11/10 — solo acabados de plataforma.**
   ([index.ts:103](../../../plugins/proposals/src/index.ts#L103)), así que
   `create_proposal`/`continue_proposal`/`auto_work`/`proposal_board` operaban
   sobre `docs/mcp-vertex/proposals/` — un directorio casi vacío que solo
-  contenía **3 borradores abandonados** de p104/p106/p107 (versiones más
+  contenía **3 borradores abandonados** de l104/l106/l107 (versiones más
   viejas y menos completas que las reales, confirmado por diff: la versión de
   `docs/proposals/` de cada uno está `status: done` con narrativa final; la de
   `docs/mcp-vertex/proposals/` seguía en `status: pending`/borrador). Todo el
-  trabajo real de proposals (`p99`-`p110`, la auditoría maestra) siempre vivió
+  trabajo real de proposals (`l99`-`l110`, la auditoría maestra) siempre vivió
   en `docs/proposals/`, fuera del alcance de las tools. Cualquier agente que
   usara las tools de proposals "correctamente" escribía en el sitio
   equivocado — el síntoma reportado por el usuario, literal: el MCP no se

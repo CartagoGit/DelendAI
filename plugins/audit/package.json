@@ -2,7 +2,7 @@
 	"name": "@mcp-vertex/audit",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Plugin de auditoría multi-modelo (alcance A, p99): genera el brief canónico que el agente copia/pega en cada modelo (`audit_plan`) y consolida N auditorías en una sola hoja de ruta unificada (`audit_consolidate`). Sin red, sin secretos. Load with `mcp-vertex --plugins=audit`.",
+	"description": "Plugin de auditoría multi-modelo (alcance A, l99): genera el brief canónico que el agente copia/pega en cada modelo (`audit_plan`) y consolida N auditorías en una sola hoja de ruta unificada (`audit_consolidate`). Sin red, sin secretos. Load with `mcp-vertex --plugins=audit`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [

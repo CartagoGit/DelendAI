@@ -60,7 +60,7 @@ export default definePlugin({
 		/** Quality-gate command surfaced by auto_work. */
 		validationCommand: z.string().optional(),
 		/**
-		 * Default persistence mode for `<prefix>_auto_work` (p109).
+		 * Default persistence mode for `<prefix>_auto_work` (l109).
 		 *   - `none`             — no git interaction (legacy behaviour).
 		 *   - `commit`           — stage claimed files + Conventional Commits
 		 *                          commit locally after `sync_proposals`.

@@ -51,7 +51,7 @@ Phản hồi (rút gọn):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n thực…" },
+    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n thực…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }

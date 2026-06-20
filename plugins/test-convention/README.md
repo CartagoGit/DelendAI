@@ -121,7 +121,7 @@ const where = suggestSpecPath('src/lib/foo.ts', c);
 
 ## See also
 
-- Proposal [`p108`](../../docs/proposals/p108-feat-test-convention-plugin.md).
+- Proposal [`l108`](../../docs/proposals/l108-feat-test-convention-plugin.md).
 - Companion plugin: [`@mcp-vertex/quality`](../quality) — executes the
   scopes; `test-convention` teaches how to write them.
 - Companion plugin: [`@mcp-vertex/status-marker`](../status-marker) — the

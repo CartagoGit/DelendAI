@@ -1,5 +1,5 @@
 /**
- * `IQualityGate` contract guard (p107 — quality gates multi-lenguaje, s1).
+ * `IQualityGate` contract guard (l107 — quality gates multi-lenguaje, s1).
  *
  * These specs pin the shape of the public interface so future refactors
  * cannot silently drop a field or widen `expect` into a free string and

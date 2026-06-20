@@ -1,6 +1,6 @@
 /**
  * `discoverTutorials` — scan `plugins/<plugin>/tutorials/<lang>/*.md` and
- * return a structured catalogue the docs site can render. See p100 s7.
+ * return a structured catalogue the docs site can render. See l100 s7.
  *
  * Tutorial files have a YAML frontmatter:
  *
@@ -121,7 +121,7 @@ export const discoverTutorials = (
 					!Number.isNaN(Number(meta.order))
 						? { order: Number(meta.order) }
 						: {}),
-					// p110 s3: surface the auto-translated / review flags so
+					// l110 s3: surface the auto-translated / review flags so
 					// downstream consumers (capabilities.json, Tutorial.astro)
 					// can mark untranslated tutorials without re-parsing
 					// frontmatter themselves.

@@ -20,7 +20,7 @@ describe('resolveScopes', () => {
 			scopes: { feature: ['a', 'b'] },
 		});
 		// `expect: 'exit0'` is the default injected by `scopes.ts` since the
-		// `IScopeCommand` → `IValidationCommand` alignment (p107 s1).
+		// `IScopeCommand` → `IValidationCommand` alignment (l107 s1).
 		expect(map.feature).toEqual([
 			{ command: 'a', expect: 'exit0' },
 			{ command: 'b', expect: 'exit0' },

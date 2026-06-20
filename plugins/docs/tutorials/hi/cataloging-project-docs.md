@@ -53,7 +53,7 @@ recursively चलाई जाती हैं। **workspace के बाह�
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: वास्तविक i18n…" },
+    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: वास्तविक i18n…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }

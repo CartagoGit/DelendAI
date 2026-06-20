@@ -5,7 +5,7 @@
  * presets shipped by plugins (see `@mcp-vertex/quality` for the canonical TS
  * preset and the language-agnostic runner).
  *
- * Design notes (M27 / p107):
+ * Design notes (M27 / l107):
  *
  * - The core is project-agnostic. It MUST NOT install any toolchain or
  *   import language-specific helpers. The interface only describes what
@@ -28,7 +28,7 @@
  * - `languages` is an OPEN array (a preset declares `['ts', 'tsx']`, a custom
  *   gate may declare `['sh']`); the language tag is advisory metadata used by
  *   the docs site, by `detectRunner`-style helpers and by the eventual
- *   `gate_suggest_for_file` tool (slice s4 of p107).
+ *   `gate_suggest_for_file` tool (slice s4 of l107).
  * - `docs` is optional but recommended: a one-line markdown the agent can
  *   surface in knowledge entries without having to grep the registry.
  *
@@ -59,7 +59,7 @@ export type IQualityGateExpect = 'pass' | 'fail';
  * tags without a core release. Presets MUST declare a non-empty array.
  *
  * Reserved short codes (matching the `mcp-vertex.config.json#language`
- * convention proposed in p107 §3.2):
+ * convention proposed in l107 §3.2):
  *
  * - `ts` / `tsx`  — TypeScript / TSX
  * - `js` / `jsx`  — vanilla JS
@@ -114,7 +114,7 @@ export interface IQualityGate {
 	 *
 	 * - the docs site to render the "Quality gates" section per language;
 	 * - `detectRunner`-style helpers to pick the right preset;
-	 * - the `gate_suggest_for_file` tool (p107 s4) to recommend a gate
+	 * - the `gate_suggest_for_file` tool (l107 s4) to recommend a gate
 	 *   given a source file's language.
 	 *
 	 * MUST contain at least one entry; the runner falls back to "unknown"

@@ -45,10 +45,10 @@ deve essere eseguito alla lettera — senza improvvisare passi.
 // Risposta tipica (troncata)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "Aprire docs/mcp-vertex/proposals/p110-…md e scegliere il prossimo slice atomico.",
+    "Aprire docs/mcp-vertex/proposals/l110-…md e scegliere il prossimo slice atomico.",
     "Richiedere i suoi file: proposals_agent_lock { action: \"claim\", … }.",
     "Implementare esattamente quello slice — niente al di fuori dei file richiesti.",
     "Validare secondo il gate del progetto (vedere get_validation_matrix se presente).",
@@ -110,7 +110,7 @@ frontmatter + piano degli slice, e ricostruisce `index.json`.
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -136,5 +136,5 @@ lo store è esaurito).
 ## Prossimo passo
 
 - [Come il plugin agent_worktree isola gli agenti concorrenti](#)
-- [Modalità di persistenza per auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Modalità di persistenza per auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context per il lavoro ripreso](#)

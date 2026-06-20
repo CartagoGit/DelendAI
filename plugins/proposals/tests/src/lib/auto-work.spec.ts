@@ -81,7 +81,7 @@ describe('auto_work (one-call action plan)', () => {
 		expect(Array.isArray(out.steps)).toBe(true);
 	});
 
-	it("plan with persist mode 'none' has no persist step (default behaviour, p109)", async () => {
+	it("plan with persist mode 'none' has no persist step (default behaviour, l109)", async () => {
 		writeFileSync(
 			options.indexPathAbs,
 			JSON.stringify({
@@ -138,7 +138,7 @@ describe('auto_work (one-call action plan)', () => {
 		expect(persistSteps[0]).toContain('refuses to push to `main`');
 	});
 
-	it('input.persist overrides config.persist.mode (priority chain, p109 §2)', async () => {
+	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,
 			persist: { mode: 'commit' },

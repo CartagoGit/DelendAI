@@ -1,5 +1,5 @@
 /**
- * scope-type.spec.ts — p107 s1
+ * scope-type.spec.ts — l107 s1
  *
  * Compile-time guard that the plugin's `IScopeCommand` is
  * structurally equivalent to the core public `IValidationCommand`.
@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IScopeCommand } from '@mcp-vertex/quality/lib/runner';
 
-describe('IScopeCommand ↔ IValidationCommand (p107 s1)', () => {
+describe('IScopeCommand ↔ IValidationCommand (l107 s1)', () => {
 	it('IScopeCommand is assignable from IValidationCommand (same source)', () => {
 		const core: IValidationCommand = {
 			command: 'tsc --noEmit',

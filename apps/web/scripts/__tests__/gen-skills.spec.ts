@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { walkSkillsForTest as walkSkills } from '../gen-skills';
 
-describe('walkSkills (p106 s1)', () => {
+describe('walkSkills (l106 s1)', () => {
 	let tmp: string;
 
 	beforeAll(() => {

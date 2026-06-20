@@ -148,5 +148,5 @@ stdout/stderr，并返回结构化报告 `{ ok, results: [{ command, ok, code, t
 
 ## 下一步
 
-- [多语言质量门控（p107）](../../p107-multilang-quality-gates.md)
-- [信任边界 & 命令策略（M13）](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [多语言质量门控（l107）](../../l107-multilang-quality-gates.md)
+- [信任边界 & 命令策略（M13）](../../l107-multilang-quality-gates.md#5-no-objetivos)

@@ -1,5 +1,5 @@
 /**
- * store-concurrency.spec.ts (M32, p111 s4)
+ * store-concurrency.spec.ts (M32, l111 s4)
  *
  * `saveNote` is the only public mutation path on the notes store.
  * Its correctness under concurrent writers is a contract: two agents
@@ -25,7 +25,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { readStore, removeNote, saveNote } from '@mcp-vertex/memory/lib/store';
 
-describe('memory store concurrency (M32, p111 s4)', () => {
+describe('memory store concurrency (M32, l111 s4)', () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {

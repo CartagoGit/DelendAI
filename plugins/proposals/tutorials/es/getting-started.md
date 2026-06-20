@@ -45,10 +45,10 @@ El plan debe ejecutarse literalmente, sin improvisar pasos.
 // Respuesta típica (truncada)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "Abre docs/mcp-vertex/proposals/p110-…md y elige el siguiente slice atómico.",
+    "Abre docs/mcp-vertex/proposals/l110-…md y elige el siguiente slice atómico.",
     "Reclama sus archivos: proposals_agent_lock { action: \"claim\", … }.",
     "Implementa exactamente ese slice — nada fuera de los archivos reclamados.",
     "Valida según el gate del proyecto (consulta get_validation_matrix si existe).",
@@ -109,7 +109,7 @@ barato e idempotente.
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -135,7 +135,7 @@ elimina el lock y vuelve a sincronizar el índice. Luego llama a
 ## Siguiente paso
 
 - [Cómo el plugin agent_worktree aísla agentes concurrentes](#)
-- [Modos de persistencia para auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Modos de persistencia para auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context para trabajo reanudado](#)
 
 > **TRANSLATION PENDING** — This is the EN source copied

@@ -95,7 +95,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 		// *default* status create_proposal writes for ANY new proposal
 		// regardless of kind (authoring.tool.ts: `status: ${args.status ??
 		// 'ready'}`). Without also gating on the filename prefix, a brand
-		// new legacy-style proposal (id `p5`, `p100`, …) created via the
+		// new legacy-style proposal (id `p5`, `l100`, …) created via the
 		// existing, heavily-used create_proposal tool would get silently
 		// relocated into `ready/` the moment syncProposalRegistry next ran
 		// — caught by authoring.spec.ts's "p5-meta.md stays exactly where

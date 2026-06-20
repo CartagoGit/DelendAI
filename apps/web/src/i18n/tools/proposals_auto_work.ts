@@ -1,7 +1,7 @@
 // i18n catalogue for `proposals_auto_work`.
 //
 // Second entry of the per-tool i18n catalogue (apps/web/src/i18n/tools/).
-// 12-lang invariant is enforced by `check-i18n.ts` (p100 s3-bis).
+// 12-lang invariant is enforced by `check-i18n.ts` (l100 s3-bis).
 
 import type { IToolI18n } from './_shape';
 

@@ -10,7 +10,7 @@
  * Additionally, every catalogue entry that opted in via
  * `apps/web/src/i18n/tools/index.ts` (per-tool i18n) must carry 12-lang
  * `description`. Tools NOT in the catalogue are exempt: joining the catalogue
- * is opt-in, and once you join you commit to 12-lang. See p100 s3-bis.
+ * is opt-in, and once you join you commit to 12-lang. See l100 s3-bis.
  *
  * Run standalone (`bun scripts/check-i18n.ts`) or as part of `build:strict`.
  */
@@ -45,7 +45,7 @@ for (const { code } of languages) {
 		problems.push(`[${lang}] stale keys not in en: ${extra.join(', ')}`);
 }
 
-// Per-tool catalogue entries (p100 s3-bis): once a tool opts in, every
+// Per-tool catalogue entries (l100 s3-bis): once a tool opts in, every
 // supported language must carry a non-empty `description`.
 for (const { name, dict } of listRegisteredTools()) {
 	const langsWithValue = languages

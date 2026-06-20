@@ -164,5 +164,5 @@ verbotene Binary".
 
 ## Nächster Schritt
 
-- [Mehrsprachige Quality-Gates (p107)](../../p107-multilang-quality-gates.md)
-- [Vertrauensgrenze & Befehlsrichtlinie (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Mehrsprachige Quality-Gates (l107)](../../l107-multilang-quality-gates.md)
+- [Vertrauensgrenze & Befehlsrichtlinie (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

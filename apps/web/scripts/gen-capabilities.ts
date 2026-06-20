@@ -408,7 +408,7 @@ const collectPackages = (): Array<{
 };
 
 /** Walk `plugins/<plugin>/tutorials/<lang>/*.md` and return the flat
- *  catalogue. See p100 s7. */
+ *  catalogue. See l100 s7. */
 const collectTutorials = (): ITutorial[] => {
 	const langCodes = supportedLanguages.map((l) => l.code);
 	const all = discoverTutorials(join(ROOT, 'plugins'), langCodes, {

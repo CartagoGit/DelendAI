@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 
 import { lintProposalMarkdown } from '../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
 
-// Loose on purpose, same reasoning as PROPOSAL_FILENAME below: p99 (2
+// Loose on purpose, same reasoning as PROPOSAL_FILENAME below: l99 (2
 // digits) must classify as "legacy warning", not "fatal error". `l` is
 // included alongside `p` — post-migration legacy keeps the same
 // permanently-lenient tier, see the module doc comment above.
@@ -32,7 +32,7 @@ const isLegacyFilename = (filename: string): boolean =>
 	/^[pl]\d+-/.test(filename);
 
 // Only files shaped like a proposal (legacy `pNNN-…`, including the
-// 2-digit `p99-…`, or a new kind prefix) are proposals at all.
+// 2-digit `l99-…`, or a new kind prefix) are proposals at all.
 // `docs/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
 // ones that ended up in `done/`), `RESUMEN-*` session notes,
@@ -43,7 +43,7 @@ const isLegacyFilename = (filename: string): boolean =>
 // Deliberately looser than the canonical `^[a-z]\d{3,}-…` pattern
 // (proposal-scaffold-linter's `lintFilenameAndFolder` and the glossary's
 // id regex both require ≥3 digits): a strict filter here would silently
-// *skip* `p99-feat-multi-model-audit-plugin.md` (2 digits) instead of
+// *skip* `l99-feat-multi-model-audit-plugin.md` (2 digits) instead of
 // surfacing it as a finding — invisible is worse than flagged. The
 // walker's job is "is this plausibly a proposal", the linter's stricter
 // job is "does it conform"; the file still goes through

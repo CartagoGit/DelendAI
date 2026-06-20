@@ -24,7 +24,7 @@ const mulberry32 = (seed: number) => {
 	};
 };
 
-const WORDS = ['alpha', 'beta', 'gamma', 'delta', 'p110', 'slice', 'done'];
+const WORDS = ['alpha', 'beta', 'gamma', 'delta', 'l110', 'slice', 'done'];
 const randomWord = (rng: () => number): string =>
 	WORDS[Math.floor(rng() * WORDS.length)] ?? 'x';
 

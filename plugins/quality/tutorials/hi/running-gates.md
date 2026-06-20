@@ -159,5 +159,5 @@ binary ने emit किया हो)।
 
 ## अगला कदम
 
-- [बहु-भाषा quality gates (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [बहु-भाषा quality gates (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & command policy (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
