@@ -31,6 +31,13 @@
  * `data/skills.json` and `data/capabilities.json`; consumers that try
  * `#MANIFESTS/skills.json` before s3 will fail to resolve. That is
  * the documented expected behaviour (see p112 §1).
+ *
+ * `REPO_ROOT` is computed as `<this file>/../../../..` (4 levels up:
+ * `lib/` → `scripts/` → `web/apps/` → `web/` → repo). Hard-coding
+ * those hops would couple this module to its own filename; using
+ * `import.meta.url` + `fileURLToPath` keeps the path resolution
+ * filesystem-anchored (DIP: depend on the file's location, not on
+ * hard-coded strings).
  */
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
