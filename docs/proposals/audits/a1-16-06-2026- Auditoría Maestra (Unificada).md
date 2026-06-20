@@ -677,6 +677,15 @@ camino al 11/10 — solo acabados de plataforma.**
   ¿migrar `.mcp.json` de este repo a un `host-config.ts` propio con 1-2 `extraTools`
   específicas (ej. `rename_audit`), o queda como está (CLI+preset, sin tools propias)?
   No implementado — análogo a l99, dejado para decidir.
+  **✅ Decidido y cerrado (21-06, sesión §11):** migrar. `scripts/host-server.ts`
+  reutiliza `parseCliArgs`+`assembleCliConfig` (mismo `--preset=swarm` de
+  siempre) y añade `mcp-vertex_rename_audit` como `extraTools` —
+  ([scripts/host/rename-audit-engine.ts](../../../scripts/host/rename-audit-engine.ts),
+  [scripts/host/rename-audit-tool.ts](../../../scripts/host/rename-audit-tool.ts)).
+  `.mcp.json` y `.vscode/mcp.json` apuntan ahora a ese script. Verificado con un
+  cliente MCP real por stdio: 62 tools, `rename_audit` presente y funcionando
+  (detecta sus propias menciones literales de los patrones retirados como único
+  resultado — el resto del código está limpio).
 
 ---
 
