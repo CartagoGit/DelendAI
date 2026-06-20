@@ -1,13 +1,15 @@
 ---
-id: p103
+id: l103
 type: proposal
 status: done
 track: runtime+coordination
 date: 2026-06-18
 closed: 2026-06-20
+kind: legacy
+title: Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
 ---
 
-# p103 — Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
+# l103 — Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
 
 > **Estado: DONE (2026-06-20).** La propuesta
 > documenta el problema, lo que el servidor MCP **sí puede** y
@@ -442,7 +444,7 @@ cerrar s1.
   serialización de writes al packet.
 - `packages/core/src/lib/shared/write-file-atomic.ts` —
   durabilidad del packet.
-- `docs/proposals/p103-loop-detection-and-handoff.md` — este
+- `docs/proposals/l103-loop-detection-and-handoff.md` — este
   fichero (la spec que estas líneas describen).
 
 ## 5. Slices (orden de ejecución, disjuntas)
@@ -555,5 +557,5 @@ canal existente; cero infra nueva.
 | Hash de args vs Levenshtein | **hash primero**, Levenshtein en s2-bis | Hash es O(1) y suficiente para "el modelo repite lo mismo"; Levenshtein es O(n²) y solo añade valor para "args casi iguales" (un sub-caso). |
 | Threshold default 3 | igual a `IDLE_STOP_THRESHOLD` existente | Coherencia con el brake que ya tenemos. El usuario puede ajustar. |
 | Default `enabled: true` | como en la propuesta original | Acepta el riesgo de falsos positivos (mitigado por el handoff que se ignora si no aplica). El usuario pidió esta dirección. |
-| Per-agent tracking | **sí**, clave `agent` del agent_lock | Dos agentes con la misma tool + mismo args no se confunden; matches p103 §1 "agente lógico". |
+| Per-agent tracking | **sí**, clave `agent` del agent_lock | Dos agentes con la misma tool + mismo args no se confunden; matches l103 §1 "agente lógico". |
   fichero.

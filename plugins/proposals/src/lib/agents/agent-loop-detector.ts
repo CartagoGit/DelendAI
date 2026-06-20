@@ -1,5 +1,5 @@
 /**
- * `agent-loop-detector` — pure module for p103 s1.
+ * `agent-loop-detector` — pure module for l103 s1.
  *
  * Given a sliding window of recent tool calls per agent, returns
  * a verdict describing whether the agent is stuck in an exact-repeat
@@ -17,9 +17,9 @@
  *   function signature change with no caller-side blast radius.
  *
  * The detector only flags `exact-repeat`. Near-repeat (Levenshtein
- * similarity) is s2-bis per p103 §5.1.
+ * similarity) is s2-bis per l103 §5.1.
  *
- * @see docs/proposals/p103-loop-detection-and-handoff.md §5 s1.
+ * @see docs/proposals/l103-loop-detection-and-handoff.md §5 s1.
  */
 import { createHash } from 'node:crypto';
 
@@ -47,7 +47,7 @@ export interface ILoopVerdict {
 	readonly offendingHash: string | null;
 }
 
-/** Tunable knobs. Defaults match p103 §5.1. */
+/** Tunable knobs. Defaults match l103 §5.1. */
 export interface ILoopDetectorOptions {
 	/** Max calls kept per agent in the sliding window. Default 50. */
 	readonly ringSize?: number;

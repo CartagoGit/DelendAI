@@ -1,16 +1,19 @@
 ---
-id: p112
+id: l112
 type: proposal
-status: pending
+status: blocked
 track: web
 date: 2026-06-20
 related:
-  - p100 # website i18n & docs rewrite
-  - p101 # web header transitions
-  - p110 # residual web/i18n follow-ups
+  - l100 # website i18n & docs rewrite
+  - l101 # web header transitions
+  - l110 # residual web/i18n follow-ups
+kind: legacy
+title: Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
+blocked_by: [self:needs-triage]
 ---
 
-# p112 — Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
+# l112 — Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
 
 > **Status: IDEA. Explored 2026-06-20 in two slices that were reverted by
 > the workspace's parallel-edit reconciliation (cf. `affairs-orchestrator
@@ -115,7 +118,7 @@ locally before commit.
     has migrated yet, so this slice is a no-op for the site build,
     but it proves the wiring is correct before we change consumers).
 - review-state: in_review
-- review-implementer: mcp-core-p112-s2
+- review-implementer: mcp-core-l112-s2
 ### s3 — Move the two site manifests to `apps/web/src/data/manifests/`
 
 - files: apps/web/scripts/gen-skills.ts, apps/web/scripts/gen-capabilities.ts, .gitignore
@@ -192,7 +195,7 @@ import capabilities         from '#MANIFESTS/capabilities.json'; // local
 - The runtime state under `.cache/mcp-vertex/` (already correctly
   git-ignored).
 - The proposals plugin's own `index.json` regeneration path (its
-  docsDir resolution, addressed by p111 s5).
+  docsDir resolution, addressed by l111 s5).
 - Workspace packages in `packages/core/`, `plugins/*/`, `examples/*/`
   (would be a follow-up proposal — the convention is established
   here, but applying it repo-wide is out of scope).

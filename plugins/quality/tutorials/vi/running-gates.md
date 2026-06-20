@@ -157,5 +157,5 @@ command policy") và **không bao giờ được khởi chạy**. `deny` thắng
 
 ## Bước tiếp theo
 
-- [Quality gates đa ngôn ngữ (p107)](../../p107-multilang-quality-gates.md)
-- [Ranh giới tin cậy & chính sách lệnh (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Quality gates đa ngôn ngữ (l107)](../../l107-multilang-quality-gates.md)
+- [Ranh giới tin cậy & chính sách lệnh (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

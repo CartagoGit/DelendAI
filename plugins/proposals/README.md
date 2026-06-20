@@ -68,7 +68,7 @@ Pointing mcp-vertex at a project that already has a proposals folder? Call
 }
 ```
 
-### `auto_work` persistence modes (p109)
+### `auto_work` persistence modes (l109)
 
 The `auto_work` tool can optionally commit (and push) the slice's
 claimed files when the orchestrator closes the slice. Three modes,
@@ -113,7 +113,7 @@ project) > `'none'` (default):
   `claim.files`; it never runs `git add .` so a slice can't drag in
   unrelated changes.
 
-The full spec lives in [docs/proposals/p109-feat-auto-work-persist-modes.md](../../docs/proposals/p109-feat-auto-work-persist-modes.md).
+The full spec lives in [docs/proposals/l109-feat-auto-work-persist-modes.md](../../docs/proposals/l109-feat-auto-work-persist-modes.md).
 
 ## Paths
 

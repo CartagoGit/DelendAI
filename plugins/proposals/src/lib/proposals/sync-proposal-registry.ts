@@ -357,13 +357,13 @@ interface INewSystemFile {
  * A file is only "on the new state machine" if BOTH hold:
  * 1. its filename prefix is one of the 12 live f113 kind prefixes
  *    (explicitly excludes the retired legacy `p` — `p5-meta.md`,
- *    `p99-…md`, etc. are never reconciled, no matter their status);
+ *    `l99-…md`, etc. are never reconciled, no matter their status);
  * 2. frontmatter `status` resolves to one of the 7 glossary statuses.
  *
  * Status alone is NOT enough: `ready` is the *default* status
  * `create_proposal` writes for brand-new proposals regardless of kind
  * (`status: ${args.status ?? 'ready'}`), so without the prefix check
- * every freshly created legacy-style proposal (id `p5`, `p100`, …) —
+ * every freshly created legacy-style proposal (id `p5`, `l100`, …) —
  * which is the common case, that tool predates f113 and has no notion
  * of kinds — would get silently relocated into `ready/` the moment
  * `syncProposalRegistry` next ran. Caught by `authoring.spec.ts`'s

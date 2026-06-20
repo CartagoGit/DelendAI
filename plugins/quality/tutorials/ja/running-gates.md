@@ -158,5 +158,5 @@ lang: ja
 
 ## 次のステップ
 
-- [多言語Qualityゲート（p107）](../../p107-multilang-quality-gates.md)
-- [信頼境界 & コマンドポリシー（M13）](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [多言語Qualityゲート（l107）](../../l107-multilang-quality-gates.md)
+- [信頼境界 & コマンドポリシー（M13）](../../l107-multilang-quality-gates.md#5-no-objetivos)

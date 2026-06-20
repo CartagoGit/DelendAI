@@ -1,5 +1,5 @@
 /**
- * `IPluginConfigExample` contract guard (p100 s6).
+ * `IPluginConfigExample` contract guard (l100 s6).
  *
  * Pins the shape so future refactors cannot silently drop the
  * `summary` or `options` fields. The interface is opt-in (plugins

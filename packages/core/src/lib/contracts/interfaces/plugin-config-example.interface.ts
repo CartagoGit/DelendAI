@@ -1,7 +1,7 @@
 /**
  * `IPluginConfigExample` — contract a plugin can implement so the docs
  * site can render a ready-to-copy `mcp-vertex.config.json` snippet for
- * each plugin. See p100 s6.
+ * each plugin. See l100 s6.
  *
  * Plugins opt in by exporting a `configExample` object (or by adding
  * it to their `IMcpPlugin`). The docs site reads it via

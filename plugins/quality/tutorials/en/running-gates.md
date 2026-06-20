@@ -159,5 +159,5 @@ wins over `allow`; an empty `allow` means "any binary not denied".
 
 ## Next step
 
-- [Multi-language quality gates (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Multi-language quality gates (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & command policy (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

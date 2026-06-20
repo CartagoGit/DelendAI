@@ -42,6 +42,11 @@ const walkFiles = async (root: string): Promise<string[]> => {
 			if (SKIP_DIR_NAMES.has(entry.name)) continue;
 			out.push(...(await walkFiles(join(root, entry.name))));
 		} else if (entry.isFile()) {
+			// Generated artefacts (the proposals registry) are rebuilt by
+			// sync_proposals right after the migration — rewriting their text
+			// directly would be redundant and could drift from what the real
+			// generator would have produced.
+			if (entry.name === 'index.json') continue;
 			const dot = entry.name.lastIndexOf('.');
 			if (dot === -1) continue;
 			if (SEARCH_EXTENSIONS.has(entry.name.slice(dot))) {
@@ -57,12 +62,12 @@ const walkFiles = async (root: string): Promise<string[]> => {
  * so a subsequent bare-id rule never re-matches inside what the first
  * rule already rewrote):
  *
- * 1. The full `pNNN-<slug>` stem (e.g. `p99-feat-multi-model-audit-
+ * 1. The full `pNNN-<slug>` stem (e.g. `l99-feat-multi-model-audit-
  *    plugin`) -> `lNNN-<slug>`, anchored to the EXACT slug from the
  *    migration plan so a coincidental `p\d+-` elsewhere is never
  *    touched.
  * 2. The bare `\bpNNN\b` mention (no slug) -> `lNNN` — common in prose
- *    like "Quality gates multi-lenguaje (p107)", which the full-stem
+ *    like "Quality gates multi-lenguaje (l107)", which the full-stem
  *    rule alone would miss even on the same line as a full link.
  */
 export const buildRewrites = (
@@ -91,7 +96,7 @@ export const rewriteRefsInFile = (
 	let occurrences = 0;
 	let next = content;
 	for (const { from, to } of rewrites) {
-		// `from` is the exact old stem (e.g. "p99-feat-multi-model-audit-plugin")
+		// `from` is the exact old stem (e.g. "l99-feat-multi-model-audit-plugin")
 		// anchored to one specific migration plan, so every match IS the
 		// whole token — a flat replacement, no captured groups needed.
 		next = next.replace(from, () => {

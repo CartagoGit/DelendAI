@@ -1,5 +1,5 @@
 /**
- * Optional persistence step for `<prefix>_auto_work` (p109).
+ * Optional persistence step for `<prefix>_auto_work` (l109).
  *
  * When the agent closes a slice, it can opt to commit (and optionally
  * push) the changed files. Three modes:
@@ -24,12 +24,12 @@
  * ```typescript
  * const result = await maybePersistAfterSlice(
  *   ['plugins/proposals/src/lib/tools/auto-work-persist.ts'],
- *   'p109',
+ *   'l109',
  *   's2',
  *   {
  *     mode: 'commit-and-push',
  *     cwd: '/abs/repo',
- *     pushTarget: 'origin agent/p109',
+ *     pushTarget: 'origin agent/l109',
  *   },
  * );
  * if (!result.committed) console.warn('persist skipped:', result.reason);
@@ -122,7 +122,7 @@ const DEFAULT_PUSH_TARGET = 'origin HEAD';
  *
  * - `plugins/proposals/src/lib/foo.ts` → `plugins`
  * - `apps/web/src/pages/index.astro`   → `apps`
- * - `docs/proposals/p99.md`           → `docs`
+ * - `docs/proposals/l99.md`           → `docs`
  * - `package.json` (no segments)      → `chore`
  *
  * The lookup is intentionally dumb (no allowlist) — it does not try to

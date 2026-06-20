@@ -42,10 +42,10 @@ be executed verbatim — no improvising steps.
 // Typical response (truncated)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "Open docs/mcp-vertex/proposals/p110-…md and pick the next atomic slice.",
+    "Open docs/mcp-vertex/proposals/l110-…md and pick the next atomic slice.",
     "Claim its files: proposals_agent_lock { action: \"claim\", … }",
     "Implement exactly that slice — nothing outside the claimed files.",
     "Validate per the project gate (see get_validation_matrix if present).",
@@ -104,7 +104,7 @@ and idempotent.
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -129,5 +129,5 @@ is drained).
 ## Next step
 
 - [How the agent_worktree plugin isolates concurrent agents](#)
-- [Persistence modes for auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Persistence modes for auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context for resumed work](#)

@@ -154,5 +154,5 @@ lang: ar
 
 ## الخطوة التالية
 
-- [gates الجودة متعددة اللغات (p107)](../../p107-multilang-quality-gates.md)
-- [حدود الثقة وسياسة الأوامر (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [gates الجودة متعددة اللغات (l107)](../../l107-multilang-quality-gates.md)
+- [حدود الثقة وسياسة الأوامر (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

@@ -93,7 +93,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed
-- **p111 closed: post-closure audit hardening landed.** Five findings
+- **l111 closed: post-closure audit hardening landed.** Five findings
   from the 16-06 master audit, plus two new ones discovered this
   session, are now fixed and pinned by tests: (s1) M45 — `auto_work`
   / `continue_proposal` no longer crash on idle because a local
@@ -121,8 +121,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the public surface (`saveNote`/`removeNote`/`readStore`), no
   `node:fs`/`withFileMutex` imports — DIP, so a future
   SQLite-WAL swap can't silently break the contract.
-- **p110 closed: i18n + docs rewrite residuals landed.** The three
-  slices p100 deferred are now done — (1) `apps/web/scripts/lib/resolve-i18n-descriptions.ts`
+- **l110 closed: i18n + docs rewrite residuals landed.** The three
+  slices l100 deferred are now done — (1) `apps/web/scripts/lib/resolve-i18n-descriptions.ts`
   + `gen-capabilities.ts` integration precompute the 12-language
   `i18n` block for every tool with a catalogue entry, so the SSR
   renderer never pays a runtime `describeTool()` lookup; (2) a
@@ -132,7 +132,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   · Tutorial` tabs in `PluginPage.astro`; (3) the 5 tutorial
   files in 11 languages are committed and the
   `apps/web/scripts/check-tutorials-i18n.ts` gate reports 60 files
-  / 0 pending / 100% reviewed. Cached p109 (`auto_work` persistence
+  / 0 pending / 100% reviewed. Cached l109 (`auto_work` persistence
   modes) ships in the same window.
 - **No synchronous I/O left in `proposals`** (H2, extends M5): migrated the
   residual `*Sync` calls in the proposals tools (`authoring`, `continue-proposal`,

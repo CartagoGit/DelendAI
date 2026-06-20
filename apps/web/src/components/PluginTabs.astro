@@ -1,6 +1,6 @@
 ---
 /**
- * `PluginTabs.astro` — accessible tab strip for plugin pages (p100 s8).
+ * `PluginTabs.astro` — accessible tab strip for plugin pages (l100 s8).
  *
  * Renders an ARIA-correct tablist with one `<section role="tabpanel">`
  * per tab. Tabs are client-side: clicking a tab button toggles the
@@ -97,7 +97,7 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 </style>
 
 <script>
-	// ARIA tabs controller (p110 s8). Extracted to a module so the
+	// ARIA tabs controller (l110 s8). Extracted to a module so the
 	// activation / keyboard logic is unit-testable with a minimal DOM
 	// stand-in instead of being trapped inside an Astro `is:inline`
 	// block. Astro bundles this `<script>` automatically; the path is

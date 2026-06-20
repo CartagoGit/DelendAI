@@ -1,6 +1,6 @@
 # `@mcp-vertex/audit`
 
-Multi-model audit plugin (p99, alcance A). Estandariza el formato de
+Multi-model audit plugin (l99, alcance A). Estandariza el formato de
 auditoría del repo y consolida N auditorías en una sola hoja de ruta
 unificada. **Sin red, sin secretos.**
 
@@ -66,7 +66,7 @@ pero el parser tolera variantes razonables.
 
 ## Alcance A (este plugin) vs B (futuro)
 
-| | A (este plugin) | B (p99 B, propuesta separada) |
+| | A (este plugin) | B (l99 B, propuesta separada) |
 |---|---|---|
 | Red | ❌ | ✅ (OpenRouter, etc.) |
 | Secretos | ❌ | ✅ (claves API) |
@@ -93,7 +93,7 @@ Sin opciones hoy. Futuras opciones: `auditDir`, `dimensions`,
 
 ## Ver también
 
-- [`docs/proposals/p99-feat-multi-model-audit-plugin.md`](../../docs/proposals/p99-feat-multi-model-audit-plugin.md)
+- [`docs/proposals/l99-feat-multi-model-audit-plugin.md`](../../docs/proposals/l99-feat-multi-model-audit-plugin.md)
   — la propuesta completa.
 - `docs/proposals/audits/` — los archivos `.md` de auditorías individuales
   que este plugin parsea.

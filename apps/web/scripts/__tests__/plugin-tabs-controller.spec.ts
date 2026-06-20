@@ -1,5 +1,5 @@
 /**
- * `initPluginTabs` contract guard (p110 s8).
+ * `initPluginTabs` contract guard (l110 s8).
  *
  * The plugin tabs controller touches the DOM (querySelector, getElementById,
  * addEventListener, attribute mutations, focus). Vitest runs in `node`
@@ -7,7 +7,7 @@
  * DOM stand-in instead of pulling in `jsdom` / `happy-dom`. The stand-in
  * implements the slice of the DOM API `initPluginTabs` actually consumes.
  *
- * Why not jsdom: p110 §2 deliberately avoided new dependencies. A 50-line
+ * Why not jsdom: l110 §2 deliberately avoided new dependencies. A 50-line
  * fake keeps the test fast, dependency-free, and forces us to write the
  * controller against the narrowest DOM contract — if the fake rejects
  * something the controller asks for, that's a signal the controller is

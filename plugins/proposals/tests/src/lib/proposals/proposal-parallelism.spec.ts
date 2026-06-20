@@ -98,7 +98,7 @@ describe('evaluateParallelism', () => {
 		const result = evaluateParallelism([
 			auditOnly,
 			{
-				proposalId: 'p99-fixture',
+				proposalId: 'l99-fixture',
 				mainWriteLane: 'editor',
 				parallelismLanes: ['audit'],
 			},

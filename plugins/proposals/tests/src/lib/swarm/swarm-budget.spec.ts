@@ -39,7 +39,7 @@ const writeProposal = (name: string, content: string): string => {
 
 const VALID_FRONTMATTER_BASE = [
 	'---',
-	'id: p99',
+	'id: l99',
 	'type: meta',
 	'status: pending',
 	'track: meta',
@@ -52,7 +52,7 @@ const VALID_FRONTMATTER_BASE = [
 describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy', () => {
 	it('returns ISwarmProposalExtension with both blocks when both are valid', async () => {
 		const path = writeProposal(
-			'p99-valid.md',
+			'l99-valid.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'swarmBudget:',
@@ -97,7 +97,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
 	it('throws ProposalParseError with INVALID_SWARM_BUDGET for negative maxAgentsPerSession', async () => {
 		const path = writeProposal(
-			'p99-negative-budget.md',
+			'l99-negative-budget.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'swarmBudget:',
@@ -129,7 +129,7 @@ describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
 describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
 	it('throws ProposalParseError with INVALID_CONTINUITY_POLICY for zero retries', async () => {
 		const path = writeProposal(
-			'p99-zero-retries.md',
+			'l99-zero-retries.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'continuityPolicy:',
@@ -161,7 +161,7 @@ describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
 describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false is valid', () => {
 	it('accepts forbidReReadOnUnchangedDigest: false without error', async () => {
 		const path = writeProposal(
-			'p99-forbidflag-false.md',
+			'l99-forbidflag-false.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'continuityPolicy:',
@@ -187,7 +187,7 @@ describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false
 describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base validation', () => {
 	it('returns empty ISwarmProposalExtension for a valid proposal without swarm keys', async () => {
 		const path = writeProposal(
-			'p99-no-swarm.md',
+			'l99-no-swarm.md',
 			[
 				VALID_FRONTMATTER_BASE,
 				'---',
@@ -205,7 +205,7 @@ describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base va
 
 	it('propagates ProposalParseError from base parser when frontmatter is missing', async () => {
 		const path = writeProposal(
-			'p99-no-frontmatter.md',
+			'l99-no-frontmatter.md',
 			'# [PROPOSAL] No frontmatter at all\n\nSome content.',
 		);
 

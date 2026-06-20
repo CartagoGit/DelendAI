@@ -44,10 +44,10 @@ executado literalmente — sem improvisar etapas.
 // Resposta típica (truncada)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "Abrir docs/mcp-vertex/proposals/p110-…md e escolher o próximo slice atômico.",
+    "Abrir docs/mcp-vertex/proposals/l110-…md e escolher o próximo slice atômico.",
     "Reivindicar seus arquivos: proposals_agent_lock { action: \"claim\", … }.",
     "Implementar exatamente esse slice — nada fora dos arquivos reivindicados.",
     "Validar conforme o gate do projeto (ver get_validation_matrix se presente).",
@@ -108,7 +108,7 @@ rápido e idempotente.
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -133,5 +133,5 @@ store estiver esgotado).
 ## Próximo passo
 
 - [Como o plugin agent_worktree isola agentes concorrentes](#)
-- [Modos de persistência para auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Modos de persistência para auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context para trabalho retomado](#)

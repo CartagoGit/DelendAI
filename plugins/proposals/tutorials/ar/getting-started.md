@@ -43,10 +43,10 @@ docs/mcp-vertex/proposals/
 // استجابة نموذجية (مختصرة)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "افتح docs/mcp-vertex/proposals/p110-…md واختر الشريحة الذرية التالية.",
+    "افتح docs/mcp-vertex/proposals/l110-…md واختر الشريحة الذرية التالية.",
     "اطالب بملفاتها: proposals_agent_lock { action: \"claim\", … }.",
     "نفّذ هذه الشريحة فقط — لا شيء خارج الملفات المطالَب بها.",
     "تحقّق وفق بوابة المشروع (راجع get_validation_matrix إن وُجدت).",
@@ -103,7 +103,7 @@ bun run validate
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -126,5 +126,5 @@ bun run validate
 ## الخطوة التالية
 
 - [كيف تعزل إضافة agent_worktree العملاء المتزامنين](#)
-- [أوضاع الحفظ لـ auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [أوضاع الحفظ لـ auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [سياق الجولة للعمل المستأنف](#)

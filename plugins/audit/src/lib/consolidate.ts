@@ -1,5 +1,5 @@
 /**
- * Consolidate N audit documents into a single master view (p99, alcance A).
+ * Consolidate N audit documents into a single master view (l99, alcance A).
  *
  * The consolidator is the value-add of this plugin: each model produces
  * an audit in the same format (via the brief from `brief.ts`), and this

@@ -17,7 +17,7 @@
 // The `check-i18n.ts` gate is NOT extended to require 12-language
 // completeness on these files in this proposal: the catalogue starts
 // empty by design so we ship the infrastructure without breaking the
-// build. A future proposal (p106) will populate it language by language
+// build. A future proposal (l106) will populate it language by language
 // and then tighten the gate to require 12-lang completeness per entry.
 
 import type { Lang } from '../shared';

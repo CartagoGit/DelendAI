@@ -4,7 +4,7 @@
 // (apps/web/src/i18n/tools/<key>.ts convention — the path matches the
 // `descriptionKey` the tool's registration declares).
 //
-// 12-lang invariant is enforced by `check-i18n.ts` (p100 s3-bis).
+// 12-lang invariant is enforced by `check-i18n.ts` (l100 s3-bis).
 // The English copy is the canonical source of truth; the rest are
 // straight translations to keep this plugin self-contained for the
 // docs site. Keep the text aligned with `plugins/audit/src/lib/brief.ts`.

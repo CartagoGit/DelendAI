@@ -1,5 +1,5 @@
 /**
- * `maybePersistAfterSlice` contract guard (p109 s2).
+ * `maybePersistAfterSlice` contract guard (l109 s2).
  *
  * Pins the four guarantees the helper makes to `auto_work`:
  *
@@ -70,7 +70,7 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'none', git: runner },
 		);
@@ -90,7 +90,7 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'commit', git: runner },
 		);
@@ -114,14 +114,14 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'commit', git: runner },
 		);
 		const commitArgs = runner.calls.find(
 			(a) => a[0] === 'commit' && a[1] === '-m',
 		);
-		expect(commitArgs?.[2]).toBe('plugins(p109): s2');
+		expect(commitArgs?.[2]).toBe('plugins(l109): s2');
 	});
 
 	it('refuses to push to `main` (safety net)', async () => {
@@ -139,7 +139,7 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'commit-and-push', pushTarget: 'origin main', git: runner },
 		);
@@ -158,11 +158,11 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{
 				mode: 'commit-and-push',
-				pushTarget: 'origin agent/p109',
+				pushTarget: 'origin agent/l109',
 				git: runner,
 			},
 		);
@@ -170,7 +170,7 @@ describe('maybePersistAfterSlice', () => {
 		expect(result.pushed).toBe(true);
 		expect(result.hash).toBe('deadbeef');
 		const pushCall = runner.calls.find((a) => a[0] === 'push');
-		expect(pushCall).toEqual(['push', 'origin', 'agent/p109']);
+		expect(pushCall).toEqual(['push', 'origin', 'agent/l109']);
 	});
 
 	it('reports a friendly reason when `git add` fails (never throws)', async () => {
@@ -183,7 +183,7 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'commit', git: runner },
 		);
@@ -203,7 +203,7 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{ mode: 'commit', git: runner },
 		);
@@ -224,11 +224,11 @@ describe('maybePersistAfterSlice', () => {
 		]);
 		const result = await maybePersistAfterSlice(
 			['plugins/proposals/src/lib/foo.ts'],
-			'p109',
+			'l109',
 			's2',
 			{
 				mode: 'commit-and-push',
-				pushTarget: 'origin agent/p109',
+				pushTarget: 'origin agent/l109',
 				git: runner,
 			},
 		);
@@ -245,7 +245,7 @@ describe('maybePersistAfterSlice', () => {
 				output: 'should not be called',
 			},
 		]);
-		const result = await maybePersistAfterSlice([], 'p109', 's2', {
+		const result = await maybePersistAfterSlice([], 'l109', 's2', {
 			mode: 'commit',
 			git: runner,
 		});
@@ -261,10 +261,10 @@ describe('renderCommitMessage', () => {
 			renderCommitMessage(
 				'<area>(<proposalId>): <sliceId>',
 				'plugins',
-				'p109',
+				'l109',
 				's2',
 			),
-		).toBe('plugins(p109): s2');
+		).toBe('plugins(l109): s2');
 	});
 
 	it('passes unknown placeholders through verbatim', () => {
@@ -272,7 +272,7 @@ describe('renderCommitMessage', () => {
 			renderCommitMessage(
 				'feat(<unknown>): <sliceId>',
 				'plugins',
-				'p109',
+				'l109',
 				's2',
 			),
 		).toBe('feat(<unknown>): s2');

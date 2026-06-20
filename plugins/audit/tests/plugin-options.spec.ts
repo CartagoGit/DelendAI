@@ -1,6 +1,6 @@
 /**
  * `definePlugin({ ...optionsSchema })` for `@mcp-vertex/audit`
- * (p99 follow-up). These specs pin the contract:
+ * (l99 follow-up). These specs pin the contract:
  *
  * 1. `optionsSchema` is `strict` — unknown fields are rejected.
  * 2. The plugin's defaults match the documented constants

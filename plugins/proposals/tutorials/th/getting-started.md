@@ -42,10 +42,10 @@ docs/mcp-vertex/proposals/
 // การตอบสนองทั่วไป (ตัดทอน)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "เปิด docs/mcp-vertex/proposals/p110-…md และเลือกสไลซ์อะตอมิกถัดไป",
+    "เปิด docs/mcp-vertex/proposals/l110-…md และเลือกสไลซ์อะตอมิกถัดไป",
     "เรียกร้องสิทธิ์ไฟล์: proposals_agent_lock { action: \"claim\", … }",
     "นำไปใช้เฉพาะสไลซ์นั้น — ไม่มีอะไรนอกไฟล์ที่เรียกร้องสิทธิ์",
     "ตรวจสอบตาม gate ของโครงการ (ดู get_validation_matrix หากมี)",
@@ -103,7 +103,7 @@ bun run validate
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -127,5 +127,5 @@ index ใหม่ จากนั้นเรียก `auto_work` อีกค
 ## ขั้นตอนถัดไป
 
 - [ปลั๊กอิน agent_worktree แยกเอเจนต์พร้อมกันอย่างไร](#)
-- [โหมดการยืนยันสำหรับ auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [โหมดการยืนยันสำหรับ auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context สำหรับการทำงานที่เริ่มใหม่](#)

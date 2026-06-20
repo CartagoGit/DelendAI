@@ -8,7 +8,7 @@ export default defineConfig({
 		// `idea` status) should set `include: []` in their local
 		// `vitest.config.ts` AND add a short comment explaining why —
 		// see `plugins/audit/vitest.config.ts` for the historical
-		// p99 opt-out pattern.
+		// l99 opt-out pattern.
 		projects: [
 			'packages/*',
 			'plugins/*',

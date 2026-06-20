@@ -90,7 +90,7 @@ export const buildBrief = (
 > configuración, tests y documentación. Cita siempre \`<archivo>:<línea>\` o
 > \`<archivo>#L<línea>\` cuando reportes un hallazgo.
 >
-> Este brief es el contrato público de \`@mcp-vertex/audit\` (p99). Si tu
+> Este brief es el contrato público de \`@mcp-vertex/audit\` (l99). Si tu
 > salida se aleja del formato, la herramienta \`audit_consolidate\` no
 > podrá deduplicar tus hallazgos contra los de otros revisores.
 

@@ -13,7 +13,7 @@ import type { IAutoWorkPersistMode } from './auto-work-persist';
 /**
  * Optional persistence step the orchestrator can opt into at slice
  * close time. Three modes — `'none'` (default, no git), `'commit'`,
- * `'commit-and-push'`. See p109 §2 for the rationale; the helper
+ * `'commit-and-push'`. See l109 §2 for the rationale; the helper
  * itself lives in `auto-work-persist.ts` and is invoked by the
  * orchestrator, not by `auto_work` (which only renders the plan).
  */
@@ -72,7 +72,7 @@ export const __resetIdleStreakForTesting = (): void => {
  * `maybePersistAfterSlice(...)` after `sync_proposals`. The persist
  * itself is NOT executed inside this tool — `auto_work` is read-only
  * with respect to the workspace filesystem and git; it only renders
- * a plan. See p109 s3.
+ * a plan. See l109 s3.
  */
 export const runAutoWork = async (
 	options: IAutoWorkToolOptions & {
@@ -198,7 +198,7 @@ const INPUT_SCHEMA = z
 		/**
 		 * Optional per-call override for the persist mode. Resolved with
 		 * priority `args.persist` > `config.persist.mode` > `'none'`.
-		 * See p109 §2 "Prioridad de resolución".
+		 * See l109 §2 "Prioridad de resolución".
 		 */
 		persist: z.enum(['none', 'commit', 'commit-and-push']).optional(),
 	})

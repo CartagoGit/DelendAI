@@ -1,15 +1,17 @@
 ---
-id: p104
+id: l104
 type: proposal
 status: done
 track: agent-contract
 date: 2026-06-18
 closed: 2026-06-20
 related:
-  - p99 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
+  - l99 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
+kind: legacy
+title: Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
 ---
 
-# p104 — Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
+# l104 — Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
 
 > **Estado: DONE (2026-06-20).** Plugin implementado y operativo:
 > 3 tools (`close`, `validate`, `ping`) + 2 knowledge entries,
@@ -305,7 +307,7 @@ Eso significa que en el estado actual del core, el plugin solo puede:
 **Recomendación**: empezar por **A** (publicar el plugin con knowledge +
 tools, sin tocar el core). Cumple el 80% — el agente tiene la tabla
 canónica disponible y un helper que produce la línea exacta, así que la
-convención se vuelve trivial de seguir. Mientras, abrir p105 para añadir
+convención se vuelve trivial de seguir. Mientras, abrir l105 para añadir
 los hooks al core (B) como mejora separada.
 
 ### Si eliges B o C, propuesta adicional mínima para el core
@@ -409,7 +411,7 @@ de transición. La tabla de 8 estados **no cambia** — es contrato.
 - [x] README del plugin documenta: tabla, formato, ejemplo de uso.
 - [x] Sitio web: entrada en `/plugins/status-marker` (autogenerada
       por `[plugin].astro` desde `capabilities.json`) y entrada en
-      `/capabilities` con el desplegable (p105 B10).
+      `/capabilities` con el desplegable (l105 B10).
 - [ ] **No-goal explícito**: los hooks `onBeforePrompt` /
       `onAfterRespond` del core no se exponen (alcance A elegido en
       §4). Queda para una propuesta dedicada si surge la necesidad.

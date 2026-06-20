@@ -74,6 +74,9 @@ describe('lintProposalsDir', () => {
 		expect(summary.ok).toBe(true);
 	});
 
+	// Synthetic fixture, not a reference to a real proposal — uses `p99`
+	// deliberately (NOT `l99`) to cover the pre-migration prefix; the
+	// post-migration `l`-prefix case is covered separately below.
 	it('discovers a 2-digit legacy id (p99) and warns instead of skipping it', async () => {
 		await write(root, 'p99-old-thing.md', '# no frontmatter at all\n');
 		const summary = await lintProposalsDir(root);

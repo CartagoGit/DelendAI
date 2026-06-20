@@ -6,7 +6,7 @@ import { buildConsolidateRegistration } from './lib/tools/consolidate-tool';
 import { buildPlanRegistration } from './lib/tools/plan-tool';
 
 /**
- * `@mcp-vertex/audit` — multi-model audit plugin (p99, alcance A).
+ * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A).
  *
  * The plugin ships with two tools:
  *
@@ -21,13 +21,13 @@ import { buildPlanRegistration } from './lib/tools/plan-tool';
  *
  * Activation is opt-in: `mcp-vertex --plugins=audit`. The plugin makes no
  * network calls (no API fan-out, no keys, no telemetry). For the
- * network-enabled scope (p99 B), a separate opt-in plugin would own that.
+ * network-enabled scope (l99 B), a separate opt-in plugin would own that.
  *
- * See `docs/proposals/p99-feat-multi-model-audit-plugin.md` for the
+ * See `docs/proposals/l99-feat-multi-model-audit-plugin.md` for the
  * design rationale and the 3-enfoque analysis.
  */
 
-const KNOWLEDGE_BRIEF = `# Plugin @mcp-vertex/audit (p99 alcance A)
+const KNOWLEDGE_BRIEF = `# Plugin @mcp-vertex/audit (l99 alcance A)
 
 Sin red, sin secretos. Estandariza el formato de auditoría del repo y
 consolida N auditorías en una sola hoja de ruta.
@@ -141,7 +141,7 @@ export default definePlugin({
 	name: 'audit',
 	version: '0.1.0',
 	describe:
-		'Multi-model audit plugin (p99 alcance A): canonical brief generator + consolidation across N model reports. Read-only, no network, no secrets.',
+		'Multi-model audit plugin (l99 alcance A): canonical brief generator + consolidation across N model reports. Read-only, no network, no secrets.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
 		const optionsResult = OptionsSchema.safeParse(ctx.options);

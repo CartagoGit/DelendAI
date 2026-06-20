@@ -43,10 +43,10 @@ phải được thực hiện nguyên văn — không ứng biến các bước.
 // Phản hồi thông thường (rút gọn)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "Mở docs/mcp-vertex/proposals/p110-…md và chọn lát cắt nguyên tử tiếp theo.",
+    "Mở docs/mcp-vertex/proposals/l110-…md và chọn lát cắt nguyên tử tiếp theo.",
     "Yêu cầu tệp của nó: proposals_agent_lock { action: \"claim\", … }.",
     "Triển khai đúng lát cắt đó — không làm gì ngoài các tệp đã yêu cầu.",
     "Xác thực theo cổng dự án (xem get_validation_matrix nếu có).",
@@ -105,7 +105,7 @@ hoạch lát cắt, và xây dựng lại `index.json`. Nó nhanh và idempotent
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -130,5 +130,5 @@ nó sẽ trả về lát cắt tiếp theo (hoặc `state: "idle"` nếu kho
 ## Bước tiếp theo
 
 - [Plugin agent_worktree cô lập các tác nhân đồng thời như thế nào](#)
-- [Chế độ lưu trữ cho auto_work (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [Chế độ lưu trữ cho auto_work (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [Round context cho công việc được tiếp tục](#)

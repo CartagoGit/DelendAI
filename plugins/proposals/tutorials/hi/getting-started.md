@@ -44,10 +44,10 @@ docs/mcp-vertex/proposals/
 // सामान्य प्रतिक्रिया (संक्षिप्त)
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "docs/mcp-vertex/proposals/p110-…md खोलें और अगला परमाणु स्लाइस चुनें।",
+    "docs/mcp-vertex/proposals/l110-…md खोलें और अगला परमाणु स्लाइस चुनें।",
     "इसकी फ़ाइलें दावा करें: proposals_agent_lock { action: \"claim\", … }।",
     "बिल्कुल उस स्लाइस को लागू करें — दावा की गई फ़ाइलों के बाहर कुछ नहीं।",
     "प्रोजेक्ट गेट के अनुसार मान्य करें (यदि मौजूद हो तो get_validation_matrix देखें)।",
@@ -107,7 +107,7 @@ bun run validate
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -132,5 +132,5 @@ bun run validate
 ## अगला कदम
 
 - [agent_worktree प्लगइन समवर्ती एजेंटों को कैसे अलग करता है](#)
-- [auto_work के लिए पर्सिस्टेंस मोड (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [auto_work के लिए पर्सिस्टेंस मोड (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [फिर से शुरू किए गए कार्य के लिए Round context](#)

@@ -1,5 +1,5 @@
 ---
-id: p111
+id: l111
 status: done
 type: proposal
 track: core+proposals
@@ -16,17 +16,19 @@ shipped-in:
   - 49a9e28 # s4: store-concurrency spec for memory store (M32)
   - 440c3ad # s4 (chained): simplify import in store-concurrency.spec.ts
 related:
-  - p99 # audit plugin: this proposal records a new finding in its master audit doc
-  - p110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
+  - l99 # audit plugin: this proposal records a new finding in its master audit doc
+  - l110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
+kind: legacy
+title: Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
 ---
 
-# p111 — Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
+# l111 — Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
 
 ## 0. Por qué existe esta propuesta
 
 `docs/proposals/audits/16-06-2026- Auditoría Maestra (Unificada).md`
 deja explícitamente como "trabajo de una propuesta futura" el cierre
-de los hallazgos abiertos no bloqueantes que quedaron tras p99-p110.
+de los hallazgos abiertos no bloqueantes que quedaron tras l99-l110.
 Esta propuesta cierra los acotados, de bajo riesgo, que no requieren
 una decisión del usuario (excluye M44) ni tocan acciones externas
 (npm publish, merge a `main`).
@@ -36,7 +38,7 @@ verificados contra el código y ya corregidos:
 
 - **M45 — `auto_work`/`continue_proposal` lanzaban un crash de
   validación MCP en vez de un estado idle limpio** cuando no había
-  proposals actionable (el caso común tras cerrar p110). Causa: un
+  proposals actionable (el caso común tras cerrar l110). Causa: un
   helper `json()` local duplicado que omitía `structuredContent`
   pese a declarar `outputSchema`. Esto es, con alta probabilidad, la
   causa raíz de que agentes orquestadores "se bloqueen sin avanzar"
@@ -44,10 +46,10 @@ verificados contra el código y ya corregidos:
   orquestador llama primero.
 - **M46 — `docsDir` del propio repo apuntaba a `docs/mcp-vertex`**
   (el default del framework), mientras que los 13 proposals reales
-  (`p99`-`p110` + el audit maestro) siempre vivieron en
+  (`l99`-`l110` + el audit maestro) siempre vivieron en
   `docs/proposals/`. El plugin `proposals` resolvía
   `<docsDir>/proposals` a un directorio casi vacío y desconectado
-  (3 borradores abandonados de p104/p106/p107, versiones más viejas
+  (3 borradores abandonados de l104/l106/l107, versiones más viejas
   que las reales). Cualquier agente que usara `create_proposal`/
   `continue_proposal`/`auto_work` "correctamente" escribía en el
   sitio equivocado — exactamente el síntoma reportado ("el mcp no se
@@ -126,7 +128,7 @@ verificados contra el código y ya corregidos:
 
 - No tocar M44 (migrar `.mcp.json` a `host-config.ts`) — decisión
   pendiente del usuario, explícitamente dejada así en la auditoría.
-- No tocar p102 (`keepLegacy` por defecto) — diferida explícitamente
+- No tocar l102 (`keepLegacy` por defecto) — diferida explícitamente
   por el usuario el 2026-06-18.
 - No npm publish ni merge `develop→main` — lo hace el usuario.
 
@@ -135,7 +137,7 @@ verificados contra el código y ya corregidos:
 `bun run validate` verde en cada slice. Conventional Commits por
 slice. El registro `docs/proposals/index.json` (si existe) o el
 `sync_proposals` posterior a un reinicio del servidor MCP refleja
-`p111` con sus 4 slices.
+`l111` con sus 4 slices.
 - review-state: done
 - review-implementer: mcp-core-s4-runner
 - review-reviewer: mcp-core-orchestrator

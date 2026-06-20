@@ -1,5 +1,5 @@
 /**
- * `check-tutorials-i18n` contract guard (p110 s3).
+ * `check-tutorials-i18n` contract guard (l110 s3).
  *
  * The script exports `runCheck(langCodes, tutorials)` as a pure
  * function: same inputs, same parity verdict. This spec pins the

@@ -161,5 +161,5 @@ non negato".
 
 ## Prossimo passo
 
-- [Gate di qualità multi-linguaggio (p107)](../../p107-multilang-quality-gates.md)
-- [Confine di fiducia & policy dei comandi (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
+- [Gate di qualità multi-linguaggio (l107)](../../l107-multilang-quality-gates.md)
+- [Confine di fiducia & policy dei comandi (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)

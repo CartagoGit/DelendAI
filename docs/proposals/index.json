@@ -1,125 +1,202 @@
 {
-	"generated_at": "2026-06-20T17:49:49.626Z",
-	"count": 15,
+	"generated_at": "2026-06-20T18:33:05.903Z",
+	"count": 17,
 	"proposals": [
 		{
-			"id": "p100",
-			"file": "p100-website-i18n-and-docs-rewrite.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "p101",
-			"file": "p101-web-header-transitions-and-full-capabilities-surface.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "p102",
-			"file": "p102-keep-legacy-default-false.md",
+			"id": "l102",
+			"file": "paused/l102-keep-legacy-default-false.md",
 			"track": "core+scaffold",
 			"type": "proposal",
-			"status": "deferred",
+			"status": "paused",
 			"date": "2026-06-18"
 		},
 		{
-			"id": "p103",
-			"file": "p103-loop-detection-and-handoff.md",
+			"id": "f113",
+			"file": "ready/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
+			"track": "proposals+core+web+notification",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-20",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: \"S1-S5, S11-S13: state machine + kinds + linters + reconciler + migration + id allocator\" }",
+					"{ agent: implementation_runner, task: \"S8-S9: agent-alive/idle/dead events over the heartbeat mtime + recovery tools\" }",
+					"{ agent: implementation_runner, task: \"S6, S10: i18n glossary + status badges + recovery dashboard + SSE\" }"
+				],
+				"reservedFiles": [
+					"docs/scaffolds/",
+					"docs/proposals/",
+					"plugins/proposals/src/lib/proposals/sync-proposal-registry.ts",
+					"plugins/proposals/src/lib/proposals/proposal-document.ts",
+					"plugins/proposals/src/lib/proposals/adopt.ts",
+					"plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts",
+					"plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
+					"plugins/proposals/src/lib/tools/proposal-transition.tool.ts",
+					"plugins/proposals/src/lib/tools/recovery-tools.ts",
+					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
+					"plugins/proposals/src/lib/proposals/proposal-id-allocator.ts",
+					".cache/mcp-vertex/proposal-id-counters.json",
+					"plugins/notification/src/lib/agent-events.ts",
+					"plugins/notification/src/lib/agent-events-bridge.ts",
+					"plugins/notification/src/lib/tools.ts",
+					"apps/web/src/i18n/langs/",
+					"apps/web/src/i18n/check-i18n.ts",
+					"apps/web/src/pages/status/recovery.astro",
+					"apps/web/src/components/recovery/",
+					"apps/web/src/pages/api/events/",
+					"scripts/lint-scaffolds.ts",
+					"scripts/migrate-legacy-proposals.ts",
+					"scripts/normalize-legacy-proposals.ts",
+					"scripts/rewrite-proposal-refs.ts"
+				]
+			}
+		},
+		{
+			"id": "f114",
+			"file": "ready/f114-feat-ide-extension-vscode-and-friends.md",
+			"track": "apps+client+docs",
+			"type": "feat",
+			"status": "ready",
+			"date": "2026-06-20",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: \"S1-S3: packages/client (MCP stdio client + OverviewService + NotificationsService + MetricsService + in-memory mock) with full unit tests\" }",
+					"{ agent: implementation_runner, task: \"S4-S7: apps/vscode scaffold + activate + ToolTreeDataProvider + StatusBar + command palette wiring consuming packages/client\" }",
+					"{ agent: implementation_runner, task: \"S8-S10: tool-detail webview + proposals board view + metrics sparkline using generated tool-outputs types\" }",
+					"{ agent: implementation_runner, task: \"S11-S12: i18n (en/es/ja/zh/de/fr) + check-i18n gate + VSIX packaging via vsce + docs/IDE-EXTENSION.md\" }"
+				],
+				"reservedFiles": [
+					"packages/client/",
+					"packages/client/package.json",
+					"packages/client/src/lib/transport/",
+					"packages/client/src/lib/services/",
+					"packages/client/src/public/",
+					"packages/client/tests/",
+					"apps/vscode/",
+					"apps/vscode/.vscodeignore",
+					"apps/vscode/package.json",
+					"apps/vscode/src/extension.ts",
+					"apps/vscode/src/providers/",
+					"apps/vscode/src/commands/",
+					"apps/vscode/src/views/",
+					"apps/vscode/src/test/",
+					"apps/vscode/src/i18n/",
+					"apps/vscode/scripts/check-i18n.ts",
+					"apps/vscode/README.md",
+					"docs/IDE-EXTENSION.md"
+				]
+			}
+		},
+		{
+			"id": "l100",
+			"file": "done/l100-website-i18n-and-docs-rewrite.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "l101",
+			"file": "done/l101-web-header-transitions-and-full-capabilities-surface.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "l103",
+			"file": "done/l103-loop-detection-and-handoff.md",
 			"track": "runtime+coordination",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
 		},
 		{
-			"id": "p104",
-			"file": "p104-feat-status-marker-plugin.md",
+			"id": "l104",
+			"file": "done/l104-feat-status-marker-plugin.md",
 			"track": "agent-contract",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
 		},
 		{
-			"id": "p105",
-			"file": "p105-web-bugfixes-and-ux-overhaul.md",
+			"id": "l105",
+			"file": "done/l105-web-bugfixes-and-ux-overhaul.md",
 			"track": "web+i18n+docs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-19"
 		},
 		{
-			"id": "p106",
-			"file": "p106-fix-gen-skills-recursion.md",
+			"id": "l106",
+			"file": "done/l106-fix-gen-skills-recursion.md",
 			"track": "web",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-19"
 		},
 		{
-			"id": "p107",
-			"file": "p107-multilang-quality-gates.md",
+			"id": "l107",
+			"file": "done/l107-multilang-quality-gates.md",
 			"track": "core+quality+web",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-19"
 		},
 		{
-			"id": "p108",
-			"file": "p108-feat-test-convention-plugin.md",
+			"id": "l108",
+			"file": "done/l108-feat-test-convention-plugin.md",
 			"track": "core+plugin+web",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-19"
 		},
 		{
-			"id": "p109",
-			"file": "p109-feat-auto-work-persist-modes.md",
+			"id": "l109",
+			"file": "done/l109-feat-auto-work-persist-modes.md",
 			"track": "plugin",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "p110",
-			"file": "p110-residual-p100-web-and-i18n.md",
+			"id": "l110",
+			"file": "done/l110-residual-p100-web-and-i18n.md",
 			"track": "web+i18n",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "p111",
-			"file": "p111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
+			"id": "l111",
+			"file": "done/l111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
 			"track": "core+proposals",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "p112",
-			"file": "p112-derive-site-manifests-and-local-aliases.md",
-			"track": "web",
+			"id": "l113",
+			"file": "done/l113-fix-audit-types.md",
+			"track": "plugins",
 			"type": "proposal",
-			"status": "pending",
+			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "p99",
-			"file": "p99-feat-multi-model-audit-plugin.md",
+			"id": "l99",
+			"file": "done/l99-feat-multi-model-audit-plugin.md",
 			"track": "audit",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
 		},
 		{
-			"id": "p113",
-			"file": "p113-fix-audit-types.md",
-			"track": "plugins",
+			"id": "l112",
+			"file": "blocked/l112-derive-site-manifests-and-local-aliases.md",
+			"track": "web",
 			"type": "proposal",
-			"status": "done",
+			"status": "blocked",
 			"date": "2026-06-20"
 		}
 	],

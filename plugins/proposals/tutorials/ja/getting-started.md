@@ -43,10 +43,10 @@ docs/mcp-vertex/proposals/
 // 典型的なレスポンス（短縮）
 {
   "state": "work",
-  "proposalId": "p110",
+  "proposalId": "l110",
   "sliceId": "s1-claim",
   "steps": [
-    "docs/mcp-vertex/proposals/p110-…md を開いて次のアトミックスライスを選択する。",
+    "docs/mcp-vertex/proposals/l110-…md を開いて次のアトミックスライスを選択する。",
     "ファイルをクレームする: proposals_agent_lock { action: \"claim\", … }。",
     "そのスライスだけを実装する——クレームされたファイル以外は何もしない。",
     "プロジェクトのゲートで検証する（あれば get_validation_matrix を参照）。",
@@ -105,7 +105,7 @@ bun run validate
 {
   "tool": "proposals_close_slice",
   "args": {
-    "proposalId": "p110",
+    "proposalId": "l110",
     "sliceId": "s1-claim"
   }
 }
@@ -130,5 +130,5 @@ bun run validate
 ## 次のステップ
 
 - [agent_worktreeプラグインが並行エージェントを分離する方法](#)
-- [auto_workの永続化モード (p109)](../../p109-feat-auto-work-persist-modes.md)
+- [auto_workの永続化モード (l109)](../../l109-feat-auto-work-persist-modes.md)
 - [再開されたワークのラウンドコンテキスト](#)

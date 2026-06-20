@@ -1,5 +1,5 @@
 ---
-id: p107
+id: l107
 type: proposal
 status: done
 track: core+quality+web
@@ -7,11 +7,13 @@ date: 2026-06-19
 reopened: 2026-06-20
 closed: 2026-06-20
 related:
-  - p105 # web bugfixes & UX overhaul (where this is mentioned as B17)
-  - p108 # test-convention plugin (complementary: scan-drift vs run_quality)
+  - l105 # web bugfixes & UX overhaul (where this is mentioned as B17)
+  - l108 # test-convention plugin (complementary: scan-drift vs run_quality)
+kind: legacy
+title: Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 ---
 
-# p107 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
+# l107 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 
 > **Estado: DONE (2026-06-20).** Reescrito el 2026-06-20 después
 > de inspeccionar el código actual; **todos los slices aplicados**
@@ -144,7 +146,7 @@ test` directamente, no via `run_quality`.
 completo, en `apps/web/src/pages/guide.astro` (raíz) y clonado
 en `apps/web/src/pages/[lang]/guide.astro` para los 12 locales.
 La sección §9 "Quality gates & multi-language" **ya existe** y
-menciona explícitamente "proposal p107 — work in progress". El
+menciona explícitamente "proposal l107 — work in progress". El
 s3 consiste en **reemplazar ese WIP** con la realidad actual:
 
 1. La arquitectura YA es agnóstica del lenguaje desde hace
@@ -217,7 +219,7 @@ slice más barato de los tres y el más seguro.
     con snippets de config para TypeScript, Python, Rust y Go.
   - Menciona los 3 tools: `get_quality_scopes`, `run_quality`,
     `quality_cancel`.
-  - NO menciona "work in progress" / "proposal p107" — el
+  - NO menciona "work in progress" / "proposal l107" — el
     "WIP" se cierra con este slice.
   - `bun run site:strict` queda verde.
 

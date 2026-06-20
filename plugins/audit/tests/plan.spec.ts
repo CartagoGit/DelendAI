@@ -32,7 +32,7 @@ describe('buildBrief', () => {
 		expect(Object.keys(SCOPE_LABEL)).toEqual([...ALL_SCOPES]);
 	});
 
-	// p99 follow-up: `buildBrief` now accepts an optional `dimensions`
+	// l99 follow-up: `buildBrief` now accepts an optional `dimensions`
 	// override so hosts can ship a custom rubric via the audit plugin's
 	// `options.dimensions`. The default path is unchanged (canonical
 	// 9 dimensions) and the override path is exercised below.
