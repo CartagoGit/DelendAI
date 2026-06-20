@@ -39,12 +39,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Repository root, computed from this file's location
- * (`apps/web/scripts/lib/local-aliases.mjs` → 3 dirs up → repo root).
+ * (`apps/web/scripts/lib/local-aliases.mjs` → 4 dirs up → repo root).
  *
  * Exported so consumers (the sync test in p112 s6, ad-hoc scripts)
  * can derive paths from a single source of truth.
  */
-export const REPO_ROOT = resolve(HERE, '..', '..', '..');
+export const REPO_ROOT = resolve(HERE, '..', '..', '..', '..');
 
 /**
  * The six local alias roots, each tied to a filesystem dir under
