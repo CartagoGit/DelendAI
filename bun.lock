@@ -69,6 +69,23 @@
         "vitest": "4.1.8",
       },
     },
+    "plugins/audit": {
+      "name": "@mcp-vertex/audit",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/deps": {
       "name": "@mcp-vertex/deps",
       "version": "0.1.0",
@@ -443,6 +460,8 @@
     "@keyv/bigmap": ["@keyv/bigmap@1.3.1", "", { "dependencies": { "hashery": "^1.4.0", "hookified": "^1.15.0" }, "peerDependencies": { "keyv": "^5.6.0" } }, "sha512-WbzE9sdmQtKy8vrNPa9BRnwZh5UF4s1KTmSK0KUVLo3eff5BlQNNWDnFOouNpKfPKDnms9xynJjsMYjMaT/aFQ=="],
 
     "@keyv/serialize": ["@keyv/serialize@1.1.1", "", {}, "sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA=="],
+
+    "@mcp-vertex/audit": ["@mcp-vertex/audit@workspace:plugins/audit"],
 
     "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
 
