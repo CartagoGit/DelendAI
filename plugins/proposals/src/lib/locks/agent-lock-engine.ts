@@ -10,7 +10,12 @@
 
 import { readFile, stat } from 'node:fs/promises';
 
-import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
+import {
+	LockContentionError,
+	toolError,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
@@ -22,6 +27,13 @@ export type IAgentLockArgs = {
 	agent?: string | undefined;
 	files?: string[] | undefined;
 	parent_task_id?: string | undefined;
+	/**
+	 * What `withFileMutex` should do when a **live** holder keeps the lock
+	 * file past its contention timeout (M28): `'steal'` (default) reclaims
+	 * it as before; `'fail'` rejects instead of clobbering a slow-but-alive
+	 * holder. Forwarded as-is — see `IFileMutexOptions.onContention`.
+	 */
+	onContention?: 'steal' | 'fail' | undefined;
 };
 
 export type ILockEntry = {
@@ -48,6 +60,14 @@ export type IAgentLockDeps = {
 	toolName?: string;
 	/** Workspace-relative label echoed in payloads. */
 	lockFileLabel?: string;
+	/**
+	 * Internal `withFileMutex` timing overrides — NOT exposed on the tool's
+	 * inputSchema. Tests use these to exercise contention paths (M28)
+	 * without waiting out the production timeouts.
+	 */
+	mutexTimeoutMs?: number;
+	mutexStaleMs?: number;
+	mutexPollMs?: number;
 };
 
 export type IAgentLockResponse = {
@@ -179,7 +199,35 @@ export async function runAgentLockEngine(
 	// Cross-process critical section: the whole read → mutate → write runs
 	// under a file mutex so two concurrent agents can't lose each other's
 	// updates (atomic writes alone prevent torn files, not lost updates).
-	return withFileMutex(lockPath, () => executeLockAction(args, deps));
+	try {
+		return await withFileMutex(
+			lockPath,
+			() => executeLockAction(args, deps),
+			{
+				onContention: args.onContention,
+				...(deps.mutexTimeoutMs !== undefined
+					? { timeoutMs: deps.mutexTimeoutMs }
+					: {}),
+				...(deps.mutexStaleMs !== undefined
+					? { staleMs: deps.mutexStaleMs }
+					: {}),
+				...(deps.mutexPollMs !== undefined
+					? { pollMs: deps.mutexPollMs }
+					: {}),
+			},
+		);
+	} catch (error) {
+		if (error instanceof LockContentionError) {
+			// M28: under `onContention:'fail'` a live holder past the timeout
+			// rejects instead of being stolen — surface it as a clear tool
+			// error (not an uncaught exception) so the caller can back off.
+			return toolError(
+				error.message,
+				'Wait for the lock-released notification (or retry agent_lock status) instead of forcing a steal.',
+			);
+		}
+		throw error;
+	}
 }
 
 async function executeLockAction(
