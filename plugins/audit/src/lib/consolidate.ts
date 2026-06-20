@@ -111,7 +111,12 @@ export const consolidateAudits = (
 	for (const d of parsed) {
 		for (const f of d.findings) {
 			const hit = merged.find(
-				(m) => m.worstSeverity === f.severity && isSameFinding(m, f),
+				(m) =>
+					m.worstSeverity === f.severity &&
+					isSameFinding(
+						{ title: m.titles[0] ?? '', files: m.files },
+						f,
+					),
 			);
 			if (hit) {
 				hit.titles = dedup([...hit.titles, f.title]);
