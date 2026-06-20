@@ -58,6 +58,15 @@ export default definePlugin({
 		/** Quality-gate command surfaced by auto_work. */
 		validationCommand: z.string().optional(),
 	}),
+	configExample: {
+		summary:
+			'Default swarm setup: serial cascade (f before p), bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
+		options: {
+			familyCascade: ['f', 'p'],
+			validationCommand: 'bun run validate',
+			namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
+		},
+	},
 	register(ctx) {
 		// All path-bearing tools share ONE layout so locks, queue,
 		// round-context and the proposal store always agree. The layout

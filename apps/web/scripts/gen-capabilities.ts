@@ -325,8 +325,38 @@ const collectTools = async (): Promise<ICollected> => {
 	}
 };
 
-const collectPackages = (): Array<{ name: string; version: string }> => {
-	const out: Array<{ name: string; version: string }> = [];
+/** Extract a plugin's optional configExample (see `IPluginConfigExample`). */
+const configExampleOf = (pkgName: string) => {
+	const shortName = pkgName.replace('@mcp-vertex/', '');
+	for (const [key, plugin] of Object.entries(PLUGINS)) {
+		if (key.includes(shortName) && plugin && typeof plugin === 'object') {
+			const ex = (plugin as { configExample?: unknown }).configExample;
+			if (
+				ex &&
+				typeof ex === 'object' &&
+				'summary' in ex &&
+				'options' in ex
+			) {
+				return ex as {
+					summary: string;
+					options: Record<string, unknown>;
+				};
+			}
+		}
+	}
+	return undefined;
+};
+
+const collectPackages = (): Array<{
+	name: string;
+	version: string;
+	configExample?: { summary: string; options: Record<string, unknown> };
+}> => {
+	const out: Array<{
+		name: string;
+		version: string;
+		configExample?: { summary: string; options: Record<string, unknown> };
+	}> = [];
 	for (const group of ['packages', 'plugins']) {
 		for (const dir of readdirSync(join(ROOT, group))) {
 			try {
@@ -336,8 +366,13 @@ const collectPackages = (): Array<{ name: string; version: string }> => {
 						'utf8',
 					),
 				) as { name?: string; version?: string };
-				if (pkg.name && pkg.version)
-					out.push({ name: pkg.name, version: pkg.version });
+				if (!pkg.name || !pkg.version) continue;
+				const configExample = configExampleOf(pkg.name);
+				out.push({
+					name: pkg.name,
+					version: pkg.version,
+					...(configExample ? { configExample } : {}),
+				});
 			} catch {
 				// not a package dir
 			}

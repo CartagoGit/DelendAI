@@ -79,6 +79,17 @@ export interface IMcpPlugin {
 			error?: unknown;
 		};
 	};
+	/**
+	 * Optional example config for the docs site. When present, the
+	 * `/plugins/<slug>` page renders a copy-pasteable JSON snippet with
+	 * the plugin's typical options pre-filled. Plugins without a
+	 * `configExample` simply skip the Configuration section on their
+	 * page. See p100 s6 and `IPluginConfigExample`.
+	 */
+	readonly configExample?: {
+		readonly summary: string;
+		readonly options: Readonly<Record<string, unknown>>;
+	};
 	register(
 		ctx: IMcpPluginContext,
 	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;

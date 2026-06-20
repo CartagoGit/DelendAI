@@ -43,6 +43,9 @@ export type {
 	IQualityGateList,
 } from '../lib/contracts/interfaces/quality-gate.interface';
 export type {
+	IPluginConfigExample,
+} from '../lib/contracts/interfaces/plugin-config-example.interface';
+export type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../lib/contracts/interfaces/knowledge.interface';
