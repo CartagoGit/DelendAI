@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-20T03:00:00.000Z",
-	"count": 5,
+	"generated_at": "2026-06-20T04:00:00.000Z",
+	"count": 10,
 	"proposals": [
 		{
 			"id": "p99",
@@ -11,12 +11,36 @@
 			"date": "2026-06-20"
 		},
 		{
+			"id": "p100",
+			"file": "p100-website-i18n-and-docs-rewrite.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "p101",
+			"file": "p101-web-header-transitions-and-full-capabilities-surface.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
 			"id": "p104",
 			"file": "p104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md",
 			"track": "agent-contract",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
+		},
+		{
+			"id": "p105",
+			"file": "p105-web-bugfixes-and-ux-overhaul.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
 		},
 		{
 			"id": "p106",
@@ -35,11 +59,27 @@
 			"date": "2026-06-20"
 		},
 		{
+			"id": "p108",
+			"file": "p108-feat-test-convention-plugin.md",
+			"track": "core+plugin+web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
 			"id": "p109",
 			"file": "p109-feat-auto-work-persist-modes.md",
 			"track": "plugin",
 			"type": "proposal",
 			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "p110",
+			"file": "p110-residual-p100-web-and-i18n.md",
+			"track": "web+i18n",
+			"type": "proposal",
+			"status": "ready",
 			"date": "2026-06-20"
 		}
 	],
