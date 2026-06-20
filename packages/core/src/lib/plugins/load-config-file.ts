@@ -41,6 +41,11 @@ export interface IMcpVertexConfigFile {
 	readonly $schema?: string;
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
+	/**
+	 * Default false. When true, scaffold regeneration preserves existing
+	 * files under legacy/ before writing fresh templates.
+	 */
+	readonly keepLegacy?: boolean;
 	/** Quality-gate commands per scope, surfaced by `get_validation_matrix`. */
 	readonly validationMatrix?: {
 		readonly scopes: Readonly<
@@ -60,6 +65,7 @@ export const CONFIG_FILE_SCHEMA = z
 		$schema: z.string().optional(),
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
+		keepLegacy: z.boolean().optional(),
 		validationMatrix: z
 			.object({
 				scopes: z.record(

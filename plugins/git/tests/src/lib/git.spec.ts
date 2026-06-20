@@ -80,6 +80,7 @@ describe('git plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/git',
 			pluginDocsDir: 'docs/mcp-vertex/git',
 			namespacePrefix: 'git',

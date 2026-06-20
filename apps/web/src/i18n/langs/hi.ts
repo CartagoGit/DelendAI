@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -131,6 +132,7 @@ const dict: LangDict = {
 		docs: 'प्रोजेक्ट markdown दस्तावेज़ कैटलॉग करें और पढ़ें, कम-लागत क्यूरेटेड नेविगेशन।',
 		deps: 'ऑफ़लाइन निर्भरता सूची + स्वास्थ्य (lockfile, ढीली रेंज, डुप्लिकेट)।',
 		notification: 'लॉक-रिलीज़ इवेंट पुश करता है ताकि एजेंट पोलिंग बंद करें।',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'हर एजेंट उत्तर के लिए अनिवार्य रंगीन क्लोज़ मार्कर: 8 कैनोनिकल स्थितियाँ, helper + validator टूल।',
 		core: 'निरपेक्ष कोर: overview, scaffold, मेट्रिक्स, doctor और प्लगइन लोडर।',
@@ -169,6 +171,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.hi,
 	recovery: recoveryByLang.hi,
+	logs: logsByLang.hi,
 };
 
 export default dict;

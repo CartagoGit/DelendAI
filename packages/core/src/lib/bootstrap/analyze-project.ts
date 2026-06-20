@@ -235,6 +235,50 @@ const detectMcp = (
 	return { has: evidence.length > 0, evidence };
 };
 
+const detectCustomExtraTools = (reader: IFileReader): boolean => {
+	const hostConfig =
+		reader.readFile('libs/mcp-project/src/lib/shared/host-config.ts') ??
+		reader.readFile('src/lib/shared/host-config.ts');
+	if (hostConfig === undefined) return false;
+	const match = /extraTools\s*:\s*\[([\s\S]*?)\]/m.exec(hostConfig);
+	if (match === null) return false;
+	const body = match[1] ?? '';
+	const withoutComments = body
+		.replace(/\/\*[\s\S]*?\*\//g, '')
+		.replace(/\/\/.*$/gm, '');
+	const withoutScaffold = withoutComments.replace(
+		/buildScaffoldToolRegistration\s*\([\s\S]*?\)\s*,?/g,
+		'',
+	);
+	return /[A-Za-z0-9_$]+\s*\(/.test(withoutScaffold);
+};
+
+const detectCustomVertexConfig = (reader: IFileReader): boolean => {
+	const raw = reader.readFile('mcp-vertex.config.json');
+	if (raw === undefined) return false;
+	try {
+		const parsed = JSON.parse(raw) as {
+			plugins?: unknown;
+			validationMatrix?: { scopes?: unknown };
+		};
+		const plugins =
+			parsed.plugins &&
+			typeof parsed.plugins === 'object' &&
+			!Array.isArray(parsed.plugins)
+				? Object.keys(parsed.plugins).length
+				: 0;
+		const scopes =
+			parsed.validationMatrix?.scopes &&
+			typeof parsed.validationMatrix.scopes === 'object' &&
+			!Array.isArray(parsed.validationMatrix.scopes)
+				? Object.keys(parsed.validationMatrix.scopes).length
+				: 0;
+		return plugins > 0 || scopes > 0;
+	} catch {
+		return false;
+	}
+};
+
 /**
  * Inspect a project through a read-only reader and produce a structured
  * analysis. Never throws on malformed input — missing or invalid files
@@ -248,6 +292,8 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 	const language = detectLanguage(reader, pkg);
 	const monorepoTool = detectMonorepoTool(reader, pkg);
 	const mcp = detectMcp(reader, deps);
+	const hasCustomExtraTools = detectCustomExtraTools(reader);
+	const hasCustomVertexConfig = detectCustomVertexConfig(reader);
 	const projectType = detectProjectType(
 		reader,
 		pkg,
@@ -277,6 +323,10 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 		signals.push(
 			`existing agent config (${agentConfigs.join(', ')}); align with it`,
 		);
+	}
+	if (hasCustomExtraTools) signals.push('host-config has custom extraTools');
+	if (hasCustomVertexConfig) {
+		signals.push('mcp-vertex.config.json has plugin or validation config');
 	}
 	if (ci.length > 0) signals.push(`CI: ${ci.join(', ')}`);
 

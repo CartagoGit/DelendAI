@@ -90,6 +90,7 @@ describe('deps plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/deps',
 			pluginDocsDir: 'docs/mcp-vertex/deps',
 			namespacePrefix: 'deps',

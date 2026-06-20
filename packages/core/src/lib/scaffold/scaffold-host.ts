@@ -267,6 +267,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		},
 		namespacePrefix: '${prefix}',
 		workspace,
+		keepLegacy: false,
 		validationMatrix: { scopes: {} },
 		extraTools: [
 			// Your project tools register here. The scaffold tool lets
@@ -274,6 +275,7 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 			buildScaffoldToolRegistration({
 				namespacePrefix: '${prefix}',
 				workspace,
+				keepLegacy: false,
 				projectName: '${options.projectName}',
 				projectPackageName: '${options.projectPackageName}',
 			}),

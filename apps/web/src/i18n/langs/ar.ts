@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -128,6 +129,7 @@ const dict: LangDict = {
 		docs: 'فهرسة وقراءة وثائق markdown للمشروع، تنقّل مُنسّق منخفض التكلفة.',
 		deps: 'جرد تبعيات دون اتصال + صحة (lockfile، نطاقات فضفاضة، تكرارات).',
 		notification: 'يدفع أحداث تحرير القفل ليتوقف الوكلاء عن الاستطلاع.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'علامة إغلاق ملوّنة إلزامية لكل ردّ وكيل: 8 حالات مرجعية، أدوات مساعدة ومُحقِّق.',
 		core: 'النواة المحايدة: overview، scaffold، مقاييس، doctor، ومُحمّل الإضافات.',
@@ -166,6 +168,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.ar,
 	recovery: recoveryByLang.ar,
+	logs: logsByLang.ar,
 };
 
 export default dict;

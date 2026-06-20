@@ -133,4 +133,32 @@ describe('migrateJsonFile (M14)', () => {
 		expect(res?.changed).toBe(false);
 		expect(res?.backupPath).toBeNull();
 	});
+
+	it('forceBackup preserves current bytes even when no migration runs', async () => {
+		const raw = JSON.stringify({ version: 3, title: 'hi' });
+		writeFileSync(path, raw);
+		const res = await migrateJsonFile(path, {
+			migrators,
+			targetVersion: 3,
+			forceBackup: true,
+		});
+		expect(res?.changed).toBe(false);
+		expect(res?.backupPath).toBeTruthy();
+		expect(readFileSync(res?.backupPath ?? '', 'utf8')).toBe(raw);
+		expect(readFileSync(path, 'utf8')).toBe(raw);
+	});
+
+	it('dry-run ignores forceBackup and leaves disk untouched', async () => {
+		const raw = JSON.stringify({ version: 3, title: 'hi' });
+		writeFileSync(path, raw);
+		const res = await migrateJsonFile(path, {
+			migrators,
+			targetVersion: 3,
+			forceBackup: true,
+			dryRun: true,
+		});
+		expect(res?.changed).toBe(false);
+		expect(res?.backupPath).toBeNull();
+		expect(readFileSync(path, 'utf8')).toBe(raw);
+	});
 });

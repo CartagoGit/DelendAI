@@ -11,7 +11,7 @@
 // enforce 12-language completeness on this file: that tightening is a
 // separate proposal so the catalogue can be populated incrementally.
 
-import type { IToolI18n } from './_shape';
+import type { IToolI18n } from '#I18N/tools/_shape';
 
 export const mcpVertexOverviewI18n: IToolI18n = {
 	description: {

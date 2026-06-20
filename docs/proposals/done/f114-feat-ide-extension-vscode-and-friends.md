@@ -2,7 +2,7 @@
 id: f114
 kind: feat
 title: IDE extension (VS Code first, JetBrains/Zed later) — generic MCP client + tree + webviews
-status: ready
+status: done
 triaged: true
 date: 2026-06-20
 track: apps+client+docs
@@ -178,7 +178,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S1 — `packages/client` scaffold + `McpStdioClient` _(excl. `packages/client/src/lib/services/`, `apps/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/client/package.json`
     - `packages/client/src/lib/transport/mcp-stdio-client.ts`
@@ -201,10 +201,12 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - **Gate**: `bun run test packages/client` (coverage on
   `mcp-stdio-client.ts` ≥ 90%).
 - **Estimated work**: 1 session.
+- **Shipped**: `packages/client` scaffold, `McpStdioClient`,
+  `IMcpTransport`, type re-exports, in-memory unit tests and stdio e2e.
 
 ### S2 — `OverviewService` + `KnowledgeService` _(excl. `apps/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/client/src/lib/services/overview-service.ts`
     - `packages/client/src/lib/services/knowledge-service.ts`
@@ -221,10 +223,12 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - Tests with a fake transport that returns fixture JSON.
 - **Gate**: `bun run test packages/client` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: `OverviewService`, `KnowledgeService`, stable tool
+  descriptor normalization, knowledge summaries/bodies and unit tests.
 
 ### S3 — `NotificationsService` + `MetricsService` _(excl. `apps/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/client/src/lib/services/notifications-service.ts`
     - `packages/client/src/lib/services/metrics-service.ts`
@@ -239,10 +243,13 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - Tests verify event dispatch + back-pressure (drops if subscriber slow).
 - **Gate**: `bun run test packages/client` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: notification status/await-lock wrappers, EventTarget-style
+  listeners for `lock-released`, `cap`, `bloqueado`, slow-subscriber
+  back-pressure, metrics snapshots and async metric streams.
 
 ### S4 — `apps/vscode` scaffold _(excl. `apps/vscode/src/providers/`, `apps/vscode/src/commands/`, `apps/vscode/src/views/`, `apps/vscode/src/i18n/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/package.json`
     - `apps/vscode/tsconfig.json`
@@ -261,10 +268,12 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - **Command**: `cd apps/vscode && bun run type && bun run test`.
 - **Expect**: exit 0.
 - **Estimated work**: 1 session.
+- **Shipped**: `apps/vscode` manifest, TypeScript/Vitest config,
+  injectable activation, `showOverview` webview command and smoke test.
 
 ### S5 — TreeView: Servers → Plugins → Tools _(excl. `apps/vscode/src/extension.ts`, `apps/vscode/src/views/`, `apps/vscode/src/commands/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/providers/tool-tree-data-provider.ts`
     - `apps/vscode/src/providers/tool-tree-node.ts`
@@ -279,10 +288,12 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - Tests with a fake `OverviewService` returning a 3-plugin fixture.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: tool tree nodes, provider, watcher-driven refresh,
+  manifest view contribution and provider tests.
 
 ### S6 — Command palette wiring _(excl. `apps/vscode/src/providers/`, `apps/vscode/src/views/`, `apps/vscode/src/i18n/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/commands/show-overview.ts`
     - `apps/vscode/src/commands/refresh.ts`
@@ -299,10 +310,12 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - `mcp-vertex.openProposal` — shows `proposals_proposal_board`.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: command modules for overview, refresh, validation and
+  proposal board; activation wiring; command tests.
 
 ### S7 — Status bar item _(excl. `apps/vscode/src/views/`, `apps/vscode/src/commands/`, `apps/vscode/src/i18n/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/providers/status-bar.ts`
     - `apps/vscode/src/extension.ts` (registers StatusBar on activate)
@@ -312,10 +325,12 @@ proposals` with a click → `showOverview`. Updates on
   `NotificationsService` events.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 0.5 session.
+- **Shipped**: status bar provider, activation wiring, notification-driven
+  refresh and tests.
 
 ### S8 — Tool detail webview _(excl. `apps/vscode/src/extension.ts`, `apps/vscode/src/commands/`, `apps/vscode/src/i18n/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/views/tool-detail-webview.ts`
     - `apps/vscode/src/views/render-output-schema.ts`
@@ -331,10 +346,12 @@ proposals` with a click → `showOverview`. Updates on
 - Tests cover schema rendering with two fixtures.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 1.5 sessions.
+- **Shipped**: schema renderer, tool detail HTML/CSS, metrics-aware detail
+  renderer and rendering tests.
 
 ### S9 — Proposal board view _(excl. `apps/vscode/src/extension.ts`, `apps/vscode/src/commands/`, `apps/vscode/src/views/tool-detail_`, `apps/vscode/src/i18n/`, `docs/`)\*
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/providers/proposal-board-provider.ts`
     - `apps/vscode/src/test/proposal-board-provider.spec.ts`
@@ -345,10 +362,12 @@ proposals` with a click → `showOverview`. Updates on
   `vscode.workspace.openTextDocument`.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: proposal board provider, status sorting, clickable command
+  metadata and second manifest view.
 
 ### S10 — Metrics sparkline _(excl. `apps/vscode/src/views/tool-detail_`, `apps/vscode/src/i18n/`, `docs/`)\*
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/views/metrics-sparkline.ts`
     - `apps/vscode/src/views/metrics-sparkline.html`
@@ -359,10 +378,12 @@ proposals` with a click → `showOverview`. Updates on
 - A test verifies the SVG string for a given snapshot.
 - **Gate**: `bun run test apps/vscode` exits 0.
 - **Estimated work**: 1 session.
+- **Shipped**: metrics sparkline renderer, metrics webview command,
+  manifest command and tests.
 
 ### S11 — i18n + quality gate _(excl. `apps/web/`, `apps/vscode/src/extension.ts`, `apps/vscode/src/providers/`, `apps/vscode/src/views/`, `docs/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/src/i18n/langs/en.ts`
     - `apps/vscode/src/i18n/langs/es.ts`
@@ -379,10 +400,12 @@ proposals` with a click → `showOverview`. Updates on
   `bun run lint` via `lint:ide` (runs both web and vscode checks).
 - **Gate**: `bun run lint` exits 0 (includes the new `lint:ide`).
 - **Estimated work**: 1 session.
+- **Shipped**: 12-language extension i18n catalog, completeness checker,
+  app script and root `lint:ide` integration.
 
 ### S12 — VSIX packaging + README _(excl. `apps/vscode/src/extension.ts`, `apps/vscode/src/providers/`, `apps/vscode/src/views/`, `apps/vscode/src/commands/`, `apps/vscode/src/i18n/`)_
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `apps/vscode/.vscodeignore`
     - `apps/vscode/package.json` (adds `vsce` script + publisher field)
@@ -401,6 +424,8 @@ proposals` with a click → `showOverview`. Updates on
 - **Command**: `cd apps/vscode && bun run package`.
 - **Expect**: produces `apps/vscode/mcp-vertex-vscode-0.1.0.vsix`,
   exit 0.
+- **Shipped**: VSIX packaging script, `.vscodeignore`, local license,
+  README, changelog, root package script and IDE extension docs.
 
 ## risks and mitigations
 

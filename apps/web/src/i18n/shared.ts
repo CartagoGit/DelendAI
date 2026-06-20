@@ -242,7 +242,34 @@ export interface IRecoveryTranslations {
 	readonly forceReady: string;
 }
 
-/** Plugin descriptor keys: keep in sync with `apps/web/src/data/capabilities.json`. */
+export interface ILogsTranslations {
+	readonly page_title: string;
+	readonly lead: string;
+	readonly empty: string;
+	readonly filter_outcome: string;
+	readonly filter_agent: string;
+	readonly filter_task: string;
+	readonly copyTask: string;
+	readonly outcomes: {
+		readonly ok: string;
+		readonly failed: string;
+		readonly timed_out: string;
+		readonly cancelled: string;
+		readonly dead: string;
+		readonly idle: string;
+		readonly unknown: string;
+	};
+	readonly columns: {
+		readonly ts: string;
+		readonly kind: string;
+		readonly agent: string;
+		readonly task: string;
+		readonly outcome: string;
+		readonly summary: string;
+	};
+}
+
+/** Plugin descriptor keys: keep in sync with `apps/web/src/data/manifests/capabilities.json`. */
 export type PluginKey =
 	| 'proposals'
 	| 'git'
@@ -253,6 +280,7 @@ export type PluginKey =
 	| 'docs'
 	| 'deps'
 	| 'notification'
+	| 'logs'
 	| 'status-marker'
 	| 'core';
 
@@ -279,6 +307,7 @@ export interface ITranslations {
 	readonly skills: ISkillsTranslations;
 	readonly proposals: IProposalGlossaryTranslations;
 	readonly recovery: IRecoveryTranslations;
+	readonly logs: ILogsTranslations;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */

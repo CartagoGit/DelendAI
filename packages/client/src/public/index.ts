@@ -1,0 +1,51 @@
+export {
+	McpStdioClient,
+	McpToolError,
+	payloadFromResult,
+} from '../lib/transport/mcp-stdio-client';
+export type {
+	IMcpStdioClientOptions,
+	IMcpToolCallResult,
+	IMcpToolDescriptor,
+	IMcpTransport,
+} from '../lib/transport/mcp-transport.types';
+export {
+	OverviewService,
+	normalizeTool,
+	pluginFromToolName,
+} from '../lib/services/overview-service';
+export type { IOverviewOptions } from '../lib/services/overview-service';
+export {
+	KnowledgeNotFoundError,
+	KnowledgeService,
+} from '../lib/services/knowledge-service';
+export { MetricsService } from '../lib/services/metrics-service';
+export { NotificationsService } from '../lib/services/notifications-service';
+export type {
+	IMetricsSnapshot,
+	IMetricsSnapshotOptions,
+	IMetricsStreamOptions,
+} from '../lib/services/metrics-service';
+export type {
+	IAwaitLockOptions,
+	IAwaitLockResult,
+	IBloqueadoNotificationEvent,
+	ICapNotificationEvent,
+	ILockReleasedEvent,
+	INotificationEvent,
+	INotificationEventName,
+	INotificationListener,
+	INotificationStatus,
+	IStatusNotificationEvent,
+} from '../lib/services/notifications-service';
+export type {
+	IKnowledgeEntry,
+	IKnowledgeSummary,
+	IOverview,
+	IOverviewKnowledge,
+	IOverviewTool,
+	IToolDescriptor,
+	IToolEffect,
+} from '../lib/services/tool-descriptor.types';
+
+export type * from '@mcp-vertex/core/public';

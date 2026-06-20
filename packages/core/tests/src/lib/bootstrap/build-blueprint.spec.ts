@@ -40,6 +40,11 @@ describe('buildServerBlueprint', () => {
 		expect(bp.skills.some((s) => s.name.includes('angular'))).toBe(true);
 		expect(bp.agents[0]?.slot).toBe('orchestrator');
 		expect(bp.tests).toBe(true);
+		expect(bp.defaults).toEqual({
+			keepLegacy: false,
+			reasons: ['greenfield-safe default'],
+			warnings: [],
+		});
 	});
 
 	it('omits tests when requested and notes an existing server', () => {
@@ -74,5 +79,37 @@ describe('buildServerBlueprint', () => {
 			paths.some((p) => p.includes('-check-project-state.tool.ts')),
 		).toBe(true);
 		expect(paths.some((p) => p.includes('.tool.spec.ts'))).toBe(true);
+	});
+
+	it('recommends keepLegacy when host-config has custom extraTools', () => {
+		const analysis = analyzeProject(
+			reader({
+				'package.json': JSON.stringify({ name: 'svc' }),
+				'libs/mcp-project/src/lib/shared/host-config.ts': `
+export const buildHostConfig = () => ({
+	extraTools: [registerCustomTool()],
+});
+`,
+			}),
+		);
+		const bp = buildServerBlueprint(analysis);
+		expect(bp.defaults.keepLegacy).toBe(true);
+		expect(bp.defaults.reasons).toContain(
+			'host-config has custom extraTools',
+		);
+		expect(bp.defaults.warnings[0]).toMatch(/legacy/);
+	});
+
+	it('recommends keepLegacy when the user intent is migration work', () => {
+		const analysis = analyzeProject(
+			reader({ 'package.json': JSON.stringify({ name: 'svc' }) }),
+		);
+		const bp = buildServerBlueprint(analysis, {
+			intent: 'refactor the MCP host and replace the old scaffold',
+		});
+		expect(bp.defaults.keepLegacy).toBe(true);
+		expect(bp.defaults.reasons).toContain(
+			'user request mentions migration/refactor work',
+		);
 	});
 });

@@ -9,7 +9,7 @@
 // straight translations to keep this plugin self-contained for the
 // docs site. Keep the text aligned with `plugins/audit/src/lib/brief.ts`.
 
-import type { IToolI18n } from './_shape';
+import type { IToolI18n } from '#I18N/tools/_shape';
 
 export const auditPlanI18n: IToolI18n = {
 	description: {

@@ -1,16 +1,17 @@
 // the `<prefix>_scaffold` MCP tool: lets any agent in the host
 // workspace generate new tools, prompts, skills, agent adapters or a
-// complete host project. Dry-run by default; writes refuse to
-// overwrite existing files (scaffolds are starting points, not
-// migrations).
+// complete host project. Dry-run by default; writes refuse to overwrite
+// existing files unless keepLegacy is enabled, in which case the old bytes are
+// preserved under legacy/ before fresh templates are written.
 
-import { mkdir, stat, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
+import { basename, dirname, extname } from 'node:path';
 
 import { z } from 'zod';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { writeFileAtomic } from '../shared/atomic-write';
 import {
 	scaffoldAgentFile,
 	scaffoldClientFiles,
@@ -32,6 +33,7 @@ export interface IScaffoldToolOptions {
 	readonly projectName: string;
 	readonly projectPackageName: string;
 	readonly defaultModel?: string;
+	readonly keepLegacy?: boolean;
 }
 
 export const SCAFFOLD_INPUT_SCHEMA = z.object({
@@ -60,6 +62,12 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 		.boolean()
 		.optional()
 		.describe('Default true: return the files without writing.'),
+	keepLegacy: z
+		.boolean()
+		.optional()
+		.describe(
+			'Override the config-level keepLegacy for this scaffold call.',
+		),
 });
 
 export type IScaffoldArgs = z.infer<typeof SCAFFOLD_INPUT_SCHEMA>;
@@ -70,8 +78,59 @@ export interface IScaffoldReport {
 	readonly files: readonly IScaffoldedFile[];
 	readonly written: readonly string[];
 	readonly skipped: readonly string[];
+	readonly moved: readonly string[];
+	readonly kept: readonly string[];
 	readonly errors: readonly string[];
 }
+
+const pathExists = async (absolutePath: string): Promise<boolean> => {
+	try {
+		await stat(absolutePath);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+const legacyPathFor = async (
+	workspace: IWorkspacePathProvider,
+	relativePath: string,
+): Promise<{
+	readonly relativePath: string;
+	readonly absolutePath: string;
+}> => {
+	const ext = extname(relativePath);
+	const base = basename(relativePath, ext);
+	const ts = Date.now().toString(36);
+	for (let index = 0; index < 1000; index += 1) {
+		const suffix = index === 0 ? '' : `-${index.toString(36)}`;
+		const candidate = `legacy/${base}-${ts}${suffix}${ext}`;
+		const absolutePath = workspace.resolve(candidate);
+		if (!(await pathExists(absolutePath))) {
+			return { relativePath: candidate, absolutePath };
+		}
+	}
+	throw new Error(`could not allocate legacy path for ${relativePath}`);
+};
+
+const moveToLegacy = async (
+	source: string,
+	destination: string,
+): Promise<'rename' | 'copy-unlink'> => {
+	try {
+		await rename(source, destination);
+		return 'rename';
+	} catch (error) {
+		const code =
+			typeof error === 'object' && error !== null && 'code' in error
+				? (error as { code?: unknown }).code
+				: undefined;
+		if (code !== 'EXDEV') throw error;
+		await copyFile(source, destination);
+		await unlink(source);
+		return 'copy-unlink';
+	}
+};
 
 export const buildScaffoldReport = async (
 	options: IScaffoldToolOptions,
@@ -88,6 +147,7 @@ export const buildScaffoldReport = async (
 	const dryRun = args.dryRun ?? true;
 	const errors: string[] = [];
 	let files: readonly IScaffoldedFile[] = [];
+	const keepLegacy = args.keepLegacy ?? options.keepLegacy ?? false;
 
 	const name = args.name ?? '';
 	const description = args.description ?? `TODO: describe ${name}.`;
@@ -156,24 +216,45 @@ export const buildScaffoldReport = async (
 
 	const written: string[] = [];
 	const skipped: string[] = [];
+	const moved: string[] = [];
+	const kept: string[] = [];
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
-			// Refuse to overwrite: scaffolds are starting points, not migrations.
-			let alreadyExists = false;
-			try {
-				await stat(absolute);
-				alreadyExists = true;
-			} catch {
-				// missing — safe to write
-			}
+			const alreadyExists = await pathExists(absolute);
 			if (alreadyExists) {
-				skipped.push(file.path);
-				continue;
+				if (!keepLegacy) {
+					skipped.push(file.path);
+					kept.push(file.path);
+					continue;
+				}
+				try {
+					const legacy = await legacyPathFor(
+						options.workspace,
+						file.path,
+					);
+					await mkdir(dirname(legacy.absolutePath), {
+						recursive: true,
+					});
+					const strategy = await moveToLegacy(
+						absolute,
+						legacy.absolutePath,
+					);
+					moved.push(legacy.relativePath);
+					if (strategy === 'copy-unlink') {
+						errors.push(
+							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
+						);
+					}
+				} catch (error) {
+					errors.push(
+						`${file.path}: ${error instanceof Error ? error.message : String(error)}`,
+					);
+					continue;
+				}
 			}
 			try {
-				await mkdir(dirname(absolute), { recursive: true });
-				await writeFile(absolute, file.content, 'utf8');
+				await writeFileAtomic(absolute, file.content);
 				written.push(file.path);
 			} catch (error) {
 				errors.push(
@@ -182,7 +263,16 @@ export const buildScaffoldReport = async (
 			}
 		}
 	}
-	return { kind: args.kind, dryRun, files, written, skipped, errors };
+	return {
+		kind: args.kind,
+		dryRun,
+		files,
+		written,
+		skipped,
+		moved,
+		kept,
+		errors,
+	};
 };
 
 /** Registration for the host's `<prefix>_scaffold` tool. */
@@ -200,7 +290,7 @@ export const buildScaffoldToolRegistration = (
 			{
 				outputSchema: z.object({}).catchall(z.unknown()),
 				description:
-					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes never overwrite existing files.',
+					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,
 			},
 			async (args: IScaffoldArgs) => {

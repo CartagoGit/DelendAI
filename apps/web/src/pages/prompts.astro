@@ -1,9 +1,9 @@
 ---
-import PromptsSection from '../components/PromptsSection.astro';
-import Base from '../layouts/Base.astro';
-import PageHeader from '../components/PageHeader.astro';
-import { useTranslations, type Lang } from '../i18n/ui';
-import capabilities from '../data/capabilities.json';
+import PromptsSection from '#COMPONENTS/PromptsSection.astro';
+import Base from '#LAYOUTS/Base.astro';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+import capabilities from '#MANIFESTS/capabilities.json';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);

@@ -84,6 +84,7 @@ describe('quality plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/quality',
 			pluginDocsDir: 'docs/mcp-vertex/quality',
 			namespacePrefix: 'quality',

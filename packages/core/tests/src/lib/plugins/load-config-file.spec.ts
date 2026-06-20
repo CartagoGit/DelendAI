@@ -32,18 +32,33 @@ describe('parseConfigFile', () => {
 		});
 		expect(pluginConfigFor(config, 'missing')).toEqual({});
 	});
+
+	it('accepts keepLegacy as an optional global scaffold default', () => {
+		const config = parseConfigFile(JSON.stringify({ keepLegacy: true }));
+		expect(config.keepLegacy).toBe(true);
+		expect(
+			diagnoseConfigFile(JSON.stringify({ keepLegacy: true })).issues,
+		).toEqual([]);
+	});
 });
 
 describe('assembleCliConfig + config file', () => {
 	const fakePlugin = {
 		name: 'demo',
-		register: (ctx: { namespacePrefix: string; options: unknown }) => ({
+		register: (ctx: {
+			namespacePrefix: string;
+			options: unknown;
+			keepLegacy: boolean;
+		}) => ({
 			tools: [],
 			knowledge: [
 				{
 					id: 'seen',
 					title: ctx.namespacePrefix,
-					body: JSON.stringify(ctx.options),
+					body: JSON.stringify({
+						options: ctx.options,
+						keepLegacy: ctx.keepLegacy,
+					}),
 				},
 			],
 		}),
@@ -63,7 +78,34 @@ describe('assembleCliConfig + config file', () => {
 		});
 		const known = config.knowledge?.find((entry) => entry.id === 'seen');
 		expect(known?.title).toBe('dd');
-		expect(known?.body).toBe(JSON.stringify({ k: 'v' }));
+		expect(JSON.parse(known?.body ?? '{}')).toEqual({
+			options: { k: 'v' },
+			keepLegacy: false,
+		});
+	});
+
+	it('resolves keepLegacy false by default and propagates true to plugins and core scaffold', async () => {
+		const missing = await assembleCliConfig(
+			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
+			{
+				import: async () => ({ default: fakePlugin }),
+				readFile: () => undefined,
+			},
+		);
+		expect(missing.config.keepLegacy).toBe(false);
+
+		const explicit = await assembleCliConfig(
+			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
+			{
+				import: async () => ({ default: fakePlugin }),
+				readFile: () => JSON.stringify({ keepLegacy: true }),
+			},
+		);
+		expect(explicit.config.keepLegacy).toBe(true);
+		const known = explicit.config.knowledge?.find(
+			(entry) => entry.id === 'seen',
+		);
+		expect(JSON.parse(known?.body ?? '{}').keepLegacy).toBe(true);
 	});
 
 	it('lets an explicit CLI flag win over the config file', async () => {

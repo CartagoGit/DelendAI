@@ -229,6 +229,7 @@ describe('notification plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/notification',
 			pluginDocsDir: 'docs/mcp-vertex/notification',
 			namespacePrefix: 'notification',

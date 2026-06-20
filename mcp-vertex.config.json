@@ -2,6 +2,7 @@
 	"$schema": "./packages/core/schema/mcp-vertex.config.schema.json",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs",
+	"keepLegacy": false,
 	"plugins": {
 		"docs": { "options": { "roots": ["docs", "README.md"] } },
 		"search": { "options": {} },

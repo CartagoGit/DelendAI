@@ -1,8 +1,8 @@
 ---
-import PluginPage from '../../../components/PluginPage.astro';
-import Base from '../../../layouts/Base.astro';
-import capabilities from '../../../data/capabilities.json';
-import { languages, type Lang } from '../../../i18n/ui';
+import PluginPage from '#COMPONENTS/PluginPage.astro';
+import Base from '#LAYOUTS/Base.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+import { languages, type Lang } from '#I18N/ui';
 
 export function getStaticPaths() {
 	const slugOf = (name: string) =>

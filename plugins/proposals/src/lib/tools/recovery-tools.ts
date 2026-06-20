@@ -391,7 +391,11 @@ export const buildRecoveryToolRegistrations = (
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_stale_list`,
-					{ outputSchema: z.object({}).catchall(z.unknown()) },
+					{
+						description:
+							'List proposals whose owner emitted agent-dead from the recovery event buffer.',
+						outputSchema: z.object({}).catchall(z.unknown()),
+					},
 					async () => runProposalStaleList(withBuffer),
 				);
 			},
@@ -403,6 +407,8 @@ export const buildRecoveryToolRegistrations = (
 				server.registerTool(
 					`${options.namespacePrefix}_agent_lock_release_orphan`,
 					{
+						description:
+							'Release an orphan task lock only when a matching agent-dead event exists.',
 						outputSchema: z.object({}).catchall(z.unknown()),
 						inputSchema: z.object({
 							taskId: z.string().min(1),
@@ -421,6 +427,8 @@ export const buildRecoveryToolRegistrations = (
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_force_transition`,
 					{
+						description:
+							'Force a proposal to a recovery status with a required reason and optional lock release.',
 						outputSchema: z.object({}).catchall(z.unknown()),
 						inputSchema: z.object({
 							id: z.string().min(1),
@@ -442,6 +450,8 @@ export const buildRecoveryToolRegistrations = (
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,
 					{
+						description:
+							'Move one proposal file to the folder that matches its frontmatter status.',
 						outputSchema: z.object({}).catchall(z.unknown()),
 						inputSchema: z.object({
 							id: z.string().min(1),
@@ -459,6 +469,8 @@ export const buildRecoveryToolRegistrations = (
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_diagnose`,
 					{
+						description:
+							'Diagnose proposal folder, status, lock owners, heartbeat, and recovery actions.',
 						outputSchema: z.object({}).catchall(z.unknown()),
 						inputSchema: z.object({ id: z.string().min(1) }),
 					},

@@ -21,6 +21,20 @@ turn on capability with plugins (`mcp-vertex --plugins=...`).
 - Plugins implement `IMcpPlugin`; load them by name via `--plugins`.
 - Usable as a plain library too (import from `@mcp-vertex/core/public`).
 
+## Scaffold + migrations
+
+`mcp-vertex.config.json` accepts `keepLegacy` (default `false`). With the
+default, scaffold writes skip existing files. When `keepLegacy: true` is set
+globally, or passed to one `<prefix>_scaffold` call, an existing target is moved
+to `legacy/<basename>-<timestamp>.<ext>` before the fresh template is written.
+This is for migration/refactor work where old host files need to stay available
+for comparison or rollback; clean up snapshots after review, for example with
+`git clean -fd legacy/` in a disposable working tree.
+
+Versioned JSON migrations expose the same preservation idea as a per-call
+escape hatch: `migrateJsonFile(..., { forceBackup: true })` writes a `.bak-*`
+snapshot even when no migrator runs.
+
 Full guide: **README-MCP-VERTEX.md** · Plugins: **PLUGINS-MCP-VERTEX.md** (docs folder).
 
 BSD-3-Clause © Cartago

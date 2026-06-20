@@ -1,9 +1,9 @@
 ---
-import PluginsSection from '../../../components/PluginsSection.astro';
-import Base from '../../../layouts/Base.astro';
-import PageHeader from '../../../components/PageHeader.astro';
-import { languages, useTranslations, type Lang } from '../../../i18n/ui';
-import capabilities from '../../../data/capabilities.json';
+import PluginsSection from '#COMPONENTS/PluginsSection.astro';
+import Base from '#LAYOUTS/Base.astro';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import { languages, useTranslations, type Lang } from '#I18N/ui';
+import capabilities from '#MANIFESTS/capabilities.json';
 
 export function getStaticPaths() {
 	return languages

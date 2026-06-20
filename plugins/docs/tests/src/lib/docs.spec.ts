@@ -84,6 +84,7 @@ describe('docs plugin', () => {
 			},
 			cacheDir: '.cache/mcp-vertex',
 			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
 			pluginCacheDir: '.cache/mcp-vertex/docs',
 			pluginDocsDir: 'docs/mcp-vertex/docs',
 			namespacePrefix: 'docs',

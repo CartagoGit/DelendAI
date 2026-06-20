@@ -13,6 +13,12 @@ export interface IBlueprintArtifact {
 	readonly description: string;
 }
 
+export interface IBlueprintDefaults {
+	readonly keepLegacy: boolean;
+	readonly reasons: readonly string[];
+	readonly warnings: readonly string[];
+}
+
 /**
  * The EXHAUSTIVE plan for a project-specific MCP server: every tool,
  * prompt, skill and agent worth creating for this project, plus whether
@@ -31,6 +37,7 @@ export interface IServerBlueprint {
 	readonly agents: ReadonlyArray<{ slot: string; description: string }>;
 	readonly tests: boolean;
 	readonly hasExistingServer: boolean;
+	readonly defaults: IBlueprintDefaults;
 	readonly notes: readonly string[];
 }
 
@@ -38,6 +45,8 @@ export interface IBlueprintOptions {
 	readonly serverName?: string;
 	readonly namespacePrefix?: string;
 	readonly tests?: boolean;
+	/** Optional free-form user request used only for migration-safety hints. */
+	readonly intent?: string;
 }
 
 const kebabHead = (name: string | undefined): string => {
@@ -83,6 +92,44 @@ const SUBAGENT_SLOTS = [
 	},
 ] as const;
 
+const MIGRATION_INTENT_RE =
+	/\b(migrat(?:e|ion|ing)?|refactor|rewrite|replace|regen(?:erate)?|port)\b/i;
+
+const buildBlueprintDefaults = (
+	analysis: IProjectAnalysis,
+	options: IBlueprintOptions,
+): IBlueprintDefaults => {
+	const reasons: string[] = [];
+	const warnings: string[] = [];
+	if (analysis.signals.includes('host-config has custom extraTools')) {
+		reasons.push('host-config has custom extraTools');
+	}
+	if (
+		analysis.signals.includes(
+			'mcp-vertex.config.json has plugin or validation config',
+		)
+	) {
+		reasons.push('mcp-vertex.config.json has plugin or validation config');
+	}
+	if (
+		options.intent !== undefined &&
+		MIGRATION_INTENT_RE.test(options.intent)
+	) {
+		reasons.push('user request mentions migration/refactor work');
+	}
+	if (reasons.length === 0) {
+		return {
+			keepLegacy: false,
+			reasons: ['greenfield-safe default'],
+			warnings,
+		};
+	}
+	warnings.push(
+		'keepLegacy preserves existing scaffold targets under legacy/ before writing fresh templates; review those snapshots before deleting them.',
+	);
+	return { keepLegacy: true, reasons, warnings };
+};
+
 /** Build the exhaustive blueprint from a project analysis. */
 export const buildServerBlueprint = (
 	analysis: IProjectAnalysis,
@@ -93,6 +140,7 @@ export const buildServerBlueprint = (
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
+	const defaults = buildBlueprintDefaults(analysis, options);
 
 	// Tools: catalog baseline + one runner per quality script the repo has.
 	const scriptTools: IBlueprintArtifact[] = Object.keys(analysis.scripts).map(
@@ -163,6 +211,12 @@ export const buildServerBlueprint = (
 			`Align with the existing agent config (${analysis.agentConfigs.join(', ')}).`,
 		);
 	}
+	notes.push(
+		defaults.keepLegacy
+			? `Recommended keepLegacy=true: ${defaults.reasons.join('; ')}.`
+			: 'Recommended keepLegacy=false: greenfield-safe default.',
+	);
+	notes.push(...defaults.warnings);
 
 	return {
 		serverName,
@@ -175,6 +229,7 @@ export const buildServerBlueprint = (
 		agents,
 		tests,
 		hasExistingServer: analysis.hasMcpProject,
+		defaults,
 		notes,
 	};
 };

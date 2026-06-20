@@ -15,9 +15,9 @@
  * guide grows past ~20 sections, migrate to Astro Content
  * Collections (markdown files in src/content/guide/<lang>/).
  */
-import Base from '../layouts/Base.astro';
-import PageHeader from '../components/PageHeader.astro';
-import { useTranslations, type Lang } from '../i18n/ui';
+import Base from '#LAYOUTS/Base.astro';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);

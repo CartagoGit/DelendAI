@@ -1,10 +1,10 @@
 ---
-import SiteNav from '../components/SiteNav.astro';
-import SiteFooter from '../components/SiteFooter.astro';
-import Config from '../components/Config.astro';
+import SiteNav from '#COMPONENTS/SiteNav.astro';
+import SiteFooter from '#COMPONENTS/SiteFooter.astro';
+import Config from '#COMPONENTS/Config.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
-import { rtlLangs, type Lang } from '../i18n/ui';
+import { rtlLangs, type Lang } from '#I18N/ui';
 
 interface Props {
 	lang: Lang;

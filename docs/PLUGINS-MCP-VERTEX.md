@@ -54,6 +54,7 @@ export default definePlugin({
 | `ctx.workspace` | Resolves workspace-relative paths to absolute. **Never use `process.cwd()`.** |
 | `ctx.corePaths` | `{ cacheDir, docsDir }` as resolved from the CLI. |
 | `ctx.cacheDir` / `ctx.docsDir` | Shorthands for the above. |
+| `ctx.keepLegacy` | Global preservation preference from `mcp-vertex.config.json` (default `false`). Plugins that regenerate durable project files should preserve the old file first when this is `true`. |
 | `ctx.pluginCacheDir` | Your private scratch root: `<cacheDir>/<name>`. |
 | `ctx.pluginDocsDir` | Your docs root: `<docsDir>/<name>`. |
 | `ctx.namespacePrefix` | Tool namespace (default `name`, override with `plugins.<name>.prefix` in the config file). |
@@ -103,8 +104,12 @@ It produces `plugins/myfeature/` with `package.json`, `tsconfig.json`,
 3. **Namespace everything** with `ctx.namespacePrefix`; never hardcode names.
 4. **All state under `ctx.pluginCacheDir`**, all docs under `ctx.pluginDocsDir`.
    Resolve to absolute with `ctx.workspace.resolve(...)`.
-5. **No host imports, no `process.cwd()`.** Everything you need is in `ctx`.
-6. **Keep knowledge short and on-demand.** It is loaded per plugin; small,
+5. **Respect `ctx.keepLegacy` for generated durable project files.** The core
+   scaffold moves existing targets to `legacy/` before rewriting when this flag
+   is true; plugins with similar regeneration flows should offer the same
+   preservation contract.
+6. **No host imports, no `process.cwd()`.** Everything you need is in `ctx`.
+7. **Keep knowledge short and on-demand.** It is loaded per plugin; small,
    precise bodies cost the agent fewer tokens.
 
 ## Example plugin

@@ -1,5 +1,6 @@
-import type { LangDict } from '../shared';
-import { proposalGlossaryByLang, recoveryByLang } from '../proposals';
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
 
 const dict: LangDict = {
 	nav: {
@@ -127,6 +128,7 @@ const dict: LangDict = {
 		docs: 'จัดทำแคตตาล็อกและอ่านเอกสาร markdown ของโปรเจกต์ การนำทางที่คัดสรรต้นทุนต่ำ',
 		deps: 'รายการพึ่งพาแบบออฟไลน์ + สุขภาพ (lockfile ช่วงหลวม รายการซ้ำ)',
 		notification: 'พุชเหตุการณ์ปลดล็อกเพื่อให้เอเจนต์หยุดโพล',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
 		'status-marker':
 			'เครื่องหมายปิดสีบังคับสำหรับทุกการตอบกลับของเอเจนต์: 8 สถานะมาตรฐาน เครื่องมือ helper + validator',
 		core: 'แกนที่ไม่ผูกกับโปรเจกต์: overview scaffold เมตริก doctor และตัวโหลดปลั๊กอิน',
@@ -165,6 +167,7 @@ const dict: LangDict = {
 	},
 	proposals: proposalGlossaryByLang.th,
 	recovery: recoveryByLang.th,
+	logs: logsByLang.th,
 };
 
 export default dict;

@@ -2,7 +2,7 @@
 id: f113
 kind: feat
 title: Proposal state machine, kinds, scaffolds, and recovery
-status: ready
+status: done
 triaged: true
 date: 2026-06-20
 track: proposals+core+web+notification
@@ -1091,11 +1091,7 @@ Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after
   message will be `refactor(proposals): normalize legacy proposals
   to canonical scaffold (f113)`. No content change, no new behaviour.
 - 2026-06-20 continuation: S6-S12 have now landed in code. Verified
-  green: `bun run typecheck`, `bun run lint`, `bun run test`
-  (121 files / 872 passed / 10 skipped), `bun run lint:proposals`
-  (18 checked, 15 legacy warnings, 0 fatal), and
-  `bun run lint:scaffolds`. Two gates remain externally blocked in the
-  current repo state rather than by f113 code: `bun run lint:scss`
-  fails on pre-existing `nav`/`nav-media` BEM selectors, and
-  `bun run site:strict` fails before Astro with Bun unable to resolve
-  `@mcp-vertex/core/public` from `apps/web/scripts/gen-capabilities.ts`.
+  green: `bun run validate` (typecheck + Biome + SCSS + 121 test files /
+  872 passed / 10 skipped), `bun run lint:proposals` (18 checked, 15
+  legacy warnings, 0 fatal), `bun run lint:scaffolds`, and
+  `bun run site:strict`.

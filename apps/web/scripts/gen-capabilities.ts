@@ -1,8 +1,9 @@
 /**
- * gen-capabilities.ts — emit `src/data/capabilities.json`, the data source the
- * Astro site renders from. It assembles the REAL server with every plugin and
- * enumerates the live tools over the MCP protocol (`listTools`), plus the
- * published packages + versions, so the site can never drift from the code.
+ * gen-capabilities.ts — emit `src/data/manifests/capabilities.json`, the data
+ * source the Astro site renders from. It assembles the REAL server with every
+ * plugin and enumerates the live tools over the MCP protocol (`listTools`),
+ * plus the published packages + versions, so the site can never drift from the
+ * code.
  *
  * Coverage guard: with `--strict` (CI) an undocumented tool fails the build.
  *
@@ -53,12 +54,20 @@ import testConventionPlugin from '@mcp-vertex/test-convention';
 import auditPlugin from '@mcp-vertex/audit';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
+import logsPlugin from '@mcp-vertex/logs';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
-const OUT = resolve(HERE, '..', 'src', 'data', 'capabilities.json');
+const OUT = resolve(
+	HERE,
+	'..',
+	'src',
+	'data',
+	'manifests',
+	'capabilities.json',
+);
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,status-marker,test-convention,audit,docs,deps';
+	'proposals,rules,memory,git,quality,search,notification,status-marker,test-convention,audit,docs,deps,logs';
 const PLUGINS: Record<string, unknown> = {
 	'mcp-proposals': proposalsPlugin,
 	'mcp-rules': rulesPlugin,
@@ -72,6 +81,7 @@ const PLUGINS: Record<string, unknown> = {
 	'mcp-audit': auditPlugin,
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
+	'mcp-logs': logsPlugin,
 };
 
 interface ITool {

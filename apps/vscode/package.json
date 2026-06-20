@@ -1,0 +1,74 @@
+{
+	"name": "mcp-vertex-vscode",
+	"displayName": "mcp-vertex",
+	"description": "VS Code client for inspecting and operating an mcp-vertex MCP server.",
+	"version": "0.1.0",
+	"publisher": "cartago",
+	"type": "module",
+	"private": true,
+	"license": "BSD-3-Clause",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"views": {
+			"explorer": [
+				{
+					"id": "mcp-vertex.tools",
+					"name": "mcp-vertex Tools"
+				},
+				{
+					"id": "mcp-vertex.proposals",
+					"name": "mcp-vertex Proposals"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "mcp-vertex.showOverview",
+				"title": "mcp-vertex: Show Overview"
+			},
+			{
+				"command": "mcp-vertex.refresh",
+				"title": "mcp-vertex: Refresh"
+			},
+			{
+				"command": "mcp-vertex.runValidation",
+				"title": "mcp-vertex: Run Validation"
+			},
+			{
+				"command": "mcp-vertex.openProposal",
+				"title": "mcp-vertex: Open Proposal Board"
+			},
+			{
+				"command": "mcp-vertex.showMetrics",
+				"title": "mcp-vertex: Show Metrics"
+			}
+		]
+	},
+	"scripts": {
+		"type": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run",
+		"check:i18n": "bun scripts/check-i18n.ts",
+		"build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
+		"package": "bun run build && vsce package --no-dependencies --no-git-tag-version"
+	},
+	"dependencies": {
+		"@mcp-vertex/client": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.90.0",
+		"@vscode/vsce": "^3.6.3",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	}
+}

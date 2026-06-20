@@ -23,6 +23,7 @@
 		"@mcp-vertex/deps": "workspace:*",
 		"@mcp-vertex/docs": "workspace:*",
 		"@mcp-vertex/git": "workspace:*",
+		"@mcp-vertex/logs": "workspace:*",
 		"@mcp-vertex/memory": "workspace:*",
 		"@mcp-vertex/notification": "workspace:*",
 		"@mcp-vertex/proposals": "workspace:*",
