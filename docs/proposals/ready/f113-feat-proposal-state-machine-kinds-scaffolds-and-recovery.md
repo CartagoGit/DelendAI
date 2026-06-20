@@ -1,0 +1,710 @@
+---
+id: f113
+kind: feat
+title: Proposal state machine, kinds, scaffolds, and recovery
+status: ready
+triaged: true
+date: 2026-06-20
+track: proposals+core+web+notification
+budget: { maxInputTokens: 12000, maxOutputTokens: 8000, maxIterations: 60 }
+ownership:
+  - { agent: implementation-runner, task: state machine + kinds + linters + reconciler + migration }
+  - { agent: notification-author, task: agent-alive/idle/dead events over the heartbeat mtime }
+  - { agent: web-author, task: i18n glossary + status badges + recovery dashboard + SSE }
+reservedFiles:
+  - docs/scaffolds/
+  - docs/proposals/
+  - plugins/proposals/src/lib/proposals/sync-proposal-registry.ts
+  - plugins/proposals/src/lib/proposals/proposal-document.ts
+  - plugins/proposals/src/lib/proposals/adopt.ts
+  - plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts
+  - plugins/proposals/src/lib/tools/continue-proposal.tool.ts
+  - plugins/proposals/src/lib/tools/proposal-transition.tool.ts
+  - plugins/proposals/src/lib/tools/recovery-tools.ts
+  - plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts
+  - plugins/notification/src/lib/agent-events.ts
+  - plugins/notification/src/lib/agent-events-bridge.ts
+  - plugins/notification/src/lib/tools.ts
+  - apps/web/src/i18n/langs/
+  - apps/web/src/i18n/check-i18n.ts
+  - apps/web/src/pages/status/recovery.astro
+  - apps/web/src/components/recovery/
+  - apps/web/src/pages/api/events/
+  - scripts/lint-scaffolds.ts
+  - scripts/migrate-legacy-proposals.ts
+  - scripts/normalize-legacy-proposals.ts
+  - scripts/rewrite-proposal-refs.ts
+acceptance:
+  - { command: bun run type, expect: exit0 }
+  - { command: bun run test, expect: exit0 }
+  - { command: bun run site:strict, expect: exit0 }
+  - { command: bun run lint:proposals, expect: exit0 }
+  - { command: bun run lint:scaffolds, expect: exit0 }
+related:
+  - p111 # post-closure audit (the closed reference for prefix conventions)
+  - p112 # parallel proposal; lives in paused/ after this lands
+  - p99 # the audit plugin whose lifecycle this proposal formalises
+---
+
+# f113 — Proposal state machine, kinds, scaffolds, and recovery
+
+## 0. Why this proposal exists
+
+Today the proposal workflow has four problems:
+
+1. **8 overlapping statuses** (`pending`, `in_progress`, `ready`, `blocked`,
+   `done`, `retired`, `paused`, `deferred`) with no clear distinction between
+   "blocked by something else" and "paused by a human". The `auto_work`
+   cascade skips them inconsistently because the signals are duplicated.
+2. **One kind for everything** (`type: proposal` on all 14 `.md`). There is
+   no link between a proposal's intent (feat vs fix vs refactor) and the
+   Conventional Commit it produces, so `release.ts` cannot derive the
+   semver bump from the proposal alone.
+3. **No canonical scaffold**. Each proposal invents its own headings;
+   agents have to re-discover where the Goal lives, where the Slices live,
+   and what "done" means. The `proposal-document.ts` parser extracts
+   `goal`, `motivation`, `goals`, `nonGoals`, `closureCriteria` but the
+   order and presence are not enforced, so two proposals in the same
+   folder can look completely different.
+4. **Stale agents are detected by polling, not by event**. The
+   `withFileMutex` heartbeat already exists but no one listens for it as
+   a lifecycle signal. A crashed agent leaves a proposal stuck in
+   `in-progress/` until a human notices (or until the agent-lock GC
+   eventually runs and silently evicts the lock with no notification).
+
+This proposal fixes all four by introducing:
+
+- **7 statuses** (one folder each), with `blocked` and `paused` strictly
+  separated and `draft` folded into `blocked-by: [self:*]`.
+- **12 kinds** (one single-letter prefix each), with `pNNN` legacy
+  preserved as `LNNN` after migration.
+- **A `docs/scaffolds/` folder** with one `ARCHITECTURE-*.md` per file
+  domain. Linters (`proposal-scaffold-linter`, `lint-scaffolds`) enforce
+  them on every `bun run validate`.
+- **A subscribe-based recovery system** that piggybacks on the existing
+  `withFileMutex` heartbeat mtime, emitting `agent-alive`, `agent-idle`,
+  and `agent-dead` notifications so agents and the orchestrator react in
+  real time instead of polling.
+
+## 1. Goal
+
+Replace the proposal status union with a clean state machine, link each
+proposal to a kind via filename prefix, enforce a canonical scaffold via
+linter, and replace polling-based stale detection with a notification
+channel that lets any subscriber (agents, orchestrator, dashboard) react
+to agent lifecycle events within `3 × heartbeatMs`.
+
+## 2. Why this design
+
+### 2.1 Why 7 statuses, not 10
+
+The 8-status union has duplicate signals:
+
+| Today | What it really means |
+|---|---|
+| `pending` | "I want to do this but haven't triaged it" |
+| `draft` | "I want to do this but the file is incomplete" |
+| → both | "wait for a human or for the file to be filled" |
+
+| Today | What it really means |
+|---|---|
+| `paused` | "stop, I'll come back" |
+| `deferred` | "stop, not this cycle" |
+| → both | "human-driven stop with optional horizon" |
+
+Folding `draft` into `blocked-by: [self:goal-missing]` reuses the existing
+blocking mechanism (one mechanism, not two). Folding `deferred` into a
+`deferred: true` flag on `paused/` reuses the folder.
+
+Result: **5 base statuses + 1 self-block variant + 1 retire terminal = 7
+folders**, with 3 flags (`triaged`, `deferred`, `cancelled`) that refine
+behaviour without being statuses.
+
+### 2.2 Why 12 kinds with single-letter prefixes
+
+A proposal's filename prefix tells you its kind without parsing
+frontmatter. The mapping is 1:1:
+
+| Prefix | Kind | Glyph | Conventional Commit | Bump |
+|---|---|---|---|---|
+| `f` | feat | ✨ | `feat:` | minor |
+| `b` | breaking | 💥 | `feat!:` | major |
+| `x` | fix | 🐛 | `fix:` | patch |
+| `r` | refactor | 🛠️ | `refactor:` | patch |
+| `P` | perf | ⚡ | `perf:` | patch |
+| `a` | audit | 🔬 | `chore(audit):` | patch |
+| `c` | chore | 🧹 | `chore:` | patch |
+| `d` | docs | 📚 | `docs:` | none |
+| `t` | test | 🧪 | `test:` | none |
+| `i` | infra | 🏗️ | `chore(infra):` | none |
+| `s` | spike | 🧭 | — | none |
+| `L` | legacy | 📦 | `feat:` | minor |
+
+Why `P` (uppercase) for perf: `p` lowercase is reserved for the legacy
+`pNNN-…` naming. Renaming legacy to free `p` would break git history and
+external references. Uppercase `P` keeps `perf` legible without colliding
+with legacy. Same logic for `L` (legacy marker after migration).
+
+### 2.3 Why `docs/scaffolds/` instead of one big `SCAFFOLDS.md`
+
+Each file domain has its own invariants. A monolithic document mixes
+concerns and is hard to keep in sync. One `ARCHITECTURE-<DOMAIN>.md`
+per domain (proposals, audits, ADRs, workflows, tools, docs, memory)
+lets the docs plugin serve them as separate web pages and lets each
+linter import only the section it needs.
+
+### 2.4 Why subscribe, not poll
+
+The `withFileMutex` heartbeat already touches the mutex file's mtime
+every `heartbeatMs`. That mtime is the source of truth for "this agent
+is alive". A new watcher (`plugins/notification/src/lib/agent-events.ts`)
+observes the mtime and emits:
+
+- `agent-alive` on every mtime bump (informational, lets the dashboard
+  draw a green dot).
+- `agent-idle` after 10 heartbeat cycles with no mtime change (the
+  agent finished or is between tasks).
+- `agent-dead` after 3 missed cycles (the agent crashed or hung).
+
+These flow through the existing `notification` plugin's
+`notifications/message` channel, so any subscriber (agents, the
+recovery dashboard, `auto_work`, the task queue) reacts in real time.
+**No polling, no `setInterval` for stale detection**, no `bun run
+reconcile` needed to surface zombies.
+
+## 3. Non-goals
+
+- **Not** changing the swarm coordination logic, the task queue engine,
+  the agent-lock registry, or the `release.ts` semver mapping.
+- **Not** introducing JSON sidecars. Every file stays `.md` with
+  frontmatter (Option C from the design discussion).
+- **Not** rewriting the prose of the 14 legacy proposals. Slice S12 is
+  a `refactor:` of shape, not content.
+- **Not** removing the `pNNN-…` filenames. They become `LNNN-…` via
+  `git mv`, preserving blame and external references.
+
+## 4. Architecture
+
+### 4.1 The 7 folders
+
+```
+docs/proposals/
+├── ready/         # triaged, waiting for an agent
+├── in-progress/   # agent holds the lock and is working
+├── review/        # implementer submitted; reviewer must approve/request_changes
+├── done/          # approved and archived (terminal)
+├── paused/        # human-paused, will resume
+├── blocked/       # blocked-by deps OR blocked-by [self:*] for drafts
+└── retired/       # cancelled / superseded (terminal)
+```
+
+The folder ↔ status mapping is enforced by the reconciler (S5) and by
+the proposal linter (S2).
+
+### 4.2 Status transitions (DFA)
+
+```
+   proposal_resume
+       ▲            ┌── claim ──┐
+       │            ▼           │
+   paused ──► ready ─────► in-progress ──submit──► review ──┬─approve──► done
+       ▲     ▲    │             │   ▲                     │
+       │     │    │             │   └── request_changes ───┘
+       │     │    ▼             ▼
+       │     │  blocked ◄── proposal_block
+       │     │    │
+       │     │    ▼ (deps satisfied)
+       │     └── ready (auto, when blocked-by resolves)
+       │
+       └─────────────── (any) ──proposal_retire──► retired (terminal)
+```
+
+- `done` and `retired` are terminal. Exit requires explicit
+  `proposal_retire` (rare, defensive).
+- `paused` requires `proposal_resume` (human) to leave.
+- `blocked` auto-resolves to `ready` when `blocked-by` becomes empty
+  (deps reach `done`, or self-block issues are fixed).
+- `review` → `in-progress` is the `request_changes` loop.
+
+### 4.3 Filename ↔ kind (enforced by S2)
+
+The regex for a valid proposal filename:
+
+```typescript
+/^[a-zA-Z]\d{3,}-[a-z0-9-]+\.md$/u
+```
+
+Captured groups: `[letter][digits][-][slug].md`.
+
+The linter checks:
+
+```typescript
+const prefix = filename[0];                                  // 'f', 'b', 'x', …
+const kind = frontmatter.kind;                               // 'feat', 'breaking', 'fix', …
+const expectedPrefix = PROPOSAL_PREFIX_BY_KIND[kind];        // 'f', 'b', 'x', …
+if (prefix !== expectedPrefix) {
+  throw new LintError(
+    `filename starts with '${prefix}' (kind=${PROPOSAL_KIND_BY_PREFIX[prefix]}) ` +
+    `but frontmatter.kind = '${kind}' (expected prefix '${expectedPrefix}')`
+  );
+}
+```
+
+### 4.4 Frontmatter schema (Zod)
+
+```typescript
+const ProposalFrontmatterSchema = z.object({
+  id: z.string().regex(/^[a-zA-Z]\d{3,}$/u),
+  kind: z.enum([
+    'feat', 'breaking', 'fix', 'refactor', 'perf',
+    'audit', 'chore', 'docs', 'test', 'infra',
+    'spike', 'legacy',
+  ]),
+  title: z.string().min(8),
+  status: z.enum([
+    'ready', 'in-progress', 'review', 'done',
+    'paused', 'blocked', 'retired',
+  ]),
+  date: z.string().datetime(),
+  track: z.string().min(1),
+  // Optional modifiers
+  triaged: z.boolean().optional(),
+  deferred: z.boolean().optional(),
+  cancelled: z.boolean().optional(),
+  superseded_by: z.string().optional(),
+  blocked_by: z.array(z.string()).optional(),
+  // Agent plumbing
+  last_heartbeat_at: z.string().datetime().optional(),
+  owner_agent: z.string().optional(),
+  // Project hooks
+  budget: z.object({
+    maxInputTokens: z.number().optional(),
+    maxOutputTokens: z.number().optional(),
+    maxIterations: z.number().optional(),
+    maxToolCalls: z.number().optional(),
+  }).optional(),
+  ownership: z.array(z.object({
+    agent: z.string(),
+    task: z.string(),
+    files: z.array(z.string()).optional(),
+  })).optional(),
+  reservedFiles: z.array(z.string()).optional(),
+  acceptance: z.array(z.object({
+    command: z.string(),
+    expect: z.string(),
+    timeoutMs: z.number().optional(),
+  })).optional(),
+  // Bookkeeping
+  related: z.array(z.string()).optional(),
+  shipped_in: z.array(z.string()).optional(),
+  closed: z.string().datetime().optional(),
+});
+```
+
+### 4.5 Canonical body sections (linter-enforced order)
+
+```markdown
+## Goal              (required, 1 paragraph)
+## Why               (required, 1-3 paragraphs, link to the parent audit if any)
+## Non-goals         (required, bullets)
+## Slices            (required)
+### S<N> — <title>
+  - **Status**: pending | in-progress | review | done
+  - **Files**: [`path`, …]
+  - **Command**: `bun run …`
+  - **Expect**: exit0 | pass | synchronized | contains:<substring>
+  - **Depends-on**: S<N-1>           (optional)
+  - **Notes**: free text             (optional)
+## Acceptance        (required, checkboxes + commands)
+## Notes             (optional, free prose at the end)
+```
+
+The linter (`proposal-scaffold-linter.ts`) extracts the section headings
+in order, errors if any required section is missing or if any section
+appears out of order, and validates that each slice has all four
+required fields (`Status`, `Files`, `Command`, `Expect`).
+
+### 4.6 Subscribe-based recovery
+
+The recovery model is **three layers**, all wired through the existing
+notification plugin:
+
+1. **Heartbeat source** (unchanged): `withFileMutex` already touches the
+   mutex file's mtime every `heartbeatMs` while an agent holds a claim.
+2. **Event emitter** (new, S8): `agent-events.ts` watches the mutex
+   file's mtime and emits `agent-alive` / `agent-idle` / `agent-dead`.
+3. **Bridge** (new, S8): `agent-events-bridge.ts` re-emits the events
+   as `notifications/message` so they flow through the same channel as
+   the existing `lock-released`.
+4. **Subscribers** (new in S4, S9, S10): the orchestrator and the
+   recovery dashboard subscribe; agents can also subscribe to react to
+   peer events (e.g. take over a task whose owner went `agent-dead`).
+
+```typescript
+// filepath: plugins/notification/src/lib/agent-events.ts (sketch)
+export const watchAgentHeartbeat = (
+  agent: string,
+  taskId: string,
+  mutexPath: string,
+  emitter: EventEmitter,
+  heartbeatMs: number,
+): { close: () => void } => {
+  let lastSeen = new Date();
+  let missedBeats = 0;
+  const watcher = watch(mutexPath, () => {
+    lastSeen = new Date();
+    missedBeats = 0;
+    emitter.emit('agent-event', { kind: 'agent-alive', agent, taskId, ts: lastSeen.toISOString() });
+  });
+  const deadInterval = setInterval(() => {
+    const ageMs = Date.now() - lastSeen.getTime();
+    if (ageMs < heartbeatMs * 1.5) return;
+    missedBeats += 1;
+    if (missedBeats === 3) {
+      emitter.emit('agent-event', {
+        kind: 'agent-dead', agent, taskId,
+        lastSeen: lastSeen.toISOString(),
+        missedBeats, ts: new Date().toISOString(),
+      });
+    }
+  }, heartbeatMs);
+  return { close: () => { watcher.close(); clearInterval(deadInterval); } };
+};
+```
+
+### 4.7 The 5 recovery tools
+
+| Tool | Purpose | Mutation |
+|---|---|---|
+| `proposal_force_transition` | Move a proposal to a new status, releasing any lock held by `overrideLockOwner`. Requires non-empty `reason`. | yes |
+| `proposal_diagnose` | Return folder + frontmatter + lock + last heartbeat + last agent-dead event + inconsistencies + suggested actions. | no |
+| `proposal_reconcile_folder` | Move a proposal file to the folder matching its frontmatter status. Dry-runnable, idempotent. | yes |
+| `agent_lock_release_orphan` | Release an orphan lock whose owner has been `agent-dead`. Refuses if owner is alive. | yes |
+| `proposal_stale_list` | List proposals whose agent went `agent-dead`. Reads from the event buffer (no scan). | no |
+
+### 4.8 Recovery dashboard
+
+`apps/web/src/pages/status/recovery.astro` is a thin Astro page:
+
+- On render, calls `proposal_stale_list`.
+- Renders a table with one row per zombie, one button per suggested
+  action (`force-transition`, `release-lock`).
+- Subscribes via SSE to `/api/events/agent-dead`; on each event,
+  re-fetches the list (no full page reload).
+
+i18n-complete (12 languages) — every UI string is a key in
+`apps/web/src/i18n/langs/*.ts#recovery`.
+
+## 5. Slices
+
+The work is split into 12 sequential slices, each independently
+gateable. Files marked `excl.` are exclusively claimed by the slice.
+
+### S1 — Glosario canónico *(excl. `proposal-glossary.constant.ts`)*
+
+- Create `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`
+  with `PROPOSAL_STATUSES` (7), `PROPOSAL_KINDS` (12), `PROPOSAL_KIND_BY_PREFIX`,
+  `PROPOSAL_PREFIX_BY_KIND`, `PROPOSAL_STATUS_TRANSITIONS`, `STATUS_TO_FOLDER`,
+  `PROPOSAL_FLAGS`.
+- Create `proposal-glossary.spec.ts` with the 6 invariant tests
+  (every status has a label/folder, every transition target is known,
+  terminal statuses have at most `retire` as outgoing edge, every kind
+  has a single-letter prefix, prefixes are unique, the legacy alias
+  table is consistent).
+- Refactor `sync-proposal-registry.ts#L17-26` to import from the
+  glosario instead of redefining `IProposalStatus`.
+- Refactor `sync-proposal-registry.ts#L67` `VALID_STATUSES` to be
+  derived from `Object.keys(PROPOSAL_STATUSES)`.
+- Refactor `proposal-document.ts` `IProposalFrontmatter.status` to be
+  `keyof typeof PROPOSAL_STATUSES` (narrowed by Zod).
+- Refactor `adopt.ts#kindOf` to use `PROPOSAL_PREFIX_BY_KIND`.
+- **Gate**: `bun run type && bun run test proposal-glossary.spec.ts`.
+- **Estimated work**: 1 session.
+
+### S2 — Scaffold linter *(excl. `proposal-scaffold-linter.ts`)*
+
+- Create `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts`
+  exporting `lintProposalMarkdown({ path, markdown })`.
+- Validate frontmatter via Zod (S1 schema).
+- Validate body section order: required sections present and in
+  `Goal → Why → Non-goals → Slices → Acceptance` order; `Notes`
+  optional and last.
+- Validate each slice has `Status`, `Files`, `Command`, `Expect`.
+- Validate filename prefix matches `PROPOSAL_PREFIX_BY_KIND[kind]`.
+- Validate folder matches `STATUS_TO_FOLDER[status]`.
+- Refuse with a precise error: file path, line number, what's wrong,
+  what the fix is.
+- `proposal-scaffold-linter.spec.ts` covers 12 happy paths and 15
+  negative cases (each invariant broken).
+- **Gate**: `bun run test proposal-scaffold-linter.spec.ts`.
+- **Estimated work**: 1 session.
+
+### S3 — Transition tool *(excl. `proposal-transition.tool.ts`)*
+
+- Create `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+  exporting `proposal_transition({ id, to, reason })`.
+- Validate the transition against `PROPOSAL_STATUS_TRANSITIONS`.
+- Acquire `withFileMutex` on the proposal path.
+- Update frontmatter `status` via `writeFileAtomic`.
+- `git mv` the file to the new folder.
+- Emit a `proposal-transition` event to the task queue (audit trail).
+- `proposal-transition.tool.spec.ts` covers the 7×7 transition matrix
+  (legal edges pass, illegal edges throw).
+- Add `bun run lint:proposals` script that walks every `.md` under
+  `docs/proposals/` and runs the linter; non-zero exit on failure.
+- **Gate**: `bun run test && bun run lint:proposals` (currently
+  produces warnings on the 14 legacy; that's expected).
+- **Estimated work**: 1 session.
+
+### S4 — `auto_work` consciente *(excl. `continue-proposal.tool.ts`)*
+
+- Refactor `continue_proposal` cascade to filter by **folder**, not
+  by date or by status alone:
+  - `ready/` → first priority
+  - `in-progress/` → respect (already claimed)
+  - `review/` → respect (already submitted)
+  - `paused/`, `blocked/`, `done/`, `retired/` → skip
+- Add a subscription on `agent-dead` so a peer dying re-evaluates the
+  cascade within seconds (not on the next `auto_work` call).
+- `continue-proposal.tool.spec.ts` covers: cascade picks `ready` first,
+  cascade respects `in-progress` even if newer, cascade skips
+  `paused`/`blocked`/`done`/`retired`.
+- **Gate**: `bun run test continue-proposal.tool.spec.ts`.
+- **Estimated work**: 0.5 session.
+
+### S5 — Folder reconciler *(excl. `sync-proposal-registry.ts`)*
+
+- Extend `sync-proposal-registry.ts` with `reconcileFolders()`:
+  walks every `.md`, computes the expected folder from frontmatter
+  status, moves the file if needed via `git mv`.
+- Add `reconcileBlocked()`: for each `blocked/` proposal, check
+  `blocked-by`. If all listed deps are in `done/`, transition
+  `blocked → ready` (auto), emit `blocked-resolved` event.
+- Add `reconcileSelfBlocked()`: for `blocked-by: [self:*]`, re-run the
+  scaffold linter. If it passes, transition `blocked → ready`.
+- Make all three idempotent (running twice = no-op).
+- Add e2e spec that creates a misfiled proposal, runs sync, asserts
+  it moved.
+- **Gate**: `bun run test sync-proposal-registry.spec.ts` plus a
+  manual check on the 14 legacy.
+- **Estimated work**: 1 session.
+
+### S6 — i18n glossary + badges *(excl. `apps/web/src/i18n/langs/`)*
+
+- Extend `apps/web/src/i18n/langs/*.ts` (12 files) with the tree:
+  ```typescript
+  proposals: {
+    statuses: {
+      ready:      { label, short, long },
+      in_progress:{ label, short, long },
+      review:     { label, short, long },
+      done:       { label, short, long },
+      paused:     { label, short, long },
+      blocked:    { label, short, long },
+      retired:    { label, short, long },
+    },
+    kinds: {
+      feat:     { label, short, long },
+      breaking: { label, short, long },
+      fix:      { label, short, long },
+      refactor: { label, short, long },
+      perf:     { label, short, long },
+      audit:    { label, short, long },
+      chore:    { label, short, long },
+      docs:     { label, short, long },
+      test:     { label, short, long },
+      infra:    { label, short, long },
+      spike:    { label, short, long },
+      legacy:   { label, short, long },
+    },
+  }
+  ```
+- Extend `apps/web/src/i18n/check-i18n.ts` to require all keys.
+- Create `apps/web/src/components/proposals/StatusBadge.astro` and
+  `KindBadge.astro` that import the glosario and render a coloured
+  pill with the glyph + label.
+- **Gate**: `bun run site:strict` (fails if any of the 12 languages
+  is missing a key).
+- **Estimated work**: 1.5 sessions.
+
+### S7 — `docs/scaffolds/` *(excl. `docs/scaffolds/`)*
+
+- Create `docs/scaffolds/README.md` (index of all scaffolds).
+- Create `docs/scaffolds/ARCHITECTURE-PROPOSALS.md` — the full shape
+  spec for proposals, slices, transitions, recovery. Source for the
+  agents and the linter.
+- Create `docs/scaffolds/ARCHITECTURE-AUDITS.md` — shape spec for
+  audit reports (`docs/proposals/audits/**`).
+- Create `docs/scaffolds/ARCHITECTURE-ADR.md` — shape spec for ADRs
+  (`docs/adr/NNNN-*.md`).
+- Create `docs/scaffolds/ARCHITECTURE-WORKFLOWS.md` — shape spec for
+  GitHub Actions (required keys, pinned SHAs).
+- Create `docs/scaffolds/ARCHITECTURE-TOOLS.md` — shape spec for MCP
+  tool specs (outputSchema mandatory, Zod schema in/out).
+- Create `docs/scaffolds/ARCHITECTURE-DOCS.md` — shape spec for web
+  pages (`apps/web/src/content/docs/**`).
+- Create `docs/scaffolds/ARCHITECTURE-MEMORY.md` — shape spec for
+  memory notes (`plugins/memory/store/**`).
+- Create `scripts/lint-scaffolds.ts` that walks each scaffold's
+  `applies-to` glob and validates the relevant subset of rules.
+- Add `bun run lint:scaffolds` script.
+- i18n: every scaffold becomes a web page under
+  `apps/web/src/content/docs/<lang>/scaffolds/...` (12 languages).
+- **Gate**: `bun run lint:scaffolds` (warns on the 14 legacy; will
+  pass cleanly once S11+S12 land).
+- **Estimated work**: 2 sessions.
+
+### S8 — Notification: agent events *(excl. `plugins/notification/src/lib/agent-events*.ts`)*
+
+- Create `plugins/notification/src/lib/agent-events.ts` exporting
+  `watchAgentHeartbeat(...)` per the sketch in §4.6.
+- Create `plugins/notification/src/lib/agent-events-bridge.ts` that
+  re-emits the events through `server.notification(...)` as
+  `notifications/message`.
+- Register both in `plugins/notification/src/lib/tools.ts` so the
+  bridge is wired on plugin boot.
+- `agent-events.spec.ts` covers: mtime bump → `agent-alive`; 10
+  cycles idle → `agent-idle`; 3 missed cycles → `agent-dead`;
+  bridge delivers events through the notification channel.
+- **Gate**: `bun run test plugins/notification`.
+- **Estimated work**: 1 session.
+
+### S9 — Recovery tools *(excl. `plugins/proposals/src/lib/tools/recovery-tools.ts`)*
+
+- Create the 5 tools from §4.7.
+- `proposal_stale_list` reads from an in-memory buffer fed by the
+  S8 bridge; GC entries older than 1 h.
+- `proposal_force_transition` releases the lock in the agent-names
+  registry, then moves the file via the same logic as S3.
+- `proposal_diagnose` returns a full picture: folder, frontmatter
+  status, lock owner, last heartbeat, last agent-dead event,
+  inconsistencies (folder ≠ status, lock owner ≠ frontmatter owner,
+  last heartbeat > 3× heartbeatMs), suggested actions.
+- `proposal_reconcile_folder` wraps S5's `reconcileFolders()` for a
+  single id.
+- `agent_lock_release_orphan` checks the agent is actually
+  `agent-dead` (via the event buffer) before releasing.
+- `recovery-tools.spec.ts` covers each tool with synthetic events.
+- **Gate**: `bun run test recovery-tools.spec.ts`.
+- **Estimated work**: 1.5 sessions.
+
+### S10 — Recovery dashboard *(excl. `apps/web/src/pages/status/recovery.astro`)*
+
+- Create `apps/web/src/pages/status/recovery.astro` per §4.8.
+- Create `apps/web/src/components/recovery/RecoveryTable.astro` with
+  one row per zombie and one button per suggested action.
+- Create `apps/web/src/pages/api/events/[topic].ts` as an SSE
+  endpoint that streams `notifications/message` events for the
+  given topic (default `agent-dead`).
+- Add `recovery.*` keys to all 12 `apps/web/src/i18n/langs/*.ts`.
+- Manual test: simulate an agent-dead event via the S8 test
+  harness, confirm the dashboard updates within 2 s.
+- **Gate**: `bun run site:strict` plus a manual end-to-end test.
+- **Estimated work**: 1 session.
+
+### S11 — Migration script *(excl. `scripts/migrate-legacy-proposals.ts`)*
+
+- Create `scripts/migrate-legacy-proposals.ts` that:
+  1. Lists every `pNNN-*.md` under `docs/proposals/`.
+  2. Computes the new path: `<status>/<L>NNN-legacy-<original-slug>.md`
+     (strip the old `feat-` / `fix-` / `chore-` prefix from the slug;
+     the kind info moves to frontmatter `kind: legacy` + `kind-original`).
+  3. Dry-run mode prints a diff (default).
+  4. Apply mode does `git mv` for each file (preserves blame).
+  5. Regenerates `docs/proposals/index.json` with the new paths.
+  6. Emits a summary table at the end.
+- Create `scripts/rewrite-proposal-refs.ts` that greps the repo for
+  `pNNN` references in `.md`, `.ts`, `.astro`, and rewrites them to
+  `LNNN` (or to the new path). Dry-runnable.
+- Manual test: dry-run on the repo, review the diff, then apply.
+- **Gate**: the 14 legacy files end up in the correct folder with
+  the correct name; `git log --follow <file>` still shows the
+  original history.
+- **Estimated work**: 1 session.
+
+### S12 — Legacy normalization *(excl. `scripts/normalize-legacy-proposals.ts`)*
+
+- Create `scripts/normalize-legacy-proposals.ts` that:
+  1. Reads each `LNNN-*.md` (post-S11).
+  2. Normalises frontmatter: ensures `kind: legacy`, adds
+     `kind-original` (inferred from filename), ensures `track`
+     present, ensures `date` ISO-8601.
+  3. Normalises body sections to the canonical order. If a section
+     is missing, inserts a placeholder (`## Goal\n\n_Imported from
+     legacy — needs rewrite_`).
+  4. Does NOT change the prose content (this is a `refactor:`).
+- Run the scaffold linter on each; iterate until all pass.
+- **Gate**: `bun run lint:proposals` passes cleanly on every file
+  under `docs/proposals/`.
+- **Estimated work**: 1.5 sessions.
+
+## 6. Dependency graph
+
+```
+S1 ──┬──► S2 ──┬──► S7 ──────────────────────────┐
+      │         │                                  │
+      │         ├──► S3 ──┬──► S4                  │
+      │         │         │                          │
+      │         │         ├──► S5 ──┐                │
+      │         │         │         │                │
+      │         ▼         ▼         ├──► S11 ──┐     │
+      │         (DFA)   (folder)    │         │     │
+      │                             │         ▼     │
+      └──► S6 ──────────────────────┤        S12 ───┘
+                                    │
+S8 ──► S9 ──┬──► S10 ────────────────┘
+            │
+            └──► (S4 subscribes here)
+```
+
+Critical path: S1 → S3 → S5 → S11 → S12 (≈ 5.5 sessions).
+Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9).
+
+## 7. Acceptance criteria
+
+- [ ] `proposal-glossary.constant.ts` defines 7 statuses, 12 kinds,
+      12 prefix mappings, and a 7×7 transition matrix.
+- [ ] `proposal-scaffold-linter` rejects malformed proposals with a
+      precise error (file path, line number, fix hint).
+- [ ] `proposal_transition` MCP tool validates the DFA on every call
+      and moves the file atomically (`withFileMutex` +
+      `writeFileAtomic`).
+- [ ] `auto_work` only picks from `ready/`, `in-progress/`, `review/`.
+- [ ] `sync_proposals` reconciles folders and auto-resolves
+      `blocked → ready` when deps are met.
+- [ ] `agent-alive`, `agent-idle`, `agent-dead` events flow through
+      the notification plugin's `notifications/message` channel.
+- [ ] `proposal_stale_list` returns zombies from the event buffer,
+      not from a polling scan.
+- [ ] All 14 legacy proposals live in one of the 7 folders with a
+      `LNNN-…` filename.
+- [ ] All 14 legacy proposals pass `bun run lint:proposals`.
+- [ ] i18n covers 7 statuses × 12 languages + 12 kinds × 12 languages.
+- [ ] `/status/recovery` dashboard renders and reacts to events via SSE.
+- [ ] `bun run validate` (type + test + lint + site:strict) green.
+
+## 8. Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| 14 legacy break `bun run validate` between S3 and S12 | Feature flag `PROPOSAL_STATE_MACHINE_V2`; S3 only flips it on after S12 lands |
+| `pNNN` legacy collides with new prefix regex | The regex `[a-zA-Z]` accepts both; the prefix-mapping table accepts `p → legacy` |
+| 12-language i18n drift | `bun run site:strict` fails the build if any key is missing; no exceptions |
+| SSE endpoint overloads during incidents | Rate-limit per topic; events are already dedup'd by the bridge (1 event per state change, not per mtime bump) |
+| Agent-dead false positives (slow CI, not crash) | Threshold is `3 × heartbeatMs` (default 30 s), not 1; the dashboard lets a human force-resume if the agent is just slow |
+| `git mv` on the 14 legacy breaks external references | S11's `rewrite-proposal-refs.ts` updates all internal refs; external refs (PR descriptions, docs) keep working because the numeric id is preserved (`p099` → `L099`) |
+
+## 9. Notes
+
+- The `draft` case is **not** a new status. It is
+  `blocked-by: [self:goal-missing]` (or `[self:slices-empty]`,
+  `[self:budget-missing]`). One blocking mechanism, reused for
+  self-blocking.
+- `blocked` auto-resolves to `ready` when deps are met. `paused`
+  never auto-resolves — only `proposal_resume` (manual) lifts it.
+- The recovery tools are **additive**. Existing `agent_lock gc`,
+  `task_queue` subscribe, and `notification` plugin's
+  `lock-released` are unchanged. The new layer sits on top.
+- The 14 legacy normalization is a pure `refactor:`. The commit
+  message will be `refactor(proposals): normalize legacy proposals
+  to canonical scaffold (f113)`. No content change, no new behaviour.
