@@ -5,7 +5,7 @@
 	"type": "module",
 	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
-		"dev": "bun run docs:api && PAGES_BASE='' astro dev",
+		"dev": "bun run --cwd ../.. docs:api && PAGES_BASE='' astro dev",
 		"preview": "astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",

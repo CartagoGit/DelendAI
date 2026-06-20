@@ -10,7 +10,8 @@
 			"mcp__mcp-vertex__proposals_proposal_board",
 			"mcp__mcp-vertex__proposals_state_health",
 			"mcp__mcp-vertex__proposals_agent_lock",
-			"mcp__mcp-vertex__proposals_compact_status"
+			"mcp__mcp-vertex__proposals_compact_status",
+			"mcp__mcp-vertex__proposals_continue_proposal"
 		],
 		"deny": []
 	},

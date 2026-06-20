@@ -20,3 +20,13 @@ bun.lockb
 # declarations to dist/; a .d.ts next to a .ts source is always an accident.
 packages/*/src/**/*.d.ts
 plugins/*/src/**/*.d.ts
+
+# Agent session notes dropped at the repo root. These are transient
+# per-session digests (consolidation steps, workarounds, lessons
+# learned) that belong in the agent's memory / notes system, not in
+# the public history. The `mcp-vertex-session-*.md` glob matches the
+# convention used by recent sessions; the broader `*session*.md`
+# catches related names without false positives on the docs.
+mcp-vertex-session-*.md
+*session*.md
+!.agents/sessions/
