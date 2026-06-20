@@ -152,7 +152,14 @@ const extractFindings = (body: string): readonly IAuditFinding[] => {
 			/\*\*Fichero[a-z]?\s*:?\*\*?\s*:?\s*`?([^`\n]+)`?/u.exec(line);
 		if (fileMatch?.[1]) {
 			for (const candidate of fileMatch[1].split(',')) {
-				const trimmed = candidate.trim().replace(/[`*]/g, '');
+				// Strip backticks, asterisks, and any trailing line
+				// anchor (`#L42` / `#L42-L58`) so callers can match on
+				// the canonical path alone.
+				const trimmed = candidate
+					.trim()
+					.replace(/[`*]/g, '')
+					.replace(/#L[\w-]+$/u, '')
+					.trim();
 				if (trimmed.length > 0 && !currentFiles.includes(trimmed)) {
 					currentFiles.push(trimmed);
 				}
@@ -187,8 +194,16 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 			continue;
 		}
 		if (!inTable) continue;
-		const dim = cells[0] ?? '';
-		const scoreCell = cells[1] ?? '';
+		// Strip surrounding `**…**` markdown emphasis from the dimension
+		// label so consumers can match on plain text (`Arquitectura`, not
+		// `**Arquitectura**`). Same goes for the score cell.
+		const cleanCell = (s: string): string =>
+			s
+				.replace(/^\*\*\s*/u, '')
+				.replace(/\s*\*\*$/u, '')
+				.trim();
+		const dim = cleanCell(cells[0] ?? '');
+		const scoreCell = cleanCell(cells[1] ?? '');
 		const comment = cells.slice(2).join(' | ');
 		const scoreMatch = /^(\d+)\s*\/\s*10$/u.exec(scoreCell);
 		const score = scoreMatch?.[1]
@@ -214,8 +229,19 @@ const extractScores = (body: string): readonly IAuditScore[] => {
 
 /** Final note: paragraph after `**Nota final:**` or `**Nota global:**`. */
 const extractNote = (body: string): string => {
-	const m = /\*\*Nota\s+(?:final|global)\s*:?\*\*?:?\s*([^\n]+)/iu.exec(body);
-	return (m?.[1] ?? '').trim();
+	// Tolerant: the source audits vary in formatting. We find the line
+	// that mentions `Nota final` or `Nota global`, then strip the
+	// surrounding `**` emphasis and any leading colon. This handles
+	// every observed shape: `**Nota final: 8/10 — ...**`,
+	// `**Nota global 7/10 — ...**`, and unbolded variants.
+	const m = /\*\*Nota\s+(?:final|global)[^\n]*\*\*/iu.exec(body);
+	const raw = m?.[0] ?? '';
+	// Strip the `**` emphasis and the `Nota final:` label, keeping
+	// only the actual note content.
+	return raw
+		.replace(/^\*\*Nota\s+(?:final|global)\s*:?\s*/iu, '')
+		.replace(/\*\*$/u, '')
+		.trim();
 };
 
 /**
