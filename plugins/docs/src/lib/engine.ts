@@ -1,6 +1,9 @@
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import {
+	resolveWorkspaceContained,
+	walkAllowedFiles,
+} from '@mcp-vertex/core/public';
+import { readFile, stat } from 'node:fs/promises';
+import { relative, sep } from 'node:path';
 
 /** One catalogued doc. `path` is relative to the workspace root. */
 export interface IDocEntry {
@@ -104,23 +107,14 @@ export const listDocs = async (
 		if (docs.length >= max) truncated = true;
 	};
 
-	const walk = async (absDir: string): Promise<void> => {
-		if (truncated) return;
-		const entries = await readdir(absDir, { withFileTypes: true }).catch(
-			() => null,
-		);
-		if (entries === null) return;
-		for (const e of [...entries].sort((a, b) =>
-			a.name.localeCompare(b.name),
-		)) {
-			if (truncated) return;
-			if (e.isDirectory()) {
-				if (!ignore.has(e.name)) await walk(join(absDir, e.name));
-			} else if (e.isFile()) {
-				await addFile(join(absDir, e.name));
-			}
-		}
-	};
+	const walk = (rootAbs: string): Promise<void> =>
+		walkAllowedFiles({
+			workspaceRootAbs,
+			rootAbs,
+			isTruncated: () => truncated,
+			shouldSkipDir: (_relDirPath, dirName) => ignore.has(dirName),
+			visitFile: addFile,
+		});
 
 	for (const root of roots) {
 		if (truncated) break;

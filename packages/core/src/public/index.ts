@@ -125,6 +125,8 @@ export {
 export { joinRel } from '../lib/shared/paths';
 export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
+export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files';
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
 export { killProcessGroup } from '../lib/commands/process-group';
