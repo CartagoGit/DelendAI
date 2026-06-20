@@ -3,16 +3,15 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
 	test: {
 		// Projects run as their own vitest instances; the root shell walks
-		// the listed globs to wire them up. Plugins still in `idea` (e.g.
-		// `plugins/audit/` for p99) intentionally self-exclude runtime
-		// tests, but the root shell still picks up their `*.spec.ts`
-		// files unless we skip the entire project here. Remove the
-		// `!plugins/audit` from the `projects` array (or restore the
-		// simple globs) when p99 flips to `status: done` in
-		// `docs/proposals/index.json`.
+		// the listed globs to wire them up. Plugins that need to pause
+		// their own runtime tests temporarily (e.g. while still in
+		// `idea` status) should set `include: []` in their local
+		// `vitest.config.ts` AND add a short comment explaining why —
+		// see `plugins/audit/vitest.config.ts` for the historical
+		// p99 opt-out pattern.
 		projects: [
 			'packages/*',
-			'plugins/!(audit)',
+			'plugins/*',
 			'examples/custom-plugin',
 			'apps/web',
 		],

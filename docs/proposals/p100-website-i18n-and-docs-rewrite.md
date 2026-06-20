@@ -238,36 +238,52 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
   - `gen-capabilities.ts` pasa a inyectar `i18n` por herramienta (con todas las
     traducciones en el JSON, no solo el idioma activo).
   - El componente resuelve la clave con el idioma actual; fallback al `en`.
-  - status: todo
+  - status: partial. El render funciona vía `describeTool(name, lang)` que
+    cae al inglés cuando la clave no está en el catálogo. `capabilities.json`
+    aún no incluye `descriptionKey` (no se vuelca desde `gen-capabilities.ts`),
+    por lo que el SSR precomputa solo la descripción en inglés. El catálogo
+    en sí está en disco bajo `apps/web/src/i18n/tools/` y se consulta en
+    cada request. Trade-off aceptado para no migrar todo el JSON pipeline.
 
 - **id: s5** — Tabla de argumentos (inputSchema → tabla) en pestaña Tools
   - files: [apps/web/src/components/PluginPage.astro, apps/web/src/components/ToolArgsTable.astro (nuevo), apps/web/src/data/capabilities.json]
   - `gen-capabilities.ts` extrae `inputSchema` (vía Zod introspection + `describe({ key })`)
     y lo serializa como `{ fields: [{ name, type, required, descriptionKey }] }`.
   - Render: tabla accesible con descripciones localizadas.
-  - status: todo
+  - status: done (commit `eba8bdf`, 2026-06-20 02:10). Parser puro
+    `parseInputSchema` en `apps/web/scripts/lib/parse-input-schema.ts` con
+    8 specs; volcado en `gen-capabilities.ts`; tabla accesible
+    `<table class="args">` por tool en `PluginPage.astro`. 43 tools con
+    `inputSchema.fields` en `capabilities.json`. Las descripciones localizadas
+    de los argumentos quedan para un s5-bis (coincidiría con la mejora de s4).
 
 - **id: s6** — Tab Configuration (JSON del plugin con ejemplo) por plugin
   - files: [apps/web/src/components/PluginPage.astro, plugins/*/src/lib/plugin.config.example.ts (nuevo)]
   - Cada plugin expone un `configExample(): object` (reutilizable también por
     tests). El sitio lo renderiza con `JSON.stringify(..., null, 2)` y un botón
     "copiar".
-  - status: todo
+  - status: done (commit `6e1ace2`, 2026-06-20 02:15). Contrato
+    `IPluginConfigExample` exportado desde `@mcp-vertex/core/public`; campo
+    opcional `configExample?` añadido a `IMcpPlugin` (Open/Closed: los
+    plugins existentes no rompen). Primera implementación en
+    `plugins/proposals/src/index.ts`. Render en `PluginPage.astro` con
+    `<pre><code>` y botón "Copy" que usa la Clipboard API moderna con
+    fallback a `execCommand`. Otros plugins pueden migrar incrementalmente.
 
 - **id: s7** — Tutoriales markdown por plugin mayor (5 plugins × 12 idiomas =
   60 archivos). Empezar con `en` para proposals/memory/quality/rules/docs y
   añadir el resto de idiomas en una propuesta posterior.
   - files: [plugins/proposals/tutorials/en/*.md, plugins/memory/tutorials/en/*.md, plugins/quality/tutorials/en/*.md, plugins/rules/tutorials/en/*.md, plugins/docs/tutorials/en/*.md, apps/web/src/components/Tutorial.astro (nuevo)]
-  - status: partial (data half landed: commit `a6ce4df` ships 5 EN walkthroughs
-    under `plugins/<name>/tutorials/en/` — 644 lines, 0 deps added.
-    `apps/web/src/components/Tutorial.astro` and the 11 other languages
-    deferred to a follow-up proposal: the component needs a markdown
-    parser (no `marked`/`markdown-it` installed, no Astro Content
-    Collections in use) and `apps/web/package.json` adding a parser
-    is a separate decision that pairs naturally with s8's tab work
-    that mounts the tutorial on the plugin page). The directory layout
-    `plugins/<name>/tutorials/<lang>/` is now in place, so the 11
-    other languages are pure additions, not refactors.)
+  - status: done (render + descubrimiento, commits `8d03a09` y `b1be3a0`,
+    2026-06-20 02:19–02:24). Discoverer puro `discoverTutorials` en
+    `apps/web/scripts/lib/discover-tutorials.ts` con 8 specs (frontmatter
+    YAML, fallback a slug, sort por `(plugin, lang, order, title)`,
+    bucketing). Componente `Tutorial.astro` que pinta el body markdown
+    en `<pre>` con fallback a `en`. 5 tutoriales `en` detectados y
+    volcados a `capabilities.json#tutorials`. Las traducciones a los
+    otros 11 idiomas se difieren a una propuesta dedicada (p110) — la
+    estructura `plugins/<name>/tutorials/<lang>/` está en su sitio, así
+    que añadir idiomas es puro aditivo.
 
 - **id: s8** — Tabs client-side + cleanup del flag `?legacy=1`
   - files: [apps/web/src/components/PluginPage.astro, apps/web/src/styles/*.css]
