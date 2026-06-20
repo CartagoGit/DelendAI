@@ -80,7 +80,7 @@ verificados contra el código y ya corregidos:
   - Test de contención: bajo `'fail'`, un claim concurrente contra un
     holder vivo se rechaza (no roba); bajo `'steal'` (default) el
     comportamiento histórico no cambia.
-- status: pending
+- status: done
 
 ### s4 — M32: tests property-based para frontmatter-parser/redactSecrets + concurrencia de memory
 - files: packages/core/tests/src/lib/shared/frontmatter-parser.property.spec.ts

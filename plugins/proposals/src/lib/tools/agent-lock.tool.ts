@@ -41,6 +41,13 @@ export const buildAgentLockRegistration = (
 						agent: z.string().optional(),
 						files: z.array(z.string()).optional(),
 						parent_task_id: z.string().optional(),
+						/**
+						 * What to do when claim/release/gc contends with a *live*
+						 * holder past the mutex's contention timeout (M28):
+						 * `'steal'` (default) reclaims as before; `'fail'` rejects
+						 * instead of clobbering a slow-but-alive holder.
+						 */
+						onContention: z.enum(['steal', 'fail']).optional(),
 					}),
 				},
 				async (args) => {
