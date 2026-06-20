@@ -93,6 +93,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed
+- **p111 closed: post-closure audit hardening landed.** Five findings
+  from the 16-06 master audit, plus two new ones discovered this
+  session, are now fixed and pinned by tests: (s1) M45 — `auto_work`
+  / `continue_proposal` no longer crash on idle because a local
+  `json()` duplicate was setting only `content`, never
+  `structuredContent` (both tools now delegate to the shared
+  `toolJson` helper); M46 — `docsDir` in `mcp-vertex.config.json`
+  points at `docs/` so `<docsDir>/proposals` resolves to the real
+  `docs/proposals/` corpus, not the empty `docs/mcp-vertex/proposals/`
+  shadow that held 3 abandoned drafts (this was the literal
+  "the MCP isn't being applied to our project" symptom). (s2) M25 —
+  `walkAllowedFiles` is now a single shared helper in
+  `packages/core/src/lib/shared/walk-allowed-files.ts` and both
+  `search` and `docs` delegate to it (no duplicated walk logic).
+  (s3) M28 — `agent_lock` forwards `onContention: 'fail'` to
+  `withFileMutex`, throwing `LockContentionError` instead of
+  stealing a live holder's lock. (s4) M32 — three property-based
+  specs land: `redact.property.spec.ts` (idempotence, no false
+  negatives), `frontmatter-parser.property.spec.ts` (round-trip),
+  and `store-concurrency.spec.ts` (the new file): 4 cases pin
+  the M32 contract — 32 parallel writers preserve every note,
+  16 concurrent upserts to the same title converge to 1 (no
+  duplicates), sequential and parallel workloads converge to the
+  same id set, and saves+deletes interleaved preserve the
+  expected intersection. The memory store spec depends only on
+  the public surface (`saveNote`/`removeNote`/`readStore`), no
+  `node:fs`/`withFileMutex` imports — DIP, so a future
+  SQLite-WAL swap can't silently break the contract.
 - **p110 closed: i18n + docs rewrite residuals landed.** The three
   slices p100 deferred are now done — (1) `apps/web/scripts/lib/resolve-i18n-descriptions.ts`
   + `gen-capabilities.ts` integration precompute the 12-language
