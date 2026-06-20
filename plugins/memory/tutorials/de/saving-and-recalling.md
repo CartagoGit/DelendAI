@@ -1,64 +1,58 @@
 ---
-title: "Saving and recalling memory notes [Deutsch — needs translation]"
+title: Speichern und Abrufen von Memory-Notizen
 plugin: memory
-audience: any agent that needs cross-session continuity
+audience: jeder Agent, der sitzungsübergreifende Kontinuität benötigt
 order: 1
 lang: de
-auto-translated: true
-needs-human-review: true
-source: plugins/memory/tutorials/en/saving-and-recalling.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# Speichern und Abrufen von Memory-Notizen
 
+Dieses Tutorial zeigt die vier `memory_*`-Tools in Aktion. Notizen
+sind kleine JSON-Einträge unter `.cache/mcp-vertex/memory/notes.json`
+— klein genug für eine vollständige Ausgabe, indiziert nach id,
+abrufbar per Tag oder Volltextsuche.
 
-# Saving and recalling memory notes
+## 0. Das mentale Modell
 
-This walkthrough shows the four `memory_*` tools in action. Notes
-are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
-— small enough to dump in full, indexed by id, retrievable by
-tag or full-text query.
+Eine **Notiz** ist `{ id, title, body, tags, createdAt, updatedAt }`.
+Titel sind eindeutig (Groß-/Kleinschreibung ignoriert) — `memory_save`
+führt einen Upsert nach Titel durch. Es gibt kein Schema für `body`;
+behandeln Sie es als kurzes Freitextfeld. Secrets werden von
+`redactSecrets` automatisch entfernt, bevor die Notiz gespeichert wird
+(siehe `packages/core/src/lib/shared/redact.ts`).
 
-## 0. The mental model
-
-A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
-Titles are unique (case-insensitive) — `memory_save` upserts by
-title. There is no schema for `body`; treat it as a short
-free-text field. Secrets are auto-redacted by `redactSecrets`
-before the note is persisted (see
-`packages/core/src/lib/shared/redact.ts`).
-
-## 1. Save a note
+## 1. Eine Notiz speichern
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "monorepo publish order",
-    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
+    "title": "Monorepo-Publikationsreihenfolge",
+    "body": "Core zuerst, dann Plugins im Gleichlauf. derive-version.ts liest Conventional Commits seit dem letzten vX.Y.Z-Tag.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
-so you can `forget` it later.
+Antwort: `{ id: "<uuid>", createdAt: "..." }`. Save gibt die id zurück,
+damit Sie sie später vergessen können.
 
-## 2. Recall by query
+## 2. Nach Abfrage abrufen
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "publish order",
+    "query": "Publikationsreihenfolge",
     "limit": 5
   }
 }
 ```
 
-Returns up to `limit` notes that match the query (substring match
-on title + body, ranked by recency). Use `tags` instead of (or
-alongside) `query` to narrow:
+Gibt bis zu `limit` Notizen zurück, die der Abfrage entsprechen
+(Teilstring-Match auf Titel + Body, nach Aktualität geordnet). Verwenden
+Sie `tags` anstatt (oder zusätzlich zu) `query`, um einzugrenzen:
 
 ```json
 {
@@ -67,50 +61,39 @@ alongside) `query` to narrow:
 }
 ```
 
-## 3. List cheaply
+## 3. Kostengünstig auflisten
 
-`memory_list` returns just `{ id, title, tags }` — the index. Use
-it when you don't want to fetch the bodies yet:
+`memory_list` gibt nur `{ id, title, tags }` zurück — den Index.
+Verwenden Sie es, wenn Sie die Bodies noch nicht abrufen möchten:
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. Forget
+## 4. Vergessen
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` is hard-delete — there is no soft-delete / archive.
-The id is gone; the title is freed for a future `memory_save`.
+`memory_forget` ist ein Hard-Delete — es gibt kein Soft-Delete / Archiv.
+Die id ist weg; der Titel ist für ein zukünftiges `memory_save` frei.
 
-## Common pitfalls
+## Häufige Fehler
 
-- **Secrets in `body`**: even though the plugin redacts on save,
-  do not paste raw tokens or `.env`-style values — the redaction
-  is heuristic, not perfect.
-- **Title collisions**: `memory_save` upserts by title. If two
-  agents save the same title in parallel, the second writer wins
-  and the first is lost. Use unique titles per slice / per
-  problem.
-- **Recall gets too many hits**: prefer `tags` over a broad
-  `query`. A query of `""` returns everything sorted by recency
-  — useful for "what did I save last session?" but expensive on a
-  full store.
+- **Secrets in `body`**: Auch wenn das Plugin beim Speichern bereinigt,
+  fügen Sie keine rohen Token oder `.env`-Werte ein — die Bereinigung
+  ist heuristisch, nicht perfekt.
+- **Titelkollisionen**: `memory_save` führt einen Upsert nach Titel durch.
+  Wenn zwei Agenten denselben Titel parallel speichern, gewinnt der zweite
+  Schreiber und der erste geht verloren. Verwenden Sie eindeutige Titel
+  pro Slice / pro Problem.
+- **Recall gibt zu viele Treffer**: Bevorzugen Sie `tags` gegenüber einer
+  breiten `query`. Eine query von `""` gibt alles nach Aktualität sortiert
+  zurück — nützlich für „Was habe ich letztes Mal gespeichert?" aber
+  teuer bei einem vollen Store.
 
-## Next step
+## Nächster Schritt
 
-- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
-- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper Deutsch
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`
-
+- [Wie round_context (proposals) Speichernotizen mit aktiven Vorschlägen verknüpft](../../proposals/tutorials/de/getting-started.md)
+- [Secrets-Redaction-Vertrag](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)

@@ -1,46 +1,36 @@
 ---
-title: "Running quality gates for any language [中文 — needs translation]"
+title: 为任意语言运行质量门控
 plugin: quality
-audience: any agent that needs cross-session continuity
+audience: 需要验证项目状态的代理
 order: 1
 lang: zh
-auto-translated: true
-needs-human-review: true
-source: plugins/quality/tutorials/en/running-gates.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# 为任意语言运行质量门控
 
+`quality` 插件在设计上是**语言无关的**：它执行您的 `mcp-vertex.config.json`
+中指定的任何命令并报告退出码。本教程展示三个作用域来源（按优先级顺序）、
+如何运行一个，以及如何取消失控的进程。
 
-# Running quality gates for any language
+## 0. 心理模型
 
-The `quality` plugin is **language-agnostic** by design: it spawns
-whatever command your `mcp-vertex.config.json` says and reports
-the exit code. This walkthrough shows the three sources of
-scopes (in precedence order), how to run one, and how to cancel a
-runaway.
-
-## 0. The mental model
-
-A **scope** is a named list of commands. The plugin runs every
-command in the scope, in order, captures stdout/stderr, and
-returns a structured `{ ok, results: [{ command, ok, code, tail }]
-}` report. The `ok` field is the whole scope — if any command
-fails, the scope is not ok.
+**作用域**是一个命名的命令列表。插件按顺序执行作用域中的每个命令，捕获
+stdout/stderr，并返回结构化报告 `{ ok, results: [{ command, ok, code, tail }] }`。
+`ok` 字段表示整个作用域——如果任何命令失败，作用域不 ok。
 
 ```
-┌─ plugin options.scopes (highest priority)
+┌─ plugin options.scopes（最高优先级）
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ detected package.json scripts → "all" (lint, typecheck, test, build)
+└─ 检测到的 package.json 脚本 → "all"（lint, typecheck, test, build）
 ```
 
-## 1. List the available scopes (read-only)
+## 1. 列出可用作用域（只读）
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-Response example (truncated):
+示例响应（截断）：
 
 ```json
 {
@@ -54,13 +44,13 @@ Response example (truncated):
 }
 ```
 
-## 2. Run a scope
+## 2. 运行一个作用域
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-The response is per-command:
+响应是按命令的：
 
 ```json
 {
@@ -83,24 +73,21 @@ The response is per-command:
 }
 ```
 
-Read `results[N].tail` for the failure context. The `tail` is the
-last 20 non-empty lines (capped at 64 KiB total output) — enough
-to debug without flooding the agent's context.
+读取 `results[N].tail` 获取失败上下文。`tail` 是最后 20 个非空行
+（总输出上限 64 KiB）——足以调试而不会淹没代理的上下文。
 
-## 3. Cancel a runaway
+## 3. 取消失控的进程
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-Sends `SIGKILL` to the process group of every in-flight run. Pass
-`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
-the next call's `results` will reflect the kill.
+向每个运行中进程的进程组发送 `SIGKILL`。传递 `{ "pid": <number> }`
+取消其中一个。取消是非阻塞的：下次调用的 `results` 将反映终止。
 
-## 4. Make it language-agnostic
+## 4. 使其语言无关
 
-The core runs whatever your config says. Example for a polyglot
-project (TypeScript + Python):
+核心运行您的配置所说的。多语言项目（TypeScript + Python）示例：
 
 ```jsonc
 // mcp-vertex.config.json
@@ -121,15 +108,13 @@ project (TypeScript + Python):
 }
 ```
 
-`run_quality` will run **all four commands** in `typecheck` /
-`test` scopes, regardless of language. Exit 0 = pass; non-zero =
-fail (regardless of which binary emitted it).
+`run_quality` 将运行 `typecheck` / `test` 作用域中的**所有四个命令**，
+不论什么语言。Exit 0 = 通过；非零 = 失败（不管哪个二进制发出的）。
 
-## 5. Harden with a command policy (M13)
+## 5. 用命令策略加固（M13）
 
-`run_quality` **executes** whatever the host config says. To
-restrict which binaries may run when a less-trusted agent calls
-the tool, use `commandPolicy`:
+`run_quality` **执行**宿主配置所说的内容。要限制信任度较低的代理调用
+工具时哪些二进制可以运行，使用 `commandPolicy`：
 
 ```jsonc
 {
@@ -146,36 +131,22 @@ the tool, use `commandPolicy`:
 }
 ```
 
-A blocked command is reported as `code: 126` with a reason
-("blocked by command policy") and is **never spawned**. `deny`
-wins over `allow`; an empty `allow` means "any binary not denied".
+被阻止的命令以 `code: 126` 和原因（"blocked by command policy"）报告，
+**永远不会被启动**。`deny` 优先于 `allow`；空 `allow` 意味着"任何未
+被拒绝的二进制"。
 
-## Common pitfalls
+## 常见陷阱
 
-- **`run_quality` doesn't replace `bun run validate`**: the core's
-  `validate` script runs the four checks directly. `run_quality`
-  is for **ad-hoc** runs and per-scope introspection from an
-  agent. Both are valid; they don't talk to each other.
-- **A long-running command that exceeds the timeout** is killed
-  with `code: 124` and `timedOut: true`. Default timeout is
-  600 000 ms (10 minutes). Override per runner if needed.
-- **Polling for "is it done yet?"**: don't. `run_quality` is
-  synchronous. If you need to know about long scopes, use
-  `quality_cancel` with the `pid` from `activeRunPids` (via
-  metrics or a follow-up tool call).
+- **`run_quality` 不替代 `bun run validate`**：核心的 `validate` 脚本
+  直接运行四项检查。`run_quality` 用于**临时**运行和来自代理的按作用域
+  内省。两者都有效；它们互不通信。
+- **超过超时的长时间运行命令**被以 `code: 124` 和 `timedOut: true` 终止。
+  默认超时为 600 000 ms（10 分钟）。如需要可按 runner 覆盖。
+- **轮询"完成了吗？"**：不要这样做。`run_quality` 是同步的。如果需要
+  了解长作用域，使用带有来自 `activeRunPids`（通过指标或后续工具调用）
+  的 `pid` 的 `quality_cancel`。
 
-## Next step
+## 下一步
 
-- [Multi-language quality gates (p107)](../../p107-multilang-quality-gates.md)
-- [Trust boundary & command policy (M13)](../../p107-multilang-quality-gates.md#5-no-objetivos)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper 中文
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/quality/tutorials/en/running-gates.md`
-
+- [多语言质量门控（p107）](../../p107-multilang-quality-gates.md)
+- [信任边界 & 命令策略（M13）](../../p107-multilang-quality-gates.md#5-no-objetivos)

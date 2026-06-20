@@ -1,32 +1,24 @@
 ---
-title: "Cataloguing project docs [ไทย — needs translation]"
+title: จัดทำแคตาล็อกเอกสารโครงการ
 plugin: docs
-audience: any agent that needs cross-session continuity
+audience: ทุกเอเจนต์ที่ต้องการค้นหาเอกสารตามหัวข้อ
 order: 1
 lang: th
-auto-translated: true
-needs-human-review: true
-source: plugins/docs/tutorials/en/cataloging-project-docs.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# จัดทำแคตาล็อกเอกสารโครงการ
 
+ปลั๊กอิน `docs` ตอบคำถามเล็กๆ ที่พบบ่อย: "โครงการนี้มีเอกสารอะไรบ้าง
+และฉันกำลังมองหาอันไหน?" แทนที่จะใช้ grep เอเจนต์ถามปลั๊กอิน บทเรียน
+นี้แสดงวิธีเปิดใช้งาน แสดงรายการ และอ่าน
 
-# Cataloguing project docs
+## 0. โมเดลความคิด
 
-The `docs` plugin answers a small, frequent question: "what docs
-does this project have, and which one am I looking for?" Instead
-of grepping, the agent asks the plugin. This walkthrough shows
-how to enable, list, and read.
+**เอกสาร** คือไฟล์ `.md` ใดๆ ภายใต้ `roots` ที่กำหนดไว้ ปลั๊กอินนับ
+พวกมันหนึ่งครั้ง ดึงชื่อ (จาก `# heading` แรกหรือ frontmatter `title:`)
+และให้บริการดัชนีที่มีโทเค็นต่ำ Body ถูกดึงเฉพาะเมื่อมีการร้องขอ
 
-## 0. The mental model
-
-A **doc** is any `.md` file under the configured `roots`. The
-plugin enumerates them once, extracts the title (from the first
-`# heading` or frontmatter `title:`), and serves a low-token
-index. The body is only fetched on demand.
-
-Configuration lives in `mcp-vertex.config.json`:
+การกำหนดค่าอยู่ใน `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -40,17 +32,16 @@ Configuration lives in `mcp-vertex.config.json`:
 }
 ```
 
-`roots` is an array of paths (files or directories). Directories
-are walked recursively. **Paths outside the workspace are
-refused** — no `..` traversal.
+`roots` คือ array ของเส้นทาง (ไฟล์หรือไดเรกทอรี) ไดเรกทอรีจะถูกดูแบบ
+recursive **เส้นทางนอก workspace จะถูกปฏิเสธ** — ไม่มีการดู `..`
 
-## 1. List (low-token index)
+## 1. แสดงรายการ (ดัชนีที่มีโทเค็นต่ำ)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Response (truncated):
+การตอบสนอง (ตัดทอน):
 
 ```json
 {
@@ -59,14 +50,14 @@ Response (truncated):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n real…" },
+    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n จริง…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/proposals"]`):
+รายการจะเรียงตามเส้นทาง ส่ง `roots` เพื่อจำกัดรายการให้อยู่ใน subset
+(เช่น `["docs/proposals"]` เท่านั้น):
 
 ```json
 {
@@ -75,7 +66,7 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-## 2. Read one doc
+## 2. อ่านเอกสาร
 
 ```json
 {
@@ -84,63 +75,50 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-Response:
+การตอบสนอง:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…full body…",
+  "content": "# Architecture\n\n…เนื้อหาเต็ม…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` is capped at 256 KiB. If the doc is bigger, `truncated:
-true` and the body is the first 256 KiB. If the path doesn't
-match any doc under the configured roots, `found: false`.
+`content` ถูกจำกัดที่ 256 KiB หากเอกสารใหญ่กว่า `truncated: true`
+และ body คือ 256 KiB แรก หากเส้นทางไม่ตรงกับเอกสารใดๆ ภายใต้ roots
+ที่กำหนด `found: false`
 
-## 3. Why two tools and not one
+## 3. ทำไมต้องสองเครื่องมือไม่ใช่หนึ่ง
 
-`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
-`read` is expensive (potentially megabytes per doc). Splitting
-them means the agent can `list` first, then `read` only the ones
-that look relevant — saving tokens on every discovery step.
+`list` ราคาถูก (ไม่กี่ร้อยไบต์ต่อเอกสาร 18 เอกสาร ≈ 4 KiB) `read`
+มีราคาแพง (อาจเป็นหลาย megabyte ต่อเอกสาร) การแยกพวกมันออกจากกันทำให้
+เอเจนต์สามารถ `list` ก่อน แล้วจึง `read` เฉพาะที่ดูเกี่ยวข้อง—
+ประหยัดโทเค็นในทุกขั้นตอนการค้นหา
 
-## 4. Path containment (security)
+## 4. การจำกัดเส้นทาง (ความปลอดภัย)
 
-`docs_read` resolves the path with `resolveWorkspaceContained` —
-absolute paths, `..` traversal, and symlinks pointing outside the
-workspace are all refused. The `found: false` response is the
-agent's signal that the path was rejected; the plugin does not
-distinguish "missing" from "outside-workspace" on purpose (to
-avoid leaking filesystem layout).
+`docs_read` แก้ไขเส้นทางด้วย `resolveWorkspaceContained` — เส้นทางสัมบูรณ์
+การดู `..` และ symlink ที่ชี้ไปนอก workspace ทั้งหมดจะถูกปฏิเสธ
+การตอบสนอง `found: false` คือสัญญาณสำหรับเอเจนต์ว่าเส้นทางถูกปฏิเสธ;
+ปลั๊กอินไม่แยกแยะระหว่าง "ไม่มี" และ "นอก workspace" โดยเจตนา
+(เพื่อหลีกเลี่ยงการเปิดเผยโครงสร้างระบบไฟล์)
 
-## Common pitfalls
+## ข้อผิดพลาดที่พบบ่อย
 
-- **Root doesn't exist**: `docs_list` returns `{ count: 0,
-  truncated: false, docs: [] }`. The plugin does not warn.
-- **Doc not yet committed**: untracked files are still served
-  (the plugin reads from the filesystem, not from git). The
-  `path` you get back is workspace-relative.
-- **Title inference fails**: if the first heading is not `# ` (no
-  space, wrong level) and there's no frontmatter `title:`, the
-  plugin uses the filename basename (e.g. `CHANGELOG.md` →
-  `CHANGELOG.md`). Re-run after fixing the heading.
+- **Root ไม่มีอยู่**: `docs_list` ส่งคืน `{ count: 0, truncated: false,
+  docs: [] }` ปลั๊กอินไม่เตือน
+- **เอกสารยังไม่ได้ commit**: ไฟล์ที่ไม่ได้ติดตามยังคงถูกให้บริการ
+  (ปลั๊กอินอ่านจากระบบไฟล์ ไม่ใช่จาก git) `path` ที่ส่งคืนสัมพันธ์กับ
+  workspace
+- **การอนุมานชื่อล้มเหลว**: หาก heading แรกไม่ใช่ `# ` (ไม่มีช่องว่าง
+  ระดับผิด) และไม่มี frontmatter `title:` ปลั๊กอินจะใช้ basename ของ
+  ชื่อไฟล์ (เช่น `CHANGELOG.md` → `CHANGELOG.md`) รันใหม่หลังจากแก้ไข
+  heading
 
-## Next step
+## ขั้นตอนถัดไป
 
-- [How `docs_list` integrates with `memory_recall` for "what
-  did I save last session + where was it documented?"](#)
-- [Curating a knowledge index with the `knowledge` plugin](#)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper ไทย
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`
-
+- [`docs_list` รวมกับ `memory_recall` สำหรับ "ฉันบันทึกอะไร + ถูกบันทึกไว้ที่ไหน?" อย่างไร](#)
+- [การดูแลดัชนีความรู้ด้วยปลั๊กอิน `knowledge`](#)

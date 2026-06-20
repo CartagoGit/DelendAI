@@ -1,32 +1,26 @@
 ---
-title: "Cataloguing project docs [हिन्दी — needs translation]"
+title: प्रोजेक्ट डॉक्स कैटलॉग करना
 plugin: docs
-audience: any agent that needs cross-session continuity
+audience: कोई भी एजेंट जिसे विषय के अनुसार दस्तावेज़ खोजना है
 order: 1
 lang: hi
-auto-translated: true
-needs-human-review: true
-source: plugins/docs/tutorials/en/cataloging-project-docs.md
-generated: 2026-06-20T01:53:12Z
 ---
 
+# प्रोजेक्ट डॉक्स कैटलॉग करना
 
+`docs` प्लगइन एक छोटे, बार-बार आने वाले सवाल का जवाब देता है: "इस
+प्रोजेक्ट में कौन से docs हैं, और मैं कौन सा ढूंढ रहा हूं?" grep करने
+के बजाय, एजेंट प्लगइन से पूछता है। यह ट्यूटोरियल दिखाता है कि कैसे
+सक्षम करें, सूचीबद्ध करें और पढ़ें।
 
-# Cataloguing project docs
+## 0. मानसिक मॉडल
 
-The `docs` plugin answers a small, frequent question: "what docs
-does this project have, and which one am I looking for?" Instead
-of grepping, the agent asks the plugin. This walkthrough shows
-how to enable, list, and read.
+एक **doc** कॉन्फ़िगर की गई `roots` के अंतर्गत कोई भी `.md` फ़ाइल है।
+प्लगइन उन्हें एक बार गणना करता है, शीर्षक निकालता है (पहले `# heading`
+या frontmatter `title:` से), और एक low-token इंडेक्स प्रस्तुत करता है।
+Body केवल मांग पर प्राप्त की जाती है।
 
-## 0. The mental model
-
-A **doc** is any `.md` file under the configured `roots`. The
-plugin enumerates them once, extracts the title (from the first
-`# heading` or frontmatter `title:`), and serves a low-token
-index. The body is only fetched on demand.
-
-Configuration lives in `mcp-vertex.config.json`:
+कॉन्फ़िगरेशन `mcp-vertex.config.json` में है:
 
 ```jsonc
 {
@@ -40,17 +34,17 @@ Configuration lives in `mcp-vertex.config.json`:
 }
 ```
 
-`roots` is an array of paths (files or directories). Directories
-are walked recursively. **Paths outside the workspace are
-refused** — no `..` traversal.
+`roots` paths (फ़ाइलें या directories) का array है। Directories
+recursively चलाई जाती हैं। **workspace के बाहर के paths अस्वीकार किए
+जाते हैं** — कोई `..` traversal नहीं।
 
-## 1. List (low-token index)
+## 1. सूचीबद्ध करें (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Response (truncated):
+प्रतिक्रिया (संक्षिप्त):
 
 ```json
 {
@@ -59,14 +53,14 @@ Response (truncated):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: i18n real…" },
+    { "path": "docs/proposals/p100-…md", "title": "p100 — Web: वास्तविक i18n…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/proposals"]`):
+सूची path के अनुसार क्रमबद्ध है। सूची को एक subset तक सीमित करने के
+लिए `roots` पास करें (जैसे सिर्फ `["docs/proposals"]`):
 
 ```json
 {
@@ -75,7 +69,7 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-## 2. Read one doc
+## 2. एक doc पढ़ें
 
 ```json
 {
@@ -84,63 +78,50 @@ subset (e.g. just `["docs/proposals"]`):
 }
 ```
 
-Response:
+प्रतिक्रिया:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…full body…",
+  "content": "# Architecture\n\n…पूर्ण body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` is capped at 256 KiB. If the doc is bigger, `truncated:
-true` and the body is the first 256 KiB. If the path doesn't
-match any doc under the configured roots, `found: false`.
+`content` 256 KiB तक सीमित है। यदि doc बड़ा है, तो `truncated: true`
+और body पहले 256 KiB है। यदि path कॉन्फ़िगर की गई roots के अंतर्गत
+किसी doc से मेल नहीं खाता, तो `found: false`।
 
-## 3. Why two tools and not one
+## 3. दो tools क्यों, एक क्यों नहीं
 
-`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
-`read` is expensive (potentially megabytes per doc). Splitting
-them means the agent can `list` first, then `read` only the ones
-that look relevant — saving tokens on every discovery step.
+`list` सस्ता है (प्रति doc कुछ सौ bytes, 18 docs ≈ 4 KiB)। `read` महंगा
+है (प्रति doc संभावित megabytes)। उन्हें अलग करने से एजेंट पहले `list`
+कर सकता है, फिर केवल relevant लगने वाले `read` कर सकता है — प्रत्येक
+discovery step पर tokens बचाते हुए।
 
-## 4. Path containment (security)
+## 4. Path containment (सुरक्षा)
 
-`docs_read` resolves the path with `resolveWorkspaceContained` —
-absolute paths, `..` traversal, and symlinks pointing outside the
-workspace are all refused. The `found: false` response is the
-agent's signal that the path was rejected; the plugin does not
-distinguish "missing" from "outside-workspace" on purpose (to
-avoid leaking filesystem layout).
+`docs_read` path को `resolveWorkspaceContained` से resolve करता है —
+absolute paths, `..` traversal, और workspace के बाहर pointing symlinks
+सभी अस्वीकार हैं। `found: false` प्रतिक्रिया एजेंट का संकेत है कि path
+अस्वीकार किया गया; प्लगइन जानबूझकर "गुम" और "workspace के बाहर" में
+अंतर नहीं करता (filesystem layout leak से बचने के लिए)।
 
-## Common pitfalls
+## सामान्य त्रुटियां
 
-- **Root doesn't exist**: `docs_list` returns `{ count: 0,
-  truncated: false, docs: [] }`. The plugin does not warn.
-- **Doc not yet committed**: untracked files are still served
-  (the plugin reads from the filesystem, not from git). The
-  `path` you get back is workspace-relative.
-- **Title inference fails**: if the first heading is not `# ` (no
-  space, wrong level) and there's no frontmatter `title:`, the
-  plugin uses the filename basename (e.g. `CHANGELOG.md` →
-  `CHANGELOG.md`). Re-run after fixing the heading.
+- **Root मौजूद नहीं है**: `docs_list` `{ count: 0, truncated: false,
+  docs: [] }` लौटाता है। प्लगइन चेतावनी नहीं देता।
+- **Doc अभी committed नहीं**: untracked files फिर भी serve की जाती हैं
+  (प्लगइन filesystem से पढ़ता है, git से नहीं)। वापस किया गया `path`
+  workspace-relative है।
+- **Title inference विफल**: यदि पहला heading `# ` नहीं है (कोई space
+  नहीं, गलत level) और कोई frontmatter `title:` नहीं है, तो प्लगइन
+  फ़ाइल का basename उपयोग करता है (जैसे `CHANGELOG.md` →
+  `CHANGELOG.md`)। heading ठीक करने के बाद पुनः चलाएं।
 
-## Next step
+## अगला कदम
 
-- [How `docs_list` integrates with `memory_recall` for "what
-  did I save last session + where was it documented?"](#)
-- [Curating a knowledge index with the `knowledge` plugin](#)
-
-> **TRANSLATION PENDING** — This is the EN source copied
-> verbatim. A human (or your preferred translation tool) must
-> replace the body above with a proper हिन्दी
-> translation. The `needs-human-review: true` and
-> `auto-translated: true` frontmatter flags must be removed
-> when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
->
-> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`
-
+- [`docs_list` `memory_recall` के साथ "मैंने क्या सहेजा + यह कहाँ documented था?" के लिए कैसे integrate होता है](#)
+- [`knowledge` plugin के साथ knowledge index क्यूरेट करना](#)
