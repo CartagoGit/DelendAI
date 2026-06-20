@@ -1,9 +1,10 @@
 ---
 id: p109
 type: proposal
-status: idea
+status: done
 track: plugin
 date: 2026-06-20
+closed: 2026-06-20
 related:
   - p99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
   - p107 # multi-lang quality gates (este plugin complementa: quality ejecuta, auto-work coordina la persistencia)
@@ -12,7 +13,7 @@ related:
 
 # p109 — `auto_work`: modos de persistencia (commit / commit-and-push / none)
 
-> **Estado: IDEA para decidir.** No implementado todavía. Nace del
+> **Estado: DONE (2026-06-20).** Nace del
 > problema concreto: hoy `<prefix>_auto_work` cierra el slice con la
 > línea ambigua `Mark progress in the proposal, then
 > <prefix>_sync_proposals` — y `sync_proposals` **solo actualiza el
@@ -238,10 +239,10 @@ pasa a tener **JSON Schema** validado por
 
 ## 9. Estado
 
-- s1: ⏳ idea
-- s2: ⏳ idea
-- s3: ⏳ idea
-- s4: ⏳ idea
+- s1: ✅ hecho (commit `5bd32c6`, "add maybePersistAfterSlice helper (p109 s1+s2)" — los tipos `IAutoWorkPersistConfig` y la extensión de `IAutoWorkToolOptions`).
+- s2: ✅ hecho (mismo commit `5bd32c6` — el helper `maybePersistAfterSlice` + 11 tests).
+- s3: ✅ hecho (commit `ab5de2e` "add persistence modes (none, commit, commit-and-push) and update related tests" — tool `auto_work` carga config, resuelve prioridad, inyecta paso extra; 4 tests nuevos).
+- s4: ✅ hecho (commits `6fe3500` "stop mutating readonly IAutoWorkToolOptions.persist in spec" + este commit — README del plugin documenta los 3 modos, propuesta cerrada).
 
 ## 10. Referencias
 
