@@ -27,7 +27,38 @@ shipped-in:
 > plugin está excluido del `tsconfig.json` raíz (`exclude:
 > ["plugins/audit/**/*"]`) y tiene su propio `tsconfig.dts.json` para
 > empaquetar; los specs se typecheckean dentro de su `vitest.config.ts`
-> propio. Un slice futuro (siguiente propuesta o tarea del agente) cierra
+> propio.
+>
+> **Pendiente menor adicional (2026-06-20, descubierto al validar
+> el gate):** `bun run typecheck` desde la raíz reporta **9 errores**
+> en `plugins/audit/`. El `exclude: ["plugins/audit/**/*"]` del
+> `tsconfig.json` raíz no se está respetando (probable causa:
+> `tsc --noEmit -p tsconfig.json` resuelve a un proyecto que
+> arrastra `plugins/audit/` por los `paths` del
+> `tsconfig.base.json` — `paths` no respeta `exclude`). Errores
+> observados (la lista exacta puede haber cambiado con commits
+> posteriores):
+>
+> - `src/index.ts(97,26)`: `Property 'reader' does not exist on type
+>   'IWorkspacePathProvider'` — usa un field que no expone el contrato
+>   público del core. Fix mínimo: quitar la referencia (o añadir
+>   `reader?` a `IWorkspacePathProvider` en el core, que es el cambio
+>   mayor).
+> - `src/lib/parse-audit.ts(201/207/209/210/219)`: cadena de
+>   `implicitly has type 'any'`, `Block-scoped variable 'raw' used
+>   before its declaration`, `param 'c' implicitly any` — half-typed
+>   helper. Fix: anotaciones explícitas + reorder de la declaración
+>   de `raw` (8 líneas aprox).
+> - `src/lib/tools/consolidate-tool.ts(92, 121)`:
+>   `exactOptionalPropertyTypes: true` mismatch — el handler acepta
+>   `{ auditDir?: string }` pero el contrato MCP SDK exige
+>   `{ auditDir?: string | undefined }`. Fix: añadir `| undefined`
+>   a las dos annotations.
+>
+> Coste estimado del fix combinado: ~20 líneas, sin nuevas deps,
+> todo typecheck-lint. Una vez arreglado, `bun run validate` vuelve
+> a verde (los 9 errores son los únicos que rompen el gate hoy).
+> Un slice futuro (siguiente propuesta o tarea del agente) cierra
 > esos bugs; **no bloquean** el cierre de p99 porque el plugin ya produce
 > los tools correctos y se carga sin errores en runtime (la lógica vive
 > en `src/lib/`, no en los specs). y
