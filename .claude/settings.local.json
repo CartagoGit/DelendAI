@@ -14,7 +14,8 @@
 			"mcp__mcp-vertex__proposals_continue_proposal",
 			"mcp__mcp-vertex__proposals_close_slice",
 			"Skill(code-review)",
-			"Skill(code-review:*)"
+			"Skill(code-review:*)",
+			"mcp__mcp-vertex__proposals_sync_proposals"
 		],
 		"deny": []
 	},

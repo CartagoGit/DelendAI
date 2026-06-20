@@ -162,7 +162,7 @@ export default definePlugin({
 		});
 		const consolidate = buildConsolidateRegistration({
 			namespacePrefix: ctx.namespacePrefix,
-			reader: ctx.workspace.reader,
+			workspaceRoot: ctx.workspace.root,
 			defaultAuditDir: auditDir,
 			defaultTopActions: topActions,
 		});
