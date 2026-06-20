@@ -110,7 +110,15 @@ const dict: LangDict = {
 		creatorsRepo: '作者 (GitHub)',
 		creatorsNpm: '作者 (npm)',
 	},
-	pluginpage: { back: '戻る', tools: 'ツール', install: 'インストール' },
+	pluginpage: {
+		back: '戻る',
+		tools: 'ツール',
+		install: 'インストール',
+		tabInstall: 'インストール',
+		tabTools: 'ツール',
+		tabConfiguration: '設定',
+		tabTutorial: 'チュートリアル',
+	},
 	plugin: {
 		proposals:
 			'マルチエージェント調整：ロック、タスクキュー、スライス、round-context、状態修復。',

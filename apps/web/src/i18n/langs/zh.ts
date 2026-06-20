@@ -105,7 +105,15 @@ const dict: LangDict = {
 		creatorsRepo: '作者 GitHub',
 		creatorsNpm: '作者 npm',
 	},
-	pluginpage: { back: '返回', tools: '工具', install: '安装' },
+	pluginpage: {
+		back: '返回',
+		tools: '工具',
+		install: '安装',
+		tabInstall: '安装',
+		tabTools: '工具',
+		tabConfiguration: '配置',
+		tabTutorial: '教程',
+	},
 	plugin: {
 		proposals:
 			'多智能体协调：锁、任务队列、切片、round-context、状态修复。',

@@ -114,6 +114,10 @@ const dict: LangDict = {
 		back: 'Volver',
 		tools: 'Herramientas',
 		install: 'Instalación',
+		tabInstall: 'Instalación',
+		tabTools: 'Herramientas',
+		tabConfiguration: 'Configuración',
+		tabTutorial: 'Tutorial',
 	},
 	plugin: {
 		proposals:

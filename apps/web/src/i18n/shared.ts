@@ -180,6 +180,11 @@ export interface IPluginPageTranslations {
 	readonly back: string;
 	readonly tools: string;
 	readonly install: string;
+	/** Tab labels for the plugin page strip (p100 s8). */
+	readonly tabInstall: string;
+	readonly tabTools: string;
+	readonly tabConfiguration: string;
+	readonly tabTutorial: string;
 }
 
 export interface INotFoundTranslations {

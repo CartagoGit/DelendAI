@@ -108,7 +108,15 @@ const dict: LangDict = {
 		creatorsRepo: 'निर्माता GitHub पर',
 		creatorsNpm: 'निर्माता npm पर',
 	},
-	pluginpage: { back: 'वापस', tools: 'टूल', install: 'इंस्टॉल' },
+	pluginpage: {
+		back: 'वापस',
+		tools: 'टूल',
+		install: 'इंस्टॉल',
+		tabInstall: 'इंस्टॉल',
+		tabTools: 'टूल',
+		tabConfiguration: 'कॉन्फ़िगरेशन',
+		tabTutorial: 'ट्यूटोरियल',
+	},
 	plugin: {
 		proposals:
 			'मल्टी-एजेंट समन्वय: लॉक, कार्य कतार, slices, round-context, स्थिति मरम्मत।',

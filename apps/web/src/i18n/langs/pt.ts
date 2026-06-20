@@ -110,7 +110,15 @@ const dict: LangDict = {
 		creatorsRepo: 'Autor no GitHub',
 		creatorsNpm: 'Autor no npm',
 	},
-	pluginpage: { back: 'Voltar', tools: 'Ferramentas', install: 'Instalação' },
+	pluginpage: {
+		back: 'Voltar',
+		tools: 'Ferramentas',
+		install: 'Instalação',
+		tabInstall: 'Instalação',
+		tabTools: 'Ferramentas',
+		tabConfiguration: 'Configuração',
+		tabTutorial: 'Tutorial',
+	},
 	plugin: {
 		proposals:
 			'Coordenação multi-agente: locks, fila de tarefas, slices, round-context, reparo de estado.',
