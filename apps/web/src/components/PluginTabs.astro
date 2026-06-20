@@ -1,0 +1,151 @@
+---
+/**
+ * `PluginTabs.astro` — accessible tab strip for plugin pages (p100 s8).
+ *
+ * Renders an ARIA-correct tablist with one `<section role="tabpanel">`
+ * per tab. Tabs are client-side: clicking a tab button toggles the
+ * `hidden` attribute on its target panel; arrow keys move focus
+ * between tabs (roving tabindex). All panels are rendered into the
+ * SSR output so crawlers and no-JS users see every section in order;
+ * the script simply hides everything except the active tab on
+ * hydration.
+ *
+ * Props:
+ *   - tabs: ordered list of `{ id, label }`; `id` matches the
+ *     `[data-tab-panel]` value the consuming component emits.
+ *   - defaultTab: id of the panel visible on first render (defaults
+ *     to `tabs[0].id`).
+ *
+ * The component does not manage i18n for the labels — the caller
+ * passes already-translated strings. That keeps this file free of
+ * `useTranslations` and lets unit tests run without an Astro runtime.
+ */
+interface Props {
+	readonly tabs: ReadonlyArray<{
+		readonly id: string;
+		readonly label: string;
+	}>;
+	readonly defaultTab?: string;
+}
+
+const { tabs, defaultTab } = Astro.props as Props;
+const initial = defaultTab ?? tabs[0]?.id ?? '';
+---
+
+<section class="plugin-tabs" data-plugin-tabs data-default-tab={initial}>
+	<nav class="plugin-tabs__bar" aria-label="Plugin sections">
+		<ul role="tablist" class="plugin-tabs__list">
+			{
+				tabs.map((t) => (
+					<li role="presentation">
+						<button
+							type="button"
+							role="tab"
+							id={`tab-${t.id}`}
+							class="plugin-tabs__tab"
+							data-tab-trigger={t.id}
+							aria-selected={t.id === initial ? 'true' : 'false'}
+							aria-controls={`panel-${t.id}`}
+							tabindex={t.id === initial ? 0 : -1}
+						>
+							{t.label}
+						</button>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<div class="plugin-tabs__panels">
+		<slot />
+	</div>
+</section>
+
+<style>
+	.plugin-tabs__bar {
+		border-bottom: 1px solid var(--rule, rgba(127, 127, 127, 0.25));
+		margin-bottom: 1.5rem;
+	}
+	.plugin-tabs__list {
+		display: flex;
+		gap: 0.25rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		flex-wrap: wrap;
+	}
+	.plugin-tabs__tab {
+		appearance: none;
+		background: transparent;
+		border: 0;
+		border-bottom: 2px solid transparent;
+		color: inherit;
+		cursor: pointer;
+		font: inherit;
+		padding: 0.5rem 0.9rem;
+	}
+	.plugin-tabs__tab[aria-selected='true'] {
+		border-bottom-color: currentColor;
+		font-weight: 600;
+	}
+	.plugin-tabs__tab:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+	.plugin-tabs__panels > [data-tab-panel][hidden] {
+		display: none;
+	}
+</style>
+
+<script is:inline>
+	// Minimal ARIA tabs controller. Inline so it works without an Astro
+	// framework import. The script is idempotent: if the page has no
+	// `[data-plugin-tabs]` element, it does nothing.
+	(function () {
+		const root = document.querySelector('[data-plugin-tabs]');
+		if (!(root instanceof HTMLElement)) return;
+		const defaultTab = root.dataset.defaultTab || '';
+		const triggers = Array.from(root.querySelectorAll('[data-tab-trigger]'));
+		const panels = new Map();
+		for (const trigger of triggers) {
+			if (!(trigger instanceof HTMLElement)) continue;
+			const id = trigger.dataset.tabTrigger || '';
+			const panel = document.getElementById(`panel-${id}`);
+			if (panel) panels.set(id, { trigger, panel });
+		}
+
+		const activate = (id) => {
+			for (const [key, { trigger, panel }] of panels) {
+				const active = key === id;
+				trigger.setAttribute('aria-selected', active ? 'true' : 'false');
+				trigger.setAttribute('tabindex', active ? '0' : '-1');
+				if (active) panel.removeAttribute('hidden');
+				else panel.setAttribute('hidden', '');
+			}
+		};
+
+		const initial = panels.has(defaultTab) ? defaultTab : (panels.keys().next().value || '');
+		if (initial) activate(initial);
+
+		for (const [id, { trigger }] of panels) {
+			trigger.addEventListener('click', () => activate(id));
+			trigger.addEventListener('keydown', (event) => {
+				const keys = Array.from(panels.keys());
+				const idx = keys.indexOf(id);
+				if (idx < 0) return;
+				let next = -1;
+				if (event.key === 'ArrowRight') next = (idx + 1) % keys.length;
+				else if (event.key === 'ArrowLeft') next = (idx - 1 + keys.length) % keys.length;
+				else if (event.key === 'Home') next = 0;
+				else if (event.key === 'End') next = keys.length - 1;
+				if (next < 0) return;
+				event.preventDefault();
+				const nextId = keys[next];
+				const nextEntry = panels.get(nextId);
+				if (nextEntry) {
+					activate(nextId);
+					nextEntry.trigger.focus();
+				}
+			});
+		}
+	})();
+</script>

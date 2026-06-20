@@ -105,7 +105,15 @@ const dict: LangDict = {
 		creatorsRepo: 'ผู้สร้างบน GitHub',
 		creatorsNpm: 'ผู้สร้างบน npm',
 	},
-	pluginpage: { back: 'กลับ', tools: 'เครื่องมือ', install: 'ติดตั้ง' },
+	pluginpage: {
+		back: 'กลับ',
+		tools: 'เครื่องมือ',
+		install: 'ติดตั้ง',
+		tabInstall: 'ติดตั้ง',
+		tabTools: 'เครื่องมือ',
+		tabConfiguration: 'การตั้งค่า',
+		tabTutorial: 'บทเรียน',
+	},
 	plugin: {
 		proposals:
 			'การประสานงานหลายเอเจนต์: ล็อก คิวงาน slices round-context การซ่อมสถานะ',

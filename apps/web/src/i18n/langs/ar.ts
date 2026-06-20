@@ -105,7 +105,15 @@ const dict: LangDict = {
 		creatorsRepo: 'المُنشئ على GitHub',
 		creatorsNpm: 'المُنشئ على npm',
 	},
-	pluginpage: { back: 'رجوع', tools: 'الأدوات', install: 'التثبيت' },
+	pluginpage: {
+		back: 'رجوع',
+		tools: 'الأدوات',
+		install: 'التثبيت',
+		tabInstall: 'التثبيت',
+		tabTools: 'الأدوات',
+		tabConfiguration: 'الإعداد',
+		tabTutorial: 'دليل',
+	},
 	plugin: {
 		proposals:
 			'تنسيق متعدد الوكلاء: أقفال، طابور مهام، شرائح، round-context، إصلاح الحالة.',

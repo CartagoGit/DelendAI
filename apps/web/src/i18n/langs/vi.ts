@@ -108,7 +108,15 @@ const dict: LangDict = {
 		creatorsRepo: 'Tác giả trên GitHub',
 		creatorsNpm: 'Tác giả trên npm',
 	},
-	pluginpage: { back: 'Quay lại', tools: 'Công cụ', install: 'Cài đặt' },
+	pluginpage: {
+		back: 'Quay lại',
+		tools: 'Công cụ',
+		install: 'Cài đặt',
+		tabInstall: 'Cài đặt',
+		tabTools: 'Công cụ',
+		tabConfiguration: 'Cấu hình',
+		tabTutorial: 'Hướng dẫn',
+	},
 	plugin: {
 		proposals:
 			'Điều phối đa tác tử: khóa, hàng đợi tác vụ, slice, round-context, sửa trạng thái.',

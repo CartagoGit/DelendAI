@@ -4,6 +4,7 @@ import { describeTool } from '../i18n/tools';
 import capabilities from '../data/capabilities.json';
 import type { ITutorial } from '../../scripts/lib/discover-tutorials';
 import PageHeader from './PageHeader.astro';
+import PluginTabs from './PluginTabs.astro';
 import Tutorial from './Tutorial.astro';
 
 interface Props {
@@ -34,6 +35,12 @@ type ITool = {
 			description?: string;
 		}>;
 	};
+	/**
+	 * Precomputed 12-language description block. When present, SSR
+	 * renders the active language directly from this map and skips
+	 * the runtime `describeTool()` lookup. See p110 s1.
+	 */
+	i18n?: Record<string, string>;
 };
 type IPkg = {
 	name: string;
@@ -58,8 +65,15 @@ const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === ns)
 	.sort((a, b) => a.name.localeCompare(b.name));
 // Localized description with graceful English fallback.
-const toolDesc = (tool: ITool) =>
-	describeTool(tool.name, lang) ?? tool.description;
+// SSR-fast path: use the precomputed `i18n` block when available. Falls
+// back to the runtime `describeTool()` lookup for tools not in the
+// catalogue, and finally to the SDK's English description.
+const toolDesc = (tool: ITool): string => {
+	if (tool.i18n) {
+		return tool.i18n[lang] ?? tool.i18n.en ?? tool.description;
+	}
+	return describeTool(tool.name, lang) ?? tool.description;
+};
 
 const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 const description = t(`plugin.${slug}`);
@@ -75,91 +89,112 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 />
 <section class="section">
 	<div class="container">
-		<h2>{t.pluginpage.install}</h2>
-		<div class="install__cmd-grid">
-			<div class="install__cmd-card">
-				<span class="install__cmd-label">bun</span>
-				<pre><code>bun add {title}</code></pre>
-			</div>
-			<div class="install__cmd-card">
-				<span class="install__cmd-label">npm · pnpm · yarn</span>
-				<pre><code>{`{ "args": ["@mcp-vertex/core", "--plugins=${slug}"] }`}</code></pre>
-			</div>
-		</div>
-
-		<h2>{t.pluginpage.tools}</h2>
-		<div class="tools-grid">
-			{tools.map((tool) => (
-				<div class="tool card">
-					<div class="tool__head">
-						<code>{tool.name}</code>
-						{(tool.effects ?? []).map((e) => (
-							<span class={`fx fx--${e}`}>{e}</span>
-						))}
-						{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
+		<PluginTabs
+			tabs={[
+				{ id: 'install', label: t.pluginpage.tabInstall },
+				{ id: 'tools', label: t.pluginpage.tabTools },
+				...(pkg?.configExample
+					? ([{ id: 'configuration', label: t.pluginpage.tabConfiguration }] as const)
+					: []),
+				...(pluginTutorials.length > 0
+					? ([{ id: 'tutorial', label: t.pluginpage.tabTutorial }] as const)
+					: []),
+			]}
+		>
+			<section data-tab-panel="install" id="panel-install">
+				<h2>{t.pluginpage.install}</h2>
+				<div class="install__cmd-grid">
+					<div class="install__cmd-card">
+						<span class="install__cmd-label">bun</span>
+						<pre><code>bun add {title}</code></pre>
 					</div>
-					<p>{toolDesc(tool)}</p>
-					{(tool.inputSchema?.fields.length ?? 0) > 0 && (
-						<table class="args">
-							<caption>{tool.name} arguments</caption>
-							<thead>
-								<tr>
-									<th scope="col">Argument</th>
-									<th scope="col">Type</th>
-									<th scope="col">Required</th>
-									<th scope="col">Description</th>
-								</tr>
-							</thead>
-							<tbody>
-								{(tool.inputSchema?.fields ?? []).map((field) => (
-									<tr>
-										<td><code>{field.name}</code></td>
-										<td><code>{field.type}</code></td>
-										<td>{field.required ? 'yes' : 'no'}</td>
-										<td>{field.description ?? '—'}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					)}
-				</div>
-			))}
-		</div>
-
-		{pkg?.configExample && (
-			<section class="config">
-				<h2>{t.pluginpage.configuration ?? 'Configuration'}</h2>
-				<p>{pkg.configExample.summary}</p>
-				<div class="config__snippet">
-					<button
-						type="button"
-						class="config__copy"
-						data-copy-target={`cfg-${slug}`}
-					>
-						Copy
-					</button>
-					<pre id={`cfg-${slug}`}><code>{
-						// The outer object mirrors the user's mcp-vertex.config.json
-						// so they can paste the whole block. The plugin key is the
-						// package short-name; `options` is what the plugin sees as
-						// `ctx.options` at registration time.
-						JSON.stringify(
-							{
-								plugins: {
-									[slug]: {
-										options: pkg.configExample.options,
-									},
-								},
-							},
-							null,
-							2,
-						)
-					}</code></pre>
+					<div class="install__cmd-card">
+						<span class="install__cmd-label">npm · pnpm · yarn</span>
+						<pre><code>{`{ "args": ["@mcp-vertex/core", "--plugins=${slug}"] }`}</code></pre>
+					</div>
 				</div>
 			</section>
-		)}
 
-		<Tutorial tutorials={pluginTutorials} plugin={slug} lang={lang} />
+			<section data-tab-panel="tools" id="panel-tools" hidden>
+				<h2>{t.pluginpage.tools}</h2>
+				<div class="tools-grid">
+					{tools.map((tool) => (
+						<div class="tool card">
+							<div class="tool__head">
+								<code>{tool.name}</code>
+								{(tool.effects ?? []).map((e) => (
+									<span class={`fx fx--${e}`}>{e}</span>
+								))}
+								{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
+							</div>
+							<p>{toolDesc(tool)}</p>
+							{(tool.inputSchema?.fields.length ?? 0) && (
+								<table class="args">
+									<caption>{tool.name} arguments</caption>
+									<thead>
+										<tr>
+											<th scope="col">Argument</th>
+											<th scope="col">Type</th>
+											<th scope="col">Required</th>
+											<th scope="col">Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										{(tool.inputSchema?.fields ?? []).map((field) => (
+											<tr>
+												<td><code>{field.name}</code></td>
+												<td><code>{field.type}</code></td>
+												<td>{field.required ? 'yes' : 'no'}</td>
+												<td>{field.description ?? '—'}</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							)}
+						</div>
+					))}
+				</div>
+			</section>
+
+			{pkg?.configExample && (
+				<section data-tab-panel="configuration" id="panel-configuration" hidden>
+					<h2>{t.pluginpage.tabConfiguration}</h2>
+					<p>{pkg.configExample.summary}</p>
+					<div class="config__snippet">
+						<button
+							type="button"
+							class="config__copy"
+							data-copy-target={`cfg-${slug}`}
+						>
+							Copy
+						</button>
+						<pre id={`cfg-${slug}`}><code>{
+							// The outer object mirrors the user's mcp-vertex.config.json
+							// so they can paste the whole block. The plugin key is the
+							// package short-name; `options` is what the plugin sees as
+							// `ctx.options` at registration time.
+							JSON.stringify(
+								{
+									plugins: {
+										[slug]: {
+											options: pkg.configExample.options,
+										},
+									},
+								},
+								null,
+								2,
+							)
+						}</code></pre>
+					</div>
+				</section>
+			)}
+
+			{pluginTutorials.length > 0 && (
+				<section data-tab-panel="tutorial" id="panel-tutorial" hidden>
+					<Tutorial tutorials={pluginTutorials} plugin={slug} lang={lang} />
+				</section>
+			)}
+		</PluginTabs>
 	</div>
 </section>
 
