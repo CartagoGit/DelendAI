@@ -68,6 +68,53 @@ Pointing mcp-vertex at a project that already has a proposals folder? Call
 }
 ```
 
+### `auto_work` persistence modes (p109)
+
+The `auto_work` tool can optionally commit (and push) the slice's
+claimed files when the orchestrator closes the slice. Three modes,
+resolved by `input.persist` (per call) > `options.persist.mode` (per
+project) > `'none'` (default):
+
+| Mode | What `auto_work` does at slice close |
+|---|---|
+| `none` (default) | nothing — preserves the "analyse before committing" workflow |
+| `commit` | `git add <slice files> && git commit -m "<template>"` |
+| `commit-and-push` | the above + `git push <pushTarget>` |
+
+```jsonc
+{
+	"plugins": {
+		"proposals": {
+			"options": {
+				"persist": {
+					"mode": "commit",
+					"messageTemplate": "<area>(<proposalId>): <sliceId>",
+					"pushTarget": "origin agent/<name>"
+				}
+			}
+		}
+	}
+}
+```
+
+- **Default template** follows Conventional Commits
+  (`<area>(<proposalId>): <sliceId>`); `<area>` is inferred from the
+  proposal path (`docs`, `plugins/proposals`, …), `<proposalId>` from
+  the filename, `<sliceId>` from the slice the orchestrator is closing.
+- **Safety net:** the push to `main` is always refused — the commit
+  lands, the push is skipped with `reason: "refusing to push to main
+  automatically"`. This preserves the "no commit-back loop on `main`"
+  invariant from `AGENTS.md` without any extra CI check. Use a
+  worktree branch like `agent/<name>` if you want automatic push.
+- **Git missing or commit failed:** the helper never throws; the
+  result is `{ committed: false, pushed: false, reason }` and the
+  rest of the slice flow continues.
+- **Files are explicit:** the helper receives the exact list from
+  `claim.files`; it never runs `git add .` so a slice can't drag in
+  unrelated changes.
+
+The full spec lives in [docs/proposals/p109-feat-auto-work-persist-modes.md](../../docs/proposals/p109-feat-auto-work-persist-modes.md).
+
 ## Paths
 
 State under `.cache/mcp-vertex/proposals/`; human-edited proposals under
