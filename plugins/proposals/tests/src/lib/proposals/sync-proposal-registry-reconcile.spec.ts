@@ -90,38 +90,38 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 			// still at the root, untouched
 			await readFile(join(root, 'p050-legacy.md'), 'utf8');
 		});
+
+		// Regression: `status` alone isn't a safe signal — `ready` is the
+		// *default* status create_proposal writes for ANY new proposal
+		// regardless of kind (authoring.tool.ts: `status: ${args.status ??
+		// 'ready'}`). Without also gating on the filename prefix, a brand
+		// new legacy-style proposal (id `p5`, `p100`, …) created via the
+		// existing, heavily-used create_proposal tool would get silently
+		// relocated into `ready/` the moment syncProposalRegistry next ran
+		// — caught by authoring.spec.ts's "p5-meta.md stays exactly where
+		// it was written" assertion.
+		it('never touches a legacy-prefixed file even when its status happens to be a glossary status (ready)', async () => {
+			await writeProposal(root, '', 'p005-newly-created.md', {
+				id: 'p005',
+				status: 'ready',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([]);
+			await readFile(join(root, 'p005-newly-created.md'), 'utf8');
+		});
 	});
 
 	describe('reconcileBlocked', () => {
-		// `blocked_by` is a YAML block array — frontmatter-parser.ts only
-		// supports inline arrays when they're empty (`key: []`); a non-empty
-		// inline array like `key: [f400]` parses as the literal string
-		// "[f400]", not an array. Written by hand here, bypassing the
-		// generic flat-map writeProposal() helper.
-		const writeWithBlockedBy = async (
-			folder: string,
-			filename: string,
-			id: string,
-			blockedByTokens: readonly string[],
-			body = '## Goal\n\np.\n',
-		): Promise<void> => {
-			const dir = join(root, folder);
-			await mkdir(dir, { recursive: true });
-			const blockLines = blockedByTokens
-				.map((t) => `  - ${t}`)
-				.join('\n');
-			const raw = `---\nid: ${id}\nstatus: blocked\nblocked_by:\n${blockLines}\n---\n\n${body}`;
-			await writeFile(join(dir, filename), raw, 'utf8');
-		};
-
 		it('resolves blocked -> ready when the dependency is done', async () => {
 			await writeProposal(root, 'done', 'f400-dep.md', {
 				id: 'f400',
 				status: 'done',
 			});
-			await writeWithBlockedBy('blocked', 'f401-waiting.md', 'f401', [
-				'f400',
-			]);
+			await writeProposal(root, 'blocked', 'f401-waiting.md', {
+				id: 'f401',
+				status: 'blocked',
+				blocked_by: '[f400]',
+			});
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
 			expect(result.resolved).toEqual([{ id: 'f401' }]);
 			const moved = await readFile(
@@ -136,9 +136,11 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 				id: 'f402',
 				status: 'ready',
 			});
-			await writeWithBlockedBy('blocked', 'f403-waiting.md', 'f403', [
-				'f402',
-			]);
+			await writeProposal(root, 'blocked', 'f403-waiting.md', {
+				id: 'f403',
+				status: 'blocked',
+				blocked_by: '[f402]',
+			});
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
 			expect(result.resolved).toEqual([]);
 		});
@@ -170,21 +172,21 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 				'- [ ] done.',
 				'',
 			].join('\n');
-			const dir = join(root, 'blocked');
-			await mkdir(dir, { recursive: true });
-			const raw = `---
-id: f404
-kind: feat
-title: A sufficiently long title
-status: blocked
-date: 2026-06-20
-track: proposals
-blocked_by:
-  - self:goal-missing
----
-
-${validBody}`;
-			await writeFile(join(dir, 'f404-self-blocked.md'), raw, 'utf8');
+			await writeProposal(
+				root,
+				'blocked',
+				'f404-self-blocked.md',
+				{
+					id: 'f404',
+					kind: 'feat',
+					title: 'A sufficiently long title',
+					status: 'blocked',
+					date: '2026-06-20',
+					track: 'proposals',
+					blocked_by: '[self:goal-missing]',
+				},
+				validBody,
+			);
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
 			expect(result.resolved).toEqual([{ id: 'f404' }]);
 		});

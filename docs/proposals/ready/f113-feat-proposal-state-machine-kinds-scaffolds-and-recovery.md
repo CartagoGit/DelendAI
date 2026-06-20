@@ -711,21 +711,84 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 
 ### S5 — Folder reconciler *(excl. `sync-proposal-registry.ts`)*
 
-- **Status**: pending
-- Extend `sync-proposal-registry.ts` with `reconcileFolders()`:
-  walks every `.md`, computes the expected folder from frontmatter
-  status, moves the file if needed via `git mv`.
-- Add `reconcileBlocked()`: for each `blocked/` proposal, check
-  `blocked-by`. If all listed deps are in `done/`, transition
-  `blocked → ready` (auto), emit `blocked-resolved` event.
-- Add `reconcileSelfBlocked()`: for `blocked-by: [self:*]`, re-run the
-  scaffold linter. If it passes, transition `blocked → ready`.
-- Make all three idempotent (running twice = no-op).
-- Add e2e spec that creates a misfiled proposal, runs sync, asserts
-  it moved.
-- **Gate**: `bun run test sync-proposal-registry.spec.ts` plus a
-  manual check on the 14 legacy.
-- **Estimated work**: 1 session.
+- **Status**: done
+- **Moved before S4** (dependency the original graph missed): the
+  registry's directory scan had a hardcoded subtree list
+  (`audits`/`fixes`/`historical`/`paused`/`revised`/…) that pre-dates
+  f113 — it never looked inside `ready/`, `in-progress/`, `review/`,
+  `done/`, `blocked/`, `retired/`. **`f113` itself was invisible to
+  `sync_proposals`/`auto_work`/`proposal_board`** until this slice
+  extended the subtree list (deduped against the legacy list, which
+  already happened to include `paused`).
+- Extended `IProposalStatus`/`VALID_STATUSES` (additive only) with the
+  2 new-only spellings (`in-progress` hyphenated, `review`) so a
+  migrated proposal's real status round-trips through the index
+  instead of falling back to `pending` with a spurious warning — the
+  other 5 new statuses already share their spelling with the legacy
+  union.
+- `reconcileFolders()` + `reconcileBlocked()` (merged
+  `reconcileSelfBlocked()` into the same function — both end in the
+  identical action, clearing a satisfied blocker and transitioning
+  `blocked → ready`; two functions for one effect would have been the
+  duplication, not the merge). Both wired into `syncProposalRegistry`
+  via an injectable `gitRunner`, running before the scan so the index
+  reflects the post-reconciliation tree. Idempotent (a file already
+  correctly placed, or already resolved, is a no-op on the next run).
+- **Dropped**: the `blocked-resolved` task-queue event — same
+  reasoning as S3 dropping the task-queue audit event: no append-only
+  log primitive to reuse there; `reconcileBlocked`'s own return value
+  (`{ resolved: [...] }`) is the signal, available to whatever calls
+  `syncProposalRegistry`.
+- **1 critical bug found and fixed before this could ship** — status
+  alone is not a safe "is this a new-system file" signal.
+  `create_proposal` (the existing, heavily-used tool, unrelated to
+  f113) defaults every brand-new proposal to **`status: ready`**
+  regardless of kind (`authoring.tool.ts`: `status: ${args.status ??
+  'ready'}`). Without an additional check, `reconcileFolders` would
+  silently relocate *any* freshly created legacy-style proposal (id
+  `p5`, `p100`, …) into `ready/` the instant `syncProposalRegistry`
+  next ran — caught by the pre-existing `authoring.spec.ts` assertion
+  that `p5-meta.md` stays exactly where it was written. Fixed:
+  `isNewSystemFilename()` additionally requires the filename's prefix
+  to be one of the 12 *live* kind prefixes, explicitly excluding the
+  retired legacy `p` (which IS a key in `PROPOSAL_KIND_BY_PREFIX`, for
+  the reverse-lookup transition period — so it needs its own explicit
+  exclusion, not just "not found in the map"). A new-system file now
+  needs both signals (prefix AND status) to ever be touched.
+- **2 collisions with concurrent agents, same pattern as f113 S3**: a
+  `git add -A`-shaped commit (`dcb4517`) swept up an early,
+  pre-bug-fix snapshot of this slice's code under its own message
+  before I'd finished it. Content verified intact; this entry plus the
+  3 follow-up commits (frontmatter-parser fix, hardened tests, this
+  doc update) carry what was still uncommitted.
+- **Also fixed in `frontmatter-parser.ts`** (not `sync-proposal-
+  registry.ts`, so technically outside this slice's `excl.` — a small,
+  additive, backward-compatible parser gap, not a reserved-file
+  conflict): non-empty inline arrays (`blocked_by: [self:goal-missing,
+  f400]`, the syntax this very document uses in §9) parsed as the
+  literal string `"[self:goal-missing]"`, not an array — only the
+  empty-array case (`key: []`) was ever handled. `blocked_by` couldn't
+  work at all without this. Added inline flow-sequence parsing
+  (comma-split scalars); a token containing a colon
+  (`self:goal-missing`) stays one scalar instead of being misread as a
+  nested mapping key — the same ambiguity the *block*-array form has
+  for that token shape, which is why `blocked_by` should always be
+  written inline per the convention.
+- `sync-proposal-registry-reconcile.spec.ts`: 9 tests (move-on-
+  mismatch, idempotence, legacy-never-touched, the `ready`-default
+  regression above, dependency-resolves, dependency-still-blocked,
+  self-block-resolves, plus 2 `syncProposalRegistry` integration
+  tests: discovers a file in `ready/`, reconciles-then-indexes with no
+  duplicate entries). Added a property-test case for the inline-array
+  fix in `frontmatter-parser.property.spec.ts`.
+- **Gate**: `bun run test` (847 tests) + `bun run validate` — both
+  green. No manual check against the 14 legacy is meaningful yet
+  (`isNewSystemFilename` guarantees none of them are touched by
+  construction).
+- **Estimated work**: 1 session (ran long for the same reason as S3 —
+  real bugs surfaced by actually running the code against realistic
+  scenarios, including the existing test suite, not just new
+  isolated unit tests).
 
 ### S6 — i18n glossary + badges *(excl. `apps/web/src/i18n/langs/`)*
 
