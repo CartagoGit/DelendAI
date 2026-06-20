@@ -281,6 +281,10 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 		const regs = buildMemoryToolRegistrations({
 			namespacePrefix: 'memory',
 			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
 		});
 		const byId = (id: string): IToolRegistration =>
 			regs.find((r) => r.id === id)!;
