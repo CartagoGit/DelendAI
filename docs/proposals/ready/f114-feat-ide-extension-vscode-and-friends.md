@@ -42,7 +42,7 @@ related:
 
 # f114 — IDE extension (VS Code first, JetBrains/Zed later)
 
-## 0. Goal
+## goal
 
 Ship a **VS Code extension** that consumes the existing `@mcp-vertex/core`
 MCP server through a **new, IDE-agnostic `@mcp-vertex/client` library**, so
@@ -52,7 +52,7 @@ the live tool registry (`overview`), per-tool detail (`knowledge` +
 generated `outputSchema`), the proposal board, agent locks and metrics —
 all from the MCP server, with no host vocabulary leaking into the core.
 
-## 1. Why
+## why
 
 Three concrete pains today:
 
@@ -71,6 +71,19 @@ Three concrete pains today:
 This proposal **does not** add a new plugin to the server. It is a
 **client of the existing server**, sitting in `apps/` next to `apps/web`,
 governed by the same i18n/lint/validate rules.
+
+## non-goals
+
+- **No new MCP plugin.** This is a pure client. New capabilities go
+  through the normal proposals workflow.
+- **No bundling of the server inside the extension.** The extension
+  spawns the server via stdio; it does not embed it. Keeps the core's
+  versioning independent.
+- **No auth/secret storage** in v0.1. The server is local-only today;
+  when auth lands, follow up in `f116`.
+- **No codeLens over tool calls in user code** — punted to a future
+  proposal (it needs the inverse index of which tools a repo uses,
+  which the metrics plugin does not yet expose).
 
 ## architecture
 
@@ -135,10 +148,21 @@ type Overview = McpVertexToolOutputs["mcp-vertex_overview"];
 Runtime values flow through the MCP client; types flow through
 `generated/`. This is the same pattern `apps/web` already uses.
 
-## 3. Slices
+## slices
 
 Each slice ends green (`bun run validate`), ships a Conventional
 Commit, and updates this proposal's `shipped-in` list in `index.json`.
+
+## acceptance
+
+- `bun run type`, `bun run test`, `bun run lint`, `bun run site:strict`,
+  `bun run lint:proposals` and `cd apps/vscode && bun run package` all
+  exit 0 from the root.
+- New unit tests in `packages/client/tests/` and `apps/vscode/src/test/`.
+- A smoke e2e that spawns the real server, calls `overview`, asserts
+  the JSON shape, exits 0.
+- A `.vsix` artifact produced and uploaded as a workflow artifact in
+  CI for manual install.
 
 ### S1 — `packages/client` scaffold + `McpStdioClient` *(excl. `packages/client/src/lib/services/`, `apps/`, `docs/`)*
 
@@ -365,51 +389,3 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - **Command**: `cd apps/vscode && bun run package`.
 - **Expect**: produces `apps/vscode/mcp-vertex-vscode-0.1.0.vsix`,
   exit 0.
-
-## non-goals
-
-- **No new MCP plugin.** This is a pure client. New capabilities go
-  through the normal proposals workflow.
-- **No bundling of the server inside the extension.** The extension
-  spawns the server via stdio; it does not embed it. Keeps the core's
-  versioning independent.
-- **No auth/secret storage** in v0.1. The server is local-only today;
-  when auth lands, follow up in `f116`.
-- **No codeLens over tool calls in user code** — punted to a future
-  proposal (it needs the inverse index of which tools a repo uses,
-  which the metrics plugin does not yet expose).
-
-## risks and mitigations
-
-| Risk | Mitigation |
-|---|---|
-| Stdio spawn differs across hosts (Win/Mac/Linux) | `McpStdioClient` uses `Bun.spawn`; CI matrix exercises all three. |
-| `@vscode/test-electron` is heavy | Use `@vscode/test-cli` (the new lightweight runner) + mock client for unit tests. |
-| Generated types drift when a tool changes | `bun run types:generate` is in CI; `apps/vscode` `bun run type` fails if regenerated types are not committed. |
-| i18n gate blocks the release | S11 is its own slice so it lands early; the `check-i18n` script is the canary. |
-| Cursor/Antigravity fork the VS Code API | They share it; extension works out of the box. Documented in README. |
-| JetBrains later | Reserved: when S12 ships, file `f115-feat-jetbrains-extension.md` reusing `packages/client`. The client is the seam. |
-
-## acceptance
-
-- `bun run type`, `bun run test`, `bun run lint`, `bun run site:strict`,
-  `bun run lint:proposals` and `cd apps/vscode && bun run package` all
-  exit 0 from the root.
-- New unit tests in `packages/client/tests/` and `apps/vscode/src/test/`.
-- A smoke e2e that spawns the real server, calls `overview`, asserts
-  the JSON shape, exits 0.
-- A `.vsix` artifact produced and uploaded as a workflow artifact in
-  CI for manual install.
-
-## notes
-
-- **Multi-IDE from day one**: `packages/client` is the seam. Cursor /
-  Antigravity / Windsurf inherit VS Code support for free (they are
-  VS Code forks). PhpStorm / WebStorm come later via a JetBrains plugin
-  that consumes the same client.
-- **Types-only imports from `@mcp-vertex/core`** in `apps/vscode`.
-  Runtime goes through MCP.
-- **Library, not framework**: `packages/client` exposes typed
-  services; the host wires them. No DI container.
-- **No React/Vue** in webviews: preact + plain DOM to keep the VSIX
-  small.

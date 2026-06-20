@@ -127,7 +127,7 @@
   transition: transform 0.18s ease;
 }
 
-.nav__more[open] > summary .nav__more-caret {
+	.nav__more[open] > .nav__more-summary .nav__more-caret {
   transform: rotate(180deg);
 }
 
