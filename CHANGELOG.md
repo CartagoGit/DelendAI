@@ -93,6 +93,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
 ### Changed
+- **p110 closed: i18n + docs rewrite residuals landed.** The three
+  slices p100 deferred are now done — (1) `apps/web/scripts/lib/resolve-i18n-descriptions.ts`
+  + `gen-capabilities.ts` integration precompute the 12-language
+  `i18n` block for every tool with a catalogue entry, so the SSR
+  renderer never pays a runtime `describeTool()` lookup; (2) a
+  new `PluginTabs.astro` (with `role="tablist"` / `aria-selected`
+  / roving `tabindex`) and an extracted `plugin-tabs-controller.ts`
+  (pure module, 9 specs) wire up `Overview · Tools · Configuration
+  · Tutorial` tabs in `PluginPage.astro`; (3) the 5 tutorial
+  files in 11 languages are committed and the
+  `apps/web/scripts/check-tutorials-i18n.ts` gate reports 60 files
+  / 0 pending / 100% reviewed. Cached p109 (`auto_work` persistence
+  modes) ships in the same window.
 - **No synchronous I/O left in `proposals`** (H2, extends M5): migrated the
   residual `*Sync` calls in the proposals tools (`authoring`, `continue-proposal`,
   `compact-status`, `state-tools`), the `swarm/round-context-*` readers, and the

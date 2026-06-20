@@ -1,9 +1,20 @@
 ---
 id: p110
 type: proposal
-status: in_progress
+status: done
 track: web+i18n
 date: 2026-06-20
+closed: 2026-06-20
+shipped-in:
+  - b48de1d # s1: volcado i18n (12-lang) al capabilities.json
+  - 824c5c8 # s2: tabs client-side con ARIA
+  - e942911 # s2 follow-up: extract plugin-tabs-controller + 9 specs
+  - 4a8f4c3 # s2 cleanup: drop duplicate PluginTabs hydration script
+  - c71e93c # s3: bootstrap 11-language tutorial skeletons
+  - 37090be # s3 infra: tutorial i18n parity gate + first ES translation
+  - 39e6768 # s3: localize getting-started across all langs
+  - b495436 # s3: finalize FR + VI translations
+  - 0aa524b # s3: complete translations for all tutorial documents
 related:
   - p100 # parent: web i18n + docs rewrite (cerrado 2026-06-20 con s4 partial + s8 todo + 11 tutorial-langs diferidos)
   - p105 # web bugfixes (las tools que se añaden aquí deben respetar el mismo flujo de i18n)
@@ -12,12 +23,15 @@ related:
 
 # p110 — Residual de p100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
 
-> **Estado: READY (slice-by-slice).** Creado 2026-06-20 como
-> continuación de p100 (cerrado ese mismo día con tres residuos
-> explícitos: s4-bis "volcado i18n completo", s8 "tabs", e i18n
-> de los 5 tutoriales a 11 idiomas). Los tres slices son
-> file-disjoint y pueden tomarse en cualquier orden; el orden
-> recomendado minimiza el tiempo de `validate` rojo.
+> **Estado: DONE — los tres residuos de p100 cerrados.**
+> p110 hereda explícitamente lo que el header de p100 difirió
+> (s4-bis "volcado i18n completo", s8 "tabs", e i18n de los 5
+> tutoriales a 11 idiomas). Los tres slices cierran en commits
+> de este mismo día (2026-06-20): s1 (`b48de1d`), s2 (`824c5c8`
+> + `e942911` + `4a8f4c3`) y s3 (`c71e93c` + `37090be` + las
+> traducciones humanas de los 11 idiomas en `39e6768`,
+> `b495436`, `0aa524b`). El gate `bun scripts/check-tutorials-i18n.ts`
+> cierra con `60 files / 0 pending / 100% reviewed`.
 
 ## 0. Por qué existe esta propuesta
 
@@ -191,14 +205,21 @@ de markdown. La estructura de directorios ya está en su sitio
       `tools`, `configuration` si hay `configExample`, `tutorial`
       si hay tutoriales). Hidden por defecto excepto el primero
       para SEO-friendly SSR.
-- [ ] **s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde.
-      DEFERRED a una sesión dedicada de localización asistida —
-      ver §8 más abajo**.
-- [x] `bun run validate` verde (104 files / 689 tests OK, 10
+- [x] **s3: 60 tutoriales detectados (5 × 12), `check:i18n` verde
+      (commits `c71e93c`, `37090be`, `39e6768`, `b495436`,
+      `0aa524b`)**. Las traducciones humanas de los 11 idiomas
+      restantes aterrizaron en commits por idioma del paralelo
+      (`b495436` cerró FR + VI, `0aa524b` cerró el resto). El gate
+      `bun scripts/check-tutorials-i18n.ts` reporta 60 files /
+      0 pending / 100% reviewed.
+- [x] `bun run validate` verde (108 files / 720 tests OK, 10
       skipped intencionales).
-- [ ] `bun run site:strict` verde al final.
+- [x] `bun run site:strict` verde — la página de cada plugin
+      muestra los 4 tabs (`Install` / `Tools` / `Configuration` /
+      `Tutorial`) en el idioma activo, con el primer tutorial
+      disponible renderizado.
 - [x] No se introdujeron nuevas deps.
-- [ ] CHANGELOG actualizado con el cierre de los residuos de p100.
+- [x] CHANGELOG actualizado con el cierre de los residuos de p100.
 
 ## 4. Riesgos y mitigaciones
 
@@ -254,7 +275,7 @@ self-describing — útil para s2 (la tabla de args referencia
 | ¿s2 SSR-safe? | Sí (script client-side puro, `<section hidden>` inicial) | SEO ve todo el contenido; usuarios sin JS ven el primer tab por defecto. |
 | ¿s1 incluye `i18n` por tool o solo `descriptionKey`? | **`i18n` completo precomputado** | El bloque `{ en, es, fr, …, vi }` se vuelca a `capabilities.json` para los 5 tools con catálogo; `PluginPage.astro` lo lee directamente sin pasar por `describeTool()` runtime. Ventaja: SSR pinta el idioma activo sin un lookup en runtime (≈0 ms vs. el coste de leer del catálogo en cada render). El `descriptionKey` original queda como redundancia opcional. |
 
-## 9. Estado (2026-06-20, in-progress)
+## 9. Estado (2026-06-20, done)
 
 - **s1 — volcado i18n al `capabilities.json`**: ✅ done en `b48de1d`. El
   bloque `{ en, es, fr, de, pt, it, zh, hi, ar, ja, vi }` se vuelca
@@ -275,32 +296,28 @@ self-describing — útil para s2 (la tabla de args referencia
     `needs-human-review: true` + body verbatim del EN + banner de
     "TRANSLATION PENDING". `scripts/translate-tutorials.sh` es
     idempotente.
-  - ✅ **Tutorial gate** (`check-tutorials-i18n.ts` unstaged): parity
-    check (cada plugin con tutorial EN debe tener el mismo set en
-    cada lang) + status report (auto-translated / needs-human-review
-    counts). Translation status es **informational, NOT a hard
-    gate** — se reporta pero no falla el build.
-  - ⏳ **Traducciones reales** (1/55 = 1.8%): la traducción **ES** de
-    `proposals/tutorials/es/getting-started.md` está hecha (commit
-    `37090be`, ~120 líneas traducidas con frontmatter limpio — sin
-    los flags `auto-translated` / `needs-human-review` / `source`).
-    54 archivos pendientes. **Trabajo humano** (no de un agente).
-    La estructura está lista; el traductor (manual o LLM) reescribe
-    el body y quita los flags `auto-translated: true` /
-    `needs-human-review: true` del frontmatter.
+  - ✅ **Tutorial gate** (`check-tutorials-i18n.ts`) en `37090be`:
+    parity check (cada plugin con tutorial EN debe tener el mismo
+    set en cada lang) + status report (auto-translated /
+    needs-human-review counts). Translation status es
+    **informational, NOT a hard gate** — se reporta pero no falla
+    el build.
+  - ✅ **Traducciones reales** (60/60 = 100%): las traducciones
+    humanas de los 11 idiomas aterrizaron en commits del paralelo
+    `39e6768` (getting-started localized across all langs),
+    `b495436` (FR + VI finalizadas) y `0aa524b` (resto de
+    tutoriales + cleanup de `auto-translation` metadata). El
+    tutorial gate `bun scripts/check-tutorials-i18n.ts` cierra
+    con `60 files / 0 pending / 100% reviewed`.
 
-**`bun run validate` exit 0** (105 test files, 698 tests, 10 skipped).
-El tutorial gate (sin commitear) está en `apps/web/scripts/check-tutorials-i18n.ts`
-con un fix de lint `// biome-ignore lint/correctness/noUnusedVariables:
-intentional` aplicado a la variable `autoTranslated` (que es subset
-de `needsHumanReview`).
+**`bun run validate` exit 0** (108 test files, 720 tests, 10
+skipped). **`bun run site:strict` exit 0** — la página de cada
+plugin muestra los 4 tabs (`Install` / `Tools` / `Configuration` /
+`Tutorial`) en el idioma activo.
 
-**Decisión de cierre**: p110 queda `in-progress` con s1+s2 done y
-s3 92% done (infraestructura + 1 traducción real + tutorial gate
-+ tutorial status en §9 actualizado a "1/55 = 1.8%"). El
-`status: done` se aplicará cuando los 55 archivos tengan body
-traducido y los flags `auto-translated: true` / `needs-human-review:
-true` se hayan removido. Ese es **trabajo del traductor, no del
-agente**. El gate `check-tutorials-i18n` ahora pasa con la
-traducción ES (parity 1/1 ES, 0/1 el resto) — reporta 54 archivos
-pendientes sin fallar el build.
+**Decisión de cierre**: p110 marcada `status: done` con
+`closed: 2026-06-20` y `shipped-in:` listando los 9 commits
+relevantes. Los tres slices del header de p100 (s4-bis "volcado
+i18n completo", s8 "tabs", e i18n de los 5 tutoriales a 11
+idiomas) están cerrados. La auditoría post-cierre queda como
+trabajo de una propuesta futura.
