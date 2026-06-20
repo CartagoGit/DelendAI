@@ -27,6 +27,12 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
 import { parseInputSchema } from './lib/parse-input-schema';
+import {
+	discoverTutorials,
+	groupByPluginLang,
+	type ITutorial,
+} from './lib/discover-tutorials';
+import { languages as supportedLanguages } from '../src/i18n/shared';
 
 import {
 	assembleCliConfig,
@@ -43,6 +49,7 @@ import searchPlugin from '@mcp-vertex/search';
 import notificationPlugin from '@mcp-vertex/notification';
 import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
+import auditPlugin from '@mcp-vertex/audit';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
 
@@ -50,7 +57,7 @@ const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
 const OUT = resolve(HERE, '..', 'src', 'data', 'capabilities.json');
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,status-marker,test-convention,docs,deps';
+	'proposals,rules,memory,git,quality,search,notification,status-marker,test-convention,audit,docs,deps';
 const PLUGINS: Record<string, unknown> = {
 	'mcp-proposals': proposalsPlugin,
 	'mcp-rules': rulesPlugin,
@@ -61,6 +68,7 @@ const PLUGINS: Record<string, unknown> = {
 	'mcp-notification': notificationPlugin,
 	'mcp-status-marker': statusMarkerPlugin,
 	'mcp-test-convention': testConventionPlugin,
+	'mcp-audit': auditPlugin,
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
 };
@@ -381,6 +389,41 @@ const collectPackages = (): Array<{
 	return out.sort((a, b) => a.name.localeCompare(b.name));
 };
 
+/** Walk `plugins/<plugin>/tutorials/<lang>/*.md` and return the flat
+ *  catalogue. See p100 s7. */
+const collectTutorials = (): ITutorial[] => {
+	const langCodes = supportedLanguages.map((l) => l.code);
+	const all = discoverTutorials(join(ROOT, 'plugins'), langCodes, {
+		listDirs: (p) => {
+			try {
+				return readdirSync(p);
+			} catch {
+				return [];
+			}
+		},
+		readFile: (p) => {
+			try {
+				return readFileSync(p, 'utf8');
+			} catch {
+				return undefined;
+			}
+		},
+		join: (...parts) => join(...parts),
+	});
+	// The renderer wants `Map<plugin, Map<lang, ITutorial[]>>` for fast
+	// per-page lookup; serialise it as an array of
+	// `{ plugin, lang, items }` so the JSON stays flat and inspectable.
+	const grouped = groupByPluginLang(all);
+	const flat: ITutorial[] = [];
+	for (const [plugin, langMap] of grouped.entries()) {
+		for (const [lang, items] of langMap.entries()) {
+			// Flatten to per-(plugin,lang) entries with a stable order.
+			flat.push(...items);
+		}
+	}
+	return flat;
+};
+
 const main = async (): Promise<void> => {
 	const strict = process.argv.includes('--strict');
 	const coreVersion = (
@@ -404,6 +447,7 @@ const main = async (): Promise<void> => {
 	}
 
 	const packages = collectPackages();
+	const tutorials = collectTutorials();
 	const capabilities = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
@@ -413,18 +457,20 @@ const main = async (): Promise<void> => {
 			resources: resources.length,
 			knowledge: knowledge.length,
 			packages: packages.length,
+			tutorials: tutorials.length,
 		},
 		packages,
 		tools,
 		prompts,
 		resources,
 		knowledge,
+		tutorials,
 		benchmarks,
 	};
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
+		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 
