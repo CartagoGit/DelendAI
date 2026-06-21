@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="mcp-vertex logo (monochrome)">
+	<g fill="currentColor" stroke="currentColor">
+		<path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke-width="4.5" stroke-linejoin="round"/>
+		<g stroke-width="3.5" stroke-linecap="round">
+			<line x1="32" y1="32" x2="32" y2="8"/>
+			<line x1="32" y1="32" x2="11.5" y2="44"/>
+			<line x1="32" y1="32" x2="52.5" y2="44"/>
+		</g>
+		<path d="M32 21 L41 26.5 L41 37.5 L32 43 L23 37.5 L23 26.5 Z"/>
+		<circle cx="32" cy="8" r="5"/>
+		<circle cx="11.5" cy="44" r="5"/>
+		<circle cx="52.5" cy="44" r="5"/>
+	</g>
+</svg>

@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-06-20T14:52:23.393Z",
+  "skills": [
+    {
+      "id": "mcp-vertex-failure-modes",
+      "name": "mcp-vertex-failure-modes",
+      "description": "What to do when an mcp-vertex tool returns a failure envelope — lock conflict, corrupt file, state inconsistency, command-policy block, or a timeout. Use when a tool reports ok:false or a swarm gets stuck.",
+      "plugin": "mcp-vertex-failure-modes",
+      "summary": "Tools return a structured error envelope: `{ ok:false, error:{ reason, nextAction } }`",
+      "path": "skills/mcp-vertex-failure-modes/SKILL.md"
+    },
+    {
+      "id": "mcp-vertex-plugin-authoring",
+      "name": "mcp-vertex-plugin-authoring",
+      "description": "How to author or modify an mcp-vertex plugin — the contract, the namespace, outputSchema discipline, durable state, path containment, and the test/build gates. Use when adding a tool, creating a plugin, or changing a plugin's surface.",
+      "plugin": "mcp-vertex-plugin-authoring",
+      "summary": "A plugin is an opt-in capability the core loads by specifier",
+      "path": "skills/mcp-vertex-plugin-authoring/SKILL.md"
+    }
+  ]
+}
