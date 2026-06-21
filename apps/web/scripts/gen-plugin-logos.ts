@@ -27,12 +27,11 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const CAPABILITIES = join(
-	ROOT,
-	'apps/web/src/data/manifests/capabilities.json',
-);
-const OUT = join(ROOT, 'apps/web/public/logos');
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const APPS_WEB = join(SCRIPT_DIR, '..');
+const REPO_ROOT = join(APPS_WEB, '..', '..');
+const CAPABILITIES = join(APPS_WEB, 'src/data/manifests/capabilities.json');
+const OUT = join(APPS_WEB, 'public/logos');
 
 interface ICapPackage {
 	name: string;

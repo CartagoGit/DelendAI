@@ -32,7 +32,6 @@ import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
 } from './providers/status-bar';
-import { createVscodeHostAdapter } from './host/vscode-host-adapter';
 
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
@@ -134,26 +133,31 @@ export const activate = async (
 	context.subscriptions.push(registerOpenProposalCommand({ vscode, client }));
 	context.subscriptions.push(registerShowMetricsCommand({ vscode, client }));
 
-	// f125 — IDE-agnostic dashboard, wired via the host adapter so the
-	// dashboard HTML + tab logic are reusable from JetBrains/Zed/Cursor
-	// adapters without touching `vscode.*`.
-	const host = createVscodeHostAdapter();
-	context.subscriptions.push(
-		registerOpenDashboardCommand({
-			host,
-			client,
-			getConfig: () => {
-				try {
-					const section = host.getConfiguration<{
-						readonly extension?: { readonly docsUrl?: string };
-					}>('mcp-vertex');
-					return section ?? {};
-				} catch {
-					return {};
-				}
-			},
-		}),
-	);
+	// f125 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
+	// that inject a fake `vscode` API never resolve the real `vscode`
+	// module (unavailable outside the VS Code runtime).
+	if (deps.vscode === undefined) {
+		const { createVscodeHostAdapter } = await import(
+			'./host/vscode-host-adapter'
+		);
+		const host = createVscodeHostAdapter();
+		context.subscriptions.push(
+			registerOpenDashboardCommand({
+				host,
+				client,
+				getConfig: () => {
+					try {
+						const section = host.getConfiguration<{
+							readonly extension?: { readonly docsUrl?: string };
+						}>('mcp-vertex');
+						return section ?? {};
+					} catch {
+						return {};
+					}
+				},
+			}),
+		);
+	}
 };
 
 export const deactivate = async (): Promise<void> => {};
