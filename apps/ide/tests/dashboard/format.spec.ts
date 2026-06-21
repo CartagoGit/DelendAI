@@ -15,9 +15,9 @@ describe('formatNumber', () => {
 		expect(formatNumber(1234)).toBe('1,234');
 	});
 
-	it('honours a custom locale', () => {
-		// es-ES uses dot as thousands separator
-		expect(formatNumber(1234, 'es')).toMatch(/1\.234|1\s234/);
+	it('honours a custom locale when it differs from default', () => {
+		// de-DE uses dot as thousands separator
+		expect(formatNumber(1234, 'de')).toMatch(/1\.234/);
 	});
 });
 

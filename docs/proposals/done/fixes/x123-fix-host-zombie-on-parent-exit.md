@@ -2,7 +2,7 @@
 id: x123
 kind: fix
 title: fix(host): install signal handlers so Bun doesn't zombie on parent exit
-status: ready
+status: done
 date: 2026-06-21
 track: core+host
 related:
