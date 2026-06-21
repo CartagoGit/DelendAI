@@ -442,9 +442,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **Bugs de la web reportados (18-06, 2ª tanda) — M38** (re-verificado 21-06, ver §11):
 - ✅ La **página de la API** (`/api/`, TypeDoc) — funciona, assets relativos.
 - ✅ **Banderas** de idioma — se ven, rutas correctas.
-- 🟡 La **descripción de cada herramienta sale solo en inglés** — arquitectura
-  i18n resuelta (catálogo opt-in + fallback), pero solo 5/68 tools tienen
-  entrada; el resto es backlog de contenido, no bug.
+- ✅ La **descripción de cada herramienta sale solo en inglés** — cerrado
+  21-06: las 68 tools tienen entrada en el catálogo (12 idiomas cada una),
+  `check-i18n.ts` lo exige. Antes solo 5/68 estaban traducidas.
 - ✅ Algunas descripciones **se salían de su recuadro** (overflow) — contenidas
   con `overflow-wrap`/`text-overflow:ellipsis`.
 - 🟡 Preferencia: **cada sección = una página individual** (no todo en un único home).
@@ -580,10 +580,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ✅ **M32 · Cobertura desigual** — cerrado (ver §11, sesión 21-06):
   property-based tests para `frontmatter-parser`/`redactSecrets` y test de
   concurrencia dedicado para `memory` ya existían, verificados contra código.
-- ⬜ **M33 · Profundidad de plugins (mejoras opcionales)** — `git` (blame/show/worktree),
-  `search` (`rg` opcional, `context:N`), `deps` (monorepo-aware, pyproject/Cargo),
-  `memory` (export/import), `docs` (`docs_search`). No son *fixes* de auditoría sino
-  enhancements; cada plugin cumple su contrato hoy. Se abordan a demanda.
+- 🟡 **M33 · Profundidad de plugins (mejoras opcionales)** — parcial, sesión 21-06:
+  - ✅ `git`: `git_blame` (autoría por línea, rango opcional), `git_show`
+    (metadata + `--stat`, sin el patch completo) y `git_worktree` (listado
+    read-only; crear/borrar sigue siendo trabajo de `proposals_agent_worktree`,
+    sin duplicar el path de escritura). 12 tests nuevos.
+  - ✅ `deps`: `deps_polyglot` — lee pyproject.toml (PEP 621 + Poetry),
+    Cargo.toml y go.mod si existen, con parsers propios de subconjunto
+    documentado (mismo enfoque que `frontmatter-parser.ts`, sin añadir una
+    dependencia de TOML genérica). 10 tests nuevos. Sigue offline.
+  - ⬜ `search` (`rg` opcional, `context:N`), `memory` (export/import), `docs`
+    (`docs_search`) — no abordados esta sesión, quedan a demanda.
 - ✅ **M34 · OSS hygiene** —
   `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + Mermaid),
   `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, y **CHANGELOG enlazado** (Keep a
@@ -823,16 +830,10 @@ camino al 11/10 — solo acabados de plataforma.**
     `i18n/shared.ts` resuelven a ficheros reales en `public/flags/*.svg`
     (verificado 1:1) y el HTML construido referencia
     `/mcp-vertex/flags/<code>.svg` con el base correcto.
-  - 🟡 **Descripción de herramienta solo en inglés** — la causa raíz (sin
-    mecanismo de i18n) está resuelta desde la sesión 20-06: hay un catálogo
+  - ✅ **Descripción de herramienta solo en inglés** — cerrado 21-06. Catálogo
     opt-in (`apps/web/src/i18n/tools/`) con fallback a inglés, gateado por
-    `check-i18n.ts` para que ninguna entrada que se une quede incompleta en
-    los 12 idiomas. Verificado en el HTML construido que `audit_audit_consolidate`
-    sale en chino en `/zh/plugins/audit/`. **Lo que queda es contenido, no
-    arquitectura:** solo 5 de 68 tools están en el catálogo; las otras 63
-    siguen en inglés por diseño (opt-in, no se traducen automáticamente).
-    Backlog explícito, no bug — cada plugin puede sumar su entrada cuando se
-    decida invertir en ello.
+    `check-i18n.ts`. Las 68 tools tienen ya su entrada en los 12 idiomas
+    (antes solo 5/68); verificado en el HTML construido.
   - ✅ **Overflow de descripciones** — `_tool.scss` (`overflow-wrap: anywhere`)
     y `_plugin-card.scss` (`overflow:hidden` + `text-overflow:ellipsis`) ya
     contienen el contenido dentro de su caja.
