@@ -1,11 +1,11 @@
 ---
-id: l103
+id: f103
 type: proposal
 status: done
 track: runtime+coordination
 date: 2026-06-18
 closed: 2026-06-20
-kind: legacy
+kind: feat
 title: Detección de "el agente dice que va a hacer X y no lo hace" + handoff a otro agente
 ---
 

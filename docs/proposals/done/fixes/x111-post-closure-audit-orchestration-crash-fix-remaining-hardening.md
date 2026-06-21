@@ -1,5 +1,5 @@
 ---
-id: l111
+id: x111
 status: done
 type: proposal
 track: core+proposals
@@ -16,9 +16,9 @@ shipped-in:
   - 49a9e28 # s4: store-concurrency spec for memory store (M32)
   - 440c3ad # s4 (chained): simplify import in store-concurrency.spec.ts
 related:
-  - l99 # audit plugin: this proposal records a new finding in its master audit doc
-  - l110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
-kind: legacy
+  - f99 # audit plugin: this proposal records a new finding in its master audit doc
+  - f110 # the master audit's §9 explicitly deferred this post-closure backlog to a future proposal
+kind: fix
 title: Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
 ---
 

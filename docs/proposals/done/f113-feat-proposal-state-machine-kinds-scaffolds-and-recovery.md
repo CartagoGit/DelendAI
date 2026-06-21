@@ -43,9 +43,9 @@ acceptance:
   - { command: bun run lint:proposals, expect: exit0 }
   - { command: bun run lint:scaffolds, expect: exit0 }
 related:
-  - l111 # post-closure audit (the closed reference for prefix conventions)
-  - l112 # parallel proposal; lives in paused/ after this lands
-  - l99 # the audit plugin whose lifecycle this proposal formalises
+  - x111 # post-closure audit (the closed reference for prefix conventions)
+  - f112 # parallel proposal; lives in paused/ after this lands
+  - f99 # the audit plugin whose lifecycle this proposal formalises
 ---
 
 # f113 — Proposal state machine, kinds, scaffolds, and recovery

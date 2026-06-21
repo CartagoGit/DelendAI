@@ -37,6 +37,9 @@ body {
 // blends with the page background; the thumb uses `--muted` so it stays
 // legible against every palette. On hover the thumb switches to
 // `--accent` so the affordance is visible without breaking the palette.
+// The `:hover` lives inside a single rule block (the BEM convention
+// allows one trailing pseudo per `&`-rooted selector) so stylelint
+// stays happy and the palette change is atomic.
 ::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
@@ -49,9 +52,10 @@ body {
 	border-radius: 999px;
 	border: 2px solid var(--bg-soft);
 	transition: background 0.2s ease;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: var(--accent);
+
+	&:hover {
+		background: var(--accent);
+	}
 }
 a {
 	color: var(--accent);

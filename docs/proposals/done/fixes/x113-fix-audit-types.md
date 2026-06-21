@@ -1,13 +1,13 @@
 ---
-id: l113
+id: x113
 type: proposal
 status: done
 track: plugins
 date: 2026-06-20
 related:
-  - l99 # feat: multi-model audit plugin
-  - l108 # feat: test-convention plugin
-kind: legacy
+  - f99 # feat: multi-model audit plugin
+  - f108 # feat: test-convention plugin
+kind: fix
 title: Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
 ---
 

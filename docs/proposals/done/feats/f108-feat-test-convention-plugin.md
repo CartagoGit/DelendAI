@@ -1,16 +1,16 @@
 ---
-id: l108
+id: f108
 type: proposal
 status: done
 track: core+plugin+web
 date: 2026-06-19
 closed: 2026-06-20
 related:
-  - l99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
-  - l104 # status-marker (mismo patrón: knowledge + tools para un contrato del agente)
-  - l105 # web bugfixes & UX overhaul (aquí entra la página del plugin)
-  - l107 # multi-lang quality gates (este plugin complementa: quality ejecuta, test-convention enseña)
-kind: legacy
+  - f99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
+  - f104 # status-marker (mismo patrón: knowledge + tools para un contrato del agente)
+  - x105 # web bugfixes & UX overhaul (aquí entra la página del plugin)
+  - f107 # multi-lang quality gates (este plugin complementa: quality ejecuta, test-convention enseña)
+kind: feat
 title: Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
 ---
 

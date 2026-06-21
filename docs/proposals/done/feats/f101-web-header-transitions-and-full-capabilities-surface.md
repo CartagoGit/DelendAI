@@ -1,12 +1,12 @@
 ---
-id: l101
+id: f101
 type: proposal
 status: done
 track: web+i18n+docs
 date: 2026-06-18
 budget: 3
 closed: 2026-06-18
-kind: legacy
+kind: feat
 title: Header persistente con transiciones + surface completo en la web
 ---
 

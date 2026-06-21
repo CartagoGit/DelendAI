@@ -1,5 +1,5 @@
 ---
-id: l110
+id: f110
 type: proposal
 status: done
 track: web+i18n
@@ -16,10 +16,10 @@ shipped-in:
   - b495436 # s3: finalize FR + VI translations
   - 0aa524b # s3: complete translations for all tutorial documents
 related:
-  - l100 # parent: web i18n + docs rewrite (cerrado 2026-06-20 con s4 partial + s8 todo + 11 tutorial-langs diferidos)
-  - l105 # web bugfixes (las tools que se añaden aquí deben respetar el mismo flujo de i18n)
-  - l107 # multi-lang quality gates (este plugin ejecuta, l110 documenta; ortogonal)
-kind: legacy
+  - f100 # parent: web i18n + docs rewrite (cerrado 2026-06-20 con s4 partial + s8 todo + 11 tutorial-langs diferidos)
+  - x105 # web bugfixes (las tools que se añaden aquí deben respetar el mismo flujo de i18n)
+  - f107 # multi-lang quality gates (este plugin ejecuta, l110 documenta; ortogonal)
+kind: feat
 title: Residual de l100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
 ---
 

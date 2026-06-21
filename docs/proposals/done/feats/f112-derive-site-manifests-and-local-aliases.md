@@ -1,14 +1,14 @@
 ---
-id: l112
+id: f112
 type: proposal
 status: done
 track: web
 date: 2026-06-20
 related:
-  - l100 # website i18n & docs rewrite
-  - l101 # web header transitions
-  - l110 # residual web/i18n follow-ups
-kind: legacy
+  - f100 # website i18n & docs rewrite
+  - f101 # web header transitions
+  - f110 # residual web/i18n follow-ups
+kind: feat
 title: Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
 unblocked_by: [self:triaged-and-implemented]
 ---
