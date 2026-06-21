@@ -1,7 +1,6 @@
 ---
 import PromptsSection from '#COMPONENTS/PromptsSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
 
@@ -13,6 +12,5 @@ const count = capabilities.counts.prompts ?? 0;
 ---
 
 <Base lang={lang} title={`${t.prompts.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang} title={t.prompts.title} />
-	<PromptsSection lang={lang} />
+	<PromptsSection lang={lang} heading={t.prompts.title} />
 </Base>

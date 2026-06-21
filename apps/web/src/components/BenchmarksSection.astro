@@ -4,9 +4,12 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.bench.title;
 
 const BASELINE_TOK = 4000;
 
@@ -36,7 +39,7 @@ const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
 
 <section id="benchmarks" class="section">
 	<div class="container">
-		<h2>{t.bench.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.bench.lead}</p>
 		<div class="grid">
 			<div class="feature"><h3>&lt;300 · {t.bench.b1.t}</h3><p>{t.bench.b1.b}</p></div>

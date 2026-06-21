@@ -9,6 +9,13 @@
 }
 html {
 	scroll-behavior: smooth;
+	// Firefox: themed scrollbar via the standard properties.
+	// `scrollbar-color` is supported since Firefox 64; `scrollbar-width`
+	// lets us opt out of the OS overlay so the bar stays visible in dark
+	// themes (where the default overlay becomes invisible on the dark
+	// track).
+	scrollbar-color: var(--muted) var(--bg-soft);
+	scrollbar-width: thin;
 }
 body {
 	margin: 0;
@@ -18,7 +25,33 @@ body {
 	background: var(--bg);
 	color: var(--fg);
 	-webkit-font-smoothing: antialiased;
-	transition: background 0.2s ease, color 0.2s ease;
+	transition:
+		background 0.2s ease,
+		color 0.2s ease,
+		// Cross-fade the scrollbar palette with the theme tokens so the
+		// user-visible handoff matches the rest of the page.
+		scrollbar-color 0.2s ease;
+}
+
+// WebKit / Blink themed scrollbar. The track uses `--bg-soft` so it
+// blends with the page background; the thumb uses `--muted` so it stays
+// legible against every palette. On hover the thumb switches to
+// `--accent` so the affordance is visible without breaking the palette.
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: var(--bg-soft);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--muted);
+	border-radius: 999px;
+	border: 2px solid var(--bg-soft);
+	transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--accent);
 }
 a {
 	color: var(--accent);

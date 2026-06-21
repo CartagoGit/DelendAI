@@ -19,9 +19,12 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.plugins.title;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -80,7 +83,7 @@ const ordered = [...packages].sort((a, b) =>
 
 <section id="capabilities" class="section">
 	<div class="container">
-		<h2>{t.plugins.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.plugins.lead}</p>
 		<div class="pd">
 			{

@@ -1,7 +1,6 @@
 ---
 import ResourcesSection from '#COMPONENTS/ResourcesSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
 
@@ -13,6 +12,5 @@ const count = capabilities.counts.resources ?? 0;
 ---
 
 <Base lang={lang} title={`${t.resources.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang} title={t.resources.title} />
-	<ResourcesSection lang={lang} />
+	<ResourcesSection lang={lang} heading={t.resources.title} />
 </Base>

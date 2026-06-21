@@ -5,9 +5,12 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.resources.title;
 
 type IResource = {
 	uri: string;
@@ -33,7 +36,7 @@ const name = (r: IResource) =>
 
 <section id="resources" class="section">
 	<div class="container">
-		<h2>{t.resources.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.resources.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{capabilities.counts.resources ?? resources.length}</b><span>{t.resources.count}</span></div>

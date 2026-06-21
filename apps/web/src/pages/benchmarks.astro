@@ -1,16 +1,12 @@
 ---
 import BenchmarksSection from '#COMPONENTS/BenchmarksSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
 ---
 
 <Base lang={lang} title={`${t.bench.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang} title={t.bench.title} />
-	<BenchmarksSection lang={lang} />
+	<BenchmarksSection lang={lang} heading={t.bench.title} />
 </Base>
