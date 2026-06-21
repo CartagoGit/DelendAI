@@ -2,7 +2,7 @@
 id: a00022
 kind: audit
 title: "Auditoría Unificada — consolidación de a00021/a00026/a00024/a00025/a00023 (2026-06-21)"
-status: ready
+status: done
 date: 2026-06-21
 track: archive
 ownership:
@@ -36,7 +36,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 ## Non-goals
 
 - Re-ejecutar la auditoría de código desde cero. Este documento parte de la investigación de cross-referencing ya hecha (grep + lectura directa contra el HEAD actual) y la usa como base.
-- Implementar cualquiera de los slices nuevos abiertos aquí (S2–S5) — quedan `status: pending`, accionables por una sesión futura.
+- Reabrir los slices nuevos S2–S5 fuera de esta auditoría — ya fueron implementados y cerrados en esta sesión.
 - Resolver `f00020`, `f00019`, `f00027`, `r00002` o `l00008` — se referencian como ya-cubiertos, no se reimplementan ni se tocan sus archivos.
 - Resolver la duplicación documentada entre `r00002` y `l00008` (mismos dos archivos de catchall, `rules-tools.ts:199` y `adopt.tool.ts:81`) — se documenta como meta-hallazgo informativo (§ Findings, fila "META"), no se decide aquí cuál propuesta debe ceder el slice.
 - Ejecutar el triage completo de `a00025` más allá de lo descrito en su propia sección — `a024a`/`a024b` quedan explícitamente diferidas (no creadas) con la razón documentada; solo `a024c` (sin prerequisite) se considera lista para crear en una sesión de implementación futura, no en esta consolidación.
@@ -46,7 +46,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 - global_gate: lint
 
 ### S1 — Execute audit and document findings (este documento)
-- **Files**: `docs/proposals/ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md`
+- **Files**: `docs/proposals/done/audits/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: done
 - status: done
@@ -89,10 +89,10 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 ## Acceptance
 
 - `bun run lint:proposals` es verde para este documento.
-- `bun run validate` es verde (no se rompe nada al consolidar; los slices S2–S5 quedan `pending` para una sesión de implementación futura, no se ejecutan en esta consolidación).
+- `bun run validate` es verde tras implementar y cerrar S1–S5.
 - Cada finding deduplicado de a00021/a00026/a00024/a00023 tiene un Resolution Track explícito: `Verified — resolved` (ya en disco), `Referenced — covered by Proposal <id>` (no se duplica slice), o `New slice <Sx>` (accionable, abierto aquí).
 - `a00021`, `a00026`, `a00024`, `a00025`, `a00023` quedan transicionadas a `done/audits/` con nota de cierre "Superseded by a00022".
-- `docs/proposals/index.json` refleja el estado final (a00022 en `ready`, las 5 originales en `done`).
+- `docs/proposals/index.json` refleja el estado final (a00022 y las 5 originales en `done/audits/`).
 
 ## Verified State
 
@@ -204,5 +204,5 @@ Siguiendo el criterio (b) ofrecido para este encargo — dado que mezclar el tri
 
 - Esta consolidación parte de una investigación de cross-referencing ya realizada (grep + lectura directa contra el HEAD actual) antes de escribir este documento — no repite la lectura exhaustiva de código que ya hicieron `a00021`/`a00026`/`a00024`/`a00023`.
 - Las 5 auditorías originales se cierran (`status: done`, movidas a `docs/proposals/done/audits/`) con la nota: "Superseded by unified audit `a00022` (consolidación de auditorías ready del 2026-06-21); ver a00022 para hallazgos referenciados y slices vivos."
-- Ningún slice nuevo de esta auditoría (S2–S5) se implementa en esta sesión — quedan `status: pending`, listos para que una sesión de implementación los reclame vía `auto_work`/`continue_proposal`.
+- Los slices nuevos de esta auditoría (S2–S5) se implementaron y cerraron en esta sesión; `bun run validate` quedó verde.
 - El meta-hallazgo META-1 (duplicación `r00002`↔`l00008`) y la nota H-I18N-DUP quedan deliberadamente sin propuesta de seguimiento — son follow-ups de coordinación entre propuestas existentes, no hallazgos nuevos de código, y exceden el mandato de esta consolidación.

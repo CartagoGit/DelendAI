@@ -567,3 +567,131 @@ Table of dimensions.
 		).toBe(true);
 	});
 });
+
+describe('lintProposalMarkdown — f00024 cascadeOverride / cascadeBoost', () => {
+	// Builds a doc with arbitrary raw frontmatter lines (including numeric
+	// or array values that the string-only `FRONTMATTER` helper above
+	// cannot express — `cascadeOverride` is a number).
+	const rawDoc = (extraFrontmatter: string): string => `---
+id: f00024
+kind: feat
+title: f00024 cascade priority by kind with frontmatter override
+status: ready
+date: 2026-06-21
+track: proposals-plugin+workflow
+${extraFrontmatter}
+---
+
+## Goal
+
+p.
+
+## Why
+
+p.
+
+## Non-goals
+
+- not this.
+
+## Slices
+
+### S1 — Slice one
+- **Status**: pending
+- **Files**: [\`x.ts\`]
+- **Command**: \`bun run test\`
+- **Expect**: exit0
+
+## Acceptance
+
+- [ ] done.
+`;
+
+	it('accepts cascadeOverride with a paired cascadeOverrideReason', () => {
+		const markdown = rawDoc(
+			'cascadeOverride: -1\ncascadeOverrideReason: urgent customer escalation',
+		);
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			markdown,
+		});
+		expect(
+			result.issues.some((i) => i.message.includes('cascadeOverride')),
+		).toBe(false);
+	});
+
+	it('flags cascadeOverride without cascadeOverrideReason', () => {
+		const markdown = rawDoc('cascadeOverride: -1');
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			markdown,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('cascadeOverrideReason'),
+			),
+		).toBe(true);
+	});
+
+	it('flags cascadeOverrideReason without cascadeOverride (dangling audit trail)', () => {
+		const markdown = rawDoc(
+			'cascadeOverrideReason: this reason has no override',
+		);
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			markdown,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('cascadeOverride is missing'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a non-numeric cascadeOverride', () => {
+		const markdown = rawDoc(
+			"cascadeOverride: '-1'\ncascadeOverrideReason: bad type",
+		);
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			markdown,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('cascadeOverride must be a finite number'),
+			),
+		).toBe(true);
+	});
+
+	it('accepts each allowed cascadeBoost value', () => {
+		for (const boost of [
+			'shipped-blocking',
+			'customer-reported',
+			'security',
+		]) {
+			const markdown = rawDoc(`cascadeBoost: ${boost}`);
+			const result = lintProposalMarkdown({
+				path: 'docs/proposals/ready/f00024-do-the-thing.md',
+				markdown,
+			});
+			expect(
+				result.issues.some((i) => i.message.includes('cascadeBoost')),
+			).toBe(false);
+		}
+	});
+
+	it('flags an unknown cascadeBoost (would silently no-op at runtime)', () => {
+		const markdown = rawDoc('cascadeBoost: urgent-please');
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			markdown,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) => i.message.includes('cascadeBoost')),
+		).toBe(true);
+	});
+});

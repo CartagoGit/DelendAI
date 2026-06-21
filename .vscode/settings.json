@@ -36,5 +36,49 @@
 	},
 	"[html]": {
 		"editor.defaultFormatter": "biomejs.biome"
-	}
+	},
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Copilot / Copilot Chat / agent mode: auto-approve everything.
+	//
+	// These settings make VS Code Copilot run without asking for confirmation
+	// before tool calls, file edits, terminal commands, or MCP server calls.
+	// The repo is a developer sandbox (`AGENTS.md` already declares this a
+	// trusted monorepo) so we trade friction for velocity. Override locally
+	// by adding the same keys to `.vscode/settings.local.json` (gitignored)
+	// and setting them back to false. See `.vscode/settings.local.json.example`
+	// for a starter override file.
+	// ──────────────────────────────────────────────────────────────────────
+
+	// Auto-approve ALL chat-mode tool calls (file edits, terminal, search,
+	// MCP, browser). Equivalent to Claude Code's `bypassPermissions`.
+	"chat.tools.autoApprove": true,
+
+	// Don't prompt before running terminal commands from chat.
+	"chat.tools.terminal.autoApprove": {
+		"*": true
+	},
+
+	// Don't prompt before running MCP server tools.
+	"chat.mcp.autoApprove": true,
+
+	// Don't prompt before file edits / writes from chat.
+	"chat.edit.autoApprove": true,
+
+	// Don't prompt before inserting code at the cursor (next-edit suggestions
+	// already bypass by default; this covers the inline-chat confirm dialog).
+	"chat.inlineChat.acceptChangesWithCtrlEnter": true,
+	"chat.inlineChat.disableNotification": true,
+
+	// Auto-approve in the agent (autopilot-like) workflow.
+	"github.copilot.chat.agent.autoApprove": true,
+
+	// Don't show the "allow this command" dialog for terminal commands Copilot
+	// generates. The terminal still runs; only the prompt is suppressed.
+	"github.copilot.chat.runCommand.enabled": true,
+	"github.copilot.chat.commandExecution.alwaysAllow": true,
+
+	// Suppress telemetry permission prompts (these are unrelated to chat
+	// permissions but they pop up at first session start and add noise).
+	"github.copilot.telemetry.enabled": false
 }

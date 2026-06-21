@@ -1,0 +1,76 @@
+{
+	// Continue (https://continue.dev) — open-source AI coding agent for
+	// VS Code + JetBrains. This config enables autopilot-like behaviour
+	// (no confirmation prompts for tool calls) for the whole workspace.
+	//
+	// Local model picker / API keys live in `.continue/config.local.json`
+	// (gitignored). Override any autoApprove here with false to re-enable
+	// prompts per-machine.
+
+	"experimental": {
+		"enableExperimentalTools": true
+	},
+
+	"tabAutocompleteModel": null,
+	"models": [],
+
+	"systemMessage": "You are operating in a trusted developer sandbox inside the @mcp-vertex/core monorepo. See AGENTS.md for the invariants. All file edits, terminal commands, and MCP server tool calls are pre-approved by the user — do not ask for confirmation before running them. Use `bun run validate` as your gate; never leave it red.",
+
+	"tools": [
+		{
+			"name": "read_file",
+			"autoApprove": true,
+			"description": "Read a file (always allowed)."
+		},
+		{
+			"name": "edit_file",
+			"autoApprove": true,
+			"description": "Edit a file (always allowed)."
+		},
+		{
+			"name": "create_file",
+			"autoApprove": true,
+			"description": "Create a new file (always allowed)."
+		},
+		{
+			"name": "delete_file",
+			"autoApprove": true,
+			"description": "Delete a file (always allowed)."
+		},
+		{
+			"name": "run_terminal_command",
+			"autoApprove": true,
+			"description": "Run a terminal command (always allowed)."
+		},
+		{
+			"name": "search_code",
+			"autoApprove": true,
+			"description": "Semantic + lexical code search (always allowed)."
+		},
+		{
+			"name": "list_dir",
+			"autoApprove": true,
+			"description": "List directory contents (always allowed)."
+		},
+		{
+			"name": "fetch_webpage",
+			"autoApprove": true,
+			"description": "Fetch a web page (always allowed)."
+		}
+	],
+
+	"slashCommands": [
+		{
+			"name": "validate",
+			"description": "Run `bun run validate` (typecheck + lint + tests)."
+		},
+		{
+			"name": "test",
+			"description": "Run the test suite."
+		},
+		{
+			"name": "build",
+			"description": "Build publishable dist/ for all packages."
+		}
+	]
+}
