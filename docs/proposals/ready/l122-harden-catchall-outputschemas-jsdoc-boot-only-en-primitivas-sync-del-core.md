@@ -1,5 +1,7 @@
 ---
 id: l122
+kind: refactor
+title: Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
 status: ready
 type: proposal
 track: core+plugins
@@ -35,57 +37,88 @@ Añadir JSDoc `/** Boot-time one-shot only — hot paths must use the async vari
 
 Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba importar estas funciones desde `packages/core/src/lib/tools/**` o desde handlers. Si la regla custom es overkill para el beneficio, basta con el JSDoc y un párrafo en AGENTS.md (que ya existe, pero el código no lo refleja).
 
-Acceptance:
-- `bun run validate` verde.
-- 0 ocurrencias de `z.object({}).catchall(z.unknown())` en `packages/core/src` y `plugins/*/src` (verificable con `grep -r 'catchall(z.unknown())' packages/core/src plugins/*/src`).
-- 6 tests nuevos (uno por schema endurecido) que validen que el JSON Schema generado no es catchall.
-- 2 JSDocs nuevos en las primitivas sync.
-- `bun run lint:proposals` valida este documento.
-- Cita cruzada desde `a022` (H3+H4) y referencia a `l118` (que ya endureció el catchall del plugin `rules`, ahora ampliado al resto).
+## Why
+
+- AGENTS.md, invariante 8: "Every public tool declares an `outputSchema`. Open `catchall` schemas are a documented exception, not a default". Hoy el código tiene 6 catchalls (3 en `bootstrap`, 1 en `scaffold`, 1 en `rules`, 1 en `proposals/adopt`). El audit l118 ya cerró los catchalls dentro de `rules` para una rama concreta; este l122 cierra el resto.
+- Un `outputSchema` que admite cualquier objeto es, en la práctica, equivalente a no tener schema: el SDK no puede validar `structuredContent`, la generación de tipos SDK colapsa a `unknown`, y los consumidores caen en duck-typing — exactamente lo que M24 (master audit) fue creado para prevenir.
+- Los tipos `IProjectAnalysis`, `IServerPlan`, `IMcpProjectSkeleton`, `IScaffoldReport`, `IRulesManifest`, `ISwarmPathLayout` ya existen en el código (son las interfaces TypeScript de las que el runtime ya deriva sus `z.object` parciales). Solo falta formalizar el `z.object` en el `outputSchema` de cada tool.
+- Para H4, el JSDoc en el código es lo único que falta entre el invariante documentado en AGENTS.md y el dev que llega a la función: hoy la barrera es solo un párrafo en un doc que muchos no leen antes de importar.
+
+## Non-goals
+
+- Reescribir los tipos a `z.object` puros en todo el codebase; este slice es solo sobre los `outputSchema` declarados en `server.registerTool`.
+- Cambiar el formato de `structuredContent` ni el protocolo MCP subyacente.
+- Endurecer el `outputSchema` de `metrics-tool.ts:64` (`tools: z.object({}).catchall(MetricSchema)`) — es legítimo porque el dominio es dinámico (cualquier tool registrada). Documentado como excepción en el audit.
 
 ## Slices
 
-- global_gate: lint
+### S1 — Endurecer 3 outputSchemas en bootstrap-tool (IProjectAnalysis, IServerPlan, IMcpProjectSkeleton)
+  - **Status**: ready
+  - **Files**: `packages/core/src/lib/bootstrap/bootstrap-tool.ts`
+  - **Command**: `bunx vitest run packages/core && bun run typecheck`
+  - **Expect**: green; 3 schemas derivados de tipos existentes; JSON Schema generado estricto (sin `additionalProperties` permisivos).
+  - **Acceptance**:
+    - 3 schemas derivados de tipos existentes (`z.object` con propiedades explícitas)
+    - JSON Schema generado estricto
+    - 3 tests que validan el endurecimiento (uno por schema)
 
-### s1 — Endurecer 3 outputSchemas en bootstrap-tool (IProjectAnalysis, IServerPlan, IMcpProjectSkeleton)
-- files: packages/core/src/lib/bootstrap/bootstrap-tool.ts
-- gate: e2e
-- acceptance:
-  - "3 schemas derivados de tipos existentes"
-  - "JSON Schema generado estricto (sin additionalProperties permisivos)"
-  - "3 tests que validan el endurecimiento"
-- status: pending
+### S2 — Endurecer outputSchema de scaffold-tool (IScaffoldReport)
+  - **Status**: ready
+  - **Files**: `packages/core/src/lib/scaffold/scaffold-tool.ts`
+  - **Command**: `bunx vitest run packages/core && bun run typecheck`
+  - **Expect**: green; 1 schema derivado de `IScaffoldReport`; test de JSON Schema estricto.
+  - **Acceptance**:
+    - 1 schema derivado de `IScaffoldReport`
+    - Test de JSON Schema estricto
 
-### s2 — Endurecer outputSchema de scaffold-tool (IScaffoldReport)
-- files: packages/core/src/lib/scaffold/scaffold-tool.ts
-- gate: e2e
-- acceptance:
-  - "1 schema derivado de IScaffoldReport"
-  - "Test de JSON Schema estricto"
-- status: pending
+### S3 — Endurecer outputSchema de rules-tools (IRulesManifest)
+  - **Status**: ready
+  - **Files**: `plugins/rules/src/lib/rules-tools.ts`
+  - **Command**: `bunx vitest run plugins/rules && bun run typecheck`
+  - **Expect**: green; 1 schema derivado de `IRulesManifest`; test de JSON Schema estricto.
+  - **Acceptance**:
+    - 1 schema derivado de `IRulesManifest`
+    - Test de JSON Schema estricto
 
-### s3 — Endurecer outputSchema de rules-tools (IRulesManifest)
-- files: plugins/rules/src/lib/rules-tools.ts
-- gate: e2e
-- acceptance:
-  - "1 schema derivado de IRulesManifest"
-  - "Test de JSON Schema estricto"
-- status: pending
+### S4 — Endurecer outputSchema de adopt.tool (ISwarmPathLayout)
+  - **Status**: ready
+  - **Files**: `plugins/proposals/src/lib/tools/proposals/adopt.tool.ts`
+  - **Command**: `bunx vitest run plugins/proposals && bun run typecheck`
+  - **Expect**: green; 1 schema derivado de `ISwarmPathLayout`; test de JSON Schema estricto.
+  - **Acceptance**:
+    - 1 schema derivado de `ISwarmPathLayout`
+    - Test de JSON Schema estricto
 
-### s4 — Endurecer outputSchema de adopt.tool (ISwarmPathLayout)
-- files: plugins/proposals/src/lib/tools/proposals/adopt.tool.ts
-- gate: e2e
-- acceptance:
-  - "1 schema derivado de ISwarmPathLayout"
-  - "Test de JSON Schema estricto"
-- status: pending
+### S5 — JSDoc boot-only en primitivas sync del core
+  - **Status**: ready
+  - **Files**:
+    - `packages/core/src/lib/shared/atomic-write.ts`
+    - `packages/core/src/lib/shared/quarantine-corrupt-file.ts`
+  - **Command**: `bun run validate`
+  - **Expect**: green; 2 JSDocs añadidos.
+  - **Acceptance**:
+    - JSDoc `/** Boot-time one-shot only — hot paths must use the async variant. */` en `writeFileAtomicSync`
+    - JSDoc equivalente en `quarantineCorruptFileSync`
 
-### s5 — JSDoc boot-only en primitivas sync del core
-- files: packages/core/src/lib/shared/atomic-write.ts
-- files: packages/core/src/lib/shared/quarantine-corrupt-file.ts
-- gate: lint
-- acceptance:
-  - "JSDoc en writeFileAtomicSync"
-  - "JSDoc en quarantineCorruptFileSync"
-  - "bun run validate verde"
-- status: pending
+## Acceptance
+
+- [ ] `bun run validate` es verde.
+- [ ] 0 ocurrencias de `z.object({}).catchall(z.unknown())` en `packages/core/src` y `plugins/*/src` (verificable con `grep -r 'catchall(z.unknown())' packages/core/src plugins/*/src`).
+- [ ] 6 tests nuevos (uno por schema endurecido) que validen que el JSON Schema generado no es catchall.
+- [ ] 2 JSDocs nuevos en las primitivas sync.
+- [ ] `bun run lint:proposals` valida este documento.
+- [ ] Cita cruzada desde `a022` (H3+H4) y referencia a `l118` marcada en el checklist.
+
+## Risks and mitigations
+
+- **R1**: derivar `z.object` a mano para 6 tipos puede divergir del tipo real si alguien edita la interface y olvida actualizar el schema. **Mitigación**: usar `z.custom<T>()` con un type-test runtime, o derivar automáticamente con `z.infer<typeof IProjectAnalysis>` y un `z.object({...})` paralelo documentado como "must mirror IProjectAnalysis".
+- **R2**: el JSON Schema generado por `zod-to-json-schema` puede añadir `additionalProperties: true` por defecto. **Mitigación**: en cada test de S1-S4, parsear el schema y asertar que el nivel raíz no tiene `additionalProperties` o que es `additionalProperties: false`.
+- **R3**: la regla Biome/ESLint custom para "no importar *Sync desde tools" puede ser overkill. **Mitigación**: en S5, si la fricción es alta, dejar solo el JSDoc y abrir follow-up separado.
+
+## Notes
+
+- **Auditoría origen**: `a022-21-06-2026-copilot-minimax-m3-repositorio.md` (H3 y H4, severidad P1).
+- **Propuesta complementaria**: `l118-harden-catchall-output-schemas.md` (que endureció `rules` parcialmente); esta `l122` es la iteración "resto del monorepo".
+- **Master audit**: cierra el follow-up de M24 (outputSchemas catchall).
+- **Naturaleza de la deuda**: hygiene, no corrección. La API actual funciona, pero pierde validación en runtime y dificulta la generación de tipos SDK.
+- **Follow-up natural**: si se aprueba, abre el camino a una tercera iteración (`l123`?) que audite cualquier `z.object({})` o `z.unknown()` introducido en PRs futuros vía una regla Biome.

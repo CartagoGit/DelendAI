@@ -21,6 +21,39 @@ export {
 } from '../lib/services/knowledge-service';
 export { MetricsService } from '../lib/services/metrics-service';
 export { NotificationsService } from '../lib/services/notifications-service';
+export {
+	DashboardService,
+	createEmptyTotals,
+} from '../lib/services/dashboard-service';
+export type { IDashboardServiceOptions } from '../lib/services/dashboard-service';
+export type {
+	IDashboardAgentsModel,
+	IDashboardAllModels,
+	IDashboardMetricsModel,
+	IDashboardOverviewModel,
+	IDashboardPluginsModel,
+	IDashboardSessionsModel,
+	IDashboardSourceAgents,
+	IDashboardSourceOverview,
+	IDashboardSourceProposals,
+	IDashboardTimesModel,
+	IDashboardTokensModel,
+	IDashboardToolsModel,
+	IDashboardTotals,
+	IToolMetricRow,
+} from '../lib/services/dashboard.types';
+export {
+	DEFAULT_DOCS_URL,
+	EmbedService,
+	resolveDocsUrl,
+	validateDocsUrl,
+} from '../lib/services/embed-service';
+export type {
+	IDocsUrlConfig,
+	IDocsUrlValidation,
+	IEmbedServiceOptions,
+	IResolvedDocsUrl,
+} from '../lib/services/embed-service';
 export type {
 	IMetricsSnapshot,
 	IMetricsSnapshotOptions,

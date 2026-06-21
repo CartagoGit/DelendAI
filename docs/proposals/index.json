@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T04:58:51.794Z",
-	"count": 16,
+	"generated_at": "2026-06-21T05:14:06.473Z",
+	"count": 22,
 	"proposals": [
 		{
 			"id": "l114",
@@ -37,6 +37,33 @@
 			}
 		},
 		{
+			"id": "a023",
+			"file": "ready/a023-21-06-2026-copilot-gpt-5-4-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a024",
+			"file": "ready/a024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
+			"track": "metrics+plugins+workflow",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: technical_investigator, task: 'S1: Inventory of token sinks and baseline measurement' }",
+					"{ agent: proposal_guardian, task: 'S2: Triage findings into deferred proposals' }"
+				]
+			}
+		},
+		{
 			"id": "f122",
 			"file": "ready/f122-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
 			"track": "proposals-plugin",
@@ -51,6 +78,35 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f125",
+			"file": "ready/f125-ide-extension-multi-ide-brand-dashboard.md",
+			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"],
+				"reservedFiles": [
+					"apps/ide/",
+					"apps/vscode/",
+					"apps/vscode/media/",
+					"apps/vscode/src/dashboard/",
+					"apps/vscode/src/panels/",
+					"apps/vscode/src/embeds/",
+					"apps/vscode/src/commands/",
+					"apps/vscode/src/providers/",
+					"apps/vscode/src/views/",
+					"apps/vscode/src/i18n/",
+					"apps/vscode/scripts/check-i18n.ts",
+					"packages/client/",
+					"packages/client/src/lib/services/",
+					"docs/IDE-EXTENSION.md",
+					"docs/CROSS-IDE.md",
+					"docs/proposals/done/feats/f114-feat-ide-extension-vscode-and-friends.md"
+				]
+			}
 		},
 		{
 			"id": "l115",
@@ -112,6 +168,30 @@
 			"id": "l122",
 			"file": "ready/l122-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
 			"track": "core+plugins",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l125",
+			"file": "ready/l125-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
+			"track": "plugins+core+audit",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l126",
+			"file": "ready/l126-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
+			"track": "core+agents+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l127",
+			"file": "ready/l127-skills-and-tools-coverage.md",
+			"track": "plugins+skills+core",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
