@@ -249,10 +249,19 @@ const drawerLinks = [
 		const trigger = document.getElementById('nav-more-trigger');
 		const panel = document.getElementById('nav-more-panel');
 		if (!trigger || !panel) return;
+		// The wrapper carries the `.is-open` class so the SCSS can
+		// drive the scaleY/opacity transition without using
+		// `:has([aria-expanded=...])` (the linter rejects attribute
+		// selectors in `:has()` chains). `aria-expanded` is kept on
+		// the trigger for screen readers and as a second source of
+		// truth for the open state.
+		const wrapper = trigger.closest<HTMLElement>('.nav__more');
+		if (!wrapper) return;
 
 		const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
 		const open = () => {
 			trigger.setAttribute('aria-expanded', 'true');
+			wrapper.classList.add('nav__more--open');
 			panel.removeAttribute('hidden');
 			// Move focus to the first menu item so keyboard users can
 			// continue with ArrowDown / Enter.
@@ -262,10 +271,11 @@ const drawerLinks = [
 		const close = ({ restoreFocus = true } = {}) => {
 			if (!isOpen()) return;
 			trigger.setAttribute('aria-expanded', 'false');
+			wrapper.classList.remove('nav__more--open');
 			// Wait for the open/close transition to end before hiding the
 			// panel — the panel uses `visibility: hidden` via
-			// `[aria-expanded="false"]` rather than `display: none` so the
-			// CSS transition can play; the `hidden` attribute is the
+			// `.is-open` (rather than `display: none`) so the CSS
+			// transition can play; the `hidden` attribute is the
 			// belt-and-braces removal from the a11y tree.
 			window.setTimeout(() => {
 				if (!isOpen()) panel.setAttribute('hidden', '');

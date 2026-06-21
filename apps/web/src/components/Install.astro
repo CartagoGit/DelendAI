@@ -26,9 +26,12 @@ import {
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (x124 S7). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.install.title;
 const defaultPm = 'npm';
 const defaultIde = 'vscode';
 
@@ -63,7 +66,7 @@ for (const pm of packageManagers) {
 
 <section id="install" class="section">
 	<div class="container">
-		<h2>{t.install.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.install.lead}</p>
 
 		<div class="install" data-pm={defaultPm} data-ide={defaultIde} data-snippets={JSON.stringify(snippets)}>
