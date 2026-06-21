@@ -295,8 +295,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `version: 1`, y rechaza versiones futuras no soportadas en vez de aceptarlas
   silenciosamente. Cubierto por
   `plugins/proposals/tests/src/lib/shared/agent-registry-store.spec.ts`.
-- [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya DONE según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
-  **Plan: [`ready/f00029-versioned-skills-prompts-and-web-fetch-plugin.md`](../ready/f00029-versioned-skills-prompts-and-web-fetch-plugin.md) — 5 skills nuevas + `manifest.json` versionado + plugin `@mcp-vertex/web` opt-in.**
+- [x] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya DONE según §7)*
+  ✅ `skills/manifest.json` (version-pinning contract: `version` + `minCoreVersion`
+  por skill) + `tools/scripts/lint/check-skills.script.ts` (CI gate) + 5 skills nuevas
+  (`mcp-vertex-operator`, `proposal-swarm-runner`, `state-repair-playbook`,
+  `token-budget-playbook`, `concurrency-patterns`) + `loadSkills`/`ISkillBundle` en
+  `packages/core/src/public/index.ts` (consumer helper) + plugin opt-in
+  `@mcp-vertex/web-fetch` (`web_fetch`, allow-list con wildcard `*.suffix`,
+  redirects re-validados hop-a-hop, cap de 50 KiB, `effects:['network']`, fuera de
+  todo preset). 23 tests nuevos. *(Cierra `f00029`. Nota: el paquete npm es
+  `@mcp-vertex/web-fetch` — `@mcp-vertex/web` ya era el nombre del workspace
+  `apps/web`.)*
 - [ ] **npm publish** (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
   **Pausado en [`paused/c00001-pause-npm-publish.md`](../paused/c00001-pause-npm-publish.md)** —
   bloqueado por `NPM_TOKEN` + org `@cartago-git` + merge `develop→main`. El repo

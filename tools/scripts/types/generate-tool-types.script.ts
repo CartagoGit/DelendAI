@@ -38,6 +38,7 @@ import logsPlugin from '@mcp-vertex/logs';
 import auditPlugin from '@mcp-vertex/audit';
 import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
+import webFetchPlugin from '@mcp-vertex/web-fetch';
 
 import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
 
@@ -57,10 +58,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-audit': auditPlugin,
 	'mcp-status-marker': statusMarkerPlugin,
 	'mcp-test-convention': testConventionPlugin,
+	'mcp-web-fetch': webFetchPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch';
 
 /**
  * Assemble the reference server with every plugin and harvest each

@@ -785,12 +785,12 @@ const lintFrontmatter = (
 
 	if (
 		typeof frontmatter.id === 'string' &&
-		!/^[a-z]\d{5}$/.test(frontmatter.id)
+		!/^[a-z]\d{3,}$/.test(frontmatter.id)
 	) {
 		issues.push({
 			line: 0,
-			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{5}$/`,
-			fix: 'Use a single lowercase letter followed by exactly 5 digits (e.g. f00014). Padded 5-digit IDs are enforced by f00023.',
+			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{3,}$/`,
+			fix: 'Use a single lowercase letter followed by ≥3 digits (e.g. f00014 padded per f00023, or f114 legacy).',
 		});
 	}
 

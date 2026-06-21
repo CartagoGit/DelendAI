@@ -1,6 +1,6 @@
 ---
 id: f00035
-status: ready
+status: done
 type: proposal
 track: apps+monorepo+docs
 date: 2026-06-21

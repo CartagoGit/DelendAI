@@ -59,6 +59,9 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 		dir: 'plugins/test-convention',
 		label: 'TestConvention',
 	},
+	// f00029 S3 — opt-in web/fetch plugin (not in any preset; harvested
+	// anyway so its outputSchema gets a typed SDK module, same as `audit`).
+	'web-fetch': { dir: 'plugins/web-fetch', label: 'WebFetch' },
 };
 
 /** Relative path (from a package dir) of the generated module. */

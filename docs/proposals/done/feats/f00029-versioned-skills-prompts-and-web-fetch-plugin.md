@@ -1,15 +1,12 @@
 ---
 id: f00029
-status: ready
+status: done
 type: proposal
 track: skills+plugins+docs
 date: 2026-06-21
 kind: feat
 title: Versioned skills/prompts + opt-in @mcp-vertex/web plugin
-reservedFiles:
-    - skills/
-    - plugins/web/
-    - packages/core/src/lib/skills/
+shipped-in: []
 ownership:
     - { agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }
 ---
@@ -112,11 +109,16 @@ by:
 
 ## Acceptance
 
-- [ ] `skills/manifest.json` exists and is enforced by CI.
-- [ ] All 5 new skills exist with semver and `minCoreVersion`.
-- [ ] `plugins/web` ships and is opt-in via the config.
-- [ ] `ISkillBundle` is in the public surface.
-- [ ] Master audit line 281 is `[x]`.
+- [x] `skills/manifest.json` exists and is enforced by CI
+      (`tools/scripts/lint/check-skills.script.ts`).
+- [x] All 5 new skills exist with semver and `minCoreVersion`.
+- [x] `plugins/web-fetch` ships and is opt-in via the config (npm package
+      `@mcp-vertex/web-fetch`; `@mcp-vertex/web` was already the docs site's
+      package name — see rationale).
+- [x] `ISkillBundle` is in the public surface
+      (`packages/core/src/public/index.ts`, via `loadSkills`).
+- [x] Master audit line 298 is `[x]` (the proposal's original "line 281"
+      reference was stale relative to the current file).
 
 ## risks and mitigations
 
@@ -132,8 +134,70 @@ by:
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 281).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
+  (line 298, "Skills/prompts versionados … plugin web/fetch").
 - Existing skills: `skills/mcp-vertex-plugin-authoring/SKILL.md`,
   `skills/mcp-vertex-failure-modes/SKILL.md`.
-- Plugin preset config: `mcp-vertex.config.json`.
-- `discover-plugins.ts`: `packages/core/src/lib/plugins/discover-plugins.ts`.
+- Plugin preset config: `mcp-vertex.config.json`,
+  `packages/core/src/lib/plugins/parse-cli-args.ts` (`PLUGIN_PRESETS`).
+
+## rationale
+
+Design decisions not obvious from the slices above:
+
+- **`@mcp-vertex/web-fetch`, not `@mcp-vertex/web`**: the proposal's literal
+  package name `@mcp-vertex/web` collides with the pre-existing `apps/web`
+  workspace (the Astro docs site), which `bun install` rejects outright
+  ("Workspace name already exists"). Renamed the npm package AND the
+  plugin's registered `name` to `web-fetch` — `--plugins=<name>` resolves a
+  bare specifier to `@mcp-vertex/<name>` first
+  (`resolvePluginSpecifier` in `packages/core/src/lib/plugins/load-plugins.ts`),
+  so `--plugins=web` would never find this package if only the npm name
+  changed. Tool names are unaffected either way (`namespacePrefix` defaults
+  to the plugin's own name, e.g. `web-fetch_web_fetch` — same convention as
+  `docs_docs_list`).
+- **Flat `z.object` output schema, not `z.discriminatedUnion`**: the first
+  implementation modelled `web_fetch`'s success/failure as a
+  `z.discriminatedUnion('ok', [...])`, which type-checks fine but breaks at
+  *runtime* — the installed `@modelcontextprotocol/sdk`'s `outputSchema`
+  compat layer (`normalizeObjectSchema` in its `zod-compat.js`) only
+  recognises plain `z.object` schemas (checks for a top-level `.shape`); a
+  discriminated union has none, so the SDK silently resolves the schema to
+  `undefined` and then crashes inside its own parse helper on the next
+  call (`"undefined is not an object (evaluating 's._zod')"` — an SDK
+  internal error, not a Zod validation error, which made it easy to miss
+  without an actual end-to-end tool-call smoke test). Fixed by flattening
+  to one `z.object` with optional fields for both branches, matching every
+  other tool in the repo (`buildMetricsToolRegistration`,
+  `buildDocsToolRegistrations`). **This is a load-bearing constraint for
+  any future tool in this repo: `outputSchema` must be a flat `z.object`,
+  never a union/discriminated-union/intersection** — worth a callout in
+  `mcp-vertex-plugin-authoring/SKILL.md` as a follow-up.
+- **`PLUGIN_PRESETS` left untouched, no `web-fetch` entry added**: the
+  proposal's S3 said "add `web` to the `swarm` preset as opt-in", but
+  `parse-cli-args.ts`'s own comment establishes the actual convention: an
+  opt-in, side-effecting capability (the precedent is `audit`) is
+  deliberately **not** added to any preset, including `swarm` — a user
+  opts in explicitly with `--plugins=web-fetch`. Following the proposal's
+  literal instruction would have contradicted the codebase's own
+  documented invariant; followed the invariant instead.
+- **`tools/scripts/types/generate-tool-types.script.ts` + `emit-tool-types.ts`
+  updated to harvest `web-fetch`**: this generator hardcodes its plugin
+  list (no dynamic discovery), so a new plugin's `outputSchema` is silently
+  excluded from the generated SDK (`src/generated/tool-outputs.ts`) unless
+  added explicitly to both `PLUGIN_SPECIFIERS`/`PLUGIN_LIST` (generator) and
+  `PACKAGE_ROUTES` (emitter) — not part of any reserved file for another
+  in-flight proposal, so this is a safe, additive 3-line change per file.
+- **No `discover-plugins.ts`**: the proposal's notes reference
+  `packages/core/src/lib/plugins/discover-plugins.ts`, which does not exist
+  in this codebase (likely stale from an earlier draft). Plugin discovery
+  is purely `resolvePluginSpecifier` + dynamic `import()` in
+  `load-plugins.ts`; no separate discovery module to wire into.
+- **`skills/manifest.json` is additive to, not a replacement for,
+  `apps/web/scripts/gen-skills.ts`**: that script already scans `skills/`
+  for `SKILL.md` files and regenerates the doc site's catalogue dynamically
+  (no manifest needed for that path). `manifest.json` adds the *version*
+  axis (`version` + `minCoreVersion` per skill) that the dynamic scan does
+  not and cannot infer from the filesystem alone — the two coexist by
+  design, per `f00029`'s own framing as "version-pinning contract", not a
+  new discovery mechanism.

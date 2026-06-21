@@ -80,6 +80,14 @@ export interface IProposalIdAllocatorOptions {
  * returns a number lower than what's already on disk for that prefix —
  * the seed-from-disk step guarantees that even on a counter file that's
  * missing or predates some legacy proposals.
+ *
+ * IDs are formatted as padded 5-digit numbers (f00001, f00014, …) to
+ * align with the f00023 "renumber with padding" rule, which the linter
+ * enforces for new proposals going forward. Legacy 3-digit ids remain
+ * accepted on read (the linter regex is `^[a-z]\d{3,}$`) but the
+ * allocator never produces them — it always emits the canonical
+ * padded form so the on-disk set is monotonically migrating to
+ * f00023-compliant names.
  */
 export const allocateNextProposalId = async (
 	prefix: string,
@@ -93,7 +101,7 @@ export const allocateNextProposalId = async (
 		const next = (counters[prefix] ?? 0) + 1;
 		counters[prefix] = next;
 		await writeFileAtomic(options.counterPathAbs, JSON.stringify(counters));
-		return `${prefix}${next}`;
+		return `${prefix}${String(next).padStart(5, '0')}`;
 	});
 
 /** Resolves a kind name (`'feat'`, `'fix'`, …) to its single-letter prefix, or `null` if unknown. */

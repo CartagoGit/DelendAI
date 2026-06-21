@@ -25,7 +25,7 @@ describe('allocateNextProposalId (f00016 S13)', () => {
 			proposalsDirAbs: root,
 			counterPathAbs,
 		});
-		expect(id).toBe('f1');
+		expect(id).toBe('f00001');
 	});
 
 	it('seeds from disk, taking the max existing number per prefix (legacy + f00016 already there)', async () => {
@@ -40,13 +40,14 @@ describe('allocateNextProposalId (f00016 S13)', () => {
 			proposalsDirAbs: root,
 			counterPathAbs,
 		});
-		expect(id).toBe('f00014');
+		// Max f-id on disk is 16, so the next allocation is 17, padded.
+		expect(id).toBe('f00017');
 		// A different prefix's seed is independent and unaffected.
 		const idForX = await allocateNextProposalId('x', {
 			proposalsDirAbs: root,
 			counterPathAbs,
 		});
-		expect(idForX).toBe('x1');
+		expect(idForX).toBe('x00001');
 	});
 
 	it('increments sequentially across repeated calls, no gaps', async () => {
@@ -59,7 +60,7 @@ describe('allocateNextProposalId (f00016 S13)', () => {
 				}),
 			);
 		}
-		expect(ids).toEqual(['a1', 'a2', 'a3', 'a4', 'a5']);
+		expect(ids).toEqual(['a00001', 'a00002', 'a00003', 'a00004', 'a00005']);
 	});
 
 	it('keeps each prefix on its own independent sequence', async () => {
@@ -75,7 +76,7 @@ describe('allocateNextProposalId (f00016 S13)', () => {
 			proposalsDirAbs: root,
 			counterPathAbs,
 		});
-		expect([f1, x1, f2]).toEqual(['f1', 'x1', 'f2']);
+		expect([f1, x1, f2]).toEqual(['f00001', 'x00001', 'f00002']);
 	});
 
 	it('is race-safe: N concurrent calls for the same prefix produce N distinct, sequential ids', async () => {
