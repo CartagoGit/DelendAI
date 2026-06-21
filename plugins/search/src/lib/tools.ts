@@ -35,7 +35,7 @@ export const buildSearchToolRegistrations = (
 					`${prefix}_search`,
 					{
 						description:
-							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Low-token: results and per-line previews are capped.',
+							'Search the workspace text files and return matching {file,line,text} hits. `query` is a substring by default, or a JS regex with regex:true. Narrow by path with `include`/`exclude` globs (e.g. "src/**/*.ts"). Pass `context: N` (0-10) for N lines before/after each hit. Pass `preferRg: true` to use the `rg` (ripgrep) binary when available — faster on huge repos; silently falls back to the built-in walker otherwise (see `usedRg`/`rgFallbackReason`). Low-token: results and per-line previews are capped.',
 						inputSchema: z.object({
 							query: z.string(),
 							roots: z.array(z.string()).optional(),
@@ -44,17 +44,23 @@ export const buildSearchToolRegistrations = (
 							regex: z.boolean().optional(),
 							include: z.array(z.string()).optional(),
 							exclude: z.array(z.string()).optional(),
+							context: z.number().int().min(0).max(10).optional(),
+							preferRg: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
 							query: z.string(),
 							count: z.number(),
 							truncated: z.boolean(),
 							scanned: z.number(),
+							usedRg: z.boolean(),
+							rgFallbackReason: z.string().optional(),
 							hits: z.array(
 								z.object({
 									file: z.string(),
 									line: z.number(),
 									text: z.string(),
+									before: z.array(z.string()).optional(),
+									after: z.array(z.string()).optional(),
 								}),
 							),
 						}),
@@ -67,6 +73,8 @@ export const buildSearchToolRegistrations = (
 						regex?: boolean | undefined;
 						include?: string[] | undefined;
 						exclude?: string[] | undefined;
+						context?: number | undefined;
+						preferRg?: boolean | undefined;
 					}) => {
 						try {
 							const result = await searchWorkspace(
@@ -92,6 +100,12 @@ export const buildSearchToolRegistrations = (
 									...(args.exclude
 										? { exclude: args.exclude }
 										: {}),
+									...(args.context !== undefined
+										? { context: args.context }
+										: {}),
+									...(args.preferRg !== undefined
+										? { preferRg: args.preferRg }
+										: {}),
 								},
 							);
 							return toolJson({
@@ -99,6 +113,13 @@ export const buildSearchToolRegistrations = (
 								count: result.hits.length,
 								truncated: result.truncated,
 								scanned: result.scanned,
+								usedRg: result.usedRg,
+								...(result.rgFallbackReason !== undefined
+									? {
+											rgFallbackReason:
+												result.rgFallbackReason,
+										}
+									: {}),
 								hits: result.hits,
 							});
 						} catch (err) {

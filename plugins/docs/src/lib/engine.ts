@@ -143,6 +143,93 @@ export interface IDocContent {
 	readonly found: boolean;
 }
 
+export interface IDocSearchHit {
+	readonly path: string;
+	readonly title: string;
+	readonly score: number;
+	/** ≤ `SNIPPET_MAX_CHARS` chars of context around the first match. */
+	readonly snippet: string;
+}
+
+const SNIPPET_MAX_CHARS = 200;
+const SNIPPET_CONTEXT_CHARS = 80;
+const TITLE_HIT_WEIGHT = 3;
+
+const countOccurrences = (haystack: string, needle: string): number => {
+	if (needle.length === 0) return 0;
+	let count = 0;
+	let from = 0;
+	for (;;) {
+		const idx = haystack.indexOf(needle, from);
+		if (idx < 0) break;
+		count += 1;
+		from = idx + needle.length;
+	}
+	return count;
+};
+
+/**
+ * Snippet of ≤ {@link SNIPPET_MAX_CHARS} chars centred on the first
+ * case-insensitive match of `query` in `body`. Falls back to the start of
+ * the body when there's no literal hit (e.g. the match came only from the
+ * title) so the caller always gets a preview, never an empty string.
+ */
+const snippetAround = (body: string, query: string): string => {
+	const lower = body.toLowerCase();
+	const idx = query.length > 0 ? lower.indexOf(query.toLowerCase()) : -1;
+	const center = idx >= 0 ? idx : 0;
+	const start = Math.max(0, center - SNIPPET_CONTEXT_CHARS);
+	const end = Math.min(
+		body.length,
+		center + Math.max(query.length, 1) + SNIPPET_CONTEXT_CHARS,
+	);
+	const slice = body.slice(start, end).replace(/\s+/g, ' ').trim();
+	const prefix = start > 0 ? '… ' : '';
+	const suffix = end < body.length ? ' …' : '';
+	const framed = `${prefix}${slice}${suffix}`;
+	return framed.length > SNIPPET_MAX_CHARS
+		? `${framed.slice(0, SNIPPET_MAX_CHARS - 1)}…`
+		: framed;
+};
+
+/**
+ * Rank-search the project's markdown docs by a free-text query. Reuses
+ * {@link listDocs}'s catalogue (same roots/extensions/containment guard)
+ * and scores each doc by `(titleHits * 3) + bodyHits` — a linear scan,
+ * which is the documented, accepted limit at the 10-50 doc scale this
+ * plugin targets (see f00028 R3). Read-only; never writes.
+ */
+export const searchDocs = async (
+	workspaceRootAbs: string,
+	query: string,
+	options: IDocsOptions & { readonly limit?: number } = {},
+): Promise<{ hits: IDocSearchHit[]; truncated: boolean }> => {
+	const trimmed = query.trim();
+	if (trimmed.length === 0) return { hits: [], truncated: false };
+	const limit = clamp(options.limit, 10, 1, 100);
+
+	const { docs, truncated } = await listDocs(workspaceRootAbs, options);
+	const needle = trimmed.toLowerCase();
+
+	const hits: IDocSearchHit[] = [];
+	for (const doc of docs) {
+		const titleHits = countOccurrences(doc.title.toLowerCase(), needle);
+		const { content } = await readDoc(workspaceRootAbs, doc.path);
+		const bodyHits = countOccurrences(content.toLowerCase(), needle);
+		const score = titleHits * TITLE_HIT_WEIGHT + bodyHits;
+		if (score <= 0) continue;
+		hits.push({
+			path: doc.path,
+			title: doc.title,
+			score,
+			snippet: snippetAround(content, trimmed),
+		});
+	}
+
+	hits.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
+	return { hits: hits.slice(0, limit), truncated };
+};
+
 /**
  * Read one doc by its workspace-relative path. Refuses paths that escape
  * the workspace root (no `..` traversal). Content is capped.

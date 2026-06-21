@@ -10,8 +10,10 @@ import {
 import type { IToolTextResult } from '@mcp-vertex/core/public';
 
 import {
+	exportNotes,
 	getMaxNotes,
 	deriveNoteId,
+	importNotes,
 	readStore,
 	recall,
 	removeNote,
@@ -323,6 +325,117 @@ export const buildMemoryToolRegistrations = (
 										'Call memory_list to see ids.',
 									);
 						}),
+				);
+			},
+		},
+		{
+			id: 'export',
+			summary: 'Export the full note store as a JSON or NDJSON snapshot.',
+			tags: ['memory'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_export`,
+					{
+						description:
+							'Export the full note store as a portable snapshot. `format: "json"` returns one { notes: [...] } document; `"ndjson"` returns one JSON object per line (streamable, diff-friendly). Expired notes are excluded unless `includeExpired: true`. Pair with memory_import to move notes between workspaces or take a backup.',
+						inputSchema: z.object({
+							format: z.enum(['json', 'ndjson']).optional(),
+							includeExpired: z.boolean().optional(),
+						}),
+						outputSchema: z.object({
+							ok: z.literal(true),
+							format: z.enum(['json', 'ndjson']),
+							payload: z.string(),
+							count: z.number(),
+						}),
+					},
+					async (args: {
+						format?: 'json' | 'ndjson' | undefined;
+						includeExpired?: boolean | undefined;
+					}) =>
+						guardCorrupt(async () => {
+							const format = args.format ?? 'json';
+							const { payload, count } = await exportNotes(
+								options.storePathAbs,
+								{
+									format,
+									...(args.includeExpired !== undefined
+										? {
+												includeExpired:
+													args.includeExpired,
+											}
+										: {}),
+								},
+							);
+							return toolOk({ format, payload, count });
+						}),
+				);
+			},
+		},
+		{
+			id: 'import',
+			effects: ['write', 'destructive'],
+			summary:
+				'Import a previously exported snapshot (replace or merge).',
+			tags: ['memory'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_import`,
+					{
+						description:
+							'Import a snapshot produced by memory_export. `mode: "replace"` discards the current store first (destructive); `"merge"` (default) keeps existing notes and resolves id collisions per `conflict`: "overwrite" (incoming wins, default), "skip" (existing wins) or "merge" (union tags, longer body, newest timestamps win). Every incoming title/body/tag is redacted for secrets before it touches disk, exactly like memory_save.',
+						inputSchema: z.object({
+							payload: z.string(),
+							format: z.enum(['json', 'ndjson']).optional(),
+							mode: z.enum(['replace', 'merge']).optional(),
+							conflict: z
+								.enum(['overwrite', 'skip', 'merge'])
+								.optional(),
+						}),
+						outputSchema: z.object({
+							ok: z.literal(true),
+							imported: z.number(),
+							skipped: z.number(),
+							overwritten: z.number(),
+							merged: z.number(),
+							total: z.number(),
+							redactedSecrets: z.number(),
+						}),
+					},
+					async (args: {
+						payload: string;
+						format?: 'json' | 'ndjson' | undefined;
+						mode?: 'replace' | 'merge' | undefined;
+						conflict?: 'overwrite' | 'skip' | 'merge' | undefined;
+					}) => {
+						if (args.payload.length > 5_000_000) {
+							return toolError(
+								'payload too large (max 5MB)',
+								'Split the import into smaller batches.',
+							);
+						}
+						return guardCorrupt(async () => {
+							try {
+								const result = await importNotes(
+									options.storePathAbs,
+									args.payload,
+									{
+										format: args.format ?? 'json',
+										mode: args.mode ?? 'merge',
+										...(args.conflict !== undefined
+											? { conflict: args.conflict }
+											: {}),
+									},
+								);
+								return toolOk({ ...result });
+							} catch (err) {
+								return toolError(
+									`invalid import payload: ${err instanceof Error ? err.message : String(err)}`,
+									'Pass the exact payload returned by memory_export with a matching format.',
+								);
+							}
+						});
+					},
 				);
 			},
 		},
