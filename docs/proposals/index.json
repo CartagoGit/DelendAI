@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T02:03:36.615Z",
-	"count": 22,
+	"generated_at": "2026-06-21T03:10:00.000Z",
+	"count": 30,
 	"proposals": [
 		{
 			"id": "a1-16-06-2026- Auditoría Maestra (Unificada)",
@@ -245,12 +245,76 @@
 			"date": "2026-06-20"
 		},
 		{
+			"id": "l114",
+			"file": "paused/l114-pause-npm-publish.md",
+			"track": "docs+release",
+			"type": "proposal",
+			"status": "paused",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "l99",
 			"file": "done/l99-feat-multi-model-audit-plugin.md",
 			"track": "audit",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
+		},
+		{
+			"id": "l115",
+			"file": "ready/l115-decide-and-close-m13-security-plugin.md",
+			"track": "plugins+security",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l116",
+			"file": "ready/l116-release-provenance-via-npm-publish.md",
+			"track": "release+ci",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l117",
+			"file": "ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md",
+			"track": "skills+plugins+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l118",
+			"file": "ready/l118-harden-catchall-output-schemas.md",
+			"track": "plugins+core",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l119",
+			"file": "ready/l119-web-deep-pages-and-search.md",
+			"track": "web+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l120",
+			"file": "ready/l120-metrics-longitudinal-regression-gate.md",
+			"track": "metrics+ci",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l121",
+			"file": "ready/l121-plugins-depth-extension.md",
+			"track": "plugins",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
 		}
 	],
 	"errors": [
