@@ -102,6 +102,10 @@ const dict: LangDict = {
 		motion: 'एनिमेशन',
 		motionLabel: 'मार्की को एनिमेट करें',
 	},
+	search: {
+		title: 'खोजें',
+		placeholder: 'साइट में खोजें...',
+	},
 	footer: {
 		built: 'जीवित टूल रजिस्ट्री से जनित।',
 		tagline: 'प्रोजेक्ट-अज्ञेयवादी MCP सर्वर कोर + प्लगइन लोडर।',

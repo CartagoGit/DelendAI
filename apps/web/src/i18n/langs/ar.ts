@@ -99,6 +99,10 @@ const dict: LangDict = {
 		motion: 'الحركة',
 		motionLabel: 'تحريك الأشرطة',
 	},
+	search: {
+		title: 'بحث',
+		placeholder: 'البحث في الموقع...',
+	},
 	footer: {
 		built: 'مُولّد من السجل الحي للأدوات.',
 		tagline: 'نواة خادم MCP لا تعرف عن المشروع + محمّل إضافات.',

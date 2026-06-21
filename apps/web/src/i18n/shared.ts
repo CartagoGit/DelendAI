@@ -167,6 +167,11 @@ export interface ICfgTranslations {
 	readonly motionLabel: string;
 }
 
+export interface ISearchTranslations {
+	readonly title: string;
+	readonly placeholder: string;
+}
+
 export interface IFooterTranslations {
 	readonly built: string;
 	readonly tagline: string;
@@ -297,6 +302,7 @@ export interface ITranslations {
 	readonly bench: IBenchTranslations;
 	readonly plugins: IPluginsTranslations;
 	readonly cfg: ICfgTranslations;
+	readonly search: ISearchTranslations;
 	readonly footer: IFooterTranslations;
 	readonly pluginpage: IPluginPageTranslations;
 	readonly plugin: IPluginTranslations;

@@ -102,6 +102,10 @@ const dict: LangDict = {
 		motion: 'Chuyển động',
 		motionLabel: 'Hoạt họa các marquee',
 	},
+	search: {
+		title: 'Tìm kiếm',
+		placeholder: 'Tìm kiếm trên trang...',
+	},
 	footer: {
 		built: 'Sinh từ registry công cụ sống.',
 		tagline: 'Lõi máy chủ MCP không phụ thuộc dự án + bộ nạp plugin.',

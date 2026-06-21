@@ -1,0 +1,115 @@
+---
+// Search.astro — site-wide search modal, backed by Pagefind.
+//
+// Pagefind indexes the static `dist/` output after `astro build`
+// (`bun run build`/`build:strict` → `pagefind --site dist`, see
+// package.json) and ships its own UI bundle (`pagefind-ui.js`/`.css`)
+// alongside the index. We lazy-load both on first open — no search JS/WASM
+// ships to a visitor who never opens the modal — and theme the widget via
+// its `--pagefind-ui-*` CSS variables so it matches the site instead of
+// looking like a foreign component. Pagefind reads `<html lang>` (set by
+// `Base.astro`) and scopes results to that language automatically.
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div
+	class="modal"
+	id="search-modal"
+	role="dialog"
+	aria-modal="true"
+	aria-label={t.search.title}
+	hidden
+	transition:persist
+	transition:name="search-modal"
+>
+	<div class="modal__backdrop" data-search-close></div>
+	<div class="modal__panel modal__panel--search">
+		<div class="modal__head">
+			<h2>{t.search.title}</h2>
+			<button class="modal__close" data-search-close aria-label="Close">×</button>
+		</div>
+		<div id="search-pagefind" data-pf-lang={lang} data-pf-placeholder={t.search.placeholder}></div>
+	</div>
+</div>
+
+<script define:vars={{ base: import.meta.env.BASE_URL.replace(/\/$/, '') }}>
+	// Settings-modal pattern (Config.astro): re-runs after every Astro view
+	// transition, AbortController revokes the previous listener batch.
+	let searchAbort;
+	let pagefindReady;
+
+	const loadPagefind = () => {
+		if (pagefindReady) return pagefindReady;
+		pagefindReady = new Promise((resolve) => {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = `${base}/pagefind/pagefind-ui.css`;
+			document.head.appendChild(link);
+
+			const script = document.createElement('script');
+			script.src = `${base}/pagefind/pagefind-ui.js`;
+			script.onload = () => resolve();
+			document.head.appendChild(script);
+		});
+		return pagefindReady;
+	};
+
+	const setupSearch = () => {
+		searchAbort?.abort();
+		searchAbort = new AbortController();
+		const { signal } = searchAbort;
+
+		const modal = document.getElementById('search-modal');
+		const openBtn = document.getElementById('search-open');
+		const mount = document.getElementById('search-pagefind');
+		let widget;
+
+		const open = async () => {
+			modal?.removeAttribute('hidden');
+			modal?.classList.add('modal--open');
+			await loadPagefind();
+			if (!widget && mount && window.PagefindUI) {
+				widget = new window.PagefindUI({
+					element: mount,
+					language: mount.dataset.pfLang,
+					showSubResults: true,
+					translations: { placeholder: mount.dataset.pfPlaceholder },
+				});
+			}
+			mount?.querySelector('input')?.focus();
+		};
+		const close = () => {
+			modal?.classList.remove('modal--open');
+			window.setTimeout(() => {
+				if (!modal?.classList.contains('modal--open')) {
+					modal?.setAttribute('hidden', '');
+				}
+			}, 240);
+		};
+
+		openBtn?.addEventListener('click', open, { signal });
+		for (const el of document.querySelectorAll('[data-search-close]')) {
+			el.addEventListener('click', close, { signal });
+		}
+		document.addEventListener(
+			'keydown',
+			(e) => {
+				if (e.key === 'Escape') close();
+				if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+					e.preventDefault();
+					void open();
+				}
+			},
+			{ signal },
+		);
+	};
+
+	setupSearch();
+	document.addEventListener('astro:page-load', setupSearch);
+</script>
