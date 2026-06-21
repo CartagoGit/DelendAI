@@ -115,7 +115,7 @@ golden-schema test in S0.
       `structuredContent` for every tool (no `Record<string, unknown>`).
 - [ ] Master audit line 518 is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — Discriminated union serialises incorrectly for a specific tool**:
   S3's plan is "enumerate first, then fix" so a single failing tool doesn't
@@ -125,7 +125,7 @@ golden-schema test in S0.
   will get a compile error. This is **intentional** — the whole point of
   M24 was to make the surface typed. Documented in the changelog entry.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 518).
 - M24 guard test: `plugins/rules/tests/src/lib/plugin.spec.ts` (cited as

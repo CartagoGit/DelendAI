@@ -1,25 +1,10 @@
 {
-	"generated_at": "2026-06-21T06:26:39.455Z",
-	"count": 77,
+	"generated_at": "2026-06-21T14:30:07.737Z",
+	"count": 79,
 	"proposals": [
 		{
-			"id": "f119",
-			"file": "f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
-			"track": "proposals",
-			"type": "unspecified",
-			"status": "in_progress",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
-					"{ agent: implementation_runner, task: 's2: re-classify l99..l113 by real kind + move into done/feats|fixes/' }",
-					"{ agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }"
-				]
-			}
-		},
-		{
-			"id": "a026",
-			"file": "ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
+			"id": "a00022",
+			"file": "ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "ready",
@@ -31,24 +16,24 @@
 			}
 		},
 		{
-			"id": "f122",
-			"file": "ready/f122-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
-			"track": "proposals-plugin",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f123",
-			"file": "ready/f123-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
+			"id": "f00019",
+			"file": "ready/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
 			"track": "notification-plugin",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f125",
-			"file": "ready/f125-ide-extension-multi-ide-brand-dashboard.md",
+			"id": "f00020",
+			"file": "ready/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"track": "proposals-plugin",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00022",
+			"file": "ready/f00022-ide-extension-multi-ide-brand-dashboard.md",
 			"track": "apps+client+docs",
 			"type": "proposal",
 			"status": "ready",
@@ -71,13 +56,13 @@
 					"packages/client/src/lib/services/",
 					"docs/IDE-EXTENSION.md",
 					"docs/CROSS-IDE.md",
-					"docs/proposals/done/feats/f114-feat-ide-extension-vscode-and-friends.md"
+					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md"
 				]
 			}
 		},
 		{
-			"id": "f126",
-			"file": "ready/f126-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"id": "f00023",
+			"file": "ready/f00023-rename-proposal-ids-padded-5-digits-by-creation-date.md",
 			"track": "proposals-plugin+docs",
 			"type": "proposal",
 			"status": "ready",
@@ -91,7 +76,7 @@
 					"docs/proposals/paused/",
 					"docs/proposals/blocked/",
 					"docs/proposals/retired/",
-					"docs/proposals/RESUMEN-SESION-2026-06-17.md",
+					"docs/proposals/n00001-SESION-2026-06-17.md",
 					"scripts/lint-proposals.ts",
 					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
 					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
@@ -101,104 +86,119 @@
 			}
 		},
 		{
-			"id": "f127",
-			"file": "ready/f127-cascade-priority-by-kind-with-frontmatter-override.md",
+			"id": "f00024",
+			"file": "ready/f00024-cascade-priority-by-kind-with-frontmatter-override.md",
 			"track": "proposals-plugin+workflow",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l115",
-			"file": "done/l115-decide-and-close-m13-security-plugin.md",
-			"track": "plugins+security",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "l116",
-			"file": "done/l116-release-provenance-via-npm-publish.md",
-			"track": "release+ci",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "l117",
-			"file": "ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md",
-			"track": "skills+plugins+docs",
+			"id": "f00025",
+			"file": "ready/f00025-tools-scripts-refactor-rename-scripts-to-tools.md",
+			"track": "core+build+release+proposals+lint+i18n+site",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l118",
-			"file": "ready/l118-harden-catchall-output-schemas.md",
-			"track": "plugins+core",
+			"id": "f00026",
+			"file": "ready/f00026-ide-observability-v3.md",
+			"track": "apps+client+docs",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{"
+				]
+			}
 		},
 		{
-			"id": "l119",
-			"file": "ready/l119-web-deep-pages-and-search.md",
-			"track": "web+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "l120",
-			"file": "ready/l120-metrics-longitudinal-regression-gate.md",
+			"id": "f00027",
+			"file": "ready/f00027-metrics-longitudinal-regression-gate.md",
 			"track": "metrics+ci",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l121",
-			"file": "ready/l121-plugins-depth-extension.md",
+			"id": "f00028",
+			"file": "ready/f00028-plugins-depth-extension.md",
 			"track": "plugins",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l122",
-			"file": "ready/l122-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
-			"track": "core+plugins",
+			"id": "f00029",
+			"file": "ready/f00029-versioned-skills-prompts-and-web-fetch-plugin.md",
+			"track": "skills+plugins+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l125",
-			"file": "ready/l125-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
-			"track": "plugins+core+audit",
+			"id": "f00030",
+			"file": "ready/f00030-web-deep-pages-and-search.md",
+			"track": "web+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l126",
-			"file": "ready/l126-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
+			"id": "f00031",
+			"file": "ready/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
 			"track": "core+agents+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l127",
-			"file": "ready/l127-skills-and-tools-coverage.md",
+			"id": "f00032",
+			"file": "ready/f00032-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f119",
-			"file": "in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
+			"id": "l00008",
+			"file": "ready/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
+			"track": "plugins+core+audit",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "r00001",
+			"file": "ready/r00001-harden-catchall-output-schemas.md",
+			"track": "plugins+core",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "r00002",
+			"file": "ready/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
+			"track": "core+plugins",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00001",
+			"file": "in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
 			"track": "proposals",
 			"type": "unspecified",
 			"status": "in-progress",
@@ -206,182 +206,198 @@
 			"extras": {
 				"ownership": [
 					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
-					"{ agent: implementation_runner, task: 's2: re-classify f99..l113 by real kind + move into done/feats|fixes/' }",
-					"{ agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }"
+					"{ agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }",
+					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
 				]
 			}
 		},
 		{
-			"id": "l114",
-			"file": "paused/l114-pause-npm-publish.md",
+			"id": "c00002",
+			"file": "done/c00002-decide-and-close-m13-security-plugin.md",
+			"track": "plugins+security",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00033",
+			"file": "done/f00033-release-provenance-via-npm-publish.md",
+			"track": "release+ci",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "c00001",
+			"file": "paused/c00001-pause-npm-publish.md",
 			"track": "docs+release",
 			"type": "proposal",
 			"status": "paused",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "a001",
-			"file": "done/audits/a001-15-06-2026-codex-gpt-5-5.md",
+			"id": "a00001",
+			"file": "done/audits/a00001-14-06-2026-antigravity-claude-sonnet-4-6-thinking.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
-			"date": "2026-06-15T01:56:05Z"
+			"date": "2026-06-21T04:23:51Z"
 		},
 		{
-			"id": "a002",
-			"file": "done/audits/a002-15-06-2026-antigravity-claude-sonnet-4-6-thinking-estado-actual.md",
+			"id": "a00002",
+			"file": "done/audits/a00002-15-06-2026-antigravity-claude-sonnet-4-6-thinking-estado-actual.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-15T23:13:30Z"
 		},
 		{
-			"id": "a003",
-			"file": "done/audits/a003-15-06-2026-auditoria-unificada.md",
+			"id": "a00003",
+			"file": "done/audits/a00003-15-06-2026-antigravity-gemini-3-5-flash.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21T04:23:51Z"
+		},
+		{
+			"id": "a00004",
+			"file": "done/audits/a00004-15-06-2026-antigravity-gemini-3-5-flash-estado-actual.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21T04:23:51Z"
+		},
+		{
+			"id": "a00005",
+			"file": "done/audits/a00005-15-06-2026-auditoria-unificada.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:35:52Z"
 		},
 		{
-			"id": "a004",
-			"file": "done/audits/a004-16-06-2026-antigravity-claude-sonnet-4-6-thinking-previa.md",
+			"id": "a00006",
+			"file": "done/audits/a00006-15-06-2026-claude-code-opus-4-8.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21T04:23:51Z"
+		},
+		{
+			"id": "a00007",
+			"file": "done/audits/a00007-15-06-2026-codex-gpt-5-5.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-15T01:56:05Z"
+		},
+		{
+			"id": "a00008",
+			"file": "done/audits/a00008-16-06-2026-antigravity-claude-sonnet-4-6-thinking.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a005",
-			"file": "done/audits/a005-16-06-2026-antigravity-claude-sonnet-4-6-thinking.md",
+			"id": "a00009",
+			"file": "done/audits/a00009-16-06-2026-antigravity-claude-sonnet-4-6-thinking-previa.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a006",
-			"file": "done/audits/a006-16-06-2026-antigravity-gemini-3-5-flash-previa-exhaustiva.md",
+			"id": "a00010",
+			"file": "done/audits/a00010-16-06-2026-antigravity-gemini-3-5-flash.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a007",
-			"file": "done/audits/a007-16-06-2026-antigravity-gemini-3-5-flash-previa-unificada.md",
+			"id": "a00011",
+			"file": "done/audits/a00011-16-06-2026-antigravity-gemini-3-5-flash-previa-exhaustiva.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a008",
-			"file": "done/audits/a008-16-06-2026-antigravity-gemini-3-5-flash.md",
+			"id": "a00012",
+			"file": "done/audits/a00012-16-06-2026-antigravity-gemini-3-5-flash-previa-unificada.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a009",
-			"file": "done/audits/a009-16-06-2026-claude-code-opus-4-8.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-16T23:43:13Z"
-		},
-		{
-			"id": "a010",
-			"file": "done/audits/a010-16-06-2026-codex-gpt-5-auditoria-exhaustiva.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-16T23:43:13Z"
-		},
-		{
-			"id": "a011",
-			"file": "done/audits/a011-17-06-2026-auditoria-independiente-github-copilot-minimax-m3.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-17T12:51:25Z"
-		},
-		{
-			"id": "a012",
-			"file": "done/audits/a012-17-06-2026-claude-code-opus-4-8-estado-actual.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-17T18:18:00Z"
-		},
-		{
-			"id": "a013",
-			"file": "done/audits/a013-18-06-2026-auditoria-agnostica-codex-gpt-5.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-18T08:39:00Z"
-		},
-		{
-			"id": "a014",
-			"file": "done/audits/a014-18-06-2026-auditoria-agnostica-gpt-5-4.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-18T08:39:00Z"
-		},
-		{
-			"id": "a015",
-			"file": "done/audits/a015-18-06-2026-auditoria-agnostica-estado-actual.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-18T08:39:00Z"
-		},
-		{
-			"id": "a016",
-			"file": "done/audits/a016-16-06-2026-auditoria-maestra-unificada.md",
+			"id": "a00013",
+			"file": "done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21T01:23:10Z"
 		},
 		{
-			"id": "a017",
-			"file": "done/audits/a017-14-06-2026-antigravity-claude-sonnet-4-6-thinking.md",
+			"id": "a00014",
+			"file": "done/audits/a00014-16-06-2026-claude-code-opus-4-8.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
-			"date": "2026-06-21T04:23:51Z"
+			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a018",
-			"file": "done/audits/a018-15-06-2026-antigravity-gemini-3-5-flash-estado-actual.md",
+			"id": "a00015",
+			"file": "done/audits/a00015-16-06-2026-codex-gpt-5-auditoria-exhaustiva.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
-			"date": "2026-06-21T04:23:51Z"
+			"date": "2026-06-16T23:43:13Z"
 		},
 		{
-			"id": "a019",
-			"file": "done/audits/a019-15-06-2026-antigravity-gemini-3-5-flash.md",
+			"id": "a00016",
+			"file": "done/audits/a00016-17-06-2026-auditoria-independiente-github-copilot-minimax-m3.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
-			"date": "2026-06-21T04:23:51Z"
+			"date": "2026-06-17T12:51:25Z"
 		},
 		{
-			"id": "a020",
-			"file": "done/audits/a020-15-06-2026-claude-code-opus-4-8.md",
+			"id": "a00017",
+			"file": "done/audits/a00017-17-06-2026-claude-code-opus-4-8-estado-actual.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
-			"date": "2026-06-21T04:23:51Z"
+			"date": "2026-06-17T18:18:00Z"
 		},
 		{
-			"id": "a021",
-			"file": "done/audits/a021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"id": "a00018",
+			"file": "done/audits/a00018-18-06-2026-auditoria-agnostica-codex-gpt-5.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-18T08:39:00Z"
+		},
+		{
+			"id": "a00019",
+			"file": "done/audits/a00019-18-06-2026-auditoria-agnostica-estado-actual.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-18T08:39:00Z"
+		},
+		{
+			"id": "a00020",
+			"file": "done/audits/a00020-18-06-2026-auditoria-agnostica-gpt-5-4.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-18T08:39:00Z"
+		},
+		{
+			"id": "a00021",
+			"file": "done/audits/a00021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -393,8 +409,8 @@
 			}
 		},
 		{
-			"id": "a022",
-			"file": "done/audits/a022-21-06-2026-copilot-minimax-m3-repositorio.md",
+			"id": "a00023",
+			"file": "done/audits/a00023-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -406,8 +422,8 @@
 			}
 		},
 		{
-			"id": "a023",
-			"file": "done/audits/a023-21-06-2026-copilot-gpt-5-4-repositorio.md",
+			"id": "a00024",
+			"file": "done/audits/a00024-21-06-2026-copilot-gpt-5-4-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -419,8 +435,8 @@
 			}
 		},
 		{
-			"id": "a024",
-			"file": "done/audits/a024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
+			"id": "a00025",
+			"file": "done/audits/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
 			"track": "metrics+plugins+workflow",
 			"type": "unspecified",
 			"status": "done",
@@ -433,8 +449,8 @@
 			}
 		},
 		{
-			"id": "a025",
-			"file": "done/audits/a025-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
+			"id": "a00026",
+			"file": "done/audits/a00026-21-06-2026-copilot-minimax-m3-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -446,88 +462,161 @@
 			}
 		},
 		{
-			"id": "f100",
-			"file": "done/feats/f100-website-i18n-and-docs-rewrite.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f101",
-			"file": "done/feats/f101-web-header-transitions-and-full-capabilities-surface.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f102",
-			"file": "done/feats/f102-keep-legacy-default-false.md",
-			"track": "core+scaffold",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f103",
-			"file": "done/feats/f103-loop-detection-and-handoff.md",
-			"track": "runtime+coordination",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f104",
-			"file": "done/feats/f104-feat-status-marker-plugin.md",
-			"track": "agent-contract",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f107",
-			"file": "done/feats/f107-multilang-quality-gates.md",
-			"track": "core+quality+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "f108",
-			"file": "done/feats/f108-feat-test-convention-plugin.md",
-			"track": "core+plugin+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "f109",
-			"file": "done/feats/f109-feat-auto-work-persist-modes.md",
-			"track": "plugin",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "f110",
-			"file": "done/feats/f110-residual-p100-web-and-i18n.md",
-			"track": "web+i18n",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "f112",
-			"file": "done/feats/f112-derive-site-manifests-and-local-aliases.md",
+			"id": "f00002",
+			"file": "done/feats/f00002-derive-site-manifests-and-local-aliases.md",
 			"track": "web",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "f113",
-			"file": "done/feats/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
+			"id": "f00003",
+			"file": "done/feats/f00003-feat-auto-work-persist-modes.md",
+			"track": "plugin",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "f00004",
+			"file": "done/feats/f00004-feat-multi-model-audit-plugin.md",
+			"track": "audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00005",
+			"file": "done/feats/f00005-feat-status-marker-plugin.md",
+			"track": "agent-contract",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00006",
+			"file": "done/feats/f00006-feat-test-convention-plugin.md",
+			"track": "core+plugin+web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "f00007",
+			"file": "done/feats/f00007-keep-legacy-default-false.md",
+			"track": "core+scaffold",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00008",
+			"file": "done/feats/f00008-loop-detection-and-handoff.md",
+			"track": "runtime+coordination",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00009",
+			"file": "done/feats/f00009-multilang-quality-gates.md",
+			"track": "core+quality+web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "f00010",
+			"file": "done/feats/f00010-residual-p100-web-and-i18n.md",
+			"track": "web+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "f00011",
+			"file": "done/feats/f00011-web-header-transitions-and-full-capabilities-surface.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00012",
+			"file": "done/feats/f00012-website-i18n-and-docs-rewrite.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00013",
+			"file": "done/feats/f00013-adopt-core-migrations-for-agent-registry.md",
+			"track": "proposals+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00014",
+			"file": "done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
+			"track": "apps+client+docs",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-20",
+			"extras": {
+				"ownership": ["{", "{", "{", "{"],
+				"reservedFiles": [
+					"packages/client/",
+					"apps/vscode/",
+					"apps/vscode/.vscodeignore",
+					"apps/vscode/package.json",
+					"apps/vscode/src/extension.ts",
+					"apps/vscode/src/providers/",
+					"apps/vscode/src/commands/",
+					"apps/vscode/src/views/",
+					"apps/vscode/src/test/",
+					"apps/vscode/src/i18n/",
+					"apps/vscode/README.md",
+					"apps/vscode/CHANGELOG.md",
+					"docs/IDE-EXTENSION.md"
+				]
+			}
+		},
+		{
+			"id": "f00015",
+			"file": "done/feats/f00015-feat-mcp-logs-plugin.md",
+			"track": "plugins+notification+memory+web+docs",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-20",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: \"S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot\" }",
+					"{ agent: implementation_runner, task: \"S2: tool-registry hook for started/completed/failed/timed_out capture\" }",
+					"{ agent: implementation_runner, task: \"S3: subscribe to notifications/message bus + normalize events + correlate claim→started→completed chain\" }",
+					"{ agent: implementation_runner, task: \"S4: 5 tools (logs_query, logs_tail, logs_subscribe, logs_correlate, logs_redact_test) + specs\" }",
+					"{ agent: implementation_runner, task: \"S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f00016 S10)\" }",
+					"{ agent: implementation_runner, task: \"S6: acceptance — bun run validate green\" }"
+				],
+				"reservedFiles": [
+					"plugins/logs/",
+					"plugins/logs/src/",
+					"plugins/logs/tests/",
+					"plugins/logs/package.json",
+					"plugins/logs/README.md",
+					".cache/mcp-vertex/logs/",
+					"apps/web/src/pages/status/logs.astro",
+					"apps/web/src/components/logs/",
+					"apps/web/src/pages/api/events/logs.ts",
+					"apps/web/src/i18n/langs/",
+					"docs/LOGS.md"
+				]
+			}
+		},
+		{
+			"id": "f00016",
+			"file": "done/feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
 			"track": "proposals+core+web+notification",
 			"type": "unspecified",
 			"status": "done",
@@ -567,209 +656,144 @@
 			}
 		},
 		{
-			"id": "f114",
-			"file": "done/feats/f114-feat-ide-extension-vscode-and-friends.md",
-			"track": "apps+client+docs",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-20",
-			"extras": {
-				"ownership": ["{", "{", "{", "{"],
-				"reservedFiles": [
-					"packages/client/",
-					"apps/vscode/",
-					"apps/vscode/.vscodeignore",
-					"apps/vscode/package.json",
-					"apps/vscode/src/extension.ts",
-					"apps/vscode/src/providers/",
-					"apps/vscode/src/commands/",
-					"apps/vscode/src/views/",
-					"apps/vscode/src/test/",
-					"apps/vscode/src/i18n/",
-					"apps/vscode/README.md",
-					"apps/vscode/CHANGELOG.md",
-					"docs/IDE-EXTENSION.md"
-				]
-			}
-		},
-		{
-			"id": "f115",
-			"file": "done/feats/f115-feat-mcp-logs-plugin.md",
-			"track": "plugins+notification+memory+web+docs",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-20",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: \"S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot\" }",
-					"{ agent: implementation_runner, task: \"S2: tool-registry hook for started/completed/failed/timed_out capture\" }",
-					"{ agent: implementation_runner, task: \"S3: subscribe to notifications/message bus + normalize events + correlate claim→started→completed chain\" }",
-					"{ agent: implementation_runner, task: \"S4: 5 tools (logs_query, logs_tail, logs_subscribe, logs_correlate, logs_redact_test) + specs\" }",
-					"{ agent: implementation_runner, task: \"S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f113 S10)\" }",
-					"{ agent: implementation_runner, task: \"S6: acceptance — bun run validate green\" }"
-				],
-				"reservedFiles": [
-					"plugins/logs/",
-					"plugins/logs/src/",
-					"plugins/logs/tests/",
-					"plugins/logs/package.json",
-					"plugins/logs/README.md",
-					".cache/mcp-vertex/logs/",
-					"apps/web/src/pages/status/logs.astro",
-					"apps/web/src/components/logs/",
-					"apps/web/src/pages/api/events/logs.ts",
-					"apps/web/src/i18n/langs/",
-					"docs/LOGS.md"
-				]
-			}
-		},
-		{
-			"id": "f116",
-			"file": "done/feats/f116-proposals-output-schema-hardening.md",
+			"id": "f00017",
+			"file": "done/feats/f00017-proposals-output-schema-hardening.md",
 			"track": "proposals+tooling",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f117",
-			"file": "done/feats/f117-adopt-core-migrations-for-agent-registry.md",
-			"track": "proposals+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f118",
-			"file": "done/feats/f118-rules-compact-findings.md",
+			"id": "f00018",
+			"file": "done/feats/f00018-rules-compact-findings.md",
 			"track": "rules+quality",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f99",
-			"file": "done/feats/f99-feat-multi-model-audit-plugin.md",
-			"track": "audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "x105",
-			"file": "done/fixes/x105-web-bugfixes-and-ux-overhaul.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "x106",
-			"file": "done/fixes/x106-fix-gen-skills-recursion.md",
-			"track": "web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "x111",
-			"file": "done/fixes/x111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
-			"track": "core+proposals",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "x113",
-			"file": "done/fixes/x113-fix-audit-types.md",
+			"id": "x00001",
+			"file": "done/fixes/x00001-fix-audit-types.md",
 			"track": "plugins",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-20"
 		},
 		{
-			"id": "x122",
-			"file": "done/fixes/x122-web-ui-bugfixes.md",
+			"id": "x00002",
+			"file": "done/fixes/x00002-fix-gen-skills-recursion.md",
+			"track": "web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "x00003",
+			"file": "done/fixes/x00003-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
+			"track": "core+proposals",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "x00004",
+			"file": "done/fixes/x00004-web-bugfixes-and-ux-overhaul.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "x00005",
+			"file": "done/fixes/x00005-web-ui-bugfixes.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "x123",
-			"file": "done/fixes/x123-fix-host-zombie-on-parent-exit.md",
+			"id": "x00006",
+			"file": "done/fixes/x00006-fix-host-zombie-on-parent-exit.md",
 			"track": "core+host",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "x124",
-			"file": "done/fixes/x124-web-ui-bugfixes-round-2.md",
+			"id": "x00007",
+			"file": "done/fixes/x00007-web-ui-bugfixes-round-2.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "x125",
-			"file": "done/fixes/x125-missing-plugin-logos.md",
+			"id": "x00008",
+			"file": "done/fixes/x00008-missing-plugin-logos.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "n001",
-			"file": "done/resumes/n001-15-06-2026-resumen-sesion-autonoma-claude-code.md",
+			"id": "x00009",
+			"file": "done/fixes/x00009-web-ui-polish-round-3.md",
+			"track": "web+ui",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "n00001",
+			"file": "done/resumes/n00001-15-06-2026-resumen-sesion-autonoma-claude-code.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-15"
 		},
 		{
-			"id": "n002",
-			"file": "done/resumes/n002-15-06-2026-resumen-sesion-oficina-claude-code.md",
+			"id": "n00002",
+			"file": "done/resumes/n00002-15-06-2026-resumen-sesion-oficina-claude-code.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-15"
 		},
 		{
-			"id": "n003",
-			"file": "done/resumes/n003-16-06-2026-resumen-sesion-2a-ronda-claude-code.md",
+			"id": "n00003",
+			"file": "done/resumes/n00003-16-06-2026-resumen-sesion-2a-ronda-claude-code.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-15"
 		},
 		{
-			"id": "n004",
-			"file": "done/resumes/n004-16-06-2026-resumen-sesion-3a-ronda-claude-code.md",
+			"id": "n00004",
+			"file": "done/resumes/n00004-16-06-2026-resumen-sesion-3a-ronda-claude-code.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16"
 		},
 		{
-			"id": "n005",
-			"file": "done/resumes/n005-16-06-2026-resumen-sesion-4a-ronda-claude-code.md",
+			"id": "n00005",
+			"file": "done/resumes/n00005-16-06-2026-resumen-sesion-4a-ronda-claude-code.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-16"
 		},
 		{
-			"id": "n006",
-			"file": "done/resumes/n006-17-06-2026-resumen-sesion-handoff-copilot.md",
+			"id": "n00006",
+			"file": "done/resumes/n00006-17-06-2026-resumen-sesion-handoff-copilot.md",
 			"track": "general",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-17"
 		},
 		{
-			"id": "n007",
-			"file": "done/resumes/n007-resume-kind-handoff-summaries.md",
+			"id": "n00007",
+			"file": "done/resumes/n00007-resume-kind-handoff-summaries.md",
 			"track": "proposals",
 			"type": "unspecified",
 			"status": "done",
@@ -778,7 +802,7 @@
 				"ownership": [
 					"{ agent: implementation_runner, task: 's1: add resume kind (prefix n) to glossary + authoring tool enum' }",
 					"{ agent: implementation_runner, task: 's2: scaffold this proposal in ready/ with canonical sections' }",
-					"{ agent: implementation_runner, task: 's3: move 6 RESUMEN-SESION-*.md into done/resumes/ with n001..n006 chronological numbering' }",
+					"{ agent: implementation_runner, task: 's3: move 6 n00001-SESION-*.md into done/resumes/ with n00001..n00006 chronological numbering' }",
 					"{ agent: implementation_runner, task: 's4: update done/README.md to document the new bucket + answer the docsDir question' }",
 					"{ agent: implementation_runner, task: 's5: sync proposals index + run full validate (typecheck, lint, tests, lint:proposals)' }"
 				]

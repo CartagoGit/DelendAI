@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 // It is imported relatively so its pure flag-parsing logic is unit-tested and
 // typechecked alongside the rest of the monorepo. `main()` itself stays
 // untested by design (fs + spawn shell — see scripts/release.ts header).
-import { parseFlags } from '../../../scripts/release';
+import { parseFlags } from '../../../tools/scripts/release/release.script';
 
 describe('parseFlags (f00033 — release provenance)', () => {
 	it('defaults to --tool=bun and --provenance=false', () => {

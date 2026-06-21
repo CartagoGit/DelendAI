@@ -355,7 +355,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 - [ ] `git ls-files apps/vscode/ | grep '\\.vsix$'` devuelve vacío.
 - [ ] `packages/client/README.md` existe.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — `git_commit` + `git_push` rompen la postura read-only del
   plugin `git`**: documentado en el slice s9; el helper vive en
@@ -384,7 +384,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   al resto por nombre. No hay skill "raíz" que crezca
   indefinidamente.
 
-## Linked references
+## notes
 
 - `f00028-plugins-depth-extension.md` (search/memory/docs depth) — **complementaria**, no solapada.
 - `r00001-harden-catchall-output-schemas.md` (outputSchema shape) — **complementaria**, esta propuesta aplica el patrón a tools nuevos.

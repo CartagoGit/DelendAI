@@ -38,10 +38,10 @@ import { fileURLToPath } from 'node:url';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
-} from '../plugins/proposals/src/lib/proposals/frontmatter-parser';
-import { STATUS_TO_FOLDER } from '../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
-import { createGitRunner } from '../plugins/proposals/src/lib/shared/git-runner';
-import type { IGitRunner } from '../plugins/proposals/src/lib/shared/git-runner';
+} from '../../plugins/proposals/src/lib/proposals/frontmatter-parser';
+import { STATUS_TO_FOLDER } from '../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
+import { createGitRunner } from '../../plugins/proposals/src/lib/shared/git-runner';
+import type { IGitRunner } from '../../plugins/proposals/src/lib/shared/git-runner';
 
 interface IStatusMapping {
 	readonly status: string;

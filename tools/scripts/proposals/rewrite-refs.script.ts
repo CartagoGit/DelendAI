@@ -16,7 +16,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { planMigration } from './migrate-legacy-proposals';
+import { planMigration } from './migrate-legacy.script';
 
 const SEARCH_EXTENSIONS = new Set(['.md', '.ts', '.astro', '.json']);
 const SKIP_DIR_NAMES = new Set([

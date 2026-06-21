@@ -114,7 +114,7 @@ plugin-depth improvements that were explicitly **not addressed in session
 - [ ] `docs_search` returns ranked hits with snippets.
 - [ ] Master audit line 598 is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — `rg` JSON output is not stable across versions**: pin to
   `rg --json` format ≥ 12.0 (the documented stable line shape); the spec
@@ -127,7 +127,7 @@ plugin-depth improvements that were explicitly **not addressed in session
   have; documented as a known limit. If a future user hits thousands of
   docs, the proposal to add an index is `l999` (placeholder).
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 598).
 - M11 closure (search .gitignore, memory TTL/redact, docs pagination):
