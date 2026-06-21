@@ -32,6 +32,7 @@ import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
 } from './providers/status-bar';
+import { createVscodeHostAdapter } from './host/vscode-host-adapter';
 
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
