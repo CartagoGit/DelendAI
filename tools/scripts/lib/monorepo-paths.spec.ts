@@ -121,7 +121,7 @@ describe('monorepo-paths', () => {
 		});
 
 		it('vscodeVsix is rooted under dist/apps/vscode/<version>', () => {
-			expect(WELL_KNOWN.vsix('0.2.0')).toBe(
+			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
 				`${repoRoot()}/dist/apps/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
 			);
 		});
@@ -170,9 +170,15 @@ describe('monorepo-paths', () => {
 			expect(resolved).toBe(target);
 		});
 
-		it("returns '.' when the target IS the repo root", () => {
+		it('returns the climb path when the target IS the repo root', () => {
 			const link = `${root}/apps/web/public/api`;
-			expect(relativeFrom(link, root)).toBe('.');
+			// From the symlink's PARENT (apps/web/public), three `..` bring
+			// us to the repo root.
+			expect(relativeFrom(link, root)).toBe('../../..');
+		});
+
+		it("returns '.' when the link itself IS at the repo root", () => {
+			expect(relativeFrom(`${root}/api`, root)).toBe('.');
 		});
 
 		it('falls back to the absolute target when it lives outside the repo', () => {

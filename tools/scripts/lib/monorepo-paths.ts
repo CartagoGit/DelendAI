@@ -239,10 +239,15 @@ export const WELL_KNOWN = {
 } as const;
 
 /**
- * Compute the relative symlink target from `linkDir` to `targetDir`,
- * climbing through `repoRoot()`. Wraps Node's `path.relative` quirk where
- * it adds an extra `../` when both endpoints share a common ancestor at
- * the FS root.
+ * Compute the relative symlink target from the symlink path `linkDir` to
+ * `targetDir`. The returned string is intended to be stored as the body
+ * of a symlink at `linkDir`; it is interpreted relative to
+ * `dirname(linkDir)`.
+ *
+ * We avoid Node's `path.relative` because it returns paths like
+ * `../../../foo` even when both endpoints share a common ancestor at
+ * the FS root (the extra `../` escapes the mount). This implementation
+ * climbs manually through `repoRoot()`.
  */
 export const relativeFrom = (linkDir: string, targetDir: string): string => {
 	const root = repoRoot();
@@ -254,11 +259,10 @@ export const relativeFrom = (linkDir: string, targetDir: string): string => {
 		.filter((p) => p.length > 0);
 	const rootParts = root.split(sep).filter((p) => p.length > 0);
 	const climb = linkParentParts.length - rootParts.length;
-	// Climb up, then down. We do this manually because `path.relative` does
-	// not give us this answer cleanly when both endpoints live inside a
-	// subtree of a deeper mount.
 	if (targetDir === root) {
-		return '../'.repeat(climb).replace(/\/+$/, '') || '.';
+		if (climb <= 0) return '.';
+		if (climb === 1) return '..';
+		return '../'.repeat(climb).replace(/\/+$/, '');
 	}
 	if (targetDir.startsWith(root + sep)) {
 		const descend = targetDir.slice(root.length + 1);
