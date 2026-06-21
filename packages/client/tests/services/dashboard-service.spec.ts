@@ -60,6 +60,16 @@ describe('DashboardService', () => {
 		expect(model.topByTokens[0]?.tool).toBe('proposals_proposal_board');
 	});
 
+	it('requests compact overview for dashboard totals', async () => {
+		const { service, calls } = makeService();
+		await service.getOverviewModel();
+		expect(
+			calls.find((c) => c.tool === 'mcp-vertex_overview')?.args,
+		).toEqual({
+			compact: true,
+		});
+	});
+
 	it('getToolsModel returns sortable rows', async () => {
 		const { service } = makeService();
 		const model = await service.getToolsModel();

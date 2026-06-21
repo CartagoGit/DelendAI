@@ -8,7 +8,10 @@ export interface IMemoryTreeNode {
 	readonly description?: string;
 	readonly tooltip?: string;
 	readonly collapsibleState: TreeItemCollapsibleState;
-	readonly contextValue: 'mcpVertexMemoryRoot' | 'mcpVertexMemoryNote';
+	readonly contextValue:
+		| 'mcpVertexMemoryRoot'
+		| 'mcpVertexMemoryNote'
+		| 'mcpVertexMemoryMore';
 	readonly note?: IMemoryListEntry;
 }
 
@@ -18,7 +21,13 @@ export type IMemoryTreeChangeListener = (
 
 export class MemoryTreeDataProvider {
 	private readonly listeners = new Set<IMemoryTreeChangeListener>();
-	private cache: readonly IMemoryListEntry[] | undefined;
+	private cache:
+		| {
+				readonly notes: readonly IMemoryListEntry[];
+				readonly total: number;
+				readonly limit: number;
+		  }
+		| undefined;
 
 	constructor(private readonly memory: Pick<MemoryService, 'list'>) {}
 
@@ -40,7 +49,7 @@ export class MemoryTreeDataProvider {
 	async getChildren(element?: IMemoryTreeNode): Promise<IMemoryTreeNode[]> {
 		if (element !== undefined) return [];
 		const notes = await this.notes();
-		if (notes.length === 0) {
+		if (notes.notes.length === 0) {
 			return [
 				{
 					id: 'memory:empty',
@@ -50,7 +59,7 @@ export class MemoryTreeDataProvider {
 				},
 			];
 		}
-		return notes.map((note) => ({
+		const nodes: IMemoryTreeNode[] = notes.notes.map((note) => ({
 			id: `memory:${note.id}`,
 			label: note.title,
 			description: note.tags.join(', '),
@@ -59,6 +68,17 @@ export class MemoryTreeDataProvider {
 			contextValue: 'mcpVertexMemoryNote',
 			note,
 		}));
+		if (notes.total > notes.notes.length) {
+			nodes.push({
+				id: 'memory:more',
+				label: `${notes.total - notes.notes.length} more memory notes`,
+				description: `showing first ${notes.limit}`,
+				tooltip: 'Refresh or use memory search/recall for more notes.',
+				collapsibleState: TreeItemCollapsibleState.None,
+				contextValue: 'mcpVertexMemoryMore',
+			});
+		}
+		return nodes;
 	}
 
 	refresh(): void {
@@ -66,8 +86,20 @@ export class MemoryTreeDataProvider {
 		for (const listener of this.listeners) listener(undefined);
 	}
 
-	private async notes(): Promise<readonly IMemoryListEntry[]> {
-		this.cache ??= (await this.memory.list({ limit: 100 })).notes;
+	private async notes(): Promise<{
+		readonly notes: readonly IMemoryListEntry[];
+		readonly total: number;
+		readonly limit: number;
+	}> {
+		if (this.cache === undefined) {
+			const limit = 100;
+			const result = await this.memory.list({ limit });
+			this.cache = {
+				notes: result.notes,
+				total: result.total,
+				limit,
+			};
+		}
 		return this.cache;
 	}
 }

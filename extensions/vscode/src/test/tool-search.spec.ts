@@ -48,11 +48,18 @@ const createVscode = () => {
 describe('mcp-vertex.toolSearch', () => {
 	it('opens a quick pick with the live tool list', async () => {
 		const { vscode, commands, picks, messages } = createVscode();
+		let overviewCalls = 0;
 		registerToolSearchCommand({
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
 					if (input.name === 'mcp-vertex_overview') {
+						overviewCalls += 1;
+						if (overviewCalls === 1) {
+							expect(input.arguments).toEqual({
+								compact: true,
+							});
+						}
 						return {
 							structuredContent: {
 								server: {
@@ -87,6 +94,7 @@ describe('mcp-vertex.toolSearch', () => {
 		await commands.get(TOOL_SEARCH_COMMAND)?.();
 		expect(picks.length).toBeGreaterThan(0);
 		expect(picks[0]).toMatch(/^tool:/);
+		expect(overviewCalls).toBe(2);
 		// When the user picks a tool, the command calls it and shows
 		// an info message with the result.
 		expect(messages.some((m) => m.includes('mcp-vertex_overview'))).toBe(

@@ -22,7 +22,7 @@ export class OverviewService {
 	}
 
 	async listTools(): Promise<readonly IToolDescriptor[]> {
-		const overview = await this.getOverview({ compact: false });
+		const overview = await this.getOverview({ compact: true });
 		return overview.tools.map((tool) => normalizeTool(tool));
 	}
 }

@@ -193,6 +193,33 @@ describe('command wiring', () => {
 		expect(panels).toHaveLength(0);
 	});
 
+	it('opens the overview command with compact output by default', async () => {
+		const { vscode, commands, panels } = createVscode();
+		registerShowOverviewCommand({
+			vscode,
+			client: McpStdioClient.fromTransport({
+				async callTool(input) {
+					expect(input.name).toBe('mcp-vertex_overview');
+					expect(input.arguments).toEqual({ compact: true });
+					return {
+						structuredContent: {
+							server: { name: 'mcp-vertex', version: '0.1.0' },
+							namespacePrefix: 'mcp-vertex',
+							plugins: [],
+							tools: [],
+							knowledge: [],
+							recommendedNextAction: '',
+						},
+					};
+				},
+			}),
+		});
+
+		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
+
+		expect(panels[0]?.webview.html).toContain('mcp-vertex Overview');
+	});
+
 	it('shows an error when the metrics command fails', async () => {
 		const { vscode, commands, errors, panels } = createVscode();
 		registerShowMetricsCommand({
