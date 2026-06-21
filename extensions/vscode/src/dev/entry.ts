@@ -173,8 +173,7 @@ const render = (id: string): void => {
 	for (const btn of document.querySelectorAll<HTMLElement>(
 		'[data-webview]',
 	)) {
-		btn.dataset['active'] =
-			btn.dataset['webview'] === view.id ? 'true' : 'false';
+		btn.dataset.active = btn.dataset.webview === view.id ? 'true' : 'false';
 	}
 };
 
@@ -187,7 +186,7 @@ if (sidebar) {
 	).join('');
 	for (const btn of sidebar.querySelectorAll<HTMLElement>('[data-webview]')) {
 		btn.addEventListener('click', () => {
-			const id = btn.dataset['webview'];
+			const id = btn.dataset.webview;
 			if (id) render(id);
 		});
 	}
