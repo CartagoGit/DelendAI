@@ -7,7 +7,7 @@ import {
 
 describe('PRESET_CATALOG', () => {
 	it('lists presets in ⊇ order: minimal, standard, swarm, full', () => {
-		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
+		expect(PRESET_CATALOG.map((def) => def.id)).toEqual([...PRESET_KIND]);
 	});
 
 	it('stores deltas, not full membership lists', () => {

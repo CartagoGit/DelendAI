@@ -69,6 +69,17 @@ export type {
 export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
 export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
 export {
+	PRESET_CATALOG,
+	PRESET_KIND,
+	resolvePresetMembers,
+	isPresetKind,
+} from '../lib/plugins/preset-catalog';
+export type {
+	IPresetDefinition,
+	IPresetKind,
+	IPresetMember,
+} from '../lib/plugins/preset-catalog';
+export {
 	DEFAULT_CONFIG_FILENAME,
 	CONFIG_FILE_SCHEMA,
 	diagnoseConfigFile,

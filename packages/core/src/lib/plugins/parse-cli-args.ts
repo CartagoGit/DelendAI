@@ -1,4 +1,9 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import {
+	PRESET_CATALOG,
+	resolvePresetMembers,
+	type IPresetKind,
+} from './preset-catalog';
 
 /**
  * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
@@ -64,38 +69,25 @@ const KNOWN_KEYS = new Set([
 
 // Curated plugin presets (additive). `--preset=standard` saves typing the
 // full `--plugins` list; it merges with any explicit `--plugins`.
-const STANDARD_PRESET = [
-	'git',
-	'search',
-	'memory',
-	'docs',
-	'rules',
-	'quality',
-	'deps',
-] as const;
-export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> = {
-	// read-only orientation, lightweight
-	minimal: ['git', 'search'],
-	// full single-agent toolkit
-	standard: STANDARD_PRESET,
-	// standard + multi-agent coordination (includes status-marker for the
-	// mandatory coloured close marker convention — see plugin l104 —
-	// and test-convention so every agent in the swarm follows the same
-	// test rules — see plugin l108; audit is opt-in per project and is
-	// NOT in the swarm preset because the user may prefer to run it
-	// separately, after the round finishes — see plugin l99).
-	swarm: [
-		...STANDARD_PRESET,
-		'proposals',
-		'notification',
-		'status-marker',
-		'test-convention',
-	],
-};
+//
+// The canonical membership lives in `./preset-catalog.ts`. This map is a
+// thin projection consumed by the legacy `PLUGIN_PRESETS` export and by
+// `resolvePreset` — both kept stable so existing callers and tests don't
+// break. The web page (`apps/web/src/pages/presets.astro`) and any new
+// consumer MUST read `PRESET_CATALOG` directly.
+export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> =
+	Object.freeze(
+		Object.fromEntries(
+			PRESET_CATALOG.map((def) => [
+				def.id,
+				resolvePresetMembers(def.id as IPresetKind),
+			]),
+		),
+	) as Readonly<Record<string, readonly string[]>>;
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */
 export const resolvePreset = (name: string | undefined): readonly string[] =>
-	name === undefined ? [] : (PLUGIN_PRESETS[name] ?? []);
+	resolvePresetMembers(name);
 
 const isFalse = (value: string | undefined): boolean =>
 	value === 'false' || value === '0' || value === 'no';

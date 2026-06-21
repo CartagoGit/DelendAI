@@ -39,6 +39,17 @@ export interface ICommandDeps {
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
 }
 
+export const showCommandError = async (
+	vscode: ICommandVscodeApi,
+	action: string,
+	err: unknown,
+): Promise<void> => {
+	const detail = err instanceof Error ? err.message : String(err);
+	await vscode.window.showErrorMessage?.(
+		`mcp-vertex: ${action} failed: ${detail}`,
+	);
+};
+
 export const renderJsonHtml = (
 	title: string,
 	payload: object,

@@ -11,7 +11,13 @@ import {
 	RUN_VALIDATION_COMMAND,
 	registerRunValidationCommand,
 } from '../commands/run-validation';
+import {
+	SHOW_METRICS_COMMAND,
+	registerShowMetricsCommand,
+} from '../commands/show-metrics';
+import { registerShowOverviewCommand } from '../commands/show-overview';
 import type { ICommandVscodeApi } from '../commands/types';
+import { SHOW_OVERVIEW_COMMAND } from '../extension';
 
 const createVscode = () => {
 	const commands = new Map<
@@ -20,6 +26,7 @@ const createVscode = () => {
 	>();
 	const panels: Array<{ webview: { html: string } }> = [];
 	const messages: string[] = [];
+	const errors: string[] = [];
 	const vscode: ICommandVscodeApi = {
 		ViewColumn: { One: 1 },
 		commands: {
@@ -38,9 +45,13 @@ const createVscode = () => {
 				messages.push(message);
 				return undefined;
 			},
+			async showErrorMessage(message) {
+				errors.push(message);
+				return undefined;
+			},
 		},
 	};
-	return { vscode, commands, panels, messages };
+	return { vscode, commands, panels, messages, errors };
 };
 
 describe('command wiring', () => {
@@ -98,6 +109,25 @@ describe('command wiring', () => {
 		expect(panels[0]?.webview.html).toContain('mcp-vertex Validation');
 	});
 
+	it('shows an error when validation commands fail', async () => {
+		const { vscode, commands, errors, panels } = createVscode();
+		registerRunValidationCommand({
+			vscode,
+			client: McpStdioClient.fromTransport({
+				async callTool() {
+					throw new Error('server offline');
+				},
+			}),
+		});
+
+		await commands.get(RUN_VALIDATION_COMMAND)?.();
+
+		expect(errors).toEqual([
+			'mcp-vertex: run validation failed: server offline',
+		]);
+		expect(panels).toHaveLength(0);
+	});
+
 	it('opens the proposal board command', async () => {
 		const { vscode, commands, panels } = createVscode();
 		registerOpenProposalCommand({
@@ -123,5 +153,62 @@ describe('command wiring', () => {
 		await commands.get(OPEN_PROPOSAL_COMMAND)?.();
 
 		expect(panels[0]?.webview.html).toContain('f00014');
+	});
+
+	it('shows an error when the proposal board command fails', async () => {
+		const { vscode, commands, errors, panels } = createVscode();
+		registerOpenProposalCommand({
+			vscode,
+			client: McpStdioClient.fromTransport({
+				async callTool() {
+					throw new Error('proposal tool missing');
+				},
+			}),
+		});
+
+		await commands.get(OPEN_PROPOSAL_COMMAND)?.();
+
+		expect(errors).toEqual([
+			'mcp-vertex: open proposals failed: proposal tool missing',
+		]);
+		expect(panels).toHaveLength(0);
+	});
+
+	it('shows an error when the overview command fails', async () => {
+		const { vscode, commands, errors, panels } = createVscode();
+		registerShowOverviewCommand({
+			vscode,
+			client: McpStdioClient.fromTransport({
+				async callTool() {
+					throw new Error('overview unavailable');
+				},
+			}),
+		});
+
+		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
+
+		expect(errors).toEqual([
+			'mcp-vertex: show overview failed: overview unavailable',
+		]);
+		expect(panels).toHaveLength(0);
+	});
+
+	it('shows an error when the metrics command fails', async () => {
+		const { vscode, commands, errors, panels } = createVscode();
+		registerShowMetricsCommand({
+			vscode,
+			client: McpStdioClient.fromTransport({
+				async callTool() {
+					throw new Error('metrics unavailable');
+				},
+			}),
+		});
+
+		await commands.get(SHOW_METRICS_COMMAND)?.();
+
+		expect(errors).toEqual([
+			'mcp-vertex: show metrics failed: metrics unavailable',
+		]);
+		expect(panels).toHaveLength(0);
 	});
 });

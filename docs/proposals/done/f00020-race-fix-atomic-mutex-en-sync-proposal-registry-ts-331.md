@@ -2,7 +2,7 @@
 id: f00020
 kind: feat
 title: Race fix — atomic + mutex en sync-proposal-registry.ts:331
-status: ready
+status: done
 type: proposal
 track: proposals-plugin
 date: 2026-06-21
