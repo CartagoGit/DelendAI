@@ -654,12 +654,12 @@ const lintFilenameAndFolder = (
 ): ILintIssue[] => {
 	const issues: ILintIssue[] = [];
 	const filename = path.split('/').pop() ?? path;
-	const m = filename.match(/^([a-z])(\d{3,})-[a-z0-9-]+\.md$/);
+	const m = filename.match(/^([a-z])(\d{5,})-[a-z0-9-]+\.md$/);
 	if (!m) {
 		issues.push({
 			line: 0,
 			message: `filename "${filename}" does not match the canonical pattern`,
-			fix: 'Rename to `<prefix><NNN>-<kebab-slug>.md` (lowercase prefix, ≥3 digits).',
+			fix: 'Rename to `<prefix><NNN>-<kebab-slug>.md` (lowercase prefix, ≥5 digits).',
 		});
 		return issues;
 	}
@@ -789,8 +789,8 @@ const lintFrontmatter = (
 	) {
 		issues.push({
 			line: 0,
-			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{3,}$/`,
-			fix: 'Use a single lowercase letter followed by ≥3 digits (e.g. f00014 padded per f00023, or f114 legacy).',
+			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{5,}$/`,
+			fix: 'Use a single lowercase letter followed by ≥5	 digits (e.g. f00014 padded per f00023, or f114 legacy).',
 		});
 	}
 

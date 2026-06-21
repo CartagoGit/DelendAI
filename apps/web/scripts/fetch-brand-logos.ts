@@ -4,16 +4,16 @@
  * asset (favicon / logo SVG) and copy it to the web app's
  * `apps/web/public/logos/` directory.
  *
- * Why this exists (x128):
- *   x127 used the local `simple-icons` package, but most
+ * Why this exists (follow-up to x00010):
+ *   x00010 used the local `simple-icons` package, but most
  *   simple-icons marks are wordmarks (the literal project name
  *   spelled out in text), not icon-style marks. The user
- *   feedback after x127: "los logos no son los logos reales
+ *   feedback after x00010: "los logos no son los logos reales
  *   de nada... son simplemente svgs con colores, no con los
  *   logotipos de cada framework. Descargalos de donde
  *   corresponda".
  *
- *   So x128 goes to the source. We hit each project's
+ *   So this follow-up goes to the source. We hit each project's
  *   official site for `<link rel="icon">` and download the
  *   first match. SVG when the project ships one (npm, pnpm,
  *   yarn, bun, deno, vscode, cursor), PNG/ICO when it doesn't

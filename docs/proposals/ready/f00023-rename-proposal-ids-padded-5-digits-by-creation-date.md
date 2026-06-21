@@ -22,7 +22,7 @@ reservedFiles:
     - plugins/proposals/src/lib/proposals/proposal-sync.ts
 related:
     - f00016 # proposal state machine — defines the 7-status DFA + the 12 kinds; f00023 must not break it
-    - f00001 # done-folder mirrors kinds — IN PROGRESS; f00001 is renumbering audits a1..a20 inside done/audits/ today
+  - f00001 # done-folder mirrors kinds — already landed; the audit documents now live in done/audits/ with padded IDs
     - f00022 # IDE extension v2 — does not touch IDs but has reservedFiles that include docs/proposals/done/feats/
 ---
 
@@ -92,11 +92,11 @@ Cada familia se enumera por **fecha de creación real** (= fecha del primer comm
 Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en paralelo pueden ejecutarlas. La gate global es `lint` (`bun run lint:proposals`).
 
 ### S1 — Inventario + mapa de renumeración
-- **Files**: [`scripts/rename-proposals-padded.ts`]
-- **Status**: pending
+- **Files**: [`tools/scripts/proposals/rename-padded.script.ts`]
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
-  - "Crea un script `scripts/rename-proposals-padded.ts` que escanea todos los `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/`, extrae el `id:` del frontmatter, obtiene la fecha de creación vía `git log --diff-filter=A --format=%aI -- <path>`, ordena, asigna padded IDs por familia, y emite un mapa `oldId -> newId` como JSON."
+  - "Crea un script `tools/scripts/proposals/rename-padded.script.ts` que escanea todos los `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/`, extrae el `id:` del frontmatter, obtiene la fecha de creación vía `git log --diff-filter=A --format=%aI -- <path>`, ordena, asigna padded IDs por familia, y emite un mapa `oldId -> newId` como JSON."
   - "`--dry-run` (default) imprime el mapa en stdout; `--apply` hace `git mv` + reescritura de frontmatter."
   - "Maneja colisiones (dos archivos con misma fecha) por orden alfabético de filename."
   - "No toca refs externas — solo frontmatter y filename."
@@ -106,7 +106,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 - **Status**: pending
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
-  - "Ejecuta `bun scripts/rename-proposals-padded.ts --apply` (el script de S1)."
+  - "Ejecuta `bun tools/scripts/proposals/rename-padded.script.ts --apply` (el script de S1)."
   - "Tras ejecutar, `git status --porcelain` muestra los renames como `R` (rename), no como `D` + `?` (delete + untracked) — esto preserva el historial."
   - "`bun run lint:proposals` pasa sin warnings de ID mal formado."
   - "`docs/proposals/index.json` se regenera con `mcp-vertex.proposals.sync_proposals` (o `bun scripts/sync-proposals.ts` si existe un script equivalente) — los `id` y `file` reflejan el nuevo padding."
@@ -133,7 +133,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 
 ## Dependency graph
 
-- **f00001 está `in_progress` y renombra `a1..a20` en `done/audits/`**. Si f00001 cierra antes que S2, el mapa de S1 ya incluye esos IDs como `a00001..a00020`. Si f00001 cierra después, S1 debe coordinarse con f00001 para no renombrar dos veces.
+- **f00001 ya está `done` y dejó los audits en `done/audits/`**. El mapa de S1 ya incluye esos IDs como `a00001..a00020`, así que S2 no tiene que coordinar un segundo rename con esa propuesta.
 - **f00022 (IDE extension) tiene `reservedFiles: [..., docs/proposals/done/feats/]`.** S2 debe leer esos `reservedFiles` antes de hacer `git mv` y abortar si encuentra conflicto.
 - **Agents paralelos en worktrees**: cada slice corre en su propio `agent/<name>` worktree. La sincronización final se hace en `develop` cuando los 4 PRs mergen.
 

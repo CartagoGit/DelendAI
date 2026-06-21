@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T21:35:13.353Z",
+	"generated_at": "2026-06-21T21:38:45.470Z",
 	"count": 97,
 	"proposals": [
 		{
@@ -66,8 +66,8 @@
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00048",
-			"file": "ready/f00048-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"id": "f00050",
+			"file": "ready/f00050-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
 			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "ready",
@@ -80,24 +80,6 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
-		},
-		{
-			"id": "a00027",
-			"file": "done/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
-			"track": "workflow+core+plugins+apps+docs+memory",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
-					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
-					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
-					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
-					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
-					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
-				]
-			}
 		},
 		{
 			"id": "c00002",
@@ -413,8 +395,8 @@
 			}
 		},
 		{
-			"id": "a00027",
-			"file": "done/audits/a00027-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"id": "a00031",
+			"file": "done/audits/a00031-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -961,8 +943,8 @@
 			"date": "2026-06-21"
 		},
 		{
-			"id": "x00127",
-			"file": "done/fixes/x127-real-brand-logos.md",
+			"id": "x00010",
+			"file": "done/fixes/x00010-real-brand-logos.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
