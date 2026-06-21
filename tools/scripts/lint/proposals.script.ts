@@ -24,17 +24,15 @@ import { fileURLToPath } from 'node:url';
 
 import { lintProposalMarkdown } from '../../../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
 
-// Loose on purpose, same reasoning as PROPOSAL_FILENAME below: l99 (2
-// digits) must classify as "legacy warning", not "fatal error". `l` is
-// included alongside `p` — post-migration legacy keeps the same
-// permanently-lenient tier, see the module doc comment above.
+// Post-padding, legacy proposals still remain warn-only, but proposal
+// filenames themselves are now expected to use a fixed 5-digit id.
 const isLegacyFilename = (filename: string, absPath: string): boolean => {
 	if (absPath.includes('/done/')) return true;
-	return /^[pl]\d+-/.test(filename);
+	return /^[pl]\d{5}-/.test(filename);
 };
 
-// Only files shaped like a proposal (legacy `pNNN-…`, including the
-// 2-digit `l99-…`, or a new kind prefix) are proposals at all.
+// Only files shaped like a proposal with the canonical padded id are
+// proposals at all.
 // `docs/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
 // ones that ended up in `done/`), `n00001-*` session notes,
@@ -42,15 +40,10 @@ const isLegacyFilename = (filename: string, absPath: string): boolean => {
 // migrating" — they were never proposals, so flagging them as scaffold
 // violations would be noise, not signal.
 //
-// Deliberately looser than the canonical `^[a-z]\d{3,}-…` pattern
-// (proposal-scaffold-linter's `lintFilenameAndFolder` and the glossary's
-// id regex both require ≥3 digits): a strict filter here would silently
-// *skip* `l99-feat-multi-model-audit-plugin.md` (2 digits) instead of
-// surfacing it as a finding — invisible is worse than flagged. The
-// walker's job is "is this plausibly a proposal", the linter's stricter
-// job is "does it conform"; the file still goes through
-// `lintProposalMarkdown` and gets flagged there for the short id.
-const PROPOSAL_FILENAME = /^[a-z]\d+-[a-z0-9-]+\.md$/;
+// Keep the walker's filter aligned with the canonical fixed-width id
+// scheme so stray historical filenames are treated as non-proposal docs
+// unless they are restored intentionally.
+const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
 const isProposalFilename = (filename: string): boolean =>
 	PROPOSAL_FILENAME.test(filename);
 

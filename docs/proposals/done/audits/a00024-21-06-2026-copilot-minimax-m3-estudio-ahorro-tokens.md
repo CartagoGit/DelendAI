@@ -34,7 +34,7 @@ acceptance:
 - **Audited HEAD**: HEAD actual de la rama de trabajo (la propuesta se mueve con `develop`; la fecha es lo que cuenta, no el SHA).
 - **Revisor / Model**: GitHub Copilot (MiniMax-M3) — mismo runner que la sesión que originó el debate.
 - **Date**: 2026-06-21.
-- **Método**: cross-check del debate snapshot-plugin (sesión 2026-06-21) con los datos de `mcp-vertex_metrics`, `TOKEN-BUDGETS.md`, las propuestas `f00027` (gate de regresión), `f00016` (proposal state machine) y el master audit `a1`. Sin nuevas mediciones invasivas en este slice; el estudio es **de inventario y diseño**, no de ejecución de benchmarks.
+- **Método**: cross-check del debate snapshot-plugin (sesión 2026-06-21) con los datos de `mcp-vertex_metrics`, `TOKEN-BUDGETS.md`, las propuestas `f00027` (gate de regresión), `f00016` (proposal state machine) y el master audit `a00013`. Sin nuevas mediciones invasivas en este slice; el estudio es **de inventario y diseño**, no de ejecución de benchmarks.
 
 ## Why
 
@@ -141,7 +141,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 ### S1 — Inventory of token sinks and baseline measurement
 - **Files**:
   - `docs/proposals/ready/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (este archivo)
-  - `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (referencia, no se modifica en este slice)
+  - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (referencia, no se modifica en este slice)
   - `docs/TOKEN-BUDGETS.md` (referencia)
   - `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md` (referencia, **prerequisite de A y B**)
 - **Status**: pending
@@ -166,7 +166,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 - **Files**:
   - `docs/proposals/done/audits/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (este archivo, movido)
   - `docs/proposals/index.json` (status: done)
-  - `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (si aplica, marcar línea como `[x]`)
+  - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (si aplica, marcar línea como `[x]`)
 - **Status**: pending
 - **Agent**: `proposal_guardian`
 - **Command**: `bun run validate`
@@ -215,7 +215,7 @@ Aún no verificado. Este slice solo deja el inventario. La verificación se hace
 - **R4 — El cache de respuestas MCP (Familia A) puede violar expectativas del agente.** Si cachea y la realidad cambia (otro agente cierra un slice, llega una `notification`), el agente opera sobre datos viejos. Mitigación: invalidación por evento `proposal_transition` + TTL corto + test e2e que abra dos slices en paralelo y verifique que el cache del primero se invalida cuando el segundo transiciona.
 
 ### Referencias
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (M12 token budget, M29 metrics, M27 web docs).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (M12 token budget, M29 metrics, M27 web docs).
 - Gate de regresión (prerequisite): `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md`.
 - Baseline numérico: `docs/TOKEN-BUDGETS.md` (1 271 B compact / 6 735 B full / 159 B auto_work idle / 1 026 B auto_work plan; gates 7 000 / 1 600 / 1 600).
 - Debate origen (snapshot plugin): memoria de sesión `/memories/session/snapshot-plugin-debate-2026-06-21.md`.

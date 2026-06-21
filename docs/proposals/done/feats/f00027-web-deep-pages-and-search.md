@@ -190,7 +190,7 @@ properly navigable **documentation surface**:
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 543).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 543).
 - W3 requirements: same audit §7-bis (live annotations).
 - `capabilities.json` generator: `scripts/gen-capabilities.ts` (or
   equivalent — `rg` to confirm the actual path).

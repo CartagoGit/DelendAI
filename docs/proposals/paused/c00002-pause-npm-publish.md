@@ -10,19 +10,19 @@ title: Pause npm publish — blocked on NPM_TOKEN and develop→main merge
 superseded_by: f00034 # f00034 keeps the publish paused (the NPM_TOKEN + develop→main block is unchanged) BUT explicitly includes @mcp-vertex/cli in the SAME lockstep batch as the rest. The "private first, public later" split is removed: 16 packages in one batch.
 ---
 
-# c00001 — Pause npm publish — blocked on NPM_TOKEN and develop→main merge
+# c00002 — Pause npm publish — blocked on NPM_TOKEN and develop→main merge
 
 ## Goal
 
 Document the **npm publish** step as a paused proposal so it stops being a
-ticking checkbox on the master audit (`a1-16-06-2026`). Everything that the
+ticking checkbox on the master audit (`a00013-16-06-2026`). Everything that the
 repo can do without the user's npm credentials / final merge is already done
 (see §"Done already"); what remains is exclusively **operational** (credentials
 + merge + push) and lives entirely on the user's side.
 
 ## why
 
-The audit (`a1-16-06-2026 §7`, line 282) keeps `npm publish` as `- [ ]` because
+The audit (`a00013-16-06-2026 §7`, line 282) keeps `npm publish` as `- [ ]` because
 it depends on three things that the repository cannot do on its own:
 
 1. **`NPM_TOKEN` (Granular access token with Bypass 2FA)** — lives in
@@ -57,7 +57,7 @@ waits for is the user's inputs.
   (`.github/workflows/rotate-npm-token.yml`) opens an issue every ~90 days.
 - ✅ `docs/NPM_PUBLISH.md` updated to 10 packages with the post-Nov-2025
   Granular token recipe and Bypass 2FA note.
-- ✅ `docs/proposals/paused/c00001-pause-npm-publish.md` exists with
+- ✅ `docs/proposals/paused/c00002-pause-npm-publish.md` exists with
   `status: paused`.
 - ✅ `docs/NPM_PUBLISH.md` still points here from the master audit.
 - ✅ The master audit's `npm publish` checkbox stays `- [ ]` but now
@@ -70,7 +70,7 @@ This proposal has no slices — it is a **checkpoint**, not a workstream.
 
 ## why this design
 
-Move `paused/c00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
+Move `paused/c00002-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
 **all three** are true:
 
 1. `@cartago-git` org exists on the user's npm account.
@@ -83,7 +83,7 @@ At that point the slice is literally `git checkout main && git merge develop
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (lines 282, 297, 363).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (lines 282, 297, 363).
 - Operational guide: `docs/NPM_PUBLISH.md`.
 - Resume workflow: `.github/workflows/release.yml`.
 - Token rotation reminder: `.github/workflows/rotate-npm-token.yml`.

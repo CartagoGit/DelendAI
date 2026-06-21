@@ -7,8 +7,8 @@ triaged: true
 date: 2026-06-21
 track: proposals
 ownership:
-    - { agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }
-    - { agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }
+    - { agent: implementation_runner, task: 's1: rename 20 audit files to a00001..a00020 + move into done/audits/' }
+    - { agent: implementation_runner, task: 's2: re-classify the 15 legacy-prefixed closed proposals into their real done/feats|fixes targets' }
     - { agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }
 acceptance:
     - { command: bun run type, expect: exit0 }
@@ -20,7 +20,7 @@ related:
     - x00001 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
 ---
 
-# f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/
+# f00042 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/
 
 ## Goal
 
@@ -120,8 +120,8 @@ docs/proposals/
 ├── review/                 # status: review
 ├── done/                   # status: done (this proposal mirrors kinds inside)
 │   ├── README.md           # convention document (s3)
-│   ├── audits/             # kind: audit  (20 files: a1..a20)
-│   ├── feats/              # kind: feat   (~10-15 files: f00004..f00001, f00004..l113 re-tagged)
+│   ├── audits/             # kind: audit  (20 files: a00001..a00020)
+│   ├── feats/              # kind: feat   (~10-15 files; legacy-prefixed proposals reclassified to padded feat ids)
 │   ├── fixes/              # kind: fix    (~2-3 files: x-prefixed closed proposals)
 │   └── n00001-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
 │                              (they predate the convention and are not proposals)
@@ -164,7 +164,7 @@ Both checks remain correct under this proposal because:
 
 ### 3.4 Audit numbering
 
-The 20 audit files are renumbered `a1..a20` by `git log --diff-filter=A
+The 20 audit files are renumbered `a00001..a00020` by `git log --diff-filter=A
 --format=%ai -- <file>` order (when each file first appeared in the
 repo). Ties broken by alphabetical slug. The number is assigned once,
 frozen in the filename and the `id:` field, and never re-used.
@@ -202,52 +202,52 @@ all receive new numbers based on the chronological table in §3.5.
 
 - global_gate: none
 
-### S1 — Renumber and rename the 20 closed audit documents to a1-a20 by chronological creation order
+### S1 — Renumber and rename the 20 closed audit documents to a00001-a00020 by chronological creation order
 - **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
-- files: docs/proposals/done/a1-14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md
-- files: docs/proposals/done/a2-15-06-2026- Antigravity (Gemini 3.5 Flash) [estado-actual].md
-- files: docs/proposals/done/a3-15-06-2026- Antigravity (Gemini 3.5 Flash).md
-- files: docs/proposals/done/a4-15-06-2026- Claude Code (Opus 4.8).md
-- files: docs/proposals/done/15-06-2026- Antigravity (Claude Sonnet 4.6 Thinking) [estado-actual].md
-- files: docs/proposals/done/15-06-2026- Codex (GPT-5.5).md
-- files: docs/proposals/done/AUDITORIA-UNIFICADA-2026-06-15.md
-- files: docs/proposals/done/16-06-2026- Antigravity (Claude Sonnet 4.6 Thinking) [previa].md
-- files: docs/proposals/done/16-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md
-- files: docs/proposals/done/16-06-2026- Antigravity (Gemini 3.5 Flash) [previa-exhaustiva].md
-- files: docs/proposals/done/16-06-2026- Antigravity (Gemini 3.5 Flash) [previa-unificada].md
-- files: docs/proposals/done/16-06-2026- Antigravity (Gemini 3.5 Flash).md
-- files: docs/proposals/done/16-06-2026- Claude Code (Opus 4.8).md
-- files: docs/proposals/done/16-06-2026- Codex (GPT-5) [auditoria-exhaustiva].md
-- files: docs/proposals/done/17-06-2026- Auditoría Independiente (GitHub Copilot · MiniMax-M3).md
-- files: docs/proposals/done/17-06-2026- Claude Code (Opus 4.8) [estado-actual].md
-- files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (Codex GPT-5).md
-- files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (GPT-5.4).md
-- files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (estado-actual).md
-- files: docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md
+- files: docs/proposals/done/audits/a00001-14-06-2026-antigravity-claude-sonnet-4-6-thinking.md
+- files: docs/proposals/done/audits/a00002-15-06-2026-antigravity-claude-sonnet-4-6-thinking-estado-actual.md
+- files: docs/proposals/done/audits/a00003-15-06-2026-antigravity-gemini-3-5-flash.md
+- files: docs/proposals/done/audits/a00004-15-06-2026-antigravity-gemini-3-5-flash-estado-actual.md
+- files: docs/proposals/done/audits/a00005-15-06-2026-auditoria-unificada.md
+- files: docs/proposals/done/audits/a00006-15-06-2026-claude-code-opus-4-8.md
+- files: docs/proposals/done/audits/a00007-15-06-2026-codex-gpt-5-5.md
+- files: docs/proposals/done/audits/a00008-16-06-2026-antigravity-claude-sonnet-4-6-thinking.md
+- files: docs/proposals/done/audits/a00009-16-06-2026-antigravity-claude-sonnet-4-6-thinking-previa.md
+- files: docs/proposals/done/audits/a00010-16-06-2026-antigravity-gemini-3-5-flash.md
+- files: docs/proposals/done/audits/a00011-16-06-2026-antigravity-gemini-3-5-flash-previa-exhaustiva.md
+- files: docs/proposals/done/audits/a00012-16-06-2026-antigravity-gemini-3-5-flash-previa-unificada.md
+- files: docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md
+- files: docs/proposals/done/audits/a00014-16-06-2026-claude-code-opus-4-8.md
+- files: docs/proposals/done/audits/a00015-16-06-2026-codex-gpt-5-auditoria-exhaustiva.md
+- files: docs/proposals/done/audits/a00016-17-06-2026-auditoria-independiente-github-copilot-minimax-m3.md
+- files: docs/proposals/done/audits/a00017-17-06-2026-claude-code-opus-4-8-estado-actual.md
+- files: docs/proposals/done/audits/a00018-18-06-2026-auditoria-agnostica-codex-gpt-5.md
+- files: docs/proposals/done/audits/a00019-18-06-2026-auditoria-agnostica-estado-actual.md
+- files: docs/proposals/done/audits/a00020-18-06-2026-auditoria-agnostica-gpt-5-4.md
 
-### S2 — Move l99-l113 (legacy-prefixed closed proposals) into their real-kind sub-folders
+### S2 — Move the legacy-prefixed closed proposals into their real-kind sub-folders
 - **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
-- files: docs/proposals/done/l99-feat-multi-model-audit-plugin.md
-- files: docs/proposals/done/l100-website-i18n-and-docs-rewrite.md
-- files: docs/proposals/done/l101-web-header-transitions-and-full-capabilities-surface.md
-- files: docs/proposals/done/l102-keep-legacy-default-false.md
-- files: docs/proposals/done/l103-loop-detection-and-handoff.md
-- files: docs/proposals/done/l104-feat-status-marker-plugin.md
-- files: docs/proposals/done/l105-web-bugfixes-and-ux-overhaul.md
-- files: docs/proposals/done/l106-fix-gen-skills-recursion.md
-- files: docs/proposals/done/l107-multilang-quality-gates.md
-- files: docs/proposals/done/l108-feat-test-convention-plugin.md
-- files: docs/proposals/done/l109-feat-auto-work-persist-modes.md
-- files: docs/proposals/done/l110-residual-p100-web-and-i18n.md
-- files: docs/proposals/done/l111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md
-- files: docs/proposals/done/l112-derive-site-manifests-and-local-aliases.md
-- files: docs/proposals/done/l113-fix-audit-types.md
+- files: docs/proposals/done/feats/f00006-feat-multi-model-audit-plugin.md
+- files: docs/proposals/done/feats/f00018-website-i18n-and-docs-rewrite.md
+- files: docs/proposals/done/feats/f00017-web-header-transitions-and-full-capabilities-surface.md
+- files: docs/proposals/done/feats/f00010-keep-legacy-default-false.md
+- files: docs/proposals/done/feats/f00011-loop-detection-and-handoff.md
+- files: docs/proposals/done/feats/f00008-feat-status-marker-plugin.md
+- files: docs/proposals/done/fixes/x00006-web-bugfixes-and-ux-overhaul.md
+- files: docs/proposals/done/fixes/x00002-fix-gen-skills-recursion.md
+- files: docs/proposals/done/feats/f00012-multilang-quality-gates.md
+- files: docs/proposals/done/feats/f00009-feat-test-convention-plugin.md
+- files: docs/proposals/done/feats/f00003-feat-auto-work-persist-modes.md
+- files: docs/proposals/done/feats/f00015-residual-p100-web-and-i18n.md
+- files: docs/proposals/done/fixes/x00005-post-closure-audit-orchestration-crash-fix-remaining-hardening.md
+- files: docs/proposals/done/feats/f00002-derive-site-manifests-and-local-aliases.md
+- files: docs/proposals/done/fixes/x00001-fix-audit-types.md
 
 ### S3 — Move the remaining f00016-f00018 closed feats and create the sub-folder convention doc
 - **Status**: done

@@ -16,7 +16,8 @@
       "Skill(code-review)",
       "Skill(code-review:*)",
       "mcp__mcp-vertex__proposals_sync_proposals",
-      "mcp__mcp-vertex__mcp-vertex_overview"
+      "mcp__mcp-vertex__mcp-vertex_overview",
+      "mcp__mcp-vertex__proposals_auto_work"
     ],
     "deny": []
   },

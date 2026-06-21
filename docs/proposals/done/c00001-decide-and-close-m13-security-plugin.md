@@ -80,7 +80,7 @@ Pick one of:
 ### S3 — Wire into `swarm` preset
   - **Status**: ready
   - **Files**: `mcp-vertex.config.json` (add `security` to the swarm preset),
-    `docs/proposals/audits/a1-16-06-2026-…md` (line 275 → `[x]` with note).
+    `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 275 → `[x]` with note).
   - **Command**: `bun run validate`
   - **Expect**: green; master audit `M13` checkbox is now `[x]`.
 
@@ -88,7 +88,7 @@ Pick one of:
 
 ### S1 — Audit note only
   - **Status**: ready
-  - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 275 → `[x]`
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 275 → `[x]`
     with the "core primitives cover MV surface" verdict; link to this
     proposal).
   - **Command**: none (markdown only).

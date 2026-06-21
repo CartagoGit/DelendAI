@@ -100,7 +100,7 @@ by:
 
 ### S5 — Audit close
   - **Status**: ready
-  - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 281 → `[x]`
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 281 → `[x]`
     with link to this proposal; the original line splits into the two
     sub-items: "skills/prompts versionados" and "plugin `web`/`fetch`"
     both `[x]`).

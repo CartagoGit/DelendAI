@@ -99,7 +99,7 @@ golden-schema test in S0.
 
 ### S4 — Per-call-site exception audit
   - **Status**: done
-  - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 518 → `[x]`
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 518 → `[x]`
     with link to this proposal; if any `catchall` survives, it gets a
     per-call-site comment in the form
     `// schema exception: <SDK limitation> (<issue#>)` and the audit
@@ -141,7 +141,7 @@ core golden schema guard was repaired. Verification:
   `metrics.tools: z.object({}).catchall(MetricSchema)` exception, not
   `z.unknown()`.
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 518).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 518).
 - M24 guard test: `plugins/rules/tests/src/lib/plugin.spec.ts` (cited as
   the model for the new golden test).
 - `toolJson` helper: `packages/core/src/lib/shared/tool-response.ts` (the
