@@ -6,6 +6,7 @@ import {
 	activate,
 	CLIENT_STATE_KEY,
 	OPEN_PROPOSAL_COMMAND,
+	OPEN_SETTINGS_COMMAND,
 	renderOverviewHtml,
 	REFRESH_COMMAND,
 	RUN_VALIDATION_COMMAND,
@@ -73,13 +74,13 @@ describe('VS Code extension smoke', () => {
 		});
 
 		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
-		// f125 + f126: 5 original commands + openDashboard (f125) +
-		// openKnowledge + toolSearch + restartServer (f126) = 8.
-		expect(subscriptions).toHaveLength(8);
+		// f125 + f126/f00026: original commands + observability commands.
+		expect(subscriptions).toHaveLength(11);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
 		expect(commands.has(SHOW_METRICS_COMMAND)).toBe(true);
+		expect(commands.has(OPEN_SETTINGS_COMMAND)).toBe(true);
 
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 
