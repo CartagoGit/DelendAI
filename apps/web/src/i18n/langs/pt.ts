@@ -254,6 +254,19 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.pt,
 	recovery: recoveryByLang.pt,
 	logs: logsByLang.pt,
+	presets: {
+		title: 'Presets',
+		lead: 'Conjuntos de plugins pré-configurados para diferentes tamanhos de espaço de trabalho.',
+		summary:
+			'Este repositório contém {count} plugins exclusivos nos presets.',
+		hostOnlyChip: 'apenas host',
+		installTitle: 'Como usar',
+		installLead:
+			'Especifique a bandeira --preset ao iniciar o servidor MCP.',
+		table: {
+			preset: 'Preset',
+		},
+	},
 };
 
 export default dict;

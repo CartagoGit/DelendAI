@@ -251,6 +251,17 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.hi,
 	recovery: recoveryByLang.hi,
 	logs: logsByLang.hi,
+	presets: {
+		title: 'प्रीसेट्स',
+		lead: 'विभिन्न कार्यस्थान आकारों के लिए पूर्व-कॉन्फ़िगर किए गए प्लगइन सेट।',
+		summary: 'इस रिपॉजिटरी में प्रीसेट में {count} अद्वितीय प्लगइन शामिल हैं।',
+		hostOnlyChip: 'केवल होस्ट',
+		installTitle: 'कैसे उपयोग करें',
+		installLead: 'MCP सर्वर शुरू करते समय --preset ध्वज निर्दिष्ट करें।',
+		table: {
+			preset: 'प्रीसेट',
+		},
+	},
 };
 
 export default dict;

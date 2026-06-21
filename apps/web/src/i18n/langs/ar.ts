@@ -248,6 +248,18 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.ar,
 	recovery: recoveryByLang.ar,
 	logs: logsByLang.ar,
+	presets: {
+		title: 'الإعدادات المسبقة',
+		lead: 'مجموعات المكونات الإضافية المكونة مسبقًا لمساحات العمل بمختلف الأحجام.',
+		summary:
+			'يحتوي هذا المستودع على {count} من المكونات الإضافية الفريدة عبر الإعدادات المسبقة.',
+		hostOnlyChip: 'المضيف فقط',
+		installTitle: 'كيفية الاستخدام',
+		installLead: 'حدد علم --preset عند بدء تشغيل خادم MCP.',
+		table: {
+			preset: 'الإعداد المسبق',
+		},
+	},
 };
 
 export default dict;

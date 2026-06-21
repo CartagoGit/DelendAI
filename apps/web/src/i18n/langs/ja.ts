@@ -254,6 +254,18 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.ja,
 	recovery: recoveryByLang.ja,
 	logs: logsByLang.ja,
+	presets: {
+		title: 'プリセット',
+		lead: 'さまざまなワークスペースのサイズに合わせて事前構成されたプラグインのセット。',
+		summary:
+			'このリポジトリには、プリセット全体で {count} 個の固有のプラグインが含まれています。',
+		hostOnlyChip: 'ホストのみ',
+		installTitle: '使い方',
+		installLead: 'MCP サーバーの起動時に --preset フラグを指定します。',
+		table: {
+			preset: 'プリセット',
+		},
+	},
 };
 
 export default dict;
