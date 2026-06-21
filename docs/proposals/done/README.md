@@ -100,7 +100,7 @@ and recommends canonicalisation if it sees an ad-hoc shape.
 
 ## See also
 
-- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds; archived once f00001 lands).
-- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
+- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](./feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds).
+- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](./feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
 - [n00007 — Resume kind: cross-session handoff summaries](../ready/n00007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
 - [`done/resumes/README.md`](./resumes/README.md) — the `resumes/` bucket's own README.

@@ -74,5 +74,5 @@ tier as `kind: legacy` (prefix `l`) per f00016 §4.3.
 
 - [n00007 — Resume kind: cross-session handoff summaries](../../../ready/n00007-resume-kind-cross-session-handoff-summaries.md)
   (the proposal that defined this kind + bucket)
-- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md)
-- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)
+- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md)
+- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)

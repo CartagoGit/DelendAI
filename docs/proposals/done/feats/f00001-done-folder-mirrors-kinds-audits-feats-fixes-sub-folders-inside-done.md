@@ -2,7 +2,7 @@
 id: f00001
 kind: feat
 title: Done folder mirrors kinds — audits/, feats/, fixes/ sub-folders inside done/
-status: in-progress
+status: done
 triaged: true
 date: 2026-06-21
 track: proposals
@@ -27,7 +27,7 @@ related:
 Add an internal sub-folder mirror inside `docs/proposals/done/` so the
 folder scales without becoming a flat dump. The 7 statuses still live at
 the root (`ready/`, `in-progress/`, `review/`, `done/`, `paused/`,
-`blocked/`, `retired/`) per [f00016](done/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md);
+`blocked/`, `retired/`) per [f00016](./f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md);
 only **inside `done/`** we group closed proposals by their `kind`
 (currently `audits/`, `feats/`, `fixes/`). This is purely a filesystem
 convention — the reconciler still treats every file under `done/` (any
@@ -254,13 +254,13 @@ all receive new numbers based on the chronological table in §3.5.
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
-- files: docs/proposals/done/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
-- files: docs/proposals/done/f00014-feat-ide-extension-vscode-and-friends.md
-- files: docs/proposals/done/f00015-feat-mcp-logs-plugin.md
-- files: docs/proposals/done/f00017-proposals-output-schema-hardening.md
-- files: docs/proposals/done/f00013-adopt-core-migrations-for-agent-registry.md
-- files: docs/proposals/done/f00018-rules-compact-findings.md
-- files: docs/proposals/INDEX.md
+- files: docs/proposals/done/feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
+- files: docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md
+- files: docs/proposals/done/feats/f00015-feat-mcp-logs-plugin.md
+- files: docs/proposals/done/feats/f00017-proposals-output-schema-hardening.md
+- files: docs/proposals/done/feats/f00013-adopt-core-migrations-for-agent-registry.md
+- files: docs/proposals/done/feats/f00018-rules-compact-findings.md
+- files: docs/proposals/done/README.md
 
 ## Acceptance
 

@@ -15,7 +15,7 @@ track: archive
 > de abajo fueron **re-verificados contra el código** en esta sesión: se
 > cita la línea exacta.
 >
-> **Superseded by [f00001 — Done folder mirrors kinds](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)**
+> **Superseded by [f00001 — Done folder mirrors kinds](../feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)**
 > (cuando aterrice): la Maestra ya no es "el documento único y vigente" —
 > los hallazgos abiertos migraron a propuestas cerradas en `done/feats/` y
 > `done/fixes/`, y la organización de las propias auditorías pasó a
