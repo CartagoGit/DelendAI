@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -16,6 +17,7 @@ import {
 	readConfigText,
 	setDotPath,
 	writeConfigSafely,
+	writeWorkspaceFileSafely,
 } from '../lib/config-file';
 import { formatRows } from '../lib/text-format';
 
@@ -80,6 +82,21 @@ const scalarArg = (
 
 const hasFlag = (args: readonly string[], name: string): boolean =>
 	args.includes(`--${name}`);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const scaffoldFilesOf = (
+	report: unknown,
+): ReadonlyArray<{ readonly path: string; readonly content: string }> => {
+	if (!isRecord(report) || !Array.isArray(report.files)) return [];
+	return report.files.filter(
+		(file): file is { readonly path: string; readonly content: string } =>
+			isRecord(file) &&
+			typeof file.path === 'string' &&
+			typeof file.content === 'string',
+	);
+};
 
 const listCommand: ICliCommand = {
 	name: 'plugin list',
@@ -266,6 +283,27 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 		},
 	},
 	{
+		name: 'init',
+		summary: 'Create a minimal mcp-vertex config file.',
+		async run(args, ctx) {
+			const raw = await readConfigText(ctx.globals.workspace);
+			if (raw !== undefined && !hasFlag(args, 'force')) {
+				return {
+					code: EXIT_CODE.VALIDATION,
+					error: `${configPathFor(ctx.globals.workspace)} already exists; pass --force to overwrite`,
+				};
+			}
+			const path = await writeConfigSafely(ctx.globals.workspace, {
+				plugins: {},
+			});
+			return data({
+				path,
+				created: raw === undefined,
+				overwritten: raw !== undefined,
+			});
+		},
+	},
+	{
 		name: 'search',
 		summary: 'Search workspace text files.',
 		async run(args, ctx) {
@@ -329,19 +367,40 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 		async run(args, ctx) {
 			const kind = args[0];
 			const name = scalarArg(args, 'name') ?? args[1];
+			const out = scalarArg(args, 'out');
 			if (kind === undefined || name === undefined) {
 				return {
 					code: EXIT_CODE.USAGE,
 					error: 'usage: scaffold <kind> --name=<name>',
 				};
 			}
-			return data(
-				await request(ctx, 'mcp-vertex_scaffold', {
-					kind,
-					name,
-					dryRun: true,
-				}),
-			);
+			const report = await request(ctx, 'mcp-vertex_scaffold', {
+				kind,
+				name,
+				dryRun: true,
+			});
+			if (out === undefined || hasFlag(args, 'dry-run')) {
+				return data(report);
+			}
+			const files = scaffoldFilesOf(report);
+			if (files.length === 0) {
+				return {
+					code: EXIT_CODE.RUNTIME,
+					error: 'scaffold produced no writable files',
+				};
+			}
+			const written: string[] = [];
+			for (const file of files) {
+				const target = files.length === 1 ? out : join(out, file.path);
+				written.push(
+					await writeWorkspaceFileSafely(
+						ctx.globals.workspace,
+						target,
+						file.content,
+					),
+				);
+			}
+			return data({ report, written });
 		},
 	},
 ];
