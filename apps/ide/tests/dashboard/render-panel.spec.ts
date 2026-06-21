@@ -143,6 +143,18 @@ const baseAgents = {
 	totalActive: 1,
 };
 
+const baseHealth = {
+	healthy: true,
+	locksActive: 0,
+	queue: null,
+	orphans: 0,
+	orphansThreshold: 'unknown',
+	stale: [],
+	staleCount: 0,
+	agents: [],
+	fetchedAt: '2026-06-21T07:00:00.000Z',
+};
+
 const fixture: IDashboardAllModels = {
 	overview: baseOverview,
 	metrics: baseMetrics,
@@ -152,6 +164,7 @@ const fixture: IDashboardAllModels = {
 	sessions: baseSessions,
 	times: baseTimes,
 	agents: baseAgents,
+	health: baseHealth,
 	server: {
 		name: 'mcp-vertex',
 		version: '0.1.0',
@@ -270,6 +283,8 @@ describe('renderDashboard', () => {
 		expect(html).toContain('tab-sessions');
 		expect(html).toContain('tab-times');
 		expect(html).toContain('tab-agents');
+		expect(html).toContain('tab-health');
+		expect(html).toContain('panel-health');
 		expect(html).toContain('tab-docs');
 		expect(html).toContain('panel-overview');
 		expect(html).toContain('panel-metrics');
