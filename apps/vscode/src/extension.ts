@@ -7,9 +7,14 @@ import {
 
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import {
+	OPEN_KNOWLEDGE_COMMAND,
+	registerOpenKnowledgeCommand,
+} from './commands/open-knowledge';
+import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
+import { registerRestartServerCommand } from './commands/restart-server';
 import { REFRESH_COMMAND, registerRefreshCommand } from './commands/refresh';
 import {
 	RUN_VALIDATION_COMMAND,
@@ -20,6 +25,10 @@ import {
 	registerShowMetricsCommand,
 } from './commands/show-metrics';
 import { registerShowOverviewCommand } from './commands/show-overview';
+import {
+	TOOL_SEARCH_COMMAND,
+	registerToolSearchCommand,
+} from './commands/tool-search';
 import { renderJsonHtml } from './commands/types';
 import {
 	type IFileSystemWatcher,
@@ -129,6 +138,11 @@ export const activate = async (
 	);
 	context.subscriptions.push(registerOpenProposalCommand({ vscode, client }));
 	context.subscriptions.push(registerShowMetricsCommand({ vscode, client }));
+	context.subscriptions.push(
+		registerOpenKnowledgeCommand({ vscode, client }),
+	);
+	context.subscriptions.push(registerToolSearchCommand({ vscode, client }));
+	context.subscriptions.push(registerRestartServerCommand(vscode));
 
 	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`

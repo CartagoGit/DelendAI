@@ -38,6 +38,10 @@ export type {
 } from '../lib/services/logs.types';
 export type { INotificationLogsBridgeOptions } from '../lib/services/notification-logs-bridge';
 export type {
+	IKnowledgeFullEntry,
+	IKnowledgeListEntry,
+} from '../lib/services/knowledge-service';
+export type {
 	IKnowledgeHit,
 	ISearchHit,
 	ISearchOptions,
@@ -55,6 +59,13 @@ export type {
 	IStaleAgent,
 	IStaleKind,
 } from '../lib/services/health.types';
+export { ConnectionHealthService } from '../lib/services/connection-health-service';
+export type {
+	IConnectionHealthEvent,
+	IConnectionHealthOptions,
+	IConnectionHealthSnapshot,
+	IConnectionState,
+} from '../lib/services/connection-health.types';
 export type { IDashboardServiceOptions } from '../lib/services/dashboard-service';
 export type {
 	IDashboardAgentsModel,

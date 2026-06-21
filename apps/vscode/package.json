@@ -2,7 +2,7 @@
 	"name": "mcp-vertex-vscode",
 	"displayName": "mcp-vertex",
 	"description": "VS Code client for inspecting and operating an mcp-vertex MCP server.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"publisher": "cartago",
 	"type": "module",
 	"private": true,
@@ -70,6 +70,18 @@
 			{
 				"command": "mcp-vertex.openDocs",
 				"title": "mcp-vertex: Open Documentation"
+			},
+			{
+				"command": "mcp-vertex.openKnowledge",
+				"title": "mcp-vertex: Open Knowledge Navigator"
+			},
+			{
+				"command": "mcp-vertex.toolSearch",
+				"title": "mcp-vertex: Search Tools"
+			},
+			{
+				"command": "mcp-vertex.restartServer",
+				"title": "mcp-vertex: Restart MCP Server"
 			}
 		]
 	},

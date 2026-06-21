@@ -28,6 +28,7 @@ export { renderPanelSessions } from '../dashboard/render-panel-sessions';
 export { renderPanelTimes } from '../dashboard/render-panel-times';
 export { renderPanelTokens } from '../dashboard/render-panel-tokens';
 export { renderPanelTools } from '../dashboard/render-panel-tools';
+export { renderPanelHealth } from '../dashboard/render-panel-health';
 export { barChart } from '../dashboard/bar-chart';
 export type { IBarDatum } from '../dashboard/bar-chart';
 export { sparklinePath } from '../dashboard/sparkline';
