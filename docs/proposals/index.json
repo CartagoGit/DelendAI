@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T19:59:12.924Z",
-	"count": 90,
+	"generated_at": "2026-06-21T20:15:21.389Z",
+	"count": 91,
 	"proposals": [
 		{
 			"id": "a00027",
@@ -116,6 +116,14 @@
 			"id": "f00047",
 			"file": "ready/f00047-multi-surface-budget-gates-compact-first-consumers.md",
 			"track": "core+client+extensions/vscode+plugins+metrics+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00048",
+			"file": "ready/f00048-contracts-file-naming-and-folder-conventions.md",
+			"track": "architecture+lint+repo-layout",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"

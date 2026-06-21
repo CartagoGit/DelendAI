@@ -372,7 +372,7 @@ export default definePlugin({
 						'- `agent_names` — name the whole agent tree, orchestrator included.',
 						'- `task_queue` / `round_context` — multi-agent coordination & resumed rounds.',
 						'',
-						'Loop: claim → one atomic slice → validate → sync → release. Report `lock-conflict` instead of retrying a blocked claim.',
+						'Loop: claim → one atomic slice → validate → close_slice. If that was the last open slice, sync once; otherwise do not sync mid-flight. On blocked claims, await_lock or lock-released — never poll.',
 						`State under \`${layout.scratchDir}\`; proposals under \`${layout.proposalsDir}\`.`,
 					].join('\n'),
 				},

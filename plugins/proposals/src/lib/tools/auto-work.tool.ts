@@ -159,7 +159,7 @@ export const runAutoWork = async (
 				: {
 						nextAction:
 							next.nextAction ??
-							'Create a proposal under the proposals dir and run sync_proposals.',
+							'Create a proposal under the proposals dir; only run sync_proposals after creating/renaming proposal files or after the last open slice of a proposal is closed.',
 					}),
 		});
 	}
@@ -195,16 +195,16 @@ export const runAutoWork = async (
 	const steps = [
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
-		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }.`,
+		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${prefix}_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
 			? [`Validate: run \`${options.validationCommand}\`.`]
 			: [
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),
-		`Mark progress in the proposal, then ${prefix}_sync_proposals.`,
+		`Mark progress in the proposal, then ${prefix}_close_slice { id, sliceId } to flip the slice status and release the lock atomically.`,
+		`If that was the last open slice for the proposal, run ${prefix}_sync_proposals once; otherwise do not sync mid-flight.`,
 		...persistStep,
-		`Release: ${prefix}_agent_lock { action: "release", task_id }.`,
 		`Repeat ${prefix}_auto_work for the next slice/proposal.`,
 	];
 

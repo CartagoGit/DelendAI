@@ -41,7 +41,7 @@ Close the workflow-level gaps surfaced by a00027 S2: make the multi-agent path l
 
 ### S2 — Runtime enforcement for non-trivial delegation and wait path
 - **Files**: plugins/proposals/src/lib/tools/auto-work.tool.ts, plugins/proposals/src/lib/tools/continue-proposal.tool.ts, plugins/proposals/src/index.ts, plugins/notification/src/lib/tools.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "auto_work exposes the same non-trivial threshold the docs prescribe and points to one canonical wait path when work is blocked by claims."

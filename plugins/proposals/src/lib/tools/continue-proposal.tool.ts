@@ -480,8 +480,7 @@ export const runContinueProposal = async (
 		return json({
 			kind: 'all-claimed',
 			reason: 'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
-			nextAction:
-				'Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or stop and report that all work is claimed.',
+			nextAction: `Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry the claim path.`,
 		});
 	// f00024: kind-based cascade (+ frontmatter override/boost) replaces the
 	// old hardcoded `['f', 'p']` family-prefix rank. A host that still
