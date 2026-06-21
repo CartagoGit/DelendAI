@@ -99,6 +99,13 @@ export interface McpVertexOverviewOutput {
 		cacheDir: string;
 		docsDir: string;
 	};
+	pluginDiagnostic?: {
+		requested: string[];
+		loaded: string[];
+		missing: string[];
+		configPlugins: string[];
+		errors: number;
+	};
 	plugins: Array<string | {
 		name: string;
 		version?: string;

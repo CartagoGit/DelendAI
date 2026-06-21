@@ -2,7 +2,7 @@
 id: f00049
 kind: feat
 title: mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins
-status: ready
+status: done
 type: proposal
 track: host+core+docs+workflow
 date: 2026-06-21
@@ -31,8 +31,8 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 - global_gate: type
 
 ### S1 — Canonical plugin resolution for mcp.json-launched host
-- **Files**: tools/scripts/host/host-server.script.ts, packages/core/src/lib/plugins/parse-cli-args.ts, mcp-vertex.config.json
-- **Status**: pending
+- **Files**: tools/scripts/host/host-server.script.ts, packages/core/src/lib/cli/assemble.ts, mcp-vertex.config.json
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "The host launch path used by .vscode/mcp.json resolves plugins from the same canonical sources as the rest of the repo: preset delta, explicit --plugins, exclude-plugins, and mcp-vertex.config.json plugin entries."
@@ -40,8 +40,8 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
   - "Host-only plugins remain opt-in; the slice fixes parity, not automatic expansion to every possible plugin."
 
 ### S2 — Compact diagnostic of loaded plugins and tools
-- **Files**: packages/core/src/lib/tools/overview-tool.ts, packages/core/src/lib/contracts/interfaces/core-paths.interface.ts, docs/TOKEN-BUDGETS.md
-- **Status**: pending
+- **Files**: packages/core/src/lib/tools/overview-tool.ts
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "On startup or first cheap inspection, the server can explain which plugins and tools were actually loaded for the workspace and whether that matches config/preset expectations."
@@ -50,7 +50,7 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 
 ### S3 — Repo-facing configuration and docs contract
 - **Files**: .vscode/mcp.json, README.md, docs/CROSS-IDE.md, docs/README-MCP-VERTEX.md
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "The repo documents one canonical way to launch mcp-vertex from mcp.json so the loaded tools match the repo's declared plugin surface."
@@ -59,7 +59,7 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 
 ### S4 — Validation coverage for loaded-tool parity
 - **Files**: packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts, packages/core/tests/src/lib/e2e/mcp-json-plugin-parity.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "Tests cover at least one workspace where mcp-vertex.config.json declares plugins and the mcp.json launch path exposes the expected tool names."
@@ -72,3 +72,12 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 - A compact diagnostic explains what was loaded and why.
 - The docs and example config make that precedence understandable to a user opening the repo.
 - Validation covers at least one parity case end to end.
+
+## notes
+
+### Closure — 2026-06-21
+
+- `assembleCliConfig` now merges preset/CLI plugins with plugin declarations from `mcp-vertex.config.json`, then applies `exclude-plugins` to the final set.
+- Compact overview now exposes `pluginDiagnostic` with requested, loaded, missing, config-declared plugins and error count.
+- `.vscode/mcp.json`, README and cross-IDE docs document the repo launcher and precedence.
+- Verified with `bun run typecheck`, focused parity/token-budget tests and `bun run validate`.

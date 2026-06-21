@@ -52,6 +52,7 @@ scaffolding tools.
 | `--name=NAME` | `mcp-vertex` | Server name advertised over MCP. |
 | `--prefix=NS` | `mcpvertex` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
 | `--config=FILE` | `mcp-vertex.config.json` | Config file with per-plugin values (see below). |
+| `--exclude-plugins=a,b` | _(none)_ | Subtract plugins after preset, explicit plugins and config-file plugin declarations are merged. |
 | `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
 | `--mcp-project-create=false` | (on) | Disable the first-start project-server blueprint. |
 | `--mcp-project-tests=false` | (on) | Omit tests from the generated blueprint. |
@@ -78,10 +79,17 @@ For anything beyond the global roots, put a config file at the workspace root
 }
 ```
 
-Precedence for the shared roots is **explicit CLI flag > config file > default**.
-A plugin reads its entry as `ctx.options` (and its namespace as
-`ctx.namespacePrefix`). A missing or malformed file contributes nothing — it
-never crashes the server.
+Precedence for shared roots is **explicit CLI flag > config file > default**.
+Plugin loading is additive: `--preset`, explicit `--plugins` and
+`mcp-vertex.config.json#plugins` are merged, deduped, then
+`--exclude-plugins` subtracts from the final set. A plugin reads its entry as
+`ctx.options` (and its namespace as `ctx.namespacePrefix`). A missing or
+malformed file contributes nothing — it never crashes the server.
+
+The compact overview includes a `pluginDiagnostic` block with the requested,
+loaded, missing and config-declared plugins. Hosts can call
+`<prefix>_overview { "compact": true }` first to confirm the tool surface loaded
+from `mcp.json` matches the repo config.
 
 ## Built-in tools (always available)
 

@@ -24,6 +24,7 @@ export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
+	readonly pluginDiagnostic?: IOverviewPluginDiagnostic | undefined;
 	readonly plugins: readonly IOverviewPlugin[];
 	readonly tools: readonly IOverviewToolEntry[];
 	readonly knowledge: ReadonlyArray<{
@@ -31,6 +32,14 @@ export interface IOverviewSnapshot {
 		readonly title: string;
 	}>;
 	readonly recommendedNextAction: string;
+}
+
+export interface IOverviewPluginDiagnostic {
+	readonly requested: readonly string[];
+	readonly loaded: readonly string[];
+	readonly missing: readonly string[];
+	readonly configPlugins: readonly string[];
+	readonly errors: number;
 }
 
 const MAX_OVERVIEW_SUMMARY_CHARS = 96;
@@ -72,6 +81,15 @@ export const buildOverviewToolRegistration = (
 					namespacePrefix: z.string(),
 					corePaths: z
 						.object({ cacheDir: z.string(), docsDir: z.string() })
+						.optional(),
+					pluginDiagnostic: z
+						.object({
+							requested: z.array(z.string()),
+							loaded: z.array(z.string()),
+							missing: z.array(z.string()),
+							configPlugins: z.array(z.string()),
+							errors: z.number(),
+						})
 						.optional(),
 					plugins: z.array(
 						z.union([
@@ -127,6 +145,7 @@ export const buildOverviewToolRegistration = (
 					return toolJson({
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
+						pluginDiagnostic: snap.pluginDiagnostic,
 						plugins: snap.plugins.map((p) => p.name),
 						tools: tools.map((t) => t.name),
 						knowledge: snap.knowledge.map((k) => k.id),

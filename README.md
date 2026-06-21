@@ -48,6 +48,14 @@ bun run types:generate   # regenerate src/generated/tool-outputs.ts per package
 
 ## Develop
 
+## Local MCP Host
+
+The checked-in `.vscode/mcp.json` launches this repo through
+`tools/scripts/host/host-server.script.ts` with `--preset=swarm`. The host uses
+the same loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
+loaded automatically in addition to the preset unless excluded with
+`--exclude-plugins`.
+
 ```bash
 bun install
 bun run validate         # typecheck + tests (incl. the type-SDK drift guard)
