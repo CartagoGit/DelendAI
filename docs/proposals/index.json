@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T03:41:24.999Z",
-	"count": 30,
+	"generated_at": "2026-06-21T04:58:51.794Z",
+	"count": 16,
 	"proposals": [
 		{
 			"id": "l114",
@@ -8,6 +8,48 @@
 			"track": "docs+release",
 			"type": "proposal",
 			"status": "paused",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "a021",
+			"file": "ready/a021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a022",
+			"file": "ready/a022-21-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "f122",
+			"file": "ready/f122-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"track": "proposals-plugin",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f123",
+			"file": "ready/f123-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
+			"track": "notification-plugin",
+			"type": "proposal",
+			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
@@ -67,261 +109,43 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "l122",
+			"file": "ready/l122-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
+			"track": "core+plugins",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "x123",
+			"file": "ready/x123-fix-host-zombie-on-parent-exit.md",
+			"track": "core+host",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "x124",
+			"file": "ready/x124-web-ui-bugfixes-round-2.md",
+			"track": "web+ui",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "f119",
 			"file": "in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
 			"track": "proposals",
 			"type": "unspecified",
-			"status": "in_progress",
+			"status": "in-progress",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
 					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
-					"{ agent: implementation_runner, task: 's2: re-classify l99..l113 by real kind + move into done/feats|fixes/' }",
+					"{ agent: implementation_runner, task: 's2: re-classify f99..l113 by real kind + move into done/feats|fixes/' }",
 					"{ agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }"
 				]
 			}
-		},
-		{
-			"id": "f113",
-			"file": "done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
-			"track": "proposals+core+web+notification",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-20",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: \"S1-S5, S11-S13: state machine + kinds + linters + reconciler + migration + id allocator\" }",
-					"{ agent: implementation_runner, task: \"S8-S9: agent-alive/idle/dead events over the heartbeat mtime + recovery tools\" }",
-					"{ agent: implementation_runner, task: \"S6, S10: i18n glossary + status badges + recovery dashboard + SSE\" }"
-				],
-				"reservedFiles": [
-					"docs/scaffolds/",
-					"docs/proposals/",
-					"plugins/proposals/src/lib/proposals/sync-proposal-registry.ts",
-					"plugins/proposals/src/lib/proposals/proposal-document.ts",
-					"plugins/proposals/src/lib/proposals/adopt.ts",
-					"plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts",
-					"plugins/proposals/src/lib/tools/continue-proposal.tool.ts",
-					"plugins/proposals/src/lib/tools/proposal-transition.tool.ts",
-					"plugins/proposals/src/lib/tools/recovery-tools.ts",
-					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
-					"plugins/proposals/src/lib/proposals/proposal-id-allocator.ts",
-					".cache/mcp-vertex/proposal-id-counters.json",
-					"plugins/notification/src/lib/agent-events.ts",
-					"plugins/notification/src/lib/agent-events-bridge.ts",
-					"plugins/notification/src/lib/tools.ts",
-					"apps/web/src/i18n/langs/",
-					"apps/web/src/i18n/check-i18n.ts",
-					"apps/web/src/pages/status/recovery.astro",
-					"apps/web/src/components/recovery/",
-					"apps/web/src/pages/api/events/",
-					"scripts/lint-scaffolds.ts",
-					"scripts/migrate-legacy-proposals.ts",
-					"scripts/normalize-legacy-proposals.ts",
-					"scripts/rewrite-proposal-refs.ts"
-				]
-			}
-		},
-		{
-			"id": "f114",
-			"file": "done/f114-feat-ide-extension-vscode-and-friends.md",
-			"track": "apps+client+docs",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-20",
-			"extras": {
-				"ownership": ["{", "{", "{", "{"],
-				"reservedFiles": [
-					"packages/client/",
-					"apps/vscode/",
-					"apps/vscode/.vscodeignore",
-					"apps/vscode/package.json",
-					"apps/vscode/src/extension.ts",
-					"apps/vscode/src/providers/",
-					"apps/vscode/src/commands/",
-					"apps/vscode/src/views/",
-					"apps/vscode/src/test/",
-					"apps/vscode/src/i18n/",
-					"apps/vscode/README.md",
-					"apps/vscode/CHANGELOG.md",
-					"docs/IDE-EXTENSION.md"
-				]
-			}
-		},
-		{
-			"id": "f115",
-			"file": "done/f115-feat-mcp-logs-plugin.md",
-			"track": "plugins+notification+memory+web+docs",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-20",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: \"S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot\" }",
-					"{ agent: implementation_runner, task: \"S2: tool-registry hook for started/completed/failed/timed_out capture\" }",
-					"{ agent: implementation_runner, task: \"S3: subscribe to notifications/message bus + normalize events + correlate claim→started→completed chain\" }",
-					"{ agent: implementation_runner, task: \"S4: 5 tools (logs_query, logs_tail, logs_subscribe, logs_correlate, logs_redact_test) + specs\" }",
-					"{ agent: implementation_runner, task: \"S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f113 S10)\" }",
-					"{ agent: implementation_runner, task: \"S6: acceptance — bun run validate green\" }"
-				],
-				"reservedFiles": [
-					"plugins/logs/",
-					"plugins/logs/src/",
-					"plugins/logs/tests/",
-					"plugins/logs/package.json",
-					"plugins/logs/README.md",
-					".cache/mcp-vertex/logs/",
-					"apps/web/src/pages/status/logs.astro",
-					"apps/web/src/components/logs/",
-					"apps/web/src/pages/api/events/logs.ts",
-					"apps/web/src/i18n/langs/",
-					"docs/LOGS.md"
-				]
-			}
-		},
-		{
-			"id": "f116",
-			"file": "done/f116-proposals-output-schema-hardening.md",
-			"track": "proposals+tooling",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f117",
-			"file": "done/f117-adopt-core-migrations-for-agent-registry.md",
-			"track": "proposals+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f118",
-			"file": "done/f118-rules-compact-findings.md",
-			"track": "rules+quality",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "l100",
-			"file": "done/l100-website-i18n-and-docs-rewrite.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "l101",
-			"file": "done/l101-web-header-transitions-and-full-capabilities-surface.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "l102",
-			"file": "done/l102-keep-legacy-default-false.md",
-			"track": "core+scaffold",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "l103",
-			"file": "done/l103-loop-detection-and-handoff.md",
-			"track": "runtime+coordination",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "l104",
-			"file": "done/l104-feat-status-marker-plugin.md",
-			"track": "agent-contract",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "l105",
-			"file": "done/l105-web-bugfixes-and-ux-overhaul.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "l106",
-			"file": "done/l106-fix-gen-skills-recursion.md",
-			"track": "web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "l107",
-			"file": "done/l107-multilang-quality-gates.md",
-			"track": "core+quality+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "l108",
-			"file": "done/l108-feat-test-convention-plugin.md",
-			"track": "core+plugin+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "l109",
-			"file": "done/l109-feat-auto-work-persist-modes.md",
-			"track": "plugin",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "l110",
-			"file": "done/l110-residual-p100-web-and-i18n.md",
-			"track": "web+i18n",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "l111",
-			"file": "done/l111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
-			"track": "core+proposals",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "l112",
-			"file": "done/l112-derive-site-manifests-and-local-aliases.md",
-			"track": "web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "l113",
-			"file": "done/l113-fix-audit-types.md",
-			"track": "plugins",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "l99",
-			"file": "done/l99-feat-multi-model-audit-plugin.md",
-			"track": "audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
 		}
 	],
 	"errors": []

@@ -57,6 +57,55 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			};
 			applyTheme();
 			document.addEventListener('astro:after-swap', applyTheme);
+
+			// x124 S2 — Re-bind nav and footer hrefs after every view
+			// transition. The chrome is mounted once with
+			// `transition:persist`, so the SSR-rendered hrefs (in the
+			// original language) would otherwise stick around after a
+			// language change. We read the active locale from
+			// `<html lang>` and rewrite the href of every in-page link
+			// inside the nav and the footer so the user can keep
+			// navigating in the new locale from any persisted chrome
+			// surface.
+			const LOCALE_CODES = new Set([
+				'en', 'es', 'fr', 'de', 'pt', 'it', 'zh', 'hi', 'ar', 'ja', 'vi', 'th',
+			]);
+			const stripLocale = (path) => {
+				const segs = path.split('/').filter(Boolean);
+				if (segs[0] && LOCALE_CODES.has(segs[0]) && segs[0] !== 'en') {
+					return '/' + segs.slice(1).join('/');
+				}
+				return path || '/';
+			};
+			const rewireHrefs = () => {
+				const lang = document.documentElement.lang || 'en';
+				const relative = stripLocale(location.pathname);
+				const targets = document.querySelectorAll(
+					'.nav__links a, .sitefoot a[href]',
+				);
+				for (const a of targets) {
+					const href = a.getAttribute('href') || '';
+					// Skip external / mailto / anchor / absolute URLs — only
+					// rewrite in-site relative links.
+					if (
+						!/^\/(?!\/)/.test(href) ||
+						href.startsWith('//') ||
+						href.startsWith('/api/') ||
+						href.startsWith('/flags/') ||
+						href.startsWith('/logos/')
+					) {
+						continue;
+					}
+					const cleanHref = href.split('#')[0] || '/';
+					// Extract the segment path (strip the locale prefix if
+					// present, then re-add the new locale's prefix).
+					const targetRel = stripLocale(cleanHref);
+					const next = lang === 'en' ? targetRel : `/${lang}${targetRel === '/' ? '/' : targetRel}`;
+					if (a.getAttribute('href') !== next) a.setAttribute('href', next);
+				}
+			};
+			rewireHrefs();
+			document.addEventListener('astro:after-swap', rewireHrefs);
 		</script>
 	</head>
 	<body>

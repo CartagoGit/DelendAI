@@ -1,24 +1,16 @@
 // _view-transitions.scss — View Transitions API styling (Astro ClientRouter).
 //
-// Header, footer, drawer and settings modal carry `transition:persist` so
-// they stay mounted across navigations — no remount, no jump.  We suppress
-// their default crossfade (animation-duration: 0s) so they look static
-// while only the <main> content swaps.
+// Header, footer, drawer and the two modals carry `transition:persist` so
+// they stay mounted across navigations — no remount, no jump. They do NOT
+// set `transition:name` (x124 S1): the name would trigger a morph between
+// the old and new DOM state, and the nav/footer copy changes with the
+// language, producing a visible flicker. With just `transition:persist`,
+// the browser snapshots the element once and the new page's `astro-snap`
+// pass replaces the contents in place without animating them — exactly
+// the static behaviour we want for chrome that lives on every page.
 //
-// The selectors are pseudo-element functions — they don't follow BEM and
-// are allow-listed in stylelint.config.mjs (IGNORE_SELECTORS).
-
-// Suppress crossfade on persist elements.
-::view-transition-old(site-nav),
-::view-transition-new(site-nav),
-::view-transition-old(site-footer),
-::view-transition-new(site-footer),
-::view-transition-old(cfg-modal),
-::view-transition-new(cfg-modal),
-::view-transition-old(nav-drawer),
-::view-transition-new(nav-drawer) {
-	animation-duration: 0s;
-}
+// The selectors below are pseudo-element functions and are allow-listed
+// in stylelint.config.mjs (IGNORE_SELECTORS).
 
 // Default <main> root fade-in with a tiny upward drift.
 ::view-transition-old(root) {
