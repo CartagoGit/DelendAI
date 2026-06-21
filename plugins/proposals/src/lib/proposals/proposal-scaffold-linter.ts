@@ -322,21 +322,29 @@ const lintFilenameAndFolder = (
 		const pathParts = path.split('/');
 		// f119: terminal statuses (`done`, `retired`) may live under a kind
 		// sub-folder (e.g. `done/audits/a001-...`) as a filesystem-only
-		// organisation convention. We accept any path that STARTS WITH the
-		// expected status folder — the sub-folder is a kind mirror, not a
-		// separate status. Non-terminal statuses (ready, in-progress,
-		// review, paused, blocked) still require the exact folder.
-		const isTerminal = status === 'done' || status === 'retired';
+		// organisation convention. The check is **status-driven, not
+		// position-driven**: walk the ancestor chain from the file
+		// upward; the FIRST ancestor whose name matches a known status
+		// folder is the file's effective status folder. That ancestor
+		// must equal the expected folder. This is robust against future
+		// re-orderings of path segments, against any number of nested
+		// sub-folders (e.g. `done/audits/2024/...`), and against paths
+		// that don't start with `docs/proposals/` (e.g. absolute or
+		// relative-from-cwd).
+		const STATUS_FOLDER_NAMES = new Set<string>(
+			Object.values(STATUS_TO_FOLDER),
+		);
+		// Skip the filename itself (last segment); walk parents nearest-first.
+		const ancestorFolders = pathParts.slice(0, -1);
+		const nearestStatusAncestor = ancestorFolders.find((seg) =>
+			STATUS_FOLDER_NAMES.has(seg),
+		);
+		const matches = nearestStatusAncestor === expectedFolder;
 		const immediateParent = pathParts[pathParts.length - 2];
-		const matches =
-			immediateParent === expectedFolder ||
-			(isTerminal &&
-				pathParts.includes(expectedFolder) &&
-				pathParts.indexOf(expectedFolder) === pathParts.length - 2);
 		if (!matches) {
 			issues.push({
 				line: 0,
-				message: `frontmatter status "${status}" expects folder "${expectedFolder}" but file lives in "${immediateParent}"`,
+				message: `frontmatter status "${status}" expects folder "${expectedFolder}" but the nearest status ancestor is "${nearestStatusAncestor ?? '(none)'}" (immediate parent: "${immediateParent}")`,
 				fix: `Move the file to docs/proposals/${expectedFolder}/ (or to docs/proposals/${expectedFolder}/<kind-subfolder>/ for terminal statuses), or update status to match its current folder.`,
 			});
 		}
