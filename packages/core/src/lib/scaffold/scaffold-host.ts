@@ -207,9 +207,10 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 ## Compact lane
 
 1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-project-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-3. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
-4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+4. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
 `,
 	};
 };
@@ -227,12 +228,13 @@ export const scaffoldInstructionsFile = (
 The MCP server \`mcp-project-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
-- The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
+- The multi-agent proposal workflow (\`${prefix}_auto_work\`, \`${prefix}_continue_proposal\`, \`${prefix}_delegate\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
 
 ## Lane
 
 - Default model: \`${options.defaultModel ?? '<your-model>'}\`.
 - MCP payload first, one atomic slice, minimal validation, serial continuity.
+- Orchestration threshold: keep the root chat to coordination calls. Delegate any slice that needs more than 3 tool calls, multiple files, or repeated MCP reads.
 - Every final message ends with ONE close marker line (see the close-markers constant of this host).
 `,
 	};

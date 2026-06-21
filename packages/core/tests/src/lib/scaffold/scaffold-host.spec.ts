@@ -55,6 +55,9 @@ describe('scaffold-host generators (p97)', () => {
 		expect(orchestrator.path).toBe('.github/agents/orchestrator.agent.md');
 		expect(orchestrator.content).toContain('mcp-project-acme/*');
 		expect(orchestrator.content).toContain('acme_overview');
+		expect(orchestrator.content).toContain('acme_auto_work');
+		expect(orchestrator.content).toContain('acme_delegate');
+		expect(orchestrator.content).toContain('more than 3 tool calls');
 		expect(orchestrator.content).toContain('user-invocable: true');
 		// M9: the proposal-workflow tools are shown as conditional on the
 		// plugin, never promised as always-present.
@@ -83,6 +86,11 @@ describe('scaffold-host generators (p97)', () => {
 		);
 		expect(config?.content).toContain("namespacePrefix: 'acme'");
 		expect(config?.content).toContain('buildScaffoldToolRegistration');
+		const instructions = files.find((file) =>
+			file.path.endsWith('copilot-instructions.md'),
+		);
+		expect(instructions?.content).toContain('acme_delegate');
+		expect(instructions?.content).toContain('Orchestration threshold');
 		// The generated project must not leak the host's own namespace.
 		for (const file of files) {
 			expect(file.content, file.path).not.toContain('mcp-vertex_');

@@ -78,7 +78,7 @@ The dependency arrow only ever points **plugin → core**, never the reverse.
 3. `createMcpProject` registers every tool deterministically, wrapping each with the
    metrics collector (latency, bytes, errors) before exposing it.
 4. The server serves over stdio. `overview` gives a one-call, low-token map; `auto_work`
-   gives a tight next-action plan.
+   gives a tight next-action plan plus a delegation policy for non-trivial slices.
 
 ## Cross-cutting invariants
 

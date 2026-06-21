@@ -5,19 +5,21 @@ marketing. Numbers are **payload bytes** of the tool result text an agent sees
 (≈ 4 bytes/token), captured by driving the **real** assembled server over the MCP
 protocol (`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`).
 
-## Baseline (2026-06-16)
+## Baseline (2026-06-21)
 
 Server: `--plugins=proposals,memory` (26 tools registered).
 
 | Cold-start call | Bytes | ≈ tokens | Notes |
 |---|---:|---:|---|
-| `overview` (full) | 4 868 | ~1 220 | Every tool with summary + knowledge ids + paths. |
-| `overview { compact: true }` | 882 | ~220 | Names only — **5.5× cheaper**. Use this first when there are many tools. |
-| `auto_work` | 144 | ~36 | One tight action plan, not prose. |
+| `overview` (full) | 6 735 | ~1 684 | Every tool with summary + knowledge ids + paths. |
+| `overview { compact: true }` | 1 271 | ~318 | Names only — **5.3× cheaper**. Use this first when there are many tools. |
+| `auto_work` (idle) | 159 | ~40 | Explicit idle state, not prose. |
+| `auto_work` (work plan) | 1 026 | ~257 | One tight action plan plus a compact delegation policy. |
 
-A full cold-start orientation is therefore **~250 tokens** (`overview compact`) +
-**~36** (`auto_work`) ≈ **<300 tokens** to know the whole server and the next
-action.
+A full cold-start orientation is therefore **~318 tokens** (`overview compact`) +
+**~40** (`auto_work` idle) ≈ **~358 tokens** when no proposal is actionable; with
+an actionable proposal, `auto_work` stays around **~257 tokens** and also tells the
+agent whether to delegate expensive inspection.
 
 ## Enforced budgets (regression guard)
 
@@ -25,7 +27,7 @@ The benchmark spec fails if a change regresses these ceilings:
 
 | Payload | Budget (bytes) |
 |---|---:|
-| `overview` full | 6 500 |
+| `overview` full | 7 000 |
 | `overview` compact | 1 600 |
 | `auto_work` | 1 600 |
 
@@ -44,6 +46,8 @@ bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
 
 - `overview` is one cold-start call (no tool-by-tool probing); `compact`/`tag`
   shrink it further.
+- `auto_work` tells agents when to stop doing research in the root chat and use
+  `continue_proposal mode:"plan"` + `delegate` for non-trivial slices.
 - Knowledge is lazy (MCP resources) — bodies are fetched only on demand.
 - Tool responses are compact JSON (`toolJson`/`toolOk`/`toolError`), no
   pretty-print; persisted files stay human-readable but are never the payload.

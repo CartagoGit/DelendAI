@@ -10,6 +10,7 @@ import {
 	gitWorktreeList,
 	parseBlamePorcelain,
 	parseLog,
+	parseShowOutput,
 	parseStatus,
 	parseWorktreeList,
 } from '@mcp-vertex/git/lib/git';
@@ -127,10 +128,44 @@ describe('git blame (M33)', () => {
 			reason: 'fatal: no such path',
 		});
 	});
+
+	it('rejects a half-open line range before calling git', async () => {
+		const run: IGitRunner = async () => {
+			throw new Error('runner should not be called');
+		};
+		await expect(
+			gitBlame(run, 'src/a.ts', { startLine: 3 }),
+		).resolves.toEqual({
+			ok: false,
+			lines: [],
+			reason: 'startLine and endLine must be provided together',
+		});
+	});
 });
 
 describe('git show (M33)', () => {
-	it('parses commit metadata + the --stat summary below the blank line', async () => {
+	it('parses real git show output where --stat starts immediately after the subject', () => {
+		expect(
+			parseShowOutput(
+				[
+					'abc1234',
+					'Jane Doe',
+					'2024-01-02T03:04:05+00:00',
+					'feat: add thing',
+					' src/a.ts | 2 ++',
+					' 1 file changed, 2 insertions(+)',
+				].join('\n'),
+			),
+		).toEqual({
+			hash: 'abc1234',
+			author: 'Jane Doe',
+			date: '2024-01-02T03:04:05+00:00',
+			subject: 'feat: add thing',
+			stat: 'src/a.ts | 2 ++\n 1 file changed, 2 insertions(+)',
+		});
+	});
+
+	it('parses commit metadata + the --stat summary below an optional blank line', async () => {
 		const run: IGitRunner = async () => ({
 			ok: true,
 			output: [
