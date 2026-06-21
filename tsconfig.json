@@ -3,8 +3,8 @@
 	"include": [
 		"packages/*/src/**/*",
 		"packages/*/tests/**/*",
-		"apps/ide/src/**/*",
-		"apps/ide/tests/**/*",
+		"packages/ui-extension/src/**/*",
+		"packages/ui-extension/tests/**/*",
 		"apps/vscode/src/**/*",
 		"plugins/*/src/**/*",
 		"plugins/*/tests/**/*",

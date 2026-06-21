@@ -14,7 +14,7 @@ export default defineConfig({
 			'plugins/*',
 			'examples/custom-plugin',
 			'apps/web',
-			'apps/ide',
+			'packages/ui-extension',
 			'tools/scripts',
 		],
 		// Coverage is a root concern (aggregated across every project). It only
