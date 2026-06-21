@@ -5,7 +5,8 @@
 			"command": "bun",
 			"args": [
 				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
-				"--workspace=${workspaceFolder}"
+				"--workspace=${workspaceFolder}",
+				"--preset=swarm"
 			]
 		}
 	}

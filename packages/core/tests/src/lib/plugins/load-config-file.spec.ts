@@ -131,6 +131,37 @@ describe('assembleCliConfig + config file', () => {
 		});
 		expect(config.corePaths?.cacheDir).toBe('.fromfile');
 	});
+
+	it('loads plugins declared only in the config file', async () => {
+		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
+		const { config, loadResult } = await assembleCliConfig(args, {
+			import: async () => ({ default: fakePlugin }),
+			readFile: () =>
+				JSON.stringify({
+					plugins: { demo: { prefix: 'dd' } },
+				}),
+		});
+		expect(loadResult.loaded.map((entry) => entry.plugin.name)).toEqual([
+			'demo',
+		]);
+		const known = config.knowledge?.find((entry) => entry.id === 'seen');
+		expect(known?.title).toBe('dd');
+	});
+
+	it('applies exclude-plugins to config-file plugins too', async () => {
+		const args = parseCliArgs(
+			['--workspace=/ws', '--exclude-plugins=demo'],
+			'/cwd',
+		);
+		const { loadResult } = await assembleCliConfig(args, {
+			import: async () => ({ default: fakePlugin }),
+			readFile: () =>
+				JSON.stringify({
+					plugins: { demo: { prefix: 'dd' } },
+				}),
+		});
+		expect(loadResult.loaded).toEqual([]);
+	});
 });
 
 describe('diagnoseConfigFile', () => {

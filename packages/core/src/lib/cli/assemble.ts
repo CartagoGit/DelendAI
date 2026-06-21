@@ -94,6 +94,7 @@ export const assembleCliConfig = async (
 	const rawConfig = readFile(configPath);
 	const fileConfig = parseConfigFile(rawConfig);
 	const configDiagnostic = diagnoseConfigFile(rawConfig);
+	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
 
 	// Precedence for roots: explicit CLI flag > config file > default.
 	const cacheDir =
@@ -122,8 +123,13 @@ export const assembleCliConfig = async (
 		};
 	};
 
+	const excludedPlugins = new Set(args.excludePlugins);
+	const effectivePlugins = [
+		...new Set([...args.plugins, ...configPluginNames]),
+	].filter((name) => !excludedPlugins.has(name));
+
 	const loadResult = await loadPlugins({
-		specifiers: args.plugins,
+		specifiers: effectivePlugins,
 		buildContext,
 		...(deps.import ? { import: deps.import } : {}),
 	});
@@ -203,6 +209,18 @@ export const assembleCliConfig = async (
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
 		corePaths,
+		pluginDiagnostic: {
+			requested: effectivePlugins,
+			loaded: loadResult.loaded.map((entry) => entry.plugin.name),
+			missing: effectivePlugins.filter(
+				(name) =>
+					!loadResult.loaded.some(
+						(entry) => entry.plugin.name === name,
+					),
+			),
+			configPlugins: configPluginNames,
+			errors: loadResult.errors.length,
+		},
 		plugins: loadResult.loaded.map((entry) => ({
 			name: entry.plugin.name,
 			version: entry.plugin.version,
@@ -230,7 +248,7 @@ export const assembleCliConfig = async (
 	const coreCollector: IStatusCollector = {
 		id: 'mcp-vertex',
 		collect: async () => ({
-			requestedPlugins: args.plugins,
+			requestedPlugins: effectivePlugins,
 			loadedPlugins: loadResult.loaded.map((e) => e.plugin.name),
 			pluginErrors: loadResult.errors.length,
 		}),

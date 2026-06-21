@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T21:01:23.198Z",
+	"generated_at": "2026-06-21T21:06:14.163Z",
 	"count": 93,
 	"proposals": [
 		{
@@ -69,14 +69,6 @@
 			"id": "f00048",
 			"file": "ready/f00048-contracts-file-naming-and-folder-conventions.md",
 			"track": "architecture+lint+repo-layout",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00049",
-			"file": "ready/f00049-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
-			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
@@ -832,6 +824,14 @@
 			"id": "f00047",
 			"file": "done/feats/f00047-multi-surface-budget-gates-compact-first-consumers.md",
 			"track": "core+client+extensions/vscode+plugins+metrics+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00049",
+			"file": "done/feats/f00049-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"

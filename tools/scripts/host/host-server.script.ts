@@ -24,6 +24,8 @@ const run = async (): Promise<void> => {
 	const cwd = process.cwd();
 	// `--preset=swarm` is this repo's default; any flag the caller passes
 	// (e.g. VS Code's `--workspace=${workspaceFolder}`) is forwarded after it.
+	// `assembleCliConfig` then adds plugin entries from
+	// `mcp-vertex.config.json` and applies exclude-plugins to the final set.
 	const args = parseCliArgs(
 		['--preset=swarm', ...process.argv.slice(2)],
 		cwd,

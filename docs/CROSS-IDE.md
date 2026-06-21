@@ -28,6 +28,19 @@ The CLI still talks to the MCP server over the public client transport; it does
 not import IDE adapters or plugin internals. See
 [`packages/cli/README.md`](../packages/cli/README.md) for command details.
 
+## mcp.json Plugin Parity
+
+This repo's `.vscode/mcp.json` launches
+`tools/scripts/host/host-server.script.ts` with `--workspace` and
+`--preset=swarm`. The host script uses the same core assembly path as the CLI:
+it resolves preset plugins, explicit `--plugins`, plugins declared in
+`mcp-vertex.config.json`, and finally subtracts `--exclude-plugins`.
+
+That means "mcp-vertex is loaded" implies the configured repo plugin tools are
+loaded too. A compact `mcp-vertex_overview { "compact": true }` includes
+`pluginDiagnostic` with requested, loaded, missing and config-declared plugin
+names so a host can detect mismatch without rendering a full overview dump.
+
 ## What you get for free
 
 Implement `IHostAdapter` once and you automatically get:
