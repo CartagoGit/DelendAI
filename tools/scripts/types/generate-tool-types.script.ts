@@ -41,7 +41,7 @@ import testConventionPlugin from '@mcp-vertex/test-convention';
 
 import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-proposals': proposalsPlugin,

@@ -15,7 +15,7 @@ import { z } from 'zod';
 
 import { CONFIG_FILE_SCHEMA } from '../../../packages/core/src/lib/plugins/load-config-file';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 /** Path of the committed schema, relative to the repo root. */
 export const CONFIG_SCHEMA_PATH =
