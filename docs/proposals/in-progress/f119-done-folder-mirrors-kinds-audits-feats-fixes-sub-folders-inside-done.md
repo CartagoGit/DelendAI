@@ -203,6 +203,10 @@ all receive new numbers based on the chronological table in §3.5.
 - global_gate: none
 
 ### S1 — Renumber and rename the 20 closed audit documents to a1-a20 by chronological creation order
+- **Status**: pending
+- **Files**: see files list below
+- **Command**: `bun run lint:proposals`
+- **Expect**: exit0
 - files: docs/proposals/done/a1-14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md
 - files: docs/proposals/done/a2-15-06-2026- Antigravity (Gemini 3.5 Flash) [estado-actual].md
 - files: docs/proposals/done/a3-15-06-2026- Antigravity (Gemini 3.5 Flash).md
@@ -223,10 +227,12 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (GPT-5.4).md
 - files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (estado-actual).md
 - files: docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md
-- gate: lint
-- status: pending
 
 ### S2 — Move l99-l113 (legacy-prefixed closed proposals) into their real-kind sub-folders
+- **Status**: pending
+- **Files**: see files list below
+- **Command**: `bun run lint:proposals`
+- **Expect**: exit0
 - files: docs/proposals/done/l99-feat-multi-model-audit-plugin.md
 - files: docs/proposals/done/l100-website-i18n-and-docs-rewrite.md
 - files: docs/proposals/done/l101-web-header-transitions-and-full-capabilities-surface.md
@@ -242,10 +248,12 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/l111-post-closure-audit-orchestration-crash-fix-remaining-hardening.md
 - files: docs/proposals/done/l112-derive-site-manifests-and-local-aliases.md
 - files: docs/proposals/done/l113-fix-audit-types.md
-- gate: lint
-- status: pending
 
 ### S3 — Move the remaining f113-f118 closed feats and create the sub-folder convention doc
+- **Status**: pending
+- **Files**: see files list below
+- **Command**: `bun run lint:proposals`
+- **Expect**: exit0
 - files: docs/proposals/done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
 - files: docs/proposals/done/f114-feat-ide-extension-vscode-and-friends.md
 - files: docs/proposals/done/f115-feat-mcp-logs-plugin.md
@@ -253,8 +261,6 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/f117-adopt-core-migrations-for-agent-registry.md
 - files: docs/proposals/done/f118-rules-compact-findings.md
 - files: docs/proposals/INDEX.md
-- gate: lint
-- status: pending
 
 ## Acceptance
 

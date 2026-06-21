@@ -465,3 +465,105 @@ p.
 		).toBe(true);
 	});
 });
+
+describe('lintProposalMarkdown — audit format', () => {
+	const AUDIT_FRONTMATTER = (
+		overrides: Record<string, string> = {},
+	): string => {
+		const fields: Record<string, string> = {
+			id: 'a021',
+			kind: 'audit',
+			title: 'Audit of some component',
+			status: 'ready',
+			date: '2026-06-20',
+			track: 'archive',
+			...overrides,
+		};
+		const lines = Object.entries(fields)
+			.filter(([, v]) => v !== '')
+			.map(([k, v]) => `${k}: ${v}`);
+		return `---\n${lines.join('\n')}\n---\n`;
+	};
+
+	const AUDIT_BODY = (sliceBlock: string = TERSE_SLICE): string => `
+## Goal
+
+One paragraph.
+
+## Why
+
+1-3 paragraphs.
+
+## Non-goals
+
+- not this.
+
+## Slices
+
+${sliceBlock}
+## Acceptance
+
+- [ ] done.
+
+## Verified State
+
+LOC and test metrics.
+
+## Findings
+
+Prioritized list of findings.
+
+## Scoreboard
+
+Table of dimensions.
+`;
+
+	const auditDoc = (
+		frontmatterOverrides: Record<string, string> = {},
+		sliceBlock: string = TERSE_SLICE,
+	): string =>
+		AUDIT_FRONTMATTER(frontmatterOverrides) + AUDIT_BODY(sliceBlock);
+
+	it('accepts a minimal valid audit proposal', () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/a021-audit-report.md',
+			markdown: auditDoc(),
+		});
+		expect(result.ok).toBe(true);
+		expect(result.issues).toEqual([]);
+	});
+
+	it('flags a missing required audit section (e.g. Scoreboard)', () => {
+		const missingScoreboard = auditDoc().replace(
+			'## Scoreboard',
+			'## Unused',
+		);
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/a021-audit-report.md',
+			markdown: missingScoreboard,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('missing required section "scoreboard"'),
+			),
+		).toBe(true);
+	});
+
+	it('flags out-of-order audit sections', () => {
+		const swapped = auditDoc()
+			.replace('## Findings', '## Temp')
+			.replace('## Verified State', '## Findings')
+			.replace('## Temp', '## Verified State');
+		const result = lintProposalMarkdown({
+			path: 'docs/proposals/ready/a021-audit-report.md',
+			markdown: swapped,
+		});
+		expect(result.ok).toBe(false);
+		expect(
+			result.issues.some((i) =>
+				i.message.includes('out of canonical order'),
+			),
+		).toBe(true);
+	});
+});
