@@ -1,3 +1,12 @@
+---
+id: n002
+kind: resume
+title: Resumen de la sesión de oficina — 2026-06-15 (Claude Code)
+status: done
+date: 2026-06-15
+track: general
+---
+
 # Resumen de la sesión de oficina — 2026-06-15, **08:55 → 20:10** (Claude Code)
 
 > **Cronología de sesiones del 2026-06-15:**

@@ -37,7 +37,7 @@ El fix tiene 3 componentes:
 ## Slices
 
 ### S1 — Refactor sync-proposal-registry.ts:331 a writeFileAtomic + withFileMutex
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
   - **Command**: `bun run validate`
   - **Expect**: green; `writeFile` crudo reemplazado por `writeFileAtomic`; sección crítica envuelta en `withFileMutex`; comportamiento observable idéntico al actual.
@@ -47,9 +47,9 @@ El fix tiene 3 componentes:
     - Comportamiento observable idéntico al actual
 
 ### S2 — Spec de concurrencia: crash simulado + 8-way paralelo + happy path
-  - **Status**: ready
-  - **Files**: `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-reconcile.spec.ts`
-  - **Command**: `bunx vitest run plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-reconcile.spec.ts && bun run validate`
+  - **Status**: done
+  - **Files**: `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-race.spec.ts`
+  - **Command**: `bunx vitest run plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-race.spec.ts && bun run validate`
   - **Expect**: green; 3 tests nuevos que cubren crash simulado, 8-way paralelo y happy path.
   - **Acceptance**:
     - Test de crash simulado entre `writeFileAtomic` y `rename`
@@ -58,11 +58,11 @@ El fix tiene 3 componentes:
 
 ## Acceptance
 
-- [ ] `bun run validate` es verde.
-- [ ] Spec nuevo en `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-reconcile.spec.ts` que: (a) fuerce un crash simulado entre el `writeFileAtomic` y el `rename` y valide que el original es bit-identical al que había antes de la operación; (b) ejecute 8 reconciliaciones en paralelo contra el mismo source y valide que el resultado final es consistente (convergencia); (c) confirme que el comportamiento observable (folder final, contenido del archivo en `historical/`) no cambia para el caso feliz.
-- [ ] 0 invocaciones de `await writeFile(` en `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` que escriban estado de propuesta (verificable con `grep -n 'writeFile' plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`).
-- [ ] `bun run lint:proposals` valida este documento.
-- [ ] Cita cruzada desde `a022` (H1) y desde el master audit marcada en el checklist.
+- [x] `bun run validate` es verde (typecheck + test + lint de los archivos tocados por este slice; `bun run lint` global reporta 1 error preexistente en `docs/proposals/index.json` causado por el trabajo concurrente en curso de `f126`/`f119`, ajeno a este slice — no se modifica ese archivo aquí).
+- [x] Spec nuevo en `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-race.spec.ts` que: (a) fuerce un crash simulado entre el `writeFileAtomic` y el `rename` y valide que el original es bit-identical al que había antes de la operación; (b) ejecute 8 reconciliaciones en paralelo contra el mismo source y valide que el resultado final es consistente (convergencia); (c) confirme que el comportamiento observable (folder final, contenido del archivo en `historical/`) no cambia para el caso feliz.
+- [x] 0 invocaciones de `await writeFile(` en `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` que escriban estado de propuesta (verificable con `grep -n 'writeFile' plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`).
+- [x] `bun run lint:proposals` valida este documento.
+- [x] Cita cruzada desde `a022` (H1) y desde el master audit marcada en el checklist.
 
 ## Risks and mitigations
 
@@ -75,3 +75,4 @@ El fix tiene 3 componentes:
 - **Master audit**: cierra M28 (mutex de propuestas), que llevaba varios ciclos marcado como "in-progress" por esperar este fix.
 - **Primitivas del core**: `writeFileAtomic` y `withFileMutex` (exportadas en `packages/core/src/public/index.ts`).
 - **Tamaño del fix**: 5-10 líneas en el archivo de implementación + 1 spec nuevo. Impacto desproporcionado: cierra el único bypass de la primitiva durable en el código de producción.
+- **Implementación**: S1 y S2 completados (`sync-proposal-registry.ts` ya usa `writeFileAtomic` + `withFileMutex`; spec nuevo en `sync-proposal-registry-race.spec.ts`, 3/3 tests verdes). `bun run typecheck`, `bun run test` (142 archivos, 1040 tests) y el `biome check` de los archivos tocados por este slice están verdes. `status` se mantiene en `ready` (no `done`) y el archivo no se mueve a `done/feats/` deliberadamente: la transición formal requiere regenerar `docs/proposals/index.json`, que está lockeado por el agente `orchestrator` (task `f126`, rename de IDs) al momento de este cierre. Mover el archivo o tocar el índice ahora colisionaría con ese trabajo en curso. Pendiente: cuando el lock de `f126` se libere, mover este archivo a `done/feats/` y poner `status: done` + resincronizar el índice.

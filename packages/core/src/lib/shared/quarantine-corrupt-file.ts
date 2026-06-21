@@ -56,7 +56,13 @@ export const quarantineCorruptFile = async (
 	}
 };
 
-/** Synchronous variant of {@link quarantineCorruptFile}. */
+/**
+ * Synchronous variant of {@link quarantineCorruptFile}.
+ *
+ * Boot-time one-shot only — hot paths must use the async variant. No
+ * `*Sync` filesystem calls inside tool handlers or engines (AGENTS.md
+ * invariant 3).
+ */
 export const quarantineCorruptFileSync = (
 	absolutePath: string,
 ): string | null => {

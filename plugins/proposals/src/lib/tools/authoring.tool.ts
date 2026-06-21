@@ -176,6 +176,7 @@ export const buildCreateProposalRegistration = (
 							'infra',
 							'spike',
 							'legacy',
+							'resume',
 						])
 						.optional(),
 					title: z.string(),

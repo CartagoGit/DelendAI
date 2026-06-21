@@ -1,3 +1,12 @@
+---
+id: n003
+kind: resume
+title: Resumen de sesión — 2ª ronda 2026-06-15 noche → 06-16 (Claude Code)
+status: done
+date: 2026-06-15
+track: general
+---
+
 # Resumen de sesión — 2ª ronda de auditoría (2026-06-15 noche → 06-16, Opus)
 
 > Continuación tras la sesión de oficina. El usuario aportó **dos auditorías

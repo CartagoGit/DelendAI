@@ -60,7 +60,13 @@ jobs:
         if: steps.decide.outputs.release == 'true'
         env:
           VERSION: ${{ steps.decide.outputs.version }}
-        run: bun run release --set="$VERSION" --write --publish
+        # --tool=npm --provenance: `id-token: write` (above) lets npm attach an
+        # OIDC-backed provenance attestation to each published tarball. Safe to
+        # switch from `bun publish`: every package's `workspace:*` reference to
+        # `@mcp-vertex/core` lives only in `devDependencies` (never published),
+        # and `peerDependencies` already carry a resolved `^X.Y.Z` range via
+        # `--write` (see scripts/release.ts header for the full rationale).
+        run: bun run release --set="$VERSION" --write --publish --tool=npm --provenance
 
       - name: Tag the release commit
         if: steps.decide.outputs.release == 'true'

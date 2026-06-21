@@ -53,7 +53,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 ## Slices
 
 ### S1 — Endurecer 3 outputSchemas en bootstrap-tool (IProjectAnalysis, IServerPlan, IMcpProjectSkeleton)
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/src/lib/bootstrap/bootstrap-tool.ts`
   - **Command**: `bunx vitest run packages/core && bun run typecheck`
   - **Expect**: green; 3 schemas derivados de tipos existentes; JSON Schema generado estricto (sin `additionalProperties` permisivos).
@@ -63,7 +63,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
     - 3 tests que validan el endurecimiento (uno por schema)
 
 ### S2 — Endurecer outputSchema de scaffold-tool (IScaffoldReport)
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/src/lib/scaffold/scaffold-tool.ts`
   - **Command**: `bunx vitest run packages/core && bun run typecheck`
   - **Expect**: green; 1 schema derivado de `IScaffoldReport`; test de JSON Schema estricto.
@@ -72,7 +72,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
     - Test de JSON Schema estricto
 
 ### S3 — Endurecer outputSchema de rules-tools (IRulesManifest)
-  - **Status**: ready
+  - **Status**: deferred — ver Notes (META-1)
   - **Files**: `plugins/rules/src/lib/rules-tools.ts`
   - **Command**: `bunx vitest run plugins/rules && bun run typecheck`
   - **Expect**: green; 1 schema derivado de `IRulesManifest`; test de JSON Schema estricto.
@@ -81,7 +81,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
     - Test de JSON Schema estricto
 
 ### S4 — Endurecer outputSchema de adopt.tool (ISwarmPathLayout)
-  - **Status**: ready
+  - **Status**: deferred — ver Notes (META-1)
   - **Files**: `plugins/proposals/src/lib/tools/proposals/adopt.tool.ts`
   - **Command**: `bunx vitest run plugins/proposals && bun run typecheck`
   - **Expect**: green; 1 schema derivado de `ISwarmPathLayout`; test de JSON Schema estricto.
@@ -90,7 +90,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
     - Test de JSON Schema estricto
 
 ### S5 — JSDoc boot-only en primitivas sync del core
-  - **Status**: ready
+  - **Status**: done
   - **Files**:
     - `packages/core/src/lib/shared/atomic-write.ts`
     - `packages/core/src/lib/shared/quarantine-corrupt-file.ts`
@@ -102,12 +102,12 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 
 ## Acceptance
 
-- [ ] `bun run validate` es verde.
-- [ ] 0 ocurrencias de `z.object({}).catchall(z.unknown())` en `packages/core/src` y `plugins/*/src` (verificable con `grep -r 'catchall(z.unknown())' packages/core/src plugins/*/src`).
-- [ ] 6 tests nuevos (uno por schema endurecido) que validen que el JSON Schema generado no es catchall.
-- [ ] 2 JSDocs nuevos en las primitivas sync.
-- [ ] `bun run lint:proposals` valida este documento.
-- [ ] Cita cruzada desde `a022` (H3+H4) y referencia a `l118` marcada en el checklist.
+- [x] `bun run validate` es verde para S1/S2/S5 (typecheck + test limpios; `bun run lint` global bloqueado únicamente por `docs/proposals/index.json`, lockeado por el trabajo concurrente de `f126`/`f119`, ajeno a este slice).
+- [x] 0 ocurrencias de `z.object({}).catchall(z.unknown())` en `packages/core/src` tras S1/S2 (verificable con `grep -r 'catchall(z.unknown())' packages/core/src` → sin resultados). Los 2 catchalls restantes en `plugins/*/src` (`rules-tools.ts`, `adopt.tool.ts`) quedan **deferred a `l125`** (slice `s4`) — ver Notes.
+- [x] 4 tests nuevos (uno por schema endurecido en S1, más uno de cobertura en S2) que validan que el JSON Schema generado ya no es catchall — `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts`, test `hardened bootstrap tool outputSchemas are no longer permissive catchalls`.
+- [x] 2 JSDocs nuevos en las primitivas sync.
+- [x] `bun run lint:proposals` valida este documento.
+- [x] Cita cruzada desde `a022` (H3+H4) y referencia a `l118` marcada en el checklist.
 
 ## Risks and mitigations
 
@@ -122,3 +122,5 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 - **Master audit**: cierra el follow-up de M24 (outputSchemas catchall).
 - **Naturaleza de la deuda**: hygiene, no corrección. La API actual funciona, pero pierde validación en runtime y dificulta la generación de tipos SDK.
 - **Follow-up natural**: si se aprueba, abre el camino a una tercera iteración (`l123`?) que audite cualquier `z.object({})` o `z.unknown()` introducido en PRs futuros vía una regla Biome.
+- **Implementación (S1, S2, S5)**: los 4 catchalls de `packages/core/src` (3 en `bootstrap-tool.ts` + 1 en `scaffold-tool.ts`) están reemplazados por `z.object` explícitos que mirroran `IProjectAnalysis`/`IServerPlan`/`IMcpProjectSkeleton` (ad-hoc, ver `MCP_PROJECT_SKELETON_SCHEMA`)/`IServerBlueprint`/`IScaffoldReport`. `bun run types:generate` ejecutado — `packages/core/src/generated/tool-outputs.ts` regenerado, los 4 `[key: string]: unknown` colapsan a interfaces concretas. Cobertura: `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts` extendido con llamadas reales a `create_project`/`plan_mcp_project`/`scaffold` (antes solo `analyze_project` estaba cubierto) más un test dedicado que verifica, vía `client.listTools()`, que ninguno de los 4 outputSchema endurecidos tiene `additionalProperties: true` ni `properties` vacío. JSDocs de S5 añadidos en `writeFileAtomicSync` y `quarantineCorruptFileSync`. `bun run typecheck` y `bun run test` (142 archivos, 1042+ tests) verdes.
+- **META-1 (S3/S4 deferred)**: `l125` (slice `s4`) reclama el mismo fix para los mismos 2 archivos (`rules-tools.ts:199`, `adopt.tool.ts:81`) que S3/S4 de esta propuesta. Para evitar trabajo duplicado o colisión de edición concurrente (ver `a026` § META-1), esta sesión **no implementa S3/S4** — quedan `status: deferred`, formalmente cedidos a `l125`. Si `l125` se cierra sin tocar esos 2 archivos por cualquier razón, S3/S4 de `l122` quedan disponibles para retomarse.

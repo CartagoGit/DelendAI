@@ -54,7 +54,13 @@ export interface RulesGetRulesOutput {
 	areas: {
 		project: string;
 		area: string;
-		rules: Record<string, unknown>;
+		rules: {
+			framework: string;
+			presetId: string;
+			eslint: string[];
+			typecheck: string[];
+			reason: string;
+		};
 	}[];
 	conventions: Record<string, string[]>;
 }

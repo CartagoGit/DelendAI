@@ -51,7 +51,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 
 	it('every kind has a single lowercase-letter prefix', () => {
 		const kinds = Object.keys(PROPOSAL_KINDS);
-		expect(kinds).toHaveLength(12);
+		expect(kinds).toHaveLength(13);
 		for (const kind of kinds) {
 			const prefix =
 				PROPOSAL_PREFIX_BY_KIND[
@@ -61,9 +61,20 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('prefixes are unique across all 12 kinds', () => {
+	it('prefixes are unique across all 13 kinds', () => {
 		const prefixes = Object.values(PROPOSAL_PREFIX_BY_KIND);
 		expect(new Set(prefixes).size).toBe(prefixes.length);
+	});
+
+	it('resume kind uses prefix n with no version bump', () => {
+		expect(PROPOSAL_KINDS.resume).toEqual({
+			prefix: 'n',
+			glyph: '🧭',
+			conventionalCommitType: '',
+			bump: 'none',
+		});
+		expect(PROPOSAL_KIND_BY_PREFIX.n).toBe('resume');
+		expect(PROPOSAL_PREFIX_BY_KIND.resume).toBe('n');
 	});
 
 	it('the legacy alias table is consistent (p and l both resolve to legacy, l is canonical)', () => {

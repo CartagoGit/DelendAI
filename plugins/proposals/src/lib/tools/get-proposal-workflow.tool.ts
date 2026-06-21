@@ -29,6 +29,8 @@ export const buildGetProposalWorkflowRegistration = (
 					families: z.array(
 						z.object({
 							prefix: z.string(),
+							/** f127: proposal kind this family maps to (e.g. "fix", "feat"). */
+							kind: z.string().optional(),
 							description: z.string(),
 							cascadePriority: z.number(),
 						}),
@@ -39,7 +41,7 @@ export const buildGetProposalWorkflowRegistration = (
 					template: z.string(),
 				}),
 				description:
-					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
+					'Returns the proposal workflow as structured JSON: families (prefix, kind, description and cascade priority — 12 active kinds + the legacy `p` alias), file locations, naming, rules and the canonical markdown template. Read-only.',
 			},
 			async () => {
 				const workflow = buildProposalWorkflow(

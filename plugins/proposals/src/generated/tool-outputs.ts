@@ -325,6 +325,7 @@ export interface ProposalsDelegateOutput {
 export interface ProposalsGetProposalWorkflowOutput {
 	families: {
 		prefix: string;
+		kind?: string;
 		description: string;
 		cascadePriority: number;
 	}[];
@@ -343,7 +344,11 @@ export interface ProposalsPlanOutput {
 export interface ProposalsProposalAdoptOutput {
 	ok: true;
 	root: string;
-	layout: Record<string, unknown>;
+	layout: {
+		root: string;
+		files: Record<string, string>;
+		folders: Record<string, string>;
+	};
 	scan: {
 		proposals: Array<{
 			file: string;

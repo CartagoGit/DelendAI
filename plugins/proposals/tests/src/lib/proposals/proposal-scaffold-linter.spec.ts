@@ -270,7 +270,7 @@ ${TERSE_SLICE}
 		const result = lint(doc({ kind: 'nonsense' }));
 		expect(
 			result.issues.some((i) =>
-				i.message.includes('not one of the 12 known kinds'),
+				i.message.includes('not one of the 13 known kinds'),
 			),
 		).toBe(true);
 	});

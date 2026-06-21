@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
@@ -300,7 +300,10 @@ const reconcileCompletedProposalMarkdown = (markdown: string): string => {
 	return markdown;
 };
 
-const reconcileAndArchiveCompletedRootProposals = async (
+// Exported for f122 S2 (race-condition regression coverage); not part of the
+// plugin's public tool surface — `syncProposalRegistry` is still the only
+// entry point invoked by production code paths.
+export const reconcileAndArchiveCompletedRootProposals = async (
 	proposalsDir: string,
 ): Promise<void> => {
 	let dirents: Array<{ isFile(): boolean; name: string }>;
@@ -328,9 +331,11 @@ const reconcileAndArchiveCompletedRootProposals = async (
 			continue;
 		}
 
-		await writeFile(sourcePath, reconciled, 'utf8');
-		await mkdir(historicalDir, { recursive: true });
-		await rename(sourcePath, join(historicalDir, name));
+		await withFileMutex(sourcePath, async () => {
+			await writeFileAtomic(sourcePath, reconciled);
+			await mkdir(historicalDir, { recursive: true });
+			await rename(sourcePath, join(historicalDir, name));
+		});
 	}
 };
 
@@ -534,14 +539,27 @@ export async function syncProposalRegistry(
 		// (and its entries never double-counted) twice.
 		const subtreeAbsolutes = [
 			proposalsDir,
-			join(proposalsDir, 'audits'),
-			join(proposalsDir, 'fixes'),
 			join(proposalsDir, 'historical'),
-			join(proposalsDir, 'paused'),
 			join(proposalsDir, 'revised'),
 			join(proposalsDir, 'revised', 'audits'),
 			join(proposalsDir, 'revised', 'retired'),
+			// Top-level kind sub-folders (legacy f119 layout: `fixes/`,
+			// `audits/`, `feats/` as siblings of the 7 status folders).
+			join(proposalsDir, 'audits'),
+			join(proposalsDir, 'feats'),
+			join(proposalsDir, 'fixes'),
+			join(proposalsDir, 'resumes'),
 			...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
+			// f119 (done folder mirror): kind sub-folders inside the
+			// `done/` status folder (`done/audits/`, `done/feats/`,
+			// `done/fixes/`, `done/resumes/`). Same files as the
+			// top-level entries above when a project uses the canonical
+			// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
+			// dedup absorbs any overlap.
+			join(proposalsDir, 'done', 'audits'),
+			join(proposalsDir, 'done', 'feats'),
+			join(proposalsDir, 'done', 'fixes'),
+			join(proposalsDir, 'done', 'resumes'),
 			...extraFolders.map((folder) => join(proposalsDir, folder)),
 		];
 		const subtrees: ReadonlyArray<{ absolute: string }> = [

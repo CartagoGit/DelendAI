@@ -31,6 +31,16 @@ export interface IRulesToolOptions {
 	readonly overrides?: Readonly<Record<string, string>>;
 }
 
+// l125 s4 — mirrors `IAreaRules` (frameworks/types.ts) field-for-field,
+// replacing the residual `z.object({}).catchall(z.unknown())`.
+const AREA_RULES_SCHEMA = z.object({
+	framework: z.string(),
+	presetId: z.string(),
+	eslint: z.array(z.string()),
+	typecheck: z.array(z.string()),
+	reason: z.string(),
+});
+
 /** Read the manifest from cache, or build it in-memory if absent. */
 const loadManifest = (options: IRulesToolOptions): IRulesManifest => {
 	const raw = options.reader.readFile(options.manifestRelPath);
@@ -196,7 +206,7 @@ export const buildGetRulesRegistration = (
 						z.object({
 							project: z.string(),
 							area: z.string(),
-							rules: z.object({}).catchall(z.unknown()),
+							rules: AREA_RULES_SCHEMA,
 						}),
 					),
 					conventions: z.record(z.string(), z.array(z.string())),

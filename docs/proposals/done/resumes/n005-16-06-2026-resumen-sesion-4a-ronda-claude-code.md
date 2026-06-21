@@ -1,3 +1,12 @@
+---
+id: n005
+kind: resume
+title: Resumen de sesión — 4ª ronda 2026-06-16 tarde/noche (Claude Code)
+status: done
+date: 2026-06-16
+track: general
+---
+
 # Resumen de sesión — 4ª ronda (2026-06-16, tarde/noche, Opus)
 
 > Continúa la cola viva **§0 (N1–N23)** de

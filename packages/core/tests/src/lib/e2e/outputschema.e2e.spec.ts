@@ -103,6 +103,12 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'mcp-vertex_status' },
 		{ name: 'mcp-vertex_metrics' },
 		{ name: 'mcp-vertex_analyze_project' },
+		// l122 S1: hardened outputSchemas — side-effect-free (returns files
+		// for the agent to write; never touches disk itself).
+		{ name: 'mcp-vertex_create_project', args: { kind: 'plugin' } },
+		{ name: 'mcp-vertex_plan_mcp_project' },
+		// l122 S2: dryRun defaults true — returns files without writing.
+		{ name: 'mcp-vertex_scaffold', args: { kind: 'tool', name: 'demo' } },
 		{ name: 'git_status' },
 		{ name: 'git_changed' },
 		{ name: 'git_diff' },
@@ -187,6 +193,39 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 			.map((t) => t.name);
 		expect(missing, 'tools missing an outputSchema').toEqual([]);
 		expect(tools.length).toBeGreaterThan(20);
+	});
+
+	// l122 S1: the 3 bootstrap tools used to declare
+	// `z.object({}).catchall(z.unknown())` (a022-H3). Their outputSchema
+	// is now derived from IProjectAnalysis/IServerPlan/IScaffoldedFile/
+	// IServerBlueprint — assert the generated JSON Schema's root is no
+	// longer a permissive catchall (no `additionalProperties: true`/`{}`
+	// at the top level, and concrete `properties` are declared).
+	it('hardened bootstrap tool outputSchemas are no longer permissive catchalls', async () => {
+		const { tools } = await client.listTools();
+		const HARDENED = [
+			'mcp-vertex_analyze_project',
+			'mcp-vertex_create_project',
+			'mcp-vertex_plan_mcp_project',
+			'mcp-vertex_scaffold',
+		];
+		for (const name of HARDENED) {
+			const schema = tools.find((t) => t.name === name)?.outputSchema as
+				| {
+						properties?: Record<string, unknown>;
+						additionalProperties?: unknown;
+				  }
+				| undefined;
+			expect(schema, `${name} outputSchema`).toBeDefined();
+			expect(
+				Object.keys(schema?.properties ?? {}).length,
+				`${name} outputSchema.properties should be concrete, not empty`,
+			).toBeGreaterThan(0);
+			expect(
+				schema?.additionalProperties,
+				`${name} outputSchema should not permit arbitrary extra properties`,
+			).not.toBe(true);
+		}
 	});
 
 	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {

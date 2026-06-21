@@ -1,3 +1,14 @@
+import {
+	buildKindOrder,
+	DEFAULT_KIND_ORDER,
+	LEGACY_ALIAS_PREFIX,
+} from '../cascade/cascade-priority';
+import {
+	PROPOSAL_KIND_BY_PREFIX,
+	PROPOSAL_KINDS,
+} from '../contracts/constants/proposal-glossary.constant';
+import type { IProposalKind } from '../contracts/constants/proposal-glossary.constant';
+
 /**
  * Generalized, compact description of the proposal workflow this
  * plugin supports. Returned by the `get_proposal_workflow` tool as
@@ -8,6 +19,7 @@
 export interface IProposalWorkflow {
 	readonly families: ReadonlyArray<{
 		readonly prefix: string;
+		readonly kind: IProposalKind | typeof LEGACY_ALIAS_PREFIX;
 		readonly description: string;
 		readonly cascadePriority: number;
 	}>;
@@ -17,22 +29,38 @@ export interface IProposalWorkflow {
 	readonly template: string;
 }
 
+/**
+ * Builds the 13 cascade families (12 active kinds + the retired `p`
+ * legacy alias) from the glossary's `PROPOSAL_KINDS` and the cascade
+ * module's default order (f127). Each description is derived from the
+ * kind itself (`"{kind} ({prefix}: prefix)"`), so it never lies about
+ * what a prefix actually means — the old hardcoded `f`/`p` pair
+ * described `f` as "fixes" when `f` has meant `feat` since f113.
+ */
+const buildProposalFamilies = (): IProposalWorkflow['families'] => {
+	const order = buildKindOrder(DEFAULT_KIND_ORDER);
+	const kindFamilies = DEFAULT_KIND_ORDER.map((kind) => ({
+		prefix: PROPOSAL_KINDS[kind].prefix,
+		kind,
+		description: `${kind} (${PROPOSAL_KINDS[kind].prefix}: prefix)`,
+		cascadePriority: order.get(kind) as number,
+	}));
+	return [
+		...kindFamilies,
+		{
+			prefix: LEGACY_ALIAS_PREFIX,
+			kind: LEGACY_ALIAS_PREFIX,
+			description: `legacy alias for ${PROPOSAL_KIND_BY_PREFIX[LEGACY_ALIAS_PREFIX]} (pre-f113) — kept for back-compat`,
+			cascadePriority: order.get(LEGACY_ALIAS_PREFIX) as number,
+		},
+	];
+};
+
 export const buildProposalWorkflow = (
 	proposalsDir: string,
 	indexFile: string,
 ): IProposalWorkflow => ({
-	families: [
-		{
-			prefix: 'f',
-			description: 'fixes (highest cascade priority)',
-			cascadePriority: 0,
-		},
-		{
-			prefix: 'p',
-			description: 'proposals (planned work)',
-			cascadePriority: 1,
-		},
-	],
+	families: buildProposalFamilies(),
 	locations: {
 		proposalsDir,
 		indexFile,
@@ -42,7 +70,7 @@ export const buildProposalWorkflow = (
 	naming: '<family><n>-<kebab-title>.md, e.g. p12-add-login.md, f3-fix-crash.md',
 	rules: [
 		'One proposal = one markdown file with YAML frontmatter (id, status, budget).',
-		'Fixes (f) cascade before proposals (p).',
+		'Cascade order (highest priority first): fix, breaking, audit, chore, feat, refactor, perf, docs, test, infra, spike, legacy, p (legacy alias). A proposal may override its priority via `cascadeOverride` (+ mandatory `cascadeOverrideReason`) or nudge it within its own kind via `cascadeBoost`.',
 		'Claim files with agent_lock before editing; release when the slice closes.',
 		'A proposal may declare a `## Slices` section to parallelise disjoint work.',
 		'Layout under <docsDir>/proposals (default docs/mcp-vertex/proposals): index.json (registry), README.md (guide), p<N>-*.md / f<N>-*.md (proposals/fixes), done/ (archived), optional host buckets via extraFolders.',

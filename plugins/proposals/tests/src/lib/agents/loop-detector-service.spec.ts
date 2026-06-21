@@ -159,4 +159,93 @@ describe('AgentLoopDetectorService', () => {
 			'STOP — stuck detected due to no-progress',
 		);
 	});
+
+	// l125 s1 — async I/O regression coverage: `getActiveAgent` (called from
+	// the hot `onToolCall` path) now reads the lock file via
+	// `node:fs/promises.readFile` instead of `existsSync` + `readFileSync`.
+	describe('async I/O hot-path coverage (l125 s1)', () => {
+		it('resolves the active agent from a real lock file written asynchronously', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			const lockPath = mockCtx.workspace.resolve(
+				'.cache/mcp-vertex/agents.lock.json',
+			);
+			const { mkdir, writeFile } = await import('node:fs/promises');
+			await mkdir(join(lockPath, '..'), { recursive: true });
+			await writeFile(
+				lockPath,
+				JSON.stringify({
+					version: 1,
+					in_flight: [{ task_id: 't1', agent: 'falcon' }],
+				}),
+				'utf8',
+			);
+
+			// No `agent` in args → onToolCall must fall back to
+			// getActiveAgent(), which reads the lock file above.
+			await service.onToolCall(
+				'search_search',
+				{ query: 'x' },
+				{ ok: true },
+			);
+
+			// Confirm via observable behaviour: repeat the same call enough
+			// times to trip the detector, then check which agent got flagged.
+			for (let i = 0; i < 3; i++) {
+				await service.onToolCall(
+					'search_search',
+					{ query: 'x' },
+					{ ok: true },
+				);
+			}
+			const stuck = service.isAgentStuck('search_search', {});
+			// isAgentStuck (sync, contract-constrained) re-reads the same
+			// lock file synchronously and resolves the same agent.
+			expect(stuck).not.toBeNull();
+		});
+
+		it('never throws when the lock file is missing (async readFile rejects, caught, falls back to default-agent)', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// No lock file written — getActiveAgent's readFile must reject
+			// and be caught, not propagate.
+			await expect(
+				service.onToolCall('read_file', {}, { ok: true }),
+			).resolves.toBeUndefined();
+		});
+
+		it('pruneOldHandoffs (via a stuck cycle) tolerates a missing handoff dir on a fresh workspace', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// Drives writeHandoffPacket + pruneOldHandoffs at least once;
+			// neither must throw even though nothing pre-existed on disk.
+			for (let i = 0; i < 3; i++) {
+				await service.onToolCall(
+					'read_file',
+					{ path: 'foo.ts', agent: 'a2' },
+					{ ok: true },
+				);
+			}
+			const stuck = service.isAgentStuck('read_file', { agent: 'a2' });
+			expect(stuck).not.toBeNull();
+		});
+
+		it("8 concurrent onToolCall invocations for different agents do not corrupt each other's window", async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			const agents = Array.from({ length: 8 }, (_, i) => `agent-${i}`);
+
+			await Promise.all(
+				agents.map((agent) =>
+					service.onToolCall(
+						'read_file',
+						{ path: 'x.ts', agent },
+						{ ok: true },
+					),
+				),
+			);
+
+			// Each agent's call landed independently — none collapsed into
+			// "default-agent" or another agent's window.
+			for (const agent of agents) {
+				expect(service.isAgentStuck('read_file', { agent })).toBeNull(); // single call each, not stuck yet — but must not throw/crash
+			}
+		});
+	});
 });

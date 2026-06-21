@@ -18,8 +18,9 @@
  * `round-context-hash.ts` / `round-context-sources.ts` modules.
  */
 
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
+import { writeFileAtomic } from '@mcp-vertex/core/public';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
 import type {
@@ -106,30 +107,14 @@ export const readRoundContextDigest = async (
 /**
  * Write a digest to disk atomically.
  *
- * Strategy:
- *   1. Ensure the parent directory exists.
- *   2. Write the JSON to `<path>.tmp` synchronously.
- *   3. Rename the `.tmp` over the final path (single syscall, atomic
- *      on POSIX).
- *   4. Clean up the `.tmp` if rename fails for any reason.
+ * l125 s7: delegates to the shared `writeFileAtomic` primitive (write a
+ * temp file in the same directory, then `rename` over the target) instead
+ * of a hand-rolled reimplementation — one fewer place to keep the
+ * crash-safety guarantee correct.
  */
 export const writeRoundContextDigest = async (
 	digest: IRoundContextDigest,
 	path: string,
 ): Promise<void> => {
-	const tmpPath = `${path}.tmp`;
-	await mkdir(dirname(path), { recursive: true });
-	await writeFile(tmpPath, JSON.stringify(digest, null, 2), 'utf8');
-	try {
-		await rename(tmpPath, path);
-	} catch (err) {
-		// Best-effort cleanup of the tmp sidecar so we never leak
-		// half-written digests into the workspace.
-		try {
-			await rm(tmpPath, { force: true });
-		} catch {
-			// ignore
-		}
-		throw err;
-	}
+	await writeFileAtomic(path, JSON.stringify(digest, null, 2));
 };

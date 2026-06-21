@@ -11,10 +11,8 @@ const createItem = (): IStatusBarItem & {
 	shown: boolean;
 	disposed: boolean;
 } => {
-	const item: IStatusBarItem & { shown: boolean; disposed: boolean } = {
+	const item = {
 		text: '',
-		tooltip: undefined,
-		command: undefined,
 		shown: false,
 		disposed: false,
 		show() {
@@ -23,7 +21,7 @@ const createItem = (): IStatusBarItem & {
 		dispose() {
 			this.disposed = true;
 		},
-	};
+	} as IStatusBarItem & { shown: boolean; disposed: boolean };
 	return item;
 };
 

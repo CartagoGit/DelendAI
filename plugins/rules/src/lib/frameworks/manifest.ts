@@ -1,6 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { joinRel } from '@mcp-vertex/core/public';
-import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import {
+	joinRel,
+	withFileMutex,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 
@@ -135,11 +138,6 @@ const computeFingerprint = (
 	return `rm-${Math.abs(hash).toString(36)}`;
 };
 
-const writeAlways = (absPath: string, content: string): void => {
-	mkdirSync(dirname(absPath), { recursive: true });
-	writeFileSync(absPath, content, 'utf8');
-};
-
 export interface IEnsureCacheOptions {
 	/** Resolve a workspace-relative path to absolute. */
 	readonly resolve: (relativePath: string) => string;
@@ -158,18 +156,30 @@ export interface IEnsureCacheResult {
  * Materialise every default preset (eslint + tsconfig) into the cache,
  * and write the manifest ONLY if it does not already exist (so an agent
  * or human can edit the mapping without it being clobbered on boot).
+ *
+ * l125 s2: durable writes go through `writeFileAtomic` (crash-safe:
+ * write-temp-then-rename, never a partial file on disk) and the
+ * manifest's read-fingerprint-then-maybe-write critical section is
+ * wrapped in `withFileMutex` so two hosts booting in parallel against
+ * the same workspace cache converge instead of interleaving writes.
  */
-export const ensureRulesCache = (
+export const ensureRulesCache = async (
 	options: IEnsureCacheOptions,
-): IEnsureCacheResult => {
+): Promise<IEnsureCacheResult> => {
 	const materialized: string[] = [];
 	for (const preset of RULE_PRESETS) {
 		const eslintRel = joinRel(options.cacheRelDir, preset.eslintConfigFile);
-		writeAlways(options.resolve(eslintRel), preset.eslintConfigContent);
+		await writeFileAtomic(
+			options.resolve(eslintRel),
+			preset.eslintConfigContent,
+		);
 		materialized.push(eslintRel);
 		if (preset.tsconfigFile !== undefined && preset.tsconfigContent) {
 			const tsRel = joinRel(options.cacheRelDir, preset.tsconfigFile);
-			writeAlways(options.resolve(tsRel), preset.tsconfigContent);
+			await writeFileAtomic(
+				options.resolve(tsRel),
+				preset.tsconfigContent,
+			);
 			materialized.push(tsRel);
 		}
 	}
@@ -177,26 +187,24 @@ export const ensureRulesCache = (
 	// (mode/overrides/detected presets changed). A matching fingerprint is
 	// left untouched so human edits to the mapping survive.
 	const manifestAbs = options.resolve(options.manifestRelPath);
-	let manifestWritten = false;
-	let existingFingerprint: string | undefined;
-	if (existsSync(manifestAbs)) {
+	const manifestWritten = await withFileMutex(manifestAbs, async () => {
+		let existingFingerprint: string | undefined;
 		try {
 			existingFingerprint = (
-				JSON.parse(readFileSync(manifestAbs, 'utf8')) as {
+				JSON.parse(await readFile(manifestAbs, 'utf8')) as {
 					fingerprint?: string;
 				}
 			).fingerprint;
 		} catch {
-			existingFingerprint = undefined; // corrupt → regenerate
+			existingFingerprint = undefined; // missing/corrupt → regenerate
 		}
-	}
-	if (existingFingerprint !== options.manifest.fingerprint) {
-		writeAlways(
+		if (existingFingerprint === options.manifest.fingerprint) return false;
+		await writeFileAtomic(
 			manifestAbs,
 			`${JSON.stringify(options.manifest, null, '\t')}\n`,
 		);
-		manifestWritten = true;
-	}
+		return true;
+	});
 	return {
 		materialized,
 		manifestWritten,

@@ -132,13 +132,24 @@ Para cada hallazgo usa el bloque:
    \`resolveWorkspaceContained\`.
 2. **Plugins \`plugins/*\`** — contratos respetados, no \`process.cwd()\`,
    rutas vía \`ctx.workspace\`, mutex cuando hay escritura,
-   \`redactSecrets\` en cualquier persistencia.
+   \`redactSecrets\` en cualquier persistencia. Cada plugin debe honrar
+   u, si no aplica, ignorar **explícitamente** \`ctx.keepLegacy\` (no
+   dejarlo sin mencionar en su código ni en su doc).
 3. **Web \`apps/web\`** — i18n completa (12 langs),
    \`apps/web/src/i18n/tools/<tool>.ts\` poblado,
    \`check:i18n\` verde, páginas 1-idioma-1-página.
 4. **Validación** — \`bun run validate\` (typecheck + biome + stylelint + tests).
 5. **Tests** — patrones \`*.spec.ts\` colocated; usan \`vi.fn()\`; el
    orquestador no se cuelga en bucles.
+6. **Observabilidad** — \`mcp-vertex_metrics\` es la primitiva canónica
+   de observabilidad; toda auditoría debe verificar que está presente,
+   que persiste su estado entre llamadas, y que un snapshot-diff entre
+   dos invocaciones refleja la actividad real del host.
+7. **Tipos generados** — cualquier plugin cuyas tools declaren un
+   \`outputSchema\` tipado debe tener su \`src/generated/tool-outputs.ts\`
+   generado (\`bun run types:generate\`) y commiteado — no basta con que
+   el schema exista en el código si el tipo generado está ausente o
+   desfasado.
 
 ---
 

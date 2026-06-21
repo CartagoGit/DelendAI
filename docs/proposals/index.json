@@ -110,18 +110,18 @@
 		},
 		{
 			"id": "l115",
-			"file": "ready/l115-decide-and-close-m13-security-plugin.md",
+			"file": "done/l115-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
 			"id": "l116",
-			"file": "ready/l116-release-provenance-via-npm-publish.md",
+			"file": "done/l116-release-provenance-via-npm-publish.md",
 			"track": "release+ci",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{

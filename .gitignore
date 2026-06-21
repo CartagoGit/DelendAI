@@ -28,8 +28,12 @@ plugins/*/src/**/*.d.ts
 # per-session digests (consolidation steps, workarounds, lessons
 # learned) that belong in the agent's memory / notes system, not in
 # the public history. The `mcp-vertex-session-*.md` glob matches the
-# convention used by recent sessions; the broader `*session*.md`
-# catches related names without false positives on the docs.
+# convention used by recent sessions.
+#
+# NOTE (2026-06-21, n007): the broader `*session*.md` glob was removed.
+# Cross-session handoff summaries are now first-class proposals of kind
+# `resume` (prefix `n`) living under `docs/proposals/done/resumes/` and
+# MUST be tracked. The narrower `mcp-vertex-session-*.md` glob below
+# still catches the ad-hoc transient notes that show up at the repo root.
 mcp-vertex-session-*.md
-*session*.md
 !.agents/sessions/
