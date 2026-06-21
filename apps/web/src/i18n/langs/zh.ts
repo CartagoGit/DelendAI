@@ -247,17 +247,6 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.zh,
 	recovery: recoveryByLang.zh,
 	logs: logsByLang.zh,
-	presets: {
-		title: '预设',
-		lead: '针对不同工作区大小预先配置的插件集。',
-		summary: '此仓库在预设中包含 {count} 个唯一的插件。',
-		hostOnlyChip: '仅限主机',
-		installTitle: '如何使用',
-		installLead: '启动 MCP 服务器时指定 --preset 标志。',
-		table: {
-			preset: '预设',
-		},
-	},
 };
 
 export default dict;

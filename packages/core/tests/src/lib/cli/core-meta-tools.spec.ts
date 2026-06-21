@@ -15,6 +15,12 @@ const fakePlugin = {
 				summary: 'does the thing',
 				register: async () => {},
 			},
+			{
+				id: 'long',
+				summary:
+					'This summary is intentionally long enough to prove the overview keeps full payloads bounded while still surfacing a useful one-line description.',
+				register: async () => {},
+			},
 		],
 		knowledge: [{ id: 'demo-guide', title: 'Demo guide', body: 'BODY' }],
 	}),
@@ -93,5 +99,15 @@ describe('core meta-tools', () => {
 		expect(Array.isArray(compact.tools)).toBe(true);
 		expect(typeof compact.tools[0]).toBe('string'); // names, not objects
 		expect(compact.plugins).toContain('demo');
+	});
+
+	it('overview full bounds long tool summaries', async () => {
+		const { byId } = await assemble();
+		const snap = await callTool(byId('overview'));
+		const summary = snap.tools.find(
+			(t: { name: string }) => t.name === 'demo_long',
+		)?.summary;
+		expect(summary).toHaveLength(96);
+		expect(summary.endsWith('...')).toBe(true);
 	});
 });

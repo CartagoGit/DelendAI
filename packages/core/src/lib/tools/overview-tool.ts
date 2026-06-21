@@ -33,6 +33,14 @@ export interface IOverviewSnapshot {
 	readonly recommendedNextAction: string;
 }
 
+const MAX_OVERVIEW_SUMMARY_CHARS = 96;
+
+const compactSummary = (summary: string | undefined): string | undefined => {
+	if (summary === undefined) return undefined;
+	if (summary.length <= MAX_OVERVIEW_SUMMARY_CHARS) return summary;
+	return `${summary.slice(0, MAX_OVERVIEW_SUMMARY_CHARS - 3)}...`;
+};
+
 /**
  * The single cold-start entry point. One call returns the whole map of
  * the server — identity, loaded plugins, every tool with a one-line
@@ -132,7 +140,10 @@ export const buildOverviewToolRegistration = (
 						tool.tags === undefined &&
 						tool.effects === undefined
 							? tool.name
-							: tool,
+							: {
+									...tool,
+									summary: compactSummary(tool.summary),
+								},
 					),
 				});
 			},
