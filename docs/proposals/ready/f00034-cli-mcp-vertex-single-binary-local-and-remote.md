@@ -11,6 +11,7 @@ related:
     - f00032 # skills + write-side tools — CLI consumes the public surface those tools define
     - a00022 # master unificada — S5 (try/catch in vscode commands) is the only adjacent change
     - l00008 # plugins ↔ project state sync — CLI respects the same durable-write invariants
+    - c00001 # pause npm publish — superseded by this proposal: f00034 ships the CLI in the SAME publish batch as the rest
 reservedFiles:
     - packages/cli/
     - packages/cli/package.json
@@ -20,6 +21,7 @@ reservedFiles:
     - packages/cli/tests/
     - packages/cli/README.md
     - packages/core/package.json # only the bin field is touched; see S1
+    - docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)
 ---
 
 # f00034 — Single CLI for `@mcp-vertex/core` — `mcp-vertex` / `mcpv`, local + `--remote=stdio`, one private package
@@ -65,7 +67,7 @@ The same binary must work **against the local repo** (workspace=`.`) and **again
 - **Implementing `--remote=tcp://...` in v1.** The flag is **parsed and validated** in v1 (so v2 can ship without a parser change), but the transport implementation is deferred. v1 only ships `--remote=stdio` (spawns the local `mcp-vertex` binary as a child process and talks stdio via `@mcp-vertex/client`).
 - **An interactive REPL.** No `mcpv` without arguments. A `mcpv help` (or `mcpv --help`) lists subcommands; subcommands take flags. A REPL is a v2 conversation.
 - **Write-side tools that bypass the durable primitives.** Anything in the CLI that mutates state (S5: `scaffold`, `init`, `config set`, `config doctor --fix`) uses `withFileMutex` + `writeFileAtomic` from the core's public surface. No exception. This is enforced by tests, not by convention.
-- **Publishing `@mcp-vertex/cli` to npm in v1.** The package is `private: true` until the v1 ships, `bun run site:strict` is green, and the i18n coverage check passes. Then we flip `private: false` and let `bun run release` do its job. Until then the binary is invoked from the monorepo (`bun run mcp-vertex -- status`, `bunx --workspaces mcp-vertex status`).
+- **Holding back `@mcp-vertex/cli` from the first publish batch.** The repo's strategy is to ship the whole set (15 publishable packages + this new one) **simultaneously**, not piecemeal. `c00001` (npm publish pause) is being effectively superseded by this proposal: when the user runs the `release.yml` workflow, `@mcp-vertex/cli@0.1.0` goes out in the same lockstep batch as the rest. There is no "private first, public later" gate — there is only "the gate is `bun run validate` + `bun run site:strict` + the user's `NPM_TOKEN`".
 - **Touching any existing `outputSchema`.** The CLI propagates the core's `outputSchema` byte-for-byte in both local and remote modes. If a future core change modifies a schema, the CLI's type tests fail loudly. Rule 8 stays unbroken.
 
 ## architecture
@@ -279,6 +281,9 @@ packages/
   - `docs/CROSS-IDE.md` (UPDATE; one new section: "Console access (mcp-vertex / mcpv)" pointing to `packages/cli/README.md`)
   - `packages/cli/README.md` (NEW; install, usage, subcommand table, `--json` examples, i18n table)
   - `docs/proposals/index.json` (UPDATE; add the f00034 entry)
+  - `packages/cli/package.json` (UPDATE in S7 only; flip `private: true` to `private: false` and add `"publishConfig": { "access": "public" }` + extend `files` to include `dist`, `README.md`, `LICENSE`; matching the pattern of the other 15 publishable packages; verify the existing `release.yml` workflow picks it up automatically — it iterates over `packages/*/package.json` and `plugins/*/package.json` via `bun run release`, no workflow change required)
+  - `docs/NPM_PUBLISH.md` (UPDATE; bump the package list from "10 paquetes" to "16 paquetes" including `@mcp-vertex/cli`; add a one-line note that `c00001` is superseded and the publish batch is now 16 packages in lockstep)
+  - `docs/proposals/paused/c00001-pause-npm-publish.md` (UPDATE; add a `Superseded by: f00034` footer so the master audit's pointer is updated; the file itself stays in `paused/` until the user actually runs the release, but the cross-reference is now correct)
 - **Gate**:
   - `bun run validate` (root) — verde
   - `bun run lint:cli` — verde
@@ -292,7 +297,7 @@ packages/
   - The new gate `lint:cli:i18n` catches any drift between the keys used in `commands/*.ts` and the 12 generated translation files.
   - `apps/web/src/i18n/langs/*.ts` is complete for the new `cliHelp` namespace in **all 12 locales** (rule 9 of `AGENTS.md`).
   - The README of `packages/cli` is the single source of truth for "how to use the CLI". `docs/CROSS-IDE.md` and `docs/PLUGINS-MCP-VERTEX.md` get a one-line cross-link.
-  - At the end of S7, the package is **still `private: true`**. Flipping to public is **explicitly not part of this proposal** — it's a separate decision (when the v1 has been stable in main for ≥1 minor cycle and the i18n is battle-tested). The acceptance for S7 says `private: true` stays.
+  - At the end of S7, the package is **`private: false` and `publishConfig.access: "public"`**, mirroring the 15 other publishable packages. The first `release.yml` run after S7 includes `@mcp-vertex/cli@0.1.0` in the lockstep batch automatically — no workflow change, no extra flag, no manual step. `c00001` is effectively superseded; its frontmatter is updated to add a `Superseded by: f00034` line, and the file moves from `paused/` to `done/` only when the user actually runs the publish (so the master audit's pointer stays accurate in the meantime).
 
 ## dependency graph
 
@@ -330,7 +335,7 @@ S2 (parser, formatter, exit codes, i18n gen script)
 - i18n coverage: `--help` is translated to all 12 locales; `--lang=zz` falls back to `en`; `bun run lint:cli:i18n` is green.
 - `bun run site:strict` is green (the web i18n gate is part of the chain).
 - `apps/vscode` MCP-client commands get **no regression** from this proposal: the only adjacent change was `a00022` S5 (try/catch in 4 commands) and is independent.
-- The package is `private: true` at the end of f00034. Publishing to npm is **out of scope**.
+- At the end of f00034, `packages/cli` is **`private: false` with `publishConfig.access: "public"`** and will be picked up by the existing `release.yml` workflow on the next `develop→main` push. `c00001` is updated to add a `Superseded by: f00034` footer (the file stays in `paused/` until the user actually runs the publish, then moves to `done/`). The first publish batch after f00034 lands is **16 packages in lockstep**: the 15 already-publishable ones plus `@mcp-vertex/cli`.
 
 ## risks and mitigations
 
@@ -349,7 +354,7 @@ These are the choices made in the absence of a synchronous answer from the user.
 
 1. **One package, two bin names** (`mcp-vertex` and `mcpv`, both pointing to `dist/index.js`), not one name. Reason: `mcp-vertex` was already the published bin of `core`; `mcpv` is the daily-driver short form. Re-cluttering the user's PATH is not worth the savings.
 2. **v1 ships `--remote=stdio` only.** The `--remote=tcp://...` flag is parsed and rejected with a clear "v2" message, so the flag surface is stable from v1. Reasonable: TCP brings auth/TLS/multi-tenant decisions that are out of scope for a CLI proposal.
-3. **`packages/cli` is `private: true` at the end of f00034.** Publishing to npm is a separate, later decision. Reasonable: it lets the v1 iterate without semver pressure, and the audit M26 (master unificada) gets a stable package to audit before it goes public.
+3. **`packages/cli` ships in the same publish batch as the rest of the monorepo (`private: false` at the end of f00034), and `c00001` is effectively superseded.** The repo's strategy is to publish the whole set simultaneously, not piecemeal. Adding a new publishable package to a v0.1.0 lockstep release that already waits on `NPM_TOKEN` + `develop→main` (the `c00001` block) costs zero additional operations and gives the user a coherent `0.1.0` to install. Reasonable: this matches the user's intent ("todavía estamos en proceso de creación, la idea es sacar todo el conjunto simultáneamente"), keeps the publish workflow simple, and avoids the trap of "private now, public later" (which has historically caused version-skew bugs in the user's other repos).
 4. **The parser is hand-rolled** (`parser.ts`, zero-dep apart from zod). Reasonable: the repo is Bun + zero-dep-friendly, and the alternative (`commander`/`cac`/`yargs`) all bring non-trivial weight.
 5. **`scaffold` outputs to stdout by default** (CI-friendly: `mcpv scaffold tool --name=foo > foo.ts`). Writing to disk is opt-in via `--out=<path>`. Reasonable: a CLI for humans should not write files silently.
 6. **`config set` is schema-gated**, never silent-coerces. Reasonable: the whole point of `mcpv config get/set` is to give the user precise control, and silent coercion is the bug that turns into a 2-day incident.
