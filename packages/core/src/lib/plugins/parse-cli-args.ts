@@ -89,6 +89,12 @@ export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> =
 export const resolvePreset = (name: string | undefined): readonly string[] =>
 	resolvePresetMembers(name);
 
+/** Whether the caller explicitly selected the plugin surface. */
+export const hasExplicitPluginSurfaceSelection = (
+	args: Pick<IMcpVertexCliArgs, 'tokens'>,
+): boolean =>
+	args.tokens.preset !== undefined || args.tokens.plugins !== undefined;
+
 const isFalse = (value: string | undefined): boolean =>
 	value === 'false' || value === '0' || value === 'no';
 

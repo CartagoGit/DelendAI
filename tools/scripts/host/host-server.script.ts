@@ -15,6 +15,7 @@ import {
 	assembleCliConfig,
 	createMcpProject,
 	gracefulShutdown,
+	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
@@ -22,14 +23,17 @@ import { buildRenameAuditToolRegistration } from './rename-audit-tool';
 
 const run = async (): Promise<void> => {
 	const cwd = process.cwd();
-	// `--preset=swarm` is this repo's default; any flag the caller passes
-	// (e.g. VS Code's `--workspace=${workspaceFolder}`) is forwarded after it.
+	const forwarded = process.argv.slice(2);
+	const parsedForwarded = parseCliArgs(forwarded, cwd);
+	// Repo default: when the caller did not explicitly choose a plugin surface,
+	// fall back to `--preset=swarm`. If the caller *did* pass --preset/--plugins,
+	// trust that explicit selection and do not hide it behind an implicit preset.
+	const effectiveArgv = hasExplicitPluginSurfaceSelection(parsedForwarded)
+		? forwarded
+		: ['--preset=swarm', ...forwarded];
 	// `assembleCliConfig` then adds plugin entries from
 	// `mcp-vertex.config.json` and applies exclude-plugins to the final set.
-	const args = parseCliArgs(
-		['--preset=swarm', ...process.argv.slice(2)],
-		cwd,
-	);
+	const args = parseCliArgs(effectiveArgv, cwd);
 	const { config, loadResult } = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);

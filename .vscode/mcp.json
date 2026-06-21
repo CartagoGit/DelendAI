@@ -6,6 +6,7 @@
 			"args": [
 				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
 				"--workspace=${workspaceFolder}",
+				"--config=${workspaceFolder}/mcp-vertex.config.json",
 				"--preset=swarm"
 			]
 		}

@@ -61,7 +61,7 @@ acceptance:
 
 Every finding in `## Findings` must declare a **Resolution Track**:
 1. **Resolved in Audit Slices**: If the fix is minor, trivial, or directly manageable during the audit, it should be mapped to a slice (e.g., `S2 — fix Biome deprecation warning`) and resolved before the audit is closed.
-2. **Deferred to Individual Proposals**: If the fix is a larger feature, significant refactoring, or a complex bug, it must be split into a separate, new proposal (e.g., `f120`, `x122`) and linked as a follow-up.
+2. **Deferred to Individual Proposals**: If the fix is a larger feature, significant refactoring, or a complex bug, it must be split into a separate, new proposal (e.g., `f00120`, `x00122`) and linked as a follow-up.
 
 ### Lifecycle & Status Rules
 
