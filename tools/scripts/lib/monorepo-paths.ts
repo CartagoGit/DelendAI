@@ -19,7 +19,7 @@
  *
  *   3. `dist/<group>/<name>/<version>/<artifact>` — monorepo-wide
  *      distributable artefacts. NEVER TRACKED. Examples today:
- *      `dist/apps/vscode/<version>/<name>.vsix`.
+ *      `dist/extensions/vscode/<version>/<name>.vsix`.
  *
  * Any script, package.json script, or CI workflow that needs to compute
  * one of these paths MUST import from this module. Hard-coding
@@ -36,7 +36,7 @@
  * - All returned paths are absolute.
  * - Path segments passed in are validated to be lowercase, kebab-safe,
  *   and free of `..` traversal. The module does not silently allow
- *   malformed names because a typo in `apps/vscode` is exactly the
+ *   malformed names because a typo in `extensions/vscode` is exactly the
  *   class of bug we're trying to prevent.
  */
 import { spawnSync } from 'node:child_process';
@@ -44,12 +44,18 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
-export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'examples';
+export type MonorepoGroup =
+	| 'apps'
+	| 'plugins'
+	| 'packages'
+	| 'extensions'
+	| 'examples';
 
 const VALID_GROUPS = new Set<MonorepoGroup>([
 	'apps',
 	'plugins',
 	'packages',
+	'extensions',
 	'examples',
 ]);
 
@@ -227,14 +233,19 @@ export const WELL_KNOWN = {
 	/** Astro static site output, served by GitHub Pages. */
 	webApp: () => buildDir('apps', 'web'),
 	/** VS Code extension dist. */
-	vscode: () => buildDir('apps', 'vscode'),
-	/** VS Code packaged .vsix output. */
+	vscode: () => buildDir('extensions', 'vscode'),
+	/** VS Code packaged .vsix output. The .vsix filename follows vsce's
+	 *  convention: scoped names drop the slash, so
+	 *  `@mcp-vertex/extension-vscode@1.0.0` produces
+	 *  `mcp-vertex-extension-vscode-1.0.0.vsix`. The packaging script
+	 *  reads `manifest.name` to compute this directly, so this helper is
+	 *  the second-source-of-truth for tests + documentation. */
 	vscodeVsix: (version: string) =>
 		distArtifactPath(
-			'apps',
+			'extensions',
 			'vscode',
 			version,
-			`mcp-vertex-vscode-${version}.vsix`,
+			`mcp-vertex-extension-vscode-${version}.vsix`,
 		),
 } as const;
 
