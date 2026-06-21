@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T15:45:00.000Z",
-	"count": 80,
+	"generated_at": "2026-06-21T16:08:02.057Z",
+	"count": 82,
 	"proposals": [
 		{
 			"id": "a00022",
@@ -94,14 +94,6 @@
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00025",
-			"file": "ready/f00025-tools-scripts-refactor-rename-scripts-to-tools.md",
-			"track": "core+build+release+proposals+lint+i18n+site",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
 			"id": "f00026",
 			"file": "ready/f00026-ide-observability-v3.md",
 			"track": "apps+client+docs",
@@ -173,6 +165,60 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00034",
+			"file": "ready/f00034-cli-mcp-vertex-single-binary-local-and-remote.md",
+			"track": "core+cli+client+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"packages/cli/",
+					"packages/cli/package.json",
+					"packages/cli/tsconfig.json",
+					"packages/cli/vitest.config.ts",
+					"packages/cli/src/",
+					"packages/cli/tests/",
+					"packages/cli/README.md",
+					"packages/core/package.json # only the bin field is touched; see S1",
+					"docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)"
+				]
+			}
+		},
+		{
+			"id": "f00035",
+			"file": "ready/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
+			"track": "apps+monorepo+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{", "{", "{", "{"],
+				"reservedFiles": [
+					"apps/ide/",
+					"apps/ide/package.json",
+					"apps/ide/src/",
+					"apps/ide/tests/",
+					"apps/vscode/",
+					"apps/vscode/package.json",
+					"apps/vscode/src/",
+					"apps/vscode/media/",
+					"apps/vscode/scripts/",
+					"tsconfig.base.json",
+					"tsconfig.json",
+					"vitest.config.ts",
+					"vitest.shared.ts",
+					"package.json",
+					"docs/CROSS-IDE.md",
+					"docs/IDE-EXTENSION.md",
+					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
+					"tools/scripts/dev/dev.script.ts",
+					"tools/scripts/lib/monorepo-paths.ts",
+					"tools/scripts/lib/monorepo-paths.spec.ts"
+				]
+			}
+		},
+		{
 			"id": "l00008",
 			"file": "ready/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
 			"track": "plugins+core+audit",
@@ -226,61 +272,6 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
-		},
-		{
-			"id": "f00034",
-			"file": "ready/f00034-cli-mcp-vertex-single-binary-local-and-remote.md",
-			"track": "core+cli+client+workflow",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"related": ["f00031", "f00032", "a00022", "l00008", "c00001"],
-				"reservedFiles": [
-					"packages/cli/",
-					"packages/cli/package.json",
-					"packages/cli/tsconfig.json",
-					"packages/cli/vitest.config.ts",
-					"packages/cli/src/",
-					"packages/cli/tests/",
-					"packages/cli/README.md",
-					"packages/core/package.json",
-					"docs/NPM_PUBLISH.md"
-				]
-			}
-		},
-		{
-			"id": "f00035",
-			"file": "ready/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
-			"track": "apps+monorepo+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"related": ["f00022", "f00034", "f00014"],
-				"reservedFiles": [
-					"apps/ide/",
-					"apps/ide/package.json",
-					"apps/ide/src/",
-					"apps/ide/tests/",
-					"apps/vscode/",
-					"apps/vscode/package.json",
-					"apps/vscode/src/",
-					"apps/vscode/media/",
-					"apps/vscode/scripts/",
-					"tsconfig.base.json",
-					"tsconfig.json",
-					"vitest.config.ts",
-					"vitest.shared.ts",
-					"package.json",
-					"docs/CROSS-IDE.md",
-					"docs/IDE-EXTENSION.md",
-					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
-					"tools/scripts/dev/dev.script.ts",
-					"tools/scripts/lib/monorepo-paths.ts",
-					"tools/scripts/lib/monorepo-paths.spec.ts"
-				]
-			}
 		},
 		{
 			"id": "c00001",
@@ -727,6 +718,14 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00025",
+			"file": "done/feats/f00025-tools-scripts-refactor-rename-scripts-to-tools.md",
+			"track": "core+build+release+proposals+lint+i18n+site",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "x00001",
 			"file": "done/fixes/x00001-fix-audit-types.md",
 			"track": "plugins",
@@ -793,6 +792,14 @@
 		{
 			"id": "x00009",
 			"file": "done/fixes/x00009-web-ui-polish-round-3.md",
+			"track": "web+ui",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "x00127",
+			"file": "done/fixes/x127-real-brand-logos.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
