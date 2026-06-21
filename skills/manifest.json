@@ -1,0 +1,55 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"generatedAt": "2026-06-21T00:00:00.000Z",
+	"skills": [
+		{
+			"id": "mcp-vertex-plugin-authoring",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-plugin-authoring/SKILL.md",
+			"tags": ["plugin-authoring", "contract", "core"]
+		},
+		{
+			"id": "mcp-vertex-failure-modes",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-failure-modes/SKILL.md",
+			"tags": ["failure-modes", "recovery", "swarm"]
+		},
+		{
+			"id": "mcp-vertex-operator",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-operator/SKILL.md",
+			"tags": ["operator", "orientation", "presets"]
+		},
+		{
+			"id": "proposal-swarm-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/proposal-swarm-runner/SKILL.md",
+			"tags": ["proposals", "swarm", "multi-agent"]
+		},
+		{
+			"id": "state-repair-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/state-repair-playbook/SKILL.md",
+			"tags": ["state-health", "state-repair", "recovery"]
+		},
+		{
+			"id": "token-budget-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/token-budget-playbook/SKILL.md",
+			"tags": ["metrics", "token-budget", "compact"]
+		},
+		{
+			"id": "concurrency-patterns",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/concurrency-patterns/SKILL.md",
+			"tags": ["concurrency", "mutex", "locking"]
+		}
+	]
+}

@@ -1,0 +1,61 @@
+{
+	"name": "@mcp-vertex/web-fetch",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Opt-in web/fetch plugin for @mcp-vertex/core: web_fetch resolves an allow-listed URL and returns capped text. Load with `mcp-vertex --plugins=web-fetch` and configure `plugins.web-fetch.options.allowList`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"web",
+		"fetch",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../scripts/build.ts plugins/web-fetch"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

@@ -118,10 +118,10 @@
 		},
 		{
 			"id": "f00027",
-			"file": "ready/f00027-metrics-longitudinal-regression-gate.md",
+			"file": "done/feats/f00027-metrics-longitudinal-regression-gate.md",
 			"track": "metrics+ci",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{

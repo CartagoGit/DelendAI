@@ -1,11 +1,14 @@
 ---
 id: f00027
-status: ready
+status: done
 type: proposal
 track: metrics+ci
 date: 2026-06-21
 kind: feat
 title: Metrics longitudinal regression gate (per-release snapshot diff)
+shipped-in: []
+ownership:
+    - { agent: implementation_runner, task: 'S1-S4: baseline retrieval + diff gate + CI wiring + audit close' }
 ---
 
 # f00027 — Metrics longitudinal regression gate (per-release snapshot diff)
@@ -108,8 +111,48 @@ single tool).
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 565).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
+  (M29, "Métricas persistentes").
 - M12 / M29 foundations: same audit §7 "P3 — Plataforma de referencia".
 - `metrics` tool source: `packages/core/src/lib/metrics/metrics-tool.ts`.
-- Existing token-budget e2e: `plugins/proposals/tests/src/e2e/token-budget.spec.ts`
-  (or equivalent — `rg token-budget plugins/` to confirm).
+
+## rationale
+
+Design decisions not obvious from the slices above:
+
+- **Path convention deviation**: the proposal text specified `scripts/metrics/*`,
+  but the repo's actual convention (see `tools/scripts/lint/`, `tools/scripts/smoke/`)
+  is `tools/scripts/<category>/<name>.script.ts`. There is no top-level `scripts/`
+  directory in this repo — implemented under `tools/scripts/metrics/` instead,
+  matching every sibling tool script and picked up automatically by the root
+  `vitest.config.ts` `projects: ['tools/scripts']` glob.
+- **Baseline distribution via release asset, not a fixed snapshot path**: the
+  GitHub Releases API does not expose "the metrics file from commit X" directly;
+  the simplest durable channel is a release asset named `metrics-baseline.json`
+  attached at publish time (a follow-up to `release.script.ts`, not part of this
+  proposal's slices — documented here so it is not lost). `get-baseline.script.ts`
+  resolves `GET /repos/:owner/:repo/releases/latest`, finds that asset, and
+  downloads it; `no-previous-release` / `no-snapshot-asset` are both treated as
+  "skip the gate", not as fatal errors, matching R1.
+- **Bytes/call and ms/call, not raw totals**: the persisted `metrics` snapshot
+  already aggregates `totalBytes`/`totalMs` across the *whole process* lifetime,
+  which depends on how many times each tool was called. Diffing raw totals would
+  conflate "the gate called the tool more times" with "the tool got more
+  expensive". Normalising to bytes-per-call / ms-per-call before diffing isolates
+  the per-call cost regression the gate is meant to catch (the real proxy for
+  token cost per AGENTS.md M12).
+- **`collect-candidate.script.ts` calls only `_overview` and `_compact_status`-like
+  tools repeatedly**: calling every tool in the swarm preset (some of which
+  mutate state, e.g. `agent_lock`) would pollute the candidate run with
+  side-effecting calls unrelated to the regression being measured. The gate's
+  scope (per the proposal's `Why`) is "overview / auto_work / any single tool" —
+  the compact, read-only entry points are the ones whose token cost actually
+  drives the swarm's per-turn budget; covering every write tool is future work,
+  not a regression in this slice's scope.
+- **SOLID applied**: `get-baseline.script.ts` (fetch a baseline),
+  `diff-snapshots.script.ts` (pure diff + render), and
+  `collect-candidate.script.ts` (drive a live server) are three modules with
+  exactly one reason to change each (network/auth, comparison math, MCP client
+  orchestration). `diffSnapshots` takes its `IThresholds` as a parameter
+  (dependency inversion) instead of reading `process.env` internally, which is
+  what makes 7 of its 12 test cases pure-function unit tests with zero mocking.

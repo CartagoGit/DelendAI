@@ -6,6 +6,12 @@ track: skills+plugins+docs
 date: 2026-06-21
 kind: feat
 title: Versioned skills/prompts + opt-in @mcp-vertex/web plugin
+reservedFiles:
+    - skills/
+    - plugins/web/
+    - packages/core/src/lib/skills/
+ownership:
+    - { agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }
 ---
 
 # f00029 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
