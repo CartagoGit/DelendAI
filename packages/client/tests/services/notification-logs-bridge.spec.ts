@@ -1,10 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	vi,
+} from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
 import { MetricsService } from '../../src/lib/services/metrics-service';
 import { NotificationsService } from '../../src/lib/services/notifications-service';
 import { NotificationLogsBridge } from '../../src/lib/services/notification-logs-bridge';
 import { createFakeTransport } from './logs-service.fixtures';
+
+// Use real timers across the suite so the bridge's `setInterval` fires.
+beforeAll(() => {
+	vi.useRealTimers();
+});
+afterAll(() => {
+	vi.useRealTimers();
+});
 
 const makeBridge = () => {
 	const { transport } = createFakeTransport({
@@ -21,9 +37,6 @@ const makeBridge = () => {
 			totals: { calls: 1, errors: 0, totalMs: 100, totalBytes: 100 },
 		},
 	});
-	const client = McpStdioClient.fromTransport(transport);
-	const notifications = new NotificationsService(client);
-	const metrics = new MetricsService(client);
 	const bridge = new NotificationLogsBridge({ notifications, metrics });
 	return { bridge, notifications, metrics };
 };
