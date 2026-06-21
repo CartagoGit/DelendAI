@@ -29,7 +29,7 @@ export const buildGetProposalWorkflowRegistration = (
 					families: z.array(
 						z.object({
 							prefix: z.string(),
-							/** f127: proposal kind this family maps to (e.g. "fix", "feat"). */
+							/** f00024: proposal kind this family maps to (e.g. "fix", "feat"). */
 							kind: z.string().optional(),
 							description: z.string(),
 							cascadePriority: z.number(),

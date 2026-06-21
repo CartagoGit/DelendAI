@@ -16,7 +16,7 @@ const lock = (taskId = 't1', agent = 'falcon') =>
 		in_flight: [{ task_id: taskId, agent, ownership: ['src/a.ts'] }],
 	});
 
-describe('agent heartbeat events (f113 S8)', () => {
+describe('agent heartbeat events (f00016 S8)', () => {
 	let dir = '';
 	let lockFile = '';
 

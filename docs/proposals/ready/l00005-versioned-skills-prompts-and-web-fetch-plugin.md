@@ -8,7 +8,7 @@ kind: feat
 title: Versioned skills/prompts + opt-in @mcp-vertex/web plugin
 ---
 
-# l117 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
+# l00005 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
 
 ## Goal
 

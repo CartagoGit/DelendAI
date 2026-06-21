@@ -1,5 +1,5 @@
 /**
- * l125 s3 — `audit_consolidate`'s `auditDir` resolved with bare
+ * l00008 s3 — `audit_consolidate`'s `auditDir` resolved with bare
  * `path.resolve(workspaceRoot, relDir)` (no containment), so a caller
  * could pass `..`/absolute paths and read files outside the workspace.
  * This spec pins the fix: `resolveWorkspaceContained` rejects escapes
@@ -37,7 +37,7 @@ const invoke = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-describe('audit_consolidate auditDir containment (l125 s3)', () => {
+describe('audit_consolidate auditDir containment (l00008 s3)', () => {
 	let workspaceRoot = '';
 
 	beforeEach(async () => {

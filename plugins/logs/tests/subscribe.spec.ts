@@ -22,7 +22,7 @@ describe('subscribeToBus', () => {
 
 		bus.emit('agent-dead', {
 			agent: 'a1',
-			taskId: 'f115-s3',
+			taskId: 'f00015-s3',
 			summary: 'token = ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL',
 		});
 		subscription.close();

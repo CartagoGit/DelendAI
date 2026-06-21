@@ -1,17 +1,17 @@
 ---
 id: f00024
-kind: chore
+kind: feat
 title: Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID
 status: ready
 type: proposal
 track: proposals-plugin+workflow
 date: 2026-06-21
 related:
-    - f113 # proposal state machine — defines PROPOSAL_KINDS, the 7-status DFA; f127 must not break it
-    - f126 # renumber IDs to padded 5 digits — independent; f127 doesn't depend on f126 and shouldn't wait for it
+    - f00016 # proposal state machine — defines PROPOSAL_KINDS, the 7-status DFA; f00024 must not break it
+    - f00023 # renumber IDs to padded 5 digits — independent; f00024 doesn't depend on f00023 and shouldn't wait for it
 ---
 
-# f127 — Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID
+# f00024 — Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID
 
 ## Goal
 
@@ -26,21 +26,21 @@ families: [
 
 Esto está **roto contra el catálogo real**:
 
-| Prefijo en el glossary (f113) | Kind canónico       | Uso real en disco                                              | ¿Cubierto hoy? |
+| Prefijo en el glossary (f00016) | Kind canónico       | Uso real en disco                                              | ¿Cubierto hoy? |
 |-------------------------------|---------------------|----------------------------------------------------------------|----------------|
-| `x`                           | `fix`               | `x105`, `x106`, `x111`, `x113`, `x122`, `x123`, `x124`         | **NO**         |
+| `x`                           | `fix`               | `x00004`, `x00002`, `x00003`, `x00001`, `x00005`, `x00006`, `x00007`         | **NO**         |
 | `b`                           | `breaking`          | (ninguno aún)                                                  | NO             |
-| `a`                           | `audit`             | `a001..a024` (20 en done/audits/ + 4 en ready)                 | NO             |
+| `a`                           | `audit`             | `a00007..a00025` (20 en done/audits/ + 4 en ready)                 | NO             |
 | `c`                           | `chore`             | (ninguno aún)                                                  | NO             |
-| `f`                           | `feat`              | `f99..f125` (10 en done/feats/ + 4 en ready + 1 in-progress)    | sí (pero descrito como "fixes", lo cual es mentira) |
+| `f`                           | `feat`              | `f00004..f00022` (10 en done/feats/ + 4 en ready + 1 in-progress)    | sí (pero descrito como "fixes", lo cual es mentira) |
 | `r`                           | `refactor`          | (ninguno aún)                                                  | NO             |
 | `v`                           | `perf`              | (ninguno aún)                                                  | NO             |
 | `d`                           | `docs`              | (ninguno aún)                                                  | NO             |
 | `t`                           | `test`              | (ninguno aún)                                                  | NO             |
 | `i`                           | `infra`             | (ninguno aún)                                                  | NO             |
 | `s`                           | `spike`             | (ninguno aún)                                                  | NO             |
-| `l`                           | `legacy`            | `l99..l127`                                                    | NO             |
-| `p`                           | alias de `legacy`   | (ninguno en disco desde f113 S11)                              | sí (descrito como "proposals planned", lo cual es mentira) |
+| `l`                           | `legacy`            | `l99..l00010`                                                    | NO             |
+| `p`                           | alias de `legacy`   | (ninguno en disco desde f00016 S11)                              | sí (descrito como "proposals planned", lo cual es mentira) |
 
 **Consecuencias observables**:
 
@@ -76,8 +76,8 @@ El orden codifica dos principios: **(1) los fixes de bugs son lo más urgente** 
 |------|--------|------------|------------------------|--------|------------------------------------------------------------------------|
 | 0    | `x`    | `fix`      | `fix`                  | patch  | Bug confirmado en producción → primero.                                |
 | 1    | `b`    | `breaking` | `feat!`                | major  | Breaking changes erosionan confianza si se atrasan.                    |
-| 2    | `a`    | `audit`    | `chore(audit)`         | patch  | Las auditorías cierran hallazgos del master audit (a016).              |
-| 3    | `c`    | `chore`    | `chore`                | patch  | Chore de workflow (como f127) suele desbloquear otros slices.         |
+| 2    | `a`    | `audit`    | `chore(audit)`         | patch  | Las auditorías cierran hallazgos del master audit (a00013).              |
+| 3    | `c`    | `chore`    | `chore`                | patch  | Chore de workflow (como f00024) suele desbloquear otros slices.         |
 | 4    | `f`    | `feat`     | `feat`                 | minor  | Features nuevos, pero solo después de que lo urgente está cubierto.    |
 | 5    | `r`    | `refactor` | `refactor`             | patch  | Mejora interna sin cambio de comportamiento — nunca urgente.           |
 | 6    | `v`    | `perf`     | `perf`                 | patch  | Optimización — solo cuando hay medida que diga "esto va mal".          |
@@ -86,7 +86,7 @@ El orden codifica dos principios: **(1) los fixes de bugs son lo más urgente** 
 | 9    | `i`    | `infra`    | `chore(infra)`         | none   | CI/build/scripts — solo cuando bloquea a otro slice.                   |
 | 10   | `s`    | `spike`    | `''`                   | none   | Spikes son investigación; pueden esperar al final.                     |
 | 11   | `l`    | `legacy`   | `feat`                 | minor  | Legacy imports; históricamente cerrados, no activos.                  |
-| 12   | `p`    | legacy alias | `feat`               | minor  | Alias pre-f113; no debería tener archivos nuevos.                      |
+| 12   | `p`    | legacy alias | `feat`               | minor  | Alias pre-f00016; no debería tener archivos nuevos.                      |
 
 > **Razón para que `x` (fix) gane a `b` (breaking)**: un fix arregla algo roto HOY; un breaking es un cambio que va a romper MAÑANA. Lo roto-ahora gana sobre lo-que-romperá-después.
 
@@ -129,8 +129,8 @@ Un boost NO cambia la prioridad absoluta del proposal; solo lo mueve al **frente
 {
   "families": [{ "prefix": "x", "kind": "fix", "cascadePriority": 0, "description": "fix (x: prefix)" }, ...],
   "overrides": {
-    "f125": -1,
-    "x123": 0
+    "f00022": -1,
+    "x00006": 0
   }
 }
 ```
@@ -234,7 +234,7 @@ export const buildDefaultCascadeChain = (): ICascadePriorityResolver =>
   - acceptance:
     - Grep exhaustivo de **todos los consumers** de `cascadePriority` y de `proposal-workflow.families[]` en `plugins/`, `packages/`, `apps/`. Salida: lista con path + línea + tipo de uso (lectura directa, iteración, destructuring, comparación).
     - Identifica si `status-marker` o `memory` plugins leen el cascade. Si lo hacen, clasifica el uso como "must preserve" o "can be deleted".
-    - Salida en `docs/proposals/done/audits/aXXX-discovery-cascade-callers.md` (nuevo audit, no en `ready/` — es output de f127, no una proposal).
+    - Salida en `docs/proposals/done/audits/aXXX-discovery-cascade-callers.md` (nuevo audit, no en `ready/` — es output de f00024, no una proposal).
   - dependsOn: []
 
 - **s1 — Tipos y cadena de resolvers (4 archivos nuevos)**
@@ -255,7 +255,7 @@ export const buildDefaultCascadeChain = (): ICascadePriorityResolver =>
     - `buildProposalWorkflow()` ya no hardcodea `[{prefix:'f', ...}, {prefix:'p', ...}]`. En su lugar, llama a `buildKindOrder(PROPOSAL_KINDS)` + `buildAliasFamilies()` para componer las 13 familias.
     - La `description` de cada familia es `"{kind} ({prefix}: prefix)"` (veraz, no "fixes" si es feat).
     - El array mantiene el orden de §"Orden por defecto".
-    - El alias `p` se añade con `description: "legacy alias for l (pre-f113) — kept for back-compat"`, `cascadePriority` = `kindOrder.get('legacy') + 1` (12).
+    - El alias `p` se añade con `description: "legacy alias for l (pre-f00016) — kept for back-compat"`, `cascadePriority` = `kindOrder.get('legacy') + 1` (12).
     - La signature pública no cambia: `buildProposalWorkflow(proposalsDir, indexFile): IProposalWorkflow`.
     - **S2 NO depende de s1** — solo necesita la constante de orden, que s1 publica vía `buildKindOrder` (interfaz estable). Si s1 no ha mergeado, s2 importa la constante de orden directamente de `cascade-priority.ts` (que s1 deja commiteable incluso sin s2 listo).
   - dependsOn: [`s0`]
@@ -298,12 +298,12 @@ export const buildDefaultCascadeChain = (): ICascadePriorityResolver =>
 
 ## Coordination notes
 
-- **f126 (renumerar IDs) está en `ready/` pero no en progreso.** f127 no depende de f126: el cascade priority se basa en el **kind** del frontmatter, no en el número del ID. Si f126 ejecuta antes, el `id` cambia pero el `kind` no, así que el cascade sigue funcionando. Si ejecuta después, también. **No hay conflicto**.
-- **f113 (state machine) es prerrequisito lógico, no de ejecución.** f127 importa `PROPOSAL_KINDS` y `IProposalKind` de `proposal-glossary.constant.ts`, que f113 ya exporta. f127 NO modifica f113.
+- **f00023 (renumerar IDs) está en `ready/` pero no en progreso.** f00024 no depende de f00023: el cascade priority se basa en el **kind** del frontmatter, no en el número del ID. Si f00023 ejecuta antes, el `id` cambia pero el `kind` no, así que el cascade sigue funcionando. Si ejecuta después, también. **No hay conflicto**.
+- **f00016 (state machine) es prerrequisito lógico, no de ejecución.** f00024 importa `PROPOSAL_KINDS` y `IProposalKind` de `proposal-glossary.constant.ts`, que f00016 ya exporta. f00024 NO modifica f00016.
 - **Otros consumers del cascade** (si los hay en otros plugins, p.ej. status-marker o memory): segregan en el grep previo a s2. Si alguno lee `cascadePriority` directamente del `IProposalWorkflow.families[]`, sigue funcionando porque el campo se mantiene (mismo nombre, mismo tipo, mismo orden estable por prefix).
 
 ## Out of scope
 
 - Reordenar los `kindOrder` por configuración (sigue siendo hardcoded en §"Orden por defecto"). Un override por-host en `mcp-vertex.config.json` puede ser una propuesta futura, no se mete aquí.
 - Persistir el `cascadeOverride` por usuario/agente (override siempre viene del frontmatter, no del estado del swarm).
-- Cambiar la cascada del **workflow de transiciones de status** (DFA de 7-status). Eso es f113 §4.2, intacto. f127 solo toca el cascade de **selección de propuesta a trabajar**, que es ortogonal.
+- Cambiar la cascada del **workflow de transiciones de status** (DFA de 7-status). Eso es f00016 §4.2, intacto. f00024 solo toca el cascade de **selección de propuesta a trabajar**, que es ortogonal.

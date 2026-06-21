@@ -113,10 +113,10 @@ describe('continue_proposal (serial cascade)', () => {
 		expect(out.nextAction).toContain('Do NOT retry');
 	});
 
-	// f113 S4: new-system entries (id prefix is one of the 12 live kinds,
+	// f00016 S4: new-system entries (id prefix is one of the 12 live kinds,
 	// status is one of the 7 glossary statuses) are actionable by FOLDER
 	// (derived from the index `file` path), not by status string.
-	describe('folder-aware cascade for new-system (f113) entries', () => {
+	describe('folder-aware cascade for new-system (f00016) entries', () => {
 		it('picks a new-system entry living in ready/', async () => {
 			writeFileSync(
 				options.indexPathAbs,

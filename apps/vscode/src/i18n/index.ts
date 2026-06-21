@@ -24,7 +24,7 @@ export interface IExtensionTranslations {
 	readonly toolsView: string;
 	readonly proposalsView: string;
 	readonly statusTooltip: string;
-	// f125 — dashboard commands and panel labels (i18n parity across 12 langs)
+	// f00022 — dashboard commands and panel labels (i18n parity across 12 langs)
 	readonly openDashboard: string;
 	readonly openDocs: string;
 	readonly tabOverview: string;

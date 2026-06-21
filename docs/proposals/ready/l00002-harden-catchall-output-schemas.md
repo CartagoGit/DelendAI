@@ -8,7 +8,7 @@ kind: refactor
 title: Harden the remaining permissive catchall outputSchemas
 ---
 
-# l118 — Harden the remaining permissive `catchall` outputSchemas
+# l00002 — Harden the remaining permissive `catchall` outputSchemas
 
 ## Goal
 

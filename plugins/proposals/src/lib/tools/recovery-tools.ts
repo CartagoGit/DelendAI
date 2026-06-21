@@ -356,7 +356,7 @@ export const runProposalReconcileFolder = async (
 		return toolError(`proposal "${args.id}" not found`, 'Check the id.');
 	if (!isKnownStatus(found.status)) {
 		return toolError(
-			`proposal status "${found.status}" is not on the f113 state machine`,
+			`proposal status "${found.status}" is not on the f00016 state machine`,
 			'Migrate legacy proposals first.',
 		);
 	}

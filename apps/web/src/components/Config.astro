@@ -23,7 +23,7 @@ const stripLocale = (p: string): string => {
 		segs[0] &&
 		languages.some((l) => l.code === segs[0] && l.code !== 'en')
 	) {
-		return '/' + segs.slice(1).join('/');
+		return `/${segs.slice(1).join('/')}`;
 	}
 	return p || '/';
 };

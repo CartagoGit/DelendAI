@@ -4,7 +4,7 @@ import { buildProposalWorkflow } from '../../../../src/lib/knowledge/proposal-wo
 import { DEFAULT_KIND_ORDER } from '../../../../src/lib/cascade/cascade-priority';
 import { PROPOSAL_KINDS } from '../../../../src/lib/contracts/constants/proposal-glossary.constant';
 
-describe('buildProposalWorkflow (f127 cascade families)', () => {
+describe('buildProposalWorkflow (f00024 cascade families)', () => {
 	const workflow = buildProposalWorkflow('docs/proposals', 'index.json');
 
 	it('returns exactly 13 families: 12 active kinds + the legacy `p` alias', () => {

@@ -1,7 +1,7 @@
 /**
- * plugin-drift-budget.spec.ts — l125 s7.
+ * plugin-drift-budget.spec.ts — l00008 s7.
  *
- * A non-regression budget against 3 anti-patterns the l125 consolidation
+ * A non-regression budget against 3 anti-patterns the l00008 consolidation
  * closed across the plugin satellite: sync `node:fs` calls in plugin
  * source outside an explicit boot-time allowlist, residual
  * `z.object({}).catchall(z.unknown())` outputSchemas, and raw
@@ -64,20 +64,20 @@ const relPath = (abs: string): string =>
 	relative(REPO_ROOT, abs).split('\\').join('/');
 
 // Each entry: `<relative-file-path>:<line-number>` — the exact, narrow
-// boot-time one-shots this consolidation (and its predecessors, f122/f123)
+// boot-time one-shots this consolidation (and its predecessors, f00020/f00019)
 // left in place, each with a code comment at the call site explaining why.
 const SYNC_IO_ALLOWLIST = new Set<string>([
 	// The import statement itself — the actual usages below are what
 	// matter; an unused sync import would already fail typecheck/lint.
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:1',
 	// Constructor one-shot: instantiated once per `register(ctx)`, not
-	// per-request (l125 s1).
+	// per-request (l00008 s1).
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:96',
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:99',
 	// isAgentStuck: contract-constrained — packages/core's
 	// IMcpVertexHostConfig.isAgentStuck is declared synchronous and is
 	// invoked without `await` after every tool call; widening that core
-	// contract is out of scope for this budget (l125 s1, documented
+	// contract is out of scope for this budget (l00008 s1, documented
 	// in-code with a JSDoc on the method).
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:423',
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:424',
@@ -86,7 +86,7 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 const SYNC_IO_PATTERN =
 	/\b(existsSync|readFileSync|readdirSync|mkdirSync|writeFileSync)\b/;
 
-describe('plugin satellite drift budget (l125 s7)', () => {
+describe('plugin satellite drift budget (l00008 s7)', () => {
 	it('0 sync node:fs calls in plugins/*/src outside the documented allowlist', async () => {
 		const files = await collectPluginSourceFiles();
 		const violations: string[] = [];

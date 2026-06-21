@@ -20,7 +20,7 @@ export interface IProposalBoardSummary {
 }
 
 /**
- * `McpVertexStatusBar` — VS Code status bar summary, upgraded in f125
+ * `McpVertexStatusBar` — VS Code status bar summary, upgraded in f00022
  * to include the same KPIs the dashboard exposes (tools, proposals,
  * tokens, agents). Click → open the dashboard.
  */

@@ -9,7 +9,7 @@ kind: feat
 title: Add compact findings to rules checks
 ---
 
-# f118 — Add compact findings to rules checks
+# f00018 — Add compact findings to rules checks
 
 ## Goal
 

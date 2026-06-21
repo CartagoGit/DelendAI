@@ -46,13 +46,13 @@ acceptance:
     - { command: bun run lint:proposals, expect: exit0 }
     - { command: cd apps/vscode && bun run package, expect: exit0 }
 related:
-    - f113 # proposal state machine — the extension reads its board
-    - f100 # i18n baseline — extension mirrors the language list
-    - f101 # capabilities surface — extension is the IDE counterpart
-    - f110 # residual p100 web & i18n — same i18n rules apply
+    - f00016 # proposal state machine — the extension reads its board
+    - f00012 # i18n baseline — extension mirrors the language list
+    - f00011 # capabilities surface — extension is the IDE counterpart
+    - f00010 # residual p100 web & i18n — same i18n rules apply
 ---
 
-# f114 — IDE extension (VS Code first, JetBrains/Zed later)
+# f00014 — IDE extension (VS Code first, JetBrains/Zed later)
 
 ## goal
 
@@ -92,7 +92,7 @@ governed by the same i18n/lint/validate rules.
   spawns the server via stdio; it does not embed it. Keeps the core's
   versioning independent.
 - **No auth/secret storage** in v0.1. The server is local-only today;
-  when auth lands, follow up in `f116`.
+  when auth lands, follow up in `f00017`.
 - **No codeLens over tool calls in user code** — punted to a future
   proposal (it needs the inverse index of which tools a repo uses,
   which the metrics plugin does not yet expose).
@@ -436,7 +436,7 @@ proposals` with a click → `showOverview`. Updates on
 | Generated types drift when a tool changes        | `bun run types:generate` is in CI; `apps/vscode` `bun run type` fails if regenerated types are not committed.        |
 | i18n gate blocks the release                     | S11 is its own slice so it lands early; the `check-i18n` script is the canary.                                       |
 | Cursor/Antigravity fork the VS Code API          | They share it; extension works out of the box. Documented in README.                                                 |
-| JetBrains later                                  | Reserved: when S12 ships, file `f115-feat-jetbrains-extension.md` reusing `packages/client`. The client is the seam. |
+| JetBrains later                                  | Reserved: when S12 ships, file `f00015-feat-jetbrains-extension.md` reusing `packages/client`. The client is the seam. |
 
 ## notes
 

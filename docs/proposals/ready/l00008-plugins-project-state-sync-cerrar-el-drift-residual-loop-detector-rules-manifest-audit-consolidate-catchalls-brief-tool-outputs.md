@@ -6,11 +6,11 @@ track: plugins+core+audit
 date: 2026-06-21
 ---
 
-# l125 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
+# l00008 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
 
 ## Goal
 
-Consolidar el drift residual entre los 13 plugins y los invariantes del core (AGENTS.md reglas 3–8) que las propuestas puntuales `f122`, `f123`, `l118`, `l122` no cierran. Tras esta propuesta, `bun run validate` debe pasar y los plugins deben: (a) tener 0 `*Sync` de `node:fs` en hot paths, (b) escribir de forma durable con `writeFileAtomic` + `withFileMutex`, (c) contener paths workspace-scoped con `resolveWorkspaceContained`, (d) tipar los catchalls de outputSchema que aún queden, (e) generar `tool-outputs.ts` cuando aplique, y (f) cubrirse en el audit brief.
+Consolidar el drift residual entre los 13 plugins y los invariantes del core (AGENTS.md reglas 3–8) que las propuestas puntuales `f00020`, `f00019`, `l00002`, `l00007` no cierran. Tras esta propuesta, `bun run validate` debe pasar y los plugins deben: (a) tener 0 `*Sync` de `node:fs` en hot paths, (b) escribir de forma durable con `writeFileAtomic` + `withFileMutex`, (c) contener paths workspace-scoped con `resolveWorkspaceContained`, (d) tipar los catchalls de outputSchema que aún queden, (e) generar `tool-outputs.ts` cuando aplique, y (f) cubrirse en el audit brief.
 
 ## Slices
 
@@ -37,7 +37,7 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
   - "Spec nuevo que simula un kill -9 entre el write y el fsync y confirma que el archivo en disco es bit-identical al original o al nuevo, nunca parcial."
   - "bun run validate verde."
 - status: done
-- implementation_note: "`ensureRulesCache` y el `register(ctx)` del plugin `rules` son ahora `async` (boot-time, no hot-path — invariante 3 de AGENTS.md no aplica de todos modos, pero el cambio elimina cualquier riesgo futuro). El materialize-preset loop usa `writeFileAtomic` (crash-safe: write-temp-then-rename). El read-fingerprint→maybe-write del manifest queda envuelto en `withFileMutex(manifestAbs, ...)`. Spec nuevo en `plugins/rules/tests/src/lib/frameworks/manifest.spec.ts` (4 tests: happy path, fingerprint estable no reescribe, manifest nunca truncado, 8 llamadas paralelas convergen). `plugins/rules` suite completa: 15/15 verde. `bun run typecheck` limpio. `bun run lint`/`validate` global bloqueado únicamente por `docs/proposals/index.json` (lock externo de `f126`/`f119`, ajeno a este slice)."
+- implementation_note: "`ensureRulesCache` y el `register(ctx)` del plugin `rules` son ahora `async` (boot-time, no hot-path — invariante 3 de AGENTS.md no aplica de todos modos, pero el cambio elimina cualquier riesgo futuro). El materialize-preset loop usa `writeFileAtomic` (crash-safe: write-temp-then-rename). El read-fingerprint→maybe-write del manifest queda envuelto en `withFileMutex(manifestAbs, ...)`. Spec nuevo en `plugins/rules/tests/src/lib/frameworks/manifest.spec.ts` (4 tests: happy path, fingerprint estable no reescribe, manifest nunca truncado, 8 llamadas paralelas convergen). `plugins/rules` suite completa: 15/15 verde. `bun run typecheck` limpio. `bun run lint`/`validate` global bloqueado únicamente por `docs/proposals/index.json` (lock externo de `f00023`/`f00001`, ajeno a este slice)."
 
 ### s3 — audit/consolidate-tool.ts → resolveWorkspaceContained para auditDir
 - files: plugins/audit/src/lib/tools/consolidate-tool.ts
@@ -63,7 +63,7 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
   - "bun run types:generate ejecutado sin warnings de catchall restantes en estos dos plugins."
   - "bun run validate verde."
 - status: done
-- implementation_note: "**Resuelve META-1** (a026): `l122` cedió explícitamente sus slices S3/S4 (los mismos 2 archivos) a este `s4`; implementado aquí, no duplicado. Ambos catchalls reemplazados por `z.object` concretos que mirroran el tipo TS real en runtime — no `z.record(z.string(), z.unknown())` como sugería el acceptance original, porque ambos campos ya tienen un tipo TS concreto y estable: `rules-tools.ts:199` (`get_rules.areas[].rules`) ahora mirrora `IAreaRules` (`framework`/`presetId`/`eslint`/`typecheck`/`reason`); `adopt.tool.ts:81` (`proposal_adopt.layout`) ahora mirrora `PROPOSALS_LAYOUT` real (`root: string`, `files`/`folders: Record<string,string>`) — **no** `IHostPathLayout` como asumía el acceptance original (verificado leyendo `proposals/adopt.ts`: el campo `layout` es la constante de documentación estática `PROPOSALS_LAYOUT`, no el layout de paths en runtime; usar `z.object({ proposalsDir, proposalIndexFile })` habría sido incorrecto y roto en runtime). Specs nuevos con casos golden: `plugins/rules/tests/src/lib/tools/rules-tools.spec.ts` y `plugins/proposals/tests/src/lib/adopt-tool.spec.ts`, ambos invocan el handler real registrado y verifican el shape exacto (incluido `Object.keys(...).sort()` para confirmar que no quedan keys sueltas del catchall). `bun run types:generate` regeneró `plugins/rules/src/generated/tool-outputs.ts` y `plugins/proposals/src/generated/tool-outputs.ts` sin warnings — los 2 `Record<string, unknown>` colapsan a los tipos concretos. `bun run typecheck`, drift guard (`tool-types-sdk.spec.ts`, 8/8) y suites completas de `proposals` (51 archivos) + `rules` (4 archivos) verdes."
+- implementation_note: "**Resuelve META-1** (a00022): `l00007` cedió explícitamente sus slices S3/S4 (los mismos 2 archivos) a este `s4`; implementado aquí, no duplicado. Ambos catchalls reemplazados por `z.object` concretos que mirroran el tipo TS real en runtime — no `z.record(z.string(), z.unknown())` como sugería el acceptance original, porque ambos campos ya tienen un tipo TS concreto y estable: `rules-tools.ts:199` (`get_rules.areas[].rules`) ahora mirrora `IAreaRules` (`framework`/`presetId`/`eslint`/`typecheck`/`reason`); `adopt.tool.ts:81` (`proposal_adopt.layout`) ahora mirrora `PROPOSALS_LAYOUT` real (`root: string`, `files`/`folders: Record<string,string>`) — **no** `IHostPathLayout` como asumía el acceptance original (verificado leyendo `proposals/adopt.ts`: el campo `layout` es la constante de documentación estática `PROPOSALS_LAYOUT`, no el layout de paths en runtime; usar `z.object({ proposalsDir, proposalIndexFile })` habría sido incorrecto y roto en runtime). Specs nuevos con casos golden: `plugins/rules/tests/src/lib/tools/rules-tools.spec.ts` y `plugins/proposals/tests/src/lib/adopt-tool.spec.ts`, ambos invocan el handler real registrado y verifican el shape exacto (incluido `Object.keys(...).sort()` para confirmar que no quedan keys sueltas del catchall). `bun run types:generate` regeneró `plugins/rules/src/generated/tool-outputs.ts` y `plugins/proposals/src/generated/tool-outputs.ts` sin warnings — los 2 `Record<string, unknown>` colapsan a los tipos concretos. `bun run typecheck`, drift guard (`tool-types-sdk.spec.ts`, 8/8) y suites completas de `proposals` (51 archivos) + `rules` (4 archivos) verdes."
 
 ### s5 — Audit brief — añadir mcp-vertex_metrics, keepLegacy, tool-outputs como invariantes
 - files: plugins/audit/src/lib/brief.ts
@@ -105,26 +105,26 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
   - "Spec que ejecuta `grep -rE 'await writeFile\(' plugins/*/src/` y falla si encuentra hits (debe ser writeFileAtomic)."
   - "Los 3 specs son parte de `bun run validate`."
 - status: done
-- implementation_note: "3 tests en `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`, implementados en TypeScript/Node (no shell `grep`, para que corran igual en CI y en cualquier OS, vía `readdir`/`readFile` recursivo sobre `plugins/*/src`): (1) 0 sync `node:fs` fuera del allowlist explícito de 2 ubicaciones documentadas (constructor boot-time de `loop-detector-service.ts` + el método `isAgentStuck` contract-constrained, ambos de `l125 s1`); (2) 0 `catchall(z.unknown(` en `plugins/*/src` + `packages/core/src` (confirmado 0 tras `l122` S1/S2 + `l125` s4); (3) 0 `await writeFile(` crudo en `plugins/*/src`. **Hallazgo adicional durante la implementación**: el barrido encontró un cuarto sitio no listado en el acceptance original — `plugins/proposals/src/lib/swarm/round-context-digest.ts:122` (`await writeFile(tmpPath, ...)`, una reimplementación manual del patrón write-temp-then-rename que `writeFileAtomic` ya provee). Se corrigió como parte de este slice (reemplazado por una llamada directa a `writeFileAtomic`, eliminando ~15 líneas de lógica duplicada de cleanup/rename). Tras ese fix, los 3 greps dan 0 hits reales en todo el monorepo. `bun run typecheck`, `plugins/proposals` suite (52 archivos) y suite completa (148 archivos, 1065 tests) verdes."
+- implementation_note: "3 tests en `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`, implementados en TypeScript/Node (no shell `grep`, para que corran igual en CI y en cualquier OS, vía `readdir`/`readFile` recursivo sobre `plugins/*/src`): (1) 0 sync `node:fs` fuera del allowlist explícito de 2 ubicaciones documentadas (constructor boot-time de `loop-detector-service.ts` + el método `isAgentStuck` contract-constrained, ambos de `l00008 s1`); (2) 0 `catchall(z.unknown(` en `plugins/*/src` + `packages/core/src` (confirmado 0 tras `l00007` S1/S2 + `l00008` s4); (3) 0 `await writeFile(` crudo en `plugins/*/src`. **Hallazgo adicional durante la implementación**: el barrido encontró un cuarto sitio no listado en el acceptance original — `plugins/proposals/src/lib/swarm/round-context-digest.ts:122` (`await writeFile(tmpPath, ...)`, una reimplementación manual del patrón write-temp-then-rename que `writeFileAtomic` ya provee). Se corrigió como parte de este slice (reemplazado por una llamada directa a `writeFileAtomic`, eliminando ~15 líneas de lógica duplicada de cleanup/rename). Tras ese fix, los 3 greps dan 0 hits reales en todo el monorepo. `bun run typecheck`, `plugins/proposals` suite (52 archivos) y suite completa (148 archivos, 1065 tests) verdes."
 
 ## Why
 
-- Las propuestas puntuales `f122` (race en `sync-proposal-registry.ts:331`), `f123` (sync I/O en `notification/watcher.ts`), `l118` y `l122` (catchalls residuales) cierran **un hallazgo cada una** pero dejan sin tocar:
+- Las propuestas puntuales `f00020` (race en `sync-proposal-registry.ts:331`), `f00019` (sync I/O en `notification/watcher.ts`), `l00002` y `l00007` (catchalls residuales) cierran **un hallazgo cada una** pero dejan sin tocar:
   1. **Sync I/O en `loop-detector-service.ts`** — el segundo hot path con `*Sync` en producción, llamado por `continue-proposal` y por el detector de loops.
   2. **Escritura no atómica en `rules/frameworks/manifest.ts`** — rompe AGENTS.md invariante 4 (durable writes via primitives).
   3. **Path input sin contain en `audit/consolidate-tool.ts`** — rompe AGENTS.md invariante 5 (workspace-scoped path inputs via `resolveWorkspaceContained`).
-  4. **Catchalls residuales** en `rules/get_rules.areas[].rules` y `proposals/adopt.layout` (los otros catchalls están cubiertos por l118/l122).
+  4. **Catchalls residuales** en `rules/get_rules.areas[].rules` y `proposals/adopt.layout` (los otros catchalls están cubiertos por l00002/l00007).
   5. **Audit brief desactualizado** — no menciona `mcp-vertex_metrics`, ni `keepLegacy`, ni el invariante "tool-outputs commiteado".
   6. **`tool-outputs.ts` ausente** en `audit`, `status-marker`, `test-convention` — el SDK tipado no cubre esos plugins.
 - Sin un cierre consolidado, cada nuevo plugin que se sume al swarm arrastrará las mismas dudas: ¿dónde está `walkAllowedFiles`? ¿cómo tipas un outputSchema abierto? ¿qué hace `keepLegacy`? El brief de auditoría debe **codificar** las respuestas.
-- AGENTS.md regla 9 (i18n) es completa en `apps/web` y `apps/vscode`, pero los plugins no tienen i18n. Esta propuesta **no toca i18n** porque ya está cubierta por f110 (i18n completeness en apps). Queda fuera de scope.
+- AGENTS.md regla 9 (i18n) es completa en `apps/web` y `apps/vscode`, pero los plugins no tienen i18n. Esta propuesta **no toca i18n** porque ya está cubierta por f00010 (i18n completeness en apps). Queda fuera de scope.
 
 ## Non-goals
 
 - Reescribir el loop-detector completo (el refactor es local a las 5–6 llamadas síncronas).
 - Cambiar la API pública de las tools (los nombres y shapes quedan idénticos; solo cambia el código interno).
 - Añadir un nuevo mecanismo de locking distribuido (`withFileMutex` es suficiente).
-- Internacionalizar los strings de los plugins (cubierto por f110).
+- Internacionalizar los strings de los plugins (cubierto por f00010).
 - Migrar a `chokidar` o `node:fs.watch` (cambio de paradigma, fuera de scope).
 
 ## Acceptance
@@ -155,13 +155,13 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
 
 ## Notas
 
-- **Auditoría origen**: `a022-21-06-2026-copilot-minimax-m3-repositorio.md` (P0/P1/P2 agregados como F-02..F-12 complementarios).
+- **Auditoría origen**: `a00026-21-06-2026-copilot-minimax-m3-repositorio.md` (P0/P1/P2 agregados como F-02..F-12 complementarios).
 - **Propuestas relacionadas** (no se solapan):
-  - `f122` — race en `sync-proposal-registry.ts:331` (cerrado por separado, ver `f122` Notes).
-  - `f123` — sync I/O en `notification/watcher.ts` (cerrado por separado, ver `f123` Notes).
-  - `l118` / `l122` — catchalls en bootstrap/scaffold + JSDoc de primitivas sync (cubren el core, no los plugins). `l122` cerró S1/S2/S5 (los 4 catchalls de `packages/core/src`); sus slices S3/S4 (los mismos 2 archivos que el `s4` de esta propuesta — `rules-tools.ts:199`, `adopt.tool.ts:81`) quedaron explícitamente `deferred` a favor de este `l125.s4`, resolviendo el meta-hallazgo META-1 documentado en `a026`. **`s4` de `l125` es ahora la única propuesta viva para esos 2 archivos** — quien la tome no necesita coordinar con `l122`.
-  - `l121` — depth extension (search rg, memory export/import, docs_search; **distinto objetivo**).
-  - `x123` — fix de zombie host (no relacionado).
+  - `f00020` — race en `sync-proposal-registry.ts:331` (cerrado por separado, ver `f00020` Notes).
+  - `f00019` — sync I/O en `notification/watcher.ts` (cerrado por separado, ver `f00019` Notes).
+  - `l00002` / `l00007` — catchalls en bootstrap/scaffold + JSDoc de primitivas sync (cubren el core, no los plugins). `l00007` cerró S1/S2/S5 (los 4 catchalls de `packages/core/src`); sus slices S3/S4 (los mismos 2 archivos que el `s4` de esta propuesta — `rules-tools.ts:199`, `adopt.tool.ts:81`) quedaron explícitamente `deferred` a favor de este `l00008.s4`, resolviendo el meta-hallazgo META-1 documentado en `a00022`. **`s4` de `l00008` es ahora la única propuesta viva para esos 2 archivos** — quien la tome no necesita coordinar con `l00007`.
+  - `l00004` — depth extension (search rg, memory export/import, docs_search; **distinto objetivo**).
+  - `x00006` — fix de zombie host (no relacionado).
 - **Primitivas del core usadas**: `writeFileAtomic`, `withFileMutex`, `resolveWorkspaceContained`, `redactSecrets`, `walkAllowedFiles` (todas del barrel `@mcp-vertex/core/public`).
 - **Relación con `mcp-vertex_metrics`**: el spec `s7` registra los anti-patrones en cada test; `mcp-vertex_metrics` (M29) los observará en producción tras el primer release post-merge.
 - **Tamaño estimado del cambio**: 7 slices, 8 archivos de producción + 5 specs nuevos. Cada slice es ≤ 1 día; el total es ≈ 4 días de trabajo.

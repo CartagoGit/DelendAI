@@ -9,7 +9,7 @@ title: Web UI bugfixes — config modal sync, theme persistence, dev API regen, 
 shipped-in: 293837d
 ---
 
-# x122 — Web UI bugfixes (settings modal, page transitions, dev workflow, search, scrollbar)
+# x00005 — Web UI bugfixes (settings modal, page transitions, dev workflow, search, scrollbar)
 
 ## Goal
 
@@ -167,11 +167,11 @@ user-visible defects closed.
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026-…md` (M3 / M27
   follow-ups — UI polish on the web). The audit file moved to
-  `docs/proposals/done/audits/a016-16-06-2026-auditoria-maestra-unificada.md`
+  `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
   in the same commit (293837d) that shipped the fixes; the `R`
   rename in the diff stat showed up as a `D` line, which initially
   looked like data loss.
-- Companion proposal: `l119-web-deep-pages-and-search.md` (S2
+- Companion proposal: `l00006-web-deep-pages-and-search.md` (S2
   Pagefind; this proposal extends the dev-time ergonomics around
   it).
 - `apps/web/src/components/Config.astro`,

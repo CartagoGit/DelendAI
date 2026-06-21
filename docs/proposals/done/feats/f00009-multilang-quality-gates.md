@@ -7,13 +7,13 @@ date: 2026-06-19
 reopened: 2026-06-20
 closed: 2026-06-20
 related:
-  - x105 # web bugfixes & UX overhaul (where this is mentioned as B17)
-  - f108 # test-convention plugin (complementary: scan-drift vs run_quality)
+  - x00004 # web bugfixes & UX overhaul (where this is mentioned as B17)
+  - f00006 # test-convention plugin (complementary: scan-drift vs run_quality)
 kind: feat
 title: Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 ---
 
-# f107 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
+# f00009 — Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 
 > **Estado: DONE (2026-06-20).** Reescrito el 2026-06-20 después
 > de inspeccionar el código actual; **todos los slices aplicados**
@@ -146,7 +146,7 @@ test` directamente, no via `run_quality`.
 completo, en `apps/web/src/pages/guide.astro` (raíz) y clonado
 en `apps/web/src/pages/[lang]/guide.astro` para los 12 locales.
 La sección §9 "Quality gates & multi-language" **ya existe** y
-menciona explícitamente "proposal f107 — work in progress". El
+menciona explícitamente "proposal f00009 — work in progress". El
 s3 consiste en **reemplazar ese WIP** con la realidad actual:
 
 1. La arquitectura YA es agnóstica del lenguaje desde hace

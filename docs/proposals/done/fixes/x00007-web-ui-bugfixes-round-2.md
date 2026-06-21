@@ -9,12 +9,12 @@ title: Web UI bugfixes round 2 — header view-transition, language persistence 
 shipped-in: 01de303, 2759c7a, efca64a
 ---
 
-# x124 — Web UI bugfixes round 2 (post-x122)
+# x00007 — Web UI bugfixes round 2 (post-x00005)
 
 ## Goal
 
 Close the second wave of user-visible bugs the user reported on top of
-the x122 fixes (settings modal sync, themed scrollbar, etc.). Six bugs
+the x00005 fixes (settings modal sync, themed scrollbar, etc.). Six bugs
 from the user + one I caught while diagnosing.
 
 1. **Header has weird view-transitions on every navigation**: the
@@ -72,7 +72,7 @@ from the user + one I caught while diagnosing.
 ## Plus
 
 - **`/install` page still has a double title** (`<PageHeader><h1/>`
-  + `Install.astro`'s inner `<h2>`). x122 fixed the other 8
+  + `Install.astro`'s inner `<h2>`). x00005 fixed the other 8
   section pages but missed this one. Same one-line change:
   drop `<PageHeader>` and pass `heading={t.install.title}` to
   `<Install>`.
@@ -241,10 +241,10 @@ workstream; the changes are localised to a handful of files.
 
 ## Linked references
 
-- x122 — the first round of web UI bugfixes (settings modal
+- x00005 — the first round of web UI bugfixes (settings modal
   sync, themed scrollbar, etc.); the present proposal extends
   the same fix surface.
-- `apps/web/src/i18n/tools/` — the catalogue that x124 S6
+- `apps/web/src/i18n/tools/` — the catalogue that x00007 S6
   extends.
 - `apps/web/src/i18n/langs/<code>.json` — the 12-locale strings
   for UI copy.

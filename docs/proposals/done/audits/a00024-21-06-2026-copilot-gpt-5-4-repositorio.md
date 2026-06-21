@@ -12,10 +12,10 @@ acceptance:
   - { command: bun run validate, expect: exit0 }
 ---
 
-# a023 — Auditoría completa del repositorio — GitHub Copilot (GPT-5.4)
+# a00024 — Auditoría completa del repositorio — GitHub Copilot (GPT-5.4)
 
-> **Superseded by unified audit [`a026`](../../ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
-> (consolidación de auditorías ready del 2026-06-21); ver a026 para hallazgos
+> **Superseded by unified audit [`a00022`](../../ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
+> (consolidación de auditorías ready del 2026-06-21); ver a00022 para hallazgos
 > referenciados y slices vivos. Cerrada como referencia histórica.
 
 ## Goal
@@ -41,7 +41,7 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 - global_gate: lint
 
 ### S1 — Execute audit and document findings
-- **Files**: `docs/proposals/ready/a023-21-06-2026-copilot-gpt-5-4-repositorio.md`
+- **Files**: `docs/proposals/ready/a00024-21-06-2026-copilot-gpt-5-4-repositorio.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: pending
 
@@ -130,5 +130,5 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 ## Notes
 
 - Esta auditoría sí ejecutó `bun run validate`, y el resultado del estado auditado fue rojo por cambios concurrentes presentes en `apps/web`.
-- No he reescrito ni invalidado las auditorías `a021` o `a022`; esta propuesta es independiente y refleja el estado observado por GPT-5.4 en este turno.
+- No he reescrito ni invalidado las auditorías `a00021` o `a00026`; esta propuesta es independiente y refleja el estado observado por GPT-5.4 en este turno.
 - Si el árbol sigue cambiando en paralelo, el primer paso prudente antes de ejecutar `S2` a `S6` es revalidar `git status --porcelain` y reler solo los archivos objetivo de cada slice.

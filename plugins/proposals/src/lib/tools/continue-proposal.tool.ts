@@ -37,17 +37,17 @@ export interface IContinueProposalToolOptions {
 	/** Absolute path of the agent lock file. */
 	readonly lockPathAbs: string;
 	/**
-	 * @deprecated f127: superseded by `cascadeResolver` (kind-based
+	 * @deprecated f00024: superseded by `cascadeResolver` (kind-based
 	 * cascade + frontmatter override/boost). Kept only so a host config
 	 * that still sets `familyCascade` doesn't crash; when present, it is
 	 * translated into an ad-hoc resolver that ranks by prefix order, with
 	 * unknown prefixes pushed to the back — same externally observable
-	 * behaviour as before f127, but does not block the (now wired-in)
+	 * behaviour as before f00024, but does not block the (now wired-in)
 	 * frontmatter override.
 	 */
 	readonly familyCascade?: readonly string[];
 	/**
-	 * f127: priority resolver for `mode: "auto"`. Defaults to
+	 * f00024: priority resolver for `mode: "auto"`. Defaults to
 	 * `buildDefaultCascadeChain()` (kind-based cascade decorated with the
 	 * frontmatter `cascadeOverride` break-glass). Injectable for tests
 	 * (DIP) — a test can supply a fake resolver with a synthetic order
@@ -147,7 +147,7 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	error: z.string().optional(),
 });
 
-// f113 S4: a proposal already on the new state machine is actionable by
+// f00016 S4: a proposal already on the new state machine is actionable by
 // FOLDER, not by status string — `review` isn't even in the legacy
 // ACTIONABLE set, and `auto_work` should respect a slice already in
 // `review/` the same way it respects `in-progress/`.
@@ -239,7 +239,7 @@ const isCascadeBoost = (value: string | undefined): value is TCascadeBoost =>
 	typeof value === 'string' && CASCADE_BOOSTS.has(value as TCascadeBoost);
 
 /**
- * f127: resolves a free index entry's frontmatter (`cascadeOverride`,
+ * f00024: resolves a free index entry's frontmatter (`cascadeOverride`,
  * `cascadeOverrideReason`, `cascadeBoost`) into an `IProposalSummary`
  * the cascade resolver can rank. Reads only the entries already
  * filtered down to `free` (actionable, not claimed elsewhere) — never
@@ -472,7 +472,7 @@ export const runContinueProposal = async (
 			nextAction:
 				'Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or stop and report that all work is claimed.',
 		});
-	// f127: kind-based cascade (+ frontmatter override/boost) replaces the
+	// f00024: kind-based cascade (+ frontmatter override/boost) replaces the
 	// old hardcoded `['f', 'p']` family-prefix rank. A host that still
 	// configures the deprecated `familyCascade` keeps its exact previous
 	// ranking (by prefix order, unknown prefixes pushed to the back); a

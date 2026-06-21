@@ -21,6 +21,20 @@ export {
 } from '../lib/services/knowledge-service';
 export { MetricsService } from '../lib/services/metrics-service';
 export { NotificationsService } from '../lib/services/notifications-service';
+export { LogsService } from '../lib/services/logs-service';
+export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
+export type {
+	ILogCorrelateResult,
+	ILogEvent,
+	ILogOutcome,
+	ILogQueryFilter,
+	ILogQueryResult,
+	ILogRedactionTestResult,
+	ILogSubscribeOptions,
+	ILogTailResult,
+	INotificationLogEntry,
+} from '../lib/services/logs.types';
+export type { INotificationLogsBridgeOptions } from '../lib/services/notification-logs-bridge';
 export {
 	DashboardService,
 	createEmptyTotals,

@@ -1,5 +1,5 @@
 /**
- * Single source of truth for the f113 proposal state machine: the 7
+ * Single source of truth for the f00016 proposal state machine: the 7
  * statuses (one folder each), the 12 kinds (one filename prefix each),
  * and the legal status→status transitions. Every consumer (the
  * scaffold linter S2, the transition tool S3, the folder reconciler
@@ -9,7 +9,7 @@
  * NOT used yet by `sync-proposal-registry.ts` / `proposal-document.ts`:
  * those still validate the OLD 8-status union because the 14 legacy
  * proposals on disk still use it. Wiring them to this glossary is the
- * `PROPOSAL_STATE_MACHINE_V2` flag's job (f113 §8 risks), flipped only
+ * `PROPOSAL_STATE_MACHINE_V2` flag's job (f00016 §8 risks), flipped only
  * after S11/S12 migrate every legacy file — doing it earlier would
  * make `sync_proposals` reject every proposal currently on disk.
  */
@@ -24,7 +24,7 @@ export type IProposalStatus =
 	| 'retired';
 
 export interface IProposalStatusInfo {
-	/** Folder under `docs/proposals/` this status lives in (f113 §4.1). */
+	/** Folder under `docs/proposals/` this status lives in (f00016 §4.1). */
 	readonly folder: string;
 	/** Terminal statuses only leave via `proposal_retire` (rare, defensive). */
 	readonly terminal: boolean;
@@ -53,7 +53,7 @@ export const STATUS_TO_FOLDER: Readonly<Record<IProposalStatus, string>> =
 	) as Readonly<Record<IProposalStatus, string>>;
 
 /**
- * Legal status→status edges (f113 §4.2 DFA), interpreted from the ASCII
+ * Legal status→status edges (f00016 §4.2 DFA), interpreted from the ASCII
  * diagram where it didn't spell out an edge explicitly:
  * - `done`/`retired` are terminal; `done` may still `proposal_retire`
  *   (a shipped feature can later be superseded — `superseded_by`
@@ -94,7 +94,7 @@ export type IProposalKind =
 	| 'resume';
 
 export interface IProposalKindInfo {
-	/** Single lowercase letter; unique across all 12 kinds (f113 §2.2). */
+	/** Single lowercase letter; unique across all 12 kinds (f00016 §2.2). */
 	readonly prefix: string;
 	readonly glyph: string;
 	/** Conventional Commit type this kind produces (`''` for `spike`: no commit). */
@@ -218,7 +218,7 @@ export interface IProposalFlagInfo {
 
 /**
  * Frontmatter booleans that refine behaviour without being a status
- * (f113 §2.1): `draft` and `deferred` were folded into existing
+ * (f00016 §2.1): `draft` and `deferred` were folded into existing
  * mechanisms (`blocked-by: [self:*]` and a flag on `paused/`,
  * respectively) instead of adding two more statuses.
  */

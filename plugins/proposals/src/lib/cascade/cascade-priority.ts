@@ -1,9 +1,9 @@
 import type { IProposalKind } from '../contracts/constants/proposal-glossary.constant';
 
 /**
- * Default cascade order (f127): fixes ship first (broken-now beats
+ * Default cascade order (f00024): fixes ship first (broken-now beats
  * breaking-later), breaking changes before fresh features, then the
- * rest roughly by urgency. See f127 §"Orden por defecto" for the
+ * rest roughly by urgency. See f00024 §"Orden por defecto" for the
  * rationale behind every rank. `legacy` (l) keeps rank 11 and the
  * retired `p` alias sits one slot behind it (rank 12) — `p` is not an
  * `IProposalKind` so it is appended separately by `buildKindOrder`.
@@ -35,7 +35,7 @@ export type TCascadeBoost =
  * Intra-kind penalties applied by a boost. A boost only ever moves a
  * proposal towards the front of its OWN kind — never across kinds —
  * so `x` (fix) always outranks `f` (feat) regardless of boosts. See
- * f127 §"Boosts" for why this invariant must hold.
+ * f00024 §"Boosts" for why this invariant must hold.
  */
 export const DEFAULT_BOOST_PENALTIES: ReadonlyMap<TCascadeBoost, number> =
 	new Map([

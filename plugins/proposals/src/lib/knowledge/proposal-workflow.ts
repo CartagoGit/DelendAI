@@ -32,10 +32,10 @@ export interface IProposalWorkflow {
 /**
  * Builds the 13 cascade families (12 active kinds + the retired `p`
  * legacy alias) from the glossary's `PROPOSAL_KINDS` and the cascade
- * module's default order (f127). Each description is derived from the
+ * module's default order (f00024). Each description is derived from the
  * kind itself (`"{kind} ({prefix}: prefix)"`), so it never lies about
  * what a prefix actually means — the old hardcoded `f`/`p` pair
- * described `f` as "fixes" when `f` has meant `feat` since f113.
+ * described `f` as "fixes" when `f` has meant `feat` since f00016.
  */
 const buildProposalFamilies = (): IProposalWorkflow['families'] => {
 	const order = buildKindOrder(DEFAULT_KIND_ORDER);
@@ -50,7 +50,7 @@ const buildProposalFamilies = (): IProposalWorkflow['families'] => {
 		{
 			prefix: LEGACY_ALIAS_PREFIX,
 			kind: LEGACY_ALIAS_PREFIX,
-			description: `legacy alias for ${PROPOSAL_KIND_BY_PREFIX[LEGACY_ALIAS_PREFIX]} (pre-f113) — kept for back-compat`,
+			description: `legacy alias for ${PROPOSAL_KIND_BY_PREFIX[LEGACY_ALIAS_PREFIX]} (pre-f00016) — kept for back-compat`,
 			cascadePriority: order.get(LEGACY_ALIAS_PREFIX) as number,
 		},
 	];

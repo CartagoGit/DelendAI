@@ -1,7 +1,7 @@
 /**
- * f113 S3 — `<prefix>_proposal_transition`: move a proposal to a new
- * status, validating the move against the DFA (f113 §4.2) and keeping
- * the folder (f113 §4.1) and frontmatter `status` in sync via one
+ * f00016 S3 — `<prefix>_proposal_transition`: move a proposal to a new
+ * status, validating the move against the DFA (f00016 §4.2) and keeping
+ * the folder (f00016 §4.1) and frontmatter `status` in sync via one
  * atomic operation (`withFileMutex` + `writeFileAtomic` + `git mv`).
  *
  * Only operates on proposals whose CURRENT frontmatter status is
@@ -150,7 +150,7 @@ export const runProposalTransition = async (
 	if (!isKnownStatus(found.status)) {
 		return toolError(
 			`"${args.id}" has current status "${found.status}", which is not on the new state machine yet`,
-			'This proposal predates f113 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
+			'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
 		);
 	}
 
@@ -179,7 +179,7 @@ export const runProposalTransition = async (
 
 		if (moved) {
 			// The 7 status folders are expected to already exist (this repo
-			// seeds them with .gitkeep), but a host project adopting f113
+			// seeds them with .gitkeep), but a host project adopting f00016
 			// fresh, or a stray custom folder, might not have created the
 			// target yet — never fail the transition over a missing dir.
 			await mkdir(dirname(newAbsPath), { recursive: true });

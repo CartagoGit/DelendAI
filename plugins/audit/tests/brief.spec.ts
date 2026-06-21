@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { buildBrief } from '../src/lib/brief';
 
 /**
- * l125 s5 — the brief is the contract every model-side auditor reads
+ * l00008 s5 — the brief is the contract every model-side auditor reads
  * before producing a report. It must explicitly mention the 3
  * invariants this consolidation closed the drift on: `mcp-vertex_metrics`
  * as the observability primitive, `ctx.keepLegacy` as a per-plugin
  * contract every plugin must honour or explicitly ignore, and
  * `tool-outputs.ts` as a commit-time requirement for typed outputSchemas.
  */
-describe('buildBrief — l125 s5 invariants', () => {
+describe('buildBrief — l00008 s5 invariants', () => {
 	it('mentions mcp-vertex_metrics as the canonical observability primitive', () => {
 		const md = buildBrief('full');
 		expect(md).toContain('mcp-vertex_metrics');

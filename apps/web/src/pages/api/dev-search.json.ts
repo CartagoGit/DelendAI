@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 /**
  * /api/dev-search.json — dev-only client-side search index fallback
- * (l122 S4).
+ * (l00007 S4).
  *
  * Pagefind only ships in the production build (`bun run site` runs
  * `pagefind --site dist` as the last step). In `astro dev` there is no

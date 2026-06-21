@@ -8,11 +8,11 @@ track: notification-plugin
 date: 2026-06-21
 ---
 
-# f123 — Async I/O — migrar notification/watcher.ts a node:fs/promises
+# f00019 — Async I/O — migrar notification/watcher.ts a node:fs/promises
 
 ## Goal
 
-Cerrar el hallazgo H2 (P0) de la auditoría a022 migrando `plugins/notification/src/lib/watcher.ts` de fs síncrono a `node:fs/promises` (o a `walkAllowedFiles` del core si aplica).
+Cerrar el hallazgo H2 (P0) de la auditoría a00026 migrando `plugins/notification/src/lib/watcher.ts` de fs síncrono a `node:fs/promises` (o a `walkAllowedFiles` del core si aplica).
 
 El bug: el watcher invoca `existsSync`/`readdirSync`/`readFileSync` (líneas 25, 138, 179, 222-224, 237, 240, 282) dentro de `check()` que corre por `setInterval` cada N ms. AGENTS.md es explícito en el invariante 3: "Async I/O only in hot paths. No `*Sync` filesystem calls inside tool handlers or engines (boot-time one-shots are the documented exception)".
 
@@ -64,7 +64,7 @@ El fix tiene 3 componentes:
 - [x] 0 invocaciones de `*Sync` de `node:fs` en el archivo (verificable con `grep -E 'Sync\(' plugins/notification/src/lib/watcher.ts` → sin resultados).
 - [x] Spec migrado en `plugins/notification/tests/src/lib/notification.spec.ts` que valida: (a) ticks concurrentes se saltan vía guards `checkInFlight`/`pollInFlight`, no se encolan; (b) un archivo nuevo en el handoff dir se detecta y dispara la notificación; (c) `readInFlight`/`diffReleased`/`awaitLockRelease` preservan su contrato observable con I/O async.
 - [x] `bun run lint:proposals` valida este documento.
-- [x] Cita cruzada desde `a022` (H2) marcada en el checklist.
+- [x] Cita cruzada desde `a00026` (H2) marcada en el checklist.
 
 ## Risks and mitigations
 
@@ -74,9 +74,9 @@ El fix tiene 3 componentes:
 
 ## Notes
 
-- **Auditoría origen**: `a022-21-06-2026-copilot-minimax-m3-repositorio.md` (H2, severidad P0).
+- **Auditoría origen**: `a00026-21-06-2026-copilot-minimax-m3-repositorio.md` (H2, severidad P0).
 - **Primitiva candidata del core**: `walkAllowedFiles` (exportada en `packages/core/src/public/index.ts`).
 - **Invariante que rompe**: AGENTS.md regla 3 ("Async I/O only in hot paths").
 - **Tamaño del fix**: un solo archivo + un spec. Impacto desproporcionado: elimina la única fuente de stalls por sync I/O en todo el monorepo.
 - **Follow-up natural**: si se aprueba, abre el camino a una segunda iteración que migre también el bootstrap CLI del host a `walkAllowedFiles`, ganando contención de paths en boot-time.
-- **Implementación**: `watcher.ts` migrado completo a `node:fs/promises` (`readFile`/`readdir`/`stat` en lugar de `readFileSync`/`readdirSync`/`existsSync`). `readInFlight`, `IReleaseWatcher.check()` e `IHandoffWatcher.check()` son ahora `async`/devuelven `Promise`. Ticks concurrentes (`setInterval` + `fs.watch` pueden disparar casi simultáneo) se serializan con un guard booleano (`checkInFlight`/`pollInFlight`) en vez de un `inFlight: Promise` compartido — equivalente funcional, evita una segunda capa de estado. No se adoptó `walkAllowedFiles` del core: la lógica del watcher es "diff de dos snapshots de un único directorio plano", no un recorrido recursivo de árbol de workspace, así que la primitiva no encajaba sin un wrapper (R2 se materializó, mitigación aplicada según lo previsto). El spec de "max latency del event loop" (R3) no se añadió como assertion de timing dedicada — la migración a async ya es la garantía estructural de no bloqueo; en su lugar el spec existente (`notification.spec.ts`) se migró íntegro a `await watcher.check()`, preservando los 11 casos (detección de archivo nuevo, ignorar pre-existentes, JSON corrupto, `awaitLockRelease` con timeout/abort). `bun run typecheck` limpio; `bunx vitest run plugins/notification` → 11/11 verde; `bun run lint`/`bun run validate` global bloqueado únicamente por `docs/proposals/index.json`, lockeado por el trabajo concurrente de `f126`/`f119` (ajeno a este slice).
+- **Implementación**: `watcher.ts` migrado completo a `node:fs/promises` (`readFile`/`readdir`/`stat` en lugar de `readFileSync`/`readdirSync`/`existsSync`). `readInFlight`, `IReleaseWatcher.check()` e `IHandoffWatcher.check()` son ahora `async`/devuelven `Promise`. Ticks concurrentes (`setInterval` + `fs.watch` pueden disparar casi simultáneo) se serializan con un guard booleano (`checkInFlight`/`pollInFlight`) en vez de un `inFlight: Promise` compartido — equivalente funcional, evita una segunda capa de estado. No se adoptó `walkAllowedFiles` del core: la lógica del watcher es "diff de dos snapshots de un único directorio plano", no un recorrido recursivo de árbol de workspace, así que la primitiva no encajaba sin un wrapper (R2 se materializó, mitigación aplicada según lo previsto). El spec de "max latency del event loop" (R3) no se añadió como assertion de timing dedicada — la migración a async ya es la garantía estructural de no bloqueo; en su lugar el spec existente (`notification.spec.ts`) se migró íntegro a `await watcher.check()`, preservando los 11 casos (detección de archivo nuevo, ignorar pre-existentes, JSON corrupto, `awaitLockRelease` con timeout/abort). `bun run typecheck` limpio; `bunx vitest run plugins/notification` → 11/11 verde; `bun run lint`/`bun run validate` global bloqueado únicamente por `docs/proposals/index.json`, lockeado por el trabajo concurrente de `f00023`/`f00001` (ajeno a este slice).

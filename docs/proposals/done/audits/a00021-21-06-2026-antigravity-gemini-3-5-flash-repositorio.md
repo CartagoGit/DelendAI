@@ -11,10 +11,10 @@ acceptance:
   - { command: bun run validate, expect: exit0 }
 ---
 
-# a021 — Auditoría exhaustiva — Antigravity (Gemini 3.5 Flash)
+# a00021 — Auditoría exhaustiva — Antigravity (Gemini 3.5 Flash)
 
-> **Superseded by unified audit [`a026`](../../ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
-> (consolidación de auditorías ready del 2026-06-21); ver a026 para hallazgos
+> **Superseded by unified audit [`a00022`](../../ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
+> (consolidación de auditorías ready del 2026-06-21); ver a00022 para hallazgos
 > referenciados y slices vivos. Cerrada como referencia histórica.
 
 ## Goal
@@ -75,7 +75,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 - global_gate: lint
 
 ### S1 — Execute audit and document findings
-- **Files**: docs/proposals/ready/a021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md
+- **Files**: docs/proposals/ready/a00021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md
 - **Gate**: bun run lint:proposals
 - **Status**: pending
 

@@ -32,7 +32,7 @@ export interface IHostPathLayout {
 	readonly proposalsDir: string;
 	/** Machine-readable proposal index. */
 	readonly proposalIndexFile: string;
-	/** f113 S13: per-kind sequential id counters (race-safe allocation). */
+	/** f00016 S13: per-kind sequential id counters (race-safe allocation). */
 	readonly proposalIdCountersFile: string;
 	/** Scratch directory for transient agent artefacts. */
 	readonly scratchDir: string;

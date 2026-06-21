@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * rename-proposals-padded.ts — f126 s1.
+ * rename-proposals-padded.ts — f00023 s1.
  *
  * Scans every `.md` under `docs/proposals/{ready,done,in-progress,paused,
  * blocked,retired}/`, extracts the `id:` from the YAML frontmatter, looks
@@ -14,19 +14,19 @@
  * rewritten). Pass `--apply` to perform the renames via `git mv` and
  * rewrite each file's `id:` field in-place.
  *
- * Design choices (see docs/proposals/ready/f126-…md §"Slices"):
+ * Design choices (see docs/proposals/ready/f00023-…md §"Slices"):
  *   - 5-digit padding (not 6, not 7) — `a00001..a99999` per family = 99 999
  *     proposals/family, enough for decades. Approved in the proposal.
  *   - Order within a family is by **creation date** (first commit), not by
- *     current numeric ID. This is the whole point of f126: the existing
- *     numbers (`a21..a24`, `f122..f125`, `l114..l127`, `x123..x124`) are
+ *     current numeric ID. This is the whole point of f00023: the existing
+ *     numbers (`a21..a24`, `f00020..f00022`, `l00001..l00010`, `x00006..x00007`) are
  *     holes and not chronological.
  *   - Ties (two files with identical creation-date) fall back to slug
  *     lexicographic order — deterministic.
  *   - No body rewrites. Only `id:` in the frontmatter and the filename
  *     prefix. The slug (everything after the first `-` in the filename)
  *     is preserved verbatim.
- *   - Alias `p` (pre-f113 legacy prefix) maps onto the same family as
+ *   - Alias `p` (pre-f00016 legacy prefix) maps onto the same family as
  *     `l` for the purposes of the sequence — they're both "legacy" kind.
  *
  *   bun scripts/rename-proposals-padded.ts            # dry-run (default)
@@ -137,14 +137,14 @@ const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 			if (ent.isDirectory()) {
 				// Recurse into sub-folders (e.g. `done/audits/`, `done/feats/`,
 				// `done/fixes/`, `done/resumes/`). We do NOT recurse into the
-				// `docs/proposals/audit*` / `RESUMEN-*.md` session notes etc.
+				// `docs/proposals/audit*` / `n001-*.md` session notes etc.
 				await visit(abs);
 				continue;
 			}
 			if (!ent.isFile()) continue;
 			if (!isProposalMd(ent.name)) continue;
 			// Skip session notes / READMEs that happen to match the regex
-			// (defensive — they shouldn't, but `RESUMEN-…md` starts with
+			// (defensive — they shouldn't, but `n001-…md` starts with
 			// uppercase R, so the regex `/^[a-z]\d+-/` rejects them anyway).
 			const raw = await readFile(abs, 'utf8');
 			const oldId = extractId(raw);

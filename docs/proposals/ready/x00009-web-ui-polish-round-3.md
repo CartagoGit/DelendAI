@@ -8,7 +8,7 @@ kind: fix
 title: Web UI polish round 3 — language swap transitions organically, header always updates, page format uniform, plugin icons with meaning, close settings modal on language change
 ---
 
-# x126 — Web UI polish round 3 (post-x122, x124, x125)
+# x126 — Web UI polish round 3 (post-x00005, x00007, x00008)
 
 ## Goal
 
@@ -39,13 +39,13 @@ Close the third wave of user-reported polish bugs. Five bugs:
    and `plugins/loop-detector.astro` still use `<PageHeader>` to
    render a `<h1>`. The other 8 section pages (`/tools`,
    `/prompts`, `/capabilities`, `/install`, …) already migrated
-   to the new pattern in x122 S3 (a single `<h1>` rendered by
+   to the new pattern in x00005 S3 (a single `<h1>` rendered by
    the section component, no `<PageHeader>`). This proposal
    migrates the four outliers so every page has exactly one
    `<h1>`, no `PageHeader` outside of `PluginPage.astro` (which
    keeps it for the breadcrumb).
 4. **The plugin icons are just letters — they don't carry any
-   meaning for what the plugin does**. The x125 placeholders
+   meaning for what the plugin does**. The x00008 placeholders
    (`plugin-audit.svg` is a magenta square with the letter "A")
    are deterministic and theme-agnostic but they don't help the
    user recognise the plugin at a glance. Fix: replace the
@@ -187,12 +187,12 @@ promise; the modal-on-top-of-fade bug looks unprofessional.
 
 ## Linked references
 
-- x122 — the first round of web UI bugfixes (settings modal
+- x00005 — the first round of web UI bugfixes (settings modal
   sync, themed scrollbar, etc.).
-- x124 — round 2 (header view transition, language
+- x00007 — round 2 (header view transition, language
   persistence, search modal, More dropdown, in-page
   language switch, missing tool/plugin i18n).
-- x125 — the placeholder logo generator and the
+- x00008 — the placeholder logo generator and the
   15 SVGs it wrote to `apps/web/public/logos/`. S4 of this
   proposal extends that script to draw semantic icons
   instead of letter glyphs.

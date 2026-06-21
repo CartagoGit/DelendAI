@@ -6,14 +6,14 @@ track: plugin
 date: 2026-06-20
 closed: 2026-06-20
 related:
-  - f99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
-  - f107 # multi-lang quality gates (este plugin complementa: quality ejecuta, auto-work coordina la persistencia)
-  - f108 # test-convention (paralelo en filosofía: publica el contrato, lo verifica)
+  - f00004 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
+  - f00009 # multi-lang quality gates (este plugin complementa: quality ejecuta, auto-work coordina la persistencia)
+  - f00006 # test-convention (paralelo en filosofía: publica el contrato, lo verifica)
 kind: feat
 title: `auto_work`: modos de persistencia (commit / commit-and-push / none)
 ---
 
-# f109 — `auto_work`: modos de persistencia (commit / commit-and-push / none)
+# f00003 — `auto_work`: modos de persistencia (commit / commit-and-push / none)
 
 > **Estado: DONE (2026-06-20).** Nace del
 > problema concreto: hoy `<prefix>_auto_work` cierra el slice con la
@@ -119,7 +119,7 @@ renderiza con:
 - `<sliceId>` = el id de slice que el orquestador está cerrando (de
   `continue_proposal.mode: 'auto'` o `mode: 'claim'`).
 
-Ejemplo renderizado: `docs(f109): slice-3 implement persist modes`.
+Ejemplo renderizado: `docs(f00003): slice-3 implement persist modes`.
 
 ### Safety net: nunca pushear a `main` automáticamente
 
@@ -216,7 +216,7 @@ pasa a tener **JSON Schema** validado por
   1. `feat(proposals): add persist modes to auto_work` (s1 + s3)
   2. `feat(proposals): add maybePersistAfterSlice helper with safety net` (s2)
   3. `docs(proposals): persist modes manifest + plugin README` (s4 docs)
-  4. `docs(proposals): close f109 first slice with status note`
+  4. `docs(proposals): close f00003 first slice with status note`
 - CHANGELOG actualizado.
 
 ## 7. Por qué **plugin config** y no solo "instrucción en AGENTS.md"
@@ -241,7 +241,7 @@ pasa a tener **JSON Schema** validado por
 
 ## 9. Estado
 
-- s1: ✅ hecho (commit `5bd32c6`, "add maybePersistAfterSlice helper (f109 s1+s2)" — los tipos `IAutoWorkPersistConfig` y la extensión de `IAutoWorkToolOptions`).
+- s1: ✅ hecho (commit `5bd32c6`, "add maybePersistAfterSlice helper (f00003 s1+s2)" — los tipos `IAutoWorkPersistConfig` y la extensión de `IAutoWorkToolOptions`).
 - s2: ✅ hecho (mismo commit `5bd32c6` — el helper `maybePersistAfterSlice` + 11 tests).
 - s3: ✅ hecho (commit `ab5de2e` "add persistence modes (none, commit, commit-and-push) and update related tests" — tool `auto_work` carga config, resuelve prioridad, inyecta paso extra; 4 tests nuevos).
 - s4: ✅ hecho (commits `6fe3500` "stop mutating readonly IAutoWorkToolOptions.persist in spec" + este commit — README del plugin documenta los 3 modos, propuesta cerrada).

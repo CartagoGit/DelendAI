@@ -189,7 +189,7 @@ describe('gracefulShutdown — unit', () => {
  * assert the child exits in < 2s with code 143 (the conventional
  * "killed by SIGTERM" exit code we wired in `scripts/host-server.ts`).
  *
- * This is the regression test that closes x123's acceptance box
+ * This is the regression test that closes x00006's acceptance box
  * "Bun doesn't zombie on parent exit": a real subprocess must
  * die promptly when its parent is gone (or when the user hits
  * Ctrl+C in a terminal that owns the pty).

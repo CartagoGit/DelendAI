@@ -8,26 +8,26 @@ date: 2026-06-21
 track: proposals
 ownership:
     - { agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }
-    - { agent: implementation_runner, task: 's2: re-classify f99..l113 by real kind + move into done/feats|fixes/' }
-    - { agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }
+    - { agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }
+    - { agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }
 acceptance:
     - { command: bun run type, expect: exit0 }
     - { command: bun run test, expect: exit0 }
     - { command: bun run lint, expect: exit0 }
     - { command: bun run lint:proposals, expect: exit0 }
 related:
-    - f113 # proposal state machine — 7 statuses at root, kinds now mirrored inside done/
-    - x113 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
+    - f00016 # proposal state machine — 7 statuses at root, kinds now mirrored inside done/
+    - x00001 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
 ---
 
-# f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/
+# f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/
 
 ## Goal
 
 Add an internal sub-folder mirror inside `docs/proposals/done/` so the
 folder scales without becoming a flat dump. The 7 statuses still live at
 the root (`ready/`, `in-progress/`, `review/`, `done/`, `paused/`,
-`blocked/`, `retired/`) per [f113](done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md);
+`blocked/`, `retired/`) per [f00016](done/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md);
 only **inside `done/`** we group closed proposals by their `kind`
 (currently `audits/`, `feats/`, `fixes/`). This is purely a filesystem
 convention — the reconciler still treats every file under `done/` (any
@@ -36,7 +36,7 @@ depth) as `status: done` and the linter still validates filename prefix
 
 ## Why
 
-After landing f113 the proposal taxonomy is clean (12 kinds, single-letter
+After landing f00016 the proposal taxonomy is clean (12 kinds, single-letter
 prefix, linter-enforced), but `docs/proposals/done/` already had 35+
 files mixed at the root: audits, feats, fixes, summaries, and legacy
 `l<NNN>-*` re-tagged with `kind: legacy` regardless of their actual
@@ -46,7 +46,7 @@ content. Two practical problems:
    feat requires `ls | grep ^f`. With 5-10 more closed proposals per week,
    this will get worse.
 2. **Misleading `kind: legacy`**: `l99-l113` were tagged `kind: legacy` by
-   f113 because of their filename prefix (pre-f113 scheme), NOT because
+   f00016 because of their filename prefix (pre-f00016 scheme), NOT because
    their actual content is obsolete. `l99-feat-multi-model-audit-plugin`
    is a real feat; tagging it `kind: legacy` is a lie about its content.
 
@@ -73,7 +73,7 @@ kind) at the same level. That's confusing for agents and tools.
 `done/` is the one status whose contents are **terminal** and
 `read-mostly`: nothing leaves it. It is the only folder where we are
 free to add internal organisation without breaking the DFA. This matches
-the f113 invariant: "`done`/`retired` are terminal".
+the f00016 invariant: "`done`/`retired` are terminal".
 
 ### 2.2 Only the kinds we actually have, no speculative buckets
 
@@ -86,7 +86,7 @@ folder count honest and avoids empty buckets.
 ### 2.3 `id:` stays, filename prefix updates
 
 Renaming `l99-feat-multi-model-audit-plugin.md` to
-`f99-feat-multi-model-audit-plugin.md` (because its real kind is `feat`)
+`f00004-feat-multi-model-audit-plugin.md` (because its real kind is `feat`)
 breaks any external link that points at the filename. But **every**
 cross-proposal reference in this repo uses the `id:` field (e.g.
 `related: l99`), not the filename, because the proposal linter
@@ -94,7 +94,7 @@ encourages it and the glossary documents it. So the rename is safe:
 
 | Before | After | `id:` (unchanged) |
 |---|---|---|
-| `done/l99-feat-multi-model-audit-plugin.md` | `done/feats/f99-feat-multi-model-audit-plugin.md` | `l99` |
+| `done/l99-feat-multi-model-audit-plugin.md` | `done/feats/f00004-feat-multi-model-audit-plugin.md` | `l99` |
 | `done/a1-16-06-2026- Auditoría Maestra.md` | `done/audits/a16-16-06-2026- Auditoría Maestra (Unificada).md` | `a1` (we keep the original audit `id`!) |
 
 Wait — for the audits, the `id:` was `a1`, `a2`, `a3`, `a4` (the
@@ -115,22 +115,22 @@ that pointed to them are checked and rewritten.
 
 ```
 docs/proposals/
-├── ready/                  # status: ready (f113 §4.1)
+├── ready/                  # status: ready (f00016 §4.1)
 ├── in-progress/            # status: in-progress
 ├── review/                 # status: review
 ├── done/                   # status: done (this proposal mirrors kinds inside)
 │   ├── README.md           # convention document (s3)
 │   ├── audits/             # kind: audit  (20 files: a1..a20)
-│   ├── feats/              # kind: feat   (~10-15 files: f99..f119, f99..l113 re-tagged)
+│   ├── feats/              # kind: feat   (~10-15 files: f00004..f00001, f00004..l113 re-tagged)
 │   ├── fixes/              # kind: fix    (~2-3 files: x-prefixed closed proposals)
-│   └── RESUMEN-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
+│   └── n001-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
 │                              (they predate the convention and are not proposals)
 ├── paused/                 # status: paused
 ├── blocked/                # status: blocked
 └── retired/                # status: retired (terminal)
 ```
 
-### 3.2 Status ↔ folder mapping (unchanged from f113)
+### 3.2 Status ↔ folder mapping (unchanged from f00016)
 
 | Status | Folder |
 |---|---|
@@ -145,7 +145,7 @@ docs/proposals/
 The reconciler keeps moving files to the **root** of each status folder;
 s3 only adds the README that documents the done/ sub-folder convention.
 
-### 3.3 Linter expectations (unchanged from f113)
+### 3.3 Linter expectations (unchanged from f00016)
 
 The `proposal-scaffold-linter` and `lint:proposals` script validate:
 
@@ -154,7 +154,7 @@ The `proposal-scaffold-linter` and `lint:proposals` script validate:
 
 Both checks remain correct under this proposal because:
 
-- Renaming `l99-feat-...md` to `f99-feat-...md` keeps rule (1): the new
+- Renaming `l99-feat-...md` to `f00004-feat-...md` keeps rule (1): the new
   prefix `f` matches `kind: feat`.
 - Moving files into `done/feats/` keeps rule (2) only if the linter walks
   the file's **status**, not its folder. We confirm: yes, the linter reads
@@ -249,17 +249,17 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/l112-derive-site-manifests-and-local-aliases.md
 - files: docs/proposals/done/l113-fix-audit-types.md
 
-### S3 — Move the remaining f113-f118 closed feats and create the sub-folder convention doc
+### S3 — Move the remaining f00016-f00018 closed feats and create the sub-folder convention doc
 - **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
-- files: docs/proposals/done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
-- files: docs/proposals/done/f114-feat-ide-extension-vscode-and-friends.md
-- files: docs/proposals/done/f115-feat-mcp-logs-plugin.md
-- files: docs/proposals/done/f116-proposals-output-schema-hardening.md
-- files: docs/proposals/done/f117-adopt-core-migrations-for-agent-registry.md
-- files: docs/proposals/done/f118-rules-compact-findings.md
+- files: docs/proposals/done/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
+- files: docs/proposals/done/f00014-feat-ide-extension-vscode-and-friends.md
+- files: docs/proposals/done/f00015-feat-mcp-logs-plugin.md
+- files: docs/proposals/done/f00017-proposals-output-schema-hardening.md
+- files: docs/proposals/done/f00013-adopt-core-migrations-for-agent-registry.md
+- files: docs/proposals/done/f00018-rules-compact-findings.md
 - files: docs/proposals/INDEX.md
 
 ## Acceptance
@@ -277,7 +277,7 @@ all receive new numbers based on the chronological table in §3.5.
   the `related: a1` form (using the `id`) keeps working. We add a
   follow-up commit if any literal filename reference is found.
 - **R2**: The linter's filename-prefix check fails on a file whose `id:`
-  field and filename prefix disagree (e.g. `id: l99` + filename `f99-...`).
+  field and filename prefix disagree (e.g. `id: l99` + filename `f00004-...`).
   Mitigation: confirmed that the linter reads `kind:` (not `id:`) for the
   prefix check, so the rename is legal as long as `kind: feat`.
 - **R3**: The legacy `docs/proposals/audits/` directory removal breaks
@@ -287,7 +287,7 @@ all receive new numbers based on the chronological table in §3.5.
 
 ## Notes
 
-- Renaming the 5 `RESUMEN-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
+- Renaming the 5 `n001-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
   in `done/` root. They are not proposals (no frontmatter), so the
   linter ignores them. They stay at `done/` root.
 - Auto-grouping future closes by kind at write-time (a `proposal_close`

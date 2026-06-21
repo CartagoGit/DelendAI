@@ -109,7 +109,7 @@ describe('command wiring', () => {
 						structuredContent: {
 							proposals: [
 								{
-									id: 'f114',
+									id: 'f00014',
 									status: 'in-progress',
 									slices: [],
 								},
@@ -122,6 +122,6 @@ describe('command wiring', () => {
 
 		await commands.get(OPEN_PROPOSAL_COMMAND)?.();
 
-		expect(panels[0]?.webview.html).toContain('f114');
+		expect(panels[0]?.webview.html).toContain('f00014');
 	});
 });

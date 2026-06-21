@@ -44,7 +44,7 @@ describe('proposal authoring (create → board → close)', () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	// f113 S13: id is now optional — omit it and pass `kind` to get a
+	// f00016 S13: id is now optional — omit it and pass `kind` to get a
 	// race-safe allocated id instead.
 	it('allocates an id from kind when id is omitted', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));

@@ -11,10 +11,10 @@ acceptance:
   - { command: bun run validate, expect: exit0 }
 ---
 
-# a022 — Auditoría completa del repositorio — GitHub Copilot (MiniMax-M3)
+# a00026 — Auditoría completa del repositorio — GitHub Copilot (MiniMax-M3)
 
-> **Superseded by unified audit [`a026`](../../ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
-> (consolidación de auditorías ready del 2026-06-21); ver a026 para hallazgos
+> **Superseded by unified audit [`a00022`](../../ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
+> (consolidación de auditorías ready del 2026-06-21); ver a00022 para hallazgos
 > referenciados y slices vivos. Cerrada como referencia histórica.
 
 ## Goal
@@ -89,9 +89,9 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 - **`outputSchema` más estricto en bootstrap/scaffold** — derivar desde tipos existentes.
 
 ### 4. Top acciones para 9/10
-1. **Cerrar la race en `sync-proposal-registry.ts:331`** — 2 h, bloquea release si lo etiquetamos. → `f122`
-2. **Migrar `notification/watcher.ts` a `node:fs/promises`** — 1 día, bloquea release. → `f123`
-3. **Cerrar los 6 `outputSchema` catchall restantes** — 1 día, mejora SDK. → `l122`
+1. **Cerrar la race en `sync-proposal-registry.ts:331`** — 2 h, bloquea release si lo etiquetamos. → `f00020`
+2. **Migrar `notification/watcher.ts` a `node:fs/promises`** — 1 día, bloquea release. → `f00019`
+3. **Cerrar los 6 `outputSchema` catchall restantes** — 1 día, mejora SDK. → `l00007`
 4. **Extraer i18n langs a `apps/shared/i18n-langs.ts`** — 1 h, evita drift. (diferido a slice S2)
 5. **Añadir `*.tsbuildinfo` a `.gitignore` raíz** — 15 min. (diferido a slice S2)
 
@@ -107,7 +107,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 - global_gate: lint
 
 ### S1 — Ejecutar la auditoría y documentar los hallazgos
-- **Files**: `docs/proposals/ready/a022-21-06-2026-copilot-minimax-m3-repositorio.md`
+- **Files**: `docs/proposals/ready/a00026-21-06-2026-copilot-minimax-m3-repositorio.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: pending
 
@@ -125,7 +125,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 
 - `bun run validate` es completamente verde (código de salida 0).
 - `bun run lint:proposals` valida este documento y las propuestas diferidas.
-- Las propuestas `f122`, `f123` y `l122` están creadas en `docs/proposals/ready/` con sus `## Slices` y referenciadas desde `## Findings`.
+- Las propuestas `f00020`, `f00019` y `l00007` están creadas en `docs/proposals/ready/` con sus `## Slices` y referenciadas desde `## Findings`.
 - Los hygiene items de S2 (`apps/shared/i18n-langs.ts` + `*.tsbuildignore`) están resueltos o documentados como follow-up si S2 revela fricciones.
 
 ## Verified State
@@ -149,10 +149,10 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 
 | ID | Severity | Description | Files | Resolution Track |
 |---|---|---|---|---|
-| H1 | P0 | Race condition en `sync-proposal-registry.ts:331` — `writeFile` no atómico entre el write y el rename a `historical/`. Ventana de inconsistencia ante kill -9. | [sync-proposal-registry.ts:331](plugins/proposals/src/lib/proposals/sync-proposal-registry.ts) | Deferred to Proposal `f122` |
-| H2 | P0 | Sync I/O (`existsSync`/`readdirSync`/`readFileSync`) en `notification/watcher.ts` dentro de `setInterval` — bloquea event loop. | [watcher.ts:25,138,179,222-224,237,240,282](plugins/notification/src/lib/watcher.ts) | Deferred to Proposal `f123` |
-| H3 | P1 | 6 `outputSchema` `z.object({}).catchall(z.unknown())` residuales: 3 en `bootstrap-tool`, 1 en `scaffold-tool`, 1 en `rules-tools`, 1 en `proposals/adopt.tool`. Tipos `IProjectAnalysis`/`IServerPlan`/`IScaffoldReport`/`IRulesManifest`/`ISwarmPathLayout` ya existen. | [bootstrap-tool.ts:99,138,186](packages/core/src/lib/bootstrap/bootstrap-tool.ts), [scaffold-tool.ts:291](packages/core/src/lib/scaffold/scaffold-tool.ts), [rules-tools.ts:199](plugins/rules/src/lib/rules-tools.ts), [proposals/adopt.tool.ts:81](plugins/proposals/src/lib/tools/proposals/adopt.tool.ts) | Deferred to Proposal `l122` |
-| H4 | P1 | `writeFileAtomicSync` y `quarantineCorruptFileSync` no tienen JSDoc que recuerde "boot-only" en el código (sí en AGENTS.md). Riesgo de import desde un handler por error. | [atomic-write.ts:36-43](packages/core/src/lib/shared/atomic-write.ts), [quarantine-corrupt-file.ts:65](packages/core/src/lib/shared/quarantine-corrupt-file.ts) | Deferred to Proposal `l122` (mismo lote de hygiene de primitivas) |
+| H1 | P0 | Race condition en `sync-proposal-registry.ts:331` — `writeFile` no atómico entre el write y el rename a `historical/`. Ventana de inconsistencia ante kill -9. | [sync-proposal-registry.ts:331](plugins/proposals/src/lib/proposals/sync-proposal-registry.ts) | Deferred to Proposal `f00020` |
+| H2 | P0 | Sync I/O (`existsSync`/`readdirSync`/`readFileSync`) en `notification/watcher.ts` dentro de `setInterval` — bloquea event loop. | [watcher.ts:25,138,179,222-224,237,240,282](plugins/notification/src/lib/watcher.ts) | Deferred to Proposal `f00019` |
+| H3 | P1 | 6 `outputSchema` `z.object({}).catchall(z.unknown())` residuales: 3 en `bootstrap-tool`, 1 en `scaffold-tool`, 1 en `rules-tools`, 1 en `proposals/adopt.tool`. Tipos `IProjectAnalysis`/`IServerPlan`/`IScaffoldReport`/`IRulesManifest`/`ISwarmPathLayout` ya existen. | [bootstrap-tool.ts:99,138,186](packages/core/src/lib/bootstrap/bootstrap-tool.ts), [scaffold-tool.ts:291](packages/core/src/lib/scaffold/scaffold-tool.ts), [rules-tools.ts:199](plugins/rules/src/lib/rules-tools.ts), [proposals/adopt.tool.ts:81](plugins/proposals/src/lib/tools/proposals/adopt.tool.ts) | Deferred to Proposal `l00007` |
+| H4 | P1 | `writeFileAtomicSync` y `quarantineCorruptFileSync` no tienen JSDoc que recuerde "boot-only" en el código (sí en AGENTS.md). Riesgo de import desde un handler por error. | [atomic-write.ts:36-43](packages/core/src/lib/shared/atomic-write.ts), [quarantine-corrupt-file.ts:65](packages/core/src/lib/shared/quarantine-corrupt-file.ts) | Deferred to Proposal `l00007` (mismo lote de hygiene de primitivas) |
 | H5 | P2 | 12 lenguas duplicadas entre `apps/web/src/i18n/langs/` y `apps/vscode/src/i18n/langs/`. Si se añade una lengua, hay que tocar 2 sitios. | `apps/web/src/i18n/langs/`, `apps/vscode/src/i18n/langs/` | Resolved in slice `S2` |
 | H6 | P3 | `plugins/test-convention/tsconfig.tsbuildinfo` aparece en el WD; falta `*.tsbuildinfo` en `.gitignore` raíz. | `.gitignore`, `plugins/test-convention/tsconfig.tsbuildinfo` | Resolved in slice `S2` |
 | H7 | P3 | `audit` plugin solo expone 2 tools (`audit_plan`, `audit_consolidate`); el README menciona capacidades de brief que el plugin no implementa. Decisión de scope probablemente deliberada. | [plugins/audit/src/index.ts:140](plugins/audit/src/index.ts), [plugins/audit/README.md](plugins/audit/README.md) | Documentado — no requiere acción |
@@ -167,10 +167,10 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 | Apps (web + vscode) | 9.0 | i18n impecable, registry vivo, VS Code API inyectada limpia. |
 | Higiene transversal | 8.5 | 0 console.log, 0 @ts-ignore, 0 .only; 6 catchalls + 1 tsbuildinfo en WD. |
 | Release / versionado | 9.5 | Tag-driven, rotate-npm-token presente, derive-version sin tests (Riesgo R-M1). |
-| **Total (Average)** | **8.7** | **Base sólida. Top priority: f122 + f123.** |
+| **Total (Average)** | **8.7** | **Base sólida. Top priority: f00020 + f00019.** |
 
 ## Notes
 
 - Esta auditoría **no ejecutó** `bun run build`/`bun run validate` por duración. La salud del build se infiere por inspección de scripts + Conventional Commits + `git status` limpio.
-- Las 8 auditorías `a001-a020` viven en `docs/proposals/done/audits/`. `a021` (Antigravity/Gemini 3.5 Flash) está en `ready/` y se solapa en fecha con esta. La numeración sigue siendo cronológica por llegada al repo, no por fecha del informe.
-- Las propuestas `l115-l121` (del master audit anterior) ya están creadas y referenciadas; esta auditoría añade `f122`/`f123`/`l122` como nuevas entradas de follow-up.
+- Las 8 auditorías `a00007-a00006` viven en `docs/proposals/done/audits/`. `a00021` (Antigravity/Gemini 3.5 Flash) está en `ready/` y se solapa en fecha con esta. La numeración sigue siendo cronológica por llegada al repo, no por fecha del informe.
+- Las propuestas `l00011-l00004` (del master audit anterior) ya están creadas y referenciadas; esta auditoría añade `f00020`/`f00019`/`l00007` como nuevas entradas de follow-up.

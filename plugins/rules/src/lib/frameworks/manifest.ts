@@ -157,7 +157,7 @@ export interface IEnsureCacheResult {
  * and write the manifest ONLY if it does not already exist (so an agent
  * or human can edit the mapping without it being clobbered on boot).
  *
- * l125 s2: durable writes go through `writeFileAtomic` (crash-safe:
+ * l00008 s2: durable writes go through `writeFileAtomic` (crash-safe:
  * write-temp-then-rename, never a partial file on disk) and the
  * manifest's read-fingerprint-then-maybe-write critical section is
  * wrapped in `withFileMutex` so two hosts booting in parallel against

@@ -23,14 +23,14 @@ reservedFiles:
     - packages/client/src/lib/services/
     - docs/IDE-EXTENSION.md
     - docs/CROSS-IDE.md
-    - docs/proposals/done/feats/f114-feat-ide-extension-vscode-and-friends.md
+    - docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md
 related:
-    - f114 # v1 — generic client + tree + webviews (closed)
-    - f115 # logs plugin — source for "logs" panel
-    - f100 # i18n baseline — dashboard mirrors the language list
-    - f101 # capabilities surface — extension is the IDE counterpart
-    - f110 # residual p100 web & i18n — same i18n rules
-    - l121 # plugin-depth extension — feeds new "tool usage" panel
+    - f00014 # v1 — generic client + tree + webviews (closed)
+    - f00015 # logs plugin — source for "logs" panel
+    - f00012 # i18n baseline — dashboard mirrors the language list
+    - f00011 # capabilities surface — extension is the IDE counterpart
+    - f00010 # residual p100 web & i18n — same i18n rules
+    - l00004 # plugin-depth extension — feeds new "tool usage" panel
 ownership:
     - {
           agent: implementation_runner,
@@ -64,7 +64,7 @@ acceptance:
     - { command: bun run lint:cross-ide, expect: exit0 }
 ---
 
-# f125 — IDE extension v2: multi-IDE shell + branded dashboard + web embed + observability panels
+# f00022 — IDE extension v2: multi-IDE shell + branded dashboard + web embed + observability panels
 
 ## goal
 
@@ -110,7 +110,7 @@ Promote `@mcp-vertex/client` + the existing VS Code extension (`apps/vscode`) fr
 
 ## why
 
-`f114` shipped the MVP — tree, webviews, status bar — but it is
+`f00014` shipped the MVP — tree, webviews, status bar — but it is
 **two things short of a real product**:
 
 1. **No brand, no "observability cockpit" feel.** Right now opening the
@@ -135,11 +135,11 @@ Promote `@mcp-vertex/client` + the existing VS Code extension (`apps/vscode`) fr
 - **No new MCP plugin.** All data is already in the registry; this is a
   pure client + UI change. New tool capabilities continue to flow
   through the normal proposals workflow.
-- **No auth/secret storage.** Same scope as f114; auth is a follow-up
-  proposal (deferred to `f116` lineage).
+- **No auth/secret storage.** Same scope as f00014; auth is a follow-up
+  proposal (deferred to `f00017` lineage).
 - **No codeLens over tool calls in user code** — that needs an inverse
-  index that the metrics plugin does not yet expose; punt to f127+.
-- **No bundling of the server inside the extension.** Same as f114.
+  index that the metrics plugin does not yet expose; punt to f00024+.
+- **No bundling of the server inside the extension.** Same as f00014.
 - **No telemetry of our own.** We display metrics; we do not phone home.
 
 ## architecture
@@ -189,12 +189,12 @@ Promote `@mcp-vertex/client` + the existing VS Code extension (`apps/vscode`) fr
 
 - **`packages/core` stays agnostic.** No `vscode`, `jetbrains`,
   `cursor`, `zed` or other host import may appear under `packages/core`
-  or any plugin. The lint rule from f114 is preserved.
+  or any plugin. The lint rule from f00014 is preserved.
 - **`packages/client` stays IDE-agnostic.** No `@vscode/*`,
   `com.intellij.*`, `zed_extension_api` etc. `apps/ide/` and `apps/vscode/`
   are the only places host APIs may be imported.
 - **`apps/ide/` is host-agnostic UI.** It produces **strings of HTML +
-  CSS + minimal vanilla JS** (already the convention in f114) plus a
+  CSS + minimal vanilla JS** (already the convention in f00014) plus a
   typed `IHostAdapter` interface. Each IDE host implements the adapter
   and consumes the strings. **No React/Vue/Preact** — the dependency
   budget is already tight and `apps/web` uses Astro for that.
@@ -498,9 +498,9 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - **Notifications panel.** `NotificationsService` already dispatches
   events; a panel that streams them into a live log is a great
   follow-up but out of scope here (would need a UI thread + careful
-  back-pressure; defer to f126).
-- **Logs panel.** Source is the `f115` logs plugin; the panel is one
+  back-pressure; defer to f00023).
+- **Logs panel.** Source is the `f00015` logs plugin; the panel is one
   extra `render-panel-logs.ts` once `LogsService` is in the client
   (currently in `plugins/logs/src/lib/`, not yet re-exported by
   `packages/client/src/public/index.ts`). Defer to f128.
-- **Auth / secret storage.** Deferred to the f116 lineage.
+- **Auth / secret storage.** Deferred to the f00017 lineage.

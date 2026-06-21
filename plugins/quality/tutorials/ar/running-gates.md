@@ -1,38 +1,44 @@
 ---
-title: تشغيل gates الجودة لأي لغة
+title: "Running quality gates for any language [العربية — needs translation]"
 plugin: quality
-audience: عميل يحتاج إلى التحقق من حالة المشروع
+audience: any agent that needs cross-session continuity
 order: 1
 lang: ar
+auto-translated: true
+needs-human-review: true
+source: plugins/quality/tutorials/en/running-gates.md
+generated: 2026-06-21T13:53:45Z
 ---
 
-# تشغيل gates الجودة لأي لغة
+# Running quality gates for any language
 
-إضافة `quality` **محايدة للغة** بالتصميم: تُشغِّل أي أمر يُحدِّده
-`mcp-vertex.config.json` وتُرسل كود الخروج. يُوضح هذا الدليل المصادر
-الثلاثة للنطاقات (بترتيب الأولوية)، وكيفية تشغيل نطاق، وكيفية إلغاء
-عملية خارجة عن السيطرة.
+The `quality` plugin is **language-agnostic** by design: it spawns
+whatever command your `mcp-vertex.config.json` says and reports
+the exit code. This walkthrough shows the three sources of
+scopes (in precedence order), how to run one, and how to cancel a
+runaway.
 
-## 0. النموذج الذهني
+## 0. The mental model
 
-**النطاق** قائمة أوامر مُسمَّاة. تُشغِّل الإضافة كل أمر في النطاق
-بالترتيب، وتلتقط stdout/stderr، وتُعيد تقريرًا مُهيكلًا
-`{ ok, results: [{ command, ok, code, tail }] }`. حقل `ok` للنطاق
-كله — إذا فشل أي أمر، فالنطاق ليس ok.
+A **scope** is a named list of commands. The plugin runs every
+command in the scope, in order, captures stdout/stderr, and
+returns a structured `{ ok, results: [{ command, ok, code, tail }]
+}` report. The `ok` field is the whole scope — if any command
+fails, the scope is not ok.
 
 ```
-┌─ plugin options.scopes (أعلى أولوية)
+┌─ plugin options.scopes (highest priority)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ سكريبتات package.json المكتشفة → "all" (lint, typecheck, test, build)
+└─ detected package.json scripts → "all" (lint, typecheck, test, build)
 ```
 
-## 1. إدراج النطاقات المتاحة (للقراءة فقط)
+## 1. List the available scopes (read-only)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-مثال على الاستجابة (مختصر):
+Response example (truncated):
 
 ```json
 {
@@ -46,13 +52,13 @@ lang: ar
 }
 ```
 
-## 2. تشغيل نطاق
+## 2. Run a scope
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-الاستجابة لكل أمر:
+The response is per-command:
 
 ```json
 {
@@ -75,24 +81,24 @@ lang: ar
 }
 ```
 
-اقرأ `results[N].tail` لسياق الفشل. `tail` هو آخر 20 سطرًا غير فارغ
-(بحد أقصى 64 KiB من الإخراج الكلي) — يكفي للتصحيح دون إغراق سياق
-العميل.
+Read `results[N].tail` for the failure context. The `tail` is the
+last 20 non-empty lines (capped at 64 KiB total output) — enough
+to debug without flooding the agent's context.
 
-## 3. إلغاء عملية خارجة عن السيطرة
+## 3. Cancel a runaway
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-يُرسل `SIGKILL` لمجموعة العمليات لكل تشغيل جارٍ. مرِّر
-`{ "pid": <number> }` لإلغاء عملية واحدة. الإلغاء غير محجوب:
-سيعكس `results` الاستدعاء التالي عملية الـ kill.
+Sends `SIGKILL` to the process group of every in-flight run. Pass
+`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
+the next call's `results` will reflect the kill.
 
-## 4. جعله محايدًا للغة
+## 4. Make it language-agnostic
 
-يُشغِّل النواة ما تقوله التهيئة. مثال لمشروع متعدد اللغات
-(TypeScript + Python):
+The core runs whatever your config says. Example for a polyglot
+project (TypeScript + Python):
 
 ```jsonc
 // mcp-vertex.config.json
@@ -113,14 +119,15 @@ lang: ar
 }
 ```
 
-سيُشغِّل `run_quality` **الأوامر الأربعة** في نطاقَي `typecheck` /
-`test`، بغض النظر عن اللغة. الخروج 0 = نجاح؛ غير صفر = فشل (أيًا كان
-الثنائي الذي أصدره).
+`run_quality` will run **all four commands** in `typecheck` /
+`test` scopes, regardless of language. Exit 0 = pass; non-zero =
+fail (regardless of which binary emitted it).
 
-## 5. التحصين بسياسة الأوامر (M13)
+## 5. Harden with a command policy (M13)
 
-`run_quality` **يُشغِّل** ما تقوله تهيئة المضيف. لتقييد الثنائيات
-التي يمكن تشغيلها حين يستدعي عميل أقل ثقةً الأداة، استخدم `commandPolicy`:
+`run_quality` **executes** whatever the host config says. To
+restrict which binaries may run when a less-trusted agent calls
+the tool, use `commandPolicy`:
 
 ```jsonc
 {
@@ -137,22 +144,36 @@ lang: ar
 }
 ```
 
-يُبلَّغ عن أمر محجوب بـ `code: 126` وسبب ("blocked by command policy")
-ولا يُشغَّل **أبدًا**. `deny` يتقدم على `allow`؛ `allow` فارغ يعني
-"أي ثنائي غير مرفوض".
+A blocked command is reported as `code: 126` with a reason
+("blocked by command policy") and is **never spawned**. `deny`
+wins over `allow`; an empty `allow` means "any binary not denied".
 
-## الأخطاء الشائعة
+## Common pitfalls
 
-- **`run_quality` لا يُعوِّض `bun run validate`**: سكريبت `validate`
-  للنواة يُشغِّل الفحوصات الأربعة مباشرةً. `run_quality` للتشغيلات
-  **العرضية** والاستبطان لكل نطاق من عميل. كلاهما صالح ولا يتواصلان.
-- **أمر طويل يتجاوز المهلة** يُقتَل بـ `code: 124` و`timedOut: true`.
-  المهلة الافتراضية 600 000 ms (10 دقائق). تجاوز لكل runner إذا لزم.
-- **الاستطلاع عن "هل انتهى؟"**: لا تفعله. `run_quality` متزامن.
-  إذا احتجت لمعرفة النطاقات الطويلة، استخدم `quality_cancel` مع
-  `pid` من `activeRunPids` (عبر المقاييس أو استدعاء أداة تالٍ).
+- **`run_quality` doesn't replace `bun run validate`**: the core's
+  `validate` script runs the four checks directly. `run_quality`
+  is for **ad-hoc** runs and per-scope introspection from an
+  agent. Both are valid; they don't talk to each other.
+- **A long-running command that exceeds the timeout** is killed
+  with `code: 124` and `timedOut: true`. Default timeout is
+  600 000 ms (10 minutes). Override per runner if needed.
+- **Polling for "is it done yet?"**: don't. `run_quality` is
+  synchronous. If you need to know about long scopes, use
+  `quality_cancel` with the `pid` from `activeRunPids` (via
+  metrics or a follow-up tool call).
 
-## الخطوة التالية
+## Next step
 
-- [gates الجودة متعددة اللغات (l107)](../../l107-multilang-quality-gates.md)
-- [حدود الثقة وسياسة الأوامر (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
+- [Multi-language quality gates (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & command policy (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper العربية
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/quality/tutorials/en/running-gates.md`

@@ -6,11 +6,11 @@ status: done
 date: 2026-06-21
 track: core+host
 related:
-  - f113 # feat: proposal state machine + kinds + scaffolds (DFA + linter)
-  - x113 # fix: audit type errors / LSP dist cascade (precedent for surgical fix)
+  - f00016 # feat: proposal state machine + kinds + scaffolds (DFA + linter)
+  - x00001 # fix: audit type errors / LSP dist cascade (precedent for surgical fix)
 ---
 
-# x123 — fix(host): install signal handlers so Bun doesn't zombie on parent exit
+# x00006 — fix(host): install signal handlers so Bun doesn't zombie on parent exit
 
 ## Goal
 
@@ -34,7 +34,7 @@ Concretely:
 
 On 2026-06-21 the MCP panel reported `Canceled: Canceled` for
 `mcp-vertex_overview` (compact mode). Investigation (see
-`docs/proposals/RESUMEN-SESION-2026-06-17.md` and the diagnostic chat
+`docs/proposals/n001-SESION-2026-06-17.md` and the diagnostic chat
 transcript) found the root cause was **not** in the server code:
 
 - `packages/core/src/lib/tools/overview-tool.ts` has no `throw`, no
@@ -205,8 +205,8 @@ smallest blast radius and the highest reusability:
 - The `McpServer.close()` API was confirmed against
   `@modelcontextprotocol/sdk@1.29.0`
   (`node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp.d.ts:44`).
-- Cross-references: f113 (proposal state machine — used here to
-  move `x123` through `ready → in-progress → review → done`); x113
+- Cross-references: f00016 (proposal state machine — used here to
+  move `x00006` through `ready → in-progress → review → done`); x00001
   (precedent for a surgical fix touching one slice at a time).
 - Session transcript and `kill 1826609` invocation are recorded
   in the parent chat; no need to repeat them in the proposal body.

@@ -5,13 +5,13 @@ status: done
 track: plugins
 date: 2026-06-20
 related:
-  - f99 # feat: multi-model audit plugin
-  - f108 # feat: test-convention plugin
+  - f00004 # feat: multi-model audit plugin
+  - f00006 # feat: test-convention plugin
 kind: fix
 title: Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
 ---
 
-# x113 — Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
+# x00001 — Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
 
 > **Status: SHIPPED 2026-06-20.** All 3 type errors fixed. `bun run
 > validate` is green (117 files / 837 tests passed). Stale `dist/`
@@ -182,5 +182,5 @@ fix(audit): align plugin with current core API (no reader injection)
 - Adjust tool handler signatures for exactOptionalPropertyTypes.
 - Remove stale dist/ artefacts that confused the TS LSP.
 
-Refs: x113
+Refs: x00001
 ```

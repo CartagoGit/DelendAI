@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * rewrite-proposal-refs.ts — f113 S11 companion.
+ * rewrite-proposal-refs.ts — f00016 S11 companion.
  *
  * Greps the repo for literal `pNNN-<slug>` references (markdown links,
  * prose mentions, path strings) and rewrites the prefix to `lNNN-<slug>`

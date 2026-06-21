@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * lint-proposals.ts — f113 S3: walk every `.md` under `docs/proposals/`
+ * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/proposals/`
  * and run `lintProposalMarkdown` (S2) against it.
  *
  * The legacy proposals — `pNNN-*.md` (pre-S11) and `lNNN-*.md` (post-
@@ -37,7 +37,7 @@ const isLegacyFilename = (filename: string, absPath: string): boolean => {
 // 2-digit `l99-…`, or a new kind prefix) are proposals at all.
 // `docs/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
-// ones that ended up in `done/`), `RESUMEN-*` session notes,
+// ones that ended up in `done/`), `n001-*` session notes,
 // `index.json`, READMEs. Those aren't "legacy proposals that need
 // migrating" — they were never proposals, so flagging them as scaffold
 // violations would be noise, not signal.

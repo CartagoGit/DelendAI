@@ -85,8 +85,8 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
-	// f113 S5 regression: `blocked_by: [self:goal-missing]` is the
-	// documented convention (f113 §9). Each token may itself contain a
+	// f00016 S5 regression: `blocked_by: [self:goal-missing]` is the
+	// documented convention (f00016 §9). Each token may itself contain a
 	// colon — must stay a single scalar string, not be mistaken for a
 	// nested `key: value` mapping the way the block-array parser would
 	// read the same token shape.

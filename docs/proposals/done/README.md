@@ -3,16 +3,16 @@
 This folder holds proposals whose status is `done` (approved and shipped)
 plus session summaries. The 7-status root layout (`ready/`,
 `in-progress/`, `review/`, `done/`, `paused/`, `blocked/`, `retired/`)
-is the DFA (f113 §4.1); inside `done/`, we **mirror the active `kind`s**
+is the DFA (f00016 §4.1); inside `done/`, we **mirror the active `kind`s**
 as sub-folders so the closure view scales.
 
 ## Sub-folders (mirror by kind)
 
 | Sub-folder | Prefix | Holds | Examples |
 |---|---|---|---|
-| `audits/` | `a<NNN>-` | Closed audit documents | `a001-…-codex-gpt-5-5.md` … `a020-…-claude-code-opus-4-8.md` |
-| `feats/` | `f<NNN>-` | Closed feature proposals | `f99-…-multi-model-audit-plugin.md` … `f118-…-rules-compact-findings.md` |
-| `fixes/` | `x<NNN>-` | Closed fix proposals | `x105-…-web-bugfixes-and-ux-overhaul.md`, `x106-…-fix-gen-skills-recursion.md`, … |
+| `audits/` | `a<NNN>-` | Closed audit documents | `a00007-…-codex-gpt-5-5.md` … `a00006-…-claude-code-opus-4-8.md` |
+| `feats/` | `f<NNN>-` | Closed feature proposals | `f00004-…-multi-model-audit-plugin.md` … `f00018-…-rules-compact-findings.md` |
+| `fixes/` | `x<NNN>-` | Closed fix proposals | `x00004-…-web-bugfixes-and-ux-overhaul.md`, `x00002-…-fix-gen-skills-recursion.md`, … |
 | `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n001-…-autonoma-claude-code.md` … `n006-…-handoff-copilot.md` |
 
 We only create a sub-folder when the second file of that kind lands in
@@ -32,7 +32,7 @@ not proposals:
   `done/audits/`.) NOT a proposal: one author, one span, no slice
   plan, no acceptance — different artefact shape from a proposal.
 
-> **Note (2026-06-21)**: `RESUMEN-SESION-*.md` files used to live at
+> **Note (2026-06-21)**: `n001-SESION-*.md` files used to live at
 > this root and in `done/`. They were promoted to first-class
 > proposals of kind `resume` by n007 and moved under
 > [`done/resumes/`](./resumes/) with chronological numbering
@@ -80,13 +80,13 @@ and recommends canonicalisation if it sees an ad-hoc shape.
 
 1. **Filename prefix matches frontmatter `kind`**: an `f<NNN>-*.md` file
    has `kind: feat`; an `x<NNN>-*.md` has `kind: fix`; an `n<NNN>-*.md`
-   has `kind: resume`; etc. The linter enforces this (f113 §4.3).
+   has `kind: resume`; etc. The linter enforces this (f00016 §4.3).
 2. **`id:` frontmatter stays stable across renames**: when a proposal
-   was previously `l99-…` and got reclassified to `f99-…`, the `id:`
-   field changed from `l99` to `f99`. Cross-references (`related: l99`
-   in other proposals) were rewritten to `related: f99` atomically by
-   the f119 migration. Do NOT refer to a proposal by its filename —
-   refer to it by `id:` (e.g. `related: f113`). The n007 migration
+   was previously `l99-…` and got reclassified to `f00004-…`, the `id:`
+   field changed from `l99` to `f00004`. Cross-references (`related: l99`
+   in other proposals) were rewritten to `related: f00004` atomically by
+   the f00001 migration. Do NOT refer to a proposal by its filename —
+   refer to it by `id:` (e.g. `related: f00016`). The n007 migration
    does NOT rename any `id:`; it only renames files (the 6 summaries
    get fresh `n001..n006` ids because they had none before).
 3. **Sub-folders only allowed inside terminal statuses**: `done/` and
@@ -100,7 +100,7 @@ and recommends canonicalisation if it sees an ad-hoc shape.
 
 ## See also
 
-- [f113 — Proposal state machine, kinds, scaffolds, and recovery](../in-progress/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds; archived once f119 lands).
-- [f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
+- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds; archived once f00001 lands).
+- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
 - [n007 — Resume kind: cross-session handoff summaries](../ready/n007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
 - [`done/resumes/README.md`](./resumes/README.md) — the `resumes/` bucket's own README.

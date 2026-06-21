@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * migrate-legacy-proposals.ts — f113 S11.
+ * migrate-legacy-proposals.ts — f00016 S11.
  *
  * Moves every `pNNN-*.md` directly under `docs/proposals/` onto the new
  * state machine: renamed to `lNNN-<same-slug>.md` (the slug is kept
@@ -16,7 +16,7 @@
  * tier's only hard requirement: `bun run lint:proposals` never treats
  * an `l`-prefixed file as fatal, only as a permanent warning).
  *
- * Legacy (8-status) -> new (7-status) mapping, per f113 §2.1's own
+ * Legacy (8-status) -> new (7-status) mapping, per f00016 §2.1's own
  * folding rules:
  *   - done/retired/paused/blocked -> same name, unchanged.
  *   - deferred -> paused + `deferred: true` (exactly what §2.1/§9

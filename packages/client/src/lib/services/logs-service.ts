@@ -123,14 +123,14 @@ export class LogsService {
 				yielded += 1;
 				yield ev;
 			}
-			if (signal?.aborted === true) return;
+			if (signal?.aborted) return;
 			await wait(pollIntervalMs, signal);
 		}
 	}
 }
 
 const wait = async (ms: number, signal?: AbortSignal): Promise<void> => {
-	if (signal?.aborted === true) return;
+	if (signal?.aborted) return;
 	await new Promise<void>((resolve) => {
 		const timer = setTimeout(resolve, ms);
 		signal?.addEventListener(
@@ -151,7 +151,7 @@ const redactEvent = (ev: ILogEvent): ILogEvent => ({
 	taskId: ev.taskId,
 	outcome: ev.outcome,
 	files: ev.files,
-	summary: redactSecretsSync(ev.summary),
+	summary: redactSecrets(ev.summary).text,
 	meta: redactMeta(ev.meta),
 });
 
@@ -160,7 +160,7 @@ const redactMeta = (
 ): Readonly<Record<string, unknown>> => {
 	const out: Record<string, unknown> = {};
 	for (const [k, v] of Object.entries(meta)) {
-		out[k] = typeof v === 'string' ? redactSecretsSync(v) : v;
+		out[k] = typeof v === 'string' ? redactSecrets(v).text : v;
 	}
 	return out;
 };

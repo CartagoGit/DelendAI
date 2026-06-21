@@ -114,11 +114,11 @@ const drawerLinks = [
 					id="nav-more-panel"
 					role="menu"
 					aria-labelledby="nav-more-trigger"
-					hidden(
-						<a class="nav__more-link" href={l.href} role="menuitem" data-nav-key={l.key}>{l.label}</a>
-					)
+					hidden
 				>
-					{navCore.map((l) => <a class="nav__more-link" href={l.href} role="menuitem">{l.label}</a>)}
+					{navCore.map((l) => (
+						<a class="nav__more-link" href={l.href} role="menuitem" data-nav-key={l.key}>{l.label}</a>
+					))}
 				</div>
 			</div>
 			{/* GitHub: icon-only link to keep the row compact. The accessible
@@ -178,11 +178,11 @@ const drawerLinks = [
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 					<path d="M6 6l12 12M18 6L6 18"></path>
 				</svg>
-			</button> data-nav-key={l.key}
+			</button>
 		</div>
 		<nav class="drawer__links" aria-label={t.nav.menu}>
 			{drawerLinks.map((l) => (
-				<a href={l.href} data-drawer-link>{l.label}</a>
+				<a href={l.href} data-drawer-link data-nav-key={l.key}>{l.label}</a>
 			))}
 			<a href={repo} rel="external" data-drawer-link>{t.nav.github}</a>
 		</nav>

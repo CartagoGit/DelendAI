@@ -13,7 +13,7 @@ import {
 import { analyzeProposals, type IScanEntry } from '../proposals/adopt';
 import type { IAuthoringToolOptions } from './authoring.tool';
 
-// l125 s4 — mirrors `PROPOSALS_LAYOUT` (proposals/adopt.ts): a static
+// l00008 s4 — mirrors `PROPOSALS_LAYOUT` (proposals/adopt.ts): a static
 // documentation object, not the runtime `IHostPathLayout`. `files`/
 // `folders` are label → human-readable-description maps.
 const ADOPT_LAYOUT_SCHEMA = z.object({

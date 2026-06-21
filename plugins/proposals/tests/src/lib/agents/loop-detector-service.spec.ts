@@ -160,10 +160,10 @@ describe('AgentLoopDetectorService', () => {
 		);
 	});
 
-	// l125 s1 — async I/O regression coverage: `getActiveAgent` (called from
+	// l00008 s1 — async I/O regression coverage: `getActiveAgent` (called from
 	// the hot `onToolCall` path) now reads the lock file via
 	// `node:fs/promises.readFile` instead of `existsSync` + `readFileSync`.
-	describe('async I/O hot-path coverage (l125 s1)', () => {
+	describe('async I/O hot-path coverage (l00008 s1)', () => {
 		it('resolves the active agent from a real lock file written asynchronously', async () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			const lockPath = mockCtx.workspace.resolve(

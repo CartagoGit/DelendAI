@@ -50,7 +50,7 @@ const ANALYZE_SCHEMA = z.object({
 	docsDir: z.string().optional(),
 });
 
-// l122 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
+// l00007 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
 const PROJECT_ANALYSIS_SCHEMA = z.object({
 	hasPackageJson: z.boolean(),
 	name: z.string().optional(),
@@ -82,7 +82,7 @@ const PROJECT_ANALYSIS_SCHEMA = z.object({
 	signals: z.array(z.string()),
 });
 
-// l122 S1 — mirrors `IServerPlan` (recommend-plan.ts).
+// l00007 S1 — mirrors `IServerPlan` (recommend-plan.ts).
 const SERVER_PLAN_SCHEMA = z.object({
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	serverName: z.string(),
@@ -96,7 +96,7 @@ const SERVER_PLAN_SCHEMA = z.object({
 	notes: z.array(z.string()),
 });
 
-// l122 S1 — mirrors `IScaffoldedFile` (scaffold-host.ts).
+// l00007 S1 — mirrors `IScaffoldedFile` (scaffold-host.ts).
 const SCAFFOLDED_FILE_SCHEMA = z.object({
 	path: z.string(),
 	content: z.string(),
@@ -115,14 +115,14 @@ const CREATE_SCHEMA = z.object({
 	description: z.string().optional(),
 });
 
-// l122 S1 — `create_project`'s output: a dry-run skeleton of files to
+// l00007 S1 — `create_project`'s output: a dry-run skeleton of files to
 // write, discriminated by what was scaffolded (host/plugin/client).
 const MCP_PROJECT_SKELETON_SCHEMA = z.object({
 	kind: z.enum(['host', 'plugin', 'client']),
 	files: z.array(SCAFFOLDED_FILE_SCHEMA),
 });
 
-// l122 S1 — mirrors `IServerBlueprint` (build-blueprint.ts), the
+// l00007 S1 — mirrors `IServerBlueprint` (build-blueprint.ts), the
 // EXHAUSTIVE plan `plan_mcp_project` returns alongside the files to write.
 const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
 	name: z.string(),
