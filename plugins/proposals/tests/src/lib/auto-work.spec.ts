@@ -5,7 +5,9 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	__resetIdleStreakForTesting,
+	buildAutoWorkOrchestrationPolicy,
 	runAutoWork,
 	type IAutoWorkToolOptions,
 } from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
@@ -79,6 +81,57 @@ describe('auto_work (one-call action plan)', () => {
 		expect(out.proposalId).toBe('p1-x');
 		expect(out.validationCommand).toBe('bun run validate');
 		expect(Array.isArray(out.steps)).toBe(true);
+	});
+
+	it('surfaces a compact orchestration policy for non-trivial slices', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(options));
+		expect(out.orchestration).toEqual({
+			lane: 'inspect-then-delegate',
+			delegateAfterToolCalls: DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
+			next: 'proposals_continue_proposal { proposalId: "p1-x", mode: "plan" }',
+			policy: 'Keep the main thread to auto_work/plan/delegate. If the slice needs >3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the research here.',
+		});
+		expect(out.steps.join('\n')).toContain(
+			'proposals_delegate one claimable slice',
+		);
+	});
+
+	it('allows hosts to tune the auto_work delegation threshold', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(
+			await runAutoWork({
+				...options,
+				orchestration: { delegateAfterToolCalls: 1 },
+			}),
+		);
+		expect(out.orchestration.delegateAfterToolCalls).toBe(1);
+		expect(out.orchestration.policy).toContain('>1 tool calls');
+	});
+
+	it('builds the orchestration policy as a standalone pure helper', () => {
+		expect(
+			buildAutoWorkOrchestrationPolicy({
+				namespacePrefix: 'work',
+				proposalId: 'f12-core',
+				delegateAfterToolCalls: 2,
+			}),
+		).toEqual({
+			lane: 'inspect-then-delegate',
+			delegateAfterToolCalls: 2,
+			next: 'work_continue_proposal { proposalId: "f12-core", mode: "plan" }',
+			policy: 'Keep the main thread to auto_work/plan/delegate. If the slice needs >2 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the research here.',
+		});
 	});
 
 	it("plan with persist mode 'none' has no persist step (default behaviour, l109)", async () => {

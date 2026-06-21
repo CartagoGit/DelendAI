@@ -43,6 +43,7 @@ const t = useTranslations(lang);
 	// transition, AbortController revokes the previous listener batch.
 	let searchAbort;
 	let pagefindReady;
+	let searchWidget;
 
 	const loadPagefind = () => {
 		if (pagefindReady) return pagefindReady;
@@ -68,14 +69,13 @@ const t = useTranslations(lang);
 		const modal = document.getElementById('search-modal');
 		const openBtn = document.getElementById('search-open');
 		const mount = document.getElementById('search-pagefind');
-		let widget;
 
 		const open = async () => {
 			modal?.removeAttribute('hidden');
 			modal?.classList.add('modal--open');
 			await loadPagefind();
-			if (!widget && mount && window.PagefindUI) {
-				widget = new window.PagefindUI({
+			if (!searchWidget && mount && window.PagefindUI) {
+				searchWidget = new window.PagefindUI({
 					element: mount,
 					language: mount.dataset.pfLang,
 					showSubResults: true,

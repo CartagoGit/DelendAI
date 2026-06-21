@@ -228,7 +228,16 @@ export const gitBlame = async (
 	options: { startLine?: number; endLine?: number } = {},
 ): Promise<IGitBlameResult> => {
 	const args = ['blame', '--porcelain'];
-	if (options.startLine !== undefined && options.endLine !== undefined) {
+	const hasStart = options.startLine !== undefined;
+	const hasEnd = options.endLine !== undefined;
+	if (hasStart !== hasEnd) {
+		return {
+			ok: false,
+			lines: [],
+			reason: 'startLine and endLine must be provided together',
+		};
+	}
+	if (hasStart && hasEnd) {
 		args.push('-L', `${options.startLine},${options.endLine}`);
 	}
 	args.push('--', path);
@@ -264,6 +273,30 @@ export interface IGitShowResult {
 
 const SHOW_PRETTY_FORMAT = '%H%n%an%n%aI%n%s';
 
+/**
+ * Parse the exact output produced by `git show --stat
+ * --pretty=format:%H%n%an%n%aI%n%s`. Git does not insert a blank line between
+ * the custom pretty block and the stat, so the stat starts immediately after
+ * line 4. Older fixtures did include a blank line; filtering only leading
+ * blanks keeps both shapes valid while matching real git output.
+ */
+export const parseShowOutput = (raw: string): IGitShowDetail => {
+	const lines = raw.split('\n');
+	const [hash, author, date, subject] = lines;
+	const stat = lines
+		.slice(4)
+		.filter((line, index) => index > 0 || line.trim() !== '')
+		.join('\n')
+		.trim();
+	return {
+		hash: hash ?? '',
+		author: author ?? '',
+		date: date ?? '',
+		subject: subject ?? '',
+		stat,
+	};
+};
+
 /** Commit metadata + `--stat` summary for `ref` (optionally scoped to one path). Never the full patch. */
 export const gitShow = async (
 	run: IGitRunner,
@@ -281,25 +314,9 @@ export const gitShow = async (
 	if (!result.ok) {
 		return { ok: false, reason: result.reason ?? 'git show failed' };
 	}
-	const lines = result.output.split('\n');
-	const [hash, author, date, subject] = lines;
-	const blankIdx = lines.findIndex((line, idx) => idx > 3 && line === '');
-	const stat =
-		blankIdx >= 0
-			? lines
-					.slice(blankIdx + 1)
-					.join('\n')
-					.trim()
-			: '';
 	return {
 		ok: true,
-		detail: {
-			hash: hash ?? '',
-			author: author ?? '',
-			date: date ?? '',
-			subject: subject ?? '',
-			stat,
-		},
+		detail: parseShowOutput(result.output),
 	};
 };
 

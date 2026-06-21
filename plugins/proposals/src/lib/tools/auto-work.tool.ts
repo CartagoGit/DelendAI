@@ -33,6 +33,17 @@ export interface IAutoWorkPersistConfig {
 	readonly pushTarget?: string;
 }
 
+export interface IAutoWorkOrchestrationConfig {
+	/**
+	 * Number of main-thread tool calls after which the returned plan should
+	 * push the agent toward `<prefix>_continue_proposal mode:"plan"` +
+	 * `<prefix>_delegate`. The tool cannot know slice size before the
+	 * proposal is inspected, so this is a compact policy hint for the
+	 * orchestrator's next decision.
+	 */
+	readonly delegateAfterToolCalls?: number;
+}
+
 export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	/** Quality-gate command to run before closing a slice, if any. */
 	readonly validationCommand?: string;
@@ -42,6 +53,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * orchestrator can still override per call via `args.persist`.
 	 */
 	readonly persist?: IAutoWorkPersistConfig;
+	readonly orchestration?: IAutoWorkOrchestrationConfig;
 	readonly loopDetector?: any;
 }
 
@@ -52,11 +64,34 @@ const json = toolJson;
 // responses we escalate to `stop: true` so a wrapper/agent halts deterministically.
 // Any actionable ('work') response resets the streak.
 const IDLE_STOP_THRESHOLD = 3;
+export const DEFAULT_DELEGATE_AFTER_TOOL_CALLS = 3;
 let consecutiveIdle = 0;
 
 /** Test-only: reset the consecutive-idle streak. */
 export const __resetIdleStreakForTesting = (): void => {
 	consecutiveIdle = 0;
+};
+
+export interface IAutoWorkOrchestrationPolicy {
+	readonly lane: 'inspect-then-delegate';
+	readonly delegateAfterToolCalls: number;
+	readonly next: string;
+	readonly policy: string;
+}
+
+export const buildAutoWorkOrchestrationPolicy = (options: {
+	readonly namespacePrefix: string;
+	readonly proposalId: string;
+	readonly delegateAfterToolCalls?: number | undefined;
+}): IAutoWorkOrchestrationPolicy => {
+	const delegateAfterToolCalls =
+		options.delegateAfterToolCalls ?? DEFAULT_DELEGATE_AFTER_TOOL_CALLS;
+	return {
+		lane: 'inspect-then-delegate',
+		delegateAfterToolCalls,
+		next: `${options.namespacePrefix}_continue_proposal { proposalId: "${options.proposalId}", mode: "plan" }`,
+		policy: `Keep the main thread to auto_work/plan/delegate. If the slice needs >${delegateAfterToolCalls} tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the research here.`,
+	};
 };
 
 /**
@@ -141,6 +176,11 @@ export const runAutoWork = async (
 		options.inputPersist ?? options.persist?.mode ?? 'none';
 
 	const prefix = options.namespacePrefix;
+	const orchestration = buildAutoWorkOrchestrationPolicy({
+		namespacePrefix: prefix,
+		proposalId: next.proposalId ?? 'unknown',
+		delegateAfterToolCalls: options.orchestration?.delegateAfterToolCalls,
+	});
 	const persistStep =
 		resolvedMode === 'none'
 			? []
@@ -154,6 +194,7 @@ export const runAutoWork = async (
 
 	const steps = [
 		`Open ${next.file} and pick the next atomic slice.`,
+		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
 		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
@@ -185,6 +226,7 @@ export const runAutoWork = async (
 		state: 'work',
 		proposalId: next.proposalId,
 		file: next.file,
+		orchestration,
 		...(options.validationCommand
 			? { validationCommand: options.validationCommand }
 			: {}),

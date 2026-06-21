@@ -105,10 +105,17 @@ export {
 } from '../lib/proposals/proposal-id-allocator';
 export type { IProposalIdAllocatorOptions } from '../lib/proposals/proposal-id-allocator';
 export {
+	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
+	buildAutoWorkOrchestrationPolicy,
 	buildAutoWorkRegistration,
 	runAutoWork,
 } from '../lib/tools/auto-work.tool';
-export type { IAutoWorkToolOptions } from '../lib/tools/auto-work.tool';
+export type {
+	IAutoWorkOrchestrationConfig,
+	IAutoWorkOrchestrationPolicy,
+	IAutoWorkPersistConfig,
+	IAutoWorkToolOptions,
+} from '../lib/tools/auto-work.tool';
 export {
 	buildPlanRegistration,
 	buildDelegateRegistration,

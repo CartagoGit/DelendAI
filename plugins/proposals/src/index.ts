@@ -82,6 +82,17 @@ export default definePlugin({
 				pushTarget: z.string().optional(),
 			})
 			.optional(),
+		/**
+		 * Token/context policy surfaced by `<prefix>_auto_work`: keep
+		 * expensive inspection in subagents once a slice is no longer a
+		 * quick serial edit. This is guidance only; actual delegation stays
+		 * with the orchestrator/client.
+		 */
+		orchestration: z
+			.object({
+				delegateAfterToolCalls: z.number().int().positive().optional(),
+			})
+			.optional(),
 	}),
 	configExample: {
 		summary:
@@ -90,6 +101,7 @@ export default definePlugin({
 			familyCascade: ['f', 'p'],
 			validationCommand: 'bun run validate',
 			namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
+			orchestration: { delegateAfterToolCalls: 3 },
 		},
 	},
 	register(ctx) {
@@ -228,6 +240,13 @@ export default definePlugin({
 								},
 							}
 						: {}),
+					...(ctx.options.orchestration !== undefined
+						? {
+								orchestration: ctx.options.orchestration as {
+									delegateAfterToolCalls?: number;
+								},
+							}
+						: {}),
 				}),
 				buildPlanRegistration(ctx.namespacePrefix),
 				buildDelegateRegistration({
@@ -280,6 +299,7 @@ export default definePlugin({
 											type: 'text' as const,
 											text: [
 												`Call \`${ctx.namespacePrefix}_auto_work\` to get the next proposal and a step plan.`,
+												'If the returned orchestration policy says the slice is non-trivial, call `continue_proposal mode:"plan"` and `delegate` before doing the heavy inspection in the main thread.',
 												'Then: claim files with `agent_lock`, do one atomic slice, validate, `sync_proposals`, release the lock.',
 												'Report `lock-conflict` instead of retrying a blocked claim. Keep it small and low-token.',
 											].join('\n'),
@@ -344,6 +364,7 @@ export default definePlugin({
 						`Tools are namespaced \`${ctx.namespacePrefix}_*\`. Start with \`auto_work\`.`,
 						'',
 						'- `auto_work` — one call: the next proposal + an ordered action plan.',
+						'- `auto_work.orchestration` — context policy: keep the main thread compact; inspect plan/delegate for non-trivial slices.',
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
 						'- `agent_lock` — claim files before editing, release after (claim/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',

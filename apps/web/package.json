@@ -10,8 +10,9 @@
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",
-		"build": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && astro build",
-		"build:strict": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && astro build"
+		"index:search": "pagefind --site dist",
+		"build": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && astro build && bun run index:search",
+		"build:strict": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && astro build && bun run index:search"
 	},
 	"dependencies": {
 		"astro": "^6.4.8",

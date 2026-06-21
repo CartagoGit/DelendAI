@@ -176,8 +176,8 @@ export const buildGitToolRegistrations = (
 							'Returns per-line authorship for a tracked file: {line, hash, author, date, content}. Optional `startLine`/`endLine` (both required together) scope it to a range. Read-only.',
 						inputSchema: z.object({
 							path: z.string(),
-							startLine: z.number().optional(),
-							endLine: z.number().optional(),
+							startLine: z.number().int().positive().optional(),
+							endLine: z.number().int().positive().optional(),
 						}),
 						outputSchema: z.object({
 							lines: z.array(

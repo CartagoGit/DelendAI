@@ -12,6 +12,10 @@ You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 - If the `mcp-vertex` MCP server is loaded, call `mcp-vertex_overview` before anything
   else. Use `search`/`docs_read`/`memory_recall` instead of raw filesystem crawls.
 - Do not re-read content whose digest is unchanged.
+- Keep the root chat as the coordinator, not the researcher. If a slice will need
+  more than 3 MCP/tool calls, multiple files, or repeated context reads, call
+  `mcp-vertex_continue_proposal { mode: "plan" }` and `mcp-vertex_delegate` so
+  the subagent absorbs the verbose tool output and returns only a compact result.
 
 ## Working loop
 
@@ -34,6 +38,9 @@ You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 - Hand a slice to a subagent via `delegate` (assigns a name + claims its
   files in one call, returns a compact handoff packet) instead of calling
   `agent_names` and `agent_lock` separately.
+- Treat `auto_work.orchestration` as the default budget policy: the main thread
+  should usually stop after `overview`/`auto_work`/`plan`/`delegate` and let the
+  implementation runner do expensive inspection.
 - Claim a slice via `agent_lock` before editing its files; slices are file-disjoint.
 - Wait for the `lock-released` notification rather than polling.
 - Close a slice with `close_slice` (flips status + releases the lock atomically).
