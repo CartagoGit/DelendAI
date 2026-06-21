@@ -2,7 +2,7 @@
 id: f00024
 kind: feat
 title: Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID
-status: ready
+status: done
 type: proposal
 track: proposals-plugin+workflow
 date: 2026-06-21

@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T19:06:00.000Z",
-	"count": 86,
+	"generated_at": "2026-06-21T19:41:50.173Z",
+	"count": 87,
 	"proposals": [
 		{
 			"id": "a00027",
@@ -8,7 +8,17 @@
 			"track": "workflow+core+plugins+apps+docs+memory",
 			"type": "unspecified",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
+					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
+					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
+					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
+					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
+					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
+				]
+			}
 		},
 		{
 			"id": "f00023",
@@ -34,14 +44,6 @@
 					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
 				]
 			}
-		},
-		{
-			"id": "f00024",
-			"file": "ready/f00024-cascade-priority-by-kind-with-frontmatter-override.md",
-			"track": "proposals-plugin+workflow",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
 		},
 		{
 			"id": "f00026",
@@ -129,27 +131,11 @@
 			}
 		},
 		{
-			"id": "l00008",
-			"file": "done/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
-			"track": "plugins+core+audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
 			"id": "r00001",
 			"file": "ready/r00001-harden-catchall-output-schemas.md",
 			"track": "plugins+core",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "r00002",
-			"file": "done/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
-			"track": "core+plugins",
-			"type": "proposal",
-			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
@@ -187,6 +173,22 @@
 			"id": "f00033",
 			"file": "done/f00033-release-provenance-via-npm-publish.md",
 			"track": "release+ci",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l00008",
+			"file": "done/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
+			"track": "plugins+core+audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "r00002",
+			"file": "done/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
+			"track": "core+plugins",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
@@ -673,6 +675,14 @@
 			"id": "f00022",
 			"file": "done/feats/f00022-ide-extension-multi-ide-brand-dashboard.md",
 			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00024",
+			"file": "done/feats/f00024-cascade-priority-by-kind-with-frontmatter-override.md",
+			"track": "proposals-plugin+workflow",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
