@@ -94,7 +94,7 @@
 	},
 	"dependencies": {
 		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/ide": "workspace:*"
+		"@mcp-vertex/ui-extension": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.90.0",
