@@ -134,3 +134,58 @@ When you change the `IHostAdapter` interface, bump
 `@mcp-vertex/ide` and release a new minor. Existing hosts continue to
 work via the `?` suffix on optional methods; missing methods are
 detected at type-check time.
+
+## Observability v3 (f126)
+
+The VS Code extension now ships **six more client services** that
+compose into the existing dashboard + add three new commands.
+Because every new service is implemented in `apps/ide/` or
+`packages/client/`, every host (JetBrains, Zed, Cursor, Antigravity)
+gets them for free by reusing the same `IHostAdapter` they already
+implement.
+
+### New services
+
+| Service | File | What it does |
+|---|---|---|
+| `LogsService` | [`packages/client/src/lib/services/logs-service.ts`](../packages/client/src/lib/services/logs-service.ts) | `query` / `tail` / `correlate` / `redactTest` against the server's `logs_*` tools. `subscribe(opts)` is an `AsyncIterable` that polls `logs_subscribe` with dedup + abort + max-events. |
+| `NotificationLogsBridge` | [`packages/client/src/lib/services/notification-logs-bridge.ts`](../packages/client/src/lib/services/notification-logs-bridge.ts) | Subscribes to `lock-released` / `cap` / `bloqueado` events from `NotificationsService` and pairs each with the tool calls that fired within ±5s (using `MetricsService` as the source of truth). |
+| `SearchService` | [`packages/client/src/lib/services/search-service.ts`](../packages/client/src/lib/services/search-service.ts) | `search(query, opts)` against `search_search`. `searchTools(query, tools)` and `searchKnowledge(query, entries)` are **client-side** fuzzy-substring matchers (exact=100, prefix=60, substring=40, tag=20, description=10) — no round-trip. |
+| `HealthService` | [`packages/client/src/lib/services/health-service.ts`](../packages/client/src/lib/services/health-service.ts) | Aggregates `proposals_state_health`, `proposals_proposal_stale_list` and `proposals_agent_names` into a single `IHealthSnapshot`. Degrades gracefully on missing tools. |
+| `ConnectionHealthService` | [`packages/client/src/lib/services/connection-health-service.ts`](../packages/client/src/lib/services/connection-health-service.ts) | Pings `status-marker_ping` every 5s, emits `up` / `down` / `retrying` events via an EventTarget-style API. Used by the VS Code status bar. |
+
+### New commands
+
+- `mcp-vertex.openKnowledge` — opens the **Knowledge Navigator**
+  webview (category-grouped list + in-place search + body preview).
+- `mcp-vertex.toolSearch` — opens a QuickPick over the live tool
+  registry + knowledge entries (from `SearchService`).
+- `mcp-vertex.restartServer` — re-spawns the MCP server. Hosts
+  override the default behavior by passing a custom `restartFn`.
+
+### New webview
+
+`renderKnowledgeNavigator` in
+[`apps/ide/src/knowledge/render-knowledge-navigator.ts`](../apps/ide/src/knowledge/render-knowledge-navigator.ts)
+is a 2-pane HTML view: left = category-grouped list with a search
+box, right = body preview. Pure function, no host imports — works
+identically in every IDE.
+
+### New dashboard panel
+
+The 8-tab `renderDashboard` got a 9th tab (`Health`), driven by
+`renderPanelHealth` in
+[`apps/ide/src/dashboard/render-panel-health.ts`](../apps/ide/src/dashboard/render-panel-health.ts).
+Shows a `Healthy` / `Degraded` KPI tile, the locks count, the stale
+agents count, the queue (length / queued / waiter-orphans /
+oldest-age / threshold), and the active agents list.
+
+### Adopting f126 in your host
+
+Nothing to do — the services are wired into the dashboard and the
+new commands automatically if you implement the same
+`registerCommand` / `createWebviewPanel` / `createStatusBarItem`
+methods on your `IHostAdapter` (which you already do). The
+status-bar `mcp-vertex.restartServer` falls back to an info message
+when no custom `restartFn` is provided; JetBrains hosts can plug in
+their own restart flow.

@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.3.0
+
+- **f126 — Logs in real time** — the dashboard's `Logs` panel
+  subscribes to `logs_subscribe` and correlates every log event with
+  the tool calls that fired within ±5s (via
+  `NotificationLogsBridge`). Every payload is redacted through the
+  shared `redactSecrets` rule set.
+- **f126 — Search everywhere** — `mcp-vertex.toolSearch` opens a
+  QuickPick over the live tool registry + knowledge entries. Hit Enter
+  on a tool to invoke it; hit Enter on a knowledge entry to preview
+  its body.
+- **f126 — Knowledge navigator** — `mcp-vertex.openKnowledge` opens a
+  category-grouped navigator webview with in-place search and a
+  Markdown body preview. Entries are grouped by plugin prefix via the
+  client-side `categoryOf(id)` helper.
+- **f126 — Health diagnostics** — a new `Health` panel in the dashboard
+  surfaces `proposals_state_health`, `proposals_proposal_stale_list`
+  and `proposals_agent_names` aggregated into a single
+  `IHealthSnapshot`. The status bar's `Status` tile shows
+  `Healthy` / `Degraded`, and the queue + active agents are broken
+  down by their respective KPI tiles.
+- **f126 — Connection-health status bar** — `ConnectionHealthService`
+  pings the server every 5s with `status-marker_ping`, emits
+  `up` / `down` / `retrying` events via an EventTarget-style API, and
+  is paired with a new `mcp-vertex.restartServer` command.
+- **New client services** — `LogsService`, `NotificationLogsBridge`,
+  `SearchService`, `HealthService`, `ConnectionHealthService` are
+  exported from `@mcp-vertex/client` and use only the existing MCP
+  tool surface — no new plugins.
+- **i18n parity** — `IExtensionTranslations` extended from 29 to
+  **39 keys** (commands + Health tab labels + KPI labels). All 12
+  languages (ar, de, en, es, fr, hi, it, ja, pt, th, vi, zh) ship
+  the new keys; enforced by `bun run check:i18n:ide`.
+- **Multi-host impact** — every new service is implemented in
+  `apps/ide/` or `packages/client/`, with the VS Code extension
+  consuming them through the `IHostAdapter` seam. JetBrains, Zed,
+  Cursor and Antigravity hosts get the new functionality for free by
+  implementing the same adapter.
+
 ## 0.2.0
 
 - **f125 — Dashboard webview** — branded 8-panel dashboard replaces

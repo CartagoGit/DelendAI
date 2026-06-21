@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T14:30:07.737Z",
-	"count": 79,
+	"generated_at": "2026-06-21T15:45:00.000Z",
+	"count": 80,
 	"proposals": [
 		{
 			"id": "a00022",
@@ -235,7 +235,7 @@
 			"status": "ready",
 			"date": "2026-06-21",
 			"extras": {
-				"related": ["f00031", "f00032", "a00022", "l00008"],
+				"related": ["f00031", "f00032", "a00022", "l00008", "c00001"],
 				"reservedFiles": [
 					"packages/cli/",
 					"packages/cli/package.json",
@@ -244,7 +244,41 @@
 					"packages/cli/src/",
 					"packages/cli/tests/",
 					"packages/cli/README.md",
-					"packages/core/package.json"
+					"packages/core/package.json",
+					"docs/NPM_PUBLISH.md"
+				]
+			}
+		},
+		{
+			"id": "f00035",
+			"file": "ready/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
+			"track": "apps+monorepo+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"related": ["f00022", "f00034", "f00014"],
+				"reservedFiles": [
+					"apps/ide/",
+					"apps/ide/package.json",
+					"apps/ide/src/",
+					"apps/ide/tests/",
+					"apps/vscode/",
+					"apps/vscode/package.json",
+					"apps/vscode/src/",
+					"apps/vscode/media/",
+					"apps/vscode/scripts/",
+					"tsconfig.base.json",
+					"tsconfig.json",
+					"vitest.config.ts",
+					"vitest.shared.ts",
+					"package.json",
+					"docs/CROSS-IDE.md",
+					"docs/IDE-EXTENSION.md",
+					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
+					"tools/scripts/dev/dev.script.ts",
+					"tools/scripts/lib/monorepo-paths.ts",
+					"tools/scripts/lib/monorepo-paths.spec.ts"
 				]
 			}
 		},

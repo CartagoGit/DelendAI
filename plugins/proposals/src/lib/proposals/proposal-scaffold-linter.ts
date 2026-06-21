@@ -262,7 +262,19 @@ const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
 	// === `architecture` (design / how it fits) ===
 	implementation: 'architecture',
 	'7. conventional commits': 'architecture',
-
+	// === Custom / domain-specific (added as the catalogue grew) ===
+	'orden por defecto': 'why this design',
+	'scope (lo que sí toca)': 'why this design',
+	'out of scope (lo que no toca)': 'non-goals',
+	scope: 'why this design',
+	'acceptance (global)': 'acceptance',
+	'acceptance criteria': 'acceptance',
+	'acceptance checklist': 'notes',
+	'contract change': 'why this design',
+	'hard rules (cannot be broken)': 'non-goals',
+	'the honest constraint': 'why this design',
+	'decisión de schema': 'why this design',
+	'notes (cross-references)': 'notes',
 	// === Audit-narrative emoji sections (recognised as "notes" since they
 	//     are post-hoc commentary, not part of the proposal's plan) ===
 	'📊 resumen ejecutivo': 'notes',
