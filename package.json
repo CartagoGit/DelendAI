@@ -37,6 +37,7 @@
 		"format:check": "bun run format:all:check",
 		"prepare": "lefthook install",
 		"build": "bun tools/scripts/compile/build.script.ts",
+		"cli": "bun packages/cli/src/index.ts",
 		"package": "cd extensions/vscode && bun run package",
 		"validate": "bun run typecheck && bun run lint && bun run lint:scss && bun run test",
 		"types:generate": "bun tools/scripts/types/generate-tool-types.script.ts",

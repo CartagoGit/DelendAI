@@ -149,6 +149,8 @@ describe('continue_proposal (serial cascade)', () => {
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('all-claimed');
 		expect(out.nextAction).toContain('Do NOT retry');
+		expect(out.nextAction).toContain('proposals_await_lock');
+		expect(out.nextAction).toContain('lock-released');
 	});
 
 	// f00016 S4: new-system entries (id prefix is one of the 12 live kinds,

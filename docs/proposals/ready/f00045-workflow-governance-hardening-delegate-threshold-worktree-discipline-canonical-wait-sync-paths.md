@@ -50,7 +50,7 @@ Close the workflow-level gaps surfaced by a00027 S2: make the multi-agent path l
 
 ### S3 — Worktree discipline and validation coverage
 - **Files**: plugins/proposals/src/lib/tools/agent-worktree.tool.ts, plugins/proposals/tests/src/lib/tools/auto-work.tool.spec.ts, plugins/proposals/tests/src/lib/tools/continue-proposal.tool.spec.ts, plugins/notification/tests/src/lib/tools.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "A 2+ agent workflow has an enforced or test-covered worktree discipline rather than a best-effort recommendation only."

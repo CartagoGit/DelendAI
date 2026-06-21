@@ -306,4 +306,49 @@ describe('notification plugin', () => {
 		fakeServer.server.onclose?.();
 		rmSync(dir, { recursive: true, force: true });
 	});
+
+	it('registers await_lock with anti-polling guidance in the description', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'notify-await-'));
+		const ctx = {
+			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/mcp-vertex/notification',
+			pluginDocsDir: 'docs/mcp-vertex/notification',
+			namespacePrefix: 'notification',
+			options: { intervalMs: 50 },
+			args: {},
+		} satisfies IMcpPluginContext;
+
+		const reg = await plugin.register(ctx);
+		const descriptors: Array<{ name: string; description?: string }> = [];
+		const fakeServer = {
+			sendLoggingMessage: async () => {},
+			server: { onclose: undefined as undefined | (() => void) },
+			registerTool: (
+				name: string,
+				descriptor: { description?: string },
+			) => {
+				descriptors.push({
+					name,
+					...(descriptor.description === undefined
+						? {}
+						: { description: descriptor.description }),
+				});
+			},
+		};
+		await reg.tools![1]!.register(fakeServer as never);
+		expect(descriptors).toHaveLength(1);
+		expect(descriptors[0]?.name).toBe('notification_await_lock');
+		expect(descriptors[0]?.description).toContain(
+			'do NOT poll agent_lock status',
+		);
+		fakeServer.server.onclose?.();
+		rmSync(dir, { recursive: true, force: true });
+	});
 });

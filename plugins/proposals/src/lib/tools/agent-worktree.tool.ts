@@ -49,7 +49,7 @@ export const buildAgentWorktreeRegistration = (
 		id: 'agent_worktree',
 		effects: ['write', 'spawn'],
 		summary:
-			'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Use when 2+ agents share this repo.',
+			'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
@@ -57,7 +57,7 @@ export const buildAgentWorktreeRegistration = (
 				{
 					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
 					description:
-						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`.',
+						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`.',
 					inputSchema: z.object({
 						action: z.enum(['create', 'list', 'remove']),
 						agent: z.string().optional(),
