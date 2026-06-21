@@ -2,7 +2,7 @@
 id: r00002
 kind: refactor
 title: Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
-status: ready
+status: done
 type: proposal
 track: core+plugins
 date: 2026-06-21

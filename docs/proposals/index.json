@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T18:53:21.758Z",
+	"generated_at": "2026-06-21T19:06:00.000Z",
 	"count": 85,
 	"proposals": [
 		{
@@ -138,10 +138,10 @@
 		},
 		{
 			"id": "r00002",
-			"file": "ready/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
+			"file": "done/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
 			"track": "core+plugins",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
