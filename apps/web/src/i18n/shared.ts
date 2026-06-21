@@ -68,6 +68,8 @@ export interface INavTranslations {
 	readonly skills: string;
 	readonly guide: string;
 	readonly more: string;
+	readonly firstFiveMinutes: string;
+	readonly troubleshooting: string;
 }
 
 export interface IPageSection {
@@ -193,6 +195,25 @@ export interface IPluginPageTranslations {
 	readonly tabTutorial: string;
 }
 
+/** Per-tool detail page (`/tools/<plugin>/<tool>`, l030 S1). */
+export interface IToolPageTranslations {
+	readonly back: string;
+	readonly backToPlugin: string;
+	readonly arguments: string;
+	readonly argName: string;
+	readonly argType: string;
+	readonly argRequired: string;
+	readonly argDescription: string;
+	readonly argRequiredYes: string;
+	readonly argRequiredNo: string;
+	readonly noArguments: string;
+	readonly effects: string;
+	readonly effectReadOnly: string;
+	readonly example: string;
+	readonly exampleNote: string;
+	readonly plugin: string;
+}
+
 export interface INotFoundTranslations {
 	readonly code: string;
 	readonly title: string;
@@ -245,6 +266,40 @@ export interface IRecoveryTranslations {
 	readonly actions: string;
 	readonly releaseLock: string;
 	readonly forceReady: string;
+}
+
+/** "First 5 minutes" onboarding page (`/first-5-minutes`, l030 S3). */
+export interface IFirstFiveMinutesProfile {
+	readonly title: string;
+	readonly intro: string;
+	readonly steps: ReadonlyArray<string>;
+}
+
+export interface IFirstFiveMinutesTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly profileTabBunNode: string;
+	readonly profileTabVscode: string;
+	readonly profileTabClaude: string;
+	readonly bunNode: IFirstFiveMinutesProfile;
+	readonly vscode: IFirstFiveMinutesProfile;
+	readonly claude: IFirstFiveMinutesProfile;
+	readonly nextSteps: string;
+	readonly nextToolsCta: string;
+	readonly nextTroubleshootingCta: string;
+}
+
+/** Troubleshooting index + case page (`/troubleshooting`, l030 S4). */
+export interface ITroubleshootingTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly symptom: string;
+	readonly cause: string;
+	readonly fix: string;
+	readonly tags: string;
+	readonly backToIndex: string;
+	readonly closedBy: string;
+	readonly empty: string;
 }
 
 export interface ILogsTranslations {
@@ -306,6 +361,9 @@ export interface ITranslations {
 	readonly footer: IFooterTranslations;
 	readonly pluginpage: IPluginPageTranslations;
 	readonly plugin: IPluginTranslations;
+	readonly toolpage: IToolPageTranslations;
+	readonly firstFiveMinutes: IFirstFiveMinutesTranslations;
+	readonly troubleshooting: ITroubleshootingTranslations;
 	readonly notFound: INotFoundTranslations;
 	readonly knowledge: IKnowledgeTranslations;
 	readonly prompts: IPromptsTranslations;
@@ -331,6 +389,14 @@ const resolve = (dict: LangDict, fallback: LangDict): ITranslations => {
 	const merge = (a: unknown, b: unknown): unknown => {
 		if (typeof a === 'string') return a;
 		if (typeof b === 'string') return b;
+		// Arrays (e.g. `firstFiveMinutes.<profile>.steps`) are leaf values, not
+		// objects to merge key-by-key — `Object.keys([...])` would otherwise
+		// yield numeric-string indices and silently turn the array into a
+		// plain object (`{0: ..., 1: ...}`), breaking every `.map()` call site.
+		// `a` (the active language) always wins when both are arrays; `b`
+		// (English) is the fallback only when `a` is missing entirely.
+		if (Array.isArray(a)) return a;
+		if (Array.isArray(b)) return b;
 		if (a && b && typeof a === 'object' && typeof b === 'object') {
 			const out: Record<string, unknown> = {};
 			const keys = new Set([...Object.keys(a), ...Object.keys(b)]);

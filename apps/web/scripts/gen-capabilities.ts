@@ -34,6 +34,10 @@ import {
 	type ITutorial,
 } from './lib/discover-tutorials';
 import { resolveI18nDescriptions } from './lib/resolve-i18n-descriptions';
+import {
+	discoverTroubleshootingCases,
+	type ITroubleshootingCase,
+} from './lib/discover-troubleshooting';
 import { languages as supportedLanguages } from '../src/i18n/shared';
 
 import {
@@ -461,6 +465,30 @@ const collectTutorials = (): ITutorial[] => {
 	return flat;
 };
 
+/** Walk `docs/troubleshooting/*.md` and return the flat catalogue (l030 S4). */
+const collectTroubleshooting = (): ITroubleshootingCase[] => {
+	const dir = join(ROOT, 'docs/troubleshooting');
+	return [
+		...discoverTroubleshootingCases(dir, {
+			listFiles: (p) => {
+				try {
+					return readdirSync(p);
+				} catch {
+					return [];
+				}
+			},
+			readFile: (p) => {
+				try {
+					return readFileSync(p, 'utf8');
+				} catch {
+					return undefined;
+				}
+			},
+			join: (...parts) => join(...parts),
+		}),
+	];
+};
+
 const main = async (): Promise<void> => {
 	const strict = process.argv.includes('--strict');
 	const coreVersion = (
@@ -485,6 +513,7 @@ const main = async (): Promise<void> => {
 
 	const packages = collectPackages();
 	const tutorials = collectTutorials();
+	const troubleshooting = collectTroubleshooting();
 	const capabilities = {
 		generatedAt: new Date().toISOString(),
 		coreVersion,
@@ -495,6 +524,7 @@ const main = async (): Promise<void> => {
 			knowledge: knowledge.length,
 			packages: packages.length,
 			tutorials: tutorials.length,
+			troubleshooting: troubleshooting.length,
 		},
 		packages,
 		tools,
@@ -502,12 +532,13 @@ const main = async (): Promise<void> => {
 		resources,
 		knowledge,
 		tutorials,
+		troubleshooting,
 		benchmarks,
 	};
 	mkdirSync(dirname(OUT), { recursive: true });
 	writeFileSync(OUT, `${JSON.stringify(capabilities, null, 2)}\n`);
 	console.log(
-		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
+		`wrote ${OUT} — ${tools.length} tools, ${prompts.length} prompts, ${resources.length} resources, ${knowledge.length} knowledge, ${packages.length} packages, ${tutorials.length} tutorials, ${troubleshooting.length} troubleshooting, ${benchmarks.length} benchmarks, ${undocumented.length} undocumented.`,
 	);
 };
 

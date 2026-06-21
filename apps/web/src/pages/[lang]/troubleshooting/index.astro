@@ -1,0 +1,21 @@
+---
+import TroubleshootingIndex from '#COMPONENTS/TroubleshootingIndex.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { languages, useTranslations, type Lang } from '#I18N/ui';
+
+export function getStaticPaths() {
+	return languages
+		.filter((l) => l.code !== 'en')
+		.map((l) => ({ params: { lang: l.code } }));
+}
+
+const { lang } = Astro.params;
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+const t = useTranslations(langCode);
+---
+
+<Base lang={langCode} title={`${t.troubleshooting.title} — @mcp-vertex/core`}>
+	<TroubleshootingIndex lang={langCode} />
+</Base>

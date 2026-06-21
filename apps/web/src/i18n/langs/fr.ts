@@ -17,6 +17,8 @@ const dict: LangDict = {
 		skills: 'Compétences',
 		guide: 'Guide',
 		more: 'Plus',
+		firstFiveMinutes: 'Les 5 premières minutes',
+		troubleshooting: 'Dépannage',
 	},
 	hero: {
 		title: { a: 'Le ', b: 'MCP Vertex', c: ' agnostique' },
@@ -62,6 +64,8 @@ const dict: LangDict = {
 		oneCmdNote:
 			'Détecte votre IDE et ajoute mcp-vertex — sans toucher à vos autres serveurs MCP.',
 		config: "Choisissez un preset (minimal · standard · swarm) ou listez les plugins. Lancez avec --check pour l'autodiagnostic.",
+		excludeHelp:
+			"Retirez des plugins de l'ensemble résolu avec --exclude-plugins= (alias : --excludePlugins=). Utile pour exclure un plugin d'un preset sans le forker — p. ex. --preset=swarm --exclude-plugins=notification pour une session à un seul agent.",
 	},
 	tools: {
 		title: 'Outils',
@@ -141,6 +145,78 @@ const dict: LangDict = {
 		'status-marker':
 			'Marqueur de fermeture coloré obligatoire pour chaque réponse d’agent : 8 états canoniques, outils helper + validateur.',
 		core: 'Le cœur agnostique : overview, scaffold, métriques, doctor et le chargeur de plugins.',
+	},
+	toolpage: {
+		back: 'Retour',
+		backToPlugin: 'Retour au plugin',
+		arguments: 'Arguments',
+		argName: 'Argument',
+		argType: 'Type',
+		argRequired: 'Requis',
+		argDescription: 'Description',
+		argRequiredYes: 'oui',
+		argRequiredNo: 'non',
+		noArguments: "Cet outil n'accepte aucun argument.",
+		effects: 'Effets',
+		effectReadOnly: 'lecture seule',
+		example: "Exemple d'appel",
+		exampleNote:
+			"Affiché comme un payload générique d'appel d'outil MCP ; le transport exact dépend de votre client.",
+		plugin: 'Plugin',
+	},
+	firstFiveMinutes: {
+		title: 'Les 5 premières minutes',
+		lead: 'Trois guides de démarrage à copier-coller. Choisissez celui qui correspond à la façon dont vous exécutez mcp-vertex.',
+		profileTabBunNode: 'Bun / Node',
+		profileTabVscode: 'VS Code / Copilot',
+		profileTabClaude: 'Claude Code',
+		bunNode: {
+			title: 'Bun / Node — lancer le serveur directement',
+			intro: "Aucune intégration d'éditeur nécessaire : lancez le host server depuis un terminal et pointez n'importe quel client MCP vers son transport stdio.",
+			steps: [
+				'Installer : `bun add @mcp-vertex/core` (ou `npm install @mcp-vertex/core`).',
+				'Lancer : `bunx mcp-vertex --preset=standard` (ou `npx mcp-vertex --preset=standard`).',
+				"Vérifier : le processus affiche la liste des plugins chargés et attend sur stdio — Ctrl+C pour l'arrêter.",
+				'Pointez la config de votre client MCP vers le binaire avec `--preset=minimal|standard|swarm` (voir Installer pour la liste complète des flags).',
+				'Appelez `mcp-vertex_overview { compact: true }` en premier — il vous dit quoi faire ensuite.',
+			],
+		},
+		vscode: {
+			title: 'VS Code / GitHub Copilot',
+			intro: "L'installateur en une commande détecte VS Code et ajoute mcp-vertex à votre liste de serveurs MCP sans toucher aux serveurs existants.",
+			steps: [
+				"Lancez l'installateur en une commande depuis la page Installer (détecte votre IDE automatiquement).",
+				'Rechargez la fenêtre (`Developer: Reload Window`) pour que Copilot prenne en compte le nouveau serveur.',
+				"Ouvrez le panneau de chat Copilot et sélectionnez l'agent `mcp-vertex` dans le sélecteur d'agents.",
+				'Demandez-lui d’appeler `mcp-vertex_overview` — il doit indiquer le preset chargé et une action recommandée.',
+				'Si le serveur n’apparaît pas, consultez Dépannage → "MCP server not detected".',
+			],
+		},
+		claude: {
+			title: 'Claude Code',
+			intro: "Claude Code lit `.mcp.json` à la racine du workspace ; l'installateur écrit ou fusionne ce fichier pour vous.",
+			steps: [
+				"Lancez l'installateur en une commande — il détecte Claude Code et écrit `.mcp.json`.",
+				'Redémarrez Claude Code (ou lancez `/mcp` pour recharger les serveurs) pour qu’il prenne en compte la nouvelle entrée.',
+				'Dans une session neuve, les fichiers toujours chargés `AGENTS.md` + `CLAUDE.md` pointent déjà vers `mcp-vertex_overview` comme premier appel.',
+				'Confirmez avec `mcp-vertex_overview { compact: true }` — le champ `recommendedNextAction` vous dit quoi faire ensuite.',
+				'Pour les sessions multi-agent, lisez le skill `proposal-swarm-runner` avant de réclamer un slice.',
+			],
+		},
+		nextSteps: 'Où aller ensuite',
+		nextToolsCta: 'Parcourir tous les outils',
+		nextTroubleshootingCta: 'Quelque chose ne fonctionne pas ? Dépannage',
+	},
+	troubleshooting: {
+		title: 'Dépannage',
+		lead: 'Symptôme → cause probable → solution, pour les problèmes réellement signalés.',
+		symptom: 'Symptôme',
+		cause: 'Cause probable',
+		fix: 'Solution',
+		tags: 'Tags',
+		backToIndex: 'Retour au dépannage',
+		closedBy: 'Clos par',
+		empty: 'Aucun cas de dépannage ne correspond encore à ce filtre.',
 	},
 	knowledge: {
 		title: 'Connaissances',

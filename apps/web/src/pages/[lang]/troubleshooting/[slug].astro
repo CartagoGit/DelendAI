@@ -1,0 +1,25 @@
+---
+import TroubleshootingCase from '#COMPONENTS/TroubleshootingCase.astro';
+import Base from '#LAYOUTS/Base.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+import { languages, type Lang } from '#I18N/ui';
+
+export function getStaticPaths() {
+	const cases = (capabilities.troubleshooting ?? []) as Array<{
+		slug: string;
+	}>;
+	const langs = languages.map((l) => l.code).filter((c) => c !== 'en');
+	return langs.flatMap((lang) =>
+		cases.map((c) => ({ params: { lang, slug: c.slug } })),
+	);
+}
+
+const { lang, slug } = Astro.params;
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+---
+
+<Base lang={langCode} title={`${slug} — Troubleshooting — @mcp-vertex/core`}>
+	<TroubleshootingCase lang={langCode} slug={slug!} />
+</Base>
