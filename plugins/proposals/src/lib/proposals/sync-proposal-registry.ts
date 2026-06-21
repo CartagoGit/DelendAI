@@ -561,7 +561,12 @@ export async function syncProposalRegistry(
 			proposals: entries,
 			errors: warnings,
 		};
-		const nextText = `${JSON.stringify(index, null, '\t')}\n`;
+		// `docs/proposals/index.json` is a tracked, Biome-linted file
+		// (unlike lock/handoff packets under `.mcp-vertex/`), so it must
+		// match `biome.json#json.formatter.indentWidth` (4 spaces) — a
+		// tab-indented write here makes `bun run lint` red on every
+		// regeneration until someone re-formats it by hand.
+		const nextText = `${JSON.stringify(index, null, 4)}\n`;
 		let changed = true;
 		try {
 			const current = await readFile(indexPath, 'utf8');

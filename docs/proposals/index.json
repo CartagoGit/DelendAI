@@ -1,7 +1,22 @@
 {
-	"generated_at": "2026-06-21T05:14:06.473Z",
-	"count": 22,
+	"generated_at": "2026-06-21T05:19:35.662Z",
+	"count": 24,
 	"proposals": [
+		{
+			"id": "f119",
+			"file": "f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
+			"track": "proposals",
+			"type": "unspecified",
+			"status": "in_progress",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
+					"{ agent: implementation_runner, task: 's2: re-classify l99..l113 by real kind + move into done/feats|fixes/' }",
+					"{ agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }"
+				]
+			}
+		},
 		{
 			"id": "l114",
 			"file": "paused/l114-pause-npm-publish.md",
@@ -105,6 +120,31 @@
 					"docs/IDE-EXTENSION.md",
 					"docs/CROSS-IDE.md",
 					"docs/proposals/done/feats/f114-feat-ide-extension-vscode-and-friends.md"
+				]
+			}
+		},
+		{
+			"id": "f126",
+			"file": "ready/f126-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"track": "proposals-plugin+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"docs/proposals/index.json",
+					"docs/proposals/ready/",
+					"docs/proposals/done/",
+					"docs/proposals/in-progress/",
+					"docs/proposals/paused/",
+					"docs/proposals/blocked/",
+					"docs/proposals/retired/",
+					"docs/proposals/RESUMEN-SESION-2026-06-17.md",
+					"scripts/lint-proposals.ts",
+					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
+					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
+					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
+					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
 				]
 			}
 		},
