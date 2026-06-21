@@ -1,14 +1,15 @@
 ---
-id: l122
-status: ready
+id: x122
+status: done
 type: proposal
 track: web+ui
 date: 2026-06-21
 kind: fix
 title: Web UI bugfixes — config modal sync, theme persistence, dev API regen, page title dedup, search modal in dev, themed scrollbar
+shipped-in: 293837d
 ---
 
-# l122 — Web UI bugfixes (settings modal, page transitions, dev workflow, search, scrollbar)
+# x122 — Web UI bugfixes (settings modal, page transitions, dev workflow, search, scrollbar)
 
 ## Goal
 
