@@ -128,7 +128,7 @@ a shorter compact entrypoint.
     2–3 agentes paralelos coordinándose sobre slices disjuntos."
   - "Referencia `round_context` como cache de digests: 'no re-leer
     docs cuyo digest no haya cambiado'."
-
+- status: done
 ### S3 — Skill `mcp-vertex-conventional-commits-and-release`
 - **Files**: `skills/mcp-vertex-conventional-commits-and-release/SKILL.md`
   (nuevo).
