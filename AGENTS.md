@@ -35,6 +35,18 @@ A Bun monorepo:
 **Definition of done for any change: `bun run validate` is green.** It must never
 be left red on a working branch.
 
+**Re-read discipline.** After editing a file inside a slice, do not re-read it
+"just to be sure". Re-read only when one of these is true:
+
+- `git status --porcelain -- <path>` shows it as modified after your last write
+  (means someone else — user, parallel agent, hook — touched it).
+- `mcp-vertex_overview` (compact) reports a relevant change since the last
+  read.
+- You explicitly need the new bytes (e.g. to compose the next edit).
+
+Between reads inside the same slice, trust the working tree. This is what
+keeps `git diff` out of the hot path.
+
 ## Hard rules
 
 1. **The core stays agnostic.** Never import a plugin from `packages/core`, never

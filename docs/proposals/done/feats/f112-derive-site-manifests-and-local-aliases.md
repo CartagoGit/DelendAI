@@ -13,7 +13,7 @@ title: Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
 unblocked_by: [self:triaged-and-implemented]
 ---
 
-# l112 — Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
+# f112 — Derive site manifests + adopt `#MAYÚSCULAS/*` local-alias convention
 
 > **Status: IDEA. Explored 2026-06-20 in two slices that were reverted by
 > the workspace's parallel-edit reconciliation (cf. `affairs-orchestrator
@@ -200,7 +200,7 @@ import capabilities         from '#MANIFESTS/capabilities.json'; // local
 - The runtime state under `.cache/mcp-vertex/` (already correctly
   git-ignored).
 - The proposals plugin's own `index.json` regeneration path (its
-  docsDir resolution, addressed by l111 s5).
+  docsDir resolution, addressed by x111 s5).
 - Workspace packages in `packages/core/`, `plugins/*/`, `examples/*/`
   (would be a follow-up proposal — the convention is established
   here, but applying it repo-wide is out of scope).

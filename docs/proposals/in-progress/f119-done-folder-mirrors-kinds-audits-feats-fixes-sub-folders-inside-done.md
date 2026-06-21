@@ -8,7 +8,7 @@ date: 2026-06-21
 track: proposals
 ownership:
     - { agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }
-    - { agent: implementation_runner, task: 's2: re-classify l99..l113 by real kind + move into done/feats|fixes/' }
+    - { agent: implementation_runner, task: 's2: re-classify f99..l113 by real kind + move into done/feats|fixes/' }
     - { agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }
 acceptance:
     - { command: bun run type, expect: exit0 }
@@ -117,7 +117,7 @@ docs/proposals/
 ├── done/                   # status: done (this proposal mirrors kinds inside)
 │   ├── README.md           # convention document (s3)
 │   ├── audits/             # kind: audit  (20 files: a1..a20)
-│   ├── feats/              # kind: feat   (~10-15 files: f99..f119, l99..l113 re-tagged)
+│   ├── feats/              # kind: feat   (~10-15 files: f99..f119, f99..l113 re-tagged)
 │   ├── fixes/              # kind: fix    (~2-3 files: x-prefixed closed proposals)
 │   └── RESUMEN-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
 │                              (they predate the convention and are not proposals)

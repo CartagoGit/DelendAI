@@ -12,7 +12,7 @@ kind: feat
 title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 ---
 
-# l102 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
+# f102 — `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 
 > **Estado histórico:** esta propuesta quedó pausada por decisión del usuario el
 > 2026-06-18. Se reabrió el 2026-06-20 por instrucción explícita de continuar
@@ -364,7 +364,7 @@ de plugin.
 - **Riesgo**: los plugins existentes (proposals, memory,
   notification) ignoran `ctx.keepLegacy` y siguen sobreescribiendo.
   **Mitigación**: slice s1 expone el campo; los plugins lo
-  consumen en su PR siguiente (out of scope de l102). El doc
+  consumen en su PR siguiente (out of scope de f102). El doc
   `PLUGINS-MCP-VERTEX.md` deja claro que es contrato de autor.
 - **Riesgo**: la heurística del analyzer dispara falsos positivos
   en greenfield. **Mitigación**: solo dispara con evidencia
@@ -388,7 +388,7 @@ ahora". Razones para archivarla:
    releases que ya estén en uso, no con un primer lanzamiento.
 
 Cuando llegue el próximo refactor / migración real (y va a llegar),
-se reabre l102, se ejecuta s1–s5 en orden y se cierra.
+se reabre f102, se ejecuta s1–s5 en orden y se cierra.
 
 ## 8. Cierre 2026-06-20
 

@@ -12,7 +12,7 @@ kind: fix
 title: Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
 ---
 
-# l105 — Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
+# x106 — Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
 
 > **Estado: IDEA para decidir. NO IMPLEMENTAR TODAVÍA.** Recoge un
 > bug que bloquea `bun run site:strict` y deja la página `/skills`
@@ -78,7 +78,7 @@ anidado; solo el walker se quedó a medio camino.
 ## 2. Por qué importa
 
 1. **Bloquea `bun run site:strict`** — el guardián de cobertura
-   que la propuesta l100 instauró para "la web nunca miente sobre
+   que la propuesta f100 instauró para "la web nunca miente sobre
    lo que el código expone".
 2. **Pérdida silenciosa de información** — los dos SKILL.md ya
    escritos (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`)
