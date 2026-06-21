@@ -13,8 +13,17 @@ A Bun monorepo:
   scaffold, metrics, shared filesystem primitives (`withFileMutex`,
   `writeFileAtomic`, `quarantineCorruptFile`, `resolveWorkspaceContained`,
   `redactSecrets`). **No domain logic lives here.**
+- `packages/client` — stdio client + service layer used by every host
+  extension (dashboard, knowledge, search, health, connection-health,
+  notification-logs bridge, logs).
+- `packages/ui-extension` — host-agnostic UI shell (dashboard, panels,
+  knowledge navigator, command palette, brand assets). Pure HTML/CSS/JS,
+  no host imports. Consumed by every `extensions/<host>/`.
 - `plugins/*` — opt-in capabilities (`proposals`, `memory`, `quality`, `rules`,
   `search`, `docs`, `deps`, `git`, `notification`). Each owns its namespace.
+- `extensions/vscode` — VS Code host implementation that consumes
+  `@mcp-vertex/ui-extension` + `@mcp-vertex/client`. Produces the
+  `.vsix`. **Only file under `extensions/` that may import `vscode`.**
 - `apps/web` — Astro product/docs site, generated from the **live** tool registry.
 - `examples/*` — adoption examples (minimal host, custom plugin, swarm).
 - `scripts/*` — build, release, type/schema generation (pure planning split from
