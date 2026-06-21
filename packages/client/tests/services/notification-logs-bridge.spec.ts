@@ -42,9 +42,6 @@ const makeBridge = () => {
 };
 
 describe('NotificationLogsBridge', () => {
-	beforeEach(() => {
-		vi.useRealTimers();
-	});
 	afterEach(() => {
 		vi.useRealTimers();
 	});
