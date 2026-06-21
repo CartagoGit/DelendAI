@@ -69,7 +69,7 @@ Reglas:
 - **Status**: pending
 - **Files**:
   - `scripts/translate-tutorials.sh` → `tools/scripts/i18n/translate-tutorials.script.ts`
-  - `scripts/gen-section-pages.sh` → `tools/scripts/site/gen-section-pages.script.ts`
+  - `scripts/gen-section-pages.sh` → `tools/scripts/astro/gen-section-pages.script.ts`
   - `scripts/translate-tutorials.sh` (delete) + `scripts/gen-section-pages.sh` (delete)
 - **Command**: `bun run validate` + `bun tools/scripts/i18n/translate-tutorials.script.ts --dry-run` (si tiene flag) + `bun tools/scripts/site/gen-section-pages.script.ts --check` (idem)
 - **Acceptance**:
