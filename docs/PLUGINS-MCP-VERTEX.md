@@ -96,6 +96,13 @@ mcp-vertex_create_server  { "kind": "plugin", "pluginName": "myfeature", "descri
 It produces `plugins/myfeature/` with `package.json`, `tsconfig.json`,
 `src/index.ts` (a working `IMcpPlugin` with a `_ping` tool) and a `README.md`.
 
+## Presets
+
+Use `--preset=minimal|standard|swarm|full` when you want a curated plugin set
+instead of spelling out `--plugins=...`. The canonical membership lives in
+`packages/core/src/lib/plugins/preset-catalog.ts`; the web `/presets` page
+renders that catalog directly, so docs and CLI stay aligned.
+
 ## Rules for great, model-agnostic, low-token plugins
 
 1. **Strict schemas in, structured JSON out.** Don't return prose an LLM has to

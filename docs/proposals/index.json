@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T19:43:53.310Z",
+	"generated_at": "2026-06-21T19:48:02.607Z",
 	"count": 87,
 	"proposals": [
 		{
@@ -106,17 +106,6 @@
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": ["{", "{", "{", "{"]
-			}
-		},
-		{
-			"id": "f00043",
-			"file": "ready/f00043-presets-page-and-plugin-membership.md",
-			"track": "apps/web+docs+core+cli",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": ["{", "{", "{", "{", "{"]
 			}
 		},
 		{
@@ -781,6 +770,17 @@
 					"tools/scripts/lib/monorepo-paths.ts",
 					"tools/scripts/lib/monorepo-paths.spec.ts"
 				]
+			}
+		},
+		{
+			"id": "f00043",
+			"file": "done/feats/f00043-presets-page-and-plugin-membership.md",
+			"track": "apps/web+docs+core+cli",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
 			}
 		},
 		{

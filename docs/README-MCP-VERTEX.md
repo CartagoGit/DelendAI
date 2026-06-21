@@ -44,7 +44,7 @@ scaffolding tools.
 | Argument | Default | Purpose |
 |---|---|---|
 | `--plugins=a,b,c` | _(none)_ | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
-| `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped): `minimal` (git, search), `standard` (git, search, memory, docs, rules, quality, deps), `swarm` (standard + proposals, notification). |
+| `--preset=NAME` | _(none)_ | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `standard`, `swarm`, `full`) and rendered on the web presets page. |
 | `--verbose` | off | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup. |
 | `--cacheDir=DIR` | `.cache/mcp-vertex` | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`. |
 | `--docsDir=DIR` | `docs/mcp-vertex` | Human-edited document root (e.g. proposals). |
