@@ -46,13 +46,15 @@ const run = async (): Promise<void> => {
 	};
 
 	const assembled = await createMcpProject(extended);
-	await assembled.start();
 
-	// Install signal handlers so the Bun host exits cleanly when VS Code /
-	// Copilot closes the parent shell. Without this, every abrupt close
-	// leaves a Bun zombie holding the workspace's agents.lock.json,
-	// which makes the next session's first tool call slow enough to
-	// trip the client MCP timeout. See docs/proposals/done/fixes/x123.
+	// Install signal handlers BEFORE `await assembled.start()`. The
+	// `start()` call can take several seconds on a cold start (loading
+	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
+	// arrives during that window must be handled gracefully — not
+	// terminate the process with the signal still set. The handler
+	// closure captures `assembled`, which is assigned synchronously
+	// before `start()` resolves, so the reference is always live by
+	// the time a signal can arrive. See docs/proposals/done/fixes/x123.
 	const onSignal = (code: number): void => {
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
@@ -65,6 +67,8 @@ const run = async (): Promise<void> => {
 		// when we got here via SIGTERM first.
 		void assembled.server.close().catch(() => undefined);
 	});
+
+	await assembled.start();
 };
 
 void run();

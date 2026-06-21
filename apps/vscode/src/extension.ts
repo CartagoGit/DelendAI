@@ -24,7 +24,6 @@ import {
 } from './commands/show-metrics';
 import { registerShowOverviewCommand } from './commands/show-overview';
 import { renderJsonHtml } from './commands/types';
-import { createVscodeHostAdapter } from './host/vscode-host-adapter';
 import {
 	type IFileSystemWatcher,
 	ToolTreeDataProvider,

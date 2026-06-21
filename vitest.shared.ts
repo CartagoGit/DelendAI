@@ -178,5 +178,13 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			find: '@mcp-vertex/test-convention',
 			replacement: resolve(testConvention, 'index.ts'),
 		},
+		{
+			find: '@mcp-vertex/ide/public',
+			replacement: resolve(workspaceRoot, 'apps/ide/src/public/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/ide',
+			replacement: resolve(workspaceRoot, 'apps/ide/src/index.ts'),
+		},
 	];
 };
