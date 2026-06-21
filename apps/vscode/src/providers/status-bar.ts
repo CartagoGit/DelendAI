@@ -4,7 +4,8 @@ import type {
 	OverviewService,
 } from '@mcp-vertex/client';
 
-import { OPEN_DASHBOARD_COMMAND, SHOW_OVERVIEW_COMMAND } from '../extension';
+import { OPEN_DASHBOARD_COMMAND } from '../commands/open-dashboard';
+import { SHOW_OVERVIEW_COMMAND } from '../extension';
 
 export interface IStatusBarItem {
 	text: string;
