@@ -20,15 +20,25 @@
 	"activationEvents": [],
 	"main": "./dist/extension.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "mcp-vertex",
+					"title": "mcp-vertex",
+					"icon": "media/logo.svg"
+				}
+			]
+		},
 		"views": {
-			"explorer": [
+			"mcp-vertex": [
 				{
 					"id": "mcp-vertex.tools",
-					"name": "mcp-vertex Tools"
+					"name": "Tools",
+					"icon": "media/logo.svg"
 				},
 				{
 					"id": "mcp-vertex.proposals",
-					"name": "mcp-vertex Proposals"
+					"name": "Proposals"
 				}
 			]
 		},

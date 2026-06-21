@@ -2,7 +2,7 @@
 id: a024
 kind: audit
 title: "Estudio exhaustivo de ahorro de tokens — superficie de herramientas, working tree y disciplina"
-status: ready
+status: done
 date: 2026-06-21
 track: metrics+plugins+workflow
 ownership:
@@ -14,6 +14,15 @@ acceptance:
 ---
 
 # a024 — Estudio exhaustivo de ahorro de tokens
+
+> **Superseded by unified audit [`a026`](../../ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
+> (consolidación de auditorías ready del 2026-06-21). El triage de S2 (crear
+> `a024a`/`a024b`/`a024c`/`a024d`) se decidió explícitamente **diferido**
+> dentro de a026 § Notes — `a024a`/`a024b` esperan el prerequisite `l120`;
+> `a024c` (skill `token-hygiene`, sin prerequisite) queda recomendada como
+> follow-up de baja friction pero no creada en esta sesión; `a024d` se trató
+> como nota de documentación, no como propuesta independiente. Ver a026 para
+> el detalle completo de la decisión. Cerrada como referencia histórica.
 
 ## Goal
 

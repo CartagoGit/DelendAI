@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T05:35:48.645Z",
-	"count": 24,
+	"generated_at": "2026-06-21T05:48:31.000Z",
+	"count": 25,
 	"proposals": [
 		{
 			"id": "f119",
@@ -27,10 +27,10 @@
 		},
 		{
 			"id": "a021",
-			"file": "ready/a021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"file": "done/audits/a021-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
@@ -40,10 +40,10 @@
 		},
 		{
 			"id": "a022",
-			"file": "ready/a022-21-06-2026-copilot-minimax-m3-repositorio.md",
+			"file": "done/audits/a022-21-06-2026-copilot-minimax-m3-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
@@ -53,10 +53,10 @@
 		},
 		{
 			"id": "a023",
-			"file": "ready/a023-21-06-2026-copilot-gpt-5-4-repositorio.md",
+			"file": "done/audits/a023-21-06-2026-copilot-gpt-5-4-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
@@ -66,10 +66,10 @@
 		},
 		{
 			"id": "a024",
-			"file": "ready/a024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
+			"file": "done/audits/a024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
 			"track": "metrics+plugins+workflow",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
@@ -80,10 +80,10 @@
 		},
 		{
 			"id": "a025",
-			"file": "ready/a025-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
+			"file": "done/audits/a025-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
@@ -269,6 +269,19 @@
 					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
 					"{ agent: implementation_runner, task: 's2: re-classify f99..l113 by real kind + move into done/feats|fixes/' }",
 					"{ agent: implementation_runner, task: 's3: move f113..f118 into done/feats/ + create done/README.md documenting the convention' }"
+				]
+			}
+		},
+		{
+			"id": "a026",
+			"file": "ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian, task: 'S1: Execute audit and document findings' }"
 				]
 			}
 		}
