@@ -59,7 +59,9 @@ Esto causa tres problemas:
 - [ ] `bun run validate` (typecheck + lint + tests) verde. No se modifica ningún test ni ningún comportamiento observable de los tools; el cambio es puramente cosmético + de ordenación.
 - [ ] El campo `cascadePriority` del workflow (`f` < `p`) se mantiene — el padding no afecta a la cascada.
 
-## Scope (lo que SÍ toca)
+## Why this design
+
+(what this proposal touches — the scope)
 
 1. **22 archivos `.md` bajo `docs/proposals/`** (frontmatter `id:` + nombre de archivo). Solo frontmatter y filename; **NO** se reescribe el cuerpo.
 2. **`docs/proposals/index.json`** regenerado vía `mcp-vertex.proposals.sync_proposals` después de los renames.
@@ -145,7 +147,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 - **f00022 (IDE extension) tiene `reservedFiles: [..., docs/proposals/done/feats/]`.** Eso podría colisionar con los archivos que f00023 va a renombrar en `done/feats/`. Resolución: s2 lee el `reservedFiles` de f00022 antes de hacer `git mv` y aborta si encuentra conflicto (en la práctica, f00022 aún no está implementado, así que el riesgo es bajo — pero s2 lo verifica).
 - **Agents paralelos en worktrees**: cada slice corre en su propio `agent/<name>` worktree. La sincronización final se hace en `develop` cuando los 4 PRs mergen. `bun run sync_proposals` se ejecuta en `develop` después del merge para regenerar el `index.json` global.
 
-## Migration safety net
+### Migration safety net
 
 Si la migración sale mal, el rollback es:
 

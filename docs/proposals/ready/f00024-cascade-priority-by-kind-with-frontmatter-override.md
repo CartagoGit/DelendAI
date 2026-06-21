@@ -68,7 +68,11 @@ Esto está **roto contra el catálogo real**:
 - [ ] `bun run validate` (typecheck + lint + tests) verde. Se añaden ≥ 8 tests nuevos (uno por cada kind activo + override + default).
 - [ ] El test del cascade priority es **puro** (no toca disco, no lee el `index.json`): inyecta el resolver y prueba con proposals sintéticos.
 
-## Orden por defecto
+## why this design
+
+Las decisiones de schema, estructura y orden viven en esta sección, desglosadas en subsecciones.
+
+### Orden por defecto
 
 El orden codifica dos principios: **(1) los fixes de bugs son lo más urgente** (rompen a usuarios), **(2) los breaking changes deben salir antes que los features nuevos** (porque rompen a integradores). El bump semver es el proxy de severidad que ya usa Conventional Commits.
 
@@ -103,7 +107,7 @@ Un boost NO cambia la prioridad absoluta del proposal; solo lo mueve al **frente
 
 **Por qué un boost no salta inter-kind**: la regla "`x` antes que `f`" es un invariante de seguridad del cascade (un fix no puede quedar atrapado detrás de un feat). Si un `f*` con boost saltara por encima de un `x*`, reintroduciríamos el bug que arregla esta propuesta. Si necesitas que un `f*` corra antes que un `x*`, usa `cascadeOverride: -1` con su reason — eso es un break-glass, no un atajo.
 
-## Decisión de schema (kind, override, boost)
+### Decisión de schema (kind, override, boost)
 
 `get_proposal_workflow` actualmente devuelve:
 
@@ -137,7 +141,7 @@ Un boost NO cambia la prioridad absoluta del proposal; solo lo mueve al **frente
 
 **Recomendación**: opción A por ahora (KISS). Si en el futuro hace falta overrides dinámicos, se migra a B sin breaking change (campo adicional). La propuesta elige **A**.
 
-## Estructura SOLID propuesta
+### Estructura SOLID propuesta
 
 El código actual es un módulo con una función `buildProposalWorkflow` que devuelve un objeto literal. Para aplicar SOLID, se descompone así:
 

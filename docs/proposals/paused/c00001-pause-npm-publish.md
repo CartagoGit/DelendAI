@@ -57,6 +57,12 @@ waits for is the user's inputs.
   (`.github/workflows/rotate-npm-token.yml`) opens an issue every ~90 days.
 - ✅ `docs/NPM_PUBLISH.md` updated to 10 packages with the post-Nov-2025
   Granular token recipe and Bypass 2FA note.
+- ✅ `docs/proposals/paused/c00001-pause-npm-publish.md` exists with
+  `status: paused`.
+- ✅ `docs/NPM_PUBLISH.md` still points here from the master audit.
+- ✅ The master audit's `npm publish` checkbox stays `- [ ]` but now
+  references `paused/c00001` as the explanation, not `NPM_PUBLISH.md`
+  alone.
 
 ## Slices
 
@@ -74,14 +80,6 @@ Move `paused/c00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
 
 At that point the slice is literally `git checkout main && git merge develop
 && git push` and the `release.yml` workflow takes over end-to-end.
-
-## Acceptance evidence (checklist)
-
-- [x] `docs/proposals/paused/c00001-pause-npm-publish.md` exists with this
-  frontmatter (`status: paused`).
-- [x] `docs/NPM_PUBLISH.md` still points here from the master audit.
-- [x] The master audit's `npm publish` checkbox stays `- [ ]` but now
-  references `paused/c00001` as the explanation, not `NPM_PUBLISH.md` alone.
 
 ## notes
 

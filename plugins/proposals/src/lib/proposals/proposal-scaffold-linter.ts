@@ -270,13 +270,20 @@ const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
 	'acceptance (global)': 'acceptance',
 	'acceptance criteria': 'acceptance',
 	'acceptance checklist': 'non-goals',
+	'acceptance evidence': 'non-goals',
+	'acceptance evidence (checklist)': 'non-goals',
+	'decisión de schema (kind, override, boost)': 'why this design',
 	'contract change': 'why this design',
 	'hard rules (cannot be broken)': 'non-goals',
 	'the honest constraint': 'why this design',
 	'decisión de schema': 'why this design',
 	'notes (cross-references)': 'non-goals',
 	'renumbering plan': 'notes',
+	'migration safety net': 'notes',
 	risks: 'risks and mitigations',
+	'coordination notes': 'notes',
+	'coordination with f119': 'notes',
+	'estructura solid propuesta': 'why this design',
 	// === Audit-narrative emoji sections (recognised as "notes" since they
 	//     are post-hoc commentary, not part of the proposal's plan) ===
 	'📊 resumen ejecutivo': 'notes',
@@ -341,17 +348,38 @@ interface IHeadingMatch {
  * as real document structure.
  */
 const computeFencedLineMask = (lines: readonly string[]): boolean[] => {
+	// A CommonMark fenced code block opens with a run of ≥3 backticks
+	// (optionally followed by an info string) on a line by itself, and
+	// closes with a run of backticks at least as long as the opener.
+	// A fence of 4+ backticks lets authors embed 3-backtick spans
+	// inside (e.g. an example that documents code itself). The previous
+	// implementation only matched exactly 3 backticks and toggled the
+	// state on every match, so a 4-backtick block counted as two
+	// open/close pairs and the rest of the file was treated as
+	// "inside" — which is why headings like `## acceptance` got
+	// missed.
 	const mask: boolean[] = [];
-	let inFence = false;
+	let fenceRun = 0; // length of the open fence, 0 when outside any
 	for (const line of lines) {
-		if (/^```/.test(line.trim())) {
-			// The fence delimiter line itself counts as "inside" too, so a
-			// heading-shaped fence marker line is never mistaken for one.
-			mask.push(true);
-			inFence = !inFence;
+		const trimmed = line.trim();
+		const m = /^(```+)(.*)$/.exec(trimmed);
+		if (m) {
+			const run = m[1]?.length ?? 0;
+			if (fenceRun === 0) {
+				// Opening fence.
+				fenceRun = run;
+				mask.push(true); // the delimiter line itself is "inside"
+			} else if (run >= fenceRun && (m[2] ?? '').trim() === '') {
+				// Closing fence: at least as many backticks, no info string.
+				fenceRun = 0;
+				mask.push(true);
+			} else {
+				// Looks like a fence but doesn't close — treat as content.
+				mask.push(fenceRun > 0);
+			}
 			continue;
 		}
-		mask.push(inFence);
+		mask.push(fenceRun > 0);
 	}
 	return mask;
 };
