@@ -82,9 +82,9 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 
 ## Slices
 
-### S1 — Skill `mcp-vertex-proposals-workflow`
-- **Files**: `skills/mcp-vertex-proposals-workflow/SKILL.md` (nuevo),
-  `skills/mcp-vertex-proposals-workflow/manifest.json` (nuevo, con
+### S1 — Skill `proposals-workflow-playbook`
+- **Files**: `skills/proposals-workflow-playbook/SKILL.md` (nuevo),
+  `skills/manifest.json` (actualizado, con
   `appliesTo: ['@mcp-vertex/proposals']` y `priority: 'high'` para que
   el host pueda resolverlo sin grep).
 - **Status**: done
@@ -108,9 +108,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 
 S1 landed using the current repo-wide skill manifest contract from
 `f00029`: `skills/manifest.json` is the single versioned index, so no
-per-skill `manifest.json` was added. The new skill intentionally aliases
-the existing `proposal-swarm-runner` playbook with a shorter compact
-entrypoint matching the proposal name.
+per-skill `manifest.json` was added. The skill is named
+`proposals-workflow-playbook` to follow the existing playbook naming
+pattern (`state-repair-playbook`, `token-budget-playbook`) and
+intentionally aliases the existing `proposal-swarm-runner` playbook with
+a shorter compact entrypoint.
 
 ### S2 — Skill `mcp-vertex-multi-agent-coordination`
 - **Files**: `skills/mcp-vertex-multi-agent-coordination/SKILL.md` (nuevo).
