@@ -30,4 +30,15 @@ export const vi = {
 	kpiAgents: 'Tac nhan',
 	refreshDashboard: 'Lam moi bang dieu khien',
 	docsUrlRejected: 'mcp-vertex: URL tai lieu bi tu choi',
+	openKnowledge: 'mcp-vertex: Mo bo duyet tri thuc',
+	toolSearch: 'mcp-vertex: Tim cong cu',
+	restartServer: 'mcp-vertex: Khoi dong lai may chu MCP',
+	tabHealth: 'Suc khoe',
+	healthHealthy: 'Khoe manh',
+	healthDegraded: 'Suy giam',
+	healthLocks: 'Khoa',
+	healthStale: 'Tac nhan khong hoat dong',
+	healthQueue: 'Hang doi',
+	serverRestartHint:
+		'mcp-vertex: vui long khoi dong lai tien ich de khoi dong lai may chu MCP.',
 } satisfies IExtensionTranslations;

@@ -46,6 +46,17 @@ export interface IExtensionTranslations {
 	readonly kpiAgents: string;
 	readonly refreshDashboard: string;
 	readonly docsUrlRejected: string;
+	// f126 — Knowledge navigator, Health panel, Connection health
+	readonly openKnowledge: string;
+	readonly toolSearch: string;
+	readonly restartServer: string;
+	readonly tabHealth: string;
+	readonly healthHealthy: string;
+	readonly healthDegraded: string;
+	readonly healthLocks: string;
+	readonly healthStale: string;
+	readonly healthQueue: string;
+	readonly serverRestartHint: string;
 }
 
 export type IExtensionDictionary = Record<Lang, IExtensionTranslations>;

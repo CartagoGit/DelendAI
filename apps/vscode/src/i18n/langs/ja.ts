@@ -30,4 +30,15 @@ export const ja = {
 	kpiAgents: 'Agents',
 	refreshDashboard: 'Refresh dashboard',
 	docsUrlRejected: 'mcp-vertex: docs URL rejected',
+	openKnowledge: 'mcp-vertex: Open Knowledge Navigator',
+	toolSearch: 'mcp-vertex: Search Tools',
+	restartServer: 'mcp-vertex: Restart MCP Server',
+	tabHealth: 'Health',
+	healthHealthy: 'Healthy',
+	healthDegraded: 'Degraded',
+	healthLocks: 'Locks',
+	healthStale: 'Stale agents',
+	healthQueue: 'Queue',
+	serverRestartHint:
+		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
 } satisfies IExtensionTranslations;

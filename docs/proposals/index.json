@@ -228,6 +228,27 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00034",
+			"file": "ready/f00034-cli-mcp-vertex-single-binary-local-and-remote.md",
+			"track": "core+cli+client+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"related": ["f00031", "f00032", "a00022", "l00008"],
+				"reservedFiles": [
+					"packages/cli/",
+					"packages/cli/package.json",
+					"packages/cli/tsconfig.json",
+					"packages/cli/vitest.config.ts",
+					"packages/cli/src/",
+					"packages/cli/tests/",
+					"packages/cli/README.md",
+					"packages/core/package.json"
+				]
+			}
+		},
+		{
 			"id": "c00001",
 			"file": "paused/c00001-pause-npm-publish.md",
 			"track": "docs+release",
