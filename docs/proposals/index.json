@@ -17,10 +17,10 @@
 		},
 		{
 			"id": "f00019",
-			"file": "ready/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
+			"file": "done/feats/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
 			"track": "notification-plugin",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
