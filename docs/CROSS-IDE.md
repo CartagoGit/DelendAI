@@ -11,6 +11,23 @@ imports leak into the server. Only the IDE host knows about its own
 runtime (e.g. `com.intellij.openapi.*`, `zed_extension_api`,
 `vscode.*`).
 
+## Console Access
+
+`@mcp-vertex/cli` provides the same inspection surface without an IDE:
+`mcp-vertex` and `mcpv` both point at `packages/cli/dist/index.js`.
+Use it for CI, terminal audits, and hosts that need a quick smoke test before
+building native UI:
+
+```bash
+bun run cli -- overview --json
+bun run cli -- plugin list --plugins=docs,search
+bun run cli -- docs list --max=10
+```
+
+The CLI still talks to the MCP server over the public client transport; it does
+not import IDE adapters or plugin internals. See
+[`packages/cli/README.md`](../packages/cli/README.md) for command details.
+
 ## What you get for free
 
 Implement `IHostAdapter` once and you automatically get:

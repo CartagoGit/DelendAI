@@ -26,6 +26,7 @@
 		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts",
+		"lint:cli-imports": "bun tools/scripts/lint/no-internal-core-imports.script.ts",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
 		"lint:scss": "stylelint \"apps/web/src/**/*.scss\"",
 		"lint:scss:fix": "stylelint --fix \"apps/web/src/**/*.scss\"",
