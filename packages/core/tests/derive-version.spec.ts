@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 // Auto-version derivation lives at the repo root (scripts/). Its pure helpers
 // are unit-tested + typechecked alongside the monorepo, like release-plan.
-import { applyBump, classifyBump } from '../../../scripts/derive-version';
+import {
+	applyBump,
+	classifyBump,
+} from '../../../tools/scripts/release/derive-version.script';
 
 describe('classifyBump (Conventional Commits → bump)', () => {
 	it('feat → minor', () => {

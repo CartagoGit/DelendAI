@@ -112,7 +112,7 @@ by:
 - [ ] `ISkillBundle` is in the public surface.
 - [ ] Master audit line 281 is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — Skill bodies drift from the code they reference**: each new
   skill's "worked example" must cite a file/line that exists at the
@@ -124,7 +124,7 @@ by:
   is rejected). DNS-rebinding and IPv6 bypass are out of scope and
   documented as host-level concerns in the plugin README.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 281).
 - Existing skills: `skills/mcp-vertex-plugin-authoring/SKILL.md`,

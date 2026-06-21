@@ -82,7 +82,7 @@ At that point the slice is literally `git checkout main && git merge develop
 - [x] The master audit's `npm publish` checkbox stays `- [ ]` but now
   references `paused/c00001` as the explanation, not `NPM_PUBLISH.md` alone.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (lines 282, 297, 363).
 - Operational guide: `docs/NPM_PUBLISH.md`.

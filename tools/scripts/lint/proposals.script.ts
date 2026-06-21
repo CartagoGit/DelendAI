@@ -22,7 +22,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { lintProposalMarkdown } from '../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
+import { lintProposalMarkdown } from '../../../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
 
 // Loose on purpose, same reasoning as PROPOSAL_FILENAME below: l99 (2
 // digits) must classify as "legacy warning", not "fatal error". `l` is

@@ -92,7 +92,7 @@ single tool).
 - [ ] The job summary is a markdown table readable from the PR UI.
 - [ ] Master audit line 565 is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — First run has no baseline (the very first release with this
   gate)**: S1's "fail gracefully if the tag doesn't exist yet" path
@@ -106,7 +106,7 @@ single tool).
   GitHub Actions runners have internet; the script uses the built-in
   `fetch` with a 5 s timeout. No new dependency.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 565).
 - M12 / M29 foundations: same audit §7 "P3 — Plataforma de referencia".

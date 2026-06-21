@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 // Root-level script, tested alongside the monorepo per the
 // derive-version.spec.ts / release-plan.spec.ts convention.
-import { lintProposalsDir } from '../../../scripts/lint-proposals';
+import { lintProposalsDir } from '../../../tools/scripts/lint/proposals.script';
 
 const write = async (
 	root: string,

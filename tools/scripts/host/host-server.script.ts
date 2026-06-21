@@ -18,7 +18,7 @@ import {
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
-import { buildRenameAuditToolRegistration } from './host/rename-audit-tool';
+import { buildRenameAuditToolRegistration } from './rename-audit-tool';
 
 const run = async (): Promise<void> => {
 	const cwd = process.cwd();

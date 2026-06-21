@@ -8,7 +8,7 @@ import {
 	computeReleasePlan,
 	nextVersion,
 	type IReleasePkg,
-} from '../../../scripts/release-plan';
+} from '../../../tools/scripts/release/release-plan';
 
 describe('nextVersion (N23 release tooling)', () => {
 	it('bumps patch/minor/major and resets lower components', () => {

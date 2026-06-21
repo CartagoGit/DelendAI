@@ -104,14 +104,14 @@ properly navigable **documentation surface**:
       the proposal that closed each one.
 - [ ] Master audit line 543 is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — 816 new pages blow up the build time**: profile S1 first; if
   build > 90s, split by language (one build job per locale in CI).
 - **R2 — Pagefind asset size**: cap the index to ≤ 1 MB by excluding
   `dist/pagefind/*.json` from the lighthouse check; not a build failure.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 543).
 - W3 requirements: same audit §7-bis (live annotations).
