@@ -203,7 +203,7 @@ all receive new numbers based on the chronological table in §3.5.
 - global_gate: none
 
 ### S1 — Renumber and rename the 20 closed audit documents to a1-a20 by chronological creation order
-- **Status**: pending
+- **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
@@ -229,7 +229,7 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md
 
 ### S2 — Move l99-l113 (legacy-prefixed closed proposals) into their real-kind sub-folders
-- **Status**: pending
+- **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
@@ -250,7 +250,7 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/l113-fix-audit-types.md
 
 ### S3 — Move the remaining f113-f118 closed feats and create the sub-folder convention doc
-- **Status**: pending
+- **Status**: done
 - **Files**: see files list below
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
