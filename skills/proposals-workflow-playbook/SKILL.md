@@ -1,9 +1,9 @@
 ---
-name: mcp-vertex-proposals-workflow
+name: proposals-workflow-playbook
 description: Canonical compact workflow for agents working through the proposals plugin: orient, select work, claim files, implement, validate, close, and sync without polling or hand-editing generated state.
 ---
 
-# mcp-vertex proposals workflow
+# proposals workflow playbook
 
 Use this when a session needs to advance proposal work through MCP tools.
 It is the compact entrypoint; `proposal-swarm-runner` has the longer

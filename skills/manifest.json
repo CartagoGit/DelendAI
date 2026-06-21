@@ -31,10 +31,10 @@
 			"tags": ["proposals", "swarm", "multi-agent"]
 		},
 		{
-			"id": "mcp-vertex-proposals-workflow",
+			"id": "proposals-workflow-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-proposals-workflow/SKILL.md",
+			"bodyPath": "skills/proposals-workflow-playbook/SKILL.md",
 			"tags": ["proposals", "workflow", "compact"]
 		},
 		{
