@@ -75,7 +75,7 @@ Move `paused/c00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
 At that point the slice is literally `git checkout main && git merge develop
 && git push` and the `release.yml` workflow takes over end-to-end.
 
-## Acceptance checklist
+## Acceptance evidence (checklist)
 
 - [x] `docs/proposals/paused/c00001-pause-npm-publish.md` exists with this
   frontmatter (`status: paused`).
