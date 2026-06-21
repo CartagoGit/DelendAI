@@ -5,7 +5,7 @@ type: proposal
 track: apps+monorepo+docs
 date: 2026-06-21
 kind: feat
-title: Rename IDE shell + relocate extensions — apps/ide → packages/ui-extension, apps/vscode → extensions/vscode, app name → ui-extension / extension-vscode
+title: Rename IDE shell + relocate extensions — apps/ide → packages/ui-extension, extensions/vscode → extensions/vscode, app name → ui-extension / extension-vscode
 shipped-in:
     - '5cc6536:feat(monorepo): wire @mcp-vertex/ui-extension tsconfig + vitest paths (S2)'
     - 'b38768c:chore(monorepo): add extensions/* to bun workspaces + retarget root scripts (S4)'
@@ -13,18 +13,18 @@ shipped-in:
     - 'b7813ab:chore(tools): retarget dev script + monorepo-paths to extensions/vscode + packages/ui-extension (S6)'
     - 'e47eb64:docs: update CROSS-IDE + IDE-EXTENSION + AGENTS to new ui-extension / extensions paths (S7)'
     - '54ccb4b:feat!: publish packages/ui-extension@1.0.0 + extensions/vscode@1.0.0 with rename CHANGELOG (S8)'
-    - '7383b85:fix(extensions/vscode): correct sync-logo.ts paths after apps/vscode → extensions/vscode move'
-shipped-via: parallel + orchestrator. S1 (apps/ide → packages/ui-extension) and S3 (apps/vscode → extensions/vscode) were committed by parallel agents before the orchestrator reached them; verified via `git log --follow`. S2, S4-S8 + fixup authored by `mcp-vertex-orchestrator`.
+    - '7383b85:fix(extensions/vscode): correct sync-logo.ts paths after extensions/vscode → extensions/vscode move'
+shipped-via: parallel + orchestrator. S1 (apps/ide → packages/ui-extension) and S3 (extensions/vscode → extensions/vscode) were committed by parallel agents before the orchestrator reached them; verified via `git log --follow`. S2, S4-S8 + fixup authored by `mcp-vertex-orchestrator`.
 reservedFiles:
     - apps/ide/
     - apps/ide/package.json
     - apps/ide/src/
     - apps/ide/tests/
-    - apps/vscode/
-    - apps/vscode/package.json
-    - apps/vscode/src/
-    - apps/vscode/media/
-    - apps/vscode/scripts/
+    - extensions/vscode/
+    - extensions/vscode/package.json
+    - extensions/vscode/src/
+    - extensions/vscode/media/
+    - extensions/vscode/scripts/
     - tsconfig.base.json
     - tsconfig.json
     - vitest.config.ts
@@ -37,7 +37,7 @@ reservedFiles:
     - tools/scripts/lib/monorepo-paths.ts
     - tools/scripts/lib/monorepo-paths.spec.ts
 related:
-    - f00022 # IDE extension v2 — defined apps/ide and apps/vscode with their current names; this proposal supersedes that naming
+    - f00022 # IDE extension v2 — defined apps/ide and extensions/vscode with their current names; this proposal supersedes that naming
     - f00034 # CLI mcp-vertex single binary — its `packages/cli/` move is the precedent for non-app workspace packages
     - f00014 # original IDE extension vscode and friends
 ownership:
@@ -51,7 +51,7 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S3: git mv apps/vscode → extensions/vscode + rename package.json name "mcp-vertex-vscode" → "@mcp-vertex/extension-vscode"',
+          task: 'S3: git mv extensions/vscode → extensions/vscode + rename package.json name "mcp-vertex-vscode" → "@mcp-vertex/extension-vscode"',
       }
     - {
           agent: implementation_runner,
@@ -63,7 +63,7 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S6: update tools/scripts/lib/monorepo-paths.ts WELL_KNOWN map (extensions/vscode instead of apps/vscode) + corresponding spec',
+          task: 'S6: update tools/scripts/lib/monorepo-paths.ts WELL_KNOWN map (extensions/vscode instead of extensions/vscode) + corresponding spec',
       }
     - {
           agent: implementation_runner,
@@ -102,12 +102,12 @@ sin cambiar comportamiento ni romper consumidores externos:
    que es una extensión en sí misma.
 2. **`apps/ide` está en la carpeta equivocada**. `apps/` está
    reservada para aplicaciones con un entrypoint publicable (hoy
-   `apps/web` es Astro, `apps/vscode` produce un `.vsix`). `apps/ide`
+   `apps/web` es Astro, `extensions/vscode` produce un `.vsix`). `apps/ide`
    no es ninguna de las dos cosas: es una librería reusable sin
    binario, sin servidor y sin proceso. Debe vivir en **`packages/`**
    junto a `packages/core` y `packages/client`. Mover a
    **`packages/ui-extension/`** (reflejando el rename de S1).
-3. **Las extensiones no son "apps" ordinarias**. `apps/vscode` convive
+3. **Las extensiones no son "apps" ordinarias**. `extensions/vscode` convive
    con `apps/web` pero pertenecen a categorías distintas: la web es un
    sitio estático, la extensión VS Code es un binario instalable. Crear
    **`extensions/`** como categoría propia deja libre `apps/` para
@@ -123,7 +123,7 @@ packages/
 └── ui-extension/        # ← antes apps/ide — librería reusable, sin entrypoint
 
 extensions/
-├── vscode/              # ← antes apps/vscode — produce .vsix
+├── vscode/              # ← antes extensions/vscode — produce .vsix
 ├── jetbrains/           # (futuro, se crea cuando se implemente)
 └── zed/                 # (futuro, se crea cuando se implemente)
 
@@ -139,7 +139,7 @@ componen; el segundo es la instancia concreta para VS Code.
 
 ### Evidencia de la confusión de naming
 
-Sesión 2026-06-21: al presentar `apps/ide` y `apps/vscode` al usuario,
+Sesión 2026-06-21: al presentar `apps/ide` y `extensions/vscode` al usuario,
 su primera lectura fue "ide es la extensión, vscode es una extensión
 para él". Esa lectura es incorrecta pero **es la lectura natural**
 del nombre actual. Renombrar elimina la ambigüedad sin tener que
@@ -196,14 +196,14 @@ cinco reglas no negociables:
 5. **`@mcp-vertex/ide` queda como alias deprecated durante 1 minor.**
    El nuevo paquete publica `exports['./legacy']` que apunta al
    barrel antiguo durante un ciclo de release, con un warning a
-   consola si se importa desde `apps/vscode` u otros consumers.
+   consola si se importa desde `extensions/vscode` u otros consumers.
    Esto permite revertir sin romper a quien ya integró.
 
 ## non-goals
 
 - **No tocar `packages/core`, `packages/client`, `plugins/*`,
   `apps/web`, `examples/*`.** Esta propuesta solo mueve `apps/ide`
-  y `apps/vscode` y renombra sus paquetes. Cualquier reorganización
+  y `extensions/vscode` y renombra sus paquetes. Cualquier reorganización
   mayor queda fuera de scope.
 - **No añadir `extensions/jetbrains` ni `extensions/zed`.** Solo se
   crea la carpeta vacía con un `.gitkeep` para reservar el nombre.
@@ -268,13 +268,13 @@ cinco reglas no negociables:
   - "`bun run typecheck` exit 0."
 - **Gate**: `bun run typecheck` (expect exit0)
 
-### S3 — `apps/vscode/` → `extensions/vscode/` + rename package
+### S3 — `extensions/vscode/` → `extensions/vscode/` + rename package
 
 - **Status**: pending
 - **Files**:
-  - `apps/vscode/`
+  - `extensions/vscode/`
   - `extensions/vscode/package.json`
-- `git mv apps/vscode extensions/vscode` (preserva historial)
+- `git mv extensions/vscode extensions/vscode` (preserva historial)
 - En `extensions/vscode/package.json`:
   - `name`: `mcp-vertex-vscode` → `@mcp-vertex/extension-vscode`
   - `description`: actualizar para reflejar "instancia concreta del
@@ -299,15 +299,15 @@ cinco reglas no negociables:
       "examples/*"
   ]
   ```
-- Scripts a actualizar (referencias a `apps/vscode` y `apps/ide`):
-  - `lint:ide`: `cd apps/vscode` → `cd extensions/vscode`
+- Scripts a actualizar (referencias a `extensions/vscode` y `apps/ide`):
+  - `lint:ide`: `cd extensions/vscode` → `cd extensions/vscode`
   - `check:i18n:ide`: idem
   - `lint:brand`: idem
   - `sync:logo`: idem
   - `lint:cross-ide`: `apps/ide` → `packages/ui-extension`
-  - `package`: `cd apps/vscode` → `cd extensions/vscode`
+  - `package`: `cd extensions/vscode` → `cd extensions/vscode`
 - **Acceptance**:
-  - "`grep -n 'apps/vscode\\|apps/ide' package.json` no devuelve
+  - "`grep -n 'extensions/vscode\\|apps/ide' package.json` no devuelve
     resultados."
   - "`bun install` regenera `bun.lock` con los nuevos paths."
 - **Gate**: `bun install` (expect exit0)
@@ -318,7 +318,7 @@ cinco reglas no negociables:
 - **Files**:
   - `extensions/vscode/src/`
 
-- [`extensions/vscode/src/extension.ts`](apps/vscode/src/extension.ts)
+- [`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts)
   y todo el árbol `src/` — reemplazar imports relativos y aliases:
   - `from '@mcp-vertex/ide'` → `from '@mcp-vertex/ui-extension'`
   - `from '@mcp-vertex/ide/public'` → `from '@mcp-vertex/ui-extension/public'`
@@ -339,14 +339,14 @@ cinco reglas no negociables:
 - [`tools/scripts/dev/dev.script.ts`](tools/scripts/dev/dev.script.ts):
   - `root: join(ROOT, 'apps/ide')` → `join(ROOT, 'packages/ui-extension')`
   - `title: 'apps/ide — dashboard preview'` → `'packages/ui-extension — dashboard preview'`
-  - `root: join(ROOT, 'apps/vscode')` → `join(ROOT, 'extensions/vscode')`
-  - `title: 'apps/vscode — webviews preview'` → `'extensions/vscode — webviews preview'`
+  - `root: join(ROOT, 'extensions/vscode')` → `join(ROOT, 'extensions/vscode')`
+  - `title: 'extensions/vscode — webviews preview'` → `'extensions/vscode — webviews preview'`
   - Mensaje de error: `'apps/ide/src/dev/entry.ts'` →
     `'packages/ui-extension/src/dev/entry.ts'`
 - [`tools/scripts/lib/monorepo-paths.ts`](tools/scripts/lib/monorepo-paths.ts):
-  - `WELL_KNOWN.vscode()`: `${repoRoot()}/build/apps/vscode` →
+  - `WELL_KNOWN.vscode()`: `${repoRoot()}/build/extensions/vscode` →
     `${repoRoot()}/build/extensions/vscode`
-  - Doc comments que mencionan `apps/vscode/<version>` →
+  - Doc comments que mencionan `extensions/vscode/<version>` →
     `extensions/vscode/<version>`
 - [`tools/scripts/lib/monorepo-paths.spec.ts`](tools/scripts/lib/monorepo-paths.spec.ts):
   - Actualizar asserts con los nuevos paths
@@ -367,10 +367,10 @@ cinco reglas no negociables:
 - [`docs/CROSS-IDE.md`](docs/CROSS-IDE.md):
   - `apps/ide/src/host-adapter.types.ts` →
     `packages/ui-extension/src/host-adapter.types.ts`
-  - `apps/vscode/package.json` → `extensions/vscode/package.json`
-  - `apps/vscode/src/host/vscode-host-adapter.ts` →
+  - `extensions/vscode/package.json` → `extensions/vscode/package.json`
+  - `extensions/vscode/src/host/vscode-host-adapter.ts` →
     `extensions/vscode/src/host/vscode-host-adapter.ts`
-  - `apps/vscode/src/i18n/` → `extensions/vscode/src/i18n/`
+  - `extensions/vscode/src/i18n/` → `extensions/vscode/src/i18n/`
   - `apps/ide/tests/host-adapter.types.spec.ts` →
     `packages/ui-extension/tests/host-adapter.types.spec.ts`
   - `bun run lint:cross-ide` (texto): `apps/ide` →
@@ -378,16 +378,16 @@ cinco reglas no negociables:
   - `@mcp-vertex/ide` → `@mcp-vertex/ui-extension` en toda la prosa
 - [`docs/IDE-EXTENSION.md`](docs/IDE-EXTENSION.md):
   - Diagrama ASCII: `@mcp-vertex/ide` → `@mcp-vertex/ui-extension`,
-    `apps/vscode` → `extensions/vscode`
-  - Sección "Brand assets": `apps/vscode/media/...` →
+    `extensions/vscode` → `extensions/vscode`
+  - Sección "Brand assets": `extensions/vscode/media/...` →
     `extensions/vscode/media/...`
-  - Sección "Development": `apps/vscode` → `extensions/vscode`
+  - Sección "Development": `extensions/vscode` → `extensions/vscode`
   - Sección "Troubleshooting": idem
 - [`AGENTS.md`](AGENTS.md):
   - Sección "What this repo is": enumerar `packages/ui-extension` y
-    `extensions/vscode` en lugar de `apps/ide` y `apps/vscode`
+    `extensions/vscode` en lugar de `apps/ide` y `extensions/vscode`
 - **Acceptance**:
-  - "`grep -rn 'apps/ide\\|apps/vscode' docs/` solo devuelve el
+  - "`grep -rn 'apps/ide\\|extensions/vscode' docs/` solo devuelve el
     historial en `docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md`
     (que es una feat histórica; se acepta como referencia inmutable)."
   - "`bun run lint:proposals` exit 0."
@@ -414,7 +414,7 @@ cinco reglas no negociables:
     el nombre del package y su ubicación (`apps/ide` →
     `packages/ui-extension`).
   - `mcp-vertex-vscode` renombrado a `@mcp-vertex/extension-vscode`.
-    Sin cambios funcionales; nueva ubicación (`apps/vscode` →
+    Sin cambios funcionales; nueva ubicación (`extensions/vscode` →
     `extensions/vscode`).
   - Los workspaces de Bun ahora incluyen `extensions/*` además de
     `apps/*`.
@@ -463,7 +463,7 @@ más allá de los gates individuales de cada slice:
   la versión de Bun del repo es anterior hay que actualizar.
   **Mitigación**: S4 valida con `bun install` + `bun run validate`
   antes de seguir con S5+.
-- **R3 — `git mv` falla porque `apps/ide/` o `apps/vscode/` tienen
+- **R3 — `git mv` falla porque `apps/ide/` o `extensions/vscode/` tienen
   cambios sin commitear**. **Mitigación**: S0 (fuera de scope, pero
   prerrequisito) — `git status --porcelain` limpio antes de empezar.
 - **R4 — Algún consumer externo (downstream) importa
@@ -478,19 +478,19 @@ más allá de los gates individuales de cada slice:
 | Antes | Después |
 |---|---|
 | `apps/ide/` | `packages/ui-extension/` |
-| `apps/vscode/` | `extensions/vscode/` |
+| `extensions/vscode/` | `extensions/vscode/` |
 | `@mcp-vertex/ide` (package) | `@mcp-vertex/ui-extension` (package) |
 | `mcp-vertex-vscode` (package) | `@mcp-vertex/extension-vscode` (package) |
 | `@mcp-vertex/ide` (alias TS) | `@mcp-vertex/ui-extension` (alias TS) |
 | `@mcp-vertex/ide/*` (alias TS) | `@mcp-vertex/ui-extension/*` (alias TS) |
 | `@mcp-vertex/ide/public` (alias TS) | `@mcp-vertex/ui-extension/public` (alias TS) |
 | `apps/ide` (root scripts) | `packages/ui-extension` (root scripts) |
-| `apps/vscode` (root scripts) | `extensions/vscode` (root scripts) |
-| `apps/vscode` (vitest project) | `extensions/vscode` (vitest project) |
-| `apps/vscode/media/...` (docs) | `extensions/vscode/media/...` (docs) |
-| `apps/vscode/src/...` (docs) | `extensions/vscode/src/...` (docs) |
-| `build/apps/vscode` (paths) | `build/extensions/vscode` (paths) |
-| `dist/apps/vscode/<version>` (paths) | `dist/extensions/vscode/<version>` (paths) |
+| `extensions/vscode` (root scripts) | `extensions/vscode` (root scripts) |
+| `extensions/vscode` (vitest project) | `extensions/vscode` (vitest project) |
+| `extensions/vscode/media/...` (docs) | `extensions/vscode/media/...` (docs) |
+| `extensions/vscode/src/...` (docs) | `extensions/vscode/src/...` (docs) |
+| `build/extensions/vscode` (paths) | `build/extensions/vscode` (paths) |
+| `dist/extensions/vscode/<version>` (paths) | `dist/extensions/vscode/<version>` (paths) |
 
 ### Cross-references
 

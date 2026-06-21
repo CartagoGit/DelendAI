@@ -20,7 +20,7 @@ acceptance:
 
 ## Goal
 
-- **Audited Scope**: Monorepo completo — `packages/core`, `packages/client`, `plugins/*`, `apps/web`, `apps/vscode`, `scripts/*` y la capa de propuestas/auditorías bajo `docs/proposals/`.
+- **Audited Scope**: Monorepo completo — `packages/core`, `packages/client`, `plugins/*`, `apps/web`, `extensions/vscode`, `scripts/*` y la capa de propuestas/auditorías bajo `docs/proposals/`.
 - **Audited HEAD**: `01de303dfa0140ea1d8af3ea9ac8b91cc58ffc56` (rama `develop`).
 - **Revisor / Model**: GitHub Copilot (GPT-5.4).
 - **Date**: 2026-06-21.
@@ -75,10 +75,10 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 ### S6 — Raise app-level resilience and UI test coverage
 - **Files**:
   - `apps/web/vitest.config.ts`
-  - `apps/vscode/src/commands/show-overview.ts`
-  - `apps/vscode/src/commands/show-metrics.ts`
-  - `apps/vscode/src/commands/open-proposal.ts`
-  - `apps/vscode/src/commands/run-validation.ts`
+  - `extensions/vscode/src/commands/show-overview.ts`
+  - `extensions/vscode/src/commands/show-metrics.ts`
+  - `extensions/vscode/src/commands/open-proposal.ts`
+  - `extensions/vscode/src/commands/run-validation.ts`
 - **Gate**: `bun run validate`
 - **Status**: pending
 
@@ -95,7 +95,7 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 | Audited HEAD | `git rev-parse HEAD` | `01de303dfa0140ea1d8af3ea9ac8b91cc58ffc56` |
 | Working tree | `git status --porcelain` | árbol concurrente, no limpio |
 | Validation gate | `bun run validate` | **FAIL** en `bun run lint` por 1 error de Biome y 1 drift de formato en `apps/web` |
-| Root test projects | `vitest.config.ts` | incluye `packages/*`, `plugins/*`, `examples/custom-plugin`, `apps/web`; **excluye `apps/vscode`** |
+| Root test projects | `vitest.config.ts` | incluye `packages/*`, `plugins/*`, `examples/custom-plugin`, `apps/web`; **excluye `extensions/vscode`** |
 | Publish smoke scope | `scripts/smoke-pack.ts` | solo prueba `packages/core`, `plugins/proposals`, `plugins/memory` |
 | Web unit test scope | `apps/web/vitest.config.ts` | solo prueba `scripts/__tests__/**/*.spec.ts`; no cubre componentes/páginas Astro |
 | Audit typecheck coverage | `tsconfig.json` + `scripts/build.ts` | `plugins/audit/**/*` excluido del typecheck raíz, pero sí entra en build por descubrimiento |
@@ -106,13 +106,13 @@ El repositorio sigue teniendo una base técnica fuerte: arquitectura núcleo-plu
 | ID | Severity | Description | Files | Resolution Track |
 |---|---|---|---|---|
 | H1 | P0 | El estado auditado no pasa el gate principal: `bun run validate` falla en `bun run lint` por una concatenación no conforme en `Config.astro` y drift de formato en `PluginsSection.astro`. Mientras esto siga así, la rama no cumple la definición de hecho del repo. | [apps/web/src/components/Config.astro](apps/web/src/components/Config.astro), [apps/web/src/components/PluginsSection.astro](apps/web/src/components/PluginsSection.astro) | Resolved in slice `S2` |
-| H2 | P1 | El `vitest.config.ts` raíz ya no incluye `apps/vscode`, así que la validación global deja fuera una app del monorepo. Eso reduce la fiabilidad del gate y permite regresiones en la extensión sin señal en `bun run validate`. | [vitest.config.ts](vitest.config.ts) | Resolved in slice `S3` |
+| H2 | P1 | El `vitest.config.ts` raíz ya no incluye `extensions/vscode`, así que la validación global deja fuera una app del monorepo. Eso reduce la fiabilidad del gate y permite regresiones en la extensión sin señal en `bun run validate`. | [vitest.config.ts](vitest.config.ts) | Resolved in slice `S3` |
 | H3 | P1 | `plugins/audit` está excluido del typecheck raíz, pero `scripts/build.ts` lo descubre y lo construye como paquete publicable. El gate principal no cubre toda la superficie que el monorepo distribuye. | [tsconfig.json](tsconfig.json), [scripts/build.ts](scripts/build.ts), [plugins/audit/vitest.config.ts](plugins/audit/vitest.config.ts) | Resolved in slice `S3` |
 | H4 | P1 | El caché/manifest de `rules` usa `writeFileSync` y `readFileSync` directamente para materializar presets y regenerar el manifest. En un repo explícitamente multiagente, esa persistencia no es tan robusta como las primitivas durables ya disponibles. | [plugins/rules/src/lib/frameworks/manifest.ts](plugins/rules/src/lib/frameworks/manifest.ts) | Resolved in slice `S4` |
 | H5 | P2 | El smoke de empaquetado e instalación desde tarball solo cubre core, proposals y memory. El resto de plugins publicables puede romper exports, peers o `files` sin señal previa en CI. | [scripts/smoke-pack.ts](scripts/smoke-pack.ts) | Resolved in slice `S5` |
 | H6 | P2 | El paquete `@mcp-vertex/audit` omite `LICENSE` en `files`, a diferencia del resto de plugins revisados. Eso degrada el artefacto publicado aunque no rompa el runtime. | [plugins/audit/package.json](plugins/audit/package.json) | Resolved in slice `S5` |
 | H7 | P2 | La web solo prueba scripts utilitarios; no hay cobertura Vitest para componentes ni páginas Astro. Hoy el build detecta parte de las roturas, pero no asegura comportamiento ni render de la UI. | [apps/web/vitest.config.ts](apps/web/vitest.config.ts) | Resolved in slice `S6` |
-| H8 | P2 | Varios comandos de la extensión VS Code invocan el cliente MCP sin `try/catch` ni feedback de error al usuario. Ante fallos de transporte o respuesta, el comando puede abortar sin diagnóstico visible. | [apps/vscode/src/commands/show-overview.ts](apps/vscode/src/commands/show-overview.ts), [apps/vscode/src/commands/show-metrics.ts](apps/vscode/src/commands/show-metrics.ts), [apps/vscode/src/commands/open-proposal.ts](apps/vscode/src/commands/open-proposal.ts), [apps/vscode/src/commands/run-validation.ts](apps/vscode/src/commands/run-validation.ts) | Resolved in slice `S6` |
+| H8 | P2 | Varios comandos de la extensión VS Code invocan el cliente MCP sin `try/catch` ni feedback de error al usuario. Ante fallos de transporte o respuesta, el comando puede abortar sin diagnóstico visible. | [extensions/vscode/src/commands/show-overview.ts](extensions/vscode/src/commands/show-overview.ts), [extensions/vscode/src/commands/show-metrics.ts](extensions/vscode/src/commands/show-metrics.ts), [extensions/vscode/src/commands/open-proposal.ts](extensions/vscode/src/commands/open-proposal.ts), [extensions/vscode/src/commands/run-validation.ts](extensions/vscode/src/commands/run-validation.ts) | Resolved in slice `S6` |
 | H9 | P3 | Hay deriva documental en la config raíz de Vitest: sigue remitiendo al patrón histórico de opt-out de audit, pero la config actual del plugin sí ejecuta sus tests. No rompe funcionalidad, pero sí confunde mantenimiento. | [vitest.config.ts](vitest.config.ts), [plugins/audit/vitest.config.ts](plugins/audit/vitest.config.ts) | Resolved in slice `S3` |
 
 ## Scoreboard

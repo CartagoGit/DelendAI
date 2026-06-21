@@ -7,7 +7,7 @@ date: 2026-06-21
 kind: feat
 title: IDE extension v2 — multi-IDE abstraction + branded dashboard + web embed + observability panels
 shipped-in:
-    - 61a5f37 # feat: Rename IDE shell and relocate extensions (apps/ide -> packages/ui-extension, apps/vscode -> extensions/vscode)
+    - 61a5f37 # feat: Rename IDE shell and relocate extensions (apps/ide -> packages/ui-extension, extensions/vscode -> extensions/vscode)
     - 3d3f21c # refactor(extensions/vscode): migrate @mcp-vertex/ide imports to @mcp-vertex/ui-extension (S5)
     - 54ccb4b # feat!: publish packages/ui-extension@1.0.0 + extensions/vscode@1.0.0 with rename CHANGELOG (S8)
     - efca64a # feat: add dashboard types and embed service for improved dashboard functionality
@@ -23,7 +23,7 @@ related:
     - f00011 # capabilities surface — extension is the IDE counterpart
     - f00010 # residual p100 web & i18n — same i18n rules
     - f00028 # plugin-depth extension — feeds new "tool usage" panel
-    - f00035 # rename apps/ide->packages/ui-extension, apps/vscode->extensions/vscode (superseded this proposal's reservedFiles, see rationale)
+    - f00035 # rename apps/ide->packages/ui-extension, extensions/vscode->extensions/vscode (superseded this proposal's reservedFiles, see rationale)
 globalGate: lint
 acceptance:
     - { command: bun run typecheck, expect: exit0 }
@@ -470,12 +470,12 @@ anticipate. Evidence, checked live against `develop` before closing:
 
 - **Path rename happened first, as `f00035` itself predicted.**
   `f00035` ("rename `apps/ide`→`packages/ui-extension`,
-  `apps/vscode`→`extensions/vscode`") shipped in commit `61a5f37` and
+  `extensions/vscode`→`extensions/vscode`") shipped in commit `61a5f37` and
   explicitly notes in its own `## notes`: *"Sustituye el naming
   propuesto por `f00022` ... quien ejecute `f00022` debe correr antes
   `f00035` para que los paths sigan existiendo."* That happened — this
   proposal's body has been mechanically rewritten in place
-  (`apps/ide/` → `packages/ui-extension/`, `apps/vscode` →
+  (`apps/ide/` → `packages/ui-extension/`, `extensions/vscode` →
   `extensions/vscode`) so the historical record matches what actually
   exists on disk.
 - **Cross-IDE shell exists and is wired**: `packages/ui-extension/`
@@ -543,7 +543,7 @@ anticipate. Evidence, checked live against `develop` before closing:
   the current `package.json` — site strictness is covered by
   `bun run lint` plus the Astro build itself; dropped to avoid
   asserting a non-existent gate), and
-  `cd apps/vscode && bun run package` (path renamed, and packaging is
+  `cd extensions/vscode && bun run package` (path renamed, and packaging is
   exercised on demand, not part of the standard `validate` gate — left
   out of the frontmatter `acceptance:` list to avoid invoking a
   network/packaging step from a routine validate run, matching how

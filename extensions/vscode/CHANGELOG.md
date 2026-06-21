@@ -56,14 +56,14 @@
 - **Status bar upgrade** — now shows
   `$(mcp-vertex) mcp-vertex • N tools • M proposals • 12.3k tok •
   K agents`. Click → open the dashboard.
-- **Activity bar icon** — brand logo (`apps/vscode/media/logo.svg`)
+- **Activity bar icon** — brand logo (`extensions/vscode/media/logo.svg`)
   ships as the activity bar entry for the `mcp-vertex` view container.
 - **i18n parity** — `IExtensionTranslations` extended to 29 keys
   (commands + dashboard tabs + KPI labels). All 12 languages
   (ar, de, en, es, fr, hi, it, ja, pt, th, vi, zh) parity-checked by
   `bun run check:i18n:ide`.
 - **Brand drift guard** — `bun run lint:brand` verifies that
-  `apps/vscode/media/logo.svg` is byte-identical to
+  `extensions/vscode/media/logo.svg` is byte-identical to
   `apps/web/public/logo.svg`.
 - **DashboardService** — new client-side aggregator that derives all
   8 panel models in a single round-trip from

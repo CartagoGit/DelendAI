@@ -268,7 +268,7 @@ remediation for that step.
 - **Gate**: `bun run test apps/web`, `bun run site:strict`,
   `bun run check:i18n:plugins` exit 0.
 
-### S4 — VS Code webview + i18n + README addendum _(incl. `apps/vscode/`, `docs/`)_
+### S4 — VS Code webview + i18n + README addendum _(incl. `extensions/vscode/`, `docs/`)_
 
 - **Status**: ready
 - **Files**:

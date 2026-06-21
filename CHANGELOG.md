@@ -100,7 +100,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for one minor via the legacy `@mcp-vertex/ide` aliases still
   wired in `tsconfig.base.json` and `vitest.shared.ts`.
 - `mcp-vertex-vscode` carries `displayName: "@mcp-vertex/extension-vscode"`
-  to reflect the rename (`apps/vscode` → `extensions/vscode`). The
+  to reflect the rename (`extensions/vscode` → `extensions/vscode`). The
   flat `name: "mcp-vertex-vscode"` is kept because `vsce` rejects
   scoped names with `@` or `/`; the published `.vsix` filename is
   therefore still `mcp-vertex-vscode-<version>.vsix` (see R1 in
