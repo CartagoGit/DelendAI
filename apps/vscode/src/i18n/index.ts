@@ -24,6 +24,28 @@ export interface IExtensionTranslations {
 	readonly toolsView: string;
 	readonly proposalsView: string;
 	readonly statusTooltip: string;
+	// f125 — dashboard commands and panel labels (i18n parity across 12 langs)
+	readonly openDashboard: string;
+	readonly openDocs: string;
+	readonly tabOverview: string;
+	readonly tabMetrics: string;
+	readonly tabTokens: string;
+	readonly tabTools: string;
+	readonly tabPlugins: string;
+	readonly tabSessions: string;
+	readonly tabTimes: string;
+	readonly tabAgents: string;
+	readonly tabDocs: string;
+	readonly kpiTools: string;
+	readonly kpiPlugins: string;
+	readonly kpiProposals: string;
+	readonly kpiCalls: string;
+	readonly kpiTokens: string;
+	readonly kpiSaved: string;
+	readonly kpiWall: string;
+	readonly kpiAgents: string;
+	readonly refreshDashboard: string;
+	readonly docsUrlRejected: string;
 }
 
 export type IExtensionDictionary = Record<Lang, IExtensionTranslations>;
