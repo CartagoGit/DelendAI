@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T19:59:04.255Z",
-	"count": 89,
+	"generated_at": "2026-06-21T19:59:12.924Z",
+	"count": 90,
 	"proposals": [
 		{
 			"id": "a00027",
@@ -108,6 +108,14 @@
 			"id": "f00046",
 			"file": "ready/f00046-memory-hygiene-policy-session-compaction-boundaries.md",
 			"track": "plugins/memory+skills+docs+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00047",
+			"file": "ready/f00047-multi-surface-budget-gates-compact-first-consumers.md",
+			"track": "core+client+extensions/vscode+plugins+metrics+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
