@@ -17,10 +17,14 @@ export interface SearchSearchOutput {
 	count: number;
 	truncated: boolean;
 	scanned: number;
+	usedRg: boolean;
+	rgFallbackReason?: string;
 	hits: {
 		file: string;
 		line: number;
 		text: string;
+		before?: string[];
+		after?: string[];
 	}[];
 }
 

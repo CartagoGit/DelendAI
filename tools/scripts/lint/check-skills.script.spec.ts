@@ -1,0 +1,112 @@
+#!/usr/bin/env bun
+import { describe, expect, it } from 'vitest';
+
+import {
+	checkSkillsManifest,
+	type ISkillManifest,
+} from './check-skills.script.ts';
+
+const manifest = (skills: ISkillManifest['skills']): ISkillManifest => ({
+	generatedAt: '2026-06-21T00:00:00.000Z',
+	skills,
+});
+
+describe('checkSkillsManifest', () => {
+	it('reports no issues when every manifest entry has a matching file and vice versa', () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'mcp-vertex-operator',
+					version: '1.0.0',
+					minCoreVersion: '0.1.0',
+					bodyPath: 'skills/mcp-vertex-operator/SKILL.md',
+					tags: ['operator'],
+				},
+			]),
+			['skills/mcp-vertex-operator/SKILL.md'],
+		);
+
+		expect(issues).toEqual([]);
+	});
+
+	it('flags a manifest entry whose bodyPath does not exist on disk', () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'ghost-skill',
+					version: '1.0.0',
+					minCoreVersion: '0.1.0',
+					bodyPath: 'skills/ghost-skill/SKILL.md',
+					tags: [],
+				},
+			]),
+			[],
+		);
+
+		expect(issues).toEqual([
+			{
+				kind: 'missing-on-disk',
+				detail: expect.stringContaining('ghost-skill'),
+			},
+		]);
+	});
+
+	it('flags a SKILL.md on disk with no manifest entry', () => {
+		const issues = checkSkillsManifest(manifest([]), [
+			'skills/undeclared-skill/SKILL.md',
+		]);
+
+		expect(issues).toEqual([
+			{
+				kind: 'missing-in-manifest',
+				detail: expect.stringContaining('undeclared-skill'),
+			},
+		]);
+	});
+
+	it('flags a malformed (non-semver) version', () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'bad-version',
+					version: 'v1',
+					minCoreVersion: '0.1.0',
+					bodyPath: 'skills/bad-version/SKILL.md',
+					tags: [],
+				},
+			]),
+			['skills/bad-version/SKILL.md'],
+		);
+
+		expect(
+			issues.some(
+				(i) =>
+					i.kind === 'malformed-entry' &&
+					i.detail.includes('version'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a malformed (non-semver) minCoreVersion', () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'bad-min-core',
+					version: '1.0.0',
+					minCoreVersion: 'latest',
+					bodyPath: 'skills/bad-min-core/SKILL.md',
+					tags: [],
+				},
+			]),
+			['skills/bad-min-core/SKILL.md'],
+		);
+
+		expect(
+			issues.some(
+				(i) =>
+					i.kind === 'malformed-entry' &&
+					i.detail.includes('minCoreVersion'),
+			),
+		).toBe(true);
+	});
+});

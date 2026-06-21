@@ -582,13 +582,16 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   cerrado (ver §11, sesión 21-06).
 
 **Observabilidad / release / tests (P2-P3):**
-- 🟡 **M29 · Métricas persistentes** —
+- ✅ **M29 · Métricas persistentes** —
   ✅ `metrics { persist: true }` vuelca un snapshot con timestamp a
   `<cacheDir>/metrics/<ISO>.json` (escritura atómica) y devuelve `persistedTo` +
   número de snapshots; el dir se inyecta desde `assemble` (`corePaths.cacheDir`). 3 tests.
-  ⬜ Falta el gate de regresión longitudinal que compare snapshots entre releases
-  (hoy el token-budget e2e ya cubre los payloads críticos).
-  **Plan: [`ready/f00027-metrics-longitudinal-regression-gate.md`](../ready/f00027-metrics-longitudinal-regression-gate.md) — diff snapshot vs último tag en CI; threshold +20% tokens falla el build.**
+  ✅ Gate de regresión longitudinal: job `metrics-gate` en CI compara un snapshot
+  candidato fresco contra el snapshot adjunto al último release (`tools/scripts/metrics/get-baseline.script.ts`),
+  calcula el delta por tool en bytes/call y ms/call (`tools/scripts/metrics/diff-snapshots.script.ts`)
+  y falla el build si algún tool regresa más de +20% (configurable vía
+  `METRICS_TOKEN_DELTA_PCT`/`METRICS_LATENCY_DELTA_PCT`/`METRICS_BYTES_DELTA_PCT`). 18 tests
+  nuevos. *(Cierra `f00027`.)*
 - 🟡 **M30 · Smoke funcional en CI** —
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
   `node`**, lista tools y llama `mcp-vertex_overview` (prueba que el artefacto publicado
