@@ -285,8 +285,8 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 
 ## Notes
 
-- [`f00016`](../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) — the predecessor that defined the 7 statuses and the original 12 kinds
-- [`f00001`](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) — the convention this proposal extends (sub-folders inside `done/` mirror active kinds)
+- [`f00016`](../feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) — the predecessor that defined the 7 statuses and the original 12 kinds
+- [`f00001`](../feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) — the convention this proposal extends (sub-folders inside `done/` mirror active kinds)
 - [`AGENTS.md`](../../AGENTS.md) — repo rules: definition of done (`bun run validate` green), Conventional Commits, durable writes via `withFileMutex`
 - [`plugins/proposals/README.md`](../../plugins/proposals/README.md) — the proposals plugin (workflow, `auto_work`, `create_proposal`, `close_slice`)
 - The 6 summaries this proposal migrates, in their new home:
