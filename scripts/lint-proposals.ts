@@ -29,7 +29,7 @@ import { lintProposalMarkdown } from '../plugins/proposals/src/lib/proposals/pro
 // included alongside `p` — post-migration legacy keeps the same
 // permanently-lenient tier, see the module doc comment above.
 const isLegacyFilename = (filename: string, absPath: string): boolean => {
-	if (absPath.includes('/done/audits/')) return true;
+	if (absPath.includes('/done/')) return true;
 	return /^[pl]\d+-/.test(filename);
 };
 
