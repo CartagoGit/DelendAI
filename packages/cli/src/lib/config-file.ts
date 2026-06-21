@@ -105,5 +105,20 @@ export const writeConfigSafely = async (
 	return target;
 };
 
+export const writeWorkspaceFileSafely = async (
+	workspace: string,
+	relativePath: string,
+	content: string,
+): Promise<string> => {
+	const contained = resolveWorkspaceContained(workspace, relativePath);
+	if (!contained.ok)
+		throw new Error(contained.reason ?? 'invalid workspace path');
+	const redacted = redactSecrets(content);
+	await withFileMutex(`${contained.abs}.lock`, async () => {
+		await writeFileAtomic(contained.abs, redacted.text);
+	});
+	return contained.abs;
+};
+
 export const diagnoseConfigText = (text: string | undefined) =>
 	diagnoseConfigFile(text);

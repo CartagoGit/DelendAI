@@ -36,8 +36,10 @@ The target convention is:
   folders.
 
 The convention applies to packages, plugins, extensions, apps, examples
-and tools, with documented exceptions for generated files and public
-barrels.
+and tools in this TypeScript monorepo, with documented exceptions for
+generated files and public barrels. The same convention must also be
+available to downstream `mcp-vertex` consumers as an opt-in TypeScript
+project profile, never as a language-agnostic default.
 
 ## why
 
@@ -51,6 +53,13 @@ This project is infrastructure for agents. Naming must be mechanical:
 contract type/interface, and durable constants should be grouped under a
 constants contract folder. This reduces search scope, helps lint rules
 stay simple, and prevents agents from inventing local mini-conventions.
+
+Downstream projects need the same mechanical help, but not every project
+is TypeScript. A PHP, Python, Rust, or Go host should not receive
+`*.interface.ts` advice. The convention therefore belongs behind a
+language-aware capability: a general conventions plugin can detect the
+project language and expose explicit profiles such as `typescript`,
+`typescript-react`, `astro`, or future non-TS conventions.
 
 ## why this design
 
@@ -74,6 +83,18 @@ high conflict risk and obscure behavior changes. Instead, this proposal
 adds a convention document and drift linter first, then migrates one
 package/plugin family at a time.
 
+For consumer projects, the same classifier is reused through an opt-in
+command/API:
+
+- `mcpv conventions check --profile=typescript`
+- `mcpv conventions plan --profile=typescript`
+- `mcpv conventions apply --profile=typescript --dry-run`
+
+The command must reject `--profile=typescript` when no TypeScript project
+signals are present (`tsconfig.json`, TypeScript package metadata, or
+explicit user override). Framework-specific profiles can extend the base
+TypeScript rules instead of forking them.
+
 ## non-goals
 
 - No semantic rewrite of services or tools just to rename files.
@@ -82,6 +103,10 @@ package/plugin family at a time.
 - No changing public API exports without compatibility aliases.
 - No touching active proposal/audit files owned by another agent.
 - No forcing `index.ts` public barrels to carry a role suffix.
+- No applying TypeScript suffix conventions to non-TypeScript consumer
+  projects.
+- No hard-coding framework rules in core; framework conventions belong in
+  optional profile/plugin layers.
 
 ## architecture
 
@@ -102,6 +127,17 @@ Add a pure naming classifier that maps a relative path to one of:
 The classifier feeds a new lint script in `tools/scripts/lint/` and a
 documentation page in `docs/`. The linter initially runs in report mode
 for legacy paths, then becomes strict for newly touched files.
+
+The classifier is pure and profile-driven:
+
+- `@mcp-vertex/core` keeps only generic workspace/path primitives.
+- A general `conventions` plugin owns profile discovery and exposes
+  project-facing MCP tools.
+- The TypeScript profile owns `*.interface.ts`, `*.constant.ts`,
+  `*.service.ts`, `*.tool.ts`, and folder placement rules.
+- Framework profiles compose the TypeScript profile and add narrow
+  framework rules, for example React component/test/story suffixes or
+  Astro page/content conventions.
 
 Migration slices should use `git mv`, update imports mechanically, and
 run package-level tests before full `bun run validate`.
@@ -127,7 +163,18 @@ run package-level tests before full `bun run validate`.
   - `tools/scripts/lint/file-conventions.script.ts`
 - **Gate**: `bun run lint:file-conventions`
 
-### S3 — Migrate `packages/client` services and contracts
+### S3 — Add consumer-facing TypeScript convention profile
+
+- **Status**: pending
+- **Files**:
+  - `plugins/conventions/` or equivalent plugin package
+  - `plugins/conventions/src/lib/profiles/typescript/**`
+  - `plugins/conventions/src/lib/tools/*.tool.ts`
+  - `plugins/conventions/tests/**`
+  - `docs/FILE-CONVENTIONS.md`
+- **Gate**: `bun run test plugins/conventions && bun run typecheck`
+
+### S4 — Migrate `packages/client` services and contracts
 
 - **Status**: pending
 - **Files**:
@@ -138,7 +185,7 @@ run package-level tests before full `bun run validate`.
   - `packages/client/src/public/index.ts`
 - **Gate**: `bun run test packages/client && bun run typecheck`
 
-### S4 — Migrate `packages/ui-extension` services/render contracts
+### S5 — Migrate `packages/ui-extension` services/render contracts
 
 - **Status**: pending
 - **Files**:
@@ -147,7 +194,7 @@ run package-level tests before full `bun run validate`.
   - `packages/ui-extension/src/public/index.ts`
 - **Gate**: `bun run test packages/ui-extension && bun run typecheck`
 
-### S5 — Migrate plugins by family
+### S6 — Migrate plugins by family
 
 - **Status**: pending
 - **Files**:
@@ -156,7 +203,7 @@ run package-level tests before full `bun run validate`.
   - plugin public barrels
 - **Gate**: `bun run test plugins && bun run typecheck`
 
-### S6 — Make the linter strict for non-generated files
+### S7 — Make the linter strict for non-generated files
 
 - **Status**: pending
 - **Files**:
@@ -174,6 +221,12 @@ run package-level tests before full `bun run validate`.
 - [ ] Interfaces/types and constants move under
   `contracts/interfaces/` and `contracts/constants/`.
 - [ ] Generated files and public barrels have explicit exceptions.
+- [ ] The same rules are available as an opt-in TypeScript profile for
+  consumer projects using `mcp-vertex`.
+- [ ] Non-TypeScript projects are detected and left untouched unless the
+  user explicitly selects a compatible profile.
+- [ ] General plugins and language/framework-specific profiles are
+  documented separately.
 - [ ] `bun run validate` is green.
 
 ## risks and mitigations
@@ -185,6 +238,8 @@ run package-level tests before full `bun run validate`.
   while audits are active.
 - **Over-strict naming**: start report-mode, then strict mode after
   migrations are complete.
+- **Language leakage**: keep TypeScript conventions out of core and
+  behind a profile detector/explicit profile flag.
 
 ## notes
 
