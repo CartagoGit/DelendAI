@@ -1,5 +1,5 @@
 ---
-id: x00127
+id: x00010
 status: done
 type: proposal
 track: web+ui
@@ -9,7 +9,7 @@ title: Replace hand-drawn logo placeholders with real brand marks (npm, pnpm, ya
 shipped-in: pending
 ---
 
-# x127 — Real brand logos (x00008 follow-up)
+# x00010 — Real brand logos (x00008 follow-up)
 
 ## Goal
 

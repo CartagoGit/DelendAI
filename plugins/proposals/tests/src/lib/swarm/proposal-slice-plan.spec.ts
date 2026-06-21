@@ -51,6 +51,11 @@ Prose.
 Prose after the section.
 `;
 
+const DOC_WITH_BOLD_STATUS = DOC.replace(
+	'- status: done',
+	'- **Status**: done',
+);
+
 describe('parseProposalSlicePlan (p81)', () => {
 	it('returns null for legacy proposals without a Slices section', () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
@@ -78,6 +83,12 @@ describe('parseProposalSlicePlan (p81)', () => {
 		expect(s2?.dependsOn).toEqual(['pX.S1']);
 		expect(s2?.acceptanceCriteria).toHaveLength(2);
 		expect(plan?.slices[2]?.gate).toBe('none');
+	});
+
+	it('also treats markdown bold status lines as done slices', () => {
+		const plan = parseProposalSlicePlan('pX', DOC_WITH_BOLD_STATUS);
+		expect(plan?.slices[0]?.status).toBe('done');
+		expect(validateClaim(plan!, 'pX.S1').blockerType).toBe('already-done');
 	});
 
 	it('flags overlapping files between slices', () => {

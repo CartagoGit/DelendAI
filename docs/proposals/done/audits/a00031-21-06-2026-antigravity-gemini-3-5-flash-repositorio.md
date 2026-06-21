@@ -1,5 +1,5 @@
 ---
-id: a00027
+id: a00031
 kind: audit
 title: "Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)"
 status: done
@@ -11,7 +11,15 @@ acceptance:
   - { command: bun run validate, expect: exit0 }
 ---
 
-# a00027 — Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)
+# a00031 — Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)
+
+> Renumbered from `a00027` to `a00031` on 2026-06-21: `a00027` collided
+> with `done/audits/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md`,
+> created earlier (2026-06-21T21:24:56+02:00 vs. this audit's
+> 2026-06-21T21:38:50+02:00). The copilot audit keeps `a00027`; this
+> audit moves to the next free `a`-id, `a00031`. Same class of bug as
+> the `f00048` collision fixed in the same pass — two ids minted
+> without going through the shared, mutex-guarded counter.
 
 ## goal
 

@@ -63,7 +63,7 @@ const asGate = (value: string | undefined): ISliceGate =>
  *   - `- files: <path>` (repeatable)
  *   - `- depends_on: [a, b]`
  *   - `- gate: lint|type|e2e|none`
- *   - `- status: done` (set by the executor when the slice closes)
+ *   - `- status: done` or `- **Status**: done` (set by the executor when the slice closes)
  *   - `- acceptance:` followed by indented `- "command"` lines
  */
 export const parseProposalSlicePlan = (
@@ -99,7 +99,9 @@ export const parseProposalSlicePlan = (
 			.map((d) => d.trim())
 			.filter((d) => d.length > 0);
 		const gate = asGate(body.match(/^[-*]\s*gate:\s*(\S+)/m)?.[1]);
-		const docDone = /^[-*]\s*status:\s*done\b/m.test(body);
+		const docDone =
+			/^[-*]\s*status:\s*done\b/m.test(body) ||
+			/^[-*]\s*\*\*Status\*\*:\s*`?done`?\b/m.test(body);
 		const acceptanceBlock =
 			body.match(/^[-*]\s*acceptance:\s*\n((?:[ \t]+.*\n?)*)/m)?.[1] ??
 			'';

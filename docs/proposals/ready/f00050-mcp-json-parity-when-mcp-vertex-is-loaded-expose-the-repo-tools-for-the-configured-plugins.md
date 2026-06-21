@@ -1,5 +1,5 @@
 ---
-id: f00048
+id: f00050
 kind: feat
 title: mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins
 status: ready
@@ -8,7 +8,7 @@ track: host+core+docs+workflow
 date: 2026-06-21
 ---
 
-# f00048 — mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins
+# f00050 — mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins
 
 ## Goal
 
@@ -72,3 +72,20 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 - A compact diagnostic explains what was loaded and why.
 - The docs and example config make that precedence understandable to a user opening the repo.
 - Validation covers at least one parity case end to end.
+
+## notes
+
+Renumbered from `f00048` to `f00050` on 2026-06-21. Two unrelated
+proposals were independently created with the same id `f00048`:
+`f00048-contracts-file-naming-and-folder-conventions.md` (created
+2026-06-21T22:16:04+02:00, per `git log --diff-filter=A`) and this
+file (created 2026-06-21T23:09:16+02:00, ~53 minutes later). The
+`contracts-file-naming` proposal kept `f00048` as the rightful holder
+(first writer); this proposal — the later one — was renumbered to the
+next free `f`-prefix id. At the time of the incident `f00049` was
+already allocated, so `f00050` is the first free slot. This is exactly
+the race that f00023 (renumber proposal ids, padded 5 digits) and the
+mutex-guarded `allocateNextProposalId` (`proposal-id-allocator.ts`)
+exist to prevent going forward — two ids were minted without going
+through the atomic read-increment-write the allocator already
+implements.
