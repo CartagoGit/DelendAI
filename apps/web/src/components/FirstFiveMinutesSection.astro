@@ -1,0 +1,86 @@
+---
+/**
+ * FirstFiveMinutesSection.astro — onboarding quickstart (`/first-5-minutes`, l030 S3).
+ *
+ * Three copy-pasteable profiles (Bun/Node, VS Code/Copilot, Claude Code) in
+ * a tab strip, reusing `PluginTabs.astro` (already generic — no plugin-page
+ * coupling). Each profile is an ordered list of steps; markdown-style
+ * `` `code` `` spans in the copy are rendered as <code> via a tiny inline
+ * splitter so the i18n strings stay plain text (no HTML in translation
+ * files, consistent with every other page in this app).
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import PluginTabs from '#COMPONENTS/PluginTabs.astro';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
+const troubleshootingHref =
+	lang === 'en'
+		? `${base}/troubleshooting`
+		: `${base}/${lang}/troubleshooting`;
+
+const profiles = [
+	{
+		id: 'bun-node',
+		label: t.firstFiveMinutes.profileTabBunNode,
+		data: t.firstFiveMinutes.bunNode,
+	},
+	{
+		id: 'vscode',
+		label: t.firstFiveMinutes.profileTabVscode,
+		data: t.firstFiveMinutes.vscode,
+	},
+	{
+		id: 'claude',
+		label: t.firstFiveMinutes.profileTabClaude,
+		data: t.firstFiveMinutes.claude,
+	},
+] as const;
+
+/** Split `` `code` `` spans out of a plain-text step so they render as <code>. */
+const renderStep = (step: string) =>
+	step
+		.split(/(`[^`]+`)/g)
+		.map((part) =>
+			part.startsWith('`') && part.endsWith('`')
+				? { code: part.slice(1, -1) }
+				: part,
+		);
+---
+
+<section id="first-5-minutes" class="section">
+	<div class="container">
+		<h1>{t.firstFiveMinutes.title}</h1>
+		<p class="lead">{t.firstFiveMinutes.lead}</p>
+
+		<PluginTabs tabs={profiles.map((p) => ({ id: p.id, label: p.label }))}>
+			{profiles.map((p) => (
+				<section data-tab-panel={p.id} id={`panel-${p.id}`} hidden={p.id !== profiles[0].id}>
+					<h2>{p.data.title}</h2>
+					<p>{p.data.intro}</p>
+					<ol class="first5min__steps">
+						{p.data.steps.map((step) => (
+							<li>
+								{renderStep(step).map((part) =>
+									typeof part === 'string' ? part : <code>{part.code}</code>,
+								)}
+							</li>
+						))}
+					</ol>
+				</section>
+			))}
+		</PluginTabs>
+
+		<h2>{t.firstFiveMinutes.nextSteps}</h2>
+		<p>
+			<a href={toolsHref}>{t.firstFiveMinutes.nextToolsCta} →</a>
+			{' · '}
+			<a href={troubleshootingHref}>{t.firstFiveMinutes.nextTroubleshootingCta} →</a>
+		</p>
+	</div>
+</section>

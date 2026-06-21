@@ -1,0 +1,12 @@
+---
+import FirstFiveMinutesSection from '#COMPONENTS/FirstFiveMinutesSection.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title={`${t.firstFiveMinutes.title} — @mcp-vertex/core`}>
+	<FirstFiveMinutesSection lang={lang} />
+</Base>

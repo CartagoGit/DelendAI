@@ -1,0 +1,57 @@
+---
+/**
+ * TroubleshootingIndex.astro — lists every troubleshooting case, grouped
+ * implicitly by tag (l030 S4). Source of truth: `docs/troubleshooting/*.md`,
+ * harvested into `capabilities.json` by `gen-capabilities.ts` →
+ * `discoverTroubleshootingCases` — this component never reads markdown
+ * directly, same data-flow as every other capability page.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const caseHref = (slug: string) =>
+	lang === 'en'
+		? `${base}/troubleshooting/${slug}`
+		: `${base}/${lang}/troubleshooting/${slug}`;
+
+type ICase = {
+	slug: string;
+	symptom: string;
+	cause: string;
+	fix: string;
+	tags: string[];
+	closedBy?: string;
+};
+const cases = (capabilities.troubleshooting ?? []) as ICase[];
+---
+
+<PageHeader lang={lang} title={t.troubleshooting.title} homeHref={homeHref} />
+<section class="section">
+	<div class="container">
+		<p class="lead">{t.troubleshooting.lead}</p>
+		{cases.length === 0 ? (
+			<p>{t.troubleshooting.empty}</p>
+		) : (
+			<div class="tools-grid">
+				{cases.map((c) => (
+					<a class="tool card" href={caseHref(c.slug)}>
+						<code>{c.symptom.length > 90 ? `${c.symptom.slice(0, 90)}…` : c.symptom}</code>
+						<p>{c.fix.length > 140 ? `${c.fix.slice(0, 140)}…` : c.fix}</p>
+						{c.tags.length > 0 && (
+							<p class="lead">{c.tags.map((tag) => `#${tag}`).join(' ')}</p>
+						)}
+					</a>
+				))}
+			</div>
+		)}
+	</div>
+</section>

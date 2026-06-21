@@ -15,6 +15,19 @@ const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
 const heading = headingProp ?? t.tools.title;
 
+type ITool = { name: string; namespace: string; description: string };
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+// `mcp-vertex` namespace maps back to the `core` package slug used by the
+// `/tools/<plugin>/<tool>` route (l030 S1).
+const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
+const toolHref = (tool: ITool) => {
+	const slug = slugFor(tool.namespace);
+	return lang === 'en'
+		? `${base}/tools/${slug}/${tool.name}`
+		: `${base}/${lang}/tools/${slug}/${tool.name}`;
+};
+
 const NS_LABEL: Record<string, string> = {
 	mcpvertex: 'core',
 	proposals: 'proposals',
@@ -29,7 +42,6 @@ const NS_LABEL: Record<string, string> = {
 	'status-marker': 'status-marker',
 };
 
-type ITool = { name: string; namespace: string; description: string };
 const tools = capabilities.tools as ITool[];
 const groups: Record<string, ITool[]> = {};
 for (const tool of tools) {
@@ -57,7 +69,9 @@ const desc = (tool: ITool) => describeTool(tool.name, lang) ?? tool.description;
 					<div class="ns__head"><h3>{NS_LABEL[ns] ?? ns}</h3><span class="ns__count">{list.length}</span></div>
 					<div class="tools-grid">
 						{list.map((tool) => (
-							<div class="tool card"><code>{tool.name}</code><p>{desc(tool)}</p></div>
+							<a class="tool card" href={toolHref(tool)}>
+								<code>{tool.name}</code><p>{desc(tool)}</p>
+							</a>
 						))}
 					</div>
 				</div>

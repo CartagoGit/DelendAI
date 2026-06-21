@@ -567,15 +567,23 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   `skills/` (`mcp-vertex-plugin-authoring`, `mcp-vertex-failure-modes`). El repo ya se
   aplica su propio patrón. *(Cierra el viejo pendiente "skills/prompts versionados".)*
   ⬜ Ampliable: skill de release/budgets, más agentes (contract_guardian, etc.).
-- 🟡 **M27 · Web profunda** —
+- ✅ **M27 · Web profunda** —
   ✅ **Páginas de detalle por plugin** (`/plugins/<slug>` + `/<lang>/plugins/<slug>`,
   132 páginas: 12 idiomas × 11 paquetes): cada una lista sus tools reales (desde el
   registro vivo), descripción traducida, snippet de instalación y enlace de vuelta; la
   sección Plugins del home enlaza a cada una. ✅ logo/favicon + benchmarks con gráficas.
-  ⬜ Falta: páginas por *tool* con riesgos/opciones, "primeros 5 minutos",
-  `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting, búsqueda interna
-  (pagefind). *(Se cruza con W3 §7-bis.)*
-  **Plan: [`ready/f00030-web-deep-pages-and-search.md`](../ready/f00030-web-deep-pages-and-search.md) — páginas por tool (12×68), pagefind, "First 5 minutes", troubleshooting con los 6 casos canónicos.**
+  ✅ **Páginas por tool** (`/tools/<plugin>/<tool>` + `/<lang>/tools/<plugin>/<tool>`,
+  una por cada tool real × 12 idiomas, enlazadas desde `/tools` y desde la pestaña
+  "tools" de cada plugin) con argumentos, efectos y un ejemplo de llamada genérico.
+  ✅ **Pagefind** ya estaba cableado (`Search.astro` + `index:search` en
+  `package.json`) — verificado, sin trabajo adicional. ✅ **"First 5 minutes"**
+  (`/first-5-minutes`, 3 perfiles: Bun/Node, VS Code/Copilot, Claude Code, 12
+  idiomas). ✅ **Troubleshooting** (`/troubleshooting` + `/troubleshooting/<slug>`,
+  6 casos canónicos reales en `docs/troubleshooting/*.md`, cosechados por
+  `gen-capabilities.ts` → `discoverTroubleshootingCases`, mismo patrón que
+  `discoverTutorials`). ⬜ Queda fuera de alcance de f00030 (no bloqueante):
+  `docs/ARCHITECTURE.md`+Mermaid, changelog navegable.
+  **Cerrado por [`done/feats/f00030-web-deep-pages-and-search.md`](../done/feats/f00030-web-deep-pages-and-search.md).**
 - 🟡 **M28 · Endurecer `proposals` bajo contención** —
   ✅ `await_lock` en `notification` (`<prefix>_await_lock { taskId, timeoutMs? }`
   bloquea hasta que el lock se libera o expira, vía el mismo watch del notifier +

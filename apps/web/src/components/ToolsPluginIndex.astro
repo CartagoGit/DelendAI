@@ -1,0 +1,72 @@
+---
+/**
+ * ToolsPluginIndex.astro — lists every tool a single plugin exposes, each
+ * linking to its own detail page (`/tools/<plugin>/<tool>`, l030 S1).
+ *
+ * Distinct from `PluginPage.astro`'s "tools" tab: that page shows the full
+ * plugin surface (install + tools + config + tutorial) inline; this one is
+ * the dedicated per-tool index that `/tools/[plugin]/[tool].astro` and the
+ * top-level `/tools` page link into.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import { describeTool } from '#I18N/tools';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+interface Props {
+	lang: Lang;
+	/** Plugin short-name (package name minus the `@mcp-vertex/` scope), e.g. `proposals`. */
+	slug: string;
+}
+const { lang, slug } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
+const toolHref = (name: string) =>
+	lang === 'en'
+		? `${base}/tools/${slug}/${name}`
+		: `${base}/${lang}/tools/${slug}/${name}`;
+
+type ITool = {
+	name: string;
+	namespace: string;
+	description: string;
+	i18n?: Record<string, string>;
+};
+type IPkg = { name: string; version: string };
+
+const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
+const ns = nsFor(slug);
+const tools = (capabilities.tools as ITool[])
+	.filter((tool) => tool.namespace === ns)
+	.sort((a, b) => a.name.localeCompare(b.name));
+const pkg = (capabilities.packages as IPkg[]).find(
+	(p) => p.name.replace('@mcp-vertex/', '') === slug,
+);
+
+const toolDesc = (tool: ITool): string => {
+	if (tool.i18n) return tool.i18n[lang] ?? tool.i18n.en ?? tool.description;
+	return describeTool(tool.name, lang) ?? tool.description;
+};
+---
+
+<PageHeader
+	lang={lang}
+	title={pkg?.name ?? slug}
+	homeHref={homeHref}
+	crumbs={[{ label: t.nav.tools, href: toolsHref }]}
+/>
+<section class="section">
+	<div class="container">
+		<div class="tools-grid">
+			{tools.map((tool) => (
+				<a class="tool card" href={toolHref(tool.name)}>
+					<code>{tool.name}</code>
+					<p>{toolDesc(tool)}</p>
+				</a>
+			))}
+		</div>
+	</div>
+</section>

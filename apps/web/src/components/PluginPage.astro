@@ -18,6 +18,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
 const pluginsHref =
 	lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`;
+// Per-tool detail page (l030 S1) — each tool block in the "tools" tab links
+// out to its own routable page.
+const toolHref = (name: string) =>
+	lang === 'en'
+		? `${base}/tools/${slug}/${name}`
+		: `${base}/${lang}/tools/${slug}/${name}`;
 
 // Map a package short-name to its tool namespace (core → mcp-vertex).
 const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
@@ -121,7 +127,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 					{tools.map((tool) => (
 						<div class="tool card">
 							<div class="tool__head">
-								<code>{tool.name}</code>
+								<a href={toolHref(tool.name)}><code>{tool.name}</code></a>
 								{(tool.effects ?? []).map((e) => (
 									<span class={`fx fx--${e}`}>{e}</span>
 								))}
