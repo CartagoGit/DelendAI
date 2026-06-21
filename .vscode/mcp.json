@@ -4,7 +4,7 @@
 			"type": "stdio",
 			"command": "bun",
 			"args": [
-				"${workspaceFolder}/scripts/host-server.ts",
+				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
 				"--workspace=${workspaceFolder}"
 			]
 		}

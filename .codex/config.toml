@@ -1,0 +1,15 @@
+# Project-scoped Codex config. Codex CLI and the Codex IDE extension both read
+# `.codex/config.toml` in trusted repos, so this makes the repo MCP tools
+# available without each Codex user hand-editing `~/.codex/config.toml`.
+#
+# Paths are relative to this `.codex/` directory; `cwd = ".."` starts the MCP
+# server from the repo root and lets the host script resolve the workspace from
+# `process.cwd()`.
+
+[mcp_servers.mcp-vertex]
+command = "bun"
+args = ["tools/scripts/host/host-server.script.ts"]
+cwd = ".."
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+default_tools_approval_mode = "auto"
