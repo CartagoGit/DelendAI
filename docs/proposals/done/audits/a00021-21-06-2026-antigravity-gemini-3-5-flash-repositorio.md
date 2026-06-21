@@ -63,7 +63,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 ### 4. Top acciones para 11/10 (prioridad)
 1. **Integración de pruebas**: Incluir la suite de pruebas del cliente de VS Code en la suite raíz de validaciones. (Se resolverá en `S2`).
 2. **Relevancia en búsquedas**: Delimitar el contenido principal de la web Astro con `data-pagefind-body` para eliminar el ruido en los resultados de búsqueda. (Se resolverá en `S3`).
-3. **Evitar bucles en `auto_work`**: Modificar el scheduler de propuestas para detectar la inactividad o fallos repetitivos y evitar el bucle suave. (Diferido a Propuesta `f120`).
+3. **Evitar bucles en `auto_work`**: Modificar el scheduler de propuestas para detectar la inactividad o fallos repetitivos y evitar el bucle suave. (Diferido a Propuesta `f00120`).
 
 ## Non-goals
 
@@ -119,7 +119,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 | H1 | P3 | Exclusión de `extensions/vscode` de la suite de pruebas del monorepo en la raíz | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | Se resolverá en slice `S2` |
 | H2 | P3 | Advertencia de tipos de TypeScript en el IDE sobre la propiedad `all` dentro de la configuración de cobertura de `vitest.config.ts` | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | Documentado, mantenido por compatibilidad de cobertura global |
 | H3 | P3 | Advertencia en build de Astro sobre indexación de cuerpo en Pagefind por falta de `data-pagefind-body` | [Base.astro](file:///home/cartago/_projects/mcp-vertex/apps/web/src/layouts/Base.astro) | Se resolverá en slice `S3` |
-| H4 | P2 | Mitigación del bucle suave (soft-loop) en `auto_work` para tareas estancadas | [task-queue.ts](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/task-queue.ts) | Diferido a Propuesta `f120` |
+| H4 | P2 | Mitigación del bucle suave (soft-loop) en `auto_work` para tareas estancadas | [task-queue.ts](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/task-queue.ts) | Diferido a Propuesta `f00120` |
 
 ## Scoreboard
 
