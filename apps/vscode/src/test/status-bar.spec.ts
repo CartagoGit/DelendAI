@@ -10,20 +10,25 @@ import {
 const createItem = (): IStatusBarItem & {
 	shown: boolean;
 	disposed: boolean;
-} => ({
-	text: '',
-	shown: false,
-	disposed: false,
-	show() {
-		this.shown = true;
-	},
-	dispose() {
-		this.disposed = true;
-	},
-});
+} => {
+	const item: IStatusBarItem & { shown: boolean; disposed: boolean } = {
+		text: '',
+		tooltip: undefined,
+		command: undefined,
+		shown: false,
+		disposed: false,
+		show() {
+			this.shown = true;
+		},
+		dispose() {
+			this.disposed = true;
+		},
+	};
+	return item;
+};
 
 describe('McpVertexStatusBar', () => {
-	it('shows tool and proposal counts', async () => {
+	it('shows tool, proposal, token and agent segments', async () => {
 		const item = createItem();
 		const bar = new McpVertexStatusBar(
 			item,
@@ -41,33 +46,102 @@ describe('McpVertexStatusBar', () => {
 			},
 			McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('proposals_proposal_board');
-					return {
-						structuredContent: {
-							proposals: [{ id: 'f114' }, { id: 'f115' }],
-						},
-					};
+					if (input.name === 'proposals_proposal_board') {
+						return {
+							structuredContent: {
+								proposals: [{ id: 'f114' }, { id: 'f115' }],
+							},
+						};
+					}
+					if (input.name === 'mcp-vertex_metrics') {
+						return {
+							structuredContent: {
+								tools: {},
+								totals: {
+									calls: 0,
+									errors: 0,
+									totalMs: 0,
+									totalBytes: 4000,
+								},
+							},
+						};
+					}
+					if (input.name === 'proposals_agent_names') {
+						return {
+							structuredContent: {
+								agents: [
+									{ name: 'implementation_runner' },
+									{ name: 'delivery_verifier' },
+								],
+							},
+						};
+					}
+					return { structuredContent: {} };
 				},
 			}),
 		);
 
 		await bar.start();
 
-		expect(item.text).toBe('$(tools) mcp-vertex • 1 tools • 2 proposals');
-		expect(item.command).toBe('mcp-vertex.showOverview');
+		expect(item.text).toContain('mcp-vertex');
+		expect(item.text).toContain('1 tools');
+		expect(item.text).toContain('2 proposals');
+		expect(item.text).toContain('1.0k tok');
+		expect(item.text).toContain('2 agents');
+		expect(item.command).toBe('mcp-vertex.openDashboard');
 		expect(item.shown).toBe(true);
+	});
+
+	it('falls back gracefully when metrics and agents tools are missing', async () => {
+		const item = createItem();
+		const bar = new McpVertexStatusBar(
+			item,
+			{
+				async listTools() {
+					return [];
+				},
+			},
+			McpStdioClient.fromTransport({
+				async callTool() {
+					throw new Error('tool missing');
+				},
+			}),
+		);
+		await bar.start();
+		// Without metrics or agents calls, the status bar should still
+		// render the tool/proposal segments and not crash.
+		expect(item.text).toContain('0 tools');
+		expect(item.text).not.toContain('tok');
+		expect(item.text).not.toContain('agents');
 	});
 
 	it('updates when notifications emit lifecycle events', async () => {
 		const item = createItem();
 		let toolCount = 1;
 		const client = McpStdioClient.fromTransport({
-			async callTool() {
-				return {
-					structuredContent: {
-						proposals: [{ id: 'f114' }],
-					},
-				};
+			async callTool(input) {
+				if (input.name === 'proposals_proposal_board') {
+					return {
+						structuredContent: { proposals: [{ id: 'f114' }] },
+					};
+				}
+				if (input.name === 'mcp-vertex_metrics') {
+					return {
+						structuredContent: {
+							tools: {},
+							totals: {
+								calls: 0,
+								errors: 0,
+								totalMs: 0,
+								totalBytes: 0,
+							},
+						},
+					};
+				}
+				if (input.name === 'proposals_agent_names') {
+					return { structuredContent: { agents: [] } };
+				}
+				return { structuredContent: {} };
 			},
 		});
 		const notifications = new NotificationsService(client);
@@ -95,5 +169,25 @@ describe('McpVertexStatusBar', () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(item.text).toContain('3 tools');
+	});
+
+	it('click opens the dashboard command', async () => {
+		const item = createItem();
+		const bar = new McpVertexStatusBar(
+			item,
+			{
+				async listTools() {
+					return [];
+				},
+			},
+			McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: {} };
+				},
+			}),
+		);
+		await bar.start();
+		expect(item.command).toBe('mcp-vertex.openDashboard');
+		expect(item.tooltip).toContain('Dashboard');
 	});
 });

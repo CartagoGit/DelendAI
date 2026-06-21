@@ -2,7 +2,7 @@
 id: a022
 kind: audit
 title: "Auditoría completa del repositorio — GitHub Copilot (MiniMax-M3)"
-status: ready
+status: done
 date: 2026-06-21
 track: archive
 ownership:
@@ -12,6 +12,10 @@ acceptance:
 ---
 
 # a022 — Auditoría completa del repositorio — GitHub Copilot (MiniMax-M3)
+
+> **Superseded by unified audit [`a026`](../../ready/a026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
+> (consolidación de auditorías ready del 2026-06-21); ver a026 para hallazgos
+> referenciados y slices vivos. Cerrada como referencia histórica.
 
 ## Goal
 
