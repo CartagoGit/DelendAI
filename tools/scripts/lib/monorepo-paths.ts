@@ -234,18 +234,18 @@ export const WELL_KNOWN = {
 	webApp: () => buildDir('apps', 'web'),
 	/** VS Code extension dist. */
 	vscode: () => buildDir('extensions', 'vscode'),
-	/** VS Code packaged .vsix output. The .vsix filename follows vsce's
-	 *  convention: scoped names drop the slash, so
-	 *  `@mcp-vertex/extension-vscode@1.0.0` produces
-	 *  `mcp-vertex-extension-vscode-1.0.0.vsix`. The packaging script
-	 *  reads `manifest.name` to compute this directly, so this helper is
-	 *  the second-source-of-truth for tests + documentation. */
+	/** VS Code packaged .vsix output. The flat `name` in
+	 *  `extensions/vscode/package.json` is kept as `mcp-vertex-vscode`
+	 *  because `vsce` rejects scoped names; the `displayName` is the
+	 *  new `@mcp-vertex/extension-vscode` for users. The packaging
+	 *  script reads `manifest.name` to compute this directly, so this
+	 *  helper is the second-source-of-truth for tests + documentation. */
 	vscodeVsix: (version: string) =>
 		distArtifactPath(
 			'extensions',
 			'vscode',
 			version,
-			`mcp-vertex-extension-vscode-${version}.vsix`,
+			`mcp-vertex-vscode-${version}.vsix`,
 		),
 } as const;
 

@@ -131,7 +131,7 @@ describe('monorepo-paths', () => {
 
 		it('vscodeVsix is rooted under dist/extensions/vscode/<version>', () => {
 			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
-				`${repoRoot()}/dist/extensions/vscode/0.2.0/mcp-vertex-extension-vscode-0.2.0.vsix`,
+				`${repoRoot()}/dist/extensions/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
 			);
 		});
 	});
