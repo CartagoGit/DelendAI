@@ -92,11 +92,13 @@ The auditor **must read and reason about** the actual source files in the follow
 - Identify: non-atomic writes, duplicated logic, host-specific vocabulary leaking into generic plugin contracts, missing mutex wrapping, `@ts-ignore` / `@ts-nocheck`, leftover `console.log`.
 - Confirm each finding with a code excerpt and file reference (`file#LNN`).
 
-#### 2.3 Extensions (`extensions/*`)
+#### 2.3 Extensions (`extensions/*`, `packages/ui-extension`)
 - Read `extensions/vscode/src/` — host integration, activation, webview bridge, service wiring.
-- Identify: UI panel lifecycle issues, message passing without validation, missing error boundaries, VS Code API misuse.
+- Identify: UI panel lifecycle issues, message passing without validation, missing error boundaries, VS Code API misuse, any `import vscode` outside `extensions/vscode/`.
+- Read `packages/ui-extension/` — panels, command palette, brand assets, CSS.
+- Identify: hardcoded strings that should be i18n keys, host-import violations, missing ARIA attributes.
 
-#### 2.4 UI extension (`packages/ui-extension`)
+#### 2.4 Apps and web (`apps/web`)
 - Read components, panels, command palette, brand assets.
 - Identify: hardcoded strings that should be i18n keys, missing semantic HTML, accessibility gaps, host-import violations.
 

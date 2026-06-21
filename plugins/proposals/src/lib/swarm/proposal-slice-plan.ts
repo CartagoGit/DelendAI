@@ -156,6 +156,21 @@ export interface ILockSnapshotEntry {
 	readonly agent: string;
 }
 
+const lockCoversSlice = (
+	taskId: string,
+	proposalId: string,
+	sliceId: string,
+): boolean => {
+	if (taskId === sliceId || taskId === `${proposalId}-${sliceId}`) {
+		return true;
+	}
+	if (!taskId.startsWith(`${proposalId}-`)) {
+		return false;
+	}
+	const grouped = taskId.slice(proposalId.length + 1).split('-');
+	return grouped.includes(sliceId);
+};
+
 /**
  * Derive runtime statuses: a doc-level `done` wins; an active lock
  * whose task_id equals the sliceId means `in-progress` (owner = the
@@ -165,12 +180,17 @@ export const deriveSliceStatuses = (
 	plan: IProposalSlicePlan,
 	activeLocks: readonly ILockSnapshotEntry[],
 ): IProposalSlicePlan => {
-	const byTask = new Map(activeLocks.map((lock) => [lock.taskId, lock]));
 	return {
 		...plan,
 		slices: plan.slices.map((slice) => {
 			if (slice.status === 'done') return slice;
-			const lock = byTask.get(slice.sliceId);
+			const lock = activeLocks.find((candidate) =>
+				lockCoversSlice(
+					candidate.taskId,
+					plan.proposalId,
+					slice.sliceId,
+				),
+			);
 			if (lock !== undefined) {
 				return { ...slice, status: 'in-progress', owner: lock.agent };
 			}

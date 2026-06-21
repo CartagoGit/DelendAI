@@ -149,6 +149,22 @@ export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files'
 export { redactSecrets } from '../lib/shared/redact';
 export type { IRedactResult } from '../lib/shared/redact';
 export { killProcessGroup } from '../lib/commands/process-group';
+export { runCommand } from '../lib/shared/run-command';
+export type {
+	IRunCommandOptions,
+	IRunCommandOutcome,
+} from '../lib/shared/run-command';
+export {
+	fsRead,
+	fsWrite,
+	buildFsToolRegistrations,
+} from '../lib/shared/fs-tools';
+export type {
+	IFsReadResult,
+	IFsWriteOptions,
+	IFsWriteResult,
+	IFsToolOptions,
+} from '../lib/shared/fs-tools';
 
 // --- IDE install helper (`mcp-vertex init`) ---------------------------------
 export { mergeServerEntry } from '../lib/install/merge-config';
@@ -183,6 +199,26 @@ export {
 	LockContentionError,
 } from '../lib/shared/with-file-mutex';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
+
+// --- write-side git primitives (S9: git_commit/git_push, auto_work persist) ---
+export {
+	createGitRunner as createWriteGitRunner,
+	gitAdd,
+	gitCommit,
+	gitPush,
+	gitHeadShortHash,
+	gitLastCommitAuthor,
+	commitAndPush,
+} from '../lib/shared/git-write';
+export type {
+	IGitRunner as IWriteGitRunner,
+	IGitRunResult as IWriteGitRunResult,
+	ICommitOptions,
+	IPushOptions,
+	IPushForceMode,
+	ICommitAndPushOptions,
+	ICommitAndPushResult,
+} from '../lib/shared/git-write';
 export {
 	CorruptFileError,
 	quarantineCorruptFile,

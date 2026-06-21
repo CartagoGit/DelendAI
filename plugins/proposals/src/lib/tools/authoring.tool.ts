@@ -369,7 +369,7 @@ export const buildCloseSliceRegistration = (
 				}
 				// Flip the slice block's status to done (add or replace).
 				const blockRe = new RegExp(
-					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
+					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 					'm',
 				);
 				const m = md.match(blockRe);
@@ -503,7 +503,7 @@ export const buildReviewRegistration = (
 					return toolError(`proposal file missing: ${docPath}`);
 
 				const blockRe = new RegExp(
-					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |\\n*$(?![\\s\\S]))`,
+					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
 					'm',
 				);
 				const m = md.match(blockRe);

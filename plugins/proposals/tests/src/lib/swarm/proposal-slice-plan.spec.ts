@@ -56,6 +56,28 @@ const DOC_WITH_BOLD_STATUS = DOC.replace(
 	'- **Status**: done',
 );
 
+const DOC_WITH_SIMPLE_SLICE_IDS = `---
+id: f00020
+---
+
+# f00020
+
+## Slices
+
+### S1 — first
+
+- files: docs/a.md
+- status: done
+
+### S2 — second
+
+- files: docs/b.md
+
+### S3 — third
+
+- files: docs/c.md
+`;
+
 describe('parseProposalSlicePlan', () => {
 	it('returns null for legacy proposals without a Slices section', () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
@@ -115,6 +137,20 @@ describe('deriveSliceStatuses + validateClaim', () => {
 		expect(derived.slices[1]?.owner).toBe('implementation_runner');
 		// doc-level done always wins
 		expect(derived.slices[0]?.status).toBe('done');
+	});
+
+	it('treats grouped proposal task ids as covering each referenced slice', () => {
+		const groupedPlan = parseProposalSlicePlan(
+			'f00020',
+			DOC_WITH_SIMPLE_SLICE_IDS,
+		)!;
+		const derived = deriveSliceStatuses(groupedPlan, [
+			{ taskId: 'f00020-S2-S3', agent: 'copilot' },
+		]);
+		expect(derived.slices[1]?.status).toBe('in-progress');
+		expect(derived.slices[1]?.owner).toBe('copilot');
+		expect(derived.slices[2]?.status).toBe('in-progress');
+		expect(derived.slices[2]?.owner).toBe('copilot');
 	});
 
 	it('accepts a claim whose deps are done', () => {

@@ -35,6 +35,11 @@ export type {
 } from '../lib/git';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';
+export {
+	buildGitWriteToolRegistrations,
+	isConventionalCommitMessage,
+} from '../lib/write-tools';
+export type { IGitWriteToolOptions } from '../lib/write-tools';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
