@@ -136,6 +136,35 @@ const missingEslintDeps = (
 	return required.filter((d) => !(d in deps));
 };
 
+const missingEslintFinding = (input: {
+	readonly project: string;
+	readonly area: string;
+	readonly framework: string;
+	readonly command: string;
+	readonly missing: readonly string[];
+}): {
+	readonly code: 'missing-eslint-deps';
+	readonly severity: 'warning';
+	readonly project: string;
+	readonly area: string;
+	readonly framework: string;
+	readonly message: string;
+	readonly missing: readonly string[];
+	readonly nextAction: string;
+} | null => {
+	if (input.missing.length === 0) return null;
+	return {
+		code: 'missing-eslint-deps',
+		severity: 'warning',
+		project: input.project,
+		area: input.area,
+		framework: input.framework,
+		message: `The ESLint command cannot run until ${input.missing.join(', ')} ${input.missing.length === 1 ? 'is' : 'are'} installed.`,
+		missing: input.missing,
+		nextAction: `Install the missing dev dependencies, then run \`${input.command}\`.`,
+	};
+};
+
 /** Typecheck command for an area, or undefined if it isn't a TS area. */
 const typecheckCommand = (rules: IAreaRules): string | undefined => {
 	if (rules.typecheck.length === 0) return undefined;
@@ -206,23 +235,42 @@ export const buildCheckRulesRegistration = (
 			{
 				description:
 					'Returns how to check each area against its rules: the resolved ESLint configs (project first) and the exact command to run. Advisory and agnostic — you run the command; it does not execute or modify anything.',
-				inputSchema: z.object({ area: z.string().optional() }),
+				inputSchema: z.object({
+					area: z.string().optional(),
+					compact: z.boolean().optional(),
+				}),
 				outputSchema: z.object({
+					compact: z.boolean(),
 					checks: z.array(
 						z.object({
 							project: z.string(),
 							area: z.string(),
 							framework: z.string(),
-							eslintConfigs: z.array(z.string()),
-							typecheckConfigs: z.array(z.string()),
+							eslintConfigs: z.array(z.string()).optional(),
+							typecheckConfigs: z.array(z.string()).optional(),
 							command: z.string(),
 							typecheckCommand: z.string().optional(),
 							missingEslintDeps: z.array(z.string()),
 						}),
 					),
+					findings: z.array(
+						z.object({
+							code: z.literal('missing-eslint-deps'),
+							severity: z.literal('warning'),
+							project: z.string(),
+							area: z.string(),
+							framework: z.string(),
+							message: z.string(),
+							missing: z.array(z.string()),
+							nextAction: z.string(),
+						}),
+					),
 				}),
 			},
-			async (args: { area?: string | undefined }) => {
+			async (args: {
+				area?: string | undefined;
+				compact?: boolean | undefined;
+			}) => {
 				const manifest = loadManifest(options);
 				const all = areasOf(manifest);
 				const selected =
@@ -235,21 +283,43 @@ export const buildCheckRulesRegistration = (
 						'Call get_rules to list areas.',
 					);
 				}
-				return toolJson({
-					checks: selected.map((entry) => ({
+				const compact = args.compact === true;
+				const checks = selected.map((entry) => {
+					const command = lintCheckCommand(entry.area, entry.rules);
+					const missing = missingEslintDeps(
+						options.reader,
+						entry.area,
+						entry.rules.presetId,
+					);
+					return {
 						project: entry.project,
 						area: entry.area,
 						framework: entry.rules.framework,
-						eslintConfigs: entry.rules.eslint,
-						typecheckConfigs: entry.rules.typecheck,
-						command: lintCheckCommand(entry.area, entry.rules),
+						...(compact
+							? {}
+							: {
+									eslintConfigs: entry.rules.eslint,
+									typecheckConfigs: entry.rules.typecheck,
+								}),
+						command,
 						typecheckCommand: typecheckCommand(entry.rules),
-						missingEslintDeps: missingEslintDeps(
-							options.reader,
-							entry.area,
-							entry.rules.presetId,
-						),
-					})),
+						missingEslintDeps: missing,
+					};
+				});
+				return toolJson({
+					compact,
+					checks,
+					findings: checks
+						.map((check) =>
+							missingEslintFinding({
+								project: check.project,
+								area: check.area,
+								framework: check.framework,
+								command: check.command,
+								missing: check.missingEslintDeps,
+							}),
+						)
+						.filter((finding) => finding !== null),
 				});
 			},
 		);

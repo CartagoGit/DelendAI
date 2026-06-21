@@ -24,15 +24,26 @@ export interface RulesApplyRulesOutput {
 }
 
 export interface RulesCheckRulesOutput {
+	compact: boolean;
 	checks: {
 		project: string;
 		area: string;
 		framework: string;
-		eslintConfigs: string[];
-		typecheckConfigs: string[];
+		eslintConfigs?: string[];
+		typecheckConfigs?: string[];
 		command: string;
 		typecheckCommand?: string;
 		missingEslintDeps: string[];
+	}[];
+	findings: {
+		code: "missing-eslint-deps";
+		severity: "warning";
+		project: string;
+		area: string;
+		framework: string;
+		message: string;
+		missing: string[];
+		nextAction: string;
 	}[];
 }
 

@@ -3,9 +3,11 @@ import { readFile } from 'node:fs/promises';
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
+	runMigrations,
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
+import type { IMigrator } from '@mcp-vertex/core/public';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 
@@ -52,7 +54,11 @@ const emptyRegistry = (): IAgentRegistry => ({
 	assignments: [],
 });
 
-const migrate = (raw: unknown): IAgentRegistry => {
+const AGENT_REGISTRY_MIGRATORS: Readonly<Record<number, IMigrator>> = {};
+
+const normalizeVersionedRegistry = (
+	raw: unknown,
+): IAgentRegistry & Record<string, unknown> => {
 	if (typeof raw !== 'object' || raw === null) return emptyRegistry();
 	const r = raw as Partial<IAgentRegistry>;
 	return {
@@ -68,6 +74,13 @@ const migrate = (raw: unknown): IAgentRegistry => {
 			: [],
 	};
 };
+
+const migrate = (raw: unknown): IAgentRegistry =>
+	runMigrations<IAgentRegistry>(
+		normalizeVersionedRegistry(raw),
+		AGENT_REGISTRY_MIGRATORS,
+		AGENT_CONVENTIONS.registry_version,
+	).data;
 
 export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {

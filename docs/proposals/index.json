@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T01:57:21.043Z",
-	"count": 20,
+	"generated_at": "2026-06-21T02:03:36.615Z",
+	"count": 22,
 	"proposals": [
 		{
 			"id": "a1-16-06-2026- Auditoría Maestra (Unificada)",
@@ -112,6 +112,22 @@
 			"id": "f116",
 			"file": "done/f116-proposals-output-schema-hardening.md",
 			"track": "proposals+tooling",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f117",
+			"file": "done/f117-adopt-core-migrations-for-agent-registry.md",
+			"track": "proposals+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f118",
+			"file": "done/f118-rules-compact-findings.md",
+			"track": "rules+quality",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
