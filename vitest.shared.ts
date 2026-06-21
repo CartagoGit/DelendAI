@@ -2,6 +2,25 @@ import { resolve } from 'node:path';
 import type { Alias } from 'vitest/config';
 
 /**
+ * Path to the global console-silencing vitest setup. Wired into every
+ * project via `sharedSetupFiles` so production `console.log`/`warn`/
+ * `error` calls made from tested code don't drown the validate stream.
+ * Opt out per test with `process.env.ALLOW_TEST_OUTPUT = '1'` (used by
+ * the 3 fault-injection suites that assert on real console output).
+ */
+export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
+	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
+
+/**
+ * Default setup file list shared by every vitest project. Add new
+ * cross-cutting setup files here so adding a plugin doesn't require
+ * remembering to wire them.
+ */
+export const sharedSetupFiles = (workspaceRoot: string): string[] => [
+	silenceConsoleSetupFile(workspaceRoot),
+];
+
+/**
  * Shared module aliases so specs can import via the public package
  * specifiers (`@mcp-vertex/core/...`, `@mcp-vertex/proposals/...`)
  * without a tsconfig-paths plugin. Mirrors `tsconfig.base.json` paths.

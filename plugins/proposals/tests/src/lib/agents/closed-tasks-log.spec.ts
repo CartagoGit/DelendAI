@@ -25,6 +25,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+// The proposals plugin emits "[proposals] closed-tasks log ... is
+// corrupt" via `console.error` whenever the on-disk log fails to
+// parse. Several cases here exercise that path; without opt-in the
+// shared silence-console-setup would swallow the diagnostic and
+// break the test contract.
+process.env['ALLOW_TEST_OUTPUT'] = '1';
+
 import {
 	appendToClosedTasks,
 	readClosedTasks,
