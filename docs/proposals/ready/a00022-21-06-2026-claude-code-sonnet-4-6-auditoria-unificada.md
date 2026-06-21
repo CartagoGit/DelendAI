@@ -73,12 +73,16 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 
 ### S5 — Add try/catch + user-facing error feedback to 4 `extensions/vscode` MCP-client commands
 - **Files**:
+  - `extensions/vscode/src/commands/types.ts`
   - `extensions/vscode/src/commands/show-overview.ts`
   - `extensions/vscode/src/commands/show-metrics.ts`
   - `extensions/vscode/src/commands/open-proposal.ts`
   - `extensions/vscode/src/commands/run-validation.ts`
+  - `extensions/vscode/src/test/commands.spec.ts`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Verification**: `bun run --cwd extensions/vscode test -- src/test/commands.spec.ts` passed with success-path coverage plus four MCP error feedback checks.
 
 > **Slices deliberadamente NO abiertos aquí** (documentados solo como Finding sin slice, porque su severidad es baja y/o requieren una decisión de scope que no corresponde a esta consolidación): `apps/web/vitest.config.ts` sin cobertura de componentes Astro (H-WEB-TEST), `scripts/derive-version.ts` sin tests deterministas (H-DERIVE-VERSION), dedupe de i18n langs `apps/web`↔`extensions/vscode` vía `apps/shared/` (H-I18N-DUP). Ver § Findings para el detalle de cada uno y por qué quedan como nota, no como slice.
 

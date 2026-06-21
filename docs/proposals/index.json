@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T18:44:13.378Z",
+	"generated_at": "2026-06-21T18:45:00.000Z",
 	"count": 85,
 	"proposals": [
 		{
@@ -17,10 +17,10 @@
 		},
 		{
 			"id": "f00020",
-			"file": "ready/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"file": "done/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
 			"track": "proposals-plugin",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
