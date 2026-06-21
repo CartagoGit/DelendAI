@@ -6,6 +6,10 @@ import {
 } from '@mcp-vertex/client';
 
 import {
+	OPEN_DASHBOARD_COMMAND,
+	registerOpenDashboardCommand,
+} from './commands/open-dashboard';
+import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
@@ -20,6 +24,7 @@ import {
 } from './commands/show-metrics';
 import { registerShowOverviewCommand } from './commands/show-overview';
 import { renderJsonHtml } from './commands/types';
+import { createVscodeHostAdapter } from './host/vscode-host-adapter';
 import {
 	type IFileSystemWatcher,
 	ToolTreeDataProvider,
@@ -128,6 +133,27 @@ export const activate = async (
 	);
 	context.subscriptions.push(registerOpenProposalCommand({ vscode, client }));
 	context.subscriptions.push(registerShowMetricsCommand({ vscode, client }));
+
+	// f125 — IDE-agnostic dashboard, wired via the host adapter so the
+	// dashboard HTML + tab logic are reusable from JetBrains/Zed/Cursor
+	// adapters without touching `vscode.*`.
+	const host = createVscodeHostAdapter();
+	context.subscriptions.push(
+		registerOpenDashboardCommand({
+			host,
+			client,
+			getConfig: () => {
+				try {
+					const section = host.getConfiguration<{
+						readonly extension?: { readonly docsUrl?: string };
+					}>('mcp-vertex');
+					return section ?? {};
+				} catch {
+					return {};
+				}
+			},
+		}),
+	);
 };
 
 export const deactivate = async (): Promise<void> => {};

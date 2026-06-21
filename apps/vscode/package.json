@@ -34,6 +34,10 @@
 		},
 		"commands": [
 			{
+				"command": "mcp-vertex.openDashboard",
+				"title": "mcp-vertex: Open Dashboard"
+			},
+			{
 				"command": "mcp-vertex.showOverview",
 				"title": "mcp-vertex: Show Overview"
 			},
@@ -52,6 +56,10 @@
 			{
 				"command": "mcp-vertex.showMetrics",
 				"title": "mcp-vertex: Show Metrics"
+			},
+			{
+				"command": "mcp-vertex.openDocs",
+				"title": "mcp-vertex: Open Documentation"
 			}
 		]
 	},
@@ -63,7 +71,8 @@
 		"package": "bun run build && vsce package --no-dependencies --no-git-tag-version"
 	},
 	"dependencies": {
-		"@mcp-vertex/client": "workspace:*"
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/ide": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.90.0",

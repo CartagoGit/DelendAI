@@ -31,6 +31,9 @@
 				"./packages/client/src/public/index.ts"
 			],
 			"@mcp-vertex/client/*": ["./packages/client/src/*"],
+			"@mcp-vertex/ide": ["./apps/ide/src/index.ts"],
+			"@mcp-vertex/ide/public": ["./apps/ide/src/public/index.ts"],
+			"@mcp-vertex/ide/*": ["./apps/ide/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"

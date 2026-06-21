@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T05:19:35.662Z",
+	"generated_at": "2026-06-21T05:33:02.030Z",
 	"count": 24,
 	"proposals": [
 		{
@@ -75,6 +75,19 @@
 				"ownership": [
 					"{ agent: technical_investigator, task: 'S1: Inventory of token sinks and baseline measurement' }",
 					"{ agent: proposal_guardian, task: 'S2: Triage findings into deferred proposals' }"
+				]
+			}
+		},
+		{
+			"id": "a025",
+			"file": "ready/a025-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
 				]
 			}
 		},
@@ -233,14 +246,6 @@
 			"file": "ready/l127-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
 			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "x123",
-			"file": "ready/x123-fix-host-zombie-on-parent-exit.md",
-			"track": "core+host",
-			"type": "unspecified",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
