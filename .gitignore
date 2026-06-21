@@ -1,6 +1,19 @@
 node_modules/
-dist/
+
+# Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
+#   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
+#   dist/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
+# Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
+# tracked — each package.json `main` / `exports` points there, and the
+# publishable surface is what consumers import. Those entries are NOT ignored.
 build/
+dist/
+
+# Legacy per-package build output name (pre-convention). Safe to remove.
+packages/*/build/
+apps/*/build/
+plugins/*/build/
+
 .cache/
 .mcp-vertex/
 .worktrees/
