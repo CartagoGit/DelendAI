@@ -144,9 +144,13 @@ user-visible defects closed.
 
 ## Acceptance
 
-- [ ] `bun run validate` is green.
-- [ ] `apps/web` builds (`bun run site:strict`).
-- [ ] Manual smoke (the six bullets in §Goal) all pass.
+- [x] `bun run validate` is green (133 test files, 943 tests pass).
+- [x] `apps/web` builds (`bun run site:strict`).
+- [x] Manual smoke (the six bullets in §Goal) all pass — verified
+      in the browser via Playwright on `/`, `/es/`, `/tools/`:
+      cfg modal flags re-sync, theme persists across navigations,
+      search modal has a working input + filter, scrollbar matches
+      the active theme, dev script regenerates typedoc.
 
 ## Risk register
 
@@ -162,7 +166,11 @@ user-visible defects closed.
 ## Linked references
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026-…md` (M3 / M27
-  follow-ups — UI polish on the web).
+  follow-ups — UI polish on the web). The audit file moved to
+  `docs/proposals/done/audits/a016-16-06-2026-auditoria-maestra-unificada.md`
+  in the same commit (293837d) that shipped the fixes; the `R`
+  rename in the diff stat showed up as a `D` line, which initially
+  looked like data loss.
 - Companion proposal: `l119-web-deep-pages-and-search.md` (S2
   Pagefind; this proposal extends the dev-time ergonomics around
   it).
@@ -170,3 +178,31 @@ user-visible defects closed.
   `apps/web/src/components/Search.astro`,
   `apps/web/src/layouts/Base.astro` — the three files doing
   most of the work.
+
+## Verification (post-ship)
+
+Re-verified in the dev server at `http://localhost:5000/` after
+`293837d` landed:
+
+- **/tools** (English): `<h1>Tools</h1>` — single title; the
+  PageHeader was removed and the section component owns the heading.
+- **/es/** (Spanish): cfg modal opens with the Spanish flag
+  highlighted (`aria-current="true"`), the "Tema" group has the
+  active theme swatch pressed (`aria-pressed="true"`), and the
+  modal copy is in Spanish ("Ajustes", "Tema", "Idioma",
+  "Movimiento").
+- **Theme persists across navigation**: clicking the light swatch
+  on `/tools`, navigating to `/es/`, and reloading the browser all
+  keep `data-theme="light"` and the swatch pressed.
+- **Search modal in dev**: opening the search icon mounts an
+  `<input>` + result list (the dev fallback), typing `install`
+  filters to 2 results (`Install & run` + `Guide`), clicking a
+  result navigates to the matching page.
+- **Scrollbar matches theme**: Firefox's `scrollbar-color` and
+  the WebKit `::-webkit-scrollbar-thumb` palette follow
+  `var(--muted)` and `var(--accent)` from `_themes.scss`; switching
+  from `midnight` to `light` updates the bar immediately.
+- **typedoc --watch**: `bun run dev` from `apps/web` spawns
+  `typedoc --watch` in the background and `astro dev` in the
+  foreground; the API HTML at `apps/web/public/api/` regenerates
+  on every save of a JSDoc comment.
