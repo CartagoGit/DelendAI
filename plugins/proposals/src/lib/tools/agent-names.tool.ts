@@ -66,6 +66,83 @@ export interface IAgentNamesArgs {
 const json = (value: unknown, isError = false): IToolTextResult =>
 	isError ? { ...toolJson(value), isError: true } : toolJson(value);
 
+const AGENT_ASSIGNMENT_SCHEMA = z.object({
+	task_id: z.string(),
+	agent_name: z.string(),
+	agent_slot: z.string(),
+	parent_task_id: z.string().nullable(),
+	depth: z.number(),
+	topic: z.string(),
+	adopted: z.boolean(),
+	assigned_at: z.string(),
+	last_seen: z.string(),
+	cooldown_until: z.string().nullable(),
+	status: z.enum(['active', 'cooldown', 'orphan']),
+	children: z.array(z.unknown()).optional(),
+});
+
+const AGENT_ADOPTION_SCHEMA = z.object({
+	name: z.string(),
+	task_id: z.string(),
+});
+
+const ZOMBIE_ORPHAN_SCHEMA = z.object({
+	agentName: z.string(),
+	taskId: z.string(),
+	agentSlot: z.string(),
+	lastSeen: z.string(),
+	ageMinutes: z.number(),
+	reason: z.enum([
+		'cooldown_null',
+		'stale_no_lock',
+		'stale_with_orphaned_lock',
+	]),
+	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
+});
+
+const AGENT_NAMES_OUTPUT_SCHEMA = z.object({
+	error: z.string().optional(),
+	backup: z.string().nullable().optional(),
+	nextAction: z.string().optional(),
+	summary: z
+		.object({
+			active: z.number(),
+			cooldown: z.number(),
+			orphan: z.number(),
+			adopted: z.number(),
+		})
+		.optional(),
+	assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+	adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
+	tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+	agent: z.string().optional(),
+	status: z.string().optional(),
+	in_cooldown: z.boolean().optional(),
+	task_id: z.string().optional(),
+	released: z.array(z.string()).optional(),
+	promoted: z.number().optional(),
+	freed: z.number().optional(),
+	blocked: z.boolean().optional(),
+	blockerType: z.string().optional(),
+	reason: z.string().optional(),
+	depth: z.number().optional(),
+	max_depth: z.number().optional(),
+	allowed: z.array(z.string()).optional(),
+	pool_size: z.number().optional(),
+	agent_name: z.string().optional(),
+	agent_slot: z.string().optional(),
+	parent_task_id: z.string().nullable().optional(),
+	topic: z.string().optional(),
+	assigned_at: z.string().optional(),
+	last_seen: z.string().optional(),
+	cooldown_until: z.string().nullable().optional(),
+	scannedAt: z.string().optional(),
+	staleAfterMinutes: z.number().optional(),
+	orphans: z.array(ZOMBIE_ORPHAN_SCHEMA).optional(),
+	threshold: z.enum(['green', 'yellow', 'red']).optional(),
+	recommendation: z.string().optional(),
+});
+
 const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 	(AGENT_CANONICAL_ROLES as readonly string[]).includes(value);
 
@@ -180,7 +257,7 @@ const runAgentNamesImpl = async (
 
 		case 'tree': {
 			const r = await store.read();
-			return json(buildAgentTree(r));
+			return json({ tree: buildAgentTree(r) });
 		}
 
 		case 'who_uses': {
@@ -427,7 +504,7 @@ export const buildAgentNamesRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_agent_names`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: AGENT_NAMES_OUTPUT_SCHEMA,
 				description:
 					'Agent name registry for the whole agent tree — the root orchestrator (slot "orchestrator", depth 0) included, not only subagents. Actions: assign/release/heartbeat/list/tree/who_uses/gc/reconcile. Use for named/delegated agents, not normal single-slice work.',
 				inputSchema: z.object({

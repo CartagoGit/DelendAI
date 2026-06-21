@@ -13,23 +13,207 @@
  */
 
 export interface ProposalsAgentLockOutput {
-	[key: string]: unknown;
+	tool?: string;
+	action?: "claim" | "release" | "status" | "gc";
+	path?: string;
+	lock_path?: string;
+	task_id?: string;
+	agent?: string;
+	error?: string | {
+		reason: string;
+		nextAction?: string;
+	};
+	blockerType?: string;
+	nextAction?: string;
+	summary?: string;
+	refreshed?: boolean;
+	ownership_count?: number;
+	blocked?: boolean;
+	blocked_reason?: string;
+	conflicting_task?: string;
+	conflicting_agent?: string;
+	overlapping_files?: string[];
+	claimed?: boolean;
+	removed?: number;
+	exists?: boolean;
+	active_write_lanes?: number;
+	dropped?: number;
+	version?: number;
+	stale_after_minutes?: number;
+	in_flight?: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		parent_task_id?: string;
+	}[];
+	ok?: boolean;
 }
 
 export interface ProposalsAgentLockReleaseOrphanOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
 }
 
 export interface ProposalsAgentNamesOutput {
-	[key: string]: unknown;
+	error?: string;
+	backup?: string | null;
+	nextAction?: string;
+	summary?: {
+		active: number;
+		cooldown: number;
+		orphan: number;
+		adopted: number;
+	};
+	assignments?: Array<{
+		task_id: string;
+		agent_name: string;
+		agent_slot: string;
+		parent_task_id: string | null;
+		depth: number;
+		topic: string;
+		adopted: boolean;
+		assigned_at: string;
+		last_seen: string;
+		cooldown_until: string | null;
+		status: "active" | "cooldown" | "orphan";
+		children?: unknown[];
+	}>;
+	adopted?: {
+		name: string;
+		task_id: string;
+	}[];
+	tree?: Array<{
+		task_id: string;
+		agent_name: string;
+		agent_slot: string;
+		parent_task_id: string | null;
+		depth: number;
+		topic: string;
+		adopted: boolean;
+		assigned_at: string;
+		last_seen: string;
+		cooldown_until: string | null;
+		status: "active" | "cooldown" | "orphan";
+		children?: unknown[];
+	}>;
+	agent?: string;
+	status?: string;
+	in_cooldown?: boolean;
+	task_id?: string;
+	released?: string[];
+	promoted?: number;
+	freed?: number;
+	blocked?: boolean;
+	blockerType?: string;
+	reason?: string;
+	depth?: number;
+	max_depth?: number;
+	allowed?: string[];
+	pool_size?: number;
+	agent_name?: string;
+	agent_slot?: string;
+	parent_task_id?: string | null;
+	topic?: string;
+	assigned_at?: string;
+	last_seen?: string;
+	cooldown_until?: string | null;
+	scannedAt?: string;
+	staleAfterMinutes?: number;
+	orphans?: Array<{
+		agentName: string;
+		taskId: string;
+		agentSlot: string;
+		lastSeen: string;
+		ageMinutes: number;
+		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock";
+		recommendedAction: "force_release" | "extend_cooldown" | "escalate";
+	}>;
+	threshold?: "green" | "yellow" | "red";
+	recommendation?: string;
 }
 
 export interface ProposalsAgentWorktreeOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	action: "create" | "list" | "remove";
+	reason?: string;
+	path?: string;
+	branch?: string;
+	created?: boolean;
+	removed?: boolean;
+	worktrees?: {
+		path: string;
+		head: string;
+		branch?: string;
+		detached: boolean;
+		locked: boolean;
+	}[];
 }
 
 export interface ProposalsAutoWorkOutput {
-	[key: string]: unknown;
+	state: "idle" | "work";
+	idleStreak?: number;
+	reason?: string;
+	stop?: true;
+	handoffPath?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	orchestration?: {
+		lane: "inspect-then-delegate";
+		delegateAfterToolCalls: number;
+		next: string;
+		policy: string;
+	};
+	validationCommand?: string;
+	persist?: {
+		mode: "none" | "commit" | "commit-and-push";
+		messageTemplate?: string;
+		pushTarget?: string;
+	};
+	steps?: string[];
 }
 
 export interface ProposalsCloseSliceOutput {
@@ -58,7 +242,59 @@ export interface ProposalsCompactStatusOutput {
 }
 
 export interface ProposalsContinueProposalOutput {
-	[key: string]: unknown;
+	kind: "next-proposal" | "no-proposal" | "all-claimed" | "slice-mode-error" | "slice-plan" | "slice-claim-rejected" | "slice-claim";
+	reason?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	status?: string;
+	relaunchCommand?: string;
+	guide?: string[];
+	plan?: {
+		proposalId: string;
+		slices: Array<{
+			proposalId: string;
+			sliceId: string;
+			title: string;
+			owner: string | null;
+			files: string[];
+			dependsOn: string[];
+			gate: "lint" | "type" | "e2e" | "none";
+			status: "pending" | "in-progress" | "done" | "blocked";
+			acceptanceCriteria: string[];
+		}>;
+		globalGate: "lint" | "type" | "e2e" | "none";
+	};
+	disjointnessIssues?: {
+		first: string;
+		second: string;
+		file: string;
+	}[];
+	claimableSliceIds?: string[];
+	sliceId?: string;
+	validation?: {
+		ok: boolean;
+		reason: string;
+		blockerType: "none" | "unknown-slice" | "deps-not-done" | "overlap-in-progress" | "already-done" | "already-in-progress";
+	};
+	slice?: {
+		proposalId: string;
+		sliceId: string;
+		title: string;
+		owner: string | null;
+		files: string[];
+		dependsOn: string[];
+		gate: "lint" | "type" | "e2e" | "none";
+		status: "pending" | "in-progress" | "done" | "blocked";
+		acceptanceCriteria: string[];
+	} | null;
+	executionGuide?: {
+		files: string[];
+		acceptanceCriteria: string[];
+		gate: "lint" | "type" | "e2e" | "none";
+		rules: string[];
+	};
+	error?: string;
 }
 
 export interface ProposalsCreateProposalOutput {
@@ -74,7 +310,16 @@ export interface ProposalsCreateProposalOutput {
 }
 
 export interface ProposalsDelegateOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	stage?: "assign" | "lock";
+	detail?: Record<string, unknown>;
+	agent?: string;
+	reason?: string;
+	taskId?: string;
+	slot?: string;
+	files?: string[];
+	locked?: boolean;
+	instruction?: string;
 }
 
 export interface ProposalsGetProposalWorkflowOutput {
@@ -130,15 +375,141 @@ export interface ProposalsProposalBoardOutput {
 }
 
 export interface ProposalsProposalDiagnoseOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
 }
 
 export interface ProposalsProposalForceTransitionOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
 }
 
 export interface ProposalsProposalReconcileFolderOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
 }
 
 export interface ProposalsProposalReviewOutput {
@@ -158,15 +529,151 @@ export interface ProposalsProposalReviewOutput {
 }
 
 export interface ProposalsProposalStaleListOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
 }
 
 export interface ProposalsProposalTransitionOutput {
-	[key: string]: unknown;
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	movedFrom?: string;
+	movedTo?: string;
+	warning?: string;
 }
 
 export interface ProposalsRoundContextOutput {
-	[key: string]: unknown;
+	digest: {
+		roundId: string;
+		activeProposalId: string;
+		currentTaskId: string;
+		activeLocks: {
+			taskId: string;
+			agent: string;
+			ownershipCount: number;
+			filesPreview: string[];
+			lastSeen: string;
+			parentTaskId?: string;
+		}[];
+		activeAgents: {
+			agent: string;
+			taskId: string;
+			slot: string;
+			depth: number;
+			lastSeen: string;
+			adopted: boolean;
+		}[];
+		coreDocHashes: Record<string, string>;
+		sources: {
+			chatContext: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			checkpoint: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			lock: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			registry: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+		};
+		chatContext: {
+			proposalIds: string[];
+			topic?: string;
+			lastUpdated?: string;
+		};
+		checkpoint: {
+			proposalId?: string;
+			status?: string;
+			selectedTask?: string;
+			nextAction?: string;
+			updatedAt?: string;
+		};
+		proposalPortfolio: {
+			sourceState: "ok" | "missing" | "corrupt";
+			strategy: "index" | "fallback-scan";
+			activeIds: string[];
+			activeOverflowCount: number;
+			activeCount: number;
+			pendingCount: number;
+			inProgressCount: number;
+		};
+		resumeHint: {
+			mode: "resume" | "next" | "unknown";
+			proposalId: string;
+			reason: string;
+			taskId?: string;
+		};
+		createdAt: string;
+		digestVersion: 1;
+	} | null;
+	stale: boolean;
+	recomputedAt: string;
+	digestPath: string;
 }
 
 export interface ProposalsStateHealthOutput {
@@ -188,7 +695,35 @@ export interface ProposalsStateHealthOutput {
 }
 
 export interface ProposalsStateRepairOutput {
-	[key: string]: unknown;
+	mode: "dry-run" | "execute";
+	diagnosis: {
+		locks: {
+			active: number;
+		};
+		queue: {
+			queueLength: number;
+			queuedCount: number;
+			waiterOrphans: number;
+			oldestAgeMinutes: number;
+			threshold: string;
+		} | null;
+		registry: {
+			orphans: number;
+			threshold: string;
+		};
+		healthy: boolean;
+	};
+	wouldRepair?: {
+		staleLocks: number;
+		dueQueueEntries: number;
+		orphanAssignments: number;
+	};
+	repaired?: {
+		staleLocks: number;
+		expiredQueueEntries: number;
+		orphanAssignments: number;
+	};
+	nextAction?: string;
 }
 
 export interface ProposalsSyncProposalsOutput {
@@ -199,7 +734,35 @@ export interface ProposalsSyncProposalsOutput {
 }
 
 export interface ProposalsTaskQueueOutput {
-	[key: string]: unknown;
+	error?: string;
+	taskId?: string;
+	status?: string;
+	queueLength?: number;
+	position?: number;
+	consumedAt?: string;
+	digest?: {
+		digests: {
+			taskId: string;
+			closedAt: string;
+			diffSummary?: string;
+		}[];
+	};
+	digests?: {
+		taskId: string;
+		closedAt: string;
+		diffSummary?: string;
+	}[];
+	pendingTargets?: string[];
+	queuedCount?: number;
+	promotedCount?: number;
+	consumedCount?: number;
+	cancelledCount?: number;
+	expiredCount?: number;
+	waiterOrphans?: number;
+	oldestAgeMinutes?: number;
+	releaseSignalBacklog?: number;
+	threshold?: string;
+	recommendation?: string;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

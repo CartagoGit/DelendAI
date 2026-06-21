@@ -43,6 +43,85 @@ export interface IContinueProposalArgs {
 const json = toolJson;
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
+const SLICE_GATE_SCHEMA = z.enum(['lint', 'type', 'e2e', 'none']);
+const SLICE_STATUS_SCHEMA = z.enum([
+	'pending',
+	'in-progress',
+	'done',
+	'blocked',
+]);
+const CLAIM_BLOCKER_SCHEMA = z.enum([
+	'none',
+	'unknown-slice',
+	'deps-not-done',
+	'overlap-in-progress',
+	'already-done',
+	'already-in-progress',
+]);
+
+const PROPOSAL_SLICE_SCHEMA = z.object({
+	proposalId: z.string(),
+	sliceId: z.string(),
+	title: z.string(),
+	owner: z.string().nullable(),
+	files: z.array(z.string()),
+	dependsOn: z.array(z.string()),
+	gate: SLICE_GATE_SCHEMA,
+	status: SLICE_STATUS_SCHEMA,
+	acceptanceCriteria: z.array(z.string()),
+});
+
+const PROPOSAL_SLICE_PLAN_SCHEMA = z.object({
+	proposalId: z.string(),
+	slices: z.array(PROPOSAL_SLICE_SCHEMA),
+	globalGate: SLICE_GATE_SCHEMA,
+});
+
+const CLAIM_VALIDATION_SCHEMA = z.object({
+	ok: z.boolean(),
+	reason: z.string(),
+	blockerType: CLAIM_BLOCKER_SCHEMA,
+});
+
+const SLICE_OVERLAP_SCHEMA = z.object({
+	first: z.string(),
+	second: z.string(),
+	file: z.string(),
+});
+
+const EXECUTION_GUIDE_SCHEMA = z.object({
+	files: z.array(z.string()),
+	acceptanceCriteria: z.array(z.string()),
+	gate: SLICE_GATE_SCHEMA,
+	rules: z.array(z.string()),
+});
+
+const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
+	kind: z.enum([
+		'next-proposal',
+		'no-proposal',
+		'all-claimed',
+		'slice-mode-error',
+		'slice-plan',
+		'slice-claim-rejected',
+		'slice-claim',
+	]),
+	reason: z.string().optional(),
+	nextAction: z.string().optional(),
+	proposalId: z.string().optional(),
+	file: z.string().optional(),
+	status: z.string().optional(),
+	relaunchCommand: z.string().optional(),
+	guide: z.array(z.string()).optional(),
+	plan: PROPOSAL_SLICE_PLAN_SCHEMA.optional(),
+	disjointnessIssues: z.array(SLICE_OVERLAP_SCHEMA).optional(),
+	claimableSliceIds: z.array(z.string()).optional(),
+	sliceId: z.string().optional(),
+	validation: CLAIM_VALIDATION_SCHEMA.optional(),
+	slice: PROPOSAL_SLICE_SCHEMA.nullable().optional(),
+	executionGuide: EXECUTION_GUIDE_SCHEMA.optional(),
+	error: z.string().optional(),
+});
 
 // f113 S4: a proposal already on the new state machine is actionable by
 // FOLDER, not by status string — `review` isn't even in the legacy
@@ -357,7 +436,7 @@ export const buildContinueProposalRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_continue_proposal`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: CONTINUE_PROPOSAL_OUTPUT_SCHEMA,
 				description:
 					'Resolve the next proposal to work on. mode "auto" (default) returns the next actionable proposal by family cascade; mode "plan" returns the parsed ## Slices plan with claimable slices; mode "claim" claims a slice via the agent lock. Structured JSON.',
 				inputSchema: z.object({

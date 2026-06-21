@@ -246,6 +246,34 @@ const INPUT_SCHEMA = z
 	})
 	.strict();
 
+const AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA = z.object({
+	lane: z.literal('inspect-then-delegate'),
+	delegateAfterToolCalls: z.number().int().positive(),
+	next: z.string(),
+	policy: z.string(),
+});
+
+const AUTO_WORK_PERSIST_OUTPUT_SCHEMA = z.object({
+	mode: z.enum(['none', 'commit', 'commit-and-push']),
+	messageTemplate: z.string().optional(),
+	pushTarget: z.string().optional(),
+});
+
+const AUTO_WORK_OUTPUT_SCHEMA = z.object({
+	state: z.enum(['idle', 'work']),
+	idleStreak: z.number().int().positive().optional(),
+	reason: z.string().optional(),
+	stop: z.literal(true).optional(),
+	handoffPath: z.string().optional(),
+	nextAction: z.string().optional(),
+	proposalId: z.string().optional(),
+	file: z.string().optional(),
+	orchestration: AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA.optional(),
+	validationCommand: z.string().optional(),
+	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
+	steps: z.array(z.string()).optional(),
+});
+
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
 	options: IAutoWorkToolOptions,
@@ -259,7 +287,7 @@ export const buildAutoWorkRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_auto_work`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
 				description:
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
 				inputSchema: INPUT_SCHEMA,

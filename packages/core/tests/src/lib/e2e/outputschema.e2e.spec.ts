@@ -119,6 +119,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'proposals_proposal_board' },
 		{ name: 'proposals_compact_status' },
 		{ name: 'proposals_compact_status', args: { fields: ['locks'] } },
+		{ name: 'proposals_auto_work' },
 		// action-multiplexed (read-only actions) — permissive object schema
 		{ name: 'proposals_task_queue', args: { action: 'report' } },
 		{ name: 'proposals_agent_names', args: { action: 'list' } },

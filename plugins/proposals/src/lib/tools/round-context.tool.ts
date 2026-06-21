@@ -44,6 +44,95 @@ export interface IRoundContextOutput {
 	readonly digestPath: string;
 }
 
+const SOURCE_STATE_SCHEMA = z.enum(['ok', 'missing', 'corrupt']);
+
+const ROUND_CONTEXT_SOURCE_META_SCHEMA = z.object({
+	state: SOURCE_STATE_SCHEMA,
+	fingerprint: z.string(),
+	timestamp: z.string().nullable(),
+	ageMinutes: z.number().nullable(),
+	temporallyStale: z.boolean(),
+});
+
+const ROUND_CONTEXT_SOURCES_SCHEMA = z.object({
+	chatContext: ROUND_CONTEXT_SOURCE_META_SCHEMA,
+	checkpoint: ROUND_CONTEXT_SOURCE_META_SCHEMA,
+	lock: ROUND_CONTEXT_SOURCE_META_SCHEMA,
+	registry: ROUND_CONTEXT_SOURCE_META_SCHEMA,
+});
+
+const ROUND_CONTEXT_LOCK_SCHEMA = z.object({
+	taskId: z.string(),
+	agent: z.string(),
+	ownershipCount: z.number(),
+	filesPreview: z.array(z.string()),
+	lastSeen: z.string(),
+	parentTaskId: z.string().optional(),
+});
+
+const ROUND_CONTEXT_AGENT_SCHEMA = z.object({
+	agent: z.string(),
+	taskId: z.string(),
+	slot: z.string(),
+	depth: z.number(),
+	lastSeen: z.string(),
+	adopted: z.boolean(),
+});
+
+const ROUND_CONTEXT_CHAT_CONTEXT_SCHEMA = z.object({
+	proposalIds: z.array(z.string()),
+	topic: z.string().optional(),
+	lastUpdated: z.string().optional(),
+});
+
+const ROUND_CONTEXT_CHECKPOINT_SCHEMA = z.object({
+	proposalId: z.string().optional(),
+	status: z.string().optional(),
+	selectedTask: z.string().optional(),
+	nextAction: z.string().optional(),
+	updatedAt: z.string().optional(),
+});
+
+const ROUND_CONTEXT_PORTFOLIO_SCHEMA = z.object({
+	sourceState: SOURCE_STATE_SCHEMA,
+	strategy: z.enum(['index', 'fallback-scan']),
+	activeIds: z.array(z.string()),
+	activeOverflowCount: z.number(),
+	activeCount: z.number(),
+	pendingCount: z.number(),
+	inProgressCount: z.number(),
+});
+
+const ROUND_CONTEXT_RESUME_HINT_SCHEMA = z.object({
+	mode: z.enum(['resume', 'next', 'unknown']),
+	proposalId: z.string(),
+	reason: z.string(),
+	taskId: z.string().optional(),
+});
+
+const ROUND_CONTEXT_DIGEST_SCHEMA = z.object({
+	roundId: z.string(),
+	activeProposalId: z.string(),
+	currentTaskId: z.string(),
+	activeLocks: z.array(ROUND_CONTEXT_LOCK_SCHEMA),
+	activeAgents: z.array(ROUND_CONTEXT_AGENT_SCHEMA),
+	coreDocHashes: z.record(z.string(), z.string()),
+	sources: ROUND_CONTEXT_SOURCES_SCHEMA,
+	chatContext: ROUND_CONTEXT_CHAT_CONTEXT_SCHEMA,
+	checkpoint: ROUND_CONTEXT_CHECKPOINT_SCHEMA,
+	proposalPortfolio: ROUND_CONTEXT_PORTFOLIO_SCHEMA,
+	resumeHint: ROUND_CONTEXT_RESUME_HINT_SCHEMA,
+	createdAt: z.string(),
+	digestVersion: z.literal(1),
+});
+
+const ROUND_CONTEXT_OUTPUT_SCHEMA = z.object({
+	digest: ROUND_CONTEXT_DIGEST_SCHEMA.nullable(),
+	stale: z.boolean(),
+	recomputedAt: z.string(),
+	digestPath: z.string(),
+});
+
 const firstToken = (value: string): string =>
 	value.split(/[^a-zA-Z0-9]/)[0] ?? 'unknown';
 
@@ -143,7 +232,7 @@ export const buildRoundContextRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_round_context`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: ROUND_CONTEXT_OUTPUT_SCHEMA,
 				description:
 					'Round digest only: return the persisted multi-agent round context and whether it is stale. forceRefresh recomputes and persists it. Use for resumed swarm work, not normal single-slice execution.',
 				inputSchema: z.object({
