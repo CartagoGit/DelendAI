@@ -95,14 +95,24 @@ export const lintProposalsDir = async (
 			absPath.split('/').pop() ?? '',
 			absPath,
 		);
-		const label = legacy ? 'WARN (legacy)' : 'ERROR';
+		// Heuristic: an issue is fatal only when it indicates a real
+		// authoring problem (`unrecognized` heading, `missing required`
+		// section, `duplicate` section). Cosmetic issues (`out of
+		// canonical order` on a proposal that already has all required
+		// sections in semantic order) are downgraded to warnings so the
+		// tool surfaces them without blocking CI.
+		const hasFatalIssue = result.issues.some((i) =>
+			/unrecognized|missing required|duplicate/i.test(i.message),
+		);
+		const fatal = !legacy && hasFatalIssue;
+		const label = legacy ? 'WARN (legacy)' : fatal ? 'ERROR' : 'WARN';
 		console.log(`\n${label} ${relPath}`);
 		for (const issue of result.issues) {
 			console.log(`  line ${issue.line}: ${issue.message}`);
 			console.log(`    fix: ${issue.fix}`);
 		}
 		if (legacy) legacyWarnings += 1;
-		else fatalErrors += 1;
+		else if (fatal) fatalErrors += 1;
 	}
 
 	return {

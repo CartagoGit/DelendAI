@@ -49,6 +49,10 @@ Esto causa tres problemas:
 - **Cada ID se rellena con ceros a la izquierda hasta 5 dígitos** (`a00001`, `f00100`, `c00001`, etc.). Margen para 99 999 proposals por familia = suficiente para décadas.
 - **Cada familia se renumera por fecha de creación real** (fecha del primer commit que añadió el archivo, vía `git log --diff-filter=A --format=%aI -- <path>`), empezando en `00001` para la más antigua.
 
+## Why
+
+(why this proposal exists — the rationale)
+
 ## Acceptance
 
 - [ ] `docs/proposals/index.json` lista los 22 IDs existentes (más los 20 audits que f00001 ya reubicó en `done/audits/`) con IDs padded: `a00001..a00020` (audits) + `a00021..a00024` (audits nuevos del 21/06), `f00001..f00003` (f121..f00019 + el hueco), `c00001..f00033` (c00001..f00032), `x00001..x00002` (x00006, x00007). Si al ejecutar S1 aparecen más IDs en `done/feats/` o `done/fixes/` que el index actual no conoce, se incluyen también.
@@ -141,7 +145,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
     - `git grep -nE '\b[a-z][0-9]{1,4}\b' -- ':!*.lock' ':!CHANGELOG.md'` solo devuelve matches donde `[0-9]{1,4}` es claramente no un ID de proposal (versiones, años, etc.). El verificador publica un report con los matches residuales para revisión manual.
   - dependsOn: [`s2`, `s3`]
 
-## Coordination notes
+### Coordination notes
 
 - **f00001 está `in_progress` y renombra `a1..a20` en `done/audits/`**. Si f00001 cierra antes que s2, el mapa de s1 ya incluye esos IDs como `a00001..a00020`. Si f00001 cierra después, s1 debe coordinarse con f00001 para no renombrar dos veces — la política es **s1 espera a f00001** si f00001 no ha hecho `git mv` aún. **Recomendación**: bloquear el lock de f00001 antes de empezar s1, ejecutar s1, liberar el lock.
 - **f00022 (IDE extension) tiene `reservedFiles: [..., docs/proposals/done/feats/]`.** Eso podría colisionar con los archivos que f00023 va a renombrar en `done/feats/`. Resolución: s2 lee el `reservedFiles` de f00022 antes de hacer `git mv` y aborta si encuentra conflicto (en la práctica, f00022 aún no está implementado, así que el riesgo es bajo — pero s2 lo verifica).

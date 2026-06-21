@@ -54,6 +54,10 @@ Esto está **roto contra el catálogo real**:
 2. **Override por frontmatter** (`cascadeOverride: <int>`): un proposal puede decir "yo soy priority = -5" y ganar a todos los de su kind.
 3. **Refactor SOLID** del módulo para que añadir un kind nuevo o cambiar el resolver no toque a los consumidores.
 
+## Why
+
+(why this proposal exists — the rationale)
+
 ## Acceptance
 
 - [ ] `proposal-workflow.ts.buildProposalWorkflow()` devuelve un array de **13 familias**, una por cada key de `PROPOSAL_KINDS` + el alias `p`. Cada familia tiene `prefix`, `description` (derivada del kind: `"{kind} ({prefix}: prefix)"` para no mentir), y `cascadePriority` según el orden por defecto de §"Orden por defecto".

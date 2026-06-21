@@ -265,6 +265,7 @@ const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
 	// === Custom / domain-specific (added as the catalogue grew) ===
 	'orden por defecto': 'why this design',
 	'out of scope (lo que no toca)': 'non-goals',
+	'out of scope': 'non-goals',
 	scope: 'why this design',
 	'acceptance (global)': 'acceptance',
 	'acceptance criteria': 'acceptance',
