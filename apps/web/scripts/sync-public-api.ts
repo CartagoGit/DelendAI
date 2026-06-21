@@ -40,10 +40,7 @@ import {
 const LINK = join(repoRoot(), 'apps', 'web', 'public', 'api');
 const TARGET_ABS = WELL_KNOWN.docsApi();
 
-// `relativeFrom` measures climb from the symlink's parent directory
-// (not from the symlink path itself, which includes the symlink's name).
-const LINK_PARENT = dirname(LINK);
-const relTarget = relativeFrom(LINK_PARENT, TARGET_ABS);
+const relTarget = relativeFrom(LINK, TARGET_ABS);
 
 /**
  * Replace Bun's `existsSync` (which can lie about dangling or
