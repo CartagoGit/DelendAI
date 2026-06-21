@@ -51,9 +51,9 @@ import {
 	SCAFFOLDED_FILE_SCHEMA,
 	SERVER_BLUEPRINT_SCHEMA,
 	SERVER_PLAN_SCHEMA,
-} from '../../src/lib/bootstrap/bootstrap-tool';
-import { MetricSchema } from '../../src/lib/metrics/metrics-tool';
-import { SCAFFOLD_REPORT_SCHEMA } from '../../src/lib/scaffold/scaffold-tool';
+} from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
+import { MetricSchema } from '@mcp-vertex/core/lib/metrics/metrics-tool';
+import { SCAFFOLD_REPORT_SCHEMA } from '@mcp-vertex/core/lib/scaffold/scaffold-tool';
 
 /**
  * The set of host-core tool `outputSchema`s to pin. Each entry is the
@@ -186,7 +186,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 			it(`${toolId} serialises to a strict-object root (no permissive catchall)`, () => {
 				const jsonSchema = z.toJSONSchema(CORE_TOOL_SCHEMAS[toolId]);
 				const verdict = isStrictRoot(jsonSchema);
-				expect(verdict.ok, verdict.reason ?? '').toBe(true);
+				expect(verdict.ok, verdict.ok ? '' : verdict.reason).toBe(true);
 			});
 
 			it(`${toolId} declares ≥1 root property`, () => {
