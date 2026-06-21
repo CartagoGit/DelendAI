@@ -7,7 +7,7 @@
  * {lang}/benchmarks.astro and {lang}/plugins/index.astro.
  * Run from the repo root.
  *
- * Usage: bun tools/scripts/site/gen-section-pages.script.ts
+ * Usage: bun tools/scripts/astro/gen-section-pages.script.ts
  *
  * Note: this is a developer-only codegen script. It writes the exact same
  * 4 files per language that the bash heredoc did, with tabs for indent and
