@@ -1,5 +1,5 @@
 ---
-id: a00025
+id: a00024
 kind: audit
 title: "Estudio exhaustivo de ahorro de tokens — superficie de herramientas, working tree y disciplina"
 status: done

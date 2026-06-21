@@ -1,5 +1,5 @@
 ---
-id: f00015
+id: f00005
 kind: feat
 title: MCP logs plugin — persistent append-only event log + correlation + observability dashboard
 status: done

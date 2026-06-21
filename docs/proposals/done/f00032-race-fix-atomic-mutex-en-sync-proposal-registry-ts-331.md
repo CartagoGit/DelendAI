@@ -1,5 +1,5 @@
 ---
-id: f00020
+id: f00032
 kind: feat
 title: Race fix — atomic + mutex en sync-proposal-registry.ts:331
 status: done

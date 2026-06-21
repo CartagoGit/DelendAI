@@ -175,9 +175,9 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 			await writeProposal(
 				root,
 				'blocked',
-				'f404-self-blocked.md',
+				'f00404-self-blocked.md',
 				{
-					id: 'f404',
+					id: 'f00404',
 					kind: 'feat',
 					title: 'A sufficiently long title',
 					status: 'blocked',
@@ -188,14 +188,14 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 				validBody,
 			);
 			const result = await reconcileBlocked(root, FAKE_GIT_MV);
-			expect(result.resolved).toEqual([{ id: 'f404' }]);
+			expect(result.resolved).toEqual([{ id: 'f00404' }]);
 		});
 	});
 
 	describe('syncProposalRegistry integration', () => {
 		it('discovers a new-system proposal living in ready/', async () => {
-			await writeProposal(root, 'ready', 'f500-discoverable.md', {
-				id: 'f500',
+			await writeProposal(root, 'ready', 'f00500-discoverable.md', {
+				id: 'f00500',
 				status: 'ready',
 				track: 'proposals',
 				date: '2026-06-20',
@@ -206,7 +206,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 				[],
 				FAKE_GIT_MV,
 			);
-			expect(result.proposals.some((p) => p.id === 'f500')).toBe(true);
+			expect(result.proposals.some((p) => p.id === 'f00500')).toBe(true);
 		});
 
 		it('reconciles a misfiled proposal before building the index (no duplicate entries)', async () => {

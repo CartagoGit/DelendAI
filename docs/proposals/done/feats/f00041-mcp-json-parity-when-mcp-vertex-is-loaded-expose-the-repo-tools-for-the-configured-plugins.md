@@ -1,5 +1,5 @@
 ---
-id: f00049
+id: f00041
 kind: feat
 title: mcp.json parity — when mcp-vertex is loaded, expose the repo tools for the configured plugins
 status: done

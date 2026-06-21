@@ -1,5 +1,5 @@
 ---
-id: x00004
+id: x00006
 type: proposal
 status: done
 track: web+i18n+docs

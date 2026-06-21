@@ -1,5 +1,5 @@
 ---
-id: f00014
+id: f00004
 kind: feat
 title: IDE extension (VS Code first, JetBrains/Zed later) — generic MCP client + tree + webviews
 status: done

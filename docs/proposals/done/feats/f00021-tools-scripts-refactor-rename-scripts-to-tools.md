@@ -1,5 +1,5 @@
 ---
-id: f00025
+id: f00021
 kind: feat
 title: tools/scripts refactor — portar .sh/.py a TS, mover scripts/*.ts a tools/scripts/<area>/<name>.script.ts
 status: done

@@ -209,7 +209,7 @@ const main = async (): Promise<number> => {
 		'  3. git add plugins/*/tutorials/{es,fr,de,pt,it,zh,hi,ar,ja,vi,th}/ tools/scripts/i18n/translate-tutorials.script.ts',
 	);
 	console.log(
-		"     git commit -m 'feat(plugins): bootstrap 11-language tutorial skeletons (p110 s3)'",
+		"     git commit -m 'feat(plugins): bootstrap 11-language tutorial skeletons'",
 	);
 	return 0;
 };

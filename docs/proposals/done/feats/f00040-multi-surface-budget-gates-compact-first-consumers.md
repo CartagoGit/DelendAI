@@ -1,5 +1,5 @@
 ---
-id: f00047
+id: f00040
 kind: feat
 title: Multi-surface budget gates + compact-first consumers
 status: done

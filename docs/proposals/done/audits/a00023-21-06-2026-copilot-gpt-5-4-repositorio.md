@@ -1,5 +1,5 @@
 ---
-id: a00024
+id: a00023
 kind: audit
 title: "Auditoría completa del repositorio — GitHub Copilot (GPT-5.4)"
 status: done

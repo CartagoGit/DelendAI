@@ -1,5 +1,5 @@
 ---
-id: f00016
+id: f00007
 kind: feat
 title: Proposal state machine, kinds, scaffolds, and recovery
 status: done

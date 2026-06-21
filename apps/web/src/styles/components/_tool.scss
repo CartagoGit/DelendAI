@@ -4,7 +4,7 @@
 // Tag selectors (h3) are nested with `&` to keep the BEM scope.
 //
 // Composes with the shared `.card` primitive (see _card.scss) so the
-// look matches prompts, skills, knowledge, etc. (p105).
+// look matches prompts, skills, knowledge, etc.
 
 .tools-grid {
 	display: grid;

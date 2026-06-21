@@ -1,7 +1,7 @@
 /**
  * continuity-policy.spec.ts
  *
- * TDD specs for evaluateContinuityPolicy (p34b T1 point 2).
+ * TDD specs for evaluateContinuityPolicy.
  * Mirrors the structure and approach of proposal-budget.spec.ts from p34.
  */
 

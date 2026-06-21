@@ -1,5 +1,5 @@
 ---
-id: a00023
+id: a00022
 kind: audit
 title: "Auditoría independiente y exhaustiva — Claude Code (Sonnet 4.6)"
 status: done

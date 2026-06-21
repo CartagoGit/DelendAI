@@ -4,7 +4,7 @@
 // skills, prompts, plugin cards, knowledge, etc.) uses this base and
 // layers its own modifier on top (e.g. `.tool.card`, `.prompt.card`).
 //
-// The visual goal (p105): unify the look so the site feels coherent
+// The visual goal: unify the look so the site feels coherent
 // instead of "every component has its own opinion about borders and
 // padding". Cards get a soft border by default, a subtle elevation on
 // hover, and the accent gradient reserved for "this card links somewhere".

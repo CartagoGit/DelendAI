@@ -1,6 +1,6 @@
 /**
  * local-aliases.mjs — single source of truth for `#MAYÚSCULAS/*`
- * project-local imports (p112 s1).
+ * project-local imports.
  *
  * Two artefacts share this file so they cannot drift:
  *
