@@ -23,14 +23,13 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The proposals plugin emits "[proposals] closed-tasks log ... is
 // corrupt" via `console.error` whenever the on-disk log fails to
-// parse. Several cases here exercise that path; without opt-in the
-// shared silence-console-setup would swallow the diagnostic and
-// break the test contract.
-process.env['ALLOW_TEST_OUTPUT'] = '1';
+// parse. The diagnostic is captured via a spy installed in
+// `beforeEach` so the validate stream stays clean; cases that
+// exercise this path assert on the spy's call log.
 
 import {
 	appendToClosedTasks,
@@ -48,12 +47,23 @@ afterEach(() => {
 	for (const dir of TEMP_DIRS.splice(0)) {
 		rmSync(dir, { recursive: true, force: true });
 	}
+	stderrSpy?.mockRestore();
+	consoleErrorSpy?.mockRestore();
 });
 
 let workDir: string;
+let stderrSpy: ReturnType<typeof vi.spyOn>;
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
 beforeEach(() => {
 	workDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ctl-'));
 	TEMP_DIRS.push(workDir);
+	// Capture the corruption diagnostic. Cases that need to assert on
+	// it inspect `stderrSpy.mock.calls` / `consoleErrorSpy.mock.calls`.
+	stderrSpy = vi
+		.spyOn(process.stderr, 'write')
+		.mockImplementation(() => true);
+	consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 const makeRecord = (

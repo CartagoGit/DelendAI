@@ -28,4 +28,11 @@ export interface IMcpStdioClientOptions {
 	readonly args?: readonly string[];
 	readonly env?: Record<string, string>;
 	readonly cwd?: string;
+	/**
+	 * Where the spawned MCP server should send its stderr. Defaults
+	 * to `'inherit'` so production users see live diagnostics. Tests
+	 * should pass `'ignore'` (or `'pipe'` and read it) so the server's
+	 * status banners do not leak into the test output stream.
+	 */
+	readonly stderr?: 'inherit' | 'pipe' | 'ignore';
 }

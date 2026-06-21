@@ -91,6 +91,11 @@ The dependency arrow only ever points **plugin → core**, never the reverse.
 - **Measured token budget** — `overview`/`auto_work` stay under e2e-guarded ceilings.
 - **No drift** — the typed SDK, the site's `capabilities.json` and the config schema are
   all generated from the live registry; drift-guards fail the build.
+- **Single orchestrator contract** — `mcp-vertex` is the only source of truth for the
+  orchestrator workflow. Client adapters (`.github/agents/mcp-vertex.agent.md`,
+  `.claude/agents/mcp-vertex-orchestrator.cc.md`) are thin redirectors that load
+  `mcp-vertex_overview`'s `recommendedNextAction` instead of restating the workflow
+  in prose; `bun run lint:agents` warns on drift (f00031).
 
 ## Build, test, release
 

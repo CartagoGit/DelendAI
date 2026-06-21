@@ -28,6 +28,10 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', () => {
 				'--plugins=',
 				`--workspace=${workspace}`,
 			],
+			// Silence the spawned CLI's stderr so its status banner
+			// ("[mcp-vertex] wrote a project MCP server blueprint...")
+			// does not leak into the validate output stream.
+			stderr: 'ignore',
 		});
 
 		try {

@@ -950,3 +950,10 @@ camino al 11/10 — solo acabados de plataforma.**
 > adopción de migraciones, M29 gate longitudinal, M44 decisión de usuario, M40
 > idea de plugin) se confirmaron sin cambios — la razón documentada en su
 > momento sigue siendo válida, no son regresiones.
+
+> **Cerrado por f00031** (2026-06-21): la duplicación que esta auditoría
+> (línea 551) aceptó como "el precio del dogfooding" entre
+> `.github/agents/mcp-vertex.agent.md` y `.claude/agents/mcp-vertex-orchestrator.cc.md`
+> dejó de existir — ambos son hoy redirectores delgados hacia el contrato
+> canónico en `mcp-vertex` (`mcp-vertex_overview` → `recommendedNextAction`),
+> y `bun run lint:agents` (nuevo) detecta cualquier divergencia futura.

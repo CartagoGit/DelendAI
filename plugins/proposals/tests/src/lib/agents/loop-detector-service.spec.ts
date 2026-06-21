@@ -7,23 +7,25 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-detector-service';
-
-// The detector intentionally logs a "loop-detector: agent X is stuck"
-// warning when it detects a stall. Several cases in this suite
-// exercise that log path. The shared silence-console-setup would
-// swallow it, so opt back in for this file only.
-process.env['ALLOW_TEST_OUTPUT'] = '1';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 describe('AgentLoopDetectorService', () => {
 	let dir = '';
 	let mockCtx: IMcpPluginContext;
+	// Spy on process.stderr.write so the production loop-detector
+	// diagnostic ("[mcp-vertex] loop-detector: agent X is stuck") does
+	// not leak into the validate stream. Tests that need to verify
+	// the diagnostic was emitted read `stderrSpy.mock.calls` directly.
+	let stderrSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'loop-detector-test-'));
+		stderrSpy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
 
 		// Create a minimal workspace directory structure
 		const workspace = createWorkspacePathProvider(dir);
@@ -46,6 +48,7 @@ describe('AgentLoopDetectorService', () => {
 
 	afterEach(() => {
 		rmSync(dir, { recursive: true, force: true });
+		stderrSpy.mockRestore();
 	});
 
 	it('initializes with default options and is enabled by default', () => {
