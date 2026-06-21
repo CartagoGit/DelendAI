@@ -13,6 +13,52 @@ export interface IAgentLockToolOptions {
 	readonly lockFileLabel: string;
 }
 
+const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
+	task_id: z.string(),
+	agent: z.string(),
+	ownership: z.array(z.string()),
+	started_at: z.string(),
+	last_seen: z.string(),
+	parent_task_id: z.string().optional(),
+});
+
+const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
+	tool: z.string().optional(),
+	action: z.enum(['claim', 'release', 'status', 'gc']).optional(),
+	path: z.string().optional(),
+	lock_path: z.string().optional(),
+	task_id: z.string().optional(),
+	agent: z.string().optional(),
+	error: z
+		.union([
+			z.string(),
+			z.object({
+				reason: z.string(),
+				nextAction: z.string().optional(),
+			}),
+		])
+		.optional(),
+	blockerType: z.string().optional(),
+	nextAction: z.string().optional(),
+	summary: z.string().optional(),
+	refreshed: z.boolean().optional(),
+	ownership_count: z.number().optional(),
+	blocked: z.boolean().optional(),
+	blocked_reason: z.string().optional(),
+	conflicting_task: z.string().optional(),
+	conflicting_agent: z.string().optional(),
+	overlapping_files: z.array(z.string()).optional(),
+	claimed: z.boolean().optional(),
+	removed: z.number().optional(),
+	exists: z.boolean().optional(),
+	active_write_lanes: z.number().optional(),
+	dropped: z.number().optional(),
+	version: z.number().optional(),
+	stale_after_minutes: z.number().optional(),
+	in_flight: z.array(AGENT_LOCK_ENTRY_OUTPUT_SCHEMA).optional(),
+	ok: z.boolean().optional(),
+});
+
 /**
  * Write-ownership lock: claim before editing, release after, status/gc
  * for stale claims. Thin adapter over the (tested) agent-lock engine;
@@ -32,7 +78,7 @@ export const buildAgentLockRegistration = (
 			server.registerTool(
 				toolName,
 				{
-					outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: AGENT_LOCK_OUTPUT_SCHEMA,
 					description:
 						'Write-ownership lock only: claim before editing, release after editing, status/gc for stale claims. Not a task planner.',
 					inputSchema: z.object({

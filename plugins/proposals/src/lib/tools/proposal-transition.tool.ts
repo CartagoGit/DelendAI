@@ -56,6 +56,23 @@ export interface IProposalTransitionArgs {
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
 
+const TOOL_ERROR_SCHEMA = z.object({
+	reason: z.string(),
+	nextAction: z.string().optional(),
+});
+
+const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	error: TOOL_ERROR_SCHEMA.optional(),
+	id: z.string().optional(),
+	from: z.string().optional(),
+	to: z.string().optional(),
+	reason: z.string().optional(),
+	movedFrom: z.string().optional(),
+	movedTo: z.string().optional(),
+	warning: z.string().optional(),
+});
+
 interface ILocatedProposal {
 	readonly absPath: string;
 	readonly relPath: string;
@@ -202,7 +219,7 @@ export const buildProposalTransitionRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_transition`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
 				description:
 					'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
 				inputSchema: z.object({

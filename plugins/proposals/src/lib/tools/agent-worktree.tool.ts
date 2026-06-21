@@ -15,6 +15,25 @@ export interface IAgentWorktreeToolOptions {
 	readonly run?: IGitRunner;
 }
 
+const WORKTREE_ENTRY_OUTPUT_SCHEMA = z.object({
+	path: z.string(),
+	head: z.string(),
+	branch: z.string().optional(),
+	detached: z.boolean(),
+	locked: z.boolean(),
+});
+
+const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	action: z.enum(['create', 'list', 'remove']),
+	reason: z.string().optional(),
+	path: z.string().optional(),
+	branch: z.string().optional(),
+	created: z.boolean().optional(),
+	removed: z.boolean().optional(),
+	worktrees: z.array(WORKTREE_ENTRY_OUTPUT_SCHEMA).optional(),
+});
+
 /**
  * One git worktree (+ branch `agent/<name>`) per concurrent agent, so two
  * agents working the same repo never share `.git/index` — the failure
@@ -36,7 +55,7 @@ export const buildAgentWorktreeRegistration = (
 			server.registerTool(
 				toolName,
 				{
-					outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
 					description:
 						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`.',
 					inputSchema: z.object({

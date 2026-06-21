@@ -1,7 +1,15 @@
 {
-	"generated_at": "2026-06-20T20:20:00.162Z",
-	"count": 18,
+	"generated_at": "2026-06-21T01:57:21.043Z",
+	"count": 20,
 	"proposals": [
+		{
+			"id": "a1-16-06-2026- Auditoría Maestra (Unificada)",
+			"file": "audits/a1-16-06-2026- Auditoría Maestra (Unificada).md",
+			"track": "unspecified",
+			"type": "unspecified",
+			"status": "pending",
+			"date": "unknown"
+		},
 		{
 			"id": "f113",
 			"file": "done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
@@ -99,6 +107,14 @@
 					"docs/LOGS.md"
 				]
 			}
+		},
+		{
+			"id": "f116",
+			"file": "done/f116-proposals-output-schema-hardening.md",
+			"track": "proposals+tooling",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "l100",
@@ -221,5 +237,7 @@
 			"date": "2026-06-18"
 		}
 	],
-	"errors": []
+	"errors": [
+		"a1-16-06-2026- Auditoría Maestra (Unificada).md: missing or invalid 'status' frontmatter key"
+	]
 }

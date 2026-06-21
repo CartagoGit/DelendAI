@@ -63,6 +63,44 @@ interface IStateDiagnosis {
 	readonly healthy: boolean;
 }
 
+const STATE_DIAGNOSIS_SCHEMA = z.object({
+	locks: z.object({ active: z.number() }),
+	queue: z
+		.object({
+			queueLength: z.number(),
+			queuedCount: z.number(),
+			waiterOrphans: z.number(),
+			oldestAgeMinutes: z.number(),
+			threshold: z.string(),
+		})
+		.nullable(),
+	registry: z.object({
+		orphans: z.number(),
+		threshold: z.string(),
+	}),
+	healthy: z.boolean(),
+});
+
+const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
+	mode: z.enum(['dry-run', 'execute']),
+	diagnosis: STATE_DIAGNOSIS_SCHEMA,
+	wouldRepair: z
+		.object({
+			staleLocks: z.number(),
+			dueQueueEntries: z.number(),
+			orphanAssignments: z.number(),
+		})
+		.optional(),
+	repaired: z
+		.object({
+			staleLocks: z.number(),
+			expiredQueueEntries: z.number(),
+			orphanAssignments: z.number(),
+		})
+		.optional(),
+	nextAction: z.string().optional(),
+});
+
 /**
  * Read-only health snapshot of the swarm state: how many write lanes are
  * held, queue backpressure (waiter orphans / threshold), and orphaned
@@ -136,23 +174,7 @@ export const buildStateHealthRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_health`,
 			{
-				outputSchema: z.object({
-					locks: z.object({ active: z.number() }),
-					queue: z
-						.object({
-							queueLength: z.number(),
-							queuedCount: z.number(),
-							waiterOrphans: z.number(),
-							oldestAgeMinutes: z.number(),
-							threshold: z.string(),
-						})
-						.nullable(),
-					registry: z.object({
-						orphans: z.number(),
-						threshold: z.string(),
-					}),
-					healthy: z.boolean(),
-				}),
+				outputSchema: STATE_DIAGNOSIS_SCHEMA,
 				description:
 					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
 			},
@@ -179,7 +201,7 @@ export const buildStateRepairRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_repair`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: STATE_REPAIR_OUTPUT_SCHEMA,
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
 				inputSchema: z.object({

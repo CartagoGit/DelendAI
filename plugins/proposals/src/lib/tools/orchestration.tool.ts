@@ -104,6 +104,19 @@ export interface IDelegateToolOptions {
 	readonly lockPathAbs: string;
 }
 
+const DELEGATE_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	stage: z.enum(['assign', 'lock']).optional(),
+	detail: z.record(z.string(), z.unknown()).optional(),
+	agent: z.string().optional(),
+	reason: z.string().optional(),
+	taskId: z.string().optional(),
+	slot: z.string().optional(),
+	files: z.array(z.string()).optional(),
+	locked: z.boolean().optional(),
+	instruction: z.string().optional(),
+});
+
 /**
  * `delegate` — hand a slice to a subagent organically: assign it a
  * symbolic name (agent registry) and claim its files (agent lock) in one
@@ -122,7 +135,7 @@ export const buildDelegateRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_delegate`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: DELEGATE_OUTPUT_SCHEMA,
 				description:
 					'Delegate a slice to a subagent: assigns it a symbolic name (agent registry) and claims its files (agent lock) atomically, returning the handoff packet {agent, taskId, files, locked, instruction}. If the files are already locked it reports the conflict instead of claiming.',
 				inputSchema: z.object({

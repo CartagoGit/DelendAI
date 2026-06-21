@@ -94,6 +94,52 @@ interface ILocatedProposal {
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
 
+const TOOL_ERROR_SCHEMA = z.object({
+	reason: z.string(),
+	nextAction: z.string().optional(),
+});
+
+const RECOVERY_EVENT_SCHEMA = z.object({
+	kind: z.enum(['agent-alive', 'agent-idle', 'agent-dead']),
+	agent: z.string(),
+	taskId: z.string(),
+	ts: z.string(),
+	lastSeen: z.string(),
+	missedBeats: z.number(),
+});
+
+const STALE_PROPOSAL_SCHEMA = RECOVERY_EVENT_SCHEMA.extend({
+	suggestedActions: z.array(z.string()),
+});
+
+const RECOVERY_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	error: TOOL_ERROR_SCHEMA.optional(),
+	count: z.number().optional(),
+	zombies: z.array(STALE_PROPOSAL_SCHEMA).optional(),
+	taskId: z.string().optional(),
+	agent: z.string().optional(),
+	released: z.boolean().optional(),
+	id: z.string().optional(),
+	from: z.string().optional(),
+	to: z.string().optional(),
+	reason: z.string().optional(),
+	lockReleased: z.boolean().optional(),
+	movedTo: z.string().optional(),
+	warning: z.string().optional(),
+	changed: z.boolean().optional(),
+	path: z.string().optional(),
+	dryRun: z.boolean().optional(),
+	file: z.string().optional(),
+	folder: z.string().optional(),
+	status: z.string().optional(),
+	lockOwners: z.array(z.string()).optional(),
+	lastHeartbeat: z.string().optional(),
+	lastAgentDeadEvent: RECOVERY_EVENT_SCHEMA.optional(),
+	inconsistencies: z.array(z.string()).optional(),
+	suggestedActions: z.array(z.string()).optional(),
+});
+
 const locateProposal = async (
 	proposalsDirAbs: string,
 	id: string,
@@ -394,7 +440,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'List proposals whose owner emitted agent-dead from the recovery event buffer.',
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 					},
 					async () => runProposalStaleList(withBuffer),
 				);
@@ -409,7 +455,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Release an orphan task lock only when a matching agent-dead event exists.',
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							taskId: z.string().min(1),
 							agent: z.string().min(1),
@@ -429,7 +475,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Force a proposal to a recovery status with a required reason and optional lock release.',
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							id: z.string().min(1),
 							to: z.string().min(1),
@@ -452,7 +498,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Move one proposal file to the folder that matches its frontmatter status.',
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 						inputSchema: z.object({
 							id: z.string().min(1),
 							dryRun: z.boolean().optional(),
@@ -471,7 +517,7 @@ export const buildRecoveryToolRegistrations = (
 					{
 						description:
 							'Diagnose proposal folder, status, lock owners, heartbeat, and recovery actions.',
-						outputSchema: z.object({}).catchall(z.unknown()),
+						outputSchema: RECOVERY_OUTPUT_SCHEMA,
 						inputSchema: z.object({ id: z.string().min(1) }),
 					},
 					async (args) => runProposalDiagnose(args, withBuffer),
