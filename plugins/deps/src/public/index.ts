@@ -5,7 +5,12 @@
  */
 export { default } from '../index';
 
-export { listDeps, checkDeps } from '../lib/engine';
+export {
+	listDeps,
+	checkDeps,
+	checkOutdated,
+	fetchLatestFromNpm,
+} from '../lib/engine';
 export type {
 	IDepEntry,
 	IDepSection,
@@ -13,6 +18,9 @@ export type {
 	IDepsFinding,
 	IDepsFindingKind,
 	IDepsHealth,
+	IDepsOutdatedReport,
+	IOutdatedEntry,
+	ILatestVersionFetcher,
 } from '../lib/engine';
 export { buildDepsToolRegistrations } from '../lib/tools';
 export type { IDepsToolOptions } from '../lib/tools';

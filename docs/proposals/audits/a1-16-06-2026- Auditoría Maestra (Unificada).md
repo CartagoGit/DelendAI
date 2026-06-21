@@ -255,7 +255,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   - ✅ `memory`: TTL (`expiresAt`) + `redactSecrets` ya existían (`redact-ttl.spec.ts`).
   - ✅ `docs`: paginación (`limit`/`offset`) ya existía (`docs-pagination.spec.ts`).
   - 🟡 `rules`: detecta missing-eslint como campo (`missingEslintDeps`) pero no como *finding* propio ni tiene modo `compact`. *(no implementado — bajo valor/esfuerzo, cosmético)*
-  - 🔲 `deps`: sin `deps_outdated` — requeriría red (`effects:['network']`), decisión de alcance no tomada. *(no implementado, fuera de "offline por diseño" actual)*
+  - ✅ `deps`: **decidido y cerrado (21-06, sesión §11):** `deps_outdated` añadido,
+    opt-in vía `plugins.deps.options.allowNetwork: true`, `effects: ['network']`
+    declarado en la tool. Resuelve el baseline `x.y.z` del range (ignora
+    `*`/`latest`/`workspace:`/`npm:`/`file:`/`link:`/git urls — `wanted: null`,
+    no error) y compara contra `dist-tags.latest` del registro de npm
+    (`GET registry.npmjs.org/<pkg>/latest`, fetcher inyectable). Capado a 50
+    paquetes/llamada (`truncated`). `deps_list`/`deps_check` siguen offline sin
+    cambios — es la única excepción declarada.
+    ([engine.ts](../../../plugins/deps/src/lib/engine.ts),
+    [tools.ts](../../../plugins/deps/src/lib/tools.ts)). 7 tests nuevos con
+    fetcher inyectado (sin red real en la suite).
 - [x] Freno duro anti-idle en `auto_work` + `quality_cancel`: confirmados hechos (§7, "Closed on 17-06"). *Pending (real):* guarda anti-symlink en walks; documentar frontera de confianza de `quality`.
 
 **P3 — Plataforma de referencia**

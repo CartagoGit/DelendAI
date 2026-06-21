@@ -4,7 +4,12 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { listDeps, checkDeps } from '@mcp-vertex/deps/lib/engine';
+import {
+	listDeps,
+	checkDeps,
+	checkOutdated,
+} from '@mcp-vertex/deps/lib/engine';
+import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools';
 import plugin from '@mcp-vertex/deps';
 import type {
 	IMcpPluginContext,
@@ -77,6 +82,105 @@ describe('deps engine', () => {
 		const h = await checkDeps(root);
 		expect(h.findings[0]?.kind).toBe('no-manifest');
 		expect(h.healthy).toBe(false);
+	});
+});
+
+describe('checkOutdated (M11, injected fetcher — no real network)', () => {
+	let root = '';
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'deps-outdated-'));
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	const manifest = (obj: unknown): void =>
+		writeFileSync(join(root, 'package.json'), JSON.stringify(obj), 'utf8');
+
+	it('flags a dep whose latest is newer than the pinned baseline', async () => {
+		manifest({ dependencies: { zod: '^4.0.0' } });
+		const report = await checkOutdated(
+			root,
+			'package.json',
+			async (name) => (name === 'zod' ? '4.5.0' : null),
+		);
+		expect(report.checked).toBe(1);
+		expect(report.outdatedCount).toBe(1);
+		expect(report.entries[0]).toMatchObject({
+			name: 'zod',
+			wanted: '4.0.0',
+			latest: '4.5.0',
+			outdated: true,
+		});
+	});
+
+	it('does not flag a dep that is already current', async () => {
+		manifest({ dependencies: { zod: '4.5.0' } });
+		const report = await checkOutdated(
+			root,
+			'package.json',
+			async () => '4.5.0',
+		);
+		expect(report.outdatedCount).toBe(0);
+		expect(report.entries[0]?.outdated).toBe(false);
+	});
+
+	it('skips ranges without a comparable baseline (no error, wanted:null)', async () => {
+		manifest({ dependencies: { a: '*', shared: 'workspace:*' } });
+		const report = await checkOutdated(
+			root,
+			'package.json',
+			async () => '9.9.9',
+		);
+		expect(report.entries.every((e) => e.wanted === null)).toBe(true);
+		expect(report.outdatedCount).toBe(0);
+	});
+
+	it('records a per-package error without failing the whole report', async () => {
+		manifest({ dependencies: { zod: '^4.0.0' } });
+		const report = await checkOutdated(root, 'package.json', async () => {
+			throw new Error('registry unreachable');
+		});
+		expect(report.entries[0]?.error).toContain('registry unreachable');
+		expect(report.entries[0]?.outdated).toBe(false);
+	});
+
+	it('caps at maxPackages and reports truncated:true', async () => {
+		manifest({
+			dependencies: { a: '1.0.0', b: '1.0.0', c: '1.0.0' },
+		});
+		const report = await checkOutdated(
+			root,
+			'package.json',
+			async () => '1.0.0',
+			2,
+		);
+		expect(report.checked).toBe(2);
+		expect(report.truncated).toBe(true);
+	});
+});
+
+describe('deps_outdated tool registration (M11, opt-in)', () => {
+	it('is absent by default (offline by design)', () => {
+		const tools = buildDepsToolRegistrations({
+			namespacePrefix: 'deps',
+			workspaceRootAbs: '/ws',
+		});
+		expect(tools.map((t) => t.id)).toEqual(['deps_list', 'deps_check']);
+	});
+
+	it('is added with effects:["network"] when allowNetwork is true', () => {
+		const tools = buildDepsToolRegistrations({
+			namespacePrefix: 'deps',
+			workspaceRootAbs: '/ws',
+			allowNetwork: true,
+		});
+		expect(tools.map((t) => t.id)).toEqual([
+			'deps_list',
+			'deps_check',
+			'deps_outdated',
+		]);
+		expect(tools.find((t) => t.id === 'deps_outdated')?.effects).toEqual([
+			'network',
+		]);
 	});
 });
 

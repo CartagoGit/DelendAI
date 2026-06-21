@@ -73,7 +73,16 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 			);
 			return { default: hit ? hit[1] : undefined };
 		},
-		readFile: () => undefined,
+		// Synthetic config, harvest-only: turns on `deps`'s opt-in
+		// `allowNetwork` so `deps_outdated` is registered and its
+		// `outputSchema` gets harvested too — every other plugin still sees
+		// no config file (default options), matching the real CLI default.
+		readFile: (absolutePath: string) =>
+			absolutePath.endsWith('mcp-vertex.config.json')
+				? JSON.stringify({
+						plugins: { deps: { options: { allowNetwork: true } } },
+					})
+				: undefined,
 	});
 	const assembled = await createMcpProject(config);
 	try {
