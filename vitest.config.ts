@@ -15,6 +15,7 @@ export default defineConfig({
 			'examples/custom-plugin',
 			'apps/web',
 			'packages/ui-extension',
+			'extensions/vscode',
 			'tools/scripts',
 		],
 		// Coverage is a root concern (aggregated across every project). It only

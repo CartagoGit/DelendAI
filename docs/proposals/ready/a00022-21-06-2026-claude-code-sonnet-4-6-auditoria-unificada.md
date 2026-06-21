@@ -49,10 +49,13 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 - **Files**: `docs/proposals/ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: done
+- status: done
+
 ### S2 — Include `extensions/vscode` in root `vitest.config.ts` projects
 - **Files**: `vitest.config.ts`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
+- status: done
 
 ### S3 — Include `plugins/audit` in root `tsconfig.json` typecheck coverage
 - **Files**: `tsconfig.json`
