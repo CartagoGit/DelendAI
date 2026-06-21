@@ -2,7 +2,7 @@
 id: f00019
 kind: feat
 title: Async I/O — migrar notification/watcher.ts a node:fs/promises
-status: ready
+status: done
 type: proposal
 track: notification-plugin
 date: 2026-06-21
@@ -80,3 +80,9 @@ El fix tiene 3 componentes:
 - **Tamaño del fix**: un solo archivo + un spec. Impacto desproporcionado: elimina la única fuente de stalls por sync I/O en todo el monorepo.
 - **Follow-up natural**: si se aprueba, abre el camino a una segunda iteración que migre también el bootstrap CLI del host a `walkAllowedFiles`, ganando contención de paths en boot-time.
 - **Implementación**: `watcher.ts` migrado completo a `node:fs/promises` (`readFile`/`readdir`/`stat` en lugar de `readFileSync`/`readdirSync`/`existsSync`). `readInFlight`, `IReleaseWatcher.check()` e `IHandoffWatcher.check()` son ahora `async`/devuelven `Promise`. Ticks concurrentes (`setInterval` + `fs.watch` pueden disparar casi simultáneo) se serializan con un guard booleano (`checkInFlight`/`pollInFlight`) en vez de un `inFlight: Promise` compartido — equivalente funcional, evita una segunda capa de estado. No se adoptó `walkAllowedFiles` del core: la lógica del watcher es "diff de dos snapshots de un único directorio plano", no un recorrido recursivo de árbol de workspace, así que la primitiva no encajaba sin un wrapper (R2 se materializó, mitigación aplicada según lo previsto). El spec de "max latency del event loop" (R3) no se añadió como assertion de timing dedicada — la migración a async ya es la garantía estructural de no bloqueo; en su lugar el spec existente (`notification.spec.ts`) se migró íntegro a `await watcher.check()`, preservando los 11 casos (detección de archivo nuevo, ignorar pre-existentes, JSON corrupto, `awaitLockRelease` con timeout/abort). `bun run typecheck` limpio; `bunx vitest run plugins/notification` → 11/11 verde; `bun run lint`/`bun run validate` global bloqueado únicamente por `docs/proposals/index.json`, lockeado por el trabajo concurrente de `f00023`/`f00001` (ajeno a este slice).
+
+## Rationale (cierre)
+
+- Al re-verificar el 2026-06-21 18:13 UTC+2, el código de `watcher.ts` ya tenía 0 ocurrencias de `*Sync` (`grep -nE 'Sync\(' plugins/notification/src/lib/watcher.ts` → vacío) y los 11/11 tests de `notification.spec.ts` pasaban en verde. El trabajo de implementación estaba completo; solo faltaba el cierre formal (mover a `done/` + sincronizar `index.json`).
+- En el momento del cierre, `bun run validate` global fallaba por causas **ajenas a este slice** y propiedad de otros agentes activos en paralelo en el mismo workspace: (a) `packages/ui-extension/src/dev/entry.ts` sin `lib: dom`, (b) `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts` con propiedades duplicadas (editado en vivo, `git status` lo marcaba modificado en ese instante), (c) `@mcp-vertex/audit` no resoluble en `node_modules` (workspace linking pendiente de `bun install` tras un rename de `apps/ide`→`packages/ui-extension` y `apps/vscode`→`extensions/vscode` hecho por otro agente). Ninguno de estos archivos pertenece al scope de `plugins/notification`.
+- Gate aplicado para este cierre, acotado al slice (consistente con la regla de "no quedarse esperando" cuando el bloqueo es de terceros): `npx tsc --noEmit -p tsconfig.json` sin errores en `plugins/notification/**`, `bunx vitest run plugins/notification/tests/src/lib/notification.spec.ts` → 11/11 verde, `bun tools/scripts/lint/proposals.script.ts` → `0 fatal error(s)` (82 files checked). No se tocó `bun.lock`, `proposal-scaffold-linter.ts` ni ningún archivo bajo `apps/`/`packages/ui-extension`/`extensions/vscode` para evitar colisión con el trabajo en curso de otros agentes.
