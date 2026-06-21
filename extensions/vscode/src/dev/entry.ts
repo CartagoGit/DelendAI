@@ -1,6 +1,7 @@
+/// <reference lib="dom" />
 /**
- * `apps/vscode` dev entry — renders the extension's webviews with
- * mock data in a regular browser. Loaded by
+ * `extensions/vscode` dev entry — renders the extension's webviews
+ * with mock data in a regular browser. Loaded by
  * `tools/scripts/dev/dev.script.ts` at
  * `http://localhost:5200/__entry.js`.
  *
@@ -20,6 +21,12 @@
  * The dev page is a chooser: pick a webview in the sidebar and the
  * right pane shows the rendered HTML. This mirrors the way the
  * extension surfaces them in production.
+ *
+ * The `/// <reference lib="dom" />` directive above is required because
+ * the rest of the workspace compiles against the default `lib: ["ES2022"]`
+ * (no DOM). Adding the lib globally would force every other module to
+ * tolerate DOM types; scoping it to this dev-only file is the
+ * minimum-blast-radius fix.
  */
 import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
 
@@ -34,62 +41,57 @@ interface IToolDetailViewModel {
 	readonly metrics?: IMetricsSnapshot;
 }
 
+// `IToolEffect` only allows 'write' | 'spawn' | 'network' | 'destructive'.
+// 'read' is a tag, not an effect, so the mock uses an empty effects
+// array. The renderer layer (the only thing the dev entry exercises)
+// reads `tags` for the chip display, not `effects`.
 const mockTool: IToolDescriptor = {
 	name: 'mcp-vertex_search',
 	plugin: 'search',
 	summary: 'Low-token grep over workspace text files.',
 	tags: ['search', 'read'],
-	effects: ['read'],
+	effects: [],
 };
 
+// `IMetricsSnapshot` is the public MCP output of `mcp-vertex_metrics`,
+// whose Zod `outputSchema` declares only { calls, errors, totalMs,
+// maxMs, totalBytes } per tool and { calls, errors, totalMs, totalBytes }
+// in totals. The richer per-tool fields (`tool`, `plugin`, `avgMs`,
+// `tokens`) live in the internal registry but are NOT exposed by the
+// contract yet — so the dev mock stays aligned with the published
+// shape, not the in-memory one.
 const mockMetrics: IMetricsSnapshot = {
 	tools: {
 		'mcp-vertex_search': {
-			tool: 'mcp-vertex_search',
-			plugin: 'search',
 			calls: 318,
 			errors: 1,
 			totalMs: 14_910,
 			maxMs: 420,
-			avgMs: 47,
 			totalBytes: 0,
-			tokens: 0,
 		},
 		'mcp-vertex_overview': {
-			tool: 'mcp-vertex_overview',
-			plugin: 'core',
 			calls: 412,
 			errors: 2,
 			totalMs: 7_416,
 			maxMs: 80,
-			avgMs: 18,
 			totalBytes: 0,
-			tokens: 0,
 		},
 		'mcp-vertex_proposals_board': {
-			tool: 'mcp-vertex_proposals_board',
-			plugin: 'proposals',
 			calls: 211,
 			errors: 0,
 			totalMs: 19_412,
 			maxMs: 230,
-			avgMs: 92,
 			totalBytes: 0,
-			tokens: 0,
 		},
 		'mcp-vertex_memory_recall': {
-			tool: 'mcp-vertex_memory_recall',
-			plugin: 'memory',
 			calls: 88,
 			errors: 0,
 			totalMs: 1_936,
 			maxMs: 60,
-			avgMs: 22,
 			totalBytes: 0,
-			tokens: 0,
 		},
 	},
-	totals: { calls: 1029, errors: 3, avgMs: 39 },
+	totals: { calls: 1029, errors: 3, totalMs: 39 * 1029, totalBytes: 0 },
 };
 
 const mockToolDetail: IToolDetailViewModel = {

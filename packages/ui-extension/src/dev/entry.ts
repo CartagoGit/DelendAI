@@ -1,12 +1,14 @@
+/// <reference lib="dom" />
 /**
- * `apps/ide` dev entry — renders the dashboard with mock data in a
- * regular browser. Loaded by `tools/scripts/dev/dev.script.ts` at
+ * `packages/ui-extension` dev entry — renders the dashboard with
+ * mock data in a regular browser. Loaded by
+ * `tools/scripts/dev/dev.script.ts` at
  * `http://localhost:5100/__entry.js`.
  *
  * What this gives you:
  *  - A full preview of `renderDashboard(model, options)` without
  *    launching VS Code or the MCP server.
- *  - All workspace imports (`@mcp-vertex/ide`, `@mcp-vertex/client`)
+ *  - All workspace imports (`@mcp-vertex/ui-extension`, `@mcp-vertex/client`)
  *    resolved by Bun's bundler from the monorepo's workspace symlinks.
  *
  * What this does NOT give you (by design):
@@ -21,8 +23,14 @@
  * touch gets a value, but optional branches are mostly stubbed. If a
  * panel crashes on render, the wrapper below shows the error in a
  * visible box rather than swallowing it — easier to iterate.
+ *
+ * The `/// <reference lib="dom" />` directive above is required because
+ * the rest of `packages/ui-extension` compiles against the default
+ * `lib: ["ES2022"]` (no DOM). Adding the lib globally would force
+ * every other module to tolerate DOM types; scoping it to this dev-only
+ * file is the minimum-blast-radius fix.
  */
-import { renderDashboard } from '@mcp-vertex/ide/public';
+import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 import type { IDashboardAllModels } from '@mcp-vertex/client';
 
 const mockModel: IDashboardAllModels = {

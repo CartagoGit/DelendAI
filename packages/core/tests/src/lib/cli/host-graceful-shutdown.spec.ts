@@ -223,7 +223,10 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 	it('exits with code 143 within 2s of SIGTERM (no zombie)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[resolve('scripts/host-server.ts'), `--workspace=${workspace}`],
+			[
+				resolve('tools/scripts/host/host-server.script.ts'),
+				`--workspace=${workspace}`,
+			],
 			{
 				cwd: process.cwd(),
 				stdio: ['ignore', 'pipe', 'pipe'],
@@ -257,7 +260,10 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 	it('exits with code 130 within 2s of SIGINT (Ctrl+C)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[resolve('scripts/host-server.ts'), `--workspace=${workspace}`],
+			[
+				resolve('tools/scripts/host/host-server.script.ts'),
+				`--workspace=${workspace}`,
+			],
 			{
 				cwd: process.cwd(),
 				stdio: ['ignore', 'pipe', 'pipe'],
@@ -288,7 +294,10 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 	it('survives a double SIGTERM without crashing or double-closing', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[resolve('scripts/host-server.ts'), `--workspace=${workspace}`],
+			[
+				resolve('tools/scripts/host/host-server.script.ts'),
+				`--workspace=${workspace}`,
+			],
 			{
 				cwd: process.cwd(),
 				stdio: ['ignore', 'pipe', 'pipe'],
