@@ -1,3 +1,12 @@
+---
+id: a003
+kind: audit
+title: "Auditoría unificada — síntesis de 4 revisiones (15-06-2026)"
+status: done
+date: 2026-06-16T23:35:52Z
+track: archive
+---
+
 # Auditoría unificada de `@cartago-git/mcp-vertex` — síntesis de 4 revisiones
 
 > **Fecha:** 15-06-2026. Consolida y contrasta 4 auditorías independientes:

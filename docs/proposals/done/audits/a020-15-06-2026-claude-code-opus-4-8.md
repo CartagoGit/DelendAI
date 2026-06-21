@@ -1,3 +1,12 @@
+---
+id: a020
+kind: audit
+title: "Auditoría exhaustiva — Claude Code (Opus 4.8)"
+status: done
+date: 2026-06-21T04:23:51Z
+track: archive
+---
+
 # Auditoría exhaustiva de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)
 
 > Fecha: 15-06-2026. Análisis independiente del monorepo `mcp-vertex`

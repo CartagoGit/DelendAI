@@ -1,3 +1,12 @@
+---
+id: a019
+kind: audit
+title: "Auditoría Exhaustiva — Antigravity (Gemini 3.5 Flash)"
+status: done
+date: 2026-06-21T04:23:51Z
+track: archive
+---
+
 # 🔍 Auditoría Exhaustiva — `mcp-vertex` y Plugins
 
 > **Fecha**: 15 jun 2026 | **Revisor**: Antigravity (Gemini 3.5 Flash)

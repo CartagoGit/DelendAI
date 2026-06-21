@@ -1,3 +1,12 @@
+---
+id: a004
+kind: audit
+title: "Auditoría Exhaustiva [previa] — Antigravity (Claude Sonnet 4.6 Thinking)"
+status: done
+date: 2026-06-16T23:43:13Z
+track: archive
+---
+
 # Auditoría Exhaustiva — mcp-vertex
 **Fecha:** 2026-06-16  
 **Versión auditada:** 0.1.0 (monorepo)  

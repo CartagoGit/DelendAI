@@ -1,3 +1,12 @@
+---
+id: a018
+kind: audit
+title: "Auditoría Exhaustiva del estado actual — Antigravity (Gemini 3.5 Flash)"
+status: done
+date: 2026-06-21T04:23:51Z
+track: archive
+---
+
 # 🔍 Auditoría Exhaustiva — `mcp-vertex` y Plugins (Gemini 3.5 Flash)
 
 > **Fecha**: 15 de junio de 2026

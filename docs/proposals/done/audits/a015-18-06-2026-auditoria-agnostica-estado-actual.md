@@ -1,3 +1,12 @@
+---
+id: a015
+kind: audit
+title: "Auditoría Agnóstica del estado actual"
+status: done
+date: 2026-06-18T08:39:00Z
+track: archive
+---
+
 # 18-06-2026 · Auditoría Agnóstica (estado-actual) — `@cartago-git/mcp-vertex`
 
 > **Auditoría independiente y agnóstica** del estado actual del monorepo
