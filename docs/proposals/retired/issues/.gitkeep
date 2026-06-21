@@ -1,0 +1,6 @@
+# Ingessed GitHub issues live here after analysis, regardless of outcome:
+#   `promoted`          → a proposal was created from this issue
+#   `promoted-multiple` → several proposals were carved out
+#   `dismissed`         → analysis completed but no proposal is warranted
+# Every file is named `github#<number>-<slug>.md` and embeds the original
+# issue body + comments snapshot so the GitHub thread is recoverable offline.

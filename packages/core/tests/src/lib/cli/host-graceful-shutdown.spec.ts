@@ -6,6 +6,12 @@ import { join, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+// This suite asserts on the production shutdown banner that the host
+// server writes to stderr when its MCP server fails to close. The
+// shared silence-console-setup would otherwise swallow that output
+// and make the test impossible to write. Opt back in for this file.
+process.env['ALLOW_TEST_OUTPUT'] = '1';
+
 import {
 	__resetShutdownGuardForTests,
 	gracefulShutdown,

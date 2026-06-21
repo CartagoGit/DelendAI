@@ -20,10 +20,16 @@
 	],
 	"exports": {
 		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		}

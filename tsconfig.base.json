@@ -21,6 +21,7 @@
 		"sourceMap": true,
 		"noEmit": true,
 		"allowImportingTsExtensions": true,
+		"customConditions": ["@mcp-vertex/source"],
 		"types": ["bun", "node"],
 		"paths": {
 			"@mcp-vertex/core": ["./packages/core/src/index.ts"],

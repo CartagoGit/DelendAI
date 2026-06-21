@@ -9,6 +9,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-detector-service';
+
+// The detector intentionally logs a "loop-detector: agent X is stuck"
+// warning when it detects a stall. Several cases in this suite
+// exercise that log path. The shared silence-console-setup would
+// swallow it, so opt back in for this file only.
+process.env['ALLOW_TEST_OUTPUT'] = '1';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
