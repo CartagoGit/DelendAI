@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { OPEN_DOCS_COMMAND, registerOpenDocsCommand } from '../commands/open-docs';
+import {
+	OPEN_DOCS_COMMAND,
+	registerOpenDocsCommand,
+} from '../commands/open-docs';
 import type { ICommandVscodeApi } from '../commands/types';
 
 const createVscode = () => {
