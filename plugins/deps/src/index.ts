@@ -34,10 +34,11 @@ export default definePlugin({
 					body: [
 						'# Dependency health',
 						'',
-						`Tools: \`${ctx.namespacePrefix}_deps_list\` (inventory) / \`${ctx.namespacePrefix}_deps_check\` (offline health)${o.allowNetwork === true ? ` / \`${ctx.namespacePrefix}_deps_outdated\` (network)` : ''}.`,
+						`Tools: \`${ctx.namespacePrefix}_deps_list\` (inventory) / \`${ctx.namespacePrefix}_deps_check\` (offline health) / \`${ctx.namespacePrefix}_deps_polyglot\` (Python/Rust/Go)${o.allowNetwork === true ? ` / \`${ctx.namespacePrefix}_deps_outdated\` (network)` : ''}.`,
 						'',
 						'- `deps_list` enumerates package.json deps (with version ranges) per section.',
 						'- `deps_check` flags: no lockfile (non-reproducible builds), unpinned ranges (`*`/`latest`), and deps in more than one section.',
+						'- `deps_polyglot` lists pyproject.toml/Cargo.toml/go.mod deps when those manifests exist — npm-agnostic, still offline.',
 						'- Offline and agnostic by default: no network, no CVE database. For vulnerability scanning use a dedicated external tool.',
 						"- `deps_outdated` (opt-in via `allowNetwork: true`) resolves each dep's latest npm version and flags stale ones — the one declared `effects: ['network']` exception.",
 					].join('\n'),

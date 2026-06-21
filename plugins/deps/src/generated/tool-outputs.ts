@@ -58,9 +58,23 @@ export interface DepsDepsOutdatedOutput {
 	truncated: boolean;
 }
 
+export interface DepsDepsPolyglotOutput {
+	manifests: {
+		ecosystem: string;
+		manifest: string;
+		deps: {
+			ecosystem: string;
+			name: string;
+			range: string;
+			section: string;
+		}[];
+	}[];
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DepsToolOutputs {
 	"deps_deps_check": DepsDepsCheckOutput;
 	"deps_deps_list": DepsDepsListOutput;
 	"deps_deps_outdated": DepsDepsOutdatedOutput;
+	"deps_deps_polyglot": DepsDepsPolyglotOutput;
 }

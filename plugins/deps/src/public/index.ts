@@ -22,6 +22,17 @@ export type {
 	IOutdatedEntry,
 	ILatestVersionFetcher,
 } from '../lib/engine';
+export {
+	listPolyglotDeps,
+	parseCargoToml,
+	parseGoMod,
+	parsePyprojectToml,
+} from '../lib/polyglot';
+export type {
+	IPolyglotDepEntry,
+	IPolyglotEcosystem,
+	IPolyglotManifest,
+} from '../lib/polyglot';
 export { buildDepsToolRegistrations } from '../lib/tools';
 export type { IDepsToolOptions } from '../lib/tools';
 
