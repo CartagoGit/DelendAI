@@ -4,13 +4,7 @@
  */
 import type { IDashboardPluginsModel } from '@mcp-vertex/client';
 
-import {
-	escapeHtml,
-	formatMs,
-	formatNumber,
-	formatPercent,
-	formatTokens,
-} from './format';
+import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';
 import { barChart } from './bar-chart';
 
 export const renderPanelPlugins = (model: IDashboardPluginsModel): string => {

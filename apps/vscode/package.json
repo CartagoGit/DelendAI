@@ -2,7 +2,7 @@
 	"name": "mcp-vertex-vscode",
 	"displayName": "mcp-vertex",
 	"description": "VS Code client for inspecting and operating an mcp-vertex MCP server.",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"publisher": "cartago",
 	"type": "module",
 	"private": true,

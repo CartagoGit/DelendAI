@@ -18,29 +18,29 @@ const year = new Date().getFullYear();
 	<div class="container sitefoot__inner">
 		<div class="sitefoot__col sitefoot__col--brand">
 			<strong>@mcp-vertex/core</strong>
-			<p>{t.footer.tagline}</p>
-			<p class="sitefoot__credit">{t.footer.madeBy}</p>
+			<p data-footer-key="tagline">{t.footer.tagline}</p>
+			<p class="sitefoot__credit" data-footer-key="madeBy">{t.footer.madeBy}</p>
 		</div>
 		<nav class="sitefoot__col" aria-label="Sections">
-			<strong>{t.footer.sections}</strong>
-			<a href={lang === 'en' ? `${base}/install` : `${base}/${lang}/install`}>{t.nav.install}</a>
-			<a href={lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`}>{t.nav.tools}</a>
-			<a href={lang === 'en' ? `${base}/benchmarks` : `${base}/${lang}/benchmarks`}>{t.nav.benchmarks}</a>
-			<a href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>{t.nav.plugins}</a>
-			<a href={lang === 'en' ? `${base}/prompts` : `${base}/${lang}/prompts`}>{t.nav.prompts}</a>
-			<a href={lang === 'en' ? `${base}/resources` : `${base}/${lang}/resources`}>{t.nav.resources}</a>
-			<a href={lang === 'en' ? `${base}/knowledge` : `${base}/${lang}/knowledge`}>{t.nav.knowledge}</a>
+			<strong data-footer-key="sections">{t.footer.sections}</strong>
+			<a data-nav-key="install" href={lang === 'en' ? `${base}/install` : `${base}/${lang}/install`}>{t.nav.install}</a>
+			<a data-nav-key="tools" href={lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`}>{t.nav.tools}</a>
+			<a data-nav-key="benchmarks" href={lang === 'en' ? `${base}/benchmarks` : `${base}/${lang}/benchmarks`}>{t.nav.benchmarks}</a>
+			<a data-nav-key="plugins" href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>{t.nav.plugins}</a>
+			<a data-nav-key="prompts" href={lang === 'en' ? `${base}/prompts` : `${base}/${lang}/prompts`}>{t.nav.prompts}</a>
+			<a data-nav-key="resources" href={lang === 'en' ? `${base}/resources` : `${base}/${lang}/resources`}>{t.nav.resources}</a>
+			<a data-nav-key="knowledge" href={lang === 'en' ? `${base}/knowledge` : `${base}/${lang}/knowledge`}>{t.nav.knowledge}</a>
 		</nav>
 		<nav class="sitefoot__col" aria-label="Resources">
-			<strong>{t.footer.resources}</strong>
+			<strong data-footer-key="resources">{t.footer.resources}</strong>
 			<a href={`${base}/api/`}>API (TypeDoc)</a>
 			<a href={repo} rel="external">@mcp-vertex · GitHub</a>
 			<a href="https://www.npmjs.com/package/@mcp-vertex/core" rel="external">@mcp-vertex · npm</a>
-			<a href={creatorsRepo} rel="external">{t.footer.creatorsRepo}</a>
-			<a href={creatorsNpm} rel="external">{t.footer.creatorsNpm}</a>
+			<a data-footer-key="creatorsRepo" href={creatorsRepo} rel="external">{t.footer.creatorsRepo}</a>
+			<a data-footer-key="creatorsNpm" href={creatorsNpm} rel="external">{t.footer.creatorsNpm}</a>
 		</nav>
 	</div>
 	<div class="container sitefoot__base">
-		<span>© {year} mcp-vertex · BSD-3-Clause · {t.footer.built}</span>
+		<span>© {year} mcp-vertex · BSD-3-Clause · <span data-footer-key="built">{t.footer.built}</span></span>
 	</div>
 </footer>

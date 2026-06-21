@@ -1,6 +1,5 @@
 ---
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { loopDetectorTranslations } from '#DATA/loop-detector-i18n';
 
 const lang = 'en';
@@ -9,11 +8,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base lang={lang} title={`${t.title} — @mcp-vertex/core`} description={t.subtitle}>
-	<PageHeader
-		lang={lang}
-		title={t.title}
-		crumbs={[{ label: 'Plugins', href: lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins` }]}
-	/>
+	<header class="page-header">
+		<div class="container">
+			<nav class="page-header__crumb" aria-label="breadcrumb">
+				<a href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>Plugins</a>
+				<span aria-hidden="true">›</span>
+				<span aria-current="page">{t.title}</span>
+			</nav>
+			<h1>{t.title}</h1>
+		</div>
+	</header>
 	<section class="section">
 		<div class="container guide">
 			<article class="guide__body">
