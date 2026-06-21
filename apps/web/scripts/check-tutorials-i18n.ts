@@ -20,8 +20,9 @@
  * Run standalone (`bun scripts/check-tutorials-i18n.ts`) or as part of
  * `build:strict` once `l110 s3` closes.
  *
- * @see scripts/translate-tutorials.sh — the bootstrap that creates the
- *   skeletons with `auto-translated: true` + `needs-human-review: true`.
+ * @see tools/scripts/i18n/translate-tutorials.script.ts — the bootstrap
+ *   that creates the skeletons with `auto-translated: true` +
+ *   `needs-human-review: true`.
  * @see docs/proposals/l110-residual-l100-web-and-i18n.md §2 s3.
  */
 import { resolve, dirname, join } from 'node:path';
@@ -156,5 +157,5 @@ console.log(
 	`  Translation status: ${verdict.pendingReview}/${verdict.totalFiles} still pending review (${(reviewedRatio * 100).toFixed(1)}% reviewed).`,
 );
 console.log(
-	`  Bootstrap script: \`bun scripts/translate-tutorials.sh\` re-creates skeletons idempotently.`,
+	`  Bootstrap script: \`bun tools/scripts/i18n/translate-tutorials.script.ts\` re-creates skeletons idempotently.`,
 );

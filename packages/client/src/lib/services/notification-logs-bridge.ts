@@ -96,6 +96,10 @@ export class NotificationLogsBridge {
 		const correlated = this.buffer.filter(
 			(c) => Math.abs(c.ts - eventTs) <= CORRELATION_WINDOW_MS,
 		);
+		// eslint-disable-next-line no-console
+		console.log(
+			`[bridge] handle event=${event.type} eventTs=${eventTs} buffer=${this.buffer.length} correlated=${correlated.length}`,
+		);
 		const kind: BridgeEventKind = event.type;
 		const message = describeEvent(event);
 		const taskId =

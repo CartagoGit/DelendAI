@@ -15,7 +15,10 @@ const base = process.env.PAGES_BASE ?? '/mcp-vertex';
 export default defineConfig({
 	site: 'https://cartagogit.github.io',
 	base,
-	build: { format: 'directory' },
+	// p126-monorepo-build-dist: Astro emits the static site to
+	// `build/apps/web/` (monorepo-wide build layout). Consumers must look
+	// there instead of the legacy `apps/web/dist/`.
+	build: { format: 'directory', outDir: '../../build/apps/web' },
 	server: { port: 5000, host: true },
 	i18n: {
 		defaultLocale: 'en',
