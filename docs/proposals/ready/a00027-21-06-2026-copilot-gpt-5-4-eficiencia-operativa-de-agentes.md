@@ -69,7 +69,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `docs/LOOP-DETECTION.md`
   - `docs/proposals/ready/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md`
 - **Gate**: `bun run lint:proposals`
-- **Status**: pending
+- **Status**: done
 - **Expect**: la auditoría deja una rúbrica estable y tres salidas cerrables sin tocar código: `already-strong`, `gaps documentales` y `baseline medible` sobre límites, jerarquía, presupuestos, criterios de salida y memoria compacta.
 
 ### S2 — Workflow multiagente: límites, jerarquía y criterios de salida
@@ -84,7 +84,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `AGENTS.md`
   - `CLAUDE.md`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 - **Expect**: baseline documental de workflow multiagente con tres salidas cerrables sin código: enforcement ya fuerte en runtime, gaps entre guidance y enforcement, y mapa mínimo de claim path / wait path / delegate threshold / stop path.
 
 ### S3 — Memoria, prompts y superficies de contexto
@@ -98,7 +98,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `docs/scaffolds/ARCHITECTURE-MEMORY.md`
   - `docs/scaffolds/ARCHITECTURE-WORKFLOWS.md`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 - **Expect**: baseline documental de memoria y contexto con tres salidas cerrables sin código: fronteras ya fuertes de memoria durable, gaps entre guidance e invalidación/compacción de sesión, y mapa mínimo de `memory vs docs/search/reread`.
 
 ### S4 — Core, plugins, client y hosts: bounded outputs y rutas compactas por defecto
@@ -114,7 +114,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `extensions/vscode/src/**`
   - `apps/web/src/**`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 - **Expect**: matriz por surface con cuatro ejes verificables sin tocar código: `compact-default`, `cap numérico`, `invalidación de caché` y `cheap check`, más gaps donde el bounded runtime ya exista pero el consumidor siga prefiriendo rutas caras.
 
 ### S5 — Triage: convertir gaps validados en propuestas hijas
@@ -124,7 +124,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `docs/proposals/ready/*.md`
   - `docs/proposals/index.json`
 - **Gate**: `bun run lint:proposals`
-- **Status**: pending
+- **Status**: done
 - **Expect**:
   - cada gap validado produce **como mucho una propuesta hija por familia causal**, no una por síntoma;
   - cada propuesta hija declara prerequisite, acceptance y superficie reservada;
@@ -136,7 +136,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `docs/proposals/done/audits/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md`
   - `docs/proposals/index.json`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
 - **Expect**: la auditoría solo se mueve a done cuando el mapa de follow-ups esté trazado y el repo pueda explicar, con links concretos, qué se va a hacer, qué no, y por qué.
 
 ## acceptance
@@ -155,7 +155,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 | Propuesta creada | Sí, en `ready/` |
 | Baseline de eficiencia | Parcialmente levantada en `S1` desde superficies normativas/documentales |
 | Hallazgos validados | Ya hay hallazgos documentales para `S1`, `S2` y `S3`, y evidencia de runtime/consumo para `S4`; aún no se ha hecho el triage de propuestas hijas |
-| Propuestas hijas creadas | Aún no, se reservan para `S5` |
+| Propuestas hijas creadas | Sí: `f00045`, `f00046`, `f00047` |
 | Gate de cierre | `bun run validate` al pasar a `done` |
 
 ### Baseline S1
@@ -278,10 +278,10 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 
 Estas son las familias de hallazgo que la auditoría considera plausibles y dignas de seguimiento si se verifican:
 
-1. **Una propuesta de workflow** si faltan límites, jerarquía o criterios de salida en el sistema multiagente.
-2. **Una propuesta de memoria/contexto** si hay persistencia ruidosa, falta de compactación o invalidación pobre.
-3. **Una propuesta de tool outputs/budgets** si hay herramientas o hosts que no ofrecen ruta compacta y presupuestos defendibles.
-4. **Ninguna propuesta adicional** cuando el área ya esté bien cubierta por propuestas vivas o por invariantes existentes.
+1. **Workflow**: creado `f00045` para delegate threshold, worktree discipline y rutas canónicas de wait/sync.
+2. **Memoria / contexto**: creado `f00046` para política de persistencia durable, decisión memory-vs-docs y compacción/invalicación de sesión.
+3. **Tool outputs / budgets / consumers**: creado `f00047` para budgets multi-surface y defaults compact-first en client/hosts.
+4. **Sin cuarta familia** por ahora: los demás gaps quedan como cobertura parcial o como prerequisites de esas tres líneas.
 
 Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección de tickets solapados.
 
@@ -294,7 +294,7 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 | Presupuestos | Fuerte para `overview`/`auto_work`; parcial porque el resto de surfaces bounded (`search`, `docs`, `logs`, round-context, memory`) aún no tienen budgets medidos/gateados equivalentes |
 | Criterios de salida | Fuerte para cambios de código y también en runtime swarm (`idle brake`, `all-claimed`, `stuck-detected`); parcial para slices de investigación documental |
 | Memoria compacta | Fuerte en higiene de persistencia durable; parcial en compacción e invalidación del contexto de sesión y en la frontera normativa de qué persistir |
-| Follow-ups | Aún no abrir; S1 solo justifica posibles familias, no propuestas hijas todavía |
+| Follow-ups | Triage completado en tres familias causales: `f00045`, `f00046`, `f00047` |
 
 ## notes
 
@@ -309,3 +309,5 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 - En memoria, “bounded” no equivale todavía a “budgeted”: hay límites de entrada y quota, pero no un presupuesto explícito de coste de contexto equivalente al que ya existe para `overview` y `auto_work`.
 - S4 confirma que el repo ya resuelve bastante bien `bounded` en servidor, pero no siempre `compact-first` ni `budget-aware` en consumidores host/client.
 - El follow-up potencial de S4 no es “más auditoría general”, sino decidir en `S5` si estos gaps merecen una propuesta de budgets multi-surface y otra de compact-default en clientes/hosts.
+- S5 ya está materializado: `f00045` cubre workflow governance, `f00046` cubre memoria/compacción y `f00047` cubre budgets multi-surface + consumers compact-first.
+- Con `S1`–`S5` ya cerrados a nivel documental, `S6` queda reducido a cierre formal de la auditoría y trazabilidad final de qué se abrió y qué se descartó.
