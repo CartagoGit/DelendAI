@@ -13,8 +13,10 @@ in context for the rest of the session, so how you call these tools matters:
 - **Delegate non-trivial work.** For any real change to `packages/core`, a
   plugin, the build/release scripts, or `apps/web`, use the
   `mcp-vertex-orchestrator` subagent instead of driving `proposals_*` tools
-  directly from the main thread. It knows the working loop, the invariants,
-  and the multi-agent coordination primitives.
+  directly from the main thread. As an operational threshold, treat a task as
+  non-trivial once it needs more than 3 tool calls, touches multiple files, or
+  needs repeated MCP reads to complete. It knows the working loop, the
+  invariants, and the multi-agent coordination primitives.
 - **Prefer compact tools when orienting directly.** Use
   `mcp-vertex_overview` with `compact: true`, `proposals_auto_work`, and
   `proposals_compact_status` over verbose equivalents (`proposal_board`,

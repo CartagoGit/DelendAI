@@ -32,7 +32,7 @@ Close the workflow-level gaps surfaced by a00027 S2: make the multi-agent path l
 
 ### S1 — Canonical workflow contract in docs and skills
 - **Files**: AGENTS.md, CLAUDE.md, skills/proposal-swarm-runner/SKILL.md, skills/state-repair-playbook/SKILL.md, plugins/proposals/src/lib/knowledge/proposal-workflow.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "The repo documents one canonical path for claim → wait/await_lock → delegate → close_slice → sync_proposals with no conflicting swarm narratives."
