@@ -250,11 +250,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **P2 — Calidad de producto (1 semana)**
 - [x] **M9** `.github/workflows/ci.yml` tiene job `lint` (`bun run lint` → `biome ci`), bloqueante.
 - [x] **M10** Verificado 18-06: los 9 plugins satélite tienen tests reales (deps 7 casos, docs 10, git 6, memory 26, notification 8, quality 15, rules 11, search 18 tras M11). Ninguno trivial/vacío.
-- [ ] 🟡 **M11** Verificado 18-06, parcial:
+- [x] **M11** Verificado 21-06, cerrado:
   - ✅ `search`: regex + glob ya existían; **`.gitignore` de la raíz añadido hoy** (`isGitignored`/`parseGitignore`, negación `!`, anclaje `/`, `respectGitignore:false` para optar fuera) — `search-gitignore.spec.ts`, 5 casos.
   - ✅ `memory`: TTL (`expiresAt`) + `redactSecrets` ya existían (`redact-ttl.spec.ts`).
   - ✅ `docs`: paginación (`limit`/`offset`) ya existía (`docs-pagination.spec.ts`).
-  - 🟡 `rules`: detecta missing-eslint como campo (`missingEslintDeps`) pero no como *finding* propio ni tiene modo `compact`. *(no implementado — bajo valor/esfuerzo, cosmético)*
+  - ✅ `rules`: `check_rules` acepta `compact:true` y emite `findings[]`
+    explícitos para `missing-eslint-deps` conservando `missingEslintDeps` por
+    compatibilidad. Cubierto por `plugins/rules/tests/src/lib/plugin.spec.ts`.
   - ✅ `deps`: **decidido y cerrado (21-06, sesión §11):** `deps_outdated` añadido,
     opt-in vía `plugins.deps.options.allowNetwork: true`, `effects: ['network']`
     declarado en la tool. Resuelve el baseline `x.y.z` del range (ignora
@@ -271,9 +273,17 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 **P3 — Plataforma de referencia**
 - [x] **M12** Plugin `metrics`: `packages/core/src/lib/metrics/metrics-tool.ts`, tool `<prefix>_metrics`, `persist:true` con snapshots en `<cacheDir>/metrics/`.
 - [ ] **M13** Plugin `security` + bridge securecoder — descartado explícitamente (alcance indefinido); solo se hizo allow/deny de comandos en `quality`.
-- [ ] 🟡 **M14** Infraestructura de migraciones genérica existe (`packages/core/src/lib/migrations/migrate.ts`, `runMigrations`/`IVersioned`), pero `proposals` (agent-registry-store) sigue con un `migrate()` ad-hoc de normalización, no usa el framework versionado. *(adopción incompleta, no bloqueante — el normalize defensivo ya cubre el caso real)*
+- [x] **M14** Cerrado (2026-06-21): `agent-registry-store` normaliza el registry
+  mediante `runMigrations`/`IVersioned` del core, conserva el formato actual
+  `version: 1`, y rechaza versiones futuras no soportadas en vez de aceptarlas
+  silenciosamente. Cubierto por
+  `plugins/proposals/tests/src/lib/shared/agent-registry-store.spec.ts`.
 - [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya DONE según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
 - [ ] **npm publish** (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
+  **Pausado en [`paused/l114-pause-npm-publish.md`](../paused/l114-pause-npm-publish.md)** —
+  bloqueado por `NPM_TOKEN` + org `@cartago-git` + merge `develop→main`. El repo
+  está listo (build, semver, smoke-cli/pack, workflow release.yml); solo falta
+  la parte operativa del usuario.
 
 > **Estimación combinada de los revisores:** P0 → ~9,5; +P1 (robustez/release) →
 > ~9,7-9,8; +P2 (lint + cobertura + plugins best-in-class) → ~10,0; +P3
