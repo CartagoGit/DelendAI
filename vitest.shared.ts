@@ -192,12 +192,32 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(client, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/ui-extension/public',
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/public/index.ts',
+			),
+		},
+		{
+			find: '@mcp-vertex/ui-extension',
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/index.ts',
+			),
+		},
+		{
 			find: '@mcp-vertex/ide/public',
-			replacement: resolve(workspaceRoot, 'apps/ide/src/public/index.ts'),
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/public/index.ts',
+			),
 		},
 		{
 			find: '@mcp-vertex/ide',
-			replacement: resolve(workspaceRoot, 'apps/ide/src/index.ts'),
+			replacement: resolve(
+				workspaceRoot,
+				'packages/ui-extension/src/index.ts',
+			),
 		},
 	];
 };

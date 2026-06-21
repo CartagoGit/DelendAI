@@ -31,9 +31,18 @@
 				"./packages/client/src/public/index.ts"
 			],
 			"@mcp-vertex/client/*": ["./packages/client/src/*"],
-			"@mcp-vertex/ide": ["./apps/ide/src/index.ts"],
-			"@mcp-vertex/ide/public": ["./apps/ide/src/public/index.ts"],
-			"@mcp-vertex/ide/*": ["./apps/ide/src/*"],
+			"@mcp-vertex/ui-extension": [
+				"./packages/ui-extension/src/index.ts"
+			],
+			"@mcp-vertex/ui-extension/public": [
+				"./packages/ui-extension/src/public/index.ts"
+			],
+			"@mcp-vertex/ui-extension/*": ["./packages/ui-extension/src/*"],
+			"@mcp-vertex/ide": ["./packages/ui-extension/src/index.ts"],
+			"@mcp-vertex/ide/public": [
+				"./packages/ui-extension/src/public/index.ts"
+			],
+			"@mcp-vertex/ide/*": ["./packages/ui-extension/src/*"],
 			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
 			"@mcp-vertex/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
