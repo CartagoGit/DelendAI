@@ -6,6 +6,7 @@ track: web+docs
 date: 2026-06-21
 kind: feat
 title: Web deep pages — per-tool pages, pagefind search, "first 5 minutes", troubleshooting
+shipped-in: [ca2f2db, 94c4641]
 ownership:
     - { agent: claude-orchestrator-round3, task: "S1 per-tool pages, S2 verify pagefind already wired, S3 first-5-minutes, S4 troubleshooting, S5 nav+audit close — closed" }
 acceptance:
