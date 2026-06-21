@@ -64,10 +64,12 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 - status: done
 - **Verification**: `tsconfig.json` already includes `plugins/*/src/**/*` and `plugins/*/tests/**/*`, so `plugins/audit` is covered by the root `tsc --noEmit` gate.
 
-### S4 — Expand `scripts/smoke-pack.ts` to cover all publishable plugins (not just core+proposals+memory)
-- **Files**: `scripts/smoke-pack.ts`
+### S4 — Expand `tools/scripts/smoke/pack.script.ts` to cover all publishable plugins (not just core+proposals+memory)
+- **Files**: `tools/scripts/smoke/pack.script.ts`
 - **Gate**: `bun run build && bun run smoke:pack`
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Verification**: `bun run build && bun run smoke:pack` passed; installed-from-tarball CLI served 76 tools under Node with 15 packed packages and 14 plugins resolved.
 
 ### S5 — Add try/catch + user-facing error feedback to 4 `extensions/vscode` MCP-client commands
 - **Files**:
@@ -142,7 +144,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 |---|---|---|---|---|
 | F16 | P1/P3 | `extensions/vscode` sigue excluido de `vitest.config.ts` raíz — el slot liberado lo ocupó `packages/ui-extension`, no `extensions/vscode` (a00021-H1, a00024-H2, confirmado también por a00023 sin slice propio) | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | **New slice `S2`** en este documento. |
 | F17 | P1 | `plugins/audit` excluido del typecheck raíz (`tsconfig.json`) pero sí se construye/publica vía `scripts/build.ts` — gate principal no cubre toda la superficie publicada (a00024-H3) | [tsconfig.json](file:///home/cartago/_projects/mcp-vertex/tsconfig.json), [scripts/build.ts](file:///home/cartago/_projects/mcp-vertex/scripts/build.ts) | **New slice `S3`** en este documento. |
-| F18 | P2 | `scripts/smoke-pack.ts` solo cubre `['packages/core', 'plugins/proposals', 'plugins/memory']` — el resto de plugins publicables no tiene smoke de tarball (a00024-H5) | [smoke-pack.ts](file:///home/cartago/_projects/mcp-vertex/scripts/smoke-pack.ts) | **New slice `S4`** en este documento. |
+| F18 | P2 | `tools/scripts/smoke/pack.script.ts` solo cubría `['packages/core', 'plugins/proposals', 'plugins/memory']` — el resto de plugins publicables no tenía smoke de tarball (a00024-H5) | [pack.script.ts](file:///home/cartago/_projects/mcp-vertex/tools/scripts/smoke/pack.script.ts) | **New slice `S4`** en este documento. |
 | F19 | P2 | 4 comandos de `extensions/vscode/src/commands/{show-overview,show-metrics,open-proposal,run-validation}.ts` invocan el cliente MCP sin try/catch ni feedback de error visible (a00024-H8) | `extensions/vscode/src/commands/show-overview.ts`, `show-metrics.ts`, `open-proposal.ts`, `run-validation.ts` | **New slice `S5`** en este documento. |
 
 ### Notas (sin slice, severidad baja o requiere decisión de scope ajena a esta consolidación)

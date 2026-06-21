@@ -7,10 +7,17 @@
  *
  * Slow (does an npm install); run after `bun run build`.
  *
- *   bun scripts/smoke-pack.ts
+ *   bun tools/scripts/smoke/pack.script.ts
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -18,7 +25,76 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const ROOT = resolve('.');
-const PACKAGES = ['packages/core', 'plugins/proposals', 'plugins/memory'];
+
+interface IPackageJson {
+	readonly name?: string;
+	readonly private?: boolean;
+	readonly files?: unknown;
+}
+
+const readPackageJson = (dir: string): IPackageJson => {
+	const raw = readFileSync(join(ROOT, dir, 'package.json'), 'utf8');
+	return JSON.parse(raw) as IPackageJson;
+};
+
+const discoverPublishablePluginDirs = (): readonly string[] => {
+	const dirs: string[] = ['packages/core'];
+	for (const entry of readdirSync(join(ROOT, 'plugins'), {
+		withFileTypes: true,
+	})) {
+		if (!entry.isDirectory()) continue;
+		const dir = `plugins/${entry.name}`;
+		if (!existsSync(join(ROOT, dir, 'package.json'))) continue;
+		const pkg = readPackageJson(dir);
+		if (
+			typeof pkg.name === 'string' &&
+			pkg.private !== true &&
+			Array.isArray(pkg.files)
+		) {
+			dirs.push(dir);
+		}
+	}
+	return dirs.sort((a, b) => {
+		if (a === 'packages/core') return -1;
+		if (b === 'packages/core') return 1;
+		return a.localeCompare(b);
+	});
+};
+
+const PACKED_PACKAGE_DIRS = discoverPublishablePluginDirs();
+const PLUGIN_IDS = PACKED_PACKAGE_DIRS.filter((dir) =>
+	dir.startsWith('plugins/'),
+).map((dir) => dir.slice('plugins/'.length));
+
+const REQUIRED_PLUGIN_TOOLS: Record<string, string> = {
+	audit: 'audit_audit_plan',
+	deps: 'deps_deps_list',
+	docs: 'docs_docs_list',
+	git: 'git_status',
+	logs: 'logs_query',
+	memory: 'memory_save',
+	notification: 'notification_notify_status',
+	proposals: 'proposals_auto_work',
+	quality: 'quality_get_quality_scopes',
+	rules: 'rules_get_rules',
+	search: 'search_search',
+	'status-marker': 'status-marker_ping',
+	'test-convention': 'test-convention_get_convention',
+	'web-fetch': 'web-fetch_web_fetch',
+};
+
+const REQUIRED_TOOLS = [
+	'mcp-vertex_overview',
+	...PLUGIN_IDS.map((id) => {
+		const tool = REQUIRED_PLUGIN_TOOLS[id];
+		if (tool === undefined) {
+			throw new Error(
+				`pack smoke has no required-tool mapping for plugin "${id}"`,
+			);
+		}
+		return tool;
+	}),
+];
 
 const run = (cmd: string, args: string[], cwd: string): string =>
 	execFileSync(cmd, args, {
@@ -32,7 +108,7 @@ const main = async (): Promise<void> => {
 	try {
 		// Pack each package into the throwaway project dir.
 		const tarballs: string[] = [];
-		for (const pkgDir of PACKAGES) {
+		for (const pkgDir of PACKED_PACKAGE_DIRS) {
 			const out = run(
 				'npm',
 				['pack', resolve(ROOT, pkgDir), '--pack-destination', proj],
@@ -55,7 +131,7 @@ const main = async (): Promise<void> => {
 			command: 'node',
 			args: [
 				join(proj, 'node_modules/@mcp-vertex/core/dist/cli.js'),
-				'--plugins=proposals,memory',
+				`--plugins=${PLUGIN_IDS.join(',')}`,
 				`--workspace=${workspace}`,
 			],
 		});
@@ -67,11 +143,7 @@ const main = async (): Promise<void> => {
 			await client.connect(transport);
 			const { tools } = await client.listTools();
 			const names = new Set(tools.map((t) => t.name));
-			for (const required of [
-				'mcp-vertex_overview',
-				'proposals_auto_work',
-				'memory_save',
-			]) {
+			for (const required of REQUIRED_TOOLS) {
 				if (!names.has(required)) {
 					throw new Error(
 						`installed CLI missing "${required}" (plugin failed to resolve under node)`,
@@ -80,7 +152,8 @@ const main = async (): Promise<void> => {
 			}
 			console.log(
 				`✓ pack smoke: installed-from-tarball CLI serves ${tools.length} tools under node ` +
-					`(core + proposals + memory resolved).`,
+					`(${PACKED_PACKAGE_DIRS.length} packed packages, ` +
+					`${PLUGIN_IDS.length} plugins resolved).`,
 			);
 		} finally {
 			await client.close().catch(() => undefined);
