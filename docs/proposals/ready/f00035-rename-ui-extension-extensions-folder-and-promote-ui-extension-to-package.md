@@ -191,6 +191,27 @@ cinco reglas no negociables:
    consola si se importa desde `apps/vscode` u otros consumers.
    Esto permite revertir sin romper a quien ya integró.
 
+## non-goals
+
+- **No tocar `packages/core`, `packages/client`, `plugins/*`,
+  `apps/web`, `examples/*`.** Esta propuesta solo mueve `apps/ide`
+  y `apps/vscode` y renombra sus paquetes. Cualquier reorganización
+  mayor queda fuera de scope.
+- **No añadir `extensions/jetbrains` ni `extensions/zed`.** Solo se
+  crea la carpeta vacía con un `.gitkeep` para reservar el nombre.
+  Las implementaciones concretas son propuestas separadas.
+- **No cambiar `IHostAdapter`.** La API pública de
+  `@mcp-vertex/ui-extension` (interfaces, paneles, dashboard
+  renderer) se mantiene byte-identical — solo cambian path del
+  archivo y nombre del package.
+- **No introducir imports nuevos en `packages/core` ni plugins.** La
+  regla "core stays agnostic" no se toca.
+- **No bump major de `@mcp-vertex/core`, `@mcp-vertex/client`,
+  plugins**. Solo `@mcp-vertex/ide` → `@mcp-vertex/ui-extension` y
+  `mcp-vertex-vscode` → `@mcp-vertex/extension-vscode` reciben un
+  bump major (cambio de nombre público). El resto mantiene su
+  versión actual.
+
 ## Slices
 
 ### S1 — `apps/ide/` → `packages/ui-extension/` + rename package
@@ -389,6 +410,7 @@ cinco reglas no negociables:
     `extensions/vscode`).
   - Los workspaces de Bun ahora incluyen `extensions/*` además de
     `apps/*`.
+  ```
 - **Gate**: `bun run validate` (expect exit0)
 
 ## acceptance

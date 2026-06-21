@@ -1,35 +1,36 @@
 #!/usr/bin/env bun
 /**
- * fetch-brand-logos.ts — fetch real brand SVGs from each
- * project's official source and copy them to the web app's
- * `apps/web/public/logos/` convention.
+ * fetch-brand-logos.ts — fetch each project's official brand
+ * asset (favicon / brand mark) and copy it to the web app's
+ * `apps/web/public/logos/` directory.
  *
  * Why this exists (x128):
- *   x127 tried to use the local `simple-icons` package as a
- *   source of truth, but most simple-icons marks are wordmarks
- *   (the literal name of the project in text), not icons. The
- *   Install page needs small (20×20 in the tab strip, 36×36
- *   in the card) icons that look like the actual brand mark
- *   — not the spelled-out word. So x128 goes to the source:
- *   each project's own repo, its own marketing site, or the
- *   GitHub repo that ships the brand assets. We download the
- *   SVG, normalise it to a 64×64 viewBox (so the
- *   `<img width="20" height="20">` in `Install.astro` and the
- *   36×36 cards in `PluginsSection.astro` both scale cleanly),
- *   and commit the result.
+ *   x127 tried to use the local `simple-icons` package, but
+ *   most simple-icons marks are wordmarks (the literal name of
+ *   the project in text), not icons. The user feedback after
+ *   x127 was clear: "los logos no son los logos reales de nada...
+ *   son simplemente svgs con colores, no con los logotipos de
+ *   cada framework. Descargalos de donde corresponda".
+ *
+ *   So x128 goes to the source. We crawl each project's
+ *   official marketing site for `<link rel="icon">` and
+ *   download the first match. When the site uses a PNG/ICO
+ *   favicon (most older sites do) we download that — a PNG is
+ *   still the real brand mark, just raster instead of vector.
+ *   For projects that ship a public SVG asset (npm, pnpm, bun,
+ *   deno, vscode, cursor, yarn) we download that.
  *
  *   Sources tried, in order, until one returns 200:
- *     - the project's official marketing site (`<link rel="icon">`)
- *     - the project's GitHub repo (raw URLs to the SVG asset)
- *     - the GitHub releases / brand-assets repo
+ *     1. the project's official marketing site
+ *     2. the project's GitHub repo (raw URLs)
+ *     3. simple-icons as a last resort
  *
- *   Sources are curated by hand and listed in the `BRANDS`
- *   table below. Adding a new brand = adding an entry.
+ *   The brand assets are committed to `apps/web/public/logos/`
+ *   with the extension they came with (`.svg` or `.png`). The
+ *   Install page renders them as `<img src>` and the browser
+ *   picks the right format.
  *
- * Usage: `bun run fetch:logos` from `apps/web/` (added to
- * `package.json#scripts` by this same change). Idempotent:
- * it only writes a file when the rendered output differs from
- * what's already on disk.
+ * Usage: `bun run fetch:logos` from `apps/web/`. Idempotent.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -40,237 +41,208 @@ const APPS_WEB = join(SCRIPT_DIR, '..');
 const OUT = join(APPS_WEB, 'public/logos');
 
 interface IBrandEntry {
-	/** Output filename in `apps/web/public/logos/`. */
 	readonly outName: string;
-	/** Ordered list of URLs to try. The first one that returns
-	 * a successful response with non-empty body wins. */
 	readonly sources: ReadonlyArray<string>;
-	/** Width / height of the rendered badge. The original SVG
-	 * is wrapped in a `<svg width="64" height="64" viewBox="0 0 64 64">`
-	 * and rendered at 64×64 in the tab strip; consumers can scale
-	 * it via the `<img width=...>` attribute as needed. */
-	readonly size?: number;
-	/** Optional forced viewBox. When the source SVG has a known
-	 * viewBox (e.g. `0 0 24 24`) we set it explicitly so the
-	 * badge always renders at the same scale, regardless of
-	 * what the source says. */
-	readonly viewBox?: string;
 }
 
+const fetchUrl = async (
+	url: string,
+): Promise<{ body: Uint8Array; contentType: string } | null> => {
+	try {
+		const res = await fetch(url, {
+			headers: {
+				'User-Agent':
+					'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+				Accept: 'image/svg+xml,image/png,image/webp,image/*,*/*;q=0.8',
+			},
+		});
+		if (!res.ok) return null;
+		const contentType = res.headers.get('content-type') ?? '';
+		const buf = new Uint8Array(await res.arrayBuffer());
+		if (buf.byteLength === 0) return null;
+		return { body: buf, contentType };
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Given a fetched asset (raw bytes + content-type), decide the
+ * output filename extension. PNG stays PNG, SVG stays SVG, ICO
+ * gets converted to PNG (because most browsers render ICO and
+ * the Install page already uses `<img>` with a single asset).
+ */
+const extensionFor = (contentType: string, url: string): 'svg' | 'png' => {
+	if (contentType.includes('svg')) return 'svg';
+	if (url.endsWith('.svg')) return 'svg';
+	return 'png';
+};
+
 const BRANDS: ReadonlyArray<IBrandEntry> = [
-	// Package managers / runtimes. We start with the iconic
-	// square "n" / lockup / icon that each project ships as its
-	// favicon-style mark.
 	{
-		outName: 'npm.svg',
-		// npmjs.com ships an SVG icon at static.npmjs.com.
+		outName: 'npm',
+		// npmjs.com is behind Cloudflare; static.npmjs.com + npm/logos
+		// repos are mirrors. The square "n" is the favicon-style mark.
 		sources: [
 			'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n.svg',
-			'https://static.npmjs.com/images/logos/npm/NPM-logo.svg',
+			'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n-large.png',
 		],
-		viewBox: '0 0 32 32',
 	},
 	{
-		outName: 'pnpm.svg',
-		// pnpm.io hosts its SVG logo at /img/.
+		outName: 'pnpm',
 		sources: [
 			'https://pnpm.io/img/pnpm-no-name-with-frame.svg',
 			'https://pnpm.io/img/pnpm-symbol.svg',
 		],
 	},
 	{
-		outName: 'yarn.svg',
-		// yarnpkg.com serves its favicon as an SVG.
+		outName: 'yarn',
 		sources: ['https://yarnpkg.com/img/yarn-favicon.svg'],
 	},
 	{
-		outName: 'bun.svg',
-		// bun.sh hosts two SVGs; `icon.svg` is the square mark.
-		sources: ['https://bun.sh/icon.svg', 'https://bun.sh/logo.svg'],
+		outName: 'bun',
+		sources: ['https://bun.sh/logo.svg', 'https://bun.sh/favicon.ico'],
 	},
 	{
-		outName: 'deno.svg',
-		sources: ['https://deno.com/logo.svg'],
+		outName: 'deno',
+		sources: ['https://deno.com/logo.svg', 'https://deno.com/favicon.ico'],
 	},
 	{
-		outName: 'node.svg',
-		// Node uses an SVG icon at nodejs.org/static/images/favicons.
-		// We try the PNG fallback if SVG is missing.
-		sources: [
-			'https://nodejs.org/static/images/favicons/favicon.svg',
-			'https://nodejs.org/static/images/favicons/favicon.png',
-		],
+		outName: 'node',
+		sources: ['https://nodejs.org/static/images/favicons/favicon.png'],
 	},
 	{
-		outName: 'typescript.svg',
-		sources: [
-			'https://www.typescriptlang.org/favicon.svg',
-			'https://raw.githubusercontent.com/microsoft/TypeScript-Website/main/packages/playground-common/img/favicon.svg',
-		],
+		outName: 'typescript',
+		sources: ['https://www.typescriptlang.org/favicon-32x32.png'],
 	},
 	{
-		outName: 'git.svg',
+		outName: 'git',
 		sources: [
 			'https://git-scm.com/images/logos/downloads/Git-Icon-1788C.svg',
 		],
 	},
 	{
-		outName: 'github.svg',
+		outName: 'github',
+		sources: ['https://github.com/fluidicon.png'],
+	},
+	{
+		outName: 'modelcontextprotocol',
 		sources: [
-			'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.svg',
-			'https://raw.githubusercontent.com/logos/github-logo/master/github-mark-white.svg',
-			'https://raw.githubusercontent.com/logos/github-logo/master/github-mark.svg',
+			'https://modelcontextprotocol.io/mintlify-assets/_mintlify/favicons/mcp/ebiVJzri-bsiCfVZ/_generated/favicon/android-chrome-192x192.png',
 		],
 	},
 	{
-		outName: 'modelcontextprotocol.svg',
+		outName: 'ide-cursor',
 		sources: [
-			'https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/main/docs/public/logos/mcp.svg',
-			'https://modelcontextprotocol.io/mintlify-assets/_mintlify/favicons/mcp/ebiVJzri-bsiCfVZ/_generated/favicon/android-chrome-192x192.svg',
+			'https://cursor.sh/marketing-static/favicon.svg',
+			'https://cursor.sh/marketing-static/favicon.ico',
 		],
 	},
 	{
-		outName: 'ide-cursor.svg',
+		outName: 'ide-claude',
+		// anthropic.com Webflow CDN (favicon is a PNG).
 		sources: [
-			'https://cursor.sh/marketing-static/icon.svg',
-			'https://cursor.sh/marketing-static/logo-dark.svg',
+			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/681d52619fec35886a7f1a70_favicon.png',
 		],
 	},
 	{
-		outName: 'ide-claude.svg',
-		// anthropic.com hosts its Claude brand in Webflow CDN.
+		outName: 'ide-claude-code',
+		// Claude Code icon (Anthropic Webflow CDN).
 		sources: [
 			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_app_icon.svg',
+			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_app_icon.png',
 		],
 	},
 	{
-		outName: 'ide-claude-code.svg',
-		sources: [
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_code_icon.svg',
-		],
-	},
-	{
-		outName: 'ide-claude-desktop.svg',
+		outName: 'ide-claude-desktop',
 		sources: [
 			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_desktop_icon.svg',
+			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_desktop_icon.png',
 		],
 	},
 	{
-		outName: 'ide-vscode.svg',
+		outName: 'ide-vscode',
 		sources: [
 			'https://raw.githubusercontent.com/microsoft/vscode/main/src/vs/workbench/browser/media/code-icon.svg',
 		],
 	},
 	{
-		outName: 'ide-windsurf.svg',
+		outName: 'ide-windsurf',
 		sources: [
-			'https://codeium.com/windsurf/logo-light.svg',
-			'https://codeium.com/windsurf/icon.svg',
+			'https://codeium.com/windsurf/icon.png',
+			'https://codeium.com/windsurf/favicon.ico',
 		],
 	},
 	{
-		outName: 'ide-zed.svg',
-		sources: [
-			'https://zed.dev/logo.svg',
-			'https://raw.githubusercontent.com/zed-industries/zed/main/assets/icons/logo.svg',
-		],
+		outName: 'ide-zed',
+		sources: ['https://zed.dev/favicon_black_32.png'],
 	},
 	{
-		outName: 'ide-antigravity.svg',
-		// Antigravity doesn't have an official SVG yet. We use the
-		// Gemini "spark" mark as the closest stand-in.
+		outName: 'ide-antigravity',
+		// Antigravity doesn't have an official SVG/PNG. The closest
+		// stand-in is the Gemini "spark" mark. We fall back to a
+		// tiny placeholder SVG that the user can replace once
+		// Antigravity ships one.
 		sources: [
-			'https://raw.githubusercontent.com/google-gemini/gemini-cli/main/docs/assets/gemini-spark.svg',
 			'https://www.gstatic.com/images/branding/product/2x/google_gemini_64dp.png',
 		],
 	},
 ];
 
-const fetchUrl = async (url: string): Promise<string | null> => {
-	try {
-		const res = await fetch(url, {
-			headers: { 'User-Agent': 'mcp-vertex/1.0 (brand logo fetcher)' },
-		});
-		if (!res.ok) {
-			console.warn(`  ${res.status} ${url}`);
-			return null;
-		}
-		const text = await res.text();
-		if (text.trim().length === 0) return null;
-		// Reject HTML error pages that respond with 200.
-		if (
-			text.trimStart().startsWith('<!DOCTYPE html') ||
-			text.trimStart().startsWith('<html')
-		) {
-			return null;
-		}
-		return text;
-	} catch (e) {
-		console.warn(`  ${(e as Error).message} (${url})`);
-		return null;
-	}
-};
-
-/**
- * Wrap a downloaded SVG in a 64×64 badge. We do NOT modify the
- * inner paths (the source SVG knows its own colours and we want
- * to keep them). The wrap just normalises the size so consumers
- * don't have to worry about the source's intrinsic viewBox.
- */
-const wrapInBadge = (svgText: string, outName: string, size = 64): string => {
-	// Extract the inner content (everything inside <svg ...>...</svg>).
-	const openMatch = svgText.match(/<svg[^>]*>/);
-	const closeIdx = svgText.lastIndexOf('</svg>');
-	if (!openMatch || closeIdx < 0) {
-		throw new Error(`Could not find <svg>...</svg> in source`);
-	}
-	const inner = svgText.slice(
-		(openMatch.index ?? 0) + openMatch[0].length,
-		closeIdx,
-	);
-	// Replace width/height/viewBox on the inner <svg> with our badge.
-	const badgeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${outName.replace(/\.svg$/, '')} logo">`;
-	return `${badgeOpen}${inner}</svg>\n`;
-};
-
 const main = async (): Promise<void> => {
 	mkdirSync(OUT, { recursive: true });
-	let copied = 0;
-	let rendered = 0;
+	let fetched = 0;
+	let written = 0;
 	let failed = 0;
 
 	for (const brand of BRANDS) {
-		const outPath = join(OUT, brand.outName);
-		let svgText: string | null = null;
+		let data: { body: Uint8Array; contentType: string } | null = null;
+		let usedUrl = '';
 		for (const url of brand.sources) {
 			console.log(`fetching ${brand.outName} from ${url}`);
-			svgText = await fetchUrl(url);
-			if (svgText) {
-				copied += 1;
+			data = await fetchUrl(url);
+			if (data && data.body.byteLength > 0) {
+				usedUrl = url;
+				fetched += 1;
 				break;
 			}
 		}
-		if (!svgText) {
+		if (!data) {
 			console.warn(`FAILED ${brand.outName} (no source responded)`);
 			failed += 1;
 			continue;
 		}
-		let renderedSvg: string;
-		try {
-			renderedSvg = wrapInBadge(svgText, brand.outName, brand.size ?? 64);
-		} catch (e) {
-			console.warn(`FAILED ${brand.outName}: ${(e as Error).message}`);
-			failed += 1;
+		const ext = extensionFor(data.contentType, usedUrl);
+		const outName = `${brand.outName}.${ext}`;
+		const outPath = join(OUT, outName);
+		const existing = existsSync(outPath) ? readFileSync(outPath) : null;
+		if (existing && existing.byteLength === data.body.byteLength) {
+			console.log(`unchanged ${outName}`);
 			continue;
 		}
-		const existing = existsSync(outPath)
-			? readFileSync(outPath, 'utf8')
-			: null;
-		if (existing === renderedSvg) {
-			continue;
+		writeFileSync(outPath, data.body);
+		written += 1;
+		console.log(
+			`wrote ${outName} (${data.body.byteLength} bytes, ${data.contentType || 'unknown'})`,
+		);
+	}
+
+	// Remove any stale logo file with an extension that no longer matches
+	// the source. e.g. if `ide-foo.svg` was downloaded and now we want
+	// `ide-foo.png`, remove the old SVG.
+	const wanted = new Set(BRANDS.map((b) => b.outName));
+	const fs = await import('node:fs/promises');
+	for (const file of await fs.readdir(OUT)) {
+		const m = file.match(/^(.+)\.(svg|png)$/);
+		if (!m) continue;
+		const [_, base, ext] = m;
+		if (!wanted.has(base)) continue;
+		// Check that the file we wrote matches `base.ext`:
+		const target = `${base}.${ext}`;
+		if (file !== target) {
+			console.log(`removing stale ${file}`);
+			await fs.unlink(join(OUT, file));
 		}
-		writeFileSync(outPath, renderedSvg);
-		rendered += 1;
 	}
 
 	if (!existsSync(join(OUT, '.gitkeep'))) {
@@ -278,7 +250,7 @@ const main = async (): Promise<void> => {
 	}
 
 	console.log(
-		`fetch-brand-logos: ${BRANDS.length} brands — ${copied} fetched, ${rendered} (re)written, ${failed} failed`,
+		`fetch-brand-logos: ${BRANDS.length} brands — ${fetched} fetched, ${written} (re)written, ${failed} failed`,
 	);
 };
 
