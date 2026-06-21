@@ -152,7 +152,7 @@ user-visible defects closed.
       search modal has a working input + filter, scrollbar matches
       the active theme, dev script regenerates typedoc.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — `astro:after-swap` script runs before the modal is
   re-bound**: mitigated by gating the new `markActiveLang()` on
@@ -163,7 +163,7 @@ user-visible defects closed.
 - **R3 — S4 dev endpoint size**: cap the index at 200 pages; the
   per-page payload is the title + first 240 chars of body.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026-…md` (M3 / M27
   follow-ups — UI polish on the web). The audit file moved to

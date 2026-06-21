@@ -202,7 +202,7 @@ Aceptación:
 | Aparecer SKILL.md "huérfanos" en subdirs no intencionados | La estructura del repo (`skills/<plugin>/SKILL.md`) es la única fuente de verdad; cualquier futuro SKILL.md se espera que siga ese patrón. Un check de linter o un README en `skills/` lo deja explícito. |
 | Recursión infinita si hay symlinks | `readdirSync` no sigue symlinks por defecto en `node:fs`; no se introduce la recursión a través de bucles. Si en el futuro se quisiera ser defensivo, `lstatSync` + `entry.isSymbolicLink()` y `continue`. |
 
-## 7. Definition of done
+## acceptance
 
 - [ ] `walkSkills` recursa.
 - [ ] Test nuevo (2 casos) verde.

@@ -74,7 +74,7 @@ is a deterministic placeholder per plugin.
   name. The `alt=""` on the card icons stays (the plugin name
   is in the adjacent `<code>` block).
 
-## Linked references
+## notes
 
 - `apps/web/src/components/PluginsSection.astro` and
   `apps/web/src/components/PluginCapabilities.astro` — the two

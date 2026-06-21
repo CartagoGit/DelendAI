@@ -398,7 +398,7 @@ de transición. La tabla de 8 estados **no cambia** — es contrato.
 | Hook `onAfterRespond` introduce overhead | Es fire-and-forget, sin await obligatorio. Counter en memoria, flush a `<pluginCacheDir>/metrics.jsonl` cada N segundos. |
 | Rompe agentes que no necesitan cierre (chat casual) | Plugin es **opt-in** por config; quien no lo carga no nota nada. |
 
-## 8. Definition of done
+## acceptance
 
 - [x] Carpeta `plugins/status-marker/` creada con `package.json`, `README.md`,
       `src/index.ts`, `src/lib/markers.ts`, `src/lib/validate.ts`,

@@ -301,7 +301,7 @@ mantener, se mueve a un componente `<Breadcrumb />` ligero
     que introdujo f00011.
 11. `bun run validate` y `bun run site:strict` siguen verdes.
 
-## 2. No-objetivos
+## non-goals
 
 - No traducir las descripciones reales de tools/prompts (eso va en
   propuesta x00002 — gate + infraestructura en esta, contenido en la
@@ -698,7 +698,7 @@ estructura de `en.ts` (fuente de verdad).
 - [ ] `bun run validate` verde.
 - [ ] `bun run site:strict` verde.
 
-## 6. Riesgos
+## risks and mitigations
 
 - **Marquee cambio de tamaño**: el cambio de `width: clamp(46px, 11vw, 56px)`
   a `width: auto` en hover puede hacer que la **posición** de los

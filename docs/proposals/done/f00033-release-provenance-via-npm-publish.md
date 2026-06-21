@@ -148,7 +148,7 @@ instead of resurrecting dead code preemptively.
       tag/publish**, not at proposal-authoring time.
 - [x] Master audit release/CI provenance line is `[x]`.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — `npm publish` doesn't understand `workspace:` at all**: confirmed,
   hence the resolve script. Tests cover it.
@@ -159,7 +159,7 @@ instead of resurrecting dead code preemptively.
 - **R3 — OIDC token not available in self-hosted runners**: workflow stays
   on `ubuntu-latest` GitHub-hosted. Documented in the workflow comment.
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (lines 248, 855).
 - Current release pipeline: `.github/workflows/release.yml`,

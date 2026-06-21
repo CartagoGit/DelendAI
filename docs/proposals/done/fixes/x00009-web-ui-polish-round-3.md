@@ -169,7 +169,7 @@ promise; the modal-on-top-of-fade bug looks unprofessional.
 - [ ] Every nav link reads in the active locale, no stale
       English text after a view transition.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — S2 hard-coded map drifts from `i18n/langs/`**: the
   fix script lives in `Base.astro` (small), and the canonical
@@ -186,7 +186,7 @@ promise; the modal-on-top-of-fade bug looks unprofessional.
   close animation (~200ms) so the router sees the
   navigation. Otherwise the navigation is cancelled.
 
-## Linked references
+## notes
 
 - x00005 — the first round of web UI bugfixes (settings modal
   sync, themed scrollbar, etc.).

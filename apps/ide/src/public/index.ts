@@ -40,3 +40,5 @@ export {
 	formatRelativeTime,
 	formatTokens,
 } from '../dashboard/format';
+export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigator';
+export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';

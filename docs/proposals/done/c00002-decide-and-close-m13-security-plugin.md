@@ -33,7 +33,7 @@ the checkbox is still `- [ ]`. This proposal forces a final verdict.
   open is whether to package these as a *plugin* (so consumers can swap it
   out) or keep them as core primitives forever.
 
-## Decision to make (single binary)
+## goal
 
 Pick one of:
 
@@ -57,7 +57,7 @@ Pick one of:
   out of scope regardless of the decision; that bridge needs its own spec.
 - Any change to `quality` command semantics.
 
-## Slices (option A)
+## slices
 
 ### S1 — Security plugin skeleton + re-exports
   - **Status**: ready
@@ -84,7 +84,7 @@ Pick one of:
   - **Command**: `bun run validate`
   - **Expect**: green; master audit `M13` checkbox is now `[x]`.
 
-## Slices (option B)
+## slices
 
 ### S1 — Audit note only
   - **Status**: ready
@@ -94,7 +94,7 @@ Pick one of:
   - **Command**: none (markdown only).
   - **Expect**: master audit `M13` checkbox is now `[x]`.
 
-## Slices (option C)
+## slices
 
 ### S1 — Thin `security` plugin
   - **Status**: ready
@@ -103,7 +103,7 @@ Pick one of:
   - **Command**: `bun run typecheck`
   - **Expect**: green.
 
-## Acceptance (any option)
+## acceptance
 
 - [x] Decision (A / B / C) is recorded in the proposal's `## Decision` section
       below.
@@ -111,7 +111,7 @@ Pick one of:
       change is made (B).
 - [x] Master audit M13 checkbox is `[x]`.
 
-## Decision (filled by the implementer)
+## acceptance
 
 **(B) — close as deferred, core primitives cover the minimum viable
 surface.**
@@ -134,7 +134,7 @@ note only.
      (x) B — close as deferred, core primitives cover MV
      ( ) C — thin plugin, no DSL                                  -->
 
-## Linked references
+## notes
 
 - Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (M13, line ~293).
 - Core primitives already in place: `packages/core/src/lib/shared/redact.ts`

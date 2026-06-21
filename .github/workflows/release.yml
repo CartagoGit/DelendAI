@@ -44,7 +44,7 @@ jobs:
 
       - name: Derive next version from Conventional Commits
         id: decide
-        run: bun scripts/derive-version.ts --github-output
+        run: bun tools/scripts/release/derive-version.script.ts --github-output
 
       - name: Install dependencies
         if: steps.decide.outputs.release == 'true'

@@ -53,7 +53,7 @@ documentación**:
 4. **Build sigue en verde**: `bun run validate` y `bun run site:strict`
    sin regresiones; ninguna i18n key queda faltante.
 
-## 2. No-objetivos
+## non-goals
 
 - Cambiar el `outputSchema` ni el modelo de ejecución.
 - Internacionalizar los tutoriales (eso queda en f00012 slice s7).
@@ -234,7 +234,7 @@ Página `apps/web/src/pages/skills.astro` (en) + 11 idiomas, componente
 | `gen-skills.ts` no encuentra nada | Fallback al `IBlueprintArtifact[]` del `build-blueprint.ts` que tiene al menos las skills de scaffold del core. La página nunca queda vacía. |
 | `typedoc` tarda >10s en dev | El dev server sigue siendo rápido al recargar; solo el primer arranque paga el coste. Se puede mover a un `predev` separado si molesta. |
 
-## 7. Definition of done
+## acceptance
 
 - `bun run validate` verde en cada slice.
 - `bun run site:strict` verde al final.

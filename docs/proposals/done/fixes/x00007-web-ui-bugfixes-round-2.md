@@ -225,7 +225,7 @@ workstream; the changes are localised to a handful of files.
 - [ ] The missing-i18n report script runs and produces a list
       of every entry that still needs translation.
 
-## Risk register
+## risks and mitigations
 
 - **R1 — S2 re-binds hrefs and could overwrite a user-set
   customisation**: we only rewrite `.nav__links a` and the
@@ -239,7 +239,7 @@ workstream; the changes are localised to a handful of files.
   missing-i18n report is the safety net; run it before every
   release.
 
-## Linked references
+## notes
 
 - x00005 — the first round of web UI bugfixes (settings modal
   sync, themed scrollbar, etc.); the present proposal extends

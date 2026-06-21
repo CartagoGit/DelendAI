@@ -103,7 +103,7 @@ que está cambiando el contrato de scaffold de su proyecto.
    `docs/PLUGINS-MCP-VERTEX.md` si toca algún plugin. La propuesta
    misma queda como referencia pública en `docs/proposals/`.
 
-## 2. No-objetivos
+## non-goals
 
 - **No** se introduce un sistema completo de "merge" entre el archivo
   viejo y el nuevo (eso sería un siguiente paso y un slice aparte).
