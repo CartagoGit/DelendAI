@@ -9,7 +9,6 @@ import {
 	DashboardService,
 	EmbedService,
 	type McpStdioClient,
-	resolveDocsUrl,
 } from '@mcp-vertex/client';
 import { renderDashboard } from '@mcp-vertex/ide/public';
 

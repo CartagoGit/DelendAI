@@ -34,7 +34,7 @@ export class McpVertexStatusBar {
 			'addEventListener'
 		>,
 		private readonly openDashboardCommand: string = OPEN_DASHBOARD_COMMAND,
-		private readonly showOverviewCommand: string = SHOW_OVERVIEW_COMMAND,
+		_showOverviewCommand: string = SHOW_OVERVIEW_COMMAND,
 	) {}
 
 	async start(): Promise<void> {

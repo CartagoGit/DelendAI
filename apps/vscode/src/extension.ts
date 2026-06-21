@@ -5,10 +5,7 @@ import {
 	type IOverview,
 } from '@mcp-vertex/client';
 
-import {
-	OPEN_DASHBOARD_COMMAND,
-	registerOpenDashboardCommand,
-} from './commands/open-dashboard';
+import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,

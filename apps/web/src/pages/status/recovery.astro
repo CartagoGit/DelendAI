@@ -1,5 +1,4 @@
 ---
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import RecoveryTable from '#COMPONENTS/recovery/RecoveryTable.astro';
 import Base from '#LAYOUTS/Base.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
@@ -9,9 +8,9 @@ const t = useTranslations(lang);
 ---
 
 <Base lang={lang} title={`${t.recovery.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang} title={t.recovery.title} />
 	<section class="section">
 		<div class="container">
+			<h1>{t.recovery.title}</h1>
 			<p>{t.recovery.lead}</p>
 			<RecoveryTable labels={t.recovery} />
 		</div>

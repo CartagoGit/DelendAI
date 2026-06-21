@@ -48,7 +48,7 @@ export const escapeHtml = (raw: string): string =>
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#39;');
 
-export const formatRelativeTime = (iso: string, locale = 'en'): string => {
+export const formatRelativeTime = (iso: string, _locale = 'en'): string => {
 	const then = new Date(iso).getTime();
 	if (Number.isNaN(then)) return iso;
 	const diffMs = Date.now() - then;

@@ -16,7 +16,6 @@
  * Collections (markdown files in src/content/guide/<lang>/).
  */
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 const lang: Lang = 'en';
@@ -42,8 +41,10 @@ const sections = [
 ---
 
 <Base lang={lang} title={`Guide — @mcp-vertex/core`} description="A detailed walkthrough of the @mcp-vertex/core project: concepts, install, config, plugins, quality gates, extending, FAQ.">
-	<PageHeader lang={lang} title="Guide" />
 	<section class="section">
+		<div class="container">
+			<h1>Guide</h1>
+		</div>
 		<div class="container guide">
 			<aside class="guide__toc" aria-label="Table of contents">
 				<strong>Contents</strong>

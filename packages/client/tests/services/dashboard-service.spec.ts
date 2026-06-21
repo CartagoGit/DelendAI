@@ -95,9 +95,9 @@ describe('DashboardService', () => {
 		const { service } = makeService();
 		const model = await service.getSessionsModel();
 		expect(model.total).toBe(3);
-		expect(model.byStatus['in_progress']).toBe(1);
-		expect(model.byStatus['ready']).toBe(1);
-		expect(model.byStatus['done']).toBe(1);
+		expect(model.byStatus.in_progress).toBe(1);
+		expect(model.byStatus.ready).toBe(1);
+		expect(model.byStatus.done).toBe(1);
 	});
 
 	it('getTimesModel returns p50/p95/histogram and slowest tool', async () => {

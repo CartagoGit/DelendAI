@@ -24,24 +24,36 @@ const sectionHref = (section: string) =>
 //   - `external` — the GitHub link, shown as an icon-only button so it
 //                  doesn't compete for horizontal space with the labels.
 const navSections = [
-	{ href: sectionHref('install'), label: t.nav.install },
-	{ href: sectionHref('tools'), label: t.nav.tools },
-	{ href: sectionHref('benchmarks'), label: t.nav.benchmarks },
-	{ href: sectionHref('plugins'), label: t.nav.plugins },
+	{ key: 'install', href: sectionHref('install'), label: t.nav.install },
+	{ key: 'tools', href: sectionHref('tools'), label: t.nav.tools },
+	{
+		key: 'benchmarks',
+		href: sectionHref('benchmarks'),
+		label: t.nav.benchmarks,
+	},
+	{ key: 'plugins', href: sectionHref('plugins'), label: t.nav.plugins },
 ];
 const navCore = [
-	{ href: sectionHref('prompts'), label: t.nav.prompts },
-	{ href: sectionHref('resources'), label: t.nav.resources },
-	{ href: sectionHref('knowledge'), label: t.nav.knowledge },
-	{ href: sectionHref('guide'), label: t.nav.guide },
-	{ href: `${base}/api/`, label: 'API' },
+	{ key: 'prompts', href: sectionHref('prompts'), label: t.nav.prompts },
+	{
+		key: 'resources',
+		href: sectionHref('resources'),
+		label: t.nav.resources,
+	},
+	{
+		key: 'knowledge',
+		href: sectionHref('knowledge'),
+		label: t.nav.knowledge,
+	},
+	{ key: 'guide', href: sectionHref('guide'), label: t.nav.guide },
+	{ key: 'api', href: `${base}/api/`, label: 'API' },
 ];
 
 // Drawer sections (mobile): same links as the desktop nav so users on a
 // phone can reach any section in one tap. Flat list — the dropdown
 // pattern only makes sense on desktop where horizontal space is scarce.
 const drawerLinks = [
-	{ href: homeHref, label: t.nav.concept },
+	{ key: 'home', href: homeHref, label: t.nav.concept },
 	...navSections,
 	...navCore,
 ];
@@ -60,7 +72,9 @@ const drawerLinks = [
 			<span class="nav__brand-text">@mcp-vertex/core</span>
 		</a>
 		<div class="nav__links" role="navigation">
-			{navSections.map((l) => <a class="nav__link" href={l.href}>{l.label}</a>)}
+			{navSections.map((l) => (
+				<a class="nav__link" href={l.href} data-nav-key={l.key}>{l.label}</a>
+			))}
 			<span class="nav__divider" aria-hidden="true"></span>
 			{/* "More" dropdown (x124 S4). Replaces the previous native
 			    <details> with a button + panel that we drive ourselves.
@@ -79,7 +93,7 @@ const drawerLinks = [
 					aria-expanded="false"
 					aria-controls="nav-more-panel"
 				>
-					{t.nav.more}
+					<span data-nav-key="more">{t.nav.more}</span>
 					<svg
 						class="nav__more-caret"
 						viewBox="0 0 12 12"
@@ -100,7 +114,9 @@ const drawerLinks = [
 					id="nav-more-panel"
 					role="menu"
 					aria-labelledby="nav-more-trigger"
-					hidden
+					hidden(
+						<a class="nav__more-link" href={l.href} role="menuitem" data-nav-key={l.key}>{l.label}</a>
+					)
 				>
 					{navCore.map((l) => <a class="nav__more-link" href={l.href} role="menuitem">{l.label}</a>)}
 				</div>
@@ -162,7 +178,7 @@ const drawerLinks = [
 				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 					<path d="M6 6l12 12M18 6L6 18"></path>
 				</svg>
-			</button>
+			</button> data-nav-key={l.key}
 		</div>
 		<nav class="drawer__links" aria-label={t.nav.menu}>
 			{drawerLinks.map((l) => (

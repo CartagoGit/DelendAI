@@ -215,6 +215,23 @@ const THEME_ACCENT: Record<string, string> = {
 			},
 			{ signal }
 		);
+
+		// x126 S1 — close the settings modal the moment a language option
+		// is activated so the crossfade of the new page happens without
+		// the open modal sitting on top of it. The default `<a>`
+		// navigation runs in the same microtask as the click and
+		// Astro's ClientRouter intercepts it; closing the modal *now*
+		// (before the next frame) is enough — the fade animation
+		// starts and the ClientRouter swaps the document in parallel.
+		// We listen on `click` (not just activation) so middle-click /
+		// right-click also close the modal, matching the user
+		// expectation that the modal goes away as soon as a flag is
+		// picked.
+		for (const a of document.querySelectorAll<HTMLAnchorElement>(
+			'#cfg-modal .lang-opt',
+		)) {
+			a.addEventListener('click', () => close(), { signal });
+		}
 	};
 
 	// Run on initial load AND after every Astro view transition.
