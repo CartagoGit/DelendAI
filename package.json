@@ -25,6 +25,7 @@
 		"lint:fix": "biome lint --write",
 		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
+		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
 		"lint:scss": "stylelint \"apps/web/src/**/*.scss\"",
 		"lint:scss:fix": "stylelint --fix \"apps/web/src/**/*.scss\"",

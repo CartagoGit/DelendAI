@@ -786,3 +786,10 @@ operativa* para ser la referencia OSS de su categoría.
 *Auditoría agnóstica — 2026-06-18 — `develop` @ Cartago. Sin consulta a
 auditorías previas. Cada hallazgo está verificado contra el código con
 cita de archivo:línea.*
+
+> **Cerrado por f00031** (2026-06-21): el hallazgo de la ausencia de un
+> adaptador Copilot (línea referenciada en `f00031`'s "Why") quedó resuelto
+> — `.github/agents/mcp-vertex.agent.md` es hoy un redirector delgado de
+> 11 líneas hacia `mcp-vertex_overview`/`AGENTS.md`/`skills/`, y
+> `bun run lint:agents` (nuevo, `tools/scripts/lint/agent-redirector-contract.script.ts`)
+> vigila que no vuelva a divergir.

@@ -33,30 +33,31 @@
 		},
 		{
 			"id": "f00022",
-			"file": "ready/f00022-ide-extension-multi-ide-brand-dashboard.md",
+			"file": "done/feats/f00022-ide-extension-multi-ide-brand-dashboard.md",
 			"track": "apps+client+docs",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
-				"ownership": ["{", "{", "{", "{", "{"],
-				"reservedFiles": [
-					"apps/ide/",
-					"apps/vscode/",
-					"apps/vscode/media/",
-					"apps/vscode/src/dashboard/",
-					"apps/vscode/src/panels/",
-					"apps/vscode/src/embeds/",
-					"apps/vscode/src/commands/",
-					"apps/vscode/src/providers/",
-					"apps/vscode/src/views/",
-					"apps/vscode/src/i18n/",
-					"apps/vscode/scripts/check-i18n.ts",
-					"packages/client/",
-					"packages/client/src/lib/services/",
-					"docs/IDE-EXTENSION.md",
-					"docs/CROSS-IDE.md",
-					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md"
+				"related": [
+					"f00014",
+					"f00015",
+					"f00012",
+					"f00011",
+					"f00010",
+					"f00028",
+					"f00035"
+				],
+				"shipped-in": [
+					"61a5f37",
+					"3d3f21c",
+					"54ccb4b",
+					"efca64a",
+					"0d66a6f",
+					"ab58acc",
+					"2212fbc",
+					"3b0c9e2",
+					"046dce0"
 				]
 			}
 		},

@@ -4,13 +4,14 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// This suite asserts on the production shutdown banner that the host
-// server writes to stderr when its MCP server fails to close. The
-// shared silence-console-setup would otherwise swallow that output
-// and make the test impossible to write. Opt back in for this file.
-process.env['ALLOW_TEST_OUTPUT'] = '1';
+// This suite spawns the real `scripts/host-server.ts` as a child
+// process. Each spawn uses `stdio: ['ignore', 'ignore', ...]` so the
+// child's stdout/stderr does not leak into the validate stream. The
+// one case that needs to assert on stderr (the double-SIGTERM test)
+// pipes stderr and inspects it locally — it never reaches the
+// terminal.
 
 import {
 	__resetShutdownGuardForTests,
@@ -86,6 +87,7 @@ const waitForHostReady = async (
 describe('gracefulShutdown — unit', () => {
 	let exitCalls: number[];
 	const originalExit = process.exit.bind(process);
+	let stderrSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		__resetShutdownGuardForTests();
@@ -98,10 +100,19 @@ describe('gracefulShutdown — unit', () => {
 			// catches it inside the .rejects assertion.
 			throw new Error(`__test_exit__:${code ?? 0}`);
 		}) as typeof process.exit;
+		// Capture the "[mcp-vertex] gracefulShutdown: ..." diagnostic
+		// that gracefulShutdown writes to stderr on the rejection /
+		// timeout paths so it doesn't leak into the validate stream.
+		// The two cases that exercise those paths assert on the call
+		// log explicitly.
+		stderrSpy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
 	});
 
 	afterEach(() => {
 		process.exit = originalExit;
+		stderrSpy.mockRestore();
 	});
 
 	it('awaits server.close() and then exits with the requested code', async () => {
@@ -235,7 +246,12 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 			],
 			{
 				cwd: process.cwd(),
-				stdio: ['ignore', 'pipe', 'pipe'],
+				// stdout/stderr ignored: this test asserts only on the
+				// exit code + signal, not on what the child logs. The
+				// child writes to stderr during normal startup
+				// (graceful-shutdown banner, plugin errors), which
+				// would otherwise leak into the validate output.
+				stdio: ['ignore', 'ignore', 'ignore'],
 				detached: false,
 			},
 		);
@@ -272,7 +288,9 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 			],
 			{
 				cwd: process.cwd(),
-				stdio: ['ignore', 'pipe', 'pipe'],
+				// See SIGTERM test for rationale: drop stdout/stderr
+				// so the child does not pollute the validate output.
+				stdio: ['ignore', 'ignore', 'ignore'],
 				detached: false,
 			},
 		);
@@ -306,7 +324,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
 			],
 			{
 				cwd: process.cwd(),
-				stdio: ['ignore', 'pipe', 'pipe'],
+				// stderr is piped because the assertion at the end of
+				// the test inspects it (it must NOT contain the SDK's
+				// "McpServer already closed" error). stdout is ignored
+				// so the host's startup banner does not leak.
+				stdio: ['ignore', 'ignore', 'pipe'],
 				detached: false,
 			},
 		);
