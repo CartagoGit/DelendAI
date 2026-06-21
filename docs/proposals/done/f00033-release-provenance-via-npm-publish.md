@@ -31,7 +31,7 @@ unused.
   is to rewrite `workspace:*` dependencies into versions on publish (bun
   ships that automatically; `npm publish` does **not**).
 
-## The trade-off (must be acknowledged)
+## why this design
 
 `npm publish --provenance` requires either:
 1. The packages to have **resolved versions** (no `workspace:*`) in
@@ -53,7 +53,7 @@ Two viable approaches:
 
 So: **Approach A**.
 
-## Implementation note (2026-06-21 — supersedes Approach A above)
+### Implementation note (2026-06-21)
 
 Verified on disk (`npm publish --dry-run` against `packages/core` and
 `plugins/proposals`, plus a grep of every package's `dependencies` and
@@ -128,6 +128,8 @@ instead of resurrecting dead code preemptively.
     that needed de-risking before touching production CI). Left as a
     follow-up if/when the team wants automated provenance verification in
     CI rather than first-tag observation.
+  - **Files**: `.github/workflows/release.yml`, `scripts/release.ts`, `packages/core/tests/release.spec.ts`
+  - **Gate**: `bun run validate`
 
 ### S4 — Audit close
   - **Status**: done

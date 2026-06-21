@@ -199,8 +199,11 @@ const buildClient = async (
 	return {
 		client,
 		close: async () => {
+			assembled.server.server.onclose?.();
 			await client.close();
 			await assembled.server.close();
+			await ct.close();
+			await st.close();
 		},
 	};
 };
@@ -542,4 +545,11 @@ const main = async (): Promise<void> => {
 	);
 };
 
-void main();
+main()
+	.then(() => {
+		process.exit(0);
+	})
+	.catch((error: unknown) => {
+		console.error(error);
+		process.exit(1);
+	});

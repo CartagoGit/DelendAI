@@ -119,7 +119,7 @@ export const ideTargets: readonly IIdeTarget[] = [
 	{
 		id: 'antigravity',
 		label: 'Antigravity',
-		file: '~/.gemini/config/mcp_config.json',
+		file: '~/.gemini/antigravity-ide/mcp_config.json',
 		scope: 'global',
 		kind: 'mcpServers',
 	},

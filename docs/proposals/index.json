@@ -130,10 +130,10 @@
 		},
 		{
 			"id": "l00008",
-			"file": "ready/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
+			"file": "done/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
 			"track": "plugins+core+audit",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
@@ -428,6 +428,19 @@
 		{
 			"id": "a00026",
 			"file": "done/audits/a00026-21-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a00027",
+			"file": "done/audits/a00027-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",

@@ -83,6 +83,12 @@ const CLAIM_BLOCKER_SCHEMA = z.enum([
 	'already-in-progress',
 ]);
 
+const CASCADE_BOOST_VALUES = [
+	'shipped-blocking',
+	'customer-reported',
+	'security',
+] as const satisfies readonly [TCascadeBoost, ...TCascadeBoost[]];
+
 const PROPOSAL_SLICE_SCHEMA = z.object({
 	proposalId: z.string(),
 	sliceId: z.string(),
@@ -120,6 +126,12 @@ const EXECUTION_GUIDE_SCHEMA = z.object({
 	rules: z.array(z.string()),
 });
 
+const CASCADE_TRACE_SCHEMA = z.object({
+	priority: z.number().optional(),
+	cascadeOverrideReason: z.string().optional(),
+	cascadeBoost: z.enum(CASCADE_BOOST_VALUES).optional(),
+});
+
 const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	kind: z.enum([
 		'next-proposal',
@@ -144,6 +156,7 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	validation: CLAIM_VALIDATION_SCHEMA.optional(),
 	slice: PROPOSAL_SLICE_SCHEMA.nullable().optional(),
 	executionGuide: EXECUTION_GUIDE_SCHEMA.optional(),
+	cascadeTrace: CASCADE_TRACE_SCHEMA.optional(),
 	error: z.string().optional(),
 });
 
@@ -229,11 +242,9 @@ const readIndex = async (
 
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
 
-const CASCADE_BOOSTS: ReadonlySet<TCascadeBoost> = new Set([
-	'shipped-blocking',
-	'customer-reported',
-	'security',
-]);
+const CASCADE_BOOSTS: ReadonlySet<TCascadeBoost> = new Set(
+	CASCADE_BOOST_VALUES,
+);
 
 const isCascadeBoost = (value: string | undefined): value is TCascadeBoost =>
 	typeof value === 'string' && CASCADE_BOOSTS.has(value as TCascadeBoost);
@@ -496,6 +507,7 @@ export const runContinueProposal = async (
 		free.map((entry) => summaryFor(entry, options.indexPathAbs)),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
+	const priorityById = new Map<string, number>();
 	const next = [...free].sort((a, b) => {
 		const priorityA = resolver.resolve(
 			summaryById.get(a.id) as IProposalSummary,
@@ -503,15 +515,41 @@ export const runContinueProposal = async (
 		const priorityB = resolver.resolve(
 			summaryById.get(b.id) as IProposalSummary,
 		);
+		priorityById.set(a.id, priorityA);
+		priorityById.set(b.id, priorityB);
 		const byPriority = priorityA - priorityB;
 		return byPriority !== 0 ? byPriority : a.id.localeCompare(b.id);
 	})[0];
+	const nextSummary = next ? summaryById.get(next.id) : undefined;
+	const nextPriority =
+		nextSummary === undefined
+			? undefined
+			: (priorityById.get(nextSummary.id) ??
+				resolver.resolve(nextSummary));
 	return json({
 		kind: 'next-proposal',
 		proposalId: next?.id,
 		file: next?.file,
 		status: next?.status,
 		relaunchCommand: `${options.namespacePrefix}_continue_proposal { proposalId: "${next?.id}", mode: "plan" }`,
+		cascadeTrace:
+			nextSummary === undefined
+				? undefined
+				: {
+						...(nextPriority !== undefined &&
+						Number.isFinite(nextPriority)
+							? { priority: nextPriority }
+							: {}),
+						...(nextSummary.cascadeOverrideReason
+							? {
+									cascadeOverrideReason:
+										nextSummary.cascadeOverrideReason,
+								}
+							: {}),
+						...(nextSummary.cascadeBoost
+							? { cascadeBoost: nextSummary.cascadeBoost }
+							: {}),
+					},
 		guide: [
 			'Open the proposal file and do the next atomic slice.',
 			'For parallel work, call mode:"plan" then mode:"claim".',
