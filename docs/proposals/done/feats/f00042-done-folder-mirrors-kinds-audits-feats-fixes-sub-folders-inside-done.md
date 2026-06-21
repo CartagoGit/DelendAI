@@ -85,21 +85,22 @@ folder count honest and avoids empty buckets.
 
 ### 2.3 `id:` stays, filename prefix updates
 
-Renaming `l99-feat-multi-model-audit-plugin.md` to
-`f00004-feat-multi-model-audit-plugin.md` (because its real kind is `feat`)
+Renaming the old legacy file `l99-feat-multi-model-audit-plugin.md` to its
+current canonical location
+`f00006-feat-multi-model-audit-plugin.md` (because its real kind is `feat`)
 breaks any external link that points at the filename. But **every**
 cross-proposal reference in this repo uses the `id:` field (e.g.
-`related: l99`), not the filename, because the proposal linter
+`related: f00006`), not the filename, because the proposal linter
 encourages it and the glossary documents it. So the rename is safe:
 
-| Before | After | `id:` (unchanged) |
+| Before | After | `id:` |
 |---|---|---|
-| `done/l99-feat-multi-model-audit-plugin.md` | `done/feats/f00004-feat-multi-model-audit-plugin.md` | `l99` |
-| `done/a1-16-06-2026- Auditoría Maestra.md` | `done/audits/a16-16-06-2026- Auditoría Maestra (Unificada).md` | `a1` (we keep the original audit `id`!) |
+| `done/l99-feat-multi-model-audit-plugin.md` | `done/feats/f00006-feat-multi-model-audit-plugin.md` | `f00006` |
+| `done/a1-16-06-2026- Auditoría Maestra.md` | `done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` | `a00013` |
 
-Wait — for the audits, the `id:` was `a1`, `a2`, `a3`, `a4` (the
+Wait — for the audits, the old `id:` values were `a1`, `a2`, `a3`, `a4` (the
 already-prefixed ones) plus **no frontmatter** for the un-prefixed ones.
-Renumbering the 20 audits to `a1`-`a20` requires picking the audit
+Renumbering the 20 audits to `a00001`-`a00020` requires picking the audit
 identifier. We use the **chronological position** as the new `a<NN>`,
 which becomes both the filename prefix AND the `id:` field. The old
 `a1`/`a2`/`a3`/`a4` ids are updated to their new numbers; references
@@ -154,7 +155,7 @@ The `proposal-scaffold-linter` and `lint:proposals` script validate:
 
 Both checks remain correct under this proposal because:
 
-- Renaming `l99-feat-...md` to `f00004-feat-...md` keeps rule (1): the new
+- Renaming `l99-feat-...md` to `f00006-feat-...md` keeps rule (1): the new
   prefix `f` matches `kind: feat`.
 - Moving files into `done/feats/` keeps rule (2) only if the linter walks
   the file's **status**, not its folder. We confirm: yes, the linter reads
@@ -170,33 +171,33 @@ repo). Ties broken by alphabetical slug. The number is assigned once,
 frozen in the filename and the `id:` field, and never re-used.
 
 The four pre-existing numbered audits (`a1-14-06`, `a2-15-06`,
-`a3-15-06`, `a4-15-06`) and the lone `audits/a1-16-06-...` (Maestra)
+`a3-15-06`, `a4-15-06`) and the lone pre-padding `audits/a1-16-06-...` (Maestra)
 all receive new numbers based on the chronological table in §3.5.
 
 ### 3.5 Chronological audit map (s1)
 
 | # | Created | Date in doc | Source file | Slug |
 |---|---|---|---|---|
-| a1  | 2026-06-15 01:56 | 15-06-2026 | `done/15-06-2026- Codex (GPT-5.5).md` | Codex GPT-5.5 |
-| a2  | 2026-06-15 23:13 | 15-06-2026 | `done/15-06-2026- Antigravity (Claude Sonnet 4.6 Thinking) [estado-actual].md` | Antigravity Claude estado-actual |
-| a3  | 2026-06-16 23:35 | 15-06-2026 | `done/AUDITORIA-UNIFICADA-2026-06-15.md` | Unificada 15-06 |
-| a4  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Antigravity (Claude Sonnet 4.6 Thinking) [previa].md` | Antigravity Claude previa |
-| a5  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md` | Antigravity Claude |
-| a6  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Antigravity (Gemini 3.5 Flash) [previa-exhaustiva].md` | Antigravity Gemini previa-exhaustiva |
-| a7  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Antigravity (Gemini 3.5 Flash) [previa-unificada].md` | Antigravity Gemini previa-unificada |
-| a8  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Antigravity (Gemini 3.5 Flash).md` | Antigravity Gemini |
-| a9  | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Claude Code (Opus 4.8).md` | Claude Code Opus |
-| a10 | 2026-06-16 23:43 | 16-06-2026 | `done/16-06-2026- Codex (GPT-5) [auditoria-exhaustiva].md` | Codex GPT-5 exhaustiva |
-| a11 | 2026-06-17 12:51 | 17-06-2026 | `done/17-06-2026- Auditoría Independiente (GitHub Copilot · MiniMax-M3).md` | Copilot MiniMax-M3 |
-| a12 | 2026-06-17 18:18 | 17-06-2026 | `done/17-06-2026- Claude Code (Opus 4.8) [estado-actual].md` | Claude Opus estado-actual |
-| a13 | 2026-06-18 08:39 | 18-06-2026 | `done/18-06-2026- Auditoría Agnóstica (Codex GPT-5).md` | Agnóstica Codex GPT-5 |
-| a14 | 2026-06-18 08:39 | 18-06-2026 | `done/18-06-2026- Auditoría Agnóstica (GPT-5.4).md` | Agnóstica GPT-5.4 |
-| a15 | 2026-06-18 08:39 | 18-06-2026 | `done/18-06-2026- Auditoría Agnóstica (estado-actual).md` | Agnóstica estado-actual |
-| a16 | 2026-06-21 01:23 | 16-06-2026 | `audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` | Maestra Unificada |
-| a17 | 2026-06-21 04:23 | 14-06-2026 | `done/a1-14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md` | Antigravity Claude inicial |
-| a18 | 2026-06-21 04:23 | 15-06-2026 | `done/a2-15-06-2026- Antigravity (Gemini 3.5 Flash) [estado-actual].md` | Antigravity Gemini estado-actual |
-| a19 | 2026-06-21 04:23 | 15-06-2026 | `done/a3-15-06-2026- Antigravity (Gemini 3.5 Flash).md` | Antigravity Gemini (jul-15) |
-| a20 | 2026-06-21 04:23 | 15-06-2026 | `done/a4-15-06-2026- Claude Code (Opus 4.8).md` | Claude Code Opus (jul-15) |
+| a00001 | 2026-06-15 01:56 | 15-06-2026 | `done/audits/a00007-15-06-2026-codex-gpt-5-5.md` | Codex GPT-5.5 |
+| a00002 | 2026-06-15 23:13 | 15-06-2026 | `done/audits/a00002-15-06-2026-antigravity-claude-sonnet-4-6-thinking-estado-actual.md` | Antigravity Claude estado-actual |
+| a00003 | 2026-06-16 23:35 | 15-06-2026 | `done/audits/a00005-15-06-2026-auditoria-unificada.md` | Unificada 15-06 |
+| a00004 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00009-16-06-2026-antigravity-claude-sonnet-4-6-thinking-previa.md` | Antigravity Claude previa |
+| a00005 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00008-16-06-2026-antigravity-claude-sonnet-4-6-thinking.md` | Antigravity Claude |
+| a00006 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00011-16-06-2026-antigravity-gemini-3-5-flash-previa-exhaustiva.md` | Antigravity Gemini previa-exhaustiva |
+| a00007 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00012-16-06-2026-antigravity-gemini-3-5-flash-previa-unificada.md` | Antigravity Gemini previa-unificada |
+| a00008 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00010-16-06-2026-antigravity-gemini-3-5-flash.md` | Antigravity Gemini |
+| a00009 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00014-16-06-2026-claude-code-opus-4-8.md` | Claude Code Opus |
+| a00010 | 2026-06-16 23:43 | 16-06-2026 | `done/audits/a00015-16-06-2026-codex-gpt-5-auditoria-exhaustiva.md` | Codex GPT-5 exhaustiva |
+| a00011 | 2026-06-17 12:51 | 17-06-2026 | `done/audits/a00016-17-06-2026-auditoria-independiente-github-copilot-minimax-m3.md` | Copilot MiniMax-M3 |
+| a00012 | 2026-06-17 18:18 | 17-06-2026 | `done/audits/a00017-17-06-2026-claude-code-opus-4-8-estado-actual.md` | Claude Opus estado-actual |
+| a00013 | 2026-06-18 08:39 | 18-06-2026 | `done/audits/a00018-18-06-2026-auditoria-agnostica-codex-gpt-5.md` | Agnóstica Codex GPT-5 |
+| a00014 | 2026-06-18 08:39 | 18-06-2026 | `done/audits/a00020-18-06-2026-auditoria-agnostica-gpt-5-4.md` | Agnóstica GPT-5.4 |
+| a00015 | 2026-06-18 08:39 | 18-06-2026 | `done/audits/a00019-18-06-2026-auditoria-agnostica-estado-actual.md` | Agnóstica estado-actual |
+| a00016 | 2026-06-21 01:23 | 16-06-2026 | `done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` | Maestra Unificada |
+| a00017 | 2026-06-21 04:23 | 14-06-2026 | `done/audits/a00001-14-06-2026-antigravity-claude-sonnet-4-6-thinking.md` | Antigravity Claude inicial |
+| a00018 | 2026-06-21 04:23 | 15-06-2026 | `done/audits/a00004-15-06-2026-antigravity-gemini-3-5-flash-estado-actual.md` | Antigravity Gemini estado-actual |
+| a00019 | 2026-06-21 04:23 | 15-06-2026 | `done/audits/a00003-15-06-2026-antigravity-gemini-3-5-flash.md` | Antigravity Gemini (jul-15) |
+| a00020 | 2026-06-21 04:23 | 15-06-2026 | `done/audits/a00006-15-06-2026-claude-code-opus-4-8.md` | Claude Code Opus (jul-15) |
 
 ## Slices
 
@@ -272,12 +273,12 @@ all receive new numbers based on the chronological table in §3.5.
 ## Risks and mitigations
 
 - **R1**: A cross-proposal `related:` field references an old audit
-  filename (e.g. `related: a1-14-06-...`). Mitigation: s1 only rewrites
+  filename (e.g. `related: a00001-14-06-...`). Mitigation: s1 only rewrites
   filenames, not `id:` references in other proposals' frontmatter, so
-  the `related: a1` form (using the `id`) keeps working. We add a
+  the `related: a00001` form (using the `id`) keeps working. We add a
   follow-up commit if any literal filename reference is found.
 - **R2**: The linter's filename-prefix check fails on a file whose `id:`
-  field and filename prefix disagree (e.g. `id: l99` + filename `f00004-...`).
+  field and filename prefix disagree (e.g. a legacy filename paired with its new padded `id`).
   Mitigation: confirmed that the linter reads `kind:` (not `id:`) for the
   prefix check, so the rename is legal as long as `kind: feat`.
 - **R3**: The legacy `docs/proposals/audits/` directory removal breaks

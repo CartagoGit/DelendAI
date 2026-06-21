@@ -18,7 +18,7 @@
  *
  *   bun scripts/lint-proposals.ts
  */
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -48,16 +48,16 @@ const isProposalFilename = (filename: string): boolean =>
 	PROPOSAL_FILENAME.test(filename);
 
 const walkMarkdown = async (root: string): Promise<string[]> => {
-	const entries = await readdir(root, { withFileTypes: true }).catch(
-		() => null,
-	);
+	const entries = await readdir(root).catch(() => null);
 	if (entries === null) return [];
 	const out: string[] = [];
 	for (const entry of entries) {
-		const abs = join(root, entry.name);
-		if (entry.isDirectory()) {
+		const abs = join(root, entry);
+		const info = await stat(abs).catch(() => null);
+		if (info === null) continue;
+		if (info.isDirectory()) {
 			out.push(...(await walkMarkdown(abs)));
-		} else if (entry.isFile() && isProposalFilename(entry.name)) {
+		} else if (info.isFile() && isProposalFilename(entry)) {
 			out.push(abs);
 		}
 	}

@@ -642,8 +642,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > "no implementar"):
 > - **M11 `rules` follow-up "emitir comandos `eslint` sin avisar si falta"**
 >   (sesión 18-06: aceptado como caveat documentado del plugin `rules`).
-> - **M40 plugin `@mcp-vertex/audit` multi-modelo** (l99): el diseño está
->   en `done/l99` y la decisión del usuario es la que manda; no se
+> - **M40 plugin `@mcp-vertex/audit` multi-modelo** (`f00006`): el diseño está
+>   en `done/feats/f00006-feat-multi-model-audit-plugin.md` y la decisión del usuario es la que manda; no se
 >   reabre como workstream de la auditoría.
 >
 > **Cierre total del master audit:** las 7 `[ ]` restantes (líneas 248,
@@ -700,7 +700,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 - 🔵 **M40 · Plugin de auditoría multi-modelo `@mcp-vertex/audit`** (IDEA del usuario, a
   decidir) — auditar con varios modelos de distintas empresas en el formato del repo.
-  Diseño escrito en [l99](../l99-feat-multi-model-audit-plugin.md): A) "audit kit" sin
+  Diseño escrito en [f00006](../feats/f00006-feat-multi-model-audit-plugin.md): A) "audit kit" sin
   claves (brief canónico + **consolidación automática** de las auditorías que produce cada
   IDE/modelo) ⭐; B) fan-out por API (OpenRouter = 1 clave, multi-empresa, opt-in con
   `effects:['network']`); C) roster declarado. Realidad: un server MCP no puede saber el

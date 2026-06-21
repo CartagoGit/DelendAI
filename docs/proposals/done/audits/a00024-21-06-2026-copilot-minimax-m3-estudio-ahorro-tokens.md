@@ -141,7 +141,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 ### S1 — Inventory of token sinks and baseline measurement
 - **Files**:
   - `docs/proposals/ready/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (este archivo)
-  - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (referencia, no se modifica en este slice)
+  - `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (referencia)
   - `docs/TOKEN-BUDGETS.md` (referencia)
   - `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md` (referencia, **prerequisite de A y B**)
 - **Status**: pending
