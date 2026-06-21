@@ -14,28 +14,33 @@ export interface IWebToolOptions {
 	readonly fetchImpl?: IFetchLike;
 }
 
-const OUTPUT_SCHEMA = z.discriminatedUnion('ok', [
-	z.object({
-		ok: z.literal(true),
-		url: z.string(),
-		status: z.number(),
-		contentType: z.string().nullable(),
-		body: z.string(),
-		truncated: z.boolean(),
-	}),
-	z.object({
-		ok: z.literal(false),
-		reason: z.enum([
+// The MCP SDK's `outputSchema` only accepts a plain `z.object({...})` shape
+// (`normalizeObjectSchema` in the SDK's zod-compat layer special-cases
+// objects only — a `z.discriminatedUnion` has no top-level `.shape` and
+// silently fails output validation at call time with an internal SDK error,
+// not a Zod validation error). Model the success/failure branches as one
+// flat optional-field object instead, matching the convention every other
+// tool in this repo already uses (see `buildMetricsToolRegistration` /
+// `buildDocsToolRegistrations`, both plain `z.object` with optional fields).
+const OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	url: z.string().optional(),
+	status: z.number().optional(),
+	contentType: z.string().nullable().optional(),
+	body: z.string().optional(),
+	truncated: z.boolean().optional(),
+	reason: z
+		.enum([
 			'blocked-host',
 			'invalid-url',
 			'redirect-blocked',
 			'too-many-redirects',
 			'timeout',
 			'fetch-error',
-		]),
-		detail: z.string().optional(),
-	}),
-]);
+		])
+		.optional(),
+	detail: z.string().optional(),
+});
 
 /**
  * Opt-in `web_fetch` tool: resolve one allow-listed URL and return its
