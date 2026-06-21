@@ -9,10 +9,18 @@ track: archive
 
 # 16-06-2026 · Auditoría Maestra (Unificada) — `@mcp-vertex/core`
 
-> **Documento único y vigente.** Consolida **8 auditorías independientes** del
-> estado actual del monorepo en una sola hoja de ruta hacia el "magistral" (11/10).
-> Todos los hallazgos 🔴/🟠 de abajo están **re-verificados contra el código** en
-> esta sesión: se cita la línea exacta.
+> **Estado: CERRADA como referencia histórica (2026-06-21).** Esta auditoría
+> consolidó **8 auditorías independientes** del estado del monorepo en una
+> sola hoja de ruta hacia el "magistral" (11/10). Todos los hallazgos 🔴/🟠
+> de abajo fueron **re-verificados contra el código** en esta sesión: se
+> cita la línea exacta.
+>
+> **Superseded by [f119 — Done folder mirrors kinds](../in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)**
+> (cuando aterrice): la Maestra ya no es "el documento único y vigente" —
+> los hallazgos abiertos migraron a propuestas cerradas en `done/feats/` y
+> `done/fixes/`, y la organización de las propias auditorías pasó a
+> `done/audits/`. Esta página queda como **snapshot histórico del estado al
+> 16-06-2026**, útil como referencia para entender el "antes" del refactor.
 >
 > **Las 8 auditorías unificadas** (archivadas en `docs/proposals/done/`):
 > - **1ª ronda (previas, ex `AUDITORIA-*`):** síntesis multi-modelo 15-06; Sonnet
