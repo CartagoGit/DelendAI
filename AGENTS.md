@@ -95,6 +95,12 @@ keeps `git diff` out of the hot path.
 - **Conventional Commits.** Versioning is derived from commit type on push to
   `main` (`fix:` → patch, `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major).
   No manual version bumps; no commit-back loop.
+- **Swarm proposals workflow.** If a proposals task needs more than 3 tool
+  calls, touches multiple files, or requires repeated MCP reads, delegate it
+  instead of keeping it on the main thread. With 2+ agents in the same repo,
+  each agent uses its own `agent_worktree`; on claim conflict, wait for
+  `lock-released` or `await_lock` instead of polling; `proposals_sync_proposals`
+  runs only after the last open slice of that proposal is closed.
 - **One barrel per package** (`src/public/index.ts`); internals live in `src/lib`.
 - **Interfaces are `I`-prefixed**; match the surrounding file's idiom.
 - **Tests** colocate as `*.spec.ts`; protocol behaviour gets an e2e with a real

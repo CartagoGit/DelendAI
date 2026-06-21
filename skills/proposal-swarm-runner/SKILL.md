@@ -15,14 +15,20 @@ Read this after `mcp-vertex-operator` once `overview` points you at the
 overview → recommendedNextAction mentions proposals
   → proposals_auto_work { compact: true }
       → tells you the next slice/proposal to work on, or that there is none
+         → if the work needs >3 tool calls, multiple files, or repeated MCP reads,
+            delegate it instead of keeping it on the main thread
+   → if 2+ agents are sharing this repo, create agent_worktree once at the
+      start of the session
   → proposals_continue_proposal { mode: 'plan' }
       → returns the slice's files + acceptance criteria
   → proposals_agent_lock { action: 'claim', files: [...] }
       → ok:true  → implement the slice
-      → ok:false (lock-conflict) → see mcp-vertex-failure-modes, do NOT poll
+         → ok:false (lock-conflict or all slices claimed) → await_lock or wait for
+            lock-released once; do NOT poll
   → implement + test + run the gate (bun run validate)
   → proposals_close_slice { id, sliceId }
       → flips status + releases the lock atomically
+   → if that was the last open slice for that proposal, proposals_sync_proposals once
 ```
 
 ## `auto_work` persist modes
@@ -55,11 +61,12 @@ overview → recommendedNextAction mentions proposals
 4. **Never call `proposals_sync_proposals` before closing the last open
    slice of a proposal.** Syncing mid-flight can race a peer's concurrent
    close and produce a transient inconsistent index; close every slice
-   first, sync last.
+   first, sync once at the end of that proposal's open work.
 
 ## Smoke
 
 After `proposals_close_slice`, `proposals_compact_status` should report
-one fewer open slice for that proposal and the proposal's `status` field
-in `index.json` should read `done` once its last slice closes — if it does
-not, run `state_health` (see `state-repair-playbook`) before retrying.
+one fewer open slice for that proposal. If that was the last open slice,
+run `proposals_sync_proposals` once; the proposal's `status` field in
+`index.json` should then read `done`. If it does not, run `state_health`
+(see `state-repair-playbook`) before retrying.
