@@ -66,7 +66,11 @@ export type {
 	ILoadedPlugin,
 	IPluginLoadResult,
 } from '../lib/plugins/load-plugins';
-export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
+export {
+	parseCliArgs,
+	DEFAULT_CLI_ARGS,
+	hasExplicitPluginSurfaceSelection,
+} from '../lib/plugins/parse-cli-args';
 export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
 export {
 	PRESET_CATALOG,

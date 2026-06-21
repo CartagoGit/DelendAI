@@ -44,7 +44,7 @@ acceptance:
 ### 2. Required Sections (in canonical order)
 
 - **`## Goal`**: Contains the scope of the audit, date of execution, audited HEAD commit hash, and the revisor/model.
-- **`## Why`**: Contains the audit verdict (estimated score, overall health evaluation in one phrase/paragraph).
+- **`## Why`**: Contains the detailed audit verdict (estimated score, layers evaluation, cross-cutting hygiene, token/loop analysis, and top actions) structured with H3 subheadings.
 - **`## Non-goals`**: Explicitly states what is out of scope for the audit.
 - **`## Slices`**: The slices of work that can be resolved *within the audit itself* (e.g. S1 for audit execution, S2..SN for immediate fixes/cleanups done during the audit).
 - **`## Acceptance`**: Standard acceptance criteria for closing the audit.
@@ -99,7 +99,28 @@ acceptance:
 
 ## Why
 
-[Write the Verdict in a single sentence/paragraph, highlighting the overall status and quality score, e.g. 9.2/10.]
+### 0. Veredicto rápido
+[Escribe el veredicto general en 1-2 párrafos, indicando la nota media estimada (ej. 9.2/10) y la salud global del código.]
+
+### 1. Por capas (Núcleo, Cliente, Plugins, Aplicaciones, etc.)
+- **Núcleo (`packages/core`)**: [Evaluación del núcleo, desacoplamiento y primitivas.]
+- **Cliente (`packages/client`)**: [Evaluación de la capa de cliente y servicios.]
+- **Plugins (`plugins/*`)**: [Inspección y estado de los plugins del monorepo.]
+- **Aplicaciones (`apps/*` / `extensions/*`)**: [Evaluación de la app web Astro, extensión VS Code u otras.]
+
+### 2. Higiene transversal
+- **Redacción de secretos**: [Verificación de que se usa `redactSecrets` antes de persistir.]
+- **Workspace containment**: [Verificación de que se contiene el path con `resolveWorkspaceContained`.]
+- **console.log residual**: [Verificación de que no hay logs en código de producción.]
+- **@ts-ignore / @ts-nocheck**: [Verificación de que no hay directivas de exclusión de tipos en producción.]
+
+### 3. Eficiencia / tokens / bucles / bloqueos
+- **Eficiencia de tokens**: [Análisis de consumo de tokens (lazy knowledge, overview compacto).]
+- **Bucles / bloqueo**: [Análisis de posibles bucles (continuity policy, loop detector) y bloqueos concurrentes.]
+
+### 4. Top acciones para 10/10 (prioridad)
+1. **[Acción 1]**: [Descripción]
+2. **[Acción 2]**: [Descripción]
 
 ## Non-goals
 
