@@ -79,6 +79,18 @@ keeps `git diff` out of the hot path.
 - **Interfaces are `I`-prefixed**; match the surrounding file's idiom.
 - **Tests** colocate as `*.spec.ts`; protocol behaviour gets an e2e with a real
   in-memory MCP server.
+- **Audits File Naming**: Every audit must follow the exact name structure:
+  `{numAuditoria}-{DD}-{MM}-{YYYY}-{controladorModelo}-{modelo}-{queSeHaAuditado}.md`
+  where:
+  - `numAuditoria` is the chronological identifier (e.g., `a021`).
+  - `DD`, `MM`, `YYYY` is the day, month, and 4-digit year (e.g., `21-06-2026`).
+  - `controladorModelo` is the runner/client (e.g., `antigravity`, `claude-code`, `codex`, `copilot`).
+  - `modelo` is the AI model (e.g., `deepmind`, `gpt-5-5`, `opus-4-8`).
+  - `queSeHaAuditado` describes the audited scope (e.g., `repositorio`, `plugins`, `apps`, `web`, `extensionvscode`).
+- **Audit Proposal Lifecycle**:
+  - An audit is modeled as a proposal.
+  - If the audit has pending tasks or slices to be executed within its own scope, the proposal must be created under `docs/proposals/ready/` with `status: ready` and all slices set to `pending`.
+  - If the audit has no internal tasks (e.g. all findings are deferred to separate proposals), the audit is created directly under `docs/proposals/done/audits/` with `status: done` and must reference the deferred proposals.
 
 ## When you touch a plugin / add a tool
 

@@ -8,6 +8,18 @@ applies-to: docs/proposals/**/a*.md
 
 Audits are a special kind of proposal (prefix `a`, kind `audit`) designed to evaluate a scope of the codebase, document findings, and specify the resolution tracks for those findings. By modeling audits as proposals, we track their execution, review, and validation through the standard proposal lifecycle.
 
+## Filename Convention
+
+Every audit must follow the exact filename structure:
+`{numAuditoria}-{DD}-{MM}-{YYYY}-{controladorModelo}-{modelo}-{queSeHaAuditado}.md`
+
+Where:
+- `numAuditoria` is the chronological identifier (e.g., `a021`).
+- `DD`, `MM`, `YYYY` is the day, month, and 4-digit year (e.g., `21-06-2026`).
+- `controladorModelo` is the client/runner driving the model (e.g., `antigravity`, `claude-code`, `codex`, `copilot`).
+- `modelo` is the AI model used (e.g., `deepmind`, `gpt-5-5`, `opus-4-8`).
+- `queSeHaAuditado` describes the audited scope (e.g., `repositorio`, `plugins`, `apps`, `web`, `extensionvscode`).
+
 ## Required Shape
 
 An audit proposal must be structured with the following metadata and sections:
@@ -50,6 +62,11 @@ acceptance:
 Every finding in `## Findings` must declare a **Resolution Track**:
 1. **Resolved in Audit Slices**: If the fix is minor, trivial, or directly manageable during the audit, it should be mapped to a slice (e.g., `S2 — fix Biome deprecation warning`) and resolved before the audit is closed.
 2. **Deferred to Individual Proposals**: If the fix is a larger feature, significant refactoring, or a complex bug, it must be split into a separate, new proposal (e.g., `f120`, `x122`) and linked as a follow-up.
+
+### Lifecycle & Status Rules
+
+- **Pending Tasks**: If the audit has tasks or slices to be executed within its own scope, the proposal must be created under `docs/proposals/ready/` with `status: ready` and all slices set to `pending`.
+- **No Internal Tasks**: If the audit has no internal tasks (e.g., all findings are deferred to separate proposals, or there are no findings), the audit should be created directly under `docs/proposals/done/audits/` with `status: done` and reference/link the deferred proposals.
 
 ---
 

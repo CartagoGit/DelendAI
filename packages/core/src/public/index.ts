@@ -14,6 +14,11 @@ export {
 	planRegistrationOrder,
 } from '../lib/project/create-mcp-project';
 export type { IMcpVertexProject } from '../lib/project/create-mcp-project';
+export {
+	gracefulShutdown,
+	__resetShutdownGuardForTests,
+} from '../lib/cli/graceful-shutdown';
+export type { IGracefulShutdownOptions } from '../lib/cli/graceful-shutdown';
 
 // --- workspace + paths -----------------------------------------------------
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
