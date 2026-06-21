@@ -31,7 +31,7 @@ acceptance:
 
 Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) auditaron el mismo alcance casi en simultáneo y convergen en el mismo veredicto (8.4–9.6/10, sin hallazgos FATAL): arquitectura núcleo-plugin de referencia, primitivas durables consistentes, sin huecos de diseño — la distancia al ideal es de **acabados de plataforma**, no de rediseño. Al cruzar sus hallazgos contra el código de hoy: **8 puntos ya estaban resueltos en disco** (verificados con grep/lectura directa), **6 puntos ya tienen una propuesta `ready/` que los cubre** (no se duplica slice), y **7 puntos no tienen cobertura** y se materializan aquí como slices nuevos. La quinta auditoría (`a00025`) es un meta-estudio de eficiencia de tokens con su propio plan de derivación (`a024a/b/c/d`); se trata en una sección separada (§ Estudio de eficiencia de tokens) porque su naturaleza no es "hallazgo de calidad de código" sino "diseño de un programa de medición".
 
-**Veredicto consolidado: ~8.8/10** (promedio de los 4 scores de repositorio: 9.6 + 8.7 + 8.4 + 8.5 = 8.8). Ningún revisor encontró un hallazgo FATAL. El patrón es consistente entre los 4: el núcleo y `proposals`/`memory` están en estado de referencia; la deuda vive en plugins satélite (I/O síncrono puntual), cobertura de gate (`apps/vscode` fuera del root), y superficie de empaquetado/release (smoke de tarball incompleto).
+**Veredicto consolidado: ~8.8/10** (promedio de los 4 scores de repositorio: 9.6 + 8.7 + 8.4 + 8.5 = 8.8). Ningún revisor encontró un hallazgo FATAL. El patrón es consistente entre los 4: el núcleo y `proposals`/`memory` están en estado de referencia; la deuda vive en plugins satélite (I/O síncrono puntual), cobertura de gate (`extensions/vscode` fuera del root), y superficie de empaquetado/release (smoke de tarball incompleto).
 
 ## Non-goals
 
@@ -50,7 +50,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 - **Gate**: `bun run lint:proposals`
 - **Status**: pending
 
-### S2 — Include `apps/vscode` in root `vitest.config.ts` projects
+### S2 — Include `extensions/vscode` in root `vitest.config.ts` projects
 - **Files**: `vitest.config.ts`
 - **Gate**: `bun run validate`
 - **Status**: pending
@@ -65,16 +65,16 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 - **Gate**: `bun run build && bun run smoke:pack`
 - **Status**: pending
 
-### S5 — Add try/catch + user-facing error feedback to 4 `apps/vscode` MCP-client commands
+### S5 — Add try/catch + user-facing error feedback to 4 `extensions/vscode` MCP-client commands
 - **Files**:
-  - `apps/vscode/src/commands/show-overview.ts`
-  - `apps/vscode/src/commands/show-metrics.ts`
-  - `apps/vscode/src/commands/open-proposal.ts`
-  - `apps/vscode/src/commands/run-validation.ts`
+  - `extensions/vscode/src/commands/show-overview.ts`
+  - `extensions/vscode/src/commands/show-metrics.ts`
+  - `extensions/vscode/src/commands/open-proposal.ts`
+  - `extensions/vscode/src/commands/run-validation.ts`
 - **Gate**: `bun run validate`
 - **Status**: pending
 
-> **Slices deliberadamente NO abiertos aquí** (documentados solo como Finding sin slice, porque su severidad es baja y/o requieren una decisión de scope que no corresponde a esta consolidación): `apps/web/vitest.config.ts` sin cobertura de componentes Astro (H-WEB-TEST), `scripts/derive-version.ts` sin tests deterministas (H-DERIVE-VERSION), dedupe de i18n langs `apps/web`↔`apps/vscode` vía `apps/shared/` (H-I18N-DUP). Ver § Findings para el detalle de cada uno y por qué quedan como nota, no como slice.
+> **Slices deliberadamente NO abiertos aquí** (documentados solo como Finding sin slice, porque su severidad es baja y/o requieren una decisión de scope que no corresponde a esta consolidación): `apps/web/vitest.config.ts` sin cobertura de componentes Astro (H-WEB-TEST), `scripts/derive-version.ts` sin tests deterministas (H-DERIVE-VERSION), dedupe de i18n langs `apps/web`↔`extensions/vscode` vía `apps/shared/` (H-I18N-DUP). Ver § Findings para el detalle de cada uno y por qué quedan como nota, no como slice.
 
 ## Acceptance
 
@@ -93,7 +93,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 | Findings deduplicados verificados "ya resueltos en código" | grep/lectura directa, hoy | 8 |
 | Findings deduplicados referenciados a propuesta `ready/` existente | f00020, f00019, r00002, l00008 | 6 (con 1 meta-hallazgo de duplicación r00002↔l00008 documentado) |
 | Findings deduplicados sin cobertura → slice nuevo | S2–S5 de este documento | 4 slices (cubriendo 7 hallazgos: vscode test coverage, audit typecheck, smoke-pack scope, vscode try/catch ×4) |
-| `apps/vscode` en `vitest.config.ts` raíz | `grep -n "apps/" vitest.config.ts` | ausente (solo `apps/web`, `apps/ide`) — confirmado hoy |
+| `extensions/vscode` en `vitest.config.ts` raíz | `grep -n "apps/" vitest.config.ts` | ausente (solo `apps/web`, `packages/ui-extension`) — confirmado hoy |
 | `apps/shared/` (dedupe i18n) | `ls apps/shared` | no existe — confirmado hoy |
 | Conflicto de merge `apps/web/src/data/skills.json` (a00023 H10) | `git status --porcelain apps/web/src/data/skills.json` | limpio — confirmado hoy, ya no aplica |
 
@@ -106,7 +106,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 | ID | Severity | Description | Files | Resolution Track |
 |---|---|---|---|---|
 | F1 | P1 | `data-pagefind-body` ausente en el layout Astro (a00021-H3, a00023-H4) | [Base.astro:113](file:///home/cartago/_projects/mcp-vertex/apps/web/src/layouts/Base.astro#L113) | **Verified — resolved.** Confirmado presente hoy; `a00023` reporta haberlo arreglado en su slice `S2`. |
-| F2 | P0 | `IStatusBarItem.visible` ausente, rompía `tsc --noEmit` global (a00023-H1) | [host-adapter.types.ts](file:///home/cartago/_projects/mcp-vertex/apps/ide/src/host-adapter.types.ts) | **Verified — resolved.** Propiedad presente hoy. |
+| F2 | P0 | `IStatusBarItem.visible` ausente, rompía `tsc --noEmit` global (a00023-H1) | [host-adapter.types.ts](file:///home/cartago/_projects/mcp-vertex/packages/ui-extension/src/host-adapter.types.ts) | **Verified — resolved.** Propiedad presente hoy. |
 | F3 | P0 | `DashboardService.getOverviewModel()` sin generics, rompía `bun run site:strict` (a00023-H2) | [dashboard-service.ts](file:///home/cartago/_projects/mcp-vertex/packages/client/src/lib/services/dashboard-service.ts) | **Verified — resolved.** Generics correctos hoy. |
 | F4 | P0 | Re-exports rotos en `packages/client/src/public/index.ts` (a00023-H3) | [index.ts](file:///home/cartago/_projects/mcp-vertex/packages/client/src/public/index.ts) | **Verified — resolved.** Reexports correctos hoy. |
 | F5 | P1 | `sync-proposal-registry.ts:564` usaba tab en vez de 4 espacios al regenerar `index.json`, dejando `bun run lint` rojo (a00023-H5) | [sync-proposal-registry.ts:569](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L569) | **Verified — resolved.** `JSON.stringify(index, null, 4)` confirmado hoy. |
@@ -136,10 +136,10 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 
 | ID | Severity | Description | Files | Resolution Track |
 |---|---|---|---|---|
-| F16 | P1/P3 | `apps/vscode` sigue excluido de `vitest.config.ts` raíz — el slot liberado lo ocupó `apps/ide`, no `apps/vscode` (a00021-H1, a00024-H2, confirmado también por a00023 sin slice propio) | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | **New slice `S2`** en este documento. |
+| F16 | P1/P3 | `extensions/vscode` sigue excluido de `vitest.config.ts` raíz — el slot liberado lo ocupó `packages/ui-extension`, no `extensions/vscode` (a00021-H1, a00024-H2, confirmado también por a00023 sin slice propio) | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | **New slice `S2`** en este documento. |
 | F17 | P1 | `plugins/audit` excluido del typecheck raíz (`tsconfig.json`) pero sí se construye/publica vía `scripts/build.ts` — gate principal no cubre toda la superficie publicada (a00024-H3) | [tsconfig.json](file:///home/cartago/_projects/mcp-vertex/tsconfig.json), [scripts/build.ts](file:///home/cartago/_projects/mcp-vertex/scripts/build.ts) | **New slice `S3`** en este documento. |
 | F18 | P2 | `scripts/smoke-pack.ts` solo cubre `['packages/core', 'plugins/proposals', 'plugins/memory']` — el resto de plugins publicables no tiene smoke de tarball (a00024-H5) | [smoke-pack.ts](file:///home/cartago/_projects/mcp-vertex/scripts/smoke-pack.ts) | **New slice `S4`** en este documento. |
-| F19 | P2 | 4 comandos de `apps/vscode/src/commands/{show-overview,show-metrics,open-proposal,run-validation}.ts` invocan el cliente MCP sin try/catch ni feedback de error visible (a00024-H8) | `apps/vscode/src/commands/show-overview.ts`, `show-metrics.ts`, `open-proposal.ts`, `run-validation.ts` | **New slice `S5`** en este documento. |
+| F19 | P2 | 4 comandos de `extensions/vscode/src/commands/{show-overview,show-metrics,open-proposal,run-validation}.ts` invocan el cliente MCP sin try/catch ni feedback de error visible (a00024-H8) | `extensions/vscode/src/commands/show-overview.ts`, `show-metrics.ts`, `open-proposal.ts`, `run-validation.ts` | **New slice `S5`** en este documento. |
 
 ### Notas (sin slice, severidad baja o requiere decisión de scope ajena a esta consolidación)
 
@@ -147,7 +147,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 |---|---|---|---|---|
 | H-WEB-TEST | P3 | `apps/web/vitest.config.ts` solo testea `scripts/__tests__/**/*.spec.ts`, sin cobertura de componentes/páginas Astro (a00024-H7) | [apps/web/vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/apps/web/vitest.config.ts) | **Not actioned.** Severidad P3, requiere decidir el framework de testing de componentes Astro (fuera del scope de esta consolidación); queda como nota para una propuesta dedicada futura si se decide perseguir. |
 | H-DERIVE-VERSION | P3 | `scripts/derive-version.ts` (decide el semver de cada release) sin tests deterministas (a00026-H8) | [scripts/derive-version.ts](file:///home/cartago/_projects/mcp-vertex/scripts/derive-version.ts) | **Not actioned.** Pieza única y de bajo riesgo de cambio; se documenta como deuda conocida, no se abre slice en esta consolidación. |
-| H-I18N-DUP | P2 | 12 idiomas duplicados entre `apps/web/src/i18n/langs/` y `apps/vscode/src/i18n/langs/` sin módulo compartido — `apps/shared/` no existe (a00026-H5/S2, nunca se ejecutó pese a estar en el slice S2 de la propia a00026) | `apps/web/src/i18n/langs/`, `apps/vscode/src/i18n/langs/` | **Not actioned.** Confirmado que `apps/shared/` no existe hoy. Es trabajo real y bien delimitado, pero su slice natural pertenece a quien posea el roadmap de i18n de las dos apps a la vez; se deja documentado en vez de crear un slice nuevo que compita con el ya descrito (y abandonado) en `a00026-S2`. |
+| H-I18N-DUP | P2 | 12 idiomas duplicados entre `apps/web/src/i18n/langs/` y `extensions/vscode/src/i18n/langs/` sin módulo compartido — `apps/shared/` no existe (a00026-H5/S2, nunca se ejecutó pese a estar en el slice S2 de la propia a00026) | `apps/web/src/i18n/langs/`, `extensions/vscode/src/i18n/langs/` | **Not actioned.** Confirmado que `apps/shared/` no existe hoy. Es trabajo real y bien delimitado, pero su slice natural pertenece a quien posea el roadmap de i18n de las dos apps a la vez; se deja documentado en vez de crear un slice nuevo que compita con el ya descrito (y abandonado) en `a00026-S2`. |
 | H-MERGE-CONFLICT | info | Conflicto de merge `apps/web/src/data/skills.json` ("deleted by us") mencionado por a00023-H10 como evidencia operativa puntual | `apps/web/src/data/skills.json` | **Not actioned — confirmed stale.** `git status --porcelain` sobre ese archivo está limpio hoy; era una nota histórica del working tree concurrente durante la sesión de a00023, ya no aplica. |
 
 ## Scoreboard
@@ -156,7 +156,7 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 |---|---:|---|
 | Arquitectura núcleo-plugin | 9.4 | Consenso de los 4 revisores de repositorio: agnóstico, contratos estrechos, sin acoplamiento de dominio. |
 | Concurrencia / I/O durable | 8.8 | Primitivas (`withFileMutex`, `writeFileAtomic`, `quarantineCorruptFile`) consistentes; deuda puntual ya rastreada (`f00020`/`f00019`/`l00008`). |
-| Cobertura de gate (`validate`) | 8.0 | `apps/vscode` y `plugins/audit` fuera del root gate (F16/F17, slices nuevos); resto del gate sano. |
+| Cobertura de gate (`validate`) | 8.0 | `extensions/vscode` y `plugins/audit` fuera del root gate (F16/F17, slices nuevos); resto del gate sano. |
 | Empaquetado / release | 8.3 | Build + smoke existen; smoke de tarball estrecho (F18); release.yml saneado. |
 | Plugins satélite | 8.6 | Sanos en general; I/O síncrono puntual ya cubierto por propuestas existentes; catchalls residuales con duplicación de propuestas documentada (META-1). |
 | Apps (web + vscode + ide) | 8.5 | i18n 12/12 completo; vscode con gap de try/catch (F19) y de cobertura de test global (F16). |

@@ -20,11 +20,11 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S2: SearchService in packages/client + tool-search QuickPick command in apps/vscode',
+          task: 'S2: SearchService in packages/client + tool-search QuickPick command in extensions/vscode',
       }
     - {
           agent: implementation_runner,
-          task: 'S3: KnowledgeService expansion (list + search) + Knowledge navigator webview in apps/ide',
+          task: 'S3: KnowledgeService expansion (list + search) + Knowledge navigator webview in packages/ui-extension',
       }
     - {
           agent: implementation_runner,
@@ -44,7 +44,7 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S8: Wire all 6 new services in apps/vscode activation, expand tree views, add 2 new activity-bar entries',
+          task: 'S8: Wire all 6 new services in extensions/vscode activation, expand tree views, add 2 new activity-bar entries',
       }
     - {
           agent: implementation_runner,
@@ -68,7 +68,7 @@ acceptance:
     - { command: bun run check:i18n:ide, expect: exit0 }
     - { command: bun run lint:brand, expect: exit0 }
     - { command: bun run lint:cross-ide, expect: exit0 }
-    - { command: cd apps/vscode && bun run package, expect: exit0 }
+    - { command: cd extensions/vscode && bun run package, expect: exit0 }
 ---
 
 # f00023 — IDE observability v3
@@ -161,7 +161,7 @@ This proposal closes all 7 in 11 slices.
                            │ typed JS objects
                            ▼
                 ┌────────────────────────┐
-                │ apps/ide/  (panel HTML)│
+                │ packages/ui-extension/  (panel HTML)│
                 │ + Logs panel           │
                 │ + Memory panel         │
                 │ + Settings panel       │
@@ -170,7 +170,7 @@ This proposal closes all 7 in 11 slices.
                            │ implements IHostAdapter
                            ▼
                 ┌────────────────────────┐
-                │ apps/vscode            │
+                │ extensions/vscode            │
                 │ - 7 new commands       │
                 │ - 4 new view containers│
                 │ - Status-bar banner    │
@@ -183,9 +183,9 @@ This proposal closes all 7 in 11 slices.
 - `packages/core` stays agnostic — no `vscode`/`jetbrains` import.
 - `packages/client` stays IDE-agnostic — no `@vscode/*`. The new
   services are pure TypeScript; tests run under `node`/`bun`.
-- `apps/ide/` is host-agnostic UI — every new panel returns HTML,
+- `packages/ui-extension/` is host-agnostic UI — every new panel returns HTML,
   same convention as f00022's 8 dashboard panels.
-- `apps/vscode/` is the reference adapter. **The only file that
+- `extensions/vscode/` is the reference adapter. **The only file that
   imports `vscode` is `vscode-host-adapter.ts`** (lazily loaded).
 - i18n parity — every new visible string added to all 12
   dictionaries.
@@ -234,8 +234,8 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/client/src/lib/services/search-service.ts`
   - `packages/client/src/lib/services/search.types.ts`
   - `packages/client/tests/services/search-service.spec.ts`
-  - `apps/vscode/src/commands/tool-search.ts`
-  - `apps/vscode/src/test/tool-search.spec.ts`
+  - `extensions/vscode/src/commands/tool-search.ts`
+  - `extensions/vscode/src/test/tool-search.spec.ts`
 - `SearchService` wraps `search_search` and provides:
   - `searchTools(query, opts): Promise<IToolHit[]>` — uses
     `search_search` against `docs/` + the live tool names from
@@ -246,7 +246,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - `tool-search` VS Code command opens a QuickPick, types the query,
   shows results grouped by category, Enter → run the tool (calls
   `request(toolName, {})`) and shows the JSON in an output channel.
-- **Gate**: `bun run test packages/client apps/vscode` exit 0.
+- **Gate**: `bun run test packages/client extensions/vscode` exit 0.
 
 ### S3 — `KnowledgeService` expansion + Knowledge navigator webview _(excl. `apps/`, `docs/`)_
 
@@ -256,14 +256,14 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
     existing)
   - `packages/client/src/lib/services/knowledge.types.ts`
   - `packages/client/tests/services/knowledge-service.spec.ts`
-  - `apps/ide/src/dashboard/render-panel-knowledge.ts` (or its own
-    `apps/ide/src/knowledge/render-knowledge-navigator.ts`)
-  - `apps/ide/src/knowledge/render-knowledge-navigator.ts`
-  - `apps/ide/src/knowledge/render-knowledge-entry.ts`
-  - `apps/ide/tests/knowledge/render-knowledge-navigator.spec.ts`
-  - `apps/ide/tests/knowledge/render-knowledge-entry.spec.ts`
-  - `apps/vscode/src/commands/open-knowledge.ts`
-  - `apps/vscode/src/test/open-knowledge.spec.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-knowledge.ts` (or its own
+    `packages/ui-extension/src/knowledge/render-knowledge-navigator.ts`)
+  - `packages/ui-extension/src/knowledge/render-knowledge-navigator.ts`
+  - `packages/ui-extension/src/knowledge/render-knowledge-entry.ts`
+  - `packages/ui-extension/tests/knowledge/render-knowledge-navigator.spec.ts`
+  - `packages/ui-extension/tests/knowledge/render-knowledge-entry.spec.ts`
+  - `extensions/vscode/src/commands/open-knowledge.ts`
+  - `extensions/vscode/src/test/open-knowledge.spec.ts`
 - `KnowledgeService` gains:
   - `list(opts): Promise<readonly IKnowledgeSummary[]>` (already
     existed) — added `query?: string` filter.
@@ -278,7 +278,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   `apps/web/src/components/`.
 - VS Code command: `mcp-vertex.openKnowledge` — opens the
   navigator in a webview.
-- **Gate**: `bun run test packages/client apps/ide apps/vscode` exit 0.
+- **Gate**: `bun run test packages/client packages/ui-extension extensions/vscode` exit 0.
 
 ### S4 — `HealthService` + Health panel in dashboard _(excl. `apps/`, `docs/`)_
 
@@ -287,8 +287,8 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/client/src/lib/services/health-service.ts`
   - `packages/client/src/lib/services/health.types.ts`
   - `packages/client/tests/services/health-service.spec.ts`
-  - `apps/ide/src/dashboard/render-panel-health.ts`
-  - `apps/ide/tests/dashboard/render-panel-health.spec.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-health.ts`
+  - `packages/ui-extension/tests/dashboard/render-panel-health.spec.ts`
 - `HealthService` aggregates:
   - `proposals_state_health` → 3 counts (stale, orphan-lock, healthy).
   - `proposals_proposal_stale_list` → list of stale proposals with
@@ -300,7 +300,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   Orphan / Agents), a table of stale proposals with a "Renew" button
   (calls `proposals_proposal_force_transition`), a list of active
   agents with their current proposal/slice.
-- **Gate**: `bun run test packages/client apps/ide` exit 0.
+- **Gate**: `bun run test packages/client packages/ui-extension` exit 0.
 
 ### S5 — `MemoryService` + Memory panel + tree provider _(excl. `apps/`, `docs/`)_
 
@@ -309,14 +309,14 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/client/src/lib/services/memory-service.ts`
   - `packages/client/src/lib/services/memory.types.ts`
   - `packages/client/tests/services/memory-service.spec.ts`
-  - `apps/ide/src/dashboard/render-panel-memory.ts`
-  - `apps/ide/tests/dashboard/render-panel-memory.spec.ts`
-  - `apps/vscode/src/providers/memory-tree-data-provider.ts`
-  - `apps/vscode/src/test/memory-tree-data-provider.spec.ts`
-  - `apps/vscode/src/commands/memory-save.ts`
-  - `apps/vscode/src/commands/memory-forget.ts`
-  - `apps/vscode/src/test/memory-save.spec.ts`
-  - `apps/vscode/src/test/memory-forget.spec.ts`
+  - `packages/ui-extension/src/dashboard/render-panel-memory.ts`
+  - `packages/ui-extension/tests/dashboard/render-panel-memory.spec.ts`
+  - `extensions/vscode/src/providers/memory-tree-data-provider.ts`
+  - `extensions/vscode/src/test/memory-tree-data-provider.spec.ts`
+  - `extensions/vscode/src/commands/memory-save.ts`
+  - `extensions/vscode/src/commands/memory-forget.ts`
+  - `extensions/vscode/src/test/memory-save.spec.ts`
+  - `extensions/vscode/src/test/memory-forget.spec.ts`
 - `MemoryService` wraps `memory_recall`, `memory_save`, `memory_list`,
   `memory_forget`. Returns `IMemoryEntry { key, value, tags,
   createdAt, expiresAt }`.
@@ -326,7 +326,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   hover preview, click → open the entry in the Memory panel.
 - 2 new commands: `mcp-vertex.memorySave`,
   `mcp-vertex.memoryForget`. Both have command-palette entries.
-- **Gate**: `bun run test packages/client apps/ide apps/vscode` exit 0.
+- **Gate**: `bun run test packages/client packages/ui-extension extensions/vscode` exit 0.
 
 ### S6 — `SettingsService` + settings webview _(excl. `apps/`, `docs/`)_
 
@@ -335,10 +335,10 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/client/src/lib/services/settings-service.ts`
   - `packages/client/src/lib/services/settings.types.ts`
   - `packages/client/tests/services/settings-service.spec.ts`
-  - `apps/ide/src/settings/render-settings.ts`
-  - `apps/ide/tests/settings/render-settings.spec.ts`
-  - `apps/vscode/src/commands/open-settings.ts`
-  - `apps/vscode/src/test/open-settings.spec.ts`
+  - `packages/ui-extension/src/settings/render-settings.ts`
+  - `packages/ui-extension/tests/settings/render-settings.spec.ts`
+  - `extensions/vscode/src/commands/open-settings.ts`
+  - `extensions/vscode/src/test/open-settings.spec.ts`
 - `SettingsService` reads/writes `mcp-vertex.config.json#extension`
   via the host adapter. Exposes:
   - `get(): Promise<IExtensionSettings>` — `{ docsUrl, allowLocalhost,
@@ -349,7 +349,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   options, "Save" + "Reset" buttons. The form re-reads the config on
   open so changes from outside are reflected.
 - VS Code command: `mcp-vertex.openSettings`.
-- **Gate**: `bun run test packages/client apps/ide apps/vscode` exit 0.
+- **Gate**: `bun run test packages/client packages/ui-extension extensions/vscode` exit 0.
 
 ### S7 — `ConnectionHealthService` + status-bar banner + restart command _(excl. `apps/`, `docs/`)_
 
@@ -358,10 +358,10 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/client/src/lib/services/connection-health-service.ts`
   - `packages/client/src/lib/services/connection-health.types.ts`
   - `packages/client/tests/services/connection-health-service.spec.ts`
-  - `apps/vscode/src/providers/connection-health-status-bar.ts`
-  - `apps/vscode/src/test/connection-health-status-bar.spec.ts`
-  - `apps/vscode/src/commands/restart-server.ts`
-  - `apps/vscode/src/test/restart-server.spec.ts`
+  - `extensions/vscode/src/providers/connection-health-status-bar.ts`
+  - `extensions/vscode/src/test/connection-health-status-bar.spec.ts`
+  - `extensions/vscode/src/commands/restart-server.ts`
+  - `extensions/vscode/src/test/restart-server.spec.ts`
 - `ConnectionHealthService` pings the server every 5s with
   `status-marker_ping` (the cheapest tool). Exposes:
   - `EventTarget`-style: `addEventListener("up" | "down" | "retry",
@@ -375,29 +375,29 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   `$(sync~spin) mcp-vertex (retrying)` (retrying). Click → open the
   dashboard.
 - New command: `mcp-vertex.restartServer`.
-- **Gate**: `bun run test packages/client apps/vscode` exit 0.
+- **Gate**: `bun run test packages/client extensions/vscode` exit 0.
 
-### S8 — Wire 6 new services in `apps/vscode` activation + tree views _(excl. `apps/ide/`, `docs/`)_
+### S8 — Wire 6 new services in `extensions/vscode` activation + tree views _(excl. `packages/ui-extension/`, `docs/`)_
 
 - **Status**: ready
 - **Files**:
-  - `apps/vscode/src/extension.ts` (updated activation: instantiate 6
+  - `extensions/vscode/src/extension.ts` (updated activation: instantiate 6
     new services, register 6 new commands, 2 new view containers).
-  - `apps/vscode/package.json` (updated `contributes.viewsContainers`
+  - `extensions/vscode/package.json` (updated `contributes.viewsContainers`
     + `contributes.views` + `contributes.commands`).
-  - `apps/vscode/src/test/extension-integration.spec.ts` (new spec
+  - `extensions/vscode/src/test/extension-integration.spec.ts` (new spec
     verifying every command + every view is registered).
 - The 2 new view containers are:
   - `mcp-vertex.memory` — Memory tree (S5).
   - `mcp-vertex.health` — Health KPI webview view (S4).
 - Backward-compat: all v1 + v2 commands continue to work.
-- **Gate**: `bun run test apps/vscode` exit 0; typecheck exit 0.
+- **Gate**: `bun run test extensions/vscode` exit 0; typecheck exit 0.
 
 ### S9 — i18n for ~20 new keys across all 12 languages _(excl. `apps/`, `docs/`)_
 
 - **Status**: ready
 - **Files**:
-  - `apps/vscode/src/i18n/langs/{ar,de,en,es,fr,hi,it,ja,pt,th,vi,zh}.ts`
+  - `extensions/vscode/src/i18n/langs/{ar,de,en,es,fr,hi,it,ja,pt,th,vi,zh}.ts`
     — add ~20 new keys:
     `openKnowledge`, `openSettings`, `restartServer`, `searchTools`,
     `memorySave`, `memoryForget`, `logsPanelTitle`,
@@ -405,14 +405,14 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
     `kpiHealthy`, `kpiStale`, `kpiOrphan`, `kpiAgents`,
     `connectionUp`, `connectionDown`, `connectionRetrying`,
     `connectionLost`, `restartNow`, `logSearch`, `logSubscribe`.
-  - `apps/vscode/src/i18n/index.ts` — extend `IExtensionTranslations`.
+  - `extensions/vscode/src/i18n/index.ts` — extend `IExtensionTranslations`.
 - `bun run check:i18n:ide` must pass.
 - **Gate**: `bun run check:i18n:ide` exit 0.
 
 ### S10 — Tests + `bun run validate` green + `.vsix` repackaging _(excl. `apps/`, `docs/`)_
 
 - **Status**: ready
-- **Files**: existing test files; bumped `apps/vscode/package.json#version` to `0.3.0`.
+- **Files**: existing test files; bumped `extensions/vscode/package.json#version` to `0.3.0`.
 - **Gate**:
   - `bun run type` exit 0.
   - `bun run test` exit 0.
@@ -422,8 +422,8 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `bun run lint:cross-ide` exit 0.
   - `bun run site:strict` exit 0.
   - `bun run lint:proposals` exit 0.
-  - `cd apps/vscode && bun run package` exit 0, produces
-    `apps/vscode/mcp-vertex-vscode-0.3.0.vsix`.
+  - `cd extensions/vscode && bun run package` exit 0, produces
+    `extensions/vscode/mcp-vertex-vscode-0.3.0.vsix`.
 
 ### S11 — Docs (CROSS-IDE addendum + IDE-EXTENSION v3 section + README + CHANGELOG 0.3.0) _(excl. `apps/`, `plugins/`, `packages/`)_
 
@@ -434,15 +434,15 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `docs/IDE-EXTENSION.md` (add a v3 section: "What changed in 0.3.0",
     the 6 new commands, the 2 new view containers, the Logs/Memory
     panels, the Settings webview, the Connection-health banner).
-  - `apps/vscode/README.md` (refreshed feature list + commands table).
-  - `apps/vscode/CHANGELOG.md` (new `0.3.0` entry summarising all
+  - `extensions/vscode/README.md` (refreshed feature list + commands table).
+  - `extensions/vscode/CHANGELOG.md` (new `0.3.0` entry summarising all
     additions).
 - **Gate**: `bun run site:strict` exit 0.
 
 ## acceptance
 
 - All 9 commands in `acceptance:` at the top exit 0.
-- A new `apps/vscode/mcp-vertex-vscode-0.3.0.vsix` is produced.
+- A new `extensions/vscode/mcp-vertex-vscode-0.3.0.vsix` is produced.
 - A user opening the extension can:
   - **Search** any tool by name (S2).
   - **Browse** the 30+ knowledge entries with a Markdown preview (S3).
@@ -454,7 +454,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - **Tail** live logs correlated to tool calls (S1).
 - Every visible string is translated to all 12 languages.
 - The brand logo is byte-identical between
-  `apps/web/public/logo.svg` and `apps/vscode/media/logo.svg`.
+  `apps/web/public/logo.svg` and `extensions/vscode/media/logo.svg`.
 
 ## notes
 

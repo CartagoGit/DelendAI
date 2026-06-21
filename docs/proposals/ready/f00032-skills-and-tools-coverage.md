@@ -318,13 +318,13 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 ### s13 — Hygiene: `@mcp-vertex/client` README + `.vsix` no commitido
 - **Files**: `packages/client/README.md` (nuevo, ≤ 80 líneas: qué
   es, cómo se usa desde un host externo, ejemplo de 10 líneas,
-  link a `packages/client/src/public/index.ts`). `apps/vscode/.gitignore`
+  link a `packages/client/src/public/index.ts`). `extensions/vscode/.gitignore`
   (modificado: añadir `*.vsix` y `dist/` si no está).
 - **Acceptance**:
   - "`packages/client/README.md` existe y se renderiza en
     `apps/web/src/pages/.../packages-client` (regenerable con
     `bun run site`)."
-  - "`git ls-files apps/vscode/ | grep -c '\\.vsix$'` devuelve `0`."
+  - "`git ls-files extensions/vscode/ | grep -c '\\.vsix$'` devuelve `0`."
   - "`bun run validate` verde."
 
 ### s14 — Audit close + index sync
@@ -352,7 +352,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
       `apps/web/src/i18n/ui.ts` para **todos** los idiomas —
       regla AGENTS.md #9).
 - [ ] `proposals_sync_proposals` no devuelve warnings.
-- [ ] `git ls-files apps/vscode/ | grep '\\.vsix$'` devuelve vacío.
+- [ ] `git ls-files extensions/vscode/ | grep '\\.vsix$'` devuelve vacío.
 - [ ] `packages/client/README.md` existe.
 
 ## risks and mitigations
@@ -391,6 +391,6 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 - `l00008-plugins-project-state-sync-...` (drift residual) — **complementaria**, esta propuesta usa las primitivas que l00008 s1–s2 estabiliza.
 - `f00029-versioned-skills-prompts-and-web-fetch-plugin.md` — los SKILL.md de s1–s8 son estáticos; `f00029` los versiona después.
 - `f00027-metrics-longitudinal-regression-gate.md` — los budgets medidos que el skill s4 cita vienen de `docs/TOKEN-BUDGETS.md` (sostenido por f00027).
-- `f00022-ide-extension-multi-ide-brand-dashboard.md` — la IDE extension de `apps/vscode/` consume los nuevos tools; `f00022` se beneficia de `fs_read`/`fs_write` (s12) y de `git_commit` (s9).
+- `f00022-ide-extension-multi-ide-brand-dashboard.md` — la IDE extension de `extensions/vscode/` consume los nuevos tools; `f00022` se beneficia de `fs_read`/`fs_write` (s12) y de `git_commit` (s9).
 - AGENTS.md reglas 1, 3, 5, 8, 9 (agnostic core, async I/O, path
   containment, outputSchema, i18n).
