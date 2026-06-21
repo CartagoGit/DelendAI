@@ -2,6 +2,7 @@
 import SiteNav from '#COMPONENTS/SiteNav.astro';
 import SiteFooter from '#COMPONENTS/SiteFooter.astro';
 import Config from '#COMPONENTS/Config.astro';
+import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
 import { rtlLangs, type Lang } from '#I18N/ui';
@@ -55,5 +56,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<main id="main" transition:animate="fade"><slot /></main>
 		<SiteFooter lang={lang} />
 		<Config lang={lang} />
+		<Search lang={lang} />
 	</body>
 </html>

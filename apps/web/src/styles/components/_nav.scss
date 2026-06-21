@@ -70,7 +70,10 @@
 	}
 }
 
-// Decorative utility (icon button)
+// Shared round icon-button box model (search trigger, settings gear). Each
+// keeps its own hover transform, so the shell is duplicated rather than
+// `@extend`-ed (no Sass inheritance precedent elsewhere in this codebase).
+.icon-btn,
 .gear {
 	display: inline-grid;
 	place-items: center;
@@ -81,6 +84,18 @@
 	background: var(--card);
 	color: var(--fg);
 	cursor: pointer;
+}
+
+.icon-btn {
+	transition: transform 0.2s ease, border-color 0.2s ease;
+
+	&:hover {
+		border-color: var(--accent);
+		transform: scale(1.06);
+	}
+}
+
+.gear {
 	transition: transform 0.4s ease, border-color 0.2s ease;
 
 	&:hover {
