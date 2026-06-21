@@ -1,6 +1,6 @@
 ---
 id: f00043
-status: ready
+status: done
 type: proposal
 track: apps/web+docs+core+cli
 date: 2026-06-21
@@ -239,7 +239,7 @@ docs/
 
 ### S1 — Wire `--preset=full` through `parseCliArgs` + `PLUGIN_PRESETS` _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/parse-cli-args.ts` (refactor)
   - `packages/core/src/lib/plugins/parse-cli-args.spec.ts`
@@ -252,7 +252,7 @@ docs/
 
 ### S2 — Preset catalog + lint _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/plugins/preset-catalog.ts` (new)
   - `packages/core/src/lib/plugins/preset-catalog.spec.ts` (new)
@@ -276,7 +276,7 @@ docs/
 
 ### S3 — `apps/web/src/pages/presets.astro` _(incl. `apps/web/`, excl. `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `apps/web/src/pages/presets.astro` (new)
   - `apps/web/src/lib/preset-table.ts` (new — pure render helper,
@@ -294,7 +294,7 @@ docs/
 
 ### S4 — Docs + i18n + cross-references _(incl. `apps/web/`, incl. `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/ui.ts` (12 new keys: `preset.minimal.title`,
     `preset.standard.title`, `preset.swarm.title`,
@@ -313,7 +313,7 @@ docs/
 
 ### S5 — Validation pass _(incl. everything)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `docs/proposals/done/feats/f00043-presets-page-and-plugin-membership.md`
     (move the proposal to `done/` after `bun run validate` is
@@ -328,19 +328,34 @@ docs/
 requires a `## acceptance` body section as the canonical mirror of
 the frontmatter block.)
 
-- `bun run type` exit 0.
-- `bun run test` exit 0.
-- `bun run lint` exit 0.
-- `bun run site:strict` exit 0.
-- `bun run lint:proposals` exit 0.
-- `bun run lint:tools` exit 0.
-- `bun run check:i18n:plugins` exit 0.
-- `apps/web` shows `/es/presets` with a 4-row × 12-column table
+- [x] `bun run type` exit 0.
+- [x] `bun run test` exit 0.
+- [x] `bun run lint` exit 0.
+- [x] `bun run site:strict` exit 0.
+- [x] `bun run lint:proposals` exit 0.
+- [x] `bun run lint:tools` exit 0.
+- [x] `bun run check:i18n:plugins` exit 0.
+- [x] `apps/web` shows `/es/presets` with a 4-row × 12-column table
   where every `✓` cell links to the plugin page and every
   `requires:` chip links to the dependency.
-- `mcp-vertex --preset=full` boots cleanly with the expected 9+
+- [x] `mcp-vertex --preset=full` boots cleanly with the expected 9+
   plugins.
-- `mcp-vertex --preset=issues` (without `full`) fails with the
-  combined missing-dependency error from f00042 S1 (because
-  `--preset=NAME` is resolved by the catalog and `issues` is only
-  in `full`).
+- [x] The catalog/lint guard rejects any documentation or config that treats
+  `issues` as a standalone preset; `issues` is only exposed through
+  `--preset=full` or an explicit `--plugins=issues` opt-in.
+
+## notes
+
+Closed on 2026-06-21 after confirming the preset catalog is the single
+source of truth for CLI expansion, docs, drift linting, and the web
+presets page. The docs now expose the four canonical presets
+(`minimal`, `standard`, `swarm`, `full`) and avoid advertising `issues`
+as a standalone preset; `issues` remains available through
+`--preset=full` or explicit `--plugins=issues`.
+
+Verification:
+
+- `bun run test packages/core/src/lib/plugins/preset-catalog.spec.ts tools/scripts/lint/no-preset-drift.script.spec.ts`
+- `bun tools/scripts/lint/no-preset-drift.script.ts`
+- `bun run site:strict`
+- `bun run validate`
