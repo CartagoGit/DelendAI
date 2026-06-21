@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T16:08:02.057Z",
-	"count": 82,
+	"generated_at": "2026-06-21T18:31:54.630Z",
+	"count": 85,
 	"proposals": [
 		{
 			"id": "a00022",
@@ -16,50 +16,12 @@
 			}
 		},
 		{
-			"id": "f00019",
-			"file": "done/feats/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
-			"track": "notification-plugin",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
 			"id": "f00020",
 			"file": "ready/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
 			"track": "proposals-plugin",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
-		},
-		{
-			"id": "f00022",
-			"file": "done/feats/f00022-ide-extension-multi-ide-brand-dashboard.md",
-			"track": "apps+client+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"related": [
-					"f00014",
-					"f00015",
-					"f00012",
-					"f00011",
-					"f00010",
-					"f00028",
-					"f00035"
-				],
-				"shipped-in": [
-					"61a5f37",
-					"3d3f21c",
-					"54ccb4b",
-					"efca64a",
-					"0d66a6f",
-					"ab58acc",
-					"2212fbc",
-					"3b0c9e2",
-					"046dce0"
-				]
-			}
 		},
 		{
 			"id": "f00023",
@@ -118,50 +80,6 @@
 			}
 		},
 		{
-			"id": "f00027",
-			"file": "done/feats/f00027-metrics-longitudinal-regression-gate.md",
-			"track": "metrics+ci",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00028",
-			"file": "done/feats/f00028-plugins-depth-extension.md",
-			"track": "plugins",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00029",
-			"file": "done/feats/f00029-versioned-skills-prompts-and-web-fetch-plugin.md",
-			"track": "skills+plugins+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00030",
-			"file": "done/feats/f00030-web-deep-pages-and-search.md",
-			"track": "web+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00031",
-			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
-			"track": "core+agents+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"related": ["a00019", "a00013"],
-				"shipped-in": ["095102f"]
-			}
-		},
-		{
 			"id": "f00032",
 			"file": "ready/f00032-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
@@ -191,32 +109,15 @@
 			}
 		},
 		{
-			"id": "f00035",
-			"file": "done/feats/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
-			"track": "apps+monorepo+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"related": ["f00022", "f00034", "f00014"],
-				"shipped-in": [
-					"5cc6536",
-					"b38768c",
-					"3d3f21c",
-					"b7813ab",
-					"e47eb64",
-					"54ccb4b",
-					"7383b85"
-				]
-			}
-		},
-		{
 			"id": "f00042",
 			"file": "ready/f00042-github-issues-plugin-ingest-and-propose.md",
 			"track": "plugins/issues+docs",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{"]
+			}
 		},
 		{
 			"id": "f00043",
@@ -224,7 +125,10 @@
 			"track": "apps/web+docs+core+cli",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
 		},
 		{
 			"id": "f00044",
@@ -232,7 +136,10 @@
 			"track": "docs+plugins/issues+apps/web+extensions/vscode",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
 		},
 		{
 			"id": "l00008",
@@ -734,12 +641,116 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00019",
+			"file": "done/feats/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
+			"track": "notification-plugin",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00022",
+			"file": "done/feats/f00022-ide-extension-multi-ide-brand-dashboard.md",
+			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "f00025",
 			"file": "done/feats/f00025-tools-scripts-refactor-rename-scripts-to-tools.md",
 			"track": "core+build+release+proposals+lint+i18n+site",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00027",
+			"file": "done/feats/f00027-metrics-longitudinal-regression-gate.md",
+			"track": "metrics+ci",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1-S4: baseline retrieval + diff gate + CI wiring + audit close' }"
+				]
+			}
+		},
+		{
+			"id": "f00028",
+			"file": "done/feats/f00028-plugins-depth-extension.md",
+			"track": "plugins",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00029",
+			"file": "done/feats/f00029-versioned-skills-prompts-and-web-fetch-plugin.md",
+			"track": "skills+plugins+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }"
+				]
+			}
+		},
+		{
+			"id": "f00030",
+			"file": "done/feats/f00030-web-deep-pages-and-search.md",
+			"track": "web+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: claude-orchestrator-round3, task: \"S1 per-tool pages, S2 verify pagefind already wired, S3 first-5-minutes, S4 troubleshooting, S5 nav+audit close — closed\" }"
+				]
+			}
+		},
+		{
+			"id": "f00031",
+			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
+			"track": "core+agents+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00035",
+			"file": "done/feats/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
+			"track": "apps+monorepo+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{", "{", "{", "{"],
+				"reservedFiles": [
+					"apps/ide/",
+					"apps/ide/package.json",
+					"apps/ide/src/",
+					"apps/ide/tests/",
+					"apps/vscode/",
+					"apps/vscode/package.json",
+					"apps/vscode/src/",
+					"apps/vscode/media/",
+					"apps/vscode/scripts/",
+					"tsconfig.base.json",
+					"tsconfig.json",
+					"vitest.config.ts",
+					"vitest.shared.ts",
+					"package.json",
+					"docs/CROSS-IDE.md",
+					"docs/IDE-EXTENSION.md",
+					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
+					"tools/scripts/dev/dev.script.ts",
+					"tools/scripts/lib/monorepo-paths.ts",
+					"tools/scripts/lib/monorepo-paths.spec.ts"
+				]
+			}
 		},
 		{
 			"id": "x00001",
