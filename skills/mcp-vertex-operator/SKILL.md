@@ -54,6 +54,20 @@ Call it **once** per turn, not in a loop. If the situation changes (a lock
 releases, a slice closes), the next `overview` call will reflect that — you
 do not need to poll it speculatively.
 
+## Memory vs docs vs reread
+
+Use this order when the answer might already exist:
+
+1. **Durable fact already worth keeping?** Use `memory_recall` / `memory_list`
+   first.
+2. **Canonical repo guidance or longer explanation?** Use `docs_list` /
+   `docs_read`.
+3. **Local implementation detail for the current slice only?** Reread the
+   specific file you are touching.
+
+Durable memory is for distilled reusable facts, not logs or raw tool output. If
+ the note would not help after the current slice closes, do not persist it.
+
 ## Never do
 
 1. Hardcode a plugin list instead of a `--preset` name — presets exist so
@@ -67,6 +81,9 @@ do not need to poll it speculatively.
    small (~318 tokens measured in `docs/TOKEN-BUDGETS.md`); drill into a
    specific tool (`proposal_board`, `state_health`) only when you actually
    need the verbose detail it omits.
+4. Use memory as a transcript sink — durable memory is for short reusable
+   facts; transient exploration stays in session context and should be
+   compacted away when the task changes.
 
 ## Smoke
 

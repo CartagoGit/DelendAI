@@ -32,7 +32,7 @@ Close the memory/context gaps surfaced by a00027 S3: define what deserves durabl
 
 ### S1 — Normative memory policy
 - **Files**: docs/scaffolds/ARCHITECTURE-MEMORY.md, docs/scaffolds/ARCHITECTURE-WORKFLOWS.md, .github/copilot-instructions.md, CLAUDE.md, skills/mcp-vertex-operator/SKILL.md
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "The repo defines a short policy for what deserves durable memory, what is session continuity only, and what should never be persisted."

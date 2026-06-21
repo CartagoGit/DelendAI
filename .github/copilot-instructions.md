@@ -13,6 +13,8 @@ This repo is a project-agnostic MCP server core + plugin loader. Full rules live
   the #1 token waste.
 - Prefer the MCP tools over raw shell: `search` (low-token grep), `docs_list`/
   `docs_read`, `memory_recall`, `git` status/diff.
+- Use durable memory only for distilled reusable facts; do not persist raw logs,
+  copied tool output, or per-turn exploration that will die with the current slice.
 
 ## Don't loop, don't poll
 

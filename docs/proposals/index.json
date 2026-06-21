@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T20:15:21.389Z",
-	"count": 91,
+	"generated_at": "2026-06-21T20:28:29.895Z",
+	"count": 92,
 	"proposals": [
 		{
 			"id": "a00027",
@@ -441,6 +441,19 @@
 		{
 			"id": "a00027",
 			"file": "done/audits/a00027-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a00028",
+			"file": "done/audits/a00028-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",

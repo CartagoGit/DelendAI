@@ -21,6 +21,9 @@ in context for the rest of the session, so how you call these tools matters:
   `mcp-vertex_overview` with `compact: true`, `proposals_auto_work`, and
   `proposals_compact_status` over verbose equivalents (`proposal_board`,
   full `state_health` dumps) unless you specifically need the verbose detail.
+- **Prefer distilled recall over re-reading.** If a fact should survive beyond
+  the current slice, recall it from durable memory; if it is only useful right
+  now, keep it transient and compact it away when the task changes.
 - **`/compact` between unrelated tasks.** Once a slice/proposal is closed and
   before starting unrelated work, compact — don't carry its tool output
   forward for the rest of the session.
