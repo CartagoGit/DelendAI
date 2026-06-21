@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T05:33:02.030Z",
+	"generated_at": "2026-06-21T05:35:48.645Z",
 	"count": 24,
 	"proposals": [
 		{
@@ -162,6 +162,14 @@
 			}
 		},
 		{
+			"id": "f127",
+			"file": "ready/f127-cascade-priority-by-kind-with-frontmatter-override.md",
+			"track": "proposals-plugin+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "l115",
 			"file": "ready/l115-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
@@ -245,14 +253,6 @@
 			"id": "l127",
 			"file": "ready/l127-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "x124",
-			"file": "ready/x124-web-ui-bugfixes-round-2.md",
-			"track": "web+ui",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
