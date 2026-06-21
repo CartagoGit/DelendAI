@@ -5,16 +5,17 @@
 	"type": "module",
 	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
-		"dev": "bun run dev:api & PAGES_BASE='' astro dev",
+		"sync:public-api": "bun scripts/sync-public-api.ts",
+		"dev": "bun run sync:public-api && bun run dev:api & PAGES_BASE='' astro dev",
 		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
-		"preview": "astro preview",
+		"preview": "bun run sync:public-api && astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",
 		"gen:logos": "bun scripts/gen-plugin-logos.ts",
-		"index:search": "pagefind --site dist",
-		"build": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
-		"build:strict": "bun scripts/check-i18n.ts && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
+		"index:search": "pagefind --site ../../build/apps/web",
+		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
+		"build:strict": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
 	},
 	"dependencies": {
 		"astro": "^6.4.8",
