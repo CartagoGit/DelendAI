@@ -1,5 +1,5 @@
 ---
-id: l102
+id: f102
 type: proposal
 status: done
 track: core+scaffold
@@ -8,7 +8,7 @@ deferred: 2026-06-18
 completed: 2026-06-20
 unblocked_by: [user:continue-slice-by-slice]
 budget: 4
-kind: legacy
+kind: feat
 title: `keepLegacy: false` por defecto en `mcp-vertex` y en el `mcp-project` que genera
 ---
 

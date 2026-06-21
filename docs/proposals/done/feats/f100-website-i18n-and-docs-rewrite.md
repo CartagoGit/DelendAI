@@ -1,11 +1,11 @@
 ---
-id: l100
+id: f100
 type: proposal
 status: done
 track: web+i18n+docs
 date: 2026-06-18
 budget: 4
-kind: legacy
+kind: feat
 title: Web: i18n real de herramientas, estructura por página y docs profundas
 ---
 

@@ -1,5 +1,5 @@
 ---
-id: l107
+id: f107
 type: proposal
 status: done
 track: core+quality+web
@@ -7,9 +7,9 @@ date: 2026-06-19
 reopened: 2026-06-20
 closed: 2026-06-20
 related:
-  - l105 # web bugfixes & UX overhaul (where this is mentioned as B17)
-  - l108 # test-convention plugin (complementary: scan-drift vs run_quality)
-kind: legacy
+  - x105 # web bugfixes & UX overhaul (where this is mentioned as B17)
+  - f108 # test-convention plugin (complementary: scan-drift vs run_quality)
+kind: feat
 title: Quality gates multi-lenguaje (DRY type, dogfood config, web docs)
 ---
 

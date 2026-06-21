@@ -1,15 +1,15 @@
 ---
-id: l109
+id: f109
 type: proposal
 status: done
 track: plugin
 date: 2026-06-20
 closed: 2026-06-20
 related:
-  - l99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
-  - l107 # multi-lang quality gates (este plugin complementa: quality ejecuta, auto-work coordina la persistencia)
-  - l108 # test-convention (paralelo en filosofía: publica el contrato, lo verifica)
-kind: legacy
+  - f99 # multi-model audit (mismo espíritu: tooling sobre el comportamiento del agente)
+  - f107 # multi-lang quality gates (este plugin complementa: quality ejecuta, auto-work coordina la persistencia)
+  - f108 # test-convention (paralelo en filosofía: publica el contrato, lo verifica)
+kind: feat
 title: `auto_work`: modos de persistencia (commit / commit-and-push / none)
 ---
 

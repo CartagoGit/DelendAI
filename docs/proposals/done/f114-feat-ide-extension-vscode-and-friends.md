@@ -47,9 +47,9 @@ acceptance:
     - { command: cd apps/vscode && bun run package, expect: exit0 }
 related:
     - f113 # proposal state machine — the extension reads its board
-    - l100 # i18n baseline — extension mirrors the language list
-    - l101 # capabilities surface — extension is the IDE counterpart
-    - l110 # residual p100 web & i18n — same i18n rules apply
+    - f100 # i18n baseline — extension mirrors the language list
+    - f101 # capabilities surface — extension is the IDE counterpart
+    - f110 # residual p100 web & i18n — same i18n rules apply
 ---
 
 # f114 — IDE extension (VS Code first, JetBrains/Zed later)

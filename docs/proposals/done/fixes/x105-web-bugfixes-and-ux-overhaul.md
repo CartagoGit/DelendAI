@@ -1,14 +1,14 @@
 ---
-id: l105
+id: x105
 type: proposal
 status: done
 track: web+i18n+docs
 date: 2026-06-19
 closed: 2026-06-19
 related:
-  - l100 # web i18n and docs rewrite
-  - l101 # header transitions and full capabilities surface
-kind: legacy
+  - f100 # web i18n and docs rewrite
+  - f101 # header transitions and full capabilities surface
+kind: fix
 title: Bugfixes de la web + overhaul visual / UX
 ---
 

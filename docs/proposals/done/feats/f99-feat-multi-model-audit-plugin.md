@@ -1,5 +1,5 @@
 ---
-id: l99
+id: f99
 type: proposal
 status: done
 track: audit
@@ -8,7 +8,7 @@ closed: 2026-06-20
 shipped-in:
   - b1be3a0 # feat(audit): implement multi-model audit plugin with brief generation and consolidation tools
   - 8d03a09 # feat(audit): add multi-model audit plugin with brief and consolidation tools (predecessor)
-kind: legacy
+kind: feat
 title: Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
 ---
 

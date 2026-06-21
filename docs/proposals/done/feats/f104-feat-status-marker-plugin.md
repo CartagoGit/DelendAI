@@ -1,13 +1,13 @@
 ---
-id: l104
+id: f104
 type: proposal
 status: done
 track: agent-contract
 date: 2026-06-18
 closed: 2026-06-20
 related:
-  - l99 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
-kind: legacy
+  - f99 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
+kind: feat
 title: Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
 ---
 

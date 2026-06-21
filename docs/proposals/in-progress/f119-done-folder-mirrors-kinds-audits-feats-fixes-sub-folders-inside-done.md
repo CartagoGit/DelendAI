@@ -17,7 +17,7 @@ acceptance:
     - { command: bun run lint:proposals, expect: exit0 }
 related:
     - f113 # proposal state machine — 7 statuses at root, kinds now mirrored inside done/
-    - l113 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
+    - x113 # fix-audit-types — established the `a<NN>-` audit prefix this proposal generalises
 ---
 
 # f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/

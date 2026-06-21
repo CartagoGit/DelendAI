@@ -1,14 +1,14 @@
 ---
-id: l106
+id: x106
 type: proposal
 status: done
 track: web
 date: 2026-06-19
 closed: 2026-06-19
 related:
-  - l100 # website i18n & docs rewrite (lives next to this in the web track)
-  - l101 # web header transitions
-kind: legacy
+  - f100 # website i18n & docs rewrite (lives next to this in the web track)
+  - f101 # web header transitions
+kind: fix
 title: Fix `gen-skills.ts` recursión (SKILL.md en subdirectorios no se descubren)
 ---
 
