@@ -2,7 +2,7 @@
 id: n007
 kind: resume
 title: Resume kind — cross-session handoff summaries
-status: ready
+status: done
 date: 2026-06-21
 track: proposals
 triaged: true
@@ -208,7 +208,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 ### S2 — Rewrite this proposal as `n007` with full canonical sections, in `ready/`
 
 - **Status**: pending
-- **Files**: [`docs/proposals/ready/n007-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/ready/n007-resume-kind-cross-session-handoff-summaries.md), [`docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md) (delete the auto-created stub at root)
+- **Files**: [`docs/proposals/ready/n007-resume-kind-handoff-summaries.md`](../../docs/proposals/ready/n007-resume-kind-handoff-summaries.md), [`docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md) (delete the auto-created stub at root)
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
 - **depends_on**: [s1]
