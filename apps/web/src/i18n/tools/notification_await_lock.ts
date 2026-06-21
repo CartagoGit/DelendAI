@@ -1,0 +1,20 @@
+// i18n catalogue for `notification_await_lock`.
+
+import type { IToolI18n } from '#I18N/tools/_shape';
+
+export const notificationAwaitLockI18n: IToolI18n = {
+	description: {
+		en: 'Block until the lock for `taskId` is released (no longer in-flight) or `timeoutMs` elapses (default 30000, max 120000), then return {taskId,released,timedOut,alreadyFree,waitedMs}. Use this after agent_lock returns lock-conflict: wait once, then retry the claim — do NOT poll agent_lock status in a loop.',
+		es: 'Bloquea hasta que se libere el lock de `taskId` (ya no está en curso) o transcurra `timeoutMs` (por defecto 30000, máx 120000), y luego devuelve {taskId,released,timedOut,alreadyFree,waitedMs}. Usa esto después de que agent_lock devuelva lock-conflict: espera una vez y luego reintenta el claim — NO hagas polling del estado de agent_lock en un bucle.',
+		fr: "Bloque jusqu'à ce que le verrou de `taskId` soit libéré (plus en cours) ou que `timeoutMs` s'écoule (défaut 30000, max 120000), puis renvoie {taskId,released,timedOut,alreadyFree,waitedMs}. Utilisez ceci après qu'agent_lock renvoie lock-conflict : attendez une fois, puis retentez la revendication — ne faites PAS de polling du statut d'agent_lock en boucle.",
+		de: 'Blockiert, bis die Sperre für `taskId` freigegeben wird (nicht mehr in Bearbeitung) oder `timeoutMs` abläuft (Standard 30000, max 120000), und gibt dann {taskId,released,timedOut,alreadyFree,waitedMs} zurück. Verwende dies, nachdem agent_lock einen lock-conflict zurückgegeben hat: einmal warten, dann den Claim erneut versuchen — den agent_lock-Status NICHT in einer Schleife abfragen.',
+		it: 'Si blocca finché il lock di `taskId` non viene rilasciato (non più in corso) o trascorre `timeoutMs` (predefinito 30000, max 120000), poi restituisce {taskId,released,timedOut,alreadyFree,waitedMs}. Usa questo dopo che agent_lock restituisce lock-conflict: attendi una volta, poi riprova il claim — NON eseguire polling dello stato di agent_lock in un loop.',
+		pt: 'Bloqueia até que o lock de `taskId` seja libertado (já não está em curso) ou `timeoutMs` decorra (padrão 30000, máx 120000), depois devolve {taskId,released,timedOut,alreadyFree,waitedMs}. Usa isto depois de agent_lock devolver lock-conflict: espera uma vez, depois repete o claim — NÃO faças polling do estado de agent_lock num loop.',
+		ja: '`taskId` のロックが解放される(処理中でなくなる)、または `timeoutMs` が経過する(デフォルト 30000、最大 120000)までブロックし、{taskId,released,timedOut,alreadyFree,waitedMs} を返します。agent_lock が lock-conflict を返した後にこれを使用します:一度だけ待ち、その後クレームを再試行してください — ループで agent_lock の状態をポーリングしないでください。',
+		zh: '阻塞直到 `taskId` 的锁被释放(不再处于进行中)或 `timeoutMs` 超时(默认 30000,最大 120000),然后返回 {taskId,released,timedOut,alreadyFree,waitedMs}。在 agent_lock 返回 lock-conflict 后使用此工具:等待一次,然后重试声明——不要在循环中轮询 agent_lock 的状态。',
+		hi: '`taskId` का लॉक रिलीज़ होने (अब इन-फ़्लाइट नहीं) या `timeoutMs` बीत जाने (डिफ़ॉल्ट 30000, अधिकतम 120000) तक ब्लॉक करता है, फिर {taskId,released,timedOut,alreadyFree,waitedMs} लौटाता है। agent_lock के lock-conflict लौटाने के बाद इसका उपयोग करें: एक बार प्रतीक्षा करें, फिर क्लेम को फिर से प्रयास करें — agent_lock स्थिति को लूप में पोल न करें।',
+		ar: 'يحظر حتى يتم تحرير قفل `taskId` (لم يعد قيد التنفيذ) أو ينقضي `timeoutMs` (الافتراضي 30000، الحد الأقصى 120000)، ثم يُرجع {taskId,released,timedOut,alreadyFree,waitedMs}. استخدم هذا بعد أن يُرجع agent_lock تعارض قفل (lock-conflict): انتظر مرة واحدة، ثم أعد محاولة المطالبة — لا تستطلع حالة agent_lock في حلقة تكرارية.',
+		th: 'บล็อกจนกว่าล็อกของ `taskId` จะถูกปล่อย (ไม่อยู่ระหว่างดำเนินการแล้ว) หรือ `timeoutMs` หมดเวลา (ค่าเริ่มต้น 30000 สูงสุด 120000) จากนั้นส่งคืน {taskId,released,timedOut,alreadyFree,waitedMs} ใช้สิ่งนี้หลังจาก agent_lock ส่งคืน lock-conflict: รอครั้งเดียว แล้วลองเรียกร้องใหม่ — ห้าม poll สถานะ agent_lock ในลูป',
+		vi: 'Chặn cho đến khi lock của `taskId` được giải phóng (không còn đang xử lý) hoặc `timeoutMs` hết hạn (mặc định 30000, tối đa 120000), sau đó trả về {taskId,released,timedOut,alreadyFree,waitedMs}. Dùng cái này sau khi agent_lock trả về lock-conflict: chờ một lần, rồi thử lại việc claim — KHÔNG poll trạng thái agent_lock theo vòng lặp.',
+	},
+};
