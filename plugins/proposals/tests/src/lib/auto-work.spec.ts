@@ -100,6 +100,10 @@ describe('auto_work (one-call action plan)', () => {
 		expect(out.steps.join('\n')).toContain(
 			'proposals_delegate one claimable slice',
 		);
+		expect(out.steps.join('\n')).toContain('proposals_await_lock once');
+		expect(out.steps.join('\n')).toContain(
+			'If that was the last open slice for the proposal, run proposals_sync_proposals once; otherwise do not sync mid-flight.',
+		);
 	});
 
 	it('allows hosts to tune the auto_work delegation threshold', async () => {

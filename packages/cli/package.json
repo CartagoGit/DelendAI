@@ -1,25 +1,26 @@
 {
-	"name": "@mcp-vertex/core",
+	"name": "@mcp-vertex/cli",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
+	"description": "Human-facing mcp-vertex CLI with local and stdio transports.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
-		"agent",
-		"ai",
-		"cartago",
-		"plugin"
+		"cli",
+		"mcp-vertex"
 	],
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
-		"schema",
 		"README.md",
 		"LICENSE"
 	],
+	"bin": {
+		"mcp-vertex": "./dist/index.js",
+		"mcpv": "./dist/index.js"
+	},
 	"exports": {
 		".": {
 			"@mcp-vertex/source": {
@@ -27,22 +28,16 @@
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
-		},
-		"./public": {
-			"@mcp-vertex/source": {
-				"types": "./src/public/index.ts"
-			},
-			"types": "./dist/public/index.d.ts",
-			"import": "./dist/public/index.js"
 		}
 	},
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts packages/core"
+		"build": "bun ../../tools/scripts/compile/build.script.ts"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
