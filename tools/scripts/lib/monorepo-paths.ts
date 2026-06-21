@@ -40,7 +40,8 @@
  *   class of bug we're trying to prevent.
  */
 import { spawnSync } from 'node:child_process';
-import { join, sep } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, join, sep } from 'node:path';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
 export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'examples';
@@ -245,9 +246,14 @@ export const WELL_KNOWN = {
  */
 export const relativeFrom = (linkDir: string, targetDir: string): string => {
 	const root = repoRoot();
-	const linkParts = linkDir.split(sep).filter((p) => p.length > 0);
+	// Count the climb from the symlink's PARENT (not from the symlink
+	// itself) up to the repo root. The symlink lives at `linkDir`; the
+	// symlink target is interpreted relative to `dirname(linkDir)`.
+	const linkParentParts = dirname(linkDir)
+		.split(sep)
+		.filter((p) => p.length > 0);
 	const rootParts = root.split(sep).filter((p) => p.length > 0);
-	const climb = linkParts.length - rootParts.length;
+	const climb = linkParentParts.length - rootParts.length;
 	// Climb up, then down. We do this manually because `path.relative` does
 	// not give us this answer cleanly when both endpoints live inside a
 	// subtree of a deeper mount.
@@ -284,3 +290,19 @@ export const isSafeName = (name: string): boolean => {
  */
 export const isSafeGroup = (group: string): group is MonorepoGroup =>
 	VALID_GROUPS.has(group as MonorepoGroup);
+
+/**
+ * Read a JSON file and return its parsed contents. Used by packaging /
+ * scaffolding scripts to pull the `version` from each app's
+ * `package.json` without inventing a config format. Re-throws with a
+ * path-qualified message so failures are easy to debug.
+ */
+export const readJSON = <T = unknown>(path: string): T => {
+	try {
+		const raw = readFileSync(path, 'utf8');
+		return JSON.parse(raw) as T;
+	} catch (err) {
+		const reason = err instanceof Error ? err.message : String(err);
+		throw new Error(`Could not read JSON at ${path}: ${reason}`);
+	}
+};

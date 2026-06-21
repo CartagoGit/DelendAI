@@ -60,7 +60,7 @@ import { useTranslations, type Lang } from '../../i18n/ui';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
-const base = import.meta.env.BASE_URL.replace(/\\/\$/, '');
+const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 const homeHref = \`\${base}/${params.lang}/\`;
 ---
@@ -94,7 +94,7 @@ import { useTranslations, type Lang } from '../../../i18n/ui';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
-const base = import.meta.env.BASE_URL.replace(/\\/\$/, '');
+const base = import.meta.env.BASE_URL.replace(/\\/$/, '');
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 const homeHref = \`\${base}/${params.lang}/\`;
 ---

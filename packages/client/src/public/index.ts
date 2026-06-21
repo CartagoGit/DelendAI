@@ -48,6 +48,13 @@ export {
 	DashboardService,
 	createEmptyTotals,
 } from '../lib/services/dashboard-service';
+export { HealthService } from '../lib/services/health-service';
+export type {
+	IHealthOptions,
+	IHealthSnapshot,
+	IStaleAgent,
+	IStaleKind,
+} from '../lib/services/health.types';
 export type { IDashboardServiceOptions } from '../lib/services/dashboard-service';
 export type {
 	IDashboardAgentsModel,

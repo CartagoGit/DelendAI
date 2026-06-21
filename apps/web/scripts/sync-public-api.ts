@@ -13,7 +13,7 @@
  * - Otherwise the symlink is created RELATIVE to the target so it survives
  *   being checked out at any depth:
  *
- *       apps/web/public/api  ->  ../../../build/docs-api
+ *       apps/web/public/api  ->  ../../build/docs-api
  *
  * Idempotent. Safe to run before every `astro dev` / `astro build`.
  *
@@ -23,7 +23,6 @@
  * that module.
  */
 import {
-	existsSync,
 	lstatSync,
 	mkdirSync,
 	readlinkSync,
@@ -41,7 +40,25 @@ import {
 const LINK = join(repoRoot(), 'apps', 'web', 'public', 'api');
 const TARGET_ABS = WELL_KNOWN.docsApi();
 
-const relTarget = relativeFrom(LINK, TARGET_ABS);
+// `relativeFrom` measures climb from the symlink's parent directory
+// (not from the symlink path itself, which includes the symlink's name).
+const LINK_PARENT = dirname(LINK);
+const relTarget = relativeFrom(LINK_PARENT, TARGET_ABS);
+
+/**
+ * Replace Bun's `existsSync` (which can lie about dangling or
+ * just-resolved symlinks by reporting false when lstat sees them). A
+ * direct lstat-then-catch is the only reliable way to check whether
+ * a path slot is occupied.
+ */
+const pathExists = (p: string): boolean => {
+	try {
+		lstatSync(p);
+		return true;
+	} catch {
+		return false;
+	}
+};
 
 const isDir = (p: string): boolean => {
 	try {
@@ -56,9 +73,8 @@ const isSymlinkToTarget = (p: string, want: string): boolean => {
 		const s = lstatSync(p);
 		if (!s.isSymbolicLink()) return false;
 		const actualRaw = readlinkSync(p);
-		// Accept either the relative form we just computed OR the absolute
-		// path (some users prefer absolute symlinks). Both point to the same
-		// target after resolution.
+		// Accept the relative form, the absolute form, or anything that
+		// resolves to the same target.
 		return (
 			actualRaw === relTarget ||
 			actualRaw === want ||
@@ -73,7 +89,7 @@ const main = (): void => {
 	mkdirSync(dirname(LINK), { recursive: true });
 	mkdirSync(TARGET_ABS, { recursive: true });
 
-	if (existsSync(LINK)) {
+	if (pathExists(LINK)) {
 		if (isSymlinkToTarget(LINK, TARGET_ABS)) {
 			console.log(`✓ ${LINK} -> ${relTarget} (already in place)`);
 			return;

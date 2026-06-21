@@ -15,6 +15,7 @@ export default defineConfig({
 			'examples/custom-plugin',
 			'apps/web',
 			'apps/ide',
+			'tools/scripts',
 		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain

@@ -27,7 +27,32 @@ import {
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Walk up from this file's directory until we find a directory that
+// contains `mcp-vertex.config.json` (or `.git`). That is the repo root.
+// This is robust against future moves of the script under
+// tools/scripts/<area>/<...>.<depth>.script.ts — the ROOT computation
+// doesn't break if the file is relocated one or more directories deeper.
+const findRepoRoot = (start: string): string => {
+	let current = start;
+	for (let i = 0; i < 8; i++) {
+		if (
+			existsSync(join(current, 'mcp-vertex.config.json')) ||
+			existsSync(join(current, '.git'))
+		) {
+			return current;
+		}
+		const parent = dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+	// Fallback: assume the repo root is two levels up from the script
+	// location (the original convention when the script lived at
+	// `scripts/build.ts`). This keeps the script working in environments
+	// where neither marker is reachable (e.g. running from a tarball).
+	return join(start, '..', '..');
+};
+
+const ROOT = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
 
 const discover = (): string[] =>
 	['packages', 'plugins']

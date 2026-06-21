@@ -78,7 +78,7 @@
 		"test": "vitest run",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
-		"package": "bun run build && mkdir -p ../../dist/apps/vscode/$npm_package_version && vsce package --no-dependencies --no-git-tag-version --out ../../dist/apps/vscode/$npm_package_version"
+		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
 		"@mcp-vertex/client": "workspace:*",
