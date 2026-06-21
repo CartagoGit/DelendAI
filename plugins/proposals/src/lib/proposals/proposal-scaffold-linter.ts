@@ -30,24 +30,17 @@ export interface ILintResult {
 	readonly issues: readonly ILintIssue[];
 }
 
-// Canonical top-level section sequence (f113 §4.5): required sections are
-// always present and always in this relative order; optional ones occupy a
-// fixed slot but may be omitted entirely.
-const REQUIRED_SECTIONS = [
+// Canonical top-level section sequences (f113 §4.5).
+// Standard proposals and audits have different required sections and canonical order.
+const PROPOSAL_REQUIRED_SECTIONS = [
 	'goal',
 	'why',
 	'non-goals',
 	'slices',
 	'acceptance',
 ] as const;
-const OPTIONAL_SECTION_SLOTS: Readonly<Record<string, string>> = {
-	'why this design': 'why',
-	architecture: 'non-goals',
-	'dependency graph': 'slices',
-	'risks and mitigations': 'acceptance',
-	notes: 'acceptance', // last, after Risks if present, after Acceptance otherwise
-};
-const CANONICAL_ORDER = [
+
+const PROPOSAL_CANONICAL_ORDER = [
 	'goal',
 	'why',
 	'why this design',
@@ -59,7 +52,29 @@ const CANONICAL_ORDER = [
 	'risks and mitigations',
 	'notes',
 ];
-const canonicalIndex = (name: string): number => CANONICAL_ORDER.indexOf(name);
+
+const AUDIT_REQUIRED_SECTIONS = [
+	'goal',
+	'why',
+	'non-goals',
+	'slices',
+	'acceptance',
+	'verified state',
+	'findings',
+	'scoreboard',
+] as const;
+
+const AUDIT_CANONICAL_ORDER = [
+	'goal',
+	'why',
+	'non-goals',
+	'slices',
+	'acceptance',
+	'verified state',
+	'findings',
+	'scoreboard',
+	'notes',
+];
 
 const normalizeHeading = (raw: string): string =>
 	raw
@@ -115,7 +130,14 @@ const findH2Headings = (markdown: string): IHeadingMatch[] => {
 	return out;
 };
 
-const lintSections = (markdown: string): ILintIssue[] => {
+const lintSections = (markdown: string, kind?: string): ILintIssue[] => {
+	const canonicalOrder =
+		kind === 'audit' ? AUDIT_CANONICAL_ORDER : PROPOSAL_CANONICAL_ORDER;
+	const requiredSections =
+		kind === 'audit' ? AUDIT_REQUIRED_SECTIONS : PROPOSAL_REQUIRED_SECTIONS;
+	const canonicalIndex = (name: string): number =>
+		canonicalOrder.indexOf(name);
+
 	const issues: ILintIssue[] = [];
 	const headings = findH2Headings(markdown);
 	const seen = new Map<string, IHeadingMatch>();
@@ -126,7 +148,7 @@ const lintSections = (markdown: string): ILintIssue[] => {
 			issues.push({
 				line: h.line,
 				message: `unrecognized section heading "${h.raw.trim()}" — not part of the canonical scaffold`,
-				fix: `Rename to one of: ${CANONICAL_ORDER.join(', ')} (a leading "N. " is fine).`,
+				fix: `Rename to one of: ${canonicalOrder.join(', ')} (a leading "N. " is fine).`,
 			});
 			continue;
 		}
@@ -141,7 +163,7 @@ const lintSections = (markdown: string): ILintIssue[] => {
 		seen.set(h.normalized, h);
 	}
 
-	for (const required of REQUIRED_SECTIONS) {
+	for (const required of requiredSections) {
 		if (!seen.has(required)) {
 			issues.push({
 				line: 0,
@@ -162,16 +184,10 @@ const lintSections = (markdown: string): ILintIssue[] => {
 			issues.push({
 				line: curr.line,
 				message: `section "${curr.normalized}" appears after "${prev.normalized}", out of canonical order`,
-				fix: `Reorder so the sections follow: ${CANONICAL_ORDER.join(' → ')}.`,
+				fix: `Reorder so the sections follow: ${canonicalOrder.join(' → ')}.`,
 			});
 		}
 	}
-
-	// Optional sections must sit in their declared slot (immediately after
-	// the required/optional anchor they're attached to) — checked via the
-	// non-decreasing pass above, which already catches misplacement since
-	// every section (required or optional) has a fixed CANONICAL_ORDER index.
-	void OPTIONAL_SECTION_SLOTS;
 
 	return issues;
 };
@@ -444,10 +460,12 @@ export const lintProposalMarkdown = (args: {
 	const { issues: frontmatterIssues, frontmatter } = lintFrontmatter(
 		args.markdown,
 	);
+	const kind =
+		typeof frontmatter.kind === 'string' ? frontmatter.kind : undefined;
 	const issues: ILintIssue[] = [
 		...frontmatterIssues,
 		...lintFilenameAndFolder(args.path, frontmatter),
-		...lintSections(args.markdown),
+		...lintSections(args.markdown, kind),
 		...lintSlices(args.markdown),
 	];
 	return { ok: issues.length === 0, issues };

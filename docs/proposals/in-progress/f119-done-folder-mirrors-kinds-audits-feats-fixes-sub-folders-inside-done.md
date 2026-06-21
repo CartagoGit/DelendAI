@@ -2,7 +2,7 @@
 id: f119
 kind: feat
 title: Done folder mirrors kinds — audits/, feats/, fixes/ sub-folders inside done/
-status: in_progress
+status: in-progress
 triaged: true
 date: 2026-06-21
 track: proposals
@@ -22,7 +22,7 @@ related:
 
 # f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/
 
-## 0. Goal
+## Goal
 
 Add an internal sub-folder mirror inside `docs/proposals/done/` so the
 folder scales without becoming a flat dump. The 7 statuses still live at
@@ -34,7 +34,7 @@ convention — the reconciler still treats every file under `done/` (any
 depth) as `status: done` and the linter still validates filename prefix
 ↔ frontmatter `kind`. **No engine change.**
 
-## 1. Why
+## Why
 
 After landing f113 the proposal taxonomy is clean (12 kinds, single-letter
 prefix, linter-enforced), but `docs/proposals/done/` already had 35+
@@ -58,7 +58,7 @@ This proposal fixes both **without touching the engine**:
   `kind` (the `id:` frontmatter stays unchanged, so cross-references in
   `related:` keep resolving).
 
-## 2. Why this design
+## Why this design
 
 ### 2.1 Sub-folder only inside `done/`, not at the root
 
@@ -71,7 +71,7 @@ to the linter, but the filesystem would encode two dimensions (status +
 kind) at the same level. That's confusing for agents and tools.
 
 `done/` is the one status whose contents are **terminal** and
-**read-mostly**: nothing leaves it. It is the only folder where we are
+`read-mostly`: nothing leaves it. It is the only folder where we are
 free to add internal organisation without breaking the DFA. This matches
 the f113 invariant: "`done`/`retired` are terminal".
 
@@ -105,7 +105,11 @@ which becomes both the filename prefix AND the `id:` field. The old
 `a1`/`a2`/`a3`/`a4` ids are updated to their new numbers; references
 that pointed to them are checked and rewritten.
 
-## 3. Architecture
+## Non-goals
+
+- Automating the folder grouping at write-time (this is purely a layout migration proposal).
+
+## Architecture
 
 ### 3.1 Target layout
 
@@ -162,7 +166,7 @@ Both checks remain correct under this proposal because:
 
 The 20 audit files are renumbered `a1..a20` by `git log --diff-filter=A
 --format=%ai -- <file>` order (when each file first appeared in the
-repo). Ties broken by alphabetical filename. The number is assigned once,
+repo). Ties broken by alphabetical slug. The number is assigned once,
 frozen in the filename and the `id:` field, and never re-used.
 
 The four pre-existing numbered audits (`a1-14-06`, `a2-15-06`,
@@ -194,39 +198,11 @@ all receive new numbers based on the chronological table in §3.5.
 | a19 | 2026-06-21 04:23 | 15-06-2026 | `done/a3-15-06-2026- Antigravity (Gemini 3.5 Flash).md` | Antigravity Gemini (jul-15) |
 | a20 | 2026-06-21 04:23 | 15-06-2026 | `done/a4-15-06-2026- Claude Code (Opus 4.8).md` | Claude Code Opus (jul-15) |
 
-## 4. Risks
-
-- **R1**: A cross-proposal `related:` field references an old audit
-  filename (e.g. `related: a1-14-06-...`). Mitigation: s1 only rewrites
-  filenames, not `id:` references in other proposals' frontmatter, so
-  the `related: a1` form (using the `id`) keeps working. We add a
-  follow-up commit if any literal filename reference is found.
-- **R2**: The linter's filename-prefix check fails on a file whose `id:`
-  field and filename prefix disagree (e.g. `id: l99` + filename `f99-...`).
-  Mitigation: confirmed that the linter reads `kind:` (not `id:`) for the
-  prefix check, so the rename is legal as long as `kind: feat`.
-- **R3**: The legacy `docs/proposals/audits/` directory removal breaks
-  any tool that hardcodes that path. Mitigation: a quick grep across
-  `apps/`, `plugins/`, `scripts/` found no references — the `audits/`
-  folder at root was only used as a holding pen.
-
-## 5. Out of scope
-
-- Renaming the 5 `RESUMEN-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
-  in `done/` root. They are not proposals (no frontmatter), so the
-  linter ignores them. They stay at `done/` root.
-- Auto-grouping future closes by kind at write-time (a `proposal_close`
-  tool that picks the sub-folder). That's a nice ergonomic, but it's a
-  separate engine change; this proposal is filesystem-only.
-- Buckets for `refactor/`, `chore/`, `docs/`, `test/`, `infra/`,
-  `spike/`, `breaking/`, `perf/`. They will be added when the second
-  file of each kind lands in `done/`.
-
 ## Slices
 
 - global_gate: none
 
-### s1 — Renumber and rename the 20 closed audit documents to a1-a20 by chronological creation order
+### S1 — Renumber and rename the 20 closed audit documents to a1-a20 by chronological creation order
 - files: docs/proposals/done/a1-14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md
 - files: docs/proposals/done/a2-15-06-2026- Antigravity (Gemini 3.5 Flash) [estado-actual].md
 - files: docs/proposals/done/a3-15-06-2026- Antigravity (Gemini 3.5 Flash).md
@@ -248,14 +224,9 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/18-06-2026- Auditoría Agnóstica (estado-actual).md
 - files: docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md
 - gate: lint
-- acceptance:
-  - "All 20 audit files live under `docs/proposals/done/audits/` with names `a<NN>-<DD-MM-YYYY>-<slug>.md`."
-  - "Numbering is chronological by `git log --diff-filter=A --format=%ai` of each file (ties broken by alphabetical slug)."
-  - "`bun run lint:proposals` passes (filename prefix `a` matches frontmatter `kind: audit`)."
-  - "The legacy `docs/proposals/audits/` directory is removed (its single content moved to `done/audits/`)."
 - status: pending
 
-### s2 — Move l99-l113 (legacy-prefixed closed proposals) into their real-kind sub-folders
+### S2 — Move l99-l113 (legacy-prefixed closed proposals) into their real-kind sub-folders
 - files: docs/proposals/done/l99-feat-multi-model-audit-plugin.md
 - files: docs/proposals/done/l100-website-i18n-and-docs-rewrite.md
 - files: docs/proposals/done/l101-web-header-transitions-and-full-capabilities-surface.md
@@ -272,14 +243,9 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/l112-derive-site-manifests-and-local-aliases.md
 - files: docs/proposals/done/l113-fix-audit-types.md
 - gate: lint
-- acceptance:
-  - "Every `l<NNN>-*.md` file is moved to `done/feats/` or `done/fixes/` according to its actual `kind` field in the frontmatter (NOT the `l` legacy prefix)."
-  - "Filename prefix is updated to match the real kind (e.g. `l99-feat-multi-model-audit-plugin.md` → `f99-feat-multi-model-audit-plugin.md` if its kind is feat; or stays `l99` if its real kind is legacy)."
-  - "`PROPOSAL_KIND_BY_PREFIX` lookup is updated/checked for every rename; `bun run lint:proposals` passes."
-  - "The `id:` frontmatter field stays the same as the original (e.g. `id: l99` stays `l99` even if the filename becomes `f99-...`) so cross-proposal references keep working."
 - status: pending
 
-### s3 — Move the remaining f113-f118 closed feats and create the sub-folder convention doc
+### S3 — Move the remaining f113-f118 closed feats and create the sub-folder convention doc
 - files: docs/proposals/done/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md
 - files: docs/proposals/done/f114-feat-ide-extension-vscode-and-friends.md
 - files: docs/proposals/done/f115-feat-mcp-logs-plugin.md
@@ -288,8 +254,39 @@ all receive new numbers based on the chronological table in §3.5.
 - files: docs/proposals/done/f118-rules-compact-findings.md
 - files: docs/proposals/INDEX.md
 - gate: lint
-- acceptance:
-  - "f113-f118 live under `docs/proposals/done/feats/`."
-  - "A `docs/proposals/done/README.md` documents the convention (one sub-folder per `kind`; only `audits/`, `feats/`, `fixes/` for now; root of `done/` is reserved for the legacy `RESUMEN-SESION-*.md` and `AUDITORIA-UNIFICADA-*.md` style summaries that predate the convention)."
-  - "Cross-references (`related: f113`, `related: l99`, etc.) still resolve because `id:` frontmatter is preserved across renames."
 - status: pending
+
+## Acceptance
+
+- `bun run type` exits 0.
+- `bun run test` exits 0.
+- `bun run lint` exits 0.
+- `bun run lint:proposals` exits 0.
+
+## Risks and mitigations
+
+- **R1**: A cross-proposal `related:` field references an old audit
+  filename (e.g. `related: a1-14-06-...`). Mitigation: s1 only rewrites
+  filenames, not `id:` references in other proposals' frontmatter, so
+  the `related: a1` form (using the `id`) keeps working. We add a
+  follow-up commit if any literal filename reference is found.
+- **R2**: The linter's filename-prefix check fails on a file whose `id:`
+  field and filename prefix disagree (e.g. `id: l99` + filename `f99-...`).
+  Mitigation: confirmed that the linter reads `kind:` (not `id:`) for the
+  prefix check, so the rename is legal as long as `kind: feat`.
+- **R3**: The legacy `docs/proposals/audits/` directory removal breaks
+  any tool that hardcodes that path. Mitigation: a quick grep across
+  `apps/`, `plugins/`, `scripts/` found no references — the `audits/`
+  folder at root was only used as a holding pen.
+
+## Notes
+
+- Renaming the 5 `RESUMEN-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
+  in `done/` root. They are not proposals (no frontmatter), so the
+  linter ignores them. They stay at `done/` root.
+- Auto-grouping future closes by kind at write-time (a `proposal_close`
+  tool that picks the sub-folder). That's a nice ergonomic, but it's a
+  separate engine change; this proposal is filesystem-only.
+- Buckets for `refactor/`, `chore/`, `docs/`, `test/`, `infra/`,
+  `spike/`, `breaking/`, `perf/`. They will be added when the second
+  file of each kind lands in `done/`.

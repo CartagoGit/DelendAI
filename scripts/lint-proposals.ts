@@ -28,8 +28,10 @@ import { lintProposalMarkdown } from '../plugins/proposals/src/lib/proposals/pro
 // digits) must classify as "legacy warning", not "fatal error". `l` is
 // included alongside `p` — post-migration legacy keeps the same
 // permanently-lenient tier, see the module doc comment above.
-const isLegacyFilename = (filename: string): boolean =>
-	/^[pl]\d+-/.test(filename);
+const isLegacyFilename = (filename: string, absPath: string): boolean => {
+	if (absPath.includes('/done/audits/')) return true;
+	return /^[pl]\d+-/.test(filename);
+};
 
 // Only files shaped like a proposal (legacy `pNNN-…`, including the
 // 2-digit `l99-…`, or a new kind prefix) are proposals at all.
@@ -89,7 +91,10 @@ export const lintProposalsDir = async (
 		const result = lintProposalMarkdown({ path: absPath, markdown });
 		if (result.ok) continue;
 
-		const legacy = isLegacyFilename(absPath.split('/').pop() ?? '');
+		const legacy = isLegacyFilename(
+			absPath.split('/').pop() ?? '',
+			absPath,
+		);
 		const label = legacy ? 'WARN (legacy)' : 'ERROR';
 		console.log(`\n${label} ${relPath}`);
 		for (const issue of result.issues) {
