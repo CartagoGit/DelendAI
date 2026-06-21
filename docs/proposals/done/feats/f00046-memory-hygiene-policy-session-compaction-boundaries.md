@@ -2,7 +2,7 @@
 id: f00046
 kind: feat
 title: Memory hygiene policy + session compaction boundaries
-status: ready
+status: done
 type: proposal
 track: plugins/memory+skills+docs+workflow
 date: 2026-06-21
@@ -49,7 +49,7 @@ Close the memory/context gaps surfaced by a00027 S3: define what deserves durabl
   - "Any operator-facing guidance about compaction or persistence has one canonical wording."
 
 ### S3 — Session compaction and invalidation hooks
-- **Files**: plugins/proposals/src/lib/swarm/continuity-policy.ts, plugins/proposals/src/lib/swarm/round-context-sources.ts, plugins/memory/tests/src/lib/tools.spec.ts, plugins/proposals/tests/src/lib/swarm/continuity-policy.spec.ts
+- **Files**: plugins/proposals/src/lib/swarm/continuity-policy.ts, plugins/proposals/src/lib/swarm/continuity-enforcer.ts, plugins/proposals/src/lib/swarm/swarm-closure.ts, plugins/proposals/tests/src/lib/swarm/continuity-policy.spec.ts, plugins/proposals/tests/src/lib/swarm/continuity-enforcer.spec.ts, plugins/proposals/tests/src/lib/swarm/swarm-closure.spec.ts
 - **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
@@ -63,3 +63,11 @@ Close the memory/context gaps surfaced by a00027 S3: define what deserves durabl
 - Memory/docs/search/reread choice is documented as a simple decision tree.
 - At least one compaction or invalidation path is clearer or more automatic than today's purely manual baseline.
 - `bun run validate` is green.
+
+## notes
+
+### Closure — 2026-06-21
+
+- Ampere verified S1/S2/S3 against the current docs, memory plugin wording and proposals continuity runtime.
+- The stale S3 reference to `plugins/memory/tests/src/lib/tools.spec.ts` was corrected to the actual continuity specs.
+- Verified with `bun run validate`.
