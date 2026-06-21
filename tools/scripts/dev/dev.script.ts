@@ -2,16 +2,17 @@
 /**
  * Dev orchestrator — starts three dev servers in parallel:
  *
- *   apps/web     → http://localhost:5000  (Astro, owns its own port via astro.config.mjs)
- *   apps/ide     → http://localhost:5100  (dev entry: renders the dashboard with mock data)
- *   apps/vscode  → http://localhost:5200  (dev entry: renders the extension's webviews with mock data)
+ *   apps/web            → http://localhost:5000  (Astro, owns its own port via astro.config.mjs)
+ *   packages/ui-extension → http://localhost:5100  (dev entry: renders the dashboard with mock data)
+ *   extensions/vscode   → http://localhost:5200  (dev entry: renders the extension's webviews with mock data)
  *
- * Why a single entrypoint? `apps/ide` and `apps/vscode` are not standalone
- * web apps — they're components embedded in host IDEs (webviews) or
- * served as a VS Code extension. They have no production server. For
- * local previews we render their UI in a regular browser using a tiny
- * `dev/entry.ts` per app that calls the real renderer functions with
- * mock data, served by `Bun.serve` + `Bun.build` to transform the TS.
+ * Why a single entrypoint? `packages/ui-extension` and `extensions/vscode`
+ * are not standalone web apps — they're components embedded in host IDEs
+ * (webviews) or served as a VS Code extension. They have no production
+ * server. For local previews we render their UI in a regular browser
+ * using a tiny `dev/entry.ts` per package that calls the real renderer
+ * functions with mock data, served by `Bun.serve` + `Bun.build` to
+ * transform the TS.
  *
  * Zero new dependencies: Bun is the only runtime we need. Workspace
  * imports (`@mcp-vertex/*`) are resolved by Bun's built-in resolver
@@ -67,11 +68,11 @@ const TARGETS: readonly ITarget[] = [
 	{
 		name: 'ide',
 		port: IDE_PORT,
-		root: join(ROOT, 'apps/ide'),
+		root: join(ROOT, 'packages/ui-extension'),
 		kind: 'dev-entry',
 		entry: 'src/dev/entry.ts',
 		url: `http://localhost:${IDE_PORT}`,
-		title: 'apps/ide — dashboard preview',
+		title: 'packages/ui-extension — dashboard preview',
 		blurb:
 			'Previsualiza el dashboard de la extensión con mock data. ' +
 			'En la extensión real, este HTML se inyecta dentro de un webview de VS Code.',
@@ -80,11 +81,11 @@ const TARGETS: readonly ITarget[] = [
 	{
 		name: 'vscode',
 		port: VSCODE_PORT,
-		root: join(ROOT, 'apps/vscode'),
+		root: join(ROOT, 'extensions/vscode'),
 		kind: 'dev-entry',
 		entry: 'src/dev/entry.ts',
 		url: `http://localhost:${VSCODE_PORT}`,
-		title: 'apps/vscode — webviews preview',
+		title: 'extensions/vscode — webviews preview',
 		blurb:
 			'Previsualiza los webviews de la extensión (tool-detail, metrics) con mock data. ' +
 			'En la extensión real, VS Code llama a renderToolDetailHtml(model) y monta el string en un webview panel.',
@@ -101,7 +102,7 @@ const buildEntry = async (entryAbs: string): Promise<Response> => {
 	if (!existsSync(entryAbs)) {
 		return new Response(
 			`Dev entry not found: ${entryAbs}\n` +
-				`Create it (see apps/ide/src/dev/entry.ts for a template).`,
+				`Create it (see packages/ui-extension/src/dev/entry.ts for a template).`,
 			{ status: 500 },
 		);
 	}

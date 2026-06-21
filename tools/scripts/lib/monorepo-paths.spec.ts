@@ -77,8 +77,8 @@ describe('monorepo-paths', () => {
 
 	describe('distVersionDir', () => {
 		it('includes the version verbatim in the path', () => {
-			expect(distVersionDir('apps', 'vscode', '0.2.0')).toBe(
-				`${repoRoot()}/dist/apps/vscode/0.2.0`,
+			expect(distVersionDir('extensions', 'vscode', '0.2.0')).toBe(
+				`${repoRoot()}/dist/extensions/vscode/0.2.0`,
 			);
 		});
 
@@ -93,8 +93,15 @@ describe('monorepo-paths', () => {
 
 	describe('distArtifactPath', () => {
 		it('joins the version dir and the artifact', () => {
-			const out = distArtifactPath('apps', 'vscode', '0.2.0', 'x.vsix');
-			expect(out).toBe(`${repoRoot()}/dist/apps/vscode/0.2.0/x.vsix`);
+			const out = distArtifactPath(
+				'extensions',
+				'vscode',
+				'0.2.0',
+				'x.vsix',
+			);
+			expect(out).toBe(
+				`${repoRoot()}/dist/extensions/vscode/0.2.0/x.vsix`,
+			);
 		});
 
 		it('rejects artifacts with slashes', () => {
@@ -116,13 +123,15 @@ describe('monorepo-paths', () => {
 			expect(WELL_KNOWN.webApp()).toBe(`${repoRoot()}/build/apps/web`);
 		});
 
-		it('vscode lives at build/apps/vscode', () => {
-			expect(WELL_KNOWN.vscode()).toBe(`${repoRoot()}/build/apps/vscode`);
+		it('vscode lives at build/extensions/vscode', () => {
+			expect(WELL_KNOWN.vscode()).toBe(
+				`${repoRoot()}/build/extensions/vscode`,
+			);
 		});
 
-		it('vscodeVsix is rooted under dist/apps/vscode/<version>', () => {
+		it('vscodeVsix is rooted under dist/extensions/vscode/<version>', () => {
 			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
-				`${repoRoot()}/dist/apps/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
+				`${repoRoot()}/dist/extensions/vscode/0.2.0/mcp-vertex-extension-vscode-0.2.0.vsix`,
 			);
 		});
 	});
