@@ -49,6 +49,26 @@ const claudeDesktopPath = (ctx: IInstallEnv): string => {
 	return join(ctx.home, '.config', 'Claude', 'claude_desktop_config.json');
 };
 
+const zedSettingsPath = (ctx: IInstallEnv): string => {
+	if (ctx.platform === 'darwin') {
+		return join(
+			ctx.home,
+			'Library',
+			'Application Support',
+			'Zed',
+			'settings.json',
+		);
+	}
+	if (ctx.platform === 'win32') {
+		return join(
+			ctx.appData ?? join(ctx.home, 'AppData', 'Roaming'),
+			'Zed',
+			'settings.json',
+		);
+	}
+	return join(ctx.home, '.config', 'zed', 'settings.json');
+};
+
 /** Every IDE/agent `init` knows how to configure. */
 export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 	{
@@ -118,6 +138,19 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		signals: (c) => [
 			join(c.home, '.gemini', 'config'),
 			join(c.home, '.gemini'),
+		],
+	},
+	{
+		id: 'zed',
+		label: 'Zed',
+		kind: 'context_servers',
+		scope: 'global',
+		resolve: zedSettingsPath,
+		signals: (c) => [
+			zedSettingsPath(c),
+			join(c.home, '.config', 'zed'),
+			join(c.home, 'Library', 'Application Support', 'Zed'),
+			join(c.appData ?? join(c.home, 'AppData', 'Roaming'), 'Zed'),
 		],
 	},
 ];
