@@ -10,10 +10,15 @@ export {
 	checkRepo,
 	parseStatus,
 	parseLog,
+	parseBlamePorcelain,
+	parseWorktreeList,
 	gitStatus,
 	gitChanged,
 	gitDiffStat,
 	gitLog,
+	gitBlame,
+	gitShow,
+	gitWorktreeList,
 } from '../lib/git';
 export type {
 	IGitRunner,
@@ -22,6 +27,11 @@ export type {
 	IGitStatus,
 	IGitStatusEntry,
 	IGitCommit,
+	IGitBlameLine,
+	IGitBlameResult,
+	IGitShowDetail,
+	IGitShowResult,
+	IGitWorktreeEntry,
 } from '../lib/git';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';

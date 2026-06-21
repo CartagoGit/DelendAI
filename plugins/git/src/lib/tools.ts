@@ -3,7 +3,16 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import { checkRepo, gitChanged, gitDiffStat, gitLog, gitStatus } from './git';
+import {
+	checkRepo,
+	gitBlame,
+	gitChanged,
+	gitDiffStat,
+	gitLog,
+	gitShow,
+	gitStatus,
+	gitWorktreeList,
+} from './git';
 import type { IGitRunner } from './git';
 
 const NOT_A_REPO = (reason = 'not a git repository') =>
@@ -149,6 +158,137 @@ export const buildGitToolRegistrations = (
 						);
 						return toolJson({
 							commits: await gitLog(options.run, limit),
+						});
+					},
+				);
+			},
+		},
+		{
+			id: 'blame',
+			summary:
+				'Per-line authorship for a tracked file (optionally a line range).',
+			tags: ['git'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_blame`,
+					{
+						description:
+							'Returns per-line authorship for a tracked file: {line, hash, author, date, content}. Optional `startLine`/`endLine` (both required together) scope it to a range. Read-only.',
+						inputSchema: z.object({
+							path: z.string(),
+							startLine: z.number().optional(),
+							endLine: z.number().optional(),
+						}),
+						outputSchema: z.object({
+							lines: z.array(
+								z.object({
+									line: z.number(),
+									hash: z.string(),
+									author: z.string(),
+									date: z.string(),
+									content: z.string(),
+								}),
+							),
+						}),
+					},
+					async (args: {
+						path: string;
+						startLine?: number | undefined;
+						endLine?: number | undefined;
+					}) => {
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
+						const result = await gitBlame(options.run, args.path, {
+							...(args.startLine !== undefined
+								? { startLine: args.startLine }
+								: {}),
+							...(args.endLine !== undefined
+								? { endLine: args.endLine }
+								: {}),
+						});
+						if (!result.ok) {
+							return toolError(
+								result.reason ?? 'git blame failed',
+								'Check the path exists and is tracked by git.',
+							);
+						}
+						return toolJson({ lines: result.lines });
+					},
+				);
+			},
+		},
+		{
+			id: 'show',
+			summary:
+				'Commit metadata + --stat summary for a ref (no full patch).',
+			tags: ['git'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_show`,
+					{
+						description:
+							"Returns a commit's metadata and `--stat` summary (file/line change counts, not the full patch): {hash, author, date, subject, stat}. `ref` defaults to HEAD; optional `path` scopes the stat to one file. Read-only.",
+						inputSchema: z.object({
+							ref: z.string().optional(),
+							path: z.string().optional(),
+						}),
+						outputSchema: z.object({
+							hash: z.string(),
+							author: z.string(),
+							date: z.string(),
+							subject: z.string(),
+							stat: z.string(),
+						}),
+					},
+					async (args: {
+						ref?: string | undefined;
+						path?: string | undefined;
+					}) => {
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
+						const result = await gitShow(
+							options.run,
+							args.ref ?? 'HEAD',
+							args.path,
+						);
+						if (!result.ok || !result.detail) {
+							return toolError(
+								result.reason ?? 'git show failed',
+								'Check the ref (and path, if given) exist.',
+							);
+						}
+						return toolJson(result.detail);
+					},
+				);
+			},
+		},
+		{
+			id: 'worktree',
+			summary: 'List existing git worktrees for this repo (read-only).',
+			tags: ['git', 'orientation'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_worktree`,
+					{
+						description:
+							'Lists existing git worktrees for this repo as {path, head, branch?, bare?, locked?}. Read-only orientation — to create/remove a per-agent worktree use proposals_agent_worktree instead.',
+						outputSchema: z.object({
+							worktrees: z.array(
+								z.object({
+									path: z.string(),
+									head: z.string(),
+									branch: z.string().optional(),
+									bare: z.boolean().optional(),
+									locked: z.boolean().optional(),
+								}),
+							),
+						}),
+					},
+					async () => {
+						const repo = await checkRepo(options.run);
+						if (!repo.ok) return NOT_A_REPO(repo.reason);
+						return toolJson({
+							worktrees: await gitWorktreeList(options.run),
 						});
 					},
 				);
