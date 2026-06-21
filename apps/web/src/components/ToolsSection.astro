@@ -5,9 +5,15 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> so each page has a
+	 * single, well-defined top-level heading (l122 S3 — pages were
+	 * rendering both <PageHeader><h1/> and this section's <h2>, doubling
+	 * the title). Defaults to the i18n key for back-compat. */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.tools.title;
 
 const NS_LABEL: Record<string, string> = {
 	mcpvertex: 'core',
@@ -39,7 +45,7 @@ const desc = (tool: ITool) => describeTool(tool.name, lang) ?? tool.description;
 
 <section id="tools" class="section">
 	<div class="container">
-		<h2>{t.tools.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.tools.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t.tools.count}</span></div>

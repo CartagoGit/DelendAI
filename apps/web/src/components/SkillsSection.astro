@@ -4,9 +4,12 @@ import skillsData from '#MANIFESTS/skills.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.skills.title;
 
 type ISkill = {
 	id: string;
@@ -23,7 +26,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 
 <section id="skills" class="section">
 	<div class="container">
-		<h2>{t.skills.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.skills.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{skills.length}</b><span>{t.skills.count}</span></div>

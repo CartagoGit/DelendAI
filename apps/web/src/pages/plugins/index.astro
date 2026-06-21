@@ -1,20 +1,17 @@
 ---
 import PluginsSection from '#COMPONENTS/PluginsSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
 const count = capabilities.counts.packages;
 ---
 
 <Base lang={lang} title={`${t.plugins.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang} title={t.plugins.title} />
-	<PluginsSection lang={lang} />
+	<PluginsSection lang={lang} heading={t.plugins.title} />
 	<p class="plugins-bridge">
 		<a class="plugins-bridge__link" href={`${base}/capabilities`}>
 			{t.tools.title} →

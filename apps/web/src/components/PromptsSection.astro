@@ -5,9 +5,12 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.prompts.title;
 
 type IPrompt = {
 	name: string;
@@ -36,7 +39,7 @@ const argDesc = (p: IPrompt, argName: string, fallback: string) =>
 
 <section id="prompts" class="section">
 	<div class="container">
-		<h2>{t.prompts.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.prompts.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{capabilities.counts.prompts ?? prompts.length}</b><span>{t.prompts.count}</span></div>

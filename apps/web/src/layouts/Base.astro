@@ -37,18 +37,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		    modal are mounted once in this layout and persist across navigations
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
-		<script is:inline>
-			// Apply the saved theme/motion before paint (no flash of default theme).
-			// This script runs again after every View Transition via
-			// `astro:after-swap`, so the data attributes survive navigation.
-			(() => {
+		<script>
+			// Apply the saved theme/motion before paint (no flash of default
+			// theme), and re-apply it after every View Transition. The original
+			// `is:inline` shim only runs once because Astro cannot re-execute
+			// the same inline bytes after a swap; promoting it to a real
+			// `<script>` lets us register an `astro:after-swap` listener that
+			// re-runs the same restore on every navigation.
+			const KEY_THEME = 'mcpvertex-theme';
+			const KEY_MOTION = 'mcpvertex-motion';
+			const applyTheme = () => {
 				try {
-					const t = localStorage.getItem('mcpvertex-theme');
+					const t = localStorage.getItem(KEY_THEME);
 					if (t) document.documentElement.dataset.theme = t;
-					if (localStorage.getItem('mcpvertex-motion') === 'off')
-						document.documentElement.dataset.motion = 'off';
+					const m = localStorage.getItem(KEY_MOTION);
+					if (m === 'off') document.documentElement.dataset.motion = 'off';
+					else document.documentElement.removeAttribute('data-motion');
 				} catch {}
-			})();
+			};
+			applyTheme();
+			document.addEventListener('astro:after-swap', applyTheme);
 		</script>
 	</head>
 	<body>

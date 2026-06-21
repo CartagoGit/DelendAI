@@ -99,3 +99,58 @@
 	letter-spacing: 0.1em;
 	color: var(--muted);
 }
+
+// Dev-only search fallback (l122 S4). Renders a small input + result
+// list inside the search modal when Pagefind is not available (i.e.
+// in `astro dev`, where the Pagefind UI bundle 404s). The styles reuse
+// the same surface tokens as the rest of the modal so the fallback
+// looks like a thinner Pagefind rather than a foreign widget.
+.modal__panel--search {
+	width: min(34rem, calc(100vw - 2rem));
+}
+.dev-search__input {
+	width: 100%;
+	padding: 0.6rem 0.8rem;
+	margin-bottom: 0.8rem;
+	font: inherit;
+	color: var(--fg);
+	background: var(--bg-soft);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	outline: none;
+
+	&:focus {
+		border-color: var(--accent);
+	}
+}
+.dev-search__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+.dev-search__item {
+	padding: 0.4rem 0.5rem;
+	border-radius: 6px;
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+}
+.dev-search__link {
+	display: block;
+	font-weight: 600;
+	color: var(--fg);
+}
+.dev-search__text {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+.dev-search__empty {
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.9rem;
+}

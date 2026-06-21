@@ -1,7 +1,6 @@
 ---
 import BenchmarksSection from '#COMPONENTS/BenchmarksSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { languages, useTranslations, type Lang } from '#I18N/ui';
 
 export function getStaticPaths() {
@@ -17,6 +16,5 @@ const homeHref = `${base}/${lang}/`;
 ---
 
 <Base lang={lang as Lang} title={`${t.bench.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang as Lang} title={t.bench.title} />
-	<BenchmarksSection lang={lang as Lang} />
+	<BenchmarksSection lang={lang as Lang} heading={t.bench.title} />
 </Base>

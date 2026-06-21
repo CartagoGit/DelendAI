@@ -1,7 +1,6 @@
 ---
 import SkillsSection from '#COMPONENTS/SkillsSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { languages, useTranslations, type Lang } from '#I18N/ui';
 import skillsData from '#MANIFESTS/skills.json';
 
@@ -19,6 +18,5 @@ const count = (skillsData.skills ?? []).length;
 ---
 
 <Base lang={lang as Lang} title={`${t.skills.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang as Lang} title={t.skills.title} />
-	<SkillsSection lang={lang as Lang} />
+	<SkillsSection lang={lang as Lang} heading={t.skills.title} />
 </Base>

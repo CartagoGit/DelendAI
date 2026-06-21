@@ -91,6 +91,43 @@ const THEME_ACCENT: Record<string, string> = {
 	const root = document.documentElement;
 	let cfgAbort: AbortController | undefined;
 
+	// Live re-sync helpers. They are declared at script scope (not inside
+	// `setupConfig`) so the `astro:after-swap` listener registered at the
+	// bottom of the file can call them on every navigation without going
+	// through `setupConfig` (which rebuilds DOM listeners and would be
+	// wasteful for what is a pure visual sync).
+	const markActiveTheme = () => {
+		const current = root.dataset.theme || 'dark';
+		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+			el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
+		}
+	};
+
+	// Sync the language picker with the live <html lang>. The settings
+	// modal is mounted under `transition:persist`, so Astro does NOT
+	// re-render the SSR-rendered `aria-current` after a view transition.
+	// We keep the visual state in sync at three points: on initial
+	// setup, every `astro:page-load`, and every `astro:after-swap`
+	// (which fires before `astro:page-load` but after the new document
+	// is in the DOM, so the lang-opt anchors are already up to date).
+	const markActiveLang = () => {
+		const current =
+			document.documentElement.lang ||
+			(location.pathname === '/'
+				? 'en'
+				: location.pathname.replace(/^\/+/, '').split('/')[0]);
+		for (const el of document.querySelectorAll<HTMLAnchorElement>('#cfg-modal .lang-opt')) {
+			const href = el.getAttribute('href') || '';
+			// href is either `/<lang>/…` or `/` (the default-locale root).
+			// We compare against the current lang code so the highlight
+			// follows the live `html[lang]` rather than the persisted
+			// prop of the page that first mounted the modal.
+			const code = href === '/' ? 'en' : href.replace(/^\/+/, '').split('/')[0];
+			if (code === current) el.setAttribute('aria-current', 'true');
+			else el.removeAttribute('aria-current');
+		}
+	};
+
 	const setupConfig = () => {
 		cfgAbort?.abort();
 		cfgAbort = new AbortController();
@@ -100,18 +137,12 @@ const THEME_ACCENT: Record<string, string> = {
 		const openBtn = document.getElementById('cfg-open');
 		const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
 
-		const markActiveTheme = () => {
-			const current = root.dataset.theme || 'dark';
-			for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
-				el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
-			}
-		};
-
 		const open = () => {
 			modal?.removeAttribute('hidden');
 			modal?.classList.add('modal--open');
 			if (motion) motion.checked = root.dataset.motion !== 'off';
 			markActiveTheme();
+			markActiveLang();
 		};
 		const close = () => {
 			modal?.classList.remove('modal--open');
@@ -167,4 +198,15 @@ const THEME_ACCENT: Record<string, string> = {
 	// Run on initial load AND after every Astro view transition.
 	setupConfig();
 	document.addEventListener('astro:page-load', setupConfig);
+
+	// The settings modal is mounted once and `transition:persist`-ed, so
+	// its SSR-rendered state (theme highlight, language `aria-current`,
+	// motion checkbox) is frozen at the first navigation. Re-sync both
+	// the theme swatch and the language flag on every swap so the picker
+	// always reflects the live `<html data-theme>` / `<html lang>`.
+	document.addEventListener('astro:after-swap', () => {
+		if (!document.getElementById('cfg-modal')) return;
+		markActiveTheme();
+		markActiveLang();
+	});
 </script>

@@ -5,9 +5,12 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
 }
-const { lang } = Astro.props;
+const { lang, heading: headingProp } = Astro.props;
 const t = useTranslations(lang);
+const heading = headingProp ?? t.knowledge.title;
 
 type IKnowledge = { id: string; title: string; namespace: string };
 const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
@@ -24,7 +27,7 @@ const title = (k: IKnowledge) => describeKnowledge(k.id, lang) ?? k.title;
 
 <section id="knowledge" class="section">
 	<div class="container">
-		<h2>{t.knowledge.title}</h2>
+		<h1>{heading}</h1>
 		<p class="lead">{t.knowledge.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{capabilities.counts.knowledge ?? knowledge.length}</b><span>{t.knowledge.count}</span></div>
