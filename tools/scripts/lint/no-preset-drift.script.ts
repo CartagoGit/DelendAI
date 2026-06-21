@@ -28,7 +28,7 @@
  *     exits with 0 when clean or 1 when dirty.
  */
 import { readdir, readFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 
@@ -126,7 +126,9 @@ const scanText = (
 			}
 		}
 
-		const pluginsMatch = line.match(/--plugins=([a-z][a-z0-9,\s-]*)/);
+		const pluginsMatch = line.match(
+			/--plugins=([a-z][a-z0-9-]*(?:,\s*[a-z][a-z0-9-]*)*)/,
+		);
 		if (pluginsMatch && pluginsMatch[1] !== undefined) {
 			const listed = normalizePlugins(pluginsMatch[1]);
 			// Compare against the membership of every known preset.
@@ -193,7 +195,7 @@ export const detectDrift = async (
 ): Promise<readonly IDriftFinding[]> => {
 	const findings: IDriftFinding[] = [];
 	for (const root of roots) {
-		const absRoot = join(REPO_ROOT, root);
+		const absRoot = isAbsolute(root) ? root : join(REPO_ROOT, root);
 		const files = await walk(absRoot);
 		for (const file of files) {
 			const content = await readFile(file, 'utf8').catch(() => '');
