@@ -160,7 +160,7 @@ export const decideVersion = (root: string): IVersionDecision => {
 
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
-	const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+	const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 	const decision = decideVersion(root);
 	console.log(JSON.stringify(decision));
 	if (process.argv.includes('--github-output') && process.env.GITHUB_OUTPUT) {

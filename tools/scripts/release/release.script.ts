@@ -45,7 +45,7 @@ import {
 	type ReleaseTarget,
 } from './release-plan';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 interface IRawPackageJson {
 	name: string;

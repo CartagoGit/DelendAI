@@ -237,7 +237,7 @@ const applyRenames = async (map: IRenumberMap): Promise<void> => {
 if (import.meta.main) {
 	// From `scripts/<file>.ts`, the repo root is one `..` up from `dirname(import.meta.url)`.
 	const scriptDir = dirname(fileURLToPath(import.meta.url));
-	const repoRoot = join(scriptDir, '..');
+	const repoRoot = join(scriptDir, '../../..');
 	const apply = process.argv.includes('--apply');
 	const map = await buildMap(repoRoot);
 	if (apply) {

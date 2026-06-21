@@ -109,7 +109,7 @@ export const rewriteRefsInFile = (
 
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
-	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 	const proposalsDirAbs = join(repoRoot, 'docs', 'proposals');
 	const plans = await planMigration(proposalsDirAbs);
 	const rewrites = buildRewrites(plans);
