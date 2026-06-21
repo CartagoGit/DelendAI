@@ -22,7 +22,7 @@ kind: fix
 title: Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
 ---
 
-# l111 — Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
+# x111 — Post-closure audit: orchestration crash fix + remaining hardening (M25/M28/M32/M45/M46)
 
 ## 0. Por qué existe esta propuesta
 
@@ -38,7 +38,7 @@ verificados contra el código y ya corregidos:
 
 - **M45 — `auto_work`/`continue_proposal` lanzaban un crash de
   validación MCP en vez de un estado idle limpio** cuando no había
-  proposals actionable (el caso común tras cerrar l110). Causa: un
+  proposals actionable (el caso común tras cerrar f110). Causa: un
   helper `json()` local duplicado que omitía `structuredContent`
   pese a declarar `outputSchema`. Esto es, con alta probabilidad, la
   causa raíz de que agentes orquestadores "se bloqueen sin avanzar"
@@ -128,7 +128,7 @@ verificados contra el código y ya corregidos:
 
 - No tocar M44 (migrar `.mcp.json` a `host-config.ts`) — decisión
   pendiente del usuario, explícitamente dejada así en la auditoría.
-- No tocar l102 (`keepLegacy` por defecto) — diferida explícitamente
+- No tocar f102 (`keepLegacy` por defecto) — diferida explícitamente
   por el usuario el 2026-06-18.
 - No npm publish ni merge `develop→main` — lo hace el usuario.
 

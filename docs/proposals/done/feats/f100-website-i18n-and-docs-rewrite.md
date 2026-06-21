@@ -9,7 +9,7 @@ kind: feat
 title: Web: i18n real de herramientas, estructura por página y docs profundas
 ---
 
-# l100 — Web: i18n real de herramientas, estructura por página y docs profundas
+# f100 — Web: i18n real de herramientas, estructura por página y docs profundas
 
 > **Estado: DONE — 2026-06-20**. Slices s1, s2, s3, s3-bis, s5, s6, s7
 > cerrados. s4 queda partial (render funciona vía `describeTool` runtime
@@ -286,7 +286,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
     bucketing). Componente `Tutorial.astro` que pinta el body markdown
     en `<pre>` con fallback a `en`. 5 tutoriales `en` detectados y
     volcados a `capabilities.json#tutorials`. Las traducciones a los
-    otros 11 idiomas se difieren a una propuesta dedicada (l110) — la
+    otros 11 idiomas se difieren a una propuesta dedicada (f110) — la
     estructura `plugins/<name>/tutorials/<lang>/` está en su sitio, así
     que añadir idiomas es puro aditivo.
 
@@ -305,7 +305,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
 | 12 idiomas × 40 tools = 480 strings de golpe | Slice s3 se hace solo en `en` primero. Slice s9 (siguiente propuesta) añade los otros 11 idiomas con ayuda de un script de traducción bootstrap (DeepL/Google opcional). |
 | `inputSchema` es Zod; reflejarlo a tabla requiere un wrapper que cada plugin debe usar | Wrapper `describe({ key })` opcional: si falta, el campo sale con tipo y nombre pero sin descripción localizada. |
 | Tabs client-side rompen SSR | Renderizar todas las pestañas como `<section>` y ocultar con `hidden` por defecto + pequeño script. SEO ve todo el contenido. |
-| Tutoriales en 5 plugins × 12 idiomas = mucho texto | Empezar con `en` (slice s7) y dejar la i18n de tutoriales para una propuesta dedicada (l101). |
+| Tutoriales en 5 plugins × 12 idiomas = mucho texto | Empezar con `en` (slice s7) y dejar la i18n de tutoriales para una propuesta dedicada (f101). |
 
 ## 7. No-objetivos
 
@@ -313,7 +313,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
 - Cambiar el `inputSchema`/`outputSchema` ni el modelo de ejecución.
 - Sustituir `check-i18n.ts` por otro validador.
 - Cambiar el tema visual ni el lenguaje de estilos.
-- Internacionalizar los tutoriales en esta propuesta (queda para l101).
+- Internacionalizar los tutoriales en esta propuesta (queda para f101).
 
 ## 8. Definition of done
 
@@ -324,5 +324,5 @@ extensión del validador) verde al final. Conventional Commits por slice
 ## 9. Auditoría post-cierre
 
 Cuando todos los slices estén `done`, abrir `docs/proposals/audits/<fecha>-l100-web-i18n-docs.md`
-con la auditoría del plugin `proposals_plugin_review` (ver l99 si está
+con la auditoría del plugin `proposals_plugin_review` (ver f99 si está
 implementado) o manual siguiendo el formato del repo.

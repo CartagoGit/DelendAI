@@ -18,15 +18,15 @@ shipped-in:
 related:
   - f100 # parent: web i18n + docs rewrite (cerrado 2026-06-20 con s4 partial + s8 todo + 11 tutorial-langs diferidos)
   - x105 # web bugfixes (las tools que se añaden aquí deben respetar el mismo flujo de i18n)
-  - f107 # multi-lang quality gates (este plugin ejecuta, l110 documenta; ortogonal)
+  - f107 # multi-lang quality gates (este plugin ejecuta, f110 documenta; ortogonal)
 kind: feat
-title: Residual de l100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
+title: Residual de f100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
 ---
 
-# l110 — Residual de l100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
+# f110 — Residual de f100: volcado i18n al `capabilities.json`, tabs client-side e i18n de los 5 tutoriales
 
-> **Estado: DONE — los tres residuos de l100 cerrados.**
-> l110 hereda explícitamente lo que el header de l100 difirió
+> **Estado: DONE — los tres residuos de f100 cerrados.**
+> f110 hereda explícitamente lo que el header de f100 difirió
 > (s4-bis "volcado i18n completo", s8 "tabs", e i18n de los 5
 > tutoriales a 11 idiomas). Los tres slices cierran en commits
 > de este mismo día (2026-06-20): s1 (`b48de1d`), s2 (`824c5c8`
@@ -37,9 +37,9 @@ title: Residual de l100: volcado i18n al `capabilities.json`, tabs client-side e
 
 ## 0. Por qué existe esta propuesta
 
-l100 cerró con `status: done` (header reescrito por el
+f100 cerró con `status: done` (header reescrito por el
 usuario) pero tres cosas quedaron pendientes. El header de
-l100 lo dice explícitamente:
+f100 lo dice explícitamente:
 
 > "El trabajo restante (s4-bis con volcado i18n completo,
 > s8 con tabs, e i18n de los 5 tutoriales a 11 idiomas) se
@@ -55,7 +55,7 @@ file-disjoint entre sí.
 
 `gen-capabilities.ts` ya vuelca `description` (string) por tool.
 Falta volcar `descriptionKey?: string` (añadido a
-`IToolRegistration` en l100 s2) para que el `capabilities.json`
+`IToolRegistration` en f100 s2) para que el `capabilities.json`
 artefacto sea **self-describing** y un consumidor offline (otro
 sitio, un test, un script de doc) pueda resolver la i18n sin
 tener que invocar el servidor MCP en runtime.
@@ -68,7 +68,7 @@ información al serializarse.
 
 `PluginPage.astro` actualmente renderiza Overview / Tools /
 Configuration / Install en una sola página larga, sin tabs.
-El usuario debe scrollear para ver la Configuración. l100 §4.3
+El usuario debe scrollear para ver la Configuración. f100 §4.3
 lo documenta como requisito: "Las páginas con varias vistas
 usan **tabs** que conmutan dentro de la misma URL".
 
@@ -78,7 +78,7 @@ solo el `<script>` que conmutaba `hidden`).
 
 ### s3 — i18n de los 5 tutoriales a 11 idiomas
 
-l100 s7 (commits `8d03a09` + `b1be3a0`) ya dejó:
+f100 s7 (commits `8d03a09` + `b1be3a0`) ya dejó:
 
 - 5 tutoriales en `plugins/<name>/tutorials/en/<topic>.md` (en).
 - `discoverTutorials` que escanea `plugins/<name>/tutorials/<lang>/`.
@@ -221,7 +221,7 @@ de markdown. La estructura de directorios ya está en su sitio
       `Tutorial`) en el idioma activo, con el primer tutorial
       disponible renderizado.
 - [x] No se introdujeron nuevas deps.
-- [x] CHANGELOG actualizado con el cierre de los residuos de l100.
+- [x] CHANGELOG actualizado con el cierre de los residuos de f100.
 
 ## 4. Riesgos y mitigaciones
 
@@ -234,17 +234,17 @@ de markdown. La estructura de directorios ya está en su sitio
 
 ## 5. No-objetivos
 
-- No rehacer los tutoriales en inglés (siguen los de l100 s7).
+- No rehacer los tutoriales en inglés (siguen los de f100 s7).
 - No añadir más plugins a los 5 (proposals, memory, quality,
   rules, docs) — si un plugin nuevo quiere tutorial, abre su
   propia propuesta.
 - No traducir la home ni las otras páginas de la web
-  (eso es l105 u otra propuesta; l110 es solo lo que
-  el header de l100 explícitamente difirió).
+  (eso es x105 u otra propuesta; f110 es solo lo que
+  el header de f100 explícitamente difirió).
 - No rehacer el `Tutorial.astro` (sigue usando `<pre>` para
-  el body; l100 s7 ya lo dejó así).
+  el body; f100 s7 ya lo dejó así).
 - No instalar `marked` ni `markdown-it` (la propuesta
-  original los asumió pero l100 s7 los evitó usando `<pre>`).
+  original los asumió pero f100 s7 los evitó usando `<pre>`).
 
 ## 6. Definition of done
 
@@ -254,7 +254,7 @@ verde al final. Conventional Commits por slice
 `feat(web): tabs in PluginPage.astro`,
 `docs(proposals): translate 5 tutorials to 11 languages`).
 Versionado automático por push a `main`. CHANGELOG con
-el cierre del residuo de l100.
+el cierre del residuo de f100.
 
 ## 7. Orden de toma recomendado
 
@@ -272,7 +272,7 @@ self-describing — útil para s2 (la tabla de args referencia
 
 | Decisión | Elección | Por qué |
 |---|---|---|
-| ¿Una sola propuesta o tres? | Una (l110) | El usuario lo dijo explícitamente en el header de l100. |
+| ¿Una sola propuesta o tres? | Una (f110) | El usuario lo dijo explícitamente en el header de f100. |
 | ¿i18n tutoriales: manual o asistida? | Asistida con script de bootstrap, **diferida** | Manual = 11 sesiones tediosas; auto sin review = riesgo. s3 se difiere a una sesión dedicada porque el coste (≈6 600 líneas de markdown) no encaja en una iteración corta. |
 | ¿s2 SSR-safe? | Sí (script client-side puro, `<section hidden>` inicial) | SEO ve todo el contenido; usuarios sin JS ven el primer tab por defecto. |
 | ¿s1 incluye `i18n` por tool o solo `descriptionKey`? | **`i18n` completo precomputado** | El bloque `{ en, es, fr, …, vi }` se vuelca a `capabilities.json` para los 5 tools con catálogo; `PluginPage.astro` lo lee directamente sin pasar por `describeTool()` runtime. Ventaja: SSR pinta el idioma activo sin un lookup en runtime (≈0 ms vs. el coste de leer del catálogo en cada render). El `descriptionKey` original queda como redundancia opcional. |
@@ -317,9 +317,9 @@ skipped). **`bun run site:strict` exit 0** — la página de cada
 plugin muestra los 4 tabs (`Install` / `Tools` / `Configuration` /
 `Tutorial`) en el idioma activo.
 
-**Decisión de cierre**: l110 marcada `status: done` con
+**Decisión de cierre**: f110 marcada `status: done` con
 `closed: 2026-06-20` y `shipped-in:` listando los 9 commits
-relevantes. Los tres slices del header de l100 (s4-bis "volcado
+relevantes. Los tres slices del header de f100 (s4-bis "volcado
 i18n completo", s8 "tabs", e i18n de los 5 tutoriales a 11
 idiomas) están cerrados. La auditoría post-cierre queda como
 trabajo de una propuesta futura.

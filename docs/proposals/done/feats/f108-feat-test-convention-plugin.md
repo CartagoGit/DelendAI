@@ -14,7 +14,7 @@ kind: feat
 title: Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
 ---
 
-# l108 — Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
+# f108 — Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
 
 > **Estado: DONE (2026-06-20).** Plugin creado, registrado en
 > swarm preset y en `gen-capabilities.ts`, configurado en el
@@ -489,7 +489,7 @@ humana ("queremos tests así") y la ejecución (quality).
 | `scan_drift` lee muchos archivos y revienta el budget | El scan es async, devuelve solo `violations[]` (no `contents`). En archivos >50 KB, devuelve `excerpt` recortado. Cap configurable: `maxFilesScanned` (default 500). |
 | `forbiddenPatterns` como regex rompen un spec legítimo | Se exponen como **info** o **warning** por defecto; solo `error` si el repo lo sube explícitamente. La lista inicial no incluye `.skip` (es legítimo). |
 | El runner cambia (vitest → jest) y el agent no se entera | `detectRunner()` se ejecuta en cada `scan_drift`. Si cambia, el knowledge `test-convention-runners` se actualiza y `wrong-mock-api` empieza a marcar. |
-| Dos proyectos con convenciones distintas en el mismo monorepo | El plugin se carga **una vez por workspace** (no por package). Para monorepos mixtos, abrir l109 con `specLayout: 'per-package'` y `packageMatchers`. |
+| Dos proyectos con convenciones distintas en el mismo monorepo | El plugin se carga **una vez por workspace** (no por package). Para monorepos mixtos, abrir f109 con `specLayout: 'per-package'` y `packageMatchers`. |
 
 ## 9. Plan de adoption en este repo
 
@@ -502,7 +502,7 @@ humana ("queremos tests así") y la ejecución (quality).
 5. Añadir entrada al `PLUGIN_LIST` en `apps/web/scripts/gen-capabilities.ts`.
 6. Regenerar `apps/web/src/data/capabilities.json` y `skills.json`.
 7. Cargar el plugin en la `.mcp.json` raíz (dogfooding).
-8. Una vez mergee, abrir l109 si alguien reporta fricción en monorepos.
+8. Una vez mergee, abrir f109 si alguien reporta fricción en monorepos.
 
 > **Decisión recomendada**: añadir a `swarm` **solo**. `standard` y
 > `minimal` quedan igual (la convención de tests es decisión de cada
@@ -627,8 +627,8 @@ resueltos** por commits paralelos del swarm:
 | `gen-capabilities.ts`           | ya importa `testConventionPlugin`              |
 | `mcp-vertex.config.json` raíz   | ya carga `"test-convention": { "options": {} }` |
 | `examples/swarm/README.md`      | ya documentado en §6 (fila del plugin + tour)  |
-| Página web del plugin           | se autogenera en `/plugins/test-convention` vía `[plugin].astro` (l105 B10) |
-| Página `/capabilities`          | incluye el plugin con conteo y desplegable (l105 B10, slice `127fa0c`) |
+| Página web del plugin           | se autogenera en `/plugins/test-convention` vía `[plugin].astro` (x105 B10) |
+| Página `/capabilities`          | incluye el plugin con conteo y desplegable (x105 B10, slice `127fa0c`) |
 | i18n del knowledge en 12 idiomas | **NO hecho aún** — pendiente para un slice dedicado (l109+ / l110+) |
 
 **Definition of done** de §10:
