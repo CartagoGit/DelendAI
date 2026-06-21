@@ -5,15 +5,15 @@ type: proposal
 track: plugins+skills+core
 date: 2026-06-21
 kind: feat
-title: Skills coverage + write-side tools (closes the audit gaps l121/l118 do not)
+title: Skills coverage + write-side tools (closes the audit gaps l00004/l00002 do not)
 ---
 
-# l127 — Skills coverage + write-side tools (closes the audit gaps `l121`/`l118` do not)
+# l00010 — Skills coverage + write-side tools (closes the audit gaps `l00004`/`l00002` do not)
 
 ## Goal
 
 Cerrar los **dos anillos de cobertura** que el repo todavía tiene después
-de las propuestas puntuales `l121` (plugin depth) y `l118` (catchall
+de las propuestas puntuales `l00004` (plugin depth) y `l00002` (catchall
 hardening):
 
 1. **Skills (`/skills/`)** — hoy solo hay 2 globales (`failure-modes`,
@@ -30,13 +30,13 @@ hardening):
    tiene `maybePersistAfterSlice` (tested) pero **no está expuesto
    como tool**; el engine existe, el surface no.
 
-Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
+Esta propuesta es **explícitamente complementaria** a `l00004` y `l00002`:
 
-- `l121` cubre `search` (rg + context), `memory` (export/import),
+- `l00004` cubre `search` (rg + context), `memory` (export/import),
   `docs` (docs_search) → **read-side depth en plugins específicos**.
-- `l118` cubre catchalls residuales en outputSchema → **shape
+- `l00002` cubre catchalls residuales en outputSchema → **shape
   hardening en plugins existentes**.
-- **`l127` cubre los dos anillos de cobertura que faltan**: (a) la
+- **`l00010` cubre los dos anillos de cobertura que faltan**: (a) la
   guía SKILL.md que un agente necesita para usar el swarm sin
   atascarse, y (b) los 8 tools de write-side que cierran el bucle
   "read en MCP, write en shell" que hoy se rompe 5 veces por sesión.
@@ -69,12 +69,12 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
 - **Reemplazar el shell** — los tools nuevos exponen primitivas, no
   orquestan flujos. `git_commit` toma un mensaje, no compone el
   mensaje. La composición sigue siendo del agente.
-- **Sync I/O en hot paths** — eso es `l125` s1–s2 (ya en ready). Esta
+- **Sync I/O en hot paths** — eso es `l00008` s1–s2 (ya en ready). Esta
   propuesta usa solo `withFileMutex` + `writeFileAtomic` para todo
   nuevo.
-- **Token-budget enforcement a nivel server** — eso es `l120`
+- **Token-budget enforcement a nivel server** — eso es `l00003`
   (ya en ready). Esta propuesta no introduce caps nuevos.
-- **Versionado de skills/prompts** — eso es `l117` (ya en ready).
+- **Versionado de skills/prompts** — eso es `l00005` (ya en ready).
   Esta propuesta añade SKILL.md estáticos, no un plugin de versionado.
 - **Migrar el git plugin de read-only a write-side completo** — solo
   exponemos `git_commit` + `git_push` (las primitivas que `auto_work`
@@ -225,14 +225,14 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
   (extraer a un helper `commitAndPush` compartido en
   `packages/core/src/lib/shared/git-write.ts`). Registro en
   `plugins/git/src/public/index.ts` con `effects: ['write']` y
-  `outputSchema` explícito (no catchall, alineado con `l118`).
+  `outputSchema` explícito (no catchall, alineado con `l00002`).
 - **Tests**: `plugins/git/tests/src/lib/write-tools.spec.ts` (nuevo)
   con 6 casos: commit simple, commit con `files:` selectivo, commit
   `--amend`, push normal, push `--force-with-lease`, push a branch
   protegida (rechazado).
 - **Acceptance**:
   - "El helper compartido `git-write.ts` es importable por
-    `auto-work-persist.ts` sin breaking change (la propuesta `f125`
+    `auto-work-persist.ts` sin breaking change (la propuesta `f00022`
     ya lo necesita)."
   - "`git_commit` rechaza mensajes vacíos, mensajes que no empiezan
     por Conventional Commit prefix, y `--amend` cuando el último
@@ -259,7 +259,7 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
 - **Acceptance**:
   - "Tras `proposals_edit` o `proposals_add_slice`, el archivo `.md`
     es parseable por el loader de `proposals_*` (golden test con
-    `docs/proposals/ready/l121-plugins-depth-extension.md`)."
+    `docs/proposals/ready/l00004-plugins-depth-extension.md`)."
   - "`proposals_sync_proposals` re-indexa sin warnings."
   - "`bun run validate` verde."
 
@@ -311,7 +311,7 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
     pasa."
   - "`fs_read` y `fs_write` son importables por `packages/core` y
     por cualquier plugin (re-export desde `packages/core/src/public/index.ts`);"
-  - "El e2e `outputschema.spec.ts` (cubierto por `l118` s4) sigue
+  - "El e2e `outputschema.spec.ts` (cubierto por `l00002` s4) sigue
     verde — los nuevos tools no introducen catchalls."
   - "`bun run validate` verde."
 
@@ -332,7 +332,7 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
   `proposals_sync_proposals`).
 - **Acceptance**:
   - "La propuesta aparece en `index.json` con `status: 'ready'`."
-  - "Cross-link a `l121`, `l118`, `l117`, `l120`, `l125`, `f125` en
+  - "Cross-link a `l00004`, `l00002`, `l00005`, `l00003`, `l00008`, `f00022` en
     la sección 'Linked references' del frontmatter."
 
 ## Acceptance (global)
@@ -369,11 +369,11 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
   `allowWrite`, y `effects: ['write','spawn','network']` es
   explícito (regla AGENTS.md #1). El host decide si lo activa.
 - **R3 — Skills y SKILL.md pueden quedar stale**: la propuesta
-  `l117` cubre el versionado de skills; este slice (s1–s8) crea
-  los SKILL.md **estáticos**. `l117` los migrará a versionados
+  `l00005` cubre el versionado de skills; este slice (s1–s8) crea
+  los SKILL.md **estáticos**. `l00005` los migrará a versionados
   cuando se cierre. No hay bloqueador.
 - **R4 — `proposals_edit` puede romper el formato `.md`**: el
-  test golden con `l121` (s10) detecta regresiones de parseo;
+  test golden con `l00004` (s10) detecta regresiones de parseo;
   `proposals_sync_proposals` post-edit re-indexa y el linter
   `lint-proposals.ts` falla el build si el frontmatter queda
   malformado.
@@ -386,11 +386,11 @@ Esta propuesta es **explícitamente complementaria** a `l121` y `l118`:
 
 ## Linked references
 
-- `l121-plugins-depth-extension.md` (search/memory/docs depth) — **complementaria**, no solapada.
-- `l118-harden-catchall-output-schemas.md` (outputSchema shape) — **complementaria**, esta propuesta aplica el patrón a tools nuevos.
-- `l125-plugins-project-state-sync-...` (drift residual) — **complementaria**, esta propuesta usa las primitivas que l125 s1–s2 estabiliza.
-- `l117-versioned-skills-prompts-and-web-fetch-plugin.md` — los SKILL.md de s1–s8 son estáticos; `l117` los versiona después.
-- `l120-metrics-longitudinal-regression-gate.md` — los budgets medidos que el skill s4 cita vienen de `docs/TOKEN-BUDGETS.md` (sostenido por l120).
-- `f125-ide-extension-multi-ide-brand-dashboard.md` — la IDE extension de `apps/vscode/` consume los nuevos tools; `f125` se beneficia de `fs_read`/`fs_write` (s12) y de `git_commit` (s9).
+- `l00004-plugins-depth-extension.md` (search/memory/docs depth) — **complementaria**, no solapada.
+- `l00002-harden-catchall-output-schemas.md` (outputSchema shape) — **complementaria**, esta propuesta aplica el patrón a tools nuevos.
+- `l00008-plugins-project-state-sync-...` (drift residual) — **complementaria**, esta propuesta usa las primitivas que l00008 s1–s2 estabiliza.
+- `l00005-versioned-skills-prompts-and-web-fetch-plugin.md` — los SKILL.md de s1–s8 son estáticos; `l00005` los versiona después.
+- `l00003-metrics-longitudinal-regression-gate.md` — los budgets medidos que el skill s4 cita vienen de `docs/TOKEN-BUDGETS.md` (sostenido por l00003).
+- `f00022-ide-extension-multi-ide-brand-dashboard.md` — la IDE extension de `apps/vscode/` consume los nuevos tools; `f00022` se beneficia de `fs_read`/`fs_write` (s12) y de `git_commit` (s9).
 - AGENTS.md reglas 1, 3, 5, 8, 9 (agnostic core, async I/O, path
   containment, outputSchema, i18n).

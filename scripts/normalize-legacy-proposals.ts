@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * f113 S12 — legacy frontmatter normalizer.
+ * f00016 S12 — legacy frontmatter normalizer.
  *
  * Legacy `lNNN` proposals are historical imports. This script keeps their
  * frontmatter machine-readable without rewriting body prose into a fake modern

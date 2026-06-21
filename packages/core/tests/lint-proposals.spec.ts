@@ -19,7 +19,7 @@ const write = async (
 };
 
 const VALID_PROPOSAL = `---
-id: f114
+id: f00014
 kind: feat
 title: A sufficiently long title
 status: ready
@@ -61,13 +61,13 @@ describe('lintProposalsDir', () => {
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));
 
-	it('ignores non-proposal documents (audits, README, RESUMEN notes)', async () => {
+	it('ignores non-proposal documents (audits, README, n001 notes)', async () => {
 		await write(
 			root,
 			'audits/16-06-2026- Auditoria.md',
 			'# not a proposal\n',
 		);
-		await write(root, 'RESUMEN-SESION-2026-06-17.md', '# session notes\n');
+		await write(root, 'n001-SESION-2026-06-17.md', '# session notes\n');
 		await write(root, 'README.md', '# index\n');
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(0);
@@ -105,7 +105,7 @@ describe('lintProposalsDir', () => {
 	});
 
 	it('passes a fully valid new-scaffold proposal with zero issues', async () => {
-		await write(root, 'ready/f114-do-the-thing.md', VALID_PROPOSAL);
+		await write(root, 'ready/f00014-do-the-thing.md', VALID_PROPOSAL);
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(1);
 		expect(summary.legacyWarnings).toBe(0);

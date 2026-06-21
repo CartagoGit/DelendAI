@@ -72,7 +72,7 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 
 export type IScaffoldArgs = z.infer<typeof SCAFFOLD_INPUT_SCHEMA>;
 
-// l122 S2 — mirrors `IScaffoldedFile` (scaffold-host.ts).
+// l00007 S2 — mirrors `IScaffoldedFile` (scaffold-host.ts).
 const SCAFFOLDED_FILE_SCHEMA = z.object({
 	path: z.string(),
 	content: z.string(),
@@ -89,7 +89,7 @@ export interface IScaffoldReport {
 	readonly errors: readonly string[];
 }
 
-// l122 S2 — mirrors `IScaffoldReport` above field-for-field.
+// l00007 S2 — mirrors `IScaffoldReport` above field-for-field.
 const SCAFFOLD_REPORT_SCHEMA = z.object({
 	kind: SCAFFOLD_INPUT_SCHEMA.shape.kind,
 	dryRun: z.boolean(),

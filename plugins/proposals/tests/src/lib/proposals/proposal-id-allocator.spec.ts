@@ -9,7 +9,7 @@ import {
 	prefixForKind,
 } from '@mcp-vertex/proposals/lib/proposals/proposal-id-allocator';
 
-describe('allocateNextProposalId (f113 S13)', () => {
+describe('allocateNextProposalId (f00016 S13)', () => {
 	let root = '';
 	let counterPathAbs = '';
 
@@ -28,19 +28,19 @@ describe('allocateNextProposalId (f113 S13)', () => {
 		expect(id).toBe('f1');
 	});
 
-	it('seeds from disk, taking the max existing number per prefix (legacy + f113 already there)', async () => {
+	it('seeds from disk, taking the max existing number per prefix (legacy + f00016 already there)', async () => {
 		await writeFile(join(root, 'l99-feat-multi-model-audit-plugin.md'), '');
 		await writeFile(join(root, 'l112-derive-site-manifests.md'), '');
 		await mkdir(join(root, 'ready'), { recursive: true });
 		await writeFile(
-			join(root, 'ready', 'f113-feat-proposal-state-machine.md'),
+			join(root, 'ready', 'f00016-feat-proposal-state-machine.md'),
 			'',
 		);
 		const id = await allocateNextProposalId('f', {
 			proposalsDirAbs: root,
 			counterPathAbs,
 		});
-		expect(id).toBe('f114');
+		expect(id).toBe('f00014');
 		// A different prefix's seed is independent and unaffected.
 		const idForX = await allocateNextProposalId('x', {
 			proposalsDirAbs: root,

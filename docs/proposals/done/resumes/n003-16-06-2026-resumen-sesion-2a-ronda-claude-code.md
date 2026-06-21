@@ -21,7 +21,7 @@ track: general
 
 1. **Consolidación** — Las 2 auditorías nuevas analizadas y volcadas a
    `audits/AUDITORIA-UNIFICADA-2026-06-15.md` **§0 (N1–N23)** como cola viva.
-   La revisión de oficina (`RESUMEN-SESION-OFICINA`) y las 2 auditorías nuevas
+   La revisión de oficina (`n001-SESION-OFICINA`) y las 2 auditorías nuevas
    movidas a `done/`.
 
 2. **Tanda P0/P1 — correctitud y concurrencia (N1–N10), TODO ✅ con tests:**

@@ -8,7 +8,7 @@ track: core+build+release+proposals+lint+i18n+site
 date: 2026-06-21
 ---
 
-# f124 — tools/scripts refactor — portar .sh/.py a TS y mover scripts/*.ts a tools/scripts/<area>/<name>.script.ts
+# f00025 — tools/scripts refactor — portar .sh/.py a TS y mover scripts/*.ts a tools/scripts/<area>/<name>.script.ts
 
 ## Goal
 
@@ -126,7 +126,7 @@ Reglas:
   - `package.json` → 12 entradas `scripts.*` cambian de `bun scripts/X.ts` a `bun tools/scripts/<area>/<X>.script.ts` (build, release, smoke, smoke:pack, validate es meta, types:generate, config:schema, lint:proposals, lint:scaffolds, lint:cross-ide también, los demás quedan igual).
   - `lefthook.yml` → actualizar `format-web-staged`/`format-other-staged` globs para incluir `tools/**` (la convención biome format ahora cubre también `tools/scripts/**`).
   - `.github/workflows/release.yml` → actualizar el call a `bun scripts/derive-version.ts` → `bun tools/scripts/release/derive-version.script.ts`.
-  - Cualquier `docs/proposals/**/*.md` que referencie `scripts/X.ts` → actualizar las menciones (las propuestas cerradas como `f101` o `f110` NO se reescriben — son documentos históricos; solo se actualizan las `ready/` activas si las hay).
+  - Cualquier `docs/proposals/**/*.md` que referencie `scripts/X.ts` → actualizar las menciones (las propuestas cerradas como `f00011` o `f00010` NO se reescriben — son documentos históricos; solo se actualizan las `ready/` activas si las hay).
   - `AGENTS.md` → añadir un bullet en "Hard rules" (en S5).
 - **Command**: `bun run validate` (gate global) + grep_search para confirmar 0 referencias rotas a `scripts/X.ts` en archivos no históricos.
 - **Acceptance**:

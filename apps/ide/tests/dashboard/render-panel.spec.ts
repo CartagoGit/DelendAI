@@ -110,13 +110,13 @@ const baseSessions = {
 	byStatus: { in_progress: 1, ready: 1 },
 	rows: [
 		{
-			id: 'f125',
+			id: 'f00022',
 			title: 'IDE extension v2',
 			status: 'in_progress',
 			track: 'apps+client+docs',
 		},
 		{
-			id: 'l121',
+			id: 'l00004',
 			title: 'Plugin depth extension',
 			status: 'ready',
 			track: 'plugins',

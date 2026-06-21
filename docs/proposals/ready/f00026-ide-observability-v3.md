@@ -8,11 +8,11 @@ kind: feat
 title: IDE observability v3 — logs en vivo, búsqueda, knowledge, health, memory, settings, connection-health
 shipped-in: []
 related:
-    - f125 # v2 — dashboard + multi-IDE shell (closed)
-    - f115 # logs plugin — source of truth for the new Logs panel
-    - f113 # proposal state machine — health diagnostics consume proposals_state_health
-    - f100 # i18n baseline — new strings mirror the 12 languages
-    - f101 # capabilities surface — new services are first-class IDE citizens
+    - f00022 # v2 — dashboard + multi-IDE shell (closed)
+    - f00015 # logs plugin — source of truth for the new Logs panel
+    - f00016 # proposal state machine — health diagnostics consume proposals_state_health
+    - f00012 # i18n baseline — new strings mirror the 12 languages
+    - f00011 # capabilities surface — new services are first-class IDE citizens
 ownership:
     - {
           agent: implementation_runner,
@@ -71,7 +71,7 @@ acceptance:
     - { command: cd apps/vscode && bun run package, expect: exit0 }
 ---
 
-# f126 — IDE observability v3
+# f00023 — IDE observability v3
 
 ## goal
 
@@ -96,13 +96,13 @@ slices. Every slice is **additive** — no existing API breaks.
 
 ## why
 
-`f125` shipped the dashboard + multi-IDE shell. The user then asked
+`f00022` shipped the dashboard + multi-IDE shell. The user then asked
 **"¿qué más herramientas serían útiles para alguien que vaya a usar la
 extensión?"**. An audit of the 60+ tools exposed by the server
 identified 7 missing client+UI surfaces that a daily user of the
 extension would notice immediately:
 
-1. **Logs inaccesibles** — the logs plugin emits events (f115) but the
+1. **Logs inaccesibles** — the logs plugin emits events (f00015) but the
    extension never surfaces them. When a tool fails, the user has to
    open a terminal and tail a file.
 2. **No search** — 50+ tools in the tree, no way to filter. A user
@@ -130,15 +130,15 @@ This proposal closes all 7 in 11 slices.
   in the activity bar, mirroring how the existing Tools/Proposals
   containers work. This keeps the dashboard focused on KPIs.
 - **No CodeLens** — that needs the inverse index proposed in
-  f127+.
-- **No auth** — same scope as f114/f125.
+  f00024+.
+- **No auth** — same scope as f00014/f00022.
 - **No telemetry of our own.**
 - **No git tree view** — already covered by VS Code's built-in git
   extension; we only surface `git_status` as a status-bar indicator.
 
 ## architecture
 
-### 2.1 Layered architecture (unchanged from f125)
+### 2.1 Layered architecture (unchanged from f00022)
 
 ```
                 ┌────────────────────────┐
@@ -149,14 +149,14 @@ This proposal closes all 7 in 11 slices.
                            ▼
                 ┌────────────────────────┐
                 │ @mcp-vertex/client     │
-                │ - (f125) Dashboard…    │
-                │ - (f126) LogsService   │
-                │ - (f126) SearchService │
-                │ - (f126) KnowledgeSvc+ │
-                │ - (f126) HealthService │
-                │ - (f126) MemoryService │
-                │ - (f126) SettingsSvc   │
-                │ - (f126) ConnHealthSvc │
+                │ - (f00022) Dashboard…    │
+                │ - (f00023) LogsService   │
+                │ - (f00023) SearchService │
+                │ - (f00023) KnowledgeSvc+ │
+                │ - (f00023) HealthService │
+                │ - (f00023) MemoryService │
+                │ - (f00023) SettingsSvc   │
+                │ - (f00023) ConnHealthSvc │
                 └──────────┬─────────────┘
                            │ typed JS objects
                            ▼
@@ -178,13 +178,13 @@ This proposal closes all 7 in 11 slices.
                 └────────────────────────┘
 ```
 
-### 2.2 Hard rules (preserved from f125)
+### 2.2 Hard rules (preserved from f00022)
 
 - `packages/core` stays agnostic — no `vscode`/`jetbrains` import.
 - `packages/client` stays IDE-agnostic — no `@vscode/*`. The new
   services are pure TypeScript; tests run under `node`/`bun`.
 - `apps/ide/` is host-agnostic UI — every new panel returns HTML,
-  same convention as f125's 8 dashboard panels.
+  same convention as f00022's 8 dashboard panels.
 - `apps/vscode/` is the reference adapter. **The only file that
   imports `vscode` is `vscode-host-adapter.ts`** (lazily loaded).
 - i18n parity — every new visible string added to all 12
@@ -195,7 +195,7 @@ This proposal closes all 7 in 11 slices.
 No new methods on `IHostAdapter`. Every new service uses the existing
 12 methods. The one addition is **`registerOutputChannel`** for the
 Logs panel (already in the interface as optional `?` method added in
-f125; if missing, Logs panel degrades to a "no output channel
+f00022; if missing, Logs panel degrades to a "no output channel
 available" message).
 
 ## slices
@@ -462,10 +462,10 @@ These are the other 13 tools/features identified in the audit but
 not in this proposal:
 
 - **Quality gates status** (`quality_get_quality_scopes`,
-  `quality_run_quality`) — defer until f127 (proposed).
+  `quality_run_quality`) — defer until f00024 (proposed).
 - **Git status contextual** (`git_status`, `git_diff`, etc.) —
   covered by VS Code's built-in git extension; we only show
-  `git_status` in the status bar in f127+.
+  `git_status` in the status bar in f00024+.
 - **Deps** (`deps_deps_list`, `deps_deps_outdated`,
   `deps_deps_check`) — defer to f128.
 - **Audit** (`audit_audit_plan`, `audit_audit_consolidate`) — defer

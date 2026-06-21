@@ -14,27 +14,27 @@ describe('correlateEvents', () => {
 		await store.appendEvent(
 			normalizeEvent(
 				'lock-claimed',
-				{ taskId: 'f115-s1' },
+				{ taskId: 'f00015-s1' },
 				new Date('2026-06-20T10:00:00.000Z'),
 			),
 		);
 		await store.appendEvent(
 			normalizeEvent(
 				'tool-started',
-				{ taskId: 'f115-s1', toolName: 'logs_query' },
+				{ taskId: 'f00015-s1', toolName: 'logs_query' },
 				new Date('2026-06-20T10:02:30.000Z'),
 			),
 		);
 		await store.appendEvent(
 			normalizeEvent(
 				'tool-completed',
-				{ taskId: 'f115-s1', toolName: 'logs_query' },
+				{ taskId: 'f00015-s1', toolName: 'logs_query' },
 				new Date('2026-06-20T10:02:31.000Z'),
 			),
 		);
 
 		const result = await correlateEvents(store, {
-			taskId: 'f115-s1',
+			taskId: 'f00015-s1',
 			gapMs: 60_000,
 		});
 

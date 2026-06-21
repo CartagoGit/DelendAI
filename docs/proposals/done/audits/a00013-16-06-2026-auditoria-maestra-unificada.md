@@ -15,7 +15,7 @@ track: archive
 > de abajo fueron **re-verificados contra el código** en esta sesión: se
 > cita la línea exacta.
 >
-> **Superseded by [f119 — Done folder mirrors kinds](../in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)**
+> **Superseded by [f00001 — Done folder mirrors kinds](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)**
 > (cuando aterrice): la Maestra ya no es "el documento único y vigente" —
 > los hallazgos abiertos migraron a propuestas cerradas en `done/feats/` y
 > `done/fixes/`, y la organización de las propias auditorías pasó a
@@ -262,7 +262,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - [x] **M6** `deliveredDigests` persistido en `.subscribe-delivered.json` bajo `withFileMutex` (test `task-queue-subscribe-idempotency.spec.ts`). *Nota H11:* el test modela el reinicio (motor sin estado en memoria entre llamadas) — no hay e2e que mate y relance el proceso real; valor marginal bajo dado que el motor es la fuente de verdad y ya está cubierto.
 - [x] **M7** `waitFor.file`/`lockPath` resueltos contra el root inyectado.
 - [x] **M15** Blueprint sin drift de `cacheDir` (ver CHANGELOG "Fixed").
-- [x] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate. **Provenance cerrado 21-06 por [`l116`](../ready/l116-release-provenance-via-npm-publish.md): `release.yml` ahora publica con `--tool=npm --provenance`; no hizo falta el rewrite script de `workspace:*` (premisa descartada — ver nota de implementación en l116, `workspace:*` solo vive en `devDependencies`, que `npm publish` no instala).**
+- [x] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate. **Provenance cerrado 21-06 por [`l00012`](../ready/l00012-release-provenance-via-npm-publish.md): `release.yml` ahora publica con `--tool=npm --provenance`; no hizo falta el rewrite script de `workspace:*` (premisa descartada — ver nota de implementación en l00012, `workspace:*` solo vive en `devDependencies`, que `npm publish` no instala).**
 
 **P2 — Calidad de producto (1 semana)**
 - [x] **M9** `.github/workflows/ci.yml` tiene job `lint` (`bun run lint` → `biome ci`), bloqueante.
@@ -289,16 +289,16 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 **P3 — Plataforma de referencia**
 - [x] **M12** Plugin `metrics`: `packages/core/src/lib/metrics/metrics-tool.ts`, tool `<prefix>_metrics`, `persist:true` con snapshots en `<cacheDir>/metrics/`.
-- [x] **M13** Plugin `security` + bridge securecoder — **diferido indefinidamente** (decisión B de [`l115`](../ready/l115-decide-and-close-m13-security-plugin.md), 2026-06-21): los primitivos del core (`redact.ts` para secret redaction, `contain-path.ts` para path containment) más el allow/deny de comandos ya en `quality` cubren la superficie mínima viable. Empaquetarlo como plugin independiente no aporta valor mientras no haya un segundo consumer que necesite intercambiarlo; el bridge `securecoder` sigue fuera de alcance (spec propia, no definida). Reabrir si surge esa necesidad.
+- [x] **M13** Plugin `security` + bridge securecoder — **diferido indefinidamente** (decisión B de [`l00011`](../ready/l00011-decide-and-close-m13-security-plugin.md), 2026-06-21): los primitivos del core (`redact.ts` para secret redaction, `contain-path.ts` para path containment) más el allow/deny de comandos ya en `quality` cubren la superficie mínima viable. Empaquetarlo como plugin independiente no aporta valor mientras no haya un segundo consumer que necesite intercambiarlo; el bridge `securecoder` sigue fuera de alcance (spec propia, no definida). Reabrir si surge esa necesidad.
 - [x] **M14** Cerrado (2026-06-21): `agent-registry-store` normaliza el registry
   mediante `runMigrations`/`IVersioned` del core, conserva el formato actual
   `version: 1`, y rechaza versiones futuras no soportadas en vez de aceptarlas
   silenciosamente. Cubierto por
   `plugins/proposals/tests/src/lib/shared/agent-registry-store.spec.ts`.
 - [ ] Skills/prompts versionados (operator, swarm-runner, plugin-author…); plugin `web`/`fetch`; mapa interno / split de `proposals/swarm`; TypeDoc de `public/`; `/examples`; JSON Schema de config. *(TypeDoc, `/examples` y JSON Schema ya DONE según §7 — solo quedan skills/prompts adicionales y el plugin web/fetch)*
-  **Plan: [`ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md`](../ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md) — 5 skills nuevas + `manifest.json` versionado + plugin `@mcp-vertex/web` opt-in.**
+  **Plan: [`ready/l00005-versioned-skills-prompts-and-web-fetch-plugin.md`](../ready/l00005-versioned-skills-prompts-and-web-fetch-plugin.md) — 5 skills nuevas + `manifest.json` versionado + plugin `@mcp-vertex/web` opt-in.**
 - [ ] **npm publish** (lo ejecuta el usuario, `docs/NPM_PUBLISH.md`).
-  **Pausado en [`paused/l114-pause-npm-publish.md`](../paused/l114-pause-npm-publish.md)** —
+  **Pausado en [`paused/l00001-pause-npm-publish.md`](../paused/l00001-pause-npm-publish.md)** —
   bloqueado por `NPM_TOKEN` + org `@cartago-git` + merge `develop→main`. El repo
   está listo (build, semver, smoke-cli/pack, workflow release.yml); solo falta
   la parte operativa del usuario.
@@ -312,9 +312,9 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 > quality — NO el bridge securecoder, descartado por indefinido), M14 (migraciones
 > de estado), M15/H5 (blueprint sin drift)** hechos con tests, más toda la serie
 > H1–H10 de la 4ª auditoría (Copilot·MiniMax) y el workstream **W1/W2** (auto-release
-> en push a `main` + sitio GitHub Pages). Detalle en `../RESUMEN-SESION-2026-06-17.md`.
+> en push a `main` + sitio GitHub Pages). Detalle en `../n001-SESION-2026-06-17.md`.
 > **Backlog abierto:** **W3 — sitio web profesional** (i18n, marquesinas duales,
-> benchmarks, responsive; spec en el RESUMEN) y nice-to-haves de plataforma (TypeDoc,
+> benchmarks, responsive; spec en el n001) y nice-to-haves de plataforma (TypeDoc,
 > `/examples`, JSON Schema de config, skills/prompts versionados, `quality_cancel`,
 > freno anti-idle, H11 e2e). **npm publish + deploy: pendientes de `NPM_TOKEN` y
 > merge `develop→main` (los hace el usuario).** 471 tests verdes.
@@ -539,7 +539,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   el generador de tipos (`PACKAGE_ROUTES`) y reexportado en su `public`. 487 tests verde.
   ⬜ Resta *cerrar* los `catchall` permisivos de `bootstrap`/`scaffold`/proposals
   multiplexadas (excepción documentada, no bloqueante).
-  **Plan: [`ready/l118-harden-catchall-output-schemas.md`](../ready/l118-harden-catchall-output-schemas.md) — unión discriminada con `ok: z.literal(true|false)` como discriminador; si falla la serialización JSON Schema, se cae a "split en N tools".**
+  **Plan: [`ready/l00002-harden-catchall-output-schemas.md`](../ready/l00002-harden-catchall-output-schemas.md) — unión discriminada con `ok: z.literal(true|false)` como discriminador; si falla la serialización JSON Schema, se cae a "split en N tools".**
 
 **P2 — dedupe / calidad interna:**
 - 🟡 **M25 · Teardown de procesos compartido** — extraído `killProcessGroup(pid, signal?)`
@@ -566,7 +566,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   ⬜ Falta: páginas por *tool* con riesgos/opciones, "primeros 5 minutos",
   `docs/ARCHITECTURE.md`+Mermaid, changelog navegable, troubleshooting, búsqueda interna
   (pagefind). *(Se cruza con W3 §7-bis.)*
-  **Plan: [`ready/l119-web-deep-pages-and-search.md`](../ready/l119-web-deep-pages-and-search.md) — páginas por tool (12×68), pagefind, "First 5 minutes", troubleshooting con los 6 casos canónicos.**
+  **Plan: [`ready/l00006-web-deep-pages-and-search.md`](../ready/l00006-web-deep-pages-and-search.md) — páginas por tool (12×68), pagefind, "First 5 minutes", troubleshooting con los 6 casos canónicos.**
 - 🟡 **M28 · Endurecer `proposals` bajo contención** —
   ✅ `await_lock` en `notification` (`<prefix>_await_lock { taskId, timeoutMs? }`
   bloquea hasta que el lock se libera o expira, vía el mismo watch del notifier +
@@ -588,7 +588,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   número de snapshots; el dir se inyecta desde `assemble` (`corePaths.cacheDir`). 3 tests.
   ⬜ Falta el gate de regresión longitudinal que compare snapshots entre releases
   (hoy el token-budget e2e ya cubre los payloads críticos).
-  **Plan: [`ready/l120-metrics-longitudinal-regression-gate.md`](../ready/l120-metrics-longitudinal-regression-gate.md) — diff snapshot vs último tag en CI; threshold +20% tokens falla el build.**
+  **Plan: [`ready/l00003-metrics-longitudinal-regression-gate.md`](../ready/l00003-metrics-longitudinal-regression-gate.md) — diff snapshot vs último tag en CI; threshold +20% tokens falla el build.**
 - 🟡 **M30 · Smoke funcional en CI** —
   ✅ `scripts/smoke-cli.ts` conecta un cliente MCP al **CLI compilado por stdio bajo
   `node`**, lista tools y llama `mcp-vertex_overview` (prueba que el artefacto publicado
@@ -599,7 +599,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
   **instalado** por stdio bajo node y verifica que `proposals_*`/`memory_*` resuelven
   (el peer `@mcp-vertex/core ^0.1.0` lo satisface el tarball del core). Cableado en
   CI. **M30 completo.** Verificado local: 29 tools servidas desde la instalación.
-### 🆕 Sesión 21-06 (cierre de cola viva, 2ª pasada) — `l114`-`l121` abiertas
+### 🆕 Sesión 21-06 (cierre de cola viva, 2ª pasada) — `l00001`-`l00004` abiertas
 
 > 7 propuestas creadas en `ready/` para cubrir los `[ ]` aún abiertos del
 > master audit, después de que la sesión 21-06 (re-verificación §11)
@@ -610,13 +610,13 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 | ID | Cierra | Título | Slices |
 |---|---|---|---|
-| [`l115`](../ready/l115-decide-and-close-m13-security-plugin.md) | línea 293 (M13) — **cerrado** (decisión B, 2026-06-21) | Decide & close M13 (security plugin) | 0 — diferido indefinidamente, sin código |
-| [`l116`](../ready/l116-release-provenance-via-npm-publish.md) | línea 265 — **cerrado** (2026-06-21) | Release provenance: `npm publish --provenance` | 0 — rewrite script resultó innecesario, solo flag + workflow wire |
-| [`l117`](../ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md) | línea 281 | Skills versionadas + plugin `web`/`fetch` | 5 (manifest, 5 skills, plugin, consumer helper, close) |
-| [`l118`](../ready/l118-harden-catchall-output-schemas.md) | línea 518 (M24 follow-up) | Harden remaining `catchall` schemas | 5 (golden baseline, bootstrap, scaffold, proposals, exception audit) |
-| [`l119`](../ready/l119-web-deep-pages-and-search.md) | línea 543 (M27 follow-up) | Web deep pages + pagefind + first-5-min + troubleshooting | 5 (per-tool, pagefind, quickstart, troubleshooting, nav+close) |
-| [`l120`](../ready/l120-metrics-longitudinal-regression-gate.md) | línea 565 (M29 follow-up) | Metrics longitudinal regression gate | 4 (baseline, diff, CI, close) |
-| [`l121`](../ready/l121-plugins-depth-extension.md) | línea 598 (M33 follow-up) | Plugin depth: search rg+context, memory export/import, docs `docs_search` | 4 (search, memory, docs, close) |
+| [`l00011`](../ready/l00011-decide-and-close-m13-security-plugin.md) | línea 293 (M13) — **cerrado** (decisión B, 2026-06-21) | Decide & close M13 (security plugin) | 0 — diferido indefinidamente, sin código |
+| [`l00012`](../ready/l00012-release-provenance-via-npm-publish.md) | línea 265 — **cerrado** (2026-06-21) | Release provenance: `npm publish --provenance` | 0 — rewrite script resultó innecesario, solo flag + workflow wire |
+| [`l00005`](../ready/l00005-versioned-skills-prompts-and-web-fetch-plugin.md) | línea 281 | Skills versionadas + plugin `web`/`fetch` | 5 (manifest, 5 skills, plugin, consumer helper, close) |
+| [`l00002`](../ready/l00002-harden-catchall-output-schemas.md) | línea 518 (M24 follow-up) | Harden remaining `catchall` schemas | 5 (golden baseline, bootstrap, scaffold, proposals, exception audit) |
+| [`l00006`](../ready/l00006-web-deep-pages-and-search.md) | línea 543 (M27 follow-up) | Web deep pages + pagefind + first-5-min + troubleshooting | 5 (per-tool, pagefind, quickstart, troubleshooting, nav+close) |
+| [`l00003`](../ready/l00003-metrics-longitudinal-regression-gate.md) | línea 565 (M29 follow-up) | Metrics longitudinal regression gate | 4 (baseline, diff, CI, close) |
+| [`l00004`](../ready/l00004-plugins-depth-extension.md) | línea 598 (M33 follow-up) | Plugin depth: search rg+context, memory export/import, docs `docs_search` | 4 (search, memory, docs, close) |
 
 > **Quedan 2 ítems NO propuestos a propósito** (decididos en su día como
 > "no implementar"):
@@ -652,7 +652,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
     dependencia de TOML genérica). 10 tests nuevos. Sigue offline.
   - ⬜ `search` (`rg` opcional, `context:N`), `memory` (export/import), `docs`
     (`docs_search`) — no abordados esta sesión, quedan a demanda.
-    **Plan: [`ready/l121-plugins-depth-extension.md`](../ready/l121-plugins-depth-extension.md) — los 3 en una sola propuesta (S1/S2/S3 son disjuntos por archivo).**
+    **Plan: [`ready/l00004-plugins-depth-extension.md`](../ready/l00004-plugins-depth-extension.md) — los 3 en una sola propuesta (S1/S2/S3 son disjuntos por archivo).**
 - ✅ **M34 · OSS hygiene** —
   `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + Mermaid),
   `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, y **CHANGELOG enlazado** (Keep a
@@ -877,7 +877,7 @@ camino al 11/10 — solo acabados de plataforma.**
   **UI pública** (`guide.astro` en/es: "Trust boundary (M13):"). Reescritos
   para explicar el qué/por qué sin el código de hallazgo (p. ej. `(M28):` →
   `:`, `[N9]:` → `:`). *Decisión de alcance:* las referencias a **propuestas de
-  diseño** (`f113 §4.2`, `l107 §3.2`, `l109 s3`, …) se mantienen — son citas a
+  diseño** (`f00016 §4.2`, `l107 §3.2`, `l109 s3`, …) se mantienen — son citas a
   un spec real y estable que documenta el porqué de una decisión, no
   bookkeeping transitorio de esta auditoría; la regla original apunta
   explícitamente a los códigos de hallazgo de auditoría, no a citas de spec.
@@ -904,7 +904,7 @@ camino al 11/10 — solo acabados de plataforma.**
   (`vitest` thresholds `statements:72/branches:55/functions:75/lines:73` vía
   `bun run test:coverage` en CI) — esos tres ya estaban bien. `CHANGELOG.md`
   existe y se mantiene a mano (Keep a Changelog), no autogenerado por release;
-  aceptado por diseño (M34). **Provenance implementado 21-06 (`l116`):**
+  aceptado por diseño (M34). **Provenance implementado 21-06 (`l00012`):**
   `bun publish` (1.3.x) no soporta `--provenance`, así que el paso final de
   publish ahora usa `npm publish --provenance` (vía `scripts/release.ts
   --tool=npm --provenance`). El permiso `id-token: write` del workflow ya

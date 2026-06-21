@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ensureRulesCache } from '@mcp-vertex/rules/lib/frameworks/manifest';
 import type { IRulesManifest } from '@mcp-vertex/rules/lib/frameworks/types';
 
-// l125 s2 — regression coverage for the durable-write fix in
+// l00008 s2 — regression coverage for the durable-write fix in
 // `ensureRulesCache`: the historical `writeFileSync`/`mkdirSync` bypass
 // (no atomicity, no cross-host mutex) is now `writeFileAtomic` +
 // `withFileMutex`. These specs exercise crash-safety, parallel
@@ -20,7 +20,7 @@ const manifestFixture = (fingerprint: string): IRulesManifest => ({
 	projects: { demo: {} },
 });
 
-describe('ensureRulesCache (l125 s2 durable-write fix)', () => {
+describe('ensureRulesCache (l00008 s2 durable-write fix)', () => {
 	let root = '';
 
 	beforeEach(async () => {

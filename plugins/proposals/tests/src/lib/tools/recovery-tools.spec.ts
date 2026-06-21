@@ -56,7 +56,7 @@ Keep recovery deterministic.
 - [ ] Tests pass.
 `;
 
-describe('recovery tools (f113 S9)', () => {
+describe('recovery tools (f00016 S9)', () => {
 	let dir = '';
 	let proposalsDir = '';
 	let lockPath = '';

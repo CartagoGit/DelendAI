@@ -31,7 +31,7 @@ export interface IRulesToolOptions {
 	readonly overrides?: Readonly<Record<string, string>>;
 }
 
-// l125 s4 — mirrors `IAreaRules` (frameworks/types.ts) field-for-field,
+// l00008 s4 — mirrors `IAreaRules` (frameworks/types.ts) field-for-field,
 // replacing the residual `z.object({}).catchall(z.unknown())`.
 const AREA_RULES_SCHEMA = z.object({
 	framework: z.string(),

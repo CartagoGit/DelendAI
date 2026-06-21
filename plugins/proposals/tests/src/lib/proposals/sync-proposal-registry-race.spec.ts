@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { reconcileAndArchiveCompletedRootProposals } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
 
-// f122 — regression coverage for the race fixed in
+// f00020 — regression coverage for the race fixed in
 // `reconcileAndArchiveCompletedRootProposals`: the raw `writeFile` at the
 // historical bug site (sync-proposal-registry.ts:331) has been replaced by
 // `writeFileAtomic` wrapped in `withFileMutex(sourcePath, ...)`. These specs
@@ -27,7 +27,7 @@ const DONE_BODY = (id: string) =>
 		``,
 	].join('\n');
 
-describe('reconcileAndArchiveCompletedRootProposals (f122 race fix)', () => {
+describe('reconcileAndArchiveCompletedRootProposals (f00020 race fix)', () => {
 	let root = '';
 	let proposalsDir = '';
 

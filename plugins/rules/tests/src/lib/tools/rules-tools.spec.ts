@@ -1,5 +1,5 @@
 /**
- * l125 s4 — `get_rules`'s outputSchema declared `areas[].rules:
+ * l00008 s4 — `get_rules`'s outputSchema declared `areas[].rules:
  * z.object({}).catchall(z.unknown())`. The actual runtime shape is
  * `IAreaRules` (framework/presetId/eslint/typecheck/reason) — this spec
  * pins the hardened schema against the real registration's
@@ -51,7 +51,7 @@ const workspace: IWorkspacePathProvider = {
 	resolve: (p: string) => `/ws/${p}`,
 };
 
-describe('get_rules — areas[].rules outputSchema (l125 s4)', () => {
+describe('get_rules — areas[].rules outputSchema (l00008 s4)', () => {
 	it('returns a golden IAreaRules shape: framework/presetId/eslint/typecheck/reason, no stray keys', async () => {
 		const reg = buildGetRulesRegistration({
 			namespacePrefix: 'rules',

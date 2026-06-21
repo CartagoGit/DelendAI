@@ -6,7 +6,7 @@ Closed **cross-session handoff summaries** — proposals of kind
 
 ## Why a 13th kind
 
-Until 2026-06-21, summaries lived as loose `RESUMEN-SESION-*.md` files that
+Until 2026-06-21, summaries lived as loose `n001-SESION-*.md` files that
 the linter intentionally skipped — they had no `id`, no `status`, no
 frontmatter, and weren't visible to `sync_proposals`, `proposal_board` or
 `auto_work`. n007 promotes them to first-class proposals under their own
@@ -18,7 +18,7 @@ bucket:
 - **Own prefix `n`** (single lowercase letter, unique across all 13
   kinds) so the filename + linter + glossary agree on the kind without
   ambiguity. Chosen after `m` because no existing kind used it.
-- **Own sub-folder `done/resumes/`** following the f119 mirror-by-kind
+- **Own sub-folder `done/resumes/`** following the f00001 mirror-by-kind
   convention (`audits/`, `feats/`, `fixes/` are the precedent).
 - **Chronological numbering**: the first commit that added each file
   (`git log --diff-filter=A --format=%ai`) determines its number.
@@ -45,7 +45,7 @@ The 6 summaries migrated by n007 were written before the scaffold existed
 and therefore keep their original section titles (e.g. `## ✅ Hecho (con
 tests)`, `## 🔖 Cómo continuar`, `## Estado de la cola`). Those are
 **legacy warnings** (`WARN (legacy)`) by the linter, never fatal — same
-tier as `kind: legacy` (prefix `l`) per f113 §4.3.
+tier as `kind: legacy` (prefix `l`) per f00016 §4.3.
 
 ## Files
 
@@ -74,5 +74,5 @@ tier as `kind: legacy` (prefix `l`) per f113 §4.3.
 
 - [n007 — Resume kind: cross-session handoff summaries](../../../ready/n007-resume-kind-cross-session-handoff-summaries.md)
   (the proposal that defined this kind + bucket)
-- [f113 — Proposal state machine, kinds, scaffolds, and recovery](../../in-progress/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md)
-- [f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../../in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)
+- [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md)
+- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md)

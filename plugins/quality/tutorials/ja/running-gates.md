@@ -1,38 +1,44 @@
 ---
-title: あらゆる言語のQualityゲートを実行する
+title: "Running quality gates for any language [日本語 — needs translation]"
 plugin: quality
-audience: プロジェクトの状態を検証する必要があるエージェント
+audience: any agent that needs cross-session continuity
 order: 1
 lang: ja
+auto-translated: true
+needs-human-review: true
+source: plugins/quality/tutorials/en/running-gates.md
+generated: 2026-06-21T13:53:45Z
 ---
 
-# あらゆる言語のQualityゲートを実行する
+# Running quality gates for any language
 
-`quality` プラグインは設計上**言語非依存**です：`mcp-vertex.config.json`
-に指定されたコマンドを起動し、終了コードを報告します。このチュートリアルでは
-スコープの3つのソース（優先度順）、実行方法、暴走プロセスのキャンセル方法を
-説明します。
+The `quality` plugin is **language-agnostic** by design: it spawns
+whatever command your `mcp-vertex.config.json` says and reports
+the exit code. This walkthrough shows the three sources of
+scopes (in precedence order), how to run one, and how to cancel a
+runaway.
 
-## 0. メンタルモデル
+## 0. The mental model
 
-**スコープ**は名前付きコマンドのリストです。プラグインはスコープ内の各
-コマンドを順番に実行し、stdout/stderrをキャプチャし、構造化レポート
-`{ ok, results: [{ command, ok, code, tail }] }` を返します。`ok`フィールドは
-スコープ全体のものです——コマンドが1つでも失敗すると、スコープはokではありません。
+A **scope** is a named list of commands. The plugin runs every
+command in the scope, in order, captures stdout/stderr, and
+returns a structured `{ ok, results: [{ command, ok, code, tail }]
+}` report. The `ok` field is the whole scope — if any command
+fails, the scope is not ok.
 
 ```
-┌─ plugin options.scopes（最高優先度）
+┌─ plugin options.scopes (highest priority)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ 検出されたpackage.jsonスクリプト → "all"（lint, typecheck, test, build）
+└─ detected package.json scripts → "all" (lint, typecheck, test, build)
 ```
 
-## 1. 利用可能なスコープを一覧表示（読み取り専用）
+## 1. List the available scopes (read-only)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-レスポンス例（短縮）：
+Response example (truncated):
 
 ```json
 {
@@ -46,13 +52,13 @@ lang: ja
 }
 ```
 
-## 2. スコープを実行する
+## 2. Run a scope
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-レスポンスはコマンドごと：
+The response is per-command:
 
 ```json
 {
@@ -75,24 +81,24 @@ lang: ja
 }
 ```
 
-失敗コンテキストに `results[N].tail` を読んでください。`tail` は最後の
-20個の非空行（合計64 KiBに制限）——エージェントのコンテキストを溢れさせ
-ずにデバッグするのに十分。
+Read `results[N].tail` for the failure context. The `tail` is the
+last 20 non-empty lines (capped at 64 KiB total output) — enough
+to debug without flooding the agent's context.
 
-## 3. 暴走プロセスをキャンセルする
+## 3. Cancel a runaway
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-インフライトの各実行のプロセスグループに `SIGKILL` を送信します。
-`{ "pid": <number> }` を渡して1つをキャンセル。キャンセルは非ブロッキング：
-次の呼び出しの `results` がkillを反映します。
+Sends `SIGKILL` to the process group of every in-flight run. Pass
+`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
+the next call's `results` will reflect the kill.
 
-## 4. 言語非依存にする
+## 4. Make it language-agnostic
 
-コアはあなたの設定が言うことを実行します。多言語プロジェクト
-（TypeScript + Python）の例：
+The core runs whatever your config says. Example for a polyglot
+project (TypeScript + Python):
 
 ```jsonc
 // mcp-vertex.config.json
@@ -113,15 +119,15 @@ lang: ja
 }
 ```
 
-`run_quality` は言語に関係なく `typecheck` / `test` スコープの**4つすべての
-コマンド**を実行します。Exit 0 = パス；非ゼロ = 失敗（どのバイナリが
-出力したかに関係なく）。
+`run_quality` will run **all four commands** in `typecheck` /
+`test` scopes, regardless of language. Exit 0 = pass; non-zero =
+fail (regardless of which binary emitted it).
 
-## 5. コマンドポリシーで堅牢にする（M13）
+## 5. Harden with a command policy (M13)
 
-`run_quality` はホスト設定が言うことを**実行します**。信頼度の低いエージェントが
-ツールを呼び出す際にどのバイナリを実行できるかを制限するには、
-`commandPolicy` を使用：
+`run_quality` **executes** whatever the host config says. To
+restrict which binaries may run when a less-trusted agent calls
+the tool, use `commandPolicy`:
 
 ```jsonc
 {
@@ -138,25 +144,36 @@ lang: ja
 }
 ```
 
-ブロックされたコマンドは `code: 126` と理由（"blocked by command policy"）で
-報告され、**決して起動されません**。`deny` は `allow` に優先します；
-空の `allow` は「拒否されていないすべてのバイナリ」を意味します。
+A blocked command is reported as `code: 126` with a reason
+("blocked by command policy") and is **never spawned**. `deny`
+wins over `allow`; an empty `allow` means "any binary not denied".
 
-## よくある落とし穴
+## Common pitfalls
 
-- **`run_quality` は `bun run validate` の代わりではない**: コアの
-  `validate` スクリプトは4つのチェックを直接実行します。`run_quality`は
-  **アドホック**実行とエージェントからのスコープごとのイントロスペクション用。
-  両方有効；互いに通信しません。
-- **タイムアウトを超える長時間実行コマンド**は `code: 124` と
-  `timedOut: true` で終了します。デフォルトタイムアウトは600 000 ms
-  （10分）。必要に応じてrunnerごとに上書き。
-- **「完了した？」のポーリング**: しないでください。`run_quality` は
-  同期的です。長いスコープについて知る必要がある場合、`activeRunPids`
-  の `pid`（メトリクスまたはフォローアップツール呼び出し経由）で
-  `quality_cancel` を使用してください。
+- **`run_quality` doesn't replace `bun run validate`**: the core's
+  `validate` script runs the four checks directly. `run_quality`
+  is for **ad-hoc** runs and per-scope introspection from an
+  agent. Both are valid; they don't talk to each other.
+- **A long-running command that exceeds the timeout** is killed
+  with `code: 124` and `timedOut: true`. Default timeout is
+  600 000 ms (10 minutes). Override per runner if needed.
+- **Polling for "is it done yet?"**: don't. `run_quality` is
+  synchronous. If you need to know about long scopes, use
+  `quality_cancel` with the `pid` from `activeRunPids` (via
+  metrics or a follow-up tool call).
 
-## 次のステップ
+## Next step
 
-- [多言語Qualityゲート（l107）](../../l107-multilang-quality-gates.md)
-- [信頼境界 & コマンドポリシー（M13）](../../l107-multilang-quality-gates.md#5-no-objetivos)
+- [Multi-language quality gates (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & command policy (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper 日本語
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/quality/tutorials/en/running-gates.md`

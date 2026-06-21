@@ -9,7 +9,7 @@ kind: feat
 title: Harden remaining proposals output schemas
 ---
 
-# f116 — Harden remaining proposals output schemas
+# f00017 — Harden remaining proposals output schemas
 
 ## Goal
 
@@ -48,7 +48,7 @@ cleanup would be too broad.
   - **Command**: `bunx vitest run plugins/proposals/tests/src/lib`
   - **Expect**: pass
   - **Depends-on**: S1
-  - **Notes**: Keep legacy/f113 transition branches explicit enough for generated SDK users while preserving old proposal compatibility.
+  - **Notes**: Keep legacy/f00016 transition branches explicit enough for generated SDK users while preserving old proposal compatibility.
 
 ### S3 — Coordination tools schemas
   - **Status**: done

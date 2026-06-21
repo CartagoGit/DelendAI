@@ -83,7 +83,7 @@ describe('FrontmatterOverrideResolver', () => {
 
 	it('lets cascadeOverride win over the kind rank, even a negative one', () => {
 		const overridden = summary({
-			id: 'f99',
+			id: 'f00004',
 			kind: 'feat',
 			cascadeOverride: -1,
 			cascadeOverrideReason: 'urgent customer escalation',

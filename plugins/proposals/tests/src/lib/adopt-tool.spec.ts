@@ -1,5 +1,5 @@
 /**
- * l125 s4 — `proposal_adopt`'s outputSchema declared `layout:
+ * l00008 s4 — `proposal_adopt`'s outputSchema declared `layout:
  * z.object({}).catchall(z.unknown())`. The actual runtime shape is
  * `PROPOSALS_LAYOUT` (root/files/folders, all string-valued records) —
  * this spec pins the hardened schema against the real registration's
@@ -39,7 +39,7 @@ const invoke = async (
 	return handler(args);
 };
 
-describe('proposal_adopt — layout outputSchema (l125 s4)', () => {
+describe('proposal_adopt — layout outputSchema (l00008 s4)', () => {
 	it('returns a golden layout shape: root (string) + files/folders (Record<string,string>)', async () => {
 		const workspaceRoot = await mkdtemp(join(tmpdir(), 'adopt-tool-'));
 		const proposalsDirAbs = join(

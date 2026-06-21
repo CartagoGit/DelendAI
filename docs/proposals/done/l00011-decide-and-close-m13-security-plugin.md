@@ -8,7 +8,7 @@ kind: chore
 title: Decide & close M13 (security plugin + securecoder bridge)
 ---
 
-# l115 — Decide & close M13 (security plugin + securecoder bridge)
+# l00011 — Decide & close M13 (security plugin + securecoder bridge)
 
 ## Goal
 
@@ -136,7 +136,7 @@ note only.
 
 ## Linked references
 
-- Master audit: `docs/proposals/done/audits/a016-16-06-2026-auditoria-maestra-unificada.md` (M13, line ~293).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (M13, line ~293).
 - Core primitives already in place: `packages/core/src/lib/shared/redact.ts`
   (M23), `packages/core/src/lib/shared/contain-path.ts` (M22),
   `plugins/quality` command allow/deny.

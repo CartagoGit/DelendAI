@@ -1,7 +1,6 @@
 ---
 import PluginsSection from '#COMPONENTS/PluginsSection.astro';
 import Base from '#LAYOUTS/Base.astro';
-import PageHeader from '#COMPONENTS/PageHeader.astro';
 import { languages, useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
 
@@ -19,6 +18,5 @@ const count = capabilities.counts.packages;
 ---
 
 <Base lang={lang as Lang} title={`${t.plugins.title} — @mcp-vertex/core`}>
-	<PageHeader lang={lang as Lang} title={t.plugins.title} />
-	<PluginsSection lang={lang as Lang} />
+	<PluginsSection lang={lang as Lang} heading={t.plugins.title} />
 </Base>

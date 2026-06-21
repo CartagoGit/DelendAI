@@ -101,7 +101,7 @@ const en: IProposalGlossaryTranslations = {
 		legacy: {
 			label: 'Legacy',
 			short: 'legacy',
-			long: 'Imported proposal from the pre-f113 workflow.',
+			long: 'Imported proposal from the pre-f00016 workflow.',
 		},
 	},
 };
@@ -203,7 +203,7 @@ const es: IProposalGlossaryTranslations = {
 		legacy: {
 			label: 'Legacy',
 			short: 'legacy',
-			long: 'Propuesta importada del flujo anterior a f113.',
+			long: 'Propuesta importada del flujo anterior a f00016.',
 		},
 	},
 };

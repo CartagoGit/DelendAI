@@ -1,38 +1,44 @@
 ---
-title: Chạy quality gates cho bất kỳ ngôn ngữ nào
+title: "Running quality gates for any language [Tiếng Việt — needs translation]"
 plugin: quality
-audience: tác nhân cần xác thực trạng thái dự án
+audience: any agent that needs cross-session continuity
 order: 1
 lang: vi
+auto-translated: true
+needs-human-review: true
+source: plugins/quality/tutorials/en/running-gates.md
+generated: 2026-06-21T13:53:45Z
 ---
 
-# Chạy quality gates cho bất kỳ ngôn ngữ nào
+# Running quality gates for any language
 
-Plugin `quality` được thiết kế **không phụ thuộc ngôn ngữ**: nó chạy
-bất kỳ lệnh nào mà `mcp-vertex.config.json` chỉ định và báo cáo mã
-thoát. Hướng dẫn này cho thấy ba nguồn scope (theo thứ tự ưu tiên),
-cách chạy một scope, và cách hủy một tiến trình mất kiểm soát.
+The `quality` plugin is **language-agnostic** by design: it spawns
+whatever command your `mcp-vertex.config.json` says and reports
+the exit code. This walkthrough shows the three sources of
+scopes (in precedence order), how to run one, and how to cancel a
+runaway.
 
-## 0. Mô hình tư duy
+## 0. The mental model
 
-**Scope** là danh sách lệnh được đặt tên. Plugin chạy từng lệnh trong
-scope theo thứ tự, bắt stdout/stderr và trả về báo cáo có cấu trúc
-`{ ok, results: [{ command, ok, code, tail }] }`. Trường `ok` là cho
-toàn bộ scope — nếu bất kỳ lệnh nào thất bại, scope không ok.
+A **scope** is a named list of commands. The plugin runs every
+command in the scope, in order, captures stdout/stderr, and
+returns a structured `{ ok, results: [{ command, ok, code, tail }]
+}` report. The `ok` field is the whole scope — if any command
+fails, the scope is not ok.
 
 ```
-┌─ plugin options.scopes (ưu tiên cao nhất)
+┌─ plugin options.scopes (highest priority)
 ├─ mcp-vertex.config.json → validationMatrix.scopes
-└─ scripts package.json được phát hiện → "all" (lint, typecheck, test, build)
+└─ detected package.json scripts → "all" (lint, typecheck, test, build)
 ```
 
-## 1. Liệt kê các scope có sẵn (chỉ đọc)
+## 1. List the available scopes (read-only)
 
 ```json
 { "tool": "quality_get_quality_scopes", "args": {} }
 ```
 
-Ví dụ phản hồi (rút gọn):
+Response example (truncated):
 
 ```json
 {
@@ -46,13 +52,13 @@ Ví dụ phản hồi (rút gọn):
 }
 ```
 
-## 2. Chạy một scope
+## 2. Run a scope
 
 ```json
 { "tool": "quality_run_quality", "args": { "scope": "all" } }
 ```
 
-Phản hồi là theo từng lệnh:
+The response is per-command:
 
 ```json
 {
@@ -75,24 +81,24 @@ Phản hồi là theo từng lệnh:
 }
 ```
 
-Đọc `results[N].tail` để lấy bối cảnh lỗi. `tail` là 20 dòng không trống
-cuối cùng (giới hạn 64 KiB tổng đầu ra) — đủ để gỡ lỗi mà không làm
-ngập context của tác nhân.
+Read `results[N].tail` for the failure context. The `tail` is the
+last 20 non-empty lines (capped at 64 KiB total output) — enough
+to debug without flooding the agent's context.
 
-## 3. Hủy tiến trình mất kiểm soát
+## 3. Cancel a runaway
 
 ```json
 { "tool": "quality_quality_cancel", "args": {} }
 ```
 
-Gửi `SIGKILL` đến nhóm tiến trình của mỗi lần chạy đang diễn ra.
-Truyền `{ "pid": <number> }` để hủy một cái. Hủy không chặn: `results`
-của lần gọi tiếp theo sẽ phản ánh việc kill.
+Sends `SIGKILL` to the process group of every in-flight run. Pass
+`{ "pid": <number> }` to cancel one. Cancellation is non-blocking:
+the next call's `results` will reflect the kill.
 
-## 4. Làm cho không phụ thuộc ngôn ngữ
+## 4. Make it language-agnostic
 
-Core chạy những gì config của bạn nói. Ví dụ cho dự án đa ngôn ngữ
-(TypeScript + Python):
+The core runs whatever your config says. Example for a polyglot
+project (TypeScript + Python):
 
 ```jsonc
 // mcp-vertex.config.json
@@ -113,15 +119,15 @@ Core chạy những gì config của bạn nói. Ví dụ cho dự án đa ngôn
 }
 ```
 
-`run_quality` sẽ chạy **cả bốn lệnh** trong các scope `typecheck` /
-`test`, bất kể ngôn ngữ. Exit 0 = qua; khác không = thất bại (bất kể
-binary nào phát ra).
+`run_quality` will run **all four commands** in `typecheck` /
+`test` scopes, regardless of language. Exit 0 = pass; non-zero =
+fail (regardless of which binary emitted it).
 
-## 5. Tăng cường với chính sách lệnh (M13)
+## 5. Harden with a command policy (M13)
 
-`run_quality` **thực thi** những gì config host nói. Để hạn chế những
-binary nào có thể chạy khi tác nhân ít tin cậy hơn gọi công cụ, sử
-dụng `commandPolicy`:
+`run_quality` **executes** whatever the host config says. To
+restrict which binaries may run when a less-trusted agent calls
+the tool, use `commandPolicy`:
 
 ```jsonc
 {
@@ -138,24 +144,36 @@ dụng `commandPolicy`:
 }
 ```
 
-Một lệnh bị chặn được báo cáo với `code: 126` và lý do ("blocked by
-command policy") và **không bao giờ được khởi chạy**. `deny` thắng `allow`;
-`allow` rỗng có nghĩa là "bất kỳ binary nào không bị từ chối".
+A blocked command is reported as `code: 126` with a reason
+("blocked by command policy") and is **never spawned**. `deny`
+wins over `allow`; an empty `allow` means "any binary not denied".
 
-## Những lỗi thường gặp
+## Common pitfalls
 
-- **`run_quality` không thay thế `bun run validate`**: script `validate`
-  của core chạy bốn kiểm tra trực tiếp. `run_quality` dành cho các lần
-  chạy **ad-hoc** và nội quan theo scope từ tác nhân. Cả hai đều hợp lệ;
-  chúng không nói chuyện với nhau.
-- **Lệnh chạy dài vượt quá timeout** bị kill với `code: 124` và
-  `timedOut: true`. Timeout mặc định là 600 000 ms (10 phút). Ghi đè
-  mỗi runner nếu cần.
-- **Polling "xong chưa?"**: đừng làm. `run_quality` là đồng bộ. Nếu
-  bạn cần biết về các scope dài, sử dụng `quality_cancel` với `pid`
-  từ `activeRunPids` (qua metrics hoặc lần gọi công cụ tiếp theo).
+- **`run_quality` doesn't replace `bun run validate`**: the core's
+  `validate` script runs the four checks directly. `run_quality`
+  is for **ad-hoc** runs and per-scope introspection from an
+  agent. Both are valid; they don't talk to each other.
+- **A long-running command that exceeds the timeout** is killed
+  with `code: 124` and `timedOut: true`. Default timeout is
+  600 000 ms (10 minutes). Override per runner if needed.
+- **Polling for "is it done yet?"**: don't. `run_quality` is
+  synchronous. If you need to know about long scopes, use
+  `quality_cancel` with the `pid` from `activeRunPids` (via
+  metrics or a follow-up tool call).
 
-## Bước tiếp theo
+## Next step
 
-- [Quality gates đa ngôn ngữ (l107)](../../l107-multilang-quality-gates.md)
-- [Ranh giới tin cậy & chính sách lệnh (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
+- [Multi-language quality gates (l107)](../../l107-multilang-quality-gates.md)
+- [Trust boundary & command policy (M13)](../../l107-multilang-quality-gates.md#5-no-objetivos)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Tiếng Việt
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/quality/tutorials/en/running-gates.md`

@@ -8,7 +8,7 @@ kind: feat
 title: Release provenance: switch final publish step to npm publish --provenance
 ---
 
-# l116 — Release provenance: switch final publish step to `npm publish --provenance`
+# l00012 — Release provenance: switch final publish step to `npm publish --provenance`
 
 ## Goal
 
@@ -131,7 +131,7 @@ instead of resurrecting dead code preemptively.
 
 ### S4 — Audit close
   - **Status**: done
-  - **Files**: `docs/proposals/done/audits/a016-16-06-2026-auditoria-maestra-unificada.md`
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
     (release/CI provenance line → `[x]` with link to this proposal).
   - **Command**: none.
   - **Expect**: master audit `release provenance` checkbox is now `[x]`.

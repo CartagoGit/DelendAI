@@ -43,12 +43,12 @@ acceptance:
   - { command: bun run lint:proposals, expect: exit0 }
   - { command: bun run lint:scaffolds, expect: exit0 }
 related:
-  - x111 # post-closure audit (the closed reference for prefix conventions)
-  - f112 # parallel proposal; lives in paused/ after this lands
-  - f99 # the audit plugin whose lifecycle this proposal formalises
+  - x00003 # post-closure audit (the closed reference for prefix conventions)
+  - f00002 # parallel proposal; lives in paused/ after this lands
+  - f00004 # the audit plugin whose lifecycle this proposal formalises
 ---
 
-# f113 — Proposal state machine, kinds, scaffolds, and recovery
+# f00016 — Proposal state machine, kinds, scaffolds, and recovery
 
 ## 0. Goal
 
@@ -470,12 +470,12 @@ i18n-complete (12 languages) — every UI string is a key in
 
 ### 4.9 Race-safe per-kind ID allocation
 
-Each kind keeps its **own** sequence — `f113` is independent from `a006` or
+Each kind keeps its **own** sequence — `f00016` is independent from `a00011` or
 `r042`. Today an agent would have to list every file under
 `docs/proposals/`, filter by prefix, and compute `max + 1` — racy under
 concurrent agents: two agents creating an `f`-kind proposal in the same
 instant can both read the same stale directory listing and both compute
-`f114`, then one's `git mv`/write clobbers or collides with the other's.
+`f00014`, then one's `git mv`/write clobbers or collides with the other's.
 
 `.cache/mcp-vertex/proposal-id-counters.json` (gitignored machine state,
 alongside the existing `agents.lock.json`) holds one integer per kind
@@ -494,9 +494,9 @@ prefix:
 2. Reads it; if missing, **seeds** it by scanning `docs/proposals/**/*.md`
    (all 7 folders) for `^[a-zA-Z]\d{3,}` filenames and taking the max
    per prefix — so the first call after this ships is safe even with the
-   14 legacy + `f113` already on disk.
+   14 legacy + `f00016` already on disk.
 3. Increments the counter for `prefix`, writes atomically, releases.
-4. Returns the zero-padded id (`f114`, never `f1`).
+4. Returns the zero-padded id (`f00014`, never `f1`).
 
 `create_proposal` (`authoring.tool.ts`) makes `id` **optional**: if
 omitted, it derives `prefix` from `kind` via `PROPOSAL_PREFIX_BY_KIND`
@@ -605,10 +605,10 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   parsed `## `/`### S<N>` patterns **inside fenced code blocks** as
   real document structure — this proposal's own §4.5 documents the
   scaffold using literal `## Goal` lines inside a ` ```markdown ` fence,
-  so the linter initially flagged **f113 against itself** (17 false
+  so the linter initially flagged **f00016 against itself** (17 false
   issues). Fixed with a fence-tracking mask
   (`computeFencedLineMask`); added a regression test for it.
-  Re-verified: f113 now lints clean (0 issues) against its own rules.
+  Re-verified: f00016 now lints clean (0 issues) against its own rules.
 - `proposal-scaffold-linter.spec.ts`: 24 tests (6 happy paths + 18
   negative cases, one per invariant including the fence regression) —
   fewer than the originally estimated "12 happy + 15 negative" but
@@ -653,7 +653,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
      misclassified as a *fatal* new-scaffold violation instead of an
      expected legacy warning.
   4. **The walker recursed into `docs/proposals/audits/`** (and other
-     non-proposal documents — `RESUMEN-*` session notes, READMEs) and
+     non-proposal documents — `n001-*` session notes, READMEs) and
      reported them as fatal scaffold violations. Those were never
      proposals. Fixed: only files matching the proposal filename shape
      are even considered.
@@ -737,8 +737,8 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 - **Moved before S4** (dependency the original graph missed): the
   registry's directory scan had a hardcoded subtree list
   (`audits`/`fixes`/`historical`/`paused`/`revised`/…) that pre-dates
-  f113 — it never looked inside `ready/`, `in-progress/`, `review/`,
-  `done/`, `blocked/`, `retired/`. **`f113` itself was invisible to
+  f00016 — it never looked inside `ready/`, `in-progress/`, `review/`,
+  `done/`, `blocked/`, `retired/`. **`f00016` itself was invisible to
   `sync_proposals`/`auto_work`/`proposal_board`** until this slice
   extended the subtree list (deduped against the legacy list, which
   already happened to include `paused`).
@@ -764,7 +764,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
 - **1 critical bug found and fixed before this could ship** — status
   alone is not a safe "is this a new-system file" signal.
   `create_proposal` (the existing, heavily-used tool, unrelated to
-  f113) defaults every brand-new proposal to **`status: ready`**
+  f00016) defaults every brand-new proposal to **`status: ready`**
   regardless of kind (`authoring.tool.ts`: `status: ${args.status ??
   'ready'}`). Without an additional check, `reconcileFolders` would
   silently relocate *any* freshly created legacy-style proposal (id
@@ -777,7 +777,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   the reverse-lookup transition period — so it needs its own explicit
   exclusion, not just "not found in the map"). A new-system file now
   needs both signals (prefix AND status) to ever be touched.
-- **2 collisions with concurrent agents, same pattern as f113 S3**: a
+- **2 collisions with concurrent agents, same pattern as f00016 S3**: a
   `git add -A`-shaped commit (`dcb4517`) swept up an early,
   pre-bug-fix snapshot of this slice's code under its own message
   before I'd finished it. Content verified intact; this entry plus the
@@ -982,7 +982,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   status folders) for `^([a-z])(\d+)-` filenames — `\d+`, not `\d{3,}`,
   same reasoning as S5/S2: `l99` (2 digits) must seed correctly, the
   3-digit minimum is a *future* convention for new ids, not a discovery
-  filter. Covers the 14 legacy + `f113` already on disk with zero
+  filter. Covers the 14 legacy + `f00016` already on disk with zero
   manual bootstrap step.
 - **Scope addition beyond the original 2 reserved files** (small,
   additive, non-conflicting — done solo, no concurrent collision):
@@ -1004,7 +1004,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
   `with-file-mutex.spec.ts` already covers for locks, applied here to
   a counter.
 - `proposal-id-allocator.spec.ts` (8 tests): seed-from-empty,
-  seed-from-existing-files (legacy `l99`/`l112` + `f113` mixed),
+  seed-from-existing-files (legacy `l99`/`l112` + `f00016` mixed),
   sequential-no-gaps, independent-per-prefix sequences, the 25-way
   concurrency case, counter-file-is-valid-JSON, plus 2 `prefixForKind`
   cases. `authoring.spec.ts` gained 2 new cases (allocates from kind,
@@ -1089,7 +1089,7 @@ Parallelisable pairs: (S6, S8), (S7, S9), (S10 after S6+S9), (S13 anywhere after
   `lock-released` are unchanged. The new layer sits on top.
 - The 14 legacy normalization is a pure `refactor:`. The commit
   message will be `refactor(proposals): normalize legacy proposals
-  to canonical scaffold (f113)`. No content change, no new behaviour.
+  to canonical scaffold (f00016)`. No content change, no new behaviour.
 - 2026-06-20 continuation: S6-S12 have now landed in code. Verified
   green: `bun run validate` (typecheck + Biome + SCSS + 121 test files /
   872 passed / 10 skipped), `bun run lint:proposals` (18 checked, 15

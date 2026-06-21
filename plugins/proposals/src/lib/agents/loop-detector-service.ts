@@ -395,7 +395,7 @@ export class AgentLoopDetectorService {
 	}
 
 	/**
-	 * l125 s1: this method is intentionally synchronous, not a hot-path
+	 * l00008 s1: this method is intentionally synchronous, not a hot-path
 	 * oversight. `IMcpVertexHostConfig.isAgentStuck` (packages/core
 	 * host-config.interface.ts) declares a sync return type and is
 	 * invoked inline — without `await` — right after every tool call in

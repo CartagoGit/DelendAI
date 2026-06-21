@@ -25,9 +25,9 @@ import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 
-// The legacy 8-status union, PLUS the 2 new-only f113 statuses
+// The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
-// additive only, so a proposal already on the new state machine (f113
+// additive only, so a proposal already on the new state machine (f00016
 // glossary) records its real status instead of falling back to
 // `pending` with a spurious "missing or invalid status" warning. The
 // other 5 new statuses (`ready`, `done`, `paused`, `blocked`, `retired`)
@@ -300,7 +300,7 @@ const reconcileCompletedProposalMarkdown = (markdown: string): string => {
 	return markdown;
 };
 
-// Exported for f122 S2 (race-condition regression coverage); not part of the
+// Exported for f00020 S2 (race-condition regression coverage); not part of the
 // plugin's public tool surface — `syncProposalRegistry` is still the only
 // entry point invoked by production code paths.
 export const reconcileAndArchiveCompletedRootProposals = async (
@@ -339,7 +339,7 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 	}
 };
 
-// --- f113 S5: folder reconciler ---------------------------------------------
+// --- f00016 S5: folder reconciler ---------------------------------------------
 // Operates ONLY on proposals already on the new 7-status state machine
 // (status resolves via the glossary). Legacy files (old 8-status union)
 // are invisible to every function below — `isGlossaryStatus` is the de
@@ -360,7 +360,7 @@ interface INewSystemFile {
 /** Collects every `.md` under the proposalsDir tree whose frontmatter status is on the new state machine. */
 /**
  * A file is only "on the new state machine" if BOTH hold:
- * 1. its filename prefix is one of the 12 live f113 kind prefixes
+ * 1. its filename prefix is one of the 12 live f00016 kind prefixes
  *    (explicitly excludes the retired legacy `p` — `p5-meta.md`,
  *    `l99-…md`, etc. are never reconciled, no matter their status);
  * 2. frontmatter `status` resolves to one of the 7 glossary statuses.
@@ -369,7 +369,7 @@ interface INewSystemFile {
  * `create_proposal` writes for brand-new proposals regardless of kind
  * (`status: ${args.status ?? 'ready'}`), so without the prefix check
  * every freshly created legacy-style proposal (id `p5`, `l100`, …) —
- * which is the common case, that tool predates f113 and has no notion
+ * which is the common case, that tool predates f00016 and has no notion
  * of kinds — would get silently relocated into `ready/` the moment
  * `syncProposalRegistry` next ran. Caught by `authoring.spec.ts`'s
  * existing "p5-meta.md ends up exactly where it was written" assertion.
@@ -464,7 +464,7 @@ export const reconcileFolders = async (
 };
 
 /**
- * Auto-resolves `blocked` → `ready` (f113 §4.2) when every entry in
+ * Auto-resolves `blocked` → `ready` (f00016 §4.2) when every entry in
  * `blocked_by` is satisfied: a `self:*` token clears once the scaffold
  * linter (S2) passes on the file; a proposal-id token clears once that
  * proposal's own status is `done`. Idempotent: once transitioned, the
@@ -517,7 +517,7 @@ export async function syncProposalRegistry(
 	// `paused/demos`. Injected from ctx.options so mcp-vertex's generic
 	// proposal model carries no host vocabulary.
 	extraFolders: readonly string[] = [],
-	// f113 S5: injectable for tests; defaults to a real `git mv` in `root`.
+	// f00016 S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
@@ -526,7 +526,7 @@ export async function syncProposalRegistry(
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
 		await reconcileAndArchiveCompletedRootProposals(proposalsDir);
-		// f113 S5: new-system files only (isGlossaryStatus gates it) — move
+		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
@@ -534,7 +534,7 @@ export async function syncProposalRegistry(
 		await reconcileBlocked(proposalsDir, gitRunner);
 		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
 		// arrive via `extraFolders`.
-		// f113's 7 status folders (S5) overlap with the legacy list (`paused`
+		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
 		// is in both) — dedupe by absolute path so a folder is never scanned
 		// (and its entries never double-counted) twice.
 		const subtreeAbsolutes = [
@@ -543,14 +543,14 @@ export async function syncProposalRegistry(
 			join(proposalsDir, 'revised'),
 			join(proposalsDir, 'revised', 'audits'),
 			join(proposalsDir, 'revised', 'retired'),
-			// Top-level kind sub-folders (legacy f119 layout: `fixes/`,
+			// Top-level kind sub-folders (legacy f00001 layout: `fixes/`,
 			// `audits/`, `feats/` as siblings of the 7 status folders).
 			join(proposalsDir, 'audits'),
 			join(proposalsDir, 'feats'),
 			join(proposalsDir, 'fixes'),
 			join(proposalsDir, 'resumes'),
 			...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
-			// f119 (done folder mirror): kind sub-folders inside the
+			// f00001 (done folder mirror): kind sub-folders inside the
 			// `done/` status folder (`done/audits/`, `done/feats/`,
 			// `done/fixes/`, `done/resumes/`). Same files as the
 			// top-level entries above when a project uses the canonical

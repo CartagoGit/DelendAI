@@ -1,6 +1,6 @@
 /**
  * Typed models for the Logs panel. Mirrors the server's
- * `<prefix>_logs_*` output schemas (f115).
+ * `<prefix>_logs_*` output schemas (f00015).
  */
 
 export type ILogOutcome =
@@ -74,7 +74,7 @@ export interface ILogSubscribeOptions {
 /** Notification event paired with a recent tool call (correlation). */
 export interface INotificationLogEntry {
 	readonly ts: string;
-	readonly event: 'lock-released' | 'cap' | 'bloqueado' | 'status';
+	readonly event: 'lock-released' | 'cap' | 'bloqueado';
 	readonly message: string;
 	readonly taskId?: string;
 	/** Tool calls (from `MetricsService`) that happened within ±5s. */

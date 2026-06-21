@@ -130,7 +130,7 @@ export const activate = async (
 	context.subscriptions.push(registerOpenProposalCommand({ vscode, client }));
 	context.subscriptions.push(registerShowMetricsCommand({ vscode, client }));
 
-	// f125 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
+	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`
 	// module (unavailable outside the VS Code runtime).
 	if (deps.vscode === undefined) {

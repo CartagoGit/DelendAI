@@ -39,7 +39,7 @@ export interface IAuthoringToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly lockPathAbs: string;
-	/** f113 S13: absolute path of the per-kind id counter file. */
+	/** f00016 S13: absolute path of the per-kind id counter file. */
 	readonly counterPathAbs: string;
 	/**
 	 * Workspace-relative layout (proposals dir + index) the post-create
@@ -157,7 +157,7 @@ export const buildCreateProposalRegistration = (
 					'Create a proposal document with frontmatter, a Goal and a parseable `## Slices` section (one slice per parallelisable, file-disjoint unit). Validates disjointness, writes atomically and re-syncs the index. Returns the file path and any overlap issues.',
 				inputSchema: z.object({
 					id: z.string().optional(),
-					// f113 S13: when `id` is omitted, `kind` resolves the
+					// f00016 S13: when `id` is omitted, `kind` resolves the
 					// prefix and the race-safe allocator picks the next
 					// number. One of the two is required (checked at runtime
 					// — modelling that as an exclusive-or in Zod is more
@@ -219,7 +219,7 @@ export const buildCreateProposalRegistration = (
 				} else {
 					return toolError(
 						'either id or kind is required',
-						'Pass an explicit id, or pass kind to auto-allocate the next one (f113 S13).',
+						'Pass an explicit id, or pass kind to auto-allocate the next one (f00016 S13).',
 					);
 				}
 				const slices = args.slices ?? [];

@@ -1,6 +1,6 @@
 /**
- * f113 S2 — validates a proposal `.md` against the canonical scaffold
- * (f113 §4.5): frontmatter shape, body section order, filename↔kind,
+ * f00016 S2 — validates a proposal `.md` against the canonical scaffold
+ * (f00016 §4.5): frontmatter shape, body section order, filename↔kind,
  * folder↔status, and the two equivalent slice formats (terse / narrative).
  *
  * Pure: takes the raw markdown + its path, returns issues. No I/O — the
@@ -30,7 +30,7 @@ export interface ILintResult {
 	readonly issues: readonly ILintIssue[];
 }
 
-// Canonical top-level section sequences (f113 §4.5).
+// Canonical top-level section sequences (f00016 §4.5).
 // Standard proposals and audits have different required sections and canonical order.
 const PROPOSAL_REQUIRED_SECTIONS = [
 	'goal',
@@ -212,7 +212,7 @@ const findSliceHeadings = (markdown: string): ISliceCheck[] => {
 
 /**
  * A slice block runs from its heading to the next `##`/`###` heading (or
- * EOF). Resolves to the four logical fields under either format (f113
+ * EOF). Resolves to the four logical fields under either format (f00016
  * §4.5): terse (`**Files**`/`**Command**`/`**Expect**` bullets) or
  * narrative (`(excl. ...)` in the heading + `**Gate**` bullet, which
  * combines Command + an implicit `Expect: exit0`).
@@ -336,8 +336,8 @@ const lintFilenameAndFolder = (
 	if (typeof status === 'string' && status in PROPOSAL_STATUSES) {
 		const expectedFolder = STATUS_TO_FOLDER[status as IProposalStatus];
 		const pathParts = path.split('/');
-		// f119: terminal statuses (`done`, `retired`) may live under a kind
-		// sub-folder (e.g. `done/audits/a001-...`) as a filesystem-only
+		// f00001: terminal statuses (`done`, `retired`) may live under a kind
+		// sub-folder (e.g. `done/audits/a00007-...`) as a filesystem-only
 		// organisation convention. The check is **status-driven, not
 		// position-driven**: walk the ancestor chain from the file
 		// upward; the FIRST ancestor whose name matches a known status
@@ -433,12 +433,12 @@ const lintFrontmatter = (
 
 	if (
 		typeof frontmatter.id === 'string' &&
-		!/^[a-z]\d{3,}$/.test(frontmatter.id)
+		!/^[a-z]\d{5}$/.test(frontmatter.id)
 	) {
 		issues.push({
 			line: 0,
-			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{3,}$/`,
-			fix: 'Use a single lowercase letter followed by ≥3 digits (e.g. f114).',
+			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{5}$/`,
+			fix: 'Use a single lowercase letter followed by exactly 5 digits (e.g. f00014). Padded 5-digit IDs are enforced by f126.',
 		});
 	}
 

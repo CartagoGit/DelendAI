@@ -9,7 +9,7 @@ kind: feat
 title: Adopt core migrations in the agent registry store
 ---
 
-# f117 — Adopt core migrations in the agent registry store
+# f00013 — Adopt core migrations in the agent registry store
 
 ## Goal
 

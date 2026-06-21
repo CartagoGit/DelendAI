@@ -54,7 +54,7 @@ const run = async (): Promise<void> => {
 	// terminate the process with the signal still set. The handler
 	// closure captures `assembled`, which is assigned synchronously
 	// before `start()` resolves, so the reference is always live by
-	// the time a signal can arrive. See docs/proposals/done/fixes/x123.
+	// the time a signal can arrive. See docs/proposals/done/fixes/x00006.
 	const onSignal = (code: number): void => {
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};

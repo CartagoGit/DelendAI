@@ -67,7 +67,7 @@ describe('proposal_transition', () => {
 
 	it('requires a non-empty reason', async () => {
 		const result = await runProposalTransition(
-			{ id: 'f114', to: 'in-progress', reason: '' },
+			{ id: 'f00014', to: 'in-progress', reason: '' },
 			options,
 		);
 		expect(result.isError).toBe(true);
@@ -75,7 +75,7 @@ describe('proposal_transition', () => {
 
 	it('rejects an unknown target status', async () => {
 		const result = await runProposalTransition(
-			{ id: 'f114', to: 'bogus', reason: 'because' },
+			{ id: 'f00014', to: 'bogus', reason: 'because' },
 			options,
 		);
 		expect(result.isError).toBe(true);
@@ -102,12 +102,12 @@ describe('proposal_transition', () => {
 	});
 
 	it('moves the file and updates frontmatter on a legal transition (ready -> in-progress)', async () => {
-		await writeProposal(root, 'ready', 'f114-do-thing.md', {
-			id: 'f114',
+		await writeProposal(root, 'ready', 'f00014-do-thing.md', {
+			id: 'f00014',
 			status: 'ready',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f114', to: 'in-progress', reason: 'claimed' },
+			{ id: 'f00014', to: 'in-progress', reason: 'claimed' },
 			options,
 		);
 		expect(result.isError).toBeUndefined();
@@ -115,38 +115,38 @@ describe('proposal_transition', () => {
 		expect(body.from).toBe('ready');
 		expect(body.to).toBe('in-progress');
 		const moved = await readFile(
-			join(root, 'in-progress', 'f114-do-thing.md'),
+			join(root, 'in-progress', 'f00014-do-thing.md'),
 			'utf8',
 		);
 		expect(moved).toContain('status: in-progress');
 	});
 
 	it('rejects an illegal transition (done -> in-progress)', async () => {
-		await writeProposal(root, 'done', 'f115-shipped.md', {
-			id: 'f115',
+		await writeProposal(root, 'done', 'f00015-shipped.md', {
+			id: 'f00015',
 			status: 'done',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f115', to: 'in-progress', reason: 'oops' },
+			{ id: 'f00015', to: 'in-progress', reason: 'oops' },
 			options,
 		);
 		expect(result.isError).toBe(true);
 	});
 
 	it('falls back to a plain rename (with a warning) when git mv fails', async () => {
-		await writeProposal(root, 'ready', 'f116-do-thing.md', {
-			id: 'f116',
+		await writeProposal(root, 'ready', 'f00017-do-thing.md', {
+			id: 'f00017',
 			status: 'ready',
 		});
 		const result = await runProposalTransition(
-			{ id: 'f116', to: 'blocked', reason: 'deps missing' },
+			{ id: 'f00017', to: 'blocked', reason: 'deps missing' },
 			{ ...options, gitRunner: FAKE_GIT_FAIL },
 		);
 		expect(result.isError).toBeUndefined();
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.warning).toContain('git mv failed');
 		const moved = await readFile(
-			join(root, 'blocked', 'f116-do-thing.md'),
+			join(root, 'blocked', 'f00017-do-thing.md'),
 			'utf8',
 		);
 		expect(moved).toContain('status: blocked');

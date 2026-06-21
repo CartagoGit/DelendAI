@@ -1,11 +1,11 @@
 /**
- * f113 S13 — race-safe per-kind id allocation (f113 §4.9).
+ * f00016 S13 — race-safe per-kind id allocation (f00016 §4.9).
  *
- * Each kind keeps its own sequence (`f113` is independent from `a006`
+ * Each kind keeps its own sequence (`f00016` is independent from `a00011`
  * or `r042`). The naive approach — list `docs/proposals/`, filter by
  * prefix, take `max + 1` — races under concurrent agents: two agents
  * creating an `f`-kind proposal in the same instant can both read the
- * same stale directory listing and both compute `f114`. This mirrors
+ * same stale directory listing and both compute `f00014`. This mirrors
  * `withFileMutex` for a counter instead of a lock: one mutex-guarded
  * read-increment-write, not "ls + count + hope nobody else creates one
  * between your `ls` and your `write`".
@@ -27,7 +27,7 @@ const FILENAME_PATTERN = /^([a-z])(\d+)-/;
  * folders) for filenames shaped like a proposal id, grouping the max
  * numeric suffix per prefix letter. Used once, to seed the counter
  * file the first time it's missing — so the very first allocation
- * after this ships is safe even with the 14 legacy + f113 already on
+ * after this ships is safe even with the 14 legacy + f00016 already on
  * disk, with zero manual bootstrap step.
  */
 const seedFromDisk = async (proposalsDirAbs: string): Promise<ICounters> => {
@@ -75,7 +75,7 @@ export interface IProposalIdAllocatorOptions {
 }
 
 /**
- * Returns the next id for `prefix` (e.g. `'f'` → `'f114'`), atomically
+ * Returns the next id for `prefix` (e.g. `'f'` → `'f00014'`), atomically
  * incrementing the shared counter file under `withFileMutex`. Never
  * returns a number lower than what's already on disk for that prefix —
  * the seed-from-disk step guarantees that even on a counter file that's

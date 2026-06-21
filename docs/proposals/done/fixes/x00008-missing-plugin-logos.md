@@ -9,7 +9,7 @@ title: Add placeholder SVG logos for the 15 plugins (kills the 404 wall in the b
 shipped-in: 6a328c5, e1aa6f6
 ---
 
-# x125 — Missing plugin logos
+# x00008 — Missing plugin logos
 
 ## Goal
 

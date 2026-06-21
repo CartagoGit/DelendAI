@@ -47,7 +47,7 @@ describe('McpVertexStatusBar', () => {
 					if (input.name === 'proposals_proposal_board') {
 						return {
 							structuredContent: {
-								proposals: [{ id: 'f114' }, { id: 'f115' }],
+								proposals: [{ id: 'f00014' }, { id: 'f00015' }],
 							},
 						};
 					}
@@ -120,7 +120,7 @@ describe('McpVertexStatusBar', () => {
 			async callTool(input) {
 				if (input.name === 'proposals_proposal_board') {
 					return {
-						structuredContent: { proposals: [{ id: 'f114' }] },
+						structuredContent: { proposals: [{ id: 'f00014' }] },
 					};
 				}
 				if (input.name === 'mcp-vertex_metrics') {

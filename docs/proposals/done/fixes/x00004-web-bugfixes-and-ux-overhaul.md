@@ -6,13 +6,13 @@ track: web+i18n+docs
 date: 2026-06-19
 closed: 2026-06-19
 related:
-  - f100 # web i18n and docs rewrite
-  - f101 # header transitions and full capabilities surface
+  - f00012 # web i18n and docs rewrite
+  - f00011 # header transitions and full capabilities surface
 kind: fix
 title: Bugfixes de la web + overhaul visual / UX
 ---
 
-# x105 — Bugfixes de la web + overhaul visual / UX
+# x00004 — Bugfixes de la web + overhaul visual / UX
 
 > **Estado: EN CURSO — 2026-06-19.** Decisiones del usuario (mismo
 > turno, modo chat): corregir bugs detectados durante una pasada manual
@@ -298,13 +298,13 @@ mantener, se mueve a un componente `<Breadcrumb />` ligero
 9. Hay un **desplegable por plugin** con tools/prompts/resources/
    knowledge que muestra al detalle qué aporta cada uno.
 10. `es.ts` y los demás idiomas están completos en las claves nuevas
-    que introdujo f101.
+    que introdujo f00011.
 11. `bun run validate` y `bun run site:strict` siguen verdes.
 
 ## 2. No-objetivos
 
 - No traducir las descripciones reales de tools/prompts (eso va en
-  propuesta x106 — gate + infraestructura en esta, contenido en la
+  propuesta x00002 — gate + infraestructura en esta, contenido en la
   siguiente).
 - No rehacer el sistema de build ni el deploy.
 - No introducir nuevas dependencias.
@@ -738,7 +738,7 @@ separadas sin relación visual. Ahora:
   activo** — al cambiar de PM, el snippet se re-renderiza con un
   `pre>code` que el script JS actualiza usando un mapa pre-
   computado de snippets (`data-snippets` JSON en el `.install`).
-- Cada tab tiene un `title` con la descripción del PM/IDE (x105
+- Cada tab tiene un `title` con la descripción del PM/IDE (x00004
   hint), y la fila 2 muestra un subtítulo `.ide__hint` dentro
   del panel.
 
@@ -797,7 +797,7 @@ Falta documentar en la home y en la wiki que mcp-vertex soporta:
   `go vet`). El aviso explícito es **"por ahora solo TS, pero la
   arquitectura está abierta"**.
 
-La propuesta f107 (separada) recoge el alcance de multi-lenguaje
+La propuesta f00009 (separada) recoge el alcance de multi-lenguaje
 para los typechecks.
 
 ## 9. Cierre (2026-06-19)
@@ -813,7 +813,7 @@ se entregan en esta misma sesión.
 | B2   | Cambio de idioma solo traduce la home                | done   | **086b5ef** (esta sesión) + guard ya en `index/guide/plugins[plugin]` |
 | B3   | `/plugins` con doble header                          | done   | paralelo: 9d4364c (PageHeader) |
 | B4   | `astro dev` no regenera API docs                     | done   | paralelo: `apps/web/package.json#dev` prepende `docs:api` |
-| B5   | Descripciones de tools no traducidas                 | done   | infra: `apps/web/src/i18n/tools/` + `describeTool` con fallback. Catálogo a poblar idioma-por-idioma (f100 s3, fuera de alcance aquí) |
+| B5   | Descripciones de tools no traducidas                 | done   | infra: `apps/web/src/i18n/tools/` + `describeTool` con fallback. Catálogo a poblar idioma-por-idioma (f00012 s3, fuera de alcance aquí) |
 | B6   | Marquesina: nombre siempre visible                   | done   | paralelo: `_chip.scss` con hover expand + cubic-bezier |
 | B7   | Páginas "mínimas" / poco contenido                   | done   | parcial: hero rediseñado en algunas páginas, resto en propuestas siguientes |
 | B8   | Lo que sobra / duplicado                             | done   | paralelo: `plugins/index.astro` reescrito al patrón estándar |
@@ -825,9 +825,9 @@ se entregan en esta misma sesión.
 
 **Commits propios en esta sesión (4):**
 
-- `086b5ef` — fix(web): guard langCode en 5 [lang]/* pages (x105 B2)
-- `323a389` — fix(web): complete x105 B9 i18n keys in all 12 languages
-- `127fa0c` — feat(web): per-plugin capabilities page (x105 B10)
+- `086b5ef` — fix(web): guard langCode en 5 [lang]/* pages (x00004 B2)
+- `323a389` — fix(web): complete x00004 B9 i18n keys in all 12 languages
+- `127fa0c` — feat(web): per-plugin capabilities page (x00004 B10)
 
 **Commits del cierre del frontmatter + este audit:** pendiente de
 un commit final aparte (no se mezcla con código para mantener

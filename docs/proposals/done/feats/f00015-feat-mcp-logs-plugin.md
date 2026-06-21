@@ -8,15 +8,15 @@ track: plugins+notification+memory+web+docs
 budget: { maxInputTokens: 80000, maxOutputTokens: 40000, maxIterations: 100 } # per slice-claim
 triaged: true
 unblocked_by:
-  - f113:S8 # agent-alive / agent-idle / agent-dead via withFileMutex mtime
-  - f113:S9 # 5 recovery tools (proposal_stale_list, agent_lock_release_orphan, …)
-  - f113:S10 # /status/recovery dashboard with SSE
+  - f00016:S8 # agent-alive / agent-idle / agent-dead via withFileMutex mtime
+  - f00016:S9 # 5 recovery tools (proposal_stale_list, agent_lock_release_orphan, …)
+  - f00016:S10 # /status/recovery dashboard with SSE
 ownership:
   - { agent: implementation_runner, task: "S1: plugins/logs skeleton + redactSecrets + append-only writer + daily rotation + GC at boot" }
   - { agent: implementation_runner, task: "S2: tool-registry hook for started/completed/failed/timed_out capture" }
   - { agent: implementation_runner, task: "S3: subscribe to notifications/message bus + normalize events + correlate claim→started→completed chain" }
   - { agent: implementation_runner, task: "S4: 5 tools (logs_query, logs_tail, logs_subscribe, logs_correlate, logs_redact_test) + specs" }
-  - { agent: implementation_runner, task: "S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f113 S10)" }
+  - { agent: implementation_runner, task: "S5: apps/web/src/pages/status/logs.astro + SSE endpoint + 12-language i18n (mirrors f00016 S10)" }
   - { agent: implementation_runner, task: "S6: acceptance — bun run validate green" }
 reservedFiles:
   - plugins/logs/
@@ -43,12 +43,12 @@ author:
   email: cartago.relaxingcup@gmail.com
   linkedin: null
 related:
-  - f113 # state machine + agent events the log subscribes to
-  - f114 # IDE extension — complementary consumer of the same logs
+  - f00016 # state machine + agent events the log subscribes to
+  - f00014 # IDE extension — complementary consumer of the same logs
   - p111 # post-closure audit — historical source of "why did this stop?" pain
 ---
 
-# f115 — MCP logs plugin
+# f00015 — MCP logs plugin
 
 ## Goal
 
@@ -82,7 +82,7 @@ Three concrete pains today, confirmed across multiple sessions:
    slice was submitted. None of them join these into a single
    per-task timeline. An operator investigating a stuck slice has to
    reconstruct it from 3-4 separate tools, in order, by hand.
-3. **Recovery is blind to its own history.** `f113` S9 introduces
+3. **Recovery is blind to its own history.** `f00016` S9 introduces
    `proposal_stale_list` and `proposal_diagnose` — but they only see
    the *current* state, not "this is the 4th time this slice has gone
    zombie in the last week". Without history, the same root cause can
@@ -120,20 +120,20 @@ realistic workloads — well within the rotation budget.
 
 ### Why subscribe to `notifications/message`, not poll mtime
 
-`f113` S8 introduces `agent-events.ts` watching the
+`f00016` S8 introduces `agent-events.ts` watching the
 `withFileMutex` heartbeat mtime and re-emitting events through the
-notification bus. `f115` subscribes to that bus, not to the mtime
+notification bus. `f00015` subscribes to that bus, not to the mtime
 directly — so:
 
 - `notification` and `logs` are not double-watching the same source.
-- `f113` can change internal mtime heuristics without breaking `f115`.
+- `f00016` can change internal mtime heuristics without breaking `f00015`.
 - Any future event source (e.g. an editor-side cancel event, if VS
   Code ever exposes one) only has to publish to the bus to be logged.
 
 ### Why `/status/logs`, not `/admin/logs` or `/debug/events`
 
 `/status/*` is the existing surface for operational state (`recovery`
-lives there too — `f113` S10). Logs are operational state, not admin
+lives there too — `f00016` S10). Logs are operational state, not admin
 tools, not debug tooling. Same i18n rules, same SSE pattern, same
 dashboard conventions. The cost of a new top-level page section is
 non-trivial (i18n for 12 languages, navigation entry, recovery
@@ -150,7 +150,7 @@ The minimum surface to answer "why did this stop?" is:
 
 Two more round out the surface:
 
-- **subscribe** — SSE stream for live dashboards (mirrors `f113` S10
+- **subscribe** — SSE stream for live dashboards (mirrors `f00016` S10
   pattern; needed for the dashboard's live updates)
 - **redact_test** — audit helper to prove `redactSecrets` is doing its
   job (canary payloads, regression coverage; not user-facing but
@@ -204,9 +204,9 @@ plugin — that is a separate proposal if ever needed.
 | Source | Event kinds | When |
 |---|---|---|
 | Tool registry hook (S2) | `tool-started`, `tool-completed`, `tool-failed`, `tool-timed-out` | Every MCP tool invocation |
-| `notification` bus (S3) | `agent-alive`, `agent-idle`, `agent-dead`, `lock-claimed`, `lock-released` | When `f113` S8/S9 emit them |
+| `notification` bus (S3) | `agent-alive`, `agent-idle`, `agent-dead`, `lock-claimed`, `lock-released` | When `f00016` S8/S9 emit them |
 | `quality` plugin | `quality-run-started`, `quality-run-finished`, `quality-run-cancelled` | When a quality scope starts/ends |
-| `proposals` plugin | `slice-submitted`, `slice-approved`, `slice-request-changes`, `proposal-stale-detected` | When `f113` S9 emits them |
+| `proposals` plugin | `slice-submitted`, `slice-approved`, `slice-request-changes`, `proposal-stale-detected` | When `f00016` S9 emits them |
 | `state_health` | `state-repaired`, `state-inconsistency-detected` | Whenever the repair tool is invoked |
 
 A single `normalizeEvent(kind, payload)` function (S1) maps every
@@ -271,7 +271,7 @@ a write tool; the log is internal-only.
 ### Dashboard (S5)
 
 `apps/web/src/pages/status/logs.astro` — sibling of the `recovery`
-page from `f113` S10. Same shell, same SSE pattern, same 12-language
+page from `f00016` S10. Same shell, same SSE pattern, same 12-language
 i18n keys (`logs.*`). On render:
 
 1. Calls `logs_tail({ limit: 50 })` for the initial paint.
@@ -401,7 +401,7 @@ log *does* have everything needed:
   `subscribeToBus(bus, sink)` that listens for
   `agent-alive`, `agent-idle`, `agent-dead`, `lock-claimed`,
   `lock-released` and routes them through `normalizeEvent` →
-  `appendEvent`. Coexists with `f113` S8/S9's bridge without
+  `appendEvent`. Coexists with `f00016` S8/S9's bridge without
   double-emission (single subscriber).
 - Create `plugins/logs/src/lib/correlate.ts` with
   `correlate({ taskId, agent, since, until })` that reads the
@@ -433,7 +433,7 @@ log *does* have everything needed:
   Returns `{events, oldestTs, newestTs}`.
 - `logs_subscribe` — accepts `outcomeFilter`, `kindFilter`,
   returns SSE handle (tool registration uses the same pattern
-  `f113` S10 introduces for `/api/events/[topic].ts`).
+  `f00016` S10 introduces for `/api/events/[topic].ts`).
 - `logs_correlate` — accepts `taskId` or `agent` (one required,
   not both), `since`, `until`. Returns `{chain, firstTs,
   lastTs, gaps}` where `gaps` is an array of
@@ -456,7 +456,7 @@ log *does* have everything needed:
 
 - **Status**: done
 - Create `apps/web/src/pages/status/logs.astro` mirroring
-  `apps/web/src/pages/status/recovery.astro` (from `f113` S10).
+  `apps/web/src/pages/status/recovery.astro` (from `f00016` S10).
 - Create `apps/web/src/components/logs/LogTable.astro` with
   one row per event, colour-coded outcome badge, "copy task id"
   button.
@@ -475,14 +475,14 @@ log *does* have everything needed:
   outcome badges, copy-task affordance, plugin/site capability
   generation and 12-language `logs.*` i18n coverage.
 
-### S6 — Acceptance *(excl. `bun run validate`, `docs/proposals/blocked/f115-feat-mcp-logs-plugin.md`)*
+### S6 — Acceptance *(excl. `bun run validate`, `docs/proposals/blocked/f00015-feat-mcp-logs-plugin.md`)*
 
 - **Status**: done
 - Aggregator slice: runs the full monorepo gate end-to-end and confirms
   every line item in the proposal's top-level `acceptance:` frontmatter
   resolves to exit 0. Touches no production source files itself —
   its exclusive concern is this proposal document (lint:proposals must
-  pass on `f115` itself) and the orchestrator-level command that ties
+  pass on `f00015` itself) and the orchestrator-level command that ties
   the gate together.
 - The 5 commands already declared in the top-level `acceptance:`
   frontmatter are the slice's commands; this slice is the runbook for
@@ -512,8 +512,8 @@ S1 ──┬──► S2 ──┐
 Critical path: S1 → S3 → S4 → S5 → S6 (≈ 4.5 sessions).
 Parallelisable: S2 (independent of S3, can run alongside).
 
-External dependency on `f113`: blocked on `f113:S8`, `f113:S9`,
-`f113:S10`. The `f113` S5 reconciler will promote `f115` from
+External dependency on `f00016`: blocked on `f00016:S8`, `f00016:S9`,
+`f00016:S10`. The `f00016` S5 reconciler will promote `f00015` from
 `blocked/` to `ready/` automatically when those three slices
 land (per the `blocked → ready` auto-resolution rule of the
 state machine).
@@ -545,8 +545,8 @@ state machine).
 |---|---|
 | Log volume explodes during incident (quality timeout storms, recovery loops) | Per-line 8 KB cap + 100 MB/day file warn + daily rotation; `bun run validate` includes a fuzz test that asserts bounded growth |
 | Persisting secrets via tool payloads (a tool returns an API key) | `redactSecrets` on every line before write; `logs_redact_test` exposes the detector list for audit; canary payloads in the spec cover AWS / GitHub / JWT / PEM private keys |
-| `f113` changes event names (e.g. renames `agent-dead` to `peer-down`) | S3 normalises at the boundary; a single mapping test (`event-normalization.spec.ts`) catches breaks; `f115` does not depend on `f113`'s internal naming |
-| Double subscription with `notification` (both watching mtime) | `f115` subscribes to the **bus** `notifications/message`, not the mtime — single source of events |
+| `f00016` changes event names (e.g. renames `agent-dead` to `peer-down`) | S3 normalises at the boundary; a single mapping test (`event-normalization.spec.ts`) catches breaks; `f00015` does not depend on `f00016`'s internal naming |
+| Double subscription with `notification` (both watching mtime) | `f00015` subscribes to the **bus** `notifications/message`, not the mtime — single source of events |
 | Concurrent appenders corrupting the JSONL | `withFileMutex` per day-file (not per directory); 25-way concurrency spec already covered by the mutex primitive |
 | Dashboard overwhelms the SSE bus during incidents | 100 events/sec per connection rate limit, burst 200; the dashboard batches via the `outcomeFilter` so a focused view is cheap |
 | Plugin registration order breaks (logs tries to subscribe before notification publishes) | S1 wires the subscription in `activate()` after both plugins are loaded; spec asserts the subscription succeeds even when `notification` emits before logs is ready (buffered at the bus level, the existing `notification` queue semantics apply) |
@@ -554,7 +554,7 @@ state machine).
 
 ## Notes
 
-- This proposal **does not** modify `f113`. It depends on `f113`'s
+- This proposal **does not** modify `f00016`. It depends on `f00016`'s
   contract (events emitted to the bus), not its implementation.
 - The 5 tools are read-only. A write tool would let any caller forge
   log entries and is rejected on principle.

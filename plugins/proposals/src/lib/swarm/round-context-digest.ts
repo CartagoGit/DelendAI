@@ -107,7 +107,7 @@ export const readRoundContextDigest = async (
 /**
  * Write a digest to disk atomically.
  *
- * l125 s7: delegates to the shared `writeFileAtomic` primitive (write a
+ * l00008 s7: delegates to the shared `writeFileAtomic` primitive (write a
  * temp file in the same directory, then `rename` over the target) instead
  * of a hand-rolled reimplementation — one fewer place to keep the
  * crash-safety guarantee correct.

@@ -78,7 +78,7 @@ const makeTranslatorCompat = (resolved: ITranslations): TranslatorCompat => {
 			) {
 				cur = (cur as Record<string, unknown>)[seg];
 			} else {
-				// Miss (x124 S6): the key is not in the active dict nor in
+				// Miss (x00007 S6): the key is not in the active dict nor in
 				// the English fallback. We return `undefined` so call
 				// sites that care about misses (e.g. `PluginsSection.astro`
 				// looking up `plugin.<slug>` descriptions) can fall back
