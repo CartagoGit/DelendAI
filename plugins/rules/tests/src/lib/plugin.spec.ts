@@ -97,4 +97,25 @@ describe('@mcp-vertex/rules plugin', () => {
 		expect(out.mode).toBe('strict');
 		expect(out.areas[0].rules.presetId).toBe('react-ts');
 	});
+
+	it('check_rules compact mode surfaces missing ESLint deps as findings', async () => {
+		const reg = await plugin.register(
+			makeCtx(root, {
+				framework: 'react',
+				language: 'ts',
+			}),
+		);
+		const checkRules = await captureTool(reg.tools![1]!);
+		const out = JSON.parse(
+			(await checkRules({ compact: true })).content[0]!.text,
+		);
+		expect(out.compact).toBe(true);
+		expect(out.checks[0].eslintConfigs).toBeUndefined();
+		expect(out.findings[0]).toMatchObject({
+			code: 'missing-eslint-deps',
+			severity: 'warning',
+			framework: 'react',
+		});
+		expect(out.findings[0].missing).toContain('eslint-plugin-react');
+	});
 });
