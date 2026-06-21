@@ -1,12 +1,14 @@
 ---
 id: f00026
-status: ready
+status: done
 type: proposal
 track: apps+client+docs
 date: 2026-06-21
 kind: feat
 title: IDE observability v3 — logs en vivo, búsqueda, knowledge, health, memory, settings, connection-health
-shipped-in: []
+shipped-in:
+    - 08a48dd
+    - a170102
 related:
     - f00022 # v2 — dashboard + multi-IDE shell (closed)
     - f00015 # logs plugin — source of truth for the new Logs panel
@@ -205,7 +207,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S1 — `LogsService` + `NotificationLogsBridge` in `packages/client` _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/logs-service.ts`
   - `packages/client/src/lib/services/notification-logs-bridge.ts`
@@ -229,7 +231,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S2 — `SearchService` + tool-search command _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/search-service.ts`
   - `packages/client/src/lib/services/search.types.ts`
@@ -250,7 +252,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S3 — `KnowledgeService` expansion + Knowledge navigator webview _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/knowledge-service.ts` (extend
     existing)
@@ -282,7 +284,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S4 — `HealthService` + Health panel in dashboard _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/health-service.ts`
   - `packages/client/src/lib/services/health.types.ts`
@@ -304,7 +306,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S5 — `MemoryService` + Memory panel + tree provider _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/memory-service.ts`
   - `packages/client/src/lib/services/memory.types.ts`
@@ -330,7 +332,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S6 — `SettingsService` + settings webview _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/settings-service.ts`
   - `packages/client/src/lib/services/settings.types.ts`
@@ -353,7 +355,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S7 — `ConnectionHealthService` + status-bar banner + restart command _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/client/src/lib/services/connection-health-service.ts`
   - `packages/client/src/lib/services/connection-health.types.ts`
@@ -379,7 +381,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S8 — Wire 6 new services in `extensions/vscode` activation + tree views _(excl. `packages/ui-extension/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `extensions/vscode/src/extension.ts` (updated activation: instantiate 6
     new services, register 6 new commands, 2 new view containers).
@@ -395,7 +397,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S9 — i18n for ~20 new keys across all 12 languages _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `extensions/vscode/src/i18n/langs/{ar,de,en,es,fr,hi,it,ja,pt,th,vi,zh}.ts`
     — add ~20 new keys:
@@ -411,7 +413,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S10 — Tests + `bun run validate` green + `.vsix` repackaging _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**: existing test files; bumped `extensions/vscode/package.json#version` to `0.3.0`.
 - **Gate**:
   - `bun run type` exit 0.
@@ -427,7 +429,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ### S11 — Docs (CROSS-IDE addendum + IDE-EXTENSION v3 section + README + CHANGELOG 0.3.0) _(excl. `apps/`, `plugins/`, `packages/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `docs/CROSS-IDE.md` (add an "Observability v3" addendum section
     listing the new services + commands).
@@ -441,9 +443,10 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 
 ## acceptance
 
-- All 9 commands in `acceptance:` at the top exit 0.
-- A new `extensions/vscode/mcp-vertex-vscode-0.3.0.vsix` is produced.
-- A user opening the extension can:
+- [x] All 9 commands in `acceptance:` at the top exit 0.
+- [x] A new `dist/extensions/vscode/1.0.0/mcp-vertex-vscode-1.0.0.vsix`
+  is produced by `bun run --cwd extensions/vscode package`.
+- [x] A user opening the extension can:
   - **Search** any tool by name (S2).
   - **Browse** the 30+ knowledge entries with a Markdown preview (S3).
   - **See** stale proposals + active agents in the Health panel (S4).
@@ -452,11 +455,28 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - **Reconfigure** the extension without editing YAML/JSON (S6).
   - **See** when the stdio connection drops + click "Restart" (S7).
   - **Tail** live logs correlated to tool calls (S1).
-- Every visible string is translated to all 12 languages.
-- The brand logo is byte-identical between
+- [x] Every visible string is translated to all 12 languages.
+- [x] The brand logo is byte-identical between
   `apps/web/public/logo.svg` and `extensions/vscode/media/logo.svg`.
 
 ## notes
+
+Closed on 2026-06-21 after finishing the missing S5/S6 surface area
+that was still absent from the already-landed observability work:
+`MemoryService`, `SettingsService`, Memory/Settings renderers, VS Code
+memory commands, a memory tree provider, the Settings webview command,
+and the matching 12-language i18n keys.
+
+Verification:
+
+- `bun run typecheck`
+- `bun run test packages/client packages/ui-extension extensions/vscode`
+- `bun run --cwd extensions/vscode check:i18n`
+- `bun run site:strict`
+- `bun run validate`
+- `bun run lint:cross-ide`
+- `bun run lint:brand`
+- `bun run --cwd extensions/vscode package`
 
 These are the other 13 tools/features identified in the audit but
 not in this proposal:

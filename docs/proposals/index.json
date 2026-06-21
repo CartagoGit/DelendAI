@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T19:48:02.607Z",
-	"count": 87,
+	"generated_at": "2026-06-21T19:59:04.255Z",
+	"count": 89,
 	"proposals": [
 		{
 			"id": "a00027",
@@ -42,29 +42,6 @@
 					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
 					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
 					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
-				]
-			}
-		},
-		{
-			"id": "f00026",
-			"file": "ready/f00026-ide-observability-v3.md",
-			"track": "apps+client+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{"
 				]
 			}
 		},
@@ -118,6 +95,22 @@
 			"extras": {
 				"ownership": ["{", "{", "{", "{", "{"]
 			}
+		},
+		{
+			"id": "f00045",
+			"file": "ready/f00045-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
+			"track": "proposals-plugin+workflow+skills+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00046",
+			"file": "ready/f00046-memory-hygiene-policy-session-compaction-boundaries.md",
+			"track": "plugins/memory+skills+docs+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "f00001",
@@ -683,6 +676,29 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00026",
+			"file": "done/feats/f00026-ide-observability-v3.md",
+			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{"
+				]
+			}
 		},
 		{
 			"id": "f00027",

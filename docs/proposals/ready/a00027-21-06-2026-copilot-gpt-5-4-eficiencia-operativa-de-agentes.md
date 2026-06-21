@@ -115,7 +115,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `apps/web/src/**`
 - **Gate**: `bun run validate`
 - **Status**: pending
-- **Expect**: identificar tools o flows que aún no privilegian outputs compactos, presupuestos por defecto, caching seguro, paths de validación baratos o compacción al cambiar de tramo.
+- **Expect**: matriz por surface con cuatro ejes verificables sin tocar código: `compact-default`, `cap numérico`, `invalidación de caché` y `cheap check`, más gaps donde el bounded runtime ya exista pero el consumidor siga prefiriendo rutas caras.
 
 ### S5 — Triage: convertir gaps validados en propuestas hijas
 
@@ -154,7 +154,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 |---|---|
 | Propuesta creada | Sí, en `ready/` |
 | Baseline de eficiencia | Parcialmente levantada en `S1` desde superficies normativas/documentales |
-| Hallazgos validados | Ya hay hallazgos documentales para `S1`, `S2` y `S3`; aún no hay hallazgos de implementación profunda en superficies de output |
+| Hallazgos validados | Ya hay hallazgos documentales para `S1`, `S2` y `S3`, y evidencia de runtime/consumo para `S4`; aún no se ha hecho el triage de propuestas hijas |
 | Propuestas hijas creadas | Aún no, se reservan para `S5` |
 | Gate de cierre | `bun run validate` al pasar a `done` |
 
@@ -188,6 +188,17 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 | Compacción de sesión | parcial | `/compact`, no-reread y compact-first existen, pero dependen de guidance manual |
 | Decisión memory vs docs/search/reread | parcial | hay preferencia implícita por memory y surfaces compactas, pero no un decision tree corto unificado |
 | Presupuesto específico de memory surfaces | parcial | hay bounded counts y hygiene, pero no budget explícito comparable al cold-start |
+
+### Baseline S4
+
+| Surface | Compact-default | Cap numérico | Invalidación / safety | Cheap check |
+|---|---|---|---|---|
+| `overview` | fuerte | fuerte | n/a | fuerte |
+| `search` | fuerte | fuerte | containment + fallback seguro | parcial |
+| `docs` | fuerte | fuerte | containment | fuerte |
+| `proposals` round context | fuerte | fuerte | digest-aware | fuerte |
+| `logs` | fuerte | fuerte | redaction + truncation + cursor | fuerte |
+| client/hosts | parcial | parcial | cache local no digest-aware | parcial |
 
 La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo solo escala a propuesta hija si falla al menos uno de estos puntos con evidencia reproducible.
 
@@ -238,6 +249,8 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 11. **Recall y list baratos por defecto**: la recuperación separa índice paginado de payload completo, reduciendo coste de contexto.
 12. **Persistencia segura y con invalidación real**: secretos se redactan antes de persistir, las expiradas desaparecen de lectura/export y la store corrupta se pone en cuarentena.
 13. **Disciplina compact-first de prompts principales**: `overview` primero, no releer si no cambió el digest y usar `/compact` entre tareas no relacionadas ya forman parte del marco operativo.
+14. **Bounded outputs reales en runtime**: `overview` compact, `search` con clamps múltiples, `docs` con index barato + payload unitario, `logs` con cursor/tail/truncation y `proposals` con policy digest-aware y previews capados.
+15. **Cheap checks ya disponibles en varias surfaces**: `HealthService` puede omitir stale list, `status-marker` expone un ping mínimo y la web publica benchmarks medidos del cold-start.
 
 ### documentation gaps
 
@@ -255,6 +268,11 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 12. **Exit / memory**: la compacción de sesión sigue siendo mayormente manual (`/compact`), no ligada de forma automática al cierre de slice o al cambio de tema.
 13. **Budget / hierarchy**: la regla de hilo principal barato está repartida entre prompt corto, prompt de sesión y skills, lo que introduce duplicación y riesgo de drift.
 14. **Memory / exit**: la arquitectura de memoria documenta bien seguridad y corrupción, pero no compactación semántica ni un forget path recomendado fuera del TTL.
+15. **Budget**: los budgets medidos y gateados siguen concentrados en `overview` y `auto_work`; no hay una familia equivalente para `search`, `docs`, `logs` ni round-context read-only.
+16. **Hierarchy / budget**: client y hosts siguen tirando de `overview` full por defecto en varias superficies; la ruta compact-first existe en servidor, pero no es todavía el default del consumidor.
+17. **Budget**: el panel de tokens del client usa una heurística fija de ahorro, no una medida derivada del servidor real ni de `compact vs full`.
+18. **Limits**: el árbol de memoria en VS Code limita y cachea una primera página sin overflow explícito ni navegación visible a páginas siguientes.
+19. **Hierarchy / safe cache**: las caches de tools y memory en VS Code son baratas, pero no digest-aware ni stale-aware como sí lo es proposals round context.
 
 ### follow-up shape
 
@@ -271,9 +289,9 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 
 | Dimensión | Objetivo de la auditoría |
 |---|---|
-| Límites | Fuerte en cold-start y observabilidad; parcial para exploración read-only y verbosidad fuera del loop detector |
+| Límites | Fuerte en cold-start, observabilidad, search, docs, logs y round-context por caps runtime; parcial en algunas surfaces host que recortan sin transparencia suficiente |
 | Jerarquía | Fuerte en orientación compacta, claim/release y delegación de `proposals`; parcial porque delegación y worktree siguen siendo guidance fuera del runtime del plugin |
-| Presupuestos | Fuerte para `overview`/`auto_work`; parcial para `search`, `docs`, `git`, `memory` y otras superficies del preset swarm |
+| Presupuestos | Fuerte para `overview`/`auto_work`; parcial porque el resto de surfaces bounded (`search`, `docs`, `logs`, round-context, memory`) aún no tienen budgets medidos/gateados equivalentes |
 | Criterios de salida | Fuerte para cambios de código y también en runtime swarm (`idle brake`, `all-claimed`, `stuck-detected`); parcial para slices de investigación documental |
 | Memoria compacta | Fuerte en higiene de persistencia durable; parcial en compacción e invalidación del contexto de sesión y en la frontera normativa de qué persistir |
 | Follow-ups | Aún no abrir; S1 solo justifica posibles familias, no propuestas hijas todavía |
@@ -289,3 +307,5 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 - Para slices read-only de workflow, el cierre útil mínimo no es `validate`, sino capturar evidencia sobre claim path, wait path, delegate threshold, stop path y cualquier ambigüedad entre surfaces normativas.
 - S3 separa dos planos distintos: memoria durable segura y bounded frente a gobierno del contexto en vivo. El primero ya está bastante maduro; el segundo sigue descansando más en guidance que en una policy unificada.
 - En memoria, “bounded” no equivale todavía a “budgeted”: hay límites de entrada y quota, pero no un presupuesto explícito de coste de contexto equivalente al que ya existe para `overview` y `auto_work`.
+- S4 confirma que el repo ya resuelve bastante bien `bounded` en servidor, pero no siempre `compact-first` ni `budget-aware` en consumidores host/client.
+- El follow-up potencial de S4 no es “más auditoría general”, sino decidir en `S5` si estos gaps merecen una propuesta de budgets multi-surface y otra de compact-default en clientes/hosts.
