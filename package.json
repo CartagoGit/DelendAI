@@ -40,7 +40,7 @@
 		"build": "bun tools/scripts/compile/build.script.ts",
 		"cli": "bun packages/cli/src/index.ts",
 		"package": "cd extensions/vscode && bun run package",
-		"validate": "bun run typecheck && bun run lint && bun run lint:scss && bun run test",
+		"validate": "bun run typecheck && bun run lint && bun run lint:cli-imports && bun run lint:scss && bun run test",
 		"types:generate": "bun tools/scripts/types/generate-tool-types.script.ts",
 		"config:schema": "bun tools/scripts/types/generate-config-schema.script.ts",
 		"release": "bun tools/scripts/release/release.script.ts",
