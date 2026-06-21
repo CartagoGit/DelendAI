@@ -264,7 +264,6 @@ const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
 	'7. conventional commits': 'architecture',
 	// === Custom / domain-specific (added as the catalogue grew) ===
 	'orden por defecto': 'why this design',
-	'scope (lo que sí toca)': 'why this design',
 	'out of scope (lo que no toca)': 'non-goals',
 	scope: 'why this design',
 	'acceptance (global)': 'acceptance',

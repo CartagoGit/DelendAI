@@ -49,21 +49,6 @@ become pure redirectors that load mcp-vertex on first call.
   `technical_investigator`) and the orchestrator slot. We extend it so
   it can also emit a redirector for any client that wants one.
 
-## Non-goals
-
-- Changing the public MCP surface (`mcp-vertex_overview` / `auto_work` /
-  `continue_proposal` / `delegate` / `agent_lock` / `close_slice`).
-  The orchestrator contract stays where it is.
-- Replacing the four bounded subagents added in the previous slice.
-  They are already redirector-style; this proposal only formalises the
-  pattern.
-- Forcing Claude Code to drop its native `.claude/agents/` folder. We
-  keep the folder but only the **canonical** file (the one matching
-  mcp-vertex's slot) lives there; everything else is moved out of the
-  Copilot selector's view.
-- i18n on the new redirector body — the body is intentionally a few
-  lines, English is fine for v1.
-
 ## Contract change
 
 A "redirector" agent is defined as an `*.agent.md` whose body contains
@@ -83,6 +68,21 @@ A linter rule (see S3) flags any agent file in `.github/agents/` that is
 **not** a redirector or a bounded subagent, and warns on files under
 `.claude/agents/` whose `name:` is `mcp-vertex*` but whose body is not a
 redirector.
+
+## Non-goals
+
+- Changing the public MCP surface (`mcp-vertex_overview` / `auto_work` /
+  `continue_proposal` / `delegate` / `agent_lock` / `close_slice`).
+  The orchestrator contract stays where it is.
+- Replacing the four bounded subagents added in the previous slice.
+  They are already redirector-style; this proposal only formalises the
+  pattern.
+- Forcing Claude Code to drop its native `.claude/agents/` folder. We
+  keep the folder but only the **canonical** file (the one matching
+  mcp-vertex's slot) lives there; everything else is moved out of the
+  Copilot selector's view.
+- i18n on the new redirector body — the body is intentionally a few
+  lines, English is fine for v1.
 
 ## Slices
 
