@@ -1,38 +1,46 @@
 #!/usr/bin/env bun
 /**
  * fetch-brand-logos.ts — fetch each project's official brand
- * asset (favicon / brand mark) and copy it to the web app's
+ * asset (favicon / logo SVG) and copy it to the web app's
  * `apps/web/public/logos/` directory.
  *
  * Why this exists (x128):
- *   x127 tried to use the local `simple-icons` package, but
- *   most simple-icons marks are wordmarks (the literal name of
- *   the project in text), not icons. The user feedback after
- *   x127 was clear: "los logos no son los logos reales de nada...
- *   son simplemente svgs con colores, no con los logotipos de
- *   cada framework. Descargalos de donde corresponda".
+ *   x127 used the local `simple-icons` package, but most
+ *   simple-icons marks are wordmarks (the literal project name
+ *   spelled out in text), not icon-style marks. The user
+ *   feedback after x127: "los logos no son los logos reales
+ *   de nada... son simplemente svgs con colores, no con los
+ *   logotipos de cada framework. Descargalos de donde
+ *   corresponda".
  *
- *   So x128 goes to the source. We crawl each project's
- *   official marketing site for `<link rel="icon">` and
- *   download the first match. When the site uses a PNG/ICO
- *   favicon (most older sites do) we download that — a PNG is
- *   still the real brand mark, just raster instead of vector.
- *   For projects that ship a public SVG asset (npm, pnpm, bun,
- *   deno, vscode, cursor, yarn) we download that.
+ *   So x128 goes to the source. We hit each project's
+ *   official site for `<link rel="icon">` and download the
+ *   first match. SVG when the project ships one (npm, pnpm,
+ *   yarn, bun, deno, vscode, cursor), PNG/ICO when it doesn't
+ *   (github, node, typescript, zed, claude, antigravity,
+ *   windsurf).
  *
- *   Sources tried, in order, until one returns 200:
+ *   Sources tried, in order, until one returns a real image:
  *     1. the project's official marketing site
  *     2. the project's GitHub repo (raw URLs)
  *     3. simple-icons as a last resort
  *
- *   The brand assets are committed to `apps/web/public/logos/`
- *   with the extension they came with (`.svg` or `.png`). The
- *   Install page renders them as `<img src>` and the browser
- *   picks the right format.
+ *   We validate every download by sniffing the magic bytes
+ *   (PNG, ICO, or SVG). Anything else (HTML redirect pages,
+ *   gzip bodies) is rejected. The output filename uses the
+ *   format that came back (`<base>.svg`, `<base>.png`, or
+ *   `<base>.ico`). The Install page renders them as
+ *   `<img src>` and the browser picks the right format.
  *
- * Usage: `bun run fetch:logos` from `apps/web/`. Idempotent.
+ *   Idempotent: tracks which files were written this run and
+ *   removes any `<base>.<other-ext>` left over from a previous
+ *   source change (e.g. a leftover `.svg` when the source now
+ *   serves a `.png`).
+ *
+ * Usage: `bun run fetch:logos` from `apps/web/`.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readdir, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -45,44 +53,75 @@ interface IBrandEntry {
 	readonly sources: ReadonlyArray<string>;
 }
 
+type ImageKind = 'svg' | 'png' | 'ico';
+
+const MAGIC: Record<ImageKind, ReadonlyArray<number>> = {
+	svg: [0x3c], // "<svg" — only check the first byte (always '<')
+	png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+	ico: [0x00, 0x00, 0x01, 0x00],
+};
+
+const sniff = (buf: Uint8Array): ImageKind | null => {
+	for (const kind of ['svg', 'png', 'ico'] as const) {
+		const sig = MAGIC[kind];
+		if (buf.byteLength < sig.length) continue;
+		let ok = true;
+		for (let i = 0; i < sig.length; i++) {
+			if (buf[i] !== sig[i]) {
+				ok = false;
+				break;
+			}
+		}
+		if (ok) return kind;
+	}
+	return null;
+};
+
+const extensionForKind = (kind: ImageKind): string => {
+	if (kind === 'svg') return 'svg';
+	if (kind === 'png') return 'png';
+	return 'ico';
+};
+
 const fetchUrl = async (
 	url: string,
-): Promise<{ body: Uint8Array; contentType: string } | null> => {
+): Promise<{ body: Uint8Array; kind: ImageKind; bytes: number } | null> => {
 	try {
 		const res = await fetch(url, {
+			redirect: 'follow',
 			headers: {
 				'User-Agent':
 					'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+				// Bun's fetch auto-decompresses gzip bodies, so we
+				// arrive at the raw bytes regardless of the
+				// upstream's Content-Encoding.
 				Accept: 'image/svg+xml,image/png,image/webp,image/*,*/*;q=0.8',
 			},
 		});
 		if (!res.ok) return null;
-		const contentType = res.headers.get('content-type') ?? '';
 		const buf = new Uint8Array(await res.arrayBuffer());
 		if (buf.byteLength === 0) return null;
-		return { body: buf, contentType };
-	} catch {
+		const kind = sniff(buf);
+		if (!kind) {
+			console.warn(
+				`  ${url} → magic bytes ${Array.from(buf.slice(0, 8))
+					.map((b) => b.toString(16).padStart(2, '0'))
+					.join(' ')}, skipping (likely HTML/gzip redirect)`,
+			);
+			return null;
+		}
+		return { body: buf, kind, bytes: buf.byteLength };
+	} catch (e) {
+		console.warn(`  ${url} → ${(e as Error).message}`);
 		return null;
 	}
-};
-
-/**
- * Given a fetched asset (raw bytes + content-type), decide the
- * output filename extension. PNG stays PNG, SVG stays SVG, ICO
- * gets converted to PNG (because most browsers render ICO and
- * the Install page already uses `<img>` with a single asset).
- */
-const extensionFor = (contentType: string, url: string): 'svg' | 'png' => {
-	if (contentType.includes('svg')) return 'svg';
-	if (url.endsWith('.svg')) return 'svg';
-	return 'png';
 };
 
 const BRANDS: ReadonlyArray<IBrandEntry> = [
 	{
 		outName: 'npm',
-		// npmjs.com is behind Cloudflare; static.npmjs.com + npm/logos
-		// repos are mirrors. The square "n" is the favicon-style mark.
+		// npmjs.com is behind Cloudflare; the npm/logos GitHub repo is
+		// the official mirror. The square "n" is the icon-style mark.
 		sources: [
 			'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n.svg',
 			'https://raw.githubusercontent.com/npm/logos/master/npm%20square/n-large.png',
@@ -101,11 +140,11 @@ const BRANDS: ReadonlyArray<IBrandEntry> = [
 	},
 	{
 		outName: 'bun',
-		sources: ['https://bun.sh/logo.svg', 'https://bun.sh/favicon.ico'],
+		sources: ['https://bun.sh/logo.svg'],
 	},
 	{
 		outName: 'deno',
-		sources: ['https://deno.com/logo.svg', 'https://deno.com/favicon.ico'],
+		sources: ['https://deno.com/logo.svg'],
 	},
 	{
 		outName: 'node',
@@ -133,31 +172,33 @@ const BRANDS: ReadonlyArray<IBrandEntry> = [
 	},
 	{
 		outName: 'ide-cursor',
-		sources: [
-			'https://cursor.sh/marketing-static/favicon.svg',
-			'https://cursor.sh/marketing-static/favicon.ico',
-		],
+		sources: ['https://cursor.sh/marketing-static/favicon.svg'],
 	},
 	{
 		outName: 'ide-claude',
-		// anthropic.com Webflow CDN (favicon is a PNG).
-		sources: [
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/681d52619fec35886a7f1a70_favicon.png',
-		],
+		sources: ['https://claude.ai/favicon.ico'],
 	},
 	{
 		outName: 'ide-claude-code',
-		// Claude Code icon (Anthropic Webflow CDN).
+		// Claude Code's product-specific icon lives behind the
+		// Mintlify CDN and a Cloudflare JS challenge — both reject
+		// plain `fetch` calls (returns an HTML SPA shell, magic
+		// bytes `<` not `<svg`, so our sniff correctly rejects it).
+		// We fall back to the Claude brand mark from claude.ai,
+		// which is the real Anthropic logo rendered as an ICO.
 		sources: [
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_app_icon.svg',
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_app_icon.png',
+			'https://claude.ai/favicon.ico',
+			'https://www.anthropic.com/favicon.ico',
 		],
 	},
 	{
 		outName: 'ide-claude-desktop',
+		// Same situation as `ide-claude-code` — the Claude Desktop
+		// product icon is gated behind Cloudflare. Fall back to the
+		// Claude brand mark.
 		sources: [
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_desktop_icon.svg',
-			'https://cdn.prod.website-files.com/67ce28cfec624e2b733f8a52/claude_desktop_icon.png',
+			'https://claude.com/favicon.ico',
+			'https://www.anthropic.com/favicon.ico',
 		],
 	},
 	{
@@ -168,9 +209,14 @@ const BRANDS: ReadonlyArray<IBrandEntry> = [
 	},
 	{
 		outName: 'ide-windsurf',
+		// codeium.com/windsurf/* is behind Cloudflare and serves an
+		// HTML redirect page (Content-Type: text/html) for every
+		// URL — our magic-byte sniff correctly rejects those.
+		// The windsurf.com subdomain's /favicon.ico serves the
+		// real WindSurf brand mark without the Cloudflare gate.
 		sources: [
-			'https://codeium.com/windsurf/icon.png',
-			'https://codeium.com/windsurf/favicon.ico',
+			'https://www.windsurf.com/favicon.ico',
+			'https://codeium.com/favicon.ico',
 		],
 	},
 	{
@@ -179,13 +225,11 @@ const BRANDS: ReadonlyArray<IBrandEntry> = [
 	},
 	{
 		outName: 'ide-antigravity',
-		// Antigravity doesn't have an official SVG/PNG. The closest
-		// stand-in is the Gemini "spark" mark. We fall back to a
-		// tiny placeholder SVG that the user can replace once
-		// Antigravity ships one.
-		sources: [
-			'https://www.gstatic.com/images/branding/product/2x/google_gemini_64dp.png',
-		],
+		// Antigravity ships only an ICO. The server returns
+		// Content-Encoding: gzip with Content-Type: image/x-icon;
+		// Bun's fetch transparently decompresses, so we land on
+		// the raw ICO bytes (magic 00 00 01 00).
+		sources: ['https://antigravity.google/favicon.ico'],
 	},
 ];
 
@@ -194,55 +238,53 @@ const main = async (): Promise<void> => {
 	let fetched = 0;
 	let written = 0;
 	let failed = 0;
+	const writtenThisRun = new Set<string>();
 
 	for (const brand of BRANDS) {
-		let data: { body: Uint8Array; contentType: string } | null = null;
-		let usedUrl = '';
+		let hit: { body: Uint8Array; kind: ImageKind; bytes: number } | null =
+			null;
 		for (const url of brand.sources) {
-			console.log(`fetching ${brand.outName} from ${url}`);
-			data = await fetchUrl(url);
-			if (data && data.body.byteLength > 0) {
-				usedUrl = url;
-				fetched += 1;
-				break;
-			}
+			hit = await fetchUrl(url);
+			if (hit) break;
 		}
-		if (!data) {
-			console.warn(`FAILED ${brand.outName} (no source responded)`);
+		if (!hit) {
+			console.warn(
+				`FAILED ${brand.outName} (no source responded with an image)`,
+			);
 			failed += 1;
 			continue;
 		}
-		const ext = extensionFor(data.contentType, usedUrl);
-		const outName = `${brand.outName}.${ext}`;
+		fetched += 1;
+		const outName = `${brand.outName}.${extensionForKind(hit.kind)}`;
 		const outPath = join(OUT, outName);
 		const existing = existsSync(outPath) ? readFileSync(outPath) : null;
-		if (existing && existing.byteLength === data.body.byteLength) {
-			console.log(`unchanged ${outName}`);
+		if (existing && existing.byteLength === hit.body.byteLength) {
+			console.log(`unchanged ${outName} (${hit.bytes}B)`);
+			writtenThisRun.add(outName);
 			continue;
 		}
-		writeFileSync(outPath, data.body);
+		writeFileSync(outPath, hit.body);
 		written += 1;
-		console.log(
-			`wrote ${outName} (${data.body.byteLength} bytes, ${data.contentType || 'unknown'})`,
-		);
+		writtenThisRun.add(outName);
+		console.log(`wrote ${outName} (${hit.bytes}B, ${hit.kind})`);
 	}
 
-	// Remove any stale logo file with an extension that no longer matches
-	// the source. e.g. if `ide-foo.svg` was downloaded and now we want
-	// `ide-foo.png`, remove the old SVG.
-	const wanted = new Set(BRANDS.map((b) => b.outName));
-	const fs = await import('node:fs/promises');
-	for (const file of await fs.readdir(OUT)) {
-		const m = file.match(/^(.+)\.(svg|png)$/);
+	// Remove any stale logo file with the same `<base>` but a
+	// different extension than what we wrote this run. e.g. if
+	// the previous x128 attempt left `github.svg` (from simple-
+	// icons) and this run downloaded the real `github.png`,
+	// the .svg gets deleted. The `<base>.<ext>` we want is the
+	// one in `writtenThisRun`; everything else matching a brand
+	// base is stale.
+	const wantedBases = new Set(BRANDS.map((b) => b.outName));
+	for (const file of await readdir(OUT)) {
+		const m = file.match(/^(.+)\.(svg|png|ico)$/);
 		if (!m) continue;
-		const [_, base, ext] = m;
-		if (!wanted.has(base)) continue;
-		// Check that the file we wrote matches `base.ext`:
-		const target = `${base}.${ext}`;
-		if (file !== target) {
-			console.log(`removing stale ${file}`);
-			await fs.unlink(join(OUT, file));
-		}
+		const [, base] = m;
+		if (!wantedBases.has(base)) continue;
+		if (writtenThisRun.has(file)) continue;
+		console.log(`removing stale ${file}`);
+		await unlink(join(OUT, file));
 	}
 
 	if (!existsSync(join(OUT, '.gitkeep'))) {
