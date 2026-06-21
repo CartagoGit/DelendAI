@@ -30,4 +30,15 @@ export const it = {
 	kpiAgents: 'Agenti',
 	refreshDashboard: 'Aggiorna dashboard',
 	docsUrlRejected: 'mcp-vertex: URL docs rifiutata',
+	openKnowledge: 'mcp-vertex: Apri navigatore conoscenze',
+	toolSearch: 'mcp-vertex: Cerca strumenti',
+	restartServer: 'mcp-vertex: Riavvia server MCP',
+	tabHealth: 'Salute',
+	healthHealthy: 'Sano',
+	healthDegraded: 'Degradato',
+	healthLocks: 'Blocchi',
+	healthStale: 'Agenti inattivi',
+	healthQueue: 'Coda',
+	serverRestartHint:
+		'mcp-vertex: riavvia l estensione per rilanciare il server MCP.',
 } satisfies IExtensionTranslations;

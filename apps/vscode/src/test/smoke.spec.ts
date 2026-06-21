@@ -73,8 +73,9 @@ describe('VS Code extension smoke', () => {
 		});
 
 		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
-		expect(subscriptions).toHaveLength(5);
-		expect(commands.has(SHOW_OVERVIEW_COMMAND)).toBe(true);
+		// f125 + f126: 5 original commands + openDashboard (f125) +
+		// openKnowledge + toolSearch + restartServer (f126) = 8.
+		expect(subscriptions).toHaveLength(8);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);

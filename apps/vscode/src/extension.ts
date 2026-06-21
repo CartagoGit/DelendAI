@@ -14,7 +14,10 @@ import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
-import { registerRestartServerCommand } from './commands/restart-server';
+import {
+	RESTART_SERVER_COMMAND,
+	registerRestartServerCommand,
+} from './commands/restart-server';
 import { REFRESH_COMMAND, registerRefreshCommand } from './commands/refresh';
 import {
 	RUN_VALIDATION_COMMAND,
@@ -192,8 +195,11 @@ const loadVscodeApi = async (): Promise<IVscodeApi> =>
 	(await import('vscode')) as unknown as IVscodeApi;
 
 export {
+	OPEN_KNOWLEDGE_COMMAND,
 	OPEN_PROPOSAL_COMMAND,
 	REFRESH_COMMAND,
+	RESTART_SERVER_COMMAND,
 	RUN_VALIDATION_COMMAND,
 	SHOW_METRICS_COMMAND,
+	TOOL_SEARCH_COMMAND,
 };

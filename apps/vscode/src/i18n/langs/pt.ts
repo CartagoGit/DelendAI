@@ -30,4 +30,15 @@ export const pt = {
 	kpiAgents: 'Agentes',
 	refreshDashboard: 'Atualizar painel',
 	docsUrlRejected: 'mcp-vertex: URL de docs rejeitada',
+	openKnowledge: 'mcp-vertex: Abrir navegador de conhecimento',
+	toolSearch: 'mcp-vertex: Buscar ferramentas',
+	restartServer: 'mcp-vertex: Reiniciar servidor MCP',
+	tabHealth: 'Saude',
+	healthHealthy: 'Saudavel',
+	healthDegraded: 'Degradado',
+	healthLocks: 'Bloqueios',
+	healthStale: 'Agentes inativos',
+	healthQueue: 'Fila',
+	serverRestartHint:
+		'mcp-vertex: reinicie a extensao para relancar o servidor MCP.',
 } satisfies IExtensionTranslations;
