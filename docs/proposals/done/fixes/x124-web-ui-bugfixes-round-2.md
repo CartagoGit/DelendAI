@@ -1,11 +1,12 @@
 ---
 id: x124
-status: ready
+status: done
 type: proposal
 track: web+ui
 date: 2026-06-21
 kind: fix
 title: Web UI bugfixes round 2 — header view-transition, language persistence on navigate, search modal layout, More dropdown a11y + animation, in-page language switch, missing tool/plugin i18n
+shipped-in: 01de303, 2759c7a, efca64a
 ---
 
 # x124 — Web UI bugfixes round 2 (post-x122)
