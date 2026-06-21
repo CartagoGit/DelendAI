@@ -41,7 +41,7 @@ Close the memory/context gaps surfaced by a00027 S3: define what deserves durabl
 
 ### S2 — Memory plugin and skill surfaces reflect the policy
 - **Files**: plugins/memory/src/lib/tools.ts, plugins/memory/src/lib/store.ts, skills/token-budget-playbook/SKILL.md, skills/proposal-swarm-runner/SKILL.md
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "memory_save/list/recall surfaces align with the documented non-log policy and make bounded durable-note usage explicit."

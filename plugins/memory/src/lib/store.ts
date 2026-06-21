@@ -50,7 +50,11 @@ export const DEFAULT_MAX_NOTES = 1000;
 export const getMaxNotes = (override?: number): number =>
 	typeof override === 'number' && override > 0 ? override : DEFAULT_MAX_NOTES;
 
-/** Derive a note's stable id from its title (so saves upsert by title). */
+/**
+ * Derive a note's stable id from its title (so saves upsert by title).
+ * Titles are therefore part of the durable memory contract: the store is for
+ * stable reusable facts, not ephemeral log entries that should accumulate.
+ */
 export const deriveNoteId = (title: string): string =>
 	kebab(title) || `note-${Date.now().toString(36)}`;
 
@@ -107,7 +111,9 @@ export const writeStore = async (
 
 /**
  * Upsert a note by id (derived from its title), so "save note titled X"
- * updates X instead of duplicating it. Returns the stored note.
+ * updates X instead of duplicating it. The store is intentionally biased
+ * toward durable distilled notes: overwrite a stable fact, don't append a
+ * running transcript. Returns the stored note.
  */
 export const saveNote = (
 	absPath: string,

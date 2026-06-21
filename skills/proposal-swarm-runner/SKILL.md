@@ -70,3 +70,11 @@ one fewer open slice for that proposal. If that was the last open slice,
 run `proposals_sync_proposals` once; the proposal's `status` field in
 `index.json` should then read `done`. If it does not, run `state_health`
 (see `state-repair-playbook`) before retrying.
+
+## Memory hygiene
+
+When closing a slice, only persist a durable memory note if the fact will
+still matter after the slice or session ends: stable conventions, verified
+gotchas, reusable commands, distilled decisions. Do not dump raw tool output,
+debug traces, or turn-by-turn exploration into memory; that material belongs
+to transient session context and should be compacted away once the slice closes.

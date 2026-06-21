@@ -60,6 +60,11 @@ session. The cost of re-reading a digest you already have is strictly
 worse than the cost of letting it drop and re-fetching only if actually
 needed later.
 
+If a fact from that closed slice is truly reusable after the slice ends,
+distil it into durable memory first. If it would only help while the current
+investigation is still warm, do not persist it — compact it away with the
+rest of the transient context.
+
 ## Smoke
 
 The in-process token-budget e2e
