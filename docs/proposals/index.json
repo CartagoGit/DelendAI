@@ -1,28 +1,7 @@
 {
-	"generated_at": "2026-06-21T18:45:00.000Z",
+	"generated_at": "2026-06-21T18:53:21.758Z",
 	"count": 85,
 	"proposals": [
-		{
-			"id": "a00022",
-			"file": "ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: proposal_guardian, task: 'S1: Execute audit and document findings' }"
-				]
-			}
-		},
-		{
-			"id": "f00020",
-			"file": "done/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
-			"track": "proposals-plugin",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
 		{
 			"id": "f00023",
 			"file": "ready/f00023-rename-proposal-ids-padded-5-digits-by-creation-date.md",
@@ -184,6 +163,14 @@
 			"id": "c00002",
 			"file": "done/c00002-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00020",
+			"file": "done/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"track": "proposals-plugin",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
@@ -374,6 +361,19 @@
 			"extras": {
 				"ownership": [
 					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a00022",
+			"file": "done/audits/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian, task: 'S1: Execute audit and document findings' }"
 				]
 			}
 		},

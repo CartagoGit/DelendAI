@@ -48,6 +48,16 @@ bun.lockb
 packages/*/src/**/*.d.ts
 plugins/*/src/**/*.d.ts
 
+# Personal-machine overrides of the shared agent config files. The shared
+# autopilot defaults live in `.vscode/settings.json`, `.claude/settings.json`,
+# `.continue/config.json`, `.cursor/rules/*.mdc` and `.aider.conf.yml`;
+# per-machine overrides use the `.local` suffix and MUST NOT be tracked
+# (they usually contain API keys, model choices, or stricter permission
+# settings).
+.vscode/settings.local.json
+.claude/settings.local.json
+.continue/config.local.json
+
 # Agent session notes dropped at the repo root. These are transient
 # per-session digests (consolidation steps, workarounds, lessons
 # learned) that belong in the agent's memory / notes system, not in

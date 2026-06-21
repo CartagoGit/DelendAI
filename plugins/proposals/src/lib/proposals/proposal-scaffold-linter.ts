@@ -802,6 +802,63 @@ const lintFrontmatter = (
 		});
 	}
 
+	// f00024: cascadeOverride is a break-glass that pins a proposal to an
+	// absolute cascade priority. It must always carry an audit-trail reason
+	// (logged by `proposal_auto_work` and surfaced in `get_proposal_workflow`
+	// diagnostics), and the runtime resolver already throws when the reason
+	// is missing — the linter closes the authoring gap so the runtime error
+	// never fires in production.
+	if ('cascadeOverride' in frontmatter) {
+		const override = frontmatter.cascadeOverride;
+		if (typeof override !== 'number' || !Number.isFinite(override)) {
+			issues.push({
+				line: 0,
+				message: `frontmatter cascadeOverride must be a finite number (got ${typeof override})`,
+				fix: 'Use a finite numeric priority (negative numbers rank higher in the cascade).',
+			});
+		}
+		const reason = frontmatter.cascadeOverrideReason;
+		if (typeof reason !== 'string' || reason.trim().length < 4) {
+			issues.push({
+				line: 0,
+				message:
+					'frontmatter cascadeOverride is set but cascadeOverrideReason is missing or too short',
+				fix: 'Add `cascadeOverrideReason: <human-readable rationale>` to the frontmatter so `proposal_auto_work` can log the audit trail.',
+			});
+		}
+	} else if ('cascadeOverrideReason' in frontmatter) {
+		// A reason without an override is a dangling field — either the
+		// override was removed and the reason forgotten, or the override was
+		// never added. Either way, treat as fatal so the frontmatter never
+		// claims an audit trail that the cascade never applied.
+		issues.push({
+			line: 0,
+			message:
+				'frontmatter cascadeOverrideReason is set but cascadeOverride is missing',
+			fix: 'Either add `cascadeOverride: <number>` or remove the dangling `cascadeOverrideReason`.',
+		});
+	}
+
+	// f00024: cascadeBoost is an intra-kind nudge. The union is closed
+	// (extensible only by editing `TCascadeBoost` in `cascade-priority.ts`),
+	// so an unknown value would silently fall through to no-op at runtime —
+	// catch it here instead of letting it rot.
+	if ('cascadeBoost' in frontmatter) {
+		const boost = frontmatter.cascadeBoost;
+		const allowed = new Set([
+			'shipped-blocking',
+			'customer-reported',
+			'security',
+		]);
+		if (typeof boost !== 'string' || !allowed.has(boost)) {
+			issues.push({
+				line: 0,
+				message: `frontmatter cascadeBoost "${String(boost)}" is not one of the allowed values`,
+				fix: `Use one of: ${[...allowed].join(', ')}. Unknown values silently no-op at runtime.`,
+			});
+		}
+	}
+
 	return { issues, frontmatter: frontmatter as Record<string, unknown> };
 };
 
