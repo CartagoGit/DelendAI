@@ -2,7 +2,7 @@
 	"mcpServers": {
 		"mcp-vertex": {
 			"command": "bun",
-			"args": ["scripts/host-server.ts"]
+			"args": ["tools/scripts/host/host-server.script.ts"]
 		}
 	}
 }
