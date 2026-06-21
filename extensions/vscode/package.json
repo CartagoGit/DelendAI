@@ -1,8 +1,8 @@
 {
-	"name": "mcp-vertex-vscode",
+	"name": "@mcp-vertex/extension-vscode",
 	"displayName": "mcp-vertex",
-	"description": "VS Code client for inspecting and operating an mcp-vertex MCP server.",
-	"version": "0.3.0",
+	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
+	"version": "1.0.0",
 	"publisher": "cartago",
 	"type": "module",
 	"private": true,
