@@ -223,6 +223,9 @@ const buildMap = async (root: string): Promise<IRenumberMap> => {
 
 const applyRenames = async (map: IRenumberMap): Promise<void> => {
 	for (const r of map.renames) {
+		if (r.oldRelPath === r.newRelPath && r.oldId === r.newId) {
+			continue;
+		}
 		await execFileP('git', ['mv', r.oldRelPath, r.newRelPath], {
 			cwd: process.cwd(),
 		});

@@ -1,5 +1,5 @@
 ---
-id: f00023
+id: f00014
 kind: feat
 title: Renumerar proposals con padding de 5 dígitos, por fecha de creación, dentro de cada familia
 status: ready
@@ -21,12 +21,12 @@ reservedFiles:
     - plugins/proposals/src/lib/proposals/proposal-registry.ts
     - plugins/proposals/src/lib/proposals/proposal-sync.ts
 related:
-    - f00016 # proposal state machine — defines the 7-status DFA + the 12 kinds; f00023 must not break it
-  - f00001 # done-folder mirrors kinds — already landed; the audit documents now live in done/audits/ with padded IDs
+    - f00016 # proposal state machine — defines the 7-status DFA + the 12 kinds; f00014 must not break it
+    - f00042 # done-folder mirrors kinds — already landed; the audit documents now live in done/audits/ with padded IDs
     - f00022 # IDE extension v2 — does not touch IDs but has reservedFiles that include docs/proposals/done/feats/
 ---
 
-# f00023 — Renumerar proposals con padding de 5 dígitos, por fecha de creación, dentro de cada familia
+# f00014 — Renumerar proposals con padding de 5 dígitos, por fecha de creación, dentro de cada familia
 
 ## Goal
 
@@ -103,7 +103,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 
 ### S2 — Renombrar archivos + frontmatter
 - **Files**: [`docs/proposals/ready/**`, `docs/proposals/done/**`, `docs/proposals/in-progress/**`, `docs/proposals/paused/**`, `docs/proposals/blocked/**`, `docs/proposals/retired/**`]
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "Ejecuta `bun tools/scripts/proposals/rename-padded.script.ts --apply` (el script de S1)."
@@ -112,13 +112,13 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
   - "`docs/proposals/index.json` se regenera con `mcp-vertex.proposals.sync_proposals` (o `bun scripts/sync-proposals.ts` si existe un script equivalente) — los `id` y `file` reflejan el nuevo padding."
 
 ### S3 — Actualizar referencias externas
-- **Files**: [`docs/proposals/n00001-SESION-2026-06-17.md`, `docs/proposals/in-progress/f00001-*.md`, `scripts/lint-proposals.ts`]
+- **Files**: [`docs/proposals/done/resumes/n00001-15-06-2026-resumen-sesion-autonoma-claude-code.md`, `docs/proposals/done/feats/f00042-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md`, `tools/scripts/lint/proposals.script.ts`]
 - **Status**: pending
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "Para cada `oldId -> newId` del mapa de S1, busca refs en `*.md`, `*.ts`, `*.astro` (excluyendo `node_modules`, `dist`, `coverage`, `.bun`) y reemplaza `oldId` por `newId` solo donde aparece como ID de proposal."
   - "No reemplaza números que sean parte de versiones semver, años, IDs de issue de GitHub, o nombres de archivo sin patrón `<familia><dígitos>-`."
-  - "Endurece el regex de validación en `scripts/lint-proposals.ts` a `/^[a-z]+\d{5}$/`."
+  - "Endurece el regex de validación en `tools/scripts/lint/proposals.script.ts` a `/^[a-z]+\d{5}$/`."
   - "El diff resultante es mínimo: solo las refs a IDs que cambiaron de número."
 
 ### S4 — Validación global
@@ -149,7 +149,7 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 
 ## Risks and mitigations
 
-- **R1 — La migración puede salir mal a mitad de renames.** Mitigación: el rollback es `git revert <merge-commit-de-f00023>` y el `index.json` se regenera desde los archivos, no al revés.
+- **R1 — La migración puede salir mal a mitad de renames.** Mitigación: el rollback es `git revert <merge-commit-de-f00014>` y el `index.json` se regenera desde los archivos, no al revés.
 - **R2 — Colisión con otra propuesta que reserve las mismas carpetas.** Mitigación: S1 y S2 verifican locks y `reservedFiles` antes de aplicar renames.
 
 ## Notes

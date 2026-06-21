@@ -3,7 +3,7 @@
  *
  * TDD specs for `parseChatTitlingPrefix` and `isValidChatTitlingPrefix`.
  *
- * Contract (p41, T1 — Capa 1, "Convención de prompt"):
+ * Contract:
  *
  *   1. The input is trimmed left + right before parsing.
  *   2. It must start with `[`.

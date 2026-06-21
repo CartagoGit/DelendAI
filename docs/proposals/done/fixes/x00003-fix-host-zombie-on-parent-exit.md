@@ -1,5 +1,5 @@
 ---
-id: x00006
+id: x00003
 kind: fix
 title: fix(host): install signal handlers so Bun doesn't zombie on parent exit
 status: done

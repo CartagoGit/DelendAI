@@ -1,5 +1,5 @@
 ---
-id: a00027
+id: a00028
 kind: audit
 title: "Auditoría marco de eficiencia operativa de agentes — límites, jerarquía, presupuestos, criterios de salida y memoria compacta"
 status: done

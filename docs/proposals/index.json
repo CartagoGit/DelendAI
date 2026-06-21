@@ -1,10 +1,10 @@
 {
-	"generated_at": "2026-06-21T21:38:45.470Z",
-	"count": 97,
+	"generated_at": "2026-06-21T21:47:05.555Z",
+	"count": 96,
 	"proposals": [
 		{
-			"id": "f00023",
-			"file": "ready/f00023-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"id": "f00014",
+			"file": "ready/f00014-rename-proposal-ids-padded-5-digits-by-creation-date.md",
 			"track": "proposals-plugin+docs",
 			"type": "proposal",
 			"status": "ready",
@@ -28,16 +28,16 @@
 			}
 		},
 		{
-			"id": "f00032",
-			"file": "ready/f00032-skills-and-tools-coverage.md",
+			"id": "f00020",
+			"file": "ready/f00020-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00042",
-			"file": "ready/f00042-github-issues-plugin-ingest-and-propose.md",
+			"id": "f00029",
+			"file": "ready/f00029-github-issues-plugin-ingest-and-propose.md",
 			"track": "plugins/issues+docs",
 			"type": "proposal",
 			"status": "ready",
@@ -47,8 +47,8 @@
 			}
 		},
 		{
-			"id": "f00044",
-			"file": "ready/f00044-cross-project-setup-and-github-config.md",
+			"id": "f00030",
+			"file": "ready/f00030-cross-project-setup-and-github-config.md",
 			"track": "docs+plugins/issues+apps/web+extensions/vscode",
 			"type": "proposal",
 			"status": "ready",
@@ -58,56 +58,56 @@
 			}
 		},
 		{
-			"id": "f00045",
-			"file": "ready/f00045-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
+			"id": "f00036",
+			"file": "ready/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
 			"track": "proposals-plugin+workflow+skills+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00050",
-			"file": "ready/f00050-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
-			"track": "host+core+docs+workflow",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00048",
-			"file": "ready/f00048-contracts-file-naming-and-folder-conventions.md",
+			"id": "f00037",
+			"file": "ready/f00037-contracts-file-naming-and-folder-conventions.md",
 			"track": "architecture+lint+repo-layout",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "c00002",
-			"file": "done/c00002-decide-and-close-m13-security-plugin.md",
+			"id": "f00043",
+			"file": "ready/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "c00001",
+			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00020",
-			"file": "done/f00020-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
-			"track": "proposals-plugin",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00033",
-			"file": "done/f00033-release-provenance-via-npm-publish.md",
+			"id": "f00019",
+			"file": "done/f00019-release-provenance-via-npm-publish.md",
 			"track": "release+ci",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "l00008",
-			"file": "done/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
+			"id": "f00032",
+			"file": "done/f00032-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"track": "proposals-plugin",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "l00001",
+			"file": "done/l00001-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
 			"track": "plugins+core+audit",
 			"type": "proposal",
 			"status": "done",
@@ -115,23 +115,23 @@
 		},
 		{
 			"id": "r00001",
-			"file": "done/r00001-harden-catchall-output-schemas.md",
-			"track": "plugins+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "r00002",
-			"file": "done/r00002-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
+			"file": "done/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
 			"track": "core+plugins",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "c00001",
-			"file": "paused/c00001-pause-npm-publish.md",
+			"id": "r00002",
+			"file": "done/r00002-harden-catchall-output-schemas.md",
+			"track": "plugins+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "c00002",
+			"file": "paused/c00002-pause-npm-publish.md",
 			"track": "docs+release",
 			"type": "proposal",
 			"status": "paused",
@@ -312,20 +312,20 @@
 		},
 		{
 			"id": "a00022",
-			"file": "done/audits/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
+			"file": "done/audits/a00022-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
-					"{ agent: proposal_guardian, task: 'S1: Execute audit and document findings' }"
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
 				]
 			}
 		},
 		{
 			"id": "a00023",
-			"file": "done/audits/a00023-21-06-2026-claude-code-sonnet-4-6-repositorio.md",
+			"file": "done/audits/a00023-21-06-2026-copilot-gpt-5-4-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -338,20 +338,7 @@
 		},
 		{
 			"id": "a00024",
-			"file": "done/audits/a00024-21-06-2026-copilot-gpt-5-4-repositorio.md",
-			"track": "archive",
-			"type": "unspecified",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
-				]
-			}
-		},
-		{
-			"id": "a00025",
-			"file": "done/audits/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
+			"file": "done/audits/a00024-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md",
 			"track": "metrics+plugins+workflow",
 			"type": "unspecified",
 			"status": "done",
@@ -364,8 +351,8 @@
 			}
 		},
 		{
-			"id": "a00026",
-			"file": "done/audits/a00026-21-06-2026-copilot-minimax-m3-repositorio.md",
+			"id": "a00025",
+			"file": "done/audits/a00025-21-06-2026-copilot-minimax-m3-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -377,26 +364,21 @@
 			}
 		},
 		{
-			"id": "a00027",
-			"file": "done/audits/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
-			"track": "workflow+core+plugins+apps+docs+memory",
+			"id": "a00026",
+			"file": "done/audits/a00026-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md",
+			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
-					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
-					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
-					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
-					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
-					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
-					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
+					"{ agent: proposal_guardian, task: 'S1: Execute audit and document findings' }"
 				]
 			}
 		},
 		{
-			"id": "a00031",
-			"file": "done/audits/a00031-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"id": "a00027",
+			"file": "done/audits/a00027-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
@@ -409,14 +391,19 @@
 		},
 		{
 			"id": "a00028",
-			"file": "done/audits/a00028-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
-			"track": "archive",
+			"file": "done/audits/a00028-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
+			"track": "workflow+core+plugins+apps+docs+memory",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
-					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
+					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
+					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
+					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
+					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
+					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
 				]
 			}
 		},
@@ -447,19 +434,25 @@
 			}
 		},
 		{
-			"id": "f00001",
-			"file": "done/feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
-			"track": "proposals",
+			"id": "a00031",
+			"file": "done/audits/a00031-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
-					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
-					"{ agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }",
-					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
 				]
 			}
+		},
+		{
+			"id": "f00001",
+			"file": "done/feats/f00001-adopt-core-migrations-for-agent-registry.md",
+			"track": "proposals+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "f00002",
@@ -479,87 +472,7 @@
 		},
 		{
 			"id": "f00004",
-			"file": "done/feats/f00004-feat-multi-model-audit-plugin.md",
-			"track": "audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00005",
-			"file": "done/feats/f00005-feat-status-marker-plugin.md",
-			"track": "agent-contract",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00006",
-			"file": "done/feats/f00006-feat-test-convention-plugin.md",
-			"track": "core+plugin+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "f00007",
-			"file": "done/feats/f00007-keep-legacy-default-false.md",
-			"track": "core+scaffold",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00008",
-			"file": "done/feats/f00008-loop-detection-and-handoff.md",
-			"track": "runtime+coordination",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00009",
-			"file": "done/feats/f00009-multilang-quality-gates.md",
-			"track": "core+quality+web",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "f00010",
-			"file": "done/feats/f00010-residual-p100-web-and-i18n.md",
-			"track": "web+i18n",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "f00011",
-			"file": "done/feats/f00011-web-header-transitions-and-full-capabilities-surface.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00012",
-			"file": "done/feats/f00012-website-i18n-and-docs-rewrite.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-18"
-		},
-		{
-			"id": "f00013",
-			"file": "done/feats/f00013-adopt-core-migrations-for-agent-registry.md",
-			"track": "proposals+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00014",
-			"file": "done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
+			"file": "done/feats/f00004-feat-ide-extension-vscode-and-friends.md",
 			"track": "apps+client+docs",
 			"type": "unspecified",
 			"status": "done",
@@ -584,8 +497,8 @@
 			}
 		},
 		{
-			"id": "f00015",
-			"file": "done/feats/f00015-feat-mcp-logs-plugin.md",
+			"id": "f00005",
+			"file": "done/feats/f00005-feat-mcp-logs-plugin.md",
 			"track": "plugins+notification+memory+web+docs",
 			"type": "unspecified",
 			"status": "done",
@@ -615,8 +528,16 @@
 			}
 		},
 		{
-			"id": "f00016",
-			"file": "done/feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
+			"id": "f00006",
+			"file": "done/feats/f00006-feat-multi-model-audit-plugin.md",
+			"track": "audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00007",
+			"file": "done/feats/f00007-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md",
 			"track": "proposals+core+web+notification",
 			"type": "unspecified",
 			"status": "done",
@@ -656,79 +577,112 @@
 			}
 		},
 		{
-			"id": "f00017",
-			"file": "done/feats/f00017-proposals-output-schema-hardening.md",
+			"id": "f00008",
+			"file": "done/feats/f00008-feat-status-marker-plugin.md",
+			"track": "agent-contract",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00009",
+			"file": "done/feats/f00009-feat-test-convention-plugin.md",
+			"track": "core+plugin+web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "f00010",
+			"file": "done/feats/f00010-keep-legacy-default-false.md",
+			"track": "core+scaffold",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00011",
+			"file": "done/feats/f00011-loop-detection-and-handoff.md",
+			"track": "runtime+coordination",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-18"
+		},
+		{
+			"id": "f00012",
+			"file": "done/feats/f00012-multilang-quality-gates.md",
+			"track": "core+quality+web",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
+			"id": "f00013",
+			"file": "done/feats/f00013-proposals-output-schema-hardening.md",
 			"track": "proposals+tooling",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00018",
-			"file": "done/feats/f00018-rules-compact-findings.md",
+			"id": "f00015",
+			"file": "done/feats/f00015-residual-p100-web-and-i18n.md",
+			"track": "web+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "f00016",
+			"file": "done/feats/f00016-rules-compact-findings.md",
 			"track": "rules+quality",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00019",
-			"file": "done/feats/f00019-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
-			"track": "notification-plugin",
+			"id": "f00017",
+			"file": "done/feats/f00017-web-header-transitions-and-full-capabilities-surface.md",
+			"track": "web+i18n+docs",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-21"
+			"date": "2026-06-18"
 		},
 		{
-			"id": "f00022",
-			"file": "done/feats/f00022-ide-extension-multi-ide-brand-dashboard.md",
-			"track": "apps+client+docs",
+			"id": "f00018",
+			"file": "done/feats/f00018-website-i18n-and-docs-rewrite.md",
+			"track": "web+i18n+docs",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-21"
+			"date": "2026-06-18"
 		},
 		{
-			"id": "f00024",
-			"file": "done/feats/f00024-cascade-priority-by-kind-with-frontmatter-override.md",
-			"track": "proposals-plugin+workflow",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00025",
-			"file": "done/feats/f00025-tools-scripts-refactor-rename-scripts-to-tools.md",
+			"id": "f00021",
+			"file": "done/feats/f00021-tools-scripts-refactor-rename-scripts-to-tools.md",
 			"track": "core+build+release+proposals+lint+i18n+site",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00026",
-			"file": "done/feats/f00026-ide-observability-v3.md",
-			"track": "apps+client+docs",
+			"id": "f00022",
+			"file": "done/feats/f00022-async-i-o-migrar-notification-watcher-ts-a-node-fs-promises.md",
+			"track": "notification-plugin",
 			"type": "proposal",
 			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{",
-					"{"
-				]
-			}
+			"date": "2026-06-21"
 		},
 		{
-			"id": "f00027",
-			"file": "done/feats/f00027-metrics-longitudinal-regression-gate.md",
+			"id": "f00023",
+			"file": "done/feats/f00023-plugins-depth-extension.md",
+			"track": "plugins",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00024",
+			"file": "done/feats/f00024-metrics-longitudinal-regression-gate.md",
 			"track": "metrics+ci",
 			"type": "proposal",
 			"status": "done",
@@ -740,71 +694,8 @@
 			}
 		},
 		{
-			"id": "f00028",
-			"file": "done/feats/f00028-plugins-depth-extension.md",
-			"track": "plugins",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00029",
-			"file": "done/feats/f00029-versioned-skills-prompts-and-web-fetch-plugin.md",
-			"track": "skills+plugins+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }"
-				]
-			}
-		},
-		{
-			"id": "f00030",
-			"file": "done/feats/f00030-web-deep-pages-and-search.md",
-			"track": "web+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: claude-orchestrator-round3, task: \"S1 per-tool pages, S2 verify pagefind already wired, S3 first-5-minutes, S4 troubleshooting, S5 nav+audit close — closed\" }"
-				]
-			}
-		},
-		{
-			"id": "f00031",
-			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
-			"track": "core+agents+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00034",
-			"file": "done/feats/f00034-cli-mcp-vertex-single-binary-local-and-remote.md",
-			"track": "core+cli+client+workflow",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"reservedFiles": [
-					"packages/cli/",
-					"packages/cli/package.json",
-					"packages/cli/tsconfig.json",
-					"packages/cli/vitest.config.ts",
-					"packages/cli/src/",
-					"packages/cli/tests/",
-					"packages/cli/README.md",
-					"packages/core/package.json # only the bin field is touched; see S1",
-					"docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)"
-				]
-			}
-		},
-		{
-			"id": "f00035",
-			"file": "done/feats/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
+			"id": "f00025",
+			"file": "done/feats/f00025-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
 			"track": "apps+monorepo+docs",
 			"type": "proposal",
 			"status": "done",
@@ -836,8 +727,58 @@
 			}
 		},
 		{
-			"id": "f00043",
-			"file": "done/feats/f00043-presets-page-and-plugin-membership.md",
+			"id": "f00026",
+			"file": "done/feats/f00026-versioned-skills-prompts-and-web-fetch-plugin.md",
+			"track": "skills+plugins+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }"
+				]
+			}
+		},
+		{
+			"id": "f00027",
+			"file": "done/feats/f00027-web-deep-pages-and-search.md",
+			"track": "web+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: claude-orchestrator-round3, task: \"S1 per-tool pages, S2 verify pagefind already wired, S3 first-5-minutes, S4 troubleshooting, S5 nav+audit close — closed\" }"
+				]
+			}
+		},
+		{
+			"id": "f00028",
+			"file": "done/feats/f00028-ide-extension-multi-ide-brand-dashboard.md",
+			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00031",
+			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
+			"track": "core+agents+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00033",
+			"file": "done/feats/f00033-cascade-priority-by-kind-with-frontmatter-override.md",
+			"track": "proposals-plugin+workflow",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00034",
+			"file": "done/feats/f00034-presets-page-and-plugin-membership.md",
 			"track": "apps/web+docs+core+cli",
 			"type": "proposal",
 			"status": "done",
@@ -847,28 +788,87 @@
 			}
 		},
 		{
-			"id": "f00046",
-			"file": "done/feats/f00046-memory-hygiene-policy-session-compaction-boundaries.md",
+			"id": "f00035",
+			"file": "done/feats/f00035-ide-observability-v3.md",
+			"track": "apps+client+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{",
+					"{"
+				]
+			}
+		},
+		{
+			"id": "f00038",
+			"file": "done/feats/f00038-cli-mcp-vertex-single-binary-local-and-remote.md",
+			"track": "core+cli+client+workflow",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"packages/cli/",
+					"packages/cli/package.json",
+					"packages/cli/tsconfig.json",
+					"packages/cli/vitest.config.ts",
+					"packages/cli/src/",
+					"packages/cli/tests/",
+					"packages/cli/README.md",
+					"packages/core/package.json # only the bin field is touched; see S1",
+					"docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)"
+				]
+			}
+		},
+		{
+			"id": "f00039",
+			"file": "done/feats/f00039-memory-hygiene-policy-session-compaction-boundaries.md",
 			"track": "plugins/memory+skills+docs+workflow",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00047",
-			"file": "done/feats/f00047-multi-surface-budget-gates-compact-first-consumers.md",
+			"id": "f00040",
+			"file": "done/feats/f00040-multi-surface-budget-gates-compact-first-consumers.md",
 			"track": "core+client+extensions/vscode+plugins+metrics+docs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00049",
-			"file": "done/feats/f00049-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"id": "f00041",
+			"file": "done/feats/f00041-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
 			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00042",
+			"file": "done/feats/f00042-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
+			"track": "proposals",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
+					"{ agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }",
+					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
+				]
+			}
 		},
 		{
 			"id": "x00001",
@@ -888,39 +888,39 @@
 		},
 		{
 			"id": "x00003",
-			"file": "done/fixes/x00003-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
-			"track": "core+proposals",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-20"
-		},
-		{
-			"id": "x00004",
-			"file": "done/fixes/x00004-web-bugfixes-and-ux-overhaul.md",
-			"track": "web+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-19"
-		},
-		{
-			"id": "x00005",
-			"file": "done/fixes/x00005-web-ui-bugfixes.md",
-			"track": "web+ui",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "x00006",
-			"file": "done/fixes/x00006-fix-host-zombie-on-parent-exit.md",
+			"file": "done/fixes/x00003-fix-host-zombie-on-parent-exit.md",
 			"track": "core+host",
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-21"
 		},
 		{
+			"id": "x00004",
+			"file": "done/fixes/x00004-missing-plugin-logos.md",
+			"track": "web+ui",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "x00005",
+			"file": "done/fixes/x00005-post-closure-audit-orchestration-crash-fix-remaining-hardening.md",
+			"track": "core+proposals",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-20"
+		},
+		{
+			"id": "x00006",
+			"file": "done/fixes/x00006-web-bugfixes-and-ux-overhaul.md",
+			"track": "web+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-19"
+		},
+		{
 			"id": "x00007",
-			"file": "done/fixes/x00007-web-ui-bugfixes-round-2.md",
+			"file": "done/fixes/x00007-web-ui-bugfixes.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",
@@ -928,7 +928,7 @@
 		},
 		{
 			"id": "x00008",
-			"file": "done/fixes/x00008-missing-plugin-logos.md",
+			"file": "done/fixes/x00008-web-ui-bugfixes-round-2.md",
 			"track": "web+ui",
 			"type": "proposal",
 			"status": "done",

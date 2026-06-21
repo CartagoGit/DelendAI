@@ -1,7 +1,7 @@
 /**
  * persistent-task-queue.spec.ts
  *
- * TDD specs for IPersistentTaskQueue (p40c T1 step 1).
+ * TDD specs for IPersistentTaskQueue.
  * 14+ cases as enumerated in the proposal.
  *
  * Run: bun test libs/mcp-project -- persistent-task-queue

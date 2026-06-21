@@ -1,7 +1,7 @@
 /**
  * chat-titling-reminder.spec.ts
  *
- * TDD specs for `buildChatTitlingReminder` (p41, T3 fallback).
+ * TDD specs for `buildChatTitlingReminder`.
  *
  * Context:
  *   T2 (workbench.action.chat.rename probe) returned verdict

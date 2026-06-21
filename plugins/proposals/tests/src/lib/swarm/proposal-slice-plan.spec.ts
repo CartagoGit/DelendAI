@@ -56,7 +56,7 @@ const DOC_WITH_BOLD_STATUS = DOC.replace(
 	'- **Status**: done',
 );
 
-describe('parseProposalSlicePlan (p81)', () => {
+describe('parseProposalSlicePlan', () => {
 	it('returns null for legacy proposals without a Slices section', () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
 			null,
@@ -104,7 +104,7 @@ describe('parseProposalSlicePlan (p81)', () => {
 	});
 });
 
-describe('deriveSliceStatuses + validateClaim (p81)', () => {
+describe('deriveSliceStatuses + validateClaim', () => {
 	const plan = parseProposalSlicePlan('pX', DOC)!;
 
 	it('derives in-progress (and owner) from the live lock snapshot', () => {

@@ -1,13 +1,13 @@
 /**
  * swarm-closure.spec.ts
  *
- * TDD specs for `runSwarmClosure` (p34b T3 point 11).
+ * TDD specs for `runSwarmClosure`.
  *
  * Shape: `{ withinSwarmBudget, withinContinuityPolicy, swarmViolations,
  *          closureDecision }` where `closureDecision` is
  * `'close' | 'open_fix' | 'open_heredera'`.
  *
- * Composition: validateBudget (p34) + evaluateContinuityPolicy (T1) +
+ * Composition: validateBudget + evaluateContinuityPolicy (T1) +
  * a tiny in-memory representation of the subagent tree and the lock
  * status. The spec does NOT hit the filesystem — closures work over the
  * values the orchestrator collects at the end of a round.

@@ -1,5 +1,5 @@
 ---
-id: f00024
+id: f00033
 kind: feat
 title: Cascade priority por kind (12 + alias p) con override por frontmatter, refactor SOLID
 status: done

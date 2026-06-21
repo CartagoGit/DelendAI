@@ -1,5 +1,5 @@
 ---
-id: f00045
+id: f00036
 kind: feat
 title: Workflow governance hardening — delegate threshold, worktree discipline, canonical wait/sync paths
 status: ready

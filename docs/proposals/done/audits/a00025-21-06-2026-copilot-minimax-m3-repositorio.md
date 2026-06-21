@@ -1,5 +1,5 @@
 ---
-id: a00026
+id: a00025
 kind: audit
 title: "Auditoría completa del repositorio — GitHub Copilot (MiniMax-M3)"
 status: done

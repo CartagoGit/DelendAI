@@ -1,14 +1,14 @@
 /**
  * swarm-budget.spec.ts
  *
- * TDD specs for parseSwarmFrontmatter (p34b T1 point 1).
+ * TDD specs for parseSwarmFrontmatter.
  *
  * 5 cases from the proposal:
  *  1. Valid swarmBudget + continuityPolicy → ISwarmProposalExtension
  *  2. swarmBudget.maxAgentsPerSession: -1 → INVALID_SWARM_BUDGET
  *  3. continuityPolicy.maxToolRetriesPerTool: 0 → INVALID_CONTINUITY_POLICY
  *  4. continuityPolicy.forbidReReadOnUnchangedDigest: false → valid (allow-list)
- *  5. Reuses parseProposalDocument from p34 (base errors propagate unchanged)
+ *  5. Reuses parseProposalDocument (base errors propagate unchanged)
  */
 
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';

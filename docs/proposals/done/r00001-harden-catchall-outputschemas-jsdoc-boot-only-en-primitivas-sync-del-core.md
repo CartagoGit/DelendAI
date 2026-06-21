@@ -1,5 +1,5 @@
 ---
-id: r00002
+id: r00001
 kind: refactor
 title: Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
 status: done

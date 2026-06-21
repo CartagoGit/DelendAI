@@ -1,5 +1,5 @@
 ---
-id: a00022
+id: a00026
 kind: audit
 title: "Auditoría Unificada — consolidación de a00021/a00026/a00024/a00025/a00023 (2026-06-21)"
 status: done

@@ -26,7 +26,7 @@ const HOST = {
 	projectPackageName: '@acme/mcp-project',
 } as const;
 
-describe('scaffold-host generators (p97)', () => {
+describe('scaffold-host generators', () => {
 	it('generates a registerable tool file in the host namespace', () => {
 		const file = scaffoldToolFile('acme', 'render stats', 'Stats only.');
 		expect(file.path).toBe(
@@ -98,7 +98,7 @@ describe('scaffold-host generators (p97)', () => {
 	});
 });
 
-describe('scaffold tool report (p97)', () => {
+describe('scaffold tool report', () => {
 	let root = '';
 	let options: IScaffoldToolOptions;
 

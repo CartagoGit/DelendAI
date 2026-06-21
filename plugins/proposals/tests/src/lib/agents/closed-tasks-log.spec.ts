@@ -1,7 +1,7 @@
 /**
  * closed-tasks-log.spec.ts
  *
- * TDD specs for closed-tasks-log.ts (p40c T1 step 5).
+ * TDD specs for closed-tasks-log.ts.
  * 5 cases as enumerated in the proposal:
  *   1. append
  *   2. max-size eviction (FIFO, max 256)
@@ -271,7 +271,7 @@ describe('appendToClosedTasks — round-trip', () => {
 // priority field that the active queue uses, and entries are kept
 // in strict append order.
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
+describe('appendToClosedTasks — FIFO order', () => {
 	it('keeps entries in strict append order regardless of any external priority tag', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 

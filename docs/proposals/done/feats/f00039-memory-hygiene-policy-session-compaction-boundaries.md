@@ -1,5 +1,5 @@
 ---
-id: f00046
+id: f00039
 kind: feat
 title: Memory hygiene policy + session compaction boundaries
 status: done

@@ -1,5 +1,5 @@
 ---
-id: a00028
+id: a00027
 kind: audit
 title: "Auditoría de integración MCP y estado del repositorio — Antigravity (Gemini 3.5 Flash)"
 status: done
