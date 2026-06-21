@@ -29,6 +29,11 @@ You orchestrate work in the `@mcp-vertex/core` monorepo. Read
 
 ## Multi-agent coordination (when the proposals plugin is loaded)
 
+- Before splitting work across agents, call `plan` to validate file
+  disjointness and see which slices are claimable now.
+- Hand a slice to a subagent via `delegate` (assigns a name + claims its
+  files in one call, returns a compact handoff packet) instead of calling
+  `agent_names` and `agent_lock` separately.
 - Claim a slice via `agent_lock` before editing its files; slices are file-disjoint.
 - Wait for the `lock-released` notification rather than polling.
 - Close a slice with `close_slice` (flips status + releases the lock atomically).
