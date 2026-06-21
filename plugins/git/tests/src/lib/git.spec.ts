@@ -2,11 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	checkRepo,
+	gitBlame,
 	gitChanged,
 	gitLog,
+	gitShow,
 	gitStatus,
+	gitWorktreeList,
+	parseBlamePorcelain,
 	parseLog,
 	parseStatus,
+	parseWorktreeList,
 } from '@mcp-vertex/git/lib/git';
 import type { IGitRunner } from '@mcp-vertex/git/lib/git';
 import plugin from '@mcp-vertex/git';
@@ -70,6 +75,144 @@ describe('git parsers', () => {
 	});
 });
 
+describe('git blame (M33)', () => {
+	const PORCELAIN = [
+		'abcdefabcdefabcdefabcdefabcdefabcdefabcd 1 1 2',
+		'author Jane Doe',
+		'author-mail <jane@example.com>',
+		'author-time 1700000000',
+		'author-tz +0000',
+		'summary Initial commit',
+		'filename src/a.ts',
+		'\tconst x = 1;',
+		'abcdefabcdefabcdefabcdefabcdefabcdefabcd 2 2',
+		'\tconst y = 2;',
+	].join('\n');
+
+	it('parses a full block then reuses cached metadata for the abbreviated repeat', () => {
+		const lines = parseBlamePorcelain(PORCELAIN);
+		expect(lines).toEqual([
+			{
+				line: 1,
+				hash: 'abcdefabcdef',
+				author: 'Jane Doe',
+				date: '2023-11-14',
+				content: 'const x = 1;',
+			},
+			{
+				line: 2,
+				hash: 'abcdefabcdef',
+				author: 'Jane Doe',
+				date: '2023-11-14',
+				content: 'const y = 2;',
+			},
+		]);
+	});
+
+	it('threads an injected runner and surfaces failures with a reason', async () => {
+		const run: IGitRunner = async () => ({ ok: true, output: PORCELAIN });
+		const ok = await gitBlame(run, 'src/a.ts');
+		expect(ok.ok).toBe(true);
+		expect(ok.lines).toHaveLength(2);
+
+		const failing: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: 'fatal: no such path',
+		});
+		const failed = await gitBlame(failing, 'missing.ts');
+		expect(failed).toEqual({
+			ok: false,
+			lines: [],
+			reason: 'fatal: no such path',
+		});
+	});
+});
+
+describe('git show (M33)', () => {
+	it('parses commit metadata + the --stat summary below the blank line', async () => {
+		const run: IGitRunner = async () => ({
+			ok: true,
+			output: [
+				'abc1234',
+				'Jane Doe',
+				'2024-01-02T03:04:05+00:00',
+				'feat: add thing',
+				'',
+				' src/a.ts | 2 ++',
+				' 1 file changed, 2 insertions(+)',
+			].join('\n'),
+		});
+		const result = await gitShow(run, 'HEAD');
+		expect(result).toEqual({
+			ok: true,
+			detail: {
+				hash: 'abc1234',
+				author: 'Jane Doe',
+				date: '2024-01-02T03:04:05+00:00',
+				subject: 'feat: add thing',
+				stat: 'src/a.ts | 2 ++\n 1 file changed, 2 insertions(+)',
+			},
+		});
+	});
+
+	it('surfaces a reason when the ref does not resolve', async () => {
+		const run: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: "fatal: bad revision 'nope'",
+		});
+		expect(await gitShow(run, 'nope')).toEqual({
+			ok: false,
+			reason: "fatal: bad revision 'nope'",
+		});
+	});
+});
+
+describe('git worktree list (M33)', () => {
+	const PORCELAIN = [
+		'worktree /home/user/repo',
+		'HEAD abc123abc123abc123abc123abc123abc123abc1',
+		'branch refs/heads/main',
+		'',
+		'worktree /home/user/repo-agent-a1',
+		'HEAD def456def456def456def456def456def456def4',
+		'branch refs/heads/agent/a1',
+		'',
+		'worktree /home/user/repo-bare',
+		'HEAD 0000000000000000000000000000000000000000',
+		'bare',
+	].join('\n');
+
+	it('parses multiple worktree blocks, resolving branch refs and flags', () => {
+		expect(parseWorktreeList(PORCELAIN)).toEqual([
+			{
+				path: '/home/user/repo',
+				head: 'abc123abc123abc123abc123abc123abc123abc1',
+				branch: 'main',
+			},
+			{
+				path: '/home/user/repo-agent-a1',
+				head: 'def456def456def456def456def456def456def4',
+				branch: 'agent/a1',
+			},
+			{
+				path: '/home/user/repo-bare',
+				head: '0000000000000000000000000000000000000000',
+				bare: true,
+			},
+		]);
+	});
+
+	it('threads an injected runner', async () => {
+		const run: IGitRunner = async (args) => {
+			expect(args).toEqual(['worktree', 'list', '--porcelain']);
+			return { ok: true, output: PORCELAIN };
+		};
+		expect(await gitWorktreeList(run)).toHaveLength(3);
+	});
+});
+
 describe('git plugin', () => {
 	it('registers the read-only git tools + knowledge', async () => {
 		const ctx = {
@@ -95,6 +238,9 @@ describe('git plugin', () => {
 			'changed',
 			'diff',
 			'log',
+			'blame',
+			'show',
+			'worktree',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
 	});
