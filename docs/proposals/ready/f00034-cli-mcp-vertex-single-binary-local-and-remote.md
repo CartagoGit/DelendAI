@@ -45,7 +45,7 @@ The same binary must work **against the local repo** (workspace=`.`) and **again
 
 ## why
 
-- **The cost of dogfooding is not yet closed for humans.** Every auditor in the `a00021`/`a00023`/`a00024`/`a00026` family — and the master `a00022` S5 (try/catch in 4 `apps/vscode` MCP-client commands) — was forced to look at "what the user sees" through the IDE. There is **no equivalent surface for the shell**: today a developer wanting to ask "what plugins are loaded" runs `bun run validate` and reads the output, or hand-parses `mcp-vertex.config.json`. A single CLI removes the IDE as a hard requirement for inspection.
+- **The cost of dogfooding is not yet closed for humans.** Every auditor in the `a00021`/`a00023`/`a00024`/`a00026` family — and the master `a00022` S5 (try/catch in 4 `extensions/vscode` MCP-client commands) — was forced to look at "what the user sees" through the IDE. There is **no equivalent surface for the shell**: today a developer wanting to ask "what plugins are loaded" runs `bun run validate` and reads the output, or hand-parses `mcp-vertex.config.json`. A single CLI removes the IDE as a hard requirement for inspection.
 - **CI wants a structured, scriptable surface.** `f00027` (metrics longitudinal regression gate, in `ready/`) and the upcoming `a024c` (token-budget enforcement, deferred from `a00025`) both need to consume observability from the CLI, not shell into `bun run` and grep stdout. The CLI provides `--json` from the v1.
 - **The host and the client are two faces of the same product, not two products.** Separating them into two packages (`cli-host` + `cli-client`) was the first instinct; on review, that's three packages to maintain, three releases to coordinate, three audit surfaces, and the user only ever types one command. The right separation is **one package, one binary, two transports**.
 - **The core already exports everything the CLI needs.** `assembleCliConfig` (in `core/public`) and `runCli` are the entire surface; the client (`packages/client/src/lib/transport/stdio.ts`) is already there. We add zero new functionality to the core or the client — we wrap them.
@@ -334,7 +334,7 @@ S2 (parser, formatter, exit codes, i18n gen script)
 - `mcp-vertex` and `mcpv` resolve to the same file and behave identically.
 - i18n coverage: `--help` is translated to all 12 locales; `--lang=zz` falls back to `en`; `bun run lint:cli:i18n` is green.
 - `bun run site:strict` is green (the web i18n gate is part of the chain).
-- `apps/vscode` MCP-client commands get **no regression** from this proposal: the only adjacent change was `a00022` S5 (try/catch in 4 commands) and is independent.
+- `extensions/vscode` MCP-client commands get **no regression** from this proposal: the only adjacent change was `a00022` S5 (try/catch in 4 commands) and is independent.
 - At the end of f00034, `packages/cli` is **`private: false` with `publishConfig.access: "public"`** and will be picked up by the existing `release.yml` workflow on the next `develop→main` push. `c00001` is updated to add a `Superseded by: f00034` footer (the file stays in `paused/` until the user actually runs the publish, then moves to `done/`). The first publish batch after f00034 lands is **16 packages in lockstep**: the 15 already-publishable ones plus `@mcp-vertex/cli`.
 
 ## risks and mitigations

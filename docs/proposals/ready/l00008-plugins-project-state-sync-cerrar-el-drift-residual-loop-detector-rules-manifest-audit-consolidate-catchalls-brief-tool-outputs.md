@@ -117,7 +117,7 @@ Consolidar el drift residual entre los 13 plugins y los invariantes del core (AG
   5. **Audit brief desactualizado** — no menciona `mcp-vertex_metrics`, ni `keepLegacy`, ni el invariante "tool-outputs commiteado".
   6. **`tool-outputs.ts` ausente** en `audit`, `status-marker`, `test-convention` — el SDK tipado no cubre esos plugins.
 - Sin un cierre consolidado, cada nuevo plugin que se sume al swarm arrastrará las mismas dudas: ¿dónde está `walkAllowedFiles`? ¿cómo tipas un outputSchema abierto? ¿qué hace `keepLegacy`? El brief de auditoría debe **codificar** las respuestas.
-- AGENTS.md regla 9 (i18n) es completa en `apps/web` y `apps/vscode`, pero los plugins no tienen i18n. Esta propuesta **no toca i18n** porque ya está cubierta por f00010 (i18n completeness en apps). Queda fuera de scope.
+- AGENTS.md regla 9 (i18n) es completa en `apps/web` y `extensions/vscode`, pero los plugins no tienen i18n. Esta propuesta **no toca i18n** porque ya está cubierta por f00010 (i18n completeness en apps). Queda fuera de scope.
 
 ## Non-goals
 

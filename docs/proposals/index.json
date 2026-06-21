@@ -151,11 +151,15 @@
 		},
 		{
 			"id": "f00031",
-			"file": "ready/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
+			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
 			"track": "core+agents+docs",
 			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"related": ["a00019", "a00013"],
+				"shipped-in": ["095102f"]
+			}
 		},
 		{
 			"id": "f00032",
@@ -205,6 +209,30 @@
 					"7383b85"
 				]
 			}
+		},
+		{
+			"id": "f00042",
+			"file": "ready/f00042-github-issues-plugin-ingest-and-propose.md",
+			"track": "plugins/issues+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00043",
+			"file": "ready/f00043-presets-page-and-plugin-membership.md",
+			"track": "apps/web+docs+core+cli",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00044",
+			"file": "ready/f00044-cross-project-setup-and-github-config.md",
+			"track": "docs+plugins/issues+apps/web+extensions/vscode",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "l00008",
