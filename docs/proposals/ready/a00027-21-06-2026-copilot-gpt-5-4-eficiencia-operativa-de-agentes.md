@@ -82,9 +82,10 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `skills/state-repair-playbook/**`
   - `skills/token-budget-playbook/**`
   - `AGENTS.md`
+  - `CLAUDE.md`
 - **Gate**: `bun run validate`
 - **Status**: pending
-- **Expect**: hallazgos concretos sobre claim/lock discipline, thresholds de compactación, handoff entre agentes, y cuándo el sistema obliga a parar, cerrar o delegar.
+- **Expect**: baseline documental de workflow multiagente con tres salidas cerrables sin código: enforcement ya fuerte en runtime, gaps entre guidance y enforcement, y mapa mínimo de claim path / wait path / delegate threshold / stop path.
 
 ### S3 — Memoria, prompts y superficies de contexto
 
@@ -93,11 +94,12 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `skills/**`
   - `.github/copilot-instructions.md`
   - `CLAUDE.md`
+  - `docs/TOKEN-BUDGETS.md`
   - `docs/scaffolds/ARCHITECTURE-MEMORY.md`
   - `docs/scaffolds/ARCHITECTURE-WORKFLOWS.md`
 - **Gate**: `bun run validate`
 - **Status**: pending
-- **Expect**: determinar qué memoria aporta señal real, qué memoria es ruido persistido, qué instrucciones duplican contexto innecesariamente y dónde falta compactación automática o invalidación.
+- **Expect**: baseline documental de memoria y contexto con tres salidas cerrables sin código: fronteras ya fuertes de memoria durable, gaps entre guidance e invalidación/compacción de sesión, y mapa mínimo de `memory vs docs/search/reread`.
 
 ### S4 — Core, plugins, client y hosts: bounded outputs y rutas compactas por defecto
 
@@ -152,7 +154,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 |---|---|
 | Propuesta creada | Sí, en `ready/` |
 | Baseline de eficiencia | Parcialmente levantada en `S1` desde superficies normativas/documentales |
-| Hallazgos validados | Ya hay hallazgos documentales y de cobertura; aún no hay hallazgos de implementación profunda |
+| Hallazgos validados | Ya hay hallazgos documentales para `S1`, `S2` y `S3`; aún no hay hallazgos de implementación profunda en superficies de output |
 | Propuestas hijas creadas | Aún no, se reservan para `S5` |
 | Gate de cierre | `bun run validate` al pasar a `done` |
 
@@ -165,6 +167,27 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 | Presupuestos | fuerte para cold-start; parcial para otras superficies | budgets medidos y gateados para `overview`/`auto_work`, no para `search`/`docs`/`git`/`memory` |
 | Criterios de salida | fuerte para cambios de código; parcial para investigación read-only | `bun run validate` como done global; falta cierre mínimo repositorio-específico para slices de investigación |
 | Memoria compacta | parcial | existe disciplina de `/compact` y de no releer, pero no una política única y breve de qué persistir |
+
+### Baseline S2
+
+| Subfamilia | Estado S2 | Evidencia base |
+|---|---|---|
+| Claim / release | fuerte | mutex, conflicto explícito y cierre atómico por slice |
+| Wait path | fuerte | `lock-released` push + `await_lock` sin polling |
+| Delegación | fuerte en plugin, parcial como regla repo-wide | umbral concreto en `auto_work`; el cliente aún puede ignorarlo |
+| Stop / exit | fuerte en runtime swarm, parcial para investigación read-only | `stop: true`, idle brake, stuck-detected; falta cierre mínimo común para auditorías |
+| Aislamiento git | parcial | worktree recomendado para 2+ agentes, no precondición obligatoria |
+
+### Baseline S3
+
+| Subfamilia | Estado S3 | Evidencia base |
+|---|---|---|
+| Persistencia durable | fuerte | límites de entrada, quota, TTL, redaction, mutex, atomic write y cuarentena de corrupción |
+| Recall / list | fuerte | recall y list separan índice barato de cuerpo completo |
+| Invalidación de memoria persistida | fuerte | expiradas caen en lectura y export por defecto |
+| Compacción de sesión | parcial | `/compact`, no-reread y compact-first existen, pero dependen de guidance manual |
+| Decisión memory vs docs/search/reread | parcial | hay preferencia implícita por memory y surfaces compactas, pero no un decision tree corto unificado |
+| Presupuesto específico de memory surfaces | parcial | hay bounded counts y hygiene, pero no budget explícito comparable al cold-start |
 
 La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo solo escala a propuesta hija si falla al menos uno de estos puntos con evidencia reproducible.
 
@@ -210,6 +233,11 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 6. **Anti-loop y anti-polling ya documentados**: esperar `lock-released` en vez de polling y respetar `stop: true`.
 7. **Observabilidad con límites reales**: logs redactados, capados a 8 KiB por línea, retención de 30 días y rotación diaria.
 8. **Detección de bucles con thresholds y handoff portable**: repeat/no-progress thresholds, ring size y handoff TTL ya fijados.
+9. **Workflow multiagente con enforcement parcial en runtime**: claim/release con mutex, `delegate` atómico, `lock-released` por push, `await_lock` y `auto_work` con `stop: true` tras idles o stuck detection.
+10. **Memoria bounded y no-log**: el plugin de memory ya limita título, cuerpo, tags, TTL y cuota; además dice explícitamente que la memoria es para notas durables, no logs.
+11. **Recall y list baratos por defecto**: la recuperación separa índice paginado de payload completo, reduciendo coste de contexto.
+12. **Persistencia segura y con invalidación real**: secretos se redactan antes de persistir, las expiradas desaparecen de lectura/export y la store corrupta se pone en cuarentena.
+13. **Disciplina compact-first de prompts principales**: `overview` primero, no releer si no cambió el digest y usar `/compact` entre tareas no relacionadas ya forman parte del marco operativo.
 
 ### documentation gaps
 
@@ -218,6 +246,15 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 3. **Exit**: el criterio global de done es fuerte para código, pero no hay una definición repositorio-específica igual de breve para cerrar investigación read-only.
 4. **Memory**: existe disciplina de compacción y de no releer, pero no una política única y breve sobre qué entra en memoria persistente operativa y qué debe quedar fuera.
 5. **Limits**: el loop detector cubre repetición y no-progreso de edición, pero no documenta límites equivalentes para exploración read-only o verbosidad de respuesta fuera de esas señales.
+6. **Hierarchy / enforcement**: el umbral de delegación existe dentro de `proposals` y `auto_work`, pero sigue siendo guidance del cliente/orchestrator y no una precondición dura del workflow repo-wide.
+7. **Limits / hierarchy**: el uso de worktree en sesiones multiagente está recomendado, no exigido; la seguridad git entre agentes aún depende parcialmente de disciplina humana.
+8. **Exit / hierarchy**: hay una tensión documental sobre el orden de `sync_proposals` en swarm: una narrativa lo deja dentro del loop por slice y otra lo reserva para el final del último slice abierto.
+9. **Limits / hierarchy**: la ruta canónica cuando “todo está reclamado” sigue repartida entre `continue_proposal`, notification/`await_lock` y skills; no vive aún en una sola surface normativa corta.
+10. **Memory**: falta una política normativa única de qué merece persistir como memoria durable y qué debe quedar fuera por ser continuidad de bajo valor.
+11. **Hierarchy / memory**: no hay un decision tree corto y unificado para decidir cuándo usar memory, cuándo releer local y cuándo ir a docs/search.
+12. **Exit / memory**: la compacción de sesión sigue siendo mayormente manual (`/compact`), no ligada de forma automática al cierre de slice o al cambio de tema.
+13. **Budget / hierarchy**: la regla de hilo principal barato está repartida entre prompt corto, prompt de sesión y skills, lo que introduce duplicación y riesgo de drift.
+14. **Memory / exit**: la arquitectura de memoria documenta bien seguridad y corrupción, pero no compactación semántica ni un forget path recomendado fuera del TTL.
 
 ### follow-up shape
 
@@ -235,10 +272,10 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 | Dimensión | Objetivo de la auditoría |
 |---|---|
 | Límites | Fuerte en cold-start y observabilidad; parcial para exploración read-only y verbosidad fuera del loop detector |
-| Jerarquía | Fuerte en orientación compacta y delegación; parcial por falta de umbral común para “no trivial” |
+| Jerarquía | Fuerte en orientación compacta, claim/release y delegación de `proposals`; parcial porque delegación y worktree siguen siendo guidance fuera del runtime del plugin |
 | Presupuestos | Fuerte para `overview`/`auto_work`; parcial para `search`, `docs`, `git`, `memory` y otras superficies del preset swarm |
-| Criterios de salida | Fuerte para cambios de código (`validate`); parcial para slices de investigación documental |
-| Memoria compacta | Parcial: hay compacción y no-relectura, pero no frontera documental única de persistencia operativa |
+| Criterios de salida | Fuerte para cambios de código y también en runtime swarm (`idle brake`, `all-claimed`, `stuck-detected`); parcial para slices de investigación documental |
+| Memoria compacta | Fuerte en higiene de persistencia durable; parcial en compacción e invalidación del contexto de sesión y en la frontera normativa de qué persistir |
 | Follow-ups | Aún no abrir; S1 solo justifica posibles familias, no propuestas hijas todavía |
 
 ## notes
@@ -248,3 +285,7 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 - `f00032` y `f00044` se marcan como relacionados porque tocan cobertura de skills/tools y onboarding cross-project, dos zonas donde el coste de contexto puede crecer rápido si no hay límites y rutas compactas.
 - S1 usa solo superficies normativas/documentales por diseño; no concluye aún sobre cumplimiento profundo en código, solo sobre claridad del marco operativo actual.
 - Baseline documental ya verificado en S1: `overview` full 6 735 B, `overview compact` 1 271 B, `auto_work` idle 159 B y `auto_work` con work plan 1 026 B; además existen techos de regresión para esas rutas en `docs/TOKEN-BUDGETS.md`.
+- S2 confirma enforcement parcial ya fuerte en runtime swarm: claim/release con mutex, `delegate` atómico, `await_lock`, `lock-released` push y `stop: true` tras idles o stuck detection.
+- Para slices read-only de workflow, el cierre útil mínimo no es `validate`, sino capturar evidencia sobre claim path, wait path, delegate threshold, stop path y cualquier ambigüedad entre surfaces normativas.
+- S3 separa dos planos distintos: memoria durable segura y bounded frente a gobierno del contexto en vivo. El primero ya está bastante maduro; el segundo sigue descansando más en guidance que en una policy unificada.
+- En memoria, “bounded” no equivale todavía a “budgeted”: hay límites de entrada y quota, pero no un presupuesto explícito de coste de contexto equivalente al que ya existe para `overview` y `auto_work`.

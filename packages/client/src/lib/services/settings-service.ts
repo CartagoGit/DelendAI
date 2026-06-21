@@ -30,7 +30,7 @@ export const validateExtensionSettings = (
 		allowLocalhost: settings.allowLocalhost,
 		allowPrivateIps: settings.allowPrivateIps,
 	});
-	if (!url.ok) issues.push(url.reason);
+	if (!url.ok) issues.push(url.reason ?? 'invalid-docs-url');
 	if (!LOG_LEVELS.has(settings.logLevel)) {
 		issues.push(`invalid logLevel: ${settings.logLevel}`);
 	}

@@ -1,6 +1,7 @@
 import type { McpStdioClient } from '@mcp-vertex/client';
 
 import type { IDisposable, IWebviewPanel } from '../extension';
+import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
 import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
 
 export interface ICommandVscodeApi {
@@ -37,6 +38,7 @@ export interface ICommandDeps {
 	readonly vscode: ICommandVscodeApi;
 	readonly client: McpStdioClient;
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
+	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
 }
 
 export const showCommandError = async (

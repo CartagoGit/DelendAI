@@ -1,9 +1,22 @@
 import {
 	McpStdioClient,
+	MemoryService,
 	NotificationsService,
 	OverviewService,
 	type IOverview,
 } from '@mcp-vertex/client';
+import {
+	MEMORY_FORGET_COMMAND,
+	registerMemoryForgetCommand,
+} from './commands/memory-forget';
+import {
+	MEMORY_SAVE_COMMAND,
+	registerMemorySaveCommand,
+} from './commands/memory-save';
+import {
+	OPEN_SETTINGS_COMMAND,
+	registerOpenSettingsCommand,
+} from './commands/open-settings';
 
 import { registerOpenDashboardCommand } from './commands/open-dashboard';
 import {
@@ -37,6 +50,7 @@ import {
 	type IFileSystemWatcher,
 	ToolTreeDataProvider,
 } from './providers/tool-tree-data-provider';
+import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
@@ -45,6 +59,7 @@ import {
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
+export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
 
 export interface IDisposable {
 	dispose(): void;
@@ -77,7 +92,7 @@ export interface IVscodeApi {
 		createStatusBarItem?(): IStatusBarItem;
 		registerTreeDataProvider?(
 			viewId: string,
-			provider: ToolTreeDataProvider,
+			provider: ToolTreeDataProvider | MemoryTreeDataProvider,
 		): IDisposable;
 		createWebviewPanel(
 			viewType: string,
@@ -107,6 +122,7 @@ export const activate = async (
 	const overview = new OverviewService(client);
 	const notifications = new NotificationsService(client);
 	const toolTree = new ToolTreeDataProvider(overview);
+	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
 	const statusBarItem = vscode.window.createStatusBarItem?.();
 	if (statusBarItem !== undefined) {
 		const statusBar = new McpVertexStatusBar(
@@ -125,6 +141,12 @@ export const activate = async (
 	);
 	if (treeRegistration !== undefined)
 		context.subscriptions.push(treeRegistration);
+	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
+		MEMORY_VIEW_ID,
+		memoryTree,
+	);
+	if (memoryRegistration !== undefined)
+		context.subscriptions.push(memoryRegistration);
 	const watcher = vscode.workspace?.createFileSystemWatcher(
 		'**/mcp-vertex.config.json',
 	);
@@ -146,6 +168,13 @@ export const activate = async (
 	);
 	context.subscriptions.push(registerToolSearchCommand({ vscode, client }));
 	context.subscriptions.push(registerRestartServerCommand(vscode));
+	context.subscriptions.push(
+		registerMemorySaveCommand({ vscode, client, memoryTree }),
+	);
+	context.subscriptions.push(
+		registerMemoryForgetCommand({ vscode, client, memoryTree }),
+	);
+	context.subscriptions.push(registerOpenSettingsCommand({ vscode, client }));
 
 	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`
@@ -196,10 +225,13 @@ const loadVscodeApi = async (): Promise<IVscodeApi> =>
 
 export {
 	OPEN_KNOWLEDGE_COMMAND,
+	OPEN_SETTINGS_COMMAND,
 	OPEN_PROPOSAL_COMMAND,
 	REFRESH_COMMAND,
 	RESTART_SERVER_COMMAND,
 	RUN_VALIDATION_COMMAND,
 	SHOW_METRICS_COMMAND,
+	MEMORY_FORGET_COMMAND,
+	MEMORY_SAVE_COMMAND,
 	TOOL_SEARCH_COMMAND,
 };

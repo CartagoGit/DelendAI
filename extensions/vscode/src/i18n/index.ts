@@ -50,6 +50,9 @@ export interface IExtensionTranslations {
 	readonly openKnowledge: string;
 	readonly toolSearch: string;
 	readonly restartServer: string;
+	readonly openSettings: string;
+	readonly memorySave: string;
+	readonly memoryForget: string;
 	readonly tabHealth: string;
 	readonly healthHealthy: string;
 	readonly healthDegraded: string;
