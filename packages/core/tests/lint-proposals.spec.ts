@@ -74,29 +74,36 @@ describe('lintProposalsDir', () => {
 		expect(summary.ok).toBe(true);
 	});
 
-	// Synthetic fixture, not a reference to a real proposal — uses `p99`
-	// deliberately (NOT `l99`) to cover the pre-migration prefix; the
-	// post-migration `l`-prefix case is covered separately below.
-	it('discovers a 2-digit legacy id and warns instead of skipping it', async () => {
+	// Post-f00014/f00042 the repo only treats canonical padded proposal
+	// filenames as proposals. Short legacy ids like `p99-*` or `l99-*`
+	// are historical prose references now, not live proposal filenames.
+	it('ignores non-canonical short legacy filenames after the padded-id migration', async () => {
 		await write(root, 'p99-old-thing.md', '# no frontmatter at all\n');
 		const summary = await lintProposalsDir(root);
-		expect(summary.filesChecked).toBe(1);
-		expect(summary.legacyWarnings).toBe(1);
+		expect(summary.filesChecked).toBe(0);
+		expect(summary.legacyWarnings).toBe(0);
 		expect(summary.fatalErrors).toBe(0);
 		expect(summary.ok).toBe(true);
 	});
 
 	it('treats a non-legacy (new kind-prefix) violation as a fatal error', async () => {
-		await write(root, 'ready/f200-broken.md', '# no frontmatter at all\n');
+		await write(
+			root,
+			'ready/f00200-broken.md',
+			'# no frontmatter at all\n',
+		);
 		const summary = await lintProposalsDir(root);
+		expect(summary.filesChecked).toBe(1);
 		expect(summary.fatalErrors).toBe(1);
 		expect(summary.ok).toBe(false);
 	});
 
-	// S11/S12: post-migration legacy (`kind: legacy`, prefix `l`) keeps the
-	// same permanently-lenient tier as pre-migration `p` — never fatal.
-	it('treats a post-migration legacy file (l-prefix) as a warning, not a fatal error', async () => {
-		await write(root, 'done/l99-old-thing.md', '# no frontmatter at all\n');
+	it('treats a padded legacy file (l-prefix) as a warning, not a fatal error', async () => {
+		await write(
+			root,
+			'done/l00099-old-thing.md',
+			'# no frontmatter at all\n',
+		);
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(1);
 		expect(summary.legacyWarnings).toBe(1);

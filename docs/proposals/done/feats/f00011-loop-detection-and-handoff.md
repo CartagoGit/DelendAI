@@ -444,7 +444,7 @@ cerrar s1.
   serialización de writes al packet.
 - `packages/core/src/lib/shared/write-file-atomic.ts` —
   durabilidad del packet.
-- `docs/proposals/l103-loop-detection-and-handoff.md` — este
+- `docs/proposals/done/feats/f00011-loop-detection-and-handoff.md` — este
   fichero (la spec que estas líneas describen).
 
 ## 5. Slices (orden de ejecución, disjuntas)

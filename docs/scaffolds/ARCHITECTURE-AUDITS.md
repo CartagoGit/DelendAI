@@ -70,6 +70,75 @@ Every finding in `## Findings` must declare a **Resolution Track**:
 
 ---
 
+## Mandatory Audit Methodology
+
+**This is not optional.** Before writing a single line of the audit document, the auditor MUST perform exhaustive qualitative analysis of the actual source code. Audits that rely solely on running automated commands (`bun run validate`, `biome ci`) without reading and reasoning about the code are **invalid**.
+
+### Phase 1 — Structural orientation (tools allowed)
+
+Run automated commands to collect baselines: LOC counts, test counts, coverage, Biome warnings, build output. This is the *floor*, not the ceiling, of what an audit covers.
+
+### Phase 2 — Exhaustive LLM code reading (REQUIRED, no shortcuts)
+
+The auditor **must read and reason about** the actual source files in the following order. For each layer, open the files and extract concrete evidence:
+
+#### 2.1 Core packages (`packages/core`, `packages/client`)
+- Read `src/lib/contracts/`, `src/lib/plugins/`, `src/lib/cli/`, `src/lib/bootstrap/`, `src/lib/scaffold/`, `src/lib/tools/`.
+- Identify: contract violations (`process.cwd()` in engines), placeholder/dead code, sync I/O in hot paths, missing `outputSchema`, broken barrel exports.
+- Extract: actual TypeScript snippets with real line numbers for every finding.
+
+#### 2.2 Every plugin (`plugins/*`)
+- Read the plugin's `src/` directory: engines, tools, shared utilities, schemas.
+- Identify: non-atomic writes, duplicated logic, host-specific vocabulary leaking into generic plugin contracts, missing mutex wrapping, `@ts-ignore` / `@ts-nocheck`, leftover `console.log`.
+- Confirm each finding with a code excerpt and file reference (`file#LNN`).
+
+#### 2.3 Extensions (`extensions/*`)
+- Read `extensions/vscode/src/` — host integration, activation, webview bridge, service wiring.
+- Identify: UI panel lifecycle issues, message passing without validation, missing error boundaries, VS Code API misuse.
+
+#### 2.4 UI extension (`packages/ui-extension`)
+- Read components, panels, command palette, brand assets.
+- Identify: hardcoded strings that should be i18n keys, missing semantic HTML, accessibility gaps, host-import violations.
+
+#### 2.5 Apps (`apps/web`)
+- Read Astro pages, i18n keys, Pagefind configuration, generated content pipelines.
+- Identify: missing translation keys, broken `data-pagefind-body` annotations, stale generated docs, SEO gaps.
+
+#### 2.6 Tools and scripts (`tools/`, `scripts/`)
+- Read entrypoints (`*.script.ts`) and their supporting modules.
+- Identify: forbidden non-TS extensions, missing error handling, `process.cwd()` usage, duplicated logic with core utilities.
+
+#### 2.7 Test suite (`tests/`, `*.spec.ts` colocated)
+- Read spec files for the most critical engines.
+- Identify: untested concurrency paths, stale snapshots, specs that test implementation details instead of contracts, missing mutation/property-based tests.
+
+#### 2.8 Concurrency & locking analysis
+- Trace every durable write path (anything that writes a JSON file) and verify it uses `withFileMutex` + `writeFileAtomic`.
+- Identify any read-only path that bypasses the mutex and could observe torn state.
+- Document every identified deadlock scenario in a table with: scenario, risk, existing mitigation, and gap.
+
+#### 2.9 Token-efficiency analysis
+- Enumerate every tool that contributes to the hot path (`overview`, `auto_work`, `round-context`).
+- Verify the compact budget invariant is not regressed.
+- Identify any instruction prose in tool descriptions that is redundant or compressible.
+
+#### 2.10 Skills & cross-cutting concerns
+- Read `skills/` and check alignment between skill instructions and current implementation (stale paths, wrong tool names, missing new tools).
+- Check `AGENTS.md` hard rules for any violations found in the codebase.
+- Scan for `redactSecrets` coverage on every durable store.
+
+### Phase 3 — Synthesize and write
+
+Only after completing Phase 2 does the auditor write the audit document. Every finding in `## Findings` MUST include:
+- A real file reference with line numbers.
+- A concrete code snippet that demonstrates the issue.
+- A clear explanation of the impact.
+- A resolution track (slice vs. deferred proposal).
+
+Findings without code evidence are **not findings** — they are speculation and must not appear in the audit.
+
+---
+
 ## Template
 
 Use the following template to create new audit proposals:
@@ -175,3 +244,5 @@ acceptance:
 
 Run `bun run lint:proposals` to ensure the audit proposal conforms to the sections, frontmatter, and canonical order.
 Run `bun run lint:scaffolds` to ensure this scaffold stays discoverable and well-formed.
+
+Before running an audit, read `skills/audit-playbook/SKILL.md` — it contains the step-by-step protocol for the mandatory qualitative LLM code-reading phases that must precede writing any audit document.

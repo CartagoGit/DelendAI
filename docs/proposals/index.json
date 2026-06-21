@@ -1,32 +1,7 @@
 {
-	"generated_at": "2026-06-21T21:47:05.555Z",
+	"generated_at": "2026-06-21T22:05:36.226Z",
 	"count": 96,
 	"proposals": [
-		{
-			"id": "f00014",
-			"file": "ready/f00014-rename-proposal-ids-padded-5-digits-by-creation-date.md",
-			"track": "proposals-plugin+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"reservedFiles": [
-					"docs/proposals/index.json",
-					"docs/proposals/ready/",
-					"docs/proposals/done/",
-					"docs/proposals/in-progress/",
-					"docs/proposals/paused/",
-					"docs/proposals/blocked/",
-					"docs/proposals/retired/",
-					"docs/proposals/n00001-SESION-2026-06-17.md",
-					"scripts/lint-proposals.ts",
-					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
-					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
-					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
-					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
-				]
-			}
-		},
 		{
 			"id": "f00020",
 			"file": "ready/f00020-skills-and-tools-coverage.md",
@@ -625,6 +600,31 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00014",
+			"file": "done/feats/f00014-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"track": "proposals-plugin+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"docs/proposals/index.json",
+					"docs/proposals/ready/",
+					"docs/proposals/done/",
+					"docs/proposals/in-progress/",
+					"docs/proposals/paused/",
+					"docs/proposals/blocked/",
+					"docs/proposals/retired/",
+					"docs/proposals/n00001-SESION-2026-06-17.md",
+					"tools/scripts/lint/proposals.script.ts",
+					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
+					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
+					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
+					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
+				]
+			}
+		},
+		{
 			"id": "f00015",
 			"file": "done/feats/f00015-residual-p100-web-and-i18n.md",
 			"track": "web+i18n",
@@ -864,8 +864,8 @@
 			"date": "2026-06-21",
 			"extras": {
 				"ownership": [
-					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
-					"{ agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }",
+					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a00001..a00020 + move into done/audits/' }",
+					"{ agent: implementation_runner, task: 's2: re-classify the 15 legacy-prefixed closed proposals into their real done/feats|fixes targets' }",
 					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
 				]
 			}

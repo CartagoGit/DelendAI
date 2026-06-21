@@ -57,6 +57,13 @@
 			"minCoreVersion": "0.1.0",
 			"bodyPath": "skills/concurrency-patterns/SKILL.md",
 			"tags": ["concurrency", "mutex", "locking"]
+		},
+		{
+			"id": "audit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/audit-playbook/SKILL.md",
+			"tags": ["audit", "qualitative-analysis", "methodology"]
 		}
 	]
 }

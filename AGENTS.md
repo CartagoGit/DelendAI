@@ -127,3 +127,13 @@ keeps `git diff` out of the hot path.
 
 See `skills/` for task-specific playbooks (plugin authoring, failure modes) and
 `docs/proposals/audits/` for the living master audit (the roadmap).
+
+## When you run an audit
+
+**Always read `skills/audit-playbook/SKILL.md` first.** Audits in this repo are not
+shell-only exercises — the LLM must read the actual source code exhaustively (every
+plugin, every engine, every extension, tools, scripts, test specs, skills) and produce
+findings backed by real file references and code snippets. Automated commands (`bun run
+validate`, `biome ci`) provide the quantitative baseline in Phase 0; the qualitative
+analysis in Phases 1–8 is what makes an audit valuable. An audit that skips those phases
+produces nothing actionable and will be rejected.
