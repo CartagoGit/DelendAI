@@ -14,6 +14,7 @@
 import {
 	assembleCliConfig,
 	createMcpProject,
+	gracefulShutdown,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
@@ -46,6 +47,24 @@ const run = async (): Promise<void> => {
 
 	const assembled = await createMcpProject(extended);
 	await assembled.start();
+
+	// Install signal handlers so the Bun host exits cleanly when VS Code /
+	// Copilot closes the parent shell. Without this, every abrupt close
+	// leaves a Bun zombie holding the workspace's agents.lock.json,
+	// which makes the next session's first tool call slow enough to
+	// trip the client MCP timeout. See docs/proposals/done/fixes/x123.
+	const onSignal = (code: number): void => {
+		void gracefulShutdown(assembled.server, { exitCode: code });
+	};
+	process.on('SIGTERM', () => onSignal(143));
+	process.on('SIGINT', () => onSignal(130));
+	process.on('SIGHUP', () => onSignal(129));
+	process.on('beforeExit', () => {
+		// beforeExit fires when the event loop drains naturally;
+		// gracefulShutdown's idempotent guard makes the no-op safe
+		// when we got here via SIGTERM first.
+		void assembled.server.close().catch(() => undefined);
+	});
 };
 
 void run();

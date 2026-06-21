@@ -1,0 +1,23 @@
+{
+	"name": "@mcp-vertex/ide",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"license": "BSD-3-Clause",
+	"description": "IDE-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @mcp-vertex IDE host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.",
+	"scripts": {
+		"type": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run",
+		"lint": "biome ci src tests"
+	},
+	"dependencies": {
+		"@mcp-vertex/client": "workspace:*"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.0",
+		"@types/bun": "latest",
+		"@types/node": "^20.11.0",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	}
+}

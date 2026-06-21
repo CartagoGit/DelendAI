@@ -109,7 +109,7 @@ smallest blast radius and the highest reusability:
 ## Slices
 
 ### S1 — Export a shared `gracefulShutdown` helper from core
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/src/lib/cli/graceful-shutdown.ts` (new),
     `packages/core/src/public/index.ts` (re-export the helper).
   - **Command**: `bun run typecheck`
@@ -121,7 +121,7 @@ smallest blast radius and the highest reusability:
     handler (so `SIGINT` → exit 130, the conventional value).
 
 ### S2 — Wire signal handlers in `scripts/host-server.ts`
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `scripts/host-server.ts`,
     `packages/core/tests/src/lib/cli/host-graceful-shutdown.spec.ts` (new).
   - **Command**: `bun run validate`
@@ -135,7 +135,7 @@ smallest blast radius and the highest reusability:
     `kill -TERM`).
 
 ### S3 — Regression spec: `Bun.spawn` + `SIGTERM` → exits < 2s
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/tests/src/lib/cli/host-graceful-shutdown.spec.ts`
     (same file as S2; covered by S2's vitest run; S3 only listed
     for traceability against the acceptance checkbox).
@@ -150,7 +150,7 @@ smallest blast radius and the highest reusability:
        called after closed` warning in stderr.
 
 ### S4 — Same wiring in `examples/*` hosts (opt-in)
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `examples/minimal/`, `examples/custom-plugin/`,
     `examples/swarm/` — wherever the example spawns an MCP server
     in a long-running script.
