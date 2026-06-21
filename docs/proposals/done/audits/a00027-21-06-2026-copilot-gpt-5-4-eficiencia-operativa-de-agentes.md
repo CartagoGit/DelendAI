@@ -2,7 +2,7 @@
 id: a00027
 kind: audit
 title: "Auditoría marco de eficiencia operativa de agentes — límites, jerarquía, presupuestos, criterios de salida y memoria compacta"
-status: ready
+status: done
 date: 2026-06-21
 track: workflow+core+plugins+apps+docs+memory
 related:
@@ -152,11 +152,11 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 
 | Aspecto | Estado actual |
 |---|---|
-| Propuesta creada | Sí, en `ready/` |
-| Baseline de eficiencia | Parcialmente levantada en `S1` desde superficies normativas/documentales |
-| Hallazgos validados | Ya hay hallazgos documentales para `S1`, `S2` y `S3`, y evidencia de runtime/consumo para `S4`; aún no se ha hecho el triage de propuestas hijas |
+| Propuesta creada | Sí; se cierra en `done/audits/` tras completar S6 |
+| Baseline de eficiencia | Completa para el alcance documental/runtime definido por S1-S4 |
+| Hallazgos validados | Hallazgos documentales, runtime y de consumo validados en S1-S4 |
 | Propuestas hijas creadas | Sí: `f00045`, `f00046`, `f00047` |
-| Gate de cierre | `bun run validate` al pasar a `done` |
+| Gate de cierre | `bun run validate` verde al pasar a `done` |
 
 ### Baseline S1
 
@@ -310,4 +310,4 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 - S4 confirma que el repo ya resuelve bastante bien `bounded` en servidor, pero no siempre `compact-first` ni `budget-aware` en consumidores host/client.
 - El follow-up potencial de S4 no es “más auditoría general”, sino decidir en `S5` si estos gaps merecen una propuesta de budgets multi-surface y otra de compact-default en clientes/hosts.
 - S5 ya está materializado: `f00045` cubre workflow governance, `f00046` cubre memoria/compacción y `f00047` cubre budgets multi-surface + consumers compact-first.
-- Con `S1`–`S5` ya cerrados a nivel documental, `S6` queda reducido a cierre formal de la auditoría y trazabilidad final de qué se abrió y qué se descartó.
+- S6 se cierra formalmente moviendo esta auditoría a `done/audits/` con el mapa final de follow-ups: `f00045`, `f00046` y `f00047`; no se abre cuarta familia porque los demás gaps quedan cubiertos, diferidos o subordinados a esas tres líneas.

@@ -1,25 +1,7 @@
 {
-	"generated_at": "2026-06-21T20:28:29.895Z",
+	"generated_at": "2026-06-21T20:46:01.311Z",
 	"count": 92,
 	"proposals": [
-		{
-			"id": "a00027",
-			"file": "ready/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
-			"track": "workflow+core+plugins+apps+docs+memory",
-			"type": "unspecified",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": [
-					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
-					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
-					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
-					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
-					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
-					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
-				]
-			}
-		},
 		{
 			"id": "f00023",
 			"file": "ready/f00023-rename-proposal-ids-padded-5-digits-by-creation-date.md",
@@ -435,6 +417,24 @@
 			"extras": {
 				"ownership": [
 					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a00027",
+			"file": "done/audits/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
+			"track": "workflow+core+plugins+apps+docs+memory",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
+					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
+					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
+					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
+					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
+					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
 				]
 			}
 		},
