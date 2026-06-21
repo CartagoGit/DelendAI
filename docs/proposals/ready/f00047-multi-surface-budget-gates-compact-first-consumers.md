@@ -32,7 +32,7 @@ Close the bounded-but-not-yet-budgeted gaps surfaced by a00027 S4: extend token/
 
 ### S1 — Budget baseline beyond cold-start
 - **Files**: docs/TOKEN-BUDGETS.md, tools/scripts/metrics/collect-candidate.script.ts, tools/scripts/metrics/diff-snapshots.script.ts, packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "The documented budget baseline expands beyond overview/auto_work to at least the read-only surfaces that dominate long sessions: search, docs, logs and round-context or equivalent."

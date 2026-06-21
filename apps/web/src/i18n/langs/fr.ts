@@ -254,19 +254,6 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.fr,
 	recovery: recoveryByLang.fr,
 	logs: logsByLang.fr,
-	presets: {
-		title: 'Presets',
-		lead: 'Ensembles de plugins préconfigurés pour différentes tailles d’espace de travail.',
-		summary:
-			'Ce dépôt contient {count} plugins uniques à travers les presets.',
-		hostOnlyChip: 'hôte uniquement',
-		installTitle: 'Comment utiliser',
-		installLead:
-			'Spécifiez le drapeau --preset lors del démarrage du serveur MCP.',
-		table: {
-			preset: 'Preset',
-		},
-	},
 };
 
 export default dict;

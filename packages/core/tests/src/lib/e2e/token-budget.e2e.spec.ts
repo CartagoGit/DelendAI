@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -11,6 +11,9 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import proposalsPlugin from '@mcp-vertex/proposals';
 import memoryPlugin from '@mcp-vertex/memory';
+import searchPlugin from '@mcp-vertex/search';
+import docsPlugin from '@mcp-vertex/docs';
+import logsPlugin from '@mcp-vertex/logs';
 
 /**
  * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
@@ -30,6 +33,10 @@ const BUDGET_BYTES = {
 	overviewFull: 7_000,
 	overviewCompact: 1_600,
 	autoWork: 1_600,
+	search: 3_000,
+	docsList: 2_500,
+	roundContext: 3_000,
+	logsTail: 4_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', () => {
@@ -37,15 +44,19 @@ describe('e2e: token budget (cold-start payloads)', () => {
 	let client: Client;
 	let close: () => Promise<void>;
 
-	beforeEach(async () => {
-		workspace = mkdtempSync(join(tmpdir(), 'tok-'));
+	const connectClient = async (
+		pluginList: string,
+	): Promise<{ client: Client; close: () => Promise<void> }> => {
 		const args = parseCliArgs(
-			['--plugins=proposals,memory', `--workspace=${workspace}`],
+			[`--plugins=${pluginList}`, `--workspace=${workspace}`],
 			workspace,
 		);
 		const plugins: Record<string, { default: unknown }> = {
 			'@mcp-vertex/proposals': { default: proposalsPlugin },
 			'@mcp-vertex/memory': { default: memoryPlugin },
+			'@mcp-vertex/search': { default: searchPlugin },
+			'@mcp-vertex/docs': { default: docsPlugin },
+			'@mcp-vertex/logs': { default: logsPlugin },
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,
@@ -55,15 +66,37 @@ describe('e2e: token budget (cold-start payloads)', () => {
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
-		client = new Client(
+		const connectedClient = new Client(
 			{ name: 'tok', version: '0' },
 			{ capabilities: {} },
 		);
-		await client.connect(clientTransport);
-		close = async () => {
-			await client.close();
-			await assembled.server.close();
+		await connectedClient.connect(clientTransport);
+		return {
+			client: connectedClient,
+			close: async () => {
+				await connectedClient.close();
+				await assembled.server.close();
+			},
 		};
+	};
+
+	beforeEach(async () => {
+		workspace = mkdtempSync(join(tmpdir(), 'tok-'));
+		mkdirSync(join(workspace, 'docs'), { recursive: true });
+		mkdirSync(join(workspace, 'src'), { recursive: true });
+		writeFileSync(
+			join(workspace, 'docs', 'README.md'),
+			[
+				'# Proposal workflow',
+				'',
+				'Use proposal slices and compact docs.',
+			].join('\n'),
+		);
+		writeFileSync(
+			join(workspace, 'src', 'app.ts'),
+			['export const proposal = "compact search baseline";'].join('\n'),
+		);
+		({ client, close } = await connectClient('proposals,memory'));
 	});
 
 	afterEach(async () => {
@@ -100,5 +133,60 @@ describe('e2e: token budget (cold-start payloads)', () => {
 	it('auto_work returns a tight action plan, not prose', async () => {
 		const bytes = await textBytes('proposals_auto_work', {});
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+	});
+
+	it('read-only long-session surfaces stay on bounded compact paths', async () => {
+		const extra = await connectClient('proposals,memory,search,docs,logs');
+		const extraTextBytes = async (
+			name: string,
+			args: Record<string, unknown>,
+		): Promise<number> => {
+			const res = await extra.client.callTool({ name, arguments: args });
+			const text = (
+				res.content as Array<{ type: string; text: string }>
+			)[0]?.text;
+			return Buffer.byteLength(text ?? '', 'utf8');
+		};
+		try {
+			// Prime a few events so logs_tail has real output.
+			await extra.client.callTool({
+				name: 'search_search',
+				arguments: { query: 'proposal', maxResults: 5, context: 0 },
+			});
+			await extra.client.callTool({
+				name: 'docs_docs_list',
+				arguments: { limit: 10 },
+			});
+
+			const search = await extraTextBytes('search_search', {
+				query: 'proposal',
+				maxResults: 5,
+				context: 0,
+			});
+			const docsList = await extraTextBytes('docs_docs_list', {
+				limit: 10,
+			});
+			const roundContext = await extraTextBytes(
+				'proposals_round_context',
+				{},
+			);
+			const logsTail = await extraTextBytes('logs_tail', { limit: 10 });
+
+			expect(search, `search = ${search}B`).toBeLessThan(
+				BUDGET_BYTES.search,
+			);
+			expect(docsList, `docs_list = ${docsList}B`).toBeLessThan(
+				BUDGET_BYTES.docsList,
+			);
+			expect(
+				roundContext,
+				`round_context = ${roundContext}B`,
+			).toBeLessThan(BUDGET_BYTES.roundContext);
+			expect(logsTail, `logs_tail = ${logsTail}B`).toBeLessThan(
+				BUDGET_BYTES.logsTail,
+			);
+		} finally {
+			await extra.close();
+		}
 	});
 });

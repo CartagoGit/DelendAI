@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * collect-candidate.script.ts — drive the compiled CLI over stdio, call every
- * registered tool's cheapest/compact variant 3 times (to average out
+ * collect-candidate.script.ts — drive the compiled CLI over stdio, call the
+ * cheapest read-only variants we care about 3 times (to average out
  * single-run jitter), then call `metrics { persist: true }` to dump a
  * candidate snapshot the CI gate can diff against the release baseline.
  *
@@ -19,14 +19,31 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 const CLI = resolve('packages/core/dist/cli.js');
 const REPEATS = 3;
 
-/** Best-effort "compact" arguments for the common read-only tools; tools without
- * a known compact shape are simply called with no arguments. */
+/**
+ * Best-effort cheap arguments for the common read-only tools we want to track.
+ * Unknown tools are skipped — the candidate collector only exercises the
+ * compact/read-only surfaces that dominate long agent sessions.
+ */
 const compactArgsFor = (toolName: string): Record<string, unknown> => {
 	if (toolName.endsWith('_overview')) return { compact: true };
-	if (toolName.endsWith('_auto_work')) return { compact: true };
+	if (toolName.endsWith('_auto_work')) return {};
 	if (toolName.endsWith('_compact_status')) return {};
+	if (toolName.endsWith('_docs_list')) return { limit: 10 };
+	if (toolName.endsWith('_search'))
+		return { query: 'proposal', maxResults: 5, context: 0 };
+	if (toolName.endsWith('_round_context')) return {};
+	if (toolName.endsWith('_tail')) return { limit: 10 };
 	return {};
 };
+
+const isTrackedReadOnlyTool = (toolName: string): boolean =>
+	toolName.endsWith('_overview') ||
+	toolName.endsWith('_auto_work') ||
+	toolName.endsWith('_compact_status') ||
+	toolName.endsWith('_docs_list') ||
+	toolName.endsWith('_search') ||
+	toolName.endsWith('_round_context') ||
+	toolName.endsWith('_tail');
 
 export const collectCandidateSnapshot = async (
 	outFile: string,
@@ -51,12 +68,11 @@ export const collectCandidateSnapshot = async (
 			);
 		}
 
-		// Call every read-only, non-destructive tool a few times so the
-		// snapshot has real per-tool averages rather than a single sample.
-		const readOnlyTools = tools.filter(
-			(t) =>
-				t.name.endsWith('_overview') ||
-				t.name.endsWith('_compact_status'),
+		// Call the compact/read-only surfaces a few times so the snapshot has
+		// real per-tool averages rather than a single sample. Keep this list
+		// deliberately narrow and side-effect free.
+		const readOnlyTools = tools.filter((t) =>
+			isTrackedReadOnlyTool(t.name),
 		);
 		for (let i = 0; i < REPEATS; i += 1) {
 			for (const tool of readOnlyTools) {
