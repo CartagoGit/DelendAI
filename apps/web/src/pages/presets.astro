@@ -1,0 +1,199 @@
+---
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+import {
+	buildPresetMatrix,
+	cellStateFor,
+	totalUniquePlugins,
+} from '#LIB/preset-table';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = `${base}/`;
+const matrix = buildPresetMatrix();
+const totalPlugins = totalUniquePlugins(matrix);
+---
+
+<Base lang={lang} title={`${t.presets.title} — @mcp-vertex/core`}>
+	<section class="page page--presets">
+		<header class="page__header">
+			<a class="page__back" href={homeHref}>← {t.nav.concept}</a>
+			<h1 class="page__title">{t.presets.title}</h1>
+			<p class="page__lead">{t.presets.lead}</p>
+		</header>
+
+		<section class="presets">
+			<p class="presets__summary">
+				{t.presets.summary.replace('{count}', String(totalPlugins))}
+			</p>
+
+			<div class="presets__scroll">
+				<table class="presets__matrix">
+					<thead>
+						<tr>
+							<th scope="col" class="presets__col-preset">
+								{t.presets.table.preset}
+							</th>
+							{matrix.columnIds.map((id) => (
+								<th scope="col" class="presets__col-plugin">
+									<a href={`${base}/plugins/${id}`}>{id}</a>
+								</th>
+							))}
+						</tr>
+					</thead>
+					<tbody>
+						{matrix.rows.map((row) => (
+							<tr>
+								<th scope="row" class="presets__row-header">
+									<code>--preset={row.preset.id}</code>
+									<span class="presets__row-size">
+										{row.effective.length}
+									</span>
+								</th>
+								{matrix.columnIds.map((id) => {
+									const state = cellStateFor(matrix, row.preset.id, id);
+									if (state === 'present') {
+										return <td class="presets__cell presets__cell--present">✓</td>;
+									}
+									if (state === 'hostOnly') {
+										return (
+											<td class="presets__cell presets__cell--host">
+												<span class="presets__chip presets__chip--host">
+													{t.presets.hostOnlyChip}
+												</span>
+											</td>
+										);
+									}
+									return <td class="presets__cell presets__cell--absent">—</td>;
+								})}
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			<section class="presets__install">
+				<h2 class="presets__install-title">{t.presets.installTitle}</h2>
+				<p class="presets__install-lead">{t.presets.installLead}</p>
+				<ul class="presets__install-list">
+					{matrix.rows.map((row) => (
+						<li>
+							<code>--preset={row.preset.id}</code>
+							<span class="presets__install-desc">{row.preset.summary}</span>
+						</li>
+					))}
+				</ul>
+			</section>
+		</section>
+	</section>
+</Base>
+
+<style>
+	.page--presets {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem 4rem;
+	}
+	.page__header {
+		margin-bottom: 2rem;
+	}
+	.page__back {
+		display: inline-block;
+		margin-bottom: 1rem;
+		color: var(--color-muted, #888);
+		text-decoration: none;
+	}
+	.page__title {
+		font-size: 2rem;
+		margin: 0 0 0.5rem;
+	}
+	.page__lead {
+		margin: 0;
+		color: var(--color-muted, #888);
+	}
+	.presets__summary {
+		font-size: 0.9rem;
+		color: var(--color-muted, #888);
+		margin-bottom: 1rem;
+	}
+	.presets__scroll {
+		overflow-x: auto;
+		margin-bottom: 2rem;
+	}
+	.presets__matrix {
+		border-collapse: collapse;
+		width: 100%;
+		font-size: 0.85rem;
+	}
+	.presets__matrix th,
+	.presets__matrix td {
+		padding: 0.5rem 0.75rem;
+		text-align: center;
+		border-bottom: 1px solid var(--color-border, #e2e2e2);
+	}
+	.presets__col-preset,
+	.presets__row-header {
+		text-align: left;
+		background: var(--color-bg-alt, #fafafa);
+		position: sticky;
+		left: 0;
+		z-index: 1;
+	}
+	.presets__col-plugin {
+		font-family: var(--font-mono, monospace);
+		font-size: 0.75rem;
+	}
+	.presets__col-plugin a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.presets__col-plugin a:hover {
+		text-decoration: underline;
+	}
+	.presets__row-header code {
+		font-family: var(--font-mono, monospace);
+	}
+	.presets__row-size {
+		display: inline-block;
+		margin-left: 0.5rem;
+		font-size: 0.7rem;
+		color: var(--color-muted, #888);
+	}
+	.presets__cell--present {
+		color: var(--color-success, #2a9d3f);
+		font-weight: bold;
+	}
+	.presets__cell--host {
+		background: rgba(255, 193, 7, 0.1);
+	}
+	.presets__cell--absent {
+		color: var(--color-muted, #ccc);
+	}
+	.presets__chip {
+		display: inline-block;
+		padding: 0.15rem 0.5rem;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+	}
+	.presets__chip--host {
+		background: rgba(255, 193, 7, 0.25);
+		color: #856404;
+	}
+	.presets__install-title {
+		font-size: 1.3rem;
+		margin-top: 2rem;
+	}
+	.presets__install-list {
+		list-style: none;
+		padding: 0;
+	}
+	.presets__install-list li {
+		margin-bottom: 0.75rem;
+	}
+	.presets__install-desc {
+		margin-left: 0.75rem;
+		color: var(--color-muted, #888);
+	}
+</style>

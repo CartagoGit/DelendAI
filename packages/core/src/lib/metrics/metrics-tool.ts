@@ -15,7 +15,10 @@ import { toolJson } from '../shared/tool-response';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IMetricsRegistry } from './metrics-registry';
 
-const MetricSchema = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape
+// and document why the residual `tools: z.object({}).catchall(MetricSchema)`
+// is the one documented exception in the audit.
+export const MetricSchema = z.object({
 	calls: z.number(),
 	errors: z.number(),
 	totalMs: z.number(),

@@ -60,6 +60,7 @@ export interface INavTranslations {
 	readonly tools: string;
 	readonly benchmarks: string;
 	readonly plugins: string;
+	readonly presets: string;
 	readonly github: string;
 	readonly menu: string;
 	readonly knowledge: string;
@@ -212,6 +213,19 @@ export interface IToolPageTranslations {
 	readonly example: string;
 	readonly exampleNote: string;
 	readonly plugin: string;
+}
+
+/** Presets page (`/presets`, f00043 S3) — membership matrix for every preset. */
+export interface IPresetsTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly summary: string;
+	readonly hostOnlyChip: string;
+	readonly installTitle: string;
+	readonly installLead: string;
+	readonly table: {
+		readonly preset: string;
+	};
 }
 
 export interface INotFoundTranslations {
@@ -372,6 +386,7 @@ export interface ITranslations {
 	readonly proposals: IProposalGlossaryTranslations;
 	readonly recovery: IRecoveryTranslations;
 	readonly logs: ILogsTranslations;
+	readonly presets: IPresetsTranslations;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */
