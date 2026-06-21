@@ -60,7 +60,9 @@ Las cuatro auditorías de repositorio (`a00021`, `a00026`, `a00024`, `a00023`) a
 ### S3 — Include `plugins/audit` in root `tsconfig.json` typecheck coverage
 - **Files**: `tsconfig.json`
 - **Gate**: `bun run validate`
-- **Status**: pending
+- **Status**: done
+- status: done
+- **Verification**: `tsconfig.json` already includes `plugins/*/src/**/*` and `plugins/*/tests/**/*`, so `plugins/audit` is covered by the root `tsc --noEmit` gate.
 
 ### S4 — Expand `scripts/smoke-pack.ts` to cover all publishable plugins (not just core+proposals+memory)
 - **Files**: `scripts/smoke-pack.ts`
