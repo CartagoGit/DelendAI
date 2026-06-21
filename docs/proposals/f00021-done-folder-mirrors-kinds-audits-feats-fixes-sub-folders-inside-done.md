@@ -2,7 +2,7 @@
 id: f00021
 kind: feat
 title: Done folder mirrors kinds — audits/, feats/, fixes/ sub-folders inside done/
-status: in_progress
+status: in-progress
 triaged: true
 date: 2026-06-21
 track: proposals

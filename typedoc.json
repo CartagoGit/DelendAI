@@ -2,7 +2,7 @@
 	"$schema": "https://typedoc.org/schema.json",
 	"entryPoints": ["packages/core/src/public/index.ts"],
 	"tsconfig": "tsconfig.json",
-	"out": "apps/web/public/api",
+	"out": "build/docs-api",
 	"name": "@mcp-vertex/core — public API",
 	"readme": "none",
 	"hideGenerator": true,
