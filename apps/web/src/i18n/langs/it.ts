@@ -103,6 +103,10 @@ const dict: LangDict = {
 		motion: 'Movimento',
 		motionLabel: 'Anima i marquee',
 	},
+	search: {
+		title: 'Cerca',
+		placeholder: 'Cerca nel sito...',
+	},
 	footer: {
 		built: 'Generato dal registro vivo degli strumenti.',
 		tagline:

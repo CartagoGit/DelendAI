@@ -99,6 +99,10 @@ const dict: LangDict = {
 		motion: '动画',
 		motionLabel: '为跑马灯启用动画',
 	},
+	search: {
+		title: '搜索',
+		placeholder: '搜索本站...',
+	},
 	footer: {
 		built: '取自实时工具注册表生成。',
 		tagline: '项目无关的 MCP 服务器核心 + 插件加载器。',

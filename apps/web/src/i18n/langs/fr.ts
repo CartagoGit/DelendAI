@@ -101,6 +101,10 @@ const dict: LangDict = {
 		motion: 'Animation',
 		motionLabel: 'Animer les marquees',
 	},
+	search: {
+		title: 'Rechercher',
+		placeholder: 'Rechercher sur le site...',
+	},
 	footer: {
 		built: 'Généré à partir du registre vivant des outils.',
 		tagline:

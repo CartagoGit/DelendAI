@@ -103,6 +103,10 @@ const dict: LangDict = {
 		motion: 'アニメーション',
 		motionLabel: 'マーキーをアニメーション',
 	},
+	search: {
+		title: '検索',
+		placeholder: 'サイト内を検索...',
+	},
 	footer: {
 		built: 'ライブツールレジストリから生成。',
 		tagline:
