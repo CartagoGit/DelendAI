@@ -9,6 +9,7 @@ const dict: LangDict = {
 		tools: 'Strumenti',
 		benchmarks: 'Benchmark',
 		plugins: 'Plugin',
+		presets: 'Preset',
 		github: 'GitHub',
 		menu: 'Menu',
 		knowledge: 'Conoscenza',
