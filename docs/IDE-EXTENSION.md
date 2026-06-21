@@ -66,7 +66,7 @@ The extension is a **branded observability cockpit** for any running
                            │ typed JS objects
                            ▼
                 ┌────────────────────────┐
-                │ @mcp-vertex/ide        │
+                │ @mcp-vertex/ui-extension│
                 │ - renderDashboard      │
                 │ - 8 panel renderers    │
                 │ - sparkline, barChart  │
@@ -75,7 +75,7 @@ The extension is a **branded observability cockpit** for any running
                            │ HTML strings
                            ▼
                 ┌────────────────────────┐
-                │ apps/vscode            │
+                │ extensions/vscode      │
                 │ - VscodeHostAdapter    │
                 │ - Dashboard command    │
                 │ - Knowledge command    │
@@ -91,14 +91,14 @@ The extension is a **branded observability cockpit** for any running
 The extension uses the same logo as the docs site:
 [`apps/web/public/logo.svg`](../apps/web/public/logo.svg). The asset
 is **copied byte-identically** to
-[`apps/vscode/media/logo.svg`](../apps/vscode/media/logo.svg) and
+[`extensions/vscode/media/logo.svg`](../extensions/vscode/media/logo.svg) and
 verified by `bun run lint:brand`.
 
 A monochrome variant
-([`apps/vscode/media/logo-mono.svg`](../apps/vscode/media/logo-mono.svg))
+([`extensions/vscode/media/logo-mono.svg`](../extensions/vscode/media/logo-mono.svg))
 is shipped for low-contrast themes. The palette is defined as CSS
 custom properties in
-[`apps/vscode/media/dashboard.css`](../apps/vscode/media/dashboard.css)
+[`extensions/vscode/media/dashboard.css`](../extensions/vscode/media/dashboard.css)
 and falls back to VS Code theme variables when running inside the
 editor.
 
@@ -143,9 +143,9 @@ From the workspace root:
 bun install
 bun run lint:brand         # verify logo.svg drift
 bun run check:i18n:ide      # 12 langs × 39 keys parity
-bun run --cwd apps/vscode type
-bun run --cwd apps/vscode test
-bun run --cwd apps/vscode package   # produces mcp-vertex-vscode-0.3.0.vsix
+bun run --cwd extensions/vscode type
+bun run --cwd extensions/vscode test
+bun run --cwd extensions/vscode package   # produces @mcp-vertex-extension-vscode-1.0.0.vsix
 ```
 
 ## Troubleshooting
@@ -160,7 +160,7 @@ bun run mcp-vertex
 Then:
 
 ```sh
-cd apps/vscode
+cd extensions/vscode
 bun run type
 bun run test
 bun run package

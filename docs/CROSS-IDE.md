@@ -4,7 +4,7 @@ The VS Code extension is the **reference implementation** of an
 `@mcp-vertex` IDE host. Every other IDE (JetBrains, Zed, Cursor,
 Antigravity) ships **the same dashboard, panels and commands** by
 implementing one ~200-line adapter against the `IHostAdapter`
-interface declared in [`apps/ide/src/host-adapter.types.ts`](../apps/ide/src/host-adapter.types.ts).
+interface declared in [`packages/ui-extension/src/host-adapter.types.ts`](../packages/ui-extension/src/host-adapter.types.ts).
 
 The `packages/core` and every plugin remain **host-agnostic** — no IDE
 imports leak into the server. Only the IDE host knows about its own
@@ -59,14 +59,14 @@ export interface IHostAdapter {
 }
 ```
 
-`apps/vscode/src/host/vscode-host-adapter.ts` is the canonical reference
+`extensions/vscode/src/host/vscode-host-adapter.ts` is the canonical reference
 (~200 LoC, fully commented).
 
 ## How to build a host in 5 steps
 
-1. **Create the workspace**: `apps/<ide>/package.json` depending on
-   `@mcp-vertex/ide` and `@mcp-vertex/client`. Mirror
-   `apps/vscode/package.json` shape.
+1. **Create the workspace**: `extensions/<host>/package.json` depending on
+   `@mcp-vertex/ui-extension` and `@mcp-vertex/client`. Mirror
+   `extensions/vscode/package.json` shape.
 2. **Implement `IHostAdapter`**: `apps/<ide>/src/host-adapter.ts`.
    Map every method onto the host's native API. For methods the host
    doesn't support (e.g. `showQuickPick` on Zed), return a typed
@@ -77,7 +77,7 @@ export interface IHostAdapter {
 4. **Wire commands**: register `mcp-vertex.openDashboard`,
    `mcp-vertex.openDocs`, `mcp-vertex.refresh` against the host's
    command palette.
-5. **i18n**: copy the 12 `langs/*.ts` files from `apps/vscode/src/i18n/`
+5. **i18n**: copy the 12 `langs/*.ts` files from `extensions/vscode/src/i18n/`
    and wire `bun run check:i18n:ide` into CI.
 
 ## Per-host checklist
@@ -90,7 +90,7 @@ export interface IHostAdapter {
   `AnActionEvent`.
 - Tree views: `TreeView` + `TreeStructureProvider`.
 - i18n: use `com.intellij.DynamicBundle` (optional — fall back to
-  `apps/vscode/src/i18n/langs/`).
+  `extensions/vscode/src/i18n/langs/`).
 
 ### Zed
 
@@ -116,7 +116,7 @@ export interface IHostAdapter {
 
 Every method on `IHostAdapter` is exercised by the
 `FakeHostAdapter` spec in
-`apps/ide/tests/host-adapter.types.spec.ts`. To verify your
+`packages/ui-extension/tests/host-adapter.types.spec.ts`. To verify your
 adapter, write a similar spec that:
 
 1. Constructs the adapter with a stubbed host runtime.
@@ -125,13 +125,13 @@ adapter, write a similar spec that:
 4. Cleans up via `dispose()` and confirms no leaked listeners.
 
 Run `bun run lint:cross-ide` (the existing root script) to verify
-typecheck + tests across `apps/ide`, `packages/client`, and your new
+typecheck + tests across `packages/ui-extension`, `packages/client`, and your new
 host.
 
 ## Versioning
 
 When you change the `IHostAdapter` interface, bump
-`@mcp-vertex/ide` and release a new minor. Existing hosts continue to
+`@mcp-vertex/ui-extension` and release a new minor. Existing hosts continue to
 work via the `?` suffix on optional methods; missing methods are
 detected at type-check time.
 
@@ -139,7 +139,7 @@ detected at type-check time.
 
 The VS Code extension now ships **six more client services** that
 compose into the existing dashboard + add three new commands.
-Because every new service is implemented in `apps/ide/` or
+Because every new service is implemented in `packages/ui-extension/` or
 `packages/client/`, every host (JetBrains, Zed, Cursor, Antigravity)
 gets them for free by reusing the same `IHostAdapter` they already
 implement.
@@ -166,7 +166,7 @@ implement.
 ### New webview
 
 `renderKnowledgeNavigator` in
-[`apps/ide/src/knowledge/render-knowledge-navigator.ts`](../apps/ide/src/knowledge/render-knowledge-navigator.ts)
+[`packages/ui-extension/src/knowledge/render-knowledge-navigator.ts`](../packages/ui-extension/src/knowledge/render-knowledge-navigator.ts)
 is a 2-pane HTML view: left = category-grouped list with a search
 box, right = body preview. Pure function, no host imports — works
 identically in every IDE.
@@ -175,7 +175,7 @@ identically in every IDE.
 
 The 8-tab `renderDashboard` got a 9th tab (`Health`), driven by
 `renderPanelHealth` in
-[`apps/ide/src/dashboard/render-panel-health.ts`](../apps/ide/src/dashboard/render-panel-health.ts).
+[`packages/ui-extension/src/dashboard/render-panel-health.ts`](../packages/ui-extension/src/dashboard/render-panel-health.ts).
 Shows a `Healthy` / `Degraded` KPI tile, the locks count, the stale
 agents count, the queue (length / queued / waiter-orphans /
 oldest-age / threshold), and the active agents list.
