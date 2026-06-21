@@ -81,6 +81,9 @@ export const gracefulShutdown = async (
 	const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 	const exitProcess = options.exitProcess ?? true;
 	const exitCode = options.exitCode ?? 0;
+	if (exitProcess) {
+		process.exitCode = exitCode;
+	}
 
 	// Best-effort close with a hard timeout. The MCP SDK's close()
 	// awaits in-flight tool handlers; if one is wedged we still want
