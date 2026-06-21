@@ -24,6 +24,8 @@ export interface IObservedContinuity {
 	readonly newProposalsOpenedInSession?: number;
 	readonly agentSpawnsInSession?: number;
 	readonly toolRetriesForTool?: number;
+	/** true when the current task emitted a checkpoint before close/hand-off */
+	readonly checkpointPresent?: boolean;
 	/** true when the caller intends to re-read a doc whose digest is unchanged */
 	readonly willReReadUnchangedDoc?: boolean;
 }
@@ -96,6 +98,18 @@ const evaluateBooleanChecks = (
 			field: 'forbidReReadOnUnchangedDigest',
 			message:
 				'RE_READ_FORBIDDEN: caller declared intent to re-read a core doc whose digest hash is unchanged.',
+			severity: 'block',
+		});
+	}
+
+	if (
+		policy.requireCheckpointAfterTask === true &&
+		observed.checkpointPresent !== true
+	) {
+		violations.push({
+			field: 'requireCheckpointAfterTask',
+			message:
+				'SESSION_COMPACTION_REQUIRED: continuityPolicy.requireCheckpointAfterTask is true but no checkpoint was emitted for the current task.',
 			severity: 'block',
 		});
 	}

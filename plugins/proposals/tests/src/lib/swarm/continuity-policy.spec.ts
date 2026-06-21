@@ -137,6 +137,38 @@ describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', () => {
 });
 
 // ---------------------------------------------------------------------------
+// requireCheckpointAfterTask: true + checkpointPresent !== true → block
+// ---------------------------------------------------------------------------
+describe('evaluateContinuityPolicy — requireCheckpointAfterTask', () => {
+	it('returns block violation when a checkpoint is required but missing', () => {
+		const policy: IContinuityPolicy = {
+			requireCheckpointAfterTask: true,
+		};
+		const observed: IObservedContinuity = { checkpointPresent: false };
+
+		const result = evaluateContinuityPolicy(policy, observed);
+		expect(result.withinPolicy).toBe(false);
+		const v = result.violations.find(
+			(x) => x.field === 'requireCheckpointAfterTask',
+		);
+		expect(v).toBeDefined();
+		expect(v?.severity).toBe('block');
+		expect(v?.message).toContain('SESSION_COMPACTION_REQUIRED');
+	});
+
+	it('returns withinPolicy: true when the required checkpoint is present', () => {
+		const policy: IContinuityPolicy = {
+			requireCheckpointAfterTask: true,
+		};
+		const observed: IObservedContinuity = { checkpointPresent: true };
+
+		const result = evaluateContinuityPolicy(policy, observed);
+		expect(result.withinPolicy).toBe(true);
+		expect(result.violations).toHaveLength(0);
+	});
+});
+
+// ---------------------------------------------------------------------------
 // Accumulates multiple violations
 // ---------------------------------------------------------------------------
 describe('evaluateContinuityPolicy — multiple violations', () => {
