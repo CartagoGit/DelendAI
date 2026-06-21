@@ -90,7 +90,8 @@ export interface IScaffoldReport {
 }
 
 // r00002 S2 — mirrors `IScaffoldReport` above field-for-field.
-const SCAFFOLD_REPORT_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const SCAFFOLD_REPORT_SCHEMA = z.object({
 	kind: SCAFFOLD_INPUT_SCHEMA.shape.kind,
 	dryRun: z.boolean(),
 	files: z.array(SCAFFOLDED_FILE_SCHEMA),

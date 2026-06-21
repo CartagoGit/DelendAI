@@ -51,7 +51,8 @@ const ANALYZE_SCHEMA = z.object({
 });
 
 // r00002 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
-const PROJECT_ANALYSIS_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const PROJECT_ANALYSIS_SCHEMA = z.object({
 	hasPackageJson: z.boolean(),
 	name: z.string().optional(),
 	projectType: z.enum([
@@ -83,7 +84,8 @@ const PROJECT_ANALYSIS_SCHEMA = z.object({
 });
 
 // r00002 S1 — mirrors `IServerPlan` (recommend-plan.ts).
-const SERVER_PLAN_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const SERVER_PLAN_SCHEMA = z.object({
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
 	serverName: z.string(),
 	namespacePrefix: z.string(),
@@ -97,7 +99,8 @@ const SERVER_PLAN_SCHEMA = z.object({
 });
 
 // r00002 S1 — mirrors `IScaffoldedFile` (scaffold-host.ts).
-const SCAFFOLDED_FILE_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const SCAFFOLDED_FILE_SCHEMA = z.object({
 	path: z.string(),
 	content: z.string(),
 });
@@ -117,19 +120,22 @@ const CREATE_SCHEMA = z.object({
 
 // r00002 S1 — `create_project`'s output: a dry-run skeleton of files to
 // write, discriminated by what was scaffolded (host/plugin/client).
-const MCP_PROJECT_SKELETON_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const MCP_PROJECT_SKELETON_SCHEMA = z.object({
 	kind: z.enum(['host', 'plugin', 'client']),
 	files: z.array(SCAFFOLDED_FILE_SCHEMA),
 });
 
 // r00002 S1 — mirrors `IServerBlueprint` (build-blueprint.ts), the
 // EXHAUSTIVE plan `plan_mcp_project` returns alongside the files to write.
-const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
 	name: z.string(),
 	description: z.string(),
 });
 
-const SERVER_BLUEPRINT_SCHEMA = z.object({
+// r00001 S0 — exported so the golden snapshot test can pin the schema shape.
+export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	serverName: z.string(),
 	namespacePrefix: z.string(),
 	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
