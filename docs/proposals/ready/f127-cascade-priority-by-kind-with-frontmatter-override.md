@@ -58,8 +58,10 @@ Esto está **roto contra el catálogo real**:
 
 - [ ] `proposal-workflow.ts.buildProposalWorkflow()` devuelve un array de **13 familias**, una por cada key de `PROPOSAL_KINDS` + el alias `p`. Cada familia tiene `prefix`, `description` (derivada del kind: `"{kind} ({prefix}: prefix)"` para no mentir), y `cascadePriority` según el orden por defecto de §"Orden por defecto".
 - [ ] Cada proposal puede declarar `cascadeOverride: <int>` en su frontmatter. Si está, ese valor gana sobre el de la familia (y sobre cualquier otro `cascadeOverride` numérico). Los consumers que llaman al resolver lo ven como un único número resuelto.
-- [ ] El cascade se computa en una **interfaz `ICascadePriorityResolver`** con un método `resolve(proposal: IProposalSummary): number`. Hay una implementación default `KindCascadePriorityResolver` que mira kind + frontmatter override.
-- [ ] El array de familias se construye en una **factory** `buildProposalFamilies()` que recibe `IProposalKinds` (no la constante global), testable con kinds sintéticos.
+  - El cascade se computa como una **cadena de resolvers** (`ICascadePriorityResolver` + composición Chain of Responsibility). El primer eslabón es `KindCascadePriorityResolver` (orden por kind); el segundo es `FrontmatterOverrideResolver` (decorador que aplica `cascadeOverride` y `cascadeBoost`). Los consumers pueden añadir más eslabones sin tocar a los existentes.
+  - El array de familias se construye en una **factory** `buildProposalFamilies()` que recibe `IProposalKinds` (no la constante global), testable con kinds sintéticos.
+  - Cada proposal puede declarar `cascadeOverride: <int>` **y, obligatoriamente, `cascadeOverrideReason: <string>`** (linter-enforced). El reason queda registrado en el log de `proposal_auto_work` para auditoría.
+  - Cada proposal puede declarar `cascadeBoost: 'shipped-blocking' | 'customer-reported' | 'security'` (string union, extensible). El boost desplaza al proposal al **frente de su kind** (no antes que kinds más urgentes), evitando que un `f*` con boost salte por encima de un `x*` real.
 - [ ] `proposal_auto_work` (el motor que decide el orden) usa el resolver; los tests verifican que `x*` cascadea antes que `f*` y que un proposal con `cascadeOverride: -1` cascadea antes que todos los de su kind.
 - [ ] `get_proposal_workflow` actualiza su `outputSchema` para incluir el campo `cascadeOverride?: number` en la familia (o como campo separado de "overrides disponibles" — ver §Decisión de schema).
 - [ ] `apps/web/src/i18n/tools/proposals_get_proposal_workflow.ts` (es/en/...) añade la traducción del campo nuevo si es user-visible.
@@ -87,6 +89,19 @@ El orden codifica dos principios: **(1) los fixes de bugs son lo más urgente** 
 | 12   | `p`    | legacy alias | `feat`               | minor  | Alias pre-f113; no debería tener archivos nuevos.                      |
 
 > **Razón para que `x` (fix) gane a `b` (breaking)**: un fix arregla algo roto HOY; un breaking es un cambio que va a romper MAÑANA. Lo roto-ahora gana sobre lo-que-romperá-después.
+
+### Boosts (desplazamiento intra-kind, no inter-kind)
+
+Un boost NO cambia la prioridad absoluta del proposal; solo lo mueve al **frente de su mismo kind**. Esto preserva el principio de "los fixes siempre ganan a las features" — un `f*` con `cascadeBoost: shipped-blocking` sigue cascadeando **después** de cualquier `x*` sin boost.
+
+| Boost value             | Significado                                                     | Penalización |
+|-------------------------|-----------------------------------------------------------------|--------------|
+| `shipped-blocking`      | Bloquea un release ya planificado (e.g. release notes drafted). | priority -= 0.5 dentro de su kind |
+| `customer-reported`     | Reportado por un usuario con severity alta (P0/P1).             | priority -= 0.3 dentro de su kind |
+| `security`              | Cierra un hallazgo de seguridad de una auditoría.              | priority -= 0.5 dentro de su kind |
+| (sin boost)             | Sin tratamiento especial.                                       | 0            |
+
+**Por qué un boost no salta inter-kind**: la regla "`x` antes que `f`" es un invariante de seguridad del cascade (un fix no puede quedar atrapado detrás de un feat). Si un `f*` con boost saltara por encima de un `x*`, reintroduciríamos el bug que arregla esta propuesta. Si necesitas que un `f*` corra antes que un `x*`, usa `cascadeOverride: -1` con su reason — eso es un break-glass, no un atajo.
 
 ## Decisión de schema
 
@@ -128,68 +143,107 @@ El código actual es un módulo con una función `buildProposalWorkflow` que dev
 
 ### Single Responsibility (SRP)
 
-- `cascade-priority.ts` (nuevo): solo define el orden por defecto y el resolver.
-- `proposal-workflow.ts` (existente): solo arma el `IProposalWorkflow` (locations, naming, rules, template).
-- `get-proposal-workflow.tool.ts` (existente): solo expone el tool MCP, llamando a los dos anteriores.
+- `cascade/cascade-priority.ts` (nuevo): solo define el orden por defecto, los boosts, y los resolvers componibles.
+- `cascade/cascade-chain.ts` (nuevo): compone la cadena default (kind resolver + frontmatter resolver).
+- `proposal-workflow.ts` (existente): solo arma el `IProposalWorkflow` (locations, naming, rules, template). No sabe nada de boosts u overrides.
+- `get-proposal-workflow.tool.ts` (existente): solo expone el tool MCP, llamando a los anteriores.
 
-### Open/Closed (OCP)
+### Open/Closed (OCP) + Chain of Responsibility
 
 ```ts
 // plugins/proposals/src/lib/cascade/cascade-priority.ts
 
+export type TCascadeBoost = 'shipped-blocking' | 'customer-reported' | 'security';
+
 export interface IProposalSummary {
     readonly id: string;
     readonly kind: IProposalKind;
+    /** Break-glass: any proposal can pin itself to a numeric priority. */
     readonly cascadeOverride?: number;
+    /** Mandatory if cascadeOverride is set: human-readable reason for audit. */
+    readonly cascadeOverrideReason?: string;
+    /** Intra-kind boost: moves the proposal to the front of its kind. */
+    readonly cascadeBoost?: TCascadeBoost;
 }
 
 export interface ICascadePriorityResolver {
+    /** Resolves the absolute priority. Lower = higher cascade. */
     resolve(proposal: IProposalSummary): number;
+    /** Optional hook: whether this resolver "claims" the proposal. */
+    accepts?(proposal: IProposalSummary): boolean;
 }
 
-/** Default impl: kind-order + optional frontmatter override. */
+/** Step 1 of the chain: priority by kind. */
 export class KindCascadePriorityResolver implements ICascadePriorityResolver {
     constructor(
         private readonly kindOrder: ReadonlyMap<IProposalKind, number>,
-        private readonly aliasPenalty: number, // for the 'p' alias
+        private readonly boostPenalties: ReadonlyMap<TCascadeBoost, number> = DEFAULT_BOOST_PENALTIES,
     ) {}
 
     resolve(p: IProposalSummary): number {
-        if (typeof p.cascadeOverride === 'number') return p.cascadeOverride;
-        return this.kindOrder.get(p.kind) ?? Number.POSITIVE_INFINITY;
+        const base = this.kindOrder.get(p.kind);
+        if (base === undefined) return Number.POSITIVE_INFINITY;
+        const penalty = p.cascadeBoost ? (this.boostPenalties.get(p.cascadeBoost) ?? 0) : 0;
+        // Boosts lower the priority within the same kind — e.g. a feat with
+        // shipped-blocking goes from rank 4 to 3.5, still behind any fix (rank 0).
+        return base - penalty;
     }
 }
 
-/** Factory: build the default kind-order map from PROPOSAL_KINDS. */
-export const buildKindOrder = (kinds: typeof PROPOSAL_KINDS): ReadonlyMap<IProposalKind, number> => {
-    // Hard-coded in §"Orden por defecto"; lives here as data, not as scattered ifs.
-    const order: ReadonlyArray<IProposalKind> = [
-        'fix', 'breaking', 'audit', 'chore', 'feat', 'refactor',
-        'perf', 'docs', 'test', 'infra', 'spike', 'legacy',
-    ];
-    const map = new Map<IProposalKind, number>();
-    order.forEach((kind, idx) => map.set(kind, idx));
-    return map;
-};
+const DEFAULT_BOOST_PENALTIES: ReadonlyMap<TCascadeBoost, number> = new Map([
+    ['shipped-blocking', 0.5],
+    ['customer-reported', 0.3],
+    ['security', 0.5],
+]);
+
+/** Step 2 of the chain: break-glass override. Always wins (when present). */
+export class FrontmatterOverrideResolver implements ICascadePriorityResolver {
+    constructor(private readonly inner: ICascadePriorityResolver) {}
+
+    resolve(p: IProposalSummary): number {
+        if (typeof p.cascadeOverride === 'number') return p.cascadeOverride;
+        return this.inner.resolve(p);
+    }
+}
+
+// plugins/proposals/src/lib/cascade/cascade-chain.ts
+export const buildDefaultCascadeChain = (): ICascadePriorityResolver =>
+    new FrontmatterOverrideResolver(
+        new KindCascadePriorityResolver(buildKindOrder(PROPOSAL_KINDS)),
+    );
 ```
+
+**Por qué Chain of Responsibility** (en vez de una sola clase con un if grande): cada eslabón tiene una sola razón de cambio. Si mañana quieres añadir un resolver que sube los proposals de un agente concreto, es una clase nueva + `buildDefaultCascadeChain` modificado en un solo punto. El linter puede validar que `cascadeOverride` venga siempre con `cascadeOverrideReason` (s4 lo cubre), y el log de `proposal_auto_work` registra el reason para auditoría.
 
 ### Liskov (LSP) + Dependency Inversion (DIP)
 
-`proposal_auto_work` no instancia `KindCascadePriorityResolver` directamente — recibe un `ICascadePriorityResolver` por inyección. Los tests inyectan un resolver fake que devuelve orden alfabético o prioridades hardcoded, sin tocar el registry de proposals.
+`proposal_auto_work` no instancia la cadena directamente — recibe un `ICascadePriorityResolver` por inyección. Los tests inyectan un resolver fake que devuelve orden alfabético o prioridades hardcoded, sin tocar el registry de proposals. La cadena default se construye vía `buildDefaultCascadeChain()`.
 
 ### Interface Segregation (ISP)
 
-`IProposalSummary` solo tiene los 3 campos que el resolver necesita (`id`, `kind`, `cascadeOverride`). No es un `IProposal` completo — eso sería ISP-violating (el resolver no necesita `status`, `track`, `title`, etc.).
+`IProposalSummary` solo tiene los 5 campos que el resolver necesita. No es un `IProposal` completo — eso sería ISP-violating (el resolver no necesita `status`, `track`, `title`, etc.).
 
 ## Slices
 
-- **s1 — Tipos y resolver (3 archivos nuevos)**
-  - files: [`plugins/proposals/src/lib/cascade/cascade-priority.ts`, `plugins/proposals/src/lib/cascade/cascade-priority.spec.ts`, `plugins/proposals/src/lib/cascade/index.ts`]
+> Los slices s1-s4 son **file-disjoint entre sí** y pueden correr en paralelo. s0 es discovery puro (read-only) y es prerrequisito barato de s2/s3.
+
+- **s0 — Discovery de callers externos del cascade (0 archivos productivos)**
+  - files: [] (solo lee)
+  - agent: `technical_investigator`
+  - gate: `lint`
+  - acceptance:
+    - Grep exhaustivo de **todos los consumers** de `cascadePriority` y de `proposal-workflow.families[]` en `plugins/`, `packages/`, `apps/`. Salida: lista con path + línea + tipo de uso (lectura directa, iteración, destructuring, comparación).
+    - Identifica si `status-marker` o `memory` plugins leen el cascade. Si lo hacen, clasifica el uso como "must preserve" o "can be deleted".
+    - Salida en `docs/proposals/done/audits/aXXX-discovery-cascade-callers.md` (nuevo audit, no en `ready/` — es output de f127, no una proposal).
+  - dependsOn: []
+
+- **s1 — Tipos y cadena de resolvers (4 archivos nuevos)**
+  - files: [`plugins/proposals/src/lib/cascade/cascade-priority.ts`, `plugins/proposals/src/lib/cascade/cascade-chain.ts`, `plugins/proposals/src/lib/cascade/cascade-priority.spec.ts`, `plugins/proposals/src/lib/cascade/index.ts`]
   - agent: `proposal_guardian`
   - gate: `lint`
   - acceptance:
-    - Define `IProposalSummary`, `ICascadePriorityResolver`, `KindCascadePriorityResolver`, `buildKindOrder` como en §"Estructura SOLID".
-    - `cascade-priority.spec.ts` cubre: (a) cada kind activo devuelve su rank, (b) `cascadeOverride: -1` gana sobre el rank, (c) `cascadeOverride: 99` pierde contra el rank 0, (d) un kind desconocido devuelve `+Infinity`, (e) `p` alias nunca se consulta directamente (solo vía `legacy`).
+    - Define `IProposalSummary`, `ICascadePriorityResolver`, `KindCascadePriorityResolver`, `FrontmatterOverrideResolver`, `buildKindOrder`, `buildDefaultCascadeChain` como en §"Estructura SOLID".
+    - `cascade-priority.spec.ts` cubre: (a) cada kind activo devuelve su rank, (b) `cascadeOverride: -1` gana sobre el rank, (c) `cascadeOverride: 99` pierde contra el rank 0, (d) un kind desconocido devuelve `+Infinity`, (e) un `f*` con `cascadeBoost: shipped-blocking` queda en rank 3.5, no en rank 0 (preserva el invariante "x antes que f"), (f) `cascadeOverride` sin `cascadeOverrideReason` falla con un error explícito (no silencioso).
     - 0 regresiones en `bun run test`.
   - dependsOn: []
 
@@ -203,7 +257,8 @@ export const buildKindOrder = (kinds: typeof PROPOSAL_KINDS): ReadonlyMap<IPropo
     - El array mantiene el orden de §"Orden por defecto".
     - El alias `p` se añade con `description: "legacy alias for l (pre-f113) — kept for back-compat"`, `cascadePriority` = `kindOrder.get('legacy') + 1` (12).
     - La signature pública no cambia: `buildProposalWorkflow(proposalsDir, indexFile): IProposalWorkflow`.
-  - dependsOn: [`s1`]
+    - **S2 NO depende de s1** — solo necesita la constante de orden, que s1 publica vía `buildKindOrder` (interfaz estable). Si s1 no ha mergeado, s2 importa la constante de orden directamente de `cascade-priority.ts` (que s1 deja commiteable incluso sin s2 listo).
+  - dependsOn: [`s0`]
 
 - **s3 — Wire up proposal_auto_work (1 archivo modificado)**
   - files: [`plugins/proposals/src/lib/proposals/proposal-auto-work.ts`]
@@ -211,19 +266,23 @@ export const buildKindOrder = (kinds: typeof PROPOSAL_KINDS): ReadonlyMap<IPropo
   - gate: `e2e`
   - acceptance:
     - `proposal_auto_work` recibe `ICascadePriorityResolver` por DI (constructor o factory).
-    - El default production wiring usa `KindCascadePriorityResolver` con `buildKindOrder(PROPOSAL_KINDS)`.
+    - El default production wiring usa `buildDefaultCascadeChain()`.
     - El e2e test (ya existe para `proposal_auto_work`) sigue verde: cuando hay 3 proposals (`x1`, `f1`, `a1`), la respuesta devuelve `x1` primero.
+    - Un test nuevo confirma que un `f*` con `cascadeBoost: shipped-blocking` (rank 3.5) cascadea **después** de un `x*` sin boost (rank 0) — invariante preservado.
     - Un test nuevo confirma que un proposal con `cascadeOverride: -5` cascadea antes que un `x*` normal.
-  - dependsOn: [`s2`]
+    - El log de `proposal_auto_work` registra `cascadeOverrideReason` cuando se aplica un override (auditoría).
+  - dependsOn: [`s0`, `s1`]
 
-- **s4 — Schema + i18n (2 archivos modificados)**
-  - files: [`plugins/proposals/src/lib/contracts/schemas/get-proposal-workflow.schema.ts`, `apps/web/src/i18n/tools/proposals_get_proposal_workflow.ts`]
+- **s4 — Schema + i18n + linter de override (3 archivos modificados)**
+  - files: [`plugins/proposals/src/lib/contracts/schemas/get-proposal-workflow.schema.ts`, `apps/web/src/i18n/tools/proposals_get_proposal_workflow.ts`, `scripts/lint-proposals.ts`]
   - agent: `implementation_runner`
   - gate: `lint`
   - acceptance:
     - El schema Zod del output añade `kind: IProposalKind` como campo opcional de la familia (compatible hacia atrás con consumers que ignoren campos nuevos).
     - `bun run types:generate` regenera el SDK sin breaking change.
     - La descripción impresa del tool se actualiza en los 5 idiomas: `apps/web/src/i18n/ui.ts` (en, es, fr, de, ja) — el guard `apps/web/scripts/check-i18n.ts` falla el build si falta alguno.
+    - **Linter nuevo en `scripts/lint-proposals.ts`**: si un `.md` declara `cascadeOverride:` en el frontmatter y NO declara `cascadeOverrideReason:`, falla con error (no warning). Esto cierra el riesgo de "override silencioso".
+    - **Linter nuevo**: `cascadeBoost` solo acepta los valores del union `'shipped-blocking' | 'customer-reported' | 'security'`. Cualquier otro valor falla.
   - dependsOn: [`s2`]
 
 - **s5 — Validación global (0 archivos productivos)**
@@ -234,6 +293,7 @@ export const buildKindOrder = (kinds: typeof PROPOSAL_KINDS): ReadonlyMap<IPropo
     - `bun run validate` verde.
     - `bun run site:strict` verde (el proposals plugin no rompe la generación del sitio).
     - `get_proposal_workflow` devuelve exactamente 13 familias con `kind`, `prefix`, `description`, `cascadePriority` y `cascadePriority` en el orden de §"Orden por defecto".
+    - Los callers externos identificados en s0 siguen funcionando: si el audit de s0 clasificó un caller como "must preserve", hay un test e2e que lo cubre.
   - dependsOn: [`s1`, `s2`, `s3`, `s4`]
 
 ## Coordination notes
