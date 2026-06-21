@@ -31,6 +31,13 @@
 			"tags": ["proposals", "swarm", "multi-agent"]
 		},
 		{
+			"id": "mcp-vertex-proposals-workflow",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-proposals-workflow/SKILL.md",
+			"tags": ["proposals", "workflow", "compact"]
+		},
+		{
 			"id": "state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",

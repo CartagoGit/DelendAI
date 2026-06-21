@@ -87,7 +87,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   `skills/mcp-vertex-proposals-workflow/manifest.json` (nuevo, con
   `appliesTo: ['@mcp-vertex/proposals']` y `priority: 'high'` para que
   el host pueda resolverlo sin grep).
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "El SKILL.md abre con el árbol de decisión
@@ -105,6 +105,12 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     cerrar el último slice."
   - "1 caso de smoke: importarlo desde `mcp-vertex_knowledge` no
     devuelve 404."
+
+S1 landed using the current repo-wide skill manifest contract from
+`f00029`: `skills/manifest.json` is the single versioned index, so no
+per-skill `manifest.json` was added. The new skill intentionally aliases
+the existing `proposal-swarm-runner` playbook with a shorter compact
+entrypoint matching the proposal name.
 
 ### S2 — Skill `mcp-vertex-multi-agent-coordination`
 - **Files**: `skills/mcp-vertex-multi-agent-coordination/SKILL.md` (nuevo).
