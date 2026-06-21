@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T19:41:50.173Z",
+	"generated_at": "2026-06-21T19:43:53.310Z",
 	"count": 87,
 	"proposals": [
 		{
@@ -131,14 +131,6 @@
 			}
 		},
 		{
-			"id": "r00001",
-			"file": "ready/r00001-harden-catchall-output-schemas.md",
-			"track": "plugins+core",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
 			"id": "f00001",
 			"file": "in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md",
 			"track": "proposals",
@@ -181,6 +173,14 @@
 			"id": "l00008",
 			"file": "done/l00008-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
 			"track": "plugins+core+audit",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "r00001",
+			"file": "done/r00001-harden-catchall-output-schemas.md",
+			"track": "plugins+core",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
