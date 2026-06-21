@@ -237,6 +237,31 @@ describe('polyglot manifests (M33)', () => {
 		]);
 	});
 
+	it('parses PEP 621 multi-line dependencies from pyproject.toml', () => {
+		const toml = [
+			'[project]',
+			'name = "demo"',
+			'dependencies = [',
+			'  "requests>=2.0",',
+			'  "click"',
+			']',
+		].join('\n');
+		expect(parsePyprojectToml(toml)).toEqual([
+			{
+				ecosystem: 'python',
+				name: 'requests',
+				range: '>=2.0',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'python',
+				name: 'click',
+				range: '*',
+				section: 'dependencies',
+			},
+		]);
+	});
+
 	it('parses Cargo.toml across dependency sections, extracting version from inline tables', () => {
 		const toml = [
 			'[package]',

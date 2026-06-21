@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T21:06:14.163Z",
-	"count": 93,
+	"generated_at": "2026-06-21T21:12:26.549Z",
+	"count": 95,
 	"proposals": [
 		{
 			"id": "f00023",
@@ -61,6 +61,14 @@
 			"id": "f00045",
 			"file": "ready/f00045-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
 			"track": "proposals-plugin+workflow+skills+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00048",
+			"file": "ready/f00048-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
@@ -417,6 +425,19 @@
 		{
 			"id": "a00028",
 			"file": "done/audits/a00028-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Execute audit and document findings' }"
+				]
+			}
+		},
+		{
+			"id": "a00029",
+			"file": "done/audits/a00029-21-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
 			"track": "archive",
 			"type": "unspecified",
 			"status": "done",
