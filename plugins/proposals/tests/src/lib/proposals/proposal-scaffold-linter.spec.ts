@@ -331,6 +331,73 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
+	// f119: terminal statuses (`done`, `retired`) may live under a kind
+	// sub-folder. The check is status-driven: walk ancestors, find the
+	// nearest status folder, compare to expected.
+	describe('terminal-status sub-folders (f119)', () => {
+		it('accepts done/audits/foo.md with status: done', () => {
+			const result = lint(
+				doc({ status: 'done' }),
+				'docs/proposals/done/audits/a001-15-06-2026-foo.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(false);
+		});
+
+		it('accepts done/feats/foo.md with status: done', () => {
+			const result = lint(
+				doc({ status: 'done' }),
+				'docs/proposals/done/feats/f114-do-the-thing.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(false);
+		});
+
+		it('accepts done/audits/2024/q1/foo.md (deeply nested)', () => {
+			const result = lint(
+				doc({ status: 'done' }),
+				'docs/proposals/done/audits/2024/q1/a001-foo.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(false);
+		});
+
+		it('accepts retired/foo.md with status: retired', () => {
+			const result = lint(
+				doc({ status: 'retired' }),
+				'docs/proposals/retired/x001-foo.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(false);
+		});
+
+		it('rejects ready/audits/foo.md with status: done (non-terminal)', () => {
+			const result = lint(
+				doc({ status: 'done' }),
+				'docs/proposals/ready/audits/f114-foo.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(true);
+		});
+
+		it('uses nearest status ancestor, not first occurrence', () => {
+			// If a file lives in `ready/audits/done/foo.md`, the nearest
+			// status ancestor is `ready`, not `done`. status: ready matches.
+			const result = lint(
+				doc({ status: 'ready' }),
+				'docs/proposals/ready/audits/done/f114-foo.md',
+			);
+			expect(
+				result.issues.some((i) => i.message.includes('expects folder')),
+			).toBe(false);
+		});
+	});
+
 	it('flags a slice with no Status field', () => {
 		const badSlice = `### S1 — Do the thing\n- **Files**: [\`a.ts\`]\n- **Gate**: \`bun run test\`\n`;
 		const result = lint(doc({}, badSlice));
