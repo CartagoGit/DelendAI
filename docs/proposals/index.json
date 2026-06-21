@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-21T21:12:26.549Z",
-	"count": 95,
+	"generated_at": "2026-06-21T21:18:44.635Z",
+	"count": 96,
 	"proposals": [
 		{
 			"id": "f00023",
@@ -93,6 +93,24 @@
 					"{ agent: implementation_runner, task: 's1: rename 20 audit files to a1..a20 + move into done/audits/' }",
 					"{ agent: implementation_runner, task: 's2: re-classify f00004..l113 by real kind + move into done/feats|fixes/' }",
 					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
+				]
+			}
+		},
+		{
+			"id": "a00027",
+			"file": "done/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
+			"track": "workflow+core+plugins+apps+docs+memory",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": [
+					"{ agent: technical_investigator, task: 'S1: establecer rúbrica y baseline de eficiencia con foco en límites, jerarquía, presupuestos y compacción' }",
+					"{ agent: technical_investigator, task: 'S2: auditar workflow y gobierno multiagente en proposals, locks, handoff y criterios de salida' }",
+					"{ agent: technical_investigator, task: 'S3: auditar memoria, prompts, skills y surfaces de contexto para detectar contexto innecesario y missing compaction' }",
+					"{ agent: technical_investigator, task: 'S4: auditar core, client, plugins y hosts para bounded outputs, presupuestos, caches y rutas compactas por defecto' }",
+					"{ agent: proposal_guardian, task: 'S5: convertir hallazgos validados en propuestas hijas acotadas, con prerequisites y aceptación medible' }",
+					"{ agent: proposal_guardian, task: 'S6: cerrar la auditoría cuando el mapa de follow-ups y no-goals quede trazado' }"
 				]
 			}
 		},

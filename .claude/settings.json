@@ -1,12 +1,6 @@
 {
 	"$schema": "https://json.schemastore.org/claude-code-settings.json",
 
-	// Repo-wide Claude Code defaults. Personal-machine overrides go in
-	// `.claude/settings.local.json` (gitignored). This file IS tracked so
-	// that anyone who clones the repo gets the same autopilot experience
-	// out of the box. `AGENTS.md` declares this a trusted developer
-	// sandbox, so we trade friction for velocity.
-
 	"permissions": {
 		"allow": [
 			"Read",
@@ -28,27 +22,17 @@
 		],
 		"deny": [],
 		"defaultMode": "acceptEdits",
-		"additionalDirectories": [
-			"/home/cartago/_projects/mcp-vertex"
-		]
+		"additionalDirectories": ["/home/cartago/_projects/mcp-vertex"]
 	},
 
-	// Skip the dangerous-mode confirmation dialog (bypass-equivalent for
-	// the very first prompt that asks "are you sure?").
 	"skipDangerousModePermissionPrompt": true,
 
-	// Run every session in autopilot: no per-action prompts.
 	"defaultMode": "bypassPermissions",
 
-	// Allow long-running commands without timeout nagging.
 	"env": {
 		"BUN_NO_PROMPT": "1",
 		"CI": "1"
 	},
 
-	// Pre-approve every MCP tool the `mcp-vertex` server exposes. Names are
-	// enumerated explicitly (the `*` pattern isn't supported by Claude Code
-	// for MCP tools, so we list each one we know about). Adding a new MCP
-	// tool means extending this list — there is an e2e that catches gaps.
 	"mcpServers": {}
 }
