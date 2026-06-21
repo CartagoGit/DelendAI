@@ -54,16 +54,9 @@ const SIMPLE_ICONS = join(REPO_ROOT, 'node_modules/simple-icons/icons');
 const OUT = join(APPS_WEB, 'public/logos');
 
 interface IBrandEntry {
-	/** Slug in simple-icons (`<slug>.svg`). May be absent — in that
-	 * case we use the `sources` list below to fetch. */
 	readonly simpleIconsSlug?: string;
-	/** The output filename. */
 	readonly outName: string;
-	/** Brand colour used for the rounded background. The icon
-	 * itself is rendered in white on this background. */
 	readonly brandColor: string;
-	/** Optional fallback URLs when simple-icons doesn't have the
-	 * brand. Fetched once and cached as `<outName>` in `OUT`. */
 	readonly sources?: ReadonlyArray<string>;
 }
 
@@ -145,29 +138,31 @@ interface IExtracted {
  * a transparent background rectangle, the middle ones are
  * decorative shapes, and the last one is the actual mark.
  * simple-icons icons are single-path so the last is the only
- * one either way.
+ * one either way. `String.matchAll` returns an iterator of every
+ * match so we don't have to mutate a stateful regex handle
+ * (which is also what biome's `noAssignInExpressions` rule is
+ * complaining about — a `while ((m = regex.exec(s)))` loop trips
+ * it).
  */
 const convertPath = (svgText: string): IExtracted => {
 	const viewBoxMatch = svgText.match(/viewBox="([\d.\s]+)"/);
 	const viewBox = viewBoxMatch
 		? (() => {
-				const parts = viewBoxMatch[1]!.trim().split(/\s+/).map(Number);
-				return { w: parts[2] ?? 24, h: parts[3] ?? 24 };
+				const parts = viewBoxMatch[1]!.trim().split(/\s+/);
+				return {
+					w: Number(parts[2] ?? 24),
+					h: Number(parts[3] ?? 24),
+				};
 			})()
 		: { w: 24, h: 24 };
-	// Global flag, last match
-	const pathRegex = /<path[^>]*\bd="([^"]+)"/g;
-	let lastMatch: RegExpExecArray | null = null;
-	let m: RegExpExecArray | null;
-	while ((m = pathRegex.exec(svgText)) !== null) {
-		lastMatch = m;
-	}
-	if (!lastMatch) {
+	const matches = [...svgText.matchAll(/<path[^>]*\bd="([^"]+)"/g)];
+	const last = matches[matches.length - 1];
+	if (!last) {
 		throw new Error(
 			`Could not extract <path d="..."> from SVG: ${svgText.slice(0, 200)}`,
 		);
 	}
-	return { d: lastMatch[1]!, viewBox };
+	return { d: last[1]!, viewBox };
 };
 
 const renderBrand = (
