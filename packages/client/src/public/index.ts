@@ -25,6 +25,12 @@ export { NotificationsService } from '../lib/services/notifications-service';
 export { LogsService } from '../lib/services/logs-service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
 export { SearchService } from '../lib/services/search-service';
+export { MemoryService } from '../lib/services/memory-service';
+export {
+	DEFAULT_EXTENSION_SETTINGS,
+	SettingsService,
+	validateExtensionSettings,
+} from '../lib/services/settings-service';
 export type {
 	ILogCorrelateResult,
 	ILogEvent,
@@ -48,6 +54,22 @@ export type {
 	ISearchResult,
 	IToolHit,
 } from '../lib/services/search.types';
+export type {
+	IMemoryEntry,
+	IMemoryForgetResult,
+	IMemoryListEntry,
+	IMemoryListOptions,
+	IMemoryListResult,
+	IMemoryRecallOptions,
+	IMemorySaveInput,
+	IMemorySaveResult,
+} from '../lib/services/memory.types';
+export type {
+	IExtensionSettings,
+	IExtensionSettingsPatch,
+	ISettingsStore,
+	ISettingsValidationResult,
+} from '../lib/services/settings.types';
 export {
 	DashboardService,
 	createEmptyTotals,
