@@ -1,6 +1,6 @@
 ---
 id: l00008
-status: ready
+status: done
 type: proposal
 track: plugins+core+audit
 date: 2026-06-21

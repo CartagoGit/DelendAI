@@ -294,6 +294,11 @@ export interface ProposalsContinueProposalOutput {
 		gate: "lint" | "type" | "e2e" | "none";
 		rules: string[];
 	};
+	cascadeTrace?: {
+		priority?: number;
+		cascadeOverrideReason?: string;
+		cascadeBoost?: "shipped-blocking" | "customer-reported" | "security";
+	};
 	error?: string;
 }
 

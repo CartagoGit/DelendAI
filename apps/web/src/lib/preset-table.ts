@@ -24,7 +24,7 @@ import {
 	type IPresetDefinition,
 	type IPresetKind,
 	type IPresetMember,
-} from '@mcp-vertex/core/lib/plugins/preset-catalog';
+} from '@mcp-vertex/core/public';
 
 /** A single cell of the membership matrix. */
 export type IPresetCellState = 'present' | 'hostOnly' | 'absent';

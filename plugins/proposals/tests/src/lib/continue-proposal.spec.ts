@@ -55,6 +55,44 @@ describe('continue_proposal (serial cascade)', () => {
 		expect(out.proposalId).toBe('f1-fix');
 	});
 
+	it('applies cascadeOverride and reports its reason in cascadeTrace', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{
+						id: 'x1-fix',
+						file: 'x1.md',
+						status: 'pending',
+					},
+					{
+						id: 'f1-feature',
+						file: 'f1.md',
+						status: 'pending',
+					},
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'f1.md'),
+			[
+				'---',
+				'cascadeOverride: -5',
+				'cascadeOverrideReason: urgent release train unblock',
+				'---',
+				'',
+				'# f1',
+			].join('\n'),
+		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('f1-feature');
+		expect(out.cascadeTrace).toEqual({
+			priority: -5,
+			cascadeOverrideReason: 'urgent release train unblock',
+		});
+	});
+
 	it('reports no-proposal when nothing is actionable', async () => {
 		writeFileSync(
 			options.indexPathAbs,

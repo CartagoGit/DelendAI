@@ -53,16 +53,6 @@ Esto causa tres problemas:
 
 (why this proposal exists — the rationale)
 
-## Acceptance
-
-- [ ] `docs/proposals/index.json` lista los 22 IDs existentes (más los 20 audits que f00001 ya reubicó en `done/audits/`) con IDs padded: `a00001..a00020` (audits) + `a00021..a00024` (audits nuevos del 21/06), `f00001..f00003` (f121..f00019 + el hueco), `c00001..f00033` (c00001..f00032), `x00001..x00002` (x00006, x00007). Si al ejecutar S1 aparecen más IDs en `done/feats/` o `done/fixes/` que el index actual no conoce, se incluyen también.
-- [ ] Los 22+ archivos `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/` tienen `id:` con 5 dígitos padded en el frontmatter.
-- [ ] Los nombres de archivo siguen el patrón `<familia><5-dígitos>-<slug>.md` (e.g. `f00001-feat-proposal-state-machine.md`, no `f1-feat-...`).
-- [ ] **Cero referencias rotas**: `bun run lint:proposals` pasa limpio; el grep `grep -rEn '\b[a-z][0-9]{1,4}\b' docs/ apps/ packages/ plugins/` no devuelve ningún ID viejo que no esté también en su nueva forma padded.
-- [ ] Las dos menciones explícitas en `f00001` ("20 audit files renumbered a1..a20") y el `n00001-SESION-2026-06-17.md` quedan actualizadas al nuevo padded (`a00001..a00020`).
-- [ ] `bun run validate` (typecheck + lint + tests) verde. No se modifica ningún test ni ningún comportamiento observable de los tools; el cambio es puramente cosmético + de ordenación.
-- [ ] El campo `cascadePriority` del workflow (`f` < `p`) se mantiene — el padding no afecta a la cascada.
-
 ## Why this design
 
 (what this proposal touches — the scope)
@@ -75,7 +65,7 @@ Esto causa tres problemas:
 6. **`plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`** — si el `STATUS_TO_FOLDER` o algún `KINDS` menciona IDs concretos (no debería, pero se verifica), se actualiza.
 7. **`docs/proposals/n00001-SESION-2026-06-17.md`** — las menciones a IDs viejos se actualizan al nuevo padded.
 
-## Out of scope (lo que NO toca)
+## Non-goals
 
 - El modelo DFA de 7-status (f00016) — intacto.
 - El cascade priority por familia (`f` cascadea antes que `p`) — intacto.
@@ -84,7 +74,7 @@ Esto causa tres problemas:
 - Las propuestas en `done/audits/` que ya renombró `f00001` (a1..a20) — se les reescribe el `id:` para que sea `a00001..a00020` pero NO se mueven de carpeta.
 - El campo `shipped-in` (PR/commits donde se cerró la proposal) — solo se actualiza si apunta a un ID que cambió, y solo el número dentro del string.
 
-## Renumbering plan
+## Architecture
 
 Cada familia se enumera por **fecha de creación real** (= fecha del primer commit que añadió el archivo, vía `git log --diff-filter=A --format=%aI -- <path>` | tail -1). En caso de empate a la misma fecha, se desempata por nombre de archivo (alfabético).
 
@@ -101,62 +91,68 @@ Cada familia se enumera por **fecha de creación real** (= fecha del primer comm
 
 Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en paralelo pueden ejecutarlas. La gate global es `lint` (`bun run lint:proposals`).
 
-- **s1 — Inventario + mapa de renumeración (1 archivo)**
-  - files: [`scripts/rename-proposals-padded.ts`]
-  - agent: `proposal_guardian`
-  - gate: `lint`
-  - acceptance:
-    - Crea un script `scripts/rename-proposals-padded.ts` que escanea todos los `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/`, extrae el `id:` del frontmatter, obtiene la fecha de creación vía `git log --diff-filter=A --format=%aI -- <path>`, ordena, asigna padded IDs por familia, y emite un mapa `oldId -> newId` como JSON.
-    - `--dry-run` (default) imprime el mapa en stdout; `--apply` hace `git mv` + reescritura de frontmatter.
-    - Maneja colisiones (dos archivos con misma fecha) por orden alfabético de filename.
-    - **No toca refs externas** — solo frontmatter y filename.
-  - dependsOn: []
+### S1 — Inventario + mapa de renumeración
+- **Files**: [`scripts/rename-proposals-padded.ts`]
+- **Status**: pending
+- **Gate**: `bun run lint:proposals`
+- **Acceptance**:
+  - "Crea un script `scripts/rename-proposals-padded.ts` que escanea todos los `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/`, extrae el `id:` del frontmatter, obtiene la fecha de creación vía `git log --diff-filter=A --format=%aI -- <path>`, ordena, asigna padded IDs por familia, y emite un mapa `oldId -> newId` como JSON."
+  - "`--dry-run` (default) imprime el mapa en stdout; `--apply` hace `git mv` + reescritura de frontmatter."
+  - "Maneja colisiones (dos archivos con misma fecha) por orden alfabético de filename."
+  - "No toca refs externas — solo frontmatter y filename."
 
-- **s2 — Renombrar archivos + frontmatter (22+ archivos, sin solapar con s1)**
-  - files: [`docs/proposals/ready/**`, `docs/proposals/done/**`, `docs/proposals/in-progress/**`, `docs/proposals/paused/**`, `docs/proposals/blocked/**`, `docs/proposals/retired/**`]
-  - agent: `implementation_runner`
-  - gate: `lint`
-  - acceptance:
-    - Ejecuta `bun scripts/rename-proposals-padded.ts --apply` (el script de s1).
-    - Tras ejecutar, `git status --porcelain` muestra los renames como `R` (rename), no como `D` + `?` (delete + untracked) — esto preserva el historial.
-    - `bun run lint:proposals` pasa sin warnings de ID mal formado.
-    - `docs/proposals/index.json` se regenera con `mcp-vertex.proposals.sync_proposals` (o `bun scripts/sync-proposals.ts` si existe un script equivalente) — los `id` y `file` reflejan el nuevo padding.
-  - dependsOn: [`s1`]
+### S2 — Renombrar archivos + frontmatter
+- **Files**: [`docs/proposals/ready/**`, `docs/proposals/done/**`, `docs/proposals/in-progress/**`, `docs/proposals/paused/**`, `docs/proposals/blocked/**`, `docs/proposals/retired/**`]
+- **Status**: pending
+- **Gate**: `bun run lint:proposals`
+- **Acceptance**:
+  - "Ejecuta `bun scripts/rename-proposals-padded.ts --apply` (el script de S1)."
+  - "Tras ejecutar, `git status --porcelain` muestra los renames como `R` (rename), no como `D` + `?` (delete + untracked) — esto preserva el historial."
+  - "`bun run lint:proposals` pasa sin warnings de ID mal formado."
+  - "`docs/proposals/index.json` se regenera con `mcp-vertex.proposals.sync_proposals` (o `bun scripts/sync-proposals.ts` si existe un script equivalente) — los `id` y `file` reflejan el nuevo padding."
 
-- **s3 — Actualizar referencias externas (3 archivos, sin solapar con s2)**
-  - files: [`docs/proposals/n00001-SESION-2026-06-17.md`, `docs/proposals/in-progress/f00001-*.md`, `scripts/lint-proposals.ts`]
-  - agent: `implementation_runner`
-  - gate: `lint`
-  - acceptance:
-    - Para cada `oldId -> newId` del mapa de s1, busca refs en `*.md`, `*.ts`, `*.astro` (excluyendo `node_modules`, `dist`, `coverage`, `.bun`) y reemplaza `oldId` por `newId` **solo donde aparece como ID de proposal** (regex `\b[a-z][0-9]{1,4}\b` con word boundaries + heurística de "precedido por `[` o `(` o espacio y seguido por `-`, `]`, `)`, `.`, `:`, espacio").
-    - **No** reemplaza números que sean parte de versiones semver, años, IDs de issue de GitHub, o nombres de archivo sin patrón `<familia><dígitos>-`.
-    - Endurece el regex de validación en `scripts/lint-proposals.ts` a `/^[a-z]+\d{5}$/`.
-    - El diff resultante es mínimo: solo las refs a IDs que cambiaron de número.
-  - dependsOn: [`s1`]
+### S3 — Actualizar referencias externas
+- **Files**: [`docs/proposals/n00001-SESION-2026-06-17.md`, `docs/proposals/in-progress/f00001-*.md`, `scripts/lint-proposals.ts`]
+- **Status**: pending
+- **Gate**: `bun run lint:proposals`
+- **Acceptance**:
+  - "Para cada `oldId -> newId` del mapa de S1, busca refs en `*.md`, `*.ts`, `*.astro` (excluyendo `node_modules`, `dist`, `coverage`, `.bun`) y reemplaza `oldId` por `newId` solo donde aparece como ID de proposal."
+  - "No reemplaza números que sean parte de versiones semver, años, IDs de issue de GitHub, o nombres de archivo sin patrón `<familia><dígitos>-`."
+  - "Endurece el regex de validación en `scripts/lint-proposals.ts` a `/^[a-z]+\d{5}$/`."
+  - "El diff resultante es mínimo: solo las refs a IDs que cambiaron de número."
 
-- **s4 — Validación global (0 archivos productivos; gate = e2e)**
-  - files: [] (solo lee)
-  - agent: `delivery_verifier`
-  - gate: `e2e`
-  - acceptance:
-    - `bun run validate` verde.
-    - `bun run lint:proposals` verde.
-    - `bun run site:strict` (que falla si hay tools sin documentar) sigue verde — esto confirma que el cambio no rompió el parser del proposals plugin.
-    - `git grep -nE '\b[a-z][0-9]{1,4}\b' -- ':!*.lock' ':!CHANGELOG.md'` solo devuelve matches donde `[0-9]{1,4}` es claramente no un ID de proposal (versiones, años, etc.). El verificador publica un report con los matches residuales para revisión manual.
-  - dependsOn: [`s2`, `s3`]
+### S4 — Validación global
+- **Files**: []
+- **Status**: pending
+- **Gate**: `bun run validate`
+- **Acceptance**:
+  - "`bun run validate` verde."
+  - "`bun run lint:proposals` verde."
+  - "`bun run site:strict` sigue verde y confirma que el cambio no rompió el parser del proposals plugin."
+  - "`git grep -nE '\b[a-z][0-9]{1,4}\b' -- ':!*.lock' ':!CHANGELOG.md'` solo devuelve matches donde `[0-9]{1,4}` es claramente no un ID de proposal; el verificador publica un report con los matches residuales para revisión manual."
 
-### Coordination notes
+## Dependency graph
 
-- **f00001 está `in_progress` y renombra `a1..a20` en `done/audits/`**. Si f00001 cierra antes que s2, el mapa de s1 ya incluye esos IDs como `a00001..a00020`. Si f00001 cierra después, s1 debe coordinarse con f00001 para no renombrar dos veces — la política es **s1 espera a f00001** si f00001 no ha hecho `git mv` aún. **Recomendación**: bloquear el lock de f00001 antes de empezar s1, ejecutar s1, liberar el lock.
-- **f00022 (IDE extension) tiene `reservedFiles: [..., docs/proposals/done/feats/]`.** Eso podría colisionar con los archivos que f00023 va a renombrar en `done/feats/`. Resolución: s2 lee el `reservedFiles` de f00022 antes de hacer `git mv` y aborta si encuentra conflicto (en la práctica, f00022 aún no está implementado, así que el riesgo es bajo — pero s2 lo verifica).
-- **Agents paralelos en worktrees**: cada slice corre en su propio `agent/<name>` worktree. La sincronización final se hace en `develop` cuando los 4 PRs mergen. `bun run sync_proposals` se ejecuta en `develop` después del merge para regenerar el `index.json` global.
+- **f00001 está `in_progress` y renombra `a1..a20` en `done/audits/`**. Si f00001 cierra antes que S2, el mapa de S1 ya incluye esos IDs como `a00001..a00020`. Si f00001 cierra después, S1 debe coordinarse con f00001 para no renombrar dos veces.
+- **f00022 (IDE extension) tiene `reservedFiles: [..., docs/proposals/done/feats/]`.** S2 debe leer esos `reservedFiles` antes de hacer `git mv` y abortar si encuentra conflicto.
+- **Agents paralelos en worktrees**: cada slice corre en su propio `agent/<name>` worktree. La sincronización final se hace en `develop` cuando los 4 PRs mergen.
 
-### Migration safety net
+## Acceptance
 
-Si la migración sale mal, el rollback es:
+- [ ] `docs/proposals/index.json` lista los 22 IDs existentes (más los 20 audits que f00001 ya reubicó en `done/audits/`) con IDs padded: `a00001..a00020` (audits) + `a00021..a00024` (audits nuevos del 21/06), `f00001..f00003` (f121..f00019 + el hueco), `c00001..f00033` (c00001..f00032), `x00001..x00002` (x00006, x00007). Si al ejecutar S1 aparecen más IDs en `done/feats/` o `done/fixes/` que el index actual no conoce, se incluyen también.
+- [ ] Los 22+ archivos `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/` tienen `id:` con 5 dígitos padded en el frontmatter.
+- [ ] Los nombres de archivo siguen el patrón `<familia><5-dígitos>-<slug>.md` (e.g. `f00001-feat-proposal-state-machine.md`, no `f1-feat-...`).
+- [ ] **Cero referencias rotas**: `bun run lint:proposals` pasa limpio; el grep `grep -rEn '\b[a-z][0-9]{1,4}\b' docs/ apps/ packages/ plugins/` no devuelve ningún ID viejo que no esté también en su nueva forma padded.
+- [ ] Las dos menciones explícitas en `f00001` ("20 audit files renumbered a1..a20") y el `n00001-SESION-2026-06-17.md` quedan actualizadas al nuevo padded (`a00001..a00020`).
+- [ ] `bun run validate` (typecheck + lint + tests) verde. No se modifica ningún test ni ningún comportamiento observable de los tools; el cambio es puramente cosmético + de ordenación.
+- [ ] El campo `cascadePriority` del workflow (`f` < `p`) se mantiene — el padding no afecta a la cascada.
 
-```bash
-git revert <merge-commit-de-f00023>
-```
+## Risks and mitigations
 
-No hay estado persistente que se rompa: los IDs viven en frontmatter y nombres de archivo, no en la base de datos. El `index.json` se regenera desde los archivos, no al revés. Si el CI falla en s4, los 3 slices anteriores se marcan como `pending` y se re-ejecutan desde `develop` después del fix.
+- **R1 — La migración puede salir mal a mitad de renames.** Mitigación: el rollback es `git revert <merge-commit-de-f00023>` y el `index.json` se regenera desde los archivos, no al revés.
+- **R2 — Colisión con otra propuesta que reserve las mismas carpetas.** Mitigación: S1 y S2 verifican locks y `reservedFiles` antes de aplicar renames.
+
+## Notes
+
+- No hay estado persistente que se rompa: los IDs viven en frontmatter y nombres de archivo, no en una base de datos.
+- Si el CI falla en S4, los slices anteriores se marcan como `pending` y se re-ejecutan desde `develop` después del fix.

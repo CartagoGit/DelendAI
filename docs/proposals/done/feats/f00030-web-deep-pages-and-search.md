@@ -45,91 +45,7 @@ properly navigable **documentation surface**:
   same build pipeline (Astro static + `bun run site`). One proposal, one
   workstream.
 
-## Non-goals
-
-- Migrating to MDX (Astro MDX is in the dev deps but we stay on `.astro` +
-  `.md` for now — keeps the per-language build simple).
-- Server-side search (pagefind is static; works on GitHub Pages).
-- A blog or changelog-as-blog (the changelog is a single file, not a feed).
-
-## Slices
-
-### S1 — Per-tool pages (12 languages × N tools)
-  - **Status**: done
-  - **Files**: `apps/web/src/pages/tools/[plugin]/[tool].astro` (new),
-    `apps/web/src/pages/tools/[plugin]/index.astro` (new),
-    `apps/web/src/pages/[lang]/tools/[plugin]/[tool].astro` (new),
-    `apps/web/src/pages/[lang]/tools/[plugin]/index.astro` (new),
-    `apps/web/src/components/ToolPage.astro` (new — detail page),
-    `apps/web/src/components/ToolsPluginIndex.astro` (new — per-plugin tool
-    list), `apps/web/src/components/ToolsSection.astro` (modified — tool
-    cards on `/tools` now link to their detail page),
-    `apps/web/src/components/PluginPage.astro` (modified — the "tools" tab
-    links each tool name to its detail page).
-  - **Command**: `bun run site:strict`
-  - **Result**: green; 76 tools × 12 locales = 912 per-tool pages, plus
-    14 namespaces × 12 locales = 168 per-plugin tool-index pages.
-
-### S2 — Pagefind index
-  - **Status**: done (already implemented before this proposal — verified, not re-built)
-  - **Files**: none changed — `apps/web/astro.config.mjs` did not need the
-    `pagefind` integration (the project uses the standalone `pagefind` CLI
-    via `index:search`, not the Astro integration), `apps/web/src/components/Search.astro`
-    already existed with a full modal + dev fallback, and the search button
-    was already wired into `SiteNav.astro` (`#search-open`).
-  - **Command**: `bun run --cwd apps/web index:search`
-  - **Result**: green; indexed all 1574 pages × 12 languages, 31386 words.
-
-### S3 — "First 5 minutes" page
-  - **Status**: done
-  - **Files**: `apps/web/src/pages/first-5-minutes.astro` (new),
-    `apps/web/src/pages/[lang]/first-5-minutes.astro` (new — 12 locales),
-    `apps/web/src/components/FirstFiveMinutesSection.astro` (new — 3-tab
-    profile UI reusing `PluginTabs.astro`), `apps/web/src/i18n/shared.ts`
-    (new `IFirstFiveMinutesTranslations` type), all 12
-    `apps/web/src/i18n/langs/<code>.ts` (new `firstFiveMinutes` key).
-  - **Command**: `bun run --cwd apps/web check:i18n && bun run site:strict`
-  - **Result**: green; page renders in 12 languages with 3 real profiles
-    (Bun/Node, VS Code/Copilot, Claude Code).
-
-### S4 — Troubleshooting page
-  - **Status**: done
-  - **Files**: `docs/troubleshooting/*.md` (6 new files — the canonical
-    cases), `apps/web/scripts/lib/discover-troubleshooting.ts` (new — pure
-    scanner, mirrors `discover-tutorials.ts`), `apps/web/scripts/__tests__/discover-troubleshooting.spec.ts`
-    (new, 7 cases), `apps/web/scripts/gen-capabilities.ts` (modified —
-    wires the scanner into `capabilities.json`), `apps/web/src/pages/troubleshooting/index.astro`,
-    `apps/web/src/pages/troubleshooting/[slug].astro`,
-    `apps/web/src/pages/[lang]/troubleshooting/index.astro`,
-    `apps/web/src/pages/[lang]/troubleshooting/[slug].astro` (all new),
-    `apps/web/src/components/TroubleshootingIndex.astro` + `TroubleshootingCase.astro` (new).
-  - **Command**: `bun run --cwd apps/web check:i18n && bun run site:strict`
-  - **Result**: green; exactly the 6 canonical cases (npm token, docsDir
-    misconfig, AGENT_SLOTS enum, auto_work idle, output validation, web
-    base path), each with a real `closedBy` cross-link.
-
-### S5 — Nav + audit close
-  - **Status**: done
-  - **Files**: `apps/web/src/components/SiteNav.astro` (modified — "First 5
-    minutes" + "Troubleshooting" added to the `navCore`/"More" dropdown,
-    same labels for the mobile drawer), `apps/web/src/layouts/Base.astro`
-    (modified — the persisted-chrome runtime re-translation table gets the
-    2 new nav keys for all 12 languages), `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
-    (M27 flipped 🟡 → ✅, cross-linked to this file).
-  - **Command**: `bun run site:strict && bun run validate`
-  - **Result**: green; master audit M27 is ✅. `bun run validate`: 168 test
-    files, 1246 tests passed.
-
-## Acceptance
-
-- [x] Every tool has a page (one per locale: 76 tools × 12 locales = 912 pages — more than the 68 estimated in the proposal text because the live registry grew between the proposal's drafting and this implementation).
-- [x] Pagefind index exists and is wired to the nav search button (pre-existing; verified working end to end with the new pages included).
-- [x] "First 5 minutes" page renders in 12 languages.
-- [x] Troubleshooting page lists the 6 canonical cases with back-links to
-      the proposal/session that closed each one.
-- [x] Master audit M27 line is ✅.
-
-## rationale
+## why this design
 
 - **S2 turned out to be a verification, not a build**: a prior round
   (unrelated proposal) had already wired `pagefind` end to end — the
@@ -175,6 +91,95 @@ properly navigable **documentation surface**:
   variant), and forcing a shared abstraction now would couple two call
   sites that may evolve independently — premature generalisation, not
   premature optimization, but the same smell.
+
+## Non-goals
+
+- Migrating to MDX (Astro MDX is in the dev deps but we stay on `.astro` +
+  `.md` for now — keeps the per-language build simple).
+- Server-side search (pagefind is static; works on GitHub Pages).
+- A blog or changelog-as-blog (the changelog is a single file, not a feed).
+
+## Slices
+
+### S1 — Per-tool pages (12 languages × N tools)
+  - **Status**: done
+  - **Files**: `apps/web/src/pages/tools/[plugin]/[tool].astro` (new),
+    `apps/web/src/pages/tools/[plugin]/index.astro` (new),
+    `apps/web/src/pages/[lang]/tools/[plugin]/[tool].astro` (new),
+    `apps/web/src/pages/[lang]/tools/[plugin]/index.astro` (new),
+    `apps/web/src/components/ToolPage.astro` (new — detail page),
+    `apps/web/src/components/ToolsPluginIndex.astro` (new — per-plugin tool
+    list), `apps/web/src/components/ToolsSection.astro` (modified — tool
+    cards on `/tools` now link to their detail page),
+    `apps/web/src/components/PluginPage.astro` (modified — the "tools" tab
+    links each tool name to its detail page).
+  - **Gate**: `bun run site:strict`
+  - **Command**: `bun run site:strict`
+  - **Result**: green; 76 tools × 12 locales = 912 per-tool pages, plus
+    14 namespaces × 12 locales = 168 per-plugin tool-index pages.
+
+### S2 — Pagefind index
+  - **Status**: done (already implemented before this proposal — verified, not re-built)
+  - **Files**: none changed — `apps/web/astro.config.mjs` did not need the
+    `pagefind` integration (the project uses the standalone `pagefind` CLI
+    via `index:search`, not the Astro integration), `apps/web/src/components/Search.astro`
+    already existed with a full modal + dev fallback, and the search button
+    was already wired into `SiteNav.astro` (`#search-open`).
+  - **Gate**: `bun run --cwd apps/web index:search`
+  - **Command**: `bun run --cwd apps/web index:search`
+  - **Result**: green; indexed all 1574 pages × 12 languages, 31386 words.
+
+### S3 — "First 5 minutes" page
+  - **Status**: done
+  - **Files**: `apps/web/src/pages/first-5-minutes.astro` (new),
+    `apps/web/src/pages/[lang]/first-5-minutes.astro` (new — 12 locales),
+    `apps/web/src/components/FirstFiveMinutesSection.astro` (new — 3-tab
+    profile UI reusing `PluginTabs.astro`), `apps/web/src/i18n/shared.ts`
+    (new `IFirstFiveMinutesTranslations` type), all 12
+    `apps/web/src/i18n/langs/<code>.ts` (new `firstFiveMinutes` key).
+  - **Gate**: `bun run --cwd apps/web check:i18n && bun run site:strict`
+  - **Command**: `bun run --cwd apps/web check:i18n && bun run site:strict`
+  - **Result**: green; page renders in 12 languages with 3 real profiles
+    (Bun/Node, VS Code/Copilot, Claude Code).
+
+### S4 — Troubleshooting page
+  - **Status**: done
+  - **Files**: `docs/troubleshooting/*.md` (6 new files — the canonical
+    cases), `apps/web/scripts/lib/discover-troubleshooting.ts` (new — pure
+    scanner, mirrors `discover-tutorials.ts`), `apps/web/scripts/__tests__/discover-troubleshooting.spec.ts`
+    (new, 7 cases), `apps/web/scripts/gen-capabilities.ts` (modified —
+    wires the scanner into `capabilities.json`), `apps/web/src/pages/troubleshooting/index.astro`,
+    `apps/web/src/pages/troubleshooting/[slug].astro`,
+    `apps/web/src/pages/[lang]/troubleshooting/index.astro`,
+    `apps/web/src/pages/[lang]/troubleshooting/[slug].astro` (all new),
+    `apps/web/src/components/TroubleshootingIndex.astro` + `TroubleshootingCase.astro` (new).
+  - **Gate**: `bun run --cwd apps/web check:i18n && bun run site:strict`
+  - **Command**: `bun run --cwd apps/web check:i18n && bun run site:strict`
+  - **Result**: green; exactly the 6 canonical cases (npm token, docsDir
+    misconfig, AGENT_SLOTS enum, auto_work idle, output validation, web
+    base path), each with a real `closedBy` cross-link.
+
+### S5 — Nav + audit close
+  - **Status**: done
+  - **Files**: `apps/web/src/components/SiteNav.astro` (modified — "First 5
+    minutes" + "Troubleshooting" added to the `navCore`/"More" dropdown,
+    same labels for the mobile drawer), `apps/web/src/layouts/Base.astro`
+    (modified — the persisted-chrome runtime re-translation table gets the
+    2 new nav keys for all 12 languages), `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
+    (M27 flipped 🟡 → ✅, cross-linked to this file).
+  - **Gate**: `bun run site:strict && bun run validate`
+  - **Command**: `bun run site:strict && bun run validate`
+  - **Result**: green; master audit M27 is ✅. `bun run validate`: 168 test
+    files, 1246 tests passed.
+
+## Acceptance
+
+- [x] Every tool has a page (one per locale: 76 tools × 12 locales = 912 pages — more than the 68 estimated in the proposal text because the live registry grew between the proposal's drafting and this implementation).
+- [x] Pagefind index exists and is wired to the nav search button (pre-existing; verified working end to end with the new pages included).
+- [x] "First 5 minutes" page renders in 12 languages.
+- [x] Troubleshooting page lists the 6 canonical cases with back-links to
+      the proposal/session that closed each one.
+- [x] Master audit M27 line is ✅.
 
 ## risks and mitigations
 

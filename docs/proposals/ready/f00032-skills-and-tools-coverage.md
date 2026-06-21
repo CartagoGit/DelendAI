@@ -82,11 +82,13 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 
 ## Slices
 
-### s1 — Skill `mcp-vertex-proposals-workflow`
+### S1 — Skill `mcp-vertex-proposals-workflow`
 - **Files**: `skills/mcp-vertex-proposals-workflow/SKILL.md` (nuevo),
   `skills/mcp-vertex-proposals-workflow/manifest.json` (nuevo, con
   `appliesTo: ['@mcp-vertex/proposals']` y `priority: 'high'` para que
   el host pueda resolverlo sin grep).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "El SKILL.md abre con el árbol de decisión
     `overview(compact:true) → auto_work → continue_proposal mode:plan →
@@ -104,8 +106,10 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "1 caso de smoke: importarlo desde `mcp-vertex_knowledge` no
     devuelve 404."
 
-### s2 — Skill `mcp-vertex-multi-agent-coordination`
+### S2 — Skill `mcp-vertex-multi-agent-coordination`
 - **Files**: `skills/mcp-vertex-multi-agent-coordination/SKILL.md` (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Explica la diferencia entre `agent_lock` (write-ownership en
     disco) y `agent_worktree` (branch + worktree aislado) y cuándo
@@ -117,9 +121,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "Referencia `round_context` como cache de digests: 'no re-leer
     docs cuyo digest no haya cambiado'."
 
-### s3 — Skill `mcp-vertex-conventional-commits-and-release`
+### S3 — Skill `mcp-vertex-conventional-commits-and-release`
 - **Files**: `skills/mcp-vertex-conventional-commits-and-release/SKILL.md`
   (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Tabla `commit type → semver bump`: `fix:` → patch, `feat:` →
     minor, `feat!:` / `BREAKING CHANGE:` → major, cualquier otro
@@ -133,9 +139,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     `chore:` rompiendo Conventional Commits (default patch pero CI
     puede fallar el lint)."
 
-### s4 — Skill `mcp-vertex-token-budget-discipline`
+### S4 — Skill `mcp-vertex-token-budget-discipline`
 - **Files**: `skills/mcp-vertex-token-budget-discipline/SKILL.md`
   (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Tabla medida de presupuestos actuales (`overview compact ≈318
     tok`, `auto_work ≈257`, `round_context ≈80`; números exactos
@@ -149,9 +157,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "Cómo el e2e `token-budget.spec.ts` falla el build si se rebasa;
     el SKILL.md referencia el test por nombre."
 
-### s5 — Skill `mcp-vertex-status-marker-and-closure`
+### S5 — Skill `mcp-vertex-status-marker-and-closure`
 - **Files**: `skills/mcp-vertex-status-marker-and-closure/SKILL.md`
   (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Lista los 8 estados canónicos con razón obligatoria vs
     opcional: `HECHO` (opcional), `CAP` (obligatoria), `RE-PIVOT`
@@ -167,8 +177,10 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     debe terminar con un close marker válido; `status_marker_validate`
     lo verifica en una sola llamada."
 
-### s6 — Skill `mcp-vertex-audit-runner` (plugin `audit`)
+### S6 — Skill `mcp-vertex-audit-runner` (plugin `audit`)
 - **Files**: `skills/mcp-vertex-audit-runner/SKILL.md` (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Workflow: `audit_plan { scope }` → copiar brief canónico →
     pegar en una sesión de modelo fresca → guardar el `.md` con
@@ -184,9 +196,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "Nota sobre carga: `audit` no está en el preset por defecto;
     activar con `--preset=swarm` o `--plugins=audit`."
 
-### s7 — Skill `mcp-vertex-quality-and-rules-gates`
+### S7 — Skill `mcp-vertex-quality-and-rules-gates`
 - **Files**: `skills/mcp-vertex-quality-and-rules-gates/SKILL.md`
   (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Precedence de scopes (de mayor a menor):
     `options.scopes > validationMatrix.scopes > package.json scripts`."
@@ -200,9 +214,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     in-place; si el target tiene slices en curso, proposal (no
     pisar)."
 
-### s8 — Skill `mcp-vertex-legacy-proposal-migration`
+### S8 — Skill `mcp-vertex-legacy-proposal-migration`
 - **Files**: `skills/mcp-vertex-legacy-proposal-migration/SKILL.md`
   (nuevo).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "Trío de scripts en orden estricto:
     `bun run scripts/migrate-legacy-proposals.ts --apply` →
@@ -217,7 +233,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     el linter `lint-proposals.ts` lo permite como sufijo para
     propuestas migradas que aún conservan la numeración original."
 
-### s9 — Tool `git_commit` + `git_push` (write-side git)
+### S9 — Tool `git_commit` + `git_push` (write-side git)
 - **Files**: `plugins/git/src/lib/write-tools.ts` (nuevo), exporta
   `git_commit { message, files?, amend? }` y `git_push
   { remote?, branch?, force?: 'with-lease'|'true'|'false' }`. Reusa
@@ -226,6 +242,8 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   `packages/core/src/lib/shared/git-write.ts`). Registro en
   `plugins/git/src/public/index.ts` con `effects: ['write']` y
   `outputSchema` explícito (no catchall, alineado con `r00001`).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Tests**: `plugins/git/tests/src/lib/write-tools.spec.ts` (nuevo)
   con 6 casos: commit simple, commit con `files:` selectivo, commit
   `--amend`, push normal, push `--force-with-lease`, push a branch
@@ -241,7 +259,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "`bun run validate` verde; el test e2e `git-write.spec.ts` corre
     contra un repo temporal sin tocar `.git/index` del workspace."
 
-### s10 — Tool `proposals_edit` + `proposals_add_slice` (mutate proposal body)
+### S10 — Tool `proposals_edit` + `proposals_add_slice` (mutate proposal body)
 - **Files**: `plugins/proposals/src/lib/tools/mutate-tools.ts` (nuevo).
   `proposals_edit { id, field: 'goal'|'why'|'nonGoals'|'acceptance'|'risk', value: string|string[] }`
   (edita una sección del body preservando frontmatter, slices y
@@ -250,6 +268,8 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   la sección `## Slices` respetando el patrón de la propuesta
   existente, valida disjointness con `proposals_plan` antes de
   insertar). Ambos con `outputSchema` explícito.
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Tests**: `plugins/proposals/tests/src/lib/tools/mutate-tools.spec.ts`
   con 8 casos: edit goal (preserva slices), edit acceptance (array),
   add slice (disjoint pass), add slice (overlap → rechazado), add
@@ -263,7 +283,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "`proposals_sync_proposals` re-indexa sin warnings."
   - "`bun run validate` verde."
 
-### s11 — Tool `package_install` + `package_run_script` (deps side)
+### S11 — Tool `package_install` + `package_run_script` (deps side)
 - **Files**: `plugins/deps/src/lib/write-tools.ts` (nuevo). `package_install
   { name, range?, section?: 'dependencies'|'devDependencies'|'peerDependencies',
   ecosystem?: 'npm'|'bun' }` (envuelve `bun add` con
@@ -275,6 +295,8 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   `withFileMutex` para los archivos de lock que el script pueda
   tocar). `effects: ['write','spawn','network']` (opt-in, requiere
   flag en `mcp-vertex.config.json`).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Tests**: `plugins/deps/tests/src/lib/write-tools.spec.ts` con
   6 casos: install simple, install con `devDependencies`, install
   con range inválido → rechazado, run script existente, run script
@@ -287,7 +309,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "`bun run validate` verde; los tests no tocan la red (usan un
     `package.json` fixture y `bun install --offline`)."
 
-### s12 — Tool `quality_run_all` (gate aggregator) + `fs_read`/`fs_write`
+### S12 — Tool `quality_run_all` (gate aggregator) + `fs_read`/`fs_write`
 - **Files**: `plugins/quality/src/lib/run-all.ts` (nuevo). `run_quality
   scope: 'all'` ya existe parcialmente; este slice lo formaliza: itera
   sobre `get_quality_scopes`, agrega resultados en un único payload
@@ -299,6 +321,8 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   o escriba un archivo del workspace sin shell). `effects: ['read']`
   para `fs_read`, `['write']` para `fs_write`. Path validation vía
   `resolveWorkspaceContained` (regla AGENTS.md #5).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Tests**: `plugins/quality/tests/src/lib/run-all.spec.ts` (4
   casos: 3 scopes pasan, 1 falla, scope desconocido, scope con
   dependencies circulares). `packages/core/tests/src/lib/shared/fs-tools.spec.ts`
@@ -315,11 +339,13 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
     verde — los nuevos tools no introducen catchalls."
   - "`bun run validate` verde."
 
-### s13 — Hygiene: `@mcp-vertex/client` README + `.vsix` no commitido
+### S13 — Hygiene: `@mcp-vertex/client` README + `.vsix` no commitido
 - **Files**: `packages/client/README.md` (nuevo, ≤ 80 líneas: qué
   es, cómo se usa desde un host externo, ejemplo de 10 líneas,
   link a `packages/client/src/public/index.ts`). `extensions/vscode/.gitignore`
   (modificado: añadir `*.vsix` y `dist/` si no está).
+- **Status**: pending
+- **Gate**: `bun run validate`
 - **Acceptance**:
   - "`packages/client/README.md` existe y se renderiza en
     `apps/web/src/pages/.../packages-client` (regenerable con
@@ -327,9 +353,11 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
   - "`git ls-files extensions/vscode/ | grep -c '\\.vsix$'` devuelve `0`."
   - "`bun run validate` verde."
 
-### s14 — Audit close + index sync
+### S14 — Audit close + index sync
 - **Files**: `docs/proposals/index.json` (regenerado vía
   `proposals_sync_proposals`).
+- **Status**: pending
+- **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "La propuesta aparece en `index.json` con `status: 'ready'`."
   - "Cross-link a `f00028`, `r00001`, `f00029`, `f00027`, `l00008`, `f00022` en

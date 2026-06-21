@@ -134,9 +134,10 @@ export const IDE_TARGETS: readonly IIdeInstallTarget[] = [
 		label: 'Antigravity',
 		kind: 'mcpServers',
 		scope: 'global',
-		resolve: (c) => join(c.home, '.gemini', 'config', 'mcp_config.json'),
+		resolve: (c) =>
+			join(c.home, '.gemini', 'antigravity-ide', 'mcp_config.json'),
 		signals: (c) => [
-			join(c.home, '.gemini', 'config'),
+			join(c.home, '.gemini', 'antigravity-ide'),
 			join(c.home, '.gemini'),
 		],
 	},
