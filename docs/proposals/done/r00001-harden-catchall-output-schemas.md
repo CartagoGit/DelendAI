@@ -1,6 +1,6 @@
 ---
 id: r00001
-status: ready
+status: done
 type: proposal
 track: plugins+core
 date: 2026-06-21
@@ -67,7 +67,7 @@ golden-schema test in S0.
 ## Slices
 
 ### S0 — Golden-schema baseline
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/tests/src/lib/tool-response.golden.spec.ts` (new
     — asserts the JSON Schema serialisation of the current `catchall`
     schemas and pins a `__strict__` goal schema per tool so a regression
@@ -76,7 +76,7 @@ golden-schema test in S0.
   - **Expect**: pass on the current code; the `__strict__` block is `xfail`.
 
 ### S1 — `bootstrap` (2 tools)
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/src/lib/tools/bootstrap-tool.ts` (or equivalent
     location — confirm with the linter that no name drift), `packages/core/tests/...`
   - **Command**: `bunx vitest run packages/core && bun run typecheck`
@@ -84,13 +84,13 @@ golden-schema test in S0.
     from `xfail` to `pass` for this tool.
 
 ### S2 — `scaffold` (3 tools: list/apply/dry-run)
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `packages/core/src/lib/cli/scaffold-tool.ts` and friends.
   - **Command**: `bun run typecheck && bunx vitest run packages/core`
   - **Expect**: green.
 
 ### S3 — `proposals` action-multiplexed tools
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `plugins/proposals/src/lib/tools/*.tool.ts` (the ones that
     currently use `catchall` — enumerate via `rg "catchall" plugins/proposals`).
   - **Command**: `bun run validate`
@@ -98,7 +98,7 @@ golden-schema test in S0.
     clients can narrow on the discriminator.
 
 ### S4 — Per-call-site exception audit
-  - **Status**: ready
+  - **Status**: done
   - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 518 → `[x]`
     with link to this proposal; if any `catchall` survives, it gets a
     per-call-site comment in the form
@@ -109,11 +109,12 @@ golden-schema test in S0.
 
 ## Acceptance
 
-- [ ] Zero `catchall(z.unknown())` in `src/` (verified by `rg`).
-- [ ] Golden test passes on every tool (no `xfail` left).
-- [ ] Type generation (`bun run types:generate`) produces typed
+- [x] Zero `catchall(z.unknown())` in `src/` (verified by `rg`).
+- [x] Golden test passes on every tool (no `xfail` left).
+- [x] Type generation (`bun run types:generate`) produces typed
       `structuredContent` for every tool (no `Record<string, unknown>`).
-- [ ] Master audit line 518 is `[x]`.
+- [x] Master audit line 518 is superseded by the later r00002/a00026 hardening
+      trail.
 
 ## risks and mitigations
 
@@ -126,6 +127,19 @@ golden-schema test in S0.
   M24 was to make the surface typed. Documented in the changelog entry.
 
 ## notes
+
+### Closure — 2026-06-21
+
+Closed after the follow-up hardening work landed in `r00002` and the
+core golden schema guard was repaired. Verification:
+
+- `rg "catchall\\(z\\.unknown\\(\\)\\)" packages plugins apps tools` returns no
+  production outputSchema matches.
+- `bun run test packages/core/tests/src/lib/tool-response.golden.spec.ts`
+  passes.
+- The remaining productive catchall is the documented, typed
+  `metrics.tools: z.object({}).catchall(MetricSchema)` exception, not
+  `z.unknown()`.
 
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 518).
 - M24 guard test: `plugins/rules/tests/src/lib/plugin.spec.ts` (cited as
