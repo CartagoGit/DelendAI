@@ -60,9 +60,9 @@ const asGate = (value: string | undefined): ISliceGate =>
  * single-slice document and the `plan`/`claim` modes do not apply.
  *
  * Recognised per-slice lines (inside `### <sliceId> — <title>`):
- *   - `- files: <path>` (repeatable)
- *   - `- depends_on: [a, b]`
- *   - `- gate: lint|type|e2e|none`
+ *   - `- files: <path>` or `- **Files**: <path>` (repeatable)
+ *   - `- depends_on: [a, b]` or `- **DependsOn**: [a, b]`
+ *   - `- gate: lint|type|e2e|none` or `- **Gate**: ...`
  *   - `- status: done` or `- **Status**: done` (set by the executor when the slice closes)
  *   - `- acceptance:` followed by indented `- "command"` lines
  */
@@ -89,16 +89,22 @@ export const parseProposalSlicePlan = (
 		const sliceId = block[1] ?? '';
 		const title = (block[2] ?? '').trim();
 		const body = block[3] ?? '';
-		const files = [...body.matchAll(/^[-*]\s*files:\s*(\S+)/gm)]
-			.map((m) => m[1] ?? '')
+		const files = [
+			...body.matchAll(/^[-*]\s*(?:files|\*\*Files\*\*):\s*(\S+)/gm),
+		]
+			.map((m) => normalizeFileToken(m[1] ?? ''))
 			.filter((f) => f.length > 0);
 		const dependsRaw =
-			body.match(/^[-*]\s*depends_on:\s*\[([^\]]*)\]/m)?.[1] ?? '';
+			body.match(
+				/^[-*]\s*(?:depends_on|\*\*DependsOn\*\*):\s*\[([^\]]*)\]/m,
+			)?.[1] ?? '';
 		const dependsOn = dependsRaw
 			.split(',')
 			.map((d) => d.trim())
 			.filter((d) => d.length > 0);
-		const gate = asGate(body.match(/^[-*]\s*gate:\s*(\S+)/m)?.[1]);
+		const gate = asGate(
+			body.match(/^[-*]\s*(?:gate|\*\*Gate\*\*):\s*(\S+)/m)?.[1],
+		);
 		const docDone =
 			/^[-*]\s*status:\s*done\b/m.test(body) ||
 			/^[-*]\s*\*\*Status\*\*:\s*`?done`?\b/m.test(body);
@@ -154,7 +160,14 @@ export const planDisjointnessIssues = (
 export interface ILockSnapshotEntry {
 	readonly taskId: string;
 	readonly agent: string;
+	readonly ownership?: readonly string[];
 }
+
+const normalizeFileToken = (value: string): string =>
+	value
+		.replace(/^`+|`+$/gu, '')
+		.replace(/[),.;:]+$/gu, '')
+		.trim();
 
 const lockCoversSlice = (
 	taskId: string,
@@ -184,12 +197,16 @@ export const deriveSliceStatuses = (
 		...plan,
 		slices: plan.slices.map((slice) => {
 			if (slice.status === 'done') return slice;
-			const lock = activeLocks.find((candidate) =>
-				lockCoversSlice(
-					candidate.taskId,
-					plan.proposalId,
-					slice.sliceId,
-				),
+			const lock = activeLocks.find(
+				(candidate) =>
+					lockCoversSlice(
+						candidate.taskId,
+						plan.proposalId,
+						slice.sliceId,
+					) ||
+					candidate.ownership?.some((owned) =>
+						slice.files.includes(normalizeFileToken(owned)),
+					) === true,
 			);
 			if (lock !== undefined) {
 				return { ...slice, status: 'in-progress', owner: lock.agent };

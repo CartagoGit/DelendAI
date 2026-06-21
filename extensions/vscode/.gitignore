@@ -1,0 +1,6 @@
+# Packaged VS Code extension artefact and bundler output. The repo-wide
+# .gitignore already ignores `dist/` and `extensions/*/*.vsix`; this local
+# file is defense-in-depth so a `.vsix` produced inside this directory is
+# never accidentally tracked regardless of where it lands.
+*.vsix
+dist/

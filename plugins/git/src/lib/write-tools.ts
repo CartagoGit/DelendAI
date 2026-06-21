@@ -14,7 +14,10 @@
  */
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
 import {
 	commitAndPush,
 	gitLastCommitAuthor,
@@ -87,6 +90,132 @@ const isProtectedBranch = (
 	protectedBranches: readonly string[],
 ): boolean => branch !== undefined && protectedBranches.includes(branch);
 
+export interface IGitCommitArgs {
+	readonly message: string;
+	readonly files?: readonly string[] | undefined;
+	readonly amend?: boolean | undefined;
+	/**
+	 * Identity of the calling agent, used ONLY to guard `--amend` against
+	 * clobbering another agent's commit. Optional because most callers
+	 * never amend.
+	 */
+	readonly agent?: string | undefined;
+}
+
+/**
+ * Pure handler behind the `${prefix}_commit` tool — exported separately
+ * so tests can drive it directly without an MCP server. Validates the
+ * Conventional Commit prefix and the `--amend` ownership guard, then
+ * delegates the actual git mechanics to `commitAndPush`.
+ */
+export const runGitCommit = async (
+	run: IGitRunner,
+	args: IGitCommitArgs,
+): Promise<IToolTextResult> => {
+	const repo = await checkRepo(run);
+	if (!repo.ok) return NOT_A_REPO(repo.reason);
+
+	const message = args.message.trim();
+	if (message.length === 0) {
+		return toolError(
+			'commit message must not be empty',
+			'Pass a non-empty Conventional Commit message.',
+		);
+	}
+	if (!isConventionalCommitMessage(message)) {
+		return toolError(
+			`commit message must start with a Conventional Commit prefix (${CONVENTIONAL_COMMIT_TYPES.join('|')}), optionally scoped and/or "!": got "${message}"`,
+			'Prefix the message, e.g. "feat(git): add write tools".',
+		);
+	}
+
+	const amend = args.amend === true;
+	if (amend) {
+		const lastAuthor = await gitLastCommitAuthor(run);
+		const agent = args.agent;
+		if (
+			lastAuthor !== undefined &&
+			agent !== undefined &&
+			lastAuthor !== agent
+		) {
+			return toolError(
+				`refusing --amend: last commit author "${lastAuthor}" does not match agent "${agent}"`,
+				'Only amend a commit your own agent authored; create a new commit instead.',
+			);
+		}
+	}
+
+	const files = args.files ?? [];
+	const result = await commitAndPush({
+		message,
+		amend,
+		git: run,
+		...(files.length > 0
+			? { files }
+			: // No explicit files: assume the caller already staged what
+				// it wants (e.g. via `git add` outside this tool, or
+				// amending with no new changes) — never fall back to
+				// `git add .`.
+				{ skipAdd: true }),
+	});
+
+	if (!result.committed) {
+		return toolError(
+			result.reason ?? 'commit failed',
+			'Check there are staged/changed files and the message is valid.',
+		);
+	}
+	return toolOk({
+		committed: true,
+		...(result.hash !== undefined ? { hash: result.hash } : {}),
+	});
+};
+
+export interface IGitPushArgs {
+	readonly remote?: string | undefined;
+	readonly branch?: string | undefined;
+	readonly force?: 'with-lease' | 'true' | 'false' | undefined;
+}
+
+/**
+ * Pure handler behind the `${prefix}_push` tool — exported separately so
+ * tests can drive it directly without an MCP server.
+ */
+export const runGitPush = async (
+	run: IGitRunner,
+	args: IGitPushArgs,
+	protectedBranches: readonly string[] = DEFAULT_PROTECTED_BRANCHES,
+): Promise<IToolTextResult> => {
+	const repo = await checkRepo(run);
+	if (!repo.ok) return NOT_A_REPO(repo.reason);
+
+	const targetBranch = branchOf(args.branch);
+	if (isProtectedBranch(targetBranch, protectedBranches)) {
+		return toolError(
+			`refusing to push directly to protected branch "${targetBranch}"`,
+			'Push to a feature/agent branch and open a PR instead.',
+		);
+	}
+
+	const pushResult = await run([
+		'push',
+		...(args.remote !== undefined ? [args.remote] : []),
+		...(args.branch !== undefined ? [args.branch] : []),
+		...(args.force === 'with-lease'
+			? ['--force-with-lease']
+			: args.force === 'true'
+				? ['--force']
+				: []),
+	]);
+	if (!pushResult.ok) {
+		return toolError(
+			pushResult.reason ?? 'git push failed',
+			'Check the remote/branch exist and you have permission to push.',
+		);
+	}
+	return toolOk({ pushed: true });
+};
+
 /**
  * Read-only git orientation lives in `tools.ts`; this builder adds the
  * two write tools. Both declare `effects: ['write']` so a host can warn
@@ -116,11 +245,6 @@ export const buildGitWriteToolRegistrations = (
 							message: z.string(),
 							files: z.array(z.string()).optional(),
 							amend: z.boolean().optional(),
-							/**
-							 * Identity of the calling agent, used ONLY to guard
-							 * `--amend` against clobbering another agent's
-							 * commit. Optional because most callers never amend.
-							 */
 							agent: z.string().optional(),
 						}),
 						outputSchema: z.object({
@@ -129,74 +253,8 @@ export const buildGitWriteToolRegistrations = (
 							hash: z.string().optional(),
 						}),
 					},
-					async (args: {
-						message: string;
-						files?: string[] | undefined;
-						amend?: boolean | undefined;
-						agent?: string | undefined;
-					}) => {
-						const repo = await checkRepo(options.run);
-						if (!repo.ok) return NOT_A_REPO(repo.reason);
-
-						const message = args.message.trim();
-						if (message.length === 0) {
-							return toolError(
-								'commit message must not be empty',
-								'Pass a non-empty Conventional Commit message.',
-							);
-						}
-						if (!isConventionalCommitMessage(message)) {
-							return toolError(
-								`commit message must start with a Conventional Commit prefix (${CONVENTIONAL_COMMIT_TYPES.join('|')}), optionally scoped and/or "!": got "${message}"`,
-								'Prefix the message, e.g. "feat(git): add write tools".',
-							);
-						}
-
-						const amend = args.amend === true;
-						if (amend) {
-							const lastAuthor = await gitLastCommitAuthor(
-								options.run,
-							);
-							const agent = args.agent;
-							if (
-								lastAuthor !== undefined &&
-								agent !== undefined &&
-								lastAuthor !== agent
-							) {
-								return toolError(
-									`refusing --amend: last commit author "${lastAuthor}" does not match agent "${agent}"`,
-									'Only amend a commit your own agent authored; create a new commit instead.',
-								);
-							}
-						}
-
-						const files = args.files ?? [];
-						const result = await commitAndPush({
-							message,
-							amend,
-							git: options.run,
-							...(files.length > 0
-								? { files }
-								: // No explicit files: assume the caller already
-									// staged what it wants (e.g. via `git add`
-									// outside this tool, or amending with no new
-									// changes) — never fall back to `git add .`.
-									{ skipAdd: true }),
-						});
-
-						if (!result.committed) {
-							return toolError(
-								result.reason ?? 'commit failed',
-								'Check there are staged/changed files and the message is valid.',
-							);
-						}
-						return toolOk({
-							committed: true,
-							...(result.hash !== undefined
-								? { hash: result.hash }
-								: {}),
-						});
-					},
+					async (args: IGitCommitArgs) =>
+						runGitCommit(options.run, args),
 				);
 			},
 		},
@@ -224,42 +282,8 @@ export const buildGitWriteToolRegistrations = (
 							pushed: z.boolean(),
 						}),
 					},
-					async (args: {
-						remote?: string | undefined;
-						branch?: string | undefined;
-						force?: 'with-lease' | 'true' | 'false' | undefined;
-					}) => {
-						const repo = await checkRepo(options.run);
-						if (!repo.ok) return NOT_A_REPO(repo.reason);
-
-						const targetBranch = branchOf(args.branch);
-						if (
-							isProtectedBranch(targetBranch, protectedBranches)
-						) {
-							return toolError(
-								`refusing to push directly to protected branch "${targetBranch}"`,
-								'Push to a feature/agent branch and open a PR instead.',
-							);
-						}
-
-						const pushResult = await options.run([
-							'push',
-							...(args.remote !== undefined ? [args.remote] : []),
-							...(args.branch !== undefined ? [args.branch] : []),
-							...(args.force === 'with-lease'
-								? ['--force-with-lease']
-								: args.force === 'true'
-									? ['--force']
-									: []),
-						]);
-						if (!pushResult.ok) {
-							return toolError(
-								pushResult.reason ?? 'git push failed',
-								'Check the remote/branch exist and you have permission to push.',
-							);
-						}
-						return toolOk({ pushed: true });
-					},
+					async (args: IGitPushArgs) =>
+						runGitPush(options.run, args, protectedBranches),
 				);
 			},
 		},

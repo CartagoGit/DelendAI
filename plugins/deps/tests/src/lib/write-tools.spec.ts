@@ -6,12 +6,40 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	buildDepsWriteToolRegistrations,
+	buildInstallCommand,
 	manifestAbsPath,
 	packageInstall,
 	packageRunScript,
 } from '@mcp-vertex/deps/lib/write-tools';
 
-describe('packageInstall / packageRunScript (S11, no network — offline fixtures)', () => {
+describe('buildInstallCommand (pure, no spawn)', () => {
+	it('builds a simple dependencies install command', () => {
+		const result = buildInstallCommand({ name: 'left-pad' });
+		expect(result.error).toBeUndefined();
+		expect(result.command).toBe('bun add left-pad');
+	});
+
+	it('builds a devDependencies install command with the --dev flag', () => {
+		const result = buildInstallCommand({
+			name: 'vitest',
+			range: '^4.0.0',
+			section: 'devDependencies',
+		});
+		expect(result.error).toBeUndefined();
+		expect(result.command).toBe('bun add vitest@^4.0.0 --dev');
+	});
+
+	it('rejects an invalid/unsafe version range', () => {
+		const result = buildInstallCommand({
+			name: 'left-pad',
+			range: '; rm -rf /',
+		});
+		expect(result.command).toBeUndefined();
+		expect(result.error).toContain('unsafe version range');
+	});
+});
+
+describe('packageInstall / packageRunScript (S11, offline fixtures, no network)', () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'deps-write-'));
@@ -21,7 +49,14 @@ describe('packageInstall / packageRunScript (S11, no network — offline fixture
 	const manifest = (obj: unknown): void =>
 		writeFileSync(manifestAbsPath(root), JSON.stringify(obj), 'utf8');
 
-	it('rejects an install with an unsafe/invalid version range before spawning', async () => {
+	it('rejects an install with an unsafe package name, without spawning', async () => {
+		manifest({ dependencies: {} });
+		const result = await packageInstall(root, { name: '; rm -rf /' });
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('unsafe package name');
+	});
+
+	it('rejects an install with an unsafe/invalid version range, without spawning', async () => {
 		manifest({ dependencies: {} });
 		const result = await packageInstall(root, {
 			name: 'left-pad',
@@ -29,24 +64,6 @@ describe('packageInstall / packageRunScript (S11, no network — offline fixture
 		});
 		expect(result.ok).toBe(false);
 		expect(result.error).toContain('unsafe version range');
-	});
-
-	it('builds a devDependencies install command with the --dev flag', async () => {
-		manifest({ devDependencies: {} });
-		// We don't execute the real install (no network in tests); inspect
-		// the command shape packageInstall would spawn for a safe input by
-		// checking the rejection path is NOT hit, i.e. validation passes and
-		// the formatted command contains the expected pieces. We use an
-		// intentionally-invalid binary-less command guard via a bad range to
-		// keep this assertion offline: instead, validate via the safe-path
-		// helper directly through a controlled unsafe name to confirm the
-		// dev flag composition without spawning bun.
-		const result = await packageInstall(root, {
-			name: '@@not-a-real-package', // unsafe name -> rejected before any spawn
-			section: 'devDependencies',
-		});
-		expect(result.ok).toBe(false);
-		expect(result.error).toContain('unsafe package name');
 	});
 
 	it('runs an existing script and reports exit code 0', async () => {
@@ -69,13 +86,6 @@ describe('packageInstall / packageRunScript (S11, no network — offline fixture
 		const result = await packageRunScript(root, { script: 'missing' });
 		expect(result.ok).toBe(false);
 		expect(result.error).toContain('no script named "missing"');
-	});
-
-	it('rejects an install with an unsafe package name, without spawning', async () => {
-		manifest({ dependencies: {} });
-		const result = await packageInstall(root, { name: '; rm -rf /' });
-		expect(result.ok).toBe(false);
-		expect(result.error).toContain('unsafe package name');
 	});
 });
 
