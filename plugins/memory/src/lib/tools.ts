@@ -89,7 +89,9 @@ export interface IMemoryToolOptions {
 /**
  * Persistent project memory tools. Notes live in one small JSON file
  * under the cache dir, so an agent keeps continuity across sessions
- * without re-reading the whole repo — recall only what it needs.
+ * without re-reading the whole repo — recall only what it needs. This
+ * store is for distilled reusable facts, not raw logs or per-turn
+ * exploration that should die with the current slice.
  */
 export const buildMemoryToolRegistrations = (
 	options: IMemoryToolOptions,
@@ -107,7 +109,7 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_save`,
 					{
 						description:
-							'Save a small, durable note (upserts by title). Use for decisions, gotchas and continuity an agent should remember next session. Secrets (API keys, tokens, private keys) are auto-redacted; pass ttlSeconds for a self-expiring note.',
+							'Save a small, durable note (upserts by title). Use for distilled decisions, gotchas, stable conventions and continuity worth keeping beyond the current slice or session. Do not use this as a log sink for raw tool output or per-turn exploration. Secrets (API keys, tokens, private keys) are auto-redacted; pass ttlSeconds for a self-expiring note.',
 						inputSchema: z.object({
 							title: z.string(),
 							body: z.string(),
@@ -135,7 +137,7 @@ export const buildMemoryToolRegistrations = (
 						if (args.body.length > 8000) {
 							return toolError(
 								'body too long (max 8000 chars)',
-								'Summarise; memory is for durable notes, not logs.',
+								'Summarise first; durable memory is for reusable notes, not logs or raw turn-by-turn traces.',
 							);
 						}
 						if ((args.tags?.length ?? 0) > 20) {
@@ -203,7 +205,7 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_recall`,
 					{
 						description:
-							'Recall durable notes by query and/or tags. Low-token: returns only matches, newest first.',
+							'Recall durable notes by query and/or tags. Use this before re-reading docs when the fact is likely to be a previously distilled reusable note. Low-token: returns only matches, newest first.',
 						inputSchema: z.object({
 							query: z.string().optional(),
 							tags: z.array(z.string()).optional(),
@@ -248,7 +250,7 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_list`,
 					{
 						description:
-							'List notes as {id,title,tags}, newest first. Paginated: `limit` (default 50, max 200) + `offset`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall.',
+							'List durable notes as a cheap index {id,title,tags}, newest first. Paginated: `limit` (default 50, max 200) + `offset`. Returns {notes,total,offset,nextOffset}. Read a body with memory_recall only when the index suggests the note is relevant.',
 						inputSchema: z.object({
 							limit: z.number().optional(),
 							offset: z.number().optional(),
