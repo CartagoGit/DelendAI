@@ -70,7 +70,7 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
   - `docs/proposals/ready/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: pending
-- **Expect**: la auditoría deja una rúbrica estable, una baseline de superficies caras y una lista priorizada de puntos donde el repo ya tiene disciplina y donde aún no la tiene.
+- **Expect**: la auditoría deja una rúbrica estable y tres salidas cerrables sin tocar código: `already-strong`, `gaps documentales` y `baseline medible` sobre límites, jerarquía, presupuestos, criterios de salida y memoria compacta.
 
 ### S2 — Workflow multiagente: límites, jerarquía y criterios de salida
 
@@ -151,10 +151,20 @@ Abrir hoy varias propuestas de implementación sin esta revisión sería prematu
 | Aspecto | Estado actual |
 |---|---|
 | Propuesta creada | Sí, en `ready/` |
-| Baseline de eficiencia | Pendiente de levantar en `S1` |
-| Hallazgos validados | Aún no, esta propuesta define el trabajo |
+| Baseline de eficiencia | Parcialmente levantada en `S1` desde superficies normativas/documentales |
+| Hallazgos validados | Ya hay hallazgos documentales y de cobertura; aún no hay hallazgos de implementación profunda |
 | Propuestas hijas creadas | Aún no, se reservan para `S5` |
 | Gate de cierre | `bun run validate` al pasar a `done` |
+
+### Baseline S1
+
+| Familia | Estado S1 | Evidencia base |
+|---|---|---|
+| Límites | fuerte en arranque y observabilidad; parcial fuera de esas rutas | `overview compact`, `auto_work`, capado de logs, thresholds del loop detector |
+| Jerarquía | fuerte en orientación y delegación; parcial en umbral de “no trivial” | `overview`/`auto_work`/orchestrator y regla de delegar; falta umbral común más preciso |
+| Presupuestos | fuerte para cold-start; parcial para otras superficies | budgets medidos y gateados para `overview`/`auto_work`, no para `search`/`docs`/`git`/`memory` |
+| Criterios de salida | fuerte para cambios de código; parcial para investigación read-only | `bun run validate` como done global; falta cierre mínimo repositorio-específico para slices de investigación |
+| Memoria compacta | parcial | existe disciplina de `/compact` y de no releer, pero no una política única y breve de qué persistir |
 
 La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo solo escala a propuesta hija si falla al menos uno de estos puntos con evidencia reproducible.
 
@@ -190,6 +200,27 @@ La rúbrica de evaluación que se usará en la auditoría es esta. Un hallazgo s
 
 ## findings
 
+### already-covered
+
+1. **Orientación compacta y barata ya prescrita**: primero `overview`, evitar crawling y preferir herramientas compactas sobre shell. El hilo principal ya tiene disciplina explícita de coste bajo.
+2. **Disciplina explícita de no releer**: solo releer por cambio detectado, señal relevante de `overview` o necesidad de bytes nuevos.
+3. **Presupuestos medidos y gateados para la ruta de arranque**: `overview` full/compact y `auto_work` tienen baseline y techos de regresión.
+4. **Criterio de salida global fuerte**: una tarea no está hecha si `bun run validate` no está verde.
+5. **Jerarquía del hilo principal bien definida**: trabajo no trivial baja a orchestrator/subagente y se pide compactar entre tareas no relacionadas.
+6. **Anti-loop y anti-polling ya documentados**: esperar `lock-released` en vez de polling y respetar `stop: true`.
+7. **Observabilidad con límites reales**: logs redactados, capados a 8 KiB por línea, retención de 30 días y rotación diaria.
+8. **Detección de bucles con thresholds y handoff portable**: repeat/no-progress thresholds, ring size y handoff TTL ya fijados.
+
+### documentation gaps
+
+1. **Hierarchy**: no hay un umbral operativo común para decidir qué cuenta como trabajo no trivial y cuándo la delegación deja de ser opcional.
+2. **Budget**: los presupuestos medidos hoy cubren bien `overview` y `auto_work`, pero no varias superficies que probablemente dominan gasto real en swarm (`search`, `docs`, `git`, `memory`).
+3. **Exit**: el criterio global de done es fuerte para código, pero no hay una definición repositorio-específica igual de breve para cerrar investigación read-only.
+4. **Memory**: existe disciplina de compacción y de no releer, pero no una política única y breve sobre qué entra en memoria persistente operativa y qué debe quedar fuera.
+5. **Limits**: el loop detector cubre repetición y no-progreso de edición, pero no documenta límites equivalentes para exploración read-only o verbosidad de respuesta fuera de esas señales.
+
+### follow-up shape
+
 Estas son las familias de hallazgo que la auditoría considera plausibles y dignas de seguimiento si se verifican:
 
 1. **Una propuesta de workflow** si faltan límites, jerarquía o criterios de salida en el sistema multiagente.
@@ -203,15 +234,17 @@ Ese shape es deliberado: mejor pocas propuestas bien acotadas que una colección
 
 | Dimensión | Objetivo de la auditoría |
 |---|---|
-| Límites | Confirmar que las superficies caras tienen topes explícitos o ruta compacta previa |
-| Jerarquía | Verificar que el trabajo denso baja a la capa correcta y no se queda en el hilo principal |
-| Presupuestos | Detectar gaps sin presupuesto, sin baseline o sin gate defendible |
-| Criterios de salida | Asegurar que slices y workflows saben cuándo parar, compactar o delegar |
-| Memoria compacta | Separar memoria reusable de transcript ruidoso o stale |
-| Follow-ups | Abrir solo propuestas hijas con causalidad clara y aceptación medible |
+| Límites | Fuerte en cold-start y observabilidad; parcial para exploración read-only y verbosidad fuera del loop detector |
+| Jerarquía | Fuerte en orientación compacta y delegación; parcial por falta de umbral común para “no trivial” |
+| Presupuestos | Fuerte para `overview`/`auto_work`; parcial para `search`, `docs`, `git`, `memory` y otras superficies del preset swarm |
+| Criterios de salida | Fuerte para cambios de código (`validate`); parcial para slices de investigación documental |
+| Memoria compacta | Parcial: hay compacción y no-relectura, pero no frontera documental única de persistencia operativa |
+| Follow-ups | Aún no abrir; S1 solo justifica posibles familias, no propuestas hijas todavía |
 
 ## notes
 
 - Esta auditoría está diseñada para ejecutarse por tramos y con bajo coste de contexto. Cada slice puede revisarse casi de forma independiente y solo `S5` recombina hallazgos.
 - `a00025` ya estudió ahorro de tokens como familia concreta; `a00027` amplía el marco a gobierno operativo completo y decide qué follow-ups merecen existir hoy.
 - `f00032` y `f00044` se marcan como relacionados porque tocan cobertura de skills/tools y onboarding cross-project, dos zonas donde el coste de contexto puede crecer rápido si no hay límites y rutas compactas.
+- S1 usa solo superficies normativas/documentales por diseño; no concluye aún sobre cumplimiento profundo en código, solo sobre claridad del marco operativo actual.
+- Baseline documental ya verificado en S1: `overview` full 6 735 B, `overview compact` 1 271 B, `auto_work` idle 159 B y `auto_work` con work plan 1 026 B; además existen techos de regresión para esas rutas en `docs/TOKEN-BUDGETS.md`.

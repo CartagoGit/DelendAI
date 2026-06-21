@@ -23,7 +23,14 @@ title: `auto_work`: modos de persistencia (commit / commit-and-push / none)
 > si commitea, y casi nadie pushea. Algunos perfiles quieren commit
 > local; otros quieren commit+push; otros (vos) quieren analizar antes.
 
-## 1. Contexto y motivación
+## goal
+
+Permitir que `auto_work` resuelva de forma explícita qué hacer con la
+persistencia al cerrar un slice: no persistir, commitear localmente, o
+commitear y pushear, siempre con un default seguro, sin romper el contrato
+de “one call → plan” y sin introducir automatismos peligrosos sobre `main`.
+
+## why
 
 ### Hoy
 
@@ -68,7 +75,7 @@ Podríamos exponer un `<prefix>_auto_commit` separado. Pero:
 Mejor: extender `auto_work` con un parámetro **opcional** y un **default
 seguro** (`none`).
 
-## 2. Lo que se quiere
+## why this design
 
 Extender `<prefix>_auto_work` con tres ejes:
 
@@ -130,7 +137,16 @@ reason }` en el JSON output. Eso preserva el invariante
 "no commit-back loop en main" de AGENTS.md sin tener que validar nada
 extra en CI.
 
-## 3. Diseño técnico
+## non-goals
+
+- No exponer un tool separado de auto-commit que obligue al orquestador a
+  coordinar dos llamadas distintas por slice.
+- No cambiar el comportamiento por defecto del sistema cuando no se pida
+  persistencia; `none` sigue siendo el modo seguro.
+- No permitir pushes automáticos a `main` ni sustituir la política de ramas
+  del repo.
+
+## architecture
 
 ### Helper nuevo
 
@@ -185,26 +201,49 @@ export const maybePersistAfterSlice = async (
 pasa a tener **JSON Schema** validado por
 `scripts/generate-config-schema.ts` (igual que el resto).
 
-## 4. Slices (cerrar en este orden)
+## slices
 
-| # | Slice | Cambios | Archivos | Tests |
-|---|---|---|---|---|
-| s1 | Tipos + opciones | Añadir `IAutoWorkPersistOptions`, extender `IAutoWorkToolOptions` | `auto-work.tool.ts` (types only) | sin tests nuevos |
-| s2 | Helper `maybePersistAfterSlice` | Nueva función pura, mockable, no lanza | `auto-work-persist.ts` (nuevo) | 6 tests: none / commit / commit-and-push / git-missing / push-to-main-rejected / template-default |
-| s3 | Tool `auto_work` acepta input + renderiza `steps` | Cargar config, resolver prioridad, inyectar paso extra al array | `auto-work.tool.ts` | 4 tests: input override / config default / steps count por modo / persist JSON output |
-| s4 | Config manifest + i18n + docs | Añadir keys a `apps/web/src/i18n/ui.ts` (12 idiomas), actualizar `plugins/proposals/README.md`, propuesta cerrada | varios | validate + site:strict verdes |
+### S1 — Tipos + opciones
+- **Files**: `auto-work.tool.ts`
+- **Status**: done
+- **Gate**: `bun run validate`
+- **Acceptance**:
+  - "Añadir `IAutoWorkPersistOptions` y extender `IAutoWorkToolOptions`."
+  - "No requiere tests nuevos por sí mismo; queda cubierto por los tests de S2 y S3."
 
-## 5. Riesgos y mitigaciones
+### S2 — Helper `maybePersistAfterSlice`
+- **Files**: `auto-work-persist.ts`
+- **Status**: done
+- **Gate**: `bun run validate`
+- **Acceptance**:
+  - "Nueva función pura, mockable y que no lanza excepciones."
+  - "Cobertura con tests para `none`, `commit`, `commit-and-push`, `git-missing`, rechazo de push a `main` y plantilla default."
 
-| Riesgo | Mitigación |
-|---|---|
-| Push a `main` rompe el invariante "no CI loop" | Safety net: `main` → push rechazado, `committed: true, pushed: false` |
-| `git add <files>` añade paths fuera de la slice (drift de `claim`) | El helper recibe `files` desde `claim.files`; no hace `git add .` jamás |
-| Race con `agent-worktree` por `.git/index` | El orquestador corre en su propio worktree (`agent/<name>`), el helper opera dentro de ese worktree, no hay colisión |
-| `git` no instalado en runtime | Helper degrada a `{ committed: false, pushed: false, reason: 'git not installed' }` — el flujo sigue, el agente decide qué hacer |
-| Token budget de `auto_work` crece | El output sigue por debajo de 200 tokens; el campo `persist` se omite si `mode === 'none'` |
+### S3 — Tool `auto_work` acepta input + renderiza `steps`
+- **Files**: `auto-work.tool.ts`
+- **Status**: done
+- **Gate**: `bun run validate`
+- **Acceptance**:
+  - "Carga config, resuelve prioridad de persistencia e inyecta el paso extra al array `steps`."
+  - "Cobertura con tests de input override, config default, número de pasos por modo y output JSON de `persist`."
 
-## 6. Definición de done
+### S4 — Config manifest + i18n + docs
+- **Files**: `apps/web/src/i18n/ui.ts`, `plugins/proposals/README.md`, documentación de cierre de la propuesta
+- **Status**: done
+- **Gate**: `bun run validate && bun run site:strict`
+- **Acceptance**:
+  - "Añadir keys i18n, actualizar README del plugin y cerrar la propuesta con documentación coherente."
+
+## acceptance
+
+- `bun run validate` verde (typecheck + lint + tests).
+- 10 tests nuevos (s2 + s3), todos pasan.
+- `bun run types:generate` regenera el `outputSchema` de `auto_work`
+  con el campo `persist` opcional.
+- `bun run site:strict` verde y la página del tool documenta los 3 modos.
+- La propuesta queda cerrada con commits convencionales y changelog al día.
+
+### Definición de done
 
 - `bun run validate` verde (typecheck + lint + tests).
 - 10 tests nuevos (s2 + s3), todos pasan.
@@ -219,7 +258,19 @@ pasa a tener **JSON Schema** validado por
   4. `docs(proposals): close f00003 first slice with status note`
 - CHANGELOG actualizado.
 
-## 7. Por qué **plugin config** y no solo "instrucción en AGENTS.md"
+## risks and mitigations
+
+| Riesgo | Mitigación |
+|---|---|
+| Push a `main` rompe el invariante "no CI loop" | Safety net: `main` → push rechazado, `committed: true, pushed: false` |
+| `git add <files>` añade paths fuera de la slice (drift de `claim`) | El helper recibe `files` desde `claim.files`; no hace `git add .` jamás |
+| Race con `agent-worktree` por `.git/index` | El orquestador corre en su propio worktree (`agent/<name>`), el helper opera dentro de ese worktree, no hay colisión |
+| `git` no instalado en runtime | Helper degrada a `{ committed: false, pushed: false, reason: 'git not installed' }` — el flujo sigue, el agente decide qué hacer |
+| Token budget de `auto_work` crece | El output sigue por debajo de 200 tokens; el campo `persist` se omite si `mode === 'none'` |
+
+## notes
+
+### Por qué **plugin config** y no solo "instrucción en AGENTS.md"
 
 | Criterio | `AGENTS.md` | Plugin config |
 |---|---|---|
@@ -229,7 +280,7 @@ pasa a tener **JSON Schema** validado por
 | Lo testeas unitariamente | no | sí (6 tests del helper) |
 | Lo activas/desactivas sin redeploy | no | flag `persist.mode` |
 
-## 8. Decisiones tomadas (esta sesión)
+### Decisiones tomadas (esta sesión)
 
 | Decisión | Elección | Por qué |
 |---|---|---|
@@ -239,14 +290,14 @@ pasa a tener **JSON Schema** validado por
 | Main branch | Nunca pushea automáticamente | Safety net, invariante AGENTS.md |
 | Input override | Sí (tool input) | El orquestador decide por slice si hace falta push |
 
-## 9. Estado
+### Estado
 
 - s1: ✅ hecho (commit `5bd32c6`, "add maybePersistAfterSlice helper (f00003 s1+s2)" — los tipos `IAutoWorkPersistConfig` y la extensión de `IAutoWorkToolOptions`).
 - s2: ✅ hecho (mismo commit `5bd32c6` — el helper `maybePersistAfterSlice` + 11 tests).
 - s3: ✅ hecho (commit `ab5de2e` "add persistence modes (none, commit, commit-and-push) and update related tests" — tool `auto_work` carga config, resuelve prioridad, inyecta paso extra; 4 tests nuevos).
 - s4: ✅ hecho (commits `6fe3500` "stop mutating readonly IAutoWorkToolOptions.persist in spec" + este commit — README del plugin documenta los 3 modos, propuesta cerrada).
 
-## 10. Referencias
+### Referencias
 
 - [plugins/proposals/src/lib/tools/auto-work.tool.ts](../../plugins/proposals/src/lib/tools/auto-work.tool.ts) — tool a extender.
 - [plugins/proposals/src/lib/shared/git-runner.ts](../../plugins/proposals/src/lib/shared/git-runner.ts) — runner async no-bloqueante a reusar.
