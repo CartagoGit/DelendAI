@@ -1,7 +1,15 @@
 {
 	"generated_at": "2026-06-21T19:06:00.000Z",
-	"count": 85,
+	"count": 86,
 	"proposals": [
+		{
+			"id": "a00027",
+			"file": "ready/a00027-21-06-2026-copilot-gpt-5-4-eficiencia-operativa-de-agentes.md",
+			"track": "workflow+core+plugins+apps+docs+memory",
+			"type": "unspecified",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
 		{
 			"id": "f00023",
 			"file": "ready/f00023-rename-proposal-ids-padded-5-digits-by-creation-date.md",
