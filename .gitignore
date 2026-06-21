@@ -22,7 +22,10 @@ site/
 .astro/
 apps/web/src/data/capabilities.json
 apps/web/src/data/manifests/
-apps/web/public/api/
+# Generated symlink: apps/web/public/api -> ../../../build/docs-api.
+# Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
+# apps/web dev/build). Do NOT commit the symlink itself.
+apps/web/public/api
 docs/mcp-vertex/
 *.tsbuildinfo
 .DS_Store

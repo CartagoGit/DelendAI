@@ -61,13 +61,13 @@ describe('lintProposalsDir', () => {
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));
 
-	it('ignores non-proposal documents (audits, README, n001 notes)', async () => {
+	it('ignores non-proposal documents (audits, README, n00001 notes)', async () => {
 		await write(
 			root,
 			'audits/16-06-2026- Auditoria.md',
 			'# not a proposal\n',
 		);
-		await write(root, 'n001-SESION-2026-06-17.md', '# session notes\n');
+		await write(root, 'n00001-SESION-2026-06-17.md', '# session notes\n');
 		await write(root, 'README.md', '# index\n');
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(0);

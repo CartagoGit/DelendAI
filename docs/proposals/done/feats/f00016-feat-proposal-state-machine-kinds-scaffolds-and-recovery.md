@@ -653,7 +653,7 @@ gateable. Files marked `excl.` are exclusively claimed by the slice.
      misclassified as a *fatal* new-scaffold violation instead of an
      expected legacy warning.
   4. **The walker recursed into `docs/proposals/audits/`** (and other
-     non-proposal documents — `n001-*` session notes, READMEs) and
+     non-proposal documents — `n00001-*` session notes, READMEs) and
      reported them as fatal scaffold violations. Those were never
      proposals. Fixed: only files matching the proposal filename shape
      are even considered.

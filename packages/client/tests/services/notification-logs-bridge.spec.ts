@@ -24,7 +24,7 @@ afterAll(() => {
 
 const makeBridge = () => {
 	const { transport } = createFakeTransport({
-		mcp_vertex_metrics: {
+		'mcp-vertex_metrics': {
 			tools: {
 				'mcp-vertex_overview': {
 					calls: 1,
@@ -37,15 +37,14 @@ const makeBridge = () => {
 			totals: { calls: 1, errors: 0, totalMs: 100, totalBytes: 100 },
 		},
 	});
+	const client = McpStdioClient.fromTransport(transport);
+	const notifications = new NotificationsService(client);
+	const metrics = new MetricsService(client);
 	const bridge = new NotificationLogsBridge({ notifications, metrics });
 	return { bridge, notifications, metrics };
 };
 
 describe('NotificationLogsBridge', () => {
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
 	it('emits an entry when a notification fires', () => {
 		const { bridge, notifications } = makeBridge();
 		const received: unknown[] = [];
@@ -93,12 +92,12 @@ describe('NotificationLogsBridge', () => {
 		const { bridge, notifications, metrics } = makeBridge();
 		const received: unknown[] = [];
 		bridge.addEventListener((e) => received.push(e));
-		// Trigger a metrics snapshot first to seed the metrics tools map.
+		// Seed the metrics tools map.
 		await metrics.snapshot();
 		bridge.start();
-		// Give the 1s pollMetrics tick enough time to fire and populate
-		// the buffer (it tries to take a snapshot and append entries).
-		await new Promise((r) => setTimeout(r, 1_200));
+		// Manually drive the buffer population — avoids depending on
+		// setInterval firing under vitest's fake timers.
+		await bridge.tick();
 		notifications.emitStatus('cap', 'now');
 		await new Promise((r) => setTimeout(r, 10));
 		const entry = received[0] as {

@@ -18,7 +18,7 @@ acceptance:
 > **Superseded by unified audit [`a00022`](../../ready/a00022-21-06-2026-claude-code-sonnet-4-6-auditoria-unificada.md)**
 > (consolidación de auditorías ready del 2026-06-21). El triage de S2 (crear
 > `a024a`/`a024b`/`a024c`/`a024d`) se decidió explícitamente **diferido**
-> dentro de a00022 § Notes — `a024a`/`a024b` esperan el prerequisite `l00003`;
+> dentro de a00022 § Notes — `a024a`/`a024b` esperan el prerequisite `f00027`;
 > `a024c` (skill `token-hygiene`, sin prerequisite) queda recomendada como
 > follow-up de baja friction pero no creada en esta sesión; `a024d` se trató
 > como nota de documentación, no como propuesta independiente. Ver a00022 para
@@ -34,7 +34,7 @@ acceptance:
 - **Audited HEAD**: HEAD actual de la rama de trabajo (la propuesta se mueve con `develop`; la fecha es lo que cuenta, no el SHA).
 - **Revisor / Model**: GitHub Copilot (MiniMax-M3) — mismo runner que la sesión que originó el debate.
 - **Date**: 2026-06-21.
-- **Método**: cross-check del debate snapshot-plugin (sesión 2026-06-21) con los datos de `mcp-vertex_metrics`, `TOKEN-BUDGETS.md`, las propuestas `l00003` (gate de regresión), `f00016` (proposal state machine) y el master audit `a1`. Sin nuevas mediciones invasivas en este slice; el estudio es **de inventario y diseño**, no de ejecución de benchmarks.
+- **Método**: cross-check del debate snapshot-plugin (sesión 2026-06-21) con los datos de `mcp-vertex_metrics`, `TOKEN-BUDGETS.md`, las propuestas `f00027` (gate de regresión), `f00016` (proposal state machine) y el master audit `a1`. Sin nuevas mediciones invasivas en este slice; el estudio es **de inventario y diseño**, no de ejecución de benchmarks.
 
 ## Why
 
@@ -76,7 +76,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 - **Por qué importa**: sin esto, **toda decisión de las Familias A y B se toma a ciegas**. El debate snapshot-plugin de esta sesión terminó en "no hay datos para decidir" — eso es exactamente lo que D resuelve.
 - **Lo que ya existe**: `mcp-vertex_metrics` con `persist: true` vuelca JSON bajo `<cacheDir>/metrics/<ISO>.json`. La métrica está, el gate no.
 - **Lo que falta**: gate de CI.
-- **Estado**: **ya propuesto como `l00003`** (`metrics longitudinal regression gate`). Esta auditoría **no duplica** `l00003`; lo referencia y lo coloca como **S0 (prerequisite)** de las Familias A y B.
+- **Estado**: **ya propuesto como `f00027`** (`metrics longitudinal regression gate`). Esta auditoría **no duplica** `f00027`; lo referencia y lo coloca como **S0 (prerequisite)** de las Familias A y B.
 
 ### 2. Hallazgos priorizados
 
@@ -94,13 +94,13 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 
 #### `a024a — Cache de respuestas MCP por slice` (H2)
 - Scope: plugin `plugins/response-cache/`, key = `sliceId + toolName + argsHash`, invalidación por evento `proposal_transition` y por `closeSlice`. TTL 24h para huérfanos.
-- Prerequisite: **`l00003` merged** (para tener gate que valide que la cache no introduce regresión).
+- Prerequisite: **`f00027` merged** (para tener gate que valide que la cache no introduce regresión).
 - Aceptación: `proposals_get_proposal_workflow` con misma `(sliceId, args)` devuelve mismo hash en ≤ 1 ms; bytes totales del slice bajan ≥ 30%.
 - **No-goal**: cachear respuestas que contengan `mtime` o `bytes` en el output (invalidación trivial, cache sería mentira).
 
 #### `a024b — Snapshot plugin (mínimo)` (H4)
 - Scope: tool única `snapshot_mark(pathList)` + `snapshot_diff(path)`. Storage en `.cache/mcp-vertex/snapshots/<sliceId>/<sha256(path)>`. Cleanup en `closeSlice`. **Sin hooks mágicos, sin manipulación de contexto, sin identidad por nombre de agente**.
-- Prerequisite: **`l00003` merged AND medición de H1 muestra que `git_diff` está en el top 3 de herramientas por bytes**.
+- Prerequisite: **`f00027` merged AND medición de H1 muestra que `git_diff` está en el top 3 de herramientas por bytes**.
 - Aceptación: si la métrica se cumple, la propuesta se abre; si no, se cierra con `status: done` y un párrafo en `docs/proposals/audits/` explicando "medimos, no compensa".
 - Riesgo: snapshots stale. Mitigación: la marca es de slice, no de agente; el `agent_lock` ya evita escritura concurrente; `closeSlice` limpia.
 
@@ -110,14 +110,14 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 - Aceptación: el SKILL.md existe, es invocable, y la regla se mantiene sincronizada con `AGENTS.md` (un test e2e que falle si divergen).
 - **No-goal**: meter la regla en `core` (el `core` debe seguir siendo agnóstico, ver AGENTS.md §"Hard rules" #1).
 
-#### `a024d — Wire `l00003` como prerequisite explícito` (H1)
-- Scope: añadir una nota en `TOKEN-BUDGETS.md` ("Reproduce") que diga: "para validar que un cambio no regresa el budget, ejecuta también el gate de `l00003`".
-- Prerequisite: `l00003` no es prerequisite de este slice (es copy).
-- Aceptación: el `README` de `TOKEN-BUDGETS.md` enlaza a `l00003`.
+#### `a024d — Wire `f00027` como prerequisite explícito` (H1)
+- Scope: añadir una nota en `TOKEN-BUDGETS.md` ("Reproduce") que diga: "para validar que un cambio no regresa el budget, ejecuta también el gate de `f00027`".
+- Prerequisite: `f00027` no es prerequisite de este slice (es copy).
+- Aceptación: el `README` de `TOKEN-BUDGETS.md` enlaza a `f00027`.
 
 ### 4. Lo que **no** haría este estudio (Non-goals del estudio)
 
-- Reescribir `l00003`. Es una propuesta ya en `ready/` con slices propias. Este estudio la referencia, no la duplica.
+- Reescribir `f00027`. Es una propuesta ya en `ready/` con slices propias. Este estudio la referencia, no la duplica.
 - Implementar un cache de respuestas. Eso es `a024a` (futuro).
 - Implementar un snapshot plugin. Eso es `a024b` (futuro y condicional).
 - Medir con un benchmark nuevo en este slice. La medición ya existe (`mcp-vertex_metrics`); este estudio **la cruza con el debate**, no corre benchmarks.
@@ -125,12 +125,12 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 
 ## non-goals
 
-- Reemplazar el gate de `TOKEN-BUDGETS.md` (mide el **estado actual**; este estudio precede a `l00003` que mide el **delta entre releases**).
+- Reemplazar el gate de `TOKEN-BUDGETS.md` (mide el **estado actual**; este estudio precede a `f00027` que mide el **delta entre releases**).
 - Meter reglas de ahorro de tokens en el `core` (rompe la regla #1 de AGENTS.md).
 - Acoplar cache de respuestas con `agent_lock` (el lock hace su trabajo, no es fuente de verdad para invalidación de cache).
 - Crear un plugin de snapshot que manipule el contexto del modelo (cruza la frontera del host).
 - Cambiar la convención de prefijos del repo (`l*`/`a*`/`f*`/`x*`).
-- Reescribir `l00003`. Es una propuesta ya en `ready/` con slices propias. Este estudio la referencia, no la duplica.
+- Reescribir `f00027`. Es una propuesta ya en `ready/` con slices propias. Este estudio la referencia, no la duplica.
 - Implementar un cache de respuestas. Eso es `a024a` (futuro).
 - Implementar un snapshot plugin. Eso es `a024b` (futuro y condicional).
 - Medir con un benchmark nuevo en este slice. La medición ya existe (`mcp-vertex_metrics`); este estudio **la cruza con el debate**, no corre benchmarks.
@@ -143,7 +143,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
   - `docs/proposals/ready/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (este archivo)
   - `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (referencia, no se modifica en este slice)
   - `docs/TOKEN-BUDGETS.md` (referencia)
-  - `docs/proposals/ready/l00003-metrics-longitudinal-regression-gate.md` (referencia, **prerequisite de A y B**)
+  - `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md` (referencia, **prerequisite de A y B**)
 - **Status**: pending
 - **Agent**: `technical_investigator`
 - **Gate**: `bun run lint:proposals`
@@ -153,7 +153,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 - **Files**:
   - `docs/proposals/ready/a00025-21-06-2026-copilot-minimax-m3-estudio-ahorro-tokens.md` (mismo archivo; notas por H#)
   - `docs/proposals/ready/a024a-cache-respuestas-mcp-por-slice.md` (crear si H2 se valida)
-  - `docs/proposals/ready/a024b-snapshot-plugin-minimo.md` (crear si H4 + l00003 validan)
+  - `docs/proposals/ready/a024b-snapshot-plugin-minimo.md` (crear si H4 + f00027 validan)
   - `docs/proposals/ready/a024c-skill-token-hygiene.md` (crear)
   - `docs/TOKEN-BUDGETS.md` (anotación mínima, opcional)
   - `docs/proposals/index.json` (alta de los nuevos)
@@ -178,7 +178,7 @@ Score cualitativo: **8.1/10** — el marco está; el plano fino está sin hacer.
 - [ ] `bun run validate` verde (este slice no toca código, pero la propuesta debe sobrevivir al gate).
 - [ ] §1 cubre las 4 familias (A, B, C, D) con mecanismo, evidencia, riesgo y estado.
 - [ ] §findings nombra al menos un proposal derivado por familia o justifica explícitamente "no se propone".
-- [ ] El estudio **no duplica** `l00003` — lo referencia como prerequisite de A y B.
+- [ ] El estudio **no duplica** `f00027` — lo referencia como prerequisite de A y B.
 - [ ] El estudio **no añade infra** — solo deja mapa + proposals derivados en `ready/`.
 
 ## verified state
@@ -189,10 +189,10 @@ Aún no verificado. Este slice solo deja el inventario. La verificación se hace
 
 | # | Hallazgo | Familia | Severidad | Proposal derivado | Estado |
 |---|---|---|---|---|---|
-| H1 | Sin gate de regresión, todo "ahorro de tokens" es teatro | D | alta | `l00003` (ya en `ready/`, **referenciado como prerequisite**) | prerequisite |
-| H2 | `proposals_get_proposal_workflow` 2 KB/call sin cache (43% de bytes en sesión origen) | A | media | `a024a` | deferred (espera `l00003`) |
+| H1 | Sin gate de regresión, todo "ahorro de tokens" es teatro | D | alta | `f00027` (ya en `ready/`, **referenciado como prerequisite**) | prerequisite |
+| H2 | `proposals_get_proposal_workflow` 2 KB/call sin cache (43% de bytes en sesión origen) | A | media | `a024a` | deferred (espera `f00027`) |
 | H3 | Disciplina de re-read existe en `AGENTS.md` pero no en skill dedicada | C | baja | `a024c` | deferred (S2) |
-| H4 | Snapshot plugin no se ha medido; sin D, no se puede decidir | B | indeterminada | `a024b` | deferred (condicional a `l00003`) |
+| H4 | Snapshot plugin no se ha medido; sin D, no se puede decidir | B | indeterminada | `a024b` | deferred (condicional a `f00027`) |
 | H5 | `mcp-vertex_overview` puede ser deshabilitado por el usuario (visto en esta sesión) | operativo | info | (no se propone; nota en §notes) | observed |
 | H6 | `AGENTS.md` § "Re-read discipline" se añadió en esta sesión como parte de la Familia C | C | info | (cubierto) | shipped (este commit) |
 | H7 | 3 errores en `proposals_create_proposal` por race contra store vacía al inicio de sesión | A (calidad) | info | (no se propone; observado) | observed |
@@ -201,7 +201,7 @@ Aún no verificado. Este slice solo deja el inventario. La verificación se hace
 
 - **Cobertura del estudio**: 4/4 familias (A, B, C, D) tratadas. ✅
 - **Proposals derivados nombrados**: 4 (`a024a`, `a024b`, `a024c`, `a024d`-implícito en nota de TOKEN-BUDGETS). ✅
-- **Prerequisites explícitos**: `l00003` referenciado como prerequisite de A y B. ✅
+- **Prerequisites explícitos**: `f00027` referenciado como prerequisite de A y B. ✅
 - **Decisiones de no-hacer documentadas**: 5 (no-goals + non-goals del estudio). ✅
 - **Mediciones citadas**: sesión 2026-06-21 (17 calls, 11 031 B) + baseline de `TOKEN-BUDGETS.md` (1 271 / 6 735 / 159 / 1 026). ✅
 - **Score cualitativo auto-asignado**: 8.1/10 — el marco está; el plano fino está sin hacer.
@@ -209,14 +209,14 @@ Aún no verificado. Este slice solo deja el inventario. La verificación se hace
 ## notes
 
 ### Riesgos del estudio (R1–R4)
-- **R1 — Las métricas de una sola sesión no son muestra.** El 43% de bytes para `proposals_get_proposal_workflow` viene de **una** sesión con 17 calls. La propuesta **`a024a` se reabre solo si `l00003` muestra que esa proporción se sostiene**; mientras tanto, queda como "evidencia anecdótica bien documentada".
+- **R1 — Las métricas de una sola sesión no son muestra.** El 43% de bytes para `proposals_get_proposal_workflow` viene de **una** sesión con 17 calls. La propuesta **`a024a` se reabre solo si `f00027` muestra que esa proporción se sostiene**; mientras tanto, queda como "evidencia anecdótica bien documentada".
 - **R2 — `mcp-vertex_overview` puede estar deshabilitado por el usuario.** Visto en esta sesión: el usuario deshabilitó la tool y el host siguió funcionando. Eso **no afecta** al estudio, pero **afecta** a la regla de re-read de `AGENTS.md`: cuando `overview` no está, el disparador #2 no aplica. Mitigación: el estudio menciona H5 como info, no como blocker.
-- **R3 — El snapshot plugin (Familia B) tiene adoption risk.** Si se implementa sin que `l00003` mida primero, podríamos estar añadiendo un plugin que nadie usa. Por eso `a024b` es **condicional a la métrica de `l00003`**, no "hazlo y vemos".
+- **R3 — El snapshot plugin (Familia B) tiene adoption risk.** Si se implementa sin que `f00027` mida primero, podríamos estar añadiendo un plugin que nadie usa. Por eso `a024b` es **condicional a la métrica de `f00027`**, no "hazlo y vemos".
 - **R4 — El cache de respuestas MCP (Familia A) puede violar expectativas del agente.** Si cachea y la realidad cambia (otro agente cierra un slice, llega una `notification`), el agente opera sobre datos viejos. Mitigación: invalidación por evento `proposal_transition` + TTL corto + test e2e que abra dos slices en paralelo y verifique que el cache del primero se invalida cuando el segundo transiciona.
 
 ### Referencias
 - Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (M12 token budget, M29 metrics, M27 web docs).
-- Gate de regresión (prerequisite): `docs/proposals/ready/l00003-metrics-longitudinal-regression-gate.md`.
+- Gate de regresión (prerequisite): `docs/proposals/ready/f00027-metrics-longitudinal-regression-gate.md`.
 - Baseline numérico: `docs/TOKEN-BUDGETS.md` (1 271 B compact / 6 735 B full / 159 B auto_work idle / 1 026 B auto_work plan; gates 7 000 / 1 600 / 1 600).
 - Debate origen (snapshot plugin): memoria de sesión `/memories/session/snapshot-plugin-debate-2026-06-21.md`.
 - Regla de re-read: `AGENTS.md` § "Re-read discipline".

@@ -1,5 +1,5 @@
 ---
-id: n005
+id: n00005
 kind: resume
 title: Resumen de sesión — 4ª ronda 2026-06-16 tarde/noche (Claude Code)
 status: done
@@ -11,7 +11,7 @@ track: general
 
 > Continúa la cola viva **§0 (N1–N23)** de
 > `audits/AUDITORIA-UNIFICADA-2026-06-15.md`. Sesión anterior (3ª ronda) en
-> `done/n001-SESION-3A-RONDA-2026-06-16.md` (archivada al arrancar).
+> `done/n00001-SESION-3A-RONDA-2026-06-16.md` (archivada al arrancar).
 >
 > **Repo:** `/home/cartago/_projects/mcp-vertex`.
 > **Estado al cerrar: 425 tests (415 + 10 skip), typecheck limpio, TODO VERDE.**
@@ -20,7 +20,7 @@ track: general
 
 ## Qué se hizo (todo ✅ con tests, commiteado)
 
-1. **Arranque**: archivé `n001-SESION-3A-RONDA` a `done/`; validé verde el
+1. **Arranque**: archivé `n00001-SESION-3A-RONDA` a `done/`; validé verde el
    punto de partida (417 tests).
 
 2. **N20 — split de `round-context.ts` COMPLETO** (estaba 🟡 parcial). De 758

@@ -34,7 +34,7 @@ Concretely:
 
 On 2026-06-21 the MCP panel reported `Canceled: Canceled` for
 `mcp-vertex_overview` (compact mode). Investigation (see
-`docs/proposals/n001-SESION-2026-06-17.md` and the diagnostic chat
+`docs/proposals/n00001-SESION-2026-06-17.md` and the diagnostic chat
 transcript) found the root cause was **not** in the server code:
 
 - `packages/core/src/lib/tools/overview-tool.ts` has no `throw`, no

@@ -13,13 +13,13 @@ as sub-folders so the closure view scales.
 | `audits/` | `a<NNN>-` | Closed audit documents | `a00007-…-codex-gpt-5-5.md` … `a00006-…-claude-code-opus-4-8.md` |
 | `feats/` | `f<NNN>-` | Closed feature proposals | `f00004-…-multi-model-audit-plugin.md` … `f00018-…-rules-compact-findings.md` |
 | `fixes/` | `x<NNN>-` | Closed fix proposals | `x00004-…-web-bugfixes-and-ux-overhaul.md`, `x00002-…-fix-gen-skills-recursion.md`, … |
-| `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n001-…-autonoma-claude-code.md` … `n006-…-handoff-copilot.md` |
+| `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n00001-…-autonoma-claude-code.md` … `n00006-…-handoff-copilot.md` |
 
 We only create a sub-folder when the second file of that kind lands in
 `done/`. Buckets for `refactor/`, `chore/`, `docs/`, `test/`,
 `infra/`, `spike/`, `breaking/`, `perf/` will be added when the second
 file of each kind lands. The `resumes/` bucket was created by
-[n007](../ready/n007-resume-kind-cross-session-handoff-summaries.md)
+[n00007](../ready/n00007-resume-kind-cross-session-handoff-summaries.md)
 which also introduced the 13th proposal kind `resume` (prefix `n`).
 
 ## Loose files at `done/` root
@@ -32,11 +32,11 @@ not proposals:
   `done/audits/`.) NOT a proposal: one author, one span, no slice
   plan, no acceptance — different artefact shape from a proposal.
 
-> **Note (2026-06-21)**: `n001-SESION-*.md` files used to live at
+> **Note (2026-06-21)**: `n00001-SESION-*.md` files used to live at
 > this root and in `done/`. They were promoted to first-class
-> proposals of kind `resume` by n007 and moved under
+> proposals of kind `resume` by n00007 and moved under
 > [`done/resumes/`](./resumes/) with chronological numbering
-> (`n001..n006`). The carve-out line above is the surviving entry for
+> (`n00001..n00006`). The carve-out line above is the surviving entry for
 > the AUDITORIA-UNIFICADA only.
 
 ## Why this folder lives at `docs/proposals/`, not `docs/mcp-vertex/proposals/`
@@ -86,9 +86,9 @@ and recommends canonicalisation if it sees an ad-hoc shape.
    field changed from `l99` to `f00004`. Cross-references (`related: l99`
    in other proposals) were rewritten to `related: f00004` atomically by
    the f00001 migration. Do NOT refer to a proposal by its filename —
-   refer to it by `id:` (e.g. `related: f00016`). The n007 migration
+   refer to it by `id:` (e.g. `related: f00016`). The n00007 migration
    does NOT rename any `id:`; it only renames files (the 6 summaries
-   get fresh `n001..n006` ids because they had none before).
+   get fresh `n00001..n00006` ids because they had none before).
 3. **Sub-folders only allowed inside terminal statuses**: `done/` and
    `retired/`. The reconciler treats any depth under these folders as
    "status done" / "status retired". Non-terminal statuses (`ready`,
@@ -102,5 +102,5 @@ and recommends canonicalisation if it sees an ad-hoc shape.
 
 - [f00016 — Proposal state machine, kinds, scaffolds, and recovery](../in-progress/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds; archived once f00001 lands).
 - [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../in-progress/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
-- [n007 — Resume kind: cross-session handoff summaries](../ready/n007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
+- [n00007 — Resume kind: cross-session handoff summaries](../ready/n00007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
 - [`done/resumes/README.md`](./resumes/README.md) — the `resumes/` bucket's own README.

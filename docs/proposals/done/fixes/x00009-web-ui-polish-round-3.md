@@ -1,11 +1,12 @@
 ---
 id: x00009
-status: ready
+status: done
 type: proposal
 track: web+ui
 date: 2026-06-21
 kind: fix
 title: Web UI polish round 3 — language swap transitions organically, header always updates, page format uniform, plugin icons with meaning, close settings modal on language change
+shipped-in: 5bd3819
 ---
 
 # x126 — Web UI polish round 3 (post-x00005, x00007, x00008)

@@ -438,7 +438,7 @@ const lintFrontmatter = (
 		issues.push({
 			line: 0,
 			message: `frontmatter id "${frontmatter.id}" does not match /^[a-z]\\d{5}$/`,
-			fix: 'Use a single lowercase letter followed by exactly 5 digits (e.g. f00014). Padded 5-digit IDs are enforced by f126.',
+			fix: 'Use a single lowercase letter followed by exactly 5 digits (e.g. f00014). Padded 5-digit IDs are enforced by f00023.',
 		});
 	}
 

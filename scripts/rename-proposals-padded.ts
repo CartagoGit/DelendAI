@@ -19,7 +19,7 @@
  *     proposals/family, enough for decades. Approved in the proposal.
  *   - Order within a family is by **creation date** (first commit), not by
  *     current numeric ID. This is the whole point of f00023: the existing
- *     numbers (`a21..a24`, `f00020..f00022`, `l00001..l00010`, `x00006..x00007`) are
+ *     numbers (`a21..a24`, `f00020..f00022`, `c00001..f00032`, `x00006..x00007`) are
  *     holes and not chronological.
  *   - Ties (two files with identical creation-date) fall back to slug
  *     lexicographic order — deterministic.
@@ -137,14 +137,14 @@ const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 			if (ent.isDirectory()) {
 				// Recurse into sub-folders (e.g. `done/audits/`, `done/feats/`,
 				// `done/fixes/`, `done/resumes/`). We do NOT recurse into the
-				// `docs/proposals/audit*` / `n001-*.md` session notes etc.
+				// `docs/proposals/audit*` / `n00001-*.md` session notes etc.
 				await visit(abs);
 				continue;
 			}
 			if (!ent.isFile()) continue;
 			if (!isProposalMd(ent.name)) continue;
 			// Skip session notes / READMEs that happen to match the regex
-			// (defensive — they shouldn't, but `n001-…md` starts with
+			// (defensive — they shouldn't, but `n00001-…md` starts with
 			// uppercase R, so the regex `/^[a-z]\d+-/` rejects them anyway).
 			const raw = await readFile(abs, 'utf8');
 			const oldId = extractId(raw);

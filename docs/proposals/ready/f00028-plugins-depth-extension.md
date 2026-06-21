@@ -1,5 +1,5 @@
 ---
-id: l00004
+id: f00028
 status: ready
 type: proposal
 track: plugins
@@ -8,7 +8,7 @@ kind: feat
 title: Plugin depth extension — search (rg + context), memory (export/import), docs (docs_search)
 ---
 
-# l00004 — Plugin depth extension — `search` (rg + context), `memory` (export/import), `docs` (`docs_search`)
+# f00028 — Plugin depth extension — `search` (rg + context), `memory` (export/import), `docs` (`docs_search`)
 
 ## Goal
 
@@ -86,7 +86,7 @@ plugin-depth improvements that were explicitly **not addressed in session
     limit?, include?)` that walks the same files as `docs_list`, scores
     matches by `(titleHit * 3) + bodyHit`, returns ranked snippets of
     ≤ 200 chars around the hit), `plugins/docs/src/lib/tools.ts` (add
-    `docs_search` tool with `outputSchema` explicit per the l00002
+    `docs_search` tool with `outputSchema` explicit per the r00001
     proposal; takes `query: string`, `limit?: number (default 10)`,
     `include?: string[]`),
     `plugins/docs/tests/src/lib/engine-search.spec.ts` (new spec: 5

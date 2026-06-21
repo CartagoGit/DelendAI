@@ -30,7 +30,7 @@ related:
     - f00012 # i18n baseline — dashboard mirrors the language list
     - f00011 # capabilities surface — extension is the IDE counterpart
     - f00010 # residual p100 web & i18n — same i18n rules
-    - l00004 # plugin-depth extension — feeds new "tool usage" panel
+    - f00028 # plugin-depth extension — feeds new "tool usage" panel
 ownership:
     - {
           agent: implementation_runner,

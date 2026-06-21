@@ -1,5 +1,5 @@
 ---
-id: l00001
+id: c00001
 status: paused
 type: proposal
 track: docs+release
@@ -9,7 +9,7 @@ kind: chore
 title: Pause npm publish — blocked on NPM_TOKEN and develop→main merge
 ---
 
-# l00001 — Pause npm publish — blocked on NPM_TOKEN and develop→main merge
+# c00001 — Pause npm publish — blocked on NPM_TOKEN and develop→main merge
 
 ## Goal
 
@@ -63,7 +63,7 @@ This proposal has no slices — it is a **checkpoint**, not a workstream.
 
 ## Resume trigger (how this leaves `paused`)
 
-Move `paused/l00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
+Move `paused/c00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
 **all three** are true:
 
 1. `@cartago-git` org exists on the user's npm account.
@@ -76,11 +76,11 @@ At that point the slice is literally `git checkout main && git merge develop
 
 ## Acceptance
 
-- [x] `docs/proposals/paused/l00001-pause-npm-publish.md` exists with this
+- [x] `docs/proposals/paused/c00001-pause-npm-publish.md` exists with this
   frontmatter (`status: paused`).
 - [x] `docs/NPM_PUBLISH.md` still points here from the master audit.
 - [x] The master audit's `npm publish` checkbox stays `- [ ]` but now
-  references `paused/l00001` as the explanation, not `NPM_PUBLISH.md` alone.
+  references `paused/c00001` as the explanation, not `NPM_PUBLISH.md` alone.
 
 ## Linked references
 

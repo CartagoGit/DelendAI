@@ -37,7 +37,7 @@ const isLegacyFilename = (filename: string, absPath: string): boolean => {
 // 2-digit `l99-…`, or a new kind prefix) are proposals at all.
 // `docs/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
-// ones that ended up in `done/`), `n001-*` session notes,
+// ones that ended up in `done/`), `n00001-*` session notes,
 // `index.json`, READMEs. Those aren't "legacy proposals that need
 // migrating" — they were never proposals, so flagging them as scaffold
 // violations would be noise, not signal.

@@ -1,5 +1,5 @@
 ---
-id: n007
+id: n00007
 kind: resume
 title: Resume kind — cross-session handoff summaries
 status: done
@@ -9,7 +9,7 @@ triaged: true
 ownership:
     - { agent: implementation_runner, task: 's1: add resume kind (prefix n) to glossary + authoring tool enum' }
     - { agent: implementation_runner, task: 's2: scaffold this proposal in ready/ with canonical sections' }
-    - { agent: implementation_runner, task: 's3: move 6 n001-SESION-*.md into done/resumes/ with n001..n006 chronological numbering' }
+    - { agent: implementation_runner, task: 's3: move 6 n00001-SESION-*.md into done/resumes/ with n00001..n00006 chronological numbering' }
     - { agent: implementation_runner, task: 's4: update done/README.md to document the new bucket + answer the docsDir question' }
     - { agent: implementation_runner, task: 's5: sync proposals index + run full validate (typecheck, lint, tests, lint:proposals)' }
 acceptance:
@@ -24,21 +24,21 @@ related:
     - f00023 # rename proposal IDs by creation date — orthogonal: this adds a 13th kind, not a new numbering scheme
 ---
 
-# n007 — Resume kind: cross-session handoff summaries
+# n00007 — Resume kind: cross-session handoff summaries
 
 ## Goal
 
-Add a 13th proposal kind **`resume`** (single-letter prefix `n`) so cross-session handoff summaries live as first-class proposals under `docs/proposals/done/resumes/n<NNN>-*.md` and follow the same scaffold/linter as `a`/`f`/`x`/etc., instead of being loose `n001-SESION-*.md` files the linter happens to skip. Move the 6 existing summaries into the new bucket with chronological numbering (`n001..n006`) and document the convention in `docs/proposals/done/README.md`.
+Add a 13th proposal kind **`resume`** (single-letter prefix `n`) so cross-session handoff summaries live as first-class proposals under `docs/proposals/done/resumes/n<NNN>-*.md` and follow the same scaffold/linter as `a`/`f`/`x`/etc., instead of being loose `n00001-SESION-*.md` files the linter happens to skip. Move the 6 existing summaries into the new bucket with chronological numbering (`n00001..n00006`) and document the convention in `docs/proposals/done/README.md`.
 
 ## Why
 
 Cross-session summaries are the single most important document for "pick up where I left off" workflows (home → office, context-restart, agent hand-off). Today they have three real problems:
 
-1. **No first-class identity.** They live as loose `.md` files (`n001-SESION-*.md`) outside the proposal state machine — `scripts/lint-proposals.ts` *intentionally* skips them (the walker filters by `^[a-z]\d+-…` and the test "ignores non-proposal documents" enshrines the behaviour). They have no `id`, no `status`, no frontmatter. Tools that read the proposals index (`sync_proposals` → `index.json`, `proposal_board`, `auto_work`) can't see them.
+1. **No first-class identity.** They live as loose `.md` files (`n00001-SESION-*.md`) outside the proposal state machine — `scripts/lint-proposals.ts` *intentionally* skips them (the walker filters by `^[a-z]\d+-…` and the test "ignores non-proposal documents" enshrines the behaviour). They have no `id`, no `status`, no frontmatter. Tools that read the proposals index (`sync_proposals` → `index.json`, `proposal_board`, `auto_work`) can't see them.
 
 2. **No scaffold.** Each summary is hand-rolled; sections drift between sessions (`Cronología`, `Cronología de sesiones`, `Qué se hizo`, `Hecho`, mixed English/Spanish headings). Future agents retype the format instead of inheriting it.
 
-3. **No home.** The 6 existing summaries are split: 1 at `docs/proposals/n001-SESION-2026-06-17.md` (loose at root) and 5 at `docs/proposals/done/n001-SESION-*.md` (the `done/` README explicitly carves them out as "loose files that predate the convention"). That carve-out was right at the time — there was no kind for them — but it's time to give them one.
+3. **No home.** The 6 existing summaries are split: 1 at `docs/proposals/n00001-SESION-2026-06-17.md` (loose at root) and 5 at `docs/proposals/done/n00001-SESION-*.md` (the `done/` README explicitly carves them out as "loose files that predate the convention"). That carve-out was right at the time — there was no kind for them — but it's time to give them one.
 
 This proposal fixes all three by treating summaries as proposals of a 13th kind, `resume`. Same linter, same index, same scaffold. No new tool: `create_proposal` learns the kind, the existing file walker picks them up automatically, and `proposal_board`/`auto_work` can eventually include them in the actionable list (out of scope for this proposal — flagged in §"non-goals").
 
@@ -71,10 +71,10 @@ done/
 └── resumes/            # n<NNN>-...   ← NEW (this proposal)
     ├── README.md       # bucket-specific doc
     ├── .gitkeep        # keeps the empty folder under git
-    └── n001-...md ... n006-...md
+    └── n00001-...md ... n00006-...md
 ```
 
-The `done/README.md` carve-out line "`n001-SESION-*.md` — session notes (not a proposal)" is **removed** by this proposal; they ARE proposals now (kind: resume). Same for `AUDITORIA-UNIFICADA-*.md` — it stays loose at `done/` root because it's a historical consolidated doc, not a proposal-shaped work record (one author, one span, no slice plan, no acceptance). Different artefact, different rule.
+The `done/README.md` carve-out line "`n00001-SESION-*.md` — session notes (not a proposal)" is **removed** by this proposal; they ARE proposals now (kind: resume). Same for `AUDITORIA-UNIFICADA-*.md` — it stays loose at `done/` root because it's a historical consolidated doc, not a proposal-shaped work record (one author, one span, no slice plan, no acceptance). Different artefact, different rule.
 
 ### 2.3 Chronological numbering via `git log --diff-filter=A`
 
@@ -82,22 +82,22 @@ The 6 existing summaries span `2026-06-15 → 2026-06-17`. Same ordering rule as
 
 | New filename | Date | Original |
 |---|---|---|
-| `n001-15-06-2026-resumen-sesion-autonoma-claude-code.md` | 2026-06-15 | `n001-SESION-AUTONOMA-2026-06-15.md` |
-| `n002-15-06-2026-resumen-sesion-oficina-claude-code.md` | 2026-06-15 | `n001-SESION-OFICINA-2026-06-15.md` |
-| `n003-15-06-2026-resumen-sesion-2a-ronda-claude-code.md` | 2026-06-15 | `n001-SESION-2A-RONDA-2026-06-15.md` |
-| `n004-16-06-2026-resumen-sesion-3a-ronda-claude-code.md` | 2026-06-16 | `n001-SESION-3A-RONDA-2026-06-16.md` |
-| `n005-16-06-2026-resumen-sesion-4a-ronda-claude-code.md` | 2026-06-16 | `n001-SESION-4A-RONDA-2026-06-16.md` |
-| `n006-17-06-2026-resumen-sesion-handoff-copilot.md` | 2026-06-17 | `n001-SESION-2026-06-17.md` |
+| `n00001-15-06-2026-resumen-sesion-autonoma-claude-code.md` | 2026-06-15 | `n00001-SESION-AUTONOMA-2026-06-15.md` |
+| `n00002-15-06-2026-resumen-sesion-oficina-claude-code.md` | 2026-06-15 | `n00001-SESION-OFICINA-2026-06-15.md` |
+| `n00003-15-06-2026-resumen-sesion-2a-ronda-claude-code.md` | 2026-06-15 | `n00001-SESION-2A-RONDA-2026-06-15.md` |
+| `n00004-16-06-2026-resumen-sesion-3a-ronda-claude-code.md` | 2026-06-16 | `n00001-SESION-3A-RONDA-2026-06-16.md` |
+| `n00005-16-06-2026-resumen-sesion-4a-ronda-claude-code.md` | 2026-06-16 | `n00001-SESION-4A-RONDA-2026-06-16.md` |
+| `n00006-17-06-2026-resumen-sesion-handoff-copilot.md` | 2026-06-17 | `n00001-SESION-2026-06-17.md` |
 
 (The exact controller+model per session is read from each file's body in s3 — the slug above is a placeholder until s3 runs `git log` + `head -10` on each file.)
 
-**`id:` stays in the new filename**, because we add frontmatter (status: done, kind: resume, etc.) — the file becomes a proper proposal, not a renamed loose `.md`. The new id (n001..n006) is the **chronological position**, not the original filename.
+**`id:` stays in the new filename**, because we add frontmatter (status: done, kind: resume, etc.) — the file becomes a proper proposal, not a renamed loose `.md`. The new id (n00001..n00006) is the **chronological position**, not the original filename.
 
 ### 2.4 Linter behaviour: nothing to change
 
-The walker in `scripts/lint-proposals.ts` already filters by `^[a-z]\d+-…`. With the new kind registered in `PROPOSAL_KINDS`, a file `n001-…md` with `kind: resume` passes `lintProposalMarkdown` and is linted like any other proposal (frontmatter shape, body section order, slice discipline). No linter change beyond the glossary entry.
+The walker in `scripts/lint-proposals.ts` already filters by `^[a-z]\d+-…`. With the new kind registered in `PROPOSAL_KINDS`, a file `n00001-…md` with `kind: resume` passes `lintProposalMarkdown` and is linted like any other proposal (frontmatter shape, body section order, slice discipline). No linter change beyond the glossary entry.
 
-The existing carve-out in the walker (skip non-proposals) stays — `n001-SESION-*.md` no longer matches it because the new files don't start with `n001-`. The "ignores non-proposal documents" test continues to pass: a stray README, an AUDITORIA-UNIFICADA, an `index.json` are still skipped.
+The existing carve-out in the walker (skip non-proposals) stays — `n00001-SESION-*.md` no longer matches it because the new files don't start with `n00001-`. The "ignores non-proposal documents" test continues to pass: a stray README, an AUDITORIA-UNIFICADA, an `index.json` are still skipped.
 
 The carve-out comment in `scripts/lint-proposals.ts` (lines 37-49) gets updated to reflect that summaries are no longer "non-proposal documents" — they're proposals of kind `resume`.
 
@@ -109,9 +109,9 @@ The carve-out comment in `scripts/lint-proposals.ts` (lines 37-49) gets updated 
 
 - **No `proposal_board` / `auto_work` integration.** The summaries live under `done/` (terminal status); `auto_work` already skips `done`. Adding summaries to the actionable list is *useful* but out of scope — that needs a "include historical summaries" mode that this proposal doesn't touch.
 - **No `session_status` tool.** A tool that lists "the latest `n<NNN>-*.md` resume" or "the resume referenced by the current proposal's `supersedes:` field" would be helpful for `auto_work` to surface "pick up at session X" automatically. Deferred to a follow-up proposal.
-- **No automatic frontmatter generation from a blank `n001-…md`.** This proposal documents the scaffold and migrates the 6 existing summaries by hand; it does NOT auto-generate frontmatter from arbitrary markdown.
+- **No automatic frontmatter generation from a blank `n00001-…md`.** This proposal documents the scaffold and migrates the 6 existing summaries by hand; it does NOT auto-generate frontmatter from arbitrary markdown.
 - **No rewrite of prose.** The summaries are historical records; their bodies stay byte-for-byte identical. Only filenames + added frontmatter change.
-- **No backwards-compat alias.** Old `n001-SESION-*.md` paths are gone; this is internal repo state, not a published contract.
+- **No backwards-compat alias.** Old `n00001-SESION-*.md` paths are gone; this is internal repo state, not a published contract.
 
 ## Architecture
 
@@ -205,28 +205,28 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
   - Existing glossary spec passes with the count updated from 12 to 13
 - **Note**: `proposal-scaffold-linter.ts` does NOT need a change — the new prefix is auto-registered via `PROPOSAL_KIND_BY_PREFIX`.
 
-### S2 — Rewrite this proposal as `n007` with full canonical sections, in `ready/`
+### S2 — Rewrite this proposal as `n00007` with full canonical sections, in `ready/`
 
 - **Status**: pending
-- **Files**: [`docs/proposals/ready/n007-resume-kind-handoff-summaries.md`](../../docs/proposals/ready/n007-resume-kind-handoff-summaries.md), [`docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/n001-resume-kind-cross-session-handoff-summaries.md) (delete the auto-created stub at root)
+- **Files**: [`docs/proposals/ready/n00007-resume-kind-handoff-summaries.md`](../../docs/proposals/ready/n00007-resume-kind-handoff-summaries.md), [`docs/proposals/n00001-resume-kind-cross-session-handoff-summaries.md`](../../docs/proposals/n00001-resume-kind-cross-session-handoff-summaries.md) (delete the auto-created stub at root)
 - **Command**: `bun run lint:proposals`
 - **Expect**: exit0
 - **depends_on**: [s1]
 - **acceptance**:
-  - This proposal lives at `docs/proposals/ready/n007-...md` with `id: n007`, `kind: resume`, `status: ready`, all canonical `## Goal / ## Why / ## Why this design / ## Non-goals / ## Architecture / ## Slices / ## Acceptance` sections present and ordered
-  - The auto-created stub at `docs/proposals/n001-...md` is deleted (the `create_proposal` tool wrote it before `kind: resume` existed; it has incomplete frontmatter + missing sections)
+  - This proposal lives at `docs/proposals/ready/n00007-...md` with `id: n00007`, `kind: resume`, `status: ready`, all canonical `## Goal / ## Why / ## Why this design / ## Non-goals / ## Architecture / ## Slices / ## Acceptance` sections present and ordered
+  - The auto-created stub at `docs/proposals/n00001-...md` is deleted (the `create_proposal` tool wrote it before `kind: resume` existed; it has incomplete frontmatter + missing sections)
   - `bun run lint:proposals` reports `1 file checked, 0 fatal, 0 legacy warnings`
 
-### S3 — Move 6 `n001-SESION-*.md` to `done/resumes/` with `n001..n006` chronological numbering + bucket README
+### S3 — Move 6 `n00001-SESION-*.md` to `done/resumes/` with `n00001..n00006` chronological numbering + bucket README
 
 - **Status**: pending
 - **Files**:
-  - `docs/proposals/n001-SESION-2026-06-17.md` (move from root)
-  - `docs/proposals/done/n001-SESION-AUTONOMA-2026-06-15.md`
-  - `docs/proposals/done/n001-SESION-OFICINA-2026-06-15.md`
-  - `docs/proposals/done/n001-SESION-2A-RONDA-2026-06-15.md`
-  - `docs/proposals/done/n001-SESION-3A-RONDA-2026-06-16.md`
-  - `docs/proposals/done/n001-SESION-4A-RONDA-2026-06-16.md`
+  - `docs/proposals/n00001-SESION-2026-06-17.md` (move from root)
+  - `docs/proposals/done/n00001-SESION-AUTONOMA-2026-06-15.md`
+  - `docs/proposals/done/n00001-SESION-OFICINA-2026-06-15.md`
+  - `docs/proposals/done/n00001-SESION-2A-RONDA-2026-06-15.md`
+  - `docs/proposals/done/n00001-SESION-3A-RONDA-2026-06-16.md`
+  - `docs/proposals/done/n00001-SESION-4A-RONDA-2026-06-16.md`
   - `docs/proposals/done/resumes/.gitkeep` (new)
   - `docs/proposals/done/resumes/README.md` (new)
 - **Command**: `bun run lint:proposals`
@@ -234,7 +234,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 - **depends_on**: [s2]
 - **gate**: e2e
 - **acceptance**:
-  - All 6 files moved into `docs/proposals/done/resumes/` with new names `n001-…-autonoma-…md` … `n006-…-handoff-…md` ordered by `git log --diff-filter=A` first-appeared-at; ties broken by alphabetical slug
+  - All 6 files moved into `docs/proposals/done/resumes/` with new names `n00001-…-autonoma-…md` … `n00006-…-handoff-…md` ordered by `git log --diff-filter=A` first-appeared-at; ties broken by alphabetical slug
   - Each moved file has new YAML frontmatter (id, kind: resume, title, status: done, date, track) prepended to its existing body — the body itself stays byte-identical
   - `docs/proposals/done/resumes/README.md` documents the kind, scaffold, and numbering rule
   - `docs/proposals/done/resumes/.gitkeep` keeps the empty-folder case under git (the 6 files satisfy that already, but the `.gitkeep` is the documented convention from f00001)
@@ -249,7 +249,7 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
 - **depends_on**: [s3]
 - **acceptance**:
   - The "Sub-folders (mirror by kind)" table has a `resumes/` row (prefix `n`, kind `resume`) with the 6 example filenames
-  - The "Loose files at `done/` root" carve-out removes `n001-SESION-*.md` (they ARE proposals now); `AUDITORIA-UNIFICADA-*.md` stays
+  - The "Loose files at `done/` root" carve-out removes `n00001-SESION-*.md` (they ARE proposals now); `AUDITORIA-UNIFICADA-*.md` stays
   - A new "Why this folder lives at `docs/proposals/`, not `docs/mcp-vertex/proposals/`" section explains the `docsDir` default + the override in `mcp-vertex.config.json` of this repo
   - Rule about "only create the sub-folder when the second file of that kind lands" stays valid (6 files > 2)
 
@@ -265,21 +265,21 @@ So: **if you're a consumer, you get `docs/mcp-vertex/proposals/`; if you ARE mcp
   - `bun run type` — exit0
   - `bun run lint` — exit0
   - `bun run test` — exit0 (all existing tests still pass; the 3 changed test files have updated assertions for the new kind)
-  - `bun run lint:proposals` — exit0 (the new `n007` proposal + the 6 moved `n001..n006` summaries + the unchanged f00001/f00016 etc. all pass)
-  - `docs/proposals/index.json` (regenerated by `sync_proposals`) reflects all 7 new entries (1 in `ready/`, 6 in `done/resumes/`); the 2 entries that previously sat under `done/` (loose `n001-SESION-*`) are gone
+  - `bun run lint:proposals` — exit0 (the new `n00007` proposal + the 6 moved `n00001..n00006` summaries + the unchanged f00001/f00016 etc. all pass)
+  - `docs/proposals/index.json` (regenerated by `sync_proposals`) reflects all 7 new entries (1 in `ready/`, 6 in `done/resumes/`); the 2 entries that previously sat under `done/` (loose `n00001-SESION-*`) are gone
 
 ## Acceptance
 
 - [ ] `bun run type` exit0
 - [ ] `bun run lint` exit0
 - [ ] `bun run test` exit0 (incl. the new `resume kind uses prefix n` test)
-- [ ] `bun run lint:proposals` exit0 (the new `n007` proposal + 6 moved `n001..n006` summaries all pass)
+- [ ] `bun run lint:proposals` exit0 (the new `n00007` proposal + 6 moved `n00001..n00006` summaries all pass)
 - [ ] `docs/proposals/index.json` (regenerated by `sync_proposals`) reflects all 7 new entries
 
 ## Risks and mitigations
 
-- **ID collision with the auto-created `n001` stub at `docs/proposals/` root.** The `create_proposal` tool wrote a stub at root before `kind: resume` existed; it has `id: n001` and an incomplete body. **Mitigation**: S2 explicitly deletes the stub and creates the properly-numbered `n007` at `ready/` instead. The stub has no committed state worth preserving.
-- **f00023 lock on `proposal-glossary.constant.ts`.** S1 needs that file; f00023 (rename IDs by creation date) is held by the orchestrator with last-heartbeat fresh. **Mitigation**: S1 is delegated to a subagent with its own worktree (`agent/implementation_runner-n007-s1`), so the lock conflict is contained. The subagent waits for `lock-released` notification if necessary; if f00023's change conflicts with `resume` (it shouldn't — different concerns), the subagent re-runs after f00023 ships.
+- **ID collision with the auto-created `n00001` stub at `docs/proposals/` root.** The `create_proposal` tool wrote a stub at root before `kind: resume` existed; it has `id: n00001` and an incomplete body. **Mitigation**: S2 explicitly deletes the stub and creates the properly-numbered `n00007` at `ready/` instead. The stub has no committed state worth preserving.
+- **f00023 lock on `proposal-glossary.constant.ts`.** S1 needs that file; f00023 (rename IDs by creation date) is held by the orchestrator with last-heartbeat fresh. **Mitigation**: S1 is delegated to a subagent with its own worktree (`agent/implementation_runner-n00007-s1`), so the lock conflict is contained. The subagent waits for `lock-released` notification if necessary; if f00023's change conflicts with `resume` (it shouldn't — different concerns), the subagent re-runs after f00023 ships.
 - **Linter regression.** Adding a 13th kind could break callers that hard-code 12 (the glossary spec asserts `length === 12`). **Mitigation**: the spec is updated to `13` in S1, with a comment explaining why. All other consumers read `PROPOSAL_KINDS` dynamically.
 - **Body re-sectioning during migration.** Each moved file needs minimal frontmatter + section edits; risk of typos in the 6 bodies. **Mitigation**: bodies stay byte-identical; only frontmatter is prepended. The 3 `RESUME_REQUIRED_SECTIONS` (`goal`, `state at close`, `how to continue`) are checked for by the linter — if any file lacks them, S3 fails fast with a precise line number and the migration is fixed manually (it's a literal rename + 2-line frontmatter, not a rewrite).
 

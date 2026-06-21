@@ -21,6 +21,14 @@ export interface ICommandVscodeApi {
 			options: { readonly enableScripts?: boolean },
 		): IWebviewPanel;
 		showInformationMessage?(message: string): Thenable<string | undefined>;
+		showQuickPick?(
+			items: ReadonlyArray<{
+				readonly id: string;
+				readonly label: string;
+				readonly description?: string;
+				readonly detail?: string;
+			}>,
+		): Thenable<string | undefined>;
 	};
 }
 

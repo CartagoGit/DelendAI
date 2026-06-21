@@ -123,7 +123,7 @@ docs/proposals/
 │   ├── audits/             # kind: audit  (20 files: a1..a20)
 │   ├── feats/              # kind: feat   (~10-15 files: f00004..f00001, f00004..l113 re-tagged)
 │   ├── fixes/              # kind: fix    (~2-3 files: x-prefixed closed proposals)
-│   └── n001-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
+│   └── n00001-SESION-*.md # summaries + AUDITORIA-UNIFICADA — root, not bucketed
 │                              (they predate the convention and are not proposals)
 ├── paused/                 # status: paused
 ├── blocked/                # status: blocked
@@ -287,7 +287,7 @@ all receive new numbers based on the chronological table in §3.5.
 
 ## Notes
 
-- Renaming the 5 `n001-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
+- Renaming the 5 `n00001-SESION-*.md` and the `AUDITORIA-UNIFICADA-...md`
   in `done/` root. They are not proposals (no frontmatter), so the
   linter ignores them. They stay at `done/` root.
 - Auto-grouping future closes by kind at write-time (a `proposal_close`

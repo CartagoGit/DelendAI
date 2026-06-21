@@ -1,5 +1,5 @@
 ---
-id: l00005
+id: f00029
 status: ready
 type: proposal
 track: skills+plugins+docs
@@ -8,7 +8,7 @@ kind: feat
 title: Versioned skills/prompts + opt-in @mcp-vertex/web plugin
 ---
 
-# l00005 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
+# f00029 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
 
 ## Goal
 
