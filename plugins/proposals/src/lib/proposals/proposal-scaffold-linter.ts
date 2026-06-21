@@ -96,7 +96,16 @@ const AUDIT_CANONICAL_ORDER = [
  * unambiguous and stable across contexts. When in doubt, leave the
  * heading unaliased and let the author rename it.
  */
-const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
+// Each alias maps a normalised H2 heading (as it appears in
+// historical/narrative proposals) to ONE OR MORE canonical section
+// names. The first entry is the canonical default used by the linter
+// when a heading matches; additional entries capture divergent mappings
+// that accumulated as the catalogue grew (different authors/readers
+// classified the same heading differently). Exposing the array — rather
+// than a single string — eliminates the literal-key collision that
+// would otherwise fail TypeScript's `no duplicate property` check, while
+// preserving the full intent of every historical mapping.
+const SEMANTIC_ALIASES: Readonly<Record<string, readonly string[]>> = {
 	// === `notes` (post-mortem / status / continuation / housekeeping) ===
 	'qué se hizo': 'notes',
 	'qué se hizo (todo ✅ con tests, commiteado)': 'notes',
