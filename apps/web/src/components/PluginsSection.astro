@@ -36,6 +36,27 @@ const pluginHref = (slug: string) =>
 const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
 const capabilityCount = (slug: string) =>
 	tools.filter((tool) => tool.namespace === nsFor(slug)).length;
+// x124 S6 — when a plugin's `langs/<code>.json` has no entry for
+// `plugin.<slug>`, the legacy `t('plugin.${slug}')` returns undefined
+// (we changed the shim to do that instead of leaking the raw key).
+// We fall back to a one-line summary derived from the first tool the
+// plugin contributes, so the card always has *some* copy in the
+// active locale. When that summary is itself in English, we leave it
+// as-is — running the description through Google Translate is out of
+// scope for a UI bugfix; the missing-i18n report (S6 report) is the
+// canonical list of plugins that still need a translation.
+const firstToolDesc = (slug: string): string | undefined => {
+	const ns = nsFor(slug);
+	const first = (
+		capabilities.tools as Array<{ namespace: string; description: string }>
+	).find((t) => t.namespace === ns);
+	return first?.description;
+};
+const pluginDesc = (slug: string): string => {
+	const localised = t(`plugin.${slug}`);
+	if (typeof localised === 'string' && localised.length > 0) return localised;
+	return firstToolDesc(slug) ?? `Plugin: ${slug}.`;
+};
 ---
 
 <section id="plugins" class="section">
@@ -64,7 +85,7 @@ const capabilityCount = (slug: string) =>
 									<span class="plugin-card__version">v{pkg.version}</span>
 								</div>
 							</div>
-							<p class="plugin-card__desc">{t(`plugin.${slug}`)}</p>
+							<p class="plugin-card__desc">{pluginDesc(slug)}</p>
 							<div class="plugin-card__foot">
 								<span class="plugin-card__badge">
 									{count} {count === 1 ? 'tool' : 'tools'}

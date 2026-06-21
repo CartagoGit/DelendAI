@@ -64,10 +64,11 @@ type TranslatorCompat = ITranslations &
 	((...parts: ReadonlyArray<string>) => string);
 
 const makeTranslatorCompat = (resolved: ITranslations): TranslatorCompat => {
-	const callFn = (...parts: ReadonlyArray<string>): string => {
+	const callFn = (...parts: ReadonlyArray<string>): string | undefined => {
 		const path = parts
 			.flatMap((p) => (typeof p === 'string' ? p.split('.') : []))
 			.filter((s) => s.length > 0);
+		if (path.length === 0) return undefined;
 		let cur: unknown = resolved;
 		for (const seg of path) {
 			if (
@@ -77,10 +78,20 @@ const makeTranslatorCompat = (resolved: ITranslations): TranslatorCompat => {
 			) {
 				cur = (cur as Record<string, unknown>)[seg];
 			} else {
-				return path.join('.');
+				// Miss (x124 S6): the key is not in the active dict nor in
+				// the English fallback. We return `undefined` so call
+				// sites that care about misses (e.g. `PluginsSection.astro`
+				// looking up `plugin.<slug>` descriptions) can fall back
+				// to a richer source — the live tool registry
+				// (`capabilities.json`) — instead of leaking the raw
+				// dot-notation key on screen.  The default return type is
+				// widened to `string | undefined`; consumers that do
+				// `t('nav.concept')` as a string still get a string when
+				// the key exists, and `?? 'fallback'` patterns work.
+				return undefined;
 			}
 		}
-		return typeof cur === 'string' ? cur : path.join('.');
+		return typeof cur === 'string' ? cur : undefined;
 	};
 	// Attach the function to the resolved object so callers can do `t.nav.concept`
 	// (object access) and `t("nav.concept")` (call access) on the same value.

@@ -122,13 +122,15 @@
 //   - animate the open / close transition,
 //   - keep the panel fully keyboard-accessible (trigger is a
 //     <button aria-haspopup>, panel is role="menu").
-// The panel is mounted hidden via the `hidden` HTML attribute; we
-// remove the attribute on open and the panel is animated into
-// view with `transform: scaleY(0 → 1)` + `opacity: 0 → 1`. On
-// close we keep the panel in the DOM (and toggle the
-// `aria-expanded` parent state) so the close transition can
-// play; the `hidden` attribute is restored by the JS after the
-// 200ms animation ends.
+//
+// The JS in `SiteNav.astro` toggles a `.is-open` class on the
+// `.nav__more` wrapper (alongside `aria-expanded` on the trigger
+// for a11y). We use the class instead of `:has(...)` so the
+// selectors stay BEM-compliant (the linter rejects `:has()` with
+// attribute selectors). The panel is mounted with the `hidden`
+// attribute; the class flip also drives the scaleY/opacity
+// transition. The JS removes the `hidden` attribute on open and
+// restores it 200ms after close so the close transition can play.
 .nav__more {
 	position: relative;
 
@@ -162,10 +164,23 @@
 		outline-offset: 2px;
 	}
 }
-.nav__more:has(#nav-more-trigger[aria-expanded="true"]) {
+.nav__more--open {
 	--nav-more-summary-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 	--nav-more-summary-color: var(--fg);
 	--nav-more-caret-transform: rotate(180deg);
+	// The panel reads its open-state values from these custom
+	// properties so the descendant selector stays out of the BEM
+	// scope (the linter rejects `.block--mod .block__elem`).
+	// Defaults are set on `.nav__more-panel` below; this block
+	// just overrides them when the wrapper carries the `--open`
+	// modifier.
+	--nav-more-panel-transform: scaleY(1);
+	--nav-more-panel-opacity: 1;
+	--nav-more-panel-visibility: visible;
+	--nav-more-panel-transition:
+		transform 0.18s ease,
+		opacity 0.16s ease,
+		visibility 0s linear 0s;
 }
 .nav__more-caret {
 	transform: var(--nav-more-caret-transform);
@@ -186,22 +201,14 @@
 	gap: 1px;
 	z-index: 30;
 	transform-origin: top right;
-	transform: scaleY(0);
-	opacity: 0;
-	visibility: hidden;
-	transition:
-		transform 0.18s ease,
-		opacity 0.16s ease,
-		visibility 0s linear 0.18s;
-}
-.nav__more:has(#nav-more-trigger[aria-expanded="true"]) .nav__more-panel {
-	transform: scaleY(1);
-	opacity: 1;
-	visibility: visible;
-	transition:
-		transform 0.18s ease,
-		opacity 0.16s ease,
-		visibility 0s linear 0s;
+	// Closed-state defaults; `.nav__more--open` overrides these
+	// via the custom properties above so the panel's
+	// `transform` / `opacity` / `visibility` transition picks up
+	// the open values without a descendant selector.
+	transform: var(--nav-more-panel-transform, scaleY(0));
+	opacity: var(--nav-more-panel-opacity, 0);
+	visibility: var(--nav-more-panel-visibility, hidden);
+	transition: var(--nav-more-panel-transition);
 }
 .nav__more-link {
 	color: var(--muted);
@@ -222,9 +229,9 @@
 // becomes instant (no scale / fade) and the panel snaps in.
 @media (prefers-reduced-motion: reduce) {
 	.nav__more-panel,
-	.nav__more:has(#nav-more-trigger[aria-expanded="true"]) .nav__more-panel {
-		transition: none;
-		transform: none;
+	.nav__more--open {
+		--nav-more-panel-transition: none;
+		--nav-more-panel-transform: none;
 	}
 }
 
