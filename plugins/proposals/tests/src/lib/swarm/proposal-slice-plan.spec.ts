@@ -88,13 +88,13 @@ id: f00020
 
 ### S12 — aggregator
 
-- **Files**: `packages/core/src/public/index.ts`
-- **Files**: `plugins/quality/src/lib/run-all.ts`
+- **Files**: \`packages/core/src/public/index.ts\`
+- **Files**: \`plugins/quality/src/lib/run-all.ts\`
 - **Gate**: type
 
 ### S13 — hygiene
 
-- **Files**: `packages/client/README.md`
+- **Files**: \`packages/client/README.md\`
 - **Gate**: lint
 `;
 
