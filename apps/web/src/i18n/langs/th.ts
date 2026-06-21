@@ -247,6 +247,17 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.th,
 	recovery: recoveryByLang.th,
 	logs: logsByLang.th,
+	presets: {
+		title: 'พรีเซ็ต',
+		lead: 'ชุดปลั๊กอินที่กำหนดค่าไว้ล่วงหน้าสำหรับขนาดพื้นที่ทำงานที่ต่างกัน',
+		summary: 'พื้นที่เก็บข้อมูลนี้มีปลั๊กอินที่ไม่ซ้ำกัน {count} รายการในพรีเซ็ต',
+		hostOnlyChip: 'โฮสต์เท่านั้น',
+		installTitle: 'วิธีใช้งาน',
+		installLead: 'ระบุแฟล็ก --preset เมื่อเริ่มต้นเซิร์ฟเวอร์ MCP',
+		table: {
+			preset: 'พรีเซ็ต',
+		},
+	},
 };
 
 export default dict;

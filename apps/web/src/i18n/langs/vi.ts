@@ -252,6 +252,17 @@ const dict: LangDict = {
 	proposals: proposalGlossaryByLang.vi,
 	recovery: recoveryByLang.vi,
 	logs: logsByLang.vi,
+	presets: {
+		title: 'Preset',
+		lead: 'Bộ plugin được cấu hình sẵn cho các kích thước không gian làm việc khác nhau.',
+		summary: 'Kho lưu trữ này chứa {count} plugin độc nhất qua các preset.',
+		hostOnlyChip: 'chỉ máy chủ',
+		installTitle: 'Cách sử dụng',
+		installLead: 'Chỉ định cờ --preset khi khởi động máy chủ MCP.',
+		table: {
+			preset: 'Preset',
+		},
+	},
 };
 
 export default dict;
