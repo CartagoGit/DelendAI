@@ -9,6 +9,7 @@
  * of truth and the dashboard never invents data.
  */
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
+import { HealthService } from './health-service';
 import type { MetricsService } from './metrics-service';
 import type { OverviewService } from './overview-service';
 import type { IOverview } from './tool-descriptor.types';
@@ -319,6 +320,7 @@ export class DashboardService {
 			sessions,
 			times,
 			agents,
+			health,
 		] = await Promise.all([
 			this.getOverviewModel(),
 			this.getMetricsModel(),
@@ -328,6 +330,17 @@ export class DashboardService {
 			this.getSessionsModel(),
 			this.getTimesModel(),
 			this.getAgentsModel(),
+			new HealthService(this.client).snapshot().catch(() => ({
+				healthy: false,
+				locksActive: 0,
+				queue: null,
+				orphans: 0,
+				orphansThreshold: 'unknown',
+				stale: [],
+				staleCount: 0,
+				agents: [],
+				fetchedAt: new Date().toISOString(),
+			})),
 		]);
 		return {
 			overview,
@@ -338,6 +351,7 @@ export class DashboardService {
 			sessions,
 			times,
 			agents,
+			health,
 			server: {
 				name: overview.serverName,
 				version: overview.serverVersion,

@@ -11,6 +11,7 @@ import type { IDashboardAllModels } from '@mcp-vertex/client';
 
 import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';
 import { renderPanelAgents } from './render-panel-agents';
+import { renderPanelHealth } from './render-panel-health';
 import { renderPanelMetrics } from './render-panel-metrics';
 import { renderPanelOverview } from './render-panel-overview';
 import { renderPanelPlugins } from './render-panel-plugins';
@@ -34,6 +35,7 @@ const TABS: ReadonlyArray<{ id: string; label: string }> = [
 	{ id: 'sessions', label: 'Sessions' },
 	{ id: 'times', label: 'Times' },
 	{ id: 'agents', label: 'Agents' },
+	{ id: 'health', label: 'Health' },
 ];
 
 const CLIENT_SCRIPT = `
@@ -96,6 +98,7 @@ export const renderDashboard = (
 	const sessionsPanel = renderPanelSessions(model.sessions);
 	const timesPanel = renderPanelTimes(model.times);
 	const agentsPanel = renderPanelAgents(model.agents);
+	const healthPanel = renderPanelHealth(model.health);
 
 	const docsPanel = `
 <section class="mv-panel" id="panel-docs" role="tabpanel" aria-labelledby="tab-docs">
@@ -129,6 +132,7 @@ export const renderDashboard = (
 		sessionsPanel,
 		timesPanel,
 		agentsPanel,
+		healthPanel,
 		docsPanel,
 	]
 		.map((html, ix) => {

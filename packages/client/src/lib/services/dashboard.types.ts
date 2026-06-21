@@ -8,6 +8,7 @@
  * `mcp-vertex_knowledge`) — never invent fields that aren't already on
  * the server.
  */
+import type { IHealthSnapshot } from './health.types';
 import type { IOverview } from './tool-descriptor.types';
 
 /** Tool-call metric as recorded by `<prefix>_metrics`. */
@@ -149,6 +150,7 @@ export interface IDashboardAllModels {
 	readonly sessions: IDashboardSessionsModel;
 	readonly times: IDashboardTimesModel;
 	readonly agents: IDashboardAgentsModel;
+	readonly health: IHealthSnapshot;
 	readonly server: {
 		readonly name: string;
 		readonly version: string;

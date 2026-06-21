@@ -2,7 +2,15 @@
 id: f00025
 kind: feat
 title: tools/scripts refactor — portar .sh/.py a TS, mover scripts/*.ts a tools/scripts/<area>/<name>.script.ts
-status: ready
+status: done
+shipped-in:
+  - 7971ab8 (S1 — borrar scripts/diag.py, scripts/fix-ext.py, .validation-script.sh, S1-IMPLEMENTATION-SUMMARY.md)
+  - 2e89484 (S2 — tools/scripts/i18n/translate-tutorials.script.ts, port of scripts/translate-tutorials.sh)
+  - 7381097 (S2 — tools/scripts/astro/gen-section-pages.script.ts + deletion of sync-public-api.ts + scripts/*.sh; por orchestrator en paralelo)
+  - ce94758 (S2 — apps/web/scripts/{check-tutorials-i18n,discover-tutorials}.ts consumer updates; por orchestrator en paralelo)
+  - 9f1e376 (S2 sync — corregir path 'site/' → 'astro/' en JSDoc y propuesta)
+  - 39e5bc2 (S3 — scripts/*.ts → tools/scripts/<area>/<name>.script.ts + rename build/ → compile/ + ROOT path fixes)
+  - ab58acc (S4 + S5 — workflows (release.yml, ci.yml, pages.yml), package.json scripts, biome.json, AGENTS.md bullet 10, tools/scripts/lint/no-shell-python.script.ts gate; mezclado con knowledge navigator del orchestrator)
 type: proposal
 track: core+build+release+proposals+lint+i18n+site
 date: 2026-06-21
