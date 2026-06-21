@@ -10,6 +10,7 @@ import {
 	fetchLatestFromNpm,
 } from './engine';
 import type { ILatestVersionFetcher } from './engine';
+import { listPolyglotDeps } from './polyglot';
 
 export interface IDepsToolOptions {
 	readonly namespacePrefix: string;
@@ -172,5 +173,42 @@ export const buildDepsToolRegistrations = (
 					} satisfies IToolRegistration,
 				]
 			: []),
+		{
+			id: 'deps_polyglot',
+			summary:
+				'List Python/Rust/Go dependencies (pyproject.toml, Cargo.toml, go.mod) if present.',
+			tags: ['deps', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_deps_polyglot`,
+					{
+						description:
+							'List declared dependencies from whichever of pyproject.toml (PEP 621 `[project] dependencies` and/or Poetry `[tool.poetry.dependencies]`), Cargo.toml ([dependencies]/[dev-dependencies]/[build-dependencies]) and go.mod (require) exist at the workspace root. Each entry has {ecosystem,name,range,section}. Read-only, offline, no CVE database — same contract as deps_list, for non-npm ecosystems.',
+						outputSchema: z.object({
+							manifests: z.array(
+								z.object({
+									ecosystem: z.string(),
+									manifest: z.string(),
+									deps: z.array(
+										z.object({
+											ecosystem: z.string(),
+											name: z.string(),
+											range: z.string(),
+											section: z.string(),
+										}),
+									),
+								}),
+							),
+						}),
+					},
+					async () =>
+						toolJson({
+							manifests: await listPolyglotDeps(
+								options.workspaceRootAbs,
+							),
+						}),
+				);
+			},
+		},
 	];
 };

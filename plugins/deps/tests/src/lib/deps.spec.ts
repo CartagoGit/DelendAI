@@ -9,6 +9,12 @@ import {
 	checkDeps,
 	checkOutdated,
 } from '@mcp-vertex/deps/lib/engine';
+import {
+	listPolyglotDeps,
+	parseCargoToml,
+	parseGoMod,
+	parsePyprojectToml,
+} from '@mcp-vertex/deps/lib/polyglot';
 import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools';
 import plugin from '@mcp-vertex/deps';
 import type {
@@ -164,7 +170,11 @@ describe('deps_outdated tool registration (M11, opt-in)', () => {
 			namespacePrefix: 'deps',
 			workspaceRootAbs: '/ws',
 		});
-		expect(tools.map((t) => t.id)).toEqual(['deps_list', 'deps_check']);
+		expect(tools.map((t) => t.id)).toEqual([
+			'deps_list',
+			'deps_check',
+			'deps_polyglot',
+		]);
 	});
 
 	it('is added with effects:["network"] when allowNetwork is true', () => {
@@ -177,10 +187,151 @@ describe('deps_outdated tool registration (M11, opt-in)', () => {
 			'deps_list',
 			'deps_check',
 			'deps_outdated',
+			'deps_polyglot',
 		]);
 		expect(tools.find((t) => t.id === 'deps_outdated')?.effects).toEqual([
 			'network',
 		]);
+	});
+});
+
+describe('polyglot manifests (M33)', () => {
+	it('parses PEP 621 dependencies + Poetry groups from pyproject.toml', () => {
+		const toml = [
+			'[project]',
+			'name = "demo"',
+			'dependencies = ["requests>=2.0", "click"]',
+			'',
+			'[tool.poetry.dependencies]',
+			'python = "^3.11"',
+			'fastapi = "^0.110"',
+			'',
+			'[tool.poetry.group.dev.dependencies]',
+			'pytest = "^8.0"',
+		].join('\n');
+		expect(parsePyprojectToml(toml)).toEqual([
+			{
+				ecosystem: 'python',
+				name: 'requests',
+				range: '>=2.0',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'python',
+				name: 'click',
+				range: '*',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'python',
+				name: 'fastapi',
+				range: '^0.110',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'python',
+				name: 'pytest',
+				range: '^8.0',
+				section: 'group.dev',
+			},
+		]);
+	});
+
+	it('parses Cargo.toml across dependency sections, extracting version from inline tables', () => {
+		const toml = [
+			'[package]',
+			'name = "demo"',
+			'',
+			'[dependencies]',
+			'serde = "1.0"',
+			'tokio = { version = "1", features = ["full"] }',
+			'',
+			'[dev-dependencies]',
+			'proptest = "1.0"',
+		].join('\n');
+		expect(parseCargoToml(toml)).toEqual([
+			{
+				ecosystem: 'rust',
+				name: 'serde',
+				range: '1.0',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'rust',
+				name: 'tokio',
+				range: '1',
+				section: 'dependencies',
+			},
+			{
+				ecosystem: 'rust',
+				name: 'proptest',
+				range: '1.0',
+				section: 'dev-dependencies',
+			},
+		]);
+	});
+
+	it('parses go.mod single-line and block require statements, flagging indirect', () => {
+		const mod = [
+			'module example.com/demo',
+			'',
+			'go 1.21',
+			'',
+			'require (',
+			'\tgithub.com/pkg/errors v0.9.1',
+			'\tgolang.org/x/sync v0.5.0 // indirect',
+			')',
+			'',
+			'require github.com/single/dep v1.2.3',
+		].join('\n');
+		expect(parseGoMod(mod)).toEqual([
+			{
+				ecosystem: 'go',
+				name: 'github.com/pkg/errors',
+				range: 'v0.9.1',
+				section: 'require',
+			},
+			{
+				ecosystem: 'go',
+				name: 'golang.org/x/sync',
+				range: 'v0.5.0',
+				section: 'require (indirect)',
+			},
+			{
+				ecosystem: 'go',
+				name: 'github.com/single/dep',
+				range: 'v1.2.3',
+				section: 'require',
+			},
+		]);
+	});
+
+	it('listPolyglotDeps only reads whichever manifests exist', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'deps-polyglot-'));
+		try {
+			writeFileSync(
+				join(root, 'go.mod'),
+				'module demo\n\nrequire github.com/x/y v1.0.0\n',
+				'utf8',
+			);
+			const manifests = await listPolyglotDeps(root);
+			expect(manifests).toEqual([
+				{
+					ecosystem: 'go',
+					manifest: 'go.mod',
+					deps: [
+						{
+							ecosystem: 'go',
+							name: 'github.com/x/y',
+							range: 'v1.0.0',
+							section: 'require',
+						},
+					],
+				},
+			]);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
 
@@ -205,6 +356,7 @@ describe('deps plugin', () => {
 		expect((reg.tools as IToolRegistration[]).map((t) => t.id)).toEqual([
 			'deps_list',
 			'deps_check',
+			'deps_polyglot',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('deps-usage');
 	});
