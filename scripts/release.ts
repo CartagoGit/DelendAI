@@ -15,6 +15,17 @@
  *   --publish                  publish every package in dependency order
  *   --no-validate              skip `bun run validate` before publishing (NOT recommended)
  *   --tool=bun|npm             publish tool (default: bun — it rewrites workspace:* deps)
+ *   --provenance               pass `--provenance` to `npm publish` (npm only; requires
+ *                              OIDC, i.e. `id-token: write` permission in CI). Ignored
+ *                              (with a warning) when --tool=bun, since bun does not
+ *                              support provenance attestations.
+ *
+ * Note on `workspace:*`: every package in this monorepo only references
+ * `@mcp-vertex/core` as `workspace:*` in `devDependencies` (never in
+ * `dependencies`/`peerDependencies`, which already carry a resolved `^X.Y.Z`
+ * range via `applyPlan`). `npm publish` never installs devDependencies, so it
+ * does not choke on the workspace protocol here — no pre-publish rewrite step
+ * is needed for `--tool=npm` to work in this repo.
  *
  * Side-effect free planning lives in ./release-plan.ts; this file is the thin
  * fs + spawn shell around it (so it is intentionally not unit-tested).
@@ -61,21 +72,25 @@ function toReleasePkg(dir: string, pkg: IRawPackageJson): IReleasePkg {
 	return { dir, name: pkg.name, version: pkg.version };
 }
 
-interface ICliFlags {
+/** Exported for unit testing only. */
+export interface ICliFlags {
 	target: ReleaseTarget | undefined;
 	write: boolean;
 	publish: boolean;
 	validate: boolean;
 	tool: 'bun' | 'npm';
+	provenance: boolean;
 }
 
-function parseFlags(argv: readonly string[]): ICliFlags {
+/** Exported for unit testing only; `main()` is the production entry point. */
+export function parseFlags(argv: readonly string[]): ICliFlags {
 	let bump: BumpKind | undefined;
 	let set: string | undefined;
 	let write = false;
 	let publish = false;
 	let validate = true;
 	let tool: 'bun' | 'npm' = 'bun';
+	let provenance = false;
 	for (const arg of argv) {
 		if (arg.startsWith('--bump=')) {
 			const v = arg.slice('--bump='.length);
@@ -97,6 +112,8 @@ function parseFlags(argv: readonly string[]): ICliFlags {
 				throw new Error(`--tool must be bun|npm, got "${v}"`);
 			}
 			tool = v;
+		} else if (arg === '--provenance') {
+			provenance = true;
 		} else {
 			throw new Error(`unknown flag: ${arg}`);
 		}
@@ -110,7 +127,7 @@ function parseFlags(argv: readonly string[]): ICliFlags {
 			: bump !== undefined
 				? { kind: bump }
 				: undefined;
-	return { target, write, publish, validate, tool };
+	return { target, write, publish, validate, tool, provenance };
 }
 
 function printPlan(plan: IReleasePlan): void {
@@ -148,10 +165,20 @@ function run(cmd: string, args: readonly string[], cwd: string): void {
 	execFileSync(cmd, args as string[], { cwd, stdio: 'inherit' });
 }
 
-function publishAll(tool: 'bun' | 'npm'): void {
+function publishAll(tool: 'bun' | 'npm', provenance: boolean): void {
+	if (provenance && tool === 'bun') {
+		console.warn(
+			'--provenance has no effect with --tool=bun (bun publish does not ' +
+				'support provenance attestations); ignoring. Use --tool=npm.',
+		);
+	}
+	const args =
+		provenance && tool === 'npm'
+			? ['publish', '--provenance']
+			: ['publish'];
 	for (const dir of PUBLISH_ORDER) {
-		console.log(`\n=== publishing ${dir} (${tool} publish) ===`);
-		run(tool, ['publish'], join(ROOT, dir));
+		console.log(`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
+		run(tool, args, join(ROOT, dir));
 	}
 	console.log('\nAll packages published.');
 }
@@ -193,7 +220,7 @@ function main(): void {
 		// types. `files: ["dist"]` is what ends up on the registry.
 		console.log('Building dist before publish (bun run build)…\n');
 		run('bun', ['run', 'build'], ROOT);
-		publishAll(flags.tool);
+		publishAll(flags.tool, flags.provenance);
 	} else {
 		console.log('Pass --publish to publish in order:');
 		console.log(`  ${PUBLISH_ORDER.join('\n  ')}\n`);

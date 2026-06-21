@@ -72,6 +72,12 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 
 export type IScaffoldArgs = z.infer<typeof SCAFFOLD_INPUT_SCHEMA>;
 
+// l122 S2 — mirrors `IScaffoldedFile` (scaffold-host.ts).
+const SCAFFOLDED_FILE_SCHEMA = z.object({
+	path: z.string(),
+	content: z.string(),
+});
+
 export interface IScaffoldReport {
 	readonly kind: IScaffoldArgs['kind'];
 	readonly dryRun: boolean;
@@ -82,6 +88,18 @@ export interface IScaffoldReport {
 	readonly kept: readonly string[];
 	readonly errors: readonly string[];
 }
+
+// l122 S2 — mirrors `IScaffoldReport` above field-for-field.
+const SCAFFOLD_REPORT_SCHEMA = z.object({
+	kind: SCAFFOLD_INPUT_SCHEMA.shape.kind,
+	dryRun: z.boolean(),
+	files: z.array(SCAFFOLDED_FILE_SCHEMA),
+	written: z.array(z.string()),
+	skipped: z.array(z.string()),
+	moved: z.array(z.string()),
+	kept: z.array(z.string()),
+	errors: z.array(z.string()),
+});
 
 const pathExists = async (absolutePath: string): Promise<boolean> => {
 	try {
@@ -288,7 +306,7 @@ export const buildScaffoldToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_scaffold`,
 			{
-				outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: SCAFFOLD_REPORT_SCHEMA,
 				description:
 					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
 				inputSchema: SCAFFOLD_INPUT_SCHEMA,

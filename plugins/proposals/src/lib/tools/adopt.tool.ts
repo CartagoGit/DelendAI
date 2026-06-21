@@ -13,6 +13,15 @@ import {
 import { analyzeProposals, type IScanEntry } from '../proposals/adopt';
 import type { IAuthoringToolOptions } from './authoring.tool';
 
+// l125 s4 — mirrors `PROPOSALS_LAYOUT` (proposals/adopt.ts): a static
+// documentation object, not the runtime `IHostPathLayout`. `files`/
+// `folders` are label → human-readable-description maps.
+const ADOPT_LAYOUT_SCHEMA = z.object({
+	root: z.string(),
+	files: z.record(z.string(), z.string()),
+	folders: z.record(z.string(), z.string()),
+});
+
 type ILightFrontmatter = { id?: string; status?: string; type?: string } | null;
 
 /** Extract id/status/type from a markdown file's leading frontmatter block. */
@@ -78,7 +87,7 @@ export const buildAdoptRegistration = (
 				outputSchema: z.object({
 					ok: z.literal(true),
 					root: z.string(),
-					layout: z.object({}).catchall(z.unknown()),
+					layout: ADOPT_LAYOUT_SCHEMA,
 					scan: z.object({
 						proposals: z.array(
 							z.object({

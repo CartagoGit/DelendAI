@@ -82,7 +82,7 @@ export default definePlugin({
 		/** area path → preset id, forcing detection for that area. */
 		overrides: z.record(z.string(), z.string()).optional(),
 	}),
-	register(ctx) {
+	async register(ctx) {
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const cacheRelDir = ctx.pluginCacheDir;
 		const manifestRelPath = joinRel(cacheRelDir, 'rules-map.json');
@@ -126,7 +126,7 @@ export default definePlugin({
 				mode,
 				...(Object.keys(overrides).length > 0 ? { overrides } : {}),
 			});
-			ensureRulesCache({
+			await ensureRulesCache({
 				resolve: (rel) => ctx.workspace.resolve(rel),
 				cacheRelDir,
 				manifest,

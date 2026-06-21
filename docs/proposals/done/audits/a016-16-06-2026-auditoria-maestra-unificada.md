@@ -262,8 +262,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - [x] **M6** `deliveredDigests` persistido en `.subscribe-delivered.json` bajo `withFileMutex` (test `task-queue-subscribe-idempotency.spec.ts`). *Nota H11:* el test modela el reinicio (motor sin estado en memoria entre llamadas) — no hay e2e que mate y relance el proceso real; valor marginal bajo dado que el motor es la fuente de verdad y ya está cubierto.
 - [x] **M7** `waitFor.file`/`lockPath` resueltos contra el root inyectado.
 - [x] **M15** Blueprint sin drift de `cacheDir` (ver CHANGELOG "Fixed").
-- [ ] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate. *(sin verificar en esta sesión)*
-  **Plan: [`ready/l116-release-provenance-via-npm-publish.md`](../ready/l116-release-provenance-via-npm-publish.md) — provenance falta solo el switch a `npm publish --provenance` (Approach A, pre-publish script que resuelve `workspace:*`).**
+- [x] Release/CI: `release.yml` por tag `v*` con `provenance`, `CHANGELOG`, pinning de TS/vitest/Bun, coverage gate. **Provenance cerrado 21-06 por [`l116`](../ready/l116-release-provenance-via-npm-publish.md): `release.yml` ahora publica con `--tool=npm --provenance`; no hizo falta el rewrite script de `workspace:*` (premisa descartada — ver nota de implementación en l116, `workspace:*` solo vive en `devDependencies`, que `npm publish` no instala).**
 
 **P2 — Calidad de producto (1 semana)**
 - [x] **M9** `.github/workflows/ci.yml` tiene job `lint` (`bun run lint` → `biome ci`), bloqueante.
@@ -290,8 +289,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 **P3 — Plataforma de referencia**
 - [x] **M12** Plugin `metrics`: `packages/core/src/lib/metrics/metrics-tool.ts`, tool `<prefix>_metrics`, `persist:true` con snapshots en `<cacheDir>/metrics/`.
-- [ ] **M13** Plugin `security` + bridge securecoder — descartado explícitamente (alcance indefinido); solo se hizo allow/deny de comandos en `quality`.
-  **Decisión forzada por [`ready/l115-decide-and-close-m13-security-plugin.md`](../ready/l115-decide-and-close-m13-security-plugin.md): A (plugin completo), B (cerrar como diferido) o C (plugin fino sin DSL).**
+- [x] **M13** Plugin `security` + bridge securecoder — **diferido indefinidamente** (decisión B de [`l115`](../ready/l115-decide-and-close-m13-security-plugin.md), 2026-06-21): los primitivos del core (`redact.ts` para secret redaction, `contain-path.ts` para path containment) más el allow/deny de comandos ya en `quality` cubren la superficie mínima viable. Empaquetarlo como plugin independiente no aporta valor mientras no haya un segundo consumer que necesite intercambiarlo; el bridge `securecoder` sigue fuera de alcance (spec propia, no definida). Reabrir si surge esa necesidad.
 - [x] **M14** Cerrado (2026-06-21): `agent-registry-store` normaliza el registry
   mediante `runMigrations`/`IVersioned` del core, conserva el formato actual
   `version: 1`, y rechaza versiones futuras no soportadas en vez de aceptarlas
@@ -612,8 +610,8 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 
 | ID | Cierra | Título | Slices |
 |---|---|---|---|
-| [`l115`](../ready/l115-decide-and-close-m13-security-plugin.md) | línea 275 (M13) | Decide & close M13 (security plugin) | 3 (A) / 1 (B) / 1 (C) — depende de la decisión A/B/C |
-| [`l116`](../ready/l116-release-provenance-via-npm-publish.md) | líneas 248, 855 | Release provenance: `npm publish --provenance` | 4 (rewrite script, wire, dry-run, audit close) |
+| [`l115`](../ready/l115-decide-and-close-m13-security-plugin.md) | línea 293 (M13) — **cerrado** (decisión B, 2026-06-21) | Decide & close M13 (security plugin) | 0 — diferido indefinidamente, sin código |
+| [`l116`](../ready/l116-release-provenance-via-npm-publish.md) | línea 265 — **cerrado** (2026-06-21) | Release provenance: `npm publish --provenance` | 0 — rewrite script resultó innecesario, solo flag + workflow wire |
 | [`l117`](../ready/l117-versioned-skills-prompts-and-web-fetch-plugin.md) | línea 281 | Skills versionadas + plugin `web`/`fetch` | 5 (manifest, 5 skills, plugin, consumer helper, close) |
 | [`l118`](../ready/l118-harden-catchall-output-schemas.md) | línea 518 (M24 follow-up) | Harden remaining `catchall` schemas | 5 (golden baseline, bootstrap, scaffold, proposals, exception audit) |
 | [`l119`](../ready/l119-web-deep-pages-and-search.md) | línea 543 (M27 follow-up) | Web deep pages + pagefind + first-5-min + troubleshooting | 5 (per-tool, pagefind, quickstart, troubleshooting, nav+close) |
@@ -901,19 +899,21 @@ camino al 11/10 — solo acabados de plataforma.**
   - ✅ **Overflow de descripciones** — `_tool.scss` (`overflow-wrap: anywhere`)
     y `_plugin-card.scss` (`overflow:hidden` + `text-overflow:ellipsis`) ya
     contienen el contenido dentro de su caja.
-- **🟡 release.yml — re-verificado:** pinning de bun exacto (`1.3.14`),
+- **🟢 release.yml — re-verificado:** pinning de bun exacto (`1.3.14`),
   TypeScript/Vitest exactos en `package.json` (sin rango), y coverage gate real
   (`vitest` thresholds `statements:72/branches:55/functions:75/lines:73` vía
   `bun run test:coverage` en CI) — esos tres ya estaban bien. `CHANGELOG.md`
   existe y se mantiene a mano (Keep a Changelog), no autogenerado por release;
-  aceptado por diseño (M34). **Provenance NO implementado y no es un bug
-  nuestro:** `bun publish` (1.3.x) no tiene flag `--provenance` — solo `npm
-  publish` lo soporta. El permiso `id-token: write` del workflow queda sin
-  efecto hasta que `bun publish` lo soporte o se cambie la última fase del
-  release a `npm publish --provenance` (perdiendo el rewrite de
-  `workspace:*` que hace `bun publish`, que es la razón de usar `bun` aquí).
-  Limitación de la herramienta, documentada, no se fuerza un cambio de
-  riesgo alto en el pipeline de publicación real para resolverla.
+  aceptado por diseño (M34). **Provenance implementado 21-06 (`l116`):**
+  `bun publish` (1.3.x) no soporta `--provenance`, así que el paso final de
+  publish ahora usa `npm publish --provenance` (vía `scripts/release.ts
+  --tool=npm --provenance`). El permiso `id-token: write` del workflow ya
+  no es YAML muerto. El rewrite de `workspace:*` que se temía perder al
+  dejar `bun publish` resultó innecesario: `workspace:*` solo aparece en
+  `devDependencies` en los 10 paquetes (verificado por grep), que `npm
+  publish` ni instala ni valida; `peerDependencies` ya se reescribe a un
+  rango `^X.Y.Z` resuelto por `applyPlan()` con `--write`, independientemente
+  de la herramienta de publish usada después.
 
 **Verificado en esta sesión:** `bun run validate` (typecheck + lint + lint:scss
 + test, 912/912), `bun run lint:proposals` (0 fatal), `bun run site:strict`

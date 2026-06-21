@@ -1,3 +1,12 @@
+---
+id: n001
+kind: resume
+title: Resumen de la sesión autónoma — 2026-06-15 (Claude Code · madrugada)
+status: done
+date: 2026-06-15
+track: general
+---
+
 # Resumen de la sesión autónoma — 2026-06-15, **madrugada → ~08:05** (Claude Code, Opus 4.8)
 
 > **Sesión 1 de 2 del día.** Esta fue la sesión autónoma (sin supervisión,

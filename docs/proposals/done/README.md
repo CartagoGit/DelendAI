@@ -13,33 +13,82 @@ as sub-folders so the closure view scales.
 | `audits/` | `a<NNN>-` | Closed audit documents | `a001-…-codex-gpt-5-5.md` … `a020-…-claude-code-opus-4-8.md` |
 | `feats/` | `f<NNN>-` | Closed feature proposals | `f99-…-multi-model-audit-plugin.md` … `f118-…-rules-compact-findings.md` |
 | `fixes/` | `x<NNN>-` | Closed fix proposals | `x105-…-web-bugfixes-and-ux-overhaul.md`, `x106-…-fix-gen-skills-recursion.md`, … |
+| `resumes/` | `n<NNN>-` | Closed cross-session handoff summaries | `n001-…-autonoma-claude-code.md` … `n006-…-handoff-copilot.md` |
 
 We only create a sub-folder when the second file of that kind lands in
 `done/`. Buckets for `refactor/`, `chore/`, `docs/`, `test/`,
 `infra/`, `spike/`, `breaking/`, `perf/` will be added when the second
-file of each kind lands.
+file of each kind lands. The `resumes/` bucket was created by
+[n007](../ready/n007-resume-kind-cross-session-handoff-summaries.md)
+which also introduced the 13th proposal kind `resume` (prefix `n`).
 
 ## Loose files at `done/` root
 
 These are kept at the root because they predate the convention and are
 not proposals:
 
-- `RESUMEN-SESION-*.md` — session notes (not a proposal).
 - `AUDITORIA-UNIFICADA-*.md` — historical consolidated audit, predates
   the kind-mirror convention. (The live audits now live under
-  `done/audits/`.)
+  `done/audits/`.) NOT a proposal: one author, one span, no slice
+  plan, no acceptance — different artefact shape from a proposal.
+
+> **Note (2026-06-21)**: `RESUMEN-SESION-*.md` files used to live at
+> this root and in `done/`. They were promoted to first-class
+> proposals of kind `resume` by n007 and moved under
+> [`done/resumes/`](./resumes/) with chronological numbering
+> (`n001..n006`). The carve-out line above is the surviving entry for
+> the AUDITORIA-UNIFICADA only.
+
+## Why this folder lives at `docs/proposals/`, not `docs/mcp-vertex/proposals/`
+
+This is the recurring question this README answers once and for all.
+
+**The CLI default** (`packages/core/src/lib/plugins/parse-cli-args.ts` +
+`DEFAULT_PATH_LAYOUT` in
+`plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts`)
+is `docsDir = "docs/mcp-vertex"`. A fresh project that runs
+`bunx @mcp-vertex/core --check` with no `mcp-vertex.config.json` gets
+proposals under `docs/mcp-vertex/proposals/`.
+
+**This repo (`@mcp-vertex/core` itself) overrides that** in
+[`mcp-vertex.config.json`](../../../mcp-vertex.config.json):
+
+```json
+{
+  "cacheDir": ".cache/mcp-vertex",
+  "docsDir": "docs"
+}
+```
+
+…so proposals live at `docs/proposals/` (the repo IS mcp-vertex; the
+extra `mcp-vertex/` sub-folder would be redundant). The override is
+intentional and documented.
+
+**A consumer project** that adopts mcp-vertex via
+`proposals_proposal_adopt` (or by writing a fresh config) has two
+equally valid choices:
+
+1. Keep the default → `docs/mcp-vertex/proposals/`.
+2. Override `docsDir` in `mcp-vertex.config.json` → whatever you like.
+
+Both are supported. The proposals plugin never assumes the layout — it
+reads `docsDir` from the resolved config and writes everything
+relative to it. `proposals_proposal_adopt` reports the actual folder
+and recommends canonicalisation if it sees an ad-hoc shape.
 
 ## Rules
 
 1. **Filename prefix matches frontmatter `kind`**: an `f<NNN>-*.md` file
-   has `kind: feat`; an `x<NNN>-*.md` has `kind: fix`; etc. The linter
-   enforces this (f113 §4.3).
+   has `kind: feat`; an `x<NNN>-*.md` has `kind: fix`; an `n<NNN>-*.md`
+   has `kind: resume`; etc. The linter enforces this (f113 §4.3).
 2. **`id:` frontmatter stays stable across renames**: when a proposal
    was previously `l99-…` and got reclassified to `f99-…`, the `id:`
    field changed from `l99` to `f99`. Cross-references (`related: l99`
    in other proposals) were rewritten to `related: f99` atomically by
    the f119 migration. Do NOT refer to a proposal by its filename —
-   refer to it by `id:` (e.g. `related: f113`).
+   refer to it by `id:` (e.g. `related: f113`). The n007 migration
+   does NOT rename any `id:`; it only renames files (the 6 summaries
+   get fresh `n001..n006` ids because they had none before).
 3. **Sub-folders only allowed inside terminal statuses**: `done/` and
    `retired/`. The reconciler treats any depth under these folders as
    "status done" / "status retired". Non-terminal statuses (`ready`,
@@ -53,3 +102,5 @@ not proposals:
 
 - [f113 — Proposal state machine, kinds, scaffolds, and recovery](../in-progress/f113-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds; archived once f119 lands).
 - [f119 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](../in-progress/f119-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
+- [n007 — Resume kind: cross-session handoff summaries](../ready/n007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
+- [`done/resumes/README.md`](./resumes/README.md) — the `resumes/` bucket's own README.

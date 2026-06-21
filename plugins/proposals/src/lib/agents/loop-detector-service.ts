@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { mkdir, readdir, unlink, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
 	writeFileAtomic,
@@ -235,19 +235,14 @@ export class AgentLoopDetectorService {
 
 	private async getActiveAgent(): Promise<string> {
 		try {
-			if (existsSync(this.lockPath)) {
-				const raw = readFileSync(this.lockPath, 'utf8');
-				const locks = JSON.parse(raw);
-				if (
-					Array.isArray(locks.in_flight) &&
-					locks.in_flight.length > 0
-				) {
-					// Default to the first active lock agent
-					return locks.in_flight[0].agent;
-				}
+			const raw = await readFile(this.lockPath, 'utf8');
+			const locks = JSON.parse(raw);
+			if (Array.isArray(locks.in_flight) && locks.in_flight.length > 0) {
+				// Default to the first active lock agent
+				return locks.in_flight[0].agent;
 			}
 		} catch {
-			// Ignore
+			// missing/corrupt lock file → no active agent to report
 		}
 		return 'default-agent';
 	}
@@ -399,6 +394,20 @@ export class AgentLoopDetectorService {
 		}
 	}
 
+	/**
+	 * l125 s1: this method is intentionally synchronous, not a hot-path
+	 * oversight. `IMcpVertexHostConfig.isAgentStuck` (packages/core
+	 * host-config.interface.ts) declares a sync return type and is
+	 * invoked inline — without `await` — right after every tool call in
+	 * `create-mcp-project.ts`. Making this `async` would require widening
+	 * that core contract to `Promise<...> | ...`, which ripples to every
+	 * host config consumer — out of scope for a contained fix. The sync
+	 * read below is a deliberate, narrow exception to invariant 3,
+	 * bounded by this one call site; `onToolCall`'s `getActiveAgent` (the
+	 * other path that needs the same lookup) already uses the async
+	 * primitive since it runs inside an `async` hook with no such
+	 * constraint.
+	 */
 	public isAgentStuck(
 		_toolName: string,
 		args: unknown,
@@ -410,8 +419,6 @@ export class AgentLoopDetectorService {
 			agent = (args as { agent?: string }).agent ?? '';
 		}
 		if (!agent) {
-			// Sync retrieve locks synchronously from memory since we can't await locks.json here
-			// Or check the active locks file synchronously
 			try {
 				if (existsSync(this.lockPath)) {
 					const raw = readFileSync(this.lockPath, 'utf8');
@@ -444,32 +451,27 @@ export class AgentLoopDetectorService {
 		let currentProposal = null;
 
 		try {
-			if (existsSync(this.lockPath)) {
-				const raw = await readFileSync(this.lockPath, 'utf8');
-				const locks = JSON.parse(raw);
-				activeLocks = locks.in_flight ?? [];
-			}
+			const raw = await readFile(this.lockPath, 'utf8');
+			const locks = JSON.parse(raw);
+			activeLocks = locks.in_flight ?? [];
 		} catch {
-			// Ignore
+			// missing/corrupt lock file → no active locks to report
 		}
 
 		try {
-			if (existsSync(this.proposalIndexPath)) {
-				const raw = await readFileSync(this.proposalIndexPath, 'utf8');
-				const index = JSON.parse(raw);
-				// Find matching active proposal
-				const activeTaskIds = new Set(
-					activeLocks.map((l: any) => l.task_id),
-				);
-				if (Array.isArray(index.proposals)) {
-					currentProposal =
-						index.proposals.find((p: any) =>
-							activeTaskIds.has(p.id),
-						) ?? null;
-				}
+			const raw = await readFile(this.proposalIndexPath, 'utf8');
+			const index = JSON.parse(raw);
+			// Find matching active proposal
+			const activeTaskIds = new Set(
+				activeLocks.map((l: any) => l.task_id),
+			);
+			if (Array.isArray(index.proposals)) {
+				currentProposal =
+					index.proposals.find((p: any) => activeTaskIds.has(p.id)) ??
+					null;
 			}
 		} catch {
-			// Ignore
+			// missing/corrupt proposal index → no matching proposal to report
 		}
 
 		let gitHead = '';
@@ -533,7 +535,6 @@ export class AgentLoopDetectorService {
 
 	private async pruneOldHandoffs(): Promise<void> {
 		try {
-			if (!existsSync(this.handoffDirAbs)) return;
 			const files = await readdir(this.handoffDirAbs);
 			const now = Date.now();
 			const ttlMs = this.options.handoffTtlDays * 24 * 60 * 60 * 1000;
@@ -546,7 +547,7 @@ export class AgentLoopDetectorService {
 				}
 			}
 		} catch {
-			// Ignore
+			// missing handoff dir or transient I/O error → nothing to prune
 		}
 	}
 }

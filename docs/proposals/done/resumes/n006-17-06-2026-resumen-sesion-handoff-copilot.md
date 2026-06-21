@@ -1,3 +1,12 @@
+---
+id: n006
+kind: resume
+title: Resumen de sesión — 2026-06-17 (casa → oficina, handoff Copilot · MiniMax-M3)
+status: done
+date: 2026-06-17
+track: general
+---
+
 # Resumen de sesión — 2026-06-17 (casa → oficina, Opus)
 
 > **Repo:** `/home/cartago/_projects/mcp-vertex` · rama **`main`** ·

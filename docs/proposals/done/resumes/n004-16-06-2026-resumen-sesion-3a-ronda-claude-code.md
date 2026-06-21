@@ -1,3 +1,12 @@
+---
+id: n004
+kind: resume
+title: Resumen de sesión — 3ª ronda 2026-06-16 (Claude Code)
+status: done
+date: 2026-06-16
+track: general
+---
+
 # Resumen de sesión — 3ª ronda (2026-06-16, **08:27 → ~13:50**, oficina, Opus)
 
 > Continúa la cola viva **§0 (N1–N23)** de

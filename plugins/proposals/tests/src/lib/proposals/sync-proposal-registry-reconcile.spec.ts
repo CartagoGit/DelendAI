@@ -226,5 +226,73 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 			expect(matches).toHaveLength(1);
 			expect(matches[0]?.file).toBe('ready/f501-misfiled.md');
 		});
+
+		// n007 (resume kind): proposals living in kind sub-folders inside
+		// `done/` (`done/resumes/`, `done/audits/`, `done/feats/`,
+		// `done/fixes/`) must show up in the index exactly once, never
+		// duplicated by `done/` itself or any other subtree. Before n007,
+		// syncProposalRegistry only listed top-level status folders, so
+		// `done/resumes/*.md` were invisible to the registry — the linter
+		// walked them, but `proposal_board` / `auto_work` couldn't see
+		// them. The fix: add explicit sub-tree entries for the 4 known
+		// kind buckets under `done/` so each is scanned once and only once.
+		it('discovers a proposal in done/resumes/ exactly once (n007 resume kind)', async () => {
+			await writeProposal(root, 'done/resumes', 'n001-handoff.md', {
+				id: 'n001',
+				kind: 'resume',
+				status: 'done',
+				track: 'general',
+				date: '2026-06-21',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			const matches = result.proposals.filter((p) => p.id === 'n001');
+			expect(matches).toHaveLength(1);
+			expect(matches[0]?.file).toBe('done/resumes/n001-handoff.md');
+			expect(matches[0]?.status).toBe('done');
+		});
+
+		it('discovers all 4 f119 kind sub-folders under done/ exactly once', async () => {
+			await writeProposal(root, 'done/audits', 'a900-test.md', {
+				id: 'a900',
+				status: 'done',
+				track: 'audit',
+				date: '2026-06-21',
+			});
+			await writeProposal(root, 'done/feats', 'f901-test.md', {
+				id: 'f901',
+				status: 'done',
+				track: 'proposals',
+				date: '2026-06-21',
+			});
+			await writeProposal(root, 'done/fixes', 'x901-test.md', {
+				id: 'x901',
+				status: 'done',
+				track: 'proposals',
+				date: '2026-06-21',
+			});
+			await writeProposal(root, 'done/resumes', 'n902-test.md', {
+				id: 'n902',
+				status: 'done',
+				track: 'general',
+				date: '2026-06-21',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			for (const id of ['a900', 'f901', 'x901', 'n902']) {
+				const matches = result.proposals.filter((p) => p.id === id);
+				expect(matches, `${id} must appear exactly once`).toHaveLength(
+					1,
+				);
+			}
+		});
 	});
 });

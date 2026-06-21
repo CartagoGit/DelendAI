@@ -50,6 +50,58 @@ const ANALYZE_SCHEMA = z.object({
 	docsDir: z.string().optional(),
 });
 
+// l122 S1 — mirrors `IProjectAnalysis` (analyze-project.ts).
+const PROJECT_ANALYSIS_SCHEMA = z.object({
+	hasPackageJson: z.boolean(),
+	name: z.string().optional(),
+	projectType: z.enum([
+		'library',
+		'cli',
+		'webapp',
+		'game',
+		'monorepo',
+		'generic',
+	]),
+	language: z.enum([
+		'typescript',
+		'javascript',
+		'python',
+		'go',
+		'rust',
+		'unknown',
+	]),
+	packageManager: z.enum(['bun', 'pnpm', 'yarn', 'npm', 'unknown']),
+	framework: z.string().optional(),
+	testRunner: z.enum(['vitest', 'jest', 'bun', 'node', 'unknown']),
+	monorepoTool: z.string().optional(),
+	hasMcpProject: z.boolean(),
+	mcpEvidence: z.array(z.string()),
+	ci: z.array(z.string()),
+	agentConfigs: z.array(z.string()),
+	scripts: z.record(z.string(), z.string()),
+	signals: z.array(z.string()),
+});
+
+// l122 S1 — mirrors `IServerPlan` (recommend-plan.ts).
+const SERVER_PLAN_SCHEMA = z.object({
+	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
+	serverName: z.string(),
+	namespacePrefix: z.string(),
+	plugins: z.array(z.string()),
+	tools: z.array(z.object({ name: z.string(), description: z.string() })),
+	validationCommands: z.record(z.string(), z.string()),
+	cacheDir: z.string(),
+	docsDir: z.string(),
+	mcpJson: z.record(z.string(), z.unknown()),
+	notes: z.array(z.string()),
+});
+
+// l122 S1 — mirrors `IScaffoldedFile` (scaffold-host.ts).
+const SCAFFOLDED_FILE_SCHEMA = z.object({
+	path: z.string(),
+	content: z.string(),
+});
+
 const CREATE_SCHEMA = z.object({
 	kind: z
 		.enum(['host', 'plugin', 'client'])
@@ -61,6 +113,39 @@ const CREATE_SCHEMA = z.object({
 	pluginName: z.string().optional().describe('Plugin id (kind "plugin").'),
 	clientName: z.string().optional().describe('Client id (kind "client").'),
 	description: z.string().optional(),
+});
+
+// l122 S1 — `create_project`'s output: a dry-run skeleton of files to
+// write, discriminated by what was scaffolded (host/plugin/client).
+const MCP_PROJECT_SKELETON_SCHEMA = z.object({
+	kind: z.enum(['host', 'plugin', 'client']),
+	files: z.array(SCAFFOLDED_FILE_SCHEMA),
+});
+
+// l122 S1 — mirrors `IServerBlueprint` (build-blueprint.ts), the
+// EXHAUSTIVE plan `plan_mcp_project` returns alongside the files to write.
+const BLUEPRINT_ARTIFACT_SCHEMA = z.object({
+	name: z.string(),
+	description: z.string(),
+});
+
+const SERVER_BLUEPRINT_SCHEMA = z.object({
+	serverName: z.string(),
+	namespacePrefix: z.string(),
+	projectType: PROJECT_ANALYSIS_SCHEMA.shape.projectType,
+	plugins: z.array(z.string()),
+	tools: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
+	prompts: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
+	skills: z.array(BLUEPRINT_ARTIFACT_SCHEMA),
+	agents: z.array(z.object({ slot: z.string(), description: z.string() })),
+	tests: z.boolean(),
+	hasExistingServer: z.boolean(),
+	defaults: z.object({
+		keepLegacy: z.boolean(),
+		reasons: z.array(z.string()),
+		warnings: z.array(z.string()),
+	}),
+	notes: z.array(z.string()),
 });
 
 const json = (value: unknown) => ({
@@ -96,7 +181,10 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_analyze_project`,
 				{
-					outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({
+						analysis: PROJECT_ANALYSIS_SCHEMA,
+						plan: SERVER_PLAN_SCHEMA,
+					}),
 					description:
 						'Read-only. Inspect this project and return a structured analysis plus a recommended MCP server plan (project type, tools, plugins, validation commands and a ready-to-paste mcp.json). Call this first; it never writes.',
 					inputSchema: ANALYZE_SCHEMA,
@@ -135,7 +223,7 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_create_project`,
 				{
-					outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: MCP_PROJECT_SKELETON_SCHEMA,
 					description:
 						'Generate the files for a project-specific MCP server (or a new plugin) from a plan. Returns the files for YOU to write — it does not touch disk. Run analyze_project first to get a plan, edit it if needed, then call this.',
 					inputSchema: CREATE_SCHEMA,
@@ -183,7 +271,10 @@ export const buildBootstrapToolRegistrations = (
 			server.registerTool(
 				`${prefix}_plan_mcp_project`,
 				{
-					outputSchema: z.object({}).catchall(z.unknown()),
+					outputSchema: z.object({
+						blueprint: SERVER_BLUEPRINT_SCHEMA,
+						files: z.array(SCAFFOLDED_FILE_SCHEMA),
+					}),
 					description:
 						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-vertex instead of replacing it.',
 					inputSchema: z.object({

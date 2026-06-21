@@ -35,6 +35,9 @@ import notificationPlugin from '@mcp-vertex/notification';
 import docsPlugin from '@mcp-vertex/docs';
 import depsPlugin from '@mcp-vertex/deps';
 import logsPlugin from '@mcp-vertex/logs';
+import auditPlugin from '@mcp-vertex/audit';
+import statusMarkerPlugin from '@mcp-vertex/status-marker';
+import testConventionPlugin from '@mcp-vertex/test-convention';
 
 import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
 
@@ -51,10 +54,13 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-docs': docsPlugin,
 	'mcp-deps': depsPlugin,
 	'mcp-logs': logsPlugin,
+	'mcp-audit': auditPlugin,
+	'mcp-status-marker': statusMarkerPlugin,
+	'mcp-test-convention': testConventionPlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention';
 
 /**
  * Assemble the reference server with every plugin and harvest each

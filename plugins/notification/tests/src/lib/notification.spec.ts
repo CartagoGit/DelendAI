@@ -30,29 +30,31 @@ describe('lock-release watcher [N14]', () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('readInFlight maps claims by task_id (empty on missing/corrupt)', () => {
-		expect(readInFlight(lockFile).size).toBe(0);
+	it('readInFlight maps claims by task_id (empty on missing/corrupt)', async () => {
+		expect((await readInFlight(lockFile)).size).toBe(0);
 		writeFileSync(lockFile, '{{{ corrupt');
-		expect(readInFlight(lockFile).size).toBe(0);
+		expect((await readInFlight(lockFile)).size).toBe(0);
 		writeFileSync(
 			lockFile,
 			lock([{ task_id: 't1', agent: 'a', ownership: ['f.ts'] }]),
 		);
-		expect(readInFlight(lockFile).get('t1')?.files).toEqual(['f.ts']);
+		expect((await readInFlight(lockFile)).get('t1')?.files).toEqual([
+			'f.ts',
+		]);
 	});
 
-	it('diffReleased reports claims gone since the previous scan', () => {
-		const prev = readInFlight(lockFile);
+	it('diffReleased reports claims gone since the previous scan', async () => {
+		const prev = await readInFlight(lockFile);
 		writeFileSync(lockFile, lock([{ task_id: 't1' }, { task_id: 't2' }]));
-		const curr = readInFlight(lockFile);
+		const curr = await readInFlight(lockFile);
 		// t1,t2 are new (not releases). Now release t1:
 		writeFileSync(lockFile, lock([{ task_id: 't2' }]));
-		const after = readInFlight(lockFile);
+		const after = await readInFlight(lockFile);
 		expect(diffReleased(prev, curr)).toEqual([]);
 		expect(diffReleased(curr, after).map((c) => c.taskId)).toEqual(['t1']);
 	});
 
-	it('watcher.check fires onRelease exactly for freed claims', () => {
+	it('watcher.check fires onRelease exactly for freed claims', async () => {
 		writeFileSync(
 			lockFile,
 			lock([{ task_id: 't1', agent: 'falcon', ownership: ['src/a.ts'] }]),
@@ -62,11 +64,14 @@ describe('lock-release watcher [N14]', () => {
 			lockFile,
 			onRelease: (r) => seen.push(...r),
 		});
+		// First check() only establishes the baseline (no prior scan to diff
+		// against yet), mirroring the old constructor-time sync pre-scan.
+		expect(await watcher.check()).toEqual([]);
 		// No change yet:
-		expect(watcher.check()).toEqual([]);
+		expect(await watcher.check()).toEqual([]);
 		// Release t1:
 		writeFileSync(lockFile, lock([]));
-		const released = watcher.check();
+		const released = await watcher.check();
 		watcher.stop();
 		expect(released.map((c) => c.taskId)).toEqual(['t1']);
 		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
@@ -150,7 +155,7 @@ describe('handoff watcher', () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('ignores pre-existing files in the handoff directory', () => {
+	it('ignores pre-existing files in the handoff directory', async () => {
 		writeFileSync(
 			join(handoffDir, 'prev.json'),
 			JSON.stringify({
@@ -166,19 +171,20 @@ describe('handoff watcher', () => {
 			onHandoff: (e) => seen.push(...e),
 		});
 
-		expect(watcher.check()).toEqual([]);
+		// First check() primes seenFiles from the pre-existing file, no events.
+		expect(await watcher.check()).toEqual([]);
 		expect(seen).toEqual([]);
 		watcher.stop();
 	});
 
-	it('detects newly created valid handoff files', () => {
+	it('detects newly created valid handoff files', async () => {
 		const seen: IHandoffEvent[] = [];
 		const watcher = createHandoffWatcher({
 			handoffDir,
 			onHandoff: (e) => seen.push(...e),
 		});
 
-		expect(watcher.check()).toEqual([]);
+		expect(await watcher.check()).toEqual([]);
 
 		writeFileSync(
 			join(handoffDir, 'new.json'),
@@ -189,7 +195,7 @@ describe('handoff watcher', () => {
 			}),
 		);
 
-		const events = watcher.check();
+		const events = await watcher.check();
 		watcher.stop();
 
 		expect(events.length).toBe(1);
@@ -199,12 +205,15 @@ describe('handoff watcher', () => {
 		expect(seen[0]?.agent).toBe('a2');
 	});
 
-	it('ignores invalid JSON or non-handoff schema files', () => {
+	it('ignores invalid JSON or non-handoff schema files', async () => {
 		const seen: IHandoffEvent[] = [];
 		const watcher = createHandoffWatcher({
 			handoffDir,
 			onHandoff: (e) => seen.push(...e),
 		});
+
+		// Prime first (no pre-existing files yet).
+		expect(await watcher.check()).toEqual([]);
 
 		writeFileSync(join(handoffDir, 'bad1.json'), '{ corrupt json');
 		writeFileSync(
@@ -212,7 +221,7 @@ describe('handoff watcher', () => {
 			JSON.stringify({ schema: 'other/schema', reason: 'no-progress' }),
 		);
 
-		expect(watcher.check()).toEqual([]);
+		expect(await watcher.check()).toEqual([]);
 		expect(seen).toEqual([]);
 		watcher.stop();
 	});

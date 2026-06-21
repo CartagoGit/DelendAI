@@ -21,6 +21,14 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 } from '../contracts/constants/proposal-glossary.constant';
+import { parseProposalFrontmatter } from '../shared/proposal-frontmatter';
+import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
+import { LEGACY_ALIAS_PREFIX } from '../cascade/cascade-priority';
+import type {
+	ICascadePriorityResolver,
+	IProposalSummary,
+	TCascadeBoost,
+} from '../cascade/cascade-priority';
 
 export interface IContinueProposalToolOptions {
 	readonly namespacePrefix: string;
@@ -28,8 +36,24 @@ export interface IContinueProposalToolOptions {
 	readonly indexPathAbs: string;
 	/** Absolute path of the agent lock file. */
 	readonly lockPathAbs: string;
-	/** Family prefixes in cascade order (default `['f', 'p']`). */
+	/**
+	 * @deprecated f127: superseded by `cascadeResolver` (kind-based
+	 * cascade + frontmatter override/boost). Kept only so a host config
+	 * that still sets `familyCascade` doesn't crash; when present, it is
+	 * translated into an ad-hoc resolver that ranks by prefix order, with
+	 * unknown prefixes pushed to the back — same externally observable
+	 * behaviour as before f127, but does not block the (now wired-in)
+	 * frontmatter override.
+	 */
 	readonly familyCascade?: readonly string[];
+	/**
+	 * f127: priority resolver for `mode: "auto"`. Defaults to
+	 * `buildDefaultCascadeChain()` (kind-based cascade decorated with the
+	 * frontmatter `cascadeOverride` break-glass). Injectable for tests
+	 * (DIP) — a test can supply a fake resolver with a synthetic order
+	 * and never touch the real glossary or disk.
+	 */
+	readonly cascadeResolver?: ICascadePriorityResolver;
 }
 
 export interface IContinueProposalArgs {
@@ -205,6 +229,55 @@ const readIndex = async (
 
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
 
+const CASCADE_BOOSTS: ReadonlySet<TCascadeBoost> = new Set([
+	'shipped-blocking',
+	'customer-reported',
+	'security',
+]);
+
+const isCascadeBoost = (value: string | undefined): value is TCascadeBoost =>
+	typeof value === 'string' && CASCADE_BOOSTS.has(value as TCascadeBoost);
+
+/**
+ * f127: resolves a free index entry's frontmatter (`cascadeOverride`,
+ * `cascadeOverrideReason`, `cascadeBoost`) into an `IProposalSummary`
+ * the cascade resolver can rank. Reads only the entries already
+ * filtered down to `free` (actionable, not claimed elsewhere) — never
+ * the whole proposals tree — so this stays a bounded, small batch of
+ * extra file reads instead of an O(all proposals) scan. A missing or
+ * unparsable file degrades to "no override/boost", never throws.
+ */
+const summaryFor = async (
+	entry: IIndexEntry,
+	indexPath: string,
+): Promise<IProposalSummary> => {
+	const prefix = familyOf(entry.id);
+	const kind = PROPOSAL_KIND_BY_PREFIX[prefix] ?? LEGACY_ALIAS_PREFIX;
+	const docPath = join(dirname(indexPath), entry.file);
+	const markdown = await readTextOrNull(docPath);
+	if (markdown === null) return { id: entry.id, kind };
+	const frontmatter = parseProposalFrontmatter(markdown);
+	const overrideRaw = frontmatter.cascadeOverride;
+	const override =
+		overrideRaw !== undefined && overrideRaw.trim() !== ''
+			? Number(overrideRaw)
+			: undefined;
+	const boost = isCascadeBoost(frontmatter.cascadeBoost)
+		? frontmatter.cascadeBoost
+		: undefined;
+	return {
+		id: entry.id,
+		kind,
+		...(override !== undefined && Number.isFinite(override)
+			? { cascadeOverride: override }
+			: {}),
+		...(frontmatter.cascadeOverrideReason
+			? { cascadeOverrideReason: frontmatter.cascadeOverrideReason }
+			: {}),
+		...(boost ? { cascadeBoost: boost } : {}),
+	};
+};
+
 const readActiveLocks = async (
 	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
@@ -264,8 +337,6 @@ export const runContinueProposal = async (
 	args: IContinueProposalArgs,
 	options: IContinueProposalToolOptions,
 ): Promise<IToolTextResult> => {
-	const cascade = options.familyCascade ?? ['f', 'p'];
-
 	if (args.mode === 'plan' || args.mode === 'claim') {
 		if (!args.proposalId)
 			return json({
@@ -401,13 +472,39 @@ export const runContinueProposal = async (
 			nextAction:
 				'Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or stop and report that all work is claimed.',
 		});
-	const rank = (id: string): number => {
-		const index = cascade.indexOf(familyOf(id));
-		return index < 0 ? cascade.length : index;
-	};
+	// f127: kind-based cascade (+ frontmatter override/boost) replaces the
+	// old hardcoded `['f', 'p']` family-prefix rank. A host that still
+	// configures the deprecated `familyCascade` keeps its exact previous
+	// ranking (by prefix order, unknown prefixes pushed to the back); a
+	// host on the new default gets the full 13-family cascade plus the
+	// break-glass override.
+	const resolver: ICascadePriorityResolver =
+		options.cascadeResolver ??
+		(options.familyCascade
+			? {
+					resolve: (proposal) => {
+						const index = options.familyCascade?.indexOf(
+							familyOf(proposal.id),
+						);
+						return index === undefined || index < 0
+							? (options.familyCascade?.length ?? 0)
+							: index;
+					},
+				}
+			: buildDefaultCascadeChain());
+	const summaries = await Promise.all(
+		free.map((entry) => summaryFor(entry, options.indexPathAbs)),
+	);
+	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const next = [...free].sort((a, b) => {
-		const byFamily = rank(a.id) - rank(b.id);
-		return byFamily !== 0 ? byFamily : a.id.localeCompare(b.id);
+		const priorityA = resolver.resolve(
+			summaryById.get(a.id) as IProposalSummary,
+		);
+		const priorityB = resolver.resolve(
+			summaryById.get(b.id) as IProposalSummary,
+		);
+		const byPriority = priorityA - priorityB;
+		return byPriority !== 0 ? byPriority : a.id.localeCompare(b.id);
 	})[0];
 	return json({
 		kind: 'next-proposal',

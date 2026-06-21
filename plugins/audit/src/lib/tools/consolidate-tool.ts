@@ -4,6 +4,7 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import {
+	resolveWorkspaceContained,
 	toolError,
 	toolJson,
 	type IToolRegistration,
@@ -111,7 +112,18 @@ export const buildConsolidateRegistration = (
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
-					const absDir = path.resolve(options.workspaceRoot, relDir);
+					const contained = resolveWorkspaceContained(
+						options.workspaceRoot,
+						relDir,
+					);
+					if (!contained.ok) {
+						return toolError(
+							`audit dir "${relDir}" is not allowed`,
+							contained.reason ??
+								'Path must stay inside the workspace root.',
+						);
+					}
+					const absDir = contained.abs;
 					let entries: readonly string[];
 					try {
 						entries = await readdir(absDir);

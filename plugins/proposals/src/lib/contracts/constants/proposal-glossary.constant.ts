@@ -90,7 +90,8 @@ export type IProposalKind =
 	| 'test'
 	| 'infra'
 	| 'spike'
-	| 'legacy';
+	| 'legacy'
+	| 'resume';
 
 export interface IProposalKindInfo {
 	/** Single lowercase letter; unique across all 12 kinds (f113 §2.2). */
@@ -175,6 +176,13 @@ export const PROPOSAL_KINDS: Readonly<
 		glyph: '📦',
 		conventionalCommitType: 'feat',
 		bump: 'minor',
+	},
+	/** Cross-session handoff summaries (n<NNN>-*.md). No version bump, no commit. */
+	resume: {
+		prefix: 'n',
+		glyph: '🧭',
+		conventionalCommitType: '',
+		bump: 'none',
 	},
 };
 

@@ -415,7 +415,7 @@ const lintFrontmatter = (
 	) {
 		issues.push({
 			line: 0,
-			message: `frontmatter kind "${frontmatter.kind}" is not one of the 12 known kinds`,
+			message: `frontmatter kind "${frontmatter.kind}" is not one of the 13 known kinds`,
 			fix: `Use one of: ${Object.keys(PROPOSAL_KINDS).join(', ')}.`,
 		});
 	}

@@ -50,6 +50,15 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 	logs: { dir: 'plugins/logs', label: 'Logs' },
 	rules: { dir: 'plugins/rules', label: 'Rules' },
 	proposals: { dir: 'plugins/proposals', label: 'Proposals' },
+	// l125 s6 — these 3 plugins were missing from the harvest server in
+	// generate-tool-types.ts, so their typed outputSchemas (where they
+	// declare one) never reached a generated SDK module.
+	audit: { dir: 'plugins/audit', label: 'Audit' },
+	'status-marker': { dir: 'plugins/status-marker', label: 'StatusMarker' },
+	'test-convention': {
+		dir: 'plugins/test-convention',
+		label: 'TestConvention',
+	},
 };
 
 /** Relative path (from a package dir) of the generated module. */
@@ -223,6 +232,18 @@ export const emitToolOutputsModule = (
 	const blocks: string[] = [FILE_HEADER];
 	for (const tool of tools) {
 		const name = outputInterfaceName(tool.name);
+		// A top-level `anyOf`/`oneOf` (e.g. `outputSchema: z.union([...])`)
+		// has no `properties` of its own — it IS the union. Emitting it as
+		// an `interface { }` would silently collapse to an empty object
+		// type (Biome's `noBannedTypes`, l125 s6). A type alias preserves
+		// the actual discriminated-union shape.
+		const variants = tool.schema.anyOf ?? tool.schema.oneOf;
+		if (variants !== undefined && variants.length > 0) {
+			blocks.push(
+				`export type ${name} = ${jsonSchemaToTs(tool.schema, 0)};`,
+			);
+			continue;
+		}
 		const members = objectMemberLines(tool.schema, 1);
 		const body = members.length === 0 ? '' : `\n${members.join('\n')}\n`;
 		blocks.push(`export interface ${name} {${body}}`);

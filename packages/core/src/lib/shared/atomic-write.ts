@@ -30,6 +30,11 @@ export const writeFileAtomic = async (
 	}
 };
 
+/**
+ * Boot-time one-shot only — hot paths must use the async variant
+ * ({@link writeFileAtomic}). No `*Sync` filesystem calls inside tool
+ * handlers or engines (AGENTS.md invariant 3).
+ */
 export const writeFileAtomicSync = (
 	absolutePath: string,
 	content: string,

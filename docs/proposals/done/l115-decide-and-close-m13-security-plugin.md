@@ -1,6 +1,6 @@
 ---
 id: l115
-status: ready
+status: done
 type: proposal
 track: plugins+security
 date: 2026-06-21
@@ -105,23 +105,38 @@ Pick one of:
 
 ## Acceptance (any option)
 
-- [ ] Decision (A / B / C) is recorded in the proposal's `## Decision` section
+- [x] Decision (A / B / C) is recorded in the proposal's `## Decision` section
       below.
-- [ ] The corresponding slice is implemented (A or C) or only the audit
+- [x] The corresponding slice is implemented (A or C) or only the audit
       change is made (B).
-- [ ] Master audit line 275 is `[x]`.
+- [x] Master audit M13 checkbox is `[x]`.
 
 ## Decision (filled by the implementer)
 
-> _Pick one of A / B / C before claiming a slice._
+**(B) — close as deferred, core primitives cover the minimum viable
+surface.**
+
+Rationale: the three primitives the audit's "minimum viable security
+surface" lists already exist and are exercised in production —
+`packages/core/src/lib/shared/redact.ts` (secret redaction, M23),
+`packages/core/src/lib/shared/contain-path.ts` (path containment,
+M22), and command allow/deny in `plugins/quality`. Packaging them as a
+standalone `security` plugin only pays off once a second consumer
+needs to swap the implementation independently of `quality`/core — no
+such consumer exists today, and the `securecoder` bridge (the other
+half of M13) is explicitly out of scope regardless of the option
+picked. Option A's `threat-model.json` DSL is speculative design for a
+requirement nobody has stated yet (over-engineering risk noted in
+AGENTS.md). Zero code changes; this proposal closes with the audit
+note only.
 
 <!-- ( ) A — full plugin + threat-model DSL
-     ( ) B — close as deferred, core primitives cover MV
+     (x) B — close as deferred, core primitives cover MV
      ( ) C — thin plugin, no DSL                                  -->
 
 ## Linked references
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 275).
+- Master audit: `docs/proposals/done/audits/a016-16-06-2026-auditoria-maestra-unificada.md` (M13, line ~293).
 - Core primitives already in place: `packages/core/src/lib/shared/redact.ts`
   (M23), `packages/core/src/lib/shared/contain-path.ts` (M22),
   `plugins/quality` command allow/deny.

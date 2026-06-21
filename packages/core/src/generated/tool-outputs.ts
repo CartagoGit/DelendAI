@@ -13,11 +13,45 @@
  */
 
 export interface McpVertexAnalyzeProjectOutput {
-	[key: string]: unknown;
+	analysis: {
+		hasPackageJson: boolean;
+		name?: string;
+		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+		language: "typescript" | "javascript" | "python" | "go" | "rust" | "unknown";
+		packageManager: "bun" | "pnpm" | "yarn" | "npm" | "unknown";
+		framework?: string;
+		testRunner: "vitest" | "jest" | "bun" | "node" | "unknown";
+		monorepoTool?: string;
+		hasMcpProject: boolean;
+		mcpEvidence: string[];
+		ci: string[];
+		agentConfigs: string[];
+		scripts: Record<string, string>;
+		signals: string[];
+	};
+	plan: {
+		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+		serverName: string;
+		namespacePrefix: string;
+		plugins: string[];
+		tools: {
+			name: string;
+			description: string;
+		}[];
+		validationCommands: Record<string, string>;
+		cacheDir: string;
+		docsDir: string;
+		mcpJson: Record<string, unknown>;
+		notes: string[];
+	};
 }
 
 export interface McpVertexCreateProjectOutput {
-	[key: string]: unknown;
+	kind: "host" | "plugin" | "client";
+	files: {
+		path: string;
+		content: string;
+	}[];
 }
 
 export interface McpVertexGetValidationMatrixOutput {
@@ -84,11 +118,54 @@ export interface McpVertexOverviewOutput {
 }
 
 export interface McpVertexPlanMcpProjectOutput {
-	[key: string]: unknown;
+	blueprint: {
+		serverName: string;
+		namespacePrefix: string;
+		projectType: "library" | "cli" | "webapp" | "game" | "monorepo" | "generic";
+		plugins: string[];
+		tools: {
+			name: string;
+			description: string;
+		}[];
+		prompts: {
+			name: string;
+			description: string;
+		}[];
+		skills: {
+			name: string;
+			description: string;
+		}[];
+		agents: {
+			slot: string;
+			description: string;
+		}[];
+		tests: boolean;
+		hasExistingServer: boolean;
+		defaults: {
+			keepLegacy: boolean;
+			reasons: string[];
+			warnings: string[];
+		};
+		notes: string[];
+	};
+	files: {
+		path: string;
+		content: string;
+	}[];
 }
 
 export interface McpVertexScaffoldOutput {
-	[key: string]: unknown;
+	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
+	dryRun: boolean;
+	files: {
+		path: string;
+		content: string;
+	}[];
+	written: string[];
+	skipped: string[];
+	moved: string[];
+	kept: string[];
+	errors: string[];
 }
 
 export interface McpVertexStatusOutput {
