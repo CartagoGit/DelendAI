@@ -47,9 +47,9 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 - **Muy bien**: Sitio estático Astro generado desde el live API del registry. Excelente i18n para 12 lenguas.
 - **Regular (Pagefind warning)**: Pagefind generaba una advertencia durante el build al no encontrar un contenedor con `data-pagefind-body`, lo que provocaba que se indexaran elementos ruidosos de navegación y layouts comunes en lugar de enfocarse solo en el contenido. (Se resolverá en `S3`).
 
-#### VS Code Extension (`apps/vscode`)
+#### VS Code Extension (`extensions/vscode`)
 - **Muy bien**: Cobertura sólida de 7 archivos de pruebas unitarias (16 tests en total).
-- **Regular (Exclusión de pruebas)**: La suite de pruebas de `apps/vscode` estaba excluida de la configuración de proyectos en el `vitest.config.ts` raíz, por lo que no se ejecutaban con el comando global de validación. (Se resolverá en `S2`).
+- **Regular (Exclusión de pruebas)**: La suite de pruebas de `extensions/vscode` estaba excluida de la configuración de proyectos en el `vitest.config.ts` raíz, por lo que no se ejecutaban con el comando global de validación. (Se resolverá en `S2`).
 
 ### 2. ¿Más skills / tools / agentes / plugins?
 - **Plugin de seguridad de dependencias**: Añadir integración offline opcional con herramientas como `npm audit` o alertas de vulnerabilidades OSV.
@@ -79,7 +79,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 - **Gate**: bun run lint:proposals
 - **Status**: pending
 
-### S2 — Include apps/vscode in workspace test suite
+### S2 — Include extensions/vscode in workspace test suite
 - **Files**: vitest.config.ts
 - **Gate**: bun run validate
 - **Status**: pending
@@ -97,7 +97,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 ## Acceptance
 
 - `bun run validate` es completamente verde (código de salida 0).
-- Todos los tests de `apps/vscode` se integran y pasan exitosamente en el flujo principal del monorepo.
+- Todos los tests de `extensions/vscode` se integran y pasan exitosamente en el flujo principal del monorepo.
 - El build de Pagefind no emite advertencias sobre la ausencia de `data-pagefind-body`.
 - El informe de auditoría cumple con todos los requisitos de `docs/scaffolds/ARCHITECTURE-AUDITS.md` y es validado exitosamente por `bun run lint:proposals`.
 
@@ -116,7 +116,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 
 | ID | Severity | Description | Files | Resolution Track |
 |---|---|---|---|---|
-| H1 | P3 | Exclusión de `apps/vscode` de la suite de pruebas del monorepo en la raíz | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | Se resolverá en slice `S2` |
+| H1 | P3 | Exclusión de `extensions/vscode` de la suite de pruebas del monorepo en la raíz | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | Se resolverá en slice `S2` |
 | H2 | P3 | Advertencia de tipos de TypeScript en el IDE sobre la propiedad `all` dentro de la configuración de cobertura de `vitest.config.ts` | [vitest.config.ts](file:///home/cartago/_projects/mcp-vertex/vitest.config.ts) | Documentado, mantenido por compatibilidad de cobertura global |
 | H3 | P3 | Advertencia en build de Astro sobre indexación de cuerpo en Pagefind por falta de `data-pagefind-body` | [Base.astro](file:///home/cartago/_projects/mcp-vertex/apps/web/src/layouts/Base.astro) | Se resolverá en slice `S3` |
 | H4 | P2 | Mitigación del bucle suave (soft-loop) en `auto_work` para tareas estancadas | [task-queue.ts](file:///home/cartago/_projects/mcp-vertex/plugins/proposals/src/lib/proposals/task-queue.ts) | Diferido a Propuesta `f120` |
@@ -131,7 +131,7 @@ Base de código extremadamente sólida, calificada con un **9.6/10** de media. D
 | Anti-deadlock / concurrencia | 9.6 | Primitivas robustas con bloqueos mediante exclusión mutua en archivos (`withFileMutex` y `writeFileAtomic`). |
 | Calidad de código fuente | 9.7 | Código fuente muy legible, sin warnings, excelente configuración de Biome. |
 | Documentación | 9.8 | Altísima calidad, ADRs exhaustivos, i18n impecable de 12 idiomas. |
-| Tests (estructura, cobertura, calidad) | 9.9 | Cobertura y velocidad excelentes en vitest. Inclusión de `apps/vscode` robustece el flujo global. |
+| Tests (estructura, cobertura, calidad) | 9.9 | Cobertura y velocidad excelentes en vitest. Inclusión de `extensions/vscode` robustece el flujo global. |
 | Seguridad operacional | 9.5 | Redacción de secretos y contención en espacio de trabajo implementadas de forma correcta. |
 | Genericidad (project-agnostic) | 9.7 | Sin lógica de dominio acoplada al núcleo del servidor o CLI. |
 | **Total (Average)** | **9.6** | **Excelente nivel de calidad arquitectónica y estabilidad.** |

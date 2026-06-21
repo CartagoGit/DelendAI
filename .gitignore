@@ -14,10 +14,10 @@ packages/*/build/
 apps/*/build/
 plugins/*/build/
 
-# Legacy: .vsix artefacts used to be dropped at apps/vscode/<name>.vsix before
+# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix before
 # the monorepo-wide dist/ convention. Track only the staged
-# dist/apps/vscode/<version>/<name>.vsix path; treat older top-level .vsix as
-# build artefacts. After the apps/vscode → extensions/vscode move (f00035),
+# dist/extensions/vscode/<version>/<name>.vsix path; treat older top-level .vsix as
+# build artefacts. After the extensions/vscode → extensions/vscode move (f00035),
 # the same rule applies to extensions/*/*.vsix.
 apps/*/*.vsix
 extensions/*/*.vsix

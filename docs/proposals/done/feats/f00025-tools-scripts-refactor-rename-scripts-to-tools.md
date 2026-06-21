@@ -51,7 +51,7 @@ Reglas:
 
 - Reescribir la lógica de los scripts `.sh` (awk/sed/find recursivo/declare -A) en algo idiomático-funcional: se portan 1:1 a TS con `node:fs/promises` + `node:child_process` cuando haga falta (find, date, sed) y se mantienen como side-effecting shells en el sentido de AGENTS.md. Lo importante es que sean `.ts`.
 - Crear un wrapper o helper `runScript(name, args)` para invocarlos desde otros sitios: cada script se invoca con `bun tools/scripts/<area>/<name>.script.ts` y nada más. Si en el futuro hace falta un wrapper, se discute en una propuesta aparte.
-- Mover `apps/web/scripts/*.ts` o `apps/vscode/scripts/*.ts`: esos viven dentro de su app y siguen su propia convención. Esta propuesta toca **solo `scripts/` y crea `tools/scripts/`**.
+- Mover `apps/web/scripts/*.ts` o `extensions/vscode/scripts/*.ts`: esos viven dentro de su app y siguen su propia convención. Esta propuesta toca **solo `scripts/` y crea `tools/scripts/`**.
 - Cambiar el comportamiento de `package.json` `scripts.*`: las claves siguen llamándose igual (`build`, `release`, `smoke`, `smoke:pack`, `validate`, `types:generate`, `config:schema`, `lint:proposals`, `lint:scaffolds`). Lo que cambia es el `bun scripts/X.ts` interno por `bun tools/scripts/<area>/<X>.script.ts`. Esto se hace en S4.
 - Renombrar `scripts/host/rename-audit-engine.ts` y `scripts/host/rename-audit-tool.ts` con sufijo `.script.ts` — no son entrypoints, son módulos importados por `host-server.script.ts`. Se mueven tal cual a `tools/scripts/host/`.
 

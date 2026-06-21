@@ -55,8 +55,8 @@ Base de código sólida y disciplinada (**8.9/10**), pero el estado *auditado en
 - **Mal (bug genuino, corregido en `S2`)**: `IStatusBarItem` (en `host-adapter.types.ts`) no declaraba `visible`, pero `FakeStatusBarItem` (en `tests/fake-host-adapter.ts`) y el spec `host-adapter.types.spec.ts` sí lo usaban — 3 errores `TS2339` reproducibles en `tsc --noEmit -p tsconfig.json` con caché fría. Esto bloqueaba *todo* `bun run validate` del monorepo (el script encadena `typecheck && lint && ...`), no solo el paquete en curso.
 - **Nota de proceso**: el paquete está deliberadamente incompleto (proposal `f00022` en `status: ready`, slices S1–S11 pendientes); el bug de tipos es responsabilidad de ese trabajo en curso, no un defecto de diseño del shell `IHostAdapter`.
 
-#### VS Code Extension (`apps/vscode`)
-- **Bien**: i18n completo (12 idiomas × 8 keys, verificado con `check:i18n`). Sigue excluido de `vitest.config.ts` raíz como proyecto propio (el slot fue ocupado por `apps/ide`, no por `apps/vscode`) — issue de cobertura de gate ya señalado por `a00021`/`a00024`, sin novedad aquí.
+#### VS Code Extension (`extensions/vscode`)
+- **Bien**: i18n completo (12 idiomas × 8 keys, verificado con `check:i18n`). Sigue excluido de `vitest.config.ts` raíz como proyecto propio (el slot fue ocupado por `apps/ide`, no por `extensions/vscode`) — issue de cobertura de gate ya señalado por `a00021`/`a00024`, sin novedad aquí.
 
 ### 2. Eficiencia / tokens / bucles / bloqueos
 - **Bucles**: el detector de loops (`l103`) está en producción y se disparó en vivo durante los tests (`no-progress` y `exact-repeat`), confirmando que la mitigación de `a00021` funciona end-to-end, no solo a nivel de unidad.
@@ -73,7 +73,7 @@ Base de código sólida y disciplinada (**8.9/10**), pero el estado *auditado en
 - Resolver `f00020`, `f00019` o `l00008` (ya creadas por auditorías previas; se referencian, no se duplican).
 - Resolver el conflicto de merge detectado en `apps/web/src/data/skills.json` más allá de lo necesario para mantener `bun run validate` verde (se documenta como evidencia operativa, no como un finding con slice propio).
 - Completar la propuesta `f00022` (IDE extension v2) — solo se corrigen los bugs de tipos que bloqueaban el gate global.
-- Re-auditar a fondo `apps/vscode` (ya cubierto por `a00021`/`a00024`).
+- Re-auditar a fondo `extensions/vscode` (ya cubierto por `a00021`/`a00024`).
 
 ## Slices
 

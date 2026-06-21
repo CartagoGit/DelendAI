@@ -19,7 +19,7 @@ acceptance:
 
 ## Goal
 
-- **Audited Scope**: Monorepo completo — `packages/core`, `packages/client`, los 11 plugins cargados (`git`, `search`, `memory`, `docs`, `rules`, `quality`, `deps`, `proposals`, `notification`, `status-marker`, `test-convention`), `apps/web` (Astro) y `apps/vscode` (extensión).
+- **Audited Scope**: Monorepo completo — `packages/core`, `packages/client`, los 11 plugins cargados (`git`, `search`, `memory`, `docs`, `rules`, `quality`, `deps`, `proposals`, `notification`, `status-marker`, `test-convention`), `apps/web` (Astro) y `extensions/vscode` (extensión).
 - **Audited HEAD**: `f103a96dc7264774e617fc06efc0e848c73ab26b` (rama `develop`).
 - **Revisor / Model**: GitHub Copilot (MiniMax-M3) ejecutando a través del orquestador `@mcp-vertex-orchestrator`.
 - **Date**: 2026-06-21
@@ -61,9 +61,9 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 #### `apps/web` (Astro)
 - **Muy bien**: `astro.config.mjs` apunta al registry vivo vía `LOCAL_ALIASES` (`scripts/lib/local-aliases.mjs`); p112 s2 mantiene `tsconfig.json#paths` y `vite.resolve.alias` sincronizados vía `local-aliases.spec.ts`. Sin drift.
 - **Muy bien**: `check-i18n.ts` verifica completeness para las 12 lenguas + 71 catálogos per-tool. Las lenguas con keys faltantes rompen el build.
-- **Regular (drift con vscode)**: las 12 lenguas están duplicadas entre `apps/web/src/i18n/langs/` y `apps/vscode/src/i18n/langs/`. Si una propuesta de "lengua adicional" entra, hay que tocar 2 sitios. **(Hallazgo H6, BAJO)**.
+- **Regular (drift con vscode)**: las 12 lenguas están duplicadas entre `apps/web/src/i18n/langs/` y `extensions/vscode/src/i18n/langs/`. Si una propuesta de "lengua adicional" entra, hay que tocar 2 sitios. **(Hallazgo H6, BAJO)**.
 
-#### `apps/vscode` (extensión)
+#### `extensions/vscode` (extensión)
 - **Muy bien**: `extension.ts:103-105` usa `loadVscodeApi = async () => (await import('vscode'))` con `as unknown as IVscodeApi` — patrón de inyección declarado explícitamente, no hack. Permite tests sin VS Code.
 - **Muy bien**: `check-i18n.ts` valida las 12 lenguas × 8 keys.
 - **Bien (sin tests de extension.ts)**: solo se testea lo que esté dentro de `tests/`. Aceptable porque `McpStdioClient` está cubierto en `@mcp-vertex/client`.
@@ -115,7 +115,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 - **Files**:
   - `apps/shared/i18n-langs.ts` (nuevo)
   - `apps/web/src/i18n/langs/index.ts` (importa del shared)
-  - `apps/vscode/src/i18n/langs/index.ts` (importa del shared)
+  - `extensions/vscode/src/i18n/langs/index.ts` (importa del shared)
   - `.gitignore` (añadir `*.tsbuildinfo`)
   - Limpiar `plugins/test-convention/tsconfig.tsbuildinfo` del WD
 - **Gate**: `bun run validate`
@@ -153,7 +153,7 @@ El monorepo está **arquitectónicamente sano y disciplinado**. Los invariantes 
 | H2 | P0 | Sync I/O (`existsSync`/`readdirSync`/`readFileSync`) en `notification/watcher.ts` dentro de `setInterval` — bloquea event loop. | [watcher.ts:25,138,179,222-224,237,240,282](plugins/notification/src/lib/watcher.ts) | Deferred to Proposal `f00019` |
 | H3 | P1 | 6 `outputSchema` `z.object({}).catchall(z.unknown())` residuales: 3 en `bootstrap-tool`, 1 en `scaffold-tool`, 1 en `rules-tools`, 1 en `proposals/adopt.tool`. Tipos `IProjectAnalysis`/`IServerPlan`/`IScaffoldReport`/`IRulesManifest`/`ISwarmPathLayout` ya existen. | [bootstrap-tool.ts:99,138,186](packages/core/src/lib/bootstrap/bootstrap-tool.ts), [scaffold-tool.ts:291](packages/core/src/lib/scaffold/scaffold-tool.ts), [rules-tools.ts:199](plugins/rules/src/lib/rules-tools.ts), [proposals/adopt.tool.ts:81](plugins/proposals/src/lib/tools/proposals/adopt.tool.ts) | Deferred to Proposal `r00002` |
 | H4 | P1 | `writeFileAtomicSync` y `quarantineCorruptFileSync` no tienen JSDoc que recuerde "boot-only" en el código (sí en AGENTS.md). Riesgo de import desde un handler por error. | [atomic-write.ts:36-43](packages/core/src/lib/shared/atomic-write.ts), [quarantine-corrupt-file.ts:65](packages/core/src/lib/shared/quarantine-corrupt-file.ts) | Deferred to Proposal `r00002` (mismo lote de hygiene de primitivas) |
-| H5 | P2 | 12 lenguas duplicadas entre `apps/web/src/i18n/langs/` y `apps/vscode/src/i18n/langs/`. Si se añade una lengua, hay que tocar 2 sitios. | `apps/web/src/i18n/langs/`, `apps/vscode/src/i18n/langs/` | Resolved in slice `S2` |
+| H5 | P2 | 12 lenguas duplicadas entre `apps/web/src/i18n/langs/` y `extensions/vscode/src/i18n/langs/`. Si se añade una lengua, hay que tocar 2 sitios. | `apps/web/src/i18n/langs/`, `extensions/vscode/src/i18n/langs/` | Resolved in slice `S2` |
 | H6 | P3 | `plugins/test-convention/tsconfig.tsbuildinfo` aparece en el WD; falta `*.tsbuildinfo` en `.gitignore` raíz. | `.gitignore`, `plugins/test-convention/tsconfig.tsbuildinfo` | Resolved in slice `S2` |
 | H7 | P3 | `audit` plugin solo expone 2 tools (`audit_plan`, `audit_consolidate`); el README menciona capacidades de brief que el plugin no implementa. Decisión de scope probablemente deliberada. | [plugins/audit/src/index.ts:140](plugins/audit/src/index.ts), [plugins/audit/README.md](plugins/audit/README.md) | Documentado — no requiere acción |
 | H8 | P3 | `scripts/derive-version.ts` (decide semver desde Conventional Commits) no tiene tests deterministas. Es la única pieza que decide la versión de release. | [scripts/derive-version.ts](scripts/derive-version.ts) | Deferred a propuesta individual (futuro) |

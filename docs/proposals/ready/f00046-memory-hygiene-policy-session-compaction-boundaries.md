@@ -50,7 +50,7 @@ Close the memory/context gaps surfaced by a00027 S3: define what deserves durabl
 
 ### S3 — Session compaction and invalidation hooks
 - **Files**: plugins/proposals/src/lib/swarm/continuity-policy.ts, plugins/proposals/src/lib/swarm/round-context-sources.ts, plugins/memory/tests/src/lib/tools.spec.ts, plugins/proposals/tests/src/lib/swarm/continuity-policy.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "The repo defines or implements a clearer trigger for when stale session context should be compacted or invalidated."

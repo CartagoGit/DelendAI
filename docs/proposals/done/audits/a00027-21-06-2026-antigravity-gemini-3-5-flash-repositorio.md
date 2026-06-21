@@ -38,7 +38,7 @@ La suite global de pruebas (1,334 tests) y el chequeo de tipos y linter son comp
 
 #### Aplicaciones (`apps/*`)
 - **Muy bien**: La app Astro (`apps/web`) tiene traducción completa en 12 idiomas y se compila sin errores. Hemos actualizado `apps/web/src/data/install.ts` para reflejar la ruta de configuración correcta de Antigravity (`~/.gemini/antigravity-ide/mcp_config.json`).
-- **Muy bien**: La extensión de VS Code (`apps/vscode`) ya se incluye en la suite global de vitest y tiene try/catch robusto en sus comandos de cliente MCP.
+- **Muy bien**: La extensión de VS Code (`extensions/vscode`) ya se incluye en la suite global de vitest y tiene try/catch robusto en sus comandos de cliente MCP.
 
 ### 2. Higiene transversal
 
