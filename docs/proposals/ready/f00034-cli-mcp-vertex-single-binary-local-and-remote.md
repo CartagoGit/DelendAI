@@ -295,10 +295,11 @@ packages/
   - The README of `packages/cli` is the single source of truth for "how to use the CLI". `docs/CROSS-IDE.md` and `docs/PLUGINS-MCP-VERTEX.md` get a one-line cross-link.
   - At the end of S7, the package is **`private: false` and `publishConfig.access: "public"`**, mirroring the 15 other publishable packages. The first `release.yml` run after S7 includes `@mcp-vertex/cli@0.1.0` in the lockstep batch automatically — no workflow change, no extra flag, no manual step. `c00001` is effectively superseded; its frontmatter is updated to add a `Superseded by: f00034` line, and the file moves from `paused/` to `done/` only when the user actually runs the publish (so the master audit's pointer stays accurate in the meantime).
 
-**Residual before closing S7**: localized CLI help (`--lang=<locale>`) and a
-dedicated command coverage gate remain to be implemented. The production CLI,
-safe write path, remote stdio path, import discipline gate, README and publish
-docs are already shipped and covered by `bun run validate`.
+**Residual before closing S7**: a dedicated command coverage gate remains to
+be implemented. Localized CLI help (`--lang=es`, `--lang=ja`, fallback to
+English), the production CLI, safe write path, remote stdio path, import
+discipline gate, README and publish docs are already shipped and covered by
+`bun run validate`.
 
 ## dependency graph
 

@@ -190,7 +190,10 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	// 2. Continuity policy. Empty policy → no enforcement.
 	const continuityResult: IContinuityCheckResult = evaluateContinuityPolicy(
 		input.continuityPolicy,
-		input.observedContinuity,
+		{
+			...input.observedContinuity,
+			checkpointPresent: input.checkpointPresent,
+		},
 	);
 	for (const v of continuityResult.violations) {
 		violations.push(continuityToSwarm(v));
@@ -217,21 +220,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 		});
 	}
 
-	// 5. Checkpoint policy: requireCheckpointAfterTask → block on missing.
-	if (
-		input.continuityPolicy.requireCheckpointAfterTask === true &&
-		!input.checkpointPresent
-	) {
-		violations.push({
-			field: 'checkpoint',
-			message:
-				'continuityPolicy.requireCheckpointAfterTask is true but no checkpoint was emitted for the most recent task.',
-			severity: 'block',
-			source: 'checkpoint',
-		});
-	}
-
-	// 6. Closure decision.
+	// 5. Closure decision.
 	const hasBlock = violations.some((v) => v.severity === 'block');
 	const withinSwarmBudget = !budgetResult.violations.some(
 		(v) => v.severity === 'block',
@@ -239,11 +228,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	const withinContinuityPolicy =
 		continuityResult.withinPolicy &&
 		input.agentTree.orphanCount === 0 &&
-		staleLocks.length === 0 &&
-		!(
-			input.continuityPolicy.requireCheckpointAfterTask === true &&
-			!input.checkpointPresent
-		);
+		staleLocks.length === 0;
 
 	// Decision policy:
 	//   - block → 'open_fix' (operator or implementation_runner fixes)

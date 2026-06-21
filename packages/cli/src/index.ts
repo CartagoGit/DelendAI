@@ -39,7 +39,7 @@ export const runHumanCli = async (
 		return EXIT_CODE.OK;
 	}
 	if (parsed.help) {
-		process.stdout.write(renderHelp(commands));
+		process.stdout.write(renderHelp(commands, parsed.globals.lang));
 		return EXIT_CODE.OK;
 	}
 

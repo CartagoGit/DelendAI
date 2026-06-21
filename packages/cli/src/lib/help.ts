@@ -1,26 +1,34 @@
 import { CLI_VERSION } from '../contracts/constants/version.constant';
+import { helpTranslationFor } from '../contracts/constants/help-translation.constant';
 import type { ICliCommand } from '../contracts/interfaces/cli-command.interface';
 
-export const renderHelp = (commands: readonly ICliCommand[]): string =>
-	[
+export const renderHelp = (
+	commands: readonly ICliCommand[],
+	lang = 'en',
+): string => {
+	const t = helpTranslationFor(lang);
+	const summaryOf = (command: ICliCommand): string =>
+		t.commandSummaries[command.name] ?? command.summary;
+	return [
 		`mcp-vertex ${CLI_VERSION}`,
 		'',
-		'Usage:',
+		t.usage,
 		'  mcpv [global flags] <command> [args]',
 		'',
-		'Global flags:',
-		'  --workspace <path>   Workspace root (default: current directory)',
-		'  --remote=stdio       Use stdio transport (tcp:// is reserved for v2)',
-		'  --plugins=a,b        Extra plugins to load into the MCP server',
-		'  --preset=<name>      Core plugin preset passed to the MCP server',
-		'  --config=<path>      Config file passed to the MCP server',
-		'  --json               Print stable JSON',
-		'  --help, -h           Show help',
-		'  --version, -v        Show version',
+		t.globalFlags,
+		`  --workspace <path>   ${t.flagWorkspace}`,
+		`  --remote=stdio       ${t.flagRemote}`,
+		`  --plugins=a,b        ${t.flagPlugins}`,
+		`  --preset=<name>      ${t.flagPreset}`,
+		`  --config=<path>      ${t.flagConfig}`,
+		`  --json               ${t.flagJson}`,
+		`  --help, -h           ${t.flagHelp}`,
+		`  --version, -v        ${t.flagVersion}`,
 		'',
-		'Commands:',
+		t.commands,
 		...commands.map(
-			(command) => `  ${command.name.padEnd(18)} ${command.summary}`,
+			(command) => `  ${command.name.padEnd(18)} ${summaryOf(command)}`,
 		),
 		'',
 	].join('\n');
+};

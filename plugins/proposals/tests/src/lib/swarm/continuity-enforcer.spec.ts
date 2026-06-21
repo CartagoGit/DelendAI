@@ -89,6 +89,19 @@ describe('enforceContinuity — block violations', () => {
 			'forbidReReadOnUnchangedDigest',
 		);
 	});
+
+	it('blocks when requireCheckpointAfterTask is violated', () => {
+		const policy: IContinuityPolicy = {
+			requireCheckpointAfterTask: true,
+		};
+		const result = enforceContinuity({
+			policy,
+			observed: { checkpointPresent: false },
+			decision: baseDecision,
+		});
+		expect(result.decision.mode).toBe('reset');
+		expect(result.decision.reason).toContain('requireCheckpointAfterTask');
+	});
 });
 
 describe('enforceContinuity — warn-only violations', () => {
