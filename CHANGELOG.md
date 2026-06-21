@@ -92,6 +92,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Chaos/adversarial coordination tests and a strict end-to-end net that
   validates every read-only tool's `outputSchema` over the real MCP protocol.
 
+### Changed (BREAKING)
+- `@mcp-vertex/ide` renamed to `@mcp-vertex/ui-extension`. The
+  public API (interfaces, panels, dashboard renderer) is byte-
+  identical; only the package name and its location changed
+  (`apps/ide` → `packages/ui-extension`). Consumers keep working
+  for one minor via the legacy `@mcp-vertex/ide` aliases still
+  wired in `tsconfig.base.json` and `vitest.shared.ts`.
+- `mcp-vertex-vscode` carries `displayName: "@mcp-vertex/extension-vscode"`
+  to reflect the rename (`apps/vscode` → `extensions/vscode`). The
+  flat `name: "mcp-vertex-vscode"` is kept because `vsce` rejects
+  scoped names with `@` or `/`; the published `.vsix` filename is
+  therefore still `mcp-vertex-vscode-<version>.vsix` (see R1 in
+  `docs/proposals/ready/f00035-...md`).
+- Bun workspaces now include `extensions/*` alongside `apps/*`;
+  the `MonorepoGroup` union in `tools/scripts/lib/monorepo-paths.ts`
+  was extended with `'extensions'` so all path helpers accept the
+  new group.
+
 ### Changed
 - **l111 closed: post-closure audit hardening landed.** Five findings
   from the 16-06 master audit, plus two new ones discovered this

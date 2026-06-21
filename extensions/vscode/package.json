@@ -1,6 +1,6 @@
 {
-	"name": "@mcp-vertex/extension-vscode",
-	"displayName": "mcp-vertex",
+	"name": "mcp-vertex-vscode",
+	"displayName": "@mcp-vertex/extension-vscode",
 	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
 	"version": "1.0.0",
 	"publisher": "cartago",

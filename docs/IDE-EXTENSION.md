@@ -145,7 +145,7 @@ bun run lint:brand         # verify logo.svg drift
 bun run check:i18n:ide      # 12 langs × 39 keys parity
 bun run --cwd extensions/vscode type
 bun run --cwd extensions/vscode test
-bun run --cwd extensions/vscode package   # produces @mcp-vertex-extension-vscode-1.0.0.vsix
+bun run --cwd extensions/vscode package   # produces mcp-vertex-vscode-1.0.0.vsix (flat name; displayName is @mcp-vertex/extension-vscode)
 ```
 
 ## Troubleshooting
