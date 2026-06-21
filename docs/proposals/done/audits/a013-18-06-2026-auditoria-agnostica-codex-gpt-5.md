@@ -1,3 +1,12 @@
+---
+id: a013
+kind: audit
+title: "Auditoría Agnóstica — Codex (GPT-5)"
+status: done
+date: 2026-06-18T08:39:00Z
+track: archive
+---
+
 # 18-06-2026 - Codex (GPT-5) [auditoria agnostica 11 de 10]
 
 Auditoria independiente del workspace `mcp-vertex`, hecha sobre el estado real del

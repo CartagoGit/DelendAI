@@ -1,3 +1,12 @@
+---
+id: a011
+kind: audit
+title: "Auditoría Independiente — GitHub Copilot (MiniMax-M3)"
+status: done
+date: 2026-06-17T12:51:25Z
+track: archive
+---
+
 # 17-06-2026 · Auditoría Independiente — `@cartago-git/mcp-vertex`
 
 > **Documento independiente.** Hecha desde cero leyendo el código del monorepo

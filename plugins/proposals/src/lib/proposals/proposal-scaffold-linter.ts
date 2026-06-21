@@ -320,12 +320,24 @@ const lintFilenameAndFolder = (
 	if (typeof status === 'string' && status in PROPOSAL_STATUSES) {
 		const expectedFolder = STATUS_TO_FOLDER[status as IProposalStatus];
 		const pathParts = path.split('/');
-		const actualFolder = pathParts[pathParts.length - 2];
-		if (actualFolder !== expectedFolder) {
+		// f119: terminal statuses (`done`, `retired`) may live under a kind
+		// sub-folder (e.g. `done/audits/a001-...`) as a filesystem-only
+		// organisation convention. We accept any path that STARTS WITH the
+		// expected status folder — the sub-folder is a kind mirror, not a
+		// separate status. Non-terminal statuses (ready, in-progress,
+		// review, paused, blocked) still require the exact folder.
+		const isTerminal = status === 'done' || status === 'retired';
+		const immediateParent = pathParts[pathParts.length - 2];
+		const matches =
+			immediateParent === expectedFolder ||
+			(isTerminal &&
+				pathParts.includes(expectedFolder) &&
+				pathParts.indexOf(expectedFolder) === pathParts.length - 2);
+		if (!matches) {
 			issues.push({
 				line: 0,
-				message: `frontmatter status "${status}" expects folder "${expectedFolder}" but file lives in "${actualFolder}"`,
-				fix: `Move the file to docs/proposals/${expectedFolder}/, or update status to match its current folder.`,
+				message: `frontmatter status "${status}" expects folder "${expectedFolder}" but file lives in "${immediateParent}"`,
+				fix: `Move the file to docs/proposals/${expectedFolder}/ (or to docs/proposals/${expectedFolder}/<kind-subfolder>/ for terminal statuses), or update status to match its current folder.`,
 			});
 		}
 	}

@@ -1,3 +1,12 @@
+---
+id: a014
+kind: audit
+title: "Auditoría Agnóstica — GPT-5.4"
+status: done
+date: 2026-06-18T08:39:00Z
+track: archive
+---
+
 # 18-06-2026 · Auditoría Agnóstica MCP-Core (GPT-5.4)
 
 > Auditoría nueva, independiente y agnóstica del workspace `mcp-vertex`, hecha contra el código y el estado ejecutable actual del repositorio el 2026-06-18. No toma como fuente de verdad las auditorías previas; solo se ha mirado de ellas el patrón de nombre y la forma del documento para mantener coherencia editorial dentro de `docs/proposals/audits`.

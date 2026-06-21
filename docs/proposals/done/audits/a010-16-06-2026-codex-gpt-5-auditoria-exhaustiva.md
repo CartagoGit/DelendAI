@@ -1,3 +1,12 @@
+---
+id: a010
+kind: audit
+title: "Auditoría exhaustiva — Codex (GPT-5)"
+status: done
+date: 2026-06-16T23:43:13Z
+track: archive
+---
+
 # Auditoria exhaustiva de `mcp-vertex` y plugins - Codex (GPT-5)
 
 > **Fecha:** 16-06-2026  

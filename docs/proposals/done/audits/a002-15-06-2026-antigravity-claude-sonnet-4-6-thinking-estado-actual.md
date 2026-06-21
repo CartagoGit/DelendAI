@@ -1,3 +1,12 @@
+---
+id: a002
+kind: audit
+title: "Auditoría exhaustiva del estado actual — Antigravity (Claude Sonnet 4.6 Thinking)"
+status: done
+date: 2026-06-15T23:13:30Z
+track: archive
+---
+
 # Auditoría exhaustiva de `@cartago-git/mcp-vertex` — Antigravity (Claude Sonnet 4.6 Thinking)
 
 > **Fecha:** 15-06-2026  

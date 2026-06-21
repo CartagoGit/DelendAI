@@ -1,3 +1,12 @@
+---
+id: a012
+kind: audit
+title: "Auditoría del estado actual — Claude Code (Opus 4.8)"
+status: done
+date: 2026-06-17T18:18:00Z
+track: archive
+---
+
 # Auditoría del estado actual de `@cartago-git/mcp-vertex` — Claude Code (Opus 4.8)
 
 > Fecha: 17-06-2026 (tarde, casa). Auditoría **del estado ACTUAL** tras cerrar

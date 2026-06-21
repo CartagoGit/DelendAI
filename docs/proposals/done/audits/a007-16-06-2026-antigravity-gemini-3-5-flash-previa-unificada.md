@@ -1,3 +1,12 @@
+---
+id: a007
+kind: audit
+title: "Auditoría exhaustiva [previa-unificada] — Antigravity (Gemini 3.5 Flash)"
+status: done
+date: 2026-06-16T23:43:13Z
+track: archive
+---
+
 # Auditoría unificada de `@cartago-git/mcp-vertex` — Sesión de Auditoría Exhaustiva 2026-06-16
 
 > **Fecha:** 16 de Junio de 2026.
