@@ -115,8 +115,20 @@
 	margin: 0 0.15rem;
 }
 
-// "More" dropdown — native <details>/<summary> styled to look like another
-// nav link. No JS, fully keyboard-accessible, and themes follow currentColor.
+// "More" dropdown (x124 S4). Replaces the previous native
+// <details>/<summary> with a custom button + panel so we can:
+//   - close on outside click (a native <details> only closes on
+//     re-toggle of the same trigger),
+//   - animate the open / close transition,
+//   - keep the panel fully keyboard-accessible (trigger is a
+//     <button aria-haspopup>, panel is role="menu").
+// The panel is mounted hidden via the `hidden` HTML attribute; we
+// remove the attribute on open and the panel is animated into
+// view with `transform: scaleY(0 → 1)` + `opacity: 0 → 1`. On
+// close we keep the panel in the DOM (and toggle the
+// `aria-expanded` parent state) so the close transition can
+// play; the `hidden` attribute is restored by the JS after the
+// 200ms animation ends.
 .nav__more {
 	position: relative;
 
@@ -136,16 +148,10 @@
 	padding: 0.3rem 0.55rem;
 	border-radius: 6px;
 	user-select: none;
+	border: none;
+	font-family: inherit;
 	transition: color 0.18s ease, background 0.18s ease;
 
-	/* stylelint-disable-next-line selector-max-pseudo -- vendor pseudo on a native UA element */
-	&::-webkit-details-marker {
-		display: none;
-	}
-	/* stylelint-disable-next-line scoped-bem/selector -- native <summary> marker. */
-	&::marker {
-		content: '';
-	}
 	&:hover,
 	&:focus-visible {
 		color: var(--fg);
@@ -156,7 +162,7 @@
 		outline-offset: 2px;
 	}
 }
-.nav__more[open] {
+.nav__more:has(#nav-more-trigger[aria-expanded="true"]) {
 	--nav-more-summary-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 	--nav-more-summary-color: var(--fg);
 	--nav-more-caret-transform: rotate(180deg);
@@ -174,11 +180,28 @@
 	background: var(--card);
 	border: 1px solid var(--line);
 	border-radius: 10px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
 	z-index: 30;
+	transform-origin: top right;
+	transform: scaleY(0);
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		transform 0.18s ease,
+		opacity 0.16s ease,
+		visibility 0s linear 0.18s;
+}
+.nav__more:has(#nav-more-trigger[aria-expanded="true"]) .nav__more-panel {
+	transform: scaleY(1);
+	opacity: 1;
+	visibility: visible;
+	transition:
+		transform 0.18s ease,
+		opacity 0.16s ease,
+		visibility 0s linear 0s;
 }
 .nav__more-link {
 	color: var(--muted);
@@ -187,10 +210,21 @@
 	border-radius: 6px;
 	white-space: nowrap;
 
-	&:hover {
+	&:hover,
+	&:focus-visible {
 		color: var(--fg);
 		text-decoration: none;
 		background: color-mix(in srgb, var(--accent) 9%, transparent);
+		outline: none;
+	}
+}
+// Respect users who have asked for less motion: open / close
+// becomes instant (no scale / fade) and the panel snaps in.
+@media (prefers-reduced-motion: reduce) {
+	.nav__more-panel,
+	.nav__more:has(#nav-more-trigger[aria-expanded="true"]) .nav__more-panel {
+		transition: none;
+		transform: none;
 	}
 }
 

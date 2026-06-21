@@ -48,10 +48,12 @@ const drawerLinks = [
 ---
 
 {/* `transition:persist` keeps the nav mounted across View Transitions so the
-    header stops "jumping". `transition:name="site-nav"` anchors it for the
-    browser's View Transitions API; we then disable the crossfade (see
-    global.scss) so the nav stays still while only <main> animates. */}
-<nav class="nav" transition:persist transition:name="site-nav" aria-label="Primary">
+    header stops "jumping". We intentionally do NOT set `transition:name`
+    here: the name would trigger a morph between the old and new nav state
+    on every navigation, and the nav contents (hrefs, labels) change with
+    the language, producing a visible flicker. The `aria-label` and the
+    script below are the accessibility + binding source of truth. */}
+<nav class="nav" transition:persist aria-label="Primary">
 	<div class="container nav__inner">
 		<a class="nav__brand" href={homeHref}>
 			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
@@ -60,12 +62,23 @@ const drawerLinks = [
 		<div class="nav__links" role="navigation">
 			{navSections.map((l) => <a class="nav__link" href={l.href}>{l.label}</a>)}
 			<span class="nav__divider" aria-hidden="true"></span>
-			{/* Core/plugin surfaces live inside a native <details> dropdown so
-			    the row stays on one line on tablet widths. <details>/<summary>
-			    are keyboard-accessible without JS and the close-on-outside-click
-			    behaviour comes for free in modern browsers. */}
-			<details class="nav__more">
-				<summary class="nav__more-summary">
+			{/* "More" dropdown (x124 S4). Replaces the previous native
+			    <details> with a button + panel that we drive ourselves.
+			    A <details> closes only when the *same* trigger is
+			    clicked again, not on outside click, and the browser
+			    provides no animation. Driving the open state from a
+			    small script gives us outside-click close, Escape
+			    close, ArrowDown focus into the panel, and a smooth
+			    open/close animation that respects prefers-reduced-motion. */}
+			<div class="nav__more">
+				<button
+					type="button"
+					class="nav__more-summary"
+					id="nav-more-trigger"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-controls="nav-more-panel"
+				>
 					{t.nav.more}
 					<svg
 						class="nav__more-caret"
@@ -81,11 +94,17 @@ const drawerLinks = [
 					>
 						<path d="M3 4.5l3 3 3-3"></path>
 					</svg>
-				</summary>
-				<div class="nav__more-panel" role="menu">
+				</button>
+				<div
+					class="nav__more-panel"
+					id="nav-more-panel"
+					role="menu"
+					aria-labelledby="nav-more-trigger"
+					hidden
+				>
 					{navCore.map((l) => <a class="nav__more-link" href={l.href} role="menuitem">{l.label}</a>)}
 				</div>
-			</details>
+			</div>
 			{/* GitHub: icon-only link to keep the row compact. The accessible
 			    name still comes from `aria-label` so screen readers say "GitHub",
 			    not "GitHub, link". */}
@@ -133,7 +152,6 @@ const drawerLinks = [
 	aria-label={t.nav.menu}
 	hidden
 	transition:persist
-	transition:name="nav-drawer"
 >
 	<div class="drawer__backdrop" data-drawer-close></div>
 	<aside class="drawer__panel">
@@ -218,4 +236,78 @@ const drawerLinks = [
 	};
 	setupDrawer();
 	document.addEventListener('astro:page-load', setupDrawer);
+
+	// "More" dropdown (x124 S4). Open/close on trigger click, outside
+	// click, or Escape; ArrowDown moves focus into the panel. Re-runs
+	// after every View Transition so the listeners don't accumulate.
+	let moreAbort;
+	const setupMore = () => {
+		moreAbort?.abort();
+		moreAbort = new AbortController();
+		const { signal } = moreAbort;
+
+		const trigger = document.getElementById('nav-more-trigger');
+		const panel = document.getElementById('nav-more-panel');
+		if (!trigger || !panel) return;
+
+		const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
+		const open = () => {
+			trigger.setAttribute('aria-expanded', 'true');
+			panel.removeAttribute('hidden');
+			// Move focus to the first menu item so keyboard users can
+			// continue with ArrowDown / Enter.
+			const first = panel.querySelector<HTMLElement>('.nav__more-link');
+			first?.focus();
+		};
+		const close = ({ restoreFocus = true } = {}) => {
+			if (!isOpen()) return;
+			trigger.setAttribute('aria-expanded', 'false');
+			// Wait for the open/close transition to end before hiding the
+			// panel — the panel uses `visibility: hidden` via
+			// `[aria-expanded="false"]` rather than `display: none` so the
+			// CSS transition can play; the `hidden` attribute is the
+			// belt-and-braces removal from the a11y tree.
+			window.setTimeout(() => {
+				if (!isOpen()) panel.setAttribute('hidden', '');
+			}, 200);
+			if (restoreFocus) trigger.focus();
+		};
+		const toggle = () => (isOpen() ? close() : open());
+
+		trigger.addEventListener('click', (e) => {
+			e.preventDefault();
+			toggle();
+		}, { signal });
+		trigger.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				open();
+			}
+		}, { signal });
+		// Outside click: close when the user clicks anywhere outside the
+		// trigger or the panel. `pointerdown` is more responsive than
+		// `click` (the menu doesn't flash closed-then-open on tap).
+		document.addEventListener('pointerdown', (e) => {
+			if (!isOpen()) return;
+			const target = e.target as Node | null;
+			if (target && !trigger.contains(target) && !panel.contains(target)) {
+				close({ restoreFocus: false });
+			}
+		}, { signal });
+		// Escape closes and returns focus to the trigger.
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && isOpen()) {
+				e.preventDefault();
+				close();
+			}
+		}, { signal });
+		// Close after a menu item is activated (a normal left-click
+		// would follow the anchor; this is the user gesture firing
+		// before navigation starts).
+		for (const link of panel.querySelectorAll<HTMLAnchorElement>('.nav__more-link')) {
+			link.addEventListener('click', () => close({ restoreFocus: false }), { signal });
+		}
+	};
+	setupMore();
+	document.addEventListener('astro:page-load', setupMore);
 </script>

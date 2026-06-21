@@ -39,12 +39,17 @@
 	backdrop-filter: blur(2px);
 }
 .modal__panel {
+	// Anchor to a fixed top offset (x124 S3) so the panel does not drift
+	// when its inner contents grow or shrink — the search modal used to
+	// re-centre on every keystroke because the result list changed the
+	// panel's height. Centring on top instead of vertical-centre keeps
+	// the top edge stable for every variant of the modal.
 	position: absolute;
-	top: 50%;
+	top: 6vh;
 	left: 50%;
-	transform: translate(-50%, -50%) scale(0.94);
+	transform: translateX(-50%) scale(0.94);
 	width: min(28rem, calc(100vw - 2rem));
-	max-height: calc(100vh - 2rem);
+	max-height: 88vh;
 	overflow: auto;
 	background: var(--bg);
 	border: 1px solid var(--line);
@@ -63,11 +68,11 @@
 @keyframes modal-pop-in {
 	from {
 		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.94);
+		transform: translateX(-50%) scale(0.94);
 	}
 	to {
 		opacity: 1;
-		transform: translate(-50%, -50%) scale(1);
+		transform: translateX(-50%) scale(1);
 	}
 }
 .modal__head {
