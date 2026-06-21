@@ -44,9 +44,23 @@ interface ITomlTable {
 const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 	const tables: ITomlTable[] = [];
 	let current: { name: string; entries: Map<string, string> } | null = null;
+	let accumulatingKey: string | null = null;
+	let accumulatingValue = '';
+
 	for (const rawLine of raw.split('\n')) {
 		const line = rawLine.trim();
 		if (line === '' || line.startsWith('#')) continue;
+
+		if (accumulatingKey !== null && current) {
+			accumulatingValue += ` ${line}`;
+			if (line.includes(']')) {
+				current.entries.set(accumulatingKey, accumulatingValue.trim());
+				accumulatingKey = null;
+				accumulatingValue = '';
+			}
+			continue;
+		}
+
 		const heading = /^\[([^\]]+)\]$/.exec(line);
 		if (heading) {
 			if (current)
@@ -57,7 +71,13 @@ const splitTomlTables = (raw: string): readonly ITomlTable[] => {
 		const kv = /^([^=]+?)\s*=\s*(.+)$/.exec(line);
 		if (kv && current) {
 			const key = (kv[1] ?? '').trim().replace(/^"(.*)"$/, '$1');
-			current.entries.set(key, (kv[2] ?? '').trim());
+			const val = (kv[2] ?? '').trim();
+			if (val.startsWith('[') && !val.endsWith(']')) {
+				accumulatingKey = key;
+				accumulatingValue = val;
+			} else {
+				current.entries.set(key, val);
+			}
 		}
 	}
 	if (current) tables.push({ name: current.name, entries: current.entries });
