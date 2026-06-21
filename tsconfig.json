@@ -12,5 +12,5 @@
 		"examples/*/tests/**/*",
 		"scripts/**/*"
 	],
-	"exclude": ["plugins/audit/**/*"]
+	"exclude": []
 }

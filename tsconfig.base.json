@@ -96,7 +96,12 @@
 			"@mcp-vertex/test-convention/public": [
 				"./plugins/test-convention/src/public/index.ts"
 			],
-			"@mcp-vertex/test-convention/*": ["./plugins/test-convention/src/*"]
+			"@mcp-vertex/test-convention/*": [
+				"./plugins/test-convention/src/*"
+			],
+			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
+			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
+			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
