@@ -6,7 +6,15 @@ track: apps+monorepo+docs
 date: 2026-06-21
 kind: feat
 title: Rename IDE shell + relocate extensions — apps/ide → packages/ui-extension, apps/vscode → extensions/vscode, app name → ui-extension / extension-vscode
-shipped-in: []
+shipped-in:
+    - '5cc6536:feat(monorepo): wire @mcp-vertex/ui-extension tsconfig + vitest paths (S2)'
+    - 'b38768c:chore(monorepo): add extensions/* to bun workspaces + retarget root scripts (S4)'
+    - '3d3f21c:refactor(extensions/vscode): migrate @mcp-vertex/ide imports to @mcp-vertex/ui-extension (S5)'
+    - 'b7813ab:chore(tools): retarget dev script + monorepo-paths to extensions/vscode + packages/ui-extension (S6)'
+    - 'e47eb64:docs: update CROSS-IDE + IDE-EXTENSION + AGENTS to new ui-extension / extensions paths (S7)'
+    - '54ccb4b:feat!: publish packages/ui-extension@1.0.0 + extensions/vscode@1.0.0 with rename CHANGELOG (S8)'
+    - '7383b85:fix(extensions/vscode): correct sync-logo.ts paths after apps/vscode → extensions/vscode move'
+shipped-via: parallel + orchestrator. S1 (apps/ide → packages/ui-extension) and S3 (apps/vscode → extensions/vscode) were committed by parallel agents before the orchestrator reached them; verified via `git log --follow`. S2, S4-S8 + fixup authored by `mcp-vertex-orchestrator`.
 reservedFiles:
     - apps/ide/
     - apps/ide/package.json
