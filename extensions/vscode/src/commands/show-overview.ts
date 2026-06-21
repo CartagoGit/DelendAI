@@ -9,7 +9,7 @@ export const registerShowOverviewCommand = (deps: ICommandDeps) =>
 		try {
 			const overview = await new OverviewService(deps.client).getOverview(
 				{
-					compact: false,
+					compact: true,
 				},
 			);
 			const panel = deps.vscode.window.createWebviewPanel(

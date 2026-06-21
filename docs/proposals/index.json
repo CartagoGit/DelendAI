@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-21T20:56:54.831Z",
+	"generated_at": "2026-06-21T21:01:23.198Z",
 	"count": 93,
 	"proposals": [
 		{
@@ -61,14 +61,6 @@
 			"id": "f00045",
 			"file": "ready/f00045-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
 			"track": "proposals-plugin+workflow+skills+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00047",
-			"file": "ready/f00047-multi-surface-budget-gates-compact-first-consumers.md",
-			"track": "core+client+extensions/vscode+plugins+metrics+docs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
@@ -832,6 +824,14 @@
 			"id": "f00046",
 			"file": "done/feats/f00046-memory-hygiene-policy-session-compaction-boundaries.md",
 			"track": "plugins/memory+skills+docs+workflow",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00047",
+			"file": "done/feats/f00047-multi-surface-budget-gates-compact-first-consumers.md",
+			"track": "core+client+extensions/vscode+plugins+metrics+docs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"

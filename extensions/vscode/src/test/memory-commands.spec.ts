@@ -114,4 +114,25 @@ describe('memory commands', () => {
 		expect(children[0]?.label).toBe('Decision');
 		expect(children[0]?.description).toBe('proposal');
 	});
+
+	it('shows an overflow node when the memory list is truncated', async () => {
+		const provider = new MemoryTreeDataProvider({
+			async list(args) {
+				expect(args).toEqual({ limit: 100 });
+				return {
+					notes: [
+						{ id: 'n1', title: 'Decision', tags: ['proposal'] },
+					],
+					total: 3,
+					offset: 0,
+				};
+			},
+		});
+		const children = await provider.getChildren();
+		expect(children.map((child) => child.contextValue)).toEqual([
+			'mcpVertexMemoryNote',
+			'mcpVertexMemoryMore',
+		]);
+		expect(children[1]?.label).toBe('2 more memory notes');
+	});
 });

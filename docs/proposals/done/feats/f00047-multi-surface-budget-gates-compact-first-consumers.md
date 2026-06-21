@@ -2,7 +2,7 @@
 id: f00047
 kind: feat
 title: Multi-surface budget gates + compact-first consumers
-status: ready
+status: done
 type: proposal
 track: core+client+extensions/vscode+plugins+metrics+docs
 date: 2026-06-21
@@ -40,8 +40,8 @@ Close the bounded-but-not-yet-budgeted gaps surfaced by a00027 S4: extend token/
   - "The repo documents which surfaces are bounded but still not budget-gated."
 
 ### S2 — Compact-first defaults in client and host consumers
-- **Files**: packages/client/src/lib/services/overview-service.ts, packages/client/src/lib/services/dashboard-service.ts, extensions/vscode/src/providers/tool-tree-data-provider.ts, extensions/vscode/src/providers/memory-tree-data-provider.ts
-- **Status**: pending
+- **Files**: packages/client/src/lib/services/overview-service.ts, packages/client/src/lib/services/dashboard-service.ts, extensions/vscode/src/commands/tool-search.ts, extensions/vscode/src/commands/show-overview.ts, extensions/vscode/src/providers/memory-tree-data-provider.ts
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "Client and VS Code consumers prefer compact/default-cheap server surfaces where available instead of overview full by default."
@@ -49,8 +49,8 @@ Close the bounded-but-not-yet-budgeted gaps surfaced by a00027 S4: extend token/
   - "The token panel avoids fixed heuristics when a measured value or clearer caveat is available."
 
 ### S3 — Cache freshness and cheap-check validation
-- **Files**: packages/client/src/lib/services/health-service.ts, plugins/status-marker/src/lib/tools/close-tools.ts, packages/client/tests/services/health-service.spec.ts, extensions/vscode/src/test/memory-tree-data-provider.spec.ts
-- **Status**: pending
+- **Files**: packages/client/tests/services/overview-service.spec.ts, packages/client/tests/services/dashboard-service.spec.ts, extensions/vscode/src/test/tool-search.spec.ts, extensions/vscode/src/test/commands.spec.ts, extensions/vscode/src/test/memory-commands.spec.ts
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "Host/client cheap-check surfaces stay explicitly cheap and their role in avoiding expensive reads is documented or tested."
@@ -63,3 +63,12 @@ Close the bounded-but-not-yet-budgeted gaps surfaced by a00027 S4: extend token/
 - Client and host consumers prefer compact/default-cheap surfaces where the server already supports them.
 - Cache freshness or overflow semantics become clearer where current consumers silently hide cost or incompleteness.
 - `bun run validate` is green.
+
+## notes
+
+### Closure — 2026-06-21
+
+- Carver verified S1 was already implemented and identified S2/S3 gaps.
+- S2 now makes `OverviewService.listTools`, dashboard overview, VS Code tool search and VS Code overview compact-first.
+- S3 now test-covers compact overview calls and adds a visible memory overflow node when the host list is truncated.
+- Verified with targeted vitest, `bun run typecheck`, and `bun run validate`.

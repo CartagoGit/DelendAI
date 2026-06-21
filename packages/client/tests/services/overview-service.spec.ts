@@ -50,7 +50,7 @@ describe('OverviewService', () => {
 			async callTool(input) {
 				expect(input).toEqual({
 					name: 'mcp-vertex_overview',
-					arguments: { compact: false },
+					arguments: { compact: true },
 				});
 				return { structuredContent: overviewFixture };
 			},

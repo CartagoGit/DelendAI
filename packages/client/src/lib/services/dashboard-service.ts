@@ -90,11 +90,11 @@ export class DashboardService {
 
 	async getOverviewModel(): Promise<IDashboardOverviewModel> {
 		const overview = this.overview
-			? await this.overview.getOverview({ compact: false })
+			? await this.overview.getOverview({ compact: true })
 			: await this.client.request<
 					{ readonly compact: boolean },
 					IOverview
-				>('mcp-vertex_overview', { compact: false });
+				>('mcp-vertex_overview', { compact: true });
 		const metrics = await this.snapshotMetrics();
 		const proposals = await this.fetchProposalsSafe();
 		const agents = await this.fetchAgentsSafe();
@@ -165,7 +165,7 @@ export class DashboardService {
 			.map(([tool, m]) => buildRow(tool, m))
 			.sort((a, b) => b.tokens - a.tokens);
 		const tokensUsed = tokensFromBytes(snap.totals.totalBytes);
-		const tokensSaved = Math.round(tokensUsed * 0.18); // compact saves ~18%
+		const tokensSaved = this.estimateTokensSaved(undefined, snap);
 		return {
 			tokensUsed,
 			tokensSaved,

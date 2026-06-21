@@ -23,7 +23,7 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 		const knowledge = new KnowledgeService(deps.client);
 		const search = new SearchService(deps.client);
 
-		const ov = await overview.getOverview({ compact: false });
+		const ov = await overview.getOverview({ compact: true });
 		const knowledgeList = await knowledge.listKnowledge().catch(() => []);
 
 		// The QuickPick already type-filters; for the initial (no
