@@ -39,7 +39,7 @@ Esto está **roto contra el catálogo real**:
 | `t`                           | `test`              | (ninguno aún)                                                  | NO             |
 | `i`                           | `infra`             | (ninguno aún)                                                  | NO             |
 | `s`                           | `spike`             | (ninguno aún)                                                  | NO             |
-| `l`                           | `legacy`            | `l99..l00010`                                                    | NO             |
+| `l`                           | `legacy`            | `l99..f00032`                                                    | NO             |
 | `p`                           | alias de `legacy`   | (ninguno en disco desde f00016 S11)                              | sí (descrito como "proposals planned", lo cual es mentira) |
 
 **Consecuencias observables**:

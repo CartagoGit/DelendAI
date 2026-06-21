@@ -56,7 +56,7 @@ Reglas:
   - `scripts/fix-ext.py` → borrar
   - `.validation-script.sh` → borrar
   - `leep 5` → borrar (artefacto de `sleep 5` mal tipeado en una sesión)
-  - `S1-IMPLEMENTATION-SUMMARY.md` → borrar (nota de sesión, ya integrada en el commit `a243bcc` de n007)
+  - `S1-IMPLEMENTATION-SUMMARY.md` → borrar (nota de sesión, ya integrada en el commit `a243bcc` de n00007)
 - **Command**: `git rm` + `rm` para los untracked.
 - **Acceptance**:
   - 0 archivos `.py` en `scripts/`

@@ -116,7 +116,7 @@ const baseSessions = {
 			track: 'apps+client+docs',
 		},
 		{
-			id: 'l00004',
+			id: 'f00028',
 			title: 'Plugin depth extension',
 			status: 'ready',
 			track: 'plugins',

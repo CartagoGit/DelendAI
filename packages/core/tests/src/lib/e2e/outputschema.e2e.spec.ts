@@ -103,11 +103,11 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		{ name: 'mcp-vertex_status' },
 		{ name: 'mcp-vertex_metrics' },
 		{ name: 'mcp-vertex_analyze_project' },
-		// l00007 S1: hardened outputSchemas — side-effect-free (returns files
+		// r00002 S1: hardened outputSchemas — side-effect-free (returns files
 		// for the agent to write; never touches disk itself).
 		{ name: 'mcp-vertex_create_project', args: { kind: 'plugin' } },
 		{ name: 'mcp-vertex_plan_mcp_project' },
-		// l00007 S2: dryRun defaults true — returns files without writing.
+		// r00002 S2: dryRun defaults true — returns files without writing.
 		{ name: 'mcp-vertex_scaffold', args: { kind: 'tool', name: 'demo' } },
 		{ name: 'git_status' },
 		{ name: 'git_changed' },
@@ -195,7 +195,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 		expect(tools.length).toBeGreaterThan(20);
 	});
 
-	// l00007 S1: the 3 bootstrap tools used to declare
+	// r00002 S1: the 3 bootstrap tools used to declare
 	// `z.object({}).catchall(z.unknown())` (a00026-H3). Their outputSchema
 	// is now derived from IProjectAnalysis/IServerPlan/IScaffoldedFile/
 	// IServerBlueprint — assert the generated JSON Schema's root is no

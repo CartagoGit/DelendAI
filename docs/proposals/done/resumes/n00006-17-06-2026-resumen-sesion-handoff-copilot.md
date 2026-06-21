@@ -1,5 +1,5 @@
 ---
-id: n006
+id: n00006
 kind: resume
 title: Resumen de sesión — 2026-06-17 (casa → oficina, handoff Copilot · MiniMax-M3)
 status: done

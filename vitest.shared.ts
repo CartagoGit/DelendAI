@@ -24,6 +24,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		workspaceRoot,
 		'plugins/test-convention/src',
 	);
+	const client = resolve(workspaceRoot, 'packages/client/src');
 	return [
 		{
 			find: '@mcp-vertex/core/public',
@@ -177,6 +178,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/test-convention',
 			replacement: resolve(testConvention, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/client/public',
+			replacement: resolve(client, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/client\/lib\/(.*)$/,
+			replacement: `${resolve(client, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/client',
+			replacement: resolve(client, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/ide/public',

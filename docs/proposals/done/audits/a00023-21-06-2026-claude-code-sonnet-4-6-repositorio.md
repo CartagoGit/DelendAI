@@ -34,7 +34,7 @@ Base de código sólida y disciplinada (**8.9/10**), pero el estado *auditado en
 
 #### Núcleo (`packages/core`)
 - **Muy bien**: typecheck raíz limpio, 0 `console.log`, 0 `@ts-ignore`, primitivas durables (`withFileMutex`, `writeFileAtomic`, `resolveWorkspaceContained`) consistentemente usadas en `memory`, `proposals`, `deps`, `docs`, `search`.
-- **Regular**: 3 `outputSchema` `z.object({}).catchall(z.unknown())` en `bootstrap-tool.ts` y 1 en `scaffold-tool.ts` siguen presentes — ya cubiertos por `l00008`/`l00007` (no se duplica).
+- **Regular**: 3 `outputSchema` `z.object({}).catchall(z.unknown())` en `bootstrap-tool.ts` y 1 en `scaffold-tool.ts` siguen presentes — ya cubiertos por `l00008`/`r00002` (no se duplica).
 
 #### Cliente (`packages/client`)
 - **Mal (bug genuino, corregido en `S3`)**: `DashboardService.getOverviewModel()` llamaba a `this.client.request('mcp-vertex_overview', { compact: false })` sin generics explícitos, infiriendo `TOut` como `unknown` y rompiendo `bunx tsc -p .../tsconfig.json` durante `scripts/build.ts` (12 errores `TS18046`/`TS7006`). El build de `packages/client` estaba roto en el HEAD auditado.
@@ -135,7 +135,7 @@ Base de código sólida y disciplinada (**8.9/10**), pero el estado *auditado en
 | `bun run site:strict` — estado final | `bun scripts/build.ts && astro build && pagefind` | **PASS** — 338 páginas construidas; Pagefind indexa 338 páginas vía `data-pagefind-body` (antes: 500 páginas, sin tag, con ruido de nav/footer) |
 | Biome lint | `biome ci` | 0 errores, 6 infos (no bloqueantes) tras S2–S6 |
 | Scaffolds lint | `bun run lint:scaffolds` | ✓ scaffolds complete |
-| Catchalls residuales | `grep -rc 'catchall(z.unknown())' packages/core/src plugins/*/src` | 6 (sin cambio; cubiertos por `l00008`/`l00007`) |
+| Catchalls residuales | `grep -rc 'catchall(z.unknown())' packages/core/src plugins/*/src` | 6 (sin cambio; cubiertos por `l00008`/`r00002`) |
 | I/O síncrono en `notification/watcher.ts` | `grep -c 'existsSync\|readdirSync\|readFileSync' plugins/notification/src/lib/watcher.ts` | 11 (sin cambio; cubierto por `f00019`) |
 | I/O síncrono en `rules/frameworks/manifest.ts` | `grep -c 'writeFileSync\|readFileSync' plugins/rules/src/lib/frameworks/manifest.ts` | 3 (sin cambio; cubierto por `l00008`) |
 | Race condition `sync-proposal-registry.ts:331` | `grep -n 'await writeFile(sourcePath' plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` | presente, sin `writeFileAtomic` (sin cambio; cubierto por `f00020`) |

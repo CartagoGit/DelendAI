@@ -1,5 +1,5 @@
 ---
-id: n002
+id: n00002
 kind: resume
 title: Resumen de la sesión de oficina — 2026-06-15 (Claude Code)
 status: done
@@ -12,7 +12,7 @@ track: general
 > **Cronología de sesiones del 2026-06-15:**
 > - **Sesión 1 — autónoma (madrugada → ~08:05)**: ejecuté la auditoría sin
 >   supervisión mientras no estabas. Detalle en
->   [`n001-SESION-AUTONOMA-2026-06-15.md`](./n001-SESION-AUTONOMA-2026-06-15.md).
+>   [`n00001-SESION-AUTONOMA-2026-06-15.md`](./n00001-SESION-AUTONOMA-2026-06-15.md).
 >   Cerró F1, F5, M2, M3, #10, R1, R6–R10, M6, tokens, rules-laravel (**283 tests**).
 > - **Sesión 2 — oficina (08:55 → 20:10)** ← *este documento*. Llegué a la
 >   oficina, retomé el trabajo a medias y vacié la cola accionable de la

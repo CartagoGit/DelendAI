@@ -62,6 +62,15 @@ export class NotificationLogsBridge {
 		this.unsubscribe?.();
 	}
 
+	/**
+	 * Manually drive one metrics poll. Useful for tests that use
+	 * fake timers, and for hosts that want a deterministic
+	 * "refresh correlation buffer now" command.
+	 */
+	async tick(): Promise<void> {
+		await this.pollMetrics();
+	}
+
 	addEventListener(cb: (entry: INotificationLogEntry) => void): () => void {
 		this.listeners.add(cb);
 		return (): void => {
@@ -95,10 +104,6 @@ export class NotificationLogsBridge {
 		const eventTs = Date.now();
 		const correlated = this.buffer.filter(
 			(c) => Math.abs(c.ts - eventTs) <= CORRELATION_WINDOW_MS,
-		);
-		// eslint-disable-next-line no-console
-		console.log(
-			`[bridge] handle event=${event.type} eventTs=${eventTs} buffer=${this.buffer.length} correlated=${correlated.length}`,
 		);
 		const kind: BridgeEventKind = event.type;
 		const message = describeEvent(event);

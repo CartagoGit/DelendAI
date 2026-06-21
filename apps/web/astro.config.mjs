@@ -17,8 +17,10 @@ export default defineConfig({
 	base,
 	// p126-monorepo-build-dist: Astro emits the static site to
 	// `build/apps/web/` (monorepo-wide build layout). Consumers must look
-	// there instead of the legacy `apps/web/dist/`.
-	build: { format: 'directory', outDir: '../../build/apps/web' },
+	// there instead of the legacy `apps/web/dist/`. `outDir` is relative
+	// to the Astro project root (apps/web/).
+	outDir: '../../build/apps/web',
+	build: { format: 'directory' },
 	server: { port: 5000, host: true },
 	i18n: {
 		defaultLocale: 'en',

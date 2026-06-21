@@ -1,5 +1,5 @@
 ---
-id: l00011
+id: c00002
 status: done
 type: proposal
 track: plugins+security
@@ -8,7 +8,7 @@ kind: chore
 title: Decide & close M13 (security plugin + securecoder bridge)
 ---
 
-# l00011 — Decide & close M13 (security plugin + securecoder bridge)
+# c00002 — Decide & close M13 (security plugin + securecoder bridge)
 
 ## Goal
 

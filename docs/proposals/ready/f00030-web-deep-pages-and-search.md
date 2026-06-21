@@ -1,5 +1,5 @@
 ---
-id: l00006
+id: f00030
 status: ready
 type: proposal
 track: web+docs
@@ -8,7 +8,7 @@ kind: feat
 title: Web deep pages — per-tool pages, pagefind search, "first 5 minutes", troubleshooting
 ---
 
-# l00006 — Web deep pages — per-tool pages, pagefind search, "first 5 minutes", troubleshooting
+# f00030 — Web deep pages — per-tool pages, pagefind search, "first 5 minutes", troubleshooting
 
 ## Goal
 
@@ -118,5 +118,5 @@ properly navigable **documentation surface**:
 - `capabilities.json` generator: `scripts/gen-capabilities.ts` (or
   equivalent — `rg` to confirm the actual path).
 - Existing i18n gate: `apps/web/scripts/check-i18n.ts`.
-- Session summary: `docs/proposals/n001-SESION-2026-06-17.md` (the
+- Session summary: `docs/proposals/n00001-SESION-2026-06-17.md` (the
   source of the "canonical 6 cases" list).

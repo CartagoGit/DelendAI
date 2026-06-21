@@ -1,5 +1,5 @@
 ---
-id: n001
+id: n00001
 kind: resume
 title: Resumen de la sesión autónoma — 2026-06-15 (Claude Code · madrugada)
 status: done
@@ -12,7 +12,7 @@ track: general
 > **Sesión 1 de 2 del día.** Esta fue la sesión autónoma (sin supervisión,
 > mientras no estabas; parada ~08:05 al irte al trabajo). La continuación desde
 > la oficina (08:55 → 20:10) está en
-> [`n001-SESION-OFICINA-2026-06-15.md`](./n001-SESION-OFICINA-2026-06-15.md).
+> [`n00001-SESION-OFICINA-2026-06-15.md`](./n00001-SESION-OFICINA-2026-06-15.md).
 
 Me diste la batuta para ejecutar la **auditoría unificada** sin parar y tomar
 decisiones por ti. Esto es lo que hice, por qué, y lo que dejé pendiente (con el

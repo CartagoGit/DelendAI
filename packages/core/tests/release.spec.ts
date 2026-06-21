@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 // untested by design (fs + spawn shell — see scripts/release.ts header).
 import { parseFlags } from '../../../scripts/release';
 
-describe('parseFlags (l00012 — release provenance)', () => {
+describe('parseFlags (f00033 — release provenance)', () => {
 	it('defaults to --tool=bun and --provenance=false', () => {
 		const flags = parseFlags([]);
 		expect(flags.tool).toBe('bun');

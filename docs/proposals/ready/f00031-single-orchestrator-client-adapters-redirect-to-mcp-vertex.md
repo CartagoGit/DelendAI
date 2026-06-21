@@ -1,5 +1,5 @@
 ---
-id: l00009
+id: f00031
 status: ready
 type: proposal
 track: core+agents+docs
@@ -8,7 +8,7 @@ kind: feat
 title: Single canonical orchestrator — client adapters are thin redirectors to mcp-vertex
 ---
 
-# l00009 — Single canonical orchestrator — client adapters are thin redirectors to mcp-vertex
+# f00031 — Single canonical orchestrator — client adapters are thin redirectors to mcp-vertex
 
 ## Goal
 
@@ -139,13 +139,13 @@ redirector.
     section pointing at the redirector contract.
   - `docs/proposals/done/audits/a00019-18-06-2026-…md` and
     `docs/proposals/done/audits/a00013-16-06-2026-…md`: append a "Closed
-    by l00009" footnote; do not rewrite the audit bodies.
+    by f00031" footnote; do not rewrite the audit bodies.
 - Acceptance: `bun run site:strict` is green; all 12 i18n keys present.
 
 ### S5 — Close the slice
 
 - Conventional commit: `feat(agents): make mcp-vertex the single
-  orchestrator; per-client adapters become redirectors (l00009)`.
+  orchestrator; per-client adapters become redirectors (f00031)`.
 - Update `docs/proposals/index.json` to move this file under
   `done/feats/`.
 - `bun run validate` is green.

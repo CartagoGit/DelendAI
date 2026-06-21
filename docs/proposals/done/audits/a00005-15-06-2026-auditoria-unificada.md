@@ -23,7 +23,7 @@ track: archive
 > ⏸️ pendientes — Tier3/plataforma,
 > npm publish. **R14, M7, M4, M5, M8, M9, R12 y R13 también HECHOS** (sesión
 > Opus; M6 ya estaba). Detalle en
-> `docs/proposals/done/n001-SESION-AUTONOMA-2026-06-15.md`. **mcp-vertex 314 tests
+> `docs/proposals/done/n00001-SESION-AUTONOMA-2026-06-15.md`. **mcp-vertex 314 tests
 > (304+10 skip), verdes.**
 >
 > **⚠️ CORRECCIÓN DE PREMISA (2026-06-15, sesión Opus):** el "invariante crítico"

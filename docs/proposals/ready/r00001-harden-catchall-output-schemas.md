@@ -1,5 +1,5 @@
 ---
-id: l00002
+id: r00001
 status: ready
 type: proposal
 track: plugins+core
@@ -8,7 +8,7 @@ kind: refactor
 title: Harden the remaining permissive catchall outputSchemas
 ---
 
-# l00002 — Harden the remaining permissive `catchall` outputSchemas
+# r00001 — Harden the remaining permissive `catchall` outputSchemas
 
 ## Goal
 

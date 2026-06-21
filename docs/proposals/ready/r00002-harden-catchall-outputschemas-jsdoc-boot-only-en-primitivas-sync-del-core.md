@@ -1,5 +1,5 @@
 ---
-id: l00007
+id: r00002
 kind: refactor
 title: Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
 status: ready
@@ -8,11 +8,11 @@ track: core+plugins
 date: 2026-06-21
 ---
 
-# l00007 — Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
+# r00002 — Harden catchall outputSchemas + JSDoc boot-only en primitivas sync del core
 
 ## Goal
 
-Cerrar los hallazgos H3 y H4 de la auditoría a00026 (P1) — y de paso abrir el camino para cerrar definitivamente el master audit M24 follow-up que `l00002` ya empezó. Esta propuesta actúa en **dos frentes complementarios**:
+Cerrar los hallazgos H3 y H4 de la auditoría a00026 (P1) — y de paso abrir el camino para cerrar definitivamente el master audit M24 follow-up que `r00001` ya empezó. Esta propuesta actúa en **dos frentes complementarios**:
 
 **Frente 1 (H3) — outputSchemas catchall residuales**
 
@@ -39,7 +39,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 
 ## Why
 
-- AGENTS.md, invariante 8: "Every public tool declares an `outputSchema`. Open `catchall` schemas are a documented exception, not a default". Hoy el código tiene 6 catchalls (3 en `bootstrap`, 1 en `scaffold`, 1 en `rules`, 1 en `proposals/adopt`). El audit l00002 ya cerró los catchalls dentro de `rules` para una rama concreta; este l00007 cierra el resto.
+- AGENTS.md, invariante 8: "Every public tool declares an `outputSchema`. Open `catchall` schemas are a documented exception, not a default". Hoy el código tiene 6 catchalls (3 en `bootstrap`, 1 en `scaffold`, 1 en `rules`, 1 en `proposals/adopt`). El audit r00001 ya cerró los catchalls dentro de `rules` para una rama concreta; este r00002 cierra el resto.
 - Un `outputSchema` que admite cualquier objeto es, en la práctica, equivalente a no tener schema: el SDK no puede validar `structuredContent`, la generación de tipos SDK colapsa a `unknown`, y los consumidores caen en duck-typing — exactamente lo que M24 (master audit) fue creado para prevenir.
 - Los tipos `IProjectAnalysis`, `IServerPlan`, `IMcpProjectSkeleton`, `IScaffoldReport`, `IRulesManifest`, `ISwarmPathLayout` ya existen en el código (son las interfaces TypeScript de las que el runtime ya deriva sus `z.object` parciales). Solo falta formalizar el `z.object` en el `outputSchema` de cada tool.
 - Para H4, el JSDoc en el código es lo único que falta entre el invariante documentado en AGENTS.md y el dev que llega a la función: hoy la barrera es solo un párrafo en un doc que muchos no leen antes de importar.
@@ -107,7 +107,7 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 - [x] 4 tests nuevos (uno por schema endurecido en S1, más uno de cobertura en S2) que validan que el JSON Schema generado ya no es catchall — `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts`, test `hardened bootstrap tool outputSchemas are no longer permissive catchalls`.
 - [x] 2 JSDocs nuevos en las primitivas sync.
 - [x] `bun run lint:proposals` valida este documento.
-- [x] Cita cruzada desde `a00026` (H3+H4) y referencia a `l00002` marcada en el checklist.
+- [x] Cita cruzada desde `a00026` (H3+H4) y referencia a `r00001` marcada en el checklist.
 
 ## Risks and mitigations
 
@@ -118,9 +118,9 @@ Adicionalmente, considerar añadir una regla Biome o ESLint custom que prohíba 
 ## Notes
 
 - **Auditoría origen**: `a00026-21-06-2026-copilot-minimax-m3-repositorio.md` (H3 y H4, severidad P1).
-- **Propuesta complementaria**: `l00002-harden-catchall-output-schemas.md` (que endureció `rules` parcialmente); esta `l00007` es la iteración "resto del monorepo".
+- **Propuesta complementaria**: `r00001-harden-catchall-output-schemas.md` (que endureció `rules` parcialmente); esta `r00002` es la iteración "resto del monorepo".
 - **Master audit**: cierra el follow-up de M24 (outputSchemas catchall).
 - **Naturaleza de la deuda**: hygiene, no corrección. La API actual funciona, pero pierde validación en runtime y dificulta la generación de tipos SDK.
 - **Follow-up natural**: si se aprueba, abre el camino a una tercera iteración (`l123`?) que audite cualquier `z.object({})` o `z.unknown()` introducido en PRs futuros vía una regla Biome.
 - **Implementación (S1, S2, S5)**: los 4 catchalls de `packages/core/src` (3 en `bootstrap-tool.ts` + 1 en `scaffold-tool.ts`) están reemplazados por `z.object` explícitos que mirroran `IProjectAnalysis`/`IServerPlan`/`IMcpProjectSkeleton` (ad-hoc, ver `MCP_PROJECT_SKELETON_SCHEMA`)/`IServerBlueprint`/`IScaffoldReport`. `bun run types:generate` ejecutado — `packages/core/src/generated/tool-outputs.ts` regenerado, los 4 `[key: string]: unknown` colapsan a interfaces concretas. Cobertura: `packages/core/tests/src/lib/e2e/outputschema.e2e.spec.ts` extendido con llamadas reales a `create_project`/`plan_mcp_project`/`scaffold` (antes solo `analyze_project` estaba cubierto) más un test dedicado que verifica, vía `client.listTools()`, que ninguno de los 4 outputSchema endurecidos tiene `additionalProperties: true` ni `properties` vacío. JSDocs de S5 añadidos en `writeFileAtomicSync` y `quarantineCorruptFileSync`. `bun run typecheck` y `bun run test` (142 archivos, 1042+ tests) verdes.
-- **META-1 (S3/S4 deferred)**: `l00008` (slice `s4`) reclama el mismo fix para los mismos 2 archivos (`rules-tools.ts:199`, `adopt.tool.ts:81`) que S3/S4 de esta propuesta. Para evitar trabajo duplicado o colisión de edición concurrente (ver `a00022` § META-1), esta sesión **no implementa S3/S4** — quedan `status: deferred`, formalmente cedidos a `l00008`. Si `l00008` se cierra sin tocar esos 2 archivos por cualquier razón, S3/S4 de `l00007` quedan disponibles para retomarse.
+- **META-1 (S3/S4 deferred)**: `l00008` (slice `s4`) reclama el mismo fix para los mismos 2 archivos (`rules-tools.ts:199`, `adopt.tool.ts:81`) que S3/S4 de esta propuesta. Para evitar trabajo duplicado o colisión de edición concurrente (ver `a00022` § META-1), esta sesión **no implementa S3/S4** — quedan `status: deferred`, formalmente cedidos a `l00008`. Si `l00008` se cierra sin tocar esos 2 archivos por cualquier razón, S3/S4 de `r00002` quedan disponibles para retomarse.

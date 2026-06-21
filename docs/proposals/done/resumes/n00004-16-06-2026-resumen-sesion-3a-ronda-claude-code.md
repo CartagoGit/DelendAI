@@ -1,5 +1,5 @@
 ---
-id: n004
+id: n00004
 kind: resume
 title: Resumen de sesión — 3ª ronda 2026-06-16 (Claude Code)
 status: done
@@ -11,7 +11,7 @@ track: general
 
 > Continúa la cola viva **§0 (N1–N23)** de
 > `audits/AUDITORIA-UNIFICADA-2026-06-15.md`. Sesión anterior (2ª ronda, noche
-> 06-15) en `done/n001-SESION-2A-RONDA-2026-06-15.md`.
+> 06-15) en `done/n00001-SESION-2A-RONDA-2026-06-15.md`.
 >
 > **Repo:** `/home/cartago/_proyectos/propios/mcp-vertex`.
 > **Estado al cerrar: 417 tests (407 + 10 skip), typecheck limpio, TODO VERDE.**
@@ -30,7 +30,7 @@ track: general
 
 ## Qué se hizo (todo ✅ con tests, commiteado)
 
-1. **Arranque**: archivé `n001-SESION-2A-RONDA` a `done/` y confirmé verde el
+1. **Arranque**: archivé `n00001-SESION-2A-RONDA` a `done/` y confirmé verde el
    trabajo en paralelo (366 → punto de partida).
 
 2. **N16 — `outputSchema` por tool: COMPLETO (~32 tools).** El SDK MCP valida

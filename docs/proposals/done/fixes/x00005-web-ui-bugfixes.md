@@ -171,7 +171,7 @@ user-visible defects closed.
   in the same commit (293837d) that shipped the fixes; the `R`
   rename in the diff stat showed up as a `D` line, which initially
   looked like data loss.
-- Companion proposal: `l00006-web-deep-pages-and-search.md` (S2
+- Companion proposal: `f00030-web-deep-pages-and-search.md` (S2
   Pagefind; this proposal extends the dev-time ergonomics around
   it).
 - `apps/web/src/components/Config.astro`,

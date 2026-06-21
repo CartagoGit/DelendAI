@@ -1,5 +1,5 @@
 ---
-id: l00012
+id: f00033
 status: done
 type: proposal
 track: release+ci
@@ -8,7 +8,7 @@ kind: feat
 title: Release provenance: switch final publish step to npm publish --provenance
 ---
 
-# l00012 — Release provenance: switch final publish step to `npm publish --provenance`
+# f00033 — Release provenance: switch final publish step to `npm publish --provenance`
 
 ## Goal
 

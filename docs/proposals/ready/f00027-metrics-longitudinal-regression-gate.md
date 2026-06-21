@@ -1,5 +1,5 @@
 ---
-id: l00003
+id: f00027
 status: ready
 type: proposal
 track: metrics+ci
@@ -8,7 +8,7 @@ kind: feat
 title: Metrics longitudinal regression gate (per-release snapshot diff)
 ---
 
-# l00003 — Metrics longitudinal regression gate (per-release snapshot diff)
+# f00027 — Metrics longitudinal regression gate (per-release snapshot diff)
 
 ## Goal
 

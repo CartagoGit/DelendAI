@@ -23,6 +23,7 @@ export { MetricsService } from '../lib/services/metrics-service';
 export { NotificationsService } from '../lib/services/notifications-service';
 export { LogsService } from '../lib/services/logs-service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
+export { SearchService } from '../lib/services/search-service';
 export type {
 	ILogCorrelateResult,
 	ILogEvent,
@@ -35,6 +36,13 @@ export type {
 	INotificationLogEntry,
 } from '../lib/services/logs.types';
 export type { INotificationLogsBridgeOptions } from '../lib/services/notification-logs-bridge';
+export type {
+	IKnowledgeHit,
+	ISearchHit,
+	ISearchOptions,
+	ISearchResult,
+	IToolHit,
+} from '../lib/services/search.types';
 export {
 	DashboardService,
 	createEmptyTotals,

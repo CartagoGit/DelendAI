@@ -104,7 +104,7 @@ El `scripts/build-site.ts` actual (W1) genera un `index.html` mínimo autoconten
 desde la lista viva de tools. El encargo W3 (web de producto profesional: componentes
 SCSS+TS+HTML separados, i18n multi-idioma, benchmarks, explicación de concepto,
 **marquesinas duales** con hover-pausa + zoom de icono, responsive total) **no está
-iniciado**. Spec completo en `../n001-SESION-2026-06-17.md`. Es el mayor trozo de
+iniciado**. Spec completo en `../n00001-SESION-2026-06-17.md`. Es el mayor trozo de
 trabajo abierto, pero es producto/marketing, no core.
 
 ---
@@ -164,7 +164,7 @@ schema/skills/quality_cancel/anti-idle) → ~10,0; +A3 (web W3) + publish real �
 2. **A2 — onboarding**: JSON Schema del config + TypeDoc + `/examples` (los 3 de más
    ROI para adopción), luego skills versionadas, `quality_cancel`, freno duro
    anti-idle en `auto_work`.
-3. **A3 — W3**: construir el sitio profesional (spec en el n001).
+3. **A3 — W3**: construir el sitio profesional (spec en el n00001).
 4. **A4** (opcional): desacoplar el typecheck raíz del SDK de `build-site`.
 5. **Despliegue** (lo hace el usuario): `NPM_TOKEN`, Pages = Actions, merge
    `develop → main`.
