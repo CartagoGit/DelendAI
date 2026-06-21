@@ -14,7 +14,7 @@ Every audit must follow the exact filename structure:
 `{numAuditoria}-{DD}-{MM}-{YYYY}-{controladorModelo}-{modelo}-{queSeHaAuditado}.md`
 
 Where:
-- `numAuditoria` is the chronological identifier (e.g., `a021`).
+- `numAuditoria` is the chronological identifier, zero-padded to 5 digits per f00014 (e.g., `a00021`).
 - `DD`, `MM`, `YYYY` is the day, month, and 4-digit year (e.g., `21-06-2026`).
 - `controladorModelo` is the client/runner driving the model (e.g., `antigravity`, `claude-code`, `codex`, `copilot`).
 - `modelo` is the AI model used (e.g., `deepmind`, `gpt-5-5`, `opus-4-8`).
@@ -25,10 +25,10 @@ Where:
 An audit proposal must be structured with the following metadata and sections:
 
 ### 1. Frontmatter
-Must include standard proposal frontmatter with `kind: audit`, `id: aNNN`, and the appropriate status/track:
+Must include standard proposal frontmatter with `kind: audit`, `id: aNNNNN` (5-digit padded), and the appropriate status/track:
 ```yaml
 ---
-id: a021
+id: a00021
 kind: audit
 title: "Auditoría Independiente — [Revisor] ([Modelo])"
 status: ready # or in-progress, review, done

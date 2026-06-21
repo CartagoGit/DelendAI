@@ -15,7 +15,7 @@ reservedFiles:
     - docs/proposals/blocked/
     - docs/proposals/retired/
     - docs/proposals/n00001-SESION-2026-06-17.md
-    - scripts/lint-proposals.ts
+    - tools/scripts/lint/proposals.script.ts
     - plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts
     - plugins/proposals/src/lib/proposals/frontmatter-parser.ts
     - plugins/proposals/src/lib/proposals/proposal-registry.ts
@@ -39,7 +39,7 @@ Hoy los IDs de proposal son irregulares:
 
 Esto causa tres problemas:
 
-1. **Los números no reflejan el orden cronológico real.** `a1` y `a2` (los audits del 14/06 y 15/06 — los más antiguos) ya están en `done/audits/` renombrados por `f00001`; pero el resto del catálogo empieza en `a21`, dejando huecos inexplicables entre `a4` y `a21`.
+1. **Los números no reflejan el orden cronológico real.** `a00001` y `a00002` (los audits del 14/06 y 15/06 — los más antiguos) ya están en `done/audits/`; antes del padding el resto del catálogo empezaba en `a21`, dejando huecos inexplicables entre `a4` y `a21`.
 2. **Los IDs son ambiguos en logs y PRs.** `f00020` y `r00002` coexisten; `f00019` y `x00006` también. Un grep `grep -E '\b1[0-9]{2}\b'` en un log devuelve los dos.
 3. **No hay un ancho fijo**, así que cuando `f*` llegue a 1000 o `a*` llegue a 100, los IDs tendrán longitudes distintas y romperán el layout de tablas, columnas de dashboard, y orden lexicográfico (`f00020` < `f23` en ASCII aunque `f23` sea más antiguo).
 
@@ -60,7 +60,7 @@ Esto causa tres problemas:
 1. **22 archivos `.md` bajo `docs/proposals/`** (frontmatter `id:` + nombre de archivo). Solo frontmatter y filename; **NO** se reescribe el cuerpo.
 2. **`docs/proposals/index.json`** regenerado vía `mcp-vertex.proposals.sync_proposals` después de los renames.
 3. **Refs internas** en otros proposals (`related: [f00016, f00001, f00022]`, links `[f00016](done/f00016-...)`, menciones en prosa como "After landing f00016..."). Solo las que apunten a un ID cuyo número haya cambiado.
-4. **`scripts/lint-proposals.ts`** — el regex que valida el formato de ID (`/^[a-z]+\d+$/`) se endurece a `/^[a-z]+\d{5}$/` para que el padding sea enforced desde el CI, no opcional.
+4. **`tools/scripts/lint/proposals.script.ts`** — el regex que valida el formato de ID se endurece a 5 dígitos padded para que el esquema quede enforced desde CI, no opcional.
 5. **`plugins/proposals/src/lib/proposals/frontmatter-parser.ts`** y **`proposal-registry.ts`** — si exponen un validador de ID, se ajusta al nuevo regex. Si solo lo leen, no se toca.
 6. **`plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`** — si el `STATUS_TO_FOLDER` o algún `KINDS` menciona IDs concretos (no debería, pero se verifica), se actualiza.
 7. **`docs/proposals/n00001-SESION-2026-06-17.md`** — las menciones a IDs viejos se actualizan al nuevo padded.
@@ -71,7 +71,7 @@ Esto causa tres problemas:
 - El cascade priority por familia (`f` cascadea antes que `p`) — intacto.
 - La estructura de carpetas (`ready/`, `done/{audits,feats,fixes}/`, etc.) — intacta.
 - El contenido (cuerpo) de cualquier proposal — solo frontmatter + filename.
-- Las propuestas en `done/audits/` que ya renombró `f00001` (a1..a20) — se les reescribe el `id:` para que sea `a00001..a00020` pero NO se mueven de carpeta.
+- Las propuestas en `done/audits/` que ya estaban renumeradas en la migración anterior — se les reescribe el `id:` para que sea `a00001..a00020` pero NO se mueven de carpeta.
 - El campo `shipped-in` (PR/commits donde se cerró la proposal) — solo se actualiza si apunta a un ID que cambió, y solo el número dentro del string.
 
 ## Architecture
@@ -80,7 +80,7 @@ Cada familia se enumera por **fecha de creación real** (= fecha del primer comm
 
 | Familia | Hoy (22 IDs)            | Mapeo propuesto (preliminar — S1 confirma con git log)                                |
 |---------|-------------------------|---------------------------------------------------------------------------------------|
-| `a`     | 21, 22, 23, 24          | `a00021`, `a00022`, `a00023`, `a00024` (los 4 del 21/06 — los 20 de `done/audits/` ya fueron `a1..a20` por f00001 y se renumeran a `a00001..a00020`) |
+| `a`     | 21, 22, 23, 24          | `a00021`, `a00022`, `a00023`, `a00024` (los 4 del 21/06 — los 20 de `done/audits/` se renumeran a `a00001..a00020`) |
 | `f`     | 122, 123, 125 (+ los renombrados por f00001 en done/) | `f00001`, `f00002`, `f00003` (los más recientes del catálogo ready/in-progress)        |
 | `l`     | 114, 115, 116, 117, 118, 119, 120, 121, 122, 125, 126, 127 | `c00001`, `r00001`, …, `f00033` (ordenados por fecha de creación)                      |
 | `x`     | 123, 124                | `x00001`, `x00002`                                                                    |
@@ -139,11 +139,11 @@ Cada slice es **file-disjoint** (no comparte archivos), así que 4 subagentes en
 
 ## Acceptance
 
-- [ ] `docs/proposals/index.json` lista los 22 IDs existentes (más los 20 audits que f00001 ya reubicó en `done/audits/`) con IDs padded: `a00001..a00020` (audits) + `a00021..a00024` (audits nuevos del 21/06), `f00001..f00003` (f121..f00019 + el hueco), `c00001..f00033` (c00001..f00032), `x00001..x00002` (x00006, x00007). Si al ejecutar S1 aparecen más IDs en `done/feats/` o `done/fixes/` que el index actual no conoce, se incluyen también.
+- [ ] `docs/proposals/index.json` lista los IDs existentes con padding de 5 dígitos; los audits quedan como `a00001..a00020` (más los nuevos del 21/06), y el resto de familias refleja el mapa final calculado por S1/S2.
 - [ ] Los 22+ archivos `.md` bajo `docs/proposals/{ready,done,in-progress,paused,blocked,retired}/` tienen `id:` con 5 dígitos padded en el frontmatter.
 - [ ] Los nombres de archivo siguen el patrón `<familia><5-dígitos>-<slug>.md` (e.g. `f00001-feat-proposal-state-machine.md`, no `f1-feat-...`).
 - [ ] **Cero referencias rotas**: `bun run lint:proposals` pasa limpio; el grep `grep -rEn '\b[a-z][0-9]{1,4}\b' docs/ apps/ packages/ plugins/` no devuelve ningún ID viejo que no esté también en su nueva forma padded.
-- [ ] Las dos menciones explícitas en `f00001` ("20 audit files renumbered a1..a20") y el `n00001-SESION-2026-06-17.md` quedan actualizadas al nuevo padded (`a00001..a00020`).
+- [ ] Las menciones explícitas al rango antiguo `a1..a20` y el `n00001-SESION-2026-06-17.md` quedan actualizadas al nuevo padded (`a00001..a00020`).
 - [ ] `bun run validate` (typecheck + lint + tests) verde. No se modifica ningún test ni ningún comportamiento observable de los tools; el cambio es puramente cosmético + de ordenación.
 - [ ] El campo `cascadePriority` del workflow (`f` < `p`) se mantiene — el padding no afecta a la cascada.
 

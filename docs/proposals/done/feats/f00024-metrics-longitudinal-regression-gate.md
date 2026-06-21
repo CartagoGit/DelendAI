@@ -81,7 +81,7 @@ single tool).
 
 ### S4 — Audit close
   - **Status**: ready
-  - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 565 → `[x]`
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (line 565 → `[x]`
     with link to this proposal).
   - **Command**: none.
   - **Expect**: master audit line 565 is `[x]`.

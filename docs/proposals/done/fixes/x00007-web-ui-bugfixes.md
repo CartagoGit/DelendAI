@@ -165,7 +165,7 @@ user-visible defects closed.
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026-…md` (M3 / M27
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (M3 / M27
   follow-ups — UI polish on the web). The audit file moved to
   `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
   in the same commit (293837d) that shipped the fixes; the `R`

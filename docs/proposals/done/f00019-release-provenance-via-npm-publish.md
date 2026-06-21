@@ -8,12 +8,12 @@ kind: feat
 title: Release provenance: switch final publish step to npm publish --provenance
 ---
 
-# f00033 — Release provenance: switch final publish step to `npm publish --provenance`
+# f00019 — Release provenance: switch final publish step to `npm publish --provenance`
 
 ## Goal
 
 Close the master audit's `[ ]` on Release/CI provenance
-(`docs/proposals/audits/a1-16-06-2026…md` line 248) by making the
+(`docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` line 248) by making the
 `release.yml` workflow actually produce **npm provenance attestations** on
 each published artefact. Today the workflow ends with `bun publish`, which
 does **not** support `--provenance` (bun 1.3.x limitation). The repo already
@@ -163,7 +163,7 @@ instead of resurrecting dead code preemptively.
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (lines 248, 855).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md` (lines 248, 855).
 - Current release pipeline: `.github/workflows/release.yml`,
   `scripts/release.ts`.
 - npm provenance docs:

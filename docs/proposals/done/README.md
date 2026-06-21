@@ -82,10 +82,10 @@ and recommends canonicalisation if it sees an ad-hoc shape.
    has `kind: feat`; an `x<NNN>-*.md` has `kind: fix`; an `n<NNN>-*.md`
    has `kind: resume`; etc. The linter enforces this (f00016 §4.3).
 2. **`id:` frontmatter stays stable across renames**: when a proposal
-   was previously `l99-…` and got reclassified to `f00004-…`, the `id:`
-   field changed from `l99` to `f00004`. Cross-references (`related: l99`
-   in other proposals) were rewritten to `related: f00004` atomically by
-   the f00001 migration. Do NOT refer to a proposal by its filename —
+   was previously legacy-prefixed and got reclassified to its real padded
+   id (for example `f00006-…`), the `id:` field was updated to that new
+   canonical id. Cross-references were rewritten atomically by the
+   f00014 migration. Do NOT refer to a proposal by its filename —
    refer to it by `id:` (e.g. `related: f00016`). The n00007 migration
    does NOT rename any `id:`; it only renames files (the 6 summaries
    get fresh `n00001..n00006` ids because they had none before).
@@ -101,6 +101,6 @@ and recommends canonicalisation if it sees an ad-hoc shape.
 ## See also
 
 - [f00016 — Proposal state machine, kinds, scaffolds, and recovery](./feats/f00016-feat-proposal-state-machine-kinds-scaffolds-and-recovery.md) (the predecessor that defined the 7 statuses and 12 kinds).
-- [f00001 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](./feats/f00001-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
-- [n00007 — Resume kind: cross-session handoff summaries](../ready/n00007-resume-kind-cross-session-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
+- [f00042 — Done folder mirrors kinds: audits/, feats/, fixes/ sub-folders inside done/](./feats/f00042-done-folder-mirrors-kinds-audits-feats-fixes-sub-folders-inside-done.md) (this convention).
+- [n00007 — Resume kind: cross-session handoff summaries](./resumes/n00007-resume-kind-handoff-summaries.md) (the 13th kind `resume` + `done/resumes/` bucket).
 - [`done/resumes/README.md`](./resumes/README.md) — the `resumes/` bucket's own README.
