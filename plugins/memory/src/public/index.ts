@@ -11,8 +11,18 @@ export {
 	saveNote,
 	recall,
 	removeNote,
+	exportNotes,
+	importNotes,
 } from '../lib/store';
-export type { INote, ISaveResult } from '../lib/store';
+export type {
+	INote,
+	ISaveResult,
+	IMemoryExportFormat,
+	IMemoryImportFormat,
+	IMemoryImportMode,
+	IMemoryImportConflict,
+	IMemoryImportResult,
+} from '../lib/store';
 export { redactSecrets } from '../lib/redact';
 export type { IRedactResult } from '../lib/redact';
 export { rankNotes, tokenize } from '../lib/rank';

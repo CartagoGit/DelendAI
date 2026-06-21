@@ -314,7 +314,7 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 });
 
 describe('memory plugin', () => {
-	it('registers the four memory tools + knowledge', async () => {
+	it('registers the six memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {
@@ -336,6 +336,8 @@ describe('memory plugin', () => {
 			'recall',
 			'list',
 			'forget',
+			'export',
+			'import',
 		]);
 		// The registered MCP names are single-prefixed (`memory_save`, …),
 		// not double-prefixed (`memory_memory_save`). [e2e regression guard]

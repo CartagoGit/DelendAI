@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { listDocs, readDoc } from './engine';
+import { listDocs, readDoc, searchDocs } from './engine';
 import type { IDocsOptions } from './engine';
 
 export interface IDocsToolOptions {
@@ -110,6 +110,57 @@ export const buildDocsToolRegistrations = (
 						toolJson(
 							await readDoc(options.workspaceRootAbs, args.path),
 						),
+				);
+			},
+		},
+		{
+			id: 'docs_search',
+			summary:
+				'Search the project markdown docs by free text — ranked hits with snippets.',
+			tags: ['docs', 'orientation', 'lazy'],
+			register: async (server) => {
+				server.registerTool(
+					`${prefix}_docs_search`,
+					{
+						description:
+							'Search the project documentation by free text. Scores hits by (titleHits * 3) + bodyHits over the same catalogue as docs_list (same roots/containment guard). Returns ranked {path,title,score,snippet} entries (snippet ≤ 200 chars around the first match). Read-only.',
+						inputSchema: z.object({
+							query: z.string(),
+							limit: z.number().optional(),
+							include: z.array(z.string()).optional(),
+						}),
+						outputSchema: z.object({
+							hits: z.array(
+								z.object({
+									path: z.string(),
+									title: z.string(),
+									score: z.number(),
+									snippet: z.string(),
+								}),
+							),
+							truncated: z.boolean(),
+						}),
+					},
+					async (args: {
+						query: string;
+						limit?: number | undefined;
+						include?: string[] | undefined;
+					}) => {
+						const { hits, truncated } = await searchDocs(
+							options.workspaceRootAbs,
+							args.query,
+							{
+								...defaults,
+								...(args.include
+									? { roots: args.include }
+									: {}),
+								...(args.limit !== undefined
+									? { limit: args.limit }
+									: {}),
+							},
+						);
+						return toolJson({ hits, truncated });
+					},
 				);
 			},
 		},

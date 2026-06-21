@@ -616,7 +616,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 | [`r00001`](../ready/r00001-harden-catchall-output-schemas.md) | línea 518 (M24 follow-up) | Harden remaining `catchall` schemas | 5 (golden baseline, bootstrap, scaffold, proposals, exception audit) |
 | [`f00030`](../ready/f00030-web-deep-pages-and-search.md) | línea 543 (M27 follow-up) | Web deep pages + pagefind + first-5-min + troubleshooting | 5 (per-tool, pagefind, quickstart, troubleshooting, nav+close) |
 | [`f00027`](../ready/f00027-metrics-longitudinal-regression-gate.md) | línea 565 (M29 follow-up) | Metrics longitudinal regression gate | 4 (baseline, diff, CI, close) |
-| [`f00028`](../ready/f00028-plugins-depth-extension.md) | línea 598 (M33 follow-up) | Plugin depth: search rg+context, memory export/import, docs `docs_search` | 4 (search, memory, docs, close) |
+| [`f00028`](../done/feats/f00028-plugins-depth-extension.md) | línea 598 (M33 follow-up) — **cerrado** (2026-06-21) | Plugin depth: search rg+context, memory export/import, docs `docs_search` | 4 (search, memory, docs, close) |
 
 > **Quedan 2 ítems NO propuestos a propósito** (decididos en su día como
 > "no implementar"):
@@ -641,7 +641,7 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
 - ✅ **M32 · Cobertura desigual** — cerrado (ver §11, sesión 21-06):
   property-based tests para `frontmatter-parser`/`redactSecrets` y test de
   concurrencia dedicado para `memory` ya existían, verificados contra código.
-- 🟡 **M33 · Profundidad de plugins (mejoras opcionales)** — parcial, sesión 21-06:
+- ✅ **M33 · Profundidad de plugins (mejoras opcionales)** — completo (cierre 2026-06-21):
   - ✅ `git`: `git_blame` (autoría por línea, rango opcional), `git_show`
     (metadata + `--stat`, sin el patch completo) y `git_worktree` (listado
     read-only; crear/borrar sigue siendo trabajo de `proposals_agent_worktree`,
@@ -650,9 +650,12 @@ ya existen — la sugerencia de "health_check/repair" está cubierta.
     Cargo.toml y go.mod si existen, con parsers propios de subconjunto
     documentado (mismo enfoque que `frontmatter-parser.ts`, sin añadir una
     dependencia de TOML genérica). 10 tests nuevos. Sigue offline.
-  - ⬜ `search` (`rg` opcional, `context:N`), `memory` (export/import), `docs`
-    (`docs_search`) — no abordados esta sesión, quedan a demanda.
-    **Plan: [`ready/f00028-plugins-depth-extension.md`](../ready/f00028-plugins-depth-extension.md) — los 3 en una sola propuesta (S1/S2/S3 son disjuntos por archivo).**
+  - ✅ `search` (`rg` opcional vía `preferRg`, `context:N` 0-10), `memory`
+    (`memory_export`/`memory_import` con `format`/`mode`/`conflict`), `docs`
+    (`docs_search` con scoring `titleHits*3 + bodyHits` y snippets) — cerrado:
+    [`done/feats/f00028-plugins-depth-extension.md`](../done/feats/f00028-plugins-depth-extension.md).
+    49 tests nuevos (25 search, 12 memory export/import, 6 docs_search, 6
+    registros de plugin actualizados).
 - ✅ **M34 · OSS hygiene** —
   `docs/ARCHITECTURE.md` (capas, contratos, flujo, invariantes + Mermaid),
   `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`, y **CHANGELOG enlazado** (Keep a

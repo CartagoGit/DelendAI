@@ -75,7 +75,7 @@ describe('docs engine', () => {
 });
 
 describe('docs plugin', () => {
-	it('registers docs_list + docs_read + knowledge', async () => {
+	it('registers docs_list + docs_read + docs_search + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 			corePaths: {
@@ -95,6 +95,7 @@ describe('docs plugin', () => {
 		expect((reg.tools as IToolRegistration[]).map((t) => t.id)).toEqual([
 			'docs_list',
 			'docs_read',
+			'docs_search',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('docs-usage');
 	});

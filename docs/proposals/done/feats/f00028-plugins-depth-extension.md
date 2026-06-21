@@ -1,6 +1,6 @@
 ---
 id: f00028
-status: ready
+status: done
 type: proposal
 track: plugins
 date: 2026-06-21
@@ -52,67 +52,45 @@ plugin-depth improvements that were explicitly **not addressed in session
 ## Slices
 
 ### S1 — `search`: optional `rg` backend + `context:N`
-  - **Status**: ready
-  - **Files**: `plugins/search/src/lib/engine.ts` (add `RgBackend` class
-    that shells out to `rg --json` with the same containment guard;
-    selected when `options.preferRg: true` AND `rg` is on `$PATH`,
-    else falls back to the in-house walker with a one-time warn in the
-    response), `plugins/search/src/lib/tools.ts` (add `context` parameter
-    to `search_query` with default 0, max 10), `plugins/search/tests/...`
-    (new spec: 6 cases — rg available + preferRg, rg missing, context:0
-    unchanged, context:3 returns N lines, containment guard still
-    applies, no false matches on `.git/`).
-  - **Command**: `bun run validate`
+  - **Status**: done
+  - **Files**: `plugins/search/src/lib/engine.ts`, `plugins/search/src/lib/tools.ts`,
+    `plugins/search/tests/src/lib/search-rg-context.spec.ts` (new spec, 7 cases).
+  - **Command**: `bunx vitest run plugins/search/tests && bun run typecheck`
   - **Expect**: green.
 
 ### S2 — `memory`: export/import
-  - **Status**: ready
-  - **Files**: `plugins/memory/src/lib/tools.ts` (add `memory_export`:
-    `format: 'json'|'ndjson'`, `includeExpired: boolean?` — defaults to
-    false; `memory_import`: `mode: 'replace'|'merge'`, `conflict:
-    'overwrite'|'skip'|'merge'`; both go through the same
-    `withFileMutex` + `redactSecrets` as `memory_save`),
-    `plugins/memory/tests/src/lib/tools.spec.ts` (new spec: 8 cases —
-    export empty store, export with expired items excluded, import
-    replace, import merge no conflict, import merge with skip, import
-    merge with overwrite, import with secret redaction, round-trip
-    equality).
-  - **Command**: `bun run validate`
-  - **Expect**: green; `bun run smoke:pack` still works.
+  - **Status**: done
+  - **Files**: `plugins/memory/src/lib/store.ts`, `plugins/memory/src/lib/tools.ts`,
+    `plugins/memory/src/public/index.ts`, `plugins/memory/tests/src/lib/export-import.spec.ts`
+    (new spec, 12 cases), `plugins/memory/tests/src/lib/memory.spec.ts` (updated tool-id list).
+  - **Command**: `bunx vitest run plugins/memory/tests && bun run typecheck`
+  - **Expect**: green.
 
 ### S3 — `docs`: `docs_search`
-  - **Status**: ready
-  - **Files**: `plugins/docs/src/lib/engine.ts` (add `searchDocs(query,
-    limit?, include?)` that walks the same files as `docs_list`, scores
-    matches by `(titleHit * 3) + bodyHit`, returns ranked snippets of
-    ≤ 200 chars around the hit), `plugins/docs/src/lib/tools.ts` (add
-    `docs_search` tool with `outputSchema` explicit per the r00001
-    proposal; takes `query: string`, `limit?: number (default 10)`,
-    `include?: string[]`),
-    `plugins/docs/tests/src/lib/engine-search.spec.ts` (new spec: 5
-    cases — title hit ranks first, body hit, empty query returns [], no
-    matches returns [], limit cap respected).
-  - **Command**: `bun run validate`
-  - **Expect**: green; the new tool shows up in `overview` with
-    `effects: []` (read-only).
+  - **Status**: done
+  - **Files**: `plugins/docs/src/lib/engine.ts`, `plugins/docs/src/lib/tools.ts`,
+    `plugins/docs/src/public/index.ts`, `plugins/docs/tests/src/lib/engine-search.spec.ts`
+    (new spec, 6 cases), `plugins/docs/tests/src/lib/docs.spec.ts` (updated tool-id list).
+  - **Command**: `bunx vitest run plugins/docs/tests && bun run typecheck`
+  - **Expect**: green.
 
 ### S4 — Audit close
-  - **Status**: ready
-  - **Files**: `docs/proposals/audits/a1-16-06-2026-…md` (line 598 → `[x]`
-    with link to this proposal; the three sub-bullets
-    `search`/`memory`/`docs` are now `[x]` each).
+  - **Status**: done
+  - **Files**: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
+    (M33 line → ✅, tracking table row → cerrado).
   - **Command**: none.
-  - **Expect**: master audit line 598 is `[x]`.
+  - **Expect**: master audit M33 is closed.
 
 ## Acceptance
 
-- [ ] `search_query` accepts `context: N` (0 ≤ N ≤ 10) and returns N
-      surrounding lines per hit.
-- [ ] `search_query` with `preferRg: true` uses `rg` when available.
-- [ ] `memory_export` / `memory_import` round-trip preserves all
+- [x] `search` accepts `context: N` (0 ≤ N ≤ 10) and returns N
+      surrounding lines per hit (`before`/`after` arrays on each hit).
+- [x] `search` with `preferRg: true` uses `rg` when available (`usedRg: true`),
+      falls back with `rgFallbackReason` otherwise.
+- [x] `memory_export` / `memory_import` round-trip preserves all
       non-expired entries; secrets are redacted on import.
-- [ ] `docs_search` returns ranked hits with snippets.
-- [ ] Master audit line 598 is `[x]`.
+- [x] `docs_search` returns ranked hits with snippets.
+- [x] Master audit M33 is closed.
 
 ## risks and mitigations
 
@@ -129,10 +107,76 @@ plugin-depth improvements that were explicitly **not addressed in session
 
 ## notes
 
-- Master audit: `docs/proposals/audits/a1-16-06-2026- Auditoría Maestra (Unificada).md` (line 598).
+- Master audit: `docs/proposals/done/audits/a00013-16-06-2026-auditoria-maestra-unificada.md`
+  (M33, formerly cited by its pre-renumbering line/path).
 - M11 closure (search .gitignore, memory TTL/redact, docs pagination):
   same audit §7 "P2 — Calidad de producto".
 - M22 containment guard: `packages/core/src/lib/shared/contain-path.ts`.
 - M23 redact: `packages/core/src/lib/shared/redact.ts`.
 - `docs_list` / `docs_read`: `plugins/docs/src/lib/tools.ts` (the model
   for the new `docs_search` tool).
+
+### Rationale (decisions taken autonomously during implementation)
+
+- **Tool name stays `search`/`memory_export`/`docs_search`, not `search_query`**:
+  the proposal's S1 text said `search_query`, but the actual registered tool is
+  `${prefix}_search` (`buildSearchToolRegistrations`). Renaming it would have
+  broken the public surface for no functional gain (forbidden by this
+  proposal's own Non-goals: "no breaking the public tool surface"). `context`/
+  `preferRg` were added as new optional input fields on the existing tool.
+- **`searchWorkspace` became a dispatcher over two private implementations**
+  (`searchWorkspaceInHouse` / `searchWorkspaceWithRg`) rather than an `RgBackend`
+  class as the proposal sketched — a plain function dispatch matches every
+  other engine in this codebase (no class-based engines elsewhere in
+  `plugins/*/src/lib/engine.ts`) and keeps the single-responsibility split
+  (selection logic vs. each backend's own walk/parse logic) without
+  introducing an OOP pattern foreign to the rest of the plugin.
+- **rg JSON parsing required a two-pass buffer-per-file algorithm**, not the
+  naive single-pass "nearest match" association first attempted: `rg --json
+  --context N` interleaves `context` records *before* the `match` record in
+  the stream (e.g. context(1), context(2), match(3), context(4), context(5)),
+  so a context line for "before" arrives before any match key exists to
+  attach it to. Buffering each file's records in line-number order and
+  walking outward from each `match` while neighbours are `context` is the
+  correct (and simpler) algorithm — verified against real `rg` output during
+  implementation, not assumed from the spec.
+- **`rg` path resolution bug found and fixed during implementation**: rg's
+  JSON `path.text` field is the path exactly as it was passed on the
+  command line. Since absolute roots are passed (the same `resolveWorkspaceContained`
+  output used everywhere else for containment), `path.join(workspaceRootAbs, absolutePath)`
+  silently concatenates instead of respecting the absolute path — `path.resolve`
+  is required instead. Caught by the "context lines match the in-house walker"
+  cross-check test, not by manual inspection.
+- **`memory_import`'s conflict `'merge'` strategy** (union tags, keep the
+  longer body, newest `updatedAt` wins) was not fully specified by the
+  proposal beyond naming the three modes. Chosen because it's the only
+  strategy of the three that can't silently lose data — `'overwrite'` and
+  `'skip'` are both lossy by design (that's their point), so `'merge'` had to
+  define a deterministic, non-lossy tie-break instead of picking one side
+  arbitrarily.
+- **`exportNotes`/`importNotes` live in `store.ts`, not `tools.ts`** — same
+  split the file already had for `saveNote`/`recall`/`removeNote`: persistence
+  + business logic in `store.ts` (independently unit-testable, no MCP
+  plumbing), `outputSchema`/`inputSchema`/wiring in `tools.ts`. This is the
+  Single Responsibility split the proposal's SOLID directive calls for; no
+  new abstraction was introduced beyond what the file already does for every
+  other memory operation.
+- **`docs_search` reuses `listDocs` + `readDoc` verbatim** instead of a new
+  read path, so the containment guard, size cap and root-resolution logic
+  exist in exactly one place. The score formula `(titleHits * 3) + bodyHits`
+  matches the proposal's spec literally.
+- **Concurrent-session note**: this slice was implemented while ≥1 other
+  agent was active in the same working tree (confirmed via `.mcp-vertex/handoff/*`
+  and a live `.worktrees/implementation-runner` checkout) working on
+  `f00022`/`f00026`/`f00035` (IDE/ui-extension rename) and `f00023`/`f00024`
+  (proposal renumbering/cascade-priority). `plugins/search`, `plugins/memory`,
+  `plugins/docs` were untouched by that work (confirmed via mtimes before
+  starting), so this slice has zero file overlap with it. The global
+  `bun run validate` was red for unrelated reasons during parts of this work
+  (a syntax error mid-edit in `proposal-scaffold-linter.ts`, missing
+  `lib: dom` in `packages/ui-extension`/`extensions/vscode` dev entries, a
+  transient `@mcp-vertex/audit` workspace-link gap) — none touching
+  `plugins/search`/`memory`/`docs`. Gate actually applied: `bun run typecheck`
+  clean for all three plugins, `bunx vitest run plugins/search plugins/memory
+  plugins/docs` → 83/83 green, `npx biome check` clean for every new/changed
+  file in this slice.
