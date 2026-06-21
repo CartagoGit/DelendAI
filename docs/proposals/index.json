@@ -187,34 +187,21 @@
 		},
 		{
 			"id": "f00035",
-			"file": "ready/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
+			"file": "done/feats/f00035-rename-ui-extension-extensions-folder-and-promote-ui-extension-to-package.md",
 			"track": "apps+monorepo+docs",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-21",
 			"extras": {
-				"ownership": ["{", "{", "{", "{", "{", "{", "{", "{"],
-				"reservedFiles": [
-					"apps/ide/",
-					"apps/ide/package.json",
-					"apps/ide/src/",
-					"apps/ide/tests/",
-					"apps/vscode/",
-					"apps/vscode/package.json",
-					"apps/vscode/src/",
-					"apps/vscode/media/",
-					"apps/vscode/scripts/",
-					"tsconfig.base.json",
-					"tsconfig.json",
-					"vitest.config.ts",
-					"vitest.shared.ts",
-					"package.json",
-					"docs/CROSS-IDE.md",
-					"docs/IDE-EXTENSION.md",
-					"docs/proposals/done/feats/f00014-feat-ide-extension-vscode-and-friends.md",
-					"tools/scripts/dev/dev.script.ts",
-					"tools/scripts/lib/monorepo-paths.ts",
-					"tools/scripts/lib/monorepo-paths.spec.ts"
+				"related": ["f00022", "f00034", "f00014"],
+				"shipped-in": [
+					"5cc6536",
+					"b38768c",
+					"3d3f21c",
+					"b7813ab",
+					"e47eb64",
+					"54ccb4b",
+					"7383b85"
 				]
 			}
 		},
