@@ -37,9 +37,10 @@ const buildHtml = (url: string): string => `<!DOCTYPE html>
 </body>
 </html>`;
 
-export const registerOpenDocsCommand = (
-	deps: { vscode: ICommandVscodeApi; options?: IOpenDocsOptions },
-) =>
+export const registerOpenDocsCommand = (deps: {
+	vscode: ICommandVscodeApi;
+	options?: IOpenDocsOptions;
+}) =>
 	deps.vscode.commands.registerCommand(OPEN_DOCS_COMMAND, async () => {
 		const embed = new EmbedService(deps.options ?? {});
 		const url = deps.options?.fallbackUrl ?? 'https://mcp-vertex.dev';
