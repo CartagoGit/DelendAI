@@ -38,6 +38,13 @@
 			"tags": ["proposals", "workflow", "compact"]
 		},
 		{
+			"id": "mcp-vertex-multi-agent-coordination",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-multi-agent-coordination/SKILL.md",
+			"tags": ["multi-agent", "coordination", "locking"]
+		},
+		{
 			"id": "state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
