@@ -69,6 +69,17 @@ keeps `git diff` out of the hot path.
    documented exception, not a default.
 9. **i18n is complete or it doesn't ship.** Any web copy change must add ALL
    languages; `apps/web/scripts/check-i18n.ts` fails the build otherwise.
+10. **`tools/` and `scripts/` are TypeScript-exclusive.** No `.py`, `.sh`,
+    `.bash`, `.zsh`, `.pl`, `.rb`, `.pyc` inside them. The gate is
+    `bun run lint:tools` (self-hosted at
+    `tools/scripts/lint/no-shell-python.script.ts`); it walks the tree, matches
+    by extension, and exits 1 with a per-violation report when any forbidden
+    file is found. Entrypoints carry the suffix `*.script.ts` and are invoked
+    as `bun tools/scripts/<area>/<name>.script.ts`. Pure modules imported by
+    them live in the same area without the suffix. Plugins that legitimately
+    need a non-TS utility (e.g. a future `python-lint` plugin) declare the
+    exception in their plugin README and add the plugin name to the gate's
+    allowlist.
 
 ## Conventions
 

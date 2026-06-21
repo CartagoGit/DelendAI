@@ -315,7 +315,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
 - Cambiar el tema visual ni el lenguaje de estilos.
 - Internacionalizar los tutoriales en esta propuesta (queda para f00011).
 
-## 8. Definition of done
+## acceptance
 
 `bun run validate` verde en cada slice. `bun run site:strict` (con la
 extensión del validador) verde al final. Conventional Commits por slice

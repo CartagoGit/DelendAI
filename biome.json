@@ -13,7 +13,6 @@
 			"!.worktrees",
 			"!node_modules",
 			"!apps/web/.astro",
-			"!apps/web/dist",
 			"!apps/web/node_modules",
 			"!apps/web/public",
 			"!apps/web/src/data/capabilities.json",

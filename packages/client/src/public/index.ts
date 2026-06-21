@@ -18,6 +18,7 @@ export type { IOverviewOptions } from '../lib/services/overview-service';
 export {
 	KnowledgeNotFoundError,
 	KnowledgeService,
+	categoryOf,
 } from '../lib/services/knowledge-service';
 export { MetricsService } from '../lib/services/metrics-service';
 export { NotificationsService } from '../lib/services/notifications-service';

@@ -232,7 +232,7 @@ de markdown. La estructura de directorios ya está en su sitio
 | s3 se hace con traducciones automáticas de baja calidad | Marcar el frontmatter con `auto-translated: true` y pedir review humano. No mergear si la traducción cambia el significado técnico (nombres de tools, ejemplos de JSON). |
 | Las 3 slices en paralelo por 3 agentes pisándose | Cada slice es file-disjoint (s1 toca `gen-capabilities.ts`, s2 toca `PluginPage.astro` y un `_scss`, s3 toca solo `plugins/*/tutorials/`). `git pull --rebase` antes de empezar. |
 
-## 5. No-objetivos
+## non-goals
 
 - No rehacer los tutoriales en inglés (siguen los de f00012 s7).
 - No añadir más plugins a los 5 (proposals, memory, quality,

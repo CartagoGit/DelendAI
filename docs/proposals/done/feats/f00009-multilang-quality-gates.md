@@ -241,7 +241,7 @@ slice más barato de los tres y el más seguro.
       alias `IScopeCommand` se mantiene como re-export; los call
       sites externos siguen funcionando sin cambios).
 
-## 5. No-objetivos
+## non-goals
 
 - No instalar toolchains (mypy, cargo, go).
 - No crear `presets/<lang>.ts` en el plugin (la doc muestra los
@@ -253,7 +253,7 @@ slice más barato de los tres y el más seguro.
   (sobre-ingeniería: el campo `validationMatrix.scopes` ya es
   agnóstico).
 
-## 6. Riesgos
+## risks and mitigations
 
 | Riesgo | Mitigación |
 |---|---|

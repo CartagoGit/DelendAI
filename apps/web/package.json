@@ -13,6 +13,7 @@
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",
 		"gen:logos": "bun scripts/gen-plugin-logos.ts",
+		"fetch:logos": "bun scripts/fetch-brand-logos.ts",
 		"index:search": "pagefind --site ../../build/apps/web",
 		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
 		"build:strict": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"

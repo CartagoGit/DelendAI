@@ -19,7 +19,7 @@ repo can do without the user's npm credentials / final merge is already done
 (see §"Done already"); what remains is exclusively **operational** (credentials
 + merge + push) and lives entirely on the user's side.
 
-## Why it is paused (not ready, not blocked, not done)
+## why
 
 The audit (`a1-16-06-2026 §7`, line 282) keeps `npm publish` as `- [ ]` because
 it depends on three things that the repository cannot do on its own:
@@ -45,7 +45,7 @@ waits for is the user's inputs.
 - Re-implementing the release workflow (it already matches `NPM_PUBLISH.md`).
 - Changing the package names or the org name.
 
-## Done already (no action needed from this proposal)
+## acceptance
 
 - ✅ `bun run build` produces ESM + `.d.ts` for all 10 packages.
 - ✅ `bun run release --set=<v> --write --publish` works (dry-run green).
@@ -61,7 +61,7 @@ waits for is the user's inputs.
 
 This proposal has no slices — it is a **checkpoint**, not a workstream.
 
-## Resume trigger (how this leaves `paused`)
+## why this design
 
 Move `paused/c00001-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
 **all three** are true:

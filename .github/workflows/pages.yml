@@ -49,8 +49,11 @@ jobs:
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
+        # Astro emits the static site to `build/apps/web/` (see AGENTS.md
+        # → "Build / dist layout"). The old `apps/web/dist/` path is no
+        # longer the source of truth.
         with:
-          path: apps/web/dist
+          path: build/apps/web
 
   deploy:
     name: deploy

@@ -124,7 +124,7 @@ verificados contra el código y ya corregidos:
   4/4 tests verdes, typecheck verde, DIP/SRP/ISP confirmados;
   aprobado como `done`.
 
-## 2. No-objetivos
+## non-goals
 
 - No tocar M44 (migrar `.mcp.json` a `host-config.ts`) — decisión
   pendiente del usuario, explícitamente dejada así en la auditoría.
@@ -132,7 +132,7 @@ verificados contra el código y ya corregidos:
   por el usuario el 2026-06-18.
 - No npm publish ni merge `develop→main` — lo hace el usuario.
 
-## 3. Definition of done
+## acceptance
 
 `bun run validate` verde en cada slice. Conventional Commits por
 slice. El registro `docs/proposals/index.json` (si existe) o el

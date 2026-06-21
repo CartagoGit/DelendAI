@@ -21,6 +21,7 @@ export interface ICommandVscodeApi {
 			options: { readonly enableScripts?: boolean },
 		): IWebviewPanel;
 		showInformationMessage?(message: string): Thenable<string | undefined>;
+		showErrorMessage?(message: string): Thenable<string | undefined>;
 		showQuickPick?(
 			items: ReadonlyArray<{
 				readonly id: string;
