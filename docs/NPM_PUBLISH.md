@@ -1,10 +1,13 @@
 # Publicar `@mcp-vertex/*` en npm — guía paso a paso
 
 > Todo queda **preparado** para que solo ejecutes estos pasos con tu cuenta.
-> Paquetes (10): `@mcp-vertex/core`, `@mcp-vertex/proposals`,
-> `@mcp-vertex/rules`, `@mcp-vertex/memory`, `@mcp-vertex/git`,
-> `@mcp-vertex/quality`, `@mcp-vertex/search`,
-> `@mcp-vertex/notification`, `@mcp-vertex/docs`, `@mcp-vertex/deps`. Todos en `0.1.0`,
+> Paquetes publicables (17): `@mcp-vertex/core`, `@mcp-vertex/client`,
+> `@mcp-vertex/cli`, `@mcp-vertex/proposals`, `@mcp-vertex/rules`,
+> `@mcp-vertex/memory`, `@mcp-vertex/git`, `@mcp-vertex/quality`,
+> `@mcp-vertex/search`, `@mcp-vertex/notification`, `@mcp-vertex/docs`,
+> `@mcp-vertex/deps`, `@mcp-vertex/audit`, `@mcp-vertex/logs`,
+> `@mcp-vertex/status-marker`, `@mcp-vertex/test-convention` y
+> `@mcp-vertex/web-fetch`. Todos en `0.1.0`,
 > `publishConfig.access=public`, `files` limitado a `src` + README + LICENSE.
 
 ## 0. Requisitos (una vez)
@@ -29,7 +32,7 @@ y dirigido por los commits** — no hay que bumpear versiones a mano:
    `!`/`BREAKING CHANGE`→major. Solo `docs`/`chore`/`ci`/`test`/`style`/`build`/
    `refactor` → **no publica**. Un commit no convencional con contenido → patch
    (default seguro). Si hay algo que publicar: valida + build +
-   `bun run release --set=<versión derivada> --write --publish` (10 paquetes en
+   `bun run release --set=<versión derivada> --write --publish` (17 paquetes en
    orden) + crea el **tag** `vX.Y.Z` + un **GitHub Release** con notas autogeneradas.
    *Tag-driven:* el bump NO se commitea de vuelta a `main` (sin bucles de CI).
 3. El workflow **Pages** regenera y despliega el sitio (web de la doc) desde la
@@ -65,8 +68,8 @@ corre el día 1 de cada 3 meses (`cron: "0 9 1 */3 *"`). Si han pasado más de
 lanzarse manualmente desde la pestaña *Actions*.
 
 ## 0. Vía manual asistida: `bun run release`
-Un único comando versiona los 10 paquetes **en lockstep** (todos a la misma
-versión, reescribiendo el `peerDependency` `^x.y.z` del core en los 9 plugins) y
+Un único comando versiona los 17 paquetes publicables **en lockstep** (todos a la misma
+versión, reescribiendo las dependencias workspace internas a la versión real) y
 publica en el orden correcto. Por defecto es **dry-run** (no escribe nada):
 
 ```bash
@@ -92,13 +95,17 @@ bun run validate            # typecheck + tests (debe acabar en verde)
 ```
 
 ## 2. Orden de publicación (IMPORTANTE)
-`mcp-vertex` PRIMERO (los plugins lo declaran como `peerDependency`). Luego los 9
-plugins en cualquier orden.
+`@mcp-vertex/core` PRIMERO; después `@mcp-vertex/client` y `@mcp-vertex/cli`;
+finalmente los plugins en cualquier orden compatible con sus dependencias.
 
 ```bash
 # 1) núcleo
 cd packages/core        && npm publish && cd -
-# 2) plugins
+# 2) cliente + CLI
+cd packages/client      && npm publish && cd -
+cd packages/cli         && npm publish && cd -
+# 3) plugins
+cd plugins/audit        && npm publish && cd -
 cd plugins/proposals    && npm publish && cd -
 cd plugins/rules        && npm publish && cd -
 cd plugins/memory       && npm publish && cd -
@@ -108,6 +115,10 @@ cd plugins/search       && npm publish && cd -
 cd plugins/notification && npm publish && cd -
 cd plugins/docs         && npm publish && cd -
 cd plugins/deps         && npm publish && cd -
+cd plugins/logs         && npm publish && cd -
+cd plugins/status-marker && npm publish && cd -
+cd plugins/test-convention && npm publish && cd -
+cd plugins/web-fetch    && npm publish && cd -
 ```
 - `publishConfig.access=public` ya está, así que NO necesitas `--access public`.
 - Si usas 2FA te pedirá el OTP en cada uno (`npm publish --otp=123456`).
@@ -127,6 +138,8 @@ Los plugins tienen `"@mcp-vertex/core": "workspace:*"` en **devDependencies**.
 ## 3. Verificar lo publicado
 ```bash
 npm view @mcp-vertex/core version
+bunx @mcp-vertex/cli --version
+bunx @mcp-vertex/cli overview --json
 bunx @mcp-vertex/core --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps --check
 # Debe imprimir "ok": true y "assembles": true
 ```
@@ -159,5 +172,5 @@ Node sin transpilación: añadir `tsc` build por paquete, `exports` apuntando a
 Bun ni vía `bunx`.
 
 ---
-*Resumen: `bun install && bun run validate` → publicar core → publicar los 5
-plugins → `bunx ... --check` para verificar. Nada más.*
+*Resumen: `bun install && bun run validate` → publicar core → publicar client/cli
+→ publicar plugins → `bunx @mcp-vertex/cli overview --json` para verificar. Nada más.*
