@@ -1,18 +1,18 @@
 /**
  * `registerOpenDashboardCommand` — opens (or refreshes) the
  * `mcp-vertex Dashboard` webview. The dashboard's HTML is produced
- * by `@mcp-vertex/ide/public`'s `renderDashboard(...)`, fed by a
- * `DashboardService` over the same `McpStdioClient` used by every
- * other command.
+ * by `@mcp-vertex/ui-extension/public`'s `renderDashboard(...)`, fed
+ * by a `DashboardService` over the same `McpStdioClient` used by
+ * every other command.
  */
 import {
 	DashboardService,
 	EmbedService,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
-import { renderDashboard } from '@mcp-vertex/ide/public';
+import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 
-import type { IHostAdapter } from '@mcp-vertex/ide/public';
+import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
 import { REFRESH_COMMAND } from './refresh';
 

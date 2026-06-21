@@ -5,7 +5,7 @@
  * without reloading the webview.
  */
 import { KnowledgeService } from '@mcp-vertex/client';
-import { renderKnowledgeNavigator } from '@mcp-vertex/ide/public';
+import { renderKnowledgeNavigator } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 

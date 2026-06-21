@@ -9,7 +9,7 @@
  * rejection we surface an error message instead of opening a panel.
  */
 import { EmbedService, type IEmbedServiceOptions } from '@mcp-vertex/client';
-import { escapeHtml } from '@mcp-vertex/ide/public';
+import { escapeHtml } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandVscodeApi } from './types';
 

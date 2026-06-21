@@ -11,7 +11,7 @@ import {
 	OverviewService,
 	SearchService,
 } from '@mcp-vertex/client';
-import type { IQuickPickItem } from '@mcp-vertex/ide/public';
+import type { IQuickPickItem } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps } from './types';
 
