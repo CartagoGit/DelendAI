@@ -6,6 +6,13 @@ track: plugins+skills+core
 date: 2026-06-21
 kind: feat
 title: Skills coverage + write-side tools (closes the audit gaps f00028/r00001 do not)
+related:
+  - f00028 # plugin depth/read-side coverage complement
+  - r00001 # catchall outputSchema hardening complement
+  - f00029 # versioned skills follow-up for the static SKILL.md slices here
+  - f00027 # token-budget gate backing the measured numbers cited by S4
+  - l00008 # residual state-sync hardening that these write-side slices build on
+  - f00022 # IDE extension consumer of fs/git write-side tools
 ---
 
 # f00032 — Skills coverage + write-side tools (closes the audit gaps `f00028`/`r00001` do not)
@@ -146,7 +153,7 @@ a shorter compact entrypoint.
   - "Riesgos: `fix:` mal clasificado como `feat:` (minor indebido),
     `chore:` rompiendo Conventional Commits (default patch pero CI
     puede fallar el lint)."
-
+- status: done
 ### S4 — Skill `mcp-vertex-token-budget-discipline`
 - **Files**: `skills/mcp-vertex-token-budget-discipline/SKILL.md`
   (nuevo).
@@ -164,7 +171,7 @@ a shorter compact entrypoint.
     con `maxResults > 50`."
   - "Cómo el e2e `token-budget.spec.ts` falla el build si se rebasa;
     el SKILL.md referencia el test por nombre."
-
+- status: done
 ### S5 — Skill `mcp-vertex-status-marker-and-closure`
 - **Files**: `skills/mcp-vertex-status-marker-and-closure/SKILL.md`
   (nuevo).
@@ -184,7 +191,7 @@ a shorter compact entrypoint.
   - "Patrón de auditoría: el último 20% de cada respuesta del agente
     debe terminar con un close marker válido; `status_marker_validate`
     lo verifica en una sola llamada."
-
+- status: done
 ### S6 — Skill `mcp-vertex-audit-runner` (plugin `audit`)
 - **Files**: `skills/mcp-vertex-audit-runner/SKILL.md` (nuevo).
 - **Status**: pending
@@ -203,7 +210,7 @@ a shorter compact entrypoint.
     derivadas."
   - "Nota sobre carga: `audit` no está en el preset por defecto;
     activar con `--preset=swarm` o `--plugins=audit`."
-
+- status: done
 ### S7 — Skill `mcp-vertex-quality-and-rules-gates`
 - **Files**: `skills/mcp-vertex-quality-and-rules-gates/SKILL.md`
   (nuevo).
@@ -221,7 +228,7 @@ a shorter compact entrypoint.
     `mode: 'proposal'`, siempre proposal; si `mode: 'strict'`, aplica
     in-place; si el target tiene slices en curso, proposal (no
     pisar)."
-
+- status: done
 ### S8 — Skill `mcp-vertex-legacy-proposal-migration`
 - **Files**: `skills/mcp-vertex-legacy-proposal-migration/SKILL.md`
   (nuevo).
@@ -240,7 +247,7 @@ a shorter compact entrypoint.
   - "Por qué `l` (legacy) queda en warning permanente, no error:
     el linter `lint-proposals.ts` lo permite como sufijo para
     propuestas migradas que aún conservan la numeración original."
-
+- status: done
 ### S9 — Tool `git_commit` + `git_push` (write-side git)
 - **Files**: `plugins/git/src/lib/write-tools.ts` (nuevo), exporta
   `git_commit { message, files?, amend? }` y `git_push
@@ -370,7 +377,7 @@ a shorter compact entrypoint.
   - "La propuesta aparece en `index.json` con `status: 'ready'`."
   - "Cross-link a `f00028`, `r00001`, `f00029`, `f00027`, `l00008`, `f00022` en
     la sección 'Linked references' del frontmatter."
-
+- status: done
 ## Acceptance (global)
 
 - [ ] 8 SKILL.md nuevos en `/skills/` siguiendo el patrón de
@@ -388,7 +395,8 @@ a shorter compact entrypoint.
       `apps/web/src/i18n/ui.ts` para **todos** los idiomas —
       regla AGENTS.md #9).
 - [ ] `proposals_sync_proposals` no devuelve warnings.
-- [ ] `git ls-files extensions/vscode/ | grep '\\.vsix$'` devuelve vacío.
+- [ ] `git ls-files extensions/vscode/ | grep '\\.vsix
+` devuelve vacío.
 - [ ] `packages/client/README.md` existe.
 
 ## risks and mitigations
@@ -430,3 +438,5 @@ a shorter compact entrypoint.
 - `f00022-ide-extension-multi-ide-brand-dashboard.md` — la IDE extension de `extensions/vscode/` consume los nuevos tools; `f00022` se beneficia de `fs_read`/`fs_write` (s12) y de `git_commit` (s9).
 - AGENTS.md reglas 1, 3, 5, 8, 9 (agnostic core, async I/O, path
   containment, outputSchema, i18n).
+- status: done
+

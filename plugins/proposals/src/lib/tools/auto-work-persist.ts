@@ -35,6 +35,8 @@
  * if (!result.committed) console.warn('persist skipped:', result.reason);
  * ```
  */
+import { commitAndPush } from '@mcp-vertex/core/public';
+
 import type { IGitRunner } from '../shared/git-runner';
 
 /** How `auto_work` should persist the slice when it closes. */
@@ -208,16 +210,11 @@ export const maybePersistAfterSlice = async (
 	// Stage the files explicitly. We never `git add .` because that
 	// would silently fold unrelated, unreviewed changes (drift between
 	// `agent_lock.files` and the actual diff) into the slice commit.
+	// Checked here (rather than left to `commitAndPush`) so the empty-file
+	// reason stays this module's own wording ("empty slice").
 	if (files.length === 0) {
 		return persistResult(false, false, mode, {
 			reason: 'no files to commit (empty slice)',
-		});
-	}
-
-	const addResult = await run(['add', '--', ...files]);
-	if (!addResult.ok) {
-		return persistResult(false, false, mode, {
-			reason: `git add failed: ${addResult.reason ?? 'unknown'}`,
 		});
 	}
 
@@ -225,54 +222,51 @@ export const maybePersistAfterSlice = async (
 	const area = inferArea(files);
 	const message = renderCommitMessage(template, area, proposalId, sliceId);
 
-	const commitResult = await run(['commit', '-m', message]);
-	if (!commitResult.ok) {
-		// A common non-fatal case: nothing to commit (worktree already
-		// clean after `git add`). Surface a friendly reason so the
-		// agent knows the persist step did not actually move state.
-		const reason = commitResult.reason ?? 'unknown';
-		const alreadyClean = /nothing to commit|no changes added/u.test(reason);
+	// `mode === 'commit-and-push'` with a `pushTarget` that would hit
+	// `main` is special-cased BEFORE calling the shared engine: the
+	// commit still happens, but the push step is skipped entirely (the
+	// engine is never told to push), preserving the exact "refusing to
+	// push to main automatically" reason this module has always reported.
+	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
+	const wouldHitMain =
+		mode === 'commit-and-push' && pushWouldHitMain(pushTarget);
+	const [pushRemote, pushBranch] = pushTarget.split(/\s+/u);
+
+	const result = await commitAndPush({
+		files,
+		message,
+		git: run,
+		...(mode === 'commit-and-push' && !wouldHitMain
+			? {
+					push: {
+						...(pushRemote !== undefined
+							? { remote: pushRemote }
+							: {}),
+						...(pushBranch !== undefined
+							? { branch: pushBranch }
+							: {}),
+					},
+				}
+			: {}),
+	});
+
+	if (!result.committed) {
 		return persistResult(false, false, mode, {
-			reason: alreadyClean
-				? 'nothing to commit (worktree already clean)'
-				: `git commit failed: ${reason}`,
+			...(result.reason !== undefined ? { reason: result.reason } : {}),
 		});
 	}
 
-	// `git rev-parse --short HEAD` to report the hash back to the agent.
-	const hashResult = await run(['rev-parse', '--short', 'HEAD']);
-	const hash = hashResult.ok ? hashResult.output.trim() : undefined;
-
-	if (mode !== 'commit-and-push') {
-		return persistResult(
-			true,
-			false,
-			mode,
-			hash !== undefined ? { hash } : {},
-		);
-	}
-
-	const pushTarget = options.pushTarget ?? DEFAULT_PUSH_TARGET;
-	if (pushWouldHitMain(pushTarget)) {
+	if (mode === 'commit-and-push' && wouldHitMain) {
 		// Safety net: never push to main automatically. The commit is
 		// already done; we just refuse to push and explain why.
-		const extras: { hash?: string; reason?: string } = {
+		return persistResult(true, false, mode, {
 			reason: 'refusing to push to main automatically',
-		};
-		if (hash !== undefined) extras.hash = hash;
-		return persistResult(true, false, mode, extras);
+			...(result.hash !== undefined ? { hash: result.hash } : {}),
+		});
 	}
 
-	const pushResult = await run(['push', ...pushTarget.split(/\s+/u)]);
-	if (!pushResult.ok) {
-		const extras: { hash?: string; reason?: string } = {
-			reason: `git push failed: ${pushResult.reason ?? 'unknown'}`,
-		};
-		if (hash !== undefined) extras.hash = hash;
-		return persistResult(true, false, mode, extras);
-	}
-
-	const extras: { hash?: string } = {};
-	if (hash !== undefined) extras.hash = hash;
-	return persistResult(true, true, mode, extras);
+	return persistResult(true, result.pushed, mode, {
+		...(result.hash !== undefined ? { hash: result.hash } : {}),
+		...(result.reason !== undefined ? { reason: result.reason } : {}),
+	});
 };

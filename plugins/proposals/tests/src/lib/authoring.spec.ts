@@ -112,6 +112,43 @@ describe('proposal authoring (create → board → close)', () => {
 		expect(doc).toMatch(/### s1[\s\S]*?- status: done/);
 	});
 
+	it('closes the last slice without appending the done marker outside the slice block', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'p6',
+			title: 'Last slice close',
+			goal: 'close final slice cleanly',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const file = join(opts.proposalsDirAbs, 'p6-last-slice-close.md');
+		const original = readFileSync(file, 'utf8');
+		const withAcceptance = original.replace(
+			/## Acceptance\n\n- \[ \] done\./,
+			'## Acceptance\n\n- [ ] done.\n\n## Notes\n\nTail after slices.',
+		);
+		require('node:fs').writeFileSync(file, withAcceptance, 'utf8');
+
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const closed = parse(
+			await close({
+				proposalId: 'p6',
+				sliceId: 's1',
+				releaseLock: false,
+			}),
+		);
+		expect(closed.closed).toBe(true);
+
+		const doc = readFileSync(file, 'utf8');
+		const sliceBlock = doc.slice(
+			doc.indexOf('### s1'),
+			doc.indexOf('## Acceptance'),
+		);
+		expect(sliceBlock).toMatch(/- status: done/);
+		expect(doc.slice(doc.indexOf('## Acceptance'))).not.toMatch(
+			/^- status: done/m,
+		);
+	});
+
 	it('redacts secrets pasted into the goal before persisting (M23)', async () => {
 		const create = await capture(buildCreateProposalRegistration(opts));
 		const created = parse(
