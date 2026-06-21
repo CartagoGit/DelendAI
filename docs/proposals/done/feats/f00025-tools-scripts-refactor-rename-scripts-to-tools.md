@@ -65,6 +65,7 @@ Reglas:
   - `.validation-script.sh` → borrar
   - `leep 5` → borrar (artefacto de `sleep 5` mal tipeado en una sesión)
   - `S1-IMPLEMENTATION-SUMMARY.md` → borrar (nota de sesión, ya integrada en el commit `a243bcc` de n00007)
+- **Gate**: `git rm && rm && bun run validate`
 - **Command**: `git rm` + `rm` para los untracked.
 - **Acceptance**:
   - 0 archivos `.py` en `scripts/`
@@ -79,6 +80,7 @@ Reglas:
   - `scripts/translate-tutorials.sh` → `tools/scripts/i18n/translate-tutorials.script.ts`
   - `scripts/gen-section-pages.sh` → `tools/scripts/astro/gen-section-pages.script.ts`
   - `scripts/translate-tutorials.sh` (delete) + `scripts/gen-section-pages.sh` (delete)
+- **Gate**: `bun run validate`
 - **Command**: `bun run validate` + `bun tools/scripts/i18n/translate-tutorials.script.ts --dry-run` (si tiene flag) + `bun tools/scripts/site/gen-section-pages.script.ts --check` (idem)
 - **Acceptance**:
   - Ambos `.script.ts` ejecutables con `bun run` (shebang `#!/usr/bin/env bun` + `process.exit` explícito con código)
@@ -117,6 +119,7 @@ Reglas:
 
   Y al final del slice: `git rm -r scripts/` (la carpeta queda vacía).
 
+- **Gate**: `bun run typecheck && bun run test`
 - **Command**: `git mv` (preserva historial) + `bun run typecheck && bun run test` (142 archivos, ~1040 tests, debe quedar verde) + smoke de los 12 entrypoints con `--help` o `--dry-run` cuando exista.
 - **Acceptance**:
   - 0 archivos dentro de `scripts/` tras el slice
@@ -136,6 +139,7 @@ Reglas:
   - `.github/workflows/release.yml` → actualizar el call a `bun scripts/derive-version.ts` → `bun tools/scripts/release/derive-version.script.ts`.
   - Cualquier `docs/proposals/**/*.md` que referencie `scripts/X.ts` → actualizar las menciones (las propuestas cerradas como `f00011` o `f00010` NO se reescriben — son documentos históricos; solo se actualizan las `ready/` activas si las hay).
   - `AGENTS.md` → añadir un bullet en "Hard rules" (en S5).
+- **Gate**: `bun run validate`
 - **Command**: `bun run validate` (gate global) + grep_search para confirmar 0 referencias rotas a `scripts/X.ts` en archivos no históricos.
 - **Acceptance**:
   - `bun run build` funciona end-to-end
@@ -163,6 +167,7 @@ Reglas:
   - `apps/web/scripts/check-tutorials-i18n.ts` → actualizar el `@see scripts/translate-tutorials.sh` → `@see tools/scripts/i18n/translate-tutorials.script.ts` y el comentario del banner "Bootstrap script: `bun scripts/translate-tutorials.sh`" → "`bun tools/scripts/i18n/translate-tutorials.script.ts`".
   - `apps/web/scripts/lib/discover-tutorials.ts` → actualizar el comentario del pipeline.
   - `biome.json` → `files.includes` añade `"tools/**"` y quita `"scripts/**"` (ya borrado en S3); el formatter cubre `tools/scripts/**/*.{ts,mjs,cjs,json,md}` con la misma config que `apps/web/scripts/**`.
+- **Gate**: `bun run validate`
 - **Command**: `bun run validate` + crear ad-hoc un `scripts/test.py` (que `git clean` borrará tras el test) para verificar que el gate lo cazaría. Limpiar el `.py` tras la prueba.
 - **Acceptance**:
   - `bun run lint:tools` verde
