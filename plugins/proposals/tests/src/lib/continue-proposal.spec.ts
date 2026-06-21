@@ -153,6 +153,50 @@ describe('continue_proposal (serial cascade)', () => {
 		expect(out.nextAction).toContain('lock-released');
 	});
 
+	it('skips a ready proposal whose slices exist but none are claimable because live ownership already covers them', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [
+					{ id: 'f00020', file: 'f00020.md', status: 'ready' },
+					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
+				],
+			}),
+		);
+		writeFileSync(
+			join(root, 'f00020.md'),
+			[
+				'---',
+				'id: f00020',
+				'---',
+				'',
+				'# f00020',
+				'',
+				'## Slices',
+				'',
+				'### S12 — aggregator',
+				'',
+				'- **Files**: `plugins/quality/src/lib/run-all.ts`',
+			].join('\n'),
+		);
+		writeFileSync(join(root, 'p2.md'), '# free fallback\n');
+		writeFileSync(
+			options.lockPathAbs,
+			JSON.stringify({
+				in_flight: [
+					{
+						task_id: 'f00020-S11-S13',
+						agent: 'hydra',
+						ownership: ['plugins/quality/src/lib/run-all.ts'],
+					},
+				],
+			}),
+		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('p2-second');
+	});
+
 	// f00016 S4: new-system entries (id prefix is one of the 12 live kinds,
 	// status is one of the 7 glossary statuses) are actionable by FOLDER
 	// (derived from the index `file` path), not by status string.

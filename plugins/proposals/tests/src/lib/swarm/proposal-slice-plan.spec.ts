@@ -78,6 +78,26 @@ id: f00020
 - files: docs/c.md
 `;
 
+const DOC_WITH_BOLD_FIELDS = `---
+id: f00020
+---
+
+# f00020
+
+## Slices
+
+### S12 — aggregator
+
+- **Files**: `packages/core/src/public/index.ts`
+- **Files**: `plugins/quality/src/lib/run-all.ts`
+- **Gate**: type
+
+### S13 — hygiene
+
+- **Files**: `packages/client/README.md`
+- **Gate**: lint
+`;
+
 describe('parseProposalSlicePlan', () => {
 	it('returns null for legacy proposals without a Slices section', () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
@@ -111,6 +131,17 @@ describe('parseProposalSlicePlan', () => {
 		const plan = parseProposalSlicePlan('pX', DOC_WITH_BOLD_STATUS);
 		expect(plan?.slices[0]?.status).toBe('done');
 		expect(validateClaim(plan!, 'pX.S1').blockerType).toBe('already-done');
+	});
+
+	it('parses narrative bold field labels used by live proposal docs', () => {
+		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS);
+		expect(plan?.slices[0]?.files).toEqual([
+			'packages/core/src/public/index.ts',
+			'plugins/quality/src/lib/run-all.ts',
+		]);
+		expect(plan?.slices[0]?.gate).toBe('type');
+		expect(plan?.slices[1]?.files).toEqual(['packages/client/README.md']);
+		expect(plan?.slices[1]?.gate).toBe('lint');
 	});
 
 	it('flags overlapping files between slices', () => {
@@ -151,6 +182,19 @@ describe('deriveSliceStatuses + validateClaim', () => {
 		expect(derived.slices[1]?.owner).toBe('copilot');
 		expect(derived.slices[2]?.status).toBe('in-progress');
 		expect(derived.slices[2]?.owner).toBe('copilot');
+	});
+
+	it('treats ownership overlap as in-progress even when the grouped task id omits the exact slice id', () => {
+		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS)!;
+		const derived = deriveSliceStatuses(plan, [
+			{
+				taskId: 'f00020-S11-S13',
+				agent: 'hydra',
+				ownership: ['plugins/quality/src/lib/run-all.ts'],
+			},
+		]);
+		expect(derived.slices[0]?.status).toBe('in-progress');
+		expect(derived.slices[0]?.owner).toBe('hydra');
 	});
 
 	it('accepts a claim whose deps are done', () => {

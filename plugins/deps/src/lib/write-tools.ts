@@ -72,6 +72,39 @@ const tailOf = (text: string, lines = 20): string =>
 export const manifestAbsPath = (workspaceRootAbs: string): string =>
 	join(workspaceRootAbs, 'package.json');
 
+export type IBuildInstallCommandResult =
+	| { readonly command: string; readonly error?: undefined }
+	| { readonly command?: undefined; readonly error: string };
+
+/**
+ * Validate `name`/`range` and build the `bun add`/`npm install` command
+ * line WITHOUT spawning anything. Pure and exported so the command shape
+ * (section flag, ecosystem, spec) is unit-testable without a real install.
+ */
+export const buildInstallCommand = (
+	options: IPackageInstallOptions,
+): IBuildInstallCommandResult => {
+	const ecosystem = options.ecosystem ?? 'bun';
+	const section = options.section ?? 'dependencies';
+
+	if (!SAFE_NAME.test(options.name)) {
+		return { error: `rejected: unsafe package name "${options.name}"` };
+	}
+	if (options.range !== undefined && !SAFE_RANGE.test(options.range)) {
+		return { error: `rejected: unsafe version range "${options.range}"` };
+	}
+
+	const spec =
+		options.range !== undefined && options.range.length > 0
+			? `${options.name}@${options.range}`
+			: options.name;
+	const flag = SECTION_FLAG[section];
+	const command = [INSTALL_COMMAND[ecosystem], spec, flag]
+		.filter((part): part is string => part !== null)
+		.join(' ');
+	return { command };
+};
+
 /**
  * `bun add`/`npm install` a single dependency, guarded by `withFileMutex`
  * (via `runCommand`'s `lockPath`) over the target `package.json` so two
@@ -83,47 +116,26 @@ export const packageInstall = async (
 	workspaceRootAbs: string,
 	options: IPackageInstallOptions,
 ): Promise<IPackageInstallResult> => {
-	const ecosystem = options.ecosystem ?? 'bun';
-	const section = options.section ?? 'dependencies';
-
-	if (!SAFE_NAME.test(options.name)) {
+	const built = buildInstallCommand(options);
+	if (built.error !== undefined) {
 		return {
 			ok: false,
 			command: '',
 			code: -1,
 			timedOut: false,
 			tail: '',
-			error: `rejected: unsafe package name "${options.name}"`,
+			error: built.error,
 		};
 	}
-	if (options.range !== undefined && !SAFE_RANGE.test(options.range)) {
-		return {
-			ok: false,
-			command: '',
-			code: -1,
-			timedOut: false,
-			tail: '',
-			error: `rejected: unsafe version range "${options.range}"`,
-		};
-	}
-
-	const spec =
-		options.range !== undefined && options.range.length > 0
-			? `${options.name}@${options.range}`
-			: options.name;
-	const flag = SECTION_FLAG[section];
-	const command = [INSTALL_COMMAND[ecosystem], spec, flag]
-		.filter((part): part is string => part !== null)
-		.join(' ');
 
 	const manifestAbs = manifestAbsPath(workspaceRootAbs);
-	const outcome = await runCommand(command, {
+	const outcome = await runCommand(built.command, {
 		cwd: workspaceRootAbs,
 		lockPath: manifestAbs,
 	});
 	return {
 		ok: outcome.code === 0,
-		command,
+		command: built.command,
 		code: outcome.code,
 		timedOut: outcome.timedOut,
 		tail: tailOf(outcome.output),
@@ -278,7 +290,18 @@ export const buildDepsWriteToolRegistrations = (
 					}) => {
 						const result = await packageInstall(
 							options.workspaceRootAbs,
-							args,
+							{
+								name: args.name,
+								...(args.range !== undefined
+									? { range: args.range }
+									: {}),
+								...(args.section !== undefined
+									? { section: args.section }
+									: {}),
+								...(args.ecosystem !== undefined
+									? { ecosystem: args.ecosystem }
+									: {}),
+							},
 						);
 						if (result.error !== undefined) {
 							return toolError(result.error);
@@ -321,7 +344,15 @@ export const buildDepsWriteToolRegistrations = (
 					}) => {
 						const result = await packageRunScript(
 							options.workspaceRootAbs,
-							args,
+							{
+								script: args.script,
+								...(args.args !== undefined
+									? { args: args.args }
+									: {}),
+								...(args.cwd !== undefined
+									? { cwd: args.cwd }
+									: {}),
+							},
 						);
 						if (result.error !== undefined) {
 							return toolError(result.error);

@@ -293,7 +293,11 @@ const readActiveLocks = async (
 	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
-		in_flight?: Array<{ task_id?: string; agent?: string }>;
+		in_flight?: Array<{
+			task_id?: string;
+			agent?: string;
+			ownership?: string[];
+		}>;
 	}>(lockPath);
 	if (lock === null) return [];
 	return (lock.in_flight ?? [])
@@ -301,6 +305,13 @@ const readActiveLocks = async (
 		.map((entry) => ({
 			taskId: entry.task_id ?? '',
 			agent: entry.agent ?? 'unknown',
+			...(Array.isArray(entry.ownership)
+				? {
+						ownership: entry.ownership.filter(
+							(item) => typeof item === 'string',
+						),
+					}
+				: {}),
 		}));
 };
 
@@ -506,8 +517,33 @@ export const runContinueProposal = async (
 		free.map((entry) => summaryFor(entry, options.indexPathAbs)),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
+	const activeLocks = await readActiveLocks(options.lockPathAbs);
+	const claimableById = new Map<string, number>();
+	for (const entry of free) {
+		const docPath = join(dirname(options.indexPathAbs), entry.file);
+		const markdown = await readTextOrNull(docPath);
+		if (markdown === null) continue;
+		const parsedPlan = parseProposalSlicePlan(entry.id, markdown);
+		if (parsedPlan === null) continue;
+		const derivedPlan = deriveSliceStatuses(parsedPlan, activeLocks);
+		claimableById.set(
+			entry.id,
+			derivedPlan.slices.filter(
+				(slice) => validateClaim(derivedPlan, slice.sliceId).ok,
+			).length,
+		);
+	}
+	const seriallyFree = free.filter(
+		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
+	);
+	if (seriallyFree.length === 0)
+		return json({
+			kind: 'all-claimed',
+			reason: 'every actionable proposal is currently covered by live slice claims or ownership overlap',
+			nextAction: `Do NOT retry auto mode in a loop. Wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry auto mode or the exact claim path.`,
+		});
 	const priorityById = new Map<string, number>();
-	const next = [...free].sort((a, b) => {
+	const next = [...seriallyFree].sort((a, b) => {
 		const priorityA = resolver.resolve(
 			summaryById.get(a.id) as IProposalSummary,
 		);
