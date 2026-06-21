@@ -3,14 +3,38 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { listDeps, checkDeps } from './engine';
+import {
+	listDeps,
+	checkDeps,
+	checkOutdated,
+	fetchLatestFromNpm,
+} from './engine';
+import type { ILatestVersionFetcher } from './engine';
 
 export interface IDepsToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
 	/** Manifest path relative to the workspace root. Default `package.json`. */
 	readonly manifest?: string;
+	/**
+	 * Opt-in: also register `deps_outdated` (hits the npm registry, `effects:
+	 * ['network']`). Default false — `deps`/`deps_check`/`deps_list` stay
+	 * offline by design; this is the one deliberate, declared exception.
+	 */
+	readonly allowNetwork?: boolean;
+	/** Injectable for tests; defaults to a real npm registry fetch. */
+	readonly fetchLatest?: ILatestVersionFetcher;
 }
+
+const OUTDATED_ENTRY = z.object({
+	name: z.string(),
+	range: z.string(),
+	section: z.string(),
+	wanted: z.string().nullable(),
+	latest: z.string().nullable(),
+	outdated: z.boolean(),
+	error: z.string().optional(),
+});
 
 const SECTION_COUNTS = z.object({
 	dependencies: z.number(),
@@ -107,5 +131,46 @@ export const buildDepsToolRegistrations = (
 				);
 			},
 		},
+		...(options.allowNetwork
+			? [
+					{
+						id: 'deps_outdated',
+						summary:
+							"Resolve each dep's latest npm version and flag stale ones. Opt-in, network.",
+						tags: ['deps', 'network'],
+						effects: ['network'],
+						register: async (server) => {
+							server.registerTool(
+								`${prefix}_deps_outdated`,
+								{
+									description:
+										"For each manifest dep whose range pins a plain x.y.z baseline, resolve the npm registry's `latest` dist-tag and flag it as outdated when newer. Ranges without a comparable baseline (*, latest, workspace:/npm:/file:/link:, git urls) report wanted:null and are skipped, not errors. Capped at 50 packages per call (truncated:true past the cap). Opt-in (plugins.deps.options.allowNetwork:true) — deps_list/deps_check stay offline.",
+									inputSchema: z.object({
+										manifest: z.string().optional(),
+									}),
+									outputSchema: z.object({
+										manifest: z.string(),
+										checked: z.number(),
+										outdatedCount: z.number(),
+										entries: z.array(OUTDATED_ENTRY),
+										truncated: z.boolean(),
+									}),
+								},
+								async (args: {
+									manifest?: string | undefined;
+								}) =>
+									toolJson(
+										await checkOutdated(
+											options.workspaceRootAbs,
+											args.manifest ?? manifest,
+											options.fetchLatest ??
+												fetchLatestFromNpm,
+										),
+									),
+							);
+						},
+					} satisfies IToolRegistration,
+				]
+			: []),
 	];
 };
