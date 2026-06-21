@@ -1,6 +1,6 @@
 ---
 id: f00034
-status: ready
+status: done
 type: proposal
 track: core+cli+client+workflow
 date: 2026-06-21
@@ -346,6 +346,13 @@ S2 (parser, formatter, exit codes, i18n gen script)
 6. **The i18n script (`generate-cli-translations.script.ts`) may produce stale files** if a developer adds a new `t('foo.bar')` key in a command and forgets to run it. Mitigated by `lint:cli:i18n` (it fails on any missing key) and by hooking the script into `bun run dev` so the file is regenerated on save in dev mode.
 
 ## notes
+
+### Closure — 2026-06-21
+
+- `packages/cli` is publishable (`private` omitted, `publishConfig.access: public`) and owns both `mcp-vertex` and `mcpv`.
+- `lint:cli-imports`, `lint:cli-coverage` and `lint:cli:i18n` run in `bun run validate`.
+- `lint:cli:i18n` now verifies all 12 supported help locales cover every registered command.
+- Verified with `bun run validate` and `bun run site:strict`.
 
 ### Decisions taken by the orchestrator (open to user veto before S1)
 
