@@ -103,7 +103,7 @@ Un boost NO cambia la prioridad absoluta del proposal; solo lo mueve al **frente
 
 **Por qué un boost no salta inter-kind**: la regla "`x` antes que `f`" es un invariante de seguridad del cascade (un fix no puede quedar atrapado detrás de un feat). Si un `f*` con boost saltara por encima de un `x*`, reintroduciríamos el bug que arregla esta propuesta. Si necesitas que un `f*` corra antes que un `x*`, usa `cascadeOverride: -1` con su reason — eso es un break-glass, no un atajo.
 
-## Decisión de schema
+## Decisión de schema (kind, override, boost)
 
 `get_proposal_workflow` actualmente devuelve:
 

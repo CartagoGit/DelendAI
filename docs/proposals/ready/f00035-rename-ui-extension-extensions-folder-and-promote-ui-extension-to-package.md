@@ -259,12 +259,6 @@ cinco reglas no negociables:
 - **Files**:
   - `package.json`
   - `bun.lock`
-  - "`git log --follow extensions/vscode/src/extension.ts` muestra
-    el historial completo desde `apps/vscode`."
-  - "El `package.json` declara el nuevo nombre y la versión major."
-
-### S4 — Update root `package.json` workspaces + scripts
-
 - [`package.json`](package.json) `workspaces` — reemplazar
   `"apps/*"` por `"apps/*"` + `"extensions/*"`:
   ```json
@@ -425,27 +419,6 @@ más allá de los gates individuales de cada slice:
     válido."
   - "CHANGELOG.md tiene la entrada BREAKING documentada."
 
-## notes
-
-### Migration map (referencia rápida)
-
-| Antes | Después |
-|---|---|
-| `apps/ide/` | `packages/ui-extension/` |
-| `apps/vscode/` | `extensions/vscode/` |
-| `@mcp-vertex/ide` (package) | `@mcp-vertex/ui-extension` (package) |
-| `mcp-vertex-vscode` (package) | `@mcp-vertex/extension-vscode` (package) |
-| `@mcp-vertex/ide` (alias TS) | `@mcp-vertex/ui-extension` (alias TS) |
-| `@mcp-vertex/ide/*` (alias TS) | `@mcp-vertex/ui-extension/*` (alias TS) |
-| `@mcp-vertex/ide/public` (alias TS) | `@mcp-vertex/ui-extension/public` (alias TS) |
-| `apps/ide` (root scripts) | `packages/ui-extension` (root scripts) |
-| `apps/vscode` (root scripts) | `extensions/vscode` (root scripts) |
-| `apps/vscode` (vitest project) | `extensions/vscode` (vitest project) |
-| `apps/vscode/media/...` (docs) | `extensions/vscode/media/...` (docs) |
-| `apps/vscode/src/...` (docs) | `extensions/vscode/src/...` (docs) |
-| `build/apps/vscode` (paths) | `build/extensions/vscode` (paths) |
-| `dist/apps/vscode/<version>` (paths) | `dist/extensions/vscode/<version>` (paths) |
-
 ## risks and mitigations
 
 - **R1 — `vsce` rechaza el nuevo package name `@mcp-vertex/extension-vscode`**.
@@ -468,7 +441,28 @@ más allá de los gates individuales de cada slice:
   alias `exports['./legacy']` con deprecation warning durante un
   minor.
 
-## notes (cross-references)
+## notes
+
+### Migration map (referencia rápida)
+
+| Antes | Después |
+|---|---|
+| `apps/ide/` | `packages/ui-extension/` |
+| `apps/vscode/` | `extensions/vscode/` |
+| `@mcp-vertex/ide` (package) | `@mcp-vertex/ui-extension` (package) |
+| `mcp-vertex-vscode` (package) | `@mcp-vertex/extension-vscode` (package) |
+| `@mcp-vertex/ide` (alias TS) | `@mcp-vertex/ui-extension` (alias TS) |
+| `@mcp-vertex/ide/*` (alias TS) | `@mcp-vertex/ui-extension/*` (alias TS) |
+| `@mcp-vertex/ide/public` (alias TS) | `@mcp-vertex/ui-extension/public` (alias TS) |
+| `apps/ide` (root scripts) | `packages/ui-extension` (root scripts) |
+| `apps/vscode` (root scripts) | `extensions/vscode` (root scripts) |
+| `apps/vscode` (vitest project) | `extensions/vscode` (vitest project) |
+| `apps/vscode/media/...` (docs) | `extensions/vscode/media/...` (docs) |
+| `apps/vscode/src/...` (docs) | `extensions/vscode/src/...` (docs) |
+| `build/apps/vscode` (paths) | `build/extensions/vscode` (paths) |
+| `dist/apps/vscode/<version>` (paths) | `dist/extensions/vscode/<version>` (paths) |
+
+### Cross-references
 
 - Sustituye el naming propuesto por `f00022` (que reservó los nombres
   actuales). Las reservedFiles de `f00022` quedan obsoletas tras

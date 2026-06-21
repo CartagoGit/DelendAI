@@ -269,12 +269,14 @@ const SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
 	scope: 'why this design',
 	'acceptance (global)': 'acceptance',
 	'acceptance criteria': 'acceptance',
-	'acceptance checklist': 'notes',
+	'acceptance checklist': 'non-goals',
 	'contract change': 'why this design',
 	'hard rules (cannot be broken)': 'non-goals',
 	'the honest constraint': 'why this design',
 	'decisión de schema': 'why this design',
-	'notes (cross-references)': 'notes',
+	'notes (cross-references)': 'non-goals',
+	'renumbering plan': 'notes',
+	risks: 'risks and mitigations',
 	// === Audit-narrative emoji sections (recognised as "notes" since they
 	//     are post-hoc commentary, not part of the proposal's plan) ===
 	'📊 resumen ejecutivo': 'notes',
