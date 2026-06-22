@@ -142,7 +142,7 @@ The classifier is pure and profile-driven:
 Migration slices should use `git mv`, update imports mechanically, and
 run package-level tests before full `bun run validate`.
 
-## slices
+## Slices
 
 ### S1 — Document the convention and add the classifier
 
