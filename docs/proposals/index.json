@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T01:00:07.562Z",
+	"generated_at": "2026-06-22T01:04:11.962Z",
 	"count": 103,
 	"proposals": [
 		{
@@ -45,14 +45,6 @@
 			"extras": {
 				"ownership": ["{", "{", "{", "{", "{"]
 			}
-		},
-		{
-			"id": "f00036",
-			"file": "ready/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
-			"track": "proposals-plugin+workflow+skills+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
 		},
 		{
 			"id": "f00037",
@@ -147,6 +139,14 @@
 			"id": "f00032",
 			"file": "done/f00032-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
 			"track": "proposals-plugin",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00036",
+			"file": "done/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
+			"track": "proposals-plugin+workflow+skills+docs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
