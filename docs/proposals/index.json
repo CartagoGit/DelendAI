@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T20:59:33.641Z",
+	"generated_at": "2026-06-22T21:00:31.670Z",
 	"count": 103,
 	"proposals": [
 		{
@@ -57,14 +57,6 @@
 			"date": "2026-06-22"
 		},
 		{
-			"id": "f00043",
-			"file": "review/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
-			"track": "host+core+docs+workflow",
-			"type": "proposal",
-			"status": "review",
-			"date": "2026-06-21"
-		},
-		{
 			"id": "c00001",
 			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
@@ -92,6 +84,14 @@
 			"id": "f00036",
 			"file": "done/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
 			"track": "proposals-plugin+workflow+skills+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00043",
+			"file": "done/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
