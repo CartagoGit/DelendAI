@@ -146,13 +146,14 @@ run package-level tests before full `bun run validate`.
 
 ### S1 — Document the convention and add the classifier
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `docs/FILE-CONVENTIONS.md`
   - `tools/scripts/lint/file-conventions.ts`
   - `tools/scripts/lint/file-conventions.script.ts`
   - `tools/scripts/lint/file-conventions.script.spec.ts`
 - **Gate**: `bun run test tools/scripts/lint/file-conventions.script.spec.ts`
+- **Commit**: `05f0ad8` (feat(lint): add file-conventions classifier and reference doc)
 
 ### S2 — Wire report-mode lint and baseline
 
