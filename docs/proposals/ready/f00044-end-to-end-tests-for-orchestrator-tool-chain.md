@@ -146,8 +146,24 @@ compares payloads modulo that diagnostic field.
 
 ### S4 — `sync_proposals` + `agent_lock` + `agent_worktree` + `task_queue` end-to-end
 - **Files**: plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: e2e
+- status: done
+
+Note: `agent_lock` keys ownership on the `agent` argument (not the
+client connection), so the two-agent contention scenario is reproduced
+with a single client driving two `agent` values — no second transport
+needed. Covered deterministically: lock claim → ownership in status →
+overlapping claim rejected (`blocked`, `conflicting_task`,
+`overlapping_files`) → release frees it; `sync_proposals` ingests a
+freshly dropped proposal (`count` grows, no errors); `agent_worktree
+create` against a throwaway `git init` workspace returns a clean
+worktree with **no origin remote** (the push-safety invariant);
+`task_queue enqueue` returns `queued` and is idempotent on repeated
+`taskId`, with `report` exposing stats. Deferred (out of scope for the
+proposals-only harness): `await_lock`'s blocking acquire/resolve cycle
+(it lives in the notification plugin) and `task_queue subscribe`'s
+timing-dependent stream.
 - acceptance:
   - "`agent_lock claim` from `client-A` on two seeded files returns `ok: true`; `agents.lock.json` lists both files under `client-A`'s ownership."
   - "Conflict detection: `client-B` calling `agent_lock claim` on one of those files returns a structured error naming the file and the current owner; `await_lock` accepts a `task_id` and returns a sentinel the harness resolves when `client-A` releases."
