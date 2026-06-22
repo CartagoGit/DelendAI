@@ -28,6 +28,18 @@ export interface ILoopDetectorServiceOptions {
 	handoffDir: string;
 	handoffTtlDays: number;
 	notifyOnDetect: boolean;
+	/**
+	 * Agent names or glob patterns the detector MUST ignore. The
+	 * detector was originally tuned for swarm runs where the same
+	 * `edit_file` call 3 times in a row is unambiguous stuck. But
+	 * interactive host sessions (`copilot-default`, `cursor-default`,
+	 * etc.) legitimately invoke the same orient tool multiple times —
+	 * the threshold that catches a swarm stall produces false
+	 * positives for the human in the loop. Defaults to the common
+	 * `*-default` / `default-*` / `host` / `interactive` patterns;
+	 * set to `[]` in the config to opt back into universal monitoring.
+	 */
+	interactiveAgentPatterns: readonly string[];
 }
 
 export interface IExtendedToolCall {
@@ -72,7 +84,11 @@ export class AgentLoopDetectorService {
 		// 1. Resolve configuration: defaults -> config file -> CLI args overrides
 		const defaults: ILoopDetectorServiceOptions = {
 			enabled: true,
-			repeatThreshold: 3,
+			// 8 is empirically high enough that interactive re-orient calls
+			// (`continue_proposal`, `round_context`) do not trip it, while a
+			// swarm agent that calls the same edit_file 8 times in a row is
+			// unambiguously stuck. Hosts can still tune per environment.
+			repeatThreshold: 8,
 			nearRepeatThreshold: 5,
 			similarityThreshold: 0.9,
 			idleThreshold: 3,
@@ -87,6 +103,16 @@ export class AgentLoopDetectorService {
 			handoffDir: '.mcp-vertex/handoff',
 			handoffTtlDays: 7,
 			notifyOnDetect: true,
+			// Universal host-session shapes — Copilot, Cursor, Windsurf and
+			// any host that calls its user-facing session `*-default`. Hosts
+			// whose interactive session is named differently can extend this
+			// list from the config file (`loopDetector.interactiveAgentPatterns`).
+			interactiveAgentPatterns: [
+				'*-default',
+				'default-*',
+				'host',
+				'interactive',
+			],
 		};
 
 		const globalConfigPath = ctx.workspace.resolve(
@@ -150,6 +176,10 @@ export class AgentLoopDetectorService {
 				cliConfig.notifyOnDetect ??
 				globalConfig.loopDetector?.notifyOnDetect ??
 				defaults.notifyOnDetect,
+			interactiveAgentPatterns:
+				cliConfig.interactiveAgentPatterns ??
+				globalConfig.loopDetector?.interactiveAgentPatterns ??
+				defaults.interactiveAgentPatterns,
 		};
 
 		this.handoffDirAbs = ctx.workspace.resolve(this.options.handoffDir);
@@ -216,6 +246,14 @@ export class AgentLoopDetectorService {
 					subKey === 'notifyOnDetect'
 				) {
 					out.notifyOnDetect = val === 'true' || val === '1';
+				} else if (
+					subKey === 'interactive-agent-patterns' ||
+					subKey === 'interactiveAgentPatterns'
+				) {
+					// CLI accepts a comma-separated list. Empty list ("")
+					// is treated as "explicit opt-out of all ignore rules".
+					out.interactiveAgentPatterns =
+						val === '' ? [] : val.split(',').map((s) => s.trim());
 				}
 			}
 		}
@@ -257,6 +295,44 @@ export class AgentLoopDetectorService {
 		);
 	}
 
+	/**
+	 * Match `agent` against the configured interactive patterns. A pattern
+	 * without wildcard characters is an exact-match string; a pattern with
+	 * `*` or `?` is a wildcard where `*` matches any run of characters
+	 * and `?` matches any single character. Mirrors the contract of
+	 * minimatch without pulling the dep — the patterns we expect are
+	 * trivially small (typically 4-5 entries from the default config).
+	 */
+	private isInteractiveAgent(agent: string): boolean {
+		if (!agent || !this.options.interactiveAgentPatterns?.length) {
+			return false;
+		}
+		for (const pattern of this.options.interactiveAgentPatterns) {
+			if (!pattern) continue;
+			if (!pattern.includes('*') && !pattern.includes('?')) {
+				if (agent === pattern) return true;
+				continue;
+			}
+			const regex = new RegExp(
+				'^' +
+					pattern
+						.split('*')
+						.map((part) =>
+							part
+								.split('?')
+								.map((p) =>
+									p.replace(/[.+^${}()|[\]\\]/g, '\\$&'),
+								)
+								.join('.'),
+						)
+						.join('.*') +
+					'$',
+			);
+			if (regex.test(agent)) return true;
+		}
+		return false;
+	}
+
 	/** Hook triggered after every tool execution */
 	public async onToolCall(
 		toolName: string,
@@ -275,6 +351,16 @@ export class AgentLoopDetectorService {
 		}
 		if (!agent) {
 			agent = await this.getActiveAgent();
+		}
+
+		// Interactive host sessions (Copilot/Cursor/Windsurf user-facing
+		// tabs etc.) legitimately re-call orient tools a handful of times;
+		// they are not swarm agents and the detector should not police
+		// them. Skip both the sliding-window accumulation and the verdict
+		// so a future stuck swarm agent is not poisoned by interactive
+		// calls that happened to share the lock file.
+		if (this.isInteractiveAgent(agent)) {
+			return;
 		}
 
 		// Calculate progress via git diff
@@ -435,6 +521,15 @@ export class AgentLoopDetectorService {
 			}
 		}
 		if (!agent) agent = 'default-agent';
+
+		// Same skip as onToolCall: an interactive session can never be
+		// stuck. This is the sync read path used by `create-mcp-project`'s
+		// per-call inline check, so it must mirror the async behaviour
+		// exactly to avoid injecting a spurious `__stuck_detected` into
+		// the response of an otherwise-legitimate orient call.
+		if (this.isInteractiveAgent(agent)) {
+			return null;
+		}
 
 		return this.stuckAgents.get(agent) ?? null;
 	}
