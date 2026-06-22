@@ -15,7 +15,7 @@ const GLOBAL_FLAGS_WITH_VALUE = new Set([
 	'config',
 ]);
 const VALUE_FLAGS = GLOBAL_FLAGS_WITH_VALUE;
-const TWO_PART_COMMANDS = new Set(['plugin', 'config', 'docs']);
+const TWO_PART_COMMANDS = new Set(['plugin', 'config', 'docs', 'git']);
 
 const takeFlagValue = (
 	argv: readonly string[],
