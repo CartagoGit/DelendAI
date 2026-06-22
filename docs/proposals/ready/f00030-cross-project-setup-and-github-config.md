@@ -242,23 +242,39 @@ remediation for that step.
 - status: done
 ### S2 — `setup-github` subcommand + MCP tool _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
-- **Files**:
-  - `packages/core/src/lib/setup/setup-steps.ts` (new)
+- **Status**: done-on-disk (2026-06-22, orchestrator + implementation_runner)
+  **NOT YET COMMITTED** — terminal wedged in alt-buffer; subagent
+  could not run `git commit`. Work exists in working tree awaiting
+  commit on next session. See `.mcp-vertex/handoff/mensa-orchestrator-*.json`.
+- **Files (on disk, uncommitted)**:
+  - `packages/core/src/lib/setup/setup-steps.ts` (new — agnostic step engine)
   - `packages/core/src/lib/setup/setup-steps.spec.ts` (new)
-  - `packages/core/src/lib/setup/cross-project-guide.ts` (new)
-  - `packages/core/src/lib/setup/cross-project-guide.spec.ts`
-  - `packages/core/src/lib/cli/setup-subcommand.ts` (new — wires
-    the subcommand into `assembleCli`)
-  - `plugins/issues/src/lib/github-setup.ts` (new)
+  - `packages/core/src/lib/setup/cross-project-guide.ts` (new — markdown producer)
+  - `packages/core/src/lib/setup/cross-project-guide.spec.ts` (new)
+  - `packages/core/src/lib/cli/setup-subcommand.ts` (new — wires `setup-github` subcommand)
+  - `packages/core/src/lib/cli/setup-subcommand.spec.ts` (new)
+  - `plugins/issues/src/lib/github-setup.ts` (new — tier detection + verify)
   - `plugins/issues/src/lib/github-setup.spec.ts` (new)
-  - `plugins/issues/src/lib/tools/setup-github.tool.ts` (new)
-  - `plugins/issues/src/lib/tools/setup-github.tool.spec.ts`
+  - `plugins/issues/src/lib/tools/setup-github.tool.ts` (new — MCP factory)
+  - `plugins/issues/src/lib/tools/setup-github.tool.spec.ts` (new)
+  - Edits: `packages/core/src/lib/cli/assemble.ts`,
+    `packages/core/vitest.config.ts`, `plugins/issues/vitest.config.ts`
+    (vitest discovery paths extended to include `src/lib/...` siblings)
 - The subcommand and the tool share `runSetupGithub(ctx, opts)`
   so the behaviour is identical. The CLI subcommand is a thin
   shell around the tool with stdin/stdout prompts; the tool is
   the underlying primitive.
-- **Gate**: `bun run test packages/core plugins/issues` exit 0.
+- **Gate (after commit)**: `bun run test packages/core plugins/issues`
+  exit 0. Subagent reports 1761 passed / 7 failed globally; the
+  7 failures are pre-existing in `token-budget.e2e`,
+  `plugin-drift-budget`, `preset-catalog`, `bun-polyfill-environment`
+  (none touch S2). External-gate-blocker recorded.
+- **Integration gap**: tool factory ready in
+  `plugins/issues/src/lib/tools/setup-github.tool.ts` but **not
+  yet exported** from `plugins/issues/src/lib/tools/index.ts` /
+  `plugins/issues/src/index.ts` — those files are claimed by
+  lyra/f00029-S3. Deferred to S3 or a tiny merge slice after
+  f00029 closes.
 
 ### S3 — `apps/web/src/pages/setup.astro` (wizard) _(incl. `apps/web/`)_
 

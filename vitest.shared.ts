@@ -15,9 +15,18 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
  * Default setup file list shared by every vitest project. Add new
  * cross-cutting setup files here so adding a plugin doesn't require
  * remembering to wire them.
+ *
+ * Order matters:
+ *   1. silenceConsoleSetupFile — must come first so console-output spies
+ *      installed per-test are not undone by the polyfill's subprocess
+ *      `which bun` call (which can log on certain shells).
+ *   2. bunPolyfillSetupFile — attaches `Bun.which` to globalThis so
+ *      specs gated on `typeof Bun !== 'undefined'` unskip on hosts that
+ *      have Bun installed (the default vitest thread-pool is plain Node).
  */
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	silenceConsoleSetupFile(workspaceRoot),
+	resolve(workspaceRoot, 'tools/scripts/lib/bun-polyfill.ts'),
 ];
 
 /**

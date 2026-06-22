@@ -41,12 +41,7 @@ scaffolding tools.
 
 ## First run in a new project
 
-If you just added `mcp-vertex` to a new project, follow the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it covers the 7 steps from detecting your repo to verifying the GitHub issues plugin.
-
-- Detect the current GitHub repo from `origin` and confirm the final `owner/name`.
-- Choose the auth tier in order: `gh`, `GITHUB_TOKEN`, then anonymous REST fallback.
-- Write `plugins.issues.options.repo` into `mcp-vertex.config.json` without persisting secrets.
-- Verify the tier and then run the printed `mcp-vertex` invocation in your host.
+If this is the first time you are wiring `mcp-vertex` into a repository, start with [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md). It is the canonical guide for choosing the right preset, writing `mcp-vertex.config.json`, and configuring the `issues` plugin for the current GitHub repo without drifting from the documented launch shape.
 
 ## CLI arguments
 

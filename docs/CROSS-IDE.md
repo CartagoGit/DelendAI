@@ -43,7 +43,7 @@ names so a host can detect mismatch without rendering a full overview dump.
 
 ### Cross-IDE: configuring the issues plugin in any host
 
-> **Configuring the GitHub issues plugin?** See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it walks through the 7 setup steps and the `mcp-vertex setup-github` command that automates them.
+When you need the GitHub issues tools in VS Code, Cursor, Claude Code, or another host, use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) as the canonical workflow. It keeps the per-repo `mcp-vertex.config.json` entry, the chosen preset or explicit plugin list, and the GitHub auth tier check aligned so every host launches the same effective `issues` surface.
 
 ## What you get for free
 

@@ -109,9 +109,7 @@ The `issues` plugin is part of `full` and is the repo-facing GitHub integration 
 
 ### Setup
 
-Use `mcp-vertex setup-github` to walk through repository detection, auth-tier selection, config writing, and verification for the current repo. Implemented by S2 of this proposal.
-
-See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) for the full 7-step walkthrough.
+Use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) for the canonical first-run flow. That guide covers the required `plugins.issues.options.repo` config, the `gh` versus `GITHUB_TOKEN` versus anonymous auth decision, and the matching `mcp.json` launch shape. The dedicated `setup-github` subcommand and MCP tool are scheduled in S2 of proposal `f00030`; until that lands, the markdown guide is the source of truth.
 
 ## Rules for great, model-agnostic, low-token plugins
 
