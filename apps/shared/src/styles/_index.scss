@@ -1,0 +1,14 @@
+// _index.scss — composition root for `@mcp-vertex/shared/styles`.
+//
+// Forwards tokens (invariant design values) and themes (palettes + brand
+// hex) so downstream consumers can `@use '@mcp-vertex/shared/styles' as *;`
+// and reach every custom property at the `:root` scope.
+//
+// Order matters: tokens first, themes second. Themes rely on the brand
+// hex tokens defined in `_themes.scss` (which depend on nothing in
+// `_tokens.scss`), but consumers may want to read brand colours without
+// the palette defaults — both files expose independent `:root` blocks
+// so load order does not affect outcome.
+
+@forward 'tokens';
+@forward 'themes';

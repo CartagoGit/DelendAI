@@ -1,0 +1,13 @@
+// styles.scss — placeholder stylesheet for `@mcp-vertex/shared/styles`.
+//
+// Downstream consumers (the docs site, every host extension) import this
+// file from inside their own `<style>` tag or SCSS pipeline:
+//
+//   @use '@mcp-vertex/shared/styles';
+//
+// In S3–S4 this file will carry the runtime component CSS (header bar,
+// dropdown, language picker, disclosure, toast). For now it forwards
+// tokens + themes so typecheck / build does not break.
+
+@forward 'tokens';
+@forward 'themes';

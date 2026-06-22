@@ -216,3 +216,100 @@ describe('auto_work (one-call action plan)', () => {
 		expect(out.persist.mode).toBe('commit-and-push');
 	});
 });
+
+describe('auto_work + loop-detector interaction (a00033 S3)', () => {
+	let root = '';
+	let options: IAutoWorkToolOptions;
+
+	beforeEach(() => {
+		__resetIdleStreakForTesting();
+		root = mkdtempSync(join(tmpdir(), 'auto-lp-'));
+		options = {
+			namespacePrefix: 'proposals',
+			indexPathAbs: join(root, 'index.json'),
+			lockPathAbs: join(root, 'lock.json'),
+			validationCommand: 'bun run validate',
+		};
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	// Fake detector that ALWAYS says "stuck" with a handoff payload,
+	// modelled on what the production AgentLoopDetectorService returns
+	// from `isAgentStuck(tool, args)` when it detects an exact-repeat
+	// loop (see loop-detector-service.ts). The point is to prove the
+	// tool short-circuits BEFORE consulting the detector when the
+	// tool is in the disable list.
+	const stuckDetector = {
+		isAgentStuck: () => ({
+			handoffPath: '.mcp-vertex/handoff/stuck-agent.json',
+			suggestedAction: 'call proposals_continue_proposal mode:auto',
+		}),
+	};
+
+	it('skips the loop detector for `proposals_auto_work` by default (a00033 S3 / H1)', async () => {
+		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
+		const out = parse(
+			await runAutoWork({
+				...options,
+				loopDetector: stuckDetector,
+			}),
+		);
+		// The detector would have returned stop=true, but the disable
+		// list contains `proposals_auto_work` by default, so the tool
+		// falls through to the in-tool idle-streak branch.
+		expect(out.state).toBe('idle');
+		expect(out.reason).not.toBe('stuck-detected');
+		expect(out.stop).toBeUndefined();
+	});
+
+	it('still consults the loop detector when `loopDetectorDisableFor` is empty', async () => {
+		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
+		const out = parse(
+			await runAutoWork({
+				...options,
+				loopDetector: stuckDetector,
+				loopDetectorDisableFor: [],
+			}),
+		);
+		// Empty disable list ⇒ detector wins ⇒ stop with stuck-detected.
+		expect(out.state).toBe('idle');
+		expect(out.stop).toBe(true);
+		expect(out.reason).toBe('stuck-detected');
+		expect(out.handoffPath).toBe('.mcp-vertex/handoff/stuck-agent.json');
+	});
+
+	it('honors a custom disable list (a host can opt other tools out too)', async () => {
+		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
+		const out = parse(
+			await runAutoWork({
+				...options,
+				loopDetector: stuckDetector,
+				// Explicitly include the auto_work tool name → same effect
+				// as the default but proves the override path.
+				loopDetectorDisableFor: [
+					'some_other_tool',
+					'proposals_auto_work',
+				],
+			}),
+		);
+		expect(out.state).toBe('idle');
+		expect(out.reason).not.toBe('stuck-detected');
+	});
+
+	it('in-tool `consecutiveIdle` streak is the sole brake for the no-args case (3 idle → stop)', async () => {
+		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
+		const opts: IAutoWorkToolOptions = {
+			...options,
+			loopDetector: stuckDetector,
+		};
+		// Two idle returns: no stop yet.
+		expect(parse(await runAutoWork(opts)).stop).toBeUndefined();
+		expect(parse(await runAutoWork(opts)).stop).toBeUndefined();
+		// Third idle: in-tool streak trips, stop with the recovery hint.
+		const third = parse(await runAutoWork(opts));
+		expect(third.stop).toBe(true);
+		expect(third.idleStreak).toBe(3);
+		expect(third.reason).not.toBe('stuck-detected');
+	});
+});

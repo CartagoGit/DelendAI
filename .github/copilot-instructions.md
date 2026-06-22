@@ -21,6 +21,13 @@ This repo is a project-agnostic MCP server core + plugin loader. Full rules live
 - When you need a lock another agent holds, **wait for the `lock-released`
   notification** (notification plugin) instead of polling `agent_lock status`.
 - `auto_work` stops after consecutive idles by design — respect `stop: true`.
+  When `auto_work` returns `stop: true`, recover by calling
+  `proposals_continue_proposal { mode: "auto" }` directly (or by reading
+  the cascade with `proposals_compact_status`). Do NOT re-call `auto_work`
+  until you have made progress — a slice closed, a lock released, or a file
+  edited. The loop detector is a safety net for actual loops, not a gate on
+  polling for work; see `AGENTS.md` §"`auto_work` ↔ loop detector ↔
+  idle-streak" for the full contract.
 
 ## Definition of done
 

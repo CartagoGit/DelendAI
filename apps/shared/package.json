@@ -1,0 +1,39 @@
+{
+	"name": "@mcp-vertex/shared",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"license": "BSD-3-Clause",
+	"description": "Shared design tokens, themes, i18n contract and brand assets. Single source of truth for @mcp-vertex/ui-extension, apps/web and every host extension.",
+	"main": "./src/public/index.ts",
+	"types": "./src/public/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/public/index.ts",
+			"import": "./src/public/index.ts"
+		},
+		"./styles": {
+			"types": "./src/styles/_index.scss",
+			"import": "./src/styles/_index.scss"
+		},
+		"./styles/*": {
+			"types": "./src/styles/*",
+			"import": "./src/styles/*"
+		},
+		"./i18n": {
+			"types": "./src/i18n/index.ts",
+			"import": "./src/i18n/index.ts"
+		},
+		"./brand/*": {
+			"types": "./brand/*",
+			"import": "./brand/*"
+		}
+	},
+	"files": [
+		"src",
+		"brand"
+	],
+	"scripts": {
+		"type": "tsc --noEmit -p tsconfig.json"
+	}
+}

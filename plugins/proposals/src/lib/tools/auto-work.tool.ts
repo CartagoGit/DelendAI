@@ -55,7 +55,28 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	readonly persist?: IAutoWorkPersistConfig;
 	readonly orchestration?: IAutoWorkOrchestrationConfig;
 	readonly loopDetector?: any;
+	/**
+	 * Tool names the loop detector MUST skip. Defaults to `[<prefix>_auto_work]`
+	 * so the in-tool `consecutiveIdle` streak (3 consecutive idle returns) is
+	 * the sole brake for `auto_work` no-args calls — otherwise a user calling
+	 * `auto_work` three times in a row on a cascade with no actionable proposal
+	 * gets a hard `stop: true` from the detector even though the cascade still
+	 * has work to return on the next call. The detector is still wired and
+	 * still fires on actual loops (same `agent_lock claim` retried, same
+	 * `sync_proposals` retried, etc.).
+	 */
+	readonly loopDetectorDisableFor?: readonly string[];
 }
+
+/**
+ * Default tool names the loop detector skips. The orchestrator's host can
+ * extend or replace this via `loopDetectorDisableFor` on the tool options.
+ * `<prefix>_auto_work` is excluded by default — see the doc comment on
+ * `IAutoWorkToolOptions.loopDetectorDisableFor` for the rationale.
+ */
+export const DEFAULT_LOOP_DETECTOR_DISABLE_FOR = [
+	'proposals_auto_work',
+] as const;
 
 const json = toolJson;
 
@@ -115,18 +136,30 @@ export const runAutoWork = async (
 	},
 ): Promise<IToolTextResult> => {
 	if (options.loopDetector) {
-		const stuckInfo = options.loopDetector.isAgentStuck(
-			`${options.namespacePrefix}_auto_work`,
-			{},
-		);
-		if (stuckInfo) {
-			return json({
-				state: 'idle',
-				stop: true,
-				reason: 'stuck-detected',
-				handoffPath: stuckInfo.handoffPath,
-				nextAction: stuckInfo.suggestedAction,
-			});
+		// The detector is a safety net for actual loops (same
+		// `agent_lock claim` retried, same `sync_proposals` retried).
+		// For the `auto_work` no-args case the in-tool `consecutiveIdle`
+		// streak is the right brake — the detector would otherwise trap
+		// the orchestrator in a stop state when the cascade has work to
+		// return on the next call (see a00033 S3 / H1).
+		const autoWorkToolName = `${options.namespacePrefix}_auto_work`;
+		const disabled = options.loopDetectorDisableFor ?? [
+			...DEFAULT_LOOP_DETECTOR_DISABLE_FOR,
+		];
+		if (!disabled.includes(autoWorkToolName)) {
+			const stuckInfo = options.loopDetector.isAgentStuck(
+				autoWorkToolName,
+				{},
+			);
+			if (stuckInfo) {
+				return json({
+					state: 'idle',
+					stop: true,
+					reason: 'stuck-detected',
+					handoffPath: stuckInfo.handoffPath,
+					nextAction: stuckInfo.suggestedAction,
+				});
+			}
 		}
 	}
 

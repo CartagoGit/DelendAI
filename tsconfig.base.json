@@ -39,6 +39,8 @@
 				"./packages/ui-extension/src/public/index.ts"
 			],
 			"@mcp-vertex/ui-extension/*": ["./packages/ui-extension/src/*"],
+			"@mcp-vertex/shared": ["./apps/shared/src/public/index.ts"],
+			"@mcp-vertex/shared/*": ["./apps/shared/src/*"],
 			"@mcp-vertex/ide": ["./packages/ui-extension/src/index.ts"],
 			"@mcp-vertex/ide/public": [
 				"./packages/ui-extension/src/public/index.ts"
