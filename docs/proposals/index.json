@@ -1,18 +1,7 @@
 {
-	"generated_at": "2026-06-22T01:21:23.245Z",
+	"generated_at": "2026-06-22T06:00:26.707Z",
 	"count": 104,
 	"proposals": [
-		{
-			"id": "a00032",
-			"file": "ready/a00032-22-06-2026-copilot-minimax-m3-repositorio.md",
-			"track": "audit+core+plugins+extensions+web+tools",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22",
-			"extras": {
-				"ownership": ["{", "{", "{", "{", "{"]
-			}
-		},
 		{
 			"id": "a00033",
 			"file": "ready/a00033-22-06-2026-copilot-minimax-m3-test-isolation-and-auto-work-loop.md",
@@ -63,14 +52,6 @@
 			"date": "2026-06-21"
 		},
 		{
-			"id": "f00044",
-			"file": "ready/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
-			"track": "plugins/proposals+tests+core",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
-		},
-		{
 			"id": "f00045",
 			"file": "ready/f00045-chat-tool-error-shows-direct-log-link.md",
 			"track": "core+client+extension+tests",
@@ -95,12 +76,23 @@
 			"date": "2026-06-22"
 		},
 		{
-			"id": "f00048",
-			"file": "ready/f00048-web-install-onboarding-guide-ux-overhaul.md",
-			"track": "web+ui+i18n",
+			"id": "f00043",
+			"file": "review/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
 			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
+			"status": "review",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "a00032",
+			"file": "done/a00032-22-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "audit+core+plugins+extensions+web+tools",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
 		},
 		{
 			"id": "c00001",
@@ -158,6 +150,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00048",
+			"file": "done/f00048-web-install-onboarding-guide-ux-overhaul.md",
+			"track": "web+ui+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "l00001",

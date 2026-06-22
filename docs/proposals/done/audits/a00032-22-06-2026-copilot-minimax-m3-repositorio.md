@@ -1,6 +1,6 @@
 ---
 id: a00032
-status: ready
+status: done
 type: proposal
 track: audit+core+plugins+extensions+web+tools
 date: 2026-06-22
