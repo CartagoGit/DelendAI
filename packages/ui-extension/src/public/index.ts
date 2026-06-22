@@ -46,3 +46,25 @@ export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigato
 export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';
 export { renderSettings } from '../settings/render-settings';
 export type { IRenderSettingsOptions } from '../settings/render-settings';
+export {
+	renderHeaderBar,
+	renderDropdown,
+	renderDisclosure,
+	renderLanguagePicker,
+	readInitialLang,
+	writeLang,
+	renderToast,
+	componentCss,
+	componentScript,
+	renderRuntime,
+} from '../components';
+export type {
+	IHeaderBarOptions,
+	IDropdownOptions,
+	IDropdownItem,
+	IDisclosureOptions,
+	ILanguagePickerOptions,
+	IToastOptions,
+	ToastKind,
+	IComponentRuntimeHost,
+} from '../components';

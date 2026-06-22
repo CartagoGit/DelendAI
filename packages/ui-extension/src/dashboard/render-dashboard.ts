@@ -9,6 +9,7 @@
  */
 import type { IDashboardAllModels } from '@mcp-vertex/client';
 
+import { renderHeaderBar, componentCss, renderRuntime } from '../components';
 import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';
 import { renderPanelAgents } from './render-panel-agents';
 import { renderPanelHealth } from './render-panel-health';
@@ -146,38 +147,21 @@ export const renderDashboard = (
 		})
 		.join('');
 
+	const header = renderHeaderBar({
+		brandName: 'mcp-vertex',
+		version: `${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}`,
+	});
+
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>mcp-vertex Dashboard</title>
+	<style>${componentCss}</style>
 </head>
 <body>
-	<header class="mv-header">
-		<svg class="mv-header__logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="mcp-vertex logo">
-			<defs>
-				<linearGradient id="mv-grad" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
-					<stop offset="0" stop-color="#58a6ff"/>
-					<stop offset="1" stop-color="#a371f7"/>
-				</linearGradient>
-			</defs>
-			<path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#mv-grad)" stroke-width="4.5" stroke-linejoin="round"/>
-			<g stroke="url(#mv-grad)" stroke-width="3.5" stroke-linecap="round">
-				<line x1="32" y1="32" x2="32" y2="8"/>
-				<line x1="32" y1="32" x2="11.5" y2="44"/>
-				<line x1="32" y1="32" x2="52.5" y2="44"/>
-			</g>
-			<path d="M32 21 L41 26.5 L41 37.5 L32 43 L23 37.5 L23 26.5 Z" fill="url(#mv-grad)"/>
-			<circle cx="32" cy="8" r="5" fill="url(#mv-grad)"/>
-			<circle cx="11.5" cy="44" r="5" fill="url(#mv-grad)"/>
-			<circle cx="52.5" cy="44" r="5" fill="url(#mv-grad)"/>
-		</svg>
-		<div class="mv-header__brand">
-			<span class="mv-header__name">mcp-vertex</span>
-			<span class="mv-header__version">v${escapeHtml(model.server.version)} · ${escapeHtml(model.server.name)}</span>
-		</div>
-	</header>
+	${header}
 	${kpiStrip}
 	${tabsBar}
 	<main class="mv-main">
@@ -191,6 +175,7 @@ export const renderDashboard = (
 		<span>fetched: <code>${escapeHtml(model.server.fetchedAt)}</code></span>
 	</footer>
 	<script>${CLIENT_SCRIPT}</script>
+	${renderRuntime()}
 </body>
 </html>`;
 };
