@@ -25,7 +25,8 @@
 		}
 	},
 	"dependencies": {
-		"@mcp-vertex/client": "workspace:*"
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",
