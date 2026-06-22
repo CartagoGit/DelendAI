@@ -94,7 +94,7 @@ Two additional, smaller wins:
 - No new fixtures under `docs/proposals/` — every e2e seeds its own
   proposals under `tmpdir`.
 
-## slices
+## Slices
 
 - global_gate: lint
 

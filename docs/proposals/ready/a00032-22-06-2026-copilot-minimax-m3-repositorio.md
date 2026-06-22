@@ -6,7 +6,9 @@ track: audit+core+plugins+extensions+web+tools
 date: 2026-06-22
 kind: audit
 title: Auditoría repositorio completa (Copilot / MiniMax-M3 / 2026-06-22) — gate en rojo
-shipped-in: []
+shipped-in:
+  - 9cb64c1
+  - f3cb117
 related:
     - a00022 # consolidación previa del 2026-06-21 — comparte rúbrica y método
     - a00026 # última auditoría MiniMax-M3 del repo (estado de referencia)
@@ -125,8 +127,10 @@ audit host que esperan `AuditScope`).
 - **Files**:
   - `plugins/audit/src/lib/brief.ts`
 - **Gate**: `bun run build`
-- **Status**: done
-- status: done
+- **Status**: shipped
+- status: shipped
+
+Status: shipped (commit 9cb64c1)
 
 ### S3 — FATAL #2: `notification.spec.ts` — stuck-detected no emitido
 
@@ -149,8 +153,10 @@ Diferido a propuesta **`a00033-investigate-test-isolation-pollution`**
 - **Files**:
   - (none — no source change required)
 - **Gate**: `bun run test -- plugins/notification/tests/src/lib/notification.spec.ts` → exit0
-- **Status**: done
-- status: done
+- **Status**: shipped
+- status: shipped
+
+Status: shipped (commit f3cb117)
 
 ### S4 — MUY MAL #1: `overview` full 7244B > budget 7000B
 
@@ -171,8 +177,10 @@ contaminación entre tests para que el e2e mida el coste real.
 - **Files**:
   - (none — no source change required)
 - **Gate**: `bun run test -- tests/src/lib/e2e/token-budget.e2e.spec.ts` → exit0
-- **Status**: done
-- status: done
+- **Status**: shipped
+- status: shipped
+
+Status: shipped (commit f3cb117)
 
 ### S5 — MEJORABLE #1: `plugin-drift-budget.spec.ts` falsa alarma
 
@@ -193,8 +201,10 @@ es la contaminación, no la heurística.
 - **Files**:
   - (none — no source change required)
 - **Gate**: `bun run test -- packages/core/tests/src/lib/plugin-drift-budget.spec.ts` → exit0
-- **Status**: done
-- status: done
+- **Status**: shipped
+- status: shipped
+
+Status: shipped (commit f3cb117)
 
 ### S6 — NEW: investigar la contaminación de estado entre tests
 
