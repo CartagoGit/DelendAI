@@ -220,7 +220,7 @@ slice (the proposal's migration S4–S6 is what consumes this profile).
   - `packages/ui-extension/tests/**`
   - `packages/ui-extension/src/public/index.ts`
 - **Gate**: `bun run test packages/ui-extension && bun run typecheck`
-
+- status: done
 ### S6 — Migrate plugins by family
 
 - **Status**: pending

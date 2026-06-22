@@ -10,7 +10,7 @@ import type {
 	IWebviewOptions,
 	IWebviewPanel,
 	IWebviewViewProvider,
-} from '../src/host-adapter.types';
+} from '../src/contracts/interfaces/host-adapter.interface';
 
 class TrackingDisposable implements IDisposable {
 	disposed = false;

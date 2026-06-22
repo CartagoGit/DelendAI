@@ -16,7 +16,7 @@ export type {
 	IWebviewOptions,
 	IWebviewPanel,
 	IWebviewViewProvider,
-} from '../host-adapter.types';
+} from '../contracts/interfaces/host-adapter.interface';
 
 export { renderDashboard } from '../dashboard/render-dashboard';
 export type { IRenderDashboardOptions } from '../dashboard/render-dashboard';
