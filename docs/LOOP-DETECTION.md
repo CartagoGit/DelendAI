@@ -89,7 +89,7 @@ The detector is enabled by default. It can be configured globally in `mcp-vertex
 {
   "loopDetector": {
     "enabled": true,
-    "repeatThreshold": 3,
+    "repeatThreshold": 8,
     "nearRepeatThreshold": 5,
     "similarityThreshold": 0.9,
     "idleThreshold": 3,
@@ -103,16 +103,49 @@ The detector is enabled by default. It can be configured globally in `mcp-vertex
     ],
     "handoffDir": ".mcp-vertex/handoff",
     "handoffTtlDays": 7,
-    "notifyOnDetect": true
+    "notifyOnDetect": true,
+    "interactiveAgentPatterns": ["*-default", "default-*", "host", "interactive"]
   }
 }
 ```
+
+### Interactive host sessions are excluded by default
+
+The detector was originally tuned for **swarm agents** (long-running
+background workers that claim slices via `agent_lock`). For those
+agents, calling the same `edit_file` 3 times in a row is unambiguous
+stuck and the original `repeatThreshold: 3` was reasonable.
+
+But **interactive host sessions** (Copilot chat, Cursor tab,
+Windsurf etc.) legitimately re-call orient tools like
+`proposals_continue_proposal`, `proposals_round_context` and
+`proposals_auto_work` multiple times in a row while the human drives.
+At `repeatThreshold: 3` that produced false-positive stuck warnings
+on every working session, even when the agent is making progress.
+
+To keep both audiences working, the detector now:
+
+- Defaults `repeatThreshold` to **8** (high enough that interactive
+  re-orient calls do not trip it; still unambiguously stuck for any
+  swarm agent).
+- Maintains a per-config list `interactiveAgentPatterns` of agent
+  names or wildcard patterns that are **completely ignored** by the
+  detector (no window accumulation, no verdict, no handoff packet).
+  Defaults to `["*-default", "default-*", "host", "interactive"]`
+  which covers every host that calls its user-facing session
+  `*-default`. Hosts whose interactive session is named differently
+  can extend the list from `mcp-vertex.config.json`.
+- The empty list (`[]`) opts back into universal monitoring — useful
+  in CI or for hosts that want to police every agent unconditionally.
 
 ### CLI Overrides
 You can temporarily change thresholds or disable the detector per-session via command-line arguments:
 - Disable loop detection: `mcp-vertex --no-loop-detector`
 - Customize repeat threshold: `mcp-vertex --loop-detector.repeat-threshold=5`
 - Change handoff directory: `mcp-vertex --loop-detector.handoff-dir=/tmp/handoff`
+- Tighten or relax the interactive-agent ignore list:
+  `mcp-vertex --loop-detector.interactive-agent-patterns=*-default,cursor-*`
+  (empty value disables the ignore list entirely)
 
 ---
 

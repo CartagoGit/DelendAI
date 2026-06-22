@@ -34,6 +34,19 @@ export interface ILoopDetectorConfig {
 	readonly handoffDir?: string;
 	readonly handoffTtlDays?: number;
 	readonly notifyOnDetect?: boolean;
+	/**
+	 * Agent names (or glob patterns) the detector MUST ignore. Designed
+	 * for interactive host sessions (e.g. `copilot-default`,
+	 * `cursor-default`) where repeating the same orient tool a handful
+	 * of times is legitimate, not a loop. Exact strings match the
+	 * agent verbatim; each entry that contains `*` or `?` is treated
+	 * as a minimatch-style wildcard.
+	 *
+	 * Defaults (when omitted): `["*-default", "default-*", "host",
+	 * "interactive"]` — the patterns every host reports its single
+	 * user-facing session under. Set to `[]` to monitor every agent.
+	 */
+	readonly interactiveAgentPatterns?: readonly string[];
 }
 
 export interface IMcpVertexConfigFile {
@@ -101,6 +114,7 @@ export const CONFIG_FILE_SCHEMA = z
 				handoffDir: z.string().optional(),
 				handoffTtlDays: z.number().optional(),
 				notifyOnDetect: z.boolean().optional(),
+				interactiveAgentPatterns: z.array(z.string()).optional(),
 			})
 			.strict()
 			.optional(),

@@ -99,7 +99,7 @@ Two additional wins:
 - **Files**: plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts
 - **Status**: pending
 - **Gate**: type
-- **Acceptance**:
+- acceptance:
   - "An `assembled-proposals-server` helper exported from `plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts` mirrors the pattern at `packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts`: it spins up `parseCliArgs` + `assembleCliConfig` + `createMcpProject` + `InMemoryTransport` + a real `Client`, exposes `client`, `server`, `workspace`, `close`, and an `await client.callTool({ name: 'proposals_*', arguments })` helper that returns the parsed `structuredContent`."
   - "`auto-work.e2e.spec.ts` proves, over the real MCP protocol: idle-when-empty returns `state: 'idle'` and `stop: undefined`; three consecutive idle calls escalate with the third carrying `stop: true`, `idleStreak: 3`, and a `nextAction` starting with `STOP —`; one seeded pending proposal returns `state: 'work'` with a non-empty `steps` array containing the configured `validationCommand` literally; the idle streak is reset by the work response."
   - "Every response in the spec satisfies the outputSchema parity invariant: `structuredContent` equals parsed `content[0].text`."
@@ -109,7 +109,7 @@ Two additional wins:
 - **Files**: plugins/proposals/tests/src/lib/e2e/continue-proposal.e2e.spec.ts
 - **Status**: pending
 - **Gate**: type
-- **Acceptance**:
+- acceptance:
   - "With two seeded proposals (one in `ready/`, one already in `in-progress/`), `mode: 'auto'` returns `kind: 'next-proposal'` for the highest-priority pending proposal, with `proposalId`, `file`, and a non-empty `nextAction`."
   - "`mode: 'next'` advances past the in-progress proposal and returns the next pending one, or `kind: 'all-claimed'` when none."
   - "`mode: 'plan'` returns an ordered step list for a given `proposalId` with `claimableSliceIds` populated, structurally identical to what `auto_work` would emit but without resolving the cascade."
@@ -119,7 +119,7 @@ Two additional wins:
 - **Files**: plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts
 - **Status**: pending
 - **Gate**: type
-- **Acceptance**:
+- acceptance:
   - "Legal path: seed a proposal in `ready/`; calling `proposals_proposal_transition { id, to: 'in-progress' }` returns `ok: true`, the seeded file moves to `docs/proposals/in-progress/`, and `agents.lock.json` reflects the new task."
   - "Second legal transition: with the proposal now `in-progress`, `to: 'review'` returns `ok: true` and moves the file to `docs/proposals/review/`."
   - "Illegal skip rejected: from `ready`, `to: 'done'` directly returns `ok: false`, surfaces `error.nextAction` naming the legal next step, and the file remains in `ready/`."
@@ -131,7 +131,7 @@ Two additional wins:
 - **Files**: plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts
 - **Status**: pending
 - **Gate**: e2e
-- **Acceptance**:
+- acceptance:
   - "`agent_lock claim` from `client-A` on two seeded files returns `ok: true`; `agents.lock.json` lists both files under `client-A`'s ownership."
   - "Conflict detection: `client-B` calling `agent_lock claim` on one of those files returns a structured error naming the file and the current owner; `await_lock` accepts a `task_id` and returns a sentinel the harness resolves when `client-A` releases."
   - "`agent_worktree create` with `agent: 'agent-A'`, `base_branch: 'HEAD'` returns a path under the workspace; `git status` inside that path shows a clean working tree."
