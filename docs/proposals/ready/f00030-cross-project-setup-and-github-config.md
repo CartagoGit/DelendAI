@@ -6,7 +6,9 @@ track: docs+plugins/issues+apps/web+extensions/vscode
 date: 2026-06-21
 kind: feat
 title: Cross-project setup — how to wire mcp-vertex (and the issues plugin) into any project
-shipped-in: []
+shipped-in:
+    - 5c688f4 # S1 docs/CROSS-PROJECT-SETUP.md (canonical) + 4 linked callouts
+    - 23bb415 # fix: restore unrelated proposal after docs slice commit
 related:
     - f00042 # the GitHub issues plugin — this proposal is partly its "consumer-side" docs
     - f00043 # presets page — links to the cross-project setup page
@@ -219,19 +221,25 @@ remediation for that step.
 
 ### S1 — `docs/CROSS-PROJECT-SETUP.md` (canonical) _(incl. `docs/`)_
 
-- **Status**: ready
+- **Status**: done (2026-06-22, orchestrator + implementation_runner)
+  - Commits: `5c688f4`, `23bb415`
 - **Files**:
-  - `docs/CROSS-PROJECT-SETUP.md` (new)
-  - `docs/README-MCP-VERTEX.md` (add "First run" section)
-  - `docs/IDE-EXTENSION.md` (add cross-project callout)
-  - `docs/CROSS-IDE.md` (add cross-project callout)
-  - `docs/PLUGINS-MCP-VERTEX.md` (add issues-plugin setup
-    command)
+  - `docs/CROSS-PROJECT-SETUP.md` (new — 6.5k, 7-step guide +
+    auth-tier matrix + preset wiring + troubleshooting)
+  - `docs/README-MCP-VERTEX.md` (added "First run in a new project"
+    section)
+  - `docs/IDE-EXTENSION.md` (added cross-project callout)
+  - `docs/CROSS-IDE.md` (added cross-project callout)
+  - `docs/PLUGINS-MCP-VERTEX.md` (added explicit `Issues plugin`
+    section with `Setup` subsection pointing at the new guide)
 - The guide is structured as the 7 steps in §"The 7 steps of
   `setup-github`" above, plus a "Troubleshooting" section.
-- **Gate**: `bun run lint:proposals`, `bun run lint:tools`,
-  `bun run lint:markdown` (if it exists; otherwise add).
-
+- **Gate**: `bun run lint:tools` exit 0; `bun run lint` exit 0.
+  `bun run lint:markdown` does not exist in this repo (skipped).
+  `bun run lint:proposals` is blocked by pre-existing structural
+  drift in `paused/c00002` and `done/c00001` (not by this slice);
+  recorded for the global gate.
+- status: done
 ### S2 — `setup-github` subcommand + MCP tool _(excl. `apps/`, `docs/`)_
 
 - **Status**: ready
@@ -302,83 +310,6 @@ remediation for that step.
   narrow — it only matches `mcp-vertex ... --preset=NAME` or
   `--plugins=A,B,...` patterns that look like a complete spec.
 - **Gate**: `bun run lint:setup`, `bun run validate` exit 0.
-
-## Slices
-
-```yaml
-slices:
-  - sliceId: S1
-    title: "docs/CROSS-PROJECT-SETUP.md (canonical) + linked callouts"
-    files:
-      - docs/CROSS-PROJECT-SETUP.md
-      - docs/README-MCP-VERTEX.md
-      - docs/IDE-EXTENSION.md
-      - docs/CROSS-IDE.md
-      - docs/PLUGINS-MCP-VERTEX.md
-    gate: docs
-    dependsOn: []
-    acceptance:
-      - "docs/CROSS-PROJECT-SETUP.md exists and contains the 7 setup steps"
-      - "README-MCP-VERTEX.md, IDE-EXTENSION.md, CROSS-IDE.md, PLUGINS-MCP-VERTEX.md each link to CROSS-PROJECT-SETUP.md"
-      - "bun run lint:proposals exit 0"
-  - sliceId: S2
-    title: "setup-github CLI subcommand + issues_setup_github MCP tool"
-    files:
-      - packages/core/src/lib/setup/setup-steps.ts
-      - packages/core/src/lib/setup/setup-steps.spec.ts
-      - packages/core/src/lib/setup/cross-project-guide.ts
-      - packages/core/src/lib/setup/cross-project-guide.spec.ts
-      - packages/core/src/lib/cli/setup-subcommand.ts
-      - plugins/issues/src/lib/github-setup.ts
-      - plugins/issues/src/lib/github-setup.spec.ts
-      - plugins/issues/src/lib/tools/setup-github.tool.ts
-      - plugins/issues/src/lib/tools/setup-github.tool.spec.ts
-    gate: type+test
-    dependsOn: [S1]
-    acceptance:
-      - "`mcp-vertex setup-github` runs end-to-end on a fresh repo"
-      - "issues_setup_github MCP tool exposed with outputSchema"
-      - "bun run type exit 0; bun run test packages/core plugins/issues exit 0"
-  - sliceId: S3
-    title: "apps/web/src/pages/setup.astro wizard + i18n (12 keys × 12 langs)"
-    files:
-      - apps/web/src/pages/setup.astro
-      - apps/web/src/lib/setup-wizard.ts
-      - apps/web/tests/lib/setup-wizard.spec.ts
-      - apps/web/src/i18n/ui.ts
-    gate: type+test+i18n
-    dependsOn: [S1, S2]
-    acceptance:
-      - "/setup page renders the 7-step wizard"
-      - "apps/web/src/i18n/ui.ts has 12 wizard keys × 12 languages"
-      - "bun run test apps/web exit 0; bun run site:strict exit 0; bun run check:i18n:plugins exit 0"
-  - sliceId: S4
-    title: "VS Code command mcp-vertex.setupGithub + webview + i18n"
-    files:
-      - extensions/vscode/src/commands/setup-github.ts
-      - extensions/vscode/src/webviews/setup-github.ts
-      - extensions/vscode/src/test/setup-github.spec.ts
-      - extensions/vscode/src/i18n/strings.ts
-      - extensions/vscode/package.json
-    gate: type+test+i18n
-    dependsOn: [S1]
-    acceptance:
-      - "mcp-vertex.setupGithub appears in the command palette"
-      - "Webview renders the 7 steps; navigation works"
-      - "extensions/vscode/src/i18n/strings.ts has 12 wizard keys × 12 languages"
-      - "bun run test extensions/vscode exit 0; bun run check:i18n:plugins exit 0"
-  - sliceId: S5
-    title: "Cross-project setup lint (lint:setup)"
-    files:
-      - tools/scripts/lint/no-preset-drift.script.ts
-      - bunfig.toml
-      - package.json
-    gate: lint
-    dependsOn: [S1, S2, S3, S4]
-    acceptance:
-      - "bun run lint:setup exit 0; fails on any doc with mismatched --preset plugin list"
-      - "bun run validate exit 0 (full gate)"
-```
 
 ## acceptance
 
