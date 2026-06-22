@@ -50,13 +50,27 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 
 ### S3 — Repo-facing configuration and docs contract
 - **Files**: .vscode/mcp.json, README.md, docs/CROSS-IDE.md, docs/README-MCP-VERTEX.md
-- **Status**: pending
+- **Status**: done (2026-06-22, copilot-default)
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "The repo documents one canonical way to launch mcp-vertex from mcp.json so the loaded tools match the repo's declared plugin surface."
   - "The example mcp.json and docs explain the precedence between mcp.json flags, presets and mcp-vertex.config.json."
   - "A user opening the repo can tell, without reverse-engineering the host script, why a given plugin tool should or should not be available."
-
+- **Delivered**:
+  - `docs/README-MCP-VERTEX.md` — replaced the "Install / register" section
+    with a 4-client table (VS Code/Copilot, Cursor, Antigravity, Claude Code,
+    Codex) and a TOML/JSON snippet per client; added a "Precedence — how
+    plugins are resolved" subsection that documents the canonical
+    `--preset → --plugins → mcp-vertex.config.json#plugins → --exclude-plugins`
+    resolution order, with the concrete worked example of this repo's
+    own `.vscode/mcp.json` + `mcp-vertex.config.json` surface.
+  - `README.md` — expanded "Local MCP Host" with the 4-client table and
+    the parity-check terminal one-liner (`bun run cli -- overview --json`).
+  - `docs/CROSS-IDE.md` — added a "Launch shape — same args, four config
+    files" section that maps each chat client to its config file and
+    notes the `${workspaceFolder}` gotcha for Claude Code and Codex.
+  - `.vscode/mcp.json` — verified untouched (already canonical, set by S1).
+- status: done
 ### S4 — Validation coverage for loaded-tool parity
 - **Files**: packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts, packages/core/tests/src/lib/e2e/mcp-json-plugin-parity.e2e.spec.ts
 - **Status**: pending
