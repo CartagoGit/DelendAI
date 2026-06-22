@@ -6,7 +6,9 @@ track: plugins/issues+docs
 date: 2026-06-21
 kind: feat
 title: GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal
-shipped-in: []
+shipped-in:
+    - 6b386fa # S2 GitHub client + scaffold builder (10 files)
+    - e05e699 # S3 MCP tools + 2 spec files (analyze, resolve) — landed in the loop-detector cleanup commit
 related:
     - f00015 # logs plugin — same shape (host-only, not in swarm preset)
     - f00026 # observability v3 — same "host-side tool with rich UI surface" pattern
