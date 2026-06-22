@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IHostAdapter,
 	ITreeDataProvider,
-} from '../src/host-adapter.types';
-import { createFakeHostAdapter } from './fake-host-adapter';
+} from '../../../src/contracts/interfaces/host-adapter.interface';
+import { createFakeHostAdapter } from '../../fake-host-adapter';
 
 describe('IHostAdapter (fake)', () => {
 	it('exposes a stable id, displayName and hostVersion', () => {

@@ -14,7 +14,7 @@
  * after the webview's body content.
  */
 
-import type { IHostAdapter } from '../host-adapter.types';
+import type { IHostAdapter } from '../contracts/interfaces/host-adapter.interface';
 
 export interface IComponentRuntimeHost extends Pick<IHostAdapter, 'id'> {
 	/** Dispatch a `data-mv-action` event. The action id is `string` (stable). */
