@@ -2,7 +2,7 @@
 id: f00045
 kind: feat
 title: chat tool error surfaces a direct clickable link to its log entry
-status: ready
+status: done
 type: proposal
 track: core+client+extension+tests
 date: 2026-06-21

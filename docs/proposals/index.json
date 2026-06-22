@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T21:12:09.263Z",
+	"generated_at": "2026-06-22T21:23:49.035Z",
 	"count": 103,
 	"proposals": [
 		{
@@ -28,14 +28,6 @@
 			"id": "f00037",
 			"file": "ready/f00037-contracts-file-naming-and-folder-conventions.md",
 			"track": "architecture+lint+repo-layout",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00045",
-			"file": "ready/f00045-chat-tool-error-shows-direct-log-link.md",
-			"track": "core+client+extension+tests",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
@@ -95,6 +87,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-22"
+		},
+		{
+			"id": "f00045",
+			"file": "done/f00045-chat-tool-error-shows-direct-log-link.md",
+			"track": "core+client+extension+tests",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "f00048",
