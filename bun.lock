@@ -21,6 +21,10 @@
         "zod": "^4.4.3",
       },
     },
+    "apps/shared": {
+      "name": "@mcp-vertex/shared",
+      "version": "0.1.0",
+    },
     "apps/web": {
       "name": "@mcp-vertex/web",
       "version": "0.1.0",
@@ -628,6 +632,8 @@
     "@mcp-vertex/rules": ["@mcp-vertex/rules@workspace:plugins/rules"],
 
     "@mcp-vertex/search": ["@mcp-vertex/search@workspace:plugins/search"],
+
+    "@mcp-vertex/shared": ["@mcp-vertex/shared@workspace:apps/shared"],
 
     "@mcp-vertex/status-marker": ["@mcp-vertex/status-marker@workspace:plugins/status-marker"],
 
