@@ -176,7 +176,8 @@ backlog (S4–S6) burns this number down; S7 flips it to strict.
 
 ### S3 — Add consumer-facing TypeScript convention profile
 
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Files**:
   - `plugins/conventions/` or equivalent plugin package
   - `plugins/conventions/src/lib/profiles/typescript/**`
@@ -184,6 +185,21 @@ backlog (S4–S6) burns this number down; S7 flips it to strict.
   - `plugins/conventions/tests/**`
   - `docs/FILE-CONVENTIONS.md`
 - **Gate**: `bun run test plugins/conventions && bun run typecheck`
+
+Delivered: the `@mcp-vertex/conventions` plugin (`--plugins=conventions`,
+host-agnostic, deps only on `@mcp-vertex/core`). It owns a self-contained
+TypeScript profile (`classifyPath` + `TYPESCRIPT_RULES`, exported from
+`/public`) rather than importing the lint engine from `tools/` (a plugin
+must not reach into `tools/`); a parity spec asserts the plugin profile
+classifies a sample path set identically to
+`tools/scripts/lint/file-conventions.ts`, so the two can never drift.
+Two read-only tools: `conventions_classify` (pure — classify supplied
+paths) and `conventions_check` (scan the workspace via an injected
+`IDirReader`, report per-role counts + the unmatched list). SOLID: pure
+profile, DI'd scan port (`node:fs` adapter in prod, in-memory tree in
+tests), one responsibility per file. 42 tests pass; typecheck green;
+builds into `dist`. The `plan`/`apply` rename surfaces remain a later
+slice (the proposal's migration S4–S6 is what consumes this profile).
 
 ### S4 — Migrate `packages/client` services and contracts
 
