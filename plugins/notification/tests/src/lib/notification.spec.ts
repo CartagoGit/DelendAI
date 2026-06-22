@@ -280,6 +280,9 @@ describe('notification plugin', () => {
 		expect(out.emitted).toBe(0);
 		expect(typeof out.watching).toBe('string');
 
+		// Let the watcher's async prime pass observe the empty directory first.
+		await new Promise((resolve) => setTimeout(resolve, 60));
+
 		// Write a new handoff file
 		writeFileSync(
 			join(handoffDir, 'stuck-agent.json'),
