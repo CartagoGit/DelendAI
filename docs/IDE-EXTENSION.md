@@ -135,6 +135,10 @@ Defaults to `https://mcp-vertex.dev`. Localhost and private IPs are
 rejected by `EmbedService` unless `allowLocalhost` /
 `allowPrivateIps` is explicitly enabled.
 
+### Configure the issues plugin
+
+> **Configuring the GitHub issues plugin?** See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it walks through the 7 setup steps and the `mcp-vertex setup-github` command that automates them.
+
 ## Development
 
 From the workspace root:

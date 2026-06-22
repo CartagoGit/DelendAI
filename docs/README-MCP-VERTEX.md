@@ -39,6 +39,15 @@ Register the core once in your MCP client (VS Code, Cursor, Claude…):
 No plugins? Drop `--plugins`. The core still gives you the bootstrap and
 scaffolding tools.
 
+## First run in a new project
+
+If you just added `mcp-vertex` to a new project, follow the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it covers the 7 steps from detecting your repo to verifying the GitHub issues plugin.
+
+- Detect the current GitHub repo from `origin` and confirm the final `owner/name`.
+- Choose the auth tier in order: `gh`, `GITHUB_TOKEN`, then anonymous REST fallback.
+- Write `plugins.issues.options.repo` into `mcp-vertex.config.json` without persisting secrets.
+- Verify the tier and then run the printed `mcp-vertex` invocation in your host.
+
 ## CLI arguments
 
 | Argument | Default | Purpose |

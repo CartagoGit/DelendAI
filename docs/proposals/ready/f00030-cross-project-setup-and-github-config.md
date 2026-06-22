@@ -303,6 +303,83 @@ remediation for that step.
   `--plugins=A,B,...` patterns that look like a complete spec.
 - **Gate**: `bun run lint:setup`, `bun run validate` exit 0.
 
+## Slices
+
+```yaml
+slices:
+  - sliceId: S1
+    title: "docs/CROSS-PROJECT-SETUP.md (canonical) + linked callouts"
+    files:
+      - docs/CROSS-PROJECT-SETUP.md
+      - docs/README-MCP-VERTEX.md
+      - docs/IDE-EXTENSION.md
+      - docs/CROSS-IDE.md
+      - docs/PLUGINS-MCP-VERTEX.md
+    gate: docs
+    dependsOn: []
+    acceptance:
+      - "docs/CROSS-PROJECT-SETUP.md exists and contains the 7 setup steps"
+      - "README-MCP-VERTEX.md, IDE-EXTENSION.md, CROSS-IDE.md, PLUGINS-MCP-VERTEX.md each link to CROSS-PROJECT-SETUP.md"
+      - "bun run lint:proposals exit 0"
+  - sliceId: S2
+    title: "setup-github CLI subcommand + issues_setup_github MCP tool"
+    files:
+      - packages/core/src/lib/setup/setup-steps.ts
+      - packages/core/src/lib/setup/setup-steps.spec.ts
+      - packages/core/src/lib/setup/cross-project-guide.ts
+      - packages/core/src/lib/setup/cross-project-guide.spec.ts
+      - packages/core/src/lib/cli/setup-subcommand.ts
+      - plugins/issues/src/lib/github-setup.ts
+      - plugins/issues/src/lib/github-setup.spec.ts
+      - plugins/issues/src/lib/tools/setup-github.tool.ts
+      - plugins/issues/src/lib/tools/setup-github.tool.spec.ts
+    gate: type+test
+    dependsOn: [S1]
+    acceptance:
+      - "`mcp-vertex setup-github` runs end-to-end on a fresh repo"
+      - "issues_setup_github MCP tool exposed with outputSchema"
+      - "bun run type exit 0; bun run test packages/core plugins/issues exit 0"
+  - sliceId: S3
+    title: "apps/web/src/pages/setup.astro wizard + i18n (12 keys × 12 langs)"
+    files:
+      - apps/web/src/pages/setup.astro
+      - apps/web/src/lib/setup-wizard.ts
+      - apps/web/tests/lib/setup-wizard.spec.ts
+      - apps/web/src/i18n/ui.ts
+    gate: type+test+i18n
+    dependsOn: [S1, S2]
+    acceptance:
+      - "/setup page renders the 7-step wizard"
+      - "apps/web/src/i18n/ui.ts has 12 wizard keys × 12 languages"
+      - "bun run test apps/web exit 0; bun run site:strict exit 0; bun run check:i18n:plugins exit 0"
+  - sliceId: S4
+    title: "VS Code command mcp-vertex.setupGithub + webview + i18n"
+    files:
+      - extensions/vscode/src/commands/setup-github.ts
+      - extensions/vscode/src/webviews/setup-github.ts
+      - extensions/vscode/src/test/setup-github.spec.ts
+      - extensions/vscode/src/i18n/strings.ts
+      - extensions/vscode/package.json
+    gate: type+test+i18n
+    dependsOn: [S1]
+    acceptance:
+      - "mcp-vertex.setupGithub appears in the command palette"
+      - "Webview renders the 7 steps; navigation works"
+      - "extensions/vscode/src/i18n/strings.ts has 12 wizard keys × 12 languages"
+      - "bun run test extensions/vscode exit 0; bun run check:i18n:plugins exit 0"
+  - sliceId: S5
+    title: "Cross-project setup lint (lint:setup)"
+    files:
+      - tools/scripts/lint/no-preset-drift.script.ts
+      - bunfig.toml
+      - package.json
+    gate: lint
+    dependsOn: [S1, S2, S3, S4]
+    acceptance:
+      - "bun run lint:setup exit 0; fails on any doc with mismatched --preset plugin list"
+      - "bun run validate exit 0 (full gate)"
+```
+
 ## acceptance
 
 (Mirrors the `acceptance:` block in the frontmatter. The linter
