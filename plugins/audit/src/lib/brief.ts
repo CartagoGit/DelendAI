@@ -34,7 +34,17 @@ export type UniversalAuditScope =
 	| 'tokens'
 	| 'tests'
 	| 'docs';
-
+/**
+ * Public short alias for {@link UniversalAuditScope}. Kept for backwards
+ * compatibility with downstream consumers (e.g. the plugin's
+ * `src/public/index.ts`, the `audit_plan` tool, external hosts) that
+ * historically imported `AuditScope`. New code should prefer
+ * `UniversalAuditScope` directly; this alias is the single source of truth
+ * that satisfies both call sites without forcing every plugin to ship two
+ * type names. The fix for audit finding "plugins/audit
+ * `AuditScope` not exported by `brief.ts`" lives here.
+ */
+export type AuditScope = UniversalAuditScope;
 /** All universal scope identifiers, in canonical order. */
 export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
 	'full',
@@ -66,7 +76,8 @@ export const ALL_SCOPES = UNIVERSAL_SCOPES;
 
 /**
  * A host-defined layer scope that the agent will read exhaustively.
- * Configured via `mcp-vertex.config.json → plugins.audit.options.layers`.
+ * Configured via the host project's audit plugin options (typically under
+ * `plugins.audit.options.layers` in whatever config file the host uses).
  */
 export interface ILayerConfig {
 	/**
@@ -118,21 +129,68 @@ export interface IBriefOptions {
 	 * `ctx.options.layers`. Used when `scope` is a layer name or `'full'`.
 	 */
 	readonly layers?: readonly ILayerConfig[];
+	/**
+	 * Human-readable project name, rendered in the brief header and in
+	 * the "no layers configured" fallback. Defaults to `"the project"`.
+	 * Keep the value generic — the brief is meant to land in any model
+	 * session and should not assume mcp-vertex-specific vocabulary.
+	 */
+	readonly projectName?: string;
+	/**
+	 * Path to the host config file, rendered in the "no layers
+	 * configured" hint. Defaults to `"<config-file>"` (a placeholder).
+	 * Hosts that want to point the model at a concrete file (e.g.
+	 * `mcp-vertex.config.json`, `app.toml`, `settings.yaml`) can pass it
+	 * here without leaking that path into the agnostic default brief.
+	 */
+	readonly configFileName?: string;
+	/**
+	 * Optional list of extra cross-cutting invariants the host wants
+	 * every scope to surface. Each entry is rendered as a bullet under
+	 * the "Invariantes transversales" block, before the universal
+	 * defaults. Use this to inject project-specific "must check this"
+	 * rules without forking `buildBrief`.
+	 */
+	readonly crossCuttingAdditions?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
 // Cross-cutting invariants (appear in every scope)
 // ---------------------------------------------------------------------------
 
-const CROSS_CUTTING = `
+/**
+ * Universal defaults for the "cross-cutting invariants" block. These
+ * are project-agnostic on purpose: every host benefits from checking
+ * them, regardless of language or framework. Hosts that have additional
+ * invariants they want surfaced in every scope can pass them via
+ * {@link IBriefOptions.crossCuttingAdditions}; they are rendered AFTER
+ * the universal defaults so the brief stays self-explanatory.
+ *
+ * The historical (mcp-vertex-specific) defaults — `mcp-vertex_metrics`,
+ * `ctx.keepLegacy`, `tool-outputs.ts` — were promoted to **host-added**
+ * invariants because they describe one project's vocabulary. Other
+ * projects will have their own observability primitive, their own
+ * keep-legacy semantics, their own generated-typed-outputs workflow.
+ * Hosts wire those via `crossCuttingAdditions` from `register()`.
+ */
+const CROSS_CUTTING_UNIVERSAL_DEFAULTS: readonly string[] = [
+	'- **Observabilidad**: identifica la primitiva canónica del proyecto (métricas, tracing, logs estructurados, lo que sea) y verifica que esté presente, que persista su estado entre llamadas, y que un snapshot-diff entre dos invocaciones refleje la actividad real del host. Si no existe, es hallazgo MEJORABLE; si existe pero miente, es FATAL.',
+	'- **Honoring de flags de configuración**: cada flag opt-in documentado (legacy, migración, dry-run, allow-list, etc.) debe estar **explícitamente honrado o explícitamente ignorado** en el código. Un flag mencionado en docs pero sin efecto verificable en código es hallazgo MEJORABLE.',
+	'- **Outputs tipados generados**: si el proyecto genera tipos a partir de schemas (typed SDK, JSON Schema, OpenAPI, etc.) los archivos generados deben estar commiteados y regenerarse como parte del gate de validación. Un \`<generated>\` ausente o desfasado respecto a su fuente es hallazgo.',
+];
+
+const renderCrossCutting = (additions: readonly string[]): string => {
+	const bullets = [...CROSS_CUTTING_UNIVERSAL_DEFAULTS, ...additions].join(
+		'\n',
+	);
+	return `
 ### ⚠️ Invariantes transversales (siempre, independientemente del alcance)
 
-Estos tres puntos se verifican en **cualquier** alcance de auditoría:
+Estos puntos se verifican en **cualquier** alcance de auditoría:
 
-- **\`mcp-vertex_metrics\`** — es la primitiva canónica de observabilidad. Verifica que esté presente, que persista su estado entre llamadas, y que un snapshot-diff entre dos invocaciones refleje la actividad real del host.
-- **\`ctx.keepLegacy\`** — cada plugin debe honrar o ignorar **explícitamente** este flag. Nunca dejarlo sin mencionar en código ni en docs.
-- **\`tool-outputs.ts\`** — todo plugin con \`outputSchema\` tipado debe tener su \`src/generated/tool-outputs.ts\` generado y commiteado (\`bun run types:generate\`). Si el archivo está ausente o desfasado, es un hallazgo.
+${bullets}
 `;
+};
 
 // ---------------------------------------------------------------------------
 // Universal reading phases (repo-agnostic)
@@ -175,11 +233,11 @@ Patrón canónico: specs colocados junto al código; usan mocks/stubs inyectados
 const PHASE_DOCS = `
 ### Fase — Documentación
 
-- **Guías de agente / AGENTS.md**: para cada regla definida, ¿hay alguna violación en el código que la contradiga?
-- **Skills**: abre cada skill y verifica: ¿nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas?
-- **Scaffolds / plantillas**: ¿describen correctamente la práctica actual o están desfasados?
+- **Guías de agente / AGENTS.md** (o equivalente: \`CONTRIBUTING.md\`, \`CONVENTIONS.md\`, \`docs/agent.md\`): para cada regla definida, ¿hay alguna violación en el código que la contradiga?
+- **Skills / runbooks / playbooks**: abre cada uno y verifica: ¿nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas? ¿Algún ejemplo de output desactualizado?
+- **Scaffolds / plantillas / generators**: ¿describen correctamente la práctica actual o están desfasados?
 - **READMEs de módulos**: ¿actualizados tras los últimos cambios significativos?
-- **Scripts**: ¿algún archivo en directorios de scripts con extensión prohibida por las reglas del repo?
+- **Reglas declaradas en código (lint, typecheck, scripts de CI)**: ¿están en sync con las reglas narradas en docs? Un doc que dice "no X" sin un lint que lo enforce es hallazgo MEJORABLE.
 `;
 
 // ---------------------------------------------------------------------------
@@ -221,7 +279,10 @@ Checklist genérico de capa:
  *
  * @param scope - Either a universal scope identifier or the `name` of a
  *   host-configured layer. Pass `'full'` for a complete audit.
- * @param options - Optional overrides for dimensions and layer definitions.
+ * @param options - Optional overrides for dimensions, layer definitions,
+ *   project name, config-file hint, and host-specific cross-cutting
+ *   invariants. Defaults are project-agnostic on purpose; pass options
+ *   to brand the output for a specific host.
  */
 export const buildBrief = (
 	scope: string,
@@ -229,6 +290,8 @@ export const buildBrief = (
 ): string => {
 	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
 	const layers = options.layers ?? [];
+	const projectName = options.projectName ?? 'the project';
+	const configFileName = options.configFileName ?? '<config-file>';
 	const dimensionsTable = dimensions.map((d) => `| ${d} | /10 |`).join('\n');
 
 	// Resolve label: universal scope label, layer label, or raw scope string.
@@ -241,7 +304,14 @@ export const buildBrief = (
 		universalLabel ?? layerConfig?.label ?? `Capa personalizada: ${scope}`;
 
 	// Build the reading phases appropriate for this scope.
-	const readingPhases = buildReadingPhases(scope, layers);
+	const readingPhases = buildReadingPhases(scope, layers, {
+		layers,
+		projectName,
+		configFileName,
+		...(options.crossCuttingAdditions !== undefined
+			? { crossCuttingAdditions: options.crossCuttingAdditions }
+			: {}),
+	});
 
 	return `# 📋 Brief de auditoría (alcance: ${scopeLabel})
 
@@ -346,16 +416,33 @@ Una tabla compacta \`| 🔴 P0 | <acción> | <archivo> |\` con las
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+interface IBuildReadingPhasesOptions {
+	readonly layers: readonly ILayerConfig[];
+	readonly projectName: string;
+	readonly configFileName: string;
+	readonly crossCuttingAdditions?: readonly string[];
+}
+
 /**
  * Assemble the reading-phase sections for the requested scope.
  * `full` includes all universal phases + all configured layers.
  * A universal scope includes only its own phase.
  * A layer name includes only that layer's generic reading phase.
  * Unknown scopes get all universal phases (safe fallback).
+ *
+ * The cross-cutting invariants block is rendered by {@link renderCrossCutting}
+ * with the host's `crossCuttingAdditions` appended to the universal
+ * defaults; this keeps the brief agnostic for hosts that never set the
+ * additions and self-explanatory for hosts that do.
  */
 const buildReadingPhases = (
 	scope: string,
 	layers: readonly ILayerConfig[],
+	options: IBuildReadingPhasesOptions = {
+		layers: [],
+		projectName: 'the project',
+		configFileName: '<config-file>',
+	},
 ): string => {
 	const universalPhaseMap: Record<UniversalAuditScope, string> = {
 		full: '', // handled below
@@ -365,20 +452,24 @@ const buildReadingPhases = (
 		docs: PHASE_DOCS,
 	};
 
+	const crossCutting = renderCrossCutting(
+		options.crossCuttingAdditions ?? [],
+	);
+
 	if (scope === 'full') {
 		const layerPhases =
 			layers.length > 0
 				? layers.map(buildLayerPhase).join('\n')
 				: `
-### Fase — Código fuente del proyecto
+### Fase — Código fuente de ${options.projectName}
 
 No hay capas configuradas. Lee los directorios principales del proyecto:
 busca los mismos patrones del checklist genérico en todo el código fuente.
-Añade capas en \`mcp-vertex.config.json → plugins.audit.options.layers\` para
-obtener instrucciones de lectura específicas por capa en próximas auditorías.
+Añade capas en la sección \`plugins.audit.options.layers\` de \`${options.configFileName}\`
+para obtener instrucciones de lectura específicas por capa en próximas auditorías.
 `;
 		return (
-			CROSS_CUTTING +
+			crossCutting +
 			layerPhases +
 			PHASE_SECURITY +
 			PHASE_TOKENS +
@@ -389,17 +480,17 @@ obtener instrucciones de lectura específicas por capa en próximas auditorías.
 
 	// Universal scope (security, tokens, tests, docs)
 	if (scope in universalPhaseMap && scope !== 'full') {
-		return CROSS_CUTTING + universalPhaseMap[scope as UniversalAuditScope];
+		return crossCutting + universalPhaseMap[scope as UniversalAuditScope];
 	}
 
 	// Layer scope
 	const layer = layers.find((l) => l.name === scope);
 	if (layer) {
-		return CROSS_CUTTING + buildLayerPhase(layer);
+		return crossCutting + buildLayerPhase(layer);
 	}
 
 	// Unknown scope — safe fallback: all universal phases
 	return (
-		CROSS_CUTTING + PHASE_SECURITY + PHASE_TOKENS + PHASE_TESTS + PHASE_DOCS
+		crossCutting + PHASE_SECURITY + PHASE_TOKENS + PHASE_TESTS + PHASE_DOCS
 	);
 };
