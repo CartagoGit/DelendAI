@@ -50,27 +50,6 @@ import {
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
-// Plugin imports are dynamic (lazy `await import(...)`) so the script
-// can fall back to a stub when the workspace packages have no `dist/`
-// yet (fresh checkout that hasn't run `bun run build`). Static imports
-// would throw `Cannot find module '@mcp-vertex/<plugin>'` at module
-// load time, before our try/catch in `main()` could catch it.
-const PLUGIN_LOADERS = {
-	'@mcp-vertex/proposals': () => import('@mcp-vertex/proposals'),
-	'@mcp-vertex/rules': () => import('@mcp-vertex/rules'),
-	'@mcp-vertex/memory': () => import('@mcp-vertex/memory'),
-	'@mcp-vertex/git': () => import('@mcp-vertex/git'),
-	'@mcp-vertex/quality': () => import('@mcp-vertex/quality'),
-	'@mcp-vertex/search': () => import('@mcp-vertex/search'),
-	'@mcp-vertex/notification': () => import('@mcp-vertex/notification'),
-	'@mcp-vertex/status-marker': () => import('@mcp-vertex/status-marker'),
-	'@mcp-vertex/test-convention': () => import('@mcp-vertex/test-convention'),
-	'@mcp-vertex/audit': () => import('@mcp-vertex/audit'),
-	'@mcp-vertex/docs': () => import('@mcp-vertex/docs'),
-	'@mcp-vertex/deps': () => import('@mcp-vertex/deps'),
-	'@mcp-vertex/logs': () => import('@mcp-vertex/logs'),
-} as const;
-
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
 const OUT = resolve(
@@ -81,10 +60,15 @@ const OUT = resolve(
 	'manifests',
 	'capabilities.json',
 );
-// Plugin loaders + the map key the host uses for each (`mcp-<short>`).
-// Keys must match `package.json#name` of every plugin in `plugins/*/src/lib`.
-// Module records are resolved lazily so `bun run dev` on a fresh checkout
-// (no `dist/`) can fall back to a stub instead of crashing on import.
+
+// Plugin imports are dynamic (lazy `await import(...)`) so the script
+// can fall back to a stub when the workspace packages have no `dist/`
+// yet (fresh checkout that hasn't run `bun run build`). Static imports
+// would throw `Cannot find module '@mcp-vertex/<plugin>'` at module
+// load time, before our try/catch in `main()` could catch it.
+// `hostKey` is the name the host expects in its plugin map (e.g.
+// `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
+// plugin; the harvest path uses it to feed `assembleCliConfig`.
 type PluginModule = { default: unknown };
 const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
 	'@mcp-vertex/proposals': () => import('@mcp-vertex/proposals'),
@@ -114,6 +98,18 @@ const hostKeyOf = (specifier: string): string =>
 const PLUGIN_LIST = Object.keys(PLUGIN_LOADERS)
 	.map((s) => shortNameOf(s))
 	.join(',');
+
+// Cache of loaded plugin default exports, keyed by the host's `mcp-<short>`
+// identifier. Populated once at the top of `main()` so both the harvest
+// path (`buildClient` → `assembleCliConfig`) and the `configExampleOf`
+// lookup can share the same module records without double `import()`.
+const PLUGINS: Record<string, unknown> = {};
+const loadAllPlugins = async (): Promise<void> => {
+	for (const [specifier, loader] of Object.entries(PLUGIN_LOADERS)) {
+		const mod = await loader();
+		PLUGINS[hostKeyOf(specifier)] = mod.default;
+	}
+};
 
 interface ITool {
 	readonly name: string;
@@ -588,13 +584,14 @@ const main = async (): Promise<void> => {
 	).version;
 
 	// The harvest path needs every plugin's `dist/` built because the
-	// imports above resolve through `@mcp-vertex/*` → package `main`
-	// (typically `dist/public/index.js`). On a fresh checkout the dev
-	// server still wants the JSON file to exist so Vite can resolve
+	// dynamic imports below resolve through `@mcp-vertex/*` → package
+	// `main` (typically `dist/public/index.js`). On a fresh checkout the
+	// dev server still wants the JSON file to exist so Vite can resolve
 	// `#MANIFESTS/capabilities.json`; we emit a stub instead of failing
 	// the dev pipeline.
 	let harvested: Awaited<ReturnType<typeof collectTools>>;
 	try {
+		await loadAllPlugins();
 		harvested = await collectTools();
 	} catch (error) {
 		const reason = formatHarvestError(error);
