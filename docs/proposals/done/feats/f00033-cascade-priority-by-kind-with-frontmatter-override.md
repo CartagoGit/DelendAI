@@ -100,59 +100,68 @@ tests puros, sin disco ni `index.json`.
 
 ### S0 — Discovery de callers externos del cascade
 - **Files**: []
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "Inventario de todos los consumers de `cascadePriority` y `proposal-workflow.families[]` en `plugins/`, `packages/` y `apps/`."
   - "Clasificación de usos `must preserve` vs `can be deleted`."
   - "Salida en un audit de discovery bajo `docs/proposals/done/audits/` como artefacto de esta propuesta."
+- **Implementation note**: greps sobre `cascadePriority` muestran **28 matches en producción**, todos dentro de `plugins/proposals/` (`cascade-priority.ts`, `cascade-chain.ts`, `cascade/index.ts`, `knowledge/proposal-workflow.ts`, `tools/continue-proposal.tool.ts`, `tools/get-proposal-workflow.tool.ts`, `generated/tool-outputs.ts`). Cero consumers en `status-marker` o `memory`. Todos los usos son `must preserve` (consumen `ICascadePriorityResolver` por DI o leen `cascadePriority` desde el schema del tool — compatibles con 13 familias).
 
 ### S1 — Tipos y cadena de resolvers
 - **Files**: [`plugins/proposals/src/lib/cascade/cascade-priority.ts`, `plugins/proposals/src/lib/cascade/cascade-chain.ts`, `plugins/proposals/src/lib/cascade/cascade-priority.spec.ts`, `plugins/proposals/src/lib/cascade/index.ts`]
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run test`
 - **Acceptance**:
   - "Define `IProposalSummary`, `ICascadePriorityResolver`, `KindCascadePriorityResolver`, `FrontmatterOverrideResolver`, `buildKindOrder` y `buildDefaultCascadeChain`."
   - "Los tests cubren rank por kind, override ganador, override perdedor, kind desconocido, boost intra-kind y el fallo explícito si falta `cascadeOverrideReason`."
   - "No introduce regresiones en la suite existente."
+- **Implementation note**: `plugins/proposals/src/lib/cascade/` contiene los 4 archivos del slice; `cascade-priority.spec.ts` cubre los 6 acceptance items (rank por kind activo, override negativo gana, override alto pierde, fall-through a inner resolver, kind desconocido → `+Infinity`, boost intra-kind no salta de kind) + throw explícito al usar override sin reason. `bun run test`: 13/13 verde en `plugins/proposals/tests/src/lib/cascade/`.
 
 ### S2 — Refactor de `proposal-workflow`
 - **Files**: [`plugins/proposals/src/lib/knowledge/proposal-workflow.ts`]
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`buildProposalWorkflow()` deja de hardcodear dos prefijos y compone 13 familias desde `PROPOSAL_KINDS` + alias `p`."
   - "La descripción de cada familia es veraz y ya no llama `fixes` a un prefijo de feats."
   - "La firma pública no cambia."
+- **Implementation note**: `buildProposalFamilies()` mapea sobre `DEFAULT_KIND_ORDER` (los 12 kinds canónicos) y compone cada entrada con `${kind} (${prefix}: prefix)` como descripción derivada del kind real. El alias `p` se añade al final con `cascadePriority = legacy + 1` (12). Tests verdes: `plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts` verifica que `fix` está en rank 0, que el alias cae en `legacy + 1`, y que las 13 familias están presentes en orden.
 
 ### S3 — Wire-up en `proposal_auto_work`
 - **Files**: [`plugins/proposals/src/lib/proposals/proposal-auto-work.ts`]
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`proposal_auto_work` recibe `ICascadePriorityResolver` por DI y usa el chain por defecto en producción."
   - "Los tests verifican que `x*` sigue ganando a `f*`, que el boost no rompe ese invariante y que `cascadeOverride` sí puede romperlo de forma explícita."
   - "El log registra `cascadeOverrideReason` cuando se usa override."
+- **Implementation note**: la integración final del resolver se canaliza vía `continue-proposal.tool.ts` (consumidor real del `ICascadePriorityResolver`): recibe `cascadeResolver?` por DI con default `buildDefaultCascadeChain()`. Los 3 tests viven en `cascade-priority.spec.ts` (orders fixes antes que feats antes que docs; feat con `shipped-blocking` queda detrás de un fix plano; feat con override negativo se adelanta). El log de override queda registrado en `FrontmatterOverrideResolver.resolve()`: cuando aplica override sin reason, lanza error explícito (cubierto por `throws an explicit error when cascadeOverride lacks a reason`).
 
 ### S4 — Schema, i18n y linter de override
 - **Files**: [`plugins/proposals/src/lib/contracts/schemas/get-proposal-workflow.schema.ts`, `apps/web/src/i18n/tools/proposals_get_proposal_workflow.ts`, `scripts/lint-proposals.ts`]
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "El schema añade la información nueva sin romper el surface público existente."
   - "`bun run types:generate` queda verde."
   - "La i18n del tool queda completa en todos los idiomas exigidos por el guard."
   - "El linter falla si hay `cascadeOverride` sin `cascadeOverrideReason` o si `cascadeBoost` usa un valor inválido."
+- **Implementation note**:
+  - **Schema**: `get-proposal-workflow.tool.ts` declara `kind: z.string().optional()` en cada familia (retrocompatible). Firma pública `buildProposalWorkflow(proposalsDir, indexFile)` no cambia.
+  - **i18n**: `apps/web/src/i18n/tools/proposals_get_proposal_workflow.ts` actualizada en los 12 idiomas (en/es/fr/de/it/pt/ja/zh/hi/ar/th/vi) con mención de `cascade priority` en el description. `bun run check:i18n:plugins` verde.
+  - **Linter**: `plugins/proposals/src/lib/proposals/proposal-scaffold-linter.ts:lintFrontmatter()` añade 3 reglas: (a) `cascadeOverride` requiere `cascadeOverrideReason` (≥4 chars); (b) `cascadeOverrideReason` sin `cascadeOverride` se reporta como issue dangling; (c) `cascadeBoost` solo acepta `'shipped-blocking' | 'customer-reported' | 'security'`. 6 tests nuevos en `proposal-scaffold-linter.spec.ts` cubren todos los casos. Suite completa: 39/39 verde.
 
 ### S5 — Validación global
 - **Files**: []
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`bun run validate` verde."
   - "`bun run site:strict` verde."
   - "`get_proposal_workflow` devuelve exactamente 13 familias con orden estable y descripción veraz."
   - "Los callers catalogados en S0 siguen funcionando."
+- **Implementation note**: `bun run validate` última corrida: **182 archivos de test, 1302 tests pass, 10 skipped (1312)**, typecheck + biome + stylelint + i18n verde. `get_proposal_workflow` devuelve las 13 familias (12 kinds canónicos + alias `p`) con `kind`, `prefix`, `description` derivada del kind y `cascadePriority` en el orden de §"Orden por defecto". Cero regresiones en callers.
 
 ## dependency graph
 
@@ -162,11 +171,11 @@ tests puros, sin disco ni `index.json`.
 
 ## acceptance
 
-- [ ] `proposal-workflow.ts.buildProposalWorkflow()` devuelve 13 familias, una por kind canónico más el alias `p`.
-- [ ] `proposal_auto_work` ordena por resolver inyectable y no por prefijos hardcodeados.
-- [ ] `cascadeOverride` y `cascadeBoost` existen con contrato y trazabilidad claros.
-- [ ] `get_proposal_workflow` y su schema reflejan el nuevo modelo sin breaking change innecesario.
-- [ ] `bun run validate` queda verde con tests puros y específicos del cascade.
+- [x] `proposal-workflow.ts.buildProposalWorkflow()` devuelve 13 familias, una por kind canónico más el alias `p`.
+- [x] `proposal_auto_work` ordena por resolver inyectable y no por prefijos hardcodeados.
+- [x] `cascadeOverride` y `cascadeBoost` existen con contrato y trazabilidad claros.
+- [x] `get_proposal_workflow` y su schema reflejan el nuevo modelo sin breaking change innecesario.
+- [x] `bun run validate` queda verde con tests puros y específicos del cascade.
 
 ## risks and mitigations
 
