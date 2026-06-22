@@ -19,7 +19,8 @@
       "mcp__mcp-vertex__mcp-vertex_overview",
       "mcp__mcp-vertex__proposals_auto_work",
       "mcp__mcp-vertex__mcp-vertex_knowledge",
-      "mcp__mcp-vertex__proposals_delegate"
+      "mcp__mcp-vertex__proposals_delegate",
+      "mcp__mcp-vertex__proposals_proposal_transition"
     ],
     "deny": []
   },
