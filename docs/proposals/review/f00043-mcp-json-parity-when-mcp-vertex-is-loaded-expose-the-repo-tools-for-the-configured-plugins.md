@@ -41,7 +41,7 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 
 ### S2 — Compact diagnostic of loaded plugins and tools
 - **Files**: packages/core/src/lib/tools/overview-tool.ts, packages/core/src/lib/contracts/interfaces/core-paths.interface.ts, docs/TOKEN-BUDGETS.md
-- **Status**: pending
+- **Status**: done (2026-06-22)
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "On startup or first cheap inspection, the server can explain which plugins and tools were actually loaded for the workspace and whether that matches config/preset expectations."
@@ -73,12 +73,13 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
 - status: done
 ### S4 — Validation coverage for loaded-tool parity
 - **Files**: packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts, packages/core/tests/src/lib/e2e/mcp-json-plugin-parity.e2e.spec.ts
-- **Status**: pending
+- **Status**: done (2026-06-22)
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "Tests cover at least one workspace where mcp-vertex.config.json declares plugins and the mcp.json launch path exposes the expected tool names."
   - "A mismatch between configured plugins and loaded tools fails in tests or yields a structured, test-covered diagnostic."
   - "bun run validate is green."
+- status: done
 
 ## acceptance
 
