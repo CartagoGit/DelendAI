@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { LogsService } from '../../src/lib/services/logs-service';
+import { LogsService } from '../../src/lib/services/logs.service';
 import {
 	correlateFixture,
 	createFakeTransport,
@@ -10,7 +10,7 @@ import {
 	sampleEvent,
 	subscribeFixture,
 	tailFixture,
-} from './logs-service.fixtures';
+} from './logs.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {

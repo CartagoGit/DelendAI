@@ -9,10 +9,10 @@ import {
 } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { MetricsService } from '../../src/lib/services/metrics-service';
-import { NotificationsService } from '../../src/lib/services/notifications-service';
+import { MetricsService } from '../../src/lib/services/metrics.service';
+import { NotificationsService } from '../../src/lib/services/notifications.service';
 import { NotificationLogsBridge } from '../../src/lib/services/notification-logs-bridge';
-import { createFakeTransport } from './logs-service.fixtures';
+import { createFakeTransport } from './logs.service.fixtures';
 
 // Use real timers across the suite so the bridge's `setInterval` fires.
 beforeAll(() => {

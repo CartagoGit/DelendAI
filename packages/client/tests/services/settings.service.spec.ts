@@ -4,8 +4,8 @@ import {
 	DEFAULT_EXTENSION_SETTINGS,
 	SettingsService,
 	validateExtensionSettings,
-} from '../../src/lib/services/settings-service';
-import type { ISettingsStore } from '../../src/lib/services/settings.types';
+} from '../../src/lib/services/settings.service';
+import type { ISettingsStore } from '../../src/lib/contracts/interfaces/settings.interface';
 
 const createStore = (
 	initial: unknown = {},

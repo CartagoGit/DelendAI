@@ -7,7 +7,7 @@ import type {
 	IMemoryRecallOptions,
 	IMemorySaveInput,
 	IMemorySaveResult,
-} from './memory.types';
+} from '../contracts/interfaces/memory.interface';
 
 const MEMORY_LIST = 'memory_list';
 const MEMORY_RECALL = 'memory_recall';

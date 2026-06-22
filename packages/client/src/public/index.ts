@@ -10,29 +10,29 @@ export type {
 	IMcpToolCallResult,
 	IMcpToolDescriptor,
 	IMcpTransport,
-} from '../lib/transport/mcp-transport.types';
+} from '../lib/contracts/interfaces/mcp-transport.interface';
 export {
 	OverviewService,
 	normalizeTool,
 	pluginFromToolName,
-} from '../lib/services/overview-service';
-export type { IOverviewOptions } from '../lib/services/overview-service';
+} from '../lib/services/overview.service';
+export type { IOverviewOptions } from '../lib/services/overview.service';
 export {
 	KnowledgeNotFoundError,
 	KnowledgeService,
 	categoryOf,
-} from '../lib/services/knowledge-service';
-export { MetricsService } from '../lib/services/metrics-service';
-export { NotificationsService } from '../lib/services/notifications-service';
-export { LogsService } from '../lib/services/logs-service';
+} from '../lib/services/knowledge.service';
+export { MetricsService } from '../lib/services/metrics.service';
+export { NotificationsService } from '../lib/services/notifications.service';
+export { LogsService } from '../lib/services/logs.service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
-export { SearchService } from '../lib/services/search-service';
-export { MemoryService } from '../lib/services/memory-service';
+export { SearchService } from '../lib/services/search.service';
+export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
 	SettingsService,
 	validateExtensionSettings,
-} from '../lib/services/settings-service';
+} from '../lib/services/settings.service';
 export type {
 	ILogCorrelateResult,
 	ILogEvent,
@@ -43,19 +43,19 @@ export type {
 	ILogSubscribeOptions,
 	ILogTailResult,
 	INotificationLogEntry,
-} from '../lib/services/logs.types';
+} from '../lib/contracts/interfaces/logs.interface';
 export type { INotificationLogsBridgeOptions } from '../lib/services/notification-logs-bridge';
 export type {
 	IKnowledgeFullEntry,
 	IKnowledgeListEntry,
-} from '../lib/services/knowledge-service';
+} from '../lib/services/knowledge.service';
 export type {
 	IKnowledgeHit,
 	ISearchHit,
 	ISearchOptions,
 	ISearchResult,
 	IToolHit,
-} from '../lib/services/search.types';
+} from '../lib/contracts/interfaces/search.interface';
 export type {
 	IMemoryEntry,
 	IMemoryForgetResult,
@@ -65,32 +65,32 @@ export type {
 	IMemoryRecallOptions,
 	IMemorySaveInput,
 	IMemorySaveResult,
-} from '../lib/services/memory.types';
+} from '../lib/contracts/interfaces/memory.interface';
 export type {
 	IExtensionSettings,
 	IExtensionSettingsPatch,
 	ISettingsStore,
 	ISettingsValidationResult,
-} from '../lib/services/settings.types';
+} from '../lib/contracts/interfaces/settings.interface';
 export {
 	DashboardService,
 	createEmptyTotals,
-} from '../lib/services/dashboard-service';
-export { HealthService } from '../lib/services/health-service';
+} from '../lib/services/dashboard.service';
+export { HealthService } from '../lib/services/health.service';
 export type {
 	IHealthOptions,
 	IHealthSnapshot,
 	IStaleAgent,
 	IStaleKind,
-} from '../lib/services/health.types';
-export { ConnectionHealthService } from '../lib/services/connection-health-service';
+} from '../lib/contracts/interfaces/health.interface';
+export { ConnectionHealthService } from '../lib/services/connection-health.service';
 export type {
 	IConnectionHealthEvent,
 	IConnectionHealthOptions,
 	IConnectionHealthSnapshot,
 	IConnectionState,
-} from '../lib/services/connection-health.types';
-export type { IDashboardServiceOptions } from '../lib/services/dashboard-service';
+} from '../lib/contracts/interfaces/connection-health.interface';
+export type { IDashboardServiceOptions } from '../lib/services/dashboard.service';
 export type {
 	IDashboardAgentsModel,
 	IDashboardAllModels,
@@ -106,24 +106,24 @@ export type {
 	IDashboardToolsModel,
 	IDashboardTotals,
 	IToolMetricRow,
-} from '../lib/services/dashboard.types';
+} from '../lib/contracts/interfaces/dashboard.interface';
 export {
 	DEFAULT_DOCS_URL,
 	EmbedService,
 	resolveDocsUrl,
 	validateDocsUrl,
-} from '../lib/services/embed-service';
+} from '../lib/services/embed.service';
 export type {
 	IDocsUrlConfig,
 	IDocsUrlValidation,
 	IEmbedServiceOptions,
 	IResolvedDocsUrl,
-} from '../lib/services/embed-service';
+} from '../lib/services/embed.service';
 export type {
 	IMetricsSnapshot,
 	IMetricsSnapshotOptions,
 	IMetricsStreamOptions,
-} from '../lib/services/metrics-service';
+} from '../lib/services/metrics.service';
 export type {
 	IAwaitLockOptions,
 	IAwaitLockResult,
@@ -135,7 +135,7 @@ export type {
 	INotificationListener,
 	INotificationStatus,
 	IStatusNotificationEvent,
-} from '../lib/services/notifications-service';
+} from '../lib/services/notifications.service';
 export type {
 	IKnowledgeEntry,
 	IKnowledgeSummary,
@@ -144,6 +144,6 @@ export type {
 	IOverviewTool,
 	IToolDescriptor,
 	IToolEffect,
-} from '../lib/services/tool-descriptor.types';
+} from '../lib/contracts/interfaces/tool-descriptor.interface';
 
 export type * from '@mcp-vertex/core/public';

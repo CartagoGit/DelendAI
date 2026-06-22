@@ -5,7 +5,7 @@ import {
 	EmbedService,
 	resolveDocsUrl,
 	validateDocsUrl,
-} from '../../src/lib/services/embed-service';
+} from '../../src/lib/services/embed.service';
 
 describe('resolveDocsUrl', () => {
 	it('returns the override when extension.docsUrl is set', () => {

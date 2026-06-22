@@ -26,7 +26,7 @@ import type {
 	ILogRedactionTestResult,
 	ILogSubscribeOptions,
 	ILogTailResult,
-} from './logs.types';
+} from '../contracts/interfaces/logs.interface';
 
 const TOOL_QUERY = 'logs_query';
 const TOOL_TAIL = 'logs_tail';

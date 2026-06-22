@@ -16,7 +16,7 @@ import type {
 	ISearchOptions,
 	ISearchResult,
 	IToolHit,
-} from './search.types';
+} from '../contracts/interfaces/search.interface';
 
 const TOOL_SEARCH = 'search_search';
 

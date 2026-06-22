@@ -4,7 +4,7 @@ import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {
 	IKnowledgeEntry,
 	IKnowledgeSummary,
-} from './tool-descriptor.types';
+} from '../contracts/interfaces/tool-descriptor.interface';
 
 type IKnowledgeOutput = McpVertexToolOutputs['mcp-vertex_knowledge'];
 
