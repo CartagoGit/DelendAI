@@ -6,9 +6,10 @@
 	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
 		"sync:public-api": "bun scripts/sync-public-api.ts",
-		"dev": "bun run sync:public-api && bun run dev:api & PAGES_BASE='' astro dev",
+		"gen:manifests": "bun scripts/gen-capabilities.ts",
+		"dev": "bun run sync:public-api && bun run gen:manifests && bun run dev:api & PAGES_BASE='' astro dev",
 		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
-		"preview": "bun run sync:public-api && astro preview",
+		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",

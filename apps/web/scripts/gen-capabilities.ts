@@ -10,7 +10,11 @@
  *   bun scripts/gen-capabilities.ts            # write, warn on gaps
  *   bun scripts/gen-capabilities.ts --strict   # write, FAIL on gaps (CI)
  *
- * Requires `bun run build` first (the public API resolves to each package's dist).
+ * Requires `bun run build` first (the public API resolves to each package's
+ * dist). When the workspace dist is missing the script falls back to a stub
+ * (no harvest, all arrays empty) so `bun run dev` does not crash with
+ * `Cannot find module '#MANIFESTS/capabilities.json'` on a fresh checkout.
+ * `--strict` keeps the original behaviour and propagates the error.
  */
 import {
 	mkdirSync,
@@ -46,19 +50,26 @@ import {
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
 
-import proposalsPlugin from '@mcp-vertex/proposals';
-import rulesPlugin from '@mcp-vertex/rules';
-import memoryPlugin from '@mcp-vertex/memory';
-import gitPlugin from '@mcp-vertex/git';
-import qualityPlugin from '@mcp-vertex/quality';
-import searchPlugin from '@mcp-vertex/search';
-import notificationPlugin from '@mcp-vertex/notification';
-import statusMarkerPlugin from '@mcp-vertex/status-marker';
-import testConventionPlugin from '@mcp-vertex/test-convention';
-import auditPlugin from '@mcp-vertex/audit';
-import docsPlugin from '@mcp-vertex/docs';
-import depsPlugin from '@mcp-vertex/deps';
-import logsPlugin from '@mcp-vertex/logs';
+// Plugin imports are dynamic (lazy `await import(...)`) so the script
+// can fall back to a stub when the workspace packages have no `dist/`
+// yet (fresh checkout that hasn't run `bun run build`). Static imports
+// would throw `Cannot find module '@mcp-vertex/<plugin>'` at module
+// load time, before our try/catch in `main()` could catch it.
+const PLUGIN_LOADERS = {
+	'@mcp-vertex/proposals': () => import('@mcp-vertex/proposals'),
+	'@mcp-vertex/rules': () => import('@mcp-vertex/rules'),
+	'@mcp-vertex/memory': () => import('@mcp-vertex/memory'),
+	'@mcp-vertex/git': () => import('@mcp-vertex/git'),
+	'@mcp-vertex/quality': () => import('@mcp-vertex/quality'),
+	'@mcp-vertex/search': () => import('@mcp-vertex/search'),
+	'@mcp-vertex/notification': () => import('@mcp-vertex/notification'),
+	'@mcp-vertex/status-marker': () => import('@mcp-vertex/status-marker'),
+	'@mcp-vertex/test-convention': () => import('@mcp-vertex/test-convention'),
+	'@mcp-vertex/audit': () => import('@mcp-vertex/audit'),
+	'@mcp-vertex/docs': () => import('@mcp-vertex/docs'),
+	'@mcp-vertex/deps': () => import('@mcp-vertex/deps'),
+	'@mcp-vertex/logs': () => import('@mcp-vertex/logs'),
+} as const;
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
@@ -160,6 +171,21 @@ interface ICollected {
 
 const namespaceOf = (toolName: string): string =>
 	toolName.includes('_') ? (toolName.split('_')[0] as string) : 'core';
+
+/**
+ * Distil a harvest failure into a short, operator-friendly reason.
+ * The most common case on a fresh checkout is
+ *   `Cannot find module '@mcp-vertex/<plugin>' from '…/gen-capabilities.ts'`
+ * — that means the workspace package's `dist/` is missing. Anything else
+ * (plugin load crash, MCP handshake failure) is reported verbatim.
+ */
+const formatHarvestError = (error: unknown): string => {
+	const msg = error instanceof Error ? error.message : String(error);
+	const m = msg.match(/Cannot find module '([^']+)'/u);
+	if (m) return `missing dist for ${m[1]} (run \`bun run build\` first)`;
+	const firstLine = msg.split('\n')[0]?.trim() ?? 'unknown error';
+	return firstLine.length > 200 ? `${firstLine.slice(0, 197)}…` : firstLine;
+};
 
 /** Assemble the real server for a plugin list and return a connected client. */
 const buildClient = async (
@@ -492,6 +518,49 @@ const collectTroubleshooting = (): ITroubleshootingCase[] => {
 	];
 };
 
+/**
+ * Build a capabilities stub when the workspace packages have no `dist/`
+ * yet (i.e. a fresh checkout that hasn't run `bun run build`). The dev
+ * server renders the home page even with no tools, so the SSR pipeline
+ * never blows up with `Cannot find module '#MANIFESTS/capabilities.json'`.
+ *
+ * Only used by the dev fallback path — `--strict` and the real `build`
+ * pipeline keep the live harvest, so production builds never ship a
+ * stub.
+ */
+const writeStub = (coreVersion: string, reason: string): void => {
+	const stub = {
+		generatedAt: new Date().toISOString(),
+		coreVersion,
+		stub: true,
+		stubReason: reason,
+		counts: {
+			tools: 0,
+			prompts: 0,
+			resources: 0,
+			knowledge: 0,
+			packages: 0,
+			tutorials: 0,
+			troubleshooting: 0,
+			benchmarks: 0,
+		},
+		packages: [],
+		tools: [],
+		prompts: [],
+		resources: [],
+		knowledge: [],
+		tutorials: [],
+		troubleshooting: [],
+		benchmarks: [],
+	};
+	mkdirSync(dirname(OUT), { recursive: true });
+	writeFileSync(OUT, `${JSON.stringify(stub, null, 2)}\n`);
+	console.warn(
+		`⚠ gen-capabilities: emitted STUB capabilities.json (${reason}). ` +
+			`Run \`bun run build\` once to harvest the real tool catalogue.`,
+	);
+};
+
 const main = async (): Promise<void> => {
 	const strict = process.argv.includes('--strict');
 	const coreVersion = (
@@ -502,8 +571,23 @@ const main = async (): Promise<void> => {
 		}
 	).version;
 
-	const { tools, prompts, resources, knowledge, benchmarks } =
-		await collectTools();
+	// The harvest path needs every plugin's `dist/` built because the
+	// imports above resolve through `@mcp-vertex/*` → package `main`
+	// (typically `dist/public/index.js`). On a fresh checkout the dev
+	// server still wants the JSON file to exist so Vite can resolve
+	// `#MANIFESTS/capabilities.json`; we emit a stub instead of failing
+	// the dev pipeline.
+	let harvested: Awaited<ReturnType<typeof collectTools>>;
+	try {
+		harvested = await collectTools();
+	} catch (error) {
+		const reason = formatHarvestError(error);
+		if (strict) throw error;
+		writeStub(coreVersion, reason);
+		return;
+	}
+
+	const { tools, prompts, resources, knowledge, benchmarks } = harvested;
 	const undocumented = tools.filter((t) => t.description.trim().length === 0);
 	if (undocumented.length > 0) {
 		const msg = `${undocumented.length} tool(s) without a description: ${undocumented.map((t) => t.name).join(', ')}`;
