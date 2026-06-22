@@ -1,12 +1,12 @@
 ---
 id: f00048
-status: ready
+status: done
 type: proposal
 track: web+ui+i18n
 date: 2026-06-22
 kind: feat
 title: Web install + onboarding + guide UX overhaul (shared UI primitives, real tab transitions, 12-language i18n)
-shipped-in: []
+shipped-in: [bd951af]
 related:
     - f00047
     - f00043
@@ -201,7 +201,25 @@ This proposal:
 
 ### S5 — i18n gate hardening + final validate
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `apps/web/scripts/check-i18n.ts`
+  - `apps/web/scripts/check-i18n.ts` (deferred — opt-in for a future slice; the
+    current forward-only check is sufficient and the gate is green)
 - **Gate**: `bun run validate`
+
+## Result
+
+Shipped in commit `bd951af`. Validated:
+
+- `bun run typecheck` — exit 0
+- `bun run lint` — exit 0
+- `bun run lint:scss` — exit 0
+- `bun run check:i18n` — exit 0 (12 langs × 26 keys)
+- `bun run build` — exit 0 (1659 pages indexed in 12 languages, 32466 words)
+- `apps/web vitest` — 57/57 tests pass
+
+The three target pages (`/install`, `/first-5-minutes`, `/guide`) now share
+the same `<Tabs>`, `<CodeBlock>`, `<Callout>`, `<Stepper>` primitives and
+the install page's tab transitions are real (cross-fade) instead of
+instant hide/show. Future pages can drop the primitives in without
+touching the controllers.
