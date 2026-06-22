@@ -19,7 +19,17 @@ export default defineConfig({
 		include: ['tests/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		environment: 'node',
-		setupFiles: sharedSetupFiles(workspaceRoot),
+		setupFiles: [
+			...sharedSetupFiles(workspaceRoot),
+			// Wire the Bun polyfill ONLY in this project. The proposals
+			// integration spec (`executable-acceptance.spec.ts`) gates itself
+			// on `typeof Bun !== 'undefined'`; vitest's thread pool is plain
+			// Node, so without this shim the spec is skipped on hosts that
+			// have Bun installed. The polyfill is a no-op on hosts without
+			// Bun (returns `null` from `Bun.which`, matching the real Bun API
+			// and keeping the integration spec guarded by intent).
+			resolve(workspaceRoot, 'tools/scripts/lib/bun-polyfill.ts'),
+		],
 		globals: false,
 	},
 });
