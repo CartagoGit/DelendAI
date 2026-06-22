@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T06:36:45.212Z",
+	"generated_at": "2026-06-22T06:53:28.096Z",
 	"count": 106,
 	"proposals": [
 		{
@@ -88,10 +88,10 @@
 		},
 		{
 			"id": "f00047",
-			"file": "done/feats/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
+			"file": "ready/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
 			"track": "ui-extension+web+vscode+scss+i18n",
 			"type": "proposal",
-			"status": "done",
+			"status": "ready",
 			"date": "2026-06-22"
 		},
 		{
