@@ -16,8 +16,28 @@
 // `apps/web/src/i18n/shared.ts` surface so the typecheck during the
 // rewire stays green and the migration is mechanical.
 
-// ─── Language metadata ───────────────────────────────────────────────
+// ─── Language codes (the `Lang` literal type) ────────────────────────
+//
+// Defined first, with no dependency on `ILangMeta`, to break the cycle
+// `ILangMeta → Lang → languages satisfies ILangMeta → ILangMeta`.
+export const languageCodes = [
+	'ar',
+	'de',
+	'en',
+	'es',
+	'fr',
+	'hi',
+	'it',
+	'ja',
+	'pt',
+	'th',
+	'vi',
+	'zh',
+] as const;
 
+export type Lang = (typeof languageCodes)[number];
+
+// ─── Language metadata (depends on `Lang` but `Lang` no longer depends on it) ─
 export interface ILangMeta {
 	readonly code: Lang;
 	readonly label: string;
@@ -40,8 +60,6 @@ export const languages = [
 	{ code: 'zh', label: '中文', flag: 'cn' },
 ] as const satisfies readonly ILangMeta[];
 
-export type Lang = (typeof languages)[number]['code'];
-
 export const rtlLangs: readonly Lang[] = ['ar'];
 
 export const defaultLang: Lang = 'en';
@@ -56,7 +74,7 @@ export const themes = [
 export type Theme = (typeof themes)[number];
 
 export const flagFor = (lang: Lang): string =>
-	languages.find((l) => l.code === lang)?.flag ?? 'gb';
+	languages.find((l: ILangMeta) => l.code === lang)?.flag ?? 'gb';
 
 // ─── Translation shape (the contract) ──────────────────────────────────
 //

@@ -24,28 +24,31 @@ export {
 	t,
 } from './shared';
 
-// Populated by S2 — kept as a `Record` so the barrel can re-export the
-// map before S2 lands. S2 replaces this stub with the real merged
-// dictionaries imported from `./langs/<code>.ts`.
 import type { ILangDict, Lang, LangDictByLang } from './shared';
-
-const stub = (): ILangDict => ({
-	site: {} as ILangDict['site'],
-	extension: {} as ILangDict['extension'],
-	tools: {},
-});
+import ar from './langs/ar';
+import de from './langs/de';
+import en from './langs/en';
+import es from './langs/es';
+import fr from './langs/fr';
+import hi from './langs/hi';
+import it from './langs/it';
+import ja from './langs/ja';
+import pt from './langs/pt';
+import th from './langs/th';
+import vi from './langs/vi';
+import zh from './langs/zh';
 
 export const dictsByLang: LangDictByLang = {
-	ar: stub(),
-	de: stub(),
-	en: stub(),
-	es: stub(),
-	fr: stub(),
-	hi: stub(),
-	it: stub(),
-	ja: stub(),
-	pt: stub(),
-	th: stub(),
-	vi: stub(),
-	zh: stub(),
+	ar,
+	de,
+	en,
+	es,
+	fr,
+	hi,
+	it,
+	ja,
+	pt,
+	th,
+	vi,
+	zh,
 } as Record<Lang, ILangDict> as LangDictByLang;
