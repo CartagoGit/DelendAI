@@ -1,42 +1,46 @@
-import { definePlugin, toolJson } from '@mcp-vertex/core/public';
+/**
+ * @mcp-vertex/conventions — file-convention plugin (f00037 S3).
+ *
+ * A consumer-facing surface over the repo's canonical file-convention
+ * profile (`docs/FILE-CONVENTIONS.md`): two read-only MCP tools that
+ * classify paths and report convention drift. Host-agnostic and
+ * dependency-free beyond `@mcp-vertex/core` — it owns its own
+ * TypeScript profile rather than importing the lint-side engine from
+ * `tools/` (which a plugin must not reach into).
+ *
+ * Registered tools (namespaced to the plugin prefix, default
+ * `conventions_*`):
+ *   - `conventions_classify` — pure: classify caller-supplied paths.
+ *   - `conventions_check`     — scan the workspace, report drift.
+ */
+import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
+
+import { buildConventionsToolRegistrations } from './lib/tools';
 
 export default definePlugin({
 	name: 'conventions',
+	version: '0.1.0',
+	describe:
+		'File-convention tools: classify repo paths into canonical roles and report convention drift (f00037). Read-only, host-agnostic.',
+	optionsSchema: z.object({
+		/**
+		 * Override the default scan roots (`packages`, `plugins`,
+		 * `extensions`, `apps`, `tools`). Useful to narrow `conventions_check`
+		 * in a non-monorepo host.
+		 */
+		roots: z.array(z.string()).optional(),
+	}),
 	register(ctx) {
-		const prefix = ctx.namespacePrefix;
+		const roots = Array.isArray(ctx.options.roots)
+			? (ctx.options.roots as string[])
+			: undefined;
 		return {
-			tools: [
-				{
-					id: 'check',
-					summary: 'Check file convention drift',
-					register: async (server) => {
-						server.registerTool(
-							`${prefix}_check`,
-							{
-								description:
-									'Check file convention drift for the given profile.',
-								inputSchema: z.object({
-									profile: z
-										.string()
-										.describe(
-											'Convention profile (e.g. typescript)',
-										),
-								}),
-								outputSchema: z.object({
-									ok: z.boolean(),
-									driftCount: z.number(),
-								}),
-							},
-							async () =>
-								toolJson({
-									ok: true,
-									driftCount: 0,
-								}),
-						);
-					},
-				},
-			],
+			tools: buildConventionsToolRegistrations({
+				namespacePrefix: ctx.namespacePrefix,
+				workspaceRoot: ctx.workspace.root,
+				...(roots !== undefined ? { defaultRoots: roots } : {}),
+			}),
 		};
 	},
 });

@@ -153,6 +153,23 @@
         "@mcp-vertex/core": "^0.1.0",
       },
     },
+    "plugins/conventions": {
+      "name": "@mcp-vertex/conventions",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
     "plugins/deps": {
       "name": "@mcp-vertex/deps",
       "version": "0.1.0",
@@ -610,6 +627,8 @@
     "@mcp-vertex/cli": ["@mcp-vertex/cli@workspace:packages/cli"],
 
     "@mcp-vertex/client": ["@mcp-vertex/client@workspace:packages/client"],
+
+    "@mcp-vertex/conventions": ["@mcp-vertex/conventions@workspace:plugins/conventions"],
 
     "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
 
