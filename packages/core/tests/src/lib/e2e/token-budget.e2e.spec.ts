@@ -30,7 +30,11 @@ const BUDGET_BYTES = {
 	// Full overview lists every tool's summary, so it grows as the toolset does
 	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
 	// path (well under budget) — agents use it when there are many tools.
-	overviewFull: 7_000,
+	// Bumped 7000 → 8000 (2026-06-22) after f00029-S2 (github-issues plugin,
+	// 5 tools) + f00030 (setup-github) + f00047 (ui-extension toolbar) raised
+	// the baseline from 6700B to 7244B measured; the compact path is the
+	// real promise and remains at 1477B (well under 1600).
+	overviewFull: 8_000,
 	overviewCompact: 1_600,
 	autoWork: 1_600,
 	search: 3_000,

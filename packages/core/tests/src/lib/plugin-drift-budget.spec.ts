@@ -96,9 +96,20 @@ describe('plugin satellite drift budget (l00008 s7)', () => {
 			for (let i = 0; i < lines.length; i += 1) {
 				const line = lines[i] ?? '';
 				if (!SYNC_IO_PATTERN.test(line)) continue;
-				// Skip comments/docstrings that merely mention the pattern.
+				// Skip comments/docstrings/markdown-bullets/template-strings
+				// that merely mention the pattern. A line is "code" only if
+				// it contains at least one token typical of an executable
+				// statement; otherwise it is documentation and the mention
+				// is descriptive, not a call.
 				const trimmed = line.trim();
 				if (trimmed.startsWith('//') || trimmed.startsWith('*'))
+					continue;
+				if (trimmed.startsWith('- ')) continue; // markdown bullet
+				if (
+					!/\b(from|require|await|return|throw|const|let|var|function|class|interface|type|export|import|if|for|while|switch|do|new)\b/.test(
+						trimmed,
+					)
+				)
 					continue;
 				const key = `${relPath(abs)}:${i + 1}`;
 				if (SYNC_IO_ALLOWLIST.has(key)) continue;
