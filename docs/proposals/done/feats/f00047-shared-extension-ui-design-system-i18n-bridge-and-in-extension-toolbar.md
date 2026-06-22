@@ -2,11 +2,18 @@
 id: f00047
 kind: feat
 title: shared extension UI — design system, i18n bridge, webview primitives and in-extension toolbar
-status: ready
+status: done
 type: proposal
 track: ui-extension+web+vscode+scss+i18n
 date: 2026-06-22
-shipped-in: []
+shipped-in:
+    - 12bc1d3
+    - b50c3d2
+    - c359c2d
+    - ddb72d2
+    - ee1f58d
+    - 7bf7ced
+    - 764561d
 related:
     - a00025
     - a00026
@@ -232,7 +239,7 @@ header + dropdown + toolbar that every webview panel shares.
   `packages/ui-extension/src/dashboard/render-dashboard.ts` →
   composes `HeaderBar` + `LanguagePicker` + the existing KPI strip +
   tabs (no inline styles).
-- **Status**: pending
+- **Status**: done (commit ddb72d2)
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "Each component is exported both as a TS function returning an
@@ -281,7 +288,7 @@ header + dropdown + toolbar that every webview panel shares.
   `apps/shared/brand/`); the source of truth lives there. A
   `tools/scripts/sync-brand-assets.script.ts` regenerates the
   per-host copies on `bun run build`.
-- **Status**: pending
+- **Status**: done (commit ee1f58d)
 - **Gate**: `bun run lint:scss` + `bun run validate`
 - **Acceptance**:
   - "Every webview the VS Code host opens
@@ -327,7 +334,7 @@ header + dropdown + toolbar that every webview panel shares.
   `extensions/vscode/package.json` → adds
   `viewsContainers.activitybar[].id: 'mcp-vertex.toolbar'` and the
   `mcp-vertex.openToolbar` command entry.
-- **Status**: pending
+- **Status**: done (commit 7bf7ced)
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`defaultQuickActions()` returns the canonical set:
@@ -378,7 +385,7 @@ header + dropdown + toolbar that every webview panel shares.
   `@mcp-vertex/shared`), with a short note that brand assets live
   under `apps/shared/brand/`,
   `docs/FILE-CONVENTIONS.md` → notes the new package layout.
-- **Status**: pending
+- **Status**: done (commit 764561d)
 - **Gate**: `bun run validate` + `bun run site`
 - **Acceptance**:
   - "`bun run site` builds with the shared package wired in. The

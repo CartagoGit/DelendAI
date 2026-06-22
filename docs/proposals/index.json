@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T06:53:28.096Z",
+	"generated_at": "2026-06-22T08:01:28.621Z",
 	"count": 106,
 	"proposals": [
 		{
@@ -82,14 +82,6 @@
 			"id": "f00046",
 			"file": "ready/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
 			"track": "cli+core+plugins+i18n+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "f00047",
-			"file": "ready/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
-			"track": "ui-extension+web+vscode+scss+i18n",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-22"
@@ -975,6 +967,14 @@
 					"{ agent: implementation_runner, task: 's3: move f00016..f00018 into done/feats/ + create done/README.md documenting the convention' }"
 				]
 			}
+		},
+		{
+			"id": "f00047",
+			"file": "done/feats/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
+			"track": "ui-extension+web+vscode+scss+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "x00001",
