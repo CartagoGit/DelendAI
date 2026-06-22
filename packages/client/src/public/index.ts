@@ -1,9 +1,11 @@
 export {
 	McpStdioClient,
 	McpToolError,
+	logHintFromResult,
 	payloadFromResult,
 } from '../lib/transport/mcp-stdio-client';
 export type {
+	IMcpLogHint,
 	IMcpStdioClientOptions,
 	IMcpToolCallResult,
 	IMcpToolDescriptor,

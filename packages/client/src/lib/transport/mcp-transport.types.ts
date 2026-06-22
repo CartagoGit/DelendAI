@@ -1,3 +1,17 @@
+/**
+ * A pointer to the persisted log line that recorded a tool failure.
+ * Mirrors the core `IToolErrorLogHint` envelope field
+ * (`tool-response.ts`): `path` is the absolute JSONL log file, `line`
+ * is the 1-indexed line inside it, `ts` is the event timestamp. The IDE
+ * renders a clickable "Open log" affordance only when all three are
+ * present (f00045).
+ */
+export interface IMcpLogHint {
+	readonly path: string;
+	readonly line: number;
+	readonly ts: string;
+}
+
 export interface IMcpToolCallResult {
 	readonly content?: Array<{
 		readonly type?: string;

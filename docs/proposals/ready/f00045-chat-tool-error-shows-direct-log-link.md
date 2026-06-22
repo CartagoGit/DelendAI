@@ -54,8 +54,15 @@ without scrolling, grepping, or re-deriving the timestamp.
   `packages/core/src/lib/log/log-emitter.ts` (new, small),
   `packages/core/src/lib/contracts/interfaces/core-paths.interface.ts`,
   `packages/core/tests/src/lib/shared/tool-response.spec.ts`
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Gate**: `bun run typecheck`
+
+Note: `toolErrorWithLogHint` + `IToolErrorLogHint` ship in
+`packages/core/src/lib/shared/tool-response.ts`; the `create-mcp-project`
+wrapper augments every `isError` result with a `logHint` (path + ts;
+`line: 0` path-only — a real line number requires the logs plugin's
+explicit emit) and never overwrites an engine-set hint.
 - **Acceptance**:
   - "A new helper `toolErrorWithLogHint(reason, hint, nextAction?)`
     returns `{ ok: false, error: { reason, nextAction? }, logHint:
@@ -73,8 +80,19 @@ without scrolling, grepping, or re-deriving the timestamp.
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`,
   `packages/client/src/lib/transport/mcp-transport.types.ts`,
   `packages/client/tests/src/lib/transport/mcp-stdio-client.spec.ts`
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Gate**: `bun run typecheck`
+
+Note: `McpToolError` now exposes `readonly logHint?`; `request()`
+extracts it via the new `logHintFromResult` helper (checks
+`structuredContent` then the parsed `content[0].text`, validating the
+`{path, line, ts}` shape) on every `isError` result. `IMcpLogHint` +
+`logHintFromResult` are exported from `@mcp-vertex/client`. The actual
+spec lives at `packages/client/tests/transport/mcp-stdio-client.spec.ts`
+(5 new cases: structured hint, text-only hint, absent, malformed).
+Transport-level throws (cancel/timeout/parse) are not McpToolErrors, so
+they carry no hint — the absence is the affordance.
 - **Acceptance**:
   - "`McpToolError` exposes `readonly logHint?: { path, line, ts }`."
   - "When the server returns `isError:true`, `request()` extracts
@@ -90,8 +108,20 @@ without scrolling, grepping, or re-deriving the timestamp.
 - **Files**: `extensions/vscode/src/commands/types.ts`,
   `extensions/vscode/src/extension.ts`,
   `extensions/vscode/src/test/commands.spec.ts`
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Gate**: `bun run typecheck`
+
+Note: implemented more simply than the original sketch. Because S2 now
+puts `logHint` directly on the thrown `McpToolError`, the hint rides on
+the `err` every handler already passes to `showCommandError(vscode,
+action, err)` — so NO handler had to be changed to thread it through.
+`showCommandError` duck-types `err.logHint`; when present (and the host
+exposes `Uri` + `commands.executeCommand`) it offers an `Open log`
+action that runs `vscode.open` on
+`Uri.file(path).with({ fragment: 'L<line>' })`. Tests live at
+`extensions/vscode/src/test/show-command-error.spec.ts` (4 cases:
+open-on-click, dismiss, no-hint fallback, no-Uri fallback).
 - **Acceptance**:
   - "`showCommandError(vscode, action, err, logHint?)` accepts an
     optional `logHint`. When present, the toast uses
@@ -114,8 +144,20 @@ without scrolling, grepping, or re-deriving the timestamp.
   `packages/core/tests/src/lib/e2e/log-hint.e2e.spec.ts` (new),
   `packages/client/tests/src/lib/transport/mcp-stdio-client.spec.ts`
   (extend)
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Gate**: `bun run validate`
+
+Note: the round-trip is covered without an undeclared cross-package
+dependency. The server-side emission is pinned by a real over-the-wire
+e2e at `plugins/proposals/tests/src/lib/e2e/log-hint.e2e.spec.ts` (an
+illegal transition carries a well-formed `logHint` — path under the
+workspace `logs/<date>.jsonl`, numeric `line`, ISO `ts`; a successful
+call carries none). The client-side extraction is covered by the S2
+client unit specs. The proposals test package keeps a core-only
+dependency surface (it does not import `@mcp-vertex/client`). The
+cancel-mid-flight branch yields a non-McpToolError throw with no hint —
+the absence is the affordance (S2/S3).
 - **Acceptance**:
   - "An e2e test boots the assembled server, calls a tool that
     returns `toolError(...)`, and asserts the response carries

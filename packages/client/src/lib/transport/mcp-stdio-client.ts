@@ -2,20 +2,64 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 import type {
+	IMcpLogHint,
 	IMcpStdioClientOptions,
 	IMcpToolDescriptor,
 	IMcpTransport,
 } from './mcp-transport.types';
 
 export class McpToolError extends Error {
-	constructor(
-		message: string,
-		readonly result: unknown,
-	) {
+	/**
+	 * Pointer to the log line that recorded this failure, when the
+	 * server surfaced one (f00045). Absent for transport-level errors
+	 * (cancel, timeout, parse failure) — the IDE uses the absence to
+	 * render the no-link variant.
+	 */
+	readonly logHint?: IMcpLogHint;
+
+	constructor(message: string, result: unknown, logHint?: IMcpLogHint) {
 		super(message);
 		this.name = 'McpToolError';
+		this.result = result;
+		if (logHint !== undefined) this.logHint = logHint;
 	}
+
+	readonly result: unknown;
 }
+
+/** Type guard: a well-formed `{ path, line, ts }` log hint. */
+const isLogHint = (value: unknown): value is IMcpLogHint =>
+	typeof value === 'object' &&
+	value !== null &&
+	typeof (value as Record<string, unknown>).path === 'string' &&
+	typeof (value as Record<string, unknown>).line === 'number' &&
+	typeof (value as Record<string, unknown>).ts === 'string';
+
+/**
+ * Best-effort extraction of a `logHint` from an `isError` result. The
+ * server may put it on `structuredContent` or only inside the JSON
+ * `content[0].text` envelope; we check both and validate the shape so a
+ * malformed hint never produces a half-populated affordance.
+ */
+export const logHintFromResult = (result: {
+	readonly structuredContent?: unknown;
+	readonly content?: Array<{ readonly text?: string }>;
+}): IMcpLogHint | undefined => {
+	const fromStructured = (result.structuredContent as Record<string, unknown>)
+		?.logHint;
+	if (isLogHint(fromStructured)) return fromStructured;
+
+	const text = result.content?.find(
+		(entry) => entry.text !== undefined,
+	)?.text;
+	if (text === undefined) return undefined;
+	try {
+		const parsed = JSON.parse(text) as Record<string, unknown>;
+		return isLogHint(parsed.logHint) ? parsed.logHint : undefined;
+	} catch {
+		return undefined;
+	}
+};
 
 export class McpStdioClient {
 	private constructor(private readonly transport: IMcpTransport) {}
@@ -58,6 +102,7 @@ export class McpStdioClient {
 			throw new McpToolError(
 				`MCP tool "${tool}" returned an error`,
 				result,
+				logHintFromResult(result),
 			);
 		}
 		return payloadFromResult<TOut>(result);
