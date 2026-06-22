@@ -1,15 +1,7 @@
 {
-	"generated_at": "2026-06-21T22:40:43.242Z",
+	"generated_at": "2026-06-21T23:16:55.058Z",
 	"count": 96,
 	"proposals": [
-		{
-			"id": "f00020",
-			"file": "ready/f00020-skills-and-tools-coverage.md",
-			"track": "plugins+skills+core",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
 		{
 			"id": "f00029",
 			"file": "ready/f00029-github-issues-plugin-ingest-and-propose.md",
@@ -655,6 +647,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-18"
+		},
+		{
+			"id": "f00020",
+			"file": "done/feats/f00020-skills-and-tools-coverage.md",
+			"track": "plugins+skills+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "f00021",

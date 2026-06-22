@@ -24,6 +24,19 @@ export interface QualityQualityCancelOutput {
 	count: number;
 }
 
+export interface QualityQualityRunAllOutput {
+	results: {
+		scope: string;
+		ok: boolean;
+		duration: number;
+		errors: string[];
+	}[];
+	summary: {
+		ok: boolean;
+		scopes: number;
+	};
+}
+
 export interface QualityRunQualityOutput {
 	scope: string;
 	ok: boolean;
@@ -40,5 +53,6 @@ export interface QualityRunQualityOutput {
 export interface QualityToolOutputs {
 	"quality_get_quality_scopes": QualityGetQualityScopesOutput;
 	"quality_quality_cancel": QualityQualityCancelOutput;
+	"quality_quality_run_all": QualityQualityRunAllOutput;
 	"quality_run_quality": QualityRunQualityOutput;
 }

@@ -21,6 +21,12 @@ export interface IPluginLoadResult {
 	}>;
 }
 
+/** One loaded plugin's unmet `dependsOn` entries. */
+export interface IMissingPluginDependency {
+	readonly plugin: string;
+	readonly missing: readonly string[];
+}
+
 export interface ILoadPluginsOptions {
 	readonly specifiers: readonly string[];
 	/** Build the per-plugin context once the plugin's name is known. */
@@ -89,10 +95,57 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
 };
 
 /**
+ * Pure, single-pass dependency check: for every loaded plugin whose
+ * `dependsOn` names a plugin id that is NOT also in the loaded set,
+ * collect a `{ plugin, missing }` entry. Order matches `loadedPlugins`.
+ * Does not mutate or import anything — a separate concern from the
+ * import/register loop in `loadPlugins`, so it can be unit-tested and
+ * reasoned about on its own (SOLID: one responsibility per function).
+ */
+export const checkPluginDependencies = (
+	loadedPlugins: readonly ILoadedPlugin[],
+): readonly IMissingPluginDependency[] => {
+	const loadedNames = new Set(
+		loadedPlugins.map((entry) => entry.plugin.name),
+	);
+	const result: IMissingPluginDependency[] = [];
+	for (const { plugin } of loadedPlugins) {
+		const missing = (plugin.dependsOn ?? []).filter(
+			(dep) => !loadedNames.has(dep),
+		);
+		if (missing.length > 0) {
+			result.push({ plugin: plugin.name, missing });
+		}
+	}
+	return result;
+};
+
+/** Render the combined dependency error for every plugin with missing deps. */
+const formatMissingDependenciesError = (
+	missing: readonly IMissingPluginDependency[],
+): string =>
+	missing
+		.map(
+			(entry) =>
+				`plugin "${entry.plugin}" requires ${entry.missing
+					.map((dep) => `"${dep}"`)
+					.join(', ')} (not in load set)`,
+		)
+		.join('; ');
+
+/**
  * Resolve, import and register each requested plugin. One bad plugin
  * never aborts the rest: failures are collected in `errors` and the
  * server still boots with whatever loaded. Deterministic: plugins are
  * processed in the order requested.
+ *
+ * After every plugin has attempted to load, a final dependency pass
+ * (`checkPluginDependencies`) runs over the loaded set. If any loaded
+ * plugin declares a `dependsOn` that is not satisfied by the rest of
+ * the load set, the WHOLE batch is refused — `loaded` comes back empty
+ * and a single combined error lists every missing dependency. This is
+ * deliberately stricter than the per-plugin error handling above: a
+ * plugin with an unmet hard dependency must never partially register.
  */
 export const loadPlugins = async (
 	options: ILoadPluginsOptions,
@@ -181,6 +234,21 @@ export const loadPlugins = async (
 				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
 			});
 		}
+	}
+
+	const missingDependencies = checkPluginDependencies(loaded);
+	if (missingDependencies.length > 0) {
+		return {
+			loaded: [],
+			errors: [
+				...errors,
+				{
+					specifier: '(dependsOn)',
+					message:
+						formatMissingDependenciesError(missingDependencies),
+				},
+			],
+		};
 	}
 
 	return { loaded, errors };

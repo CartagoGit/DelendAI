@@ -71,6 +71,48 @@
 			"minCoreVersion": "0.1.0",
 			"bodyPath": "skills/audit-playbook/SKILL.md",
 			"tags": ["audit", "qualitative-analysis", "methodology"]
+		},
+		{
+			"id": "mcp-vertex-conventional-commits-and-release",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-conventional-commits-and-release/SKILL.md",
+			"tags": ["release", "conventional-commits", "versioning"]
+		},
+		{
+			"id": "mcp-vertex-token-budget-discipline",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-token-budget-discipline/SKILL.md",
+			"tags": ["token-budget", "compact", "delegation"]
+		},
+		{
+			"id": "mcp-vertex-status-marker-and-closure",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-status-marker-and-closure/SKILL.md",
+			"tags": ["status-marker", "closure", "audit-trail"]
+		},
+		{
+			"id": "mcp-vertex-audit-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-audit-runner/SKILL.md",
+			"tags": ["audit", "lifecycle", "rubric"]
+		},
+		{
+			"id": "mcp-vertex-quality-and-rules-gates",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-quality-and-rules-gates/SKILL.md",
+			"tags": ["quality", "rules", "gates"]
+		},
+		{
+			"id": "mcp-vertex-legacy-proposal-migration",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-legacy-proposal-migration/SKILL.md",
+			"tags": ["legacy", "migration", "proposals"]
 		}
 	]
 }
