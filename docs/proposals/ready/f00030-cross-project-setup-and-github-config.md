@@ -217,7 +217,7 @@ remediation for that step.
   website page lists a preset's plugin set that disagrees with
   `PRESET_CATALOG`.
 
-## slices
+## Slices
 
 ### S1 — `docs/CROSS-PROJECT-SETUP.md` (canonical) _(incl. `docs/`)_
 
