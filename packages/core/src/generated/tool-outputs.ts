@@ -54,6 +54,21 @@ export interface McpVertexCreateProjectOutput {
 	}[];
 }
 
+export interface McpVertexFsReadOutput {
+	path: string;
+	found: boolean;
+	content: string | null;
+	totalLines: number | null;
+	range: unknown[] | null;
+}
+
+export interface McpVertexFsWriteOutput {
+	path: string;
+	ok: boolean;
+	bytesWritten: number;
+	error?: string;
+}
+
 export interface McpVertexGetValidationMatrixOutput {
 	scopes: Record<string, {
 		command: string;
@@ -187,6 +202,8 @@ export interface McpVertexStatusOutput {
 export interface McpVertexToolOutputs {
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
+	"mcp-vertex_fs_read": McpVertexFsReadOutput;
+	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
 	"mcp-vertex_metrics": McpVertexMetricsOutput;

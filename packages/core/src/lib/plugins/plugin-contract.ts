@@ -92,6 +92,17 @@ export interface IMcpPlugin {
 	/** One-line, model-agnostic description of what the plugin adds. */
 	readonly describe?: string;
 	/**
+	 * Other plugin ids (by `name`) this plugin requires to be present in
+	 * the same load set. Additive/optional: most plugins have no
+	 * dependencies. The loader (`load-plugins.ts`) refuses the entire
+	 * batch — no partial registration — if any loaded plugin names a
+	 * dependency that is not also being loaded, collecting every missing
+	 * dependency into a single combined error instead of failing one at
+	 * a time. Declaring this is the plugin's job; enforcing it is the
+	 * loader's (see `checkPluginDependencies`).
+	 */
+	readonly dependsOn?: readonly string[];
+	/**
 	 * Optional schema validating `ctx.options` (from the config file).
 	 * Any object exposing zod's `safeParse` works — declaring it lets
 	 * the loader reject misconfigured options with a clear error before

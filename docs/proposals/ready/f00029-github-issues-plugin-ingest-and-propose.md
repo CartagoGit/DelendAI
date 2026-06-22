@@ -281,7 +281,7 @@ For each tool call that needs GitHub data:
 Each call captures which tier was used in the response so the user
 knows why a fetch was slow or rate-limited.
 
-## slices
+## Slices
 
 Each slice ends green (`bun run validate`), ships a Conventional
 Commit, and updates this proposal's `shipped-in` list in
@@ -316,7 +316,7 @@ Commit, and updates this proposal's `shipped-in` list in
   `dependsOn?: readonly string[]` field to `IMcpPlugin` plus a
   loader-side enforcement loop. Tests on the core side.
 - **Gate**: `bun run test plugins/issues packages/core` exit 0.
-
+- status: done
 ### S2 — GitHub client + scaffold builder _(excl. `apps/`)_
 
 - **Status**: ready
@@ -358,7 +358,7 @@ Commit, and updates this proposal's `shipped-in` list in
     one with comments handled by YAML's `#`-prefix.
 - **Gate**: `bun run test plugins/issues` exit 0; coverage on
   the 3 modules ≥ 85%.
-
+- status: done
 ### S3 — The 4 MCP tools _(excl. `apps/`, `docs/`)_
 
 - **Status**: ready

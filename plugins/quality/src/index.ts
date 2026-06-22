@@ -5,6 +5,7 @@ import {
 import { z } from 'zod';
 
 import { createCommandRunner } from './lib/runner';
+import { buildRunAllToolRegistration } from './lib/run-all';
 import { buildQualityToolRegistrations } from './lib/tools';
 
 /**
@@ -34,26 +35,30 @@ export default definePlugin({
 	register(ctx) {
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const timeoutMs = ctx.options.timeoutMs;
+		const qualityOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			reader,
+			workspaceRoot: ctx.workspace.root,
+			run: createCommandRunner(
+				typeof timeoutMs === 'number' ? timeoutMs : undefined,
+			),
+			...(ctx.options.scopes
+				? {
+						optionScopes: ctx.options.scopes as Record<
+							string,
+							readonly string[]
+						>,
+					}
+				: {}),
+			...(ctx.options.commandPolicy
+				? { commandPolicy: ctx.options.commandPolicy }
+				: {}),
+		};
 		return {
-			tools: buildQualityToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				reader,
-				workspaceRoot: ctx.workspace.root,
-				run: createCommandRunner(
-					typeof timeoutMs === 'number' ? timeoutMs : undefined,
-				),
-				...(ctx.options.scopes
-					? {
-							optionScopes: ctx.options.scopes as Record<
-								string,
-								readonly string[]
-							>,
-						}
-					: {}),
-				...(ctx.options.commandPolicy
-					? { commandPolicy: ctx.options.commandPolicy }
-					: {}),
-			}),
+			tools: [
+				...buildQualityToolRegistrations(qualityOptions),
+				buildRunAllToolRegistration(qualityOptions),
+			],
 			knowledge: [
 				{
 					id: 'quality-gates',
@@ -61,7 +66,7 @@ export default definePlugin({
 					body: [
 						'# Quality gates',
 						'',
-						`Tools: \`${ctx.namespacePrefix}_get_quality_scopes\` (list) and \`${ctx.namespacePrefix}_run_quality\` (execute).`,
+						`Tools: \`${ctx.namespacePrefix}_get_quality_scopes\` (list), \`${ctx.namespacePrefix}_run_quality\` (execute one scope), \`${ctx.namespacePrefix}_quality_run_all\` (execute every configured scope, one aggregated report).`,
 						'',
 						'- Before closing work, run the relevant scope and ensure it passes.',
 						'- Scopes come from plugin options → mcp-vertex.config.json validationMatrix → package.json scripts.',

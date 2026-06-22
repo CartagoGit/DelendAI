@@ -3,41 +3,94 @@
  * into a fresh model session to elicit an audit in the format this
  * repo expects.
  *
- * The brief is intentionally **language-agnostic** (it asks for
- * Spanish translations of the model-side text, but the rubric and
- * format are universal). The shape mirrors what the existing audits
- * in `docs/proposals/audits/` and `docs/proposals/done/` already use,
- * so the consolidator can parse both this plugin's outputs and the
- * pre-existing artefacts without a fork.
+ * ## Scope model
  *
- * Keeping the brief as a single exported string is the simplest possible
- * contract: `audit_plan { scope }` returns it verbatim; downstream
- * consumers (web, scripts, future tools) can re-emit it without
- * duplicating the prose.
+ * Scopes are divided into two categories:
+ *
+ * - **Universal scopes** (`UNIVERSAL_SCOPES`): built-in, repo-agnostic. They
+ *   address concerns that exist in any codebase (security, token efficiency,
+ *   test quality, docs hygiene). Always available without host configuration.
+ *
+ * - **Layer scopes**: host-defined via the plugin's `options.layers` config.
+ *   A layer is a logical slice of the codebase (e.g. `core`, `api`, `frontend`,
+ *   `database`) with a label, a list of source paths to read, and optional
+ *   extra checks. `buildBrief` generates a parameterised reading-phase section
+ *   for each layer, so the LLM knows exactly what to open and what to look for.
+ *   `full` includes all universal phases + all configured layers.
+ *
+ * This separation makes the plugin genuinely project-agnostic: the universal
+ * scopes are always correct; the layer scopes adapt to whatever the host repo
+ * looks like (monorepo, microservice, library, CLI tool, etc.).
  */
 
-export type AuditScope =
+// ---------------------------------------------------------------------------
+// Universal scopes (built-in, agnostic)
+// ---------------------------------------------------------------------------
+
+/** Scopes that are always available regardless of host configuration. */
+export type UniversalAuditScope =
 	| 'full'
-	| 'core'
-	| 'plugins'
-	| 'extensions'
-	| 'web'
 	| 'security'
 	| 'tokens'
 	| 'tests'
 	| 'docs';
 
-export const SCOPE_LABEL: Readonly<Record<AuditScope, string>> = {
+/** All universal scope identifiers, in canonical order. */
+export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
+	'full',
+	'security',
+	'tokens',
+	'tests',
+	'docs',
+];
+
+/** Human-readable labels for universal scopes. */
+export const SCOPE_LABEL: Readonly<Record<UniversalAuditScope, string>> = {
 	full: 'Auditoría completa',
-	core: 'Núcleo (`packages/core`, `packages/client`)',
-	plugins: 'Plugins (`plugins/*`)',
-	extensions: 'Extensiones (`extensions/*`, `packages/ui-extension`)',
-	web: 'Web / docs site (`apps/web`)',
 	security: 'Seguridad operacional',
 	tokens: 'Eficiencia de tokens / presupuesto',
 	tests: 'Calidad y cobertura de tests',
-	docs: 'Documentación (README, AGENTS, skills, scaffolds)',
+	docs: 'Documentación (README, AGENTS, skills)',
 };
+
+/**
+ * For backwards compatibility: `ALL_SCOPES` is kept as the list of
+ * universal scopes. Hosts that previously iterated `ALL_SCOPES` to
+ * enumerate all scopes must also include their configured layers.
+ */
+export const ALL_SCOPES = UNIVERSAL_SCOPES;
+
+// ---------------------------------------------------------------------------
+// Layer config (host-defined)
+// ---------------------------------------------------------------------------
+
+/**
+ * A host-defined layer scope that the agent will read exhaustively.
+ * Configured via `mcp-vertex.config.json → plugins.audit.options.layers`.
+ */
+export interface ILayerConfig {
+	/**
+	 * Unique identifier used as the `scope` argument (e.g. `core`, `api`,
+	 * `frontend`). Must be a valid identifier: lowercase, hyphens allowed.
+	 */
+	readonly name: string;
+	/** Human-readable label shown in the brief header. */
+	readonly label: string;
+	/**
+	 * Workspace-relative directories or files the LLM must read.
+	 * Supports glob-like descriptions (e.g. `src/lib/`, `packages/core/src/`).
+	 */
+	readonly paths: readonly string[];
+	/**
+	 * Additional layer-specific checks to append to the generic checklist.
+	 * Each string is rendered as a bullet point in the reading-phase section.
+	 */
+	readonly checks?: readonly string[];
+}
+
+// ---------------------------------------------------------------------------
+// Scoring dimensions
+// ---------------------------------------------------------------------------
 
 /** Sections that the brief asks the model to grade, in canonical order. */
 export const SCORE_DIMENSIONS: readonly string[] = [
@@ -52,33 +105,25 @@ export const SCORE_DIMENSIONS: readonly string[] = [
 	'Genericidad (project-agnostic)',
 ];
 
-/** Options that customise {@link buildBrief}'s output. All fields are
- *  optional; missing fields fall back to the canonical defaults
- *  ({@link SCORE_DIMENSIONS}, single-column table) so existing
- *  callers do not need to change.
- *
- *  SRP: this module owns the brief's prose + shape. The plugin's
- *  `optionsSchema` is the only place that builds an
- *  {@link IBriefOptions} from a host's config; consumers that call
- *  {@link buildBrief} directly can pass `undefined` and get the same
- *  output they had before this option was added.
- */
+// ---------------------------------------------------------------------------
+// Brief options
+// ---------------------------------------------------------------------------
+
+/** Options that customise {@link buildBrief}'s output. */
 export interface IBriefOptions {
-	/** Custom scoring dimensions to score against. Defaults to
-	 *  {@link SCORE_DIMENSIONS}. The array order is preserved in the
-	 *  rendered markdown table. */
+	/** Custom scoring dimensions. Defaults to {@link SCORE_DIMENSIONS}. */
 	readonly dimensions?: readonly string[];
+	/**
+	 * Host-configured layers. Passed by the plugin's `register` from
+	 * `ctx.options.layers`. Used when `scope` is a layer name or `'full'`.
+	 */
+	readonly layers?: readonly ILayerConfig[];
 }
 
 // ---------------------------------------------------------------------------
-// Scope-specific reading instructions
+// Cross-cutting invariants (appear in every scope)
 // ---------------------------------------------------------------------------
 
-/**
- * Cross-cutting invariants that appear in EVERY scope. The consolidator
- * spec (`brief.spec.ts`) checks that these strings appear in all scopes,
- * so they MUST be included regardless of the scope value.
- */
 const CROSS_CUTTING = `
 ### ⚠️ Invariantes transversales (siempre, independientemente del alcance)
 
@@ -89,141 +134,82 @@ Estos tres puntos se verifican en **cualquier** alcance de auditoría:
 - **\`tool-outputs.ts\`** — todo plugin con \`outputSchema\` tipado debe tener su \`src/generated/tool-outputs.ts\` generado y commiteado (\`bun run types:generate\`). Si el archivo está ausente o desfasado, es un hallazgo.
 `;
 
-const PHASE_CORE = `
-### Fase — Paquetes del núcleo (\`packages/core\`, \`packages/client\`)
-
-Abre y lee cada subdirectorio. Para cada fichero que toques, extrae el snippet exacto (≤ 15 líneas) y cita \`archivo:línea\`.
-
-| Subdirectorio | Qué buscar |
-|---|---|
-| \`contracts/\` | ¿Interfaces completas? ¿\`constants/\` poblado o directorio vacío (dead structure)? |
-| \`plugins/\` | \`load-plugins.ts\` — ¿resiliente? ¿\`process.cwd()\` como fallback? \`plugin-contract.ts\` — ¿inyección limpia, sin globals? |
-| \`cli/\` | \`assemble.ts\` — ¿\`--check\` relee el config dos veces? ¿\`process.cwd()\`? \`parse-cli-args.ts\` — ¿presets actualizados con todos los plugins? |
-| \`bootstrap/\` | \`analyze-project.ts\` — ¿función pura con \`IFileReader\` inyectado? ¿Sin I/O directo? |
-| \`scaffold/\` | \`scaffold-host.ts\` — ¿nombre de modelo hardcodeado del autor original? |
-| \`tools/\` | \`overview-tool.ts\` — ¿declara \`outputSchema\`? ¿Dentro del presupuesto de tokens? |
-| \`project/\` | \`create-mcp-project.ts\` — ¿\`coreToolRegistrations\` vacío placeholder o real? |
-| \`shared/\` | ¿Utilidades (\`joinRel\`, etc.) aquí o duplicadas en plugins? |
-
-Para \`packages/client/src/\`: servicios, stdio client, connection health, notification bridge.
-- ¿\`process.cwd()\`? ¿Servicios sin teardown? ¿Promesas sin capturar?
-`;
-
-const PHASE_PLUGINS = `
-### Fase — Plugins (\`plugins/*\`)
-
-Para **cada plugin** (proposals, memory, rules, quality, search, docs, deps, git, notification, status-marker, test-convention, audit…):
-
-1. Lee \`src/index.ts\` — ¿implementa \`IMcpPlugin.register(ctx)\` sin globals mutables?
-2. Lee cada engine (\`*-engine.ts\`, \`*-runner.ts\`, \`*-context.ts\`):
-   - **Escrituras durables**: ¿todo \`writeFile\` pasa por \`withFileMutex\` + \`writeFileAtomic\`? Un \`fs.writeFile\` desnudo es hallazgo FATAL.
-   - **\`process.cwd()\`**: ¿llamada directa o parámetro con default?
-   - **I/O síncrono** (\`readFileSync\`, \`existsSync\`) en hot paths (handlers de tools)?
-   - **\`outputSchema\`**: ¿cada registro de tool lo declara?
-   - **\`@ts-ignore\` / \`@ts-nocheck\`**: cita cualquier ocurrencia.
-   - **\`console.log\`** en paths de producción: cita.
-   - **\`ctx.keepLegacy\`**: ¿honrado o ignorado explícitamente?
-3. ¿Vocabulario del host en contratos genéricos? (tracks como \`'ui-demo'\`, rutas hardcodeadas como \`paused/demos\`)
-4. Para \`proposals\` en particular, lee también:
-   - \`persistent-task-queue.ts\` — deuda de schema de lock, I/O síncrono, backpressure.
-   - \`agent-lock-engine.ts\` — atomicidad de escritura, fallback de ruta.
-   - \`sync-proposal-registry.ts\` — default \`process.cwd()\`, atomicidad.
-   - \`round-context.ts\` — digest SHA-256, tamaño (>500 líneas = candidato a refactor), rutas hardcodeadas.
-   - \`proposal-parallelism.ts\` — ¿\`IProposalTrack\` como union abierta o cerrada?
-   - \`proposal-scaffold-linter.ts\` — ¿constraint de ID de 5 dígitos (\`\\d{5}\`) aplicado?
-`;
-
-const PHASE_EXTENSIONS = `
-### Fase — Extensiones (\`extensions/*\`, \`packages/ui-extension\`)
-
-**\`extensions/vscode/src/\`**: activación, extension host, webview bridge, service wiring.
-- ¿\`deactivate()\` limpia todos los disposables?
-- ¿Mensajes del webview validados antes de actuar?
-- ¿Algún \`import vscode\` fuera de \`extensions/vscode/\`?
-- ¿Status bar items disposed al desactivar?
-- ¿\`process.cwd()\` en código de extensión (debería usar workspace URIs)?
-
-**\`packages/ui-extension\`**: panels, command palette, brand assets, CSS.
-- ¿Strings hardcodeados que deberían ser i18n keys?
-- ¿\`import\` desde un paquete del host (ej. \`vscode\`)? Viola el contrato host-agnostic.
-- ¿Atributos ARIA faltantes en elementos interactivos?
-- ¿CSS custom properties consistentes con el design token system?
-`;
-
-const PHASE_WEB = `
-### Fase — Web / docs site (\`apps/web\`)
-
-Lee páginas Astro, \`src/i18n/ui.ts\`, config de Pagefind, scripts de contenido generado.
-- Cada string visible debe tener entradas en **todos** los idiomas de \`ui.ts\` (12 langs). Ejecuta \`bun run site:strict\` mentalmente.
-- Páginas con \`data-pagefind-body\` — ¿la anotación es correcta y consistente?
-- Docs de tools/plugins generados — ¿coinciden con el live tool registry o están desfasados?
-- \`check:i18n\` verde. Una clave faltante en un idioma es hallazgo MUY_MAL.
-`;
+// ---------------------------------------------------------------------------
+// Universal reading phases (repo-agnostic)
+// ---------------------------------------------------------------------------
 
 const PHASE_SECURITY = `
 ### Fase — Seguridad operacional
 
-- **Escrituras atómicas**: traza cada path de escritura durable y verifica \`withFileMutex\` + \`writeFileAtomic\`. Cualquier \`fs.writeFile\` desnudo en un engine es FATAL.
-- **\`redactSecrets\`**: ¿se aplica antes de persistir cualquier texto del usuario en memory o proposals?
-- **\`resolveWorkspaceContained\`**: ¿todo input de path validado? Una ruta \`../\` que escape es FATAL.
-- **I/O síncrono en hot paths**: \`*Sync\` en handlers de tools = MUY_MAL.
-- **\`@ts-ignore\`**: cualquier ocurrencia en producción es hallazgo.
+- **Escrituras atómicas**: traza cada path de escritura durable y verifica que usa primitivas de escritura atómica (tmp-file + rename o equivalente del framework). Un \`writeFile\` desnudo en datos compartidos es hallazgo FATAL.
+- **Redacción de secretos**: ¿se aplica \`redactSecrets\` (o equivalente) antes de persistir cualquier texto del usuario?
+- **Contención de paths**: ¿todo input de path está validado contra el workspace root? Una ruta \`../\` que escape es FATAL.
+- **I/O síncrono en hot paths**: \`*Sync\` en handlers de tools/requests es MUY_MAL.
+- **\`@ts-ignore\` / supresiones de tipos**: cualquier ocurrencia en producción es hallazgo.
 - **Secrets hardcodeados**: API keys, tokens, endpoints privados en fuente.
 `;
 
 const PHASE_TOKENS = `
 ### Fase — Eficiencia de tokens
 
-- Confirma que \`overview { compact: true }\` se mantiene bajo el presupuesto medido (ver \`docs/TOKEN-BUDGETS.md\`).
-- ¿Alguna descripción de tool con prosa redundante?
+- Confirma que el tool de orientación principal (\`overview\` o equivalente) se mantiene bajo el presupuesto documentado.
+- ¿Alguna descripción de tool con prosa redundante (explica lo mismo que el nombre del parámetro)?
 - ¿Instrucciones de sistema comprimibles sin perder semántica?
-- Traza el path frío de un agente nuevo: ¿cuántas llamadas necesita antes de poder trabajar?
-- ¿El \`roundContext\` digest evita re-lecturas innecesarias de docs no modificados?
+- Traza el path frío de un agente nuevo: ¿cuántas llamadas necesita antes de poder trabajar? ¿Es el mínimo posible?
+- ¿El sistema evita re-lecturas innecesarias de recursos no modificados (hashing, digest, cache)?
 `;
 
 const PHASE_TESTS = `
-### Fase — Tests (\`tests/\`, \`*.spec.ts\` colocated)
+### Fase — Tests
 
 Lee los spec files de los engines más críticos:
-- ¿Paths de concurrencia cubiertos? (dos agentes escribiendo simultáneamente)
+- ¿Paths de concurrencia cubiertos? (dos escritores simultáneos)
 - ¿Snapshots stale?
 - ¿Los specs testean contratos o detalles de implementación?
-- ¿Falta fuzzing / property-based testing en \`parseQueue\`?
+- ¿Falta fuzzing / property-based testing en lógica de parsing con múltiples capas de validación?
 
-Flag: engine con >300 LOC y <3 spec files = riesgo de undertest (hallazgo MEJORABLE).
-Patrón canónico: \`*.spec.ts\` colocated; usan \`vi.fn()\`; el orquestador no se cuelga en bucles.
+Flag: módulo con >300 LOC y <3 spec files = riesgo de undertest (hallazgo MEJORABLE).
+Patrón canónico: specs colocados junto al código; usan mocks/stubs inyectados, no globals.
 `;
 
 const PHASE_DOCS = `
-### Fase — Documentación (\`AGENTS.md\`, \`README.md\`, \`skills/\`, \`docs/scaffolds/\`)
+### Fase — Documentación
 
-- **\`AGENTS.md\` hard rules (1–10)**: para cada regla, ¿hay alguna violación en el código que la contradiga?
-- **Skills**: abre cada \`skills/*/SKILL.md\`. ¿Nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas?
-- **Scaffolds**: ¿\`ARCHITECTURE-AUDITS.md\` describe correctamente la metodología actual?
-- **READMEs de plugins**: ¿actualizados tras los últimos cambios?
-- **\`tools/\`/\`scripts/\`**: ¿algún \`.py\`, \`.sh\`, \`.bash\`? Viola la regla 10 de \`AGENTS.md\`.
+- **Guías de agente / AGENTS.md**: para cada regla definida, ¿hay alguna violación en el código que la contradiga?
+- **Skills**: abre cada skill y verifica: ¿nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas?
+- **Scaffolds / plantillas**: ¿describen correctamente la práctica actual o están desfasados?
+- **READMEs de módulos**: ¿actualizados tras los últimos cambios significativos?
+- **Scripts**: ¿algún archivo en directorios de scripts con extensión prohibida por las reglas del repo?
 `;
 
-/** Map of scope → reading phases to include. */
-const SCOPE_PHASES: Readonly<Record<AuditScope, string>> = {
-	full: [
-		PHASE_CORE,
-		PHASE_PLUGINS,
-		PHASE_EXTENSIONS,
-		PHASE_WEB,
-		PHASE_SECURITY,
-		PHASE_TOKENS,
-		PHASE_TESTS,
-		PHASE_DOCS,
-	].join('\n'),
-	core: PHASE_CORE,
-	plugins: PHASE_PLUGINS,
-	extensions: PHASE_EXTENSIONS,
-	web: PHASE_WEB,
-	security: PHASE_SECURITY,
-	tokens: PHASE_TOKENS,
-	tests: PHASE_TESTS,
-	docs: PHASE_DOCS,
+// ---------------------------------------------------------------------------
+// Generic layer reading phase (parameterised by ILayerConfig)
+// ---------------------------------------------------------------------------
+
+const buildLayerPhase = (layer: ILayerConfig): string => {
+	const pathsList = layer.paths.map((p) => `  - \`${p}\``).join('\n');
+	const extraChecks =
+		layer.checks && layer.checks.length > 0
+			? '\n\n**Checks adicionales específicos de esta capa:**\n' +
+				layer.checks.map((c) => `- ${c}`).join('\n')
+			: '';
+
+	return `
+### Fase — ${layer.label}
+
+Lee exhaustivamente los siguientes directorios/archivos:
+${pathsList}
+
+Para cada fichero que toques, extrae el snippet exacto (≤ 15 líneas) y cita \`archivo:línea\`.
+
+Checklist genérico de capa:
+- **I/O síncrono en hot paths**: \`readFileSync\`, \`existsSync\`, etc. en handlers o rutas calientes = MUY_MAL.
+- **Globals mutables / \`process.cwd()\`**: paths y configuración deben venir de la inyección de contexto, no de variables globales.
+- **Escrituras sin protección**: cualquier \`writeFile\` / escritura de estado compartido sin mutex + write-atomic = FATAL.
+- **\`@ts-ignore\` / \`@ts-nocheck\` / \`console.log\`** en código de producción: cita la línea.
+- **Contratos públicos honrados**: ¿la capa respeta las interfaces que declara exponer?
+- **Duplicación de lógica**: ¿hay utilidades copiadas de otra capa que deberían estar en un módulo compartido?${extraChecks}
+`;
 };
 
 // ---------------------------------------------------------------------------
@@ -231,22 +217,33 @@ const SCOPE_PHASES: Readonly<Record<AuditScope, string>> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Build the brief in markdown. Pure function; the only required input
- * is the chosen scope. Optional {@link IBriefOptions} override the
- * default dimensions for hosts that want a different rubric.
- * Keeping it pure means `audit_plan` can be invoked from a unit test
- * without touching the filesystem.
+ * Build the audit brief in markdown.
+ *
+ * @param scope - Either a universal scope identifier or the `name` of a
+ *   host-configured layer. Pass `'full'` for a complete audit.
+ * @param options - Optional overrides for dimensions and layer definitions.
  */
 export const buildBrief = (
-	scope: AuditScope,
+	scope: string,
 	options: IBriefOptions = {},
 ): string => {
-	const scopeLabel = SCOPE_LABEL[scope];
 	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
+	const layers = options.layers ?? [];
 	const dimensionsTable = dimensions.map((d) => `| ${d} | /10 |`).join('\n');
-	const readingPhases = CROSS_CUTTING + SCOPE_PHASES[scope];
 
-	return `# 📋 Brief de auditoría — \`@mcp-vertex/core\` (alcance: ${scopeLabel})
+	// Resolve label: universal scope label, layer label, or raw scope string.
+	const universalLabel =
+		scope in SCOPE_LABEL
+			? SCOPE_LABEL[scope as UniversalAuditScope]
+			: undefined;
+	const layerConfig = layers.find((l) => l.name === scope);
+	const scopeLabel =
+		universalLabel ?? layerConfig?.label ?? `Capa personalizada: ${scope}`;
+
+	// Build the reading phases appropriate for this scope.
+	const readingPhases = buildReadingPhases(scope, layers);
+
+	return `# 📋 Brief de auditoría (alcance: ${scopeLabel})
 
 > **Fecha**: <YYYY-MM-DD> · **Revisor**: <Modelo + Host> · **Metodología**: Lectura
 > exhaustiva del código del alcance indicado. **Los comandos automatizados son el
@@ -254,9 +251,8 @@ export const buildBrief = (
 > con referencias \`archivo#Lnn\`, y justificar cada hallazgo con evidencia concreta.
 > Auditorías que solo resumen output de comandos son inválidas.
 >
-> Este brief es el contrato público de \`@mcp-vertex/audit\`. Si tu salida se aleja
-> del formato, la herramienta \`audit_consolidate\` no podrá deduplicar tus hallazgos
-> contra los de otros revisores.
+> Si tu salida se aleja del formato, la herramienta \`audit_consolidate\` no podrá
+> deduplicar tus hallazgos contra los de otros revisores.
 
 ---
 
@@ -302,10 +298,10 @@ No escribas «podría» o «posiblemente» — o lo viste en el código, o no lo
 ### Fase 0 — Baseline cuantitativo (comandos permitidos)
 
 Ejecuta y anota los resultados para la tabla \`## Verified State\`:
-- \`bun run test 2>&1 | tail -5\` — cuenta tests y estado pass/fail.
-- \`bun run build 2>&1 | tail -10\` — output de build.
-- \`biome ci . 2>&1 | tail -10\` — cuenta warnings/errors.
-- LOC aproximado: \`find <scope-dirs> -name '*.ts' | xargs wc -l | tail -1\`.
+- Tests: \`<comando de tests del repo>\` — cuenta y estado pass/fail.
+- Build: \`<comando de build>\` — output limpio o errores.
+- Linter: \`<comando de lint>\` — warnings/errors.
+- LOC aproximado del alcance.
 
 **Esta fase es el suelo, no el techo.** Continúa con las fases de lectura de código.
 
@@ -346,15 +342,64 @@ Una tabla compacta \`| 🔴 P0 | <acción> | <archivo> |\` con las
 `;
 };
 
-/** All scopes, ordered for the brief (default first). */
-export const ALL_SCOPES: readonly AuditScope[] = [
-	'full',
-	'core',
-	'plugins',
-	'extensions',
-	'web',
-	'security',
-	'tokens',
-	'tests',
-	'docs',
-];
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Assemble the reading-phase sections for the requested scope.
+ * `full` includes all universal phases + all configured layers.
+ * A universal scope includes only its own phase.
+ * A layer name includes only that layer's generic reading phase.
+ * Unknown scopes get all universal phases (safe fallback).
+ */
+const buildReadingPhases = (
+	scope: string,
+	layers: readonly ILayerConfig[],
+): string => {
+	const universalPhaseMap: Record<UniversalAuditScope, string> = {
+		full: '', // handled below
+		security: PHASE_SECURITY,
+		tokens: PHASE_TOKENS,
+		tests: PHASE_TESTS,
+		docs: PHASE_DOCS,
+	};
+
+	if (scope === 'full') {
+		const layerPhases =
+			layers.length > 0
+				? layers.map(buildLayerPhase).join('\n')
+				: `
+### Fase — Código fuente del proyecto
+
+No hay capas configuradas. Lee los directorios principales del proyecto:
+busca los mismos patrones del checklist genérico en todo el código fuente.
+Añade capas en \`mcp-vertex.config.json → plugins.audit.options.layers\` para
+obtener instrucciones de lectura específicas por capa en próximas auditorías.
+`;
+		return (
+			CROSS_CUTTING +
+			layerPhases +
+			PHASE_SECURITY +
+			PHASE_TOKENS +
+			PHASE_TESTS +
+			PHASE_DOCS
+		);
+	}
+
+	// Universal scope (security, tokens, tests, docs)
+	if (scope in universalPhaseMap && scope !== 'full') {
+		return CROSS_CUTTING + universalPhaseMap[scope as UniversalAuditScope];
+	}
+
+	// Layer scope
+	const layer = layers.find((l) => l.name === scope);
+	if (layer) {
+		return CROSS_CUTTING + buildLayerPhase(layer);
+	}
+
+	// Unknown scope — safe fallback: all universal phases
+	return (
+		CROSS_CUTTING + PHASE_SECURITY + PHASE_TOKENS + PHASE_TESTS + PHASE_DOCS
+	);
+};

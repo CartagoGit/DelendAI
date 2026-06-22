@@ -37,6 +37,7 @@ import type {
 	IOverviewSnapshot,
 	IOverviewToolEntry,
 } from '../tools/overview-tool';
+import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
 import { createMetricsRegistry } from '../metrics/metrics-registry';
@@ -277,6 +278,10 @@ export const assembleCliConfig = async (
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,
+		}),
+		...buildFsToolRegistrations({
+			namespacePrefix: corePrefix,
+			workspaceRootAbs: workspace.root,
 		}),
 		buildScaffoldToolRegistration({
 			namespacePrefix: corePrefix,

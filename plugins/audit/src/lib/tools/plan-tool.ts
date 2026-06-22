@@ -1,27 +1,38 @@
-import { z } from 'zod';
-
 import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { buildBrief, type AuditScope, ALL_SCOPES } from '../brief';
+import { buildBrief, UNIVERSAL_SCOPES, type ILayerConfig } from '../brief';
+
+import { z } from 'zod';
 
 // --- output schemas --------------------------------------------------------
 
 const PlanOutputSchema = z.object({
-	scope: z.enum(ALL_SCOPES as readonly [AuditScope, ...AuditScope[]]),
+	scope: z.string(),
 	markdown: z.string(),
 	dimensions: z.array(z.string()),
+	/** All scopes available for this host (universal + configured layers). */
+	availableScopes: z.array(
+		z.object({
+			name: z.string(),
+			label: z.string(),
+			kind: z.enum(['universal', 'layer']),
+		}),
+	),
 });
 
 // --- input schema ----------------------------------------------------------
 
 const PlanInputSchema = z.object({
-	scope: z
-		.enum(ALL_SCOPES as readonly [AuditScope, ...AuditScope[]])
-		.optional(),
+	/**
+	 * Scope to audit. Accepts any universal scope (`full`, `security`,
+	 * `tokens`, `tests`, `docs`) or any layer name configured via
+	 * `options.layers`. Defaults to `full`.
+	 */
+	scope: z.string().optional(),
 });
 
 // --- builders --------------------------------------------------------------
@@ -34,6 +45,12 @@ export interface IPlanToolOptions {
 	 * The host wires this from `ctx.options.dimensions` when present.
 	 */
 	readonly dimensions?: readonly string[];
+	/**
+	 * Host-defined codebase layers. Each layer becomes an available scope
+	 * and gets its own reading-phase section in the generated brief.
+	 * Wired from `ctx.options.layers`.
+	 */
+	readonly layers?: readonly ILayerConfig[];
 }
 
 /**
@@ -45,6 +62,22 @@ export const buildPlanRegistration = (
 ): IToolRegistration => {
 	const prefix = options.namespacePrefix;
 	const defaultDimensions = options.dimensions;
+	const configuredLayers = options.layers ?? [];
+
+	// All scopes available for this host.
+	const universalAvailable = UNIVERSAL_SCOPES.map((name) => ({
+		name,
+		label: name, // labels are resolved in buildBrief
+		kind: 'universal' as const,
+	}));
+	const layerAvailable = configuredLayers.map((l) => ({
+		name: l.name,
+		label: l.label,
+		kind: 'layer' as const,
+	}));
+	const allAvailable = [...universalAvailable, ...layerAvailable];
+	const allAvailableNames = allAvailable.map((s) => s.name);
+
 	return {
 		id: 'audit_plan',
 		summary:
@@ -56,23 +89,18 @@ export const buildPlanRegistration = (
 				`${prefix}_audit_plan`,
 				{
 					description:
-						'Return the canonical audit brief (markdown) that the agent can paste into any model session to elicit an audit in the format `@mcp-vertex/audit` can consolidate. Optional `scope` narrows the audit focus (default `full`).',
+						'Return the canonical audit brief (markdown) for the requested scope. Universal scopes: `full` (default), `security`, `tokens`, `tests`, `docs`. Additional layer scopes depend on host configuration (`options.layers`). Paste the output into any model session to elicit a structured audit.',
 					inputSchema: PlanInputSchema,
 					outputSchema: PlanOutputSchema,
 				},
-				async (args: { scope?: AuditScope | undefined }) => {
-					const scope: AuditScope = args.scope ?? 'full';
-					if (!ALL_SCOPES.includes(scope)) {
+				async (args: { scope?: string | undefined }) => {
+					const scope = args.scope ?? 'full';
+					if (!allAvailableNames.includes(scope)) {
 						return toolError(
 							`unknown scope "${scope}"`,
-							`Allowed scopes: ${ALL_SCOPES.join(', ')}.`,
+							`Available scopes: ${allAvailableNames.join(', ')}.`,
 						);
 					}
-					// Resolve dimensions per call: explicit config wins, then
-					// the canonical default. We don't pass per-call overrides
-					// here (the input schema has no `dimensions` field on
-					// purpose — rubric tweaks are a host-level config concern,
-					// not a per-tool-call concern).
 					const dimensions = defaultDimensions ?? [
 						'Arquitectura',
 						'Contratos e interfaces',
@@ -86,8 +114,12 @@ export const buildPlanRegistration = (
 					];
 					return toolJson({
 						scope,
-						markdown: buildBrief(scope, { dimensions }),
+						markdown: buildBrief(scope, {
+							dimensions,
+							layers: configuredLayers,
+						}),
 						dimensions,
+						availableScopes: allAvailable,
 					});
 				},
 			);

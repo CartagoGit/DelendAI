@@ -96,6 +96,7 @@ describe('quality plugin', () => {
 			'get_quality_scopes',
 			'run_quality',
 			'quality_cancel',
+			'quality_run_all',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('quality-gates');
 	});

@@ -38,9 +38,14 @@ export interface AuditAuditConsolidateOutput {
 }
 
 export interface AuditAuditPlanOutput {
-	scope: "full" | "core" | "plugins" | "web" | "security" | "tokens" | "tests" | "docs";
+	scope: string;
 	markdown: string;
 	dimensions: string[];
+	availableScopes: Array<{
+		name: string;
+		label: string;
+		kind: "universal" | "layer";
+	}>;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

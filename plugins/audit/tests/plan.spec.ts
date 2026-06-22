@@ -4,6 +4,7 @@ import {
 	ALL_SCOPES,
 	SCORE_DIMENSIONS,
 	SCOPE_LABEL,
+	UNIVERSAL_SCOPES,
 	buildBrief,
 } from '../src/lib/brief';
 
@@ -28,8 +29,24 @@ describe('buildBrief', () => {
 		}
 	});
 
-	it('exposes the canonical labels for every scope', () => {
-		expect(Object.keys(SCOPE_LABEL)).toEqual([...ALL_SCOPES]);
+	it('exposes canonical labels for every universal scope', () => {
+		expect(Object.keys(SCOPE_LABEL)).toEqual([...UNIVERSAL_SCOPES]);
+		// ALL_SCOPES is an alias for UNIVERSAL_SCOPES (backwards compat)
+		expect([...ALL_SCOPES]).toEqual([...UNIVERSAL_SCOPES]);
+	});
+
+	it('generates a parameterised brief for a custom layer scope', () => {
+		const layer = {
+			name: 'api',
+			label: 'API Layer',
+			paths: ['src/api/', 'src/routes/'],
+			checks: ['Verify rate limiting is applied on public endpoints'],
+		};
+		const md = buildBrief('api', { layers: [layer] });
+		expect(md).toContain('API Layer');
+		expect(md).toContain('src/api/');
+		expect(md).toContain('src/routes/');
+		expect(md).toContain('Verify rate limiting');
 	});
 
 	// l99 follow-up: `buildBrief` now accepts an optional `dimensions`
