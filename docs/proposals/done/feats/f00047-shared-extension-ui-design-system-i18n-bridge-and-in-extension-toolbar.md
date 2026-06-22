@@ -2,11 +2,13 @@
 id: f00047
 kind: feat
 title: shared extension UI — design system, i18n bridge, webview primitives and in-extension toolbar
-status: ready
+status: done
 type: proposal
 track: ui-extension+web+vscode+scss+i18n
 date: 2026-06-22
-shipped-in: []
+shipped-in:
+    - 12bc1d3
+    - b50c3d2
 related:
     - a00025
     - a00026
@@ -158,7 +160,7 @@ header + dropdown + toolbar that every webview panel shares.
   `apps/web/src/styles/styles.scss` → `@use 'apps/shared/...';` at top,
   `apps/web/scripts/check-i18n.ts` → unchanged contract, reads from
   `apps/shared/i18n/langs/` after S2.
-- **Status**: pending
+- **Status**: done (commit 12bc1d3)
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "`apps/shared` is a workspace package with `name:
@@ -196,7 +198,7 @@ header + dropdown + toolbar that every webview panel shares.
   `apps/shared/i18n/langs/`),
   `apps/web/scripts/check-i18n.ts` → reads
   `apps/shared/i18n/langs/` (12 langs × full key set).
-- **Status**: pending
+- **Status**: done (commit b50c3d2)
 - **Gate**: `bun run --cwd extensions/vscode check:i18n`
 - **Acceptance**:
   - "`ILangDict` is the single shape with three top-level keys:
@@ -232,7 +234,7 @@ header + dropdown + toolbar that every webview panel shares.
   `packages/ui-extension/src/dashboard/render-dashboard.ts` →
   composes `HeaderBar` + `LanguagePicker` + the existing KPI strip +
   tabs (no inline styles).
-- **Status**: pending
+- **Status**: deferred
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "Each component is exported both as a TS function returning an
@@ -281,7 +283,7 @@ header + dropdown + toolbar that every webview panel shares.
   `apps/shared/brand/`); the source of truth lives there. A
   `tools/scripts/sync-brand-assets.script.ts` regenerates the
   per-host copies on `bun run build`.
-- **Status**: pending
+- **Status**: deferred
 - **Gate**: `bun run lint:scss` + `bun run validate`
 - **Acceptance**:
   - "Every webview the VS Code host opens
@@ -327,7 +329,7 @@ header + dropdown + toolbar that every webview panel shares.
   `extensions/vscode/package.json` → adds
   `viewsContainers.activitybar[].id: 'mcp-vertex.toolbar'` and the
   `mcp-vertex.openToolbar` command entry.
-- **Status**: pending
+- **Status**: deferred
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`defaultQuickActions()` returns the canonical set:
@@ -378,7 +380,7 @@ header + dropdown + toolbar that every webview panel shares.
   `@mcp-vertex/shared`), with a short note that brand assets live
   under `apps/shared/brand/`,
   `docs/FILE-CONVENTIONS.md` → notes the new package layout.
-- **Status**: pending
+- **Status**: deferred
 - **Gate**: `bun run validate` + `bun run site`
 - **Acceptance**:
   - "`bun run site` builds with the shared package wired in. The

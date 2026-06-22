@@ -1,7 +1,18 @@
 {
-	"generated_at": "2026-06-22T06:03:20.301Z",
-	"count": 103,
+	"generated_at": "2026-06-22T06:36:45.212Z",
+	"count": 106,
 	"proposals": [
+		{
+			"id": "a00032",
+			"file": "ready/a00032-22-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "audit+core+plugins+extensions+web+tools",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
+		},
 		{
 			"id": "a00033",
 			"file": "ready/a00033-22-06-2026-copilot-minimax-m3-test-isolation-and-auto-work-loop.md",
@@ -44,6 +55,14 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00043",
+			"file": "ready/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "f00044",
 			"file": "ready/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
 			"track": "plugins/proposals+tests+core",
@@ -69,10 +88,10 @@
 		},
 		{
 			"id": "f00047",
-			"file": "ready/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
+			"file": "done/feats/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
 			"track": "ui-extension+web+vscode+scss+i18n",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-22"
 		},
 		{
@@ -90,6 +109,31 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00014",
+			"file": "done/f00014-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"track": "proposals-plugin+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"docs/proposals/index.json",
+					"docs/proposals/ready/",
+					"docs/proposals/done/",
+					"docs/proposals/in-progress/",
+					"docs/proposals/paused/",
+					"docs/proposals/blocked/",
+					"docs/proposals/retired/",
+					"docs/proposals/n00001-SESION-2026-06-17.md",
+					"tools/scripts/lint/proposals.script.ts",
+					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
+					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
+					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
+					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
+				]
+			}
 		},
 		{
 			"id": "f00019",
