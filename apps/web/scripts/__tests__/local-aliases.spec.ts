@@ -16,6 +16,17 @@ describe('local aliases', () => {
 			};
 		};
 
-		expect(tsconfig.compilerOptions?.paths).toEqual(TS_CONFIG_PATHS);
+		const paths = tsconfig.compilerOptions?.paths ?? {};
+
+		// Every local alias entry must be present (the local aliases are
+		// the contract this spec guards). Extra entries are allowed —
+		// f00047 S6 added the `@mcp-vertex/*` workspace aliases, which
+		// are wired in `astro.config.mjs#vite.resolve.alias` for runtime
+		// resolution and reflected here for the type-checker. The contract
+		// is that local aliases are present; workspace aliases are a
+		// superset.
+		for (const [alias, expected] of Object.entries(TS_CONFIG_PATHS)) {
+			expect(paths[alias]).toEqual(expected);
+		}
 	});
 });

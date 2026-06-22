@@ -79,3 +79,63 @@ if (problems.length) {
 console.log(
 	`✓ i18n complete: ${languages.length} languages × ${enKeys.length} keys.`,
 );
+
+// f00047 S6 — validate the SHARED i18n module too. The shared module is
+// the single source of truth for every consumer (`@mcp-vertex/ui-extension`,
+// `apps/web`, every host extension). The site-side check above is a
+// per-consumer check; this is the source-of-truth check. The keys here
+// are flattened from the `site`, `extension`, and `tools` sections.
+import { dictsByLang as sharedDicts } from '@mcp-vertex/shared/i18n';
+import { languages as sharedLanguages } from '@mcp-vertex/shared/i18n';
+
+const flattenKeys = (root: unknown, prefix = ''): string[] => {
+	if (root === null || root === undefined) return prefix ? [prefix] : [];
+	if (typeof root !== 'object') return prefix ? [prefix] : [];
+	if (Array.isArray(root)) return prefix ? [prefix] : [];
+	const out: string[] = [];
+	for (const [k, v] of Object.entries(root as Record<string, unknown>)) {
+		const next = prefix ? `${prefix}.${k}` : k;
+		if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+			out.push(...flattenKeys(v, next));
+		} else {
+			out.push(next);
+		}
+	}
+	return out;
+};
+
+const sharedEn = sharedDicts.en as unknown as Record<string, unknown>;
+const sharedEnKeys = flattenKeys(sharedEn);
+const sharedProblems: string[] = [];
+
+for (const lang of sharedLanguages) {
+	const dict = (sharedDicts as Record<string, Record<string, unknown>>)[
+		lang.code
+	];
+	if (!dict) {
+		sharedProblems.push(`[shared:${lang.code}] no dictionary registered`);
+		continue;
+	}
+	const dictKeys = new Set(flattenKeys(dict));
+	const missing = sharedEnKeys.filter((k) => !dictKeys.has(k));
+	if (missing.length) {
+		sharedProblems.push(
+			`[shared:${lang.code}] missing ${missing.length} keys: ${missing.join(', ')}`,
+		);
+	}
+}
+
+if (sharedProblems.length) {
+	console.error(
+		'\n✗ shared i18n incomplete — every language must translate every key:\n',
+	);
+	for (const p of sharedProblems) console.error(`  ${p}`);
+	console.error(
+		`\n${sharedLanguages.length} languages · ${sharedEnKeys.length} keys each expected.`,
+	);
+	process.exit(1);
+}
+
+console.log(
+	`✓ shared i18n complete: ${sharedLanguages.length} languages × ${sharedEnKeys.length} keys.`,
+);

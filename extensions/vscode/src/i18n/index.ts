@@ -1,93 +1,42 @@
-export const languages = [
-	'ar',
-	'de',
-	'en',
-	'es',
-	'fr',
-	'hi',
-	'it',
-	'ja',
-	'pt',
-	'th',
-	'vi',
-	'zh',
-] as const;
+/**
+ * Extension-side i18n surface — f00047 S6.
+ *
+ * This module is a thin re-export of `@mcp-vertex/shared/i18n`. The
+ * shared package owns the `Lang` enum, the `ILangDict` contract, the
+ * 12 merged language dictionaries, and the `dictsByLang` selector.
+ * The extension host does not maintain a parallel set of dictionaries
+ * anymore — S2 lifted them and S6 deleted the duplicates.
+ *
+ * The re-export keeps the old import path so the rest of the host
+ * (commands, host adapter, etc.) continues to work without churn.
+ */
+import {
+	languages as _languages,
+	rtlLangs as _rtlLangs,
+	defaultLang as _defaultLang,
+	themes as _themes,
+	flagFor as _flagFor,
+	dictsByLang as _dictsByLang,
+	type Lang as _Lang,
+	type ILangMeta as _ILangMeta,
+	type Theme as _Theme,
+	type ILangDict as _ILangDict,
+} from '@mcp-vertex/shared/i18n';
 
-export type Lang = (typeof languages)[number];
+export const languages = _languages;
+export const rtlLangs = _rtlLangs;
+export const defaultLang = _defaultLang;
+export const themes = _themes;
+export const flagFor = _flagFor;
+export const dictsByLang = _dictsByLang;
+export type Lang = _Lang;
+export type ILangMeta = _ILangMeta;
+export type Theme = _Theme;
+export type ILangDict = _ILangDict;
 
-export interface IExtensionTranslations {
-	readonly overviewTitle: string;
-	readonly refresh: string;
-	readonly runValidation: string;
-	readonly openProposalBoard: string;
-	readonly showMetrics: string;
-	readonly toolsView: string;
-	readonly proposalsView: string;
-	readonly statusTooltip: string;
-	// f00022 — dashboard commands and panel labels (i18n parity across 12 langs)
-	readonly openDashboard: string;
-	readonly openDocs: string;
-	readonly tabOverview: string;
-	readonly tabMetrics: string;
-	readonly tabTokens: string;
-	readonly tabTools: string;
-	readonly tabPlugins: string;
-	readonly tabSessions: string;
-	readonly tabTimes: string;
-	readonly tabAgents: string;
-	readonly tabDocs: string;
-	readonly kpiTools: string;
-	readonly kpiPlugins: string;
-	readonly kpiProposals: string;
-	readonly kpiCalls: string;
-	readonly kpiTokens: string;
-	readonly kpiSaved: string;
-	readonly kpiWall: string;
-	readonly kpiAgents: string;
-	readonly refreshDashboard: string;
-	readonly docsUrlRejected: string;
-	// f126 — Knowledge navigator, Health panel, Connection health
-	readonly openKnowledge: string;
-	readonly toolSearch: string;
-	readonly restartServer: string;
-	readonly openSettings: string;
-	readonly memorySave: string;
-	readonly memoryForget: string;
-	readonly tabHealth: string;
-	readonly healthHealthy: string;
-	readonly healthDegraded: string;
-	readonly healthLocks: string;
-	readonly healthStale: string;
-	readonly healthQueue: string;
-	readonly serverRestartHint: string;
-}
+/** Convenience alias for the extension's flat translations shape. */
+export type IExtensionTranslations = NonNullable<ILangDict['extension']> &
+	Record<string, string>;
 
+/** Convenience: the per-lang dictionary map (alias of `dictsByLang`). */
 export type IExtensionDictionary = Record<Lang, IExtensionTranslations>;
-
-import { ar } from './langs/ar';
-import { de } from './langs/de';
-import { en } from './langs/en';
-import { es } from './langs/es';
-import { fr } from './langs/fr';
-import { hi } from './langs/hi';
-import { it } from './langs/it';
-import { ja } from './langs/ja';
-import { pt } from './langs/pt';
-import { th } from './langs/th';
-import { vi } from './langs/vi';
-import { zh } from './langs/zh';
-
-export const dictsByLang = {
-	ar,
-	de,
-	en,
-	es,
-	fr,
-	hi,
-	it,
-	ja,
-	pt,
-	th,
-	vi,
-	zh,
-} as const satisfies IExtensionDictionary;

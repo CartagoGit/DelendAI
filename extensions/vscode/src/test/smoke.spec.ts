@@ -75,7 +75,8 @@ describe('VS Code extension smoke', () => {
 
 		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
 		// f125 + f126/f00026: original commands + observability commands.
-		expect(subscriptions).toHaveLength(11);
+		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
+		expect(subscriptions).toHaveLength(12);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
