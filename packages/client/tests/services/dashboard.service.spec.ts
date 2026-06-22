@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { DashboardService } from '../../src/lib/services/dashboard-service';
+import { DashboardService } from '../../src/lib/services/dashboard.service';
 import {
 	agentsFixture,
 	allResponsesFixture,
@@ -9,7 +9,7 @@ import {
 	metricsFixture,
 	overviewFixture,
 	proposalsFixture,
-} from './dashboard-service.fixtures';
+} from './dashboard.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = allResponsesFixture,

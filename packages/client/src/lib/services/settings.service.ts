@@ -1,10 +1,10 @@
-import { DEFAULT_DOCS_URL, validateDocsUrl } from './embed-service';
+import { DEFAULT_DOCS_URL, validateDocsUrl } from './embed.service';
 import type {
 	IExtensionSettings,
 	IExtensionSettingsPatch,
 	ISettingsStore,
 	ISettingsValidationResult,
-} from './settings.types';
+} from '../contracts/interfaces/settings.interface';
 
 export const DEFAULT_EXTENSION_SETTINGS: IExtensionSettings = {
 	docsUrl: DEFAULT_DOCS_URL,

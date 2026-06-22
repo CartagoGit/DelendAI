@@ -13,7 +13,7 @@ import type {
 	IHealthOptions,
 	IHealthSnapshot,
 	IStaleAgent,
-} from './health.types';
+} from '../contracts/interfaces/health.interface';
 
 const TOOL_STATE_HEALTH = 'proposals_state_health';
 const TOOL_STALE_LIST = 'proposals_proposal_stale_list';

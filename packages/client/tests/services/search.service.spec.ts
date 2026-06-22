@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { SearchService } from '../../src/lib/services/search-service';
-import { createFakeTransport } from './logs-service.fixtures';
+import { SearchService } from '../../src/lib/services/search.service';
+import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {

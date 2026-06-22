@@ -6,7 +6,7 @@ import type {
 	IMcpStdioClientOptions,
 	IMcpToolDescriptor,
 	IMcpTransport,
-} from './mcp-transport.types';
+} from '../contracts/interfaces/mcp-transport.interface';
 
 export class McpToolError extends Error {
 	/**

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { ConnectionHealthService } from '../../src/lib/services/connection-health-service';
+import { ConnectionHealthService } from '../../src/lib/services/connection-health.service';
 
 const makeService = (
 	pingImpl: () => Promise<unknown> = async () => ({}),

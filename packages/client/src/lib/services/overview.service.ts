@@ -4,7 +4,7 @@ import type {
 	IOverviewTool,
 	IToolDescriptor,
 	IToolEffect,
-} from './tool-descriptor.types';
+} from '../contracts/interfaces/tool-descriptor.interface';
 
 export interface IOverviewOptions {
 	readonly compact?: boolean;

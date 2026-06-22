@@ -1,4 +1,4 @@
-import type { IMcpTransport } from '../../src/lib/transport/mcp-transport.types';
+import type { IMcpTransport } from '../../src/lib/contracts/interfaces/mcp-transport.interface';
 
 interface IFakeCall {
 	tool: string;

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { HealthService } from '../../src/lib/services/health-service';
+import { HealthService } from '../../src/lib/services/health.service';
 import {
 	createFakeTransport,
 	healthyFixture,
 	unhealthyFixture,
-} from './health-service.fixtures';
+} from './health.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = healthyFixture,

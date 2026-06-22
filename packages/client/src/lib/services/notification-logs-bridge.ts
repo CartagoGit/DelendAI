@@ -7,12 +7,12 @@
  * tab to give the user **why** a notification fired, not just
  * **that** it fired.
  */
-import type { IMetricsSnapshot, MetricsService } from './metrics-service';
+import type { IMetricsSnapshot, MetricsService } from './metrics.service';
 import type {
 	INotificationEvent,
 	NotificationsService,
-} from './notifications-service';
-import type { INotificationLogEntry } from './logs.types';
+} from './notifications.service';
+import type { INotificationLogEntry } from '../contracts/interfaces/logs.interface';
 
 const CORRELATION_WINDOW_MS = 5_000;
 const MAX_BUFFER = 200;

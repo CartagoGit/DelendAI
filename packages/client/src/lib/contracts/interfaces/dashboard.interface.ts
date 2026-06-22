@@ -8,8 +8,8 @@
  * `mcp-vertex_knowledge`) — never invent fields that aren't already on
  * the server.
  */
-import type { IHealthSnapshot } from './health.types';
-import type { IOverview } from './tool-descriptor.types';
+import type { IHealthSnapshot } from './health.interface';
+import type { IOverview } from './tool-descriptor.interface';
 
 /** Tool-call metric as recorded by `<prefix>_metrics`. */
 export interface IToolMetricRow {

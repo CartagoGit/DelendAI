@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { MemoryService } from '../../src/lib/services/memory-service';
+import { MemoryService } from '../../src/lib/services/memory.service';
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
-import { createFakeTransport } from './logs-service.fixtures';
+import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = () => {
 	const { transport, calls } = createFakeTransport({

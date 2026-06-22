@@ -9,10 +9,10 @@
  * of truth and the dashboard never invents data.
  */
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
-import { HealthService } from './health-service';
-import type { MetricsService } from './metrics-service';
-import type { OverviewService } from './overview-service';
-import type { IOverview } from './tool-descriptor.types';
+import { HealthService } from './health.service';
+import type { MetricsService } from './metrics.service';
+import type { OverviewService } from './overview.service';
+import type { IOverview } from '../contracts/interfaces/tool-descriptor.interface';
 import type {
 	IDashboardAgentsModel,
 	IDashboardAllModels,
@@ -25,7 +25,7 @@ import type {
 	IDashboardToolsModel,
 	IDashboardTotals,
 	IToolMetricRow,
-} from './dashboard.types';
+} from '../contracts/interfaces/dashboard.interface';
 
 export interface IDashboardServiceOptions {
 	readonly client: McpStdioClient;

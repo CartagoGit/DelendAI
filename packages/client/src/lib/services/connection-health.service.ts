@@ -16,7 +16,7 @@ import type {
 	IConnectionHealthOptions,
 	IConnectionHealthSnapshot,
 	IConnectionState,
-} from './connection-health.types';
+} from '../contracts/interfaces/connection-health.interface';
 
 const TOOL_PING = 'status-marker_ping';
 
