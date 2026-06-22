@@ -103,6 +103,16 @@ instead of spelling out `--plugins=...`. The canonical membership lives in
 `packages/core/src/lib/plugins/preset-catalog.ts`; the web `/presets` page
 renders that catalog directly, so docs and CLI stay aligned.
 
+## Issues plugin
+
+The `issues` plugin is part of `full` and is the repo-facing GitHub integration for reading issues against the current workspace repository.
+
+### Setup
+
+Use `mcp-vertex setup-github` to walk through repository detection, auth-tier selection, config writing, and verification for the current repo. Implemented by S2 of this proposal.
+
+See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) for the full 7-step walkthrough.
+
 ## Rules for great, model-agnostic, low-token plugins
 
 1. **Strict schemas in, structured JSON out.** Don't return prose an LLM has to

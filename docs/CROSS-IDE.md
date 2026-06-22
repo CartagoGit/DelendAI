@@ -41,6 +41,10 @@ loaded too. A compact `mcp-vertex_overview { "compact": true }` includes
 `pluginDiagnostic` with requested, loaded, missing and config-declared plugin
 names so a host can detect mismatch without rendering a full overview dump.
 
+### Cross-IDE: configuring the issues plugin in any host
+
+> **Configuring the GitHub issues plugin?** See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it walks through the 7 setup steps and the `mcp-vertex setup-github` command that automates them.
+
 ## What you get for free
 
 Implement `IHostAdapter` once and you automatically get:

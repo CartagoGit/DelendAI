@@ -251,11 +251,16 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		 *   2. update the expected fingerprint with justification.
 		 */
 		const EXPECTED_FINGERPRINTS: Readonly<Record<string, string>> = {
-			analyze_project: 'PLACEHOLDER_analyze',
-			create_project: 'PLACEHOLDER_create',
-			plan_mcp_project: 'PLACEHOLDER_plan',
-			scaffold: 'PLACEHOLDER_scaffold',
-			metrics: 'PLACEHOLDER_metrics',
+			analyze_project:
+				'afb4f23f259e2ceb6ec3e0091f4857e004f85176988d9180c0c1f933ab589ee3',
+			create_project:
+				'0ef14e05c9f07f6ea95efd1c315e9b5ad182aebbd83b6d6c065e638e8c294bb3',
+			plan_mcp_project:
+				'ffe1d51d4f7942f62f1cd16d4e4a940fb1960278aada04fbb38fc0673d9f6b73',
+			scaffold:
+				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
+			metrics:
+				'6a620df97c35aff8faa9f4ceb9c1dacfa1d520ef3abe1b9ae338f898254bb000',
 		};
 
 		for (const [toolId, expected] of Object.entries(
@@ -269,18 +274,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 						],
 					),
 				);
-				// First run: emit the actual fingerprint so the developer can
-				// pin it. Subsequent runs: assert equality.
-				if (expected.startsWith('PLACEHOLDER_')) {
-					// biome-ignore lint/suspicious/noConsole: intentional
-					// dev-time signal during initial golden pinning.
-					console.warn(
-						`[r00001 S0] pin ${toolId} fingerprint: ${actual}`,
-					);
-					expect(actual).toMatch(/^[0-9a-f]{64}$/);
-				} else {
-					expect(actual).toBe(expected);
-				}
+				expect(actual, `fingerprint of ${toolId}`).toBe(expected);
 			});
 		}
 	});
