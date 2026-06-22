@@ -68,3 +68,14 @@ export type {
 	ToastKind,
 	IComponentRuntimeHost,
 } from '../components';
+export {
+	renderToolbar,
+	defaultQuickActions,
+	filterByHost,
+	QUICK_ACTION_CATEGORIES,
+} from '../toolbar';
+export type {
+	QuickAction,
+	QuickActionCategory,
+	IRenderToolbarOptions,
+} from '../toolbar';

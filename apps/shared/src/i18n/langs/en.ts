@@ -500,6 +500,22 @@ const extension = {
 	healthQueue: 'Queue',
 	serverRestartHint:
 		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
+	openLogsToday: "mcp-vertex: Open Today's Log",
+	gitStatus: 'mcp-vertex: Git Status',
+	openMemory: 'mcp-vertex: Open Memory Search',
+	notificationTest: 'mcp-vertex: Test Notification',
+	depsCheck: 'mcp-vertex: Check Dependencies',
+	webFetch: 'mcp-vertex: Web Fetch',
+	toolbarCategoryProposals: 'Proposals',
+	toolbarCategoryKnowledge: 'Knowledge',
+	toolbarCategoryLogs: 'Logs',
+	toolbarCategoryDocs: 'Docs',
+	toolbarCategoryQuality: 'Quality',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'Memory',
+	toolbarCategoryNotification: 'Notifications',
+	toolbarCategoryDeps: 'Dependencies',
+	toolbarCategoryTools: 'Tools',
 };
 
 const dict: ILangDict = {
