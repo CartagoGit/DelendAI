@@ -1,6 +1,6 @@
 ---
 id: f00044
-status: ready
+status: done
 type: proposal
 track: plugins/proposals+tests+core
 date: 2026-06-22
