@@ -21,10 +21,10 @@ actually need the extra detail:
 
 | Verbose                  | Compact equivalent                          |
 | ------------------------- | -------------------------------------------- |
-| `proposal_board`          | `proposals_auto_work { compact: true }` / `proposals_compact_status` |
-| `state_health` (full)     | `proposals_compact_status` for routine orientation; reserve `state_health` for suspected drift |
+| `proposals_proposal_board`          | `proposals_auto_work { compact: true }` / `proposals_compact_status` |
+| `proposals_state_health` (full)     | `proposals_compact_status` for routine orientation; reserve `proposals_state_health` for suspected drift |
 | `mcp-vertex_overview` (default) | `mcp-vertex_overview { compact: true }` |
-| `audit_consolidate` with no scope | `audit_consolidate { scope: <narrow> }` |
+| `audit_audit_consolidate` with no scope | `audit_audit_consolidate { scope: <narrow> }` |
 
 ## Tools to delegate, not call from the main thread
 
@@ -33,10 +33,10 @@ called from the orchestrating/root context, should instead be delegated to
 a subagent (e.g. `mcp-vertex-orchestrator`) so the verbose result is
 absorbed there and only a compact summary comes back:
 
-- `proposal_board` in its verbose form.
-- `state_health` full dumps (vs the compact `healthy: boolean` check).
-- `audit_consolidate` without a `scope` filter.
-- `search` with `maxResults > 50`.
+- `proposals_proposal_board` in its verbose form.
+- `proposals_state_health` full dumps (vs the compact `healthy: boolean` check).
+- `audit_audit_consolidate` without a `scope` filter.
+- `search_search` with `maxResults > 50`.
 
 ## How the regression gate measures cost
 

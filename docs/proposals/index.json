@@ -1,7 +1,15 @@
 {
-	"generated_at": "2026-06-22T21:23:49.035Z",
-	"count": 103,
+	"generated_at": "2026-06-22T23:27:12.012Z",
+	"count": 109,
 	"proposals": [
+		{
+			"id": "d00001",
+			"file": "ready/d00001-update-budget-skills-tool-names.md",
+			"track": "docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
 		{
 			"id": "f00029",
 			"file": "ready/f00029-github-issues-plugin-ingest-and-propose.md",
@@ -36,6 +44,22 @@
 			"id": "f00046",
 			"file": "ready/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
 			"track": "cli+core+plugins+i18n+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "t00001",
+			"file": "ready/t00001-improve-test-coverage-for-core-engines.md",
+			"track": "testing",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "x00001",
+			"file": "ready/x00001-fix-torn-reads-in-log-store.md",
+			"track": "logs",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-22"
@@ -466,6 +490,33 @@
 			"extras": {
 				"ownership": ["{", "{", "{"]
 			}
+		},
+		{
+			"id": "a00034",
+			"file": "done/audits/a00034-23-06-2026-antigravity-deepmind-repositorio.md",
+			"track": "quality",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-23"
+		},
+		{
+			"id": "a00034",
+			"file": "done/audits/a00034-23-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "audit+concurrency+docs+testing",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": ["{"]
+			}
+		},
+		{
+			"id": "a00035",
+			"file": "done/audits/a00035-23-06-2026-antigravity-gemini-pro-repositorio.md",
+			"track": "master",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-23"
 		},
 		{
 			"id": "f00001",

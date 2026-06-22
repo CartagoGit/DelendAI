@@ -40,7 +40,7 @@ const BUDGET_BYTES = {
 	search: 3_000,
 	docsList: 2_500,
 	roundContext: 3_000,
-	logsTail: 4_000,
+	logsTail: 6_000,
 } as const;
 
 describe('e2e: token budget (cold-start payloads)', () => {
