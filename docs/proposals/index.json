@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T21:00:31.670Z",
+	"generated_at": "2026-06-22T21:12:09.263Z",
 	"count": 103,
 	"proposals": [
 		{
@@ -31,14 +31,6 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
-		},
-		{
-			"id": "f00044",
-			"file": "ready/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
-			"track": "plugins/proposals+tests+core",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
 		},
 		{
 			"id": "f00045",
@@ -95,6 +87,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00044",
+			"file": "done/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
+			"track": "plugins/proposals+tests+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "f00048",
