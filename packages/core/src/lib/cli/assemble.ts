@@ -210,18 +210,40 @@ export const assembleCliConfig = async (
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
 		corePaths,
-		pluginDiagnostic: {
-			requested: effectivePlugins,
-			loaded: loadResult.loaded.map((entry) => entry.plugin.name),
-			missing: effectivePlugins.filter(
+		pluginDiagnostic: (() => {
+			const missingPlugins = effectivePlugins.filter(
 				(name) =>
 					!loadResult.loaded.some(
 						(entry) => entry.plugin.name === name,
 					),
-			),
-			configPlugins: configPluginNames,
-			errors: loadResult.errors.length,
-		},
+			);
+			const missingReasonsEntries = missingPlugins
+				.map((name): [string, string] | undefined => {
+					const error = loadResult.errors.find(
+						(candidate) => candidate.specifier === name,
+					);
+					return error === undefined
+						? undefined
+						: [name, error.message];
+				})
+				.filter(
+					(entry): entry is [string, string] => entry !== undefined,
+				);
+			return {
+				requested: effectivePlugins,
+				loaded: loadResult.loaded.map((entry) => entry.plugin.name),
+				missing: missingPlugins,
+				...(missingReasonsEntries.length > 0
+					? {
+							missingReasons: Object.fromEntries(
+								missingReasonsEntries,
+							),
+						}
+					: {}),
+				configPlugins: configPluginNames,
+				errors: loadResult.errors.length,
+			};
+		})(),
 		plugins: loadResult.loaded.map((entry) => ({
 			name: entry.plugin.name,
 			version: entry.plugin.version,

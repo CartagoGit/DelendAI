@@ -77,3 +77,7 @@ bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
   bound the large outputs.
 - With `--plugins=notification`, agents react to `lock-released` pushes instead
   of polling `agent_lock status` (the dominant token sink in real swarms).
+- `overview`'s `pluginDiagnostic.missingReasons` only appears when a configured
+  plugin failed to load, mapping each `missing` name to why — so the
+  configured/loaded divergence stays explicit without a verbose dump, and the
+  all-clear shape (the common case) is unchanged.

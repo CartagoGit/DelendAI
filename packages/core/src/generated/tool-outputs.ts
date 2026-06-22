@@ -118,6 +118,7 @@ export interface McpVertexOverviewOutput {
 		requested: string[];
 		loaded: string[];
 		missing: string[];
+		missingReasons?: Record<string, string>;
 		configPlugins: string[];
 		errors: number;
 	};

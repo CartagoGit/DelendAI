@@ -97,7 +97,7 @@ Two additional wins:
 ### S1 — Shared harness + `auto_work` end-to-end
 - **Files**: plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts
 - **Files**: plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: type
 - acceptance:
   - "An `assembled-proposals-server` helper exported from `plugins/proposals/tests/src/lib/e2e/assembled-proposals-server.ts` mirrors the pattern at `packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts`: it spins up `parseCliArgs` + `assembleCliConfig` + `createMcpProject` + `InMemoryTransport` + a real `Client`, exposes `client`, `server`, `workspace`, `close`, and an `await client.callTool({ name: 'proposals_*', arguments })` helper that returns the parsed `structuredContent`."
