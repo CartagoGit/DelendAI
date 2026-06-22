@@ -35,6 +35,15 @@ export type UniversalAuditScope =
 	| 'tests'
 	| 'docs';
 
+/**
+ * Public short name for {@link UniversalAuditScope}, kept for backwards
+ * compatibility with downstream consumers (e.g. `plugins/audit/src/public/index.ts`,
+ * the `audit_plan` tool, external hosts) that historically imported `AuditScope`.
+ * New code should prefer `UniversalAuditScope` directly; this alias is the
+ * single source of truth that satisfies both call sites.
+ */
+export type AuditScope = UniversalAuditScope;
+
 /** All universal scope identifiers, in canonical order. */
 export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
 	'full',
