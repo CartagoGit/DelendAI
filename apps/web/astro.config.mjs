@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 // Local import aliases (`#MAYÚSCULAS/*`, see p112 §1). Single source of truth
 // in `scripts/lib/local-aliases.mjs`; both `vite.resolve.alias` (runtime)
