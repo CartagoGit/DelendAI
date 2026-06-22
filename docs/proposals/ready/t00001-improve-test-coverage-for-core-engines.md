@@ -22,7 +22,7 @@ Increase unit test coverage for agent-lock-engine.ts, sync-proposal-registry.ts,
 - gate: none
 - acceptance:
   - "bun run test"
-- status: pending
+- status: done
 
 ### S2 — Add tests for sync-proposal-registry
 - files: plugins/proposals/src/lib/proposals/sync-proposal-registry.ts
@@ -30,7 +30,7 @@ Increase unit test coverage for agent-lock-engine.ts, sync-proposal-registry.ts,
 - gate: none
 - acceptance:
   - "bun run test"
-- status: pending
+- status: done
 
 ### S3 — Add tests for round-context sub-modules
 - files: plugins/proposals/src/lib/swarm/round-context.ts
@@ -38,4 +38,4 @@ Increase unit test coverage for agent-lock-engine.ts, sync-proposal-registry.ts,
 - gate: none
 - acceptance:
   - "bun run test"
-- status: pending
+- status: done
