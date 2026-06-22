@@ -1,6 +1,6 @@
 ---
 id: a00033
-status: ready
+status: done
 type: proposal
 track: core+plugins+tools
 date: 2026-06-22
@@ -121,8 +121,13 @@ tmpdir. Produce a 1-pager with the failing line.
   - `vitest.shared.ts`
   - `plugins/notification/src/lib/agent-events-bridge.ts`
 - **Gate**: `bun run lint`
-- **Status**: pending
-- status: pending
+- **Status**: done
+- status: done
+
+Investigation captured in `## verified state` + `## findings` (H2):
+the bridge resolved a `process.cwd()`-relative `.cache/mcp-vertex/`
+path for the heartbeat lock; the failing line was the lock-path
+derivation feeding the watcher. S2 closes it.
 
 ### S2 — Fix the agent-events-bridge to honor per-test cwd
 
@@ -136,8 +141,17 @@ heartbeat watcher must not retry indefinitely.
   - `plugins/notification/src/lib/agent-events.ts`
   - `plugins/notification/tests/src/lib/notification.spec.ts`
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: pending
+- **Status**: done
+- status: done
+
+Delivered via a cleaner mechanism than the literal "cwd option": the
+bridge takes an absolute `lockFileAbs` derived from
+`ctx.workspace.resolve(lockRel)` (workspace-relative, never
+`process.cwd()`), so tests pointing the workspace at a tmpdir are fully
+isolated. The heartbeat watcher swallows ENOENT (`readClaims`/`mtimeMs`
+return `[]`/`null`) and uses an `unref`'d `setInterval` with a
+`.catch()` guard, so a missing lock file never throws or retry-storms.
+Full suite (`bun run test`) is green with no per-test isolation.
 
 ### S3 — Decouple loop detector from `proposals_auto_work`
 
