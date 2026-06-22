@@ -104,7 +104,17 @@
 			],
 			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
 			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
-			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"]
+			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"],
+			"@mcp-vertex/web-fetch": ["./plugins/web-fetch/src/index.ts"],
+			"@mcp-vertex/web-fetch/public": [
+				"./plugins/web-fetch/src/public/index.ts"
+			],
+			"@mcp-vertex/web-fetch/*": ["./plugins/web-fetch/src/*"],
+			"@mcp-vertex/issues": ["./plugins/issues/src/index.ts"],
+			"@mcp-vertex/issues/public": [
+				"./plugins/issues/src/public/index.ts"
+			],
+			"@mcp-vertex/issues/*": ["./plugins/issues/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
