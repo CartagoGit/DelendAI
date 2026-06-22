@@ -34,18 +34,7 @@ export type UniversalAuditScope =
 	| 'tokens'
 	| 'tests'
 	| 'docs';
-<<<<<<< HEAD
 
-/**
- * Public short name for {@link UniversalAuditScope}, kept for backwards
- * compatibility with downstream consumers (e.g. `plugins/audit/src/public/index.ts`,
- * the `audit_plan` tool, external hosts) that historically imported `AuditScope`.
- * New code should prefer `UniversalAuditScope` directly; this alias is the
- * single source of truth that satisfies both call sites.
- */
-export type AuditScope = UniversalAuditScope;
-
-=======
 /**
  * Public short alias for {@link UniversalAuditScope}. Kept for backwards
  * compatibility with downstream consumers (e.g. the plugin's
@@ -53,11 +42,9 @@ export type AuditScope = UniversalAuditScope;
  * historically imported `AuditScope`. New code should prefer
  * `UniversalAuditScope` directly; this alias is the single source of truth
  * that satisfies both call sites without forcing every plugin to ship two
- * type names. The fix for audit finding "plugins/audit
- * `AuditScope` not exported by `brief.ts`" lives here.
+ * type names.
  */
 export type AuditScope = UniversalAuditScope;
->>>>>>> agent/copilot-minimax-m3
 /** All universal scope identifiers, in canonical order. */
 export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
 	'full',
