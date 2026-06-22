@@ -15,8 +15,13 @@
 
 // 1. Tokens & themes — define design variables first so everything below
 //    can reference them.
-@use "tokens";
-@use "themes";
+//
+// The shared package (`apps/shared`) owns the brand tokens (`--mv-*`),
+// the brand hex literals and the canonical 5 palettes. We re-export them
+// here as the base layer; the local `tokens` / `themes` partials (right
+// below) keep the existing legacy names (`--bg`, `--fg`, `--accent`, …)
+// for the 7-1 components.
+@use "../../../shared/src/styles" as shared;
 
 // 2. Reset & base — global element styling, tag selectors, typography.
 @use "reset";

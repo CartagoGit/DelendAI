@@ -253,7 +253,13 @@ export class AgentLoopDetectorService {
 					// CLI accepts a comma-separated list. Empty list ("")
 					// is treated as "explicit opt-out of all ignore rules".
 					out.interactiveAgentPatterns =
+<<<<<<< Updated upstream
 						val === '' ? [] : val.split(',').map((s) => s.trim());
+=======
+						val === ''
+							? []
+							: val.split(',').map((s) => s.trim());
+>>>>>>> Stashed changes
 				}
 			}
 		}
@@ -320,9 +326,13 @@ export class AgentLoopDetectorService {
 						.map((part) =>
 							part
 								.split('?')
+<<<<<<< Updated upstream
 								.map((p) =>
 									p.replace(/[.+^${}()|[\]\\]/g, '\\$&'),
 								)
+=======
+								.map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&'))
+>>>>>>> Stashed changes
 								.join('.'),
 						)
 						.join('.*') +
