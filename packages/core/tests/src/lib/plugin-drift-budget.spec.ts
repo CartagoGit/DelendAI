@@ -72,15 +72,15 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 	'plugins/proposals/src/lib/agents/loop-detector-service.ts:1',
 	// Constructor one-shot: instantiated once per `register(ctx)`, not
 	// per-request (l00008 s1).
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:96',
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:99',
+	'plugins/proposals/src/lib/agents/loop-detector-service.ts:122',
+	'plugins/proposals/src/lib/agents/loop-detector-service.ts:125',
 	// isAgentStuck: contract-constrained — packages/core's
 	// IMcpVertexHostConfig.isAgentStuck is declared synchronous and is
 	// invoked without `await` after every tool call; widening that core
 	// contract is out of scope for this budget (l00008 s1, documented
 	// in-code with a JSDoc on the method).
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:423',
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:424',
+	'plugins/proposals/src/lib/agents/loop-detector-service.ts:513',
+	'plugins/proposals/src/lib/agents/loop-detector-service.ts:514',
 ]);
 
 const SYNC_IO_PATTERN =

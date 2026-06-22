@@ -14,7 +14,7 @@
 import { dictsByLang, defaultLang, type Lang } from '@mcp-vertex/shared/i18n';
 import { renderToolbar } from '@mcp-vertex/ui-extension/public';
 
-import type { ICommandDeps, ICommandVscodeApi } from './types';
+import type { ICommandDeps } from './types';
 
 export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
 
