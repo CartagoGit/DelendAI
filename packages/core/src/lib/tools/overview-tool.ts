@@ -38,6 +38,8 @@ export interface IOverviewPluginDiagnostic {
 	readonly requested: readonly string[];
 	readonly loaded: readonly string[];
 	readonly missing: readonly string[];
+	/** Why each `missing` entry didn't load. Omitted when `missing` is empty. */
+	readonly missingReasons?: Readonly<Record<string, string>> | undefined;
 	readonly configPlugins: readonly string[];
 	readonly errors: number;
 }
@@ -87,6 +89,9 @@ export const buildOverviewToolRegistration = (
 							requested: z.array(z.string()),
 							loaded: z.array(z.string()),
 							missing: z.array(z.string()),
+							missingReasons: z
+								.record(z.string(), z.string())
+								.optional(),
 							configPlugins: z.array(z.string()),
 							errors: z.number(),
 						})

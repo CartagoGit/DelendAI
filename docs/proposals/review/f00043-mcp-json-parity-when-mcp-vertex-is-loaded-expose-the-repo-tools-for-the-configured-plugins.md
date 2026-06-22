@@ -47,7 +47,7 @@ Make the VS Code / mcp.json launch path for mcp-vertex resolve the same plugin/t
   - "On startup or first cheap inspection, the server can explain which plugins and tools were actually loaded for the workspace and whether that matches config/preset expectations."
   - "The diagnostic path is compact-first: it does not require a verbose dump just to learn that the server loaded the wrong surface."
   - "If the configured plugin surface and the loaded tool surface diverge, the reason is explicit instead of implicit."
-
+- status: done
 ### S3 — Repo-facing configuration and docs contract
 - **Files**: .vscode/mcp.json, README.md, docs/CROSS-IDE.md, docs/README-MCP-VERTEX.md
 - **Status**: done (2026-06-22, copilot-default)
