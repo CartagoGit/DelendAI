@@ -1,14 +1,28 @@
 {
-	"generated_at": "2026-06-22T00:22:59.431Z",
-	"count": 97,
+	"generated_at": "2026-06-22T01:00:07.562Z",
+	"count": 103,
 	"proposals": [
 		{
-			"id": "f00020",
-			"file": "ready/f00020-skills-and-tools-coverage.md",
-			"track": "plugins+skills+core",
+			"id": "a00032",
+			"file": "ready/a00032-22-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "audit+core+plugins+extensions+web+tools",
 			"type": "proposal",
 			"status": "ready",
-			"date": "2026-06-21"
+			"date": "2026-06-22",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
+		},
+		{
+			"id": "a00033",
+			"file": "ready/a00033-22-06-2026-copilot-minimax-m3-test-isolation-and-auto-work-loop.md",
+			"track": "core+plugins+tools",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22",
+			"extras": {
+				"ownership": ["{", "{", "{"]
+			}
 		},
 		{
 			"id": "f00029",
@@ -57,12 +71,69 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00044",
+			"file": "ready/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
+			"track": "plugins/proposals+tests+core",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "f00045",
+			"file": "ready/f00045-chat-tool-error-shows-direct-log-link.md",
+			"track": "core+client+extension+tests",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00046",
+			"file": "ready/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
+			"track": "cli+core+plugins+i18n+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "f00047",
+			"file": "ready/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
+			"track": "ui-extension+web+vscode+scss+i18n",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
 			"id": "c00001",
 			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00014",
+			"file": "done/f00014-rename-proposal-ids-padded-5-digits-by-creation-date.md",
+			"track": "proposals-plugin+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"reservedFiles": [
+					"docs/proposals/index.json",
+					"docs/proposals/ready/",
+					"docs/proposals/done/",
+					"docs/proposals/in-progress/",
+					"docs/proposals/paused/",
+					"docs/proposals/blocked/",
+					"docs/proposals/retired/",
+					"docs/proposals/n00001-SESION-2026-06-17.md",
+					"tools/scripts/lint/proposals.script.ts",
+					"plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts",
+					"plugins/proposals/src/lib/proposals/frontmatter-parser.ts",
+					"plugins/proposals/src/lib/proposals/proposal-registry.ts",
+					"plugins/proposals/src/lib/proposals/proposal-sync.ts"
+				]
+			}
 		},
 		{
 			"id": "f00019",

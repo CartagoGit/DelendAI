@@ -45,6 +45,32 @@ names so a host can detect mismatch without rendering a full overview dump.
 
 When you need the GitHub issues tools in VS Code, Cursor, Claude Code, or another host, use [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md) as the canonical workflow. It keeps the per-repo `mcp-vertex.config.json` entry, the chosen preset or explicit plugin list, and the GitHub auth tier check aligned so every host launches the same effective `issues` surface.
 
+## Launch shape — same args, four config files
+
+Every chat client listed in [README-MCP-VERTEX.md § Install / register](./README-MCP-VERTEX.md#install--register)
+wraps the same canonical launch path. The launch arguments
+(`--workspace`, `--config`, `--preset=swarm`, optional `--plugins=...`)
+are identical across clients; only the wrapping JSON/TOML shape changes.
+
+| Client | Config file | Wrapping | Notes |
+|---|---|---|---|
+| GitHub Copilot | `.vscode/mcp.json` | `{ servers: { "<name>": {...} } }` | workspace root, supports `${workspaceFolder}` |
+| Cursor | `.vscode/mcp.json` | same as Copilot | reuses the VS Code file |
+| Antigravity | `.vscode/mcp.json` | same as Copilot | reuses the VS Code file |
+| Claude Code | `~/.claude.json` | `{ mcpServers: { "<name>": {...} } }` | user home, **no** `${workspaceFolder}` — substitute absolute paths |
+| Codex | `~/.codex/config.toml` | `[mcp_servers.<name>]` | user home, TOML array of args |
+
+Building a new `@mcp-vertex/<ide>` host (JetBrains / Zed / unknown)
+follows the 5-step recipe below — it does **not** require re-documenting
+the launch shape, because the launch shape lives in the host runtime's
+own config file, not in the host extension.
+
+> **One source of truth for the launch shape.** Whenever the canonical
+> launch arguments change, only `.vscode/mcp.json` (and the snippet in
+> [README-MCP-VERTEX.md](./README-MCP-VERTEX.md#install--register))
+> need to be edited; the equivalent Claude Code and Codex snippets are
+> regenerated from the same shape.
+
 ## What you get for free
 
 Implement `IHostAdapter` once and you automatically get:

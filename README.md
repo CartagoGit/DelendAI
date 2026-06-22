@@ -50,16 +50,33 @@ bun run types:generate   # regenerate src/generated/tool-outputs.ts per package
 
 ## Local MCP Host
 
-The checked-in `.vscode/mcp.json` launches this repo through
-`tools/scripts/host/host-server.script.ts` with `--preset=swarm`. The host uses
-the same loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
+The checked-in `.vscode/mcp.json` is the **canonical launch shape** for this
+repo. GitHub Copilot, Cursor, and Antigravity all read it from the workspace
+root; Claude Code and Codex read equivalents from `~/.claude.json` and
+`~/.codex/config.toml` respectively, but wrap the **same** launch arguments.
+
+| Client | Config file | Loaded by |
+|---|---|---|
+| GitHub Copilot (VS Code) | `.vscode/mcp.json` | workspace root |
+| Cursor | `.vscode/mcp.json` | workspace root (reuses the VS Code file) |
+| Antigravity | `.vscode/mcp.json` | workspace root (reuses the VS Code file) |
+| Claude Code | `~/.claude.json` | user home (`mcpServers.<name>`) |
+| Codex | `~/.codex/config.toml` | user home (`[mcp_servers.<name>]`) |
+
+The launch path is `tools/scripts/host/host-server.script.ts` with
+`--workspace`, `--config` and `--preset=swarm`. The host uses the same
+loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
 loaded automatically in addition to the preset unless excluded with
-`--exclude-plugins`.
+`--exclude-plugins`. See [`docs/README-MCP-VERTEX.md`](./docs/README-MCP-VERTEX.md)
+for the full snippet per client and the plugin-resolution precedence.
 
 ```bash
 bun install
 bun run validate         # typecheck + tests (incl. the type-SDK drift guard)
 bun run types:generate   # regenerate the typed tool-output SDK
+
+# Quick parity check from the terminal — confirms mcp.json vs config.json match:
+bun run cli -- overview --json   # pluginDiagnostic.loaded == requested - missing
 ```
 
 BSD-3-Clause © Cartago

@@ -22,22 +22,126 @@ structured JSON, and every operation is deterministic and idempotent.
 
 ## Install / register
 
-Register the core once in your MCP client (VS Code, Cursor, Claude…):
+mcp-vertex is a stdio MCP server. Every chat client that supports MCP loads
+it the same way: a config entry that names the binary, the workspace, and
+the plugin set. The shape of the entry varies per client, but the launch
+arguments are **identical** — once you decide which plugin set you want,
+copy the args verbatim into the client-specific config.
+
+The four clients we actively dogfood today, in priority order:
+
+| Client | Config file | Format | Where it lives |
+|---|---|---|---|
+| **GitHub Copilot** (VS Code) | `.vscode/mcp.json` | JSON with `servers.<name>` | workspace root (this repo's own setup) |
+| **Cursor** | `.vscode/mcp.json` | same as Copilot | workspace root (Cursor reuses the VS Code file) |
+| **Antigravity** | `.vscode/mcp.json` | same as Copilot | workspace root (Antigravity is built on VS Code) |
+| **Claude Code** | `~/.claude.json` | JSON with `mcpServers.<name>` | user home directory |
+| **Codex** | `~/.codex/config.toml` | TOML with `[mcp_servers.<name>]` | user home directory |
+
+> **One canonical launch shape, many config files.** The four files above
+> all wrap the same `--workspace`, `--config` and `--preset` arguments —
+> the only thing that changes is the JSON/TOML wrapping. Edit your
+> `mcp-vertex.config.json` once and every client picks up the change on
+> next start.
+
+### VS Code / GitHub Copilot (`.vscode/mcp.json`)
+
+This is the canonical reference. Other clients reuse the same args:
 
 ```jsonc
 // .vscode/mcp.json
 {
 	"servers": {
 		"mcp-vertex": {
-			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=proposals"]
+			"type": "stdio",
+			"command": "bun",
+			"args": [
+				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
+				"--workspace=${workspaceFolder}",
+				"--config=${workspaceFolder}/mcp-vertex.config.json",
+				"--preset=swarm"
+			]
 		}
 	}
 }
 ```
 
-No plugins? Drop `--plugins`. The core still gives you the bootstrap and
+The `host-server.script.ts` entry point boots the **same** loader as the
+`mcpv` CLI. Plugins declared in `mcp-vertex.config.json` are loaded
+automatically; `--preset` adds the curated swarm preset; missing
+plugins are skipped with a stderr warning — the rest still load.
+
+If you are consuming mcp-vertex as a published package from npm:
+
+```jsonc
+// .vscode/mcp.json (consumer-style)
+{
+	"servers": {
+		"mcp-vertex": {
+			"command": "bunx",
+			"args": ["@mcp-vertex/core", "--workspace=${workspaceFolder}", "--preset=swarm"]
+		}
+	}
+}
+```
+
+No plugins? Drop `--preset`. The core still gives you the bootstrap and
 scaffolding tools.
+
+### Cursor and Antigravity
+
+Both reuse `.vscode/mcp.json` from the workspace root — no separate file
+needed. The args are byte-for-byte identical to the VS Code block above.
+
+### Claude Code (`~/.claude.json`)
+
+Claude Code wraps the same MCP server under a `mcpServers` key instead of
+`servers`, and lives in the user's home directory instead of the workspace:
+
+```jsonc
+// ~/.claude.json
+{
+	"mcpServers": {
+		"mcp-vertex": {
+			"command": "bun",
+			"args": [
+				"/absolute/path/to/your/repo/tools/scripts/host/host-server.script.ts",
+				"--config=/absolute/path/to/your/repo/mcp-vertex.config.json",
+				"--preset=swarm"
+			]
+		}
+	}
+}
+```
+
+> Claude Code does **not** expand `${workspaceFolder}`. Substitute the
+> absolute path to the repo. Use `--workspace=$PWD` if you prefer the
+> shell to resolve it at launch time.
+
+### Codex (`~/.codex/config.toml`)
+
+Codex uses TOML and lives in the user's home directory. The server key
+uses `[mcp_servers.<name>]` (with underscores) and the array of args is a
+TOML array:
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.mcp-vertex]
+command = "bun"
+args = [
+  "/absolute/path/to/your/repo/tools/scripts/host/host-server.script.ts",
+  "--config=/absolute/path/to/your/repo/mcp-vertex.config.json",
+  "--preset=swarm",
+]
+```
+
+### JetBrains / Zed / other IDE hosts
+
+For JetBrains and Zed, implement an `@mcp-vertex/<ide>` host adapter
+against the `IHostAdapter` interface declared in
+[`packages/ui-extension/src/host-adapter.types.ts`](../packages/ui-extension/src/host-adapter.types.ts)
+— see [CROSS-IDE.md](./CROSS-IDE.md) for the 5-step recipe. Every other
+client picks up the change on next start.
 
 ## First run in a new project
 
@@ -94,6 +198,52 @@ The compact overview includes a `pluginDiagnostic` block with the requested,
 loaded, missing and config-declared plugins. Hosts can call
 `<prefix>_overview { "compact": true }` first to confirm the tool surface loaded
 from `mcp.json` matches the repo config.
+
+### Precedence — how plugins are resolved
+
+When you wire mcp-vertex into any of the chat clients above, the actual
+plugin set the server loads is the **union** of four canonical sources,
+applied in this exact order:
+
+1. **`--preset=NAME`** — curated plugin set from the catalog (`minimal`,
+   `standard`, `swarm`, `full`). Resolved once at startup.
+2. **`--plugins=a,b,c`** — explicit plugins the user wants on top of the
+   preset (deduped against the preset).
+3. **`mcp-vertex.config.json#plugins`** — workspace-declared plugins with
+   their per-plugin options. Always merged in.
+4. **`--exclude-plugins=a,b`** — subtracted last, regardless of source.
+
+Concrete example: this repo's own launch shape
+
+```bash
+# .vscode/mcp.json (the checked-in file in this repo)
+bun tools/scripts/host/host-server.script.ts \
+  --workspace=. \
+  --config=./mcp-vertex.config.json \
+  --preset=swarm
+```
+
+combined with `mcp-vertex.config.json#plugins = { docs, search, git,
+status-marker, test-convention, quality, audit }` produces the union
+`{ docs, search, git, memory, rules, quality, deps, proposals,
+notification, status-marker, test-convention, audit }` — the same surface
+that `mcp-vertex_overview { "compact": true }` reports as `loaded: 12`. If
+that number drops, **the config file is wrong or missing, not the client
+config** — the client config only wraps the launch arguments.
+
+#### Quick parity check
+
+After starting mcp-vertex in any chat client, run the compact overview
+inside the chat (or from a terminal with `bun run cli -- overview
+--json`). The `pluginDiagnostic` field tells you, in one block:
+
+- `requested` — what every source asked for (preset + plugins + config)
+- `loaded` — what the loader actually instantiated
+- `missing` — requested plugins that failed to load (name + reason)
+- `configPlugins` — what `mcp-vertex.config.json` declared
+
+If `loaded` ≠ `requested − missing`, the launch arguments or the
+config file are the cause — **not the client wrapper**.
 
 ## Built-in tools (always available)
 
