@@ -6,7 +6,9 @@ track: core+plugins+tools
 date: 2026-06-22
 kind: audit
 title: Test-isolation pollution + auto_work loop-detector tunability
-shipped-in: []
+shipped-in:
+  - 0d28715
+  - 77302d3
 related:
     - a00032 # parent audit that surfaced the cross-suite pollution + auto_work UX
     - f00036 # workflow governance — gate / discipline / wait paths
@@ -158,8 +160,10 @@ the next proposal".
   - `plugins/proposals/src/lib/tools/auto-work.tool.ts`
   - `plugins/proposals/src/lib/tools/auto-work.tool.spec.ts` (new)
 - **Gate**: `bun run test`
-- **Status**: pending
-- status: pending
+- **Status**: done
+- status: done
+
+Status: shipped in commit `0d28715` (merged to develop via `77302d3`).
 
 ### S4 — Document the new contract in `AGENTS.md`
 
@@ -177,8 +181,10 @@ documents:
   - `AGENTS.md`
   - `.github/copilot-instructions.md` (short reference)
 - **Gate**: `bun run lint:proposals` and visual review
-- **Status**: pending
-- status: pending
+- **Status**: done
+- status: done
+
+Status: shipped in commit `0d28715` (merged to develop via `77302d3`).
 
 ## acceptance
 
