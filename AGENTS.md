@@ -101,6 +101,27 @@ keeps `git diff` out of the hot path.
   each agent uses its own `agent_worktree`; on claim conflict, wait for
   `lock-released` or `await_lock` instead of polling; `proposals_sync_proposals`
   runs only after the last open slice of that proposal is closed.
+- **`auto_work` ↔ loop detector ↔ idle-streak (a00033 S3, H1).** Three pieces of
+  plumbing converge on the same "is the orchestrator stuck?" question, and the
+  contract is:
+  - **In-tool brake** for `auto_work` no-args calls: the `consecutiveIdle`
+    streak at `plugins/proposals/src/lib/tools/auto-work.tool.ts:75-77`. After
+    3 consecutive idle returns, `auto_work` returns `stop: true` with the
+    explicit recovery hint "STOP — auto_work has returned idle N× in a row.
+    Do NOT call auto_work again until new work exists; enqueue/create a
+    proposal (or wait for a lock-released notification) first."
+  - **Loop detector** for actual loops (same `agent_lock claim` retried,
+    same `sync_proposals` retried, etc.). The detector is wired into
+    `auto_work` but **disabled by default for `proposals_auto_work`** (see
+    `DEFAULT_LOOP_DETECTOR_DISABLE_FOR`) — calling `auto_work` three times
+    in a row is NOT a loop; it's the orchestrator polling for work. Hosts
+    that want the old behaviour can opt back in with
+    `loopDetectorDisableFor: []`.
+  - **Recovery from `stop: true`**: call `proposals_continue_proposal
+    { mode: "auto" }` directly (or read the proposal cascade yourself with
+    `proposals_compact_status`). Do NOT re-call `auto_work` until you have
+    made progress (a slice closed, a lock released, a file edited). The
+    detector is a safety net, not a workflow gate.
 - **One barrel per package** (`src/public/index.ts`); internals live in `src/lib`.
 - **Interfaces are `I`-prefixed**; match the surrounding file's idiom.
 - **Tests** colocate as `*.spec.ts`; protocol behaviour gets an e2e with a real

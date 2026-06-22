@@ -1,0 +1,47 @@
+// _tokens.scss — design tokens for the @mcp-vertex ecosystem.
+//
+// Theme-dependent values (colours) live in `_themes.scss`; everything
+// invariant (radii, layout max-width, font stacks, spacing scale) is
+// declared here as CSS custom properties on `:root` so every consumer
+// (apps/web, @mcp-vertex/ui-extension, host extensions) reaches for the
+// same names.
+//
+// All names are `mv-` prefixed so they cannot collide with host theme
+// variables (e.g. `--vscode-editor-background`) or site legacy names
+// (`--bg`, `--fg`). Downstream surfaces that still want the legacy names
+// can alias them in their own partial.
+
+:root {
+	// --- radii ------------------------------------------------------------
+	--mv-radius: 8px;
+	--mv-radius-sm: 4px;
+	--mv-radius-lg: 12px;
+
+	// --- layout ----------------------------------------------------------
+	--mv-maxw: 68rem;
+	--mv-gap: 16px;
+
+	// --- typography ------------------------------------------------------
+	--mv-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	--mv-font-prose: system-ui, -apple-system, BlinkMacSystemFont,
+		'Segoe UI', Roboto, sans-serif;
+
+	// --- spacing scale ---------------------------------------------------
+	--mv-s-1: 4px;
+	--mv-s-2: 8px;
+	--mv-s-3: 12px;
+	--mv-s-4: 16px;
+	--mv-s-5: 24px;
+	--mv-s-6: 32px;
+
+	// --- transitions -----------------------------------------------------
+	--mv-transition-fast: 120ms ease-out;
+	--mv-transition-base: 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--mv-transition-fast: 0ms;
+		--mv-transition-base: 0ms;
+	}
+}

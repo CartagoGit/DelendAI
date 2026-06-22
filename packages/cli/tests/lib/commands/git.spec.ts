@@ -10,13 +10,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { EXIT_CODE } from '../../../../src/contracts/constants/exit-code.constant';
+import { EXIT_CODE } from '../../../src/contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
 	ICliCommandResult,
-} from '../../../../src/contracts/interfaces/cli-command.interface';
-import { gitCommands } from '../../../../src/commands/groups/git';
+} from '../../../src/contracts/interfaces/cli-command.interface';
+import { gitCommands } from '../../../src/commands/groups/git';
 
 const buildStubContext = (): {
 	readonly ctx: ICliCommandContext;

@@ -80,8 +80,9 @@ describe('AgentLoopDetectorService', () => {
 	it('flags stuck and writes handoff packet on exact-repeat calls', async () => {
 		const service = new AgentLoopDetectorService(mockCtx);
 
-		// Call exact-repeat tool 3 times
-		for (let i = 0; i < 3; i++) {
+		// Call exact-repeat tool past the default threshold (8) — see
+		// "interactive-agent skip" describe block for the rationale.
+		for (let i = 0; i < 9; i++) {
 			await service.onToolCall(
 				'read_file',
 				{ path: 'foo.ts', agent: 'a1' },
@@ -104,8 +105,8 @@ describe('AgentLoopDetectorService', () => {
 	it('redacts secrets in the written handoff packet recent calls', async () => {
 		const service = new AgentLoopDetectorService(mockCtx);
 
-		// Call exact-repeat with a Stripe key
-		for (let i = 0; i < 3; i++) {
+		// Call exact-repeat with a Stripe key, past the default threshold.
+		for (let i = 0; i < 9; i++) {
 			await service.onToolCall(
 				'read_file',
 				{
@@ -153,8 +154,8 @@ describe('AgentLoopDetectorService', () => {
 
 		const service = new AgentLoopDetectorService(mockCtx);
 
-		// Call a modifying tool 3 times with different arguments without making changes
-		for (let i = 0; i < 3; i++) {
+		// Call a modifying tool past the default no-progress threshold (3).
+		for (let i = 0; i < 4; i++) {
 			await service.onToolCall(
 				'edit_file',
 				{ path: 'test.txt', agent: 'a1', val: i },
@@ -254,6 +255,194 @@ describe('AgentLoopDetectorService', () => {
 			// "default-agent" or another agent's window.
 			for (const agent of agents) {
 				expect(service.isAgentStuck('read_file', { agent })).toBeNull(); // single call each, not stuck yet — but must not throw/crash
+			}
+		});
+	});
+
+	// Regression coverage for the copilot-default false-positive:
+	// interactive host sessions (Copilot chat, Cursor tab, etc.) were
+	// flagged as stuck after 3 orient calls because the detector had no
+	// notion of "this is the human-in-the-loop agent, not a swarm
+	// worker." The fix is `interactiveAgentPatterns` (default
+	// `*-default`, `default-*`, `host`, `interactive`) — those agents
+	// never accumulate in the sliding window and never fire a verdict.
+	describe('interactive-agent skip (copilot-default false-positive)', () => {
+		it('does not flag an agent matching the default `*-default` pattern, even after 100 exact-repeat calls', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// Simulates the exact scenario from the production handoff
+			// packet: `copilot-default` re-invokes an orient tool.
+			for (let i = 0; i < 100; i++) {
+				await service.onToolCall(
+					'proposals_continue_proposal',
+					{ proposalId: 'f00030', mode: 'plan' },
+					{ ok: true },
+				);
+			}
+			// The agent never enters the stuck map; isAgentStuck returns null.
+			expect(
+				service.isAgentStuck('proposals_continue_proposal', {
+					agent: 'copilot-default',
+				}),
+			).toBeNull();
+			// And no handoff packet was written either.
+			const handoffDirAbs = mockCtx.workspace.resolve(
+				'.mcp-vertex/handoff',
+			);
+			if (existsSync(handoffDirAbs)) {
+				const { readdir } = await import('node:fs/promises');
+				const files = await readdir(handoffDirAbs);
+				expect(
+					files.some((f) => f.startsWith('copilot-default-')),
+				).toBe(false);
+			}
+		});
+
+		it('still flags non-interactive swarm agents at the default threshold (8)', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// A swarm agent with a non-matching name: even one more than
+			// the threshold trips the detector (proves the threshold did
+			// not silently regress for swarm agents).
+			for (let i = 0; i < 9; i++) {
+				await service.onToolCall(
+					'edit_file',
+					{ path: 'foo.ts', agent: 'falcon', val: i },
+					{ ok: true },
+				);
+			}
+			const stuck = service.isAgentStuck('edit_file', {
+				agent: 'falcon',
+			});
+			expect(stuck).not.toBeNull();
+			expect(stuck?.suggestedAction).toContain('exact-repeat');
+		});
+
+		it('interactive pattern matches a wildcard suffix (`cursor-*`, `windsurf-*`)', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// 5 calls each — well above the old threshold of 3.
+			for (const agent of [
+				'cursor-default',
+				'cursor-debug',
+				'windsurf-prod',
+			]) {
+				for (let i = 0; i < 5; i++) {
+					await service.onToolCall(
+						'proposals_round_context',
+						{ agent },
+						{ ok: true },
+					);
+				}
+				expect(
+					service.isAgentStuck('proposals_round_context', {
+						agent,
+					}),
+				).toBeNull();
+			}
+		});
+
+		it('interactive pattern respects host overrides via the config file', async () => {
+			// Write a config that replaces the defaults with the host's
+			// own naming convention. This is the documented extension
+			// point for hosts whose interactive session is not `*-default`.
+			const configPath = mockCtx.workspace.resolve(
+				'mcp-vertex.config.json',
+			);
+			const { writeFile, unlink } = await import('node:fs/promises');
+			await writeFile(
+				configPath,
+				JSON.stringify({
+					loopDetector: {
+						interactiveAgentPatterns: ['host-session-*'],
+					},
+				}),
+				'utf8',
+			);
+			try {
+				const service = new AgentLoopDetectorService(mockCtx);
+				for (let i = 0; i < 20; i++) {
+					await service.onToolCall(
+						'proposals_continue_proposal',
+						{ agent: 'host-session-42' },
+						{ ok: true },
+					);
+				}
+				expect(
+					service.isAgentStuck('proposals_continue_proposal', {
+						agent: 'host-session-42',
+					}),
+				).toBeNull();
+			} finally {
+				await unlink(configPath);
+			}
+		});
+
+		it('interactive pattern honours the empty-list opt-out (CI / universal monitoring)', async () => {
+			const configPath = mockCtx.workspace.resolve(
+				'mcp-vertex.config.json',
+			);
+			const { writeFile, unlink } = await import('node:fs/promises');
+			await writeFile(
+				configPath,
+				JSON.stringify({
+					loopDetector: { interactiveAgentPatterns: [] },
+				}),
+				'utf8',
+			);
+			try {
+				const service = new AgentLoopDetectorService(mockCtx);
+				// With the ignore list disabled, copilot-default is now
+				// monitored like any other agent and trips at the new
+				// default threshold (8).
+				for (let i = 0; i < 9; i++) {
+					await service.onToolCall(
+						'read_file',
+						{ path: 'x.ts', agent: 'copilot-default' },
+						{ ok: true },
+					);
+				}
+				expect(
+					service.isAgentStuck('read_file', {
+						agent: 'copilot-default',
+					}),
+				).not.toBeNull();
+			} finally {
+				await unlink(configPath);
+			}
+		});
+
+		it('interactive pattern honours the CLI override `--loop-detector.interactive-agent-patterns`', async () => {
+			const ctxWithCli = {
+				...mockCtx,
+				args: {
+					'loop-detector.interactive-agent-patterns':
+						'host-session-*,assistant-*',
+				},
+			};
+			const service = new AgentLoopDetectorService(ctxWithCli);
+			// The default `*-default` is overridden → copilot-default
+			// is now a regular agent and gets stuck after 9 calls.
+			for (let i = 0; i < 9; i++) {
+				await service.onToolCall(
+					'read_file',
+					{ path: 'x.ts', agent: 'copilot-default' },
+					{ ok: true },
+				);
+			}
+			expect(
+				service.isAgentStuck('read_file', {
+					agent: 'copilot-default',
+				}),
+			).not.toBeNull();
+
+			// But `host-session-42` and `assistant-bot` are now ignored.
+			for (const agent of ['host-session-42', 'assistant-bot']) {
+				for (let i = 0; i < 15; i++) {
+					await service.onToolCall(
+						'read_file',
+						{ path: 'x.ts', agent },
+						{ ok: true },
+					);
+				}
+				expect(service.isAgentStuck('read_file', { agent })).toBeNull();
 			}
 		});
 	});

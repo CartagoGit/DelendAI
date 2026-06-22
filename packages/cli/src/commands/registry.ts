@@ -20,7 +20,6 @@ import {
 	writeWorkspaceFileSafely,
 } from '../lib/config-file';
 import { formatRows } from '../lib/text-format';
-import { gitCommands } from './groups/git';
 
 const text = (body: string, code = EXIT_CODE.OK): ICliCommandResult => ({
 	code,
@@ -404,4 +403,11 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 			return data({ report, written });
 		},
 	},
-        ...gitCommands,
+	gitStatusCommand,
+	gitChangedCommand,
+	gitDiffCommand,
+	gitLogCommand,
+	gitBlameCommand,
+	gitShowCommand,
+	gitWorktreeCommand,
+];

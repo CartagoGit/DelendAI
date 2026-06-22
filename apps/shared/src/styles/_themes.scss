@@ -1,0 +1,84 @@
+// _themes.scss — 5 colour palettes + brand hex literals.
+//
+// This file is the **single source of truth** for the brand colours
+// (`--mv-brand-blue` and `--mv-brand-purple`) and for the five palettes
+// the docs site offers. The hex literals `#58a6ff` and `#a371f7` MUST
+// NOT appear in any other source file; this is enforced by
+// `tools/scripts/lint/no-duplicate-brand-hex.script.ts`.
+//
+// Themes are activated via `[data-theme="<name>"]` on <html>. The
+// `dark` block is also the unthemed fallback so we never paint
+// unthemed. The dashboard/extension host injects `--vscode-*` fallbacks
+// where its own theme is the surface; see the Notes in the proposal.
+
+:root,
+:root[data-theme='dark'] {
+	--bg: #0d1117;
+	--bg-soft: #11161d;
+	--card: #161b22;
+	--line: #2a3038;
+	--fg: #e6edf3;
+	--muted: #9aa4b2;
+	--accent: var(--mv-brand-blue);
+	--accent-2: var(--mv-brand-purple);
+}
+
+:root[data-theme='light'] {
+	--bg: #ffffff;
+	--bg-soft: #f6f8fa;
+	--card: #ffffff;
+	--line: #d8dee4;
+	--fg: #1f2328;
+	--muted: #59636e;
+	--accent: #0969da;
+	--accent-2: #8250df;
+}
+
+:root[data-theme='midnight'] {
+	--bg: #0b0f1a;
+	--bg-soft: #0f1424;
+	--card: #141a2e;
+	--line: #232a44;
+	--fg: #e8ecff;
+	--muted: #9aa6d4;
+	--accent: #7c93ff;
+	--accent-2: #c084fc;
+}
+
+:root[data-theme='solarized'] {
+	--bg: #002b36;
+	--bg-soft: #073642;
+	--card: #073642;
+	--line: #0a4d5c;
+	--fg: #eee8d5;
+	--muted: #93a1a1;
+	--accent: #2aa198;
+	--accent-2: #b58900;
+}
+
+:root[data-theme='nord'] {
+	--bg: #2e3440;
+	--bg-soft: #323846;
+	--card: #3b4252;
+	--line: #4c566a;
+	--fg: #eceff4;
+	--muted: #b3bccb;
+	--accent: #88c0d0;
+	--accent-2: #b48ead;
+}
+
+// --- Brand hex (canonical, see lint:brand-hex) ------------------------------
+// `#58a6ff` (blue) and `#a371f7` (purple) are the brand palette primaries.
+// They are derived from `apps/shared/brand/logo.svg` (the gradient) and
+// exported here as the only definitions in source. Hosts reach for
+// `var(--mv-brand-blue)` / `var(--mv-brand-purple)` instead of using the
+// literals themselves.
+:root {
+	--mv-brand-blue: #58a6ff;
+	--mv-brand-purple: #a371f7;
+	--mv-brand-gradient: linear-gradient(
+		135deg,
+		var(--mv-brand-blue),
+		var(--mv-brand-purple)
+	);
+}
