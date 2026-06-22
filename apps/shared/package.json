@@ -35,5 +35,8 @@
 	],
 	"scripts": {
 		"type": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"@mcp-vertex/ui-extension": "workspace:*"
 	}
 }

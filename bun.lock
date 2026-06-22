@@ -24,6 +24,9 @@
     "apps/shared": {
       "name": "@mcp-vertex/shared",
       "version": "0.1.0",
+      "dependencies": {
+        "@mcp-vertex/ui-extension": "workspace:*",
+      },
     },
     "apps/web": {
       "name": "@mcp-vertex/web",
