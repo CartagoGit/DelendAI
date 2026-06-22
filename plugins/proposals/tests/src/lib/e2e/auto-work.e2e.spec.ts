@@ -28,35 +28,35 @@ import {
  * The `auto_work` tool's `outputSchema` is a small union of `idle`
  * (with optional `stop` / `idleStreak` / `nextAction`) and `work`
  * (with `proposalId`, `file`, `orchestration`, `steps`, `persist`,
- * `validationCommand`). We type-narrow via the `state` field.
+ * `validationCommand`). The harness returns the parsed
+ * `structuredContent`; we type it as a single object with optional
+ * fields so the spec can read each field without per-`it` narrowing.
  */
-type AutoWorkOutput =
-	| {
-			state: 'idle';
-			stop?: true;
-			idleStreak?: number;
-			reason?: string;
-			nextAction?: string;
-			handoffPath?: string;
-	  }
-	| {
-			state: 'work';
-			proposalId: string;
-			file: string;
-			orchestration: {
-				lane: 'inspect-then-delegate';
-				delegateAfterToolCalls: number;
-				next: string;
-				policy: string;
-			};
-			validationCommand?: string;
-			persist: {
-				mode: 'none' | 'commit' | 'commit-and-push';
-				messageTemplate?: string;
-				pushTarget?: string;
-			};
-			steps: string[];
-	  };
+interface AutoWorkOutput {
+	state: 'idle' | 'work';
+	// idle-only fields
+	readonly stop?: true;
+	readonly idleStreak?: number;
+	readonly reason?: string;
+	readonly nextAction?: string;
+	readonly handoffPath?: string;
+	// work-only fields
+	readonly proposalId?: string;
+	readonly file?: string;
+	readonly orchestration?: {
+		readonly lane: 'inspect-then-delegate';
+		readonly delegateAfterToolCalls: number;
+		readonly next: string;
+		readonly policy: string;
+	};
+	readonly validationCommand?: string;
+	readonly persist?: {
+		readonly mode: 'none' | 'commit' | 'commit-and-push';
+		readonly messageTemplate?: string;
+		readonly pushTarget?: string;
+	};
+	readonly steps?: string[];
+}
 
 const callAutoWork = async (
 	server: IAssembledProposalsServer,
@@ -147,15 +147,16 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		const res = await callAutoWork(harness);
 		expect(res.ok).toBe(true);
 		expect(res.structured.state).toBe('work');
-		if (res.structured.state !== 'work') return;
 		expect(res.structured.proposalId).toBe('p9999');
 		expect(res.structured.file).toMatch(/p9999-harness-seed\.md$/);
-		expect(res.structured.orchestration.lane).toBe('inspect-then-delegate');
-		expect(res.structured.orchestration.delegateAfterToolCalls).toBe(3);
-		expect(res.structured.steps.length).toBeGreaterThan(0);
+		expect(res.structured.orchestration?.lane).toBe(
+			'inspect-then-delegate',
+		);
+		expect(res.structured.orchestration?.delegateAfterToolCalls).toBe(3);
+		expect(res.structured.steps?.length ?? 0).toBeGreaterThan(0);
+		const stepsBlob = (res.structured.steps ?? []).join('\n');
 		// The harness-built server did NOT configure a validation command,
 		// so the work plan must fall back to the generic gate hint.
-		const stepsBlob = res.structured.steps.join('\n');
 		expect(stepsBlob).toMatch(/Validate/i);
 		// The plan must mention every subsequent tool the agent is
 		// expected to call, in the order `auto_work` documents.
@@ -207,11 +208,10 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		});
 		const res = await callAutoWork(harness);
 		expect(res.structured.state).toBe('work');
-		if (res.structured.state !== 'work') return;
-		expect(res.structured.orchestration.next).toMatch(
+		expect(res.structured.orchestration?.next).toMatch(
 			/^proposals_continue_proposal/,
 		);
-		expect(res.structured.persist.mode).toBe('none');
+		expect(res.structured.persist?.mode).toBe('none');
 	});
 
 	it('every response satisfies the outputSchema parity invariant', async () => {

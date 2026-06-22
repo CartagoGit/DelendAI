@@ -198,9 +198,9 @@ describe('AgentLoopDetectorService', () => {
 				{ ok: true },
 			);
 
-			// Confirm via observable behaviour: repeat the same call enough
-			// times to trip the detector, then check which agent got flagged.
-			for (let i = 0; i < 3; i++) {
+			// Confirm via observable behaviour: repeat the same call past
+			// the default threshold (8) to trip the detector.
+			for (let i = 0; i < 9; i++) {
 				await service.onToolCall(
 					'search_search',
 					{ query: 'x' },
@@ -226,7 +226,7 @@ describe('AgentLoopDetectorService', () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			// Drives writeHandoffPacket + pruneOldHandoffs at least once;
 			// neither must throw even though nothing pre-existed on disk.
-			for (let i = 0; i < 3; i++) {
+			for (let i = 0; i < 9; i++) {
 				await service.onToolCall(
 					'read_file',
 					{ path: 'foo.ts', agent: 'a2' },
