@@ -30,6 +30,7 @@
 		"lint:cli-coverage": "bun tools/scripts/lint/cli-coverage.script.ts",
 		"lint:cli:i18n": "bun tools/scripts/lint/cli-i18n.script.ts",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
+		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --report",
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",
 		"sync:brand-assets": "bun tools/scripts/brand/sync-brand-assets.script.ts",
 		"lint:scss": "stylelint \"apps/web/src/**/*.scss\"",

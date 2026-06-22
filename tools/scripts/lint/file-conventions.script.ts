@@ -90,12 +90,22 @@ export const walkAndClassify = async (
 	return findings;
 };
 
-/** Format findings as a human-readable report. Pure. */
-export const formatReport = (findings: readonly IRoleFinding[]): string => {
+/**
+ * Format findings as a human-readable report. Pure.
+ *
+ * `reportOnly` (the `--report` flag, S2) collapses the output to the
+ * single count line — the baseline number the migration burns down,
+ * with no per-file noise. The default (check mode) lists the first 50
+ * drift files so a contributor can see exactly what to rename.
+ */
+export const formatReport = (
+	findings: readonly IRoleFinding[],
+	reportOnly = false,
+): string => {
 	if (findings.length === 0) return 'file-conventions: 0 unmatched files\n';
-	const lines: string[] = [
-		`file-conventions: ${findings.length} unmatched files`,
-	];
+	const header = `file-conventions: ${findings.length} unmatched files`;
+	if (reportOnly) return `${header}\n`;
+	const lines: string[] = [header];
 	for (const f of findings.slice(0, 50)) {
 		lines.push(`  ${f.relPath}`);
 	}
@@ -127,7 +137,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			] as const);
 	const rootDir = process.cwd();
 	const findings = await walkAndClassify(rootDir, scanRoots);
-	process.stderr.write(formatReport(findings));
+	process.stderr.write(formatReport(findings, reportOnly));
 	if (reportOnly) return 0;
 	// S1 ships the linter in **report mode** (S2 wires the official
 	// `lint:file-conventions` script). Until S7 promotes it to strict,

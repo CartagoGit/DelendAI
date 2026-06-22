@@ -108,6 +108,25 @@ migrations land (S4–S6). After S7 the linter becomes strict for
 non-generated files. Migration slices use `git mv` and run the local
 package tests before promoting to `bun run validate`.
 
+### Report-mode lint (S2)
+
+The classifier is wired as a non-failing baseline lint:
+
+```bash
+bun run lint:file-conventions   # report mode: counts unmatched files, exits 0
+```
+
+It runs `file-conventions.script.ts --report`, which counts the files
+the classifier currently maps to `'other'` (no canonical suffix/folder)
+without failing the build — so the convention is visible and tracked
+before the migrations rename anything.
+
+**Baseline (2026-06-22):** 485 unmatched `.ts`/`.tsx` files. That number
+is the migration backlog S4–S6 will burn down; S7 then flips the lint to
+strict (exit 1 on any non-generated drift) so the baseline can never
+regress once it reaches zero. Re-run the command above any time to see
+the current count.
+
 ## See also
 
 - `AGENTS.md` — repo-wide invariants and the `*.script.ts` tooling rule.

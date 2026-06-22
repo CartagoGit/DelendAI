@@ -238,6 +238,18 @@ describe('formatReport', () => {
 		expect(out).toContain('80 unmatched');
 		expect(out).toContain('…and 30 more');
 	});
+
+	it('report mode (S2) collapses to the count line with no per-file noise', () => {
+		const many = Array.from({ length: 80 }, (_, i) => ({
+			relPath: `f${i}.ts`,
+			role: 'other' as const,
+			reason: 'unmatched' as const,
+		}));
+		const out = formatReport(many, true);
+		expect(out).toBe('file-conventions: 80 unmatched files\n');
+		expect(out).not.toContain('f0.ts');
+		expect(out).not.toContain('…and');
+	});
 });
 
 describe('main() CLI shell', () => {
