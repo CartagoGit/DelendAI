@@ -44,7 +44,20 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		'plugins/test-convention/src',
 	);
 	const client = resolve(workspaceRoot, 'packages/client/src');
+	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
+		{
+			find: '@mcp-vertex/shared/i18n',
+			replacement: resolve(shared, 'i18n/index.ts'),
+		},
+		{
+			find: '@mcp-vertex/shared/styles',
+			replacement: resolve(shared, 'styles/_index.scss'),
+		},
+		{
+			find: '@mcp-vertex/shared',
+			replacement: resolve(shared, 'public/index.ts'),
+		},
 		{
 			find: '@mcp-vertex/core/public',
 			replacement: resolve(core, 'public/index.ts'),
