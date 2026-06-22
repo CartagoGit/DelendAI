@@ -63,7 +63,7 @@ const dict: LangDict = {
 		oneCmd: 'Một lệnh · mọi IDE',
 		oneCmdNote:
 			'Tự phát hiện IDE và thêm mcp-vertex — không đụng tới các MCP server khác của bạn.',
-		config: 'Chọn một preset (minimal · standard · swarm) hoặc liệt kê plugin tường minh. Chạy với --check để tự chẩn đoán.',
+		config: 'Chọn một preset (minimal · standard · swarm · full) hoặc liệt kê plugin tường minh. Chạy với --check để tự chẩn đoán.',
 		excludeHelp:
 			'Trừ plugin khỏi tập đã giải bằng --exclude-plugins= (bí danh: --excludePlugins=). Hữu ích để loại một plugin khỏi preset mà không fork — ví dụ --preset=swarm --exclude-plugins=notification cho phiên đơn tác tử.',
 	},
@@ -176,7 +176,7 @@ const dict: LangDict = {
 				'Cài đặt: `bun add @mcp-vertex/core` (hoặc `npm install @mcp-vertex/core`).',
 				'Chạy: `bunx mcp-vertex --preset=standard` (hoặc `npx mcp-vertex --preset=standard`).',
 				'Xác minh: tiến trình in ra danh sách plugin đã tải và chờ trên stdio — Ctrl+C để dừng.',
-				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|standard|swarm` (xem Cài đặt để có danh sách flag đầy đủ).',
+				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|standard|swarm|full` (xem Cài đặt để có danh sách flag đầy đủ).',
 				'Gọi `mcp-vertex_overview { compact: true }` trước tiên — nó cho bạn biết phải làm gì tiếp theo.',
 			],
 		},

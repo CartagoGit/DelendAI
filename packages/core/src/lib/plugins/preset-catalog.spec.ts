@@ -15,10 +15,10 @@ describe('PRESET_CATALOG', () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// standard: adds 5 on top of minimal
 		expect(PRESET_CATALOG[1]?.members.length).toBe(5);
-		// swarm: adds 4 on top of standard
-		expect(PRESET_CATALOG[2]?.members.length).toBe(4);
-		// full: adds 4 host-only on top of swarm
-		expect(PRESET_CATALOG[3]?.members.length).toBe(4);
+		// swarm: adds 5 on top of standard
+		expect(PRESET_CATALOG[2]?.members.length).toBe(5);
+		// full: adds 2 host-only on top of swarm
+		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
 	});
 
 	it('marks every full-preset member as hostOnly', () => {
@@ -89,22 +89,23 @@ describe('resolvePresetMembers', () => {
 		expect(resolved.length).toBe(7);
 	});
 
-	it('resolves swarm = standard + proposals/notification/status-marker/test-convention', () => {
+	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', () => {
 		const resolved = resolvePresetMembers('swarm');
 		expect(resolved).toContain('proposals');
 		expect(resolved).toContain('notification');
+		expect(resolved).toContain('logs');
 		expect(resolved).toContain('status-marker');
 		expect(resolved).toContain('test-convention');
 		expect(resolved).not.toContain('audit');
 		expect(resolved).not.toContain('issues');
 	});
 
-	it('resolves full = swarm + audit/logs/web-fetch/issues', () => {
+	it('resolves full = swarm + web-fetch/issues', () => {
 		const resolved = resolvePresetMembers('full');
-		expect(resolved).toContain('audit');
-		expect(resolved).toContain('logs');
 		expect(resolved).toContain('web-fetch');
 		expect(resolved).toContain('issues');
+		expect(resolved).not.toContain('audit');
+		expect(resolved).toContain('logs');
 		// and everything in swarm
 		expect(resolved).toContain('proposals');
 		expect(resolved).toContain('notification');

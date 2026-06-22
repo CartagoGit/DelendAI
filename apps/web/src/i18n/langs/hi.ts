@@ -63,7 +63,7 @@ const dict: LangDict = {
 		oneCmd: 'एक कमांड · कोई भी IDE',
 		oneCmdNote:
 			'आपका IDE पहचानकर mcp-vertex जोड़ता है — आपके बाकी MCP सर्वर को छुए बिना।',
-		config: 'एक प्रीसेट चुनें (minimal · standard · swarm) या प्लगइन स्पष्ट रूप से सूचीबद्ध करें। स्व-निदान के लिए --check के साथ चलाएँ।',
+		config: 'एक प्रीसेट चुनें (minimal · standard · swarm · full) या प्लगइन स्पष्ट रूप से सूचीबद्ध करें। स्व-निदान के लिए --check के साथ चलाएँ।',
 		excludeHelp:
 			'--exclude-plugins= (उपनाम: --excludePlugins=) के साथ हल प्लगइन सेट से प्लगइन्स हटाएँ। प्रीसेट से किसी प्लगइन को फोर्क किए बिना हटाने के लिए उपयोगी — उदा. --preset=swarm --exclude-plugins=notification एकल-एजेंट सत्र के लिए।',
 	},
@@ -175,7 +175,7 @@ const dict: LangDict = {
 				'इंस्टॉल करें: `bun add @mcp-vertex/core` (या `npm install @mcp-vertex/core`)।',
 				'चलाएँ: `bunx mcp-vertex --preset=standard` (या `npx mcp-vertex --preset=standard`)।',
 				'जाँचें: प्रोसेस लोड किए गए प्लगइन की सूची प्रिंट करता है और stdio पर प्रतीक्षा करता है — रोकने के लिए Ctrl+C।',
-				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|standard|swarm` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',
+				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|standard|swarm|full` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',
 				'पहले `mcp-vertex_overview { compact: true }` कॉल करें — यह बताता है कि आगे क्या करना है।',
 			],
 		},

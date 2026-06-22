@@ -60,7 +60,7 @@ const dict: LangDict = {
 		oneCmd: 'أمر واحد · أي IDE',
 		oneCmdNote:
 			'يكتشف الـ IDE ويضيف mcp-vertex — دون المساس بخوادم MCP الأخرى لديك.',
-		config: 'اختر إعدادًا مسبقًا (minimal · standard · swarm) أو اسرد الإضافات صراحةً. شغّل مع --check للتشخيص الذاتي.',
+		config: 'اختر إعدادًا مسبقًا (minimal · standard · swarm · full) أو اسرد الإضافات صراحةً. شغّل مع --check للتشخيص الذاتي.',
 		excludeHelp:
 			'احذف إضافات من المجموعة المُحوَّلة باستخدام --exclude-plugins= (الاسم البديل: --excludePlugins=). مفيد لاستبعاد إضافة من مجموعة دون تفرّعها — مثلًا --preset=swarm --exclude-plugins=notification لجلسة وكيل واحد.',
 	},
@@ -172,7 +172,7 @@ const dict: LangDict = {
 				'التثبيت: `bun add @mcp-vertex/core` (أو `npm install @mcp-vertex/core`).',
 				'التشغيل: `bunx mcp-vertex --preset=standard` (أو `npx mcp-vertex --preset=standard`).',
 				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
-				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm` (راجع التثبيت لقائمة كاملة بالأعلام).',
+				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',
 				'استدعِ `mcp-vertex_overview { compact: true }` أولًا — يخبرك بما يجب فعله بعد ذلك.',
 			],
 		},

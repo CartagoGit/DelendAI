@@ -64,7 +64,7 @@ const dict: LangDict = {
 		oneCmd: '1コマンド · どのIDEでも',
 		oneCmdNote:
 			'IDE を自動検出して mcp-vertex を追加 — 他の MCP サーバーには一切触れません。',
-		config: 'プリセット（minimal · standard · swarm）を選ぶか、プラグインを明示的に列挙します。--check で自己診断。',
+		config: 'プリセット（minimal · standard · swarm · full）を選ぶか、プラグインを明示的に列挙します。--check で自己診断。',
 		excludeHelp:
 			'--exclude-plugins=（別名：--excludePlugins=）で解決済みセットからプラグインを除外できます。フォークせずにプリセットから外すのに便利 — 例：--preset=swarm --exclude-plugins=notification は単一エージェントセッション向け。',
 	},
@@ -178,7 +178,7 @@ const dict: LangDict = {
 				'インストール：`bun add @mcp-vertex/core`（または `npm install @mcp-vertex/core`）。',
 				'実行：`bunx mcp-vertex --preset=standard`（または `npx mcp-vertex --preset=standard`）。',
 				'確認：プロセスが読み込んだプラグイン一覧を表示し、stdio で待機します — 停止するには Ctrl+C。',
-				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|standard|swarm` を指定します（フラグの全リストはインストールページを参照）。',
+				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|standard|swarm|full` を指定します（フラグの全リストはインストールページを参照）。',
 				'最初に `mcp-vertex_overview { compact: true }` を呼び出してください — 次に何をすべきか教えてくれます。',
 			],
 		},

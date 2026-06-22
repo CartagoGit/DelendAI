@@ -63,7 +63,7 @@ const dict: LangDict = {
 		oneCmd: 'Ein Befehl · jedes IDE',
 		oneCmdNote:
 			'Erkennt dein IDE und fügt mcp-vertex hinzu — ohne deine anderen MCP-Server anzurühren.',
-		config: 'Wähle ein Preset (minimal · standard · swarm) oder liste Plugins explizit. Mit --check zur Selbstdiagnose.',
+		config: 'Wähle ein Preset (minimal · standard · swarm · full) oder liste Plugins explizit. Mit --check zur Selbstdiagnose.',
 		excludeHelp:
 			'Entferne Plugins aus der aufgelösten Menge mit --exclude-plugins= (Alias: --excludePlugins=). Praktisch, um ein Plugin aus einem Preset zu werfen, ohne es zu forken — z. B. --preset=swarm --exclude-plugins=notification für eine Einzel-Agent-Sitzung.',
 	},
@@ -175,7 +175,7 @@ const dict: LangDict = {
 				'Installieren: `bun add @mcp-vertex/core` (oder `npm install @mcp-vertex/core`).',
 				'Starten: `bunx mcp-vertex --preset=standard` (oder `npx mcp-vertex --preset=standard`).',
 				'Prüfen: der Prozess gibt die Liste der geladenen Plugins aus und wartet auf stdio — Ctrl+C zum Beenden.',
-				'Richte die Konfiguration deines MCP-Clients mit `--preset=minimal|standard|swarm` auf das Binary (vollständige Flag-Liste unter Installieren).',
+				'Richte die Konfiguration deines MCP-Clients mit `--preset=minimal|standard|swarm|full` auf das Binary (vollständige Flag-Liste unter Installieren).',
 				'Rufe zuerst `mcp-vertex_overview { compact: true }` auf — es sagt dir, was als Nächstes zu tun ist.',
 			],
 		},

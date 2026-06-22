@@ -60,7 +60,7 @@ const dict: LangDict = {
 		oneCmd: 'คำสั่งเดียว · ทุก IDE',
 		oneCmdNote:
 			'ตรวจจับ IDE ของคุณและเพิ่ม mcp-vertex — โดยไม่แตะเซิร์ฟเวอร์ MCP อื่นของคุณ',
-		config: 'เลือกพรีเซ็ต (minimal · standard · swarm) หรือระบุปลั๊กอินอย่างชัดเจน รันด้วย --check เพื่อวินิจฉัยตนเอง',
+		config: 'เลือกพรีเซ็ต (minimal · standard · swarm · full) หรือระบุปลั๊กอินอย่างชัดเจน รันด้วย --check เพื่อวินิจฉัยตนเอง',
 		excludeHelp:
 			'ลบปลั๊กอินออกจากเซ็ตที่ถูกแก้ด้วย --exclude-plugins= (ชื่อแทน: --excludePlugins=) มีประโยชน์เมื่อต้องการตัดปลั๊กอินออกจากเพรสเซ็ตโดยไม่ fork — เช่น --preset=swarm --exclude-plugins=notification สำหรับเซสชันเอเจนต์เดี่ยว',
 	},
@@ -171,7 +171,7 @@ const dict: LangDict = {
 				'ติดตั้ง: `bun add @mcp-vertex/core` (หรือ `npm install @mcp-vertex/core`)',
 				'รัน: `bunx mcp-vertex --preset=standard` (หรือ `npx mcp-vertex --preset=standard`)',
 				'ตรวจสอบ: โปรเซสจะพิมพ์รายการปลั๊กอินที่โหลดและรอบน stdio — กด Ctrl+C เพื่อหยุด',
-				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
+				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm|full` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
 				'เรียก `mcp-vertex_overview { compact: true }` ก่อน — มันจะบอกว่าต้องทำอะไรต่อไป',
 			],
 		},
