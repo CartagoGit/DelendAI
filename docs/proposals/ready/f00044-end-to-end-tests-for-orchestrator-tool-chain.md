@@ -107,8 +107,16 @@ Two additional wins:
 
 ### S2 — `continue_proposal` end-to-end (plan / next / auto modes)
 - **Files**: plugins/proposals/tests/src/lib/e2e/continue-proposal.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: type
+- status: done
+
+Note: the tool's real mode surface is `auto | plan | claim` (there is no
+`next` mode — the proposal's original wording predated the final API).
+The spec covers `auto` cascade resolution (including that an unlocked
+in-progress proposal stays actionable), `plan` slice parsing with
+`claimableSliceIds`, `claim`, the `slice-mode-error` guard, and the
+parity invariant.
 - acceptance:
   - "With two seeded proposals (one in `ready/`, one already in `in-progress/`), `mode: 'auto'` returns `kind: 'next-proposal'` for the highest-priority pending proposal, with `proposalId`, `file`, and a non-empty `nextAction`."
   - "`mode: 'next'` advances past the in-progress proposal and returns the next pending one, or `kind: 'all-claimed'` when none."
@@ -117,8 +125,17 @@ Two additional wins:
 
 ### S3 — `proposal_transition` end-to-end (DFA enforcement over the wire)
 - **Files**: plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts
-- **Status**: pending
+- **Status**: done
 - **Gate**: type
+- status: done
+
+Note: covers the legal forward path (ready → in-progress → review) with
+real folder moves, illegal skip (ready → done) and illegal reverse
+(in-progress → ready) rejections carrying `error.nextAction`, and the
+parity invariant. The transition falls back to a plain rename when the
+workspace is not a git repo (the e2e tmpdir), so no `git init` is
+needed. Error envelopes may carry an extra `logHint`; the parity check
+compares payloads modulo that diagnostic field.
 - acceptance:
   - "Legal path: seed a proposal in `ready/`; calling `proposals_proposal_transition { id, to: 'in-progress' }` returns `ok: true`, the seeded file moves to `docs/proposals/in-progress/`, and `agents.lock.json` reflects the new task."
   - "Second legal transition: with the proposal now `in-progress`, `to: 'review'` returns `ok: true` and moves the file to `docs/proposals/review/`."
