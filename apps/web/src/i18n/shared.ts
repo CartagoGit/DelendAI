@@ -138,6 +138,50 @@ export interface IInstallTranslations {
 	readonly oneCmdNote: string;
 	readonly config: string;
 	readonly excludeHelp: string;
+	/** f00048 — expanded install matrix. */
+	readonly tabsPackageManager: string;
+	readonly tabsIde: string;
+	readonly tabsPreset: string;
+	readonly pmStep1Title: string;
+	readonly pmStep1Body: string;
+	readonly pmStep2Title: string;
+	readonly pmStep2Body: string;
+	readonly pmRecommend: string;
+	readonly ideFileLabel: string;
+	readonly ideScopeLabel: string;
+	readonly ideScopeProject: string;
+	readonly ideScopeGlobal: string;
+	readonly ideScopeBoth: string;
+	readonly ideWhyLabel: string;
+	readonly ideWhyBody: string;
+	readonly presetSizeLabel: string;
+	readonly presetUseLabel: string;
+	readonly presetPluginsLabel: string;
+	readonly presetFoot: string;
+	readonly copy: string;
+	readonly copied: string;
+	readonly faqTitle: string;
+	readonly faqQ1: string;
+	readonly faqA1: string;
+	readonly faqQ2: string;
+	readonly faqA2: string;
+	readonly faqQ3: string;
+	readonly faqA3: string;
+}
+
+/** f00048 — generic UI primitives copy (CodeBlock, Tabs, Callout, Stepper, CopyButton). */
+export interface IUiTranslations {
+	readonly codeCopy: string;
+	readonly codeCopied: string;
+	readonly codeCollapse: string;
+	readonly codeExpand: string;
+	readonly calloutNote: string;
+	readonly calloutTip: string;
+	readonly calloutWarn: string;
+	readonly calloutDanger: string;
+	readonly tabsNext: string;
+	readonly tabsPrev: string;
+	readonly stepsOf: string;
 }
 
 export interface IToolsTranslations {
@@ -387,6 +431,7 @@ export interface ITranslations {
 	readonly recovery: IRecoveryTranslations;
 	readonly logs: ILogsTranslations;
 	readonly presets: IPresetsTranslations;
+	readonly ui: IUiTranslations;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */

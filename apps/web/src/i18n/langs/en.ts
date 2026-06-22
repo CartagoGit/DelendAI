@@ -66,6 +66,38 @@ const dict: LangDict = {
 		config: 'Pick a preset (minimal · standard · swarm) or list plugins explicitly. Run with --check to self-diagnose.',
 		excludeHelp:
 			'Subtract plugins from the resolved set with --exclude-plugins= (alias: --excludePlugins=). Useful to drop a plugin from a preset without forking it — e.g. --preset=swarm --exclude-plugins=notification for a single-agent session.',
+		tabsPackageManager: 'Package manager',
+		tabsIde: 'IDE / agent',
+		tabsPreset: 'Preset',
+		pmStep1Title: '1. Initialize',
+		pmStep1Body:
+			'Run the one-command installer. It detects your editor, merges the config and prints what it did.',
+		pmStep2Title: '2. Verify',
+		pmStep2Body:
+			'Run the same package manager with `--check` to self-diagnose.',
+		pmRecommend: 'Recommended',
+		ideFileLabel: 'Config file',
+		ideScopeLabel: 'Scope',
+		ideScopeProject: 'project',
+		ideScopeGlobal: 'global',
+		ideScopeBoth: 'project / global',
+		ideWhyLabel: 'Why this shape?',
+		ideWhyBody:
+			'Each IDE uses a slightly different JSON key (`mcpServers`, `servers`, `context_servers`) and a different file path. The renderer below adapts automatically — paste it as-is.',
+		presetSizeLabel: 'plugins',
+		presetUseLabel: 'Use it for',
+		presetPluginsLabel: 'Bundled plugins',
+		presetFoot:
+			'Pass any preset to the server with `--preset=<name>`. Presets are additive — you can layer `--include-plugins=` and `--exclude-plugins=` to fine-tune without forking.',
+		copy: 'Copy',
+		copied: 'Copied!',
+		faqTitle: 'Frequently asked',
+		faqQ1: 'Why is `deno run -A npm:@mcp-vertex/core` slow to start?',
+		faqA1: 'Deno resolves and verifies the npm package on first use. Subsequent runs reuse the cache in `~/.cache/deno`. For repeated runs, prefer bun or npx.',
+		faqQ2: 'My IDE is not listed — what now?',
+		faqA2: 'Any IDE that accepts a stdio MCP server works. Take the JSON from VS Code, change the file path to whatever your IDE expects, and register the same command + args.',
+		faqQ3: 'Can I run multiple presets at once?',
+		faqA3: 'No — one server, one preset. If you need different plugin sets per project, drop a `mcp-vertex.config.json` in that project and the loader reads it first.',
 	},
 	tools: {
 		title: 'Tools',
@@ -262,6 +294,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'Preset',
 		},
+	},
+	ui: {
+		codeCopy: 'Copy',
+		codeCopied: 'Copied!',
+		codeCollapse: 'Collapse',
+		codeExpand: 'Expand',
+		calloutNote: 'Note',
+		calloutTip: 'Tip',
+		calloutWarn: 'Warning',
+		calloutDanger: 'Danger',
+		tabsNext: 'Next',
+		tabsPrev: 'Previous',
+		stepsOf: 'of',
 	},
 };
 

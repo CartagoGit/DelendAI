@@ -137,7 +137,7 @@ rejected by `EmbedService` unless `allowLocalhost` /
 
 ### Configure the issues plugin
 
-> **Configuring the GitHub issues plugin?** See the [Cross-project setup guide](CROSS-PROJECT-SETUP.md) — it walks through the 7 setup steps and the `mcp-vertex setup-github` command that automates them.
+If this is a fresh repo or the extension loads `mcp-vertex` without the GitHub issues tools you expect, follow [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md). That guide is the canonical path for choosing `--preset=full` versus `--plugins=proposals,issues`, writing `plugins.issues.options.repo` in `mcp-vertex.config.json`, and verifying whether the host is running on `gh`, `rest-authed`, or anonymous GitHub access.
 
 ## Development
 
