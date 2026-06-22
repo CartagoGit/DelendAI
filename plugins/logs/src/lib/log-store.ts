@@ -68,8 +68,11 @@ export const createLogStore = (logsDir: string): ILogStore => {
 			.sort();
 		const events: ILogEvent[] = [];
 		for (const name of names) {
-			const content = await readFile(join(logsDir, name), 'utf8').catch(
-				() => '',
+			const file = join(logsDir, name);
+			const content = await withFileMutex(
+				file,
+				async () => await readFile(file, 'utf8').catch(() => ''),
+				{ onContention: 'fail', timeoutMs: 10_000 },
 			);
 			for (const line of content.split('\n')) {
 				if (!line.trim()) continue;

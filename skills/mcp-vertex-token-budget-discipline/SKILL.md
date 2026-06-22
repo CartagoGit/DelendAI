@@ -11,9 +11,9 @@ description: Which mcp-vertex tools are cheap to call from the root/orchestratin
 1. About to orient at the start of a session? -> `mcp-vertex_overview { compact: true }`,
    not the full form.
 2. About to check proposal state? -> `proposals_auto_work` /
-   `proposals_compact_status`, not `proposal_board` verbose.
+   `proposals_compact_status`, not `proposals_proposal_board` verbose.
 3. About to call a tool with no `compact` flag and a potentially large
-   result (`search`, `state_health`, `audit_consolidate`)? -> bound it
+   result (`search_search`, `proposals_state_health`, `audit_audit_consolidate`)? -> bound it
    (`maxResults`, `scope`) or delegate the call to a subagent.
 4. Slice closed and about to start unrelated work? -> `/compact` before
    continuing; don't carry its tool output forward.
@@ -44,9 +44,9 @@ Additional surfaces tracked (not yet hard-gated, but bounded):
 | Verbose | Compact-native equivalent |
 |---|---|
 | `mcp-vertex_overview` (default) | `mcp-vertex_overview { compact: true }` |
-| `proposal_board` | `proposals_auto_work` / `proposals_compact_status` |
-| `state_health` (full dump) | `proposals_compact_status` for routine checks |
-| `audit_consolidate` (no scope) | `audit_consolidate { auditDir: <narrow> }` |
+| `proposals_proposal_board` | `proposals_auto_work` / `proposals_compact_status` |
+| `proposals_state_health` (full dump) | `proposals_compact_status` for routine checks |
+| `audit_audit_consolidate` (no scope) | `audit_audit_consolidate { auditDir: <narrow> }` |
 | `search_search` (no `maxResults`) | `search_search { maxResults: <=50 }` |
 
 Rule: call the compact form first; only drill into the verbose form when the
@@ -57,10 +57,10 @@ compact answer is insufficient for the decision you're making right now.
 Per `CLAUDE.md`'s "keep the main thread cheap" rule — delegate these to the
 `mcp-vertex-orchestrator` subagent so the verbose payload is absorbed there:
 
-- `proposal_board` in its verbose form.
-- `state_health` full dumps.
-- `audit_consolidate` with no scope/`auditDir` filter.
-- `search` with `maxResults > 50`.
+- `proposals_proposal_board` in its verbose form.
+- `proposals_state_health` full dumps.
+- `audit_audit_consolidate` with no scope/`auditDir` filter.
+- `search_search` with `maxResults > 50`.
 
 ## Regression gate
 
@@ -73,8 +73,8 @@ rather than raising the ceiling.
 
 ## Never do
 
-- Never call `proposal_board` verbose, `state_health` full, or unscoped
-  `audit_consolidate` directly from the root/coordinator thread.
+- Never call `proposals_proposal_board` verbose, `proposals_state_health` full, or unscoped
+  `audit_audit_consolidate` directly from the root/coordinator thread.
 - Never assume a tool without a `compact` parameter is automatically cheap —
   check `docs/TOKEN-BUDGETS.md` or bound it explicitly (`maxResults`, `scope`).
 - Never carry a closed slice's verbose tool output into unrelated work —
