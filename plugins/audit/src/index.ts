@@ -48,13 +48,20 @@ del repo y consolida N auditorías en una sola hoja de ruta.
    las puntuaciones, y devuelve la vista estructurada más el maestro
    en markdown.
 
-## Modelo de scopes
+## Modelo de scopes (project-agnostic)
 
-El plugin es **project-agnostic**: los scopes universales son siempre los mismos,
-los scopes de capa los define el repo que usa la librería. Un repo de microservicios
-puede definir \`api\`, \`database\`, \`queue\`; un monorepo puede definir \`core\`,
-\`plugins\`, \`extensions\`. El brief generado para cada capa incluye sus paths
-y sus checks específicos.
+El plugin es **project-agnostic** por diseño. Los scopes universales son los
+mismos para cualquier repo; los scopes de capa los define el host que usa
+la librería. Un repo de microservicios puede definir \`api\`, \`database\`,
+\`queue\`; un monorepo puede definir \`core\`, \`plugins\`, \`extensions\`;
+una librería pequeña puede no definir ninguno y usar solo los universales.
+El brief generado para cada capa incluye sus paths y sus checks específicos.
+
+El host **brandea el output** vía tres opciones opcionales:
+\`projectName\` (texto del header), \`configFileName\` (placeholder del
+"no hay capas" hint) y \`crossCuttingAdditions\` (invariantes propias que
+se suman a las universales). Sin ninguna de las tres, el brief es 100%
+agnóstico y portable a cualquier modelo en cualquier sesión.
 
 ## Alcance A (este plugin)
 
@@ -63,23 +70,29 @@ y sus checks específicos.
 - La consolidación es automática: el plugin deduplica por título + archivo
   citado, promedia las 9 dimensiones canónicas, y emite una tabla resumen.
 
-## Configuración
+## Configuración (host-agnostic)
 
 \`\`\`jsonc
-// mcp-vertex.config.json
+// el config-file que use el host (p. ej. mcp-vertex.config.json, app.toml, settings.yaml)
 {
   "plugins": {
     "audit": {
       "options": {
+        "projectName": "<your project name>",
+        "configFileName": "<your config file>",
         "auditDir": "docs/proposals/audits",
         "topActions": 5,
         "dimensions": ["Arquitectura", "Tests", "Documentación", "Genericidad"],
+        "crossCuttingAdditions": [
+          "- **Tu invariante 1**: descripción breve.",
+          "- **Tu invariante 2**: descripción breve."
+        ],
         "layers": [
           {
             "name": "core",
             "label": "Core packages",
             "paths": ["packages/core/src/", "packages/client/src/"],
-            "checks": ["¿process.cwd() como fallback?", "¿Escrituras sin mutex?"]
+            "checks": ["¿Globals mutables en hot paths?", "¿Escrituras sin mutex?"]
           },
           {
             "name": "api",
@@ -97,6 +110,11 @@ y sus checks específicos.
 Todos los campos son opcionales. Sin \`layers\`, el scope \`full\` genera una guía
 genérica de lectura de código. Con \`layers\`, cada capa aparece como scope y el
 brief de \`full\` incluye todas las capas con sus paths y checks específicos.
+\`projectName\` y \`configFileName\` solo cambian el branding del header y de la
+pista "no hay capas configuradas"; las rúbricas universales no los mencionan.
+\`crossCuttingAdditions\` se suma a las invariantes universales (observabilidad,
+honoring de flags, outputs tipados) para que el modelo chequee también lo propio
+del host.
 `;
 
 /**
@@ -160,6 +178,28 @@ const OptionsSchema = z
 		 * ```
 		 */
 		layers: z.array(LayerSchema).optional(),
+		/**
+		 * Project name rendered in the brief header and in the
+		 * consolidated master document. Keeps the brief agnostic for
+		 * hosts that never set it (the default placeholder is
+		 * `"the project"`).
+		 */
+		projectName: z.string().min(1).optional(),
+		/**
+		 * Config file path rendered in the "no layers configured" hint
+		 * (e.g. `mcp-vertex.config.json`, `app.toml`, `<config-file>`).
+		 * Hosts that want to point the model at a concrete file can
+		 * pass it here; the default placeholder avoids leaking any
+		 * specific host vocabulary.
+		 */
+		configFileName: z.string().min(1).optional(),
+		/**
+		 * Host-specific cross-cutting invariants rendered into the
+		 * brief's "Invariantes transversales" block (after the universal
+		 * defaults). Use this to inject project-specific "must check
+		 * this" rules without forking `buildBrief`.
+		 */
+		crossCuttingAdditions: z.array(z.string().min(1)).optional(),
 	})
 	.strict();
 
@@ -195,16 +235,25 @@ export default definePlugin({
 				: DEFAULT_OPTIONS.dimensions;
 		const layers: readonly ILayerConfig[] =
 			(pluginOptions.layers as readonly ILayerConfig[] | undefined) ?? [];
+		const projectName = pluginOptions.projectName;
+		const configFileName = pluginOptions.configFileName;
+		const crossCuttingAdditions = pluginOptions.crossCuttingAdditions;
 		const plan = buildPlanRegistration({
 			namespacePrefix: ctx.namespacePrefix,
 			dimensions,
 			layers,
+			...(projectName !== undefined ? { projectName } : {}),
+			...(configFileName !== undefined ? { configFileName } : {}),
+			...(crossCuttingAdditions !== undefined
+				? { crossCuttingAdditions }
+				: {}),
 		});
 		const consolidate = buildConsolidateRegistration({
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
 			defaultAuditDir: auditDir,
 			defaultTopActions: topActions,
+			...(projectName !== undefined ? { projectName } : {}),
 		});
 		return {
 			tools: [plan, consolidate],
@@ -222,7 +271,9 @@ export default definePlugin({
 						UNIVERSAL_SCOPES.map(
 							(id) => `- \`${id}\` — ${SCOPE_LABEL[id]}`,
 						).join('\n') +
-						'\n\nLayer scopes are configured via `options.layers` in `mcp-vertex.config.json`.',
+						(configFileName !== undefined
+							? `\n\nLayer scopes are configured via \`options.layers\` in \`${configFileName}\`.`
+							: '\n\nLayer scopes are configured via `options.layers` in the host config file.'),
 				},
 			],
 		};

@@ -85,8 +85,96 @@ describe('issues plugin — dependsOn contract', () => {
 		const issuesEntry = result.loaded.find(
 			(entry) => entry.plugin.name === 'issues',
 		);
-		// S1 ships the skeleton only — 0 tools is the expected mid-state
-		// until S3 wires the 5 issues_* tools.
+		// No `repo` option in the smoke test ctx — the plugin registers
+		// zero tools and emits a discoverable knowledge entry. See
+		// the `register()` UX guard in `src/index.ts` for the rationale.
 		expect(issuesEntry?.registrations.tools).toEqual([]);
+	});
+});
+
+describe('issues plugin — UX guard when `repo` is missing', () => {
+	const buildCtx = (options: Record<string, unknown>): IMcpPluginContext => ({
+		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
+		corePaths: {
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+		},
+		cacheDir: '.cache/mcp-vertex',
+		docsDir: 'docs/mcp-vertex',
+		keepLegacy: false,
+		pluginCacheDir: '.cache/mcp-vertex/issues',
+		pluginDocsDir: 'docs/mcp-vertex/issues',
+		namespacePrefix: 'issues',
+		options,
+		args: {},
+	});
+
+	/**
+	 * `IMcpPlugin.register` may return a sync or async registrations
+	 * record (the loader treats them identically). Normalize via
+	 * `Promise.resolve` so the tests work with whichever the plugin
+	 * actually returns.
+	 */
+	const unwrap = (
+		r: ReturnType<typeof issuesPlugin.register>,
+	): Promise<Awaited<ReturnType<typeof issuesPlugin.register>>> =>
+		Promise.resolve(r);
+
+	it('registers 0 tools when `repo` is missing, but emits an `issues-needs-repo-config` knowledge entry', async () => {
+		const result = await unwrap(issuesPlugin.register(buildCtx({})));
+		expect(result.tools).toEqual([]);
+		expect(result.knowledge).toHaveLength(1);
+		const entry = result.knowledge?.[0];
+		expect(entry?.id).toBe('issues-needs-repo-config');
+		expect(entry?.title).toBe('issues plugin needs `repo` configured');
+		// The body must mention the two fix paths so the host can
+		// act on it without reading the source.
+		expect(entry?.body).toContain('plugins.issues.options.repo');
+		expect(entry?.body).toContain('setup-github');
+	});
+
+	it('treats empty-string `repo` the same as missing (no throw, knowledge entry surfaces)', async () => {
+		const result = await unwrap(
+			issuesPlugin.register(buildCtx({ repo: '' })),
+		);
+		expect(result.tools).toEqual([]);
+		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
+	});
+
+	it('treats whitespace-only `repo` the same as missing (defensive)', async () => {
+		const result = await unwrap(
+			issuesPlugin.register(buildCtx({ repo: '   ' })),
+		);
+		expect(result.tools).toEqual([]);
+		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
+	});
+
+	it('registers the 5 `issues_*` tools when `repo` is provided', async () => {
+		const result = await unwrap(
+			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/mcp-vertex' })),
+		);
+		expect(result.tools ?? []).toHaveLength(5);
+		const toolIds = (result.tools ?? []).map((t) => t.id).sort();
+		expect(toolIds).toEqual([
+			'issues_analyze',
+			'issues_fetch',
+			'issues_ingest',
+			'issues_list',
+			'issues_resolve',
+		]);
+		// No knowledge entry when fully configured — the hint is
+		// irrelevant and would just be noise.
+		expect(result.knowledge).toBeUndefined();
+	});
+
+	it('throws on invalid `scaffoldDir` (workspace escape)', () => {
+		expect(() =>
+			issuesPlugin.register(
+				buildCtx({
+					repo: 'CartagoGit/mcp-vertex',
+					scaffoldDir: '../escape',
+				}),
+			),
+		).toThrow(/invalid scaffoldDir/);
 	});
 });

@@ -225,10 +225,28 @@ export const consolidateAudits = (
 /** Re-export for tests. */
 export const _internal = { isSameFinding, worstSeverity, SEVERITY_RANK };
 
+/**
+ * Options for {@link renderConsolidationMarkdown}. Keeps the function
+ * project-agnostic: the host wires its own project name into the
+ * header instead of hardcoding `\`@mcp-vertex/core\``.
+ */
+export interface IRenderConsolidationOptions {
+	/**
+	 * Human-readable project name rendered in the master document
+	 * header. Defaults to `"the project"` to stay agnostic of any
+	 * specific host vocabulary.
+	 */
+	readonly projectName?: string;
+}
+
 /** Convenience: render the consolidation as a markdown master document. */
-export const renderConsolidationMarkdown = (c: IConsolidation): string => {
+export const renderConsolidationMarkdown = (
+	c: IConsolidation,
+	options: IRenderConsolidationOptions = {},
+): string => {
 	const lines: string[] = [];
-	lines.push('# Auditoría Maestra (Unificada) — `@mcp-vertex/core`');
+	const projectName = options.projectName ?? 'the project';
+	lines.push(`# Auditoría Maestra (Unificada) — \`${projectName}\``);
 	lines.push('');
 	lines.push(
 		`> Consolidación de **${c.auditsFound}** auditorías. Los hallazgos 🔴/🟠 están re-verificados contra el código.`,

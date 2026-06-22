@@ -18,6 +18,40 @@ const createGithubClient = (repo: string): IGithubClient => ({
 });
 
 /**
+ * Knowledge entry surfaced when the plugin loads with `--plugins=proposals,issues`
+ * but `plugins.issues.options.repo` is not set in `mcp-vertex.config.json`.
+ * Without this entry, the user would see `issues_*` silently missing from
+ * `mcp-vertex_overview` and have to read the code to discover the reason.
+ * Surfacing the entry as a discoverable knowledge item makes the failure
+ * mode self-documenting and one `mcp-vertex_knowledge` call away.
+ */
+const ISSUES_NEEDS_SETUP_BODY = [
+	'# issues plugin — repo not configured',
+	'',
+	'`plugins/issues` is loaded but `plugins.issues.options.repo` is missing.',
+	'',
+	'Pick one of two paths:',
+	'',
+	'1. **Interactive (recommended for first-time setup)**: run the `setup-github` subcommand once. It detects the repo from `git remote get-url origin`, asks you to confirm, and writes the config atomically.',
+	'',
+	'   ```bash',
+	'   mcp-vertex setup-github',
+	'   ```',
+	'',
+	'2. **Manual**: edit `mcp-vertex.config.json` and add',
+	'',
+	'   ```jsonc',
+	'   {',
+	'     "plugins": {',
+	'       "issues": { "options": { "repo": "<owner>/<name>" } }',
+	'     }',
+	'   }',
+	'   ```',
+	'',
+	'Restart the host after either change.',
+].join('\n');
+
+/**
  * Opt-in GitHub issues plugin. Host-only, single-user productivity
  * tool (same shape as `plugins/logs` / `plugins/web-fetch`): not part
  * of the `swarm` preset, never loaded unless the user explicitly adds
@@ -32,11 +66,11 @@ const createGithubClient = (repo: string): IGithubClient => ({
  * register `issues` at all if `proposals` is not in the same load
  * set — no partial registration, no silently broken tools.
  *
- * S1 registers the plugin skeleton only: `dependsOn` is declared and
- * enforced, but the 5 `issues_*` tools (list/fetch/ingest/analyze/
- * resolve) and the GitHub client land in S2/S3. Until then,
- * `register()` returns zero tools — a deliberate, inspectable
- * mid-state, not a bug.
+ * The 5 `issues_*` tools (list/fetch/ingest/analyze/resolve) register
+ * conditionally on the `repo` option being set; without it, the
+ * plugin returns an `IKnowledgeEntry` (`issues-needs-repo-config`) so the
+ * host agent can discover the missing-config situation via
+ * `mcp-vertex_overview` or `mcp-vertex_knowledge`.
  */
 export default definePlugin({
 	name: 'issues',
@@ -45,9 +79,9 @@ export default definePlugin({
 		'REQUIRES proposals plugin. Opt-in GitHub issues ingest/analyse/promote workflow — host-only, not in the swarm preset.',
 	dependsOn: ['proposals'],
 	optionsSchema: z.object({
-		/** `'owner/name'`; defaults to `git remote get-url origin` (S2). */
+		/** `'owner/name'`; required to register the 5 `issues_*` tools. */
 		repo: z.string().optional(),
-		/** Defaults to `docs/proposals/retired/issues` (S2/S3). */
+		/** Defaults to `docs/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),
 	}),
 	register(ctx) {
@@ -63,13 +97,22 @@ export default definePlugin({
 				: DEFAULT_SCAFFOLD_DIR;
 
 		if (repo === undefined) {
-			// No `repo` configured: register zero tools rather than throwing
-			// at boot — `mcp-vertex --check` and a bare `--plugins=issues`
-			// smoke test should both succeed; the actual tool calls would
-			// simply have nowhere to fetch from. The proposal's S2 mentions
-			// deriving a default from `git remote get-url origin`; deferred to
-			// a follow-up slice so S3 stays focused on the 5 tools.
-			return { tools: [] };
+			// No `repo` configured: register zero tools + emit a
+			// discoverable knowledge entry instead of throwing at boot.
+			// The contract: the rest of the plugin surface stays green
+			// (CI smoke, `--check`), and any agent that boots the server
+			// sees the hint via `mcp-vertex_overview` (lists knowledge
+			// ids) or via a direct `mcp-vertex_knowledge` call.
+			return {
+				tools: [],
+				knowledge: [
+					{
+						id: 'issues-needs-repo-config',
+						title: 'issues plugin needs `repo` configured',
+						body: ISSUES_NEEDS_SETUP_BODY,
+					},
+				],
+			};
 		}
 
 		const contained = resolveWorkspaceContained(

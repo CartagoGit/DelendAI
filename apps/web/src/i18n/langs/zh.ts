@@ -60,7 +60,7 @@ const dict: LangDict = {
 		oneCmd: '一条命令 · 任意 IDE',
 		oneCmdNote:
 			'自动检测你的 IDE 并加入 mcp-vertex——绝不动你其它的 MCP 服务器。',
-		config: '选择一个预设（minimal · standard · swarm）或显式列出插件。用 --check 自检。',
+		config: '选择一个预设（minimal · standard · swarm · full）或显式列出插件。用 --check 自检。',
 		excludeHelp:
 			'使用 --exclude-plugins=（别名 --excludePlugins=）从解析结果中移除插件。便于在不复刻的情况下从预设中去掉某个插件——例如 --preset=swarm --exclude-plugins=notification 用于单智能体会话。',
 		tabsPackageManager: '包管理器',
@@ -202,7 +202,7 @@ const dict: LangDict = {
 				'安装：`bun add @mcp-vertex/core`（或 `npm install @mcp-vertex/core`）。',
 				'运行：`bunx mcp-vertex --preset=standard`（或 `npx mcp-vertex --preset=standard`）。',
 				'验证：进程会打印已加载的插件列表并在 stdio 上等待——按 Ctrl+C 停止。',
-				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|standard|swarm`（完整 flag 列表见“安装”页）。',
+				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|standard|swarm|full`（完整 flag 列表见“安装”页）。',
 				'先调用 `mcp-vertex_overview { compact: true }`——它会告诉你接下来该做什么。',
 			],
 		},

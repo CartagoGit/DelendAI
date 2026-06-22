@@ -102,7 +102,11 @@ describe('plugin satellite drift budget (l00008 s7)', () => {
 				// statement; otherwise it is documentation and the mention
 				// is descriptive, not a call.
 				const trimmed = line.trim();
-				if (trimmed.startsWith('//') || trimmed.startsWith('*'))
+				if (
+					trimmed.startsWith('//') ||
+					trimmed.startsWith('*') ||
+					trimmed.startsWith('- ')
+				)
 					continue;
 				if (trimmed.startsWith('- ')) continue; // markdown bullet
 				if (

@@ -153,17 +153,46 @@ export const buildOverviewToolRegistration = (
 					});
 				}
 				return toolJson({
-					...snap,
+					server: snap.server,
+					namespacePrefix: snap.namespacePrefix,
+					pluginDiagnostic: snap.pluginDiagnostic,
+					plugins: snap.plugins.map((plugin) =>
+						plugin.version === undefined
+							? plugin.name
+							: {
+									name: plugin.name,
+									...(plugin.version === undefined
+										? {}
+										: { version: plugin.version }),
+								},
+					),
 					tools: tools.map((tool) =>
 						tool.summary === undefined &&
 						tool.tags === undefined &&
 						tool.effects === undefined
 							? tool.name
 							: {
-									...tool,
-									summary: compactSummary(tool.summary),
+									name: tool.name,
+									...(tool.summary === undefined
+										? {}
+										: {
+												summary: compactSummary(
+													tool.summary,
+												),
+											}),
+									...(tool.tags === undefined
+										? {}
+										: { tags: tool.tags }),
+									...(tool.effects === undefined
+										? {}
+										: { effects: tool.effects }),
 								},
 					),
+					knowledge: snap.knowledge.map((entry) => ({
+						id: entry.id,
+						title: entry.title,
+					})),
+					recommendedNextAction: snap.recommendedNextAction,
 				});
 			},
 		);
