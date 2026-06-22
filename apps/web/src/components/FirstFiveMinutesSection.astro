@@ -1,16 +1,21 @@
 ---
 /**
- * FirstFiveMinutesSection.astro — onboarding quickstart (`/first-5-minutes`, l030 S3).
+ * FirstFiveMinutesSection.astro — onboarding quickstart (`/first-5-minutes`, f00048 S3).
  *
  * Three copy-pasteable profiles (Bun/Node, VS Code/Copilot, Claude Code) in
- * a tab strip, reusing `PluginTabs.astro` (already generic — no plugin-page
- * coupling). Each profile is an ordered list of steps; markdown-style
- * `` `code` `` spans in the copy are rendered as <code> via a tiny inline
- * splitter so the i18n strings stay plain text (no HTML in translation
- * files, consistent with every other page in this app).
+ * a shared `<Tabs>` strip. Each profile is a `<Stepper>` of plain-text steps
+ * (with inline `` `code` `` spans rendered as <code>) plus a `Callout` and
+ * optional `CodeBlock` for richer examples.
+ *
+ * Reuses the shared UI primitives so the transition behaviour matches the
+ * install page exactly — same controller, same fade-in animation, same
+ * keyboard navigation.
  */
 import { useTranslations, type Lang } from '#I18N/ui';
-import PluginTabs from '#COMPONENTS/PluginTabs.astro';
+import Tabs from '#UI/Tabs.astro';
+import Stepper from '#UI/Stepper.astro';
+import Callout from '#UI/Callout.astro';
+import CodeBlock from '#UI/CodeBlock.astro';
 
 interface Props {
 	lang: Lang;
@@ -23,34 +28,29 @@ const troubleshootingHref =
 	lang === 'en'
 		? `${base}/troubleshooting`
 		: `${base}/${lang}/troubleshooting`;
+const installHref =
+	lang === 'en' ? `${base}/install` : `${base}/${lang}/install`;
 
 const profiles = [
 	{
 		id: 'bun-node',
 		label: t.firstFiveMinutes.profileTabBunNode,
 		data: t.firstFiveMinutes.bunNode,
+		cmd: 'bunx @mcp-vertex/core --preset=standard',
 	},
 	{
 		id: 'vscode',
 		label: t.firstFiveMinutes.profileTabVscode,
 		data: t.firstFiveMinutes.vscode,
+		cmd: 'bunx @mcp-vertex/core init',
 	},
 	{
 		id: 'claude',
 		label: t.firstFiveMinutes.profileTabClaude,
 		data: t.firstFiveMinutes.claude,
+		cmd: 'bunx @mcp-vertex/core init',
 	},
 ] as const;
-
-/** Split `` `code` `` spans out of a plain-text step so they render as <code>. */
-const renderStep = (step: string) =>
-	step
-		.split(/(`[^`]+`)/g)
-		.map((part) =>
-			part.startsWith('`') && part.endsWith('`')
-				? { code: part.slice(1, -1) }
-				: part,
-		);
 ---
 
 <section id="first-5-minutes" class="section">
@@ -58,29 +58,75 @@ const renderStep = (step: string) =>
 		<h1>{t.firstFiveMinutes.title}</h1>
 		<p class="lead">{t.firstFiveMinutes.lead}</p>
 
-		<PluginTabs tabs={profiles.map((p) => ({ id: p.id, label: p.label }))}>
-			{profiles.map((p) => (
-				<section data-tab-panel={p.id} id={`panel-${p.id}`} hidden={p.id !== profiles[0].id}>
-					<h2>{p.data.title}</h2>
-					<p>{p.data.intro}</p>
-					<ol class="first5min__steps">
-						{p.data.steps.map((step) => (
-							<li>
-								{renderStep(step).map((part) =>
-									typeof part === 'string' ? part : <code>{part.code}</code>,
-								)}
-							</li>
-						))}
-					</ol>
-				</section>
-			))}
-		</PluginTabs>
+		<Tabs
+			tabs={profiles.map((p) => ({ id: p.id, label: p.label }))}
+			defaultTab={profiles[0].id}
+		>
+			{
+				profiles.map((p) => (
+					<section data-tab-panel={p.id} id={`ui-panel-${p.id}`}>
+						<h2 class="first5__h2">{p.data.title}</h2>
+						<p>{p.data.intro}</p>
+						<Stepper steps={p.data.steps} />
+						<CodeBlock
+							code={p.cmd}
+							lang="bash"
+							caption={t.install.oneCmd}
+							filename="terminal"
+							lang_label={lang}
+						/>
+					</section>
+				))
+			}
+		</Tabs>
 
-		<h2>{t.firstFiveMinutes.nextSteps}</h2>
-		<p>
-			<a href={toolsHref}>{t.firstFiveMinutes.nextToolsCta} →</a>
-			{' · '}
-			<a href={troubleshootingHref}>{t.firstFiveMinutes.nextTroubleshootingCta} →</a>
-		</p>
+		<section class="first5__next">
+			<h2>{t.firstFiveMinutes.nextSteps}</h2>
+			<ul class="first5__next-list">
+				<li>
+					<a href={installHref}>{t.install.title} →</a>
+				</li>
+				<li>
+					<a href={toolsHref}>{t.firstFiveMinutes.nextToolsCta} →</a>
+				</li>
+				<li>
+					<a href={troubleshootingHref}>
+						{t.firstFiveMinutes.nextTroubleshootingCta} →
+					</a>
+				</li>
+			</ul>
+			<Callout variant="tip" lang_label={lang}>
+				Run <code>mcp-vertex_overview</code> with <code>compact: true</code> after the
+				server boots — the <code>recommendedNextAction</code> field tells the agent exactly
+				what to do next.
+			</Callout>
+		</section>
 	</div>
 </section>
+
+<style>
+	.first5__h2 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.25rem, 3vw, 1.5rem);
+	}
+	.first5__next {
+		margin-top: 2.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--line);
+	}
+	.first5__next h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.15rem;
+	}
+	.first5__next-list {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.25rem;
+	}
+	.first5__next-list a {
+		font-weight: 500;
+	}
+</style>

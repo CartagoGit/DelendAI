@@ -66,6 +66,38 @@ const dict: LangDict = {
 		config: 'Wähle ein Preset (minimal · standard · swarm) oder liste Plugins explizit. Mit --check zur Selbstdiagnose.',
 		excludeHelp:
 			'Entferne Plugins aus der aufgelösten Menge mit --exclude-plugins= (Alias: --excludePlugins=). Praktisch, um ein Plugin aus einem Preset zu werfen, ohne es zu forken — z. B. --preset=swarm --exclude-plugins=notification für eine Einzel-Agent-Sitzung.',
+		tabsPackageManager: 'Paketmanager',
+		tabsIde: 'IDE / Agent',
+		tabsPreset: 'Preset',
+		pmStep1Title: '1. Initialisieren',
+		pmStep1Body:
+			'Führe den Ein-Befehl-Installer aus. Er erkennt deinen Editor, führt die Konfiguration zusammen und zeigt, was er getan hat.',
+		pmStep2Title: '2. Prüfen',
+		pmStep2Body:
+			'Starte denselben Paketmanager mit `--check` für die Selbstdiagnose.',
+		pmRecommend: 'Empfohlen',
+		ideFileLabel: 'Konfig-Datei',
+		ideScopeLabel: 'Geltungsbereich',
+		ideScopeProject: 'Projekt',
+		ideScopeGlobal: 'global',
+		ideScopeBoth: 'Projekt / global',
+		ideWhyLabel: 'Warum diese Form?',
+		ideWhyBody:
+			'Jede IDE verwendet einen leicht anderen JSON-Schlüssel (`mcpServers`, `servers`, `context_servers`) und einen anderen Pfad. Der Renderer passt sich automatisch an — einfach einfügen.',
+		presetSizeLabel: 'Plugins',
+		presetUseLabel: 'Verwenden für',
+		presetPluginsLabel: 'Enthaltene Plugins',
+		presetFoot:
+			'Übergib ein beliebiges Preset mit `--preset=<name>`. Presets sind additiv — kombiniere `--include-plugins=` und `--exclude-plugins=` zum Feintunen ohne Fork.',
+		copy: 'Kopieren',
+		copied: 'Kopiert!',
+		faqTitle: 'Häufige Fragen',
+		faqQ1: 'Warum startet `deno run -A npm:@mcp-vertex/core` langsam?',
+		faqA1: 'Deno löst das npm-Paket bei der ersten Verwendung auf und verifiziert es. Folgeaufrufe nutzen den Cache in `~/.cache/deno`. Für wiederholte Starts sind bun oder npx besser.',
+		faqQ2: 'Meine IDE ist nicht gelistet — was nun?',
+		faqA2: 'Jede IDE, die einen stdio-MCP-Server akzeptiert, funktioniert. Nimm das JSON aus VS Code, ändere den Dateipfad auf den von deiner IDE erwarteten und registriere denselben Befehl + Argumente.',
+		faqQ3: 'Kann ich mehrere Presets gleichzeitig ausführen?',
+		faqA3: 'Nein — ein Server, ein Preset. Wenn du pro Projekt unterschiedliche Plugin-Sets brauchst, lege eine `mcp-vertex.config.json` im Projekt ab und der Loader liest sie zuerst.',
 	},
 	tools: {
 		title: 'Tools',
@@ -263,6 +295,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'Preset',
 		},
+	},
+	ui: {
+		codeCopy: 'Kopieren',
+		codeCopied: 'Kopiert!',
+		codeCollapse: 'Einklappen',
+		codeExpand: 'Ausklappen',
+		calloutNote: 'Hinweis',
+		calloutTip: 'Tipp',
+		calloutWarn: 'Warnung',
+		calloutDanger: 'Gefahr',
+		tabsNext: 'Weiter',
+		tabsPrev: 'Zurück',
+		stepsOf: 'von',
 	},
 };
 

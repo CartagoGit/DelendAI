@@ -67,6 +67,38 @@ const dict: LangDict = {
 		config: 'プリセット（minimal · standard · swarm）を選ぶか、プラグインを明示的に列挙します。--check で自己診断。',
 		excludeHelp:
 			'--exclude-plugins=（別名：--excludePlugins=）で解決済みセットからプラグインを除外できます。フォークせずにプリセットから外すのに便利 — 例：--preset=swarm --exclude-plugins=notification は単一エージェントセッション向け。',
+		tabsPackageManager: 'パッケージマネージャ',
+		tabsIde: 'IDE / エージェント',
+		tabsPreset: 'プリセット',
+		pmStep1Title: '1. 初期化',
+		pmStep1Body:
+			'ワンコマンドのインストーラを実行します。エディタを検出し、設定をマージして、何を行ったかを表示します。',
+		pmStep2Title: '2. 検証',
+		pmStep2Body:
+			'同じパッケージマネージャに `--check` を付けて自己診断します。',
+		pmRecommend: '推奨',
+		ideFileLabel: '設定ファイル',
+		ideScopeLabel: 'スコープ',
+		ideScopeProject: 'プロジェクト',
+		ideScopeGlobal: 'グローバル',
+		ideScopeBoth: 'プロジェクト / グローバル',
+		ideWhyLabel: 'なぜこの形？',
+		ideWhyBody:
+			'IDE ごとに少しずつ異なる JSON キー（`mcpServers`、`servers`、`context_servers`）とパスを使います。レンダラーが自動で合わせるため、そのまま貼り付けてください。',
+		presetSizeLabel: 'プラグイン',
+		presetUseLabel: '用途',
+		presetPluginsLabel: '含まれるプラグイン',
+		presetFoot:
+			'`--preset=<name>` で任意のプリセットをサーバーに渡せます。プリセットは加算的です — フォークせずに `--include-plugins=` と `--exclude-plugins=` を組み合わせて微調整できます。',
+		copy: 'コピー',
+		copied: 'コピーしました！',
+		faqTitle: 'よくある質問',
+		faqQ1: 'なぜ `deno run -A npm:@mcp-vertex/core` の起動は遅い？',
+		faqA1: 'Deno は初回使用時に npm パッケージを解決・検証します。以降の実行は `~/.cache/deno` のキャッシュを再利用します。繰り返し起動するなら bun か npx を推奨。',
+		faqQ2: 'IDE がリストにない — どうすれば？',
+		faqA2: 'stdio MCP サーバーを受け入れる任意の IDE で動作します。VS Code の JSON をコピーし、ファイルパスをその IDE が期待するものに変更し、同じコマンド + 引数を登録してください。',
+		faqQ3: '複数のプリセットを同時に実行できますか？',
+		faqA3: 'いいえ — 1 つのサーバーに 1 つのプリセットです。プロジェクトごとに異なるプラグインセットが必要な場合は、そのプロジェクトに `mcp-vertex.config.json` を置くとローダーが最初に読みます。',
 	},
 	tools: {
 		title: 'ツール',
@@ -265,6 +297,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'プリセット',
 		},
+	},
+	ui: {
+		codeCopy: 'コピー',
+		codeCopied: 'コピーしました！',
+		codeCollapse: '折りたたむ',
+		codeExpand: '展開',
+		calloutNote: 'メモ',
+		calloutTip: 'ヒント',
+		calloutWarn: '注意',
+		calloutDanger: '危険',
+		tabsNext: '次へ',
+		tabsPrev: '前へ',
+		stepsOf: '/',
 	},
 };
 

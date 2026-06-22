@@ -1,0 +1,89 @@
+---
+/**
+ * `CopyButton.astro` — small standalone copy button (f00048 S1).
+ *
+ * Use when you have arbitrary text to copy that is NOT inside a `<code>`
+ * (e.g. an image URL, a JSON snippet kept in JS state, etc.). For code
+ * blocks, prefer `CodeBlock.astro` which already embeds a copy button.
+ *
+ * Props:
+ *   - text: the literal text to copy.
+ *   - label: button accessible label (default: 'Copy').
+ *   - variant: 'ghost' | 'solid'.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	readonly text: string;
+	readonly label?: string;
+	readonly variant?: 'ghost' | 'solid';
+	readonly lang_label?: Lang;
+}
+
+const {
+	text,
+	label,
+	variant = 'ghost',
+	lang_label = 'en',
+} = Astro.props as Props;
+const t = useTranslations(lang_label);
+const finalLabel = label ?? t.ui.codeCopy;
+---
+
+<button
+	type="button"
+	class:list={['ui-copybtn', `ui-copybtn--${variant}`]}
+	data-copy-text={text}
+	aria-label={finalLabel}
+>
+	<span class="ui-copybtn__icon" aria-hidden="true">⧉</span>
+	<span class="ui-copybtn__label" data-copy-label="idle">{finalLabel}</span>
+</button>
+
+<style>
+	.ui-copybtn {
+		appearance: none;
+		font: inherit;
+		font-size: 0.85rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.4rem 0.7rem;
+		border-radius: var(--radius);
+		cursor: pointer;
+		transition:
+			background-color 0.18s ease,
+			color 0.18s ease,
+			border-color 0.18s ease;
+	}
+	.ui-copybtn--ghost {
+		border: 1px solid var(--line);
+		background: transparent;
+		color: inherit;
+	}
+	.ui-copybtn--ghost:hover {
+		background: color-mix(in srgb, currentColor 8%, transparent);
+	}
+	.ui-copybtn--solid {
+		border: 1px solid transparent;
+		background: var(--accent, currentColor);
+		color: var(--accent-fg, var(--bg));
+	}
+	.ui-copybtn:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+	.ui-copybtn[data-state='copied'] {
+		color: var(--ok, #16a34a);
+		border-color: color-mix(in srgb, var(--ok, #16a34a) 40%, transparent);
+	}
+	.ui-copybtn__icon {
+		font-size: 1.05em;
+		line-height: 1;
+	}
+</style>
+
+<script>
+	import { initCopyButtons } from './_code-copy-controller';
+	initCopyButtons(document);
+</script>

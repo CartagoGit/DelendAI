@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-22T01:04:11.962Z",
-	"count": 103,
+	"generated_at": "2026-06-22T01:21:23.245Z",
+	"count": 104,
 	"proposals": [
 		{
 			"id": "a00032",
@@ -90,6 +90,14 @@
 			"id": "f00047",
 			"file": "ready/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
 			"track": "ui-extension+web+vscode+scss+i18n",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "f00048",
+			"file": "ready/f00048-web-install-onboarding-guide-ux-overhaul.md",
+			"track": "web+ui+i18n",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-22"

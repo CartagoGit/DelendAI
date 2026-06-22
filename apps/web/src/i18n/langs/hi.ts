@@ -66,6 +66,37 @@ const dict: LangDict = {
 		config: 'एक प्रीसेट चुनें (minimal · standard · swarm) या प्लगइन स्पष्ट रूप से सूचीबद्ध करें। स्व-निदान के लिए --check के साथ चलाएँ।',
 		excludeHelp:
 			'--exclude-plugins= (उपनाम: --excludePlugins=) के साथ हल प्लगइन सेट से प्लगइन्स हटाएँ। प्रीसेट से किसी प्लगइन को फोर्क किए बिना हटाने के लिए उपयोगी — उदा. --preset=swarm --exclude-plugins=notification एकल-एजेंट सत्र के लिए।',
+		tabsPackageManager: 'पैकेज मैनेजर',
+		tabsIde: 'IDE / एजेंट',
+		tabsPreset: 'प्रीसेट',
+		pmStep1Title: '1. प्रारंभ करें',
+		pmStep1Body:
+			'एक-कमांड इंस्टॉलर चलाएँ। यह आपका एडिटर पहचानता है, कॉन्फ़िगरेशन मर्ज करता है, और जो किया वह प्रिंट करता है।',
+		pmStep2Title: '2. सत्यापित करें',
+		pmStep2Body: 'स्व-निदान के लिए उसी पैकेज मैनेजर को `--check` के साथ चलाएँ।',
+		pmRecommend: 'अनुशंसित',
+		ideFileLabel: 'कॉन्फ़िग फ़ाइल',
+		ideScopeLabel: 'स्कोप',
+		ideScopeProject: 'प्रोजेक्ट',
+		ideScopeGlobal: 'वैश्विक',
+		ideScopeBoth: 'प्रोजेक्ट / वैश्विक',
+		ideWhyLabel: 'यह आकृति क्यों?',
+		ideWhyBody:
+			'हर IDE थोड़ा अलग JSON कुंजी (`mcpServers`, `servers`, `context_servers`) और अलग पथ उपयोग करता है। रेंडरर स्वतः अनुकूलित होता है — ज्यों का त्यों पेस्ट करें।',
+		presetSizeLabel: 'प्लगइन्स',
+		presetUseLabel: 'के लिए उपयोग',
+		presetPluginsLabel: 'शामिल प्लगइन्स',
+		presetFoot:
+			'`--preset=<name>` के साथ कोई भी प्रीसेट सर्वर को दें। प्रीसेट्स योगात्मक हैं — आप फोर्क किए बिना `--include-plugins=` और `--exclude-plugins=` को मिलाकर बारीक़ी से सेट कर सकते हैं।',
+		copy: 'कॉपी करें',
+		copied: 'कॉपी हो गया!',
+		faqTitle: 'अक्सर पूछे जाने वाले प्रश्न',
+		faqQ1: '`deno run -A npm:@mcp-vertex/core` धीमे क्यों शुरू होता है?',
+		faqA1: 'Deno पहले उपयोग पर npm पैकेज हल और सत्यापित करता है। बाद के रन `~/.cache/deno` में कैश का पुनः उपयोग करते हैं। बार-बार शुरू करने के लिए bun या npx बेहतर है।',
+		faqQ2: 'मेरा IDE सूची में नहीं है — अब क्या?',
+		faqA2: 'कोई भी IDE जो stdio MCP सर्वर स्वीकार करता है, काम करता है। VS Code का JSON लें, फ़ाइल पथ अपने IDE की अपेक्षा के अनुसार बदलें, और वही कमांड + तर्क पंजीकृत करें।',
+		faqQ3: 'क्या मैं एक साथ कई प्रीसेट चला सकता हूँ?',
+		faqA3: 'नहीं — एक सर्वर, एक प्रीसेट। यदि प्रति-प्रोजेक्ट अलग प्लगइन सेट चाहिए, तो उस प्रोजेक्ट में `mcp-vertex.config.json` रखें और लोडर उसे पहले पढ़ेगा।',
 	},
 	tools: {
 		title: 'टूल',
@@ -261,6 +292,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'प्रीसेट',
 		},
+	},
+	ui: {
+		codeCopy: 'कॉपी',
+		codeCopied: 'कॉपी हो गया!',
+		codeCollapse: 'संकुचित',
+		codeExpand: 'विस्तार',
+		calloutNote: 'नोट',
+		calloutTip: 'सुझाव',
+		calloutWarn: 'चेतावनी',
+		calloutDanger: 'ख़तरा',
+		tabsNext: 'अगला',
+		tabsPrev: 'पिछला',
+		stepsOf: 'में से',
 	},
 };
 
