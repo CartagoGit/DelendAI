@@ -67,6 +67,38 @@ const dict: LangDict = {
 		config: "Scegli un preset (minimal · standard · swarm) o elenca i plugin. Esegui con --check per l'autodiagnosi.",
 		excludeHelp:
 			'Sottrai plugin dall’insieme risolto con --exclude-plugins= (alias: --excludePlugins=). Utile per togliere un plugin da un preset senza biforcarlo — es. --preset=swarm --exclude-plugins=notification per una sessione single-agent.',
+		tabsPackageManager: 'Gestore pacchetti',
+		tabsIde: 'IDE / agente',
+		tabsPreset: 'Preset',
+		pmStep1Title: '1. Inizializza',
+		pmStep1Body:
+			'Esegui l’installer a un comando. Rileva l’editor, unisce la configurazione e mostra cosa ha fatto.',
+		pmStep2Title: '2. Verifica',
+		pmStep2Body:
+			'Esegui lo stesso gestore con `--check` per l’autodiagnosi.',
+		pmRecommend: 'Consigliato',
+		ideFileLabel: 'File di config',
+		ideScopeLabel: 'Ambito',
+		ideScopeProject: 'progetto',
+		ideScopeGlobal: 'globale',
+		ideScopeBoth: 'progetto / globale',
+		ideWhyLabel: 'Perché questa forma?',
+		ideWhyBody:
+			'Ogni IDE usa una chiave JSON leggermente diversa (`mcpServers`, `servers`, `context_servers`) e un percorso differente. Il renderer si adatta automaticamente — incollalo così com’è.',
+		presetSizeLabel: 'plugin',
+		presetUseLabel: 'Usalo per',
+		presetPluginsLabel: 'Plugin inclusi',
+		presetFoot:
+			'Passa qualsiasi preset al server con `--preset=<nome>`. I preset sono additivi — combina `--include-plugins=` e `--exclude-plugins=` per rifinire senza fork.',
+		copy: 'Copia',
+		copied: 'Copiato!',
+		faqTitle: 'Domande frequenti',
+		faqQ1: 'Perché `deno run -A npm:@mcp-vertex/core` è lento ad avviarsi?',
+		faqA1: 'Deno risolve e verifica il pacchetto npm al primo utilizzo. Le esecuzioni successive riutilizzano la cache in `~/.cache/deno`. Per avvii ripetuti, preferisci bun o npx.',
+		faqQ2: 'Il mio IDE non è elencato — cosa faccio?',
+		faqA2: 'Qualsiasi IDE che accetta un server MCP stdio funziona. Prendi il JSON da VS Code, cambia il percorso a quello atteso dal tuo IDE e registra lo stesso comando + argomenti.',
+		faqQ3: 'Posso eseguire più preset insieme?',
+		faqA3: 'No — un server, un preset. Se servono set di plugin diversi per progetto, metti un `mcp-vertex.config.json` in quel progetto e il loader lo legge prima.',
 	},
 	tools: {
 		title: 'Strumenti',
@@ -266,6 +298,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'Preset',
 		},
+	},
+	ui: {
+		codeCopy: 'Copia',
+		codeCopied: 'Copiato!',
+		codeCollapse: 'Riduci',
+		codeExpand: 'Espandi',
+		calloutNote: 'Nota',
+		calloutTip: 'Suggerimento',
+		calloutWarn: 'Avviso',
+		calloutDanger: 'Pericolo',
+		tabsNext: 'Avanti',
+		tabsPrev: 'Indietro',
+		stepsOf: 'di',
 	},
 };
 

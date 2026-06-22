@@ -10,7 +10,8 @@
 			"#LAYOUTS/*": ["./src/layouts/*"],
 			"#I18N/*": ["./src/i18n/*"],
 			"#LIB/*": ["./src/lib/*"],
-			"#SCRIPTS/*": ["./scripts/*"]
+			"#SCRIPTS/*": ["./scripts/*"],
+			"#UI/*": ["./src/components/ui/*"]
 		}
 	}
 }

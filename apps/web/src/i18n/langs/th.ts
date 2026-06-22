@@ -63,6 +63,37 @@ const dict: LangDict = {
 		config: 'เลือกพรีเซ็ต (minimal · standard · swarm) หรือระบุปลั๊กอินอย่างชัดเจน รันด้วย --check เพื่อวินิจฉัยตนเอง',
 		excludeHelp:
 			'ลบปลั๊กอินออกจากเซ็ตที่ถูกแก้ด้วย --exclude-plugins= (ชื่อแทน: --excludePlugins=) มีประโยชน์เมื่อต้องการตัดปลั๊กอินออกจากเพรสเซ็ตโดยไม่ fork — เช่น --preset=swarm --exclude-plugins=notification สำหรับเซสชันเอเจนต์เดี่ยว',
+		tabsPackageManager: 'ตัวจัดการแพ็กเกจ',
+		tabsIde: 'IDE / เอเจนต์',
+		tabsPreset: 'พรีเซ็ต',
+		pmStep1Title: '1. เริ่มต้น',
+		pmStep1Body:
+			'รันตัวติดตั้งคำสั่งเดียว มันจะตรวจจับตัวแก้ไขของคุณ ผสานคอนฟิก และพิมพ์สิ่งที่ทำ',
+		pmStep2Title: '2. ตรวจสอบ',
+		pmStep2Body: 'รันตัวจัดการแพ็กเกจเดิมพร้อม `--check` เพื่อวินิจฉัยตนเอง',
+		pmRecommend: 'แนะนำ',
+		ideFileLabel: 'ไฟล์คอนฟิก',
+		ideScopeLabel: 'ขอบเขต',
+		ideScopeProject: 'โปรเจกต์',
+		ideScopeGlobal: 'ส่วนกลาง',
+		ideScopeBoth: 'โปรเจกต์ / ส่วนกลาง',
+		ideWhyLabel: 'ทำไมเป็นรูปแบบนี้?',
+		ideWhyBody:
+			'แต่ละ IDE ใช้คีย์ JSON ต่างกันเล็กน้อย (`mcpServers`, `servers`, `context_servers`) และพาธต่างกัน ตัวเรนเดอร์ปรับอัตโนมัติ — วางตามต้นฉบับได้เลย',
+		presetSizeLabel: 'ปลั๊กอิน',
+		presetUseLabel: 'ใช้สำหรับ',
+		presetPluginsLabel: 'ปลั๊กอินที่รวมอยู่',
+		presetFoot:
+			'ส่งพรีเซ็ตใด ๆ ไปยังเซิร์ฟเวอร์ด้วย `--preset=<name>` พรีเซ็ตเป็นแบบบวก — รวม `--include-plugins=` และ `--exclude-plugins=` เพื่อปรับแต่งโดยไม่ต้อง fork',
+		copy: 'คัดลอก',
+		copied: 'คัดลอกแล้ว!',
+		faqTitle: 'คำถามที่พบบ่อย',
+		faqQ1: 'ทำไม `deno run -A npm:@mcp-vertex/core` เริ่มต้นช้า?',
+		faqA1: 'Deno แก้และตรวจสอบแพ็กเกจ npm ในการใช้ครั้งแรก การรันครั้งถัดไปใช้แคชใน `~/.cache/deno` สำหรับการเริ่มต้นซ้ำ ๆ ควรใช้ bun หรือ npx',
+		faqQ2: 'IDE ของฉันไม่อยู่ในรายการ — ทำอย่างไร?',
+		faqA2: 'IDE ใดก็ตามที่รับเซิร์ฟเวอร์ MCP แบบ stdio ใช้ได้ทั้งนั้น นำ JSON จาก VS Code ไปเปลี่ยนพาธไฟล์ให้ตรงกับที่ IDE ของคุณต้องการ แล้วลงทะเบียนคำสั่งและอาร์กิวเมนต์เดิม',
+		faqQ3: 'สามารถรันหลายพรีเซ็ตพร้อมกันได้ไหม?',
+		faqA3: 'ไม่ได้ — หนึ่งเซิร์ฟเวอร์ หนึ่งพรีเซ็ต หากต้องการชุดปลั๊กอินต่างกันต่อโปรเจกต์ ให้วาง `mcp-vertex.config.json` ในโปรเจกต์นั้น แล้วตัวโหลดจะอ่านมันก่อน',
 	},
 	tools: {
 		title: 'เครื่องมือ',
@@ -257,6 +288,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'พรีเซ็ต',
 		},
+	},
+	ui: {
+		codeCopy: 'คัดลอก',
+		codeCopied: 'คัดลอกแล้ว!',
+		codeCollapse: 'ย่อ',
+		codeExpand: 'ขยาย',
+		calloutNote: 'หมายเหตุ',
+		calloutTip: 'เคล็ดลับ',
+		calloutWarn: 'คำเตือน',
+		calloutDanger: 'อันตราย',
+		tabsNext: 'ถัดไป',
+		tabsPrev: 'ก่อนหน้า',
+		stepsOf: 'จาก',
 	},
 };
 

@@ -66,6 +66,38 @@ const dict: LangDict = {
 		config: 'Chọn một preset (minimal · standard · swarm) hoặc liệt kê plugin tường minh. Chạy với --check để tự chẩn đoán.',
 		excludeHelp:
 			'Trừ plugin khỏi tập đã giải bằng --exclude-plugins= (bí danh: --excludePlugins=). Hữu ích để loại một plugin khỏi preset mà không fork — ví dụ --preset=swarm --exclude-plugins=notification cho phiên đơn tác tử.',
+		tabsPackageManager: 'Trình quản lý gói',
+		tabsIde: 'IDE / tác tử',
+		tabsPreset: 'Preset',
+		pmStep1Title: '1. Khởi tạo',
+		pmStep1Body:
+			'Chạy trình cài một lệnh. Nó phát hiện trình soạn thảo, hợp nhất cấu hình và in ra những gì đã làm.',
+		pmStep2Title: '2. Kiểm tra',
+		pmStep2Body:
+			'Chạy cùng trình quản lý gói với `--check` để tự chẩn đoán.',
+		pmRecommend: 'Được khuyến nghị',
+		ideFileLabel: 'Tệp cấu hình',
+		ideScopeLabel: 'Phạm vi',
+		ideScopeProject: 'dự án',
+		ideScopeGlobal: 'toàn cục',
+		ideScopeBoth: 'dự án / toàn cục',
+		ideWhyLabel: 'Sao lại hình này?',
+		ideWhyBody:
+			'Mỗi IDE dùng khóa JSON hơi khác (`mcpServers`, `servers`, `context_servers`) và đường dẫn khác. Trình kết xuất tự thích nghi — dán nguyên si là chạy.',
+		presetSizeLabel: 'plugin',
+		presetUseLabel: 'Dùng cho',
+		presetPluginsLabel: 'Plugin đi kèm',
+		presetFoot:
+			'Truyền preset bất kỳ cho server bằng `--preset=<tên>`. Preset cộng dồn — kết hợp `--include-plugins=` và `--exclude-plugins=` để tinh chỉnh mà không fork.',
+		copy: 'Sao chép',
+		copied: 'Đã sao chép!',
+		faqTitle: 'Câu hỏi thường gặp',
+		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/core` khởi động chậm?',
+		faqA1: 'Deno giải và xác minh gói npm ở lần dùng đầu. Các lần sau dùng lại cache trong `~/.cache/deno`. Cho khởi động lặp lại, hãy ưu tiên bun hoặc npx.',
+		faqQ2: 'IDE của tôi không có trong danh sách — giờ sao?',
+		faqA2: 'Bất kỳ IDE nào chấp nhận MCP server stdio đều chạy được. Lấy JSON từ VS Code, đổi đường dẫn tệp cho khớp IDE của bạn, rồi đăng ký cùng lệnh + đối số.',
+		faqQ3: 'Tôi có thể chạy nhiều preset cùng lúc không?',
+		faqA3: 'Không — một server, một preset. Nếu mỗi dự án cần bộ plugin khác, đặt một `mcp-vertex.config.json` trong dự án đó và loader đọc nó trước.',
 	},
 	tools: {
 		title: 'Công cụ',
@@ -262,6 +294,19 @@ const dict: LangDict = {
 		table: {
 			preset: 'Preset',
 		},
+	},
+	ui: {
+		codeCopy: 'Sao chép',
+		codeCopied: 'Đã sao chép!',
+		codeCollapse: 'Thu gọn',
+		codeExpand: 'Mở rộng',
+		calloutNote: 'Ghi chú',
+		calloutTip: 'Mẹo',
+		calloutWarn: 'Cảnh báo',
+		calloutDanger: 'Nguy hiểm',
+		tabsNext: 'Tiếp',
+		tabsPrev: 'Trước',
+		stepsOf: 'trên',
 	},
 };
 

@@ -1,0 +1,180 @@
+---
+/**
+ * `Tabs.astro` — generic ARIA-correct tab strip with real transitions (f00048 S1).
+ *
+ * Behaviour:
+ *   - Renders an `<nav role="tablist">` with one `<button role="tab">` per entry.
+ *   - All panels (slot children) are rendered into the SSR output so no-JS users
+ *     see every section; the script just hides non-active panels on hydration.
+ *   - Cross-fade transition between panels uses a CSS `::view-transition-group`
+ *     workaround with opacity + transform (no View Transitions API needed; that
+ *     is reserved for page navigation in this app).
+ *   - Keyboard: ← / → moves focus + activation between tabs; Home / End jump to
+ *     first / last; roving tabindex is maintained automatically.
+ *   - State persists per `<Tabs>` root via `data-active` (no global).
+ *
+ * Props:
+ *   - tabs: ordered `{ id, label, badge? }` list.
+ *   - defaultTab: id of the panel visible on first render (defaults to tabs[0].id).
+ *   - variant: 'pill' | 'underline' (default underline — matches the existing
+ *     install page style).
+ *   - label: accessible label for the tablist (aria-label).
+ *
+ * Consumers must wrap each panel in `<section data-tab-panel={id} hidden={...}>`.
+ */
+interface Props {
+	readonly tabs: ReadonlyArray<{
+		readonly id: string;
+		readonly label: string;
+		readonly badge?: string;
+	}>;
+	readonly defaultTab?: string;
+	readonly variant?: 'underline' | 'pill';
+	readonly label?: string;
+}
+
+const {
+	tabs,
+	defaultTab,
+	variant = 'underline',
+	label = 'Sections',
+} = Astro.props as Props;
+const initial = defaultTab ?? tabs[0]?.id ?? '';
+---
+
+<section
+	class:list={['ui-tabs', `ui-tabs--${variant}`]}
+	data-ui-tabs
+	data-default-tab={initial}
+>
+	<nav class="ui-tabs__bar" aria-label={label}>
+		<ul role="tablist" class="ui-tabs__list">
+			{
+				tabs.map((t) => (
+					<li role="presentation">
+						<button
+							type="button"
+							role="tab"
+							id={`ui-tab-${t.id}`}
+							class="ui-tabs__tab"
+							data-tab-trigger={t.id}
+							aria-selected={t.id === initial ? 'true' : 'false'}
+							aria-controls={`ui-panel-${t.id}`}
+							tabindex={t.id === initial ? 0 : -1}
+						>
+							<span class="ui-tabs__label">{t.label}</span>
+							{t.badge && <span class="ui-tabs__badge">{t.badge}</span>}
+						</button>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<div class="ui-tabs__panels">
+		<slot />
+	</div>
+</section>
+
+<style>
+	.ui-tabs__bar {
+		position: relative;
+		margin-bottom: 1.5rem;
+	}
+	.ui-tabs--underline .ui-tabs__bar {
+		border-bottom: 1px solid var(--line);
+	}
+	.ui-tabs__list {
+		display: flex;
+		gap: 0.25rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		flex-wrap: wrap;
+	}
+	.ui-tabs__tab {
+		appearance: none;
+		background: transparent;
+		border: 0;
+		color: inherit;
+		cursor: pointer;
+		font: inherit;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.6rem 1rem;
+		border-radius: var(--radius);
+		transition:
+			background-color 0.18s ease,
+			color 0.18s ease;
+	}
+	.ui-tabs--underline .ui-tabs__tab {
+		border-radius: 0;
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+	}
+	.ui-tabs__tab:hover {
+		background: color-mix(in srgb, currentColor 8%, transparent);
+	}
+	.ui-tabs--underline .ui-tabs__tab:hover {
+		background: transparent;
+		color: var(--fg);
+	}
+	.ui-tabs__tab[aria-selected='true'] {
+		font-weight: 600;
+	}
+	.ui-tabs--underline .ui-tabs__tab[aria-selected='true'] {
+		border-bottom-color: currentColor;
+	}
+	.ui-tabs--pill .ui-tabs__tab[aria-selected='true'] {
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+	.ui-tabs__tab:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+	.ui-tabs__badge {
+		font-size: 0.7em;
+		padding: 0.1rem 0.4rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, currentColor 14%, transparent);
+		color: inherit;
+		opacity: 0.8;
+	}
+	.ui-tabs__panels {
+		position: relative;
+	}
+	/* Cross-fade transition between panels. The active panel animates
+	   in; the previous one fades out cleanly because we toggle `hidden`
+	   only after the transition completes (the controller handles that). */
+	.ui-tabs__panels > [data-tab-panel] {
+		animation: ui-tab-fade-in 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+	@keyframes ui-tab-fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.ui-tabs__panels > [data-tab-panel][hidden] {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.ui-tabs__panels > [data-tab-panel] {
+			animation: none;
+		}
+	}
+</style>
+
+<script>
+	/**
+	 * Tabs controller — extracted so the activation / keyboard logic is
+	 * unit-testable (same pattern as `plugin-tabs-controller.ts`).
+	 * Idempotent: running twice on the same root is a no-op.
+	 */
+	import { initTabs } from './_tabs-controller';
+	initTabs(document);
+</script>

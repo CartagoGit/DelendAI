@@ -63,6 +63,37 @@ const dict: LangDict = {
 		config: '选择一个预设（minimal · standard · swarm）或显式列出插件。用 --check 自检。',
 		excludeHelp:
 			'使用 --exclude-plugins=（别名 --excludePlugins=）从解析结果中移除插件。便于在不复刻的情况下从预设中去掉某个插件——例如 --preset=swarm --exclude-plugins=notification 用于单智能体会话。',
+		tabsPackageManager: '包管理器',
+		tabsIde: 'IDE / 智能体',
+		tabsPreset: '预设',
+		pmStep1Title: '1. 初始化',
+		pmStep1Body:
+			'运行一条命令的安装程序。它会检测你的编辑器、合并配置并打印所做的事。',
+		pmStep2Title: '2. 验证',
+		pmStep2Body: '使用同一个包管理器加上 `--check` 进行自检。',
+		pmRecommend: '推荐',
+		ideFileLabel: '配置文件',
+		ideScopeLabel: '作用域',
+		ideScopeProject: '项目',
+		ideScopeGlobal: '全局',
+		ideScopeBoth: '项目 / 全局',
+		ideWhyLabel: '为什么是这种结构？',
+		ideWhyBody:
+			'每个 IDE 使用略有不同的 JSON 键（`mcpServers`、`servers`、`context_servers`）和不同的文件路径。渲染器会自动适配——原样粘贴即可。',
+		presetSizeLabel: '个插件',
+		presetUseLabel: '适用于',
+		presetPluginsLabel: '包含的插件',
+		presetFoot:
+			'使用 `--preset=<名称>` 将任意预设传递给服务器。预设是可叠加的——可以组合 `--include-plugins=` 和 `--exclude-plugins=` 在不复刻的情况下微调。',
+		copy: '复制',
+		copied: '已复制！',
+		faqTitle: '常见问题',
+		faqQ1: '为什么 `deno run -A npm:@mcp-vertex/core` 启动慢？',
+		faqA1: 'Deno 在首次使用时解析并验证 npm 包。后续运行会复用 `~/.cache/deno` 中的缓存。若频繁启动，建议使用 bun 或 npx。',
+		faqQ2: '我的 IDE 不在列表中——怎么办？',
+		faqA2: '任何接受 stdio MCP 服务器的 IDE 都可以使用。复制 VS Code 的 JSON，把文件路径改成你的 IDE 期望的，再注册相同的命令与参数即可。',
+		faqQ3: '可以同时运行多个预设吗？',
+		faqA3: '不行——一个服务器对应一个预设。如果不同项目需要不同的插件集，可以在项目下放一个 `mcp-vertex.config.json`，加载器会优先读取它。',
 	},
 	tools: {
 		title: '工具',
@@ -257,6 +288,19 @@ const dict: LangDict = {
 		table: {
 			preset: '预设',
 		},
+	},
+	ui: {
+		codeCopy: '复制',
+		codeCopied: '已复制！',
+		codeCollapse: '折叠',
+		codeExpand: '展开',
+		calloutNote: '提示',
+		calloutTip: '技巧',
+		calloutWarn: '警告',
+		calloutDanger: '危险',
+		tabsNext: '下一个',
+		tabsPrev: '上一个',
+		stepsOf: '/',
 	},
 };
 
