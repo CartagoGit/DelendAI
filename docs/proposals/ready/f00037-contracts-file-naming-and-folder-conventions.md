@@ -157,12 +157,22 @@ run package-level tests before full `bun run validate`.
 
 ### S2 — Wire report-mode lint and baseline
 
-- **Status**: pending
+- **Status**: done
+- status: done
 - **Files**:
   - `package.json`
   - `docs/FILE-CONVENTIONS.md`
   - `tools/scripts/lint/file-conventions.script.ts`
 - **Gate**: `bun run lint:file-conventions`
+
+Delivered: `lint:file-conventions` wired in `package.json` as a
+non-failing baseline (`file-conventions.script.ts --report`, exits 0).
+`--report` now collapses to a single count line (`file-conventions: 485
+unmatched files`) instead of the per-file list — the docstring's
+promise was previously unimplemented. Baseline (485 unmatched) recorded
+in `docs/FILE-CONVENTIONS.md` under "Report-mode lint (S2)". Added a
+spec case for the report-mode branch (28 tests pass). The migration
+backlog (S4–S6) burns this number down; S7 flips it to strict.
 
 ### S3 — Add consumer-facing TypeScript convention profile
 
