@@ -230,8 +230,12 @@ export {
 	toolJson,
 	toolOk,
 	toolError,
+	toolErrorWithLogHint,
 } from '../lib/shared/tool-response';
-export type { IToolTextResult } from '../lib/shared/tool-response';
+export type {
+	IToolTextResult,
+	IToolErrorLogHint,
+} from '../lib/shared/tool-response';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
 export { buildOverviewToolRegistration } from '../lib/tools/overview-tool';

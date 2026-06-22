@@ -6,6 +6,62 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import { estimateResultBytes } from '../metrics/metrics-registry';
 
 /**
+ * Compute the absolute path of today's JSONL log file the
+ * `logs` plugin writes to. Pure: no filesystem I/O. The path is
+ * resolved against the host workspace and `corePaths.cacheDir`.
+ * When either is missing, the hint is `null` and the wrapper
+ * simply skips the injection.
+ */
+const resolveLogFilePath = (
+	config: IMcpVertexHostConfig,
+	now: Date,
+): string | null => {
+	if (!config.corePaths) return null;
+	const cacheDir = config.workspace.resolve(config.corePaths.cacheDir);
+	if (!cacheDir) return null;
+	const dateStr = now.toISOString().slice(0, 10);
+	const sep = cacheDir.includes('\\') ? '\\' : '/';
+	return `${cacheDir}${sep}logs${sep}${dateStr}.jsonl`;
+};
+
+/**
+ * Inject a `logHint` into a failure result's `structuredContent` so
+ * the IDE can offer a clickable "Open log" affordance. Pure: only
+ * mutates the in-memory result object; never does filesystem I/O.
+ * No-op when the result is not an object, already carries a
+ * `logHint`, or the path cannot be resolved.
+ */
+const injectLogHintIntoResult = (
+	result: unknown,
+	logPath: string | null,
+	now: Date,
+): void => {
+	if (!result || typeof result !== 'object') return;
+	if (
+		!Array.isArray(result) &&
+		(result as { isError?: boolean }).isError !== true
+	)
+		return;
+	const resObj = result as Record<string, unknown>;
+	const structured = resObj.structuredContent;
+	if (
+		structured === null ||
+		typeof structured !== 'object' ||
+		Array.isArray(structured)
+	) {
+		return;
+	}
+	const structuredObj = structured as Record<string, unknown>;
+	if ('logHint' in structuredObj) return; // engine already set one
+	if (logPath === null) return;
+	structuredObj.logHint = {
+		path: logPath,
+		line: 0, // unknown without I/O — IDE renders path only
+		ts: now.toISOString(),
+	};
+};
+
+/**
  * Wrap `server.registerTool` so every tool handler records latency, response
  * bytes and error flag into the metrics registry. Transparent: the tool
  * contract is unchanged; instrumentation is pure measurement around the call.
@@ -58,6 +114,18 @@ const instrumentToolHandlers = (
 							suggestedAction: stuckInfo.suggestedAction,
 						};
 					}
+				}
+
+				// On failure, inject a logHint so the IDE can offer an
+				// "Open log" affordance. Pure (no I/O): the actual
+				// log entry is written by the logs plugin's onToolCall
+				// in the finally block below.
+				if (isError) {
+					injectLogHintIntoResult(
+						result,
+						resolveLogFilePath(config, new Date()),
+						new Date(),
+					);
 				}
 
 				return result;

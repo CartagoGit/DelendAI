@@ -51,6 +51,26 @@ export interface IPlanToolOptions {
 	 * Wired from `ctx.options.layers`.
 	 */
 	readonly layers?: readonly ILayerConfig[];
+	/**
+	 * Project name rendered in the brief header and in the
+	 * "no layers configured" fallback. Wired from
+	 * `ctx.options.projectName`. Defaults to `"the project"` so the
+	 * brief stays agnostic for hosts that never set it.
+	 */
+	readonly projectName?: string;
+	/**
+	 * Config file path rendered in the "no layers configured" hint
+	 * (e.g. `mcp-vertex.config.json`, `app.toml`, `<config-file>`).
+	 * Wired from `ctx.options.configFileName`. Defaults to
+	 * `"<config-file>"` to avoid leaking any specific host vocabulary.
+	 */
+	readonly configFileName?: string;
+	/**
+	 * Host-specific cross-cutting invariants rendered into the brief's
+	 * "Invariantes transversales" block (after the universal defaults).
+	 * Wired from `ctx.options.crossCuttingAdditions`.
+	 */
+	readonly crossCuttingAdditions?: readonly string[];
 }
 
 /**
@@ -117,6 +137,18 @@ export const buildPlanRegistration = (
 						markdown: buildBrief(scope, {
 							dimensions,
 							layers: configuredLayers,
+							...(options.projectName !== undefined
+								? { projectName: options.projectName }
+								: {}),
+							...(options.configFileName !== undefined
+								? { configFileName: options.configFileName }
+								: {}),
+							...(options.crossCuttingAdditions !== undefined
+								? {
+										crossCuttingAdditions:
+											options.crossCuttingAdditions,
+									}
+								: {}),
 						}),
 						dimensions,
 						availableScopes: allAvailable,

@@ -1,5 +1,12 @@
 node_modules/
 
+# Plugin tool verification harness (tools/scripts/verify/) scratch dir.
+# The harness exercises fs_write with a real payload to prove the
+# outputSchema matches; the file is intentionally placed under
+# `.verify-tmp/` so it never collides with source files and is easy
+# to bulk-remove. Always gitignored.
+.verify-tmp/
+
 # Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
 #   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
 #   dist/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)

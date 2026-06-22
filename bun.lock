@@ -70,6 +70,24 @@
         "vitest": "4.1.8",
       },
     },
+    "packages/cli": {
+      "name": "@mcp-vertex/cli",
+      "version": "0.1.0",
+      "bin": {
+        "mcp-vertex": "./dist/index.js",
+        "mcpv": "./dist/index.js",
+      },
+      "dependencies": {
+        "@mcp-vertex/client": "workspace:*",
+        "@mcp-vertex/core": "workspace:*",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8",
+      },
+    },
     "packages/client": {
       "name": "@mcp-vertex/client",
       "version": "0.1.0",
@@ -86,9 +104,6 @@
     "packages/core": {
       "name": "@mcp-vertex/core",
       "version": "0.1.0",
-      "bin": {
-        "mcp-vertex": "./dist/cli.js",
-      },
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
@@ -166,6 +181,23 @@
     },
     "plugins/git": {
       "name": "@mcp-vertex/git",
+      "version": "0.1.0",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@mcp-vertex/core": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "6.0.3",
+        "vitest": "4.1.8",
+      },
+      "peerDependencies": {
+        "@mcp-vertex/core": "^0.1.0",
+      },
+    },
+    "plugins/issues": {
+      "name": "@mcp-vertex/issues",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -567,6 +599,8 @@
 
     "@mcp-vertex/audit": ["@mcp-vertex/audit@workspace:plugins/audit"],
 
+    "@mcp-vertex/cli": ["@mcp-vertex/cli@workspace:packages/cli"],
+
     "@mcp-vertex/client": ["@mcp-vertex/client@workspace:packages/client"],
 
     "@mcp-vertex/core": ["@mcp-vertex/core@workspace:packages/core"],
@@ -578,6 +612,8 @@
     "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:examples/custom-plugin"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
+
+    "@mcp-vertex/issues": ["@mcp-vertex/issues@workspace:plugins/issues"],
 
     "@mcp-vertex/logs": ["@mcp-vertex/logs@workspace:plugins/logs"],
 

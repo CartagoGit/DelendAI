@@ -78,6 +78,12 @@ export interface IConsolidateToolOptions {
 	 * `ctx.options.topActions` when present, defaulting to 5.
 	 */
 	readonly defaultTopActions?: number;
+	/**
+	 * Project name rendered in the master document header. Host wires
+	 * this from `ctx.options.projectName` so the consolidated markdown
+	 * does not hardcode mcp-vertex vocabulary.
+	 */
+	readonly projectName?: string;
 }
 
 /**
@@ -162,7 +168,11 @@ export const buildConsolidateRegistration = (
 					});
 					return toolJson({
 						...result,
-						markdown: renderConsolidationMarkdown(result),
+						markdown: renderConsolidationMarkdown(result, {
+							...(options.projectName !== undefined
+								? { projectName: options.projectName }
+								: {}),
+						}),
 					});
 				},
 			);
