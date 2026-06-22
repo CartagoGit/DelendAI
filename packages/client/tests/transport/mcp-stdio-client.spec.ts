@@ -78,6 +78,91 @@ describe('McpStdioClient', () => {
 		});
 	});
 
+	it('attaches a logHint from structuredContent on an error result', async () => {
+		const logHint = {
+			path: '/tmp/x/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			line: 7,
+			ts: '2026-06-22T10:00:00.000Z',
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					isError: true,
+					structuredContent: {
+						ok: false,
+						error: { reason: 'x' },
+						logHint,
+					},
+					content: [{ type: 'text', text: '{"ok":false}' }],
+				};
+			},
+		});
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			name: 'McpToolError',
+			logHint,
+		});
+	});
+
+	it('attaches a logHint parsed from the text envelope when structuredContent is absent', async () => {
+		const logHint = {
+			path: '/tmp/y/.cache/mcp-vertex/logs/2026-06-22.jsonl',
+			line: 3,
+			ts: '2026-06-22T11:00:00.000Z',
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					isError: true,
+					content: [
+						{
+							type: 'text',
+							text: JSON.stringify({
+								ok: false,
+								error: { reason: 'x' },
+								logHint,
+							}),
+						},
+					],
+				};
+			},
+		});
+		await expect(client.request('demo_fail', {})).rejects.toMatchObject({
+			name: 'McpToolError',
+			logHint,
+		});
+	});
+
+	it('leaves logHint undefined on an error result without one', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					isError: true,
+					content: [{ type: 'text', text: '{"ok":false}' }],
+				};
+			},
+		});
+		const err = await client.request('demo_fail', {}).catch((e) => e);
+		expect(err).toBeInstanceOf(McpToolError);
+		expect((err as McpToolError).logHint).toBeUndefined();
+	});
+
+	it('ignores a malformed logHint (missing/!typed fields)', async () => {
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return {
+					isError: true,
+					structuredContent: {
+						ok: false,
+						logHint: { path: '/x', line: 'NaN', ts: 1 },
+					},
+					content: [{ type: 'text', text: '{"ok":false}' }],
+				};
+			},
+		});
+		const err = await client.request('demo_fail', {}).catch((e) => e);
+		expect((err as McpToolError).logHint).toBeUndefined();
+	});
+
 	it('lists tools and closes the underlying transport when supported', async () => {
 		let closed = false;
 		const transport: IMcpTransport = {
