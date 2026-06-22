@@ -211,7 +211,7 @@ slice (the proposal's migration S4–S6 is what consumes this profile).
   - `packages/client/tests/**`
   - `packages/client/src/public/index.ts`
 - **Gate**: `bun run test packages/client && bun run typecheck`
-
+- status: done
 ### S5 — Migrate `packages/ui-extension` services/render contracts
 
 - **Status**: pending
