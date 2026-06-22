@@ -393,7 +393,7 @@ Commit, and updates this proposal's `shipped-in` list in
 - Tests inject a fake `IGithubClient` and a tmp dir; no real
   network calls.
 - **Gate**: `bun run test plugins/issues` exit 0.
-
+- status: done
 ### S4 — Docs + config wiring _(incl. `docs/`, excl. `apps/`)_
 
 - **Status**: ready
