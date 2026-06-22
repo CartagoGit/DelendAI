@@ -98,7 +98,11 @@ describe('plugin satellite drift budget (l00008 s7)', () => {
 				if (!SYNC_IO_PATTERN.test(line)) continue;
 				// Skip comments/docstrings that merely mention the pattern.
 				const trimmed = line.trim();
-				if (trimmed.startsWith('//') || trimmed.startsWith('*'))
+				if (
+					trimmed.startsWith('//') ||
+					trimmed.startsWith('*') ||
+					trimmed.startsWith('- ')
+				)
 					continue;
 				const key = `${relPath(abs)}:${i + 1}`;
 				if (SYNC_IO_ALLOWLIST.has(key)) continue;
