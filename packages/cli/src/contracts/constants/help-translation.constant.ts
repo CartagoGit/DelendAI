@@ -31,6 +31,14 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'docs list': 'List project documentation.',
 	'docs read': 'Read one project documentation file.',
 	scaffold: 'Generate a scaffold through the core tool.',
+	'git status': 'Working-tree status (branch + clean flag + entries).',
+	'git changed': 'List of changed file paths in the working tree.',
+	'git diff': 'Diff --stat (optionally staged or scoped to a path).',
+	'git log': 'Recent commits (hash + subject).',
+	'git blame':
+		'Per-line authorship for a tracked file (optionally a line range).',
+	'git show': 'Commit metadata + --stat summary for a ref (no full patch).',
+	'git worktree': 'List existing git worktrees for this repo (read-only).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
