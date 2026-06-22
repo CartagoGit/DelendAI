@@ -20,6 +20,13 @@ const EXPECTED_COMMANDS = [
 	'docs list',
 	'docs read',
 	'scaffold',
+	'git status',
+	'git changed',
+	'git diff',
+	'git log',
+	'git blame',
+	'git show',
+	'git worktree',
 ] as const;
 
 describe('CLI command registry', () => {
