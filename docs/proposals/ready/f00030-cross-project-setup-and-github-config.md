@@ -242,11 +242,17 @@ remediation for that step.
 - status: done
 ### S2 — `setup-github` subcommand + MCP tool _(excl. `apps/`, `docs/`)_
 
-- **Status**: done-on-disk (2026-06-22, orchestrator + implementation_runner)
-  **NOT YET COMMITTED** — terminal wedged in alt-buffer; subagent
-  could not run `git commit`. Work exists in working tree awaiting
-  commit on next session. See `.mcp-vertex/handoff/mensa-orchestrator-*.json`.
-- **Files (on disk, uncommitted)**:
+- **Status**: ready
+- **Gate**: `bun run test packages/core plugins/issues`
+- **Lost-work note (2026-06-22)**: a prior session reported this slice
+  "done-on-disk, not yet committed" (terminal wedged before `git
+  commit`). That uncommitted work was wiped by a concurrent agent's
+  `git reset` and is gone — none of the files below exist on disk or
+  in git history (verified `packages/core/src/lib/setup/` is absent).
+  The slice is therefore **not done**: it must be re-implemented from
+  the spec below. See `.mcp-vertex/handoff/mensa-orchestrator-*.json`
+  for the original design notes.
+- **Files (to implement)**:
   - `packages/core/src/lib/setup/setup-steps.ts` (new — agnostic step engine)
   - `packages/core/src/lib/setup/setup-steps.spec.ts` (new)
   - `packages/core/src/lib/setup/cross-project-guide.ts` (new — markdown producer)
@@ -264,17 +270,11 @@ remediation for that step.
   so the behaviour is identical. The CLI subcommand is a thin
   shell around the tool with stdin/stdout prompts; the tool is
   the underlying primitive.
-- **Gate (after commit)**: `bun run test packages/core plugins/issues`
-  exit 0. Subagent reports 1761 passed / 7 failed globally; the
-  7 failures are pre-existing in `token-budget.e2e`,
-  `plugin-drift-budget`, `preset-catalog`, `bun-polyfill-environment`
-  (none touch S2). External-gate-blocker recorded.
-- **Integration gap**: tool factory ready in
-  `plugins/issues/src/lib/tools/setup-github.tool.ts` but **not
-  yet exported** from `plugins/issues/src/lib/tools/index.ts` /
-  `plugins/issues/src/index.ts` — those files are claimed by
-  lyra/f00029-S3. Deferred to S3 or a tiny merge slice after
-  f00029 closes.
+- **Integration note**: when re-implemented, the tool factory in
+  `plugins/issues/src/lib/tools/setup-github.tool.ts` must be exported
+  from `plugins/issues/src/lib/tools/index.ts` /
+  `plugins/issues/src/index.ts` (the earlier attempt left this wiring
+  unfinished).
 
 ### S3 — `apps/web/src/pages/setup.astro` (wizard) _(incl. `apps/web/`)_
 
