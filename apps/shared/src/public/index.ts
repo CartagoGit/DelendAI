@@ -21,3 +21,18 @@ export {
 	flagFor,
 } from '../i18n/shared';
 export type { Theme } from '../i18n/shared';
+
+// Host-agnostic UI primitives. The S6 slice (`f00047`) replaced the
+// site/extension hand-rolled "More" dropdowns with the shared
+// `renderDropdown`, which lives in `@mcp-vertex/ui-extension` and is
+// re-exported here so every consumer imports it from one stable place:
+// `@mcp-vertex/shared`. Downstream consumers must NOT depend on
+// `@mcp-vertex/ui-extension` directly — that's an internal alias host.
+//
+// `renderDropdown` is the runtime HTML for an accessible disclosure
+// (button + panel + outside-click + Esc + aria attributes + CSS
+// transitions). It returns an HTML string suitable for Astro's
+// `set:html` directive. See `packages/ui-extension/src/components/
+// dropdown.ts` for the implementation and `tests/components/dropdown
+// .spec.ts` for the contract.
+export { renderDropdown } from '@mcp-vertex/ui-extension';
