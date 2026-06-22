@@ -1,15 +1,7 @@
 {
-	"generated_at": "2026-06-22T23:29:10.409Z",
+	"generated_at": "2026-06-22T23:52:52.816Z",
 	"count": 109,
 	"proposals": [
-		{
-			"id": "d00001",
-			"file": "ready/d00001-update-budget-skills-tool-names.md",
-			"track": "docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
-		},
 		{
 			"id": "f00029",
 			"file": "ready/f00029-github-issues-plugin-ingest-and-propose.md",
@@ -57,20 +49,20 @@
 			"date": "2026-06-22"
 		},
 		{
-			"id": "x00001",
-			"file": "ready/x00001-fix-torn-reads-in-log-store.md",
-			"track": "logs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
-		},
-		{
 			"id": "c00001",
 			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
 			"track": "plugins+security",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "d00001",
+			"file": "done/d00001-update-budget-skills-tool-names.md",
+			"track": "docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "f00019",
@@ -151,6 +143,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "x00001",
+			"file": "done/x00001-fix-torn-reads-in-log-store.md",
+			"track": "logs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "c00002",
