@@ -107,13 +107,13 @@ export const componentCss: string = `
 	max-width: 360px;
 	animation: mv-toast-in 180ms ease-out;
 }
-.mv-toast--success { border-color: var(--mv-brand-blue, #58a6ff); }
+.mv-toast--success { border-color: var(--mv-brand-blue); }
 .mv-toast--warn { border-color: #d29922; }
 .mv-toast--error { border-color: #f85149; }
 .mv-toast__message { flex: 1; }
 .mv-toast__action {
 	padding: 4px 10px;
-	background: var(--mv-brand-blue, #58a6ff);
+	background: var(--mv-brand-blue);
 	color: #fff; border: 0; border-radius: var(--mv-radius-sm, 4px);
 	font: inherit; cursor: pointer;
 }
