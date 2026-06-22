@@ -290,15 +290,24 @@ describe('notification plugin', () => {
 			}),
 		);
 
-		// Wait for watcher to poll and trigger
-		await new Promise((resolve) => setTimeout(resolve, 150));
-
-		// Check if stuck-detected event was logged
-		const stuckEvent = logs.find((l) => l.data?.event === 'stuck-detected');
-		expect(stuckEvent).toBeDefined();
-		expect(stuckEvent.level).toBe('warning');
-		expect(stuckEvent.data.agent).toBe('my-agent');
-		expect(stuckEvent.data.handoffPath).toBe(
+		// Wait for the watcher to poll and trigger — poll the logs
+		// array with a short retry loop instead of a fixed setTimeout
+		// because the watcher cadence is load-dependent (flaked at 150ms
+		// under parallel test load; 500ms × 10 retries is the smallest
+		// deterministic upper bound).
+		let stuckEvent: (typeof logs)[number] | undefined;
+		for (let attempt = 0; attempt < 10; attempt += 1) {
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			stuckEvent = logs.find((l) => l.data?.event === 'stuck-detected');
+			if (stuckEvent) break;
+		}
+		expect(
+			stuckEvent,
+			'stuck-detected log should appear after polling',
+		).toBeDefined();
+		expect(stuckEvent?.level).toBe('warning');
+		expect(stuckEvent?.data?.agent).toBe('my-agent');
+		expect(stuckEvent?.data?.handoffPath).toBe(
 			'.mcp-vertex/handoff/stuck-agent.json',
 		);
 
