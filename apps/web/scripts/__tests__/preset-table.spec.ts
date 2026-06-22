@@ -26,9 +26,10 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// The last ids are host-only (full's deltas)
-			expect(ids.at(-4)).toBe('audit');
-			expect(ids.at(-3)).toBe('logs');
+			// The last ids are host-only (full's deltas). `audit` is opt-in
+			// as of the a00032 S7 preset recalibration (logs moved to swarm,
+			// audit moved to opt-in), so the host-only tail is now just
+			// web-fetch + issues.
 			expect(ids.at(-2)).toBe('web-fetch');
 			expect(ids.at(-1)).toBe('issues');
 		});
@@ -40,8 +41,12 @@ describe('preset-table', () => {
 			const full = matrix.rows.find((r) => r.preset.id === 'full');
 			expect(minimal?.effective).toEqual(['git', 'search']);
 			expect(swarm?.effective).toContain('proposals');
+			// `audit` is opt-in as of a00032 S7 — not in any preset.
 			expect(swarm?.effective).not.toContain('audit');
-			expect(full?.effective).toContain('audit');
+			expect(full?.effective).not.toContain('audit');
+			// `logs` moved from full to swarm in a00032 S7.
+			expect(swarm?.effective).toContain('logs');
+			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
 		});
 	});
@@ -55,16 +60,11 @@ describe('preset-table', () => {
 		});
 
 		it('returns "hostOnly" for a host-only plugin inside full', () => {
-			expect(cellStateFor(matrix, 'full', 'audit')).toBe('hostOnly');
+			// a00032 S7: `audit` is opt-in (no longer in any preset), so
+			// `cellStateFor(matrix, 'full', 'audit')` is now "absent".
+			expect(cellStateFor(matrix, 'full', 'audit')).toBe('absent');
 			expect(cellStateFor(matrix, 'full', 'issues')).toBe('hostOnly');
-		});
-
-		it('returns "absent" for a plugin not in the preset', () => {
-			expect(cellStateFor(matrix, 'minimal', 'proposals')).toBe('absent');
-			expect(cellStateFor(matrix, 'standard', 'audit')).toBe('absent');
-		});
-
-		it('returns "absent" for an unknown preset id', () => {
+			expect(cellStateFor(matrix, 'full', 'web-fetch')).toBe('hostOnly');
 			expect(cellStateFor(matrix, 'foo', 'git')).toBe('absent');
 		});
 
