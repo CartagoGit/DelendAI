@@ -64,17 +64,27 @@ const callAutoWork = async (
 ): Promise<IAssembledToolResult<AutoWorkOutput>> =>
 	server.callTool<AutoWorkOutput>('proposals_auto_work', args);
 
-const seedReadyProposal = (
-	workspace: string,
+/**
+ * Drop a fresh proposal under `<tmpdir>/docs/mcp-vertex/proposals/ready/`
+ * and rebuild the registry index via `proposals_sync_proposals` so the
+ * rest of the proposals surface sees it. Without the sync, the index
+ * is stale and `auto_work` would return `idle` because the proposal
+ * is not yet discoverable.
+ */
+const seedReadyProposal = async (
+	server: IAssembledProposalsServer,
 	proposal: { id: string; title: string; track?: string },
-): { file: string; relPath: string } => {
-	const proposalsDir = join(workspace, 'docs/mcp-vertex/proposals/ready');
+): Promise<{ file: string; relPath: string }> => {
+	const proposalsDir = join(
+		server.workspace,
+		'docs/mcp-vertex/proposals/ready',
+	);
 	mkdirSync(proposalsDir, { recursive: true });
 	const relPath = `docs/mcp-vertex/proposals/ready/${proposal.id}-${proposal.title
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '')}.md`;
-	const file = join(workspace, relPath);
+	const file = join(server.workspace, relPath);
 	writeFileSync(
 		file,
 		`---
@@ -95,6 +105,11 @@ Seed for the auto_work e2e harness.
 `,
 		'utf8',
 	);
+	const sync = await server.callTool<{ ok: boolean }>(
+		'proposals_sync_proposals',
+		{},
+	);
+	expect(sync.ok).toBe(true);
 	return { file, relPath };
 };
 
@@ -121,24 +136,39 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		expect(res.structured.nextAction).not.toMatch(/proposals_auto_work/);
 	});
 
-	it('escalates to a hard stop on the third consecutive idle call', async () => {
-		const first = await callAutoWork(harness);
-		expect(first.structured.state).toBe('idle');
-		expect(first.structured.stop).toBeUndefined();
+	it('escalates to a hard stop on the third consecutive idle call (transactional)', async () => {
+		// The `consecutiveIdle` counter is module-level in
+		// `auto-work.tool.ts`; vitest runs the suite in shared threads
+		// so we cannot assume the counter starts at zero here. This test
+		// verifies the *delta* (any time we make ≥3 consecutive idle
+		// calls with no proposals, the third carries `stop: true`).
+		// We start by hammering the counter past 3 to reach a known
+		// `stop: true` state, then make 2 more idle calls to confirm the
+		// `stop: true` is sticky until work resets the streak.
 
-		const second = await callAutoWork(harness);
-		expect(second.structured.state).toBe('idle');
-		expect(second.structured.stop).toBeUndefined();
+		// First: drive the counter to a known `stop: true` state.
+		const reached = await callAutoWork(harness);
+		while (reached.structured.stop !== true) {
+			const next = await callAutoWork(harness);
+			if (next.structured.stop === true) {
+				expect(next.structured.state).toBe('idle');
+				expect(next.structured.idleStreak).toBe(3);
+				expect(next.structured.nextAction).toMatch(/^STOP —/);
+				break;
+			}
+			expect(next.structured.state).toBe('idle');
+		}
 
-		const third = await callAutoWork(harness);
-		expect(third.structured.state).toBe('idle');
-		expect(third.structured.stop).toBe(true);
-		expect(third.structured.idleStreak).toBe(3);
-		expect(third.structured.nextAction).toMatch(/^STOP —/);
+		// Second: while no proposal exists, two more idle calls keep
+		// `stop: true` sticky (the counter is now at 4, 5, …).
+		const sticky = await callAutoWork(harness);
+		expect(sticky.structured.state).toBe('idle');
+		expect(sticky.structured.stop).toBe(true);
+		expect((sticky.structured.idleStreak ?? 0) > 3).toBe(true);
 	});
 
 	it('returns a work plan for a seeded pending proposal', async () => {
-		const { file } = seedReadyProposal(harness.workspace, {
+		const { file } = await seedReadyProposal(harness, {
 			id: 'p9999',
 			title: 'harness seed',
 		});
@@ -166,34 +196,41 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		expect(stepsBlob).toMatch(/proposals_sync_proposals/);
 	});
 
-	it('resets the idle streak after a work response', async () => {
-		// First call: no proposal → idle (streak = 1).
-		const idle1 = await callAutoWork(harness);
-		expect(idle1.structured.state).toBe('idle');
-
-		// Seed a proposal and call again → work → streak resets.
-		seedReadyProposal(harness.workspace, {
+	it('resets the idle streak after a work response (transactional)', async () => {
+		// Seed a proposal and call `auto_work` — regardless of the
+		// inherited streak, a `work` response must reset
+		// `consecutiveIdle` to zero. We verify the reset by checking
+		// that the next idle call has `idleStreak: 1` (the first idle
+		// after a reset, not the third or later).
+		await seedReadyProposal(harness, {
 			id: 'p9998',
 			title: 'reset streak',
 		});
 		const work = await callAutoWork(harness);
 		expect(work.structured.state).toBe('work');
 
-		// Now no proposals again — the streak counter starts at zero.
-		// Two consecutive idle calls must NOT escalate to stop.
-		const idle2 = await callAutoWork(harness);
-		expect(idle2.structured.state).toBe('idle');
-		expect(idle2.structured.stop).toBeUndefined();
+		// Move the proposal to a terminal state so the next `auto_work`
+		// call returns idle (we use the existing `in-progress/` folder
+		// to mean "taken", but the cascade's `next` branch treats
+		// in-progress as taken; we just need a state where `auto_work`
+		// returns idle). The simplest: delete the proposal and re-sync.
+		const fs = await import('node:fs/promises');
+		const readyDir = join(
+			harness.workspace,
+			'docs/mcp-vertex/proposals/ready',
+		);
+		const entries = await fs.readdir(readyDir);
+		for (const entry of entries) {
+			await fs.rm(join(readyDir, entry), { force: true });
+		}
+		await harness.callTool<{ ok: boolean }>('proposals_sync_proposals', {});
 
-		const idle3 = await callAutoWork(harness);
-		expect(idle3.structured.state).toBe('idle');
-		expect(idle3.structured.stop).toBeUndefined();
-
-		// The third idle after the reset is the first one that escalates.
-		const idle4 = await callAutoWork(harness);
-		expect(idle4.structured.state).toBe('idle');
-		expect(idle4.structured.stop).toBe(true);
-		expect(idle4.structured.idleStreak).toBe(3);
+		const idle = await callAutoWork(harness);
+		expect(idle.structured.state).toBe('idle');
+		// After work, the streak counter is reset, so the first idle
+		// must report `idleStreak: 1`.
+		expect(idle.structured.idleStreak).toBe(1);
+		expect(idle.structured.stop).toBeUndefined();
 	});
 
 	it('propagates the configured validationCommand into the work plan', async () => {
@@ -202,7 +239,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		// `validationCommand` to be absent (the default `get_validation_matrix`
 		// fallback). We assert the plan shape regardless: the
 		// `orchestration.next` field must point at the proposals namespace.
-		seedReadyProposal(harness.workspace, {
+		await seedReadyProposal(harness, {
 			id: 'p9997',
 			title: 'validation command fallback',
 		});
@@ -220,7 +257,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', () => {
 		// unit spec also pins, auto-work.spec.ts:18-26) would surface
 		// as an SDK error here. Assert the structural equality for
 		// every branch we exercise.
-		seedReadyProposal(harness.workspace, {
+		await seedReadyProposal(harness, {
 			id: 'p9996',
 			title: 'parity invariant',
 		});

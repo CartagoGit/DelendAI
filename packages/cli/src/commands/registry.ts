@@ -402,7 +402,6 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 			}
 			return data({ report, written });
 		},
-	},
 	gitStatusCommand,
 	gitChangedCommand,
 	gitDiffCommand,

@@ -1,16 +1,13 @@
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-detector-service';
 import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
 
 describe('debug-falcon', () => {
-	it('logs state after 9 calls', async () => {
+	it('logs state after 9 calls (no stderr spy)', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'loop-debug-'));
-		const stderrSpy = vi
-			.spyOn(process.stderr, 'write')
-			.mockImplementation(() => true);
 		try {
 			const workspace = createWorkspacePathProvider(dir);
 			const mockCtx = {
@@ -29,14 +26,6 @@ describe('debug-falcon', () => {
 				args: {},
 			};
 			const service = new AgentLoopDetectorService(mockCtx);
-			console.log(
-				'repeatThreshold:',
-				(service as any).options.repeatThreshold,
-			);
-			console.log(
-				'interactiveAgentPatterns:',
-				(service as any).options.interactiveAgentPatterns,
-			);
 			for (let i = 0; i < 9; i++) {
 				await service.onToolCall(
 					'edit_file',
@@ -47,25 +36,39 @@ describe('debug-falcon', () => {
 			const stuck = service.isAgentStuck('edit_file', {
 				agent: 'falcon',
 			});
-			console.log('stuck:', stuck);
+			// Use console.log (not stubbed) to surface state.
+			// eslint-disable-next-line no-console
 			console.log(
-				'stuckAgents:',
-				Array.from((service as any).stuckAgents.entries()),
-			);
-			console.log(
-				'windowMap sizes:',
-				Array.from((service as any).windowMap.entries()).map(
-					([k, v]) => [k, v.length],
-				),
-			);
-			console.log(
-				'isInteractiveAgent("falcon"):',
-				(service as any).isInteractiveAgent('falcon'),
+				'DEBUG_OUT',
+				JSON.stringify({
+					threshold: (
+						service as { options: { repeatThreshold: number } }
+					).options.repeatThreshold,
+					stuck,
+					stuckAgents: Array.from(
+						(
+							service as unknown as {
+								stuckAgents: Map<string, unknown>;
+							}
+						).stuckAgents.entries(),
+					),
+					windowMapSizes: Array.from(
+						(
+							service as unknown as {
+								windowMap: Map<string, unknown[]>;
+							}
+						).windowMap.entries(),
+					).map(([k, v]) => [k, v.length]),
+					isInteractiveFalcon: (
+						service as unknown as {
+							isInteractiveAgent: (s: string) => boolean;
+						}
+					).isInteractiveAgent('falcon'),
+				}),
 			);
 			expect(stuck).not.toBeNull();
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
-			stderrSpy.mockRestore();
 		}
 	});
 });
