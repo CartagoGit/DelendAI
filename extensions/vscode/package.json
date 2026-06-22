@@ -92,6 +92,10 @@
 				"title": "mcp-vertex: Open Settings"
 			},
 			{
+				"command": "mcp-vertex.openToolbar",
+				"title": "mcp-vertex: Open Toolbar"
+			},
+			{
 				"command": "mcp-vertex.memorySave",
 				"title": "mcp-vertex: Save Memory Note"
 			},

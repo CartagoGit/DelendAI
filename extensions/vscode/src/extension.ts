@@ -42,6 +42,10 @@ import {
 } from './commands/show-metrics';
 import { registerShowOverviewCommand } from './commands/show-overview';
 import {
+	OPEN_TOOLBAR_COMMAND,
+	registerOpenToolbarCommand,
+} from './commands/open-toolbar';
+import {
 	TOOL_SEARCH_COMMAND,
 	registerToolSearchCommand,
 } from './commands/tool-search';
@@ -175,6 +179,7 @@ export const activate = async (
 		registerMemoryForgetCommand({ vscode, client, memoryTree }),
 	);
 	context.subscriptions.push(registerOpenSettingsCommand({ vscode, client }));
+	context.subscriptions.push(registerOpenToolbarCommand({ vscode, client }));
 
 	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`
@@ -227,6 +232,7 @@ export {
 	OPEN_KNOWLEDGE_COMMAND,
 	OPEN_SETTINGS_COMMAND,
 	OPEN_PROPOSAL_COMMAND,
+	OPEN_TOOLBAR_COMMAND,
 	REFRESH_COMMAND,
 	RESTART_SERVER_COMMAND,
 	RUN_VALIDATION_COMMAND,
