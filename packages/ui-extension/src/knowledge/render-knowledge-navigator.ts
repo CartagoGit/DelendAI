@@ -105,7 +105,7 @@ export const renderKnowledgeNavigator = (
 			--mv-bg: var(--vscode-editor-background, #0d1117);
 			--mv-border: var(--vscode-widget-border, #30363d);
 			--mv-surface: var(--vscode-side-bar-background, #161b22);
-			--mv-accent: var(--mv-brand-purple, #a371f7);
+			--mv-accent: var(--mv-brand-purple);
 		}
 		* { box-sizing: border-box; }
 		body {

@@ -293,12 +293,15 @@ describe('renderDashboard', () => {
 		expect(html).toContain('https://mcp-vertex.dev');
 	});
 
-	it('inlines the brand logo SVG in the header', () => {
+	it('inlines the brand logo SVG in the header (via shared --mv-brand-* tokens)', () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('mv-header__logo');
 		expect(html).toContain('linearGradient');
-		expect(html).toContain('#58a6ff');
-		expect(html).toContain('#a371f7');
+		// f00047 S3: brand hex literals moved to apps/shared; the webview
+		// references them via CSS variables so there is exactly one source
+		// of truth. Asserting the variable names keeps the test honest.
+		expect(html).toContain('--mv-brand-blue');
+		expect(html).toContain('--mv-brand-purple');
 	});
 
 	it('sets the first tab as active by default', () => {
