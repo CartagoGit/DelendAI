@@ -63,6 +63,7 @@ const ALIAS_ROOTS = /** @type {const} */ ([
 	['#I18N', 'apps/web/src/i18n'],
 	['#LIB', 'apps/web/src/lib'],
 	['#SCRIPTS', 'apps/web/scripts'],
+	['#UI', 'apps/web/src/components/ui'],
 ]);
 
 /**
