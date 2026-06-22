@@ -42,7 +42,9 @@ describe('debug-falcon', () => {
 				'DEBUG_OUT',
 				JSON.stringify({
 					threshold: (
-						service as { options: { repeatThreshold: number } }
+						service as unknown as {
+							options: { repeatThreshold: number };
+						}
 					).options.repeatThreshold,
 					stuck,
 					stuckAgents: Array.from(

@@ -301,11 +301,13 @@ describe('AgentLoopDetectorService', () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			// A swarm agent with a non-matching name: even one more than
 			// the threshold trips the detector (proves the threshold did
-			// not silently regress for swarm agents).
+			// not silently regress for swarm agents). Args are kept
+			// constant so the detector's `(tool, args-hash)` exact-repeat
+			// key matches across calls — see `detectAgentLoop` contract.
 			for (let i = 0; i < 9; i++) {
 				await service.onToolCall(
 					'edit_file',
-					{ path: 'foo.ts', agent: 'falcon', val: i },
+					{ path: 'foo.ts', agent: 'falcon' },
 					{ ok: true },
 				);
 			}
