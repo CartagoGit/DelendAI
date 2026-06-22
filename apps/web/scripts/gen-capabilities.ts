@@ -81,23 +81,39 @@ const OUT = resolve(
 	'manifests',
 	'capabilities.json',
 );
-const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,status-marker,test-convention,audit,docs,deps,logs';
-const PLUGINS: Record<string, unknown> = {
-	'mcp-proposals': proposalsPlugin,
-	'mcp-rules': rulesPlugin,
-	'mcp-memory': memoryPlugin,
-	'mcp-git': gitPlugin,
-	'mcp-quality': qualityPlugin,
-	'mcp-search': searchPlugin,
-	'mcp-notification': notificationPlugin,
-	'mcp-status-marker': statusMarkerPlugin,
-	'mcp-test-convention': testConventionPlugin,
-	'mcp-audit': auditPlugin,
-	'mcp-docs': docsPlugin,
-	'mcp-deps': depsPlugin,
-	'mcp-logs': logsPlugin,
-};
+// Plugin loaders + the map key the host uses for each (`mcp-<short>`).
+// Keys must match `package.json#name` of every plugin in `plugins/*/src/lib`.
+// Module records are resolved lazily so `bun run dev` on a fresh checkout
+// (no `dist/`) can fall back to a stub instead of crashing on import.
+type PluginModule = { default: unknown };
+const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
+	'@mcp-vertex/proposals': () => import('@mcp-vertex/proposals'),
+	'@mcp-vertex/rules': () => import('@mcp-vertex/rules'),
+	'@mcp-vertex/memory': () => import('@mcp-vertex/memory'),
+	'@mcp-vertex/git': () => import('@mcp-vertex/git'),
+	'@mcp-vertex/quality': () => import('@mcp-vertex/quality'),
+	'@mcp-vertex/search': () => import('@mcp-vertex/search'),
+	'@mcp-vertex/notification': () => import('@mcp-vertex/notification'),
+	'@mcp-vertex/status-marker': () => import('@mcp-vertex/status-marker'),
+	'@mcp-vertex/test-convention': () => import('@mcp-vertex/test-convention'),
+	'@mcp-vertex/audit': () => import('@mcp-vertex/audit'),
+	'@mcp-vertex/docs': () => import('@mcp-vertex/docs'),
+	'@mcp-vertex/deps': () => import('@mcp-vertex/deps'),
+	'@mcp-vertex/logs': () => import('@mcp-vertex/logs'),
+} as const;
+
+const shortNameOf = (specifier: string): string =>
+	specifier.replace(/^@mcp-vertex\//u, '');
+
+// `hostKey` is the name the host expects in its plugin map (e.g.
+// `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
+// plugin; the harvest path uses it to feed `assembleCliConfig`.
+const hostKeyOf = (specifier: string): string =>
+	`mcp-${shortNameOf(specifier)}`;
+
+const PLUGIN_LIST = Object.keys(PLUGIN_LOADERS)
+	.map((s) => shortNameOf(s))
+	.join(',');
 
 interface ITool {
 	readonly name: string;
