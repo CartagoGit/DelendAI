@@ -200,7 +200,7 @@ Status: shipped in commit `0d28715` (merged to develop via `77302d3`).
 
 | Aspect | Command / Source | Result |
 |---|---|---|
-| Parent audit | `docs/proposals/ready/a00032-22-06-2026-copilot-minimax-m3-repositorio.md` | this proposal is a child of a00032 S6 |
+| Parent audit | `docs/proposals/done/audits/a00032-22-06-2026-copilot-minimax-m3-repositorio.md` | this proposal is a child of a00032 S6 |
 | Loop detector call site | `plugins/proposals/src/lib/tools/auto-work.tool.ts:116` | the `options.loopDetector.isAgentStuck(...)` check that returns `stuck-detected` for the no-args case |
 | Idle-streak counter | `plugins/proposals/src/lib/tools/auto-work.tool.ts:75-77, 137-148` | `consecutiveIdle`, `IDLE_STOP_THRESHOLD = 3` — the right brake |
 | Test setup chain | `tools/scripts/lib/silence-console-setup.ts` + `vitest.shared.ts → sharedSetupFiles` | applies to all 20 per-project vitest configs; no per-test cwd override |
