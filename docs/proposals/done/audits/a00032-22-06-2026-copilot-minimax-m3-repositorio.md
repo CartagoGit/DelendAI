@@ -101,7 +101,7 @@ Scoreboard, Concurrency table y Resolution Track. Estado del slice:
 `bun run lint:proposals` pase.
 
 - **Files**:
-  - `docs/proposals/ready/a00032-22-06-2026-copilot-minimax-m3-repositorio.md`
+  - `docs/proposals/done/audits/a00032-22-06-2026-copilot-minimax-m3-repositorio.md`
 - **Gate**: `bun run lint:proposals`
 - **Status**: done
 - status: done
