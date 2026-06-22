@@ -146,7 +146,7 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 		font: inherit; text-align: left; cursor: pointer;
 		transition: border-color var(--mv-transition-fast, 120ms ease-out);
 	}
-	.mv-toolbar__card:hover { border-color: var(--mv-brand-blue, #58a6ff); }
+	.mv-toolbar__card:hover { border-color: var(--mv-brand-blue); }
 	.mv-toolbar__card-icon { font-size: 18px; }
 	.mv-toolbar__card-label { font-size: 12px; }
 	</style>

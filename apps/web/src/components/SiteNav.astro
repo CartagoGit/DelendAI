@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang } from '#I18N/ui';
+import { renderDropdown } from '@mcp-vertex/shared';
 
 interface Props {
 	lang: Lang;
@@ -94,43 +95,15 @@ const drawerLinks = [
 			    small script gives us outside-click close, Escape
 			    close, ArrowDown focus into the panel, and a smooth
 			    open/close animation that respects prefers-reduced-motion. */}
-			<div class="nav__more">
-				<button
-					type="button"
-					class="nav__more-summary"
-					id="nav-more-trigger"
-					aria-haspopup="menu"
-					aria-expanded="false"
-					aria-controls="nav-more-panel"
-				>
-					<span data-nav-key="more">{t.nav.more}</span>
-					<svg
-						class="nav__more-caret"
-						viewBox="0 0 12 12"
-						width="10"
-						height="10"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M3 4.5l3 3 3-3"></path>
-					</svg>
-				</button>
-				<div
-					class="nav__more-panel"
-					id="nav-more-panel"
-					role="menu"
-					aria-labelledby="nav-more-trigger"
-					hidden
-				>
-					{navCore.map((l) => (
-						<a class="nav__more-link" href={l.href} role="menuitem" data-nav-key={l.key}>{l.label}</a>
-					))}
-				</div>
-			</div>
+			<div class="nav__more" set:html={renderDropdown({
+				id: 'nav-more',
+				label: t.nav.more,
+				align: 'right',
+				items: navCore.map((l) => ({
+					id: l.key,
+					label: l.label,
+				})),
+			})} />
 			{/* GitHub: icon-only link to keep the row compact. The accessible
 			    name still comes from `aria-label` so screen readers say "GitHub",
 			    not "GitHub, link". */}

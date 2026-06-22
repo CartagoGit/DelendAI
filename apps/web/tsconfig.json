@@ -11,7 +11,9 @@
 			"#I18N/*": ["./src/i18n/*"],
 			"#LIB/*": ["./src/lib/*"],
 			"#SCRIPTS/*": ["./scripts/*"],
-			"#UI/*": ["./src/components/ui/*"]
+			"#UI/*": ["./src/components/ui/*"],
+			"@mcp-vertex/shared": ["../../apps/shared/src/public/index.ts"],
+			"@mcp-vertex/shared/*": ["../../apps/shared/src/*"]
 		}
 	}
 }

@@ -178,3 +178,43 @@ or run `mcp-vertex: Restart MCP Server`.
 If the docs tab shows a rejection error, check `extension.docsUrl` in
 `mcp-vertex.config.json` — `http://`, `localhost`, and private IPs
 are blocked by default.
+## Shared UI surface
+
+The extension is built on top of two layered packages:
+
+```
+apps/shared/                  @mcp-vertex/shared         design tokens, themes, brand assets, i18n contract
+packages/ui-extension/         @mcp-vertex/ui-extension   host-agnostic webview components (header, dropdown, language picker, disclosure, toast, toolbar)
+extensions/vscode/             mcp-vertex-vscode          the VS Code host (only file that imports `vscode`)
+```
+
+- **Header bar** — every webview (`mcp-vertex.dashboard`,
+  `mcp-vertex.knowledge`, `mcp-vertex.settings`,
+  `mcp-vertex.toolDetail`, `mcp-vertex.toolbar`) renders the same
+  `renderHeaderBar({ brandName, version, … })` from
+  `@mcp-vertex/ui-extension`. Brand SVG is inline (no asset
+  dependency at runtime).
+- **Language picker** — a `renderLanguagePicker` is rendered in
+  the header strip; `IHostAdapter.setLanguage(lang)` + a
+  `globalState['mv:lang']` persist the choice. The shared
+  `localStorage['mv:lang']` is the cross-host fallback.
+- **Dropdown** — `renderDropdown` is a CSS-transition (180ms
+  ease-out) dropdown with outside-click + `Esc` close, driven by
+  the runtime's `data-mv-action` delegation.
+- **Disclosure** — `<details>`/`<summary>` for collapsible
+  sections; works without the runtime attached.
+- **Toast** — for the in-extension notification surface.
+- **Toolbar** — the new `mcp-vertex.toolbar` activity-bar entry
+  surfaces the 10 canonical quick actions
+  (`proposals.*`, `knowledge.*`, `logs.*`, `docs.*`, `quality.*`,
+  `git.*`, `memory.*`, `notification.*`, `deps.*`, `web.*`) as
+  cards grouped by category. Hosts can extend the set via
+  `additionalQuickActions`.
+
+**Brand assets live under `apps/shared/brand/`** (the single source
+of truth for `logo.svg` and `logo-mono.svg`). They are regenerated
+into per-host `media/` directories by
+`bun run sync:brand-assets`, which runs as part of `bun run build`.
+The `bun run lint:brand-hex` gate fails the build if the brand hex
+literals `#58a6ff` or `#a371f7` leak outside the canonical
+`_themes.scss` + `shared.ts` + the lint script itself.
