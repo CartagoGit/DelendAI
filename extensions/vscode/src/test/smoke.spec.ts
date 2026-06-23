@@ -135,6 +135,20 @@ describe('VS Code extension smoke', () => {
 				},
 			},
 			window: {
+				createStatusBarItem() {
+					// Minimal stand-in for the VS Code status bar item; the
+					// extension only assigns `command` and `tooltip` to it.
+					return {
+						command: undefined,
+						tooltip: undefined,
+						text: '',
+						show() {},
+						hide() {},
+						dispose() {},
+					} as unknown as ReturnType<
+						NonNullable<IVscodeApi['window']['createStatusBarItem']>
+					>;
+				},
 				createWebviewPanel() {
 					return { webview: { html: '' } };
 				},

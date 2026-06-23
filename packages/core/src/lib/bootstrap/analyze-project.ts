@@ -7,6 +7,7 @@ import {
 	QUALITY_ROLES,
 	QUALITY_ROLE_ALIASES,
 } from './script-rules';
+import { matchProjectType } from './project-type-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -228,22 +229,19 @@ const detectProjectType = (
 	framework: string | undefined,
 	monorepoTool: string | undefined,
 ): IProjectType => {
-	if (monorepoTool !== undefined) return 'monorepo';
-	if (detectGame(deps)) return 'game';
-	if (framework !== undefined) return 'webapp';
-	if (pkg?.bin !== undefined) return 'cli';
-	if (pkg?.exports !== undefined || pkg?.main !== undefined) return 'library';
-	// Non-JS stacks.
-	if (reader.exists('Cargo.toml')) {
-		return reader.exists('src/main.rs') ? 'cli' : 'library';
-	}
-	if (reader.exists('go.mod')) {
-		return reader.exists('main.go') ? 'cli' : 'library';
-	}
-	if (reader.exists('pyproject.toml') || reader.exists('setup.py')) {
-		return 'library';
-	}
-	return 'generic';
+	// The actual rule table lives in `project-type-rules.ts`; this
+	// function only translates the analysis inputs into the rule
+	// context. Adding a new project type is a one-line table entry,
+	// not an edit to this function.
+	return matchProjectType({
+		reader,
+		hasBin: pkg?.bin !== undefined,
+		hasExports: pkg?.exports !== undefined,
+		hasMain: pkg?.main !== undefined,
+		framework,
+		monorepoTool,
+		isGame: detectGame(deps),
+	});
 };
 
 const detectMcp = (

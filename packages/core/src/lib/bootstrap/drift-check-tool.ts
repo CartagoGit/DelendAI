@@ -7,7 +7,7 @@
 // the pure `diffAnalysis` + the durable `drift-store` (mutex + atomic
 // write + quarantine, per AGENTS.md invariant #4).
 
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
