@@ -246,7 +246,7 @@ Bootstrap:
   - "Flags existentes (`--include`, `--exclude`, `--regex`, `--max`) preservan comportamiento."
 
 ### S7 — proposals (`mcpv proposals <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/proposals.ts`, tests, i18n
 - **Tools mapped**: `proposals_auto_work`, `proposals_continue_proposal`, `proposals_create_proposal`, `proposals_close_slice`, `proposals_proposal_transition`, `proposals_proposal_board`, `proposals_compact_status`, `proposals_state_health`, `proposals_agent_names`, `proposals_agent_lock`, `proposals_agent_worktree`, `proposals_proposal_stale_list`, `proposals_round_context`, `proposals_get_proposal_workflow`, `proposals_proposal_diagnose`, `proposals_proposal_adopt`, `proposals_proposal_force_transition`, `proposals_proposal_reconcile_folder`, `proposals_state_repair`, `proposals_agent_lock_release_orphan`, `proposals_proposal_review`, `proposals_sync_proposals`, `proposals_task_queue`, `proposals_delegate`, `proposals_plan`
 - **Gate**: `bun run test packages/cli && bun run typecheck`
