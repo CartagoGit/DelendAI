@@ -71,3 +71,16 @@ guide.
 | `mcp-vertex.openProposal` | mcp-vertex: Open Proposal Board |
 | `mcp-vertex.showOverview` | mcp-vertex: Show Overview (compat → dashboard) |
 | `mcp-vertex.showMetrics` | mcp-vertex: Show Metrics (compat → dashboard) |
+| `mcp-vertex.setupGithub` | mcp-vertex: Set up GitHub issues |
+
+## Set up the GitHub issues plugin
+
+`mcp-vertex.setupGithub` opens a multi-step webview that walks you through
+wiring the GitHub `issues` plugin into the current repository. It mirrors the
+web wizard and the canonical 7-step guide in
+[`docs/CROSS-PROJECT-SETUP.md`](../../docs/CROSS-PROJECT-SETUP.md): detect the
+repo, confirm `owner/name`, pick the auth tier (`gh` / `GITHUB_TOKEN` /
+anonymous), write `plugins.issues.options.repo`, verify the tier, print the
+exact launch invocation, and optionally mark the repo configured. Each step
+has a Back / Next pair and a "Copy command" button; the wizard holds its state
+only while open and persists nothing beyond what the setup writes to disk.
