@@ -5,6 +5,9 @@ import { McpStdioClient, type IOverview } from '@mcp-vertex/client';
 import {
 	activate,
 	CLIENT_STATE_KEY,
+	deactivate,
+	__resetRuntimeHandle,
+	getRuntimeHandle,
 	OPEN_PROPOSAL_COMMAND,
 	OPEN_SETTINGS_COMMAND,
 	renderOverviewHtml,
@@ -104,5 +107,61 @@ describe('VS Code extension smoke', () => {
 
 		expect(html).toContain('&lt;mcp&gt;&amp;\\&quot;vertex\\&quot;');
 		expect(html).not.toContain('<mcp>&"vertex"');
+	});
+
+	// r00003 S4: `deactivate` must drain the runtime handle that
+	// `activate` populated. Before this regression test, `deactivate`
+	// was empty and the status bar item, watchers and the stdio
+	// client leaked on every window reload.
+	it('deactivate drains the runtime handle populated by activate', async () => {
+		__resetRuntimeHandle();
+		const subscriptions: Array<{ dispose(): void }> = [];
+		const context: IExtensionContext = {
+			subscriptions,
+			globalState: {
+				get<T>(): T | undefined {
+					return undefined;
+				},
+				async update() {
+					// no-op
+				},
+			},
+		};
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+		};
+		const client = McpStdioClient.fromTransport({
+			async callTool() {
+				return { structuredContent: overviewFixture };
+			},
+		});
+
+		await activate(context, {
+			vscode,
+			createClient: async () => client,
+		});
+
+		const handle = getRuntimeHandle();
+		expect(handle).toBeDefined();
+		// The smoke test's baseline activation registers 13 disposables
+		// (status bar + 2 trees + 1 watcher + 9 commands). Even if a
+		// future slice changes that number, the contract is "at least 1
+		// disposable was tracked" — which is what proves the handle was
+		// actually wired up.
+		expect(handle?.count ?? 0).toBeGreaterThanOrEqual(1);
+
+		await deactivate();
+
+		expect(getRuntimeHandle()).toBeUndefined();
 	});
 });

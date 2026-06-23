@@ -97,8 +97,30 @@ export {
 	frameworkHintsFor,
 	languageHintsFor,
 } from './body-content';
-export {
-	buildBootstrapToolRegistrations,
-	createWorkspaceFileReader,
-} from './bootstrap-tool';
+export { buildBootstrapToolRegistrations } from './bootstrap-tool';
 export type { IBootstrapToolOptions } from './bootstrap-tool';
+export { createWorkspaceFileReader } from './workspace-file-reader';
+// Per-tool modules: each one is independently importable so hosts
+// can register only the tools they want.
+export { buildAnalyzeToolRegistration } from './analyze-tool';
+export type { IAnalyzeToolDeps } from './analyze-tool';
+export { buildPlanToolRegistration } from './plan-tool';
+export type { IPlanToolDeps } from './plan-tool';
+export { buildCreateToolRegistration } from './create-tool';
+export type { ICreateToolDeps } from './create-tool';
+export { buildDriftCheckToolRegistration } from './drift-check-tool';
+export type { IDriftCheckToolDeps } from './drift-check-tool';
+// Schemas: the wire contract in one place.
+export {
+	PROJECT_ANALYSIS_SCHEMA,
+	SERVER_PLAN_SCHEMA,
+	SCAFFOLDED_FILE_SCHEMA,
+	BLUEPRINT_ARTIFACT_SCHEMA,
+	SERVER_BLUEPRINT_SCHEMA,
+	MCP_PROJECT_SKELETON_SCHEMA,
+	DRIFT_REPORT_SCHEMA,
+	ANALYZE_INPUT_SCHEMA,
+	CREATE_INPUT_SCHEMA,
+	PLAN_INPUT_SCHEMA,
+	DRIFT_INPUT_SCHEMA,
+} from './schemas';

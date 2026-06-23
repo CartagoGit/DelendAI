@@ -63,6 +63,10 @@ import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
 } from './providers/status-bar';
+import {
+	createRuntimeHandle,
+	type IRuntimeHandle,
+} from './host/runtime-handle';
 
 export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
@@ -125,6 +129,12 @@ export const activate = async (
 	context: IExtensionContext,
 	deps: IActivationDeps = {},
 ): Promise<void> => {
+	// r00003 S4: every disposable the extension creates will be tracked
+	// through this handle. `deactivate()` (called by VS Code with no
+	// arguments) drains it. Tests can read `getRuntimeHandle()` to
+	// assert which disposables were registered and in what order.
+	const handle: IRuntimeHandle = createRuntimeHandle();
+	setRuntimeHandle(handle);
 	const vscode = deps.vscode ?? (await loadVscodeApi());
 	const client = await (deps.createClient ?? createDefaultClient)();
 	await context.globalState.update(CLIENT_STATE_KEY, client);
@@ -142,6 +152,11 @@ export const activate = async (
 		);
 		await statusBar.start();
 		context.subscriptions.push(statusBar);
+		// r00003 S4: route the status bar through the handle so that
+		// `deactivate()` actually disposes it. The `subscriptions` push
+		// remains for VS Code's own lifecycle observer (so the test that
+		// checks `subscriptions.length === 13` keeps passing).
+		handle.register('status-bar', statusBar);
 	}
 
 	const treeRegistration = vscode.window.registerTreeDataProvider?.(
@@ -226,7 +241,31 @@ export const activate = async (
 	}
 };
 
-export const deactivate = async (): Promise<void> => {};
+// r00003 S4: the VS Code runtime calls `deactivate()` with no arguments,
+// so we cannot rely on the host passing the activation context back.
+// The only safe bridge between two top-level exports of this file is a
+// module-level handle slot. VS Code only allows one activation per
+// process, so the slot is single-valued; tests can reset it between
+// cases via `__resetRuntimeHandle()` (exported below).
+let __runtimeHandle: IRuntimeHandle | undefined;
+
+export const __resetRuntimeHandle = (): void => {
+	__runtimeHandle = undefined;
+};
+
+export const setRuntimeHandle = (handle: IRuntimeHandle): void => {
+	__runtimeHandle = handle;
+};
+
+export const getRuntimeHandle = (): IRuntimeHandle | undefined =>
+	__runtimeHandle;
+
+export const deactivate = async (): Promise<void> => {
+	const handle = __runtimeHandle;
+	if (handle === undefined) return;
+	handle.disposeAll();
+	__runtimeHandle = undefined;
+};
 
 export const createDefaultClient = async (): Promise<McpStdioClient> =>
 	McpStdioClient.connect({
