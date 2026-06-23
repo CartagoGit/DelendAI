@@ -165,7 +165,14 @@ export interface IVerifyCliOptions {
 export const parseVerifyCliArgs = (
 	argv: readonly string[],
 ): IVerifyCliOptions => {
-	const pluginArg = argv.find((a): boolean => a.startsWith('--plugin='));
+	// `findLast` (ES2023, available in Bun) gives us last-write-wins
+	// semantics: when the user passes `--plugin=audit --plugin=rules`,
+	// the rightmost one wins (matches typical CLI conventions: a
+	// later flag overrides an earlier one). Pinned by the spec at
+	// tools/scripts/verify/plugin-tool-verify.script.spec.ts.
+	const pluginArg = (argv as readonly string[]).findLast((a): boolean =>
+		a.startsWith('--plugin='),
+	);
 	return {
 		pluginFilter:
 			pluginArg !== undefined
