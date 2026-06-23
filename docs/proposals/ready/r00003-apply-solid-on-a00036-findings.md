@@ -257,7 +257,15 @@ Their working tree (uncommitted, unmerged) contains:
   new `plugins/proposals/src/lib/swarm/host-capabilities.ts`.
 - **SOLID**: O (new hosts extend by registering a `IHostCapabilities`
   entry); D (depends on capabilities, not on hardcoded literals).
-- **Status**: pending.
+- **Status**: done. The reminder was already templated from
+  `IHostCapabilities`, but `createDefaultHostCapabilities()` still returned
+  the VS Code / Copilot set, leaking the vendor name + release in the
+  default config. Flipped the default to `GENERIC_IDE_CAPABILITIES` (no
+  vendor leak), kept `VSCODE_COPILOT_043_CAPABILITIES` as an explicit
+  opt-in, and de-vendored the module doc comments. New spec asserts the
+  default config produces no host-name leak. Note: a sibling hardcoded
+  "VS Code sidebar" string remains in `chat-titling-prefix.ts` (out of this
+  slice's file scope) — flagged as a follow-up.
 - **Gate**: `bun run test`.
 - **Acceptance**:
   - The hardcoded string ("VS Code 1.123 / Copilot Chat 0.43") is
