@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
-import { createLogStore } from '../src/lib/log-store';
+import { createLogStore } from '../src/lib/services/log-store';
 import {
 	normalizeEvent,
 	serializeRedactedEvent,
-} from '../src/lib/normalize-event';
+} from '../src/lib/services/normalize-event';
 
 const tempLogs = async (): Promise<string> =>
 	mkdtemp(join(tmpdir(), 'mcp-vertex-logs-'));

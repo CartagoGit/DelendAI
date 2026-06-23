@@ -108,6 +108,13 @@
 			"tags": ["quality", "rules", "gates"]
 		},
 		{
+			"id": "mcp-vertex-rules-solid-architecture",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "skills/mcp-vertex-rules-solid-architecture/SKILL.md",
+			"tags": ["rules", "solid", "architecture", "contributor-guide"]
+		},
+		{
 			"id": "mcp-vertex-legacy-proposal-migration",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",

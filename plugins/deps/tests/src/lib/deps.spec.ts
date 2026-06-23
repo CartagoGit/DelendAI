@@ -15,7 +15,7 @@ import {
 	parseGoMod,
 	parsePyprojectToml,
 } from '@mcp-vertex/deps/lib/services/polyglot';
-import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools';
+import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools/tools';
 import plugin from '@mcp-vertex/deps';
 import type {
 	IMcpPluginContext,

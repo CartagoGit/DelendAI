@@ -20,8 +20,14 @@ import {
 	PresetRegistry,
 	DogmaRegistry,
 	PresetDetector,
+	defaultPresetValidator,
+	composeValidators,
 } from '@mcp-vertex/rules/lib/frameworks/registry';
 import { buildDefaultComposition } from '@mcp-vertex/rules/lib/frameworks/registry/factory';
+import {
+	stringDogmaRenderer,
+	DogmaRendererRegistry,
+} from '@mcp-vertex/rules/lib/frameworks/dogmas';
 import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from '@mcp-vertex/rules/lib/tools/policy-resolver';
 import type {
 	ILanguageAdapter,
@@ -41,10 +47,8 @@ import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust'
 import { RUST_DOGMA } from '@mcp-vertex/rules/lib/frameworks/dogmas/rust.dogma';
 import { ALL_PRESET_DATA } from '@mcp-vertex/rules/lib/frameworks/presets/data';
 import { DEFAULT_DOGMA_ADAPTERS } from '@mcp-vertex/rules/lib/frameworks/dogmas';
-import {
-	fallbackCommandSetProvider,
-	toAreaRulesLite,
-} from '@mcp-vertex/rules/lib/tools/command-resolver';
+import { fallbackCommandSetProvider } from '@mcp-vertex/rules/lib/tools/command-resolver';
+import { toAreaRulesLite } from '@mcp-vertex/rules/lib/frameworks/legacy-shape/adapter';
 
 const makeReader = (files: Record<string, string>) => ({
 	readFile: (p: string) => files[p],
@@ -285,5 +289,116 @@ describe('SOLID refactor: compile + link', () => {
 		);
 		expect(out.checkCommand).toContain('cargo clippy');
 		expect(calls).toBe(0);
+	});
+
+	it('validates a preset via the OCP `IPresetValidator` seam', () => {
+		// A correct preset produces zero findings.
+		expect(defaultPresetValidator.validate(RUST_PRESET)).toEqual([]);
+
+		// A broken preset (empty linter content + empty conventions)
+		// produces two findings with stable codes.
+		const broken: IRulePreset = {
+			...RUST_PRESET,
+			id: 'broken-preset',
+			linterConfigContent: '   ', // whitespace-only counts as empty
+			conventions: [],
+		};
+		const findings = defaultPresetValidator.validate(broken);
+		expect(findings.map((f) => f.code).sort()).toEqual([
+			'empty-conventions',
+			'empty-linter-config',
+		]);
+	});
+
+	it('composes validators (OCP — adding a validator = appending, never editing)', () => {
+		// A second validator that flags preset ids longer than 30 chars.
+		const idLengthValidator = {
+			validate(preset: IRulePreset) {
+				if (preset.id.length > 30) {
+					return [
+						{
+							code: 'linter-deps-mismatch' as const,
+							message: `Preset id "${preset.id}" is too long (>30 chars).`,
+							presetId: preset.id,
+						},
+					];
+				}
+				return [];
+			},
+		};
+		const combined = composeValidators(
+			defaultPresetValidator,
+			idLengthValidator,
+		);
+		const longId: IRulePreset = {
+			...RUST_PRESET,
+			id: 'rust-clippy-with-a-very-long-id-that-exceeds-thirty',
+		};
+		const findings = combined.validate(longId);
+		expect(findings.map((f) => f.code)).toContain('linter-deps-mismatch');
+	});
+
+	it('renders dogmas via the DIP `IDogmaRenderer` seam', () => {
+		// The default renderer produces a one-line string that an
+		// LLM can read as a single sentence.
+		const out = stringDogmaRenderer.render(RUST_DOGMA);
+		expect(out.rendererId).toBe('string');
+		expect(out.payload).toContain('rust (cargo, rust-2024)');
+		expect(out.payload).toContain('borrow-checker');
+		expect(out.payload).toContain('Result');
+		expect(out.payload).toContain('?');
+		// The bullets are appended after the dimensions:
+		expect(out.payload).toMatch(/Idioms:.*\?/);
+	});
+
+	it('looks up renderers by id (DIP — DogmaRendererRegistry)', () => {
+		// Adding a second renderer (e.g. `markdown`) does not
+		// touch the registry class; the registry looks up by id
+		// and falls back to the default.
+		const markdownRenderer = {
+			id: 'markdown',
+			render(d: typeof RUST_DOGMA) {
+				return {
+					payload: `## ${d.language} (${d.version})\n- ownership: ${d.ownership}\n- error: ${d.errorModel}\n`,
+					rendererId: 'markdown',
+				};
+			},
+		};
+		const reg = new DogmaRendererRegistry(
+			[stringDogmaRenderer, markdownRenderer],
+			'string',
+		);
+		expect(reg.resolve('markdown').id).toBe('markdown');
+		expect(reg.resolve('string').id).toBe('string');
+		expect(reg.resolve('unknown-id').id).toBe('string'); // fallback
+		expect(reg.resolve().id).toBe('string'); // default
+	});
+
+	it('factory accepts a fully custom preset (DIP override)', () => {
+		// A test that wants to exercise a 1-element adapter list
+		// AND a 1-element preset list does so without touching the
+		// wiring code.
+		const customAdapter: ILanguageAdapter = {
+			id: 'custom',
+			priority: 10,
+			detect: () => ({ presetId: 'custom-preset', reason: 'custom' }),
+		};
+		const customPreset: IRulePreset = {
+			id: 'custom-preset',
+			framework: 'custom',
+			language: 'rs',
+			linter: 'clippy',
+			linterConfigFile: 'custom.clippy.toml',
+			linterConfigContent: '# custom',
+			conventions: ['custom convention'],
+		};
+		const root = buildDefaultComposition({
+			adapters: [customAdapter],
+			presets: [customPreset],
+		});
+		expect(root.registry.supportedIds).toEqual(['custom-preset']);
+		expect(
+			root.detector.detect(makeReader({ 'a.txt': '' }), '')?.presetId,
+		).toBe('custom-preset');
 	});
 });

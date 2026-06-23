@@ -2,6 +2,13 @@ import type { IDogmaAdapter } from '../contracts';
 
 import { RUST_DOGMA } from './rust.dogma';
 
+export {
+	stringDogmaRenderer,
+	DogmaRendererRegistry,
+	type IDogmaRenderer,
+	type IRenderedDogma,
+} from './renderer';
+
 /**
  * Barrel + composition root for dogma adapters.
  *

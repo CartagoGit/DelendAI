@@ -27,7 +27,14 @@ export { DEFAULT_CORE_PATHS } from '../lib/contracts/interfaces/core-paths.inter
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
 
 // --- contracts -------------------------------------------------------------
-export type { IMcpVertexHostConfig } from '../lib/contracts/interfaces/host-config.interface';
+export type {
+	IHostContent,
+	IHostIdentity,
+	IHostObservability,
+	IHostPaths,
+	IHostRegistrations,
+	IMcpVertexHostConfig,
+} from '../lib/contracts/interfaces/host-config.interface';
 export type { IMcpVertexProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {

@@ -148,12 +148,38 @@ const verifyPlugin = async (
 	return results;
 };
 
+/**
+ * Solid-SRP: pure parser for the verify script's CLI flags. Kept
+ * here (not in `format-results-table` or anywhere else) because the
+ * parser is intrinsic to this entrypoint — moving it would couple
+ * the formatter to a single consumer.
+ *
+ * Returns a typed options object so the rest of `main()` never
+ * touches `process.argv` directly (DIP: `main` depends on the
+ * parsed shape, not on the raw argv).
+ */
+export interface IVerifyCliOptions {
+	readonly pluginFilter: string | undefined;
+}
+
+export const parseVerifyCliArgs = (
+	argv: readonly string[],
+): IVerifyCliOptions => {
+	const pluginArg = argv.find((a): boolean => a.startsWith('--plugin='));
+	return {
+		pluginFilter:
+			pluginArg !== undefined
+				? pluginArg.slice('--plugin='.length)
+				: undefined,
+	};
+};
+
 const main = async (): Promise<number> => {
-	const argv = process.argv.slice(2);
-	const pluginArg = argv.find((a) => a.startsWith('--plugin='));
-	const list = pluginArg
-		? [pluginArg.slice('--plugin='.length)]
-		: [...PLUGIN_LIST];
+	const options = parseVerifyCliArgs(process.argv.slice(2));
+	const list =
+		options.pluginFilter !== undefined
+			? [options.pluginFilter]
+			: [...PLUGIN_LIST];
 	const workspaceRoot = process.cwd();
 
 	const all: IVerifyResult[] = [];
