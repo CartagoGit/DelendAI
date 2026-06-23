@@ -58,18 +58,17 @@ const readerFromFiles = (files: Record<string, string>): IFileReader => ({
 });
 
 const buildRoot = () =>
-	c// The vanilla-js fallback is part of every composition
+	composeRoot({
+		// The vanilla-js fallback is part of every composition
 		// root by default (S — the fallback is a real preset,
 		// not a magic string in the writer).
-		presets: [VANILLA_JS_FALLBACK_PRESET, ({
-		presets: [RUST_PRESET],
+		presets: [VANILLA_JS_FALLBACK_PRESET, RUST_PRESET],
 		adapters: [rustAdapter],
 		dogmas: DEFAULT_DOGMA_ADAPTERS,
 		validators: buildValidatorRegistry(),
 		renderers: buildDefaultRenderers(),
 		policyResolver: defaultPolicyResolver,
 	});
-
 describe('manifest-via-composition (DIP, S)', () => {
 	it('resolves a Rust area to the rust-clippy preset via the composition root', () => {
 		const reader = readerFromFiles({

@@ -6,24 +6,13 @@
  * Pure: takes the raw markdown + its path, returns issues. No I/O — the
  * caller (the `lint:proposals` script, S3) does the file walking.
  */
+import { PROPOSAL_KINDS } from '../contracts/constants/proposal-glossary.constant';
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
-import {
-	PROPOSAL_KIND_BY_PREFIX,
-	PROPOSAL_KINDS,
-	PROPOSAL_STATUSES,
-	STATUS_TO_FOLDER,
-} from '../contracts/constants/proposal-glossary.constant';
-import type {
-	IProposalKind,
-	IProposalStatus,
-} from '../contracts/constants/proposal-glossary.constant';
+import { lintFilenameAndFolder } from './filename-linter';
+import { lintFrontmatter } from './frontmatter-linter';
+import type { ILintIssue } from './frontmatter-linter';
 
-export interface ILintIssue {
-	/** 1-based line number in the source markdown, or 0 for file-level issues. */
-	readonly line: number;
-	readonly message: string;
-	readonly fix: string;
-}
+export type { ILintIssue } from './frontmatter-linter';
 
 export interface ILintResult {
 	readonly ok: boolean;
@@ -648,92 +637,9 @@ const lintSlices = (markdown: string): ILintIssue[] => {
 	return issues;
 };
 
-const lintFilenameAndFolder = (
-	path: string,
-	frontmatter: Record<string, unknown>,
-): ILintIssue[] => {
-	const issues: ILintIssue[] = [];
-	const filename = path.split('/').pop() ?? path;
-	const m = filename.match(/^([a-z])(\d{5,})-[a-z0-9-]+\.md$/);
-	if (!m) {
-		issues.push({
-			line: 0,
-			message: `filename "${filename}" does not match the canonical pattern`,
-			fix: 'Rename to `<prefix><NNN>-<kebab-slug>.md` (lowercase prefix, ≥5 digits).',
-		});
-		return issues;
-	}
-	const prefix = m[1] ?? '';
-	const kind = frontmatter.kind;
-	const kindFromPrefix = PROPOSAL_KIND_BY_PREFIX[prefix];
-	if (kindFromPrefix === undefined) {
-		issues.push({
-			line: 0,
-			message: `filename prefix "${prefix}" is not a known kind prefix`,
-			fix: `Use one of: ${Object.values(PROPOSAL_KINDS)
-				.map((k) => k.prefix)
-				.join(', ')} (or the retired legacy "p").`,
-		});
-	} else if (typeof kind === 'string' && kind !== kindFromPrefix) {
-		issues.push({
-			line: 0,
-			message: `filename starts with "${prefix}" (kind=${kindFromPrefix}) but frontmatter.kind = "${kind}"`,
-			fix: `Either rename the file to start with "${
-				PROPOSAL_KINDS[kind as IProposalKind]?.prefix ?? '?'
-			}", or set frontmatter kind: ${kindFromPrefix}.`,
-		});
-	}
-
-	const status = frontmatter.status;
-	if (typeof status === 'string' && status in PROPOSAL_STATUSES) {
-		const expectedFolder = STATUS_TO_FOLDER[status as IProposalStatus];
-		const pathParts = path.split('/');
-		// f00001: terminal statuses (`done`, `retired`) may live under a kind
-		// sub-folder (e.g. `done/audits/a00007-...`) as a filesystem-only
-		// organisation convention. The check is **status-driven, not
-		// position-driven**: walk the ancestor chain from the file
-		// upward; the FIRST ancestor whose name matches a known status
-		// folder is the file's effective status folder. That ancestor
-		// must equal the expected folder. This is robust against future
-		// re-orderings of path segments, against any number of nested
-		// sub-folders (e.g. `done/audits/2024/...`), and against paths
-		// that don't start with `docs/proposals/` (e.g. absolute or
-		// relative-from-cwd).
-		const STATUS_FOLDER_NAMES = new Set<string>(
-			Object.values(STATUS_TO_FOLDER),
-		);
-		// Skip the filename itself (last segment); walk parents nearest-first.
-		const ancestorFolders = pathParts.slice(0, -1);
-		const nearestStatusAncestor = ancestorFolders.find((seg) =>
-			STATUS_FOLDER_NAMES.has(seg),
-		);
-		const matches = nearestStatusAncestor === expectedFolder;
-		const immediateParent = pathParts[pathParts.length - 2];
-		if (!matches) {
-			issues.push({
-				line: 0,
-				message: `frontmatter status "${status}" expects folder "${expectedFolder}" but the nearest status ancestor is "${nearestStatusAncestor ?? '(none)'}" (immediate parent: "${immediateParent}")`,
-				fix: `Move the file to docs/proposals/${expectedFolder}/ (or to docs/proposals/${expectedFolder}/<kind-subfolder>/ for terminal statuses), or update status to match its current folder.`,
-			});
-		}
-	}
-
-	return issues;
-};
-
-const lintFrontmatter = (
-	markdown: string,
-): { issues: ILintIssue[]; frontmatter: Record<string, unknown> } => {
-	const issues: ILintIssue[] = [];
-	const block = extractYamlBlock(markdown);
-	if (block === null) {
-		return {
-			issues: [
-				{
-					line: 0,
-					message: 'no YAML frontmatter block found',
-					fix: 'Add a `---`-delimited frontmatter block at the top of the file.',
-				},
+// `lintFilenameAndFolder` and `lintFrontmatter` are imported from the
+// cohesive `filename-linter.ts` / `frontmatter-linter.ts` modules (SRP).
+// The orchestrator below just wires them together.
 			],
 			frontmatter: {},
 		};
