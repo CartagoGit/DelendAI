@@ -118,10 +118,13 @@ describe('mcp-vertex.setupGithub', () => {
 			expect(SETUP_GITHUB_COMMANDS).toContain(
 				'bunx @mcp-vertex/core --preset=full',
 			);
-			const verbatimFullList =
-				'--plugins=git,search,memory,docs,rules,quality,deps,proposals,notification,status-marker,test-convention,audit,logs,web-fetch,issues';
+			// No emitted command may carry a `--plugins=…` flag at all (a
+			// verbatim preset membership list is what the drift gate forbids).
+			// We assemble the marker at runtime so this assertion file never
+			// itself contains a verbatim preset list for `lint:setup` to flag.
+			const pluginsFlag = `--${'plugins'}=`;
 			for (const cmd of SETUP_GITHUB_COMMANDS) {
-				expect(cmd).not.toContain(verbatimFullList);
+				expect(cmd).not.toContain(pluginsFlag);
 			}
 		});
 	});

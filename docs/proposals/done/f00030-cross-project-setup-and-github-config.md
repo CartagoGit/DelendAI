@@ -1,6 +1,6 @@
 ---
 id: f00030
-status: ready
+status: done
 type: proposal
 track: docs+plugins/issues+apps/web+extensions/vscode
 date: 2026-06-21
@@ -294,7 +294,7 @@ remediation for that step.
 
 ### S4 — VS Code webview + i18n + README addendum _(incl. `extensions/vscode/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `extensions/vscode/src/commands/setup-github.ts` (new)
   - `extensions/vscode/src/webviews/setup-github.ts` (new —

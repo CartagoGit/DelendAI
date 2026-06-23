@@ -1,26 +1,7 @@
 {
-	"generated_at": "2026-06-23T13:52:40.831Z",
+	"generated_at": "2026-06-23T14:42:04.727Z",
 	"count": 109,
 	"proposals": [
-		{
-			"id": "f00030",
-			"file": "ready/f00030-cross-project-setup-and-github-config.md",
-			"track": "docs+plugins/issues+apps/web+extensions/vscode",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": ["{", "{", "{", "{", "{"]
-			}
-		},
-		{
-			"id": "f00037",
-			"file": "ready/f00037-contracts-file-naming-and-folder-conventions.md",
-			"track": "architecture+lint+repo-layout",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21"
-		},
 		{
 			"id": "c00001",
 			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
@@ -57,6 +38,17 @@
 			}
 		},
 		{
+			"id": "f00030",
+			"file": "done/f00030-cross-project-setup-and-github-config.md",
+			"track": "docs+plugins/issues+apps/web+extensions/vscode",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
+		},
+		{
 			"id": "f00032",
 			"file": "done/f00032-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
 			"track": "proposals-plugin",
@@ -68,6 +60,14 @@
 			"id": "f00036",
 			"file": "done/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
 			"track": "proposals-plugin+workflow+skills+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00037",
+			"file": "done/f00037-contracts-file-naming-and-folder-conventions.md",
+			"track": "architecture+lint+repo-layout",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
