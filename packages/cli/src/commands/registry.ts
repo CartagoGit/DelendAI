@@ -30,6 +30,7 @@ import {
 	gitWorktreeCommand,
 } from './groups/git';
 import { auditCommands } from './groups/audit';
+import { coreExtraCommands } from './groups/core';
 import { depsCommands } from './groups/deps';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
@@ -433,4 +434,5 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	...qualityCommands,
 	...auditCommands,
 	...logsCommands,
+	...coreExtraCommands,
 ];
