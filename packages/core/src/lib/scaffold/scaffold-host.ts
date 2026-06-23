@@ -23,6 +23,14 @@ export interface IScaffoldHostOptions {
 	readonly projectPackageName: string;
 	/** Default agent model id. */
 	readonly defaultModel?: string;
+	/**
+	 * Namespaced ids of the bootstrap tools that the generated host should
+	 * reference from its agent/instructions files. Defaults to
+	 * `[\`<prefix>_analyze_project\`, \`<prefix>_plan_mcp_project\`,
+	 * \`<prefix>_create_project\`]`. Hosts that add a `drift_check` tool
+	 * should append it here so the orchestrator knows it exists.
+	 */
+	readonly bootstrapToolIds?: readonly string[];
 }
 
 const SUBAGENT_SLOTS = [
@@ -199,6 +207,15 @@ export const scaffoldAgentFile = (
 	const tools = isRoot
 		? `[read, search, edit, execute, todo, agent, mcp-project-${prefix}/*]`
 		: `[read, search, edit, execute, todo, mcp-project-${prefix}/*]`;
+	const bootstrapTools = (
+		options.bootstrapToolIds ?? [
+			`${prefix}_analyze_project`,
+			`${prefix}_plan_mcp_project`,
+			`${prefix}_create_project`,
+		]
+	)
+		.map((id) => `\`${id}\``)
+		.join(', ');
 	return {
 		path: `.github/agents/${slot}.agent.md`,
 		content: `---
@@ -223,6 +240,7 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
 4. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis: ${isRoot ? '' : 'escalate to the root so '}the orchestrator can call ${bootstrapTools}. The first tool inspects; the second returns an exhaustive blueprint (tools + prompts + skills + agents + tests); the third materialises the files. The orchestrator (or a delegated runner) writes them.
 `,
 	};
 };

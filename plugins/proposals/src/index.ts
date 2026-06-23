@@ -9,6 +9,7 @@ import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool'
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
+import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
 import {
 	buildDelegateRegistration,
 	buildPlanRegistration,
@@ -261,6 +262,13 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDirAbs: abs(layout.proposalsDir),
 					workspaceRoot: ctx.workspace.root,
+					indexPathAbs: abs(layout.proposalIndexFile),
+				}),
+				buildClosePlanRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					workspaceRoot: ctx.workspace.root,
+					indexPathAbs: abs(layout.proposalIndexFile),
 				}),
 				buildCreateProposalRegistration(authoringOptions),
 				buildCloseSliceRegistration(authoringOptions),

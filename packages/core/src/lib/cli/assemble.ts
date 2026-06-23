@@ -304,6 +304,10 @@ export const assembleCliConfig = async (
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,
+			cacheDir: corePaths.cacheDir,
+			...(fileConfig.bootstrap?.patternOverrides !== undefined
+				? { patternOverrides: fileConfig.bootstrap.patternOverrides }
+				: {}),
 		}),
 		...buildFsToolRegistrations({
 			namespacePrefix: corePrefix,

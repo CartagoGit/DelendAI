@@ -1,6 +1,7 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IProjectAnalysis } from './analyze-project';
-import { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
+import { resolvePatternCatalog } from './pattern-catalog-overrides';
+import type { IPatternOverrides } from './pattern-catalog-overrides';
 import type { IRecommendedTool } from './pattern-catalog';
 
 export interface IServerPlanOptions {
@@ -8,6 +9,12 @@ export interface IServerPlanOptions {
 	readonly namespacePrefix?: string;
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
+	 * `PROJECT_PATTERN_CATALOG` is used.
+	 */
+	readonly patternOverrides?: IPatternOverrides;
 }
 
 export interface IServerPlan {
@@ -75,7 +82,8 @@ export const recommendServerPlan = (
 	analysis: IProjectAnalysis,
 	options: IServerPlanOptions = {},
 ): IServerPlan => {
-	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
+	const catalog = resolvePatternCatalog(options.patternOverrides);
+	const pattern = catalog[analysis.projectType];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;

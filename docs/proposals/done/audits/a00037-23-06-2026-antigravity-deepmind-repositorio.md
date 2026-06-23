@@ -1,5 +1,5 @@
 ---
-id: a00036
+id: a00037
 kind: audit
 title: Exhaustive audit of mcp-vertex monorepo — HEAD 43d452d
 status: done

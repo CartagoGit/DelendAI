@@ -67,6 +67,29 @@ export interface IMcpVertexConfigFile {
 	};
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
 	readonly loopDetector?: ILoopDetectorConfig;
+	/**
+	 * Optional bootstrap layer configuration. Hosts use this to teach
+	 * the bootstrap blueprint about project types, tool lists and
+	 * knowledge hints that the hardcoded catalog does not cover. See
+	 * `bootstrap/pattern-catalog-overrides.ts` for the merge rules.
+	 */
+	readonly bootstrap?: {
+		readonly patternOverrides?: Readonly<
+			Record<
+				string,
+				{
+					readonly type: string;
+					readonly describe: string;
+					readonly recommendedTools: ReadonlyArray<{
+						readonly name: string;
+						readonly description: string;
+					}>;
+					readonly recommendedPlugins: readonly string[];
+					readonly knowledgeHints: readonly string[];
+				}
+			>
+		>;
+	};
 }
 
 /** Default config file name looked up at the workspace root. */
@@ -115,6 +138,28 @@ export const CONFIG_FILE_SCHEMA = z
 				handoffTtlDays: z.number().optional(),
 				notifyOnDetect: z.boolean().optional(),
 				interactiveAgentPatterns: z.array(z.string()).optional(),
+			})
+			.strict()
+			.optional(),
+		bootstrap: z
+			.object({
+				patternOverrides: z
+					.record(
+						z.string(),
+						z.object({
+							type: z.string(),
+							describe: z.string(),
+							recommendedTools: z.array(
+								z.object({
+									name: z.string(),
+									description: z.string(),
+								}),
+							),
+							recommendedPlugins: z.array(z.string()),
+							knowledgeHints: z.array(z.string()),
+						}),
+					)
+					.optional(),
 			})
 			.strict()
 			.optional(),

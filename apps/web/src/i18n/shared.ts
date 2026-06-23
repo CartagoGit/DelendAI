@@ -336,6 +336,7 @@ export interface IProposalGlossaryTranslations {
 		readonly infra: IProposalGlossaryEntry;
 		readonly spike: IProposalGlossaryEntry;
 		readonly legacy: IProposalGlossaryEntry;
+		readonly plan: IProposalGlossaryEntry;
 	};
 }
 
