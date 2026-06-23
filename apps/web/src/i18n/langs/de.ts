@@ -175,6 +175,12 @@ const dict: LangDict = {
 		'status-marker':
 			'Pflicht-Schlussmarker in Farbe für jede Agent-Antwort: 8 kanonische Zustände, Helfer- und Validator-Tools.',
 		core: 'Der agnostische Kern: overview, Scaffold, Metriken, Doctor und der Plugin-Loader.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'Zurück',

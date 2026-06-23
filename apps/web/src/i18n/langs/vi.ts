@@ -176,6 +176,12 @@ const dict: LangDict = {
 		'status-marker':
 			'Đánh dấu kết thúc màu bắt buộc cho mỗi phản hồi của tác tử: 8 trạng thái chuẩn, công cụ helper + validator.',
 		core: 'Lõi bất khả tri: overview, scaffold, số liệu, doctor và trình tải plugin.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'Quay lại',

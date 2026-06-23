@@ -304,5 +304,14 @@ export type {
 export { loadSkills } from '../lib/skills/load-skills';
 export type { ISkillBundle } from '../lib/skills/load-skills';
 
+// --- cross-project setup engine (f00030 S2) -------------------------------
+export { buildGithubSetupSteps } from '../lib/setup/setup-steps';
+export type {
+	GithubAuthTier,
+	IGithubSetupContext,
+	ISetupStep,
+} from '../lib/setup/setup-steps';
+export { renderCrossProjectGuide } from '../lib/setup/cross-project-guide';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

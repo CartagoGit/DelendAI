@@ -1,18 +1,7 @@
 {
-	"generated_at": "2026-06-23T06:26:34.761Z",
+	"generated_at": "2026-06-23T06:31:05.815Z",
 	"count": 109,
 	"proposals": [
-		{
-			"id": "f00029",
-			"file": "ready/f00029-github-issues-plugin-ingest-and-propose.md",
-			"track": "plugins/issues+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": ["{", "{", "{", "{"]
-			}
-		},
 		{
 			"id": "f00030",
 			"file": "ready/f00030-cross-project-setup-and-github-config.md",
@@ -55,6 +44,17 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00029",
+			"file": "done/f00029-github-issues-plugin-ingest-and-propose.md",
+			"track": "plugins/issues+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{"]
+			}
 		},
 		{
 			"id": "f00032",

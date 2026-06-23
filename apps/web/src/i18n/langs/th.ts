@@ -170,6 +170,12 @@ const dict: LangDict = {
 		'status-marker':
 			'เครื่องหมายปิดสีบังคับสำหรับทุกการตอบกลับของเอเจนต์: 8 สถานะมาตรฐาน เครื่องมือ helper + validator',
 		core: 'แกนที่ไม่ผูกกับโปรเจกต์: overview scaffold เมตริก doctor และตัวโหลดปลั๊กอิน',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'กลับ',
