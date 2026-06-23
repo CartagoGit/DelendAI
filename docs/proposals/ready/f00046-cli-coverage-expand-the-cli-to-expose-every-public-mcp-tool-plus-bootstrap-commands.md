@@ -280,7 +280,7 @@ Bootstrap:
   - "Esta slice desbloquea f00037 S3."
 
 ### S10 — `mcpv doctor` + `mcpv completion <shell>`
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/doctor.ts`, `packages/cli/src/lib/completion/{bash,zsh,fish}.ts`, tests, i18n
 - **Tools mapped**: ninguno nuevo — el doctor combina `overview` + `read_config_text` + checks locales; el completion no toca MCP.
 - **Gate**: `bun run test packages/cli && bun run typecheck`
