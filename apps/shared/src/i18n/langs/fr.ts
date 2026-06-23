@@ -512,7 +512,7 @@ const extension = {
 	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
 	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
 	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
+	toolbarCategoryLogs: 'Journaux',
 	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
 	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
 	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
