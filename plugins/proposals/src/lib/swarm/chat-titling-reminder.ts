@@ -49,10 +49,7 @@
 // ---------------------------------------------------------------------------
 
 import type { IAgentClosureReport } from '../agents/agent-closure-report';
-import {
-	CHAT_TITLING_PREFIX_MAX_LENGTH,
-	parseChatTitlingPrefix,
-} from './chat-titling-prefix';
+import { parseChatTitlingPrefix } from './chat-titling-prefix';
 import {
 	createDefaultHostCapabilities,
 	type IHostCapabilities,

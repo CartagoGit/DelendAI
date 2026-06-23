@@ -189,7 +189,7 @@ const validateCurrentStatus = (
 // ---------------------------------------------------------------------------
 
 const validateTransition = (
-	id: string,
+	_id: string,
 	from: IProposalStatus,
 	to: IProposalStatus,
 ): ReturnType<typeof toolError> | null => {

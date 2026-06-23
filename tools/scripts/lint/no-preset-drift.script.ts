@@ -221,7 +221,7 @@ export const formatReport = (findings: readonly IDriftFinding[]): string => {
 		lines.push(`  ${f.relPath}:${f.line}  [${f.kind}]`);
 		lines.push(`    ${f.detail}`);
 	}
-	return lines.join('\n') + '\n';
+	return `${lines.join('\n')}\n`;
 };
 
 export const main = async (): Promise<number> => {

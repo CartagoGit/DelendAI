@@ -6,7 +6,6 @@ import {
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 import type { IProjectAnalysis } from './analyze-project';
-import { blueprintArtifactBody } from './body-content';
 import { matchPromptArtifacts } from './prompt-artifact-rules';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
 import { matchSkillArtifacts } from './skill-artifact-rules';

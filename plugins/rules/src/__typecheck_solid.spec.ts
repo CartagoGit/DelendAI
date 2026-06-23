@@ -23,7 +23,6 @@ import type {
 	IRulePreset,
 	IDogmaAdapter,
 	ICommandSet,
-	ICommandSetProvider,
 } from './lib/frameworks/contracts';
 import { rustAdapter } from './lib/frameworks/languages/rust/rust.adapter';
 import { rustCommandSetProvider } from './lib/frameworks/languages/rust/rust-command.provider';

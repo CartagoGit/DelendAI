@@ -3,18 +3,17 @@
  * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/proposals/`
  * and run `lintProposalMarkdown` (S2) against it.
  *
- * The legacy proposals — `pNNN-*.md` (pre-S11) and `lNNN-*.md` (post-
- * S11/S12, `kind: legacy`) — are warn-only **permanently**, not just
- * during the migration window. S12's own non-goal is "do NOT rewrite
+ * The legacy proposals — `pNNN-*.md` (pre-S11), `lNNN-*.md` (post-
+ * S11/S12, `kind: legacy`), and proposals already archived under
+ * `done/` — are skipped by this executable lint. S12's own non-goal is "do NOT rewrite
  * the prose" — these are historical, mostly `done`, documents that
  * predate the scaffold; several don't have a 1:1 mapping onto Goal/
  * Why/Non-goals/Slices/Acceptance at all (one proposal-FOR-a-decision
  * doc has no Slices section by design), and their slice sub-format
  * predates the `### S<N> —` heading shape entirely. Forcing 100%
- * conformance would mean either rewriting meaning into documents that
- * shouldn't change, or never finishing. `kind: legacy` (prefix `l`) IS
- * the signal "imported, evaluated leniently" — same tier as the
- * pre-migration `p` prefix, not a stricter one.
+ * conformance would mean rewriting historical meaning into documents
+ * that shouldn't change. Active and newly-authored proposals remain
+ * linted normally.
  *
  *   bun scripts/lint-proposals.ts
  */
@@ -66,7 +65,7 @@ const walkMarkdown = async (root: string): Promise<string[]> => {
 
 export interface ILintProposalsSummary {
 	readonly filesChecked: number;
-	readonly legacyWarnings: number;
+	readonly legacySkipped: number;
 	readonly fatalErrors: number;
 	readonly ok: boolean;
 }
@@ -75,7 +74,7 @@ export const lintProposalsDir = async (
 	proposalsDirAbs: string,
 ): Promise<ILintProposalsSummary> => {
 	const files = await walkMarkdown(proposalsDirAbs);
-	let legacyWarnings = 0;
+	let legacySkipped = 0;
 	let fatalErrors = 0;
 
 	for (const absPath of files) {
@@ -88,6 +87,10 @@ export const lintProposalsDir = async (
 			absPath.split('/').pop() ?? '',
 			absPath,
 		);
+		if (legacy) {
+			legacySkipped += 1;
+			continue;
+		}
 		// Heuristic: an issue is fatal only when it indicates a real
 		// authoring problem (`unrecognized` heading, `missing required`
 		// section, `duplicate` section). Cosmetic issues (`out of
@@ -97,20 +100,19 @@ export const lintProposalsDir = async (
 		const hasFatalIssue = result.issues.some((i) =>
 			/unrecognized|missing required|duplicate/i.test(i.message),
 		);
-		const fatal = !legacy && hasFatalIssue;
-		const label = legacy ? 'WARN (legacy)' : fatal ? 'ERROR' : 'WARN';
+		const fatal = hasFatalIssue;
+		const label = fatal ? 'ERROR' : 'WARN';
 		console.log(`\n${label} ${relPath}`);
 		for (const issue of result.issues) {
 			console.log(`  line ${issue.line}: ${issue.message}`);
 			console.log(`    fix: ${issue.fix}`);
 		}
-		if (legacy) legacyWarnings += 1;
-		else if (fatal) fatalErrors += 1;
+		if (fatal) fatalErrors += 1;
 	}
 
 	return {
 		filesChecked: files.length,
-		legacyWarnings,
+		legacySkipped,
 		fatalErrors,
 		ok: fatalErrors === 0,
 	};
@@ -122,7 +124,7 @@ if (import.meta.main) {
 	const proposalsDirAbs = join(repoRoot, 'docs', 'proposals');
 	const summary = await lintProposalsDir(proposalsDirAbs);
 	console.log(
-		`\n${summary.filesChecked} files checked, ${summary.legacyWarnings} legacy warning(s), ${summary.fatalErrors} fatal error(s).`,
+		`\n${summary.filesChecked} files checked, ${summary.legacySkipped} legacy file(s) skipped, ${summary.fatalErrors} fatal error(s).`,
 	);
 	if (!summary.ok) process.exit(1);
 }

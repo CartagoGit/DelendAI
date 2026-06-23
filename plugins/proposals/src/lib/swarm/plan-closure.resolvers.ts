@@ -158,7 +158,7 @@ export const buildDiskPlanChildrenResolver = async (
 	return {
 		resolveOne: async (ref, kind) => {
 			if (kind === 'slice') {
-				if (ownSlices !== undefined && ownSlices.has(ref)) {
+				if (ownSlices?.has(ref)) {
 					return {
 						ref,
 						kind,
@@ -215,7 +215,6 @@ export const readPlanOwnSliceStatuses = (
 	const section = m[1] ?? '';
 	const blockRe =
 		/###\s+([A-Za-z0-9_-]+)[^\n]*\n([\s\S]*?)(?=###\s|\n*$(?![\s\S]))/g;
-	// biome-ignore lint/suspicious/noAssignInExpressions: regex iteration idiom
 	let bm: RegExpExecArray | null = blockRe.exec(section);
 	while (bm !== null) {
 		const id = bm[1] ?? '';

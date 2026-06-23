@@ -8,7 +8,7 @@
  * a cast silently accepts typos, unknown fields and wrong types.
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import testConventionPlugin from '../../../src/index';
 

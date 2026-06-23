@@ -57,7 +57,7 @@ export const runHumanCli = async (
 		: command.name.startsWith('docs ')
 			? ['docs']
 			: [];
-	let ctx;
+	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		ctx = await createStdioContext(cwd, parsed.globals, extraPlugins);
 		const result = await command.run(

@@ -70,7 +70,7 @@ export const readProposalType = (raw: string): string => readType(raw);
 export const readProposalKind = (raw: string): string => {
 	const fm = parseFrontmatter(raw);
 	if (fm === null) return '';
-	const k = fm['kind'];
+	const k = fm.kind;
 	return typeof k === 'string' ? k : '';
 };
 
@@ -81,7 +81,7 @@ export const readProposalKind = (raw: string): string => {
 const readType = (raw: string): string => {
 	const fm = parseFrontmatter(raw);
 	if (fm === null) return '';
-	const t = fm['type'];
+	const t = fm.type;
 	return typeof t === 'string' ? t : '';
 };
 

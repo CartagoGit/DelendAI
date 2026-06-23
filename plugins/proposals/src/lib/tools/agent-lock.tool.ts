@@ -4,7 +4,6 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import type { ILockChangeListener } from '../locks/lock-change-listener';
-import { lockChangeMultiplexer } from '../locks/lock-change-listener';
 
 export interface IAgentLockToolOptions {
 	/** Tool namespace, e.g. `proposals` → `proposals_agent_lock`. */

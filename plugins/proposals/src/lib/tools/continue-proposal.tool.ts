@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';
@@ -215,10 +214,6 @@ const isActionable = (entry: IProposalIndexEntry): boolean => {
 	}
 	return entry.status !== undefined && ACTIONABLE.has(entry.status);
 };
-
-interface IIndexEntry extends IProposalIndexEntry {
-	readonly status: string;
-}
 
 /** Extract the family prefix from a proposal id (`q00001` → `q`). */
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';

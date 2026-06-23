@@ -14,7 +14,6 @@
 
 import type { IBlueprintArtifact } from './build-blueprint';
 import type { ICanonicalToolId } from './capability-normalize';
-import type { IAliasStrategy } from './alias-strategy';
 
 /**
  * Discriminated result of classifying a single desired tool against

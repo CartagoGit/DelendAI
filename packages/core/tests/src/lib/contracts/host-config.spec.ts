@@ -119,7 +119,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 				validationMatrix,
 			};
 			expect(slice.knowledge?.[0]?.id).toBe('k1');
-			const fullScope = validationMatrix.scopes['full'];
+			const fullScope = validationMatrix.scopes.full;
 			expect(fullScope?.[0]?.command).toBe('bun test');
 		});
 		it('is assignable to the composite (LSP)', () => {

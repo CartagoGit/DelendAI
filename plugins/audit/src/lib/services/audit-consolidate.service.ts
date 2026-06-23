@@ -21,14 +21,12 @@
 import type {
 	AuditSeverity,
 	IAuditDocument,
-	IAuditFinding,
 	IConsolidation,
 } from '../contracts/interfaces/audit.interface';
 
 import {
 	DEFAULT_CONSOLIDATION_STRATEGIES,
 	type IConsolidationStrategies,
-	type ILikeFinding,
 } from './audit-consolidation-strategies';
 
 const dedup = <T>(arr: readonly T[]): T[] => Array.from(new Set(arr));
@@ -56,7 +54,7 @@ export const consolidateAudits = (
 	options: IConsolidateOptions = {},
 ): IConsolidation => {
 	const strategies = options.strategies ?? DEFAULT_CONSOLIDATION_STRATEGIES;
-	const worstSeverity = strategies.severity.worst;
+	const _worstSeverity = strategies.severity.worst;
 	const isSameFinding = strategies.dedup;
 	const findingKey = strategies.key.key;
 	const topN = options.topActions ?? 5;

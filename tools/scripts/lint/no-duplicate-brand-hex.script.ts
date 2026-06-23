@@ -24,7 +24,7 @@
  *   0 — no offending files.
  *   1 — one or more files contain the hex literals outside the allowlist.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
 const REPO_ROOT = process.cwd();

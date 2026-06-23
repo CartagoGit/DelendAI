@@ -1,5 +1,5 @@
-import { readFileSync, renameSync, writeFileSync } from 'fs';
-import { dirname, basename, join, relative } from 'path';
+import { readFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import { $ } from 'bun';
 
 const filesRaw = await $`find plugins/*/src/lib -type f -name "*.ts"`.text();
@@ -7,7 +7,7 @@ const testFilesRaw =
 	await $`find plugins/*/tests/src/lib -type f -name "*.spec.ts"`.text();
 
 const files = filesRaw.split('\n').filter(Boolean);
-const testFiles = testFilesRaw.split('\n').filter(Boolean);
+const _testFiles = testFilesRaw.split('\n').filter(Boolean);
 
 function guessRole(content: string, name: string): string {
 	if (
@@ -52,7 +52,7 @@ function guessRole(content: string, name: string): string {
 }
 
 function computeNewPath(filePath: string, role: string): string {
-	const dir = dirname(filePath);
+	const _dir = dirname(filePath);
 	const base = basename(filePath, '.ts');
 
 	// find plugin root: plugins/search

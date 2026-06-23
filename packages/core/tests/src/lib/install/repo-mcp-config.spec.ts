@@ -45,7 +45,7 @@ describe('repo MCP client configs', () => {
 		expect(entry?.type).toBe('stdio');
 		expect(entry?.command).toBe('bun');
 		expect(entry?.args).toContain(
-			'${workspaceFolder}/tools/scripts/host/host-server.script.ts',
+			`\${workspaceFolder}/tools/scripts/host/host-server.script.ts`,
 		);
 		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
 	});

@@ -16,12 +16,6 @@ import {
 	fixQualityPromptBody,
 	startPromptBody,
 } from './prompt-bodies';
-import {
-	frameworkSkillBody,
-	frameworkSkillWhenToUse,
-	projectStandardsSkillBody,
-} from './skill-bodies';
-
 export {
 	continueProposalPromptBody,
 	fixQualityPromptBody,

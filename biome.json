@@ -8,6 +8,7 @@
 			"!build",
 			"!coverage",
 			"!site",
+			"!.continue",
 			"!.astro",
 			"!.cache",
 			"!.worktrees",

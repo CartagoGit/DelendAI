@@ -28,7 +28,7 @@ describe('escapeRegExp', () => {
 	it('escapes every regex metacharacter', () => {
 		// Build a single string containing all 14 metacharacters and
 		// assert none of them retains its regex meaning after escape.
-		const input = '.*+?^${}()|[]\\';
+		const input = `.*+?^\${}()|[]\\`;
 		const out = escapeRegExp(input);
 		// The escaped string must NOT match the unescaped input as a
 		// regex (every metacharacter is neutralised).
