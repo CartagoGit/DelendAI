@@ -306,7 +306,7 @@ Their working tree (uncommitted, unmerged) contains:
   new `plugins/proposals/src/lib/agents/worktree-sync-coordinator.ts`.
 - **SOLID**: D (depends on `IWorktreeSyncCoordinator`, not on raw git +
   registry); S (engine focuses on git worktree mechanics).
-- **Status**: pending. **Interacts with `u00002`**: if the worktree
+- **Status**: done. **Interacts with `u00002`**: if the worktree
   flag is in `false` in this repo, this slice is still relevant for
   hosts that opt in.
 - **Gate**: `bun run test`.

@@ -1,6 +1,10 @@
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../shared/git-runner';
+import {
+	type IWorktreeSyncCoordinator,
+	resolveWorktreeSyncCoordinator,
+} from './worktree-sync-coordinator';
 
 /**
  * Isolates a concurrent agent into its own `git worktree` + branch, so two
@@ -14,6 +18,22 @@ export interface IAgentWorktreeOptions {
 	readonly workspaceRoot: string;
 	/** Relative dir holding all agent worktrees (default `.worktrees`). */
 	readonly worktreesDirRel?: string;
+	/**
+	 * r00003 S10 (CONC-1): serializes `git worktree add`/`remove` against
+	 * the proposals registry sync so a concurrent
+	 * `syncProposalRegistry.run()` never reads a half-applied worktree.
+	 * When omitted, a coordinator is derived from `registryMutexPath`
+	 * (pass-through when that too is absent — identical to the previous
+	 * direct-git behaviour). Tests inject a stub to assert ordering.
+	 */
+	readonly coordinator?: IWorktreeSyncCoordinator;
+	/**
+	 * Absolute path of the proposals registry index whose `withFileMutex`
+	 * lock the default coordinator shares. When set (and no explicit
+	 * `coordinator` is given), worktree mutations and registry syncs become
+	 * mutually exclusive.
+	 */
+	readonly registryMutexPath?: string;
 }
 
 export interface IAgentWorktreeArgs {
@@ -71,6 +91,17 @@ const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
 		options.worktreesDirRel ?? '.worktrees',
 		agentSlug,
 	);
+
+/**
+ * The coordinator that serializes worktree mutations against the registry
+ * sync. Use the explicitly-injected one if present; otherwise derive it
+ * from `registryMutexPath` (pass-through when that is also absent).
+ */
+const coordinatorFor = (
+	options: IAgentWorktreeOptions,
+): IWorktreeSyncCoordinator =>
+	options.coordinator ??
+	resolveWorktreeSyncCoordinator(options.registryMutexPath);
 
 /** Parse `git worktree list --porcelain` into structured entries. */
 export const parseWorktreeList = (raw: string): readonly IWorktreeEntry[] => {
@@ -169,7 +200,12 @@ const createWorktree = async (
 	const addArgs = hasBranch
 		? ['worktree', 'add', path, branch]
 		: ['worktree', 'add', '-b', branch, path, args.base_branch ?? 'HEAD'];
-	const result = await run(addArgs);
+	// r00003 S10 (CONC-1): the `git worktree add` runs under the registry
+	// mutex so a concurrent `syncProposalRegistry.run()` cannot read a
+	// half-applied worktree mid-add.
+	const result = await coordinatorFor(options).runExclusive(() =>
+		run(addArgs),
+	);
 	if (!result.ok) {
 		return {
 			ok: false,
@@ -199,7 +235,11 @@ const removeWorktree = async (
 		...(args.force === true ? ['--force'] : []),
 		path,
 	];
-	const result = await run(removeArgs);
+	// r00003 S10 (CONC-1): same registry-mutex serialization as `create`,
+	// so a worktree removal and a registry sync never interleave.
+	const result = await coordinatorFor(options).runExclusive(() =>
+		run(removeArgs),
+	);
 	if (!result.ok) {
 		return {
 			ok: false,

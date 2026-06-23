@@ -57,6 +57,12 @@ export type {
 	IAgentWorktreeResult,
 	IWorktreeEntry,
 } from '../lib/agents/agent-worktree-engine';
+export {
+	createFileMutexWorktreeCoordinator,
+	createPassthroughWorktreeCoordinator,
+	resolveWorktreeSyncCoordinator,
+} from '../lib/agents/worktree-sync-coordinator';
+export type { IWorktreeSyncCoordinator } from '../lib/agents/worktree-sync-coordinator';
 export { buildTaskQueueRegistration } from '../lib/tools/task-queue.tool';
 export type { ITaskQueueToolOptions } from '../lib/tools/task-queue.tool';
 export { buildSyncProposalsRegistration } from '../lib/tools/sync-proposals.tool';
