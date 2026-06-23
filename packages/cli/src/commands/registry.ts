@@ -32,6 +32,7 @@ import {
 import { auditCommands } from './groups/audit';
 import { coreExtraCommands } from './groups/core';
 import { depsCommands } from './groups/deps';
+import { docsCommands } from './groups/docs';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { qualityCommands } from './groups/quality';
@@ -328,8 +329,14 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 			if (query === undefined)
 				return {
 					code: EXIT_CODE.USAGE,
-					error: 'usage: search <query> [--max=N]',
+					error: 'usage: search <query> [--max=N] [--context=N] [--regex]',
 				};
+			// f00046 S6: `--context=N` forwards `context` (lines before/after
+			// each hit, 0–10). `--json-lines` is honoured by the global `--json`
+			// renderer; it is accepted here so the flag never errors.
+			const contextRaw = scalarArg(args, 'context');
+			const context =
+				contextRaw !== undefined ? Number(contextRaw) : undefined;
 			return data(
 				await request(ctx, 'search_search', {
 					query,
@@ -337,6 +344,9 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 					regex: hasFlag(args, 'regex'),
 					include: scalarArg(args, 'include')?.split(','),
 					exclude: scalarArg(args, 'exclude')?.split(','),
+					...(context !== undefined && Number.isFinite(context)
+						? { context }
+						: {}),
 				}),
 			);
 		},
@@ -435,4 +445,5 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	...auditCommands,
 	...logsCommands,
 	...coreExtraCommands,
+	...docsCommands,
 ];

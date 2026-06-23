@@ -59,6 +59,7 @@ const EXPECTED_COMMANDS = [
 	'project analyze',
 	'project plan',
 	'project create',
+	'docs search',
 ] as const;
 
 describe('CLI command registry', () => {
