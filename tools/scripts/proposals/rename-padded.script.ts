@@ -84,14 +84,6 @@ const FAMILIES_ORDER = [
 	'p',
 ] as const;
 const PAD = 5;
-const STATUS_FOLDERS = [
-	'ready',
-	'done',
-	'in-progress',
-	'paused',
-	'blocked',
-	'retired',
-] as const;
 
 const isProposalMd = (filename: string): boolean =>
 	/^[a-z]\d+-.+\.md$/.test(filename);

@@ -1,12 +1,4 @@
-import {
-	afterAll,
-	afterEach,
-	beforeAll,
-	describe,
-	expect,
-	it,
-	vi,
-} from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
 import { MetricsService } from '../../src/lib/services/metrics.service';

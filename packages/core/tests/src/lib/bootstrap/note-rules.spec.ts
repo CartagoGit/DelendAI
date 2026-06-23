@@ -85,7 +85,7 @@ describe('matchNotes', () => {
 		const out = matchNotes(makeCtx());
 		// Debug aid: surface the actual output when this fails.
 		if (!out.some((n) => n.startsWith('No MCP server found'))) {
-			throw new Error('debug notes=' + JSON.stringify(out));
+			throw new Error(`debug notes=${JSON.stringify(out)}`);
 		}
 		expect(
 			out.some((n) =>

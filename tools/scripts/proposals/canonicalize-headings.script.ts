@@ -75,12 +75,6 @@ const AUDIT_CANONICAL_HEADINGS: readonly string[] = [
 	'notes',
 ];
 
-interface IHeadingMatch {
-	readonly line: number;
-	readonly raw: string;
-	readonly canonical: string;
-}
-
 interface IHeadingFix {
 	readonly line: number;
 	readonly before: string;

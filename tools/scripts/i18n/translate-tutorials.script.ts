@@ -103,7 +103,7 @@ const buildSkeleton = (params: {
 	readonly body: string;
 	readonly nowIso: string;
 }): string => {
-	const { srcAbs, plugin, topic, lang, enTitle, body, nowIso } = params;
+	const { srcAbs, plugin, lang, enTitle, body, nowIso } = params;
 	const display = LANGS_DISPLAY[lang];
 	const srcRel = relative(REPO_ROOT, srcAbs);
 	const frontmatter = [

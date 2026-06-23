@@ -26,7 +26,7 @@
  */
 import { afterEach, beforeEach, vi } from 'vitest';
 
-const ALLOW = process.env['ALLOW_TEST_OUTPUT'] === '1';
+const ALLOW = process.env.ALLOW_TEST_OUTPUT === '1';
 
 type LogMethod = (...args: unknown[]) => void;
 type ConsoleLike = Record<

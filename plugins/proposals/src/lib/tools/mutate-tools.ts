@@ -1,16 +1,3 @@
-/**
- * `proposals_edit` + `proposals_add_slice` (S10, f00020) — mutate the
- * BODY of an existing proposal document: replace a top-level section
- * (`## Goal` / `## Why` / `## Non-goals` / `## Acceptance` / `## risks
- * and mitigations`) or append a new slice to the `## Slices` section.
- *
- * This module only knows the proposal markdown FORMAT — disjointness
- * validation reuses `proposal-slice-plan.ts` (the same logic
- * `proposals_plan`/`proposal_board` use) rather than re-implementing it,
- * and writes go through `withFileMutex` + `writeFileAtomic` like every
- * other durable write in this plugin. It has no opinion on git.
- */
-import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { z } from 'zod';

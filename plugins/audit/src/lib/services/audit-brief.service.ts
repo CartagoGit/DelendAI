@@ -47,13 +47,11 @@ export type {
 	UniversalAuditScope,
 } from './audit-brief.constants';
 import {
-	ALL_SCOPES,
 	CROSS_CUTTING_UNIVERSAL_DEFAULTS,
 	type ILayerConfig,
 	SCOPE_LABEL,
 	SCORE_DIMENSIONS,
 	UNIVERSAL_PHASES,
-	UNIVERSAL_SCOPES,
 	type UniversalAuditScope,
 } from './audit-brief.constants';
 

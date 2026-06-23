@@ -124,7 +124,7 @@ export const scaffoldPromptFile = (
 	const userText =
 		body !== undefined && body.length > 0
 			? safeBody
-			: 'Wrapper: call the ${prefix} MCP tools; the server is the source of truth.';
+			: `Wrapper: call the ${prefix} MCP tools; the server is the source of truth.`;
 	return {
 		path: `libs/mcp-project/src/lib/prompts/${prefix}-${id}.prompt.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

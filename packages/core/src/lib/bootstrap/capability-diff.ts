@@ -16,7 +16,7 @@ import type { IProjectAnalysis } from './analyze-project';
 import type { IBlueprintArtifact, IServerBlueprint } from './build-blueprint';
 import { canonicalToolId } from './capability-normalize';
 import type { ICanonicalToolId } from './capability-normalize';
-import { CompositeAliasStrategy, DefaultAliasStrategy } from './alias-strategy';
+import { DefaultAliasStrategy } from './alias-strategy';
 import type { IAliasStrategy } from './alias-strategy';
 import { DefaultExistingToolsMatcher } from './tool-classifier';
 import type {

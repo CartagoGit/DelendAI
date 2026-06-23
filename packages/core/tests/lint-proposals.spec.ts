@@ -81,7 +81,7 @@ describe('lintProposalsDir', () => {
 		await write(root, 'p99-old-thing.md', '# no frontmatter at all\n');
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(0);
-		expect(summary.legacyWarnings).toBe(0);
+		expect(summary.legacySkipped).toBe(0);
 		expect(summary.fatalErrors).toBe(0);
 		expect(summary.ok).toBe(true);
 	});
@@ -98,7 +98,7 @@ describe('lintProposalsDir', () => {
 		expect(summary.ok).toBe(false);
 	});
 
-	it('treats a padded legacy file (l-prefix) as a warning, not a fatal error', async () => {
+	it('skips a padded legacy file (l-prefix)', async () => {
 		await write(
 			root,
 			'done/l00099-old-thing.md',
@@ -106,7 +106,7 @@ describe('lintProposalsDir', () => {
 		);
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(1);
-		expect(summary.legacyWarnings).toBe(1);
+		expect(summary.legacySkipped).toBe(1);
 		expect(summary.fatalErrors).toBe(0);
 		expect(summary.ok).toBe(true);
 	});
@@ -115,7 +115,7 @@ describe('lintProposalsDir', () => {
 		await write(root, 'ready/f00014-do-the-thing.md', VALID_PROPOSAL);
 		const summary = await lintProposalsDir(root);
 		expect(summary.filesChecked).toBe(1);
-		expect(summary.legacyWarnings).toBe(0);
+		expect(summary.legacySkipped).toBe(0);
 		expect(summary.fatalErrors).toBe(0);
 		expect(summary.ok).toBe(true);
 	});

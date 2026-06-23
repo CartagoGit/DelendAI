@@ -45,7 +45,6 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import {
-	BLUEPRINT_ARTIFACT_SCHEMA,
 	MCP_PROJECT_SKELETON_SCHEMA,
 	PROJECT_ANALYSIS_SCHEMA,
 	SCAFFOLDED_FILE_SCHEMA,

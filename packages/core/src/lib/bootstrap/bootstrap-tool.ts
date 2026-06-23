@@ -15,7 +15,7 @@ import type { IFileReader } from './analyze-project';
 import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import { recommendServerPlan } from './recommend-plan';
 import { diffAnalysis } from './drift';
-import type { IDriftChange, IDriftReport } from './drift';
+import type { IDriftReport } from './drift';
 import { loadDriftSnapshot, saveDriftSnapshot } from './drift-store';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 
@@ -67,7 +67,6 @@ export const createWorkspaceFileReader = (
 // `bootstrap-schemas.ts`.
 import {
 	ANALYZE_SCHEMA,
-	BLUEPRINT_ARTIFACT_SCHEMA,
 	CREATE_SCHEMA,
 	DRIFT_REPORT_SCHEMA,
 	MCP_PROJECT_SKELETON_SCHEMA,

@@ -136,9 +136,7 @@ export const classifyPath = (
 	for (const r of rules) {
 		try {
 			if (r.match(rel)) return r.name;
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return 'other';
 };

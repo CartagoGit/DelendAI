@@ -1,5 +1,4 @@
 import type { ICommandSet, ICommandSetProvider } from '../../contracts';
-import type { IAreaRulesLite } from '../../registry/preset-registry';
 
 /**
  * Cargo/Clippy command-set provider. `cargo check` is both the

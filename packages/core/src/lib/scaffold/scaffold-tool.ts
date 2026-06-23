@@ -11,7 +11,6 @@ import { z } from 'zod';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { writeFileAtomic } from '../shared/atomic-write';
 import {
 	createFileSystemBatchWriter,
 	type IBatchAtomicWriter,
