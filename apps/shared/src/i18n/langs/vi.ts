@@ -500,22 +500,22 @@ const extension = {
 	healthQueue: 'Hang doi',
 	serverRestartHint:
 		'mcp-vertex: vui long khoi dong lai tien ich de khoi dong lai may chu MCP.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: Mở nhật ký hôm nay',
+	gitStatus: 'mcp-vertex: Trạng thái Git',
+	openMemory: 'mcp-vertex: Mở tìm kiếm bộ nhớ',
+	notificationTest: 'mcp-vertex: Kiểm tra thông báo',
+	depsCheck: 'mcp-vertex: Kiểm tra phụ thuộc',
+	webFetch: 'mcp-vertex: Lấy web',
+	toolbarCategoryProposals: 'Đề xuất',
+	toolbarCategoryKnowledge: 'Tri thức',
+	toolbarCategoryLogs: 'Nhật ký',
+	toolbarCategoryDocs: 'Tài liệu',
+	toolbarCategoryQuality: 'Chất lượng',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'Bộ nhớ',
+	toolbarCategoryNotification: 'Thông báo',
+	toolbarCategoryDeps: 'Phụ thuộc',
+	toolbarCategoryTools: 'Công cụ',
 	setupGithub: 'mcp-vertex: Thiết lập issues GitHub',
 };
 

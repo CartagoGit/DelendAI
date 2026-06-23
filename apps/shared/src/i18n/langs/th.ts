@@ -494,22 +494,22 @@ const extension = {
 	healthQueue: 'Queue',
 	serverRestartHint:
 		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: เปิดบันทึกของวันนี้',
+	gitStatus: 'mcp-vertex: สถานะ Git',
+	openMemory: 'mcp-vertex: เปิดการค้นหาหน่วยความจำ',
+	notificationTest: 'mcp-vertex: ทดสอบการแจ้งเตือน',
+	depsCheck: 'mcp-vertex: ตรวจสอบการพึ่งพา',
+	webFetch: 'mcp-vertex: ดึงเว็บ',
+	toolbarCategoryProposals: 'ข้อเสนอ',
+	toolbarCategoryKnowledge: 'ความรู้',
+	toolbarCategoryLogs: 'บันทึก',
+	toolbarCategoryDocs: 'เอกสาร',
+	toolbarCategoryQuality: 'คุณภาพ',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'หน่วยความจำ',
+	toolbarCategoryNotification: 'การแจ้งเตือน',
+	toolbarCategoryDeps: 'การพึ่งพา',
+	toolbarCategoryTools: 'เครื่องมือ',
 	setupGithub: 'mcp-vertex: ตั้งค่า GitHub issues',
 };
 

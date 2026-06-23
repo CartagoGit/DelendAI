@@ -501,22 +501,22 @@ const extension = {
 	healthQueue: 'Warteschlange',
 	serverRestartHint:
 		'mcp-vertex: bitte Erweiterung neu laden, um den MCP-Server neu zu starten.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: Heutiges Log öffnen',
+	gitStatus: 'mcp-vertex: Git-Status',
+	openMemory: 'mcp-vertex: Memory-Suche öffnen',
+	notificationTest: 'mcp-vertex: Benachrichtigung testen',
+	depsCheck: 'mcp-vertex: Abhängigkeiten prüfen',
+	webFetch: 'mcp-vertex: Web abrufen',
+	toolbarCategoryProposals: 'Vorschläge',
+	toolbarCategoryKnowledge: 'Wissen',
+	toolbarCategoryLogs: 'Logs',
+	toolbarCategoryDocs: 'Docs',
+	toolbarCategoryQuality: 'Qualität',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'Memory',
+	toolbarCategoryNotification: 'Benachrichtigungen',
+	toolbarCategoryDeps: 'Abhängigkeiten',
+	toolbarCategoryTools: 'Tools',
 	setupGithub: 'mcp-vertex: GitHub-Issues einrichten',
 };
 
