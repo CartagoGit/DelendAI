@@ -40,9 +40,19 @@ export interface IShapeRuleFinding extends IShapeFinding {
 }
 
 const TOP_LEVEL_EXEMPT: ReadonlySet<string> = new Set([
+	// Built-in top-level commands with no plugin namespace.
 	'completion',
 	'version',
 	'help',
+	// `doctor` is a top-level diagnostic command whose actions (env,
+	// plugins, tools) are nested subcommands, not part of the name —
+	// the same single-token shape as `completion`.
+	'doctor',
+	// `web-fetch` is a 1:1 plugin command: the plugin maps to exactly
+	// one tool (`web-fetch_web_fetch`), so the command *is* the action.
+	// Its namespace is already kebab-case; there is no second token to
+	// add without inventing a redundant `web-fetch fetch`.
+	'web-fetch',
 ]);
 
 /**

@@ -98,28 +98,22 @@ export const PushFromMainRule: IWorkflowRule = {
 /** Rule 3 — placeholder for the sync-race heuristic. The real
  *  enforcement requires cross-referencing `proposals_sync_proposals`
  *  MCP invocations against slice-close timestamps; that telemetry is
- *  not yet exported by the proposals plugin (post-f00049 follow-up). */
+ *  not yet exported by the proposals plugin (post-f00049 follow-up).
+ *
+ *  Until that telemetry exists the rule detects nothing: a placeholder
+ *  must not turn the gate red. It stays in the chain (open/closed) so
+ *  the follow-up only swaps the body, not the wiring. */
 export const SyncRaceRule: IWorkflowRule = {
 	id: 'sync-race',
-	detect: () => [
-		{
-			rule: 'sync-race',
-			detail: 'noop: requires MCP telemetry (post-f00049 follow-up)',
-		},
-	],
+	detect: () => [],
 };
 
 /** Rule 4 — placeholder for the auto-work-loop heuristic. Same gap as
  *  SyncRaceRule; the real enforcement arrives with the proposals
- *  plugin's runtime telemetry. */
+ *  plugin's runtime telemetry. Detects nothing until then. */
 export const AutoWorkLoopRule: IWorkflowRule = {
 	id: 'auto-work-loop',
-	detect: () => [
-		{
-			rule: 'auto-work-loop',
-			detail: 'noop: requires MCP telemetry (post-f00049 follow-up)',
-		},
-	],
+	detect: () => [],
 };
 
 /** Default rule set, ordered by perceived severity (most actionable first). */
