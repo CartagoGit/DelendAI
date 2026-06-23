@@ -3,8 +3,11 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import { InvalidSearchPatternError, searchWorkspace } from './engine';
-import type { ISearchOptions } from './engine';
+import {
+	InvalidSearchPatternError,
+	searchWorkspace,
+} from '../services/search-engine.service';
+import type { ISearchOptions } from '../services/search-engine.service';
 
 export interface ISearchToolOptions {
 	readonly namespacePrefix: string;

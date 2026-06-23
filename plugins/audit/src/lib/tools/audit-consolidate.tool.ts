@@ -10,8 +10,11 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { consolidateAudits, renderConsolidationMarkdown } from '../consolidate';
-import { parseAuditFiles } from '../parse-audit';
+import {
+	consolidateAudits,
+	renderConsolidationMarkdown,
+} from '../services/audit-consolidate.service';
+import { parseAuditFiles } from '../services/parse-audit.service';
 
 // --- output schemas --------------------------------------------------------
 

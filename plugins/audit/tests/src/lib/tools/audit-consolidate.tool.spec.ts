@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { buildConsolidateRegistration } from '../src/lib/tools/consolidate-tool';
+import { buildConsolidateRegistration } from '../../../../src/lib/tools/audit-consolidate.tool';
 
 const invoke = async (
 	reg: ReturnType<typeof buildConsolidateRegistration>,

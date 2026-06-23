@@ -1,7 +1,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildSearchToolRegistrations } from './lib/tools';
-import type { ISearchOptions } from './lib/engine';
+import { buildSearchToolRegistrations } from './lib/tools/search.tool';
+import type { ISearchOptions } from './lib/services/search-engine.service';
 
 /**
  * Textual workspace search. A grep-like `search` tool over allow-listed

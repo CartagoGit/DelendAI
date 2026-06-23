@@ -5,14 +5,17 @@
  */
 export { default } from '../index';
 
-export { searchWorkspace, InvalidSearchPatternError } from '../lib/engine';
+export {
+	searchWorkspace,
+	InvalidSearchPatternError,
+} from '../lib/services/search-engine.service';
 export type {
 	ISearchHit,
 	ISearchResult,
 	ISearchOptions,
-} from '../lib/engine';
-export { buildSearchToolRegistrations } from '../lib/tools';
-export type { ISearchToolOptions } from '../lib/tools';
+} from '../lib/services/search-engine.service';
+export { buildSearchToolRegistrations } from '../lib/tools/search.tool';
+export type { ISearchToolOptions } from '../lib/tools/search.tool';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

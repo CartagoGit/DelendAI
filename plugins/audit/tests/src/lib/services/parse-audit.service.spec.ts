@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseAuditBody } from '../src/lib/parse-audit';
+import { parseAuditBody } from '../../../../src/lib/services/parse-audit.service';
 import type {
 	IAuditDocument,
 	IAuditFinding,
 	IAuditScore,
-} from '../src/lib/types';
+} from '../../../../src/lib/contracts/interfaces/audit.interface';
 
 const SAMPLE_AUDIT = `# 🔍 Auditoría Exhaustiva — \`mcp-vertex\` y Plugins
 
