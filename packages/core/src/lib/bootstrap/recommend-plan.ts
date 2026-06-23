@@ -1,5 +1,6 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IProjectAnalysis } from './analyze-project';
+import { runnerFor } from './package-runners';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
 import type { IPatternOverrides } from './pattern-catalog-overrides';
 import type { IRecommendedTool } from './pattern-catalog';
