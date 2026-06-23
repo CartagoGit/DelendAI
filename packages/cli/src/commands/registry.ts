@@ -29,6 +29,7 @@ import {
 	gitStatusCommand,
 	gitWorktreeCommand,
 } from './groups/git';
+import { memoryCommands } from './groups/memory';
 
 const text = (body: string, code = EXIT_CODE.OK): ICliCommandResult => ({
 	code,
@@ -419,4 +420,5 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	gitBlameCommand,
 	gitShowCommand,
 	gitWorktreeCommand,
+	...memoryCommands,
 ];
