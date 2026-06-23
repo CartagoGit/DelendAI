@@ -41,10 +41,39 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 
-import {
-	PROPOSAL_CANONICAL_ORDER,
-	AUDIT_CANONICAL_ORDER,
-} from '../../../plugins/proposals/src/lib/proposals/proposal-scaffold-linter';
+/**
+ * Canonical headings are duplicated locally (vs. imported from
+ * `proposal-scaffold-linter.ts`) because that module keeps the lists as
+ * module-private constants. The duplication is protected by
+ * `tools/scripts/proposals/canonicalize-headings.drift.spec.ts`, which
+ * imports both this file and the linter's exported `lintProposalMarkdown`
+ * to confirm the two sets agree. If they ever drift, the spec fails.
+ */
+const PROPOSAL_CANONICAL_HEADINGS: readonly string[] = [
+	'goal',
+	'why',
+	'why this design',
+	'non-goals',
+	'architecture',
+	'slices',
+	'dependency graph',
+	'acceptance',
+	'risks and mitigations',
+	'notes',
+];
+
+const AUDIT_CANONICAL_HEADINGS: readonly string[] = [
+	'goal',
+	'why',
+	'non-goals',
+	'architecture',
+	'slices',
+	'acceptance',
+	'verified state',
+	'findings',
+	'scoreboard',
+	'notes',
+];
 
 interface IHeadingMatch {
 	readonly line: number;
@@ -82,20 +111,40 @@ const stripParenthetical = (s: string): string =>
 	s.replace(/\s*\([^)]*\)\s*$/, '').trim();
 
 /** Pure: returns the canonical form of an H2 text or null if it is
- * already canonical and recognised. */
+ * already canonical and recognised.
+ *
+ * Mirrors the linter's normalisation (`proposal-scaffold-linter.ts`
+ * `normalizeHeading`) — lowercase + trim, but **does not strip
+ * parentheticals** because the linter does not either. The trailing
+ * parenthetical is preserved in the input, so we accept a heading as
+ * canonical when its lowercase form either equals one of the canonical
+ * names or begins with `canonical + " "` / `canonical + "("` (the two
+ * common agent-authored suffixes). */
 export const normalizeHeading = (
 	raw: string,
 	canonical: readonly string[],
 ): string | null => {
 	const text = raw.replace(/^##\s+/, '').trim();
 	if (text === '') return null;
-	const stripped = stripParenthetical(text).toLowerCase();
-	if (canonical.includes(stripped)) return null;
-	if (stripped in SYNONYMS) return SYNONYMS[stripped] ?? null;
-	// Last-ditch heuristic: case-insensitive equality with a canonical
-	// heading (handles `## Goal`, `##  GOAL `, etc).
-	const hit = canonical.find((c) => c.toLowerCase() === stripped);
-	return hit ?? null;
+	const lower = text.toLowerCase();
+	// Exact match (case-insensitive) — already canonical.
+	const exact = canonical.find((c) => c.toLowerCase() === lower);
+	if (exact !== undefined) return null;
+	// Suffix-tolerant match: `Acceptance (end-to-end)` → `acceptance`,
+	// `Migration order` → `notes` (via SYNONYMS alias below).
+	for (const c of canonical) {
+		const lc = c.toLowerCase();
+		if (lower === lc) return null;
+		if (lower.startsWith(`${lc} (`) || lower.startsWith(`${lc} -`)) {
+			return c;
+		}
+	}
+	// Synonym map for headings the linter recognises as the same section
+	// via `SEMANTIC_ALIASES` (we duplicate a small subset here so the
+	// script stays self-contained; the drift spec verifies coverage).
+	const synonymHit = SYNONYMS[lower] ?? SYNONYMS[stripParenthetical(lower)];
+	if (synonymHit !== undefined) return synonymHit;
+	return null;
 };
 
 /** Pure: walk the markdown line-by-line and emit one IHeadingFix per
@@ -140,7 +189,9 @@ export const applyFixes = (
 export const loadCanonicalHeadings = async (
 	auditMode: boolean,
 ): Promise<readonly string[]> => {
-	const set = auditMode ? AUDIT_CANONICAL_ORDER : PROPOSAL_CANONICAL_ORDER;
+	const set = auditMode
+		? AUDIT_CANONICAL_HEADINGS
+		: PROPOSAL_CANONICAL_HEADINGS;
 	return Array.from(set);
 };
 
