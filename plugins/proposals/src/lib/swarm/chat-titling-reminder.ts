@@ -29,10 +29,19 @@
  *
  * Relationship with the rest of the project:
  *   - `libs/mcp-project/src/lib/swarm/chat-titling-prefix.ts` (T1)
+ *   - `libs/mcp-project/src/lib/swarm/host-capabilities.ts` (host
+ *     capabilities abstraction; r00003 S8 / F3)
  *   - `libs/mcp-project/src/lib/agents/agent-closure-report.ts`
  *     (consumed by `<prefix>_self_review_gate`).
  *   - the host self-review gate tool
  *     (concatenates the output of this helper to the gate's response).
+ *
+ * r00003 S8 (F3, O + D): the IDE name, the action id, and the
+ * "blocked" reason used to be hardcoded literals sprinkled through
+ * this file. They now live in `host-capabilities.ts` as a small data
+ * interface. When Copilot Chat ships a release that *does* register
+ * the rename action, hosts flip `programmaticRenameActionId` on the
+ * capabilities object — no code change here.
  */
 
 // ---------------------------------------------------------------------------
@@ -44,6 +53,10 @@ import {
 	CHAT_TITLING_PREFIX_MAX_LENGTH,
 	parseChatTitlingPrefix,
 } from './chat-titling-prefix';
+import {
+	createDefaultHostCapabilities,
+	type IHostCapabilities,
+} from './host-capabilities';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -86,6 +99,15 @@ export type IChatTitlingReminderInput = Omit<
 > &
 	Partial<IChatTitlingReminderContext>;
 
+/**
+ * Options that affect the rendered reminder without changing its
+ * contract. Currently only `hostCapabilities` — callers that want a
+ * host-agnostic reminder (or a different IDE) inject their own.
+ */
+export interface IChatTitlingReminderOptions {
+	readonly hostCapabilities?: IHostCapabilities;
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -107,22 +129,33 @@ export type IChatTitlingReminderInput = Omit<
  * The output always:
  *   - Opens with `## Rename chat session reminder`.
  *   - Mentions the technical limitation
- *     "no `workbench.action.chat.rename`".
- *   - Tells the user how to perform the rename manually
- *     ("right-click the editor tab → **Rename**").
- *   - Calls out the 40-character cap to avoid sidebar truncation.
+ *     "no `workbench.action.chat.rename`" (or the action id provided
+ *     by the host's `IHostCapabilities.programmaticRenameActionId`).
+ *   - Tells the user how to perform the rename manually, using the
+ *     phrase provided by `IHostCapabilities.manualRenameInstruction`.
+ *   - Calls out the prefix length cap to avoid sidebar truncation.
  *   - Ends with a trailing newline so it can be safely concatenated
  *     to a markdown payload.
  */
 export function buildChatTitlingReminder(
 	report: IChatTitlingReminderInput,
+	options: IChatTitlingReminderOptions = {},
 ): string {
 	const proposalId = normaliseOptionalString(report.proposalId);
 	const taskId = normaliseOptionalString(report.taskId);
 	const summary = normaliseOptionalString(report.summary);
 
+	const caps = options.hostCapabilities ?? createDefaultHostCapabilities();
+	const actionId =
+		caps.programmaticRenameActionId ?? 'workbench.action.chat.rename';
+	const blockedReason =
+		caps.programmaticRenameBlockedReason ?? `not available on this host`;
+
 	const heading = '## Rename chat session reminder';
-	const capNote = `The prefix must fit in ${CHAT_TITLING_PREFIX_MAX_LENGTH} characters to avoid truncation.`;
+	const capNote = `The prefix must fit in ${caps.prefixCharCap} characters to avoid truncation.`;
+	const sidebar = `The chat title in the ${caps.ideDisplayName} ${caps.chatPanelLocation} is auto-derived from the first`;
+	const blocked = `rename it programmatically (no \`${actionId}\` — ${blockedReason}). To give this chat a meaningful`;
+	const manual = `title, ${caps.manualRenameInstruction}, and set:`;
 
 	if (proposalId !== null) {
 		const safeTaskId = taskId ?? '<T-taskId>';
@@ -143,11 +176,10 @@ export function buildChatTitlingReminder(
 			return [
 				heading,
 				'',
-				'The chat title in the VS Code sidebar is auto-derived from the first',
+				sidebar,
 				'prompt. This conversation is not in a state where the orchestrator can',
-				'rename it programmatically (no `workbench.action.chat.rename` in',
-				'VS Code 1.123 / Copilot Chat 0.43). To give this chat a meaningful',
-				'title, right-click the editor tab → **Rename**, and set:',
+				blocked,
+				manual,
 				'',
 				`    ${resolvedProposalTemplate}`,
 				'',
@@ -162,11 +194,10 @@ export function buildChatTitlingReminder(
 	return [
 		heading,
 		'',
-		'The chat title in the VS Code sidebar is auto-derived from the first',
+		sidebar,
 		'prompt. This conversation is not in a state where the orchestrator can',
-		'rename it programmatically (no `workbench.action.chat.rename` in',
-		'VS Code 1.123 / Copilot Chat 0.43). To give this chat a meaningful',
-		'title, right-click the editor tab → **Rename**, and set:',
+		blocked,
+		manual,
 		'',
 		'    [FREE] <short summary>',
 		'',
