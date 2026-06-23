@@ -78,3 +78,11 @@ plugins/*/src/**/*.d.ts
 # still catches the ad-hoc transient notes that show up at the repo root.
 mcp-vertex-session-*.md
 !.agents/sessions/
+
+# Audit-H8: tools/scripts/.cache/ holds the rules plugin runtime
+# cache (eslint config snapshots fetched at plugin init). It is
+# regenerated on every boot and was being committed by accident
+# after `bun tools/scripts/verify/plugin-tool-verify.script.ts` walks
+# the rules plugin. The cache contents drift between Bun versions
+# and CI runners, so committing them caused non-reproducible diffs.
+tools/scripts/.cache/
