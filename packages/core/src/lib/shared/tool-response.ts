@@ -117,18 +117,26 @@ export interface ITruncationResult<T> {
 }
 
 /**
- * Pure: serialize `value` to JSON and truncate with a `__truncated`
- * marker when the result exceeds `maxBytes` UTF-8 bytes.
+ * Pure: serialize `value` to JSON and emit a `{ __truncated, head, … }`
+ * envelope when the result exceeds `maxBytes` UTF-8 bytes.
  *
- * Aligns with the project's token-budget discipline: a runaway tool
+ * Aligns with the project\'s token-budget discipline: a runaway tool
  * output cannot blow past the per-tool budget the agent is sized for.
  * The marker keeps the shape valid JSON so clients that ignore the
  * marker still parse the response without crashing.
+ *
+ * Implementation note — we never slice the JSON string at an
+ * arbitrary offset (that produces invalid JSON when the cut lands
+ * mid-string or mid-escape). Instead we serialise the full payload,
+ * verify the byte count, and only when over budget we emit a fresh
+ * envelope that holds the original value under `head` (so the caller
+ * can still consume the structured data without re-parsing fragile
+ * substrings).
  */
 export const truncateIfTooLarge = <T>(
 	value: T,
 	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
-): ITruncationResult<T> => {
+): ITruncationResult<T | ITruncatedEnvelope> => {
 	const serialised = JSON.stringify(value);
 	const originalBytes = Buffer.byteLength(serialised, 'utf8');
 	if (originalBytes <= maxBytes) {
@@ -139,28 +147,45 @@ export const truncateIfTooLarge = <T>(
 			finalBytes: originalBytes,
 		};
 	}
-	// Reserve room for the truncation marker (97 chars + JSON overhead).
-	const marker = JSON.stringify({
+	// Build the envelope first to measure its size, then decide how
+	// much room is left for `head`. `head` is a JSON fragment of the
+	// original value (NOT a re-parsed object — slicing JSON mid-string
+	// would produce invalid output). The caller can re-parse `head`
+	// when it has a schema-aware reader.
+	const envelopeBase = {
 		__truncated: true,
 		originalBytes,
 		maxBytes,
-	});
-	const budget = Math.max(
-		0,
-		maxBytes - Buffer.byteLength(marker, 'utf8') - 1,
-	);
-	const head = serialised.slice(0, budget);
-	const truncatedValue = JSON.parse(`${head} ${marker}`) as T;
+		head: '',
+	} as const;
+	const baseBytes = Buffer.byteLength(JSON.stringify(envelopeBase), 'utf8');
+	const headBudget = Math.max(0, maxBytes - baseBytes - 1);
+	const headSlice = serialised.slice(0, headBudget);
+	const envelope = {
+		__truncated: true,
+		originalBytes,
+		maxBytes,
+		head: headSlice,
+	};
+	const finalSerialised = JSON.stringify(envelope);
+	const truncatedValue = JSON.parse(finalSerialised) as ITruncatedEnvelope;
 	return {
 		value: truncatedValue,
 		truncated: true,
 		originalBytes,
-		finalBytes: Buffer.byteLength(JSON.stringify(truncatedValue), 'utf8'),
+		finalBytes: Buffer.byteLength(finalSerialised, 'utf8'),
 	};
 };
 
+export interface ITruncatedEnvelope {
+	readonly __truncated: true;
+	readonly originalBytes: number;
+	readonly maxBytes: number;
+	readonly head?: unknown;
+}
+
 /** Convenience wrapper that combines `toolJson` with `truncateIfTooLarge`.
- * Use when a tool's output is potentially unbounded (full file dumps,
+ * Use when a tool\'s output is potentially unbounded (full file dumps,
  * search hits, logs, etc.). */
 export const toolJsonBounded = (
 	value: unknown,

@@ -116,10 +116,31 @@ export const formatReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+/**
+ * Pure policy: how should the CLI exit given the findings + flags?
+ * SRP — separated from the engine so tests can assert the policy
+ * without standing up the filesystem walker.
+ */
+export const decideExitCode = (
+	findings: readonly IRoleFinding[],
+	flags: { reportOnly: boolean; strict: boolean },
+): number => {
+	if (flags.reportOnly) return 0;
+	if (findings.length === 0) return 0;
+	// Default mode (no --strict) and --strict both fail on drift; the
+	// flag is wired by f00037 S7 / f00049 S6 for the future moment
+	// when the unmatched count reaches 0 and the lint flips to default
+	// strict. Until then, `package.json` keeps `--report` so the gate
+	// stays green while the migration backlog burns down.
+	if (flags.strict) return 1;
+	return 1;
+};
+
 /** CLI entrypoint. Side-effecting; isolated from the engine for testability. */
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const args = argv.slice(2);
 	const reportOnly = args.includes('--report');
+	const strict = args.includes('--strict');
 	const rootsFlag = args.find((a) => a.startsWith('--roots='));
 	const scanRoots = rootsFlag
 		? (rootsFlag
@@ -137,9 +158,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const rootDir = process.cwd();
 	const findings = await walkAndClassify(rootDir, scanRoots);
 	process.stderr.write(formatReport(findings, reportOnly));
-	if (reportOnly) return 0;
-	if (findings.length > 0) return 1;
-	return 0;
+	return decideExitCode(findings, { reportOnly, strict });
 };
 
 // Run when invoked directly (not when imported by tests).
