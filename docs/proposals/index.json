@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-23T15:39:44.332Z",
-	"count": 116,
+	"generated_at": "2026-06-23T22:27:02.954Z",
+	"count": 112,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -47,29 +47,31 @@
 			}
 		},
 		{
-			"id": "q00001",
-			"file": "ready/q00001-plan-of-plans.md",
-			"track": "proposals-plugin",
-			"type": "plan",
+			"id": "r00003",
+			"file": "ready/r00003-apply-solid-on-a00036-findings.md",
+			"track": "core+cli+extensions+plugins+architecture+refactor",
+			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-23",
 			"extras": {
 				"ownership": [
-					"{ agent: implementation_runner, task: 'qs1: add `plan` kind (q) to PROPOSAL_KINDS' }",
-					"{ agent: implementation_runner, task: 'qs2: parse `contains:` and `closureGate:` in frontmatter' }",
-					"{ agent: implementation_runner, task: 'qs3: build plan-closure.ts (recursive evaluator + tests)' }",
-					"{ agent: implementation_runner, task: 'qs4: guard proposal_transition → done for plan kind' }",
-					"{ agent: implementation_runner, task: 'qs5: add proposals_close_plan tool' }",
-					"{ agent: implementation_runner, task: 'qs6: exclude plans with pending children from auto_work' }",
-					"{ agent: implementation_runner, task: 'qs7: add i18n keys for plan (12 languages)' }",
-					"{ agent: implementation_runner, task: 'qs8: update skills + plugin README' }",
-					"{ agent: implementation_runner, task: 'close q00001 via proposals_close_plan once all 8 slices are done' }"
+					"{ agent: implementation_runner, task: 'S1 (P0): F-002 — `assemble.ts` blueprint write goes through a durable once-only primitive (mutex + writeFileAtomic)' }",
+					"{ agent: implementation_runner, task: 'S2 (P0): F-001 — `cli/server-args.ts` flags forwarding by declarative table (O + I)' }",
+					"{ agent: implementation_runner, task: 'S3 (P0): F-003 — `fs-tools.ts` remove `atomic: false` from the public tool surface (L + I)' }",
+					"{ agent: implementation_runner, task: 'S4 (P0): EXT-01 — `extensions/vscode/src/extension.ts` runtime handle + real `deactivate()` (S + D)' }",
+					"{ agent: implementation_runner, task: 'S5 (P0): TS-01 — `plugin-tool-verify.script.ts` plugin loader via injected root (D)' }",
+					"{ agent: implementation_runner, task: 'S6 (P1): F1 partial — `loop-detector-service.ts` SRP/DIP cleanup of remaining hot-path sync I/O (gated by parallel-agent WIP)' }",
+					"{ agent: implementation_runner, task: 'S7 (P1): F2 — `proposal-scaffold-linter.ts` remove host-specific narrative from runtime linter (S + O + D)' }",
+					"{ agent: implementation_runner, task: 'S8 (P1): F3 — `chat-titling-reminder.ts` host/version-agnostic reminder (S + O + D)' }",
+					"{ agent: implementation_runner, task: 'S9 (P1): F4–F9 — six plugins get a real `OptionsSchema` (search/docs/deps/git/web-fetch/proposals)`' }",
+					"{ agent: implementation_runner, task: 'S10 (P1): CONC-1 — `agent-worktree-engine.ts` coordinator with syncProposalRegistry (D)' }",
+					"{ agent: implementation_runner, task: 'S11 (P1): CONC-2 — `scaffold-tool.ts` transactional batch writer (S + D)' }"
 				]
 			}
 		},
 		{
 			"id": "u00002",
-			"file": "ready/u00002-gate-agent-worktree-behind-host-flag-default-off.md",
+			"file": "ready/f00052-gate-agent-worktree-behind-host-flag-default-off.md",
 			"track": "proposals-plugin+core+cli+skills+workflow",
 			"type": "proposal",
 			"status": "ready",
@@ -87,162 +89,25 @@
 			}
 		},
 		{
-			"id": "x00050",
-			"file": "ready/x00050-quick-wins-audit-2026-06-23.md",
-			"track": "repo-hygiene+ci+lint+docs+extensions/vscode",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-23"
-		},
-		{
-			"id": "c00001",
-			"file": "done/c00001-decide-and-close-m13-security-plugin.md",
-			"track": "plugins+security",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "d00001",
-			"file": "done/d00001-update-budget-skills-tool-names.md",
-			"track": "docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "f00019",
-			"file": "done/f00019-release-provenance-via-npm-publish.md",
-			"track": "release+ci",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00029",
-			"file": "done/f00029-github-issues-plugin-ingest-and-propose.md",
-			"track": "plugins/issues+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": ["{", "{", "{", "{"]
-			}
-		},
-		{
-			"id": "f00030",
-			"file": "done/f00030-cross-project-setup-and-github-config.md",
-			"track": "docs+plugins/issues+apps/web+extensions/vscode",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21",
-			"extras": {
-				"ownership": ["{", "{", "{", "{", "{"]
-			}
-		},
-		{
-			"id": "f00032",
-			"file": "done/f00032-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"id": "q00001",
+			"file": "done/q00001-plan-of-plans.md",
 			"track": "proposals-plugin",
-			"type": "proposal",
+			"type": "plan",
 			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00036",
-			"file": "done/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
-			"track": "proposals-plugin+workflow+skills+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00037",
-			"file": "done/f00037-contracts-file-naming-and-folder-conventions.md",
-			"track": "architecture+lint+repo-layout",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00043",
-			"file": "done/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
-			"track": "host+core+docs+workflow",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00044",
-			"file": "done/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
-			"track": "plugins/proposals+tests+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "f00045",
-			"file": "done/f00045-chat-tool-error-shows-direct-log-link.md",
-			"track": "core+client+extension+tests",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "f00046",
-			"file": "done/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
-			"track": "cli+core+plugins+i18n+docs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "f00048",
-			"file": "done/f00048-web-install-onboarding-guide-ux-overhaul.md",
-			"track": "web+ui+i18n",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "l00001",
-			"file": "done/l00001-plugins-project-state-sync-cerrar-el-drift-residual-loop-detector-rules-manifest-audit-consolidate-catchalls-brief-tool-outputs.md",
-			"track": "plugins+core+audit",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "r00001",
-			"file": "done/r00001-harden-catchall-outputschemas-jsdoc-boot-only-en-primitivas-sync-del-core.md",
-			"track": "core+plugins",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "r00002",
-			"file": "done/r00002-harden-catchall-output-schemas.md",
-			"track": "plugins+core",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-21"
-		},
-		{
-			"id": "t00001",
-			"file": "done/t00001-improve-test-coverage-for-core-engines.md",
-			"track": "testing",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "x00001",
-			"file": "done/x00001-fix-torn-reads-in-log-store.md",
-			"track": "logs",
-			"type": "proposal",
-			"status": "done",
-			"date": "2026-06-22"
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'qs1: add `plan` kind (q) to PROPOSAL_KINDS' }",
+					"{ agent: implementation_runner, task: 'qs2: parse `contains:` and `closureGate:` in frontmatter' }",
+					"{ agent: implementation_runner, task: 'qs3: build plan-closure.ts (recursive evaluator + tests)' }",
+					"{ agent: implementation_runner, task: 'qs4: guard proposal_transition → done for plan kind' }",
+					"{ agent: implementation_runner, task: 'qs5: add proposals_close_plan tool' }",
+					"{ agent: implementation_runner, task: 'qs6: exclude plans with pending children from auto_work' }",
+					"{ agent: implementation_runner, task: 'qs7: add i18n keys for plan (12 languages)' }",
+					"{ agent: implementation_runner, task: 'qs8: update skills + plugin README' }",
+					"{ agent: implementation_runner, task: 'close q00001 via proposals_close_plan once all 8 slices are done' }"
+				]
+			}
 		},
 		{
 			"id": "c00002",
@@ -630,6 +495,19 @@
 			"date": "2026-06-23"
 		},
 		{
+			"id": "a00038",
+			"file": "done/audits/a00038-23-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: Ejecutar la auditoría y documentar hallazgos' }"
+				]
+			}
+		},
+		{
 			"id": "f00001",
 			"file": "done/feats/f00001-adopt-core-migrations-for-agent-registry.md",
 			"track": "proposals+core",
@@ -865,6 +743,14 @@
 			"date": "2026-06-18"
 		},
 		{
+			"id": "f00019",
+			"file": "done/feats/f00019-release-provenance-via-npm-publish.md",
+			"track": "release+ci",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
 			"id": "f00020",
 			"file": "done/feats/f00020-skills-and-tools-coverage.md",
 			"track": "plugins+skills+core",
@@ -977,9 +863,39 @@
 			"date": "2026-06-21"
 		},
 		{
+			"id": "f00029",
+			"file": "done/feats/f00029-github-issues-plugin-ingest-and-propose.md",
+			"track": "plugins/issues+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{"]
+			}
+		},
+		{
+			"id": "f00030",
+			"file": "done/feats/f00030-cross-project-setup-and-github-config.md",
+			"track": "docs+plugins/issues+apps/web+extensions/vscode",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21",
+			"extras": {
+				"ownership": ["{", "{", "{", "{", "{"]
+			}
+		},
+		{
 			"id": "f00031",
 			"file": "done/feats/f00031-single-orchestrator-client-adapters-redirect-to-mcp-vertex.md",
 			"track": "core+agents+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00032",
+			"file": "done/feats/f00032-race-fix-atomic-mutex-en-sync-proposal-registry-ts-331.md",
+			"track": "proposals-plugin",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
@@ -1025,6 +941,22 @@
 					"{"
 				]
 			}
+		},
+		{
+			"id": "f00036",
+			"file": "done/feats/f00036-workflow-governance-hardening-delegate-threshold-worktree-discipline-canonical-wait-sync-paths.md",
+			"track": "proposals-plugin+workflow+skills+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00037",
+			"file": "done/feats/f00037-contracts-file-naming-and-folder-conventions.md",
+			"track": "architecture+lint+repo-layout",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
 		},
 		{
 			"id": "f00038",
@@ -1087,9 +1019,57 @@
 			}
 		},
 		{
+			"id": "f00043",
+			"file": "done/feats/f00043-mcp-json-parity-when-mcp-vertex-is-loaded-expose-the-repo-tools-for-the-configured-plugins.md",
+			"track": "host+core+docs+workflow",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00044",
+			"file": "done/feats/f00044-end-to-end-tests-for-orchestrator-tool-chain.md",
+			"track": "plugins/proposals+tests+core",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "f00045",
+			"file": "done/feats/f00045-chat-tool-error-shows-direct-log-link.md",
+			"track": "core+client+extension+tests",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-21"
+		},
+		{
+			"id": "f00046",
+			"file": "done/feats/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
+			"track": "cli+core+plugins+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
+		},
+		{
 			"id": "f00047",
 			"file": "done/feats/f00047-shared-extension-ui-design-system-i18n-bridge-and-in-extension-toolbar.md",
 			"track": "ui-extension+web+vscode+scss+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "f00048",
+			"file": "done/feats/f00048-web-install-onboarding-guide-ux-overhaul.md",
+			"track": "web+ui+i18n",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
+		},
+		{
+			"id": "x00001",
+			"file": "done/fixes/x00001-fix-torn-reads-in-log-store.md",
+			"track": "logs",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-22"
@@ -1173,6 +1153,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "x00050",
+			"file": "done/fixes/x00050-quick-wins-audit-2026-06-23.md",
+			"track": "repo-hygiene+ci+lint+docs+extensions/vscode",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-23"
 		},
 		{
 			"id": "n00001",
