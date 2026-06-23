@@ -136,6 +136,17 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Delegate a slice to a subagent (assign name + claim files).',
 	'proposals plan':
 		'Validate proposed slices into a parallel plan (disjointness).',
+	'notification status':
+		'Report the lock-release notifier (watched file + recent releases).',
+	'notification await-lock':
+		'Block until a taskId lock is released (or timeout), then return.',
+	'web-fetch': 'Fetch one allow-listed URL and return capped text (opt-in).',
+	'status-marker close':
+		'Return the exact coloured close-marker line for a state.',
+	'status-marker validate':
+		'Check whether a response ends with a valid close marker.',
+	'status-marker ping':
+		'Echo plugin identity + resolved paths (confirm it is loaded).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

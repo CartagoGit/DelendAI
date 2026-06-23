@@ -35,10 +35,13 @@ import { depsCommands } from './groups/deps';
 import { docsCommands } from './groups/docs';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
+import { notificationCommands } from './groups/notification';
 import { proposalsCommands } from './groups/proposals';
 import { qualityCommands } from './groups/quality';
 import { rulesCommands } from './groups/rules';
+import { statusMarkerCommands } from './groups/status-marker';
 import { testConventionCommands } from './groups/test-convention';
+import { webFetchCommands } from './groups/web-fetch';
 
 const text = (body: string, code = EXIT_CODE.OK): ICliCommandResult => ({
 	code,
@@ -448,4 +451,7 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	...coreExtraCommands,
 	...docsCommands,
 	...proposalsCommands,
+	...notificationCommands,
+	...webFetchCommands,
+	...statusMarkerCommands,
 ];

@@ -258,7 +258,7 @@ Bootstrap:
   - "i18n + tests + cobertura CLI pasa."
 
 ### S8 — notification + web-fetch + status-marker (`mcpv notification/web-fetch/status-marker <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/notification.ts`, `web-fetch.ts`, tests, i18n
 - **Tools mapped**: `notification_notify_status`, `notification_await_lock`, `web-fetch_web_fetch`, `status-marker_close`, `status-marker_validate`, `status-marker_ping`
 - **Gate**: `bun run test packages/cli && bun run typecheck`

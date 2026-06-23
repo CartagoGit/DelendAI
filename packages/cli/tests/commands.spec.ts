@@ -85,6 +85,12 @@ const EXPECTED_COMMANDS = [
 	'proposals task-queue',
 	'proposals delegate',
 	'proposals plan',
+	'notification status',
+	'notification await-lock',
+	'web-fetch',
+	'status-marker close',
+	'status-marker validate',
+	'status-marker ping',
 ] as const;
 
 describe('CLI command registry', () => {
