@@ -12,7 +12,7 @@
 import type { IValidationCommand } from '@mcp-vertex/core/public';
 import { describe, expect, it } from 'vitest';
 
-import type { IScopeCommand } from '@mcp-vertex/quality/lib/runner';
+import type { IScopeCommand } from '@mcp-vertex/quality/lib/services/runner';
 
 describe('IScopeCommand ↔ IValidationCommand (l107 s1)', () => {
 	it('IScopeCommand is assignable from IValidationCommand (same source)', () => {

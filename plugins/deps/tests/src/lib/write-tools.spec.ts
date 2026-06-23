@@ -10,7 +10,7 @@ import {
 	manifestAbsPath,
 	packageInstall,
 	packageRunScript,
-} from '@mcp-vertex/deps/lib/write-tools';
+} from '@mcp-vertex/deps/lib/services/write-tools';
 
 describe('buildInstallCommand (pure, no spawn)', () => {
 	it('builds a simple dependencies install command', () => {

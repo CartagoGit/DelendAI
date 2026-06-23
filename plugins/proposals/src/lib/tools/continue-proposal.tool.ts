@@ -21,17 +21,18 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 } from '../contracts/constants/proposal-glossary.constant';
-import { parseProposalFrontmatter } from '../shared/proposal-frontmatter';
+import { buildCascadeSummary } from '../cascade/cascade-summary';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
+import { blockedByFor } from '../proposals/blocked-by';
+import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
-	extractYamlBlock,
-	parseFrontmatterBlock,
-} from '../proposals/frontmatter-parser';
-import { LEGACY_ALIAS_PREFIX } from '../cascade/cascade-priority';
+	readJsonOrNull,
+	readProposalIndex,
+	readTextOrNull,
+} from '../proposals/index-reader';
 import type {
 	ICascadePriorityResolver,
 	IProposalSummary,
-	TCascadeBoost,
 } from '../cascade/cascade-priority';
 
 export interface IContinueProposalToolOptions {
@@ -213,86 +214,12 @@ const isActionable = (entry: IIndexEntry): boolean => {
 	return ACTIONABLE.has(entry.status);
 };
 
-interface IIndexEntry {
-	readonly id: string;
-	readonly file: string;
+interface IIndexEntry extends IProposalIndexEntry {
 	readonly status: string;
 }
 
-// Async file helpers (H2): a missing/corrupt file resolves to null, matching
-// the old existsSync-guarded sync reads — never blocks the event loop.
-const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as T;
-	} catch {
-		return null;
-	}
-};
-const readTextOrNull = async (path: string): Promise<string | null> => {
-	try {
-		return await readFile(path, 'utf8');
-	} catch {
-		return null;
-	}
-};
-
-const readIndex = async (
-	indexPath: string,
-): Promise<readonly IIndexEntry[]> => {
-	const parsed = await readJsonOrNull<{ proposals?: IIndexEntry[] }>(
-		indexPath,
-	);
-	return parsed?.proposals ?? [];
-};
-
+/** Extract the family prefix from a proposal id (`q00001` → `q`). */
 const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
-
-const CASCADE_BOOSTS: ReadonlySet<TCascadeBoost> = new Set(
-	CASCADE_BOOST_VALUES,
-);
-
-const isCascadeBoost = (value: string | undefined): value is TCascadeBoost =>
-	typeof value === 'string' && CASCADE_BOOSTS.has(value as TCascadeBoost);
-
-/**
- * f00024: resolves a free index entry's frontmatter (`cascadeOverride`,
- * `cascadeOverrideReason`, `cascadeBoost`) into an `IProposalSummary`
- * the cascade resolver can rank. Reads only the entries already
- * filtered down to `free` (actionable, not claimed elsewhere) — never
- * the whole proposals tree — so this stays a bounded, small batch of
- * extra file reads instead of an O(all proposals) scan. A missing or
- * unparsable file degrades to "no override/boost", never throws.
- */
-const summaryFor = async (
-	entry: IIndexEntry,
-	indexPath: string,
-): Promise<IProposalSummary> => {
-	const prefix = familyOf(entry.id);
-	const kind = PROPOSAL_KIND_BY_PREFIX[prefix] ?? LEGACY_ALIAS_PREFIX;
-	const docPath = join(dirname(indexPath), entry.file);
-	const markdown = await readTextOrNull(docPath);
-	if (markdown === null) return { id: entry.id, kind };
-	const frontmatter = parseProposalFrontmatter(markdown);
-	const overrideRaw = frontmatter.cascadeOverride;
-	const override =
-		overrideRaw !== undefined && overrideRaw.trim() !== ''
-			? Number(overrideRaw)
-			: undefined;
-	const boost = isCascadeBoost(frontmatter.cascadeBoost)
-		? frontmatter.cascadeBoost
-		: undefined;
-	return {
-		id: entry.id,
-		kind,
-		...(override !== undefined && Number.isFinite(override)
-			? { cascadeOverride: override }
-			: {}),
-		...(frontmatter.cascadeOverrideReason
-			? { cascadeOverrideReason: frontmatter.cascadeOverrideReason }
-			: {}),
-		...(boost ? { cascadeBoost: boost } : {}),
-	};
-};
 
 const readActiveLocks = async (
 	lockPath: string,
@@ -326,7 +253,7 @@ const resolveDoc = async (
 ): Promise<
 	{ id: string; markdown: string } | { error: string; nextAction: string }
 > => {
-	const entries = await readIndex(indexPath);
+	const entries = await readProposalIndex(indexPath);
 	if (entries.length === 0)
 		return {
 			error: `proposal index not found or empty at ${indexPath}`,
@@ -352,58 +279,7 @@ const resolveDoc = async (
 	return { id: entry.id, markdown: md };
 };
 
-/**
- * q00001: surface a `plan` proposal's open children so the orchestrator
- * knows why the plan is not closable yet. Returns an empty list for
- * non-plan proposals (no behaviour change for the 12 existing kinds).
- */
-const blockedByFor = async (
-	entry: IIndexEntry,
-	indexPath: string,
-): Promise<readonly string[]> => {
-	const docPath = join(dirname(indexPath), entry.file);
-	const markdown = await readTextOrNull(docPath);
-	if (markdown === null) return [];
-	const block = extractYamlBlock(markdown);
-	if (block === null) return [];
-	const fm = parseFrontmatterBlock(block);
-	if (fm.type !== 'plan') return [];
-	const entries = await readIndex(indexPath);
-	const byId = new Map(entries.map((e) => [e.id, e.status]));
-	const readId = (raw: unknown): string | null => {
-		if (typeof raw === 'string') return raw.trim() || null;
-		if (raw !== null && typeof raw === 'object') {
-			const id = (raw as Record<string, unknown>).id;
-			if (typeof id === 'string') return id.trim() || null;
-			if (typeof id === 'number') return String(id);
-		}
-		return null;
-	};
-	const collect = (list: readonly unknown[]): string[] => {
-		const out: string[] = [];
-		for (const raw of list) {
-			const id = readId(raw);
-			if (id === null) continue;
-			const status = byId.get(id);
-			if (status === undefined || status === 'done') continue;
-			out.push(id);
-		}
-		return out;
-	};
-	const containsRaw =
-		fm.contains !== null &&
-		typeof fm.contains === 'object' &&
-		!Array.isArray(fm.contains)
-			? (fm.contains as Record<string, unknown>)
-			: null;
-	const proposals = Array.isArray(containsRaw?.proposals)
-		? (containsRaw.proposals as readonly unknown[])
-		: [];
-	const plans = Array.isArray(containsRaw?.plans)
-		? (containsRaw.plans as readonly unknown[])
-		: [];
-	return [...collect(proposals), ...collect(plans)];
-};
+// q00001 helper extracted to `proposals/blocked-by.ts` (SRP).
 
 /**
  * Resolve the next proposal to work on. `mode: "auto"` (default) reads
@@ -520,7 +396,7 @@ export const runContinueProposal = async (
 	}
 
 	// mode === 'auto' (serial): next actionable proposal by cascade.
-	const entries = await readIndex(options.indexPathAbs);
+	const entries = await readProposalIndex(options.indexPathAbs);
 	const actionable = entries.filter(isActionable);
 	if (actionable.length === 0)
 		return json({
@@ -572,7 +448,7 @@ export const runContinueProposal = async (
 				}
 			: buildDefaultCascadeChain());
 	const summaries = await Promise.all(
-		free.map((entry) => summaryFor(entry, options.indexPathAbs)),
+		free.map((entry) => buildCascadeSummary(entry, options.indexPathAbs)),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);

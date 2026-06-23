@@ -19,14 +19,25 @@ import type { IFileReader } from './analyze-project';
 export type IAgentConfigMatchKind = 'file' | 'dir' | 'file-or-dir';
 
 /**
- * `file`     — match when `path` exists as a file.
- * `dir`      — match when `path` is a non-empty directory.
+ * `file`     — match when the path exists as a file.
+ * `dir`      — match when the path is a non-empty directory.
  * `file-or-dir` — match when EITHER `exists(path)` OR
  *                  `listDir(path).length > 0` returns true.
+ *
+ * SOLID — I. A single rule carries EITHER a `path` (single
+ * evidence point) OR a `paths` array (multiple equivalent
+ * evidence points for the same id). The Cursor rule, e.g.,
+ * matches either `.cursorrules` (legacy file) OR `.cursor`
+ * (modern dir) under the SAME id `cursor` — restoring the
+ * unique-id contract.
  */
+
 export interface IAgentConfigRule {
 	readonly id: string;
-	readonly path: string;
+	/** Single evidence path. Mutually exclusive with `paths`. */
+	readonly path?: string;
+	/** Multiple equivalent evidence paths. Mutually exclusive with `path`. */
+	readonly paths?: readonly string[];
 	readonly matchAs: IAgentConfigMatchKind;
 	/** Earlier rules win. Reserved for future use. */
 	readonly priority: number;
@@ -46,20 +57,14 @@ export const DEFAULT_AGENT_CONFIG_RULES: readonly IAgentConfigRule[] = [
 		priority: 90,
 	},
 	{
+		// Cursor can be detected from EITHER the legacy
+		// `.cursorrules` file OR the modern `.cursor` directory.
+		// One rule, two evidence paths, one id — the unique-id
+		// contract holds.
 		id: 'cursor',
-		path: '.cursorrules',
+		paths: ['.cursorrules', '.cursor'],
 		matchAs: 'file-or-dir',
-		// The original code checks `.cursorrules` OR `.cursor/*`;
-		// `.cursor` is a directory in the standard Cursor setup.
-		// We split that into two paths (a file `matchAs: file-or-dir`
-		// for `.cursorrules`, a dir-based one for `.cursor`).
 		priority: 80,
-	},
-	{
-		id: 'cursor',
-		path: '.cursor',
-		matchAs: 'dir',
-		priority: 79,
 	},
 	{
 		id: 'copilot-instructions',
@@ -89,13 +94,29 @@ export const DEFAULT_AGENT_CONFIG_RULES: readonly IAgentConfigRule[] = [
  */
 const EMPTY_RESULT: readonly string[] = Object.freeze([]);
 
+const pathMatches = (
+	reader: IFileReader,
+	matchAs: IAgentConfigMatchKind,
+	path: string,
+): boolean => {
+	if (matchAs === 'file') return reader.exists(path);
+	if (matchAs === 'dir') return reader.listDir(path).length > 0;
+	// file-or-dir: legacy file setups OR modern dir setups. Both
+	// indicate the same editor.
+	return reader.exists(path) || reader.listDir(path).length > 0;
+};
+
 const matches = (reader: IFileReader, rule: IAgentConfigRule): boolean => {
-	if (rule.matchAs === 'file') return reader.exists(rule.path);
-	if (rule.matchAs === 'dir') return reader.listDir(rule.path).length > 0;
-	// file-or-dir: cursor's `.cursorrules` is a file, but legacy /
-	// split setups leave just a `.cursor` dir. The original code
-	// accepted either; we keep that behaviour.
-	return reader.exists(rule.path) || reader.listDir(rule.path).length > 0;
+	const targets =
+		rule.paths !== undefined
+			? rule.paths
+			: rule.path !== undefined
+				? [rule.path]
+				: [];
+	for (const path of targets) {
+		if (pathMatches(reader, rule.matchAs, path)) return true;
+	}
+	return false;
 };
 
 export const matchAgentConfigs = (

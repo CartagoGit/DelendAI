@@ -146,27 +146,13 @@ describe('bootstrap rule tables — id+priority contract (7 tables)', () => {
 				expect(typeof table.matcher).toBe('function');
 			});
 
-			it('every rule carries a unique id when the table is well-formed', () => {
-				// Known exception: `agent-config-rules` ships the id
-				// `'cursor'` twice (one entry for `.cursor/rules/`, one for
-				// `.cursorrules`). We tolerate that single drift here and
-				// assert there are no OTHER duplicates. Fixing the
-				// duplicate — rename one entry to e.g. `cursorrules` —
-				// collapses this conditional and restores the strict check.
+			it('every rule carries a unique id (the strict contract — no tolerated duplicates)', () => {
+				// The cursor case is now modelled as ONE rule with a
+				// `paths: ['.cursorrules', '.cursor']` array, not two
+				// rules with the same id. The unique-id contract holds
+				// across all 7 id-based tables.
 				const ids = table.defaultRules.map((r) => r.id);
-				if (table.module === 'agent-config-rules') {
-					const dupes = [
-						...new Set(
-							ids.filter((id, i) => ids.indexOf(id) !== i),
-						),
-					];
-					expect(
-						dupes,
-						'agent-config-rules has the documented cursor duplicate and nothing else',
-					).toEqual(['cursor']);
-				} else {
-					expect(new Set(ids).size).toBe(ids.length);
-				}
+				expect(new Set(ids).size).toBe(ids.length);
 			});
 		});
 	}

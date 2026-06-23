@@ -12,7 +12,7 @@ import {
 	readInFlight,
 	type IReleasedClaim,
 	type IHandoffEvent,
-} from '@mcp-vertex/notification/lib/watcher';
+} from '@mcp-vertex/notification/lib/services/watcher';
 import plugin from '@mcp-vertex/notification';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 

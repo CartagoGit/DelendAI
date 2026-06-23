@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { searchDocs } from '@mcp-vertex/docs/lib/engine';
+import { searchDocs } from '@mcp-vertex/docs/lib/services/engine';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

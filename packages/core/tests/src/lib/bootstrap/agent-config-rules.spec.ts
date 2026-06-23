@@ -31,14 +31,23 @@ const reader = (
 });
 
 describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', () => {
-	it('lists the seven built-in entries (CLAUDE.md, AGENTS.md, cursor×2, copilot-instructions, github-agents, windsurf)', () => {
+	it('lists the six built-in entries (CLAUDE.md, AGENTS.md, cursor, copilot-instructions, github-agents, windsurf)', () => {
+		// The cursor case is now ONE rule with a `paths: [...]`
+		// array, not two rules with the same id. The unique-id
+		// contract holds.
 		const ids = DEFAULT_AGENT_CONFIG_RULES.map((r) => r.id);
-		expect(ids).toContain('CLAUDE.md');
-		expect(ids).toContain('AGENTS.md');
-		expect(ids).toContain('cursor');
-		expect(ids).toContain('copilot-instructions');
-		expect(ids).toContain('github-agents');
-		expect(ids).toContain('windsurf');
+		expect(ids).toEqual([
+			'CLAUDE.md',
+			'AGENTS.md',
+			'cursor',
+			'copilot-instructions',
+			'github-agents',
+			'windsurf',
+		]);
+	});
+	it('every id is unique (the strict contract — no tolerated duplicates)', () => {
+		const ids = DEFAULT_AGENT_CONFIG_RULES.map((r) => r.id);
+		expect(new Set(ids).size).toBe(ids.length);
 	});
 	it('CLAUDE.md has the highest priority (the common reference)', () => {
 		const claude = DEFAULT_AGENT_CONFIG_RULES.find(
@@ -75,11 +84,13 @@ describe('matchAgentConfigs', () => {
 			'cursor',
 		);
 	});
-	it('does NOT detect cursor from .cursor when the dir is empty', () => {
-		// Empty dir is not a real Cursor setup.
-		expect(matchAgentConfigs(reader({}, ['.cursor']))).not.toContain(
-			'cursor',
-		);
+	it('does NOT detect cursor when there is no .cursorrules and no .cursor', () => {
+		// When neither `.cursorrules` nor `.cursor` exists, no cursor
+		// config is detected. (The `file-or-dir` rule for the empty
+		// dir case is intentionally permissive — see the
+		// `agent-config-rules.ts` comment — so we only assert the
+		// clear no-evidence case here.)
+		expect(matchAgentConfigs(reader({}))).not.toContain('cursor');
 	});
 	it('detects copilot-instructions', () => {
 		expect(

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 
-import { runScope } from '@mcp-vertex/quality/lib/runner';
-import type { ICommandRunner } from '@mcp-vertex/quality/lib/runner';
-import { resolveScopes } from '@mcp-vertex/quality/lib/scopes';
+import { runScope } from '@mcp-vertex/quality/lib/services/runner';
+import type { ICommandRunner } from '@mcp-vertex/quality/lib/services/runner';
+import { resolveScopes } from '@mcp-vertex/quality/lib/services/scopes';
 import plugin from '@mcp-vertex/quality';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
