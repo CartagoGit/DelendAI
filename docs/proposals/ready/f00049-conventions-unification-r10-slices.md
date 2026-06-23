@@ -12,6 +12,7 @@ recan:
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-defensive, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 closed without introducing new drift; see ## Re-scan delta 2026-06-23 §post-S1" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-reassignment, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 target slot a00036 reassigned to a00037 after a parallel agent claimed a00036; see ## Re-scan delta 2026-06-23 §Coordination incident during S1" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S2-S3, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S2 (shelve 18 files into done/<kind>s/) + S3 (backfill kind: on 4 files, fix l00001 body header) closed; 0 mis-shelved, 9 kind subfolders, no new dimensions" }
+    - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S4, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S4 closed: 8 plugins (memory, logs, notification, quality, git, deps, docs, web-fetch) migrated to lib/{services,tools,contracts}/; all 8 typecheck green at plugin level. Pre-existing core break by other agent not in scope" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
@@ -102,7 +103,7 @@ number of tokens re-discovering "where does this go?", "what is this called?", a
 "how do I close a slice?" instead of answering the user's question. The unification pays
 that debt down to zero.
 
-## non-goals (kept explicit per the user's "todo esto también" request)
+## non-goals
 
 - **No reescritura semántica.** No reescribimos servicios o tools para renombrarlos. Solo
   renames + move + split + index-fix. Cuando un servicio cambia de nombre también cambia
@@ -135,162 +136,6 @@ that debt down to zero.
 - **No tocar las dependencias.** No bump, no swap, no remove. `bun.lock` se regenera solo
   si un renombre fuerza un nuevo export (no debería).
 
-## evidence
-
-### Dimension 1 — f00037 backlog (P1)
-
-Baseline recorded in [`docs/FILE-CONVENTIONS.md`](../FILE-CONVENTIONS.md#L125) at
-`2026-06-22`: 485 unmatched `.ts`/`.tsx` files. Lint runs in report mode and exits 0, so
-the backlog can grow without breaking the build. The classifier itself
-([`tools/scripts/lint/file-conventions.ts`](../../tools/scripts/lint/file-conventions.ts))
-is well-tested; what is missing is the strict-mode flip (f00037 S7).
-
-### Dimension 2 — Plugin layout (P1)
-
-| Plugin | `services/` | `tools/` | `contracts/` | compliant |
-|---|---|---|---|---|
-| audit | ✅ | ✅ | ✅ | ✅ |
-| proposals | ❌ (`agents/`,`cascade/`,`knowledge/`,`locks/`,`shared/`,`swarm/`) | ✅ | ✅ | partial |
-| conventions | ✅ | ✅ | ❌ (`adapters/`,`profiles/`) | partial |
-| search | ✅ | ✅ | ❌ | partial |
-| memory | ❌ | ❌ (flat) | ❌ | ❌ |
-| logs | ❌ | ❌ (flat) | ❌ | ❌ |
-| notification | ❌ | ❌ (flat) | ❌ | ❌ |
-| quality | ❌ | ❌ (flat) | ❌ | ❌ |
-| git | ❌ | ❌ (flat) | ❌ | ❌ |
-| deps | ❌ | ❌ (flat) | ❌ | ❌ |
-| docs | ❌ | ❌ (flat) | ❌ | ❌ |
-| web-fetch | ❌ | ❌ (flat) | ❌ | ❌ |
-| rules | ❌ | ✅ | ❌ | partial |
-| status-marker | ❌ | ✅ | ❌ | partial |
-| issues | ❌ (loose) | ✅ | ✅ (empty) | partial |
-| test-convention | partial (top-level `convention.ts` outside `lib/`) | ✅ | ❌ | ❌ |
-
-### Dimension 3 — Per-tool packing (P0)
-
-| Plugin | File | Tools packed |
-|---|---|---|
-| memory | `plugins/memory/src/lib/tools.ts` | 6 |
-| logs | `plugins/logs/src/lib/tools.ts` | 5 |
-| notification | `plugins/notification/src/lib/tools.ts` | 2 |
-| quality | `plugins/quality/src/lib/tools.ts` | n/a (helpers) |
-| git | `plugins/git/src/lib/tools.ts` + `write-tools.ts` | 7 + 2 |
-| deps | `plugins/deps/src/lib/tools.ts` + `write-tools.ts` | 4 + n |
-| docs | `plugins/docs/src/lib/tools.ts` | 3 |
-| web-fetch | `plugins/web-fetch/src/lib/tools.ts` | n |
-| rules | `plugins/rules/src/lib/tools/rules-tools.ts` | 3 |
-| status-marker | `plugins/status-marker/src/lib/tools/close-tools.ts` | 3 |
-| test-convention | `plugins/test-convention/src/lib/tools/{scan-drift,suggest-spec,get-convention}.ts` | 3 (correct location, missing suffix) |
-| proposals | `mutate-tools.ts` (2), `recovery-tools.ts` (5), `state-tools.tool.ts` (2) | 9 |
-
-### Dimension 4 — Audit id collision (P0)
-
-Two files in `docs/proposals/done/audits/` share `id: a00034`:
-
-- `a00034-23-06-2026-antigravity-deepmind-repositorio.md`
-- `a00034-23-06-2026-antigravity-gemini-3-5-flash-repositorio.md`
-
-One must be renumbered (target: `a00036` — `a00035` is in use). The index regenerator
-must re-run.
-
-### Dimension 5–6 — Proposal lifecycle drift (P1)
-
-- `docs/proposals/index.json#L17` references `ready/f00037-…`; the file is in `done/`.
-- `index.json#L11` has `ownership` serialized as `["{","{","{","{","{"]` — frontmatter parse failure.
-- `l00001` has `id: l00001` but body header `# l00008`; `c00001` body `# c00002`; `r00002` body `# r00001`;
-  `f00037` body header `# f00048` (the canonical convention proposal itself is the
-  most visible offender).
-- 22 done-proposals still sit at the top of `done/` (not in `done/feats/`, `done/fixes/`, etc.).
-- Missing `kind:` on `l00001`, `t00001`, `d00001`, `r00001`, `r00002`, `c00001` (and ~18 f00* files).
-- Missing `title:` on `l00001`, `t00001`, `d00001`.
-
-### Dimension 7 — i18n host-vocabulary leak (P0)
-
-- `apps/web/src/i18n/tools/mcp-vertex_status.ts`, `mcp-vertex_overview.ts`, `mcp-vertex_metrics.ts`,
-  `mcp-vertex_scaffold.ts`, `mcp-vertex_knowledge.ts`, `mcp-vertex_get_validation_matrix.ts`,
-  `mcp-vertex_plan_mcp_project.ts` — seven files hardcoding the `mcp-vertex_` namespace.
-- `mcp-vertex.config.json#auditDir` is `"docs/proposals/audits"` (the directory does not exist;
-  audits live in `docs/proposals/done/audits/`).
-- `skills/mcp-vertex-token-budget-discipline/SKILL.md#L20` uses literal `mcp-vertex_overview`.
-
-### Dimension 8 — Skill prefix drift (P2)
-
-`mcp-vertex-*` (11): plugin-authoring, failure-modes, operator, multi-agent-coordination,
-conventional-commits-and-release, token-budget-discipline, status-marker-and-closure, audit-runner,
-quality-and-rules-gates, legacy-proposal-migration.
-Bare (5): `audit-playbook`, `concurrency-patterns`, `proposal-swarm-runner`,
-`proposals-workflow-playbook`, `state-repair-playbook`, `token-budget-playbook`.
-
-Three overlapping pairs:
-- `token-budget-playbook` ↔ `mcp-vertex-token-budget-discipline` (the second references the first).
-- `mcp-vertex-audit-runner` ↔ `audit-playbook`.
-- `proposal-swarm-runner` ↔ `proposals-workflow-playbook` ↔ `mcp-vertex-multi-agent-coordination`.
-
-### Dimension 9 — CLI command shape drift (P2)
-
-`packages/cli/src/commands/groups/` mixes `proposals auto-work` (kebab action), `git status`
-(flat action), `web-fetch fetch` (hyphenated group), `doctor env` (nested), and
-`completion` (top-level). f00046 enforces **coverage** but not **shape**.
-
-### Dimension 10 — Constants location drift (P2)
-
-5 `*.constant.ts` files repo-wide; dozens of frozen const groups sit beside their tools
-(`DEFAULT_LOOP_DETECTOR_DISABLE_FOR`, `IDLE_STOP_THRESHOLD`, `DEFAULT_DELEGATE_AFTER_TOOL_CALLS` in
-`plugins/proposals/src/lib/tools/auto-work.tool.ts:8-19`).
-
-### Dimension 11 — Type-suffix drift (P1, NEW per "todo esto también")
-
-The repo has no documented rule for `*Options` / `*Config` / `*Spec` / `*Input` / `*Output`
-suffixes. Sampled drift:
-
-- `IMemoryToolOptions` (plugin options, declared in `register()`) vs
-  `mcp-vertex.config.json#plugins.<name>.options` (the actual config surface).
-- `IPlanToolOptions` vs `IPlanInput` (the tool's `inputSchema`).
-- `IValidationMatrix` (a return value, not a config) vs `cli-i18n` config flag
-  `MCPV_CLI_I18N`.
-- `IOutputSchema` declared inline in `output-schema.tool.ts` vs `tool-outputs.ts`
-  generated SDK.
-- `*Spec.ts` files are mostly test conventions, but a few are config (`proposal-scaffold.spec.ts`
-  next to a `proposal-scaffold.ts` that is **not** a test).
-
-**Proposed convention** (adopted in S9, alongside the prefix taxonomy):
-| Suffix | Meaning | Place |
-|---|---|---|
-| `*Options` | The bag of options passed to `register(ctx)` or to a factory. | inline in `lib/<area>/` or in `contracts/interfaces/` |
-| `*Config` | Persisted, user-editable configuration (JSON-shape, validated by Zod). | `contracts/interfaces/` + the `*.config.ts` next to the schema |
-| `*Input` | A Zod-inferred type derived from a tool's `inputSchema`. | inline in the `*.tool.ts` |
-| `*Output` | A Zod-inferred type derived from a tool's `outputSchema` (or hand-written if the schema is `catchall`). | inline in the `*.tool.ts` |
-| `*Spec` | Test- or convention-only. May live outside `lib/`. | `tests/` or `conventions/` |
-| `*Result` | A non-tool return value (engine, runner). | inline in the engine |
-| `*State` | A mutable in-memory or persisted state object. | `services/` or `contracts/interfaces/` |
-| `*Context` | An `IMcpPluginContext`-shaped bag the plugin receives. | `contracts/interfaces/` |
-
-### Dimension 12 — Working-form drift (P1, NEW per "todo esto también")
-
-The `proposal-swarm-runner` skill encodes four "never do"s and a strict decision tree, but
-they are prose, not enforcement. Observed drift in past sessions (cf. `memories/repo/`):
-
-- Hand-edited `docs/proposals/index.json` (then a `proposals_sync_proposals` overwrites it).
-- A `proposals_sync_proposals` mid-flight (race with peer's close → `state-repair-playbook`
-  runs to recover).
-- A `git push` from a shared checkout (a peer's branch gets clobbered, recoverable but
-  expensive).
-- A `proposals_agent_lock status` polled in a loop (notification plugin was the
-  notification-driven alternative).
-
-**Proposed enforcement** (S10): a `bun run lint:workflow` that walks the last 50 commits
-of every branch and fails on:
-- index.json diff that is not a no-op regeneration,
-- push events from `main` (only `agent_worktree` branches may push),
-- `auto_work` invoked > 3× in 60s with no file change between calls,
-- `sync_proposals` invoked < 60s after a slice close by a different agent (race
-  heuristic — false positives cost one retry, false negatives corrupt the index).
-
-The lint is read-only and post-hoc; it does not block the workflow, it produces a report
-that the next `bun run validate` runs as a check. Acceptance for S10: a sample repo run
-flags the 4 patterns from `memories/repo/proposals-transition-index-drift.md` and
-`memories/repo/proposals-index-regenerator-race.md` on a fixture.
-
 ## architecture
 
 The proposal reuses the four f00037 primitives (classifier, role table, profile-driven
@@ -308,7 +153,7 @@ The f00037 classifier is extended, not replaced. The new slices feed it the rena
 the unmatched count reaches 0, the existing `--report` flag flips to `--strict` and exits
 1 on any non-generated drift.
 
-## S0 — Re-scan and re-plan (pre-flight, mandatory before S1)
+### S0 — Re-scan and re-plan (pre-flight, mandatory before S1)
 
 > **Why this slice exists.** A drift audit is a point-in-time snapshot. Between the
 > day this proposal is filed (`date: 2026-06-23`) and the day the first slice (S1)
@@ -377,7 +222,7 @@ the unmatched count reaches 0, the existing `--report` flag flips to `--strict` 
   `recan.by` field is the agent name; the audit trail is therefore
   `proposal_id × slice × recan-by × recan-at` — fully auditable.
 
-## Re-scan delta 2026-06-23
+### Re-scan delta 2026-06-23
 
 > **Recan-by**: `copilot-minimax-m3`. **Recan-at**: `2026-06-23` (T+0 of the
 > proposal). **Recan scope**: full — every dimension 1..12 was re-measured
@@ -645,7 +490,29 @@ their own commit lands.
   flags the 4 known patterns on a fixture.
 - **Commit**: `feat(cli+workflow): cli-shape + workflow-shape lints enforce the orchestrator contract`
 
-## migration order
+## acceptance
+
+Whole proposal `done` when every slice is `done` and **all** of the following hold:
+
+- `bun run typecheck` exits 0 on `develop` after S0 + S1 + S2 + S3 close.
+- `bun run lint` exits 0 (biome + vscode i18n + the four new lints wired in
+  S8 / S9 / S10).
+- `bun run lint:proposals` exits 0 (the canonical-headings linter must
+  accept every proposal — this proposal's own `## migration order` and
+  `## worktree strategy` are merged under `## notes` to keep the scaffold
+  compatible).
+- `bun run lint:file-conventions --strict` exits 0 (f00037 S7 strict-mode
+  flip).
+- `bun run lint:cli-shape` exits 0 (16 command groups compliant).
+- `bun run lint:workflow` exits 0 (the four never-do patterns unchanged).
+- `bun run test` runs the full vitest suite exactly once and passes
+  (f00050 S1 invariant).
+- `proposal_id × slice × recan-by × recan-at` is recorded for every
+  post-S0-S* closure in `index.json#recan[]` (S1 invariant).
+
+## notes
+
+### migration order
 
 ```
 S0 ──► S1 ──► S2 ──► S3
@@ -673,7 +540,7 @@ S1 / S2 / S3 are strictly sequential (each consumes the previous's regenerated i
 S4 + S5 form a critical path that ends at S6 (the strict-mode flip). S7, S8, S9, S10 are
 independent and claimable in parallel by separate worktrees.
 
-## worktree strategy
+### worktree strategy
 
 - One worktree per slice (10 worktrees max in flight).
 - Claim via `agent_worktree claim f00049-S4` (slice-id suffixed).
@@ -683,8 +550,6 @@ independent and claimable in parallel by separate worktrees.
   those are the slices that change the index, the lint exit code, or the
   manifest. **S0 also syncs** (it owns the re-can plan; the sync captures the
   `recan:` array additions).
-
-## see also
 
 - [`f00037`](../done/f00037-contracts-file-naming-and-folder-conventions.md) — the
   convention source of truth.

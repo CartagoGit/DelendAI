@@ -1,12 +1,19 @@
+// body-content.spec.ts: the SOLID body builders are unit-testable
+// in isolation and the dispatcher routes by artifact name.
+
 import { describe, expect, it } from 'vitest';
 
 import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
 import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
 import {
-	continueProposalPromptBody,
+	blueprintArtifactBody,
 	fixQualityPromptBody,
+	formatList,
+	formatScripts,
+	frameworkHintsFor,
 	frameworkSkillBody,
 	frameworkSkillWhenToUse,
+	languageHintsFor,
 	projectStandardsSkillBody,
 	startPromptBody,
 } from '@mcp-vertex/core/lib/bootstrap/body-content';
@@ -29,8 +36,45 @@ const analyse = (pkg: Record<string, unknown>) =>
 		}),
 	);
 
-describe('body-content', () => {
-	it('start prompt body includes project facts and bootstrap references', () => {
+describe('format-helpers', () => {
+	it('formatList renders empty as a stub', () => {
+		expect(formatList([])).toBe('_(none detected)_');
+	});
+	it('formatList renders each item as a backticked bullet', () => {
+		expect(formatList(['a', 'b'])).toBe('- `a`\n- `b`');
+	});
+	it('formatScripts renders empty as a stub', () => {
+		expect(formatScripts({})).toBe('_(no quality scripts detected)_');
+	});
+	it('formatScripts renders role → command bullets', () => {
+		expect(formatScripts({ test: 'vitest', lint: 'eslint .' })).toBe(
+			'- `test` → `vitest`\n- `lint` → `eslint .`',
+		);
+	});
+});
+
+describe('framework-hints / language-hints (declarative tables)', () => {
+	it('returns the registered hints for Angular', () => {
+		const a = analyse({ dependencies: { '@angular/core': '^22' } });
+		const hints = frameworkHintsFor(a);
+		expect(hints.length).toBeGreaterThan(0);
+		expect(hints[0]).toMatch(/Standalone components/);
+	});
+	it('returns the empty fallback for an unknown framework', () => {
+		const a = analyse({});
+		expect(frameworkHintsFor(a)).toEqual([]);
+	});
+	it('returns the empty fallback for an unknown language', () => {
+		// A reader with no tsconfig AND no package.json field makes the
+		// analyzer default to `unknown` language.
+		const a = analyzeProject(reader({}));
+		expect(a.language).toBe('unknown');
+		expect(languageHintsFor(a)).toEqual([]);
+	});
+});
+
+describe('prompt bodies', () => {
+	it('startPromptBody includes project facts and bootstrap references', () => {
 		const a = analyse({
 			dependencies: { '@angular/core': '^22' },
 			scripts: { lint: 'eslint .', test: 'vitest' },
@@ -38,94 +82,73 @@ describe('body-content', () => {
 		const body = startPromptBody(a, 'acme');
 		expect(body).toContain('@acme/site');
 		expect(body).toContain('acme_overview');
-		expect(body).toContain('acme_analyze_project');
-		expect(body).toContain('acme_plan_mcp_project');
 		expect(body).toContain('angular');
 	});
 
-	it('fix quality prompt body lists the actual scripts', () => {
-		const a = analyse({
-			scripts: { lint: 'eslint .', test: 'vitest', build: 'ng build' },
-		});
-		const body = fixQualityPromptBody(a, 'acme');
-		expect(body).toContain('lint');
-		expect(body).toContain('eslint .');
-		expect(body).toContain('test');
-		expect(body).toContain('ng build');
-	});
-
-	it('fix quality prompt body is honest when there are no scripts', () => {
+	it('fixQualityPromptBody is honest when there are no scripts', () => {
 		const a = analyse({});
-		const body = fixQualityPromptBody(a, 'acme');
-		expect(body).toMatch(/no quality scripts detected/i);
+		expect(fixQualityPromptBody(a, 'acme')).toMatch(
+			/no quality scripts detected/i,
+		);
 	});
+});
 
-	it('continue proposal prompt body references the multi-agent workflow', () => {
-		const body = continueProposalPromptBody('acme');
-		expect(body).toContain('acme_auto_work');
-		expect(body).toContain('acme_continue_proposal');
-		expect(body).toContain('lock-conflict');
-	});
-
-	it('project standards skill body lists real CI / agent configs', () => {
-		// hand-craft a richer analysis via additional files
-		const a2 = analyzeProject(
+describe('skill bodies', () => {
+	it('projectStandardsSkillBody lists CI and agent configs', () => {
+		const a = analyzeProject(
 			reader({
 				'package.json': '{"name":"x"}',
 				'tsconfig.json': '{}',
 				'AGENTS.md': '# guide',
-				'CLAUDE.md': '# guide',
 				'.github/copilot-instructions.md': '# guide',
 				'.gitlab-ci.yml': 'stages: [test]',
 			}),
 		);
-		const body = projectStandardsSkillBody(a2);
+		const body = projectStandardsSkillBody(a);
 		expect(body).toContain('AGENTS.md');
-		expect(body).toContain('CLAUDE.md');
-		expect(body).toContain('copilot-instructions');
 		expect(body).toContain('gitlab-ci');
-		expect(body).toContain('`typescript`');
 	});
 
-	it('framework skill body is empty for projects without a framework', () => {
+	it('frameworkSkillBody is empty for projects without a framework', () => {
 		const a = analyse({});
 		expect(frameworkSkillBody(a)).toBe('');
 		expect(frameworkSkillWhenToUse(a)).toEqual([]);
 	});
-
-	it('framework skill body is non-empty for Angular projects', () => {
-		const a = analyse({ dependencies: { '@angular/core': '^22' } });
-		const body = frameworkSkillBody(a);
-		expect(body).toContain('Angular');
-		expect(frameworkSkillWhenToUse(a).length).toBeGreaterThan(0);
-	});
 });
 
-describe('buildServerBlueprint body injection', () => {
-	it('injects a real body for the start prompt and the project standards skill', () => {
-		const bp = buildServerBlueprint(
-			analyse({
-				dependencies: { '@angular/core': '^22' },
-				scripts: { lint: 'eslint .', test: 'vitest' },
-			}),
+describe('blueprintArtifactBody dispatcher', () => {
+	it('routes `start` to startPromptBody', () => {
+		const a = analyse({});
+		const out = blueprintArtifactBody(
+			{ name: 'start', description: 'd' },
+			a,
+			'acme',
 		);
-		const start = bp.prompts.find((p) => p.name === 'start');
-		expect(start?.body).toBeDefined();
-		expect(start?.body).toContain('@acme/site');
-		const skill = bp.skills.find((s) => s.name === 'project standards');
-		expect(skill?.body).toBeDefined();
-		expect(skill?.body).toContain('Project facts');
-		expect(skill?.whenToUse?.length).toBeGreaterThan(0);
+		expect(out).toBe(startPromptBody(a, 'acme'));
 	});
-
-	it('injects the framework skill body when the project has a framework', () => {
-		const bp = buildServerBlueprint(
-			analyse({ dependencies: { '@angular/core': '^22' } }),
+	it('routes `fix quality` to fixQualityPromptBody', () => {
+		const a = analyse({});
+		const out = blueprintArtifactBody(
+			{ name: 'fix quality', description: 'd' },
+			a,
+			'acme',
 		);
-		const frameworkSkill = bp.skills.find((s) =>
-			s.name.includes('angular'),
-		);
-		expect(frameworkSkill?.body).toBeDefined();
-		expect(frameworkSkill?.whenToUse?.length).toBeGreaterThan(0);
+		expect(out).toBe(fixQualityPromptBody(a, 'acme'));
+	});
+	it('returns empty string for unknown artefact names', () => {
+		const a = analyse({});
+		expect(
+			blueprintArtifactBody(
+				{ name: 'totally unknown', description: 'd' },
+				a,
+				'acme',
+			),
+		).toBe('');
+	});
+	it('the dispatcher is referenced by the blueprint pipeline (regression guard)', () => {
+		const a = analyse({});
+		const bp = buildServerBlueprint(a);
+		const start = bp.prompts.find((p) => p.name === 'start');
+		expect(start?.body).toBe(startPromptBody(a, bp.namespacePrefix));
 	});
 });

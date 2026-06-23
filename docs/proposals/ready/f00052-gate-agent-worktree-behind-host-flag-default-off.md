@@ -220,7 +220,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
     internal slices or as a `done/audits/` entry) and lists `u00002` in
     any related row."
 
-## Acceptance (end-to-end)
+## acceptance
 
 - `bun run validate` is green on `develop` after merging the slice chain.
 - In this repo, the default config + a fresh `bun run host` start means
@@ -232,7 +232,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
 - The 4 skills and `AGENTS.md` no longer recommend `agent_worktree` for
   single-agent sessions.
 
-## Risks
+## risks and mitigations
 
 - **Existing consumers** that pass `--agent-worktree` (none in this repo
   today — the flag is new) keep working because unknown future values
