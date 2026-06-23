@@ -109,7 +109,16 @@ export const blockedByFor = async (
 	if (fm.type !== 'plan') return [];
 
 	const entries = await resolvedReaders.readProposalIndex(indexPathAbs);
-	const statusById = new Map(entries.map((e) => [e.id, e.status]));
+	// Drop entries with no status (legacy indexes / partial index files);
+	// the Map only tracks proposals whose status is known.
+	const statusById = new Map(
+		entries
+			.filter(
+				(e): e is typeof e & { status: string } =>
+					e.status !== undefined,
+			)
+			.map((e) => [e.id, e.status]),
+	);
 
 	const contains =
 		fm.contains !== null &&

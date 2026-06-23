@@ -34,13 +34,18 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 	const metadata: IMcpVertexProjectMetadata = {
 		name: 'mcp-vertex-host',
 		version: '1.0.0',
+		description: 'Test host metadata fixture',
 	};
 	const workspace: IWorkspacePathProvider = {
 		root: '/repo',
 		resolve: (rel) => `/repo/${rel}`,
 	};
 	const corePaths: ICorePaths = { cacheDir: '/cache', docsDir: '/docs' };
-	const knowledgeEntry: IKnowledgeEntry = { id: 'k1', title: 'Title' };
+	const knowledgeEntry: IKnowledgeEntry = {
+		id: 'k1',
+		title: 'Title',
+		body: 'Knowledge body for the test fixture',
+	};
 	const validationMatrix: IValidationMatrix = {
 		scopes: {
 			full: [{ command: 'bun test', expect: 'exit0' }],
