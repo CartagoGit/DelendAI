@@ -81,7 +81,7 @@ const CONFIG_FILENAME = 'mcp-vertex.config.json';
 
 /** Production probes: git remote, `gh auth status`, env, config read. */
 const defaultDeps = (cwd: string): ISetupGithubCliDeps => {
-	const spawn = (cmd: readonly string[]): { ok: boolean; out: string } => {
+	const spawn = (cmd: string[]): { ok: boolean; out: string } => {
 		try {
 			const res = Bun.spawnSync(cmd, { cwd });
 			return {

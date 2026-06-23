@@ -86,9 +86,12 @@ describe('issues plugin — dependsOn contract', () => {
 			(entry) => entry.plugin.name === 'issues',
 		);
 		// No `repo` option in the smoke test ctx — the plugin registers
-		// zero tools and emits a discoverable knowledge entry. See
-		// the `register()` UX guard in `src/index.ts` for the rationale.
-		expect(issuesEntry?.registrations.tools).toEqual([]);
+		// only the `setup_github` helper (f00030 S2: setup guidance is
+		// available before the repo is configured) and emits a
+		// discoverable knowledge entry.
+		expect(
+			(issuesEntry?.registrations.tools ?? []).map((t) => t.id),
+		).toEqual(['setup_github']);
 	});
 });
 
@@ -120,9 +123,9 @@ describe('issues plugin — UX guard when `repo` is missing', () => {
 	): Promise<Awaited<ReturnType<typeof issuesPlugin.register>>> =>
 		Promise.resolve(r);
 
-	it('registers 0 tools when `repo` is missing, but emits an `issues-needs-repo-config` knowledge entry', async () => {
+	it('registers only the setup helper when `repo` is missing, and emits an `issues-needs-repo-config` knowledge entry', async () => {
 		const result = await unwrap(issuesPlugin.register(buildCtx({})));
-		expect(result.tools).toEqual([]);
+		expect((result.tools ?? []).map((t) => t.id)).toEqual(['setup_github']);
 		expect(result.knowledge).toHaveLength(1);
 		const entry = result.knowledge?.[0];
 		expect(entry?.id).toBe('issues-needs-repo-config');
@@ -137,7 +140,7 @@ describe('issues plugin — UX guard when `repo` is missing', () => {
 		const result = await unwrap(
 			issuesPlugin.register(buildCtx({ repo: '' })),
 		);
-		expect(result.tools).toEqual([]);
+		expect((result.tools ?? []).map((t) => t.id)).toEqual(['setup_github']);
 		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
 	});
 
@@ -145,15 +148,15 @@ describe('issues plugin — UX guard when `repo` is missing', () => {
 		const result = await unwrap(
 			issuesPlugin.register(buildCtx({ repo: '   ' })),
 		);
-		expect(result.tools).toEqual([]);
+		expect((result.tools ?? []).map((t) => t.id)).toEqual(['setup_github']);
 		expect(result.knowledge?.[0]?.id).toBe('issues-needs-repo-config');
 	});
 
-	it('registers the 5 `issues_*` tools when `repo` is provided', async () => {
+	it('registers the 5 `issues_*` tools + setup_github when `repo` is provided', async () => {
 		const result = await unwrap(
 			issuesPlugin.register(buildCtx({ repo: 'CartagoGit/mcp-vertex' })),
 		);
-		expect(result.tools ?? []).toHaveLength(5);
+		expect(result.tools ?? []).toHaveLength(6);
 		const toolIds = (result.tools ?? []).map((t) => t.id).sort();
 		expect(toolIds).toEqual([
 			'issues_analyze',
@@ -161,6 +164,7 @@ describe('issues plugin — UX guard when `repo` is missing', () => {
 			'issues_ingest',
 			'issues_list',
 			'issues_resolve',
+			'setup_github',
 		]);
 		// No knowledge entry when fully configured — the hint is
 		// irrelevant and would just be noise.
