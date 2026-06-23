@@ -3,8 +3,8 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { webFetch } from './engine';
-import type { IFetchLike } from './engine';
+import { webFetch } from '../services/engine';
+import type { IFetchLike } from '../services/engine';
 
 export interface IWebToolOptions {
 	readonly namespacePrefix: string;

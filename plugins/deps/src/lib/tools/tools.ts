@@ -8,9 +8,9 @@ import {
 	checkDeps,
 	checkOutdated,
 	fetchLatestFromNpm,
-} from './engine';
-import type { ILatestVersionFetcher } from './engine';
-import { listPolyglotDeps } from './polyglot';
+} from '../services/engine';
+import type { ILatestVersionFetcher } from '../services/engine';
+import { listPolyglotDeps } from '../services/polyglot';
 
 export interface IDepsToolOptions {
 	readonly namespacePrefix: string;

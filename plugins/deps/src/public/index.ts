@@ -10,7 +10,7 @@ export {
 	checkDeps,
 	checkOutdated,
 	fetchLatestFromNpm,
-} from '../lib/engine';
+} from './services/engine';
 export type {
 	IDepEntry,
 	IDepSection,
@@ -21,18 +21,18 @@ export type {
 	IDepsOutdatedReport,
 	IOutdatedEntry,
 	ILatestVersionFetcher,
-} from '../lib/engine';
+} from './services/engine';
 export {
 	listPolyglotDeps,
 	parseCargoToml,
 	parseGoMod,
 	parsePyprojectToml,
-} from '../lib/polyglot';
+} from './services/polyglot';
 export type {
 	IPolyglotDepEntry,
 	IPolyglotEcosystem,
 	IPolyglotManifest,
-} from '../lib/polyglot';
+} from './services/polyglot';
 export { buildDepsToolRegistrations } from '../lib/tools';
 export type { IDepsToolOptions } from '../lib/tools';
 

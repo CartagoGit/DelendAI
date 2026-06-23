@@ -12,11 +12,11 @@ import {
 	type IReleasedClaim,
 	type IReleaseWatcher,
 	type IHandoffWatcher,
-} from './watcher';
+} from '../services/watcher';
 import {
 	startAgentEventsBridge,
 	type IAgentEventsBridge,
-} from './agent-events-bridge';
+} from '../services/agent-events-bridge';
 
 export interface INotifyToolOptions {
 	readonly namespacePrefix: string;

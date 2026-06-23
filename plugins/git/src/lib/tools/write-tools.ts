@@ -25,8 +25,8 @@ import {
 	toolOk,
 } from '@mcp-vertex/core/public';
 
-import { checkRepo } from './git';
-import type { IGitRunner } from './git';
+import { checkRepo } from '../services/git';
+import type { IGitRunner } from '../services/git';
 
 const NOT_A_REPO = (reason = 'not a git repository') =>
 	toolError(

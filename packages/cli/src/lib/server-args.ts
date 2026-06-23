@@ -91,7 +91,7 @@ export const SERVER_ARG_FORWARDERS: readonly IServerArgForwarder[] = [
 const forwardAll = (globals: ICliGlobalOptions): readonly string[] => {
 	const out: string[] = [];
 	for (const forwarder of SERVER_ARG_FORWARDERS) {
-		const value = (globals as Record<string, unknown>)[forwarder.key];
+		const value = globals[forwarder.key];
 		out.push(...forwarder.argv(String(forwarder.key), value));
 	}
 	return out;

@@ -140,10 +140,10 @@ export const locateByScan = async (
 	proposalId: string,
 ): Promise<ILocatedProposal | null> => {
 	for (const folder of PROPOSAL_STATUS_FOLDERS) {
-		const dir =
-			folder === 'ready'
-				? proposalsDirAbs
-				: `${proposalsDirAbs}/${folder}`;
+		// Every status has its own subdirectory, including `ready`. The
+		// `ready/` folder is NOT the proposals root — proposals live
+		// inside it, sibling to `in-progress/`, `done/`, etc.
+		const dir = `${proposalsDirAbs}/${folder}`;
 		let entries: string[];
 		try {
 			entries = await readdir(dir);
@@ -151,9 +151,7 @@ export const locateByScan = async (
 			continue;
 		}
 		for (const name of entries) {
-			if (!name.startsWith(`${proposalId}-`) || !name.endsWith('.md')) {
-				continue;
-			}
+			if (!name.endsWith('.md')) continue;
 			const path = join(dir, name);
 			let raw: string;
 			try {
@@ -164,6 +162,14 @@ export const locateByScan = async (
 			const block = extractYamlBlock(raw);
 			if (block === null) continue;
 			const fm = parseFrontmatterBlock(block);
+			// Match by frontmatter `id`, NOT by filename prefix. The
+			// filename is a convention (e.g. `q00001-plan-of-plans.md`)
+			// but the authoritative identity is the frontmatter `id` —
+			// `q00001` and `q00001-plan-of-plans` are the same id for
+			// the same proposal. Filename prefix filtering would reject
+			// legitimate proposals whose filename doesn't follow the
+			// `<id>-<slug>.md` convention (some test fixtures and
+			// hand-edited files do not).
 			if (fm.id === proposalId) {
 				return {
 					absPath: path,

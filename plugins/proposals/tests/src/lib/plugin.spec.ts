@@ -54,6 +54,7 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'proposal_force_transition',
 			'proposal_reconcile_folder',
 			'proposal_diagnose',
+			'proposals_close_plan',
 		]);
 		expect(registrations.knowledge?.map((k) => k.id)).toContain(
 			'multi-agent-loop',

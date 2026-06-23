@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ICliGlobalOptions } from '../../../src/contracts/interfaces/cli-command.interface';
 import {
 	buildServerArgs,
 	SERVER_ARG_FORWARDERS,
