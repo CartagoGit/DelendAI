@@ -197,6 +197,22 @@ export const activate = async (
 		},
 	});
 	await context.globalState.update(CLIENT_STATE_KEY, client);
+
+	// r00003 S4: `track()` is the single registration seam for every
+	// disposable the extension creates (command subscriptions, tree
+	// providers, watchers, the dashboard webview). It pushes onto
+	// `context.subscriptions` (so VS Code's own lifecycle observer still
+	// sees the resource) AND registers it in the runtime handle (so a
+	// host-driven `deactivate()` — which VS Code calls with no context —
+	// can actually dispose it in LIFO order). A monotonic counter keys
+	// each entry so the handle can address them individually.
+	let trackSeq = 0;
+	const track = (disposable: IDisposable): IDisposable => {
+		context.subscriptions.push(disposable);
+		handle.register(`sub-${trackSeq++}`, disposable);
+		return disposable;
+	};
+
 	const overview = new OverviewService(client);
 	const notifications = new NotificationsService(client);
 	const toolTree = new ToolTreeDataProvider(overview);
@@ -253,31 +269,21 @@ export const activate = async (
 		toolTree.refresh();
 	}
 
-	context.subscriptions.push(registerShowOverviewCommand({ vscode, client }));
-	context.subscriptions.push(
-		registerRefreshCommand({ vscode, client, toolTree }),
-	);
-	context.subscriptions.push(
-		registerRunValidationCommand({ vscode, client }),
-	);
-	context.subscriptions.push(registerOpenProposalCommand({ vscode, client }));
-	context.subscriptions.push(registerShowMetricsCommand({ vscode, client }));
+	track(registerShowOverviewCommand({ vscode, client }));
+	track(registerRefreshCommand({ vscode, client, toolTree }));
+	track(registerRunValidationCommand({ vscode, client }));
+	track(registerOpenProposalCommand({ vscode, client }));
+	track(registerShowMetricsCommand({ vscode, client }));
 	// Fix #6: `openDocs` was declared in package.json but never wired up
 	// in `activate()`, so the command was unreachable from the UI. It is
 	// a thin host wrapper around `EmbedService` (no client request), so
 	// it only needs `vscode`.
-	context.subscriptions.push(registerOpenDocsCommand({ vscode }));
-	context.subscriptions.push(
-		registerOpenKnowledgeCommand({ vscode, client }),
-	);
-	context.subscriptions.push(registerToolSearchCommand({ vscode, client }));
-	context.subscriptions.push(registerRestartServerCommand(vscode));
-	context.subscriptions.push(
-		registerMemorySaveCommand({ vscode, client, memoryTree }),
-	);
-	context.subscriptions.push(
-		registerMemoryForgetCommand({ vscode, client, memoryTree }),
-	);
+	track(registerOpenDocsCommand({ vscode }));
+	track(registerOpenKnowledgeCommand({ vscode, client }));
+	track(registerToolSearchCommand({ vscode, client }));
+	track(registerRestartServerCommand(vscode));
+	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
+	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
 	// Fix #7: `openSettings` renders a webview that posts messages to
 	// `mcp-vertex.saveSettings` / `mcp-vertex.resetSettings`. Those
 	// handlers were never registered, so changes the user made in the
@@ -293,17 +299,17 @@ export const activate = async (
 		vscode,
 		settingsStore,
 	);
-	context.subscriptions.push(openSettingsReg);
-	context.subscriptions.push(saveSettingsReg);
-	context.subscriptions.push(resetSettingsReg);
-	context.subscriptions.push(
+	track(openSettingsReg);
+	track(saveSettingsReg);
+	track(resetSettingsReg);
+	track(
 		registerOpenToolbarCommand({
 			vscode,
 			client,
 			globalState: context.globalState,
 		}),
 	);
-	context.subscriptions.push(
+	track(
 		registerSetupGithubCommand({
 			vscode,
 			client,
@@ -323,7 +329,7 @@ export const activate = async (
 			'./host/vscode-host-adapter'
 		);
 		const host = createVscodeHostAdapter();
-		context.subscriptions.push(
+		track(
 			registerOpenDashboardCommand({
 				host,
 				client,
@@ -344,7 +350,7 @@ export const activate = async (
 		// works the same way it does in production, regardless of which
 		// test fakes / alt hosts are loading this code.
 		const host = createFakeHostFromVscode(deps.vscode);
-		context.subscriptions.push(
+		track(
 			registerOpenDashboardCommand({
 				host,
 				client,

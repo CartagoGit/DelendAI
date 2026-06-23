@@ -94,7 +94,12 @@ describe('activate / deactivate lifecycle (reload-leak contract)', () => {
 			createClient: async () => tracked.client,
 		});
 
-		expect(getRuntimeHandle()?.count ?? 0).toBeGreaterThanOrEqual(1);
+		// r00003 S4: the handle must own MORE than just the client — every
+		// command subscription and the dashboard webview now register
+		// through the `track()` seam, so a host-driven `deactivate()` (which
+		// VS Code calls with no context) can dispose them. A count of 1
+		// would mean only the client was tracked and the commands leaked.
+		expect(getRuntimeHandle()?.count ?? 0).toBeGreaterThan(1);
 		// No close yet — the client is in use.
 		expect(tracked.closeCalls).toBe(0);
 

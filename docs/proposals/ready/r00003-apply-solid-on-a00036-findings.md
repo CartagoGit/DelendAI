@@ -164,7 +164,7 @@ Their working tree (uncommitted, unmerged) contains:
 - **SOLID**: S (activate composes, deactivate disposes — separate
   responsibilities); D (deactivate depends on `IRuntimeHandle`, not on
   the concrete `vscode.ExtensionContext`).
-- **Status**: pending.
+- **Status**: done.
 - **Gate**: `bun run test` (extensions test suite + manual reload check).
 - **Acceptance**:
   - `deactivate()` is no longer empty; it delegates to
