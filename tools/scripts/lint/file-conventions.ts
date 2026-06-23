@@ -41,6 +41,8 @@ export type Role =
 	| 'factory'
 	| 'builder'
 	| 'generated'
+	| 'test'
+	| 'config'
 	| 'barrel'
 	| 'other';
 
@@ -87,7 +89,17 @@ const GeneratedRule: IRoleRule = rule(
 		hasSegment(rel, 'generated') || /\.generated\./.test(basename(rel)),
 );
 
-/** 2. Public barrels — `src/public/index.ts` and `src/index.ts`.
+/** 2. Configuration files — package-local tool/test/build config. */
+const ConfigRule: IRoleRule = rule('config', (rel) =>
+	/\.config\.ts$/.test(basename(rel)),
+);
+
+/** 3. Tests — test suffix wins over role suffix when both apply. */
+const TestRule: IRoleRule = rule('test', (rel) =>
+	/(?:\.e2e)?\.spec\.tsx?$/.test(basename(rel)),
+);
+
+/** 4. Public barrels — `src/public/index.ts` and `src/index.ts`.
  *  These re-export the package surface and carry no role suffix. */
 const BarrelRule: IRoleRule = rule('barrel', (rel) => {
 	const base = basename(rel);
@@ -161,6 +173,8 @@ const BuilderRule: IRoleRule = rule(
  *  `classifyPath`). */
 export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	GeneratedRule,
+	TestRule,
+	ConfigRule,
 	BarrelRule,
 	InterfaceRule,
 	ConstantRule,

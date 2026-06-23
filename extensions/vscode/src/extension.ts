@@ -207,9 +207,7 @@ export const activate = async (
 	let statusBarItem: IStatusBarItem | undefined;
 	try {
 		statusBarItem = vscode.window.createStatusBarItem?.();
-	} catch (err) {
-		// eslint-disable-next-line no-console -- activation diagnostic
-		console.warn('[mcp-vertex] status bar unavailable, continuing:', err);
+	} catch {
 		statusBarItem = undefined;
 	}
 	if (statusBarItem !== undefined) {

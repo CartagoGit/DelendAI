@@ -48,8 +48,7 @@ const bindOne = (root: HTMLElement): void => {
 			if (match) {
 				p.style.animation = 'none';
 				// Force reflow so the animation restarts cleanly.
-				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-				p.offsetHeight;
+				void p.offsetHeight;
 				p.style.animation = '';
 			}
 		}

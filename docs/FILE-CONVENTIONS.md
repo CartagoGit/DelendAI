@@ -80,8 +80,8 @@ These categories are exempt from the role-suffix rule:
 
 ```
 'interface' | 'constant' | 'service' | 'tool' | 'registry'
-| 'register' | 'factory' | 'builder' | 'generated' | 'barrel'
-| 'other'
+| 'register' | 'factory' | 'builder' | 'generated' | 'test'
+| 'config' | 'barrel' | 'other'
 ```
 
 The classifier is the single source of truth — both this document and

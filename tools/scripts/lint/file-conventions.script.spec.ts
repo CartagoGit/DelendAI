@@ -87,6 +87,22 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('generated');
 	});
 
+	it('classifies TypeScript config files', () => {
+		expect(classifyPath('plugins/search/vitest.config.ts')).toBe('config');
+		expect(classifyPath('apps/web/astro.config.ts')).toBe('config');
+	});
+
+	it('classifies tests before role suffixes', () => {
+		expect(
+			classifyPath('plugins/audit/tests/src/lib/plugin-options.spec.ts'),
+		).toBe('test');
+		expect(
+			classifyPath(
+				'plugins/proposals/tests/src/lib/tools/example.tool.spec.ts',
+			),
+		).toBe('test');
+	});
+
 	it('classifies registry/register/factory/builder roles', () => {
 		expect(
 			classifyPath('packages/core/src/lib/registries/tool-registry.ts'),
@@ -275,11 +291,12 @@ describe('main() CLI shell', () => {
 });
 
 describe('DEFAULT_TS_RULES (closed-world sanity)', () => {
-	it('contains exactly the 10 documented role rules', () => {
+	it('contains exactly the 12 documented role rules', () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name).sort();
 		expect(names).toEqual([
 			'barrel',
 			'builder',
+			'config',
 			'constant',
 			'factory',
 			'generated',
@@ -287,15 +304,18 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', () => {
 			'register',
 			'registry',
 			'service',
+			'test',
 			'tool',
 		]);
-		expect(names.length).toBe(10);
+		expect(names.length).toBe(12);
 	});
 
-	it('lists generated first, then barrel, then interface (priority order)', () => {
+	it('lists generated first, then tests, config, barrel and interface (priority order)', () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name);
 		expect(names[0]).toBe('generated');
-		expect(names[1]).toBe('barrel');
-		expect(names[2]).toBe('interface');
+		expect(names[1]).toBe('test');
+		expect(names[2]).toBe('config');
+		expect(names[3]).toBe('barrel');
+		expect(names[4]).toBe('interface');
 	});
 });
