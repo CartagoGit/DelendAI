@@ -70,10 +70,10 @@ describe('core extra group (f00046 S5)', () => {
 		expect(res.code).toBe(EXIT_CODE.USAGE);
 	});
 
-	it('fs write forwards content + flags (create-dirs, no-atomic)', async () => {
+	it('fs write forwards content + flags (create-dirs)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('fs write').run(
-			['out/x.txt', '--content=hi', '--create-dirs', '--no-atomic'],
+			['out/x.txt', '--content=hi', '--create-dirs'],
 			ctx,
 		);
 		expect(calls[0]).toEqual({
@@ -82,8 +82,22 @@ describe('core extra group (f00046 S5)', () => {
 				path: 'out/x.txt',
 				content: 'hi',
 				createDirs: true,
-				atomic: false,
 			},
+		});
+	});
+
+	it('fs write rejects --no-atomic (atomic is non-negotiable via the LLM-facing tool, r00003 S3 / LSP)', async () => {
+		const { ctx } = buildStubContext();
+		const res = await find('fs write').run(
+			['out/x.txt', '--content=hi', '--no-atomic'],
+			ctx,
+		);
+		expect(res.code).toBe(EXIT_CODE.OK);
+		expect(res.data).toMatchObject({
+			ok: false,
+			error: expect.stringContaining(
+				'--no-atomic is no longer supported',
+			),
 		});
 	});
 

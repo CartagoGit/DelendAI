@@ -218,12 +218,11 @@ export const buildFsToolRegistrations = (
 					`${prefix}_fs_write`,
 					{
 						description:
-							'Write a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected. `createDirs:true` makes missing parent directories; `atomic` (default true) routes the write through a crash-safe, concurrency-safe mutex+rename. This DOES mutate the workspace.',
+							'Write a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected. `createDirs:true` makes missing parent directories; writes are always routed through a crash-safe, concurrency-safe mutex+rename. This DOES mutate the workspace.',
 						inputSchema: z.object({
 							path: z.string(),
 							content: z.string(),
 							createDirs: z.boolean().optional(),
-							atomic: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
 							path: z.string(),
@@ -236,7 +235,6 @@ export const buildFsToolRegistrations = (
 						path: string;
 						content: string;
 						createDirs?: boolean | undefined;
-						atomic?: boolean | undefined;
 					}) => {
 						const result = await fsWrite(
 							options.workspaceRootAbs,
@@ -245,9 +243,6 @@ export const buildFsToolRegistrations = (
 							{
 								...(args.createDirs !== undefined
 									? { createDirs: args.createDirs }
-									: {}),
-								...(args.atomic !== undefined
-									? { atomic: args.atomic }
 									: {}),
 							},
 						);
