@@ -193,7 +193,7 @@ Bootstrap:
 - review-implementer: copilot-minimax-m3
 - status: done
 ### S2 — memory commands (`mcpv memory <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/memory.ts`, tests, i18n (12 locales)
 - **Tools mapped**: `memory_save`, `memory_recall`, `memory_list`, `memory_forget`, `memory_export`, `memory_import`
 - **Gate**: `bun run test packages/cli && bun run typecheck`

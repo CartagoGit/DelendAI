@@ -27,6 +27,12 @@ const EXPECTED_COMMANDS = [
 	'git blame',
 	'git show',
 	'git worktree',
+	'memory save',
+	'memory recall',
+	'memory list',
+	'memory forget',
+	'memory export',
+	'memory import',
 ] as const;
 
 describe('CLI command registry', () => {

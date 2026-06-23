@@ -39,6 +39,12 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Per-line authorship for a tracked file (optionally a line range).',
 	'git show': 'Commit metadata + --stat summary for a ref (no full patch).',
 	'git worktree': 'List existing git worktrees for this repo (read-only).',
+	'memory save': 'Save a durable note (upserts by title).',
+	'memory recall': 'Recall durable notes by query and/or tags.',
+	'memory list': 'List durable notes as a cheap index (id, title, tags).',
+	'memory forget': 'Delete a durable note by id.',
+	'memory export': 'Export the note store as a portable snapshot.',
+	'memory import': 'Import a snapshot produced by memory export.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
