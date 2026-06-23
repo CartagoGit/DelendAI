@@ -50,52 +50,52 @@ import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
  * and returns structured JSON so any agent or model consumes it the
  * same way.
  */
+/**
+ * r00003 S9 (F9, O + L + I): the proposals plugin's options schema, named
+ * so `register()` can `safeParse(ctx.options)` against the SAME contract
+ * the loader validates — the configured and validated plugin are one
+ * (LSP), and `proposalFolders` / `proposalNarrativePatterns` are typed
+ * fields, not `ctx.options.X as Y` casts.
+ */
+const PROPOSALS_OPTIONS_SCHEMA = z.object({
+	/** Custom symbolic agent-name pool. */
+	namePool: z.array(z.string()).optional(),
+	/** Family prefixes in cascade order, e.g. ["f","p"]. */
+	familyCascade: z.array(z.string()).optional(),
+	/** Quality-gate command surfaced by auto_work. */
+	validationCommand: z.string().optional(),
+	persist: z
+		.object({
+			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
+			messageTemplate: z.string().optional(),
+			pushTarget: z.string().optional(),
+		})
+		.optional(),
+	orchestration: z
+		.object({
+			delegateAfterToolCalls: z.number().int().positive().optional(),
+		})
+		.optional(),
+	/**
+	 * r00003 S9 (F9): host-specific proposal subfolders (relative to the
+	 * proposals dir), e.g. `['paused/demos']`. mcp-vertex bakes none.
+	 */
+	proposalFolders: z.array(z.string()).optional(),
+	/**
+	 * r00003 S7 + S9: host narrative-heading aliases for the proposal
+	 * scaffold linter, as `[heading, canonicalSection]` tuples.
+	 */
+	proposalNarrativePatterns: z
+		.array(z.tuple([z.string(), z.string()]))
+		.optional(),
+});
+
 export default definePlugin({
 	name: 'proposals',
 	version: '0.1.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
-	optionsSchema: z.object({
-		/** Custom symbolic agent-name pool. */
-		namePool: z.array(z.string()).optional(),
-		/** Family prefixes in cascade order, e.g. ["f","p"]. */
-		familyCascade: z.array(z.string()).optional(),
-		/** Quality-gate command surfaced by auto_work. */
-		validationCommand: z.string().optional(),
-		/**
-		 * Default persistence mode for `<prefix>_auto_work` (l109).
-		 *   - `none`             — no git interaction (legacy behaviour).
-		 *   - `commit`           — stage claimed files + Conventional Commits
-		 *                          commit locally after `sync_proposals`.
-		 *   - `commit-and-push`  — the above plus `git push <pushTarget>`.
-		 *                          Push to `main` is always refused.
-		 *
-		 * Per-call overrides via `auto_work { persist: '...' }` win over
-		 * this default.
-		 */
-		persist: z
-			.object({
-				mode: z
-					.enum(['none', 'commit', 'commit-and-push'])
-					.default('none'),
-				/** Conventional-Commits template. Default: `<area>(<proposalId>): <sliceId>`. */
-				messageTemplate: z.string().optional(),
-				/** Push target for `commit-and-push`. Default: `origin HEAD`. */
-				pushTarget: z.string().optional(),
-			})
-			.optional(),
-		/**
-		 * Token/context policy surfaced by `<prefix>_auto_work`: keep
-		 * expensive inspection in subagents once a slice is no longer a
-		 * quick serial edit. This is guidance only; actual delegation stays
-		 * with the orchestrator/client.
-		 */
-		orchestration: z
-			.object({
-				delegateAfterToolCalls: z.number().int().positive().optional(),
-			})
-			.optional(),
-	}),
+	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
 	configExample: {
 		summary:
 			'Default swarm setup: serial cascade (f before p), bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
@@ -107,6 +107,19 @@ export default definePlugin({
 		},
 	},
 	register(ctx) {
+		// r00003 S9 (F9): validate ctx.options through the SAME schema the
+		// loader declares, so a host misconfig is a structured error here
+		// rather than a silent cast downstream. The narrow per-field casts
+		// below remain for the engines whose option contracts are not yet
+		// migrated; `proposalFolders` is read from the parsed, typed value.
+		const parsedOptions = PROPOSALS_OPTIONS_SCHEMA.safeParse(
+			ctx.options ?? {},
+		);
+		if (!parsedOptions.success) {
+			throw new Error(
+				`proposals plugin rejected its options: ${parsedOptions.error.message}`,
+			);
+		}
 		const loopDetector = new AgentLoopDetectorService(ctx);
 		// All path-bearing tools share ONE layout so locks, queue,
 		// round-context and the proposal store always agree. The layout
@@ -122,10 +135,8 @@ export default definePlugin({
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
 		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
-		// its folder policy via ctx.options.
-		const extraProposalFolders = Array.isArray(ctx.options.proposalFolders)
-			? (ctx.options.proposalFolders as string[])
-			: [];
+		// its folder policy via ctx.options (now schema-validated, S9).
+		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,

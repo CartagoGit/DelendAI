@@ -1,4 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { z } from 'zod';
 
 import { buildSearchToolRegistrations } from './lib/tools/search.tool';
 import type { ISearchOptions } from './lib/services/search-engine.service';
@@ -10,27 +11,43 @@ import type { ISearchOptions } from './lib/services/search-engine.service';
  * `mcp-vertex --plugins=search`. Agnostic: roots/extensions/ignored dirs
  * are configurable via `plugins.search.options`.
  */
+
+/**
+ * r00003 S9 (F4, O + L + I): an explicit zod schema for the search
+ * plugin's options. Replaces the `ctx.options as { … }` cast so a host
+ * misconfig (e.g. `maxResults: "10"`) is rejected up front with a
+ * structured error instead of being silently coerced.
+ */
+const OptionsSchema = z.object({
+	roots: z.array(z.string()).optional(),
+	extensions: z.array(z.string()).optional(),
+	ignoreDirs: z.array(z.string()).optional(),
+	maxResults: z.number().optional(),
+});
+
 export default definePlugin({
 	name: 'search',
 	version: '0.1.0',
 	describe:
 		'Grep-like textual search over the workspace (low-token {file,line,text} hits).',
+	optionsSchema: OptionsSchema,
 	register(ctx) {
-		const opts = ctx.options as {
-			roots?: string[];
-			extensions?: string[];
-			ignoreDirs?: string[];
-			maxResults?: number;
-		};
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		if (!parsed.success) {
+			throw new Error(
+				`search plugin rejected its options: ${parsed.error.message}`,
+			);
+		}
+		const opts = parsed.data;
 		const defaults: ISearchOptions = {
-			...(Array.isArray(opts.roots) ? { roots: opts.roots } : {}),
-			...(Array.isArray(opts.extensions)
+			...(opts.roots !== undefined ? { roots: opts.roots } : {}),
+			...(opts.extensions !== undefined
 				? { extensions: opts.extensions }
 				: {}),
-			...(Array.isArray(opts.ignoreDirs)
+			...(opts.ignoreDirs !== undefined
 				? { ignoreDirs: opts.ignoreDirs }
 				: {}),
-			...(typeof opts.maxResults === 'number'
+			...(opts.maxResults !== undefined
 				? { maxResults: opts.maxResults }
 				: {}),
 		};

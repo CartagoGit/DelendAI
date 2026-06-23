@@ -1,4 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { z } from 'zod';
 
 import { buildDepsToolRegistrations } from './lib/tools';
 import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';
@@ -14,17 +15,32 @@ import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';
  * `plugins.deps.options.allowWrite: true` to also expose `package_install` /
  * `package_run_script` (mutates package.json/the lockfile and may spawn).
  */
+
+/**
+ * r00003 S9 (F6, O + L + I): explicit zod schema for the deps plugin's
+ * options. Replaces the `ctx.options as { … }` cast so a host misconfig
+ * (e.g. `allowNetwork: "yes"`) is rejected up front.
+ */
+const OptionsSchema = z.object({
+	manifest: z.string().optional(),
+	allowNetwork: z.boolean().optional(),
+	allowWrite: z.boolean().optional(),
+});
+
 export default definePlugin({
 	name: 'deps',
 	version: '0.1.0',
 	describe:
 		'Dependency inventory + offline health (deps_list / deps_check): lockfile, unpinned ranges, duplicates. Opt-in deps_outdated (network) and package_install/package_run_script (write).',
+	optionsSchema: OptionsSchema,
 	register(ctx) {
-		const o = ctx.options as {
-			manifest?: string;
-			allowNetwork?: boolean;
-			allowWrite?: boolean;
-		};
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		if (!parsed.success) {
+			throw new Error(
+				`deps plugin rejected its options: ${parsed.error.message}`,
+			);
+		}
+		const o = parsed.data;
 		return {
 			tools: [
 				...buildDepsToolRegistrations({

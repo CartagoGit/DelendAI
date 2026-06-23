@@ -288,7 +288,17 @@ Their working tree (uncommitted, unmerged) contains:
 - **SOLID**: O (new options extend the schema, not the cast); L
   (configured and validated plugins are the same contract); I (each
   plugin's schema is its own narrow interface, not a `Record<string, unknown>`).
-- **Status**: pending.
+- **Status**: done. search/docs/deps/git each gained an explicit
+  `optionsSchema` + a `safeParse(ctx.options)` guard in `register` (the
+  `ctx.options as { … }` casts are gone); web-fetch already had its schema
+  from the S9-residual quick win. proposals' schema gained `proposalFolders`
+  and `proposalNarrativePatterns` (S7), and `register` reads `proposalFolders`
+  from the parsed value. A `plugin-options.spec.ts` per plugin asserts the
+  schema is exposed, valid options register, and an invalid option is
+  rejected before any tool is wired. The repo's `mcp-vertex.config.json`
+  still validates unchanged. (A few narrow per-engine `ctx.options.X as Y`
+  reads remain in proposals for option contracts whose engines are out of
+  S9's file scope; flagged as a follow-up.)
 - **Gate**: `bun run test` + `bun run lint:proposals`.
 - **Acceptance**:
   - Each plugin declares `optionsSchema: z.object({ ... })`.

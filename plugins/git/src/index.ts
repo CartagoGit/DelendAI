@@ -1,4 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { z } from 'zod';
 
 import { createGitRunner } from './lib/services/git';
 import { buildGitToolRegistrations } from './lib/tools';
@@ -16,14 +17,32 @@ import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
  * in `mcp-vertex.config.json`. Mirrors the same `options.allowWrite`
  * gate used by other write-capable plugins in this repo.
  */
+
+/**
+ * r00003 S9 (F7, O + L + I): explicit zod schema for the git plugin's
+ * options. Replaces the implicit `ctx.options.allowWrite` read on an
+ * untyped bag so a host misconfig (e.g. `allowWrite: "true"`) is rejected
+ * up front instead of silently treated as falsy.
+ */
+const OptionsSchema = z.object({
+	allowWrite: z.boolean().optional(),
+});
+
 export default definePlugin({
 	name: 'git',
 	version: '0.1.0',
 	describe:
 		'Read-only git orientation: status, changed files, diff stat, recent log, blame, show and worktree list as structured JSON. Optional (opt-in) write tools: commit and push.',
+	optionsSchema: OptionsSchema,
 	register(ctx) {
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		if (!parsed.success) {
+			throw new Error(
+				`git plugin rejected its options: ${parsed.error.message}`,
+			);
+		}
 		const run = createGitRunner(ctx.workspace.root);
-		const allowWrite = ctx.options.allowWrite === true;
+		const allowWrite = parsed.data.allowWrite === true;
 		const readTools = buildGitToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			run,
