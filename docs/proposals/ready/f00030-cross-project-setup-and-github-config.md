@@ -313,7 +313,7 @@ remediation for that step.
 
 ### S5 — Cross-project setup lint _(incl. `tools/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/no-preset-drift.script.ts` (S5 — extend
     with the cross-project lint, or split into
