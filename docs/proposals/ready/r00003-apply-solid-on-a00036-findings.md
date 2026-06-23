@@ -110,7 +110,7 @@ Their working tree (uncommitted, unmerged) contains:
   new `packages/core/src/lib/shared/blueprint-store.ts`.
 - **SOLID**: S (assemble no longer mixes analysis + idempotency policy +
   persistence); D (depends on `BlueprintStore` abstraction).
-- **Status**: pending.
+- **Status**: done.
 - **Gate**: `bun run test` (token-budget e2e + assemble spec).
 - **Acceptance**:
   - The TOCTOU race in `prepareServerBlueprintOnStart` is gone: the new

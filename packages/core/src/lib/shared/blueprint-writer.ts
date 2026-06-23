@@ -24,11 +24,12 @@
  *     check.
  */
 
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { withFileMutex } from './with-file-mutex';
 import { writeFileAtomic } from './atomic-write';
+import { quarantineCorruptFile } from './quarantine-corrupt-file';
 
 export interface IBlueprintPayload {
 	readonly generatedAt: string;
@@ -59,12 +60,29 @@ export interface IBlueprintWriter {
 	): Promise<IBlueprintWriteResult>;
 }
 
-const exists = async (absolutePath: string): Promise<boolean> => {
+/**
+ * Probe an existing blueprint and classify it:
+ *
+ *   - `'missing'`  — no file at the path; the caller should write.
+ *   - `'intact'`   — a file exists and parses as JSON; preserve it.
+ *   - `'corrupt'`  — a file exists but does NOT parse; the caller must
+ *                    quarantine it (corrupt ≠ empty, AGENTS.md invariant
+ *                    4) and then write a fresh blueprint.
+ */
+const probeBlueprint = async (
+	absolutePath: string,
+): Promise<'missing' | 'intact' | 'corrupt'> => {
+	let bytes: string;
 	try {
-		await (await import('node:fs/promises')).stat(absolutePath);
-		return true;
+		bytes = await readFile(absolutePath, 'utf8');
 	} catch {
-		return false;
+		return 'missing';
+	}
+	try {
+		JSON.parse(bytes);
+		return 'intact';
+	} catch {
+		return 'corrupt';
 	}
 };
 
@@ -83,15 +101,23 @@ export const createFileSystemBlueprintWriter = (): IBlueprintWriter => ({
 		const absolute = join(workspaceRoot, relativePath);
 
 		const tryWrite = async (): Promise<IBlueprintWriteResult> => {
-			// First check: cheap fail-fast before taking the lock.
-			if (await exists(absolute)) {
+			// First check: cheap fail-fast before taking the lock. An
+			// intact blueprint short-circuits without the mutex.
+			if ((await probeBlueprint(absolute)) === 'intact') {
 				return { written: false, path: relativePath };
 			}
 			return withFileMutex(absolute, async () => {
-				// Second check inside the lock: a peer may have raced
+				// Second probe inside the lock: a peer may have raced
 				// past the first check and written before we got here.
-				if (await exists(absolute)) {
+				const state = await probeBlueprint(absolute);
+				if (state === 'intact') {
 					return { written: false, path: relativePath };
+				}
+				if (state === 'corrupt') {
+					// corrupt ≠ empty: move the unparseable bytes aside
+					// (preserved as a `.corrupt-*` sidecar) before we
+					// overwrite, so an operator can inspect them.
+					await quarantineCorruptFile(absolute);
 				}
 				await mkdir(dirname(absolute), { recursive: true });
 				await writeFileAtomic(

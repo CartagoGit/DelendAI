@@ -12,7 +12,14 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import {
+	mkdtemp,
+	readFile,
+	readdir,
+	rm,
+	stat,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -69,6 +76,43 @@ describe('createFileSystemBlueprintWriter — writeOnce idempotency', () => {
 			generatedAt: 'first',
 			blueprint: { kind: 'tool', version: 1 },
 		});
+	});
+
+	it('quarantines a corrupt (unparseable) pre-existing blueprint, then writes fresh', async () => {
+		// A pre-existing file whose bytes do not parse as JSON must be
+		// treated as corrupt — NOT as a valid "already exists" blueprint.
+		// corrupt ≠ empty (AGENTS.md invariant 4): the garbage bytes are
+		// moved aside to a `.corrupt-*` sidecar, then a fresh blueprint
+		// lands in their place.
+		await writeFile(
+			join(workspace, 'bp.json'),
+			'{ this is not json',
+			'utf8',
+		);
+
+		const writer: IBlueprintWriter = createFileSystemBlueprintWriter();
+		const result = await writer.writeOnce(workspace, 'bp.json', {
+			generatedAt: 'fresh',
+			blueprint: { kind: 'tool' },
+		});
+
+		// The corrupt file was replaced by a valid one.
+		expect(result.written).toBe(true);
+		const bytes = await readFile(join(workspace, 'bp.json'), 'utf8');
+		expect(JSON.parse(bytes)).toEqual({
+			generatedAt: 'fresh',
+			blueprint: { kind: 'tool' },
+		});
+
+		// The original corrupt bytes are preserved in a sidecar, not lost.
+		const entries = await readdir(workspace);
+		const quarantined = entries.filter((e) => e.includes('.corrupt-'));
+		expect(quarantined).toHaveLength(1);
+		const sidecar = await readFile(
+			join(workspace, quarantined[0] as string),
+			'utf8',
+		);
+		expect(sidecar).toBe('{ this is not json');
 	});
 
 	it('creates parent directories recursively (mkdir -p) before writing', async () => {
