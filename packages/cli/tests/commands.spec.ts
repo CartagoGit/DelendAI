@@ -91,6 +91,9 @@ const EXPECTED_COMMANDS = [
 	'status-marker close',
 	'status-marker validate',
 	'status-marker ping',
+	'conventions check',
+	'conventions plan',
+	'conventions apply',
 ] as const;
 
 describe('CLI command registry', () => {
