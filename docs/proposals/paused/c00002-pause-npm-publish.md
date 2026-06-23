@@ -40,11 +40,35 @@ conventional commits, packaging 10 packages, smoke-cli + smoke-pack) is in
 place. The CI workflow (`release.yml`) is wired and ready; the only thing it
 waits for is the user's inputs.
 
+## why this design
+
+Move `paused/c00002-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
+**all three** are true:
+
+1. `@cartago-git` org exists on the user's npm account.
+2. `NPM_TOKEN` (Granular, `Read and write`, `Bypass 2FA`) is set as a repo
+   secret.
+3. The user is ready to merge `develop → main`.
+
+At that point the slice is literally `git checkout main && git merge develop
+&& git push` and the `release.yml` workflow takes over end-to-end.
+
 ## Non-goals
 
 - Re-running the publish from the repo side.
 - Re-implementing the release workflow (it already matches `NPM_PUBLISH.md`).
 - Changing the package names or the org name.
+
+## Slices
+
+### S1 — Resume publish after external credentials are ready
+
+- **Status**: paused.
+- **Files**: [`docs/NPM_PUBLISH.md`](../../NPM_PUBLISH.md),
+  [`docs/proposals/paused/c00002-pause-npm-publish.md`](c00002-pause-npm-publish.md).
+- **Gate**: `bun run validate`.
+- **Acceptance**: resume only after the npm org, `NPM_TOKEN`, and
+  `develop → main` merge readiness are confirmed by the user.
 
 ## acceptance
 
@@ -63,23 +87,6 @@ waits for is the user's inputs.
 - ✅ The master audit's `npm publish` checkbox stays `- [ ]` but now
   references `paused/c00001` as the explanation, not `NPM_PUBLISH.md`
   alone.
-
-## Slices
-
-This proposal has no slices — it is a **checkpoint**, not a workstream.
-
-## why this design
-
-Move `paused/c00002-pause-npm-publish.md` → `ready/` (or `in-progress/`) when
-**all three** are true:
-
-1. `@cartago-git` org exists on the user's npm account.
-2. `NPM_TOKEN` (Granular, `Read and write`, `Bypass 2FA`) is set as a repo
-   secret.
-3. The user is ready to merge `develop → main`.
-
-At that point the slice is literally `git checkout main && git merge develop
-&& git push` and the `release.yml` workflow takes over end-to-end.
 
 ## notes
 

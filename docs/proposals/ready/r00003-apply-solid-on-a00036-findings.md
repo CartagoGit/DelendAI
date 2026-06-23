@@ -76,7 +76,7 @@ matching test in the same slice.
 - **No new dependencies.** Refactors use only what the repo already
   imports.
 
-## notes
+## architecture
 
 > Coordination with the parallel agent mid-flight on F1 — read this first.
 
