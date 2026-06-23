@@ -236,7 +236,7 @@ Bootstrap:
   - "`mcpv project analyze` y `mcpv project plan` devuelven los blueprints que el orquestrador consume — útiles para revisar el plan desde terminal antes de delegar."
 
 ### S6 — docs + search extended (`mcpv docs search`, search flags `--context`, `--json-lines`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/docs.ts` (extensión), `search.ts` (extensión), tests, i18n
 - **Tools mapped**: `docs_docs_search`, `search_search` (ext.)
 - **Gate**: `bun run test packages/cli && bun run typecheck`

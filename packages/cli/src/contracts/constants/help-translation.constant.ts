@@ -90,6 +90,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Return an exhaustive blueprint for a project-specific MCP server.',
 	'project create':
 		'Generate the files for a project MCP server, plugin, or client.',
+	'docs search': 'Search project documentation by free text (ranked hits).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
