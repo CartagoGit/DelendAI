@@ -19,7 +19,7 @@
  *      tests inject a stub, production uses `node:fs` via
  *      `createFsConfigFileReader()`.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 
 import {
 	parseConfigFile,
@@ -62,7 +62,7 @@ export interface ILoopDetectorServiceOptions {
  */
 export interface IConfigFileReader {
 	/** Return the parsed config object, or `undefined` if the file is absent. */
-	readGlobalConfig(): IMcpVertexConfigFile;
+	readGlobalConfig(): Promise<IMcpVertexConfigFile>;
 }
 
 /** Production reader: reads `mcp-vertex.config.json` from the workspace. */
@@ -71,10 +71,9 @@ export const createFsConfigFileReader = (
 ): IConfigFileReader => {
 	const path = workspace.resolve('mcp-vertex.config.json');
 	return {
-		readGlobalConfig() {
-			if (!existsSync(path)) return {};
+		async readGlobalConfig() {
 			try {
-				return parseConfigFile(readFileSync(path, 'utf8'));
+				return parseConfigFile(await readFile(path, 'utf8'));
 			} catch {
 				// Corrupt/missing — fall through to defaults. Matches the
 				// pre-split behaviour (a corrupt config never crashes boot).
@@ -201,9 +200,21 @@ export const parseLoopDetectorCliOverrides = (
  */
 export const resolveLoopDetectorConfig = (
 	input: IResolveLoopDetectorConfigInput,
+): Promise<ILoopDetectorServiceOptions> =>
+	input.configReader
+		.readGlobalConfig()
+		.then((globalConfig) =>
+			resolveLoopDetectorConfigFromFileConfig(
+				globalConfig,
+				input.cliArgs,
+			),
+		);
+
+export const resolveLoopDetectorConfigFromFileConfig = (
+	globalConfig: IMcpVertexConfigFile,
+	cliArgs: Readonly<Record<string, string>>,
 ): ILoopDetectorServiceOptions => {
-	const cliConfig = parseLoopDetectorCliOverrides(input.cliArgs);
-	const globalConfig = input.configReader.readGlobalConfig();
+	const cliConfig = parseLoopDetectorCliOverrides(cliArgs);
 	const loop = globalConfig.loopDetector;
 
 	return {

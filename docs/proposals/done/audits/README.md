@@ -57,6 +57,8 @@ unique across the folder — enforced by `bun run lint:audit-ids`.
 | [a00033](a00033-22-06-2026-copilot-minimax-m3-test-isolation-and-auto-work-loop.md) | 2026-06-22 | copilot | minimax-m3 | test-isolation-and-auto-work-loop | Test isolation + auto-work loop |
 | [a00034](a00034-23-06-2026-antigravity-gemini-3-5-flash-repositorio.md) | 2026-06-23 | antigravity | gemini-3-5-flash | repositorio | Auditoría de repositorio |
 | [a00035](a00035-23-06-2026-antigravity-gemini-pro-repositorio.md) | 2026-06-23 | antigravity | gemini-pro | repositorio | Auditoría de repositorio |
-| [a00036](a00036-23-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-23 | antigravity | deepmind | repositorio | Exhaustive audit of mcp-vertex monorepo — HEAD 43d452d |
+| [a00036](a00036-23-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-23 | copilot | minimax-m3 | repositorio | Auditoría canónica del repositorio mcp-vertex — HEAD 6e1015e |
+| [a00037](a00037-23-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-23 | antigravity | deepmind | repositorio | Exhaustive audit of mcp-vertex monorepo — HEAD 43d452d |
+| [a00038](a00038-23-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-23 | copilot | minimax-m3 | repositorio | Auditoría Maestra Exhaustiva — Copilot (minimax-m3) |
 
-36 audits · f00050 S10.
+38 audits · f00050 S10.

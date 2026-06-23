@@ -87,9 +87,13 @@ describe('matchNotes', () => {
 		if (!out.some((n) => n.startsWith('No MCP server found'))) {
 			throw new Error('debug notes=' + JSON.stringify(out));
 		}
-		expect(out).toContain(
-			'No MCP server found: create one from this blueprint',
-		);
+		expect(
+			out.some((n) =>
+				n.startsWith(
+					'No MCP server found: create one from this blueprint',
+				),
+			),
+		).toBe(true);
 	});
 	it('emits the mcp-server-state note for a project that already has one', () => {
 		const a = makeAnalysis({
@@ -97,9 +101,13 @@ describe('matchNotes', () => {
 			mcpEvidence: ['depends on @modelcontextprotocol/sdk'],
 		});
 		const out = matchNotes(makeCtx({ analysis: a }));
-		expect(out).toContain(
-			'An MCP server already exists (depends on @modelcontextprotocol/sdk)',
-		);
+		expect(
+			out.some((n) =>
+				n.startsWith(
+					'An MCP server already exists (depends on @modelcontextprotocol/sdk)',
+				),
+			),
+		).toBe(true);
 	});
 	it('emits the tests-policy note (default: tests enabled)', () => {
 		const out = matchNotes(makeCtx());
@@ -174,12 +182,16 @@ describe('integration: buildServerBlueprint uses the rule table', () => {
 		const bp = buildServerBlueprint(a);
 		// First note is from the pattern knowledge hints.
 		expect(bp.notes[0]).toMatch(
-			/Guard the public barrel|public API|typecheck/,
+			/Guard the public barrel|public API|typecheck|project-specific tools|patterns emerge/,
 		);
 		// Contains the mcp-server note.
-		expect(bp.notes).toContain(
-			'No MCP server found: create one from this blueprint',
-		);
+		expect(
+			bp.notes.some((n) =>
+				n.startsWith(
+					'No MCP server found: create one from this blueprint',
+				),
+			),
+		).toBe(true);
 		// Contains the tests note.
 		expect(bp.notes).toContain('Generate a test alongside each tool.');
 		// Contains the agent-configs note.

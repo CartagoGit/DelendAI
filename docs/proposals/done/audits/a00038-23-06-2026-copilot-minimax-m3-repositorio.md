@@ -1,5 +1,5 @@
 ---
-id: a00031
+id: a00038
 kind: audit
 title: "Auditoría Maestra Exhaustiva — Copilot (minimax-m3) — estado actual de `develop`"
 status: done
@@ -12,7 +12,7 @@ acceptance:
   - { command: bun run lint:proposals, expect: exit0 }
 ---
 
-# a00031 — Auditoría Maestra Exhaustiva — Copilot (minimax-m3)
+# a00038 — Auditoría Maestra Exhaustiva — Copilot (minimax-m3)
 
 ## Goal
 
@@ -24,7 +24,7 @@ acceptance:
 
 ## Why
 
-El último audit (a00030) cerró 5 acciones top con propuestas f00050..f00055. Varias ya están hechas (a00031 las verifica); otras siguen abiertas (f00051, f00052, f00054). Además:
+El último audit (a00030) cerró 5 acciones top con propuestas f00050..f00055. Varias ya están hechas (a00038 las verifica); otras siguen abiertas (f00051, f00052, f00054). Además:
 
 1. El commit `fb88376 feat(proposals): canonicalize-headings script + drift spec` introduce una **regresión masiva de imports** en 6 plugins (mueve archivos a `services/` y `tools/` con `git mv` pero no actualiza los importadores). Esto rompe el typecheck en `develop` sin que el gate lo detecte.
 2. La propuesta `r00003` (ready) lista 16 hallazgos de `a00036` por implementar; auditar su estado real evita duplicar trabajo.
@@ -39,7 +39,7 @@ El último audit (a00030) cerró 5 acciones top con propuestas f00050..f00055. V
 ## slices
 
 ### S1 — Execute audit and document findings
-- **Files**: [a00031-23-06-2026-copilot-minimax-m3-repositorio.md](file:///home/cartago/_projects/mcp-vertex/docs/proposals/done/audits/a00031-23-06-2026-copilot-minimax-m3-repositorio.md)
+- **Files**: [a00038-23-06-2026-copilot-minimax-m3-repositorio.md](file:///home/cartago/_projects/mcp-vertex/docs/proposals/done/audits/a00038-23-06-2026-copilot-minimax-m3-repositorio.md)
 - **Gate**: lint
 - **Status**: done
 
@@ -297,7 +297,7 @@ const content = await withFileMutex(
 
 ## Estado de las propuestas en vuelo
 
-| Propuesta | Estado | Hallazgos pendientes relevantes para a00031 |
+| Propuesta | Estado | Hallazgos pendientes relevantes para a00038 |
 |---|---|---|
 | `r00003` (ready) | 11 slices SOLID de a00036, 5 P0 + 6 P1 | S6 ya implementado (F9); resto sin tocar. |
 | `x00050` (ready) | 10 quick wins, headline = fix `validate` corrupto | S1 fix `bun run validate` es independiente de F1 (F1 es typecheck, no validate). |

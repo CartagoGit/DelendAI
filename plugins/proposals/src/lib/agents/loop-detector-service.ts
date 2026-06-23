@@ -10,10 +10,15 @@ import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
 import type { IToolCall as IDetectorToolCall } from './agent-loop-detector';
 import {
+	LOOP_DETECTOR_DEFAULTS,
 	createFsConfigFileReader,
+	parseLoopDetectorCliOverrides,
 	resolveLoopDetectorConfig,
 } from './loop-detector-config';
-import type { ILoopDetectorServiceOptions } from './loop-detector-config';
+import type {
+	IConfigFileReader,
+	ILoopDetectorServiceOptions,
+} from './loop-detector-config';
 import { buildSwarmPaths } from '../contracts/constants/default-path-layout.constant';
 
 export type { ILoopDetectorServiceOptions } from './loop-detector-config';
@@ -28,12 +33,13 @@ export interface IExtendedToolCall {
 }
 
 export class AgentLoopDetectorService {
-	private readonly options: ILoopDetectorServiceOptions;
+	private options: ILoopDetectorServiceOptions;
 	private readonly gitRunner: IGitRunner;
+	private readonly configReader: IConfigFileReader;
 	private readonly lockPath: string;
 	private readonly proposalIndexPath: string;
 	private readonly roundContextDigestPath: string;
-	private readonly handoffDirAbs: string;
+	private handoffDirAbs: string;
 
 	// Memory sliding window of calls per agent
 	private readonly windowMap = new Map<string, IExtendedToolCall[]>();
@@ -56,6 +62,7 @@ export class AgentLoopDetectorService {
 	// to a `Date.now()` comparison + a Map read.
 	private lockCache: { agent: string; mtimeMs: number } | undefined;
 	private static readonly LOCK_CACHE_TTL_MS = 50;
+	private configLoadPromise: Promise<void> | undefined;
 
 	constructor(private readonly ctx: IMcpPluginContext) {
 		const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir);
@@ -69,16 +76,26 @@ export class AgentLoopDetectorService {
 		this.gitRunner = createGitRunner(ctx.workspace.root);
 
 		// Solid-SRP: config resolution lives in `loop-detector-config.ts`.
-		// Precedence is CLI > on-disk config > defaults. The constructor
-		// here just orchestrates path derivation + state init; the
-		// boot-time sync read of `mcp-vertex.config.json` is encapsulated
-		// inside `createFsConfigFileReader` (audit-H4 exception).
-		this.options = resolveLoopDetectorConfig({
-			configReader: createFsConfigFileReader(ctx.workspace),
-			cliArgs: ctx.args,
-		});
+		// Start with defaults + CLI synchronously for the core's sync
+		// `isAgentStuck` contract; on-disk config loads async on first use.
+		this.options = {
+			...LOOP_DETECTOR_DEFAULTS,
+			...parseLoopDetectorCliOverrides(ctx.args),
+		};
+		this.configReader = createFsConfigFileReader(ctx.workspace);
 
 		this.handoffDirAbs = ctx.workspace.resolve(this.options.handoffDir);
+	}
+
+	private async ensureConfigLoaded(): Promise<void> {
+		this.configLoadPromise ??= resolveLoopDetectorConfig({
+			configReader: this.configReader,
+			cliArgs: this.ctx.args,
+		}).then((options) => {
+			this.options = options;
+			this.handoffDirAbs = this.ctx.workspace.resolve(options.handoffDir);
+		});
+		await this.configLoadPromise;
 	}
 
 	private async initializeGitDiff() {
@@ -165,6 +182,7 @@ export class AgentLoopDetectorService {
 		_result: unknown,
 		_error?: unknown,
 	): Promise<void> {
+		await this.ensureConfigLoaded();
 		if (!this.options.enabled) return;
 
 		await this.initializeGitDiff();

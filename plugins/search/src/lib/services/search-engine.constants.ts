@@ -66,7 +66,7 @@ export const extensionOf = (name: string): string => {
 /** Truncate a long line for the preview payload. */
 export const preview = (line: string): string =>
 	line.length > MAX_LINE_PREVIEW
-		? `${line.slice(0, MAX_LINE_PREVIEW)}…`
+		? `${line.slice(0, MAX_LINE_PREVIEW - 1)}…`
 		: line;
 
 /** True iff `relPath` matches any compiled glob regex. */

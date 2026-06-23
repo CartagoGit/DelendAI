@@ -54,6 +54,17 @@ export interface McpVertexCreateProjectOutput {
 	}[];
 }
 
+export interface McpVertexDriftCheckOutput {
+	hasDrift: boolean;
+	changes: Array<{
+		kind: "script-added" | "script-dropped" | "framework-changed" | "language-changed" | "monorepo-changed" | "package-manager-changed" | "test-runner-changed" | "mcp-server-added" | "mcp-server-dropped" | "ci-changed" | "agent-config-changed";
+		summary: string;
+	}>;
+	isFirstSnapshot: boolean;
+	lastSnapshotAt: string | null;
+	summary: string;
+}
+
 export interface McpVertexFsReadOutput {
 	path: string;
 	found: boolean;
@@ -203,6 +214,7 @@ export interface McpVertexStatusOutput {
 export interface McpVertexToolOutputs {
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
+	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
 	"mcp-vertex_fs_read": McpVertexFsReadOutput;
 	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
