@@ -80,7 +80,7 @@ export const componentScript: string = `
       var action = item.getAttribute('data-mv-action');
       var dropdownId = item.getAttribute('data-mv-dropdown-id');
       if (action) {
-        try { host.dispatch(action, { originalEvent: evt }); } catch (e) { console.error('[mv] dispatch failed:', e); }
+        try { host.dispatch(action, { originalEvent: evt }); } catch (_) {}
       }
       if (dropdownId) { closeAllDropdowns(null); }
       return;
@@ -104,7 +104,7 @@ export const componentScript: string = `
       try {
         host.setLanguage(lang);
         host.persistLanguage(lang);
-      } catch (e) { console.error('[mv] setLanguage failed:', e); }
+      } catch (_) {}
     }
   });
 

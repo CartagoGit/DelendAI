@@ -39,7 +39,7 @@ export const renderHostBridge = (): string =>
   function post(payload) {
     if (!vscode) return;
     try { vscode.postMessage(payload); }
-    catch (e) { console.error('[mv] postMessage failed:', e); }
+    catch (_) {}
   }
 
   function findActionEl(evt) {
