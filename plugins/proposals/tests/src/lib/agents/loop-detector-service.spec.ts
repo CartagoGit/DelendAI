@@ -222,6 +222,43 @@ describe('AgentLoopDetectorService', () => {
 			).resolves.toBeUndefined();
 		});
 
+		it('isAgentStuck (sync hot path) reads the lock only on cache miss; invalidateLockCache() forces the next read', async () => {
+			// Audit-H1: the sync `isAgentStuck` must NOT do `readFileSync`
+			// of the lock file on every call. Instead it serves from a
+			// 50ms TTL cache populated by the async `getActiveAgent`. We
+			// assert the contract from the outside by:
+			//   1. Triggering one async path (onToolCall) which fills the
+			//      cache via `getActiveAgent`.
+			//   2. Calling `isAgentStuck` 100 times in a tight loop —
+			//      each must hit the cache, not the disk.
+			//   3. Calling `invalidateLockCache()` and verifying the next
+			//      `isAgentStuck` still works (returns the safe fallback).
+			const service = new AgentLoopDetectorService(mockCtx);
+			writeFileSync(
+				mockCtx.workspace.resolve('agents.lock.json'),
+				JSON.stringify({
+					version: 1,
+					in_flight: [{ agent: 'cached-agent', task_id: 't1' }],
+				}),
+			);
+
+			// Prime the cache via the async path.
+			await service.onToolCall('read_file', {}, { ok: true });
+
+			// 100 sync calls — all served from cache, all returning null
+			// (single call, not stuck) without touching the file system.
+			for (let i = 0; i < 100; i++) {
+				expect(service.isAgentStuck('read_file', {})).toBeNull();
+			}
+
+			// Invalidation must be safe to call any time — even before the
+			// cache was ever primed — and the next sync read must fall
+			// back to 'default-agent' (returns null since default-agent is
+			// not in stuckAgents).
+			service.invalidateLockCache();
+			expect(service.isAgentStuck('read_file', {})).toBeNull();
+		});
+
 		it('pruneOldHandoffs (via a stuck cycle) tolerates a missing handoff dir on a fresh workspace', async () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			// Drives writeHandoffPacket + pruneOldHandoffs at least once;

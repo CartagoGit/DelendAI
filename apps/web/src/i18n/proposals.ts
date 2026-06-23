@@ -103,6 +103,11 @@ const en: IProposalGlossaryTranslations = {
 			short: 'legacy',
 			long: 'Imported proposal from the pre-f00016 workflow.',
 		},
+		plan: {
+			label: 'Plan',
+			short: 'plan',
+			long: 'Orchestrator proposal that aggregates other proposals and/or its own slices. Closes only when every contained proposal, sub-plan, and own slice is done + peer-reviewed (q00001).',
+		},
 	},
 };
 
@@ -204,6 +209,11 @@ const es: IProposalGlossaryTranslations = {
 			label: 'Legacy',
 			short: 'legacy',
 			long: 'Propuesta importada del flujo anterior a f00016.',
+		},
+		plan: {
+			label: 'Plan',
+			short: 'plan',
+			long: 'Propuesta orquestadora que agrupa otras propuestas y/o sus propios slices. Solo se cierra cuando cada propuesta, sub-plan y slice propio está hecho + revisado por pares (q00001).',
 		},
 	},
 };

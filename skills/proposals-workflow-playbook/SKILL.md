@@ -53,3 +53,67 @@ owns the files, wait for `notification_await_lock` or the
 `proposals_auto_work` should either return a claimable slice/proposal or
 an explicit idle reason. A silent empty response is a host assembly bug,
 not a valid workflow state.
+
+## Plans (q00001)
+
+A `type: plan` proposal (prefix `q`) is an **orchestrator container** that
+groups other proposals and/or carries its own executable slices. A plan
+cannot close (`status: done`) until every contained proposal, sub-plan
+and own slice is `done` + peer-reviewed.
+
+### Working with a plan
+
+1. Use `proposals_continue_proposal { planId: "q00001", mode: "plan" }`
+   to inspect its `## Slices` section and the `contains:` block.
+2. For each contained proposal, claim + close its slices as usual.
+3. For own slices, claim them via `agent_lock` like any other slice.
+4. When every child is done, call
+   `proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
+   runs the closure preflight; if any child is still open, it returns a
+   list of `blockers[]` you must resolve first.
+5. `proposals_proposal_transition { id: "q00001", to: "done" }` also
+   enforces the same rule (defence in depth) — both surfaces share the
+   `evaluatePlanClosure` engine so they can never disagree.
+
+### Sub-plans
+
+A plan's `contains.plans[]` may reference other plans. The closure
+evaluator recurses with cycle detection — a self-reference
+(`q00001 → q00002 → q00001`) surfaces a `self-cycle` blocker instead of
+infinite-looping.
+
+### Minimal template
+
+```yaml
+---
+id: q00042
+type: plan
+status: ready
+track: my-area
+contains:
+    proposals:
+        - { id: f00100, required: true }
+        - { id: f00101, required: true }
+    slices:
+        - { id: qs1, title: "Build the dashboard" }
+closureGate:
+    requirePeerReview: true
+    requireAllSlicesDone: true
+    requireAllChildrenDone: true
+globalGate: type
+---
+
+# q00042 — My orchestration plan
+
+## goal
+
+Ship f00100 and f00101 atomically as a single plan, with one extra
+dashboard slice on top.
+
+## Slices
+
+### qs1 — Build the dashboard
+- files: [apps/web/src/pages/plans/q00042.astro]
+- gate: type
+- status: pending
+```

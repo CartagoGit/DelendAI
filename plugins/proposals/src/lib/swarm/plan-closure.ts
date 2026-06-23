@@ -403,6 +403,8 @@ export const buildInMemoryResolver = (
 
 import { readFile } from 'node:fs/promises';
 
+import { parseProposalDocument } from '../proposals/proposal-document';
+
 export interface IDiskPlanResolverOptions {
 	/** Absolute path to `docs/proposals/index.json` (the registry). */
 	readonly indexPathAbs: string;

@@ -160,9 +160,16 @@ export const diffCapabilities = (
 			desiredAliases.add(alias);
 		}
 	}
-	const extra = existing
-		.map(stripPrefix)
-		.filter((id) => !desiredIds.has(id) && !desiredAliases.has(id));
+	const extra = existing.map(stripPrefix).filter((id) => {
+		if (desiredIds.has(id)) return false;
+		// Same prefix-style match used to classify `present` —
+		// `test_runner` is not "extra" if a desired tool aliases to
+		// `test`.
+		for (const alias of desiredAliases) {
+			if (id === alias || id.startsWith(`${alias}_`)) return false;
+		}
+		return true;
+	});
 
 	const summary =
 		missing.length === 0

@@ -40,6 +40,7 @@ import type { IGitRunner } from '../shared/git-runner';
 import {
 	buildDiskPlanChildrenResolver,
 	evaluatePlanClosure,
+	readOwnSliceStatusesFromDisk,
 } from '../swarm/plan-closure';
 import { parseProposalDocument } from '../proposals/proposal-document';
 

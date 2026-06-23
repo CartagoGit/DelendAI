@@ -35,6 +35,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 | `create_proposal` / `close_slice` | Author a proposal (frontmatter + disjoint slices); mark a slice done + release its lock. |
 | `proposal_review` | Peer-review loop: `submit` a finished slice → a **different** agent `approve`s (→ done) or `request_changes` (→ reworkable); repeat until no objection. |
 | `proposal_adopt` | Make an existing proposals folder followable: canonical layout + a scan of the real folder + a plan to organize it for mcp-vertex (read-only; you run the steps). |
+| `proposals_close_plan` | Close a `type: plan` proposal (prefix `q`). Refuses with a `blockers[]` list until every contained proposal, sub-plan, and own slice is done + peer-reviewed. `dryRun: true` runs the preflight without applying the transition. See **Plan-of-plans (q00001)** below. |
 
 ### Folder layout (`<docsDir>/proposals`, default `docs/mcp-vertex/proposals`)
 
@@ -130,5 +131,63 @@ import {
 	buildSwarmPaths,
 } from '@mcp-vertex/proposals/public';
 ```
+
+## Plan-of-plans (q00001)
+
+A **plan** is a first-class proposal of `type: plan` (prefix `q`, glyph
+🗂️) that acts as an orchestrator container. It groups references to
+other proposals, may reference other plans recursively, and/or carry
+its own executable `## Slices`. A plan cannot close (`status: done`)
+until **every** contained proposal, sub-plan, and own slice is
+`status: done` **AND** has been peer-reviewed.
+
+```yaml
+---
+id: q00042
+type: plan
+status: ready
+track: my-area
+contains:
+    proposals:
+        - { id: f00100, required: true }
+    slices:
+        - { id: qs1, title: "Build the dashboard" }
+closureGate:
+    requirePeerReview: true
+    requireAllSlicesDone: true
+    requireAllChildrenDone: true
+globalGate: type
+---
+```
+
+### Closure rule
+
+The `proposals_close_plan` tool (and `proposals_proposal_transition`,
+defence in depth) consults `evaluatePlanClosure(planId, frontmatter,
+resolver)` before applying the transition. The evaluator:
+
+- Walks `contains.proposals[]` and reports every child whose
+  `status !== 'done'`.
+- Recurses into `contains.plans[]` with a `visited: Set<string>` cycle
+  guard — a self-reference surfaces a `self-cycle` blocker.
+- Checks the plan's own `## Slices` block for `- status: pending` or
+  `- status: in-progress` lines.
+- Reads peer-review state from the proposal index (legacy entries
+  default to `true` to avoid a migration cliff).
+
+The full evaluator lives in
+[`src/lib/swarm/plan-closure.ts`](src/lib/swarm/plan-closure.ts) and is
+covered by
+[`tests/src/lib/swarm/plan-closure.spec.ts`](tests/src/lib/swarm/plan-closure.spec.ts)
+(12 vitest cases: child status, peer review, own slices, sub-plan
+recursion, cycle detection, mixed scenarios, `closureGate` overrides).
+
+### When to reach for a plan
+
+Use a `plan` when you need to ship 2+ proposals atomically and don't
+want a half-closed state visible on the board. A plan is NOT a
+replacement for a single proposal; if your work is one proposal with
+its own slices, just use that — `## Slices` already gives you parallel
+work for free.
 
 BSD-3-Clause © Cartago

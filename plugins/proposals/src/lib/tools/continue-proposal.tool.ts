@@ -23,6 +23,10 @@ import {
 } from '../contracts/constants/proposal-glossary.constant';
 import { parseProposalFrontmatter } from '../shared/proposal-frontmatter';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
+import {
+	extractYamlBlock,
+	parseFrontmatterBlock,
+} from '../proposals/frontmatter-parser';
 import { LEGACY_ALIAS_PREFIX } from '../cascade/cascade-priority';
 import type {
 	ICascadePriorityResolver,
@@ -158,6 +162,7 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	executionGuide: EXECUTION_GUIDE_SCHEMA.optional(),
 	cascadeTrace: CASCADE_TRACE_SCHEMA.optional(),
 	error: z.string().optional(),
+	blockedBy: z.array(z.string()).optional(),
 });
 
 // f00016 S4: a proposal already on the new state machine is actionable by
@@ -345,6 +350,59 @@ const resolveDoc = async (
 			nextAction: 'Run sync_proposals to reconcile the index.',
 		};
 	return { id: entry.id, markdown: md };
+};
+
+/**
+ * q00001: surface a `plan` proposal's open children so the orchestrator
+ * knows why the plan is not closable yet. Returns an empty list for
+ * non-plan proposals (no behaviour change for the 12 existing kinds).
+ */
+const blockedByFor = async (
+	entry: IIndexEntry,
+	indexPath: string,
+): Promise<readonly string[]> => {
+	const docPath = join(dirname(indexPath), entry.file);
+	const markdown = await readTextOrNull(docPath);
+	if (markdown === null) return [];
+	const block = extractYamlBlock(markdown);
+	if (block === null) return [];
+	const fm = parseFrontmatterBlock(block);
+	if (fm.type !== 'plan') return [];
+	const entries = await readIndex(indexPath);
+	const byId = new Map(entries.map((e) => [e.id, e.status]));
+	const readId = (raw: unknown): string | null => {
+		if (typeof raw === 'string') return raw.trim() || null;
+		if (raw !== null && typeof raw === 'object') {
+			const id = (raw as Record<string, unknown>).id;
+			if (typeof id === 'string') return id.trim() || null;
+			if (typeof id === 'number') return String(id);
+		}
+		return null;
+	};
+	const collect = (list: readonly unknown[]): string[] => {
+		const out: string[] = [];
+		for (const raw of list) {
+			const id = readId(raw);
+			if (id === null) continue;
+			const status = byId.get(id);
+			if (status === undefined || status === 'done') continue;
+			out.push(id);
+		}
+		return out;
+	};
+	const containsRaw =
+		fm.contains !== null &&
+		typeof fm.contains === 'object' &&
+		!Array.isArray(fm.contains)
+			? (fm.contains as Record<string, unknown>)
+			: null;
+	const proposals = Array.isArray(containsRaw?.proposals)
+		? (containsRaw.proposals as readonly unknown[])
+		: [];
+	const plans = Array.isArray(containsRaw?.plans)
+		? (containsRaw.plans as readonly unknown[])
+		: [];
+	return [...collect(proposals), ...collect(plans)];
 };
 
 /**
@@ -590,6 +648,11 @@ export const runContinueProposal = async (
 			'For parallel work, call mode:"plan" then mode:"claim".',
 			'Claim files with agent_lock before editing; release when done.',
 		],
+		...(next === undefined
+			? {}
+			: {
+					blockedBy: await blockedByFor(next, options.indexPathAbs),
+				}),
 	});
 };
 

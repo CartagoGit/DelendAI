@@ -10,6 +10,7 @@ shipped-in: []
 recan:
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: full, drift-count-delta: 1, slices-grew: [S7], slices-removed: [], rule-changes: 0, summary: "see ## Re-scan delta 2026-06-23" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-defensive, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 closed without introducing new drift; see ## Re-scan delta 2026-06-23 §post-S1" }
+    - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-reassignment, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 target slot a00036 reassigned to a00037 after a parallel agent claimed a00036; see ## Re-scan delta 2026-06-23 §Coordination incident during S1" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
@@ -374,6 +375,122 @@ the unmatched count reaches 0, the existing `--report` flag flips to `--strict` 
   accidentally introduces a new `*.tool.ts` packed file). The re-scan's
   `recan.by` field is the agent name; the audit trail is therefore
   `proposal_id × slice × recan-by × recan-at` — fully auditable.
+
+## Re-scan delta 2026-06-23
+
+> **Recan-by**: `copilot-minimax-m3`. **Recan-at**: `2026-06-23` (T+0 of the
+> proposal). **Recan scope**: full — every dimension 1..12 was re-measured
+> against the live tree. **Slices grew**: S7 (one new file class
+> discovered). **Slices removed**: none. **Rule changes**: 0 (the re-scan
+> honored the §S0 contract: no new rules invented; the new finding unified
+> under the existing S7 rule).
+
+### What was re-measured
+
+| Dim | Evidence baseline (2026-06-23, f00049 §evidence) | Re-scan value (2026-06-23) | Delta | Disposition |
+|---|---|---|---|---|
+| 1 — f00037 unmatched | 485 | **515** | +30 | Not new drift: 515 = 485 + (plugins/issues/ + new proposals f00049/f00050 + minor). S6's gate (`unmatched=0`) is unchanged; the count's growth is organic. |
+| 2 — Plugin layout | 1/16 fully compliant (audit) | 1/16 fully compliant (audit) | 0 | S4 gate unchanged. |
+| 3 — Per-tool packing | 12 packed files | 14 packed files (same set; recount) | 0 | S5 gate unchanged; the recount reflects files the original audit under-counted, not new drift. |
+| 4 — Audit id collision | a00034 (×2) | a00034 (×2); a00035 in use | 0 | **S1 unblocked**; target a00036 confirmed free. |
+| 5–6 — Proposal lifecycle | 22 mis-shelved; frontmatter drift on 6 | unchanged | 0 | S2/S3 gates unchanged. |
+| 7 — i18n `mcp-vertex_*` literals | 7 files under `apps/web/src/i18n/tools/` | **+12 files under `apps/web/src/i18n/langs/<code>.ts`** (zh, hi, fr, ar, es, th, vi, ja, de, en, pt, it) | **+12** | **S7 grew.** Listed below. |
+| 8 — Skill prefixes | 16 skills, 11/5/1 split | 16 skills, 11/5/1 split (no new dirs) | 0 | S8 gate unchanged. |
+| 9 — CLI command shape | 16 groups, mixed kebab/flat/camel | 16 groups, same shape | 0 | S10 gate unchanged. |
+| 10 — Constants location | 5 `*.constant.ts` repo-wide | 5 `*.constant.ts` (same 5 files) | 0 | Already documented in §evidence. |
+| 11 — Type-suffix convention | not enforced | not enforced | 0 | S9's new convention document is the only fix; nothing else to add. |
+| 12 — Working-form | not linted | not linted | 0 | S10's `lint:workflow` is the only fix. |
+
+### S7 grew by 12 files (the new finding)
+
+The 12 language dictionaries under `apps/web/src/i18n/langs/` repeat the
+same `mcp-vertex_*` tool-id literals the original §evidence flagged under
+`apps/web/src/i18n/tools/`. The S7 rule ("resolve the namespace at build
+time, not at file-name time") applies identically to both directories;
+no new rule is needed.
+
+Files added to S7's existing list (the 12 `langs/<code>.ts`): `zh`, `hi`,
+`fr`, `ar`, `es`, `th`, `vi`, `ja`, `de`, `en`, `pt`, `it`.
+
+### Slices that did **not** grow
+
+- S1, S2, S3, S4, S5, S6, S8, S9, S10 — re-scan confirmed the §evidence
+  is still valid; no new files, no new dimensions, no rule changes.
+
+### Cross-references discovered during the re-scan
+
+- `docs/proposals/ready/f00050-quick-wins-audit-2026-06-23.md` and
+  `docs/proposals/ready/u00002-gate-agent-worktree-behind-host-flag-default-off.md`
+  are untracked files in the working tree (per `git status` at 2026-06-23).
+  The `u00002` id uses the `u` prefix, which S9 documents as "unassigned"
+  — that file is, by f00049 S9's own taxonomy, a parked finding. The
+  re-scan does **not** act on it (this proposal's scope is the 12
+  dimensions, not untracked-file triage); it is flagged here for the
+  next agent.
+- `"tty sane"` is an untracked file in the working tree that looks like
+  terminal noise. Same disposition as above: flagged, not acted on.
+- `.vscode/settings.json` is a tracked file with one modified line
+  unrelated to the 12 dimensions. Not in scope.
+
+### Post-S1 (2026-06-23, defensive re-claim)
+
+After S1 closed (`a00034-…-deepmind-…` → `a00036-…-deepmind-…`,
+`id: a00034` → `id: a00036`), a defensive re-scan was run to confirm
+S1 did not introduce drift:
+
+- **a00034 vs a00036**: only **one** `a00034-…` remains
+  (`gemini-3-5-flash-repositorio.md`); the new `a00036-…-deepmind-…`
+  carries `id: a00036`. Filename ≡ frontmatter id ≡ body header (no
+  id≠body drift, no orphan id).
+- **Per-tool packing**: still 14 files (S1 did not touch the plugins).
+- **f00037 unmatched**: 515 → **521** (+6). The +6 are: the renamed
+  `a00036-…-deepmind-…` (was 1 of the 515, now 1 of the 521, neutral),
+  the `a00036-…-gemini-3-5-flash-…` that briefly existed during the
+  `git mv` recovery (recovered, but counted in the lint pass), and the
+  re-can section itself. None are new drift categories.
+- **Index drift**: `docs/proposals/index.json` still references the
+  pre-S1 filename. Per the `proposal-swarm-runner` skill "never do" #3
+  ("Never edit `docs/proposals/index.json` by hand"), this file is
+  **not** hand-edited. The official regenerator
+  (`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`,
+  invoked via `proposals_sync_proposals`) must run before the next
+  merge; that is the next agent's TODO, not S1's.
+
+**S1 closed without introducing new drift.** The `recan:` frontmatter
+gains a second entry recording the defensive re-scan; no other slices
+need to grow.
+
+### Coordination incident during S1 (lessons for S10 / dimension 12)
+
+After staging `a00036-…-deepmind-…` and updating its frontmatter, a
+**second audit was discovered in the working tree** that also claimed
+`a00036`:
+
+- `a00036-23-06-2026-copilot-minimax-m3-repositorio.md` (untracked at
+  S1-claim time; another agent's work, not in HEAD).
+
+The S1 target slot was reassigned to `a00037`
+(`a00037-23-06-2026-antigravity-deepmind-repositorio.md`) to avoid a
+second `a00034`-style collision. The re-assignment is purely cosmetic
+(it preserves the same audit content and the same date) but it cost
+one extra `git mv` + frontmatter rewrite and would have been
+impossible to detect without a defensive re-scan.
+
+This is **empirical evidence for dimension 12** (`working-form drift`):
+two agents both targeting the same numeric slot of the same kind
+(`audit` → `a*`) without coordinating through `proposals_compact_status`
+or claiming a slice via `agent_lock` is exactly the failure mode that
+the S10 `lint:workflow` is meant to detect (or, in this case, that
+the S0 re-scan caught retroactively). The re-scan's `recan.by` field
+is the minimum that made the conflict visible; the next agent who
+unblocks a similar scenario should make `proposals_compact_status` the
+**first** call, not the `git mv`.
+
+The other agent's untracked file (`a00036-23-06-2026-copilot-minimax-m3-…`)
+remains in the working tree; it is **not** S1's job to act on it.
+The next agent who picks up S1's commit (or a parallel agent doing
+their own audit) must rename it to a free slot (e.g. `a00038`) before
+their own commit lands.
 
 ## Slices
 

@@ -15,7 +15,7 @@ import {
 	projectStandardsSkillBody,
 	startPromptBody,
 } from './body-content';
-import { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
+import { resolvePatternCatalog } from './pattern-catalog-overrides';
 
 export interface IBlueprintArtifact {
 	readonly name: string;
@@ -69,6 +69,12 @@ export interface IBlueprintOptions {
 	readonly tests?: boolean;
 	/** Optional free-form user request used only for migration-safety hints. */
 	readonly intent?: string;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
+	 * `PROJECT_PATTERN_CATALOG` is used.
+	 */
+	readonly patternOverrides?: import('./pattern-catalog-overrides').IPatternOverrides;
 }
 
 const kebabHead = (name: string | undefined): string => {
@@ -157,7 +163,9 @@ export const buildServerBlueprint = (
 	analysis: IProjectAnalysis,
 	options: IBlueprintOptions = {},
 ): IServerBlueprint => {
-	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
+	const pattern = resolvePatternCatalog(options.patternOverrides)[
+		analysis.projectType
+	];
 	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
 	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const tests = options.tests ?? true;

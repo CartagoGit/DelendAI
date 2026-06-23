@@ -100,6 +100,14 @@ export type {
 	IProposalTransitionArgs,
 } from '../lib/tools/proposal-transition.tool';
 export {
+	buildClosePlanRegistration,
+	runClosePlan,
+} from '../lib/tools/close-plan.tool';
+export type {
+	IClosePlanArgs,
+	IClosePlanToolOptions,
+} from '../lib/tools/close-plan.tool';
+export {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../lib/proposals/proposal-id-allocator';

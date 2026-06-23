@@ -119,7 +119,26 @@ const detectTestRunner = (
 };
 
 const QUALITY_ROLES = ['lint', 'test', 'build', 'typecheck'] as const;
+const QUALITY_ROLE_SET = new Set<string>(QUALITY_ROLES);
+const SCRIPT_BLACKLIST = new Set([
+	'prepare',
+	'postinstall',
+	'preinstall',
+	'prepublish',
+	'prepack',
+	'postpack',
+	'preversion',
+	'postversion',
+	'prepublishOnly',
+]);
 
+/**
+ * Pick the scripts worth surfacing to the agent: any role that looks
+ * like a quality gate (lint, test, build, typecheck + common aliases)
+ * AND anything that doesn't look like a lifecycle hook. The agent
+ * uses the picked set to derive `run_<role>` tools and the drift
+ * detector uses it to flag new/removed scripts — see drift.ts.
+ */
 const pickScripts = (
 	scripts: Record<string, string>,
 ): Record<string, string> => {
@@ -130,6 +149,15 @@ const pickScripts = (
 	// common aliases
 	if (out.typecheck === undefined && scripts['type-check'] !== undefined) {
 		out.typecheck = scripts['type-check'] as string;
+	}
+	// Anything else that isn't a lifecycle hook is potentially a
+	// quality gate (e2e, format, docs, dev, start, …) and worth
+	// surfacing. This is the source of `run_e2e`, `run_format` etc.
+	for (const [role, command] of Object.entries(scripts)) {
+		if (SCRIPT_BLACKLIST.has(role)) continue;
+		if (out[role] !== undefined) continue;
+		if (role.startsWith('pre') || role.startsWith('post')) continue;
+		out[role] = command;
 	}
 	return out;
 };

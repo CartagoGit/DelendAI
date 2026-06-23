@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import {
 	scaffoldClientFiles,
 	scaffoldHostProject,
@@ -13,13 +14,30 @@ import { analyzeProject } from './analyze-project';
 import type { IFileReader } from './analyze-project';
 import { buildBlueprintFiles, buildServerBlueprint } from './build-blueprint';
 import { recommendServerPlan } from './recommend-plan';
+import { diffAnalysis } from './drift';
+import type { IDriftChange, IDriftReport } from './drift';
+import { loadDriftSnapshot, saveDriftSnapshot } from './drift-store';
+import type { IPatternOverrides } from './pattern-catalog-overrides';
 
 export interface IBootstrapToolOptions {
 	readonly workspace: IWorkspacePathProvider;
 	/** Namespace for the bootstrap tools, e.g. `mcpvertex`. */
 	readonly namespacePrefix: string;
+	/**
+	 * Workspace-relative cache root, e.g. `.cache/mcp-vertex`. The
+	 * `drift_check` tool uses it to read/write the last-analysis
+	 * snapshot. Defaults to `.cache/mcp-vertex` when omitted.
+	 */
+	readonly cacheDir?: string;
 	/** Override the reader (tests); default reads from the workspace. */
 	readonly reader?: IFileReader;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). Forwarded to `analyze_project`
+	 * and `plan_mcp_project` so the bootstrap blueprint adapts to
+	 * host-defined project types.
+	 */
+	readonly patternOverrides?: IPatternOverrides;
 }
 
 /** A read-only reader backed by the workspace filesystem. */
@@ -154,6 +172,32 @@ export const SERVER_BLUEPRINT_SCHEMA = z.object({
 	notes: z.array(z.string()),
 });
 
+// f00051 S3 — `drift_check` output schema. Mirrors `IDriftReport` (drift.ts).
+export const DRIFT_REPORT_SCHEMA = z.object({
+	hasDrift: z.boolean(),
+	changes: z.array(
+		z.object({
+			kind: z.enum([
+				'script-added',
+				'script-dropped',
+				'framework-changed',
+				'language-changed',
+				'monorepo-changed',
+				'package-manager-changed',
+				'test-runner-changed',
+				'mcp-server-added',
+				'mcp-server-dropped',
+				'ci-changed',
+				'agent-config-changed',
+			]),
+			summary: z.string(),
+		}),
+	),
+	isFirstSnapshot: z.boolean(),
+	lastSnapshotAt: z.string().nullable(),
+	summary: z.string(),
+});
+
 const json = (value: unknown) => ({
 	content: [{ type: 'text' as const, text: JSON.stringify(value) }],
 	// MCP modern structuredContent so the declared outputSchema is satisfied
@@ -209,6 +253,9 @@ export const buildBootstrapToolRegistrations = (
 							: {}),
 						...(args.docsDir !== undefined
 							? { docsDir: args.docsDir }
+							: {}),
+						...(options.patternOverrides !== undefined
+							? { patternOverrides: options.patternOverrides }
 							: {}),
 					};
 					return json({
@@ -305,6 +352,9 @@ export const buildBootstrapToolRegistrations = (
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
 							: {}),
+						...(options.patternOverrides !== undefined
+							? { patternOverrides: options.patternOverrides }
+							: {}),
 					});
 					return json({
 						blueprint,
@@ -315,5 +365,67 @@ export const buildBootstrapToolRegistrations = (
 		},
 	};
 
-	return [analyze, planServer, create];
+	const driftCheck: IToolRegistration = {
+		id: 'drift_check',
+		summary:
+			'Diff the current project analysis against the last persisted snapshot — flags new scripts, dropped deps, framework changes and the missing tools they imply.',
+		tags: ['bootstrap', 'drift'],
+		register: async (server) => {
+			server.registerTool(
+				`${prefix}_drift_check`,
+				{
+					outputSchema: DRIFT_REPORT_SCHEMA,
+					description:
+						'Read-write. Compare the current project analysis against the last snapshot persisted under `<cacheDir>/drift/last-analysis.json` and return a structured report of what changed (new/removed scripts, framework upgrades, CI changes, MCP server presence, …). Persists the new snapshot at the end so the next call sees it as the baseline. Use this after a code change to find out whether the bootstrap plan is now stale.',
+					inputSchema: z.object({
+						persist: z
+							.boolean()
+							.optional()
+							.describe(
+								'Default true: write the new analysis as the new baseline. Pass false to peek without updating.',
+							),
+					}),
+				},
+				async (args: { persist?: boolean | undefined }) => {
+					const analysis = analyzeProject(reader);
+					const persist = args.persist ?? true;
+					const { snapshot, corruptBackupPath } =
+						await loadDriftSnapshot(
+							options.workspace,
+							options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+						);
+					const baseReport: IDriftReport = diffAnalysis(
+						analysis,
+						snapshot?.analysis,
+						snapshot?.savedAt ?? null,
+					);
+					if (persist) {
+						await saveDriftSnapshot(
+							options.workspace,
+							options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+							analysis,
+						);
+					}
+					// `corruptBackupPath` is a private signal (not part of
+					// the public outputSchema) so we surface it as a
+					// diagnostic line in the text payload, where the agent
+					// can still see it without breaking schema validation.
+					const report: IDriftReport = baseReport;
+					const text =
+						corruptBackupPath !== null
+							? `${JSON.stringify(report)}\n\n# diagnostic: previous snapshot was corrupt; preserved at ${corruptBackupPath}`
+							: JSON.stringify(report);
+					return {
+						content: [{ type: 'text' as const, text }],
+						structuredContent: report as unknown as Record<
+							string,
+							unknown
+						>,
+					};
+				},
+			);
+		},
+	};
+
+	return [analyze, planServer, create, driftCheck];
 };

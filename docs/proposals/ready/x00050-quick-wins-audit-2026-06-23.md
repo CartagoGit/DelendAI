@@ -1,5 +1,5 @@
 ---
-id: f00050
+id: x00050
 status: ready
 type: proposal
 track: repo-hygiene+ci+lint+docs+extensions/vscode
@@ -14,25 +14,13 @@ related:
     - f00049 # conventions unification — S1 also renumbers the duplicate a00034 (this proposal's S3 is the minimal subset; coordinate so only one lands)
     - f00047 # apps/shared i18n — owns the TODO(f00047) markers this proposal's S7 resolves
     - f00037 # file/folder conventions — context for the lint:* wiring in S4
-ownership:
-    - { agent: implementation_runner, task: 'S1: fix corrupted validate script (runs the suite ~4x today)' }
-    - { agent: implementation_runner, task: 'S2: delete 5 root scratch files' }
-    - { agent: implementation_runner, task: 'S3: renumber duplicate a00034 + add lint:audit-ids' }
-    - { agent: implementation_runner, task: 'S4: wire lint:tools/proposals/scaffolds/agents into validate' }
-    - { agent: implementation_runner, task: 'S5: add engines + packageManager to root package.json' }
-    - { agent: implementation_runner, task: 'S6: declare activationEvents in extensions/vscode/package.json' }
-    - { agent: implementation_runner, task: 'S7: resolve the two TODO(f00047) hardcoded-language markers' }
-    - { agent: implementation_runner, task: 'S8: add dependabot.yml + CodeQL workflow' }
-    - { agent: implementation_runner, task: 'S9: reconcile the plugin count (9/14/16) against the live registry' }
-    - { agent: implementation_runner, task: 'S10: navigable index for docs/troubleshooting/ + docs/proposals/done/audits/' }
-globalGate: validate
 acceptance:
     - { command: bun run validate, expect: exit0 }
     - { command: bun run lint:tools, expect: exit0 }
     - { command: bun run lint:proposals, expect: exit0 }
 ---
 
-# f00050 — Quick wins from the 2026-06-23 audit
+# x00050 — Quick wins from the 2026-06-23 audit
 
 ## goal
 
@@ -63,18 +51,7 @@ work lands.
 - **No new public types.** S6/S7 stay inside `extensions/vscode` (the only host that may
   import `vscode`); S5 only adds metadata fields to the root manifest.
 
-## serialization note
-
-Four slices edit the **root `package.json`** (S1 fixes the `validate` chain, S3 adds the
-`lint:audit-ids` script, S4 wires the `lint:*` scripts into `validate`, S5 adds
-`engines`/`packageManager`). They are intentionally serialized via `depends_on` so the
-`overlap-in-progress` guard claims them one at a time. The `planDisjointnessIssues` report
-will list `package.json` overlaps for S1/S3/S4/S5 by design — this is the mechanism that
-prevents two agents racing on the manifest, not a defect.
-
-## Slices
-
-- global_gate: none
+## slices
 
 ### S1 — Fix the corrupted `validate` script
 
@@ -196,29 +173,29 @@ prevents two agents racing on the manifest, not a defect.
     - "docs/proposals/done/audits/ has a README that links all 36 audits (id, date, runner/model, scope)"
     - "every link in both indexes resolves to an existing file"
 
-## migration order
+## acceptance
 
-```
-S1 ──► S2
-  │
-  ├──► S3 ──► S4 ──► S5      (the package.json chain — claimed one at a time)
-  │
-  ├──► S6
-  ├──► S7
-  ├──► S8
-  ├──► S9
-  └──► S10
-```
+Each slice ships with `bun run validate` green. Whole proposal done when:
 
-S1 ships first (it gates every other slice's `bun run validate` acceptance). S3 → S4 → S5
-are serialized on the root `package.json`. S2, S6, S7, S8, S9, S10 are independent and
-claimable in parallel by separate worktrees once S1 is `done`.
+- `bun run typecheck` exits 0.
+- `bun run lint` exits 0 (biome + vscode i18n).
+- `bun run lint:cli-imports`, `lint:cli-coverage`, `lint:cli:i18n` exit 0.
+- `bun run lint:scss`, `lint:brand-hex`, `lint:setup` exit 0.
+- `bun run lint:tools`, `lint:proposals`, `lint:scaffolds`, `lint:agents`, `lint:audit-ids` exit 0 (newly wired in S4).
+- `bun run test` runs the **full** vitest suite exactly once (S1 invariant).
 
-## Definition of done for the whole proposal
+## notes
 
-`bun run validate` is green and all 10 slices (S1–S10) are `done`.
+Four slices edit the **root `package.json`** (S1 fixes the `validate` chain, S3 adds the
+`lint:audit-ids` script, S4 wires the `lint:*` scripts into `validate`, S5 adds
+`engines`/`packageManager`). They are intentionally serialized via `depends_on` so the
+`overlap-in-progress` guard claims them one at a time.
 
-## see also
+Migration order: S1 first (gates every other slice's `bun run validate` acceptance); S3 →
+S4 → S5 are serialized on the root `package.json`; S2, S6, S7, S8, S9, S10 are independent
+and claimable in parallel by separate worktrees once S1 is `done`.
+
+### see also
 
 - [`f00049`](f00049-conventions-unification-r10-slices.md) — conventions unification; its
   S1 also renumbers the duplicate `a00034` (coordinate with this proposal's S3).
