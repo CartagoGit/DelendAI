@@ -34,6 +34,7 @@ import { conventionsCommands } from './groups/conventions';
 import { coreExtraCommands } from './groups/core';
 import { depsCommands } from './groups/deps';
 import { docsCommands } from './groups/docs';
+import { doctorCommands } from './groups/doctor';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';
@@ -456,4 +457,5 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	...webFetchCommands,
 	...statusMarkerCommands,
 	...conventionsCommands,
+	...doctorCommands,
 ];

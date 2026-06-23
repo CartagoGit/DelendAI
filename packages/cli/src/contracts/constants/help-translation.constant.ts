@@ -153,6 +153,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'List the files that need a canonical rename (migration backlog).',
 	'conventions apply':
 		'Guarded apply: reports outstanding violations (no blind rename).',
+	doctor: 'Sectioned health report (env, config, plugins, tools) + exit code.',
+	completion: 'Print a shell-completion script (bash|zsh|fish) for mcpv.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
