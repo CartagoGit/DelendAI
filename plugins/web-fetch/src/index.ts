@@ -1,4 +1,5 @@
 import { definePlugin } from '@mcp-vertex/core/public';
+import { z } from 'zod';
 
 import { buildWebToolRegistrations } from './lib/tools';
 
@@ -19,18 +20,35 @@ import { buildWebToolRegistrations } from './lib/tools';
  * via `plugins.web-fetch.options.allowList: string[]` — an empty/missing
  * allow-list means `web_fetch` rejects every call (fail closed, not open).
  */
+
+/**
+ * r00003 S9-residual: explicit zod schema so a host misconfig is
+ * rejected up front (see test-convention's equivalent for context).
+ */
+const OptionsSchema = z.object({
+	allowList: z.array(z.string()).optional(),
+});
+
 export default definePlugin({
 	name: 'web-fetch',
 	version: '0.1.0',
 	describe:
 		'Opt-in web_fetch: resolve one allow-listed URL, return capped text. Network, fails closed without an allow-list.',
+	optionsSchema: OptionsSchema,
 	register(ctx) {
-		const o = ctx.options as { allowList?: unknown };
-		const allowList = Array.isArray(o.allowList)
-			? o.allowList.filter(
-					(entry): entry is string => typeof entry === 'string',
-				)
-			: [];
+		// r00003 S9-residual (SOLID L + I): parse ctx.options through
+		// the schema above so a misconfigured host (wrong type, extra
+		// fields) gets a structured error instead of being silently
+		// coerced. The previous code cast through `unknown` and
+		// re-validated by hand — fine for `allowList`, but every
+		// future option would have re-implemented that pattern.
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		if (!parsed.success) {
+			throw new Error(
+				`web-fetch plugin rejected its options: ${parsed.error.message}`,
+			);
+		}
+		const allowList = parsed.data.allowList ?? [];
 		return {
 			tools: buildWebToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,

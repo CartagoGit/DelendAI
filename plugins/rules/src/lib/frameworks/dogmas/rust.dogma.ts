@@ -16,6 +16,7 @@ import type { IDogmaAdapter } from '../contracts';
  */
 export const RUST_DOGMA: IDogmaAdapter = {
 	language: 'rs',
+	displayName: 'Rust',
 	version: 'rust-2024',
 	packageManager: 'cargo',
 	ownership: 'borrow-checker',

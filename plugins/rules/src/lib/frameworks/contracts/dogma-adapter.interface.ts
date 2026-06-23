@@ -31,6 +31,19 @@ export interface IDogmaAdapter
 		ITestingDogma {
 	/** Which language this dogma describes. */
 	readonly language: TPresetLanguage;
+	/**
+	 * Human-readable language name (e.g. `Rust` for `rs`,
+	 * `Python` for `py`). Used by the `stringDogmaRenderer`
+	 * so the rendered payload is LLM-friendly ("Rust (cargo,
+	 * rust-2024): …") rather than carrying opaque ISO tags
+	 * ("rs (cargo, rust-2024): …"). Defaults to the ISO tag
+	 * when the data file does not provide one.
+	 *
+	 * Single Responsibility: presentation concern lives on
+	 * the data object, not in the renderer (which stays
+	 * format-agnostic and never branches by language).
+	 */
+	readonly displayName?: string;
 	/** Package manager / build tool (e.g. `cargo`, `npm`, `pip`). */
 	readonly packageManager: string;
 	/**

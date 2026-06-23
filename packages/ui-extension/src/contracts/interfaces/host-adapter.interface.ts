@@ -44,6 +44,17 @@ export interface IWebviewPanel {
 		html: string;
 		readonly options: IWebviewOptions;
 		setHtml(html: string): void;
+		/**
+		 * Receive every `postMessage` from this webview. Returns a
+		 * disposable that, when invoked, removes the listener. Optional
+		 * because host simulators (test fakes) often don't model the
+		 * full message bus.
+		 */
+		readonly onDidReceiveMessage?: (
+			cb: (msg: unknown) => void | Promise<void>,
+		) => IDisposable;
+		/** Send a message FROM the host TO the webview. */
+		readonly postMessage?: (msg: unknown) => Promise<void>;
 	};
 	readonly visible: boolean;
 	reveal(viewColumn?: number): void;
@@ -152,6 +163,12 @@ export interface IHostAdapter {
 
 	// ---- assets ---------------------------------------------------------------
 
-	/** URI for an asset inside the host bundle (e.g. `media/logo.svg`). */
-	asWebviewUri(relativePath: string): string;
+	/**
+	 * URI for an asset inside the host bundle (e.g. `media/logo.svg`).
+	 * Hosts that resolve URIs through a live webview (VS Code 1.56+)
+	 * should pass the panel so the result honours `localResourceRoots`.
+	 * Hosts without a panel handle return a relative URI and let the
+	 * CSP surface the failure.
+	 */
+	asWebviewUri(relativePath: string, panel?: IWebviewPanel): string;
 }
