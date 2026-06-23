@@ -41,7 +41,6 @@ import {
 import type {
 	ISearchBackend,
 	ISearchHit,
-	ISearchOptions,
 	ISearchResult,
 } from './search-engine.types';
 

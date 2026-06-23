@@ -5,7 +5,7 @@
  */
 export { default } from '../index';
 
-export { webFetch, isHostAllowed } from './services/engine';
+export { webFetch, isHostAllowed } from '../lib/services/engine';
 export type {
 	IWebFetchOptions,
 	IWebFetchResult,
@@ -13,7 +13,7 @@ export type {
 	IWebFetchFailure,
 	IWebFetchReason,
 	IFetchLike,
-} from './services/engine';
+} from '../lib/services/engine';
 export { buildWebToolRegistrations } from '../lib/tools';
 export type { IWebToolOptions } from '../lib/tools';
 

@@ -39,7 +39,6 @@ import {
 	InvalidSearchPatternError,
 	type ISearchBackend,
 	type ISearchHit,
-	type ISearchOptions,
 	type ISearchResult,
 } from './search-engine.types';
 

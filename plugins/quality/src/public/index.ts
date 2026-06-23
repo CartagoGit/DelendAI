@@ -8,20 +8,23 @@ export { default } from '../index';
 export {
 	createCommandRunner,
 	runScope,
-} from './services/runner';
+} from '../lib/services/runner';
 export type {
 	ICommandRunner,
 	ICommandResult,
 	IScopeResult,
 	IScopeCommand,
-} from './services/runner';
-export { resolveScopes } from './services/scopes';
-export type { IScopeMap } from './services/scopes';
+} from '../lib/services/runner';
+export { resolveScopes } from '../lib/services/scopes';
+export type { IScopeMap } from '../lib/services/scopes';
 export {
 	evaluateCommandPolicy,
 	commandBinary,
-} from './services/command-policy';
-export type { ICommandPolicy, IPolicyVerdict } from './services/command-policy';
+} from '../lib/services/command-policy';
+export type {
+	ICommandPolicy,
+	IPolicyVerdict,
+} from '../lib/services/command-policy';
 export { buildQualityToolRegistrations } from '../lib/tools';
 export type { IQualityToolOptions } from '../lib/tools';
 

@@ -19,7 +19,7 @@ import {
 	createFileSystemBatchWriter,
 	type IBatchOperation,
 	type IBatchWriteResult,
-} from '../../../src/lib/shared/batch-atomic-writer';
+} from '../../../../src/lib/shared/batch-atomic-writer';
 
 let workspace: string;
 
