@@ -17,7 +17,7 @@ import {
 	createCommandRunner,
 	runScope,
 	type ICommandRunner,
-} from '@mcp-vertex/quality/lib/runner';
+} from '@mcp-vertex/quality/lib/services/runner';
 
 describe('createCommandRunner (real spawn)', () => {
 	let cwd = '';

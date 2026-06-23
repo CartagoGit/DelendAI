@@ -8,14 +8,14 @@ import {
 	listDeps,
 	checkDeps,
 	checkOutdated,
-} from '@mcp-vertex/deps/lib/engine';
+} from '@mcp-vertex/deps/lib/services/engine';
 import {
 	listPolyglotDeps,
 	parseCargoToml,
 	parseGoMod,
 	parsePyprojectToml,
-} from '@mcp-vertex/deps/lib/polyglot';
-import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools';
+} from '@mcp-vertex/deps/lib/services/polyglot';
+import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/services/tools';
 import plugin from '@mcp-vertex/deps';
 import type {
 	IMcpPluginContext,

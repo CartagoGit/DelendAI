@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ICommandRunner } from '@mcp-vertex/quality/lib/runner';
+import type { ICommandRunner } from '@mcp-vertex/quality/lib/services/runner';
 import {
 	buildRunAllToolRegistration,
 	runAllScopes,
-} from '@mcp-vertex/quality/lib/run-all';
+} from '@mcp-vertex/quality/lib/services/run-all';
 import type { IFileReader } from '@mcp-vertex/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({

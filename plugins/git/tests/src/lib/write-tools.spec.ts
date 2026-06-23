@@ -16,9 +16,9 @@ import {
 	isConventionalCommitMessage,
 	runGitCommit,
 	runGitPush,
-} from '@mcp-vertex/git/lib/write-tools';
-import { createGitRunner } from '@mcp-vertex/git/lib/git';
-import type { IGitRunner } from '@mcp-vertex/git/lib/git';
+} from '@mcp-vertex/git/lib/services/write-tools';
+import { createGitRunner } from '@mcp-vertex/git/lib/services/git';
+import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
 
 const execFileAsync = promisify(execFile);
 

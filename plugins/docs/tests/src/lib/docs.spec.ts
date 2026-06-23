@@ -4,7 +4,11 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { listDocs, readDoc, extractTitle } from '@mcp-vertex/docs/lib/engine';
+import {
+	listDocs,
+	readDoc,
+	extractTitle,
+} from '@mcp-vertex/docs/lib/services/engine';
 import plugin from '@mcp-vertex/docs';
 import type {
 	IMcpPluginContext,
