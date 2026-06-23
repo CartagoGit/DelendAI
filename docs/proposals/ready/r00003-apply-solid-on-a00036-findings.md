@@ -198,7 +198,15 @@ Their working tree (uncommitted, unmerged) contains:
 
 - **Files**: [`plugins/proposals/src/lib/agents/loop-detector-service.ts`](plugins/proposals/src/lib/agents/loop-detector-service.ts) (lines 513-514).
 - **SOLID**: D (no more direct `node:fs` in the hot path).
-- **Status**: pending. **GATED on the parallel-agent `loop-detector-config.ts` merge landing first.**
+- **Status**: done. The parallel-agent F1 refactor (commit `410131b`,
+  "update loop detector config to use async file reading") already
+  replaced the residual `existsSync`/`readFileSync` on lines 513-514 with
+  `await readFile`; the only remaining sync method (`isAgentStuck`) is the
+  documented core-contract exception backed by the `lockCache` TTL, not an
+  I/O call. Per this slice's own escape clause ("if the parallel agent's
+  refactor already covers 513-514, this slice collapses to verify the gate
+  — no code change") S6 is closed by gate verification: `grep` confirms no
+  sync FS calls remain and all 36 loop-detector specs pass.
 - **Gate**: `bun run validate`.
 - **Acceptance**:
   - Lines 513-514 (and any other remaining `existsSync`/`readFileSync` in
