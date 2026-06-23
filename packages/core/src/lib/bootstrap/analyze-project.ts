@@ -12,6 +12,9 @@ import { isGameProject, matchFramework } from './framework-rules';
 import { matchCi } from './ci-rules';
 import { matchAgentConfigs } from './agent-config-rules';
 import { matchLanguage } from './language-rules';
+import { matchMonorepoTool } from './monorepo-rules';
+import { matchPackageManager } from './package-manager-rules';
+import { detectMcpEvidence } from './mcp-evidence-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -110,11 +113,11 @@ const detectGame = (deps: Record<string, string>): boolean =>
 const detectPackageManager = (
 	reader: IFileReader,
 ): IProjectAnalysis['packageManager'] => {
-	if (reader.exists('bun.lock') || reader.exists('bun.lockb')) return 'bun';
-	if (reader.exists('pnpm-lock.yaml')) return 'pnpm';
-	if (reader.exists('yarn.lock')) return 'yarn';
-	if (reader.exists('package-lock.json')) return 'npm';
-	return 'unknown';
+	// The package-manager rule table lives in
+	// `package-manager-rules.ts`; this function is a thin
+	// adapter. Adding a manager is a one-line table entry, not
+	// an edit to this function.
+	return matchPackageManager(reader);
 };
 
 const detectTestRunner = (
@@ -169,12 +172,10 @@ const detectMonorepoTool = (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 ): string | undefined => {
-	if (reader.exists('nx.json')) return 'nx';
-	if (reader.exists('turbo.json')) return 'turbo';
-	if (reader.exists('pnpm-workspace.yaml')) return 'pnpm-workspaces';
-	if (reader.exists('lerna.json')) return 'lerna';
-	if (pkg?.workspaces !== undefined) return 'bun/npm-workspaces';
-	return undefined;
+	// The monorepo rule table lives in `monorepo-rules.ts`; this
+	// function is a thin adapter. Adding a monorepo tool is a
+	// one-line table entry, not an edit to this function.
+	return matchMonorepoTool(reader, pkg);
 };
 
 const detectLanguage = (
@@ -227,17 +228,11 @@ const detectMcp = (
 	reader: IFileReader,
 	deps: Record<string, string>,
 ): { has: boolean; evidence: string[] } => {
-	const evidence: string[] = [];
-	if ('@modelcontextprotocol/sdk' in deps) {
-		evidence.push('depends on @modelcontextprotocol/sdk');
-	}
-	for (const path of ['.vscode/mcp.json', 'mcp.json', '.cursor/mcp.json']) {
-		if (reader.exists(path)) evidence.push(`found ${path}`);
-	}
-	for (const path of ['src/server.ts', 'src/mcp-server.ts', 'server.ts']) {
-		if (reader.exists(path)) evidence.push(`found ${path}`);
-	}
-	return { has: evidence.length > 0, evidence };
+	// The MCP-evidence rule table lives in `mcp-evidence-rules.ts`;
+	// this function is a thin adapter. Adding a new evidence kind
+	// (e.g. a corporate marker file) is a one-line table entry.
+	const result = detectMcpEvidence(reader, deps);
+	return { has: result.has, evidence: [...result.evidence] };
 };
 
 const detectCustomExtraTools = (reader: IFileReader): boolean => {
