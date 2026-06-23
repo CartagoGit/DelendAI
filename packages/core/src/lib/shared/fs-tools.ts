@@ -117,12 +117,11 @@ export const buildFsToolRegistrations = (
 					`${prefix}_fs_write`,
 					{
 						description:
-							'Write a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected before any I/O. `createDirs:true` creates parent directories; `atomic:false` skips the per-path mutex (default true, with `writeFileAtomic`).',
+							'Write a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected before any I/O. `createDirs:true` creates parent directories. Writes are always durable (atomic + per-path mutex).',
 						inputSchema: z.object({
 							path: z.string(),
 							content: z.string(),
 							createDirs: z.boolean().optional(),
-							atomic: z.boolean().optional(),
 						}),
 						outputSchema: z.object({
 							path: z.string(),
@@ -135,9 +134,26 @@ export const buildFsToolRegistrations = (
 						path: string;
 						content: string;
 						createDirs?: boolean | undefined;
-						atomic?: boolean | undefined;
-					}) =>
-						toolJson(
+					}) => {
+						// r00003 S3 (F-003): reject a stray `atomic`
+						// argument explicitly rather than silently
+						// dropping it. A caller passing `atomic:false`
+						// expects a non-durable write; surfacing a
+						// structured invalid-argument error is honest,
+						// whereas writing atomically anyway would be a
+						// silent contract change.
+						if (
+							Object.hasOwn(
+								args as Record<string, unknown>,
+								'atomic',
+							)
+						) {
+							return toolError(
+								'invalid-argument: `atomic` is not a valid option for fs_write',
+								'Remove `atomic` from the input. fs_write is always durable (atomic + per-path mutex); there is no non-atomic public write.',
+							);
+						}
+						return toolJson(
 							await fsWrite(
 								options.workspaceRootAbs,
 								args.path,
@@ -146,12 +162,10 @@ export const buildFsToolRegistrations = (
 									...(args.createDirs !== undefined
 										? { createDirs: args.createDirs }
 										: {}),
-									...(args.atomic !== undefined
-										? { atomic: args.atomic }
-										: {}),
 								},
 							),
-						),
+						);
+					},
 				);
 			},
 		},

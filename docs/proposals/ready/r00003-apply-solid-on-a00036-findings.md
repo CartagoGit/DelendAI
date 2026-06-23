@@ -146,7 +146,7 @@ Their working tree (uncommitted, unmerged) contains:
 - **SOLID**: L (substitutability: the public tool contract does not
   expose a variant that breaks durability); I (the public `IFsWriteTool`
   no longer carries an `atomic` option).
-- **Status**: pending.
+- **Status**: done.
 - **Gate**: `bun run test`.
 - **Acceptance**:
   - The `fs_write` tool input schema does NOT include `atomic`.
