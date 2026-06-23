@@ -45,9 +45,10 @@ describe('matchLanguage', () => {
 		);
 	});
 	it('returns `javascript` when only package.json is present', () => {
-		expect(matchLanguage(reader({ 'package.json': '{"name":"x"}' }))).toBe(
-			'javascript',
-		);
+		// The `javascript` rule is keyed on the `pkg` parameter
+		// (set by the analyser after a successful parse), not on
+		// the reader.
+		expect(matchLanguage(reader({}), { name: 'x' })).toBe('javascript');
 	});
 	it('returns `python` for a pyproject.toml project', () => {
 		expect(matchLanguage(reader({ 'pyproject.toml': '[project]' }))).toBe(
