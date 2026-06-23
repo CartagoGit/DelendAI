@@ -72,87 +72,104 @@ const endsWithBasename = (rel: string, suffix: string): boolean =>
  * rules second; everything else falls through to `other` (implicit
  * final rule added by `classifyPath`).
  */
+/* ------------------------------------------------------------------ *
+ *  Individual rules — each named constant owns one role's classification
+ *  concern (SRP). The composer at the bottom is the only place that
+ *  orders the chain; new roles are added by appending a new constant
+ *  here and a single line to `DEFAULT_TS_RULES` below (Open/Closed).
+ * ------------------------------------------------------------------ */
+
+/** 1. Generated outputs always win — they are owned by a generator
+ *  and exempted from the suffix rule entirely. */
+const GeneratedRule: IRoleRule = rule(
+	'generated',
+	(rel) =>
+		hasSegment(rel, 'generated') || /\.generated\./.test(basename(rel)),
+);
+
+/** 2. Public barrels — `src/public/index.ts` and `src/index.ts`.
+ *  These re-export the package surface and carry no role suffix. */
+const BarrelRule: IRoleRule = rule('barrel', (rel) => {
+	const base = basename(rel);
+	if (base !== 'index.ts') return false;
+	return (
+		rel.endsWith('/src/public/index.ts') || /\/src\/index\.ts$/.test(rel)
+	);
+});
+
+/** 3. Interface contracts — under `contracts/interfaces/` or `.interface.ts`. */
+const InterfaceRule: IRoleRule = rule(
+	'interface',
+	(rel) =>
+		hasSegment(rel, 'contracts/interfaces') || /\.interface\.ts$/.test(rel),
+);
+
+/** 4. Constant contracts — under `contracts/constants/` or `.constant.ts`. */
+const ConstantRule: IRoleRule = rule(
+	'constant',
+	(rel) =>
+		hasSegment(rel, 'contracts/constants') || /\.constant\.ts$/.test(rel),
+);
+
+/** 5. Services — under `services/` or `.service.ts`. */
+const ServiceRule: IRoleRule = rule(
+	'service',
+	(rel) => hasSegment(rel, 'services') || endsWithBasename(rel, 'service.ts'),
+);
+
+/** 6. MCP tools — under `tools/` or `.tool.ts`. Tools never live at
+ *  the package root because the role is project-wide. */
+const ToolRule: IRoleRule = rule(
+	'tool',
+	(rel) => hasSegment(rel, 'tools') || endsWithBasename(rel, 'tool.ts'),
+);
+
+/** 7. Registries — `.registry.ts` (and `registry/` or `registries/` folder). */
+const RegistryRule: IRoleRule = rule(
+	'registry',
+	(rel) =>
+		hasSegment(rel, 'registry') ||
+		hasSegment(rel, 'registries') ||
+		endsWithBasename(rel, 'registry.ts'),
+);
+
+/** 8. Registration glue — `.register.ts` (and `register/` or `registers/` folder). */
+const RegisterRule: IRoleRule = rule(
+	'register',
+	(rel) =>
+		hasSegment(rel, 'register') ||
+		hasSegment(rel, 'registers') ||
+		endsWithBasename(rel, 'register.ts'),
+);
+
+/** 9. Factories — `.factory.ts` or `factories/` folder. */
+const FactoryRule: IRoleRule = rule(
+	'factory',
+	(rel) =>
+		hasSegment(rel, 'factories') || endsWithBasename(rel, 'factory.ts'),
+);
+
+/** 10. Builders — `.builder.ts` or `builders/` folder. */
+const BuilderRule: IRoleRule = rule(
+	'builder',
+	(rel) => hasSegment(rel, 'builders') || endsWithBasename(rel, 'builder.ts'),
+);
+
+/** Default rule chain. Order matters: more specific rules first
+ *  (`generated`, `barrel`); suffix-based role rules second; everything
+ *  else falls through to `'other'` (implicit final rule added by
+ *  `classifyPath`). */
 export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
-	// 1. Generated outputs always win — they are owned by a generator
-	//    and exempted from the suffix rule entirely.
-	rule(
-		'generated',
-		(rel) =>
-			hasSegment(rel, 'generated') || /\.generated\./.test(basename(rel)),
-	),
-
-	// 2. Public barrels — `src/public/index.ts` and `src/index.ts`.
-	//    These re-export the package surface and carry no role suffix.
-	rule('barrel', (rel) => {
-		const base = basename(rel);
-		if (base !== 'index.ts') return false;
-		return (
-			rel.endsWith('/src/public/index.ts') ||
-			/\/src\/index\.ts$/.test(rel)
-		);
-	}),
-
-	// 3. Interface contracts — under `contracts/interfaces/` or `.interface.ts`.
-	rule(
-		'interface',
-		(rel) =>
-			hasSegment(rel, 'contracts/interfaces') ||
-			/\.interface\.ts$/.test(rel),
-	),
-
-	// 4. Constant contracts — under `contracts/constants/` or `.constant.ts`.
-	rule(
-		'constant',
-		(rel) =>
-			hasSegment(rel, 'contracts/constants') ||
-			/\.constant\.ts$/.test(rel),
-	),
-
-	// 5. Services — under `services/` or `.service.ts`.
-	rule(
-		'service',
-		(rel) =>
-			hasSegment(rel, 'services') || endsWithBasename(rel, 'service.ts'),
-	),
-
-	// 6. MCP tools — under `tools/` or `.tool.ts`. Tools never live at
-	//    the package root because the role is project-wide.
-	rule(
-		'tool',
-		(rel) => hasSegment(rel, 'tools') || endsWithBasename(rel, 'tool.ts'),
-	),
-
-	// 7. Registries — `.registry.ts` (and `registry/` or `registries/` folder).
-	rule(
-		'registry',
-		(rel) =>
-			hasSegment(rel, 'registry') ||
-			hasSegment(rel, 'registries') ||
-			endsWithBasename(rel, 'registry.ts'),
-	),
-
-	// 8. Registration glue — `.register.ts` (and `register/` or `registers/` folder).
-	rule(
-		'register',
-		(rel) =>
-			hasSegment(rel, 'register') ||
-			hasSegment(rel, 'registers') ||
-			endsWithBasename(rel, 'register.ts'),
-	),
-
-	// 9. Factories — `.factory.ts` or `factories/` folder.
-	rule(
-		'factory',
-		(rel) =>
-			hasSegment(rel, 'factories') || endsWithBasename(rel, 'factory.ts'),
-	),
-
-	// 10. Builders — `.builder.ts` or `builders/` folder.
-	rule(
-		'builder',
-		(rel) =>
-			hasSegment(rel, 'builders') || endsWithBasename(rel, 'builder.ts'),
-	),
+	GeneratedRule,
+	BarrelRule,
+	InterfaceRule,
+	ConstantRule,
+	ServiceRule,
+	ToolRule,
+	RegistryRule,
+	RegisterRule,
+	FactoryRule,
+	BuilderRule,
 ];
 
 /**
@@ -174,10 +191,7 @@ export const classifyPath = (
 	for (const r of rules) {
 		try {
 			if (r.match(rel)) return r.name;
-		} catch {
-			// A buggy rule must not poison the whole chain; skip it.
-			continue;
-		}
+		} catch {}
 	}
 	return 'other';
 };

@@ -8,6 +8,7 @@ import {
 	QUALITY_ROLE_ALIASES,
 } from './script-rules';
 import { matchProjectType } from './project-type-rules';
+import { isGameProject, matchFramework } from './framework-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -89,21 +90,14 @@ const allDeps = (pkg: IPackageJson | undefined): Record<string, string> => ({
 	...(pkg?.devDependencies ?? {}),
 });
 
-const detectFramework = (deps: Record<string, string>): string | undefined => {
-	if ('@angular/core' in deps) return 'angular';
-	if ('next' in deps) return 'next';
-	if ('react' in deps) return 'react';
-	if ('vue' in deps) return 'vue';
-	if ('svelte' in deps) return 'svelte';
-	if ('solid-js' in deps) return 'solid';
-	return undefined;
-};
+const detectFramework = (deps: Record<string, string>): string | undefined =>
+	// The framework rule table lives in `framework-rules.ts`; this
+	// function is a thin adapter.
+	matchFramework(deps);
 
 const detectGame = (deps: Record<string, string>): boolean =>
-	'phaser' in deps ||
-	'three' in deps ||
-	'pixi.js' in deps ||
-	'babylonjs' in deps;
+	// Same idea: the engine list is data, not control flow.
+	isGameProject(deps);
 
 const detectPackageManager = (
 	reader: IFileReader,

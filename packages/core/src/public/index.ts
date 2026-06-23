@@ -232,10 +232,14 @@ export {
 	toolOk,
 	toolError,
 	toolErrorWithLogHint,
+	truncateIfTooLarge,
+	toolJsonBounded,
+	DEFAULT_MAX_RESPONSE_BYTES,
 } from '../lib/shared/tool-response';
 export type {
 	IToolTextResult,
 	IToolErrorLogHint,
+	ITruncationResult,
 } from '../lib/shared/tool-response';
 
 // --- core meta-tools (overview / knowledge / validation matrix) ------------
