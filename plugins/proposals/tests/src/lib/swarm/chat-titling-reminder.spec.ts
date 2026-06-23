@@ -87,9 +87,13 @@ describe('buildChatTitlingReminder — heading and technical limitation', () => 
 		expect(reminder).toContain('no `workbench.action.chat.rename`');
 	});
 
-	it('tells the user to perform the rename manually via the UI ("right-click the editor tab → **Rename**")', () => {
+	it('tells the user to perform the rename manually via the generic UI hint (r00003 S8: no vendor leak by default)', () => {
 		const reminder = buildChatTitlingReminder(makeReport());
-		expect(reminder).toContain('right-click the editor tab → **Rename**');
+		// Default capabilities are now the GENERIC IDE set, so the manual
+		// instruction is host-agnostic ("the chat tab", not "the editor
+		// tab" which was VS Code-specific) and no vendor name leaks.
+		expect(reminder).toContain('right-click the chat tab → **Rename**');
+		expect(reminder).not.toContain('VS Code');
 	});
 
 	it('warns the user about the 40-character cap to avoid sidebar truncation', () => {

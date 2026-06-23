@@ -6,13 +6,15 @@
  * cannot perform the rename programmatically on this build.
  *
  * Background:
- *   T2 (technical_investigator) confirmed that
- *   `workbench.action.chat.rename` is **not** registered in VS Code
- *   1.123 / Copilot Chat 0.43. The T3 *integrate* branch is therefore
- *   dead on arrival and the T3 *fallback* branch is active: the gate
- *   must emit a visible reminder block that tells the user how to
- *   apply the prefix convention to the current chat session by
- *   hand.
+ *   On hosts whose programmatic chat-rename action is not registered
+ *   (`IHostCapabilities.programmaticRenameActionId === null`), the
+ *   orchestrator cannot rename the session itself, so the *fallback*
+ *   branch is active: the gate emits a visible reminder block that
+ *   tells the user how to apply the prefix convention to the current
+ *   chat session by hand. Which action id is checked, whether it is
+ *   registered, and the user-facing instructions all come from the
+ *   injected `IHostCapabilities` — this module names no IDE and no host
+ *   release.
  *
  *   The block is a pure-data string with no executable content; it is
  *   safe to concatenate to any markdown payload and to copy/paste into
@@ -39,9 +41,10 @@
  * r00003 S8 (F3, O + D): the IDE name, the action id, and the
  * "blocked" reason used to be hardcoded literals sprinkled through
  * this file. They now live in `host-capabilities.ts` as a small data
- * interface. When Copilot Chat ships a release that *does* register
- * the rename action, hosts flip `programmaticRenameActionId` on the
- * capabilities object — no code change here.
+ * interface, and the runtime default is the *generic* IDE set (no
+ * vendor name). When a host registers the rename action, it flips
+ * `programmaticRenameActionId` on its capabilities object — no code
+ * change here.
  */
 
 // ---------------------------------------------------------------------------

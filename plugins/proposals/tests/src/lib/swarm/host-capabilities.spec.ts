@@ -34,9 +34,13 @@ const makeReport = (
 });
 
 describe('host-capabilities — default factory', () => {
-	it('returns the VS Code + Copilot Chat 0.43 capabilities by default (back-compat)', () => {
+	it('returns the GENERIC IDE capabilities by default (r00003 S8: no vendor leak)', () => {
+		// The plugin is host-agnostic: an orchestrator that has not
+		// registered ctx.options.hostCapabilities must get the generic
+		// set, never the VS Code / Copilot one.
 		const caps = createDefaultHostCapabilities();
-		expect(caps).toEqual(VSCODE_COPILOT_043_CAPABILITIES);
+		expect(caps).toEqual(GENERIC_IDE_CAPABILITIES);
+		expect(caps).not.toEqual(VSCODE_COPILOT_043_CAPABILITIES);
 	});
 
 	it('does not leak host names into the generic capability', () => {
@@ -47,8 +51,22 @@ describe('host-capabilities — default factory', () => {
 });
 
 describe('buildChatTitlingReminder — host-capability injection (SOLID D)', () => {
-	it('renders the VS Code prose when no options are passed (default capabilities)', () => {
+	it('renders GENERIC prose with NO host name leak when no options are passed', () => {
+		// r00003 S8 (F3): the default config must not mention any IDE or
+		// host release number.
 		const reminder = buildChatTitlingReminder(makeReport());
+		expect(reminder).toContain('the IDE sidebar');
+		expect(reminder).toContain('right-click the chat tab → **Rename**');
+		expect(reminder).not.toContain('VS Code');
+		expect(reminder).not.toContain('Copilot');
+		expect(reminder).not.toContain('1.123');
+		expect(reminder).not.toContain('0.43');
+	});
+
+	it('renders the VS Code prose only when VS Code capabilities are explicitly injected', () => {
+		const reminder = buildChatTitlingReminder(makeReport(), {
+			hostCapabilities: VSCODE_COPILOT_043_CAPABILITIES,
+		});
 		expect(reminder).toContain('VS Code sidebar');
 		expect(reminder).toContain('right-click the editor tab → **Rename**');
 	});

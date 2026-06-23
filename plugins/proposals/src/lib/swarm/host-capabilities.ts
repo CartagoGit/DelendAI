@@ -113,9 +113,12 @@ export const GENERIC_IDE_CAPABILITIES: IHostCapabilities = {
 };
 
 /**
- * Default capabilities — the same set the reminder used to hardcode.
- * Existing callers that never register capabilities get byte-identical
- * output to the pre-SOLID implementation.
+ * Default capabilities — r00003 S8 (F3): the **generic** IDE set, NOT the
+ * VS Code / Copilot one. The plugin is host-agnostic, so an
+ * orchestrator that has not registered `ctx.options.hostCapabilities`
+ * must never leak a vendor name or a host release number into the
+ * reminder. A VS Code host opts into the richer prose explicitly by
+ * registering `VSCODE_COPILOT_043_CAPABILITIES` (or its own object).
  */
 export const createDefaultHostCapabilities = (): IHostCapabilities =>
-	VSCODE_COPILOT_043_CAPABILITIES;
+	GENERIC_IDE_CAPABILITIES;
