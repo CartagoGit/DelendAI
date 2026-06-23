@@ -129,7 +129,7 @@ Their working tree (uncommitted, unmerged) contains:
   new `packages/cli/src/lib/server-args.mapper.ts`.
 - **SOLID**: O (extension by data, not by `if`s); I (small mappers per
   concern: identity, plugins/preset, observability, bootstrap).
-- **Status**: pending.
+- **Status**: done.
 - **Gate**: `bun run test` (parser + new mapper spec).
 - **Acceptance**:
   - `buildServerArgs` reads from `SERVER_ARG_MAPPER` table; adding a
