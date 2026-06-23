@@ -29,11 +29,16 @@ const fmWith = (
 		status: 'ready',
 		track: 'test',
 	};
-	if (closureGate === undefined) return base;
+	if (closureGate === undefined) {
+		return {
+			...base,
+			closureGate: undefined,
+		} as unknown as IProposalFrontmatter;
+	}
 	return {
 		...base,
 		closureGate: closureGate as IProposalFrontmatter['closureGate'],
-	};
+	} as unknown as IProposalFrontmatter;
 };
 
 describe('policyFromFrontmatter', () => {

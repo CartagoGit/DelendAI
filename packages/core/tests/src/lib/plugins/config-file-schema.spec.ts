@@ -130,7 +130,7 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 			},
 		};
 		const asConfig: IMcpVertexConfigFile = { validationMatrix: scopes };
-		expect(asConfig.validationMatrix?.scopes.full[0]?.command).toBe(
+		expect(asConfig.validationMatrix?.scopes.full?.[0]?.command).toBe(
 			'bun test',
 		);
 	});

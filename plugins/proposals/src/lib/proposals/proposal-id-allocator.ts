@@ -10,13 +10,16 @@
  * read-increment-write, not "ls + count + hope nobody else creates one
  * between your `ls` and your `write`".
  */
-import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import { PROPOSAL_PREFIX_BY_KIND } from '../contracts/constants/proposal-glossary.constant';
 import type { IProposalKind } from '../contracts/constants/proposal-glossary.constant';
+import {
+	DEFAULT_ALLOCATOR_FS,
+	type IAllocatorFs,
+} from './proposal-id-allocator-fs';
 
 type ICounters = Record<string, number>;
 
@@ -29,8 +32,13 @@ const FILENAME_PATTERN = /^([a-z])(\d+)-/;
  * file the first time it's missing — so the very first allocation
  * after this ships is safe even with the 14 legacy + f00016 already on
  * disk, with zero manual bootstrap step.
+ *
+ * DIP — `fs` is injected; default wiring uses the real filesystem.
  */
-const seedFromDisk = async (proposalsDirAbs: string): Promise<ICounters> => {
+const seedFromDisk = async (
+	proposalsDirAbs: string,
+	fs: IAllocatorFs = DEFAULT_ALLOCATOR_FS,
+): Promise<ICounters> => {
 	const counters: ICounters = {};
 	const folders = [
 		'',
@@ -45,12 +53,10 @@ const seedFromDisk = async (proposalsDirAbs: string): Promise<ICounters> => {
 	for (const folder of folders) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
-		const dirents = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
-		for (const dirent of dirents) {
-			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
-			const m = dirent.name.match(FILENAME_PATTERN);
+		const entries = await fs.list(dirAbs);
+		for (const entry of entries) {
+			if (!entry.isFile || !entry.name.endsWith('.md')) continue;
+			const m = entry.name.match(FILENAME_PATTERN);
 			if (!m) continue;
 			const prefix = m[1] ?? '';
 			const n = Number(m[2]);
@@ -61,9 +67,14 @@ const seedFromDisk = async (proposalsDirAbs: string): Promise<ICounters> => {
 	return counters;
 };
 
-const readCounters = async (path: string): Promise<ICounters | null> => {
+const readCounters = async (
+	path: string,
+	fs: IAllocatorFs = DEFAULT_ALLOCATOR_FS,
+): Promise<ICounters | null> => {
+	const raw = await fs.read(path);
+	if (raw === null) return null;
 	try {
-		return JSON.parse(await readFile(path, 'utf8')) as ICounters;
+		return JSON.parse(raw) as ICounters;
 	} catch {
 		return null;
 	}

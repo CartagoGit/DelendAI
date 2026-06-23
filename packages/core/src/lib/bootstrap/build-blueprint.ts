@@ -6,16 +6,11 @@ import {
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 import type { IProjectAnalysis } from './analyze-project';
-import {
-	blueprintArtifactBody,
-	continueProposalPromptBody,
-	fixQualityPromptBody,
-	frameworkSkillBody,
-	frameworkSkillWhenToUse,
-	projectStandardsSkillBody,
-	startPromptBody,
-} from './body-content';
+import { blueprintArtifactBody } from './body-content';
+import { matchPromptArtifacts } from './prompt-artifact-rules';
 import { resolvePatternCatalog } from './pattern-catalog-overrides';
+import { matchSkillArtifacts } from './skill-artifact-rules';
+import { matchNotes } from './note-rules';
 
 export interface IBlueprintArtifact {
 	readonly name: string;
@@ -187,47 +182,13 @@ export const buildServerBlueprint = (
 		...scriptTools,
 	]);
 
-	const prompts: IBlueprintArtifact[] = [
-		{
-			name: 'start',
-			description: 'Orient and start working in this project.',
-			body: startPromptBody(analysis, namespacePrefix),
-		},
-	];
-	if (Object.keys(analysis.scripts).length > 0) {
-		prompts.push({
-			name: 'fix quality',
-			description: 'Run the gates and fix what fails.',
-			body: fixQualityPromptBody(analysis, namespacePrefix),
-		});
-	}
-	if (plugins.includes('proposals')) {
-		prompts.push({
-			name: 'continue proposal',
-			description: 'Resolve and execute the next proposal slice.',
-			body: continueProposalPromptBody(namespacePrefix),
-		});
-	}
+	const prompts = matchPromptArtifacts({
+		analysis,
+		namespacePrefix,
+		plugins,
+	});
 
-	const skills: IBlueprintArtifact[] = [
-		{
-			name: 'project standards',
-			description: `Closed stack and conventions of ${serverName}.`,
-			body: projectStandardsSkillBody(analysis),
-			whenToUse: [
-				'Before writing or reviewing code in this project.',
-				'When a code review questions a project-wide convention.',
-			],
-		},
-	];
-	if (analysis.framework !== undefined) {
-		skills.push({
-			name: `${analysis.framework} conventions`,
-			description: `${analysis.framework} idioms and lint/type rules for this project.`,
-			body: frameworkSkillBody(analysis),
-			whenToUse: [...frameworkSkillWhenToUse(analysis)],
-		});
-	}
+	const skills = matchSkillArtifacts({ analysis, serverName });
 
 	const agents = [
 		{
@@ -237,26 +198,14 @@ export const buildServerBlueprint = (
 		...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
 	];
 
-	const notes: string[] = [
-		...pattern.knowledgeHints,
-		analysis.hasMcpProject
-			? `An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-vertex instead of replacing it — register it alongside, reuse its tools, and adopt mcp-vertex conventions incrementally.`
-			: 'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',
-		tests
-			? 'Generate a test alongside each tool.'
-			: 'Tests omitted (--mcp-project-tests=false).',
-	];
-	if (analysis.agentConfigs.length > 0) {
-		notes.push(
-			`Align with the existing agent config (${analysis.agentConfigs.join(', ')}).`,
-		);
-	}
-	notes.push(
-		defaults.keepLegacy
-			? `Recommended keepLegacy=true: ${defaults.reasons.join('; ')}.`
-			: 'Recommended keepLegacy=false: greenfield-safe default.',
-	);
-	notes.push(...defaults.warnings);
+	const notes = matchNotes({
+		analysis,
+		defaults,
+		tests,
+		...(options.patternOverrides !== undefined
+			? { patternOverrides: options.patternOverrides }
+			: {}),
+	});
 
 	return {
 		serverName,

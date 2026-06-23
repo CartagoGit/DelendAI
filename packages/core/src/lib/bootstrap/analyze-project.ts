@@ -18,6 +18,7 @@ import { detectMcpEvidence } from './mcp-evidence-rules';
 import { matchTestRunner } from './test-runner-rules';
 import { matchHostConfig } from './host-config-rules';
 import { matchVertexConfigFromRaw } from './vertex-config-rules';
+import { matchSignals } from './signal-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -281,47 +282,45 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 	);
 	const ci = detectCi(reader);
 	const agentConfigs = detectAgentConfigs(reader);
+	const packageManager = detectPackageManager(reader);
+	const testRunner = detectTestRunner(deps, scripts);
+	const scriptsPicked = pickScripts(scripts);
 
-	const signals: string[] = [];
-	if (pkg === undefined && language === 'unknown') {
-		signals.push('no recognised manifest — limited analysis');
-	}
-	signals.push(
-		mcp.has
-			? 'an MCP server already exists; recommend augmenting, not replacing'
-			: 'no MCP server detected; a fresh one can be scaffolded',
-	);
-	if (framework !== undefined) signals.push(`web framework: ${framework}`);
-	if (monorepoTool !== undefined)
-		signals.push(`monorepo tool: ${monorepoTool}`);
-	if (language !== 'typescript' && language !== 'javascript') {
-		signals.push(`non-JS stack: ${language}`);
-	}
-	if (agentConfigs.length > 0) {
-		signals.push(
-			`existing agent config (${agentConfigs.join(', ')}); align with it`,
-		);
-	}
-	if (hasCustomExtraTools) signals.push('host-config has custom extraTools');
-	if (hasCustomVertexConfig) {
-		signals.push('mcp-vertex.config.json has plugin or validation config');
-	}
-	if (ci.length > 0) signals.push(`CI: ${ci.join(', ')}`);
+	const signals = matchSignals({
+		analysis: {
+			hasPackageJson: pkg !== undefined,
+			name: pkg?.name,
+			projectType,
+			language,
+			packageManager,
+			framework,
+			testRunner,
+			monorepoTool,
+			hasMcpProject: mcp.has,
+			mcpEvidence: mcp.evidence,
+			ci,
+			agentConfigs,
+			scripts: scriptsPicked,
+			signals: [],
+		},
+		hasCustomExtraTools,
+		hasCustomVertexConfig,
+	});
 
 	return {
 		hasPackageJson: pkg !== undefined,
 		name: pkg?.name,
 		projectType,
 		language,
-		packageManager: detectPackageManager(reader),
+		packageManager,
 		framework,
-		testRunner: detectTestRunner(deps, scripts),
+		testRunner,
 		monorepoTool,
 		hasMcpProject: mcp.has,
 		mcpEvidence: mcp.evidence,
 		ci,
 		agentConfigs,
-		scripts: pickScripts(scripts),
+		scripts: scriptsPicked,
 		signals,
 	};
 };

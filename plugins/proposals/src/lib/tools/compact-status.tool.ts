@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
@@ -10,6 +8,7 @@ import {
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
+import { readJsonOrNull } from '../proposals/index-reader';
 
 export interface ICompactStatusOptions {
 	readonly namespacePrefix: string;
@@ -37,14 +36,7 @@ export interface ICompactStatus {
 	};
 }
 
-// Async file read (H2): tolerant — missing/corrupt → null.
-const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as T;
-	} catch {
-		return null;
-	}
-};
+// `readJsonOrNull` is provided by `proposals/index-reader.ts` (DRY).
 
 const readQueueTolerant = async (
 	path: string,

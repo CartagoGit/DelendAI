@@ -21,3 +21,12 @@ export {
 	type IPresetValidator,
 	type IPresetFinding,
 } from './validator';
+export {
+	buildValidatorRegistry,
+	type IValidatorRegistry,
+} from './validator-registry';
+export {
+	composeRoot,
+	buildDefaultRenderers,
+	defaultPolicyResolver,
+} from './composition-root';

@@ -6,6 +6,7 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { readJsonOrNull } from '../proposals/index-reader';
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -19,14 +20,8 @@ const fileExists = async (path: string): Promise<boolean> => {
 
 /** In-flight claim count straight from the lock file (0 if missing/corrupt). */
 const rawInFlightCount = async (lockPath: string): Promise<number> => {
-	try {
-		const parsed = JSON.parse(await readFile(lockPath, 'utf8')) as {
-			in_flight?: unknown[];
-		};
-		return Array.isArray(parsed.in_flight) ? parsed.in_flight.length : 0;
-	} catch {
-		return 0;
-	}
+	const parsed = await readJsonOrNull<{ in_flight?: unknown[] }>(lockPath);
+	return Array.isArray(parsed?.in_flight) ? parsed.in_flight.length : 0;
 };
 import {
 	expireSweep,

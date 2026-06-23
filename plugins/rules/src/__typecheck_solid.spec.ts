@@ -32,10 +32,8 @@ import { RUST_PRESET } from './lib/frameworks/presets/data/rust';
 import { RUST_DOGMA } from './lib/frameworks/dogmas/rust.dogma';
 import { ALL_PRESET_DATA } from './lib/frameworks/presets/data';
 import { DEFAULT_DOGMA_ADAPTERS } from './lib/frameworks/dogmas';
-import {
-	fallbackCommandSetProvider,
-	toAreaRulesLite,
-} from './lib/tools/command-resolver';
+import { fallbackCommandSetProvider } from './lib/tools/command-resolver';
+import { toAreaRulesLite } from './lib/frameworks/legacy-shape/adapter';
 
 describe('SOLID refactor: compile + link', () => {
 	it('exposes the expected public symbols', () => {

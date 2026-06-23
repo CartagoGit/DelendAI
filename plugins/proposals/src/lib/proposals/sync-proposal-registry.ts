@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
+import { setFrontmatterStatus } from './proposal-frontmatter-writer';
 import type {
 	IAcceptanceCriterion,
 	IProposalBudget,
@@ -426,15 +427,7 @@ const moveFile = async (
 	if (!result.ok) await rename(fromAbs, toAbs);
 };
 
-const setStatusLine = (raw: string, newStatus: string): string => {
-	const m = raw.match(/^(---\r?\n[\s\S]*?\r?\n---)/);
-	if (!m) return raw;
-	const block = m[1] ?? '';
-	return (
-		block.replace(/^status:.*$/m, `status: ${newStatus}`) +
-		raw.slice(block.length)
-	);
-};
+const setStatusLine = setFrontmatterStatus;
 
 /**
  * Moves every new-system file whose actual folder disagrees with what

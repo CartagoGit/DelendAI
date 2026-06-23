@@ -20,7 +20,7 @@
  * They are the canonical "existsSync + readFileSync" replacement.
  */
 
-import { readFile } from 'node:fs/promises';
+import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
 
 /**
  * Read a file and parse it as JSON. Returns `null` when:
@@ -32,10 +32,17 @@ import { readFile } from 'node:fs/promises';
  * to surface a "this should have worked" failure here. If the JSON is
  * malformed in a way the caller cares about, validate the parsed
  * shape downstream (e.g. via a Zod schema in `parseProposalDocument`).
+ *
+ * DIP — `fs` is injected; default wiring uses the real filesystem.
  */
-export const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
+export const readJsonOrNull = async <T>(
+	path: string,
+	fs: IIndexFs = DEFAULT_INDEX_FS,
+): Promise<T | null> => {
+	const raw = await fs.read(path);
+	if (raw === null) return null;
 	try {
-		return JSON.parse(await readFile(path, 'utf8')) as T;
+		return JSON.parse(raw) as T;
 	} catch {
 		return null;
 	}
@@ -45,14 +52,13 @@ export const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
  * Read a file as UTF-8 text. Returns `null` when the file does not
  * exist or is unreadable. Never throws. Pairs with `readJsonOrNull`
  * for callers that need both formats.
+ *
+ * DIP — `fs` is injected; default wiring uses the real filesystem.
  */
-export const readTextOrNull = async (path: string): Promise<string | null> => {
-	try {
-		return await readFile(path, 'utf8');
-	} catch {
-		return null;
-	}
-};
+export const readTextOrNull = async (
+	path: string,
+	fs: IIndexFs = DEFAULT_INDEX_FS,
+): Promise<string | null> => fs.read(path);
 
 // ---------------------------------------------------------------------------
 // Index-shape reader. Every tool that wants to know "what proposals exist
@@ -100,7 +106,8 @@ export interface IProposalIndexFile {
  */
 export const readProposalIndex = async (
 	indexPathAbs: string,
+	fs?: IIndexFs,
 ): Promise<readonly IProposalIndexEntry[]> => {
-	const parsed = await readJsonOrNull<IProposalIndexFile>(indexPathAbs);
+	const parsed = await readJsonOrNull<IProposalIndexFile>(indexPathAbs, fs);
 	return parsed?.proposals ?? [];
 };
