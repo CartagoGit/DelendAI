@@ -91,7 +91,8 @@ export type IProposalKind =
 	| 'infra'
 	| 'spike'
 	| 'legacy'
-	| 'resume';
+	| 'resume'
+	| 'plan';
 
 export interface IProposalKindInfo {
 	/** Single lowercase letter; unique across all 12 kinds (f00016 §2.2). */
@@ -181,6 +182,20 @@ export const PROPOSAL_KINDS: Readonly<
 	resume: {
 		prefix: 'n',
 		glyph: '🧭',
+		conventionalCommitType: '',
+		bump: 'none',
+	},
+	/**
+	 * Plan-of-plans: a proposal that orchestrates other proposals and/or
+	 * carries its own executable slices (q<NNN>-*.md). A `plan` cannot
+	 * close (`status: done`) until every contained proposal, sub-plan
+	 * and slice is `done` AND peer-reviewed. No conventional commit and
+	 * no semver bump — the work that closes a plan is the work the
+	 * children ship, not the plan itself. See `q00001-plan-of-plans`.
+	 */
+	plan: {
+		prefix: 'q',
+		glyph: '🗂️',
 		conventionalCommitType: '',
 		bump: 'none',
 	},

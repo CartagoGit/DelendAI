@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import type { ILockChangeListener } from '../locks/lock-change-listener';
+import { lockChangeMultiplexer } from '../locks/lock-change-listener';
 
 export interface IAgentLockToolOptions {
 	/** Tool namespace, e.g. `proposals` → `proposals_agent_lock`. */
@@ -12,12 +14,15 @@ export interface IAgentLockToolOptions {
 	/** Workspace-relative label echoed in payloads. */
 	readonly lockFileLabel: string;
 	/**
-	 * Audit-h1-fix: invoked after every successful `claim`/`release`/`gc`
-	 * so the loop detector's in-memory cache of the lock file's first
-	 * `in_flight` agent never goes stale by more than its 50ms TTL.
-	 * Optional so the tool stays testable in isolation.
+	 * Solid-ISP: optional listener fired after every successful
+	 * `claim`/`release`/`gc` (status is excluded — it never mutates
+	 * the file). Replaces the previous `onLockChanged?: () => void`
+	 * callback so the tool can carry richer event payloads without
+	 * breaking listeners. The plugin may pass a multiplexer wrapping
+	 * any number of concrete listeners (loop detector, drift counter,
+	 * audit hook, etc.).
 	 */
-	readonly onLockChanged?: () => void;
+	readonly lockChangeListener?: ILockChangeListener;
 }
 
 const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
@@ -109,17 +114,22 @@ export const buildAgentLockRegistration = (
 						toolName,
 						lockFileLabel: options.lockFileLabel,
 					});
-					// Audit-h1-fix: any successful claim/release/gc may have
-					// changed the lock file. Invalidate the loop detector's
-					// in-memory cache so the next `isAgentStuck` (called
-					// inline from core on every tool call) does not serve a
-					// stale agent for longer than the 50ms TTL.
-					if (!res.isError && options.onLockChanged) {
-						try {
-							options.onLockChanged();
-						} catch {
-							// Never let the cache callback fail the tool.
-						}
+					// Solid-ISP: fire the change listener ONLY for actions
+					// that actually mutate the file. `status` is excluded —
+					// it never changes the file, so listeners would do
+					// useless work. Each listener handles its own exceptions
+					// (or relies on the multiplexer's outer try-catch); the
+					// tool itself never lets a listener fail it.
+					if (
+						!res.isError &&
+						options.lockChangeListener !== undefined &&
+						args.action !== 'status'
+					) {
+						options.lockChangeListener.onLockChanged({
+							action: args.action,
+							agent: args.agent,
+							taskId: args.task_id,
+						});
 					}
 					// The engine returns text-only; mirror its JSON payload into
 					// structuredContent so the declared outputSchema is satisfied

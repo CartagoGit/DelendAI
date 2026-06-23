@@ -4,6 +4,7 @@ status: done
 type: proposal
 track: logs
 date: 2026-06-22
+kind: fix
 ---
 
 # x00001 — Fix torn reads in log-store

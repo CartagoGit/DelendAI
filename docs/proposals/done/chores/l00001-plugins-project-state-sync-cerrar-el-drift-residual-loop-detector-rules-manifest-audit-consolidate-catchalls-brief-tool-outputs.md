@@ -4,9 +4,11 @@ status: done
 type: proposal
 track: plugins+core+audit
 date: 2026-06-21
+kind: chore
+legacy: true
 ---
 
-# l00008 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
+# l00001 — Plugins ↔ project state sync — cerrar el drift residual (loop-detector, rules/manifest, audit/consolidate, catchalls, brief, tool-outputs)
 
 ## Goal
 

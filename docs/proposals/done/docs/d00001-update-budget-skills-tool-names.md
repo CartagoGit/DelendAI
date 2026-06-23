@@ -4,6 +4,7 @@ status: done
 type: proposal
 track: docs
 date: 2026-06-22
+kind: docs
 ---
 
 # d00001 — Update budget skills tool names

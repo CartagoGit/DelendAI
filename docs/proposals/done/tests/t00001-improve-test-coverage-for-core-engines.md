@@ -4,6 +4,7 @@ status: done
 type: proposal
 track: testing
 date: 2026-06-22
+kind: test
 ---
 
 # t00001 — Improve test coverage for core engines

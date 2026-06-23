@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import { createCallbackLockListener } from './lib/locks/lock-change-listener';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
@@ -167,9 +168,15 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
-					// Audit-h1-fix: keep the loop detector's lock-cache
-					// coherent with every successful claim/release/gc.
-					onLockChanged: () => loopDetector.invalidateLockCache(),
+					// Solid-ISP: keep the loop detector's lock cache coherent
+					// with every successful claim/release/gc. The tool knows
+					// nothing about the loop detector; the adapter bridges
+					// the typed `ILockChangeListener` event to the cache
+					// invalidation. Future consumers (drift counter, audit
+					// hooks, etc.) compose into the same multiplexer.
+					lockChangeListener: createCallbackLockListener(() =>
+						loopDetector.invalidateLockCache(),
+					),
 				}),
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,
