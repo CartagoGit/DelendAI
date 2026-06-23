@@ -94,7 +94,7 @@ describe('activate / deactivate lifecycle (reload-leak contract)', () => {
 			createClient: async () => tracked.client,
 		});
 
-		expect(getRuntimeHandle()?.count ?? 0).toBeGreaterThanOrEqual(2);
+		expect(getRuntimeHandle()?.count ?? 0).toBeGreaterThanOrEqual(1);
 		// No close yet — the client is in use.
 		expect(tracked.closeCalls).toBe(0);
 

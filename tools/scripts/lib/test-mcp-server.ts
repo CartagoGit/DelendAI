@@ -87,7 +87,8 @@ export const captureToolRegistration = async (
 			const out = (await invoke(a)) as {
 				content?: Array<{ text?: string }>;
 			};
-			const text = out?.content?.[0]?.text ?? '';
+			const text = out?.content?.[0]?.text;
+			if (text === undefined) return out;
 			try {
 				return JSON.parse(text);
 			} catch {

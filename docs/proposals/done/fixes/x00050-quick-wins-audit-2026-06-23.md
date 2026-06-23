@@ -1,6 +1,6 @@
 ---
 id: x00050
-status: ready
+status: done
 type: proposal
 track: repo-hygiene+ci+lint+docs+extensions/vscode
 date: 2026-06-23
@@ -55,7 +55,7 @@ work lands.
 
 ### S1 — Fix the corrupted `validate` script
 
-- **Status**: pending
+- **Status**: done
 - **Files**: package.json
 - **Gate**: lint
 - depends_on: []
@@ -66,7 +66,7 @@ work lands.
 
 ### S2 — Delete the 5 root scratch files
 
-- **Status**: pending
+- **Status**: done
 - **Files**: list-unmatched.ts
 - **Files**: test-ts.ts
 - **Files**: unmatched_plugins.txt
@@ -79,9 +79,9 @@ work lands.
     - "no source file imports or references the deleted scratch files"
     - "bun run validate stays green after removal"
 
-### S3 — Renumber the duplicate `a00034` + add `lint:audit-ids`
+### S3 — Renumber the duplicate audit id + add `lint:audit-ids`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: docs/proposals/done/audits
 - **Files**: package.json
 - **Files**: tools/scripts/lint/audit-ids.script.ts
@@ -94,7 +94,7 @@ work lands.
 
 ### S4 — Wire `lint:tools`, `lint:proposals`, `lint:scaffolds`, `lint:agents` into `validate`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: package.json
 - **Gate**: lint
 - depends_on: [S1, S3]
@@ -105,7 +105,7 @@ work lands.
 
 ### S5 — Add `engines` and `packageManager` to the root `package.json`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: package.json
 - **Gate**: type
 - depends_on: [S1, S4]
@@ -116,7 +116,7 @@ work lands.
 
 ### S6 — Declare `activationEvents` in `extensions/vscode/package.json`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: extensions/vscode/package.json
 - **Gate**: type
 - depends_on: [S1]
@@ -127,7 +127,7 @@ work lands.
 
 ### S7 — Resolve the two `TODO(f00047)` hardcoded-language markers
 
-- **Status**: pending
+- **Status**: done
 - **Files**: extensions/vscode/src/commands/setup-github.ts
 - **Files**: extensions/vscode/src/commands/open-toolbar.ts
 - **Gate**: type
@@ -139,7 +139,7 @@ work lands.
 
 ### S8 — Add `.github/dependabot.yml` + CodeQL workflow
 
-- **Status**: pending
+- **Status**: done
 - **Files**: .github/dependabot.yml
 - **Files**: .github/workflows/codeql.yml
 - **Gate**: none
@@ -151,7 +151,7 @@ work lands.
 
 ### S9 — Reconcile the plugin count (9 / 14 / 16) against the live registry
 
-- **Status**: pending
+- **Status**: done
 - **Files**: AGENTS.md
 - **Files**: .github/copilot-instructions.md
 - **Files**: docs/ARCHITECTURE.md
@@ -163,7 +163,7 @@ work lands.
 
 ### S10 — Navigable index for `docs/troubleshooting/` and `docs/proposals/done/audits/`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: docs/troubleshooting/README.md
 - **Files**: docs/proposals/done/audits/README.md
 - **Gate**: none

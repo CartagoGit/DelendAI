@@ -214,8 +214,10 @@ export const locateProposal = async (
 				};
 			}
 		}
-		// Fall through; the index entry alone is still useful.
-		return fromIndex;
+		// The index entry is stale (the file moved or became unreadable).
+		// Fall back to the filesystem scan so callers that need current
+		// frontmatter status do not receive an empty status from old index
+		// metadata.
 	}
 	return locateByScan(options.proposalsDirAbs, proposalId, fs);
 };
