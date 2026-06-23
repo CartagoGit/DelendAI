@@ -27,7 +27,11 @@ export default defineConfig({
 	},
 	test: {
 		name: 'apps-web',
-		include: ['scripts/__tests__/**/*.spec.ts'],
+		include: [
+			'scripts/__tests__/**/*.spec.ts',
+			// f00030 S3 — pure helpers under `src/lib/` are unit-tested here.
+			'tests/**/*.spec.ts',
+		],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		environment: 'node',
 		globals: false,

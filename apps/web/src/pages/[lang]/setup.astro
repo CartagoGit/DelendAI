@@ -1,0 +1,18 @@
+---
+import Setup from '#COMPONENTS/Setup.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { languages, useTranslations, type Lang } from '#I18N/ui';
+
+export function getStaticPaths() {
+	return languages
+		.filter((l) => l.code !== 'en')
+		.map((l) => ({ params: { lang: l.code } }));
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as Lang);
+---
+
+<Base lang={lang as Lang} title={`${t.setup.title} — @mcp-vertex/core`}>
+	<Setup lang={lang as Lang} heading={t.setup.title} />
+</Base>

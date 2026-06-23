@@ -295,6 +295,33 @@ const dict: LangDict = {
 			preset: 'พรีเซ็ต',
 		},
 	},
+	setup: {
+		title: 'การตั้งค่าข้ามโปรเจกต์',
+		lead: 'เชื่อม mcp-vertex เข้ากับรีโพใดก็ได้ และเตรียมปลั๊กอิน issues ของ GitHub ให้พร้อมสำหรับรีโพนั้น — เป็น 7 ขั้นตอนเดียวกับที่คำสั่ง setup-github ทำงาน',
+		stepsTitle: '7 ขั้นตอน',
+		docsLinkLabel: 'อ่านคู่มือการตั้งค่าข้ามโปรเจกต์ฉบับหลัก',
+		detectRepoTitle: 'ตรวจหารีโพ',
+		detectRepoBody:
+			'อ่าน remote ของ GitHub แล้วแปลงให้อยู่ในรูป owner/name สลักที่ตรวจพบต้องชี้ไปยังรีโพที่คุณคาดหวัง',
+		confirmRepoTitle: 'ยืนยัน owner/name',
+		confirmRepoBody: 'รันคำสั่งตั้งค่าและยืนยัน (หรือแทนที่) สลักที่ตรวจพบก่อนที่จะเขียนสิ่งใด',
+		pickAuthTierTitle: 'เลือกระดับการยืนยันตัวตน',
+		pickAuthTierBody:
+			'ใช้ gh เมื่อ gh auth status สำเร็จ, ใช้ rest-authed เมื่อมีการตั้งค่า GITHUB_TOKEN, หรือใช้ rest-anon ในกรณีอื่น (จำกัด 60 คำขอต่อชั่วโมง)',
+		writeConfigTitle: 'เขียนการตั้งค่า',
+		writeConfigBody:
+			'เขียน plugins.issues.options.repo ลงใน mcp-vertex.config.json โดยไม่แตะการตั้งค่าปลั๊กอินอื่น',
+		verifyTierTitle: 'ตรวจสอบระดับ',
+		verifyTierBody:
+			'เริ่มโฮสต์โดยโหลดปลั๊กอิน issues เพื่อทดสอบระดับการยืนยันตัวตนที่เลือกแบบครบวงจร',
+		printInvocationTitle: 'พิมพ์คำสั่งเรียกใช้',
+		printInvocationBody:
+			'เพิ่มบล็อกเซิร์ฟเวอร์นี้ลงใน mcp.json ของคุณ รูปแบบเหมือนกันทั้งใน VS Code, Cursor และ Claude Code',
+		markConfiguredTitle: 'ทำเครื่องหมายว่าตั้งค่าแล้ว',
+		markConfiguredBody:
+			'บันทึกเป็นทางเลือกว่ารีโพนี้ตั้งค่าไปแล้วครั้งหนึ่ง เพื่อให้การรันครั้งถัดไปข้ามคำถาม',
+		optionalLabel: 'ไม่บังคับ',
+	},
 	ui: {
 		codeCopy: 'คัดลอก',
 		codeCopied: 'คัดลอกแล้ว!',

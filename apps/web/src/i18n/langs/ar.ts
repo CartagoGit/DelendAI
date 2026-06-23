@@ -297,6 +297,34 @@ const dict: LangDict = {
 			preset: 'الإعداد المسبق',
 		},
 	},
+	setup: {
+		title: 'الإعداد عبر المشاريع',
+		lead: 'اربط mcp-vertex بأي مستودع وجهّز إضافة issues الخاصة بـ GitHub لذلك المستودع — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
+		stepsTitle: 'الخطوات السبع',
+		docsLinkLabel: 'اقرأ الدليل المرجعي للإعداد عبر المشاريع',
+		detectRepoTitle: 'اكتشاف المستودع',
+		detectRepoBody:
+			'يقرأ ريموت GitHub ويحوّله إلى owner/name. يجب أن يشير المعرّف المكتشف إلى المستودع الذي تتوقعه.',
+		confirmRepoTitle: 'تأكيد owner/name',
+		confirmRepoBody:
+			'شغّل أمر الإعداد وأكّد (أو استبدل) المعرّف المكتشف قبل كتابة أي شيء.',
+		pickAuthTierTitle: 'اختيار مستوى المصادقة',
+		pickAuthTierBody:
+			'استخدم gh عندما ينجح gh auth status، وrest-authed عند ضبط GITHUB_TOKEN، وإلا rest-anon (محدود بـ 60 طلبًا في الساعة).',
+		writeConfigTitle: 'كتابة الإعدادات',
+		writeConfigBody:
+			'يكتب plugins.issues.options.repo في mcp-vertex.config.json دون المساس بإعدادات الإضافات الأخرى.',
+		verifyTierTitle: 'التحقق من المستوى',
+		verifyTierBody:
+			'شغّل المضيف مع تحميل إضافة issues لاختبار مستوى المصادقة المختار من البداية إلى النهاية.',
+		printInvocationTitle: 'طباعة أمر التشغيل',
+		printInvocationBody:
+			'أضف كتلة الخادم هذه إلى ملف mcp.json. الشكل نفسه في VS Code وCursor وClaude Code.',
+		markConfiguredTitle: 'وضع علامة كمُهيّأ',
+		markConfiguredBody:
+			'سجّل اختياريًا أن هذا المستودع تم إعداده مرة واحدة، حتى تتخطى عمليات التشغيل اللاحقة المطالبات.',
+		optionalLabel: 'اختياري',
+	},
 	ui: {
 		codeCopy: 'نسخ',
 		codeCopied: 'تم النسخ!',
