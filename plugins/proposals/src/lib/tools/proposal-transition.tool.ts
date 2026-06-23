@@ -1,18 +1,37 @@
 /**
- * f00016 S3 — `<prefix>_proposal_transition`: move a proposal to a new
- * status, validating the move against the DFA (f00016 §4.2) and keeping
- * the folder (f00016 §4.1) and frontmatter `status` in sync via one
- * atomic operation (`withFileMutex` + `writeFileAtomic` + `git mv`).
+ * proposal-transition.tool.ts
  *
- * Only operates on proposals whose CURRENT frontmatter status is
- * already one of the new 7 (`IProposalStatus`) — the 14 legacy files
- * still use the old 8-status union and are untouched by this tool
- * until S11/S12 migrate them (see S1's note on `sync-proposal-registry.ts`).
- * A legacy file's current status simply won't be found in
- * `PROPOSAL_STATUS_TRANSITIONS`, so the tool refuses cleanly instead of
- * needing a separate feature flag to stay safe.
+ * `<prefix>_proposal_transition`: move a proposal to a new status,
+ * validated against the DFA (f00016 §4.2) and with the folder
+ * (f00016 §4.1) and frontmatter `status` kept in sync via one atomic
+ * operation (`withFileMutex` + `writeFileAtomic` + `git mv`).
+ *
+ * Post-SOLID-refactor:
+ *   - The tool file is now pure orchestration. All disk I/O and
+ *     parsing go through injected helpers:
+ *       • `locateProposal` → shared helper in `proposals/locate.ts`
+ *         (DRY; the previous inline copy is gone).
+ *       • `setFrontmatterStatus` → `proposals/proposal-frontmatter-writer.ts`
+ *         (pure byte-level mutation, unit-testable in isolation).
+ *       • `isPlanProposal` → `proposals/proposal-type-detector.ts`
+ *         (single source of truth for "is this a plan?").
+ *       • `runPlanClosureGuard` → `swarm/plan-closure-guard.ts`
+ *         (the q00001 closure composition; the inline 12-line block
+ *         is gone).
+ *   - The tool no longer reaches into low-level modules. It composes
+ *     abstractions (DIP) and only knows about the DFA, the
+ *     frontmatter-writer, and the guard.
+ *
+ * Legacy handling:
+ *   Only operates on proposals whose CURRENT frontmatter status is
+ *   already one of the new 7 (`IProposalStatus`). The 14 legacy files
+ *   still use the old 8-status union and are untouched until
+ *   S11/S12 migrate them. A legacy file's status simply won't be
+ *   found in `PROPOSAL_STATUS_TRANSITIONS`, so the tool refuses
+ *   cleanly without needing a feature flag.
  */
-import { mkdir, readFile, readdir, rename } from 'node:fs/promises';
+
+import { mkdir, readFile, rename } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 
 import { z } from 'zod';
@@ -31,18 +50,13 @@ import {
 	STATUS_TO_FOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
 import type { IProposalStatus } from '../contracts/constants/proposal-glossary.constant';
-import {
-	extractYamlBlock,
-	parseFrontmatterBlock,
-} from '../proposals/frontmatter-parser';
+import { locateProposal } from '../proposals/locate';
+import type { ILocatedProposal } from '../proposals/locate';
+import { setFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
+import { isPlanProposal } from '../proposals/proposal-type-detector';
+import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
-import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
-import {
-	buildDiskPlanChildrenResolver,
-	readOwnSliceStatusesFromDisk,
-} from '../swarm/plan-closure.resolvers';
-import { parseProposalDocument } from '../proposals/proposal-document';
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
@@ -87,67 +101,58 @@ const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	warning: z.string().optional(),
 });
 
-interface ILocatedProposal {
-	readonly absPath: string;
-	readonly relPath: string;
-	readonly folder: string;
-	readonly raw: string;
-	readonly status: string;
-}
-
-/** Walks the 7 status folders (plus any stray top-level `.md`) for the file whose frontmatter `id` matches. */
-const locateProposal = async (
-	proposalsDirAbs: string,
-	id: string,
-): Promise<ILocatedProposal | null> => {
-	const folders = [...Object.values(STATUS_TO_FOLDER), '.'];
-	for (const folder of folders) {
-		const dirAbs = join(proposalsDirAbs, folder);
-		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => null,
-		);
-		if (entries === null) continue;
-		for (const entry of entries) {
-			if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
-			const absPath = join(dirAbs, entry.name);
-			const raw = await readFile(absPath, 'utf8');
-			const block = extractYamlBlock(raw);
-			if (block === null) continue;
-			const fm = parseFrontmatterBlock(block);
-			if (fm.id !== id) continue;
-			return {
-				absPath,
-				relPath: relative(proposalsDirAbs, absPath),
-				folder: folder === '.' ? '' : folder,
-				raw,
-				status: typeof fm.status === 'string' ? fm.status : '',
-			};
-		}
-	}
-	return null;
-};
-
-/** Replaces the frontmatter's `status:` line in place; leaves everything else byte-identical. */
-const setFrontmatterStatus = (raw: string, newStatus: string): string => {
-	const m = raw.match(/^(---\r?\n[\s\S]*?\r?\n---)/);
-	if (!m) return raw;
-	const block = m[1] ?? '';
-	const replaced = block.replace(/^status:.*$/m, `status: ${newStatus}`);
-	return replaced + raw.slice(block.length);
-};
-
-/** True when the proposal's frontmatter declares `type: plan` (q00001). */
-const looksLikePlan = (raw: string): boolean => {
-	const block = extractYamlBlock(raw);
-	if (block === null) return false;
-	const fm = parseFrontmatterBlock(block);
-	return fm.type === 'plan';
-};
-
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	options: IProposalTransitionToolOptions,
 ) => {
+	const rejection = validateTransitionArgs(args);
+	if (rejection !== null) return rejection;
+	// After `validateTransitionArgs` succeeded, `args.to` is one of
+	// the 7 known statuses. The `as IProposalStatus` cast is the
+	// explicit narrow — TypeScript cannot infer the type narrowing
+	// across the early-return boundary, so we re-state it.
+	const to: IProposalStatus = isKnownStatus(args.to)
+		? args.to
+		: (args.to as IProposalStatus);
+
+	const found = await locateProposal(args.id, {
+		indexPathAbs: options.indexPathAbs ?? '',
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
+	if (found === null) {
+		return toolError(
+			`no proposal with id "${args.id}" found under ${options.proposalsDirAbs}`,
+			'Check the id, or run sync_proposals first.',
+		);
+	}
+
+	const from = validateCurrentStatus(args.id, found);
+	if (typeof from !== 'string') return from;
+
+	const dfaRejection = validateTransition(args.id, from, to);
+	if (dfaRejection !== null) return dfaRejection;
+
+	const guardRejection = await maybeApplyPlanClosureGuard(
+		args,
+		found,
+		options,
+	);
+	if (guardRejection !== null) return guardRejection;
+
+	return await applyTransition(
+		{ id: args.id, from, to, reason: args.reason },
+		found,
+		options,
+	);
+};
+
+// ---------------------------------------------------------------------------
+// Step 1 — Validate args (cheap, no I/O).
+// ---------------------------------------------------------------------------
+
+const validateTransitionArgs = (
+	args: IProposalTransitionArgs,
+): ReturnType<typeof toolError> | null => {
 	if (args.reason.trim() === '') {
 		return toolError(
 			'reason is required',
@@ -160,70 +165,96 @@ export const runProposalTransition = async (
 			`Use one of: ${Object.keys(PROPOSAL_STATUSES).join(', ')}.`,
 		);
 	}
+	return null;
+};
 
-	const found = await locateProposal(options.proposalsDirAbs, args.id);
-	if (found === null) {
-		return toolError(
-			`no proposal with id "${args.id}" found under ${options.proposalsDirAbs}`,
-			'Check the id, or run sync_proposals first.',
-		);
-	}
+// ---------------------------------------------------------------------------
+// Step 2 — Reject legacy / off-state-machine proposals.
+// Returns the narrowed status on success, or a toolError on failure.
+// ---------------------------------------------------------------------------
 
-	if (!isKnownStatus(found.status)) {
-		return toolError(
-			`"${args.id}" has current status "${found.status}", which is not on the new state machine yet`,
-			'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
-		);
-	}
+const validateCurrentStatus = (
+	id: string,
+	found: ILocatedProposal,
+): IProposalStatus | ReturnType<typeof toolError> => {
+	if (isKnownStatus(found.status)) return found.status;
+	return toolError(
+		`"${id}" has current status "${found.status}", which is not on the new state machine yet`,
+		'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
+	);
+};
 
-	const legalTargets = PROPOSAL_STATUS_TRANSITIONS[found.status];
-	if (!legalTargets.has(args.to)) {
-		return toolError(
-			`illegal transition: "${found.status}" → "${args.to}"`,
-			legalTargets.size > 0
-				? `From "${found.status}", the only legal targets are: ${[...legalTargets].join(', ')}.`
-				: `"${found.status}" is terminal — no transitions out.`,
-		);
-	}
+// ---------------------------------------------------------------------------
+// Step 3 — Validate the DFA edge (status → status transition allowed?).
+// ---------------------------------------------------------------------------
 
-	// q00001 plan-closure guard: when closing a `type: plan` to `done`,
-	// every contained proposal, sub-plan, and own slice must already be
-	// `status: done` (and peer-reviewed, when the index carries the
-	// field). Fail loudly with a list of actionable blockers — the
-	// surface is the same one `proposals_close_plan` returns, so the
-	// user can call that tool for a friendlier wrapper.
-	if (
-		args.to === 'done' &&
-		looksLikePlan(found.raw) &&
-		options.indexPathAbs !== undefined
-	) {
-		const planDoc = await parseProposalDocument(found.absPath);
-		const ownSlices = await readOwnSliceStatusesFromDisk(found.absPath);
-		const resolver = await buildDiskPlanChildrenResolver({
-			indexPathAbs: options.indexPathAbs,
-			proposalsDirAbs: options.proposalsDirAbs,
-			ownSlices,
-		});
-		const report = await evaluatePlanClosure({
-			planId: args.id,
-			frontmatter: planDoc.frontmatter,
-			resolver,
-		});
-		if (!report.closable) {
-			const lines = report.reasons.map(
-				(r) => `  - [${r.kind}/${r.code}] ${r.message}`,
-			);
-			return toolError(
-				`plan ${args.id} is not closable: ${report.reasons.length} blocker(s)`,
-				`Resolve the blockers first, then call proposal_transition again.\n${lines.join('\n')}\n\nTip: use proposals_close_plan for a friendlier wrapper that runs this same guard.`,
-			);
-		}
-	}
+const validateTransition = (
+	id: string,
+	from: IProposalStatus,
+	to: IProposalStatus,
+): ReturnType<typeof toolError> | null => {
+	const legalTargets = PROPOSAL_STATUS_TRANSITIONS[from];
+	if (legalTargets.has(to)) return null;
+	return toolError(
+		`illegal transition: "${from}" → "${to}"`,
+		legalTargets.size > 0
+			? `From "${from}", the only legal targets are: ${[...legalTargets].join(', ')}.`
+			: `"${from}" is terminal — no transitions out.`,
+	);
+};
 
+// ---------------------------------------------------------------------------
+// Step 4 — q00001 closure guard (only fires for `type: plan` → done).
+// ---------------------------------------------------------------------------
+
+const maybeApplyPlanClosureGuard = async (
+	args: IProposalTransitionArgs,
+	found: ILocatedProposal,
+	options: IProposalTransitionToolOptions,
+): Promise<ReturnType<typeof toolError> | null> => {
+	if (args.to !== 'done') return null;
+	if (options.indexPathAbs === undefined) return null;
+
+	// `locateProposal` returns a partial record when only the index
+	// matched (no re-read of the file). The plan-closure guard needs
+	// the full markdown, so we re-read it here. Cheap and keeps the
+	// locate helper single-responsibility.
+	const raw = await readFile(found.absPath, 'utf8');
+	if (!isPlanProposal(raw)) return null;
+
+	const guard = await runPlanClosureGuard({
+		planId: args.id,
+		planAbsPath: found.absPath,
+		proposalsDirAbs: options.proposalsDirAbs,
+		indexPathAbs: options.indexPathAbs,
+	});
+	if (guard.closable) return null;
+	return toolError(
+		`plan ${args.id} is not closable: ${guard.blockerCount} blocker(s)`,
+		`Resolve the blockers first, then call proposal_transition again.\n${guard.blockerLines.join('\n')}\n\nTip: use proposals_close_plan for a friendlier wrapper that runs this same guard.`,
+	);
+};
+
+// ---------------------------------------------------------------------------
+// Step 5 — Apply the transition (file mutation + git mv).
+// ---------------------------------------------------------------------------
+
+interface IApplyArgs {
+	readonly id: string;
+	readonly from: IProposalStatus;
+	readonly to: IProposalStatus;
+	readonly reason: string;
+}
+
+const applyTransition = async (
+	args: IApplyArgs,
+	found: ILocatedProposal,
+	options: IProposalTransitionToolOptions,
+) => {
 	const gitRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
 	const newFolder = STATUS_TO_FOLDER[args.to];
-	const filename = found.relPath.split('/').pop() ?? found.relPath;
+	const filename = found.absPath.split('/').pop() ?? found.absPath;
 	const newAbsPath = join(options.proposalsDirAbs, newFolder, filename);
 	const moved = newAbsPath !== found.absPath;
 
@@ -253,14 +284,18 @@ export const runProposalTransition = async (
 
 	return toolOk({
 		id: args.id,
-		from: found.status,
+		from: args.from,
 		to: args.to,
 		reason: args.reason,
-		movedFrom: found.relPath,
+		movedFrom: relative(options.proposalsDirAbs, found.absPath),
 		movedTo: relative(options.proposalsDirAbs, newAbsPath),
 		...(gitWarning ? { warning: gitWarning } : {}),
 	});
 };
+
+// ---------------------------------------------------------------------------
+// Tool registration.
+// ---------------------------------------------------------------------------
 
 /** Registration for `<prefix>_proposal_transition`. */
 export const buildProposalTransitionRegistration = (

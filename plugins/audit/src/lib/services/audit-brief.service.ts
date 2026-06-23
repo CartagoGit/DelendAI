@@ -28,12 +28,34 @@
 // ---------------------------------------------------------------------------
 
 /** Scopes that are always available regardless of host configuration. */
-export type UniversalAuditScope =
-	| 'full'
-	| 'security'
-	| 'tokens'
-	| 'tests'
-	| 'docs';
+// Re-exports from `audit-brief.constants.ts` for backwards compatibility.
+// The canonical definitions live in the constants module; this file keeps
+// the public surface stable by re-exporting the same names.
+//
+// SOLID — the constants module owns type unions, scope tables, layer
+// config, score dimensions, the universal reading phases, and the
+// cross-cutting invariant defaults (SRP). This service file is now a
+// pure function over those inputs.
+export {
+	ALL_SCOPES,
+	SCOPE_LABEL,
+	SCORE_DIMENSIONS,
+	UNIVERSAL_SCOPES,
+} from './audit-brief.constants';
+export type {
+	ILayerConfig,
+	UniversalAuditScope,
+} from './audit-brief.constants';
+import {
+	ALL_SCOPES,
+	CROSS_CUTTING_UNIVERSAL_DEFAULTS,
+	type ILayerConfig,
+	SCOPE_LABEL,
+	SCORE_DIMENSIONS,
+	UNIVERSAL_PHASES,
+	UNIVERSAL_SCOPES,
+	type UniversalAuditScope,
+} from './audit-brief.constants';
 
 /**
  * Public short alias for {@link UniversalAuditScope}. Kept for backwards
@@ -45,76 +67,6 @@ export type UniversalAuditScope =
  * type names.
  */
 export type AuditScope = UniversalAuditScope;
-/** All universal scope identifiers, in canonical order. */
-export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
-	'full',
-	'security',
-	'tokens',
-	'tests',
-	'docs',
-];
-
-/** Human-readable labels for universal scopes. */
-export const SCOPE_LABEL: Readonly<Record<UniversalAuditScope, string>> = {
-	full: 'Auditoría completa',
-	security: 'Seguridad operacional',
-	tokens: 'Eficiencia de tokens / presupuesto',
-	tests: 'Calidad y cobertura de tests',
-	docs: 'Documentación (README, AGENTS, skills)',
-};
-
-/**
- * For backwards compatibility: `ALL_SCOPES` is kept as the list of
- * universal scopes. Hosts that previously iterated `ALL_SCOPES` to
- * enumerate all scopes must also include their configured layers.
- */
-export const ALL_SCOPES = UNIVERSAL_SCOPES;
-
-// ---------------------------------------------------------------------------
-// Layer config (host-defined)
-// ---------------------------------------------------------------------------
-
-/**
- * A host-defined layer scope that the agent will read exhaustively.
- * Configured via the host project's audit plugin options (typically under
- * `plugins.audit.options.layers` in whatever config file the host uses).
- */
-export interface ILayerConfig {
-	/**
-	 * Unique identifier used as the `scope` argument (e.g. `core`, `api`,
-	 * `frontend`). Must be a valid identifier: lowercase, hyphens allowed.
-	 */
-	readonly name: string;
-	/** Human-readable label shown in the brief header. */
-	readonly label: string;
-	/**
-	 * Workspace-relative directories or files the LLM must read.
-	 * Supports glob-like descriptions (e.g. `src/lib/`, `packages/core/src/`).
-	 */
-	readonly paths: readonly string[];
-	/**
-	 * Additional layer-specific checks to append to the generic checklist.
-	 * Each string is rendered as a bullet point in the reading-phase section.
-	 */
-	readonly checks?: readonly string[];
-}
-
-// ---------------------------------------------------------------------------
-// Scoring dimensions
-// ---------------------------------------------------------------------------
-
-/** Sections that the brief asks the model to grade, in canonical order. */
-export const SCORE_DIMENSIONS: readonly string[] = [
-	'Arquitectura',
-	'Contratos e interfaces',
-	'Eficiencia de tokens',
-	'Anti-deadlock / concurrencia',
-	'Calidad de código fuente',
-	'Documentación',
-	'Tests (estructura, cobertura, calidad)',
-	'Seguridad operacional',
-	'Genericidad (project-agnostic)',
-];
 
 // ---------------------------------------------------------------------------
 // Brief options
@@ -155,30 +107,15 @@ export interface IBriefOptions {
 }
 
 // ---------------------------------------------------------------------------
-// Cross-cutting invariants (appear in every scope)
+// Cross-cutting renderer (pure function over its inputs)
 // ---------------------------------------------------------------------------
 
 /**
- * Universal defaults for the "cross-cutting invariants" block. These
- * are project-agnostic on purpose: every host benefits from checking
- * them, regardless of language or framework. Hosts that have additional
- * invariants they want surfaced in every scope can pass them via
- * {@link IBriefOptions.crossCuttingAdditions}; they are rendered AFTER
- * the universal defaults so the brief stays self-explanatory.
- *
- * The historical (mcp-vertex-specific) defaults — `mcp-vertex_metrics`,
- * `ctx.keepLegacy`, `tool-outputs.ts` — were promoted to **host-added**
- * invariants because they describe one project's vocabulary. Other
- * projects will have their own observability primitive, their own
- * keep-legacy semantics, their own generated-typed-outputs workflow.
- * Hosts wire those via `crossCuttingAdditions` from `register()`.
+ * Render the cross-cutting invariants block. Universal defaults come
+ * first, then the host's `crossCuttingAdditions`. Kept as a function
+ * (not a constant in the constants module) because it builds markdown
+ * from a join — that is logic, not data, and belongs in the service.
  */
-const CROSS_CUTTING_UNIVERSAL_DEFAULTS: readonly string[] = [
-	'- **Observabilidad**: identifica la primitiva canónica del proyecto (métricas, tracing, logs estructurados, lo que sea) y verifica que esté presente, que persista su estado entre llamadas, y que un snapshot-diff entre dos invocaciones refleje la actividad real del host. Si no existe, es hallazgo MEJORABLE; si existe pero miente, es FATAL.',
-	'- **Honoring de flags de configuración**: cada flag opt-in documentado (legacy, migración, dry-run, allow-list, etc.) debe estar **explícitamente honrado o explícitamente ignorado** en el código. Un flag mencionado en docs pero sin efecto verificable en código es hallazgo MEJORABLE.',
-	'- **Outputs tipados generados**: si el proyecto genera tipos a partir de schemas (typed SDK, JSON Schema, OpenAPI, etc.) los archivos generados deben estar commiteados y regenerarse como parte del gate de validación. Un \`<generated>\` ausente o desfasado respecto a su fuente es hallazgo.',
-];
-
 const renderCrossCutting = (additions: readonly string[]): string => {
 	const bullets = [...CROSS_CUTTING_UNIVERSAL_DEFAULTS, ...additions].join(
 		'\n',
@@ -191,54 +128,6 @@ Estos puntos se verifican en **cualquier** alcance de auditoría:
 ${bullets}
 `;
 };
-
-// ---------------------------------------------------------------------------
-// Universal reading phases (repo-agnostic)
-// ---------------------------------------------------------------------------
-
-const PHASE_SECURITY = `
-### Fase — Seguridad operacional
-
-- **Escrituras atómicas**: traza cada path de escritura durable y verifica que usa primitivas de escritura atómica (tmp-file + rename o equivalente del framework). Un \`writeFile\` desnudo en datos compartidos es hallazgo FATAL.
-- **Redacción de secretos**: ¿se aplica \`redactSecrets\` (o equivalente) antes de persistir cualquier texto del usuario?
-- **Contención de paths**: ¿todo input de path está validado contra el workspace root? Una ruta \`../\` que escape es FATAL.
-- **I/O síncrono en hot paths**: \`*Sync\` en handlers de tools/requests es MUY_MAL.
-- **\`@ts-ignore\` / supresiones de tipos**: cualquier ocurrencia en producción es hallazgo.
-- **Secrets hardcodeados**: API keys, tokens, endpoints privados en fuente.
-`;
-
-const PHASE_TOKENS = `
-### Fase — Eficiencia de tokens
-
-- Confirma que el tool de orientación principal (\`overview\` o equivalente) se mantiene bajo el presupuesto documentado.
-- ¿Alguna descripción de tool con prosa redundante (explica lo mismo que el nombre del parámetro)?
-- ¿Instrucciones de sistema comprimibles sin perder semántica?
-- Traza el path frío de un agente nuevo: ¿cuántas llamadas necesita antes de poder trabajar? ¿Es el mínimo posible?
-- ¿El sistema evita re-lecturas innecesarias de recursos no modificados (hashing, digest, cache)?
-`;
-
-const PHASE_TESTS = `
-### Fase — Tests
-
-Lee los spec files de los engines más críticos:
-- ¿Paths de concurrencia cubiertos? (dos escritores simultáneos)
-- ¿Snapshots stale?
-- ¿Los specs testean contratos o detalles de implementación?
-- ¿Falta fuzzing / property-based testing en lógica de parsing con múltiples capas de validación?
-
-Flag: módulo con >300 LOC y <3 spec files = riesgo de undertest (hallazgo MEJORABLE).
-Patrón canónico: specs colocados junto al código; usan mocks/stubs inyectados, no globals.
-`;
-
-const PHASE_DOCS = `
-### Fase — Documentación
-
-- **Guías de agente / AGENTS.md** (o equivalente: \`CONTRIBUTING.md\`, \`CONVENTIONS.md\`, \`docs/agent.md\`): para cada regla definida, ¿hay alguna violación en el código que la contradiga?
-- **Skills / runbooks / playbooks**: abre cada uno y verifica: ¿nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas? ¿Algún ejemplo de output desactualizado?
-- **Scaffolds / plantillas / generators**: ¿describen correctamente la práctica actual o están desfasados?
-- **READMEs de módulos**: ¿actualizados tras los últimos cambios significativos?
-- **Reglas declaradas en código (lint, typecheck, scripts de CI)**: ¿están en sync con las reglas narradas en docs? Un doc que dice "no X" sin un lint que lo enforce es hallazgo MEJORABLE.
-`;
 
 // ---------------------------------------------------------------------------
 // Generic layer reading phase (parameterised by ILayerConfig)
@@ -444,14 +333,6 @@ const buildReadingPhases = (
 		configFileName: '<config-file>',
 	},
 ): string => {
-	const universalPhaseMap: Record<UniversalAuditScope, string> = {
-		full: '', // handled below
-		security: PHASE_SECURITY,
-		tokens: PHASE_TOKENS,
-		tests: PHASE_TESTS,
-		docs: PHASE_DOCS,
-	};
-
 	const crossCutting = renderCrossCutting(
 		options.crossCuttingAdditions ?? [],
 	);
@@ -471,16 +352,19 @@ para obtener instrucciones de lectura específicas por capa en próximas auditor
 		return (
 			crossCutting +
 			layerPhases +
-			PHASE_SECURITY +
-			PHASE_TOKENS +
-			PHASE_TESTS +
-			PHASE_DOCS
+			UNIVERSAL_PHASES.security +
+			UNIVERSAL_PHASES.tokens +
+			UNIVERSAL_PHASES.tests +
+			UNIVERSAL_PHASES.docs
 		);
 	}
 
 	// Universal scope (security, tokens, tests, docs)
-	if (scope in universalPhaseMap && scope !== 'full') {
-		return crossCutting + universalPhaseMap[scope as UniversalAuditScope];
+	if (scope in UNIVERSAL_PHASES && scope !== 'full') {
+		return (
+			crossCutting +
+			UNIVERSAL_PHASES[scope as Exclude<UniversalAuditScope, 'full'>]
+		);
 	}
 
 	// Layer scope
@@ -491,6 +375,10 @@ para obtener instrucciones de lectura específicas por capa en próximas auditor
 
 	// Unknown scope — safe fallback: all universal phases
 	return (
-		crossCutting + PHASE_SECURITY + PHASE_TOKENS + PHASE_TESTS + PHASE_DOCS
+		crossCutting +
+		UNIVERSAL_PHASES.security +
+		UNIVERSAL_PHASES.tokens +
+		UNIVERSAL_PHASES.tests +
+		UNIVERSAL_PHASES.docs
 	);
 };

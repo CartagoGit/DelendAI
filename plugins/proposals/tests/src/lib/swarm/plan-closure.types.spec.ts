@@ -22,15 +22,19 @@ import {
 
 const fmWith = (
 	closureGate: Record<string, unknown> | undefined,
-): IProposalFrontmatter => ({
-	id: 'q00001',
-	type: 'plan',
-	status: 'ready',
-	track: 'test',
-	...(closureGate === undefined
-		? {}
-		: { closureGate: closureGate as IProposalFrontmatter['closureGate'] }),
-});
+): IProposalFrontmatter => {
+	const base: IProposalFrontmatter = {
+		id: 'q00001',
+		type: 'plan',
+		status: 'ready',
+		track: 'test',
+	};
+	if (closureGate === undefined) return base;
+	return {
+		...base,
+		closureGate: closureGate as IProposalFrontmatter['closureGate'],
+	};
+};
 
 describe('policyFromFrontmatter', () => {
 	it('returns the canonical defaults when closureGate is absent', () => {

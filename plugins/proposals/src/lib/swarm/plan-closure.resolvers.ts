@@ -215,8 +215,9 @@ export const readPlanOwnSliceStatuses = (
 	const section = m[1] ?? '';
 	const blockRe =
 		/###\s+([A-Za-z0-9_-]+)[^\n]*\n([\s\S]*?)(?=###\s|\n*$(?![\s\S]))/g;
-	let bm: RegExpExecArray | null;
-	while ((bm = blockRe.exec(section)) !== null) {
+	// biome-ignore lint/suspicious/noAssignInExpressions: regex iteration idiom
+	let bm: RegExpExecArray | null = blockRe.exec(section);
+	while (bm !== null) {
 		const id = bm[1] ?? '';
 		const body = bm[2] ?? '';
 		const sm = body.match(
@@ -225,6 +226,7 @@ export const readPlanOwnSliceStatuses = (
 		if (sm) {
 			map.set(id, (sm[1] ?? '').trim());
 		}
+		bm = blockRe.exec(section);
 	}
 	return map;
 };
