@@ -26,6 +26,36 @@ export const registerOpenKnowledgeCommand = (deps: ICommandDeps) =>
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);
+		// FIX (K2): the navigator webview posts `{ command: 'openEntry', id }`
+		// from each entry click but the host never listened. Without this
+		// bridge, clicking any entry is a silent no-op. We now fetch the
+		// entry body and post it back as a `preview` command that the
+		// client-side script (now XSS-safe via textContent) renders.
+		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
+			if (
+				typeof msg !== 'object' ||
+				msg === null ||
+				(msg as { command?: unknown }).command !== 'openEntry'
+			) {
+				return;
+			}
+			const id = (msg as { id?: unknown }).id;
+			if (typeof id !== 'string' || id.length === 0) return;
+			try {
+				const entry = await fetchKnowledgeEntry(
+					deps.vscode,
+					deps.client,
+					id,
+				);
+				await panel.webview.postMessage?.({
+					command: 'preview',
+					entry,
+				});
+			} catch {
+				// fetchKnowledgeEntry already surfaces an error to the
+				// user; nothing more to do here.
+			}
+		});
 		panel.webview.html = html;
 		return panel;
 	});

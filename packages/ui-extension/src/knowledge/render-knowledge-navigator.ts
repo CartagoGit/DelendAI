@@ -24,6 +24,15 @@ export interface IRenderKnowledgeNavigatorOptions {
 
 const CLIENT_SCRIPT = `
 (function () {
+  'use strict';
+  // FIX (K1): VS Code only allows a single acquireVsCodeApi() per
+  // webview session. We must capture it ONCE here and close over
+  // the reference, otherwise the second click throws
+  // "An instance of the VS Code API has already been acquired".
+  const vscode = (typeof window.acquireVsCodeApi === 'function')
+    ? window.acquireVsCodeApi()
+    : null;
+
   const search = document.getElementById('mv-kn-search');
   if (search) {
     search.addEventListener('input', () => {
@@ -42,19 +51,60 @@ const CLIENT_SCRIPT = `
       });
     });
   }
+
+  // FIX (K4): replaced the inline onclick dispatching a CustomEvent
+  // nobody listened to with a delegated click handler. Single event
+  // listener, single vscode.postMessage path.
+  document.addEventListener('click', (e) => {
+    const a = e.target && e.target.closest && e.target.closest('a[data-entry]');
+    if (!a) return;
+    e.preventDefault();
+    const id = a.getAttribute('data-entry');
+    if (vscode && id) vscode.postMessage({ command: 'openEntry', id });
+  });
+
+  // FIX (K3): the previous handler rebuilt the preview by concatenating
+  // msg.entry.title / msg.entry.id into innerHTML — an XSS vector for
+  // any knowledge entry whose title or id contains HTML. We now build
+  // the preview DOM via createElement + textContent so every user
+  // string is rendered as text, never parsed as HTML.
+  window.addEventListener('message', (e) => {
+    const msg = e && e.data;
+    if (!msg || msg.command !== 'preview' || !msg.entry) return;
+    const preview = document.querySelector('.mv-kn-preview');
+    if (!preview) return;
+
+    // Reset classes & content (the preview pane is rebuilt every time).
+    preview.classList.remove('mv-kn-preview--empty');
+    while (preview.firstChild) preview.removeChild(preview.firstChild);
+
+    const header = document.createElement('header');
+    const h2 = document.createElement('h2');
+    h2.textContent = msg.entry.title || '';
+    const code = document.createElement('code');
+    code.textContent = msg.entry.id || '';
+    header.appendChild(h2);
+    header.appendChild(code);
+
+    const pre = document.createElement('pre');
+    pre.textContent = msg.entry.body || '';
+
+    preview.appendChild(header);
+    preview.appendChild(pre);
+  });
 })();
 `.trim();
 
 const renderCategory = (
 	category: string,
 	entries: readonly IKnowledgeListEntry[],
-	onOpenEntry: string,
+	_onOpenEntry: string,
 ): string => {
 	const rows = entries
 		.map((e) => {
 			const data = `${e.id} ${e.title} ${category}`;
 			return `<li class="mv-kn-entry" data-search="${escapeHtml(data)}">
-				<a href="#" data-entry="${escapeHtml(e.id)}" onclick="event.preventDefault(); window.dispatchEvent(new CustomEvent('mv-kn-open', {detail: '${escapeHtml(e.id)}'}))">
+				<a href="#" data-entry="${escapeHtml(e.id)}" data-title="${escapeHtml(e.title)}">
 					<code>${escapeHtml(e.id)}</code>
 					<span class="mv-kn-title">${escapeHtml(e.title)}</span>
 				</a>
@@ -105,7 +155,13 @@ export const renderKnowledgeNavigator = (
 			--mv-bg: var(--vscode-editor-background, #0d1117);
 			--mv-border: var(--vscode-widget-border, #30363d);
 			--mv-surface: var(--vscode-side-bar-background, #161b22);
-			--mv-accent: var(--mv-brand-purple);
+			/* FIX (K5): --mv-brand-purple was undefined inside this
+			   webview (only the shared componentCss defines it). The
+			   .mv-kn-count badge now falls back to the brand hex
+			   inline so the category counts render visibly even when
+			   componentCss is not injected by the host. */
+			--mv-brand-purple: #7c3aed;
+			--mv-accent: var(--mv-brand-purple, #7c3aed);
 		}
 		* { box-sizing: border-box; }
 		body {
@@ -209,27 +265,6 @@ export const renderKnowledgeNavigator = (
 	</aside>
 	${renderPreview(options.preview)}
 	<script>${CLIENT_SCRIPT}</script>
-	<script>
-		// Forward entry clicks to the host as messages.
-		document.addEventListener('click', (e) => {
-			const a = e.target && e.target.closest && e.target.closest('a[data-entry]');
-			if (!a) return;
-			e.preventDefault();
-			const id = a.getAttribute('data-entry');
-			// Acquire the VS Code webview API and post a message.
-			const vscode = window.acquireVsCodeApi && window.acquireVsCodeApi();
-			if (vscode) vscode.postMessage({ command: 'openEntry', id });
-		});
-		window.addEventListener('message', (e) => {
-			const msg = e.data;
-			if (msg && msg.command === 'preview' && msg.entry) {
-				const preview = document.querySelector('.mv-kn-preview');
-				if (preview && msg.entry.body) {
-					preview.innerHTML = '<header><h2>' + msg.entry.title + '</h2><code>' + msg.entry.id + '</code></header><pre>' + msg.entry.body.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) + '</pre>';
-				}
-			}
-		});
-	</script>
 </body>
 </html>`;
 };

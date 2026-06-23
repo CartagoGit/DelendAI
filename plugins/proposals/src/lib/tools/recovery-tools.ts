@@ -22,7 +22,7 @@ import {
 } from '../proposals/frontmatter-parser';
 import { locateByScan } from '../proposals/locate';
 import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
-import { readTextOrNull } from '../proposals/index-reader';
+import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 
@@ -208,20 +208,19 @@ const readLock = async (
 	stale_after_minutes: number;
 	in_flight: any[];
 }> => {
-	try {
-		const parsed = JSON.parse(await readFile(lockPathAbs, 'utf8')) as {
-			version?: number;
-			stale_after_minutes?: number;
-			in_flight?: any[];
-		};
-		return {
-			version: parsed.version ?? 1,
-			stale_after_minutes: parsed.stale_after_minutes ?? 10,
-			in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
-		};
-	} catch {
+	const parsed = await readJsonOrNull<{
+		version?: number;
+		stale_after_minutes?: number;
+		in_flight?: any[];
+	}>(lockPathAbs);
+	if (parsed === null) {
 		return { version: 1, stale_after_minutes: 10, in_flight: [] };
 	}
+	return {
+		version: parsed.version ?? 1,
+		stale_after_minutes: parsed.stale_after_minutes ?? 10,
+		in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
+	};
 };
 
 const releaseLock = async (

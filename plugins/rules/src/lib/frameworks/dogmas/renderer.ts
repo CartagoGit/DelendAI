@@ -61,7 +61,7 @@ export const stringDogmaRenderer: IDogmaRenderer = {
 };
 
 const labelOf = (d: IDogmaAdapter): string =>
-	`${d.language} (${d.packageManager}, ${d.version})`;
+	`${d.displayName ?? d.language} (${d.packageManager}, ${d.version})`;
 
 type DimKey =
 	| 'ownership'

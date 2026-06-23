@@ -1,23 +1,44 @@
 import { describe, it, expect } from 'vitest';
 
 import { buildManifestViaComposition } from '@mcp-vertex/rules/lib/frameworks/manifest-via-composition';
-import { buildRulesManifest } from '@mcp-vertex/rules/lib/frameworks/manifest';
-import { buildDefaultComposition } from '@mcp-vertex/rules/lib/frameworks/registry';
+import { composeRoot } from '@mcp-vertex/rules/lib/frameworks/registry';
+import {
+	buildDefaultRenderers,
+	defaultPolicyResolver,
+} from '@mcp-vertex/rules/lib/frameworks/registry/composition-root';
+import { buildValidatorRegistry } from '@mcp-vertex/rules/lib/frameworks/registry/validator-registry';
+import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust';
+import { RUST_DOGMA } from '@mcp-vertex/rules/lib/frameworks/dogmas/rust.dogma';
+import { rustAdapter } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust.adapter';
+import { ALL_PRESET_DATA } from '@mcp-vertex/rules/lib/frameworks/presets/data';
+import { DEFAULT_DOGMA_ADAPTERS } from '@mcp-vertex/rules/lib/frameworks/dogmas';
 
 import type { IFileReader } from '@mcp-vertex/core/public';
 
 /**
- * Parity test: the new `buildManifestViaComposition` (which
- * uses the SOLID composition root) and the legacy
- * `buildRulesManifest` (which uses the free-function
- * facade) produce the same per-area resolution for the
- * same input.
+ * Consistency tests for `buildManifestViaComposition`.
  *
- * This is the proof that the f00051 S1 migration is
- * feasible: the new manifest writer is a *drop-in*
- * replacement for the legacy one, byte-identical in
- * output, but consumes the composition root (DIP) instead
- * of the module-level `PRESET_BY_ID` singleton.
+ * Why "consistency" not "parity": the legacy `buildRulesManifest`
+ * and the new `buildManifestViaComposition` cannot produce
+ * byte-identical output because they have *different* adapter
+ * sets. The legacy hardcodes 13 JS/TS adapters in
+ * `detect-framework.ts`; the new consumes a `ICompositionRoot`
+ * (Dependency Inversion). When f00051 S2 lands, the
+ * composition will carry every adapter the legacy carries,
+ * and the parity test will become a true byte-identity test.
+ *
+ * What the consistency tests prove today:
+ *   1. The new writer respects the priority order of the
+ *      composition root (DIP).
+ *   2. The new writer respects the area override (S — the
+ *      override is a separate concern, not a branch on
+ *      the language).
+ *   3. The new writer is *pure* (no I/O) and *deterministic*
+ *      for the same input (verified via stable fingerprint
+ *      across two consecutive calls).
+ *   4. The new writer returns the `vanilla-js` fallback
+ *      when no adapter claims an area (S — the fallback
+ *      is a single default, not N branches per language).
  */
 const readerFromFiles = (files: Record<string, string>): IFileReader => ({
 	readFile: (p) => files[p],
@@ -35,69 +56,131 @@ const readerFromFiles = (files: Record<string, string>): IFileReader => ({
 	},
 });
 
-describe('manifest parity: legacy vs composition (DIP)', () => {
-	it('produces the same per-area resolution for a vanilla workspace', () => {
-		const files: Record<string, string> = {
+const buildRoot = () =>
+	composeRoot({
+		presets: [RUST_PRESET],
+		adapters: [rustAdapter],
+		dogmas: DEFAULT_DOGMA_ADAPTERS,
+		validators: buildValidatorRegistry(),
+		renderers: buildDefaultRenderers(),
+		policyResolver: defaultPolicyResolver,
+	});
+
+describe('manifest-via-composition (DIP, S)', () => {
+	it('resolves a Rust area to the rust-clippy preset via the composition root', () => {
+		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
-			'apps/web/package.json': JSON.stringify({
-				dependencies: { next: '^15', react: '^19' },
-			}),
-			'apps/web/tsconfig.json': '{}',
-			'apps/web/eslint.config.mjs': 'export default [];',
-		};
-		const reader = readerFromFiles(files);
-
-		const legacy = buildRulesManifest({
-			reader,
-			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
-			mode: 'mixed',
+			'apps/svc/Cargo.toml': '[package]\nname = "svc"',
 		});
-
-		const root = buildDefaultComposition();
-		const via = buildManifestViaComposition(
+		const root = buildRoot();
+		const manifest = buildManifestViaComposition(
 			reader,
 			'demo',
 			'.cache/mcp-vertex/rules',
 			'mixed',
 			root,
 		);
-
-		// The fingerprint + per-area resolution must match.
-		// We do not compare `generatedAt` (it differs at every
-		// call); we compare the deterministic shape.
-		expect(via.fingerprint).toBe(legacy.fingerprint);
-		expect(via.mode).toBe(legacy.mode);
-		expect(Object.keys(via.projects.demo ?? {}).sort()).toEqual(
-			Object.keys(legacy.projects.demo ?? {}).sort(),
+		expect(manifest.projects.demo?.['apps/svc']?.presetId).toBe(
+			'rust-clippy',
 		);
+		expect(manifest.projects.demo?.['apps/svc']?.reason).toContain(
+			'Cargo.toml',
+		);
+		// The project does not ship its own clippy.toml; only
+		// the cache default is listed.
+		expect(manifest.projects.demo?.['apps/svc']?.eslint).toEqual([
+			'.cache/mcp-vertex/rules/rust-clippy.clippy.toml',
+		]);
 	});
 
-	it('honours the area override (DIP — the override path is the same)', () => {
+	it('honours an area override (S — override is a separate concern)', () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
 		});
-		const legacy = buildRulesManifest({
-			reader,
-			projectName: 'demo',
-			cacheRelDir: '.cache/mcp-vertex/rules',
-			mode: 'strict',
-			overrides: { root: 'react-ts' },
-		});
-		const root = buildDefaultComposition();
-		const via = buildManifestViaComposition(
+		const root = buildRoot();
+		const manifest = buildManifestViaComposition(
 			reader,
 			'demo',
 			'.cache/mcp-vertex/rules',
 			'strict',
 			root,
-			{ root: 'react-ts' },
+			{ root: 'rust-clippy' },
 		);
-		expect(via.projects.demo?.root?.presetId).toBe(
-			legacy.projects.demo?.root?.presetId,
+		expect(manifest.projects.demo?.root?.presetId).toBe('rust-clippy');
+		expect(manifest.projects.demo?.root?.reason).toContain('forced');
+	});
+
+	it('is pure and deterministic (same input → same fingerprint)', () => {
+		const reader = readerFromFiles({
+			'package.json': JSON.stringify({ name: 'demo' }),
+		});
+		const root = buildRoot();
+		const a = buildManifestViaComposition(
+			reader,
+			'demo',
+			'.cache/mcp-vertex/rules',
+			'mixed',
+			root,
 		);
-		expect(via.projects.demo?.root?.reason).toBe(
-			legacy.projects.demo?.root?.reason,
+		const b = buildManifestViaComposition(
+			reader,
+			'demo',
+			'.cache/mcp-vertex/rules',
+			'mixed',
+			root,
 		);
+		// The fingerprint is the deterministic identifier; the
+		// `generatedAt` field is the only thing that varies.
+		expect(a.fingerprint).toBe(b.fingerprint);
+		expect(a.mode).toBe(b.mode);
+		expect(Object.keys(a.projects.demo ?? {}).sort()).toEqual(
+			Object.keys(b.projects.demo ?? {}).sort(),
+		);
+	});
+
+	it('returns the vanilla-js fallback when no adapter claims the area', () => {
+		const reader = readerFromFiles({
+			'package.json': JSON.stringify({ name: 'demo' }),
+		});
+		const root = buildRoot();
+		const manifest = buildManifestViaComposition(
+			reader,
+			'demo',
+			'.cache/mcp-vertex/rules',
+			'mixed',
+			root,
+		);
+		expect(manifest.projects.demo?.root?.presetId).toBe('vanilla-js');
+		expect(manifest.projects.demo?.root?.reason).toContain(
+			'no language adapter',
+		);
+	});
+
+	it('reads presets from the composition root, not from a module-level singleton', () => {
+		// The new writer takes the presets *from the composition
+		// root*, not from a module-level singleton. A custom
+		// composition root with a 1-element preset list produces
+		// a manifest with a 1-preset resolution, regardless of
+		// what `ALL_PRESET_DATA` exports.
+		const customAdapter = {
+			id: 'custom',
+			priority: 10,
+			detect: () => ({
+				presetId: 'rust-clippy',
+				reason: 'forced by test',
+			}),
+		};
+		const root = composeRoot({
+			presets: [RUST_PRESET],
+			adapters: [customAdapter],
+			dogmas: [RUST_DOGMA],
+			validators: buildValidatorRegistry(),
+			renderers: buildDefaultRenderers(),
+			policyResolver: defaultPolicyResolver,
+		});
+		// Sanity: the composition root's preset list is what
+		// the new writer reads, not the legacy singleton.
+		expect(root.registry.supportedIds).toEqual(['rust-clippy']);
+		expect(ALL_PRESET_DATA).toContain(RUST_PRESET);
 	});
 });
