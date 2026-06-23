@@ -15,20 +15,27 @@ importing plugin internals.
 
 ## Commands
 
-| Command | Purpose |
+`mcpv --help` lists the full surface grouped by group; `--help --lang=es`
+(and 11 other locales) renders the same help translated. Every plugin
+tool has a 1:1 subcommand — the CLI is pure delegation, no domain logic.
+
+| Group | Commands |
 |---|---|
-| `status` | Runtime status collectors from the server. |
-| `overview` | Compact server map: plugins, tools, knowledge and next action. |
-| `plugin list` | Loaded plugin catalogue. |
-| `plugin inspect <name>` | Tools exposed by one plugin. |
-| `metrics` | Per-tool calls, errors, latency and response bytes. |
-| `validate` | Run the root `bun run validate` gate. |
-| `validate-matrix` | Show the configured validation matrix. |
-| `config show|get|set|doctor|schema` | Inspect or safely update `mcp-vertex.config.json`. |
-| `init` | Create a minimal `mcp-vertex.config.json`; refuses overwrite unless `--force`. |
-| `search <query>` | Search text files through the `search` plugin. |
-| `docs list|read` | Navigate markdown docs through the `docs` plugin. |
-| `scaffold <kind> --name=<name>` | Generate core scaffolds; add `--out=<path>` to write. |
+| **core** | `status`, `overview`, `plugin list/inspect`, `metrics`, `validate`, `validate-matrix`, `config show/get/set/doctor/schema`, `init`, `search`, `scaffold` |
+| **fs / knowledge / project** | `fs read/write`, `knowledge`, `project analyze/plan/create` |
+| **git** | `git status/changed/diff/log/blame/show/worktree` |
+| **memory** | `memory save/recall/list/forget/export/import` |
+| **deps / rules / test-convention** | `deps list/check/polyglot`, `rules get/check/apply`, `test-convention get/suggest/scan` |
+| **quality / audit / logs** | `quality scopes/run/cancel/run-all`, `audit plan/consolidate`, `logs query/tail/subscribe/correlate/redact-test` |
+| **docs** | `docs list/read/search` |
+| **proposals** | `proposals auto-work/continue/create/close-slice/transition/board/status/health/agent-names/lock/worktree/stale-list/round-context/workflow/diagnose/adopt/force-transition/reconcile-folder/state-repair/release-orphan/review/sync/task-queue/delegate/plan` |
+| **notification / web-fetch / status-marker** | `notification status/await-lock`, `web-fetch`, `status-marker close/validate/ping` |
+| **conventions** | `conventions check/plan/apply` |
+| **doctor / completion** | `doctor` (sectioned health, exit 0/1/2), `completion bash\|zsh\|fish` |
+
+`mcpv doctor --json` returns `{ status, sections }` for CI. `eval "$(mcpv
+completion bash)"` installs shell completion derived from the live
+command registry.
 
 ## Examples
 
