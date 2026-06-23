@@ -1,97 +1,58 @@
 // capability-diff: "what does THIS project need vs. what does it have?".
 //
-// The bootstrap blueprint (`build-blueprint.ts`) generates a fresh server
-// from a greenfield assumption. In the real world the project already
-// ships (or depends on) an MCP server, and the right move is to **augment
-// it**, not replace it. This module is the seam that decides which tools
-// are missing, which already exist under a different name, and which are
-// candidates to be dropped.
+// SOLID — Single Responsibility. After the refactor this file is a
+// THIN COMPOSER. The five things it used to do are now owned by
+// dedicated modules:
+//   - id normalisation  → capability-normalize.ts
+//   - alias generation  → alias-strategy.ts (IAliasStrategy)
+//   - bucket assignment → tool-classifier.ts (IExistingToolsMatcher)
+//   - result aggregation → capability-diff-views.ts
+//   - existing-tool discovery → existing-tools-source.ts
 //
-// Design notes (f00051 S1):
-// - Pure: takes an `IProjectAnalysis` + the namespaced tool ids the
-//   existing server exposes; returns a structured diff. No filesystem,
-//   no MCP, no `process.cwd()`.
-// - The "existing tool set" is whatever the caller injects. Today the
-//   bootstrap tool can read it from `mcp.json` (via `createMcpProject`
-//   + `listTools`); tomorrow a host can pass an in-memory list from a
-//   connected server. Either way, this module stays the same.
-// - Mirrors the structure of `IProjectAnalysis.signals`: stable shape,
-//   readable by both the LLM and a human reviewing the plan.
+// The only thing left here is the pipeline that wires them together
+// and the public `diffCapabilities` entry point.
 
 import type { IProjectAnalysis } from './analyze-project';
 import type { IBlueprintArtifact, IServerBlueprint } from './build-blueprint';
+import { canonicalToolId } from './capability-normalize';
+import type { ICanonicalToolId } from './capability-normalize';
+import { CompositeAliasStrategy, DefaultAliasStrategy } from './alias-strategy';
+import type { IAliasStrategy } from './alias-strategy';
+import { DefaultExistingToolsMatcher } from './tool-classifier';
+import type {
+	IExistingToolsMatcher,
+	IToolClassification,
+} from './tool-classifier';
+import {
+	buildCapabilityViews,
+	formatCoverageSummary,
+} from './capability-diff-views';
+import type {
+	ICapabilityDiffEntry,
+	ICapabilityDiffViews,
+} from './capability-diff-views';
+import { StaticExistingToolsSource } from './existing-tools-source';
+import type { IExistingToolsSource } from './existing-tools-source';
 
 /** Namespaced tool id, e.g. `acme_run_test`. */
 export type IToolName = string;
 
-export interface ICapabilityDiffEntry {
-	readonly tool: IBlueprintArtifact;
-	/** Why this tool is in this bucket (one short sentence). */
-	readonly reason: string;
-}
+export type { ICapabilityDiffViews as ICapabilityDiff } from './capability-diff-views';
 
-export interface ICapabilityDiff {
-	readonly desired: readonly IToolName[];
-	readonly existing: readonly IToolName[];
-	/** In the blueprint, also exposed by the existing server (by id or alias). */
-	readonly present: readonly ICapabilityDiffEntry[];
-	/** In the blueprint, NOT exposed by the existing server. */
-	readonly missing: readonly ICapabilityDiffEntry[];
-	/** Exposed by the existing server but NOT in the blueprint (candidates for cleanup). */
-	readonly extra: readonly IToolName[];
+export interface IDiffOptions {
+	readonly namespacePrefix?: string;
+	/** Inject a custom alias strategy (defaults to `DefaultAliasStrategy`). */
+	readonly aliasStrategy?: IAliasStrategy;
+	/** Inject a custom existing-tools matcher. */
+	readonly matcher?: IExistingToolsMatcher;
 	/**
-	 * Desired tool that the existing server exposes but with a description
-	 * the project should review (different `summary` tag, different shape).
+	 * Inject a custom source for the existing tool set. Defaults to
+	 * `StaticExistingToolsSource` wrapping the `existing` argument;
+	 * pass a smarter source (e.g. one that calls `<prefix>_list_tools`
+	 * on a live server) when available.
 	 */
-	readonly mismatched: readonly ICapabilityDiffEntry[];
-	/** One-line summary the agent can read at a glance. */
-	readonly summary: string;
+	readonly source?: IExistingToolsSource;
 }
-
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
-
-const normaliseId = (tool: IBlueprintArtifact): IToolName =>
-	`${kebab(tool.name).replace(/-/g, '_')}`;
-
-const COMMON_VERB_PREFIXES = new Set([
-	'run',
-	'get',
-	'fetch',
-	'list',
-	'show',
-	'check',
-	'render',
-	'do',
-	'make',
-	'create',
-	'delete',
-	'update',
-	'open',
-	'close',
-]);
-
-const aliasCandidates = (id: string): readonly string[] => {
-	const out: string[] = [id];
-	const parts = id.split('_');
-	const head = parts[0];
-	if (head !== undefined && head !== id) out.push(head);
-	// Strip a leading verb prefix so `run_test` aliases to `test` and
-	// matches an existing `test_runner` / `test_exec` etc.
-	if (
-		parts.length > 1 &&
-		head !== undefined &&
-		COMMON_VERB_PREFIXES.has(head)
-	) {
-		const rest = parts.slice(1).join('_');
-		if (rest !== id && !out.includes(rest)) out.push(rest);
-	}
-	return out;
-};
 
 /**
  * Diff `blueprint.tools` against the existing tool ids of a project.
@@ -104,97 +65,113 @@ const aliasCandidates = (id: string): readonly string[] => {
 export const diffCapabilities = (
 	blueprint: Pick<IServerBlueprint, 'tools'>,
 	existing: readonly IToolName[],
-	options: { readonly namespacePrefix?: string } = {},
-): ICapabilityDiff => {
+	options: IDiffOptions = {},
+): ICapabilityDiffViews => {
 	const prefix = options.namespacePrefix;
-	const stripPrefix = (name: string): string =>
-		prefix !== undefined && name.startsWith(`${prefix}_`)
-			? name.slice(prefix.length + 1)
-			: name;
+	const strategy = options.aliasStrategy ?? new DefaultAliasStrategy();
+	const matcher = options.matcher ?? new DefaultExistingToolsMatcher();
+	const source =
+		options.source ??
+		new StaticExistingToolsSource({
+			raw: existing,
+			...(prefix !== undefined ? { namespacePrefix: prefix } : {}),
+		});
 
-	const existingIds = new Set(existing.map(stripPrefix));
-
+	const existingIds = source.canonicalSet();
 	const present: ICapabilityDiffEntry[] = [];
 	const missing: ICapabilityDiffEntry[] = [];
 	const mismatched: ICapabilityDiffEntry[] = [];
 
 	for (const tool of blueprint.tools) {
-		const id = normaliseId(tool);
-		const aliases = aliasCandidates(id);
-		const matches = (alias: string): boolean =>
-			[...existingIds].some(
-				(existingId) =>
-					existingId === alias || existingId.startsWith(`${alias}_`),
-			);
-		const presentAlias = aliases.find(matches);
-		if (presentAlias !== undefined) {
-			present.push({
-				tool,
-				reason: `present as ${prefix ?? ''}_${presentAlias}`.replace(
-					/^_/,
-					'',
-				),
-			});
-			continue;
-		}
-		// No exact match. If a same-head alias exists, treat it as
-		// "mismatched" so the agent reviews rather than scaffolds.
-		const headHit = aliases.find((alias) => alias !== id && matches(alias));
-		if (headHit !== undefined) {
-			mismatched.push({
-				tool,
-				reason: `existing tool covers a related surface (${prefix ?? ''}_${headHit}); review instead of scaffolding`,
-			});
-		} else {
-			missing.push({
-				tool,
-				reason: 'no existing tool covers this capability',
-			});
-		}
-	}
-
-	const desiredIds = new Set(blueprint.tools.map(normaliseId));
-	const desiredAliases = new Set<string>();
-	for (const tool of blueprint.tools) {
-		for (const alias of aliasCandidates(normaliseId(tool))) {
-			desiredAliases.add(alias);
+		const canonical = canonicalToolId(tool.name, prefix);
+		const aliases = strategy.aliasesFor(canonical, { raw: tool.name });
+		const result: IToolClassification = matcher.classify({
+			tool,
+			canonical,
+			raw: tool.name,
+			aliases,
+			existing: existingIds,
+		});
+		switch (result.kind) {
+			case 'present':
+				present.push({
+					tool,
+					reason: `present as ${prefix ?? ''}_${result.matchedAs}`.replace(
+						/^_/,
+						'',
+					),
+				});
+				break;
+			case 'mismatched':
+				mismatched.push({
+					tool,
+					reason: `existing tool covers a related surface (${prefix ?? ''}_${result.existingHead}); review instead of scaffolding`,
+				});
+				break;
+			case 'missing':
+				missing.push({
+					tool,
+					reason: 'no existing tool covers this capability',
+				});
+				break;
 		}
 	}
-	const extra = existing.map(stripPrefix).filter((id) => {
-		if (desiredIds.has(id)) return false;
-		// Same prefix-style match used to classify `present` —
-		// `test_runner` is not "extra" if a desired tool aliases to
-		// `test`.
-		for (const alias of desiredAliases) {
-			if (id === alias || id.startsWith(`${alias}_`)) return false;
-		}
-		return true;
-	});
 
-	const summary =
-		missing.length === 0
-			? `Coverage complete: ${present.length}/${blueprint.tools.length} tools present, 0 missing.`
-			: `${missing.length} tool(s) missing, ${mismatched.length} need review, ${present.length} already present, ${extra.length} extra.`;
+	const desired = blueprint.tools.map(
+		(tool) => canonicalToolId(tool.name, prefix) as ICanonicalToolId,
+	);
 
-	return {
-		desired: blueprint.tools.map(normaliseId),
+	const views = buildCapabilityViews({
+		desired,
 		existing: [...existingIds],
 		present,
 		missing,
 		mismatched,
-		extra,
-		summary,
+		extra: collectExtra(blueprint.tools, existingIds, strategy, prefix),
+	});
+
+	return {
+		...views,
+		summary: formatCoverageSummary(views),
 	};
 };
 
 /**
+ * Tools the existing server exposes that the blueprint does not need.
+ * Pure: derived from the desired-alias set + the existing id set.
+ */
+const collectExtra = (
+	blueprintTools: readonly IBlueprintArtifact[],
+	existing: ReadonlySet<ICanonicalToolId>,
+	strategy: IAliasStrategy,
+	prefix: string | undefined,
+): readonly ICanonicalToolId[] => {
+	const desiredAliases = new Set<ICanonicalToolId>();
+	for (const tool of blueprintTools) {
+		const canonical = canonicalToolId(tool.name, prefix);
+		for (const alias of strategy.aliasesFor(canonical, {
+			raw: tool.name,
+		})) {
+			desiredAliases.add(alias);
+		}
+	}
+	return [...existing].filter((id) => {
+		if (desiredAliases.has(id)) return false;
+		for (const alias of desiredAliases) {
+			if (id.startsWith(`${alias}_`)) return false;
+		}
+		return true;
+	});
+};
+
+/**
  * Convenience: derive the existing tool set by reading `mcp.json` from
- * the project reader. This is best-effort: when the config is missing
- * or the server entry is opaque, returns an empty list. Real hosts that
- * can launch the existing server should pass a richer snapshot.
+ * the project reader. Best-effort: when the config is missing or the
+ * server entry is opaque, returns an empty list. Hosts that can launch
+ * the existing server should pass a richer snapshot.
  */
 export const existingToolsFromAnalysis = (
-	analysis: IProjectAnalysis,
+	_analysis: IProjectAnalysis,
 	reader: { readFile(relativePath: string): string | undefined },
 ): readonly IToolName[] => {
 	for (const path of ['.vscode/mcp.json', 'mcp.json', '.cursor/mcp.json']) {
@@ -204,13 +181,6 @@ export const existingToolsFromAnalysis = (
 			const parsed = JSON.parse(raw) as {
 				servers?: Record<string, unknown>;
 			};
-			// Heuristic: if a server entry's `args` contains --plugins,
-			// we can recover the plugin ids but NOT the tool names (they
-			// are derived at runtime from each plugin's `register`).
-			// So we return an empty list — the LLM will trigger
-			// `<prefix>_list_tools` against the live server when it
-			// needs exact ids. Returning [] here is correct because we
-			// cannot lie about what we don't know.
 			void parsed.servers;
 			return [];
 		} catch {
@@ -219,3 +189,33 @@ export const existingToolsFromAnalysis = (
 	}
 	return [];
 };
+
+// Re-export the strategies and the views builder so consumers have a
+// single import surface without reaching into sub-modules.
+export {
+	CompositeAliasStrategy,
+	DefaultAliasStrategy,
+} from './alias-strategy';
+export type { IAliasContext, IAliasStrategy } from './alias-strategy';
+export { DefaultExistingToolsMatcher } from './tool-classifier';
+export type {
+	IClassificationContext,
+	IExistingToolsMatcher,
+	IToolClassification,
+} from './tool-classifier';
+export { StaticExistingToolsSource } from './existing-tools-source';
+export type { IExistingToolsSource } from './existing-tools-source';
+export {
+	buildCapabilityViews,
+	formatCoverageSummary,
+} from './capability-diff-views';
+export type {
+	ICapabilityDiffEntry,
+	ICapabilityDiffViews,
+	IPresentView,
+	IMissingView,
+	IMismatchedView,
+	IExtraView,
+	IDesiredView,
+	IBuildViewsInput,
+} from './capability-diff-views';

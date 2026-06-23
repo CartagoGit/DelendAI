@@ -13,7 +13,7 @@ related:
 
 # f00050 — Future work deferred from f00049
 
-## Goal
+## goal
 
 Capture the nine non-goals that [`f00049`](../ready/f00049-conventions-unification-r10-slices.md)
 explicitly chose **not** to do, so they survive past the unification's close. Each item
@@ -44,7 +44,7 @@ Listing them in a single place, with preconditions, makes them:
 3. **Auditable** — `proposals_compact_status` includes `paused/` and counts these
    as parked work, not lost work.
 
-## Non-goals (the things this proposal is also NOT)
+## non-goals
 
 - Do not implement any of the nine slices while the proposal is `paused`.
 - Do not move this file to `ready/` until the `preconditions-met:` array records
@@ -52,22 +52,8 @@ Listing them in a single place, with preconditions, makes them:
 - Do not link this proposal from `f00049` as a dependency of f00049's slices —
   f00049 explicitly does not depend on f00050.
 
-## acceptance
 
-The proposal closes when **all nine** of these are true:
-
-- ✅ The 9 non-goals from f00049 §"non-goals (kept explicit per the user's
-  'todo esto también' request)" are captured below as S* slices with
-  preconditions.
-- ✅ `docs/proposals/index.json` lists this file under `paused/`.
-- ✅ `proposals_compact_status` shows `paused: 1` incrementing on this proposal's
-  creation.
-- ✅ `f00049` references this file from its own "see also" — done at the time
-  f00049 was written; the link is `paused/f00050-future-non-goals-of-f00049.md`.
-- ✅ The next agent who unblocks an item copies its slice out of this file into
-  a fresh `ready/f00051-…` (or appropriate id) and removes the slice from here.
-
-## Re-scan before unpausing any S-* slice (pre-flight, mandatory)
+### Re-scan before unpausing any S-* slice (pre-flight, mandatory)
 
 > **Why this section exists.** A precondition is a snapshot in time. Between the
 > day this proposal is parked (`date: 2026-06-23`) and the day an agent decides
@@ -78,7 +64,7 @@ The proposal closes when **all nine** of these are true:
 > against the live tree, not against the parking-lot text.**
 
 - **When it runs**: every time an agent considers moving a slice from this
-  file into `docs/proposals/ready/`. **Before** the `## how to unpause an item`
+  file into `docs/proposals/ready/`. **Before** the `### how to unpause an item`
   procedure below starts.
 - **Files read** (no writes during the re-scan itself):
   - This file (for the slice's declared preconditions).
@@ -98,7 +84,7 @@ The proposal closes when **all nine** of these are true:
      **expands** the preconditions in this file (in place) before copying
      to `ready/`.
   3. **Check for unification drift on the *mechanism* of unpausing.** The
-     `## how to unpause an item` procedure below is part of the repo's
+     `### how to unpause an item` procedure below is part of the repo's
      working form (a workflow-shape concern). If f00049 S10's
      `lint:workflow` (or its successor) flags this procedure as drifted,
      the procedure is updated *here* in the parking lot before the slice
@@ -120,7 +106,14 @@ The proposal closes when **all nine** of these are true:
   the day a sibling slice is unblocked, so the two proposals stay in
   sync.
 
-## Slices (deferred, each parked until its precondition is met)
+## slices
+### S0 — parking-lot placeholder (this proposal stays paused)
+
+- **Status**: paused
+- **Files**: docs/proposals/paused/f00050-future-non-goals-of-f00049.md (this file only).
+- **Gate**: none (paused — the proposal is a parking lot, not a workstream).
+- **Acceptance**: each item parked below (`### S-A — …`, `### S-B — …`, …) carries its own precondition; the proposal as a whole is `done` when all nine items have been moved out into their own `ready/<id>-…` proposals. Until then, the proposal stays `paused` and the slice below remains unclaimable.
+
 
 ### S-A — Semantic rewrite of services and tools beyond renames
 
@@ -286,7 +279,7 @@ The proposal closes when **all nine** of these are true:
 - **Note**: f00049 touches zero deps. This slice is the *only* sanctioned
   way to change `bun.lock` as part of convention work.
 
-## how to unpause an item
+### how to unpause an item
 
 0. **Run the re-scan** described in the `## Re-scan before unpausing any S-* slice`
    section above. The re-scan may amend the slice's preconditions or
@@ -305,7 +298,22 @@ The proposal closes when **all nine** of these are true:
    `proposal-swarm-runner` "never do" rule #4, this is the only sanctioned
    moment to sync after moving files in this folder).
 
-## see also
+## acceptance
+
+The proposal closes when **all nine** of these are true:
+
+- ✅ The 9 non-goals from f00049 §"non-goals (kept explicit per the user's
+  'todo esto también' request)" are captured below as S* slices with
+  preconditions.
+- ✅ `docs/proposals/index.json` lists this file under `paused/`.
+- ✅ `proposals_compact_status` shows `paused: 1` incrementing on this proposal's
+  creation.
+- ✅ `f00049` references this file from its own "see also" — done at the time
+  f00049 was written; the link is `paused/f00050-future-non-goals-of-f00049.md`.
+- ✅ The next agent who unblocks an item copies its slice out of this file into
+  a fresh `ready/f00051-…` (or appropriate id) and removes the slice from here.
+
+## notes
 
 - [`f00049`](../ready/f00049-conventions-unification-r10-slices.md) — the
   parent proposal whose non-goals this file parks.
