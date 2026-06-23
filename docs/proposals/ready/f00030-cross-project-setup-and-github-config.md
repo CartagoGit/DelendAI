@@ -242,7 +242,7 @@ remediation for that step.
 - status: done
 ### S2 — `setup-github` subcommand + MCP tool _(excl. `apps/`, `docs/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run test packages/core plugins/issues`
 - **Lost-work note (2026-06-22)**: a prior session reported this slice
   "done-on-disk, not yet committed" (terminal wedged before `git

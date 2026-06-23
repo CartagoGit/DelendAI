@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs';
-
 import {
 	DEFAULT_CONFIG_FILENAME,
 	definePlugin,
@@ -109,10 +107,7 @@ export default definePlugin({
 			deps: createGithubSetupDeps(
 				ctx.workspace.root,
 				DEFAULT_CONFIG_FILENAME,
-				(absPath) =>
-					existsSync(absPath)
-						? readFileSync(absPath, 'utf8')
-						: undefined,
+				repo !== undefined,
 			),
 		});
 

@@ -77,16 +77,20 @@ export const isIssuesConfigured = (configText: string | undefined): boolean => {
 
 /**
  * Production probe factory: wires the real side effects (git remote via
- * `Bun.spawnSync`, `gh auth status`, `GITHUB_TOKEN`, config file read)
- * behind the injectable `IGithubSetupDeps` port. Kept separate from the
- * pure functions above so the engine stays unit-testable.
+ * `Bun.spawnSync`, `gh auth status`, `GITHUB_TOKEN`) behind the
+ * injectable `IGithubSetupDeps` port. `configured` is passed in (the
+ * plugin already knows it from `ctx.options.repo`) rather than read from
+ * disk — keeping the plugin free of sync `node:fs` calls (plugin
+ * drift-budget) and reflecting the LIVE loaded state, not a stale file.
+ * Kept separate from the pure functions above so the engine stays
+ * unit-testable.
  */
 export const createGithubSetupDeps = (
 	repoRoot: string,
 	configPath: string,
-	readFileText: (absPath: string) => string | undefined,
+	configured: boolean,
 ): IGithubSetupDeps => {
-	const spawn = (cmd: readonly string[]): { ok: boolean; out: string } => {
+	const spawn = (cmd: string[]): { ok: boolean; out: string } => {
 		try {
 			const res = Bun.spawnSync(cmd, { cwd: repoRoot });
 			return {
@@ -104,7 +108,9 @@ export const createGithubSetupDeps = (
 		},
 		hasGhCli: () => spawn(['gh', 'auth', 'status']).ok,
 		githubToken: () => process.env.GITHUB_TOKEN,
-		readConfig: () => readFileText(`${repoRoot}/${configPath}`),
+		// Synthesised from the known load state — no file read in the plugin.
+		readConfig: () =>
+			configured ? '{"plugins":{"issues":{"options":{}}}}' : undefined,
 		configPath,
 	};
 };
