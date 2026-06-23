@@ -49,11 +49,9 @@ describe('diffCapabilities', () => {
 		const diff = diffCapabilities(bp, existing, {
 			namespacePrefix: 'acme',
 		});
-		const runTest = diff.present.find((p) => p.tool.name === 'run_test');
+		const runTest = diff.present.find((p) => p.name === 'run_test');
 		expect(runTest).toBeDefined();
-		expect(diff.missing.some((m) => m.tool.name === 'run_test')).toBe(
-			false,
-		);
+		expect(diff.missing.some((m) => m.name === 'run_test')).toBe(false);
 	});
 
 	it('classifies a head-alias as present (not mismatched)', () => {
@@ -64,14 +62,10 @@ describe('diffCapabilities', () => {
 		const diff = diffCapabilities(bp, ['acme_test_runner'], {
 			namespacePrefix: 'acme',
 		});
+		expect(diff.present.find((p) => p.name === 'run_test')).toBeDefined();
+		expect(diff.missing.find((m) => m.name === 'run_test')).toBeUndefined();
 		expect(
-			diff.present.find((p) => p.tool.name === 'run_test'),
-		).toBeDefined();
-		expect(
-			diff.missing.find((m) => m.tool.name === 'run_test'),
-		).toBeUndefined();
-		expect(
-			diff.mismatched.find((m) => m.tool.name === 'run_test'),
+			diff.mismatched.find((m) => m.name === 'run_test'),
 		).toBeUndefined();
 		// The related tool is consumed by the head-alias match — it does
 		// not leak into `extra` either.

@@ -47,23 +47,10 @@ const kebabHead = (name: string | undefined): string => {
 	return head && head.length > 0 ? head : 'app';
 };
 
-const runner = (analysis: IProjectAnalysis): string => {
-	switch (analysis.packageManager) {
-		case 'bun':
-			return 'bun run';
-		case 'pnpm':
-			return 'pnpm';
-		case 'yarn':
-			return 'yarn';
-		default:
-			return 'npm run';
-	}
-};
-
 const buildValidationCommands = (
 	analysis: IProjectAnalysis,
 ): Record<string, string> => {
-	const prefix = runner(analysis);
+	const prefix = runnerFor(analysis.packageManager);
 	const out: Record<string, string> = {};
 	for (const [role, script] of Object.entries(analysis.scripts)) {
 		out[role] = `${prefix} ${role}`.trim();

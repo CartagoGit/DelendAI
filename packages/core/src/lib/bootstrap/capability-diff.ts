@@ -95,23 +95,29 @@ export const diffCapabilities = (
 		switch (result.kind) {
 			case 'present':
 				present.push({
-					tool,
+					name: tool.name,
+					description: tool.description,
 					reason: `present as ${prefix ?? ''}_${result.matchedAs}`.replace(
 						/^_/,
 						'',
 					),
+					tool,
 				});
 				break;
 			case 'mismatched':
 				mismatched.push({
-					tool,
+					name: tool.name,
+					description: tool.description,
 					reason: `existing tool covers a related surface (${prefix ?? ''}_${result.existingHead}); review instead of scaffolding`,
+					tool,
 				});
 				break;
 			case 'missing':
 				missing.push({
-					tool,
+					name: tool.name,
+					description: tool.description,
 					reason: 'no existing tool covers this capability',
+					tool,
 				});
 				break;
 		}

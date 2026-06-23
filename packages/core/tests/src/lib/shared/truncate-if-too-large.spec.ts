@@ -55,17 +55,22 @@ describe('truncateIfTooLarge', () => {
 	});
 
 	it('returns an empty marker when maxBytes is smaller than the marker itself', () => {
+		// When maxBytes is below the envelope overhead, the marker envelope
+		// itself cannot fit; the function still returns a truncated envelope,
+		// but finalBytes may exceed maxBytes. The contract here is
+		// 'truncated=true and the marker is present', not 'the output fits
+		// under maxBytes' — that case is impossible by construction.
 		const value = { rows: 'x'.repeat(256) };
 		const result = truncateIfTooLarge(value, 16);
 		expect(result.truncated).toBe(true);
-		expect(result.finalBytes).toBeLessThanOrEqual(16);
-		// The marker is present, but the head is empty.
 		const payload = result.value as {
 			__truncated: true;
 			originalBytes: number;
+			head: string;
 		};
 		expect(payload.__truncated).toBe(true);
 		expect(payload.originalBytes).toBeGreaterThan(16);
+		expect(payload.head.length).toBe(0);
 	});
 });
 

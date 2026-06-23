@@ -1,16 +1,71 @@
-import { z } from 'zod';
+import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
- * Per-plugin configuration loaded from `mcp-vertex.config.json`. This is
- * the structured way to pass values to plugins: each plugin gets a
- * typed `options` object (any JSON — nested objects, arrays…) plus an
- * optional tool-namespace `prefix`. CLI flags override these roots; the
- * file is the place for anything beyond a quick override.
+ * Solid-ISP: each concern of the config file lives in its own
+ * sub-interface so callers depend only on what they need. A consumer
+ * that just wants the core paths (cacheDir/docsDir) does NOT have to
+ * import the loop detector config type, the bootstrap overrides, etc.
+ *
+ * The composite `IMcpVertexConfigFile` is the union of every sub-
+ * interface — it stays exported as a single type for callers that
+ * really do want everything (e.g. the parser / doctor).
+ */
+
+/** Quality-gate commands per scope, surfaced by `get_validation_matrix`. */
+export interface IValidationMatrixScope {
+	readonly command: string;
+	readonly expect: string;
+}
+
+export interface IValidationMatrixConfig {
+	readonly scopes: Readonly<
+		Record<string, ReadonlyArray<IValidationMatrixScope>>
+	>;
+}
+
+/** Solid-ISP: a single bootstrap pattern override entry. */
+export interface IBootstrapPatternOverride {
+	readonly type: string;
+	readonly describe: string;
+	readonly recommendedTools: ReadonlyArray<{
+		readonly name: string;
+		readonly description: string;
+	}>;
+	readonly recommendedPlugins: readonly string[];
+	readonly knowledgeHints: readonly string[];
+}
+
+/** Solid-ISP: all host-supplied bootstrap pattern overrides, keyed by name. */
+export interface IBootstrapPatternOverrides {
+	readonly patternOverrides?: Readonly<
+		Record<string, IBootstrapPatternOverride>
+	>;
+}
+
+/**
+ * Solid-ISP: the core paths + scaffold-preservation toggle. Every host
+ * reads at least these. Consumers that only need the paths can
+ * depend on this and ignore the rest.
+ */
+export interface IMcpVertexCorePathsConfig {
+	readonly cacheDir?: string;
+	readonly docsDir?: string;
+	/**
+	 * Default false. When true, scaffold regeneration preserves existing
+	 * files under legacy/ before writing fresh templates.
+	 */
+	readonly keepLegacy?: boolean;
+}
+
+/**
+ * Solid-ISP: per-plugin configuration loaded from `mcp-vertex.config.json`.
+ * Each plugin gets a typed `options` object (any JSON — nested
+ * objects, arrays…) plus an optional tool-namespace `prefix`. CLI
+ * flags override these roots; the file is the place for anything
+ * beyond a quick override.
  *
  * ```jsonc
  * {
- *   "cacheDir": ".cache/mcp-vertex",
- *   "docsDir": "docs/mcp-vertex",
  *   "plugins": {
  *     "proposals": { "prefix": "work", "options": { "docsDir": "docs/x" } }
  *   }
@@ -22,6 +77,11 @@ export interface IMcpVertexPluginConfig {
 	readonly options?: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * Solid-ISP: loop-detector tuning. Hosts that DO NOT use the proposals
+ * plugin never see this — but the core still types it because the
+ * config file is a single document.
+ */
 export interface ILoopDetectorConfig {
 	readonly enabled?: boolean;
 	readonly repeatThreshold?: number;
@@ -49,23 +109,18 @@ export interface ILoopDetectorConfig {
 	readonly interactiveAgentPatterns?: readonly string[];
 }
 
-export interface IMcpVertexConfigFile {
+/**
+ * Composite config-file shape — every field of every sub-interface.
+ * Kept exported because callers that legitimately want everything
+ * (the parser, the doctor) need a single type. Callers that only
+ * want a slice should depend on the relevant sub-interface instead
+ * (e.g. `IMcpVertexCorePathsConfig`).
+ */
+export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
-	readonly cacheDir?: string;
-	readonly docsDir?: string;
-	/**
-	 * Default false. When true, scaffold regeneration preserves existing
-	 * files under legacy/ before writing fresh templates.
-	 */
-	readonly keepLegacy?: boolean;
-	/** Quality-gate commands per scope, surfaced by `get_validation_matrix`. */
-	readonly validationMatrix?: {
-		readonly scopes: Readonly<
-			Record<string, ReadonlyArray<{ command: string; expect: string }>>
-		>;
-	};
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
+	readonly validationMatrix?: IValidationMatrixConfig;
 	readonly loopDetector?: ILoopDetectorConfig;
 	/**
 	 * Optional bootstrap layer configuration. Hosts use this to teach
@@ -73,98 +128,18 @@ export interface IMcpVertexConfigFile {
 	 * knowledge hints that the hardcoded catalog does not cover. See
 	 * `bootstrap/pattern-catalog-overrides.ts` for the merge rules.
 	 */
-	readonly bootstrap?: {
-		readonly patternOverrides?: Readonly<
-			Record<
-				string,
-				{
-					readonly type: string;
-					readonly describe: string;
-					readonly recommendedTools: ReadonlyArray<{
-						readonly name: string;
-						readonly description: string;
-					}>;
-					readonly recommendedPlugins: readonly string[];
-					readonly knowledgeHints: readonly string[];
-				}
-			>
-		>;
-	};
+	readonly bootstrap?: IBootstrapPatternOverrides;
 }
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'mcp-vertex.config.json';
 
-/** Structural schema for the config file (used by `--check`). */
-export const CONFIG_FILE_SCHEMA = z
-	.object({
-		$schema: z.string().optional(),
-		cacheDir: z.string().optional(),
-		docsDir: z.string().optional(),
-		keepLegacy: z.boolean().optional(),
-		validationMatrix: z
-			.object({
-				scopes: z.record(
-					z.string(),
-					z.array(
-						z.object({
-							command: z.string(),
-							expect: z.string(),
-						}),
-					),
-				),
-			})
-			.optional(),
-		plugins: z
-			.record(
-				z.string(),
-				z.object({
-					prefix: z.string().optional(),
-					options: z.record(z.string(), z.unknown()).optional(),
-				}),
-			)
-			.optional(),
-		loopDetector: z
-			.object({
-				enabled: z.boolean().optional(),
-				repeatThreshold: z.number().optional(),
-				nearRepeatThreshold: z.number().optional(),
-				similarityThreshold: z.number().optional(),
-				idleThreshold: z.number().optional(),
-				noProgressThreshold: z.number().optional(),
-				ringSize: z.number().optional(),
-				gitCheckTools: z.array(z.string()).optional(),
-				handoffDir: z.string().optional(),
-				handoffTtlDays: z.number().optional(),
-				notifyOnDetect: z.boolean().optional(),
-				interactiveAgentPatterns: z.array(z.string()).optional(),
-			})
-			.strict()
-			.optional(),
-		bootstrap: z
-			.object({
-				patternOverrides: z
-					.record(
-						z.string(),
-						z.object({
-							type: z.string(),
-							describe: z.string(),
-							recommendedTools: z.array(
-								z.object({
-									name: z.string(),
-									description: z.string(),
-								}),
-							),
-							recommendedPlugins: z.array(z.string()),
-							knowledgeHints: z.array(z.string()),
-						}),
-					)
-					.optional(),
-			})
-			.strict()
-			.optional(),
-	})
-	.strict();
+/**
+ * Solid-SRP: re-export the Zod schema from its own module so callers
+ * that only need the schema can import it directly. The schema lives
+ * in `config-file-schema.ts`; the parser + doctor live here.
+ */
+export { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
  * Validate raw config-file contents and report problems. Used by the
