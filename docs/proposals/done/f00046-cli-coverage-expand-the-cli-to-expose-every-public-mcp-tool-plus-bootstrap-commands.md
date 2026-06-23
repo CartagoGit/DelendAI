@@ -1,6 +1,6 @@
 ---
 id: f00046
-status: ready
+status: done
 type: proposal
 track: cli+core+plugins+i18n+docs
 date: 2026-06-22
