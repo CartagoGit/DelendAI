@@ -7,10 +7,7 @@
  * is the Dependency-Inversion seam that lets `check-conventions.tool.ts`
  * be exercised without touching the real filesystem.
  */
-import {
-	classifyPath,
-	type Role,
-} from './profiles/typescript/typescript-profile';
+import { classifyPath, type Role } from './typescript-profile.service';
 
 /** Minimal directory-listing port. Returns entry names (files + dirs). */
 export interface IDirReader {

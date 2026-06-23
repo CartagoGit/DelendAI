@@ -106,8 +106,12 @@ export const formatReport = (
 	const header = `file-conventions: ${findings.length} unmatched files`;
 	if (reportOnly) return `${header}\n`;
 	const lines: string[] = [header];
-	for (const f of findings) {
-		lines.push(`  ${f.relPath}`);
+	const limit = 50;
+	for (let i = 0; i < Math.min(findings.length, limit); i++) {
+		lines.push(`  ${findings[i].relPath}`);
+	}
+	if (findings.length > limit) {
+		lines.push(`  …and ${findings.length - limit} more`);
 	}
 	return `${lines.join('\n')}\n`;
 };
@@ -134,10 +138,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const findings = await walkAndClassify(rootDir, scanRoots);
 	process.stderr.write(formatReport(findings, reportOnly));
 	if (reportOnly) return 0;
-	// S1 ships the linter in **report mode** (S2 wires the official
-	// `lint:file-conventions` script). Until S7 promotes it to strict,
-	// drift findings never cause exit 1 — only a print.
-	void findings;
+	if (findings.length > 0) return 1;
 	return 0;
 };
 

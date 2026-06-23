@@ -13,7 +13,10 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolOk } from '@mcp-vertex/core/public';
 
-import { scanConventions, type IDirReader } from '../conventions-scan';
+import {
+	scanConventions,
+	type IDirReader,
+} from '../services/conventions-scan.service';
 
 /** Default roots to scan when the caller does not narrow the set. */
 export const DEFAULT_SCAN_ROOTS: readonly string[] = [

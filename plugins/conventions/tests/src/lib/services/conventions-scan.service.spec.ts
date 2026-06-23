@@ -10,7 +10,7 @@ import {
 	scanConventions,
 	type IDirEntry,
 	type IDirReader,
-} from '../../../src/lib/conventions-scan';
+} from '../../../../src/lib/services/conventions-scan.service';
 
 /** Build an in-memory reader from a flat `dir -> entries` map. */
 const memoryReader = (

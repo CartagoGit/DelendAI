@@ -9,7 +9,10 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { IDirEntry, IDirReader } from '../conventions-scan';
+import type {
+	IDirEntry,
+	IDirReader,
+} from '../services/conventions-scan.service';
 
 /** Build a `node:fs`-backed reader rooted at `rootDir` (absolute path). */
 export const createFsDirReader = (rootDir: string): IDirReader => ({
