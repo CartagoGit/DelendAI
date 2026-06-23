@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { createCommandRunner } from './lib/services/runner';
 import { buildRunAllToolRegistration } from './lib/services/run-all';
-import { buildQualityToolRegistrations } from './lib/tools/tools';
+import { buildQualityToolRegistrations } from './lib/tools';
 
 /**
  * Quality-gate runner. Executes the project's validation commands

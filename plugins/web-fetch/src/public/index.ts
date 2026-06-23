@@ -14,8 +14,8 @@ export type {
 	IWebFetchReason,
 	IFetchLike,
 } from '../lib/services/engine';
-export { buildWebToolRegistrations } from './lib/tools/tools';
-export type { IWebToolOptions } from './lib/tools/tools';
+export { buildWebToolRegistrations } from '../lib/tools';
+export type { IWebToolOptions } from '../lib/tools';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

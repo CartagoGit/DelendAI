@@ -1,18 +1,18 @@
+import { eslintCommandSetProvider } from '../languages/base/eslint-base.provider';
+import { rustAdapter } from '../languages/rust/rust.adapter';
+import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
+import { ALL_PRESET_DATA } from '../presets/data';
+
 import type {
 	ILanguageAdapter,
 	IDogmaAdapter,
 	IRulePreset,
 	ICommandSetProvider,
 } from '../contracts';
-import { eslintCommandSetProvider } from '../languages/base/eslint-base.provider';
-import { rustAdapter } from '../languages/rust/rust.adapter';
-import { RUST_DOGMA } from '../dogmas/rust.dogma';
-import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
-import { ALL_PRESET_DATA } from '../presets/data';
 
 import { DogmaRegistry } from './dogma-registry';
 import { PresetDetector } from './detector';
-import { PresetRegistry, type IAreaRulesLite } from './preset-registry';
+import { PresetRegistry } from './preset-registry';
 
 /**
  * The composition root (DIP — the single place that knows how to
@@ -52,20 +52,13 @@ export const buildDefaultComposition = (
 	const presets = overrides.presets ?? ALL_PRESET_DATA;
 	const adapters = overrides.adapters ?? [rustAdapter];
 	const dogmas = overrides.dogmas ?? DEFAULT_DOGMA_ADAPTERS;
-	const defaultProvider =
+	const defaultProvider: ICommandSetProvider =
 		overrides.defaultCommandSetProvider ?? eslintCommandSetProvider;
 
 	const registry = new PresetRegistry({
 		presets,
 		adapters,
-		// The `eslintCommandSetProvider` satisfies the
-		// `defaultCommandSetProvider` contract by shape; cast is
-		// safe because both call signatures are `buildCommandSet(areaDir, rules) → ICommandSet`.
-		defaultCommandSetProvider: ((areaDir: string, rules: IAreaRulesLite) =>
-			defaultProvider.buildCommandSet(areaDir, rules)) as (
-			areaDir: string,
-			rules: IAreaRulesLite,
-		) => import('../contracts').ICommandSet,
+		defaultCommandSetProvider: defaultProvider,
 	});
 	const dogmaRegistry = new DogmaRegistry(dogmas);
 	const detector = new PresetDetector(registry);

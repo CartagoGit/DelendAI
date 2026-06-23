@@ -1,7 +1,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
 import { createGitRunner } from './lib/services/git';
-import { buildGitToolRegistrations } from './lib/tools/tools';
+import { buildGitToolRegistrations } from './lib/tools';
 import { buildGitWriteToolRegistrations } from './lib/tools/write-tools';
 
 /**

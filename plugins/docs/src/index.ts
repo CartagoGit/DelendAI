@@ -1,6 +1,6 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildDocsToolRegistrations } from './lib/tools/tools';
+import { buildDocsToolRegistrations } from './lib/tools';
 import type { IDocsOptions } from './lib/services/engine';
 
 /**
