@@ -280,3 +280,95 @@ describe('runAgentWorktreeEngine — list', () => {
 		});
 	});
 });
+
+/**
+ * r00003 S10 (CONC-1): the engine must route every `git worktree`
+ * mutation through the injected `IWorktreeSyncCoordinator`, so a host can
+ * serialize it against `syncProposalRegistry.run()`.
+ */
+describe('runAgentWorktreeEngine — sync coordinator (CONC-1)', () => {
+	it('runs `worktree add` INSIDE the injected coordinator (create)', async () => {
+		const order: string[] = [];
+		const { run } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') {
+				order.push('git:add');
+				return ok('');
+			}
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+
+		const coordinator = {
+			async runExclusive<T>(work: () => Promise<T>): Promise<T> {
+				order.push('coordinator:enter');
+				try {
+					return await work();
+				} finally {
+					order.push('coordinator:exit');
+				}
+			},
+		};
+
+		await runAgentWorktreeEngine(
+			{ action: 'create', agent: 'orion' },
+			{ run, workspaceRoot: '/repo', coordinator },
+		);
+
+		// The git mutation must be strictly nested inside the coordinator.
+		expect(order).toEqual([
+			'coordinator:enter',
+			'git:add',
+			'coordinator:exit',
+		]);
+	});
+
+	it('runs `worktree remove` INSIDE the injected coordinator', async () => {
+		const order: string[] = [];
+		const { run } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'remove') {
+				order.push('git:remove');
+				return ok('');
+			}
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const coordinator = {
+			async runExclusive<T>(work: () => Promise<T>): Promise<T> {
+				order.push('coordinator:enter');
+				try {
+					return await work();
+				} finally {
+					order.push('coordinator:exit');
+				}
+			},
+		};
+
+		await runAgentWorktreeEngine(
+			{ action: 'remove', agent: 'orion' },
+			{ run, workspaceRoot: '/repo', coordinator },
+		);
+
+		expect(order).toEqual([
+			'coordinator:enter',
+			'git:remove',
+			'coordinator:exit',
+		]);
+	});
+
+	it('the default (no coordinator, no registryMutexPath) is pass-through', async () => {
+		// Behaviour must be byte-identical to direct git when nothing opts
+		// into coordination.
+		const { run, calls } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return ok('deadbeef');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const result = await runAgentWorktreeEngine(
+			{ action: 'create', agent: 'lyra' },
+			{ run, workspaceRoot: '/repo' },
+		);
+		expect(result).toMatchObject({ ok: true, created: true });
+		expect(calls.some((c) => c[1] === 'add')).toBe(true);
+	});
+});
