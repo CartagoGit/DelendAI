@@ -155,14 +155,6 @@ class VscodeWebviewPanel implements IWebviewPanel {
 				// swallow the boolean here.
 				await this.panel.webview.postMessage(msg);
 			},
-			onDidDispose: (cb) => {
-				this.disposeListeners.add(cb);
-				return new VscodeDisposable({
-					dispose: () => {
-						this.disposeListeners.delete(cb);
-					},
-				});
-			},
 		};
 	}
 	reveal(viewColumn?: number): void {

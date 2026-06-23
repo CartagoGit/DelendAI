@@ -26,8 +26,6 @@ interface IRecordingNotifications {
 
 const fakeItem = (): IStatusBarItem => ({
 	text: '',
-	command: undefined,
-	tooltip: undefined,
 	show() {},
 	dispose() {},
 });
