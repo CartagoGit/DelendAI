@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { PROPOSAL_KINDS } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 import { lintProposalMarkdown } from '@mcp-vertex/proposals/lib/proposals/proposal-scaffold-linter';
 
 const FRONTMATTER = (overrides: Record<string, string> = {}): string => {
@@ -268,9 +269,10 @@ ${TERSE_SLICE}
 
 	it('flags an invalid kind', () => {
 		const result = lint(doc({ kind: 'nonsense' }));
+		const kindCount = Object.keys(PROPOSAL_KINDS).length;
 		expect(
 			result.issues.some((i) =>
-				i.message.includes('not one of the 13 known kinds'),
+				i.message.includes(`not one of the ${kindCount} known kinds`),
 			),
 		).toBe(true);
 	});

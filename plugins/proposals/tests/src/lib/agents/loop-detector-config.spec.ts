@@ -63,19 +63,21 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 
 	describe('resolveLoopDetectorConfig — precedence: CLI > file > defaults', () => {
 		const stubReader = (config: IMcpVertexConfigFile) => ({
-			readGlobalConfig: () => config,
+			async readGlobalConfig() {
+				return config;
+			},
 		});
 
-		it('returns defaults when no file and no CLI args', () => {
-			const out = resolveLoopDetectorConfig({
+		it('returns defaults when no file and no CLI args', async () => {
+			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
 			});
 			expect(out).toEqual(LOOP_DETECTOR_DEFAULTS);
 		});
 
-		it('file overrides defaults', () => {
-			const out = resolveLoopDetectorConfig({
+		it('file overrides defaults', async () => {
+			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({
 					loopDetector: { repeatThreshold: 99 },
 				}),
@@ -88,8 +90,8 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			);
 		});
 
-		it('CLI overrides file (highest precedence)', () => {
-			const out = resolveLoopDetectorConfig({
+		it('CLI overrides file (highest precedence)', async () => {
+			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({
 					loopDetector: { repeatThreshold: 50, enabled: false },
 				}),
@@ -99,8 +101,8 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			expect(out.enabled).toBe(false); // file wins over default (CLI did not set enabled)
 		});
 
-		it('CLI overrides default when no file is present', () => {
-			const out = resolveLoopDetectorConfig({
+		it('CLI overrides default when no file is present', async () => {
+			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {
 					'loop-detector.enabled': 'false',
@@ -111,12 +113,12 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			expect(out.handoffTtlDays).toBe(30);
 		});
 
-		it('treats an absent reader result as empty config (no crash)', () => {
+		it('treats an absent reader result as empty config (no crash)', async () => {
 			// The Solid reader abstraction lets tests prove this without
 			// touching the filesystem. `readGlobalConfig` returning `{}`
 			// is the same path the FS reader takes when the file is
 			// missing or corrupt.
-			const out = resolveLoopDetectorConfig({
+			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
 			});
@@ -125,12 +127,12 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 	});
 
 	describe('createFsConfigFileReader (DIP production wiring)', () => {
-		it('returns an empty config when the workspace path does not exist', () => {
+		it('returns an empty config when the workspace path does not exist', async () => {
 			const reader = createFsConfigFileReader({
 				root: '/definitely/not/here',
 				resolve: (rel) => `/definitely/not/here/${rel}`,
 			});
-			expect(reader.readGlobalConfig()).toEqual({});
+			await expect(reader.readGlobalConfig()).resolves.toEqual({});
 		});
 	});
 });

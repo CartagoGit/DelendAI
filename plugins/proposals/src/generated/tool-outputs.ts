@@ -300,6 +300,7 @@ export interface ProposalsContinueProposalOutput {
 		cascadeBoost?: "shipped-blocking" | "customer-reported" | "security";
 	};
 	error?: string;
+	blockedBy?: string[];
 }
 
 export interface ProposalsCreateProposalOutput {
@@ -599,6 +600,29 @@ export interface ProposalsProposalTransitionOutput {
 	warning?: string;
 }
 
+export interface ProposalsProposalsClosePlanOutput {
+	ok: boolean;
+	planId: string;
+	dryRun: boolean;
+	closable: boolean;
+	blockers: Array<{
+		ref: string;
+		kind: "proposal" | "plan" | "slice";
+		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";
+		message: string;
+	}>;
+	preview?: {
+		from: string;
+		to: string;
+		movedFrom?: string;
+		movedTo?: string;
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+}
+
 export interface ProposalsRoundContextOutput {
 	digest: {
 		roundId: string;
@@ -797,6 +821,7 @@ export interface ProposalsToolOutputs {
 	"proposals_proposal_review": ProposalsProposalReviewOutput;
 	"proposals_proposal_stale_list": ProposalsProposalStaleListOutput;
 	"proposals_proposal_transition": ProposalsProposalTransitionOutput;
+	"proposals_proposals_close_plan": ProposalsProposalsClosePlanOutput;
 	"proposals_round_context": ProposalsRoundContextOutput;
 	"proposals_state_health": ProposalsStateHealthOutput;
 	"proposals_state_repair": ProposalsStateRepairOutput;

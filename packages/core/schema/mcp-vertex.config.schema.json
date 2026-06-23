@@ -117,6 +117,68 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"bootstrap": {
+			"type": "object",
+			"properties": {
+				"patternOverrides": {
+					"type": "object",
+					"propertyNames": {
+						"type": "string"
+					},
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"type": {
+								"type": "string"
+							},
+							"describe": {
+								"type": "string"
+							},
+							"recommendedTools": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": "string"
+										},
+										"description": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"description"
+									],
+									"additionalProperties": false
+								}
+							},
+							"recommendedPlugins": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"knowledgeHints": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							}
+						},
+						"required": [
+							"type",
+							"describe",
+							"recommendedTools",
+							"recommendedPlugins",
+							"knowledgeHints"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"additionalProperties": false
 		}
 	},
 	"additionalProperties": false,

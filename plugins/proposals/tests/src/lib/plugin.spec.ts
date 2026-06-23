@@ -41,6 +41,7 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'plan',
 			'delegate',
 			'proposal_transition',
+			'proposals_close_plan',
 			'create_proposal',
 			'close_slice',
 			'proposal_review',
@@ -54,7 +55,6 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'proposal_force_transition',
 			'proposal_reconcile_folder',
 			'proposal_diagnose',
-			'proposals_close_plan',
 		]);
 		expect(registrations.knowledge?.map((k) => k.id)).toContain(
 			'multi-agent-loop',
@@ -92,6 +92,7 @@ describe('@mcp-vertex/proposals plugin', () => {
 			'work_plan',
 			'work_delegate',
 			'work_proposal_transition',
+			'work_proposals_close_plan',
 			'work_create_proposal',
 			'work_close_slice',
 			'work_proposal_review',
