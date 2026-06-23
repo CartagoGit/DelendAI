@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
 	discoverTutorials,
+	type ITutorial,
 	type ITutorialReader,
 } from './lib/discover-tutorials';
 import { languages } from '../src/i18n/shared';

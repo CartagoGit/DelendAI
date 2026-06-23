@@ -2,6 +2,7 @@ import { eslintCommandSetProvider } from '../languages/base/eslint-base.provider
 import { rustAdapter } from '../languages/rust/rust.adapter';
 import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
 import { ALL_PRESET_DATA } from '../presets/data';
+import { VANILLA_JS_FALLBACK_PRESET } from '../presets/data/fallback';
 
 import type {
 	ILanguageAdapter,
@@ -80,7 +81,12 @@ export const buildDefaultComposition = (
 		readonly policyResolver?: IPolicyResolver;
 	} = {},
 ): ICompositionRoot => {
-	const presets = overrides.presets ?? ALL_PRESET_DATA;
+	// The vanilla-js fallback is always present (S — the
+	// fallback is a real preset, not a magic string).
+	const presets = overrides.presets ?? [
+		VANILLA_JS_FALLBACK_PRESET,
+		...ALL_PRESET_DATA,
+	];
 	const adapters = overrides.adapters ?? [rustAdapter];
 	const dogmas = overrides.dogmas ?? DEFAULT_DOGMA_ADAPTERS;
 	const provider: ICommandSetProvider =

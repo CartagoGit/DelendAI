@@ -9,6 +9,30 @@
 // `ITranslations` and languages must satisfy it (`const dict: LangDict = { … }`).
 
 // ─── Language metadata ────────────────────────────────────────────────────────
+//
+// The `Lang` type is derived from a bare `as const` array (`languageCodes`)
+// declared BEFORE `ILangMeta`. This deliberately breaks the cycle
+//   `ILangMeta → Lang → languages satisfies readonly ILangMeta[] → ILangMeta`
+// that TypeScript otherwise reports with `TS2456: Type alias 'Lang'
+// circularly references itself`. The same fix is already in place in
+// `apps/shared/src/i18n/shared.ts`; keep both copies in lockstep.
+
+export const languageCodes = [
+	'ar',
+	'de',
+	'en',
+	'es',
+	'fr',
+	'hi',
+	'it',
+	'ja',
+	'pt',
+	'th',
+	'vi',
+	'zh',
+] as const;
+
+export type Lang = (typeof languageCodes)[number];
 
 export interface ILangMeta {
 	readonly code: Lang;
@@ -18,7 +42,7 @@ export interface ILangMeta {
 }
 
 /** Languages with a full translation (selectable in the config modal). */
-export const languages = [
+export const languages: readonly ILangMeta[] = [
 	{ code: 'ar', label: 'العربية', flag: 'sa' },
 	{ code: 'de', label: 'Deutsch', flag: 'de' },
 	{ code: 'en', label: 'English', flag: 'gb' },
@@ -31,9 +55,7 @@ export const languages = [
 	{ code: 'th', label: 'ไทย', flag: 'th' },
 	{ code: 'vi', label: 'Tiếng Việt', flag: 'vn' },
 	{ code: 'zh', label: '中文', flag: 'cn' },
-] as const satisfies readonly ILangMeta[];
-
-export type Lang = (typeof languages)[number]['code'];
+];
 
 /** Right-to-left languages (need `dir="rtl"`). */
 export const rtlLangs: readonly Lang[] = ['ar'];
@@ -50,7 +72,7 @@ export const themes = [
 export type Theme = (typeof themes)[number];
 
 export const flagFor = (lang: Lang): string =>
-	languages.find((l) => l.code === lang)?.flag ?? 'gb';
+	languages.find((l: ILangMeta) => l.code === lang)?.flag ?? 'gb';
 
 // ─── Translation shape (the contract) ────────────────────────────────────────
 

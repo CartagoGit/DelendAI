@@ -8,6 +8,7 @@ import {
 } from '@mcp-vertex/rules/lib/frameworks/registry/composition-root';
 import { buildValidatorRegistry } from '@mcp-vertex/rules/lib/frameworks/registry/validator-registry';
 import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust';
+import { VANILLA_JS_FALLBACK_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/fallback';
 import { RUST_DOGMA } from '@mcp-vertex/rules/lib/frameworks/dogmas/rust.dogma';
 import { rustAdapter } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust.adapter';
 import { ALL_PRESET_DATA } from '@mcp-vertex/rules/lib/frameworks/presets/data';
@@ -57,7 +58,10 @@ const readerFromFiles = (files: Record<string, string>): IFileReader => ({
 });
 
 const buildRoot = () =>
-	composeRoot({
+	c// The vanilla-js fallback is part of every composition
+		// root by default (S — the fallback is a real preset,
+		// not a magic string in the writer).
+		presets: [VANILLA_JS_FALLBACK_PRESET, ({
 		presets: [RUST_PRESET],
 		adapters: [rustAdapter],
 		dogmas: DEFAULT_DOGMA_ADAPTERS,

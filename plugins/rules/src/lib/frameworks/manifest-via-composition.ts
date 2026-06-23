@@ -66,12 +66,32 @@ const findProjectTsconfig = (
  */
 const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
 
-const discoverAreas = (reader: IFileReader): readonly string[] => {
+/**
+ * Discover the project areas.
+ *
+ * **DIP — Dependency Inversion**: the discovery is driven by
+ * the composition root's `detector`, not by a hardcoded
+ * "is this a JS project?" heuristic. A directory is an
+ * area if (a) it is the root (`''`), or (b) it is an
+ * immediate child of one of the canonical groups AND at
+ * least one adapter in the composition root claims it.
+ *
+ * This is what makes the manifest writer *language-agnostic*
+ * (S): adding a new language = adding one adapter; the
+ * manifest writer picks up the new area automatically
+ * (the OCP hinge at the manifest layer).
+ */
+const discoverAreas = (
+	reader: IFileReader,
+	root: Pick<import('./registry').ICompositionRoot, 'detector'>,
+): readonly string[] => {
 	const areas: string[] = [''];
 	for (const group of GROUP_DIRS) {
 		for (const child of reader.listDir(group)) {
 			const dir = `${group}/${child}`;
-			if (reader.exists(`${dir}/package.json`)) areas.push(dir);
+			if (root.detector.detect(reader, dir) !== undefined) {
+				areas.push(dir);
+			}
 		}
 	}
 	return areas;
@@ -101,7 +121,7 @@ export const buildManifestViaComposition = (
 	overrides: Readonly<Record<string, string>> = {},
 ): IRulesManifest => {
 	const areas: Record<string, IAreaRules> = {};
-	for (const areaDir of discoverAreas(reader)) {
+	for (const areaDir of discoverAreas(reader, root)) {
 		const forced = overrides[areaKey(areaDir)];
 		const detected = root.detector.detect(reader, areaDir);
 		const presetId =
