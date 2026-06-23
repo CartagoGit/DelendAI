@@ -38,14 +38,24 @@ const listAuditFiles = async (root: string): Promise<IAuditFile[]> => {
 	const result: IAuditFile[] = [];
 	for (const e of entries) {
 		if (!e.isFile() || !e.name.endsWith('.md')) continue;
-		const match = e.name.match(ID_RE);
-		if (!match) continue;
-		result.push({ file: e.name, id: `a${match[1]}` });
+		const id = parseIdFromFilename(e.name);
+		if (id === null) continue;
+		result.push({ file: e.name, id });
 	}
 	return result;
 };
 
-const detectCollisions = (files: readonly IAuditFile[]): ICollision[] => {
+/** Pure: extract the `aNNNNN` id from a canonical audit filename, or
+ * return null if the filename does not match the convention. */
+export const parseIdFromFilename = (filename: string): string | null => {
+	const match = filename.match(ID_RE);
+	if (!match || match[1] === undefined) return null;
+	return `a${match[1]}`;
+};
+
+export const detectCollisions = (
+	files: readonly IAuditFile[],
+): ICollision[] => {
 	const byId = new Map<string, string[]>();
 	for (const f of files) {
 		const list = byId.get(f.id);
