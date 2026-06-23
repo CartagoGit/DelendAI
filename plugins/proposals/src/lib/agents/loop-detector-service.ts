@@ -1,4 +1,3 @@
-import { readFileSync, existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -69,6 +68,17 @@ export class AgentLoopDetectorService {
 		string,
 		{ handoffPath: string; suggestedAction: string }
 	>();
+
+	// Lock-file lookup cache (H1 mitigation). `isAgentStuck` is called
+	// inline on every tool call from core (`IMcpVertexHostConfig`), so a
+	// sync read on that hot path is forbidden by AGENTS.md rule 3. The
+	// lock file only changes when `agent_lock` claims/releases — both
+	// are routed through this service, which invalidates the cache. For
+	// non-proposals tools (the vast majority of calls in a swarm) the
+	// 50ms window covers ~hundreds of calls, so the sync path reduces
+	// to a `Date.now()` comparison + a Map read.
+	private lockCache: { agent: string; mtimeMs: number } | undefined;
+	private static readonly LOCK_CACHE_TTL_MS = 50;
 
 	constructor(private readonly ctx: IMcpPluginContext) {
 		const layout = buildSwarmPaths(ctx.cacheDir, ctx.docsDir);
@@ -276,8 +286,12 @@ export class AgentLoopDetectorService {
 			const raw = await readFile(this.lockPath, 'utf8');
 			const locks = JSON.parse(raw);
 			if (Array.isArray(locks.in_flight) && locks.in_flight.length > 0) {
-				// Default to the first active lock agent
-				return locks.in_flight[0].agent;
+				const agent = locks.in_flight[0].agent;
+				// Refresh the sync-path cache as a side effect so
+				// `isAgentStuck` (called inline from core on every tool
+				// call) can serve from memory within the TTL window.
+				this.lockCache = { agent, mtimeMs: Date.now() };
+				return agent;
 			}
 		} catch {
 			// missing/corrupt lock file → no active agent to report
@@ -485,18 +499,24 @@ export class AgentLoopDetectorService {
 	}
 
 	/**
-	 * l00008 s1: this method is intentionally synchronous, not a hot-path
-	 * oversight. `IMcpVertexHostConfig.isAgentStuck` (packages/core
-	 * host-config.interface.ts) declares a sync return type and is
-	 * invoked inline — without `await` — right after every tool call in
-	 * `create-mcp-project.ts`. Making this `async` would require widening
-	 * that core contract to `Promise<...> | ...`, which ripples to every
-	 * host config consumer — out of scope for a contained fix. The sync
-	 * read below is a deliberate, narrow exception to invariant 3,
-	 * bounded by this one call site; `onToolCall`'s `getActiveAgent` (the
-	 * other path that needs the same lookup) already uses the async
-	 * primitive since it runs inside an `async` hook with no such
-	 * constraint.
+	 * l00008 s1 + audit-h1-fix: this method is intentionally synchronous,
+	 * not a hot-path oversight. `IMcpVertexHostConfig.isAgentStuck`
+	 * (packages/core host-config.interface.ts) declares a sync return
+	 * type and is invoked inline — without `await` — right after every
+	 * tool call in `create-mcp-project.ts`. Making this `async` would
+	 * widen the core contract to `Promise<...> | ...`, which ripples to
+	 * every host config consumer — out of scope for a contained fix.
+	 *
+	 * The previous implementation did a `readFileSync` here (forbidden by
+	 * AGENTS.md rule 3). The audit (2026-06-23) replaced that with a
+	 * 50ms TTL cache populated by the async `getActiveAgent` (which is
+	 * called from `onToolCall` and runs after every proposals_* tool).
+	 * Inside the TTL window the sync path is a Map read + Date.now().
+	 * When the cache is cold AND a non-proposals tool is the caller, the
+	 * refresh is kicked off in the background — the sync path returns
+	 * `'default-agent'` as a safe fallback. `agent-lock` claim/release
+	 * routes through `invalidateLockCache()` (declared on this class) so
+	 * the cache can never go stale by more than the TTL.
 	 */
 	public isAgentStuck(
 		_toolName: string,
@@ -509,20 +529,7 @@ export class AgentLoopDetectorService {
 			agent = (args as { agent?: string }).agent ?? '';
 		}
 		if (!agent) {
-			try {
-				if (existsSync(this.lockPath)) {
-					const raw = readFileSync(this.lockPath, 'utf8');
-					const locks = JSON.parse(raw);
-					if (
-						Array.isArray(locks.in_flight) &&
-						locks.in_flight.length > 0
-					) {
-						agent = locks.in_flight[0].agent;
-					}
-				}
-			} catch {
-				// Ignore
-			}
+			agent = this.readCachedLockAgent();
 		}
 		if (!agent) agent = 'default-agent';
 
@@ -536,6 +543,42 @@ export class AgentLoopDetectorService {
 		}
 
 		return this.stuckAgents.get(agent) ?? null;
+	}
+
+	/**
+	 * Sync read of the lock file's first in-flight agent, served from a
+	 * 50ms TTL cache. When the cache is cold, kicks off an async
+	 * refresh and returns `''` (caller falls back to `'default-agent'`).
+	 * This is the only sync path that touches the lock file in the
+	 * whole service; everything else goes through the async
+	 * `getActiveAgent`, which updates this cache as a side effect.
+	 */
+	private readCachedLockAgent(): string {
+		const now = Date.now();
+		const cached = this.lockCache;
+		if (
+			cached !== undefined &&
+			now - cached.mtimeMs < AgentLoopDetectorService.LOCK_CACHE_TTL_MS
+		) {
+			return cached.agent;
+		}
+		// Cold path: refresh in the background, do not block.
+		void this.refreshLockCache();
+		return '';
+	}
+
+	private async refreshLockCache(): Promise<void> {
+		const agent = await this.getActiveAgent();
+		this.lockCache = { agent, mtimeMs: Date.now() };
+	}
+
+	/**
+	 * Called by the agent-lock engine after a successful claim/release
+	 * so the in-memory cache never serves a stale agent for longer than
+	 * the TTL window.
+	 */
+	public invalidateLockCache(): void {
+		this.lockCache = undefined;
 	}
 
 	private async writeHandoffPacket(

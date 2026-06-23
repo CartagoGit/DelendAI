@@ -1,16 +1,46 @@
 #!/usr/bin/env bun
 /**
- * no-internal-core-imports.script.ts - f00034 s7 (gate).
+ * no-internal-core-imports.script.ts - f00034 s7 (gate) + audit-h3-fix.
  *
- * The CLI package may depend on the public core API only. Imports from
- * `@mcp-vertex/core/lib`, `@mcp-vertex/core/dist`, or relative paths into
- * `packages/core/src/lib` couple the CLI to core internals and must fail.
+ * CLI code (and any tool we ship to consumers) may depend on the public
+ * core API only. Imports from `@mcp-vertex/core/lib`,
+ * `@mcp-vertex/core/dist`, or relative paths into `packages/core/src/lib`
+ * couple the consumer to core internals and must fail.
+ *
+ * Audit 2026-06-23 extended the scan roots to also cover `tools/scripts`
+ * (production entrypoints + their pure-module helpers, excluding the
+ * `lint/` and `metrics/` subtrees which contain self-test fixtures).
+ * Internal core imports inside the core's own `tests/` tree are still
+ * allowed because they live next to the code they exercise.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
-const DEFAULT_SCAN_ROOT = 'packages/cli/src';
+/**
+ * Default scan roots (audit-h3-fix). Each entry is a workspace-relative
+ * path; any directory under it is walked recursively except `node_modules`,
+ * `dist`, and `coverage`. Pass a single root via the positional CLI arg
+ * to narrow the scan for ad-hoc checks.
+ */
+const DEFAULT_SCAN_ROOTS: readonly string[] = [
+	'packages/cli/src',
+	'tools/scripts',
+];
+/**
+ * Audit-h3-fix: subtrees under a scan root that legitimately touch core
+ * internals on purpose. Each entry is matched as a workspace-relative
+ * path prefix.
+ */
+const SCAN_EXCLUDE_PREFIXES: readonly string[] = [
+	// The lint scripts ARE the rule: their fixture strings intentionally
+	// reference `@mcp-vertex/core/lib/...` to assert the linter fires.
+	'tools/scripts/lint/',
+	// The metrics baseline snapshotter shells out to git, no internal
+	// core imports expected; excluded defensively in case a future
+	// fixture is added.
+	'tools/scripts/metrics/',
+];
 const TS_FILE = /\.ts$/;
 
 export interface IInternalCoreImportFinding {
@@ -114,15 +144,35 @@ const walk = async (root: string): Promise<readonly string[]> => {
 	return out;
 };
 
+/**
+ * Audit-h3-fix: accepts a single root (string) or a list of roots
+ * (readonly string[]). The default list lives in DEFAULT_SCAN_ROOTS.
+ */
 export const detectInternalCoreImports = async (
-	root: string = DEFAULT_SCAN_ROOT,
+	roots: string | readonly string[] = DEFAULT_SCAN_ROOTS,
 ): Promise<readonly IInternalCoreImportFinding[]> => {
-	const absRoot = isAbsolute(root) ? root : join(REPO_ROOT, root);
+	const list = typeof roots === 'string' ? [roots] : roots;
 	const findings: IInternalCoreImportFinding[] = [];
-	for (const file of await walk(absRoot)) {
-		const content = await readFile(file, 'utf8').catch(() => '');
-		if (content.length === 0) continue;
-		findings.push(...scanText(content, file, relative(REPO_ROOT, file)));
+	for (const root of list) {
+		const absRoot = isAbsolute(root) ? root : join(REPO_ROOT, root);
+		for (const file of await walk(absRoot)) {
+			const rel = relative(REPO_ROOT, file);
+			// Audit-h3-fix: respect SCAN_EXCLUDE_PREFIXES. The lint subtree
+			// and metrics subtree are skipped wholesale — fixture strings
+			// there intentionally reference internal core paths.
+			if (
+				SCAN_EXCLUDE_PREFIXES.some(
+					(prefix) =>
+						rel === prefix.replace(/\/$/, '') ||
+						rel.startsWith(prefix),
+				)
+			) {
+				continue;
+			}
+			const content = await readFile(file, 'utf8').catch(() => '');
+			if (content.length === 0) continue;
+			findings.push(...scanText(content, file, rel));
+		}
 	}
 	return findings;
 };

@@ -14,6 +14,7 @@
 import { dictsByLang, defaultLang, type Lang } from '@mcp-vertex/shared/i18n';
 import { renderToolbar } from '@mcp-vertex/ui-extension/public';
 
+import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 
 export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
@@ -21,12 +22,17 @@ export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
 const TOOLBAR_VIEW_TYPE = 'mcpVertexToolbar';
 const TOOLBAR_TITLE = 'mcp-vertex Toolbar';
 
+/** Resolve the host's persisted language (f00050 S7) with a typed fallback. */
+const resolveLang = (deps: ICommandDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
+
 export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(OPEN_TOOLBAR_COMMAND, async () => {
-		// TODO(f00047-S5): read the host's persisted language from
-		// `globalState['mv:lang']` (S4) when it ships. For now, default
-		// to 'en' so the toolbar renders.
-		const lang: Lang = defaultLang;
+		const lang = resolveLang(deps);
 		const dict = dictsByLang[lang];
 		const html = renderToolbar({
 			host: 'vscode',

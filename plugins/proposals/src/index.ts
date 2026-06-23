@@ -166,6 +166,9 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
+					// Audit-h1-fix: keep the loop detector's lock-cache
+					// coherent with every successful claim/release/gc.
+					onLockChanged: () => loopDetector.invalidateLockCache(),
 				}),
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,

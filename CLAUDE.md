@@ -7,7 +7,8 @@ guidance for whichever agent is driving the main thread.
 ## Keep the main thread cheap
 
 This repo's MCP host (`scripts/host-server.ts`) runs `--preset=swarm`, which
-loads ~9 plugins and a large `proposals_*` tool surface. Tool *results* stay
+loads the active plugin preset (currently 9 of the 16 shipped plugins — see
+[`AGENTS.md`](AGENTS.md) for the live list). Tool *results* stay
 in context for the rest of the session, so how you call these tools matters:
 
 - **Delegate non-trivial work.** For any real change to `packages/core`, a

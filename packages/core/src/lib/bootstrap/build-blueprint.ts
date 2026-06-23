@@ -6,11 +6,33 @@ import {
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 import type { IProjectAnalysis } from './analyze-project';
+import {
+	blueprintArtifactBody,
+	continueProposalPromptBody,
+	fixQualityPromptBody,
+	frameworkSkillBody,
+	frameworkSkillWhenToUse,
+	projectStandardsSkillBody,
+	startPromptBody,
+} from './body-content';
 import { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
 
 export interface IBlueprintArtifact {
 	readonly name: string;
 	readonly description: string;
+	/**
+	 * Body text for the generated artefact (prompt or skill). When present
+	 * it replaces the generic TODO placeholder that `scaffoldPromptFile`
+	 * / `scaffoldSkillFile` would otherwise emit. Optional so callers that
+	 * only know `name`+`description` keep working.
+	 */
+	readonly body?: string;
+	/**
+	 * Concrete "when to use" bullets for skills. Same contract as
+	 * `scaffoldSkillFile`'s fourth arg: overrides the TODO bullet when
+	 * present.
+	 */
+	readonly whenToUse?: readonly string[];
 }
 
 export interface IBlueprintDefaults {
@@ -161,18 +183,21 @@ export const buildServerBlueprint = (
 		{
 			name: 'start',
 			description: 'Orient and start working in this project.',
+			body: startPromptBody(analysis, namespacePrefix),
 		},
 	];
 	if (Object.keys(analysis.scripts).length > 0) {
 		prompts.push({
 			name: 'fix quality',
 			description: 'Run the gates and fix what fails.',
+			body: fixQualityPromptBody(analysis, namespacePrefix),
 		});
 	}
 	if (plugins.includes('proposals')) {
 		prompts.push({
 			name: 'continue proposal',
 			description: 'Resolve and execute the next proposal slice.',
+			body: continueProposalPromptBody(namespacePrefix),
 		});
 	}
 
@@ -180,12 +205,19 @@ export const buildServerBlueprint = (
 		{
 			name: 'project standards',
 			description: `Closed stack and conventions of ${serverName}.`,
+			body: projectStandardsSkillBody(analysis),
+			whenToUse: [
+				'Before writing or reviewing code in this project.',
+				'When a code review questions a project-wide convention.',
+			],
 		},
 	];
 	if (analysis.framework !== undefined) {
 		skills.push({
 			name: `${analysis.framework} conventions`,
 			description: `${analysis.framework} idioms and lint/type rules for this project.`,
+			body: frameworkSkillBody(analysis),
+			whenToUse: [...frameworkSkillWhenToUse(analysis)],
 		});
 	}
 
@@ -278,10 +310,25 @@ export const buildBlueprintFiles = (
 		if (blueprint.tests) files.push(toolTestFile(prefix, tool.name));
 	}
 	for (const prompt of blueprint.prompts) {
-		files.push(scaffoldPromptFile(prefix, prompt.name, prompt.description));
+		files.push(
+			scaffoldPromptFile(
+				prefix,
+				prompt.name,
+				prompt.description,
+				prompt.body,
+			),
+		);
 	}
 	for (const skill of blueprint.skills) {
-		files.push(scaffoldSkillFile(prefix, skill.name, skill.description));
+		files.push(
+			scaffoldSkillFile(
+				prefix,
+				skill.name,
+				skill.description,
+				skill.whenToUse ?? [],
+				skill.body,
+			),
+		);
 	}
 	// De-duplicate by path (host project already ships a starter skill).
 	const byPath = new Map<string, IScaffoldedFile>();

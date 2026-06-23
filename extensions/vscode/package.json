@@ -17,7 +17,16 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onView:mcp-vertex.tools",
+		"onView:mcp-vertex.proposals",
+		"onView:mcp-vertex.memory",
+		"onCommand:mcp-vertex.openDashboard",
+		"onCommand:mcp-vertex.showOverview",
+		"onCommand:mcp-vertex.refresh",
+		"onCommand:mcp-vertex.openToolbar",
+		"onCommand:mcp-vertex.setupGithub"
+	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {

@@ -24,11 +24,10 @@
  * Pure verification harness; no I/O, no network, no writes.
  */
 
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import { assembleCliConfig, parseCliArgs } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 interface ILoadedTool {
 	readonly id: string;

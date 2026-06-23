@@ -12,7 +12,7 @@
  * `renderSetupGithubWebview(...)`; the copy is resolved per language from the
  * shared i18n surface.
  */
-import { defaultLang, type Lang } from '../i18n';
+import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { setupGithubStrings } from '../i18n/strings';
 import { renderSetupGithubWebview } from '../webviews/setup-github';
 
@@ -22,11 +22,20 @@ export const SETUP_GITHUB_COMMAND = 'mcp-vertex.setupGithub';
 
 const SETUP_GITHUB_VIEW_TYPE = 'mcpVertexSetupGithub';
 
+/** Key under which the host persists the user's preferred language. */
+export const HOST_LANG_KEY = 'mv:lang';
+
+/** Resolve the host's persisted language (f00050 S7) with a typed fallback. */
+const resolveLang = (deps: ICommandDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
+
 export const registerSetupGithubCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(SETUP_GITHUB_COMMAND, () => {
-		// TODO(f00047): read the host's persisted language from
-		// `globalState['mv:lang']` when it ships; default to English for now.
-		const lang: Lang = defaultLang;
+		const lang = resolveLang(deps);
 		const strings = setupGithubStrings(lang);
 		const html = renderSetupGithubWebview(strings);
 		const panel = deps.vscode.window.createWebviewPanel(

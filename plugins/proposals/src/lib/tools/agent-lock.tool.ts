@@ -11,6 +11,13 @@ export interface IAgentLockToolOptions {
 	readonly lockPathAbs: string;
 	/** Workspace-relative label echoed in payloads. */
 	readonly lockFileLabel: string;
+	/**
+	 * Audit-h1-fix: invoked after every successful `claim`/`release`/`gc`
+	 * so the loop detector's in-memory cache of the lock file's first
+	 * `in_flight` agent never goes stale by more than its 50ms TTL.
+	 * Optional so the tool stays testable in isolation.
+	 */
+	readonly onLockChanged?: () => void;
 }
 
 const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
@@ -102,6 +109,18 @@ export const buildAgentLockRegistration = (
 						toolName,
 						lockFileLabel: options.lockFileLabel,
 					});
+					// Audit-h1-fix: any successful claim/release/gc may have
+					// changed the lock file. Invalidate the loop detector's
+					// in-memory cache so the next `isAgentStuck` (called
+					// inline from core on every tool call) does not serve a
+					// stale agent for longer than the 50ms TTL.
+					if (!res.isError && options.onLockChanged) {
+						try {
+							options.onLockChanged();
+						} catch {
+							// Never let the cache callback fail the tool.
+						}
+					}
 					// The engine returns text-only; mirror its JSON payload into
 					// structuredContent so the declared outputSchema is satisfied
 					// (the SDK validates it on success).

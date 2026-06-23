@@ -106,30 +106,37 @@ export const scaffoldPromptFile = (
 	prefix: string,
 	name: string,
 	description: string,
+	body?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
 	const promptName = `${prefix}-${id}`;
+	const safeDescription = description.replace(/'/g, '');
+	const safeBody = (body ?? '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+	const userText =
+		body !== undefined && body.length > 0
+			? safeBody
+			: 'Wrapper: call the ${prefix} MCP tools; the server is the source of truth.';
 	return {
 		path: `libs/mcp-project/src/lib/prompts/${prefix}-${id}.prompt.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 export const ${prefix.toUpperCase()}_${id.replace(/-/g, '_').toUpperCase()}_PROMPT = {
 	name: '${promptName}',
-	description: '${description.replace(/'/g, '')}',
+	description: '${safeDescription}',
 } as const;
 
 export async function register${fn}Prompt(server: McpServer): Promise<void> {
 	server.registerPrompt(
 		'${promptName}',
-		{ description: '${description.replace(/'/g, '')}' },
+		{ description: '${safeDescription}' },
 		async () => ({
 			messages: [
 				{
 					role: 'user' as const,
 					content: {
 						type: 'text' as const,
-						text: 'Wrapper: call the ${prefix} MCP tools; the server is the source of truth.',
+						text: \`${userText}\`,
 					},
 				},
 			],
@@ -145,12 +152,17 @@ export const scaffoldSkillFile = (
 	name: string,
 	description: string,
 	whenToUse: readonly string[] = [],
+	body?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const bullets =
 		whenToUse.length > 0
 			? whenToUse.map((entry) => `- ${entry}`).join('\n')
 			: '- TODO: describe when an agent should read this skill.';
+	const bodySection =
+		body !== undefined && body.length > 0
+			? body
+			: '2. TODO: the skill body.';
 	return {
 		path: `libs/mcp-project/src/lib/skills/${prefix}-${id}.md`,
 		content: `---
@@ -168,7 +180,7 @@ ${bullets}
 ## Quick reference
 
 1. Call \`${prefix}_overview\` first; the MCP payload is the source of truth.
-2. TODO: the skill body.
+${bodySection}
 
 ## Checklist
 

@@ -7,6 +7,8 @@ date: 2026-06-23
 kind: feat
 title: Conventions unification — close the f00037 backlog and unify every other naming/structural/working-form drift
 shipped-in: []
+recan:
+    - { at: 2026-06-23, by: copilot-minimax-m3, scope: full, drift-count-delta: 1, slices-grew: [S7], slices-removed: [], rule-changes: 0, summary: "see ## Re-scan delta 2026-06-23" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)

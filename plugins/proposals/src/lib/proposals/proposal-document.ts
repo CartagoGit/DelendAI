@@ -50,6 +50,39 @@ export interface IOwnershipEntry {
 	readonly files?: readonly string[];
 }
 
+/**
+ * A child referenced from a `plan` proposal's `contains:` block. The
+ * parser stores each entry as the raw key/value map (id, kind, required…)
+ * and normalises to this shape for the closure evaluator.
+ */
+export interface IPlanChild {
+	readonly id: string;
+	readonly kind?: string;
+	readonly required?: boolean;
+	readonly title?: string;
+}
+
+/**
+ * A plan's `contains:` block. Each list is optional; a plan may carry
+ * only proposals, only sub-plans, only its own slices, or any mix.
+ */
+export interface IPlanContains {
+	readonly proposals?: readonly IPlanChild[];
+	readonly plans?: readonly IPlanChild[];
+	readonly slices?: readonly IPlanChild[];
+}
+
+/**
+ * A plan's `closureGate:` block. All three flags default to `true`
+ * in the closure evaluator when the block is absent — the strictest
+ * closure is the safe default.
+ */
+export interface IPlanClosureGate {
+	readonly requirePeerReview?: boolean;
+	readonly requireAllSlicesDone?: boolean;
+	readonly requireAllChildrenDone?: boolean;
+}
+
 export interface IProposalFrontmatter {
 	readonly id: string;
 	readonly type: string;
@@ -63,6 +96,12 @@ export interface IProposalFrontmatter {
 	 */
 	readonly ownership?: readonly IOwnershipEntry[];
 	readonly reservedFiles?: readonly string[];
+	/**
+	 * Plan-of-plans children (q00001). Only set on `type: plan` proposals;
+	 * ignored otherwise by the cascade and the closure evaluator.
+	 */
+	readonly contains?: IPlanContains;
+	readonly closureGate?: IPlanClosureGate;
 }
 
 export interface IProposalBody {

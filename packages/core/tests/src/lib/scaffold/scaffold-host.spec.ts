@@ -15,6 +15,7 @@ import {
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldHostProject,
+	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
 } from '@mcp-vertex/core/public';
