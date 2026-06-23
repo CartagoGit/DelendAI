@@ -1,40 +1,39 @@
 /**
- * q00001 — `proposals_close_plan` (f00020-style tool):
+ * close-plan.tool.ts
  *
- * User-facing wrapper around `proposal_transition → done` for `type: plan`
- * proposals. The transition tool already enforces the plan-closure rule
- * (it calls `evaluatePlanClosure` and rejects with a list of blockers);
- * this tool adds:
- *   1. A clearer preflight that returns the same blockers in a structured
- *      `blockers[]` array (so dashboards can render them).
- *   2. A `dryRun` mode that runs the guard without applying the
- *      transition — useful for "is the plan closable yet?" probes.
- *   3. A `proposalId` alias (`planId`) for readability.
+ * `proposals_close_plan` — user-facing wrapper around
+ * `proposal_transition → done` for `type: plan` proposals (q00001).
  *
- * The actual status mutation still goes through `runProposalTransition`,
- * which is the single source of truth for the folder+frontmatter dance
- * (and the only path that calls `git mv`). One rule, one place.
+ * Post-SOLID-refactor:
+ *   - Discovery (finding the plan file) delegates to
+ *     `proposals/locate.ts#locateProposal`, which both index- and
+ *     scan-resolves in one call. The previous inline `locatePlan`
+ *     helper is gone (DRY).
+ *   - Closure evaluation delegates to `evaluatePlanClosure` from the
+ *     engine module. The previous hand-built wrapper around
+ *     `buildDiskPlanChildrenResolver` is gone — the disk resolver
+ *     now accepts the own-slice Map directly via its `ownSlices`
+ *     option, no casting, no ad-hoc decorator (ISP).
+ *   - The actual status mutation still goes through
+ *     `runProposalTransition`, which is the single source of truth
+ *     for the folder+frontmatter dance (and the only path that
+ *     calls `git mv`). One rule, one place.
  */
 
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson, toolOk } from '@mcp-vertex/core/public';
+import { toolError, toolOk } from '@mcp-vertex/core/public';
 
+import { parseProposalDocument } from '../proposals/proposal-document';
+import { locateProposal } from '../proposals/locate';
+import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
-	evaluatePlanClosure,
 	readOwnSliceStatusesFromDisk,
-} from '../swarm/plan-closure';
-import { parseProposalDocument } from '../proposals/proposal-document';
-import { join } from 'node:path';
-import { readFile, readdir } from 'node:fs/promises';
+} from '../swarm/plan-closure.resolvers';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
-import {
-	extractYamlBlock,
-	parseFrontmatterBlock,
-} from '../proposals/frontmatter-parser';
 
 export interface IClosePlanToolOptions extends IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
@@ -51,8 +50,6 @@ export interface IClosePlanArgs {
 	/** Required when `dryRun` is false; surfaced in the audit trail. */
 	readonly reason?: string | undefined;
 }
-
-const json = toolJson;
 
 const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 	planId: z.string().min(1).optional(),
@@ -96,48 +93,32 @@ const CLOSE_PLAN_OUTPUT_SCHEMA = z.object({
 });
 
 /**
- * Locate a plan markdown file under `proposalsDirAbs` by its id. Returns
- * the absolute path + the parsed frontmatter `type` so the caller can
- * reject non-plan proposals with a friendly error.
+ * Build a resolver + evaluate closure for a given plan. Extracted
+ * from `runClosePlan` so the SRP is obvious: this function does
+ * nothing but "given a plan file, run the preflight".
+ *
+ * The own-slice status Map is read once and passed straight into the
+ * disk resolver's `ownSlices` option — no wrapper resolver, no
+ * duck-typed cast. This is the same shape the test resolver uses, so
+ * the engine treats both identically.
  */
-const locatePlan = async (
-	proposalsDirAbs: string,
+const runPreflight = async (
 	planId: string,
-): Promise<{ absPath: string; type: string } | null> => {
-	const candidates = ['ready', 'in-progress', 'review', 'paused', 'blocked'];
-	for (const folder of candidates) {
-		const dir =
-			folder === 'ready'
-				? proposalsDirAbs
-				: `${proposalsDirAbs}/${folder}`;
-		let entries: string[];
-		try {
-			entries = await readdir(dir);
-		} catch {
-			continue;
-		}
-		for (const name of entries) {
-			if (!name.startsWith(`${planId}-`) || !name.endsWith('.md'))
-				continue;
-			const path = join(dir, name);
-			let raw: string;
-			try {
-				raw = await readFile(path, 'utf8');
-			} catch {
-				continue;
-			}
-			const block = extractYamlBlock(raw);
-			if (block === null) continue;
-			const fm = parseFrontmatterBlock(block);
-			if (fm.id === planId) {
-				return {
-					absPath: path,
-					type: typeof fm.type === 'string' ? fm.type : '',
-				};
-			}
-		}
-	}
-	return null;
+	absPath: string,
+	options: IClosePlanToolOptions,
+) => {
+	const planDoc = await parseProposalDocument(absPath);
+	const ownSlices = await readOwnSliceStatusesFromDisk(absPath);
+	const resolver = await buildDiskPlanChildrenResolver({
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+		ownSlices,
+	});
+	return evaluatePlanClosure({
+		planId,
+		frontmatter: planDoc.frontmatter,
+		resolver,
+	});
 };
 
 export const runClosePlan = async (
@@ -152,7 +133,10 @@ export const runClosePlan = async (
 		);
 	}
 
-	const located = await locatePlan(options.proposalsDirAbs, planId);
+	const located = await locateProposal(planId, {
+		indexPathAbs: options.indexPathAbs,
+		proposalsDirAbs: options.proposalsDirAbs,
+	});
 	if (located === null) {
 		return toolError(
 			`no plan with id "${planId}" found under ${options.proposalsDirAbs}`,
@@ -166,30 +150,7 @@ export const runClosePlan = async (
 		);
 	}
 
-	const planDoc = await parseProposalDocument(located.absPath);
-	const resolver = await buildDiskPlanChildrenResolver({
-		indexPathAbs: options.indexPathAbs,
-		proposalsDirAbs: options.proposalsDirAbs,
-	});
-	const ownSlices = await readOwnSliceStatusesFromDisk(located.absPath);
-	const report = await evaluatePlanClosure({
-		planId,
-		frontmatter: planDoc.frontmatter,
-		resolver: {
-			...resolver,
-			resolveOne: async (ref, kind) => {
-				if (kind === 'slice' && ownSlices.has(ref)) {
-					return {
-						ref,
-						kind,
-						status: ownSlices.get(ref) ?? 'unknown',
-						peerReviewed: true,
-					};
-				}
-				return resolver.resolveOne(ref, kind);
-			},
-		},
-	});
+	const report = await runPreflight(planId, located.absPath, options);
 
 	if (!report.closable || args.dryRun === true) {
 		return toolOk({
@@ -238,6 +199,20 @@ export const runClosePlan = async (
 	});
 };
 
+/**
+ * Normalise MCP schema args → `IClosePlanArgs` without passing
+ * `key: undefined` (which would violate the strict
+ * `exactOptionalPropertyTypes` setting).
+ */
+const normaliseArgs = (
+	args: z.infer<typeof CLOSE_PLAN_INPUT_SCHEMA>,
+): IClosePlanArgs => ({
+	...(args.planId !== undefined ? { planId: args.planId } : {}),
+	...(args.proposalId !== undefined ? { proposalId: args.proposalId } : {}),
+	...(args.dryRun !== undefined ? { dryRun: args.dryRun } : {}),
+	...(args.reason !== undefined ? { reason: args.reason } : {}),
+});
+
 export const buildClosePlanRegistration = (
 	options: IClosePlanToolOptions,
 ): IToolRegistration => ({
@@ -255,29 +230,7 @@ export const buildClosePlanRegistration = (
 					'Run the q00001 plan-closure preflight; if the plan is closable, transition it to `done`. With `dryRun: true`, only the preflight runs.',
 				inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
 			},
-			async (args) =>
-				// exactOptionalPropertyTypes-safe normalisation: the SDK
-				// infers the schema's shape with `T | undefined` for every
-				// optional key, but `IClosePlanArgs` declares `T?` (no
-				// undefined). Spread conditionally so we never pass
-				// `key: undefined` to the handler.
-				runClosePlan(
-					{
-						...(args.planId !== undefined
-							? { planId: args.planId }
-							: {}),
-						...(args.proposalId !== undefined
-							? { proposalId: args.proposalId }
-							: {}),
-						...(args.dryRun !== undefined
-							? { dryRun: args.dryRun }
-							: {}),
-						...(args.reason !== undefined
-							? { reason: args.reason }
-							: {}),
-					},
-					options,
-				),
+			async (args) => runClosePlan(normaliseArgs(args), options),
 		);
 	},
 });

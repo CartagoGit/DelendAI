@@ -37,11 +37,11 @@ import {
 } from '../proposals/frontmatter-parser';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { evaluatePlanClosure } from '../swarm/plan-closure.engine';
 import {
 	buildDiskPlanChildrenResolver,
-	evaluatePlanClosure,
 	readOwnSliceStatusesFromDisk,
-} from '../swarm/plan-closure';
+} from '../swarm/plan-closure.resolvers';
 import { parseProposalDocument } from '../proposals/proposal-document';
 
 export interface IProposalTransitionToolOptions {
@@ -198,28 +198,16 @@ export const runProposalTransition = async (
 		options.indexPathAbs !== undefined
 	) {
 		const planDoc = await parseProposalDocument(found.absPath);
+		const ownSlices = await readOwnSliceStatusesFromDisk(found.absPath);
 		const resolver = await buildDiskPlanChildrenResolver({
 			indexPathAbs: options.indexPathAbs,
 			proposalsDirAbs: options.proposalsDirAbs,
+			ownSlices,
 		});
-		const ownSlices = await readOwnSliceStatusesFromDisk(found.absPath);
 		const report = await evaluatePlanClosure({
 			planId: args.id,
 			frontmatter: planDoc.frontmatter,
-			resolver: {
-				...resolver,
-				resolveOne: async (ref, kind) => {
-					if (kind === 'slice' && ownSlices.has(ref)) {
-						return {
-							ref,
-							kind,
-							status: ownSlices.get(ref) ?? 'unknown',
-							peerReviewed: true,
-						};
-					}
-					return resolver.resolveOne(ref, kind);
-				},
-			},
+			resolver,
 		});
 		if (!report.closable) {
 			const lines = report.reasons.map(

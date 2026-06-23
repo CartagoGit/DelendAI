@@ -147,25 +147,37 @@ export const truncateIfTooLarge = <T>(
 			finalBytes: originalBytes,
 		};
 	}
-	// Build the envelope first to measure its size, then decide how
-	// much room is left for `head`. `head` is a JSON fragment of the
-	// original value (NOT a re-parsed object — slicing JSON mid-string
-	// would produce invalid output). The caller can re-parse `head`
-	// when it has a schema-aware reader.
-	const envelopeBase = {
+	// Iteratively shrink `head` until the envelope (base + escaped head)
+	// fits under `maxBytes`. Convergence is guaranteed because every
+	// iteration removes at least one byte from `head`, and the
+	// degenerate case (headBudget = 0) terminates with an empty head.
+	const baseShape = {
 		__truncated: true,
 		originalBytes,
 		maxBytes,
 		head: '',
 	} as const;
-	const baseBytes = Buffer.byteLength(JSON.stringify(envelopeBase), 'utf8');
-	const headBudget = Math.max(0, maxBytes - baseBytes - 1);
-	const headSlice = serialised.slice(0, headBudget);
+	let envelopeSize = Buffer.byteLength(JSON.stringify(baseShape), 'utf8');
+	let headBudget = Math.max(0, maxBytes - envelopeSize - 1);
+	while (headBudget > 0) {
+		const candidate = {
+			__truncated: true,
+			originalBytes,
+			maxBytes,
+			head: serialised.slice(0, headBudget),
+		};
+		const size = Buffer.byteLength(JSON.stringify(candidate), 'utf8');
+		if (size <= maxBytes) {
+			envelopeSize = size;
+			break;
+		}
+		headBudget = Math.max(0, headBudget - 1);
+	}
 	const envelope = {
 		__truncated: true,
 		originalBytes,
 		maxBytes,
-		head: headSlice,
+		head: serialised.slice(0, headBudget),
 	};
 	const finalSerialised = JSON.stringify(envelope);
 	const truncatedValue = JSON.parse(finalSerialised) as ITruncatedEnvelope;
