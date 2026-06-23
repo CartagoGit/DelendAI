@@ -12,8 +12,8 @@ import {
 	gitShow,
 	gitStatus,
 	gitWorktreeList,
-} from './git';
-import type { IGitRunner } from './git';
+} from '../services/git';
+import type { IGitRunner } from '../services/git';
 
 const NOT_A_REPO = (reason = 'not a git repository') =>
 	toolError(

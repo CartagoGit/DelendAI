@@ -11,13 +11,13 @@ export {
 	searchDocs,
 	extractTitle,
 	DEFAULT_DOC_ROOTS,
-} from '../lib/engine';
+} from './services/engine';
 export type {
 	IDocEntry,
 	IDocContent,
 	IDocsOptions,
 	IDocSearchHit,
-} from '../lib/engine';
+} from './services/engine';
 export { buildDocsToolRegistrations } from '../lib/tools';
 export type { IDocsToolOptions } from '../lib/tools';
 

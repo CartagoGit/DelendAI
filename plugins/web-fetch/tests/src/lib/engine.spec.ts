@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isHostAllowed, webFetch } from '../../../src/lib/engine';
-import type { IFetchLike } from '../../../src/lib/engine';
+import { isHostAllowed, webFetch } from '../../../src/lib/services/engine';
+import type { IFetchLike } from '../../../src/lib/services/engine';
 
 const textResponse = (
 	status: number,

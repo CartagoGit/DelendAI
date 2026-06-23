@@ -3,11 +3,11 @@ import { z } from 'zod';
 import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import { cancelActiveRuns, runScope } from './runner';
-import type { ICommandRunner } from './runner';
-import type { ICommandPolicy } from './command-policy';
-import { resolveScopes } from './scopes';
-import type { IScopeMap } from './scopes';
+import { cancelActiveRuns, runScope } from '../services/runner';
+import type { ICommandRunner } from '../services/runner';
+import type { ICommandPolicy } from '../services/command-policy';
+import { resolveScopes } from '../services/scopes';
+import type { IScopeMap } from '../services/scopes';
 
 export interface IQualityToolOptions {
 	readonly namespacePrefix: string;

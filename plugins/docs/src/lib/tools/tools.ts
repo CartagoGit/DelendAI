@@ -3,8 +3,8 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { listDocs, readDoc, searchDocs } from './engine';
-import type { IDocsOptions } from './engine';
+import { listDocs, readDoc, searchDocs } from '../services/engine';
+import type { IDocsOptions } from '../services/engine';
 
 export interface IDocsToolOptions {
 	readonly namespacePrefix: string;

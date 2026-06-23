@@ -110,6 +110,9 @@ describe('proposal_transition', () => {
 			{ id: 'f00014', to: 'in-progress', reason: 'claimed' },
 			options,
 		);
+		if (result.isError === true) {
+			process.stderr.write(`\n\nDEBUG: ${result.content?.[0]?.text}\n\n`);
+		}
 		expect(result.isError).toBeUndefined();
 		const body = JSON.parse(result.content[0]?.text ?? '{}');
 		expect(body.from).toBe('ready');

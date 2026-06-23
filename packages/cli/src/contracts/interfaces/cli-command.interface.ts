@@ -12,6 +12,17 @@ export interface ICliGlobalOptions {
 	readonly plugins: readonly string[];
 	readonly preset?: string | undefined;
 	readonly config?: string | undefined;
+	// r00003 S2 (F-001: declarative flag forwarding). Each entry is
+	// optional on the global options surface; the forwarder table skips
+	// undefined values, so the host never sees `--flag` for an unset
+	// option. Defined on the interface (not added ad-hoc inside the
+	// forwarder) so `keyof ICliGlobalOptions` covers every flag the
+	// declarative table can declare.
+	readonly cacheDir?: string | undefined;
+	readonly docsDir?: string | undefined;
+	readonly excludePlugins?: readonly string[] | undefined;
+	readonly mcpProjectCreate?: boolean | undefined;
+	readonly mcpProjectTests?: boolean | undefined;
 }
 
 export interface ICliCommandResult {
