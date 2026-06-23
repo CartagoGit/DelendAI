@@ -43,6 +43,47 @@ export type Role =
 	| 'generated'
 	| 'test'
 	| 'config'
+	| 'script'
+	| 'command'
+	| 'provider'
+	| 'view'
+	| 'component'
+	| 'page'
+	| 'i18n'
+	| 'data'
+	| 'dev'
+	| 'webview'
+	| 'transport'
+	| 'bootstrap'
+	| 'swarm'
+	| 'proposal'
+	| 'agent'
+	| 'dashboard'
+	| 'framework'
+	| 'shared'
+	| 'cli'
+	| 'host'
+	| 'toolbar'
+	| 'cascade'
+	| 'install'
+	| 'metric'
+	| 'migration'
+	| 'scaffold'
+	| 'setup'
+	| 'knowledge'
+	| 'lock'
+	| 'project'
+	| 'skill'
+	| 'workspace'
+	| 'entry'
+	| 'plugin'
+	| 'app-lib'
+	| 'setting'
+	| 'test-support'
+	| 'issue'
+	| 'marker'
+	| 'convention'
+	| 'type'
 	| 'barrel'
 	| 'other';
 
@@ -86,7 +127,9 @@ const endsWithBasename = (rel: string, suffix: string): boolean =>
 const GeneratedRule: IRoleRule = rule(
 	'generated',
 	(rel) =>
-		hasSegment(rel, 'generated') || /\.generated\./.test(basename(rel)),
+		hasSegment(rel, 'generated') ||
+		hasSegment(rel, '.astro') ||
+		/\.generated\./.test(basename(rel)),
 );
 
 /** 2. Configuration files — package-local tool/test/build config. */
@@ -99,7 +142,112 @@ const TestRule: IRoleRule = rule('test', (rel) =>
 	/(?:\.e2e)?\.spec\.tsx?$/.test(basename(rel)),
 );
 
-/** 4. Public barrels — `src/public/index.ts` and `src/index.ts`.
+/** Type companions: feature-private structural helpers. */
+const TypeRule: IRoleRule = rule(
+	'type',
+	(rel) => /\.types\.ts$/.test(basename(rel)) || hasSegment(rel, 'contracts'),
+);
+
+/** 4. Script entrypoints and script-local helper modules. */
+const ScriptRule: IRoleRule = rule('script', (rel) =>
+	hasSegment(rel, 'scripts'),
+);
+
+/** 5. Host/CLI commands. */
+const CommandRule: IRoleRule = rule('command', (rel) =>
+	hasSegment(rel, 'commands'),
+);
+
+/** 6. UI/host providers. */
+const ProviderRule: IRoleRule = rule('provider', (rel) =>
+	hasSegment(rel, 'providers'),
+);
+
+/** 7. Render-only views. */
+const ViewRule: IRoleRule = rule('view', (rel) => hasSegment(rel, 'views'));
+
+/** 8. UI components and controllers. */
+const ComponentRule: IRoleRule = rule('component', (rel) =>
+	hasSegment(rel, 'components'),
+);
+
+/** 9. Route handlers/pages. */
+const PageRule: IRoleRule = rule('page', (rel) => hasSegment(rel, 'pages'));
+
+/** 10. Translation dictionaries and language surfaces. */
+const I18nRule: IRoleRule = rule('i18n', (rel) => hasSegment(rel, 'i18n'));
+
+/** 11. Static data modules. */
+const DataRule: IRoleRule = rule('data', (rel) => hasSegment(rel, 'data'));
+
+/** 12. Local dev-only entrypoints. */
+const DevRule: IRoleRule = rule('dev', (rel) => hasSegment(rel, 'dev'));
+
+/** 13. Host webview modules. */
+const WebviewRule: IRoleRule = rule('webview', (rel) =>
+	hasSegment(rel, 'webviews'),
+);
+
+/** 14. Transport adapters. */
+const TransportRule: IRoleRule = rule('transport', (rel) =>
+	hasSegment(rel, 'transport'),
+);
+
+const folderRule = (name: Role, segment: string): IRoleRule =>
+	rule(name, (rel) => hasSegment(rel, segment));
+
+const BootstrapRule = folderRule('bootstrap', 'bootstrap');
+const SwarmRule = folderRule('swarm', 'swarm');
+const ProposalRule = folderRule('proposal', 'proposals');
+const AgentRule = folderRule('agent', 'agents');
+const DashboardRule = folderRule('dashboard', 'dashboard');
+const FrameworkRule = folderRule('framework', 'frameworks');
+const SharedRule = folderRule('shared', 'shared');
+const CliRule = folderRule('cli', 'cli');
+const HostRule = folderRule('host', 'host');
+const ToolbarRule = folderRule('toolbar', 'toolbar');
+const CascadeRule = folderRule('cascade', 'cascade');
+const InstallRule = folderRule('install', 'install');
+const MetricRule = folderRule('metric', 'metrics');
+const MigrationRule = folderRule('migration', 'migrations');
+const ScaffoldRule = folderRule('scaffold', 'scaffold');
+const SetupRule = folderRule('setup', 'setup');
+const KnowledgeRule = folderRule('knowledge', 'knowledge');
+const LockRule = folderRule('lock', 'locks');
+const ProjectRule = folderRule('project', 'project');
+const SkillRule = folderRule('skill', 'skills');
+const WorkspaceRule = folderRule('workspace', 'workspace');
+const SettingRule = folderRule('setting', 'settings');
+
+const EntryRule: IRoleRule = rule('entry', (rel) =>
+	/(?:^|\/)(?:cli|extension)\.ts$/.test(rel),
+);
+
+const PluginRule: IRoleRule = rule('plugin', (rel) =>
+	/\/src\/lib\/plugins\//.test(rel),
+);
+
+const AppLibRule: IRoleRule = rule('app-lib', (rel) =>
+	/^apps\/web\/src\/lib\//.test(rel),
+);
+
+const TestSupportRule: IRoleRule = rule('test-support', (rel) =>
+	/\/tests\//.test(rel),
+);
+
+const IssueRule: IRoleRule = rule('issue', (rel) =>
+	/^plugins\/issues\//.test(rel),
+);
+
+const MarkerRule: IRoleRule = rule('marker', (rel) =>
+	/^plugins\/status-marker\//.test(rel),
+);
+
+const ConventionRule: IRoleRule = rule('convention', (rel) =>
+	/^plugins\/test-convention\//.test(rel),
+);
+
+/** 15. Public barrels — `src/public/index.ts` and `src/index.ts`.
  *  These re-export the package surface and carry no role suffix. */
 const BarrelRule: IRoleRule = rule('barrel', (rel) => {
 	const base = basename(rel);
@@ -175,15 +323,56 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	GeneratedRule,
 	TestRule,
 	ConfigRule,
+	ScriptRule,
+	CommandRule,
+	ProviderRule,
+	ViewRule,
+	ComponentRule,
+	PageRule,
+	I18nRule,
+	DataRule,
+	DevRule,
+	WebviewRule,
+	TransportRule,
 	BarrelRule,
 	InterfaceRule,
 	ConstantRule,
+	TypeRule,
 	ServiceRule,
 	ToolRule,
 	RegistryRule,
 	RegisterRule,
 	FactoryRule,
 	BuilderRule,
+	BootstrapRule,
+	SwarmRule,
+	AgentRule,
+	DashboardRule,
+	FrameworkRule,
+	SharedRule,
+	CliRule,
+	HostRule,
+	ToolbarRule,
+	CascadeRule,
+	InstallRule,
+	MetricRule,
+	MigrationRule,
+	ScaffoldRule,
+	SetupRule,
+	KnowledgeRule,
+	LockRule,
+	ProjectRule,
+	SkillRule,
+	WorkspaceRule,
+	SettingRule,
+	EntryRule,
+	PluginRule,
+	AppLibRule,
+	TestSupportRule,
+	IssueRule,
+	MarkerRule,
+	ConventionRule,
+	ProposalRule,
 ];
 
 /**

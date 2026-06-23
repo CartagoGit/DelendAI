@@ -7,7 +7,11 @@
  * is the Dependency-Inversion seam that lets `check-conventions.tool.ts`
  * be exercised without touching the real filesystem.
  */
-import { classifyPath, type Role } from './typescript-profile.service';
+import {
+	classifyPath,
+	TYPESCRIPT_RULES,
+	type Role,
+} from './typescript-profile.service';
 
 /** Minimal directory-listing port. Returns entry names (files + dirs). */
 export interface IDirReader {
@@ -29,19 +33,11 @@ export interface IConventionsScanResult {
 	readonly unmatched: readonly string[];
 }
 
-const EMPTY_COUNTS = (): Record<Role, number> => ({
-	interface: 0,
-	constant: 0,
-	service: 0,
-	tool: 0,
-	registry: 0,
-	register: 0,
-	factory: 0,
-	builder: 0,
-	generated: 0,
-	barrel: 0,
-	other: 0,
-});
+const EMPTY_COUNTS = (): Record<Role, number> =>
+	Object.fromEntries([
+		...TYPESCRIPT_RULES.map((rule) => [rule.name, 0] as const),
+		['other', 0] as const,
+	]) as Record<Role, number>;
 
 const isTypeScript = (name: string): boolean =>
 	name.endsWith('.ts') || name.endsWith('.tsx');

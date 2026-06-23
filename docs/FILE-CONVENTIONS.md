@@ -81,7 +81,15 @@ These categories are exempt from the role-suffix rule:
 ```
 'interface' | 'constant' | 'service' | 'tool' | 'registry'
 | 'register' | 'factory' | 'builder' | 'generated' | 'test'
-| 'config' | 'barrel' | 'other'
+| 'config' | 'script' | 'command' | 'provider' | 'view'
+| 'component' | 'page' | 'i18n' | 'data' | 'dev' | 'webview'
+| 'transport' | 'bootstrap' | 'swarm' | 'proposal' | 'agent'
+| 'dashboard' | 'framework' | 'shared' | 'cli' | 'host'
+| 'toolbar' | 'cascade' | 'install' | 'metric' | 'migration'
+| 'scaffold' | 'setup' | 'knowledge' | 'lock' | 'project'
+| 'skill' | 'workspace' | 'entry' | 'plugin' | 'app-lib'
+| 'setting' | 'test-support' | 'issue' | 'marker' | 'convention'
+| 'type' | 'barrel' | 'other'
 ```
 
 The classifier is the single source of truth — both this document and

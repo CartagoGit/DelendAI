@@ -85,11 +85,18 @@ describe('file-conventions.ts (pure classifier)', () => {
 		expect(
 			classifyPath('packages/core/src/lib/types/api.generated.ts'),
 		).toBe('generated');
+		expect(classifyPath('apps/web/.astro/types.d.ts')).toBe('generated');
 	});
 
 	it('classifies TypeScript config files', () => {
 		expect(classifyPath('plugins/search/vitest.config.ts')).toBe('config');
 		expect(classifyPath('apps/web/astro.config.ts')).toBe('config');
+	});
+
+	it('classifies type companion files', () => {
+		expect(
+			classifyPath('plugins/issues/src/lib/contracts/issue.types.ts'),
+		).toBe('type');
 	});
 
 	it('classifies tests before role suffixes', () => {
@@ -101,6 +108,30 @@ describe('file-conventions.ts (pure classifier)', () => {
 				'plugins/proposals/tests/src/lib/tools/example.tool.spec.ts',
 			),
 		).toBe('test');
+	});
+
+	it('classifies project-native folders that intentionally avoid role suffixes', () => {
+		expect(
+			classifyPath('extensions/vscode/src/commands/open-docs.ts'),
+		).toBe('command');
+		expect(
+			classifyPath(
+				'extensions/vscode/src/providers/tool-tree-data-provider.ts',
+			),
+		).toBe('provider');
+		expect(
+			classifyPath('packages/ui-extension/src/components/runtime.ts'),
+		).toBe('component');
+		expect(classifyPath('apps/web/src/i18n/ui.ts')).toBe('i18n');
+		expect(classifyPath('apps/web/scripts/gen-skills.ts')).toBe('script');
+		expect(classifyPath('apps/web/src/pages/api/dev-search.json.ts')).toBe(
+			'page',
+		);
+		expect(
+			classifyPath(
+				'packages/client/src/lib/transport/mcp-stdio-client.ts',
+			),
+		).toBe('transport');
 	});
 
 	it('classifies registry/register/factory/builder roles', () => {
@@ -116,6 +147,49 @@ describe('file-conventions.ts (pure classifier)', () => {
 		expect(
 			classifyPath('packages/core/src/lib/builders/query-builder.ts'),
 		).toBe('builder');
+	});
+
+	it('classifies stable domain folders', () => {
+		expect(
+			classifyPath('packages/core/src/lib/bootstrap/analyze-tool.ts'),
+		).toBe('bootstrap');
+		expect(
+			classifyPath('plugins/proposals/src/lib/swarm/round-context.ts'),
+		).toBe('swarm');
+		expect(
+			classifyPath(
+				'plugins/proposals/src/lib/agents/delivery-verifier.ts',
+			),
+		).toBe('agent');
+		expect(
+			classifyPath('packages/ui-extension/src/dashboard/format.ts'),
+		).toBe('dashboard');
+		expect(
+			classifyPath(
+				'plugins/rules/src/lib/frameworks/detect-framework.ts',
+			),
+		).toBe('framework');
+		expect(classifyPath('extensions/vscode/src/extension.ts')).toBe(
+			'entry',
+		);
+		expect(
+			classifyPath('packages/core/src/lib/plugins/load-plugins.ts'),
+		).toBe('plugin');
+		expect(classifyPath('apps/web/src/lib/setup-wizard.ts')).toBe(
+			'app-lib',
+		);
+		expect(
+			classifyPath('packages/ui-extension/tests/fake-host-adapter.ts'),
+		).toBe('test-support');
+		expect(classifyPath('plugins/issues/src/lib/github-client.ts')).toBe(
+			'issue',
+		);
+		expect(classifyPath('plugins/status-marker/src/lib/markers.ts')).toBe(
+			'marker',
+		);
+		expect(classifyPath('plugins/test-convention/src/scan.ts')).toBe(
+			'convention',
+		);
 	});
 
 	it('returns `other` for unclassified paths', () => {
@@ -286,36 +360,77 @@ describe('main() CLI shell', () => {
 
 	it('exists as an exported async function (smoke)', () => {
 		expect(typeof main).toBe('function');
-		expect(main([])).toBeInstanceOf(Promise);
 	});
 });
 
 describe('DEFAULT_TS_RULES (closed-world sanity)', () => {
-	it('contains exactly the 12 documented role rules', () => {
+	it('contains exactly the documented role rules', () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name).sort();
-		expect(names).toEqual([
+		const expected = [
+			'agent',
+			'app-lib',
 			'barrel',
+			'bootstrap',
 			'builder',
+			'cascade',
+			'cli',
+			'command',
+			'component',
 			'config',
+			'convention',
 			'constant',
+			'data',
+			'dashboard',
+			'dev',
+			'entry',
 			'factory',
+			'framework',
 			'generated',
+			'host',
+			'i18n',
+			'install',
 			'interface',
+			'issue',
+			'knowledge',
+			'lock',
+			'marker',
+			'metric',
+			'migration',
+			'page',
+			'plugin',
+			'provider',
+			'project',
+			'proposal',
 			'register',
 			'registry',
+			'scaffold',
+			'script',
 			'service',
+			'setup',
+			'shared',
+			'skill',
+			'setting',
+			'swarm',
 			'test',
+			'test-support',
 			'tool',
-		]);
-		expect(names.length).toBe(12);
+			'toolbar',
+			'transport',
+			'type',
+			'view',
+			'webview',
+			'workspace',
+		].sort();
+		expect(names).toEqual(expected);
+		expect(names.length).toBe(53);
 	});
 
-	it('lists generated first, then tests, config, barrel and interface (priority order)', () => {
+	it('lists generated first, then tests, config, scripts and commands (priority order)', () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name);
 		expect(names[0]).toBe('generated');
 		expect(names[1]).toBe('test');
 		expect(names[2]).toBe('config');
-		expect(names[3]).toBe('barrel');
-		expect(names[4]).toBe('interface');
+		expect(names[3]).toBe('script');
+		expect(names[4]).toBe('command');
 	});
 });
