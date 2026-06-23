@@ -498,22 +498,22 @@ const extension = {
 	healthQueue: 'Queue',
 	serverRestartHint:
 		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: आज का लॉग खोलें',
+	gitStatus: 'mcp-vertex: Git स्थिति',
+	openMemory: 'mcp-vertex: मेमोरी खोज खोलें',
+	notificationTest: 'mcp-vertex: सूचना का परीक्षण करें',
+	depsCheck: 'mcp-vertex: निर्भरताएँ जाँचें',
+	webFetch: 'mcp-vertex: वेब प्राप्त करें',
+	toolbarCategoryProposals: 'प्रस्ताव',
+	toolbarCategoryKnowledge: 'ज्ञान',
+	toolbarCategoryLogs: 'लॉग',
+	toolbarCategoryDocs: 'दस्तावेज़',
+	toolbarCategoryQuality: 'गुणवत्ता',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'मेमोरी',
+	toolbarCategoryNotification: 'सूचनाएँ',
+	toolbarCategoryDeps: 'निर्भरताएँ',
+	toolbarCategoryTools: 'टूल',
 	setupGithub: 'mcp-vertex: GitHub issues सेट अप करें',
 };
 

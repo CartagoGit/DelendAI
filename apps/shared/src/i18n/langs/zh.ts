@@ -494,22 +494,22 @@ const extension = {
 	healthQueue: 'Queue',
 	serverRestartHint:
 		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: 打开今天的日志',
+	gitStatus: 'mcp-vertex: Git 状态',
+	openMemory: 'mcp-vertex: 打开记忆搜索',
+	notificationTest: 'mcp-vertex: 测试通知',
+	depsCheck: 'mcp-vertex: 检查依赖',
+	webFetch: 'mcp-vertex: 获取网页',
+	toolbarCategoryProposals: '提案',
+	toolbarCategoryKnowledge: '知识',
+	toolbarCategoryLogs: '日志',
+	toolbarCategoryDocs: '文档',
+	toolbarCategoryQuality: '质量',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: '记忆',
+	toolbarCategoryNotification: '通知',
+	toolbarCategoryDeps: '依赖',
+	toolbarCategoryTools: '工具',
 	setupGithub: 'mcp-vertex：配置 GitHub issues',
 };
 

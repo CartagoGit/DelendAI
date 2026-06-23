@@ -504,22 +504,22 @@ const extension = {
 	healthQueue: 'Fila',
 	serverRestartHint:
 		'mcp-vertex: reinicie a extensao para relancar o servidor MCP.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: Abrir o log de hoje',
+	gitStatus: 'mcp-vertex: Estado do Git',
+	openMemory: 'mcp-vertex: Abrir pesquisa na memória',
+	notificationTest: 'mcp-vertex: Testar notificação',
+	depsCheck: 'mcp-vertex: Verificar dependências',
+	webFetch: 'mcp-vertex: Obter web',
+	toolbarCategoryProposals: 'Propostas',
+	toolbarCategoryKnowledge: 'Conhecimento',
+	toolbarCategoryLogs: 'Logs',
+	toolbarCategoryDocs: 'Docs',
+	toolbarCategoryQuality: 'Qualidade',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'Memória',
+	toolbarCategoryNotification: 'Notificações',
+	toolbarCategoryDeps: 'Dependências',
+	toolbarCategoryTools: 'Ferramentas',
 	setupGithub: 'mcp-vertex: Configurar issues do GitHub',
 };
 

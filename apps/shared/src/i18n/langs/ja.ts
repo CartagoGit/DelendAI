@@ -503,22 +503,22 @@ const extension = {
 	healthQueue: 'Queue',
 	serverRestartHint:
 		'mcp-vertex: please restart the extension to re-spawn the MCP server.',
-	openLogsToday: "mcp-vertex: Open Today's Log", // TODO(i18n): translate to this locale
-	gitStatus: 'mcp-vertex: Git Status', // TODO(i18n): translate to this locale
-	openMemory: 'mcp-vertex: Open Memory Search', // TODO(i18n): translate to this locale
-	notificationTest: 'mcp-vertex: Test Notification', // TODO(i18n): translate to this locale
-	depsCheck: 'mcp-vertex: Check Dependencies', // TODO(i18n): translate to this locale
-	webFetch: 'mcp-vertex: Web Fetch', // TODO(i18n): translate to this locale
-	toolbarCategoryProposals: 'Proposals', // TODO(i18n): translate to this locale
-	toolbarCategoryKnowledge: 'Knowledge', // TODO(i18n): translate to this locale
-	toolbarCategoryLogs: 'Logs', // TODO(i18n): translate to this locale
-	toolbarCategoryDocs: 'Docs', // TODO(i18n): translate to this locale
-	toolbarCategoryQuality: 'Quality', // TODO(i18n): translate to this locale
-	toolbarCategoryGit: 'Git', // TODO(i18n): translate to this locale
-	toolbarCategoryMemory: 'Memory', // TODO(i18n): translate to this locale
-	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
-	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
-	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	openLogsToday: 'mcp-vertex: 今日のログを開く',
+	gitStatus: 'mcp-vertex: Git ステータス',
+	openMemory: 'mcp-vertex: メモリ検索を開く',
+	notificationTest: 'mcp-vertex: 通知をテスト',
+	depsCheck: 'mcp-vertex: 依存関係を確認',
+	webFetch: 'mcp-vertex: Web 取得',
+	toolbarCategoryProposals: '提案',
+	toolbarCategoryKnowledge: 'ナレッジ',
+	toolbarCategoryLogs: 'ログ',
+	toolbarCategoryDocs: 'ドキュメント',
+	toolbarCategoryQuality: '品質',
+	toolbarCategoryGit: 'Git',
+	toolbarCategoryMemory: 'メモリ',
+	toolbarCategoryNotification: '通知',
+	toolbarCategoryDeps: '依存関係',
+	toolbarCategoryTools: 'ツール',
 	setupGithub: 'mcp-vertex: GitHub issues をセットアップ',
 };
 
