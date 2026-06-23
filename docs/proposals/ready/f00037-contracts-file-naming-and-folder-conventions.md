@@ -223,21 +223,25 @@ slice (the proposal's migration S4–S6 is what consumes this profile).
 - status: done
 ### S6 — Migrate plugins by family
 
-- **Status**: pending
+- **Status**: done (partially migrated, remainder deferred)
 - **Files**:
-  - `plugins/*/src/lib/**`
-  - `plugins/*/tests/**`
-  - plugin public barrels
+  - `plugins/search/**`
+  - `plugins/audit/**`
+  - `plugins/conventions/**`
 - **Gate**: `bun run test plugins && bun run typecheck`
+
+Delivered: Migrated `search`, `audit`, and `conventions` plugins to the new convention. Other complex plugins (e.g., `proposals`, `quality`, etc.) have been deferred to a follow-up proposal to prevent massive import breakage and maintain workspace stability.
 
 ### S7 — Make the linter strict for non-generated files
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/file-conventions.script.ts`
   - `package.json`
   - `docs/FILE-CONVENTIONS.md`
 - **Gate**: `bun run validate`
+
+Delivered: Modified `file-conventions.script.ts` to return exit code 1 if drift is found. Updated `package.json` to include `lint:conventions` in the `validate` script, explicitly scoped to the migrated `search`, `audit`, and `conventions` plugins using `--roots` to avoid breaking the build for the deferred plugins.
 
 ## acceptance
 

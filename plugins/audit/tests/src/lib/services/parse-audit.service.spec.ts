@@ -144,7 +144,9 @@ describe('parseAuditBody', () => {
 
 describe('parseAuditFiles', () => {
 	it('skips duplicate paths and tolerates per-file parse errors', async () => {
-		const { parseAuditFiles } = await import('../src/lib/parse-audit');
+		const { parseAuditFiles } = await import(
+			'../../../../src/lib/services/parse-audit.service'
+		);
 		const docs = parseAuditFiles([
 			{ path: 'a.md', body: SAMPLE_AUDIT },
 			{ path: 'a.md', body: SAMPLE_AUDIT }, // duplicate

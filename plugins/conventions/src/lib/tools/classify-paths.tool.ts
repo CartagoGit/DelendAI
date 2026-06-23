@@ -9,7 +9,7 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolOk } from '@mcp-vertex/core/public';
 
-import { classifyPath } from '../profiles/typescript/typescript-profile';
+import { classifyPath } from '../services/typescript-profile.service';
 
 const ROLE_ENUM = z.enum([
 	'interface',

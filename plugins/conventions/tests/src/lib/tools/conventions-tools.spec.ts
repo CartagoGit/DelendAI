@@ -6,9 +6,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runClassifyPaths } from '../../../src/lib/tools/classify-paths.tool';
-import { runCheckConventions } from '../../../src/lib/tools/check-conventions.tool';
-import type { IDirEntry, IDirReader } from '../../../src/lib/conventions-scan';
+import { runClassifyPaths } from '../../../../src/lib/tools/classify-paths.tool';
+import { runCheckConventions } from '../../../../src/lib/tools/check-conventions.tool';
+import type {
+	IDirEntry,
+	IDirReader,
+} from '../../../../src/lib/services/conventions-scan.service';
 
 const parse = (result: { content: Array<{ text?: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}');
@@ -45,7 +48,7 @@ const dir = (name: string): IDirEntry => ({ name, isDirectory: true });
 
 describe('runCheckConventions', () => {
 	const reader: IDirReader = {
-		async list(relDir) {
+		async list(relDir: string) {
 			const tree: Record<string, readonly IDirEntry[]> = {
 				pkg: [dir('src')],
 				'pkg/src': [file('a.tool.ts'), file('loose.ts')],

@@ -6,7 +6,7 @@
  */
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
-import { createFsDirReader } from '../adapters/fs-dir-reader';
+import { createFsDirReader } from '../services/fs-dir-reader.service';
 import { buildCheckConventionsRegistration } from './check-conventions.tool';
 import { buildClassifyPathsRegistration } from './classify-paths.tool';
 

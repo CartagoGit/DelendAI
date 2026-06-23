@@ -11,11 +11,11 @@ import { describe, expect, it } from 'vitest';
 import {
 	classifyPath as toolsClassify,
 	type Role as ToolsRole,
-} from '../../../../../tools/scripts/lint/file-conventions';
+} from '../../../../../../tools/scripts/lint/file-conventions';
 import {
 	classifyPath,
 	TYPESCRIPT_RULES,
-} from '../../../src/lib/profiles/typescript/typescript-profile';
+} from '../../../../src/lib/services/typescript-profile.service';
 
 describe('typescript-profile classifyPath', () => {
 	it.each([

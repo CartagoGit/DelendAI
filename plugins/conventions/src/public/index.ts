@@ -14,10 +14,10 @@ export {
 	TYPESCRIPT_RULES,
 	type IRoleRule,
 	type Role,
-} from '../lib/profiles/typescript/typescript-profile';
+} from '../lib/services/typescript-profile.service';
 export {
 	scanConventions,
 	type IConventionsScanResult,
 	type IDirEntry,
 	type IDirReader,
-} from '../lib/conventions-scan';
+} from '../lib/services/conventions-scan.service';
