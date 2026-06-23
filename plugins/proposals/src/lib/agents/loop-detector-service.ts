@@ -1,46 +1,22 @@
-import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, readdir, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
 	writeFileAtomic,
 	redactSecrets,
-	parseConfigFile,
-} from '@mcp-vertex/core/public';
-import type {
-	IMcpVertexConfigFile,
-	IMcpPluginContext,
+	type IMcpPluginContext,
 } from '@mcp-vertex/core/public';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
 import type { IToolCall as IDetectorToolCall } from './agent-loop-detector';
+import {
+	createFsConfigFileReader,
+	resolveLoopDetectorConfig,
+} from './loop-detector-config';
+import type { ILoopDetectorServiceOptions } from './loop-detector-config';
 import { buildSwarmPaths } from '../contracts/constants/default-path-layout.constant';
 
-export interface ILoopDetectorServiceOptions {
-	enabled: boolean;
-	repeatThreshold: number;
-	nearRepeatThreshold: number;
-	similarityThreshold: number;
-	idleThreshold: number;
-	noProgressThreshold: number;
-	ringSize: number;
-	gitCheckTools: readonly string[];
-	handoffDir: string;
-	handoffTtlDays: number;
-	notifyOnDetect: boolean;
-	/**
-	 * Agent names or glob patterns the detector MUST ignore. The
-	 * detector was originally tuned for swarm runs where the same
-	 * `edit_file` call 3 times in a row is unambiguous stuck. But
-	 * interactive host sessions (`copilot-default`, `cursor-default`,
-	 * etc.) legitimately invoke the same orient tool multiple times —
-	 * the threshold that catches a swarm stall produces false
-	 * positives for the human in the loop. Defaults to the common
-	 * `*-default` / `default-*` / `host` / `interactive` patterns;
-	 * set to `[]` in the config to opt back into universal monitoring.
-	 */
-	interactiveAgentPatterns: readonly string[];
-}
+export type { ILoopDetectorServiceOptions } from './loop-detector-config';
 
 export interface IExtendedToolCall {
 	readonly tool: string;
@@ -92,191 +68,17 @@ export class AgentLoopDetectorService {
 		);
 		this.gitRunner = createGitRunner(ctx.workspace.root);
 
-		// 1. Resolve configuration: defaults -> config file -> CLI args overrides
-		const defaults: ILoopDetectorServiceOptions = {
-			enabled: true,
-			// 8 is empirically high enough that interactive re-orient calls
-			// (`continue_proposal`, `round_context`) do not trip it, while a
-			// swarm agent that calls the same edit_file 8 times in a row is
-			// unambiguously stuck. Hosts can still tune per environment.
-			repeatThreshold: 8,
-			nearRepeatThreshold: 5,
-			similarityThreshold: 0.9,
-			idleThreshold: 3,
-			noProgressThreshold: 3,
-			ringSize: 50,
-			gitCheckTools: [
-				'edit_file',
-				'write_file',
-				'multi_replace_string_in_file',
-				'replace_string_in_file',
-			],
-			handoffDir: '.mcp-vertex/handoff',
-			handoffTtlDays: 7,
-			notifyOnDetect: true,
-			// Universal host-session shapes — Copilot, Cursor, Windsurf and
-			// any host that calls its user-facing session `*-default`. Hosts
-			// whose interactive session is named differently can extend this
-			// list from the config file (`loopDetector.interactiveAgentPatterns`).
-			interactiveAgentPatterns: [
-				'*-default',
-				'default-*',
-				'host',
-				'interactive',
-			],
-		};
-
-		const globalConfigPath = ctx.workspace.resolve(
-			'mcp-vertex.config.json',
-		);
-		// Boot-time one-shot (audit-H4): this constructor runs at most
-		// once per process, so the `readFileSync` here is the narrow
-		// exception documented in AGENTS.md rule 3 — NOT a hot-path
-		// sync read. The hot-path sync read (`isAgentStuck`) was
-		// replaced with a 50ms TTL cache populated by `getActiveAgent`
-		// (audit-H1). If you need to reload the config mid-run, fire
-		// a `proposals_set_loop_detector_options` tool; do NOT add
-		// another sync read to the constructor.
-		let globalConfig: IMcpVertexConfigFile = {};
-		if (existsSync(globalConfigPath)) {
-			try {
-				globalConfig = parseConfigFile(
-					readFileSync(globalConfigPath, 'utf8'),
-				);
-			} catch {
-				// Ignored
-			}
-		}
-
-		const cliConfig = this.parseCliOverrides(ctx.args);
-
-		this.options = {
-			enabled:
-				cliConfig.enabled ??
-				globalConfig.loopDetector?.enabled ??
-				defaults.enabled,
-			repeatThreshold:
-				cliConfig.repeatThreshold ??
-				globalConfig.loopDetector?.repeatThreshold ??
-				defaults.repeatThreshold,
-			nearRepeatThreshold:
-				cliConfig.nearRepeatThreshold ??
-				globalConfig.loopDetector?.nearRepeatThreshold ??
-				defaults.nearRepeatThreshold,
-			similarityThreshold:
-				cliConfig.similarityThreshold ??
-				globalConfig.loopDetector?.similarityThreshold ??
-				defaults.similarityThreshold,
-			idleThreshold:
-				cliConfig.idleThreshold ??
-				globalConfig.loopDetector?.idleThreshold ??
-				defaults.idleThreshold,
-			noProgressThreshold:
-				cliConfig.noProgressThreshold ??
-				globalConfig.loopDetector?.noProgressThreshold ??
-				defaults.noProgressThreshold,
-			ringSize:
-				cliConfig.ringSize ??
-				globalConfig.loopDetector?.ringSize ??
-				defaults.ringSize,
-			gitCheckTools:
-				cliConfig.gitCheckTools ??
-				globalConfig.loopDetector?.gitCheckTools ??
-				defaults.gitCheckTools,
-			handoffDir:
-				cliConfig.handoffDir ??
-				globalConfig.loopDetector?.handoffDir ??
-				defaults.handoffDir,
-			handoffTtlDays:
-				cliConfig.handoffTtlDays ??
-				globalConfig.loopDetector?.handoffTtlDays ??
-				defaults.handoffTtlDays,
-			notifyOnDetect:
-				cliConfig.notifyOnDetect ??
-				globalConfig.loopDetector?.notifyOnDetect ??
-				defaults.notifyOnDetect,
-			interactiveAgentPatterns:
-				cliConfig.interactiveAgentPatterns ??
-				globalConfig.loopDetector?.interactiveAgentPatterns ??
-				defaults.interactiveAgentPatterns,
-		};
+		// Solid-SRP: config resolution lives in `loop-detector-config.ts`.
+		// Precedence is CLI > on-disk config > defaults. The constructor
+		// here just orchestrates path derivation + state init; the
+		// boot-time sync read of `mcp-vertex.config.json` is encapsulated
+		// inside `createFsConfigFileReader` (audit-H4 exception).
+		this.options = resolveLoopDetectorConfig({
+			configReader: createFsConfigFileReader(ctx.workspace),
+			cliArgs: ctx.args,
+		});
 
 		this.handoffDirAbs = ctx.workspace.resolve(this.options.handoffDir);
-
-		if (!this.options.enabled) {
-			ctx.workspace.resolve('.mcp-vertex'); // Touch to keep lint clean if needed
-		}
-	}
-
-	private parseCliOverrides(
-		args: Readonly<Record<string, string>>,
-	): Partial<ILoopDetectorServiceOptions> {
-		const out: Partial<ILoopDetectorServiceOptions> = {};
-		if (
-			args['no-loop-detector'] === 'true' ||
-			args['loop-detector'] === 'false'
-		) {
-			out.enabled = false;
-		} else if (args['loop-detector'] === 'true') {
-			out.enabled = true;
-		}
-		for (const [key, val] of Object.entries(args)) {
-			if (key.startsWith('loop-detector.')) {
-				const subKey = key.slice('loop-detector.'.length);
-				if (
-					subKey === 'repeat-threshold' ||
-					subKey === 'repeatThreshold'
-				) {
-					out.repeatThreshold = Number(val);
-				} else if (
-					subKey === 'near-repeat-threshold' ||
-					subKey === 'nearRepeatThreshold'
-				) {
-					out.nearRepeatThreshold = Number(val);
-				} else if (
-					subKey === 'similarity-threshold' ||
-					subKey === 'similarityThreshold'
-				) {
-					out.similarityThreshold = Number(val);
-				} else if (
-					subKey === 'idle-threshold' ||
-					subKey === 'idleThreshold'
-				) {
-					out.idleThreshold = Number(val);
-				} else if (
-					subKey === 'no-progress-threshold' ||
-					subKey === 'noProgressThreshold'
-				) {
-					out.noProgressThreshold = Number(val);
-				} else if (subKey === 'ring-size' || subKey === 'ringSize') {
-					out.ringSize = Number(val);
-				} else if (
-					subKey === 'handoff-dir' ||
-					subKey === 'handoffDir'
-				) {
-					out.handoffDir = val;
-				} else if (
-					subKey === 'handoff-ttl-days' ||
-					subKey === 'handoffTtlDays'
-				) {
-					out.handoffTtlDays = Number(val);
-				} else if (
-					subKey === 'notify-on-detect' ||
-					subKey === 'notifyOnDetect'
-				) {
-					out.notifyOnDetect = val === 'true' || val === '1';
-				} else if (
-					subKey === 'interactive-agent-patterns' ||
-					subKey === 'interactiveAgentPatterns'
-				) {
-					// CLI accepts a comma-separated list. Empty list ("")
-					// is treated as "explicit opt-out of all ignore rules".
-					out.interactiveAgentPatterns =
-						val === '' ? [] : val.split(',').map((s) => s.trim());
-				}
-			}
-		}
-		return out;
 	}
 
 	private async initializeGitDiff() {

@@ -308,6 +308,23 @@ Today it cannot.
     - "An e2e spec builds the manifest, calls `get_rules` and `check_rules` against the polyglot fixture via the real MCP harness (the same pattern `tools/scripts/verify/plugin-tool-verify.script.ts` uses), and asserts each area resolves to its expected preset, the per-area `linter` discriminator is correct, the per-area `linterConfigs` non-empty, and the per-area `typecheckCommand` is defined where applicable"
     - "Spec exits 0; no real network calls; no real linter binaries are required (the spec validates the *commands* the tool would emit, not the lint results)"
 
+## acceptance
+
+`bun run validate` is the global gate. The pre-existing l00008 specs (rules-plugin
+durable writes, outputSchema hardening) must remain green across every slice; the
+new S9 + S10 specs grow the rules-plugin test count by ~36. No `package.json`
+field is renamed (the per-language additions are additive). The pre-existing
+`get_rules` / `check_rules` / `apply_rules` tool IDs are unchanged; only the
+field *names* inside the structured payload change, and only in S7.
+
+After S10 lands, the plugin is ready for a follow-up slice set that:
+- adds a per-language `docs/` page in `apps/web` (one per family) — owner
+  depends on the docs team
+- adds a `plugins/rules/<lang>` split if/when the JS/TS surface and any
+  non-JS/TS surface diverge enough to warrant separate packages
+- adds Haskell / Scala / Zig / Dart-Flutter / Lua / R / Julia presets
+  (f00052+ proposals)
+
 ## Risks
 
 1. **Online registry rate-limits.** PyPI is generous; crates.io and Maven Central
@@ -329,23 +346,6 @@ Today it cannot.
    `verify` harness reads `outputSchema` but only the field shape, not the
    field *name*). External hosts that depended on the name are caught by the
    backward-compat alias for one release.
-
-## acceptance
-
-`bun run validate` is the global gate. The pre-existing l00008 specs (rules-plugin
-durable writes, outputSchema hardening) must remain green across every slice; the
-new S9 + S10 specs grow the rules-plugin test count by ~36. No `package.json`
-field is renamed (the per-language additions are additive). The pre-existing
-`get_rules` / `check_rules` / `apply_rules` tool IDs are unchanged; only the
-field *names* inside the structured payload change, and only in S7.
-
-After S10 lands, the plugin is ready for a follow-up slice set that:
-- adds a per-language `docs/` page in `apps/web` (one per family) — owner
-  depends on the docs team
-- adds a `plugins/rules/<lang>` split if/when the JS/TS surface and any
-  non-JS/TS surface diverge enough to warrant separate packages
-- adds Haskell / Scala / Zig / Dart-Flutter / Lua / R / Julia presets
-  (f00052+ proposals)
 
 ## notes
 

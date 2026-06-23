@@ -11,6 +11,7 @@ recan:
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: full, drift-count-delta: 1, slices-grew: [S7], slices-removed: [], rule-changes: 0, summary: "see ## Re-scan delta 2026-06-23" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-defensive, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 closed without introducing new drift; see ## Re-scan delta 2026-06-23 §post-S1" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-reassignment, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 target slot a00036 reassigned to a00037 after a parallel agent claimed a00036; see ## Re-scan delta 2026-06-23 §Coordination incident during S1" }
+    - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S2-S3, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S2 (shelve 18 files into done/<kind>s/) + S3 (backfill kind: on 4 files, fix l00001 body header) closed; 0 mis-shelved, 9 kind subfolders, no new dimensions" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
