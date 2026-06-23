@@ -167,7 +167,8 @@ the unmatched count reaches 0, the existing `--report` flag flips to `--strict` 
 > it, at the time the unification runs.
 
 - **Status**: ready (claimable; it is the only slice that MUST run before S1).
-- **Files** (all writes go to **this proposal's own file**, no new files created):
+- **Files**: [`docs/proposals/ready/f00049-conventions-unification-r10-slices.md`](f00049-conventions-unification-r10-slices.md).
+  All writes go to this proposal's own file; no new files are created.
   - `docs/proposals/ready/f00049-conventions-unification-r10-slices.md` —
     appends a `## Re-scan delta <date>` section under the existing `## evidence`,
     listing every new drift found since `date: 2026-06-23`.
@@ -176,7 +177,8 @@ the unmatched count reaches 0, the existing `--report` flag flips to `--strict` 
   - If the re-scan finds drift that needs a new slice: the new slice is added **to
     this file** as `S<n+1>` (or higher), keeping the S1..S10 numbering as the
     stable spine, with the new slices following it.
-- **Gate** (the slice is **not** done until every gate is green):
+- **Gate**: `bun run lint:proposals`.
+  The slice is not done until every gate is green:
   1. **Re-scan runs.** The exact methodology from
      [`skills/audit-playbook/SKILL.md`](../../skills/audit-playbook/SKILL.md) is
      re-applied to the live tree. The re-scan MUST cover the same 12 dimensions
@@ -379,7 +381,15 @@ their own commit lands.
 ### S4 — Migrate 8 plugins to `lib/{services,tools,contracts}/`
 
 - **Status**: ready
-- **Files** (in dependency order, claimable in parallel by worktree):
+- **Files**: [`plugins/memory/src/lib`](../../../plugins/memory/src/lib),
+  [`plugins/logs/src/lib`](../../../plugins/logs/src/lib),
+  [`plugins/notification/src/lib`](../../../plugins/notification/src/lib),
+  [`plugins/quality/src/lib`](../../../plugins/quality/src/lib),
+  [`plugins/git/src/lib`](../../../plugins/git/src/lib),
+  [`plugins/deps/src/lib`](../../../plugins/deps/src/lib),
+  [`plugins/docs/src/lib`](../../../plugins/docs/src/lib),
+  [`plugins/web-fetch/src/lib`](../../../plugins/web-fetch/src/lib).
+  Dependency order, claimable in parallel by worktree:
   - `plugins/memory/src/lib/{services,tools,contracts}/` created; flat files re-homed.
   - `plugins/logs/src/lib/{services,tools,contracts}/`.
   - `plugins/notification/src/lib/{services,tools,contracts}/`.
@@ -432,6 +442,8 @@ their own commit lands.
 - **Status**: ready
 - **Decision**: drop the `mcp-vertex-` prefix on skill directory names (the manifest `id`
   keeps the prefix for backwards compatibility; only the directory basename changes).
+- **Files**: [`skills/`](../../../skills),
+  [`skills/manifest.json`](../../../skills/manifest.json).
   - `skills/mcp-vertex-failure-modes/` → `skills/failure-modes/`
   - `skills/mcp-vertex-operator/` → `skills/operator/`
   - `skills/mcp-vertex-multi-agent-coordination/` → `skills/multi-agent-coordination/`
