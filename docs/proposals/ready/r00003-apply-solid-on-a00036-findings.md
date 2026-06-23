@@ -226,7 +226,20 @@ Their working tree (uncommitted, unmerged) contains:
 - **SOLID**: S (linter validates structure, not history); O (new
   patterns extend by data); D (depends on `INarrativePatternProvider`,
   defaults to a host-configurable list).
-- **Status**: pending.
+- **Status**: done. Deviation: the Acceptance says the runtime default is
+  an *empty* list, but the repo's own audits under `done/audits/` rely on
+  the historical aliases, so a hard-empty default would turn `validate`
+  red. Resolved per the higher-priority "validate stays green" rule: the
+  historical catalogue moved verbatim into the new module as the *opt-out*
+  default provider (`createDefaultNarrativePatternProvider`), with
+  `createEmptyNarrativePatternProvider` available for a host that wants a
+  strict structure-only linter. The linter itself is now host-agnostic
+  (no inline host narrative); the host injects its vocabulary via
+  `lintProposalMarkdown({ narrativePatterns })` (wired to
+  `ctx.options.proposalNarrativePatterns` in S9). The a00036 "passes by
+  default" check was replaced with an equivalent narrative-headings
+  fixture, since a00036's English headings were never in the catalogue and
+  it only lints clean via the legacy-skip list.
 - **Gate**: `bun run test`.
 - **Acceptance**:
   - The hardcoded array (with `copilot · minimax-m3`, `mcp-vertex`, etc.)
