@@ -40,16 +40,46 @@ const ctx = (over: Partial<IWorkflowContext> = {}): IWorkflowContext => ({
 });
 
 describe('HandEditedIndexRule', () => {
-	it('flags a commit that touched docs/proposals/index.json', () => {
+	it('flags a mixed commit that touched docs/proposals/index.json', () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({
 				recentCommits: [
-					commit({ files: ['docs/proposals/index.json'] }),
+					commit({
+						files: ['docs/proposals/index.json', 'src/x.ts'],
+					}),
 				],
 			}),
 		);
 		expect(findings).toHaveLength(1);
 		expect(findings[0]?.rule).toBe('hand-edited-index');
+	});
+
+	it('ignores historical mixed commits before workflow lint enforcement', () => {
+		const findings = HandEditedIndexRule.detect(
+			ctx({
+				recentCommits: [
+					commit({
+						iso: '2026-06-23T17:45:01+02:00',
+						files: ['docs/proposals/index.json', 'src/x.ts'],
+					}),
+				],
+			}),
+		);
+		expect(findings).toEqual([]);
+	});
+
+	it('allows a dedicated generated proposal index refresh commit', () => {
+		const findings = HandEditedIndexRule.detect(
+			ctx({
+				recentCommits: [
+					commit({
+						subject: 'chore: refresh proposals index',
+						files: ['docs/proposals/index.json'],
+					}),
+				],
+			}),
+		);
+		expect(findings).toEqual([]);
 	});
 
 	it('passes when no commit touched the index', () => {
@@ -100,7 +130,9 @@ describe('lintWorkflow (engine over the default rule chain)', () => {
 		const findings = lintWorkflow(
 			ctx({
 				recentCommits: [
-					commit({ files: ['docs/proposals/index.json'] }),
+					commit({
+						files: ['docs/proposals/index.json', 'src/x.ts'],
+					}),
 				],
 				upstream: { localHead: 'aaaa', remoteHead: 'bbbb' },
 			}),
