@@ -35,6 +35,7 @@ import { depsCommands } from './groups/deps';
 import { docsCommands } from './groups/docs';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
+import { proposalsCommands } from './groups/proposals';
 import { qualityCommands } from './groups/quality';
 import { rulesCommands } from './groups/rules';
 import { testConventionCommands } from './groups/test-convention';
@@ -446,4 +447,5 @@ export const registerAllCommands = (): readonly ICliCommand[] => [
 	...logsCommands,
 	...coreExtraCommands,
 	...docsCommands,
+	...proposalsCommands,
 ];

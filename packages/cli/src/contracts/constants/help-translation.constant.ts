@@ -91,6 +91,51 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'project create':
 		'Generate the files for a project MCP server, plugin, or client.',
 	'docs search': 'Search project documentation by free text (ranked hits).',
+	'proposals auto-work':
+		'Resolve the next proposal and return a compact action plan.',
+	'proposals continue': 'Resolve / plan / claim the next proposal slice.',
+	'proposals create':
+		'Create a proposal document with a parseable Slices section.',
+	'proposals close-slice':
+		'Mark a slice done + release its lock atomically, then re-sync.',
+	'proposals transition':
+		'Move a proposal to a new status (DFA-validated; requires reason).',
+	'proposals board':
+		'Show each actionable proposal with its slices (verbose).',
+	'proposals status':
+		'Compact proposals state: locks, queue backpressure, counts.',
+	'proposals health':
+		'Diagnose swarm state (locks, queue, registry) without changing it.',
+	'proposals agent-names':
+		'Agent name registry: assign/release/list/tree/gc/reconcile.',
+	'proposals lock': 'File write-ownership lock: claim/release/status/gc.',
+	'proposals worktree':
+		'Per-agent git worktree: create/list/remove (git isolation).',
+	'proposals stale-list': 'List proposals whose owner emitted agent-dead.',
+	'proposals round-context':
+		'Return the persisted multi-agent round context (+ staleness).',
+	'proposals workflow':
+		'Return the proposal workflow (families, locations, template).',
+	'proposals diagnose':
+		'Diagnose a proposal: folder, status, lock owners, recovery.',
+	'proposals adopt': 'Make a proposals folder followable (read-only plan).',
+	'proposals force-transition':
+		'Force a proposal to a recovery status (requires reason).',
+	'proposals reconcile-folder':
+		'Move a proposal file to the folder matching its status.',
+	'proposals state-repair':
+		'Auto-heal stale swarm state (dry-run unless --execute).',
+	'proposals release-orphan':
+		'Release an orphan task lock (only with an agent-dead event).',
+	'proposals review':
+		'Peer-review a slice: submit/approve/request_changes/status.',
+	'proposals sync': 'Regenerate the proposal index from the proposals tree.',
+	'proposals task-queue':
+		'Swarm coordination queue: enqueue/dequeue/subscribe/report.',
+	'proposals delegate':
+		'Delegate a slice to a subagent (assign name + claim files).',
+	'proposals plan':
+		'Validate proposed slices into a parallel plan (disjointness).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
