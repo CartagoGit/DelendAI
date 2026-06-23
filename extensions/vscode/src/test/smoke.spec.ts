@@ -12,6 +12,7 @@ import {
 	RUN_VALIDATION_COMMAND,
 	SHOW_METRICS_COMMAND,
 	SHOW_OVERVIEW_COMMAND,
+	SETUP_GITHUB_COMMAND,
 	type IExtensionContext,
 	type IVscodeApi,
 } from '../extension';
@@ -76,12 +77,14 @@ describe('VS Code extension smoke', () => {
 		expect(stored.get(CLIENT_STATE_KEY)).toBe(client);
 		// f125 + f126/f00026: original commands + observability commands.
 		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
-		expect(subscriptions).toHaveLength(12);
+		// f00030 S4: +1 for the new mcp-vertex.setupGithub command.
+		expect(subscriptions).toHaveLength(13);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
 		expect(commands.has(SHOW_METRICS_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_SETTINGS_COMMAND)).toBe(true);
+		expect(commands.has(SETUP_GITHUB_COMMAND)).toBe(true);
 
 		await commands.get(SHOW_OVERVIEW_COMMAND)?.();
 

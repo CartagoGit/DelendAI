@@ -278,7 +278,7 @@ remediation for that step.
 
 ### S3 — `apps/web/src/pages/setup.astro` (wizard) _(incl. `apps/web/`)_
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `apps/web/src/pages/setup.astro` (new)
   - `apps/web/src/lib/setup-wizard.ts` (new — pure render

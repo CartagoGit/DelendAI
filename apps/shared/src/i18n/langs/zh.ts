@@ -510,6 +510,7 @@ const extension = {
 	toolbarCategoryNotification: 'Notifications', // TODO(i18n): translate to this locale
 	toolbarCategoryDeps: 'Dependencies', // TODO(i18n): translate to this locale
 	toolbarCategoryTools: 'Tools', // TODO(i18n): translate to this locale
+	setupGithub: 'mcp-vertex：配置 GitHub issues',
 };
 
 const dict: ILangDict = {

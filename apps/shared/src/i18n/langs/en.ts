@@ -516,6 +516,7 @@ const extension = {
 	toolbarCategoryNotification: 'Notifications',
 	toolbarCategoryDeps: 'Dependencies',
 	toolbarCategoryTools: 'Tools',
+	setupGithub: 'mcp-vertex: Set up GitHub issues',
 };
 
 const dict: ILangDict = {
