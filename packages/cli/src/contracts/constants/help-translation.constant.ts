@@ -45,6 +45,22 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'memory forget': 'Delete a durable note by id.',
 	'memory export': 'Export the note store as a portable snapshot.',
 	'memory import': 'Import a snapshot produced by memory export.',
+	'deps list': 'List declared npm dependencies with their version ranges.',
+	'deps check':
+		'Report offline dependency health (lockfile, unpinned, duplicates).',
+	'deps polyglot':
+		'List declared deps from pyproject/Cargo/go.mod (non-npm ecosystems).',
+	'rules get': 'Show the lint/type rules map (optionally for one area).',
+	'rules check':
+		'Show how to check an area against its rules (resolved configs + command).',
+	'rules apply':
+		'Show a plan to bring an area into rule compliance (advisory).',
+	'test-convention get':
+		'Show the canonical test convention the workspace expects.',
+	'test-convention suggest':
+		'Show the companion spec path + skeleton for a source file.',
+	'test-convention scan':
+		'Scan src/ and tests/ for test-convention violations.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
