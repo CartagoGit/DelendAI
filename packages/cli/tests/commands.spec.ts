@@ -53,6 +53,12 @@ const EXPECTED_COMMANDS = [
 	'logs subscribe',
 	'logs correlate',
 	'logs redact-test',
+	'fs read',
+	'fs write',
+	'knowledge',
+	'project analyze',
+	'project plan',
+	'project create',
 ] as const;
 
 describe('CLI command registry', () => {

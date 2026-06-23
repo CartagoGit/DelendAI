@@ -80,6 +80,16 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Build a chronological chain for one taskId or agent (gap detection).',
 	'logs redact-test':
 		'Run the redactor against a sample and list detected secret patterns.',
+	'fs read': 'Read a workspace file (optionally a line range).',
+	'fs write':
+		'Write a workspace file (atomic by default, never outside the root).',
+	knowledge: 'List knowledge entries, or print one by id.',
+	'project analyze':
+		'Inspect the project and recommend an MCP server plan (read-only).',
+	'project plan':
+		'Return an exhaustive blueprint for a project-specific MCP server.',
+	'project create':
+		'Generate the files for a project MCP server, plugin, or client.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

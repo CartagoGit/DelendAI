@@ -225,7 +225,7 @@ Bootstrap:
   - "Cobertura CLI >= 90%."
 
 ### S5 — fs read/write + knowledge + analyze/plan/create-project (`mcpv fs/knowledge/project <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/core.ts` (extensión), tests, i18n
 - **Tools mapped**: `mcp-vertex_fs_read`, `mcp-vertex_fs_write`, `mcp-vertex_knowledge`, `mcp-vertex_analyze_project`, `mcp-vertex_plan_mcp_project`, `mcp-vertex_create_project`
 - **Gate**: `bun run test packages/cli && bun run typecheck`
