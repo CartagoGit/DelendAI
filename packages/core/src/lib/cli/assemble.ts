@@ -22,7 +22,7 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
-import { loadPlugins } from '../plugins/load-plugins';
+import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
 import { parseCliArgs } from '../plugins/parse-cli-args';
@@ -60,7 +60,11 @@ export interface IAssembledCliConfig {
 }
 
 export interface IAssembleCliDeps {
-	/** Injectable plugin importer (default: dynamic `import`). */
+	/**
+	 * Injectable plugin importer. Defaults to `nodeDynamicImport` (a
+	 * direct dynamic `import(specifier)`) so the CLI works out of the
+	 * box. Tests pass a fake to avoid touching the module graph.
+	 */
 	import?: (specifier: string) => Promise<unknown>;
 	/** Injectable config-file reader (default: node fs). */
 	readFile?: (absolutePath: string) => string | undefined;
@@ -132,7 +136,7 @@ export const assembleCliConfig = async (
 	const loadResult = await loadPlugins({
 		specifiers: effectivePlugins,
 		buildContext,
-		...(deps.import ? { import: deps.import } : {}),
+		import: deps.import ?? nodeDynamicImport,
 	});
 
 	const prompts: IPromptRegistration[] = [];

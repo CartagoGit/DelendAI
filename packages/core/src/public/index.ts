@@ -60,6 +60,7 @@ export type {
 } from '../lib/plugins/plugin-contract';
 export {
 	loadPlugins,
+	nodeDynamicImport,
 	resolvePluginSpecifier,
 } from '../lib/plugins/load-plugins';
 export type {
