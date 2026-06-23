@@ -485,7 +485,7 @@ their own commit lands.
 
 ### S10 — CLI command-shape lint + workflow / working-form lints
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/cli-shape.script.ts` (new).
   - `tools/scripts/lint/workflow.script.ts` (new) — reads the last 50 commits + the
