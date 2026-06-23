@@ -21,7 +21,7 @@ import type {
 } from '../../../../src/lib/swarm/round-context-types';
 
 const sourceMeta = (fingerprint: string): IRoundContextSourceMeta => ({
-	state: 'present',
+	state: 'ok',
 	fingerprint,
 	timestamp: '2026-06-22T10:00:00.000Z',
 	ageMinutes: 1,
