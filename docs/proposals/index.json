@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-23T00:01:54.211Z",
+	"generated_at": "2026-06-23T06:26:34.761Z",
 	"count": 109,
 	"proposals": [
 		{
@@ -31,14 +31,6 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-21"
-		},
-		{
-			"id": "f00046",
-			"file": "ready/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
-			"track": "cli+core+plugins+i18n+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
 		},
 		{
 			"id": "c00001",
@@ -103,6 +95,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "f00046",
+			"file": "done/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
+			"track": "cli+core+plugins+i18n+docs",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "f00048",
