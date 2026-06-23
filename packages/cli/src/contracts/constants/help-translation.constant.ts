@@ -61,6 +61,25 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Show the companion spec path + skeleton for a source file.',
 	'test-convention scan':
 		'Scan src/ and tests/ for test-convention violations.',
+	'quality scopes':
+		'List the quality-gate scopes and the commands each runs.',
+	'quality run': "Execute a quality scope's commands and report pass/fail.",
+	'quality cancel': 'Abort quality commands currently running in the server.',
+	'quality run-all':
+		'Run every configured quality scope and aggregate the report.',
+	'audit plan':
+		'Get the canonical audit brief for a scope (paste into a model).',
+	'audit consolidate':
+		'Deduplicate + average audit reports into one master document.',
+	'logs query':
+		'Query redacted MCP log events with filters + cursor pagination.',
+	'logs tail': 'Show the newest redacted MCP log events.',
+	'logs subscribe':
+		'Return recent log events matching outcome/kind filters (poll).',
+	'logs correlate':
+		'Build a chronological chain for one taskId or agent (gap detection).',
+	'logs redact-test':
+		'Run the redactor against a sample and list detected secret patterns.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

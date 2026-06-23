@@ -214,7 +214,7 @@ Bootstrap:
   - "Cobertura CLI >= 90%."
 
 ### S4 — quality + audit + logs (`mcpv quality/audit/logs <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/quality.ts`, `audit.ts`, `logs.ts`, tests, i18n
 - **Tools mapped**: `quality_get_quality_scopes`, `quality_run_quality`, `quality_quality_cancel`, `quality_quality_run_all`, `audit_audit_plan`, `audit_audit_consolidate`, `logs_query`, `logs_tail`, `logs_subscribe`, `logs_correlate`, `logs_redact_test`
 - **Gate**: `bun run test packages/cli && bun run typecheck`
