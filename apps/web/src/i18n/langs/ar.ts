@@ -171,6 +171,12 @@ const dict: LangDict = {
 		'status-marker':
 			'علامة إغلاق ملوّنة إلزامية لكل ردّ وكيل: 8 حالات مرجعية، أدوات مساعدة ومُحقِّق.',
 		core: 'النواة المحايدة: overview، scaffold، مقاييس، doctor، ومُحمّل الإضافات.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'رجوع',

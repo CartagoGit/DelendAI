@@ -400,9 +400,28 @@ export type PluginKey =
 	| 'notification'
 	| 'logs'
 	| 'status-marker'
+	| 'issues'
 	| 'core';
 
-export type IPluginTranslations = Readonly<Record<PluginKey, string>>;
+export type IPluginTranslations = {
+	readonly proposals: string;
+	readonly git: string;
+	readonly memory: string;
+	readonly search: string;
+	readonly rules: string;
+	readonly quality: string;
+	readonly docs: string;
+	readonly deps: string;
+	readonly notification: string;
+	readonly logs: string;
+	readonly 'status-marker': string;
+	readonly core: string;
+	readonly issues: {
+		readonly description: string;
+		readonly requires: string;
+		readonly installSnippet: string;
+	};
+};
 
 /** Root shape — every per-language dictionary must satisfy this. */
 export interface ITranslations {

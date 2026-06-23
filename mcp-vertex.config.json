@@ -10,6 +10,7 @@
 		"status-marker": { "options": {} },
 		"test-convention": { "options": {} },
 		"quality": { "options": {} },
+		"issues": { "options": { "repo": "<owner>/<name>" } },
 		"audit": {
 			"options": {
 				"auditDir": "docs/proposals/audits",

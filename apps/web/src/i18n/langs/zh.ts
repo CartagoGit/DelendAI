@@ -170,6 +170,12 @@ const dict: LangDict = {
 		'status-marker':
 			'每个智能体回复必须以彩色结束标记收尾：8 个标准状态、辅助与校验工具。',
 		core: '与项目无关的内核：overview、scaffold、指标、doctor 和插件加载器。',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: '返回',

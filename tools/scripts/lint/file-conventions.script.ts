@@ -106,13 +106,8 @@ export const formatReport = (
 	const header = `file-conventions: ${findings.length} unmatched files`;
 	if (reportOnly) return `${header}\n`;
 	const lines: string[] = [header];
-	for (const f of findings.slice(0, 50)) {
+	for (const f of findings) {
 		lines.push(`  ${f.relPath}`);
-	}
-	if (findings.length > 50) {
-		lines.push(
-			`  …and ${findings.length - 50} more (run with --report to suppress)`,
-		);
 	}
 	return `${lines.join('\n')}\n`;
 };

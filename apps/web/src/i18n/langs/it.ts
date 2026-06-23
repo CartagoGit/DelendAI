@@ -178,6 +178,12 @@ const dict: LangDict = {
 		'status-marker':
 			'Marker di chiusura colorato obbligatorio per ogni risposta dell’agente: 8 stati canonici, strumenti helper + validatore.',
 		core: 'Il core agnostico: overview, scaffold, metriche, doctor e il loader di plugin.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'Indietro',

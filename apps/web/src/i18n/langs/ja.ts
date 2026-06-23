@@ -178,6 +178,12 @@ const dict: LangDict = {
 		'status-marker':
 			'エージェント応答ごとに必須のカラー終了マーカー：8 つの正規状態、ヘルパーとバリデータのツール。',
 		core: '非依存のコア：overview、scaffold、メトリクス、doctor、プラグインローダー。',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: '戻る',

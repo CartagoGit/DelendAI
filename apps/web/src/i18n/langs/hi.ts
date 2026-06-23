@@ -174,6 +174,12 @@ const dict: LangDict = {
 		'status-marker':
 			'हर एजेंट उत्तर के लिए अनिवार्य रंगीन क्लोज़ मार्कर: 8 कैनोनिकल स्थितियाँ, helper + validator टूल।',
 		core: 'निरपेक्ष कोर: overview, scaffold, मेट्रिक्स, doctor और प्लगइन लोडर।',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'वापस',

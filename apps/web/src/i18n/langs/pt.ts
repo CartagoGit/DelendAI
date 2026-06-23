@@ -178,6 +178,12 @@ const dict: LangDict = {
 		'status-marker':
 			'Marcador de fechamento colorido obrigatório para cada resposta do agente: 8 estados canônicos, ferramentas helper + validador.',
 		core: 'O núcleo agnóstico: overview, scaffold, métricas, doctor e o carregador de plugins.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
 	},
 	toolpage: {
 		back: 'Voltar',

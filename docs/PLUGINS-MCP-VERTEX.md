@@ -103,9 +103,12 @@ instead of spelling out `--plugins=...`. The canonical membership lives in
 `packages/core/src/lib/plugins/preset-catalog.ts`; the web `/presets` page
 renders that catalog directly, so docs and CLI stay aligned.
 
-## Issues plugin
+## Personal / host-only plugins
+
+### Issues plugin
 
 The `issues` plugin is part of `full` and is the repo-facing GitHub integration for reading issues against the current workspace repository.
+**Note: This plugin has a hard dependency on the `proposals` plugin.** You must have `proposals` loaded for `issues` to work.
 
 ### Setup
 

@@ -1,6 +1,6 @@
 ---
 id: f00029
-status: ready
+status: done
 type: proposal
 track: plugins/issues+docs
 date: 2026-06-21
@@ -434,7 +434,7 @@ Commit, and updates this proposal's `shipped-in` list in
     pointer to the `full`/`personal` preset (defined in f00043).
 - **Gate**: `bun run site:strict`, `bun run check:i18n:plugins`,
   `bun run lint:proposals`, `bun run lint:tools` all exit 0.
-
+- status: done
 ## acceptance
 
 (Mirrors the `acceptance:` block in the frontmatter. The linter
