@@ -503,12 +503,10 @@ export const prepareServerBlueprintOnStart = async (
 		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
 
-	// Cheap pre-check preserves the legacy "already-exists" short-circuit
-	// for the common case (the blueprint is rarely re-written).
-	if (existsSync(join(args.workspace, relPath))) {
-		return { written: false, path: relPath };
-	}
-
+	// Idempotency is the writer's responsibility (SRP): `writeOnce`
+	// repeats the existence/corruption check inside its mutex, so a
+	// pre-check here would only duplicate that policy and re-introduce
+	// the TOCTOU window this slice removed.
 	const reader = createWorkspaceFileReader({
 		root: args.workspace,
 		resolve: (rel) => join(args.workspace, rel),
