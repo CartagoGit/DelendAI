@@ -42,6 +42,17 @@ const EXPECTED_COMMANDS = [
 	'test-convention get',
 	'test-convention suggest',
 	'test-convention scan',
+	'quality scopes',
+	'quality run',
+	'quality cancel',
+	'quality run-all',
+	'audit plan',
+	'audit consolidate',
+	'logs query',
+	'logs tail',
+	'logs subscribe',
+	'logs correlate',
+	'logs redact-test',
 ] as const;
 
 describe('CLI command registry', () => {
