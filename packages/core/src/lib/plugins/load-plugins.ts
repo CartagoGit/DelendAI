@@ -46,6 +46,12 @@ export interface ILoadPluginsOptions {
 
 /**
  * Node-side dynamic import, suitable for CLI/runtime hosts.
+ *
+ * Built via `new Function(...)` so the literal `import(specifier)`
+ * source is never visible to a static analyser (Vite warns about
+ * unresolvable dynamic imports and downgrades tree-shaking). At
+ * runtime this is exactly equivalent to `import(specifier)`.
+ *
  * Exported separately so it never lives inside the core's public
  * bundle — browser hosts (web, VS Code) MUST provide their own
  * loader instead. The web app's loader is a thin wrapper around the
@@ -53,7 +59,12 @@ export interface ILoadPluginsOptions {
  * uses Node's `require` for activation-time loads.
  */
 export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
-	import(specifier);
+	(0, dynamicImport)(specifier);
+
+const dynamicImport = new Function(
+	'specifier',
+	'return import(specifier);',
+) as (specifier: string) => Promise<unknown>;
 
 const withTimeout = async <T>(
 	promise: Promise<T>,
