@@ -30,8 +30,8 @@ graph TD
         METRICS["metrics registry + tool"]
     end
 
-    subgraph plugins["plugins/* — opt-in capability"]
-        PLUGINS["proposals · memory · quality · rules ·<br/>search · docs · deps · git · notification"]
+    subgraph plugins["plugins/* — opt-in capability (16 shipped)"]
+        PLUGINS["proposals · memory · quality · rules ·<br/>search · docs · deps · git · notification ·<br/>audit · conventions · issues · logs ·<br/>status-marker · test-convention · web-fetch"]
     end
 
     PLUGINS -.->|"import shared helpers"| SHARED

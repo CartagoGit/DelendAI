@@ -21,9 +21,11 @@ import { fileURLToPath } from 'node:url';
 
 import { z } from 'zod';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import {
+	assembleCliConfig,
+	createMcpProject,
+	parseCliArgs,
+} from '@mcp-vertex/core/public';
 
 import proposalsPlugin from '@mcp-vertex/proposals';
 import rulesPlugin from '@mcp-vertex/rules';

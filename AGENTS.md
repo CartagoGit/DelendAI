@@ -19,8 +19,10 @@ A Bun monorepo:
 - `packages/ui-extension` — host-agnostic UI shell (dashboard, panels,
   knowledge navigator, command palette, brand assets). Pure HTML/CSS/JS,
   no host imports. Consumed by every `extensions/<host>/`.
-- `plugins/*` — opt-in capabilities (`proposals`, `memory`, `quality`, `rules`,
-  `search`, `docs`, `deps`, `git`, `notification`). Each owns its namespace.
+- `plugins/*` — opt-in capabilities (16 plugins shipped today: `proposals`,
+  `memory`, `quality`, `rules`, `search`, `docs`, `deps`, `git`, `notification`,
+  `audit`, `conventions`, `issues`, `logs`, `status-marker`, `test-convention`,
+  `web-fetch` — see `plugins/` for the live list). Each owns its namespace.
 - `extensions/vscode` — VS Code host implementation that consumes
   `@mcp-vertex/ui-extension` + `@mcp-vertex/client`. Produces the
   `.vsix`. **Only file under `extensions/` that may import `vscode`.**
@@ -64,7 +66,16 @@ keeps `git diff` out of the hot path.
 2. **No `process.cwd()` in engines.** Paths come from `ctx.workspace` / `corePaths`
    / injected options. Tests inject readers; engines are pure over their inputs.
 3. **Async I/O only in hot paths.** No `*Sync` filesystem calls inside tool
-   handlers or engines (boot-time one-shots are the documented exception).
+   handlers or engines. The "boot-time one-shots" exception is narrow: a
+   sync read is acceptable when the call site runs **at most a handful of
+   times per process lifetime** (CLI arg parse, config-file load at
+   boot, `/proc/version` probe for WSL detection). Any code on a per-call
+   path — `onToolCall`, `isAgentStuck`, request middleware, every tool
+   handler — must use `await readFile` (or a `withFileMutex`-guarded
+   read). For sync interfaces (e.g. `IMcpVertexHostConfig.isAgentStuck`)
+   that cannot be widened without rippling the core contract, use a
+   short-TTL in-memory cache populated by the async read path (see
+   `AgentLoopDetectorService.lockCache` for the canonical example).
 4. **Durable writes go through the primitives.** Persisted state uses
    `withFileMutex` + `writeFileAtomic`; corrupt ≠ empty (`quarantineCorruptFile`).
 5. **Workspace-scoped path inputs must be contained.** Use

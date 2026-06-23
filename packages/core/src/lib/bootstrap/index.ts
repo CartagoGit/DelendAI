@@ -19,6 +19,24 @@ export type {
 	IBlueprintOptions,
 } from './build-blueprint';
 export {
+	diffCapabilities,
+	existingToolsFromAnalysis,
+} from './capability-diff';
+export type {
+	ICapabilityDiff,
+	ICapabilityDiffEntry,
+	IToolName,
+} from './capability-diff';
+export {
+	blueprintArtifactBody,
+	continueProposalPromptBody,
+	fixQualityPromptBody,
+	frameworkSkillBody,
+	frameworkSkillWhenToUse,
+	projectStandardsSkillBody,
+	startPromptBody,
+} from './body-content';
+export {
 	buildBootstrapToolRegistrations,
 	createWorkspaceFileReader,
 } from './bootstrap-tool';

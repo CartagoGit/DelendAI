@@ -1,0 +1,41 @@
+# dependabot.yml — f00050 S8.
+#
+# Automated dependency updates for the mcp-vertex monorepo.
+# Two ecosystems are in scope:
+#   - `npm`    → covers the bun-managed `package.json` workspaces
+#                (packages/*, plugins/*, apps/*, extensions/*, examples/*).
+#                Dependabot opens PRs against the manifest; `bun install`
+#                regenerates `bun.lock`.
+#   - `github-actions` → keeps `.github/workflows/*.yml` on current
+#                action SHAs.
+#
+# Direct commits to `main` are disabled — every update is a PR that the
+# `CI` workflow gates, so a broken dependency upgrade cannot land silently.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+    groups:
+      production:
+        dependency-type: "production"
+      development:
+        dependency-type: "development"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "ci"
+      - "dependencies"

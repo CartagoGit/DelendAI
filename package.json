@@ -13,6 +13,10 @@
 		"extensions/*",
 		"examples/*"
 	],
+	"engines": {
+		"bun": ">=1.1.0"
+	},
+	"packageManager": "bun@1.3.2",
 	"scripts": {
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
@@ -30,6 +34,7 @@
 		"lint:cli-coverage": "bun tools/scripts/lint/cli-coverage.script.ts",
 		"lint:cli:i18n": "bun tools/scripts/lint/cli-i18n.script.ts",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts",
+		"lint:audit-ids": "bun tools/scripts/lint/audit-ids.script.ts",
 		"lint:setup": "bun tools/scripts/lint/no-preset-drift.script.ts",
 		"lint:conventions": "bun tools/scripts/lint/file-conventions.script.ts --roots=plugins/search,plugins/audit,plugins/conventions",
 		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --report",
@@ -47,7 +52,7 @@
 		"build": "bun run sync:brand-assets && bun tools/scripts/compile/build.script.ts",
 		"cli": "bun packages/cli/src/index.ts",
 		"package": "cd extensions/vscode && bun run package",
-		"validate": "bun run typecheck && bun run lint && bun run lint:cli-imports && bun run lint:cli-coverage && bun run lint:cli:i18n && bun run lint:scss && bun run lint:brand-hex && bun run lint:setup && bun run test&& bun run lint:setup && bun run test bun run lint:setup && bun run lint:setup && bun run test&& bun run lint:setup && bun run test bun run lint:conventions && bun run lint:setup && bun run test&& bun run lint:setup && bun run test bun run test",
+		"validate": "bun run typecheck && bun run lint && bun run lint:cli-imports && bun run lint:cli-coverage && bun run lint:cli:i18n && bun run lint:scss && bun run lint:brand-hex && bun run lint:setup && bun run test",
 		"types:generate": "bun tools/scripts/types/generate-tool-types.script.ts",
 		"config:schema": "bun tools/scripts/types/generate-config-schema.script.ts",
 		"release": "bun tools/scripts/release/release.script.ts",

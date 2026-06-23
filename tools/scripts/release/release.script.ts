@@ -80,6 +80,11 @@ export interface ICliFlags {
 	validate: boolean;
 	tool: 'bun' | 'npm';
 	provenance: boolean;
+	/** Audit-h2-fix: when true, suppress every progress banner so this
+	 *  script stays quiet inside `bun run validate` and CI logs. The
+	 *  plan + publish result still go to stderr so callers see what
+	 *  happened if they pipe stdout to a file. */
+	quiet: boolean;
 }
 
 /** Exported for unit testing only; `main()` is the production entry point. */
@@ -91,6 +96,7 @@ export function parseFlags(argv: readonly string[]): ICliFlags {
 	let validate = true;
 	let tool: 'bun' | 'npm' = 'bun';
 	let provenance = false;
+	let quiet = false;
 	for (const arg of argv) {
 		if (arg.startsWith('--bump=')) {
 			const v = arg.slice('--bump='.length);
@@ -114,6 +120,8 @@ export function parseFlags(argv: readonly string[]): ICliFlags {
 			tool = v;
 		} else if (arg === '--provenance') {
 			provenance = true;
+		} else if (arg === '--quiet' || arg === '-q') {
+			quiet = true;
 		} else {
 			throw new Error(`unknown flag: ${arg}`);
 		}
@@ -127,24 +135,34 @@ export function parseFlags(argv: readonly string[]): ICliFlags {
 			: bump !== undefined
 				? { kind: bump }
 				: undefined;
-	return { target, write, publish, validate, tool, provenance };
+	return { target, write, publish, validate, tool, provenance, quiet };
 }
 
-function printPlan(plan: IReleasePlan): void {
-	console.log(`\nLockstep target version: ${plan.to}\n`);
+/**
+ * Audit-h2-fix: progress logger. When `--quiet`/`-q` is passed, banners
+ * disappear so `bun run validate` and CI logs stay readable. Critical
+ * errors still go to `console.error` regardless (see main()'s try/catch).
+ */
+const log = (quiet: boolean, ...args: readonly unknown[]): void => {
+	if (quiet) return;
+	console.log(...args);
+};
+
+function printPlan(plan: IReleasePlan, quiet: boolean): void {
+	log(quiet, `\nLockstep target version: ${plan.to}\n`);
 	for (const e of plan.entries) {
 		const v = e.from === e.to ? e.to : `${e.from} → ${e.to}`;
 		const peer =
 			e.peerCoreFrom !== undefined && e.peerCoreFrom !== e.peerCoreTo
 				? `  (peer ${CORE_PEER}: ${e.peerCoreFrom} → ${e.peerCoreTo})`
 				: '';
-		console.log(`  ${e.name.padEnd(28)} ${v}${peer}`);
+		log(quiet, `  ${e.name.padEnd(28)} ${v}${peer}`);
 	}
-	console.log('');
+	log(quiet, '');
 }
 
 /** Rewrite version + core peerDependency in place, preserving tab indentation. */
-function applyPlan(plan: IReleasePlan): void {
+function applyPlan(plan: IReleasePlan, quiet: boolean): void {
 	for (const e of plan.entries) {
 		const pkg = readPkg(e.dir);
 		pkg.version = e.to;
@@ -156,16 +174,20 @@ function applyPlan(plan: IReleasePlan): void {
 		}
 		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
-		console.log(`  wrote ${e.dir}/package.json → ${e.to}`);
+		log(quiet, `  wrote ${e.dir}/package.json → ${e.to}`);
 	}
-	console.log('');
+	log(quiet, '');
 }
 
 function run(cmd: string, args: readonly string[], cwd: string): void {
 	execFileSync(cmd, args as string[], { cwd, stdio: 'inherit' });
 }
 
-function publishAll(tool: 'bun' | 'npm', provenance: boolean): void {
+function publishAll(
+	tool: 'bun' | 'npm',
+	provenance: boolean,
+	quiet: boolean,
+): void {
 	if (provenance && tool === 'bun') {
 		console.warn(
 			'--provenance has no effect with --tool=bun (bun publish does not ' +
@@ -177,10 +199,10 @@ function publishAll(tool: 'bun' | 'npm', provenance: boolean): void {
 			? ['publish', '--provenance']
 			: ['publish'];
 	for (const dir of PUBLISH_ORDER) {
-		console.log(`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
+		log(quiet, `\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
 		run(tool, args, join(ROOT, dir));
 	}
-	console.log('\nAll packages published.');
+	log(quiet, '\nAll packages published.');
 }
 
 function main(): void {
@@ -195,36 +217,45 @@ function main(): void {
 	const plan = computeReleasePlan(pkgs, target);
 
 	const versionChange = flags.target !== undefined;
-	console.log(
+	log(
+		flags.quiet,
 		versionChange
 			? `Release plan (${flags.write ? 'APPLY' : 'dry-run'}):`
 			: 'Current versions (no --bump/--set given):',
 	);
-	printPlan(plan);
+	printPlan(plan, flags.quiet);
 
 	if (versionChange && flags.write) {
-		applyPlan(plan);
+		applyPlan(plan, flags.quiet);
 	} else if (versionChange) {
-		console.log(
+		log(
+			flags.quiet,
 			'Dry-run: pass --write to apply these changes to package.json.\n',
 		);
 	}
 
 	if (flags.publish) {
 		if (flags.validate) {
-			console.log('Validating before publish (bun run validate)…\n');
+			log(flags.quiet, 'Validating before publish (bun run validate)…\n');
 			run('bun', ['run', 'validate'], ROOT);
 		}
 		// Compile every package to publishable `dist/` (Node-runnable .js +
 		// .d.ts) before publishing. Core builds first so plugins resolve its
 		// types. `files: ["dist"]` is what ends up on the registry.
-		console.log('Building dist before publish (bun run build)…\n');
+		log(flags.quiet, 'Building dist before publish (bun run build)…\n');
 		run('bun', ['run', 'build'], ROOT);
-		publishAll(flags.tool, flags.provenance);
+		publishAll(flags.tool, flags.provenance, flags.quiet);
 	} else {
-		console.log('Pass --publish to publish in order:');
-		console.log(`  ${PUBLISH_ORDER.join('\n  ')}\n`);
+		log(flags.quiet, 'Pass --publish to publish in order:');
+		log(flags.quiet, `  ${PUBLISH_ORDER.join('\n  ')}\n`);
 	}
 }
 
-main();
+try {
+	main();
+} catch (err) {
+	// Audit-h10-fix: surface the actual stack so a release failure is
+	// debuggable from the CI log without re-running locally.
+	console.error(err instanceof Error ? (err.stack ?? err.message) : err);
+	process.exit(1);
+}

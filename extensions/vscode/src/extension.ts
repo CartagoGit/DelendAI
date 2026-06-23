@@ -76,6 +76,7 @@ export interface IDisposable {
 export interface IExtensionContext {
 	readonly subscriptions: IDisposable[];
 	readonly globalState: {
+		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void>;
 	};
 }
@@ -183,8 +184,20 @@ export const activate = async (
 		registerMemoryForgetCommand({ vscode, client, memoryTree }),
 	);
 	context.subscriptions.push(registerOpenSettingsCommand({ vscode, client }));
-	context.subscriptions.push(registerOpenToolbarCommand({ vscode, client }));
-	context.subscriptions.push(registerSetupGithubCommand({ vscode, client }));
+	context.subscriptions.push(
+		registerOpenToolbarCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+		}),
+	);
+	context.subscriptions.push(
+		registerSetupGithubCommand({
+			vscode,
+			client,
+			globalState: context.globalState,
+		}),
+	);
 
 	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`

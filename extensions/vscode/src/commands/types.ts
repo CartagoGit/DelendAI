@@ -71,6 +71,11 @@ export interface ICommandDeps {
 	readonly client: McpStdioClient;
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
 	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
+	/** Optional host persistence layer (f00050 S7). Used by commands that
+	 * resolve the user's preferred language from `mv:lang`. */
+	readonly globalState?: {
+		get<T>(key: string): T | undefined;
+	};
 }
 
 export const showCommandError = async (
