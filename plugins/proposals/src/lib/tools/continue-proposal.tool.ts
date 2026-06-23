@@ -185,11 +185,12 @@ const NEW_SYSTEM_ACTIONABLE_FOLDERS = new Set([
  * (explicitly excluding the retired legacy `p`) AND its status resolves
  * to one of the 7 glossary statuses.
  */
-const isNewSystemEntry = (entry: IIndexEntry): boolean => {
+const isNewSystemEntry = (entry: IProposalIndexEntry): boolean => {
 	const prefix = entry.id[0] ?? '';
 	return (
 		prefix !== 'p' &&
 		prefix in PROPOSAL_KIND_BY_PREFIX &&
+		entry.status !== undefined &&
 		entry.status in PROPOSAL_STATUSES
 	);
 };
@@ -207,12 +208,12 @@ const folderOf = (file: string): string | null => {
  * (S5's reconciler keeps that folder in sync with frontmatter `status`,
  * so this is the operative source of truth post-migration).
  */
-const isActionable = (entry: IIndexEntry): boolean => {
+const isActionable = (entry: IProposalIndexEntry): boolean => {
 	if (isNewSystemEntry(entry)) {
 		const folder = folderOf(entry.file);
 		return folder !== null && NEW_SYSTEM_ACTIONABLE_FOLDERS.has(folder);
 	}
-	return ACTIONABLE.has(entry.status);
+	return entry.status !== undefined && ACTIONABLE.has(entry.status);
 };
 
 interface IIndexEntry extends IProposalIndexEntry {
@@ -418,7 +419,7 @@ export const runContinueProposal = async (
 			proposalIdOf(lock.taskId),
 		),
 	);
-	const isClaimedElsewhere = (entry: IIndexEntry): boolean =>
+	const isClaimedElsewhere = (entry: IProposalIndexEntry): boolean =>
 		(entry.status === 'in_progress' || entry.status === 'in-progress') &&
 		lockedProposalIds.has(proposalIdOf(entry.id));
 	const free = actionable.filter((entry) => !isClaimedElsewhere(entry));

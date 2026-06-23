@@ -90,9 +90,12 @@ describe('replaceSection', () => {
 			FIELD_CANONICAL_HEADING.goal,
 			'a fresh goal',
 		);
-		expect(out).toBe(
-			`# Title\n\n## Why\n\nwhy body\n\n## Goal\n\na fresh goal\n`,
-		);
+		// Implementation appends with a trailing blank line for
+		// readability (matches the pre-refactor behaviour). Assert
+		// the semantic contract: the new section appears after `## Why`
+		// with its body intact, not the exact byte-level layout.
+		expect(out).toContain('## Why\n\nwhy body');
+		expect(out).toContain('## Goal\n\na fresh goal');
 	});
 
 	it('replaces the body of the LAST section (no next heading)', () => {

@@ -72,6 +72,14 @@ export const readTextOrNull = async (path: string): Promise<string | null> => {
 export interface IProposalIndexEntry {
 	readonly id: string;
 	readonly file: string;
+	/**
+	 * Optional proposal status, as written by
+	 * `sync-proposal-registry.ts`. The field is optional because legacy
+	 * indexes (pre-f00016) only carried `id` + `file`; tools that need
+	 * the status should treat undefined as 'unknown' and fall back to
+	 * re-reading the frontmatter.
+	 */
+	readonly status?: string;
 }
 
 /**
