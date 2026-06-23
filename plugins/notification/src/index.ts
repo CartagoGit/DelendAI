@@ -4,7 +4,7 @@ import { z } from 'zod';
 import {
 	buildAwaitLockRegistration,
 	buildNotifyRegistration,
-} from './lib/tools/tools';
+} from './lib/tools';
 
 /**
  * The notification plugin. It turns the swarm's file-based lock release

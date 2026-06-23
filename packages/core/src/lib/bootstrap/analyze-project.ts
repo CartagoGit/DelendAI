@@ -16,6 +16,8 @@ import { matchMonorepoTool } from './monorepo-rules';
 import { matchPackageManager } from './package-manager-rules';
 import { detectMcpEvidence } from './mcp-evidence-rules';
 import { matchTestRunner } from './test-runner-rules';
+import { matchHostConfig } from './host-config-rules';
+import { matchVertexConfigFromRaw } from './vertex-config-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -233,47 +235,26 @@ const detectMcp = (
 };
 
 const detectCustomExtraTools = (reader: IFileReader): boolean => {
-	const hostConfig =
-		reader.readFile('libs/mcp-project/src/lib/shared/host-config.ts') ??
-		reader.readFile('src/lib/shared/host-config.ts');
-	if (hostConfig === undefined) return false;
-	const match = /extraTools\s*:\s*\[([\s\S]*?)\]/m.exec(hostConfig);
-	if (match === null) return false;
-	const body = match[1] ?? '';
-	const withoutComments = body
-		.replace(/\/\*[\s\S]*?\*\//g, '')
-		.replace(/\/\/.*$/gm, '');
-	const withoutScaffold = withoutComments.replace(
-		/buildScaffoldToolRegistration\s*\([\s\S]*?\)\s*,?/g,
-		'',
-	);
-	return /[A-Za-z0-9_$]+\s*\(/.test(withoutScaffold);
+	// The host-config rule table lives in `host-config-rules.ts`;
+	// this function is a thin adapter. The current consumer
+	// only needs a boolean; the matcher returns a list of hit
+	// ids and we surface "any hit" as `true` for backward
+	// compatibility.
+	const hits = matchHostConfig(reader);
+	return hits.length > 0;
 };
 
 const detectCustomVertexConfig = (reader: IFileReader): boolean => {
-	const raw = reader.readFile('mcp-vertex.config.json');
-	if (raw === undefined) return false;
-	try {
-		const parsed = JSON.parse(raw) as {
-			plugins?: unknown;
-			validationMatrix?: { scopes?: unknown };
-		};
-		const plugins =
-			parsed.plugins &&
-			typeof parsed.plugins === 'object' &&
-			!Array.isArray(parsed.plugins)
-				? Object.keys(parsed.plugins).length
-				: 0;
-		const scopes =
-			parsed.validationMatrix?.scopes &&
-			typeof parsed.validationMatrix.scopes === 'object' &&
-			!Array.isArray(parsed.validationMatrix.scopes)
-				? Object.keys(parsed.validationMatrix.scopes).length
-				: 0;
-		return plugins > 0 || scopes > 0;
-	} catch {
-		return false;
-	}
+	// The vertex-config rule table lives in
+	// `vertex-config-rules.ts`; this function is a thin adapter.
+	// The matcher parses the JSON internally and returns a list
+	// of hit ids; the boolean is `any hit` for backward
+	// compatibility with the boolean contract this function
+	// used to have.
+	const hits = matchVertexConfigFromRaw(
+		reader.readFile('mcp-vertex.config.json'),
+	);
+	return hits.length > 0;
 };
 
 /**

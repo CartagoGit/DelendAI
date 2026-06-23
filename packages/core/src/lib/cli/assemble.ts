@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import {
 	analyzeProject,
@@ -30,6 +29,10 @@ import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { createMcpProject } from '../project/create-mcp-project';
 import { joinRel } from '../shared/paths';
+import {
+	createFileSystemBlueprintWriter,
+	type IBlueprintWriter,
+} from '../shared/blueprint-writer';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
@@ -476,6 +479,14 @@ export const runDoctor = async (
  * writes into the repo itself. Skipped by `--mcp-project-create=false`.
  * If a server already exists, the blueprint's notes explain how to
  * integrate it with mcp-vertex organically.
+ *
+ * r00003 S1 (F-002, S + D): the existence check + mkdir + writeFile
+ * triple was a race condition with two concurrent first-starts able to
+ * both pass the check and clobber each other's bytes. The body now
+ * delegates to `IBlueprintWriter.writeOnce`, which serializes the
+ * existence check + write under a `withFileMutex` keyed by the
+ * absolute path, and uses `writeFileAtomic` so readers never observe
+ * a half-written file.
  */
 export const prepareServerBlueprintOnStart = async (
 	args: IMcpVertexCliArgs,
@@ -483,12 +494,21 @@ export const prepareServerBlueprintOnStart = async (
 	// it avoids drift: the blueprint must land under the SAME cacheDir as the
 	// rest of the store, including when it comes from mcp-vertex.config.json.
 	resolvedCacheDir?: string,
+	// Dependency-injection seam for tests and alternative storage
+	// (e.g. an in-memory writer). Defaults to the filesystem-backed
+	// implementation keyed by the workspace root.
+	writer: IBlueprintWriter = createFileSystemBlueprintWriter(),
 ): Promise<{ written: boolean; path: string }> => {
 	const cacheDir =
 		resolvedCacheDir ?? args.tokens.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
-	const absPath = join(args.workspace, relPath);
-	if (existsSync(absPath)) return { written: false, path: relPath };
+
+	// Cheap pre-check preserves the legacy "already-exists" short-circuit
+	// for the common case (the blueprint is rarely re-written).
+	if (existsSync(join(args.workspace, relPath))) {
+		return { written: false, path: relPath };
+	}
+
 	const reader = createWorkspaceFileReader({
 		root: args.workspace,
 		resolve: (rel) => join(args.workspace, rel),
@@ -497,13 +517,10 @@ export const prepareServerBlueprintOnStart = async (
 	const blueprint = buildServerBlueprint(analysis, {
 		tests: args.mcpProjectTests,
 	});
-	await mkdir(dirname(absPath), { recursive: true });
-	await writeFile(
-		absPath,
-		`${JSON.stringify({ generatedAt: new Date().toISOString(), blueprint }, null, '\t')}\n`,
-		'utf8',
-	);
-	return { written: true, path: relPath };
+	return writer.writeOnce(args.workspace, relPath, {
+		generatedAt: new Date().toISOString(),
+		blueprint,
+	});
 };
 
 /** Entry point for the `mcp-vertex` bin. */

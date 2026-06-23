@@ -11,8 +11,8 @@ export {
 	createReleaseWatcher,
 } from '../lib/services/watcher';
 export type { IReleasedClaim, IReleaseWatcher } from '../lib/services/watcher';
-export { buildNotifyRegistration } from './lib/tools/tools';
-export type { INotifyToolOptions } from './lib/tools/tools';
+export { buildNotifyRegistration } from '../lib/tools';
+export type { INotifyToolOptions } from '../lib/tools';
 export { watchAgentHeartbeat } from '../lib/services/agent-events';
 export type {
 	IAgentEvent,

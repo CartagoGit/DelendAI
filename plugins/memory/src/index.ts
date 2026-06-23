@@ -1,7 +1,7 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { buildMemoryToolRegistrations } from './lib/tools/tools';
+import { buildMemoryToolRegistrations } from './lib/tools';
 
 const OptionsSchema = z
 	.object({

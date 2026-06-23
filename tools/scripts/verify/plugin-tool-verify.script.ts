@@ -24,8 +24,6 @@
  * Pure verification harness; no I/O, no network, no writes.
  */
 
-import type { z } from 'zod';
-
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';

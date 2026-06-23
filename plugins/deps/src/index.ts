@@ -1,6 +1,6 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildDepsToolRegistrations } from './lib/tools/tools';
+import { buildDepsToolRegistrations } from './lib/tools';
 import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';
 
 /**

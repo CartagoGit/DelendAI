@@ -13,7 +13,7 @@ export {
 	removeNote,
 	exportNotes,
 	importNotes,
-} from './lib/services/store';
+} from '../lib/services/store';
 export type {
 	INote,
 	ISaveResult,
@@ -22,13 +22,13 @@ export type {
 	IMemoryImportMode,
 	IMemoryImportConflict,
 	IMemoryImportResult,
-} from './lib/services/store';
-export { redactSecrets } from './lib/services/redact';
-export type { IRedactResult } from './lib/services/redact';
-export { rankNotes, tokenize } from './lib/services/rank';
-export type { IRankedNote } from './lib/services/rank';
-export { buildMemoryToolRegistrations } from './lib/tools/tools';
-export type { IMemoryToolOptions } from './lib/tools/tools';
+} from '../lib/services/store';
+export { redactSecrets } from '../lib/services/redact';
+export type { IRedactResult } from '../lib/services/redact';
+export { rankNotes, tokenize } from '../lib/services/rank';
+export type { IRankedNote } from '../lib/services/rank';
+export { buildMemoryToolRegistrations } from '../lib/tools';
+export type { IMemoryToolOptions } from '../lib/tools';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

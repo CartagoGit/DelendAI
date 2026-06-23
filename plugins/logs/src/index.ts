@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { createLogStore } from './lib/services/log-store';
 import { normalizeEvent } from './lib/services/normalize-event';
-import { buildLogToolRegistrations } from './lib/tools/tools';
+import { buildLogToolRegistrations } from './lib/tools';
 
 export default definePlugin({
 	name: 'logs',
