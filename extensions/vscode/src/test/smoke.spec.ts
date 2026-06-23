@@ -84,7 +84,14 @@ describe('VS Code extension smoke', () => {
 		// f125 + f126/f00026: original commands + observability commands.
 		// f00047 S5: +1 for the new mcp-vertex.openToolbar command.
 		// f00030 S4: +1 for the new mcp-vertex.setupGithub command.
-		expect(subscriptions).toHaveLength(13);
+		// f00047 S6 (settings wire-up): +3 for openDocs / saveSettings /
+		//   resetSettings — `renderSettings` posts to these commands, and
+		//   previously they were unregistered so saves were silently
+		//   dropped.
+		// f00047 S6 (dashboard-always-registers): +1 for openDashboard,
+		//   which is now wired even when `deps.vscode` is injected (the
+		//   smoke test injects vscode → dashboard now shows up here).
+		expect(subscriptions).toHaveLength(17);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);

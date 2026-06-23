@@ -90,13 +90,24 @@ const assertSafeName = (kind: string, name: string): void => {
 	}
 };
 
-const assertSafeGroup = (group: string): asserts group is MonorepoGroup => {
+/**
+ * Validate a group name and return it typed as `MonorepoGroup`.
+ *
+ * Implemented as a plain value-returning function (not a TS `asserts`
+ * predicate) so the call sites stay compatible with TypeScript 6+'s
+ * stricter `asserts`-call-target rules (TS2775), which would
+ * otherwise require the `group` argument to be re-annotated at every
+ * call site. The runtime behaviour — throw on an unknown name — is
+ * identical.
+ */
+const assertSafeGroup = (group: string): MonorepoGroup => {
 	if (!VALID_GROUPS.has(group as MonorepoGroup)) {
 		throw new Error(
 			`Unknown monorepo group ${JSON.stringify(group)}. ` +
 				`Expected one of: ${[...VALID_GROUPS].join(', ')}.`,
 		);
 	}
+	return group as MonorepoGroup;
 };
 
 /**
@@ -144,7 +155,9 @@ export const repoRoot = (): string => {
  * monorepo-wide `buildDir('apps', <name>)`.
  */
 export const packageBuildDir = (group: MonorepoGroup, name: string): string => {
-	assertSafeGroup(group);
+	// `assertSafeGroup` is now value-returning (TS 6+ TS2775 compatibility);
+	// discard the narrowed value because the parameter is already typed.
+	void assertSafeGroup(group);
 	assertSafeName('name', name);
 	return join(repoRoot(), group, name, 'dist');
 };
@@ -154,7 +167,9 @@ export const packageBuildDir = (group: MonorepoGroup, name: string): string => {
  * NEVER tracked). Examples: `build/docs-api/`, `build/apps/web/`.
  */
 export const buildDir = (group: MonorepoGroup, name: string): string => {
-	assertSafeGroup(group);
+	// `assertSafeGroup` is now value-returning (TS 6+ TS2775 compatibility);
+	// discard the narrowed value because the parameter is already typed.
+	void assertSafeGroup(group);
 	assertSafeName('name', name);
 	return join(repoRoot(), 'build', group, name);
 };
@@ -171,7 +186,9 @@ export const distVersionDir = (
 	name: string,
 	version: string,
 ): string => {
-	assertSafeGroup(group);
+	// `assertSafeGroup` is now value-returning (TS 6+ TS2775 compatibility);
+	// discard the narrowed value because the parameter is already typed.
+	void assertSafeGroup(group);
 	assertSafeName('name', name);
 	if (typeof version !== 'string' || version.length === 0) {
 		throw new Error(

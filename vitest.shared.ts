@@ -1,5 +1,17 @@
 import { resolve } from 'node:path';
-import type { Alias } from 'vitest/config';
+
+/**
+ * `Alias` moved from `vitest/config` to `vite` in vitest 4.x, and
+ * `vite` is not a direct dep of every workspace (apps/web, plugins/…)
+ * — so a direct `import type { Alias } from 'vite'` breaks `tsc -p
+ * apps/web/tsconfig.json`. Declare the shape locally and rely on
+ * structural compatibility: `resolve.alias` accepts any object that
+ * matches `{ find: string | RegExp; replacement: string }`.
+ */
+export interface Alias {
+	readonly find: string | RegExp;
+	readonly replacement: string;
+}
 
 /**
  * Path to the global console-silencing vitest setup. Wired into every

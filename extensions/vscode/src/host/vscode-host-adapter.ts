@@ -120,9 +120,8 @@ class VscodeWebviewPanel implements IWebviewPanel {
 		setHtml(html: string): void;
 		readonly onDidReceiveMessage?: (
 			cb: (msg: unknown) => void | Promise<void>,
-		) => { dispose(): void };
-		readonly postMessage?: (msg: unknown) => Thenable<void>;
-		readonly onDidDispose?: (cb: () => void) => { dispose(): void };
+		) => IDisposable;
+		readonly postMessage?: (msg: unknown) => Promise<void>;
 	} {
 		return {
 			options: this.options,
@@ -134,28 +133,35 @@ class VscodeWebviewPanel implements IWebviewPanel {
 			onDidReceiveMessage: (cb) => {
 				this.messageListeners.add(cb);
 				const sub = this.panel.webview.onDidReceiveMessage((msg) => {
-					void Promise.resolve(cb(msg)).catch((e) => {
+					void Promise.resolve(cb(msg)).catch((e: unknown) => {
 						console.error(
 							'[mcp-vertex] onDidReceiveMessage handler threw:',
 							e,
 						);
 					});
 				});
-				return {
+				return new VscodeDisposable({
 					dispose: () => {
 						this.messageListeners.delete(cb);
 						sub.dispose();
 					},
-				};
+				});
 			},
-			postMessage: (msg) => this.panel.webview.postMessage(msg),
+			postMessage: async (msg) => {
+				// VS Code's `postMessage` returns `Thenable<boolean>`. The
+				// `IWebviewPanel` contract pins it to `Promise<void>` so
+				// host fakes that don't model a real message bus can stay
+				// trivially `{ postMessage: async () => {} }`. We await and
+				// swallow the boolean here.
+				await this.panel.webview.postMessage(msg);
+			},
 			onDidDispose: (cb) => {
 				this.disposeListeners.add(cb);
-				return {
+				return new VscodeDisposable({
 					dispose: () => {
 						this.disposeListeners.delete(cb);
 					},
-				};
+				});
 			},
 		};
 	}
@@ -189,6 +195,10 @@ export const createVscodeHostAdapter = (
 ): IHostAdapter => {
 	const extensionUri = options.extensionUri;
 	return {
+		id: 'vscode',
+		displayName: 'Visual Studio Code',
+		hostVersion: HOST_VERSION,
+
 		registerCommand(
 			commandId: string,
 			callback: ICommandCallback,
@@ -196,6 +206,13 @@ export const createVscodeHostAdapter = (
 			return new VscodeDisposable(
 				vscode.commands.registerCommand(commandId, callback),
 			);
+		},
+
+		async executeCommand(
+			commandId: string,
+			...args: readonly unknown[]
+		): Promise<unknown> {
+			return vscode.commands.executeCommand(commandId, ...args);
 		},
 
 		createStatusBarItem(
@@ -225,7 +242,13 @@ export const createVscodeHostAdapter = (
 						'id' in element
 							? String((element as { id: unknown }).id)
 							: undefined;
-					const nodes = provider.getChildren(id);
+					const raw = provider.getChildren(id);
+					// Defensive: a provider may return `undefined` (typing
+					// currently pins it to `T[]`, but the contract has
+					// historically allowed it). VS Code's tree renderer
+					// explodes on `undefined`, so we collapse to an empty
+					// array instead of taking the whole extension down.
+					const nodes = Array.isArray(raw) ? raw : [];
 					return nodes.map((n) => ({ ...n, id: n.id }) as unknown);
 				},
 				getTreeItem(node) {

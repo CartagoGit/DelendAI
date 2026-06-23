@@ -58,6 +58,38 @@ export const registerOpenSettingsCommand = (
 			saveCommand: SAVE_SETTINGS_COMMAND,
 			resetCommand: RESET_SETTINGS_COMMAND,
 		});
+		// FIX (S1): the webview posts `{command:'save', settings}` and
+		// `{command:'reset'}` from its client script. Previously the
+		// host never listened, so Save/Reset were visual-only. We now
+		// bridge the message to the SettingsService so the persisted
+		// store actually reflects the user's choices, and re-render
+		// the form on reset so the visible fields update too.
+		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
+			if (typeof msg !== 'object' || msg === null) return;
+			const m = msg as { command?: unknown; settings?: unknown };
+			if (m.command === 'save') {
+				const patch = parseSettingsInput(m.settings);
+				if (patch === undefined) {
+					await deps.vscode.window.showErrorMessage?.(
+						'mcp-vertex: saveSettings received an invalid payload.',
+					);
+					return;
+				}
+				const svc = new SettingsService(store);
+				await svc.set(patch);
+				return;
+			}
+			if (m.command === 'reset') {
+				const svc = new SettingsService(store);
+				await svc.set(DEFAULT_EXTENSION_SETTINGS);
+				const fresh = await svc.get();
+				panel.webview.html = renderSettings({
+					settings: fresh,
+					saveCommand: SAVE_SETTINGS_COMMAND,
+					resetCommand: RESET_SETTINGS_COMMAND,
+				});
+			}
+		});
 		return panel;
 	});
 

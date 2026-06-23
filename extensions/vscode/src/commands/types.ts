@@ -75,6 +75,7 @@ export interface ICommandDeps {
 	 * resolve the user's preferred language from `mv:lang`. */
 	readonly globalState?: {
 		get<T>(key: string): T | undefined;
+		update(key: string, value: unknown): Thenable<void> | Promise<void>;
 	};
 }
 

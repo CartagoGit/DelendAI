@@ -20,19 +20,48 @@ export interface IProposalBoardSummary {
 }
 
 /**
+ * Type of the `notifications` dependency. We pin to `addEventListener`
+ * + `removeEventListener` so the status bar can detach on `dispose()`
+ * without taking a hard dependency on the full service surface. This
+ * matters because the previous version called `addEventListener` three
+ * times in `start()` and never removed them — every window reload leaked
+ * three more listeners onto the same `NotificationsService`, and every
+ * notification event fired 3× the update requests.
+ */
+export type INotificationsLike = Pick<
+	NotificationsService,
+	'addEventListener' | 'removeEventListener'
+>;
+
+/** Events the status bar subscribes to (kept explicit for grep-ability). */
+const STATUS_BAR_EVENTS = ['lock-released', 'cap', 'bloqueado'] as const;
+
+/**
  * `McpVertexStatusBar` — VS Code status bar summary, upgraded in f00022
  * to include the same KPIs the dashboard exposes (tools, proposals,
  * tokens, agents). Click → open the dashboard.
+ *
+ * Lifecycle contract (f00047 S6 + reload-leak fix): the bar is a real
+ * disposable. Calling `dispose()` removes every notification listener
+ * it registered and disposes the underlying status bar item, so
+ * `deactivate()` -> `runtimeHandle.disposeAll()` cleans up cleanly on
+ * every window reload.
  */
 export class McpVertexStatusBar {
+	/** The callbacks we registered, keyed by event name. Used for
+	 * `removeEventListener` on dispose — we MUST keep the same function
+	 * references for `removeEventListener` to match. */
+	private readonly registeredListeners: Map<
+		string & {},
+		(event: unknown) => void
+	> = new Map();
+	private disposed = false;
+
 	constructor(
 		private readonly item: IStatusBarItem,
 		private readonly overview: Pick<OverviewService, 'listTools'>,
 		private readonly client: Pick<McpStdioClient, 'request'>,
-		private readonly notifications?: Pick<
-			NotificationsService,
-			'addEventListener'
-		>,
+		private readonly notifications?: INotificationsLike,
 		private readonly openDashboardCommand: string = OPEN_DASHBOARD_COMMAND,
 		_showOverviewCommand: string = SHOW_OVERVIEW_COMMAND,
 	) {}
@@ -40,20 +69,26 @@ export class McpVertexStatusBar {
 	async start(): Promise<void> {
 		this.item.command = this.openDashboardCommand;
 		this.item.tooltip = 'mcp-vertex Dashboard (click to open)';
-		this.notifications?.addEventListener('lock-released', () => {
-			void this.update();
-		});
-		this.notifications?.addEventListener('cap', () => {
-			void this.update();
-		});
-		this.notifications?.addEventListener('bloqueado', () => {
-			void this.update();
-		});
+		for (const event of STATUS_BAR_EVENTS) {
+			const handler = (): void => {
+				void this.update();
+			};
+			this.registeredListeners.set(event, handler);
+			this.notifications?.addEventListener(
+				event as Parameters<INotificationsLike['addEventListener']>[0],
+				// The notification service accepts a generic callback;
+				// the event shape is richer than we need here.
+				handler as Parameters<
+					INotificationsLike['addEventListener']
+				>[1],
+			);
+		}
 		await this.update();
 		this.item.show();
 	}
 
 	async update(): Promise<void> {
+		if (this.disposed) return;
 		const tools = await this.overview.listTools();
 		const proposalCount = await this.proposalCount();
 		const tokenSummary = await this.tokensSummary();
@@ -67,6 +102,19 @@ export class McpVertexStatusBar {
 	}
 
 	dispose(): void {
+		if (this.disposed) return;
+		this.disposed = true;
+		for (const [event, handler] of this.registeredListeners) {
+			this.notifications?.removeEventListener(
+				event as Parameters<
+					INotificationsLike['removeEventListener']
+				>[0],
+				handler as Parameters<
+					INotificationsLike['removeEventListener']
+				>[1],
+			);
+		}
+		this.registeredListeners.clear();
 		this.item.dispose();
 	}
 

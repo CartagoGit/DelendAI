@@ -12,7 +12,12 @@
  */
 import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
-import { componentCss, componentScript, renderHeaderBar } from '../components';
+import {
+	componentCss,
+	componentScript,
+	renderHeaderBar,
+	renderHostBridge,
+} from '../components';
 import { escapeHtml } from '../dashboard/format';
 
 import {
@@ -156,6 +161,7 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 	<main class="mv-toolbar__main">
 		${groups}
 	</main>
+	${renderHostBridge()}
 	<script>${componentScript}</script>
 </body>
 </html>`;

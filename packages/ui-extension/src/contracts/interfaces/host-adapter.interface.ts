@@ -113,6 +113,18 @@ export interface IHostAdapter {
 
 	registerCommand(commandId: string, callback: ICommandCallback): IDisposable;
 
+	/**
+	 * Dispatch a command by id (with optional arguments). Used by
+	 * webview message bridges that need to fire-and-forget a
+	 * registered command without owning the registration lifecycle.
+	 * Optional because some hosts don't expose command dispatch
+	 * outside their own process.
+	 */
+	executeCommand?(
+		commandId: string,
+		...args: readonly unknown[]
+	): Promise<unknown>;
+
 	createStatusBarItem(
 		alignment?: IHostAlignment,
 		priority?: number,

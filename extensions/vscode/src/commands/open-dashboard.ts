@@ -14,6 +14,7 @@ import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
+import { OPEN_PROPOSAL_COMMAND } from './open-proposal';
 import { REFRESH_COMMAND } from './refresh';
 
 export const OPEN_DASHBOARD_COMMAND = 'mcp-vertex.openDashboard';
@@ -53,5 +54,37 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 			},
 		);
 		panel.webview.setHtml(html);
+		// FIX (D1) + (D2): wire the message bridge so the ⟳ tab posts
+		// `{command:'action',action:'refresh'}` (resolved to the host's
+		// REFRESH_COMMAND) and `<a data-proposal="...">` rows in the
+		// Agents/Sessions panels open the matching proposal. Without
+		// this listener both gestures were silent no-ops.
+		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
+			if (typeof msg !== 'object' || msg === null) return;
+			const m = msg as {
+				command?: unknown;
+				action?: unknown;
+				id?: unknown;
+			};
+			if (m.command === 'action' && m.action === 'refresh') {
+				try {
+					await deps.host.executeCommand?.(REFRESH_COMMAND);
+				} catch {
+					// Best-effort: a missing executeCommand is a host
+					// capability gap, not a user error.
+				}
+				return;
+			}
+			if (m.command === 'openProposal' && typeof m.id === 'string') {
+				try {
+					await deps.host.executeCommand?.(
+						OPEN_PROPOSAL_COMMAND,
+						m.id,
+					);
+				} catch {
+					// Same: best-effort.
+				}
+			}
+		});
 		return panel;
 	});

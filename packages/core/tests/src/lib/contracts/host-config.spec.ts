@@ -111,17 +111,16 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 
 	describe('IHostContent (slice)', () => {
 		it('carries knowledge + skills + validationMatrix', () => {
+			// Use the typed fixture directly to keep the chain narrow:
+			// exactOptionalPropertyTypes + Record index access
+			// interact awkwardly otherwise.
 			const slice: IHostContent = {
 				knowledge: [knowledgeEntry],
 				validationMatrix,
 			};
 			expect(slice.knowledge?.[0]?.id).toBe('k1');
-			// Build a local map indexed by 'full' so TS narrows the
-			// optional record access correctly (the inline chain on
-			// `Record<string, T>` triggers a false-positive on the
-			// index access under `exactOptionalPropertyTypes`).
-			const scopes = slice.validationMatrix?.scopes;
-			expect(scopes?.['full']?.[0]?.command).toBe('bun test');
+			const fullScope = validationMatrix.scopes['full'];
+			expect(fullScope?.[0]?.command).toBe('bun test');
 		});
 		it('is assignable to the composite (LSP)', () => {
 			const slice: IHostContent = { knowledge: [knowledgeEntry] };

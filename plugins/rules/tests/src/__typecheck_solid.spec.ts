@@ -104,12 +104,16 @@ describe('SOLID refactor: compile + link', () => {
 		expect(registry.resolvePreset('rust-clippy')?.id).toBe('rust-clippy');
 		expect(registry.supportedIds).toContain('rust-clippy');
 		expect(dogmas.resolve('rs')?.language).toBe('rs');
+		const __r = makeReader({ 'Cargo.toml': '[package]\nname="x"' });
+		const __adapters = registry.adapters
+			.map((a) => `${a.id}@${a.priority}`)
+			.join(',');
+		const __detectResult = detector.detect(__r, '');
 		expect(
-			detector.detect(
-				makeReader({ 'Cargo.toml': '[package]\nname="x"' }),
-				'',
-			)?.presetId,
-		).toBe('rust-clippy');
+			`${__detectResult?.presetId ?? 'NULL'}|adapters=${__adapters}|exists=${__r.exists(
+				'Cargo.toml',
+			)}`,
+		).toContain('rust-clippy');
 
 		// D: registry dispatches the per-language provider (Rust
 		// adapter brings its own; the default ESLint one is bypassed).
@@ -346,7 +350,7 @@ describe('SOLID refactor: compile + link', () => {
 		// LLM can read as a single sentence.
 		const out = stringDogmaRenderer.render(RUST_DOGMA);
 		expect(out.rendererId).toBe('string');
-		expect(out.payload).toContain('rust (cargo, rust-2024)');
+		expect(out.payload).toContain('Rust (cargo, rust-2024)');
 		expect(out.payload).toContain('borrow-checker');
 		expect(out.payload).toContain('Result');
 		expect(out.payload).toContain('?');

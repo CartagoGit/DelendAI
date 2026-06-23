@@ -109,9 +109,9 @@ const sharedEnKeys = flattenKeys(sharedEn);
 const sharedProblems: string[] = [];
 
 for (const lang of sharedLanguages) {
-	const dict = (sharedDicts as Record<string, Record<string, unknown>>)[
-		lang.code
-	];
+	const dict = (
+		sharedDicts as unknown as Record<string, Record<string, unknown>>
+	)[lang.code];
 	if (!dict) {
 		sharedProblems.push(`[shared:${lang.code}] no dictionary registered`);
 		continue;

@@ -57,7 +57,12 @@ export const defaultQuickActions = (): readonly QuickAction[] => [
 		id: 'proposals.board',
 		labelKey: 'openProposalBoard',
 		icon: '📋',
-		command: 'mcp-vertex.openProposalBoard',
+		// FIX (T3): the previous command id (`openProposalBoard`) was
+		// never registered in package.json. The registered command is
+		// `mcp-vertex.openProposal` (it takes the proposal id as an
+		// optional argument). Clicking the toolbar card now opens the
+		// board view that actually exists.
+		command: 'mcp-vertex.openProposal',
 		category: 'proposals',
 	},
 	{

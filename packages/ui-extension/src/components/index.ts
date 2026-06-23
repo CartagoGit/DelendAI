@@ -19,4 +19,5 @@ export { renderToast } from './toast';
 export type { IToastOptions, ToastKind } from './toast';
 export { componentScript, renderRuntime } from './runtime';
 export type { IComponentRuntimeHost } from './runtime';
+export { renderHostBridge } from './host-bridge';
 export { componentCss } from './styles.css';
