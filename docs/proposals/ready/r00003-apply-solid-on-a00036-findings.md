@@ -327,7 +327,13 @@ Their working tree (uncommitted, unmerged) contains:
 - **SOLID**: S (scaffold plans, batch-writer persists); D (depends on
   `IBatchAtomicWriter`, default impl holds a single mutex for the
   batch).
-- **Status**: pending.
+- **Status**: done. `batch-atomic-writer.ts` (mutex-guarded `writeAll`
+  with all-or-nothing rollback) and `scaffold-tool.ts`'s
+  `batchWriter.writeAll(toWrite)` call were already in place; verified the
+  Acceptance — the rollback spec asserts a mid-batch failure leaves no
+  partial files, the serialization spec asserts two concurrent batches
+  never observe a torn write, and `IBatchAtomicWriter` is injectable. All
+  17 scaffold + batch-writer specs pass.
 - **Gate**: `bun run test`.
 - **Acceptance**:
   - The scaffold loop calls `batchWriter.writeAll([{path, content}, ...])`
