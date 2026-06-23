@@ -20,6 +20,9 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
+import { locateByScan } from '../proposals/locate';
+import { setFrontmatterStatus as sharedSetFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
+import { readTextOrNull } from '../proposals/index-reader';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 
@@ -144,40 +147,58 @@ const locateProposal = async (
 	proposalsDirAbs: string,
 	id: string,
 ): Promise<ILocatedProposal | null> => {
-	for (const folder of [...Object.values(STATUS_TO_FOLDER), '.']) {
-		const dirAbs = join(proposalsDirAbs, folder);
-		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
-		for (const entry of entries) {
-			if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
-			const absPath = join(dirAbs, entry.name);
-			const raw = await readFile(absPath, 'utf8');
-			const block = extractYamlBlock(raw);
-			if (block === null) continue;
-			const fm = parseFrontmatterBlock(block);
-			if (fm.id !== id) continue;
-			return {
-				absPath,
-				relPath: relative(proposalsDirAbs, absPath),
-				folder: folder === '.' ? '' : folder,
-				raw,
-				frontmatter: fm,
-				status: typeof fm.status === 'string' ? fm.status : '',
-			};
-		}
-	}
-	return null;
+	// Delegate the folder-walking to the shared `locateByScan` (DRY —
+	// same loop body used by 3+ tools). The local wrapper just adds
+	// the `raw` + `frontmatter` fields the recovery tools need.
+	const located = await locateByScan(proposalsDirAbs, id);
+	if (located === null) return null;
+	const raw = (await readTextOrNull(located.absPath)) ?? '';
+	const block = extractYamlBlock(raw);
+	const frontmatter =
+		block === null
+			? {}
+			: (parseFrontmatterBlock(block) as Record<string, unknown>);
+	return {
+		absPath: located.absPath,
+		relPath: relative(proposalsDirAbs, located.absPath),
+		folder: located.folder,
+		raw,
+		frontmatter,
+		status: located.status,
+	};
 };
 
 const setFrontmatterStatus = (raw: string, status: string): string => {
-	const m = raw.match(/^(---\r?\n[\s\S]*?\r?\n---)/);
-	if (!m) return raw;
-	const block = m[1] ?? '';
-	const next = /^status:/m.test(block)
-		? block.replace(/^status:.*$/m, `status: ${status}`)
-		: block.replace(/\r?\n---$/, `\nstatus: ${status}\n---`);
+	// Behaviour-preserving wrapper around the shared frontmatter
+	// writer. The local copy used to insert a new `status:` line when
+	// missing; the shared writer does the same, so the behaviour is
+	// equivalent for both branches (replace-if-present, append-if-not).
+	// Kept as a named alias so the recovery-tool call sites read
+	// consistently with the rest of this file.
+	return updateStatusLine(raw, status);
+};
+
+/**
+ * Behaviour-preserving replacement for the pre-refactor local
+ * `setFrontmatterStatus`: when the frontmatter already has a `status:`
+ * line, replace it in place; otherwise append a new line just before
+ * the closing `---`. The shared `setFrontmatterStatus` only handles
+ * the in-place case, so we layer the append behaviour on top of it.
+ */
+const updateStatusLine = (raw: string, status: string): string => {
+	if (/^status:/m.test(extractFrontmatterBlock(raw) ?? '')) {
+		return sharedSetFrontmatterStatus(raw, status);
+	}
+	const block = extractFrontmatterBlock(raw);
+	if (block === null) return raw;
+	const next = block.replace(/\r?\n---$/, `\nstatus: ${status}\n---`);
 	return next + raw.slice(block.length);
+};
+
+/** Pull the YAML frontmatter block (between `---` markers) out of a raw blob. */
+const extractFrontmatterBlock = (raw: string): string | null => {
+	const m = raw.match(/^(---\r?\n[\s\S]*?\r?\n---)/);
+	return m === null ? null : (m[1] ?? '');
 };
 
 const readLock = async (

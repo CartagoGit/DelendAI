@@ -116,7 +116,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 				validationMatrix,
 			};
 			expect(slice.knowledge?.[0]?.id).toBe('k1');
-			expect(slice.validationMatrix?.scopes.full[0]?.command).toBe(
+			expect(slice.validationMatrix?.scopes.full?.[0]?.command).toBe(
 				'bun test',
 			);
 		});

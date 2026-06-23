@@ -18,85 +18,24 @@ import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
-import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
+import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
 	validateClaim,
 } from '../swarm/proposal-slice-plan';
-import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import {
 	parseReviewState,
 	renderReviewLines,
 	reviewTransition,
 } from '../swarm/proposal-review';
+import { readActiveLocks } from './authoring-options';
+import type { IAuthoringToolOptions } from './authoring-options';
 
-export interface IAuthoringToolOptions {
-	readonly namespacePrefix: string;
-	readonly workspaceRoot: string;
-	/** Absolute proposals dir + index + lock. */
-	readonly proposalsDirAbs: string;
-	readonly indexPathAbs: string;
-	readonly lockPathAbs: string;
-	/** f00016 S13: absolute path of the per-kind id counter file. */
-	readonly counterPathAbs: string;
-	/**
-	 * Workspace-relative layout (proposals dir + index) the post-create
-	 * sync uses, so a relocated store stays coherent. Defaults to
-	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
-	 */
-	readonly layout?: Pick<
-		IHostPathLayout,
-		'proposalsDir' | 'proposalIndexFile'
-	>;
-	/**
-	 * Host-specific proposal subfolders (relative to proposalsDir) the
-	 * post-mutation sync should also scan, e.g. `['paused/demos']`.
-	 */
-	readonly extraFolders?: readonly string[];
-}
-
-/** Escape regex metacharacters so a user-supplied sliceId can't alter the match. */
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const kebab = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
-
-// Async file helpers (H2): never block the event loop on a tool call. A
-// missing/corrupt file resolves to null/[], same semantics as the old
-// existsSync-guarded sync reads.
-const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as T;
-	} catch {
-		return null;
-	}
-};
-const readTextOrNull = async (path: string): Promise<string | null> => {
-	try {
-		return await readFile(path, 'utf8');
-	} catch {
-		return null;
-	}
-};
-
-const readActiveLocks = async (
-	lockPath: string,
-): Promise<readonly ILockSnapshotEntry[]> => {
-	const lock = await readJsonOrNull<{
-		in_flight?: Array<{ task_id?: string; agent?: string }>;
-	}>(lockPath);
-	if (lock === null) return [];
-	return (lock.in_flight ?? [])
-		.filter((e) => typeof e.task_id === 'string')
-		.map((e) => ({ taskId: e.task_id ?? '', agent: e.agent ?? 'unknown' }));
-};
+export type { IAuthoringToolOptions } from './authoring-options';
+export { readActiveLocks } from './authoring-options';
 
 const SLICE_IN = z.object({
 	sliceId: z.string(),

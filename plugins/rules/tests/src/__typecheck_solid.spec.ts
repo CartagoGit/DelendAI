@@ -276,10 +276,13 @@ describe('SOLID refactor: compile + link', () => {
 				return { checkCommand: 'stub-default' };
 			},
 		};
+		// PresetRegistry takes a plain callback; wrap the provider as one
+		// so the test exercises the same adapter shape the factory uses.
 		const reg = new PresetRegistry({
 			presets: [RUST_PRESET],
 			adapters: [rustAdapter],
-			defaultCommandSetProvider: stubDefault,
+			defaultCommandSetProvider: (areaDir, rules) =>
+				stubDefault.buildCommandSet(areaDir, rules),
 		});
 		// Rust adapter brings its own; the default is NOT called.
 		const out = reg.commandsFor(
@@ -400,5 +403,68 @@ describe('SOLID refactor: compile + link', () => {
 		expect(
 			root.detector.detect(makeReader({ 'a.txt': '' }), '')?.presetId,
 		).toBe('custom-preset');
+	});
+
+	it('amplified composition root exposes validators + renderers + policyResolver (S — single face)', () => {
+		// The composition root is the *single* face a tool
+		// imports to access every SOLID seam. The three new
+		// fields are mandatory — a tool that wants to validate
+		// / render / resolve a policy reads them from `root`,
+		// not from a module-level singleton.
+		const root = buildDefaultComposition();
+		expect(root.validators).toBeDefined();
+		expect(root.renderers).toBeDefined();
+		expect(root.policyResolver).toBeDefined();
+		// Validators and renderers are pre-populated with their
+		// defaults; the policy resolver is the one place the
+		// priority order lives.
+		expect(root.validators.validators.length).toBeGreaterThanOrEqual(1);
+		expect(root.renderers.resolve('string').id).toBe('string');
+	});
+
+	it('validators run via the registry (OCP — composition over inheritance)', () => {
+		// The validator-registry composes all validators; a
+		// test can pass a custom list to exercise a specific
+		// check in isolation.
+		const root = buildDefaultComposition();
+		const findings = root.validators.validate(RUST_PRESET);
+		expect(findings).toEqual([]); // RUST_PRESET is well-formed
+	});
+
+	it('factory accepts a custom policy resolver (DIP override)', () => {
+		// A host that wants a different priority order (e.g.
+		// "treat dogma as advisory only") injects a different
+		// IPolicyResolver via the factory. The composition root
+		// never branches on the resolver type.
+		const customPolicy = {
+			resolveCommand({
+				fromDefault,
+			}: {
+				areaDir: string;
+				fromDefault: ICommandSet;
+			}) {
+				return {
+					effective: 'default' as const,
+					command: fromDefault.checkCommand,
+					rationale:
+						'Host policy: always default; project and dogma are advisory.',
+					fromDefault,
+				};
+			},
+		};
+		const root = buildDefaultComposition({
+			policyResolver: customPolicy,
+		});
+		const out = root.policyResolver.resolveCommand({
+			areaDir: '',
+			fromProject: { checkCommand: 'echo project' },
+			fromDefault: { checkCommand: 'echo default' },
+		});
+		// Even when a project config is present, the host's
+		// custom resolver returns `default`. This proves the
+		// priority order is *encoded in the resolver*, not
+		// in the tools.
+		expect(out.effective).toBe('default');
+		expect(out.rationale).toContain('Host policy');
 	});
 });
