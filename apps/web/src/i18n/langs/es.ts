@@ -305,6 +305,34 @@ const dict: LangDict = {
 			preset: 'Preset',
 		},
 	},
+	setup: {
+		title: 'Configuración entre proyectos',
+		lead: 'Integra mcp-vertex en cualquier repositorio y deja listo el plugin de issues de GitHub para ese repo: los mismos 7 pasos que ejecuta el comando setup-github.',
+		stepsTitle: 'Los 7 pasos',
+		docsLinkLabel: 'Lee la guía canónica de configuración entre proyectos',
+		detectRepoTitle: 'Detectar el repo',
+		detectRepoBody:
+			'Lee el remoto de GitHub y normalízalo a owner/name. El slug detectado debe apuntar al repo que esperas.',
+		confirmRepoTitle: 'Confirmar owner/name',
+		confirmRepoBody:
+			'Ejecuta el comando de configuración y confirma (o reemplaza) el slug detectado antes de escribir nada.',
+		pickAuthTierTitle: 'Elegir nivel de autenticación',
+		pickAuthTierBody:
+			'Usa gh cuando gh auth status funcione, rest-authed cuando GITHUB_TOKEN esté definido, o rest-anon en caso contrario (limitado a 60 peticiones/hora).',
+		writeConfigTitle: 'Escribir la configuración',
+		writeConfigBody:
+			'Escribe plugins.issues.options.repo en mcp-vertex.config.json sin tocar otros ajustes de plugins.',
+		verifyTierTitle: 'Verificar el nivel',
+		verifyTierBody:
+			'Inicia el host con el plugin de issues cargado para ejercitar de extremo a extremo el nivel de autenticación elegido.',
+		printInvocationTitle: 'Imprimir la invocación',
+		printInvocationBody:
+			'Añade este bloque de servidor a tu mcp.json. La forma es la misma en VS Code, Cursor y Claude Code.',
+		markConfiguredTitle: 'Marcar como configurado',
+		markConfiguredBody:
+			'Opcionalmente registra que este repo ya se configuró una vez, para que las ejecuciones futuras omitan las preguntas.',
+		optionalLabel: 'opcional',
+	},
 	ui: {
 		codeCopy: 'Copiar',
 		codeCopied: '¡Copiado!',

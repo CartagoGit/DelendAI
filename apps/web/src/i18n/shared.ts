@@ -169,6 +169,32 @@ export interface IInstallTranslations {
 	readonly faqA3: string;
 }
 
+/**
+ * Cross-project setup wizard (`/setup`, f00030 S3). Mirrors the 7 canonical
+ * steps in `docs/CROSS-PROJECT-SETUP.md`; one `*Title`/`*Body` pair per step.
+ */
+export interface ISetupTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly stepsTitle: string;
+	readonly docsLinkLabel: string;
+	readonly detectRepoTitle: string;
+	readonly detectRepoBody: string;
+	readonly confirmRepoTitle: string;
+	readonly confirmRepoBody: string;
+	readonly pickAuthTierTitle: string;
+	readonly pickAuthTierBody: string;
+	readonly writeConfigTitle: string;
+	readonly writeConfigBody: string;
+	readonly verifyTierTitle: string;
+	readonly verifyTierBody: string;
+	readonly printInvocationTitle: string;
+	readonly printInvocationBody: string;
+	readonly markConfiguredTitle: string;
+	readonly markConfiguredBody: string;
+	readonly optionalLabel: string;
+}
+
 /** f00048 — generic UI primitives copy (CodeBlock, Tabs, Callout, Stepper, CopyButton). */
 export interface IUiTranslations {
 	readonly codeCopy: string;
@@ -450,6 +476,7 @@ export interface ITranslations {
 	readonly recovery: IRecoveryTranslations;
 	readonly logs: ILogsTranslations;
 	readonly presets: IPresetsTranslations;
+	readonly setup: ISetupTranslations;
 	readonly ui: IUiTranslations;
 }
 

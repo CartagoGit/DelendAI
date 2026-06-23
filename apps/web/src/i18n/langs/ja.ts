@@ -304,6 +304,34 @@ const dict: LangDict = {
 			preset: 'プリセット',
 		},
 	},
+	setup: {
+		title: 'クロスプロジェクト設定',
+		lead: '任意のリポジトリに mcp-vertex を組み込み、そのリポジトリ向けに GitHub issues プラグインを準備します。setup-github コマンドが実行するのと同じ 7 ステップです。',
+		stepsTitle: '7 つのステップ',
+		docsLinkLabel: '正規のクロスプロジェクト設定ガイドを読む',
+		detectRepoTitle: 'リポジトリの検出',
+		detectRepoBody:
+			'GitHub のリモートを読み取り owner/name に正規化します。検出されたスラッグは想定するリポジトリを指している必要があります。',
+		confirmRepoTitle: 'owner/name の確認',
+		confirmRepoBody:
+			'セットアップコマンドを実行し、何かを書き込む前に検出されたスラッグを確認（または上書き）します。',
+		pickAuthTierTitle: '認証ティアの選択',
+		pickAuthTierBody:
+			'gh auth status が成功すれば gh、GITHUB_TOKEN が設定されていれば rest-authed、それ以外は rest-anon（毎時 60 リクエスト上限）を使用します。',
+		writeConfigTitle: '設定の書き込み',
+		writeConfigBody:
+			'他のプラグイン設定に触れずに plugins.issues.options.repo を mcp-vertex.config.json に書き込みます。',
+		verifyTierTitle: 'ティアの検証',
+		verifyTierBody:
+			'issues プラグインを読み込んだ状態でホストを起動し、選択した認証ティアをエンドツーエンドで検証します。',
+		printInvocationTitle: '起動コマンドの出力',
+		printInvocationBody:
+			'このサーバーブロックを mcp.json に追加します。形は VS Code、Cursor、Claude Code で同じです。',
+		markConfiguredTitle: '設定済みとしてマーク',
+		markConfiguredBody:
+			'このリポジトリが一度設定済みであることを任意で記録し、以降の実行でプロンプトを省略できるようにします。',
+		optionalLabel: '任意',
+	},
 	ui: {
 		codeCopy: 'コピー',
 		codeCopied: 'コピーしました！',

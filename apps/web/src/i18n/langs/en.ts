@@ -301,6 +301,34 @@ const dict: LangDict = {
 			preset: 'Preset',
 		},
 	},
+	setup: {
+		title: 'Cross-project setup',
+		lead: 'Wire mcp-vertex into any repository and get the GitHub issues plugin ready for that repo — the same 7 steps the setup-github command runs.',
+		stepsTitle: 'The 7 steps',
+		docsLinkLabel: 'Read the canonical cross-project setup guide',
+		detectRepoTitle: 'Detect repo',
+		detectRepoBody:
+			'Read the GitHub remote and normalize it to owner/name. The detected slug must point at the repo you expect.',
+		confirmRepoTitle: 'Confirm owner/name',
+		confirmRepoBody:
+			'Run the setup command and confirm (or override) the detected repo slug before any config is written.',
+		pickAuthTierTitle: 'Pick auth tier',
+		pickAuthTierBody:
+			'Use gh when gh auth status succeeds, rest-authed when GITHUB_TOKEN is set, or rest-anon otherwise (capped at 60 requests/hour).',
+		writeConfigTitle: 'Write config',
+		writeConfigBody:
+			'Write plugins.issues.options.repo into mcp-vertex.config.json without touching unrelated plugin settings.',
+		verifyTierTitle: 'Verify tier',
+		verifyTierBody:
+			'Launch the host with the issues plugin loaded so the chosen auth tier is exercised end-to-end.',
+		printInvocationTitle: 'Print invocation',
+		printInvocationBody:
+			'Add this server block to your host mcp.json. The shape is the same across VS Code, Cursor, and Claude Code.',
+		markConfiguredTitle: 'Mark configured',
+		markConfiguredBody:
+			'Optionally record that this repo was configured once, so later runs can skip the prompts.',
+		optionalLabel: 'optional',
+	},
 	ui: {
 		codeCopy: 'Copy',
 		codeCopied: 'Copied!',

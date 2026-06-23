@@ -299,6 +299,34 @@ const dict: LangDict = {
 			preset: 'प्रीसेट',
 		},
 	},
+	setup: {
+		title: 'क्रॉस-प्रोजेक्ट सेटअप',
+		lead: 'mcp-vertex को किसी भी रिपॉज़िटरी में जोड़ें और उस रिपॉज़िटरी के लिए GitHub issues प्लगइन तैयार करें — वही 7 चरण जो setup-github कमांड चलाता है।',
+		stepsTitle: '7 चरण',
+		docsLinkLabel: 'क्रॉस-प्रोजेक्ट सेटअप की आधिकारिक गाइड पढ़ें',
+		detectRepoTitle: 'रिपॉज़िटरी पहचानें',
+		detectRepoBody:
+			'GitHub रिमोट पढ़कर उसे owner/name में सामान्यीकृत करता है। पहचाना गया स्लग आपकी अपेक्षित रिपॉज़िटरी की ओर इंगित करना चाहिए।',
+		confirmRepoTitle: 'owner/name की पुष्टि करें',
+		confirmRepoBody:
+			'सेटअप कमांड चलाएँ और कुछ भी लिखने से पहले पहचाने गए स्लग की पुष्टि करें (या बदलें)।',
+		pickAuthTierTitle: 'प्रमाणीकरण स्तर चुनें',
+		pickAuthTierBody:
+			'जब gh auth status सफल हो तो gh, जब GITHUB_TOKEN सेट हो तो rest-authed, अन्यथा rest-anon (प्रति घंटे 60 अनुरोध तक सीमित) का उपयोग करें।',
+		writeConfigTitle: 'कॉन्फ़िग लिखें',
+		writeConfigBody:
+			'plugins.issues.options.repo को mcp-vertex.config.json में लिखता है, अन्य प्लगइन सेटिंग्स को छुए बिना।',
+		verifyTierTitle: 'स्तर सत्यापित करें',
+		verifyTierBody:
+			'issues प्लगइन लोड करके होस्ट शुरू करें ताकि चुना गया प्रमाणीकरण स्तर एंड-टू-एंड परखा जा सके।',
+		printInvocationTitle: 'इन्वोकेशन प्रिंट करें',
+		printInvocationBody:
+			'यह सर्वर ब्लॉक अपने mcp.json में जोड़ें। यह रूप VS Code, Cursor और Claude Code में एक समान है।',
+		markConfiguredTitle: 'कॉन्फ़िगर किया गया चिह्नित करें',
+		markConfiguredBody:
+			'वैकल्पिक रूप से दर्ज करें कि यह रिपॉज़िटरी एक बार कॉन्फ़िगर हो चुकी है, ताकि बाद के रन प्रॉम्प्ट छोड़ दें।',
+		optionalLabel: 'वैकल्पिक',
+	},
 	ui: {
 		codeCopy: 'कॉपी',
 		codeCopied: 'कॉपी हो गया!',

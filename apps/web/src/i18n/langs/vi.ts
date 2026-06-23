@@ -301,6 +301,34 @@ const dict: LangDict = {
 			preset: 'Preset',
 		},
 	},
+	setup: {
+		title: 'Thiết lập đa dự án',
+		lead: 'Kết nối mcp-vertex vào bất kỳ kho lưu trữ nào và chuẩn bị plugin issues của GitHub cho kho đó — đúng 7 bước mà lệnh setup-github thực hiện.',
+		stepsTitle: '7 bước',
+		docsLinkLabel: 'Đọc hướng dẫn thiết lập đa dự án chính thức',
+		detectRepoTitle: 'Phát hiện kho',
+		detectRepoBody:
+			'Đọc remote GitHub và chuẩn hóa thành owner/name. Slug được phát hiện phải trỏ tới kho bạn mong đợi.',
+		confirmRepoTitle: 'Xác nhận owner/name',
+		confirmRepoBody:
+			'Chạy lệnh thiết lập và xác nhận (hoặc ghi đè) slug được phát hiện trước khi ghi bất cứ thứ gì.',
+		pickAuthTierTitle: 'Chọn cấp xác thực',
+		pickAuthTierBody:
+			'Dùng gh khi gh auth status thành công, rest-authed khi GITHUB_TOKEN được đặt, ngược lại dùng rest-anon (giới hạn 60 yêu cầu/giờ).',
+		writeConfigTitle: 'Ghi cấu hình',
+		writeConfigBody:
+			'Ghi plugins.issues.options.repo vào mcp-vertex.config.json mà không động đến các thiết lập plugin khác.',
+		verifyTierTitle: 'Xác minh cấp',
+		verifyTierBody:
+			'Khởi chạy host với plugin issues đã nạp để kiểm tra đầu cuối cấp xác thực đã chọn.',
+		printInvocationTitle: 'In lệnh khởi chạy',
+		printInvocationBody:
+			'Thêm khối server này vào mcp.json của bạn. Cấu trúc giống nhau trên VS Code, Cursor và Claude Code.',
+		markConfiguredTitle: 'Đánh dấu đã cấu hình',
+		markConfiguredBody:
+			'Tùy chọn ghi lại rằng kho này đã được cấu hình một lần, để các lần chạy sau bỏ qua các bước hỏi.',
+		optionalLabel: 'tùy chọn',
+	},
 	ui: {
 		codeCopy: 'Sao chép',
 		codeCopied: 'Đã sao chép!',

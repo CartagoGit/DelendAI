@@ -1,0 +1,12 @@
+---
+import Setup from '#COMPONENTS/Setup.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title={`${t.setup.title} — @mcp-vertex/core`}>
+	<Setup lang={lang} heading={t.setup.title} />
+</Base>

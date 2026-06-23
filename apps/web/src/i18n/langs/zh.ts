@@ -295,6 +295,34 @@ const dict: LangDict = {
 			preset: '预设',
 		},
 	},
+	setup: {
+		title: '跨项目配置',
+		lead: '将 mcp-vertex 接入任意仓库，并为该仓库准备好 GitHub issues 插件——与 setup-github 命令执行的 7 个步骤一致。',
+		stepsTitle: '7 个步骤',
+		docsLinkLabel: '阅读权威的跨项目配置指南',
+		detectRepoTitle: '检测仓库',
+		detectRepoBody:
+			'读取 GitHub 远端并规范化为 owner/name。检测到的标识必须指向你期望的仓库。',
+		confirmRepoTitle: '确认 owner/name',
+		confirmRepoBody:
+			'运行配置命令，在写入任何内容之前确认（或覆盖）检测到的仓库标识。',
+		pickAuthTierTitle: '选择认证级别',
+		pickAuthTierBody:
+			'当 gh auth status 成功时使用 gh；当设置了 GITHUB_TOKEN 时使用 rest-authed；否则使用 rest-anon（每小时限 60 次请求）。',
+		writeConfigTitle: '写入配置',
+		writeConfigBody:
+			'将 plugins.issues.options.repo 写入 mcp-vertex.config.json，不触碰其他插件设置。',
+		verifyTierTitle: '验证级别',
+		verifyTierBody:
+			'在加载 issues 插件的情况下启动宿主，以端到端方式验证所选的认证级别。',
+		printInvocationTitle: '打印启动命令',
+		printInvocationBody:
+			'将此服务器配置块添加到你的 mcp.json。在 VS Code、Cursor 和 Claude Code 中形式相同。',
+		markConfiguredTitle: '标记为已配置',
+		markConfiguredBody:
+			'可选地记录该仓库已配置过一次，使后续运行跳过提示。',
+		optionalLabel: '可选',
+	},
 	ui: {
 		codeCopy: '复制',
 		codeCopied: '已复制！',
