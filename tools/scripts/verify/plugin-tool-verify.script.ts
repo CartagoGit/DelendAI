@@ -20,11 +20,19 @@
  * Usage:
  *   bun tools/scripts/verify/plugin-tool-verify.script.ts            # all plugins
  *   bun tools/scripts/verify/plugin-tool-verify.script.ts --plugin=audit
+ *   bun tools/scripts/verify/plugin-tool-verify.script.ts --workspace=/abs/repo
+ *
+ * `--workspace` (r00003 S5 / TS-01) lets the harness run from ANY cwd:
+ * plugins are resolved against the injected workspace root and contained
+ * with `resolveWorkspaceContained`, not against this script's own path.
  *
  * Pure verification harness; no I/O, no network, no writes.
  */
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import {
+	type IToolRegistration,
+	resolveWorkspaceContained,
+} from '@mcp-vertex/core/public';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
 import { captureToolRegistration } from '../lib/test-mcp-server';
@@ -160,7 +168,23 @@ const verifyPlugin = async (
  */
 export interface IVerifyCliOptions {
 	readonly pluginFilter: string | undefined;
+	/**
+	 * Workspace root the plugins are resolved against. Supplied via
+	 * `--workspace=<abs>`; when omitted the caller falls back to
+	 * `process.cwd()`. r00003 S5 (TS-01): making this an explicit option
+	 * lets the script run from ANY cwd, not only from
+	 * `tools/scripts/verify/`.
+	 */
+	readonly workspace: string | undefined;
 }
+
+const lastFlagValue = (
+	argv: readonly string[],
+	prefix: string,
+): string | undefined => {
+	const arg = argv.findLast((a): boolean => a.startsWith(prefix));
+	return arg !== undefined ? arg.slice(prefix.length) : undefined;
+};
 
 export const parseVerifyCliArgs = (
 	argv: readonly string[],
@@ -170,16 +194,56 @@ export const parseVerifyCliArgs = (
 	// the rightmost one wins (matches typical CLI conventions: a
 	// later flag overrides an earlier one). Pinned by the spec at
 	// tools/scripts/verify/plugin-tool-verify.script.spec.ts.
-	const pluginArg = (argv as readonly string[]).findLast((a): boolean =>
-		a.startsWith('--plugin='),
-	);
 	return {
-		pluginFilter:
-			pluginArg !== undefined
-				? pluginArg.slice('--plugin='.length)
-				: undefined,
+		pluginFilter: lastFlagValue(argv, '--plugin='),
+		workspace: lastFlagValue(argv, '--workspace='),
 	};
 };
+
+/**
+ * r00003 S5 (TS-01, DIP): resolve a plugin name to its source root
+ * **relative to the injected workspace root**, not to a relative path
+ * baked into this script's own location. The name is contained with
+ * `resolveWorkspaceContained`, so a malicious or mistaken
+ * `--plugin=../../etc` cannot make the harness import code from outside
+ * the workspace.
+ *
+ * Returns the contained, absolute plugin root on success; throws with a
+ * structured reason when the name escapes the workspace.
+ */
+export interface IPluginRootResolver {
+	resolve(pluginName: string): string;
+}
+
+export const createWorkspacePluginRootResolver = (
+	workspaceRoot: string,
+): IPluginRootResolver => ({
+	resolve(pluginName) {
+		// Contain the plugin name FIRST: an absolute name or a `..`
+		// traversal must be rejected before it is ever joined to the
+		// `plugins/` prefix (otherwise `plugins//etc/evil` would resolve
+		// back inside the workspace and slip through).
+		const containedName = resolveWorkspaceContained(
+			workspaceRoot,
+			pluginName,
+		);
+		if (!containedName.ok) {
+			throw new Error(
+				`plugin "${pluginName}" resolves outside the workspace: ${containedName.reason}`,
+			);
+		}
+		const containedRoot = resolveWorkspaceContained(
+			workspaceRoot,
+			`plugins/${pluginName}`,
+		);
+		if (!containedRoot.ok) {
+			throw new Error(
+				`plugin "${pluginName}" resolves outside the workspace: ${containedRoot.reason}`,
+			);
+		}
+		return containedRoot.abs;
+	},
+});
 
 const main = async (): Promise<number> => {
 	const options = parseVerifyCliArgs(process.argv.slice(2));
@@ -187,11 +251,19 @@ const main = async (): Promise<number> => {
 		options.pluginFilter !== undefined
 			? [options.pluginFilter]
 			: [...PLUGIN_LIST];
-	const workspaceRoot = process.cwd();
+	// r00003 S5 (TS-01): the workspace root comes from `--workspace`, with
+	// `process.cwd()` as a boot-time fallback. Resolving it here (a single
+	// CLI entrypoint) is the one place a cwd read is acceptable; everything
+	// downstream takes the resolved root as an argument.
+	const workspaceRoot = options.workspace ?? process.cwd();
+	const rootResolver = createWorkspacePluginRootResolver(workspaceRoot);
 
 	const all: IVerifyResult[] = [];
 	for (const name of list) {
 		try {
+			// Contain the plugin name before doing any I/O: a name that
+			// escapes the workspace is rejected here, not after a load.
+			rootResolver.resolve(name);
 			const res = await verifyPlugin(name, workspaceRoot);
 			all.push(...res);
 		} catch (err) {
