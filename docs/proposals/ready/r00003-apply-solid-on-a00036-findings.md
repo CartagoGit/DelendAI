@@ -183,7 +183,7 @@ Their working tree (uncommitted, unmerged) contains:
 
 - **Files**: [`tools/scripts/verify/plugin-tool-verify.script.ts`](tools/scripts/verify/plugin-tool-verify.script.ts) (line 58).
 - **SOLID**: D (depends on `IPluginRootResolver`, not on relative paths).
-- **Status**: pending.
+- **Status**: done.
 - **Gate**: `bun run test` (lint:tools + manual run).
 - **Acceptance**:
   - The relative import `await import(\`../../plugins/${name}/src/index.ts\`)`
