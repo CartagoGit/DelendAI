@@ -102,6 +102,10 @@
 			{
 				"command": "mcp-vertex.memoryForget",
 				"title": "mcp-vertex: Forget Memory Note"
+			},
+			{
+				"command": "mcp-vertex.setupGithub",
+				"title": "mcp-vertex: Set up GitHub issues"
 			}
 		]
 	},

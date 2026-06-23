@@ -49,6 +49,10 @@ import {
 	TOOL_SEARCH_COMMAND,
 	registerToolSearchCommand,
 } from './commands/tool-search';
+import {
+	SETUP_GITHUB_COMMAND,
+	registerSetupGithubCommand,
+} from './commands/setup-github';
 import { renderJsonHtml } from './commands/types';
 import {
 	type IFileSystemWatcher,
@@ -180,6 +184,7 @@ export const activate = async (
 	);
 	context.subscriptions.push(registerOpenSettingsCommand({ vscode, client }));
 	context.subscriptions.push(registerOpenToolbarCommand({ vscode, client }));
+	context.subscriptions.push(registerSetupGithubCommand({ vscode, client }));
 
 	// f00022 — IDE-agnostic dashboard, lazy-loaded adapter so unit tests
 	// that inject a fake `vscode` API never resolve the real `vscode`
@@ -240,4 +245,5 @@ export {
 	MEMORY_FORGET_COMMAND,
 	MEMORY_SAVE_COMMAND,
 	TOOL_SEARCH_COMMAND,
+	SETUP_GITHUB_COMMAND,
 };
