@@ -51,6 +51,38 @@ describe('scaffold-host generators', () => {
 		expect(file.content).toContain('acme_overview');
 	});
 
+	it('prompts accept a body argument that becomes the user-facing text', () => {
+		const file = scaffoldPromptFile(
+			'acme',
+			'start',
+			'Orient and start working.',
+			'You are working in **Acme**. Call acme_overview first.',
+		);
+		expect(file.path).toBe(
+			'libs/mcp-project/src/lib/prompts/acme-start.prompt.ts',
+		);
+		expect(file.content).toContain('You are working in **Acme**');
+		expect(file.content).toContain('acme_overview');
+		// Body must not leak template-literal backticks: the implementation
+		// escapes them so a body containing `code` does not break the
+		// generated source file.
+		expect(file.content).not.toMatch(/text: `[^`]*\$\{/);
+	});
+
+	it('skills accept a body argument that becomes the skill body', () => {
+		const file = scaffoldSkillFile(
+			'acme',
+			'angular conventions',
+			'Angular idioms.',
+			['Before writing Angular code.'],
+			'## Angular idioms\n\n- Use standalone components.',
+		);
+		expect(file.content).toContain('## Angular idioms');
+		expect(file.content).toContain('Use standalone components');
+		// The TODO body fallback must NOT appear when a real body is given.
+		expect(file.content).not.toContain('TODO: the skill body.');
+	});
+
 	it('agent adapters always delegate to the HOST MCP server', () => {
 		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
 		expect(orchestrator.path).toBe('.github/agents/orchestrator.agent.md');

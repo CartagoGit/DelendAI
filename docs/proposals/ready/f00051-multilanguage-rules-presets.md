@@ -330,7 +330,7 @@ Today it cannot.
    field *name*). External hosts that depended on the name are caught by the
    backward-compat alias for one release.
 
-## verification plan
+## acceptance
 
 `bun run validate` is the global gate. The pre-existing l00008 specs (rules-plugin
 durable writes, outputSchema hardening) must remain green across every slice; the
@@ -347,7 +347,9 @@ After S10 lands, the plugin is ready for a follow-up slice set that:
 - adds Haskell / Scala / Zig / Dart-Flutter / Lua / R / Julia presets
   (f00052+ proposals)
 
-## is mcp-vertex used the same way in non-Node projects?
+## notes
+
+### How mcp-vertex is used in non-Node projects
 
 The user's second question, captured in the proposal brief: **no, and that is
 the point of this proposal.** A Python or Go project loads
