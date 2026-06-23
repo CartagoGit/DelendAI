@@ -1,6 +1,6 @@
 ---
 id: t00001
-status: ready
+status: done
 type: proposal
 track: testing
 date: 2026-06-22

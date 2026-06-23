@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-22T23:54:41.009Z",
+	"generated_at": "2026-06-23T00:01:54.211Z",
 	"count": 109,
 	"proposals": [
 		{
@@ -36,14 +36,6 @@
 			"id": "f00046",
 			"file": "ready/f00046-cli-coverage-expand-the-cli-to-expose-every-public-mcp-tool-plus-bootstrap-commands.md",
 			"track": "cli+core+plugins+i18n+docs",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-22"
-		},
-		{
-			"id": "t00001",
-			"file": "ready/t00001-improve-test-coverage-for-core-engines.md",
-			"track": "testing",
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-22"
@@ -143,6 +135,14 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-21"
+		},
+		{
+			"id": "t00001",
+			"file": "done/t00001-improve-test-coverage-for-core-engines.md",
+			"track": "testing",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-22"
 		},
 		{
 			"id": "x00001",
