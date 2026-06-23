@@ -380,10 +380,48 @@ export class DashboardService {
 			totalBytes: number;
 		};
 	}> {
-		if (this.metrics !== undefined) {
-			return await this.metrics.snapshot();
-		}
-		return await this.client.request('mcp-vertex_metrics', {});
+		const raw =
+			this.metrics !== undefined
+				? await this.metrics.snapshot()
+				: await this.client.request('mcp-vertex_metrics', {});
+		const snap = raw as {
+			tools?: Record<
+				string,
+				{
+					calls?: number;
+					errors?: number;
+					totalMs?: number;
+					maxMs?: number;
+					totalBytes?: number;
+				}
+			>;
+			totals?: {
+				calls?: number;
+				errors?: number;
+				totalMs?: number;
+				totalBytes?: number;
+			};
+		};
+		return {
+			tools: Object.fromEntries(
+				Object.entries(snap.tools ?? {}).map(([tool, m]) => [
+					tool,
+					{
+						calls: m.calls ?? 0,
+						errors: m.errors ?? 0,
+						totalMs: m.totalMs ?? 0,
+						maxMs: m.maxMs ?? 0,
+						totalBytes: m.totalBytes ?? 0,
+					},
+				]),
+			),
+			totals: {
+				calls: snap.totals?.calls ?? 0,
+				errors: snap.totals?.errors ?? 0,
+				totalMs: snap.totals?.totalMs ?? 0,
+				totalBytes: snap.totals?.totalBytes ?? 0,
+			},
+		};
 	}
 
 	private async fetchProposalsSafe(): Promise<
