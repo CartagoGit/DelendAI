@@ -1,12 +1,17 @@
+import { existsSync, readFileSync } from 'node:fs';
+
 import {
+	DEFAULT_CONFIG_FILENAME,
 	definePlugin,
 	resolveWorkspaceContained,
 } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { createGithubSetupDeps } from './lib/github-setup';
 import { fetchIssue, listIssues } from './lib/github-client';
 import type { IGithubClient } from './lib/tools';
 import { buildIssuesToolRegistrations } from './lib/tools';
+import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
 const DEFAULT_SCAFFOLD_DIR = 'docs/proposals/retired/issues';
@@ -96,15 +101,30 @@ export default definePlugin({
 				? ctx.options.scaffoldDir
 				: DEFAULT_SCAFFOLD_DIR;
 
+		// f00030 S2: the setup-github guide is available regardless of
+		// whether `repo` is configured — its whole point is to help the
+		// user reach a configured state.
+		const setupGithubTool = buildSetupGithubRegistration({
+			namespacePrefix: ctx.namespacePrefix,
+			deps: createGithubSetupDeps(
+				ctx.workspace.root,
+				DEFAULT_CONFIG_FILENAME,
+				(absPath) =>
+					existsSync(absPath)
+						? readFileSync(absPath, 'utf8')
+						: undefined,
+			),
+		});
+
 		if (repo === undefined) {
-			// No `repo` configured: register zero tools + emit a
+			// No `repo` configured: register only the setup helper + a
 			// discoverable knowledge entry instead of throwing at boot.
 			// The contract: the rest of the plugin surface stays green
 			// (CI smoke, `--check`), and any agent that boots the server
 			// sees the hint via `mcp-vertex_overview` (lists knowledge
 			// ids) or via a direct `mcp-vertex_knowledge` call.
 			return {
-				tools: [],
+				tools: [setupGithubTool],
 				knowledge: [
 					{
 						id: 'issues-needs-repo-config',
@@ -134,6 +154,6 @@ export default definePlugin({
 			githubClient,
 		});
 
-		return { tools };
+		return { tools: [...tools, setupGithubTool] };
 	},
 });

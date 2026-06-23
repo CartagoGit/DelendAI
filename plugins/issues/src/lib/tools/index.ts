@@ -14,6 +14,7 @@ import { buildListIssuesRegistration } from './list-issues.tool';
 import { buildResolveIssueRegistration } from './resolve-issue.tool';
 
 export type { IGithubClient } from './list-issues.tool';
+export { buildSetupGithubRegistration } from './setup-github.tool';
 
 export interface IBuildIssuesToolRegistrationsOptions {
 	/** Tool namespace, e.g. `'issues'` → `issues_list`, `issues_fetch`, … */
