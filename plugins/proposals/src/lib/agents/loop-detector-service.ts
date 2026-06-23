@@ -272,10 +272,6 @@ export class AgentLoopDetectorService {
 		}
 
 		const isStuck = verdict.isStuck || noProgressStuck;
-		// eslint-disable-next-line no-console
-		console.error(
-			`[mcp-vertex] loop-detector DEBUG: agent=${agent} tool=${toolName} verdict.isStuck=${verdict.isStuck} repeatCount=${verdict.repeatCount} noProgressStuck=${noProgressStuck} windowSize=${window.length}`,
-		);
 		if (isStuck && !this.stuckAgents.has(agent)) {
 			// Trigger stuck flow: write handoff and store verdict
 			const _ts = new Date().toISOString();

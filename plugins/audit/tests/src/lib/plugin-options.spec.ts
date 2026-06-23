@@ -24,8 +24,8 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { SCORE_DIMENSIONS } from '../src/lib/services/audit-brief.service';
-import plugin from '../src/index';
+import { SCORE_DIMENSIONS } from '../../../src/lib/services/audit-brief.service';
+import plugin from '../../../src/index';
 
 // --- harness ---------------------------------------------------------------
 
