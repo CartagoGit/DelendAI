@@ -268,7 +268,7 @@ Bootstrap:
   - "`mcpv web-fetch <url>` soporta `--max-bytes` y `--timeout`."
 
 ### S9 — `mcpv conventions {check,plan,apply}` (consumer-facing surface for f00037 S3)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/conventions.ts`, `packages/cli/src/lib/conventions/adapter.ts`, tests, i18n
 - **Tools mapped**: depende del plugin `conventions` (a definir por f00037 S3). Mientras el plugin no exista, el grupo expone una implementación standalone que consume `tools/scripts/lint/file-conventions.script.ts` directamente y devuelve el mismo shape.
 - **Gate**: `bun run test packages/cli && bun run typecheck`

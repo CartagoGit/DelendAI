@@ -147,6 +147,12 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Check whether a response ends with a valid close marker.',
 	'status-marker ping':
 		'Echo plugin identity + resolved paths (confirm it is loaded).',
+	'conventions check':
+		'Report file-convention drift (per-role counts + unmatched files).',
+	'conventions plan':
+		'List the files that need a canonical rename (migration backlog).',
+	'conventions apply':
+		'Guarded apply: reports outstanding violations (no blind rename).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
