@@ -6,7 +6,7 @@
  *
  * Tools mapped:
  *   - `mcp-vertex_fs_read`         ({ path, range? })
- *   - `mcp-vertex_fs_write`        ({ path, content, createDirs?, atomic? })
+ *   - `mcp-vertex_fs_write`        ({ path, content, createDirs? })
  *   - `mcp-vertex_knowledge`       ({ id? })
  *   - `mcp-vertex_analyze_project` ({ serverName?, namespacePrefix?, ... })
  *   - `mcp-vertex_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
@@ -50,16 +50,25 @@ const fsWriteCommand: ICliCommand = {
 		const path = positionalArg(args);
 		const content = scalarArg(args, 'content');
 		if (path === undefined || content === undefined) {
-			return usage(
-				'fs write <path> --content=<string> [--create-dirs] [--no-atomic]',
-			);
+			return usage('fs write <path> --content=<string> [--create-dirs]');
+		}
+		// r00003 S3 (F-003, LSP): the MCP `fs_write` tool's surface no
+		// longer accepts `atomic` — atomicity is non-negotiable for the
+		// LLM-facing path. The CLI flag was the only escape hatch; if a
+		// user really needs non-atomic writes (bulk migration, repair of
+		// a partially-corrupt file), they should call the in-process
+		// `fsWrite` helper from a script, not through the LLM-facing tool.
+		if (hasFlag(args, 'no-atomic')) {
+			return data({
+				ok: false,
+				error: '--no-atomic is no longer supported via the CLI: the `mcp-vertex_fs_write` tool is always atomic. For non-atomic writes, use the in-process `fsWrite` helper from a Bun script.',
+			});
 		}
 		return data(
 			await request(ctx, 'mcp-vertex_fs_write', {
 				path,
 				content,
 				...(hasFlag(args, 'create-dirs') ? { createDirs: true } : {}),
-				...(hasFlag(args, 'no-atomic') ? { atomic: false } : {}),
 			}),
 		);
 	},
