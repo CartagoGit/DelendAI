@@ -24,70 +24,41 @@ import type {
 	IAuditFinding,
 	IConsolidation,
 } from '../contracts/interfaces/audit.interface';
-import { SEVERITY_ORDER } from '../contracts/interfaces/audit.interface';
 
-const SEVERITY_RANK: Readonly<Record<AuditSeverity, number>> = (() => {
-	const out: Record<AuditSeverity, number> = {} as Record<
-		AuditSeverity,
-		number
-	>;
-	SEVERITY_ORDER.forEach((s, i) => {
-		out[s] = i;
-	});
-	return out;
-})();
-
-/** Lower rank = more urgent. */
-const worstSeverity = (a: AuditSeverity, b: AuditSeverity): AuditSeverity =>
-	SEVERITY_RANK[a] <= SEVERITY_RANK[b] ? a : b;
-
-/** Are two findings "the same"? Cheap heuristic, see file header. */
-interface ILikeFinding {
-	readonly title: string;
-	readonly files: readonly string[];
-}
-const isSameFinding = (a: ILikeFinding, b: ILikeFinding): boolean => {
-	const sharedFile = a.files.some((f) => b.files.includes(f));
-	if (!sharedFile) return false;
-	const norm = (s: string): string => s.toLowerCase();
-	const aTitle = norm(a.title);
-	const bTitle = norm(b.title);
-	return (
-		aTitle.includes(bTitle) ||
-		bTitle.includes(aTitle) ||
-		aTitle
-			.split(/\s+/u)
-			.some((tok) => tok.length >= 6 && bTitle.includes(tok))
-	);
-};
+import {
+	DEFAULT_CONSOLIDATION_STRATEGIES,
+	type IConsolidationStrategies,
+	type ILikeFinding,
+} from './audit-consolidation-strategies';
 
 const dedup = <T>(arr: readonly T[]): T[] => Array.from(new Set(arr));
-
-/** Stable key for a finding when we merge duplicates. */
-const findingKey = (
-	f: IAuditFinding,
-	index: number,
-	seenBefore: ReadonlySet<string>,
-): string => {
-	const filePart = (f.files[0] ?? 'no-file').replace(/[^a-z0-9]+/giu, '-');
-	const base = `${f.severity.toLowerCase()}-${filePart}`;
-	if (seenBefore.has(base)) return `consensus-${index}`;
-	return base;
-};
 
 export interface IConsolidateOptions {
 	/** How many top actions to surface in `topActions`. Default 5. */
 	readonly topActions?: number;
+	/**
+	 * Strategy bundle. Hosts can swap one or all three of
+	 * severity ranking, finding-dedup predicate, and key
+	 * derivation without editing this file. Defaults to
+	 * `DEFAULT_CONSOLIDATION_STRATEGIES`.
+	 */
+	readonly strategies?: IConsolidationStrategies;
 }
 
 /**
  * Reduce the parsed documents into one master view. Pure: same inputs
- * always produce the same output.
+ * always produce the same output. Strategies are injectable for DIP
+ * (test the consolidator with fake ranking + dedup without touching
+ * the implementation).
  */
 export const consolidateAudits = (
 	documents: readonly IAuditDocument[],
 	options: IConsolidateOptions = {},
 ): IConsolidation => {
+	const strategies = options.strategies ?? DEFAULT_CONSOLIDATION_STRATEGIES;
+	const worstSeverity = strategies.severity.worst;
+	const isSameFinding = strategies.dedup;
+	const findingKey = strategies.key.key;
 	const topN = options.topActions ?? 5;
 
 	const skipped: { path: string; reason: string }[] = [];
@@ -144,8 +115,10 @@ export const consolidateAudits = (
 	}
 	// Sort merged findings by severity rank (urgent first), then by seenBy count.
 	merged.sort((a, b) => {
-		const sev =
-			SEVERITY_RANK[a.worstSeverity] - SEVERITY_RANK[b.worstSeverity];
+		const sev = strategies.severity.compare(
+			a.worstSeverity,
+			b.worstSeverity,
+		);
 		if (sev !== 0) return sev;
 		return b.seenBy.length - a.seenBy.length;
 	});
@@ -222,8 +195,11 @@ export const consolidateAudits = (
 	};
 };
 
-/** Re-export for tests. */
-export const _internal = { isSameFinding, worstSeverity, SEVERITY_RANK };
+/** Re-export for tests — points at the strategy bundle so tests can
+ *  swap the default strategies for fakes. */
+export const _internal = {
+	strategies: DEFAULT_CONSOLIDATION_STRATEGIES,
+};
 
 /**
  * Options for {@link renderConsolidationMarkdown}. Keeps the function

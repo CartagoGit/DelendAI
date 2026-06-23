@@ -9,6 +9,9 @@ import {
 } from './script-rules';
 import { matchProjectType } from './project-type-rules';
 import { isGameProject, matchFramework } from './framework-rules';
+import { matchCi } from './ci-rules';
+import { matchAgentConfigs } from './agent-config-rules';
+import { matchLanguage } from './language-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -64,7 +67,12 @@ export interface IProjectAnalysis {
 	readonly signals: readonly string[];
 }
 
-interface IPackageJson {
+/**
+ * Subset of `package.json` the analyser actually reads. Exported
+ * because the language-rule table (and any other rule that
+ * inspects the manifest) needs the same shape.
+ */
+export interface IPackageJson {
 	name?: string;
 	bin?: unknown;
 	main?: string;
@@ -173,47 +181,24 @@ const detectLanguage = (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 ): IProjectLanguage => {
-	if (reader.exists('tsconfig.json') || reader.exists('tsconfig.base.json')) {
-		return 'typescript';
-	}
-	if (pkg !== undefined) return 'javascript';
-	if (
-		reader.exists('pyproject.toml') ||
-		reader.exists('requirements.txt') ||
-		reader.exists('setup.py')
-	) {
-		return 'python';
-	}
-	if (reader.exists('go.mod')) return 'go';
-	if (reader.exists('Cargo.toml')) return 'rust';
-	return 'unknown';
+	// The language rule table lives in `language-rules.ts`; this
+	// function is a thin adapter. Adding a language is a one-line
+	// table entry, not an edit to this function.
+	return matchLanguage(reader, pkg);
 };
 
-const detectCi = (reader: IFileReader): string[] => {
-	const ci: string[] = [];
-	if (reader.listDir('.github/workflows').length > 0)
-		ci.push('github-actions');
-	if (reader.exists('.gitlab-ci.yml')) ci.push('gitlab-ci');
-	if (reader.exists('azure-pipelines.yml')) ci.push('azure-pipelines');
-	if (reader.exists('.circleci/config.yml')) ci.push('circleci');
-	if (reader.exists('Jenkinsfile')) ci.push('jenkins');
-	return ci;
+const detectCi = (reader: IFileReader): readonly string[] => {
+	// The CI rule table lives in `ci-rules.ts`; this function is a
+	// thin adapter. Adding a CI system is a one-line table entry,
+	// not an edit to this function.
+	return matchCi(reader);
 };
 
-const detectAgentConfigs = (reader: IFileReader): string[] => {
-	const configs: string[] = [];
-	if (reader.exists('CLAUDE.md')) configs.push('CLAUDE.md');
-	if (reader.exists('AGENTS.md')) configs.push('AGENTS.md');
-	if (reader.exists('.cursorrules') || reader.listDir('.cursor').length > 0) {
-		configs.push('cursor');
-	}
-	if (reader.exists('.github/copilot-instructions.md')) {
-		configs.push('copilot-instructions');
-	}
-	if (reader.listDir('.github/agents').length > 0)
-		configs.push('github-agents');
-	if (reader.exists('.windsurfrules')) configs.push('windsurf');
-	return configs;
+const detectAgentConfigs = (reader: IFileReader): readonly string[] => {
+	// The agent-config rule table lives in `agent-config-rules.ts`;
+	// this function is a thin adapter. Adding an editor is a
+	// one-line table entry, not an edit to this function.
+	return matchAgentConfigs(reader);
 };
 
 const detectProjectType = (

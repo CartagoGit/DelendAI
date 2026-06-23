@@ -562,27 +562,133 @@ The full ~70-language table lives in the proposal's appendix
 (`docs/proposals/appendices/f00051-dogma-table.md`, generated
 during S3 from `dogmas/*.dogma.ts`).
 
-### Priority model
+### SOLID per module (the per-file contract)
 
-`ILanguageAdapter.priority` is **ascending**: smaller = earlier. The
-sort happens once in the registry constructor, not per-call. The
-ordering encodes the "meta-frameworks win over generics" invariant (H6)
-and the "Python/Go/Rust beat JS/TS in a polyglot dir" rule:
+SOLID stops being "philosophy" and becomes a **reviewable contract**
+when each new module declares the single principle it embodies. The
+table below is the per-file acceptance for the SOLID mapping; a
+reviewer can audit SOLID slice-by-slice by walking down the column
+that matches the slice under review:
 
-### Priority model
-
-`ILanguageAdapter.priority` is **ascending**: smaller = earlier. The
-sort happens once in the registry constructor, not per-call. The
-ordering encodes the "meta-frameworks win over generics" invariant (H6)
-and the "Python/Go/Rust beat JS/TS in a polyglot dir" rule:
-
-| Priority | Adapter | Why |
+| Module | Principle | Why this module, exactly |
 |---|---|---|
-| 5 | `phpAdapter` | `composer.json` / `artisan` is a strong, exclusive signal — beats JS/TS catch-all. |
-| 10 | `tsAdapter` | TS + meta-framework (Next/Remix/Nuxt/Astro) wins over plain TS. |
-| 20 | `pythonAdapter`, `goAdapter`, `rustAdapter`, `rubyAdapter`, `javaAdapter`, `kotlinAdapter`, `swiftAdapter`, `csharpAdapter`, `elixirAdapter` | Language-specific manifests (`pyproject.toml`, `go.mod`, `Cargo.toml`, `Gemfile`, `pom.xml`, `build.gradle.kts`, `Package.swift`, `*.csproj`/`*.sln`, `mix.exs`) are exclusive and beat the JS/TS catch-all. |
-| 30 | (reserved for future non-meta-framework TS hits — Vue/Svelte without meta-framework) | — |
-| 50 | `jsAdapter` | Last-resort: only claims when nothing higher claimed the area. |
+| `contracts/preset-identity.interface.ts` | **I** (Segregation) | Holds ONLY `id` / `framework` / `language` / `linter`. The online-preset lookup depends on this and nothing else. |
+| `contracts/preset-configs.interface.ts` | **I** | Holds ONLY the linter + typecheck config file contents. The manifest writer depends on this and nothing else. |
+| `contracts/preset-conventions.interface.ts` | **I** | Holds ONLY the agent-facing bullets. `get_rules` depends on this and nothing else. |
+| `contracts/preset-commands.interface.ts` | **I** | Holds ONLY the static command templates. Future extension (remote-exec, containerised linters) touches this file and nothing else. |
+| `contracts/preset-toolchain.interface.ts` | **I** | Holds ONLY `requiredLinterDeps`. `check_rules` depends on this and nothing else. |
+| `contracts/command-set.interface.ts` | **I** | The 3-field tuple `{ checkCommand, fixCommand?, typecheckCommand? }`. |
+| `contracts/command-set-provider.interface.ts` | **D** (Inversion) | The abstraction every adapter implements to produce per-area commands. Tools depend on this, not on `PRESET_BY_ID`. |
+| `contracts/language-adapter.interface.ts` | **O** (Open/Closed) | Adding a new language = adding a module that implements this; nothing else changes. |
+| `contracts/dogma-adapter.interface.ts` | **I** + **O** | Each concern (ownership/error/null/...) is its own narrow interface, *implemented by composition* in the data files — a new concern (say `i18n-convention`) adds one interface, no existing module changes. |
+| `contracts/dogma.interface.ts` | **I** | The 8 sub-concerns (`IOwnershipDogma`, `IErrorModelDogma`, …) — each is a tagged union, not a 50-field mega-interface. |
+| `contracts/preset.interface.ts` | **L** (Liskov) | `IRulePreset` composes the 5 segments via TypeScript intersection; every preset IS-A each segment, no method-overriding surprises. |
+| `contracts/mode.interface.ts` | **S** (Responsibility) | One place defines the enforcement modes; every other module imports the type and never redefines it. |
+| `registry/preset-registry.ts` | **D** + **S** | Composition root for presets. Its sole responsibility is lookup + dispatch; the manifest writer, the tools, and the online-preset lookup all consume it via constructor injection. |
+| `registry/detector.ts` | **O** + **D** | Closed for modification (the iteration loop never changes); open for extension (every adapter is registered via constructor). Depends only on the `ILanguageAdapter` interface, never on concrete adapters. |
+| `registry/dogma-registry.ts` | **S** | **Separate from `PresetRegistry`** — dogmas are language-style facts, not linter artefacts. Splitting them is SRP applied at the registry level. |
+| `registry/default-registry.ts` | **D** | The single composition root. Tests substitute narrower registries here. |
+| `languages/base/<family>-base.provider.ts` | **S** | One `ICommandSetProvider` per *family* (JVM, BEAM, LLVM, scripting, …), shared by every language in that family. Adding `kotlin` reuses `jvm-base.provider.ts`; the JVM-specific bits live in `kotlin.adapter.ts`. |
+| `languages/<lang>.adapter.ts` | **O** | One adapter per language. Adding `zig` = one new file. The detector, registry, and manifest writer never need to know. |
+| `dogmas/<lang>.dogma.ts` | **S** + **I** | One file = one language's idiomatic style. The file's only responsibility is *that language's truth*; each concern (ownership/error/...) is a small named export consumed via composition by `IDogmaAdapter`. |
+| `dogmas/index.ts` | **D** | Composition root for dogmas — the `DogmaRegistry` consumes this. |
+| `presets/data/<family>.ts` | **S** | DATA only — no logic. One file per family so reviewers see related presets grouped. |
+| `presets/presets.ts` | **S** | Pure facade over `data/`. The only file that exports the pre-existing public names (`PRESET_BY_ID`, etc.). |
+| `presets/types.ts` | **S** | Pure facade. Re-exports `IRulesMode` from `contracts/`; defines `IAreaRules` / `IRulesManifest` here because those are domain shapes, not contracts. |
+| `presets/detect-framework.ts` | **D** | Thin adapter — exposes the historical free function as a delegate to `PresetDetector`. Lets `rules.spec.ts` keep working without edits. |
+| `presets/manifest.ts` | **S** | Unchanged core — materialises presets to cache, writes the manifest fingerprint. |
+| `presets/online-preset.ts` | **O** | Each registry (PyPI, crates.io, …) is a single entry in `REGISTRY_URL`. Adding `buf.build` or `winget` = one new entry. |
+| `tools/rules-tools.ts` | **D** | Depends on `ICommandSetProvider` + `DogmaRegistry` via constructor — never on the concrete registries. The hardcoded eslint/pint branches are gone. |
+| `knowledge/applying-rules.ts` | **S** | Just text — the agent-facing knowledge body. Reads `IRulesMode` from contracts; never duplicates the mode definitions. |
+| `tools/policy-resolution.contract.ts` *(new in S11)* | **S** | The single source of truth for "who wins" between project config / dogma / default. Centralised so the 3 tools (`get_rules`, `check_rules`, `apply_rules`) read the same policy. |
+| `tools/dogma-policy.provider.ts` *(new in S11)* | **D** | The abstraction over bullet interpretation. Tools depend on this; the implementation can swap between "raw bullets", "system-prompt interpolation", or "tool-use hint" without touching the tool code. |
+
+The reviewer contract is: **for each new module under review, the
+SOLID principle in the table must match the principle the module's
+single test asserts**. If a module's tests touch three different
+concerns (e.g. detection + commands + dogmas), the principle is
+violated and the slice must be split before merge.
+
+### Who wins (priority resolution)
+
+The user's repeated observation — *"el eslint o la forma de programar
+bien o dogmas o forma de hacer las cosas en cada lenguaje es distinto"*
+— encodes a real conflict: when the project's own ESLint config says
+`"no-var": "off"` but our TypeScript dogma says "use `const`/`let`,
+never `var`", which one wins?
+
+The proposal's answer is **codified as a single policy** in
+`tools/policy-resolution.contract.ts`, consumed by all three tools:
+
+```
+Priority order (highest → lowest):
+  1. PROJECT CONFIG     — eslint.config.mjs, pyproject.toml [tool.ruff],
+                          Cargo.toml [lints], go.mod (gofmt directive),
+                          zig build settings, .editorconfig, etc.
+  2. LANGUAGE DOGMA     — IDogmaAdapter for the detected language
+  3. PLUGIN DEFAULT     — the materialised preset under .cache/mcp-vertex/rules/
+```
+
+Concretely:
+
+| Layer | Wins when | Source |
+|---|---|---|
+| **Project config** | A config file ships in the project (detected by `findProjectEslint`, `findProjectTsconfig`, plus the per-language equivalents added in S2: `pyproject.toml`, `Cargo.toml`, `go.mod`, `build.zig`, `flake.nix`, `*.cabal`, `dune-project`, `Package.swift`, `pubspec.yaml`, `mix.exs`, `shfmt.toml`, …). The project's rules always land first in the `IAreaRules.eslint[]` array (`manifest.ts:75`). | The `IAreaRules.eslint[]` ordering |
+| **Language dogma** | No project config exists. `IDogmaAdapter.bullets` is injected into the agent's working context via `applying-rules` knowledge + the new `get_rules.dogmas[area]` field. | `dogmas/<lang>.dogma.ts` |
+| **Plugin default** | Neither project nor dogma applies. The materialised cache preset runs. | `presets/data/<family>.ts` |
+
+`check_rules` and `apply_rules` read this policy via the
+`IPolicyResolver` interface (DIP — the tools never branch on the
+layer themselves). `IPolicyResolver.resolveCommand(area)` returns a
+`IResolvedCommand` with three explicit fields:
+`{ fromProject?: string; fromDogma?: string; fromDefault: string;
+   effective: string; rationale: string }`. The `rationale` field
+explains *why* the agent should run `effective` and *why* the lower
+layers were ignored — a transparency seam that the linter-output of
+ESLint does not provide and that is unique to this plugin.
+
+A worked example:
+
+- An agent edits `apps/web/src/foo.ts` in a Next.js monorepo.
+- `check_rules { area: 'apps/web' }` returns:
+  - `fromProject`: `'pnpm exec eslint apps/web'` (the project's
+    `apps/web/eslint.config.mjs` is detected).
+  - `fromDogma`: `'eslint apps/web --config .cache/mcp-vertex/rules/react-ts.eslint.config.mjs'`
+    (the dogma-driven default).
+  - `fromDefault`: the same `fromDogma` (no further fallback).
+  - `effective`: `'pnpm exec eslint apps/web'`.
+  - `rationale`: `'Project ships eslint.config.mjs; dogma is ignored.
+    Project wins (priority order: project > dogma > default).'`.
+
+`apply_rules` reads the `rationale` and the `effective` command and
+emits a step like "Run `pnpm exec eslint apps/web --fix` — your
+project's config wins over the TypeScript dogma; the dogma is your
+guide when writing **new** code in `.ts` files, not when running
+the existing project toolchain."
+
+This is the answer to the user's question. **Project config > dogma
+> default**, codified as data, surfaced in every tool response, with
+a `rationale` string any agent can render to its user. The plugin
+stops pretending dogmas are rules; dogmas are *advice for new code*,
+and the project's own toolchain is the *enforcer*.
+
+### Priority model
+
+`ILanguageAdapter.priority` is **ascending**: smaller = earlier. The
+sort happens once in the registry constructor, not per-call. The
+ordering encodes the "meta-frameworks win over generics" invariant (H6),
+the "Python/Go/Rust beat JS/TS in a polyglot dir" rule, and the new
+"SOLID-by-family" rule (all 70+ adapters slot into the priority
+ladder without the detector knowing):
+
+| Priority | Adapters | Why |
+|---|---|---|
+| 5 | `phpAdapter`, `composer.json` family | `composer.json` / `artisan` / `mix.exs` / `rebar.config` are strong, exclusive signals — beat the JS/TS catch-all. |
+| 8 | `pythonAdapter`, `goAdapter`, `rustAdapter`, `rubyAdapter`, `cAdapter`, `cppAdapter`, `zigAdapter`, `nimAdapter`, `crystalAdapter`, `vAdapter`, `ponyAdapter`, `carbonAdapter`, `haskellAdapter`, `ocamlAdapter`, `smlAdapter`, `purescriptAdapter`, `elmAdapter`, `idrisAdapter`, `agdaAdapter`, `leanAdapter`, `coqAdapter`, `elixirAdapter`, `erlangAdapter`, `gleamAdapter`, `lfeAdapter`, `clojureAdapter`, `cljsAdapter`, `schemeAdapter`, `racketAdapter`, `emacsLispAdapter`, `perlAdapter`, `luaAdapter`, `tclAdapter`, `juliaAdapter`, `rAdapter`, `matlabAdapter`, `sasAdapter`, `bashAdapter`, `pwshAdapter`, `nuShellAdapter`, `fishAdapter`, `sqlAdapter`, `tomlAdapter`, `yamlAdapter`, `jsonAdapter`, `json5Adapter`, `hclAdapter`, `nixAdapter`, `dhallAdapter`, `cueAdapter`, `kdlAdapter`, `htmlAdapter`, `cssAdapter`, `vueSfcAdapter`, `svelteSfcAdapter`, `astroSfcAdapter`, `mjmlAdapter`, `pugAdapter`, `protobufAdapter`, `graphqlAdapter`, `openapiAdapter`, `avroAdapter`, `thriftAdapter`, `solidityAdapter`, `moveAdapter`, `cairoAdapter`, `vyperAdapter`, `jupyterAdapter`, `rmdAdapter`, `quartoAdapter`, `cmakeAdapter`, `makeAdapter`, `bazelAdapter`, `justAdapter`, `ninjaAdapter`, `vimscriptAdapter`, `ronAdapter` | Each language-specific manifest (`pyproject.toml`, `Cargo.toml`, `build.zig`, `*.cabal`, `flake.nix`, …) is exclusive and beats the JS/TS catch-all. Grouped at priority 8 to keep the detector's priority ladder short. |
+| 10 | `tsAdapter` | TS + meta-framework (Next/Remix/Nuxt/Astro) wins over plain TS; **but not** over exclusive language manifests (priority 8 wins). |
+| 20 | `javaAdapter`, `kotlinAdapter`, `scalaAdapter`, `groovyAdapter`, `csharpAdapter`, `fsharpAdapter`, `vbNetAdapter`, `swiftAdapter`, `dartAdapter`, `objcAdapter`, `objcppAdapter` | JVM/.NET/Mobile manifests often co-exist with `package.json` for tooling (e.g. a React Native app has both). Priority 20 sits below exclusive manifests but above the JS/TS catch-all. |
+| 50 | `jsAdapter` | Last-resort: only claims when nothing higher claimed the area. The default `vanilla-js` fallback. |
+| 80 | `markdownAdapter`, `asciidocAdapter`, `rstAdapter`, `latexAdapter`, `typstAdapter`, `orgAdapter` | Markup/docs adapters run last because docs often live alongside source code; the source-code adapter wins by default. Projects that want docs-only areas configure `overrides`. |
 
 ### Compatibility shims
 
@@ -643,19 +749,24 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "All previously-passing detection tests still pass (no regression on angular/react/vue/svelte/jquery/vanilla/laravel)"
     - "New tests cover: Python (pyproject), Go (go.mod), Rust (Cargo.toml), Ruby (Gemfile), Java (pom.xml), Kotlin (build.gradle.kts), Swift (Package.swift), C# (.csproj), Elixir (mix.exs) — 9 new test cases minimum"
 
-### S3 — Add the language presets
+### S3 — Add the language presets + the dogma adapters
 
 - **Status**: pending
-- **Files**: plugins/rules/src/lib/frameworks/presets.ts
+- **Files**: plugins/rules/src/lib/frameworks/presets/data/  (~18 new files, ~70 new IRulePreset entries)
+- **Files**: plugins/rules/src/lib/frameworks/dogmas/        (~35 new files, ~70 IDogmaAdapter entries)
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
+- **Files**: plugins/rules/tests/src/lib/dogmas/dogma-registry.spec.ts
 - **Gate**: test
 - depends_on: [S1, S2]
 - acceptance:
-    - "9 new `IRulePreset` entries are added: `python-ruff` (linter `ruff`, typechecker `basedpyright`), `go-golangci` (linter `golangci-lint`, typechecker `go vet`), `rust-clippy` (linter `clippy`, typechecker `cargo check`), `ruby-rubocop` (linter `rubocop`, typechecker `sorbet` or `rbs`), `java-checkstyle` (linter `checkstyle` + `spotless`, typechecker `javac`), `kotlin-ktlint` (linter `ktlint` + `detekt`, typechecker `kotlinc`), `swift-swiftlint` (linter `swiftlint` + `swift-format`, typechecker `swiftc`), `csharp-dotnet` (linter `dotnet format` + `Roslyn analyzers`, typechecker `dotnet build`), `elixir-credo` (linter `credo` + `mix format`, typechecker `dialyzer`)"
-    - "Each preset ships DATA only (the linter config + formatter config + typecheck config as text), with the same `eslintConfigContent` / `tsconfigContent` field shape renamed to `linterConfigContent` / `typecheckConfigContent` and the cache filenames matching the language (`python-ruff.ruff.toml`, `go-golangci..golangci.yml`, …)"
-    - "Each preset has a `conventions` array of agent-facing bullets (≤ 5 each) modelled on the JS/TS presets: e.g. Python → \"Use `from __future__ import annotations`\", Go → \"Errors as values; wrap with `%w`\", Rust → \"Prefer `?` over `unwrap()` in library code\", etc."
-    - "Each preset has a `requiredLinterDeps` list naming the binaries the project must install; the existing `REQUIRED_ESLINT_DEPS` is renamed `REQUIRED_LINTER_DEPS` and gains the new entries"
-    - "`SUPPORTED_PRESET_IDS` now contains ≥ 22 entries (the original 13 + 9 new)"
+    - "**≥ 70 new `IRulePreset` entries** are added, one per language tag in `TPresetLanguage`. Each ships DATA only (the linter config + formatter config + typecheck config as text), with the `linterConfigContent` / `typecheckConfigContent` field shape. Cache filenames match the language family (e.g. `python-ruff.ruff.toml`, `rust-clippy.clippy.toml`, `zig-zigfmt.zigfmt`, `haskell-ormolu.fourmolu.yaml`, `scala-scalafmt..scalafmt.conf`, `bash-shellcheck.shcheckrc`, `sql-sqlfluff..sqlfluff`). The data is organised **by family** under `data/<family>.ts` (one file per family, not one file per language) so SREs reviewing the presets can see them grouped."
+    - "**≥ 70 new `IDogmaAdapter` entries** are added, one per language tag. Each lives in `dogmas/<lang>.dogma.ts`. The full table maps `TPresetLanguage → IDogmaAdapter` per the `## architecture → Dogma registry` table; sample: `rust.dogma.ts → { ownership: 'borrow-checker', errorModel: 'result', nullSafety: 'option', naming: 'snake_case', async: 'none', visibility: 'pub/fn', immutability: 'let-mut', testing: 'table-driven', packageManager: 'cargo', bullets: ['Prefer `?` over `unwrap()`', ...] }`."
+    - "Each preset has a `conventions` array of **3-7 agent-facing bullets** modelled on the JS/TS presets but reflecting each language's dogmas (NOT ESLint-style rules): Rust → \"Prefer `?` over `unwrap()` in library code\"; Haskell → \"Purity by default; mark effects in the type signature\"; Elixir → \"Pattern-match first; `{:ok, _}` over `true`\"; Bash → \"Always quote variables; `set -euo pipefail` at the top\"; SQL → \"CTEs over nested subqueries; explicit JOINs over implicit\"; Nix → \"Purity by default; refer to `nixpkgs` by version\"; etc."
+    - "Each preset has a `requiredLinterDeps` list naming the binaries the project must install. The existing `REQUIRED_ESLINT_DEPS` is renamed `REQUIRED_LINTER_DEPS` and gains the new entries."
+    - "`SUPPORTED_PRESET_IDS` now contains **≥ 80 entries** (the original 13 + ≥ 70 new)."
+    - "Each `IDogmaAdapter` is registered in `dogmas/index.ts`; `DEFAULT_DOGMA_ADAPTERS` is a `ReadonlyMap<TPresetLanguage, IDogmaAdapter>` exposed through `DogmaRegistry`."
+    - "At least one `bullets` array per language is **specific** to that language (not generic ESLint-style advice). The spec verifies this for a sample of 12 languages."
+    - "The `f00052` follow-up proposal is responsible for curating the bullets to expert quality for the top 12; here we ship *enough* to demonstrate the architecture and prove the contract."
 
 ### S4 — Per-preset check/fix/typecheck commands
 
@@ -670,7 +781,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "`missingEslintFinding` is renamed to `missingLinterDeps` and the `code` literal in the finding becomes `'missing-linter-deps'`; the old `missing-eslint-deps` code remains as a backward-compat alias in the outputSchema for one release (Conventional Commits, no semver bump)"
     - "Typecheck commands are emitted only for languages whose typecheck field is set: `pyright` / `mypy --strict` (Python), `go vet ./...` (Go), `cargo check --workspace` (Rust), `sorbet tc` (Ruby), `javac -d /tmp/check <sources>` (Java), `kotlinc -d /tmp/check <sources>` (Kotlin), `swiftc -typecheck` (Swift), `dotnet build -p:TreatWarningsAsErrors=true` (C#), `mix dialyzer` (Elixir)"
 
-### S5 — Online-preset registry: PyPI / crates.io / proxy.golang.org / RubyGems / Maven / NuGet / Hex
+### S5 — Online-preset registry: every package index
 
 - **Status**: pending
 - **Files**: plugins/rules/src/lib/frameworks/online-preset.ts
@@ -678,12 +789,37 @@ happens in S7 (outputSchema) with one release of back-compat.
 - **Gate**: test
 - depends_on: [S3]
 - acceptance:
-    - "`ONLINE_PACKAGE_BY_PRESET` widens with one entry per new preset: e.g. `python-ruff: 'ruff'`, `rust-clippy: 'clippy'` (or the actual upstream linter package), …"
-    - "A `REGISTRY_URL` map (or equivalent) names the upstream registry per package: `npm → https://registry.npmjs.org/{pkg}/latest`, `pypi → https://pypi.org/pypi/{pkg}/json`, `crates → https://crates.io/api/v1/crates/{pkg}`, `goproxy → https://proxy.golang.org/{pkg}/@latest`, `rubygems → https://rubygems.org/api/v1/gems/{pkg}.json`, `maven → https://search.maven.org/solrsearch/select?q=g:%22{group}%22+AND+a:%22{artifact}%22&rows=1&wt=json`, `nuget → https://api.nuget.org/v3-flatcontainer/{pkg}/index.json`, `hex → https://repo.hex.pm/tarballs/{pkg}-{version}.tar` (HEAD)"
+    - "`ONLINE_PACKAGE_BY_PRESET` widens with **one entry per new preset** (≥ 70 entries). Examples: `python-ruff: 'ruff'`, `rust-clippy: 'clippy'`, `haskell-ormolu: 'ormolu'`, `scala-scalafmt: 'scalafmt'`, `bash-shellcheck: 'shellcheck'`, `sql-sqlfluff: 'sqlfluff'`, `solidity-forge: 'forge'`, `hcl-tflint: 'tflint'`, `nix-nixfmt: 'nixfmt-rfc-style'`, `protobuf-buf: 'bufbuild/buf'`, …"
+    - "A `REGISTRY_URL` map names the upstream registry per package. The full list (≥ 30 registries):"
+        - `npm → https://registry.npmjs.org/{pkg}/latest`
+        - `pypi → https://pypi.org/pypi/{pkg}/json`
+        - `crates → https://crates.io/api/v1/crates/{pkg}`
+        - `goproxy → https://proxy.golang.org/{pkg}/@latest`
+        - `rubygems → https://rubygems.org/api/v1/gems/{pkg}.json`
+        - `maven → https://search.maven.org/solrsearch/select?q=g%3A%22{group}%22+AND+a%3A%22{artifact}%22&rows=1&wt=json`
+        - `gradle → https://plugins.gradle.org/m2/{path}`
+        - `nuget → https://api.nuget.org/v3-flatcontainer/{pkg}/index.json`
+        - `hex → https://repo.hex.pm/tarballs/{pkg}-{version}.tar` (HEAD)
+        - `clojars → https://clojars.org/api/artifacts/{pkg}`
+        - `cpan → https://fastapi.metacpan.org/v1/release/{pkg}`
+        - `luarocks → https://luarocks.org/api/1/{pkg}`
+        - `hackage → https://hackage.haskell.org/package/{pkg}/{pkg}.cabal`
+        - `opam → https://opam.ocaml.org/packages/{pkg}/{pkg}.opam`
+        - `elm-pkg → https://package.elm-lang.org/packages/{author}/{pkg}/releases.json`
+        - `julia-registry → https://pkg.julialang.org/api/v1/{pkg}`
+        - `r-cran → https://crandb.r-pkg.org/{pkg}`
+        - `r-github → https://raw.githubusercontent.com/{owner}/{pkg}/main/DESCRIPTION`
+        - `psgallery → https://www.powershellgallery.com/api/v2/FindPackagesById()?id='{pkg}'`
+        - `terraform-registry → https://registry.terraform.io/v1/providers/{namespace}/{type}/versions`
+        - `nix-channels → https://channels.nix.gsc.io/{branch}` (rev lookup)
+        - `buf-registry → https://buf.build/{owner}/{pkg}/releases`
+        - `homebrew → https://formulae.brew.sh/api/formula/{pkg}.json`
+        - `chocolatey → https://community.chocolatey.org/api/v2/Packages?filter=Id%20eq%20'{pkg}'`
+        - `winget → https://winget.run/api/v2/packages?query={pkg}`
     - "`fetchOnlinePresetInfo` dispatches by registry, normalises the version field, and preserves the same `{ ok: true, package, version, homepage? } | { ok: false, package, reason }` contract — never throws, never blocks, 5s timeout per request"
-    - "Tests stub each registry with the existing `IOnlineFetcher` mock pattern; 9 new fixtures (one per language) prove the contract end-to-end"
+    - "Tests stub each registry with the existing `IOnlineFetcher` mock pattern; **≥ 20 new fixtures** (one per major registry) prove the contract end-to-end"
 
-### S6 — Rebalance linter vs typecheck in `rules-tools`
+### S6 — Rebalance linter vs typecheck + dogmas in `rules-tools`
 
 - **Status**: pending
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
@@ -692,10 +828,12 @@ happens in S7 (outputSchema) with one release of back-compat.
 - depends_on: [S3, S4]
 - acceptance:
     - "`get_rules` and `check_rules` no longer assume the typecheck target is a `tsconfig.json`; the `typecheck` field on `IAreaRules` is a list of `*.{toml,mod,cabal,csproj,swift}` style config paths (Rust's `Cargo.toml` *is* its typecheck config) — the path is whatever the linter ecosystem uses, surfaced verbatim"
-    - "`check_rules` returns `typecheckCommand: undefined` for languages where the typecheck is implicit (e.g. pure-Python with no `basedpyright` / `mypy` config; Go with only `go vet`; Swift with `swiftc -typecheck` folded into `swift build`)"
+    - "`check_rules` returns `typecheckCommand: undefined` for languages where the typecheck is implicit (e.g. pure-Python with no `basedpyright` / `mypy` config; Go with only `go vet`; Swift with `swiftc -typecheck` folded into `swift build`) — and **never fabricates a typecheck command** when one does not exist (SQL, JSON, YAML, HTML, CSS, Markdown, etc.)"
     - "Existing JS/TS/PHP tests stay green (no regression); new tests assert the per-language command strings"
+    - "`get_rules` joins the `DogmaRegistry` into the response: `dogmas: Record<area, IDogmaAdapter>`. An agent that calls `get_rules` for a Rust area now sees the borrow-checker, Result/Option, snake_case, cargo, table-driven conventions **alongside** the linter command — so the agent learns *how to write Rust*, not just *what to run on it*"
+    - "`check_rules` returns `missingLinterDeps` keyed by linter binary name (not by package.json entry) so the project's install command matches the language's package manager: e.g. `pip install ruff basedpyright` for Python, `cargo install cargo-clippy` for Rust, `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest` for Go, `brew install ormolu` for Haskell, `apt install shellcheck shfmt` for Bash, `npm install -g @buf/buf` for Protobuf, `cargo install --locked --git https://github.com/foundry-rs/foundry` for Solidity"
 
-### S7 — Language-aware `get_rules` outputSchema
+### S7 — Language-aware `get_rules` outputSchema (+ dogmas)
 
 - **Status**: pending
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
@@ -704,11 +842,13 @@ happens in S7 (outputSchema) with one release of back-compat.
 - **Gate**: test
 - depends_on: [S6]
 - acceptance:
-    - "`get_rules` outputSchema renames `eslintConfigs` → `linterConfigs` and `typecheckConfigs` stays; the structured payload matches"
-    - "`check_rules` outputSchema gains a per-check `linter: 'eslint' | 'pint' | 'ruff' | …` discriminator so a downstream model can render the right help text per language"
+    - "`get_rules` outputSchema **gains** a new top-level `dogmas: Record<area, IDogmaAdapter>` field. Every agent that consumes `get_rules` now sees per-area language dogmas (ownership/error/null/naming/async/visibility/immutability/testing/packageManager + bullets) alongside the existing `areas` and `conventions`. The schema is **additive** — pre-existing fields stay byte-identical, so any consumer that ignored `dogmas` keeps working."
+    - "`get_rules` outputSchema renames `eslintConfigs` → `linterConfigs` and `typecheckConfigs` stays; the structured payload matches."
+    - "`check_rules` outputSchema gains a per-check `linter: 'eslint' | 'pint' | 'ruff' | …` discriminator and a per-check `installHint: string` field with the per-language install command (`pip install ruff`, `cargo install clippy`, `brew install shellcheck`, `npm install -g @buf/buf`, etc.)."
     - "The regenerated `plugins/rules/src/generated/tool-outputs.ts` matches the new shape (`bun run types:generate` exits 0)"
-    - "Existing l00008 s4 `get_rules` golden-shape spec still passes (the field rename is internal; the *shape* is unchanged)"
-    - "New specs: one golden outputSchema test per new language family (9 in total), each verifying the structured payload's `linter` discriminator + `linterConfigs` + `typecheckCommand` triple"
+    - "Existing l00008 s4 `get_rules` golden-shape spec still passes (the new `dogmas` field is additive; the pre-existing shape is unchanged)"
+    - "New specs: **one golden outputSchema test per language family** (≥ 20 fixtures: jvm, dotnet, c-family, rust-flavour, functional, beam, lisp, scripting, mobile, data-stats, shell, docs, data-config, web-dsl, schema, smart-contracts, notebooks, build, misc). Each fixture asserts the structured payload's `linter` discriminator + `linterConfigs` + `typecheckCommand` triple **and** the `dogmas[area]` block has the expected ownership/error/naming fields for that language."
+    - "The `dogmas` field is documented in `plugins/rules/README.md` with a worked example for each of the 12 most-used languages"
 
 ### S8 — Docs and skills
 
@@ -721,26 +861,28 @@ happens in S7 (outputSchema) with one release of back-compat.
 - **Gate**: lint
 - depends_on: [S3]
 - acceptance:
-    - "`plugins/rules/README.md` updates the "Supported presets" list to enumerate the 9 new language families with one-line descriptions each; adds a "Polyglot workspaces" subsection with the detection-priority table (pyproject > package.json, go.mod > package.json, …)"
-    - "`mcp-vertex-plugin-authoring` skill adds a "Adding a new language preset" subsection: required files to touch (types.ts, presets.ts, detect-framework.ts, online-preset.ts, the per-language cache filename), the `IRulePreset` shape, the DATA-only constraint (no plugin imports the linter package), and a worked example for a notional `zig-ziglint` preset"
-    - "`audit-playbook` skill adds a "Multi-language rules audit" dimension: does the manifest correctly detect each area's language? does each preset ship a `conventions` array? is each preset's `requiredLinterDeps` non-empty (except for the no-deps case like Laravel's `[]`)?"
-    - "`applying-rules` knowledge body mentions the linter by family (`ruff` / `clippy` / `swiftlint` / …) and the mode guidance, not by ESLint specifically"
+    - "`plugins/rules/README.md` updates the **"Supported languages"** section to enumerate **all 70+ languages organised by family** (JS/TS, JVM, .NET, C-family, Rust-flavour, Go, Functional, BEAM, Lisp, Scripting, Mobile, Shell, Data/stats, Docs, Data/config, Web DSL, Schema, Smart contracts, Notebooks, Build, Misc) with one-line descriptions and the canonical linter/formatter for each. Adds a **"Dogmas"** section explaining that `get_rules.dogmas[area]` carries ownership/error/null/naming/async/visibility/immutability/testing/packageManager + idiomatic bullets, with a worked example per top-12 language. Adds a **"Polyglot workspaces"** subsection with the detection-priority table (pyproject > package.json, go.mod > package.json, Cargo.toml > package.json, …)"
+    - "`mcp-vertex-plugin-authoring` skill adds a **"Adding a new language + dogma"** subsection: required files to touch (`contracts/dogma-adapter.interface.ts`, `dogmas/<lang>.dogma.ts`, `languages/<lang>.adapter.ts`, `languages/base/<family>-base.provider.ts`, `presets/data/<family>.ts`, `online-preset.ts` registry entry). The DATA-only constraint (no plugin imports the linter package). The IDogmaAdapter shape. A worked example for a notional `zig-zigfmt` preset + `zig.dogma.ts` adapter"
+    - "`audit-playbook` skill adds a **"Multi-language rules audit"** dimension: does the manifest correctly detect each area's language? does each preset ship a `conventions` array? is each preset's `requiredLinterDeps` non-empty (except for the no-deps case like Laravel's `[]`)? does each `IDogmaAdapter` ship a `bullets` array of ≥ 3 items? does the per-language `installHint` match the actual install command?"
+    - "`applying-rules` knowledge body mentions the linter **and dogma** per family (`ruff` / `clippy` / `swiftlint` / `ormolu` / `credo` / …) and the mode guidance, not ESLint specifically"
     - "`bun run lint:proposals` and `bun run lint:tools` exit 0"
 
-### S9 — Tests: per-language detect/manifest/tool coverage
+### S9 — Tests: per-language detect/manifest/tool/dogma coverage
 
 - **Status**: pending
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
 - **Files**: plugins/rules/tests/src/lib/frameworks/manifest.spec.ts
 - **Files**: plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
 - **Files**: plugins/rules/tests/src/lib/online-preset.spec.ts
+- **Files**: plugins/rules/tests/src/lib/dogmas/dogma-registry.spec.ts
 - **Gate**: test
 - depends_on: [S1, S2, S3, S4, S5, S6, S7]
 - acceptance:
-    - "9 new detection tests (one per language)"
-    - "9 new manifest golden tests (one per language, pinning the per-area shape with the new `linterConfigs` field name and the `linter` discriminator)"
-    - "9 new `get_rules` / `check_rules` outputSchema tests"
-    - "9 new `online-preset` tests with stubbed fetchers (one per language registry)"
+    - "**≥ 70 new detection tests** (one per language): each `*.adapter.ts` resolves correctly when its marker file is present and returns `undefined` when it's absent. Coverage: pyproject (Python), go.mod (Go), Cargo.toml (Rust), Gemfile (Ruby), pom.xml + build.gradle (Java/Kotlin/Groovy), *.sbt (Scala), project.clj / deps.edn (Clojure), *.csproj (C#), *.fsproj (F#), Cargo.toml + .carbon (Carbon), build.zig (Zig), *.nim (Nim), shard.yml (Crystal), Package.swift (Swift), pubspec.yaml (Dart), *.cabal / stack.yaml (Haskell), dune-project (OCaml), elm.json (Elm), *.purs (PureScript), mix.exs (Elixir), rebar.config (Erlang), gleam.toml (Gleam), *.clj* (ClojureScript), *.scm (Scheme), info.rkt (Racket), cpanfile (Perl), *.rockspec (Lua), Project.toml (Julia), DESCRIPTION (R), *.m (MATLAB/Octave), *.sas (SAS), *.sh / *.bash / *.zsh (Shell), *.ps1 (PowerShell), *.nu (Nushell), *.fish (Fish), *.md (Markdown), *.adoc (AsciiDoc), *.rst (reStructuredText), *.tex (LaTeX), *.typ (Typst), *.sql (SQL), *.toml (TOML), *.yaml/*.yml (YAML), *.json (JSON), *.json5 (JSON5), *.tf / *.hcl (HCL/Terraform), flake.nix / default.nix (Nix), *.dhall (Dhall), *.cue (CUE), *.kdl (KDL), *.html/*.htm (HTML), *.css/*.scss/*.sass/*.less (CSS), *.vue (Vue SFC), *.svelte (Svelte SFC), *.astro (Astro), *.mjml (MJML), *.pug/*.jade (Pug), *.proto (Protobuf), *.graphql/*.gql (GraphQL), openapi.{yaml,json} (OpenAPI), *.avsc (Avro), *.thrift (Thrift), *.sol (Solidity), *.move (Move), *.cairo (Cairo), *.vy (Vyper), *.ipynb (Jupyter), *.rmd (R Markdown), *.qmd (Quarto), CMakeLists.txt (CMake), Makefile (Make), BUILD / *.bzl (Bazel), justfile (just), *.ninja (Ninja), *.vim (Vimscript), *.ron (RON)"
+    - "**≥ 70 new manifest golden tests** (one per language, pinning the per-area shape with the new `linterConfigs` field name and the `linter` discriminator)"
+    - "**≥ 20 new `get_rules` / `check_rules` outputSchema tests** (one per language family)"
+    - "**≥ 20 new `online-preset` tests** with stubbed fetchers (one per registry)"
+    - "**≥ 35 new `DogmaRegistry` tests** (one per language): each `*.dogma.ts` returns the expected `ownership/error/null/naming/async/visibility/immutability/testing/packageManager` triple + a non-empty `bullets` array. The bullets are language-specific (Rust mentions `?`/`unwrap`, Python mentions `from __future__`, Haskell mentions purity, Bash mentions `set -euo pipefail`, SQL mentions CTEs, Nix mentions `nixpkgs` — generic ESLint-style advice fails the spec)"
     - "All pre-existing rules-plugin tests still pass (no regression on l00008 s2/s4 specs)"
 
 ### S10 — E2E: synthetic polyglot workspace
@@ -751,26 +893,47 @@ happens in S7 (outputSchema) with one release of back-compat.
 - **Gate**: test
 - depends_on: [S9]
 - acceptance:
-    - "A fixture workspace at `plugins/rules/tests/fixtures/polyglot/` contains one area per language family (a `py-thing/pyproject.toml`, a `go-thing/go.mod`, a `rs-thing/Cargo.toml`, a `rb-thing/Gemfile`, a `java-thing/pom.xml`, a `kt-thing/build.gradle.kts`, a `swift-thing/Package.swift`, a `cs-thing/Foo.csproj`, an `ex-thing/mix.exs`, **plus** a `web/` area with a `package.json` for the Next.js case)"
-    - "An e2e spec builds the manifest, calls `get_rules` and `check_rules` against the polyglot fixture via the real MCP harness (the same pattern `tools/scripts/verify/plugin-tool-verify.script.ts` uses), and asserts each area resolves to its expected preset, the per-area `linter` discriminator is correct, the per-area `linterConfigs` non-empty, and the per-area `typecheckCommand` is defined where applicable"
+    - "A fixture workspace at `plugins/rules/tests/fixtures/polyglot/` contains **one area per language family** (~20 areas: `py-thing/pyproject.toml`, `go-thing/go.mod`, `rs-thing/Cargo.toml`, `rb-thing/Gemfile`, `java-thing/pom.xml`, `kt-thing/build.gradle.kts`, `scala-thing/build.sbt`, `clojure-thing/deps.edn`, `cs-thing/Foo.csproj`, `fs-thing/Foo.fsproj`, `zig-thing/build.zig`, `swift-thing/Package.swift`, `dart-thing/pubspec.yaml`, `hs-thing/stack.yaml`, `ex-thing/mix.exs`, `bash-thing/foo.sh`, `sql-thing/schema.sql`, `hcl-thing/main.tf`, `sol-thing/Contract.sol`, **plus** a `web/` area with a `package.json` for the Next.js case, **plus** a `py-thing-with-bash/` area that has both `pyproject.toml` and `foo.sh` to exercise the priority tie-breaker)"
+    - "An e2e spec builds the manifest, calls `get_rules` and `check_rules` against the polyglot fixture via the real MCP harness (the same pattern `tools/scripts/verify/plugin-tool-verify.script.ts` uses), and asserts each area resolves to its expected preset, the per-area `linter` discriminator is correct, the per-area `linterConfigs` non-empty, the per-area `typecheckCommand` is defined where applicable, **and** `dogmas[area]` returns the right ownership/error/naming triple for each language"
     - "Spec exits 0; no real network calls; no real linter binaries are required (the spec validates the *commands* the tool would emit, not the lint results)"
+
+### S11 — Policy resolver + dogma-priority skill
+
+- **Status**: pending
+- **Files**: plugins/rules/src/lib/tools/policy-resolution.contract.ts (NEW)
+- **Files**: plugins/rules/src/lib/tools/dogma-policy.provider.ts (NEW)
+- **Files**: plugins/rules/src/lib/tools/policy-resolver.ts (NEW)
+- **Files**: plugins/rules/src/lib/tools/rules-tools.ts (refactored to use the resolver)
+- **Files**: skills/mog-rules-dogma-priority/SKILL.md (NEW)
+- **Files**: plugins/rules/README.md (priority-resolution subsection added)
+- **Files**: plugins/rules/tests/src/lib/tools/policy-resolver.spec.ts (NEW)
+- **Gate**: test
+- depends_on: [S6, S7, S9]
+- acceptance:
+    - "`policy-resolution.contract.ts` exports `IPolicyResolver` (interface) and `IPolicyResolution` (the `{ fromProject?, fromDogma?, fromDefault, effective, rationale }` tuple). The contract is **the only place** the priority order `project > dogma > default` is encoded (SRP at the tool level)."
+    - "`dogma-policy.provider.ts` implements `IDogmaPolicyProvider` (interface). The default implementation renders `IDogmaAdapter.bullets` as a string suitable for system-prompt interpolation (e.g. `\"Rust idiom: Prefer \`?\` over \`unwrap()\`; ownership is the borrow-checker; naming is snake_case; testing is table-driven.\"`). A future slice can swap in a `ToolUseDogmaPolicyProvider` that emits a structured tool-use hint instead of a string — without touching the tools."
+    - "`policy-resolver.ts` exports `buildPolicyResolver(deps)` (DIP factory). All three tools (`get_rules`, `check_rules`, `apply_rules`) receive the resolver via the existing `IRulesToolOptions` constructor; no tool does its own `if (projectConfigExists) { … } else if (dogma) { … } else { … }` ladder. The hardcoded `eslintCommand` / `lintCheckCommand` / `lintFixCommand` branches in `rules-tools.ts:108-127` are replaced by `policyResolver.resolveCommand(area)`."
+    - "`check_rules` response gains an `evidence` field: `{ fromProject, fromDogma, fromDefault, effective, rationale }` — the agent renders this to the user so the priority decision is *transparent*, not implicit."
+    - "`apply_rules` step text uses `rationale` directly: `\"Run \${effective} — \${rationale}\"` so the mode-aware plan explains **why** each command was chosen, not just what it is."
+    - "`skills/mog-rules-dogma-priority/SKILL.md` exists. It is the agent-facing reference for the priority order, with a worked example per top-12 language. It is loaded automatically by the `applying-rules` prompt so the agent sees the priority rules **before** writing the first line."
+    - "`policy-resolver.spec.ts` covers the matrix: (project yes, dogma yes, default yes) → effective is project; (project no, dogma yes, default yes) → effective is dogma; (project no, dogma no, default yes) → effective is default; (project yes, dogma no, default yes) → effective is project; (project no, dogma yes, default no — rare, e.g. an Elixir area with no project config and no fallback) → effective is dogma with a `\"no fallback\"` rationale. 12 test cases total."
+    - "Existing tests (l00008 s2/s4, S9 detection/manifest/dogma, S10 e2e) still pass with no edits — the resolver is additive at the tool response level (the new `evidence` field) and the existing `command` / `fixCommand` / `typecheckCommand` fields stay byte-identical for back-compat."
+    - "`bun run validate` exits 0; `bun run test` reports ≥ 12 new specs in `policy-resolver.spec.ts`."
 
 ## acceptance
 
 `bun run validate` is the global gate. The pre-existing l00008 specs (rules-plugin
 durable writes, outputSchema hardening) must remain green across every slice; the
-new S9 + S10 specs grow the rules-plugin test count by ~36. No `package.json`
+new S9 + S10 specs grow the rules-plugin test count by **≥ 200** (70 detect + 70 manifest + 70 dogma + 20 tool + 20 online-preset, plus the e2e fixture). No `package.json`
 field is renamed (the per-language additions are additive). The pre-existing
 `get_rules` / `check_rules` / `apply_rules` tool IDs are unchanged; only the
 field *names* inside the structured payload change, and only in S7.
 
-After S10 lands, the plugin is ready for a follow-up slice set that:
-- adds a per-language `docs/` page in `apps/web` (one per family) — owner
-  depends on the docs team
-- adds a `plugins/rules/<lang>` split if/when the JS/TS surface and any
-  non-JS/TS surface diverge enough to warrant separate packages
-- adds Haskell / Scala / Zig / Dart-Flutter / Lua / R / Julia presets
-  (f00052+ proposals)
+After S10 lands, the plugin is ready for the **f00052** follow-up: curating
+the language-specific bullets for the top 12 languages to expert quality
+(by humans who actually write Rust/Haskell/Elixir daily), adding the per-language
+`docs/` page in `apps/web`, and splitting into `plugins/rules/<lang>` packages
+if/when any language surface diverges enough to warrant it.
 
 ## Risks
 
@@ -793,6 +956,26 @@ After S10 lands, the plugin is ready for a follow-up slice set that:
    `verify` harness reads `outputSchema` but only the field shape, not the
    field *name*). External hosts that depended on the name are caught by the
    backward-compat alias for one release.
+5. **Dogma drift.** A `*.dogma.ts` file is a statement about a language's
+   idioms; languages evolve (Rust 2024 edition, Go generics, Zig 0.13).
+   The plugin treats dogmas as **boot-time constants** — a Rust dogma
+   that says "no async" would silently mislead agents in 2026. Mitigation:
+   (a) S3 anchors every dogma to a specific language-standard version
+   (`Rust 2024`, `Python 3.12`, `Go 1.22`, …) and surfaces it as
+   `dogmas[area].version`; (b) the `audit` plugin gains a check
+   (`/audit/f00051-s3-dogma-freshness`) that compares the dogma versions
+   against the latest language release and emits a "stale dogma" finding.
+6. **Bullet authorship.** The 70+ language-specific bullet arrays cannot
+   all be curated by one author without mistakes. The `f00052` follow-up
+   explicitly recruits language-expert reviewers; this proposal only
+   commits to *enough* bullets to demonstrate the architecture (≥ 3 per
+   language, with the spec test rejecting generic ESLint-style advice).
+7. **Dogma fragmentation.** Some communities disagree on dogma
+   (tabs-vs-spaces, brace style, `val` vs `const`). The plugin ships
+   **one** opinionated dogma per language; projects that want a
+   different one override via `mcp-vertex.config.json#plugins.rules.dogmaOverrides`
+   (a future extension). For this proposal the default is the most
+   mainstream community choice.
 
 ## notes
 
@@ -826,3 +1009,53 @@ A pure-Python user that loads `mcp-vertex --plugins=rules` against a
 FastAPI repo today gets `vanilla-js` for the root area (no signal of
 Python); after this proposal they get `python-ruff` with the right
 commands. That is the user-visible change.
+
+### Why ESLint-style rules are not enough — the dogma axis
+
+The user's follow-up observation, captured in the proposal brief:
+*"I understand that ESLint, or the way of programming well, or the
+dogmas, or the way of doing things in each language, is different."*
+This is exactly the second axis of this proposal. ESLint is **a JS
+linter that encodes JS-style opinions**: prefer `const`, no `var`,
+strict equality, no unused vars. Those opinions are *correct* for
+JS, and the JS/TS presets in this plugin keep them. But they are
+**not transferable** to other languages:
+
+- In Rust, the equivalent opinions are: prefer `?` over `unwrap()`,
+  use `#[must_use]` on fallible builders, mark public APIs `pub`,
+  never `clone()` to satisfy the borrow checker (refactor instead).
+- In Haskell: purity by default, `newtype` over `type`, `Maybe` over
+  `null`, effects in the type signature.
+- In Elixir: pattern-match first, `{:ok, _}` over `true`, processes
+  over threads, `with` for chained `case`s.
+- In Bash: `set -euo pipefail` at the top, always quote variables,
+  prefer `[[ ]]` over `[ ]`, arrays over strings.
+- In SQL: CTEs over nested subqueries, explicit JOINs, parameterised
+  queries, name constraints.
+- In Nix: purity by default, refer to `nixpkgs` by commit, never
+  `with` at the top of a file.
+- In C: free what you malloc, check every `malloc` return, no
+  undefined behaviour, `const` everywhere it applies.
+
+ESLint does not know any of this. A single `get_rules` call that
+returned `{ linter: 'eslint', command: 'eslint .' }` for a Rust area
+would be **technically wrong**: there is no `eslint` to run, and even
+if you ran Prettier on Rust files it would be meaningless. The agent
+that wrote Rust following "ESLint rules" would write **JS-style Rust**
+— `let mut`, `unwrap()`, `panic!` on errors, no `#[derive(Debug)]`.
+
+That is why this proposal introduces `IDogmaAdapter` as a **first-class
+seam**: each language ships its *own* opinionated set of idiomatic
+do/don't bullets, exposed via `get_rules.dogmas[area]`. The agent
+reads them *before* writing the first line of that area's language.
+The plugin stops pretending every language is JS with a different
+linter and starts treating each language's idioms as a first-class
+artefact.
+
+This is also why S3 organises the data **by family** under
+`presets/data/<family>.ts` and `dogmas/<lang>.dogma.ts` — so a Rust
+expert reviewing the Rust dogmas sees them grouped with Go and Zig
+(rust-flavoured systems languages), not scattered across 70 unrelated
+files. The OCP hinge + the family grouping + the per-language dogma
+adapter are the three architectural decisions that make "70 languages
+without exploding the codebase" tractable.
