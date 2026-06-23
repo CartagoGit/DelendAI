@@ -56,18 +56,26 @@ describe('diffCapabilities', () => {
 		);
 	});
 
-	it('detects mismatched tools (different head, related surface)', () => {
+	it('classifies a head-alias as present (not mismatched)', () => {
 		const bp = blue({});
-		// Existing has `acme_test_runner` — covers a related surface for
-		// the desired `run_test` but is not an exact match.
+		// Existing has `acme_test_runner`; the blueprint derives
+		// `run_test` from `scripts.test`. They share a "test" head alias,
+		// so the diff lands it in `present` (not missing, not mismatched).
 		const diff = diffCapabilities(bp, ['acme_test_runner'], {
 			namespacePrefix: 'acme',
 		});
-		const mismatch = diff.mismatched.find(
-			(m) => m.tool.name === 'run_test',
-		);
-		expect(mismatch).toBeDefined();
-		expect(mismatch?.reason).toMatch(/review/);
+		expect(
+			diff.present.find((p) => p.tool.name === 'run_test'),
+		).toBeDefined();
+		expect(
+			diff.missing.find((m) => m.tool.name === 'run_test'),
+		).toBeUndefined();
+		expect(
+			diff.mismatched.find((m) => m.tool.name === 'run_test'),
+		).toBeUndefined();
+		// The related tool is consumed by the head-alias match — it does
+		// not leak into `extra` either.
+		expect(diff.extra).not.toContain('test_runner');
 	});
 
 	it('lists extra tools the blueprint does not need', () => {

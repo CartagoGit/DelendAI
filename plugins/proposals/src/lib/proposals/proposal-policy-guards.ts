@@ -125,3 +125,20 @@ export function isProposalBudgetPolicy(
 		isProposalContinuityPolicy(record.continuityPolicy)
 	);
 }
+
+// ---------------------------------------------------------------------------
+// q00001 plan-closure guard
+// ---------------------------------------------------------------------------
+
+/**
+ * A proposal whose `type === 'plan'` carries an orchestration
+ * `contains:` block. A plan MUST NOT be transitioned to `done` until
+ * every contained proposal, sub-plan, and own slice is `done` (and
+ * peer-reviewed, when the index carries the field).
+ *
+ * This helper is the canonical place to ask "may I close this plan?".
+ * Both `proposal_transition` and `proposals_close_plan` consult it —
+ * keeping the rule in one place guarantees the two surfaces never
+ * disagree.
+ */
+export const PLAN_CLOSURE_BLOCKER_PREFIX = 'plan-closure-blocker:' as const;

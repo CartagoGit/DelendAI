@@ -391,3 +391,118 @@ export const buildInMemoryResolver = (
 		},
 	};
 };
+// ---------------------------------------------------------------------------
+// Disk-backed resolver (used by proposal_transition and proposals_close_plan).
+//
+// Reads child state from `docs/proposals/index.json` and slice state from
+// the plan's own `## Slices` block on disk. Peer-review is intentionally
+// NOT read from the index yet (it is not a live field) — the resolver
+// defaults it to `true` to avoid a migration cliff; proposal_transition
+// can layer a tighter check later by parsing the proposal-review log.
+// ---------------------------------------------------------------------------
+
+import { readFile } from 'node:fs/promises';
+
+export interface IDiskPlanResolverOptions {
+	/** Absolute path to `docs/proposals/index.json` (the registry). */
+	readonly indexPathAbs: string;
+	/** Absolute path to the `docs/proposals/` directory. */
+	readonly proposalsDirAbs: string;
+}
+
+interface IIndexEntry {
+	readonly id: string;
+	readonly file: string;
+	readonly type?: string;
+	readonly status?: string;
+	readonly peerReviewed?: boolean;
+}
+
+interface IIndexFile {
+	readonly proposals: readonly IIndexEntry[];
+}
+
+const readIndex = async (
+	indexPathAbs: string,
+): Promise<ReadonlyMap<string, IIndexEntry>> => {
+	let raw: string;
+	try {
+		raw = await readFile(indexPathAbs, 'utf8');
+	} catch {
+		return new Map();
+	}
+	let parsed: IIndexFile;
+	try {
+		parsed = JSON.parse(raw) as IIndexFile;
+	} catch {
+		return new Map();
+	}
+	const map = new Map<string, IIndexEntry>();
+	for (const entry of parsed.proposals ?? []) {
+		if (typeof entry.id === 'string') {
+			map.set(entry.id, entry);
+		}
+	}
+	return map;
+};
+
+export const buildDiskPlanChildrenResolver = async (
+	options: IDiskPlanResolverOptions,
+): Promise<
+	IPlanChildrenResolver & {
+		resolveSubPlanFrontmatter(ref: string): Promise<IProposalFrontmatter>;
+	}
+> => {
+	const index = await readIndex(options.indexPathAbs);
+	const findFileFor = (id: string): string | null => {
+		const e = index.get(id);
+		return e?.file ?? null;
+	};
+	return {
+		resolveOne: async (ref, kind) => {
+			if (kind === 'slice') {
+				// Own-slice status is read separately by the caller via
+				// `readOwnSliceStatusesFromDisk`. The resolver reports
+				// `unknown` here so the guard surfaces a `not-done`
+				// blocker the user can resolve by re-syncing.
+				return { ref, kind, status: 'unknown', peerReviewed: true };
+			}
+			const entry = index.get(ref);
+			return {
+				ref,
+				kind,
+				status: entry?.status ?? 'unknown',
+				peerReviewed: entry?.peerReviewed ?? true,
+			};
+		},
+		resolveSubPlanFrontmatter: async (ref) => {
+			const file = findFileFor(ref);
+			if (file === null) {
+				throw new Error(
+					`buildDiskPlanChildrenResolver: sub-plan ${ref} not in index`,
+				);
+			}
+			const abs = file.startsWith('/')
+				? file
+				: `${options.proposalsDirAbs}/${file}`;
+			const doc = await parseProposalDocument(abs);
+			return doc.frontmatter;
+		},
+	};
+};
+
+/**
+ * Read a plan's own `## Slices` statuses from disk. Returns an empty map
+ * when the file is missing or has no Slices section.
+ */
+export const readOwnSliceStatusesFromDisk = async (
+	planMarkdownPath: string,
+): Promise<ReadonlyMap<string, string>> => {
+	let raw: string;
+	try {
+		raw = await readFile(planMarkdownPath, 'utf8');
+	} catch {
+		return new Map();
+	}
+	return readPlanOwnSliceStatuses(raw);
+};

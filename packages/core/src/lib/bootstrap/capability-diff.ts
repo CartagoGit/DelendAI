@@ -58,11 +58,38 @@ const kebab = (value: string): string =>
 const normaliseId = (tool: IBlueprintArtifact): IToolName =>
 	`${kebab(tool.name).replace(/-/g, '_')}`;
 
+const COMMON_VERB_PREFIXES = new Set([
+	'run',
+	'get',
+	'fetch',
+	'list',
+	'show',
+	'check',
+	'render',
+	'do',
+	'make',
+	'create',
+	'delete',
+	'update',
+	'open',
+	'close',
+]);
+
 const aliasCandidates = (id: string): readonly string[] => {
 	const out: string[] = [id];
-	// Allow `run_test` to match `test_runner`/`tests` etc. — bare prefix.
-	const head = id.split('_')[0];
+	const parts = id.split('_');
+	const head = parts[0];
 	if (head !== undefined && head !== id) out.push(head);
+	// Strip a leading verb prefix so `run_test` aliases to `test` and
+	// matches an existing `test_runner` / `test_exec` etc.
+	if (
+		parts.length > 1 &&
+		head !== undefined &&
+		COMMON_VERB_PREFIXES.has(head)
+	) {
+		const rest = parts.slice(1).join('_');
+		if (rest !== id && !out.includes(rest)) out.push(rest);
+	}
 	return out;
 };
 
@@ -94,26 +121,25 @@ export const diffCapabilities = (
 	for (const tool of blueprint.tools) {
 		const id = normaliseId(tool);
 		const aliases = aliasCandidates(id);
-		if (aliases.some((alias) => existingIds.has(alias))) {
+		const matches = (alias: string): boolean =>
+			[...existingIds].some(
+				(existingId) =>
+					existingId === alias || existingId.startsWith(`${alias}_`),
+			);
+		const presentAlias = aliases.find(matches);
+		if (presentAlias !== undefined) {
 			present.push({
 				tool,
-				reason: `present as ${aliases
-					.map((a) => `${prefix ?? ''}_${a}`.replace(/^_/, ''))
-					.join(' or ')}`,
+				reason: `present as ${prefix ?? ''}_${presentAlias}`.replace(
+					/^_/,
+					'',
+				),
 			});
 			continue;
 		}
 		// No exact match. If a same-head alias exists, treat it as
 		// "mismatched" so the agent reviews rather than scaffolds.
-		const headHit = aliases.find(
-			(alias) =>
-				alias !== id &&
-				[...existingIds].some(
-					(existingId) =>
-						existingId === alias ||
-						existingId.startsWith(`${alias}_`),
-				),
-		);
+		const headHit = aliases.find((alias) => alias !== id && matches(alias));
 		if (headHit !== undefined) {
 			mismatched.push({
 				tool,

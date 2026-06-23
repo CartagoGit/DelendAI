@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { z } from 'zod';
 
-import { CONFIG_FILE_SCHEMA } from '../../../packages/core/src/lib/plugins/load-config-file';
+import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/public';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 

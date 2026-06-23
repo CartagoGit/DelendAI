@@ -9,6 +9,7 @@ title: Conventions unification — close the f00037 backlog and unify every othe
 shipped-in: []
 recan:
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: full, drift-count-delta: 1, slices-grew: [S7], slices-removed: [], rule-changes: 0, summary: "see ## Re-scan delta 2026-06-23" }
+    - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S1-defensive, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S1 closed without introducing new drift; see ## Re-scan delta 2026-06-23 §post-S1" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
