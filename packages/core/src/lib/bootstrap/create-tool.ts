@@ -6,7 +6,7 @@
 // blueprint pipeline — it dispatches to the right `scaffold*Files`
 // helper based on `args.kind`.
 
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import {

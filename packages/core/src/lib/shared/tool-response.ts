@@ -99,3 +99,73 @@ export const toolErrorWithLogHint = (
 		isError: true,
 	};
 };
+
+/** Default byte ceiling for a single tool response (256 KiB). Aligns with
+ * the `token-budgets` table — a compact JSON payload under this size
+ * stays under the measured per-tool budget for every preset we ship. */
+export const DEFAULT_MAX_RESPONSE_BYTES = 256 * 1024;
+
+export interface ITruncationResult<T> {
+	/** The (possibly truncated) value to surface to the agent. */
+	readonly value: T;
+	/** True when the value was truncated to fit under `maxBytes`. */
+	readonly truncated: boolean;
+	/** Original byte length of the serialised value. */
+	readonly originalBytes: number;
+	/** Byte length of the truncated value (`<= maxBytes`). */
+	readonly finalBytes: number;
+}
+
+/**
+ * Pure: serialize `value` to JSON and truncate with a `__truncated`
+ * marker when the result exceeds `maxBytes` UTF-8 bytes.
+ *
+ * Aligns with the project's token-budget discipline: a runaway tool
+ * output cannot blow past the per-tool budget the agent is sized for.
+ * The marker keeps the shape valid JSON so clients that ignore the
+ * marker still parse the response without crashing.
+ */
+export const truncateIfTooLarge = <T>(
+	value: T,
+	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
+): ITruncationResult<T> => {
+	const serialised = JSON.stringify(value);
+	const originalBytes = Buffer.byteLength(serialised, 'utf8');
+	if (originalBytes <= maxBytes) {
+		return {
+			value,
+			truncated: false,
+			originalBytes,
+			finalBytes: originalBytes,
+		};
+	}
+	// Reserve room for the truncation marker (97 chars + JSON overhead).
+	const marker = JSON.stringify({
+		__truncated: true,
+		originalBytes,
+		maxBytes,
+	});
+	const budget = Math.max(
+		0,
+		maxBytes - Buffer.byteLength(marker, 'utf8') - 1,
+	);
+	const head = serialised.slice(0, budget);
+	const truncatedValue = JSON.parse(`${head} ${marker}`) as T;
+	return {
+		value: truncatedValue,
+		truncated: true,
+		originalBytes,
+		finalBytes: Buffer.byteLength(JSON.stringify(truncatedValue), 'utf8'),
+	};
+};
+
+/** Convenience wrapper that combines `toolJson` with `truncateIfTooLarge`.
+ * Use when a tool's output is potentially unbounded (full file dumps,
+ * search hits, logs, etc.). */
+export const toolJsonBounded = (
+	value: unknown,
+	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
+): IToolTextResult => {
+	const { value: bounded } = truncateIfTooLarge(value, maxBytes);
+	return toolJson(bounded);
+};

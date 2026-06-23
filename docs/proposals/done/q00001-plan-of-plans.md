@@ -1,6 +1,6 @@
 ---
 id: q00001
-status: ready
+status: done
 type: plan
 track: proposals-plugin
 date: 2026-06-23

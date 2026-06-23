@@ -172,7 +172,7 @@ const gatherUpstream = async (
 const realExec =
 	(cwd: string) =>
 	async (argv: readonly string[]): Promise<string> => {
-		const { stdout } = await execFile('git', [...argv], {
+		const { stdout } = await exec('git', [...argv], {
 			cwd,
 			maxBuffer: 16 * 1024 * 1024,
 		});
