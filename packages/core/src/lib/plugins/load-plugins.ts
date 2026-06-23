@@ -59,7 +59,7 @@ export interface ILoadPluginsOptions {
  * uses Node's `require` for activation-time loads.
  */
 export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
-	(0, dynamicImport)(specifier);
+	dynamicImport(specifier);
 
 const dynamicImport = new Function(
 	'specifier',

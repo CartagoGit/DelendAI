@@ -22,7 +22,8 @@
       "mcp__mcp-vertex__proposals_delegate",
       "mcp__mcp-vertex__proposals_proposal_transition",
       "mcp__mcp-vertex__audit_audit_plan",
-      "mcp__mcp-vertex__audit_audit_consolidate"
+      "mcp__mcp-vertex__audit_audit_consolidate",
+      "mcp__mcp-vertex__proposals_get_proposal_workflow"
     ],
     "deny": []
   },

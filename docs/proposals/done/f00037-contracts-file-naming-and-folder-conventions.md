@@ -1,6 +1,6 @@
 ---
 id: f00037
-status: ready
+status: done
 type: proposal
 track: architecture+lint+repo-layout
 date: 2026-06-21
