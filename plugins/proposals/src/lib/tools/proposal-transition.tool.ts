@@ -37,12 +37,25 @@ import {
 } from '../proposals/frontmatter-parser';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import {
+	buildDiskPlanChildrenResolver,
+	evaluatePlanClosure,
+} from '../swarm/plan-closure';
+import { parseProposalDocument } from '../proposals/proposal-document';
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute path to `docs/proposals/` (the 7 status folders live here). */
 	readonly proposalsDirAbs: string;
 	readonly workspaceRoot: string;
+	/**
+	 * f00016 + q00001: absolute path to `docs/proposals/index.json`. Used by
+	 * the q00001 plan-closure guard to look up child proposal statuses
+	 * when the caller transitions a `type: plan` proposal to `done`.
+	 * Optional — when absent, the plan-closure guard is skipped (legacy
+	 * hosts that have not yet adopted the index file keep working).
+	 */
+	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
 }
@@ -122,6 +135,14 @@ const setFrontmatterStatus = (raw: string, newStatus: string): string => {
 	return replaced + raw.slice(block.length);
 };
 
+/** True when the proposal's frontmatter declares `type: plan` (q00001). */
+const looksLikePlan = (raw: string): boolean => {
+	const block = extractYamlBlock(raw);
+	if (block === null) return false;
+	const fm = parseFrontmatterBlock(block);
+	return fm.type === 'plan';
+};
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	options: IProposalTransitionToolOptions,
@@ -162,6 +183,52 @@ export const runProposalTransition = async (
 				? `From "${found.status}", the only legal targets are: ${[...legalTargets].join(', ')}.`
 				: `"${found.status}" is terminal — no transitions out.`,
 		);
+	}
+
+	// q00001 plan-closure guard: when closing a `type: plan` to `done`,
+	// every contained proposal, sub-plan, and own slice must already be
+	// `status: done` (and peer-reviewed, when the index carries the
+	// field). Fail loudly with a list of actionable blockers — the
+	// surface is the same one `proposals_close_plan` returns, so the
+	// user can call that tool for a friendlier wrapper.
+	if (
+		args.to === 'done' &&
+		looksLikePlan(found.raw) &&
+		options.indexPathAbs !== undefined
+	) {
+		const planDoc = await parseProposalDocument(found.absPath);
+		const resolver = await buildDiskPlanChildrenResolver({
+			indexPathAbs: options.indexPathAbs,
+			proposalsDirAbs: options.proposalsDirAbs,
+		});
+		const ownSlices = await readOwnSliceStatusesFromDisk(found.absPath);
+		const report = await evaluatePlanClosure({
+			planId: args.id,
+			frontmatter: planDoc.frontmatter,
+			resolver: {
+				...resolver,
+				resolveOne: async (ref, kind) => {
+					if (kind === 'slice' && ownSlices.has(ref)) {
+						return {
+							ref,
+							kind,
+							status: ownSlices.get(ref) ?? 'unknown',
+							peerReviewed: true,
+						};
+					}
+					return resolver.resolveOne(ref, kind);
+				},
+			},
+		});
+		if (!report.closable) {
+			const lines = report.reasons.map(
+				(r) => `  - [${r.kind}/${r.code}] ${r.message}`,
+			);
+			return toolError(
+				`plan ${args.id} is not closable: ${report.reasons.length} blocker(s)`,
+				`Resolve the blockers first, then call proposal_transition again.\n${lines.join('\n')}\n\nTip: use proposals_close_plan for a friendlier wrapper that runs this same guard.`,
+			);
+		}
 	}
 
 	const gitRunner =

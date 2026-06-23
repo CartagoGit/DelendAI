@@ -68,11 +68,11 @@ describe('body-content', () => {
 	});
 
 	it('project standards skill body lists real CI / agent configs', () => {
-		const a = analyse({});
 		// hand-craft a richer analysis via additional files
 		const a2 = analyzeProject(
 			reader({
 				'package.json': '{"name":"x"}',
+				'tsconfig.json': '{}',
 				'AGENTS.md': '# guide',
 				'CLAUDE.md': '# guide',
 				'.github/copilot-instructions.md': '# guide',
@@ -84,8 +84,7 @@ describe('body-content', () => {
 		expect(body).toContain('CLAUDE.md');
 		expect(body).toContain('copilot-instructions');
 		expect(body).toContain('gitlab-ci');
-		expect(body).toContain('TypeScript');
-		void a;
+		expect(body).toContain('`typescript`');
 	});
 
 	it('framework skill body is empty for projects without a framework', () => {

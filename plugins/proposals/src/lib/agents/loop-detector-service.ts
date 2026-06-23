@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, readdir, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -128,6 +129,14 @@ export class AgentLoopDetectorService {
 		const globalConfigPath = ctx.workspace.resolve(
 			'mcp-vertex.config.json',
 		);
+		// Boot-time one-shot (audit-H4): this constructor runs at most
+		// once per process, so the `readFileSync` here is the narrow
+		// exception documented in AGENTS.md rule 3 — NOT a hot-path
+		// sync read. The hot-path sync read (`isAgentStuck`) was
+		// replaced with a 50ms TTL cache populated by `getActiveAgent`
+		// (audit-H1). If you need to reload the config mid-run, fire
+		// a `proposals_set_loop_detector_options` tool; do NOT add
+		// another sync read to the constructor.
 		let globalConfig: IMcpVertexConfigFile = {};
 		if (existsSync(globalConfigPath)) {
 			try {
