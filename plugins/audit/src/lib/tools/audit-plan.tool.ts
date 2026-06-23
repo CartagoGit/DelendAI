@@ -4,7 +4,11 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { buildBrief, UNIVERSAL_SCOPES, type ILayerConfig } from '../brief';
+import {
+	buildBrief,
+	UNIVERSAL_SCOPES,
+	type ILayerConfig,
+} from '../services/audit-brief.service';
 
 import { z } from 'zod';
 

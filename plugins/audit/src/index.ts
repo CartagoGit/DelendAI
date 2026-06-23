@@ -1,10 +1,14 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { SCORE_DIMENSIONS, SCOPE_LABEL, UNIVERSAL_SCOPES } from './lib/brief';
-import type { ILayerConfig } from './lib/brief';
-import { buildConsolidateRegistration } from './lib/tools/consolidate-tool';
-import { buildPlanRegistration } from './lib/tools/plan-tool';
+import {
+	SCORE_DIMENSIONS,
+	SCOPE_LABEL,
+	UNIVERSAL_SCOPES,
+} from './lib/services/audit-brief.service';
+import type { ILayerConfig } from './lib/services/audit-brief.service';
+import { buildConsolidateRegistration } from './lib/tools/audit-consolidate.tool';
+import { buildPlanRegistration } from './lib/tools/audit-plan.tool';
 
 /**
  * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A).

@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
-} from '../src/lib/consolidate';
-import { parseAuditBody } from '../src/lib/parse-audit';
-import type { IAuditDocument } from '../src/lib/types';
+} from '../../../../src/lib/services/audit-consolidate.service';
+import { parseAuditBody } from '../../../../src/lib/services/parse-audit.service';
+import type { IAuditDocument } from '../../../../src/lib/contracts/interfaces/audit.interface';
 
 const AUDIT_SONNET = `# Auditoría — Sonnet
 

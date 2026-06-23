@@ -18,7 +18,7 @@ import type {
 	IAuditFinding,
 	IAuditScore,
 	IAuditSource,
-} from './types';
+} from '../contracts/interfaces/audit.interface';
 
 /** Normalised severity tokens the parser maps onto the canonical set. */
 const SEVERITY_PATTERNS: ReadonlyArray<{

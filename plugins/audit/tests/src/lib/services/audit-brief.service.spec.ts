@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildBrief } from '../src/lib/brief';
+import { buildBrief } from '../../../../src/lib/services/audit-brief.service';
 
 /**
  * The brief is the contract every model-side auditor reads before

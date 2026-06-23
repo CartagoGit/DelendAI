@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { searchWorkspace } from '@mcp-vertex/search/lib/engine';
-import { buildSearchToolRegistrations } from '@mcp-vertex/search/lib/tools';
+import { searchWorkspace } from '@mcp-vertex/search/lib/services/search-engine.service';
+import { buildSearchToolRegistrations } from '@mcp-vertex/search/lib/tools/search.tool';
 import plugin from '@mcp-vertex/search';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 

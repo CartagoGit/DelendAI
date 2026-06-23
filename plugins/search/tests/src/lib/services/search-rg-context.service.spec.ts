@@ -13,7 +13,7 @@ import { promisify } from 'node:util';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { searchWorkspace } from '@mcp-vertex/search/lib/engine';
+import { searchWorkspace } from '@mcp-vertex/search/lib/services/search-engine.service';
 
 const execFileAsync = promisify(execFile);
 

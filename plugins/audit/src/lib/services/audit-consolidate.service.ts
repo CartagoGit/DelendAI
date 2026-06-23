@@ -23,8 +23,8 @@ import type {
 	IAuditDocument,
 	IAuditFinding,
 	IConsolidation,
-} from './types';
-import { SEVERITY_ORDER } from './types';
+} from '../contracts/interfaces/audit.interface';
+import { SEVERITY_ORDER } from '../contracts/interfaces/audit.interface';
 
 const SEVERITY_RANK: Readonly<Record<AuditSeverity, number>> = (() => {
 	const out: Record<AuditSeverity, number> = {} as Record<

@@ -6,7 +6,7 @@ import {
 	SCOPE_LABEL,
 	UNIVERSAL_SCOPES,
 	buildBrief,
-} from '../src/lib/brief';
+} from '../../../../src/lib/services/audit-brief.service';
 
 describe('buildBrief', () => {
 	it('returns a non-empty markdown for every scope', () => {
