@@ -38,6 +38,9 @@ describe('VS Code extension smoke', () => {
 		const context: IExtensionContext = {
 			subscriptions,
 			globalState: {
+				get<T>(key: string): T | undefined {
+					return stored.get(key) as T | undefined;
+				},
 				async update(key, value) {
 					stored.set(key, value);
 				},
