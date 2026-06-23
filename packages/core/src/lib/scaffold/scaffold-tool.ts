@@ -13,6 +13,11 @@ import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-p
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { writeFileAtomic } from '../shared/atomic-write';
 import {
+	createFileSystemBatchWriter,
+	type IBatchAtomicWriter,
+	type IBatchOperation,
+} from '../shared/batch-atomic-writer';
+import {
 	scaffoldAgentFile,
 	scaffoldClientFiles,
 	scaffoldHostProject,
@@ -34,6 +39,14 @@ export interface IScaffoldToolOptions {
 	readonly projectPackageName: string;
 	readonly defaultModel?: string;
 	readonly keepLegacy?: boolean;
+	/**
+	 * r00003 S11 (CONC-2, DIP): the scaffold tool writes the generated
+	 * files through a batch atomic writer. Hosts can inject their own
+	 * implementation (e.g. an in-memory writer for tests, a noop writer
+	 * for dry-run-only hosts); the default is the filesystem-backed
+	 * `createFileSystemBatchWriter` keyed by `workspace.root`.
+	 */
+	readonly batchWriter?: IBatchAtomicWriter;
 }
 
 export const SCAFFOLD_INPUT_SCHEMA = z.object({
@@ -155,6 +168,15 @@ export const buildScaffoldReport = async (
 	options: IScaffoldToolOptions,
 	args: IScaffoldArgs,
 ): Promise<IScaffoldReport> => {
+	// r00003 S11: when the caller did not inject a batchWriter, fall
+	// back to the filesystem-backed default keyed by the workspace
+	// root. This keeps `buildScaffoldReport` callable from contexts
+	// that only constructed `IScaffoldToolOptions` (e.g. host tests
+	// or CLI smoke flows) without having to know about the writer.
+	const batchWriter: IBatchAtomicWriter =
+		options.batchWriter ??
+		createFileSystemBatchWriter(options.workspace.root);
+
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: options.projectName,
 		namespacePrefix: options.namespacePrefix,
@@ -237,6 +259,7 @@ export const buildScaffoldReport = async (
 	const skipped: string[] = [];
 	const moved: string[] = [];
 	const kept: string[] = [];
+	const toWrite: IBatchOperation[] = [];
 	if (!dryRun && errors.length === 0) {
 		for (const file of files) {
 			const absolute = options.workspace.resolve(file.path);
@@ -272,13 +295,23 @@ export const buildScaffoldReport = async (
 					continue;
 				}
 			}
-			try {
-				await writeFileAtomic(absolute, file.content);
-				written.push(file.path);
-			} catch (error) {
-				errors.push(
-					`${file.path}: ${error instanceof Error ? error.message : String(error)}`,
-				);
+			toWrite.push({ path: file.path, content: file.content });
+		}
+
+		// r00003 S11 (CONC-2, S + D): the actual writes go through the
+		// batch writer in one atomic step. The planning loop above is
+		// still per-file (because keepLegacy moves are themselves
+		// observable file ops that we record individually); only the
+		// new-content writes are batched. If the batch fails, every
+		// committed file is rolled back — no partial scaffold on disk.
+		if (toWrite.length > 0) {
+			const batchResult = await batchWriter.writeAll(toWrite);
+			if (batchResult.ok) {
+				written.push(...batchResult.committed);
+			} else {
+				for (const err of batchResult.errors) {
+					errors.push(`${err.path}: ${err.reason}`);
+				}
 			}
 		}
 	}
@@ -297,38 +330,50 @@ export const buildScaffoldReport = async (
 /** Registration for the host's `<prefix>_scaffold` tool. */
 export const buildScaffoldToolRegistration = (
 	options: IScaffoldToolOptions,
-): IToolRegistration => ({
-	id: 'scaffold',
-	effects: ['write'],
-	summary:
-		'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
-	tags: ['bootstrap'],
-	register: async (server) => {
-		server.registerTool(
-			`${options.namespacePrefix}_scaffold`,
-			{
-				outputSchema: SCAFFOLD_REPORT_SCHEMA,
-				description:
-					'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
-				inputSchema: SCAFFOLD_INPUT_SCHEMA,
-			},
-			async (args: IScaffoldArgs) => {
-				const report = await buildScaffoldReport(options, args);
-				return {
-					content: [
-						{
-							type: 'text' as const,
-							// Compact (H3): the response is agent-context tokens;
-							// structuredContent below carries the typed payload.
-							text: JSON.stringify(report),
-						},
-					],
-					structuredContent: report as unknown as Record<
-						string,
-						unknown
-					>,
-				};
-			},
-		);
-	},
-});
+): IToolRegistration => {
+	// Resolve the batch writer once, at registration time. Hosts that
+	// pass their own `batchWriter` win; otherwise we build the
+	// filesystem-backed default from the workspace root.
+	const batchWriter: IBatchAtomicWriter =
+		options.batchWriter ??
+		createFileSystemBatchWriter(options.workspace.root);
+
+	return {
+		id: 'scaffold',
+		effects: ['write'],
+		summary:
+			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
+		tags: ['bootstrap'],
+		register: async (server) => {
+			server.registerTool(
+				`${options.namespacePrefix}_scaffold`,
+				{
+					outputSchema: SCAFFOLD_REPORT_SCHEMA,
+					description:
+						'Generate host artefacts from mcp-vertex templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',
+					inputSchema: SCAFFOLD_INPUT_SCHEMA,
+				},
+				async (args: IScaffoldArgs) => {
+					const report = await buildScaffoldReport(
+						{ ...options, batchWriter },
+						args,
+					);
+					return {
+						content: [
+							{
+								type: 'text' as const,
+								// Compact (H3): the response is agent-context tokens;
+								// structuredContent below carries the typed payload.
+								text: JSON.stringify(report),
+							},
+						],
+						structuredContent: report as unknown as Record<
+							string,
+							unknown
+						>,
+					};
+				},
+			);
+		},
+	};
+};

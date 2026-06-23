@@ -19,7 +19,7 @@ export {
 	gitBlame,
 	gitShow,
 	gitWorktreeList,
-} from './services/git';
+} from '../lib/services/git';
 export type {
 	IGitRunner,
 	IGitRunResult,
@@ -32,7 +32,7 @@ export type {
 	IGitShowDetail,
 	IGitShowResult,
 	IGitWorktreeEntry,
-} from './services/git';
+} from '../lib/services/git';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';
 export {
