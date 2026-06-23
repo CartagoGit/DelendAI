@@ -1,27 +1,27 @@
 export { default } from '../index';
-export { createLogStore } from '../lib/log-store';
+export { createLogStore } from './lib/services/log-store';
 export type {
 	ILogRangeFilter,
 	ILogStore,
 	ILogTailOptions,
-} from '../lib/log-store';
+} from './lib/services/log-store';
 export {
 	LOG_OUTCOMES,
 	normalizeEvent,
 	outcomeForKind,
 	serializeRedactedEvent,
-} from '../lib/normalize-event';
+} from './lib/services/normalize-event';
 export type {
 	ILogEvent,
 	LogEventKind,
 	LogOutcome,
-} from '../lib/normalize-event';
-export { correlateEvents } from '../lib/correlate';
-export type { ICorrelateOptions, ILogGap } from '../lib/correlate';
-export { redactTest } from '../lib/redact-test';
-export { subscribeToBus } from '../lib/subscribe';
+} from './lib/services/normalize-event';
+export { correlateEvents } from './lib/services/correlate';
+export type { ICorrelateOptions, ILogGap } from './lib/services/correlate';
+export { redactTest } from './lib/services/redact-test';
+export { subscribeToBus } from './lib/services/subscribe';
 export type {
 	ILogBusSubscription,
 	ILogEventBus,
 	LogBusEventKind,
-} from '../lib/subscribe';
+} from './lib/services/subscribe';

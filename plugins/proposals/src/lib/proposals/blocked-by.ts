@@ -50,19 +50,45 @@ import type { IProposalIndexEntry } from './index-reader';
  * `- status: done` line in the plan's `## Slices` section, not just
  * the index entry).
  */
+
+/**
+ * Dependency-injection surface for `blockedByFor` (DIP). Production
+ * callers leave both fields undefined and get the module-level
+ * defaults (`readTextOrNull` + `readProposalIndex`); tests pass
+ * deterministic stubs that return pre-canned markdown / index
+ * entries. Using a `Partial<>` keeps the call site ergonomic: the
+ * single production caller does not pass any argument at all.
+ */
+export interface IBlockedByReaders {
+	readonly readTextOrNull?: (path: string) => Promise<string | null>;
+	readonly readProposalIndex?: (
+		path: string,
+	) => Promise<readonly IProposalIndexEntry[]>;
+}
+
 export const blockedByFor = async (
 	entry: IProposalIndexEntry,
 	indexPathAbs: string,
+	/**
+	 * Dependency-injected filesystem readers (DIP). Defaults to the
+	 * module-level `readTextOrNull` + `readProposalIndex`. Tests pass
+	 * deterministic stubs so the projection can be exercised without
+	 * touching disk. The 1 production caller (`continue-proposal.tool.ts`)
+	 * leaves both parameters undefined and gets the default behaviour.
+	 */
+	readers: Partial<IBlockedByReaders> = {},
 ): Promise<readonly string[]> => {
+	const readText = readers.readTextOrNull ?? readTextOrNull;
+	const readIndex = readers.readProposalIndex ?? readProposalIndex;
 	const docPath = join(dirname(indexPathAbs), entry.file);
-	const markdown = await readTextOrNull(docPath);
+	const markdown = await readText(docPath);
 	if (markdown === null) return [];
 	const block = extractYamlBlock(markdown);
 	if (block === null) return [];
 	const fm = parseFrontmatterBlock(block);
 	if (fm.type !== 'plan') return [];
 
-	const entries = await readProposalIndex(indexPathAbs);
+	const entries = await readIndex(indexPathAbs);
 	const statusById = new Map(entries.map((e) => [e.id, e.status]));
 
 	const contains =

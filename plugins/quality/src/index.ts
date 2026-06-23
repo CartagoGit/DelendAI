@@ -4,9 +4,9 @@ import {
 } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { createCommandRunner } from './lib/runner';
-import { buildRunAllToolRegistration } from './lib/run-all';
-import { buildQualityToolRegistrations } from './lib/tools';
+import { createCommandRunner } from './lib/services/runner';
+import { buildRunAllToolRegistration } from './lib/services/run-all';
+import { buildQualityToolRegistrations } from './lib/tools/tools';
 
 /**
  * Quality-gate runner. Executes the project's validation commands

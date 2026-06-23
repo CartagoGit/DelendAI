@@ -1,9 +1,9 @@
 import { joinRel, definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { createLogStore } from './lib/log-store';
-import { normalizeEvent } from './lib/normalize-event';
-import { buildLogToolRegistrations } from './lib/tools';
+import { createLogStore } from './lib/services/log-store';
+import { normalizeEvent } from './lib/services/normalize-event';
+import { buildLogToolRegistrations } from './lib/tools/tools';
 
 export default definePlugin({
 	name: 'logs',

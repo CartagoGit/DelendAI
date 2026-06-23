@@ -25,8 +25,8 @@ export type {
 	ICommandPolicy,
 	IPolicyVerdict,
 } from '../lib/services/command-policy';
-export { buildQualityToolRegistrations } from '../lib/tools';
-export type { IQualityToolOptions } from '../lib/tools';
+export { buildQualityToolRegistrations } from './lib/tools/tools';
+export type { IQualityToolOptions } from './lib/tools/tools';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

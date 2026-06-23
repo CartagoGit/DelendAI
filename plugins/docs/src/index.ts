@@ -1,7 +1,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildDocsToolRegistrations } from './lib/tools';
-import type { IDocsOptions } from './lib/engine';
+import { buildDocsToolRegistrations } from './lib/tools/tools';
+import type { IDocsOptions } from './lib/services/engine';
 
 /**
  * Project documentation plugin. Catalogues and serves the repo's markdown

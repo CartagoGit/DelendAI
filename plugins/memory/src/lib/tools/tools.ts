@@ -18,7 +18,7 @@ import {
 	recall,
 	removeNote,
 	saveNote,
-} from './store';
+} from '../services/store';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.

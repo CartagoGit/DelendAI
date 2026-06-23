@@ -25,6 +25,8 @@ import {
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
+import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
+import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
@@ -42,26 +44,7 @@ export interface IMutateToolOptions {
 	readonly extraFolders?: readonly string[];
 }
 
-const readJsonOrNull = async <T>(path: string): Promise<T | null> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as T;
-	} catch {
-		return null;
-	}
-};
-
-const readTextOrNull = async (path: string): Promise<string | null> => {
-	try {
-		return await readFile(path, 'utf8');
-	} catch {
-		return null;
-	}
-};
-
-interface IIndexEntry {
-	readonly id: string;
-	readonly file: string;
-}
+interface IIndexEntry extends IProposalIndexEntry {}
 
 const locateProposalFile = async (
 	options: IMutateToolOptions,

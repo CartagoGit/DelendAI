@@ -8,7 +8,7 @@ import { toolJson } from '@mcp-vertex/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
-import type { IAutoWorkPersistMode } from './auto-work-persist';
+import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
