@@ -44,6 +44,11 @@ import {
 	type IReleasePlan,
 	type ReleaseTarget,
 } from './release-plan';
+import {
+	createConsoleLogger,
+	createQuietLogger,
+	type IReleaseLogger,
+} from './release-logger';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -139,30 +144,28 @@ export function parseFlags(argv: readonly string[]): ICliFlags {
 }
 
 /**
- * Audit-h2-fix: progress logger. When `--quiet`/`-q` is passed, banners
- * disappear so `bun run validate` and CI logs stay readable. Critical
- * errors still go to `console.error` regardless (see main()'s try/catch).
+ * Audit-h2-fix + Solid-OCP: every helper now depends on
+ * `IReleaseLogger`, not on a `quiet: boolean`. The decision of whether
+ * to suppress `info` (the `--quiet` flag) lives in the main entry
+ * point, which instantiates the right logger. Each helper just
+ * forwards to the interface.
  */
-const log = (quiet: boolean, ...args: readonly unknown[]): void => {
-	if (quiet) return;
-	console.log(...args);
-};
 
-function printPlan(plan: IReleasePlan, quiet: boolean): void {
-	log(quiet, `\nLockstep target version: ${plan.to}\n`);
+function printPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
+	logger.info(`\nLockstep target version: ${plan.to}\n`);
 	for (const e of plan.entries) {
 		const v = e.from === e.to ? e.to : `${e.from} → ${e.to}`;
 		const peer =
 			e.peerCoreFrom !== undefined && e.peerCoreFrom !== e.peerCoreTo
 				? `  (peer ${CORE_PEER}: ${e.peerCoreFrom} → ${e.peerCoreTo})`
 				: '';
-		log(quiet, `  ${e.name.padEnd(28)} ${v}${peer}`);
+		logger.info(`  ${e.name.padEnd(28)} ${v}${peer}`);
 	}
-	log(quiet, '');
+	logger.info('');
 }
 
 /** Rewrite version + core peerDependency in place, preserving tab indentation. */
-function applyPlan(plan: IReleasePlan, quiet: boolean): void {
+function applyPlan(plan: IReleasePlan, logger: IReleaseLogger): void {
 	for (const e of plan.entries) {
 		const pkg = readPkg(e.dir);
 		pkg.version = e.to;
@@ -174,9 +177,9 @@ function applyPlan(plan: IReleasePlan, quiet: boolean): void {
 		}
 		const out = `${JSON.stringify(pkg, null, '\t')}\n`;
 		writeFileSync(join(ROOT, e.dir, 'package.json'), out);
-		log(quiet, `  wrote ${e.dir}/package.json → ${e.to}`);
+		logger.info(`  wrote ${e.dir}/package.json → ${e.to}`);
 	}
-	log(quiet, '');
+	logger.info('');
 }
 
 function run(cmd: string, args: readonly string[], cwd: string): void {
@@ -186,10 +189,10 @@ function run(cmd: string, args: readonly string[], cwd: string): void {
 function publishAll(
 	tool: 'bun' | 'npm',
 	provenance: boolean,
-	quiet: boolean,
+	logger: IReleaseLogger,
 ): void {
 	if (provenance && tool === 'bun') {
-		console.warn(
+		logger.warn(
 			'--provenance has no effect with --tool=bun (bun publish does not ' +
 				'support provenance attestations); ignoring. Use --tool=npm.',
 		);
@@ -199,10 +202,10 @@ function publishAll(
 			? ['publish', '--provenance']
 			: ['publish'];
 	for (const dir of PUBLISH_ORDER) {
-		log(quiet, `\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
+		logger.info(`\n=== publishing ${dir} (${tool} ${args.join(' ')}) ===`);
 		run(tool, args, join(ROOT, dir));
 	}
-	log(quiet, '\nAll packages published.');
+	logger.info('\nAll packages published.');
 }
 
 function main(): void {
@@ -216,38 +219,45 @@ function main(): void {
 	};
 	const plan = computeReleasePlan(pkgs, target);
 
+	// Solid-DIP: the `--quiet` flag chooses WHICH logger implementation
+	// we inject. Helpers never need to know whether progress is
+	// suppressed; they just call `logger.info(...)` and trust the
+	// implementation. Tests can pass a `createRecordingLogger()` and
+	// assert on `log.calls` without monkey-patching console.
+	const logger: IReleaseLogger = flags.quiet
+		? createQuietLogger()
+		: createConsoleLogger();
+
 	const versionChange = flags.target !== undefined;
-	log(
-		flags.quiet,
+	logger.info(
 		versionChange
 			? `Release plan (${flags.write ? 'APPLY' : 'dry-run'}):`
 			: 'Current versions (no --bump/--set given):',
 	);
-	printPlan(plan, flags.quiet);
+	printPlan(plan, logger);
 
 	if (versionChange && flags.write) {
-		applyPlan(plan, flags.quiet);
+		applyPlan(plan, logger);
 	} else if (versionChange) {
-		log(
-			flags.quiet,
+		logger.info(
 			'Dry-run: pass --write to apply these changes to package.json.\n',
 		);
 	}
 
 	if (flags.publish) {
 		if (flags.validate) {
-			log(flags.quiet, 'Validating before publish (bun run validate)…\n');
+			logger.info('Validating before publish (bun run validate)…\n');
 			run('bun', ['run', 'validate'], ROOT);
 		}
 		// Compile every package to publishable `dist/` (Node-runnable .js +
 		// .d.ts) before publishing. Core builds first so plugins resolve its
 		// types. `files: ["dist"]` is what ends up on the registry.
-		log(flags.quiet, 'Building dist before publish (bun run build)…\n');
+		logger.info('Building dist before publish (bun run build)…\n');
 		run('bun', ['run', 'build'], ROOT);
-		publishAll(flags.tool, flags.provenance, flags.quiet);
+		publishAll(flags.tool, flags.provenance, logger);
 	} else {
-		log(flags.quiet, 'Pass --publish to publish in order:');
-		log(flags.quiet, `  ${PUBLISH_ORDER.join('\n  ')}\n`);
+		logger.info('Pass --publish to publish in order:');
+		logger.info(`  ${PUBLISH_ORDER.join('\n  ')}\n`);
 	}
 }
 
