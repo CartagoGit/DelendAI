@@ -16,7 +16,7 @@ import {
 	isConventionalCommitMessage,
 	runGitCommit,
 	runGitPush,
-} from '@mcp-vertex/git/lib/services/write-tools';
+} from '@mcp-vertex/git/lib/tools/write-tools';
 import { createGitRunner } from '@mcp-vertex/git/lib/services/git';
 import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
 

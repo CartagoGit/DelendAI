@@ -9,14 +9,14 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { redactSecrets } from '@mcp-vertex/memory/lib/redact';
+import { redactSecrets } from '@mcp-vertex/memory/lib/services/redact';
 import {
 	readStore,
 	recall,
 	saveNote,
 	writeStore,
 	type INote,
-} from '@mcp-vertex/memory/lib/store';
+} from '@mcp-vertex/memory/lib/services/store';
 
 // Secret fixtures are assembled from split parts so the SOURCE never holds a
 // contiguous, real-looking token (otherwise GitHub push-protection blocks the

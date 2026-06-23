@@ -16,7 +16,7 @@ import {
 	recall,
 	removeNote,
 	saveNote,
-} from '@mcp-vertex/memory/lib/store';
+} from '@mcp-vertex/memory/lib/services/store';
 import plugin from '@mcp-vertex/memory';
 import { buildMemoryToolRegistrations } from '@mcp-vertex/memory/lib/tools';
 import { CorruptFileError } from '@mcp-vertex/core/public';

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
 
-import type { ILogEvent } from '../src/lib/normalize-event';
-import { subscribeToBus } from '../src/lib/subscribe';
+import type { ILogEvent } from '../src/lib/services/normalize-event';
+import { subscribeToBus } from '../src/lib/services/subscribe';
 
 describe('subscribeToBus', () => {
 	it('normalizes bus events into log events and redacts payloads', async () => {

@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
-import { correlateEvents } from '../src/lib/correlate';
-import { createLogStore } from '../src/lib/log-store';
-import { normalizeEvent } from '../src/lib/normalize-event';
+import { correlateEvents } from '../src/lib/services/correlate';
+import { createLogStore } from '../src/lib/services/log-store';
+import { normalizeEvent } from '../src/lib/services/normalize-event';
 
 describe('correlateEvents', () => {
 	it('builds a task chain and detects long gaps', async () => {

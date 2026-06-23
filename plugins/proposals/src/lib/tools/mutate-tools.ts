@@ -28,6 +28,13 @@ import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
+	FIELD_CANONICAL_HEADING,
+	FIELD_HEADING_RE,
+	renderSectionBody,
+	replaceSection,
+} from '../proposals/section-editor';
+import type { IEditableField } from '../proposals/section-editor';
+import {
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
 } from '../swarm/proposal-slice-plan';
@@ -79,89 +86,10 @@ const resync = async (options: IMutateToolOptions): Promise<void> => {
 // proposals_edit — replace a top-level body section.
 // ---------------------------------------------------------------------------
 
-export type IEditableField =
-	| 'goal'
-	| 'why'
-	| 'nonGoals'
-	| 'acceptance'
-	| 'risk';
-
-/**
- * Maps each editable field to the markdown heading regex that locates its
- * section. `acceptance` matches both the plain `## Acceptance` heading
- * and the `## Acceptance (global)` variant used by multi-slice proposals
- * (see `docs/proposals/ready/f00020-skills-and-tools-coverage.md`).
- */
-const FIELD_HEADING_RE: Record<IEditableField, RegExp> = {
-	goal: /^## Goal\s*$/im,
-	why: /^## Why\s*$/im,
-	nonGoals: /^## Non-goals\s*$/im,
-	acceptance: /^## Acceptance(?:\s*\(.*\))?\s*$/im,
-	risk: /^## risks and mitigations\s*$/im,
-};
-
-const FIELD_CANONICAL_HEADING: Record<IEditableField, string> = {
-	goal: '## Goal',
-	why: '## Why',
-	nonGoals: '## Non-goals',
-	acceptance: '## Acceptance',
-	risk: '## risks and mitigations',
-};
-
-/** Render a field value (string or string[]) as the markdown body of a section. */
-const renderSectionBody = (value: string | readonly string[]): string =>
-	typeof value === 'string'
-		? value
-		: value.map((line) => `- ${line}`).join('\n');
-
-/**
- * Replace the body of `heading`'s section (everything between the
- * heading line and the next `## ` heading, or end of file) with
- * `newBody`. If the heading does not exist yet, appends a new section
- * (with `canonicalHeading`) right before `## Slices` when present,
- * otherwise at the end of the document.
- */
-const replaceSection = (
-	markdown: string,
-	headingRe: RegExp,
-	canonicalHeading: string,
-	newBody: string,
-): string => {
-	const lines = markdown.split('\n');
-	const headingIndex = lines.findIndex((line) => headingRe.test(line));
-	if (headingIndex === -1) {
-		// Section absent: insert a new one before `## Slices` if present,
-		// else append at the end. Keeps frontmatter + everything else intact.
-		const slicesIndex = lines.findIndex((line) =>
-			/^## Slices\s*$/.test(line),
-		);
-		const insertion = [canonicalHeading, '', newBody, ''];
-		if (slicesIndex === -1) {
-			return [...lines, '', ...insertion].join('\n');
-		}
-		return [
-			...lines.slice(0, slicesIndex),
-			...insertion,
-			...lines.slice(slicesIndex),
-		].join('\n');
-	}
-	// Find the next top-level heading after this one.
-	let endIndex = lines.length;
-	for (let i = headingIndex + 1; i < lines.length; i += 1) {
-		if (/^## /.test(lines[i] ?? '')) {
-			endIndex = i;
-			break;
-		}
-	}
-	return [
-		...lines.slice(0, headingIndex),
-		canonicalHeading,
-		'',
-		newBody,
-		'',
-		...lines.slice(endIndex),
-	].join('\n');
-};
+// Section semantics live in `proposals/section-editor.ts` (SOLID: SRP +
+// DRY). The maps and helpers used to be inlined here; they were extracted
+// so future section-aware tools (e.g. `proposals_remove_section`) can
+// reuse them without duplicating the regexes or the heading logic.
 
 export const buildProposalsEditRegistration = (
 	options: IMutateToolOptions,

@@ -23,6 +23,7 @@ import {
 } from '../contracts/constants/proposal-glossary.constant';
 import { buildCascadeSummary } from '../cascade/cascade-summary';
 import { buildDefaultCascadeChain } from '../cascade/cascade-chain';
+import type { TCascadeBoost } from '../cascade/cascade-priority';
 import { blockedByFor } from '../proposals/blocked-by';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {

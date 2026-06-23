@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
-import { createLogStore } from '../src/lib/log-store';
-import { normalizeEvent } from '../src/lib/normalize-event';
-import { redactTest } from '../src/lib/redact-test';
-import { buildLogToolRegistrations } from '../src/lib/tools';
+import { createLogStore } from '../src/lib/services/log-store';
+import { normalizeEvent } from '../src/lib/services/normalize-event';
+import { redactTest } from '../src/lib/services/redact-test';
+import { buildLogToolRegistrations } from '../src/lib/tools/tools';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 

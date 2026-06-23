@@ -15,3 +15,9 @@ export {
 	buildDefaultComposition,
 	type ICompositionRoot,
 } from './factory';
+export {
+	defaultPresetValidator,
+	composeValidators,
+	type IPresetValidator,
+	type IPresetFinding,
+} from './validator';
