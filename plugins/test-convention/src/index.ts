@@ -4,7 +4,7 @@ import {
 } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
-import { mergeConvention, type IConventionOverrides } from './convention';
+import { mergeConvention } from './convention';
 import { buildGetConvention } from './lib/tools/get-convention';
 import { buildSuggestSpec } from './lib/tools/suggest-spec';
 import { buildScanDrift } from './lib/tools/scan-drift';
@@ -51,7 +51,26 @@ export default definePlugin({
 		'Publica la convención canónica de tests del repo (extensión, layout, mock API, cobertura) y herramientas para sugerir ubicación de specs y auditar drift contra el árbol real.',
 	optionsSchema: OptionsSchema,
 	register(ctx) {
-		const convention = mergeConvention(ctx.options as IConventionOverrides);
+		// r00003 S9-residual (SOLID L + I): parse ctx.options through
+		// the schema declared above before forwarding downstream.
+		// The previous code bypassed the schema with an unsafe cast
+		// and silently accepted typos, unknown fields and wrong types.
+		// A misconfigured host now gets a structured error before
+		// register() returns.
+		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
+		if (!parsed.success) {
+			throw new Error(
+				`test-convention plugin rejected its options: ${parsed.error.message}`,
+			);
+		}
+		// The zod output is `T | undefined` for optional fields. The
+		// IConventionOverrides interface (used by mergeConvention)
+		// declares each field strictly optional without `| undefined`,
+		// so we strip the undefined entries before forwarding.
+		const opts = parsed.data;
+		const convention = mergeConvention(
+			opts as Parameters<typeof mergeConvention>[0],
+		);
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const runner: IRunnerInfo = detectRunner(reader);
 		return {
