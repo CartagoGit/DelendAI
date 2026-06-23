@@ -31,11 +31,29 @@ export interface ILoadPluginsOptions {
 	readonly specifiers: readonly string[];
 	/** Build the per-plugin context once the plugin's name is known. */
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
-	/** Injectable importer (default: dynamic `import`). For tests. */
-	readonly import?: (specifier: string) => Promise<unknown>;
+	/**
+	 * Injectable importer. **Required** — the core never calls
+	 * `import(variable)` itself, so that Vite/Rollup can statically
+	 * analyse the bundle that ships in browser hosts (the web app and
+	 * the VS Code extension) without an "unanalysable dynamic import"
+	 * warning. CLI callers pass `nodeDynamicImport` from this package;
+	 * tests pass a fake.
+	 */
+	readonly import: (specifier: string) => Promise<unknown>;
 	/** Per-step timeout (ms) for import and register. Default 15000. */
 	readonly timeoutMs?: number;
 }
+
+/**
+ * Node-side dynamic import, suitable for CLI/runtime hosts.
+ * Exported separately so it never lives inside the core's public
+ * bundle — browser hosts (web, VS Code) MUST provide their own
+ * loader instead. The web app's loader is a thin wrapper around the
+ * module-graph URL the dev server hands it; the VS Code extension
+ * uses Node's `require` for activation-time loads.
+ */
+export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
+	import(specifier);
 
 const withTimeout = async <T>(
 	promise: Promise<T>,
@@ -150,8 +168,7 @@ const formatMissingDependenciesError = (
 export const loadPlugins = async (
 	options: ILoadPluginsOptions,
 ): Promise<IPluginLoadResult> => {
-	const importer =
-		options.import ?? ((specifier: string) => import(specifier));
+	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
 	const loaded: ILoadedPlugin[] = [];
 	const errors: Array<{ specifier: string; message: string }> = [];
