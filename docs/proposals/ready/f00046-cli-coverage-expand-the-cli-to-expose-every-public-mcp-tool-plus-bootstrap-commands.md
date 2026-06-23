@@ -291,7 +291,7 @@ Bootstrap:
   - "`eval $(mcpv completion bash)` en una shell nueva autocompleta todos los comandos y sus flags."
 
 ### S11 — i18n parity + help rendering refactor + commands.spec.ts + README + CLI coverage gate
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/help.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts` (12 locales: `en`, `es`, `fr`, `de`, `it`, `pt`, `ja`, `ko`, `zh`, `ru`, `ar`, `hi`), `packages/cli/tests/commands.spec.ts`, `packages/cli/README.md`, `tools/scripts/lint/cli-i18n.script.ts`
 - **Gate**: `bun run lint:cli:i18n && bun run test packages/cli && bun run lint:proposals`
 - **Acceptance**:
