@@ -56,7 +56,8 @@
 
 	// Don't prompt before running terminal commands from chat.
 	"chat.tools.terminal.autoApprove": {
-		"*": true
+		"*": true,
+		"tee": true
 	},
 
 	// Don't prompt before running MCP server tools.
