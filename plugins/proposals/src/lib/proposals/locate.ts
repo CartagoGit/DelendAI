@@ -18,12 +18,17 @@
  * catalog) is a one-file edit.
  *
  * Pure (no I/O beyond the necessary reads). No state. Easy to unit-test.
+ *
+ * SOLID — Dependency Inversion. The three locators take an optional
+ * `IProposalFs` port (the fourth argument for the index/scan
+ * strategies, the third for the composite). Default wiring uses
+ * `DEFAULT_PROPOSAL_FS` (the real fs); tests inject a fake port.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
+import { DEFAULT_PROPOSAL_FS, type IProposalFs } from './locate-fs';
 
 // ---------------------------------------------------------------------------
 // Status folders a proposal may live in. Mirrors `proposal-glossary.constant.ts`.
@@ -85,13 +90,10 @@ interface IIndexFile {
 export const locateByIndex = async (
 	indexPathAbs: string,
 	proposalId: string,
+	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 ): Promise<ILocatedProposal | null> => {
-	let raw: string;
-	try {
-		raw = await readFile(indexPathAbs, 'utf8');
-	} catch {
-		return null;
-	}
+	const raw = await fs.read(indexPathAbs);
+	if (raw === null) return null;
 	let parsed: IIndexFile;
 	try {
 		parsed = JSON.parse(raw) as IIndexFile;
@@ -138,27 +140,19 @@ export const locateByIndex = async (
 export const locateByScan = async (
 	proposalsDirAbs: string,
 	proposalId: string,
+	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 ): Promise<ILocatedProposal | null> => {
 	for (const folder of PROPOSAL_STATUS_FOLDERS) {
 		// Every status has its own subdirectory, including `ready`. The
 		// `ready/` folder is NOT the proposals root — proposals live
 		// inside it, sibling to `in-progress/`, `done/`, etc.
 		const dir = `${proposalsDirAbs}/${folder}`;
-		let entries: string[];
-		try {
-			entries = await readdir(dir);
-		} catch {
-			continue;
-		}
+		const entries = await fs.list(dir);
 		for (const name of entries) {
 			if (!name.endsWith('.md')) continue;
 			const path = join(dir, name);
-			let raw: string;
-			try {
-				raw = await readFile(path, 'utf8');
-			} catch {
-				continue;
-			}
+			const raw = await fs.read(path);
+			if (raw === null) continue;
 			const block = extractYamlBlock(raw);
 			if (block === null) continue;
 			const fm = parseFrontmatterBlock(block);
@@ -201,14 +195,15 @@ export interface ILocateOptions {
 export const locateProposal = async (
 	proposalId: string,
 	options: ILocateOptions,
+	fs: IProposalFs = DEFAULT_PROPOSAL_FS,
 ): Promise<ILocatedProposal | null> => {
-	const fromIndex = await locateByIndex(options.indexPathAbs, proposalId);
+	const fromIndex = await locateByIndex(options.indexPathAbs, proposalId, fs);
 	if (fromIndex !== null) {
 		// Index hit — but we still need `type` + `status` for tools that
 		// branch on them (e.g. close-plan rejecting non-`plan` types).
 		// A second fast read here is cheaper than a scan.
-		try {
-			const raw = await readFile(fromIndex.absPath, 'utf8');
+		const raw = await fs.read(fromIndex.absPath);
+		if (raw !== null) {
 			const block = extractYamlBlock(raw);
 			if (block !== null) {
 				const fm = parseFrontmatterBlock(block);
@@ -218,10 +213,9 @@ export const locateProposal = async (
 					status: typeof fm.status === 'string' ? fm.status : '',
 				};
 			}
-		} catch {
-			// Fall through; the index entry alone is still useful.
 		}
+		// Fall through; the index entry alone is still useful.
 		return fromIndex;
 	}
-	return locateByScan(options.proposalsDirAbs, proposalId);
+	return locateByScan(options.proposalsDirAbs, proposalId, fs);
 };

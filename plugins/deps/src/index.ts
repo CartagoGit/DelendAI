@@ -1,7 +1,7 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildDepsToolRegistrations } from './lib/tools';
-import { buildDepsWriteToolRegistrations } from './lib/write-tools';
+import { buildDepsToolRegistrations } from './lib/tools/tools';
+import { buildDepsWriteToolRegistrations } from './lib/tools/write-tools';
 
 /**
  * Dependency inventory + offline health plugin. `deps_list` enumerates the

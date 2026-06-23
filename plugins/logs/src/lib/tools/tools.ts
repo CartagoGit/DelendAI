@@ -6,11 +6,11 @@ import {
 	type IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-import { correlateEvents } from './correlate';
-import type { ILogStore } from './log-store';
-import { LOG_OUTCOMES, type LogEventKind } from './normalize-event';
-import type { LogOutcome } from './normalize-event';
-import { redactTest } from './redact-test';
+import { correlateEvents } from '../services/correlate';
+import type { ILogStore } from '../services/log-store';
+import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
+import type { LogOutcome } from '../services/normalize-event';
+import { redactTest } from '../services/redact-test';
 
 const LogOutcomeSchema = z.enum(LOG_OUTCOMES);
 const LogEventSchema = z.object({

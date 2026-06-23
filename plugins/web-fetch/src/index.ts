@@ -1,6 +1,6 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { buildWebToolRegistrations } from './lib/tools';
+import { buildWebToolRegistrations } from './lib/tools/tools';
 
 /**
  * Opt-in web/fetch plugin. npm package `@mcp-vertex/web-fetch` (the bare

@@ -15,6 +15,7 @@ import { matchLanguage } from './language-rules';
 import { matchMonorepoTool } from './monorepo-rules';
 import { matchPackageManager } from './package-manager-rules';
 import { detectMcpEvidence } from './mcp-evidence-rules';
+import { matchTestRunner } from './test-runner-rules';
 
 /**
  * Read-only, injectable view of the target project. The default
@@ -124,14 +125,10 @@ const detectTestRunner = (
 	deps: Record<string, string>,
 	scripts: Record<string, string>,
 ): IProjectAnalysis['testRunner'] => {
-	if ('vitest' in deps) return 'vitest';
-	if ('jest' in deps) return 'jest';
-	const testScript = scripts.test ?? '';
-	if (/\bvitest\b/.test(testScript)) return 'vitest';
-	if (/\bjest\b/.test(testScript)) return 'jest';
-	if (/\bbun test\b/.test(testScript)) return 'bun';
-	if (/\bnode --test\b/.test(testScript)) return 'node';
-	return 'unknown';
+	// The test-runner rule table lives in `test-runner-rules.ts`;
+	// this function is a thin adapter. Adding a runner is a
+	// one-line table entry, not an edit to this function.
+	return matchTestRunner(deps, scripts);
 };
 
 /**

@@ -21,11 +21,18 @@ import {
 	DogmaRegistry,
 	PresetDetector,
 } from '@mcp-vertex/rules/lib/frameworks/registry';
+import { buildDefaultComposition } from '@mcp-vertex/rules/lib/frameworks/registry/factory';
+import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from '@mcp-vertex/rules/lib/tools/policy-resolver';
 import type {
 	ILanguageAdapter,
 	IRulePreset,
-	IDogmaAdapter,
 	ICommandSet,
+	ICommandSetProvider,
+	IPresetIdentity,
+	IPresetConfigs,
+	IPresetConventions,
+	IPresetCommands,
+	IPresetToolchain,
 } from '@mcp-vertex/rules/lib/frameworks/contracts';
 import { rustAdapter } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust.adapter';
 import { rustCommandSetProvider } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust-command.provider';
@@ -170,8 +177,113 @@ describe('SOLID refactor: compile + link', () => {
 		// A DogmaRegistry is independent of PresetRegistry: a
 		// future "ownership checker" tool can depend on
 		// DogmaRegistry without dragging in the linter presets.
-		const dogmas = new DogmaRegistry<IDogmaAdapter>([RUST_DOGMA]);
+		const dogmas = new DogmaRegistry([RUST_DOGMA]);
 		expect(dogmas.supportedLanguages).toEqual(['rs']);
 		expect(dogmas.resolve('rs')?.packageManager).toBe('cargo');
+	});
+
+	it('exposes a single composition root (DIP — buildDefaultComposition)', () => {
+		// The factory is the only place that knows the default
+		// wiring of presets + adapters + dogmas. A consumer
+		// (tool, test) calls it once and passes the registries
+		// around — no module-level singletons, no re-wiring.
+		const root = buildDefaultComposition();
+		expect(root.registry.supportedIds).toContain('rust-clippy');
+		expect(root.dogmas.supportedLanguages).toContain('rs');
+		expect(root.detector).toBeInstanceOf(PresetDetector);
+
+		// The factory also accepts overrides (test-only seam,
+		// never required in production). Confirms OCP: the
+		// wiring is data, not code.
+		const overridden = buildDefaultComposition({
+			adapters: [],
+			presets: [RUST_PRESET],
+		});
+		expect(overridden.registry.supportedIds).toEqual(['rust-clippy']);
+	});
+
+	it('encodes the project > dogma > default policy in one place (S11 stub)', () => {
+		// The resolver is the SINGLE place the priority order is
+		// encoded. The 3 tools will call this; they will not
+		// branch on `fromProject` themselves. Today only the
+		// *project* layer produces a non-default command set;
+		// the dogma layer is a stub (S3 / S11 will fill it in
+		// with the per-language bullets).
+		const fallback: ICommandSet = {
+			checkCommand: 'echo default',
+		};
+		const fromDogma: ICommandSet = { checkCommand: 'echo dogma' };
+		const fromProject: ICommandSet = { checkCommand: 'echo project' };
+
+		// project wins
+		const a = PROJECT_OVER_DOGMA_OVER_DEFAULT.resolveCommand({
+			areaDir: '',
+			fromProject,
+			fromDogma,
+			fromDefault: fallback,
+		});
+		expect(a.effective).toBe('project');
+		expect(a.command).toBe('echo project');
+		expect(a.rationale).toContain('project wins');
+
+		// dogma wins when no project
+		const b = PROJECT_OVER_DOGMA_OVER_DEFAULT.resolveCommand({
+			areaDir: '',
+			fromDogma,
+			fromDefault: fallback,
+		});
+		expect(b.effective).toBe('dogma');
+		expect(b.command).toBe('echo dogma');
+
+		// default wins when neither
+		const c = PROJECT_OVER_DOGMA_OVER_DEFAULT.resolveCommand({
+			areaDir: '',
+			fromDefault: fallback,
+		});
+		expect(c.effective).toBe('default');
+		expect(c.command).toBe('echo default');
+	});
+
+	it('guarantees IRulePreset Liskov (composition of 5 narrow contracts)', () => {
+		// RUST_PRESET is *typed* as IRulePreset = intersection
+		// of the 5 narrow segments. The `satisfies` checks
+		// each segment independently — if any field is missing
+		// from any segment, the test fails to compile.
+		const identity: IPresetIdentity = RUST_PRESET;
+		const configs: IPresetConfigs = RUST_PRESET;
+		const conventions: IPresetConventions = RUST_PRESET;
+		const commands: IPresetCommands = RUST_PRESET;
+		const toolchain: IPresetToolchain = RUST_PRESET;
+		expect(identity.id).toBe('rust-clippy');
+		expect(configs.linterConfigFile).toContain('clippy');
+		expect(conventions.conventions.length).toBeGreaterThan(0);
+		expect(toolchain.requiredLinterDeps).toEqual(['cargo']);
+		void commands; // optional fields; assert it satisfies the shape
+	});
+
+	it('keeps adapter commands + default provider substitutable (DIP)', () => {
+		// A test can swap the default provider entirely; the
+		// Rust adapter still uses its own (DIP — adapter wins
+		// when it brings a provider).
+		let calls = 0;
+		const stubDefault: ICommandSetProvider = {
+			buildCommandSet(): ICommandSet {
+				calls += 1;
+				return { checkCommand: 'stub-default' };
+			},
+		};
+		const reg = new PresetRegistry({
+			presets: [RUST_PRESET],
+			adapters: [rustAdapter],
+			defaultCommandSetProvider: stubDefault,
+		});
+		// Rust adapter brings its own; the default is NOT called.
+		const out = reg.commandsFor(
+			'',
+			{ linterConfigs: ['Cargo.toml'], typecheckConfigs: [] },
+			'rs',
+		);
+		expect(out.checkCommand).toContain('cargo clippy');
+		expect(calls).toBe(0);
 	});
 });

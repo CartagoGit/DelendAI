@@ -29,6 +29,7 @@ import type { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
+import { captureToolRegistration } from '../lib/test-mcp-server';
 import { formatResultsTable } from './format-results-table';
 import {
 	HAPPY_PATH_PROBE_IDS,
@@ -57,50 +58,15 @@ const PLUGIN_LIST = [
 
 /**
  * Capture the input/output zod schemas the tool registered with the
- * MCP SDK. We intercept `server.registerTool` so we never need a real
- * server; the schemas come back attached to the registration record.
+ * MCP SDK. Solid-DRY: the fake-server scaffold now lives in
+ * `lib/test-mcp-server.ts` and is shared with the type-generator and
+ * any future caller that wants to exercise a tool handler.
  *
  * Solid-ISP: returns the `IToolHandle` interface from verify-probes,
  * so the probe functions can be unit-tested with a fake handle.
  */
-const captureSchemas = async (
-	tool: IToolRegistration,
-): Promise<IToolHandle> => {
-	let inputSchema: z.ZodTypeAny | undefined;
-	let outputSchema: z.ZodTypeAny | undefined;
-	let invoke: ((args: unknown) => Promise<unknown>) | undefined;
-	const fakeServer = {
-		registerTool: (
-			_name: string,
-			schema: {
-				inputSchema?: z.ZodTypeAny;
-				outputSchema?: z.ZodTypeAny;
-			},
-			handler: (a: unknown) => Promise<unknown>,
-		) => {
-			inputSchema = schema.inputSchema;
-			outputSchema = schema.outputSchema;
-			invoke = handler;
-		},
-	};
-	await tool.register(fakeServer as never);
-	if (!invoke) throw new Error(`tool ${tool.id} did not register a handler`);
-	return {
-		tool,
-		inputSchema,
-		outputSchema,
-		invoke: async (a: unknown) => {
-			const out = await invoke(a);
-			const r = out as { content?: Array<{ text?: string }> };
-			const text = r?.content?.[0]?.text ?? '';
-			try {
-				return JSON.parse(text);
-			} catch {
-				return text;
-			}
-		},
-	};
-};
+const captureSchemas = (tool: IToolRegistration): Promise<IToolHandle> =>
+	captureToolRegistration(tool);
 
 interface IVerifyResult {
 	readonly plugin: string;
