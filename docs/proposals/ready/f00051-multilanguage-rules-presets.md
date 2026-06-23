@@ -608,7 +608,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 - global_gate: validate
 
-### S1 — Project-agnostic core: Linter×Language model
+### S1 — Project-agnostic core: Linter×Language×Dogma model
 
 - **Status**: pending
 - **Files**: plugins/rules/src/lib/frameworks/types.ts
@@ -618,9 +618,12 @@ happens in S7 (outputSchema) with one release of back-compat.
 - **Gate**: typecheck
 - depends_on: []
 - acceptance:
-    - "`IRulePreset.language` union widens to include `'py' | 'go' | 'rs' | 'rb' | 'java' | 'kt' | 'swift' | 'cs' | 'ex'`; `IRulePreset.linter` widens to include the corresponding linter ids; the pre-existing `'ts' | 'js' | 'php'` / `'eslint' | 'pint'` entries are preserved"
-    - "An `ILinterCommandSet` interface (or equivalent) carries `{ checkCommand, fixCommand?, typecheckCommand? }` per preset, *replacing* the hardcoded `eslintCommand` / `lintCheckCommand` / `lintFixCommand` branches in `rules-tools.ts`"
-    - "`IRulePreset` gains an optional `linter: 'eslint' | 'pint' | …` discriminator that already exists plus a `requiredToolchain?: readonly string[]` field naming the binaries a project must install (e.g. `['ruff', 'pyright']` for the python preset, `['cargo']` for the rust preset) — distinct from the existing `requiredEslintDeps`, which is renamed to `requiredLinterDeps`"
+    - "`TPresetLanguage` widens to ~70 language tags (full table in `## architecture → Language families in scope`); the pre-existing `'ts' | 'js' | 'php'` entries are preserved"
+    - "`TPresetLinter` widens to ~70 linter tags (one per language); pre-existing `'eslint' | 'pint'` preserved"
+    - "A new `IDogmaAdapter` interface (with its sub-interfaces `IOwnershipDogma`, `IErrorModelDogma`, `INullSafetyDogma`, `INamingStyleDogma`, `IAsyncModelDogma`, `IVisibilityDogma`, `IImmutabilityDogma`, `ITestingDogma`) lives in `contracts/dogma-adapter.interface.ts`. Each language family registers one dogma adapter in `dogmas/<lang>.dogma.ts`."
+    - "A `DogmaRegistry` class lives in `registry/dogma-registry.ts`. It is constructed with `readonly IDogmaAdapter[]` and exposes `resolve(language: TPresetLanguage): IDogmaAdapter | undefined`. **Separated from `PresetRegistry`** per Single Responsibility: dogmas are language-style facts, not linter artefacts."
+    - "An `ICommandSet` interface carries `{ checkCommand, fixCommand?, typecheckCommand? }` per preset, *replacing* the hardcoded `eslintCommand` / `lintCheckCommand` / `lintFixCommand` branches in `rules-tools.ts`"
+    - "`IRulePreset` gains an optional `requiredToolchain?: readonly string[]` field naming the binaries a project must install; the existing `requiredEslintDeps` is renamed to `requiredLinterDeps`"
     - "`IAreaRules` field `eslint` is renamed to `configs` (internal only; the public `get_rules` outputSchema renames in S7); `typecheck` stays as-is; the manifest fingerprint is recomputed against the new field name"
     - "`buildRulesManifest` still returns the same `IRulesManifest` shape (with `projects` / `mode` / `fingerprint` / `generatedAt`); only the per-area shape widens"
     - "`PRESET_BY_ID` / `SUPPORTED_PRESET_IDS` keep their lookup behaviour; new presets are added in S3, not S1"
