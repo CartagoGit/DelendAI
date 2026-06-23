@@ -102,8 +102,14 @@ export type {
 	IDoctorReport,
 } from '../lib/cli/assemble';
 export type {
+	IBootstrapPatternOverride,
+	IBootstrapPatternOverrides,
+	ILoopDetectorConfig,
 	IMcpVertexConfigFile,
+	IMcpVertexCorePathsConfig,
 	IMcpVertexPluginConfig,
+	IValidationMatrixConfig,
+	IValidationMatrixScope,
 } from '../lib/plugins/load-config-file';
 
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------
