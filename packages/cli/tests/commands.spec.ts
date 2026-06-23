@@ -33,6 +33,15 @@ const EXPECTED_COMMANDS = [
 	'memory forget',
 	'memory export',
 	'memory import',
+	'deps list',
+	'deps check',
+	'deps polyglot',
+	'rules get',
+	'rules check',
+	'rules apply',
+	'test-convention get',
+	'test-convention suggest',
+	'test-convention scan',
 ] as const;
 
 describe('CLI command registry', () => {

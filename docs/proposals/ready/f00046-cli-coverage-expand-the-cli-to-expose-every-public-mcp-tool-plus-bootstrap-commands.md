@@ -204,7 +204,7 @@ Bootstrap:
   - "i18n completa + tests + cobertura CLI pasa."
 
 ### S3 — deps + rules + test-convention (`mcpv deps/rules/test-convention <verb>`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/commands/groups/deps.ts`, `rules.ts`, `test-convention.ts`, tests, i18n
 - **Tools mapped**: `deps_deps_list`, `deps_deps_check`, `deps_deps_polyglot`, `rules_get_rules`, `rules_check_rules`, `rules_apply_rules`, `test-convention_get_convention`, `test-convention_suggest_spec_path`, `test-convention_scan_drift`
 - **Gate**: `bun run test packages/cli && bun run typecheck`
