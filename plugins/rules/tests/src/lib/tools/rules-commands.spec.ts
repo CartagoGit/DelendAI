@@ -46,7 +46,7 @@ type Handler = (a: unknown) => Promise<{
 }>;
 
 const invoke = async (
-	reg: { register: (server: unknown) => Promise<void> | void },
+	reg: { register: (server: never) => Promise<void> | void },
 	args: unknown,
 ): Promise<Record<string, unknown>> => {
 	let handler: Handler | undefined;
@@ -54,7 +54,7 @@ const invoke = async (
 		registerTool: (_name: string, _desc: unknown, fn: Handler): void => {
 			handler = fn;
 		},
-	});
+	} as never);
 	if (!handler) throw new Error('tool did not register a handler');
 	const result = await handler(args);
 	return result.structuredContent as Record<string, unknown>;
