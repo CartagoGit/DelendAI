@@ -79,11 +79,9 @@ the cleanup.
   - "`bun run validate` + `bun run build` + the web build stay green; no cache dir reappears at root."
 
 ### S2 — Move the relocatable tool configs into `configs/`
-- **Files**: configs/stylelint.config.mjs
-- **Files**: configs/typedoc.json
 - **Files**: package.json
 - **Gate**: type
-- **Status**: pending
+- **Status**: not-viable (decided against; documented in S3) — investigation showed only `typedoc.json` has zero editor dependency; every other root config (tsconfig*, biome.json, vitest.config.ts, stylelint.config.mjs, lefthook.yml, bunfig.toml) is auto-discovered at root by its tool AND the VS Code extension, so relocating into `configs/` breaks in-editor types/lint/format or the git hooks — violating the "everything works perfectly" invariant. A `configs/` folder holding one file (typedoc) splits config location for negative net value. DECISION: configs stay at root (the standard JS/TS monorepo layout); the win is removing caches + community-health docs from root (S1 + the CONTRIBUTING/SECURITY→.github move), and documenting the boundary (S3).
 - **Acceptance**:
   - "Configs whose tool supports an explicit config path AND whose editor integration is unaffected (stylelint via `--config`, typedoc via `--options`) move to `configs/`; package.json scripts pass the new path."
   - "Each moved config is verified: `bun run lint:scss` and `bun run docs:api` still pass pointing at `configs/`."
@@ -92,7 +90,7 @@ the cleanup.
 ### S3 — Document the root-layout policy
 - **Files**: AGENTS.md
 - **Gate**: type
-- **Status**: pending
+- **Status**: done — AGENTS.md gained a "Repo root layout" section codifying: caches under `.cache/<tool>/`, build outputs in `build/`, community-health docs in `.github/`, and that root configs stay (with the reason) + no `configs/` folder.
 - **Acceptance**:
   - "AGENTS.md gains a short 'Repo root layout' section: what lives at root (and the one-line reason each must), that all caches live under `.cache/<tool>/`, and that movable tool configs live in `configs/`."
   - "A reviewer can tell at a glance whether a new root file is justified."

@@ -153,6 +153,30 @@ keeps `git diff` out of the hot path.
   - If the audit has pending tasks or slices to be executed within its own scope, the proposal must be created under `docs/proposals/ready/` with `status: ready` and all slices set to `pending`.
   - If the audit has no internal tasks (e.g. all findings are deferred to separate proposals), the audit is created directly under `docs/proposals/done/audits/` with `status: done` and must reference the deferred proposals.
 
+## Repo root layout (keep it ordered — f00054)
+
+The root is intentionally minimal. Before adding a file to it, check this:
+
+- **Caches/build artefacts never clutter the root.** All caches live under
+  `.cache/<tool>/` (our own state is `.cache/mcp-vertex/`; vitest coverage is
+  `.cache/coverage/`). Build *outputs* go to `build/` (gitignored). Tool-owned
+  dirs we cannot relocate (Astro's `.astro/`, the `/verify` skill's
+  `.verify-tmp/`) stay gitignored — do not commit them, do not add more.
+- **Config files at root are only the ones their tool/editor auto-discovers
+  there** — and that is the standard, expected JS/TS monorepo layout, not
+  clutter: `package.json`, `bun.lock`, `bunfig.toml`, `.gitignore`,
+  `tsconfig*.json`, `biome.json`, `vitest.config.ts`/`vitest.shared.ts`,
+  `stylelint.config.mjs`, `lefthook.yml`, `mcp-vertex.config.json`. Moving any
+  of these breaks in-editor types/lint/format or the git hooks, so they stay.
+  Do **not** introduce a `configs/` folder for them — splitting config location
+  is non-standard and degrades the editor experience.
+- **Community-health docs live in `.github/`** (`CONTRIBUTING.md`,
+  `SECURITY.md`) — GitHub discovers them there. `README.md`, `LICENSE`,
+  `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` stay at root by convention/agent
+  discovery.
+- A new root file must justify itself against the above; otherwise it belongs
+  in `.github/`, `docs/`, `tools/`, or under `.cache/`.
+
 ## When you touch a plugin / add a tool
 
 - Add/keep its `outputSchema`; run `bun run types:generate` if the surface changed.
