@@ -839,7 +839,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S3 — Add the language presets + the dogma adapters
 
-- **Status**: pending
+- **Status**: S3 partial: priority families (Rust + Python, Go, Ruby, Java, Kotlin, Swift, C#, Elixir) done in the SOLID `dogmas/` + `presets/data/`; ~60 long-tail languages pending
 - **Files**: plugins/rules/src/lib/frameworks/presets/data/  (~18 new files, ~70 new IRulePreset entries)
 - **Files**: plugins/rules/src/lib/frameworks/dogmas/        (~35 new files, ~70 IDogmaAdapter entries)
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
