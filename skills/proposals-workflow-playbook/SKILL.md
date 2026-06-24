@@ -26,9 +26,15 @@ mcp-vertex_overview { compact: true }
 
 `auto_work` can plan persistence, but the default is still manual review:
 
+First, read `mcp-vertex.config.json#agentWorktree` (or the `--agent-worktree`
+CLI flag). If `false`/unset — do not call `proposals_agent_worktree`; commit
+to the active branch instead. The `agent_worktree` path below applies only
+when the host has enabled the capability.
+
 - `none`: default for CI, audits, and any shared worktree.
 - `commit`: local single-agent work after a focused diff review.
-- `commit-and-push`: only inside a disposable `agent_worktree`.
+- `commit-and-push`: only inside a disposable `agent_worktree` (requires the
+  host gate enabled).
 
 Do not infer a commit mode from enthusiasm. Pick the cheapest mode that
 preserves ownership.
@@ -42,7 +48,9 @@ owns the files, wait for `notification_await_lock` or the
 ## Never Do
 
 1. Do not loop on `agent_lock status`.
-2. Do not push from a shared checkout without `agent_worktree`.
+2. Do not push from a shared checkout without `agent_worktree` (when the host
+   has enabled it; if `agentWorktree` is `false`/unset, commit to the active
+   branch instead — the tool is disabled by host configuration).
 3. Do not edit `docs/proposals/index.json` by hand.
 4. Do not run `proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.

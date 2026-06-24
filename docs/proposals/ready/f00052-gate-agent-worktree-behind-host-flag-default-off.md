@@ -178,7 +178,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
   - `skills/proposals-workflow-playbook/SKILL.md`
   - `skills/mcp-vertex-multi-agent-coordination/SKILL.md`
   - `skills/concurrency-patterns/SKILL.md`
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:proposals`
 - **Acceptance**:
   - "Each skill adds a one-line decision node at the top of its

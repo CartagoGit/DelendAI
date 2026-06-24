@@ -30,11 +30,18 @@ Do not use `agent_lock` for:
 
 ### `agent_worktree`
 
+Read `mcp-vertex.config.json#agentWorktree` (or the `--agent-worktree` CLI
+flag) first. If `false`/unset — do not call `proposals_agent_worktree`;
+commit to the active branch instead. The tool stays registered but, when the
+host has not enabled the capability, returns a structured `ok: false` error
+telling you how to enable it. Everything below applies only when the host has
+turned the gate on.
+
 `proposals_agent_worktree` is **git isolation**. It gives an agent its own
 branch/worktree so commits and pushes do not trample another agent's
 checkout.
 
-Use `agent_worktree` when:
+Use `agent_worktree` (with the host gate enabled) when:
 - the slice will create commits or push
 - several agents are landing changes in parallel
 - `auto_work` persist mode is `commit-and-push`

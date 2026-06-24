@@ -50,6 +50,13 @@ agent B: agent_lock { action: 'claim', files: ['plugins/x/src/a.ts'] }
 
 ## `agent_worktree` — branch isolation, used together with `agent_lock`
 
+> **Host gate (f00052):** `agent_worktree` is a host-scoped *capability*,
+> off by default. Read `mcp-vertex.config.json#agentWorktree` (or the
+> `--agent-worktree` CLI flag). If `false`/unset — do not call
+> `proposals_agent_worktree`; commit to the active branch instead. This
+> section documents the *primitive*; the *when-to-use* decision lives in the
+> proposal playbooks and respects this flag.
+
 `agent_lock` stops two agents editing the *same file*; it does not stop a
 push from one agent clobbering another's in-flight branch. `agent_worktree`
 creates a disposable git worktree + branch per agent, so each agent's
