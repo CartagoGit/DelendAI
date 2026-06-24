@@ -940,7 +940,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S8 — Docs and skills
 
-- **Status**: pending
+- **Status**: partial — `plugins/rules/README.md` updated to document the shipped multi-language support (manifest-based detection across 11 manifests; JS/TS + PHP + the 9 language families from S3 with per-preset check/fix/typecheck commands; the dogma concept; open/closed extension). The full 70-language enumeration + the skill subsections await the long-tail. FINDING (next step for S1 convergence): the SOLID core (`frameworks/registry/`, `composition-root.ts`, `command-resolver.ts`, `policy-resolver.ts`, `dogmas/`, `manifest-via-composition.ts`) is built + unit-tested but is NOT wired into the live plugin — `tools/rules-tools.ts` still imports the legacy `frameworks/manifest.ts` (`buildRulesManifest`) + `frameworks/types.ts`. Converging means the live tools consume the composition root (`buildManifestViaComposition(reader, projectName, cacheRelDir, mode, root, overrides)` vs the legacy `(options)`), proven behavior-identical by the existing rules tests + a golden-output equivalence test. Sizeable + touches the critical rules plugin → do it with a subagent + a behavior-equivalence gate, not ad-hoc.
 - **Files**: plugins/rules/README.md
 - **Files**: skills/mcp-vertex-plugin-authoring/SKILL.md
 - **Files**: skills/audit-playbook/SKILL.md
