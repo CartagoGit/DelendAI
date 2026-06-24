@@ -5,9 +5,9 @@
 // prompts and skills — all templated so every agent DELEGATES to the
 // project's own MCP server (`<prefix>_overview` first — the universal
 // mcp-vertex entry point), never to a hardcoded host. Templates only name
-// mcp-vertex entry point), never to a hardcoded host. Templates only name
 // tools that exist: `overview` (always, via the mcp-vertex CLI) and the
-// generated scaffold tool.
+// generated scaffold tool; proposal-workflow tools are shown as
+// conditional on loading the `proposals` plugin.
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -33,7 +33,16 @@ export interface IScaffoldHostOptions {
 	readonly bootstrapToolIds?: readonly string[];
 }
 
-export type IScaffoldAgentSlot = 'orchestrator';
+const SUBAGENT_SLOTS = [
+	'proposal_guardian',
+	'implementation_runner',
+	'delivery_verifier',
+	'technical_investigator',
+] as const;
+
+export type IScaffoldAgentSlot =
+	| 'orchestrator'
+	| (typeof SUBAGENT_SLOTS)[number];
 
 const kebab = (value: string): string =>
 	value
@@ -227,10 +236,11 @@ This file is only the Copilot adapter; the agent contract lives in \`mcp-project
 ## Compact lane
 
 1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-project-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. Keep the main thread as the coordinator. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
-5. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis: ${isRoot ? '' : 'escalate to the root so '}the orchestrator can call ${bootstrapTools}. The first tool inspects; the second returns an exhaustive blueprint (tools + prompts + skills + agents + tests); the third materialises the files. The orchestrator (or a delegated runner) writes them.
+4. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis: ${isRoot ? '' : 'escalate to the root so '}the orchestrator can call ${bootstrapTools}. The first tool inspects; the second returns an exhaustive blueprint (tools + prompts + skills + agents + tests); the third materialises the files. The orchestrator (or a delegated runner) writes them.
 `,
 	};
 };
@@ -248,6 +258,8 @@ export const scaffoldInstructionsFile = (
 The MCP server \`mcp-project-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
+- The multi-agent proposal workflow (\`${prefix}_auto_work\`, \`${prefix}_continue_proposal\`, \`${prefix}_delegate\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
+
 ## Lane
 
 - Default model: \`${options.defaultModel ?? '<your-model>'}\`.
@@ -270,7 +282,9 @@ export const scaffoldHostConfigFile = (
 } from '@mcp-vertex/core/public';
 import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
 
-// workflow) by loading a plugin via the mcp-vertex CLI rather than wiring it here.
+// The core is project-agnostic. Add domain behaviour (e.g. a proposal
+// workflow) by loading a plugin via the mcp-vertex CLI
+// (\`mcp-vertex --plugins=proposals\`) rather than wiring it here.
 // Hermetic: the workspace root is injected by the caller (the server
 // entry point), never read from \`process.cwd()\` here — a lib must not
 // guess where the project lives, so this stays correct under CI,
@@ -360,6 +374,7 @@ export const scaffoldHostProject = (
 	scaffoldHostConfigFile(options),
 	...scaffoldServerEntryFiles(options),
 	scaffoldAgentFile(options, 'orchestrator'),
+	...SUBAGENT_SLOTS.map((slot) => scaffoldAgentFile(options, slot)),
 	scaffoldInstructionsFile(options),
 	scaffoldSkillFile(
 		options.namespacePrefix,
