@@ -14,6 +14,9 @@
 		"keepLegacy": {
 			"type": "boolean"
 		},
+		"agentWorktree": {
+			"type": "boolean"
+		},
 		"validationMatrix": {
 			"type": "object",
 			"properties": {

@@ -28,6 +28,7 @@ export const CONFIG_FILE_SCHEMA = z
 		cacheDir: z.string().optional(),
 		docsDir: z.string().optional(),
 		keepLegacy: z.boolean().optional(),
+		agentWorktree: z.boolean().optional(),
 		validationMatrix: z
 			.object({
 				scopes: z.record(
