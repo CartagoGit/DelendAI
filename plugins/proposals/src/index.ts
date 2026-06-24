@@ -60,8 +60,6 @@ import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	/** Custom symbolic agent-name pool. */
 	namePool: z.array(z.string()).optional(),
-	/** Family prefixes in cascade order, e.g. ["f","p"]. */
-	familyCascade: z.array(z.string()).optional(),
 	/** Quality-gate command surfaced by auto_work. */
 	validationCommand: z.string().optional(),
 	persist: z
@@ -98,9 +96,8 @@ export default definePlugin({
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
 	configExample: {
 		summary:
-			'Default swarm setup: serial cascade (f before p), bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
+			'Default swarm setup: bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
 		options: {
-			familyCascade: ['f', 'p'],
 			validationCommand: 'bun run validate',
 			namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
 			orchestration: { delegateAfterToolCalls: 3 },
@@ -230,24 +227,12 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					lockPathAbs: abs(layout.lockFile),
-					...(Array.isArray(ctx.options.familyCascade)
-						? {
-								familyCascade: ctx.options
-									.familyCascade as string[],
-							}
-						: {}),
 				}),
 				buildAutoWorkRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					lockPathAbs: abs(layout.lockFile),
 					loopDetector,
-					...(Array.isArray(ctx.options.familyCascade)
-						? {
-								familyCascade: ctx.options
-									.familyCascade as string[],
-							}
-						: {}),
 					...(typeof ctx.options.validationCommand === 'string'
 						? {
 								validationCommand: ctx.options

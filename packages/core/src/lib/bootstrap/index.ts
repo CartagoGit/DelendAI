@@ -21,7 +21,7 @@ export type {
 	IBlueprintOptions,
 } from './build-blueprint';
 // capability-diff: public surface stays backward compatible
-// (ICapabilityDiff / ICapabilityDiffEntry / IToolName) but the
+// (ICapabilityDiff / IReasonedEntry / IToolName) but the
 // implementation is now composed of focused modules.
 export {
 	diffCapabilities,
@@ -36,7 +36,7 @@ export {
 } from './capability-diff';
 export type {
 	ICapabilityDiff,
-	ICapabilityDiffEntry,
+	IReasonedEntry,
 	IToolName,
 	// Strategy interfaces.
 	IAliasStrategy,

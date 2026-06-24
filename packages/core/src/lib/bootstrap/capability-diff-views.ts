@@ -38,13 +38,6 @@ export interface IReasonedEntry {
 	readonly tool?: IBlueprintArtifact;
 }
 
-/**
- * @deprecated Use `IReasonedEntry`. Kept as a type alias for
- * backward compatibility with external consumers that imported
- * the old name; maps 1:1 to the new type.
- */
-export type ICapabilityDiffEntry = IReasonedEntry;
-
 export interface IPresentView {
 	readonly present: readonly IReasonedEntry[];
 }
@@ -80,9 +73,9 @@ export interface ICapabilityDiffViews
 export interface IBuildViewsInput {
 	readonly desired: readonly ICanonicalToolId[];
 	readonly existing: readonly ICanonicalToolId[];
-	readonly present: readonly ICapabilityDiffEntry[];
-	readonly missing: readonly ICapabilityDiffEntry[];
-	readonly mismatched: readonly ICapabilityDiffEntry[];
+	readonly present: readonly IReasonedEntry[];
+	readonly missing: readonly IReasonedEntry[];
+	readonly mismatched: readonly IReasonedEntry[];
 	readonly extra: readonly ICanonicalToolId[];
 }
 

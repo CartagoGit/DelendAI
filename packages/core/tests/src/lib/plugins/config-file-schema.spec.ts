@@ -43,7 +43,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 				plugins: {
 					proposals: {
 						prefix: 'work',
-						options: { familyCascade: ['f', 'p'] },
+						options: { validationCommand: 'bun run validate' },
 					},
 				},
 			});

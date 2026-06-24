@@ -61,7 +61,6 @@ Pointing mcp-vertex at a project that already has a proposals folder? Call
 			"prefix": "work",
 			"options": {
 				"namePool": ["orion", "lyra", "vega"],
-				"familyCascade": ["f", "p"],
 				"validationCommand": "bun run validate"
 			}
 		}
