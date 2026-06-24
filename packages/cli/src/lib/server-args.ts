@@ -12,20 +12,7 @@
  */
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
-import { type IAutoForwardRule, SERVER_ARG_MAPPER } from './server-args.mapper';
-
-/**
- * @deprecated Use `IAutoForwardRule` from `./server-args.mapper`. Kept as
- * a type alias so existing imports keep compiling.
- */
-export type IServerArgForwarder = IAutoForwardRule;
-
-/**
- * @deprecated Use `SERVER_ARG_MAPPER` from `./server-args.mapper`. Kept
- * as a value alias so existing imports keep working.
- */
-export const SERVER_ARG_FORWARDERS: readonly IAutoForwardRule[] =
-	SERVER_ARG_MAPPER;
+import { SERVER_ARG_MAPPER } from './server-args.mapper';
 
 const forwardAll = (globals: ICliGlobalOptions): readonly string[] => {
 	const out: string[] = [];
