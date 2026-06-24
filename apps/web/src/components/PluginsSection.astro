@@ -2,13 +2,20 @@
 /**
  * PluginsSection.astro — the home-page / standalone /plugins index.
  *
- * Redesigned in l105 s14: each plugin is a card with icon, name,
- * version, localized description, and a small badge with the
- * number of capabilities it contributes (tools / prompts / resources).
- * Hover lifts the card and reveals an accent gradient border.
+ * f00053 S2: every plugin is now an expandable disclosure
+ * (`PluginDisclosure.astro`) that reveals exactly the tools it
+ * contributes. All copy + capabilities come from the canonical
+ * `plugin-catalog` (S1) — this component no longer resolves
+ * descriptions from scattered i18n keys / first-tool fallbacks.
+ *
+ * The grid lists the real loadable plugins (the 16 under `plugins/`,
+ * the catalog's `PLUGIN_SLUGS`); the core/cli/client/ui-extension
+ * packages are not plugins and are documented on their own pages.
  */
 import { useTranslations, type Lang } from '#I18N/ui';
 import capabilities from '#MANIFESTS/capabilities.json';
+import { PLUGIN_CATALOG, PLUGIN_SLUGS } from '#DATA/plugin-catalog';
+import PluginDisclosure from '#COMPONENTS/PluginDisclosure.astro';
 
 interface Props {
 	lang: Lang;
@@ -24,46 +31,14 @@ const packages = capabilities.packages as Array<{
 	name: string;
 	version: string;
 }>;
-const tools = capabilities.tools as Array<{ name: string; namespace: string }>;
-const shortName = (name: string) =>
-	name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
+const versionFor = (slug: string): string =>
+	packages.find((pkg) => pkg.name === `@mcp-vertex/${slug}`)?.version ??
+	capabilities.coreVersion;
+
 const pluginHref = (slug: string) =>
 	lang === 'en'
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;
-
-// Map a package short-name to its tool namespace (core → mcp-vertex).
-const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
-const capabilityCount = (slug: string) =>
-	tools.filter((tool) => tool.namespace === nsFor(slug)).length;
-// x124 S6 — when a plugin's `langs/<code>.json` has no entry for
-// `plugin.<slug>`, the legacy `t('plugin.${slug}')` returns undefined
-// (we changed the shim to do that instead of leaking the raw key).
-// We fall back to a one-line summary derived from the first tool the
-// plugin contributes, so the card always has *some* copy in the
-// active locale. When that summary is itself in English, we leave it
-// as-is — running the description through Google Translate is out of
-// scope for a UI bugfix; the missing-i18n report (S6 report) is the
-// canonical list of plugins that still need a translation.
-const firstToolDesc = (slug: string): string | undefined => {
-	const ns = nsFor(slug);
-	const first = (
-		capabilities.tools as Array<{ namespace: string; description: string }>
-	).find((t) => t.namespace === ns);
-	return first?.description;
-};
-const pluginDesc = (slug: string): string => {
-	const localised = t(`plugin.${slug}`);
-	if (typeof localised === 'string' && localised.length > 0) return localised;
-	if (
-		typeof localised === 'object' &&
-		localised !== null &&
-		'description' in localised
-	) {
-		return (localised as any).description;
-	}
-	return firstToolDesc(slug) ?? `Plugin: ${slug}.`;
-};
 ---
 
 <section id="plugins" class="section">
@@ -72,43 +47,27 @@ const pluginDesc = (slug: string): string => {
 		<p class="lead">{t.plugins.lead}</p>
 		<div class="plugins-grid">
 			{
-				packages.map((pkg) => {
-					const slug = shortName(pkg.name);
-					const count = capabilityCount(slug);
+				PLUGIN_SLUGS.map((slug) => {
+					const entry = PLUGIN_CATALOG[slug];
+					const requires =
+						slug === 'issues'
+							? {
+									label: t.plugin.issues.requires,
+									href: pluginHref('proposals'),
+									name: 'proposals',
+								}
+							: undefined;
 					return (
-						<a class="plugin-card card" href={pluginHref(slug)}>
-							<div class="plugin-card__head">
-								<img
-									class="plugin-card__icon"
-									src={`/logos/plugin-${slug}.svg`}
-									alt=""
-									width="36"
-									height="36"
-									loading="lazy"
-									onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:this.alt||''}))"
-								/>
-								<div class="plugin-card__title">
-									<code>{pkg.name}</code>
-									<span class="plugin-card__version">v{pkg.version}</span>
-								</div>
-							</div>
-							<p class="plugin-card__desc">{pluginDesc(slug)}</p>
-							<div class="plugin-card__foot">
-								<span class="plugin-card__badge">
-									{count} {count === 1 ? 'tool' : 'tools'}
-								</span>
-								{slug === 'issues' && (
-									<span class="plugin-card__chip plugin-card__chip--warn" style="font-size: 0.75rem; padding: 0.125rem 0.375rem; border-radius: 4px; background: var(--c-surface-2); margin-left: auto; margin-right: 0.5rem; color: var(--c-text-dim);">
-										{t.plugin.issues.requires}: <a href={pluginHref('proposals')} style="color: inherit; text-decoration: underline;">proposals</a>
-									</span>
-								)}
-								<span class="plugin-card__arrow" aria-hidden="true">→</span>
-							</div>
-						</a>
+						<PluginDisclosure
+							slug={slug}
+							name={`@mcp-vertex/${entry.slug}`}
+							version={versionFor(slug)}
+							href={pluginHref(slug)}
+							requires={requires}
+						/>
 					);
 				})
 			}
 		</div>
 	</div>
 </section>
-
