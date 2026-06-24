@@ -80,14 +80,19 @@ const { labels, events = [] } = Astro.props;
 <script>
 	const filters = document.querySelectorAll('[data-log-filter]');
 	const rows = document.querySelectorAll('.logs-table tbody tr');
+	const valueOf = (selector: string): string =>
+		(document.querySelector(selector) as HTMLInputElement | null)?.value ?? '';
 	const applyFilters = () => {
-		const outcome = document.querySelector('[data-log-filter="outcome"]')?.value ?? '';
-		const agent = document.querySelector('[data-log-filter="agent"]')?.value?.toLowerCase() ?? '';
-		const task = document.querySelector('[data-log-filter="task"]')?.value?.toLowerCase() ?? '';
-		rows.forEach((row) => {
+		const outcome = valueOf('[data-log-filter="outcome"]');
+		const agent = valueOf('[data-log-filter="agent"]').toLowerCase();
+		const task = valueOf('[data-log-filter="task"]').toLowerCase();
+		rows.forEach((node) => {
+			const row = node as HTMLElement;
 			const matchesOutcome = !outcome || row.dataset.outcome === outcome;
-			const matchesAgent = !agent || row.dataset.agent.toLowerCase().includes(agent);
-			const matchesTask = !task || row.dataset.task.toLowerCase().includes(task);
+			const matchesAgent =
+				!agent || (row.dataset.agent ?? '').toLowerCase().includes(agent);
+			const matchesTask =
+				!task || (row.dataset.task ?? '').toLowerCase().includes(task);
 			row.hidden = !(matchesOutcome && matchesAgent && matchesTask);
 		});
 	};

@@ -241,7 +241,7 @@ const drawerLinks = [
 	// "More" dropdown (x124 S4). Open/close on trigger click, outside
 	// click, or Escape; ArrowDown moves focus into the panel. Re-runs
 	// after every View Transition so the listeners don't accumulate.
-	let moreAbort;
+	let moreAbort: AbortController | undefined;
 	const setupMore = () => {
 		moreAbort?.abort();
 		moreAbort = new AbortController();
