@@ -74,7 +74,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "For each plugin, the page shows how to load just that plugin (e.g. --plugins=<slug>) across the same package managers/IDEs as install.ts, in the same order and visual structure."
   - "The install snippets are derived from the canonical PACKAGE/SERVER_NAME constants in install.ts (no duplicated package name literals)."
   - "A spec asserts every plugin has a valid install descriptor and that the package-manager set matches install.ts."
-- status: pending
+- status: done
+- note: "New plugin-install.ts DERIVES per-plugin run commands (`--plugins=<slug>`) from the canonical packageManagers/ideTargets matrix + PACKAGE/SERVER_NAME (no duplicated literals). New PluginInstall.astro renders them in the same order/structure as the core install; wired into PluginPage.astro's install tab, replacing the previous hardcoded+inaccurate `bun add <pkg>` snippet. plugin-install.spec (4) asserts every plugin's PM set matches install.ts and every command loads exactly that plugin. typecheck + astro build (1719 pages) green."
 
 ### S5 — First-class CLI usage guide page
 - files: apps/web/src/pages/cli.astro

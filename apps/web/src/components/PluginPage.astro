@@ -5,6 +5,7 @@ import capabilities from '#MANIFESTS/capabilities.json';
 import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
 import PageHeader from '#COMPONENTS/PageHeader.astro';
 import PluginTabs from '#COMPONENTS/PluginTabs.astro';
+import PluginInstall from '#COMPONENTS/PluginInstall.astro';
 import Tutorial from '#COMPONENTS/Tutorial.astro';
 
 interface Props {
@@ -108,17 +109,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 			]}
 		>
 			<section data-tab-panel="install" id="panel-install">
-				<h2>{t.pluginpage.install}</h2>
-				<div class="install__cmd-grid">
-					<div class="install__cmd-card">
-						<span class="install__cmd-label">bun</span>
-						<pre><code>bun add {title}</code></pre>
-					</div>
-					<div class="install__cmd-card">
-						<span class="install__cmd-label">npm · pnpm · yarn</span>
-						<pre><code>{`{ "args": ["@mcp-vertex/core", "--plugins=${slug}"] }`}</code></pre>
-					</div>
-				</div>
+				<PluginInstall slug={slug} heading={t.pluginpage.install} />
 			</section>
 
 			<section data-tab-panel="tools" id="panel-tools" hidden>
