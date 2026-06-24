@@ -17,8 +17,10 @@ overview → recommendedNextAction mentions proposals
       → tells you the next slice/proposal to work on, or that there is none
          → if the work needs >3 tool calls, multiple files, or repeated MCP reads,
             delegate it instead of keeping it on the main thread
-   → if 2+ agents are sharing this repo, create agent_worktree once at the
-      start of the session
+   → Read mcp-vertex.config.json#agentWorktree (or the --agent-worktree CLI
+      flag). If false/unset — do not call proposals_agent_worktree; commit to
+      the active branch instead. Only if it is true AND 2+ agents share this
+      repo, create agent_worktree once at the start of the session
   → proposals_continue_proposal { mode: 'plan' }
       → returns the slice's files + acceptance criteria
   → proposals_agent_lock { action: 'claim', files: [...] }
@@ -51,9 +53,12 @@ overview → recommendedNextAction mentions proposals
 1. **Never poll `agent_lock { action: 'status' }` in a loop.** Locks are
    notification-driven: wait for the `lock-released` push (notification
    plugin) or for `await_lock`, then retry the claim once.
-2. **Never `git push` directly without an `agent_worktree`.** A bare push
-   from a shared checkout can overwrite a concurrent agent's branch; the
-   worktree isolates your branch until you are ready to merge.
+2. **Never `git push` directly without an `agent_worktree` — when the host
+   has enabled it.** Read `mcp-vertex.config.json#agentWorktree` (or the
+   `--agent-worktree` CLI flag). If `false`/unset, `agent_worktree` is
+   disabled by host configuration: commit to the active branch instead. If
+   `true`, a bare push from a shared checkout can overwrite a concurrent
+   agent's branch; the worktree isolates your branch until you merge.
 3. **Never edit `docs/proposals/index.json` by hand.** It is a generated
    index; hand edits drift from the `.md` files it indexes the moment
    anyone runs `proposals_sync_proposals`. Move/edit the proposal `.md`

@@ -109,7 +109,10 @@ keeps `git diff` out of the hot path.
 - **Swarm proposals workflow.** If a proposals task needs more than 3 tool
   calls, touches multiple files, or requires repeated MCP reads, delegate it
   instead of keeping it on the main thread. With 2+ agents in the same repo,
-  each agent uses its own `agent_worktree`; on claim conflict, wait for
+  each agent uses its own `agent_worktree` **only when the host has enabled
+  `agentWorktree`/`--agent-worktree`** (default off; the tool returns a
+  structured `ok: false` error when disabled), otherwise commit to the active
+  branch; on claim conflict, wait for
   `lock-released` or `await_lock` instead of polling; `proposals_sync_proposals`
   runs only after the last open slice of that proposal is closed.
 - **`auto_work` ↔ loop detector ↔ idle-streak (a00033 S3, H1).** Three pieces of
