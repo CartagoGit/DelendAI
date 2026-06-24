@@ -56,6 +56,15 @@ export interface IHostPaths {
 	 * under legacy/ before writing fresh templates.
 	 */
 	readonly keepLegacy?: boolean | undefined;
+	/**
+	 * Host-scoped `agent_worktree` capability, resolved at boot (host CLI
+	 * `--agent-worktree` > `mcp-vertex.config.json#agentWorktree` >
+	 * `false`). Surfaced on the host config so an a00036-style audit can
+	 * confirm the effective value without re-reading the CLI parser.
+	 * Optional on the interface (programmatic hosts may omit it); the CLI
+	 * loader always sets a concrete boolean.
+	 */
+	readonly agentWorktreeEnabled?: boolean | undefined;
 }
 
 /** Solid-ISP: agent-facing static content the host wants to expose. */

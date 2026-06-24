@@ -33,6 +33,18 @@ export interface IMcpPluginContext {
 	 * regenerate durable project files may opt in to legacy snapshots when true.
 	 */
 	readonly keepLegacy: boolean;
+	/**
+	 * Host-scoped capability gate for `agent_worktree`, resolved at boot
+	 * (host CLI `--agent-worktree` > `mcp-vertex.config.json#agentWorktree`
+	 * > `false`). The CLI loader always sets a concrete boolean; it is
+	 * additive/optional on the contract so existing programmatic hosts and
+	 * test fixtures that build a context literal keep compiling. A plugin
+	 * that offers per-agent git worktrees (proposals) reads this to decide
+	 * whether the capability is live, treating absent/`false` as disabled
+	 * (default off); when disabled it must refuse the operation with a
+	 * structured error instead of running the engine.
+	 */
+	readonly agentWorktreeEnabled?: boolean | undefined;
 	/** This plugin's private cache root: `<cacheDir>/<plugin>`. */
 	readonly pluginCacheDir: string;
 	/** This plugin's docs root: `<docsDir>/<plugin>`. */
