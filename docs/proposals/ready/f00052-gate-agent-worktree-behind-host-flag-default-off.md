@@ -120,7 +120,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
   - `packages/cli/src/lib/server-args.ts` (`buildServerArgs`)
   - `packages/cli/src/index.ts` (no semantic change; only verify the forwarding)
   - `packages/cli/tests/**/*` (new spec for parser + builder)
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run test`
 - **Acceptance**:
   - "`mcpv --agent-worktree` and `mcpv --agent-worktree=true` both end up as

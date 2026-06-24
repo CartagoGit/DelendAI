@@ -7,6 +7,7 @@ export interface IHelpTranslation {
 	readonly flagPlugins: string;
 	readonly flagPreset: string;
 	readonly flagConfig: string;
+	readonly flagAgentWorktree: string;
 	readonly flagJson: string;
 	readonly flagHelp: string;
 	readonly flagVersion: string;
@@ -167,6 +168,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Extra plugins to load into the MCP server',
 		flagPreset: 'Core plugin preset passed to the MCP server',
 		flagConfig: 'Config file passed to the MCP server',
+		flagAgentWorktree:
+			'Enable per-agent git worktrees (host-scoped; default off)',
 		flagJson: 'Print stable JSON',
 		flagHelp: 'Show help',
 		flagVersion: 'Show version',
@@ -181,6 +184,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Plugins extra que cargar en el servidor MCP',
 		flagPreset: 'Preset de plugins del core para el servidor MCP',
 		flagConfig: 'Archivo de configuracion para el servidor MCP',
+		flagAgentWorktree:
+			'Habilita worktrees git por agente (a nivel host; por defecto off)',
 		flagJson: 'Imprime JSON estable',
 		flagHelp: 'Muestra ayuda',
 		flagVersion: 'Muestra la version',
@@ -204,6 +209,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'إضافات إضافية لتحميلها في خادم MCP',
 		flagPreset: 'إعداد core المسبق المرسل إلى خادم MCP',
 		flagConfig: 'ملف الإعدادات المرسل إلى خادم MCP',
+		flagAgentWorktree:
+			'تفعيل worktrees git لكل وكيل (على مستوى المضيف؛ معطل افتراضيا)',
 		flagJson: 'اطبع JSON مستقرا',
 		flagHelp: 'اعرض المساعدة',
 		flagVersion: 'اعرض الإصدار',
@@ -218,6 +225,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Zusaetzliche Plugins fuer den MCP-Server laden',
 		flagPreset: 'Core-Plugin-Preset fuer den MCP-Server',
 		flagConfig: 'Konfigurationsdatei fuer den MCP-Server',
+		flagAgentWorktree:
+			'Git-Worktrees pro Agent aktivieren (host-weit; Standard aus)',
 		flagJson: 'Stabiles JSON ausgeben',
 		flagHelp: 'Hilfe anzeigen',
 		flagVersion: 'Version anzeigen',
@@ -232,6 +241,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Plugins supplementaires a charger dans le serveur MCP',
 		flagPreset: 'Preset core envoye au serveur MCP',
 		flagConfig: 'Fichier de configuration envoye au serveur MCP',
+		flagAgentWorktree:
+			'Activer les worktrees git par agent (au niveau hote ; desactive par defaut)',
 		flagJson: 'Afficher du JSON stable',
 		flagHelp: 'Afficher l aide',
 		flagVersion: 'Afficher la version',
@@ -246,6 +257,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'MCP सर्वर में लोड करने के लिए अतिरिक्त प्लगइन',
 		flagPreset: 'MCP सर्वर को दिया जाने वाला core plugin preset',
 		flagConfig: 'MCP सर्वर को दिया जाने वाला config file',
+		flagAgentWorktree:
+			'प्रति-एजेंट git worktree सक्षम करें (host-स्तर; डिफ़ॉल्ट बंद)',
 		flagJson: 'स्थिर JSON प्रिंट करें',
 		flagHelp: 'मदद दिखाएं',
 		flagVersion: 'वर्जन दिखाएं',
@@ -260,6 +273,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Plugin extra da caricare nel server MCP',
 		flagPreset: 'Preset core passato al server MCP',
 		flagConfig: 'File di configurazione passato al server MCP',
+		flagAgentWorktree:
+			'Abilita worktree git per agente (a livello host; disattivo di default)',
 		flagJson: 'Stampa JSON stabile',
 		flagHelp: 'Mostra aiuto',
 		flagVersion: 'Mostra versione',
@@ -274,6 +289,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'MCP サーバーに追加で読み込むプラグイン',
 		flagPreset: 'MCP サーバーへ渡す core プリセット',
 		flagConfig: 'MCP サーバーへ渡す設定ファイル',
+		flagAgentWorktree:
+			'エージェントごとの git worktree を有効化 (ホスト単位; 既定は無効)',
 		flagJson: '安定した JSON を出力',
 		flagHelp: 'ヘルプを表示',
 		flagVersion: 'バージョンを表示',
@@ -297,6 +314,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Plugins extra para carregar no servidor MCP',
 		flagPreset: 'Preset core enviado ao servidor MCP',
 		flagConfig: 'Arquivo de configuracao enviado ao servidor MCP',
+		flagAgentWorktree:
+			'Habilita worktrees git por agente (a nivel host; desativado por padrao)',
 		flagJson: 'Imprime JSON estavel',
 		flagHelp: 'Mostra ajuda',
 		flagVersion: 'Mostra a versao',
@@ -311,6 +330,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'ปลั๊กอินเพิ่มเติมที่จะโหลดเข้า MCP server',
 		flagPreset: 'core plugin preset ที่ส่งให้ MCP server',
 		flagConfig: 'ไฟล์ config ที่ส่งให้ MCP server',
+		flagAgentWorktree:
+			'เปิดใช้ git worktree ต่อเอเจนต์ (ระดับโฮสต์; ปิดโดยค่าเริ่มต้น)',
 		flagJson: 'พิมพ์ JSON แบบเสถียร',
 		flagHelp: 'แสดงความช่วยเหลือ',
 		flagVersion: 'แสดงเวอร์ชัน',
@@ -325,6 +346,8 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: 'Plugin bo sung de nap vao MCP server',
 		flagPreset: 'Core plugin preset truyen vao MCP server',
 		flagConfig: 'File cau hinh truyen vao MCP server',
+		flagAgentWorktree:
+			'Bat git worktree theo tung agent (cap host; mac dinh tat)',
 		flagJson: 'In JSON on dinh',
 		flagHelp: 'Hien thi tro giup',
 		flagVersion: 'Hien thi phien ban',
@@ -339,6 +362,7 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 		flagPlugins: '加载到 MCP 服务器的额外插件',
 		flagPreset: '传给 MCP 服务器的 core 插件预设',
 		flagConfig: '传给 MCP 服务器的配置文件',
+		flagAgentWorktree: '启用按代理的 git worktree (主机级；默认关闭)',
 		flagJson: '输出稳定 JSON',
 		flagHelp: '显示帮助',
 		flagVersion: '显示版本',

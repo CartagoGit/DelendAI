@@ -68,6 +68,26 @@ const flag = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 	argv: (k, value) => (value === true ? [`--${k}`] : []),
 });
 
+/**
+ * Tri-state boolean forwarded under an explicit host flag name (kebab).
+ * `true` ⇒ `--<flagName>`; `false` ⇒ `--<flagName>=false`; `undefined`
+ * ⇒ nothing (host falls back to its file config / default). Unlike
+ * `flag`, this forwards the explicit `false` so the host parser does not
+ * have to guess whether absence means "off" or "unset".
+ */
+const triStateFlag = (
+	key: keyof ICliGlobalOptions,
+	flagName: string,
+): IAutoForwardRule => ({
+	key,
+	kind: 'flag',
+	argv: (_k, value) => {
+		if (value === true) return [`--${flagName}`];
+		if (value === false) return [`--${flagName}=false`];
+		return [];
+	},
+});
+
 const passthrough = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 	key,
 	kind: 'passthrough',
@@ -102,6 +122,14 @@ const BOOTSTRAP_RULES: readonly IAutoForwardRule[] = [
 ];
 
 /**
+ * f00052: host-capability gates. `agent_worktree` is host-scoped, so the
+ * mcpv flag forwards an explicit `--agent-worktree[=false]` to the host.
+ */
+const CAPABILITY_RULES: readonly IAutoForwardRule[] = [
+	triStateFlag('agentWorktree', 'agent-worktree'),
+];
+
+/**
  * Declarative table of mcpv → host flag forwarding rules.
  *
  * Adding a new flag is **append one entry** to the relevant concern
@@ -113,6 +141,7 @@ export const SERVER_ARG_MAPPER: readonly IAutoForwardRule[] = [
 	...PLUGIN_RULES,
 	...OBSERVABILITY_RULES,
 	...BOOTSTRAP_RULES,
+	...CAPABILITY_RULES,
 ];
 
 // Re-export the escape-hatch builder so hosts can register a

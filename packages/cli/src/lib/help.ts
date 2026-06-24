@@ -55,6 +55,7 @@ export const renderHelp = (
 		`  --plugins=a,b        ${t.flagPlugins}`,
 		`  --preset=<name>      ${t.flagPreset}`,
 		`  --config=<path>      ${t.flagConfig}`,
+		`  --agent-worktree     ${t.flagAgentWorktree}`,
 		`  --json               ${t.flagJson}`,
 		`  --help, -h           ${t.flagHelp}`,
 		`  --version, -v        ${t.flagVersion}`,

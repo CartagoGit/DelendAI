@@ -23,6 +23,13 @@ export interface ICliGlobalOptions {
 	readonly excludePlugins?: readonly string[] | undefined;
 	readonly mcpProjectCreate?: boolean | undefined;
 	readonly mcpProjectTests?: boolean | undefined;
+	/**
+	 * f00052: host-scoped `agent_worktree` gate. Tri-state — `undefined`
+	 * (flag absent) forwards nothing so the host falls back to its file
+	 * config / `false` default; `true`/`false` forward an explicit
+	 * `--agent-worktree[=false]` so the host decision is unambiguous.
+	 */
+	readonly agentWorktree?: boolean | undefined;
 }
 
 export interface ICliCommandResult {
