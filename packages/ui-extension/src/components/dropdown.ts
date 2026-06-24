@@ -21,33 +21,73 @@ export interface IDropdownOptions {
 	readonly label: string;
 	readonly items: readonly IDropdownItem[];
 	readonly align?: 'left' | 'right';
+	/**
+	 * Optional id prefix used to build the DOM ids of the trigger / menu
+	 * / wrapper. When set, the wrapper id becomes `${idPrefix}`, the
+	 * trigger id becomes `${idPrefix}-trigger` and the menu id becomes
+	 * `${idPrefix}-menu` — which is what hosts with their own JS/CSS
+	 * contracts need (e.g. the docs site passes `idPrefix: 'nav-more'`
+	 * so its `SiteNav.astro` JS can query `#nav-more-trigger` /
+	 * `#nav-more-menu`).
+	 *
+	 * When NOT set (the legacy default), the wrapper keeps `opts.id` and
+	 * the menu keeps `${opts.id}-menu` — every existing caller is
+	 * byte-identical to before.
+	 */
+	readonly idPrefix?: string;
+	/**
+	 * Class prefix used for the wrapper / trigger / menu / item / label /
+	 * icon / caret. Defaults to `'mv-dropdown'` so the default
+	 * `mv-dropdown__*` BEM shape is preserved. The docs site passes
+	 * `classPrefix: 'nav__more'` so the emitted classes match its existing
+	 * `_nav.scss` (`.nav__more__trigger`, `.nav__more__menu`, …).
+	 *
+	 * NOTE: when a host overrides the class prefix it MUST also ship the
+	 * matching CSS — `@mcp-vertex/shared/styles` ships the default
+	 * `mv-dropdown__*` styles but nothing else.
+	 */
+	readonly classPrefix?: string;
 }
 
-const iconHtml = (icon?: string): string =>
+const iconHtml = (icon: string | undefined, classPrefix: string): string =>
 	icon
-		? `<span class="mv-dropdown__icon" aria-hidden="true">${escapeHtml(icon)}</span>`
+		? `<span class="${classPrefix}__icon" aria-hidden="true">${escapeHtml(icon)}</span>`
 		: '';
 
 /**
  * `renderDropdown` — returns the HTML string for a dropdown.
- * The trigger is a `<button class="mv-dropdown__trigger">`; the menu
- * is a `<ul class="mv-dropdown__menu">` hidden by default and shown
+ * The trigger is a `<button class="<classPrefix>__trigger">`; the menu
+ * is a `<ul class="<classPrefix>__menu">` hidden by default and shown
  * when the trigger has `aria-expanded="true"` (the runtime sets this
  * on click and resets it on outside-click / Esc).
+ *
+ * When called with no options beyond `id`/`label`/`items`/`align`, the
+ * emitted HTML is byte-identical to the legacy shape (default
+ * `idPrefix: 'mv'`, default `classPrefix: 'mv-dropdown'`), so every
+ * existing caller keeps working without changes.
  */
 export const renderDropdown = (opts: IDropdownOptions): string => {
 	const align = opts.align ?? 'left';
+	const classPrefix = opts.classPrefix ?? 'mv-dropdown';
+	// Ids: when an explicit `idPrefix` is given, the wrapper / trigger /
+	// menu ids are built from it. Otherwise we preserve the legacy shape
+	// (`opts.id` for the wrapper, `${opts.id}-menu` for the menu) so
+	// every existing caller is byte-identical.
+	const baseId = opts.idPrefix ?? opts.id;
+	const triggerId = `${baseId}-trigger`;
+	const menuId = `${baseId}-menu`;
 	const trigger = `<button
 		type="button"
-		class="mv-dropdown__trigger"
+		id="${escapeHtml(triggerId)}"
+		class="${classPrefix}__trigger"
 		aria-haspopup="true"
 		aria-expanded="false"
-		aria-controls="${escapeHtml(opts.id)}-menu"
+		aria-controls="${escapeHtml(menuId)}"
 		data-mv-toggle="dropdown"
-		data-mv-dropdown-id="${escapeHtml(opts.id)}"
+		data-mv-dropdown-id="${escapeHtml(baseId)}"
 	>
 		${escapeHtml(opts.label)}
-		<span class="mv-dropdown__caret" aria-hidden="true">▾</span>
+		<span class="${classPrefix}__caret" aria-hidden="true">▾</span>
 	</button>`;
 	const items = opts.items
 		.map(
@@ -56,26 +96,26 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 				<button
 					type="button"
 					role="menuitem"
-					class="mv-dropdown__item"
+					class="${classPrefix}__item"
 					data-mv-action="${escapeHtml(item.id)}"
-					data-mv-dropdown-id="${escapeHtml(opts.id)}"
+					data-mv-dropdown-id="${escapeHtml(baseId)}"
 				>
-					${iconHtml(item.icon)}
-					<span class="mv-dropdown__label">${escapeHtml(item.label)}</span>
+					${iconHtml(item.icon, classPrefix)}
+					<span class="${classPrefix}__label">${escapeHtml(item.label)}</span>
 				</button>
 			</li>`,
 		)
 		.join('');
 	const menu = `<ul
-		id="${escapeHtml(opts.id)}-menu"
-		class="mv-dropdown__menu mv-dropdown__menu--${align}"
+		id="${escapeHtml(menuId)}"
+		class="${classPrefix}__menu ${classPrefix}__menu--${align}"
 		role="menu"
-		aria-labelledby="${escapeHtml(opts.id)}-menu"
+		aria-labelledby="${escapeHtml(menuId)}"
 		hidden
 	>${items}</ul>`;
 	return `<div
-		id="${escapeHtml(opts.id)}"
-		class="mv-dropdown"
-		data-mv-dropdown="${escapeHtml(opts.id)}"
+		id="${escapeHtml(baseId)}"
+		class="${classPrefix}"
+		data-mv-dropdown="${escapeHtml(baseId)}"
 	>${trigger}${menu}</div>`;
 };

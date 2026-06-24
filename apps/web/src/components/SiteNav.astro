@@ -99,6 +99,8 @@ const drawerLinks = [
 			    open/close animation that respects prefers-reduced-motion. */}
 			<div class="nav__more" set:html={renderDropdown({
 				id: 'nav-more',
+				idPrefix: 'nav-more',
+				classPrefix: 'nav__more',
 				label: t.nav.more,
 				align: 'right',
 				items: navCore.map((l) => ({
@@ -248,7 +250,7 @@ const drawerLinks = [
 		const { signal } = moreAbort;
 
 		const trigger = document.getElementById('nav-more-trigger');
-		const panel = document.getElementById('nav-more-panel');
+		const panel = document.getElementById('nav-more-menu');
 		if (!trigger || !panel) return;
 		// The wrapper carries the `.is-open` class so the SCSS can
 		// drive the scaleY/opacity transition without using
@@ -266,7 +268,7 @@ const drawerLinks = [
 			panel.removeAttribute('hidden');
 			// Move focus to the first menu item so keyboard users can
 			// continue with ArrowDown / Enter.
-			const first = panel.querySelector<HTMLElement>('.nav__more-link');
+			const first = panel.querySelector<HTMLElement>('.nav__more__item');
 			first?.focus();
 		};
 		const close = ({ restoreFocus = true } = {}) => {
@@ -315,7 +317,7 @@ const drawerLinks = [
 		// Close after a menu item is activated (a normal left-click
 		// would follow the anchor; this is the user gesture firing
 		// before navigation starts).
-		for (const link of panel.querySelectorAll<HTMLAnchorElement>('.nav__more-link')) {
+		for (const link of panel.querySelectorAll<HTMLAnchorElement>('.nav__more__item')) {
 			link.addEventListener('click', () => close({ restoreFocus: false }), { signal });
 		}
 	};
