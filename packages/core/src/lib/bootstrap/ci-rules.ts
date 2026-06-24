@@ -68,18 +68,18 @@ export const DEFAULT_CI_RULES: readonly ICiRule[] = [
  */
 const EMPTY_RESULT: readonly string[] = Object.freeze([]);
 
-export const matchCi = (
+export const matchCi = async (
 	reader: IFileReader,
 	rules: readonly ICiRule[] = DEFAULT_CI_RULES,
-): readonly string[] => {
+): Promise<readonly string[]> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	const out: string[] = [];
 	for (const rule of sorted) {
 		if (rule.matchAs === 'dir') {
-			if (reader.listDir(rule.path).length > 0) {
+			if ((await reader.listDir(rule.path)).length > 0) {
 				out.push(rule.id);
 			}
-		} else if (reader.exists(rule.path)) {
+		} else if (await reader.exists(rule.path)) {
 			out.push(rule.id);
 		}
 	}

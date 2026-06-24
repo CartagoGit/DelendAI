@@ -8,32 +8,35 @@
 // resolver. Keeping them as distinct types is what makes the
 // analyser testable with a fake reader.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { promises as fs } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IFileReader } from './analyze-project';
 
-/**
- * Read-only reader backed by the workspace filesystem. `readFile` and
- * `exists` use `existsSync` (cheap boot-time probe, NOT a hot path —
- * see AGENTS.md invariant #3); `listDir` swallows the error and
- * returns `[]` so a missing directory looks like an empty one to the
- * analyser instead of crashing the whole tool.
- */
 export const createWorkspaceFileReader = (
 	workspace: IWorkspacePathProvider,
 ): IFileReader => ({
-	readFile: (relativePath) => {
-		const absolute = workspace.resolve(relativePath);
-		return existsSync(absolute)
-			? readFileSync(absolute, 'utf8')
-			: undefined;
-	},
-	exists: (relativePath) => existsSync(workspace.resolve(relativePath)),
-	listDir: (relativePath) => {
+	readFile: async (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
 		try {
-			return readdirSync(absolute);
+			return await fs.readFile(absolute, 'utf8');
+		} catch {
+			return undefined;
+		}
+	},
+	exists: async (relativePath) => {
+		try {
+			await fs.access(workspace.resolve(relativePath));
+			return true;
+		} catch {
+			return false;
+		}
+	},
+	listDir: async (relativePath) => {
+		const absolute = workspace.resolve(relativePath);
+		try {
+			return await fs.readdir(absolute);
 		} catch {
 			return [];
 		}

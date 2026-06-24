@@ -51,21 +51,24 @@ export const DEFAULT_PACKAGE_MANAGER_RULES: readonly IPackageManagerRule[] = [
 	},
 ];
 
-const matches = (
+const matches = async (
 	reader: IFileReader,
 	evidence: IPackageManagerEvidence,
-): boolean => {
-	if (evidence.kind === 'exists') return reader.exists(evidence.path);
-	return evidence.paths.some((p) => reader.exists(p));
+): Promise<boolean> => {
+	if (evidence.kind === 'exists') return await reader.exists(evidence.path);
+	for (const p of evidence.paths) {
+		if (await reader.exists(p)) return true;
+	}
+	return false;
 };
 
-export const matchPackageManager = (
+export const matchPackageManager = async (
 	reader: IFileReader,
 	rules: readonly IPackageManagerRule[] = DEFAULT_PACKAGE_MANAGER_RULES,
-): IProjectAnalysis['packageManager'] => {
+): Promise<IProjectAnalysis['packageManager']> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	for (const rule of sorted) {
-		if (matches(reader, rule.evidence)) return rule.id;
+		if (await matches(reader, rule.evidence)) return rule.id;
 	}
 	return 'unknown';
 };

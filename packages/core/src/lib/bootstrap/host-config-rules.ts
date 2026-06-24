@@ -101,9 +101,11 @@ const HOST_CONFIG_CANDIDATES: readonly string[] = [
 	'src/lib/shared/host-config.ts',
 ];
 
-const readContext = (reader: IFileReader): IHostConfigContext => {
+const readContext = async (
+	reader: IFileReader,
+): Promise<IHostConfigContext> => {
 	for (const filePath of HOST_CONFIG_CANDIDATES) {
-		const raw = reader.readFile(filePath);
+		const raw = await reader.readFile(filePath);
 		if (raw === undefined) continue;
 		const match = /extraTools\s*:\s*\[([\s\S]*?)\]/m.exec(raw);
 		const extraToolsBlock = match?.[1];
@@ -134,11 +136,11 @@ const matches = (ctx: IHostConfigContext, rule: IHostConfigRule): boolean => {
 	return new RegExp(rule.evidence.pattern).test(ctx.stripped);
 };
 
-export const matchHostConfig = (
+export const matchHostConfig = async (
 	reader: IFileReader,
 	rules: readonly IHostConfigRule[] = DEFAULT_HOST_CONFIG_RULES,
-): readonly string[] => {
-	const ctx = readContext(reader);
+): Promise<readonly string[]> => {
+	const ctx = await readContext(reader);
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	const hits: string[] = [];
 	for (const rule of sorted) {

@@ -76,28 +76,31 @@ export const DEFAULT_LANGUAGE_RULES: readonly ILanguageRule[] = [
 	},
 ];
 
-const matches = (
+const matches = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 	evidence: ILanguageEvidence,
-): boolean => {
-	if (evidence.kind === 'exists') return reader.exists(evidence.path);
+): Promise<boolean> => {
+	if (evidence.kind === 'exists') return await reader.exists(evidence.path);
 	if (evidence.kind === 'any-exists') {
-		return evidence.paths.some((p) => reader.exists(p));
+		for (const p of evidence.paths) {
+			if (await reader.exists(p)) return true;
+		}
+		return false;
 	}
 	// `has-package-json` — fired when the reader could parse a
 	// package.json (the analyser passes `pkg` only when parse OK).
 	return pkg !== undefined;
 };
 
-export const matchLanguage = (
+export const matchLanguage = async (
 	reader: IFileReader,
 	pkg?: IPackageJson | undefined,
 	rules: readonly ILanguageRule[] = DEFAULT_LANGUAGE_RULES,
-): IProjectLanguage => {
+): Promise<IProjectLanguage> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	for (const rule of sorted) {
-		if (matches(reader, pkg, rule.evidence)) return rule.id;
+		if (await matches(reader, pkg, rule.evidence)) return rule.id;
 	}
 	return 'unknown';
 };

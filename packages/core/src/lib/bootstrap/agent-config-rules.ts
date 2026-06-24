@@ -94,19 +94,24 @@ export const DEFAULT_AGENT_CONFIG_RULES: readonly IAgentConfigRule[] = [
  */
 const EMPTY_RESULT: readonly string[] = Object.freeze([]);
 
-const pathMatches = (
+const pathMatches = async (
 	reader: IFileReader,
 	matchAs: IAgentConfigMatchKind,
 	path: string,
-): boolean => {
-	if (matchAs === 'file') return reader.exists(path);
-	if (matchAs === 'dir') return reader.listDir(path).length > 0;
+): Promise<boolean> => {
+	if (matchAs === 'file') return await reader.exists(path);
+	if (matchAs === 'dir') return (await reader.listDir(path)).length > 0;
 	// file-or-dir: legacy file setups OR modern dir setups. Both
 	// indicate the same editor.
-	return reader.exists(path) || reader.listDir(path).length > 0;
+	return (
+		(await reader.exists(path)) || (await reader.listDir(path)).length > 0
+	);
 };
 
-const matches = (reader: IFileReader, rule: IAgentConfigRule): boolean => {
+const matches = async (
+	reader: IFileReader,
+	rule: IAgentConfigRule,
+): Promise<boolean> => {
 	const targets =
 		rule.paths !== undefined
 			? rule.paths
@@ -114,19 +119,19 @@ const matches = (reader: IFileReader, rule: IAgentConfigRule): boolean => {
 				? [rule.path]
 				: [];
 	for (const path of targets) {
-		if (pathMatches(reader, rule.matchAs, path)) return true;
+		if (await pathMatches(reader, rule.matchAs, path)) return true;
 	}
 	return false;
 };
 
-export const matchAgentConfigs = (
+export const matchAgentConfigs = async (
 	reader: IFileReader,
 	rules: readonly IAgentConfigRule[] = DEFAULT_AGENT_CONFIG_RULES,
-): readonly string[] => {
+): Promise<readonly string[]> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	const out: string[] = [];
 	for (const rule of sorted) {
-		if (matches(reader, rule)) out.push(rule.id);
+		if (await matches(reader, rule)) out.push(rule.id);
 	}
 	return out.length === 0 ? EMPTY_RESULT : out;
 };

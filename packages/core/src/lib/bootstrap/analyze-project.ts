@@ -27,11 +27,10 @@ import { matchSignals } from './signal-rules';
  * behind this seam is what makes the analyzer pure and agnostic.
  */
 export interface IFileReader {
-	/** Returns file contents, or undefined if it does not exist. */
-	readFile(relativePath: string): string | undefined;
-	exists(relativePath: string): boolean;
-	/** Top-level entries of a directory (names only), or []. */
-	listDir(relativePath: string): readonly string[];
+	readFile(relativePath: string): Promise<string | undefined>;
+	exists(relativePath: string): Promise<boolean>;
+	/** Lists direct children of the directory (relative paths). Never throws. */
+	listDir(relativePath: string): Promise<readonly string[]>;
 }
 
 export type IProjectType =
@@ -114,14 +113,14 @@ const detectGame = (deps: Record<string, string>): boolean =>
 	// Same idea: the engine list is data, not control flow.
 	isGameProject(deps);
 
-const detectPackageManager = (
+const detectPackageManager = async (
 	reader: IFileReader,
-): IProjectAnalysis['packageManager'] => {
+): Promise<IProjectAnalysis['packageManager']> => {
 	// The package-manager rule table lives in
 	// `package-manager-rules.ts`; this function is a thin
 	// adapter. Adding a manager is a one-line table entry, not
 	// an edit to this function.
-	return matchPackageManager(reader);
+	return await matchPackageManager(reader);
 };
 
 const detectTestRunner = (
@@ -168,52 +167,54 @@ const pickScripts = (
 	return out;
 };
 
-const detectMonorepoTool = (
+const detectMonorepoTool = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
-): string | undefined => {
+): Promise<string | undefined> => {
 	// The monorepo rule table lives in `monorepo-rules.ts`; this
 	// function is a thin adapter. Adding a monorepo tool is a
 	// one-line table entry, not an edit to this function.
-	return matchMonorepoTool(reader, pkg);
+	return await matchMonorepoTool(reader, pkg);
 };
 
-const detectLanguage = (
+const detectLanguage = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
-): IProjectLanguage => {
+): Promise<IProjectLanguage> => {
 	// The language rule table lives in `language-rules.ts`; this
 	// function is a thin adapter. Adding a language is a one-line
 	// table entry, not an edit to this function.
-	return matchLanguage(reader, pkg);
+	return await matchLanguage(reader, pkg);
 };
 
-const detectCi = (reader: IFileReader): readonly string[] => {
+const detectCi = async (reader: IFileReader): Promise<readonly string[]> => {
 	// The CI rule table lives in `ci-rules.ts`; this function is a
 	// thin adapter. Adding a CI system is a one-line table entry,
 	// not an edit to this function.
-	return matchCi(reader);
+	return await matchCi(reader);
 };
 
-const detectAgentConfigs = (reader: IFileReader): readonly string[] => {
+const detectAgentConfigs = async (
+	reader: IFileReader,
+): Promise<readonly string[]> => {
 	// The agent-config rule table lives in `agent-config-rules.ts`;
 	// this function is a thin adapter. Adding an editor is a
 	// one-line table entry, not an edit to this function.
-	return matchAgentConfigs(reader);
+	return await matchAgentConfigs(reader);
 };
 
-const detectProjectType = (
+const detectProjectType = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 	deps: Record<string, string>,
 	framework: string | undefined,
 	monorepoTool: string | undefined,
-): IProjectType => {
+): Promise<IProjectType> => {
 	// The actual rule table lives in `project-type-rules.ts`; this
 	// function only translates the analysis inputs into the rule
 	// context. Adding a new project type is a one-line table entry,
 	// not an edit to this function.
-	return matchProjectType({
+	return await matchProjectType({
 		reader,
 		hasBin: pkg?.bin !== undefined,
 		hasExports: pkg?.exports !== undefined,
@@ -224,37 +225,38 @@ const detectProjectType = (
 	});
 };
 
-const detectMcp = (
+const detectMcp = async (
 	reader: IFileReader,
 	deps: Record<string, string>,
-): { has: boolean; evidence: string[] } => {
+): Promise<{ has: boolean; evidence: string[] }> => {
 	// The MCP-evidence rule table lives in `mcp-evidence-rules.ts`;
 	// this function is a thin adapter. Adding a new evidence kind
 	// (e.g. a corporate marker file) is a one-line table entry.
-	const result = detectMcpEvidence(reader, deps);
+	const result = await detectMcpEvidence(reader, deps);
 	return { has: result.has, evidence: [...result.evidence] };
 };
 
-const detectCustomExtraTools = (reader: IFileReader): boolean => {
+const detectCustomExtraTools = async (
+	reader: IFileReader,
+): Promise<boolean> => {
 	// The host-config rule table lives in `host-config-rules.ts`;
 	// this function is a thin adapter. The current consumer
 	// only needs a boolean; the matcher returns a list of hit
 	// ids and we surface "any hit" as `true` for backward
 	// compatibility.
-	const hits = matchHostConfig(reader);
+	const hits = await matchHostConfig(reader);
 	return hits.length > 0;
 };
 
-const detectCustomVertexConfig = (reader: IFileReader): boolean => {
+const detectCustomVertexConfig = async (reader: IFileReader): Promise<boolean> => {
 	// The vertex-config rule table lives in
 	// `vertex-config-rules.ts`; this function is a thin adapter.
 	// The matcher parses the JSON internally and returns a list
 	// of hit ids; the boolean is `any hit` for backward
 	// compatibility with the boolean contract this function
 	// used to have.
-	const hits = matchVertexConfigFromRaw(
-		reader.readFile('mcp-vertex.config.json'),
-	);
+	const rawCfg = await reader.readFile('mcp-vertex.json');
+	const hits = matchVertexConfigFromRaw(rawCfg);
 	return hits.length > 0;
 };
 
@@ -263,26 +265,27 @@ const detectCustomVertexConfig = (reader: IFileReader): boolean => {
  * analysis. Never throws on malformed input — missing or invalid files
  * degrade to `unknown`/`generic` so the recommender always has data.
  */
-export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
-	const pkg = safeJson(reader.readFile('package.json'));
+export const analyzeProject = async (reader: IFileReader): Promise<IProjectAnalysis> => {
+	const pkgRaw = await reader.readFile('package.json');
+	const pkg = safeJson(pkgRaw);
 	const deps = allDeps(pkg);
 	const scripts = pkg?.scripts ?? {};
 	const framework = detectFramework(deps);
-	const language = detectLanguage(reader, pkg);
-	const monorepoTool = detectMonorepoTool(reader, pkg);
-	const mcp = detectMcp(reader, deps);
-	const hasCustomExtraTools = detectCustomExtraTools(reader);
-	const hasCustomVertexConfig = detectCustomVertexConfig(reader);
-	const projectType = detectProjectType(
+	const language = await detectLanguage(reader, pkg);
+	const monorepoTool = await detectMonorepoTool(reader, pkg);
+	const mcp = await detectMcp(reader, deps);
+	const hasCustomExtraTools = await detectCustomExtraTools(reader);
+	const hasCustomVertexConfig = await detectCustomVertexConfig(reader);
+	const projectType = await detectProjectType(
 		reader,
 		pkg,
 		deps,
 		framework,
 		monorepoTool,
 	);
-	const ci = detectCi(reader);
-	const agentConfigs = detectAgentConfigs(reader);
-	const packageManager = detectPackageManager(reader);
+	const ci = await detectCi(reader);
+	const agentConfigs = await detectAgentConfigs(reader);
+	const packageManager = await detectPackageManager(reader);
 	const testRunner = detectTestRunner(deps, scripts);
 	const scriptsPicked = pickScripts(scripts);
 

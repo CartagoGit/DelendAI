@@ -66,22 +66,22 @@ const EMPTY_RESULT: IMcpEvidence = Object.freeze({
 	evidence: Object.freeze([]),
 });
 
-const findHit = (
+const findHit = async (
 	reader: IFileReader,
 	rule: IMcpEvidenceRule,
-): string | undefined => {
+): Promise<string | undefined> => {
 	if (rule.evidence.kind !== 'any-exists') return undefined;
 	for (const path of rule.evidence.paths) {
-		if (reader.exists(path)) return path;
+		if (await reader.exists(path)) return path;
 	}
 	return undefined;
 };
 
-export const detectMcpEvidence = (
+export const detectMcpEvidence = async (
 	reader: IFileReader,
 	deps: Readonly<Record<string, string>>,
 	rules: readonly IMcpEvidenceRule[] = DEFAULT_MCP_EVIDENCE_RULES,
-): IMcpEvidence => {
+): Promise<IMcpEvidence> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	const evidence: string[] = [];
 	for (const rule of sorted) {
@@ -90,7 +90,7 @@ export const detectMcpEvidence = (
 				evidence.push(rule.summaryPrefix);
 			}
 		} else {
-			const hit = findHit(reader, rule);
+			const hit = await findHit(reader, rule);
 			if (hit !== undefined) {
 				evidence.push(`${rule.summaryPrefix} ${hit}`);
 			}

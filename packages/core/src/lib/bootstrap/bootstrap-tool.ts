@@ -44,14 +44,14 @@ export interface IBootstrapToolOptions {
 export const createWorkspaceFileReader = (
 	workspace: IWorkspacePathProvider,
 ): IFileReader => ({
-	readFile: (relativePath) => {
+	readFile: async (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
 		return existsSync(absolute)
 			? readFileSync(absolute, 'utf8')
 			: undefined;
 	},
-	exists: (relativePath) => existsSync(workspace.resolve(relativePath)),
-	listDir: (relativePath) => {
+	exists: async (relativePath) => existsSync(workspace.resolve(relativePath)),
+	listDir: async (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
 		try {
 			return readdirSync(absolute);
@@ -130,7 +130,7 @@ export const buildBootstrapToolRegistrations = (
 					inputSchema: ANALYZE_SCHEMA,
 				},
 				async (args: z.infer<typeof ANALYZE_SCHEMA>) => {
-					const analysis = analyzeProject(reader);
+					const analysis = await analyzeProject(reader);
 					const planOptions = {
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
@@ -231,7 +231,7 @@ export const buildBootstrapToolRegistrations = (
 					namespacePrefix?: string | undefined;
 					serverName?: string | undefined;
 				}) => {
-					const analysis = analyzeProject(reader);
+					const analysis = await analyzeProject(reader);
 					const blueprint = buildServerBlueprint(analysis, {
 						...(args.tests !== undefined
 							? { tests: args.tests }
@@ -277,7 +277,7 @@ export const buildBootstrapToolRegistrations = (
 					}),
 				},
 				async (args: { persist?: boolean | undefined }) => {
-					const analysis = analyzeProject(reader);
+					const analysis = await analyzeProject(reader);
 					const persist = args.persist ?? true;
 					const { snapshot, corruptBackupPath } =
 						await loadDriftSnapshot(

@@ -99,7 +99,7 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 					'Validates a scene/level document against the engine schema.',
 			},
 		],
-		recommendedPlugins: ['proposals', 'rules'],
+		recommendedPlugins: ['rules'],
 		knowledgeHints: [
 			'Author content through validated tools, never raw edits.',
 		],
@@ -116,9 +116,9 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 					'Runs the per-scope validation matrix across packages.',
 			},
 		],
-		recommendedPlugins: ['proposals', 'rules'],
+		recommendedPlugins: ['rules'],
 		knowledgeHints: [
-			'Scope gates per package; coordinate parallel work with the proposals plugin.',
+			'Scope gates per package; coordinate parallel work cleanly.',
 		],
 	},
 	generic: {
