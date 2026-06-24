@@ -107,6 +107,47 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(args).not.toContain('--plugins');
 	});
 
+	// f00052 S3 — host-scoped --agent-worktree forwarding (tri-state)
+	it('forwards --agent-worktree when agentWorktree is true', async () => {
+		const args = buildServerArgs({
+			workspace: '/repo',
+			json: false,
+			format: 'text',
+			lang: 'en',
+			noColor: false,
+			plugins: [],
+			agentWorktree: true,
+		});
+		expect(args).toContain('--agent-worktree');
+		// flag form: no explicit value token follows
+		expect(args[args.indexOf('--agent-worktree') + 1]).not.toBe('false');
+	});
+
+	it('forwards --agent-worktree=false when agentWorktree is false', async () => {
+		const args = buildServerArgs({
+			workspace: '/repo',
+			json: false,
+			format: 'text',
+			lang: 'en',
+			noColor: false,
+			plugins: [],
+			agentWorktree: false,
+		});
+		expect(args).toContain('--agent-worktree=false');
+	});
+
+	it('forwards nothing for agent-worktree when undefined (host falls back to default)', async () => {
+		const args = buildServerArgs({
+			workspace: '/repo',
+			json: false,
+			format: 'text',
+			lang: 'en',
+			noColor: false,
+			plugins: [],
+		});
+		expect(args.some((a) => a.startsWith('--agent-worktree'))).toBe(false);
+	});
+
 	it('covers every field on ICliGlobalOptions that the core parser accepts (forwarder table is exhaustive)', async () => {
 		// a00036 F-001: the host parses 13 flags; mcpv used to forward 4.
 		// We must forward every ICliGlobalOption the host cares about.
@@ -122,6 +163,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 			'excludePlugins',
 			'mcpProjectCreate',
 			'mcpProjectTests',
+			'agentWorktree',
 		];
 		const declaredKeys = new Set(SERVER_ARG_FORWARDERS.map((f) => f.key));
 		for (const k of requiredKeys) {

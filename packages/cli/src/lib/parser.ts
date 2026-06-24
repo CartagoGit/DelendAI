@@ -119,6 +119,16 @@ export const parseCliInvocation = (
 
 	const format =
 		tokens.format === 'json' || tokens.json === 'true' ? 'json' : 'text';
+	// f00052: tri-state `--agent-worktree`. `--no-agent-worktree` and
+	// `--agent-worktree=false` both mean false; a bare `--agent-worktree`
+	// or `=true` means true; absence ⇒ undefined (host falls back to its
+	// file config / `false` default).
+	const agentWorktree = ((): boolean | undefined => {
+		if (tokens['no-agent-worktree'] === 'true') return false;
+		const raw = tokens['agent-worktree'];
+		if (raw === undefined) return undefined;
+		return raw !== 'false';
+	})();
 	const globals: ICliGlobalOptions = {
 		workspace: resolve(cwd, tokens.workspace ?? '.'),
 		remote: tokens.remote,
@@ -129,6 +139,7 @@ export const parseCliInvocation = (
 		plugins: splitList(tokens.plugins),
 		preset: tokens.preset,
 		config: tokens.config,
+		agentWorktree,
 	};
 
 	return {

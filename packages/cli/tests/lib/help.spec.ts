@@ -5,6 +5,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import {
+	HELP_TRANSLATIONS,
+	SUPPORTED_HELP_LANGS,
+} from '../../src/contracts/constants/help-translation.constant';
 import type { ICliCommand } from '../../src/contracts/interfaces/cli-command.interface';
 import { renderHelp } from '../../src/lib/help';
 import { registerAllCommands } from '../../src/commands/registry';
@@ -37,5 +41,24 @@ describe('renderHelp (f00046 S11)', async () => {
 		expect(out).toContain('mcp-vertex');
 		expect(out).toContain('proposals:');
 		expect(out).toContain('Comandos:'); // Spanish locale header
+	});
+
+	// f00052 S3 — the new --agent-worktree flag must have i18n parity:
+	// every supported help language declares a non-empty flagAgentWorktree.
+	it('declares flagAgentWorktree in all 12 supported languages', () => {
+		expect(SUPPORTED_HELP_LANGS).toHaveLength(12);
+		for (const lang of SUPPORTED_HELP_LANGS) {
+			const t = HELP_TRANSLATIONS[lang];
+			expect(t, `missing translation block for ${lang}`).toBeDefined();
+			expect(
+				t?.flagAgentWorktree?.length ?? 0,
+				`flagAgentWorktree empty for ${lang}`,
+			).toBeGreaterThan(0);
+		}
+	});
+
+	it('renders the --agent-worktree flag in the global flags section', () => {
+		const out = renderHelp([stub('overview')], 'en');
+		expect(out).toContain('--agent-worktree');
 	});
 });
