@@ -1,6 +1,6 @@
 ---
 id: f00053
-status: ready
+status: done
 type: proposal
 kind: feat
 title: Unify and polish the web + extension UX — canonical plugin catalog, per-plugin disclosures, representative icons, per-plugin install, CLI guide, and shared web↔extension surface

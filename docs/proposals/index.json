@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-24T07:25:19.603Z",
+	"generated_at": "2026-06-24T16:38:07.290Z",
 	"count": 113,
 	"proposals": [
 		{
@@ -48,10 +48,10 @@
 		},
 		{
 			"id": "f00053",
-			"file": "ready/f00053-unify-and-polish-the-web-extension-ux-canonical-plugin-catalog-per-plugin-disclosures-representative-icons-per-plugin-install-cli-guide-and-shared-web-extension-surface.md",
+			"file": "done/f00053-unify-and-polish-the-web-extension-ux-canonical-plugin-catalog-per-plugin-disclosures-representative-icons-per-plugin-install-cli-guide-and-shared-web-extension-surface.md",
 			"track": "apps/web+extensions/vscode+packages/ui-extension+docs+i18n+ux",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-24"
 		},
 		{
