@@ -38,12 +38,49 @@ const findProjectTsconfig = async (
 	return (await reader.exists(rel)) ? rel : undefined;
 };
 
-const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
+const GROUP_DIRS = [
+	'apps',
+	'libs',
+	'packages',
+	'projects',
+	'services',
+] as const;
+
+/**
+ * Marker files that make a directory an "area" the rules plugin should
+ * classify. `package.json` covers JS/TS/Node; the rest are the
+ * per-language manifests added in f00051 S2 so a polyglot workspace
+ * (a Rust service next to a Python API next to a Next.js app) discovers
+ * every area, not just the Node ones.
+ */
+const AREA_MARKER_FILES = [
+	'package.json',
+	'pyproject.toml',
+	'go.mod',
+	'Cargo.toml',
+	'Gemfile',
+	'mix.exs',
+	'build.gradle.kts',
+	'pom.xml',
+	'Package.swift',
+	'composer.json',
+] as const;
+
+const hasAreaMarker = async (
+	reader: IFileReader,
+	dir: string,
+): Promise<boolean> => {
+	for (const marker of AREA_MARKER_FILES) {
+		if (await reader.exists(joinRel(dir, marker))) return true;
+	}
+	return false;
+};
 
 /**
  * Discover the project areas: the root, plus each immediate child of
- * apps/libs/packages/projects that ships a package.json. Each area can
- * carry a different framework (e.g. a Vue app next to a Laravel API).
+ * apps/libs/packages/projects/services that ships a recognised language
+ * manifest. Each area can carry a different language/framework (e.g. a
+ * Vue app next to a Laravel API next to a Rust service).
  */
 export const discoverAreas = async (
 	reader: IFileReader,
@@ -52,8 +89,7 @@ export const discoverAreas = async (
 	for (const group of GROUP_DIRS) {
 		for (const child of await reader.listDir(group)) {
 			const dir = `${group}/${child}`;
-			if (await reader.exists(joinRel(dir, 'package.json')))
-				areas.push(dir);
+			if (await hasAreaMarker(reader, dir)) areas.push(dir);
 		}
 	}
 	return areas;

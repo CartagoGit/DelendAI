@@ -427,9 +427,217 @@ const META_PRESETS: readonly IRulePreset[] = [
 	},
 ];
 
+// --- per-language presets (f00051 S2/S3) ----------------------------------
+// One baseline preset per non-JS/TS language family wired into the live
+// detection path (detect-framework.ts). DATA only: the `eslintConfigFile`/
+// `eslintConfigContent` fields carry the language's *linter* config path +
+// text (the field name is historical; the value is the materialised config
+// the PROJECT's own toolchain consumes). `conventions` are language-specific
+// (NOT ESLint-style advice); `requiredEslintDeps` names the binaries the
+// project must install. Curated bullet quality lands in f00052.
+const LANGUAGE_PRESETS: readonly IRulePreset[] = [
+	{
+		id: 'python-ruff',
+		framework: 'python',
+		language: 'py',
+		linter: 'ruff',
+		eslintConfigFile: 'python-ruff.ruff.toml',
+		eslintConfigContent: `# Baseline ruff config (the project's own pyproject.toml [tool.ruff] wins).
+line-length = 88
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+`,
+		conventions: [
+			'Use `from __future__ import annotations`; prefer type hints everywhere.',
+			'EAFP over LBYL: `try/except` rather than pre-checking.',
+			'snake_case for functions/variables, PascalCase for classes.',
+			'Prefer comprehensions and generators over manual loops where readable.',
+			'Run `ruff check .` to lint and `ruff format .` to format.',
+		],
+		requiredEslintDeps: ['ruff'],
+	},
+	{
+		id: 'go-golangci',
+		framework: 'go',
+		language: 'go',
+		linter: 'golangci-lint',
+		eslintConfigFile: 'go-golangci.golangci.yml',
+		eslintConfigContent: `# Baseline golangci-lint config (the project's own .golangci.yml wins).
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - ineffassign
+`,
+		conventions: [
+			'Errors are values: wrap with `fmt.Errorf("...: %w", err)`, never panic in libraries.',
+			'Exported identifiers are PascalCase; unexported are camelCase.',
+			'Do not communicate by sharing memory; share memory by communicating.',
+			'Accept interfaces, return concrete types; keep interfaces small.',
+			'Run `golangci-lint run ./...` and `go vet ./...` before committing.',
+		],
+		requiredEslintDeps: ['golangci-lint'],
+	},
+	{
+		id: 'rust-clippy',
+		framework: 'rust',
+		language: 'rs',
+		linter: 'clippy',
+		eslintConfigFile: 'rust-clippy.clippy.toml',
+		eslintConfigContent: `# Baseline clippy config (the project's own Cargo.toml [lints] wins).
+avoid-breaking-exported-api = false
+`,
+		conventions: [
+			'Prefer `?` over `unwrap()` in library code; reserve `unwrap()` for tests.',
+			'Use `#[must_use]` on fallible builders and Result-returning constructors.',
+			'Never `clone()` to satisfy the borrow checker; refactor the signature instead.',
+			'Default to immutable bindings; reach for `let mut` only when the value mutates.',
+			'Run `cargo clippy --workspace --all-targets -- -D warnings` before every commit.',
+		],
+		requiredEslintDeps: ['cargo', 'clippy'],
+	},
+	{
+		id: 'ruby-rubocop',
+		framework: 'ruby',
+		language: 'rb',
+		linter: 'rubocop',
+		eslintConfigFile: 'ruby-rubocop.rubocop.yml',
+		eslintConfigContent: `# Baseline RuboCop config (the project's own .rubocop.yml wins).
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+`,
+		conventions: [
+			'snake_case for methods/variables, CamelCase for classes/modules.',
+			'Prefer guard clauses; return early rather than nesting conditionals.',
+			'Use `{ ... }` for single-line blocks, `do ... end` for multi-line.',
+			'Favour `&.` (safe navigation) over explicit nil checks.',
+			'Run `rubocop` to lint and `rubocop -a` to auto-correct.',
+		],
+		requiredEslintDeps: ['rubocop'],
+	},
+	{
+		id: 'java-checkstyle',
+		framework: 'java',
+		language: 'java',
+		linter: 'checkstyle',
+		eslintConfigFile: 'java-checkstyle.checkstyle.xml',
+		eslintConfigContent: `<?xml version="1.0"?>
+<!-- Baseline Checkstyle config (the project's own checkstyle.xml wins). -->
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <module name="TreeWalker">
+    <module name="UnusedImports"/>
+    <module name="EmptyBlock"/>
+  </module>
+</module>
+`,
+		conventions: [
+			'PascalCase for classes, camelCase for methods/fields, UPPER_SNAKE for constants.',
+			'Favour immutability: `final` fields, defensive copies of mutable inputs.',
+			'Prefer composition over inheritance; program to interfaces.',
+			'Use checked exceptions deliberately; never swallow exceptions silently.',
+			'Run Checkstyle (or Spotless) in the build before merge.',
+		],
+		requiredEslintDeps: ['checkstyle'],
+	},
+	{
+		id: 'kotlin-ktlint',
+		framework: 'kotlin',
+		language: 'kt',
+		linter: 'ktlint',
+		eslintConfigFile: 'kotlin-ktlint.editorconfig',
+		eslintConfigContent: `# Baseline ktlint config (the project's own .editorconfig wins).
+[*.{kt,kts}]
+ktlint_standard = enabled
+max_line_length = 120
+`,
+		conventions: [
+			'Use `val` over `var`; prefer immutable data classes.',
+			'Embrace null safety: prefer `?.`/`?:` over `!!`.',
+			'Coroutines over raw threads for concurrency.',
+			'PascalCase for classes, camelCase for functions/properties.',
+			'Run `ktlint` to check and `ktlint -F` to format.',
+		],
+		requiredEslintDeps: ['ktlint'],
+	},
+	{
+		id: 'swift-swiftlint',
+		framework: 'swift',
+		language: 'swift',
+		linter: 'swiftlint',
+		eslintConfigFile: 'swift-swiftlint.swiftlint.yml',
+		eslintConfigContent: `# Baseline SwiftLint config (the project's own .swiftlint.yml wins).
+disabled_rules: []
+opt_in_rules:
+  - empty_count
+line_length: 120
+`,
+		conventions: [
+			'Use `guard` for early-exit; keep the happy path un-indented.',
+			'Prefer value types (struct/enum) over reference types (class).',
+			'Handle Optionals explicitly; avoid force-unwrap (`!`) outside tests.',
+			'lowerCamelCase for properties/functions, UpperCamelCase for types.',
+			'Run `swiftlint` to lint and `swift-format` (or `swiftlint --fix`) to format.',
+		],
+		requiredEslintDeps: ['swiftlint'],
+	},
+	{
+		id: 'csharp-dotnet',
+		framework: 'dotnet',
+		language: 'cs',
+		linter: 'dotnet-format',
+		eslintConfigFile: 'csharp-dotnet.editorconfig',
+		eslintConfigContent: `# Baseline .NET analyzer config (the project's own .editorconfig wins).
+[*.cs]
+dotnet_diagnostic.CA1822.severity = suggestion
+csharp_style_namespace_declarations = file_scoped:warning
+`,
+		conventions: [
+			'PascalCase for types/methods/properties, camelCase for locals/parameters.',
+			'Enable nullable reference types; treat `Nullable<T>` warnings as errors.',
+			'Prefer `async`/`await` over blocking; suffix async methods with `Async`.',
+			'Use file-scoped namespaces and expression-bodied members where clear.',
+			'Run `dotnet format` to fix and `dotnet build -warnaserror` to verify.',
+		],
+		requiredEslintDeps: ['dotnet'],
+	},
+	{
+		id: 'elixir-credo',
+		framework: 'elixir',
+		language: 'ex',
+		linter: 'credo',
+		eslintConfigFile: 'elixir-credo.credo.exs',
+		eslintConfigContent: `# Baseline Credo config (the project's own .credo.exs wins).
+%{
+  configs: [
+    %{
+      name: "default",
+      strict: true,
+      checks: %{enabled: []}
+    }
+  ]
+}
+`,
+		conventions: [
+			'Pattern-match first; prefer `{:ok, value}` / `{:error, reason}` tuples.',
+			'snake_case for functions/variables, PascalCase for modules.',
+			'Processes over threads; supervise long-lived processes.',
+			'Use `with` to chain happy-path `case`/`{:ok, _}` expressions.',
+			'Run `mix credo --strict` to lint and `mix format` to format.',
+		],
+		requiredEslintDeps: ['credo'],
+	},
+];
+
 export const RULE_PRESETS: readonly IRulePreset[] = [
 	...BASE_PRESETS,
 	...META_PRESETS,
+	...LANGUAGE_PRESETS,
 ];
 
 /** npm packages each preset's materialised ESLint config imports. */
@@ -479,6 +687,16 @@ export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> =
 		],
 		astro: ['@eslint/js', 'typescript-eslint', 'eslint-plugin-astro'],
 		'solid-ts': ['@eslint/js', 'typescript-eslint', 'eslint-plugin-solid'],
+		// Per-language presets (f00051 S2/S3): required binaries, not npm pkgs.
+		'python-ruff': ['ruff'],
+		'go-golangci': ['golangci-lint'],
+		'rust-clippy': ['cargo', 'clippy'],
+		'ruby-rubocop': ['rubocop'],
+		'java-checkstyle': ['checkstyle'],
+		'kotlin-ktlint': ['ktlint'],
+		'swift-swiftlint': ['swiftlint'],
+		'csharp-dotnet': ['dotnet'],
+		'elixir-credo': ['credo'],
 	};
 
 export const PRESET_BY_ID: ReadonlyMap<string, IRulePreset> = new Map(

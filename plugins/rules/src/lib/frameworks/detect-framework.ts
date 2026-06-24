@@ -32,6 +32,81 @@ const hasTypeScript = async (
 	(await reader.exists(joinRel(areaDir, 'tsconfig.app.json'))) ||
 	'typescript' in deps;
 
+const fileExists = (
+	reader: IFileReader,
+	areaDir: string,
+	name: string,
+): Promise<boolean> => reader.exists(joinRel(areaDir, name));
+
+/** Does the area contain any file matching the given suffix? (f00051 S2) */
+const hasFileWithSuffix = async (
+	reader: IFileReader,
+	areaDir: string,
+	suffix: string,
+): Promise<boolean> => {
+	for (const name of await reader.listDir(areaDir)) {
+		if (name.endsWith(suffix)) return true;
+	}
+	return false;
+};
+
+/**
+ * Per-language manifest/lockfile detection (f00051 S2).
+ *
+ * Each entry is an *exclusive* signal: a `pyproject.toml` / `go.mod` /
+ * `Cargo.toml` / … beats the JS/TS catch-all because no polyglot repo
+ * ships one of these by accident. Probed BEFORE the JS/TS branches so a
+ * Python backend that also carries a `package.json` (for its JS frontend
+ * tooling) still resolves to Python. The project's own config always
+ * layers on top via the manifest's project-config-first ordering.
+ *
+ * Returns the resolved detection or `undefined` if no exclusive language
+ * manifest is present in the area.
+ */
+const detectLanguageManifest = async (
+	reader: IFileReader,
+	areaDir: string,
+): Promise<IDetectResult | undefined> => {
+	if (await fileExists(reader, areaDir, 'pyproject.toml')) {
+		return { presetId: 'python-ruff', reason: 'Python (pyproject.toml)' };
+	}
+	if (await fileExists(reader, areaDir, 'go.mod')) {
+		return { presetId: 'go-golangci', reason: 'Go (go.mod)' };
+	}
+	if (await fileExists(reader, areaDir, 'Cargo.toml')) {
+		return { presetId: 'rust-clippy', reason: 'Rust (Cargo.toml)' };
+	}
+	if (await fileExists(reader, areaDir, 'Gemfile')) {
+		return { presetId: 'ruby-rubocop', reason: 'Ruby (Gemfile)' };
+	}
+	if (await fileExists(reader, areaDir, 'mix.exs')) {
+		return { presetId: 'elixir-credo', reason: 'Elixir (mix.exs)' };
+	}
+	if (await fileExists(reader, areaDir, 'build.gradle.kts')) {
+		return {
+			presetId: 'kotlin-ktlint',
+			reason: 'Kotlin (build.gradle.kts)',
+		};
+	}
+	if (await fileExists(reader, areaDir, 'pom.xml')) {
+		return { presetId: 'java-checkstyle', reason: 'Java (pom.xml)' };
+	}
+	if (await fileExists(reader, areaDir, 'Package.swift')) {
+		return { presetId: 'swift-swiftlint', reason: 'Swift (Package.swift)' };
+	}
+	if (
+		(await fileExists(reader, areaDir, '*.sln')) ||
+		(await hasFileWithSuffix(reader, areaDir, '.csproj')) ||
+		(await hasFileWithSuffix(reader, areaDir, '.sln'))
+	) {
+		return {
+			presetId: 'csharp-dotnet',
+			reason: 'C#/.NET (*.csproj / *.sln)',
+		};
+	}
+	return undefined;
+};
+
 /**
  * Resolve which preset applies to one area, by its deps + TS presence.
  * Framework wins over language; falls back to vanilla-ts/js. Pure over
@@ -43,6 +118,11 @@ export const detectPresetForArea = async (
 ): Promise<IDetectResult> => {
 	const deps = await readDeps(reader, areaDir);
 	const ts = await hasTypeScript(reader, areaDir, deps);
+	// f00051 S2 — exclusive per-language manifests win over both the
+	// JS/TS catch-all and the PHP/Laravel branch (a Laravel area never
+	// also ships a Cargo.toml/go.mod/pyproject.toml).
+	const languageManifest = await detectLanguageManifest(reader, areaDir);
+	if (languageManifest !== undefined) return languageManifest;
 	if (
 		(await reader.exists(joinRel(areaDir, 'artisan'))) ||
 		(await reader.exists(joinRel(areaDir, 'composer.json')))
