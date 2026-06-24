@@ -210,7 +210,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
     *Resolution Track* column for any finding that becomes obsolete with
     the flag (e.g. *"worktree discipline is best-effort"*) or surfaces
     new findings we did not anticipate.
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - "`bun run validate` exits 0."
