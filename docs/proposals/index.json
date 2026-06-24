@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-24T06:50:49.100Z",
-	"count": 112,
+	"generated_at": "2026-06-24T07:25:19.603Z",
+	"count": 113,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -45,6 +45,14 @@
 					"{ agent: implementation_runner, task: 'S10: e2e — spin up a tiny synthetic polyglot workspace (one area per language) and run check_rules + apply_rules end-to-end via the existing MCP harness' }"
 				]
 			}
+		},
+		{
+			"id": "f00053",
+			"file": "ready/f00053-unify-and-polish-the-web-extension-ux-canonical-plugin-catalog-per-plugin-disclosures-representative-icons-per-plugin-install-cli-guide-and-shared-web-extension-surface.md",
+			"track": "apps/web+extensions/vscode+packages/ui-extension+docs+i18n+ux",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-24"
 		},
 		{
 			"id": "q00001",
