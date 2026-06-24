@@ -1,8 +1,8 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
-	"entryPoints": ["packages/core/src/public/index.ts"],
-	"tsconfig": "tsconfig.json",
-	"out": "build/docs-api",
+	"entryPoints": ["../packages/core/src/public/index.ts"],
+	"tsconfig": "../tsconfig.json",
+	"out": "../build/docs-api",
 	"name": "@mcp-vertex/core — public API",
 	"readme": "none",
 	"hideGenerator": true,
