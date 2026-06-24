@@ -134,18 +134,18 @@
 .nav__more {
 	position: relative;
 
-	--nav-more-summary-bg: transparent;
-	--nav-more-summary-color: var(--muted);
+	--nav-more-trigger-bg: transparent;
+	--nav-more-trigger-color: var(--muted);
 	--nav-more-caret-transform: none;
 }
-.nav__more-summary {
+.nav__more__trigger {
 	list-style: none;
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
 	gap: 0.25rem;
-	color: var(--nav-more-summary-color);
-	background: var(--nav-more-summary-bg);
+	color: var(--nav-more-trigger-color);
+	background: var(--nav-more-trigger-bg);
 	font-size: 0.92rem;
 	padding: 0.3rem 0.55rem;
 	border-radius: 6px;
@@ -165,28 +165,28 @@
 	}
 }
 .nav__more--open {
-	--nav-more-summary-bg: color-mix(in srgb, var(--accent) 9%, transparent);
-	--nav-more-summary-color: var(--fg);
+	--nav-more-trigger-bg: color-mix(in srgb, var(--accent) 9%, transparent);
+	--nav-more-trigger-color: var(--fg);
 	--nav-more-caret-transform: rotate(180deg);
-	// The panel reads its open-state values from these custom
+	// The menu reads its open-state values from these custom
 	// properties so the descendant selector stays out of the BEM
 	// scope (the linter rejects `.block--mod .block__elem`).
-	// Defaults are set on `.nav__more-panel` below; this block
+	// Defaults are set on `.nav__more__menu` below; this block
 	// just overrides them when the wrapper carries the `--open`
 	// modifier.
-	--nav-more-panel-transform: scaleY(1);
-	--nav-more-panel-opacity: 1;
-	--nav-more-panel-visibility: visible;
-	--nav-more-panel-transition:
+	--nav-more-menu-transform: scaleY(1);
+	--nav-more-menu-opacity: 1;
+	--nav-more-menu-visibility: visible;
+	--nav-more-menu-transition:
 		transform 0.18s ease,
 		opacity 0.16s ease,
 		visibility 0s linear 0s;
 }
-.nav__more-caret {
+.nav__more__caret {
 	transform: var(--nav-more-caret-transform);
 	transition: transform 0.18s ease;
 }
-.nav__more-panel {
+.nav__more__menu {
 	position: absolute;
 	top: calc(100% + 0.35rem);
 	right: 0;
@@ -202,20 +202,21 @@
 	z-index: 30;
 	transform-origin: top right;
 	// Closed-state defaults; `.nav__more--open` overrides these
-	// via the custom properties above so the panel's
+	// via the custom properties above so the menu's
 	// `transform` / `opacity` / `visibility` transition picks up
 	// the open values without a descendant selector.
-	transform: var(--nav-more-panel-transform, scaleY(0));
-	opacity: var(--nav-more-panel-opacity, 0);
-	visibility: var(--nav-more-panel-visibility, hidden);
-	transition: var(--nav-more-panel-transition);
+	transform: var(--nav-more-menu-transform, scaleY(0));
+	opacity: var(--nav-more-menu-opacity, 0);
+	visibility: var(--nav-more-menu-visibility, hidden);
+	transition: var(--nav-more-menu-transition);
 }
-.nav__more-link {
+.nav__more__item {
 	color: var(--muted);
 	font-size: 0.92rem;
 	padding: 0.45rem 0.6rem;
 	border-radius: 6px;
 	white-space: nowrap;
+	text-align: left;
 
 	&:hover,
 	&:focus-visible {
@@ -226,12 +227,12 @@
 	}
 }
 // Respect users who have asked for less motion: open / close
-// becomes instant (no scale / fade) and the panel snaps in.
+// becomes instant (no scale / fade) and the menu snaps in.
 @media (prefers-reduced-motion: reduce) {
-	.nav__more-panel,
+	.nav__more__menu,
 	.nav__more--open {
-		--nav-more-panel-transition: none;
-		--nav-more-panel-transform: none;
+		--nav-more-menu-transition: none;
+		--nav-more-menu-transform: none;
 	}
 }
 
