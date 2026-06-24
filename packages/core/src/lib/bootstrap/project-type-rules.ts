@@ -21,7 +21,9 @@ export interface IProjectTypeRule {
 	 * the rules in descending `priority` order and returns the
 	 * first match.
 	 */
-	readonly matches: (ctx: IProjectTypeRuleContext) => Promise<boolean> | boolean;
+	readonly matches: (
+		ctx: IProjectTypeRuleContext,
+	) => Promise<boolean> | boolean;
 }
 
 export interface IProjectTypeRuleContext {
@@ -74,7 +76,8 @@ export const DEFAULT_PROJECT_TYPE_RULES: readonly IProjectTypeRule[] = [
 		result: 'cli',
 		priority: 55,
 		matches: async (ctx) =>
-			await ctx.reader.exists('Cargo.toml') && await ctx.reader.exists('src/main.rs'),
+			(await ctx.reader.exists('Cargo.toml')) &&
+			(await ctx.reader.exists('src/main.rs')),
 	},
 	{
 		result: 'library',
@@ -86,7 +89,8 @@ export const DEFAULT_PROJECT_TYPE_RULES: readonly IProjectTypeRule[] = [
 		result: 'cli',
 		priority: 53,
 		matches: async (ctx) =>
-			await ctx.reader.exists('go.mod') && await ctx.reader.exists('main.go'),
+			(await ctx.reader.exists('go.mod')) &&
+			(await ctx.reader.exists('main.go')),
 	},
 	{
 		result: 'library',
@@ -99,8 +103,8 @@ export const DEFAULT_PROJECT_TYPE_RULES: readonly IProjectTypeRule[] = [
 		result: 'library',
 		priority: 50,
 		matches: async (ctx) =>
-			await ctx.reader.exists('pyproject.toml') ||
-			await ctx.reader.exists('setup.py'),
+			(await ctx.reader.exists('pyproject.toml')) ||
+			(await ctx.reader.exists('setup.py')),
 	},
 ];
 
