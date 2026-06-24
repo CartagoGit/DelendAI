@@ -107,6 +107,127 @@ describe('VS Code extension smoke', async () => {
 		expect(panels[0]?.webview.html).toContain('mcp-vertex_overview');
 	});
 
+	// Fix for "Error spawn bun ENOENT" on hosts where `bun` is not on
+	// the extension host's PATH (WSL installs at ~/.bun/bin/bun, custom
+	// devcontainer images, CI runners without a login shell profile).
+	// The extension must read `mcp-vertex.server.command` / `server.args`
+	// from the workspace configuration and forward them to the spawn
+	// instead of hardcoding `bun run mcp-vertex`.
+	it('createDefaultClient honours mcp-vertex.server.command and server.args', async () => {
+		const calls: Array<{ command: string; args: readonly string[] }> = [];
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			workspace: {
+				createFileSystemWatcher() {
+					return {
+						onDidChange() {
+							return { dispose() {} };
+						},
+						onDidCreate() {
+							return { dispose() {} };
+						},
+						onDidDelete() {
+							return { dispose() {} };
+						},
+						dispose() {},
+					};
+				},
+				getConfiguration(section) {
+					expect(section).toBe('mcp-vertex.server');
+					return {
+						get<T>(key: string, defaultValue?: T): T | undefined {
+							if (key === 'command')
+								return '/home/cartago/.bun/bin/bun' as unknown as T;
+							if (key === 'args')
+								return [
+									'run',
+									'mcp-vertex',
+									'--preset=swarm',
+								] as unknown as T;
+							return defaultValue;
+						},
+					};
+				},
+			},
+		};
+		// Intercept the real connect path so we can assert the spawn
+		// payload without standing up a stdio transport.
+		const originalConnect = McpStdioClient.connect;
+		McpStdioClient.connect = (async (opts: {
+			command: string;
+			args: readonly string[];
+		}) => {
+			calls.push({ command: opts.command, args: opts.args });
+			return McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: overviewFixture };
+				},
+			});
+		}) as typeof McpStdioClient.connect;
+		try {
+			const { createDefaultClient } = await import('../extension');
+			const client = await createDefaultClient(vscode);
+			expect(client).toBeDefined();
+		} finally {
+			McpStdioClient.connect = originalConnect;
+		}
+
+		expect(calls).toHaveLength(1);
+		expect(calls[0]?.command).toBe('/home/cartago/.bun/bin/bun');
+		expect(calls[0]?.args).toEqual(['run', 'mcp-vertex', '--preset=swarm']);
+	});
+
+	it('createDefaultClient falls back to `bun run mcp-vertex` when no configuration is provided', async () => {
+		const calls: Array<{ command: string; args: readonly string[] }> = [];
+		const vscode: IVscodeApi = {
+			ViewColumn: { One: 1 },
+			commands: {
+				registerCommand() {
+					return { dispose() {} };
+				},
+			},
+			window: {
+				createWebviewPanel() {
+					return { webview: { html: '' } };
+				},
+			},
+			// No `workspace` surface — simulates the minimal host stubs used
+			// by other specs (reload-no-leak, dashboard-with-injected-vscode).
+		};
+		const originalConnect = McpStdioClient.connect;
+		McpStdioClient.connect = (async (opts: {
+			command: string;
+			args: readonly string[];
+		}) => {
+			calls.push({ command: opts.command, args: opts.args });
+			return McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: overviewFixture };
+				},
+			});
+		}) as typeof McpStdioClient.connect;
+		try {
+			const { createDefaultClient } = await import('../extension');
+			await createDefaultClient(vscode);
+		} finally {
+			McpStdioClient.connect = originalConnect;
+		}
+
+		expect(calls).toEqual([
+			{ command: 'bun', args: ['run', 'mcp-vertex'] },
+		]);
+	});
+
 	it('escapes overview content before rendering HTML', async () => {
 		const html = renderOverviewHtml({
 			...overviewFixture,
