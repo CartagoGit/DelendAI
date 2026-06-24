@@ -159,7 +159,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
   - `plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts` (add a
     case where the flag is `false` and verify the tool returns the documented
     error)
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run test`
 - **Acceptance**:
   - "When `agentWorktreeEnabled === false`, the tool returns

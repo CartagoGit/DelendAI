@@ -158,38 +158,64 @@ Seed for the sync e2e.
 		expect(after.structured.count).toBe(baseline + 1);
 	});
 
-	it('agent_worktree create returns a clean worktree with no origin remote', async () => {
-		// agent_worktree shells out to real git, so the workspace must be a
-		// git repo with at least one commit. No remote is ever added — the
-		// safety invariant is that commit-and-push could not reach the wire.
-		const ws = harness.workspace;
-		git(ws, 'init', '-q');
-		git(ws, 'config', 'user.email', 'e2e@example.com');
-		git(ws, 'config', 'user.name', 'e2e');
-		git(ws, 'config', 'commit.gpgsign', 'false');
-		writeFileSync(join(ws, 'README.md'), '# e2e\n');
-		git(ws, 'add', '.');
-		git(ws, 'commit', '-q', '-m', 'initial');
+	it('agent_worktree create returns a clean worktree with no origin remote (host enabled)', async () => {
+		// f00052: the capability is off by default, so this test runs against
+		// a harness that opted in via `--agent-worktree=true`.
+		const enabled = await createAssembledProposalsServer({
+			enableAgentWorktree: true,
+		});
+		try {
+			// agent_worktree shells out to real git, so the workspace must be a
+			// git repo with at least one commit. No remote is ever added — the
+			// safety invariant is that commit-and-push could not reach the wire.
+			const ws = enabled.workspace;
+			git(ws, 'init', '-q');
+			git(ws, 'config', 'user.email', 'e2e@example.com');
+			git(ws, 'config', 'user.name', 'e2e');
+			git(ws, 'config', 'commit.gpgsign', 'false');
+			writeFileSync(join(ws, 'README.md'), '# e2e\n');
+			git(ws, 'add', '.');
+			git(ws, 'commit', '-q', '-m', 'initial');
 
+			const res = await enabled.callTool<{
+				ok: boolean;
+				action: string;
+				path?: string;
+				created?: boolean;
+			}>('proposals_agent_worktree', {
+				action: 'create',
+				agent: 'agent-A',
+				base_branch: 'HEAD',
+			});
+			expect(res.ok).toBe(true);
+			expect(res.structured.ok).toBe(true);
+			expect(res.structured.path).toBeDefined();
+			const wtPath = res.structured.path as string;
+			expect(existsSync(wtPath)).toBe(true);
+
+			// Clean working tree and — critically — no origin remote.
+			expect(git(wtPath, 'status', '--porcelain').trim()).toBe('');
+			expect(git(wtPath, 'remote', '-v').trim()).toBe('');
+		} finally {
+			await enabled.close();
+		}
+	});
+
+	it('agent_worktree is disabled by default and returns the documented error (host not enabled)', async () => {
+		// f00052: the default harness does NOT enable the capability, so the
+		// tool stays registered but refuses with a structured ok:false error
+		// and never shells out to git.
 		const res = await harness.callTool<{
 			ok: boolean;
 			action: string;
-			path?: string;
-			created?: boolean;
-		}>('proposals_agent_worktree', {
-			action: 'create',
-			agent: 'agent-A',
-			base_branch: 'HEAD',
-		});
-		expect(res.ok).toBe(true);
-		expect(res.structured.ok).toBe(true);
-		expect(res.structured.path).toBeDefined();
-		const wtPath = res.structured.path as string;
-		expect(existsSync(wtPath)).toBe(true);
-
-		// Clean working tree and — critically — no origin remote.
-		expect(git(wtPath, 'status', '--porcelain').trim()).toBe('');
-		expect(git(wtPath, 'remote', '-v').trim()).toBe('');
+			reason?: string;
+		}>('proposals_agent_worktree', { action: 'create', agent: 'agent-A' });
+		expect(res.ok).toBe(false);
+		expect(res.structured.ok).toBe(false);
+		expect(res.structured.action).toBe('create');
+		expect(res.structured.reason).toBe(
+			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.',
+		);
 	});
 
 	it('task_queue enqueue returns queued; re-enqueueing the same taskId is idempotent', async () => {

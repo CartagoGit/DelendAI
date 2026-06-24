@@ -192,6 +192,7 @@ export default definePlugin({
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRoot: ctx.workspace.root,
+					enabled: ctx.agentWorktreeEnabled === true,
 				}),
 				buildTaskQueueRegistration({
 					namespacePrefix: ctx.namespacePrefix,

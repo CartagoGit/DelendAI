@@ -73,57 +73,72 @@ export interface IAssembledProposalsServer {
  * responsible for awaiting `close()` to release the transport and
  * the tmpdir contents.
  */
-export const createAssembledProposalsServer =
-	async (): Promise<IAssembledProposalsServer> => {
-		const workspace = mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
-		const args = parseCliArgs(
-			['--plugins=proposals', `--workspace=${workspace}`],
-			workspace,
-		);
-		const { config } = await assembleCliConfig(args, {
-			// Inject the real proposals plugin (no dynamic resolution in tests).
-			import: async () => ({ default: proposalsPlugin }),
-			// No on-disk config file: the harness owns the workspace, the
-			// plugin receives pure defaults from ctx.corePaths.
-			readFile: async () => undefined,
-		});
-		const assembled = await createMcpProject(config);
-		const [clientTransport, serverTransport] =
-			InMemoryTransport.createLinkedPair();
-		await assembled.server.connect(serverTransport);
-		const client = new McpClient(
-			{ name: 'proposals-e2e-test', version: '0.0.0' },
-			{ capabilities: {} },
-		);
-		await client.connect(clientTransport);
+export interface ICreateAssembledProposalsServerOptions {
+	/**
+	 * f00052: opt into the host-scoped `agent_worktree` capability by
+	 * forwarding `--agent-worktree=true`. Default `false` mirrors the real
+	 * runtime, where the tool is registered but disabled until a host
+	 * enables it.
+	 */
+	readonly enableAgentWorktree?: boolean;
+}
 
-		const callTool = async <T = unknown>(
-			name: string,
-			toolArgs: Record<string, unknown> = {},
-		): Promise<IAssembledToolResult<T>> => {
-			const raw = await client.callTool({ name, arguments: toolArgs });
-			const first = (
-				raw.content as Array<{ type: string; text?: string }>
-			)[0];
-			const text = first?.text ?? '{}';
-			const structured = (raw.structuredContent ?? JSON.parse(text)) as T;
-			return {
-				ok: raw.isError !== true,
-				raw,
-				structured,
-				text,
-			};
-		};
+export const createAssembledProposalsServer = async (
+	options: ICreateAssembledProposalsServerOptions = {},
+): Promise<IAssembledProposalsServer> => {
+	const workspace = mkdtempSync(join(tmpdir(), 'proposals-e2e-'));
+	const args = parseCliArgs(
+		[
+			'--plugins=proposals',
+			`--workspace=${workspace}`,
+			...(options.enableAgentWorktree ? ['--agent-worktree=true'] : []),
+		],
+		workspace,
+	);
+	const { config } = await assembleCliConfig(args, {
+		// Inject the real proposals plugin (no dynamic resolution in tests).
+		import: async () => ({ default: proposalsPlugin }),
+		// No on-disk config file: the harness owns the workspace, the
+		// plugin receives pure defaults from ctx.corePaths.
+		readFile: async () => undefined,
+	});
+	const assembled = await createMcpProject(config);
+	const [clientTransport, serverTransport] =
+		InMemoryTransport.createLinkedPair();
+	await assembled.server.connect(serverTransport);
+	const client = new McpClient(
+		{ name: 'proposals-e2e-test', version: '0.0.0' },
+		{ capabilities: {} },
+	);
+	await client.connect(clientTransport);
 
+	const callTool = async <T = unknown>(
+		name: string,
+		toolArgs: Record<string, unknown> = {},
+	): Promise<IAssembledToolResult<T>> => {
+		const raw = await client.callTool({ name, arguments: toolArgs });
+		const first = (
+			raw.content as Array<{ type: string; text?: string }>
+		)[0];
+		const text = first?.text ?? '{}';
+		const structured = (raw.structuredContent ?? JSON.parse(text)) as T;
 		return {
-			client,
-			server: assembled.server,
-			workspace,
-			callTool,
-			close: async () => {
-				await client.close();
-				await assembled.server.close();
-				rmSync(workspace, { recursive: true, force: true });
-			},
+			ok: raw.isError !== true,
+			raw,
+			structured,
+			text,
 		};
 	};
+
+	return {
+		client,
+		server: assembled.server,
+		workspace,
+		callTool,
+		close: async () => {
+			await client.close();
+			await assembled.server.close();
+			rmSync(workspace, { recursive: true, force: true });
+		},
+	};
+};
