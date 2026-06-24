@@ -34,7 +34,9 @@ extensions/*/*.vsix
 .worktrees/
 site/
 .astro/
-# f00054 S1: vitest coverage is centralized under .cache/coverage (see vitest.config.ts)
+# f00054 S1: root vitest coverage is centralized under .cache/coverage (see
+# vitest.config.ts); this also ignores any per-package coverage/ output.
+coverage/
 apps/web/src/data/capabilities.json
 apps/web/src/data/manifests/
 # Generated symlink: apps/web/public/api -> ../../../build/docs-api.
