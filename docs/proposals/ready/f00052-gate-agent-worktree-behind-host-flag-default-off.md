@@ -102,7 +102,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
   - `packages/core/src/lib/plugins/parse-cli-args.ts` (`IMcpVertexCliArgs`,
     `KNOWN_KEYS`)
   - `packages/core/tests/src/lib/plugins/parse-cli-args.spec.ts`
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run test`
 - **Acceptance**:
   - "Parser recognises `--agent-worktree=true|false` and `--agent-worktree` (bare =

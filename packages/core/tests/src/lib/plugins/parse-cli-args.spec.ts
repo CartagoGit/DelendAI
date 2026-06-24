@@ -115,4 +115,33 @@ describe('parseCliArgs', async () => {
 		const args = parseCliArgs(['--preset=swarm'], '/cwd');
 		expect(args.plugins).toContain('status-marker');
 	});
+
+	// f00052 S2 — host-scoped --agent-worktree gate (tri-state, default off)
+	describe('--agent-worktree', () => {
+		it('defaults to undefined when the flag is absent (falls back to false downstream)', () => {
+			const args = parseCliArgs([], '/cwd');
+			expect(args.agentWorktree).toBeUndefined();
+		});
+
+		it('parses --agent-worktree=true', () => {
+			const args = parseCliArgs(['--agent-worktree=true'], '/cwd');
+			expect(args.agentWorktree).toBe(true);
+		});
+
+		it('parses --agent-worktree=false', () => {
+			const args = parseCliArgs(['--agent-worktree=false'], '/cwd');
+			expect(args.agentWorktree).toBe(false);
+		});
+
+		it('treats a bare --agent-worktree as true', () => {
+			const args = parseCliArgs(['--agent-worktree'], '/cwd');
+			expect(args.agentWorktree).toBe(true);
+		});
+
+		it('throws a clear parse error for an unknown value, not a silent false', () => {
+			expect(() =>
+				parseCliArgs(['--agent-worktree=maybe'], '/cwd'),
+			).toThrow(/Invalid value for --agent-worktree: "maybe"/);
+		});
+	});
 });
