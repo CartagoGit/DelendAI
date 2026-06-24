@@ -42,6 +42,11 @@ export {
 	formatRelativeTime,
 	formatTokens,
 } from '../dashboard/format';
+export {
+	SHARED_UI_STRINGS,
+	BRAND_TOKENS,
+} from '../strings/shared-ui-strings';
+export type { SharedUiStringKey } from '../strings/shared-ui-strings';
 export { renderKnowledgeNavigator } from '../knowledge/render-knowledge-navigator';
 export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowledge-navigator';
 export { renderSettings } from '../settings/render-settings';

@@ -110,4 +110,5 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "Brand/UI copy used by BOTH the web and the extension shell lives in one host-agnostic module (pure TS, no astro/web or vscode imports) and is consumed by both."
   - "A spec asserts the shared strings module has no host-specific import and exposes the keys both surfaces need."
   - "At least the duplicated brand/tagline/nav strings identified between apps/web and packages/ui-extension are de-duplicated through this module."
-- status: pending
+- status: done
+- note: "New packages/ui-extension/src/strings/shared-ui-strings.ts holds the brand/UI copy (productName, brandName, serverName, taglines, repoUrl, docsUrl + BRAND_TOKENS), exported from the public barrel so both surfaces consume it (apps/web imports @mcp-vertex/ui-extension/public; the extension already does). shared-ui-strings.spec (2) enforces the PURITY contract (zero imports — no vscode/astro/web-alias/node) + key presence. Concrete de-dup: the extension's openDocsApi docs URL now derives from SHARED_UI_STRINGS.docsUrl. Follow-up: migrate apps/web's i18n brand literals to consume it (needs adding the ui-extension dep to apps/web). typecheck + 179 ui-extension/extension tests green."
