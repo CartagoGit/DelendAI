@@ -1,0 +1,94 @@
+---
+/**
+ * PluginDisclosure.astro — one plugin rendered as a keyboard-accessible
+ * native <details> disclosure (f00053 S2).
+ *
+ * Collapsed, the <summary> reproduces the former `.plugin-card` look
+ * (icon + name + version + purpose + tool-count badge). Expanded, the
+ * body lists exactly the tools the plugin contributes, by name with
+ * their one-line description, plus a link to the full plugin page.
+ *
+ * Single Responsibility: this component renders ONE plugin. All copy +
+ * capabilities come from the canonical `plugin-catalog` (S1) — never
+ * from a raw i18n key here, so the disclosure can never leak `plugin.<slug>`.
+ */
+import { capabilityToolsFor, resolvePluginPurpose } from '#DATA/plugin-catalog';
+
+interface Props {
+	/** Plugin slug / route id (e.g. `proposals`). */
+	slug: string;
+	/** Full package name shown as the title (e.g. `@mcp-vertex/proposals`). */
+	name: string;
+	/** Package version. */
+	version: string;
+	/** Href of the plugin's detail page. */
+	href: string;
+	/** Optional "requires <plugin>" note (e.g. issues → proposals). */
+	requires?: { label: string; href: string; name: string };
+}
+const { slug, name, version, href, requires } = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const purpose = resolvePluginPurpose(slug);
+const tools = capabilityToolsFor(slug);
+const count = tools.length;
+const iconSrc = `${base}/logos/plugin-${slug}.svg`;
+const onIconError =
+	"this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:this.dataset.slug||''}))";
+---
+
+<details class="plugin-disc card">
+	<summary class="plugin-disc__summary">
+		<div class="plugin-card__head">
+			<img
+				class="plugin-card__icon"
+				src={iconSrc}
+				alt=""
+				data-slug={slug}
+				width="36"
+				height="36"
+				loading="lazy"
+				onerror={onIconError}
+			/>
+			<div class="plugin-card__title">
+				<code>{name}</code>
+				<span class="plugin-card__version">v{version}</span>
+			</div>
+		</div>
+		<p class="plugin-card__desc">{purpose}</p>
+		<div class="plugin-card__foot">
+			<span class="plugin-card__badge">
+				{count} {count === 1 ? 'tool' : 'tools'}
+			</span>
+			<span class="plugin-disc__chevron" aria-hidden="true">▾</span>
+		</div>
+	</summary>
+	<div class="plugin-disc__body">
+		{
+			count > 0 ? (
+				<ul class="plugin-disc__tools">
+					{tools.map((tool) => (
+						<li class="plugin-disc__tool">
+							<code class="plugin-disc__tool-name">{tool.name}</code>
+							{tool.description && (
+								<span class="plugin-disc__tool-desc">{tool.description}</span>
+							)}
+						</li>
+					))}
+				</ul>
+			) : (
+				<p class="plugin-disc__empty">
+					Load this plugin (<code>--plugins={slug}</code>) to expose its tools.
+				</p>
+			)
+		}
+		{
+			requires && (
+				<p class="plugin-disc__requires">
+					Requires <a href={requires.href}>{requires.name}</a> ({requires.label}).
+				</p>
+			)
+		}
+		<a class="plugin-disc__link" href={href}>Open the {slug} plugin page →</a>
+	</div>
+</details>

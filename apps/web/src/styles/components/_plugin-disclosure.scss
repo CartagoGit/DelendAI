@@ -1,0 +1,123 @@
+// _plugin-disclosure.scss — the expandable plugin card on the /plugins
+// index (f00053 S2). Built on a native <details>/<summary> so it is
+// keyboard-accessible for free. Collapsed it reuses the .plugin-card__*
+// internals; expanded it reveals the plugin's tool list.
+//
+// BEM root: .plugin-disc. Children:
+//   - .plugin-disc__summary   (the clickable card face; <summary>)
+//   - .plugin-disc__chevron   (rotates when open)
+//   - .plugin-disc__body      (revealed content)
+//   - .plugin-disc__tools     (the contributed-tool list)
+//   - .plugin-disc__tool      (one tool: name + description)
+//   - .plugin-disc__link      (link to the full plugin page)
+
+.plugin-disc {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	min-width: 0;
+	overflow: hidden;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+	&[open] {
+		border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+		box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+	}
+
+	// Rotate the chevron when the disclosure is open. Nested under the
+	// block (rooted at `&`) so it satisfies the scoped-bem rule.
+	&[open] .plugin-disc__chevron {
+		transform: rotate(180deg);
+		color: var(--accent);
+	}
+}
+
+.plugin-disc__summary {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+	padding: 1.1rem 1.2rem 1rem;
+	cursor: pointer;
+	list-style: none;
+	user-select: none;
+
+	// Hide the native disclosure triangle (we ship our own chevron).
+	&::-webkit-details-marker {
+		display: none;
+	}
+	&::marker {
+		content: '';
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: 12px;
+	}
+}
+
+.plugin-disc__chevron {
+	font-size: 1rem;
+	color: var(--muted);
+	transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.plugin-disc__body {
+	padding: 0 1.2rem 1.1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+	border-top: 1px dashed var(--line);
+	padding-top: 0.9rem;
+}
+
+.plugin-disc__tools {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+.plugin-disc__tool {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+.plugin-disc__tool-name {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--fg);
+	word-break: break-word;
+}
+.plugin-disc__tool-desc {
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--muted);
+}
+
+.plugin-disc__empty,
+.plugin-disc__requires {
+	font-size: 0.85rem;
+	color: var(--muted);
+	margin: 0;
+}
+
+.plugin-disc__link {
+	align-self: flex-start;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--accent);
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
