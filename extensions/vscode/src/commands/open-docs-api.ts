@@ -13,12 +13,14 @@
  * as `openDocs` (rejects http://, localhost and private IPs by default).
  */
 import { EmbedService, type IEmbedServiceOptions } from '@mcp-vertex/client';
-import { escapeHtml } from '@mcp-vertex/ui-extension/public';
+import { SHARED_UI_STRINGS, escapeHtml } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandVscodeApi } from './types';
 
 export const OPEN_DOCS_API_COMMAND = 'mcp-vertex.openDocsApi';
-export const DEFAULT_DOCS_BASE_URL = 'https://mcp-vertex.dev';
+// f00053 S7: the docs URL has one source of truth (the shared strings
+// module), consumed here instead of re-typed.
+export const DEFAULT_DOCS_BASE_URL = SHARED_UI_STRINGS.docsUrl;
 
 export interface IDocsTarget {
 	readonly id: string;
