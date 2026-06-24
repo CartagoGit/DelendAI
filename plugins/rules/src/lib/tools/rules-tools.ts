@@ -85,8 +85,16 @@ const conventionsFor = (
 	return out;
 };
 
+/** The area's lint target: `.` at the workspace root, else its dir. */
+const areaTarget = (areaDir: string): string =>
+	areaDir === 'root' ? '.' : areaDir;
+
+/** Substitute the `{target}` placeholder in a preset command template. */
+const renderCommand = (template: string, areaDir: string): string =>
+	template.replace(/\{target\}/g, areaTarget(areaDir));
+
 const eslintCommand = (areaDir: string, rules: IAreaRules): string => {
-	const target = areaDir === 'root' ? '.' : areaDir;
+	const target = areaTarget(areaDir);
 	// First eslint entry is the project's own config when present; if our
 	// cache default is the only one, point ESLint at it explicitly.
 	const projectOwns = rules.eslint.length > 1;
@@ -95,14 +103,24 @@ const eslintCommand = (areaDir: string, rules: IAreaRules): string => {
 		: `eslint ${target} --config ${rules.eslint[0]}`;
 };
 
-/** Lint check/fix commands, branching on the preset's linter. */
+/**
+ * Lint check command. f00051 S4: each preset carries its own command
+ * template (`checkCommand`); only the JS/TS (`eslint`) and PHP (`pint`)
+ * presets fall through to the legacy hardcoded branches, byte-for-byte.
+ */
 const lintCheckCommand = (areaDir: string, rules: IAreaRules): string => {
 	const preset = PRESET_BY_ID.get(rules.presetId);
+	if (preset?.checkCommand !== undefined) {
+		return renderCommand(preset.checkCommand, areaDir);
+	}
 	if (preset?.linter === 'pint') return './vendor/bin/pint --test';
 	return eslintCommand(areaDir, rules);
 };
 const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
 	const preset = PRESET_BY_ID.get(rules.presetId);
+	if (preset?.fixCommand !== undefined) {
+		return renderCommand(preset.fixCommand, areaDir);
+	}
 	if (preset?.linter === 'pint') return './vendor/bin/pint';
 	return `${eslintCommand(areaDir, rules)} --fix`;
 };
@@ -177,8 +195,21 @@ const missingEslintFinding = (input: {
 	};
 };
 
-/** Typecheck command for an area, or undefined if it isn't a TS area. */
-const typecheckCommand = (rules: IAreaRules): string | undefined => {
+/**
+ * Typecheck command for an area, or undefined when the language has no
+ * separate typecheck step. f00051 S4: a preset's own `typecheckCommand`
+ * template (e.g. `cargo check --workspace`, `go vet ./...`, `basedpyright`)
+ * takes precedence; JS/TS presets fall through to the `tsc` path keyed off
+ * the resolved tsconfig list.
+ */
+const typecheckCommand = (
+	areaDir: string,
+	rules: IAreaRules,
+): string | undefined => {
+	const preset = PRESET_BY_ID.get(rules.presetId);
+	if (preset?.typecheckCommand !== undefined) {
+		return renderCommand(preset.typecheckCommand, areaDir);
+	}
 	if (rules.typecheck.length === 0) return undefined;
 	// Prefer the project's own tsconfig (entries not under the cache dir).
 	const projectTsconfig = rules.typecheck.find((p) => !p.includes('.cache/'));
@@ -318,7 +349,10 @@ export const buildCheckRulesRegistration = (
 										typecheckConfigs: entry.rules.typecheck,
 									}),
 							command,
-							typecheckCommand: typecheckCommand(entry.rules),
+							typecheckCommand: typecheckCommand(
+								entry.area,
+								entry.rules,
+							),
 							missingEslintDeps: missing,
 						};
 					}),
