@@ -27,9 +27,41 @@ export interface IRulePreset {
 	readonly id: string;
 	/** Framework family, e.g. `angular`, `react`, `vue`, `vanilla`. */
 	readonly framework: string;
-	readonly language: 'ts' | 'js' | 'php';
+	/**
+	 * Programming-language family this preset targets. Widened in
+	 * f00051 S2 beyond the original `ts | js | php` to carry the
+	 * per-language presets (Python, Go, Rust, Ruby, Java, Kotlin,
+	 * Swift, C#, Elixir). The full ~70-tag union lives in the SOLID
+	 * core's `contracts/preset-identity.interface.ts`; this legacy
+	 * facade carries the families currently wired into the live
+	 * detection path.
+	 */
+	readonly language:
+		| 'ts'
+		| 'js'
+		| 'php'
+		| 'py'
+		| 'go'
+		| 'rs'
+		| 'rb'
+		| 'java'
+		| 'kt'
+		| 'swift'
+		| 'cs'
+		| 'ex';
 	/** The linter the preset targets (eslint for JS/TS, pint for PHP…). */
-	readonly linter: 'eslint' | 'pint';
+	readonly linter:
+		| 'eslint'
+		| 'pint'
+		| 'ruff'
+		| 'golangci-lint'
+		| 'clippy'
+		| 'rubocop'
+		| 'checkstyle'
+		| 'ktlint'
+		| 'swiftlint'
+		| 'dotnet-format'
+		| 'credo';
 	/** Cache filename for the materialised ESLint config. */
 	readonly eslintConfigFile: string;
 	/** Cache filename for the materialised tsconfig (TS presets only). */

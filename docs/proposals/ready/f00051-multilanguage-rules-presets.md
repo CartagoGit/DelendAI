@@ -825,7 +825,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S2 — Language-aware area detection
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/frameworks/detect-framework.ts
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
 - **Gate**: test

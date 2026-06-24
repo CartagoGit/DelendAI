@@ -10,7 +10,9 @@ const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
 	exists: async (p) => p in files,
 	listDir: async (dir) => {
-		const prefix = `${dir}/`;
+		// Mirror the real workspace reader: `listDir('')`/`listDir('.')`
+		// lists the immediate children of the workspace root.
+		const prefix = dir === '' || dir === '.' ? '' : `${dir}/`;
 		const names = new Set<string>();
 		for (const path of Object.keys(files)) {
 			if (path.startsWith(prefix)) {
@@ -166,6 +168,91 @@ describe('detectPresetForArea', async () => {
 			expect(SUPPORTED_PRESET_IDS).toContain(id);
 		}
 	});
+
+	// --- f00051 S2: per-language manifest detection -----------------------
+	it('detects each non-JS language via its exclusive manifest/lockfile', async () => {
+		const cases: ReadonlyArray<readonly [Record<string, string>, string]> =
+			[
+				[
+					{ 'pyproject.toml': '[project]\nname = "api"' },
+					'python-ruff',
+				],
+				[
+					{ 'go.mod': 'module example.com/svc\n\ngo 1.22' },
+					'go-golangci',
+				],
+				[{ 'Cargo.toml': '[package]\nname = "cli"' }, 'rust-clippy'],
+				[{ Gemfile: "source 'https://rubygems.org'" }, 'ruby-rubocop'],
+				[{ 'pom.xml': '<project></project>' }, 'java-checkstyle'],
+				[
+					{ 'build.gradle.kts': 'plugins { kotlin("jvm") }' },
+					'kotlin-ktlint',
+				],
+				[
+					{ 'Package.swift': '// swift-tools-version:5.9' },
+					'swift-swiftlint',
+				],
+				[{ 'Foo.csproj': '<Project></Project>' }, 'csharp-dotnet'],
+				[
+					{ 'mix.exs': 'defmodule App.MixProject do\nend' },
+					'elixir-credo',
+				],
+			];
+		for (const [files, expected] of cases) {
+			expect(
+				(await detectPresetForArea(reader(files), '')).presetId,
+			).toBe(expected);
+		}
+	});
+
+	it('per-language manifest wins over a co-located package.json (polyglot tie-break)', async () => {
+		// A Python backend that also ships a package.json for its JS frontend
+		// tooling must still resolve to Python (the exclusive manifest wins).
+		expect(
+			(
+				await detectPresetForArea(
+					reader({
+						'pyproject.toml': '[project]\nname = "api"',
+						'package.json': JSON.stringify({
+							dependencies: { react: '^19' },
+						}),
+						'tsconfig.json': '{}',
+					}),
+					'',
+				)
+			).presetId,
+		).toBe('python-ruff');
+		// go.mod beats package.json too.
+		expect(
+			(
+				await detectPresetForArea(
+					reader({
+						'go.mod': 'module x\n\ngo 1.22',
+						'package.json': JSON.stringify({
+							dependencies: { vue: '^3' },
+						}),
+					}),
+					'',
+				)
+			).presetId,
+		).toBe('go-golangci');
+	});
+
+	it('exposes the new per-language preset ids', async () => {
+		for (const id of [
+			'python-ruff',
+			'go-golangci',
+			'rust-clippy',
+			'ruby-rubocop',
+			'java-checkstyle',
+			'kotlin-ktlint',
+			'swift-swiftlint',
+			'csharp-dotnet',
+			'elixir-credo',
+		]) {
+			expect(SUPPORTED_PRESET_IDS).toContain(id);
+		}
+	});
 });
 
 describe('buildRulesManifest', async () => {
@@ -210,5 +297,29 @@ describe('buildRulesManifest', async () => {
 		});
 		expect((await manifest).projects.demo?.root?.presetId).toBe('react-ts');
 		expect((await manifest).projects.demo?.root?.reason).toMatch(/forced/);
+	});
+
+	// f00051 S2 — a polyglot workspace classifies each area independently.
+	it('classifies a polyglot workspace per-area without short-circuiting', async () => {
+		const manifest = await buildRulesManifest({
+			reader: reader({
+				'package.json': JSON.stringify({ name: 'demo' }),
+				'apps/web/package.json': JSON.stringify({
+					dependencies: { next: '^15', react: '^19' },
+				}),
+				'apps/web/tsconfig.json': '{}',
+				'apps/api/pyproject.toml': '[project]\nname = "api"',
+				'services/rust-thing/Cargo.toml': '[package]\nname = "rt"',
+				'services/go-thing/go.mod': 'module x\n\ngo 1.22',
+			}),
+			projectName: 'demo',
+			cacheRelDir: '.cache/mcp-vertex/rules',
+			mode: 'mixed',
+		});
+		const areas = (await manifest).projects.demo;
+		expect(areas?.['apps/web']?.presetId).toBe('next-ts');
+		expect(areas?.['apps/api']?.presetId).toBe('python-ruff');
+		expect(areas?.['services/rust-thing']?.presetId).toBe('rust-clippy');
+		expect(areas?.['services/go-thing']?.presetId).toBe('go-golangci');
 	});
 });
