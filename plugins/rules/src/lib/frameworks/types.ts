@@ -74,6 +74,23 @@ export interface IRulePreset {
 	readonly conventions: readonly string[];
 	/** npm packages the materialised ESLint config needs installed. */
 	readonly requiredEslintDeps?: readonly string[];
+	/**
+	 * f00051 S4 — per-preset command templates. When set, the tools
+	 * emit these verbatim instead of the legacy `eslint`/`pint`
+	 * branches. The `{target}` placeholder is replaced with the area
+	 * directory (`.` for the workspace root, otherwise the relative
+	 * dir). A preset that omits these (JS/TS via `eslint`, PHP via
+	 * `pint`) keeps the historical hardcoded behaviour byte-for-byte.
+	 *
+	 * `checkCommand`  — lint/validate the area (read-only).
+	 * `fixCommand`    — auto-fix the area (may modify files).
+	 * `typecheckCommand` — type-check the area; omit for languages with
+	 *                   no separate typecheck step (Ruby/Java/Kotlin
+	 *                   without a configured typechecker, etc.).
+	 */
+	readonly checkCommand?: string;
+	readonly fixCommand?: string;
+	readonly typecheckCommand?: string;
 }
 
 /** Per-area resolution in the cache manifest. Arrays are priority-ordered. */

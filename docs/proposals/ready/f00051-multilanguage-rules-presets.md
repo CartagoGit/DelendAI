@@ -858,7 +858,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S4 — Per-preset check/fix/typecheck commands
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
 - **Files**: plugins/rules/src/lib/frameworks/types.ts
 - **Gate**: test

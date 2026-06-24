@@ -457,6 +457,9 @@ select = ["E", "F", "I", "UP", "B"]
 			'Run `ruff check .` to lint and `ruff format .` to format.',
 		],
 		requiredEslintDeps: ['ruff'],
+		checkCommand: 'ruff check {target}',
+		fixCommand: 'ruff check --fix {target}',
+		typecheckCommand: 'basedpyright {target}',
 	},
 	{
 		id: 'go-golangci',
@@ -480,6 +483,9 @@ linters:
 			'Run `golangci-lint run ./...` and `go vet ./...` before committing.',
 		],
 		requiredEslintDeps: ['golangci-lint'],
+		checkCommand: 'golangci-lint run ./...',
+		fixCommand: 'golangci-lint run --fix ./...',
+		typecheckCommand: 'go vet ./...',
 	},
 	{
 		id: 'rust-clippy',
@@ -498,6 +504,9 @@ avoid-breaking-exported-api = false
 			'Run `cargo clippy --workspace --all-targets -- -D warnings` before every commit.',
 		],
 		requiredEslintDeps: ['cargo', 'clippy'],
+		checkCommand: 'cargo clippy --workspace --all-targets -- -D warnings',
+		fixCommand: 'cargo clippy --fix --workspace --all-targets',
+		typecheckCommand: 'cargo check --workspace',
 	},
 	{
 		id: 'ruby-rubocop',
@@ -518,6 +527,8 @@ AllCops:
 			'Run `rubocop` to lint and `rubocop -a` to auto-correct.',
 		],
 		requiredEslintDeps: ['rubocop'],
+		checkCommand: 'rubocop {target}',
+		fixCommand: 'rubocop -a {target}',
 	},
 	{
 		id: 'java-checkstyle',
@@ -544,6 +555,9 @@ AllCops:
 			'Run Checkstyle (or Spotless) in the build before merge.',
 		],
 		requiredEslintDeps: ['checkstyle'],
+		checkCommand: './gradlew checkstyleMain',
+		fixCommand: './gradlew spotlessApply',
+		typecheckCommand: './gradlew compileJava',
 	},
 	{
 		id: 'kotlin-ktlint',
@@ -564,6 +578,9 @@ max_line_length = 120
 			'Run `ktlint` to check and `ktlint -F` to format.',
 		],
 		requiredEslintDeps: ['ktlint'],
+		checkCommand: 'ktlint',
+		fixCommand: 'ktlint -F',
+		typecheckCommand: './gradlew compileKotlin',
 	},
 	{
 		id: 'swift-swiftlint',
@@ -585,6 +602,9 @@ line_length: 120
 			'Run `swiftlint` to lint and `swift-format` (or `swiftlint --fix`) to format.',
 		],
 		requiredEslintDeps: ['swiftlint'],
+		checkCommand: 'swiftlint lint',
+		fixCommand: 'swiftlint --fix',
+		typecheckCommand: 'swift build',
 	},
 	{
 		id: 'csharp-dotnet',
@@ -605,6 +625,9 @@ csharp_style_namespace_declarations = file_scoped:warning
 			'Run `dotnet format` to fix and `dotnet build -warnaserror` to verify.',
 		],
 		requiredEslintDeps: ['dotnet'],
+		checkCommand: 'dotnet format --verify-no-changes',
+		fixCommand: 'dotnet format',
+		typecheckCommand: 'dotnet build -p:TreatWarningsAsErrors=true',
 	},
 	{
 		id: 'elixir-credo',
@@ -631,6 +654,9 @@ csharp_style_namespace_declarations = file_scoped:warning
 			'Run `mix credo --strict` to lint and `mix format` to format.',
 		],
 		requiredEslintDeps: ['credo'],
+		checkCommand: 'mix credo --strict',
+		fixCommand: 'mix format',
+		typecheckCommand: 'mix dialyzer',
 	},
 ];
 
