@@ -26,6 +26,7 @@ import {
 	OPEN_DOCS_COMMAND,
 	registerOpenDocsCommand,
 } from './commands/open-docs';
+import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import {
 	OPEN_KNOWLEDGE_COMMAND,
 	registerOpenKnowledgeCommand,
@@ -279,6 +280,8 @@ export const activate = async (
 	// a thin host wrapper around `EmbedService` (no client request), so
 	// it only needs `vscode`.
 	track(registerOpenDocsCommand({ vscode }));
+	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
+	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client }));
 	track(registerRestartServerCommand(vscode));

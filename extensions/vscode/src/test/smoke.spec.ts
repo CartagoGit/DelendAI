@@ -91,7 +91,8 @@ describe('VS Code extension smoke', async () => {
 		// f00047 S6 (dashboard-always-registers): +1 for openDashboard,
 		//   which is now wired even when `deps.vscode` is injected (the
 		//   smoke test injects vscode → dashboard now shows up here).
-		expect(subscriptions).toHaveLength(17);
+		// f00053 S6: +1 for the new mcp-vertex.openDocsApi command.
+		expect(subscriptions).toHaveLength(18);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
