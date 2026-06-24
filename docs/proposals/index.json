@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-24T16:38:07.290Z",
-	"count": 113,
+	"generated_at": "2026-06-24T20:19:57.303Z",
+	"count": 114,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -45,6 +45,14 @@
 					"{ agent: implementation_runner, task: 'S10: e2e — spin up a tiny synthetic polyglot workspace (one area per language) and run check_rules + apply_rules end-to-end via the existing MCP harness' }"
 				]
 			}
+		},
+		{
+			"id": "f00054",
+			"file": "ready/f00054-declutter-repo-root-configs-dir-and-centralized-cache.md",
+			"track": "repo-layout+build+tooling+dx",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-24"
 		},
 		{
 			"id": "f00053",
