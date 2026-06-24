@@ -136,7 +136,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
   - `packages/core/src/lib/cli/assemble.ts` (`buildContext`, `IMcpVertexHostConfig`)
   - `packages/core/src/lib/plugins/plugin-contract.ts` (`IMcpPluginContext`)
   - `packages/core/tests/src/lib/cli/assemble.spec.ts`
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "`IMcpPluginContext.agentWorktreeEnabled: boolean` is always set (never

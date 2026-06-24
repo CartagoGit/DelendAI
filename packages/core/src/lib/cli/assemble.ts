@@ -110,6 +110,13 @@ export const assembleCliConfig = async (
 	const corePaths = { cacheDir, docsDir };
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
+	// f00052: host-scoped agent_worktree gate. Resolution order is host
+	// CLI flag > config file > `false` default. The CLI value is already a
+	// tri-state boolean (`undefined` when the flag is absent), so a simple
+	// nullish cascade gives the documented precedence with a concrete
+	// boolean result that is never `undefined`.
+	const agentWorktreeEnabled =
+		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
@@ -119,6 +126,7 @@ export const assembleCliConfig = async (
 			cacheDir: corePaths.cacheDir,
 			docsDir: corePaths.docsDir,
 			keepLegacy,
+			agentWorktreeEnabled,
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: pluginConfig.prefix ?? pluginName,
@@ -343,6 +351,7 @@ export const assembleCliConfig = async (
 		workspace,
 		corePaths,
 		keepLegacy,
+		agentWorktreeEnabled,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
