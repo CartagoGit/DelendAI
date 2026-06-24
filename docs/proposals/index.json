@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-24T20:19:57.303Z",
+	"generated_at": "2026-06-24T20:28:32.389Z",
 	"count": 114,
 	"proposals": [
 		{
@@ -47,17 +47,17 @@
 			}
 		},
 		{
-			"id": "f00054",
-			"file": "ready/f00054-declutter-repo-root-configs-dir-and-centralized-cache.md",
-			"track": "repo-layout+build+tooling+dx",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-24"
-		},
-		{
 			"id": "f00053",
 			"file": "done/f00053-unify-and-polish-the-web-extension-ux-canonical-plugin-catalog-per-plugin-disclosures-representative-icons-per-plugin-install-cli-guide-and-shared-web-extension-surface.md",
 			"track": "apps/web+extensions/vscode+packages/ui-extension+docs+i18n+ux",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-24"
+		},
+		{
+			"id": "f00054",
+			"file": "done/f00054-declutter-repo-root-configs-dir-and-centralized-cache.md",
+			"track": "repo-layout+build+tooling+dx",
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-24"
