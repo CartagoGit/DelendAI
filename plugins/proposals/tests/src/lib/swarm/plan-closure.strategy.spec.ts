@@ -16,10 +16,8 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IProposalFrontmatter } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
-import {
-	buildInMemoryResolver,
-	withOwnSlices,
-} from '@mcp-vertex/proposals/lib/swarm/plan-closure';
+import { withOwnSlices } from '@mcp-vertex/proposals/lib/swarm/plan-closure.strategy';
+import { buildInMemoryResolver } from '@mcp-vertex/proposals/lib/swarm/plan-closure.resolvers';
 
 describe('withOwnSlices — decorator', async () => {
 	const baseFrontmatter: IProposalFrontmatter = {
