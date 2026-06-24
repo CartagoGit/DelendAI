@@ -162,14 +162,20 @@ The root is intentionally minimal. Before adding a file to it, check this:
   `.cache/coverage/`). Build *outputs* go to `build/` (gitignored). Tool-owned
   dirs we cannot relocate (Astro's `.astro/`, the `/verify` skill's
   `.verify-tmp/`) stay gitignored — do not commit them, do not add more.
-- **Config files at root are only the ones their tool/editor auto-discovers
-  there** — and that is the standard, expected JS/TS monorepo layout, not
-  clutter: `package.json`, `bun.lock`, `bunfig.toml`, `.gitignore`,
-  `tsconfig*.json`, `biome.json`, `vitest.config.ts`/`vitest.shared.ts`,
-  `stylelint.config.mjs`, `lefthook.yml`, `mcp-vertex.config.json`. Moving any
-  of these breaks in-editor types/lint/format or the git hooks, so they stay.
-  Do **not** introduce a `configs/` folder for them — splitting config location
-  is non-standard and degrades the editor experience.
+- **Relocatable tool configs live in `configs/`.** A tool config moves to
+  `configs/` only if (a) the tool accepts an explicit config path AND (b) the
+  VS Code editor integration is unaffected. Today that is `configs/typedoc.json`
+  (CLI-only, no editor extension; `docs:api` passes `--options configs/typedoc.json`).
+  When a config moves, its internal relative paths are rewritten relative to
+  `configs/` (e.g. `../tsconfig.json`).
+- **Config files that STAY at root are the ones their tool/editor auto-discovers
+  there** — the standard, expected JS/TS monorepo layout, not clutter:
+  `package.json`, `bun.lock`, `bunfig.toml`, `.gitignore`, `tsconfig*.json`,
+  `biome.json`, `vitest.config.ts`/`vitest.shared.ts`, `stylelint.config.mjs`,
+  `lefthook.yml`, `mcp-vertex.config.json`. Moving any of these breaks in-editor
+  types/lint/format or the git hooks, so they stay. Agent/IDE configs
+  (`.mcp.json`, `.aider.conf.yml`, `.cursorrules`, `.claude/`, …) also stay —
+  each agent discovers its config at root.
 - **Community-health docs live in `.github/`** (`CONTRIBUTING.md`,
   `SECURITY.md`) — GitHub discovers them there. `README.md`, `LICENSE`,
   `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` stay at root by convention/agent
