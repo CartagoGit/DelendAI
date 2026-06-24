@@ -86,7 +86,7 @@ and lets a host that *does* need multi-agent isolation opt in explicitly.
 - **Files**:
   - `packages/core/schema/mcp-vertex.config.schema.json`
   - `packages/core/src/lib/plugins/load-config-file.ts` (`CONFIG_FILE_SCHEMA`)
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "`agentWorktree` is a top-level boolean in the config schema, default `false`,
