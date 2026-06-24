@@ -250,6 +250,7 @@ export const createVscodeHostAdapter = (
 						description?: string;
 						tooltip?: string;
 						collapsible?: boolean;
+						iconId?: string;
 						command?: {
 							command: string;
 							title: string;
@@ -261,6 +262,11 @@ export const createVscodeHostAdapter = (
 					if (n.description !== undefined)
 						item.description = n.description;
 					if (n.tooltip !== undefined) item.tooltip = n.tooltip;
+					// f00053 S3 — a node may carry a codicon id; render it as
+					// a ThemeIcon so plugins/tools get a distinct, non-text
+					// icon in the tree.
+					if (n.iconId !== undefined)
+						item.iconPath = new vscode.ThemeIcon(n.iconId);
 					item.collapsibleState = n.collapsible
 						? vscode.TreeItemCollapsibleState.Collapsed
 						: vscode.TreeItemCollapsibleState.None;

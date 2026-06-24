@@ -61,7 +61,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "Every one of the 16 plugins has a distinct SVG that visually represents what it does (no two plugins share a glyph; none fall back to text in the extension tool tree)."
   - "The extension resolves a plugin/tool icon for every namespace via a single mapping module; a spec asserts there is no missing or duplicated icon for the shipped plugin set."
   - "Web cards and the extension use the same canonical icon identity per plugin (one source of truth for which glyph means which plugin)."
-- status: pending
+- status: done
+- note: "New extensions/vscode/src/host/plugin-icons.ts is the single source mapping all 16 plugins to DISTINCT, semantically representative codicon ids (+ a real default for non-plugin namespaces, so the tree never falls back to text). Wired through tool-tree-node.ts (serverNode/pluginNode/toolNode set iconId) and the generic getTreeItem adapter (iconId → vscode.ThemeIcon). plugin-icons.spec.ts asserts completeness + distinctness (6 specs). Extension tests (72) + typecheck + biome green. The web /logos/plugin-<slug>.svg set (16, all present + distinct) carries the same per-plugin identity; physically sharing the slug/identity list across web+extension is deferred to S7's shared layer."
 
 ### S4 — Per-plugin install instructions in the same matrix shape as the core install
 - files: apps/web/src/data/plugin-install.ts
