@@ -23,6 +23,14 @@
 // for the 7-1 components.
 @use "../../../shared/src/styles" as shared;
 
+// 1b. Local tokens — declare the legacy, un-prefixed custom properties
+//     that the 7-1 partials (`_layout.scss`, `_card.scss`, …) consume.
+//     This file is intentionally tiny: it only defines the layout
+//     invariants the shared package does not own (e.g. `--maxw`).
+//     Theme-dependent values stay in `_themes.scss` next to the shared
+//     `themes` forward; layout-dependent values live here.
+@use "tokens";
+
 // 2. Reset & base — global element styling, tag selectors, typography.
 @use "reset";
 

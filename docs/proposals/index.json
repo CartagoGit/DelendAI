@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-24T20:28:32.389Z",
-	"count": 114,
+	"generated_at": "2026-06-25T00:00:00.000Z",
+	"count": 115,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -43,6 +43,23 @@
 					"{ agent: implementation_runner, task: 'S8: docs + skills — update plugins/rules/README.md, mcp-vertex-plugin-authoring, audit-playbook, token-budget-playbook, applying-rules knowledge' }",
 					"{ agent: implementation_runner, task: 'S9: tests — per-language detect/manifest/tool tests (Python, Go, Rust, Ruby, Java, Kotlin, Swift, C#, Elixir) + per-language golden outputSchema specs + online-preset registry tests with stubbed fetchers' }",
 					"{ agent: implementation_runner, task: 'S10: e2e — spin up a tiny synthetic polyglot workspace (one area per language) and run check_rules + apply_rules end-to-end via the existing MCP harness' }"
+				]
+			}
+		},
+		{
+			"id": "f00056",
+			"file": "ready/f00056-agent-discovery-tool-skill-catalog-and-extension-hints.md",
+			"track": "host+extension+skills+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: build the canonical agent-discovery catalog, expose it as tool/resource/prompt, and add the token-budget regression gate' }",
+					"{ agent: implementation_runner, task: 'S2: extend the skill-manifest contract with compact summaries or deterministic fallback extraction, generate the checked-in artifact, and add stale-catalog guards' }",
+					"{ agent: implementation_runner, task: 'S3: wire the catalog into the VS Code extension and shared client services so tools, skills, and proposals are discoverable from one entrypoint' }",
+					"{ agent: implementation_runner, task: 'S4: generate host hint fragments for Copilot, Claude Code, Cursor, and generic AGENTS consumers from the same catalog builder' }",
+					"{ agent: implementation_runner, task: 'S5: ship downstream bootstrap through packaged prompts/resources, scaffolded host hints, and worked examples in minimal and swarm' }"
 				]
 			}
 		},
