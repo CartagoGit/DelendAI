@@ -99,7 +99,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "A VS Code command lets the user open the documentation / how-to-use surface (the docs site and/or an in-IDE panel) from the extension, reusing the canonical plugin catalog / CLI guide content rather than re-authoring it."
   - "The command is registered through the existing runtime-handle/track() seam so it is disposed on deactivate."
   - "A spec asserts the command is registered and resolves a non-empty docs target."
-- status: pending
+- status: done
+- note: "New mcp-vertex.openDocsApi command (open-docs-api.ts): a quick-pick of the canonical doc destinations (Guide, the S5 CLI guide, the S2 Plugins index, Tools, API) that opens the chosen one in a webview, reusing EmbedService validation like openDocs — content deep-links into the canonical pages, not re-authored. Registered through the track() seam in extension.ts (disposed on deactivate) and declared in package.json. open-docs-api.spec (7) asserts registration + non-empty validated targets + deep-linking; smoke command count bumped 17→18. Extension tests (78), typecheck, biome green."
 
 ### S7 — Shared text/strings layer so web and packages/ui-extension stop duplicating UI copy
 - files: packages/ui-extension/src/strings/shared-ui-strings.ts

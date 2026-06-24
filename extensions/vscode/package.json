@@ -85,6 +85,10 @@
 				"title": "mcp-vertex: Open Documentation"
 			},
 			{
+				"command": "mcp-vertex.openDocsApi",
+				"title": "mcp-vertex: Open Docs / API / How-to-use"
+			},
+			{
 				"command": "mcp-vertex.openKnowledge",
 				"title": "mcp-vertex: Open Knowledge Navigator"
 			},
