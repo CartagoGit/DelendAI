@@ -8,7 +8,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 - **[PLUGINS-MCP-VERTEX.md](./docs/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** · **[SECURITY.md](./SECURITY.md)** ·
+- **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
   **[AGENTS.md](./AGENTS.md)** — how to contribute, report vulnerabilities, and the
   rules agents follow.
 
