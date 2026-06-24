@@ -34,7 +34,7 @@
       "dependencies": {
         "astro": "^6.4.8",
         "sass": "^1.101.0",
-        "simple-icons": "^16.23.0",
+        "simple-icons": "^16.24.0",
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.9",
@@ -1904,7 +1904,7 @@
 
     "simple-get": ["simple-get@4.0.1", "", { "dependencies": { "decompress-response": "^6.0.0", "once": "^1.3.1", "simple-concat": "^1.0.0" } }, "sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA=="],
 
-    "simple-icons": ["simple-icons@16.23.0", "", {}, "sha512-08MaTpxj9zGYUIe38tfELYkaHiGE1YgbrbXmTBf+GPxi5mEqLSORQqOXrP0QKPdaFuzEDSmW5o4xkbLlFhmdCw=="],
+    "simple-icons": ["simple-icons@16.24.0", "", {}, "sha512-lAPW1rqgwPQ4tdIY15TtcKSgSelvJexz8q/B+a7Igg1dJoXR0LPjScLkLMI8UbLSS41/fLVZWIhsH7HPUwAgQ=="],
 
     "sisteransi": ["sisteransi@1.0.5", "", {}, "sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg=="],
 
