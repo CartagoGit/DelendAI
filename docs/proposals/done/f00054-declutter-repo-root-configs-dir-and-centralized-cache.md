@@ -1,6 +1,6 @@
 ---
 id: f00054
-status: ready
+status: done
 type: proposal
 kind: refactor
 title: Declutter the repo root — a configs/ home for relocatable tool configs and a single centralized .cache/
