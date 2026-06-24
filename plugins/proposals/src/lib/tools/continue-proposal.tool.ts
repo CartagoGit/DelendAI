@@ -42,16 +42,6 @@ export interface IContinueProposalToolOptions {
 	/** Absolute path of the agent lock file. */
 	readonly lockPathAbs: string;
 	/**
-	 * @deprecated f00024: superseded by `cascadeResolver` (kind-based
-	 * cascade + frontmatter override/boost). Kept only so a host config
-	 * that still sets `familyCascade` doesn't crash; when present, it is
-	 * translated into an ad-hoc resolver that ranks by prefix order, with
-	 * unknown prefixes pushed to the back — same externally observable
-	 * behaviour as before f00024, but does not block the (now wired-in)
-	 * frontmatter override.
-	 */
-	readonly familyCascade?: readonly string[];
-	/**
 	 * f00024: priority resolver for `mode: "auto"`. Defaults to
 	 * `buildDefaultCascadeChain()` (kind-based cascade decorated with the
 	 * frontmatter `cascadeOverride` break-glass). Injectable for tests
@@ -214,9 +204,6 @@ const isActionable = (entry: IProposalIndexEntry): boolean => {
 	}
 	return entry.status !== undefined && ACTIONABLE.has(entry.status);
 };
-
-/** Extract the family prefix from a proposal id (`q00001` → `q`). */
-const familyOf = (id: string): string => id.match(/^[a-z]+/i)?.[0] ?? '';
 
 const readActiveLocks = async (
 	lockPath: string,
@@ -424,26 +411,11 @@ export const runContinueProposal = async (
 			reason: 'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
 			nextAction: `Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry the claim path.`,
 		});
-	// f00024: kind-based cascade (+ frontmatter override/boost) replaces the
-	// old hardcoded `['f', 'p']` family-prefix rank. A host that still
-	// configures the deprecated `familyCascade` keeps its exact previous
-	// ranking (by prefix order, unknown prefixes pushed to the back); a
-	// host on the new default gets the full 13-family cascade plus the
-	// break-glass override.
+	// f00024: kind-based cascade (+ frontmatter override/boost) — the host
+	// may inject a custom resolver (DIP, for tests), otherwise the full
+	// 13-family cascade plus the break-glass override is used.
 	const resolver: ICascadePriorityResolver =
-		options.cascadeResolver ??
-		(options.familyCascade
-			? {
-					resolve: (proposal) => {
-						const index = options.familyCascade?.indexOf(
-							familyOf(proposal.id),
-						);
-						return index === undefined || index < 0
-							? (options.familyCascade?.length ?? 0)
-							: index;
-					},
-				}
-			: buildDefaultCascadeChain());
+		options.cascadeResolver ?? buildDefaultCascadeChain();
 	const summaries = await Promise.all(
 		free.map((entry) => buildCascadeSummary(entry, options.indexPathAbs)),
 	);

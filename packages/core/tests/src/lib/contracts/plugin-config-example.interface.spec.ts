@@ -26,10 +26,10 @@ describe('IPluginConfigExample', async () => {
 			summary: 'Tune the swarm timeout.',
 			options: {
 				defaultSliceGate: 'lint',
-				familyCascade: ['f', 'p'],
+				namePool: ['falcon', 'owl'],
 				notify: { onRelease: true },
 			},
 		};
-		expect(ex.options.familyCascade).toEqual(['f', 'p']);
+		expect(ex.options.namePool).toEqual(['falcon', 'owl']);
 	});
 });

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ICliGlobalOptions } from '../../../src/contracts/interfaces/cli-command.interface';
+import { buildServerArgs } from '../../../src/lib/server-args';
 import {
-	buildServerArgs,
-	SERVER_ARG_FORWARDERS,
-	type IServerArgForwarder,
-} from '../../../src/lib/server-args';
+	SERVER_ARG_MAPPER,
+	type IAutoForwardRule,
+} from '../../../src/lib/server-args.mapper';
 
 describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 	it('always forwards --workspace (the host requires a workspace)', async () => {
@@ -165,7 +165,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 			'mcpProjectTests',
 			'agentWorktree',
 		];
-		const declaredKeys = new Set(SERVER_ARG_FORWARDERS.map((f) => f.key));
+		const declaredKeys = new Set(SERVER_ARG_MAPPER.map((f) => f.key));
 		for (const k of requiredKeys) {
 			expect(
 				declaredKeys.has(k as keyof ICliGlobalOptions),
@@ -178,15 +178,15 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		// A new host flag should be addable by appending to the table.
 		// This is the Open/Closed SOLID principle: the function does not
 		// grow an `if` per new flag.
-		const initialCount = SERVER_ARG_FORWARDERS.length;
-		const customForwarder: IServerArgForwarder = {
+		const initialCount = SERVER_ARG_MAPPER.length;
+		const customForwarder: IAutoForwardRule = {
 			key: 'remote',
 			kind: 'option',
 			argv(key, value) {
 				return value === undefined ? [] : [`--${key}`, String(value)];
 			},
 		};
-		const next = [...SERVER_ARG_FORWARDERS, customForwarder];
+		const next = [...SERVER_ARG_MAPPER, customForwarder];
 		// sanity: appending is a pure operation, no shared state.
 		expect(next).toHaveLength(initialCount + 1);
 	});

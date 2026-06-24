@@ -28,7 +28,7 @@ import {
 	formatCoverageSummary,
 } from './capability-diff-views';
 import type {
-	ICapabilityDiffEntry,
+	IReasonedEntry,
 	ICapabilityDiffViews,
 } from './capability-diff-views';
 import { StaticExistingToolsSource } from './existing-tools-source';
@@ -78,9 +78,9 @@ export const diffCapabilities = (
 		});
 
 	const existingIds = source.canonicalSet();
-	const present: ICapabilityDiffEntry[] = [];
-	const missing: ICapabilityDiffEntry[] = [];
-	const mismatched: ICapabilityDiffEntry[] = [];
+	const present: IReasonedEntry[] = [];
+	const missing: IReasonedEntry[] = [];
+	const mismatched: IReasonedEntry[] = [];
 
 	for (const tool of blueprint.tools) {
 		const canonical = canonicalToolId(tool.name, prefix);
@@ -220,7 +220,7 @@ export {
 	formatCoverageSummary,
 } from './capability-diff-views';
 export type {
-	ICapabilityDiffEntry,
+	IReasonedEntry,
 	ICapabilityDiffViews,
 	IPresentView,
 	IMissingView,
