@@ -1,6 +1,6 @@
 ---
 id: r00003
-status: ready
+status: done
 type: proposal
 track: core+cli+extensions+plugins+architecture+refactor
 date: 2026-06-23

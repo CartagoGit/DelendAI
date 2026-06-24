@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-23T22:27:02.954Z",
+	"generated_at": "2026-06-24T06:50:49.100Z",
 	"count": 112,
 	"proposals": [
 		{
@@ -47,11 +47,32 @@
 			}
 		},
 		{
+			"id": "q00001",
+			"file": "done/q00001-plan-of-plans.md",
+			"track": "proposals-plugin",
+			"type": "plan",
+			"status": "done",
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'qs1: add `plan` kind (q) to PROPOSAL_KINDS' }",
+					"{ agent: implementation_runner, task: 'qs2: parse `contains:` and `closureGate:` in frontmatter' }",
+					"{ agent: implementation_runner, task: 'qs3: build plan-closure.ts (recursive evaluator + tests)' }",
+					"{ agent: implementation_runner, task: 'qs4: guard proposal_transition → done for plan kind' }",
+					"{ agent: implementation_runner, task: 'qs5: add proposals_close_plan tool' }",
+					"{ agent: implementation_runner, task: 'qs6: exclude plans with pending children from auto_work' }",
+					"{ agent: implementation_runner, task: 'qs7: add i18n keys for plan (12 languages)' }",
+					"{ agent: implementation_runner, task: 'qs8: update skills + plugin README' }",
+					"{ agent: implementation_runner, task: 'close q00001 via proposals_close_plan once all 8 slices are done' }"
+				]
+			}
+		},
+		{
 			"id": "r00003",
-			"file": "ready/r00003-apply-solid-on-a00036-findings.md",
+			"file": "done/r00003-apply-solid-on-a00036-findings.md",
 			"track": "core+cli+extensions+plugins+architecture+refactor",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-23",
 			"extras": {
 				"ownership": [
@@ -71,10 +92,10 @@
 		},
 		{
 			"id": "u00002",
-			"file": "ready/f00052-gate-agent-worktree-behind-host-flag-default-off.md",
+			"file": "done/f00052-gate-agent-worktree-behind-host-flag-default-off.md",
 			"track": "proposals-plugin+core+cli+skills+workflow",
 			"type": "proposal",
-			"status": "ready",
+			"status": "done",
 			"date": "2026-06-23",
 			"extras": {
 				"ownership": [
@@ -85,27 +106,6 @@
 					"{ agent: implementation_runner, task: 'S5: `buildAgentWorktreeRegistration` reads the flag and returns a clear `ok: false` error when disabled' }",
 					"{ agent: implementation_runner, task: 'S6: skills updated — the 4 affected playbooks consult the flag and split the flow into \"default branch\" vs \"agent_worktree path\"' }",
 					"{ agent: implementation_runner, task: 'S7: tests + a00036 audit findings deferred here' }"
-				]
-			}
-		},
-		{
-			"id": "q00001",
-			"file": "done/q00001-plan-of-plans.md",
-			"track": "proposals-plugin",
-			"type": "plan",
-			"status": "done",
-			"date": "2026-06-23",
-			"extras": {
-				"ownership": [
-					"{ agent: implementation_runner, task: 'qs1: add `plan` kind (q) to PROPOSAL_KINDS' }",
-					"{ agent: implementation_runner, task: 'qs2: parse `contains:` and `closureGate:` in frontmatter' }",
-					"{ agent: implementation_runner, task: 'qs3: build plan-closure.ts (recursive evaluator + tests)' }",
-					"{ agent: implementation_runner, task: 'qs4: guard proposal_transition → done for plan kind' }",
-					"{ agent: implementation_runner, task: 'qs5: add proposals_close_plan tool' }",
-					"{ agent: implementation_runner, task: 'qs6: exclude plans with pending children from auto_work' }",
-					"{ agent: implementation_runner, task: 'qs7: add i18n keys for plan (12 languages)' }",
-					"{ agent: implementation_runner, task: 'qs8: update skills + plugin README' }",
-					"{ agent: implementation_runner, task: 'close q00001 via proposals_close_plan once all 8 slices are done' }"
 				]
 			}
 		},

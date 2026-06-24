@@ -1,6 +1,6 @@
 ---
 id: u00002
-status: ready
+status: done
 type: proposal
 track: proposals-plugin+core+cli+skills+workflow
 date: 2026-06-23
