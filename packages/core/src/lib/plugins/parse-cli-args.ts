@@ -35,6 +35,14 @@ export interface IMcpVertexCliArgs {
 	readonly mcpProjectCreate: boolean;
 	/** Include tests in the blueprint. `--mcp-project-tests=false` to omit. */
 	readonly mcpProjectTests: boolean;
+	/**
+	 * Host-scoped gate for `agent_worktree` (`--agent-worktree[=true|false]`).
+	 * `undefined` when the flag is absent, so a downstream resolver can fall
+	 * back to the file config and finally the `false` default. A bare
+	 * `--agent-worktree` resolves to `true`; an unrecognised value
+	 * (`--agent-worktree=maybe`) throws a parse error.
+	 */
+	readonly agentWorktree?: boolean | undefined;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
 	/** The raw tokenized flags, so callers can detect what was explicit. */
@@ -65,7 +73,26 @@ const KNOWN_KEYS = new Set([
 	'verbose',
 	'mcp-project-create',
 	'mcp-project-tests',
+	'agent-worktree',
 ]);
+
+/**
+ * Resolve a tri-state boolean CLI flag. `undefined` token ⇒ `undefined`
+ * (caller decides the default). A bare flag tokenizes to `'true'`.
+ * Recognised truthy/falsey strings map cleanly; anything else throws a
+ * clear parse error instead of silently collapsing to `false`.
+ */
+const parseTriStateFlag = (
+	flag: string,
+	value: string | undefined,
+): boolean | undefined => {
+	if (value === undefined) return undefined;
+	if (value === 'true' || value === '1' || value === 'yes') return true;
+	if (value === 'false' || value === '0' || value === 'no') return false;
+	throw new Error(
+		`Invalid value for ${flag}: "${value}". Use ${flag}=true or ${flag}=false.`,
+	);
+};
 
 // Curated plugin presets (additive). `--preset=standard` saves typing the
 // full `--plugins` list; it merges with any explicit `--plugins`.
@@ -170,6 +197,10 @@ export const parseCliArgs = (
 		configPath: tokens.config,
 		mcpProjectCreate: !isFalse(tokens['mcp-project-create']),
 		mcpProjectTests: !isFalse(tokens['mcp-project-tests']),
+		agentWorktree: parseTriStateFlag(
+			'--agent-worktree',
+			tokens['agent-worktree'],
+		),
 		extra,
 		tokens,
 	};
