@@ -87,7 +87,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "A dedicated, navigable CLI guide page documents the mcpv / @mcp-vertex/core CLI: the global flags, the command groups, and the common workflows, driven by a DATA module (open/closed: adding a command is a data entry)."
   - "The page is reachable from the site nav and exists for every supported language route like the other pages."
   - "A spec asserts the CLI guide data covers the documented command groups and has no empty sections."
-- status: pending
+- status: done
+- note: "New cli-guide.ts DATA module (global flags, command groups, workflows); plugin command groups DERIVED from the S1 catalog (DRY). New /cli.astro + /[lang]/cli.astro (data-driven; +12 pages). Reachable from SiteNav via a literal 'CLI' nav entry (same pattern as the existing 'API' entry — no i18n churn). cli-guide.spec (5) asserts every plugin + core + doctor has a command group and no empty sections. typecheck, check:i18n, astro build (1731 pages) green."
 
 ### S6 — Surface docs/API from inside the extension (reuse canonical content)
 - files: extensions/vscode/src/commands/open-docs-api.ts
