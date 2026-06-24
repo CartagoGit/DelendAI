@@ -35,7 +35,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "A single host-agnostic module exposes, per plugin slug: a 1-2 sentence purpose, a category, the contributed capability counts (tools/prompts/resources from capabilities.json), and an install descriptor — with NO mcp-vertex-only hardcoding that a third-party host couldn't reuse."
   - "Purpose text has a deterministic resolution order documented in one place (canonical entry > i18n override > first-tool description), replacing the scattered fallbacks in PluginsSection."
   - "A spec asserts every loaded plugin (the 16 under plugins/) has a canonical entry with a non-empty, plugin-specific purpose (not the generic 'Plugin: <slug>')."
-- status: pending
+- status: done
+- note: "Module at apps/web/src/data/plugin-catalog.ts; spec at apps/web/tests/data/plugin-catalog.spec.ts (the apps-web vitest project only discovers tests/** and scripts/__tests__/**, not src/**). 9 specs pass; typecheck green. Exposes PLUGIN_CATALOG (16 entries), PLUGIN_SLUGS, capabilityCountFor/capabilityToolsFor (derived from capabilities.json), and resolvePluginPurpose with the documented resolution order (canonical > i18n override > first-tool > generic)."
 
 ### S2 — Plugins index: expandable per-plugin disclosure listing its tools/prompts/resources + explanation
 - files: apps/web/src/components/PluginsSection.astro
