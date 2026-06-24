@@ -70,6 +70,7 @@ the cleanup.
 - **Files**: typedoc.json
 - **Files**: .gitignore
 - **Gate**: type
+- **Status**: partial — vitest coverage moved to `.cache/coverage` (reportsDirectory) + gitignore consolidated. FINDING: the rest is tool-constrained — root `.astro/` is Astro's own content/types dir (not relocatable via `cacheDir` in Astro 6), `.verify-tmp/` is created by the external `/verify` skill at runtime (not our config), and `build/`/`dist/`/`site/` are gitignored build OUTPUTS (not caches). So the achievable cache-centralization is narrower than hoped; what remains at root is either tool-owned or already gitignored.
 - **Acceptance**:
   - "Astro builds its cache to `.cache/astro/` (astro `cacheDir`), not root `.astro/`."
   - "Vitest coverage writes to `.cache/coverage/` (coverage.reportsDirectory), not root `coverage/`."
@@ -82,6 +83,7 @@ the cleanup.
 - **Files**: configs/typedoc.json
 - **Files**: package.json
 - **Gate**: type
+- **Status**: pending
 - **Acceptance**:
   - "Configs whose tool supports an explicit config path AND whose editor integration is unaffected (stylelint via `--config`, typedoc via `--options`) move to `configs/`; package.json scripts pass the new path."
   - "Each moved config is verified: `bun run lint:scss` and `bun run docs:api` still pass pointing at `configs/`."
@@ -90,6 +92,7 @@ the cleanup.
 ### S3 — Document the root-layout policy
 - **Files**: AGENTS.md
 - **Gate**: type
+- **Status**: pending
 - **Acceptance**:
   - "AGENTS.md gains a short 'Repo root layout' section: what lives at root (and the one-line reason each must), that all caches live under `.cache/<tool>/`, and that movable tool configs live in `configs/`."
   - "A reviewer can tell at a glance whether a new root file is justified."

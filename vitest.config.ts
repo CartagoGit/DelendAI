@@ -24,6 +24,8 @@ export default defineConfig({
 		// a few points under the current numbers — tighten them as coverage grows.
 		coverage: {
 			provider: 'v8',
+			// f00054 S1: keep coverage out of the root — write under .cache/.
+			reportsDirectory: '.cache/coverage',
 			all: true,
 			include: ['packages/*/src/**', 'plugins/*/src/**'],
 			exclude: ['**/*.spec.ts', '**/*.test.ts', '**/index.ts'],
