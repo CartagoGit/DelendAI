@@ -146,7 +146,20 @@ export interface IVscodeApi {
 	};
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
+		getConfiguration?(section: string): IConfiguration;
 	};
+}
+
+/**
+ * Minimal subset of `vscode.WorkspaceConfiguration` we actually read.
+ * `get<T>(key, defaultValue)` returns the configured value or the
+ * fallback. Hosts that do not expose a configuration surface can
+ * omit `workspace.getConfiguration` entirely — the spawn resolver
+ * then falls back to the bundled defaults (`bun run mcp-vertex`).
+ */
+export interface IConfiguration {
+	get<T>(key: string): T | undefined;
+	get<T>(key: string, defaultValue: T): T;
 }
 
 export interface IActivationDeps {
@@ -174,7 +187,7 @@ export const activate = async (
 	const vscode = deps.vscode ?? (await loadVscodeApi());
 	let client: McpStdioClient;
 	try {
-		client = await (deps.createClient ?? createDefaultClient)();
+		client = await (deps.createClient ?? createDefaultClient)(vscode);
 	} catch (err) {
 		// Best-effort: surface the failure but never leave a stale handle
 		// for a future activation to inherit.
@@ -405,11 +418,42 @@ export const deactivate = async (): Promise<void> => {
 	__runtimeHandle = undefined;
 };
 
-export const createDefaultClient = async (): Promise<McpStdioClient> =>
-	McpStdioClient.connect({
-		command: 'bun',
-		args: ['run', 'mcp-vertex'],
-	});
+/**
+ * Read `mcp-vertex.server.command` / `mcp-vertex.server.args` from the
+ * workspace configuration and fall back to `bun run mcp-vertex` when
+ * the host does not expose a configuration surface or the values are
+ * unset. This unblocks environments where `bun` lives outside the
+ * `PATH` inherited by VS Code's extension host (e.g. WSL with bun
+ * installed at `~/.bun/bin/bun` but not exported to the system PATH).
+ *
+ * `args` accepts either a JSON array (typed verbatim in settings.json)
+ * or a space-separated string — the latter is friendlier for the
+ * common single-script case while still letting power users pass flags
+ * via `["run", "mcp-vertex", "--preset=swarm"]`.
+ */
+const resolveServerCommand = (
+	vscode: IVscodeApi,
+): { command: string; args: readonly string[] } => {
+	const defaults = { command: 'bun', args: ['run', 'mcp-vertex'] } as const;
+	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
+	const command = config?.get<string>('command') ?? defaults.command;
+	const rawArgs = config?.get<unknown>('args');
+	const args =
+		Array.isArray(rawArgs) && rawArgs.every((a) => typeof a === 'string')
+			? (rawArgs as readonly string[])
+			: typeof rawArgs === 'string' && rawArgs.trim().length > 0
+				? rawArgs.trim().split(/\s+/)
+				: defaults.args;
+	return { command, args };
+};
+
+export const createDefaultClient = async (
+	vscode?: IVscodeApi,
+): Promise<McpStdioClient> => {
+	const api = vscode ?? (await loadVscodeApi());
+	const { command, args } = resolveServerCommand(api);
+	return McpStdioClient.connect({ command, args });
+};
 
 export const renderOverviewHtml = (overview: IOverview): string => {
 	const toolCount = overview.tools.length;
