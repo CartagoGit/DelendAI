@@ -25,7 +25,7 @@ import {
 	type ITaskQueuePaths,
 } from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
 
-describe('task-queue engine — corrupt queue (M10)', () => {
+describe('task-queue engine — corrupt queue (M10)', async () => {
 	let dir = '';
 	let paths: ITaskQueuePaths;
 	beforeEach(() => {

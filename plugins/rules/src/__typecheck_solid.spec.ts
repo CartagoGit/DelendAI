@@ -34,8 +34,8 @@ import { DEFAULT_DOGMA_ADAPTERS } from './lib/frameworks/dogmas';
 import { fallbackCommandSetProvider } from './lib/tools/command-resolver';
 import { toAreaRulesLite } from './lib/frameworks/legacy-shape/adapter';
 
-describe('SOLID refactor: compile + link', () => {
-	it('exposes the expected public symbols', () => {
+describe('SOLID refactor: compile + link', async () => {
+	it('exposes the expected public symbols', async () => {
 		// Registry classes (DIP — constructed with their deps)
 		expect(typeof PresetRegistry).toBe('function');
 		expect(typeof DogmaRegistry).toBe('function');
@@ -72,7 +72,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(typeof toAreaRulesLite).toBe('function');
 	});
 
-	it('composes a PresetRegistry + DogmaRegistry end-to-end (SOLID wiring)', () => {
+	it('composes a PresetRegistry + DogmaRegistry end-to-end (SOLID wiring)', async () => {
 		// Single Responsibility: the registry composes presets + adapters;
 		// the DogmaRegistry composes dogmas. They are independent.
 		const presets: readonly IRulePreset[] = [RUST_PRESET];
@@ -94,15 +94,17 @@ describe('SOLID refactor: compile + link', () => {
 		expect(registry.supportedIds).toContain('rust-clippy');
 		expect(dogmas_.resolve('rs')?.language).toBe('rs');
 		expect(
-			detector.detect(
-				// Synthetic reader: Cargo.toml present
-				{
-					readFile: (p: string) =>
-						p.endsWith('package.json') ? undefined : undefined,
-					exists: (p: string) => p.endsWith('Cargo.toml'),
-					listDir: () => [],
-				},
-				'',
+			(
+				await detector.detect(
+					// Synthetic reader: Cargo.toml present
+					{
+						readFile: async (p: string) =>
+							p.endsWith('package.json') ? undefined : undefined,
+						exists: async (p: string) => p.endsWith('Cargo.toml'),
+						listDir: async () => [],
+					},
+					'',
+				)
 			)?.presetId,
 		).toBe('rust-clippy');
 
@@ -118,18 +120,18 @@ describe('SOLID refactor: compile + link', () => {
 		expect(cmds.typecheckCommand).toContain('cargo check');
 	});
 
-	it('respects the priority order (Open/Closed)', () => {
+	it('respects the priority order (Open/Closed)', async () => {
 		// Two adapters at different priorities: detector must
 		// pick the higher-priority one when both claim the area.
 		const high: ILanguageAdapter = {
 			id: 'high',
 			priority: 5,
-			detect: () => ({ presetId: 'high-preset', reason: 'high' }),
+			detect: async () => ({ presetId: 'high-preset', reason: 'high' }),
 		};
 		const low: ILanguageAdapter = {
 			id: 'low',
 			priority: 50,
-			detect: () => ({ presetId: 'low-preset', reason: 'low' }),
+			detect: async () => ({ presetId: 'low-preset', reason: 'low' }),
 		};
 		const reg = new PresetRegistry({
 			presets: [
@@ -156,18 +158,20 @@ describe('SOLID refactor: compile + link', () => {
 		});
 		const d = new PresetDetector(reg);
 		expect(
-			d.detect(
-				{
-					readFile: () => undefined,
-					exists: () => true,
-					listDir: () => [],
-				},
-				'',
+			(
+				await d.detect(
+					{
+						readFile: async () => undefined,
+						exists: async () => true,
+						listDir: async () => [],
+					},
+					'',
+				)
 			)?.presetId,
 		).toBe('high-preset');
 	});
 
-	it('renders the ICommandSet contract (one place that knows the tuple shape)', () => {
+	it('renders the ICommandSet contract (one place that knows the tuple shape)', async () => {
 		// S: ICommandSet is the single source of truth for the
 		// 3-field tuple. Every ICommandSetProvider returns it.
 		const cs: ICommandSet = rustCommandSetProvider.buildCommandSet(

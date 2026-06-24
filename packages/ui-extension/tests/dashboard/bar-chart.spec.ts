@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { barChart } from '../../src/dashboard/bar-chart';
 
-describe('barChart', () => {
-	it('returns a valid SVG element', () => {
+describe('barChart', async () => {
+	it('returns a valid SVG element', async () => {
 		const html = barChart(
 			[
 				{ label: 'a', value: 10 },
@@ -16,7 +16,7 @@ describe('barChart', () => {
 		expect(html).toContain('</svg>');
 	});
 
-	it('renders one rect per datum', () => {
+	it('renders one rect per datum', async () => {
 		const html = barChart(
 			[
 				{ label: 'a', value: 10 },
@@ -29,19 +29,19 @@ describe('barChart', () => {
 		expect((html.match(/<rect /g) ?? []).length).toBe(3);
 	});
 
-	it('renders nothing for empty data', () => {
+	it('renders nothing for empty data', async () => {
 		const html = barChart([], 200, 100);
 		expect((html.match(/<rect /g) ?? []).length).toBe(0);
 		expect(html).toContain('<svg');
 	});
 
-	it('escapes XML special chars in labels', () => {
+	it('escapes XML special chars in labels', async () => {
 		const html = barChart([{ label: '<x>&"', value: 1 }], 100, 60);
 		expect(html).toContain('&lt;x&gt;&amp;&quot;');
 		expect(html).not.toContain('<x>');
 	});
 
-	it('respects the explicit max option', () => {
+	it('respects the explicit max option', async () => {
 		const html = barChart([{ label: 'a', value: 5 }], 100, 60, { max: 10 });
 		expect(html).toContain('<rect');
 	});

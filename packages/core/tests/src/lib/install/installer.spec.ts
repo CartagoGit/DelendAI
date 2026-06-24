@@ -18,7 +18,7 @@ import {
 	targetById,
 } from '@mcp-vertex/core/public';
 
-describe('IDE installer (M39)', () => {
+describe('IDE installer (M39)', async () => {
 	let dir = '';
 	const env = () => ({
 		projectDir: dir,
@@ -31,7 +31,7 @@ describe('IDE installer (M39)', () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('buildServerEntry maps the runner (npx/bunx/deno) and adds type:stdio for VS Code', () => {
+	it('buildServerEntry maps the runner (npx/bunx/deno) and adds type:stdio for VS Code', async () => {
 		const vscode = targetById('vscode')!;
 		expect(buildServerEntry(vscode, { via: 'npx' })).toEqual({
 			type: 'stdio',
@@ -125,7 +125,7 @@ describe('IDE installer (M39)', () => {
 		expect(report.results.map((r) => r.id)).not.toContain('claude-desktop');
 	});
 
-	it('detectOs distinguishes WSL from native Linux/macOS/Windows', () => {
+	it('detectOs distinguishes WSL from native Linux/macOS/Windows', async () => {
 		expect(detectOs('darwin').id).toBe('macos');
 		expect(detectOs('win32').id).toBe('windows');
 		expect(detectOs('linux', false).id).toBe('linux');

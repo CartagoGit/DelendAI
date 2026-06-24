@@ -177,7 +177,9 @@ const inspectCommand: ICliCommand = {
 	},
 };
 
-export const registerAllCommands = (): readonly ICliCommand[] => [
+export const registerAllCommands = async (): Promise<
+	readonly ICliCommand[]
+> => [
 	{
 		name: 'status',
 		summary: 'Show runtime status collectors.',

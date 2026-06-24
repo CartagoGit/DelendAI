@@ -49,13 +49,13 @@ const docs = (): IAuditDocument[] => [
 	parseAuditBody('14-06-2026- Antigravity (Gemini).md', AUDIT_GEMINI),
 ];
 
-describe('consolidateAudits', () => {
-	it('counts successfully parsed audits', () => {
+describe('consolidateAudits', async () => {
+	it('counts successfully parsed audits', async () => {
 		const c = consolidateAudits(docs());
 		expect(c.auditsFound).toBe(3);
 	});
 
-	it('deduplicates findings that share a file and similar title', () => {
+	it('deduplicates findings that share a file and similar title', async () => {
 		const c = consolidateAudits(docs());
 		const cwdFinding = c.findings.find((f) =>
 			f.titles.some((t) => t.includes('Process cwd')),
@@ -66,12 +66,12 @@ describe('consolidateAudits', () => {
 		expect(cwdFinding?.seenBy).not.toContain('Gemini');
 	});
 
-	it('keeps unrelated findings as separate entries', () => {
+	it('keeps unrelated findings as separate entries', async () => {
 		const c = consolidateAudits(docs());
 		expect(c.findings.length).toBe(2);
 	});
 
-	it('averages per-dimension scores across models', () => {
+	it('averages per-dimension scores across models', async () => {
 		const c = consolidateAudits(docs());
 		const arch = c.consensus.find((d) => d.dimension === 'Arquitectura');
 		expect(arch).toBeDefined();
@@ -79,7 +79,7 @@ describe('consolidateAudits', () => {
 		expect(arch?.average).toBe(9);
 	});
 
-	it('skips audits with no findings and no scores', () => {
+	it('skips audits with no findings and no scores', async () => {
 		const c = consolidateAudits([
 			parseAuditBody('a.md', 'No structure here'),
 			...docs(),
@@ -89,22 +89,22 @@ describe('consolidateAudits', () => {
 		expect(c.skipped[0]?.path).toBe('a.md');
 	});
 
-	it('surfaces top urgent actions', () => {
+	it('surfaces top urgent actions', async () => {
 		const c = consolidateAudits(docs(), { topActions: 5 });
 		expect(c.topActions.length).toBeGreaterThan(0);
 		expect(c.topActions[0]).toContain('FATAL');
 		expect(c.topActions[0]).toContain('Sonnet');
 	});
 
-	it('is deterministic (same input, same output)', () => {
+	it('is deterministic (same input, same output)', async () => {
 		const a = consolidateAudits(docs());
 		const b = consolidateAudits(docs());
 		expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 	});
 });
 
-describe('renderConsolidationMarkdown', () => {
-	it('produces a valid master markdown document', () => {
+describe('renderConsolidationMarkdown', async () => {
+	it('produces a valid master markdown document', async () => {
 		const c = consolidateAudits(docs());
 		const md = renderConsolidationMarkdown(c);
 		expect(md).toContain('# Auditoría Maestra');

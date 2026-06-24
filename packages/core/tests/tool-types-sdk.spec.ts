@@ -17,8 +17,8 @@ import { generateToolOutputModules } from '../../../tools/scripts/types/generate
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
-describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
-	it('maps the primitive + object subset', () => {
+describe('emit-tool-types: pure JSON-Schema → TS emitter', async () => {
+	it('maps the primitive + object subset', async () => {
 		expect(jsonSchemaToTs({ type: 'string' })).toBe('string');
 		expect(jsonSchemaToTs({ type: 'number' })).toBe('number');
 		expect(jsonSchemaToTs({ type: 'boolean' })).toBe('boolean');
@@ -26,7 +26,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		expect(jsonSchemaToTs({ const: true })).toBe('true');
 	});
 
-	it('renders unions (incl. nullable) and dedupes', () => {
+	it('renders unions (incl. nullable) and dedupes', async () => {
 		expect(
 			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'null' }] }),
 		).toBe('string | null');
@@ -35,7 +35,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		).toBe('string');
 	});
 
-	it('parenthesises union element types in arrays', () => {
+	it('parenthesises union element types in arrays', async () => {
 		expect(
 			jsonSchemaToTs({ type: 'array', items: { type: 'string' } }),
 		).toBe('string[]');
@@ -47,7 +47,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		).toBe('Array<string | number>');
 	});
 
-	it('renders the three additionalProperties shapes', () => {
+	it('renders the three additionalProperties shapes', async () => {
 		// closed object
 		expect(
 			jsonSchemaToTs({
@@ -75,7 +75,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		).toBe('Record<string, number>');
 	});
 
-	it('marks non-required properties optional', () => {
+	it('marks non-required properties optional', async () => {
 		expect(
 			jsonSchemaToTs({
 				type: 'object',
@@ -86,13 +86,13 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		).toBe('{\n\ta: string;\n\tb?: number;\n}');
 	});
 
-	it('degrades unknown constructs to `unknown`, never invalid TS', () => {
+	it('degrades unknown constructs to `unknown`, never invalid TS', async () => {
 		expect(jsonSchemaToTs({ type: 'integer' })).toBe('number');
 		expect(jsonSchemaToTs({})).toBe('unknown');
 		expect(jsonSchemaToTs(true)).toBe('unknown');
 	});
 
-	it('emits a stable module with interfaces + a name→type map', () => {
+	it('emits a stable module with interfaces + a name→type map', async () => {
 		const module = emitToolOutputsModule('Demo', [
 			{
 				name: 'demo_ping',
@@ -113,7 +113,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 	});
 });
 
-describe('tool-output SDK drift guard (N23)', () => {
+describe('tool-output SDK drift guard (N23)', async () => {
 	it('checked-in src/generated/tool-outputs.ts match a fresh generation', async () => {
 		const modules = await generateToolOutputModules();
 		expect(modules.size).toBeGreaterThan(0);

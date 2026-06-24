@@ -4,7 +4,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-describe('no-preset-drift.script', () => {
+describe('no-preset-drift.script', async () => {
 	it('flags an unknown preset name', async () => {
 		const root = await makeTmpTree({
 			'docs/install.md': 'Use --preset=foo to load foo.\n',
@@ -45,11 +45,11 @@ describe('no-preset-drift.script', () => {
 		await rm(root, { recursive: true });
 	});
 
-	it('formatReport prints 0 violations for an empty list', () => {
+	it('formatReport prints 0 violations for an empty list', async () => {
 		expect(formatReport([])).toContain('0 violations');
 	});
 
-	it('formatReport prints one row per finding', () => {
+	it('formatReport prints one row per finding', async () => {
 		const out = formatReport([
 			{
 				absPath: '/x',

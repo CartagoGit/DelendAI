@@ -17,8 +17,8 @@ import {
  *   - the truncation path (marker shape, originalBytes/finalBytes)
  *   - toolJsonBounded (the convenience wrapper around toolJson)
  */
-describe('truncateIfTooLarge', () => {
-	it('passes through a value that fits under the byte budget', () => {
+describe('truncateIfTooLarge', async () => {
+	it('passes through a value that fits under the byte budget', async () => {
 		const value = { ok: true, count: 42 };
 		const result = truncateIfTooLarge(value);
 		expect(result.truncated).toBe(false);
@@ -29,7 +29,7 @@ describe('truncateIfTooLarge', () => {
 		);
 	});
 
-	it('truncates a value that exceeds the byte budget and marks it', () => {
+	it('truncates a value that exceeds the byte budget and marks it', async () => {
 		// Build a payload that is guaranteed to exceed any reasonable limit.
 		const huge = { rows: 'x'.repeat(1024 * 1024) };
 		const result = truncateIfTooLarge(huge, 1024);
@@ -46,7 +46,7 @@ describe('truncateIfTooLarge', () => {
 		expect(payload.maxBytes).toBe(1024);
 	});
 
-	it('accepts a custom maxBytes override', () => {
+	it('accepts a custom maxBytes override', async () => {
 		const tiny = 'hello world';
 		const small = truncateIfTooLarge(tiny, 4);
 		expect(small.truncated).toBe(true);
@@ -54,7 +54,7 @@ describe('truncateIfTooLarge', () => {
 		expect(medium.truncated).toBe(false);
 	});
 
-	it('returns an empty marker when maxBytes is smaller than the marker itself', () => {
+	it('returns an empty marker when maxBytes is smaller than the marker itself', async () => {
 		// When maxBytes is below the envelope overhead, the marker envelope
 		// itself cannot fit; the function still returns a truncated envelope,
 		// but finalBytes may exceed maxBytes. The contract here is
@@ -74,14 +74,14 @@ describe('truncateIfTooLarge', () => {
 	});
 });
 
-describe('toolJsonBounded', () => {
-	it('mirrors toolJson when the payload fits', () => {
+describe('toolJsonBounded', async () => {
+	it('mirrors toolJson when the payload fits', async () => {
 		const res = toolJsonBounded({ a: 1 }, 1024);
 		expect(res.structuredContent).toEqual({ a: 1 });
 		expect(res.content[0]?.text).toBe(JSON.stringify({ a: 1 }));
 	});
 
-	it('emits a truncated payload when the value exceeds the budget', () => {
+	it('emits a truncated payload when the value exceeds the budget', async () => {
 		const huge = { rows: 'x'.repeat(4096) };
 		const res = toolJsonBounded(huge, 128);
 		const structured = res.structuredContent as {
@@ -97,7 +97,7 @@ describe('toolJsonBounded', () => {
 		).toBeLessThanOrEqual(256);
 	});
 
-	it('uses the default ceiling when no override is given', () => {
+	it('uses the default ceiling when no override is given', async () => {
 		const res = toolJsonBounded({ ok: true });
 		expect(res.structuredContent).toEqual({ ok: true });
 		expect(
@@ -106,8 +106,8 @@ describe('toolJsonBounded', () => {
 	});
 });
 
-describe('DEFAULT_MAX_RESPONSE_BYTES', () => {
-	it('is a positive integer aligned with the documented token budget', () => {
+describe('DEFAULT_MAX_RESPONSE_BYTES', async () => {
+	it('is a positive integer aligned with the documented token budget', async () => {
 		expect(DEFAULT_MAX_RESPONSE_BYTES).toBeGreaterThan(0);
 		expect(Number.isInteger(DEFAULT_MAX_RESPONSE_BYTES)).toBe(true);
 		// 256 KiB — the documented default from the module docstring.

@@ -113,9 +113,9 @@ export const defaultRgAvailableProbe: IRgAvailableProbe = async () => {
  * `git grep` / a custom indexer never touches the dispatcher or the
  * tool registration.
  */
-export const createRgBackend = (
+export const createRgBackend = async (
 	options: { readonly rgAvailable?: IRgAvailableProbe } = {},
-): ISearchBackend => {
+): Promise<ISearchBackend> => {
 	const probe = options.rgAvailable ?? defaultRgAvailableProbe;
 	return {
 		id: RG_BACKEND_ID,

@@ -35,7 +35,7 @@ export interface IExtendedToolCall {
 export class AgentLoopDetectorService {
 	private options: ILoopDetectorServiceOptions;
 	private readonly gitRunner: IGitRunner;
-	private readonly configReader: IConfigFileReader;
+	private configReader!: IConfigFileReader;
 	private readonly lockPath: string;
 	private readonly proposalIndexPath: string;
 	private readonly roundContextDigestPath: string;
@@ -82,16 +82,22 @@ export class AgentLoopDetectorService {
 			...LOOP_DETECTOR_DEFAULTS,
 			...parseLoopDetectorCliOverrides(ctx.args),
 		};
-		this.configReader = createFsConfigFileReader(ctx.workspace);
+		// this.configReader = createFsConfigFileReader(ctx.workspace);
 
 		this.handoffDirAbs = ctx.workspace.resolve(this.options.handoffDir);
 	}
 
 	private async ensureConfigLoaded(): Promise<void> {
-		this.configLoadPromise ??= resolveLoopDetectorConfig({
-			configReader: this.configReader,
-			cliArgs: this.ctx.args,
-		}).then((options) => {
+		this.configLoadPromise ??= (async () => {
+			if (!this.configReader)
+				this.configReader = await createFsConfigFileReader(
+					this.ctx.workspace,
+				);
+			return resolveLoopDetectorConfig({
+				configReader: this.configReader,
+				cliArgs: this.ctx.args,
+			});
+		})().then((options) => {
 			this.options = options;
 			this.handoffDirAbs = this.ctx.workspace.resolve(options.handoffDir);
 		});

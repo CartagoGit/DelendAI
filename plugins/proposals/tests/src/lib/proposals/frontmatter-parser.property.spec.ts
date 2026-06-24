@@ -38,8 +38,8 @@ const randomScalar = (rng: () => number): string | number | boolean => {
 
 const TRIALS = 50;
 
-describe('parseFrontmatterBlock (property-based, M32)', () => {
-	it('round-trips flat root-level scalars (key: value)', () => {
+describe('parseFrontmatterBlock (property-based, M32)', async () => {
+	it('round-trips flat root-level scalars (key: value)', async () => {
 		const rng = mulberry32(42);
 		for (let i = 0; i < TRIALS; i++) {
 			const keys = Array.from(
@@ -60,7 +60,7 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
-	it('round-trips a block array of scalars (key:\\n  - item)', () => {
+	it('round-trips a block array of scalars (key:\\n  - item)', async () => {
 		const rng = mulberry32(7);
 		for (let i = 0; i < TRIALS; i++) {
 			const items = Array.from(
@@ -76,7 +76,7 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
-	it('round-trips an inline empty array (key: [])', () => {
+	it('round-trips an inline empty array (key: [])', async () => {
 		const rng = mulberry32(13);
 		for (let i = 0; i < TRIALS; i++) {
 			const key = `field${Math.floor(rng() * 100)}`;
@@ -90,7 +90,7 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 	// colon — must stay a single scalar string, not be mistaken for a
 	// nested `key: value` mapping the way the block-array parser would
 	// read the same token shape.
-	it('round-trips an inline non-empty array, including tokens with colons', () => {
+	it('round-trips an inline non-empty array, including tokens with colons', async () => {
 		const rng = mulberry32(2025);
 		for (let i = 0; i < TRIALS; i++) {
 			const items = Array.from(
@@ -104,7 +104,7 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
-	it('extractYamlBlock + parseFrontmatterBlock never throws on arbitrary markdown', () => {
+	it('extractYamlBlock + parseFrontmatterBlock never throws on arbitrary markdown', async () => {
 		const rng = mulberry32(2024);
 		const CHARS = '---\nabc: 123\n  - x\nfoo\n:::***';
 		for (let i = 0; i < TRIALS; i++) {
@@ -120,7 +120,7 @@ describe('parseFrontmatterBlock (property-based, M32)', () => {
 		}
 	});
 
-	it('extractYamlBlock recovers exactly the content between the first --- pair', () => {
+	it('extractYamlBlock recovers exactly the content between the first --- pair', async () => {
 		const rng = mulberry32(55);
 		for (let i = 0; i < TRIALS; i++) {
 			const key = randomWord(rng);

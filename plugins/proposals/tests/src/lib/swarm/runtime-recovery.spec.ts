@@ -18,26 +18,26 @@ function mockNow(value: number): void {
 	vi.spyOn(Date, 'now').mockReturnValue(value);
 }
 
-describe('runtime-recovery helpers', () => {
+describe('runtime-recovery helpers', async () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('marks a timestamp as stale when it is older than the configured window', () => {
+	it('marks a timestamp as stale when it is older than the configured window', async () => {
 		mockNow(NOW);
 
 		expect(isStaleTimestamp('2026-06-05T12:14:59.999Z')).toBe(true);
 		expect(isStaleTimestamp('2026-06-05T12:15:00.001Z')).toBe(false);
 	});
 
-	it('treats invalid or missing timestamps as non-stale for runtime recovery', () => {
+	it('treats invalid or missing timestamps as non-stale for runtime recovery', async () => {
 		mockNow(NOW);
 
 		expect(isStaleTimestamp(undefined)).toBe(false);
 		expect(isStaleTimestamp('not-an-iso-date')).toBe(false);
 	});
 
-	it('marks a lock as stale using its last_seen timestamp', () => {
+	it('marks a lock as stale using its last_seen timestamp', async () => {
 		mockNow(NOW);
 
 		const staleLock: IRuntimeRecoveryLock = {
@@ -50,7 +50,7 @@ describe('runtime-recovery helpers', () => {
 		expect(isStaleLock(undefined)).toBe(false);
 	});
 
-	it('does not reset from checkpoint when the checkpoint is already closed', () => {
+	it('does not reset from checkpoint when the checkpoint is already closed', async () => {
 		const checkpoint: IRuntimeRecoveryCheckpoint = {
 			proposalId: 'p40',
 			status: 'done',
@@ -60,7 +60,7 @@ describe('runtime-recovery helpers', () => {
 		expect(shouldResetFromCheckpoint(checkpoint)).toBe(false);
 	});
 
-	it('resets from checkpoint when repeatedCount crosses the threshold', () => {
+	it('resets from checkpoint when repeatedCount crosses the threshold', async () => {
 		const checkpoint: IRuntimeRecoveryCheckpoint = {
 			proposalId: 'p40',
 			status: 'in_progress',
@@ -70,7 +70,7 @@ describe('runtime-recovery helpers', () => {
 		expect(shouldResetFromCheckpoint(checkpoint)).toBe(true);
 	});
 
-	it('resets from checkpoint when lastHealthyAt is stale even if updatedAt is missing', () => {
+	it('resets from checkpoint when lastHealthyAt is stale even if updatedAt is missing', async () => {
 		mockNow(NOW + CONTINUITY_STALE_WINDOW_MS + 1);
 
 		const checkpoint: IRuntimeRecoveryCheckpoint = {
@@ -85,7 +85,7 @@ describe('runtime-recovery helpers', () => {
 		expect(shouldResetFromCheckpoint(checkpoint)).toBe(true);
 	});
 
-	it('falls back to updatedAt or lastUpdated when checking checkpoint staleness', () => {
+	it('falls back to updatedAt or lastUpdated when checking checkpoint staleness', async () => {
 		mockNow(NOW + CONTINUITY_STALE_WINDOW_MS + 1);
 
 		expect(

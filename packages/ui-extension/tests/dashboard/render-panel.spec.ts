@@ -178,8 +178,8 @@ const opts = {
 	openDocsCommand: 'mcp-vertex.openDocs',
 };
 
-describe('renderPanelOverview', () => {
-	it('renders the server name, version, and recommended next action', () => {
+describe('renderPanelOverview', async () => {
+	it('renders the server name, version, and recommended next action', async () => {
 		const html = renderPanelOverview(baseOverview);
 		expect(html).toContain('mcp-vertex');
 		expect(html).toContain('v0.1.0');
@@ -187,7 +187,7 @@ describe('renderPanelOverview', () => {
 		expect(html).toContain('panel-overview');
 	});
 
-	it('escapes user-provided strings (no XSS via plugin name)', () => {
+	it('escapes user-provided strings (no XSS via plugin name)', async () => {
 		const evil = {
 			...baseOverview,
 			plugins: [{ name: '<script>alert(1)</script>' }],
@@ -198,8 +198,8 @@ describe('renderPanelOverview', () => {
 	});
 });
 
-describe('renderPanelMetrics', () => {
-	it('renders totals and the top-tools table', () => {
+describe('renderPanelMetrics', async () => {
+	it('renders totals and the top-tools table', async () => {
 		const html = renderPanelMetrics(baseMetrics);
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('Total calls');
@@ -208,8 +208,8 @@ describe('renderPanelMetrics', () => {
 	});
 });
 
-describe('renderPanelTokens', () => {
-	it('renders the savings percent and the top-tools table', () => {
+describe('renderPanelTokens', async () => {
+	it('renders the savings percent and the top-tools table', async () => {
 		const html = renderPanelTokens(baseTokens);
 		expect(html).toContain('panel-tokens');
 		expect(html).toContain('18%');
@@ -217,8 +217,8 @@ describe('renderPanelTokens', () => {
 	});
 });
 
-describe('renderPanelTools', () => {
-	it('renders a sortable table with data-* attributes for client-side sort', () => {
+describe('renderPanelTools', async () => {
+	it('renders a sortable table with data-* attributes for client-side sort', async () => {
 		const html = renderPanelTools(baseTools);
 		expect(html).toContain('mv-tools-table');
 		expect(html).toContain('data-calls="12"');
@@ -226,8 +226,8 @@ describe('renderPanelTools', () => {
 	});
 });
 
-describe('renderPanelPlugins', () => {
-	it('renders the barchart and the rollup table', () => {
+describe('renderPanelPlugins', async () => {
+	it('renders the barchart and the rollup table', async () => {
 		const html = renderPanelPlugins(basePlugins);
 		expect(html).toContain('panel-plugins');
 		expect(html).toContain('<svg');
@@ -235,8 +235,8 @@ describe('renderPanelPlugins', () => {
 	});
 });
 
-describe('renderPanelSessions', () => {
-	it('groups proposals by status with a pill per row', () => {
+describe('renderPanelSessions', async () => {
+	it('groups proposals by status with a pill per row', async () => {
 		const html = renderPanelSessions(baseSessions);
 		expect(html).toContain('panel-sessions');
 		expect(html).toContain('in_progress');
@@ -245,8 +245,8 @@ describe('renderPanelSessions', () => {
 	});
 });
 
-describe('renderPanelTimes', () => {
-	it('renders total wall, p50/p95, and the histogram', () => {
+describe('renderPanelTimes', async () => {
+	it('renders total wall, p50/p95, and the histogram', async () => {
 		const html = renderPanelTimes(baseTimes);
 		expect(html).toContain('panel-times');
 		expect(html).toContain('Total wall');
@@ -256,21 +256,21 @@ describe('renderPanelTimes', () => {
 	});
 });
 
-describe('renderPanelAgents', () => {
-	it('renders one row per active agent', () => {
+describe('renderPanelAgents', async () => {
+	it('renders one row per active agent', async () => {
 		const html = renderPanelAgents(baseAgents);
 		expect(html).toContain('panel-agents');
 		expect(html).toContain('implementation_runner');
 	});
 
-	it('shows the empty-state row when no agents', () => {
+	it('shows the empty-state row when no agents', async () => {
 		const html = renderPanelAgents({ agents: [], totalActive: 0 });
 		expect(html).toContain('No active agents.');
 	});
 });
 
-describe('renderDashboard', () => {
-	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', () => {
+describe('renderDashboard', async () => {
+	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toMatch(/<header class="mv-header">/);
 		expect(html).toContain('mv-kpis');
@@ -293,7 +293,7 @@ describe('renderDashboard', () => {
 		expect(html).toContain('https://mcp-vertex.dev');
 	});
 
-	it('inlines the brand logo SVG in the header (via shared --mv-brand-* tokens)', () => {
+	it('inlines the brand logo SVG in the header (via shared --mv-brand-* tokens)', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('mv-header__logo');
 		expect(html).toContain('linearGradient');
@@ -304,13 +304,13 @@ describe('renderDashboard', () => {
 		expect(html).toContain('--mv-brand-purple');
 	});
 
-	it('sets the first tab as active by default', () => {
+	it('sets the first tab as active by default', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('aria-selected="true"');
 		expect(html).toContain('data-active="true"');
 	});
 
-	it('escapes the docsUrl to prevent injection', () => {
+	it('escapes the docsUrl to prevent injection', async () => {
 		const evil = renderDashboard(fixture, {
 			...opts,
 			docsUrl: 'https://x.com/"><script>alert(1)</script>',
@@ -318,7 +318,7 @@ describe('renderDashboard', () => {
 		expect(evil).not.toContain('<script>alert(1)</script>');
 	});
 
-	it('embeds the tab-switching client script', () => {
+	it('embeds the tab-switching client script', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('<script>');
 		expect(html).toContain("querySelectorAll('.mv-tab')");

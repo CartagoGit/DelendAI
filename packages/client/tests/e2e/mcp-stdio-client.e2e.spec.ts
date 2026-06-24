@@ -9,7 +9,7 @@ import {
 	type McpVertexToolOutputs,
 } from '../../src/public/index';
 
-describe('e2e: McpStdioClient over a real mcp-vertex stdio server', () => {
+describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => {
 	const workspaces: string[] = [];
 
 	afterEach(() => {

@@ -8,8 +8,8 @@ import {
 	buildBrief,
 } from '../../../../src/lib/services/audit-brief.service';
 
-describe('buildBrief', () => {
-	it('returns a non-empty markdown for every scope', () => {
+describe('buildBrief', async () => {
+	it('returns a non-empty markdown for every scope', async () => {
 		for (const scope of ALL_SCOPES) {
 			const md = buildBrief(scope);
 			expect(md.length).toBeGreaterThan(200);
@@ -17,25 +17,25 @@ describe('buildBrief', () => {
 		}
 	});
 
-	it('embeds the scope label in the header', () => {
+	it('embeds the scope label in the header', async () => {
 		const md = buildBrief('security');
 		expect(md).toContain('Seguridad operacional');
 	});
 
-	it('lists every score dimension as a table row', () => {
+	it('lists every score dimension as a table row', async () => {
 		const md = buildBrief('full');
 		for (const dim of SCORE_DIMENSIONS) {
 			expect(md).toContain(`| ${dim} |`);
 		}
 	});
 
-	it('exposes canonical labels for every universal scope', () => {
+	it('exposes canonical labels for every universal scope', async () => {
 		expect(Object.keys(SCOPE_LABEL)).toEqual([...UNIVERSAL_SCOPES]);
 		// ALL_SCOPES is an alias for UNIVERSAL_SCOPES (backwards compat)
 		expect([...ALL_SCOPES]).toEqual([...UNIVERSAL_SCOPES]);
 	});
 
-	it('generates a parameterised brief for a custom layer scope', () => {
+	it('generates a parameterised brief for a custom layer scope', async () => {
 		const layer = {
 			name: 'api',
 			label: 'API Layer',
@@ -54,14 +54,14 @@ describe('buildBrief', () => {
 	// `options.dimensions`. The default path is unchanged (canonical
 	// 9 dimensions) and the override path is exercised below.
 
-	it('falls back to SCORE_DIMENSIONS when no options are passed', () => {
+	it('falls back to SCORE_DIMENSIONS when no options are passed', async () => {
 		const md = buildBrief('full');
 		for (const dim of SCORE_DIMENSIONS) {
 			expect(md).toContain(`| ${dim} | /10 |`);
 		}
 	});
 
-	it('renders a custom dimensions array verbatim, in order', () => {
+	it('renders a custom dimensions array verbatim, in order', async () => {
 		const custom = ['Calidad', 'Seguridad', 'Docs'];
 		const md = buildBrief('full', { dimensions: custom });
 		for (const dim of custom) {
@@ -73,7 +73,7 @@ describe('buildBrief', () => {
 		expect(md).not.toContain('| Genericidad (project-agnostic) | /10 |');
 	});
 
-	it('preserves an empty options object as "use defaults"', () => {
+	it('preserves an empty options object as "use defaults"', async () => {
 		const md = buildBrief('full', {});
 		for (const dim of SCORE_DIMENSIONS) {
 			expect(md).toContain(`| ${dim} | /10 |`);

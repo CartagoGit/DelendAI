@@ -21,7 +21,7 @@ import {
 	withOwnSlices,
 } from '@mcp-vertex/proposals/lib/swarm/plan-closure';
 
-describe('withOwnSlices — decorator', () => {
+describe('withOwnSlices — decorator', async () => {
 	const baseFrontmatter: IProposalFrontmatter = {
 		id: 'q99999',
 		type: 'plan',

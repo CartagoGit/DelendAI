@@ -56,14 +56,14 @@ const CONFLICTING_EDITOR: IProposalParallelism = {
 	parallelismLanes: [],
 };
 
-describe('evaluateParallelism', () => {
-	it('returns withinPolicy:true and empty violations for the 5 mutually compatible actives', () => {
+describe('evaluateParallelism', async () => {
+	it('returns withinPolicy:true and empty violations for the 5 mutually compatible actives', async () => {
 		const result = evaluateParallelism(COMPATIBLE_LANES);
 		expect(result.withinPolicy).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('returns withinPolicy:false with a mainWriteLane block when two editor lanes are in flight', () => {
+	it('returns withinPolicy:false with a mainWriteLane block when two editor lanes are in flight', async () => {
 		const result = evaluateParallelism([
 			...COMPATIBLE_LANES,
 			CONFLICTING_EDITOR,
@@ -83,7 +83,7 @@ describe('evaluateParallelism', () => {
 		expect(editorBucket?.message).toContain('editor');
 	});
 
-	it('treats audit lanes as universally parallel-friendly (no violation with any other track)', () => {
+	it('treats audit lanes as universally parallel-friendly (no violation with any other track)', async () => {
 		const auditOnly: IProposalParallelism = {
 			proposalId: 'a99-fixture',
 			mainWriteLane: 'audit',
@@ -106,13 +106,13 @@ describe('evaluateParallelism', () => {
 		expect(result.withinPolicy).toBe(true);
 	});
 
-	it('returns empty result for an empty actives list (no proposals in flight)', () => {
+	it('returns empty result for an empty actives list (no proposals in flight)', async () => {
 		const result = evaluateParallelism([]);
 		expect(result.withinPolicy).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('emits at most one violation per conflicting lane (not O(n^2))', () => {
+	it('emits at most one violation per conflicting lane (not O(n^2))', async () => {
 		const threeEditors: IProposalParallelism[] = [
 			{ proposalId: 'e1', mainWriteLane: 'editor', parallelismLanes: [] },
 			{ proposalId: 'e2', mainWriteLane: 'editor', parallelismLanes: [] },
@@ -122,7 +122,7 @@ describe('evaluateParallelism', () => {
 		expect(result.violations.length).toBe(1);
 	});
 
-	it('emits a block when neither lane permits the other (mutual exclusion)', () => {
+	it('emits a block when neither lane permits the other (mutual exclusion)', async () => {
 		const strictEditor: IProposalParallelism = {
 			proposalId: 'p-strict',
 			mainWriteLane: 'editor',

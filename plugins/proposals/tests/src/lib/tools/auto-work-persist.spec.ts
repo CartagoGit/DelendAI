@@ -60,7 +60,7 @@ const fakeRunner = (
 	return fn;
 };
 
-describe('maybePersistAfterSlice', () => {
+describe('maybePersistAfterSlice', async () => {
 	it("mode 'none' is a hard no-op (no git calls)", async () => {
 		const runner = fakeRunner([
 			{
@@ -255,8 +255,8 @@ describe('maybePersistAfterSlice', () => {
 	});
 });
 
-describe('renderCommitMessage', () => {
-	it('substitutes the three known placeholders', () => {
+describe('renderCommitMessage', async () => {
+	it('substitutes the three known placeholders', async () => {
 		expect(
 			renderCommitMessage(
 				'<area>(<proposalId>): <sliceId>',
@@ -267,7 +267,7 @@ describe('renderCommitMessage', () => {
 		).toBe('plugins(l109): s2');
 	});
 
-	it('passes unknown placeholders through verbatim', () => {
+	it('passes unknown placeholders through verbatim', async () => {
 		expect(
 			renderCommitMessage(
 				'feat(<unknown>): <sliceId>',

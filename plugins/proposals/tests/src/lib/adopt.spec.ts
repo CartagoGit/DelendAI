@@ -11,8 +11,8 @@ const md = (
 	type = 'proposal',
 ): { id: string; status: string; type: string } => ({ id, status, type });
 
-describe('analyzeProposals (adoption)', () => {
-	it('classifies proposals, fixes, folders, index/readme and unknown markdown', () => {
+describe('analyzeProposals (adoption)', async () => {
+	it('classifies proposals, fixes, folders, index/readme and unknown markdown', async () => {
 		const entries: IScanEntry[] = [
 			{ name: 'index.json', isDir: false },
 			{ name: 'README.md', isDir: false },
@@ -42,7 +42,7 @@ describe('analyzeProposals (adoption)', () => {
 		expect(r.plan.join(' ')).toMatch(/notes\.md/);
 	});
 
-	it('plans to build the index when missing', () => {
+	it('plans to build the index when missing', async () => {
 		const r = analyzeProposals('p', [
 			{ name: 'p1-x.md', isDir: false, frontmatter: md('p1', 'ready') },
 		]);
@@ -50,7 +50,7 @@ describe('analyzeProposals (adoption)', () => {
 		expect(r.plan.join(' ')).toMatch(/sync_proposals/);
 	});
 
-	it('suggests archiving completed proposals when there is no done/ folder', () => {
+	it('suggests archiving completed proposals when there is no done/ folder', async () => {
 		const r = analyzeProposals('p', [
 			{ name: 'index.json', isDir: false },
 			{ name: 'p1-x.md', isDir: false, frontmatter: md('p1', 'done') },
@@ -58,7 +58,7 @@ describe('analyzeProposals (adoption)', () => {
 		expect(r.plan.join(' ')).toMatch(/done\/ folder/);
 	});
 
-	it('an empty folder is guided to create_proposal; a clean indexed folder is ready', () => {
+	it('an empty folder is guided to create_proposal; a clean indexed folder is ready', async () => {
 		expect(analyzeProposals('p', []).plan.join(' ')).toMatch(
 			/create_proposal/,
 		);
@@ -70,7 +70,7 @@ describe('analyzeProposals (adoption)', () => {
 		expect(clean.ready).toBe(true);
 	});
 
-	it('exposes the canonical layout for the agent to learn the convention', () => {
+	it('exposes the canonical layout for the agent to learn the convention', async () => {
 		const r = analyzeProposals('p', []);
 		expect(r.layout.files['index.json']).toMatch(/registry/);
 		expect(r.layout.folders['done/']).toMatch(/completed/);

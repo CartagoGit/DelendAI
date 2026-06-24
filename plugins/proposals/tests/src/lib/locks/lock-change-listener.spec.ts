@@ -7,9 +7,9 @@ import {
 	type ILockChangeListener,
 } from '@mcp-vertex/proposals/lib/locks/lock-change-listener';
 
-describe('lock-change-listener (Solid ISP)', () => {
-	describe('createCallbackLockListener', () => {
-		it('forwards the event to the callback', () => {
+describe('lock-change-listener (Solid ISP)', async () => {
+	describe('createCallbackLockListener', async () => {
+		it('forwards the event to the callback', async () => {
 			const cb = vi.fn();
 			const listener = createCallbackLockListener(cb);
 			listener.onLockChanged({
@@ -25,7 +25,7 @@ describe('lock-change-listener (Solid ISP)', () => {
 			});
 		});
 
-		it('swallows callback exceptions (listener must never fail the tool)', () => {
+		it('swallows callback exceptions (listener must never fail the tool)', async () => {
 			const listener = createCallbackLockListener(() => {
 				throw new Error('boom');
 			});
@@ -39,14 +39,14 @@ describe('lock-change-listener (Solid ISP)', () => {
 		});
 	});
 
-	describe('lockChangeMultiplexer', () => {
+	describe('lockChangeMultiplexer', async () => {
 		const evt: ILockChangeEvent = {
 			action: 'gc',
 			agent: undefined,
 			taskId: undefined,
 		};
 
-		it('delivers to every listener exactly once', () => {
+		it('delivers to every listener exactly once', async () => {
 			const a = vi.fn();
 			const b = vi.fn();
 			const m = lockChangeMultiplexer([
@@ -58,7 +58,7 @@ describe('lock-change-listener (Solid ISP)', () => {
 			expect(b).toHaveBeenCalledOnce();
 		});
 
-		it('keeps delivering even when one listener throws', () => {
+		it('keeps delivering even when one listener throws', async () => {
 			const a = vi.fn();
 			const b = vi.fn();
 			const faulty: ILockChangeListener = {
@@ -76,7 +76,7 @@ describe('lock-change-listener (Solid ISP)', () => {
 			expect(b).toHaveBeenCalledOnce();
 		});
 
-		it('handles an empty listener list as a no-op', () => {
+		it('handles an empty listener list as a no-op', async () => {
 			const m = lockChangeMultiplexer([]);
 			expect(() => m.onLockChanged(evt)).not.toThrow();
 		});

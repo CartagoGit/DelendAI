@@ -59,8 +59,8 @@ const EXIT_ZERO_CMD = 'bun --version';
 // the project default.
 const VITEST_SUITE_TIMEOUT_MS = 60_000;
 
-describe('runAcceptanceCriteria (integration, p34 T3)', () => {
-	describeIfBun('executable acceptance', () => {
+describe('runAcceptanceCriteria (integration, p34 T3)', async () => {
+	describeIfBun('executable acceptance', async () => {
 		it('case 1: bun --version matches contains:1. → passed: true', async () => {
 			const result = await runAcceptanceCriteria([
 				{ command: 'bun --version', expect: 'contains:1.' },
@@ -182,7 +182,7 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 		});
 	});
 
-	describe('non-Bun hosts (sanity)', () => {
+	describe('non-Bun hosts (sanity)', async () => {
 		// The pre-spawn check runs regardless of Bun availability. We
 		// assert the error path is type-safe even when the host has
 		// neither Bun nor Node.

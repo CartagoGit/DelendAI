@@ -11,8 +11,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { IPluginConfigExample } from '@mcp-vertex/core/public';
 
-describe('IPluginConfigExample', () => {
-	it('accepts a minimal example (only required fields)', () => {
+describe('IPluginConfigExample', async () => {
+	it('accepts a minimal example (only required fields)', async () => {
 		const ex: IPluginConfigExample = {
 			summary: 'Enable the swarm proposal workflow.',
 			options: {},
@@ -21,7 +21,7 @@ describe('IPluginConfigExample', () => {
 		expect(ex.options).toEqual({});
 	});
 
-	it('accepts an example with arbitrary nested config', () => {
+	it('accepts an example with arbitrary nested config', async () => {
 		const ex: IPluginConfigExample = {
 			summary: 'Tune the swarm timeout.',
 			options: {

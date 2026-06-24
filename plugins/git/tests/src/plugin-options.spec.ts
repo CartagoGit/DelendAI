@@ -23,8 +23,8 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/git optionsSchema (S9 F7)', () => {
-	it('exposes an optionsSchema', () => {
+describe('@mcp-vertex/git optionsSchema (S9 F7)', async () => {
+	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(
 			plugin.optionsSchema?.safeParse({ allowWrite: true }).success,
@@ -39,7 +39,7 @@ describe('@mcp-vertex/git optionsSchema (S9 F7)', () => {
 		);
 	});
 
-	it('throws before wiring tools when allowWrite has the wrong type', () => {
+	it('throws before wiring tools when allowWrite has the wrong type', async () => {
 		expect(() => plugin.register(baseCtx({ allowWrite: 'true' }))).toThrow(
 			/rejected its options/,
 		);

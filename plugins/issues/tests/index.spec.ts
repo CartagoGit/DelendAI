@@ -44,8 +44,8 @@ const fakeImporter =
 		throw new Error(`unexpected specifier: ${specifier}`);
 	};
 
-describe('issues plugin — dependsOn contract', () => {
-	it('declares a hard dependency on proposals', () => {
+describe('issues plugin — dependsOn contract', async () => {
+	it('declares a hard dependency on proposals', async () => {
 		expect(issuesPlugin.dependsOn).toEqual(['proposals']);
 	});
 
@@ -95,7 +95,7 @@ describe('issues plugin — dependsOn contract', () => {
 	});
 });
 
-describe('issues plugin — UX guard when `repo` is missing', () => {
+describe('issues plugin — UX guard when `repo` is missing', async () => {
 	const buildCtx = (options: Record<string, unknown>): IMcpPluginContext => ({
 		workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
 		corePaths: {
@@ -171,7 +171,7 @@ describe('issues plugin — UX guard when `repo` is missing', () => {
 		expect(result.knowledge).toBeUndefined();
 	});
 
-	it('throws on invalid `scaffoldDir` (workspace escape)', () => {
+	it('throws on invalid `scaffoldDir` (workspace escape)', async () => {
 		expect(() =>
 			issuesPlugin.register(
 				buildCtx({

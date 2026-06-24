@@ -43,7 +43,7 @@ const writeProposal = async (
 	);
 };
 
-describe('sync-proposal-registry reconciliation (f113 S5)', () => {
+describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 	let root = '';
 
 	beforeEach(async () => {
@@ -52,7 +52,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));
 
-	describe('reconcileFolders', () => {
+	describe('reconcileFolders', async () => {
 		it('moves a new-system file whose folder disagrees with its status', async () => {
 			await writeProposal(root, 'blocked', 'f300-misfiled.md', {
 				id: 'f300',
@@ -111,7 +111,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 		});
 	});
 
-	describe('reconcileBlocked', () => {
+	describe('reconcileBlocked', async () => {
 		it('resolves blocked -> ready when the dependency is done', async () => {
 			await writeProposal(root, 'done', 'f400-dep.md', {
 				id: 'f400',
@@ -192,7 +192,7 @@ describe('sync-proposal-registry reconciliation (f113 S5)', () => {
 		});
 	});
 
-	describe('syncProposalRegistry integration', () => {
+	describe('syncProposalRegistry integration', async () => {
 		it('discovers a new-system proposal living in ready/', async () => {
 			await writeProposal(root, 'ready', 'f00500-discoverable.md', {
 				id: 'f00500',

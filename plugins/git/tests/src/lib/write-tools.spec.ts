@@ -31,7 +31,7 @@ const run = async (
 	await execFileAsync(cmd, [...args], { cwd });
 };
 
-describe('git_commit / git_push (S9)', () => {
+describe('git_commit / git_push (S9)', async () => {
 	let repoDir = '';
 	let runner: IGitRunner;
 
@@ -52,7 +52,7 @@ describe('git_commit / git_push (S9)', () => {
 
 	afterEach(async () => rm(repoDir, { recursive: true, force: true }));
 
-	it('isConventionalCommitMessage accepts the documented prefixes', () => {
+	it('isConventionalCommitMessage accepts the documented prefixes', async () => {
 		expect(isConventionalCommitMessage('feat: add x')).toBe(true);
 		expect(isConventionalCommitMessage('fix(core): y')).toBe(true);
 		expect(isConventionalCommitMessage('feat!: breaking')).toBe(true);
@@ -169,7 +169,7 @@ describe('git_commit / git_push (S9)', () => {
 		).toContain('Conventional Commit prefix');
 	});
 
-	describe('push', () => {
+	describe('push', async () => {
 		let remoteDir = '';
 		let cloneDir = '';
 		let cloneRunner: IGitRunner;

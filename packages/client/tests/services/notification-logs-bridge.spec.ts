@@ -36,8 +36,8 @@ const makeBridge = () => {
 	return { bridge, notifications, metrics };
 };
 
-describe('NotificationLogsBridge', () => {
-	it('emits an entry when a notification fires', () => {
+describe('NotificationLogsBridge', async () => {
+	it('emits an entry when a notification fires', async () => {
 		const { bridge, notifications } = makeBridge();
 		const received: unknown[] = [];
 		bridge.addEventListener((e) => received.push(e));
@@ -49,7 +49,7 @@ describe('NotificationLogsBridge', () => {
 		expect(entry.message).toBe('checkpoint reached');
 	});
 
-	it('describes lock-released events with the agent + file count', () => {
+	it('describes lock-released events with the agent + file count', async () => {
 		const { bridge, notifications } = makeBridge();
 		const received: unknown[] = [];
 		bridge.addEventListener((e) => received.push(e));
@@ -99,7 +99,7 @@ describe('NotificationLogsBridge', () => {
 		bridge.stop();
 	});
 
-	it('stop() unsubscribes the timer and the notifications', () => {
+	it('stop() unsubscribes the timer and the notifications', async () => {
 		const { bridge, notifications } = makeBridge();
 		bridge.start();
 		bridge.stop();

@@ -12,14 +12,14 @@ import type {
 	IValidationMatrixScope,
 } from '@mcp-vertex/core/public';
 
-describe('config-file-schema (Solid SRP extraction)', () => {
-	describe('schema shape (mirrors IMcpVertexConfigFile)', () => {
-		it('accepts a minimal valid config (empty object)', () => {
+describe('config-file-schema (Solid SRP extraction)', async () => {
+	describe('schema shape (mirrors IMcpVertexConfigFile)', async () => {
+		it('accepts a minimal valid config (empty object)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({});
 			expect(res.success).toBe(true);
 		});
 
-		it('accepts a config with only the core paths', () => {
+		it('accepts a config with only the core paths', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				cacheDir: '.cache/mcp-vertex',
 				docsDir: 'docs/mcp-vertex',
@@ -27,7 +27,7 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 			expect(res.success).toBe(true);
 		});
 
-		it('accepts a config with validationMatrix', () => {
+		it('accepts a config with validationMatrix', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				validationMatrix: {
 					scopes: {
@@ -38,7 +38,7 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 			expect(res.success).toBe(true);
 		});
 
-		it('accepts a config with plugins', () => {
+		it('accepts a config with plugins', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				plugins: {
 					proposals: {
@@ -50,7 +50,7 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 			expect(res.success).toBe(true);
 		});
 
-		it('accepts a config with loopDetector', () => {
+		it('accepts a config with loopDetector', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				loopDetector: {
 					enabled: true,
@@ -61,7 +61,7 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 			expect(res.success).toBe(true);
 		});
 
-		it('accepts a config with bootstrap.patternOverrides', () => {
+		it('accepts a config with bootstrap.patternOverrides', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				bootstrap: {
 					patternOverrides: {
@@ -83,19 +83,19 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 			expect(res.success).toBe(true);
 		});
 
-		it('rejects unknown keys at the root (.strict)', () => {
+		it('rejects unknown keys at the root (.strict)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({ typoField: 'x' });
 			expect(res.success).toBe(false);
 		});
 
-		it('rejects unknown keys inside loopDetector (.strict)', () => {
+		it('rejects unknown keys inside loopDetector (.strict)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				loopDetector: { unknownLoopDetField: true },
 			});
 			expect(res.success).toBe(false);
 		});
 
-		it('rejects unknown keys inside bootstrap (.strict)', () => {
+		it('rejects unknown keys inside bootstrap (.strict)', async () => {
 			const res = CONFIG_FILE_SCHEMA.safeParse({
 				bootstrap: { unknownBootstrapField: true },
 			});
@@ -104,8 +104,8 @@ describe('config-file-schema (Solid SRP extraction)', () => {
 	});
 });
 
-describe('IMcpVertexConfigFile ISP segregation', () => {
-	it('IMcpVertexCorePathsConfig is structurally compatible with the parent', () => {
+describe('IMcpVertexConfigFile ISP segregation', async () => {
+	it('IMcpVertexCorePathsConfig is structurally compatible with the parent', async () => {
 		// Solid-LSP: a value typed as IMcpVertexCorePathsConfig is
 		// assignable to IMcpVertexConfigFile (it extends it).
 		const core: IMcpVertexCorePathsConfig = {
@@ -118,7 +118,7 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 		expect(asConfig.keepLegacy).toBe(true);
 	});
 
-	it('IValidationMatrixConfig narrows the validationMatrix field', () => {
+	it('IValidationMatrixConfig narrows the validationMatrix field', async () => {
 		const scopes: IValidationMatrixConfig = {
 			scopes: {
 				full: [
@@ -135,7 +135,7 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 		);
 	});
 
-	it('IBootstrapPatternOverride covers every shape of an override entry', () => {
+	it('IBootstrapPatternOverride covers every shape of an override entry', async () => {
 		const override: IBootstrapPatternOverride = {
 			type: 'library',
 			describe: 'A TypeScript library',
@@ -152,7 +152,7 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 		);
 	});
 
-	it('ILoopDetectorConfig keeps its interactiveAgentPatterns contract', () => {
+	it('ILoopDetectorConfig keeps its interactiveAgentPatterns contract', async () => {
 		const ld: ILoopDetectorConfig = {
 			enabled: false,
 			interactiveAgentPatterns: [],
@@ -161,7 +161,7 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 		expect(asConfig.loopDetector?.interactiveAgentPatterns).toEqual([]);
 	});
 
-	it('IMcpVertexPluginConfig keeps the per-plugin {prefix, options} contract', () => {
+	it('IMcpVertexPluginConfig keeps the per-plugin {prefix, options} contract', async () => {
 		const pc: IMcpVertexPluginConfig = {
 			prefix: 'work',
 			options: { docsDir: '/x' },
@@ -174,8 +174,8 @@ describe('IMcpVertexConfigFile ISP segregation', () => {
 	});
 });
 
-describe('LSP — sub-interfaces compose into IMcpVertexConfigFile', () => {
-	it('every sub-interface is a structural subset of the composite', () => {
+describe('LSP — sub-interfaces compose into IMcpVertexConfigFile', async () => {
+	it('every sub-interface is a structural subset of the composite', async () => {
 		// This is the Solid-LSP guard: a function typed against the
 		// composite must accept values typed against any sub-interface.
 		const consumer = (c: IMcpVertexConfigFile): string =>

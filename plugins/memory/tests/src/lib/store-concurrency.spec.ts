@@ -29,7 +29,7 @@ import {
 	saveNote,
 } from '@mcp-vertex/memory/lib/services/store';
 
-describe('memory store concurrency (M32, l111 s4)', () => {
+describe('memory store concurrency (M32, l111 s4)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {

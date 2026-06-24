@@ -41,8 +41,8 @@ const makeHandle = (opts: {
 	};
 };
 
-describe('verify-probes (Solid SRP extraction)', () => {
-	describe('runEmptyInputProbe', () => {
+describe('verify-probes (Solid SRP extraction)', async () => {
+	describe('runEmptyInputProbe', async () => {
 		it('returns "ok" when inputSchema accepts {} and outputSchema matches', async () => {
 			const handle = makeHandle({
 				inputSchema: zImpl.object({}).passthrough(),
@@ -106,7 +106,7 @@ describe('verify-probes (Solid SRP extraction)', () => {
 		});
 	});
 
-	describe('runHappyPathProbe', () => {
+	describe('runHappyPathProbe', async () => {
 		it('returns null when KNOWN_PROBE_INPUTS has no entry for the tool id', async () => {
 			const handle = makeHandle({
 				toolId: 'totally_unknown_tool',
@@ -179,8 +179,8 @@ describe('verify-probes (Solid SRP extraction)', () => {
 		});
 	});
 
-	describe('constants', () => {
-		it('HAPPY_PATH_PROBE_IDS is the documented trio (fs_read / fs_write / scaffold)', () => {
+	describe('constants', async () => {
+		it('HAPPY_PATH_PROBE_IDS is the documented trio (fs_read / fs_write / scaffold)', async () => {
 			expect(HAPPY_PATH_PROBE_IDS).toEqual([
 				'fs_read',
 				'fs_write',
@@ -188,7 +188,7 @@ describe('verify-probes (Solid SRP extraction)', () => {
 			]);
 		});
 
-		it('KNOWN_PROBE_INPUTS covers every id in HAPPY_PATH_PROBE_IDS', () => {
+		it('KNOWN_PROBE_INPUTS covers every id in HAPPY_PATH_PROBE_IDS', async () => {
 			// Solid-OCP guard: if you add an id to HAPPY_PATH_PROBE_IDS,
 			// KNOWN_PROBE_INPUTS must know how to drive it. This test
 			// breaks the build otherwise — caught at the same slice.

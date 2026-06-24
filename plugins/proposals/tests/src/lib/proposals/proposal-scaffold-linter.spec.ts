@@ -61,8 +61,8 @@ const doc = (
 	sliceBlock: string = TERSE_SLICE,
 ): string => FRONTMATTER(frontmatterOverrides) + BODY(sliceBlock);
 
-describe('lintProposalMarkdown — happy paths', () => {
-	it('accepts a minimal valid proposal with terse slices', () => {
+describe('lintProposalMarkdown — happy paths', async () => {
+	it('accepts a minimal valid proposal with terse slices', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/ready/f00114-do-the-thing.md',
 			markdown: doc(),
@@ -71,7 +71,7 @@ describe('lintProposalMarkdown — happy paths', () => {
 		expect(result.issues).toEqual([]);
 	});
 
-	it('accepts the narrative slice form (Gate + excl-files heading)', () => {
+	it('accepts the narrative slice form (Gate + excl-files heading)', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/ready/f00114-do-the-thing.md',
 			markdown: doc({}, NARRATIVE_SLICE()),
@@ -79,7 +79,7 @@ describe('lintProposalMarkdown — happy paths', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('accepts numbered headings as equivalent to bare names', () => {
+	it('accepts numbered headings as equivalent to bare names', async () => {
 		const numbered = doc()
 			.replace('## Goal', '## 0. Goal')
 			.replace('## Why\n', '## 1. Why\n');
@@ -90,7 +90,7 @@ describe('lintProposalMarkdown — happy paths', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('accepts all four optional sections in their fixed slots', () => {
+	it('accepts all four optional sections in their fixed slots', async () => {
 		const withOptional = `${FRONTMATTER()}
 ## Goal
 
@@ -138,7 +138,7 @@ p.
 		expect(result.ok).toBe(true);
 	});
 
-	it('resolves filename/folder/kind/status consistently', () => {
+	it('resolves filename/folder/kind/status consistently', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/in-progress/x00042-fix-the-bug.md',
 			markdown: doc({ id: 'x00042', kind: 'fix', status: 'in-progress' }),
@@ -146,7 +146,7 @@ p.
 		expect(result.ok).toBe(true);
 	});
 
-	it('resolves the retired legacy "p" prefix against kind: legacy', () => {
+	it('resolves the retired legacy "p" prefix against kind: legacy', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/done/p00099-old-thing.md',
 			markdown: doc({ id: 'p00099', kind: 'legacy', status: 'done' }),
@@ -154,7 +154,7 @@ p.
 		expect(result.ok).toBe(true);
 	});
 
-	it('ignores illustrative headings/slices written inside a fenced code block (regression: f113 §4.5 documents the scaffold using literal "## Goal" lines inside a ```markdown fence — the linter must not parse those as real structure)', () => {
+	it('ignores illustrative headings/slices written inside a fenced code block (regression: f113 §4.5 documents the scaffold using literal "## Goal" lines inside a ```markdown fence — the linter must not parse those as real structure)', async () => {
 		const withExampleFence = `${FRONTMATTER()}
 ## Goal
 
@@ -194,13 +194,13 @@ ${TERSE_SLICE}
 	});
 });
 
-describe('lintProposalMarkdown — negative cases', () => {
+describe('lintProposalMarkdown — negative cases', async () => {
 	const lint = (
 		markdown: string,
 		path = 'docs/proposals/ready/f00114-do-the-thing.md',
 	) => lintProposalMarkdown({ path, markdown });
 
-	it('flags a missing required section', () => {
+	it('flags a missing required section', async () => {
 		const result = lint(doc().replace(/## Acceptance[\s\S]*$/, ''));
 		expect(result.ok).toBe(false);
 		expect(
@@ -210,7 +210,7 @@ describe('lintProposalMarkdown — negative cases', () => {
 		).toBe(true);
 	});
 
-	it('flags an out-of-order section', () => {
+	it('flags an out-of-order section', async () => {
 		const swapped = `${FRONTMATTER()}
 ## Why
 
@@ -240,7 +240,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags an unrecognized section heading', () => {
+	it('flags an unrecognized section heading', async () => {
 		const result = lint(
 			doc().replace('## Non-goals', '## Random Section\n\n## Non-goals'),
 		);
@@ -251,14 +251,14 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a duplicate section', () => {
+	it('flags a duplicate section', async () => {
 		const result = lint(`${doc()}\n## Goal\n\nagain.\n`);
 		expect(
 			result.issues.some((i) => i.message.includes('duplicate section')),
 		).toBe(true);
 	});
 
-	it('flags a missing frontmatter field', () => {
+	it('flags a missing frontmatter field', async () => {
 		const result = lint(doc({ track: '' }));
 		expect(
 			result.issues.some((i) =>
@@ -267,7 +267,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags an invalid kind', () => {
+	it('flags an invalid kind', async () => {
 		const result = lint(doc({ kind: 'nonsense' }));
 		const kindCount = Object.keys(PROPOSAL_KINDS).length;
 		expect(
@@ -277,7 +277,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags an invalid status', () => {
+	it('flags an invalid status', async () => {
 		const result = lint(doc({ status: 'nonsense' }));
 		expect(
 			result.issues.some((i) =>
@@ -286,14 +286,14 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags an invalid id pattern', () => {
+	it('flags an invalid id pattern', async () => {
 		const result = lint(doc({ id: 'F114' }));
 		expect(
 			result.issues.some((i) => i.message.includes('does not match')),
 		).toBe(true);
 	});
 
-	it('flags a too-short title', () => {
+	it('flags a too-short title', async () => {
 		const result = lint(doc({ title: 'short' }));
 		expect(
 			result.issues.some((i) =>
@@ -302,7 +302,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a missing frontmatter block entirely', () => {
+	it('flags a missing frontmatter block entirely', async () => {
 		const result = lint(BODY());
 		expect(
 			result.issues.some((i) =>
@@ -311,7 +311,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a filename prefix that disagrees with frontmatter kind', () => {
+	it('flags a filename prefix that disagrees with frontmatter kind', async () => {
 		const result = lint(
 			doc({ kind: 'fix' }),
 			'docs/proposals/ready/f00114-do-the-thing.md',
@@ -321,7 +321,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a folder that disagrees with frontmatter status', () => {
+	it('flags a folder that disagrees with frontmatter status', async () => {
 		const result = lint(
 			doc({ status: 'done' }),
 			'docs/proposals/ready/f00114-do-the-thing.md',
@@ -336,8 +336,8 @@ ${TERSE_SLICE}
 	// f119: terminal statuses (`done`, `retired`) may live under a kind
 	// sub-folder. The check is status-driven: walk ancestors, find the
 	// nearest status folder, compare to expected.
-	describe('terminal-status sub-folders (f119)', () => {
-		it('accepts done/audits/foo.md with status: done', () => {
+	describe('terminal-status sub-folders (f119)', async () => {
+		it('accepts done/audits/foo.md with status: done', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
 				'docs/proposals/done/audits/a00001-15-06-2026-foo.md',
@@ -347,7 +347,7 @@ ${TERSE_SLICE}
 			).toBe(false);
 		});
 
-		it('accepts done/feats/foo.md with status: done', () => {
+		it('accepts done/feats/foo.md with status: done', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
 				'docs/proposals/done/feats/f00114-do-the-thing.md',
@@ -357,7 +357,7 @@ ${TERSE_SLICE}
 			).toBe(false);
 		});
 
-		it('accepts done/audits/2024/q1/foo.md (deeply nested)', () => {
+		it('accepts done/audits/2024/q1/foo.md (deeply nested)', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
 				'docs/proposals/done/audits/2024/q1/a00001-foo.md',
@@ -367,7 +367,7 @@ ${TERSE_SLICE}
 			).toBe(false);
 		});
 
-		it('accepts retired/foo.md with status: retired', () => {
+		it('accepts retired/foo.md with status: retired', async () => {
 			const result = lint(
 				doc({ status: 'retired' }),
 				'docs/proposals/retired/x00001-foo.md',
@@ -377,7 +377,7 @@ ${TERSE_SLICE}
 			).toBe(false);
 		});
 
-		it('rejects ready/audits/foo.md with status: done (non-terminal)', () => {
+		it('rejects ready/audits/foo.md with status: done (non-terminal)', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
 				'docs/proposals/ready/audits/f00114-foo.md',
@@ -387,7 +387,7 @@ ${TERSE_SLICE}
 			).toBe(true);
 		});
 
-		it('uses nearest status ancestor, not first occurrence', () => {
+		it('uses nearest status ancestor, not first occurrence', async () => {
 			// If a file lives in `ready/audits/done/foo.md`, the nearest
 			// status ancestor is `ready`, not `done`. status: ready matches.
 			const result = lint(
@@ -400,7 +400,7 @@ ${TERSE_SLICE}
 		});
 	});
 
-	it('flags a slice with no Status field', () => {
+	it('flags a slice with no Status field', async () => {
 		const badSlice = `### S1 — Do the thing\n- **Files**: [\`a.ts\`]\n- **Gate**: \`bun run test\`\n`;
 		const result = lint(doc({}, badSlice));
 		expect(
@@ -410,7 +410,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a slice that resolves no Files field', () => {
+	it('flags a slice that resolves no Files field', async () => {
 		const badSlice = `### S1 — Do the thing\n- **Status**: pending\n- **Gate**: \`bun run test\`\n`;
 		const result = lint(doc({}, badSlice));
 		expect(
@@ -420,7 +420,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags a slice that resolves no Command+Expect/Gate', () => {
+	it('flags a slice that resolves no Command+Expect/Gate', async () => {
 		const badSlice = `### S1 — Do the thing *(excl. \`a.ts\`)*\n- **Status**: pending\n`;
 		const result = lint(doc({}, badSlice));
 		expect(
@@ -430,7 +430,7 @@ ${TERSE_SLICE}
 		).toBe(true);
 	});
 
-	it('flags an empty Slices section', () => {
+	it('flags an empty Slices section', async () => {
 		const empty = `${FRONTMATTER()}
 ## Goal
 
@@ -458,7 +458,7 @@ p.
 		).toBe(true);
 	});
 
-	it('flags an unknown filename prefix', () => {
+	it('flags an unknown filename prefix', async () => {
 		const result = lint(
 			doc(),
 			'docs/proposals/ready/z00114-do-the-thing.md',
@@ -471,7 +471,7 @@ p.
 	});
 });
 
-describe('lintProposalMarkdown — audit format', () => {
+describe('lintProposalMarkdown — audit format', async () => {
 	const AUDIT_FRONTMATTER = (
 		overrides: Record<string, string> = {},
 	): string => {
@@ -529,7 +529,7 @@ Table of dimensions.
 	): string =>
 		AUDIT_FRONTMATTER(frontmatterOverrides) + AUDIT_BODY(sliceBlock);
 
-	it('accepts a minimal valid audit proposal', () => {
+	it('accepts a minimal valid audit proposal', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/ready/a00021-audit-report.md',
 			markdown: auditDoc(),
@@ -538,7 +538,7 @@ Table of dimensions.
 		expect(result.issues).toEqual([]);
 	});
 
-	it('flags a missing required audit section (e.g. Scoreboard)', () => {
+	it('flags a missing required audit section (e.g. Scoreboard)', async () => {
 		const missingScoreboard = auditDoc().replace(
 			'## Scoreboard',
 			'## Unused',
@@ -555,7 +555,7 @@ Table of dimensions.
 		).toBe(true);
 	});
 
-	it('flags out-of-order audit sections', () => {
+	it('flags out-of-order audit sections', async () => {
 		const swapped = auditDoc()
 			.replace('## Findings', '## Temp')
 			.replace('## Verified State', '## Findings')
@@ -573,7 +573,7 @@ Table of dimensions.
 	});
 });
 
-describe('lintProposalMarkdown — f00024 cascadeOverride / cascadeBoost', () => {
+describe('lintProposalMarkdown — f00024 cascadeOverride / cascadeBoost', async () => {
 	// Builds a doc with arbitrary raw frontmatter lines (including numeric
 	// or array values that the string-only `FRONTMATTER` helper above
 	// cannot express — `cascadeOverride` is a number).
@@ -612,7 +612,7 @@ p.
 - [ ] done.
 `;
 
-	it('accepts cascadeOverride with a paired cascadeOverrideReason', () => {
+	it('accepts cascadeOverride with a paired cascadeOverrideReason', async () => {
 		const markdown = rawDoc(
 			'cascadeOverride: -1\ncascadeOverrideReason: urgent customer escalation',
 		);
@@ -625,7 +625,7 @@ p.
 		).toBe(false);
 	});
 
-	it('flags cascadeOverride without cascadeOverrideReason', () => {
+	it('flags cascadeOverride without cascadeOverrideReason', async () => {
 		const markdown = rawDoc('cascadeOverride: -1');
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/ready/f00024-do-the-thing.md',
@@ -639,7 +639,7 @@ p.
 		).toBe(true);
 	});
 
-	it('flags cascadeOverrideReason without cascadeOverride (dangling audit trail)', () => {
+	it('flags cascadeOverrideReason without cascadeOverride (dangling audit trail)', async () => {
 		const markdown = rawDoc(
 			'cascadeOverrideReason: this reason has no override',
 		);
@@ -655,7 +655,7 @@ p.
 		).toBe(true);
 	});
 
-	it('flags a non-numeric cascadeOverride', () => {
+	it('flags a non-numeric cascadeOverride', async () => {
 		const markdown = rawDoc(
 			"cascadeOverride: '-1'\ncascadeOverrideReason: bad type",
 		);
@@ -671,7 +671,7 @@ p.
 		).toBe(true);
 	});
 
-	it('accepts each allowed cascadeBoost value', () => {
+	it('accepts each allowed cascadeBoost value', async () => {
 		for (const boost of [
 			'shipped-blocking',
 			'customer-reported',
@@ -688,7 +688,7 @@ p.
 		}
 	});
 
-	it('flags an unknown cascadeBoost (would silently no-op at runtime)', () => {
+	it('flags an unknown cascadeBoost (would silently no-op at runtime)', async () => {
 		const markdown = rawDoc('cascadeBoost: urgent-please');
 		const result = lintProposalMarkdown({
 			path: 'docs/proposals/ready/f00024-do-the-thing.md',

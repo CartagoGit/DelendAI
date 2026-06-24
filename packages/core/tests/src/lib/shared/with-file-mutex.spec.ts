@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { LockContentionError, withFileMutex } from '@mcp-vertex/core/public';
 
-describe('withFileMutex — cross-process critical section', () => {
+describe('withFileMutex — cross-process critical section', async () => {
 	let dir = '';
 	let target = '';
 	beforeEach(() => {

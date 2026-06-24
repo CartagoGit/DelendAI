@@ -14,14 +14,14 @@ const registeredHandlers = async () => {
 	const store = createLogStore(
 		await mkdtemp(join(tmpdir(), 'mcp-vertex-tools-')),
 	);
-	await store.appendEvent(
+	await (await store).appendEvent(
 		normalizeEvent(
 			'tool-started',
 			{ toolName: 'alpha', agent: 'a1' },
 			new Date('2026-06-20T10:00:00.000Z'),
 		),
 	);
-	await store.appendEvent(
+	await (await store).appendEvent(
 		normalizeEvent(
 			'tool-failed',
 			{ toolName: 'beta', agent: 'a1' },
@@ -34,7 +34,7 @@ const registeredHandlers = async () => {
 			handlers.set(name, handler);
 		},
 	};
-	for (const registration of buildLogToolRegistrations('logs', store)) {
+	for (const registration of buildLogToolRegistrations('logs', await store)) {
 		await registration.register(server as never);
 	}
 	return handlers;
@@ -43,7 +43,7 @@ const registeredHandlers = async () => {
 const structured = (value: unknown): Record<string, unknown> =>
 	(value as { structuredContent: Record<string, unknown> }).structuredContent;
 
-describe('log tools', () => {
+describe('log tools', async () => {
 	it('registers the five read-only tools', async () => {
 		const handlers = await registeredHandlers();
 		expect([...handlers.keys()].sort()).toEqual([
@@ -91,7 +91,7 @@ describe('log tools', () => {
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
 	});
 
-	it('redacts canary payloads', () => {
+	it('redacts canary payloads', async () => {
 		const result = redactTest(
 			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF',
 		);

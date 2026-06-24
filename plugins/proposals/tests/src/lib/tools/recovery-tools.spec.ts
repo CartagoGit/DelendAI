@@ -56,7 +56,7 @@ Keep recovery deterministic.
 - [ ] Tests pass.
 `;
 
-describe('recovery tools (f00016 S9)', () => {
+describe('recovery tools (f00016 S9)', async () => {
 	let dir = '';
 	let proposalsDir = '';
 	let lockPath = '';
@@ -114,7 +114,7 @@ describe('recovery tools (f00016 S9)', () => {
 
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('proposal_stale_list reads dead agents from the event buffer', () => {
+	it('proposal_stale_list reads dead agents from the event buffer', async () => {
 		options.eventBuffer?.add({
 			kind: 'agent-dead',
 			agent: 'falcon',

@@ -14,8 +14,8 @@ import type { IContinuityPolicy } from '@mcp-vertex/proposals/lib/swarm/swarm-ty
 // ---------------------------------------------------------------------------
 // withinPolicy: true when no violations
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — withinPolicy: true', () => {
-	it('returns withinPolicy: true when all observed values are within policy', () => {
+describe('evaluateContinuityPolicy — withinPolicy: true', async () => {
+	it('returns withinPolicy: true when all observed values are within policy', async () => {
 		const policy: IContinuityPolicy = {
 			maxTasksPerSession: 5,
 			maxAgentSpawnsPerSession: 3,
@@ -32,7 +32,7 @@ describe('evaluateContinuityPolicy — withinPolicy: true', () => {
 		expect(result.violations).toHaveLength(0);
 	});
 
-	it('returns withinPolicy: true when policy is empty (no enforcement)', () => {
+	it('returns withinPolicy: true when policy is empty (no enforcement)', async () => {
 		const result = evaluateContinuityPolicy({}, {});
 		expect(result.withinPolicy).toBe(true);
 		expect(result.violations).toHaveLength(0);
@@ -42,8 +42,8 @@ describe('evaluateContinuityPolicy — withinPolicy: true', () => {
 // ---------------------------------------------------------------------------
 // maxTasksPerSession exceeded → block violation
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — maxTasksPerSession', () => {
-	it('returns block violation when tasks exceed maxTasksPerSession', () => {
+describe('evaluateContinuityPolicy — maxTasksPerSession', async () => {
+	it('returns block violation when tasks exceed maxTasksPerSession', async () => {
 		const policy: IContinuityPolicy = { maxTasksPerSession: 3 };
 		const observed: IObservedContinuity = { tasksCompletedInSession: 5 };
 
@@ -60,8 +60,8 @@ describe('evaluateContinuityPolicy — maxTasksPerSession', () => {
 // ---------------------------------------------------------------------------
 // forbidNewProposals: true + proposals opened → block violation
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — forbidNewProposals', () => {
-	it('returns block violation when new proposals opened and forbidden', () => {
+describe('evaluateContinuityPolicy — forbidNewProposals', async () => {
+	it('returns block violation when new proposals opened and forbidden', async () => {
 		const policy: IContinuityPolicy = { forbidNewProposals: true };
 		const observed: IObservedContinuity = {
 			newProposalsOpenedInSession: 1,
@@ -76,7 +76,7 @@ describe('evaluateContinuityPolicy — forbidNewProposals', () => {
 		expect(v?.severity).toBe('block');
 	});
 
-	it('returns withinPolicy: true when forbidNewProposals: false regardless of opened', () => {
+	it('returns withinPolicy: true when forbidNewProposals: false regardless of opened', async () => {
 		const policy: IContinuityPolicy = { forbidNewProposals: false };
 		const observed: IObservedContinuity = {
 			newProposalsOpenedInSession: 5,
@@ -90,8 +90,8 @@ describe('evaluateContinuityPolicy — forbidNewProposals', () => {
 // ---------------------------------------------------------------------------
 // maxToolRetriesPerTool exceeded → warn violation
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — maxToolRetriesPerTool', () => {
-	it('returns warn violation when tool retries exceed maxToolRetriesPerTool', () => {
+describe('evaluateContinuityPolicy — maxToolRetriesPerTool', async () => {
+	it('returns warn violation when tool retries exceed maxToolRetriesPerTool', async () => {
 		const policy: IContinuityPolicy = { maxToolRetriesPerTool: 2 };
 		const observed: IObservedContinuity = { toolRetriesForTool: 5 };
 
@@ -108,8 +108,8 @@ describe('evaluateContinuityPolicy — maxToolRetriesPerTool', () => {
 // ---------------------------------------------------------------------------
 // forbidReReadOnUnchangedDigest: true + willReReadUnchangedDoc: true → block (RE_READ_FORBIDDEN)
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', () => {
-	it('returns block violation RE_READ_FORBIDDEN when re-read forbidden and doc digest unchanged', () => {
+describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', async () => {
+	it('returns block violation RE_READ_FORBIDDEN when re-read forbidden and doc digest unchanged', async () => {
 		const policy: IContinuityPolicy = {
 			forbidReReadOnUnchangedDigest: true,
 		};
@@ -125,7 +125,7 @@ describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', () => {
 		expect(v?.message).toContain('RE_READ_FORBIDDEN');
 	});
 
-	it('returns withinPolicy: true when forbidReReadOnUnchangedDigest: true but doc not re-read', () => {
+	it('returns withinPolicy: true when forbidReReadOnUnchangedDigest: true but doc not re-read', async () => {
 		const policy: IContinuityPolicy = {
 			forbidReReadOnUnchangedDigest: true,
 		};
@@ -139,8 +139,8 @@ describe('evaluateContinuityPolicy — forbidReReadOnUnchangedDigest', () => {
 // ---------------------------------------------------------------------------
 // requireCheckpointAfterTask: true + checkpointPresent !== true → block
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — requireCheckpointAfterTask', () => {
-	it('returns block violation when a checkpoint is required but missing', () => {
+describe('evaluateContinuityPolicy — requireCheckpointAfterTask', async () => {
+	it('returns block violation when a checkpoint is required but missing', async () => {
 		const policy: IContinuityPolicy = {
 			requireCheckpointAfterTask: true,
 		};
@@ -156,7 +156,7 @@ describe('evaluateContinuityPolicy — requireCheckpointAfterTask', () => {
 		expect(v?.message).toContain('SESSION_COMPACTION_REQUIRED');
 	});
 
-	it('returns withinPolicy: true when the required checkpoint is present', () => {
+	it('returns withinPolicy: true when the required checkpoint is present', async () => {
 		const policy: IContinuityPolicy = {
 			requireCheckpointAfterTask: true,
 		};
@@ -171,8 +171,8 @@ describe('evaluateContinuityPolicy — requireCheckpointAfterTask', () => {
 // ---------------------------------------------------------------------------
 // Accumulates multiple violations
 // ---------------------------------------------------------------------------
-describe('evaluateContinuityPolicy — multiple violations', () => {
-	it('accumulates multiple violations across numeric and boolean checks', () => {
+describe('evaluateContinuityPolicy — multiple violations', async () => {
+	it('accumulates multiple violations across numeric and boolean checks', async () => {
 		const policy: IContinuityPolicy = {
 			maxTasksPerSession: 2,
 			forbidNewProposals: true,

@@ -81,9 +81,9 @@ const parse = (r: { content: Array<{ text: string }> }): any =>
 
 /** Test fixture shared by the suite below. */
 const fakeReader: IFileReader = {
-	readFile: () => undefined,
-	exists: () => false,
-	listDir: () => [],
+	readFile: async () => undefined,
+	exists: async () => false,
+	listDir: async () => [],
 };
 
 const baseCtx = (options: unknown = {}): IMcpPluginContext =>
@@ -108,7 +108,7 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 
 // --- specs -----------------------------------------------------------------
 
-describe('@mcp-vertex/audit optionsSchema', () => {
+describe('@mcp-vertex/audit optionsSchema', async () => {
 	let captured: Awaited<ReturnType<typeof captureTools>>;
 
 	beforeEach(async () => {
@@ -120,7 +120,7 @@ describe('@mcp-vertex/audit optionsSchema', () => {
 		// later cleanup is mechanical.
 	});
 
-	it('exposes an optionsSchema (strict) so unknown fields are rejected', () => {
+	it('exposes an optionsSchema (strict) so unknown fields are rejected', async () => {
 		// The schema is private to the plugin entry; we exercise it by
 		// passing a malformed options object and asserting the plugin
 		// does NOT crash and still wires the tools with defaults. The

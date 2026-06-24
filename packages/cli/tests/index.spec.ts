@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { runHumanCli } from '../src/index';
 
-describe('runHumanCli', () => {
+describe('runHumanCli', async () => {
 	it('prints the version', async () => {
 		const writes: string[] = [];
 		const original = process.stdout.write;

@@ -20,7 +20,7 @@ const manifestFixture = (fingerprint: string): IRulesManifest => ({
 	projects: { demo: {} },
 });
 
-describe('ensureRulesCache (l00008 s2 durable-write fix)', () => {
+describe('ensureRulesCache (l00008 s2 durable-write fix)', async () => {
 	let root = '';
 
 	beforeEach(async () => {

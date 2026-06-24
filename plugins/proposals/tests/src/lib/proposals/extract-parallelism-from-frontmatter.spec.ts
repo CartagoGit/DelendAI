@@ -10,18 +10,18 @@ import { extractParallelismFromFrontmatter } from '@mcp-vertex/proposals/lib/pro
 const wrap = (frontmatter: string): string =>
 	`---\n${frontmatter}\n---\n\n# body\n`;
 
-describe('extractParallelismFromFrontmatter', () => {
-	it('returns null when the markdown has no frontmatter block', () => {
+describe('extractParallelismFromFrontmatter', async () => {
+	it('returns null when the markdown has no frontmatter block', async () => {
 		const raw = '# body\nno frontmatter here\n';
 		expect(extractParallelismFromFrontmatter(raw, 'p31')).toBeNull();
 	});
 
-	it('returns null when frontmatter is present but mainWriteLane is missing', () => {
+	it('returns null when frontmatter is present but mainWriteLane is missing', async () => {
 		const raw = wrap('id: p31\nstatus: in_progress\n');
 		expect(extractParallelismFromFrontmatter(raw, 'p31')).toBeNull();
 	});
 
-	it('returns the parallelism record when mainWriteLane and parallelismLanes are well-formed', () => {
+	it('returns the parallelism record when mainWriteLane and parallelismLanes are well-formed', async () => {
 		const raw = wrap(
 			'id: p31\nstatus: in_progress\nmainWriteLane: editor\nparallelismLanes: [meta, audit, ui-demo]\n',
 		);
@@ -33,7 +33,7 @@ describe('extractParallelismFromFrontmatter', () => {
 		});
 	});
 
-	it('treats a missing parallelismLanes as [] (strict, no parallel tracks permitted)', () => {
+	it('treats a missing parallelismLanes as [] (strict, no parallel tracks permitted)', async () => {
 		const raw = wrap('mainWriteLane: editor\n');
 		const got = extractParallelismFromFrontmatter(raw, 'p31');
 		expect(got).toEqual({
@@ -46,7 +46,7 @@ describe('extractParallelismFromFrontmatter', () => {
 	// M4: typo-guard is opt-in — the host supplies its own known tracks.
 	const HOST_TRACKS = new Set(['editor', 'meta', 'audit']);
 
-	it('drops unknown track names from parallelismLanes when knownTracks is given (typo guard)', () => {
+	it('drops unknown track names from parallelismLanes when knownTracks is given (typo guard)', async () => {
 		const raw = wrap(
 			'mainWriteLane: editor\nparallelismLanes: [meta, banana, audit]\n',
 		);
@@ -58,7 +58,7 @@ describe('extractParallelismFromFrontmatter', () => {
 		});
 	});
 
-	it('returns null when mainWriteLane is not in the supplied knownTracks (typo guard)', () => {
+	it('returns null when mainWriteLane is not in the supplied knownTracks (typo guard)', async () => {
 		const raw = wrap('mainWriteLane: bananas\nparallelismLanes: [meta]\n');
 		expect(
 			extractParallelismFromFrontmatter(raw, 'p31', HOST_TRACKS),
@@ -67,7 +67,7 @@ describe('extractParallelismFromFrontmatter', () => {
 
 	// M4: without knownTracks, mcp-vertex is track-agnostic — any non-empty
 	// string is a valid host track, so no vocabulary is imposed.
-	it('accepts arbitrary host tracks when no knownTracks set is supplied', () => {
+	it('accepts arbitrary host tracks when no knownTracks set is supplied', async () => {
 		const raw = wrap(
 			'mainWriteLane: my-custom-lane\nparallelismLanes: [whatever, another]\n',
 		);
@@ -78,18 +78,18 @@ describe('extractParallelismFromFrontmatter', () => {
 		});
 	});
 
-	it('still rejects an empty mainWriteLane even in agnostic mode', () => {
+	it('still rejects an empty mainWriteLane even in agnostic mode', async () => {
 		const raw = wrap('mainWriteLane: ""\nparallelismLanes: [meta]\n');
 		expect(extractParallelismFromFrontmatter(raw, 'p31')).toBeNull();
 	});
 
-	it('uses the caller-supplied proposalId verbatim, not the one in the frontmatter', () => {
+	it('uses the caller-supplied proposalId verbatim, not the one in the frontmatter', async () => {
 		const raw = wrap('id: p31-frontmatter\nmainWriteLane: editor\n');
 		const got = extractParallelismFromFrontmatter(raw, 'p31-caller');
 		expect(got?.proposalId).toBe('p31-caller');
 	});
 
-	it('accepts all canonical tracks (bootstrap, scaffold, engine, editor, ui-demo, game-demo, meta, audit, audit-meta, retired)', () => {
+	it('accepts all canonical tracks (bootstrap, scaffold, engine, editor, ui-demo, game-demo, meta, audit, audit-meta, retired)', async () => {
 		for (const t of [
 			'bootstrap',
 			'scaffold',

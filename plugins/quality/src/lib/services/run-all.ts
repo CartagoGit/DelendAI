@@ -80,7 +80,7 @@ export interface IRunAllToolOptions {
 	readonly commandPolicy?: ICommandPolicy;
 }
 
-const scopesOf = (options: IRunAllToolOptions): IScopeMap =>
+const scopesOf = async (options: IRunAllToolOptions): Promise<IScopeMap> =>
 	resolveScopes(
 		options.reader,
 		options.optionScopes ? { scopes: options.optionScopes } : {},
@@ -123,7 +123,7 @@ export const buildRunAllToolRegistration = (
 				}),
 			},
 			async () => {
-				const scopes = scopesOf(options);
+				const scopes = await scopesOf(options);
 				const names = Object.keys(scopes);
 				if (names.length === 0) {
 					return toolError(

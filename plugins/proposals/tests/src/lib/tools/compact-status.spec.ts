@@ -9,7 +9,7 @@ import {
 	type ICompactStatusOptions,
 } from '@mcp-vertex/proposals/lib/tools/compact-status.tool';
 
-describe('compact_status (N17) — aggregates the proposals plugin state', () => {
+describe('compact_status (N17) — aggregates the proposals plugin state', async () => {
 	let dir = '';
 	let opts: ICompactStatusOptions;
 	beforeEach(() => {

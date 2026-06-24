@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { renderOutputSchema } from '../views/render-output-schema';
 import { renderToolDetailHtml } from '../views/tool-detail-webview';
 
-describe('renderOutputSchema', () => {
-	it('renders object schemas with required markers', () => {
+describe('renderOutputSchema', async () => {
+	it('renders object schemas with required markers', async () => {
 		const html = renderOutputSchema({
 			type: 'object',
 			required: ['name'],
@@ -21,7 +21,7 @@ describe('renderOutputSchema', () => {
 		expect(html).toContain('Tool name');
 	});
 
-	it('renders arrays and enum values', () => {
+	it('renders arrays and enum values', async () => {
 		const html = renderOutputSchema({
 			type: 'array',
 			items: {
@@ -35,8 +35,8 @@ describe('renderOutputSchema', () => {
 	});
 });
 
-describe('renderToolDetailHtml', () => {
-	it('renders escaped tool details and metrics', () => {
+describe('renderToolDetailHtml', async () => {
+	it('renders escaped tool details and metrics', async () => {
 		const html = renderToolDetailHtml({
 			tool: {
 				name: 'demo_tool',

@@ -36,7 +36,7 @@ const createVscode = () => {
 	return { vscode, commands, panels, messages };
 };
 
-describe('mcp-vertex.openDocs', () => {
+describe('mcp-vertex.openDocs', async () => {
 	it('opens an iframe with the configured docs URL', async () => {
 		const { vscode, commands, panels, messages } = createVscode();
 		registerOpenDocsCommand({ vscode });

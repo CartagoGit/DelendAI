@@ -32,18 +32,18 @@ const PROPOSAL_CANONICAL = [
 	'notes',
 ] as const;
 
-describe('normalizeHeading', () => {
-	it('returns null when the heading is already canonical (exact match)', () => {
+describe('normalizeHeading', async () => {
+	it('returns null when the heading is already canonical (exact match)', async () => {
 		expect(normalizeHeading('goal', PROPOSAL_CANONICAL)).toBeNull();
 		expect(normalizeHeading('non-goals', PROPOSAL_CANONICAL)).toBeNull();
 	});
 
-	it('returns null for case-only differences (canonical is case-insensitive)', () => {
+	it('returns null for case-only differences (canonical is case-insensitive)', async () => {
 		expect(normalizeHeading('Goal', PROPOSAL_CANONICAL)).toBeNull();
 		expect(normalizeHeading('WHY', PROPOSAL_CANONICAL)).toBeNull();
 	});
 
-	it('rewrites parenthetical-suffixed headings to the canonical base', () => {
+	it('rewrites parenthetical-suffixed headings to the canonical base', async () => {
 		expect(
 			normalizeHeading('Acceptance (end-to-end)', PROPOSAL_CANONICAL),
 		).toBe('acceptance');
@@ -52,32 +52,32 @@ describe('normalizeHeading', () => {
 		);
 	});
 
-	it('rewrites known synonyms via the SYNONYMS map', () => {
+	it('rewrites known synonyms via the SYNONYMS map', async () => {
 		expect(normalizeHeading('see also', PROPOSAL_CANONICAL)).toBe('notes');
 		expect(normalizeHeading('Risks', PROPOSAL_CANONICAL)).toBe(
 			'risks and mitigations',
 		);
 	});
 
-	it('returns null for an empty heading (defensive)', () => {
+	it('returns null for an empty heading (defensive)', async () => {
 		expect(normalizeHeading('', PROPOSAL_CANONICAL)).toBeNull();
 		expect(normalizeHeading('   ', PROPOSAL_CANONICAL)).toBeNull();
 	});
 
-	it('returns null when no mapping exists (linter will reject too)', () => {
+	it('returns null when no mapping exists (linter will reject too)', async () => {
 		expect(
 			normalizeHeading('totally unknown heading', PROPOSAL_CANONICAL),
 		).toBeNull();
 	});
 });
 
-describe('planFixes', () => {
-	it('returns an empty plan for fully-canonical markdown', () => {
+describe('planFixes', async () => {
+	it('returns an empty plan for fully-canonical markdown', async () => {
 		const md = '# Title\n\n## goal\n\nbody\n\n## acceptance\n\n- done\n';
 		expect(planFixes(md, PROPOSAL_CANONICAL)).toEqual([]);
 	});
 
-	it('emits one fix per non-canonical H2 in line order', () => {
+	it('emits one fix per non-canonical H2 in line order', async () => {
 		// `## Goal` is case-insensitively canonical (already in PROPOSAL_CANONICAL),
 		// so only `## Acceptance (e2e)` triggers a fix.
 		const md = '## Goal\n\nbody\n\n## Acceptance (e2e)\n\nbody\n';
@@ -88,7 +88,7 @@ describe('planFixes', () => {
 		expect(fixes[0]?.after).toBe('## acceptance');
 	});
 
-	it('still rewrites Title-Case headings when the canonical form has a hyphen', () => {
+	it('still rewrites Title-Case headings when the canonical form has a hyphen', async () => {
 		// "Risks" matches the SYNONYMS alias, not a case-insensitive exact match.
 		const md = '## Risks\n\nbody\n';
 		const fixes = planFixes(md, PROPOSAL_CANONICAL);
@@ -96,7 +96,7 @@ describe('planFixes', () => {
 		expect(fixes[0]?.after).toBe('## risks and mitigations');
 	});
 
-	it('ignores headings inside fenced code blocks', () => {
+	it('ignores headings inside fenced code blocks', async () => {
 		const md = [
 			'## Acceptance (e2e)', // line 1 — needs fix
 			'',
@@ -112,8 +112,8 @@ describe('planFixes', () => {
 	});
 });
 
-describe('applyFixes', () => {
-	it('is idempotent: a second pass over the rewritten markdown is a no-op', () => {
+describe('applyFixes', async () => {
+	it('is idempotent: a second pass over the rewritten markdown is a no-op', async () => {
 		const md = '## Acceptance (e2e)\n\nbody\n';
 		const canonical = PROPOSAL_CANONICAL;
 		const first = applyFixes(md, planFixes(md, canonical));
@@ -121,7 +121,7 @@ describe('applyFixes', () => {
 		expect(second).toBe(first);
 	});
 
-	it('preserves line count and surrounding context', () => {
+	it('preserves line count and surrounding context', async () => {
 		const md = 'a\n\n## Acceptance (e2e)\n\nb\n';
 		const rew = applyFixes(md, planFixes(md, PROPOSAL_CANONICAL));
 		const lines = rew.split('\n');
@@ -132,13 +132,13 @@ describe('applyFixes', () => {
 		expect(lines[4]).toBe('b');
 	});
 
-	it('returns the input unchanged when there are no fixes', () => {
+	it('returns the input unchanged when there are no fixes', async () => {
 		const md = '## goal\n\nbody\n';
 		expect(applyFixes(md, [])).toBe(md);
 	});
 });
 
-describe('loadCanonicalHeadings', () => {
+describe('loadCanonicalHeadings', async () => {
 	it('returns the proposal list when auditMode is false', async () => {
 		const set = await loadCanonicalHeadings(false);
 		expect(set).toEqual([...PROPOSAL_CANONICAL]);
@@ -159,7 +159,7 @@ describe('loadCanonicalHeadings', () => {
  * NOT recognised, the linter returns an "unrecognized section heading"
  * error and this spec fails.
  */
-describe('drift: script canonical lists agree with proposal-scaffold-linter', () => {
+describe('drift: script canonical lists agree with proposal-scaffold-linter', async () => {
 	const probe = (list: readonly string[], kind: 'feat' | 'audit'): void => {
 		for (const heading of list) {
 			const filename =

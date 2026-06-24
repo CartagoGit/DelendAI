@@ -7,25 +7,25 @@ import { correlateEvents } from '../src/lib/services/correlate';
 import { createLogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 
-describe('correlateEvents', () => {
+describe('correlateEvents', async () => {
 	it('builds a task chain and detects long gaps', async () => {
 		const dir = await mkdtemp(join(tmpdir(), 'mcp-vertex-correlate-'));
 		const store = createLogStore(dir);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'lock-claimed',
 				{ taskId: 'f00015-s1' },
 				new Date('2026-06-20T10:00:00.000Z'),
 			),
 		);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'tool-started',
 				{ taskId: 'f00015-s1', toolName: 'logs_query' },
 				new Date('2026-06-20T10:02:30.000Z'),
 			),
 		);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'tool-completed',
 				{ taskId: 'f00015-s1', toolName: 'logs_query' },
@@ -33,7 +33,7 @@ describe('correlateEvents', () => {
 			),
 		);
 
-		const result = await correlateEvents(store, {
+		const result = await correlateEvents(await store, {
 			taskId: 'f00015-s1',
 			gapMs: 60_000,
 		});
@@ -50,7 +50,7 @@ describe('correlateEvents', () => {
 	it('requires exactly one correlation key', async () => {
 		const dir = await mkdtemp(join(tmpdir(), 'mcp-vertex-correlate-'));
 		const store = createLogStore(dir);
-		await expect(correlateEvents(store, {})).rejects.toThrow(
+		await expect(correlateEvents(await store, {})).rejects.toThrow(
 			'Provide exactly one',
 		);
 	});

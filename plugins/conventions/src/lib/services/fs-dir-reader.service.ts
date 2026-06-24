@@ -15,7 +15,9 @@ import type {
 } from '../services/conventions-scan.service';
 
 /** Build a `node:fs`-backed reader rooted at `rootDir` (absolute path). */
-export const createFsDirReader = (rootDir: string): IDirReader => ({
+export const createFsDirReader = async (
+	rootDir: string,
+): Promise<IDirReader> => ({
 	async list(relDir: string): Promise<readonly IDirEntry[]> {
 		const abs = relDir === '' ? rootDir : join(rootDir, relDir);
 		const dirents = await readdir(abs, { withFileTypes: true });

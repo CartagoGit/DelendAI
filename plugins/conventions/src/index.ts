@@ -31,12 +31,12 @@ export default definePlugin({
 		 */
 		roots: z.array(z.string()).optional(),
 	}),
-	register(ctx) {
+	async register(ctx) {
 		const roots = Array.isArray(ctx.options.roots)
 			? (ctx.options.roots as string[])
 			: undefined;
 		return {
-			tools: buildConventionsToolRegistrations({
+			tools: await buildConventionsToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				workspaceRoot: ctx.workspace.root,
 				...(roots !== undefined ? { defaultRoots: roots } : {}),

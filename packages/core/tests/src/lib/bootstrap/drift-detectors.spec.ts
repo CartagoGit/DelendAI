@@ -23,9 +23,9 @@ import { ScriptsDriftDetector } from '@mcp-vertex/core/lib/bootstrap/scripts-dri
 import { StackDriftDetector } from '@mcp-vertex/core/lib/bootstrap/stack-drift-detector';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
 const analyse = (pkg: Record<string, unknown>) =>
@@ -39,13 +39,13 @@ const analyse = (pkg: Record<string, unknown>) =>
 		}),
 	);
 
-describe('default drift detectors', () => {
-	it('exposes a chain with the three concern detectors', () => {
+describe('default drift detectors', async () => {
+	it('exposes a chain with the three concern detectors', async () => {
 		const ids = DEFAULT_DRIFT_DETECTORS.map((d) => d.id);
 		expect(ids).toEqual(['scripts', 'stack', 'metadata']);
 	});
 
-	it('each detector is independent (replacing one does not break the others)', () => {
+	it('each detector is independent (replacing one does not break the others)', async () => {
 		const customChain: readonly IDriftDetector[] = [
 			new ScriptsDriftDetector(),
 			new StackDriftDetector(),
@@ -60,16 +60,21 @@ describe('default drift detectors', () => {
 				],
 			},
 		];
-		const last = analyse({});
-		const current = analyse({});
-		const report = diffAnalysis(current, last, '2026-06-23T00:00:00.000Z', {
-			detectors: customChain,
-		});
+		const last = await analyse({});
+		const current = await analyse({});
+		const report = diffAnalysis(
+			await current,
+			await last,
+			'2026-06-23T00:00:00.000Z',
+			{
+				detectors: customChain,
+			},
+		);
 		expect(report.changes).toHaveLength(1);
 		expect(report.changes[0]?.kind).toBe('agent-config-changed');
 	});
 
-	it('omitting a detector from the chain removes its kind from the report', () => {
+	it('omitting a detector from the chain removes its kind from the report', async () => {
 		const last = analyse({ scripts: { test: 'vitest' } });
 		const current = analyse({
 			scripts: { test: 'vitest', e2e: 'playwright' },
@@ -79,27 +84,37 @@ describe('default drift detectors', () => {
 			new StackDriftDetector(),
 			new MetadataDriftDetector(),
 		];
-		const report = diffAnalysis(current, last, '2026-06-23T00:00:00.000Z', {
-			detectors: chain,
-		});
+		const report = diffAnalysis(
+			await await current,
+			await last,
+			'2026-06-23T00:00:00.000Z',
+			{
+				detectors: chain,
+			},
+		);
 		const kinds = report.changes.map((c) => c.kind);
 		expect(kinds).not.toContain('script-added');
 	});
 
-	it('an empty detector chain returns hasDrift=false when analyses are equal', () => {
-		const a = analyse({});
-		const report = diffAnalysis(a, a, '2026-06-23T00:00:00.000Z', {
-			detectors: [],
-		});
+	it('an empty detector chain returns hasDrift=false when analyses are equal', async () => {
+		const a = await analyse({});
+		const report = diffAnalysis(
+			await a,
+			await a,
+			'2026-06-23T00:00:00.000Z',
+			{
+				detectors: [],
+			},
+		);
 		expect(report.hasDrift).toBe(false);
 		expect(report.changes).toEqual([]);
 	});
 });
 
-describe('ScriptsDriftDetector', () => {
-	it('flags a new script and ignores stable ones', () => {
-		const last = analyse({ scripts: { test: 'vitest' } });
-		const current = analyse({
+describe('ScriptsDriftDetector', async () => {
+	it('flags a new script and ignores stable ones', async () => {
+		const last = await analyse({ scripts: { test: 'vitest' } });
+		const current = await analyse({
 			scripts: { test: 'vitest', e2e: 'playwright' },
 		});
 		const changes: readonly IDriftChange[] =
@@ -109,19 +124,23 @@ describe('ScriptsDriftDetector', () => {
 		expect(changes[0]?.summary).toContain('e2e');
 	});
 
-	it('emits no changes when scripts are identical (order-insensitive)', () => {
-		const a = analyse({ scripts: { test: 'vitest', lint: 'eslint .' } });
-		const b = analyse({ scripts: { lint: 'eslint .', test: 'vitest' } });
+	it('emits no changes when scripts are identical (order-insensitive)', async () => {
+		const a = await analyse({
+			scripts: { test: 'vitest', lint: 'eslint .' },
+		});
+		const b = await analyse({
+			scripts: { lint: 'eslint .', test: 'vitest' },
+		});
 		expect(
 			new ScriptsDriftDetector().detect({ current: a, last: b }),
 		).toEqual([]);
 	});
 });
 
-describe('StackDriftDetector', () => {
-	it('flags a framework change', () => {
-		const last = analyse({ dependencies: { react: '^18' } });
-		const current = analyse({
+describe('StackDriftDetector', async () => {
+	it('flags a framework change', async () => {
+		const last = await analyse({ dependencies: { react: '^18' } });
+		const current = await analyse({
 			dependencies: { '@angular/core': '^22' },
 		});
 		const changes = new StackDriftDetector().detect({ current, last });
@@ -129,16 +148,16 @@ describe('StackDriftDetector', () => {
 		expect(fw).toBeDefined();
 	});
 
-	it('emits no changes when the stack is identical', () => {
-		const a = analyse({});
+	it('emits no changes when the stack is identical', async () => {
+		const a = await analyse({});
 		expect(
 			new StackDriftDetector().detect({ current: a, last: a }),
 		).toEqual([]);
 	});
 
-	it('classifies mcp-server-added vs mcp-server-dropped', () => {
-		const last = analyse({});
-		const current = analyse({
+	it('classifies mcp-server-added vs mcp-server-dropped', async () => {
+		const last = await analyse({});
+		const current = await analyse({
 			dependencies: { '@modelcontextprotocol/sdk': '^1' },
 		});
 		const changes = new StackDriftDetector().detect({ current, last });
@@ -148,15 +167,15 @@ describe('StackDriftDetector', () => {
 	});
 });
 
-describe('MetadataDriftDetector', () => {
-	it('flags a new CI file as a ci-changed entry', () => {
-		const last = analyse({});
-		const current = analyse({});
+describe('MetadataDriftDetector', async () => {
+	it('flags a new CI file as a ci-changed entry', async () => {
+		const last = await analyse({});
+		const current = await analyse({});
 		// Hand-build a richer analysis with CI present.
-		const last2 = analyzeProject(
+		const last2 = await analyzeProject(
 			reader({ 'package.json': '{"name":"x"}' }),
 		);
-		const current2 = analyzeProject(
+		const current2 = await analyzeProject(
 			reader({
 				'package.json': '{"name":"x"}',
 				'.github/copilot-instructions.md': '# guide',

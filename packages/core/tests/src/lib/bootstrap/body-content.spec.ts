@@ -20,13 +20,13 @@ import {
 import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-const analyse = (pkg: Record<string, unknown>) =>
-	analyzeProject(
+const analyse = async (pkg: Record<string, unknown>) =>
+	await analyzeProject(
 		reader({
 			'package.json': JSON.stringify({
 				name: '@acme/site',
@@ -36,66 +36,66 @@ const analyse = (pkg: Record<string, unknown>) =>
 		}),
 	);
 
-describe('format-helpers', () => {
-	it('formatList renders empty as a stub', () => {
+describe('format-helpers', async () => {
+	it('formatList renders empty as a stub', async () => {
 		expect(formatList([])).toBe('_(none detected)_');
 	});
-	it('formatList renders each item as a backticked bullet', () => {
+	it('formatList renders each item as a backticked bullet', async () => {
 		expect(formatList(['a', 'b'])).toBe('- `a`\n- `b`');
 	});
-	it('formatScripts renders empty as a stub', () => {
+	it('formatScripts renders empty as a stub', async () => {
 		expect(formatScripts({})).toBe('_(no quality scripts detected)_');
 	});
-	it('formatScripts renders role → command bullets', () => {
+	it('formatScripts renders role → command bullets', async () => {
 		expect(formatScripts({ test: 'vitest', lint: 'eslint .' })).toBe(
 			'- `test` → `vitest`\n- `lint` → `eslint .`',
 		);
 	});
 });
 
-describe('framework-hints / language-hints (declarative tables)', () => {
-	it('returns the registered hints for Angular', () => {
+describe('framework-hints / language-hints (declarative tables)', async () => {
+	it('returns the registered hints for Angular', async () => {
 		const a = analyse({ dependencies: { '@angular/core': '^22' } });
-		const hints = frameworkHintsFor(a);
+		const hints = frameworkHintsFor(await a);
 		expect(hints.length).toBeGreaterThan(0);
 		expect(hints[0]).toMatch(/Standalone components/);
 	});
-	it('returns the empty fallback for an unknown framework', () => {
+	it('returns the empty fallback for an unknown framework', async () => {
 		const a = analyse({});
-		expect(frameworkHintsFor(a)).toEqual([]);
+		expect(frameworkHintsFor(await a)).toEqual([]);
 	});
-	it('returns the empty fallback for an unknown language', () => {
+	it('returns the empty fallback for an unknown language', async () => {
 		// A reader with no tsconfig AND no package.json field makes the
 		// analyzer default to `unknown` language.
-		const a = analyzeProject(reader({}));
+		const a = await analyzeProject(reader({}));
 		expect(a.language).toBe('unknown');
 		expect(languageHintsFor(a)).toEqual([]);
 	});
 });
 
-describe('prompt bodies', () => {
-	it('startPromptBody includes project facts and bootstrap references', () => {
+describe('prompt bodies', async () => {
+	it('startPromptBody includes project facts and bootstrap references', async () => {
 		const a = analyse({
 			dependencies: { '@angular/core': '^22' },
 			scripts: { lint: 'eslint .', test: 'vitest' },
 		});
-		const body = startPromptBody(a, 'acme');
+		const body = startPromptBody(await a, 'acme');
 		expect(body).toContain('@acme/site');
 		expect(body).toContain('acme_overview');
 		expect(body).toContain('angular');
 	});
 
-	it('fixQualityPromptBody is honest when there are no scripts', () => {
+	it('fixQualityPromptBody is honest when there are no scripts', async () => {
 		const a = analyse({});
-		expect(fixQualityPromptBody(a, 'acme')).toMatch(
+		expect(fixQualityPromptBody(await a, 'acme')).toMatch(
 			/no quality scripts detected/i,
 		);
 	});
 });
 
-describe('skill bodies', () => {
-	it('projectStandardsSkillBody lists CI and agent configs', () => {
-		const a = analyzeProject(
+describe('skill bodies', async () => {
+	it('projectStandardsSkillBody lists CI and agent configs', async () => {
+		const a = await analyzeProject(
 			reader({
 				'package.json': '{"name":"x"}',
 				'tsconfig.json': '{}',
@@ -109,46 +109,46 @@ describe('skill bodies', () => {
 		expect(body).toContain('gitlab-ci');
 	});
 
-	it('frameworkSkillBody is empty for projects without a framework', () => {
+	it('frameworkSkillBody is empty for projects without a framework', async () => {
 		const a = analyse({});
-		expect(frameworkSkillBody(a)).toBe('');
-		expect(frameworkSkillWhenToUse(a)).toEqual([]);
+		expect(frameworkSkillBody(await a)).toBe('');
+		expect(frameworkSkillWhenToUse(await a)).toEqual([]);
 	});
 });
 
-describe('blueprintArtifactBody dispatcher', () => {
-	it('routes `start` to startPromptBody', () => {
+describe('blueprintArtifactBody dispatcher', async () => {
+	it('routes `start` to startPromptBody', async () => {
 		const a = analyse({});
 		const out = blueprintArtifactBody(
 			{ name: 'start', description: 'd' },
-			a,
+			await a,
 			'acme',
 		);
-		expect(out).toBe(startPromptBody(a, 'acme'));
+		expect(out).toBe(startPromptBody(await a, 'acme'));
 	});
-	it('routes `fix quality` to fixQualityPromptBody', () => {
+	it('routes `fix quality` to fixQualityPromptBody', async () => {
 		const a = analyse({});
 		const out = blueprintArtifactBody(
 			{ name: 'fix quality', description: 'd' },
-			a,
+			await a,
 			'acme',
 		);
-		expect(out).toBe(fixQualityPromptBody(a, 'acme'));
+		expect(out).toBe(fixQualityPromptBody(await a, 'acme'));
 	});
-	it('returns empty string for unknown artefact names', () => {
+	it('returns empty string for unknown artefact names', async () => {
 		const a = analyse({});
 		expect(
 			blueprintArtifactBody(
 				{ name: 'totally unknown', description: 'd' },
-				a,
+				await a,
 				'acme',
 			),
 		).toBe('');
 	});
-	it('the dispatcher is referenced by the blueprint pipeline (regression guard)', () => {
+	it('the dispatcher is referenced by the blueprint pipeline (regression guard)', async () => {
 		const a = analyse({});
-		const bp = buildServerBlueprint(a);
+		const bp = buildServerBlueprint(await a);
 		const start = bp.prompts.find((p) => p.name === 'start');
-		expect(start?.body).toBe(startPromptBody(a, bp.namespacePrefix));
+		expect(start?.body).toBe(startPromptBody(await a, bp.namespacePrefix));
 	});
 });

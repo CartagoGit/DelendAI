@@ -49,7 +49,7 @@ export interface IMutateToolOptions {
  * Tests that want to inject a fake pass their own `IMutateStore`
  * implementation through `buildProposalsEditRegistration(options, store)`.
  */
-export const buildRealMutateStore = (): IMutateStore => ({
+export const buildRealMutateStore = async (): Promise<IMutateStore> => ({
 	async read(absPath) {
 		try {
 			return await readFile(absPath, 'utf8');

@@ -15,24 +15,24 @@ const textResponse = (
 		text: () => Promise.resolve(body),
 	});
 
-describe('isHostAllowed', () => {
-	it('matches an exact hostname', () => {
+describe('isHostAllowed', async () => {
+	it('matches an exact hostname', async () => {
 		expect(isHostAllowed('example.com', ['example.com'])).toBe(true);
 		expect(isHostAllowed('other.com', ['example.com'])).toBe(false);
 	});
 
-	it('matches a `*.suffix` wildcard against subdomains only', () => {
+	it('matches a `*.suffix` wildcard against subdomains only', async () => {
 		expect(isHostAllowed('docs.example.com', ['*.example.com'])).toBe(true);
 		expect(isHostAllowed('example.com', ['*.example.com'])).toBe(false);
 		expect(isHostAllowed('evilexample.com', ['*.example.com'])).toBe(false);
 	});
 
-	it('fails closed on an empty allow-list', () => {
+	it('fails closed on an empty allow-list', async () => {
 		expect(isHostAllowed('example.com', [])).toBe(false);
 	});
 });
 
-describe('webFetch', () => {
+describe('webFetch', async () => {
 	it('fetches an allowed URL and returns its body', async () => {
 		const fetchImpl: IFetchLike = () =>
 			textResponse(200, 'hello world', { 'content-type': 'text/plain' });

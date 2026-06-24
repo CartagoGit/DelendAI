@@ -41,9 +41,9 @@ const invoke = async (
 };
 
 const emptyReader: IFileReader = {
-	readFile: () => undefined,
-	exists: () => false,
-	listDir: () => [],
+	readFile: async () => undefined,
+	exists: async () => false,
+	listDir: async () => [],
 };
 
 const workspace: IWorkspacePathProvider = {
@@ -51,7 +51,7 @@ const workspace: IWorkspacePathProvider = {
 	resolve: (p: string) => `/ws/${p}`,
 };
 
-describe('get_rules — areas[].rules outputSchema (l00008 s4)', () => {
+describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 	it('returns a golden IAreaRules shape: framework/presetId/eslint/typecheck/reason, no stray keys', async () => {
 		const reg = buildGetRulesRegistration({
 			namespacePrefix: 'rules',

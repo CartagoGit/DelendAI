@@ -36,27 +36,27 @@ const ESLINT_CONFIG_NAMES = [
 	'eslint.config.mts',
 ] as const;
 
-const findProjectEslint = (
+const findProjectEslint = async (
 	reader: IFileReader,
 	areaDir: string,
-): string | undefined => {
+): Promise<string | undefined> => {
 	for (const name of ESLINT_CONFIG_NAMES) {
 		const rel =
 			areaDir === '' || areaDir === 'root' ? name : `${areaDir}/${name}`;
-		if (reader.exists(rel)) return rel;
+		if (await reader.exists(rel)) return rel;
 	}
 	return undefined;
 };
 
-const findProjectTsconfig = (
+const findProjectTsconfig = async (
 	reader: IFileReader,
 	areaDir: string,
-): string | undefined => {
+): Promise<string | undefined> => {
 	const rel =
 		areaDir === '' || areaDir === 'root'
 			? 'tsconfig.json'
 			: `${areaDir}/tsconfig.json`;
-	return reader.exists(rel) ? rel : undefined;
+	return (await reader.exists(rel)) ? rel : undefined;
 };
 
 /**
@@ -81,15 +81,15 @@ const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
  * manifest writer picks up the new area automatically
  * (the OCP hinge at the manifest layer).
  */
-const discoverAreas = (
+const discoverAreas = async (
 	reader: IFileReader,
 	root: Pick<import('./registry').ICompositionRoot, 'detector'>,
-): readonly string[] => {
+): Promise<readonly string[]> => {
 	const areas: string[] = [''];
 	for (const group of GROUP_DIRS) {
-		for (const child of reader.listDir(group)) {
+		for (const child of await reader.listDir(group)) {
 			const dir = `${group}/${child}`;
-			if (root.detector.detect(reader, dir) !== undefined) {
+			if ((await root.detector.detect(reader, dir)) !== undefined) {
 				areas.push(dir);
 			}
 		}
@@ -112,18 +112,18 @@ const areaKey = (areaDir: string): string =>
  * the free function `detectPresetForArea(reader, areaDir)`
  * the legacy uses.
  */
-export const buildManifestViaComposition = (
+export const buildManifestViaComposition = async (
 	reader: IFileReader,
 	projectName: string,
 	cacheRelDir: string,
 	mode: IRulesMode,
 	root: Pick<ICompositionRoot, 'detector' | 'registry'>,
 	overrides: Readonly<Record<string, string>> = {},
-): IRulesManifest => {
+): Promise<IRulesManifest> => {
 	const areas: Record<string, IAreaRules> = {};
-	for (const areaDir of discoverAreas(reader, root)) {
+	for (const areaDir of await discoverAreas(reader, root)) {
 		const forced = overrides[areaKey(areaDir)];
-		const detected = root.detector.detect(reader, areaDir);
+		const detected = await root.detector.detect(reader, areaDir);
 		const presetId =
 			forced !== undefined && root.registry.supportedIds.includes(forced)
 				? forced
@@ -136,12 +136,12 @@ export const buildManifestViaComposition = (
 				: (detected?.reason ?? 'no language adapter claimed the area');
 
 		const eslint: string[] = [];
-		const projectEslint = findProjectEslint(reader, areaDir);
+		const projectEslint = await findProjectEslint(reader, areaDir);
 		if (projectEslint !== undefined) eslint.push(projectEslint);
 		eslint.push(`${cacheRelDir}/${preset.linterConfigFile}`);
 
 		const typecheck: string[] = [];
-		const projectTsconfig = findProjectTsconfig(reader, areaDir);
+		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
 		if (projectTsconfig !== undefined) typecheck.push(projectTsconfig);
 		if (preset.typecheckConfigFile !== undefined) {
 			typecheck.push(`${cacheRelDir}/${preset.typecheckConfigFile}`);

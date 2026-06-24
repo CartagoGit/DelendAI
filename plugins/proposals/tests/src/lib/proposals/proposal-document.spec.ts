@@ -72,7 +72,7 @@ T1 spec verde
 none
 `;
 
-describe('parseProposalDocument', () => {
+describe('parseProposalDocument', async () => {
 	it('parses a valid fixture and returns IProposalDocument with expected shape', async () => {
 		const path = write(VALID_FIXTURE);
 		const doc = await parseProposalDocument(path);

@@ -22,7 +22,7 @@ import { buildSwarmPaths } from '@mcp-vertex/proposals/lib/contracts/constants/d
  * roots, both the proposal index sync and the round-context snapshot
  * read/write under that layout — not under `.cache` / `docs`.
  */
-describe('F3 — engines honor a relocated path layout', () => {
+describe('F3 — engines honor a relocated path layout', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'layout-reloc-'));

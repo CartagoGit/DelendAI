@@ -12,14 +12,14 @@ import {
 	packageRunScript,
 } from '@mcp-vertex/deps/lib/tools/write-tools';
 
-describe('buildInstallCommand (pure, no spawn)', () => {
-	it('builds a simple dependencies install command', () => {
+describe('buildInstallCommand (pure, no spawn)', async () => {
+	it('builds a simple dependencies install command', async () => {
 		const result = buildInstallCommand({ name: 'left-pad' });
 		expect(result.error).toBeUndefined();
 		expect(result.command).toBe('bun add left-pad');
 	});
 
-	it('builds a devDependencies install command with the --dev flag', () => {
+	it('builds a devDependencies install command with the --dev flag', async () => {
 		const result = buildInstallCommand({
 			name: 'vitest',
 			range: '^4.0.0',
@@ -29,7 +29,7 @@ describe('buildInstallCommand (pure, no spawn)', () => {
 		expect(result.command).toBe('bun add vitest@^4.0.0 --dev');
 	});
 
-	it('rejects an invalid/unsafe version range', () => {
+	it('rejects an invalid/unsafe version range', async () => {
 		const result = buildInstallCommand({
 			name: 'left-pad',
 			range: '; rm -rf /',
@@ -39,7 +39,7 @@ describe('buildInstallCommand (pure, no spawn)', () => {
 	});
 });
 
-describe('packageInstall / packageRunScript (S11, offline fixtures, no network)', () => {
+describe('packageInstall / packageRunScript (S11, offline fixtures, no network)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'deps-write-'));
@@ -89,8 +89,8 @@ describe('packageInstall / packageRunScript (S11, offline fixtures, no network)'
 	});
 });
 
-describe('buildDepsWriteToolRegistrations', () => {
-	it('registers package_install and package_run_script with their declared effects', () => {
+describe('buildDepsWriteToolRegistrations', async () => {
+	it('registers package_install and package_run_script with their declared effects', async () => {
 		const tools = buildDepsWriteToolRegistrations({
 			namespacePrefix: 'deps',
 			workspaceRootAbs: '/ws',

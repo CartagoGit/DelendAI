@@ -11,7 +11,7 @@ import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-projec
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import memoryPlugin from '@mcp-vertex/memory';
 
-describe('e2e: mcp.json launch path plugin parity', () => {
+describe('e2e: mcp.json launch path plugin parity', async () => {
 	let workspace = '';
 	let client: Client;
 	let close: () => Promise<void>;

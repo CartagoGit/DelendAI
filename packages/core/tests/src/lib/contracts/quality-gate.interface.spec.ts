@@ -19,8 +19,8 @@ import type {
 	IQualityGateList,
 } from '@mcp-vertex/core/public';
 
-describe('IQualityGate', () => {
-	it('accepts a minimal gate (only required fields)', () => {
+describe('IQualityGate', async () => {
+	it('accepts a minimal gate (only required fields)', async () => {
 		const gate: IQualityGate = {
 			id: 'tsc-no-emit',
 			command: 'tsc',
@@ -32,7 +32,7 @@ describe('IQualityGate', () => {
 		expect(gate.docs).toBeUndefined();
 	});
 
-	it('accepts a full gate (with optional `docs`)', () => {
+	it('accepts a full gate (with optional `docs`)', async () => {
 		const gate: IQualityGate = {
 			id: 'py-mypy',
 			command: 'mypy',
@@ -44,7 +44,7 @@ describe('IQualityGate', () => {
 		expect(gate.docs).toBe('Static type-check the Python sources.');
 	});
 
-	it('rejects `expect` values outside the closed union at type-check', () => {
+	it('rejects `expect` values outside the closed union at type-check', async () => {
 		// The check below is a type-level assertion: assigning an
 		// arbitrary string to `expect` would fail `tsc --noEmit`. We
 		// exercise the same intent at runtime by listing the only two
@@ -54,7 +54,7 @@ describe('IQualityGate', () => {
 		expect(new Set(legal)).toEqual(new Set(['pass', 'fail']));
 	});
 
-	it('documents the language tag convention (preset = lowercase short code)', () => {
+	it('documents the language tag convention (preset = lowercase short code)', async () => {
 		// The convention is documented in the JSDoc of `quality-gate.interface.ts`
 		// and pinned here so a rename regression surfaces here, not in the
 		// docs site render.
@@ -74,7 +74,7 @@ describe('IQualityGate', () => {
 		}
 	});
 
-	it('a gate can declare multiple language tags (e.g. ts + tsx)', () => {
+	it('a gate can declare multiple language tags (e.g. ts + tsx)', async () => {
 		const gate: IQualityGate = {
 			id: 'ts-eslint',
 			command: 'eslint',
@@ -86,7 +86,7 @@ describe('IQualityGate', () => {
 		expect(gate.languages).toContain('tsx');
 	});
 
-	it('a gate can declare the inverse `expect: "fail"` (mutation testing, fuzz)', () => {
+	it('a gate can declare the inverse `expect: "fail"` (mutation testing, fuzz)', async () => {
 		const gate: IQualityGate = {
 			id: 'mutation-mutate',
 			command: 'stryker',
@@ -98,7 +98,7 @@ describe('IQualityGate', () => {
 		expect(gate.expect).toBe('fail');
 	});
 
-	it('IQualityGateList is the readonly alias consumed by the runner', () => {
+	it('IQualityGateList is the readonly alias consumed by the runner', async () => {
 		const list: IQualityGateList = [
 			{
 				id: 'tsc-no-emit',

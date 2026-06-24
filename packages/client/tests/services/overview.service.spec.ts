@@ -25,7 +25,7 @@ const overviewFixture: IOverview = {
 	recommendedNextAction: 'Call overview first.',
 };
 
-describe('OverviewService', () => {
+describe('OverviewService', async () => {
 	it('fetches overview through the client', async () => {
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
@@ -74,8 +74,8 @@ describe('OverviewService', () => {
 	});
 });
 
-describe('normalizeTool', () => {
-	it('supports compact string entries and object entries', () => {
+describe('normalizeTool', async () => {
+	it('supports compact string entries and object entries', async () => {
 		expect(normalizeTool('quality_run_quality')).toEqual({
 			name: 'quality_run_quality',
 			plugin: 'quality',
@@ -96,8 +96,8 @@ describe('normalizeTool', () => {
 	});
 });
 
-describe('pluginFromToolName', () => {
-	it('keeps the core namespace intact', () => {
+describe('pluginFromToolName', async () => {
+	it('keeps the core namespace intact', async () => {
 		expect(pluginFromToolName('mcp-vertex_overview')).toBe('mcp-vertex');
 	});
 });

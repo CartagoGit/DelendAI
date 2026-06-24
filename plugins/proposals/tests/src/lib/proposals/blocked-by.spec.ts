@@ -54,7 +54,7 @@ const readers = (
 	...overrides,
 });
 
-describe('blockedByFor — early-return paths', () => {
+describe('blockedByFor — early-return paths', async () => {
 	it('returns [] when the proposal file is missing on disk', async () => {
 		const result = await blockedByFor(
 			ENTRY,
@@ -114,7 +114,7 @@ describe('blockedByFor — early-return paths', () => {
 	});
 });
 
-describe('blockedByFor — happy path (flat-array frontmatter)', () => {
+describe('blockedByFor — happy path (flat-array frontmatter)', async () => {
 	// The current `parseFrontmatterBlock` (custom YAML parser) does NOT
 	// produce a nested `{ contains: { proposals: [...], plans: [...] } }`
 	// shape — it produces a flat array `contains: [a, b, c]` (or nothing).
@@ -138,7 +138,7 @@ describe('blockedByFor — happy path (flat-array frontmatter)', () => {
 	});
 });
 
-describe('blockedByFor — defaults (DIP sanity)', () => {
+describe('blockedByFor — defaults (DIP sanity)', async () => {
 	it('uses the module-level readers when none are injected', async () => {
 		// The production call site in `continue-proposal.tool.ts`
 		// leaves both readers undefined. We assert the call does not
@@ -173,7 +173,7 @@ describe('blockedByFor — defaults (DIP sanity)', () => {
  * `frontmatter-parser` module's owner — or by switching to the `yaml`
  * npm package, which already handles nested mappings.
  */
-describe('KNOWN_GAPS — frontmatter-parser nested-mapping support', () => {
+describe('KNOWN_GAPS — frontmatter-parser nested-mapping support', async () => {
 	it('parser returns `contains: { proposals: null, plans: null }` for nested YAML with arrays', async () => {
 		const PLAN = wrap(
 			'id: q00001\ntype: plan\ncontains:\n  proposals:\n    - f00049\n    - f00050\n  plans:\n    - q00002\n',

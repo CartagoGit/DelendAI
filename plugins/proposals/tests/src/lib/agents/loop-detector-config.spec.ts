@@ -8,16 +8,16 @@ import {
 	resolveLoopDetectorConfig,
 } from '@mcp-vertex/proposals/lib/agents/loop-detector-config';
 
-describe('loop-detector-config (Solid SRP extraction)', () => {
-	describe('parseLoopDetectorCliOverrides', () => {
-		it('returns an empty object when no loop-detector args are present', () => {
+describe('loop-detector-config (Solid SRP extraction)', async () => {
+	describe('parseLoopDetectorCliOverrides', async () => {
+		it('returns an empty object when no loop-detector args are present', async () => {
 			expect(parseLoopDetectorCliOverrides({})).toEqual({});
 			expect(parseLoopDetectorCliOverrides({ unrelated: 'x' })).toEqual(
 				{},
 			);
 		});
 
-		it('parses --loop-detector=true|false and --no-loop-detector', () => {
+		it('parses --loop-detector=true|false and --no-loop-detector', async () => {
 			expect(
 				parseLoopDetectorCliOverrides({ 'loop-detector': 'true' }),
 			).toEqual({ enabled: true });
@@ -29,7 +29,7 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			).toEqual({ enabled: false });
 		});
 
-		it('parses dashed subkeys (loop-detector.repeat-threshold etc.)', () => {
+		it('parses dashed subkeys (loop-detector.repeat-threshold etc.)', async () => {
 			expect(
 				parseLoopDetectorCliOverrides({
 					'loop-detector.repeat-threshold': '12',
@@ -38,7 +38,7 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			).toEqual({ repeatThreshold: 12, notifyOnDetect: true });
 		});
 
-		it('treats --loop-detector.notify-on-detect=1 as truthy (numeric form)', () => {
+		it('treats --loop-detector.notify-on-detect=1 as truthy (numeric form)', async () => {
 			expect(
 				parseLoopDetectorCliOverrides({
 					'loop-detector.notify-on-detect': '1',
@@ -46,7 +46,7 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 			).toEqual({ notifyOnDetect: true });
 		});
 
-		it('parses comma-separated interactive-agent-patterns (empty = explicit opt-out)', () => {
+		it('parses comma-separated interactive-agent-patterns (empty = explicit opt-out)', async () => {
 			expect(
 				parseLoopDetectorCliOverrides({
 					'loop-detector.interactive-agent-patterns': 'foo, bar ,baz',
@@ -61,7 +61,7 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 		});
 	});
 
-	describe('resolveLoopDetectorConfig — precedence: CLI > file > defaults', () => {
+	describe('resolveLoopDetectorConfig — precedence: CLI > file > defaults', async () => {
 		const stubReader = (config: IMcpVertexConfigFile) => ({
 			async readGlobalConfig() {
 				return config;
@@ -126,13 +126,15 @@ describe('loop-detector-config (Solid SRP extraction)', () => {
 		});
 	});
 
-	describe('createFsConfigFileReader (DIP production wiring)', () => {
+	describe('createFsConfigFileReader (DIP production wiring)', async () => {
 		it('returns an empty config when the workspace path does not exist', async () => {
 			const reader = createFsConfigFileReader({
 				root: '/definitely/not/here',
 				resolve: (rel) => `/definitely/not/here/${rel}`,
 			});
-			await expect(reader.readGlobalConfig()).resolves.toEqual({});
+			await expect((await reader).readGlobalConfig()).resolves.toEqual(
+				{},
+			);
 		});
 	});
 });

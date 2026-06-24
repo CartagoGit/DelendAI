@@ -50,7 +50,7 @@ const sliceRef = (id: string) => ({ id, kind: 'feat', title: id });
 // 1. In-progress child proposal blocks closure
 // ---------------------------------------------------------------------------
 
-describe('evaluatePlanClosure — child proposal status', () => {
+describe('evaluatePlanClosure — child proposal status', async () => {
 	it('returns closable=false when a contained proposal is in-progress', async () => {
 		const fm = baseFrontmatter({
 			contains: {
@@ -136,7 +136,7 @@ describe('evaluatePlanClosure — child proposal status', () => {
 // 2. Own slices block closure
 // ---------------------------------------------------------------------------
 
-describe('evaluatePlanClosure — own slices', () => {
+describe('evaluatePlanClosure — own slices', async () => {
 	it('returns closable=false when a referenced own slice is pending', async () => {
 		const fm = baseFrontmatter({
 			contains: {
@@ -181,7 +181,7 @@ describe('evaluatePlanClosure — own slices', () => {
 // 3. Sub-plan recursion + cycle detection
 // ---------------------------------------------------------------------------
 
-describe('evaluatePlanClosure — sub-plans', () => {
+describe('evaluatePlanClosure — sub-plans', async () => {
 	it('recurses into a sub-plan and surfaces its open children as reasons', async () => {
 		const subPlanFm: IProposalFrontmatter = {
 			id: 'q00002',
@@ -301,7 +301,7 @@ describe('evaluatePlanClosure — sub-plans', () => {
 // 4. Mixed scenario + closureGate override
 // ---------------------------------------------------------------------------
 
-describe('evaluatePlanClosure — mixed + closureGate', () => {
+describe('evaluatePlanClosure — mixed + closureGate', async () => {
 	it('aggregates reasons from proposals, sub-plans and own slices', async () => {
 		const subPlanFm: IProposalFrontmatter = {
 			id: 'q00002',

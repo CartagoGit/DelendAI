@@ -42,9 +42,9 @@ import type { IFileReader } from '@mcp-vertex/core/public';
  *      is a single default, not N branches per language).
  */
 const readerFromFiles = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: (dir) => {
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async (dir) => {
 		const prefix = `${dir}/`;
 		const names = new Set<string>();
 		for (const path of Object.keys(files)) {
@@ -69,8 +69,8 @@ const buildRoot = () =>
 		renderers: buildDefaultRenderers(),
 		policyResolver: defaultPolicyResolver,
 	});
-describe('manifest-via-composition (DIP, S)', () => {
-	it('resolves a Rust area to the rust-clippy preset via the composition root', () => {
+describe('manifest-via-composition (DIP, S)', async () => {
+	it('resolves a Rust area to the rust-clippy preset via the composition root', async () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
 			'apps/svc/Cargo.toml': '[package]\nname = "svc"',
@@ -83,20 +83,20 @@ describe('manifest-via-composition (DIP, S)', () => {
 			'mixed',
 			root,
 		);
-		expect(manifest.projects.demo?.['apps/svc']?.presetId).toBe(
+		expect((await manifest).projects.demo?.['apps/svc']?.presetId).toBe(
 			'rust-clippy',
 		);
-		expect(manifest.projects.demo?.['apps/svc']?.reason).toContain(
+		expect((await manifest).projects.demo?.['apps/svc']?.reason).toContain(
 			'Cargo.toml',
 		);
 		// The project does not ship its own clippy.toml; only
 		// the cache default is listed.
-		expect(manifest.projects.demo?.['apps/svc']?.eslint).toEqual([
+		expect((await manifest).projects.demo?.['apps/svc']?.eslint).toEqual([
 			'.cache/mcp-vertex/rules/rust-clippy.clippy.toml',
 		]);
 	});
 
-	it('honours an area override (S — override is a separate concern)', () => {
+	it('honours an area override (S — override is a separate concern)', async () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
 		});
@@ -109,11 +109,15 @@ describe('manifest-via-composition (DIP, S)', () => {
 			root,
 			{ root: 'rust-clippy' },
 		);
-		expect(manifest.projects.demo?.root?.presetId).toBe('rust-clippy');
-		expect(manifest.projects.demo?.root?.reason).toContain('forced');
+		expect((await manifest).projects.demo?.root?.presetId).toBe(
+			'rust-clippy',
+		);
+		expect((await manifest).projects.demo?.root?.reason).toContain(
+			'forced',
+		);
 	});
 
-	it('is pure and deterministic (same input → same fingerprint)', () => {
+	it('is pure and deterministic (same input → same fingerprint)', async () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
 		});
@@ -134,14 +138,14 @@ describe('manifest-via-composition (DIP, S)', () => {
 		);
 		// The fingerprint is the deterministic identifier; the
 		// `generatedAt` field is the only thing that varies.
-		expect(a.fingerprint).toBe(b.fingerprint);
-		expect(a.mode).toBe(b.mode);
-		expect(Object.keys(a.projects.demo ?? {}).sort()).toEqual(
-			Object.keys(b.projects.demo ?? {}).sort(),
+		expect((await a).fingerprint).toBe((await b).fingerprint);
+		expect((await a).mode).toBe((await b).mode);
+		expect(Object.keys((await a).projects.demo ?? {}).sort()).toEqual(
+			Object.keys((await b).projects.demo ?? {}).sort(),
 		);
 	});
 
-	it('returns the vanilla-js fallback when no adapter claims the area', () => {
+	it('returns the vanilla-js fallback when no adapter claims the area', async () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),
 		});
@@ -153,13 +157,15 @@ describe('manifest-via-composition (DIP, S)', () => {
 			'mixed',
 			root,
 		);
-		expect(manifest.projects.demo?.root?.presetId).toBe('vanilla-js');
-		expect(manifest.projects.demo?.root?.reason).toContain(
+		expect((await manifest).projects.demo?.root?.presetId).toBe(
+			'vanilla-js',
+		);
+		expect((await manifest).projects.demo?.root?.reason).toContain(
 			'no language adapter',
 		);
 	});
 
-	it('reads presets from the composition root, not from a module-level singleton', () => {
+	it('reads presets from the composition root, not from a module-level singleton', async () => {
 		// The new writer takes the presets *from the composition
 		// root*, not from a module-level singleton. A custom
 		// composition root with a 1-element preset list produces
@@ -168,7 +174,7 @@ describe('manifest-via-composition (DIP, S)', () => {
 		const customAdapter = {
 			id: 'custom',
 			priority: 10,
-			detect: () => ({
+			detect: async () => ({
 				presetId: 'rust-clippy',
 				reason: 'forced by test',
 			}),

@@ -7,8 +7,8 @@ import {
 	type IServerArgForwarder,
 } from '../../../src/lib/server-args';
 
-describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
-	it('always forwards --workspace (the host requires a workspace)', () => {
+describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
+	it('always forwards --workspace (the host requires a workspace)', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -22,7 +22,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		expect(args[args.indexOf('--workspace') + 1]).toBe('/repo');
 	});
 
-	it('forwards --config only when defined (omits undefined)', () => {
+	it('forwards --config only when defined (omits undefined)', async () => {
 		const withCfg = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -48,7 +48,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		expect(withoutCfg).not.toContain('--config');
 	});
 
-	it('forwards --preset only when defined', () => {
+	it('forwards --preset only when defined', async () => {
 		const withPreset = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -72,7 +72,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		expect(withoutPreset).not.toContain('--preset');
 	});
 
-	it('forwards --plugins as a comma-separated list, deduplicated, plus extras', () => {
+	it('forwards --plugins as a comma-separated list, deduplicated, plus extras', async () => {
 		const args = buildServerArgs(
 			{
 				workspace: '/repo',
@@ -95,7 +95,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		expect(value?.split(',')).toHaveLength(3);
 	});
 
-	it('omits --plugins when both list and extras are empty', () => {
+	it('omits --plugins when both list and extras are empty', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -107,7 +107,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		expect(args).not.toContain('--plugins');
 	});
 
-	it('covers every field on ICliGlobalOptions that the core parser accepts (forwarder table is exhaustive)', () => {
+	it('covers every field on ICliGlobalOptions that the core parser accepts (forwarder table is exhaustive)', async () => {
 		// a00036 F-001: the host parses 13 flags; mcpv used to forward 4.
 		// We must forward every ICliGlobalOption the host cares about.
 		// Any field that is BOTH on ICliGlobalOptions AND on the host
@@ -132,7 +132,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', () => {
 		}
 	});
 
-	it('is extensible by data, not by editing the function body', () => {
+	it('is extensible by data, not by editing the function body', async () => {
 		// A new host flag should be addable by appending to the table.
 		// This is the Open/Closed SOLID principle: the function does not
 		// grow an `if` per new flag.

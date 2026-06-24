@@ -24,7 +24,7 @@ const writeManifest = (skills: unknown): void => {
 	);
 };
 
-describe('loadSkills', () => {
+describe('loadSkills', async () => {
 	it('returns every entry whose minCoreVersion is satisfied by the given core version', async () => {
 		writeManifest([
 			{

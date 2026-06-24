@@ -84,7 +84,7 @@ const waitForHostReady = async (
  *   actually terminating).
  * - The timeout path is respected when `server.close()` never resolves.
  */
-describe('gracefulShutdown — unit', () => {
+describe('gracefulShutdown — unit', async () => {
 	let exitCalls: number[];
 	const originalExit = process.exit.bind(process);
 	let stderrSpy: ReturnType<typeof vi.spyOn>;
@@ -211,7 +211,7 @@ describe('gracefulShutdown — unit', () => {
  * die promptly when its parent is gone (or when the user hits
  * Ctrl+C in a terminal that owns the pty).
  */
-describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', () => {
+describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () => {
 	let workspace = '';
 	let cleanup: (() => void) | undefined;
 

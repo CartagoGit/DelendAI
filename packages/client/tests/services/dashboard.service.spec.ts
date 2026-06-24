@@ -22,7 +22,7 @@ const makeService = (
 	return { service: new DashboardService({ client }), calls };
 };
 
-describe('DashboardService', () => {
+describe('DashboardService', async () => {
 	it('getOverviewModel returns totals derived from metrics + proposals', async () => {
 		const { service } = makeService();
 		const model = await service.getOverviewModel();

@@ -24,12 +24,12 @@ export const rustAdapter: ILanguageAdapter = {
 	id: 'rs',
 	priority: 20,
 	commands: rustCommandSetProvider,
-	detect(reader: IFileReader, areaDir: string) {
+	async detect(reader: IFileReader, areaDir: string) {
 		const manifestPath =
 			areaDir === '' || areaDir === 'root'
 				? 'Cargo.toml'
 				: `${areaDir}/Cargo.toml`;
-		if (reader.exists(manifestPath)) {
+		if (await reader.exists(manifestPath)) {
 			return {
 				presetId: 'rust-clippy',
 				reason: 'Rust (Cargo.toml)',

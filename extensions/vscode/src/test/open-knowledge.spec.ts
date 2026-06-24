@@ -44,7 +44,7 @@ const createVscode = () => {
 	return { vscode, panels, messages, errors, commands };
 };
 
-describe('mcp-vertex.openKnowledge', () => {
+describe('mcp-vertex.openKnowledge', async () => {
 	it('opens a webview with a category-grouped list', async () => {
 		const { vscode, panels, commands } = createVscode();
 		registerOpenKnowledgeCommand({

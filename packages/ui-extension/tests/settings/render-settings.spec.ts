@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderSettings } from '../../src/settings/render-settings';
 
-describe('renderSettings', () => {
-	it('renders settings values and command ids', () => {
+describe('renderSettings', async () => {
+	it('renders settings values and command ids', async () => {
 		const html = renderSettings({
 			settings: {
 				docsUrl: 'https://example.com/docs',

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderHeaderBar } from '../../src/components/header-bar';
 
-describe('renderHeaderBar', () => {
-	it('returns a <header class="mv-header"> with the brand name and version', () => {
+describe('renderHeaderBar', async () => {
+	it('returns a <header class="mv-header"> with the brand name and version', async () => {
 		const html = renderHeaderBar({
 			brandName: 'mcp-vertex',
 			version: '1.0.0',
@@ -13,7 +13,7 @@ describe('renderHeaderBar', () => {
 		expect(html).toContain('v1.0.0');
 	});
 
-	it('includes an inline brand SVG with the MV gradient', () => {
+	it('includes an inline brand SVG with the MV gradient', async () => {
 		const html = renderHeaderBar({
 			brandName: 'mcp-vertex',
 			version: '1.0.0',
@@ -23,7 +23,7 @@ describe('renderHeaderBar', () => {
 		expect(html).toContain('--mv-brand-purple');
 	});
 
-	it('omits the right-hand strip when no actions or langPicker are provided', () => {
+	it('omits the right-hand strip when no actions or langPicker are provided', async () => {
 		const html = renderHeaderBar({
 			brandName: 'mcp-vertex',
 			version: '1.0.0',
@@ -31,7 +31,7 @@ describe('renderHeaderBar', () => {
 		expect(html).not.toContain('mv-header__strip');
 	});
 
-	it('includes the right-hand strip when actions or langPicker are provided', () => {
+	it('includes the right-hand strip when actions or langPicker are provided', async () => {
 		const html = renderHeaderBar({
 			brandName: 'mcp-vertex',
 			version: '1.0.0',
@@ -43,7 +43,7 @@ describe('renderHeaderBar', () => {
 		expect(html).toContain('Lang');
 	});
 
-	it('escapes HTML in brand name and version', () => {
+	it('escapes HTML in brand name and version', async () => {
 		const html = renderHeaderBar({ brandName: '<script>', version: 'a"b' });
 		expect(html).not.toContain('<script>');
 		expect(html).toContain('&lt;script&gt;');

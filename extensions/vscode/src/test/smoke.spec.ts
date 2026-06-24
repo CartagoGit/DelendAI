@@ -29,7 +29,7 @@ const overviewFixture: IOverview = {
 	recommendedNextAction: 'Call overview first.',
 };
 
-describe('VS Code extension smoke', () => {
+describe('VS Code extension smoke', async () => {
 	it('activates, stores the client and registers showOverview', async () => {
 		const stored = new Map<string, unknown>();
 		const subscriptions: Array<{ dispose(): void }> = [];
@@ -106,7 +106,7 @@ describe('VS Code extension smoke', () => {
 		expect(panels[0]?.webview.html).toContain('mcp-vertex_overview');
 	});
 
-	it('escapes overview content before rendering HTML', () => {
+	it('escapes overview content before rendering HTML', async () => {
 		const html = renderOverviewHtml({
 			...overviewFixture,
 			server: { name: '<mcp>&"vertex"', version: '0.1.0' },

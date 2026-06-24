@@ -26,7 +26,7 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-describe('state_health / state_repair [N15]', () => {
+describe('state_health / state_repair [N15]', async () => {
 	let dir = '';
 	let opts: IStateToolOptions;
 	beforeEach(() => {

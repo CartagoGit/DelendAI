@@ -13,8 +13,8 @@ const categories = {
 	],
 };
 
-describe('renderKnowledgeNavigator', () => {
-	it('renders a category for every key', () => {
+describe('renderKnowledgeNavigator', async () => {
+	it('renders a category for every key', async () => {
 		const html = renderKnowledgeNavigator({
 			categories,
 			onOpenEntry: 'mcp-vertex.openKnowledgeEntry',
@@ -28,7 +28,7 @@ describe('renderKnowledgeNavigator', () => {
 		expect(mcpIx).toBeLessThan(propIx);
 	});
 
-	it('escapes user-provided strings (no XSS)', () => {
+	it('escapes user-provided strings (no XSS)', async () => {
 		const evil = renderKnowledgeNavigator({
 			categories: {
 				'<script>alert(1)</script>': [
@@ -42,7 +42,7 @@ describe('renderKnowledgeNavigator', () => {
 		expect(evil).toContain('&lt;script&gt;');
 	});
 
-	it('shows a count badge per category', () => {
+	it('shows a count badge per category', async () => {
 		const html = renderKnowledgeNavigator({
 			categories,
 			onOpenEntry: 'cmd',
@@ -51,7 +51,7 @@ describe('renderKnowledgeNavigator', () => {
 		expect(html).toContain('<span class="mv-kn-count">2</span>');
 	});
 
-	it('renders a preview pane, even when empty', () => {
+	it('renders a preview pane, even when empty', async () => {
 		const empty = renderKnowledgeNavigator({
 			categories: {},
 			onOpenEntry: 'cmd',

@@ -36,7 +36,7 @@ const op = (path: string, content: string): IBatchOperation => ({
 	content,
 });
 
-describe('createFileSystemBatchWriter — happy path', () => {
+describe('createFileSystemBatchWriter — happy path', async () => {
 	it('writes every operation atomically and reports ok for each', async () => {
 		const writer = createFileSystemBatchWriter(workspace);
 		const result = await writer.writeAll([
@@ -72,7 +72,7 @@ describe('createFileSystemBatchWriter — happy path', () => {
 	});
 });
 
-describe('createFileSystemBatchWriter — rollback on failure', () => {
+describe('createFileSystemBatchWriter — rollback on failure', async () => {
 	it('leaves no partial files behind when a write in the middle fails', async () => {
 		// The third operation points at a path that is impossible to
 		// write (its parent is a regular file, not a directory). The
@@ -119,7 +119,7 @@ describe('createFileSystemBatchWriter — rollback on failure', () => {
 	});
 });
 
-describe('createFileSystemBatchWriter — serialization', () => {
+describe('createFileSystemBatchWriter — serialization', async () => {
 	it('serializes two concurrent batches so neither observes the other mid-write', async () => {
 		const writer = createFileSystemBatchWriter(workspace);
 

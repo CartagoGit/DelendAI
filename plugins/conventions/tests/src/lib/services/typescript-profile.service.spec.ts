@@ -17,7 +17,7 @@ import {
 	TYPESCRIPT_RULES,
 } from '../../../../src/lib/services/typescript-profile.service';
 
-describe('typescript-profile classifyPath', () => {
+describe('typescript-profile classifyPath', async () => {
 	it.each([
 		['packages/core/src/lib/tools/foo.tool.ts', 'tool'],
 		['packages/core/src/lib/services/bar.service.ts', 'service'],
@@ -39,24 +39,24 @@ describe('typescript-profile classifyPath', () => {
 		expect(classifyPath(path)).toBe(role);
 	});
 
-	it('returns "other" for empty or non-string input', () => {
+	it('returns "other" for empty or non-string input', async () => {
 		expect(classifyPath('')).toBe('other');
 		// @ts-expect-error — defensive runtime guard, not a typed call site.
 		expect(classifyPath(undefined)).toBe('other');
 	});
 
-	it('normalises Windows separators', () => {
+	it('normalises Windows separators', async () => {
 		expect(classifyPath('pkg\\src\\lib\\tools\\a.tool.ts')).toBe('tool');
 	});
 
-	it('exposes a non-empty ordered rule chain', () => {
+	it('exposes a non-empty ordered rule chain', async () => {
 		expect(TYPESCRIPT_RULES.length).toBeGreaterThan(0);
 		// `generated` must win over everything (first in the chain).
 		expect(TYPESCRIPT_RULES[0]?.name).toBe('generated');
 	});
 });
 
-describe('drift guard: plugin profile == lint-side engine', () => {
+describe('drift guard: plugin profile == lint-side engine', async () => {
 	const SAMPLE_PATHS = [
 		'packages/core/src/lib/tools/overview.tool.ts',
 		'packages/core/src/lib/services/metrics.service.ts',

@@ -4,7 +4,7 @@ import { McpStdioClient } from '@mcp-vertex/client';
 
 import { ProposalBoardProvider } from '../providers/proposal-board-provider';
 
-describe('ProposalBoardProvider', () => {
+describe('ProposalBoardProvider', async () => {
 	it('sorts proposals by operational status', async () => {
 		const provider = new ProposalBoardProvider(
 			McpStdioClient.fromTransport({

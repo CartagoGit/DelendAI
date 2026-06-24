@@ -39,7 +39,7 @@ const STUB_RESULT: IFetchIssueResult = {
 	tier: 'gh',
 };
 
-describe('issues_fetch', () => {
+describe('issues_fetch', async () => {
 	it('delegates to the injected client and returns issue + comments', async () => {
 		let receivedNumber: number | undefined;
 		const githubClient: IGithubClient = {

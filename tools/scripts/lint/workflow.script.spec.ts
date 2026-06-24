@@ -39,8 +39,8 @@ const ctx = (over: Partial<IWorkflowContext> = {}): IWorkflowContext => ({
 	...over,
 });
 
-describe('HandEditedIndexRule', () => {
-	it('flags a mixed commit that touched docs/proposals/index.json', () => {
+describe('HandEditedIndexRule', async () => {
+	it('flags a mixed commit that touched docs/proposals/index.json', async () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({
 				recentCommits: [
@@ -54,7 +54,7 @@ describe('HandEditedIndexRule', () => {
 		expect(findings[0]?.rule).toBe('hand-edited-index');
 	});
 
-	it('ignores historical mixed commits before workflow lint enforcement', () => {
+	it('ignores historical mixed commits before workflow lint enforcement', async () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({
 				recentCommits: [
@@ -68,7 +68,7 @@ describe('HandEditedIndexRule', () => {
 		expect(findings).toEqual([]);
 	});
 
-	it('allows a dedicated generated proposal index refresh commit', () => {
+	it('allows a dedicated generated proposal index refresh commit', async () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({
 				recentCommits: [
@@ -82,7 +82,7 @@ describe('HandEditedIndexRule', () => {
 		expect(findings).toEqual([]);
 	});
 
-	it('passes when no commit touched the index', () => {
+	it('passes when no commit touched the index', async () => {
 		const findings = HandEditedIndexRule.detect(
 			ctx({ recentCommits: [commit({ files: ['src/x.ts'] })] }),
 		);
@@ -90,8 +90,8 @@ describe('HandEditedIndexRule', () => {
 	});
 });
 
-describe('PushFromMainRule', () => {
-	it('flags a diverged local/remote head', () => {
+describe('PushFromMainRule', async () => {
+	it('flags a diverged local/remote head', async () => {
 		const findings = PushFromMainRule.detect(
 			ctx({ upstream: { localHead: 'aaaa', remoteHead: 'bbbb' } }),
 		);
@@ -99,34 +99,34 @@ describe('PushFromMainRule', () => {
 		expect(findings[0]?.rule).toBe('push-from-main');
 	});
 
-	it('passes when local and remote heads match', () => {
+	it('passes when local and remote heads match', async () => {
 		const findings = PushFromMainRule.detect(
 			ctx({ upstream: { localHead: 'aaaa', remoteHead: 'aaaa' } }),
 		);
 		expect(findings).toEqual([]);
 	});
 
-	it('passes when there is no upstream', () => {
+	it('passes when there is no upstream', async () => {
 		expect(PushFromMainRule.detect(ctx({ upstream: null }))).toEqual([]);
 	});
 });
 
-describe('placeholder rules detect nothing (must not turn the gate red)', () => {
-	it('SyncRaceRule emits no findings', () => {
+describe('placeholder rules detect nothing (must not turn the gate red)', async () => {
+	it('SyncRaceRule emits no findings', async () => {
 		expect(SyncRaceRule.detect(ctx())).toEqual([]);
 	});
 
-	it('AutoWorkLoopRule emits no findings', () => {
+	it('AutoWorkLoopRule emits no findings', async () => {
 		expect(AutoWorkLoopRule.detect(ctx())).toEqual([]);
 	});
 });
 
-describe('lintWorkflow (engine over the default rule chain)', () => {
-	it('returns no findings for a clean context', () => {
+describe('lintWorkflow (engine over the default rule chain)', async () => {
+	it('returns no findings for a clean context', async () => {
 		expect(lintWorkflow(ctx())).toEqual([]);
 	});
 
-	it('aggregates findings across rules', () => {
+	it('aggregates findings across rules', async () => {
 		const findings = lintWorkflow(
 			ctx({
 				recentCommits: [
@@ -141,19 +141,19 @@ describe('lintWorkflow (engine over the default rule chain)', () => {
 		expect(ids).toEqual(['hand-edited-index', 'push-from-main']);
 	});
 
-	it('honours an injected rule subset', () => {
+	it('honours an injected rule subset', async () => {
 		expect(lintWorkflow(ctx(), [SyncRaceRule, AutoWorkLoopRule])).toEqual(
 			[],
 		);
 	});
 });
 
-describe('formatReport', () => {
-	it('renders a clean line when there are no findings', () => {
+describe('formatReport', async () => {
+	it('renders a clean line when there are no findings', async () => {
 		expect(formatReport([])).toBe('workflow: 0 findings\n');
 	});
 
-	it('renders one line per finding', () => {
+	it('renders one line per finding', async () => {
 		const out = formatReport([
 			{ rule: 'push-from-main', detail: 'diverged' },
 		]);
@@ -162,8 +162,8 @@ describe('formatReport', () => {
 	});
 });
 
-describe('DEFAULT_WORKFLOW_RULES', () => {
-	it('keeps all four rule ids wired (open/closed: placeholders stay)', () => {
+describe('DEFAULT_WORKFLOW_RULES', async () => {
+	it('keeps all four rule ids wired (open/closed: placeholders stay)', async () => {
 		expect(DEFAULT_WORKFLOW_RULES.map((r) => r.id).sort()).toEqual([
 			'auto-work-loop',
 			'hand-edited-index',

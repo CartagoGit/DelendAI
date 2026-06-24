@@ -33,7 +33,7 @@ beforeEach(async () => {
 	}
 });
 
-describe('searchWorkspace — context lines (f00028 S1)', () => {
+describe('searchWorkspace — context lines (f00028 S1)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-ctx-'));
@@ -66,7 +66,7 @@ describe('searchWorkspace — context lines (f00028 S1)', () => {
 	});
 });
 
-describe('searchWorkspace — rg backend (f00028 S1)', () => {
+describe('searchWorkspace — rg backend (f00028 S1)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-rg-'));

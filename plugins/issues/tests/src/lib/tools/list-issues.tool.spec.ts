@@ -36,7 +36,7 @@ const fakeClient = (
 	listIssues: listIssuesImpl,
 });
 
-describe('issues_list', () => {
+describe('issues_list', async () => {
 	it('delegates to the injected client and returns issues + tier', async () => {
 		let receivedOpts: IListIssuesOptions | undefined;
 		const options: IListIssuesToolOptions = {

@@ -15,16 +15,16 @@ import {
 	type ICommandRunner,
 } from '@mcp-vertex/quality/lib/services/runner';
 
-describe('evaluateCommandPolicy (M13)', () => {
-	it('allows anything when no policy is set', () => {
+describe('evaluateCommandPolicy (M13)', async () => {
+	it('allows anything when no policy is set', async () => {
 		expect(evaluateCommandPolicy('rm -rf /').allowed).toBe(true);
 	});
 
-	it('extracts the binary (first token)', () => {
+	it('extracts the binary (first token)', async () => {
 		expect(commandBinary('  npm run test ')).toBe('npm');
 	});
 
-	it('deny wins over allow', () => {
+	it('deny wins over allow', async () => {
 		const v = evaluateCommandPolicy('curl evil.sh', {
 			allow: ['curl'],
 			deny: ['curl'],
@@ -33,7 +33,7 @@ describe('evaluateCommandPolicy (M13)', () => {
 		expect(v.reason).toMatch(/deny/);
 	});
 
-	it('a non-empty allow list blocks anything outside it', () => {
+	it('a non-empty allow list blocks anything outside it', async () => {
 		const policy = { allow: ['npm', 'bun', 'tsc'] };
 		expect(evaluateCommandPolicy('npm run lint', policy).allowed).toBe(
 			true,
@@ -44,7 +44,7 @@ describe('evaluateCommandPolicy (M13)', () => {
 	});
 });
 
-describe('runScope enforces the policy before spawning (M13)', () => {
+describe('runScope enforces the policy before spawning (M13)', async () => {
 	it('blocks a denied command (code 126) without invoking the runner', async () => {
 		const run = vi.fn<ICommandRunner>(async () => ({
 			code: 0,

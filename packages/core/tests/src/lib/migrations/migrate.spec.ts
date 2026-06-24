@@ -26,8 +26,8 @@ const migrators: Record<number, IMigrator> = {
 	2: (d) => ({ ...d, tags: [] }),
 };
 
-describe('runMigrations (M14)', () => {
-	it('applies the chain in order and stamps the version', () => {
+describe('runMigrations (M14)', async () => {
+	it('applies the chain in order and stamps the version', async () => {
 		const r = runMigrations(
 			{ version: 1, name: 'x', items: [1] },
 			migrators,
@@ -43,32 +43,32 @@ describe('runMigrations (M14)', () => {
 		});
 	});
 
-	it('is a no-op when already at the target', () => {
+	it('is a no-op when already at the target', async () => {
 		const r = runMigrations({ version: 3, title: 'x' }, migrators, 3);
 		expect(r.applied).toEqual([]);
 		expect(r.data).toEqual({ version: 3, title: 'x' });
 	});
 
-	it('refuses a downgrade', () => {
+	it('refuses a downgrade', async () => {
 		expect(() => runMigrations({ version: 5 }, migrators, 3)).toThrow(
 			MigrationError,
 		);
 	});
 
-	it('throws on an incomplete migrator chain', () => {
+	it('throws on an incomplete migrator chain', async () => {
 		expect(() => runMigrations({ version: 1 }, { 1: (d) => d }, 3)).toThrow(
 			/no migrator from version 2/,
 		);
 	});
 
-	it('rejects an invalid version', () => {
+	it('rejects an invalid version', async () => {
 		expect(() => runMigrations({ version: 0 }, migrators, 3)).toThrow(
 			MigrationError,
 		);
 	});
 });
 
-describe('migrateJsonFile (M14)', () => {
+describe('migrateJsonFile (M14)', async () => {
 	let dir = '';
 	let path = '';
 	beforeEach(() => {

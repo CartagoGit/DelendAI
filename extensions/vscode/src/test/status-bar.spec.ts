@@ -25,7 +25,7 @@ const createItem = (): IStatusBarItem & {
 	return item;
 };
 
-describe('McpVertexStatusBar', () => {
+describe('McpVertexStatusBar', async () => {
 	it('shows tool, proposal, token and agent segments', async () => {
 		const item = createItem();
 		const bar = new McpVertexStatusBar(

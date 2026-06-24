@@ -8,18 +8,18 @@ import { resolvePatternCatalog } from '@mcp-vertex/core/lib/bootstrap/pattern-ca
 import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('resolvePatternCatalog', () => {
-	it('returns the hardcoded catalog when no overrides are passed', () => {
+describe('resolvePatternCatalog', async () => {
+	it('returns the hardcoded catalog when no overrides are passed', async () => {
 		const merged = resolvePatternCatalog();
 		expect(merged).toBe(PROJECT_PATTERN_CATALOG);
 	});
 
-	it('is additive: an override on a built-in type keeps the hardcoded tools/plugins', () => {
+	it('is additive: an override on a built-in type keeps the hardcoded tools/plugins', async () => {
 		const merged = resolvePatternCatalog({
 			library: {
 				type: 'library',
@@ -51,7 +51,7 @@ describe('resolvePatternCatalog', () => {
 		expect(lib.knowledgeHints).toContain('Pin the public API.');
 	});
 
-	it('accepts a brand-new project type (host-defined)', () => {
+	it('accepts a brand-new project type (host-defined)', async () => {
 		const merged = resolvePatternCatalog({
 			'data-pipeline': {
 				type: 'data-pipeline',
@@ -72,9 +72,9 @@ describe('resolvePatternCatalog', () => {
 	});
 });
 
-describe('pattern overrides flow into buildServerBlueprint and recommendServerPlan', () => {
-	const analyse = () =>
-		analyzeProject(
+describe('pattern overrides flow into buildServerBlueprint and recommendServerPlan', async () => {
+	const analyse = async () =>
+		await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: '@acme/lib',
@@ -84,8 +84,8 @@ describe('pattern overrides flow into buildServerBlueprint and recommendServerPl
 			}),
 		);
 
-	it('recommendServerPlan picks up the override tools + plugins', () => {
-		const plan = recommendServerPlan(analyse(), {
+	it('recommendServerPlan picks up the override tools + plugins', async () => {
+		const plan = await recommendServerPlan(await analyse(), {
 			patternOverrides: {
 				library: {
 					type: 'library',
@@ -104,8 +104,8 @@ describe('pattern overrides flow into buildServerBlueprint and recommendServerPl
 		expect(plan.notes).toContain('Pin the public API.');
 	});
 
-	it('buildServerBlueprint carries the override knowledge hints into notes', () => {
-		const bp = buildServerBlueprint(analyse(), {
+	it('buildServerBlueprint carries the override knowledge hints into notes', async () => {
+		const bp = buildServerBlueprint(await analyse(), {
 			patternOverrides: {
 				library: {
 					type: 'library',
@@ -124,7 +124,7 @@ describe('pattern overrides flow into buildServerBlueprint and recommendServerPl
 		expect(bp.notes).toContain('Pin the public API.');
 	});
 
-	it('host-defined type flows through when the analysis is forced to it', () => {
+	it('host-defined type flows through when the analysis is forced to it', async () => {
 		// Project types come from analyzeProject; for a brand-new type to
 		// match, the analysis must classify the project as that type. We
 		// can't forge that from a real analyzeProject, but we can verify

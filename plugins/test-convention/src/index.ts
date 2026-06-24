@@ -50,7 +50,7 @@ export default definePlugin({
 	describe:
 		'Publica la convención canónica de tests del repo (extensión, layout, mock API, cobertura) y herramientas para sugerir ubicación de specs y auditar drift contra el árbol real.',
 	optionsSchema: OptionsSchema,
-	register(ctx) {
+	async register(ctx) {
 		// r00003 S9-residual (SOLID L + I): parse ctx.options through
 		// the schema declared above before forwarding downstream.
 		// The previous code bypassed the schema with an unsafe cast
@@ -72,7 +72,7 @@ export default definePlugin({
 			opts as Parameters<typeof mergeConvention>[0],
 		);
 		const reader = createWorkspaceFileReader(ctx.workspace);
-		const runner: IRunnerInfo = detectRunner(reader);
+		const runner: IRunnerInfo = await detectRunner(reader);
 		return {
 			tools: [
 				buildGetConvention({

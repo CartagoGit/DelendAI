@@ -68,8 +68,8 @@ A diferencia de \`persistQueue\` (que usa \`tmp + rename\` correctamente).
 **Nota final: 8/10 — Proyecto de alta calidad con deuda técnica puntual.**
 `;
 
-describe('parseAuditBody', () => {
-	it('extracts the source identity from a conventional filename', () => {
+describe('parseAuditBody', async () => {
+	it('extracts the source identity from a conventional filename', async () => {
 		const doc = parseAuditBody(
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
@@ -80,7 +80,7 @@ describe('parseAuditBody', () => {
 		expect(doc.slug).toContain('14-06-2026');
 	});
 
-	it('captures the executive summary (first non-empty paragraph block)', () => {
+	it('captures the executive summary (first non-empty paragraph block)', async () => {
 		const doc = parseAuditBody(
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
@@ -89,7 +89,7 @@ describe('parseAuditBody', () => {
 		expect(doc.summary).toContain('plugin-first');
 	});
 
-	it('classifies findings by their section header severity', () => {
+	it('classifies findings by their section header severity', async () => {
 		const doc = parseAuditBody(
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
@@ -108,7 +108,7 @@ describe('parseAuditBody', () => {
 		);
 	});
 
-	it('extracts the per-dimension scoring table', () => {
+	it('extracts the per-dimension scoring table', async () => {
 		const doc = parseAuditBody(
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
@@ -127,7 +127,7 @@ describe('parseAuditBody', () => {
 		expect(generic?.score).toBe(6);
 	});
 
-	it('captures the final note', () => {
+	it('captures the final note', async () => {
 		const doc = parseAuditBody(
 			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
@@ -135,14 +135,14 @@ describe('parseAuditBody', () => {
 		expect(doc.note).toContain('8/10');
 	});
 
-	it('falls back gracefully on an unrecognised filename', () => {
+	it('falls back gracefully on an unrecognised filename', async () => {
 		const doc = parseAuditBody('random.md', SAMPLE_AUDIT);
 		expect(doc.source.host).toBe('unknown');
 		expect(doc.source.model).toBe('unknown');
 	});
 });
 
-describe('parseAuditFiles', () => {
+describe('parseAuditFiles', async () => {
 	it('skips duplicate paths and tolerates per-file parse errors', async () => {
 		const { parseAuditFiles } = await import(
 			'../../../../src/lib/services/parse-audit.service'

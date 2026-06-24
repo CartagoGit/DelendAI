@@ -30,7 +30,7 @@ import type {
  *   3. Structurally compatible — fields that overlap (none today,
  *      by design) MUST still satisfy both shapes.
  */
-describe('IMcpVertexHostConfig ISP segregation', () => {
+describe('IMcpVertexHostConfig ISP segregation', async () => {
 	const metadata: IMcpVertexProjectMetadata = {
 		name: 'mcp-vertex-host',
 		version: '1.0.0',
@@ -71,13 +71,13 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		register: async () => {},
 	};
 
-	describe('IHostIdentity (slice)', () => {
-		it('carries metadata + namespacePrefix', () => {
+	describe('IHostIdentity (slice)', async () => {
+		it('carries metadata + namespacePrefix', async () => {
 			const slice: IHostIdentity = { metadata, namespacePrefix: 'acme' };
 			expect(slice.metadata.name).toBe('mcp-vertex-host');
 			expect(slice.namespacePrefix).toBe('acme');
 		});
-		it('is assignable to the composite IMcpVertexHostConfig (LSP)', () => {
+		it('is assignable to the composite IMcpVertexHostConfig (LSP)', async () => {
 			const slice: IHostIdentity = { metadata };
 			const composite: IMcpVertexHostConfig = {
 				...slice,
@@ -88,8 +88,8 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		});
 	});
 
-	describe('IHostPaths (slice)', () => {
-		it('carries workspace + corePaths + keepLegacy', () => {
+	describe('IHostPaths (slice)', async () => {
+		it('carries workspace + corePaths + keepLegacy', async () => {
 			const slice: IHostPaths = {
 				workspace,
 				corePaths,
@@ -99,7 +99,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 			expect(slice.corePaths?.cacheDir).toBe('/cache');
 			expect(slice.keepLegacy).toBe(true);
 		});
-		it('is assignable to the composite (LSP)', () => {
+		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostPaths = { workspace };
 			const composite: IMcpVertexHostConfig = {
 				...slice,
@@ -109,8 +109,8 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		});
 	});
 
-	describe('IHostContent (slice)', () => {
-		it('carries knowledge + skills + validationMatrix', () => {
+	describe('IHostContent (slice)', async () => {
+		it('carries knowledge + skills + validationMatrix', async () => {
 			// Use the typed fixture directly to keep the chain narrow:
 			// exactOptionalPropertyTypes + Record index access
 			// interact awkwardly otherwise.
@@ -122,7 +122,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 			const fullScope = validationMatrix.scopes.full;
 			expect(fullScope?.[0]?.command).toBe('bun test');
 		});
-		it('is assignable to the composite (LSP)', () => {
+		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostContent = { knowledge: [knowledgeEntry] };
 			const composite: IMcpVertexHostConfig = {
 				...slice,
@@ -133,8 +133,8 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		});
 	});
 
-	describe('IHostObservability (slice)', () => {
-		it('carries statusCollectors + metricsRegistry + lifecycle hooks', () => {
+	describe('IHostObservability (slice)', async () => {
+		it('carries statusCollectors + metricsRegistry + lifecycle hooks', async () => {
 			const slice: IHostObservability = {
 				statusCollectors: [statusCollector],
 				onToolStart: (name) => {
@@ -144,7 +144,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 			expect(slice.statusCollectors?.[0]?.id).toBe('engine');
 			expect(typeof slice.onToolStart).toBe('function');
 		});
-		it('is assignable to the composite (LSP)', () => {
+		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostObservability = {
 				statusCollectors: [statusCollector],
 			};
@@ -157,8 +157,8 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		});
 	});
 
-	describe('IHostRegistrations (slice)', () => {
-		it('carries extraTools + extraPrompts + extraResources', () => {
+	describe('IHostRegistrations (slice)', async () => {
+		it('carries extraTools + extraPrompts + extraResources', async () => {
 			const slice: IHostRegistrations = {
 				extraTools: [toolRegistration],
 				extraPrompts: [promptRegistration],
@@ -168,7 +168,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 			expect(slice.extraPrompts?.[0]?.id).toBe('p1');
 			expect(slice.extraResources?.[0]?.id).toBe('r1');
 		});
-		it('is assignable to the composite (LSP)', () => {
+		it('is assignable to the composite (LSP)', async () => {
 			const slice: IHostRegistrations = {
 				extraTools: [toolRegistration],
 			};
@@ -181,8 +181,8 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 		});
 	});
 
-	describe('IMcpVertexHostConfig composite (Solid-LSP)', () => {
-		it('a minimal host config satisfies the contract (only required fields)', () => {
+	describe('IMcpVertexHostConfig composite (Solid-LSP)', async () => {
+		it('a minimal host config satisfies the contract (only required fields)', async () => {
 			// The minimum a host MUST inject: identity + paths. The
 			// rest is optional — this proves the slice-based design
 			// pays off (no test needs to fake a metrics registry).
@@ -191,7 +191,7 @@ describe('IMcpVertexHostConfig ISP segregation', () => {
 			expect(minimal.workspace.root).toBe('/repo');
 		});
 
-		it('the full composite carries every sub-interface field', () => {
+		it('the full composite carries every sub-interface field', async () => {
 			const full: IMcpVertexHostConfig = {
 				metadata,
 				namespacePrefix: 'full',

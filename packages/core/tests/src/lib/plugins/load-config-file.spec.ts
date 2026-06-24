@@ -11,14 +11,14 @@ import {
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
 
-describe('parseConfigFile', () => {
-	it('returns {} for missing or invalid JSON', () => {
+describe('parseConfigFile', async () => {
+	it('returns {} for missing or invalid JSON', async () => {
 		expect(parseConfigFile(undefined)).toEqual({});
 		expect(parseConfigFile('not json')).toEqual({});
 		expect(parseConfigFile('[1,2]')).toEqual({});
 	});
 
-	it('reads per-plugin options and prefix', () => {
+	it('reads per-plugin options and prefix', async () => {
 		const config = parseConfigFile(
 			JSON.stringify({
 				docsDir: 'docs/x',
@@ -33,7 +33,7 @@ describe('parseConfigFile', () => {
 		expect(pluginConfigFor(config, 'missing')).toEqual({});
 	});
 
-	it('accepts keepLegacy as an optional global scaffold default', () => {
+	it('accepts keepLegacy as an optional global scaffold default', async () => {
 		const config = parseConfigFile(JSON.stringify({ keepLegacy: true }));
 		expect(config.keepLegacy).toBe(true);
 		expect(
@@ -42,7 +42,7 @@ describe('parseConfigFile', () => {
 	});
 });
 
-describe('assembleCliConfig + config file', () => {
+describe('assembleCliConfig + config file', async () => {
 	const fakePlugin = {
 		name: 'demo',
 		register: (ctx: {
@@ -71,7 +71,7 @@ describe('assembleCliConfig + config file', () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: () =>
+			readFile: async () =>
 				JSON.stringify({
 					plugins: { demo: { prefix: 'dd', options: { k: 'v' } } },
 				}),
@@ -89,7 +89,7 @@ describe('assembleCliConfig + config file', () => {
 			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
 			{
 				import: async () => ({ default: fakePlugin }),
-				readFile: () => undefined,
+				readFile: async () => undefined,
 			},
 		);
 		expect(missing.config.keepLegacy).toBe(false);
@@ -98,7 +98,7 @@ describe('assembleCliConfig + config file', () => {
 			parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd'),
 			{
 				import: async () => ({ default: fakePlugin }),
-				readFile: () => JSON.stringify({ keepLegacy: true }),
+				readFile: async () => JSON.stringify({ keepLegacy: true }),
 			},
 		);
 		expect(explicit.config.keepLegacy).toBe(true);
@@ -115,7 +115,7 @@ describe('assembleCliConfig + config file', () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
 		});
 		expect(config.corePaths?.cacheDir).toBe('.cli');
 	});
@@ -127,7 +127,7 @@ describe('assembleCliConfig + config file', () => {
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: () => JSON.stringify({ cacheDir: '.fromfile' }),
+			readFile: async () => JSON.stringify({ cacheDir: '.fromfile' }),
 		});
 		expect(config.corePaths?.cacheDir).toBe('.fromfile');
 	});
@@ -136,7 +136,7 @@ describe('assembleCliConfig + config file', () => {
 		const args = parseCliArgs(['--workspace=/ws'], '/cwd');
 		const { config, loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: () =>
+			readFile: async () =>
 				JSON.stringify({
 					plugins: { demo: { prefix: 'dd' } },
 				}),
@@ -155,7 +155,7 @@ describe('assembleCliConfig + config file', () => {
 		);
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: fakePlugin }),
-			readFile: () =>
+			readFile: async () =>
 				JSON.stringify({
 					plugins: { demo: { prefix: 'dd' } },
 				}),
@@ -164,8 +164,8 @@ describe('assembleCliConfig + config file', () => {
 	});
 });
 
-describe('diagnoseConfigFile', () => {
-	it('reports no issues for a missing or valid file', () => {
+describe('diagnoseConfigFile', async () => {
+	it('reports no issues for a missing or valid file', async () => {
 		expect(diagnoseConfigFile(undefined)).toEqual({
 			present: false,
 			issues: [],
@@ -174,7 +174,7 @@ describe('diagnoseConfigFile', () => {
 			diagnoseConfigFile(JSON.stringify({ cacheDir: '.x' })).issues,
 		).toEqual([]);
 	});
-	it('reports invalid JSON and unknown keys', () => {
+	it('reports invalid JSON and unknown keys', async () => {
 		expect(diagnoseConfigFile('nope').issues[0]).toMatch(/invalid JSON/);
 		expect(
 			diagnoseConfigFile(JSON.stringify({ bogus: 1 })).issues.length,
@@ -182,7 +182,7 @@ describe('diagnoseConfigFile', () => {
 	});
 });
 
-describe('runDoctor', () => {
+describe('runDoctor', async () => {
 	const demoPlugin = { name: 'demo', register: () => ({}) };
 	it('reports loaded plugins, errors and counts without starting stdio', async () => {
 		const args = parseCliArgs(
@@ -194,7 +194,7 @@ describe('runDoctor', () => {
 				if (specifier.includes('demo')) return { default: demoPlugin };
 				throw new Error('not found');
 			},
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		expect(report.plugins.loaded).toEqual(['demo']);
 		expect(report.plugins.errors.length).toBe(1);
@@ -203,7 +203,7 @@ describe('runDoctor', () => {
 	});
 });
 
-describe('plugin optionsSchema validation', () => {
+describe('plugin optionsSchema validation', async () => {
 	const strictPlugin = {
 		name: 'strict',
 		optionsSchema: {
@@ -224,7 +224,7 @@ describe('plugin optionsSchema validation', () => {
 		);
 		const { loadResult } = await assembleCliConfig(args, {
 			import: async () => ({ default: strictPlugin }),
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		expect(loadResult.loaded).toEqual([]);
 		expect(loadResult.errors[0]?.message).toMatch(/rejected its options/);

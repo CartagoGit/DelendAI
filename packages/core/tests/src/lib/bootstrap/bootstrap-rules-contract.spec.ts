@@ -127,26 +127,26 @@ const RESULT_RULE_TABLES = [
 	(...args: never[]) => unknown
 >[];
 
-describe('bootstrap rule tables — id+priority contract (7 tables)', () => {
+describe('bootstrap rule tables — id+priority contract (7 tables)', async () => {
 	for (const table of ID_RULE_TABLES) {
-		describe(table.module, () => {
-			it('exposes a non-empty DEFAULT_X_RULES array', () => {
+		describe(table.module, async () => {
+			it('exposes a non-empty DEFAULT_X_RULES array', async () => {
 				expect(Array.isArray(table.defaultRules)).toBe(true);
 				expect(table.defaultRules.length).toBeGreaterThan(0);
 			});
 
-			it('every rule carries a numeric priority (sortable)', () => {
+			it('every rule carries a numeric priority (sortable)', async () => {
 				for (const rule of table.defaultRules) {
 					expect(typeof rule.priority).toBe('number');
 					expect(Number.isFinite(rule.priority)).toBe(true);
 				}
 			});
 
-			it('exposes a matcher function (default + custom rules args)', () => {
+			it('exposes a matcher function (default + custom rules args)', async () => {
 				expect(typeof table.matcher).toBe('function');
 			});
 
-			it('every rule carries a unique id (the strict contract — no tolerated duplicates)', () => {
+			it('every rule carries a unique id (the strict contract — no tolerated duplicates)', async () => {
 				// The cursor case is now modelled as ONE rule with a
 				// `paths: ['.cursorrules', '.cursor']` array, not two
 				// rules with the same id. The unique-id contract holds
@@ -158,27 +158,27 @@ describe('bootstrap rule tables — id+priority contract (7 tables)', () => {
 	}
 });
 
-describe('bootstrap rule tables — result+priority contract (1 table: project-type)', () => {
+describe('bootstrap rule tables — result+priority contract (1 table: project-type)', async () => {
 	for (const table of RESULT_RULE_TABLES) {
-		describe(table.module, () => {
-			it('exposes a non-empty DEFAULT_PROJECT_TYPE_RULES array', () => {
+		describe(table.module, async () => {
+			it('exposes a non-empty DEFAULT_PROJECT_TYPE_RULES array', async () => {
 				expect(table.defaultRules.length).toBeGreaterThan(0);
 			});
 
-			it('every rule carries a non-empty string result', () => {
+			it('every rule carries a non-empty string result', async () => {
 				for (const rule of table.defaultRules) {
 					expect(typeof rule.result).toBe('string');
 					expect(rule.result.length).toBeGreaterThan(0);
 				}
 			});
 
-			it('every rule carries a numeric priority', () => {
+			it('every rule carries a numeric priority', async () => {
 				for (const rule of table.defaultRules) {
 					expect(typeof rule.priority).toBe('number');
 				}
 			});
 
-			it('exposes a matcher function', () => {
+			it('exposes a matcher function', async () => {
 				expect(typeof table.matcher).toBe('function');
 			});
 		});
@@ -191,8 +191,8 @@ describe('bootstrap rule tables — result+priority contract (1 table: project-t
  * here is silently broken until something downstream looks up the
  * new concern.
  */
-describe('bootstrap rule tables — drift guard', () => {
-	it('exactly 8 rule tables are registered in this spec', () => {
+describe('bootstrap rule tables — drift guard', async () => {
+	it('exactly 8 rule tables are registered in this spec', async () => {
 		expect(ID_RULE_TABLES.length + RESULT_RULE_TABLES.length).toBe(8);
 	});
 });

@@ -29,8 +29,8 @@ const recordingRunner = (
 	};
 };
 
-describe('parseWorktreeList', () => {
-	it('parses branch, detached and locked entries', () => {
+describe('parseWorktreeList', async () => {
+	it('parses branch, detached and locked entries', async () => {
 		const raw = [
 			'worktree /repo',
 			'HEAD aaa111',
@@ -67,12 +67,12 @@ describe('parseWorktreeList', () => {
 		});
 	});
 
-	it('returns an empty array for empty output', () => {
+	it('returns an empty array for empty output', async () => {
 		expect(parseWorktreeList('')).toEqual([]);
 	});
 });
 
-describe('runAgentWorktreeEngine — create', () => {
+describe('runAgentWorktreeEngine — create', async () => {
 	it('creates a new branch + worktree when neither exists', async () => {
 		const { run, calls } = recordingRunner((args) => {
 			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
@@ -187,7 +187,7 @@ describe('runAgentWorktreeEngine — create', () => {
 	});
 });
 
-describe('runAgentWorktreeEngine — remove', () => {
+describe('runAgentWorktreeEngine — remove', async () => {
 	it('removes a worktree by agent name', async () => {
 		const { run, calls } = recordingRunner(() => ok(''));
 		const result = await runAgentWorktreeEngine(
@@ -237,7 +237,7 @@ describe('runAgentWorktreeEngine — remove', () => {
 	});
 });
 
-describe('runAgentWorktreeEngine — list', () => {
+describe('runAgentWorktreeEngine — list', async () => {
 	it('returns parsed entries', async () => {
 		const { run } = recordingRunner(() =>
 			ok(
@@ -286,7 +286,7 @@ describe('runAgentWorktreeEngine — list', () => {
  * mutation through the injected `IWorktreeSyncCoordinator`, so a host can
  * serialize it against `syncProposalRegistry.run()`.
  */
-describe('runAgentWorktreeEngine — sync coordinator (CONC-1)', () => {
+describe('runAgentWorktreeEngine — sync coordinator (CONC-1)', async () => {
 	it('runs `worktree add` INSIDE the injected coordinator (create)', async () => {
 		const order: string[] = [];
 		const { run } = recordingRunner((args) => {

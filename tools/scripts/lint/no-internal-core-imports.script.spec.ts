@@ -8,8 +8,8 @@ import {
 	scanText,
 } from './no-internal-core-imports.script';
 
-describe('no-internal-core-imports.script', () => {
-	it('allows the public core entrypoint', () => {
+describe('no-internal-core-imports.script', async () => {
+	it('allows the public core entrypoint', async () => {
 		const findings = scanText(
 			'import { runCli } from "@mcp-vertex/core/public";\n',
 			'/repo/packages/cli/src/index.ts',
@@ -18,7 +18,7 @@ describe('no-internal-core-imports.script', () => {
 		expect(findings).toHaveLength(0);
 	});
 
-	it('flags package imports from core lib internals', () => {
+	it('flags package imports from core lib internals', async () => {
 		const findings = scanText(
 			'import { x } from "@mcp-vertex/core/lib/plugins";\n',
 			'/repo/packages/cli/src/index.ts',
@@ -28,7 +28,7 @@ describe('no-internal-core-imports.script', () => {
 		expect(findings[0]?.reason).toContain('@mcp-vertex/core/public');
 	});
 
-	it('flags package imports from core dist output', () => {
+	it('flags package imports from core dist output', async () => {
 		const findings = scanText(
 			'export { x } from "@mcp-vertex/core/dist/public";\n',
 			'/repo/packages/cli/src/index.ts',
@@ -37,7 +37,7 @@ describe('no-internal-core-imports.script', () => {
 		expect(findings[0]?.specifier).toBe('@mcp-vertex/core/dist/public');
 	});
 
-	it('flags relative imports into packages/core/src/lib', () => {
+	it('flags relative imports into packages/core/src/lib', async () => {
 		const findings = scanText(
 			'import { x } from "../../../packages/core/src/lib/bootstrap";\n',
 			'/repo/packages/cli/src/index.ts',
@@ -46,7 +46,7 @@ describe('no-internal-core-imports.script', () => {
 		expect(findings[0]?.specifier).toContain('packages/core/src/lib');
 	});
 
-	it('flags relative imports through ../../core/src/lib', () => {
+	it('flags relative imports through ../../core/src/lib', async () => {
 		const findings = scanText(
 			'import { x } from "../../core/src/lib/bootstrap";\n',
 			'/repo/packages/cli/src/index.ts',
@@ -67,7 +67,7 @@ describe('no-internal-core-imports.script', () => {
 		await rm(root, { recursive: true });
 	});
 
-	it('formatReport prints actionable rows', () => {
+	it('formatReport prints actionable rows', async () => {
 		const out = formatReport([
 			{
 				absPath: '/repo/packages/cli/src/index.ts',

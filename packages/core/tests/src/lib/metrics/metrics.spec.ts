@@ -17,8 +17,8 @@ import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/crea
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolOk } from '@mcp-vertex/core/public';
 
-describe('createMetricsRegistry (M12)', () => {
-	it('aggregates calls, errors, latency and bytes per tool', () => {
+describe('createMetricsRegistry (M12)', async () => {
+	it('aggregates calls, errors, latency and bytes per tool', async () => {
 		const r = createMetricsRegistry();
 		r.record('a', { ms: 10, bytes: 100, isError: false });
 		r.record('a', { ms: 30, bytes: 50, isError: true });
@@ -40,14 +40,14 @@ describe('createMetricsRegistry (M12)', () => {
 		});
 	});
 
-	it('reset zeroes the counters', () => {
+	it('reset zeroes the counters', async () => {
 		const r = createMetricsRegistry();
 		r.record('a', { ms: 1, bytes: 1, isError: false });
 		r.reset();
 		expect(r.snapshot().totals.calls).toBe(0);
 	});
 
-	it('estimateResultBytes sums text content lengths', () => {
+	it('estimateResultBytes sums text content lengths', async () => {
 		expect(
 			estimateResultBytes({
 				content: [
@@ -61,7 +61,7 @@ describe('createMetricsRegistry (M12)', () => {
 	});
 });
 
-describe('metrics tool — persist snapshots (M29)', () => {
+describe('metrics tool — persist snapshots (M29)', async () => {
 	let dir = '';
 	const capture = async (persistDir?: string) => {
 		const registry = createMetricsRegistry();
@@ -119,7 +119,7 @@ describe('metrics tool — persist snapshots (M29)', () => {
 	});
 });
 
-describe('tool metrics instrumentation over the protocol (M12)', () => {
+describe('tool metrics instrumentation over the protocol (M12)', async () => {
 	it('records a tool call assembled with a metricsRegistry', async () => {
 		const registry = createMetricsRegistry();
 		const pingTool: IToolRegistration = {

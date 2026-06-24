@@ -6,11 +6,11 @@ export interface IDetectResult {
 	readonly reason: string;
 }
 
-const readDeps = (
+const readDeps = async (
 	reader: IFileReader,
 	areaDir: string,
-): Record<string, string> => {
-	const raw = reader.readFile(joinRel(areaDir, 'package.json'));
+): Promise<Record<string, string>> => {
+	const raw = await reader.readFile(joinRel(areaDir, 'package.json'));
 	if (raw === undefined) return {};
 	try {
 		const pkg = JSON.parse(raw) as {
@@ -23,13 +23,13 @@ const readDeps = (
 	}
 };
 
-const hasTypeScript = (
+const hasTypeScript = async (
 	reader: IFileReader,
 	areaDir: string,
 	deps: Record<string, string>,
-): boolean =>
-	reader.exists(joinRel(areaDir, 'tsconfig.json')) ||
-	reader.exists(joinRel(areaDir, 'tsconfig.app.json')) ||
+): Promise<boolean> =>
+	(await reader.exists(joinRel(areaDir, 'tsconfig.json'))) ||
+	(await reader.exists(joinRel(areaDir, 'tsconfig.app.json'))) ||
 	'typescript' in deps;
 
 /**
@@ -37,15 +37,15 @@ const hasTypeScript = (
  * Framework wins over language; falls back to vanilla-ts/js. Pure over
  * the injected reader so it is fully testable.
  */
-export const detectPresetForArea = (
+export const detectPresetForArea = async (
 	reader: IFileReader,
 	areaDir: string,
-): IDetectResult => {
-	const deps = readDeps(reader, areaDir);
-	const ts = hasTypeScript(reader, areaDir, deps);
+): Promise<IDetectResult> => {
+	const deps = await readDeps(reader, areaDir);
+	const ts = await hasTypeScript(reader, areaDir, deps);
 	if (
-		reader.exists(joinRel(areaDir, 'artisan')) ||
-		reader.exists(joinRel(areaDir, 'composer.json'))
+		(await reader.exists(joinRel(areaDir, 'artisan'))) ||
+		(await reader.exists(joinRel(areaDir, 'composer.json')))
 	) {
 		return {
 			presetId: 'laravel',
@@ -57,11 +57,14 @@ export const detectPresetForArea = (
 	}
 	// Meta-frameworks first: they ship react/vue transitively, so the generic
 	// `react`/`vue` checks below would misclassify them (H6).
-	const hasConfig = (name: string): boolean =>
-		['js', 'mjs', 'ts', 'cjs'].some((e) =>
-			reader.exists(joinRel(areaDir, `${name}.${e}`)),
-		);
-	if ('next' in deps || hasConfig('next.config')) {
+	const hasConfig = async (name: string): Promise<boolean> => {
+		for (const e of ['js', 'mjs', 'ts', 'cjs']) {
+			if (await reader.exists(joinRel(areaDir, `${name}.${e}`)))
+				return true;
+		}
+		return false;
+	};
+	if ('next' in deps || (await hasConfig('next.config'))) {
 		return ts
 			? {
 					presetId: 'next-ts',
@@ -72,16 +75,16 @@ export const detectPresetForArea = (
 	if (
 		'@remix-run/react' in deps ||
 		'@remix-run/node' in deps ||
-		hasConfig('remix.config')
+		(await hasConfig('remix.config'))
 	) {
 		return ts
 			? { presetId: 'remix', reason: 'Remix (@remix-run/*)' }
 			: { presetId: 'react-js', reason: 'Remix (JS) → react-js base' };
 	}
-	if ('nuxt' in deps || hasConfig('nuxt.config')) {
+	if ('nuxt' in deps || (await hasConfig('nuxt.config'))) {
 		return { presetId: 'nuxt', reason: 'Nuxt (nuxt dep / nuxt.config)' };
 	}
-	if ('astro' in deps || hasConfig('astro.config')) {
+	if ('astro' in deps || (await hasConfig('astro.config'))) {
 		return ts
 			? { presetId: 'astro', reason: 'Astro (astro dep / astro.config)' }
 			: {

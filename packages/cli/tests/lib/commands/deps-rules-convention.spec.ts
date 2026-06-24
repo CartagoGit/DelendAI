@@ -46,8 +46,8 @@ const find = (group: readonly ICliCommand[], name: string): ICliCommand => {
 	return command;
 };
 
-describe('deps group (f00046 S3)', () => {
-	it('exposes list/check/polyglot', () => {
+describe('deps group (f00046 S3)', async () => {
+	it('exposes list/check/polyglot', async () => {
 		expect(depsCommands.map((c) => c.name)).toEqual([
 			'deps list',
 			'deps check',
@@ -71,7 +71,7 @@ describe('deps group (f00046 S3)', () => {
 	});
 });
 
-describe('rules group (f00046 S3)', () => {
+describe('rules group (f00046 S3)', async () => {
 	it('rules check forwards area + compact', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(rulesCommands, 'rules check').run(
@@ -97,7 +97,7 @@ describe('rules group (f00046 S3)', () => {
 	});
 });
 
-describe('test-convention group (f00046 S3)', () => {
+describe('test-convention group (f00046 S3)', async () => {
 	it('suggest requires a source path', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find(

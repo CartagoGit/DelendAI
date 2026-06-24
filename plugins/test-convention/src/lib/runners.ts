@@ -14,22 +14,24 @@ export interface IRunnerInfo {
  * the `test` script. Pure over `reader` — the host injects the
  * reader; the engine never touches the filesystem directly.
  */
-export const detectRunner = (reader: IFileReader): IRunnerInfo => {
+export const detectRunner = async (
+	reader: IFileReader,
+): Promise<IRunnerInfo> => {
 	for (const candidate of [
 		'vitest.config.ts',
 		'vitest.config.mts',
 		'vitest.config.js',
 	]) {
-		if (reader.exists(candidate)) {
+		if (await reader.exists(candidate)) {
 			return { name: 'vitest', mockApi: 'vi', evidence: candidate };
 		}
 	}
 	for (const candidate of ['jest.config.ts', 'jest.config.js']) {
-		if (reader.exists(candidate)) {
+		if (await reader.exists(candidate)) {
 			return { name: 'jest', mockApi: 'jest', evidence: candidate };
 		}
 	}
-	const pkg = reader.readFile('package.json');
+	const pkg = await reader.readFile('package.json');
 	if (pkg !== undefined) {
 		try {
 			const scripts = (

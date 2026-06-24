@@ -43,7 +43,7 @@ const makeService = () => {
 	};
 };
 
-describe('MemoryService', () => {
+describe('MemoryService', async () => {
 	it('lists memory notes', async () => {
 		const { service, calls } = makeService();
 		const result = await service.list({ limit: 5 });

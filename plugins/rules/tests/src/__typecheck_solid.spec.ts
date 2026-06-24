@@ -51,13 +51,13 @@ import { fallbackCommandSetProvider } from '@mcp-vertex/rules/lib/tools/command-
 import { toAreaRulesLite } from '@mcp-vertex/rules/lib/frameworks/legacy-shape/adapter';
 
 const makeReader = (files: Record<string, string>) => ({
-	readFile: (p: string) => files[p],
-	exists: (p: string) => p in files,
-	listDir: () => [] as string[],
+	readFile: async (p: string) => files[p],
+	exists: async (p: string) => p in files,
+	listDir: async () => [] as string[],
 });
 
-describe('SOLID refactor: compile + link', () => {
-	it('exposes the expected public symbols', () => {
+describe('SOLID refactor: compile + link', async () => {
+	it('exposes the expected public symbols', async () => {
 		expect(typeof PresetRegistry).toBe('function');
 		expect(typeof DogmaRegistry).toBe('function');
 		expect(typeof PresetDetector).toBe('function');
@@ -89,7 +89,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(typeof toAreaRulesLite).toBe('function');
 	});
 
-	it('composes a PresetRegistry + DogmaRegistry end-to-end (SOLID wiring)', () => {
+	it('composes a PresetRegistry + DogmaRegistry end-to-end (SOLID wiring)', async () => {
 		// S: registries are independent (PresetRegistry ≠ DogmaRegistry).
 		const registry = new PresetRegistry({
 			presets: [RUST_PRESET],
@@ -110,7 +110,7 @@ describe('SOLID refactor: compile + link', () => {
 			.join(',');
 		const __detectResult = detector.detect(__r, '');
 		expect(
-			`${__detectResult?.presetId ?? 'NULL'}|adapters=${__adapters}|exists=${__r.exists(
+			`${(await __detectResult)?.presetId ?? 'NULL'}|adapters=${__adapters}|exists=${__r.exists(
 				'Cargo.toml',
 			)}`,
 		).toContain('rust-clippy');
@@ -127,16 +127,16 @@ describe('SOLID refactor: compile + link', () => {
 		expect(cmds.typecheckCommand).toContain('cargo check');
 	});
 
-	it('respects the priority order (Open/Closed)', () => {
+	it('respects the priority order (Open/Closed)', async () => {
 		const high: ILanguageAdapter = {
 			id: 'high',
 			priority: 5,
-			detect: () => ({ presetId: 'high-preset', reason: 'high' }),
+			detect: async () => ({ presetId: 'high-preset', reason: 'high' }),
 		};
 		const low: ILanguageAdapter = {
 			id: 'low',
 			priority: 50,
-			detect: () => ({ presetId: 'low-preset', reason: 'low' }),
+			detect: async () => ({ presetId: 'low-preset', reason: 'low' }),
 		};
 		const reg = new PresetRegistry({
 			presets: [
@@ -163,12 +163,12 @@ describe('SOLID refactor: compile + link', () => {
 			adapters: [low, high],
 		});
 		const d = new PresetDetector(reg);
-		expect(d.detect(makeReader({ 'a.txt': '' }), '')?.presetId).toBe(
-			'high-preset',
-		);
+		expect(
+			(await d.detect(makeReader({ 'a.txt': '' }), ''))?.presetId,
+		).toBe('high-preset');
 	});
 
-	it('exposes the ICommandSet contract (one tuple, every provider returns it)', () => {
+	it('exposes the ICommandSet contract (one tuple, every provider returns it)', async () => {
 		const cs: ICommandSet = rustCommandSetProvider.buildCommandSet(
 			'apps/foo',
 			{
@@ -181,7 +181,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(cs.typecheckCommand).toBeDefined();
 	});
 
-	it('isolates the dogmas (S — Single Responsibility of the DogmaRegistry)', () => {
+	it('isolates the dogmas (S — Single Responsibility of the DogmaRegistry)', async () => {
 		// A DogmaRegistry is independent of PresetRegistry: a
 		// future "ownership checker" tool can depend on
 		// DogmaRegistry without dragging in the linter presets.
@@ -190,7 +190,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(dogmas.resolve('rs')?.packageManager).toBe('cargo');
 	});
 
-	it('exposes a single composition root (DIP — buildDefaultComposition)', () => {
+	it('exposes a single composition root (DIP — buildDefaultComposition)', async () => {
 		// The factory is the only place that knows the default
 		// wiring of presets + adapters + dogmas. A consumer
 		// (tool, test) calls it once and passes the registries
@@ -210,7 +210,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(overridden.registry.supportedIds).toEqual(['rust-clippy']);
 	});
 
-	it('encodes the project > dogma > default policy in one place (S11 stub)', () => {
+	it('encodes the project > dogma > default policy in one place (S11 stub)', async () => {
 		// The resolver is the SINGLE place the priority order is
 		// encoded. The 3 tools will call this; they will not
 		// branch on `fromProject` themselves. Today only the
@@ -252,7 +252,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(c.command).toBe('echo default');
 	});
 
-	it('guarantees IRulePreset Liskov (composition of 5 narrow contracts)', () => {
+	it('guarantees IRulePreset Liskov (composition of 5 narrow contracts)', async () => {
 		// RUST_PRESET is *typed* as IRulePreset = intersection
 		// of the 5 narrow segments. The `satisfies` checks
 		// each segment independently — if any field is missing
@@ -269,7 +269,7 @@ describe('SOLID refactor: compile + link', () => {
 		void commands; // optional fields; assert it satisfies the shape
 	});
 
-	it('keeps adapter commands + default provider substitutable (DIP)', () => {
+	it('keeps adapter commands + default provider substitutable (DIP)', async () => {
 		// A test can swap the default provider entirely; the
 		// Rust adapter still uses its own (DIP — adapter wins
 		// when it brings a provider).
@@ -298,7 +298,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(calls).toBe(0);
 	});
 
-	it('validates a preset via the OCP `IPresetValidator` seam', () => {
+	it('validates a preset via the OCP `IPresetValidator` seam', async () => {
 		// A correct preset produces zero findings.
 		expect(defaultPresetValidator.validate(RUST_PRESET)).toEqual([]);
 
@@ -317,7 +317,7 @@ describe('SOLID refactor: compile + link', () => {
 		]);
 	});
 
-	it('composes validators (OCP — adding a validator = appending, never editing)', () => {
+	it('composes validators (OCP — adding a validator = appending, never editing)', async () => {
 		// A second validator that flags preset ids longer than 30 chars.
 		const idLengthValidator = {
 			validate(preset: IRulePreset) {
@@ -345,7 +345,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(findings.map((f) => f.code)).toContain('linter-deps-mismatch');
 	});
 
-	it('renders dogmas via the DIP `IDogmaRenderer` seam', () => {
+	it('renders dogmas via the DIP `IDogmaRenderer` seam', async () => {
 		// The default renderer produces a one-line string that an
 		// LLM can read as a single sentence.
 		const out = stringDogmaRenderer.render(RUST_DOGMA);
@@ -358,7 +358,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(out.payload).toMatch(/Idioms:.*\?/);
 	});
 
-	it('looks up renderers by id (DIP — DogmaRendererRegistry)', () => {
+	it('looks up renderers by id (DIP — DogmaRendererRegistry)', async () => {
 		// Adding a second renderer (e.g. `markdown`) does not
 		// touch the registry class; the registry looks up by id
 		// and falls back to the default.
@@ -381,14 +381,17 @@ describe('SOLID refactor: compile + link', () => {
 		expect(reg.resolve().id).toBe('string'); // default
 	});
 
-	it('factory accepts a fully custom preset (DIP override)', () => {
+	it('factory accepts a fully custom preset (DIP override)', async () => {
 		// A test that wants to exercise a 1-element adapter list
 		// AND a 1-element preset list does so without touching the
 		// wiring code.
 		const customAdapter: ILanguageAdapter = {
 			id: 'custom',
 			priority: 10,
-			detect: () => ({ presetId: 'custom-preset', reason: 'custom' }),
+			detect: async () => ({
+				presetId: 'custom-preset',
+				reason: 'custom',
+			}),
 		};
 		const customPreset: IRulePreset = {
 			id: 'custom-preset',
@@ -405,11 +408,12 @@ describe('SOLID refactor: compile + link', () => {
 		});
 		expect(root.registry.supportedIds).toEqual(['custom-preset']);
 		expect(
-			root.detector.detect(makeReader({ 'a.txt': '' }), '')?.presetId,
+			(await root.detector.detect(makeReader({ 'a.txt': '' }), ''))
+				?.presetId,
 		).toBe('custom-preset');
 	});
 
-	it('amplified composition root exposes validators + renderers + policyResolver (S — single face)', () => {
+	it('amplified composition root exposes validators + renderers + policyResolver (S — single face)', async () => {
 		// The composition root is the *single* face a tool
 		// imports to access every SOLID seam. The three new
 		// fields are mandatory — a tool that wants to validate
@@ -417,7 +421,9 @@ describe('SOLID refactor: compile + link', () => {
 		// not from a module-level singleton.
 		const root = buildDefaultComposition();
 		expect(root.validators).toBeDefined();
-		expect(root.renderers).toBeDefined();
+		expect(
+			(await root.detector.detect(makeReader({}), ''))?.presetId,
+		).toBeUndefined();
 		expect(root.policyResolver).toBeDefined();
 		// Validators and renderers are pre-populated with their
 		// defaults; the policy resolver is the one place the
@@ -426,7 +432,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(root.renderers.resolve('string').id).toBe('string');
 	});
 
-	it('validators run via the registry (OCP — composition over inheritance)', () => {
+	it('validators run via the registry (OCP — composition over inheritance)', async () => {
 		// The validator-registry composes all validators; a
 		// test can pass a custom list to exercise a specific
 		// check in isolation.
@@ -435,7 +441,7 @@ describe('SOLID refactor: compile + link', () => {
 		expect(findings).toEqual([]); // RUST_PRESET is well-formed
 	});
 
-	it('factory accepts a custom policy resolver (DIP override)', () => {
+	it('factory accepts a custom policy resolver (DIP override)', async () => {
 		// A host that wants a different priority order (e.g.
 		// "treat dogma as advisory only") injects a different
 		// IPolicyResolver via the factory. The composition root

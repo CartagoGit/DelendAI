@@ -19,7 +19,7 @@ const createStore = (
 	},
 });
 
-describe('SettingsService', () => {
+describe('SettingsService', async () => {
 	it('returns defaults when no extension config exists', async () => {
 		const service = new SettingsService(createStore({}));
 		await expect(service.get()).resolves.toEqual(
@@ -51,7 +51,7 @@ describe('SettingsService', () => {
 		expect(store.value).toEqual({});
 	});
 
-	it('validates explicit settings', () => {
+	it('validates explicit settings', async () => {
 		expect(
 			validateExtensionSettings({
 				...DEFAULT_EXTENSION_SETTINGS,

@@ -7,7 +7,7 @@ import {
 	type IMcpTransport,
 } from '../../src/public/index';
 
-describe('McpStdioClient', () => {
+describe('McpStdioClient', async () => {
 	it('calls a tool through the injected transport and returns structured content', async () => {
 		const calls: Array<{
 			name: string;
@@ -196,14 +196,14 @@ describe('McpStdioClient', () => {
 	});
 });
 
-describe('payloadFromResult', () => {
-	it('returns plain text when the text payload is not JSON', () => {
+describe('payloadFromResult', async () => {
+	it('returns plain text when the text payload is not JSON', async () => {
 		expect(
 			payloadFromResult<string>({ content: [{ text: 'plain' }] }),
 		).toBe('plain');
 	});
 
-	it('throws when the result contains no usable payload', () => {
+	it('throws when the result contains no usable payload', async () => {
 		expect(() => payloadFromResult({ content: [] })).toThrow(McpToolError);
 	});
 });

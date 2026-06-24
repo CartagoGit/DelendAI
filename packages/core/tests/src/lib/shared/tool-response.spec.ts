@@ -7,20 +7,20 @@ import {
 	toolError,
 } from '@mcp-vertex/core/public';
 
-describe('tool-response helpers — MCP modern structuredContent', () => {
-	it('toolJson mirrors an object payload into structuredContent', () => {
+describe('tool-response helpers — MCP modern structuredContent', async () => {
+	it('toolJson mirrors an object payload into structuredContent', async () => {
 		const res = toolJson({ a: 1, b: 'x' });
 		expect(res.content[0]?.text).toBe(JSON.stringify({ a: 1, b: 'x' }));
 		expect(res.structuredContent).toEqual({ a: 1, b: 'x' });
 	});
 
-	it('toolJson omits structuredContent for non-object payloads', () => {
+	it('toolJson omits structuredContent for non-object payloads', async () => {
 		expect(toolJson([1, 2, 3]).structuredContent).toBeUndefined();
 		expect(toolJson('hello').structuredContent).toBeUndefined();
 		expect(toolJson(42).structuredContent).toBeUndefined();
 	});
 
-	it('toolOk wraps the success envelope and mirrors it', () => {
+	it('toolOk wraps the success envelope and mirrors it', async () => {
 		const res = toolOk({ saved: 'note-1' });
 		expect(res.structuredContent).toEqual({ ok: true, saved: 'note-1' });
 		expect(JSON.parse(res.content[0]!.text)).toEqual({
@@ -29,7 +29,7 @@ describe('tool-response helpers — MCP modern structuredContent', () => {
 		});
 	});
 
-	it('toolError mirrors the error envelope and sets isError', () => {
+	it('toolError mirrors the error envelope and sets isError', async () => {
 		const res = toolError('boom', 'try X');
 		expect(res.isError).toBe(true);
 		expect(res.structuredContent).toEqual({
@@ -38,7 +38,7 @@ describe('tool-response helpers — MCP modern structuredContent', () => {
 		});
 	});
 
-	it('toolError omits nextAction when not given', () => {
+	it('toolError omits nextAction when not given', async () => {
 		const res = toolError('boom');
 		expect(res.structuredContent).toEqual({
 			ok: false,
@@ -46,12 +46,12 @@ describe('tool-response helpers — MCP modern structuredContent', () => {
 		});
 	});
 
-	it('text and structuredContent stay consistent', () => {
+	it('text and structuredContent stay consistent', async () => {
 		const res = toolOk({ n: 7 });
 		expect(JSON.parse(res.content[0]!.text)).toEqual(res.structuredContent);
 	});
 
-	it('toolErrorWithLogHint attaches the hint and keeps the envelope', () => {
+	it('toolErrorWithLogHint attaches the hint and keeps the envelope', async () => {
 		const hint = {
 			path: '/abs/.cache/mcp-vertex/logs/2026-06-21.jsonl',
 			line: 17,
@@ -67,7 +67,7 @@ describe('tool-response helpers — MCP modern structuredContent', () => {
 		expect(JSON.parse(res.content[0]!.text)).toEqual(res.structuredContent);
 	});
 
-	it('toolErrorWithLogHint omits nextAction when not given', () => {
+	it('toolErrorWithLogHint omits nextAction when not given', async () => {
 		const hint = {
 			path: '/abs/.cache/mcp-vertex/logs/2026-06-21.jsonl',
 			line: 1,

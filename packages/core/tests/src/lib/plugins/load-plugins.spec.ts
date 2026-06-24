@@ -19,21 +19,21 @@ const ctx = (name: string): IMcpPluginContext => ({
 	args: {},
 });
 
-describe('resolvePluginSpecifier', () => {
-	it('expands a bare short name to the scoped convention first', () => {
+describe('resolvePluginSpecifier', async () => {
+	it('expands a bare short name to the scoped convention first', async () => {
 		expect(resolvePluginSpecifier('proposals')).toEqual([
 			'@mcp-vertex/proposals',
 			'mcp-proposals',
 			'proposals',
 		]);
 	});
-	it('uses a path or explicit package verbatim', () => {
+	it('uses a path or explicit package verbatim', async () => {
 		expect(resolvePluginSpecifier('./local.ts')).toEqual(['./local.ts']);
 		expect(resolvePluginSpecifier('@scope/pkg')).toEqual(['@scope/pkg']);
 	});
 });
 
-describe('loadPlugins', () => {
+describe('loadPlugins', async () => {
 	it('loads a plugin via injected importer and merges its registrations', async () => {
 		const fakePlugin = {
 			name: 'demo',

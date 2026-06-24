@@ -159,27 +159,31 @@ export const searchWorkspace = async (
 		// In-house-only path: honour the historical contract — every
 		// test/spec that asserts on `usedRg: false` continues to pass.
 		const inHouse = createInHouseBackend();
-		return inHouse.execute({ workspaceRootAbs, query, options });
+		return (await inHouse).execute({ workspaceRootAbs, query, options });
 	}
 
 	// preferRg path: try rg first; on any failure that is not an
 	// invalid-regex error, fall back to the in-house walker and
 	// surface `rgFallbackReason` for the agent to read.
 	const rg = createRgBackend();
-	if (!(await rg.isAvailable())) {
+	if (!(await (await rg).isAvailable())) {
 		const inHouse = createInHouseBackend();
 		return {
-			...(await inHouse.execute({ workspaceRootAbs, query, options })),
+			...(await (
+				await inHouse
+			).execute({ workspaceRootAbs, query, options })),
 			rgFallbackReason: 'rg binary not found on $PATH',
 		};
 	}
 	try {
-		return await rg.execute({ workspaceRootAbs, query, options });
+		return await (await rg).execute({ workspaceRootAbs, query, options });
 	} catch (err) {
 		if (err instanceof InvalidSearchPatternError) throw err;
 		const inHouse = createInHouseBackend();
 		return {
-			...(await inHouse.execute({ workspaceRootAbs, query, options })),
+			...(await (
+				await inHouse
+			).execute({ workspaceRootAbs, query, options })),
 			rgFallbackReason: `rg invocation failed: ${String(err)}`,
 		};
 	}

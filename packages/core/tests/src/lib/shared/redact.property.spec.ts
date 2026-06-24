@@ -106,7 +106,7 @@ const SECRET_GENERATORS: ReadonlyArray<{
 
 const TRIALS = 50;
 
-describe('redactSecrets (property-based, M32)', () => {
+describe('redactSecrets (property-based, M32)', async () => {
 	it.each(
 		SECRET_GENERATORS,
 	)('always redacts a generated $name secret embedded in prose', ({
@@ -122,7 +122,7 @@ describe('redactSecrets (property-based, M32)', () => {
 		}
 	});
 
-	it('never flags plain prose with no secret-shaped substring (no false positives)', () => {
+	it('never flags plain prose with no secret-shaped substring (no false positives)', async () => {
 		const rng = mulberry32(1234);
 		for (let i = 0; i < TRIALS; i++) {
 			const input = randomSentence(rng, 8);
@@ -132,7 +132,7 @@ describe('redactSecrets (property-based, M32)', () => {
 		}
 	});
 
-	it('is idempotent: redacting an already-redacted text redacts nothing further', () => {
+	it('is idempotent: redacting an already-redacted text redacts nothing further', async () => {
 		const rng = mulberry32(777);
 		for (const { gen } of SECRET_GENERATORS) {
 			for (let i = 0; i < 5; i++) {
@@ -147,7 +147,7 @@ describe('redactSecrets (property-based, M32)', () => {
 		}
 	});
 
-	it('never throws on arbitrary random byte-ish input (total function)', () => {
+	it('never throws on arbitrary random byte-ish input (total function)', async () => {
 		const rng = mulberry32(99);
 		for (let i = 0; i < TRIALS; i++) {
 			const input = randomString(rng, Math.floor(rng() * 200));

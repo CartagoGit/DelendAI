@@ -76,18 +76,18 @@ const makeReport = (
 // Heading + technical limitation
 // ---------------------------------------------------------------------------
 
-describe('buildChatTitlingReminder — heading and technical limitation', () => {
-	it('renders the canonical heading "## Rename chat session reminder"', () => {
+describe('buildChatTitlingReminder — heading and technical limitation', async () => {
+	it('renders the canonical heading "## Rename chat session reminder"', async () => {
 		const reminder = buildChatTitlingReminder(makeReport());
 		expect(reminder).toContain('## Rename chat session reminder');
 	});
 
-	it('documents the technical limitation by mentioning "no `workbench.action.chat.rename`"', () => {
+	it('documents the technical limitation by mentioning "no `workbench.action.chat.rename`"', async () => {
 		const reminder = buildChatTitlingReminder(makeReport());
 		expect(reminder).toContain('no `workbench.action.chat.rename`');
 	});
 
-	it('tells the user to perform the rename manually via the generic UI hint (r00003 S8: no vendor leak by default)', () => {
+	it('tells the user to perform the rename manually via the generic UI hint (r00003 S8: no vendor leak by default)', async () => {
 		const reminder = buildChatTitlingReminder(makeReport());
 		// Default capabilities are now the GENERIC IDE set, so the manual
 		// instruction is host-agnostic ("the chat tab", not "the editor
@@ -96,7 +96,7 @@ describe('buildChatTitlingReminder — heading and technical limitation', () => 
 		expect(reminder).not.toContain('VS Code');
 	});
 
-	it('warns the user about the 40-character cap to avoid sidebar truncation', () => {
+	it('warns the user about the 40-character cap to avoid sidebar truncation', async () => {
 		const reminder = buildChatTitlingReminder(makeReport());
 		// The reminder must mention BOTH the number 40 and the word
 		// "truncat" (covers "truncation" / "truncated" / "truncate").
@@ -109,8 +109,8 @@ describe('buildChatTitlingReminder — heading and technical limitation', () => 
 // Proposal-bound rendering
 // ---------------------------------------------------------------------------
 
-describe('buildChatTitlingReminder — proposal-bound rendering', () => {
-	it('substitutes the resolved template "[p41] T2: rename probe" for p41/T2', () => {
+describe('buildChatTitlingReminder — proposal-bound rendering', async () => {
+	it('substitutes the resolved template "[p41] T2: rename probe" for p41/T2', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({
 				proposalId: 'p41',
@@ -121,7 +121,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 		expect(reminder).toContain('[p41] T2: rename probe');
 	});
 
-	it('substitutes the resolved template "[p41] T1: titling prefix" for p41/T1', () => {
+	it('substitutes the resolved template "[p41] T1: titling prefix" for p41/T1', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({
 				proposalId: 'p41',
@@ -132,7 +132,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 		expect(reminder).toContain('[p41] T1: titling prefix');
 	});
 
-	it('substitutes the resolved template "[p40c] T3: persistent queue smoke" for p40c/T3', () => {
+	it('substitutes the resolved template "[p40c] T3: persistent queue smoke" for p40c/T3', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({
 				proposalId: 'p40c',
@@ -143,7 +143,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 		expect(reminder).toContain('[p40c] T3: persistent queue smoke');
 	});
 
-	it('accepts a short prefix well below the 40-char cap without erroring', () => {
+	it('accepts a short prefix well below the 40-char cap without erroring', async () => {
 		// "[p41] T2: rename" is 8 chars in the visible prefix (counted
 		// from the first '[' to just before the first ':') — well
 		// below 40, so the cap note should still appear (it always
@@ -159,7 +159,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 		expect(reminder).toContain('## Rename chat session reminder');
 	});
 
-	it('does NOT render the [FREE] branch when a proposalId is present', () => {
+	it('does NOT render the [FREE] branch when a proposalId is present', async () => {
 		// "proposal-free sessions" is the exact phrase the [FREE]
 		// branch uses; the spec asserts it is absent in the proposal
 		// branch.
@@ -178,8 +178,8 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 // [FREE] branch
 // ---------------------------------------------------------------------------
 
-describe('buildChatTitlingReminder — [FREE] branch', () => {
-	it('renders the [FREE] branch when proposalId is null', () => {
+describe('buildChatTitlingReminder — [FREE] branch', async () => {
+	it('renders the [FREE] branch when proposalId is null', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({ proposalId: null, summary: 'ad-hoc debug' }),
 		);
@@ -187,13 +187,13 @@ describe('buildChatTitlingReminder — [FREE] branch', () => {
 		expect(reminder).toContain('proposal-free sessions');
 	});
 
-	it('renders the [FREE] branch when proposalId is undefined (field absent)', () => {
+	it('renders the [FREE] branch when proposalId is undefined (field absent)', async () => {
 		const reminder = buildChatTitlingReminder(makeReport({}));
 		expect(reminder).toContain('[FREE]');
 		expect(reminder).toContain('proposal-free sessions');
 	});
 
-	it('does NOT render the [pNN] template when proposalId is null', () => {
+	it('does NOT render the [pNN] template when proposalId is null', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({ proposalId: null, summary: 'ad-hoc debug' }),
 		);
@@ -208,12 +208,12 @@ describe('buildChatTitlingReminder — [FREE] branch', () => {
 // Robustness
 // ---------------------------------------------------------------------------
 
-describe('buildChatTitlingReminder — robustness', () => {
-	it('never throws on a minimal report (no optional context)', () => {
+describe('buildChatTitlingReminder — robustness', async () => {
+	it('never throws on a minimal report (no optional context)', async () => {
 		expect(() => buildChatTitlingReminder(makeReport())).not.toThrow();
 	});
 
-	it('never throws when taskId / summary are missing on a proposal-bound report', () => {
+	it('never throws when taskId / summary are missing on a proposal-bound report', async () => {
 		expect(() =>
 			buildChatTitlingReminder(
 				makeReport({ proposalId: 'p41', taskId: null, summary: null }),
@@ -221,7 +221,7 @@ describe('buildChatTitlingReminder — robustness', () => {
 		).not.toThrow();
 	});
 
-	it('the rendered block always ends with a trailing newline (safe to concat)', () => {
+	it('the rendered block always ends with a trailing newline (safe to concat)', async () => {
 		const reminder = buildChatTitlingReminder(
 			makeReport({
 				proposalId: 'p41',

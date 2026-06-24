@@ -118,7 +118,9 @@ const completionCommand: ICliCommand = {
 		}
 		// Lazy import to avoid a static cycle (the registry imports this group).
 		const { registerAllCommands } = await import('../registry');
-		const names = registerAllCommands().map((command) => command.name);
+		const names = (await registerAllCommands()).map(
+			(command) => command.name,
+		);
 		return {
 			code: EXIT_CODE.OK,
 			text: generateCompletion(shell as Shell, names),

@@ -57,7 +57,7 @@ const matches = (event: ILogEvent, filter: ILogRangeFilter): boolean => {
 	return true;
 };
 
-export const createLogStore = (logsDir: string): ILogStore => {
+export const createLogStore = async (logsDir: string): Promise<ILogStore> => {
 	const fileFor = (event: ILogEvent): string =>
 		join(logsDir, `${dayFromTs(event.ts)}.jsonl`);
 

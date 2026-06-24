@@ -31,29 +31,29 @@ const stubBackend = (
 	},
 });
 
-describe('search-engine dispatcher (Solid Strategy)', () => {
-	describe('backend identities (stable contracts)', () => {
-		it('RG_BACKEND_ID is "rg"', () => {
+describe('search-engine dispatcher (Solid Strategy)', async () => {
+	describe('backend identities (stable contracts)', async () => {
+		it('RG_BACKEND_ID is "rg"', async () => {
 			expect(RG_BACKEND_ID).toBe('rg');
 		});
-		it('IN_HOUSE_BACKEND_ID is "in-house"', () => {
+		it('IN_HOUSE_BACKEND_ID is "in-house"', async () => {
 			expect(IN_HOUSE_BACKEND_ID).toBe('in-house');
 		});
 	});
 
-	describe('createRgBackend (Solid-OCP)', () => {
+	describe('createRgBackend (Solid-OCP)', async () => {
 		it('reports its id as "rg" and exposes the available probe', async () => {
 			const backend = createRgBackend({
 				rgAvailable: async () => true,
 			});
-			expect(backend.id).toBe('rg');
-			expect(await backend.isAvailable()).toBe(true);
+			expect((await backend).id).toBe('rg');
+			expect(await (await backend).isAvailable()).toBe(true);
 		});
 
 		it('accepts a custom rgAvailable probe', async () => {
 			const probe = async () => false;
 			const backend = createRgBackend({ rgAvailable: probe });
-			expect(await backend.isAvailable()).toBe(false);
+			expect(await (await backend).isAvailable()).toBe(false);
 		});
 
 		it('defaults to the real subprocess probe (no crash)', async () => {
@@ -65,16 +65,16 @@ describe('search-engine dispatcher (Solid Strategy)', () => {
 		});
 	});
 
-	describe('createInHouseBackend (Solid-OCP)', () => {
+	describe('createInHouseBackend (Solid-OCP)', async () => {
 		it('reports its id as "in-house" and is always available', async () => {
 			const backend = createInHouseBackend();
-			expect(backend.id).toBe('in-house');
-			expect(await backend.isAvailable()).toBe(true);
+			expect((await backend).id).toBe('in-house');
+			expect(await (await backend).isAvailable()).toBe(true);
 		});
 	});
 
-	describe('createSearchDispatcher (Solid-LSP)', () => {
-		it('throws when given an empty backend list', () => {
+	describe('createSearchDispatcher (Solid-LSP)', async () => {
+		it('throws when given an empty backend list', async () => {
 			expect(() => createSearchDispatcher([])).toThrow(
 				/at least one backend/,
 			);
@@ -247,7 +247,7 @@ describe('search-engine dispatcher (Solid Strategy)', () => {
 		});
 	});
 
-	describe('searchWorkspace (legacy contract)', () => {
+	describe('searchWorkspace (legacy contract)', async () => {
 		it('returns an empty envelope for empty queries', async () => {
 			const res = await searchWorkspace('/x', '   ', {});
 			expect(res.hits).toEqual([]);

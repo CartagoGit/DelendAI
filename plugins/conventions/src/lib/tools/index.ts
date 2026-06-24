@@ -18,13 +18,13 @@ export interface IConventionsToolsOptions {
 	readonly defaultRoots?: readonly string[];
 }
 
-export const buildConventionsToolRegistrations = (
+export const buildConventionsToolRegistrations = async (
 	options: IConventionsToolsOptions,
-): readonly IToolRegistration[] => [
+): Promise<readonly IToolRegistration[]> => [
 	buildClassifyPathsRegistration(options.namespacePrefix),
 	buildCheckConventionsRegistration({
 		namespacePrefix: options.namespacePrefix,
-		reader: createFsDirReader(options.workspaceRoot),
+		reader: await createFsDirReader(options.workspaceRoot),
 		...(options.defaultRoots !== undefined
 			? { defaultRoots: options.defaultRoots }
 			: {}),

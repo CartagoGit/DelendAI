@@ -28,8 +28,8 @@ const ruleFor = (key: keyof ICliGlobalOptions): IAutoForwardRule => {
 	return rule;
 };
 
-describe('SERVER_ARG_MAPPER — rule shapes', () => {
-	it("renders an 'option' rule as --flag value when non-empty, [] otherwise", () => {
+describe('SERVER_ARG_MAPPER — rule shapes', async () => {
+	it("renders an 'option' rule as --flag value when non-empty, [] otherwise", async () => {
 		const rule = ruleFor('config');
 		expect(rule.kind).toBe('option');
 		expect(rule.argv('config', 'cfg.json')).toEqual([
@@ -40,7 +40,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', () => {
 		expect(rule.argv('config', undefined)).toEqual([]);
 	});
 
-	it("renders a 'flag' rule as bare --flag only when true", () => {
+	it("renders a 'flag' rule as bare --flag only when true", async () => {
 		const rule = ruleFor('mcpProjectCreate');
 		expect(rule.kind).toBe('flag');
 		expect(rule.argv('mcpProjectCreate', true)).toEqual([
@@ -50,7 +50,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', () => {
 		expect(rule.argv('mcpProjectCreate', undefined)).toEqual([]);
 	});
 
-	it("renders a 'repeatable' rule as a comma-joined, de-duplicated list", () => {
+	it("renders a 'repeatable' rule as a comma-joined, de-duplicated list", async () => {
 		const rule = ruleFor('plugins');
 		expect(rule.kind).toBe('repeatable');
 		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual([
@@ -60,7 +60,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', () => {
 		expect(rule.argv('plugins', [])).toEqual([]);
 	});
 
-	it("exposes a 'passthrough' rule builder that forwards values verbatim", () => {
+	it("exposes a 'passthrough' rule builder that forwards values verbatim", async () => {
 		const rule = passthroughRule('plugins');
 		expect(rule.kind).toBe('passthrough');
 		expect(rule.argv('plugins', ['--raw', 'x'])).toEqual(['--raw', 'x']);
@@ -68,8 +68,8 @@ describe('SERVER_ARG_MAPPER — rule shapes', () => {
 	});
 });
 
-describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', () => {
-	it('forwards every host global mcpv is responsible for', () => {
+describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', async () => {
+	it('forwards every host global mcpv is responsible for', async () => {
 		// The host parser (`parse-cli-args.ts`) knows these forwardable
 		// globals. mcpv used to forward only 4; every one of these MUST
 		// have a mapper rule or the host loses a flag silently.
@@ -92,7 +92,7 @@ describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', () => {
 		}
 	});
 
-	it('is extensible by data (Open/Closed): appending is a pure operation', () => {
+	it('is extensible by data (Open/Closed): appending is a pure operation', async () => {
 		const before = SERVER_ARG_MAPPER.length;
 		const extra: IAutoForwardRule = {
 			key: 'remote',

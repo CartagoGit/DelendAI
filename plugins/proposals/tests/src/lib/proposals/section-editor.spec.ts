@@ -22,28 +22,28 @@ import {
 	replaceSection,
 } from '@mcp-vertex/proposals/lib/proposals/section-editor';
 
-describe('renderSectionBody', () => {
-	it('returns the string as-is when the value is a string', () => {
+describe('renderSectionBody', async () => {
+	it('returns the string as-is when the value is a string', async () => {
 		expect(renderSectionBody('hello world')).toBe('hello world');
 	});
 
-	it('joins an array with `- ` bullet markers', () => {
+	it('joins an array with `- ` bullet markers', async () => {
 		expect(renderSectionBody(['one', 'two', 'three'])).toBe(
 			'- one\n- two\n- three',
 		);
 	});
 
-	it('returns an empty string for an empty array', () => {
+	it('returns an empty string for an empty array', async () => {
 		expect(renderSectionBody([])).toBe('');
 	});
 
-	it('returns an empty string for the empty string', () => {
+	it('returns an empty string for the empty string', async () => {
 		expect(renderSectionBody('')).toBe('');
 	});
 });
 
-describe('replaceSection', () => {
-	it('replaces the body of an existing `## Goal` section in-place', () => {
+describe('replaceSection', async () => {
+	it('replaces the body of an existing `## Goal` section in-place', async () => {
 		const md = `# Title\n\n## Goal\n\nold body\n\n## Why\n\nwhy body\n`;
 		const out = replaceSection(
 			md,
@@ -56,7 +56,7 @@ describe('replaceSection', () => {
 		);
 	});
 
-	it('matches the `## Acceptance (global)` variant for the acceptance field', () => {
+	it('matches the `## Acceptance (global)` variant for the acceptance field', async () => {
 		const md = `# Title\n\n## Acceptance (global)\n\n- a\n- b\n`;
 		const out = replaceSection(
 			md,
@@ -69,7 +69,7 @@ describe('replaceSection', () => {
 		expect(out).not.toContain('- a');
 	});
 
-	it('inserts a new section before `## Slices` when the heading is absent', () => {
+	it('inserts a new section before `## Slices` when the heading is absent', async () => {
 		const md = `# Title\n\n## Slices\n\n### S1 — Foo\n`;
 		const out = replaceSection(
 			md,
@@ -82,7 +82,7 @@ describe('replaceSection', () => {
 		);
 	});
 
-	it('appends the section at EOF when both the heading and `## Slices` are absent', () => {
+	it('appends the section at EOF when both the heading and `## Slices` are absent', async () => {
 		const md = `# Title\n\n## Why\n\nwhy body\n`;
 		const out = replaceSection(
 			md,
@@ -98,7 +98,7 @@ describe('replaceSection', () => {
 		expect(out).toContain('## Goal\n\na fresh goal');
 	});
 
-	it('replaces the body of the LAST section (no next heading)', () => {
+	it('replaces the body of the LAST section (no next heading)', async () => {
 		const md = `# Title\n\n## Goal\n\nold\n`;
 		const out = replaceSection(
 			md,
@@ -109,7 +109,7 @@ describe('replaceSection', () => {
 		expect(out).toBe(`# Title\n\n## Goal\n\nnew\n`);
 	});
 
-	it('does NOT touch the frontmatter block', () => {
+	it('does NOT touch the frontmatter block', async () => {
 		const md = `---\nid: f1\nstatus: ready\n---\n\n## Goal\n\nold\n\n## Why\n\nwhy\n`;
 		const out = replaceSection(
 			md,
@@ -123,8 +123,8 @@ describe('replaceSection', () => {
 	});
 });
 
-describe('FIELD_HEADING_RE — registry invariant', () => {
-	it('every editable field has a regex AND a canonical heading', () => {
+describe('FIELD_HEADING_RE — registry invariant', async () => {
+	it('every editable field has a regex AND a canonical heading', async () => {
 		// If you add a new field to `IEditableField`, you MUST add both
 		// a regex AND a canonical heading here — this test guards
 		// against the half-change.

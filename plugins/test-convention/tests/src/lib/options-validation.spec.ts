@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import testConventionPlugin from '../../../src/index';
 
-describe('test-convention plugin — options validation (r00003 S9-residual)', () => {
+describe('test-convention plugin — options validation (r00003 S9-residual)', async () => {
 	it('register() succeeds when ctx.options is empty (defaults applied)', async () => {
 		const ctx = {
 			workspace: { root: '/tmp', resolve: (r: string) => r },

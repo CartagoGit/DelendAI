@@ -48,7 +48,7 @@ afterEach(() => {
 	rmSync(workspace, { recursive: true, force: true });
 });
 
-describe('runAgentLockEngine — claim', () => {
+describe('runAgentLockEngine — claim', async () => {
 	it('records a new claim with its file ownership', async () => {
 		const res = await run({
 			action: 'claim',
@@ -121,7 +121,7 @@ describe('runAgentLockEngine — claim', () => {
 	});
 });
 
-describe('runAgentLockEngine — release / status', () => {
+describe('runAgentLockEngine — release / status', async () => {
 	it('release removes the task from the in-flight set', async () => {
 		await run({
 			action: 'claim',
@@ -149,7 +149,7 @@ describe('runAgentLockEngine — release / status', () => {
 	});
 });
 
-describe('runAgentLockEngine — stale GC', () => {
+describe('runAgentLockEngine — stale GC', async () => {
 	it('drops a claim older than stale_after_minutes on the next read', async () => {
 		// Claim "10 minutes ago"; the default stale window evicts it.
 		const past = new Date(Date.now() - 60 * 60 * 1000).toISOString();

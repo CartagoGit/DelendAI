@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { componentCss } from '../../src/components/styles.css';
 
-describe('componentCss', () => {
-	it('is a non-empty CSS string', () => {
+describe('componentCss', async () => {
+	it('is a non-empty CSS string', async () => {
 		expect(componentCss.length).toBeGreaterThan(200);
 	});
 
-	it('covers the five component primitives', () => {
+	it('covers the five component primitives', async () => {
 		expect(componentCss).toContain('.mv-header');
 		expect(componentCss).toContain('.mv-dropdown');
 		expect(componentCss).toContain('.mv-disclosure');
@@ -15,11 +15,11 @@ describe('componentCss', () => {
 		expect(componentCss).toContain('.mv-toast');
 	});
 
-	it('honors prefers-reduced-motion', () => {
+	it('honors prefers-reduced-motion', async () => {
 		expect(componentCss).toContain('prefers-reduced-motion');
 	});
 
-	it('uses the shared --mv-transition tokens', () => {
+	it('uses the shared --mv-transition tokens', async () => {
 		// The transition shorthand should reference the shared token (with or
 		// without a fallback). The literal `var(--mv-transition-base, …)` is
 		// the expected form because it gives older browsers a hard-coded

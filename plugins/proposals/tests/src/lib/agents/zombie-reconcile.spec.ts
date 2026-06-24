@@ -31,11 +31,11 @@ afterEach(() => {
 	}
 });
 
-describe('zombie-reconcile', () => {
+describe('zombie-reconcile', async () => {
 	const now = new Date('2026-06-05T12:00:00.000Z');
 
 	// 1. Registry vacío + lock vacío
-	it('Case 1: Registry vacío + lock vacío', () => {
+	it('Case 1: Registry vacío + lock vacío', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [],
@@ -49,7 +49,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 2. Entry: adopted: true, status: 'cooldown', cooldown_until: null, last_seen > 10 min, sin entrada en lock
-	it('Case 2: Entry: adopted: true, status: "cooldown", cooldown_until: null, last_seen > 10 min, sin entrada en lock', () => {
+	it('Case 2: Entry: adopted: true, status: "cooldown", cooldown_until: null, last_seen > 10 min, sin entrada en lock', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -79,7 +79,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 3. Entry con entrada activa en lock.in_flight (mismo task_id)
-	it('Case 3: Entry con entrada activa en lock.in_flight (mismo task_id)', () => {
+	it('Case 3: Entry con entrada activa en lock.in_flight (mismo task_id)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -115,7 +115,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 4. Entry con status: 'active' and not stale -> NO clasificada como zombie
-	it('Case 4: Entry con status: "active" (not stale)', () => {
+	it('Case 4: Entry con status: "active" (not stale)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_active', task_id: 'task-2' }],
@@ -325,24 +325,24 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 8. Threshold verde: 0 orphans
-	it('Case 8: Threshold verde: 0 orphans', () => {
+	it('Case 8: Threshold verde: 0 orphans', async () => {
 		expect(thresholdFromOrphans(0)).toBe('green');
 	});
 
 	// 9. Threshold amarillo: 1–2 orphans
-	it('Case 9: Threshold amarillo: 1–2 orphans', () => {
+	it('Case 9: Threshold amarillo: 1–2 orphans', async () => {
 		expect(thresholdFromOrphans(1)).toBe('yellow');
 		expect(thresholdFromOrphans(2)).toBe('yellow');
 	});
 
 	// 10. Threshold rojo: >= 3 orphans
-	it('Case 10: Threshold rojo: >= 3 orphans', () => {
+	it('Case 10: Threshold rojo: >= 3 orphans', async () => {
 		expect(thresholdFromOrphans(3)).toBe('red');
 		expect(thresholdFromOrphans(10)).toBe('red');
 	});
 
 	// 11. Entry con adopted: false, cooldown_until: null
-	it('Case 11: Entry con adopted: false, cooldown_until: null', () => {
+	it('Case 11: Entry con adopted: false, cooldown_until: null', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [],
@@ -370,7 +370,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 12. Entry con cooldown_until: null pero last_seen hace sólo 2 minutos
-	it('Case 12: Entry con cooldown_until: null pero last_seen hace sólo 2 minutos', () => {
+	it('Case 12: Entry con cooldown_until: null pero last_seen hace sólo 2 minutos', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -398,7 +398,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)
-	it('Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)', () => {
+	it('Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],

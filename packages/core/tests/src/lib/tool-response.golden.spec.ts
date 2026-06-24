@@ -179,16 +179,16 @@ const isStrictRoot = (
 	return { ok: true };
 };
 
-describe('r00001 S0 — core outputSchema golden snapshot', () => {
-	describe('strict tools (analyze/create/plan/scaffold)', () => {
+describe('r00001 S0 — core outputSchema golden snapshot', async () => {
+	describe('strict tools (analyze/create/plan/scaffold)', async () => {
 		for (const toolId of STRICT_TOOL_IDS) {
-			it(`${toolId} serialises to a strict-object root (no permissive catchall)`, () => {
+			it(`${toolId} serialises to a strict-object root (no permissive catchall)`, async () => {
 				const jsonSchema = z.toJSONSchema(CORE_TOOL_SCHEMAS[toolId]);
 				const verdict = isStrictRoot(jsonSchema);
 				expect(verdict.ok, verdict.ok ? '' : verdict.reason).toBe(true);
 			});
 
-			it(`${toolId} declares ≥1 root property`, () => {
+			it(`${toolId} declares ≥1 root property`, async () => {
 				const jsonSchema = z.toJSONSchema(
 					CORE_TOOL_SCHEMAS[toolId],
 				) as {
@@ -205,7 +205,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		}
 	});
 
-	describe('permissive exception (metrics)', () => {
+	describe('permissive exception (metrics)', async () => {
 		// The `metrics` tool's `tools` field is a `z.object({}).catchall(MetricSchema)`
 		// because the domain is dynamic (any tool id may appear). This is
 		// the SINGLE documented exception in audit a00026 H3. The test
@@ -213,7 +213,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		// localised: the root `metrics` schema is strict, only the
 		// nested `tools` sub-schema admits additional properties.
 		for (const toolId of PERMISSIVE_EXCEPTION_IDS) {
-			it(`${toolId} root is strict; only the nested "tools" sub-schema is the catchall exception`, () => {
+			it(`${toolId} root is strict; only the nested "tools" sub-schema is the catchall exception`, async () => {
 				const rootJson = z.toJSONSchema(CORE_TOOL_SCHEMAS[toolId]) as {
 					type: string;
 					properties: Record<string, unknown>;
@@ -236,7 +236,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		}
 	});
 
-	describe('stable fingerprint (drift detection)', () => {
+	describe('stable fingerprint (drift detection)', async () => {
 		/**
 		 * Goal-state fingerprints. The current values pin the schema
 		 * shapes AS OF the r00002 S1+S2 hardening. They will only change
@@ -265,7 +265,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		for (const [toolId, expected] of Object.entries(
 			EXPECTED_FINGERPRINTS,
 		)) {
-			it(`${toolId} fingerprint matches the pinned snapshot`, () => {
+			it(`${toolId} fingerprint matches the pinned snapshot`, async () => {
 				const actual = stableFingerprint(
 					z.toJSONSchema(
 						CORE_TOOL_SCHEMAS[
@@ -278,7 +278,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		}
 	});
 
-	describe('__strict__ goal (r00001 S1–S3 deliverables)', () => {
+	describe('__strict__ goal (r00001 S1–S3 deliverables)', async () => {
 		/**
 		 * The __strict__ block in r00001's design doc is "xfail today,
 		 * pass after S1–S3 land". As of r00002 S1+S2 the 4 host-core
@@ -298,7 +298,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		] as const;
 
 		for (const toolId of STRICT_GOAL_TOOLS) {
-			it(`__strict__ ${toolId}: root type=object, ≥1 property, additionalProperties≠true`, () => {
+			it(`__strict__ ${toolId}: root type=object, ≥1 property, additionalProperties≠true`, async () => {
 				const jsonSchema = z.toJSONSchema(CORE_TOOL_SCHEMAS[toolId]);
 				expect(jsonSchema).toMatchObject({
 					type: 'object',
@@ -315,7 +315,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 		}
 	});
 
-	describe('coverage (r00001 S4 — every hardened tool is in the snapshot)', () => {
+	describe('coverage (r00001 S4 — every hardened tool is in the snapshot)', async () => {
 		/**
 		 * Sanity guard: if a future PR hardens a new tool (e.g. r00002
 		 * closes a new catchall) and forgets to register it here, this
@@ -331,7 +331,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', () => {
 			'metrics',
 		] as const;
 
-		it('every registered core tool has a snapshot entry', () => {
+		it('every registered core tool has a snapshot entry', async () => {
 			const snapshotIds = Object.keys(CORE_TOOL_SCHEMAS).sort();
 			expect(snapshotIds).toEqual([...REGISTERED_CORE_TOOLS].sort());
 		});

@@ -15,9 +15,9 @@ import { toAreaRulesLite } from '@mcp-vertex/rules/lib/frameworks/legacy-shape/a
  * registry depends on the narrow `IAreaRulesLite`; this spec
  * proves the adapter still works.
  */
-describe('command-resolver helpers (S, ISP)', () => {
-	describe('fallbackCommandSetProvider', () => {
-		it('emits a no-op command set (so check_rules can surface "missing linter")', () => {
+describe('command-resolver helpers (S, ISP)', async () => {
+	describe('fallbackCommandSetProvider', async () => {
+		it('emits a no-op command set (so check_rules can surface "missing linter")', async () => {
 			const out = fallbackCommandSetProvider.buildCommandSet('apps/foo', {
 				linterConfigs: [],
 				typecheckConfigs: [],
@@ -32,8 +32,8 @@ describe('command-resolver helpers (S, ISP)', () => {
 	});
 });
 
-describe('legacy-shape adapter (S, ISP)', () => {
-	it('maps the legacy eslint / typecheck fields to the new shape', () => {
+describe('legacy-shape adapter (S, ISP)', async () => {
+	it('maps the legacy eslint / typecheck fields to the new shape', async () => {
 		const lite = toAreaRulesLite({
 			eslint: [
 				'apps/web/eslint.config.mjs',
@@ -48,7 +48,7 @@ describe('legacy-shape adapter (S, ISP)', () => {
 		expect(lite.typecheckConfigs).toEqual(['apps/web/tsconfig.json']);
 	});
 
-	it('handles an empty area (the `vanilla-js` fallback case)', () => {
+	it('handles an empty area (the `vanilla-js` fallback case)', async () => {
 		const lite = toAreaRulesLite({ eslint: [], typecheck: [] });
 		expect(lite.linterConfigs).toEqual([]);
 		expect(lite.typecheckConfigs).toEqual([]);

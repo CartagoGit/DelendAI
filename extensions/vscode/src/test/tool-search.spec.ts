@@ -45,7 +45,7 @@ const createVscode = () => {
 	return { vscode, commands, panels, messages, picks };
 };
 
-describe('mcp-vertex.toolSearch', () => {
+describe('mcp-vertex.toolSearch', async () => {
 	it('opens a quick pick with the live tool list', async () => {
 		const { vscode, commands, picks, messages } = createVscode();
 		let overviewCalls = 0;

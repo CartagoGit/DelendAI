@@ -20,7 +20,7 @@ const write = (root: string, rel: string, body: string): void => {
 	writeFileSync(abs, body, 'utf8');
 };
 
-describe('search regex + glob (M11)', () => {
+describe('search regex + glob (M11)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-rg-'));

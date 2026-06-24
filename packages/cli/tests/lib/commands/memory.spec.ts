@@ -50,8 +50,8 @@ const find = (name: string): ICliCommand => {
 	return command;
 };
 
-describe('memory group (f00046 S2)', () => {
-	it('exposes the 6 canonical commands', () => {
+describe('memory group (f00046 S2)', async () => {
+	it('exposes the 6 canonical commands', async () => {
 		expect(memoryCommands.map((c) => c.name)).toEqual([
 			'memory save',
 			'memory recall',

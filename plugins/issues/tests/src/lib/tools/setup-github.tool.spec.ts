@@ -19,8 +19,8 @@ const deps = (over: Partial<IGithubSetupDeps> = {}): IGithubSetupDeps => ({
 const body = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}');
 
-describe('runSetupGithubTool', () => {
-	it('returns the detected context + steps + guide', () => {
+describe('runSetupGithubTool', async () => {
+	it('returns the detected context + steps + guide', async () => {
 		const out = body(
 			runSetupGithubTool({ namespacePrefix: 'issues', deps: deps() }),
 		);
@@ -32,7 +32,7 @@ describe('runSetupGithubTool', () => {
 		expect(out.guide).toContain('# GitHub issues — setup guide');
 	});
 
-	it('reflects an already-configured workspace', () => {
+	it('reflects an already-configured workspace', async () => {
 		const out = body(
 			runSetupGithubTool({
 				namespacePrefix: 'issues',

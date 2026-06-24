@@ -65,7 +65,7 @@ Seed for the log-hint e2e.
 	expect(sync.ok).toBe(true);
 };
 
-describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', () => {
+describe('e2e: tool failure carries a logHint over the wire (f00045 S4)', async () => {
 	let harness: IAssembledProposalsServer;
 
 	beforeEach(async () => {

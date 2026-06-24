@@ -23,8 +23,8 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/web-fetch optionsSchema (S9 F8)', () => {
-	it('exposes an optionsSchema', () => {
+describe('@mcp-vertex/web-fetch optionsSchema (S9 F8)', async () => {
+	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(
 			plugin.optionsSchema?.safeParse({ allowList: ['example.com'] })
@@ -39,7 +39,7 @@ describe('@mcp-vertex/web-fetch optionsSchema (S9 F8)', () => {
 		expect(regs.tools?.length).toBeGreaterThan(0);
 	});
 
-	it('throws before wiring tools when allowList has the wrong type', () => {
+	it('throws before wiring tools when allowList has the wrong type', async () => {
 		expect(() =>
 			plugin.register(baseCtx({ allowList: 'example.com' })),
 		).toThrow(/rejected its options/);

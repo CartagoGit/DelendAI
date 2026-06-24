@@ -86,7 +86,7 @@ const SYNC_IO_ALLOWLIST = new Set<string>([
 const SYNC_IO_PATTERN =
 	/\b(existsSync|readFileSync|readdirSync|mkdirSync|writeFileSync)\b/;
 
-describe('plugin satellite drift budget (l00008 s7)', () => {
+describe('plugin satellite drift budget (l00008 s7)', async () => {
 	it('0 sync node:fs calls in plugins/*/src outside the documented allowlist', async () => {
 		const files = await collectPluginSourceFiles();
 		const violations: string[] = [];

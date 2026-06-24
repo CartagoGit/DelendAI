@@ -20,14 +20,14 @@ import type {
 	IRoundContextSourceMeta,
 } from '../../../../src/lib/swarm/round-context-types';
 
-describe('round-context-hash', () => {
-	it('computeFingerprint returns an rh- prefixed 16-char hex', () => {
+describe('round-context-hash', async () => {
+	it('computeFingerprint returns an rh- prefixed 16-char hex', async () => {
 		const hash = computeFingerprint('hello world');
 		expect(hash).toMatch(/^rh-[a-f0-9]{16}$/);
 		expect(computeFingerprint('hello world')).toBe(hash);
 	});
 
-	it('computeAgeMinutes calculates correct age', () => {
+	it('computeAgeMinutes calculates correct age', async () => {
 		expect(computeAgeMinutes(null)).toBeNull();
 		expect(computeAgeMinutes('invalid-date')).toBeNull();
 
@@ -53,7 +53,7 @@ describe('round-context-hash', () => {
 	});
 });
 
-describe('round-context-digest', () => {
+describe('round-context-digest', async () => {
 	let workspace: string;
 	let digestPath: string;
 
@@ -101,7 +101,7 @@ describe('round-context-digest', () => {
 		resumeHint: { mode: 'unknown', proposalId: 'p1', reason: 'none' },
 	});
 
-	it('buildRoundContextDigest builds digest correctly', () => {
+	it('buildRoundContextDigest builds digest correctly', async () => {
 		const input = getDummyInput();
 		const digest = buildRoundContextDigest(input);
 		expect(digest.digestVersion).toBe(1);
@@ -118,7 +118,7 @@ describe('round-context-digest', () => {
 		expect(read?.coreDocHashes['a.md']).toBe('rh-123');
 	});
 
-	it('isDigestStale checks core docs and sources', () => {
+	it('isDigestStale checks core docs and sources', async () => {
 		const digest = buildRoundContextDigest(getDummyInput());
 
 		// Not stale

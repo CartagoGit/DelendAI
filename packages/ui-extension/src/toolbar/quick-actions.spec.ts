@@ -6,8 +6,8 @@ import {
 	filterByHost,
 } from './quick-actions';
 
-describe('defaultQuickActions', () => {
-	it('returns exactly 10 actions in a stable order', () => {
+describe('defaultQuickActions', async () => {
+	it('returns exactly 10 actions in a stable order', async () => {
 		const a = defaultQuickActions();
 		expect(a).toHaveLength(10);
 		expect(a.map((x) => x.id)).toEqual([
@@ -24,7 +24,7 @@ describe('defaultQuickActions', () => {
 		]);
 	});
 
-	it('each action carries the required fields', () => {
+	it('each action carries the required fields', async () => {
 		for (const a of defaultQuickActions()) {
 			expect(a.id).toMatch(/^[a-z]+\.[a-zA-Z]+$/);
 			expect(a.labelKey.length).toBeGreaterThan(0);
@@ -34,7 +34,7 @@ describe('defaultQuickActions', () => {
 		}
 	});
 
-	it('only plugin-gated actions declare `requires`', () => {
+	it('only plugin-gated actions declare `requires`', async () => {
 		const gated = defaultQuickActions().filter(
 			(a) => a.requires !== undefined,
 		);
@@ -49,13 +49,13 @@ describe('defaultQuickActions', () => {
 	});
 });
 
-describe('filterByHost', () => {
-	it('returns the same set when no loadedPlugins are given', () => {
+describe('filterByHost', async () => {
+	it('returns the same set when no loadedPlugins are given', async () => {
 		const a = defaultQuickActions();
 		expect(filterByHost(a, 'vscode', [])).toEqual(a);
 	});
 
-	it('drops actions whose `requires` is not satisfied', () => {
+	it('drops actions whose `requires` is not satisfied', async () => {
 		const a = defaultQuickActions();
 		const out = filterByHost(a, 'vscode', ['git', 'logs']);
 		const ids = out.map((x) => x.id);
@@ -66,7 +66,7 @@ describe('filterByHost', () => {
 		expect(ids).not.toContain('web.fetch');
 	});
 
-	it('keeps actions whose `requires` is empty', () => {
+	it('keeps actions whose `requires` is empty', async () => {
 		const a = defaultQuickActions();
 		const out = filterByHost(a, 'vscode', []);
 		expect(out.find((x) => x.id === 'proposals.board')).toBeDefined();

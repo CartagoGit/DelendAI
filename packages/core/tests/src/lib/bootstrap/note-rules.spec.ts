@@ -12,12 +12,12 @@ import {
 import type { INoteContext } from '@mcp-vertex/core/lib/bootstrap/note-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: (p) => (p in files ? ['exists'] : []),
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async (p) => (p in files ? ['exists'] : []),
 });
 
-const makeAnalysis = (
+const makeAnalysis = async (
 	overrides: {
 		hasMcpProject?: boolean;
 		mcpEvidence?: readonly string[];
@@ -39,9 +39,9 @@ const makeAnalysis = (
 	return analyzeProject(reader(files));
 };
 
-const makeCtx = (
+const makeCtx = async (
 	overrides: Partial<{
-		analysis: ReturnType<typeof makeAnalysis>;
+		analysis: Awaited<ReturnType<typeof makeAnalysis>>;
 		tests: boolean;
 		defaults: {
 			keepLegacy: boolean;
@@ -49,8 +49,8 @@ const makeCtx = (
 			warnings: readonly string[];
 		};
 	}> = {},
-): INoteContext => ({
-	analysis: overrides.analysis ?? makeAnalysis(),
+): Promise<INoteContext> => ({
+	analysis: overrides.analysis ?? (await makeAnalysis()),
 	defaults: overrides.defaults ?? {
 		keepLegacy: false,
 		reasons: [],
@@ -59,8 +59,8 @@ const makeCtx = (
 	tests: overrides.tests ?? true,
 });
 
-describe('DEFAULT_NOTE_RULES (declarative table)', () => {
-	it('lists the six built-in note rules', () => {
+describe('DEFAULT_NOTE_RULES (declarative table)', async () => {
+	it('lists the six built-in note rules', async () => {
 		const ids = DEFAULT_NOTE_RULES.map((r) => r.id);
 		expect(ids).toEqual([
 			'pattern-knowledge-hints',
@@ -73,16 +73,16 @@ describe('DEFAULT_NOTE_RULES (declarative table)', () => {
 	});
 });
 
-describe('matchNotes', () => {
-	it('emits pattern knowledge hints first (priority 1000)', () => {
-		const out = matchNotes(makeCtx());
+describe('matchNotes', async () => {
+	it('emits pattern knowledge hints first (priority 1000)', async () => {
+		const out = matchNotes(await makeCtx());
 		// The first emitted note is the first knowledge hint from
 		// the pattern catalog — for a tsconfig-only project the
 		// `library` catalog is the right match.
 		expect(out[0]).toMatch(/Guard|public|barrel|API|export|pattern/);
 	});
-	it('emits the mcp-server-state note for a fresh project', () => {
-		const out = matchNotes(makeCtx());
+	it('emits the mcp-server-state note for a fresh project', async () => {
+		const out = matchNotes(await makeCtx());
 		// Debug aid: surface the actual output when this fails.
 		if (!out.some((n) => n.startsWith('No MCP server found'))) {
 			throw new Error(`debug notes=${JSON.stringify(out)}`);
@@ -95,12 +95,12 @@ describe('matchNotes', () => {
 			),
 		).toBe(true);
 	});
-	it('emits the mcp-server-state note for a project that already has one', () => {
+	it('emits the mcp-server-state note for a project that already has one', async () => {
 		const a = makeAnalysis({
 			hasMcpProject: true,
 			mcpEvidence: ['depends on @modelcontextprotocol/sdk'],
 		});
-		const out = matchNotes(makeCtx({ analysis: a }));
+		const out = matchNotes(await makeCtx({ analysis: await a }));
 		expect(
 			out.some((n) =>
 				n.startsWith(
@@ -109,42 +109,42 @@ describe('matchNotes', () => {
 			),
 		).toBe(true);
 	});
-	it('emits the tests-policy note (default: tests enabled)', () => {
-		const out = matchNotes(makeCtx());
+	it('emits the tests-policy note (default: tests enabled)', async () => {
+		const out = matchNotes(await makeCtx());
 		expect(out).toContain('Generate a test alongside each tool.');
 	});
-	it('emits the tests-policy note for `tests=false`', () => {
-		const out = matchNotes(makeCtx({ tests: false }));
+	it('emits the tests-policy note for `tests=false`', async () => {
+		const out = matchNotes(await makeCtx({ tests: false }));
 		expect(out).toContain('Tests omitted (--mcp-project-tests=false).');
 	});
-	it('emits the agent-configs-align note when configs are present', () => {
+	it('emits the agent-configs-align note when configs are present', async () => {
 		const a = makeAnalysis({ agentConfigs: ['AGENTS.md'] });
-		const out = matchNotes(makeCtx({ analysis: a }));
+		const out = matchNotes(await makeCtx({ analysis: await a }));
 		expect(out).toContain(
 			'Align with the existing agent config (AGENTS.md).',
 		);
 	});
-	it('does NOT emit the agent-configs-align note when no configs are present', () => {
-		const out = matchNotes(makeCtx());
+	it('does NOT emit the agent-configs-align note when no configs are present', async () => {
+		const out = matchNotes(await makeCtx());
 		expect(out).not.toContain('Align with the existing agent config');
 	});
-	it('emits the keep-legacy-recommendation note for keepLegacy=true', () => {
+	it('emits the keep-legacy-recommendation note for keepLegacy=true', async () => {
 		const out = matchNotes(
-			makeCtx({
+			await makeCtx({
 				defaults: { keepLegacy: true, reasons: ['foo'], warnings: [] },
 			}),
 		);
 		expect(out).toContain('Recommended keepLegacy=true: foo.');
 	});
-	it('emits the keep-legacy-recommendation note for the greenfield default', () => {
-		const out = matchNotes(makeCtx());
+	it('emits the keep-legacy-recommendation note for the greenfield default', async () => {
+		const out = matchNotes(await makeCtx());
 		expect(out).toContain(
 			'Recommended keepLegacy=false: greenfield-safe default.',
 		);
 	});
-	it('emits the keep-legacy-warnings note (spread from defaults.warnings)', () => {
+	it('emits the keep-legacy-warnings note (spread from defaults.warnings)', async () => {
 		const out = matchNotes(
-			makeCtx({
+			await makeCtx({
 				defaults: {
 					keepLegacy: true,
 					reasons: [],
@@ -155,8 +155,8 @@ describe('matchNotes', () => {
 		expect(out).toContain('first warning');
 		expect(out).toContain('second warning');
 	});
-	it('emits notes in priority order (knowledge hints → mcp-state → tests → agent-configs → keep-legacy → warnings)', () => {
-		const out = matchNotes(makeCtx());
+	it('emits notes in priority order (knowledge hints → mcp-state → tests → agent-configs → keep-legacy → warnings)', async () => {
+		const out = matchNotes(await makeCtx());
 		const idxMcp = out.findIndex((n) =>
 			n.startsWith('No MCP server found'),
 		);
@@ -169,8 +169,8 @@ describe('matchNotes', () => {
 	});
 });
 
-describe('integration: buildServerBlueprint uses the rule table', () => {
-	it('produces the same notes as the pre-refactor inline builder', () => {
+describe('integration: buildServerBlueprint uses the rule table', async () => {
+	it('produces the same notes as the pre-refactor inline builder', async () => {
 		// The pre-refactor builder produced, in order:
 		//   - pattern.knowledgeHints
 		//   - MCP-server note
@@ -179,7 +179,7 @@ describe('integration: buildServerBlueprint uses the rule table', () => {
 		//   - keep-legacy note
 		//   - defaults.warnings (spread)
 		const a = makeAnalysis({ agentConfigs: ['AGENTS.md'] });
-		const bp = buildServerBlueprint(a);
+		const bp = buildServerBlueprint(await a);
 		// First note is from the pattern knowledge hints.
 		expect(bp.notes[0]).toMatch(
 			/Guard the public barrel|public API|typecheck|project-specific tools|patterns emerge/,

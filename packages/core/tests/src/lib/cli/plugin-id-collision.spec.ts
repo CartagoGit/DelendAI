@@ -34,7 +34,7 @@ const assembleTwoPlugins = () => {
 		'/cwd',
 	);
 	return assembleCliConfig(args, {
-		readFile: () => undefined,
+		readFile: async () => undefined,
 		import: async (specifier: string) => ({
 			default: specifier.includes('beta')
 				? pluginWithPingTool('beta')
@@ -43,7 +43,7 @@ const assembleTwoPlugins = () => {
 	});
 };
 
-describe('R12 — same internal tool id across plugins', () => {
+describe('R12 — same internal tool id across plugins', async () => {
 	it('assembles without an id collision and qualifies each id by namespace', async () => {
 		const { config, loadResult } = await assembleTwoPlugins();
 		expect(loadResult.errors).toEqual([]);

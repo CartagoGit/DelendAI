@@ -27,27 +27,27 @@ export class PresetDetector {
 	 * Resolve one area to a presetId (or `undefined` if no adapter
 	 * claims it).
 	 */
-	detect(
+	async detect(
 		reader: IFileReader,
 		areaDir: string,
-	): ILanguageDetection | undefined {
-		const deps = this.#readDeps(reader, areaDir);
+	): Promise<ILanguageDetection | undefined> {
+		const deps = await this.#readDeps(reader, areaDir);
 		for (const adapter of this.#adapters) {
-			const hit = adapter.detect(reader, areaDir, deps);
+			const hit = await adapter.detect(reader, areaDir, deps);
 			if (hit !== undefined) return hit;
 		}
 		return undefined;
 	}
 
-	#readDeps(
+	async #readDeps(
 		reader: IFileReader,
 		areaDir: string,
-	): Readonly<Record<string, string>> {
+	): Promise<Readonly<Record<string, string>>> {
 		const rel =
 			areaDir === '' || areaDir === 'root'
 				? 'package.json'
 				: `${areaDir}/package.json`;
-		const raw = reader.readFile(rel);
+		const raw = await reader.readFile(rel);
 		if (raw === undefined) return {};
 		try {
 			const pkg = JSON.parse(raw) as {

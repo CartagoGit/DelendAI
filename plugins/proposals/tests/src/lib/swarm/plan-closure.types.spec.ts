@@ -41,8 +41,8 @@ const fmWith = (
 	} as unknown as IProposalFrontmatter;
 };
 
-describe('policyFromFrontmatter', () => {
-	it('returns the canonical defaults when closureGate is absent', () => {
+describe('policyFromFrontmatter', async () => {
+	it('returns the canonical defaults when closureGate is absent', async () => {
 		const policy = policyFromFrontmatter(fmWith(undefined));
 		expect(policy).toEqual({
 			requirePeerReview: true,
@@ -51,12 +51,12 @@ describe('policyFromFrontmatter', () => {
 		});
 	});
 
-	it('returns the canonical defaults when all flags are missing', () => {
+	it('returns the canonical defaults when all flags are missing', async () => {
 		const policy = policyFromFrontmatter(fmWith({}));
 		expect(policy).toEqual(DEFAULT_CLOSURE_GATE_POLICY);
 	});
 
-	it('respects explicit false values', () => {
+	it('respects explicit false values', async () => {
 		const policy = policyFromFrontmatter(
 			fmWith({
 				requirePeerReview: false,
@@ -71,7 +71,7 @@ describe('policyFromFrontmatter', () => {
 		});
 	});
 
-	it('coerces YAML-quirky booleans (1, 0, "yes", "no")', () => {
+	it('coerces YAML-quirky booleans (1, 0, "yes", "no")', async () => {
 		const policy = policyFromFrontmatter(
 			fmWith({
 				requirePeerReview: 1,
@@ -84,7 +84,7 @@ describe('policyFromFrontmatter', () => {
 		expect(policy.requireAllChildrenDone).toBe(true);
 	});
 
-	it('falls back to the default for unrecognised string values', () => {
+	it('falls back to the default for unrecognised string values', async () => {
 		const policy = policyFromFrontmatter(
 			fmWith({
 				requirePeerReview: 'maybe',
@@ -94,7 +94,7 @@ describe('policyFromFrontmatter', () => {
 		expect(policy.requirePeerReview).toBe(true);
 	});
 
-	it('treats null and undefined as missing (uses default)', () => {
+	it('treats null and undefined as missing (uses default)', async () => {
 		const policy = policyFromFrontmatter(
 			fmWith({
 				requirePeerReview: null,

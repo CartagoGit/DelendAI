@@ -24,8 +24,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-describe('parseIdFromFilename', () => {
-	it('extracts the id from a canonical filename', () => {
+describe('parseIdFromFilename', async () => {
+	it('extracts the id from a canonical filename', async () => {
 		expect(parseIdFromFilename('a00001-14-06-2026-foo-bar-baz.md')).toBe(
 			'a00001',
 		);
@@ -34,7 +34,7 @@ describe('parseIdFromFilename', () => {
 		);
 	});
 
-	it('returns null for non-canonical filenames', () => {
+	it('returns null for non-canonical filenames', async () => {
 		expect(parseIdFromFilename('x00050-quick-wins.md')).toBeNull();
 		expect(parseIdFromFilename('a1-not-zero-padded.md')).toBeNull();
 		expect(parseIdFromFilename('README.md')).toBeNull();
@@ -42,10 +42,10 @@ describe('parseIdFromFilename', () => {
 	});
 });
 
-describe('detectCollisions', () => {
+describe('detectCollisions', async () => {
 	const file = (id: string, name: string): IAuditFile => ({ id, file: name });
 
-	it('returns an empty list when every id is unique', () => {
+	it('returns an empty list when every id is unique', async () => {
 		const files = [
 			file('a00001', 'a00001-...md'),
 			file('a00002', 'a00002-...md'),
@@ -53,7 +53,7 @@ describe('detectCollisions', () => {
 		expect(detectCollisions(files)).toEqual([]);
 	});
 
-	it('groups files that share the same id', () => {
+	it('groups files that share the same id', async () => {
 		const files = [
 			file('a00034', 'a00034-...-gemini-...md'),
 			file('a00034', 'a00034-...-deepmind-...md'),
@@ -68,7 +68,7 @@ describe('detectCollisions', () => {
 		]);
 	});
 
-	it('sorts collisions by id (deterministic output for CI logs)', () => {
+	it('sorts collisions by id (deterministic output for CI logs)', async () => {
 		const files = [
 			file('a00005', 'a00005.md'),
 			file('a00005', 'a00005-dup.md'),
@@ -80,7 +80,7 @@ describe('detectCollisions', () => {
 	});
 });
 
-describe('collectAuditCollisions (integration: real filesystem under a temp dir)', () => {
+describe('collectAuditCollisions (integration: real filesystem under a temp dir)', async () => {
 	it('returns zero collisions for a fresh, all-unique folder', async () => {
 		const dir = await mkdtemp(join(tmpdir(), 'audit-ids-spec-'));
 		try {

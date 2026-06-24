@@ -26,7 +26,7 @@ const parse = (result: {
 	return value;
 };
 
-describe('auto_work (one-call action plan)', () => {
+describe('auto_work (one-call action plan)', async () => {
 	let root = '';
 	let options: IAutoWorkToolOptions;
 
@@ -123,7 +123,7 @@ describe('auto_work (one-call action plan)', () => {
 		expect(out.orchestration.policy).toContain('>1 tool calls');
 	});
 
-	it('builds the orchestration policy as a standalone pure helper', () => {
+	it('builds the orchestration policy as a standalone pure helper', async () => {
 		expect(
 			buildAutoWorkOrchestrationPolicy({
 				namespacePrefix: 'work',
@@ -217,7 +217,7 @@ describe('auto_work (one-call action plan)', () => {
 	});
 });
 
-describe('auto_work + loop-detector interaction (a00033 S3)', () => {
+describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 	let root = '';
 	let options: IAutoWorkToolOptions;
 

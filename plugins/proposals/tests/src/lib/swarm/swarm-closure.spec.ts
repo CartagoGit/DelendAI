@@ -86,8 +86,8 @@ const inputWith = (
 // Case 1: happy path → close
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 1: clean close', () => {
-	it('returns closureDecision: "close" when within budget, within policy, no locks, no orphans', () => {
+describe('runSwarmClosure — case 1: clean close', async () => {
+	it('returns closureDecision: "close" when within budget, within policy, no locks, no orphans', async () => {
 		const result = runSwarmClosure(inputWith());
 
 		expect(result.withinSwarmBudget).toBe(true);
@@ -101,8 +101,8 @@ describe('runSwarmClosure — case 1: clean close', () => {
 // Case 2: swarmViolation (block) → open_fix
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 2: block violation', () => {
-	it('returns closureDecision: "open_fix" when a block severity budget violation is present', () => {
+describe('runSwarmClosure — case 2: block violation', async () => {
+	it('returns closureDecision: "open_fix" when a block severity budget violation is present', async () => {
 		// maxPremiumCalls: 1 + observed premiumCalls: 5 → block.
 		const result = runSwarmClosure(
 			inputWith({
@@ -121,7 +121,7 @@ describe('runSwarmClosure — case 2: block violation', () => {
 		expect(result.closureDecision).toBe('open_fix');
 	});
 
-	it('returns closureDecision: "open_fix" when a continuity policy block violation is present', () => {
+	it('returns closureDecision: "open_fix" when a continuity policy block violation is present', async () => {
 		const result = runSwarmClosure(
 			inputWith({
 				observedContinuity: {
@@ -142,8 +142,8 @@ describe('runSwarmClosure — case 2: block violation', () => {
 // Case 3: agentTree.orphanCount > 0 → open_fix
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 3: orphan subagents', () => {
-	it('returns closureDecision: "open_fix" when the subagent registry has orphans', () => {
+describe('runSwarmClosure — case 3: orphan subagents', async () => {
+	it('returns closureDecision: "open_fix" when the subagent registry has orphans', async () => {
 		const result = runSwarmClosure(
 			inputWith({
 				agentTree: {
@@ -164,8 +164,8 @@ describe('runSwarmClosure — case 3: orphan subagents', () => {
 // Case 4: stale locks → open_fix
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 4: stale locks', () => {
-	it('returns closureDecision: "open_fix" when a live lock is older than stale_after_minutes', () => {
+describe('runSwarmClosure — case 4: stale locks', async () => {
+	it('returns closureDecision: "open_fix" when a live lock is older than stale_after_minutes', async () => {
 		// `stale_after_minutes` defaults to 10; we set last_seen 30 min ago.
 		const result = runSwarmClosure(
 			inputWith({
@@ -184,7 +184,7 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 		expect(result.closureDecision).toBe('open_fix');
 	});
 
-	it('accepts fresh locks without rejecting closure', () => {
+	it('accepts fresh locks without rejecting closure', async () => {
 		const result = runSwarmClosure(
 			inputWith({
 				locks: [
@@ -207,8 +207,8 @@ describe('runSwarmClosure — case 4: stale locks', () => {
 // Case 5: missing checkpoint when requireCheckpointAfterTask → open_fix
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 5: missing checkpoint', () => {
-	it('returns closureDecision: "open_fix" when the policy demands a checkpoint and none was emitted', () => {
+describe('runSwarmClosure — case 5: missing checkpoint', async () => {
+	it('returns closureDecision: "open_fix" when the policy demands a checkpoint and none was emitted', async () => {
 		const result = runSwarmClosure(
 			inputWith({
 				checkpointPresent: false,
@@ -224,8 +224,8 @@ describe('runSwarmClosure — case 5: missing checkpoint', () => {
 // Case 6: empty proposal budget is permissive
 // ---------------------------------------------------------------------------
 
-describe('runSwarmClosure — case 6: no declared budget', () => {
-	it('treats an empty budget/policy as no-enforcement', () => {
+describe('runSwarmClosure — case 6: no declared budget', async () => {
+	it('treats an empty budget/policy as no-enforcement', async () => {
 		const result = runSwarmClosure(
 			inputWith({
 				budget: {},

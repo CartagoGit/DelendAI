@@ -11,40 +11,40 @@ import {
 } from '@mcp-vertex/test-convention/public';
 
 const reader: IFileReader = {
-	readFile: () => undefined,
-	exists: () => false,
-	listDir: () => [],
+	readFile: async () => undefined,
+	exists: async () => false,
+	listDir: async () => [],
 };
 
-describe('renderOverviewMarkdown', () => {
-	it('mentions the spec extension and layout', () => {
+describe('renderOverviewMarkdown', async () => {
+	it('mentions the spec extension and layout', async () => {
 		const md = renderOverviewMarkdown(DEFAULT_CONVENTION);
 		expect(md).toContain('.spec.ts');
 		expect(md).toContain('colocate');
 	});
 
-	it('reflects a custom layout override', () => {
+	it('reflects a custom layout override', async () => {
 		const c = mergeConvention({ specLayout: 'tests-mirror' });
 		const md = renderOverviewMarkdown(c);
 		expect(md).toContain('tests-mirror');
 	});
 
-	it('lists all forbidden patterns', () => {
+	it('lists all forbidden patterns', async () => {
 		const md = renderOverviewMarkdown(DEFAULT_CONVENTION);
 		for (const p of DEFAULT_CONVENTION.forbiddenPatterns) {
 			expect(md).toContain(p.source);
 		}
 	});
 
-	it('renders the coverage thresholds', () => {
+	it('renders the coverage thresholds', async () => {
 		const md = renderOverviewMarkdown(DEFAULT_CONVENTION);
 		expect(md).toContain('80%');
 		expect(md).toContain('70%');
 	});
 });
 
-describe('renderRunnersMarkdown', () => {
-	it('names the runner and mock API', () => {
+describe('renderRunnersMarkdown', async () => {
+	it('names the runner and mock API', async () => {
 		const md = renderRunnersMarkdown(reader, {
 			name: 'vitest',
 			mockApi: 'vi',
@@ -56,8 +56,8 @@ describe('renderRunnersMarkdown', () => {
 	});
 });
 
-describe('renderCoverageMarkdown', () => {
-	it('renders a markdown table with the four thresholds', () => {
+describe('renderCoverageMarkdown', async () => {
+	it('renders a markdown table with the four thresholds', async () => {
 		const md = renderCoverageMarkdown(DEFAULT_CONVENTION);
 		expect(md).toContain('| Metric');
 		expect(md).toContain('lines');
@@ -66,7 +66,7 @@ describe('renderCoverageMarkdown', () => {
 		expect(md).toContain('statements');
 	});
 
-	it('documents the per-project override shape', () => {
+	it('documents the per-project override shape', async () => {
 		const md = renderCoverageMarkdown(DEFAULT_CONVENTION);
 		expect(md).toContain('coverageThreshold');
 		expect(md).toContain('mcp-vertex.config.json');

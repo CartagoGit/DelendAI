@@ -12,8 +12,8 @@ import {
 	MARKERS,
 } from '../src/lib/markers';
 
-describe('validate — single line', () => {
-	it('accepts every state in the canonical table', () => {
+describe('validate — single line', async () => {
+	it('accepts every state in the canonical table', async () => {
 		for (const state of CLOSE_MARKER_STATES) {
 			const line = formatCloseMarker(
 				state,
@@ -26,7 +26,7 @@ describe('validate — single line', () => {
 		}
 	});
 
-	it('rejects an empty line as missing', () => {
+	it('rejects an empty line as missing', async () => {
 		expect(validateCloseMarker('')).toEqual({
 			ok: false,
 			violation: 'missing',
@@ -37,12 +37,12 @@ describe('validate — single line', () => {
 		});
 	});
 
-	it('rejects text without a recognised emoji as bad-format', () => {
+	it('rejects text without a recognised emoji as bad-format', async () => {
 		expect(validateCloseMarker('foo').ok).toBe(false);
 		expect(validateCloseMarker('foo').violation).toBe('bad-format');
 	});
 
-	it('rejects the 5 reason-required states when no reason is supplied', () => {
+	it('rejects the 5 reason-required states when no reason is supplied', async () => {
 		const required = [
 			'CAP',
 			'RE-PIVOT',
@@ -64,33 +64,33 @@ describe('validate — single line', () => {
 		}
 	});
 
-	it('reports placeholder-reason when the helper inserted <reason-missing>', () => {
+	it('reports placeholder-reason when the helper inserted <reason-missing>', async () => {
 		const line = formatCloseMarker('BLOQUEADO'); // helper auto-inserts placeholder
 		const result = validateCloseMarker(line);
 		expect(result.ok).toBe(false);
 		expect(result.violations).toContain('placeholder-reason');
 	});
 
-	it('reports too-long when the line exceeds MAX_LINE_LEN', () => {
+	it('reports too-long when the line exceeds MAX_LINE_LEN', async () => {
 		const long = `🟨 [CAP] — ${'x'.repeat(MAX_LINE_LEN)}`;
 		const result = validateCloseMarker(long);
 		expect(result.ok).toBe(false);
 		expect(result.violations ?? []).toContain('too-long');
 	});
 
-	it('tolerates surrounding whitespace and CRLF', () => {
+	it('tolerates surrounding whitespace and CRLF', async () => {
 		const line = formatCloseMarker('HECHO');
 		expect(validateCloseMarker(`  \t${line}\r\n`).ok).toBe(true);
 	});
 });
 
-describe('validate — full response', () => {
-	it('accepts a response whose final line is the marker', () => {
+describe('validate — full response', async () => {
+	it('accepts a response whose final line is the marker', async () => {
 		const text = `Algo de prosa antes...\n\n${formatCloseMarker('HECHO')}`;
 		expect(validateResponseClose(text).ok).toBe(true);
 	});
 
-	it('rejects extra prose after the marker', () => {
+	it('rejects extra prose after the marker', async () => {
 		const text = `Prosa\n${formatCloseMarker('HECHO')}\nY más prosa después`;
 		const result = validateResponseClose(text);
 		// Once prose lands AFTER the marker, that prose becomes the
@@ -99,7 +99,7 @@ describe('validate — full response', () => {
 		expect(result.state).toBeUndefined();
 	});
 
-	it('rejects trailing inline comment on the same line as the marker', () => {
+	it('rejects trailing inline comment on the same line as the marker', async () => {
 		// Build the line manually so the inline junk is NOT treated as a
 		// reason by `validateCloseMarker`. Use a state that does NOT
 		// accept optional reasons so the trailing comment is forced into
@@ -112,20 +112,20 @@ describe('validate — full response', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('rejects extra lines after the marker', () => {
+	it('rejects extra lines after the marker', async () => {
 		const text = `${formatCloseMarker('HECHO')}\nAnother line`;
 		const result = validateResponseClose(text);
 		expect(result.ok).toBe(false);
 	});
 
-	it('reports missing when the response is empty', () => {
+	it('reports missing when the response is empty', async () => {
 		expect(validateResponseClose('').violation).toBe('missing');
 		expect(validateResponseClose('   \n   ').violation).toBe('missing');
 	});
 });
 
-describe('splitLastLine', () => {
-	it('returns the trimmed last line', () => {
+describe('splitLastLine', async () => {
+	it('returns the trimmed last line', async () => {
 		const r = splitLastLine('a\nb\nc  ');
 		expect(r.lastLine).toBe('c');
 		expect(r.hasExtraProse).toBe(false);

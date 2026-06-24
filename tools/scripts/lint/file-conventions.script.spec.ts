@@ -35,14 +35,14 @@ const mkTmpDir = async (): Promise<string> => {
 	return base;
 };
 
-describe('file-conventions.ts (pure classifier)', () => {
-	it('classifies a tool file', () => {
+describe('file-conventions.ts (pure classifier)', async () => {
+	it('classifies a tool file', async () => {
 		expect(
 			classifyPath('packages/core/src/lib/tools/bootstrap-tool.ts'),
 		).toBe('tool');
 	});
 
-	it('classifies an interface contract by suffix', () => {
+	it('classifies an interface contract by suffix', async () => {
 		expect(
 			classifyPath(
 				'plugins/proposals/src/lib/contracts/interfaces/tool-descriptor.interface.ts',
@@ -50,7 +50,7 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('interface');
 	});
 
-	it('classifies a constant contract by suffix', () => {
+	it('classifies a constant contract by suffix', async () => {
 		expect(
 			classifyPath(
 				'packages/core/src/lib/contracts/constants/proposal-glossary.constant.ts',
@@ -58,27 +58,27 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('constant');
 	});
 
-	it('classifies a service by suffix even when it lives outside `services/`', () => {
+	it('classifies a service by suffix even when it lives outside `services/`', async () => {
 		expect(
 			classifyPath('packages/client/src/lib/services/search-service.ts'),
 		).toBe('service');
 	});
 
-	it('classifies a public barrel', () => {
+	it('classifies a public barrel', async () => {
 		expect(classifyPath('packages/core/src/public/index.ts')).toBe(
 			'barrel',
 		);
 		expect(classifyPath('packages/core/src/index.ts')).toBe('barrel');
 	});
 
-	it('does NOT classify a top-level `index.ts` that is not the package entry as a barrel', () => {
+	it('does NOT classify a top-level `index.ts` that is not the package entry as a barrel', async () => {
 		// A feature-local `index.ts` is not a barrel per the convention.
 		expect(classifyPath('packages/core/src/lib/utils/index.ts')).toBe(
 			'other',
 		);
 	});
 
-	it('classifies generated outputs and gives them priority over role suffixes', () => {
+	it('classifies generated outputs and gives them priority over role suffixes', async () => {
 		expect(classifyPath('packages/core/src/generated/api-schema.ts')).toBe(
 			'generated',
 		);
@@ -88,18 +88,18 @@ describe('file-conventions.ts (pure classifier)', () => {
 		expect(classifyPath('apps/web/.astro/types.d.ts')).toBe('generated');
 	});
 
-	it('classifies TypeScript config files', () => {
+	it('classifies TypeScript config files', async () => {
 		expect(classifyPath('plugins/search/vitest.config.ts')).toBe('config');
 		expect(classifyPath('apps/web/astro.config.ts')).toBe('config');
 	});
 
-	it('classifies type companion files', () => {
+	it('classifies type companion files', async () => {
 		expect(
 			classifyPath('plugins/issues/src/lib/contracts/issue.types.ts'),
 		).toBe('type');
 	});
 
-	it('classifies tests before role suffixes', () => {
+	it('classifies tests before role suffixes', async () => {
 		expect(
 			classifyPath('plugins/audit/tests/src/lib/plugin-options.spec.ts'),
 		).toBe('test');
@@ -110,7 +110,7 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('test');
 	});
 
-	it('classifies project-native folders that intentionally avoid role suffixes', () => {
+	it('classifies project-native folders that intentionally avoid role suffixes', async () => {
 		expect(
 			classifyPath('extensions/vscode/src/commands/open-docs.ts'),
 		).toBe('command');
@@ -134,7 +134,7 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('transport');
 	});
 
-	it('classifies registry/register/factory/builder roles', () => {
+	it('classifies registry/register/factory/builder roles', async () => {
 		expect(
 			classifyPath('packages/core/src/lib/registries/tool-registry.ts'),
 		).toBe('registry');
@@ -149,7 +149,7 @@ describe('file-conventions.ts (pure classifier)', () => {
 		).toBe('builder');
 	});
 
-	it('classifies stable domain folders', () => {
+	it('classifies stable domain folders', async () => {
 		expect(
 			classifyPath('packages/core/src/lib/bootstrap/analyze-tool.ts'),
 		).toBe('bootstrap');
@@ -192,25 +192,25 @@ describe('file-conventions.ts (pure classifier)', () => {
 		);
 	});
 
-	it('returns `other` for unclassified paths', () => {
+	it('returns `other` for unclassified paths', async () => {
 		expect(classifyPath('packages/core/src/lib/utils/parse-yaml.ts')).toBe(
 			'other',
 		);
 	});
 
-	it('returns `other` for empty or non-string inputs', () => {
+	it('returns `other` for empty or non-string inputs', async () => {
 		// Defensive — the type system prevents this, but the runtime
 		// contract is part of the API.
 		expect(classifyPath('')).toBe('other');
 	});
 
-	it('normalises Windows backslashes', () => {
+	it('normalises Windows backslashes', async () => {
 		expect(
 			classifyPath('packages\\core\\src\\lib\\tools\\foo.tool.ts'),
 		).toBe('tool');
 	});
 
-	it('accepts a custom rule chain (Dependency Inversion)', () => {
+	it('accepts a custom rule chain (Dependency Inversion)', async () => {
 		const customRules: readonly IRoleRule[] = [
 			{ name: 'tool', match: (p) => p.endsWith('.special.ts') },
 		];
@@ -220,7 +220,7 @@ describe('file-conventions.ts (pure classifier)', () => {
 		expect(classifyPath('anywhere/foo.tool.ts', customRules)).toBe('other');
 	});
 
-	it('skips rules that throw without poisoning the chain', () => {
+	it('skips rules that throw without poisoning the chain', async () => {
 		const buggyRules: readonly IRoleRule[] = [
 			{
 				name: 'tool',
@@ -234,23 +234,23 @@ describe('file-conventions.ts (pure classifier)', () => {
 	});
 });
 
-describe('toRelPosix', () => {
-	it('returns empty string when path equals rootDir', () => {
+describe('toRelPosix', async () => {
+	it('returns empty string when path equals rootDir', async () => {
 		expect(toRelPosix('/repo', '/repo')).toBe('');
 	});
 
-	it('returns POSIX path with forward slashes', () => {
+	it('returns POSIX path with forward slashes', async () => {
 		expect(toRelPosix('/repo', '/repo/packages/core/index.ts')).toBe(
 			'packages/core/index.ts',
 		);
 	});
 
-	it('returns `..` prefix when path is outside rootDir', () => {
+	it('returns `..` prefix when path is outside rootDir', async () => {
 		expect(toRelPosix('/repo', '/other/x.ts')).toBe('../other/x.ts');
 	});
 });
 
-describe('walkAndClassify', () => {
+describe('walkAndClassify', async () => {
 	it('walks a small tmp tree and reports unmatched .ts files', async () => {
 		const root = await makeTmpTree({
 			'packages/core/src/lib/tools/foo.tool.ts': 'export const x = 1;',
@@ -303,12 +303,12 @@ describe('walkAndClassify', () => {
 	});
 });
 
-describe('formatReport', () => {
-	it('prints 0 unmatched for an empty list', () => {
+describe('formatReport', async () => {
+	it('prints 0 unmatched for an empty list', async () => {
 		expect(formatReport([])).toContain('0 unmatched');
 	});
 
-	it('prints each finding as one line', () => {
+	it('prints each finding as one line', async () => {
 		const out = formatReport([
 			{ relPath: 'a.ts', role: 'other', reason: 'unmatched' },
 			{ relPath: 'b.ts', role: 'other', reason: 'unmatched' },
@@ -318,7 +318,7 @@ describe('formatReport', () => {
 		expect(out).toContain('b.ts');
 	});
 
-	it('truncates after 50 findings', () => {
+	it('truncates after 50 findings', async () => {
 		const many = Array.from({ length: 80 }, (_, i) => ({
 			relPath: `f${i}.ts`,
 			role: 'other' as const,
@@ -329,7 +329,7 @@ describe('formatReport', () => {
 		expect(out).toContain('…and 30 more');
 	});
 
-	it('report mode (S2) collapses to the count line with no per-file noise', () => {
+	it('report mode (S2) collapses to the count line with no per-file noise', async () => {
 		const many = Array.from({ length: 80 }, (_, i) => ({
 			relPath: `f${i}.ts`,
 			role: 'other' as const,
@@ -342,7 +342,7 @@ describe('formatReport', () => {
 	});
 });
 
-describe('main() CLI shell', () => {
+describe('main() CLI shell', async () => {
 	it('exits 0 in report mode regardless of drift (S1 ships report-only)', async () => {
 		// Spawning `bun` mid-test would leak the host stderr. We only
 		// exercise the `main()` entrypoint path indirectly here by
@@ -358,13 +358,13 @@ describe('main() CLI shell', () => {
 		await rm(root, { recursive: true });
 	});
 
-	it('exists as an exported async function (smoke)', () => {
+	it('exists as an exported async function (smoke)', async () => {
 		expect(typeof main).toBe('function');
 	});
 });
 
-describe('DEFAULT_TS_RULES (closed-world sanity)', () => {
-	it('contains exactly the documented role rules', () => {
+describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
+	it('contains exactly the documented role rules', async () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name).sort();
 		const expected = [
 			'agent',
@@ -425,7 +425,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', () => {
 		expect(names.length).toBe(53);
 	});
 
-	it('lists generated first, then tests, config, scripts and commands (priority order)', () => {
+	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {
 		const names = DEFAULT_TS_RULES.map((r) => r.name);
 		expect(names[0]).toBe('generated');
 		expect(names[1]).toBe('test');

@@ -21,9 +21,9 @@ import {
 	locateProposal,
 } from '@mcp-vertex/proposals/lib/proposals/locate';
 
-describe('locate', () => {
-	describe('PROPOSAL_STATUS_FOLDERS', () => {
-		it('lists all 7 status folders', () => {
+describe('locate', async () => {
+	describe('PROPOSAL_STATUS_FOLDERS', async () => {
+		it('lists all 7 status folders', async () => {
 			expect(PROPOSAL_STATUS_FOLDERS).toHaveLength(7);
 			expect(PROPOSAL_STATUS_FOLDERS).toContain('ready');
 			expect(PROPOSAL_STATUS_FOLDERS).toContain('done');
@@ -33,7 +33,7 @@ describe('locate', () => {
 	// locateByIndex and locateByScan require disk fixtures. The shared
 	// locator is exercised end-to-end by `proposals_close_plan`'s
 	// integration path; here we assert the contract shape.
-	describe('locateProposal — contract', () => {
+	describe('locateProposal — contract', async () => {
 		it('returns null for an empty (missing) index without throwing', async () => {
 			const result = await locateProposal('q99999', {
 				indexPathAbs: '/nonexistent/path/index.json',

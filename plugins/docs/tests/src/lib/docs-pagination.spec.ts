@@ -40,7 +40,7 @@ const docsListHandler = async (workspaceRootAbs: string): Promise<Handler> => {
 const body = (res: IToolTextResult): Record<string, unknown> =>
 	JSON.parse((res.content[0] as { text: string }).text);
 
-describe('docs_list pagination (M11/H7)', () => {
+describe('docs_list pagination (M11/H7)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'docs-pg-'));

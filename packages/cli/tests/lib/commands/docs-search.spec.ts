@@ -37,13 +37,13 @@ const buildStubContext = () => {
 	return { ctx, calls };
 };
 
-const find = (name: string): ICliCommand => {
-	const command = registerAllCommands().find((c) => c.name === name);
+const find = async (name: string): Promise<ICliCommand> => {
+	const command = (await registerAllCommands()).find((c) => c.name === name);
 	if (command === undefined) throw new Error(`missing command: ${name}`);
 	return command;
 };
 
-describe('docs search (f00046 S6)', () => {
+describe('docs search (f00046 S6)', async () => {
 	it('requires a query and forwards include/limit', async () => {
 		const command = docsCommands[0] as ICliCommand;
 		const { ctx, calls } = buildStubContext();
@@ -57,17 +57,17 @@ describe('docs search (f00046 S6)', () => {
 	});
 });
 
-describe('search --context extension (f00046 S6)', () => {
+describe('search --context extension (f00046 S6)', async () => {
 	it('forwards context to search_search', async () => {
 		const { ctx, calls } = buildStubContext();
-		await find('search').run(['needle', '--context=3'], ctx);
+		await (await find('search')).run(['needle', '--context=3'], ctx);
 		expect(calls[0]?.tool).toBe('search_search');
 		expect((calls[0]?.args as { context?: number }).context).toBe(3);
 	});
 
 	it('omits context when not provided', async () => {
 		const { ctx, calls } = buildStubContext();
-		await find('search').run(['needle'], ctx);
+		await (await find('search')).run(['needle'], ctx);
 		expect(
 			(calls[0]?.args as { context?: number }).context,
 		).toBeUndefined();
