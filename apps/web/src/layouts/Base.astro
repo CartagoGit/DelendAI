@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			const LOCALE_CODES = new Set([
 				'en', 'es', 'fr', 'de', 'pt', 'it', 'zh', 'hi', 'ar', 'ja', 'vi', 'th',
 			]);
-			const stripLocale = (path) => {
+			const stripLocale = (path: string) => {
 				const segs = path.split('/').filter(Boolean);
 				if (segs[0] && LOCALE_CODES.has(segs[0]) && segs[0] !== 'en') {
 					return '/' + segs.slice(1).join('/');
@@ -143,18 +143,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			};
 			const refreshChrome = () => {
 				const lang = document.documentElement.lang || 'en';
-				const navTable = NAV[lang] ?? NAV.en;
-				const footerTable = FOOTER[lang] ?? FOOTER.en;
+				const navTable = NAV[lang as keyof typeof NAV] ?? NAV.en;
+				const footerTable = FOOTER[lang as keyof typeof FOOTER] ?? FOOTER.en;
 				for (const el of document.querySelectorAll('[data-nav-key]')) {
 					const key = el.getAttribute('data-nav-key');
-					const value = key && navTable[key];
+					const value = key && navTable[key as keyof typeof navTable];
 					if (typeof value === 'string' && el.textContent !== value) {
 						el.textContent = value;
 					}
 				}
 				for (const el of document.querySelectorAll('[data-footer-key]')) {
 					const key = el.getAttribute('data-footer-key');
-					const value = key && footerTable[key];
+					const value = key && footerTable[key as keyof typeof footerTable];
 					if (typeof value === 'string' && el.textContent !== value) {
 						el.textContent = value;
 					}

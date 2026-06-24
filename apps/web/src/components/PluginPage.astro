@@ -210,7 +210,7 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 			const pre = document.getElementById(id);
 			if (!pre) return;
 			const text = pre.innerText;
-			const finish = (ok: boolean): void => {
+			const finish = (ok) => {
 				btn.textContent = ok ? 'Copied!' : 'Press Ctrl+C';
 				setTimeout(() => {
 					btn.textContent = 'Copy';

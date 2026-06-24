@@ -1,6 +1,6 @@
 ---
-import { PROPOSAL_KINDS } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
-import { defaultLang, proposalGlossaryByLang, type Lang } from '#I18N';
+import { PROPOSAL_KINDS } from '@mcp-vertex/proposals/public';
+import { defaultLang, proposalGlossaryByLang, type Lang } from '#I18N/index';
 
 type Kind = keyof typeof PROPOSAL_KINDS;
 
@@ -11,10 +11,11 @@ interface Props {
 
 const { kind, lang = defaultLang } = Astro.props;
 const meta = PROPOSAL_KINDS[kind];
-const text = proposalGlossaryByLang[lang].kinds[kind];
+const kinds = proposalGlossaryByLang[lang].kinds;
+const text = kinds[kind as keyof typeof kinds];
 ---
 
-<span class={`proposal-badge proposal-badge--kind proposal-badge--${kind}`} title={text.long}>
+<span class={`proposal-badge proposal-badge--kind proposal-badge--${String(kind)}`} title={text.long}>
 	<span aria-hidden="true">{meta.glyph}</span>
 	<span>{text.label}</span>
 </span>

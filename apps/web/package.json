@@ -11,6 +11,7 @@
 		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
 		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
+		"check": "bun run sync:public-api && bun run gen:manifests && astro check",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",
 		"gen:logos": "bun scripts/gen-plugin-logos.ts",
@@ -25,6 +26,7 @@
 		"simple-icons": "^16.23.0"
 	},
 	"devDependencies": {
+		"@astrojs/check": "^0.9.9",
 		"@mcp-vertex/core": "workspace:*",
 		"@mcp-vertex/deps": "workspace:*",
 		"@mcp-vertex/docs": "workspace:*",
@@ -38,6 +40,7 @@
 		"@mcp-vertex/search": "workspace:*",
 		"@mcp-vertex/status-marker": "workspace:*",
 		"@modelcontextprotocol/sdk": "1.29.0",
-		"pagefind": "^1.5.2"
+		"pagefind": "^1.5.2",
+		"typescript": "^6.0.3"
 	}
 }
