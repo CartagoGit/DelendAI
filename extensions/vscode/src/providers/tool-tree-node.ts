@@ -1,5 +1,7 @@
 import type { IToolDescriptor } from '@mcp-vertex/client';
 
+import { SERVER_ICON_ID, iconIdForPlugin } from '../host/plugin-icons';
+
 export enum TreeItemCollapsibleState {
 	None = 0,
 	Collapsed = 1,
@@ -18,6 +20,8 @@ export interface IToolTreeNode {
 	readonly contextValue?: string;
 	readonly plugin?: string;
 	readonly tool?: IToolDescriptor;
+	/** Codicon id for the node's icon (f00053 S3). */
+	readonly iconId?: string;
 }
 
 export const serverNode = (): IToolTreeNode => ({
@@ -26,6 +30,7 @@ export const serverNode = (): IToolTreeNode => ({
 	label: 'mcp-vertex',
 	collapsibleState: TreeItemCollapsibleState.Expanded,
 	contextValue: 'mcpVertexServer',
+	iconId: SERVER_ICON_ID,
 });
 
 export const pluginNode = (
@@ -39,6 +44,7 @@ export const pluginNode = (
 	collapsibleState: TreeItemCollapsibleState.Collapsed,
 	contextValue: 'mcpVertexPlugin',
 	plugin,
+	iconId: iconIdForPlugin(plugin),
 });
 
 export const toolNode = (tool: IToolDescriptor): IToolTreeNode => ({
@@ -51,4 +57,5 @@ export const toolNode = (tool: IToolDescriptor): IToolTreeNode => ({
 	contextValue: 'mcpVertexTool',
 	plugin: tool.plugin,
 	tool,
+	iconId: iconIdForPlugin(tool.plugin),
 });
