@@ -48,7 +48,8 @@ Architecture: SOLID + DRY. The canonical plugin catalog (S1) is the dependency-i
   - "Each plugin card on /plugins can expand (native <details>/disclosure, keyboard-accessible) to reveal the plugin's explanation and the exact list of tools (and prompts/resources if any) it contributes, sourced from the S1 catalog."
   - "Collapsed state matches today's card; expanded state lists capabilities by name with their one-line descriptions."
   - "No raw i18n keys leak; the component reads purpose/capabilities only through the S1 catalog."
-- status: pending
+- status: done
+- note: "New PluginDisclosure.astro (native <details>, keyboard-accessible) + _plugin-disclosure.scss (registered in styles.scss). PluginsSection now iterates the 16 catalog plugins (PLUGIN_SLUGS) and reads purpose/tools only via the S1 catalog. Collapsed = former card look; expanded lists each contributed tool by name + description. Scope note: the grid now shows the 16 real loadable plugins (the core/cli/client/ui-extension packages, which are not plugins, are no longer listed here). astro build green (1719 pages); stylelint green."
 
 ### S3 — Distinct, representative plugin icons across web cards and the extension tool tree
 - files: apps/web/public/logos/
