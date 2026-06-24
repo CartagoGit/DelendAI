@@ -33,7 +33,7 @@ const createVscode = () => {
 	return { vscode, commands, messages };
 };
 
-describe('mcp-vertex.restartServer', () => {
+describe('mcp-vertex.restartServer', async () => {
 	it('uses a custom restartFn when provided', async () => {
 		const { vscode, commands, messages } = createVscode();
 		let called = false;

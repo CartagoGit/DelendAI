@@ -48,7 +48,7 @@ const fakeNotifications = (
 	},
 });
 
-describe('McpVertexStatusBar disposal (reload-leak contract)', () => {
+describe('McpVertexStatusBar disposal (reload-leak contract)', async () => {
 	it('removes every listener it registered, with the same callback refs', async () => {
 		const recorder: IRecordingNotifications = {
 			addCalls: [],

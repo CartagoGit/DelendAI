@@ -13,17 +13,17 @@ const reader = (
 	files: Record<string, string>,
 	emptyDirs: readonly string[] = [],
 ): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: (p) => {
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async (p) => {
 		// `emptyDirs` simulates "path exists but has no entries".
 		if (emptyDirs.includes(p)) return [];
 		return p in files ? ['exists'] : [];
 	},
 });
 
-describe('DEFAULT_CI_RULES (declarative table)', () => {
-	it('lists the five built-in CI systems', () => {
+describe('DEFAULT_CI_RULES (declarative table)', async () => {
+	it('lists the five built-in CI systems', async () => {
 		const ids = DEFAULT_CI_RULES.map((r) => r.id);
 		expect(ids).toEqual([
 			'github-actions',
@@ -33,32 +33,32 @@ describe('DEFAULT_CI_RULES (declarative table)', () => {
 			'jenkins',
 		]);
 	});
-	it('github-actions is the highest-priority (most common in mcp-vertex projects)', () => {
+	it('github-actions is the highest-priority (most common in mcp-vertex projects)', async () => {
 		const gh = DEFAULT_CI_RULES.find((r) => r.id === 'github-actions');
 		const jk = DEFAULT_CI_RULES.find((r) => r.id === 'jenkins');
 		expect(gh?.priority).toBeGreaterThan(jk?.priority ?? 0);
 	});
 });
 
-describe('matchCi', () => {
-	it('returns an empty list when no CI file is present', () => {
-		expect(matchCi(reader({}))).toEqual([]);
+describe('matchCi', async () => {
+	it('returns an empty list when no CI file is present', async () => {
+		expect(await matchCi(reader({}))).toEqual([]);
 	});
-	it('detects GitHub Actions when `.github/workflows` is a non-empty dir', () => {
-		const result = matchCi(reader({ '.github/workflows': 'dir' }));
+	it('detects GitHub Actions when `.github/workflows` is a non-empty dir', async () => {
+		const result = await matchCi(reader({ '.github/workflows': 'dir' }));
 		expect(result).toContain('github-actions');
 	});
-	it('does NOT detect GitHub Actions when the dir is empty', () => {
-		const result = matchCi(reader({}, ['.github/workflows']));
+	it('does NOT detect GitHub Actions when the dir is empty', async () => {
+		const result = await matchCi(reader({}, ['.github/workflows']));
 		expect(result).not.toContain('github-actions');
 	});
-	it('detects GitLab CI from .gitlab-ci.yml', () => {
+	it('detects GitLab CI from .gitlab-ci.yml', async () => {
 		expect(
-			matchCi(reader({ '.gitlab-ci.yml': 'stages: [test]' })),
+			await matchCi(reader({ '.gitlab-ci.yml': 'stages: [test]' })),
 		).toContain('gitlab-ci');
 	});
-	it('detects multiple CI systems in priority order', () => {
-		const result = matchCi(
+	it('detects multiple CI systems in priority order', async () => {
+		const result = await matchCi(
 			reader({
 				'.github/workflows': 'dir',
 				'.gitlab-ci.yml': 'stages: [test]',
@@ -68,9 +68,9 @@ describe('matchCi', () => {
 		// Priority order: github-actions > gitlab-ci > jenkins.
 		expect(result).toEqual(['github-actions', 'gitlab-ci', 'jenkins']);
 	});
-	it('a custom rule table overrides the default', () => {
+	it('a custom rule table overrides the default', async () => {
 		// A host that wants their internal CI outranking GitHub.
-		const result = matchCi(
+		const result = await matchCi(
 			reader({
 				'.github/workflows': 'dir',
 				'.internal/ci.yml': 'pipeline {}',
@@ -80,13 +80,13 @@ describe('matchCi', () => {
 				...DEFAULT_CI_RULES,
 			],
 		);
-		expect(result[0]).toBe('internal-ci');
+		expect((await result)[0]).toBe('internal-ci');
 	});
 });
 
-describe('integration: detectCi uses the rule table', () => {
-	it('analyzer picks up GitLab CI for a project that ships .gitlab-ci.yml', () => {
-		const analysis = analyzeProject(
+describe('integration: detectCi uses the rule table', async () => {
+	it('analyzer picks up GitLab CI for a project that ships .gitlab-ci.yml', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'.gitlab-ci.yml': 'stages: [test]',
 				'package.json': '{"name":"svc"}',

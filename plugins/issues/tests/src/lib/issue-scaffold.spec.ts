@@ -36,35 +36,35 @@ const comments: readonly IGithubComment[] = [
 	},
 ];
 
-describe('slugify', () => {
-	it('lowercases, strips punctuation and hyphenates', () => {
+describe('slugify', async () => {
+	it('lowercases, strips punctuation and hyphenates', async () => {
 		expect(slugify('Something is Broken!')).toBe('something-is-broken');
 	});
 
-	it('falls back to "untitled" for a title with no alphanumeric chars', () => {
+	it('falls back to "untitled" for a title with no alphanumeric chars', async () => {
 		expect(slugify('!!!')).toBe('untitled');
 	});
 });
 
-describe('collisionSuffix', () => {
-	it('is deterministic for the same issue number', () => {
+describe('collisionSuffix', async () => {
+	it('is deterministic for the same issue number', async () => {
 		expect(collisionSuffix(123)).toBe(collisionSuffix(123));
 		expect(collisionSuffix(123)).toHaveLength(4);
 	});
 
-	it('differs across issue numbers (no accidental collision in this test set)', () => {
+	it('differs across issue numbers (no accidental collision in this test set)', async () => {
 		expect(collisionSuffix(123)).not.toBe(collisionSuffix(124));
 	});
 });
 
-describe('buildScaffoldFileName', () => {
-	it('builds the canonical name with no collision', () => {
+describe('buildScaffoldFileName', async () => {
+	it('builds the canonical name with no collision', async () => {
 		expect(buildScaffoldFileName(123, 'Something is Broken!')).toBe(
 			'github#123-something-is-broken.md',
 		);
 	});
 
-	it('appends a deterministic hash suffix when the base name already exists', () => {
+	it('appends a deterministic hash suffix when the base name already exists', async () => {
 		const base = 'github#123-something-is-broken.md';
 		const withSuffix = buildScaffoldFileName(
 			123,
@@ -78,8 +78,8 @@ describe('buildScaffoldFileName', () => {
 	});
 });
 
-describe('buildScaffold', () => {
-	it('builds a scaffold with pending resolution and ingested status', () => {
+describe('buildScaffold', async () => {
+	it('builds a scaffold with pending resolution and ingested status', async () => {
 		const scaffold = buildScaffold(issueDetail, comments);
 		expect(scaffold.frontmatter.source).toBe('github');
 		expect(scaffold.frontmatter.source_id).toBe(123);
@@ -89,13 +89,13 @@ describe('buildScaffold', () => {
 		expect(scaffold.body).toContain('# Something is Broken!');
 	});
 
-	it('redacts secrets from the issue body before they reach the scaffold', () => {
+	it('redacts secrets from the issue body before they reach the scaffold', async () => {
 		const scaffold = buildScaffold(issueDetail, comments);
 		expect(scaffold.body).not.toContain('AKIAABCDEFGHIJKLMNOP');
 		expect(scaffold.body).toContain('[REDACTED]');
 	});
 
-	it('redacts secrets from comment bodies before they reach the frontmatter', () => {
+	it('redacts secrets from comment bodies before they reach the frontmatter', async () => {
 		const scaffold = buildScaffold(issueDetail, comments);
 		expect(scaffold.frontmatter.comments[0]?.body).not.toContain(
 			'hunter12345678',
@@ -103,14 +103,14 @@ describe('buildScaffold', () => {
 		expect(scaffold.frontmatter.comments[0]?.body).toContain('[REDACTED]');
 	});
 
-	it('renders "(none)" in the body header when the issue has no labels', () => {
+	it('renders "(none)" in the body header when the issue has no labels', async () => {
 		const scaffold = buildScaffold({ ...issueDetail, labels: [] }, []);
 		expect(scaffold.body).toContain('> Labels: (none)');
 	});
 });
 
-describe('serializeScaffold + parseScaffold round-trip', () => {
-	it('round-trips a built scaffold through serialize/parse', () => {
+describe('serializeScaffold + parseScaffold round-trip', async () => {
+	it('round-trips a built scaffold through serialize/parse', async () => {
 		const scaffold = buildScaffold(issueDetail, comments);
 		const serialized = serializeScaffold(scaffold);
 		expect(serialized.startsWith('---\n')).toBe(true);
@@ -120,7 +120,7 @@ describe('serializeScaffold + parseScaffold round-trip', () => {
 		expect(parsed.body.trim()).toBe(scaffold.body.trim());
 	});
 
-	it('throws when parsing a file with no frontmatter block', () => {
+	it('throws when parsing a file with no frontmatter block', async () => {
 		expect(() => parseScaffold('# no frontmatter here')).toThrow(
 			/no frontmatter block/,
 		);

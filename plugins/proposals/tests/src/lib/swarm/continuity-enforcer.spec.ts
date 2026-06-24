@@ -31,8 +31,8 @@ const baseDecision: IEnforceDecisionLike = {
 	reason: 'Live lock on p34b-T2.',
 };
 
-describe('enforceContinuity — no-op branches', () => {
-	it('returns the decision unchanged when policy is empty', () => {
+describe('enforceContinuity — no-op branches', async () => {
+	it('returns the decision unchanged when policy is empty', async () => {
 		const result = enforceContinuity({
 			policy: {},
 			observed: {},
@@ -44,7 +44,7 @@ describe('enforceContinuity — no-op branches', () => {
 		expect(result.check.violations).toHaveLength(0);
 	});
 
-	it('returns the decision unchanged when observed is within policy', () => {
+	it('returns the decision unchanged when observed is within policy', async () => {
 		const policy: IContinuityPolicy = {
 			maxAgentSpawnsPerSession: 2,
 		};
@@ -58,8 +58,8 @@ describe('enforceContinuity — no-op branches', () => {
 	});
 });
 
-describe('enforceContinuity — block violations', () => {
-	it('downgrades to mode=reset when maxAgentSpawnsPerSession exceeded', () => {
+describe('enforceContinuity — block violations', async () => {
+	it('downgrades to mode=reset when maxAgentSpawnsPerSession exceeded', async () => {
 		const policy: IContinuityPolicy = {
 			maxAgentSpawnsPerSession: 2,
 		};
@@ -75,7 +75,7 @@ describe('enforceContinuity — block violations', () => {
 		expect(result.check.withinPolicy).toBe(false);
 	});
 
-	it('blocks when forbidReReadOnUnchangedDigest is violated', () => {
+	it('blocks when forbidReReadOnUnchangedDigest is violated', async () => {
 		const policy: IContinuityPolicy = {
 			forbidReReadOnUnchangedDigest: true,
 		};
@@ -90,7 +90,7 @@ describe('enforceContinuity — block violations', () => {
 		);
 	});
 
-	it('blocks when requireCheckpointAfterTask is violated', () => {
+	it('blocks when requireCheckpointAfterTask is violated', async () => {
 		const policy: IContinuityPolicy = {
 			requireCheckpointAfterTask: true,
 		};
@@ -104,8 +104,8 @@ describe('enforceContinuity — block violations', () => {
 	});
 });
 
-describe('enforceContinuity — warn-only violations', () => {
-	it('annotates the reason without downgrading on warn severity', () => {
+describe('enforceContinuity — warn-only violations', async () => {
+	it('annotates the reason without downgrading on warn severity', async () => {
 		// `maxToolRetriesPerTool` is severity 'warn' in the FIELD_DEFS table,
 		// so a single overshoot should NOT downgrade the mode.
 		const policy: IContinuityPolicy = {
@@ -123,8 +123,8 @@ describe('enforceContinuity — warn-only violations', () => {
 	});
 });
 
-describe('enforceContinuity — cross-session resume annotation', () => {
-	it('appends a cross-session-resume hint when annotateOnly is true and the closed log has entries', () => {
+describe('enforceContinuity — cross-session resume annotation', async () => {
+	it('appends a cross-session-resume hint when annotateOnly is true and the closed log has entries', async () => {
 		const result = enforceContinuity({
 			policy: {},
 			observed: {},
@@ -145,7 +145,7 @@ describe('enforceContinuity — cross-session resume annotation', () => {
 		expect(result.annotated).toBe(true);
 	});
 
-	it('does not annotate when annotateOnly is omitted even if the closed log is non-empty', () => {
+	it('does not annotate when annotateOnly is omitted even if the closed log is non-empty', async () => {
 		const result = enforceContinuity({
 			policy: {},
 			observed: {},
@@ -163,8 +163,8 @@ describe('enforceContinuity — cross-session resume annotation', () => {
 	});
 });
 
-describe('ORCHESTRATOR_DEFAULT_POLICY', () => {
-	it('mirrors the hard policy declared in orchestrator.agent.md', () => {
+describe('ORCHESTRATOR_DEFAULT_POLICY', async () => {
+	it('mirrors the hard policy declared in orchestrator.agent.md', async () => {
 		expect(ORCHESTRATOR_DEFAULT_POLICY.maxAgentSpawnsPerSession).toBe(2);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.maxToolRetriesPerTool).toBe(3);
 		expect(ORCHESTRATOR_DEFAULT_POLICY.forbidReReadOnUnchangedDigest).toBe(

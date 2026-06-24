@@ -10,8 +10,8 @@ import {
 	STATUS_TO_FOLDER,
 } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
 
-describe('proposal-glossary.constant (S1, 6 invariants)', () => {
-	it('every status has a label (info) and a folder', () => {
+describe('proposal-glossary.constant (S1, 6 invariants)', async () => {
+	it('every status has a label (info) and a folder', async () => {
 		const statuses = Object.keys(PROPOSAL_STATUSES);
 		expect(statuses).toHaveLength(7);
 		for (const status of statuses) {
@@ -24,7 +24,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('every transition target is a known status', () => {
+	it('every transition target is a known status', async () => {
 		const known = new Set(Object.keys(PROPOSAL_STATUSES));
 		for (const [from, targets] of Object.entries(
 			PROPOSAL_STATUS_TRANSITIONS,
@@ -36,7 +36,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('terminal statuses have at most `retired` as an outgoing edge', () => {
+	it('terminal statuses have at most `retired` as an outgoing edge', async () => {
 		for (const [status, info] of Object.entries(PROPOSAL_STATUSES)) {
 			if (!info.terminal) continue;
 			const targets =
@@ -49,7 +49,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('every kind has a single lowercase-letter prefix', () => {
+	it('every kind has a single lowercase-letter prefix', async () => {
 		const kinds = Object.keys(PROPOSAL_KINDS);
 		expect(kinds.length).toBeGreaterThanOrEqual(13);
 		for (const kind of kinds) {
@@ -61,12 +61,12 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('prefixes are unique across all known kinds', () => {
+	it('prefixes are unique across all known kinds', async () => {
 		const prefixes = Object.values(PROPOSAL_PREFIX_BY_KIND);
 		expect(new Set(prefixes).size).toBe(prefixes.length);
 	});
 
-	it('resume kind uses prefix n with no version bump', () => {
+	it('resume kind uses prefix n with no version bump', async () => {
 		expect(PROPOSAL_KINDS.resume).toEqual({
 			prefix: 'n',
 			glyph: '🧭',
@@ -77,7 +77,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		expect(PROPOSAL_PREFIX_BY_KIND.resume).toBe('n');
 	});
 
-	it('the legacy alias table is consistent (p and l both resolve to legacy, l is canonical)', () => {
+	it('the legacy alias table is consistent (p and l both resolve to legacy, l is canonical)', async () => {
 		expect(PROPOSAL_KIND_BY_PREFIX.p).toBe('legacy');
 		expect(PROPOSAL_KIND_BY_PREFIX.l).toBe('legacy');
 		expect(PROPOSAL_PREFIX_BY_KIND.legacy).toBe('l');
@@ -88,7 +88,7 @@ describe('proposal-glossary.constant (S1, 6 invariants)', () => {
 		}
 	});
 
-	it('PROPOSAL_FLAGS documents the 3 frontmatter modifiers', () => {
+	it('PROPOSAL_FLAGS documents the 3 frontmatter modifiers', async () => {
 		expect(Object.keys(PROPOSAL_FLAGS).sort()).toEqual([
 			'cancelled',
 			'deferred',

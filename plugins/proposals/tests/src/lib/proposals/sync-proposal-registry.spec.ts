@@ -50,7 +50,7 @@ const readIndex = async (
 	};
 };
 
-describe('syncProposalRegistry (entry point)', () => {
+describe('syncProposalRegistry (entry point)', async () => {
 	let root = '';
 
 	beforeEach(async () => {

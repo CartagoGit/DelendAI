@@ -39,7 +39,7 @@ const invoke = async (
 	return handler(args);
 };
 
-describe('proposal_adopt — layout outputSchema (l00008 s4)', () => {
+describe('proposal_adopt — layout outputSchema (l00008 s4)', async () => {
 	it('returns a golden layout shape: root (string) + files/folders (Record<string,string>)', async () => {
 		const workspaceRoot = await mkdtemp(join(tmpdir(), 'adopt-tool-'));
 		const proposalsDirAbs = join(

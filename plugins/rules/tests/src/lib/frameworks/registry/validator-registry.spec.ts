@@ -15,14 +15,14 @@ import type { IRulePreset } from '@mcp-vertex/rules/lib/frameworks/contracts';
  *   3. The composition order (validators run in registration
  *      order, findings accumulate).
  */
-describe('IValidatorRegistry (S, OCP)', () => {
-	it('defaults to a single validator when no list is passed', () => {
+describe('IValidatorRegistry (S, OCP)', async () => {
+	it('defaults to a single validator when no list is passed', async () => {
 		const reg = buildValidatorRegistry();
 		expect(reg.validators).toHaveLength(1);
 		expect(reg.validate(RUST_PRESET)).toEqual([]);
 	});
 
-	it('accepts a custom list (OCP — append, never edit)', () => {
+	it('accepts a custom list (OCP — append, never edit)', async () => {
 		const longIdValidator = {
 			validate(preset: IRulePreset) {
 				if (preset.id.length > 20) {
@@ -44,7 +44,7 @@ describe('IValidatorRegistry (S, OCP)', () => {
 		expect(empty.validate(RUST_PRESET)).toEqual([]);
 	});
 
-	it('accumulates findings from multiple validators (composition order)', () => {
+	it('accumulates findings from multiple validators (composition order)', async () => {
 		const v1 = {
 			validate(preset: IRulePreset) {
 				return [

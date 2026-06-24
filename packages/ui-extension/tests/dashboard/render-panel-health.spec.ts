@@ -43,15 +43,15 @@ const baseUnhealthy: IHealthSnapshot = {
 	agents: ['a1', 'a-stale'],
 };
 
-describe('renderPanelHealth', () => {
-	it('renders the healthy status with the locks count', () => {
+describe('renderPanelHealth', async () => {
+	it('renders the healthy status with the locks count', async () => {
 		const html = renderPanelHealth(baseHealthy);
 		expect(html).toContain('Healthy');
 		expect(html).toContain('3');
 		expect(html).toContain('panel-health');
 	});
 
-	it('renders Degraded + the queue table when unhealthy', () => {
+	it('renders Degraded + the queue table when unhealthy', async () => {
 		const html = renderPanelHealth(baseUnhealthy);
 		expect(html).toContain('Degraded');
 		expect(html).toContain('Waiter orphans');
@@ -61,18 +61,18 @@ describe('renderPanelHealth', () => {
 		expect(html).toContain('restart');
 	});
 
-	it('shows the empty-state when no queue', () => {
+	it('shows the empty-state when no queue', async () => {
 		const html = renderPanelHealth(baseHealthy);
 		expect(html).toContain('No queue configured.');
 	});
 
-	it('shows the empty-state when no active agents', () => {
+	it('shows the empty-state when no active agents', async () => {
 		const empty = { ...baseHealthy, agents: [] };
 		const html = renderPanelHealth(empty);
 		expect(html).toContain('No active agents.');
 	});
 
-	it('escapes user-provided strings (no XSS)', () => {
+	it('escapes user-provided strings (no XSS)', async () => {
 		const evil = renderPanelHealth({
 			...baseHealthy,
 			agents: ['<script>alert(1)</script>'],

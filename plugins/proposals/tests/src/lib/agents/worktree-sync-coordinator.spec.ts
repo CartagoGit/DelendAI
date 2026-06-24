@@ -39,7 +39,7 @@ afterEach(async () => {
 const sleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
-describe('createPassthroughWorktreeCoordinator', () => {
+describe('createPassthroughWorktreeCoordinator', async () => {
 	it('runs the work directly and returns its result', async () => {
 		const coord = createPassthroughWorktreeCoordinator();
 		const result = await coord.runExclusive(async () => 42);
@@ -47,7 +47,7 @@ describe('createPassthroughWorktreeCoordinator', () => {
 	});
 });
 
-describe('createFileMutexWorktreeCoordinator — serialization', () => {
+describe('createFileMutexWorktreeCoordinator — serialization', async () => {
 	it('serializes a worktree mutation against a registry sync on the same lock', async () => {
 		const coord = createFileMutexWorktreeCoordinator(registryPath);
 		const events: string[] = [];
@@ -88,7 +88,7 @@ describe('createFileMutexWorktreeCoordinator — serialization', () => {
 	});
 });
 
-describe('resolveWorktreeSyncCoordinator', () => {
+describe('resolveWorktreeSyncCoordinator', async () => {
 	it('returns a pass-through coordinator when no registry path is given', async () => {
 		const coord = resolveWorktreeSyncCoordinator(undefined);
 		// Pass-through has no lock, so two overlapping runs CAN interleave.

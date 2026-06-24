@@ -21,7 +21,7 @@ const lock = (
 ) =>
 	JSON.stringify({ version: 1, stale_after_minutes: 10, in_flight: entries });
 
-describe('lock-release watcher [N14]', () => {
+describe('lock-release watcher [N14]', async () => {
 	let dir = '';
 	let lockFile = '';
 	beforeEach(() => {
@@ -144,7 +144,7 @@ describe('lock-release watcher [N14]', () => {
 	});
 });
 
-describe('handoff watcher', () => {
+describe('handoff watcher', async () => {
 	let dir = '';
 	let handoffDir = '';
 
@@ -227,7 +227,7 @@ describe('handoff watcher', () => {
 	});
 });
 
-describe('notification plugin', () => {
+describe('notification plugin', async () => {
 	it('registers notify_status + knowledge and emits on release and handoff', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-plug-'));
 		const ctx = {

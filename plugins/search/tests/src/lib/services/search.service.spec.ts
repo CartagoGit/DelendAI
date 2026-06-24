@@ -15,7 +15,7 @@ const write = (root: string, rel: string, body: string): void => {
 	writeFileSync(abs, body, 'utf8');
 };
 
-describe('searchWorkspace', () => {
+describe('searchWorkspace', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'search-'));
@@ -79,7 +79,7 @@ describe('searchWorkspace', () => {
 	});
 });
 
-describe('search plugin', () => {
+describe('search plugin', async () => {
 	const ctx = (root: string): IMcpPluginContext =>
 		({
 			workspace: { root, resolve: (p: string) => join(root, p) },

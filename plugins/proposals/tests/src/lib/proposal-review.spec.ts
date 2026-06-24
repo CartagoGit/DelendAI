@@ -8,8 +8,8 @@ import {
 	type IReviewState,
 } from '@mcp-vertex/proposals/lib/swarm/proposal-review';
 
-describe('proposal review state machine (M35)', () => {
-	it('submit moves to in_review and records the implementer', () => {
+describe('proposal review state machine (M35)', async () => {
+	it('submit moves to in_review and records the implementer', async () => {
 		const r = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon');
 		expect(r.ok).toBe(true);
 		expect(r.next).toMatchObject({
@@ -19,7 +19,7 @@ describe('proposal review state machine (M35)', () => {
 		});
 	});
 
-	it('a reviewer cannot be the implementer under review (independence)', () => {
+	it('a reviewer cannot be the implementer under review (independence)', async () => {
 		const submitted = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon')
 			.next!;
 		const approve = reviewTransition(submitted, 'approve', 'falcon');
@@ -27,7 +27,7 @@ describe('proposal review state machine (M35)', () => {
 		expect(approve.reason).toMatch(/different agent/i);
 	});
 
-	it('a different agent approves → done', () => {
+	it('a different agent approves → done', async () => {
 		const submitted = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon')
 			.next!;
 		const approved = reviewTransition(submitted, 'approve', 'eagle');
@@ -40,7 +40,7 @@ describe('proposal review state machine (M35)', () => {
 		});
 	});
 
-	it('request_changes needs a note and sends it back to changes_requested', () => {
+	it('request_changes needs a note and sends it back to changes_requested', async () => {
 		const submitted = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon')
 			.next!;
 		expect(reviewTransition(submitted, 'request_changes', 'eagle').ok).toBe(
@@ -61,7 +61,7 @@ describe('proposal review state machine (M35)', () => {
 		});
 	});
 
-	it('loops until a reviewer has no objection (rework → re-review by another)', () => {
+	it('loops until a reviewer has no objection (rework → re-review by another)', async () => {
 		let s: IReviewState = EMPTY_REVIEW;
 		s = reviewTransition(s, 'submit', 'falcon').next!; // falcon implements
 		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!; // eagle objects
@@ -78,7 +78,7 @@ describe('proposal review state machine (M35)', () => {
 		]);
 	});
 
-	it('cannot review when nothing is in review; cannot reopen a done slice', () => {
+	it('cannot review when nothing is in review; cannot reopen a done slice', async () => {
 		expect(reviewTransition(EMPTY_REVIEW, 'approve', 'eagle').ok).toBe(
 			false,
 		);
@@ -91,7 +91,7 @@ describe('proposal review state machine (M35)', () => {
 		expect(reviewTransition(done, 'submit', 'falcon').ok).toBe(false);
 	});
 
-	it('parse ∘ render round-trips the state', () => {
+	it('parse ∘ render round-trips the state', async () => {
 		const submitted = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon')
 			.next!;
 		const changed = reviewTransition(

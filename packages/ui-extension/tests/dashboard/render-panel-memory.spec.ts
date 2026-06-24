@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderPanelMemory } from '../../src/dashboard/render-panel-memory';
 
-describe('renderPanelMemory', () => {
-	it('renders memory notes and escapes user content', () => {
+describe('renderPanelMemory', async () => {
+	it('renders memory notes and escapes user content', async () => {
 		const html = renderPanelMemory({
 			notes: [
 				{

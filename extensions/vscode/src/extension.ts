@@ -328,7 +328,7 @@ export const activate = async (
 		const { createVscodeHostAdapter } = await import(
 			'./host/vscode-host-adapter'
 		);
-		const host = createVscodeHostAdapter();
+		const host = await createVscodeHostAdapter();
 		track(
 			registerOpenDashboardCommand({
 				host,

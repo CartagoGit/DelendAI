@@ -23,8 +23,8 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/deps optionsSchema (S9 F6)', () => {
-	it('exposes an optionsSchema', () => {
+describe('@mcp-vertex/deps optionsSchema (S9 F6)', async () => {
+	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(
 			plugin.optionsSchema?.safeParse({ allowWrite: true }).success,
@@ -39,7 +39,7 @@ describe('@mcp-vertex/deps optionsSchema (S9 F6)', () => {
 		);
 	});
 
-	it('throws before wiring tools when an option has the wrong type', () => {
+	it('throws before wiring tools when an option has the wrong type', async () => {
 		expect(() => plugin.register(baseCtx({ allowNetwork: 'yes' }))).toThrow(
 			/rejected its options/,
 		);

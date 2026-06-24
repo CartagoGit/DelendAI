@@ -37,7 +37,7 @@ const invoke = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-describe('audit_consolidate auditDir containment (l00008 s3)', () => {
+describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 	let workspaceRoot = '';
 
 	beforeEach(async () => {

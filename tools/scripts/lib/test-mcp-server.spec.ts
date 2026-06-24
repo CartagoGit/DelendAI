@@ -42,7 +42,7 @@ const makeTool = (
 		},
 	}) as unknown as IToolRegistration;
 
-describe('captureToolRegistration (Solid DRY + DIP extraction)', () => {
+describe('captureToolRegistration (Solid DRY + DIP extraction)', async () => {
 	it('captures input + output schemas and the invoke closure', async () => {
 		const inputSchema = z.object({ name: z.string() });
 		const outputSchema = z.object({ greeting: z.string() });

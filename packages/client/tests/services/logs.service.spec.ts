@@ -26,7 +26,7 @@ const makeService = (
 	return { service: new LogsService(client), calls };
 };
 
-describe('LogsService', () => {
+describe('LogsService', async () => {
 	it('query calls logs_query and redacts secrets in summary + meta', async () => {
 		const { service, calls } = makeService({
 			logs_query: {
@@ -122,7 +122,7 @@ describe('LogsService', () => {
 		const ac = new AbortController();
 		// Poll every 10ms; stop after collecting 2 events.
 		const iter = (async (): Promise<void> => {
-			for await (const ev of service.subscribe({
+			for await (const ev of await service.subscribe({
 				signal: ac.signal,
 				pollIntervalMs: 10,
 			})) {
@@ -142,7 +142,7 @@ describe('LogsService', () => {
 		const ac = new AbortController();
 		setTimeout(() => ac.abort(), 30);
 		const start = Date.now();
-		for await (const _ of service.subscribe({
+		for await (const _ of await service.subscribe({
 			signal: ac.signal,
 			pollIntervalMs: 10,
 		})) {

@@ -9,25 +9,25 @@ import plugin from '@mcp-vertex/quality';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('resolveScopes', () => {
-	it('prefers plugin options', () => {
-		const map = resolveScopes(reader({}), {
+describe('resolveScopes', async () => {
+	it('prefers plugin options', async () => {
+		const map = await resolveScopes(reader({}), {
 			scopes: { feature: ['a', 'b'] },
 		});
 		// `expect: 'exit0'` is the default injected by `scopes.ts` since the
 		// `IScopeCommand` → `IValidationCommand` alignment (l107 s1).
-		expect(map.feature).toEqual([
+		expect((await map).feature).toEqual([
 			{ command: 'a', expect: 'exit0' },
 			{ command: 'b', expect: 'exit0' },
 		]);
 	});
-	it('falls back to the config validationMatrix, then scripts', () => {
-		const fromConfig = resolveScopes(
+	it('falls back to the config validationMatrix, then scripts', async () => {
+		const fromConfig = await resolveScopes(
 			reader({
 				'mcp-vertex.config.json': JSON.stringify({
 					validationMatrix: {
@@ -38,8 +38,8 @@ describe('resolveScopes', () => {
 				}),
 			}),
 		);
-		expect(fromConfig.full?.[0]?.command).toBe('bun test');
-		const fromScripts = resolveScopes(
+		expect((await fromConfig).full?.[0]?.command).toBe('bun test');
+		const fromScripts = await resolveScopes(
 			reader({
 				'package.json': JSON.stringify({
 					scripts: { lint: 'x', test: 'y' },
@@ -47,14 +47,14 @@ describe('resolveScopes', () => {
 				'bun.lock': '',
 			}),
 		);
-		expect(fromScripts.all?.map((c) => c.command)).toEqual([
+		expect((await fromScripts).all?.map((c) => c.command)).toEqual([
 			'bun run lint',
 			'bun run test',
 		]);
 	});
 });
 
-describe('runScope', () => {
+describe('runScope', async () => {
 	it('reports per-command results and overall ok', async () => {
 		const run: ICommandRunner = async (cmd) =>
 			cmd.includes('fail')
@@ -74,7 +74,7 @@ describe('runScope', () => {
 	});
 });
 
-describe('quality plugin', () => {
+describe('quality plugin', async () => {
 	it('registers the quality tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

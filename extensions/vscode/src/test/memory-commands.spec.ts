@@ -45,7 +45,7 @@ const createVscode = () => {
 	return { vscode, commands, messages, errors };
 };
 
-describe('memory commands', () => {
+describe('memory commands', async () => {
 	it('saves a memory note and refreshes the tree', async () => {
 		const { vscode, commands, messages } = createVscode();
 		let refreshed = false;

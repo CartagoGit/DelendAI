@@ -22,16 +22,16 @@ const reader = (
 	files: Record<string, string> = {},
 	emptyDirs: readonly string[] = [],
 ): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files || emptyDirs.includes(p),
-	listDir: (p) => {
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files || emptyDirs.includes(p),
+	listDir: async (p) => {
 		if (emptyDirs.includes(p)) return [];
 		return p in files ? ['entry'] : [];
 	},
 });
 
-describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', () => {
-	it('lists the six built-in entries (CLAUDE.md, AGENTS.md, cursor, copilot-instructions, github-agents, windsurf)', () => {
+describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', async () => {
+	it('lists the six built-in entries (CLAUDE.md, AGENTS.md, cursor, copilot-instructions, github-agents, windsurf)', async () => {
 		// The cursor case is now ONE rule with a `paths: [...]`
 		// array, not two rules with the same id. The unique-id
 		// contract holds.
@@ -45,11 +45,11 @@ describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', () => {
 			'windsurf',
 		]);
 	});
-	it('every id is unique (the strict contract — no tolerated duplicates)', () => {
+	it('every id is unique (the strict contract — no tolerated duplicates)', async () => {
 		const ids = DEFAULT_AGENT_CONFIG_RULES.map((r) => r.id);
 		expect(new Set(ids).size).toBe(ids.length);
 	});
-	it('CLAUDE.md has the highest priority (the common reference)', () => {
+	it('CLAUDE.md has the highest priority (the common reference)', async () => {
 		const claude = DEFAULT_AGENT_CONFIG_RULES.find(
 			(r) => r.id === 'CLAUDE.md',
 		);
@@ -60,57 +60,57 @@ describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', () => {
 	});
 });
 
-describe('matchAgentConfigs', () => {
-	it('returns an empty list when no agent config is present', () => {
-		expect(matchAgentConfigs(reader({}))).toEqual([]);
+describe('matchAgentConfigs', async () => {
+	it('returns an empty list when no agent config is present', async () => {
+		expect(await matchAgentConfigs(reader({}))).toEqual([]);
 	});
-	it('detects CLAUDE.md from the file', () => {
-		expect(matchAgentConfigs(reader({ 'CLAUDE.md': '# guide' }))).toEqual([
-			'CLAUDE.md',
-		]);
+	it('detects CLAUDE.md from the file', async () => {
+		expect(
+			await matchAgentConfigs(reader({ 'CLAUDE.md': '# guide' })),
+		).toEqual(['CLAUDE.md']);
 	});
-	it('detects AGENTS.md', () => {
-		expect(matchAgentConfigs(reader({ 'AGENTS.md': '# guide' }))).toContain(
-			'AGENTS.md',
-		);
+	it('detects AGENTS.md', async () => {
+		expect(
+			await matchAgentConfigs(reader({ 'AGENTS.md': '# guide' })),
+		).toContain('AGENTS.md');
 	});
-	it('detects cursor from .cursorrules (file)', () => {
-		expect(matchAgentConfigs(reader({ '.cursorrules': 'rule' }))).toContain(
+	it('detects cursor from .cursorrules (file)', async () => {
+		expect(
+			await matchAgentConfigs(reader({ '.cursorrules': 'rule' })),
+		).toContain('cursor');
+	});
+	it('detects cursor from .cursor (dir)', async () => {
+		expect(await matchAgentConfigs(reader({ '.cursor': 'dir' }))).toContain(
 			'cursor',
 		);
 	});
-	it('detects cursor from .cursor (dir)', () => {
-		expect(matchAgentConfigs(reader({ '.cursor': 'dir' }))).toContain(
-			'cursor',
-		);
-	});
-	it('does NOT detect cursor when there is no .cursorrules and no .cursor', () => {
+	it('does NOT detect cursor when there is no .cursorrules and no .cursor', async () => {
 		// When neither `.cursorrules` nor `.cursor` exists, no cursor
 		// config is detected. (The `file-or-dir` rule for the empty
 		// dir case is intentionally permissive — see the
 		// `agent-config-rules.ts` comment — so we only assert the
 		// clear no-evidence case here.)
-		expect(matchAgentConfigs(reader({}))).not.toContain('cursor');
+		expect(await matchAgentConfigs(reader({}))).not.toContain('cursor');
 	});
-	it('detects copilot-instructions', () => {
+	it('detects copilot-instructions', async () => {
 		expect(
-			matchAgentConfigs(
+			await matchAgentConfigs(
 				reader({ '.github/copilot-instructions.md': '# guide' }),
 			),
 		).toContain('copilot-instructions');
 	});
-	it('detects github-agents from the .github/agents dir', () => {
+	it('detects github-agents from the .github/agents dir', async () => {
 		expect(
-			matchAgentConfigs(reader({ '.github/agents': 'dir' })),
+			await matchAgentConfigs(reader({ '.github/agents': 'dir' })),
 		).toContain('github-agents');
 	});
-	it('detects windsurf from .windsurfrules', () => {
+	it('detects windsurf from .windsurfrules', async () => {
 		expect(
-			matchAgentConfigs(reader({ '.windsurfrules': 'rule' })),
+			await matchAgentConfigs(reader({ '.windsurfrules': 'rule' })),
 		).toContain('windsurf');
 	});
-	it('returns all matches in priority order for a multi-config repo', () => {
-		const result = matchAgentConfigs(
+	it('returns all matches in priority order for a multi-config repo', async () => {
+		const result = await matchAgentConfigs(
 			reader({
 				'CLAUDE.md': '# claude',
 				'AGENTS.md': '# agents',
@@ -122,9 +122,9 @@ describe('matchAgentConfigs', () => {
 	});
 });
 
-describe('integration: detectAgentConfigs uses the rule table', () => {
-	it('analyzer picks up CLAUDE.md + AGENTS.md for a dual-config project', () => {
-		const analysis = analyzeProject(
+describe('integration: detectAgentConfigs uses the rule table', async () => {
+	it('analyzer picks up CLAUDE.md + AGENTS.md for a dual-config project', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'CLAUDE.md': '# claude',
 				'AGENTS.md': '# agents',

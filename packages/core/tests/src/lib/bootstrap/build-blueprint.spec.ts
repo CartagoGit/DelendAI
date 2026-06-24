@@ -8,14 +8,14 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('buildServerBlueprint', () => {
-	it('produces an exhaustive blueprint with script-derived tools + tests by default', () => {
-		const analysis = analyzeProject(
+describe('buildServerBlueprint', async () => {
+	it('produces an exhaustive blueprint with script-derived tools + tests by default', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: '@acme/site',
@@ -47,8 +47,8 @@ describe('buildServerBlueprint', () => {
 		});
 	});
 
-	it('omits tests when requested and notes an existing server', () => {
-		const analysis = analyzeProject(
+	it('omits tests when requested and notes an existing server', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({ name: 'svc' }),
 				'.vscode/mcp.json': '{}',
@@ -60,8 +60,8 @@ describe('buildServerBlueprint', () => {
 		expect(bp.notes.join(' ')).toMatch(/already exists/);
 	});
 
-	it('materialises files: host project + a file (and test) per tool', () => {
-		const analysis = analyzeProject(
+	it('materialises files: host project + a file (and test) per tool', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'lib',
@@ -81,8 +81,8 @@ describe('buildServerBlueprint', () => {
 		expect(paths.some((p) => p.includes('.tool.spec.ts'))).toBe(true);
 	});
 
-	it('recommends keepLegacy when host-config has custom extraTools', () => {
-		const analysis = analyzeProject(
+	it('recommends keepLegacy when host-config has custom extraTools', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({ name: 'svc' }),
 				'libs/mcp-project/src/lib/shared/host-config.ts': `
@@ -100,8 +100,8 @@ export const buildHostConfig = () => ({
 		expect(bp.defaults.warnings[0]).toMatch(/legacy/);
 	});
 
-	it('recommends keepLegacy when the user intent is migration work', () => {
-		const analysis = analyzeProject(
+	it('recommends keepLegacy when the user intent is migration work', async () => {
+		const analysis = await analyzeProject(
 			reader({ 'package.json': JSON.stringify({ name: 'svc' }) }),
 		);
 		const bp = buildServerBlueprint(analysis, {

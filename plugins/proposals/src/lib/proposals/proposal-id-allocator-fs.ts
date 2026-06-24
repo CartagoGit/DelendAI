@@ -40,7 +40,7 @@ export interface IAllocatorFs {
 	): Promise<readonly { name: string; isFile: boolean }[]>;
 }
 
-export const buildNodeAllocatorFs = (): IAllocatorFs => {
+export const buildNodeAllocatorFs = async (): Promise<IAllocatorFs> => {
 	type FsMod = typeof import('node:fs/promises');
 	let mod: FsMod | null = null;
 	const load = (): FsMod => {
@@ -73,4 +73,4 @@ export const buildNodeAllocatorFs = (): IAllocatorFs => {
 	};
 };
 
-export const DEFAULT_ALLOCATOR_FS: IAllocatorFs = buildNodeAllocatorFs();
+export const DEFAULT_ALLOCATOR_FS: IAllocatorFs = await buildNodeAllocatorFs();

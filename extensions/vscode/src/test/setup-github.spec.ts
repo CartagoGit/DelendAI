@@ -55,15 +55,15 @@ const noopClient = () =>
 		},
 	});
 
-describe('mcp-vertex.setupGithub', () => {
-	describe('i18n parity (all 12 languages)', () => {
-		it('every language has setup-github webview strings', () => {
+describe('mcp-vertex.setupGithub', async () => {
+	describe('i18n parity (all 12 languages)', async () => {
+		it('every language has setup-github webview strings', async () => {
 			expect(Object.keys(setupGithubStringsByLang).sort()).toEqual(
 				languages.map((l) => l.code).sort(),
 			);
 		});
 
-		it('asserts completeness without throwing', () => {
+		it('asserts completeness without throwing', async () => {
 			expect(() =>
 				assertSetupGithubStringsComplete(
 					languages.map((l) => l.code as Lang),
@@ -71,15 +71,15 @@ describe('mcp-vertex.setupGithub', () => {
 			).not.toThrow();
 		});
 
-		it('every language declares exactly 7 steps', () => {
+		it('every language declares exactly 7 steps', async () => {
 			for (const { code } of languages) {
 				expect(setupGithubStrings(code as Lang).steps).toHaveLength(7);
 			}
 		});
 	});
 
-	describe('renderSetupGithubWebview', () => {
-		it('emits all 7 step screens, only the first visible', () => {
+	describe('renderSetupGithubWebview', async () => {
+		it('emits all 7 step screens, only the first visible', async () => {
 			const html = renderSetupGithubWebview(setupGithubStrings('en'));
 			for (let i = 0; i < 7; i += 1) {
 				expect(html).toContain(`data-step="${i}"`);
@@ -89,7 +89,7 @@ describe('mcp-vertex.setupGithub', () => {
 			expect(html).toContain('data-step="1" hidden>');
 		});
 
-		it('renders Back / Next controls and a copy button per step', () => {
+		it('renders Back / Next controls and a copy button per step', async () => {
 			const en = setupGithubStrings('en');
 			const html = renderSetupGithubWebview(en);
 			expect(html).toContain('id="back"');
@@ -99,20 +99,20 @@ describe('mcp-vertex.setupGithub', () => {
 			expect((html.match(/class="copy"/g) ?? []).length).toBe(7);
 		});
 
-		it('links back to the canonical docs guide', () => {
+		it('links back to the canonical docs guide', async () => {
 			const html = renderSetupGithubWebview(setupGithubStrings('en'));
 			expect(html).toContain(SETUP_GITHUB_DOCS_URL);
 			expect(SETUP_GITHUB_DOCS_URL).toContain('CROSS-PROJECT-SETUP.md');
 		});
 
-		it('embeds the 7 canonical commands', () => {
+		it('embeds the 7 canonical commands', async () => {
 			const html = renderSetupGithubWebview(setupGithubStrings('en'));
 			expect(SETUP_GITHUB_COMMANDS).toHaveLength(7);
 			expect(html).toContain('git remote get-url origin');
 			expect(html).toContain('bunx @mcp-vertex/core --preset=full');
 		});
 
-		it('emits commands that agree with the catalog (no preset drift)', () => {
+		it('emits commands that agree with the catalog (no preset drift)', async () => {
 			// The launch command must use a catalog preset id, NOT a hand-typed
 			// plugin list mirroring a full preset (forbidden by lint:setup).
 			expect(SETUP_GITHUB_COMMANDS).toContain(
@@ -129,8 +129,8 @@ describe('mcp-vertex.setupGithub', () => {
 		});
 	});
 
-	describe('command registration', () => {
-		it('registers mcp-vertex.setupGithub and opens a webview', () => {
+	describe('command registration', async () => {
+		it('registers mcp-vertex.setupGithub and opens a webview', async () => {
 			const { vscode, panels, commands } = createVscode();
 			registerSetupGithubCommand({ vscode, client: noopClient() });
 			expect(commands.has(SETUP_GITHUB_COMMAND)).toBe(true);

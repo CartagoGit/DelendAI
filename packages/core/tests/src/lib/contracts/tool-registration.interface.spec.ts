@@ -14,8 +14,8 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 // Minimal no-op `register` so the spec doesn't need a real McpServer.
 const noopRegister = async (): Promise<void> => {};
 
-describe('IToolRegistration', () => {
-	it('accepts a registration without descriptionKey (back-compat)', () => {
+describe('IToolRegistration', async () => {
+	it('accepts a registration without descriptionKey (back-compat)', async () => {
 		const reg: IToolRegistration = {
 			id: 'ping',
 			register: noopRegister,
@@ -23,7 +23,7 @@ describe('IToolRegistration', () => {
 		expect(reg.descriptionKey).toBeUndefined();
 	});
 
-	it('accepts a registration with descriptionKey', () => {
+	it('accepts a registration with descriptionKey', async () => {
 		const reg: IToolRegistration = {
 			id: 'auto_work',
 			descriptionKey: 'proposals_auto_work',
@@ -32,7 +32,7 @@ describe('IToolRegistration', () => {
 		expect(reg.descriptionKey).toBe('proposals_auto_work');
 	});
 
-	it('preserves the i18n key convention (namespace_tool) via type-level guard', () => {
+	it('preserves the i18n key convention (namespace_tool) via type-level guard', async () => {
 		// The catalogue convention is `<namespace>_<tool>` (matches the MCP
 		// tool name without the namespace prefix). This test pins the most
 		// common shape so a renaming regression surfaces here.

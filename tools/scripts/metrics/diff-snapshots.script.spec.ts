@@ -22,8 +22,8 @@ const THRESHOLDS: IThresholds = {
 	bytesDeltaPct: 20,
 };
 
-describe('diffSnapshots', () => {
-	it('reports ok=true when no tool regresses', () => {
+describe('diffSnapshots', async () => {
+	it('reports ok=true when no tool regresses', async () => {
 		const baseline = snapshot({
 			overview: {
 				calls: 10,
@@ -49,7 +49,7 @@ describe('diffSnapshots', () => {
 		expect(report.regressions).toHaveLength(0);
 	});
 
-	it('flags a +20% bytes/call regression as a failure', () => {
+	it('flags a +20% bytes/call regression as a failure', async () => {
 		const baseline = snapshot({
 			overview: {
 				calls: 10,
@@ -76,7 +76,7 @@ describe('diffSnapshots', () => {
 		expect(report.regressions[0]?.status).toBe('regression');
 	});
 
-	it('passes a +5% delta (under threshold)', () => {
+	it('passes a +5% delta (under threshold)', async () => {
 		const baseline = snapshot({
 			overview: {
 				calls: 10,
@@ -102,7 +102,7 @@ describe('diffSnapshots', () => {
 		expect(report.tools[0]?.status).toBe('unchanged');
 	});
 
-	it('marks a brand-new tool as "new" (info, not a failure)', () => {
+	it('marks a brand-new tool as "new" (info, not a failure)', async () => {
 		const baseline = snapshot({});
 		const candidate = snapshot({
 			auto_work: {
@@ -120,7 +120,7 @@ describe('diffSnapshots', () => {
 		expect(report.tools[0]?.status).toBe('new');
 	});
 
-	it('marks a removed tool as "removed" (warning, not a failure)', () => {
+	it('marks a removed tool as "removed" (warning, not a failure)', async () => {
 		const baseline = snapshot({
 			legacy_tool: {
 				calls: 5,
@@ -138,7 +138,7 @@ describe('diffSnapshots', () => {
 		expect(report.tools[0]?.status).toBe('removed');
 	});
 
-	it('treats a corrupted baseline as caller responsibility (diff over malformed shape throws upstream, not silently)', () => {
+	it('treats a corrupted baseline as caller responsibility (diff over malformed shape throws upstream, not silently)', async () => {
 		// diffSnapshots itself only consumes a parsed object; the "corrupted
 		// baseline" failure mode is a JSON.parse failure handled by the CLI
 		// entrypoint, not by this pure function. We assert the pure function's
@@ -153,7 +153,7 @@ describe('diffSnapshots', () => {
 		).not.toThrow();
 	});
 
-	it('renders a markdown table with a pass/fail header', () => {
+	it('renders a markdown table with a pass/fail header', async () => {
 		const baseline = snapshot({
 			overview: {
 				calls: 10,

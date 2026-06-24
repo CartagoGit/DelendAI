@@ -16,7 +16,7 @@ const makeService = (
 	return { service: new HealthService(client), calls };
 };
 
-describe('HealthService', () => {
+describe('HealthService', async () => {
 	it('snapshot returns a healthy snapshot with lock + agent counts', async () => {
 		const { service, calls } = makeService();
 		const snap = await service.snapshot();

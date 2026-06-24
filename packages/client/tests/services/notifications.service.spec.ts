@@ -6,7 +6,7 @@ import {
 	type ILockReleasedEvent,
 } from '../../src/public/index';
 
-describe('NotificationsService', () => {
+describe('NotificationsService', async () => {
 	it('wraps notification status and emits lock-released events', async () => {
 		const service = new NotificationsService(
 			McpStdioClient.fromTransport({

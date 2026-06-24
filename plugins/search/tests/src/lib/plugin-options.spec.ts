@@ -28,8 +28,8 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/search optionsSchema (S9 F4)', () => {
-	it('exposes an optionsSchema', () => {
+describe('@mcp-vertex/search optionsSchema (S9 F4)', async () => {
+	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(
 			plugin.optionsSchema?.safeParse({ maxResults: 10 }).success,
@@ -43,7 +43,7 @@ describe('@mcp-vertex/search optionsSchema (S9 F4)', () => {
 		expect(regs.tools?.length).toBeGreaterThan(0);
 	});
 
-	it('throws before wiring tools when an option has the wrong type', () => {
+	it('throws before wiring tools when an option has the wrong type', async () => {
 		expect(() => plugin.register(baseCtx({ maxResults: 'lots' }))).toThrow(
 			/rejected its options/,
 		);

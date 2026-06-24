@@ -24,7 +24,7 @@ const firstSnapshot: IMetricsSnapshot = {
 	},
 };
 
-describe('MetricsService', () => {
+describe('MetricsService', async () => {
 	it('fetches a metrics snapshot', async () => {
 		const service = new MetricsService(
 			McpStdioClient.fromTransport({
@@ -64,7 +64,9 @@ describe('MetricsService', () => {
 		const ac = new AbortController();
 		const snapshots: IMetricsSnapshot[] = [];
 
-		for await (const snapshot of service.stream(1, { signal: ac.signal })) {
+		for await (const snapshot of await service.stream(1, {
+			signal: ac.signal,
+		})) {
 			snapshots.push(snapshot);
 			if (snapshots.length === 2) {
 				ac.abort();

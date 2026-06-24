@@ -11,17 +11,17 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/vertex-config-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('DEFAULT_VERTEX_CONFIG_RULES (declarative table)', () => {
-	it('lists the two built-in rules (plugins, validation-matrix-scopes)', () => {
+describe('DEFAULT_VERTEX_CONFIG_RULES (declarative table)', async () => {
+	it('lists the two built-in rules (plugins, validation-matrix-scopes)', async () => {
 		const ids = DEFAULT_VERTEX_CONFIG_RULES.map((r) => r.id);
 		expect(ids).toEqual(['plugins', 'validation-matrix-scopes']);
 	});
-	it('plugins outranks validation-matrix-scopes', () => {
+	it('plugins outranks validation-matrix-scopes', async () => {
 		const plugins = DEFAULT_VERTEX_CONFIG_RULES.find(
 			(r) => r.id === 'plugins',
 		);
@@ -32,25 +32,25 @@ describe('DEFAULT_VERTEX_CONFIG_RULES (declarative table)', () => {
 	});
 });
 
-describe('matchVertexConfig', () => {
-	it('returns an empty list when parsed is null', () => {
+describe('matchVertexConfig', async () => {
+	it('returns an empty list when parsed is null', async () => {
 		expect(matchVertexConfig(null)).toEqual([]);
 	});
-	it('returns an empty list when neither plugins nor validationMatrix is present', () => {
+	it('returns an empty list when neither plugins nor validationMatrix is present', async () => {
 		expect(matchVertexConfig({})).toEqual([]);
 	});
-	it('detects `plugins` when the plugins object is non-empty', () => {
+	it('detects `plugins` when the plugins object is non-empty', async () => {
 		expect(matchVertexConfig({ plugins: { foo: {} } })).toEqual([
 			'plugins',
 		]);
 	});
-	it('does NOT detect `plugins` when the plugins object is empty', () => {
+	it('does NOT detect `plugins` when the plugins object is empty', async () => {
 		expect(matchVertexConfig({ plugins: {} })).toEqual([]);
 	});
-	it('does NOT detect `plugins` when the value is an array (not an object)', () => {
+	it('does NOT detect `plugins` when the value is an array (not an object)', async () => {
 		expect(matchVertexConfig({ plugins: [] })).toEqual([]);
 	});
-	it('detects `validation-matrix-scopes` when scopes is non-empty', () => {
+	it('detects `validation-matrix-scopes` when scopes is non-empty', async () => {
 		expect(
 			matchVertexConfig({
 				validationMatrix: {
@@ -59,10 +59,10 @@ describe('matchVertexConfig', () => {
 			}),
 		).toEqual(['validation-matrix-scopes']);
 	});
-	it('does NOT detect `validation-matrix-scopes` when scopes is missing', () => {
+	it('does NOT detect `validation-matrix-scopes` when scopes is missing', async () => {
 		expect(matchVertexConfig({ validationMatrix: {} })).toEqual([]);
 	});
-	it('detects both when both are non-empty', () => {
+	it('detects both when both are non-empty', async () => {
 		expect(
 			matchVertexConfig({
 				plugins: { p: {} },
@@ -72,17 +72,17 @@ describe('matchVertexConfig', () => {
 	});
 });
 
-describe('matchVertexConfigFromRaw (parse + match)', () => {
-	it('returns an empty list when the file is undefined', () => {
+describe('matchVertexConfigFromRaw (parse + match)', async () => {
+	it('returns an empty list when the file is undefined', async () => {
 		expect(matchVertexConfigFromRaw(undefined)).toEqual([]);
 	});
-	it('returns an empty list on JSON parse error', () => {
+	it('returns an empty list on JSON parse error', async () => {
 		expect(matchVertexConfigFromRaw('{ not valid json')).toEqual([]);
 	});
-	it('returns an empty list when the file is an array, not an object', () => {
+	it('returns an empty list when the file is an array, not an object', async () => {
 		expect(matchVertexConfigFromRaw('[]')).toEqual([]);
 	});
-	it('detects `plugins` from a well-formed file', () => {
+	it('detects `plugins` from a well-formed file', async () => {
 		expect(
 			matchVertexConfigFromRaw(
 				JSON.stringify({ plugins: { quality: {} } }),
@@ -91,9 +91,9 @@ describe('matchVertexConfigFromRaw (parse + match)', () => {
 	});
 });
 
-describe('integration: detectCustomVertexConfig uses the rule table', () => {
-	it('analyzer sets the corresponding signal when plugins is non-empty', () => {
-		const analysis = analyzeProject(
+describe('integration: detectCustomVertexConfig uses the rule table', async () => {
+	it('analyzer sets the corresponding signal when plugins is non-empty', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'mcp-vertex.config.json': JSON.stringify({
 					plugins: { quality: {} },
@@ -105,8 +105,8 @@ describe('integration: detectCustomVertexConfig uses the rule table', () => {
 			'mcp-vertex.config.json has plugin or validation config',
 		);
 	});
-	it('analyzer does NOT set the signal when plugins is empty', () => {
-		const analysis = analyzeProject(
+	it('analyzer does NOT set the signal when plugins is empty', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'mcp-vertex.config.json': JSON.stringify({
 					plugins: {},

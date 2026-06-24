@@ -43,7 +43,7 @@ const captureTool = async (
 	return handler!;
 };
 
-describe('@mcp-vertex/rules plugin', () => {
+describe('@mcp-vertex/rules plugin', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'rules-'));
@@ -56,7 +56,7 @@ describe('@mcp-vertex/rules plugin', () => {
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 	it('registers the rules tools, prompt and knowledge; default mode mixed', async () => {
-		const reg = await plugin.register(makeCtx(root));
+		const reg = await plugin.register(await makeCtx(root));
 		expect(reg.tools?.map((t) => t.id)).toEqual([
 			'get_rules',
 			'check_rules',
@@ -68,7 +68,7 @@ describe('@mcp-vertex/rules plugin', () => {
 	});
 
 	it('materialises default presets + a manifest into the cache on register', async () => {
-		await plugin.register(makeCtx(root));
+		await plugin.register(await makeCtx(root));
 		expect(
 			existsSync(join(root, '.cache/mcp-vertex/rules/rules-map.json')),
 		).toBe(true);
@@ -86,7 +86,7 @@ describe('@mcp-vertex/rules plugin', () => {
 
 	it('get_rules returns the area map and the mode (forced framework override)', async () => {
 		const reg = await plugin.register(
-			makeCtx(root, {
+			await makeCtx(root, {
 				framework: 'react',
 				language: 'ts',
 				mode: 'strict',
@@ -100,7 +100,7 @@ describe('@mcp-vertex/rules plugin', () => {
 
 	it('check_rules compact mode surfaces missing ESLint deps as findings', async () => {
 		const reg = await plugin.register(
-			makeCtx(root, {
+			await makeCtx(root, {
 				framework: 'react',
 				language: 'ts',
 			}),

@@ -113,7 +113,7 @@ Seed for the auto_work e2e harness.
 	return { file, relPath };
 };
 
-describe('e2e: proposals_auto_work over the real MCP protocol', () => {
+describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 	let harness: IAssembledProposalsServer;
 
 	beforeEach(async () => {

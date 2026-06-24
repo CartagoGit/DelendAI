@@ -41,7 +41,7 @@ const seedScaffold = async (
 	return fileName;
 };
 
-describe('issues_resolve', () => {
+describe('issues_resolve', async () => {
 	let scaffoldDirAbs = '';
 
 	beforeEach(async () => {

@@ -9,14 +9,14 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/capability-diff';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-const blue = (pkg: Record<string, unknown>) =>
+const blue = async (pkg: Record<string, unknown>) =>
 	buildServerBlueprint(
-		analyzeProject(
+		await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: '@acme/site',
@@ -29,9 +29,11 @@ const blue = (pkg: Record<string, unknown>) =>
 	);
 
 describe('diffCapabilities', () => {
-	it('flags everything missing when the existing server has no tools', () => {
-		const bp = blue({});
-		const diff = diffCapabilities(bp, [], { namespacePrefix: 'acme' });
+	it('flags everything missing when the existing server has no tools', async () => {
+		const bp = await blue({});
+		const diff = await diffCapabilities(bp, [], {
+			namespacePrefix: 'acme',
+		});
 		expect(diff.missing.length).toBeGreaterThan(0);
 		expect(diff.present).toEqual([]);
 		expect(diff.extra).toEqual([]);
@@ -40,13 +42,13 @@ describe('diffCapabilities', () => {
 		expect(diff.summary).toMatch(/missing/);
 	});
 
-	it('marks a tool as present when the existing server exposes it', () => {
-		const bp = blue({});
+	it('marks a tool as present when the existing server exposes it', async () => {
+		const bp = await blue({});
 		// The blueprint includes `run_test` and `run_lint` (derived from scripts).
 		const existing = bp.tools
 			.filter((t) => t.name === 'run_test')
 			.map((t) => `acme_${t.name}`);
-		const diff = diffCapabilities(bp, existing, {
+		const diff = await diffCapabilities(bp, existing, {
 			namespacePrefix: 'acme',
 		});
 		const runTest = diff.present.find((p) => p.name === 'run_test');
@@ -54,12 +56,12 @@ describe('diffCapabilities', () => {
 		expect(diff.missing.some((m) => m.name === 'run_test')).toBe(false);
 	});
 
-	it('classifies a head-alias as present (not mismatched)', () => {
-		const bp = blue({});
+	it('classifies a head-alias as present (not mismatched)', async () => {
+		const bp = await blue({});
 		// Existing has `acme_test_runner`; the blueprint derives
 		// `run_test` from `scripts.test`. They share a "test" head alias,
 		// so the diff lands it in `present` (not missing, not mismatched).
-		const diff = diffCapabilities(bp, ['acme_test_runner'], {
+		const diff = await diffCapabilities(bp, ['acme_test_runner'], {
 			namespacePrefix: 'acme',
 		});
 		expect(diff.present.find((p) => p.name === 'run_test')).toBeDefined();
@@ -72,9 +74,9 @@ describe('diffCapabilities', () => {
 		expect(diff.extra).not.toContain('test_runner');
 	});
 
-	it('lists extra tools the blueprint does not need', () => {
-		const bp = blue({});
-		const diff = diffCapabilities(
+	it('lists extra tools the blueprint does not need', async () => {
+		const bp = await blue({});
+		const diff = await diffCapabilities(
 			bp,
 			['acme_run_test', 'acme_legacy_unused_tool'],
 			{ namespacePrefix: 'acme' },
@@ -82,10 +84,10 @@ describe('diffCapabilities', () => {
 		expect(diff.extra).toContain('legacy_unused_tool');
 	});
 
-	it('matches without the namespace prefix when the caller forgets it', () => {
-		const bp = blue({});
+	it('matches without the namespace prefix when the caller forgets it', async () => {
+		const bp = await blue({});
 		// Caller passes bare ids — diffCapabilities still finds them.
-		const diff = diffCapabilities(
+		const diff = await diffCapabilities(
 			bp,
 			bp.tools.map((t) => t.name),
 			{ namespacePrefix: 'acme' },
@@ -96,14 +98,14 @@ describe('diffCapabilities', () => {
 });
 
 describe('existingToolsFromAnalysis', () => {
-	it('returns an empty list when no mcp.json is present (best-effort)', () => {
-		const analysis = analyzeProject(reader({}));
-		const result = existingToolsFromAnalysis(analysis, reader({}));
+	it('returns an empty list when no mcp.json is present (best-effort)', async () => {
+		const analysis = await analyzeProject(reader({}));
+		const result = await existingToolsFromAnalysis(analysis, reader({}));
 		expect(result).toEqual([]);
 	});
 
-	it('returns an empty list when mcp.json is present (cannot derive tool names statically)', () => {
-		const analysis = analyzeProject(
+	it('returns an empty list when mcp.json is present (cannot derive tool names statically)', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({ name: 'svc' }),
 				'.vscode/mcp.json': JSON.stringify({
@@ -116,7 +118,7 @@ describe('existingToolsFromAnalysis', () => {
 				}),
 			}),
 		);
-		const result = existingToolsFromAnalysis(analysis, reader({}));
+		const result = await existingToolsFromAnalysis(analysis, reader({}));
 		expect(result).toEqual([]);
 	});
 });

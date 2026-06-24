@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { parseCliInvocation } from '../src/lib/parser';
 
-describe('parseCliInvocation', () => {
-	it('parses globals before the command', () => {
+describe('parseCliInvocation', async () => {
+	it('parses globals before the command', async () => {
 		const parsed = parseCliInvocation(
 			['--workspace', 'repo', '--json', 'overview', '--full'],
 			'/tmp',
@@ -14,7 +14,7 @@ describe('parseCliInvocation', () => {
 		expect(parsed.commandArgs).toEqual(['--full']);
 	});
 
-	it('lifts supported global flags after the command', () => {
+	it('lifts supported global flags after the command', async () => {
 		const parsed = parseCliInvocation(
 			['search', 'needle', '--plugins=search', '--max=5'],
 			'/tmp',

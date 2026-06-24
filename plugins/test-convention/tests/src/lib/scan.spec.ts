@@ -11,20 +11,20 @@ import {
 const fakeReader = (files: Record<string, string>): IFileReader => {
 	const keys = Object.keys(files);
 	return {
-		readFile: (p) => files[p],
-		exists: (p) => p in files,
-		listDir: () => keys,
+		readFile: async (p) => files[p],
+		exists: async (p) => p in files,
+		listDir: async () => keys,
 	};
 };
 
-describe('scanDrift', () => {
-	it('reports ok when there are no violations', () => {
+describe('scanDrift', async () => {
+	it('reports ok when there are no violations', async () => {
 		const reader = fakeReader({
 			'src/lib/foo.ts': 'export const foo = 1;',
 			'src/lib/foo.spec.ts':
-				'describe("foo", () => { it("a", () => {}); });',
+				'describe("foo", async () => { it("a", async () => {}); });',
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -33,12 +33,12 @@ describe('scanDrift', () => {
 		expect(report.counts.error).toBe(0);
 	});
 
-	it('flags wrong-spec-extension and missing-top-level-describe', () => {
+	it('flags wrong-spec-extension and missing-top-level-describe', async () => {
 		const reader = fakeReader({
-			'src/lib/bad.test.ts': "it('does a thing', () => {});",
+			'src/lib/bad.test.ts': "it('does a thing', async () => {});",
 		});
 		const c = mergeConvention({ specExtension: 'spec.ts' });
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: c,
 			reader,
 			workspaceRoot: '/',
@@ -48,11 +48,11 @@ describe('scanDrift', () => {
 		expect(ids).toContain('missing-top-level-describe');
 	});
 
-	it('flags missing-spec-for-export when source has exports but no spec', () => {
+	it('flags missing-spec-for-export when source has exports but no spec', async () => {
 		const reader = fakeReader({
 			'src/lib/orphan.ts': 'export function orphan() {}',
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -62,17 +62,17 @@ describe('scanDrift', () => {
 		).toBe(true);
 	});
 
-	it('flags forbidden patterns (.only, xit, @ts-ignore, console.log)', () => {
+	it('flags forbidden patterns (.only, xit, @ts-ignore, console.log)', async () => {
 		const reader = fakeReader({
 			'src/lib/x.spec.ts': [
-				'describe("x", () => {',
-				'  it.only("a", () => { console.log("debug"); });',
+				'describe("x", async () => {',
+				'  it.only("a", async () => { console.log("debug"); });',
 				'  // @ts-ignore',
-				'  xit("skipped", () => {});',
+				'  xit("skipped", async () => {});',
 				'});',
 			].join('\n'),
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -84,12 +84,12 @@ describe('scanDrift', () => {
 		expect(ids).toContain('console-residue');
 	});
 
-	it('flags wrong-mock-api when jest.fn appears in a vitest project', () => {
+	it('flags wrong-mock-api when jest.fn appears in a vitest project', async () => {
 		const reader = fakeReader({
 			'src/lib/j.spec.ts':
-				'describe("j", () => { it("a", () => { jest.fn(); }); });',
+				'describe("j", async () => { it("a", async () => { jest.fn(); }); });',
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -99,12 +99,12 @@ describe('scanDrift', () => {
 		);
 	});
 
-	it('flags orphan-spec when the import does not resolve', () => {
+	it('flags orphan-spec when the import does not resolve', async () => {
 		const reader = fakeReader({
 			'src/lib/j.spec.ts':
-				'import { x } from "./missing"; describe("j", () => { it("a", () => {}); });',
+				'import { x } from "./missing"; describe("j", async () => { it("a", async () => {}); });',
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -114,11 +114,11 @@ describe('scanDrift', () => {
 		);
 	});
 
-	it('counts severities correctly', () => {
+	it('counts severities correctly', async () => {
 		const reader = fakeReader({
-			'src/lib/a.spec.ts': 'describe.only("a", () => {});',
+			'src/lib/a.spec.ts': 'describe.only("a", async () => {});',
 		});
-		const report = scanDrift({
+		const report = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -127,13 +127,14 @@ describe('scanDrift', () => {
 		expect(report.ok).toBe(false);
 	});
 
-	it('respects scope=src and scope=tests', () => {
+	it('respects scope=src and scope=tests', async () => {
 		const reader = fakeReader({
 			'src/lib/a.ts': 'export const a = 1;',
-			'src/lib/a.spec.ts': 'describe("a", () => { it("x", () => {}); });',
-			'src/lib/b.spec.ts': 'describe.only("b", () => {});',
+			'src/lib/a.spec.ts':
+				'describe("a", async () => { it("x", async () => {}); });',
+			'src/lib/b.spec.ts': 'describe.only("b", async () => {});',
 		});
-		const srcOnly = scanDrift({
+		const srcOnly = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',
@@ -141,7 +142,7 @@ describe('scanDrift', () => {
 		});
 		expect(srcOnly.scannedFiles).toBe(1);
 
-		const testsOnly = scanDrift({
+		const testsOnly = await scanDrift({
 			convention: DEFAULT_CONVENTION,
 			reader,
 			workspaceRoot: '/',

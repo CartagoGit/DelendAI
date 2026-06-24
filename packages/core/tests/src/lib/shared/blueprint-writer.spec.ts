@@ -38,7 +38,7 @@ afterEach(async () => {
 	await rm(workspace, { recursive: true, force: true });
 });
 
-describe('createFileSystemBlueprintWriter — writeOnce idempotency', () => {
+describe('createFileSystemBlueprintWriter — writeOnce idempotency', async () => {
 	it('writes the blueprint and reports written:true on the first call', async () => {
 		const writer: IBlueprintWriter = createFileSystemBlueprintWriter();
 		const result = await writer.writeOnce(workspace, 'bp.json', {
@@ -131,7 +131,7 @@ describe('createFileSystemBlueprintWriter — writeOnce idempotency', () => {
 	});
 });
 
-describe('createFileSystemBlueprintWriter — concurrency safety', () => {
+describe('createFileSystemBlueprintWriter — concurrency safety', async () => {
 	it('serializes concurrent writeOnce calls: exactly one wins, no torn file', async () => {
 		// Fire 5 concurrent writeOnce calls against the same path.
 		// Without the mutex + double-check, multiple writers could race

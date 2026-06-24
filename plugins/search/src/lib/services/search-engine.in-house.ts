@@ -47,7 +47,7 @@ export { InvalidSearchPatternError } from './search-engine.types';
 /** Stable identifier for logs / diagnostics. */
 export const IN_HOUSE_BACKEND_ID = 'in-house';
 
-export const createInHouseBackend = (): ISearchBackend => ({
+export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 	id: IN_HOUSE_BACKEND_ID,
 	// Solid-OCP: the in-house walker needs no external probe — it
 	// always runs as long as the file system is reachable.

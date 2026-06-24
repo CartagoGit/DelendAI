@@ -19,7 +19,7 @@ import {
 
 const tok = (...parts: string[]): string => parts.join('');
 
-describe('memory export/import (f00028 S2)', () => {
+describe('memory export/import (f00028 S2)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {

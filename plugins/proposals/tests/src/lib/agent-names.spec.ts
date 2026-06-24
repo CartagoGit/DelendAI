@@ -30,7 +30,7 @@ const parse = (result: {
 	return value;
 };
 
-describe('agent_names (covers the orchestrator, not only subagents)', () => {
+describe('agent_names (covers the orchestrator, not only subagents)', async () => {
 	let root = '';
 	let options: IAgentNamesToolOptions;
 
@@ -95,7 +95,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 
 	// M10: a corrupt registry must NOT read as empty — that would let the
 	// orchestrator hand out names already held by live agents.
-	describe('corrupt registry (M10)', () => {
+	describe('corrupt registry (M10)', async () => {
 		const backupExists = (): boolean =>
 			readdirSync(root).some((f) =>
 				f.startsWith(`${basename(options.registryPathAbs)}.corrupt-`),

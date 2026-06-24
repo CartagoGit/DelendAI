@@ -61,16 +61,16 @@ const baseRoundId = () => ({
 	activeAgents: [agent('f00001-S1')],
 });
 
-describe('buildRoundId', () => {
-	it('is deterministic for identical input', () => {
+describe('buildRoundId', async () => {
+	it('is deterministic for identical input', async () => {
 		expect(buildRoundId(baseRoundId())).toBe(buildRoundId(baseRoundId()));
 	});
 
-	it('starts with the round- prefix', () => {
+	it('starts with the round- prefix', async () => {
 		expect(buildRoundId(baseRoundId())).toMatch(/^round-/);
 	});
 
-	it('changes when the active proposal changes', () => {
+	it('changes when the active proposal changes', async () => {
 		const a = buildRoundId(baseRoundId());
 		const b = buildRoundId({
 			...baseRoundId(),
@@ -79,7 +79,7 @@ describe('buildRoundId', () => {
 		expect(a).not.toBe(b);
 	});
 
-	it('depends only on lock/agent taskIds, not their volatile fields', () => {
+	it('depends only on lock/agent taskIds, not their volatile fields', async () => {
 		const a = buildRoundId(baseRoundId());
 		const b = buildRoundId({
 			...baseRoundId(),
@@ -103,8 +103,8 @@ const checkpoint = (
 	over: Partial<IRoundContextCheckpoint> = {},
 ): IRoundContextCheckpoint => ({ ...over });
 
-describe('buildResumeHint', () => {
-	it('resumes when the checkpoint is open', () => {
+describe('buildResumeHint', async () => {
+	it('resumes when the checkpoint is open', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00001',
 			currentTaskId: 'f00001-S1',
@@ -120,7 +120,7 @@ describe('buildResumeHint', () => {
 		expect(hint.proposalId).toBe('f00001');
 	});
 
-	it('advances to next when the checkpoint is closed', () => {
+	it('advances to next when the checkpoint is closed', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00001',
 			currentTaskId: 'f00001-S1',
@@ -132,7 +132,7 @@ describe('buildResumeHint', () => {
 		expect(hint.mode).toBe('next');
 	});
 
-	it('resumes the chat-context proposal when no checkpoint signal exists', () => {
+	it('resumes the chat-context proposal when no checkpoint signal exists', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00009',
 			currentTaskId: 'unknown',
@@ -145,7 +145,7 @@ describe('buildResumeHint', () => {
 		expect(hint.proposalId).toBe('f00003');
 	});
 
-	it('infers the in-flight slice from an active lock', () => {
+	it('infers the in-flight slice from an active lock', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00009',
 			currentTaskId: 'unknown',
@@ -159,7 +159,7 @@ describe('buildResumeHint', () => {
 		expect(hint.proposalId).toBe('p81');
 	});
 
-	it('returns unknown when there is no signal at all', () => {
+	it('returns unknown when there is no signal at all', async () => {
 		const hint = buildResumeHint({
 			activeProposalId: 'f00009',
 			currentTaskId: 'unknown',

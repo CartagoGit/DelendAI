@@ -28,7 +28,7 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-describe('proposal authoring (create → board → close)', () => {
+describe('proposal authoring (create → board → close)', async () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
 	beforeEach(() => {

@@ -12,7 +12,7 @@ import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-
 import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
-describe('AgentLoopDetectorService', () => {
+describe('AgentLoopDetectorService', async () => {
 	let dir = '';
 	let mockCtx: IMcpPluginContext;
 	// Spy on process.stderr.write so the production loop-detector
@@ -51,7 +51,7 @@ describe('AgentLoopDetectorService', () => {
 		stderrSpy.mockRestore();
 	});
 
-	it('initializes with default options and is enabled by default', () => {
+	it('initializes with default options and is enabled by default', async () => {
 		const service = new AgentLoopDetectorService(mockCtx);
 		expect(service).toBeDefined();
 		expect(service.isAgentStuck('read_file', {})).toBeNull();
@@ -173,7 +173,7 @@ describe('AgentLoopDetectorService', () => {
 	// l00008 s1 — async I/O regression coverage: `getActiveAgent` (called from
 	// the hot `onToolCall` path) now reads the lock file via
 	// `node:fs/promises.readFile` instead of `existsSync` + `readFileSync`.
-	describe('async I/O hot-path coverage (l00008 s1)', () => {
+	describe('async I/O hot-path coverage (l00008 s1)', async () => {
 		it('resolves the active agent from a real lock file written asynchronously', async () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			const lockPath = mockCtx.workspace.resolve(
@@ -303,7 +303,7 @@ describe('AgentLoopDetectorService', () => {
 	// worker." The fix is `interactiveAgentPatterns` (default
 	// `*-default`, `default-*`, `host`, `interactive`) — those agents
 	// never accumulate in the sliding window and never fire a verdict.
-	describe('interactive-agent skip (copilot-default false-positive)', () => {
+	describe('interactive-agent skip (copilot-default false-positive)', async () => {
 		it('does not flag an agent matching the default `*-default` pattern, even after 100 exact-repeat calls', async () => {
 			const service = new AgentLoopDetectorService(mockCtx);
 			// Simulates the exact scenario from the production handoff

@@ -36,7 +36,7 @@ export interface IIndexFs {
  * in this file so the reader module can be tested without the
  * `node:fs` dep.
  */
-export const buildNodeIndexFs = (): IIndexFs => {
+export const buildNodeIndexFs = async (): Promise<IIndexFs> => {
 	type FsMod = typeof import('node:fs/promises');
 	let mod: FsMod | null = null;
 	const load = (): FsMod => {
@@ -58,4 +58,4 @@ export const buildNodeIndexFs = (): IIndexFs => {
 
 /** Default port for the index readers. Tests can pass a fake
  *  through the optional 2nd argument of each reader. */
-export const DEFAULT_INDEX_FS: IIndexFs = buildNodeIndexFs();
+export const DEFAULT_INDEX_FS: IIndexFs = await buildNodeIndexFs();

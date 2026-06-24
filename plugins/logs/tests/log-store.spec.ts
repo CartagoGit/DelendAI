@@ -12,11 +12,11 @@ import {
 const tempLogs = async (): Promise<string> =>
 	mkdtemp(join(tmpdir(), 'mcp-vertex-logs-'));
 
-describe('log store', () => {
+describe('log store', async () => {
 	it('appends and reads redacted JSONL events', async () => {
 		const dir = await tempLogs();
 		const store = createLogStore(dir);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'tool-started',
 				{
@@ -27,7 +27,7 @@ describe('log store', () => {
 			),
 		);
 
-		const events = await store.readRange();
+		const events = await (await store).readRange();
 		expect(events).toHaveLength(1);
 		expect(events[0]?.summary).toContain('[REDACTED]');
 		expect(await readFile(join(dir, '2026-06-20.jsonl'), 'utf8')).toContain(
@@ -39,8 +39,8 @@ describe('log store', () => {
 		const dir = await tempLogs();
 		const store = createLogStore(dir);
 		await Promise.all(
-			Array.from({ length: 25 }, (_, i) =>
-				store.appendEvent(
+			Array.from({ length: 25 }, async (_, i) =>
+				(await store).appendEvent(
 					normalizeEvent(
 						'tool-completed',
 						{
@@ -55,7 +55,7 @@ describe('log store', () => {
 			),
 		);
 
-		const events = await store.readRange();
+		const events = await (await store).readRange();
 		expect(events).toHaveLength(25);
 		expect(new Set(events.map((event) => event.taskId)).size).toBe(25);
 	});
@@ -63,14 +63,14 @@ describe('log store', () => {
 	it('tails newest events and filters by outcome', async () => {
 		const dir = await tempLogs();
 		const store = createLogStore(dir);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'tool-completed',
 				{ toolName: 'ok' },
 				new Date('2026-06-20T10:00:00.000Z'),
 			),
 		);
-		await store.appendEvent(
+		await (await store).appendEvent(
 			normalizeEvent(
 				'tool-failed',
 				{ toolName: 'bad' },
@@ -78,7 +78,7 @@ describe('log store', () => {
 			),
 		);
 
-		const failed = await store.tail({ outcomeFilter: 'failed' });
+		const failed = await (await store).tail({ outcomeFilter: 'failed' });
 		expect(failed.map((event) => event.taskId)).toEqual(['bad']);
 	});
 
@@ -88,7 +88,7 @@ describe('log store', () => {
 		await writeFile(join(dir, '2026-06-19.jsonl'), '{}\n');
 		const store = createLogStore(dir);
 
-		const removed = await store.gc({
+		const removed = await (await store).gc({
 			olderThanDays: 30,
 			now: new Date('2026-06-20T00:00:00.000Z'),
 		});
@@ -101,7 +101,7 @@ describe('log store', () => {
 		);
 	});
 
-	it('caps oversized events and marks them truncated', () => {
+	it('caps oversized events and marks them truncated', async () => {
 		const line = serializeRedactedEvent(
 			normalizeEvent('tool-failed', {
 				toolName: 'huge',

@@ -85,7 +85,7 @@ export const createAssembledProposalsServer =
 			import: async () => ({ default: proposalsPlugin }),
 			// No on-disk config file: the harness owns the workspace, the
 			// plugin receives pure defaults from ctx.corePaths.
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =

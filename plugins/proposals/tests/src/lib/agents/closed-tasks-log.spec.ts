@@ -79,7 +79,7 @@ const makeRecord = (
 // ---------------------------------------------------------------------------
 // Case 1: append
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — append', () => {
+describe('appendToClosedTasks — append', async () => {
 	it('appends a new record to an empty log file', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const record = makeRecord();
@@ -113,7 +113,7 @@ describe('appendToClosedTasks — append', () => {
 // ---------------------------------------------------------------------------
 // Case 2: max-size eviction (FIFO, max 32 — p56 T2 reduced from 256)
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — max-size eviction', () => {
+describe('appendToClosedTasks — max-size eviction', async () => {
 	it('evicts the oldest entry when the log reaches 32 entries', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 
@@ -145,7 +145,7 @@ describe('appendToClosedTasks — max-size eviction', () => {
 // ---------------------------------------------------------------------------
 // Case 3: idempotency
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — idempotency', () => {
+describe('appendToClosedTasks — idempotency', async () => {
 	it('does not duplicate an entry when the same taskId is appended twice', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const record = makeRecord({ taskId: 'idempotent-task' });
@@ -163,7 +163,7 @@ describe('appendToClosedTasks — idempotency', () => {
 // ---------------------------------------------------------------------------
 // Case 4: parse defensivo (corrupted file → empty array, no throw)
 // ---------------------------------------------------------------------------
-describe('readClosedTasks — parse defensivo', () => {
+describe('readClosedTasks — parse defensivo', async () => {
 	it('returns an empty array when the log file contains invalid JSON', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		writeFileSync(logPath, '{ this is not json }', 'utf8');
@@ -193,7 +193,7 @@ describe('readClosedTasks — parse defensivo', () => {
 // coordination, so it still returns [] — but it PRESERVES the corrupt
 // bytes to a .corrupt-<ts> backup rather than letting them be overwritten.
 // ---------------------------------------------------------------------------
-describe('readClosedTasks — quarantine on corruption (M10)', () => {
+describe('readClosedTasks — quarantine on corruption (M10)', async () => {
 	const backupOf = (_logPath: string): string | undefined =>
 		readdirSync(workDir).find((f) =>
 			f.startsWith('closed-tasks.json.corrupt-'),
@@ -242,7 +242,7 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 // ---------------------------------------------------------------------------
 // Case 5: round-trip
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — round-trip', () => {
+describe('appendToClosedTasks — round-trip', async () => {
 	it('produces the same records after append + read', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const r1 = makeRecord({ taskId: 'rt-task-1' });
@@ -271,7 +271,7 @@ describe('appendToClosedTasks — round-trip', () => {
 // priority field that the active queue uses, and entries are kept
 // in strict append order.
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — FIFO order', () => {
+describe('appendToClosedTasks — FIFO order', async () => {
 	it('keeps entries in strict append order regardless of any external priority tag', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 

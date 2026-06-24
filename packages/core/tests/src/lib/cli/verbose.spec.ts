@@ -34,8 +34,8 @@ const config = {
 	extraResources: [],
 } as unknown as IMcpVertexHostConfig;
 
-describe('--verbose diagnostics (N23)', () => {
-	it('buildAssemblyDiagnostics snapshots plugins, counts and order', () => {
+describe('--verbose diagnostics (N23)', async () => {
+	it('buildAssemblyDiagnostics snapshots plugins, counts and order', async () => {
 		const d = buildAssemblyDiagnostics(args, loadResult, config, [
 			'mcp-vertex_overview',
 			'demo_x',
@@ -52,7 +52,7 @@ describe('--verbose diagnostics (N23)', () => {
 		expect(d.registrationOrder).toEqual(['mcp-vertex_overview', 'demo_x']);
 	});
 
-	it('formatVerbose renders stderr lines with version + counts + order', () => {
+	it('formatVerbose renders stderr lines with version + counts + order', async () => {
 		const out = formatVerbose(
 			buildAssemblyDiagnostics(args, loadResult, config, ['t1']),
 		);

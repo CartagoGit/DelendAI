@@ -28,7 +28,7 @@ const fullFixture = {
 	},
 };
 
-describe('KnowledgeService (f126 S3a)', () => {
+describe('KnowledgeService (f126 S3a)', async () => {
 	it('listKnowledge forwards to mcp-vertex_knowledge', async () => {
 		const service = new KnowledgeService(fakeClient(fullFixture));
 		const out = await service.listKnowledge();
@@ -62,21 +62,21 @@ describe('KnowledgeService (f126 S3a)', () => {
 		expect(titles).toEqual(['A-lifecycle', 'Z-state']);
 	});
 
-	describe('filterByQuery', () => {
+	describe('filterByQuery', async () => {
 		const entries = [
 			{ id: 'mcp-vertex_overview', title: 'Overview' },
 			{ id: 'proposals_state_machine', title: 'Proposal state machine' },
 			{ id: 'memory_recall', title: 'Memory recall' },
 		];
 
-		it('returns all entries when query is empty', () => {
+		it('returns all entries when query is empty', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			expect(service.filterByQuery(entries, '')).toHaveLength(
 				entries.length,
 			);
 		});
 
-		it('finds by exact id', () => {
+		it('finds by exact id', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			const filtered = service.filterByQuery(
 				entries,
@@ -85,7 +85,7 @@ describe('KnowledgeService (f126 S3a)', () => {
 			expect(filtered[0]?.id).toBe('mcp-vertex_overview');
 		});
 
-		it('finds by substring in title', () => {
+		it('finds by substring in title', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			const filtered = service.filterByQuery(entries, 'state');
 			expect(
@@ -93,14 +93,14 @@ describe('KnowledgeService (f126 S3a)', () => {
 			).toBe(true);
 		});
 
-		it('respects limit', () => {
+		it('respects limit', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			expect(
 				service.filterByQuery(entries, 'mcp-vertex', 1),
 			).toHaveLength(1);
 		});
 
-		it('returns [] for non-matching query', () => {
+		it('returns [] for non-matching query', async () => {
 			const service = new KnowledgeService(fakeClient({}));
 			expect(service.filterByQuery(entries, 'nope')).toEqual([]);
 		});
@@ -130,18 +130,18 @@ describe('KnowledgeService (f126 S3a)', () => {
 	});
 });
 
-describe('categoryOf', () => {
-	it('returns the plugin prefix (everything before the first _)', () => {
+describe('categoryOf', async () => {
+	it('returns the plugin prefix (everything before the first _)', async () => {
 		expect(categoryOf('proposals_state_machine')).toBe('proposals');
 		expect(categoryOf('mcp-vertex_overview')).toBe('mcp-vertex');
 		expect(categoryOf('memory_recall')).toBe('memory');
 	});
 
-	it('returns "other" when the id has no underscore', () => {
+	it('returns "other" when the id has no underscore', async () => {
 		expect(categoryOf('foo')).toBe('other');
 	});
 
-	it('returns the prefix even with a single underscore', () => {
+	it('returns the prefix even with a single underscore', async () => {
 		expect(categoryOf('foo_bar')).toBe('foo');
 	});
 });

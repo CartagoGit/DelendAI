@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { renderDropdown } from '../../src/components/dropdown';
 
-describe('renderDropdown', () => {
-	it('renders a trigger button with the given label', () => {
+describe('renderDropdown', async () => {
+	it('renders a trigger button with the given label', async () => {
 		const html = renderDropdown({
 			id: 'dd-1',
 			label: 'More',
@@ -18,7 +18,7 @@ describe('renderDropdown', () => {
 		);
 	});
 
-	it('renders each item as a menuitem button with data-mv-action', () => {
+	it('renders each item as a menuitem button with data-mv-action', async () => {
 		const html = renderDropdown({
 			id: 'dd-1',
 			label: 'More',
@@ -34,7 +34,7 @@ describe('renderDropdown', () => {
 		expect(html).toContain('📋');
 	});
 
-	it('starts with the menu hidden', () => {
+	it('starts with the menu hidden', async () => {
 		const html = renderDropdown({
 			id: 'dd-1',
 			label: 'More',
@@ -43,7 +43,7 @@ describe('renderDropdown', () => {
 		expect(html).toContain('hidden');
 	});
 
-	it('uses the menu id `<id>-menu`', () => {
+	it('uses the menu id `<id>-menu`', async () => {
 		const html = renderDropdown({
 			id: 'my-dd',
 			label: 'L',
@@ -52,7 +52,7 @@ describe('renderDropdown', () => {
 		expect(html).toContain('id="my-dd-menu"');
 	});
 
-	it('aligns right when align is "right"', () => {
+	it('aligns right when align is "right"', async () => {
 		const html = renderDropdown({
 			id: 'dd-1',
 			label: 'More',
@@ -62,7 +62,7 @@ describe('renderDropdown', () => {
 		expect(html).toContain('mv-dropdown__menu--right');
 	});
 
-	it('escapes user-supplied labels', () => {
+	it('escapes user-supplied labels', async () => {
 		const html = renderDropdown({
 			id: 'dd-1',
 			label: '<script>',

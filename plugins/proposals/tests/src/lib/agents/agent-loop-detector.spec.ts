@@ -24,8 +24,8 @@ const mkCall = (
 	timestamp = 0,
 ): IToolCall => ({ tool, args, agent, timestamp });
 
-describe('detectAgentLoop', () => {
-	it('returns isStuck=false on an empty window', () => {
+describe('detectAgentLoop', async () => {
+	it('returns isStuck=false on an empty window', async () => {
 		const out = detectAgentLoop([]);
 		expect(out).toEqual({
 			isStuck: false,
@@ -38,7 +38,7 @@ describe('detectAgentLoop', () => {
 		});
 	});
 
-	it('flags stuck when the same agent repeats the same (tool, args) 3 times in the window', () => {
+	it('flags stuck when the same agent repeats the same (tool, args) 3 times in the window', async () => {
 		const calls = [
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 1),
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 2),
@@ -53,7 +53,7 @@ describe('detectAgentLoop', () => {
 		expect(out.offendingHash).not.toBeNull();
 	});
 
-	it('does NOT flag stuck when only 2 repeats occur (below default threshold)', () => {
+	it('does NOT flag stuck when only 2 repeats occur (below default threshold)', async () => {
 		const calls = [
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 1),
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 2),
@@ -63,7 +63,7 @@ describe('detectAgentLoop', () => {
 		expect(out.repeatCount).toBe(0);
 	});
 
-	it('treats args with shuffled object keys as equal (stable stringify)', () => {
+	it('treats args with shuffled object keys as equal (stable stringify)', async () => {
 		// Same logical payload, different key insertion order — the
 		// detector must hash them identically.
 		const calls = [
@@ -91,7 +91,7 @@ describe('detectAgentLoop', () => {
 		expect(out.repeatCount).toBe(3);
 	});
 
-	it('does NOT confuse two agents calling the same tool with the same args', () => {
+	it('does NOT confuse two agents calling the same tool with the same args', async () => {
 		const calls = [
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 1),
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 2),
@@ -103,7 +103,7 @@ describe('detectAgentLoop', () => {
 		expect(out.isStuck).toBe(false);
 	});
 
-	it('respects the custom exactRepeatThreshold option', () => {
+	it('respects the custom exactRepeatThreshold option', async () => {
 		const calls = [
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 1),
 			mkCall('read_file', { path: 'foo.ts' }, 'a1', 2),
@@ -116,7 +116,7 @@ describe('detectAgentLoop', () => {
 		).toBe(false);
 	});
 
-	it('respects ringSize — old calls fall off the window', () => {
+	it('respects ringSize — old calls fall off the window', async () => {
 		const calls = [
 			// 5 unique calls before the repeat pattern starts.
 			mkCall('read_file', { path: 'a.ts' }, 'a1', 1),
@@ -145,7 +145,7 @@ describe('detectAgentLoop', () => {
 		expect(notStuck.isStuck).toBe(false);
 	});
 
-	it('returns the most-recent offender when multiple groups exceed the threshold', () => {
+	it('returns the most-recent offender when multiple groups exceed the threshold', async () => {
 		const calls = [
 			mkCall('read_file', { path: 'a.ts' }, 'a1', 1),
 			mkCall('read_file', { path: 'a.ts' }, 'a1', 2),
@@ -162,8 +162,8 @@ describe('detectAgentLoop', () => {
 	});
 });
 
-describe('buildWindow', () => {
-	it('returns the last ringSize calls in chronological order', () => {
+describe('buildWindow', async () => {
+	it('returns the last ringSize calls in chronological order', async () => {
 		const calls = Array.from({ length: 100 }, (_, i) =>
 			mkCall('read_file', { i }, 'a1', i),
 		);

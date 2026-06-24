@@ -16,8 +16,8 @@ import type {
 const parse = (result: { content: Array<{ text?: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}');
 
-describe('runClassifyPaths', () => {
-	it('classifies each path and lists the unmatched ones', () => {
+describe('runClassifyPaths', async () => {
+	it('classifies each path and lists the unmatched ones', async () => {
 		const out = parse(
 			runClassifyPaths({
 				paths: [
@@ -36,7 +36,7 @@ describe('runClassifyPaths', () => {
 		expect(out.unmatched).toEqual(['pkg/src/lib/helper.ts']);
 	});
 
-	it('handles an empty path list', () => {
+	it('handles an empty path list', async () => {
 		const out = parse(runClassifyPaths({ paths: [] }));
 		expect(out.results).toEqual([]);
 		expect(out.unmatched).toEqual([]);
@@ -46,7 +46,7 @@ describe('runClassifyPaths', () => {
 const file = (name: string): IDirEntry => ({ name, isDirectory: false });
 const dir = (name: string): IDirEntry => ({ name, isDirectory: true });
 
-describe('runCheckConventions', () => {
+describe('runCheckConventions', async () => {
 	const reader: IDirReader = {
 		async list(relDir: string) {
 			const tree: Record<string, readonly IDirEntry[]> = {

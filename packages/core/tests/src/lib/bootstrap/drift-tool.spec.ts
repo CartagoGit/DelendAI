@@ -23,7 +23,7 @@ const callTool = async (
 	return handler!(args);
 };
 
-describe('drift_check tool', () => {
+describe('drift_check tool', async () => {
 	let root: string;
 
 	beforeEach(() => {
@@ -110,7 +110,7 @@ describe('drift_check tool', () => {
 		expect(parsed.isFirstSnapshot).toBe(true);
 	});
 
-	it('the new tool is exposed by buildBootstrapToolRegistrations', () => {
+	it('the new tool is exposed by buildBootstrapToolRegistrations', async () => {
 		const tools = buildBootstrapToolRegistrations({
 			workspace: createWorkspacePathProvider(root),
 			namespacePrefix: 'app',

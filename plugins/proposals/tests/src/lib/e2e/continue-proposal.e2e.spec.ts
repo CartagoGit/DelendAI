@@ -136,7 +136,7 @@ ${slicesBlock}`,
 	return { file, relPath };
 };
 
-describe('e2e: proposals_continue_proposal over the real MCP protocol', () => {
+describe('e2e: proposals_continue_proposal over the real MCP protocol', async () => {
 	let harness: IAssembledProposalsServer;
 
 	beforeEach(async () => {

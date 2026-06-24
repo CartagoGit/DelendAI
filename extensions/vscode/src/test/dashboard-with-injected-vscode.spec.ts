@@ -28,7 +28,7 @@ const overviewFixture: IOverview = {
 	recommendedNextAction: 'Call overview first.',
 };
 
-describe('dashboard registration with injected vscode', () => {
+describe('dashboard registration with injected vscode', async () => {
 	it('registers mcp-vertex.openDashboard even when deps.vscode is provided', async () => {
 		const commands = new Map<
 			string,

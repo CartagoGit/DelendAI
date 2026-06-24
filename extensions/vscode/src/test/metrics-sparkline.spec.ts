@@ -6,8 +6,8 @@ import {
 	renderMetricsSparkline,
 } from '../views/metrics-sparkline';
 
-describe('metrics sparkline', () => {
-	it('turns a metrics snapshot into sorted points', () => {
+describe('metrics sparkline', async () => {
+	it('turns a metrics snapshot into sorted points', async () => {
 		expect(
 			metricsToPoints({
 				tools: {
@@ -39,7 +39,7 @@ describe('metrics sparkline', () => {
 		]);
 	});
 
-	it('renders a tiny inline svg', () => {
+	it('renders a tiny inline svg', async () => {
 		expect(
 			renderMetricsSparkline([
 				{ label: 'a', value: 0 },
@@ -50,7 +50,7 @@ describe('metrics sparkline', () => {
 		);
 	});
 
-	it('renders metrics html summary', () => {
+	it('renders metrics html summary', async () => {
 		const html = renderMetricsHtml({
 			tools: {},
 			totals: {

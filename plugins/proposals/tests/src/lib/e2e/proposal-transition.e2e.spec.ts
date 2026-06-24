@@ -96,7 +96,7 @@ const folderPath = (
 	relName: string,
 ): string => join(server.workspace, PROPOSALS_RELDIR, folder, relName);
 
-describe('e2e: proposals_proposal_transition over the real MCP protocol', () => {
+describe('e2e: proposals_proposal_transition over the real MCP protocol', async () => {
 	let harness: IAssembledProposalsServer;
 
 	beforeEach(async () => {

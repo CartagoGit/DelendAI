@@ -22,7 +22,7 @@ import type {
 	IToolRegistration,
 } from '@mcp-vertex/core/public';
 
-describe('deps engine', () => {
+describe('deps engine', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'deps-'));
@@ -91,7 +91,7 @@ describe('deps engine', () => {
 	});
 });
 
-describe('checkOutdated (M11, injected fetcher — no real network)', () => {
+describe('checkOutdated (M11, injected fetcher — no real network)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'deps-outdated-'));
@@ -164,8 +164,8 @@ describe('checkOutdated (M11, injected fetcher — no real network)', () => {
 	});
 });
 
-describe('deps_outdated tool registration (M11, opt-in)', () => {
-	it('is absent by default (offline by design)', () => {
+describe('deps_outdated tool registration (M11, opt-in)', async () => {
+	it('is absent by default (offline by design)', async () => {
 		const tools = buildDepsToolRegistrations({
 			namespacePrefix: 'deps',
 			workspaceRootAbs: '/ws',
@@ -177,7 +177,7 @@ describe('deps_outdated tool registration (M11, opt-in)', () => {
 		]);
 	});
 
-	it('is added with effects:["network"] when allowNetwork is true', () => {
+	it('is added with effects:["network"] when allowNetwork is true', async () => {
 		const tools = buildDepsToolRegistrations({
 			namespacePrefix: 'deps',
 			workspaceRootAbs: '/ws',
@@ -195,8 +195,8 @@ describe('deps_outdated tool registration (M11, opt-in)', () => {
 	});
 });
 
-describe('polyglot manifests (M33)', () => {
-	it('parses PEP 621 dependencies + Poetry groups from pyproject.toml', () => {
+describe('polyglot manifests (M33)', async () => {
+	it('parses PEP 621 dependencies + Poetry groups from pyproject.toml', async () => {
 		const toml = [
 			'[project]',
 			'name = "demo"',
@@ -237,7 +237,7 @@ describe('polyglot manifests (M33)', () => {
 		]);
 	});
 
-	it('parses PEP 621 multi-line dependencies from pyproject.toml', () => {
+	it('parses PEP 621 multi-line dependencies from pyproject.toml', async () => {
 		const toml = [
 			'[project]',
 			'name = "demo"',
@@ -262,7 +262,7 @@ describe('polyglot manifests (M33)', () => {
 		]);
 	});
 
-	it('parses Cargo.toml across dependency sections, extracting version from inline tables', () => {
+	it('parses Cargo.toml across dependency sections, extracting version from inline tables', async () => {
 		const toml = [
 			'[package]',
 			'name = "demo"',
@@ -296,7 +296,7 @@ describe('polyglot manifests (M33)', () => {
 		]);
 	});
 
-	it('parses go.mod single-line and block require statements, flagging indirect', () => {
+	it('parses go.mod single-line and block require statements, flagging indirect', async () => {
 		const mod = [
 			'module example.com/demo',
 			'',
@@ -360,7 +360,7 @@ describe('polyglot manifests (M33)', () => {
 	});
 });
 
-describe('deps plugin', () => {
+describe('deps plugin', async () => {
 	it('registers deps_list + deps_check + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

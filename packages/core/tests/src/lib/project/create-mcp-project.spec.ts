@@ -34,8 +34,8 @@ const hostConfig = (
 	extraTools,
 });
 
-describe('planRegistrationOrder', () => {
-	it('appends extras without an anchor, preserving declaration order', () => {
+describe('planRegistrationOrder', async () => {
+	it('appends extras without an anchor, preserving declaration order', async () => {
 		const order = planRegistrationOrder(
 			[registration('core-a'), registration('core-b')],
 			[registration('x'), registration('y')],
@@ -48,7 +48,7 @@ describe('planRegistrationOrder', () => {
 		]);
 	});
 
-	it('inserts an anchored extra immediately after its anchor', () => {
+	it('inserts an anchored extra immediately after its anchor', async () => {
 		const order = planRegistrationOrder(
 			[registration('core-a'), registration('core-b')],
 			[registration('x', 'core-a')],
@@ -60,7 +60,7 @@ describe('planRegistrationOrder', () => {
 		]);
 	});
 
-	it('keeps declaration order for several extras on the same anchor', () => {
+	it('keeps declaration order for several extras on the same anchor', async () => {
 		const order = planRegistrationOrder(
 			[registration('core-a'), registration('core-b')],
 			[registration('x', 'core-a'), registration('y', 'core-a')],
@@ -73,7 +73,7 @@ describe('planRegistrationOrder', () => {
 		]);
 	});
 
-	it('throws on duplicate registration ids', () => {
+	it('throws on duplicate registration ids', async () => {
 		expect(() =>
 			planRegistrationOrder(
 				[registration('core-a')],
@@ -82,13 +82,13 @@ describe('planRegistrationOrder', () => {
 		).toThrow(/duplicate registration id/u);
 	});
 
-	it('throws on an unknown registerAfter anchor', () => {
+	it('throws on an unknown registerAfter anchor', async () => {
 		expect(() =>
 			planRegistrationOrder([], [registration('x', 'missing')]),
 		).toThrow(/unknown registerAfter anchor/u);
 	});
 
-	it('is deterministic: same input yields the same sequence', () => {
+	it('is deterministic: same input yields the same sequence', async () => {
 		const build = (): readonly string[] =>
 			planRegistrationOrder(
 				[registration('core-a'), registration('core-b')],
@@ -102,7 +102,7 @@ describe('planRegistrationOrder', () => {
 	});
 });
 
-describe('createMcpProject', () => {
+describe('createMcpProject', async () => {
 	it('registers extras in planned order and exposes registrationOrder', async () => {
 		const calls: string[] = [];
 		const assembled = await createMcpProject(

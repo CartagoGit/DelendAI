@@ -14,8 +14,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { IScopeCommand } from '@mcp-vertex/quality/lib/services/runner';
 
-describe('IScopeCommand ↔ IValidationCommand (l107 s1)', () => {
-	it('IScopeCommand is assignable from IValidationCommand (same source)', () => {
+describe('IScopeCommand ↔ IValidationCommand (l107 s1)', async () => {
+	it('IScopeCommand is assignable from IValidationCommand (same source)', async () => {
 		const core: IValidationCommand = {
 			command: 'tsc --noEmit',
 			expect: 'exit0',
@@ -25,7 +25,7 @@ describe('IScopeCommand ↔ IValidationCommand (l107 s1)', () => {
 		expect(plugin.expect).toBe('exit0');
 	});
 
-	it('IScopeCommand requires `expect` (no longer optional)', () => {
+	it('IScopeCommand requires `expect` (no longer optional)', async () => {
 		// @ts-expect-error — without `expect` the alias must reject.
 		const _missing: IScopeCommand = { command: 'noop' };
 		// Use the binding so the @ts-expect-error is not flagged as
@@ -33,7 +33,7 @@ describe('IScopeCommand ↔ IValidationCommand (l107 s1)', () => {
 		expect(_missing).toBeDefined();
 	});
 
-	it('object literal conforms to both types at once', () => {
+	it('object literal conforms to both types at once', async () => {
 		const both: IValidationCommand & IScopeCommand = {
 			command: 'mypy .',
 			expect: 'pass',

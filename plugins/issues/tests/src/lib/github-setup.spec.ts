@@ -12,8 +12,8 @@ import {
 	type IGithubSetupDeps,
 } from '../../../src/lib/github-setup';
 
-describe('parseGithubRepo', () => {
-	it('parses an https remote', () => {
+describe('parseGithubRepo', async () => {
+	it('parses an https remote', async () => {
 		expect(parseGithubRepo('https://github.com/owner/name.git')).toBe(
 			'owner/name',
 		);
@@ -22,20 +22,20 @@ describe('parseGithubRepo', () => {
 		);
 	});
 
-	it('parses an ssh remote', () => {
+	it('parses an ssh remote', async () => {
 		expect(parseGithubRepo('git@github.com:owner/name.git')).toBe(
 			'owner/name',
 		);
 	});
 
-	it('returns null for non-github / empty remotes', () => {
+	it('returns null for non-github / empty remotes', async () => {
 		expect(parseGithubRepo(null)).toBeNull();
 		expect(parseGithubRepo('https://gitlab.com/owner/name')).toBeNull();
 	});
 });
 
-describe('resolveTier', () => {
-	it('prefers gh, then token, then anon', () => {
+describe('resolveTier', async () => {
+	it('prefers gh, then token, then anon', async () => {
 		expect(resolveTier(true, undefined)).toBe('gh');
 		expect(resolveTier(true, 'tok')).toBe('gh');
 		expect(resolveTier(false, 'tok')).toBe('token');
@@ -44,13 +44,13 @@ describe('resolveTier', () => {
 	});
 });
 
-describe('isIssuesConfigured', () => {
-	it('detects a declared issues plugin', () => {
+describe('isIssuesConfigured', async () => {
+	it('detects a declared issues plugin', async () => {
 		expect(
 			isIssuesConfigured('{"plugins":{"issues":{"options":{}}}}'),
 		).toBe(true);
 	});
-	it('is false when absent / unparseable', () => {
+	it('is false when absent / unparseable', async () => {
 		expect(isIssuesConfigured('{"plugins":{"memory":{}}}')).toBe(false);
 		expect(isIssuesConfigured(undefined)).toBe(false);
 		expect(isIssuesConfigured('not json')).toBe(false);
@@ -66,8 +66,8 @@ const deps = (over: Partial<IGithubSetupDeps> = {}): IGithubSetupDeps => ({
 	...over,
 });
 
-describe('runSetupGithub', () => {
-	it('composes context + steps + a rendered guide', () => {
+describe('runSetupGithub', async () => {
+	it('composes context + steps + a rendered guide', async () => {
 		const result = runSetupGithub(deps());
 		expect(result.context).toEqual({
 			repo: 'me/proj',
@@ -80,7 +80,7 @@ describe('runSetupGithub', () => {
 		expect(result.guide).toContain('# GitHub issues — setup guide');
 	});
 
-	it('reflects the anonymous tier + missing repo in the guide', () => {
+	it('reflects the anonymous tier + missing repo in the guide', async () => {
 		const result = runSetupGithub(
 			deps({
 				originUrl: () => null,

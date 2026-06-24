@@ -87,7 +87,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 		// `allowNetwork` so `deps_outdated` is registered and its
 		// `outputSchema` gets harvested too — every other plugin still sees
 		// no config file (default options), matching the real CLI default.
-		readFile: (absolutePath: string) =>
+		readFile: async (absolutePath: string) =>
 			absolutePath.endsWith('mcp-vertex.config.json')
 				? JSON.stringify({
 						plugins: { deps: { options: { allowNetwork: true } } },

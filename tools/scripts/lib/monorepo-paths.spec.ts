@@ -21,78 +21,78 @@ import {
 	WELL_KNOWN,
 } from './monorepo-paths.ts';
 
-describe('monorepo-paths', () => {
-	describe('repoRoot', () => {
-		it('returns a non-empty absolute path', () => {
+describe('monorepo-paths', async () => {
+	describe('repoRoot', async () => {
+		it('returns a non-empty absolute path', async () => {
 			const root = repoRoot();
 			expect(root.length).toBeGreaterThan(0);
 			expect(root.startsWith(sep) || root.startsWith('/')).toBe(true);
 		});
 
-		it('ends at a directory that contains a package.json', () => {
+		it('ends at a directory that contains a package.json', async () => {
 			const root = repoRoot();
 			expect(readJSON(join(root, 'package.json'))).toBeTypeOf('object');
 		});
 	});
 
-	describe('packageBuildDir', () => {
-		it('places per-package dist under <group>/<name>/dist', () => {
+	describe('packageBuildDir', async () => {
+		it('places per-package dist under <group>/<name>/dist', async () => {
 			const dir = packageBuildDir('plugins', 'memory');
 			expect(dir).toBe(`${repoRoot()}/plugins/memory/dist`);
 		});
 
-		it('rejects traversal in the name', () => {
+		it('rejects traversal in the name', async () => {
 			expect(() => packageBuildDir('apps', '../etc')).toThrow();
 			expect(() => packageBuildDir('apps', 'foo/bar')).toThrow();
 		});
 
-		it('rejects uppercase (typo guard)', () => {
+		it('rejects uppercase (typo guard)', async () => {
 			expect(() => packageBuildDir('apps', 'Web')).toThrow();
 		});
 
-		it('rejects unknown groups', () => {
+		it('rejects unknown groups', async () => {
 			expect(() => packageBuildDir('toolz' as never, 'x')).toThrow();
 		});
 	});
 
-	describe('buildDir', () => {
-		it('places monorepo build under build/<group>/<name>', () => {
+	describe('buildDir', async () => {
+		it('places monorepo build under build/<group>/<name>', async () => {
 			expect(buildDir('apps', 'web')).toBe(
 				`${repoRoot()}/build/apps/web`,
 			);
 		});
 	});
 
-	describe('buildTopLevel', () => {
-		it('places top-level tooling output under build/<name>', () => {
+	describe('buildTopLevel', async () => {
+		it('places top-level tooling output under build/<name>', async () => {
 			expect(buildTopLevel('docs-api')).toBe(
 				`${repoRoot()}/build/docs-api`,
 			);
 		});
 
-		it('rejects names with slashes', () => {
+		it('rejects names with slashes', async () => {
 			expect(() => buildTopLevel('docs/api')).toThrow();
 		});
 	});
 
-	describe('distVersionDir', () => {
-		it('includes the version verbatim in the path', () => {
+	describe('distVersionDir', async () => {
+		it('includes the version verbatim in the path', async () => {
 			expect(distVersionDir('extensions', 'vscode', '0.2.0')).toBe(
 				`${repoRoot()}/dist/extensions/vscode/0.2.0`,
 			);
 		});
 
-		it('rejects empty versions', () => {
+		it('rejects empty versions', async () => {
 			expect(() => distVersionDir('apps', 'vscode', '')).toThrow();
 		});
 
-		it('rejects versions with path traversal', () => {
+		it('rejects versions with path traversal', async () => {
 			expect(() => distVersionDir('apps', 'vscode', '../etc')).toThrow();
 		});
 	});
 
-	describe('distArtifactPath', () => {
-		it('joins the version dir and the artifact', () => {
+	describe('distArtifactPath', async () => {
+		it('joins the version dir and the artifact', async () => {
 			const out = distArtifactPath(
 				'extensions',
 				'vscode',
@@ -104,7 +104,7 @@ describe('monorepo-paths', () => {
 			);
 		});
 
-		it('rejects artifacts with slashes', () => {
+		it('rejects artifacts with slashes', async () => {
 			expect(() =>
 				distArtifactPath('apps', 'vscode', '0.2.0', '../x.vsix'),
 			).toThrow();
@@ -114,29 +114,29 @@ describe('monorepo-paths', () => {
 		});
 	});
 
-	describe('WELL_KNOWN', () => {
-		it('docsApi lives at build/docs-api', () => {
+	describe('WELL_KNOWN', async () => {
+		it('docsApi lives at build/docs-api', async () => {
 			expect(WELL_KNOWN.docsApi()).toBe(`${repoRoot()}/build/docs-api`);
 		});
 
-		it('webApp lives at build/apps/web', () => {
+		it('webApp lives at build/apps/web', async () => {
 			expect(WELL_KNOWN.webApp()).toBe(`${repoRoot()}/build/apps/web`);
 		});
 
-		it('vscode lives at build/extensions/vscode', () => {
+		it('vscode lives at build/extensions/vscode', async () => {
 			expect(WELL_KNOWN.vscode()).toBe(
 				`${repoRoot()}/build/extensions/vscode`,
 			);
 		});
 
-		it('vscodeVsix is rooted under dist/extensions/vscode/<version>', () => {
+		it('vscodeVsix is rooted under dist/extensions/vscode/<version>', async () => {
 			expect(WELL_KNOWN.vscodeVsix('0.2.0')).toBe(
 				`${repoRoot()}/dist/extensions/vscode/0.2.0/mcp-vertex-vscode-0.2.0.vsix`,
 			);
 		});
 	});
 
-	describe('isSafeName', () => {
+	describe('isSafeName', async () => {
 		it.each([
 			['web', true],
 			['vscode', true],
@@ -154,7 +154,7 @@ describe('monorepo-paths', () => {
 		});
 	});
 
-	describe('isSafeGroup', () => {
+	describe('isSafeGroup', async () => {
 		it.each([
 			['apps', true],
 			['plugins', true],
@@ -167,10 +167,10 @@ describe('monorepo-paths', () => {
 		});
 	});
 
-	describe('relativeFrom', () => {
+	describe('relativeFrom', async () => {
 		const root = repoRoot();
 
-		it('climbs correctly from apps/web/public/api to build/docs-api', () => {
+		it('climbs correctly from apps/web/public/api to build/docs-api', async () => {
 			const link = `${root}/apps/web/public/api`;
 			const target = `${root}/build/docs-api`;
 			const rel = relativeFrom(link, target);
@@ -179,31 +179,31 @@ describe('monorepo-paths', () => {
 			expect(resolved).toBe(target);
 		});
 
-		it('returns the climb path when the target IS the repo root', () => {
+		it('returns the climb path when the target IS the repo root', async () => {
 			const link = `${root}/apps/web/public/api`;
 			// From the symlink's PARENT (apps/web/public), three `..` bring
 			// us to the repo root.
 			expect(relativeFrom(link, root)).toBe('../../..');
 		});
 
-		it("returns '.' when the link itself IS at the repo root", () => {
+		it("returns '.' when the link itself IS at the repo root", async () => {
 			expect(relativeFrom(`${root}/api`, root)).toBe('.');
 		});
 
-		it('falls back to the absolute target when it lives outside the repo', () => {
+		it('falls back to the absolute target when it lives outside the repo', async () => {
 			const link = `${root}/apps/web/public/api`;
 			expect(relativeFrom(link, '/tmp/external')).toBe('/tmp/external');
 		});
 	});
 
-	describe('readJSON', () => {
-		it("parses the repo's own package.json", () => {
+	describe('readJSON', async () => {
+		it("parses the repo's own package.json", async () => {
 			const root = repoRoot();
 			const pkg = readJSON<{ name: string }>(join(root, 'package.json'));
 			expect(pkg.name).toBe('@mcp-vertex/core-monorepo');
 		});
 
-		it('throws with a path-qualified message on missing files', () => {
+		it('throws with a path-qualified message on missing files', async () => {
 			expect(() => readJSON('/no/such/file.json')).toThrow(
 				/Could not read JSON at/,
 			);

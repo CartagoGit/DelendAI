@@ -13,7 +13,7 @@ import {
 import * as atomicWrite from '@mcp-vertex/core/lib/shared/atomic-write';
 import * as fileMutex from '@mcp-vertex/core/lib/shared/with-file-mutex';
 
-describe('fsRead / fsWrite', () => {
+describe('fsRead / fsWrite', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'fs-tools-'));
@@ -84,7 +84,7 @@ describe('fsRead / fsWrite', () => {
  * keeps `atomic` for boot-time callers; the tool strips it and rejects a
  * stray `atomic` with a structured invalid-argument error.
  */
-describe('fs_write public tool surface (F-003)', () => {
+describe('fs_write public tool surface (F-003)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'fs-tools-pub-'));

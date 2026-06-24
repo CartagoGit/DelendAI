@@ -33,7 +33,7 @@ const buildFetchResult = (
 	tier: 'gh',
 });
 
-describe('issues_ingest', () => {
+describe('issues_ingest', async () => {
 	let scaffoldDirAbs = '';
 
 	beforeEach(async () => {

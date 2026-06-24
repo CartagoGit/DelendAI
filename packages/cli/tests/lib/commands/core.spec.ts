@@ -43,8 +43,8 @@ const find = (name: string): ICliCommand => {
 	return command;
 };
 
-describe('core extra group (f00046 S5)', () => {
-	it('exposes fs/knowledge/project commands', () => {
+describe('core extra group (f00046 S5)', async () => {
+	it('exposes fs/knowledge/project commands', async () => {
 		expect(coreExtraCommands.map((c) => c.name)).toEqual([
 			'fs read',
 			'fs write',

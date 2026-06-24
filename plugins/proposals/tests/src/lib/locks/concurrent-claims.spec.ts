@@ -14,7 +14,7 @@ import {
  * mutex, so two agents claiming disjoint files at the same time can't
  * lose each other's claim (the classic last-writer-wins corruption).
  */
-describe('agent-lock — concurrent disjoint claims (mutex)', () => {
+describe('agent-lock — concurrent disjoint claims (mutex)', async () => {
 	let dir = '';
 	let lockPath = '';
 	beforeEach(() => {

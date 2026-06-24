@@ -44,7 +44,7 @@ const assemble = async () => {
 	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
-		readFile: () =>
+		readFile: async () =>
 			JSON.stringify({
 				validationMatrix: {
 					scopes: {
@@ -58,7 +58,7 @@ const assemble = async () => {
 	return { config, byId };
 };
 
-describe('core meta-tools', () => {
+describe('core meta-tools', async () => {
 	it('overview maps the server, plugins, tools (with summaries) and knowledge', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));

@@ -36,7 +36,7 @@ export interface IProposalFs {
  * node:fs dep (and so a future host can swap to a `Bun.file` or
  * `Deno.openSync` wiring without editing `locate.ts`).
  */
-export const buildNodeProposalFs = (): IProposalFs => {
+export const buildNodeProposalFs = async (): Promise<IProposalFs> => {
 	// Lazy import to keep this contract file free of `node:` deps at
 	// module-evaluation time. Tests that never call this factory pay
 	// zero import cost.
@@ -69,4 +69,4 @@ export const buildNodeProposalFs = (): IProposalFs => {
 
 /** Default port for the locators. The first call wires the real fs;
  *  tests can pass a fake port through the 3rd argument. */
-export const DEFAULT_PROPOSAL_FS: IProposalFs = buildNodeProposalFs();
+export const DEFAULT_PROPOSAL_FS: IProposalFs = await buildNodeProposalFs();

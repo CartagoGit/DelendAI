@@ -19,8 +19,8 @@ const exhaustInterface = (l: IReleaseLogger): void => {
 	l.error('e');
 };
 
-describe('release-logger (Solid SRP/OCP extraction)', () => {
-	describe('createConsoleLogger', () => {
+describe('release-logger (Solid SRP/OCP extraction)', async () => {
+	describe('createConsoleLogger', async () => {
 		let infoSpy: ReturnType<typeof vi.spyOn>;
 		let warnSpy: ReturnType<typeof vi.spyOn>;
 		let errorSpy: ReturnType<typeof vi.spyOn>;
@@ -34,7 +34,7 @@ describe('release-logger (Solid SRP/OCP extraction)', () => {
 			vi.restoreAllMocks();
 		});
 
-		it('routes info → console.log, warn → console.warn, error → console.error', () => {
+		it('routes info → console.log, warn → console.warn, error → console.error', async () => {
 			const logger = createConsoleLogger();
 			logger.info('hello');
 			logger.warn('careful');
@@ -45,7 +45,7 @@ describe('release-logger (Solid SRP/OCP extraction)', () => {
 		});
 	});
 
-	describe('createQuietLogger', () => {
+	describe('createQuietLogger', async () => {
 		let infoSpy: ReturnType<typeof vi.spyOn>;
 		let warnSpy: ReturnType<typeof vi.spyOn>;
 		let errorSpy: ReturnType<typeof vi.spyOn>;
@@ -59,7 +59,7 @@ describe('release-logger (Solid SRP/OCP extraction)', () => {
 			vi.restoreAllMocks();
 		});
 
-		it('drops info but keeps warn/error (so genuine failures are not silenced)', () => {
+		it('drops info but keeps warn/error (so genuine failures are not silenced)', async () => {
 			const logger = createQuietLogger();
 			logger.info('banner');
 			logger.warn('careful');
@@ -70,8 +70,8 @@ describe('release-logger (Solid SRP/OCP extraction)', () => {
 		});
 	});
 
-	describe('createRecordingLogger', () => {
-		it('records every call with its channel tag in order', () => {
+	describe('createRecordingLogger', async () => {
+		it('records every call with its channel tag in order', async () => {
 			const logger = createRecordingLogger();
 			logger.info('a');
 			logger.warn('b');
@@ -85,7 +85,7 @@ describe('release-logger (Solid SRP/OCP extraction)', () => {
 			]);
 		});
 
-		it('passes the LSP test: any consumer that only knows IReleaseLogger works', () => {
+		it('passes the LSP test: any consumer that only knows IReleaseLogger works', async () => {
 			// Solid LSP guard: a function typed against the interface must
 			// work for every concrete implementation without casts.
 			const driver = (l: IReleaseLogger): void => exhaustInterface(l);

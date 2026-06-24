@@ -11,7 +11,7 @@ const jsonResponse = (status: number, body: unknown): ReturnType<IFetchLike> =>
 		text: () => Promise.resolve(JSON.stringify(body)),
 	});
 
-describe('getBaselineSnapshot', () => {
+describe('getBaselineSnapshot', async () => {
 	it('resolves the snapshot when the tag exists and has the asset', async () => {
 		const snapshot = {
 			at: '2026-06-21T00:00:00.000Z',

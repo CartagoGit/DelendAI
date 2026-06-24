@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ToolTreeDataProvider } from '../providers/tool-tree-data-provider';
 import { TreeItemCollapsibleState } from '../providers/tool-tree-node';
 
-describe('ToolTreeDataProvider', () => {
+describe('ToolTreeDataProvider', async () => {
 	it('builds server, plugin and tool levels from overview tools', async () => {
 		const provider = new ToolTreeDataProvider({
 			async listTools() {
@@ -61,7 +61,7 @@ describe('ToolTreeDataProvider', () => {
 		});
 	});
 
-	it('refreshes when the config watcher emits changes', () => {
+	it('refreshes when the config watcher emits changes', async () => {
 		const provider = new ToolTreeDataProvider({
 			async listTools() {
 				return [];

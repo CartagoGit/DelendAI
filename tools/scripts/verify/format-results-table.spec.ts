@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { formatResultsTable } from './format-results-table';
 
-describe('format-results-table (Solid SRP extraction)', () => {
-	it('renders the canonical header row', () => {
+describe('format-results-table (Solid SRP extraction)', async () => {
+	it('renders the canonical header row', async () => {
 		const out = formatResultsTable([]);
 		expect(out).toContain('Plugin');
 		expect(out).toContain('Tool');
@@ -11,14 +11,14 @@ describe('format-results-table (Solid SRP extraction)', () => {
 		expect(out).toContain('Handler');
 	});
 
-	it('emits the empty-total footer for zero rows', () => {
+	it('emits the empty-total footer for zero rows', async () => {
 		const out = formatResultsTable([]);
 		expect(out).toContain(
 			'Total: 0 ok, 0 need-input, 0 failed across 0 tools',
 		);
 	});
 
-	it('renders one row per (plugin, tool) pair with the correct mark', () => {
+	it('renders one row per (plugin, tool) pair with the correct mark', async () => {
 		const out = formatResultsTable([
 			{
 				plugin: 'audit',
@@ -51,7 +51,7 @@ describe('format-results-table (Solid SRP extraction)', () => {
 		);
 	});
 
-	it('sorts rows by (plugin, tool) so the table is deterministic', () => {
+	it('sorts rows by (plugin, tool) so the table is deterministic', async () => {
 		const out = formatResultsTable([
 			{
 				plugin: 'memory',
@@ -84,7 +84,7 @@ describe('format-results-table (Solid SRP extraction)', () => {
 		expect(memory).toBeGreaterThan(auditB);
 	});
 
-	it('handles the Solid LSP guard: format is independent of input order', () => {
+	it('handles the Solid LSP guard: format is independent of input order', async () => {
 		// Same set of rows in different orders must produce the same
 		// table (sort is stable) and the same totals.
 		const a = formatResultsTable([

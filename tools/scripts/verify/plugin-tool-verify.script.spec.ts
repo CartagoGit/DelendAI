@@ -15,22 +15,22 @@ import {
  * the bottom proves that any consumer typed against
  * `IVerifyCliOptions` can read every parsed field without casting.
  */
-describe('parseVerifyCliArgs (Solid SRP extraction)', () => {
-	it('returns an empty options bag for an empty argv', () => {
+describe('parseVerifyCliArgs (Solid SRP extraction)', async () => {
+	it('returns an empty options bag for an empty argv', async () => {
 		expect(parseVerifyCliArgs([])).toEqual({
 			pluginFilter: undefined,
 			workspace: undefined,
 		});
 	});
 
-	it('parses `--plugin=<name>` into `pluginFilter`', () => {
+	it('parses `--plugin=<name>` into `pluginFilter`', async () => {
 		expect(parseVerifyCliArgs(['--plugin=audit'])).toEqual({
 			pluginFilter: 'audit',
 			workspace: undefined,
 		});
 	});
 
-	it('parses `--plugin=<name>` even when surrounded by other args', () => {
+	it('parses `--plugin=<name>` even when surrounded by other args', async () => {
 		expect(
 			parseVerifyCliArgs(['--foo', '--plugin=rules', '--bar']),
 		).toEqual({
@@ -39,27 +39,27 @@ describe('parseVerifyCliArgs (Solid SRP extraction)', () => {
 		});
 	});
 
-	it('ignores unrelated flags and returns the documented shape', () => {
+	it('ignores unrelated flags and returns the documented shape', async () => {
 		expect(parseVerifyCliArgs(['--compact', '--quiet'])).toEqual({
 			pluginFilter: undefined,
 			workspace: undefined,
 		});
 	});
 
-	it('takes the LAST `--plugin=` flag when multiple are present (last-write-wins)', () => {
+	it('takes the LAST `--plugin=` flag when multiple are present (last-write-wins)', async () => {
 		expect(
 			parseVerifyCliArgs(['--plugin=audit', '--plugin=rules']),
 		).toEqual({ pluginFilter: 'rules', workspace: undefined });
 	});
 
-	it('preserves empty string when `--plugin=` is given with no value', () => {
+	it('preserves empty string when `--plugin=` is given with no value', async () => {
 		expect(parseVerifyCliArgs(['--plugin='])).toEqual({
 			pluginFilter: '',
 			workspace: undefined,
 		});
 	});
 
-	it('parses `--workspace=<abs>` so the harness can run from any cwd', () => {
+	it('parses `--workspace=<abs>` so the harness can run from any cwd', async () => {
 		expect(parseVerifyCliArgs(['--workspace=/abs/repo'])).toEqual({
 			pluginFilter: undefined,
 			workspace: '/abs/repo',
@@ -69,7 +69,7 @@ describe('parseVerifyCliArgs (Solid SRP extraction)', () => {
 		).toEqual({ pluginFilter: 'audit', workspace: '/abs/repo' });
 	});
 
-	it('LSP: every parsed shape is assignable to IVerifyCliOptions', () => {
+	it('LSP: every parsed shape is assignable to IVerifyCliOptions', async () => {
 		// Solid-LSP guard: a function typed against IVerifyCliOptions
 		// accepts every output of parseVerifyCliArgs without casting.
 		const consumer = (opts: IVerifyCliOptions): string =>
@@ -86,22 +86,22 @@ describe('parseVerifyCliArgs (Solid SRP extraction)', () => {
  * rejected before any import, so the harness can be pointed at any root
  * without becoming an arbitrary-file-import vector.
  */
-describe('createWorkspacePluginRootResolver (Solid DIP containment)', () => {
+describe('createWorkspacePluginRootResolver (Solid DIP containment)', async () => {
 	const root = '/abs/repo';
 
-	it('resolves a normal plugin name to an absolute path inside the workspace', () => {
+	it('resolves a normal plugin name to an absolute path inside the workspace', async () => {
 		const resolver = createWorkspacePluginRootResolver(root);
 		expect(resolver.resolve('audit')).toBe('/abs/repo/plugins/audit');
 	});
 
-	it('rejects a plugin name that escapes the workspace via ../', () => {
+	it('rejects a plugin name that escapes the workspace via ../', async () => {
 		const resolver = createWorkspacePluginRootResolver(root);
 		expect(() => resolver.resolve('../../etc/passwd')).toThrow(
 			/outside the workspace/,
 		);
 	});
 
-	it('rejects an absolute plugin name', () => {
+	it('rejects an absolute plugin name', async () => {
 		const resolver = createWorkspacePluginRootResolver(root);
 		expect(() => resolver.resolve('/etc/evil')).toThrow(
 			/outside the workspace/,

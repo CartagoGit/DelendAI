@@ -13,10 +13,10 @@ export default definePlugin({
 	optionsSchema: z.object({
 		retentionDays: z.number().optional(),
 	}),
-	register(ctx) {
+	async register(ctx) {
 		const logsDir = ctx.workspace.resolve(joinRel(ctx.cacheDir, 'logs'));
 		const store = createLogStore(logsDir);
-		void store.gc({
+		void (await store).gc({
 			olderThanDays:
 				typeof ctx.options.retentionDays === 'number'
 					? ctx.options.retentionDays
@@ -24,7 +24,7 @@ export default definePlugin({
 		});
 
 		return {
-			tools: buildLogToolRegistrations(ctx.namespacePrefix, store),
+			tools: buildLogToolRegistrations(ctx.namespacePrefix, await store),
 			knowledge: [
 				{
 					id: 'logs-operational-event-log',
@@ -38,8 +38,8 @@ export default definePlugin({
 					].join('\n'),
 				},
 			],
-			onToolStart: (toolName, args) =>
-				store.appendEvent(
+			onToolStart: async (toolName, args) =>
+				(await store).appendEvent(
 					normalizeEvent('tool-started', {
 						toolName,
 						taskId: toolName,
@@ -47,8 +47,8 @@ export default definePlugin({
 						summary: `tool-started: ${toolName}`,
 					}),
 				),
-			onToolCall: (toolName, args, result, error) =>
-				store.appendEvent(
+			onToolCall: async (toolName, args, result, error) =>
+				(await store).appendEvent(
 					normalizeEvent(error ? 'tool-failed' : 'tool-completed', {
 						toolName,
 						taskId: toolName,

@@ -200,13 +200,17 @@ const DEFAULT_MAX_FILES = 500;
  * Scan the workspace for spec files that violate the convention.
  * Pure over `reader`; never touches the filesystem directly.
  */
-export const scanDrift = (options: IScanOptions): IDriftReport => {
+export const scanDrift = async (
+	options: IScanOptions,
+): Promise<IDriftReport> => {
 	const { convention, reader } = options;
 	const maxFiles = options.maxFiles ?? DEFAULT_MAX_FILES;
 	const scope = options.scope ?? 'all';
 	const specExt = convention.specExtension;
 
-	const all = reader.listDir('').filter((p) => !p.includes('node_modules/'));
+	const all = (await reader.listDir('')).filter(
+		(p) => !p.includes('node_modules/'),
+	);
 	const specFiles = all.filter((p) => isSpec(p, specExt));
 	const sourceFiles = all.filter(isTsSource);
 	// Files that look like specs but use a non-canonical extension
@@ -238,7 +242,7 @@ export const scanDrift = (options: IScanOptions): IDriftReport => {
 	let scanned = 0;
 	for (const path of targets) {
 		if (scanned >= maxFiles) break;
-		const contents = reader.readFile(path);
+		const contents = await reader.readFile(path);
 		if (contents === undefined) continue;
 		scanned += 1;
 

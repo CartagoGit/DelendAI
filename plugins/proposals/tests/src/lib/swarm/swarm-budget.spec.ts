@@ -49,7 +49,7 @@ const VALID_FRONTMATTER_BASE = [
 // ---------------------------------------------------------------------------
 // Case 1: valid swarmBudget + continuityPolicy → ISwarmProposalExtension
 // ---------------------------------------------------------------------------
-describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy', () => {
+describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy', async () => {
 	it('returns ISwarmProposalExtension with both blocks when both are valid', async () => {
 		const path = writeProposal(
 			'l99-valid.md',
@@ -94,7 +94,7 @@ describe('parseSwarmFrontmatter — case 1: valid swarmBudget + continuityPolicy
 // ---------------------------------------------------------------------------
 // Case 2: swarmBudget.maxAgentsPerSession: -1 → INVALID_SWARM_BUDGET
 // ---------------------------------------------------------------------------
-describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
+describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', async () => {
 	it('throws ProposalParseError with INVALID_SWARM_BUDGET for negative maxAgentsPerSession', async () => {
 		const path = writeProposal(
 			'l99-negative-budget.md',
@@ -126,7 +126,7 @@ describe('parseSwarmFrontmatter — case 2: negative swarmBudget value', () => {
 // ---------------------------------------------------------------------------
 // Case 3: continuityPolicy.maxToolRetriesPerTool: 0 → INVALID_CONTINUITY_POLICY
 // ---------------------------------------------------------------------------
-describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
+describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', async () => {
 	it('throws ProposalParseError with INVALID_CONTINUITY_POLICY for zero retries', async () => {
 		const path = writeProposal(
 			'l99-zero-retries.md',
@@ -158,7 +158,7 @@ describe('parseSwarmFrontmatter — case 3: zero maxToolRetriesPerTool', () => {
 // ---------------------------------------------------------------------------
 // Case 4: continuityPolicy.forbidReReadOnUnchangedDigest: false → valid
 // ---------------------------------------------------------------------------
-describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false is valid', () => {
+describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false is valid', async () => {
 	it('accepts forbidReReadOnUnchangedDigest: false without error', async () => {
 		const path = writeProposal(
 			'l99-forbidflag-false.md',
@@ -184,7 +184,7 @@ describe('parseSwarmFrontmatter — case 4: forbidReReadOnUnchangedDigest: false
 // ---------------------------------------------------------------------------
 // Case 5: base parseProposalDocument errors propagate (no swarmBudget/continuityPolicy keys)
 // ---------------------------------------------------------------------------
-describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base validation', () => {
+describe('parseSwarmFrontmatter — case 5: reuses parseProposalDocument base validation', async () => {
 	it('returns empty ISwarmProposalExtension for a valid proposal without swarm keys', async () => {
 		const path = writeProposal(
 			'l99-no-swarm.md',

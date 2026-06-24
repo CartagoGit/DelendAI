@@ -19,7 +19,7 @@ import {
 	type ICommandRunner,
 } from '@mcp-vertex/quality/lib/services/runner';
 
-describe('createCommandRunner (real spawn)', () => {
+describe('createCommandRunner (real spawn)', async () => {
 	let cwd = '';
 	beforeEach(() => {
 		cwd = mkdtempSync(join(tmpdir(), 'quality-run-'));
@@ -69,7 +69,7 @@ describe('createCommandRunner (real spawn)', () => {
 	});
 });
 
-describe('runScope', () => {
+describe('runScope', async () => {
 	it('surfaces a timed-out command and marks the scope not-ok', async () => {
 		const fakeRunner: ICommandRunner = async (command) =>
 			command.includes('slow')

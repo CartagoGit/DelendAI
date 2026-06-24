@@ -8,7 +8,7 @@ import {
 } from '../commands/open-settings';
 import type { ICommandVscodeApi } from '../commands/types';
 
-describe('mcp-vertex.openSettings', () => {
+describe('mcp-vertex.openSettings', async () => {
 	it('opens a settings webview from the injected store', async () => {
 		const commands = new Map<
 			string,

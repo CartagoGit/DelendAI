@@ -98,14 +98,14 @@ id: f00020
 - **Gate**: lint
 `;
 
-describe('parseProposalSlicePlan', () => {
-	it('returns null for legacy proposals without a Slices section', () => {
+describe('parseProposalSlicePlan', async () => {
+	it('returns null for legacy proposals without a Slices section', async () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
 			null,
 		);
 	});
 
-	it('parses slices with files, deps, gates, acceptance and doc status', () => {
+	it('parses slices with files, deps, gates, acceptance and doc status', async () => {
 		const plan = parseProposalSlicePlan('pX', DOC);
 		expect(plan).not.toBeNull();
 		expect(plan?.globalGate).toBe('type');
@@ -127,13 +127,13 @@ describe('parseProposalSlicePlan', () => {
 		expect(plan?.slices[2]?.gate).toBe('none');
 	});
 
-	it('also treats markdown bold status lines as done slices', () => {
+	it('also treats markdown bold status lines as done slices', async () => {
 		const plan = parseProposalSlicePlan('pX', DOC_WITH_BOLD_STATUS);
 		expect(plan?.slices[0]?.status).toBe('done');
 		expect(validateClaim(plan!, 'pX.S1').blockerType).toBe('already-done');
 	});
 
-	it('parses narrative bold field labels used by live proposal docs', () => {
+	it('parses narrative bold field labels used by live proposal docs', async () => {
 		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS);
 		expect(plan?.slices[0]?.files).toEqual([
 			'packages/core/src/public/index.ts',
@@ -144,7 +144,7 @@ describe('parseProposalSlicePlan', () => {
 		expect(plan?.slices[1]?.gate).toBe('lint');
 	});
 
-	it('flags overlapping files between slices', () => {
+	it('flags overlapping files between slices', async () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',
 			'- files: libs/a/tool.ts',
@@ -157,10 +157,10 @@ describe('parseProposalSlicePlan', () => {
 	});
 });
 
-describe('deriveSliceStatuses + validateClaim', () => {
+describe('deriveSliceStatuses + validateClaim', async () => {
 	const plan = parseProposalSlicePlan('pX', DOC)!;
 
-	it('derives in-progress (and owner) from the live lock snapshot', () => {
+	it('derives in-progress (and owner) from the live lock snapshot', async () => {
 		const derived = deriveSliceStatuses(plan, [
 			{ taskId: 'pX.S2', agent: 'implementation_runner' },
 		]);
@@ -170,7 +170,7 @@ describe('deriveSliceStatuses + validateClaim', () => {
 		expect(derived.slices[0]?.status).toBe('done');
 	});
 
-	it('treats grouped proposal task ids as covering each referenced slice', () => {
+	it('treats grouped proposal task ids as covering each referenced slice', async () => {
 		const groupedPlan = parseProposalSlicePlan(
 			'f00020',
 			DOC_WITH_SIMPLE_SLICE_IDS,
@@ -184,7 +184,7 @@ describe('deriveSliceStatuses + validateClaim', () => {
 		expect(derived.slices[2]?.owner).toBe('copilot');
 	});
 
-	it('treats ownership overlap as in-progress even when the grouped task id omits the exact slice id', () => {
+	it('treats ownership overlap as in-progress even when the grouped task id omits the exact slice id', async () => {
 		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS)!;
 		const derived = deriveSliceStatuses(plan, [
 			{
@@ -197,11 +197,11 @@ describe('deriveSliceStatuses + validateClaim', () => {
 		expect(derived.slices[0]?.owner).toBe('hydra');
 	});
 
-	it('accepts a claim whose deps are done', () => {
+	it('accepts a claim whose deps are done', async () => {
 		expect(validateClaim(plan, 'pX.S2').ok).toBe(true);
 	});
 
-	it('rejects unknown, done, in-progress, missing-deps and overlap claims', () => {
+	it('rejects unknown, done, in-progress, missing-deps and overlap claims', async () => {
 		expect(validateClaim(plan, 'pX.S9').blockerType).toBe('unknown-slice');
 		expect(validateClaim(plan, 'pX.S1').blockerType).toBe('already-done');
 		expect(validateClaim(plan, 'pX.S3').blockerType).toBe('deps-not-done');

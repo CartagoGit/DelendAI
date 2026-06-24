@@ -39,7 +39,7 @@ const captureRegister = async () => {
 	return calls;
 };
 
-describe('close-tools — registration shape', () => {
+describe('close-tools — registration shape', async () => {
 	it('registers close + validate under the configured prefix', async () => {
 		const calls = await captureRegister();
 		expect(calls.map((c) => c.name)).toEqual(['sm_close', 'sm_validate']);
@@ -54,7 +54,7 @@ describe('close-tools — registration shape', () => {
 	});
 });
 
-describe('close-tools — handler', () => {
+describe('close-tools — handler', async () => {
 	it('close returns the canonical line and echoes the state', async () => {
 		const calls = await captureRegister();
 		const close = calls.find((c) => c.name === 'sm_close')!;

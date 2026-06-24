@@ -45,7 +45,7 @@ const find = (group: readonly ICliCommand[], name: string): ICliCommand => {
 	return command;
 };
 
-describe('quality group (f00046 S4)', () => {
+describe('quality group (f00046 S4)', async () => {
 	it('quality run forwards the scope', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(qualityCommands, 'quality run').run(['--scope=lint'], ctx);
@@ -70,7 +70,7 @@ describe('quality group (f00046 S4)', () => {
 	});
 });
 
-describe('audit group (f00046 S4)', () => {
+describe('audit group (f00046 S4)', async () => {
 	it('audit plan maps --kind to the tool scope', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(auditCommands, 'audit plan').run(['--kind=security'], ctx);
@@ -93,7 +93,7 @@ describe('audit group (f00046 S4)', () => {
 	});
 });
 
-describe('logs group (f00046 S4)', () => {
+describe('logs group (f00046 S4)', async () => {
 	it('logs query forwards filters incl. task→taskId alias', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(logsCommands, 'logs query').run(

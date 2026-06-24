@@ -18,8 +18,8 @@ import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
 import plugin from '@mcp-vertex/git';
 import type { IMcpPluginContext } from '@mcp-vertex/core/public';
 
-describe('git parsers', () => {
-	it('parses porcelain status with branch', () => {
+describe('git parsers', async () => {
+	it('parses porcelain status with branch', async () => {
 		const status = parseStatus(
 			'## main...origin/main\n M src/a.ts\n?? src/b.ts',
 		);
@@ -31,11 +31,11 @@ describe('git parsers', () => {
 		]);
 	});
 
-	it('treats no entries as clean', () => {
+	it('treats no entries as clean', async () => {
 		expect(parseStatus('## main').clean).toBe(true);
 	});
 
-	it('parses log lines', () => {
+	it('parses log lines', async () => {
 		expect(parseLog('abc123\tfeat: x\ndef456\tfix: y')).toEqual([
 			{ hash: 'abc123', subject: 'feat: x' },
 			{ hash: 'def456', subject: 'fix: y' },
@@ -76,7 +76,7 @@ describe('git parsers', () => {
 	});
 });
 
-describe('git blame (M33)', () => {
+describe('git blame (M33)', async () => {
 	const PORCELAIN = [
 		'abcdefabcdefabcdefabcdefabcdefabcdefabcd 1 1 2',
 		'author Jane Doe',
@@ -90,7 +90,7 @@ describe('git blame (M33)', () => {
 		'\tconst y = 2;',
 	].join('\n');
 
-	it('parses a full block then reuses cached metadata for the abbreviated repeat', () => {
+	it('parses a full block then reuses cached metadata for the abbreviated repeat', async () => {
 		const lines = parseBlamePorcelain(PORCELAIN);
 		expect(lines).toEqual([
 			{
@@ -143,8 +143,8 @@ describe('git blame (M33)', () => {
 	});
 });
 
-describe('git show (M33)', () => {
-	it('parses real git show output where --stat starts immediately after the subject', () => {
+describe('git show (M33)', async () => {
+	it('parses real git show output where --stat starts immediately after the subject', async () => {
 		expect(
 			parseShowOutput(
 				[
@@ -204,7 +204,7 @@ describe('git show (M33)', () => {
 	});
 });
 
-describe('git worktree list (M33)', () => {
+describe('git worktree list (M33)', async () => {
 	const PORCELAIN = [
 		'worktree /home/user/repo',
 		'HEAD abc123abc123abc123abc123abc123abc123abc1',
@@ -219,7 +219,7 @@ describe('git worktree list (M33)', () => {
 		'bare',
 	].join('\n');
 
-	it('parses multiple worktree blocks, resolving branch refs and flags', () => {
+	it('parses multiple worktree blocks, resolving branch refs and flags', async () => {
 		expect(parseWorktreeList(PORCELAIN)).toEqual([
 			{
 				path: '/home/user/repo',
@@ -248,7 +248,7 @@ describe('git worktree list (M33)', () => {
 	});
 });
 
-describe('git plugin', () => {
+describe('git plugin', async () => {
 	it('registers the read-only git tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

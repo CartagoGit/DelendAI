@@ -27,7 +27,7 @@ const capture = async (
 const parse = (r: { content: Array<{ text: string }> }): any =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
-describe('plan tool', () => {
+describe('plan tool', async () => {
 	it('flags file overlap and lists claimable slices', async () => {
 		const handler = await capture(buildPlanRegistration('proposals'));
 		const out = parse(
@@ -44,7 +44,7 @@ describe('plan tool', () => {
 	});
 });
 
-describe('delegate tool', () => {
+describe('delegate tool', async () => {
 	let root = '';
 	let opts: IAgentNamesToolOptions;
 	beforeEach(() => {

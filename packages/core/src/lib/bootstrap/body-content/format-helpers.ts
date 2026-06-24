@@ -13,8 +13,9 @@ export const formatList = (items: readonly string[]): string =>
 
 /** Render the `scripts` map as a one-line-per-role bullet list. */
 export const formatScripts = (
-	scripts: Readonly<Record<string, string>>,
+	scripts?: Readonly<Record<string, string>>,
 ): string => {
+	if (!scripts) return '_(no quality scripts detected)_';
 	const roles = Object.keys(scripts);
 	if (roles.length === 0) return '_(no quality scripts detected)_';
 	return roles

@@ -81,7 +81,7 @@ const loadStep = (): ISetupStep => ({
 	id: 'load',
 	title: 'Load the host with the issues plugin',
 	detail: 'Ensure the issues plugin is loaded along with any required dependencies.',
-	command: 'mcp-vertex --plugins=issues',
+	command: 'mcp-vertex --plugins=proposals,issues',
 });
 
 const verifyStep = (): ISetupStep => ({

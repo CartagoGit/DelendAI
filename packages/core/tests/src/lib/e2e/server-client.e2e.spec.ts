@@ -18,7 +18,7 @@ import memoryPlugin from '@mcp-vertex/memory';
  * proves the whole assembly (registration, request routing, result
  * shaping) works over the wire, complementing the unit tests. [N23]
  */
-describe('e2e: real MCP client ↔ assembled server', () => {
+describe('e2e: real MCP client ↔ assembled server', async () => {
 	let workspace = '';
 	let client: Client;
 	let close: () => Promise<void>;
@@ -32,7 +32,7 @@ describe('e2e: real MCP client ↔ assembled server', () => {
 		const { config } = await assembleCliConfig(args, {
 			// Inject the real memory plugin (no dynamic resolution in tests).
 			import: async () => ({ default: memoryPlugin }),
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =

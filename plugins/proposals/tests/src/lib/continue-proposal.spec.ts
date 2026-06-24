@@ -23,7 +23,7 @@ const parse = (result: {
 	return value;
 };
 
-describe('continue_proposal (serial cascade)', () => {
+describe('continue_proposal (serial cascade)', async () => {
 	let root = '';
 	let options: IContinueProposalToolOptions;
 
@@ -200,7 +200,7 @@ describe('continue_proposal (serial cascade)', () => {
 	// f00016 S4: new-system entries (id prefix is one of the 12 live kinds,
 	// status is one of the 7 glossary statuses) are actionable by FOLDER
 	// (derived from the index `file` path), not by status string.
-	describe('folder-aware cascade for new-system (f00016) entries', () => {
+	describe('folder-aware cascade for new-system (f00016) entries', async () => {
 		it('picks a new-system entry living in ready/', async () => {
 			writeFileSync(
 				options.indexPathAbs,

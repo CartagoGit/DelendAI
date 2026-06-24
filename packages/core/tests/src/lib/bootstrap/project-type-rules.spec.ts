@@ -10,22 +10,22 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/project-type-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('DEFAULT_PROJECT_TYPE_RULES (declarative table)', () => {
-	it('lists the expected project types in order of priority', () => {
+describe('DEFAULT_PROJECT_TYPE_RULES (declarative table)', async () => {
+	it('lists the expected project types in order of priority', async () => {
 		const results = DEFAULT_PROJECT_TYPE_RULES.map((r) => r.result);
 		// First entries: highest-priority (monorepo > game > webapp > cli/library).
 		expect(results[0]).toBe('monorepo');
 		expect(results[1]).toBe('game');
 		expect(results[2]).toBe('webapp');
 	});
-	it('monorepo outranks framework (a web framework inside a monorepo is still a monorepo)', () => {
+	it('monorepo outranks framework (a web framework inside a monorepo is still a monorepo)', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({}),
 				hasBin: false,
 				hasExports: false,
@@ -38,10 +38,10 @@ describe('DEFAULT_PROJECT_TYPE_RULES (declarative table)', () => {
 	});
 });
 
-describe('matchProjectType', () => {
-	it('returns `webapp` when the project has a framework', () => {
+describe('matchProjectType', async () => {
+	it('returns `webapp` when the project has a framework', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({}),
 				hasBin: false,
 				hasExports: false,
@@ -52,9 +52,9 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('webapp');
 	});
-	it('returns `cli` when the project has a `bin`', () => {
+	it('returns `cli` when the project has a `bin`', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({}),
 				hasBin: true,
 				hasExports: false,
@@ -65,9 +65,9 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('cli');
 	});
-	it('returns `game` for a project whose deps include a game engine', () => {
+	it('returns `game` for a project whose deps include a game engine', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({}),
 				hasBin: false,
 				hasExports: false,
@@ -78,9 +78,9 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('game');
 	});
-	it('returns `library` for a Rust library (Cargo.toml + no main.rs)', () => {
+	it('returns `library` for a Rust library (Cargo.toml + no main.rs)', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({ 'Cargo.toml': '...' }),
 				hasBin: false,
 				hasExports: false,
@@ -91,9 +91,9 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('library');
 	});
-	it('returns `cli` for a Rust binary (Cargo.toml + main.rs)', () => {
+	it('returns `cli` for a Rust binary (Cargo.toml + main.rs)', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({
 					'Cargo.toml': '...',
 					'src/main.rs': 'fn main() {}',
@@ -107,9 +107,9 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('cli');
 	});
-	it('returns `generic` when no rule applies', () => {
+	it('returns `generic` when no rule applies', async () => {
 		expect(
-			matchProjectType({
+			await matchProjectType({
 				reader: reader({}),
 				hasBin: false,
 				hasExports: false,
@@ -120,7 +120,7 @@ describe('matchProjectType', () => {
 			}),
 		).toBe('generic');
 	});
-	it('a custom rule table overrides the default (host can reprioritise)', () => {
+	it('a custom rule table overrides the default (host can reprioritise)', async () => {
 		// Custom rule: `webapp` outranks `monorepo`. We pass an empty
 		// list, then assert that we get the fallback.
 		const customRules = [
@@ -131,7 +131,7 @@ describe('matchProjectType', () => {
 			},
 		];
 		expect(
-			matchProjectType(
+			await matchProjectType(
 				{
 					reader: reader({}),
 					hasBin: false,
@@ -147,9 +147,9 @@ describe('matchProjectType', () => {
 	});
 });
 
-describe('integration: detectProjectType uses the rule table', () => {
-	it('still classifies a TypeScript webapp project correctly', () => {
-		const analysis = analyzeProject(
+describe('integration: detectProjectType uses the rule table', async () => {
+	it('still classifies a TypeScript webapp project correctly', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: '@acme/site',
@@ -160,8 +160,8 @@ describe('integration: detectProjectType uses the rule table', () => {
 		);
 		expect(analysis.projectType).toBe('webapp');
 	});
-	it('still classifies a monorepo correctly', () => {
-		const analysis = analyzeProject(
+	it('still classifies a monorepo correctly', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'big',

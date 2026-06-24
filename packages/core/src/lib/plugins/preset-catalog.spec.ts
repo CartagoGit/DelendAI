@@ -5,12 +5,12 @@ import {
 	resolvePresetMembers,
 } from './preset-catalog';
 
-describe('PRESET_CATALOG', () => {
-	it('lists presets in ⊇ order: minimal, standard, swarm, full', () => {
+describe('PRESET_CATALOG', async () => {
+	it('lists presets in ⊇ order: minimal, standard, swarm, full', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual([...PRESET_KIND]);
 	});
 
-	it('stores deltas, not full membership lists', () => {
+	it('stores deltas, not full membership lists', async () => {
 		// minimal: 2 members (the base)
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// standard: adds 5 on top of minimal
@@ -21,7 +21,7 @@ describe('PRESET_CATALOG', () => {
 		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
 	});
 
-	it('marks every full-preset member as hostOnly', () => {
+	it('marks every full-preset member as hostOnly', async () => {
 		const full = PRESET_CATALOG[3];
 		expect(full).toBeDefined();
 		if (full === undefined) return;
@@ -30,7 +30,7 @@ describe('PRESET_CATALOG', () => {
 		}
 	});
 
-	it('forbids hostOnly in minimal, standard, swarm', () => {
+	it('forbids hostOnly in minimal, standard, swarm', async () => {
 		for (const def of PRESET_CATALOG.slice(0, 3)) {
 			for (const member of def.members) {
 				expect(member.hostOnly).toBeUndefined();
@@ -67,17 +67,17 @@ describe('PRESET_CATALOG', () => {
 	});
 });
 
-describe('resolvePresetMembers', () => {
-	it('returns [] for unknown preset names', () => {
+describe('resolvePresetMembers', async () => {
+	it('returns [] for unknown preset names', async () => {
 		expect(resolvePresetMembers('unknown')).toEqual([]);
 		expect(resolvePresetMembers(undefined)).toEqual([]);
 	});
 
-	it('resolves minimal = [git, search]', () => {
+	it('resolves minimal = [git, search]', async () => {
 		expect(resolvePresetMembers('minimal')).toEqual(['git', 'search']);
 	});
 
-	it('resolves standard = minimal + memory/docs/rules/quality/deps', () => {
+	it('resolves standard = minimal + memory/docs/rules/quality/deps', async () => {
 		const resolved = resolvePresetMembers('standard');
 		expect(resolved).toContain('git');
 		expect(resolved).toContain('search');
@@ -89,7 +89,7 @@ describe('resolvePresetMembers', () => {
 		expect(resolved.length).toBe(7);
 	});
 
-	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', () => {
+	it('resolves swarm = standard + proposals/notification/logs/status-marker/test-convention', async () => {
 		const resolved = resolvePresetMembers('swarm');
 		expect(resolved).toContain('proposals');
 		expect(resolved).toContain('notification');
@@ -100,7 +100,7 @@ describe('resolvePresetMembers', () => {
 		expect(resolved).not.toContain('issues');
 	});
 
-	it('resolves full = swarm + web-fetch/issues', () => {
+	it('resolves full = swarm + web-fetch/issues', async () => {
 		const resolved = resolvePresetMembers('full');
 		expect(resolved).toContain('web-fetch');
 		expect(resolved).toContain('issues');
@@ -111,7 +111,7 @@ describe('resolvePresetMembers', () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('preserves the ⊇ chain ordering', () => {
+	it('preserves the ⊇ chain ordering', async () => {
 		const full = resolvePresetMembers('full');
 		const swarm = resolvePresetMembers('swarm');
 		const standard = resolvePresetMembers('standard');
@@ -128,7 +128,7 @@ describe('resolvePresetMembers', () => {
 		}
 	});
 
-	it('deduplicates plugins that appear in multiple deltas', () => {
+	it('deduplicates plugins that appear in multiple deltas', async () => {
 		// defensive: if a future preset re-adds a plugin, the resolver
 		// keeps only the first occurrence.
 		const resolved = resolvePresetMembers('full');

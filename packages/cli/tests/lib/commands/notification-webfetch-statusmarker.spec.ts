@@ -43,7 +43,7 @@ const find = (group: readonly ICliCommand[], name: string): ICliCommand => {
 	return command;
 };
 
-describe('notification group (f00046 S8)', () => {
+describe('notification group (f00046 S8)', async () => {
 	it('await-lock requires a taskId and forwards timeout', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find(
@@ -62,7 +62,7 @@ describe('notification group (f00046 S8)', () => {
 	});
 });
 
-describe('web-fetch group (f00046 S8)', () => {
+describe('web-fetch group (f00046 S8)', async () => {
 	it('requires a url and forwards max-bytes/timeout', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find(webFetchCommands, 'web-fetch').run([], ctx);
@@ -82,7 +82,7 @@ describe('web-fetch group (f00046 S8)', () => {
 	});
 });
 
-describe('status-marker group (f00046 S8)', () => {
+describe('status-marker group (f00046 S8)', async () => {
 	it('close forwards state + reason', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(statusMarkerCommands, 'status-marker close').run(

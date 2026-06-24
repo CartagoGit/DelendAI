@@ -176,12 +176,16 @@ const collectExtra = (
  * server entry is opaque, returns an empty list. Hosts that can launch
  * the existing server should pass a richer snapshot.
  */
-export const existingToolsFromAnalysis = (
+export const existingToolsFromAnalysis = async (
 	_analysis: IProjectAnalysis,
-	reader: { readFile(relativePath: string): string | undefined },
-): readonly IToolName[] => {
+	reader: {
+		readFile(
+			relativePath: string,
+		): string | undefined | Promise<string | undefined>;
+	},
+): Promise<readonly IToolName[]> => {
 	for (const path of ['.vscode/mcp.json', 'mcp.json', '.cursor/mcp.json']) {
-		const raw = reader.readFile(path);
+		const raw = await reader.readFile(path);
 		if (raw === undefined) continue;
 		try {
 			const parsed = JSON.parse(raw) as {

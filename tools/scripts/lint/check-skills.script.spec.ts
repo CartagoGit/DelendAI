@@ -11,8 +11,8 @@ const manifest = (skills: ISkillManifest['skills']): ISkillManifest => ({
 	skills,
 });
 
-describe('checkSkillsManifest', () => {
-	it('reports no issues when every manifest entry has a matching file and vice versa', () => {
+describe('checkSkillsManifest', async () => {
+	it('reports no issues when every manifest entry has a matching file and vice versa', async () => {
 		const issues = checkSkillsManifest(
 			manifest([
 				{
@@ -29,7 +29,7 @@ describe('checkSkillsManifest', () => {
 		expect(issues).toEqual([]);
 	});
 
-	it('flags a manifest entry whose bodyPath does not exist on disk', () => {
+	it('flags a manifest entry whose bodyPath does not exist on disk', async () => {
 		const issues = checkSkillsManifest(
 			manifest([
 				{
@@ -51,7 +51,7 @@ describe('checkSkillsManifest', () => {
 		]);
 	});
 
-	it('flags a SKILL.md on disk with no manifest entry', () => {
+	it('flags a SKILL.md on disk with no manifest entry', async () => {
 		const issues = checkSkillsManifest(manifest([]), [
 			'skills/undeclared-skill/SKILL.md',
 		]);
@@ -64,7 +64,7 @@ describe('checkSkillsManifest', () => {
 		]);
 	});
 
-	it('flags a malformed (non-semver) version', () => {
+	it('flags a malformed (non-semver) version', async () => {
 		const issues = checkSkillsManifest(
 			manifest([
 				{
@@ -87,7 +87,7 @@ describe('checkSkillsManifest', () => {
 		).toBe(true);
 	});
 
-	it('flags a malformed (non-semver) minCoreVersion', () => {
+	it('flags a malformed (non-semver) minCoreVersion', async () => {
 		const issues = checkSkillsManifest(
 			manifest([
 				{

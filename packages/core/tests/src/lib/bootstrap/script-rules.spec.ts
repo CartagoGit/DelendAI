@@ -16,38 +16,38 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/script-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('QUALITY_ROLES / QUALITY_ROLE_ALIASES (declarative policy)', () => {
-	it('QUALITY_ROLES lists the four primary roles', () => {
+describe('QUALITY_ROLES / QUALITY_ROLE_ALIASES (declarative policy)', async () => {
+	it('QUALITY_ROLES lists the four primary roles', async () => {
 		expect(QUALITY_ROLES).toEqual(['lint', 'test', 'build', 'typecheck']);
 	});
-	it('QUALITY_ROLE_ALIASES contains the common type-check aliases', () => {
+	it('QUALITY_ROLE_ALIASES contains the common type-check aliases', async () => {
 		expect(QUALITY_ROLE_ALIASES['type-check']).toBe('typecheck');
 	});
 });
 
-describe('LIFECYCLE_SCRIPT_BLACKLIST (declarative policy)', () => {
-	it('excludes the npm lifecycle hooks', () => {
+describe('LIFECYCLE_SCRIPT_BLACKLIST (declarative policy)', async () => {
+	it('excludes the npm lifecycle hooks', async () => {
 		expect(LIFECYCLE_SCRIPT_BLACKLIST.has('prepare')).toBe(true);
 		expect(LIFECYCLE_SCRIPT_BLACKLIST.has('postinstall')).toBe(true);
 		expect(LIFECYCLE_SCRIPT_BLACKLIST.has('prepublishOnly')).toBe(true);
 	});
 });
 
-describe('isBlacklistedScriptRole', () => {
-	it('returns true for lifecycle hooks', () => {
+describe('isBlacklistedScriptRole', async () => {
+	it('returns true for lifecycle hooks', async () => {
 		expect(isBlacklistedScriptRole('prepare')).toBe(true);
 		expect(isBlacklistedScriptRole('preinstall')).toBe(true);
 	});
-	it('returns true for `pre*` and `post*` companion scripts', () => {
+	it('returns true for `pre*` and `post*` companion scripts', async () => {
 		expect(isBlacklistedScriptRole('pretest')).toBe(true);
 		expect(isBlacklistedScriptRole('postbuild')).toBe(true);
 	});
-	it('returns false for real quality-gate scripts', () => {
+	it('returns false for real quality-gate scripts', async () => {
 		expect(isBlacklistedScriptRole('lint')).toBe(false);
 		expect(isBlacklistedScriptRole('test')).toBe(false);
 		expect(isBlacklistedScriptRole('e2e')).toBe(false);
@@ -55,9 +55,9 @@ describe('isBlacklistedScriptRole', () => {
 	});
 });
 
-describe('analyzer integration: the policy drives picked scripts', () => {
-	it('picks quality roles, applies aliases, and skips lifecycle hooks', () => {
-		const analysis = analyzeProject(
+describe('analyzer integration: the policy drives picked scripts', async () => {
+	it('picks quality roles, applies aliases, and skips lifecycle hooks', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'svc',

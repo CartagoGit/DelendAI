@@ -53,7 +53,7 @@ interface LockOutput {
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' });
 
-describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', () => {
+describe('e2e: sync_proposals + agent_lock + agent_worktree + task_queue', async () => {
 	let harness: IAssembledProposalsServer;
 
 	beforeEach(async () => {

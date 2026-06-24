@@ -59,20 +59,20 @@ const narrativeProposal = [
 ].join('\n');
 const fixturePath = 'docs/proposals/ready/r99999-narrative-headings-fixture.md';
 
-describe('narrative pattern providers', () => {
-	it('default provider carries the historical audit catalogue', () => {
+describe('narrative pattern providers', async () => {
+	it('default provider carries the historical audit catalogue', async () => {
 		const provider = createDefaultNarrativePatternProvider();
 		// A representative historical narrative heading resolves to `notes`.
 		expect(provider.aliases['estado']).toContain('notes');
 		expect(Object.keys(provider.aliases).length).toBeGreaterThan(50);
 	});
 
-	it('empty provider has no aliases (structure-only linting)', () => {
+	it('empty provider has no aliases (structure-only linting)', async () => {
 		const provider = createEmptyNarrativePatternProvider();
 		expect(Object.keys(provider.aliases)).toHaveLength(0);
 	});
 
-	it('createNarrativePatternProvider builds from host tuples and ignores malformed rows', () => {
+	it('createNarrativePatternProvider builds from host tuples and ignores malformed rows', async () => {
 		const provider = createNarrativePatternProvider([
 			['mi sección', 'notes'],
 			// malformed rows must not throw — they are dropped.
@@ -83,7 +83,7 @@ describe('narrative pattern providers', () => {
 		expect(provider.aliases['bad-row']).toBeUndefined();
 	});
 
-	it('undefined entries fall back to the historical default', () => {
+	it('undefined entries fall back to the historical default', async () => {
 		const provider = createNarrativePatternProvider(undefined);
 		expect(Object.keys(provider.aliases).length).toBe(
 			Object.keys(createDefaultNarrativePatternProvider().aliases).length,
@@ -91,8 +91,8 @@ describe('narrative pattern providers', () => {
 	});
 });
 
-describe('lintProposalMarkdown narrative-pattern injection (F2)', () => {
-	it('the DEFAULT config lints a fully-narrative proposal body clean', () => {
+describe('lintProposalMarkdown narrative-pattern injection (F2)', async () => {
+	it('the DEFAULT config lints a fully-narrative proposal body clean', async () => {
 		// The historical aliases (default provider) resolve every narrative
 		// heading to its canonical section, so a proposal written entirely
 		// in the historical vocabulary lints with no "unrecognized section"
@@ -107,7 +107,7 @@ describe('lintProposalMarkdown narrative-pattern injection (F2)', () => {
 		expect(unrecognized).toEqual([]);
 	});
 
-	it('an EMPTY provider surfaces the same narrative headings as unrecognized', () => {
+	it('an EMPTY provider surfaces the same narrative headings as unrecognized', async () => {
 		// Proof the aliases do real work: with NO narrative patterns the
 		// linter is structure-only and the Spanish/emoji headings are no
 		// longer recognized.
@@ -121,7 +121,7 @@ describe('lintProposalMarkdown narrative-pattern injection (F2)', () => {
 		).toBe(true);
 	});
 
-	it('the historical catalogue is non-trivial (it really moved out of the linter)', () => {
+	it('the historical catalogue is non-trivial (it really moved out of the linter)', async () => {
 		expect(HISTORICAL_AUDIT_NARRATIVE_ENTRIES.length).toBeGreaterThan(100);
 	});
 });

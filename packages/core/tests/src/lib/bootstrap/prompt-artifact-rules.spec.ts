@@ -12,13 +12,13 @@ import {
 import type { IPromptArtifactContext } from '@mcp-vertex/core/lib/bootstrap/prompt-artifact-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: (p) => (p in files ? ['exists'] : []),
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async (p) => (p in files ? ['exists'] : []),
 });
 
-const makeAnalysis = () =>
-	analyzeProject(
+const makeAnalysis = async () =>
+	await analyzeProject(
 		reader({
 			'tsconfig.json': '{}',
 			'package.json': JSON.stringify({
@@ -28,14 +28,16 @@ const makeAnalysis = () =>
 		}),
 	);
 
-const makeCtx = (
+const makeCtx = async (
 	overrides: Partial<{
-		analysis: ReturnType<typeof makeAnalysis>;
+		analysis: ReturnType<typeof makeAnalysis> extends Promise<infer T>
+			? T
+			: never;
 		namespacePrefix: string;
 		plugins: readonly string[];
 	}> = {},
-): IPromptArtifactContext => ({
-	analysis: overrides.analysis ?? makeAnalysis(),
+): Promise<IPromptArtifactContext> => ({
+	analysis: overrides.analysis ?? (await makeAnalysis()),
 	namespacePrefix: overrides.namespacePrefix ?? 'svc',
 	plugins: overrides.plugins ?? [],
 });
@@ -52,12 +54,12 @@ describe('DEFAULT_PROMPT_ARTIFACT_RULES (declarative table)', () => {
 });
 
 describe('matchPromptArtifacts', () => {
-	it('always emits `start`', () => {
-		const out = matchPromptArtifacts(makeCtx());
+	it('always emits `start`', async () => {
+		const out = matchPromptArtifacts(await makeCtx());
 		expect(out[0]?.name).toBe('start');
 	});
-	it('emits `fix quality` when the project has scripts', () => {
-		const out = matchPromptArtifacts(makeCtx());
+	it('emits `fix quality` when the project has scripts', async () => {
+		const out = matchPromptArtifacts(await makeCtx());
 		// analyse() does not pick scripts unless a `scripts` block
 		// is in the package.json; the makeAnalysis helper above
 		// does not declare one. The "fix quality" rule is gated
@@ -65,8 +67,8 @@ describe('matchPromptArtifacts', () => {
 		// should NOT fire here.
 		expect(out.map((p) => p.name)).not.toContain('fix quality');
 	});
-	it('emits `fix quality` when the analysis has scripts', () => {
-		const a = analyzeProject(
+	it('emits `fix quality` when the analysis has scripts', async () => {
+		const a = await analyzeProject(
 			reader({
 				'tsconfig.json': '{}',
 				'package.json': JSON.stringify({
@@ -75,19 +77,21 @@ describe('matchPromptArtifacts', () => {
 				}),
 			}),
 		);
-		const out = matchPromptArtifacts(makeCtx({ analysis: a }));
+		const out = matchPromptArtifacts(await makeCtx({ analysis: a }));
 		expect(out.map((p) => p.name)).toContain('fix quality');
 	});
-	it('emits `continue proposal` when the proposals plugin is in the plan', () => {
-		const out = matchPromptArtifacts(makeCtx({ plugins: ['proposals'] }));
+	it('emits `continue proposal` when the proposals plugin is in the plan', async () => {
+		const out = matchPromptArtifacts(
+			await makeCtx({ plugins: ['proposals'] }),
+		);
 		expect(out.map((p) => p.name)).toContain('continue proposal');
 	});
-	it('does NOT emit `continue proposal` when the proposals plugin is absent', () => {
-		const out = matchPromptArtifacts(makeCtx());
+	it('does NOT emit `continue proposal` when the proposals plugin is absent', async () => {
+		const out = matchPromptArtifacts(await makeCtx());
 		expect(out.map((p) => p.name)).not.toContain('continue proposal');
 	});
-	it('emits prompts in priority order (start > fix-quality > continue-proposal)', () => {
-		const a = analyzeProject(
+	it('emits prompts in priority order (start > fix-quality > continue-proposal)', async () => {
+		const a = await analyzeProject(
 			reader({
 				'tsconfig.json': '{}',
 				'package.json': JSON.stringify({
@@ -97,7 +101,7 @@ describe('matchPromptArtifacts', () => {
 			}),
 		);
 		const out = matchPromptArtifacts(
-			makeCtx({ analysis: a, plugins: ['proposals'] }),
+			await makeCtx({ analysis: a, plugins: ['proposals'] }),
 		);
 		expect(out.map((p) => p.name)).toEqual([
 			'start',
@@ -105,14 +109,16 @@ describe('matchPromptArtifacts', () => {
 			'continue proposal',
 		]);
 	});
-	it('the `start` body calls startPromptBody with the analysis + namespacePrefix', () => {
-		const out = matchPromptArtifacts(makeCtx({ namespacePrefix: 'myapp' }));
+	it('the `start` body calls startPromptBody with the analysis + namespacePrefix', async () => {
+		const out = matchPromptArtifacts(
+			await makeCtx({ namespacePrefix: 'myapp' }),
+		);
 		expect(out[0]?.body).toContain('myapp_overview');
 	});
 });
 
 describe('integration: buildServerBlueprint uses the rule table', () => {
-	it('produces the same prompts as the pre-refactor inline builder', () => {
+	it('produces the same prompts as the pre-refactor inline builder', async () => {
 		// The pre-refactor builder produced:
 		//   - start (always)
 		//   - fix quality (when scripts exist)
@@ -120,7 +126,7 @@ describe('integration: buildServerBlueprint uses the rule table', () => {
 		//     plan)
 		// We assert the same for a TypeScript+React project with
 		// the proposals plugin.
-		const a = analyzeProject(
+		const a = await analyzeProject(
 			reader({
 				'tsconfig.json': '{}',
 				'package.json': JSON.stringify({

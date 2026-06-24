@@ -9,8 +9,8 @@ import {
 	formatReport,
 } from './cli-coverage.script';
 
-describe('cli-coverage.script', () => {
-	it('extracts registered command names from the CLI registry', () => {
+describe('cli-coverage.script', async () => {
+	it('extracts registered command names from the CLI registry', async () => {
 		const commands = extractRegisteredCommands(`
 			const listCommand = { name: 'plugin list' };
 			export const registerAllCommands = () => [

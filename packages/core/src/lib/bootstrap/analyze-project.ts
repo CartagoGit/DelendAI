@@ -248,14 +248,16 @@ const detectCustomExtraTools = async (
 	return hits.length > 0;
 };
 
-const detectCustomVertexConfig = async (reader: IFileReader): Promise<boolean> => {
+const detectCustomVertexConfig = async (
+	reader: IFileReader,
+): Promise<boolean> => {
 	// The vertex-config rule table lives in
 	// `vertex-config-rules.ts`; this function is a thin adapter.
 	// The matcher parses the JSON internally and returns a list
 	// of hit ids; the boolean is `any hit` for backward
 	// compatibility with the boolean contract this function
 	// used to have.
-	const rawCfg = await reader.readFile('mcp-vertex.json');
+	const rawCfg = await reader.readFile('mcp-vertex.config.json');
 	const hits = matchVertexConfigFromRaw(rawCfg);
 	return hits.length > 0;
 };
@@ -265,12 +267,14 @@ const detectCustomVertexConfig = async (reader: IFileReader): Promise<boolean> =
  * analysis. Never throws on malformed input — missing or invalid files
  * degrade to `unknown`/`generic` so the recommender always has data.
  */
-export const analyzeProject = async (reader: IFileReader): Promise<IProjectAnalysis> => {
+export const analyzeProject = async (
+	reader: IFileReader,
+): Promise<IProjectAnalysis> => {
 	const pkgRaw = await reader.readFile('package.json');
 	const pkg = safeJson(pkgRaw);
 	const deps = allDeps(pkg);
 	const scripts = pkg?.scripts ?? {};
-	const framework = detectFramework(deps);
+	const framework = await detectFramework(deps);
 	const language = await detectLanguage(reader, pkg);
 	const monorepoTool = await detectMonorepoTool(reader, pkg);
 	const mcp = await detectMcp(reader, deps);

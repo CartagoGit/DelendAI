@@ -219,7 +219,7 @@ const buildClient = async (
 		// `allowNetwork` so `deps_outdated` shows up in the generated
 		// capabilities — every other plugin still sees no config file
 		// (default options), matching the real CLI default.
-		readFile: (absolutePath: string) =>
+		readFile: async (absolutePath: string) =>
 			absolutePath.endsWith('mcp-vertex.config.json')
 				? JSON.stringify({
 						plugins: { deps: { options: { allowNetwork: true } } },

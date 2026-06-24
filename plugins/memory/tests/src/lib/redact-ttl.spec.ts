@@ -24,8 +24,8 @@ import {
 // redaction regexes actually match against.
 const tok = (...parts: string[]): string => parts.join('');
 
-describe('redactSecrets (M11)', () => {
-	it('redacts well-known secret shapes', () => {
+describe('redactSecrets (M11)', async () => {
+	it('redacts well-known secret shapes', async () => {
 		const samples = [
 			tok('AK', 'IA', 'IOSFODNN7EXAMPLE'),
 			tok('gh', 'p', '_', '0123456789abcdefghijklmnopqrstuvwxyz'),
@@ -42,7 +42,7 @@ describe('redactSecrets (M11)', () => {
 		}
 	});
 
-	it('redacts secret-ish assignments but keeps the key', () => {
+	it('redacts secret-ish assignments but keeps the key', async () => {
 		const r = redactSecrets(
 			'api_key = "s3cr3tValue123" and password: hunter2hunter',
 		);
@@ -53,13 +53,13 @@ describe('redactSecrets (M11)', () => {
 		expect(r.text).not.toContain('hunter2hunter');
 	});
 
-	it('leaves ordinary prose untouched', () => {
+	it('leaves ordinary prose untouched', async () => {
 		const prose = 'We decided to use mysql2 with a 30s connection timeout.';
 		expect(redactSecrets(prose)).toEqual({ text: prose, redactions: 0 });
 	});
 });
 
-describe('TTL expiry + redaction on save (M11)', () => {
+describe('TTL expiry + redaction on save (M11)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {

@@ -52,7 +52,7 @@ p.
 - [ ] done.
 `;
 
-describe('lintProposalsDir', () => {
+describe('lintProposalsDir', async () => {
 	let root = '';
 
 	beforeEach(async () => {

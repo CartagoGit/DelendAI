@@ -5,8 +5,8 @@ import {
 	resolvePreset,
 } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
-describe('parseCliArgs', () => {
-	it('applies defaults when nothing is passed', () => {
+describe('parseCliArgs', async () => {
+	it('applies defaults when nothing is passed', async () => {
 		const args = parseCliArgs([], '/cwd');
 		expect(args.plugins).toEqual([]);
 		expect(args.cacheDir).toBe('.cache/mcp-vertex');
@@ -16,7 +16,7 @@ describe('parseCliArgs', () => {
 		expect(args.mcpProjectTests).toBe(true);
 	});
 
-	it('parses --mcp-project-create=false and --mcp-project-tests=false', () => {
+	it('parses --mcp-project-create=false and --mcp-project-tests=false', async () => {
 		const args = parseCliArgs(
 			['--mcp-project-create=false', '--mcp-project-tests=false'],
 			'/cwd',
@@ -25,7 +25,7 @@ describe('parseCliArgs', () => {
 		expect(args.mcpProjectTests).toBe(false);
 	});
 
-	it('parses --plugins as a comma list and overrides dirs', () => {
+	it('parses --plugins as a comma list and overrides dirs', async () => {
 		const args = parseCliArgs(
 			['--plugins=proposals,pepegrillo', '--cacheDir=.x', '--docsDir=d'],
 			'/cwd',
@@ -35,7 +35,7 @@ describe('parseCliArgs', () => {
 		expect(args.docsDir).toBe('d');
 	});
 
-	it('supports --key value form and forwards unknown flags to extra', () => {
+	it('supports --key value form and forwards unknown flags to extra', async () => {
 		const args = parseCliArgs(
 			['--workspace', '/ws', '--proposalsDir', 'docs/p'],
 			'/cwd',
@@ -45,7 +45,7 @@ describe('parseCliArgs', () => {
 	});
 
 	// N18: plugin presets
-	it('expands --preset=swarm into its plugin set', () => {
+	it('expands --preset=swarm into its plugin set', async () => {
 		const args = parseCliArgs(['--preset=swarm'], '/cwd');
 		expect(args.plugins).toEqual([...resolvePreset('swarm')]);
 		expect(args.plugins).toContain('proposals');
@@ -54,7 +54,7 @@ describe('parseCliArgs', () => {
 		expect(args.extra.preset).toBeUndefined();
 	});
 
-	it('merges --preset with explicit --plugins, de-duped, preset first', () => {
+	it('merges --preset with explicit --plugins, de-duped, preset first', async () => {
 		const args = parseCliArgs(
 			['--preset=minimal', '--plugins=memory,git'],
 			'/cwd',
@@ -63,14 +63,14 @@ describe('parseCliArgs', () => {
 		expect(args.plugins).toEqual(['git', 'search', 'memory']);
 	});
 
-	it('ignores an unknown preset', () => {
+	it('ignores an unknown preset', async () => {
 		expect(parseCliArgs(['--preset=nope'], '/cwd').plugins).toEqual([]);
 		expect(resolvePreset('nope')).toEqual([]);
 		expect(resolvePreset(undefined)).toEqual([]);
 	});
 
 	// --exclude-plugins: subtract a plugin (or several) from the resolved set
-	it('subtracts --exclude-plugins from a preset (single)', () => {
+	it('subtracts --exclude-plugins from a preset (single)', async () => {
 		const args = parseCliArgs(
 			['--preset=swarm', '--exclude-plugins=notification'],
 			'/cwd',
@@ -81,7 +81,7 @@ describe('parseCliArgs', () => {
 		expect(args.excludePlugins).toEqual(['notification']);
 	});
 
-	it('subtracts --exclude-plugins from a preset (comma list)', () => {
+	it('subtracts --exclude-plugins from a preset (comma list)', async () => {
 		const args = parseCliArgs(
 			['--preset=swarm', '--exclude-plugins=notification,quality'],
 			'/cwd',
@@ -91,7 +91,7 @@ describe('parseCliArgs', () => {
 		expect(args.plugins).toContain('status-marker');
 	});
 
-	it('accepts the camelCase alias --excludePlugins', () => {
+	it('accepts the camelCase alias --excludePlugins', async () => {
 		const args = parseCliArgs(
 			['--preset=swarm', '--excludePlugins=notification'],
 			'/cwd',
@@ -100,7 +100,7 @@ describe('parseCliArgs', () => {
 		expect(args.excludePlugins).toEqual(['notification']);
 	});
 
-	it('subtracts an explicit --plugins entry', () => {
+	it('subtracts an explicit --plugins entry', async () => {
 		const args = parseCliArgs(
 			[
 				'--plugins=git,search,status-marker',
@@ -111,7 +111,7 @@ describe('parseCliArgs', () => {
 		expect(args.plugins).toEqual(['git', 'search']);
 	});
 
-	it('swarm preset now includes status-marker (close-marker convention)', () => {
+	it('swarm preset now includes status-marker (close-marker convention)', async () => {
 		const args = parseCliArgs(['--preset=swarm'], '/cwd');
 		expect(args.plugins).toContain('status-marker');
 	});

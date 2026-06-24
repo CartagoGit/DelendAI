@@ -66,9 +66,9 @@ export interface IConfigFileReader {
 }
 
 /** Production reader: reads `mcp-vertex.config.json` from the workspace. */
-export const createFsConfigFileReader = (
+export const createFsConfigFileReader = async (
 	workspace: IWorkspacePathProvider,
-): IConfigFileReader => {
+): Promise<IConfigFileReader> => {
 	const path = workspace.resolve('mcp-vertex.config.json');
 	return {
 		async readGlobalConfig() {

@@ -20,7 +20,7 @@ import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool'
  * lock / queue / registry at once. The invariants that must hold are no
  * lost updates, mutual exclusion per file, and never a torn (corrupt) file.
  */
-describe('coordination chaos — heavy contention invariants (N23)', () => {
+describe('coordination chaos — heavy contention invariants (N23)', async () => {
 	let dir = '';
 	let lockPath = '';
 	let queuePath = '';

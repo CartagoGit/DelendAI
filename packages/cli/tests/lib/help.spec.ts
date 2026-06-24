@@ -17,8 +17,8 @@ const stub = (name: string): ICliCommand => ({
 	},
 });
 
-describe('renderHelp (f00046 S11)', () => {
-	it('groups commands under their first word, single-word under general', () => {
+describe('renderHelp (f00046 S11)', async () => {
+	it('groups commands under their first word, single-word under general', async () => {
 		const out = renderHelp([
 			stub('status'),
 			stub('git status'),
@@ -32,8 +32,8 @@ describe('renderHelp (f00046 S11)', () => {
 		expect(out).toMatch(/git:[\s\S]*git status[\s\S]*git log/);
 	});
 
-	it('renders the full live command surface without throwing', () => {
-		const out = renderHelp(registerAllCommands(), 'es');
+	it('renders the full live command surface without throwing', async () => {
+		const out = renderHelp(await registerAllCommands(), 'es');
 		expect(out).toContain('mcp-vertex');
 		expect(out).toContain('proposals:');
 		expect(out).toContain('Comandos:'); // Spanish locale header

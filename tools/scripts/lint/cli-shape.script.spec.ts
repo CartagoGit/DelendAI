@@ -22,29 +22,29 @@ import {
 } from './cli-shape-rules.ts';
 import { formatReport, lintCliShape } from './cli-shape.script.ts';
 
-describe('parseShapeName', () => {
-	it('splits a two-token namespaced command', () => {
+describe('parseShapeName', async () => {
+	it('splits a two-token namespaced command', async () => {
 		const parsed = parseShapeName('git status');
 		expect(parsed.namespace).toBe('git');
 		expect(parsed.action).toBe('status');
 		expect(parsed.tokens).toEqual(['git', 'status']);
 	});
 
-	it('reports an empty action for a single-token command', () => {
+	it('reports an empty action for a single-token command', async () => {
 		const parsed = parseShapeName('doctor');
 		expect(parsed.namespace).toBe('doctor');
 		expect(parsed.action).toBe('');
 		expect(parsed.tokens).toEqual(['doctor']);
 	});
 
-	it('collapses repeated whitespace between tokens', () => {
+	it('collapses repeated whitespace between tokens', async () => {
 		const parsed = parseShapeName('doctor   env');
 		expect(parsed.tokens).toEqual(['doctor', 'env']);
 	});
 });
 
-describe('CamelCaseRule', () => {
-	it('flags a camelCase action', () => {
+describe('CamelCaseRule', async () => {
+	it('flags a camelCase action', async () => {
 		expect(
 			CamelCaseRule.evaluate(parseShapeName('p auto-work')),
 		).toBeNull();
@@ -56,8 +56,8 @@ describe('CamelCaseRule', () => {
 	});
 });
 
-describe('FlatLongActionRule', () => {
-	it('flags a long flat single-word action but allows short ones', () => {
+describe('FlatLongActionRule', async () => {
+	it('flags a long flat single-word action but allows short ones', async () => {
 		expect(
 			FlatLongActionRule.evaluate(parseShapeName('p status')),
 		).toBeNull();
@@ -76,8 +76,8 @@ describe('FlatLongActionRule', () => {
 	});
 });
 
-describe('MissingActionRule', () => {
-	it('flags single-token names (the exempt filter runs in the caller)', () => {
+describe('MissingActionRule', async () => {
+	it('flags single-token names (the exempt filter runs in the caller)', async () => {
 		expect(MissingActionRule.evaluate(parseShapeName('doctor'))).toEqual({
 			rule: 'missing-action',
 			action: '',
@@ -89,8 +89,8 @@ describe('MissingActionRule', () => {
 	});
 });
 
-describe('BadNamespaceRule', () => {
-	it('accepts kebab-case namespaces and flags camelCase ones', () => {
+describe('BadNamespaceRule', async () => {
+	it('accepts kebab-case namespaces and flags camelCase ones', async () => {
 		expect(
 			BadNamespaceRule.evaluate(parseShapeName('web-fetch get')),
 		).toBeNull();
@@ -104,7 +104,7 @@ describe('BadNamespaceRule', () => {
 	});
 });
 
-describe('lintCliShape (engine, injected rules + exempt set)', () => {
+describe('lintCliShape (engine, injected rules + exempt set)', async () => {
 	it('returns no findings against a fixture tree with only valid names', async () => {
 		// No groups dir under a bare temp root → engine returns [].
 		const findings = await lintCliShape('/nonexistent-root-xyz');
@@ -122,12 +122,12 @@ describe('lintCliShape (engine, injected rules + exempt set)', () => {
 	});
 });
 
-describe('formatReport', () => {
-	it('renders a clean line when there are no findings', () => {
+describe('formatReport', async () => {
+	it('renders a clean line when there are no findings', async () => {
 		expect(formatReport([])).toBe('cli-shape: 0 findings\n');
 	});
 
-	it('renders one line per finding with file:line and rule id', () => {
+	it('renders one line per finding with file:line and rule id', async () => {
 		const out = formatReport([
 			{
 				rule: 'camelcase-action',
@@ -144,7 +144,7 @@ describe('formatReport', () => {
 	});
 });
 
-describe('live tree (the repo must stay green)', () => {
+describe('live tree (the repo must stay green)', async () => {
 	it('reports zero findings under the real command groups', async () => {
 		const findings = await lintCliShape(process.cwd());
 		expect(findings).toEqual([]);

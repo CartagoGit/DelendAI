@@ -68,7 +68,7 @@ const jsonFetch =
 		return { ok: false, status: 404, json: async () => ({}) };
 	};
 
-describe('fetchIssue', () => {
+describe('fetchIssue', async () => {
 	it('uses the gh tier when gh succeeds', async () => {
 		const spawnSync = okJsonSpawn({
 			comments: [rawComment],
@@ -164,7 +164,7 @@ describe('fetchIssue', () => {
 	});
 });
 
-describe('listIssues', () => {
+describe('listIssues', async () => {
 	it('uses the gh tier and filters out pull requests', async () => {
 		const spawnSync = okJsonSpawn({
 			'issues?': [

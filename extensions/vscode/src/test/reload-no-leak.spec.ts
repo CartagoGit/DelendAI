@@ -74,7 +74,7 @@ const makeTrackedClient = (): ITrackedClient => {
 	};
 };
 
-describe('activate / deactivate lifecycle (reload-leak contract)', () => {
+describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 	it('deactivate calls client.close() exactly once', async () => {
 		__resetRuntimeHandle();
 		const tracked = makeTrackedClient();

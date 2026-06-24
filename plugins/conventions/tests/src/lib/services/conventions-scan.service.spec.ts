@@ -24,7 +24,7 @@ const memoryReader = (
 const dir = (name: string): IDirEntry => ({ name, isDirectory: true });
 const file = (name: string): IDirEntry => ({ name, isDirectory: false });
 
-describe('scanConventions', () => {
+describe('scanConventions', async () => {
 	it('classifies a small tree and aggregates per-role counts', async () => {
 		const reader = memoryReader({
 			pkg: [dir('src')],

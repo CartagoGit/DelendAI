@@ -10,25 +10,25 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/host-config-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('DEFAULT_HOST_CONFIG_RULES (declarative table)', () => {
-	it('declares the default `custom-extra-tools` rule', () => {
+describe('DEFAULT_HOST_CONFIG_RULES (declarative table)', async () => {
+	it('declares the default `custom-extra-tools` rule', async () => {
 		expect(DEFAULT_HOST_CONFIG_RULES).toHaveLength(1);
 		expect(DEFAULT_HOST_CONFIG_RULES[0]?.id).toBe('custom-extra-tools');
 		expect(DEFAULT_HOST_CONFIG_RULES[0]?.evidence.kind).toBe('extra-tools');
 	});
 });
 
-describe('matchHostConfig', () => {
-	it('returns an empty list when no host-config.ts is present', () => {
-		expect(matchHostConfig(reader({}))).toEqual([]);
+describe('matchHostConfig', async () => {
+	it('returns an empty list when no host-config.ts is present', async () => {
+		expect(await matchHostConfig(reader({}))).toEqual([]);
 	});
-	it('returns an empty list when host-config.ts is the scaffold-only default', () => {
-		const result = matchHostConfig(
+	it('returns an empty list when host-config.ts is the scaffold-only default', async () => {
+		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
 export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => ({
@@ -41,8 +41,8 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		);
 		expect(result).toEqual([]);
 	});
-	it('returns `custom-extra-tools` when the file declares additional tools', () => {
-		const result = matchHostConfig(
+	it('returns `custom-extra-tools` when the file declares additional tools', async () => {
+		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
 export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => ({
@@ -56,9 +56,9 @@ export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => 
 		);
 		expect(result).toEqual(['custom-extra-tools']);
 	});
-	it('reads the mcp-vertex monorepo layout first', () => {
+	it('reads the mcp-vertex monorepo layout first', async () => {
 		// Both layouts are present; the monorepo one wins.
-		const result = matchHostConfig(
+		const result = await matchHostConfig(
 			reader({
 				'libs/mcp-project/src/lib/shared/host-config.ts': `
 export const buildHostConfig = () => ({
@@ -75,8 +75,8 @@ export const buildHostConfig = () => ({
 		// Monorepo file has only the scaffold helper → no hit.
 		expect(result).toEqual([]);
 	});
-	it('falls back to the standalone layout when the monorepo file is missing', () => {
-		const result = matchHostConfig(
+	it('falls back to the standalone layout when the monorepo file is missing', async () => {
+		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
 export const buildHostConfig = () => ({
@@ -87,8 +87,8 @@ export const buildHostConfig = () => ({
 		);
 		expect(result).toEqual(['custom-extra-tools']);
 	});
-	it('strips `/* */` and `//` comments before matching', () => {
-		const result = matchHostConfig(
+	it('strips `/* */` and `//` comments before matching', async () => {
+		const result = await matchHostConfig(
 			reader({
 				'src/lib/shared/host-config.ts': `
 export const buildHostConfig = () => ({
@@ -105,9 +105,9 @@ export const buildHostConfig = () => ({
 	});
 });
 
-describe('integration: detectCustomExtraTools uses the rule table', () => {
-	it('analyzer sets `signals` to include the custom-tools marker', () => {
-		const analysis = analyzeProject(
+describe('integration: detectCustomExtraTools uses the rule table', async () => {
+	it('analyzer sets `signals` to include the custom-tools marker', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'src/lib/shared/host-config.ts': `
 export const buildHostConfig = () => ({

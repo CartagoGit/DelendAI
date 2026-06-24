@@ -22,7 +22,7 @@ afterEach(() => {
 	rmSync(tmpDir, { recursive: true, force: true });
 });
 
-describe('proposal-frontmatter-zombie-policy', () => {
+describe('proposal-frontmatter-zombie-policy', async () => {
 	it('adopted: true without continuityPolicy.zombieRecovery -> throws ZodError with correct path and message', async () => {
 		const content = `---
 id: l99-zombie-test

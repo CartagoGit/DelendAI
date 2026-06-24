@@ -12,8 +12,8 @@ import {
 	type CloseMarker,
 } from '../src/lib/markers';
 
-describe('markers — canonical table', () => {
-	it('declares the 8 states in stable order', () => {
+describe('markers — canonical table', async () => {
+	it('declares the 8 states in stable order', async () => {
 		expect(CLOSE_MARKER_STATES).toEqual([
 			'HECHO',
 			'CAP',
@@ -26,7 +26,7 @@ describe('markers — canonical table', () => {
 		]);
 	});
 
-	it('maps each emoji to its state (unique)', () => {
+	it('maps each emoji to its state (unique)', async () => {
 		const emojis = Object.values(MARKERS).map((d) => d.emoji);
 		expect(new Set(emojis).size).toBe(emojis.length);
 		for (const def of Object.values(MARKERS)) {
@@ -34,7 +34,7 @@ describe('markers — canonical table', () => {
 		}
 	});
 
-	it('marks the 5 reason-required states and the 3 optional ones', () => {
+	it('marks the 5 reason-required states and the 3 optional ones', async () => {
 		const required: CloseMarker[] = [
 			'CAP',
 			'RE-PIVOT',
@@ -52,37 +52,37 @@ describe('markers — canonical table', () => {
 	});
 });
 
-describe('markers — formatCloseMarker', () => {
-	it('renders HECHO without reason', () => {
+describe('markers — formatCloseMarker', async () => {
+	it('renders HECHO without reason', async () => {
 		expect(formatCloseMarker('HECHO')).toBe('🟩 [HECHO]');
 	});
 
-	it('appends the reason with the U+2014 separator', () => {
+	it('appends the reason with the U+2014 separator', async () => {
 		expect(
 			formatCloseMarker('CAP', 'slice cerrada, validación pendiente'),
 		).toBe(`🟨 [CAP]${CLOSE_SEPARATOR}slice cerrada, validación pendiente`);
 	});
 
-	it('inserts <reason-missing> when the state requires one but none is given', () => {
+	it('inserts <reason-missing> when the state requires one but none is given', async () => {
 		const line = formatCloseMarker('BLOQUEADO');
 		expect(line.endsWith(REASON_MISSING_TOKEN)).toBe(true);
 		expect(line.startsWith('🟥 [BLOQUEADO]')).toBe(true);
 	});
 
-	it('keeps the optional reason when the state does not require one', () => {
+	it('keeps the optional reason when the state does not require one', async () => {
 		expect(formatCloseMarker('HECHO', 'opcional')).toBe(
 			'🟩 [HECHO] — opcional',
 		);
 	});
 
-	it('truncates to MAX_LINE_LEN with a trailing … when the reason overflows', () => {
+	it('truncates to MAX_LINE_LEN with a trailing … when the reason overflows', async () => {
 		const long = 'x'.repeat(200);
 		const line = formatCloseMarker('CAP', long);
 		expect(line.length).toBeLessThanOrEqual(MAX_LINE_LEN);
 		expect(line.endsWith('…')).toBe(true);
 	});
 
-	it('exports formatLxAppCloseMarker as an alias with identical output', () => {
+	it('exports formatLxAppCloseMarker as an alias with identical output', async () => {
 		const a = formatCloseMarker('HECHO');
 		const b = formatLxAppCloseMarker('HECHO');
 		expect(a).toBe(b);

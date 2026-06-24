@@ -43,7 +43,7 @@ const find = (name: string): ICliCommand => {
 	return command;
 };
 
-describe('conventions group (f00046 S9)', () => {
+describe('conventions group (f00046 S9)', async () => {
 	it('check delegates to conventions_check with roots', async () => {
 		const { ctx, calls } = buildStubContext({ unmatchedCount: 0 });
 		await find('conventions check').run(['--roots=packages,plugins'], ctx);

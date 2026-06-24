@@ -15,14 +15,14 @@ import {
  * The end-to-end integration is exercised by `plugin-tool-verify`
  * and `generate-tool-types` at runtime.
  */
-describe('plugin-test-bed (Solid DRY extraction)', () => {
-	describe('createLocalPluginImporter', () => {
-		it('returns a function that maps plugin name → import closure', () => {
+describe('plugin-test-bed (Solid DRY extraction)', async () => {
+	describe('createLocalPluginImporter', async () => {
+		it('returns a function that maps plugin name → import closure', async () => {
 			const importer = createLocalPluginImporter('/some/workspace');
 			expect(typeof importer).toBe('function');
 		});
 
-		it('returns the same shape every consumer needs (Promise<{default}>)', () => {
+		it('returns the same shape every consumer needs (Promise<{default}>)', async () => {
 			const importer: IPluginImporter = createLocalPluginImporter('/ws');
 			// Type check (compile-time) + shape: importer is callable
 			// and returns a Promise that resolves to an object with
@@ -33,8 +33,8 @@ describe('plugin-test-bed (Solid DRY extraction)', () => {
 		});
 	});
 
-	describe('IPluginImporter contract (LSP test)', () => {
-		it('accepts any function (name) => Promise<{default}> as a valid IPluginImporter', () => {
+	describe('IPluginImporter contract (LSP test)', async () => {
+		it('accepts any function (name) => Promise<{default}> as a valid IPluginImporter', async () => {
 			// Solid-LSP: the test-bed never cares about WHICH plugin
 			// loader it gets. A stub satisfying the interface must
 			// type-check without casts.

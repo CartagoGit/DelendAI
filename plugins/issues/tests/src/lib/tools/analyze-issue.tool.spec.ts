@@ -41,7 +41,7 @@ const fakeClient = (
 	listIssues: async () => ({ issues: [], tier: 'gh' }),
 });
 
-describe('issues_analyze', () => {
+describe('issues_analyze', async () => {
 	let scaffoldDirAbs = '';
 
 	beforeEach(async () => {

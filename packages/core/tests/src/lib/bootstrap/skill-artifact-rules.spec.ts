@@ -12,9 +12,9 @@ import {
 import type { ISkillArtifactContext } from '@mcp-vertex/core/lib/bootstrap/skill-artifact-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: (p) => (p in files ? ['exists'] : []),
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async (p) => (p in files ? ['exists'] : []),
 });
 
 const makeAnalysis = (deps: Record<string, string> = {}) =>
@@ -28,71 +28,71 @@ const makeAnalysis = (deps: Record<string, string> = {}) =>
 		}),
 	);
 
-const makeCtx = (
+const makeCtx = async (
 	overrides: Partial<{
-		analysis: ReturnType<typeof makeAnalysis>;
+		analysis: Awaited<ReturnType<typeof makeAnalysis>>;
 		serverName: string;
 	}> = {},
-): ISkillArtifactContext => ({
-	analysis: overrides.analysis ?? makeAnalysis(),
+): Promise<ISkillArtifactContext> => ({
+	analysis: overrides.analysis ?? (await makeAnalysis()),
 	serverName: overrides.serverName ?? 'mcp-project-svc',
 });
 
-describe('DEFAULT_SKILL_ARTIFACT_RULES (declarative table)', () => {
-	it('lists the two built-in skills', () => {
+describe('DEFAULT_SKILL_ARTIFACT_RULES (declarative table)', async () => {
+	it('lists the two built-in skills', async () => {
 		const ids = DEFAULT_SKILL_ARTIFACT_RULES.map((r) => r.id);
 		expect(ids).toEqual(['project-standards', 'framework-conventions']);
 	});
 });
 
-describe('matchSkillArtifacts', () => {
-	it('always emits `project standards`', () => {
-		const out = matchSkillArtifacts(makeCtx());
+describe('matchSkillArtifacts', async () => {
+	it('always emits `project standards`', async () => {
+		const out = matchSkillArtifacts(await makeCtx());
 		expect(out[0]?.name).toBe('project standards');
 	});
-	it('emits the framework-conventions skill when a framework is detected', () => {
+	it('emits the framework-conventions skill when a framework is detected', async () => {
 		const a = makeAnalysis({ react: '^18' });
-		const out = matchSkillArtifacts(makeCtx({ analysis: a }));
+		const out = matchSkillArtifacts(await makeCtx({ analysis: await a }));
 		expect(out.map((s) => s.name)).toContain('react conventions');
 	});
-	it('does NOT emit framework-conventions when no framework is detected', () => {
-		const out = matchSkillArtifacts(makeCtx());
+	it('does NOT emit framework-conventions when no framework is detected', async () => {
+		const out = matchSkillArtifacts(await makeCtx());
 		expect(out.map((s) => s.name)).toEqual(['project standards']);
 	});
-	it('formats the framework-skill name lazily with the framework id', () => {
+	it('formats the framework-skill name lazily with the framework id', async () => {
 		const a = makeAnalysis({ '@angular/core': '^22' });
-		const out = matchSkillArtifacts(makeCtx({ analysis: a }));
+		const out = matchSkillArtifacts(await makeCtx({ analysis: await a }));
 		const fwSkill = out.find((s) => s.name.endsWith('conventions'));
 		expect(fwSkill?.name).toBe('angular conventions');
 		expect(fwSkill?.description).toContain('angular');
 	});
-	it('emits skills in priority order (project-standards > framework-conventions)', () => {
+	it('emits skills in priority order (project-standards > framework-conventions)', async () => {
 		const a = makeAnalysis({ react: '^18' });
-		const out = matchSkillArtifacts(makeCtx({ analysis: a }));
+		const out = matchSkillArtifacts(await makeCtx({ analysis: await a }));
 		expect(out[0]?.name).toBe('project standards');
 		expect(out[1]?.name).toBe('react conventions');
 	});
-	it('emits the `whenToUse` lines for the project-standards skill', () => {
-		const out = matchSkillArtifacts(makeCtx());
+	it('emits the `whenToUse` lines for the project-standards skill', async () => {
+		const out = matchSkillArtifacts(await makeCtx());
 		expect(out[0]?.whenToUse).toContain(
 			'Before writing or reviewing code in this project.',
 		);
 	});
-	it('emits the `whenToUse` lines for the framework-conventions skill', () => {
+	it('emits the `whenToUse` lines for the framework-conventions skill', async () => {
 		const a = makeAnalysis({ react: '^18' });
-		const out = matchSkillArtifacts(makeCtx({ analysis: a }));
+		const out = matchSkillArtifacts(await makeCtx({ analysis: await a }));
 		const fw = out.find((s) => s.name.endsWith('conventions'));
 		expect(fw?.whenToUse?.[0]).toContain('react');
 	});
 });
 
-describe('integration: buildServerBlueprint uses the rule table', () => {
-	it('produces the same skills as the pre-refactor inline builder', () => {
+describe('integration: buildServerBlueprint uses the rule table', async () => {
+	it('produces the same skills as the pre-refactor inline builder', async () => {
 		// The pre-refactor builder produced:
 		//   - project standards (always)
 		//   - `<framework> conventions` (when framework detected)
 		const a = makeAnalysis({ react: '^18' });
-		const bp = buildServerBlueprint(a);
+		const bp = buildServerBlueprint(await a);
 		expect(bp.skills.map((s) => s.name)).toEqual([
 			'project standards',
 			'react conventions',

@@ -42,8 +42,10 @@ const AREA_RULES_SCHEMA = z.object({
 });
 
 /** Read the manifest from cache, or build it in-memory if absent. */
-const loadManifest = (options: IRulesToolOptions): IRulesManifest => {
-	const raw = options.reader.readFile(options.manifestRelPath);
+const loadManifest = async (
+	options: IRulesToolOptions,
+): Promise<IRulesManifest> => {
+	const raw = await options.reader.readFile(options.manifestRelPath);
 	if (raw !== undefined) {
 		try {
 			return JSON.parse(raw) as IRulesManifest;
@@ -51,7 +53,7 @@ const loadManifest = (options: IRulesToolOptions): IRulesManifest => {
 			// fall through to a freshly-built manifest
 		}
 	}
-	return buildRulesManifest({
+	return await buildRulesManifest({
 		reader: options.reader,
 		projectName: options.projectName,
 		cacheRelDir: options.cacheRelDir,
@@ -105,17 +107,17 @@ const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
 	return `${eslintCommand(areaDir, rules)} --fix`;
 };
 
-const readDeps = (
+const readDeps = async (
 	reader: IRulesToolOptions['reader'],
 	areaDir: string,
-): Record<string, string> => {
+): Promise<Record<string, string>> => {
 	const out: Record<string, string> = {};
 	for (const rel of [
 		'package.json',
 		areaDir === 'root' || areaDir === '' ? '' : `${areaDir}/package.json`,
 	]) {
 		if (rel === '') continue;
-		const raw = reader.readFile(rel);
+		const raw = await reader.readFile(rel);
 		if (raw === undefined) continue;
 		try {
 			const pkg = JSON.parse(raw) as {
@@ -135,14 +137,14 @@ const readDeps = (
 };
 
 /** Required ESLint packages the area is missing (so check won't run). */
-const missingEslintDeps = (
+const missingEslintDeps = async (
 	reader: IRulesToolOptions['reader'],
 	areaDir: string,
 	presetId: string,
-): readonly string[] => {
+): Promise<readonly string[]> => {
 	const required = REQUIRED_ESLINT_DEPS[presetId] ?? [];
 	if (required.length === 0) return [];
-	const deps = readDeps(reader, areaDir);
+	const deps = await readDeps(reader, areaDir);
 	return required.filter((d) => !(d in deps));
 };
 
@@ -213,7 +215,7 @@ export const buildGetRulesRegistration = (
 				}),
 			},
 			async (args: { area?: string | undefined }) => {
-				const manifest = loadManifest(options);
+				const manifest = await loadManifest(options);
 				const all = areasOf(manifest);
 				const selected =
 					args.area !== undefined
@@ -281,7 +283,7 @@ export const buildCheckRulesRegistration = (
 				area?: string | undefined;
 				compact?: boolean | undefined;
 			}) => {
-				const manifest = loadManifest(options);
+				const manifest = await loadManifest(options);
 				const all = areasOf(manifest);
 				const selected =
 					args.area !== undefined
@@ -294,28 +296,33 @@ export const buildCheckRulesRegistration = (
 					);
 				}
 				const compact = args.compact === true;
-				const checks = selected.map((entry) => {
-					const command = lintCheckCommand(entry.area, entry.rules);
-					const missing = missingEslintDeps(
-						options.reader,
-						entry.area,
-						entry.rules.presetId,
-					);
-					return {
-						project: entry.project,
-						area: entry.area,
-						framework: entry.rules.framework,
-						...(compact
-							? {}
-							: {
-									eslintConfigs: entry.rules.eslint,
-									typecheckConfigs: entry.rules.typecheck,
-								}),
-						command,
-						typecheckCommand: typecheckCommand(entry.rules),
-						missingEslintDeps: missing,
-					};
-				});
+				const checks = await Promise.all(
+					selected.map(async (entry) => {
+						const command = lintCheckCommand(
+							entry.area,
+							entry.rules,
+						);
+						const missing = await missingEslintDeps(
+							options.reader,
+							entry.area,
+							entry.rules.presetId,
+						);
+						return {
+							project: entry.project,
+							area: entry.area,
+							framework: entry.rules.framework,
+							...(compact
+								? {}
+								: {
+										eslintConfigs: entry.rules.eslint,
+										typecheckConfigs: entry.rules.typecheck,
+									}),
+							command,
+							typecheckCommand: typecheckCommand(entry.rules),
+							missingEslintDeps: missing,
+						};
+					}),
+				);
 				return toolJson({
 					compact,
 					checks,
@@ -369,7 +376,7 @@ export const buildApplyRulesRegistration = (
 				area?: string | undefined;
 				files?: string[] | undefined;
 			}) => {
-				const manifest = loadManifest(options);
+				const manifest = await loadManifest(options);
 				const all = areasOf(manifest);
 				const entry =
 					args.area !== undefined

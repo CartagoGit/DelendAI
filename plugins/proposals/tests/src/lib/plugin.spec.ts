@@ -20,8 +20,8 @@ const ctx = (): IMcpPluginContext => ({
 	args: {},
 });
 
-describe('@mcp-vertex/proposals plugin', () => {
-	it('exposes a valid IMcpPlugin identity', () => {
+describe('@mcp-vertex/proposals plugin', async () => {
+	it('exposes a valid IMcpPlugin identity', async () => {
 		expect(plugin.name).toBe('proposals');
 		expect(typeof plugin.register).toBe('function');
 	});

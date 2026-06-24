@@ -37,7 +37,7 @@ const captureHandler = async (
 	return handler!;
 };
 
-describe('memory store', () => {
+describe('memory store', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {
@@ -91,7 +91,7 @@ describe('memory store', () => {
 	});
 });
 
-describe('memory recall — relevance ranking (N22)', () => {
+describe('memory recall — relevance ranking (N22)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {
@@ -175,7 +175,7 @@ describe('memory recall — relevance ranking (N22)', () => {
 	});
 });
 
-describe('memory recall — adversarial inputs (N23)', () => {
+describe('memory recall — adversarial inputs (N23)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {
@@ -216,7 +216,7 @@ describe('memory recall — adversarial inputs (N23)', () => {
 	});
 });
 
-describe('memory store — corrupt ≠ empty (M10)', () => {
+describe('memory store — corrupt ≠ empty (M10)', async () => {
 	let dir = '';
 	let store = '';
 	beforeEach(() => {
@@ -313,7 +313,7 @@ describe('memory store — corrupt ≠ empty (M10)', () => {
 	});
 });
 
-describe('memory plugin', () => {
+describe('memory plugin', async () => {
 	it('registers the six memory tools + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

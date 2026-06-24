@@ -18,7 +18,7 @@ const write = (root: string, rel: string, body: string): void => {
 	writeFileSync(abs, body, 'utf8');
 };
 
-describe('searchDocs (f00028 S3)', () => {
+describe('searchDocs (f00028 S3)', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'docs-search-'));

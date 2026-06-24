@@ -112,7 +112,7 @@ const minimalProposalMissingExtras = (
 // ---------------------------------------------------------------------------
 // Case 1: red threshold with non-empty queue ⇒ verified: false
 // ---------------------------------------------------------------------------
-describe('verifyClosure — red threshold + non-empty queue', () => {
+describe('verifyClosure — red threshold + non-empty queue', async () => {
 	it('returns verified=false with a clear blocker when taskQueue=true and threshold=red', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 
@@ -161,7 +161,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 // Case 2: green / amber threshold ⇒ verified can proceed and the parsed
 // report is appended.
 // ---------------------------------------------------------------------------
-describe('verifyClosure — green / amber threshold', () => {
+describe('verifyClosure — green / amber threshold', async () => {
 	it('returns the parsed IBackpressureReport and accepts when threshold=green', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 		// Empty queue → green threshold
@@ -237,7 +237,7 @@ describe('verifyClosure — green / amber threshold', () => {
 // ---------------------------------------------------------------------------
 // Case 3: proposal does NOT declare taskQueue ⇒ back-compat, taskQueueReport = null
 // ---------------------------------------------------------------------------
-describe('verifyClosure — back-compat when proposal does not declare taskQueue', () => {
+describe('verifyClosure — back-compat when proposal does not declare taskQueue', async () => {
 	it('returns taskQueueReport=null and ignores the report when extras.taskQueue is missing', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 		// Even with a populated queue, the verifier should ignore the report
@@ -306,7 +306,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 // ---------------------------------------------------------------------------
 // Case 4: missing queue file is treated as green (empty queue, no throw)
 // ---------------------------------------------------------------------------
-describe('verifyClosure — missing queue file is treated as empty', () => {
+describe('verifyClosure — missing queue file is treated as empty', async () => {
 	it('returns taskQueueReport with queueLength=0 when the queue file does not exist', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dv-noq-'));
 		TEMP_DIRS.push(dir);

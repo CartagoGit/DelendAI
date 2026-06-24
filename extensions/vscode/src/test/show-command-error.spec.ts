@@ -80,7 +80,7 @@ const errorWithHint = (line: number) =>
 		},
 	});
 
-describe('showCommandError — log-link affordance (f00045 S3)', () => {
+describe('showCommandError — log-link affordance (f00045 S3)', async () => {
 	it('offers an "Open log" action and opens the log at #L<line> on click', async () => {
 		const { vscode, errorCalls, opened } = createVscode('Open log');
 

@@ -20,11 +20,13 @@ import {
 } from './lib/tools/rules-tools';
 import type { IRulesToolOptions } from './lib/tools/rules-tools';
 
-const projectNameFrom = (
-	reader: { readFile(p: string): string | undefined },
+const projectNameFrom = async (
+	reader: {
+		readFile(p: string): string | undefined | Promise<string | undefined>;
+	},
 	root: string,
-): string => {
-	const raw = reader.readFile('package.json');
+): Promise<string> => {
+	const raw = await reader.readFile('package.json');
 	if (raw !== undefined) {
 		try {
 			const name = (JSON.parse(raw) as { name?: string }).name;
@@ -86,7 +88,7 @@ export default definePlugin({
 		const reader = createWorkspaceFileReader(ctx.workspace);
 		const cacheRelDir = ctx.pluginCacheDir;
 		const manifestRelPath = joinRel(cacheRelDir, 'rules-map.json');
-		const projectName = projectNameFrom(reader, ctx.workspace.root);
+		const projectName = await projectNameFrom(reader, ctx.workspace.root);
 
 		const rawMode =
 			(ctx.options.mode as string | undefined) ?? ctx.args['rules-mode'];
@@ -119,7 +121,7 @@ export default definePlugin({
 		// On boot: materialise the default presets and generate the
 		// manifest if it does not exist yet. Never fail boot over this.
 		try {
-			const manifest = buildRulesManifest({
+			const manifest = await buildRulesManifest({
 				reader,
 				projectName,
 				cacheRelDir,

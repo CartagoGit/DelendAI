@@ -76,7 +76,7 @@ export const buildScanDrift = (
 				},
 				async (args): Promise<IToolTextResult> =>
 					toolJson(
-						scanDrift({
+						await scanDrift({
 							convention: options.convention,
 							reader: options.reader,
 							workspaceRoot: options.workspaceRoot,

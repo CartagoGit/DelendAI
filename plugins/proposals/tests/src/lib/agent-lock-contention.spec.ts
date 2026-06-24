@@ -16,7 +16,7 @@ import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-e
  * (test-only) `mutexTimeoutMs`/`mutexStaleMs`/`mutexPollMs` deps so the
  * spec runs fast and deterministically.
  */
-describe('agent-lock — onContention forwarding (M28)', () => {
+describe('agent-lock — onContention forwarding (M28)', async () => {
 	let dir = '';
 	let lockPath = '';
 	beforeEach(() => {

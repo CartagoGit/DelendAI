@@ -22,9 +22,11 @@ export interface ICliI18nReport {
 	readonly findings: readonly ICliI18nFinding[];
 }
 
-export const detectCliI18n = (): ICliI18nReport => {
+export const detectCliI18n = async (): Promise<ICliI18nReport> => {
 	const langs = [...SUPPORTED_HELP_LANGS];
-	const commands = registerAllCommands().map((command) => command.name);
+	const commands = (await registerAllCommands()).map(
+		(command) => command.name,
+	);
 	const findings: ICliI18nFinding[] = [];
 
 	for (const lang of langs) {
@@ -47,7 +49,7 @@ export const detectCliI18n = (): ICliI18nReport => {
 	}
 
 	for (const lang of Object.keys(HELP_TRANSLATIONS)) {
-		if (!langs.includes(lang)) {
+		if (!langs.includes(lang as any)) {
 			findings.push({
 				lang,
 				reason: 'translation exists but language is not declared in SUPPORTED_HELP_LANGS',
@@ -77,7 +79,7 @@ export const formatReport = (report: ICliI18nReport): string => {
 };
 
 export const main = async (): Promise<number> => {
-	const report = detectCliI18n();
+	const report = await detectCliI18n();
 	const text = formatReport(report);
 	if (report.findings.length === 0) {
 		process.stdout.write(text);

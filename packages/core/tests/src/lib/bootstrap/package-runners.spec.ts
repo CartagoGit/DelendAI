@@ -11,13 +11,13 @@ import {
 import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('DEFAULT_PACKAGE_RUNNERS (declarative table)', () => {
-	it('lists the five runner variants', () => {
+describe('DEFAULT_PACKAGE_RUNNERS (declarative table)', async () => {
+	it('lists the five runner variants', async () => {
 		const ids = DEFAULT_PACKAGE_RUNNERS.map((r) => r.id);
 		expect(ids).toContain('bun');
 		expect(ids).toContain('pnpm');
@@ -25,20 +25,20 @@ describe('DEFAULT_PACKAGE_RUNNERS (declarative table)', () => {
 		expect(ids).toContain('npm');
 		expect(ids).toContain('unknown');
 	});
-	it('uses `run` infix for bun and npm, omits it for pnpm and yarn', () => {
+	it('uses `run` infix for bun and npm, omits it for pnpm and yarn', async () => {
 		expect(runnerFor('bun')).toBe('bun run');
 		expect(runnerFor('npm')).toBe('npm run');
 		expect(runnerFor('pnpm')).toBe('pnpm');
 		expect(runnerFor('yarn')).toBe('yarn');
 	});
-	it('falls back to `npm run` for the unknown case', () => {
+	it('falls back to `npm run` for the unknown case', async () => {
 		expect(runnerFor('unknown')).toBe('npm run');
 	});
 });
 
-describe('integration: recommendServerPlan uses runnerFor', () => {
-	it('emits `bun run <role>` for a bun project', () => {
-		const analysis = analyzeProject(
+describe('integration: recommendServerPlan uses runnerFor', async () => {
+	it('emits `bun run <role>` for a bun project', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'svc',
@@ -48,11 +48,11 @@ describe('integration: recommendServerPlan uses runnerFor', () => {
 				'tsconfig.json': '{}',
 			}),
 		);
-		const plan = recommendServerPlan(analysis);
+		const plan = await recommendServerPlan(analysis);
 		expect(plan.validationCommands.test).toBe('bun run test');
 	});
-	it('emits `pnpm <role>` for a pnpm project (no `run` infix)', () => {
-		const analysis = analyzeProject(
+	it('emits `pnpm <role>` for a pnpm project (no `run` infix)', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'svc',
@@ -62,7 +62,7 @@ describe('integration: recommendServerPlan uses runnerFor', () => {
 				'tsconfig.json': '{}',
 			}),
 		);
-		const plan = recommendServerPlan(analysis);
+		const plan = await recommendServerPlan(analysis);
 		expect(plan.validationCommands.test).toBe('pnpm test');
 	});
 });

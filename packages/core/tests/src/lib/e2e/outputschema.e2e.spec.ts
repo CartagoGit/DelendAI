@@ -40,7 +40,7 @@ const PLUGINS = {
 	'mcp-deps': depsPlugin,
 } as const;
 
-describe('e2e: outputSchema validation over the protocol (N16)', () => {
+describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	let workspace = '';
 	let client: Client;
 	let close: () => Promise<void>;
@@ -71,7 +71,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', () => {
 				);
 				return { default: hit ? hit[1] : undefined };
 			},
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		const assembled = await createMcpProject(config);
 		const [ct, st] = InMemoryTransport.createLinkedPair();

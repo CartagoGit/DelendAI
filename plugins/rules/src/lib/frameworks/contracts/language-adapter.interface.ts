@@ -45,7 +45,7 @@ export interface ILanguageAdapter {
 		reader: IFileReader,
 		areaDir: string,
 		deps: Readonly<Record<string, string>>,
-	): ILanguageDetection | undefined;
+	): Promise<ILanguageDetection | undefined>;
 
 	/**
 	 * Optional: produce commands for this area. When omitted, the

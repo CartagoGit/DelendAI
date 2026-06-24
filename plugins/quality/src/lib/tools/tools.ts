@@ -19,7 +19,7 @@ export interface IQualityToolOptions {
 	readonly commandPolicy?: ICommandPolicy;
 }
 
-const scopesOf = (options: IQualityToolOptions): IScopeMap =>
+const scopesOf = async (options: IQualityToolOptions): Promise<IScopeMap> =>
 	resolveScopes(
 		options.reader,
 		options.optionScopes ? { scopes: options.optionScopes } : {},
@@ -57,7 +57,7 @@ export const buildQualityToolRegistrations = (
 							),
 						}),
 					},
-					async () => toolJson({ scopes: scopesOf(options) }),
+					async () => toolJson({ scopes: await scopesOf(options) }),
 				);
 			},
 		},
@@ -89,7 +89,7 @@ export const buildQualityToolRegistrations = (
 						}),
 					},
 					async (args: { scope?: string | undefined }) => {
-						const scopes = scopesOf(options);
+						const scopes = await scopesOf(options);
 						const names = Object.keys(scopes);
 						if (names.length === 0) {
 							return toolError(

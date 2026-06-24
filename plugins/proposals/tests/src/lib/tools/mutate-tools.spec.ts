@@ -116,7 +116,7 @@ Original why text.
 - Original risk.
 `;
 
-describe('proposals_edit / proposals_add_slice (S10)', () => {
+describe('proposals_edit / proposals_add_slice (S10)', async () => {
 	let root = '';
 	let opts: IMutateToolOptions;
 	let docPath: string;
@@ -304,7 +304,7 @@ const REFERENCE_FIXTURE_PATH = join(
 	'docs/proposals/done/feats/f00023-plugins-depth-extension.md',
 );
 
-describe('golden fixture: real-proposal shape stays parseable (reference only, never modified)', () => {
+describe('golden fixture: real-proposal shape stays parseable (reference only, never modified)', async () => {
 	let root = '';
 	let docPath: string;
 	let opts: IMutateToolOptions;

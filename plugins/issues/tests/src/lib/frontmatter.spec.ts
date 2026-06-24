@@ -20,8 +20,8 @@ const baseFrontmatter: IIssueScaffoldFrontmatter = {
 	comments: [],
 };
 
-describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
-	it('round-trips a minimal frontmatter (no proposals, no comments, no dismiss reason)', () => {
+describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', async () => {
+	it('round-trips a minimal frontmatter (no proposals, no comments, no dismiss reason)', async () => {
 		const serialized = serializeFrontmatterBlock(baseFrontmatter);
 		expect(serialized.startsWith('---\n')).toBe(true);
 		expect(serialized).toContain('source: github');
@@ -34,7 +34,7 @@ describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
 		expect(parsed).toEqual(baseFrontmatter);
 	});
 
-	it('round-trips proposals as a non-empty array', () => {
+	it('round-trips proposals as a non-empty array', async () => {
 		const fm: IIssueScaffoldFrontmatter = {
 			...baseFrontmatter,
 			status: 'analyzed',
@@ -49,7 +49,7 @@ describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
 		expect(parsed.resolution).toBe('promoted-multiple');
 	});
 
-	it('round-trips comments with bodies containing colons and hashes', () => {
+	it('round-trips comments with bodies containing colons and hashes', async () => {
 		const fm: IIssueScaffoldFrontmatter = {
 			...baseFrontmatter,
 			comments: [
@@ -73,7 +73,7 @@ describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
 		expect(parsed.comments).toEqual(fm.comments);
 	});
 
-	it('round-trips a dismiss_reason', () => {
+	it('round-trips a dismiss_reason', async () => {
 		const fm: IIssueScaffoldFrontmatter = {
 			...baseFrontmatter,
 			resolution: 'dismissed',
@@ -85,7 +85,7 @@ describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
 		expect(parsed.dismiss_reason).toBe('duplicate of #45');
 	});
 
-	it('quotes values that look like other YAML types so they parse back as strings', () => {
+	it('quotes values that look like other YAML types so they parse back as strings', async () => {
 		const fm: IIssueScaffoldFrontmatter = {
 			...baseFrontmatter,
 			source_author: 'true',
@@ -97,14 +97,14 @@ describe('serializeFrontmatterBlock + parseFrontmatterBlock round-trip', () => {
 	});
 });
 
-describe('extractFrontmatterBlock', () => {
-	it('returns null when there is no frontmatter fence', () => {
+describe('extractFrontmatterBlock', async () => {
+	it('returns null when there is no frontmatter fence', async () => {
 		expect(extractFrontmatterBlock('# just a heading\n\nbody')).toBeNull();
 	});
 });
 
-describe('splitFrontmatterAndBody', () => {
-	it('splits a full scaffold file into block and body', () => {
+describe('splitFrontmatterAndBody', async () => {
+	it('splits a full scaffold file into block and body', async () => {
 		const serialized = serializeFrontmatterBlock(baseFrontmatter);
 		const full = `${serialized}\n# Title\n\nBody text\n`;
 		const { block, body } = splitFrontmatterAndBody(full);
@@ -112,21 +112,21 @@ describe('splitFrontmatterAndBody', () => {
 		expect(body).toBe('\n# Title\n\nBody text\n');
 	});
 
-	it('returns a null block and the original content when there is no fence', () => {
+	it('returns a null block and the original content when there is no fence', async () => {
 		const { block, body } = splitFrontmatterAndBody('no frontmatter here');
 		expect(block).toBeNull();
 		expect(body).toBe('no frontmatter here');
 	});
 });
 
-describe('parseFrontmatterBlock validation', () => {
-	it('throws when a required key is missing', () => {
+describe('parseFrontmatterBlock validation', async () => {
+	it('throws when a required key is missing', async () => {
 		expect(() => parseFrontmatterBlock('source: github\n')).toThrow(
 			/missing required key/,
 		);
 	});
 
-	it('throws on an invalid status value', () => {
+	it('throws on an invalid status value', async () => {
 		const bad = serializeFrontmatterBlock(baseFrontmatter).replace(
 			'status: ingested',
 			'status: bogus',
@@ -135,7 +135,7 @@ describe('parseFrontmatterBlock validation', () => {
 		expect(() => parseFrontmatterBlock(block)).toThrow(/invalid status/);
 	});
 
-	it('throws on an invalid resolution value', () => {
+	it('throws on an invalid resolution value', async () => {
 		const bad = serializeFrontmatterBlock(baseFrontmatter).replace(
 			'resolution: pending',
 			'resolution: bogus',

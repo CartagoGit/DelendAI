@@ -43,7 +43,7 @@ const BUDGET_BYTES = {
 	logsTail: 6_000,
 } as const;
 
-describe('e2e: token budget (cold-start payloads)', () => {
+describe('e2e: token budget (cold-start payloads)', async () => {
 	let workspace = '';
 	let client: Client;
 	let close: () => Promise<void>;
@@ -64,7 +64,7 @@ describe('e2e: token budget (cold-start payloads)', () => {
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
 		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =

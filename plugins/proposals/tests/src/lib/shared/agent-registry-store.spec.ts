@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MigrationError } from '@mcp-vertex/core/public';
 import { createAgentRegistryStore } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
 
-describe('agent-registry-store migrations', () => {
+describe('agent-registry-store migrations', async () => {
 	let dir = '';
 	let path = '';
 

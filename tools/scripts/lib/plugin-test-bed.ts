@@ -101,7 +101,7 @@ export const assemblePluginForTest = async (
 		import: (specifier: string) => importer(specifier),
 		...(options.syntheticConfig !== undefined
 			? {
-					readFile: (absolutePath: string) =>
+					readFile: async (absolutePath: string) =>
 						absolutePath.endsWith('mcp-vertex.config.json')
 							? JSON.stringify(options.syntheticConfig)
 							: undefined,

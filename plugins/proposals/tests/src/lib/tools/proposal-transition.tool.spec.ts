@@ -49,7 +49,7 @@ const writeProposal = async (
 	await writeFile(join(dir, filename), raw, 'utf8');
 };
 
-describe('proposal_transition', () => {
+describe('proposal_transition', async () => {
 	let root = '';
 	let options: IProposalTransitionToolOptions;
 

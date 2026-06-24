@@ -71,7 +71,7 @@ tools: Read, Edit, Write, Bash
 13. Do step thirteen.
 `;
 
-describe('checkGithubAgentFile', () => {
+describe('checkGithubAgentFile', async () => {
 	it('stays silent on the actual mcp-vertex.agent.md redirector after f00031 S1', async () => {
 		const text = await readFile(
 			join(root, '.github', 'agents', 'mcp-vertex.agent.md'),
@@ -95,7 +95,7 @@ describe('checkGithubAgentFile', () => {
 		).toBeUndefined();
 	});
 
-	it('stays silent on a synthetic redirector fixture', () => {
+	it('stays silent on a synthetic redirector fixture', async () => {
 		expect(
 			checkGithubAgentFile(
 				'.github/agents/example.agent.md',
@@ -104,7 +104,7 @@ describe('checkGithubAgentFile', () => {
 		).toBeUndefined();
 	});
 
-	it('warns on a hand-rolled workflow fixture (>12 prose lines + numbered steps)', () => {
+	it('warns on a hand-rolled workflow fixture (>12 prose lines + numbered steps)', async () => {
 		const finding = checkGithubAgentFile(
 			'.github/agents/example.agent.md',
 			HAND_ROLLED_WORKFLOW,
@@ -115,8 +115,8 @@ describe('checkGithubAgentFile', () => {
 	});
 });
 
-describe('checkClaudeAgentFile', () => {
-	it('is silent on a non-mcp-vertex-named file', () => {
+describe('checkClaudeAgentFile', async () => {
+	it('is silent on a non-mcp-vertex-named file', async () => {
 		expect(
 			checkClaudeAgentFile(
 				'.claude/agents/unrelated.md',
@@ -125,7 +125,7 @@ describe('checkClaudeAgentFile', () => {
 		).toBeUndefined();
 	});
 
-	it('is silent on a redirector-shaped mcp-vertex* file', () => {
+	it('is silent on a redirector-shaped mcp-vertex* file', async () => {
 		expect(
 			checkClaudeAgentFile(
 				'.claude/agents/mcp-vertex-example.md',
@@ -134,7 +134,7 @@ describe('checkClaudeAgentFile', () => {
 		).toBeUndefined();
 	});
 
-	it('warns when name starts with mcp-vertex but body is not the redirector shape', () => {
+	it('warns when name starts with mcp-vertex but body is not the redirector shape', async () => {
 		const finding = checkClaudeAgentFile(
 			'.claude/agents/mcp-vertex-orchestrator.md',
 			MCP_VERTEX_NAMED_BUT_NOT_REDIRECTOR,

@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createRuntimeHandle } from '../host/runtime-handle';
 import type { IDisposable } from '../extension';
 
-describe('RuntimeHandle', () => {
-	it('registers disposables that can be disposed in LIFO order', () => {
+describe('RuntimeHandle', async () => {
+	it('registers disposables that can be disposed in LIFO order', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
@@ -17,13 +17,13 @@ describe('RuntimeHandle', () => {
 		expect(disposed).toEqual(['c', 'b', 'a']);
 	});
 
-	it('is a no-op when nothing has been registered', () => {
+	it('is a no-op when nothing has been registered', async () => {
 		const handle = createRuntimeHandle();
 		expect(() => handle.disposeAll()).not.toThrow();
 		expect(handle.count).toBe(0);
 	});
 
-	it('tracks count of registered items across register + dispose', () => {
+	it('tracks count of registered items across register + dispose', async () => {
 		const handle = createRuntimeHandle();
 		const noop: IDisposable = { dispose: () => {} };
 
@@ -37,7 +37,7 @@ describe('RuntimeHandle', () => {
 		expect(handle.count).toBe(0);
 	});
 
-	it('continues disposing remaining items even when one throws', () => {
+	it('continues disposing remaining items even when one throws', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
@@ -56,7 +56,7 @@ describe('RuntimeHandle', () => {
 		expect(disposed).toEqual(['safe-2', 'safe-1']);
 	});
 
-	it('disposes a single item by id without touching the rest', () => {
+	it('disposes a single item by id without touching the rest', async () => {
 		const disposed: string[] = [];
 		const handle = createRuntimeHandle();
 
@@ -75,7 +75,7 @@ describe('RuntimeHandle', () => {
 		expect(disposed).toEqual(['b', 'c', 'a']);
 	});
 
-	it('returns false when disposing a missing id', () => {
+	it('returns false when disposing a missing id', async () => {
 		const handle = createRuntimeHandle();
 		handle.register('a', { dispose: () => {} });
 		expect(handle.disposeOne('nope')).toBe(false);

@@ -54,7 +54,7 @@ const createVscode = () => {
 	return { vscode, commands, panels, messages, errors };
 };
 
-describe('command wiring', () => {
+describe('command wiring', async () => {
 	it('refreshes the tree provider', async () => {
 		const { vscode, commands, messages } = createVscode();
 		let refreshed = false;

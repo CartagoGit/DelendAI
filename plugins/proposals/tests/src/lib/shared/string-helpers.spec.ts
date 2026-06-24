@@ -24,8 +24,8 @@ import {
 	kebab,
 } from '@mcp-vertex/proposals/lib/shared/string-helpers';
 
-describe('escapeRegExp', () => {
-	it('escapes every regex metacharacter', () => {
+describe('escapeRegExp', async () => {
+	it('escapes every regex metacharacter', async () => {
 		// Build a single string containing all 14 metacharacters and
 		// assert none of them retains its regex meaning after escape.
 		const input = `.*+?^\${}()|[]\\`;
@@ -38,17 +38,17 @@ describe('escapeRegExp', () => {
 		expect(out).toBe('\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\');
 	});
 
-	it('passes through plain alphanumeric input untouched', () => {
+	it('passes through plain alphanumeric input untouched', async () => {
 		expect(escapeRegExp('hello-world_42')).toBe('hello-world_42');
 	});
 
-	it('escapes a single character at a time', () => {
+	it('escapes a single character at a time', async () => {
 		expect(escapeRegExp('.')).toBe('\\.');
 		expect(escapeRegExp('?')).toBe('\\?');
 		expect(escapeRegExp('\\')).toBe('\\\\');
 	});
 
-	it('produces a regex that only matches the literal input', () => {
+	it('produces a regex that only matches the literal input', async () => {
 		// Real-world example: a slice id like "S.1" should match itself,
 		// not "S_anything_1".
 		const sliceId = 'S.1*';
@@ -58,34 +58,34 @@ describe('escapeRegExp', () => {
 	});
 });
 
-describe('kebab', () => {
-	it('lowercases and dashes non-alphanumerics', () => {
+describe('kebab', async () => {
+	it('lowercases and dashes non-alphanumerics', async () => {
 		expect(kebab('Hello World')).toBe('hello-world');
 	});
 
-	it('collapses runs of non-alphanumerics into a single dash', () => {
+	it('collapses runs of non-alphanumerics into a single dash', async () => {
 		expect(kebab('foo   bar___baz')).toBe('foo-bar-baz');
 	});
 
-	it('trims leading and trailing dashes', () => {
+	it('trims leading and trailing dashes', async () => {
 		expect(kebab('---already---kebab')).toBe('already-kebab');
 		expect(kebab('///leading-and-trailing///')).toBe(
 			'leading-and-trailing',
 		);
 	});
 
-	it('handles punctuation correctly', () => {
+	it('handles punctuation correctly', async () => {
 		expect(kebab('My Cool Slice!')).toBe('my-cool-slice');
 		expect(kebab('foo/bar baz')).toBe('foo-bar-baz');
 		expect(kebab('v1.2.3-rc.1')).toBe('v1-2-3-rc-1');
 	});
 
-	it('returns empty string for whitespace-only input', () => {
+	it('returns empty string for whitespace-only input', async () => {
 		expect(kebab('   ')).toBe('');
 		expect(kebab('')).toBe('');
 	});
 
-	it('preserves digits as-is', () => {
+	it('preserves digits as-is', async () => {
 		expect(kebab('S1 S2 S3')).toBe('s1-s2-s3');
 		expect(kebab('42')).toBe('42');
 	});

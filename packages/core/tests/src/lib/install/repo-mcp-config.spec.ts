@@ -13,8 +13,8 @@ const HOST_SCRIPT = 'tools/scripts/host/host-server.script.ts';
 const readJson = (path: string): unknown =>
 	JSON.parse(readFileSync(join(ROOT, path), 'utf8')) as unknown;
 
-describe('repo MCP client configs', () => {
-	it('points Claude-style .mcp.json at the real host script', () => {
+describe('repo MCP client configs', async () => {
+	it('points Claude-style .mcp.json at the real host script', async () => {
 		const config = readJson('.mcp.json') as {
 			readonly mcpServers?: {
 				readonly 'mcp-vertex'?: {
@@ -30,7 +30,7 @@ describe('repo MCP client configs', () => {
 		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
 	});
 
-	it('points VS Code/Copilot mcp.json at the real host script', () => {
+	it('points VS Code/Copilot mcp.json at the real host script', async () => {
 		const config = readJson('.vscode/mcp.json') as {
 			readonly servers?: {
 				readonly 'mcp-vertex'?: {
@@ -50,7 +50,7 @@ describe('repo MCP client configs', () => {
 		expect(existsSync(join(ROOT, HOST_SCRIPT))).toBe(true);
 	});
 
-	it('ships a project-scoped Codex config for the same host script', () => {
+	it('ships a project-scoped Codex config for the same host script', async () => {
 		const config = readFileSync(join(ROOT, '.codex/config.toml'), 'utf8');
 
 		expect(config).toContain('[mcp_servers.mcp-vertex]');

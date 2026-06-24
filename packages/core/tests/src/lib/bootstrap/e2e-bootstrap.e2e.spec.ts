@@ -36,15 +36,15 @@ const repoRoot = resolve(
 );
 
 const fsReader = (root: string): IFileReader => ({
-	readFile: (rel) => {
+	readFile: async (rel) => {
 		try {
 			return readFileSync(join(root, rel), 'utf8');
 		} catch {
 			return undefined;
 		}
 	},
-	exists: (rel) => existsSync(join(root, rel)),
-	listDir: (rel) => {
+	exists: async (rel) => existsSync(join(root, rel)),
+	listDir: async (rel) => {
 		try {
 			return readdirSync(join(root, rel));
 		} catch {
@@ -53,25 +53,25 @@ const fsReader = (root: string): IFileReader => ({
 	},
 });
 
-const analyse = (root: string) => analyzeProject(fsReader(root));
+const analyse = async (root: string) => await analyzeProject(fsReader(root));
 
-describe('bootstrap e2e over examples/', () => {
-	it('analyzes examples/minimal without crashing (no package.json)', () => {
+describe('bootstrap e2e over examples/', async () => {
+	it('analyzes examples/minimal without crashing (no package.json)', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		expect(statSync(root).isDirectory()).toBe(true);
 		const analysis = analyse(root);
 		// A config file is present but no package.json.
-		expect(analysis.hasPackageJson).toBe(false);
-		expect(analysis.projectType).toBe('generic');
+		expect((await analysis).hasPackageJson).toBe(false);
+		expect((await analysis).projectType).toBe('generic');
 		// The notes mention either the absence of MCP, or the align
 		// with existing config — either way, the analysis is well-formed.
-		expect(analysis.signals.length).toBeGreaterThan(0);
+		expect((await analysis).signals.length).toBeGreaterThan(0);
 	});
 
-	it('produces a usable server plan for examples/minimal', () => {
+	it('produces a usable server plan for examples/minimal', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const plan = recommendServerPlan(analysis, {
+		const plan = await recommendServerPlan(await analysis, {
 			serverName: 'mcp-minimal',
 		});
 		expect(plan.serverName).toBe('mcp-minimal');
@@ -86,10 +86,10 @@ describe('bootstrap e2e over examples/', () => {
 		expect(entry?.args).toContain('@mcp-vertex/core');
 	});
 
-	it('builds an exhaustive blueprint for examples/minimal', () => {
+	it('builds an exhaustive blueprint for examples/minimal', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const bp = buildServerBlueprint(analysis);
+		const bp = buildServerBlueprint(await analysis);
 		// Even an empty analysis produces a non-trivial blueprint
 		// (catalog baseline + the 3 standard prompts + standard skills).
 		expect(bp.tools.length).toBeGreaterThan(0);
@@ -101,10 +101,10 @@ describe('bootstrap e2e over examples/', () => {
 		expect(bp.prompts.find((p) => p.name === 'start')).toBeDefined();
 	});
 
-	it('materialises a dry-run skeleton that contains a host server + tools + tests', () => {
+	it('materialises a dry-run skeleton that contains a host server + tools + tests', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const bp = buildServerBlueprint(analysis);
+		const bp = buildServerBlueprint(await analysis);
 		const files = buildBlueprintFiles(bp);
 		const paths = files.map((f) => f.path);
 		// Host project always ships a server entry, host config and orchestrator.
@@ -120,10 +120,10 @@ describe('bootstrap e2e over examples/', () => {
 		expect(paths.some((p) => p.endsWith('.tool.spec.ts'))).toBe(true);
 	});
 
-	it('diffCapabilities marks every tool as missing when the project has no existing server', () => {
+	it('diffCapabilities marks every tool as missing when the project has no existing server', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const bp = buildServerBlueprint(analysis);
+		const bp = buildServerBlueprint(await analysis);
 		const diff = diffCapabilities(bp, [], {
 			namespacePrefix: 'mcp-minimal',
 		});
@@ -135,10 +135,10 @@ describe('bootstrap e2e over examples/', () => {
 		expect(diff.summary).toMatch(/missing/);
 	});
 
-	it('every prompt and skill in the blueprint has a body (not just TODO)', () => {
+	it('every prompt and skill in the blueprint has a body (not just TODO)', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const bp = buildServerBlueprint(analysis);
+		const bp = buildServerBlueprint(await analysis);
 		for (const prompt of bp.prompts) {
 			expect(
 				prompt.body,
@@ -152,10 +152,10 @@ describe('bootstrap e2e over examples/', () => {
 		}
 	});
 
-	it('the orchestrator agent references the bootstrap tools (gap 4)', () => {
+	it('the orchestrator agent references the bootstrap tools (gap 4)', async () => {
 		const root = join(repoRoot, 'examples', 'minimal');
 		const analysis = analyse(root);
-		const bp = buildServerBlueprint(analysis);
+		const bp = buildServerBlueprint(await analysis);
 		const files = buildBlueprintFiles(bp);
 		const orchestrator = files.find((f) =>
 			f.path.endsWith('.github/agents/orchestrator.agent.md'),
@@ -170,7 +170,7 @@ describe('bootstrap e2e over examples/', () => {
 		expect(orchestrator?.content).toContain('re-analysis');
 	});
 
-	it('the catalog is project-agnostic: every project type has a known shape', () => {
+	it('the catalog is project-agnostic: every project type has a known shape', async () => {
 		// Sanity: the catalog has 6 entries, each with the right
 		// required fields. This is the seam `patternOverrides` hooks
 		// into — keep it honest.

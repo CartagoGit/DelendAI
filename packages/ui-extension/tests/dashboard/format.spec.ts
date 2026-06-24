@@ -10,85 +10,85 @@ import {
 	formatTokens,
 } from '../../src/dashboard/format';
 
-describe('formatNumber', () => {
-	it('formats with the default locale', () => {
+describe('formatNumber', async () => {
+	it('formats with the default locale', async () => {
 		expect(formatNumber(1234)).toBe('1,234');
 	});
 
-	it('honours a custom locale when it differs from default', () => {
+	it('honours a custom locale when it differs from default', async () => {
 		// de-DE uses dot as thousands separator
 		expect(formatNumber(1234, 'de')).toMatch(/1\.234/);
 	});
 });
 
-describe('formatBytes', () => {
-	it('formats B', () => {
+describe('formatBytes', async () => {
+	it('formats B', async () => {
 		expect(formatBytes(512)).toBe('512 B');
 	});
-	it('formats KB', () => {
+	it('formats KB', async () => {
 		expect(formatBytes(2048)).toBe('2.0 KB');
 	});
-	it('formats MB', () => {
+	it('formats MB', async () => {
 		expect(formatBytes(5 * 1024 * 1024)).toBe('5.0 MB');
 	});
-	it('formats GB', () => {
+	it('formats GB', async () => {
 		expect(formatBytes(2 * 1024 * 1024 * 1024)).toBe('2.00 GB');
 	});
 });
 
-describe('formatMs', () => {
-	it('formats microseconds for very small values', () => {
+describe('formatMs', async () => {
+	it('formats microseconds for very small values', async () => {
 		expect(formatMs(0.5)).toMatch(/µs/);
 	});
-	it('formats milliseconds', () => {
+	it('formats milliseconds', async () => {
 		expect(formatMs(250)).toBe('250 ms');
 	});
-	it('formats seconds', () => {
+	it('formats seconds', async () => {
 		expect(formatMs(2500)).toBe('2.50 s');
 	});
-	it('formats minutes', () => {
+	it('formats minutes', async () => {
 		expect(formatMs(120_000)).toBe('2.0 min');
 	});
-	it('formats hours', () => {
+	it('formats hours', async () => {
 		expect(formatMs(3_600_000)).toBe('1.0 h');
 	});
 });
 
-describe('formatTokens', () => {
-	it('formats plain numbers below 1k', () => {
+describe('formatTokens', async () => {
+	it('formats plain numbers below 1k', async () => {
 		expect(formatTokens(500)).toBe('500');
 	});
-	it('formats k for thousands', () => {
+	it('formats k for thousands', async () => {
 		expect(formatTokens(2500)).toBe('2.5k');
 	});
-	it('formats M for millions', () => {
+	it('formats M for millions', async () => {
 		expect(formatTokens(2_500_000)).toBe('2.50M');
 	});
 });
 
-describe('formatPercent', () => {
-	it('returns 0% when total is 0', () => {
+describe('formatPercent', async () => {
+	it('returns 0% when total is 0', async () => {
 		expect(formatPercent(5, 0)).toBe('0%');
 	});
-	it('returns a localised percent', () => {
+	it('returns a localised percent', async () => {
 		expect(formatPercent(1, 4)).toBe('25%');
 		expect(formatPercent(3, 4)).toBe('75%');
 	});
 });
 
-describe('escapeHtml', () => {
-	it('escapes <, >, &, " and \'', () => {
+describe('escapeHtml', async () => {
+	it('escapes <, >, &, " and \'', async () => {
 		expect(escapeHtml('<a href="x">&\'</a>')).toBe(
 			'&lt;a href=&quot;x&quot;&gt;&amp;&#39;&lt;/a&gt;',
 		);
 	});
 });
 
-describe('formatRelativeTime', () => {
-	it('returns the original ISO when invalid', () => {
+describe('formatRelativeTime', async () => {
+	it('returns the original ISO when invalid', async () => {
 		expect(formatRelativeTime('not-a-date')).toBe('not-a-date');
 	});
-	it('renders seconds/minutes/hours/days', () => {
+	it('renders seconds/minutes/hours/days', async () => {
 		const now = Date.now();
 		expect(formatRelativeTime(new Date(now - 5_000).toISOString())).toMatch(
 			/s ago/,

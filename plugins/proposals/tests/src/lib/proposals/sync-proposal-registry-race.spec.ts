@@ -27,7 +27,7 @@ const DONE_BODY = (id: string) =>
 		``,
 	].join('\n');
 
-describe('reconcileAndArchiveCompletedRootProposals (f00020 race fix)', () => {
+describe('reconcileAndArchiveCompletedRootProposals (f00020 race fix)', async () => {
 	let root = '';
 	let proposalsDir = '';
 

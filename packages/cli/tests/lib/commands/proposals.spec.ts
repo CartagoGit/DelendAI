@@ -43,8 +43,8 @@ const find = (name: string): ICliCommand => {
 	return command;
 };
 
-describe('proposals group (f00046 S7)', () => {
-	it('exposes 25 commands, all prefixed "proposals "', () => {
+describe('proposals group (f00046 S7)', async () => {
+	it('exposes 25 commands, all prefixed "proposals "', async () => {
 		expect(proposalsCommands).toHaveLength(25);
 		for (const command of proposalsCommands) {
 			expect(command.name.startsWith('proposals ')).toBe(true);

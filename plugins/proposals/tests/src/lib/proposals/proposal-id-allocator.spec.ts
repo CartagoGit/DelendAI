@@ -9,7 +9,7 @@ import {
 	prefixForKind,
 } from '@mcp-vertex/proposals/lib/proposals/proposal-id-allocator';
 
-describe('allocateNextProposalId (f00016 S13)', () => {
+describe('allocateNextProposalId (f00016 S13)', async () => {
 	let root = '';
 	let counterPathAbs = '';
 
@@ -110,14 +110,14 @@ describe('allocateNextProposalId (f00016 S13)', () => {
 	});
 });
 
-describe('prefixForKind', () => {
-	it('resolves a known kind to its prefix', () => {
+describe('prefixForKind', async () => {
+	it('resolves a known kind to its prefix', async () => {
 		expect(prefixForKind('feat')).toBe('f');
 		expect(prefixForKind('fix')).toBe('x');
 		expect(prefixForKind('legacy')).toBe('l');
 	});
 
-	it('returns null for an unknown kind', () => {
+	it('returns null for an unknown kind', async () => {
 		expect(prefixForKind('nonsense')).toBeNull();
 	});
 });

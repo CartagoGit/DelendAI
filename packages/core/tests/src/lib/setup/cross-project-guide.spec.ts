@@ -17,32 +17,32 @@ const ctx = (over: Partial<IGithubSetupContext> = {}): IGithubSetupContext => ({
 	...over,
 });
 
-describe('renderCrossProjectGuide', () => {
-	it('renders a numbered guide with the repo + tier header', () => {
+describe('renderCrossProjectGuide', async () => {
+	it('renders a numbered guide with the repo + tier header', async () => {
 		const c = ctx();
-		const md = renderCrossProjectGuide(c, buildGithubSetupSteps(c));
+		const md = renderCrossProjectGuide(c, await buildGithubSetupSteps(c));
 		expect(md).toContain('# GitHub issues — setup guide');
 		expect(md).toContain('Repository: `owner/name`');
 		expect(md).toContain('gh` CLI');
 		expect(md).toContain('1. **');
 	});
 
-	it('marks optional steps and renders command fences', () => {
+	it('marks optional steps and renders command fences', async () => {
 		const c = ctx({ tier: 'token' });
-		const md = renderCrossProjectGuide(c, buildGithubSetupSteps(c));
+		const md = renderCrossProjectGuide(c, await buildGithubSetupSteps(c));
 		expect(md).toContain('_(optional)_');
 		expect(md).toContain('```');
 	});
 
-	it('flags a missing repo in the header', () => {
+	it('flags a missing repo in the header', async () => {
 		const c = ctx({ repo: null });
-		const md = renderCrossProjectGuide(c, buildGithubSetupSteps(c));
+		const md = renderCrossProjectGuide(c, await buildGithubSetupSteps(c));
 		expect(md).toContain('not detected');
 	});
 
-	it('notes when issues is already declared', () => {
+	it('notes when issues is already declared', async () => {
 		const c = ctx({ configured: true });
-		const md = renderCrossProjectGuide(c, buildGithubSetupSteps(c));
+		const md = renderCrossProjectGuide(c, await buildGithubSetupSteps(c));
 		expect(md).toContain('issues already declared');
 	});
 });

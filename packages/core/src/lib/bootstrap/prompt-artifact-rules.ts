@@ -82,6 +82,15 @@ export const DEFAULT_PROMPT_ARTIFACT_RULES: readonly IPromptArtifactRule[] = [
 		body: ({ analysis, namespacePrefix }) =>
 			fixQualityPromptBody(analysis, namespacePrefix),
 	},
+	{
+		id: 'continue-proposal',
+		priority: 800,
+		name: 'continue proposal',
+		description: 'Resolve and execute the next proposal slice.',
+		includeWhen: ({ plugins }) => plugins.includes('proposals'),
+		body: ({ namespacePrefix }) =>
+			continueProposalPromptBody(namespacePrefix),
+	},
 ];
 
 export const matchPromptArtifacts = (

@@ -35,7 +35,7 @@ const subscribe = (
 		paths,
 	) as Promise<ISubscribeActionResult>;
 
-describe('subscribe idempotency persists across sessions (M6)', () => {
+describe('subscribe idempotency persists across sessions (M6)', async () => {
 	let dir = '';
 	let paths: ITaskQueuePaths;
 	const sidecar = (): string => join(dir, '.subscribe-delivered.json');

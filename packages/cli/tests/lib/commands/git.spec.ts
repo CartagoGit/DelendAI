@@ -49,8 +49,8 @@ const buildStubContext = (): {
 const findCommand = (name: string): ICliCommand | undefined =>
 	gitCommands.find((command) => command.name === name);
 
-describe('git group (f00046 S1)', () => {
-	it('exposes the 7 canonical commands', () => {
+describe('git group (f00046 S1)', async () => {
+	it('exposes the 7 canonical commands', async () => {
 		const expected = [
 			'git status',
 			'git changed',
@@ -64,13 +64,13 @@ describe('git group (f00046 S1)', () => {
 		expect(names).toEqual(expected);
 	});
 
-	it('keeps every command documented with a non-empty summary', () => {
+	it('keeps every command documented with a non-empty summary', async () => {
 		for (const command of gitCommands) {
 			expect(command.summary.trim().length).toBeGreaterThan(0);
 		}
 	});
 
-	it('does not register duplicate command names', () => {
+	it('does not register duplicate command names', async () => {
 		const names = gitCommands.map((command) => command.name);
 		expect(new Set(names).size).toBe(names.length);
 	});

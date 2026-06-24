@@ -8,7 +8,7 @@ const collector = (
 	collect: () => Promise<Record<string, unknown>>,
 ): IStatusCollector => ({ id, collect });
 
-describe('collectStatus (IStatusCollector, N23)', () => {
+describe('collectStatus (IStatusCollector, N23)', async () => {
 	it('aggregates every collector keyed by id', async () => {
 		const res = await collectStatus([
 			collector('engine', async () => ({ loop: 'running', fps: 60 })),

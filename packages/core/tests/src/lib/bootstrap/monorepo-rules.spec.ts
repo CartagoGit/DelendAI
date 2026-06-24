@@ -10,13 +10,13 @@ import {
 } from '@mcp-vertex/core/lib/bootstrap/monorepo-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('DEFAULT_MONOREPO_RULES (declarative table)', () => {
-	it('lists the five built-in monorepo tools', () => {
+describe('DEFAULT_MONOREPO_RULES (declarative table)', async () => {
+	it('lists the five built-in monorepo tools', async () => {
 		const ids = DEFAULT_MONOREPO_RULES.map((r) => r.id);
 		expect(ids).toEqual([
 			'nx',
@@ -26,49 +26,57 @@ describe('DEFAULT_MONOREPO_RULES (declarative table)', () => {
 			'bun/npm-workspaces',
 		]);
 	});
-	it('nx outranks turbo (priority preserves detection order)', () => {
+	it('nx outranks turbo (priority preserves detection order)', async () => {
 		const nx = DEFAULT_MONOREPO_RULES.find((r) => r.id === 'nx');
 		const turbo = DEFAULT_MONOREPO_RULES.find((r) => r.id === 'turbo');
 		expect(nx?.priority).toBeGreaterThan(turbo?.priority ?? 0);
 	});
 });
 
-describe('matchMonorepoTool', () => {
-	it('returns `nx` for a project with nx.json', () => {
-		expect(matchMonorepoTool(reader({ 'nx.json': '{}' }))).toBe('nx');
+describe('matchMonorepoTool', async () => {
+	it('returns `nx` for a project with nx.json', async () => {
+		expect(await matchMonorepoTool(reader({ 'nx.json': '{}' }))).toBe('nx');
 	});
-	it('returns `turbo` for a project with turbo.json', () => {
-		expect(matchMonorepoTool(reader({ 'turbo.json': '{}' }))).toBe('turbo');
+	it('returns `turbo` for a project with turbo.json', async () => {
+		expect(await matchMonorepoTool(reader({ 'turbo.json': '{}' }))).toBe(
+			'turbo',
+		);
 	});
-	it('returns `pnpm-workspaces` for a project with pnpm-workspace.yaml', () => {
+	it('returns `pnpm-workspaces` for a project with pnpm-workspace.yaml', async () => {
 		expect(
-			matchMonorepoTool(reader({ 'pnpm-workspace.yaml': 'packages:' })),
+			await matchMonorepoTool(
+				reader({ 'pnpm-workspace.yaml': 'packages:' }),
+			),
 		).toBe('pnpm-workspaces');
 	});
-	it('returns `lerna` for a project with lerna.json', () => {
-		expect(matchMonorepoTool(reader({ 'lerna.json': '{}' }))).toBe('lerna');
+	it('returns `lerna` for a project with lerna.json', async () => {
+		expect(await matchMonorepoTool(reader({ 'lerna.json': '{}' }))).toBe(
+			'lerna',
+		);
 	});
-	it('returns `bun/npm-workspaces` for a package.json with `workspaces`', () => {
+	it('returns `bun/npm-workspaces` for a package.json with `workspaces`', async () => {
 		expect(
-			matchMonorepoTool(reader({}), {
+			await matchMonorepoTool(reader({}), {
 				name: 'svc',
 				workspaces: ['packages/*'],
 			}),
 		).toBe('bun/npm-workspaces');
 	});
-	it('returns `undefined` for a project with no monorepo signals', () => {
-		expect(matchMonorepoTool(reader({}))).toBeUndefined();
+	it('returns `undefined` for a project with no monorepo signals', async () => {
+		expect(await matchMonorepoTool(reader({}))).toBeUndefined();
 	});
-	it('priority order: nx beats turbo when both are present', () => {
+	it('priority order: nx beats turbo when both are present', async () => {
 		expect(
-			matchMonorepoTool(reader({ 'nx.json': '{}', 'turbo.json': '{}' })),
+			await matchMonorepoTool(
+				reader({ 'nx.json': '{}', 'turbo.json': '{}' }),
+			),
 		).toBe('nx');
 	});
 });
 
-describe('integration: detectMonorepoTool uses the rule table', () => {
-	it('analyzer detects a bun workspaces project from `workspaces` in package.json', () => {
-		const analysis = analyzeProject(
+describe('integration: detectMonorepoTool uses the rule table', async () => {
+	it('analyzer detects a bun workspaces project from `workspaces` in package.json', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'big',

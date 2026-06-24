@@ -8,12 +8,12 @@ import {
 import type { IFileReader } from '@mcp-vertex/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('runAllScopes', () => {
+describe('runAllScopes', async () => {
 	it('aggregates 3 passing scopes into one ok:true report', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,
@@ -88,7 +88,7 @@ describe('runAllScopes', () => {
 	});
 });
 
-describe('quality_run_all tool registration', () => {
+describe('quality_run_all tool registration', async () => {
 	it('rejects an unknown/empty scope configuration', async () => {
 		const registration = buildRunAllToolRegistration({
 			namespacePrefix: 'quality',

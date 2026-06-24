@@ -98,20 +98,24 @@ const EXPECTED_COMMANDS = [
 	'completion',
 ] as const;
 
-describe('CLI command registry', () => {
-	it('registers the complete public command surface', () => {
-		const names = registerAllCommands().map((command) => command.name);
+describe('CLI command registry', async () => {
+	it('registers the complete public command surface', async () => {
+		const names = (await registerAllCommands()).map(
+			(command) => command.name,
+		);
 		expect(names).toEqual(EXPECTED_COMMANDS);
 	});
 
-	it('keeps every command documented with a summary', () => {
-		for (const command of registerAllCommands()) {
+	it('keeps every command documented with a summary', async () => {
+		for (const command of await registerAllCommands()) {
 			expect(command.summary.trim().length).toBeGreaterThan(0);
 		}
 	});
 
-	it('does not register duplicate command names', () => {
-		const names = registerAllCommands().map((command) => command.name);
+	it('does not register duplicate command names', async () => {
+		const names = (await registerAllCommands()).map(
+			(command) => command.name,
+		);
 		expect(new Set(names).size).toBe(names.length);
 	});
 });

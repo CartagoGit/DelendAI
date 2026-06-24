@@ -21,7 +21,7 @@ const write = (root: string, rel: string, body: string): void => {
 	writeFileSync(abs, body, 'utf8');
 };
 
-describe('docs engine', () => {
+describe('docs engine', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'docs-'));
@@ -37,7 +37,7 @@ describe('docs engine', () => {
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('extractTitle prefers frontmatter title, then first heading, then fallback', () => {
+	it('extractTitle prefers frontmatter title, then first heading, then fallback', async () => {
 		expect(extractTitle('---\ntitle: A\n---\n# B', 'f')).toBe('A');
 		expect(extractTitle('# Heading here\ntext', 'f')).toBe('Heading here');
 		expect(extractTitle('no title at all', 'fallback.md')).toBe(
@@ -78,7 +78,7 @@ describe('docs engine', () => {
 	});
 });
 
-describe('docs plugin', () => {
+describe('docs plugin', async () => {
 	it('registers docs_list + docs_read + docs_search + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },

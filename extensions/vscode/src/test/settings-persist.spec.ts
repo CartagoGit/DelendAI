@@ -60,7 +60,7 @@ const createVscode = () => {
 	return { vscode, commands, messages, errors };
 };
 
-describe('settings save / reset commands', () => {
+describe('settings save / reset commands', async () => {
 	it('saveSettings persists the payload to the shared store', async () => {
 		const { vscode, commands, messages } = createVscode();
 		const store: ISettingsStore = createExtensionSettingsStore();

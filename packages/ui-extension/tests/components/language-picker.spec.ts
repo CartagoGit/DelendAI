@@ -37,8 +37,8 @@ beforeEach(() => {
 		localStorageShim;
 });
 
-describe('language-picker', () => {
-	it('renderLanguagePicker renders a <select> with all 12 languages', () => {
+describe('language-picker', async () => {
+	it('renderLanguagePicker renders a <select> with all 12 languages', async () => {
 		const html = renderLanguagePicker({ current: 'en', languages });
 		expect(html).toContain('data-mv-lang');
 		expect(html).toContain('value="en"');
@@ -49,30 +49,30 @@ describe('language-picker', () => {
 		expect(matches?.length).toBe(12);
 	});
 
-	it('marks the current language as selected', () => {
+	it('marks the current language as selected', async () => {
 		const html = renderLanguagePicker({ current: 'es', languages });
 		expect(html).toContain('value="es" selected');
 		expect(html).not.toContain('value="en" selected');
 	});
 
-	it('readInitialLang returns the stored value when valid', () => {
+	it('readInitialLang returns the stored value when valid', async () => {
 		localStorage.setItem('mv:lang', 'fr');
 		expect(readInitialLang(languages)).toBe('fr');
 		localStorage.removeItem('mv:lang');
 	});
 
-	it('readInitialLang falls back to en when no stored value', () => {
+	it('readInitialLang falls back to en when no stored value', async () => {
 		localStorage.removeItem('mv:lang');
 		expect(readInitialLang(languages, 'en')).toBe('en');
 	});
 
-	it('readInitialLang ignores invalid stored values', () => {
+	it('readInitialLang ignores invalid stored values', async () => {
 		localStorage.setItem('mv:lang', 'klingon');
 		expect(readInitialLang(languages, 'en')).toBe('en');
 		localStorage.removeItem('mv:lang');
 	});
 
-	it('writeLang persists to localStorage', () => {
+	it('writeLang persists to localStorage', async () => {
 		writeLang('de');
 		expect(localStorage.getItem('mv:lang')).toBe('de');
 		localStorage.removeItem('mv:lang');

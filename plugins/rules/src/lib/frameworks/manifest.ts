@@ -19,23 +19,23 @@ const ESLINT_CONFIG_NAMES = [
 	'eslint.config.mts',
 ];
 
-const findProjectEslint = (
+const findProjectEslint = async (
 	reader: IFileReader,
 	areaDir: string,
-): string | undefined => {
+): Promise<string | undefined> => {
 	for (const name of ESLINT_CONFIG_NAMES) {
 		const rel = joinRel(areaDir, name);
-		if (reader.exists(rel)) return rel;
+		if (await reader.exists(rel)) return rel;
 	}
 	return undefined;
 };
 
-const findProjectTsconfig = (
+const findProjectTsconfig = async (
 	reader: IFileReader,
 	areaDir: string,
-): string | undefined => {
+): Promise<string | undefined> => {
 	const rel = joinRel(areaDir, 'tsconfig.json');
-	return reader.exists(rel) ? rel : undefined;
+	return (await reader.exists(rel)) ? rel : undefined;
 };
 
 const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
@@ -45,12 +45,15 @@ const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
  * apps/libs/packages/projects that ships a package.json. Each area can
  * carry a different framework (e.g. a Vue app next to a Laravel API).
  */
-export const discoverAreas = (reader: IFileReader): readonly string[] => {
+export const discoverAreas = async (
+	reader: IFileReader,
+): Promise<readonly string[]> => {
 	const areas: string[] = [''];
 	for (const group of GROUP_DIRS) {
-		for (const child of reader.listDir(group)) {
+		for (const child of await reader.listDir(group)) {
 			const dir = `${group}/${child}`;
-			if (reader.exists(joinRel(dir, 'package.json'))) areas.push(dir);
+			if (await reader.exists(joinRel(dir, 'package.json')))
+				areas.push(dir);
 		}
 	}
 	return areas;
@@ -74,32 +77,32 @@ const areaKey = (areaDir: string): string =>
  * honour an override), then list eslint/typecheck configs priority-first
  * — the project's own config, then our materialised default behind it.
  */
-export const buildRulesManifest = (
+export const buildRulesManifest = async (
 	options: IBuildManifestOptions,
-): IRulesManifest => {
+): Promise<IRulesManifest> => {
 	const { reader, cacheRelDir } = options;
 	const areas: Record<string, IAreaRules> = {};
-	for (const areaDir of discoverAreas(reader)) {
+	for (const areaDir of await discoverAreas(reader)) {
 		const forced = options.overrides?.[areaKey(areaDir)];
 		const detected = detectPresetForArea(reader, areaDir);
 		const presetId =
 			forced !== undefined && PRESET_BY_ID.has(forced)
 				? forced
-				: detected.presetId;
+				: (await detected).presetId;
 		const preset = PRESET_BY_ID.get(presetId);
 		if (preset === undefined) continue;
 		const reason =
 			forced !== undefined
 				? `forced via config (${forced})`
-				: detected.reason;
+				: (await detected).reason;
 
 		const eslint: string[] = [];
-		const projectEslint = findProjectEslint(reader, areaDir);
+		const projectEslint = await findProjectEslint(reader, areaDir);
 		if (projectEslint !== undefined) eslint.push(projectEslint);
 		eslint.push(joinRel(cacheRelDir, preset.eslintConfigFile));
 
 		const typecheck: string[] = [];
-		const projectTsconfig = findProjectTsconfig(reader, areaDir);
+		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
 		if (projectTsconfig !== undefined) typecheck.push(projectTsconfig);
 		if (preset.tsconfigFile !== undefined) {
 			typecheck.push(joinRel(cacheRelDir, preset.tsconfigFile));

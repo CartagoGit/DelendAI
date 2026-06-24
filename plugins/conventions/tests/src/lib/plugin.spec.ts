@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 import plugin from '../../../src/index';
 
-describe('conventions plugin', () => {
-	it('defines the plugin metadata', () => {
+describe('conventions plugin', async () => {
+	it('defines the plugin metadata', async () => {
 		expect(plugin.name).toBe('conventions');
 		expect(typeof plugin.register).toBe('function');
 	});
