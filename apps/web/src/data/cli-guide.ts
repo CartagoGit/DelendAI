@@ -47,7 +47,7 @@ const GLOBAL_FLAGS: readonly ICliFlag[] = [
 		flag: '--plugins=<a,b,…>',
 		summary:
 			'Load specific plugins (comma-separated or a repeated flag). The core ships no domain tools on its own.',
-		example: `npx -y ${PACKAGE} --plugins=git,search`,
+		example: `npx -y ${PACKAGE} --plugins=git`,
 	},
 	{
 		flag: '--preset=<name>',
