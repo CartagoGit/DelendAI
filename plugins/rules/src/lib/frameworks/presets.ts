@@ -658,6 +658,119 @@ csharp_style_namespace_declarations = file_scoped:warning
 		fixCommand: 'mix format',
 		typecheckCommand: 'mix dialyzer',
 	},
+	{
+		id: 'dart-analyze',
+		framework: 'dart',
+		language: 'dart',
+		linter: 'dart-analyze',
+		eslintConfigFile: 'dart-analyze.analysis_options.yaml',
+		eslintConfigContent: `# Baseline analysis_options (the project's own analysis_options.yaml wins).
+include: package:lints/recommended.yaml
+linter:
+  rules:
+    - prefer_final_locals
+    - avoid_print
+`,
+		conventions: [
+			'Prefer value types and `final`; use `const` for compile-time constants.',
+			'lowerCamelCase for members, UpperCamelCase for types.',
+			'Use null-safety (`?`, `!`, `late`) deliberately; avoid force-unwrap.',
+			'async/await over raw Futures; avoid blocking the event loop.',
+			'Run `dart analyze` to lint and `dart format .` to format.',
+		],
+		requiredEslintDeps: ['dart'],
+		checkCommand: 'dart analyze {target}',
+		fixCommand: 'dart fix --apply {target}',
+		typecheckCommand: 'dart analyze {target}',
+	},
+	{
+		id: 'scala-scalafmt',
+		framework: 'scala',
+		language: 'scala',
+		linter: 'scalafmt',
+		eslintConfigFile: 'scala-scalafmt.scalafmt.conf',
+		eslintConfigContent: `# Baseline scalafmt config (the project's own .scalafmt.conf wins).
+version = "3.8.1"
+runner.dialect = scala3
+maxColumn = 100
+`,
+		conventions: [
+			'Prefer immutable `val` and case classes; reserve `var` for hot loops.',
+			'Model errors with `Either`/`Option`/`Try`, not exceptions, in pure code.',
+			'camelCase for methods/values, PascalCase for types/objects.',
+			'Use `for`-comprehensions to chain `Option`/`Either`/`Future`.',
+			'Run `scalafmt` to format and `sbt compile` to type-check.',
+		],
+		requiredEslintDeps: ['scalafmt'],
+		checkCommand: 'scalafmt --test',
+		fixCommand: 'scalafmt',
+		typecheckCommand: 'sbt compile',
+	},
+	{
+		id: 'haskell-hlint',
+		framework: 'haskell',
+		language: 'hs',
+		linter: 'hlint',
+		eslintConfigFile: 'haskell-hlint.hlint.yaml',
+		eslintConfigContent: `# Baseline HLint config (the project's own .hlint.yaml wins).
+- warn: {name: Use explicit module export list}
+- ignore: {name: Redundant do}
+`,
+		conventions: [
+			'Purity by default; isolate effects in `IO` and keep the core total.',
+			'Model absence with `Maybe`, errors with `Either`; avoid partial functions.',
+			'camelCase for functions, PascalCase for types/constructors; use `newtype` liberally.',
+			'Prefer property-based tests (QuickCheck/Hedgehog) for laws.',
+			'Run `hlint .` to lint and `ormolu`/`fourmolu` to format.',
+		],
+		requiredEslintDeps: ['hlint'],
+		checkCommand: 'hlint {target}',
+		fixCommand: 'hlint --refactor --refactor-options=-i {target}',
+		typecheckCommand: 'cabal build',
+	},
+	{
+		id: 'zig-fmt',
+		framework: 'zig',
+		language: 'zig',
+		linter: 'zig-fmt',
+		eslintConfigFile: 'zig-fmt.README.txt',
+		eslintConfigContent: `Zig has no external lint config: \`zig fmt\` is the canonical formatter and the
+compiler is the type-checker. This placeholder keeps the cache layout uniform.
+`,
+		conventions: [
+			'Handle every error explicitly with error unions (`!T`) and `try`/`catch`.',
+			'Use optionals (`?T`) for absence; never a null pointer.',
+			'snake_case for functions/variables, TitleCase for types.',
+			'Prefer explicit allocators; free what you allocate (`defer`).',
+			'Run `zig fmt --check .` to verify formatting and `zig build` to type-check.',
+		],
+		requiredEslintDeps: ['zig'],
+		checkCommand: 'zig fmt --check {target}',
+		fixCommand: 'zig fmt {target}',
+		typecheckCommand: 'zig build',
+	},
+	{
+		id: 'cpp-clang',
+		framework: 'cpp',
+		language: 'cpp',
+		linter: 'clang-tidy',
+		eslintConfigFile: 'cpp-clang.clang-tidy',
+		eslintConfigContent: `# Baseline clang-tidy config (the project's own .clang-tidy wins).
+Checks: 'clang-analyzer-*,modernize-*,performance-*,bugprone-*'
+WarningsAsErrors: ''
+`,
+		conventions: [
+			'Prefer RAII and smart pointers (`unique_ptr`/`shared_ptr`) over raw new/delete.',
+			'Use `const`/`constexpr` aggressively; pass non-trivial types by `const&`.',
+			'Follow the project naming (snake_case or CamelCase) consistently.',
+			'Prefer the STL and `std::` algorithms over hand-rolled loops.',
+			'Run `clang-tidy` to lint and `clang-format` to format; build to type-check.',
+		],
+		requiredEslintDeps: ['clang-tidy', 'clang-format'],
+		checkCommand: 'clang-tidy {target}',
+		fixCommand: 'clang-tidy --fix {target}',
+		typecheckCommand: 'cmake --build build',
+	},
 ];
 
 export const RULE_PRESETS: readonly IRulePreset[] = [

@@ -205,6 +205,24 @@ describe('detectPresetForArea', async () => {
 		}
 	});
 
+	// --- f00051 S3 batch: Dart / Scala / Haskell / Zig / C++ --------------
+	it('detects the S3-batch languages via their manifests', async () => {
+		const cases: ReadonlyArray<readonly [Record<string, string>, string]> =
+			[
+				[{ 'pubspec.yaml': 'name: app' }, 'dart-analyze'],
+				[{ 'build.sbt': 'name := "app"' }, 'scala-scalafmt'],
+				[{ 'stack.yaml': 'resolver: lts-22.0' }, 'haskell-hlint'],
+				[{ 'app.cabal': 'name: app' }, 'haskell-hlint'],
+				[{ 'build.zig': 'pub fn build() void {}' }, 'zig-fmt'],
+				[{ 'CMakeLists.txt': 'project(app)' }, 'cpp-clang'],
+			];
+		for (const [files, expected] of cases) {
+			expect(
+				(await detectPresetForArea(reader(files), '')).presetId,
+			).toBe(expected);
+		}
+	});
+
 	it('per-language manifest wins over a co-located package.json (polyglot tie-break)', async () => {
 		// A Python backend that also ships a package.json for its JS frontend
 		// tooling must still resolve to Python (the exclusive manifest wins).

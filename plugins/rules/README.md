@@ -53,10 +53,13 @@ that language — not a hardcoded ESLint command for everything.
 - **JS/TS** (ESLint): `angular`, `react-ts`, `react-js`, `vue`, `svelte`,
   `vanilla-ts`, `vanilla-js`, `jquery`.
 - **PHP** (Pint): `laravel`.
-- **Other languages** (each ships a baseline preset + idiomatic *dogmas*):
+- **Other languages** (each ships a baseline preset + idiomatic conventions):
   Python (`ruff` + basedpyright), Go (`golangci-lint`), Rust (`clippy` +
   rustfmt), Ruby (`rubocop`), Java (`checkstyle`), Kotlin (`ktlint`), Swift
-  (`swiftlint`), C#/.NET (`dotnet format`), Elixir (`credo`).
+  (`swiftlint`), C#/.NET (`dotnet format`), Elixir (`credo`), Dart
+  (`dart analyze`), Scala (`scalafmt`), Haskell (`hlint`), Zig (`zig fmt`),
+  C++ (`clang-tidy`) — detected via `pubspec.yaml` / `build.sbt` /
+  `stack.yaml`·`*.cabal` / `build.zig` / `CMakeLists.txt`.
 
 Each preset carries its own `check` / `fix` / `typecheck` commands, and each
 language exposes a **dogma** (ownership/error model/null-safety/naming/async/

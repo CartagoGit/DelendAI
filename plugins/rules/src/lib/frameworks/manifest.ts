@@ -64,6 +64,11 @@ const AREA_MARKER_FILES = [
 	'pom.xml',
 	'Package.swift',
 	'composer.json',
+	'pubspec.yaml',
+	'build.sbt',
+	'stack.yaml',
+	'build.zig',
+	'CMakeLists.txt',
 ] as const;
 
 const hasAreaMarker = async (
