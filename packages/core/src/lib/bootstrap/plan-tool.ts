@@ -55,7 +55,7 @@ export const buildPlanToolRegistration = (
 					namespacePrefix?: string | undefined;
 					serverName?: string | undefined;
 				}) => {
-					const analysis = analyzeProject(deps.reader);
+					const analysis = await analyzeProject(deps.reader);
 					const blueprint = buildServerBlueprint(analysis, {
 						...(args.tests !== undefined
 							? { tests: args.tests }

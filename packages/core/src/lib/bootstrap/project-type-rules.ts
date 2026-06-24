@@ -21,7 +21,7 @@ export interface IProjectTypeRule {
 	 * the rules in descending `priority` order and returns the
 	 * first match.
 	 */
-	readonly matches: (ctx: IProjectTypeRuleContext) => boolean;
+	readonly matches: (ctx: IProjectTypeRuleContext) => Promise<boolean> | boolean;
 }
 
 export interface IProjectTypeRuleContext {
@@ -47,60 +47,60 @@ export const DEFAULT_PROJECT_TYPE_RULES: readonly IProjectTypeRule[] = [
 	{
 		result: 'monorepo',
 		priority: 100,
-		matches: (ctx) => ctx.monorepoTool !== undefined,
+		matches: async (ctx) => ctx.monorepoTool !== undefined,
 	},
 	{
 		result: 'game',
 		priority: 90,
-		matches: (ctx) => ctx.isGame,
+		matches: async (ctx) => ctx.isGame,
 	},
 	{
 		result: 'webapp',
 		priority: 80,
-		matches: (ctx) => ctx.framework !== undefined,
+		matches: async (ctx) => ctx.framework !== undefined,
 	},
 	{
 		result: 'cli',
 		priority: 70,
-		matches: (ctx) => ctx.hasBin,
+		matches: async (ctx) => ctx.hasBin,
 	},
 	{
 		result: 'library',
 		priority: 60,
-		matches: (ctx) => ctx.hasExports || ctx.hasMain,
+		matches: async (ctx) => ctx.hasExports || ctx.hasMain,
 	},
 	// Non-JS stacks — Rust.
 	{
 		result: 'cli',
 		priority: 55,
-		matches: (ctx) =>
-			ctx.reader.exists('Cargo.toml') && ctx.reader.exists('src/main.rs'),
+		matches: async (ctx) =>
+			await ctx.reader.exists('Cargo.toml') && await ctx.reader.exists('src/main.rs'),
 	},
 	{
 		result: 'library',
 		priority: 54,
-		matches: (ctx) => ctx.reader.exists('Cargo.toml'),
+		matches: async (ctx) => await ctx.reader.exists('Cargo.toml'),
 	},
 	// Go.
 	{
 		result: 'cli',
 		priority: 53,
-		matches: (ctx) =>
-			ctx.reader.exists('go.mod') && ctx.reader.exists('main.go'),
+		matches: async (ctx) =>
+			await ctx.reader.exists('go.mod') && await ctx.reader.exists('main.go'),
 	},
 	{
 		result: 'library',
 		priority: 52,
-		matches: (ctx) => ctx.reader.exists('go.mod'),
+		matches: async (ctx) => await ctx.reader.exists('go.mod'),
 	},
 	// Python — always a library at the manifest level; concrete
 	// packaging is a separate question.
 	{
 		result: 'library',
 		priority: 50,
-		matches: (ctx) =>
-			ctx.reader.exists('pyproject.toml') ||
-			ctx.reader.exists('setup.py'),
+		matches: async (ctx) =>
+			await ctx.reader.exists('pyproject.toml') ||
+			await ctx.reader.exists('setup.py'),
 	},
 ];
 
@@ -109,13 +109,13 @@ export const DEFAULT_PROJECT_TYPE_RULES: readonly IProjectTypeRule[] = [
  * returns the first match's `result`, or `'generic'` when no rule
  * applies. Allocation-free in the no-match case.
  */
-export const matchProjectType = (
+export const matchProjectType = async (
 	ctx: IProjectTypeRuleContext,
 	rules: readonly IProjectTypeRule[] = DEFAULT_PROJECT_TYPE_RULES,
-): IProjectType => {
+): Promise<IProjectType> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	for (const rule of sorted) {
-		if (rule.matches(ctx)) return rule.result;
+		if (await rule.matches(ctx)) return rule.result;
 	}
 	return 'generic';
 };

@@ -54,12 +54,12 @@ export const DEFAULT_MONOREPO_RULES: readonly IMonorepoRule[] = [
 	},
 ];
 
-const matches = (
+const matches = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 	evidence: IMonorepoEvidence,
-): boolean => {
-	if (evidence.kind === 'exists') return reader.exists(evidence.path);
+): Promise<boolean> => {
+	if (evidence.kind === 'exists') return await reader.exists(evidence.path);
 	// `has-workspaces` — true when the package.json declares
 	// `workspaces` (the bun/npm convention). Note we treat the
 	// `workspaces` field as a tuple of strings OR an object
@@ -68,14 +68,14 @@ const matches = (
 	return pkg?.workspaces !== undefined;
 };
 
-export const matchMonorepoTool = (
+export const matchMonorepoTool = async (
 	reader: IFileReader,
 	pkg?: IPackageJson | undefined,
 	rules: readonly IMonorepoRule[] = DEFAULT_MONOREPO_RULES,
-): string | undefined => {
+): Promise<string | undefined> => {
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
 	for (const rule of sorted) {
-		if (matches(reader, pkg, rule.evidence)) return rule.id;
+		if (await matches(reader, pkg, rule.evidence)) return rule.id;
 	}
 	return undefined;
 };

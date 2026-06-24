@@ -69,7 +69,7 @@ export const buildDriftCheckToolRegistration = (
 					inputSchema: DRIFT_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof DRIFT_INPUT_SCHEMA>) => {
-					const analysis = analyzeProject(deps.reader);
+					const analysis = await analyzeProject(deps.reader);
 					const persist = args.persist ?? true;
 					const { snapshot, corruptBackupPath } =
 						await loadDriftSnapshot(

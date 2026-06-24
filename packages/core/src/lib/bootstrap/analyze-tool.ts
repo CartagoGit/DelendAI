@@ -49,7 +49,7 @@ export const buildAnalyzeToolRegistration = (
 					inputSchema: ANALYZE_INPUT_SCHEMA,
 				},
 				async (args: z.infer<typeof ANALYZE_INPUT_SCHEMA>) => {
-					const analysis = analyzeProject(deps.reader);
+					const analysis = await analyzeProject(deps.reader);
 					const planOptions = {
 						...(args.serverName !== undefined
 							? { serverName: args.serverName }
