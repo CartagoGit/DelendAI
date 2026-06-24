@@ -108,4 +108,40 @@ describe('@mcp-vertex/proposals plugin', async () => {
 			'work_proposal_diagnose',
 		]);
 	});
+
+	// f00052 S5 — the host-scoped gate defaults to blocked. With a context
+	// that does not enable the capability (agentWorktreeEnabled unset/false),
+	// proposals_agent_worktree stays registered but refuses with a
+	// structured ok:false error and the documented reason — without ever
+	// shelling out to git.
+	it('agent_worktree is blocked by default (host gate off)', async () => {
+		type ToolHandler = (args: { action: string }) => Promise<{
+			structuredContent?: Record<string, unknown>;
+			isError?: boolean;
+		}>;
+		let handler: ToolHandler | undefined;
+		const fakeServer = {
+			registerTool: (_name: string, _schema: unknown, h: ToolHandler) => {
+				handler = h;
+			},
+		} as unknown as Parameters<
+			NonNullable<
+				Awaited<ReturnType<typeof plugin.register>>['tools']
+			>[number]['register']
+		>[0];
+		const registrations = await plugin.register(ctx());
+		const worktree = registrations.tools?.find(
+			(t) => t.id === 'agent_worktree',
+		);
+		expect(worktree).toBeDefined();
+		await worktree?.register(fakeServer);
+		expect(handler).toBeDefined();
+		const result = await handler?.({ action: 'create' });
+		expect(result?.isError).toBe(true);
+		expect(result?.structuredContent?.ok).toBe(false);
+		expect(result?.structuredContent?.action).toBe('create');
+		expect(result?.structuredContent?.reason).toBe(
+			'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.',
+		);
+	});
 });

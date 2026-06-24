@@ -13,7 +13,23 @@ export interface IAgentWorktreeToolOptions {
 	readonly workspaceRoot: string;
 	/** Override the git runner (tests); defaults to the real `git` binary. */
 	readonly run?: IGitRunner;
+	/**
+	 * f00052: host-scoped capability gate (`ctx.agentWorktreeEnabled`).
+	 * When `false`/absent the tool stays registered but returns a
+	 * structured `ok: false` error and never invokes the engine. Default
+	 * off — a host opts in via `--agent-worktree=true` or
+	 * `agentWorktree: true` in `mcp-vertex.config.json`.
+	 */
+	readonly enabled?: boolean | undefined;
 }
+
+/**
+ * Exact, host-facing message returned when the capability is disabled.
+ * Kept as a named constant so the tool, the unit spec and the e2e all
+ * assert byte-identical text (f00052 S5/S7).
+ */
+export const AGENT_WORKTREE_DISABLED_REASON =
+	'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in mcp-vertex.config.json to enable.';
 
 const WORKTREE_ENTRY_OUTPUT_SCHEMA = z.object({
 	path: z.string(),
@@ -71,6 +87,29 @@ export const buildAgentWorktreeRegistration = (
 					base_branch?: string | undefined;
 					force?: boolean | undefined;
 				}) => {
+					// f00052: host-scoped gate. Disabled (default) ⇒ return a
+					// structured error that echoes the action and explains how
+					// to enable; never invoke the engine, never throw.
+					if (options.enabled !== true) {
+						const disabled = {
+							ok: false as const,
+							action: args.action,
+							reason: AGENT_WORKTREE_DISABLED_REASON,
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(disabled),
+								},
+							],
+							structuredContent: disabled as unknown as Record<
+								string,
+								unknown
+							>,
+							isError: true,
+						};
+					}
 					const result = await runAgentWorktreeEngine(args, {
 						run,
 						workspaceRoot: options.workspaceRoot,
