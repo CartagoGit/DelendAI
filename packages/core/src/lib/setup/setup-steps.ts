@@ -79,8 +79,8 @@ const configStep = (ctx: IGithubSetupContext): ISetupStep => {
 
 const loadStep = (): ISetupStep => ({
 	id: 'load',
-	title: 'Load the host with the issues plugin',
-	detail: 'Ensure the issues plugin is loaded along with any required dependencies.',
+	title: 'Load the host with proposals + issues',
+	detail: 'issues hard-depends on proposals; load both in the same set.',
 	command: 'mcp-vertex --plugins=proposals,issues',
 });
 

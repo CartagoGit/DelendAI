@@ -95,7 +95,24 @@ const uniqueByName = (
 	return out;
 };
 
-
+const SUBAGENT_SLOTS = [
+	{
+		slot: 'proposal_guardian',
+		description: 'Curates and validates the backlog.',
+	},
+	{
+		slot: 'implementation_runner',
+		description: 'Executes one atomic slice.',
+	},
+	{
+		slot: 'delivery_verifier',
+		description: 'Verifies a closed slice/round.',
+	},
+	{
+		slot: 'technical_investigator',
+		description: 'Investigates without editing.',
+	},
+] as const;
 
 const MIGRATION_INTENT_RE =
 	/\b(migrat(?:e|ion|ing)?|refactor|rewrite|replace|regen(?:erate)?|port)\b/i;
@@ -177,6 +194,7 @@ export const buildServerBlueprint = (
 			slot: 'orchestrator',
 			description: 'Root orchestrator for this project.',
 		},
+		...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
 	];
 
 	const notes = matchNotes({
