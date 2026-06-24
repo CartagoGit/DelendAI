@@ -104,6 +104,27 @@ const detectLanguageManifest = async (
 			reason: 'C#/.NET (*.csproj / *.sln)',
 		};
 	}
+	if (await fileExists(reader, areaDir, 'pubspec.yaml')) {
+		return { presetId: 'dart-analyze', reason: 'Dart (pubspec.yaml)' };
+	}
+	if (await fileExists(reader, areaDir, 'build.sbt')) {
+		return { presetId: 'scala-scalafmt', reason: 'Scala (build.sbt)' };
+	}
+	if (
+		(await fileExists(reader, areaDir, 'stack.yaml')) ||
+		(await hasFileWithSuffix(reader, areaDir, '.cabal'))
+	) {
+		return {
+			presetId: 'haskell-hlint',
+			reason: 'Haskell (stack.yaml / *.cabal)',
+		};
+	}
+	if (await fileExists(reader, areaDir, 'build.zig')) {
+		return { presetId: 'zig-fmt', reason: 'Zig (build.zig)' };
+	}
+	if (await fileExists(reader, areaDir, 'CMakeLists.txt')) {
+		return { presetId: 'cpp-clang', reason: 'C++ (CMakeLists.txt)' };
+	}
 	return undefined;
 };
 

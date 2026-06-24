@@ -48,7 +48,12 @@ export interface IRulePreset {
 		| 'kt'
 		| 'swift'
 		| 'cs'
-		| 'ex';
+		| 'ex'
+		| 'dart'
+		| 'scala'
+		| 'hs'
+		| 'zig'
+		| 'cpp';
 	/** The linter the preset targets (eslint for JS/TS, pint for PHP…). */
 	readonly linter:
 		| 'eslint'
@@ -61,7 +66,12 @@ export interface IRulePreset {
 		| 'ktlint'
 		| 'swiftlint'
 		| 'dotnet-format'
-		| 'credo';
+		| 'credo'
+		| 'dart-analyze'
+		| 'scalafmt'
+		| 'hlint'
+		| 'zig-fmt'
+		| 'clang-tidy';
 	/** Cache filename for the materialised ESLint config. */
 	readonly eslintConfigFile: string;
 	/** Cache filename for the materialised tsconfig (TS presets only). */
