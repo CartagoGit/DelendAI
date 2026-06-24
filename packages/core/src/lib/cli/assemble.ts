@@ -195,7 +195,16 @@ export const assembleCliConfig = async (
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
 	const isLoaded = (name: string): boolean =>
 		loadResult.loaded.some((entry) => entry.plugin.name === name);
-	const recommendedNextAction = `Call ${corePrefix}_analyze_project to see what this project needs.`;
+	const hasProposals = isLoaded('proposals');
+	const hasRules = isLoaded('rules');
+	const rulesClause = hasRules
+		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
+		: '';
+	const recommendedNextAction =
+		(hasProposals
+			? `Call ${corePrefix}_overview, then proposals_auto_work to start working.`
+			: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
+		rulesClause;
 
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
@@ -499,9 +508,9 @@ export const prepareServerBlueprintOnStart = async (
 		resolve: (rel) => join(args.workspace, rel),
 	});
 	const analysis = await analyzeProject(reader);
-	const blueprint = await buildServerBlueprint(analysis, {
-    		tests: args.mcpProjectTests,
-    	});
+	const blueprint = buildServerBlueprint(analysis, {
+		tests: args.mcpProjectTests,
+	});
 	return writer.writeOnce(args.workspace, relPath, {
 		generatedAt: new Date().toISOString(),
 		blueprint,
