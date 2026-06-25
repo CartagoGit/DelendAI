@@ -14,11 +14,11 @@ import {
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {
-		mcp-vertex_logs_query: queryFixture,
-		mcp-vertex_logs_tail: tailFixture,
-		mcp-vertex_logs_subscribe: subscribeFixture,
-		mcp-vertex_logs_correlate: correlateFixture,
-		mcp-vertex_logs_redact_test: redactTestFixture,
+		'mcp-vertex_logs_query': queryFixture,
+		'mcp-vertex_logs_tail': tailFixture,
+		'mcp-vertex_logs_subscribe': subscribeFixture,
+		'mcp-vertex_logs_correlate': correlateFixture,
+		'mcp-vertex_logs_redact_test': redactTestFixture,
 	},
 ) => {
 	const { transport, calls } = createFakeTransport(responses);
@@ -29,7 +29,7 @@ const makeService = (
 describe('LogsService', async () => {
 	it('query calls mcp-vertex_logs_query and redacts secrets in summary + meta', async () => {
 		const { service, calls } = makeService({
-			mcp-vertex_logs_query: {
+			'mcp-vertex_logs_query': {
 				events: [
 					{
 						...sampleEvent,

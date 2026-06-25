@@ -85,21 +85,21 @@ export const metricsFixture = {
 			maxMs: 20,
 			totalBytes: 1600,
 		},
-		mcp-vertex_proposals_proposal_board: {
+		'mcp-vertex_proposals_proposal_board': {
 			calls: 4,
 			errors: 1,
 			totalMs: 320,
 			maxMs: 200,
 			totalBytes: 3200,
 		},
-		mcp-vertex_proposals_agent_names: {
+		'mcp-vertex_proposals_agent_names': {
 			calls: 2,
 			errors: 0,
 			totalMs: 20,
 			maxMs: 10,
 			totalBytes: 200,
 		},
-		mcp-vertex_quality_run_quality: {
+		'mcp-vertex_quality_run_quality': {
 			calls: 1,
 			errors: 0,
 			totalMs: 1500,
@@ -145,6 +145,6 @@ export const agentsFixture = {
 export const allResponsesFixture: ResponseMap = {
 	'mcp-vertex_overview': overviewFixture,
 	'mcp-vertex_metrics': metricsFixture,
-	mcp-vertex_proposals_proposal_board: proposalsFixture,
-	mcp-vertex_proposals_agent_names: agentsFixture,
+	'mcp-vertex_proposals_proposal_board': proposalsFixture,
+	'mcp-vertex_proposals_agent_names': agentsFixture,
 };

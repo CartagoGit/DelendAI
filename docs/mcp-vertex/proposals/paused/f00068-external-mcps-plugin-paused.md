@@ -182,6 +182,8 @@ After unpause, this proposal still explicitly **does not**:
 
 ## Architecture
 
+### Component diagram
+
 ```
                 ┌─────────────────────────────────────────────┐
                 │       packages/core (unchanged)             │
@@ -238,21 +240,7 @@ The plugin **owns its namespace** (`ext.*`) and **owns its subprocess
 registry** (per-process exit code, pid, last-boot error). The core
 sees only the merged tool list.
 
-### Token budget impact
-
-The plugin ships a **summary catalog** in `external_mcp_catalog`,
-not full schemas. Per-server cost is roughly:
-
-| Field | Approx tokens |
-|---|---|
-| `name`, `description` (≤80 chars), `tags[]` | ~30–50 |
-| Full `inputSchema` (only if the LLM asks via `external_mcp_discover`) | ~500–1500 |
-
-For the seed configuration (filesystem + angular) the catalog
-adds ~80–100 tokens to the system prompt — well within the
-existing `overview` budget (a00032 S4).
-
-## Seed catalog policy — three tiers
+### Seed catalog policy — three tiers
 
 The LLM cannot be the only gatekeeper (a curated, defensible
 catalog protects against npm typosquatting and unmaintained
@@ -278,7 +266,7 @@ with different exposure and different cost**:
 - The **curated tier** is the trust foundation. ~25 servers we
   vetted personally — they appear in the prompt so the LLM
   always knows they exist. Cost: bounded (~1 KB).
-- The **discoverable tier** is the breadth. ~60+ servers the LLM
+- The **discoverable tier** is the breadth. ~200+ servers the LLM
   can ask about on demand without any network call. Cost: only
   what the LLM chooses to load.
 - The **live tier** is the escape hatch. When a workspace uses a
@@ -336,7 +324,7 @@ These ~25 servers appear in `external_mcp_catalog` on every turn:
 > and metadata without network cost; never loaded into the
 > system prompt.
 
-These ~60+ servers are available via `external_mcp_discover`
+These ~200+ servers are available via `external_mcp_discover`
 without any npm call. The LLM sees them only when it asks
 specifically ("are there any Angular MCP servers?"). Each entry
 gets a one-line description and `ext.<namespacePrefix>`.
@@ -358,7 +346,7 @@ gets a one-line description and `ext.<namespacePrefix>`.
 | `kotlin-mcp` | Kotlin | `ext.kotlin` |
 | `swift-mcp` | Swift (sourcekit-lsp) | `ext.swift` |
 | `csharp-mcp` | C# (omnisharp-roslyn) | `ext.cs` |
-| `fsharp-mcp` | F# (FCS) | `ext.fs` (collision with `fs` → renamed `ext.fsharp`) |
+| `fsharp-mcp` | F# (FCS) | `ext.fsharp` (renamed to avoid `ext.fs` collision with filesystem) |
 | `elixir-mcp` | Elixir (elixir-ls) | `ext.ex` |
 | `phoenix-mcp` | Elixir (Phoenix framework) | `ext.phoenix` |
 | `zig-mcp` | Zig (zls) | `ext.zig` |
@@ -458,7 +446,7 @@ gets a one-line description and `ext.<namespacePrefix>`.
 | `mcp-redis` | Redis | `ext.redis` |
 | `mcp-mongo` | MongoDB | `ext.mongo` |
 | `mcp-cassandra` | Cassandra | `ext.cassandra` |
-| `mcp-elasticsearch` | Elasticsearch | `ext.es` (collision with `ext.es` → renamed `ext.elastic`) |
+| `mcp-elasticsearch` | Elasticsearch | `ext.elastic` (renamed to avoid confusion with `ext.es` Elasticsearch Spain locale) |
 | `mcp-opensearch` | OpenSearch | `ext.opensearch` |
 | `mcp-dynamodb` | DynamoDB | `ext.dynamo` |
 | `mcp-cosmosdb` | Cosmos DB | `ext.cosmos` |
@@ -764,6 +752,20 @@ topics API for `mcp-server`**, with hard limits:
 The user should never enable this unless they understand they
 are trusting the LLM's judgment about which packages to install.
 
+### Token budget impact
+
+The plugin ships a **summary catalog** in `external_mcp_catalog`,
+not full schemas. Per-server cost is roughly:
+
+| Field | Approx tokens |
+|---|---|
+| `name`, `description` (≤80 chars), `tags[]` | ~30–50 |
+| Full `inputSchema` (only if the LLM asks via `external_mcp_discover`) | ~500–1500 |
+
+For the seed configuration (filesystem + angular) the catalog
+adds ~80–100 tokens to the system prompt — well within the
+existing `overview` budget (a00032 S4).
+
 ## Slices
 
 ### S1 — Resume external-mcps plugin after the unpause gate is met
@@ -871,7 +873,16 @@ shape of the work before approving.
   config (verified via `grep -r externalServers extensions/`).
 - ✅ The §"Seed catalog policy" lists at least 1 ⭐ entry, at
   least 50 🟡 entries across ≥5 categories, and an explicit
-  ⛔ policy. Counts at the moment of writing: 25 ⭐ entries, 200+ 🟡 entries across 9 categories (Languages & LSPs, Frontend frameworks, Backend frameworks, Databases, Cloud & DevOps, Observability, Communication/productivity, Testing & QA, Build tools, AI/ML/data, Security & secrets).
+  ⛔ policy. Counts at the moment of writing: **25 ⭐ entries**
+  across 8 categories (filesystem/shell, languages, frontend,
+  backend, cloud, communication, productivity, documentation,
+  testing, build tools), **~360 🟡 entries** across 9
+  categories (Languages & LSPs, Frontend frameworks, Backend
+  frameworks, Databases & data stores, Cloud & DevOps,
+  Observability, Communication/productivity, Testing & QA,
+  Build tools & package managers, AI/ML/data, Security &
+  secrets), and an explicit ⛔ live-search policy with rate
+  limit + per-candidate ack.
 
 ## Risks and mitigations
 

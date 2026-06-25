@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-25T22:30:48.495Z",
-	"count": 132,
+	"generated_at": "2026-06-25T22:48:14.354Z",
+	"count": 133,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -236,6 +236,14 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-25"
+		},
+		{
+			"id": "f00069",
+			"file": "ready/f00069-tabs-cross-fade-and-iconography.md",
+			"track": "web+ui-extension+components+design-tokens+i18n+docs",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-26"
 		},
 		{
 			"id": "f00057",

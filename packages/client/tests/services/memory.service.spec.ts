@@ -6,12 +6,12 @@ import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = () => {
 	const { transport, calls } = createFakeTransport({
-		mcp-vertex_memory_list: {
+		'mcp-vertex_memory_list': {
 			notes: [{ id: 'n1', title: 'Decision', tags: ['proposal'] }],
 			total: 1,
 			offset: 0,
 		},
-		mcp-vertex_memory_recall: {
+		'mcp-vertex_memory_recall': {
 			notes: [
 				{
 					id: 'n1',
@@ -23,7 +23,7 @@ const makeService = () => {
 				},
 			],
 		},
-		mcp-vertex_memory_save: {
+		'mcp-vertex_memory_save': {
 			ok: true,
 			saved: {
 				id: 'n1',
@@ -35,7 +35,7 @@ const makeService = () => {
 			},
 			redactedSecrets: 0,
 		},
-		mcp-vertex_memory_forget: { ok: true, removed: 'n1' },
+		'mcp-vertex_memory_forget': { ok: true, removed: 'n1' },
 	});
 	return {
 		service: new MemoryService(McpStdioClient.fromTransport(transport)),
@@ -49,7 +49,10 @@ describe('MemoryService', async () => {
 		const result = await service.list({ limit: 5 });
 		expect(result.total).toBe(1);
 		expect(result.notes[0]?.title).toBe('Decision');
-		expect(calls[0]).toEqual({ tool: 'mcp-vertex_memory_list', args: { limit: 5 } });
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_memory_list',
+			args: { limit: 5 },
+		});
 	});
 
 	it('recalls memory notes', async () => {

@@ -20,11 +20,11 @@ import type {
 import { mcpVertexOverviewI18n } from '#I18N/tools/mcp-vertex_overview';
 import { proposalsAutoWorkI18n } from '#I18N/tools/mcp-vertex_proposals_auto_work';
 import { memorySaveI18n } from '#I18N/tools/mcp-vertex_memory_save';
-import { auditPlanI18n } from '#I18N/tools/audit_plan';
-import { auditConsolidateI18n } from '#I18N/tools/audit_consolidate';
+import { auditPlanI18n } from '#I18N/tools/mcp-vertex_audit_plan';
+import { auditConsolidateI18n } from '#I18N/tools/mcp-vertex_audit_consolidate';
 import { depsDepsListI18n } from '#I18N/tools/mcp-vertex_deps_deps_list';
 import { depsDepsCheckI18n } from '#I18N/tools/mcp-vertex_deps_deps_check';
-import { depsDepsOutdatedI18n } from '#I18N/tools/deps_deps_outdated';
+import { depsDepsOutdatedI18n } from '#I18N/tools/mcp-vertex_deps_deps_outdated';
 import { docsDocsListI18n } from '#I18N/tools/mcp-vertex_docs_docs_list';
 import { docsDocsReadI18n } from '#I18N/tools/mcp-vertex_docs_docs_read';
 import { gitChangedI18n } from '#I18N/tools/mcp-vertex_git_changed';
@@ -59,7 +59,7 @@ import { proposalsContinueProposalI18n } from '#I18N/tools/mcp-vertex_proposals_
 import { proposalsCreateProposalI18n } from '#I18N/tools/mcp-vertex_proposals_create_proposal';
 import { proposalsDelegateI18n } from '#I18N/tools/mcp-vertex_proposals_delegate';
 import { proposalsGetProposalWorkflowI18n } from '#I18N/tools/mcp-vertex_proposals_get_proposal_workflow';
-import { proposalsPlanI18n } from '#I18N/tools/proposals_plan';
+import { proposalsPlanI18n } from '#I18N/tools/mcp-vertex_proposals_plan';
 import { proposalsProposalAdoptI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_adopt';
 import { proposalsProposalBoardI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_board';
 import { proposalsProposalDiagnoseI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_diagnose';
@@ -84,8 +84,8 @@ import { statusMarkerCloseI18n } from '#I18N/tools/mcp-vertex_status-marker_clos
 import { statusMarkerPingI18n } from '#I18N/tools/mcp-vertex_status-marker_ping';
 import { statusMarkerValidateI18n } from '#I18N/tools/mcp-vertex_status-marker_validate';
 import { testConventionGetConventionI18n } from '#I18N/tools/mcp-vertex_test-convention_get_convention';
-import { testConventionScanDriftI18n } from '#I18N/tools/test-convention_scan_drift';
-import { testConventionSuggestSpecPathI18n } from '#I18N/tools/test-convention_suggest_spec_path';
+import { testConventionScanDriftI18n } from '#I18N/tools/mcp-vertex_test-convention_scan_drift';
+import { testConventionSuggestSpecPathI18n } from '#I18N/tools/mcp-vertex_test-convention_suggest_spec_path';
 
 // ─── Catalogue storage ────────────────────────────────────────────────────────
 // We use a module-level Map so additions via `register*` survive Astro's
