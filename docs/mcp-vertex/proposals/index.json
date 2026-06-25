@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-25T20:02:47.534Z",
-	"count": 127,
+	"generated_at": "2026-06-25T22:30:48.495Z",
+	"count": 132,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -111,7 +111,8 @@
 					"{ agent: implementation_runner, task: 'S2: extend `check-i18n.ts` to walk nested keys + every-language check; tighten to 12-lang strict (H10)' }",
 					"{ agent: implementation_runner, task: 'S3: `renderToolbar` awaits `bridge.listLoadedPlugins()` and gates plugin-bound actions on plugin presence (H12)' }",
 					"{ agent: implementation_runner, task: 'S4: `STATUS_BAR_EVENTS` accept a `locale` argument + use the same keymap as the web `ui.ts` (H15)' }",
-					"{ agent: implementation_runner, task: 'S5: `formatRelativeTime` switches to `Intl.RelativeTimeFormat` and honors `locale` (H17)' }"
+					"{ agent: implementation_runner, task: 'S5: `formatRelativeTime` switches to `Intl.RelativeTimeFormat` and honors `locale` (H17)' }",
+					"{ agent: web_runner, task: 'S6: fix Astro translation files braces nesting in langs/*.ts (H2)' }"
 				]
 			}
 		},
@@ -198,6 +199,45 @@
 			}
 		},
 		{
+			"id": "f00065",
+			"file": "ready/f00065-skill-ownership-cache-canon-examples-triggers-shared-contracts.md",
+			"track": "umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'A: move skills out of docs/mcp-vertex/skills into their owners (packages/core for core skills, plugins/<x> for plugin skills); docs becomes documentation only; rewire load-skills, assemble, gen-skills, lint:skills' }",
+					"{ agent: implementation_runner, task: 'B: make project + active-plugin skills auto-discoverable and usable by the AI with no manual instruction; close any gap left by f00056; optimize for token cost (compact surface)' }",
+					"{ agent: implementation_runner, task: 'C: canonicalize cache to root .cache/mcp-vertex; remove/migrate tools/scripts/.cache and any per-app/per-folder cache; document + contract the root-cache rule' }",
+					"{ agent: web_runner, task: 'D: add junior-grade web examples with per-language packager tabs (node: bun/deno/npm/pnpm/yarn; python; php/artisan; etc.), icon+name language selector, beginner explanations, and i18n-loaded copy' }",
+					"{ agent: host_runner, task: 'E: ensure slash (/) and prompt/skill trigger characters surface mcp-vertex tools/prompts/skills in Claude, Codex, Copilot, OpenCode, etc.; investigate per-host registration and propose integration' }",
+					"{ agent: implementation_runner, task: 'F: extract constants/interfaces/types reused across packages/apps/extensions into a shared contracts boundary; remove concrete duplicates found in the audit' }"
+				]
+			}
+		},
+		{
+			"id": "f00066",
+			"file": "ready/f00066-bootstrap-file-reader-async-io-refactor.md",
+			"track": "core+refactor+async",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: rewrite existsSync and readFileSync to fs/promises async calls in packages/core/src/lib/bootstrap/bootstrap-tool.ts (H5)' }"
+				]
+			}
+		},
+		{
+			"id": "f00067",
+			"file": "ready/f00067-multi-model-orchestrator.md",
+			"track": "core+plugins+config+i18n+docs+ui-extension",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25"
+		},
+		{
 			"id": "f00057",
 			"file": "in-progress/f00057-skill-unification-plugin-coverage-script-wiring-and-doc-drift-repair.md",
 			"track": "skills+plugins+tools+scripts+docs+workflow",
@@ -217,7 +257,8 @@
 					"{ agent: implementation_runner, task: 'S9: synchronise the five stale plugin READMEs against the live registerTool surface — `git`, `deps`, `memory`, `quality`, `logs` — using a single template (header → Enable → Tools table → Configuration → Options → Hard deps)' }",
 					"{ agent: implementation_runner, task: 'S10: wire the four orphan scripts into `validate` — `tools/scripts/lint/check-skills.script.ts` (`lint:skills`), `tools/scripts/verify/plugin-tool-verify.script.ts` (`verify:tools`), `tools/scripts/metrics/collect-candidate.script.ts` + `diff-snapshots` + `get-baseline` (`metrics:gate`), `tools/scripts/astro/gen-section-pages.script.ts` + `i18n/translate-tutorials.script.ts` (`site:codegen`)' }",
 					"{ agent: implementation_runner, task: 'S11: deprecate `docs_search` (semantically subsumed by `search_search` with `roots:[\"docs\"]`; mark the tool deprecated in its registration, point callers at the wrapper, remove in a follow-up) and clarify `setup_github` (kept — it is a CLI-style helper distinct from `issues_*`, document its scope in the new `plugins-issues` skill)' }",
-					"{ agent: implementation_runner, task: 'S12: unify knowledge-entry naming to `<plugin>-<topic>`, force ≥1 per plugin, and backfill `conventions` + `proposals` (the two plugins that currently expose zero knowledge entries)' }"
+					"{ agent: implementation_runner, task: 'S12: unify knowledge-entry naming to `<plugin>-<topic>`, force ≥1 per plugin, and backfill `conventions` + `proposals` (the two plugins that currently expose zero knowledge entries)' }",
+					"{ agent: implementation_runner, task: 'S13: fix core compilation/validation issues by updating catalog/assemble (H1), regenerating tool outputs SDK (H3), and fixing proposal linter warnings (H4)' }"
 				]
 			}
 		},
@@ -315,6 +356,14 @@
 			"type": "proposal",
 			"status": "paused",
 			"date": "2026-06-23"
+		},
+		{
+			"id": "f00068",
+			"file": "paused/f00068-external-mcps-plugin-paused.md",
+			"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
+			"type": "proposal",
+			"status": "paused",
+			"date": "2026-06-26"
 		},
 		{
 			"id": "a00001",
@@ -721,6 +770,14 @@
 			"type": "unspecified",
 			"status": "done",
 			"date": "2026-06-24T21:20:00Z"
+		},
+		{
+			"id": "a00042",
+			"file": "done/audits/a00042-25-06-2026-antigravity-gemini-3-5-flash-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-25T23:37:00Z"
 		},
 		{
 			"id": "f00001",

@@ -81,5 +81,36 @@
 
 	// Suppress telemetry permission prompts (these are unrelated to chat
 	// permissions but they pop up at first session start and add noise).
-	"github.copilot.telemetry.enabled": false
+	"github.copilot.telemetry.enabled": false,
+
+	// ──────────────────────────────────────────────────────────────────────
+	// Agent skills — make `mcp-vertex-status-marker-and-closure` discoverable
+	// in this workspace so the canonical close-marker behaviour is injected
+	// on every response. The skill itself lives at
+	// `plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/`
+	// and is owned by the `@mcp-vertex/status-marker` plugin (per the SOLID
+	// ownership rules in `docs/mcp-vertex/skills/README.md`).
+	// Core + transversal skills are added for completeness so the host can
+	// discover every skill shipped by the project.
+	// ──────────────────────────────────────────────────────────────────────
+	"chat.agentSkills.enabled": true,
+	"chat.agentSkillsLocations": [
+		"./packages/core/skills",
+		"./plugins/status-marker/skills",
+		"./plugins/proposals/skills",
+		"./plugins/audit/skills",
+		"./plugins/quality/skills",
+		"./plugins/test-convention/skills",
+		"./plugins/conventions/skills",
+		"./plugins/web-fetch/skills",
+		"./plugins/memory/skills",
+		"./plugins/docs/skills",
+		"./plugins/git/skills",
+		"./plugins/search/skills",
+		"./plugins/deps/skills",
+		"./plugins/notification/skills",
+		"./plugins/logs/skills",
+		"./plugins/rules/skills",
+		"./plugins/issues/skills"
+	]
 }
