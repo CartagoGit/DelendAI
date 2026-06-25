@@ -372,7 +372,7 @@ const site = {
 				'أعد تشغيل Claude Code (أو شغّل `/mcp` لإعادة تحميل الخوادم) ليتعرف على الإدخال الجديد.',
 				'في جلسة جديدة، يشير ملفا `AGENTS.md` + `CLAUDE.md` المُحمّلان دائمًا بالفعل إلى `mcp-vertex_overview` كأول استدعاء.',
 				'أكّد باستخدام `mcp-vertex_overview { compact: true }` — يخبرك حقل `recommendedNextAction` بما يجب فعله بعد ذلك.',
-				'في الجلسات متعددة الوكلاء، اقرأ مهارة `proposal-swarm-runner` قبل المطالبة بشريحة.',
+				'في الجلسات متعددة الوكلاء، اقرأ مهارة `mcp-vertex-proposal-swarm-runner` قبل المطالبة بشريحة.',
 			],
 		},
 		nextSteps: 'إلى أين بعد ذلك',

@@ -195,7 +195,7 @@ See `skills/` for task-specific playbooks (plugin authoring, failure modes) and
 
 ## When you run an audit
 
-**Always read `skills/audit-playbook/SKILL.md` first.** Audits in this repo are not
+**Always read `skills/mcp-vertex-audit-playbook/SKILL.md` first.** Audits in this repo are not
 shell-only exercises — the LLM must read the actual source code exhaustively (every
 plugin, every engine, every extension, tools, scripts, test specs, skills) and produce
 findings backed by real file references and code snippets. Automated commands (`bun run

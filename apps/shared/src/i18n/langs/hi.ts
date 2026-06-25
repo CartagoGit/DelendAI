@@ -375,7 +375,7 @@ const site = {
 				'Claude Code को रीस्टार्ट करें (या सर्वर रीलोड करने के लिए `/mcp` चलाएँ) ताकि नई प्रविष्टि पहचानी जाए।',
 				'एक नए सत्र में, हमेशा लोड होने वाली `AGENTS.md` + `CLAUDE.md` पहले से ही पहली कॉल के रूप में `mcp-vertex_overview` की ओर इंगित करती हैं।',
 				'`mcp-vertex_overview { compact: true }` से पुष्टि करें — `recommendedNextAction` फ़ील्ड बताता है कि आगे क्या करना है।',
-				'मल्टी-एजेंट सत्रों के लिए, slice claim करने से पहले `proposal-swarm-runner` स्किल पढ़ें।',
+				'मल्टी-एजेंट सत्रों के लिए, slice claim करने से पहले `mcp-vertex-proposal-swarm-runner` स्किल पढ़ें।',
 			],
 		},
 		nextSteps: 'आगे कहाँ जाएँ',

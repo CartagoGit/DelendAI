@@ -16,10 +16,9 @@ import Base from '#LAYOUTS/Base.astro';
 import CodeBlock from '#UI/CodeBlock.astro';
 import Callout from '#UI/Callout.astro';
 import Stepper from '#UI/Stepper.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
+import { type Lang } from '#I18N/ui';
 
 const lang: Lang = 'en';
-const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 // Single source of truth for the TOC. Order = render order in the article.

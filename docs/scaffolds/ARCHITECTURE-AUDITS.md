@@ -247,4 +247,4 @@ acceptance:
 Run `bun run lint:proposals` to ensure the audit proposal conforms to the sections, frontmatter, and canonical order.
 Run `bun run lint:scaffolds` to ensure this scaffold stays discoverable and well-formed.
 
-Before running an audit, read `skills/audit-playbook/SKILL.md` — it contains the step-by-step protocol for the mandatory qualitative LLM code-reading phases that must precede writing any audit document.
+Before running an audit, read `skills/mcp-vertex-audit-playbook/SKILL.md` — it contains the step-by-step protocol for the mandatory qualitative LLM code-reading phases that must precede writing any audit document.
