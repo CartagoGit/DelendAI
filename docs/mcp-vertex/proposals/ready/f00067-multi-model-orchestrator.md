@@ -52,7 +52,13 @@ user has access to**, automatically, while:
    and surfaces a `usage_report` to the user and to a future
    `advise_spend` LLM-as-cost-analyst tool.
 5. Discovering what the user has at first run: PATH probe + auth RPCs + LLM-as-bootstrap-wizard that asks the user 2-3 questions in prose and writes a `roster.draft.json` for the user to review.
-6. **Exposing real-time provider status and session spend** inside the Webview Dashboard (`packages/ui-extension`) with interactive controls.
+
+> **Scope note:** the **Webview Dashboard visualisation** of provider
+> status, quotas, and live spend (originally proposed as a goal #6
+> + S11) is **out of scope for f00067** and will be filed as
+> `f00068-ui-provider-dashboard.md` once S3–S7 close and the data
+> surface stabilises. f00067 ships the data and the CLI; f00068
+> ships the visualisation.
 
 The wiki pages cited throughout this proposal are the **source of
 truth for design decisions**; this document only summarises and
@@ -151,6 +157,18 @@ recent sessions:
   opt-in via `mcp-vertex.config.json#plugins.orchestrator-runner`
   and `#plugins.usage-tracking`. The default preset does not
   include them in S9; users add them deliberately.
+- **No Webview Dashboard visualisation in f00067.** A real-time
+  provider status panel, a *Usage Cost Analyst* card, and a
+  *Live Swarm Activity Stream* in `packages/ui-extension` are
+  explicitly **out of scope** and will be filed as
+  `f00068-ui-provider-dashboard.md` once S3–S7 close and the data
+  surface stabilises. f00067 ships the data layer + the CLI
+  surface; f00068 ships the visualisation.
+- **No new `loop-detector` module in orchestrator-runner.** The
+  runner consumes the existing `LoopDetectorService` from
+  `plugins/proposals/src/lib/agents/`. New heuristics (if any) are
+  added as hooks on the existing primitive, never as a sibling.
+  One loop detector in the codebase, not two.
 
 ## architecture
 
@@ -197,17 +215,12 @@ plugins/usage-tracking/                         NEW · the eyes
   src/lib/rollup.ts                             5-min rollups
   src/lib/pricing.ts                            LiteLLM fetch + bundled snapshot fallback
   src/lib/detect-agent.ts                       clientInfo → kind/extension
-  src/lib/circuit-breaker.ts                    NEW · cost limit enforcer
+  src/lib/circuit-breaker.ts                    NEW · session/monthly spend limits (S7)
   src/lib/tools/report.tool.ts
   src/lib/tools/clear.tool.ts
   src/public/index.ts                           barrel
   README.md
   tests/
-
-packages/ui-extension/src/                      EXT · dashboard views
-  renderers/
-    render-providers.ts                         NEW · Dashboard providers list
-    render-dashboard.ts                         EXT · wire providers & spend reports
 
 apps/web/src/i18n/tools/
   orchestrator-runner/                          NEW · 12 langs × 10 tools
@@ -277,7 +290,7 @@ highest-risk).
 ### S3 — usage-tracking plugin MVP (the eyes)
 
 - **Status**: ready
-- **Files**: `plugins/usage-tracking/` (NEW — full plugin scaffold), `apps/web/src/i18n/tools/usage-tracking/` (NEW — 12 langs × 2 tools), `packages/cli/src/commands/groups/usage-tracking.ts` (NEW).
+- **Files**: `plugins/usage-tracking/` (NEW — full plugin scaffold), `apps/web/src/i18n/tools/usage-tracking/` (NEW — 12 langs × 2 tools).
 - **Gate**: `bun run test plugins/usage-tracking && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
   - "Plugin scaffold under `plugins/usage-tracking/` follows the same layout as `plugins/memory/` (package.json, tsconfig.json, vitest.config.ts, src/public/index.ts)."
@@ -290,7 +303,6 @@ highest-risk).
   - "Subscription providers use `{kind:'subscription', subscriptionUsd, marginalCostUsd:null, fixedCost:true}` — no fabricated per-call price (CRITICAL N4 fix)."
   - "`<prefix>_usage_report {groupBy, windowDays, filter, sortBy, limit}` returns rollup slice + top 10 expensive calls."
   - "`<prefix>_usage_clear` requires confirmation."
-  - "CLI commands added under `packages/cli/src/commands/groups/usage-tracking.ts` (consumes f00046 conventions): `mcpv usage-tracking report` and `mcpv usage-tracking clear` for cost visualization outside the extension."
   - "`agent.id/kind/extension` table covers at least: GitHub Copilot Chat, Claude Code, Codex CLI, Cursor, Aider, Continue, plus the `cli-doctor` / `cli-direct` host (CRITICAL N6 fix). Schema for user extension lives at `plugins.usage-tracking.options.clientMap: Record<string, {kind, extension}>`."
   - "12 languages × 2 tool summaries ship in `apps/web/src/i18n/tools/usage-tracking/`. `bun run lint:cli:i18n` passes."
 
@@ -310,6 +322,7 @@ highest-risk).
   - "Tool `<prefix>_advise_routing {taskDescription, sliceCapabilityHints?, mode?, costPreference?, sessionId?}` returns `{decision, alternates, scoringTrace, sessionId}`. `decision.strategy` is one of `passthrough | api | cli | mcp-tool | handoff` (CRITICAL C4 fix)."
   - "Session stickiness: `Map<sessionId, IRoutingDecision>` in-memory with TTL `sessionStickinessTtlSeconds: 300` (default); pruned every 5 min (CRITICAL I12)."
   - "Tool `<prefix>_get_quota` reads `${cacheDir}/orchestrator-runner/quotas.json` (placeholder; S5 fills it)."
+  - "**Loop detection reuses the existing primitive** in `plugins/proposals/src/lib/agents/loop-detector-service.ts` (`LoopDetectorService` + `loop-detector-config.ts`). The runner imports it via `ctx.options.dependencies` (or a thin proposal-side re-export); **no new `loop-detector.ts` is created**. If a new heuristic is needed later (e.g. duplicate task descriptions across providers), it is added as a hook on `LoopDetectorService`, not as a sibling. This avoids duplicating the existing heuristic that distinguishes *stuck* from *iterating* and respects AGENTS.md rule 1 (one loop detector, not two)."
   - "4 of 10 tools ship in this slice (the headless ones). Remaining 6 (bootstrap, invoke, advise_spend, format_handoff, list_models, set_provider_state, cancel_invocation) ship in S5–S7."
 
 ---
@@ -338,6 +351,7 @@ highest-risk).
   - "Generic `SubprocessPool` lives at `plugins/orchestrator-runner/src/lib/subprocess/pool.ts` (CRITICAL C8 fix: generic primitive; could move to `core/src/lib/shared/` in a future proposal once a second consumer exists)."
   - "Pool size 2 by default; concurrency limit 4; auto-restart on crash with exponential backoff."
   - "Cancellation semantics per provider kind (CRITICAL I8 fix): `mcp-server` sends standard JSON-RPC `$/cancelRequest` notification with the active request `id`; `cli` sends `SIGTERM` at 5s, `SIGKILL` at 10s; `api` aborts the `fetch` via `AbortController` (upstream spend not refundable); `subscription` is best-effort."
+  - "**Configurable timeouts:** `plugins.orchestrator-runner.options.invokeTimeoutMs` (default 30_000) is the wall-clock cap per `<prefix>_invoke` call. Per-invocation override via `timeoutMs` argument. The runner enforces this **before** the cancellation ladder (i.e. timeout fires SIGTERM at 5s before wall-clock cap, SIGKILL at 10s before wall-clock cap, then surfaces a `timeout-exceeded` error). Schema field lives under `plugins.orchestrator-runner.options`; defaults are baked in `OptionsSchema`."
   - "Tool `<prefix>_invoke {task, mode?, capabilityHints?, costPreference?, sessionId?, stream?, toolsAllow?}` returns either `{decision, result{text, structuredContent?, usage?, costUsd?}, invocationId, sessionId}` or `{decision, error{code:'all-providers-failed', tried, nextAvailableAt}, userMessage}`."
   - "Fallback strategy: `fallbackStrategy: 'rerank'` (default) re-scores with the failed provider excluded and `maxCostTier` relaxed by 1 per hop (CRITICAL I7 fix). `fallbackStrategy: 'tier-down'` (alternative) walks the cost tier strictly downward."
   - "Tool `<prefix>_cancel_invocation {invocationId}` cancels in-flight invocations per the per-kind rules above."
@@ -360,6 +374,10 @@ highest-risk).
   - "Tool `<prefix>_advise_spend {windowDays?}` returns `{currentState{byProvider, byPlugin, byAgent, byExtension}, observations[], recommendations[]}` with `riskLevel: low|medium|high` on each recommendation. Recommendations are non-destructive; the user must confirm before they touch the config."
   - "Tool `<prefix>_usage_report` adds an `autoBypassed: number` field per provider."
   - "i18n: 12 langs × 1 new tool (`advise_spend`)."
+  - "**Circuit breaker** lives at `plugins/usage-tracking/src/lib/circuit-breaker.ts` (not in `orchestrator-runner`): it observes `invocations.jsonl`, computes rolling `sessionSpendUsd` (since session start) and `monthlySpendUsd` (calendar-month window), and writes a `limitsStatus: { sessionSpendUsd, sessionLimitUsd, sessionLimitPct, monthlySpendUsd, monthlyLimitUsd, monthlyLimitPct, breached: 'session'|'monthly'|null }` block into `usage-summary.json`. When `breached` is set, `<prefix>_invoke` returns `{ error: { code: 'spend-limit-exceeded', scope, limitUsd, observedUsd, message } }` **before** spawning any subprocess or HTTP call."
+  - "**Integration with the fallback chain** (from `06`): when the circuit breaker breaches, the runner does **not** surface a hard error if `fallbackStrategy: 'rerank'` is set and there exists at least one provider at `costTier <= 1`. In that case the runner degrades automatically to the cheapest available provider and logs the degradation in `usage-summary.json#degradations`. With `fallbackStrategy: 'tier-down'` (or no cheap tier available), the hard error fires."
+  - "**Configuration** adds two fields to `plugins.usage-tracking.options`: `maxSessionSpendUsd?: number` (default undefined = unlimited) and `maxMonthlySpendUsd?: number` (default undefined). When either is set, the breaker is active. JSON schema gain is a single `{type:'object', properties: {maxSessionSpendUsd: {type:'number', minimum:0}, maxMonthlySpendUsd: {type:'number', minimum:0}}, additionalProperties:false}` block — no global schema touch needed (per-plugin options)."
+  - "**`<prefix>_advise_spend` surfaces `limitsStatus`** in its `currentState` output, so the LLM-as-cost-analyst can recommend *\"you have $12 of your $50 monthly cap left; consider switching to Sonnet for the rest of the week\"* before the user hits the wall."
 
 ---
 
@@ -385,6 +403,7 @@ highest-risk).
   - "Cross-project setup docs show the new `providers` block with one worked example (the user's exact scenario, see `wiki/scenarios/copilot-with-minimax-byok.md`)."
   - "Each new plugin README documents: public tool list (with outputSchema summaries), config schema, cache layout, dependencies, kill switch (`plugins.<name>.options.enabled: false`)."
   - "Plugins are **opt-in**, not in the default preset. `mcp-vertex.config.json` example shows them under `plugins` but not in the `swarm` preset."
+  - "**CLI surface for usage-tracking** is added under `packages/cli/src/commands/groups/usage-tracking.ts` (consumes f00046 conventions): `mcpv usage-tracking report --group-by=provider|plugin|agent|extension --window-days=7 --json` and `mcpv usage-tracking clear --confirm`. These wrap `<prefix>_usage_report` and `<prefix>_usage_clear` and let the user inspect spend from a terminal without an IDE — useful for CI dashboards and shell workflows."
 
 ---
 
@@ -398,32 +417,6 @@ highest-risk).
   - "`1000-calls-latency.e2e.spec.ts` fires 1000 tool calls and asserts p99 latency regression < 5ms vs the same scenario without `usage-tracking` subscribed."
   - "`fallback-chain.e2e.spec.ts` marks the top-scored provider as `quota-exceeded` and verifies the runner picks the next-best provider; then advances the clock past `resetAt` and verifies the runner retries the original."
   - "All e2e tests are CI-friendly: no network calls, no real API spend. Use `mocks/` directory under `tests/`."
-
----
-
-### S11 — UI Extension Integration: Live Swarm Activity Dashboard & Cost Center
-
-- **Status**: ready
-- **Files**: `packages/ui-extension/src/renderers/render-providers.ts` (NEW), `packages/ui-extension/src/renderers/render-dashboard.ts` (EXT), `packages/ui-extension/src/renderers/render-swarm-trace.ts` (NEW).
-- **Gate**: bun run typecheck
-- **Acceptance**:
-  - "A new 'Providers & Quotas' section in the dashboard view renders a list of configured/detected providers, their current health status (green/red), active connection details, and remaining quotas."
-  - "A 'Usage Cost Analyst' card in the dashboard renders session USD costs bucketed by plugin and model using premium, responsive vanilla CSS styles."
-  - "A new **'Live Swarm Activity Stream'** panel is wired to listen to execution events from `orchestrator-runner` (starts, stops, stream chunks, costs). It displays in real time which LLM model (e.g. Claude, Codex, Copilot) is working on which specific task, what outputs are being obtained, and their live execution statistics."
-
----
-
-### S12 — Loop Prevention, Configurable Timeouts, and Cost Circuit Breaker (Guardrails)
-
-- **Status**: ready
-- **Files**: `plugins/orchestrator-runner/src/lib/subprocess/pool.ts` (EXT), `plugins/usage-tracking/src/lib/circuit-breaker.ts` (NEW), `packages/core/schema/mcp-vertex.config.schema.json` (EXT), `plugins/orchestrator-runner/src/lib/router/loop-detector.ts` (NEW).
-- **Gate**: bun run validate
-- **Acceptance**:
-  - "The `usage-tracking` options support `maxSessionSpendUsd` and `maxMonthlySpendUsd` limits. If exceeded, the orchestrator blocks subsequent LLM tool calls and returns a `spend-limit-exceeded` error."
-  - "Configurable timeouts are passed to `SubprocessPool` on `invoke`, killing hung processes safely per cancellation semantics."
-  - "A **Loop & Deadlock Detector** is introduced in `loop-detector.ts`. It tracks consecutive duplicate calls (identical task descriptions routed to the same provider) and repository state stasis (if git status or file hashes remain unchanged for N consecutive invocations by the same agent). When detected, it aborts the loop with a clear recovery plan, preventing wasteful spending while maintaining agent autonomy."
-
----
 
 ---
 

@@ -1,8 +1,11 @@
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/public';
+import type {
+	McpVertexToolOutputs,
+	IToolEffect,
+} from '@mcp-vertex/core/public';
 
 // f00065 slice F: `IToolEffect` is single-sourced in core; re-export it so this
 // module's existing importers keep their import path.
-export type { IToolEffect } from '@mcp-vertex/core/public';
+export type { IToolEffect };
 
 export type IOverview = McpVertexToolOutputs['mcp-vertex_overview'];
 export type IOverviewTool = IOverview['tools'][number];

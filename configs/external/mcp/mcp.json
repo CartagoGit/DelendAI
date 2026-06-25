@@ -2,7 +2,14 @@
 	"mcpServers": {
 		"mcp-vertex": {
 			"command": "bun",
-			"args": ["tools/scripts/host/host-server.script.ts"]
+			"args": [
+				"tools/scripts/host/host-server.script.ts",
+				"--workspace=${workspaceFolder}",
+				"--config=${workspaceFolder}/mcp-vertex.config.json",
+				"--preset=swarm"
+			],
+			"cwd": "${workspaceFolder}",
+			"env": {}
 		}
 	}
 }

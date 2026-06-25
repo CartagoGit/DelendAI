@@ -284,18 +284,32 @@ export const assembleCliConfig = async (
 		if (registrations.isAgentStuck)
 			isAgentStuckFn = registrations.isAgentStuck;
 		for (const tool of registrations.tools ?? []) {
+			// Every plugin tool is qualified with the host's core namespace
+			// prefix (`mcp-vertex` by default) followed by the plugin's own
+			// prefix. This makes the tool owner discoverable at a glance
+			// when several MCP servers are loaded side by side, and keeps
+			// the in-plugin uniqueness guarantee of `${ns}_${tool.id}`.
+			const qualifiedId = `${corePrefix}_${ns}_${tool.id}`;
 			pluginToolEntries.push({
-				name: `${ns}_${tool.id}`,
+				name: qualifiedId,
 				summary: tool.summary,
 				tags: tool.tags,
 				...(tool.effects ? { effects: tool.effects } : {}),
 			});
 			qualifiedPluginTools.push({
 				...tool,
-				id: `${ns}_${tool.id}`,
+				id: qualifiedId,
+				// The i18n catalogue key follows the same qualification as
+				// the MCP id, so `apps/web/src/i18n/tools/<key>.ts` files
+				// are looked up under the fully-qualified name.
+				...(tool.descriptionKey !== undefined
+					? { descriptionKey: `${corePrefix}_${tool.descriptionKey}` }
+					: {}),
 				// A same-plugin anchor must point at the qualified id too.
 				...(tool.registerAfter !== undefined
-					? { registerAfter: `${ns}_${tool.registerAfter}` }
+					? {
+							registerAfter: `${corePrefix}_${ns}_${tool.registerAfter}`,
+						}
 					: {}),
 			});
 		}
@@ -363,7 +377,7 @@ export const assembleCliConfig = async (
 		: '';
 	const recommendedNextAction =
 		(hasProposals
-			? `Call ${corePrefix}_overview, then proposals_auto_work to start working.`
+			? `Call ${corePrefix}_overview, then ${corePrefix}_proposals_auto_work to start working.`
 			: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
 		rulesClause;
 
