@@ -169,14 +169,18 @@ The root is intentionally minimal. Before adding a file to it, check this:
   (CLI-only, no editor extension; `docs:api` passes `--options configs/typedoc.json`).
   When a config moves, its internal relative paths are rewritten relative to
   `configs/` (e.g. `../tsconfig.json`).
+- **External agent/IDE configs may use `configs/external/<tool>/` as the
+  canonical source only when the tool's root auto-discovery keeps working** via
+  a tested stub, include, symlink, or explicit path. Do not move `.github/`,
+  `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, `.continue/`, `.mcp.json`,
+  `.aider.conf.yml`, or `.cursorrules` blindly: many hosts discover only the
+  root path and silently ignore relocated config.
 - **Config files that STAY at root are the ones their tool/editor auto-discovers
   there** — the standard, expected JS/TS monorepo layout, not clutter:
   `package.json`, `bun.lock`, `bunfig.toml`, `.gitignore`, `tsconfig*.json`,
   `biome.json`, `vitest.config.ts`/`vitest.shared.ts`, `stylelint.config.mjs`,
   `lefthook.yml`, `mcp-vertex.config.json`. Moving any of these breaks in-editor
-  types/lint/format or the git hooks, so they stay. Agent/IDE configs
-  (`.mcp.json`, `.aider.conf.yml`, `.cursorrules`, `.claude/`, …) also stay —
-  each agent discovers its config at root.
+  types/lint/format or the git hooks, so they stay.
 - **Community-health docs live in `.github/`** (`CONTRIBUTING.md`,
   `SECURITY.md`) — GitHub discovers them there. `README.md`, `LICENSE`,
   `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` stay at root by convention/agent

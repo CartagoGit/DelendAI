@@ -70,11 +70,20 @@ The target dogfood layout is:
   verify/
 configs/
   <only configs whose tools accept explicit paths without breaking editor integration>
+  external/
+    <tool>/
+      <canonical source for external-agent config when a tested root bridge exists>
 docs/mcp-vertex/
   proposals/
 ```
 
 Runtime-generated state belongs under `.cache/mcp-vertex/**`. Human-authored mcp-vertex state belongs under `docs/mcp-vertex/**`. Root files remain only when the tool, package manager, editor, or host discovers them there by convention.
+
+External agent/IDE configs are evaluated per host:
+
+- `.github/` workflows, community health files, `CODEOWNERS`, Dependabot config, Copilot instructions, and GitHub agent files are root-discovered by GitHub/GitHub Copilot; they stay at `.github/**` unless a tested root bridge preserves GitHub behavior.
+- `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, and `.continue/` may move their canonical authored source to `configs/external/<tool>/` only if the root path remains a working discovery point through a tested include/stub/symlink or explicit host setting.
+- If a host does not support includes and ignores symlinks, the root file is not clutter; it is the integration boundary.
 
 ## Slices
 
@@ -86,7 +95,8 @@ Runtime-generated state belongs under `.cache/mcp-vertex/**`. Human-authored mcp
 - **Acceptance**:
   - Every root config is classified as `must-stay-root`, `moved-to-configs`, or `blocked-by-tool`.
   - Any moved config has all package scripts updated to pass an explicit config path.
-  - Editor-discovered configs stay at root unless an extension-safe override exists.
+  - External-agent configs use `configs/external/<tool>/` as canonical source only when the root discovery bridge is verified for that host.
+  - Editor-discovered configs stay at root unless an extension-safe override or bridge exists.
 
 ### S2 — Cache centralization cleanup
 
