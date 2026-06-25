@@ -1,7 +1,7 @@
 /**
  * setup-github.ts — the multi-step webview that mirrors the web wizard
  * (`apps/web/src/pages/setup.astro`) and the canonical 7-step guide in
- * `docs/CROSS-PROJECT-SETUP.md` (f00030 S4).
+ * `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` (f00030 S4).
  *
  * The webview is intentionally minimal: 7 steps, one per screen, each with a
  * Back / Next pair and a "Copy command" button. All state (the current step)
@@ -48,7 +48,7 @@ export const SETUP_GITHUB_COMMANDS: readonly string[] = [
 
 /** Canonical source-of-truth guide every surface links back to. */
 export const SETUP_GITHUB_DOCS_URL =
-	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/CROSS-PROJECT-SETUP.md';
+	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/mcp-vertex/CROSS-PROJECT-SETUP.md';
 
 const escapeHtml = (value: string): string =>
 	value
