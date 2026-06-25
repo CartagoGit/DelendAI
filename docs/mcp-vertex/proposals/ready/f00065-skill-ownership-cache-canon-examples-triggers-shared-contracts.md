@@ -178,18 +178,32 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S3 — C: Single canonical root cache
 
-- **Status**: pending
-- **Files**: tools/scripts/.cache/** (remove/migrate), .gitignore, AGENTS.md,
-  tools/scripts/** (cache path resolution), docs/mcp-vertex/**
+- **Status**: done
+- **Files**: tools/scripts/.cache/** (removed), .gitignore, AGENTS.md,
+  tools/scripts/lib/monorepo-paths.ts, tools/scripts/lint/check-cache.script.ts
+  (+ spec), package.json (lint:cache + validate)
 - **Gate**: bun run validate
 - **Goal**: exactly one canonical cache, the root `.cache/mcp-vertex/`. Remove or
   migrate `tools/scripts/.cache` and any per-app/per-folder cache. Make the
   root-cache rule explicit in docs and in a contract/convention.
 - **Acceptance**:
-  - No `.cache` exists outside the root (verified by a lint/check).
+  - No `.cache` exists outside the root (verified by a lint/check). ✓ — the
+    stray `tools/scripts/.cache/` was deleted and `bun run lint:cache`
+    (`tools/scripts/lint/check-cache.script.ts`, wired into `validate`) fails on
+    any `.cache` outside the root.
   - Any generator that wrote to `tools/scripts/.cache` now writes to
-    `.cache/mcp-vertex/**`.
-  - Docs + a convention/contract state the cache is always the root cache.
+    `.cache/mcp-vertex/**`. ✓ — the rules cache materializes to the root cache
+    when tools are run from the repo root; the stray copy was a wrong-cwd
+    artifact, not a hardcoded path.
+  - Docs + a convention/contract state the cache is always the root cache. ✓ —
+    AGENTS.md root-layout rule rewritten; `.gitignore` Audit-H8 exception
+    replaced with a pointer to the lint.
+- **Resolver (single source of truth)**: `cacheRoot()` / `CACHE_DIR_REL` in
+  `tools/scripts/lib/monorepo-paths.ts`, both derived from core's
+  `DEFAULT_CORE_PATHS.cacheDir` (`@mcp-vertex/core/public`) so the
+  `.cache/mcp-vertex` segment is defined exactly once across engine + tooling.
+- **Validate**: green (`bun run validate` exit 0; final `lint:cache` confirms
+  only the root `.cache` exists even after `verify:tools`).
 
 ### S4 — D: Junior-grade web examples with per-language packagers
 
