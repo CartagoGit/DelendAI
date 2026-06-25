@@ -337,6 +337,35 @@ const dict: LangDict = {
 		tabsNext: '下一个',
 		tabsPrev: '上一个',
 		stepsOf: '/',
+
+	homeQuickInstall: {
+		title: '快速安装',
+		lead: '选择你的包管理器。同一条命令适用于 Node、Deno 和 Bun — 其余内容都在安装页面里。',
+		tabsLabel: '包管理器',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — 随 Node.js 附带。' },
+			{ id: 'pnpm', note: '快速、节省磁盘、严格的依赖解析。' },
+			{ id: 'yarn', note: 'npm 的经典替代。' },
+			{ id: 'bun', note: '集运行时与包管理器于一身 — mcp-vertex 本身就是用 bun 构建的。' },
+			{ id: 'deno', note: '默认安全的运行时，自带一流的 TypeScript。' },
+		],
+		recommended: '推荐',
+		fullCta: '完整安装矩阵',
+	},
+	homeAtAGlance: {
+		title: '它能做什么？',
+		lead: '选择一个版块。首页只是引导 — 每个入口都有专门的页面承载完整内容。',
+		tabsLabel: '版块',
+		openSection: '打开',
+		panels: [
+			{ id: 'plugins', label: '插件', summary: '已发布的包。只加载你需要的；内核保持极小。', href: 'plugins' },
+			{ id: 'tools', label: '工具', summary: '完整插件集暴露的每个工具，按命名空间分组 — 来自实时注册表。', href: 'tools' },
+			{ id: 'bench', label: '基准', summary: 'token 效率是受保护的不变量 — 度量，而非声称。', href: 'benchmarks' },
+			{ id: 'skills', label: '技能', summary: '智能体可按需加载的领域剧本。', href: 'skills' },
+			{ id: 'knowledge', label: '知识', summary: '内核可回答问题的编目文档。', href: 'knowledge' },
+			{ id: 'presets', label: '预设', summary: '为任意工作区大小预配置的插件集。', href: 'presets' },
+			{ id: 'setup', label: '跨项目配置', summary: '将 mcp-vertex 接入任何仓库并准备好 issues 插件。', href: 'setup' },
+		],
 	},
 };
 

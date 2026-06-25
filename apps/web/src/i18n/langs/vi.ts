@@ -343,6 +343,35 @@ const dict: LangDict = {
 		tabsNext: 'Tiếp',
 		tabsPrev: 'Trước',
 		stepsOf: 'trên',
+
+	homeQuickInstall: {
+		title: 'Cài nhanh',
+		lead: 'Chọn trình quản lý gói của bạn. Cùng một lệnh chạy với Node, Deno và Bun — phần còn lại nằm ở trang cài đặt.',
+		tabsLabel: 'Trình quản lý gói',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — đi kèm Node.js.' },
+			{ id: 'pnpm', note: 'Nhanh, tiết kiệm đĩa, phân giải phụ thuộc chặt.' },
+			{ id: 'yarn', note: 'Lựa chọn cổ điển thay cho npm.' },
+			{ id: 'bun', note: 'Runtime + trình quản lý gói tất cả trong một — chính mcp-vertex được dựng bằng bun.' },
+			{ id: 'deno', note: 'Runtime an toàn theo mặc định với TypeScript hạng nhất.' },
+		],
+		recommended: 'Được khuyến nghị',
+		fullCta: 'Ma trận cài đặt đầy đủ',
+	},
+	homeAtAGlance: {
+		title: 'Nó có thể làm gì?',
+		lead: 'Chọn một mục. Trang chủ chỉ định hướng — mỗi điểm truy cập có một trang riêng với đầy đủ chi tiết.',
+		tabsLabel: 'Mục',
+		openSection: 'Mở',
+		panels: [
+			{ id: 'plugins', label: 'Plugin', summary: 'Các gói đã phát hành. Chỉ tải những gì bạn cần; lõi vẫn nhỏ gọn.', href: 'plugins' },
+			{ id: 'tools', label: 'Công cụ', summary: 'Mọi công cụ của bộ plugin đầy đủ, nhóm theo namespace — từ registry sống.', href: 'tools' },
+			{ id: 'bench', label: 'Đo lường', summary: 'Hiệu quả token là một bất biến được bảo vệ — được đo, không tuyên bố.', href: 'benchmarks' },
+			{ id: 'skills', label: 'Kỹ năng', summary: 'Cẩm nang miền mà tác tử có thể tải theo yêu cầu.', href: 'skills' },
+			{ id: 'knowledge', label: 'Tri thức', summary: 'Tài liệu đã lập chỉ mục mà lõi có thể trả lời.', href: 'knowledge' },
+			{ id: 'presets', label: 'Preset', summary: 'Bộ plugin cấu hình sẵn cho mọi kích thước workspace.', href: 'presets' },
+			{ id: 'setup', label: 'Thiết lập đa dự án', summary: 'Cắm mcp-vertex vào bất kỳ repo nào và chuẩn bị plugin issues.', href: 'setup' },
+		],
 	},
 };
 

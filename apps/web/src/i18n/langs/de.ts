@@ -345,6 +345,35 @@ const dict: LangDict = {
 		tabsNext: 'Weiter',
 		tabsPrev: 'Zurück',
 		stepsOf: 'von',
+
+	homeQuickInstall: {
+		title: 'Schnellinstallation',
+		lead: 'Wähle deinen Paketmanager. Derselbe Befehl funktioniert mit Node, Deno und Bun — alles weitere steht auf der Installationsseite.',
+		tabsLabel: 'Paketmanager',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — mit Node.js ausgeliefert.' },
+			{ id: 'pnpm', note: 'Schnell, platteneffizient, strikte Abhängigkeitsauflösung.' },
+			{ id: 'yarn', note: 'Klassische Alternative zu npm.' },
+			{ id: 'bun', note: 'All-in-one-Runtime + Paketmanager — mcp-vertex selbst ist mit bun gebaut.' },
+			{ id: 'deno', note: 'Sichere Runtime mit erstklassigem TypeScript.' },
+		],
+		recommended: 'Empfohlen',
+		fullCta: 'Vollständige Installationsmatrix',
+	},
+	homeAtAGlance: {
+		title: 'Was kann es?',
+		lead: 'Wähle einen Bereich. Die Startseite orientiert nur — jeder Einstiegspunkt hat eine eigene Seite mit dem vollständigen Inhalt.',
+		tabsLabel: 'Bereiche',
+		openSection: 'Öffnen',
+		panels: [
+			{ id: 'plugins', label: 'Plugins', summary: 'Veröffentlichte Pakete. Lade nur, was du brauchst; der Kern bleibt winzig.', href: 'plugins' },
+			{ id: 'tools', label: 'Tools', summary: 'Alle Tools des vollen Plugin-Sets, gruppiert nach Namespace — aus dem Live-Registry.', href: 'tools' },
+			{ id: 'bench', label: 'Benchmarks', summary: 'Token-Effizienz ist eine geschützte Invariante — gemessen, nicht behauptet.', href: 'benchmarks' },
+			{ id: 'skills', label: 'Skills', summary: 'Domain-Playbooks, die der Agent bei Bedarf laden kann.', href: 'skills' },
+			{ id: 'knowledge', label: 'Wissen', summary: 'Katalogisierte Dokumente, zu denen der Kern Fragen beantworten kann.', href: 'knowledge' },
+			{ id: 'presets', label: 'Presets', summary: 'Vorkonfigurierte Plugin-Sets für jede Workspace-Größe.', href: 'presets' },
+			{ id: 'setup', label: 'Projektübergreifendes Setup', summary: 'Binde mcp-vertex in ein beliebiges Repo ein und bereite das Issues-Plugin vor.', href: 'setup' },
+		],
 	},
 };
 

@@ -14,8 +14,8 @@ A single plugin that records every tool invocation across all of
 
 ## What it owns
 
-- **`~/.cache/mcp-vertex/invocations.jsonl`** — append-only NDJSON log.
-- **`~/.cache/mcp-vertex/usage-summary.json`** — periodically
+- **`${cacheDir}/usage-tracking/invocations.jsonl`** — append-only NDJSON log.
+- **`${cacheDir}/usage-tracking/usage-summary.json`** — periodically
   refreshed rollups (every 5 min via a tick on tool completion).
 - **`<prefix>_usage_report`** MCP tool — query the rollups.
 - **`IHostObservability.onToolCall`** — extension point (already
@@ -30,14 +30,14 @@ It does **not** own:
   writes to the same `quotas.json` but doesn't own its TTL).
 - Cost calculation in fiat (each provider has its own pricing;
   the plugin keeps a pricing table in
-  `~/.cache/mcp-vertex/pricing.json`, refreshed from
+  `${cacheDir}/usage-tracking/pricing.json`, refreshed from
   LiteLLM's `model_prices_and_context_window.json` with 24h TTL).
 
 ---
 
 ## The log format
 
-`~/.cache/mcp-vertex/invocations.jsonl`:
+`${cacheDir}/usage-tracking/invocations.jsonl`:
 
 ```jsonc
 {
@@ -76,7 +76,7 @@ their cache, their OS handles it).
 
 ## The rollups
 
-`~/.cache/mcp-vertex/usage-summary.json`:
+`${cacheDir}/usage-tracking/usage-summary.json`:
 
 ```jsonc
 {
@@ -179,7 +179,7 @@ content.
 
 ## Pricing table
 
-`~/.cache/mcp-vertex/pricing.json`:
+`${cacheDir}/usage-tracking/pricing.json`:
 
 ```jsonc
 {
@@ -201,11 +201,22 @@ Refreshed by a small `tools/scripts/refresh-pricing.script.ts` (or
 by the plugin on startup, gated by a 24h TTL — same pattern as
 Aider's `ModelInfoManager`).
 
-For **subscription providers** (Claude Code, Codex, Copilot), the
-pricing entry is `{ kind: "subscription", monthlyCostUsd: 20, tier:
-"pro" }` and the cost-per-call is computed as
-`monthlyCostUsd / assumedCallsPerMonth` (heuristic; documented as
-imprecise).
+> **CRITICAL I6 fix (2026-06-25):**
+> 1. The LiteLLM URL is already covered by the default
+>    `mcp-vertex.config.json#plugins.web-fetch.options.allowList`
+>    (`raw.githubusercontent.com`).
+> 2. **Fallback when LiteLLM is down:** the plugin ships a bundled
+>    `pricing.json` (snapshot from the last successful fetch) at
+>    `${pluginSource}/resources/pricing.snapshot.json`. The cache
+>    file falls back to this if the fetch fails and there's no
+>    prior cache.
+> 3. **For subscription providers (CRITICAL N4 fix):** the metric
+>    `costUsd / call` is **meaningless** (Opus on Claude Code Max
+>    has marginal cost $0). The report uses
+>    `{ kind: "subscription", tier: "pro", subscriptionUsd: 20,
+>    marginalCostUsd: null, fixedCost: true }` and the LLM-as-cost-
+>    analyst reasons about *whether the subscription is worth
+>    renewing*, not per-call.
 
 ---
 
@@ -218,10 +229,16 @@ imprecise).
 - **No cross-host sync.** The log is per-`mcp-vertex` instance. If
   you run `mcp-vertex` on three machines, you have three logs.
   Cross-host aggregation is a future plugin.
-- **No LLM involvement in the log path.** The plugin writes the
-  record synchronously in the `onToolCall` hook. LLM analysis
-  happens on-demand via `<prefix>_usage_report` + the LLM interprets
-  the rollups.
+- **No LLM involvement in the log path.** The plugin **builds** the
+  record synchronously in the `onToolCall` hook and enqueues it; a
+  background writer batches appends via `writeFileAtomic` under a
+  single shared `withFileMutex`, flushing at most once per **250ms**
+  or **64 entries** (whichever first). **CRITICAL C2 fix (2026-06-25):**
+  this is not a per-call fsync — that would violate AGENTS.md rule
+  3 ("async I/O only in hot paths") and would trash the orchestrator's
+  own latency under load. The 250ms / 64-entry throttle is the
+  proven pattern from the notification plugin's recent fix
+  (a00032 S3).
 
 ---
 
@@ -253,9 +270,12 @@ lifecycle to manage. The plugin is mostly I/O and rollup.
 ## The MVP definition for this plugin
 
 1. **NDJSON append on every tool call.** Use the existing
-   `IHostObservability.onToolCall` hook. No new contract.
+   `IHostObservability.onToolCall` and `IHostObservability.onToolStart`
+   hooks (the latter provides `startedAt`; the former provides
+   `endedAt` and `result`). No new contract.
 2. **Detect agent via `clientInfo`.** Static table.
-3. **Pricing table with LiteLLM fetch.** 24h TTL.
+3. **Pricing table with LiteLLM fetch.** 24h TTL, bundled snapshot
+   fallback.
 4. **`<prefix>_usage_report` tool.** Group by all four axes.
 5. **`<prefix>_usage_clear` tool.** Explicit user action, requires
    confirmation.

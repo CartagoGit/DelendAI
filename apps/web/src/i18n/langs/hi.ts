@@ -341,6 +341,35 @@ const dict: LangDict = {
 		tabsNext: 'अगला',
 		tabsPrev: 'पिछला',
 		stepsOf: 'में से',
+
+	homeQuickInstall: {
+		title: 'त्वरित इंस्टॉल',
+		lead: 'अपना पैकेज मैनेजर चुनें। वही कमांड Node, Deno और Bun के साथ काम करता है — बाकी सब इंस्टॉल पेज पर है।',
+		tabsLabel: 'पैकेज मैनेजर',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — Node.js के साथ आता है।' },
+			{ id: 'pnpm', note: 'तेज़, डिस्क-कुशल, सख्त निर्भरता रिज़ॉल्यूशन।' },
+			{ id: 'yarn', note: 'npm का क्लासिक विकल्प।' },
+			{ id: 'bun', note: 'ऑल-इन-वन रनटाइम + पैकेज मैनेजर — mcp-vertex खुद bun से बना है।' },
+			{ id: 'deno', note: 'पहले-दर्ज़े के TypeScript के साथ डिफ़ॉल्ट-रूप से सुरक्षित रनटाइम।' },
+		],
+		recommended: 'अनुशंसित',
+		fullCta: 'पूर्ण इंस्टॉल मैट्रिक्स',
+	},
+	homeAtAGlance: {
+		title: 'यह क्या कर सकता है?',
+		lead: 'एक अनुभाग चुनें। होम पेज़ केवल दिशा देता है — हर प्रवेश-बिंदु की पूरी कहानी अपने पेज़ पर है।',
+		tabsLabel: 'अनुभाग',
+		openSection: 'खोलें',
+		panels: [
+			{ id: 'plugins', label: 'प्लगइन्स', summary: 'प्रकाशित पैकेज। बस जितना चाहिए उतना लोड करें; कोर छोटा रहता है।', href: 'plugins' },
+			{ id: 'tools', label: 'टूल', summary: 'पूर्ण प्लगइन सेट द्वारा उजागर हर टूल, namespace के अनुसार — जीवित रजिस्ट्री से।', href: 'tools' },
+			{ id: 'bench', label: 'बेंचमार्क', summary: 'टोकन दक्षता एक संरक्षित अपरिवर्तनीय है — मापी गई, दावा नहीं।', href: 'benchmarks' },
+			{ id: 'skills', label: 'स्किल्स', summary: 'डोमेन प्लेबुक जिन्हें एजेंट माँग पर लोड कर सकता है।', href: 'skills' },
+			{ id: 'knowledge', label: 'ज्ञान', summary: 'सूचीबद्ध दस्तावेज़ जिन पर कोर प्रश्नों का उत्तर दे सकता है।', href: 'knowledge' },
+			{ id: 'presets', label: 'प्रीसेट्स', summary: 'किसी भी वर्कस्पेस आकार के लिए पूर्व-कॉन्फ़िगर प्लगइन सेट।', href: 'presets' },
+			{ id: 'setup', label: 'क्रॉस-प्रोजेक्ट सेटअप', summary: 'mcp-vertex को किसी भी रेपो में जोड़ें और issues प्लगइन तैयार करें।', href: 'setup' },
+		],
 	},
 };
 

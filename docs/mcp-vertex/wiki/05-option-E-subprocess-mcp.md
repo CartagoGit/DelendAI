@@ -153,9 +153,10 @@ the orchestrator can:
    the LLM fills in `strengths`, `weaknesses`, `costTier` based on
    what it knows about the models.
 
-4. **Persist the roster.** `~/.cache/mcp-vertex/roster.json` (or
-   `mcp-vertex.config.json#providers` if the user prefers explicit
-   config). Re-probe on a TTL (24h like Aider's LiteLLM cache).
+4. **Persist the roster.** `${cacheDir}/orchestrator-runner/roster.json`
+   (cache, auto-regenerated) plus `mcp-vertex.config.json#providers`
+   (the user-confirmed subset). Re-probe on a TTL (24h like Aider's
+   LiteLLM cache).
 
 The user goes from *"edit JSON for 5 providers"* to *"click OK on a
 bootstrap wizard that reads your disk."*
@@ -168,11 +169,12 @@ bootstrap wizard that reads your disk."*
 > está la IA."*
 
 > **Updated 2026-06-25 (turn 5):** the LLM writes to
-> `~/.cache/mcp-vertex/roster.draft.json` (cache, never edited by
-> hand), the user reviews the diff, and on confirm the orchestrator
-> copies the relevant subset to `mcp-vertex.config.json#providers`
-> (versionado). See [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) §3
-> for the full flow including the cache/config split.
+> `${cacheDir}/orchestrator-runner/roster.draft.json` (cache, never
+> edited by hand), the user reviews the diff, and on confirm the
+> orchestrator copies the relevant subset to
+> `mcp-vertex.config.json#providers` (versionado). See
+> [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) §3 for
+> the full flow including the cache/config split.
 
 One tool call: `orchestrator_runner_bootstrap_providers`. Behaviour:
 
@@ -181,7 +183,7 @@ One tool call: `orchestrator_runner_bootstrap_providers`. Behaviour:
 2. For each found tool, run the cheapest "tell me about yourself"
    command (`claude auth status`, `codex mcp-server` + `model/list`,
    `copilot help providers`, `aider --list-models`, etc.).
-3. Write raw discovery to `~/.cache/mcp-vertex/roster.draft.json`.
+3. Write raw discovery to `${cacheDir}/orchestrator-runner/roster.draft.json`.
 4. Present a **prose summary** to the LLM of the caller:
 
    > *"The user has installed: Claude Code (logged in, Pro tier),
