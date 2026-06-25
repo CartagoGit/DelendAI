@@ -83,7 +83,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		id: 'swarm',
 		title: 'swarm',
 		summary:
-			'Multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention. ' +
+			'Multi-agent coordination: standard + proposals, notification, logs, status-marker, test-convention, conventions. ' +
 			'audit is opt-in per project and is NOT in swarm — run it separately after a round finishes.',
 		members: [
 			{ plugin: 'proposals' },
@@ -91,6 +91,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 			{ plugin: 'logs' },
 			{ plugin: 'status-marker' },
 			{ plugin: 'test-convention' },
+			{ plugin: 'conventions' },
 		],
 	},
 	{
