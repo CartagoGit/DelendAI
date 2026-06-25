@@ -4,7 +4,7 @@ import { describeTool } from '#I18N/tools';
 import capabilities from '#MANIFESTS/capabilities.json';
 import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
 import PageHeader from '#COMPONENTS/PageHeader.astro';
-import PluginTabs from '#COMPONENTS/PluginTabs.astro';
+import Tabs from '#COMPONENTS/ui/Tabs.astro';
 import PluginInstall from '#COMPONENTS/PluginInstall.astro';
 import Tutorial from '#COMPONENTS/Tutorial.astro';
 
@@ -93,7 +93,8 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 />
 <section class="section">
 	<div class="container">
-		<PluginTabs
+		<Tabs
+			variant="plugin"
 			tabs={[
 				{ id: 'install', label: t.pluginpage.tabInstall },
 				{ id: 'tools', label: t.pluginpage.tabTools },
@@ -187,7 +188,7 @@ const title = pkg?.name ?? `@mcp-vertex/${slug}`;
 				<section data-tab-panel="tutorial" id="panel-tutorial" hidden>
 					<Tutorial tutorials={pluginTutorials} plugin={slug} lang={lang} />
 				</section>
-			)}
+			)
 		</PluginTabs>
 	</div>
 </section>

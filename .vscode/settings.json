@@ -94,23 +94,23 @@
 	// discover every skill shipped by the project.
 	// ──────────────────────────────────────────────────────────────────────
 	"chat.agentSkills.enabled": true,
-	"chat.agentSkillsLocations": [
-		"./packages/core/skills",
-		"./plugins/status-marker/skills",
-		"./plugins/proposals/skills",
-		"./plugins/audit/skills",
-		"./plugins/quality/skills",
-		"./plugins/test-convention/skills",
-		"./plugins/conventions/skills",
-		"./plugins/web-fetch/skills",
-		"./plugins/memory/skills",
-		"./plugins/docs/skills",
-		"./plugins/git/skills",
-		"./plugins/search/skills",
-		"./plugins/deps/skills",
-		"./plugins/notification/skills",
-		"./plugins/logs/skills",
-		"./plugins/rules/skills",
-		"./plugins/issues/skills"
-	]
+	"chat.agentSkillsLocations": {
+		"./packages/core/skills": true,
+		"./plugins/status-marker/skills": true,
+		"./plugins/proposals/skills": true,
+		"./plugins/audit/skills": true,
+		"./plugins/quality/skills": true,
+		"./plugins/test-convention/skills": true,
+		"./plugins/conventions/skills": true,
+		"./plugins/web-fetch/skills": true,
+		"./plugins/memory/skills": true,
+		"./plugins/docs/skills": true,
+		"./plugins/git/skills": true,
+		"./plugins/search/skills": true,
+		"./plugins/deps/skills": true,
+		"./plugins/notification/skills": true,
+		"./plugins/logs/skills": true,
+		"./plugins/rules/skills": true,
+		"./plugins/issues/skills": true
+	}
 }

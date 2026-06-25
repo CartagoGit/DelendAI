@@ -6,7 +6,7 @@ import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {
-		mcp-vertex_search_search: {
+		'mcp-vertex_search_search': {
 			query: 'test',
 			count: 1,
 			truncated: false,
@@ -38,7 +38,10 @@ describe('SearchService', async () => {
 				tags: ['observability'],
 				summary: 'Per-tool call metrics',
 			},
-			{ name: 'mcp-vertex_proposals_proposal_board', tags: ['proposals'] },
+			{
+				name: 'mcp-vertex_proposals_proposal_board',
+				tags: ['proposals'],
+			},
 			{ name: 'mcp-vertex_memory_recall' },
 		];
 
