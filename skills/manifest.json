@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"generatedAt": "2026-06-21T00:00:00.000Z",
+	"generatedAt": "2026-06-25T12:00:00.000Z",
 	"skills": [
 		{
 			"id": "mcp-vertex-plugin-authoring",
@@ -27,18 +27,18 @@
 			"appliesTo": ["@mcp-vertex/*"]
 		},
 		{
-			"id": "proposal-swarm-runner",
+			"id": "mcp-vertex-proposal-swarm-runner",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/proposal-swarm-runner/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-proposal-swarm-runner/SKILL.md",
 			"tags": ["proposals", "swarm", "multi-agent"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
 		{
-			"id": "proposals-workflow-playbook",
+			"id": "mcp-vertex-proposals-workflow-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/proposals-workflow-playbook/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-proposals-workflow-playbook/SKILL.md",
 			"tags": ["proposals", "workflow", "compact"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
@@ -51,34 +51,34 @@
 			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
 		},
 		{
-			"id": "state-repair-playbook",
+			"id": "mcp-vertex-state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/state-repair-playbook/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-state-repair-playbook/SKILL.md",
 			"tags": ["state-health", "state-repair", "recovery"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
 		{
-			"id": "token-budget-playbook",
+			"id": "mcp-vertex-token-budget-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/token-budget-playbook/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-token-budget-playbook/SKILL.md",
 			"tags": ["metrics", "token-budget", "compact"],
 			"appliesTo": ["@mcp-vertex/*"]
 		},
 		{
-			"id": "concurrency-patterns",
+			"id": "mcp-vertex-concurrency-patterns",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/concurrency-patterns/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-concurrency-patterns/SKILL.md",
 			"tags": ["concurrency", "mutex", "locking"],
 			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
 		},
 		{
-			"id": "audit-playbook",
+			"id": "mcp-vertex-audit-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/audit-playbook/SKILL.md",
+			"bodyPath": "skills/mcp-vertex-audit-playbook/SKILL.md",
 			"tags": ["audit", "qualitative-analysis", "methodology"],
 			"appliesTo": ["@mcp-vertex/audit"]
 		},

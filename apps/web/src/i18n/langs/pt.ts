@@ -239,7 +239,7 @@ const dict: LangDict = {
 				'Reinicia o Claude Code (ou executa `/mcp` para recarregar servidores) para reconhecer a nova entrada.',
 				'Numa sessão nova, os ficheiros sempre carregados `AGENTS.md` + `CLAUDE.md` já apontam para `mcp-vertex_overview` como primeira chamada.',
 				'Confirma com `mcp-vertex_overview { compact: true }` — o campo `recommendedNextAction` diz o que fazer a seguir.',
-				'Para sessões multi-agente, lê o skill `proposal-swarm-runner` antes de reclamar um slice.',
+				'Para sessões multi-agente, lê o skill `mcp-vertex-proposal-swarm-runner` antes de reclamar um slice.',
 			],
 		},
 		nextSteps: 'Para onde ir a seguir',

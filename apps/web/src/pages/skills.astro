@@ -1,16 +1,22 @@
 ---
+/**
+ * `/skills` — English skills index. See `pages/tools.astro` for the
+ * recipe.
+ */
 import SkillsSection from '#COMPONENTS/SkillsSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
-import skillsData from '#MANIFESTS/skills.json';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-const lang: Lang = 'en';
+const lang = 'en' as const;
 const t = useTranslations(lang);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
-const count = (skillsData.skills ?? []).length;
 ---
 
-<Base lang={lang} title={`${t.skills.title} — @mcp-vertex/core`}>
+<PageShell
+	lang={lang}
+	title={t.skills.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.skills, href: localePath(lang, 'skills') }]}
+>
 	<SkillsSection lang={lang} heading={t.skills.title} />
-</Base>
+</PageShell>

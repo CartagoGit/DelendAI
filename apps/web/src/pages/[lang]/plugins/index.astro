@@ -1,22 +1,24 @@
 ---
+/**
+ * `/[lang]/plugins` — localized plugins index. See
+ * `pages/[lang]/tools.astro` for the recipe.
+ */
 import PluginsSection from '#COMPONENTS/PluginsSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { languages, useTranslations, type Lang } from '#I18N/ui';
-import capabilities from '#MANIFESTS/capabilities.json';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-export function getStaticPaths() {
-	return languages
-		.filter((l) => l.code !== 'en')
-		.map((l) => ({ params: { lang: l.code } }));
-}
+export const getStaticPaths = langStaticPaths;
 
-const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/${lang}/`;
-const count = capabilities.counts.packages;
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
 ---
 
-<Base lang={lang as Lang} title={`${t.plugins.title} — @mcp-vertex/core`}>
-	<PluginsSection lang={lang as Lang} heading={t.plugins.title} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.plugins.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.plugins, href: localePath(lang, 'plugins') }]}
+>
+	<PluginsSection lang={lang} heading={t.plugins.title} />
+</PageShell>

@@ -231,7 +231,7 @@ const dict: LangDict = {
 				'重启 Claude Code（或运行 `/mcp` 重新加载服务器），使其识别新条目。',
 				'在新会话中，始终加载的 `AGENTS.md` + `CLAUDE.md` 已经指向 `mcp-vertex_overview` 作为首个调用。',
 				'用 `mcp-vertex_overview { compact: true }` 确认——`recommendedNextAction` 字段会告诉你接下来该做什么。',
-				'对于多智能体会话，在认领某个 slice 之前先阅读 `proposal-swarm-runner` 技能。',
+				'对于多智能体会话，在认领某个 slice 之前先阅读 `mcp-vertex-proposal-swarm-runner` 技能。',
 			],
 		},
 		nextSteps: '接下来去哪里',
