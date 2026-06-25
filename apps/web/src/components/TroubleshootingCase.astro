@@ -34,7 +34,7 @@ const cases = (capabilities.troubleshooting ?? []) as ICase[];
 const item = cases.find((c) => c.slug === slug);
 if (!item) {
 	throw new Error(
-		`TroubleshootingCase: unknown slug "${slug}" — docs/troubleshooting/ may be stale, re-run \`bun run gen:capabilities\`.`,
+		`TroubleshootingCase: unknown slug "${slug}" — docs/mcp-vertex/troubleshooting/ may be stale, re-run \`bun run gen:capabilities\`.`,
 	);
 }
 ---

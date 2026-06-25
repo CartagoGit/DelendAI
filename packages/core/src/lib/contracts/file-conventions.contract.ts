@@ -3,7 +3,7 @@
  *
  * The canonical TypeScript file-convention profile that classifies a
  * repo-relative path into one of the 53 documented roles (see
- * `docs/FILE-CONVENTIONS.md`). This contract is the SINGLE source of
+ * `docs/mcp-vertex/FILE-CONVENTIONS.md`). This contract is the SINGLE source of
  * truth; both consumers import from here:
  *
  *   - `tools/scripts/lint/file-conventions.ts` — the lint engine

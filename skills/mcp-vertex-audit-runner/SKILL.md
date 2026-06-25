@@ -53,7 +53,7 @@ is the client/runner driving the model (`claude-code`, `copilot`, `antigravity`,
 
 ## Rubric: 5 score bands, 9 dimensions
 
-Per-finding severity bands (`docs/scaffolds/ARCHITECTURE-AUDITS.md` +
+Per-finding severity bands (`docs/mcp-vertex/scaffolds/ARCHITECTURE-AUDITS.md` +
 `plugins/audit/src/lib/brief.ts`):
 
 | Band | Emoji | Meaning |

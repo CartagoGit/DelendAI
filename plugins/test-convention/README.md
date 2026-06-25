@@ -12,7 +12,7 @@ forbidden patterns) and gives the agent three tools to apply them:
   specs and sources against the convention, return a structured drift
   report (`{ ok, counts, violations, scannedFiles }`).
 
-Designed for [`@mcp-vertex/core`](../../docs/README-MCP-VERTEX.md).
+Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 
 ## Defaults (override everything in `mcp-vertex.config.json`)
 

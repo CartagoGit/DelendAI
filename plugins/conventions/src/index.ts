@@ -2,7 +2,7 @@
  * @mcp-vertex/conventions — file-convention plugin (f00037 S3).
  *
  * A consumer-facing surface over the repo's canonical file-convention
- * profile (`docs/FILE-CONVENTIONS.md`): two read-only MCP tools that
+ * profile (`docs/mcp-vertex/FILE-CONVENTIONS.md`): two read-only MCP tools that
  * classify paths and report convention drift. Host-agnostic and
  * dependency-free beyond `@mcp-vertex/core` — it owns its own
  * TypeScript profile rather than importing the lint-side engine from

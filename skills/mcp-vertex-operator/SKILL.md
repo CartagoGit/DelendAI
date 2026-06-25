@@ -79,7 +79,7 @@ Durable memory is for distilled reusable facts, not logs or raw tool output. If
    assumption (e.g. a slice you planned to claim got claimed by a peer
    between sessions).
 3. Treat `overview`'s compact payload as exhaustive — it is intentionally
-   small (~318 tokens measured in `docs/TOKEN-BUDGETS.md`); drill into a
+   small (~318 tokens measured in `docs/mcp-vertex/TOKEN-BUDGETS.md`); drill into a
    specific tool (`proposal_board`, `state_health`) only when you actually
    need the verbose detail it omits.
 4. Use memory as a transcript sink — durable memory is for short reusable

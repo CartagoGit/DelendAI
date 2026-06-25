@@ -4,7 +4,7 @@
 8-state table that every agent response must end with, plus the
 `close` / `validate` MCP tools that produce and audit the closing line.
 
-Designed for [`@mcp-vertex/core`](../../docs/README-MCP-VERTEX.md).
+Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 
 ## The 8 states
 
@@ -71,6 +71,6 @@ const audit = validateCloseMarker(line);
 ## See also
 
 - Proposal [`l104`](../../docs/mcp-vertex/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
-- Plugin guide: [`docs/PLUGINS-MCP-VERTEX.md`](../../docs/PLUGINS-MCP-VERTEX.md).
+- Plugin guide: [`docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`](../../docs/mcp-vertex/PLUGINS-MCP-VERTEX.md).
 
 BSD-3-Clause © Cartago

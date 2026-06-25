@@ -247,7 +247,7 @@ const buildClient = async (
 };
 
 // Benchmarks are measured on the documented cold-start config (proposals +
-// memory, matching docs/TOKEN-BUDGETS.md) so the figures line up with the
+// memory, matching docs/mcp-vertex/TOKEN-BUDGETS.md) so the figures line up with the
 // "<300 tokens to orient" promise — the full tool list above still shows all 9.
 const BENCH_PLUGINS = 'proposals,memory';
 
@@ -506,9 +506,9 @@ const collectTutorials = (): ITutorial[] => {
 	return flat;
 };
 
-/** Walk `docs/troubleshooting/*.md` and return the flat catalogue (l030 S4). */
+/** Walk `docs/mcp-vertex/troubleshooting/*.md` and return the flat catalogue (l030 S4). */
 const collectTroubleshooting = (): ITroubleshootingCase[] => {
-	const dir = join(ROOT, 'docs/troubleshooting');
+	const dir = join(ROOT, 'docs/mcp-vertex/troubleshooting');
 	return [
 		...discoverTroubleshootingCases(dir, {
 			listFiles: (p) => {

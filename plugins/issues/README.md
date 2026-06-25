@@ -182,4 +182,4 @@ Returns `{ removed: boolean, movedTo?: string }`.
 
 - `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md` — the original design proposal.
 - `docs/mcp-vertex/proposals/ready/f00030-cross-project-setup-and-github-config.md` — `setup-github` subcommand + cross-project setup guide.
-- `docs/CROSS-PROJECT-SETUP.md` — canonical cross-project setup.
+- `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` — canonical cross-project setup.

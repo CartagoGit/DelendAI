@@ -2,7 +2,7 @@
 
 File-convention tools for `@mcp-vertex/core`. A consumer-facing surface
 over the repo's canonical file-convention profile (see
-[`docs/FILE-CONVENTIONS.md`](../../docs/FILE-CONVENTIONS.md), f00037):
+[`docs/mcp-vertex/FILE-CONVENTIONS.md`](../../docs/mcp-vertex/FILE-CONVENTIONS.md), f00037):
 two read-only MCP tools that classify paths into roles and report
 convention drift.
 
