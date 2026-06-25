@@ -87,5 +87,5 @@ Optional config (`mcp-vertex.config.json` at the workspace root):
    `<test-convention>_scan_drift { scope: "all" }` and refuse to close with
    `ok: false` — `counts.error` must be `0`.
 
-> This repo dogfoods exactly this setup — see [`.mcp.json`](../../.mcp.json) and
-> [`mcp-vertex.config.json`](../../mcp-vertex.config.json) at the root.
+> This repo dogfoods exactly this setup — see [`.mcp.json`](../../../../.mcp.json) and
+> [`mcp-vertex.config.json`](../../../../mcp-vertex.config.json) at the root.

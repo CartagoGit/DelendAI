@@ -61,7 +61,7 @@
         "typescript": "^6.0.3",
       },
     },
-    "examples/custom-plugin": {
+    "docs/mcp-vertex/examples/custom-plugin": {
       "name": "@mcp-vertex/example-wordcount",
       "version": "0.1.0",
       "dependencies": {
@@ -706,7 +706,7 @@
 
     "@mcp-vertex/docs": ["@mcp-vertex/docs@workspace:plugins/docs"],
 
-    "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:examples/custom-plugin"],
+    "@mcp-vertex/example-wordcount": ["@mcp-vertex/example-wordcount@workspace:docs/mcp-vertex/examples/custom-plugin"],
 
     "@mcp-vertex/git": ["@mcp-vertex/git@workspace:plugins/git"],
 

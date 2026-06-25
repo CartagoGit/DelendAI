@@ -1,8 +1,1 @@
-{
-	"mcpServers": {
-		"mcp-vertex": {
-			"command": "bun",
-			"args": ["tools/scripts/host/host-server.script.ts"]
-		}
-	}
-}
+configs/external/mcp/mcp.json

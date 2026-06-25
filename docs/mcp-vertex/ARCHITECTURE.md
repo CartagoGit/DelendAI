@@ -53,7 +53,7 @@ graph TD
 | **Core runtime** | `packages/core` | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
 | **Plugins** | `plugins/*` | One capability each, namespaced. Receive `IMcpPluginContext`. | `@mcp-vertex/core/public` |
 | **Site** | `apps/web` | Astro product/docs site, generated from the **live** registry. | core + all plugins (build-time only) |
-| **Examples** | `examples/*` | Minimal host, custom plugin, swarm. | core (+ plugins) |
+| **Examples** | `docs/mcp-vertex/examples/*` | Minimal host, custom plugin, swarm. | core (+ plugins) |
 | **Scripts** | `scripts/*` | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core |
 
 The dependency arrow only ever points **plugin → core**, never the reverse.

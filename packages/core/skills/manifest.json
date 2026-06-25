@@ -6,7 +6,7 @@
 			"id": "mcp-vertex-plugin-authoring",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-plugin-authoring/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-plugin-authoring/SKILL.md",
 			"tags": ["plugin-authoring", "contract", "core"],
 			"appliesTo": ["@mcp-vertex/*"]
 		},
@@ -14,7 +14,7 @@
 			"id": "mcp-vertex-failure-modes",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-failure-modes/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-failure-modes/SKILL.md",
 			"tags": ["failure-modes", "recovery", "swarm"],
 			"appliesTo": ["@mcp-vertex/*"]
 		},
@@ -22,7 +22,7 @@
 			"id": "mcp-vertex-operator",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-operator/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-operator/SKILL.md",
 			"tags": ["operator", "orientation", "presets"],
 			"appliesTo": ["@mcp-vertex/*"]
 		},
@@ -30,7 +30,7 @@
 			"id": "mcp-vertex-proposal-swarm-runner",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-proposal-swarm-runner/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-proposal-swarm-runner/SKILL.md",
 			"tags": ["proposals", "swarm", "multi-agent"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
@@ -38,7 +38,7 @@
 			"id": "mcp-vertex-proposals-workflow-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-proposals-workflow-playbook/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-proposals-workflow-playbook/SKILL.md",
 			"tags": ["proposals", "workflow", "compact"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
@@ -46,7 +46,7 @@
 			"id": "mcp-vertex-multi-agent-coordination",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-multi-agent-coordination/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-multi-agent-coordination/SKILL.md",
 			"tags": ["multi-agent", "coordination", "locking"],
 			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
 		},
@@ -54,7 +54,7 @@
 			"id": "mcp-vertex-state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-state-repair-playbook/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-state-repair-playbook/SKILL.md",
 			"tags": ["state-health", "state-repair", "recovery"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		},
@@ -62,7 +62,7 @@
 			"id": "mcp-vertex-token-budget-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-token-budget-playbook/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md",
 			"tags": ["metrics", "token-budget", "compact"],
 			"appliesTo": ["@mcp-vertex/*"]
 		},
@@ -70,7 +70,7 @@
 			"id": "mcp-vertex-concurrency-patterns",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-concurrency-patterns/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-concurrency-patterns/SKILL.md",
 			"tags": ["concurrency", "mutex", "locking"],
 			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
 		},
@@ -78,7 +78,7 @@
 			"id": "mcp-vertex-audit-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-audit-playbook/SKILL.md",
+			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md",
 			"tags": ["audit", "qualitative-analysis", "methodology"],
 			"appliesTo": ["@mcp-vertex/audit"]
 		},
@@ -86,7 +86,7 @@
 			"id": "mcp-vertex-conventional-commits-and-release",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-conventional-commits-and-release/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-conventional-commits-and-release/SKILL.md",
 			"tags": ["release", "conventional-commits", "versioning"],
 			"appliesTo": ["@mcp-vertex/core"]
 		},
@@ -94,7 +94,7 @@
 			"id": "mcp-vertex-token-budget-discipline",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-token-budget-discipline/SKILL.md",
+			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-discipline/SKILL.md",
 			"tags": ["token-budget", "compact", "delegation"],
 			"appliesTo": ["@mcp-vertex/core"]
 		},
@@ -102,7 +102,7 @@
 			"id": "mcp-vertex-status-marker-and-closure",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-status-marker-and-closure/SKILL.md",
+			"bodyPath": "plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md",
 			"tags": ["status-marker", "closure", "audit-trail"],
 			"appliesTo": ["@mcp-vertex/status-marker"]
 		},
@@ -110,7 +110,7 @@
 			"id": "mcp-vertex-audit-runner",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-audit-runner/SKILL.md",
+			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-runner/SKILL.md",
 			"tags": ["audit", "lifecycle", "rubric"],
 			"appliesTo": ["@mcp-vertex/audit"]
 		},
@@ -118,7 +118,7 @@
 			"id": "mcp-vertex-quality-and-rules-gates",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-quality-and-rules-gates/SKILL.md",
+			"bodyPath": "plugins/quality/skills/mcp-vertex-quality-and-rules-gates/SKILL.md",
 			"tags": ["quality", "rules", "gates"],
 			"appliesTo": ["@mcp-vertex/quality", "@mcp-vertex/rules"]
 		},
@@ -126,7 +126,7 @@
 			"id": "mcp-vertex-rules-solid-architecture",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-rules-solid-architecture/SKILL.md",
+			"bodyPath": "plugins/rules/skills/mcp-vertex-rules-solid-architecture/SKILL.md",
 			"tags": ["rules", "solid", "architecture", "contributor-guide"],
 			"appliesTo": ["@mcp-vertex/rules"]
 		},
@@ -134,7 +134,7 @@
 			"id": "mcp-vertex-legacy-proposal-migration",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
-			"bodyPath": "skills/mcp-vertex-legacy-proposal-migration/SKILL.md",
+			"bodyPath": "plugins/proposals/skills/mcp-vertex-legacy-proposal-migration/SKILL.md",
 			"tags": ["legacy", "migration", "proposals"],
 			"appliesTo": ["@mcp-vertex/proposals"]
 		}

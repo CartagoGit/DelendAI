@@ -61,7 +61,7 @@ describe('e2e: agent catalog', async () => {
 							version: '1.0.0',
 							minCoreVersion: '0.1.0',
 							bodyPath:
-								'skills/mcp-vertex-token-budget-playbook/SKILL.md',
+								'docs/mcp-vertex/skills/mcp-vertex-token-budget-playbook/SKILL.md',
 							tags: ['metrics', 'compact'],
 						},
 					],

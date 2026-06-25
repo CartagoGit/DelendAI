@@ -19,7 +19,7 @@
 			"!apps/web/src/data/capabilities.json",
 			"!apps/web/src/data/skills.json",
 			"!apps/web/src/data/manifests",
-			"!examples/custom-plugin/node_modules",
+			"!docs/mcp-vertex/examples/custom-plugin/node_modules",
 			"!packages/*/dist",
 			"!packages/*/node_modules",
 			"!plugins/*/dist",

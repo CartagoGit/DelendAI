@@ -300,19 +300,27 @@ export const assembleCliConfig = async (
 	}
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
-	const skillSummaries: readonly ISkillSummary[] = (
-		await loadSkills(
-			join(args.workspace, 'skills', 'manifest.json'),
-			args.serverVersion,
-		)
-	).map((skill) => ({
-		id: skill.id,
-		version: skill.version,
-		minCoreVersion: skill.minCoreVersion,
-		summary: deriveSkillSummary(skill.id, undefined),
-		tags: [...skill.tags],
-		bodyPath: skill.bodyPath,
-	}));
+	const configuredSkills = await loadSkills(
+		join(args.workspace, docsDir, 'skills', 'manifest.json'),
+		args.serverVersion,
+	);
+	const skillBundles =
+		configuredSkills.length > 0
+			? configuredSkills
+			: await loadSkills(
+					join(args.workspace, 'skills', 'manifest.json'),
+					args.serverVersion,
+				);
+	const skillSummaries: readonly ISkillSummary[] = skillBundles.map(
+		(skill) => ({
+			id: skill.id,
+			version: skill.version,
+			minCoreVersion: skill.minCoreVersion,
+			summary: deriveSkillSummary(skill.id, undefined),
+			tags: [...skill.tags],
+			bodyPath: skill.bodyPath,
+		}),
+	);
 	const proposalSummaries = await readProposalsIndex(
 		args.workspace,
 		readFile,

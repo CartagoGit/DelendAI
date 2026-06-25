@@ -23,7 +23,7 @@
  * @see tools/scripts/i18n/translate-tutorials.script.ts — the bootstrap
  *   that creates the skeletons with `auto-translated: true` +
  *   `needs-human-review: true`.
- * @see docs/proposals/l110-residual-l100-web-and-i18n.md §2 s3.
+ * @see docs/mcp-vertex/proposals/l110-residual-l100-web-and-i18n.md §2 s3.
  */
 import { resolve, dirname, join } from 'node:path';
 import { readdirSync, readFileSync } from 'node:fs';

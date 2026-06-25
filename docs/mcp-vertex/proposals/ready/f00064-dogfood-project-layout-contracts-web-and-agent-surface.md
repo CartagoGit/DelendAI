@@ -74,6 +74,7 @@ configs/
     <tool>/
       <canonical source for external-agent config when a tested root bridge exists>
 docs/mcp-vertex/
+  examples/
   proposals/
 ```
 
@@ -87,6 +88,8 @@ External agent/IDE configs are evaluated per host:
 - Astro's configurable `cacheDir` belongs in `.cache/astro/`; its root `.astro/`
   generated type metadata remains gitignored unless Astro supports relocating it
   without breaking editor/type-check integration.
+- Runnable adoption examples belong under `docs/mcp-vertex/examples/*` and stay
+  executable through explicit `package.json#workspaces` and `tsconfig` globs.
 
 ## Slices
 

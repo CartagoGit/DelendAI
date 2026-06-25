@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 /**
- * check-skills.script.ts — fail CI if a `skills/<name>/SKILL.md` exists on
- * disk without a matching entry in `skills/manifest.json` (or vice versa:
+ * check-skills.script.ts — fail CI if a
+ * `docs/mcp-vertex/skills/<name>/SKILL.md` exists on disk without a matching
+ * entry in `docs/mcp-vertex/skills/manifest.json` (or vice versa:
  * a manifest entry pointing at a `bodyPath` that doesn't exist). This is
  * the version-pinning contract from f00029 S1: every skill the repo ships
  * must declare a semver `version` + `minCoreVersion` so downstream
@@ -44,9 +45,13 @@ export interface ICheckSkillsIssue {
 }
 
 const SEMVER_RE = /^\d+\.\d+\.\d+$/;
+const SKILLS_REL = 'docs/mcp-vertex/skills';
 
-/** Discover every `skills/<name>/SKILL.md` (one level of nesting) under `skillsDirAbs`. */
-const discoverSkillDirs = async (skillsDirAbs: string): Promise<string[]> => {
+/** Discover every `<skillsRel>/<name>/SKILL.md` (one level of nesting) under `skillsDirAbs`. */
+const discoverSkillDirs = async (
+	skillsDirAbs: string,
+	skillsRel: string,
+): Promise<string[]> => {
 	const entries = await readdir(skillsDirAbs).catch(() => []);
 	const found: string[] = [];
 	for (const entry of entries) {
@@ -55,7 +60,7 @@ const discoverSkillDirs = async (skillsDirAbs: string): Promise<string[]> => {
 		if (st?.isDirectory() !== true) continue;
 		const skillFile = join(dirAbs, 'SKILL.md');
 		if (await stat(skillFile).catch(() => undefined)) {
-			found.push(`skills/${entry}/SKILL.md`);
+			found.push(`${skillsRel}/${entry}/SKILL.md`);
 		}
 	}
 	return found.sort((a, b) => a.localeCompare(b));
@@ -105,7 +110,7 @@ export const checkSkillsManifest = (
 		if (!inManifest.has(bodyPath)) {
 			issues.push({
 				kind: 'missing-in-manifest',
-				detail: `${bodyPath} exists on disk but has no entry in skills/manifest.json`,
+				detail: `${bodyPath} exists on disk but has no entry in ${SKILLS_REL}/manifest.json`,
 			});
 		}
 	}
@@ -120,7 +125,7 @@ const isMainModule = (): boolean => {
 
 if (isMainModule()) {
 	const root = resolve(import.meta.dirname, '..', '..', '..');
-	const skillsDirAbs = join(root, 'skills');
+	const skillsDirAbs = join(root, ...SKILLS_REL.split('/'));
 	const manifestPath = join(skillsDirAbs, 'manifest.json');
 
 	void (async () => {
@@ -137,7 +142,7 @@ if (isMainModule()) {
 			return;
 		}
 
-		const onDisk = await discoverSkillDirs(skillsDirAbs);
+		const onDisk = await discoverSkillDirs(skillsDirAbs, SKILLS_REL);
 		const issues = checkSkillsManifest(manifest, onDisk);
 
 		if (issues.length > 0) {
