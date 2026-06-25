@@ -1,5 +1,5 @@
 /**
- * load-skills.ts — read `skills/manifest.json` and resolve which entries
+ * load-skills.ts — read `docs/mcp-vertex/skills/manifest.json` and resolve which entries
  * apply to a given `@mcp-vertex/core` version (f00029 S4).
  *
  * Single Responsibility: this module only reads + filters the manifest. It
@@ -11,7 +11,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-/** One entry from `skills/manifest.json`. */
+/** One entry from `docs/mcp-vertex/skills/manifest.json`. */
 export interface ISkillBundle {
 	readonly id: string;
 	readonly version: string;
@@ -45,7 +45,7 @@ const versionGte = (version: string, minVersion: string): boolean => {
 };
 
 /**
- * Load `skills/manifest.json` from `manifestPathAbs` and return every entry
+ * Load `docs/mcp-vertex/skills/manifest.json` from `manifestPathAbs` and return every entry
  * whose `minCoreVersion` is satisfied by `coreVersion` — i.e. the bundle a
  * consumer pinned to `coreVersion` can safely resolve. Skills requiring a
  * newer core than `coreVersion` are silently excluded (not an error): an
@@ -53,7 +53,7 @@ const versionGte = (version: string, minVersion: string): boolean => {
  * doesn't have.
  *
  * Returns `[]` (not a throw) when the manifest file is missing or malformed
- * — a project without `skills/manifest.json` has no versioned skill bundle,
+ * — a project without `docs/mcp-vertex/skills/manifest.json` has no versioned skill bundle,
  * which is a valid (if degraded) state, not a fatal error.
  */
 export const loadSkills = async (

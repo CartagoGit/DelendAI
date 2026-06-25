@@ -44,19 +44,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
-export type MonorepoGroup =
-	| 'apps'
-	| 'plugins'
-	| 'packages'
-	| 'extensions'
-	| 'examples';
+export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'extensions';
 
 const VALID_GROUPS = new Set<MonorepoGroup>([
 	'apps',
 	'plugins',
 	'packages',
 	'extensions',
-	'examples',
 ]);
 
 /** Anything that can live in one of those groups. */

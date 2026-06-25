@@ -125,7 +125,7 @@ The auditor **must read and reason about** the actual source files in the follow
 - Identify any instruction prose in tool descriptions that is redundant or compressible.
 
 #### 2.10 Skills & cross-cutting concerns
-- Read `skills/` and check alignment between skill instructions and current implementation (stale paths, wrong tool names, missing new tools).
+- Read `docs/mcp-vertex/skills/` and check alignment between skill instructions and current implementation (stale paths, wrong tool names, missing new tools).
 - Check `AGENTS.md` hard rules for any violations found in the codebase.
 - Scan for `redactSecrets` coverage on every durable store.
 
@@ -247,4 +247,4 @@ acceptance:
 Run `bun run lint:proposals` to ensure the audit proposal conforms to the sections, frontmatter, and canonical order.
 Run `bun run lint:scaffolds` to ensure this scaffold stays discoverable and well-formed.
 
-Before running an audit, read `skills/mcp-vertex-audit-playbook/SKILL.md` — it contains the step-by-step protocol for the mandatory qualitative LLM code-reading phases that must precede writing any audit document.
+Before running an audit, read `docs/mcp-vertex/skills/mcp-vertex-audit-playbook/SKILL.md` — it contains the step-by-step protocol for the mandatory qualitative LLM code-reading phases that must precede writing any audit document.

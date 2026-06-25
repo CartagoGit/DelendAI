@@ -1,7 +1,7 @@
 // f00051 S6 — e2e for the bootstrap flow.
 //
 // Drives `analyze_project` → `plan_mcp_project` → `create_project` over
-// the real `examples/*` projects on disk. The point is to prove the
+// the real `docs/mcp-vertex/examples/*` projects on disk. The point is to prove the
 // end-to-end contract holds for a project that:
 //   - has a `mcp-vertex.config.json` and no `package.json`
 //   - is shaped like an example (intentionally minimal)
@@ -55,9 +55,11 @@ const fsReader = (root: string): IFileReader => ({
 
 const analyse = async (root: string) => await analyzeProject(fsReader(root));
 
-describe('bootstrap e2e over examples/', async () => {
-	it('analyzes examples/minimal without crashing (no package.json)', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+const examplesRoot = join(repoRoot, 'docs', 'mcp-vertex', 'examples');
+
+describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
+	it('analyzes docs/mcp-vertex/examples/minimal without crashing (no package.json)', async () => {
+		const root = join(examplesRoot, 'minimal');
 		expect(statSync(root).isDirectory()).toBe(true);
 		const analysis = analyse(root);
 		// A config file is present but no package.json.
@@ -68,8 +70,8 @@ describe('bootstrap e2e over examples/', async () => {
 		expect((await analysis).signals.length).toBeGreaterThan(0);
 	});
 
-	it('produces a usable server plan for examples/minimal', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+	it('produces a usable server plan for docs/mcp-vertex/examples/minimal', async () => {
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const plan = await recommendServerPlan(await analysis, {
 			serverName: 'mcp-minimal',
@@ -86,8 +88,8 @@ describe('bootstrap e2e over examples/', async () => {
 		expect(entry?.args).toContain('@mcp-vertex/core');
 	});
 
-	it('builds an exhaustive blueprint for examples/minimal', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+	it('builds an exhaustive blueprint for docs/mcp-vertex/examples/minimal', async () => {
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);
 		// Even an empty analysis produces a non-trivial blueprint
@@ -102,7 +104,7 @@ describe('bootstrap e2e over examples/', async () => {
 	});
 
 	it('materialises a dry-run skeleton that contains a host server + tools + tests', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);
 		const files = buildBlueprintFiles(bp);
@@ -121,7 +123,7 @@ describe('bootstrap e2e over examples/', async () => {
 	});
 
 	it('diffCapabilities marks every tool as missing when the project has no existing server', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);
 		const diff = diffCapabilities(bp, [], {
@@ -136,7 +138,7 @@ describe('bootstrap e2e over examples/', async () => {
 	});
 
 	it('every prompt and skill in the blueprint has a body (not just TODO)', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);
 		for (const prompt of bp.prompts) {
@@ -153,7 +155,7 @@ describe('bootstrap e2e over examples/', async () => {
 	});
 
 	it('the orchestrator agent references the bootstrap tools (gap 4)', async () => {
-		const root = join(repoRoot, 'examples', 'minimal');
+		const root = join(examplesRoot, 'minimal');
 		const analysis = analyse(root);
 		const bp = buildServerBlueprint(await analysis);
 		const files = buildBlueprintFiles(bp);

@@ -152,7 +152,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 				'plugins',
 				'extensions',
 				'apps',
-				'examples',
+				'docs/mcp-vertex/examples',
 				'tools',
 			] as const);
 	const rootDir = process.cwd();

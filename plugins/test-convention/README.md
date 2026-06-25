@@ -44,7 +44,7 @@ Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 ```
 
 The plugin ships in the **`swarm` preset** (see
-[`examples/swarm/README.md`](../../examples/swarm/README.md)) because the
+[`docs/mcp-vertex/examples/swarm/README.md`](../../docs/mcp-vertex/examples/swarm/README.md)) because the
 orchestrator benefits most from a single source of truth on test rules.
 For a single-agent setup you can enable it explicitly with
 `--plugins=test-convention`.

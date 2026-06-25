@@ -116,7 +116,7 @@ describe('issues_analyze', async () => {
 
 	it('suggests slices when the body mentions 3+ distinct path roots', async () => {
 		const body =
-			'Touches plugins/issues, apps/web/src, and packages/core/lib. Also mentions examples/minimal and extensions/vscode.';
+			'Touches plugins/issues, apps/web/src, and packages/core/lib. Also mentions docs/mcp-vertex/examples/minimal and extensions/vscode.';
 		const result = await runAnalyzeIssue(
 			{ number: 11 },
 			buildOptions(fakeClient(body, ['enhancement'])),

@@ -343,7 +343,7 @@ export type {
 	IBlueprintOptions,
 } from '../lib/bootstrap/index';
 
-// --- versioned skill bundles (f00029 S4: skills/manifest.json loader) ------
+// --- versioned skill bundles (f00029 S4: docs/mcp-vertex/skills/manifest.json loader) ------
 export { loadSkills } from '../lib/skills/load-skills';
 export type { ISkillBundle } from '../lib/skills/load-skills';
 

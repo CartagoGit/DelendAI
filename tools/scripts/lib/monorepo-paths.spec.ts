@@ -159,7 +159,7 @@ describe('monorepo-paths', async () => {
 			['apps', true],
 			['plugins', true],
 			['packages', true],
-			['examples', true],
+			['examples', false],
 			['toolz', false],
 			['APPS', false],
 		])('isSafeGroup(%j) === %j', (group, expected) => {

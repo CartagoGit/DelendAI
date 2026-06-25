@@ -17,7 +17,7 @@
  * (SRP: this module declares aliases and nothing else; DRY: a single
  * entry point feeds two consumers).
  *
- * Convention (see `docs/proposals/p112-derive-site-manifests-and-local-
+ * Convention (see `docs/mcp-vertex/proposals/p112-derive-site-manifests-and-local-
  * aliases.md` §1):
  *
  *   - Filesystem dirs are **kebab/lowercase**.

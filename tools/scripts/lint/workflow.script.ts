@@ -3,7 +3,7 @@
  * workflow.script.ts — f00049 S10 (workflow-shape lint).
  *
  * Runs every `IWorkflowRule` against the live tree and reports the
- * four "never do" patterns from `skills/mcp-vertex-proposal-swarm-runner/SKILL.md`:
+ * four "never do" patterns from `docs/mcp-vertex/skills/mcp-vertex-proposal-swarm-runner/SKILL.md`:
  *
  *   1. Hand-edited `docs/mcp-vertex/proposals/index.json` (the regenerator owns it).
  *   2. `main` local head diverges from upstream (push-from-main drift).

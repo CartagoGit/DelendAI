@@ -27,7 +27,7 @@ A Bun monorepo:
   `@mcp-vertex/ui-extension` + `@mcp-vertex/client`. Produces the
   `.vsix`. **Only file under `extensions/` that may import `vscode`.**
 - `apps/web` — Astro product/docs site, generated from the **live** tool registry.
-- `examples/*` — adoption examples (minimal host, custom plugin, swarm).
+- `docs/mcp-vertex/examples/*` — adoption examples (minimal host, custom plugin, swarm).
 - `scripts/*` — build, release, type/schema generation (pure planning split from
   side-effecting shells).
 
@@ -175,7 +175,9 @@ The root is intentionally minimal. Before adding a file to it, check this:
   a tested stub, include, symlink, or explicit path. Do not move `.github/`,
   `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, `.continue/`, `.mcp.json`,
   `.aider.conf.yml`, or `.cursorrules` blindly: many hosts discover only the
-  root path and silently ignore relocated config.
+  root path and silently ignore relocated config. Current file-level symlink
+  bridges: `.aider.conf.yml`, `.cursorrules`, and `.mcp.json` point into
+  `configs/external/**`.
 - **Config files that STAY at root are the ones their tool/editor auto-discovers
   there** — the standard, expected JS/TS monorepo layout, not clutter:
   `package.json`, `bun.lock`, `bunfig.toml`, `.gitignore`, `tsconfig*.json`,
@@ -188,6 +190,10 @@ The root is intentionally minimal. Before adding a file to it, check this:
   discovery.
 - A new root file must justify itself against the above; otherwise it belongs
   in `.github/`, `docs/mcp-vertex/`, `tools/`, `configs/`, or under `.cache/`.
+- Runnable examples are documentation-owned but still executable Bun
+  workspaces; keep them under `docs/mcp-vertex/examples/*` and include them
+  through explicit workspace/tsconfig globs instead of a root `examples/`
+  directory.
 
 ## When you touch a plugin / add a tool
 
@@ -196,12 +202,12 @@ The root is intentionally minimal. Before adding a file to it, check this:
   keys for **every** language in `apps/web/src/i18n/ui.ts`.
 - New persisted state → mutex + atomic write + a corruption test.
 
-See `skills/` for task-specific playbooks (plugin authoring, failure modes) and
+See `docs/mcp-vertex/skills/` for task-specific playbooks (plugin authoring, failure modes) and
 `docs/mcp-vertex/proposals/done/audits/` for the living master audit (the roadmap).
 
 ## When you run an audit
 
-**Always read `skills/mcp-vertex-audit-playbook/SKILL.md` first.** Audits in this repo are not
+**Always read `docs/mcp-vertex/skills/mcp-vertex-audit-playbook/SKILL.md` first.** Audits in this repo are not
 shell-only exercises — the LLM must read the actual source code exhaustively (every
 plugin, every engine, every extension, tools, scripts, test specs, skills) and produce
 findings backed by real file references and code snippets. Automated commands (`bun run

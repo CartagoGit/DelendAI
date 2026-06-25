@@ -1,8 +1,8 @@
 /**
  * gen-skills.ts — emit `src/data/manifests/skills.json`, the catalogue of
- * scaffold skills the site renders at /skills. Scans the repo's `skills/`
- * directory for SKILL.md files, extracts YAML frontmatter and a one-line
- * summary.
+ * scaffold skills the site renders at /skills. Scans the repo's
+ * `docs/mcp-vertex/skills/` directory for SKILL.md files, extracts YAML
+ * frontmatter and a one-line summary.
  *
  *   bun scripts/gen-skills.ts            # write, warn on gaps
  *   bun scripts/gen-skills.ts --strict   # FAIL on parse errors
@@ -20,7 +20,8 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
-const SKILLS_DIR = join(ROOT, 'skills');
+const SKILLS_REL = 'docs/mcp-vertex/skills';
+const SKILLS_DIR = join(ROOT, ...SKILLS_REL.split('/'));
 const OUT = resolve(HERE, '..', 'src', 'data', 'manifests', 'skills.json');
 
 interface ISkill {
@@ -36,6 +37,14 @@ const slugFromPath = (relPath: string): string => {
 	const segs = relPath.split('/');
 	// expected shape: skills/<plugin>/SKILL.md
 	if (segs[0] === 'skills' && segs.length >= 3) return segs[1] as string;
+	// repo shape: docs/mcp-vertex/skills/<plugin>/SKILL.md
+	if (
+		segs[0] === 'docs' &&
+		segs[1] === 'mcp-vertex' &&
+		segs[2] === 'skills' &&
+		segs.length >= 5
+	)
+		return segs[3] as string;
 	return segs[0] as string;
 };
 
@@ -64,7 +73,7 @@ const firstSentence = (body: string): string => {
 
 /**
  * Recursive skill walker. The top-level call is invoked with a
- * `dir` — typically `<repo>/skills` from the CLI, or any path
+ * `dir` — typically `<repo>/docs/mcp-vertex/skills` from the CLI, or any path
  * under which SKILL.md files are arranged as `<dir>/<name>/SKILL.md`.
  *
  * The internal `anchor` is the basename of the original `dir`
@@ -77,9 +86,9 @@ const firstSentence = (body: string): string => {
  * slug) and the shape the GitHub link
  * `${repo}/blob/main/${s.path}` in `SkillsSection.astro` needs.
  */
-const walkSkills = (dir: string): ISkill[] => {
+const walkSkills = (dir: string, anchor = basenameOf(dir)): ISkill[] => {
 	if (!existsSync(dir)) return [];
-	return walkSkillsInternal(dir, basenameOf(dir), '');
+	return walkSkillsInternal(dir, anchor, '');
 };
 
 const walkSkillsInternal = (
@@ -129,9 +138,9 @@ export const walkSkillsForTest = walkSkills;
 
 const main = (): void => {
 	const strict = process.argv.includes('--strict');
-	const skills = walkSkills(SKILLS_DIR);
+	const skills = walkSkills(SKILLS_DIR, SKILLS_REL);
 	if (skills.length === 0) {
-		const msg = 'no SKILL.md files found under skills/';
+		const msg = `no SKILL.md files found under ${SKILLS_REL}/`;
 		if (strict) {
 			console.error(`✖ gen-skills (strict): ${msg}`);
 			process.exit(1);

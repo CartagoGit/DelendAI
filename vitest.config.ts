@@ -12,7 +12,7 @@ export default defineConfig({
 		projects: [
 			'packages/*',
 			'plugins/*',
-			'examples/custom-plugin',
+			'docs/mcp-vertex/examples/custom-plugin',
 			'apps/web',
 			'packages/ui-extension',
 			'extensions/vscode',

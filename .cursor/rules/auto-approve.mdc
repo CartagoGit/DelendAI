@@ -38,7 +38,7 @@ this trusted monorepo.
 ## Workspace context
 
 - Monorepo: `packages/core`, `packages/client`, `packages/ui-extension`,
-  `plugins/*`, `extensions/vscode`, `apps/web`, `examples/*`, `tools/scripts`.
+  `plugins/*`, `extensions/vscode`, `apps/web`, `docs/mcp-vertex/examples/*`, `tools/scripts`.
 - Toolchain: Bun (package manager + runner + test runner), TypeScript,
   Biome (formatter + linter), Vitest.
 - Invariants: no `process.cwd()` in engines, async I/O in hot paths,
