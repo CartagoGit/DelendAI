@@ -8,8 +8,8 @@ description: How an agent (or human operator) should orient itself in a fresh mc
 
 This is the **first** skill any agent should read in a fresh session. It
 answers "what do I call before I do anything else" — the other skills
-(`proposal-swarm-runner`, `state-repair-playbook`, `token-budget-playbook`,
-`concurrency-patterns`) assume you have already done this.
+(`mcp-vertex-proposal-swarm-runner`, `mcp-vertex-state-repair-playbook`, `mcp-vertex-token-budget-playbook`,
+`mcp-vertex-concurrency-patterns`) assume you have already done this.
 
 ## Decision tree
 
@@ -19,7 +19,7 @@ session starts
       → read `recommendedNextAction` (it IS the orchestrator — do not
         restate the workflow yourself, follow what it says)
       → if it points at a proposals tool (auto_work, continue_proposal):
-          read `proposal-swarm-runner` SKILL.md next
+          read `mcp-vertex-proposal-swarm-runner` SKILL.md next
       → if it reports a failure envelope ({ ok:false, error:{ reason } }):
           read `mcp-vertex-failure-modes` SKILL.md
       → otherwise: proceed with the task using the tools `overview`

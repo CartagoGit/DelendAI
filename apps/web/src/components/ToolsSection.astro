@@ -1,81 +1,59 @@
 ---
-import { useTranslations, type Lang } from '#I18N/ui';
+/**
+ * ToolsSection.astro — body of the `/tools` index.
+ *
+ * Thin wrapper around `CapabilityGrid` that:
+ *   - emits the lead + stat-row (the grid itself only renders the
+ *     cards, not the intro),
+ *   - maps the `mcp-vertex` namespace to the `core` package slug used
+ *     by the `/tools/<plugin>/<tool>` route,
+ *   - localises tool descriptions via `describeTool`.
+ *
+ * The `<h1>` + breadcrumb come from `PageShell` via `PageHeader`; this
+ * component only owns the body.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
 import { describeTool } from '#I18N/tools';
 import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
 
 interface Props {
-	lang: Lang;
-	/** Page title. Rendered as the section's <h1> so each page has a
-	 * single, well-defined top-level heading (l122 S3 — pages were
-	 * rendering both <PageHeader><h1/> and this section's <h2>, doubling
-	 * the title). Defaults to the i18n key for back-compat. */
-	heading?: string;
+	readonly lang: Lang;
+	readonly heading: string;
 }
-const { lang, heading: headingProp } = Astro.props;
+const { lang, heading: _heading } = Astro.props;
 const t = useTranslations(lang);
-const heading = headingProp ?? t.tools.title;
-
-type ITool = { name: string; namespace: string; description: string };
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-// `mcp-vertex` namespace maps back to the `core` package slug used by the
-// `/tools/<plugin>/<tool>` route (l030 S1).
 const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
-const toolHref = (tool: ITool) => {
+const toolHref = (tool: { namespace: string; name: string }): string => {
 	const slug = slugFor(tool.namespace);
 	return lang === 'en'
 		? `${base}/tools/${slug}/${tool.name}`
 		: `${base}/${lang}/tools/${slug}/${tool.name}`;
 };
 
-const NS_LABEL: Record<string, string> = {
-	mcpvertex: 'core',
-	proposals: 'proposals',
-	git: 'git',
-	memory: 'memory',
-	search: 'search',
-	rules: 'rules',
-	quality: 'quality',
-	docs: 'docs',
-	deps: 'deps',
-	notification: 'notification',
-	'status-marker': 'status-marker',
-};
-
-const tools = capabilities.tools as ITool[];
-const groups: Record<string, ITool[]> = {};
-for (const tool of tools) {
-	if (!groups[tool.namespace]) groups[tool.namespace] = [];
-	groups[tool.namespace].push(tool);
-}
-const namespaces = Object.entries(groups).sort((a, b) =>
-	a[0].localeCompare(b[0]),
-);
-// Localized description with graceful fallback: catalogue → English (runtime).
-const desc = (tool: ITool) => describeTool(tool.name, lang) ?? tool.description;
+type ITool = { name: string; namespace: string; description: string };
+const tools = (capabilities.tools ?? []) as ITool[];
 ---
 
 <section id="tools" class="section">
 	<div class="container">
-		<h1>{heading}</h1>
 		<p class="lead">{t.tools.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t.tools.count}</span></div>
 			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t.tools.packages}</span></div>
 		</div>
-		{
-			namespaces.map(([ns, list]) => (
-				<div class="ns">
-					<div class="ns__head"><h3>{NS_LABEL[ns] ?? ns}</h3><span class="ns__count">{list.length}</span></div>
-					<div class="tools-grid">
-						{list.map((tool) => (
-							<a class="tool card" href={toolHref(tool)}>
-								<code>{tool.name}</code><p>{desc(tool)}</p>
-							</a>
-						))}
-					</div>
-				</div>
-			))
-		}
+		<CapabilityGrid
+			kind="tool"
+			items={tools}
+			labels={{ stat: t.tools.count, empty: t.tools.lead }}
+			describe={(tool) => {
+				const it = tool as ITool;
+				return describeTool(it.name, lang) ?? it.description;
+			}}
+			hrefFor={(item) => toolHref(item as ITool)}
+			sectionId="tools"
+		/>
 	</div>
 </section>

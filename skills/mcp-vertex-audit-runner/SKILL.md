@@ -1,7 +1,7 @@
 ---
 name: mcp-vertex-audit-runner
 appliesTo: ['@mcp-vertex/audit']
-description: The tool-level workflow for running and consolidating an mcp-vertex audit (audit_plan -> fresh session -> save .md -> audit_consolidate), the 5-band/9-dimension rubric, and the ready-vs-done lifecycle decision. For the exhaustive code-reading methodology itself, see the audit-playbook skill instead — this one is the surface contract, not the reading checklist.
+description: The tool-level workflow for running and consolidating an mcp-vertex audit (audit_plan -> fresh session -> save .md -> audit_consolidate), the 5-band/9-dimension rubric, and the ready-vs-done lifecycle decision. For the exhaustive code-reading methodology itself, see the mcp-vertex-audit-playbook skill instead — this one is the surface contract, not the reading checklist.
 ---
 
 # mcp-vertex audit runner

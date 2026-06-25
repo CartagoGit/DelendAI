@@ -154,8 +154,7 @@ describe('checkSkillsManifest', async () => {
 			issues.some(
 				(i) =>
 					i.kind === 'missing-applies-to' &&
-					i.detail.includes('missing-applies-field
-					i.detail.includes('minCoreVersion'),
+					i.detail.includes('missing-applies-field'),
 			),
 		).toBe(true);
 	});

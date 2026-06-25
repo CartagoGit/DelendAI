@@ -1,7 +1,7 @@
 ---
 name: mcp-vertex-token-budget-discipline
 appliesTo: ['@mcp-vertex/core']
-description: Which mcp-vertex tools are cheap to call from the root/orchestrating thread and which ones must be delegated to a subagent because their verbose form is expensive. Use before calling any tool whose name doesn't already say "compact". For the deep methodology behind the regression gate itself, see token-budget-playbook.
+description: Which mcp-vertex tools are cheap to call from the root/orchestrating thread and which ones must be delegated to a subagent because their verbose form is expensive. Use before calling any tool whose name doesn't already say "compact". For the deep methodology behind the regression gate itself, see mcp-vertex-token-budget-playbook.
 ---
 
 # mcp-vertex token budget discipline

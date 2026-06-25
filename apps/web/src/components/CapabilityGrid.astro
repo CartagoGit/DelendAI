@@ -82,15 +82,17 @@ interface Props {
 	 * caller to surface localised descriptions from the i18n tables
 	 * (`describeTool`, `describePrompt`, `describeResource`,
 	 * `describeKnowledge`). Falls back to the item's own `description`
-	 * or `title`. */
-	readonly describe?: (item: AnyItem) => string;
+	 * or `title`. Receives `unknown` so the caller can pass any item
+	 * shape — the grid is generic over `kind`, the caller is generic
+	 * over its own data source. */
+	readonly describe?: (item: unknown) => string;
 	/** For `resource` items: optional `(item) => string` that returns
 	 * the localised display name; defaults to the catalogue name. */
-	readonly displayName?: (item: AnyItem) => string;
+	readonly displayName?: (item: unknown) => string;
 	/** For `prompt` items: optional `(item, argName) => string` for
 	 * the argument descriptions. */
 	readonly argDescription?: (
-		item: AnyItem,
+		item: unknown,
 		argName: string,
 		fallback: string,
 	) => string;
@@ -98,7 +100,7 @@ interface Props {
 	readonly promptArgLabel?: string;
 	/** Optional href builder for items that have their own page
 	 * (tools, skills, troubleshooting cases). */
-	readonly hrefFor?: (item: AnyItem) => string | undefined;
+	readonly hrefFor?: (item: unknown) => string | undefined;
 	/** Optional `target` / `rel` for the rendered anchor (skills link
 	 * to the source markdown on GitHub, so they open in a new tab). */
 	readonly linkTarget?: string;
@@ -129,8 +131,9 @@ const {
 } = Astro.props as Props;
 
 const fallbackDescribe = (item: AnyItem): string => {
-	if ('description' in item && item.description) return item.description;
-	if ('title' in item && item.title) return item.title;
+	const it = item as { description?: string; title?: string };
+	if (it.description) return it.description;
+	if (it.title) return it.title;
 	return '';
 };
 
@@ -139,9 +142,10 @@ const describeItem = (item: AnyItem): string =>
 
 const nameItem = (item: AnyItem): string => {
 	if (displayName) return displayName(item);
-	if ('name' in item && item.name) return item.name;
-	if ('uri' in item) return item.uri;
-	if ('id' in item) return item.id;
+	const it = item as { name?: string; uri?: string; id?: string };
+	if (it.name) return it.name;
+	if (it.uri) return it.uri;
+	if (it.id) return it.id;
 	return '';
 };
 

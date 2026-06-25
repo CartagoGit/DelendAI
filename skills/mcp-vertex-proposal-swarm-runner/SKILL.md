@@ -1,5 +1,5 @@
 ---
-name: proposal-swarm-runner
+name: mcp-vertex-proposal-swarm-runner
 appliesTo: ['@mcp-vertex/proposals']
 description: The proposals-plugin workflow for an agent that is implementing a slice — claim, implement, validate, close — without polling locks or editing the index by hand. Use whenever overview's recommendedNextAction points at a proposals_* tool.
 ---
@@ -8,7 +8,7 @@ description: The proposals-plugin workflow for an agent that is implementing a s
 
 Read this after `mcp-vertex-operator` once `overview` points you at the
 `proposals` plugin. It covers the single-agent loop; for coordinating with
-*other* agents in the same repo, read `concurrency-patterns` next.
+*other* agents in the same repo, read `mcp-vertex-concurrency-patterns` next.
 
 ## Decision tree
 
@@ -75,7 +75,7 @@ After `proposals_close_slice`, `proposals_compact_status` should report
 one fewer open slice for that proposal. If that was the last open slice,
 run `proposals_sync_proposals` once; the proposal's `status` field in
 `index.json` should then read `done`. If it does not, run `state_health`
-(see `state-repair-playbook`) before retrying.
+(see `mcp-vertex-state-repair-playbook`) before retrying.
 
 ## Memory hygiene
 
