@@ -1,77 +1,55 @@
 ---
-import { useTranslations, type Lang } from '#I18N/ui';
+/**
+ * ResourcesSection.astro — body of the `/resources` index.
+ *
+ * Thin wrapper around `CapabilityGrid`. Resources render as a `<table>`
+ * (URI / MIME / title) — `CapabilityGrid` switches to the table shape
+ * when `kind="resource"`.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
 import { describeResource, describeResourceName } from '#I18N/tools';
 import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
 
 interface Props {
-	lang: Lang;
-	/** Page title. Rendered as the section's <h1> (l122 S3). */
-	heading?: string;
+	readonly lang: Lang;
+	readonly heading: string;
 }
-const { lang, heading: headingProp } = Astro.props;
+const { lang, heading: _heading } = Astro.props;
 const t = useTranslations(lang);
-const heading = headingProp ?? t.resources.title;
 
 type IResource = {
 	uri: string;
-	name: string;
+	name?: string;
 	description: string;
 	namespace: string;
 	mimeType?: string;
 };
-
 const resources = (capabilities.resources ?? []) as IResource[];
-const groups: Record<string, IResource[]> = {};
-for (const r of resources) {
-	if (!groups[r.namespace]) groups[r.namespace] = [];
-	groups[r.namespace].push(r);
-}
-const namespaces = Object.entries(groups).sort((a, b) =>
-	a[0].localeCompare(b[0]),
-);
-const desc = (r: IResource) => describeResource(r.uri, lang) ?? r.description;
-const name = (r: IResource) =>
-	describeResourceName(r.uri, lang) ?? r.name ?? r.uri;
 ---
 
 <section id="resources" class="section">
 	<div class="container">
-		<h1>{heading}</h1>
 		<p class="lead">{t.resources.lead}</p>
 		<div class="stat-row">
-			<div class="stat"><b>{capabilities.counts.resources ?? resources.length}</b><span>{t.resources.count}</span></div>
+			<div class="stat">
+				<b>{capabilities.counts.resources ?? resources.length}</b>
+				<span>{t.resources.count}</span>
+			</div>
 		</div>
-		{
-			namespaces.length === 0 ? (
-				<p class="lead">{t.resources.lead}</p>
-			) : (
-				namespaces.map(([ns, list]) => (
-					<div class="ns">
-						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
-						<table class="resources-table">
-							<thead>
-								<tr>
-									<th>{t.resources.uri}</th>
-									<th>{t.resources.mime}</th>
-									<th>{t.resources.title}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{list.map((r) => (
-									<tr>
-										<td><code>{r.uri}</code></td>
-										<td>{r.mimeType ?? '—'}</td>
-										<td>
-											<strong>{name(r)}</strong>
-											<p class="muted">{desc(r)}</p>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				))
-			)
-		}
+		<CapabilityGrid
+			kind="resource"
+			items={resources}
+			labels={{ stat: t.resources.count, empty: t.resources.lead }}
+			describe={(r) => {
+				const it = r as IResource;
+				return describeResource(it.uri, lang) ?? it.description;
+			}}
+			displayName={(r) => {
+				const it = r as IResource;
+				return describeResourceName(it.uri, lang) ?? it.name ?? it.uri;
+			}}
+			sectionId="resources"
+		/>
 	</div>
 </section>

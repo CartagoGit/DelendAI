@@ -1,5 +1,5 @@
 ---
-name: concurrency-patterns
+name: mcp-vertex-concurrency-patterns
 appliesTo: ['@mcp-vertex/proposals', '@mcp-vertex/notification']
 description: The repo's two concurrency primitives — withFileMutex (cross-process critical sections) and agent_lock/agent_worktree (multi-agent file-ownership coordination) — and when to use each. Use when several agents (or processes) might touch the same files at the same time.
 ---
@@ -61,7 +61,7 @@ agent B: agent_lock { action: 'claim', files: ['plugins/x/src/a.ts'] }
 `agent_lock` stops two agents editing the *same file*; it does not stop a
 push from one agent clobbering another's in-flight branch. `agent_worktree`
 creates a disposable git worktree + branch per agent, so each agent's
-`commit-and-push` (see `token-budget-playbook` / `proposal-swarm-runner`
+`commit-and-push` (see `mcp-vertex-token-budget-playbook` / `mcp-vertex-proposal-swarm-runner`
 for `auto_work`'s persist modes) lands on its own branch, not on a shared
 checkout. Use them together: `agent_lock` for "who owns these files right
 now", `agent_worktree` for "where does this agent's git history live until

@@ -1,55 +1,45 @@
 ---
-import { useTranslations, type Lang } from '#I18N/ui';
+/**
+ * KnowledgeSection.astro — body of the `/knowledge` index.
+ *
+ * Thin wrapper around `CapabilityGrid`. Knowledge cards link to the
+ * per-knowledge detail when one exists; for now they render as plain
+ * cards (no detail route yet).
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
 import { describeKnowledge } from '#I18N/tools';
 import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
 
 interface Props {
-	lang: Lang;
-	/** Page title. Rendered as the section's <h1> (l122 S3). */
-	heading?: string;
+	readonly lang: Lang;
+	readonly heading: string;
 }
-const { lang, heading: headingProp } = Astro.props;
+const { lang, heading: _heading } = Astro.props;
 const t = useTranslations(lang);
-const heading = headingProp ?? t.knowledge.title;
 
 type IKnowledge = { id: string; title: string; namespace: string };
 const knowledge = (capabilities.knowledge ?? []) as IKnowledge[];
-const groups: Record<string, IKnowledge[]> = {};
-for (const k of knowledge) {
-	if (!groups[k.namespace]) groups[k.namespace] = [];
-	groups[k.namespace].push(k);
-}
-const namespaces = Object.entries(groups).sort((a, b) =>
-	a[0].localeCompare(b[0]),
-);
-const title = (k: IKnowledge) => describeKnowledge(k.id, lang) ?? k.title;
 ---
 
 <section id="knowledge" class="section">
 	<div class="container">
-		<h1>{heading}</h1>
 		<p class="lead">{t.knowledge.lead}</p>
 		<div class="stat-row">
-			<div class="stat"><b>{capabilities.counts.knowledge ?? knowledge.length}</b><span>{t.knowledge.count}</span></div>
+			<div class="stat">
+				<b>{capabilities.counts.knowledge ?? knowledge.length}</b>
+				<span>{t.knowledge.count}</span>
+			</div>
 		</div>
-		{
-			namespaces.length === 0 ? (
-				<p class="lead">{t.knowledge.lead}</p>
-			) : (
-				namespaces.map(([ns, list]) => (
-					<div class="ns">
-						<div class="ns__head"><h3>{ns}</h3><span class="ns__count">{list.length}</span></div>
-						<div class="tools-grid">
-							{list.map((k) => (
-								<div class="tool card">
-									<code>{k.id}</code>
-									<p>{title(k)}</p>
-								</div>
-							))}
-						</div>
-					</div>
-				))
-			)
-		}
+		<CapabilityGrid
+			kind="knowledge"
+			items={knowledge}
+			labels={{ stat: t.knowledge.count, empty: t.knowledge.lead }}
+			describe={(k) => {
+				const it = k as IKnowledge;
+				return describeKnowledge(it.id, lang) ?? it.title;
+			}}
+			sectionId="knowledge"
+		/>
 	</div>
 </section>

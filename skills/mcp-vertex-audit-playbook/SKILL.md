@@ -1,5 +1,5 @@
 ---
-name: audit-playbook
+name: mcp-vertex-audit-playbook
 appliesTo: ['@mcp-vertex/audit']
 description: >
   Complete operational playbook for running an exhaustive qualitative audit of

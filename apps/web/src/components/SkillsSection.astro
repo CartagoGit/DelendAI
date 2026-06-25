@@ -1,15 +1,22 @@
 ---
-import { useTranslations, type Lang } from '#I18N/ui';
+/**
+ * SkillsSection.astro — body of the `/skills` index.
+ *
+ * Skills live in the repo as Markdown files under `skills/`; the build
+ * pipeline (`gen-skills.ts`) flattens them into `skills.json` so this
+ * page can render them as a static grid. Each card links to the source
+ * file on GitHub so the user can read the full SKILL.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
 import skillsData from '#MANIFESTS/skills.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
 
 interface Props {
-	lang: Lang;
-	/** Page title. Rendered as the section's <h1> (l122 S3). */
-	heading?: string;
+	readonly lang: Lang;
+	readonly heading: string;
 }
-const { lang, heading: headingProp } = Astro.props;
+const { lang, heading: _heading } = Astro.props;
 const t = useTranslations(lang);
-const heading = headingProp ?? t.skills.title;
 
 type ISkill = {
 	id: string;
@@ -26,28 +33,22 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 
 <section id="skills" class="section">
 	<div class="container">
-		<h1>{heading}</h1>
 		<p class="lead">{t.skills.lead}</p>
 		<div class="stat-row">
 			<div class="stat"><b>{skills.length}</b><span>{t.skills.count}</span></div>
 		</div>
-		{
-			skills.length === 0 ? (
-				<p class="lead">{t.skills.lead}</p>
-			) : (
-				<div class="skills-grid">
-					{skills.map((s) => (
-						<a class="skill" href={`${repo}/blob/main/${s.path}`} rel="external">
-							<div class="skill__head">
-								<code>{s.id}</code>
-								<span class="skill__plugin">{s.plugin}</span>
-							</div>
-							<p class="skill__summary">{s.summary || s.description}</p>
-							<span class="skill__read">{t.skills.body} →</span>
-						</a>
-					))}
-				</div>
-			)
-		}
+		<CapabilityGrid
+			kind="skill"
+			items={skills}
+			labels={{ stat: t.skills.count, empty: t.skills.lead }}
+			describe={(s) => {
+				const it = s as ISkill;
+				return it.summary || it.description;
+			}}
+			hrefFor={(s) => `${repo}/blob/main/${(s as ISkill).path}`}
+			linkTarget="_blank"
+			linkRel="external noopener"
+			sectionId="skills"
+		/>
 	</div>
 </section>
