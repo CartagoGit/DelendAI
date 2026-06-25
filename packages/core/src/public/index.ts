@@ -343,9 +343,17 @@ export type {
 	IBlueprintOptions,
 } from '../lib/bootstrap/index';
 
-// --- versioned skill bundles (f00029 S4: docs/mcp-vertex/skills/manifest.json loader) ------
+// --- versioned skill bundles (f00029 S4; f00065 S1: skills owned by package/plugin) ------
 export { loadSkills } from '../lib/skills/load-skills';
 export type { ISkillBundle } from '../lib/skills/load-skills';
+export {
+	CORE_SKILLS_ROOT,
+	SKILL_MANIFEST_REL,
+	pluginSkillsRoot,
+	ownerRootForAppliesTo,
+	skillBodyPath,
+	skillOwnerRoots,
+} from '../lib/skills/skill-paths';
 
 // --- cross-project setup engine (f00030 S2) -------------------------------
 export { buildGithubSetupSteps } from '../lib/setup/setup-steps';

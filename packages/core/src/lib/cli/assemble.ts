@@ -44,6 +44,7 @@ import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { loadSkills } from '../skills/load-skills';
+import { SKILL_MANIFEST_REL } from '../skills/skill-paths';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildAgentCatalogToolRegistration } from '../tools/agent-catalog-tool';
 import type {
@@ -300,13 +301,25 @@ export const assembleCliConfig = async (
 	}
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
+	// Skill manifest location is defined once in `skill-paths.ts`
+	// (`packages/core/skills/manifest.json`). We still fall back to the legacy
+	// `docs/<docsDir>/skills/manifest.json` and the bare `<workspace>/skills`
+	// layouts so downstream projects (and existing fixtures) that have not yet
+	// migrated keep resolving their skills.
 	const configuredSkills = await loadSkills(
-		join(args.workspace, docsDir, 'skills', 'manifest.json'),
+		join(args.workspace, ...SKILL_MANIFEST_REL.split('/')),
 		args.serverVersion,
 	);
-	const skillBundles =
+	const legacyDocsSkills =
 		configuredSkills.length > 0
 			? configuredSkills
+			: await loadSkills(
+					join(args.workspace, docsDir, 'skills', 'manifest.json'),
+					args.serverVersion,
+				);
+	const skillBundles =
+		legacyDocsSkills.length > 0
+			? legacyDocsSkills
 			: await loadSkills(
 					join(args.workspace, 'skills', 'manifest.json'),
 					args.serverVersion,

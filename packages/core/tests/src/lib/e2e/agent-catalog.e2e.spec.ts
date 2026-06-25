@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
 import proposalsPlugin from '@mcp-vertex/proposals';
 
 describe('e2e: agent catalog', async () => {
@@ -49,9 +50,10 @@ describe('e2e: agent catalog', async () => {
 	beforeEach(async () => {
 		workspace = mkdtempSync(join(tmpdir(), 'catalog-'));
 		mkdirSync(join(workspace, 'docs', 'proposals'), { recursive: true });
-		mkdirSync(join(workspace, 'skills'), { recursive: true });
+		const manifestAbs = join(workspace, ...SKILL_MANIFEST_REL.split('/'));
+		mkdirSync(dirname(manifestAbs), { recursive: true });
 		writeFileSync(
-			join(workspace, 'skills', 'manifest.json'),
+			manifestAbs,
 			JSON.stringify(
 				{
 					generatedAt: '2026-06-25T00:00:00.000Z',
@@ -61,7 +63,7 @@ describe('e2e: agent catalog', async () => {
 							version: '1.0.0',
 							minCoreVersion: '0.1.0',
 							bodyPath:
-								'docs/mcp-vertex/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+								'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
 							tags: ['metrics', 'compact'],
 						},
 					],

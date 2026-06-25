@@ -20,12 +20,12 @@ describe('checkSkillsManifest', async () => {
 					version: '1.0.0',
 					minCoreVersion: '0.1.0',
 					bodyPath:
-						'docs/mcp-vertex/skills/mcp-vertex-operator/SKILL.md',
+						'packages/core/skills/mcp-vertex-operator/SKILL.md',
 					tags: ['operator'],
 					appliesTo: ['@mcp-vertex/*'],
 				},
 			]),
-			['docs/mcp-vertex/skills/mcp-vertex-operator/SKILL.md'],
+			['packages/core/skills/mcp-vertex-operator/SKILL.md'],
 		);
 
 		expect(issues).toEqual([]);

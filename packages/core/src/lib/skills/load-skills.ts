@@ -1,17 +1,19 @@
 /**
- * load-skills.ts — read `docs/mcp-vertex/skills/manifest.json` and resolve which entries
- * apply to a given `@mcp-vertex/core` version (f00029 S4).
+ * load-skills.ts — read the composed skill manifest
+ * (`packages/core/skills/manifest.json`, see `skill-paths.ts`) and resolve
+ * which entries apply to a given `@mcp-vertex/core` version (f00029 S4).
  *
  * Single Responsibility: this module only reads + filters the manifest. It
  * does not read the SKILL.md bodies themselves (callers do that on demand,
  * the same "lazy, fetch only what you need" pattern as
  * `buildKnowledgeToolRegistration`) and does not know about the CLI/plugin
- * loader — `pluginCacheDir`/`workspace` etc. are irrelevant here, the
- * manifest is a project-level file, not a per-plugin one.
+ * loader — `pluginCacheDir`/`workspace` etc. are irrelevant here. The manifest
+ * is a project-level file composed from per-owner skills (core + plugins);
+ * its location is defined once in `skill-paths.ts`, not hardcoded here.
  */
 import { readFile } from 'node:fs/promises';
 
-/** One entry from `docs/mcp-vertex/skills/manifest.json`. */
+/** One entry from the composed skill manifest (`packages/core/skills/manifest.json`). */
 export interface ISkillBundle {
 	readonly id: string;
 	readonly version: string;
@@ -45,7 +47,7 @@ const versionGte = (version: string, minVersion: string): boolean => {
 };
 
 /**
- * Load `docs/mcp-vertex/skills/manifest.json` from `manifestPathAbs` and return every entry
+ * Load the composed skill manifest from `manifestPathAbs` and return every entry
  * whose `minCoreVersion` is satisfied by `coreVersion` — i.e. the bundle a
  * consumer pinned to `coreVersion` can safely resolve. Skills requiring a
  * newer core than `coreVersion` are silently excluded (not an error): an
@@ -53,7 +55,7 @@ const versionGte = (version: string, minVersion: string): boolean => {
  * doesn't have.
  *
  * Returns `[]` (not a throw) when the manifest file is missing or malformed
- * — a project without `docs/mcp-vertex/skills/manifest.json` has no versioned skill bundle,
+ * — a project without a composed skill manifest has no versioned skill bundle,
  * which is a valid (if degraded) state, not a fatal error.
  */
 export const loadSkills = async (
