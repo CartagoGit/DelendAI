@@ -21,6 +21,7 @@ describe('checkSkillsManifest', async () => {
 					minCoreVersion: '0.1.0',
 					bodyPath: 'skills/mcp-vertex-operator/SKILL.md',
 					tags: ['operator'],
+					appliesTo: ['@mcp-vertex/*'],
 				},
 			]),
 			['skills/mcp-vertex-operator/SKILL.md'],
