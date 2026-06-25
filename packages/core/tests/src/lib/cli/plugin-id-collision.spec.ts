@@ -49,16 +49,18 @@ describe('R12 — same internal tool id across plugins', async () => {
 		expect(loadResult.errors).toEqual([]);
 
 		const ids = config.extraTools!.map((t) => t.id);
-		expect(ids).toContain('alpha_ping');
-		expect(ids).toContain('beta_ping');
+		expect(ids).toContain('mcp-vertex_alpha_ping');
+		expect(ids).toContain('mcp-vertex_beta_ping');
 		// The raw, ambiguous id must not survive into the global sequence.
 		expect(ids).not.toContain('ping');
+		expect(ids).not.toContain('alpha_ping');
+		expect(ids).not.toContain('beta_ping');
 	});
 
 	it('builds the real MCP server without throwing a duplicate-id error', async () => {
 		const { config } = await assembleTwoPlugins();
 		const assembled = await createMcpProject(config);
-		expect(assembled.registrationOrder).toContain('alpha_ping');
-		expect(assembled.registrationOrder).toContain('beta_ping');
+		expect(assembled.registrationOrder).toContain('mcp-vertex_alpha_ping');
+		expect(assembled.registrationOrder).toContain('mcp-vertex_beta_ping');
 	});
 });

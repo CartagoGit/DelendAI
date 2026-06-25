@@ -15,6 +15,7 @@
  */
 import { useTranslations, type Lang } from '#I18N/ui';
 import { packageManagers } from '#DATA/install';
+import { brandLogo } from '#LIB/brand-logos';
 import Tabs from '#UI/Tabs.astro';
 import CodeBlock from '#UI/CodeBlock.astro';
 import Callout from '#UI/Callout.astro';
@@ -36,6 +37,7 @@ const noteByPm = new Map<string, string>(
 
 const tabs = packageManagers.map((pm) => ({
 	id: pm.id,
+	icon: brandLogo(pm.id, 'pm') ?? undefined,
 	label: pm.label,
 	badge:
 		pm.id === PM_RECOMMENDED ? t.homeQuickInstall.recommended : undefined,

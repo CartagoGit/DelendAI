@@ -33,11 +33,11 @@ describe('IToolRegistration', async () => {
 	});
 
 	it('preserves the i18n key convention (namespace_tool) via type-level guard', async () => {
-		// The catalogue convention is `<namespace>_<tool>` (matches the MCP
-		// tool name without the namespace prefix). This test pins the most
-		// common shape so a renaming regression surfaces here.
+		// The catalogue convention is `<hostPrefix>_<namespace>_<tool>`
+		// (matches the fully-qualified MCP tool name). This test pins the
+		// most common shape so a renaming regression surfaces here.
 		const proposalsKey = 'mcp-vertex_proposals_auto_work';
-		expect(proposalsKey.split('_').length).toBeGreaterThanOrEqual(2);
-		expect(proposalsKey.startsWith('proposals_')).toBe(true);
+		expect(proposalsKey.split('_').length).toBeGreaterThanOrEqual(3);
+		expect(proposalsKey.startsWith('mcp-vertex_proposals_')).toBe(true);
 	});
 });
