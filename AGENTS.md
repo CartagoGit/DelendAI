@@ -157,9 +157,16 @@ keeps `git diff` out of the hot path.
 
 The root is intentionally minimal. Before adding a file to it, check this:
 
-- **Caches/build artefacts never clutter the root.** All caches live under
-  `.cache/<tool>/` (our own state is `.cache/mcp-vertex/`; vitest coverage is
-  `.cache/coverage/`; Astro's configurable `cacheDir` is `.cache/astro/`).
+- **The cache is ALWAYS the root cache — never per-folder.** There is exactly
+  one cache root: the workspace root `.cache/` (our own state is
+  `.cache/mcp-vertex/`; vitest coverage is `.cache/coverage/`; Astro's
+  configurable `cacheDir` is `.cache/astro/`). There is NO per-app, per-package,
+  or per-folder cache. Resolve the cache path through the single source of
+  truth — `DEFAULT_CORE_PATHS.cacheDir` in the engine, or
+  `cacheRoot()`/`CACHE_DIR_REL` from `tools/scripts/lib/monorepo-paths.ts` in
+  tooling — never a hardcoded folder-relative `.cache`. Always run mcp-vertex
+  tools from the repo root so scratch state lands in the root cache. `bun run
+  lint:cache` (in `validate`) FAILS if any `.cache` appears outside the root.
   Build *outputs* go to `build/` (gitignored). Tool-owned dirs we cannot
   relocate (Astro's root `.astro/` type metadata) stay gitignored — do not
   commit them, do not add more. The local plugin verification probe writes

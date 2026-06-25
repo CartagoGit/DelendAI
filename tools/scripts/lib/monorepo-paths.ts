@@ -42,6 +42,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
+import { DEFAULT_CORE_PATHS } from '@mcp-vertex/core/public';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
 export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'extensions';
@@ -232,6 +233,26 @@ export const buildTopLevel = (name: string): string => {
 	assertSafeName('top-level build name', name);
 	return join(repoRoot(), 'build', name);
 };
+
+/**
+ * The single canonical cache root for this repo: ALWAYS the root
+ * `<repo-root>/.cache/mcp-vertex` (f00065 S2). There is no per-folder,
+ * per-app, or per-package cache — every runtime-generated mcp-vertex state
+ * lives under this one directory.
+ *
+ * The workspace-relative segment (`.cache/mcp-vertex`) is reused from core's
+ * `DEFAULT_CORE_PATHS.cacheDir` so the path is defined exactly once across the
+ * runtime engine and the tooling, the same single-source-of-truth pattern as
+ * `skill-paths.ts`. Tools that need to read/clean the cache resolve it here;
+ * the runtime engine resolves it from `DEFAULT_CORE_PATHS` joined to its
+ * workspace. The `check-cache` lint guarantees no stray `.cache` ever appears
+ * outside this root.
+ */
+export const cacheRoot = (): string =>
+	join(repoRoot(), ...DEFAULT_CORE_PATHS.cacheDir.split('/'));
+
+/** Workspace-relative canonical cache dir (`.cache/mcp-vertex`). */
+export const CACHE_DIR_REL = DEFAULT_CORE_PATHS.cacheDir;
 
 /**
  * Stable well-known names. These are the few directories the rest of the
