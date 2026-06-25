@@ -230,7 +230,7 @@ export const assembleCliConfig = async (
 			agentWorktreeEnabled,
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
-			namespacePrefix: pluginConfig.prefix ?? pluginName,
+			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
 			args: args.extra,
 		};

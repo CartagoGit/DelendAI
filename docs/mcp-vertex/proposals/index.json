@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-25T22:48:14.354Z",
-	"count": 133,
+	"generated_at": "2026-06-25T23:15:36.779Z",
+	"count": 134,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -244,6 +244,23 @@
 			"type": "proposal",
 			"status": "ready",
 			"date": "2026-06-26"
+		},
+		{
+			"id": "f00070",
+			"file": "ready/f00070-status-marker-bilingual-rendering.md",
+			"track": "i18n+l10n+plugins/status-marker+token-budget",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-26",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: extend `MARKERS` with a parallel `MARKERS_EN` map; keep `CloseMarker` type untouched' }",
+					"{ agent: implementation_runner, task: 'S2: `formatCloseMarker(state, reason?, opts?: { locale?: \"es\"|\"en\" })` — ES is the default and matches the legacy output bit-for-bit' }",
+					"{ agent: implementation_runner, task: 'S3: thread the locale through `<prefix>_close` and `<prefix>_validate` (output `line` flips; validators stay tolerant — accept both `[HECHO]` and `[DONE]` against the canonical emoji)' }",
+					"{ agent: implementation_runner, task: 'S4: regenerate `tool-outputs.ts` via `bun run types:generate`; add `formatCloseMarker` spec covering 8 states × 2 locales × reason on/off' }",
+					"{ agent: implementation_runner, task: 'S5: update the `mcp-vertex-status-marker-and-closure` skill + `.github/copilot-instructions.md` table with the bilingual mapping; document that the validator tolerates both renderings' }"
+				]
+			}
 		},
 		{
 			"id": "f00057",

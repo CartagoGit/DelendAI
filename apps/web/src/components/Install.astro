@@ -31,6 +31,7 @@ import {
 	packageManagers,
 	renderConfig,
 } from '#DATA/install';
+import { brandLogo } from '#LIB/brand-logos';
 import { PRESET_CATALOG, resolvePresetMembers } from '@mcp-vertex/core/public';
 import Tabs from '#UI/Tabs.astro';
 import CodeBlock from '#UI/CodeBlock.astro';
@@ -98,6 +99,7 @@ const presetEntries = PRESET_CATALOG.map((p) => ({
 const pmTabs = packageManagers.map((pm) => ({
 	id: pm.id,
 	label: pm.label,
+	icon: brandLogo(pm.id, 'pm') ?? undefined,
 	badge: pm.id === PM_RECOMMENDED ? t.install.pmRecommend : undefined,
 }));
 const ideTabs = ideTargets.map((ide) => ({

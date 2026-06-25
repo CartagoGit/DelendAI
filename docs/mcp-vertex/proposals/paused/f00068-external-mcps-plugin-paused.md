@@ -283,39 +283,66 @@ prescribes the structure so it can grow).
 ### Curated tier (⭐ — always in the catalog summary)
 
 > **Criteria for "curated"**: maintained in the last 12 months,
-> semver-stable release available, has at least one sponsor who
-> is not the original author, no known supply-chain incidents.
-> Updated annually via `audit-curated-seeds` (f00068 P7).
+> semver-stable release available, hosted by a known org or named
+> maintainer, ≥ 1k weekly visitors OR explicit official endorsement,
+> no known supply-chain incidents. Updated annually via
+> `audit-curated-seeds` (f00068 P7).
+>
+> **Source of truth**: every entry below was verified live on
+> 2026-06-26 against the canonical repo / npm package. See
+> [`docs/external-mcps/`](../../../../external-mcps/README.md) for
+> the underlying rubric and the full failure list (Angular, the
+> archived Anthropic servers, etc.).
 
-These ~25 servers appear in `external_mcp_catalog` on every turn:
+These 14 servers cover ~80% of everyday needs and appear in
+`external_mcp_catalog` on every turn:
 
-| Category | Server | `namespacePrefix` | Source |
+| Category | Server (verified 2026-06-26) | `namespacePrefix` | Source / weekly visitors |
 |---|---|---|---|
-| Filesystem & shell | `@modelcontextprotocol/server-filesystem` | `ext.fs` | Anthropic (official) |
-| Filesystem & shell | `@modelcontextprotocol/server-git` | `ext.gitops` | Anthropic (official) |
-| Languages & LSPs | `mcp-language-server` (isaacphi) | `ext.lsp` | Community (multi-LSP wrapper) |
-| Frontend frameworks | `angular-mcp` | `ext.angular` | Community (picks maintained fork) |
-| Frontend frameworks | `@react/mcp` | `ext.react` | Community (React docs + RSC) |
-| Frontend frameworks | `vue-mcp` | `ext.vue` | Community (Vue + Nuxt) |
-| Frontend frameworks | `svelte-mcp` | `ext.svelte` | Community (SvelteKit + runes) |
-| Frontend frameworks | `next-mcp` | `ext.nextjs` | Community (Next.js App Router) |
-| Backend frameworks | `@modelcontextprotocol/server-postgres` | `ext.pg` | Anthropic (official) |
-| Backend frameworks | `@modelcontextprotocol/server-sqlite` | `ext.sqlite` | Anthropic (official) |
-| Backend frameworks | `mcp-server-docker` | `ext.docker` | Anthropic community |
-| Cloud & DevOps | `@modelcontextprotocol/server-kubernetes` | `ext.k8s` | Anthropic community |
-| Cloud & DevOps | `mcp-aws` | `ext.aws` | Community (AWS SDK wrapper) |
-| Communication | `@modelcontextprotocol/server-slack` | `ext.slack` | Anthropic (official) |
-| Communication | `@modelcontextprotocol/server-github` | `ext.gh` | Anthropic (official) |
-| Communication | `@modelcontextprotocol/server-gitlab` | `ext.gitlab` | Anthropic (official) |
-| Communication | `mcp-linear` | `ext.linear` | Community |
-| Productivity | `@modelcontextprotocol/server-notion` | `ext.notion` | Anthropic community |
-| Productivity | `mcp-jira` | `ext.jira` | Community |
-| Documentation | `@modelcontextprotocol/server-fetch` | `ext.fetch` | Anthropic (official) |
-| Documentation | `@modelcontextprotocol/server-brave-search` | `ext.search` | Anthropic (official) |
-| Documentation | `@modelcontextprotocol/server-puppeteer` | `ext.puppet` | Anthropic (official) |
-| Testing & QA | `mcp-playwright` | `ext.pw` | Community (Microsoft Playwright) |
-| Build & package mgrs | `mcp-npm` | `ext.npm` | Community |
-| Build & package mgrs | `mcp-pypi` | `ext.pypi` | Community |
+| Filesystem & shell | `@modelcontextprotocol/server-filesystem` | `ext.fs` | Anthropic official / 239k |
+| Filesystem & shell | `mcp-server-git` (Python via uvx) | `ext.git` | Anthropic official / 194k |
+| Languages & LSPs | `mcp-language-server` (isaacphi) | `ext.lsp` | Community (covers 30+ languages via LSP) |
+| Documentation | `@modelcontextprotocol/server-fetch` | `ext.fetch` | Anthropic official / 213k |
+| Documentation | `@upstash/context7-mcp` | `ext.c7` | Community / 951k weekly on pulse.mcp.com (solves hallucinated APIs) |
+| Databases | `@modelcontextprotocol/server-postgres` | `ext.pg` | Anthropic official / 77k |
+| Databases | `@modelcontextprotocol/server-sqlite` | `ext.sqlite` | Anthropic official |
+| Databases | `mongodb-js/mcp-server` | `ext.mongo` | MongoDB Inc. official / 86k |
+| Databases | `redis/mcp-redis` | `ext.redis` | Redis official (replaces the archived Anthropic one) |
+| Cloud / DevOps | `@modelcontextprotocol/server-kubernetes` | `ext.k8s` | Anthropic community |
+| Cloud / DevOps | `mcp-server-docker` (ckreiling) | `ext.docker` | Community / 100k+ |
+| Communication | `github/github-mcp-server` | `ext.gh` | **GitHub official** (replaces the archived Anthropic one) / 121k |
+| Communication | `makenotion/notion-mcp-server` | `ext.notion` | **Notion official** (replaces the archived Anthropic one) / 137k |
+| Browser | `chrome-devtools-mcp` (Google ChromeDevTools) | `ext.cdptools` | Official / 2.5M weekly; **or** `@playwright/mcp` (Microsoft, 34.4k★, 5.5M weekly) — pick one |
+
+**Important corrections vs. the previous version of this proposal**:
+
+- **`angular-mcp` is NOT in the curated tier.** As of 2026-06-26 the
+  three candidate Angular MCPs (`cyanheads/angular-mcp-server`,
+  `darioz-ms/angular-mcp`, `Microcks/angular-mcp`) all return 404. The
+  Angular docs are served by `context7`; Angular code navigation by
+  `mcp-language-server` against the Angular Language Service; Angular
+  runtime debugging by `chrome-devtools-mcp`. See
+  [`external-mcps/frameworks.md`](../../../../external-mcps/frameworks.md#angular--no-recommended-mcp-currently-exists)
+  for the full reasoning.
+- **`@modelcontextprotocol/server-slack`, `-github`, `-gitlab`,
+  `-brave-search`, `-puppeteer`, `-redis`, `-notion` are all
+  archived by Anthropic.** Each has been moved to its current
+  canonical home (Slack → `zencoderai`, GitHub → `github/`, GitLab
+  → `zereight/`, Brave → `brave/`, Puppeteer → `chrome-devtools-mcp`,
+  Redis → `redis/`, Notion → `makenotion/`). The table above
+  reflects the current canonical packages. See
+  [`external-mcps/official-anthropic.md`](../../../../external-mcps/official-anthropic.md)
+  for the migration map.
+- **`@playwright/mcp` and `chrome-devtools-mcp` overlap heavily.**
+  Pick one as default per workspace; both are valid. The
+  recommendation is `@playwright/mcp` for general code agents
+  (cross-browser, smaller surface) and `chrome-devtools-mcp` for
+  workspaces that need perf profiling, Lighthouse audits, or
+  memory heap snapshots.
+- **`mcp-linear` is dropped from curated** (no canonical repo
+  verified; promote to 🟡 until Linear ships an official one).
+- **`mcp-jira`, `mcp-pypi`, `mcp-npm` are dropped from curated**
+  (low traffic / shallow functionality; move to 🟡).
 
 ### Discoverable tier (🟡 — load on demand)
 

@@ -79,6 +79,8 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 									alt=""
 									loading="lazy"
 									decoding="async"
+									data-tab-id={t.id}
+									onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ui-tabs__icon ui-tabs__icon--fallback',textContent:(this.dataset.tabId||'').charAt(0)}))"
 								/>
 							)}
 							<span class="ui-tabs__label">{t.label}</span>
@@ -169,6 +171,22 @@ const initial = defaultTab ?? tabs[0]?.id ?? '';
 		width: 18px;
 		height: 18px;
 		display: block;
+	}
+	/* f00069 S3 — fallback badge (first letter of the tab id) when the
+	   brand-mark SVG 404s. Replaces the <img> on `onerror`. Sized the
+	   same as the icon so the label doesn't reflow. */
+	.ui-tabs__icon--fallback {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		border-radius: 999px;
+		background: color-mix(in srgb, currentColor 14%, transparent);
+		font-size: 0.7em;
+		font-weight: 600;
+		text-transform: uppercase;
+		line-height: 1;
 	}
 	.ui-tabs__badge {
 		font-size: 0.7em;

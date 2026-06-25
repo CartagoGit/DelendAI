@@ -46,6 +46,12 @@ export const normalizeTool = (tool: IOverviewTool): IToolDescriptor => {
 };
 
 export const pluginFromToolName = (toolName: string): string => {
-	const [prefix] = toolName.split('_', 1);
+	// Strip the host's core namespace prefix first if present, so the
+	// returned plugin is the plugin prefix (e.g. `quality`), not the
+	// host prefix (e.g. `mcp-vertex`).
+	const stripped = toolName.startsWith('mcp-vertex_')
+		? toolName.slice('mcp-vertex_'.length)
+		: toolName;
+	const [prefix] = stripped.split('_', 1);
 	return prefix ?? toolName;
 };

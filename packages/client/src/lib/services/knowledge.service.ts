@@ -26,9 +26,15 @@ export type IKnowledgeFullEntry = IKnowledgeEntry;
  * Entries that don't contain `_` fall back to `other`.
  */
 export const categoryOf = (id: string): string => {
-	const ix = id.indexOf('_');
+	// Strip the host's core namespace prefix first if present, so the
+	// returned category is the plugin prefix (e.g. `proposals`), not
+	// the host prefix (e.g. `mcp-vertex`).
+	const stripped = id.startsWith('mcp-vertex_')
+		? id.slice('mcp-vertex_'.length)
+		: id;
+	const ix = stripped.indexOf('_');
 	if (ix < 0) return 'other';
-	return id.slice(0, ix);
+	return stripped.slice(0, ix);
 };
 
 export class KnowledgeService {

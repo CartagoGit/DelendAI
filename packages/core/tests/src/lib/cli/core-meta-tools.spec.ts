@@ -66,8 +66,9 @@ describe('core meta-tools', async () => {
 			'demo',
 		);
 		expect(
-			snap.tools.find((t: { name: string }) => t.name === 'demo_do')
-				?.summary,
+			snap.tools.find(
+				(t: { name: string }) => t.name === 'mcp-vertex_demo_do',
+			)?.summary,
 		).toBe('does the thing');
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
 			'demo-guide',
@@ -105,7 +106,7 @@ describe('core meta-tools', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		const summary = snap.tools.find(
-			(t: { name: string }) => t.name === 'demo_long',
+			(t: { name: string }) => t.name === 'mcp-vertex_demo_long',
 		)?.summary;
 		expect(summary).toHaveLength(96);
 		expect(summary.endsWith('...')).toBe(true);
