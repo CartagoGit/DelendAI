@@ -1,17 +1,19 @@
 #!/usr/bin/env bun
 /**
- * check-skills.script.ts — fail CI if a
- * `docs/mcp-vertex/skills/<name>/SKILL.md` exists on disk without a matching
- * entry in `docs/mcp-vertex/skills/manifest.json` (or vice versa:
- * a manifest entry pointing at a `bodyPath` that doesn't exist). This is
- * the version-pinning contract from f00029 S1: every skill the repo ships
- * must declare a semver `version` + `minCoreVersion` so downstream
- * consumers that pin a specific `@mcp-vertex/core` version can resolve a
- * matching skill bundle instead of silently getting "whatever git HEAD
- * has today".
+ * check-skills.script.ts — fail CI if an owner skill (`<owner>/skills/<name>/
+ * SKILL.md`, where owner is `packages/core` or `plugins/<plugin>`, resolved
+ * through `@mcp-vertex/core`'s `skill-paths.ts`) exists on disk without a
+ * matching entry in the composed manifest (`packages/core/skills/
+ * manifest.json`), or vice versa (a manifest entry pointing at a `bodyPath`
+ * that doesn't exist). This is the version-pinning contract from f00029 S1:
+ * every skill the repo ships must declare a semver `version` + `minCoreVersion`
+ * so downstream consumers that pin a specific `@mcp-vertex/core` version can
+ * resolve a matching skill bundle instead of silently getting "whatever git
+ * HEAD has today".
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { SKILL_MANIFEST_REL, skillOwnerRoots } from '@mcp-vertex/core/public';
 
 export interface ISkillManifestEntry {
 	readonly id: string;
@@ -45,7 +47,6 @@ export interface ICheckSkillsIssue {
 }
 
 const SEMVER_RE = /^\d+\.\d+\.\d+$/;
-const SKILLS_REL = 'docs/mcp-vertex/skills';
 
 /** Discover every `<skillsRel>/<name>/SKILL.md` (one level of nesting) under `skillsDirAbs`. */
 const discoverSkillDirs = async (
@@ -64,6 +65,19 @@ const discoverSkillDirs = async (
 		}
 	}
 	return found.sort((a, b) => a.localeCompare(b));
+};
+
+/** Plugin directory names present in the workspace (each may own a `skills/` root). */
+const discoverPluginNames = async (root: string): Promise<string[]> => {
+	const entries = await readdir(join(root, 'plugins')).catch(() => []);
+	const names: string[] = [];
+	for (const entry of entries) {
+		const st = await stat(join(root, 'plugins', entry)).catch(
+			() => undefined,
+		);
+		if (st?.isDirectory() === true) names.push(entry);
+	}
+	return names.sort((a, b) => a.localeCompare(b));
 };
 
 /**
@@ -110,7 +124,7 @@ export const checkSkillsManifest = (
 		if (!inManifest.has(bodyPath)) {
 			issues.push({
 				kind: 'missing-in-manifest',
-				detail: `${bodyPath} exists on disk but has no entry in ${SKILLS_REL}/manifest.json`,
+				detail: `${bodyPath} exists on disk but has no entry in ${SKILL_MANIFEST_REL}`,
 			});
 		}
 	}
@@ -125,8 +139,7 @@ const isMainModule = (): boolean => {
 
 if (isMainModule()) {
 	const root = resolve(import.meta.dirname, '..', '..', '..');
-	const skillsDirAbs = join(root, ...SKILLS_REL.split('/'));
-	const manifestPath = join(skillsDirAbs, 'manifest.json');
+	const manifestPath = join(root, ...SKILL_MANIFEST_REL.split('/'));
 
 	void (async () => {
 		let manifest: ISkillManifest;
@@ -142,7 +155,14 @@ if (isMainModule()) {
 			return;
 		}
 
-		const onDisk = await discoverSkillDirs(skillsDirAbs, SKILLS_REL);
+		const pluginNames = await discoverPluginNames(root);
+		const roots = skillOwnerRoots(pluginNames);
+		const discovered = await Promise.all(
+			roots.map((rel) =>
+				discoverSkillDirs(join(root, ...rel.split('/')), rel),
+			),
+		);
+		const onDisk = discovered.flat().sort((a, b) => a.localeCompare(b));
 		const issues = checkSkillsManifest(manifest, onDisk);
 
 		if (issues.length > 0) {

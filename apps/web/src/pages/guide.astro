@@ -180,8 +180,9 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 					<section id="skills" class="guide__section">
 						<h2>7. Skills</h2>
 						<p>
-							Skills are markdown documents under
-							<code>docs/mcp-vertex/skills/&lt;name&gt;/SKILL.md</code> that the agent can load
+							Skills are markdown documents owned by their package or plugin
+							(<code>packages/core/skills/&lt;name&gt;/SKILL.md</code> or
+							<code>plugins/&lt;plugin&gt;/skills/&lt;name&gt;/SKILL.md</code>) that the agent can load
 							on demand. See
 							<a href={`${base}/skills`}>the skills page</a> for the live list.
 						</p>

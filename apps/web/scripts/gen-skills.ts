@@ -1,8 +1,9 @@
 /**
  * gen-skills.ts — emit `src/data/manifests/skills.json`, the catalogue of
- * scaffold skills the site renders at /skills. Scans the repo's
- * `docs/mcp-vertex/skills/` directory for SKILL.md files, extracts YAML
- * frontmatter and a one-line summary.
+ * scaffold skills the site renders at /skills. Scans every owner skill root
+ * (core + plugins, resolved through `@mcp-vertex/core`'s `skill-paths.ts`,
+ * the single source of truth) for SKILL.md files, extracts YAML frontmatter
+ * and a one-line summary.
  *
  *   bun scripts/gen-skills.ts            # write, warn on gaps
  *   bun scripts/gen-skills.ts --strict   # FAIL on parse errors
@@ -17,12 +18,20 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { skillOwnerRoots } from '@mcp-vertex/core/public';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
-const SKILLS_REL = 'docs/mcp-vertex/skills';
-const SKILLS_DIR = join(ROOT, ...SKILLS_REL.split('/'));
 const OUT = resolve(HERE, '..', 'src', 'data', 'manifests', 'skills.json');
+
+/** Plugin directory names present in the workspace (each may own a `skills/` root). */
+const pluginNames = (): string[] => {
+	const pluginsDir = join(ROOT, 'plugins');
+	if (!existsSync(pluginsDir)) return [];
+	return readdirSync(pluginsDir)
+		.filter((name) => statSync(join(pluginsDir, name)).isDirectory())
+		.sort((a, b) => a.localeCompare(b));
+};
 
 interface ISkill {
 	readonly id: string;
@@ -35,16 +44,15 @@ interface ISkill {
 
 const slugFromPath = (relPath: string): string => {
 	const segs = relPath.split('/');
-	// expected shape: skills/<plugin>/SKILL.md
-	if (segs[0] === 'skills' && segs.length >= 3) return segs[1] as string;
-	// repo shape: docs/mcp-vertex/skills/<plugin>/SKILL.md
-	if (
-		segs[0] === 'docs' &&
-		segs[1] === 'mcp-vertex' &&
-		segs[2] === 'skills' &&
-		segs.length >= 5
-	)
-		return segs[3] as string;
+	// owner shapes: the skill slug is the segment that follows the `skills`
+	// anchor, e.g. `skills/<slug>/SKILL.md`,
+	// `packages/core/skills/<slug>/SKILL.md`,
+	// `plugins/<plugin>/skills/<slug>/SKILL.md`.
+	const skillsIdx = segs.indexOf('skills');
+	if (skillsIdx >= 0 && segs.length > skillsIdx + 1)
+		return segs[skillsIdx + 1] as string;
+	// legacy repo shape: docs/mcp-vertex/skills/<slug>/SKILL.md handled above
+	// via the `skills` anchor; fall back to the first segment otherwise.
 	return segs[0] as string;
 };
 
@@ -138,9 +146,12 @@ export const walkSkillsForTest = walkSkills;
 
 const main = (): void => {
 	const strict = process.argv.includes('--strict');
-	const skills = walkSkills(SKILLS_DIR, SKILLS_REL);
+	const roots = skillOwnerRoots(pluginNames());
+	const skills = roots
+		.flatMap((rel) => walkSkills(join(ROOT, ...rel.split('/')), rel))
+		.sort((a, b) => a.name.localeCompare(b.name));
 	if (skills.length === 0) {
-		const msg = `no SKILL.md files found under ${SKILLS_REL}/`;
+		const msg = `no SKILL.md files found under any owner skill root (${roots.join(', ')})`;
 		if (strict) {
 			console.error(`✖ gen-skills (strict): ${msg}`);
 			process.exit(1);
