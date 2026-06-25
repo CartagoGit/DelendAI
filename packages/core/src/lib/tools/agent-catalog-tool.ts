@@ -56,6 +56,7 @@ const skillSummarySchema = z.object({
 	version: z.string(),
 	minCoreVersion: z.string(),
 	summary: z.string(),
+	appliesTo: z.array(z.string()),
 	tags: z.array(z.string()),
 	bodyPath: z.string(),
 });
@@ -116,7 +117,8 @@ const matchesTool = (tool: IToolSummary, query: string): boolean =>
 const matchesSkill = (skill: ISkillSummary, query: string): boolean =>
 	lowerIncludes(skill.id, query) ||
 	lowerIncludes(skill.summary, query) ||
-	tagsInclude(skill.tags, query);
+	tagsInclude(skill.tags, query) ||
+	tagsInclude(skill.appliesTo, query);
 
 const matchesProposal = (proposal: IProposalSummary, query: string): boolean =>
 	lowerIncludes(proposal.id, query) ||

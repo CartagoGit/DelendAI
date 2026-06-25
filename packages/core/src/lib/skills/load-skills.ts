@@ -20,11 +20,23 @@ export interface ISkillBundle {
 	readonly minCoreVersion: string;
 	readonly bodyPath: string;
 	readonly tags: readonly string[];
+	/**
+	 * Plugin namespaces this skill applies to (e.g. `@mcp-vertex/proposals`, or
+	 * `@mcp-vertex/*` for transversal skills). Lets a host advertise only the
+	 * skills relevant to the active preset without reading bodies. Defaults to
+	 * `['@mcp-vertex/*']` when an older manifest omits it.
+	 */
+	readonly appliesTo: readonly string[];
 }
+
+/** Raw manifest shape: `appliesTo` may be absent in a pre-contract manifest. */
+type IRawSkillEntry = Omit<ISkillBundle, 'appliesTo'> & {
+	readonly appliesTo?: readonly string[];
+};
 
 interface ISkillManifestFile {
 	readonly generatedAt: string;
-	readonly skills: readonly ISkillBundle[];
+	readonly skills: readonly IRawSkillEntry[];
 }
 
 /** Parse "x.y.z" into `[x, y, z]`; throws on anything else (callers control the input — the manifest is repo-authored, not external). */
@@ -72,11 +84,21 @@ export const loadSkills = async (
 	}
 	if (!Array.isArray(parsed.skills)) return [];
 
-	return parsed.skills.filter((skill) => {
-		try {
-			return versionGte(coreVersion, skill.minCoreVersion);
-		} catch {
-			return false;
-		}
-	});
+	return parsed.skills
+		.filter((skill) => {
+			try {
+				return versionGte(coreVersion, skill.minCoreVersion);
+			} catch {
+				return false;
+			}
+		})
+		.map((skill) => ({
+			...skill,
+			// Normalize: a manifest predating the appliesTo contract is treated
+			// as transversal so it is still advertised, never dropped.
+			appliesTo:
+				Array.isArray(skill.appliesTo) && skill.appliesTo.length > 0
+					? skill.appliesTo
+					: ['@mcp-vertex/*'],
+		}));
 };
