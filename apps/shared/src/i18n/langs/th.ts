@@ -371,7 +371,7 @@ const site = {
 				'รีสตาร์ท Claude Code (หรือรัน `/mcp` เพื่อโหลดเซิร์ฟเวอร์ใหม่) เพื่อให้รับรู้รายการใหม่',
 				'ในเซสชันใหม่ ไฟล์ที่โหลดเสมอ `AGENTS.md` + `CLAUDE.md` ชี้ไปที่ `mcp-vertex_overview` เป็นการเรียกแรกอยู่แล้ว',
 				'ยืนยันด้วย `mcp-vertex_overview { compact: true }` — ฟิลด์ `recommendedNextAction` จะบอกว่าต้องทำอะไรต่อไป',
-				'สำหรับเซสชันหลายเอเจนต์ อ่านทักษะ `proposal-swarm-runner` ก่อนที่จะ claim slice',
+				'สำหรับเซสชันหลายเอเจนต์ อ่านทักษะ `mcp-vertex-proposal-swarm-runner` ก่อนที่จะ claim slice',
 			],
 		},
 		nextSteps: 'ไปที่ไหนต่อ',

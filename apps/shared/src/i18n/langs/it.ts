@@ -379,7 +379,7 @@ const site = {
 				'Riavvia Claude Code (o esegui `/mcp` per ricaricare i server) perché riconosca la nuova voce.',
 				'In una sessione nuova, i file sempre caricati `AGENTS.md` + `CLAUDE.md` puntano già a `mcp-vertex_overview` come prima chiamata.',
 				'Confermalo con `mcp-vertex_overview { compact: true }` — il campo `recommendedNextAction` ti dice cosa fare dopo.',
-				'Per sessioni multi-agente, leggi lo skill `proposal-swarm-runner` prima di reclamare uno slice.',
+				'Per sessioni multi-agente, leggi lo skill `mcp-vertex-proposal-swarm-runner` prima di reclamare uno slice.',
 			],
 		},
 		nextSteps: 'Dove andare dopo',

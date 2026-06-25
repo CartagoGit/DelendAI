@@ -377,7 +377,7 @@ const site = {
 				'Khởi động lại Claude Code (hoặc chạy `/mcp` để tải lại máy chủ) để nhận ra mục mới.',
 				'Trong một phiên mới, các file luôn được tải `AGENTS.md` + `CLAUDE.md` đã trỏ tới `mcp-vertex_overview` như lệnh gọi đầu tiên.',
 				'Xác nhận với `mcp-vertex_overview { compact: true }` — trường `recommendedNextAction` cho bạn biết phải làm gì tiếp theo.',
-				'Với các phiên đa tác tử, đọc kỹ năng `proposal-swarm-runner` trước khi claim một slice.',
+				'Với các phiên đa tác tử, đọc kỹ năng `mcp-vertex-proposal-swarm-runner` trước khi claim một slice.',
 			],
 		},
 		nextSteps: 'Tiếp theo nên đi đâu',

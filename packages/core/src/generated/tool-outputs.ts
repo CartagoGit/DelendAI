@@ -12,6 +12,56 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface McpVertexAgentCatalogOutput {
+	ok?: boolean;
+	matches?: number;
+	server: {
+		name: string;
+		version: string;
+		namespacePrefix: string;
+	};
+	generatedAt: string;
+	mode: "compact" | "full";
+	counts: {
+		tools: number;
+		skills: number;
+		proposals: number;
+	};
+	proposalStatusCounts: {
+		ready: number;
+		"in-progress": number;
+		review: number;
+		paused: number;
+		done: number;
+		blocked: number;
+		retired: number;
+		unspecified: number;
+	};
+	tools: Array<{
+		name: string;
+		plugin: string;
+		summary?: string;
+		tags?: string[];
+		effects?: Array<"write" | "spawn" | "network" | "destructive">;
+	}>;
+	skills: {
+		id: string;
+		version: string;
+		minCoreVersion: string;
+		summary: string;
+		tags: string[];
+		bodyPath: string;
+	}[];
+	proposals: Array<{
+		id: string;
+		title: string;
+		track: string;
+		status: "ready" | "in-progress" | "review" | "paused" | "done" | "blocked" | "retired" | "unspecified";
+		kind: "feat" | "fix" | "refactor" | "chore" | "docs" | "plan" | "audit" | "unspecified";
+		date: string;
+	}>;
+}
+
 export interface McpVertexAnalyzeProjectOutput {
 	analysis: {
 		hasPackageJson: boolean;
@@ -212,6 +262,7 @@ export interface McpVertexStatusOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
+	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
