@@ -1,12 +1,22 @@
 ---
+/**
+ * `/install` — English install page. See `pages/tools.astro` for the
+ * recipe.
+ */
 import Install from '#COMPONENTS/Install.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-const lang: Lang = 'en';
+const lang = 'en' as const;
 const t = useTranslations(lang);
 ---
 
-<Base lang={lang} title={`${t.install.title} — @mcp-vertex/core`}>
-	<Install lang={lang} heading={t.install.title} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.install.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.install, href: localePath(lang, 'install') }]}
+>
+	<Install lang={lang} />
+</PageShell>

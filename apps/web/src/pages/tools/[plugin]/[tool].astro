@@ -1,4 +1,11 @@
 ---
+/**
+ * `/tools/[plugin]/[tool]` — per-tool detail page (English).
+ *
+ * Emits one path per (plugin × tool) combination. The English copy
+ * lives at the root; every other locale lives at
+ * `/[lang]/tools/[plugin]/[tool].astro`. `ToolPage` owns the body.
+ */
 import ToolPage from '#COMPONENTS/ToolPage.astro';
 import capabilities from '#MANIFESTS/capabilities.json';
 

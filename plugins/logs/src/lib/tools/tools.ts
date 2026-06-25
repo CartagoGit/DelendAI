@@ -9,6 +9,7 @@ import {
 import { correlateEvents } from '../services/correlate';
 import type { ILogStore } from '../services/log-store';
 import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
+import type { ILogEvent } from '../services/normalize-event';
 import type { LogOutcome } from '../services/normalize-event';
 import { redactTest } from '../services/redact-test';
 
@@ -83,6 +84,17 @@ const tailOptionsFrom = (args: {
 		: {}),
 });
 
+const compactEvents = (
+	events: readonly ILogEvent[],
+	includeMeta: boolean | undefined,
+): readonly ILogEvent[] =>
+	includeMeta === true
+		? events
+		: events.map((event) => ({
+				...event,
+				meta: {},
+			}));
+
 const correlateOptionsFrom = (args: {
 	taskId?: string | undefined;
 	agent?: string | undefined;
@@ -150,11 +162,12 @@ export const buildLogToolRegistrations = (
 				`${prefix}_tail`,
 				{
 					description:
-						'Return the newest redacted MCP log events, optionally filtered by outcome or kind.',
+						'Return the newest redacted MCP log events, optionally filtered by outcome or kind. Omits verbose meta by default; pass includeMeta:true for the full stored event.',
 					inputSchema: z.object({
 						limit: z.number().optional(),
 						outcomeFilter: LogOutcomeSchema.optional(),
 						kindFilter: z.string().optional(),
+						includeMeta: z.boolean().optional(),
 					}),
 					outputSchema: z.object({
 						events: z.array(LogEventSchema),
@@ -166,8 +179,12 @@ export const buildLogToolRegistrations = (
 					limit?: number | undefined;
 					outcomeFilter?: LogOutcome | undefined;
 					kindFilter?: string | undefined;
+					includeMeta?: boolean | undefined;
 				}) => {
-					const events = await store.tail(tailOptionsFrom(args));
+					const events = compactEvents(
+						await store.tail(tailOptionsFrom(args)),
+						args.includeMeta,
+					);
 					return toolJson({
 						events,
 						oldestTs: events[0]?.ts ?? null,

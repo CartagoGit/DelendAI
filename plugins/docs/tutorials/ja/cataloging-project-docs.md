@@ -1,26 +1,30 @@
 ---
-title: プロジェクトドキュメントのカタログ化
+title: "Cataloguing project docs [日本語 — needs translation]"
 plugin: docs
-audience: トピックでドキュメントを見つける必要があるすべてのエージェント
+audience: any agent that needs cross-session continuity
 order: 1
 lang: ja
+auto-translated: true
+needs-human-review: true
+source: plugins/docs/tutorials/en/cataloging-project-docs.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# プロジェクトドキュメントのカタログ化
+# Cataloguing project docs
 
-`docs` プラグインは小さくて頻繁な質問に答えます：「このプロジェクトには
-どんなドキュメントがあり、私が探しているのはどれか？」grepをする代わりに、
-エージェントがプラグインに尋ねます。このチュートリアルでは有効化、一覧表示、
-読み込みの方法を示します。
+The `docs` plugin answers a small, frequent question: "what docs
+does this project have, and which one am I looking for?" Instead
+of grepping, the agent asks the plugin. This walkthrough shows
+how to enable, list, and read.
 
-## 0. メンタルモデル
+## 0. The mental model
 
-**ドキュメント**は設定された `roots` 下の任意の `.md` ファイルです。
-プラグインは一度列挙し、最初の `# heading` またはfrontmatter `title:` から
-タイトルを抽出し、トークン効率の良いインデックスを提供します。Bodyは
-要求時のみ取得されます。
+A **doc** is any `.md` file under the configured `roots`. The
+plugin enumerates them once, extracts the title (from the first
+`# heading` or frontmatter `title:`), and serves a low-token
+index. The body is only fetched on demand.
 
-設定は `mcp-vertex.config.json` にあります：
+Configuration lives in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -34,17 +38,17 @@ lang: ja
 }
 ```
 
-`roots` はパス（ファイルまたはディレクトリ）の配列です。ディレクトリは
-再帰的に走査されます。**ワークスペース外のパスは拒否されます** — `..`
-トラバーサル不可。
+`roots` is an array of paths (files or directories). Directories
+are walked recursively. **Paths outside the workspace are
+refused** — no `..` traversal.
 
-## 1. 一覧表示（低トークンインデックス）
+## 1. List (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-レスポンス（短縮）：
+Response (truncated):
 
 ```json
 {
@@ -53,14 +57,14 @@ lang: ja
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: 実際のi18n…" },
+    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-リストはパスでソートされています。`roots` を渡してリストをサブセットに
-限定します（例：`["docs/proposals"]` のみ）：
+The list is sorted by path. Pass `roots` to scope the list to a
+subset (e.g. just `["docs/proposals"]`):
 
 ```json
 {
@@ -69,7 +73,7 @@ lang: ja
 }
 ```
 
-## 2. ドキュメントを読む
+## 2. Read one doc
 
 ```json
 {
@@ -78,50 +82,63 @@ lang: ja
 }
 ```
 
-レスポンス：
+Response:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…完全なbody…",
+  "content": "# Architecture\n\n…full body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` は256 KiBに制限されています。ドキュメントが大きい場合、
-`truncated: true` でbodyは最初の256 KiBです。パスが設定されたroots下の
-ドキュメントと一致しない場合、`found: false`。
+`content` is capped at 256 KiB. If the doc is bigger, `truncated:
+true` and the body is the first 256 KiB. If the path doesn't
+match any doc under the configured roots, `found: false`.
 
-## 3. なぜ2つのツールで1つではないのか
+## 3. Why two tools and not one
 
-`list` は安価です（ドキュメントあたり数百バイト、18ドキュメント ≈ 4 KiB）。
-`read` は高コストです（ドキュメントあたり数メガバイトの可能性）。分離する
-ことで、エージェントはまず `list` し、次に関連しそうなもののみを `read`
-できます——各発見ステップでトークンを節約。
+`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
+`read` is expensive (potentially megabytes per doc). Splitting
+them means the agent can `list` first, then `read` only the ones
+that look relevant — saving tokens on every discovery step.
 
-## 4. パス制限（セキュリティ）
+## 4. Path containment (security)
 
-`docs_read` は `resolveWorkspaceContained` でパスを解決します——絶対パス、
-`..` トラバーサル、ワークスペース外を指すシンボリックリンクはすべて拒否
-されます。`found: false` レスポンスはパスが拒否されたエージェントへの
-シグナルです；プラグインは意図的に「存在しない」と「ワークスペース外」を
-区別しません（ファイルシステムのレイアウトを漏らさないため）。
+`docs_read` resolves the path with `resolveWorkspaceContained` —
+absolute paths, `..` traversal, and symlinks pointing outside the
+workspace are all refused. The `found: false` response is the
+agent's signal that the path was rejected; the plugin does not
+distinguish "missing" from "outside-workspace" on purpose (to
+avoid leaking filesystem layout).
 
-## よくある落とし穴
+## Common pitfalls
 
-- **Rootが存在しない**: `docs_list` は `{ count: 0, truncated: false,
-  docs: [] }` を返します。プラグインは警告しません。
-- **ドキュメントがまだコミットされていない**: 未追跡ファイルも提供されます
-  （プラグインはgitではなくファイルシステムから読みます）。返される `path`
-  はワークスペース相対です。
-- **タイトル推論が失敗する**: 最初のheadingが `# ` でない（スペースなし、
-  レベルが違う）かつfrontmatter `title:` がない場合、プラグインはファイル
-  名のbasenameを使います（例：`CHANGELOG.md` → `CHANGELOG.md`）。
-  headingを修正した後に再実行してください。
+- **Root doesn't exist**: `docs_list` returns `{ count: 0,
+  truncated: false, docs: [] }`. The plugin does not warn.
+- **Doc not yet committed**: untracked files are still served
+  (the plugin reads from the filesystem, not from git). The
+  `path` you get back is workspace-relative.
+- **Title inference fails**: if the first heading is not `# ` (no
+  space, wrong level) and there's no frontmatter `title:`, the
+  plugin uses the filename basename (e.g. `CHANGELOG.md` →
+  `CHANGELOG.md`). Re-run after fixing the heading.
 
-## 次のステップ
+## Next step
 
-- [`docs_list` が `memory_recall` と「保存したこと + どこに文書化されていたか」のために統合される方法](#)
-- [`knowledge` プラグインで知識インデックスをキュレーションする](#)
+- [How `docs_list` integrates with `memory_recall` for "what
+  did I save last session + where was it documented?"](#)
+- [Curating a knowledge index with the `knowledge` plugin](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper 日本語
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`

@@ -34,12 +34,14 @@ type ToolHandler = (args: {
 const captureHandler = async (
 	enabled: boolean,
 	run: IGitRunner,
+	worktreesDirRel?: string,
 ): Promise<ToolHandler> => {
 	const registration = buildAgentWorktreeRegistration({
 		namespacePrefix: 'proposals',
 		workspaceRoot: '/ws',
 		run,
 		enabled,
+		...(worktreesDirRel !== undefined ? { worktreesDirRel } : {}),
 	});
 	let handler: ToolHandler | undefined;
 	const fakeServer = {
@@ -98,5 +100,40 @@ describe('buildAgentWorktreeRegistration — host gate (f00052 S7)', async () =>
 		expect(result.structuredContent?.reason).not.toBe(
 			AGENT_WORKTREE_DISABLED_REASON,
 		);
+	});
+
+	it('passes the configured worktree directory to the engine', async () => {
+		const calls: string[][] = [];
+		const run: IGitRunner = async (args): Promise<IGitRunResult> => {
+			calls.push([...args]);
+			if (args[0] === 'worktree' && args[1] === 'list') {
+				return { ok: true, output: '' };
+			}
+			if (args[0] === 'rev-parse') {
+				return { ok: false, output: '', reason: 'not found' };
+			}
+			return { ok: true, output: '' };
+		};
+		const handler = await captureHandler(
+			true,
+			run,
+			'.cache/mcp-vertex/.worktrees',
+		);
+
+		const result = await handler({ action: 'create', agent: 'agent-A' });
+
+		expect(result.structuredContent?.path).toBe(
+			'/ws/.cache/mcp-vertex/.worktrees/agent-a',
+		);
+		expect(
+			calls.find((c) => c[0] === 'worktree' && c[1] === 'add'),
+		).toEqual([
+			'worktree',
+			'add',
+			'-b',
+			'agent/agent-a',
+			'/ws/.cache/mcp-vertex/.worktrees/agent-a',
+			'HEAD',
+		]);
 	});
 });

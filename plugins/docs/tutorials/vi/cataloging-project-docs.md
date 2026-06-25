@@ -1,25 +1,30 @@
 ---
-title: Lập danh mục tài liệu dự án
+title: "Cataloguing project docs [Tiếng Việt — needs translation]"
 plugin: docs
-audience: bất kỳ tác nhân nào cần tìm tài liệu theo chủ đề
+audience: any agent that needs cross-session continuity
 order: 1
 lang: vi
+auto-translated: true
+needs-human-review: true
+source: plugins/docs/tutorials/en/cataloging-project-docs.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Lập danh mục tài liệu dự án
+# Cataloguing project docs
 
-Plugin `docs` trả lời một câu hỏi nhỏ nhưng thường gặp: "dự án này có
-những tài liệu gì, và tôi đang tìm cái nào?" Thay vì grep, tác nhân
-hỏi plugin. Hướng dẫn này cho thấy cách bật, liệt kê và đọc.
+The `docs` plugin answers a small, frequent question: "what docs
+does this project have, and which one am I looking for?" Instead
+of grepping, the agent asks the plugin. This walkthrough shows
+how to enable, list, and read.
 
-## 0. Mô hình tư duy
+## 0. The mental model
 
-**Tài liệu** là bất kỳ tệp `.md` nào dưới `roots` được cấu hình. Plugin
-liệt kê chúng một lần, trích xuất tiêu đề (từ `# heading` đầu tiên hoặc
-frontmatter `title:`), và phục vụ chỉ mục ít token. Body chỉ được lấy
-theo yêu cầu.
+A **doc** is any `.md` file under the configured `roots`. The
+plugin enumerates them once, extracts the title (from the first
+`# heading` or frontmatter `title:`), and serves a low-token
+index. The body is only fetched on demand.
 
-Cấu hình nằm trong `mcp-vertex.config.json`:
+Configuration lives in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -33,16 +38,17 @@ Cấu hình nằm trong `mcp-vertex.config.json`:
 }
 ```
 
-`roots` là mảng các đường dẫn (tệp hoặc thư mục). Thư mục được duyệt
-đệ quy. **Đường dẫn ngoài workspace bị từ chối** — không có duyệt `..`.
+`roots` is an array of paths (files or directories). Directories
+are walked recursively. **Paths outside the workspace are
+refused** — no `..` traversal.
 
-## 1. Liệt kê (chỉ mục ít token)
+## 1. List (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Phản hồi (rút gọn):
+Response (truncated):
 
 ```json
 {
@@ -51,14 +57,14 @@ Phản hồi (rút gọn):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n thực…" },
+    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-Danh sách được sắp xếp theo đường dẫn. Truyền `roots` để giới hạn
-danh sách trong tập con (ví dụ chỉ `["docs/proposals"]`):
+The list is sorted by path. Pass `roots` to scope the list to a
+subset (e.g. just `["docs/proposals"]`):
 
 ```json
 {
@@ -67,7 +73,7 @@ danh sách trong tập con (ví dụ chỉ `["docs/proposals"]`):
 }
 ```
 
-## 2. Đọc một tài liệu
+## 2. Read one doc
 
 ```json
 {
@@ -76,50 +82,63 @@ danh sách trong tập con (ví dụ chỉ `["docs/proposals"]`):
 }
 ```
 
-Phản hồi:
+Response:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…nội dung đầy đủ…",
+  "content": "# Architecture\n\n…full body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` được giới hạn ở 256 KiB. Nếu tài liệu lớn hơn, `truncated:
-true` và body là 256 KiB đầu tiên. Nếu đường dẫn không khớp với tài liệu
-nào dưới roots được cấu hình, `found: false`.
+`content` is capped at 256 KiB. If the doc is bigger, `truncated:
+true` and the body is the first 256 KiB. If the path doesn't
+match any doc under the configured roots, `found: false`.
 
-## 3. Tại sao hai công cụ không phải một
+## 3. Why two tools and not one
 
-`list` rẻ (vài trăm byte mỗi tài liệu, 18 tài liệu ≈ 4 KiB). `read` đắt
-(tiềm năng megabyte mỗi tài liệu). Tách chúng cho phép tác nhân `list`
-trước, sau đó chỉ `read` những cái có vẻ liên quan——tiết kiệm token ở
-mỗi bước khám phá.
+`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
+`read` is expensive (potentially megabytes per doc). Splitting
+them means the agent can `list` first, then `read` only the ones
+that look relevant — saving tokens on every discovery step.
 
-## 4. Giới hạn đường dẫn (bảo mật)
+## 4. Path containment (security)
 
-`docs_read` giải quyết đường dẫn với `resolveWorkspaceContained` — đường
-dẫn tuyệt đối, duyệt `..`, và symlinks trỏ ngoài workspace đều bị từ chối.
-Phản hồi `found: false` là tín hiệu cho tác nhân rằng đường dẫn bị từ chối;
-plugin cố ý không phân biệt "thiếu" với "ngoài workspace" (để tránh rò rỉ
-bố cục hệ thống tệp).
+`docs_read` resolves the path with `resolveWorkspaceContained` —
+absolute paths, `..` traversal, and symlinks pointing outside the
+workspace are all refused. The `found: false` response is the
+agent's signal that the path was rejected; the plugin does not
+distinguish "missing" from "outside-workspace" on purpose (to
+avoid leaking filesystem layout).
 
-## Những lỗi thường gặp
+## Common pitfalls
 
-- **Root không tồn tại**: `docs_list` trả về `{ count: 0, truncated: false,
-  docs: [] }`. Plugin không cảnh báo.
-- **Tài liệu chưa được commit**: các tệp chưa được theo dõi vẫn được phục
-  vụ (plugin đọc từ hệ thống tệp, không từ git). `path` trả về là tương
-  đối với workspace.
-- **Suy luận tiêu đề thất bại**: nếu heading đầu tiên không phải `# `
-  (không có khoảng trắng, sai cấp) và không có frontmatter `title:`, plugin
-  dùng basename của tên tệp (ví dụ `CHANGELOG.md` → `CHANGELOG.md`).
-  Chạy lại sau khi sửa heading.
+- **Root doesn't exist**: `docs_list` returns `{ count: 0,
+  truncated: false, docs: [] }`. The plugin does not warn.
+- **Doc not yet committed**: untracked files are still served
+  (the plugin reads from the filesystem, not from git). The
+  `path` you get back is workspace-relative.
+- **Title inference fails**: if the first heading is not `# ` (no
+  space, wrong level) and there's no frontmatter `title:`, the
+  plugin uses the filename basename (e.g. `CHANGELOG.md` →
+  `CHANGELOG.md`). Re-run after fixing the heading.
 
-## Bước tiếp theo
+## Next step
 
-- [`docs_list` tích hợp với `memory_recall` cho "tôi đã lưu gì + nó được ghi lại ở đâu?"như thế nào](#)
-- [Xây dựng chỉ mục kiến thức với plugin `knowledge`](#)
+- [How `docs_list` integrates with `memory_recall` for "what
+  did I save last session + where was it documented?"](#)
+- [Curating a knowledge index with the `knowledge` plugin](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Tiếng Việt
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`

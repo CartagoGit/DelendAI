@@ -1,16 +1,27 @@
 ---
-import Base from '#LAYOUTS/Base.astro';
+/**
+ * `/capabilities` — English capabilities overview.
+ *
+ * The 360° view of every plugin: each entry expands to a disclosure of
+ * its tools, prompts, resources and knowledge. Lives at the root (no
+ * `[lang]` segment) because the catalogue is a structured data dump,
+ * not localised prose.
+ */
 import PluginCapabilities from '#COMPONENTS/PluginCapabilities.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-const lang: Lang = 'en';
+const lang = 'en' as const;
 const t = useTranslations(lang);
 ---
 
-<Base
+<PageShell
 	lang={lang}
-	title={`${t.plugins.title} · ${t.tools.title} — @mcp-vertex/core`}
+	title={`${t.plugins.title} · ${t.tools.title}`}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.capabilities ?? t.plugins.title, href: localePath(lang, 'capabilities') }]}
 	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the mcp-vertex core + plugins."
 >
 	<PluginCapabilities lang={lang} heading={t.plugins.title} />
-</Base>
+</PageShell>

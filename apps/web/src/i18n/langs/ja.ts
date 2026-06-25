@@ -6,6 +6,8 @@ const dict: LangDict = {
 	nav: {
 		concept: 'コンセプト',
 		install: 'インストール',
+		setup: 'セットアップ',
+		capabilities: 'ケイパビリティ',
 		tools: 'ツール',
 		benchmarks: 'ベンチマーク',
 		plugins: 'プラグイン',

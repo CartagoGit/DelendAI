@@ -182,9 +182,9 @@ export const assembleCliConfig = async (
 	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
-	const readFile =
+	const readFile: (absolutePath: string) => Promise<string | undefined> =
 		deps.readFile ??
-		((absolutePath: string) =>
+		(async (absolutePath: string) =>
 			existsSync(absolutePath)
 				? readFileSync(absolutePath, 'utf8')
 				: undefined);

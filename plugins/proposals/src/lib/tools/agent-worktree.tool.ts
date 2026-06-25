@@ -11,6 +11,8 @@ export interface IAgentWorktreeToolOptions {
 	readonly namespacePrefix: string;
 	/** Absolute repo root. */
 	readonly workspaceRoot: string;
+	/** Workspace-relative directory holding all agent worktrees. */
+	readonly worktreesDirRel?: string;
 	/** Override the git runner (tests); defaults to the real `git` binary. */
 	readonly run?: IGitRunner;
 	/**
@@ -113,6 +115,9 @@ export const buildAgentWorktreeRegistration = (
 					const result = await runAgentWorktreeEngine(args, {
 						run,
 						workspaceRoot: options.workspaceRoot,
+						...(options.worktreesDirRel !== undefined
+							? { worktreesDirRel: options.worktreesDirRel }
+							: {}),
 					});
 					return {
 						content: [

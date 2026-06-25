@@ -1,23 +1,30 @@
 ---
-title: 为项目文档建立目录
+title: "Cataloguing project docs [中文 — needs translation]"
 plugin: docs
-audience: 任何需要按主题查找文档的代理
+audience: any agent that needs cross-session continuity
 order: 1
 lang: zh
+auto-translated: true
+needs-human-review: true
+source: plugins/docs/tutorials/en/cataloging-project-docs.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# 为项目文档建立目录
+# Cataloguing project docs
 
-`docs` 插件回答一个小而频繁的问题："这个项目有哪些文档，我在找哪一个？"
-代理不必进行 grep，而是直接询问插件。本教程展示如何启用、列出和读取。
+The `docs` plugin answers a small, frequent question: "what docs
+does this project have, and which one am I looking for?" Instead
+of grepping, the agent asks the plugin. This walkthrough shows
+how to enable, list, and read.
 
-## 0. 心理模型
+## 0. The mental model
 
-**文档**是配置的 `roots` 下的任何 `.md` 文件。插件枚举一次，从第一个
-`# heading` 或 frontmatter `title:` 提取标题，并提供低令牌索引。
-正文仅按需获取。
+A **doc** is any `.md` file under the configured `roots`. The
+plugin enumerates them once, extracts the title (from the first
+`# heading` or frontmatter `title:`), and serves a low-token
+index. The body is only fetched on demand.
 
-配置位于 `mcp-vertex.config.json`：
+Configuration lives in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -31,16 +38,17 @@ lang: zh
 }
 ```
 
-`roots` 是路径数组（文件或目录）。目录递归遍历。**工作区外的路径被
-拒绝**——不允许 `..` 遍历。
+`roots` is an array of paths (files or directories). Directories
+are walked recursively. **Paths outside the workspace are
+refused** — no `..` traversal.
 
-## 1. 列出（低令牌索引）
+## 1. List (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-响应（截断）：
+Response (truncated):
 
 ```json
 {
@@ -49,14 +57,14 @@ lang: zh
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: 真实 i18n…" },
+    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
-列表按路径排序。传递 `roots` 将列表范围限制到子集（如只有
-`["docs/proposals"]`）：
+The list is sorted by path. Pass `roots` to scope the list to a
+subset (e.g. just `["docs/proposals"]`):
 
 ```json
 {
@@ -65,7 +73,7 @@ lang: zh
 }
 ```
 
-## 2. 读取一个文档
+## 2. Read one doc
 
 ```json
 {
@@ -74,44 +82,63 @@ lang: zh
 }
 ```
 
-响应：
+Response:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…完整正文…",
+  "content": "# Architecture\n\n…full body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` 限制为 256 KiB。如果文档更大，`truncated: true` 且正文为前
-256 KiB。如果路径不匹配配置的 roots 下的任何文档，`found: false`。
+`content` is capped at 256 KiB. If the doc is bigger, `truncated:
+true` and the body is the first 256 KiB. If the path doesn't
+match any doc under the configured roots, `found: false`.
 
-## 3. 为何两个工具而不是一个
+## 3. Why two tools and not one
 
-`list` 廉价（每个文档几百字节，18 个文档 ≈ 4 KiB）。`read` 昂贵（每个
-文档可能几兆字节）。分开它们意味着代理可以先 `list`，然后只 `read`
-看起来相关的——在每个发现步骤节省令牌。
+`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
+`read` is expensive (potentially megabytes per doc). Splitting
+them means the agent can `list` first, then `read` only the ones
+that look relevant — saving tokens on every discovery step.
 
-## 4. 路径包含（安全性）
+## 4. Path containment (security)
 
-`docs_read` 使用 `resolveWorkspaceContained` 解析路径——绝对路径、`..`
-遍历和指向工作区外的符号链接都被拒绝。`found: false` 响应是代理路径被
-拒绝的信号；插件故意不区分"缺失"和"工作区外"（以避免泄露文件系统布局）。
+`docs_read` resolves the path with `resolveWorkspaceContained` —
+absolute paths, `..` traversal, and symlinks pointing outside the
+workspace are all refused. The `found: false` response is the
+agent's signal that the path was rejected; the plugin does not
+distinguish "missing" from "outside-workspace" on purpose (to
+avoid leaking filesystem layout).
 
-## 常见陷阱
+## Common pitfalls
 
-- **Root 不存在**：`docs_list` 返回 `{ count: 0, truncated: false,
-  docs: [] }`。插件不发出警告。
-- **文档尚未提交**：未跟踪的文件仍然会被提供（插件从文件系统读取，而
-  不是从 git）。返回的 `path` 是相对于工作区的。
-- **标题推断失败**：如果第一个标题不是 `# `（没有空格，错误级别）且没有
-  frontmatter `title:`，插件使用文件名 basename（如 `CHANGELOG.md` →
-  `CHANGELOG.md`）。修复标题后重新运行。
+- **Root doesn't exist**: `docs_list` returns `{ count: 0,
+  truncated: false, docs: [] }`. The plugin does not warn.
+- **Doc not yet committed**: untracked files are still served
+  (the plugin reads from the filesystem, not from git). The
+  `path` you get back is workspace-relative.
+- **Title inference fails**: if the first heading is not `# ` (no
+  space, wrong level) and there's no frontmatter `title:`, the
+  plugin uses the filename basename (e.g. `CHANGELOG.md` →
+  `CHANGELOG.md`). Re-run after fixing the heading.
 
-## 下一步
+## Next step
 
-- [`docs_list` 如何与 `memory_recall` 集成以回答"我保存了什么 + 在哪里有文档？"](#)
-- [使用 `knowledge` 插件整理知识索引](#)
+- [How `docs_list` integrates with `memory_recall` for "what
+  did I save last session + where was it documented?"](#)
+- [Curating a knowledge index with the `knowledge` plugin](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper 中文
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`

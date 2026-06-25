@@ -117,9 +117,10 @@ The full spec lives in [docs/proposals/l109-feat-auto-work-persist-modes.md](../
 
 ## Paths
 
-State under `.cache/mcp-vertex/proposals/`; human-edited proposals under
+State under `.cache/mcp-vertex/`; disposable agent worktrees under
+`.cache/mcp-vertex/.worktrees/`; human-edited proposals under
 `docs/mcp-vertex/proposals/`. All tools share one layout so locks, queue,
-round-context and the store always agree.
+round-context, worktrees and the store always agree.
 
 ## Use as a library
 

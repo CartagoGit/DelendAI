@@ -7,10 +7,8 @@ lang: vi
 auto-translated: true
 needs-human-review: true
 source: plugins/rules/tutorials/en/framework-presets.md
-generated: 2026-06-20T01:53:13Z
+generated: 2026-06-25T16:38:00Z
 ---
-
-
 
 # Framework-aware lint and type-check presets
 
@@ -128,13 +126,13 @@ so a CI run doesn't re-detect on every invocation.
 - [How the `rules` and `quality` plugins collaborate](#)
 - [Customising a preset without forking it (the user-override rule)](#)
 
+
 > **TRANSLATION PENDING** — This is the EN source copied
 > verbatim. A human (or your preferred translation tool) must
 > replace the body above with a proper Tiếng Việt
 > translation. The `needs-human-review: true` and
 > `auto-translated: true` frontmatter flags must be removed
 > when the translation is finalised. See
-> `scripts/translate-tutorials.sh` for the bootstrap process.
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
 >
 > Source: `plugins/rules/tutorials/en/framework-presets.md`
-

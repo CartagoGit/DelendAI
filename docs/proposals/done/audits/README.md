@@ -60,5 +60,8 @@ unique across the folder — enforced by `bun run lint:audit-ids`.
 | [a00036](a00036-23-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-23 | copilot | minimax-m3 | repositorio | Auditoría canónica del repositorio mcp-vertex — HEAD 6e1015e |
 | [a00037](a00037-23-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-23 | antigravity | deepmind | repositorio | Exhaustive audit of mcp-vertex monorepo — HEAD 43d452d |
 | [a00038](a00038-23-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-23 | copilot | minimax-m3 | repositorio | Auditoría Maestra Exhaustiva — Copilot (minimax-m3) |
+| [a00039](a00039-24-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-24 | antigravity | deepmind | repositorio | Auditoría Exhaustiva — Antigravity (DeepMind / Claude Opus 4.6 Thinking) |
+| [a00040](a00040-25-06-2026-copilot-minimax-m3-repositorio.md) | 2026-06-25 | copilot | minimax-m3 | repositorio | Auditoría Exhaustiva — Copilot (MiniMax-M3) — repositorio completo |
+| [a00041](a00041-24-06-2026-antigravity-deepmind-repositorio.md) | 2026-06-24 | antigravity | deepmind | repositorio | Auditoría Exhaustiva de Excelencia — Antigravity (DeepMind) |
 
-38 audits · f00050 S10.
+41 audits · f00050 S10.

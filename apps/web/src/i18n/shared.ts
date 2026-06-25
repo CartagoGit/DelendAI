@@ -79,6 +79,8 @@ export const flagFor = (lang: Lang): string =>
 export interface INavTranslations {
 	readonly concept: string;
 	readonly install: string;
+	readonly setup: string;
+	readonly capabilities: string;
 	readonly tools: string;
 	readonly benchmarks: string;
 	readonly plugins: string;

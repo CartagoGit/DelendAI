@@ -7,7 +7,7 @@ lang: ar
 auto-translated: true
 needs-human-review: true
 source: plugins/quality/tutorials/en/running-gates.md
-generated: 2026-06-21T13:53:45Z
+generated: 2026-06-25T16:38:00Z
 ---
 
 # Running quality gates for any language

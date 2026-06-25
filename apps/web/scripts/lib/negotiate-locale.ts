@@ -89,8 +89,8 @@ export const pickFromHeader = (
 	candidates: readonly AcceptEntry[],
 ): Lang | null => {
 	let best: { lang: Lang; q: number; order: number } | null = null;
-	candidates.forEach((entry, order) => {
-		if (entry.q <= 0) return;
+	for (const [order, entry] of candidates.entries()) {
+		if (entry.q <= 0) continue;
 		// Match by prefix: `en-US` → try `en-US` then `en`.
 		const lower = entry.code.toLowerCase();
 		const segments = lower.split('-');
@@ -100,7 +100,7 @@ export const pickFromHeader = (
 			const lang = candidate as Lang;
 			if (best === null) {
 				best = { lang, q: entry.q, order };
-				return;
+				break;
 			}
 			// Prefer higher q; ties broken by earlier order in the input.
 			if (
@@ -109,9 +109,9 @@ export const pickFromHeader = (
 			) {
 				best = { lang, q: entry.q, order };
 			}
-			return;
+			break;
 		}
-	});
+	}
 	return best?.lang ?? null;
 };
 

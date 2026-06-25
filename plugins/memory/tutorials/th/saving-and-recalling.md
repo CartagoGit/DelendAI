@@ -1,57 +1,62 @@
 ---
-title: บันทึกและเรียกคืนบันทึกความจำ
+title: "Saving and recalling memory notes [ไทย — needs translation]"
 plugin: memory
-audience: ทุกเอเจนต์ที่ต้องการความต่อเนื่องระหว่างเซสชัน
+audience: any agent that needs cross-session continuity
 order: 1
 lang: th
+auto-translated: true
+needs-human-review: true
+source: plugins/memory/tutorials/en/saving-and-recalling.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# บันทึกและเรียกคืนบันทึกความจำ
+# Saving and recalling memory notes
 
-บทเรียนนี้แสดงเครื่องมือ `memory_*` สี่ตัวในการทำงานจริง บันทึกเป็น
-ระเบียน JSON ขนาดเล็กภายใต้ `.cache/mcp-vertex/memory/notes.json` —
-เล็กพอที่จะดัมพ์ทั้งหมด จัดทำดัชนีตาม id สามารถดึงข้อมูลตามแท็กหรือ
-การค้นหาข้อความเต็ม
+This walkthrough shows the four `memory_*` tools in action. Notes
+are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
+— small enough to dump in full, indexed by id, retrievable by
+tag or full-text query.
 
-## 0. โมเดลความคิด
+## 0. The mental model
 
-**บันทึก** คือ `{ id, title, body, tags, createdAt, updatedAt }`
-ชื่อมีความเป็นเอกลักษณ์ (ไม่คำนึงถึงตัวพิมพ์ใหญ่/เล็ก) — `memory_save`
-ทำการ upsert ตามชื่อ ไม่มีสคีมาสำหรับ `body`; ให้ถือว่าเป็นช่องข้อความ
-อิสระสั้น ความลับถูกแก้ไขอัตโนมัติโดย `redactSecrets` ก่อนที่บันทึก
-จะถูกบันทึก (ดู `packages/core/src/lib/shared/redact.ts`)
+A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
+Titles are unique (case-insensitive) — `memory_save` upserts by
+title. There is no schema for `body`; treat it as a short
+free-text field. Secrets are auto-redacted by `redactSecrets`
+before the note is persisted (see
+`packages/core/src/lib/shared/redact.ts`).
 
-## 1. บันทึกโน้ต
+## 1. Save a note
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "ลำดับการเผยแพร่ monorepo",
-    "body": "core ก่อน จากนั้น plugins พร้อมกัน derive-version.ts อ่าน Conventional Commits ตั้งแต่แท็ก vX.Y.Z ล่าสุด",
+    "title": "monorepo publish order",
+    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-การตอบสนอง: `{ id: "<uuid>", createdAt: "..." }` Save ส่งคืน id เพื่อให้
-คุณสามารถ `forget` ได้ภายหลัง
+Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
+so you can `forget` it later.
 
-## 2. เรียกคืนตามการค้นหา
+## 2. Recall by query
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "ลำดับการเผยแพร่",
+    "query": "publish order",
     "limit": 5
   }
 }
 ```
 
-ส่งคืนสูงสุด `limit` บันทึกที่ตรงกับการค้นหา (การจับคู่สตริงย่อยบน
-ชื่อ + body จัดอันดับตามความใหม่) ใช้ `tags` แทน (หรือร่วมกับ) `query`
-เพื่อจำกัดขอบเขต:
+Returns up to `limit` notes that match the query (substring match
+on title + body, ranked by recency). Use `tags` instead of (or
+alongside) `query` to narrow:
 
 ```json
 {
@@ -60,37 +65,50 @@ lang: th
 }
 ```
 
-## 3. แสดงรายการโดยมีต้นทุนต่ำ
+## 3. List cheaply
 
-`memory_list` ส่งคืนเพียง `{ id, title, tags }` — ดัชนี ใช้เมื่อคุณ
-ยังไม่ต้องการดึง body:
+`memory_list` returns just `{ id, title, tags }` — the index. Use
+it when you don't want to fetch the bodies yet:
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. ลืม
+## 4. Forget
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` คือการลบถาวร — ไม่มีการลบแบบอ่อน / เก็บถาวร id
-หายไป; ชื่อได้รับการปล่อยให้ใช้ `memory_save` ในอนาคต
+`memory_forget` is hard-delete — there is no soft-delete / archive.
+The id is gone; the title is freed for a future `memory_save`.
 
-## ข้อผิดพลาดที่พบบ่อย
+## Common pitfalls
 
-- **ความลับใน `body`**: แม้ว่าปลั๊กอินจะแก้ไขเมื่อบันทึก อย่าวางโทเค็น
-  ดิบหรือค่าในสไตล์ `.env` — การแก้ไขเป็นแบบ heuristic ไม่สมบูรณ์แบบ
-- **ชื่อซ้ำกัน**: `memory_save` ทำการ upsert ตามชื่อ หากเอเจนต์สองตัว
-  บันทึกชื่อเดียวกันแบบขนาน ผู้เขียนคนที่สองจะชนะและคนแรกจะหาย
-  ใช้ชื่อที่ไม่ซ้ำกันต่อ slice / ปัญหา
-- **Recall ได้รับผลลัพธ์มากเกินไป**: ให้ความสำคัญ `tags` มากกว่า `query`
-  ที่กว้าง การค้นหา `""` ส่งคืนทุกอย่างจัดเรียงตามความใหม่ — มีประโยชน์
-  สำหรับ "ฉันบันทึกอะไรในเซสชันที่แล้ว?" แต่มีค่าใช้จ่ายสูงใน store
-  ที่เต็ม
+- **Secrets in `body`**: even though the plugin redacts on save,
+  do not paste raw tokens or `.env`-style values — the redaction
+  is heuristic, not perfect.
+- **Title collisions**: `memory_save` upserts by title. If two
+  agents save the same title in parallel, the second writer wins
+  and the first is lost. Use unique titles per slice / per
+  problem.
+- **Recall gets too many hits**: prefer `tags` over a broad
+  `query`. A query of `""` returns everything sorted by recency
+  — useful for "what did I save last session?" but expensive on a
+  full store.
 
-## ขั้นตอนถัดไป
+## Next step
 
-- [round_context (proposals) เชื่อมโยงบันทึกความจำกับข้อเสนอที่ใช้งานอยู่อย่างไร](../../proposals/tutorials/th/getting-started.md)
-- [สัญญาการแก้ไขความลับ](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
+- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper ไทย
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`

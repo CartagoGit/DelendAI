@@ -4,10 +4,10 @@ import { joinRel } from '@mcp-vertex/core/public';
 /**
  * Derive the full swarm path layout from a cache root and a docs root.
  * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
- * and `--docsDir` (default `docs/mcp-vertex`) and hands each plugin its
- * own namespaced sub-roots (`<cacheDir>/<plugin>`); the swarm plugin
- * passes those here. Cache artefacts (locks, queue, checkpoints) live
- * under `cacheDir`; human-edited proposals live under `docsDir`.
+ * and `--docsDir` (default `docs/mcp-vertex`) and hands the proposals
+ * plugin those resolved roots. Cache artefacts (locks, queue,
+ * checkpoints, worktrees) live under `cacheDir`; human-edited proposals
+ * live under `docsDir`.
  */
 export const buildSwarmPaths = (
 	cacheDir: string,
@@ -33,6 +33,7 @@ export const buildSwarmPaths = (
 	proposalsDir: joinRel(docsDir, 'proposals'),
 	proposalIndexFile: joinRel(docsDir, 'proposals/index.json'),
 	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),
+	worktreesDir: joinRel(cacheDir, '.worktrees'),
 	scratchDir: cacheDir,
 });
 

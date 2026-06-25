@@ -2,11 +2,25 @@
 	"$schema": "./packages/core/schema/mcp-vertex.config.schema.json",
 	"cacheDir": ".cache/mcp-vertex",
 	"docsDir": "docs",
+	"agentWorktree": true,
 	"keepLegacy": false,
 	"plugins": {
+		"conventions": { "options": {} },
 		"docs": { "options": { "roots": ["docs", "README.md"] } },
 		"search": { "options": {} },
 		"git": { "options": {} },
+		"web-fetch": {
+			"options": {
+				"allowList": [
+					"mcp-vertex.dev",
+					"github.com",
+					"raw.githubusercontent.com",
+					"docs.github.com",
+					"registry.npmjs.org",
+					"www.npmjs.com"
+				]
+			}
+		},
 		"status-marker": { "options": {} },
 		"test-convention": { "options": {} },
 		"quality": { "options": {} },

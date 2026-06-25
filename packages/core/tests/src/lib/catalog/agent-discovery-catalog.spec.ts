@@ -104,7 +104,11 @@ const registerToolHandler = async () => {
 		now: fixedNow,
 	});
 	await registration.register({
-		registerTool: (_name, _meta, toolHandler) => {
+		registerTool: (
+			_name: string,
+			_meta: unknown,
+			toolHandler: (args: unknown) => Promise<unknown>,
+		) => {
 			handler = toolHandler;
 		},
 	} as never);

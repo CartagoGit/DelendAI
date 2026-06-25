@@ -105,6 +105,11 @@
 			"@mcp-vertex/audit": ["./plugins/audit/src/index.ts"],
 			"@mcp-vertex/audit/public": ["./plugins/audit/src/public/index.ts"],
 			"@mcp-vertex/audit/*": ["./plugins/audit/src/*"],
+			"@mcp-vertex/conventions": ["./plugins/conventions/src/index.ts"],
+			"@mcp-vertex/conventions/public": [
+				"./plugins/conventions/src/public/index.ts"
+			],
+			"@mcp-vertex/conventions/*": ["./plugins/conventions/src/*"],
 			"@mcp-vertex/web-fetch": ["./plugins/web-fetch/src/index.ts"],
 			"@mcp-vertex/web-fetch/public": [
 				"./plugins/web-fetch/src/public/index.ts"
