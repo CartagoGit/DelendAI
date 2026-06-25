@@ -1,19 +1,10 @@
 import { execFile } from 'node:child_process';
 
-/**
- * Result of running a git subcommand. `ok` is true only when git ran
- * and exited 0; otherwise `reason` explains why (git missing, timeout,
- * stderr) so a caller can distinguish "clean repo" from "git unavailable"
- * instead of treating both as an empty string.
- */
-export interface IGitRunResult {
-	readonly ok: boolean;
-	readonly output: string;
-	readonly reason?: string;
-}
-
-/** Runs a git subcommand asynchronously. Injectable for tests. */
-export type IGitRunner = (args: readonly string[]) => Promise<IGitRunResult>;
+// f00065 slice F: the git-runner contract is single-sourced in core and
+// re-exported here so this module's existing importers keep their import path.
+// Only the contract is shared; the read-only runner implementation stays local.
+export type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
 
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)
