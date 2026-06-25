@@ -407,9 +407,7 @@ export const classifyPath = (
 	for (const rule of rules) {
 		try {
 			if (rule.match(relPath)) return rule.name;
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return 'other';
 };
