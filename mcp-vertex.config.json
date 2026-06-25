@@ -6,7 +6,7 @@
 	"keepLegacy": false,
 	"plugins": {
 		"conventions": { "options": {} },
-		"docs": { "options": { "roots": ["docs", "README.md"] } },
+		"docs": { "options": { "roots": ["docs/mcp-vertex", "README.md"] } },
 		"search": { "options": {} },
 		"git": { "options": {} },
 		"web-fetch": {

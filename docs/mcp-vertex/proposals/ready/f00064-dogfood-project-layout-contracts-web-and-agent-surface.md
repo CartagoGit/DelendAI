@@ -82,8 +82,11 @@ Runtime-generated state belongs under `.cache/mcp-vertex/**`. Human-authored mcp
 External agent/IDE configs are evaluated per host:
 
 - `.github/` workflows, community health files, `CODEOWNERS`, Dependabot config, Copilot instructions, and GitHub agent files are root-discovered by GitHub/GitHub Copilot; they stay at `.github/**` unless a tested root bridge preserves GitHub behavior.
-- `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, and `.continue/` may move their canonical authored source to `configs/external/<tool>/` only if the root path remains a working discovery point through a tested include/stub/symlink or explicit host setting.
+- `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, and `.continue/` may move their canonical authored source to `configs/external/<tool>/` only if the root path remains a working discovery point through a tested include/stub/symlink or explicit host setting. `.continue/` is the Continue.dev workspace assistant config, not mcp-vertex runtime state.
 - If a host does not support includes and ignores symlinks, the root file is not clutter; it is the integration boundary.
+- Astro's configurable `cacheDir` belongs in `.cache/astro/`; its root `.astro/`
+  generated type metadata remains gitignored unless Astro supports relocating it
+  without breaking editor/type-check integration.
 
 ## Slices
 
