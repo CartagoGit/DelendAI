@@ -32,20 +32,20 @@ const tools: readonly IToolSummary[] = [
 
 const skills: readonly ISkillSummary[] = [
 	{
-		id: 'token-budget-playbook',
+		id: 'mcp-vertex-token-budget-playbook',
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Budget every response before it drifts.',
 		tags: ['metrics', 'compact'],
-		bodyPath: 'skills/token-budget-playbook/SKILL.md',
+		bodyPath: 'skills/mcp-vertex-token-budget-playbook/SKILL.md',
 	},
 	{
-		id: 'audit-playbook',
+		id: 'mcp-vertex-audit-playbook',
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Run exhaustive code audits.',
 		tags: ['audit'],
-		bodyPath: 'skills/audit-playbook/SKILL.md',
+		bodyPath: 'skills/mcp-vertex-audit-playbook/SKILL.md',
 	},
 ];
 
@@ -128,8 +128,8 @@ describe('buildCatalog', async () => {
 			'search_search',
 		]);
 		expect(snapshot.skills.map((entry) => entry.id)).toEqual([
-			'audit-playbook',
-			'token-budget-playbook',
+			'mcp-vertex-audit-playbook',
+			'mcp-vertex-token-budget-playbook',
 		]);
 		expect(snapshot.proposals.map((entry) => entry.id)).toEqual([
 			'a00001',
@@ -197,7 +197,7 @@ describe('buildCatalog', async () => {
 			'mcp-vertex_agent_catalog',
 		);
 		expect((skillResult.skills as Array<{ id: string }>)[0]?.id).toBe(
-			'token-budget-playbook',
+			'mcp-vertex-token-budget-playbook',
 		);
 		expect((proposalResult.proposals as Array<{ id: string }>)[0]?.id).toBe(
 			'f00056',
@@ -255,7 +255,7 @@ describe('buildCatalog', async () => {
 			'mcp-vertex_agent_catalog',
 		);
 		expect(second.skills.map((entry) => entry.id)).toContain(
-			'audit-playbook',
+			'mcp-vertex-audit-playbook',
 		);
 		expect(second.proposals.map((entry) => entry.id)).toContain('a00001');
 	});

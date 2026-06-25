@@ -1,6 +1,5 @@
 ---
 import ToolPage from '#COMPONENTS/ToolPage.astro';
-import Base from '#LAYOUTS/Base.astro';
 import capabilities from '#MANIFESTS/capabilities.json';
 
 export function getStaticPaths() {
@@ -20,9 +19,7 @@ export function getStaticPaths() {
 	});
 }
 
-const { plugin, tool } = Astro.params;
+const { tool } = Astro.params;
 ---
 
-<Base lang="en" title={`${tool} — @mcp-vertex/core`}>
-	<ToolPage lang="en" toolName={tool!} />
-</Base>
+<ToolPage lang="en" toolName={tool!} />

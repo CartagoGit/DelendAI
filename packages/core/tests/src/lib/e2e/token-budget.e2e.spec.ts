@@ -111,10 +111,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				generatedAt: '2026-06-25T00:00:00.000Z',
 				skills: [
 					{
-						id: 'token-budget-playbook',
+						id: 'mcp-vertex-token-budget-playbook',
 						version: '1.0.0',
 						minCoreVersion: '0.1.0',
-						bodyPath: 'skills/token-budget-playbook/SKILL.md',
+						bodyPath:
+							'skills/mcp-vertex-token-budget-playbook/SKILL.md',
 						tags: ['metrics', 'compact'],
 					},
 				],

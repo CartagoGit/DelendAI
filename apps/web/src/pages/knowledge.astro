@@ -1,16 +1,22 @@
 ---
+/**
+ * `/knowledge` — English knowledge index. See `pages/tools.astro` for
+ * the recipe.
+ */
 import KnowledgeSection from '#COMPONENTS/KnowledgeSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
-import capabilities from '#MANIFESTS/capabilities.json';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-const lang: Lang = 'en';
+const lang = 'en' as const;
 const t = useTranslations(lang);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/`;
-const count = capabilities.counts.knowledge ?? 0;
 ---
 
-<Base lang={lang} title={`${t.knowledge.title} — @mcp-vertex/core`}>
+<PageShell
+	lang={lang}
+	title={t.knowledge.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.knowledge, href: localePath(lang, 'knowledge') }]}
+>
 	<KnowledgeSection lang={lang} heading={t.knowledge.title} />
-</Base>
+</PageShell>

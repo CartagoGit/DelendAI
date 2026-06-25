@@ -239,7 +239,7 @@ const dict: LangDict = {
 				'Claude Code を再起動（または `/mcp` を実行してサーバーを再読み込み）して、新しいエントリを認識させます。',
 				'新しいセッションでは、常に読み込まれる `AGENTS.md` + `CLAUDE.md` が最初の呼び出しとして既に `mcp-vertex_overview` を指しています。',
 				'`mcp-vertex_overview { compact: true }` で確認してください — `recommendedNextAction` フィールドが次に何をすべきか教えてくれます。',
-				'マルチエージェントのセッションでは、スライスを claim する前に `proposal-swarm-runner` スキルを読んでください。',
+				'マルチエージェントのセッションでは、スライスを claim する前に `mcp-vertex-proposal-swarm-runner` スキルを読んでください。',
 			],
 		},
 		nextSteps: '次に進む先',

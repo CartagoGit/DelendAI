@@ -26,7 +26,12 @@ type ISkill = {
 	summary: string;
 	path: string;
 };
-const skills = (skillsData.skills ?? []) as ISkill[];
+const skills = (skillsData.skills ?? []) as unknown as Array<{
+	readonly id: string;
+	readonly name: string;
+	readonly namespace: string;
+	readonly description: string;
+}>;
 
 const repo = 'https://github.com/CartagoGit/mcp-vertex';
 ---
@@ -42,10 +47,10 @@ const repo = 'https://github.com/CartagoGit/mcp-vertex';
 			items={skills}
 			labels={{ stat: t.skills.count, empty: t.skills.lead }}
 			describe={(s) => {
-				const it = s as ISkill;
+				const it = s as unknown as ISkill;
 				return it.summary || it.description;
 			}}
-			hrefFor={(s) => `${repo}/blob/main/${(s as ISkill).path}`}
+			hrefFor={(s) => `${repo}/blob/main/${(s as unknown as ISkill).path}`}
 			linkTarget="_blank"
 			linkRel="external noopener"
 			sectionId="skills"

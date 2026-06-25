@@ -1,22 +1,24 @@
 ---
+/**
+ * `/[lang]/skills` — localized skills index. See
+ * `pages/[lang]/tools.astro` for the recipe.
+ */
 import SkillsSection from '#COMPONENTS/SkillsSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { languages, useTranslations, type Lang } from '#I18N/ui';
-import skillsData from '#MANIFESTS/skills.json';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-export function getStaticPaths() {
-	return languages
-		.filter((l) => l.code !== 'en')
-		.map((l) => ({ params: { lang: l.code } }));
-}
+export const getStaticPaths = langStaticPaths;
 
-const { lang } = Astro.params;
-const t = useTranslations(lang as Lang);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/${lang}/`;
-const count = (skillsData.skills ?? []).length;
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
 ---
 
-<Base lang={lang as Lang} title={`${t.skills.title} — @mcp-vertex/core`}>
-	<SkillsSection lang={lang as Lang} heading={t.skills.title} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.skills.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.skills, href: localePath(lang, 'skills') }]}
+>
+	<SkillsSection lang={lang} heading={t.skills.title} />
+</PageShell>
