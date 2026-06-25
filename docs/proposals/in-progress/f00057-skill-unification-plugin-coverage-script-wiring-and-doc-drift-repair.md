@@ -1,13 +1,32 @@
 ---
 id: f00057
-status: ready
+status: in-progress
 type: proposal
 track: skills+plugins+tools+scripts+docs+workflow
 date: 2026-06-25
 kind: refactor
 title: Skill unification + plugin coverage + script wiring + doc-drift repair
-shipped-in: []
+shipped-in:
+  - 451abe38 # fix(f00057 S5): sync skill manifest bodyPath to the renamed mcp-vertex-* dirs
+  - 85f2d56a # feat(f00057 S10): wire 4 orphan scripts into the dev toolchain
+  - 94536da3 # refactor(f00057 S8): extract the TypeScript file-convention profile to packages/core/
+  - 09f39a5e # feat(f00057 S7): add conventions to the swarm preset
 recan: []
+slices-done:
+  - S5  # appliesTo consistently declared on all 17 skills + check-skills lint enforces it
+  - S7  # conventions added to swarm preset (resolvePresetMembers('swarm') -> 13 plugins)
+  - S8  # TypeScript file-convention profile extracted to packages/core/src/lib/contracts/file-conventions.contract.ts
+  - S10 # lint:skills + verify:tools wired into validate; site:codegen + metrics:gate as opt-in; fix-fb88376-imports archived
+slices-pending:
+  - S1  # proposals-canonical-workflow skill fusion
+  - S2  # token-budget-discipline skill fusion
+  - S3  # multi-agent-coordination skill fusion
+  - S4  # audit-end-to-end skill fusion
+  - S6  # 6 new plugin playbook skills (git, deps, issues, test-convention, conventions, notification)
+  - S9  # synchronise 5 plugin READMEs
+  - S11 # deprecate docs_search; clarify setup_github
+  - S12 # unify knowledge-entry naming to <plugin>-<topic>
+
 related:
   - f00049 # conventions unification — f00057 owns S8's playbook merge + extends S4's per-plugin layout migration to the remaining plugins
   - f00051 # multi-language rules presets — f00057 must coordinate S8 docs that cross with skill merging

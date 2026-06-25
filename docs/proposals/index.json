@@ -65,10 +65,10 @@
 		},
 		{
 			"id": "f00057",
-			"file": "ready/f00057-skill-unification-plugin-coverage-script-wiring-and-doc-drift-repair.md",
+			"file": "in-progress/f00057-skill-unification-plugin-coverage-script-wiring-and-doc-drift-repair.md",
 			"track": "skills+plugins+tools+scripts+docs+workflow",
 			"type": "proposal",
-			"status": "ready",
+			"status": "in-progress",
 			"date": "2026-06-25",
 			"extras": {
 				"ownership": [
