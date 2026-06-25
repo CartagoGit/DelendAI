@@ -178,7 +178,7 @@ For every identified concurrent-write scenario, fill in:
 ### Token-efficiency check
 
 - Confirm `overview { compact: true }` stays under the measured budget
-  (see `docs/TOKEN-BUDGETS.md`).
+  (see `docs/mcp-vertex/TOKEN-BUDGETS.md`).
 - Any tool description prose that is redundant (explains the same thing the
   parameter name already makes obvious)?
 

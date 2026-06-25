@@ -1,5 +1,5 @@
 /**
- * `discoverTroubleshootingCases` — scan `docs/troubleshooting/*.md` and
+ * `discoverTroubleshootingCases` — scan `docs/mcp-vertex/troubleshooting/*.md` and
  * return a structured catalogue the docs site renders (l030 S4).
  *
  * Case files have a YAML frontmatter:
@@ -10,7 +10,7 @@
  *   cause: "..."
  *   fix: "..."
  *   tags: [release, npm, ci]
- *   closedBy: "docs/NPM_PUBLISH.md §0.1"
+ *   closedBy: "docs/mcp-vertex/NPM_PUBLISH.md §0.1"
  *   ---
  *
  *   body (markdown, rendered as-is)

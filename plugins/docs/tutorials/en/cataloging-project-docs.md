@@ -51,7 +51,7 @@ Response (truncated):
   "truncated": false,
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
-    { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
+    { "path": "docs/mcp-vertex/ARCHITECTURE.md", "title": "Architecture" },
     { "path": "docs/mcp-vertex/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
@@ -73,7 +73,7 @@ subset (e.g. just `["docs/mcp-vertex/proposals"]`):
 ```json
 {
   "tool": "docs_read",
-  "args": { "path": "docs/ARCHITECTURE.md" }
+  "args": { "path": "docs/mcp-vertex/ARCHITECTURE.md" }
 }
 ```
 
@@ -81,7 +81,7 @@ Response:
 
 ```json
 {
-  "path": "docs/ARCHITECTURE.md",
+  "path": "docs/mcp-vertex/ARCHITECTURE.md",
   "title": "Architecture",
   "content": "# Architecture\n\n…full body…",
   "truncated": false,

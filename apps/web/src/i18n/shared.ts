@@ -195,7 +195,7 @@ export interface IInstallTranslations {
 
 /**
  * Cross-project setup wizard (`/setup`, f00030 S3). Mirrors the 7 canonical
- * steps in `docs/CROSS-PROJECT-SETUP.md`; one `*Title`/`*Body` pair per step.
+ * steps in `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`; one `*Title`/`*Body` pair per step.
  */
 export interface ISetupTranslations {
 	readonly title: string;

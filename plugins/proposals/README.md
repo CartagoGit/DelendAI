@@ -1,7 +1,7 @@
 # @mcp-vertex/proposals
 
 The **proposals workflow** plugin for
-[`@mcp-vertex/core`](../../docs/README-MCP-VERTEX.md): a file-based proposal store,
+[`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md): a file-based proposal store,
 file-level agent locks, a persistent task queue and multi-agent ("swarm")
 coordination — including naming the whole agent tree (orchestrator included).
 

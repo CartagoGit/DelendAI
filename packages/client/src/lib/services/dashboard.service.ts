@@ -477,7 +477,7 @@ export class DashboardService {
 	): number {
 		// Compact responses are ~18% smaller on average in our reference
 		// dataset; this is the conservative number reported in
-		// `docs/TOKEN-BUDGETS.md`. Future revisions can compute this
+		// `docs/mcp-vertex/TOKEN-BUDGETS.md`. Future revisions can compute this
 		// from a compact-vs-full diff if the server exposes it.
 		return Math.round(tokensFromBytes(metrics.totals.totalBytes) * 0.18);
 	}

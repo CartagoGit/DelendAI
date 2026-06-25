@@ -3,10 +3,10 @@
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
 [@mcp-vertex](https://www.npmjs.com/org/mcp-vertex).
 
-- **[README-MCP-VERTEX.md](./docs/README-MCP-VERTEX.md)** — what it is, how to use it,
+- **[README-MCP-VERTEX.md](./docs/mcp-vertex/README-MCP-VERTEX.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
-- **[PLUGINS-MCP-VERTEX.md](./docs/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
-- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — layers, contracts, request flow,
+- **[PLUGINS-MCP-VERTEX.md](./docs/mcp-vertex/PLUGINS-MCP-VERTEX.md)** — how to create plugins.
+- **[ARCHITECTURE.md](./docs/mcp-vertex/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
 - **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
   **[AGENTS.md](./AGENTS.md)** — how to contribute, report vulnerabilities, and the
@@ -67,7 +67,7 @@ The launch path is `tools/scripts/host/host-server.script.ts` with
 `--workspace`, `--config` and `--preset=swarm`. The host uses the same
 loader as the CLI, so plugins declared in `mcp-vertex.config.json` are
 loaded automatically in addition to the preset unless excluded with
-`--exclude-plugins`. See [`docs/README-MCP-VERTEX.md`](./docs/README-MCP-VERTEX.md)
+`--exclude-plugins`. See [`docs/mcp-vertex/README-MCP-VERTEX.md`](./docs/mcp-vertex/README-MCP-VERTEX.md)
 for the full snippet per client and the plugin-resolution precedence.
 
 ```bash

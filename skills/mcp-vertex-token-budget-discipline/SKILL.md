@@ -20,7 +20,7 @@ description: Which mcp-vertex tools are cheap to call from the root/orchestratin
 
 ## Measured budgets (current baseline)
 
-From `docs/TOKEN-BUDGETS.md`, captured against a real assembled server
+From `docs/mcp-vertex/TOKEN-BUDGETS.md`, captured against a real assembled server
 (`--plugins=proposals,memory`, 26 tools) via
 `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`:
 
@@ -76,7 +76,7 @@ rather than raising the ceiling.
 - Never call `proposals_proposal_board` verbose, `proposals_state_health` full, or unscoped
   `audit_audit_consolidate` directly from the root/coordinator thread.
 - Never assume a tool without a `compact` parameter is automatically cheap —
-  check `docs/TOKEN-BUDGETS.md` or bound it explicitly (`maxResults`, `scope`).
+  check `docs/mcp-vertex/TOKEN-BUDGETS.md` or bound it explicitly (`maxResults`, `scope`).
 - Never carry a closed slice's verbose tool output into unrelated work —
   `/compact` first.
 

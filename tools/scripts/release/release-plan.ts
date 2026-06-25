@@ -9,7 +9,7 @@
 
 /**
  * Publish order: `@mcp-vertex/core` FIRST (every plugin declares it as a
- * `peerDependency`), then the nine plugins. Mirrors docs/NPM_PUBLISH.md §2.
+ * `peerDependency`), then the nine plugins. Mirrors docs/mcp-vertex/NPM_PUBLISH.md §2.
  */
 export const PUBLISH_ORDER: readonly string[] = [
 	'packages/core',

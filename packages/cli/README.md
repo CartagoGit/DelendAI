@@ -43,7 +43,7 @@ command registry.
 bun run cli -- status --json
 bun run cli -- plugin list --plugins=docs,search
 bun run cli -- docs list --max=10 --json
-bun run cli -- docs read docs/ARCHITECTURE.md
+bun run cli -- docs read docs/mcp-vertex/ARCHITECTURE.md
 bun run cli -- config get plugins.docs.options.roots
 ```
 

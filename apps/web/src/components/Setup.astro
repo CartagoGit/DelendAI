@@ -2,7 +2,7 @@
 /**
  * Setup.astro — cross-project setup wizard (f00030 S3).
  *
- * Renders the 7 canonical steps from `docs/CROSS-PROJECT-SETUP.md` as an
+ * Renders the 7 canonical steps from `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` as an
  * ordered list, each with a copy-pasteable command (via the shared
  * `CodeBlock`, which already owns the `navigator.clipboard` copy button used
  * across the site — same pattern as `Install.astro`). The step list and the
@@ -45,7 +45,7 @@ const steps = buildSetupWizard({
 // docs are the reference every surface links back to (f00030 §"One guide,
 // four surfaces").
 const DOCS_GUIDE_URL =
-	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/CROSS-PROJECT-SETUP.md';
+	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/mcp-vertex/CROSS-PROJECT-SETUP.md';
 ---
 
 <section id="setup" class="section">

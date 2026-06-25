@@ -4,7 +4,7 @@
  *
  * This mirrors the agnostic step engine in
  * `packages/core/src/lib/setup/setup-steps.ts` and the canonical 7-step
- * guide in `docs/CROSS-PROJECT-SETUP.md` (§"The 7 steps of `setup-github`").
+ * guide in `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` (§"The 7 steps of `setup-github`").
  * The web wizard renders those same 7 steps statically; this module is the
  * single, testable source the `.astro` page maps over.
  *

@@ -1,6 +1,6 @@
 /**
  * `discoverTroubleshootingCases` — pure-function catalogue scanner for
- * `docs/troubleshooting/*.md` (l030 S4). Mirrors `discover-tutorials.spec.ts`:
+ * `docs/mcp-vertex/troubleshooting/*.md` (l030 S4). Mirrors `discover-tutorials.spec.ts`:
  * SRP lives in the module, this spec pins the contract.
  */
 import { describe, expect, it } from 'vitest';
@@ -11,7 +11,7 @@ import {
 } from '../lib/discover-troubleshooting';
 
 const fakeReader = (files: Record<string, string>): ITroubleshootingReader => {
-	const dir = 'docs/troubleshooting';
+	const dir = 'docs/mcp-vertex/troubleshooting';
 	const names = Object.keys(files)
 		.filter((p) => p.startsWith(`${dir}/`))
 		.map((p) => p.slice(dir.length + 1));
@@ -25,14 +25,14 @@ const fakeReader = (files: Record<string, string>): ITroubleshootingReader => {
 describe('discoverTroubleshootingCases', () => {
 	it('returns an empty list when the directory has no files', () => {
 		const r = fakeReader({});
-		expect(discoverTroubleshootingCases('docs/troubleshooting', r)).toEqual(
-			[],
-		);
+		expect(
+			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+		).toEqual([]);
 	});
 
 	it('parses frontmatter (slug, symptom, cause, fix, tags, closedBy) and body', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/example-case.md': [
+			'docs/mcp-vertex/troubleshooting/example-case.md': [
 				'---',
 				'slug: example-case',
 				'symptom: "Things break."',
@@ -45,7 +45,10 @@ describe('discoverTroubleshootingCases', () => {
 				'Body text.',
 			].join('\n'),
 		});
-		const out = discoverTroubleshootingCases('docs/troubleshooting', r);
+		const out = discoverTroubleshootingCases(
+			'docs/mcp-vertex/troubleshooting',
+			r,
+		);
 		expect(out).toHaveLength(1);
 		const first = out[0];
 		if (!first) throw new Error('expected one case');
@@ -60,7 +63,7 @@ describe('discoverTroubleshootingCases', () => {
 
 	it('skips a file missing any required field', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/incomplete.md': [
+			'docs/mcp-vertex/troubleshooting/incomplete.md': [
 				'---',
 				'slug: incomplete',
 				'symptom: "Only a symptom."',
@@ -68,15 +71,15 @@ describe('discoverTroubleshootingCases', () => {
 				'body',
 			].join('\n'),
 		});
-		expect(discoverTroubleshootingCases('docs/troubleshooting', r)).toEqual(
-			[],
-		);
+		expect(
+			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+		).toEqual([]);
 	});
 
 	it('skips non-md files', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/notes.txt': 'not a case',
-			'docs/troubleshooting/real.md': [
+			'docs/mcp-vertex/troubleshooting/notes.txt': 'not a case',
+			'docs/mcp-vertex/troubleshooting/real.md': [
 				'---',
 				'slug: real',
 				'symptom: "s"',
@@ -86,13 +89,16 @@ describe('discoverTroubleshootingCases', () => {
 				'body',
 			].join('\n'),
 		});
-		const out = discoverTroubleshootingCases('docs/troubleshooting', r);
+		const out = discoverTroubleshootingCases(
+			'docs/mcp-vertex/troubleshooting',
+			r,
+		);
 		expect(out.map((c) => c.slug)).toEqual(['real']);
 	});
 
 	it('defaults tags to [] when absent', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/no-tags.md': [
+			'docs/mcp-vertex/troubleshooting/no-tags.md': [
 				'---',
 				'slug: no-tags',
 				'symptom: "s"',
@@ -102,28 +108,34 @@ describe('discoverTroubleshootingCases', () => {
 				'body',
 			].join('\n'),
 		});
-		const out = discoverTroubleshootingCases('docs/troubleshooting', r);
+		const out = discoverTroubleshootingCases(
+			'docs/mcp-vertex/troubleshooting',
+			r,
+		);
 		expect(out[0]?.tags).toEqual([]);
 	});
 
 	it('sorts by slug', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/zeta.md':
+			'docs/mcp-vertex/troubleshooting/zeta.md':
 				'---\nslug: zeta\nsymptom: "s"\ncause: "c"\nfix: "f"\n---\nbody',
-			'docs/troubleshooting/alpha.md':
+			'docs/mcp-vertex/troubleshooting/alpha.md':
 				'---\nslug: alpha\nsymptom: "s"\ncause: "c"\nfix: "f"\n---\nbody',
 		});
-		const out = discoverTroubleshootingCases('docs/troubleshooting', r);
+		const out = discoverTroubleshootingCases(
+			'docs/mcp-vertex/troubleshooting',
+			r,
+		);
 		expect(out.map((c) => c.slug)).toEqual(['alpha', 'zeta']);
 	});
 
 	it('handles a file with broken frontmatter (no closing ---) by skipping it', () => {
 		const r = fakeReader({
-			'docs/troubleshooting/broken.md':
+			'docs/mcp-vertex/troubleshooting/broken.md':
 				'---\nslug: broken\n# no closing fence',
 		});
-		expect(discoverTroubleshootingCases('docs/troubleshooting', r)).toEqual(
-			[],
-		);
+		expect(
+			discoverTroubleshootingCases('docs/mcp-vertex/troubleshooting', r),
+		).toEqual([]);
 	});
 });
