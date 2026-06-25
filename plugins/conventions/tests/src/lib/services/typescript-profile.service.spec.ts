@@ -41,7 +41,6 @@ describe('typescript-profile classifyPath', async () => {
 
 	it('returns "other" for empty or non-string input', async () => {
 		expect(classifyPath('')).toBe('other');
-		// @ts-expect-error — defensive runtime guard, not a typed call site.
 		expect(classifyPath(undefined)).toBe('other');
 	});
 

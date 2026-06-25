@@ -57,6 +57,19 @@ export type {
 	IKnowledgeEntry,
 	ISkillEntry,
 } from '../lib/contracts/interfaces/knowledge.interface';
+// File-convention profile (f00037 / f00057 S8) — the canonical
+// TypeScript rule chain used by both the lint engine and the
+// `@mcp-vertex/conventions` plugin.
+export {
+	classifyPath,
+	DEFAULT_TS_RULES,
+	endsWithBasename,
+	hasSegment,
+} from '../lib/contracts/file-conventions.contract';
+export type {
+	IRoleRule,
+	Role,
+} from '../lib/contracts/file-conventions.contract';
 
 // --- plugin system ---------------------------------------------------------
 export { definePlugin } from '../lib/plugins/plugin-contract';
