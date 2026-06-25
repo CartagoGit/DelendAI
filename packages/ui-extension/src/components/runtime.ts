@@ -32,43 +32,61 @@ export const componentScript: string = `
   var host = window.__MV_HOST__ || { id: 'web', dispatch: function () {}, setLanguage: function () {}, persistLanguage: function () {} };
   var openDropdowns = new Set();
 
+  // Mirror the open state onto the wrapper's data-open attribute so
+  // the host CSS can drive the transition without a JS-side class
+  // flip. We keep aria-expanded on the trigger (a11y) and hidden on
+  // the panel (a11y tree removal) in lockstep with data-open.
+  function setDropdownOpen(trigger, menu, wrapper, open) {
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      menu.removeAttribute('hidden');
+      if (wrapper) wrapper.setAttribute('data-open', '');
+    } else {
+      menu.setAttribute('hidden', '');
+      if (wrapper) wrapper.removeAttribute('data-open');
+    }
+  }
+
   function closeAllDropdowns(exceptId) {
-    document.querySelectorAll('.mv-dropdown__trigger[aria-expanded="true"]').forEach(function (t) {
+    document.querySelectorAll('[data-mv-toggle="dropdown"][aria-expanded="true"]').forEach(function (t) {
       var id = t.getAttribute('data-mv-dropdown-id');
       if (id && id !== exceptId) {
-        t.setAttribute('aria-expanded', 'false');
         var menu = document.getElementById(id + '-menu');
-        if (menu) menu.hidden = true;
+        var wrapper = t.closest('[data-mv-dropdown]');
+        setDropdownOpen(t, menu, wrapper, false);
         openDropdowns.delete(id);
       }
     });
   }
 
   function toggleDropdown(id) {
-    var trigger = document.querySelector('.mv-dropdown__trigger[data-mv-dropdown-id="' + id + '"]');
+    var trigger = document.querySelector('[data-mv-toggle="dropdown"][data-mv-dropdown-id="' + id + '"]');
     var menu = document.getElementById(id + '-menu');
     if (!trigger || !menu) return;
     var open = trigger.getAttribute('aria-expanded') === 'true';
     if (open) {
-      trigger.setAttribute('aria-expanded', 'false');
-      menu.hidden = true;
+      setDropdownOpen(trigger, menu, trigger.closest('[data-mv-dropdown]'), false);
       openDropdowns.delete(id);
     } else {
       closeAllDropdowns(id);
-      trigger.setAttribute('aria-expanded', 'true');
-      menu.hidden = false;
+      setDropdownOpen(trigger, menu, trigger.closest('[data-mv-dropdown]'), true);
       openDropdowns.add(id);
     }
   }
 
   // Delegated click handler.
   // data-mv-toggle dispatch: handled per-type below (dropdown / disclosure).
+  // The trigger / wrapper selectors stay attribute-based (data-mv-toggle,
+  // data-mv-dropdown) so the runtime works with whatever classPrefix the
+  // host passed to renderDropdown -- including the docs site's nav__more
+  // (the trigger is .nav__more__trigger but it still carries the same
+  // data-mv-toggle="dropdown" contract).
   document.addEventListener('click', function (evt) {
     var target = evt.target;
     if (!(target instanceof Element)) return;
 
     // Dropdown trigger → toggle.
-    var trigger = target.closest('.mv-dropdown__trigger');
+    var trigger = target.closest('[data-mv-toggle="dropdown"]');
     if (trigger) {
       var id = trigger.getAttribute('data-mv-dropdown-id');
       if (id) { toggleDropdown(id); evt.preventDefault(); return; }
@@ -87,7 +105,7 @@ export const componentScript: string = `
     }
 
     // Outside click → close all open dropdowns.
-    if (!target.closest('.mv-dropdown')) closeAllDropdowns(null);
+    if (!target.closest('[data-mv-dropdown]')) closeAllDropdowns(null);
   });
 
   // Esc → close all dropdowns.

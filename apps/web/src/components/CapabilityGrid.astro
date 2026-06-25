@@ -1,0 +1,267 @@
+---
+/**
+ * CapabilityGrid.astro — one BEM block, one source of truth for every
+ * "list of capability cards grouped by namespace" pattern on the site.
+ *
+ * The five section components that built this view (ToolsSection,
+ * PromptsSection, ResourcesSection, KnowledgeSection, SkillsSection)
+ * were 80% identical: each read its array from `capabilities.json`
+ * (or `skills.json`), grouped by `namespace`, then iterated to render
+ * a card. Each card looked slightly different (an `<a>` for tools
+ * that link to a per-tool page, a `<div>` for prompts/knowledge,
+ * a `<table>` for resources, a link to the markdown source for
+ * skills). Centralising the grouping + rendering means:
+ *
+ *   - adding a new capability kind is one entry in the manifest +
+ *     one section component (a 30-line wrapper), not 100+ lines of
+ *     copy-paste;
+ *   - the visual treatment stays consistent (same stat row, same
+ *     `ns__head`, same grid, same empty-state copy);
+ *   - the empty state + 0-capability fallback is the same in every
+ *     page, so users on small projects see something sensible.
+ *
+ * Behaviour:
+ *   - `kind` decides the card shape (tool / prompt / resource /
+ *     knowledge / skill).
+ *   - `linkBase` is the href prefix for any tool / skill / case card
+ *     that has its own detail page.
+ *   - `items` is the raw array; the grid groups by `namespace` and
+ *     sorts namespaces alphabetically so the order is stable.
+ *   - `labels` carries the i18n strings the grid needs (stat label,
+ *     empty message, namespace label). Pass them via the consuming
+ *     Section component so every page keeps its own i18n keys.
+ */
+type CapabilityKind = 'tool' | 'prompt' | 'resource' | 'knowledge' | 'skill';
+
+interface BaseItem {
+	readonly namespace: string;
+}
+
+interface ToolItem extends BaseItem {
+	readonly name: string;
+	readonly description: string;
+}
+interface PromptItem extends BaseItem {
+	readonly name: string;
+	readonly description: string;
+	readonly arguments?: ReadonlyArray<{
+		readonly name: string;
+		readonly description: string;
+		readonly required?: boolean;
+	}>;
+}
+interface ResourceItem extends BaseItem {
+	readonly uri: string;
+	readonly name?: string;
+	readonly description: string;
+	readonly mimeType?: string;
+}
+interface KnowledgeItem extends BaseItem {
+	readonly id: string;
+	readonly title: string;
+}
+interface SkillItem extends BaseItem {
+	readonly id: string;
+	readonly name: string;
+	readonly description: string;
+	readonly summary: string;
+	readonly path: string;
+}
+
+type AnyItem = ToolItem | PromptItem | ResourceItem | KnowledgeItem | SkillItem;
+
+interface Props {
+	readonly kind: CapabilityKind;
+	readonly items: ReadonlyArray<AnyItem>;
+	readonly labels: {
+		readonly stat: string;
+		readonly empty: string;
+		readonly namespaceTitle?: string;
+	};
+	/** Optional per-item override: `(item) => string`. Used by the
+	 * caller to surface localised descriptions from the i18n tables
+	 * (`describeTool`, `describePrompt`, `describeResource`,
+	 * `describeKnowledge`). Falls back to the item's own `description`
+	 * or `title`. */
+	readonly describe?: (item: AnyItem) => string;
+	/** For `resource` items: optional `(item) => string` that returns
+	 * the localised display name; defaults to the catalogue name. */
+	readonly displayName?: (item: AnyItem) => string;
+	/** For `prompt` items: optional `(item, argName) => string` for
+	 * the argument descriptions. */
+	readonly argDescription?: (
+		item: AnyItem,
+		argName: string,
+		fallback: string,
+	) => string;
+	/** For `prompt` items: the i18n label for the "args" disclosure. */
+	readonly promptArgLabel?: string;
+	/** Optional href builder for items that have their own page
+	 * (tools, skills, troubleshooting cases). */
+	readonly hrefFor?: (item: AnyItem) => string | undefined;
+	/** Optional `target` / `rel` for the rendered anchor (skills link
+	 * to the source markdown on GitHub, so they open in a new tab). */
+	readonly linkTarget?: string;
+	readonly linkRel?: string;
+	/** Optional override for the empty state heading copy. When
+	 * `items.length === 0` the grid still renders a stat row + the
+	 * empty message, mirroring the legacy behaviour every Section
+	 * shipped. */
+	readonly showEmptyStateHeading?: boolean;
+	/** Section id; the wrapper carries `id="<sectionId>"` so
+	 * in-page anchors (`#tools`, `#prompts`, …) keep working. */
+	readonly sectionId?: string;
+}
+
+const {
+	kind,
+	items,
+	labels,
+	describe,
+	displayName,
+	argDescription,
+	promptArgLabel,
+	hrefFor,
+	linkTarget,
+	linkRel,
+	showEmptyStateHeading = true,
+	sectionId,
+} = Astro.props as Props;
+
+const fallbackDescribe = (item: AnyItem): string => {
+	if ('description' in item && item.description) return item.description;
+	if ('title' in item && item.title) return item.title;
+	return '';
+};
+
+const describeItem = (item: AnyItem): string =>
+	describe?.(item) ?? fallbackDescribe(item);
+
+const nameItem = (item: AnyItem): string => {
+	if (displayName) return displayName(item);
+	if ('name' in item && item.name) return item.name;
+	if ('uri' in item) return item.uri;
+	if ('id' in item) return item.id;
+	return '';
+};
+
+const groups: Record<string, AnyItem[]> = {};
+for (const item of items) {
+	const ns = item.namespace;
+	if (!groups[ns]) groups[ns] = [];
+	groups[ns].push(item);
+}
+const namespaces = Object.entries(groups).sort((a, b) =>
+	a[0].localeCompare(b[0]),
+);
+
+const isEmpty = items.length === 0;
+---
+
+<section id={sectionId} class="section">
+	<div class="container">
+		<div class="stat-row">
+			<div class="stat">
+				<b>{items.length}</b>
+				<span>{labels.stat}</span>
+			</div>
+		</div>
+		{
+			isEmpty ? (
+				showEmptyStateHeading && <p class="lead">{labels.empty}</p>
+			) : (
+				namespaces.map(([ns, list]) => (
+					<div class="ns">
+						<div class="ns__head">
+							<h3>{labels.namespaceTitle ?? ns}</h3>
+							<span class="ns__count">{list.length}</span>
+						</div>
+						{kind === 'resource' ? (
+							<table class="resources-table">
+								<thead>
+									<tr>
+										<th>URI</th>
+										<th>MIME</th>
+										<th>Title</th>
+									</tr>
+								</thead>
+								<tbody>
+									{list.map((item) => {
+										const r = item as ResourceItem;
+										return (
+											<tr>
+												<td>
+													<code>{r.uri}</code>
+												</td>
+												<td>{r.mimeType ?? '—'}</td>
+												<td>
+													<strong>{nameItem(item)}</strong>
+													<p class="muted">{describeItem(item)}</p>
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						) : kind === 'prompt' ? (
+							<div class="prompts-grid">
+								{list.map((item) => {
+									const p = item as PromptItem;
+									return (
+										<div class="prompt card">
+											<div class="tool__head">
+												<code>{p.name}</code>
+											</div>
+											<p>{describeItem(item)}</p>
+											{p.arguments && p.arguments.length > 0 && promptArgLabel && (
+												<details class="prompt__args">
+													<summary>
+														{promptArgLabel} ({p.arguments.length})
+													</summary>
+													<ul>
+														{p.arguments.map((a) => (
+															<li>
+																<code>{a.name}</code>
+																{a.required && <span class="prompt__req">*</span>} —{' '}
+																{argDescription
+																	? argDescription(p, a.name, a.description)
+																	: a.description}
+															</li>
+														))}
+													</ul>
+												</details>
+											)}
+										</div>
+									);
+								})}
+							</div>
+						) : (
+							<div class:list={[kind === 'tool' || kind === 'knowledge' || kind === 'skill' ? 'tools-grid' : 'tools-grid']}>
+								{list.map((item) => {
+									const href = hrefFor?.(item);
+									const label = kind === 'skill' ? nameItem(item) : ('name' in item ? item.name : 'id' in item ? item.id : '');
+									const isLink = !!href;
+									const Tag = isLink ? 'a' : 'div';
+									return (
+										<Tag
+											class={`${kind === 'skill' ? 'skill' : 'tool'} card`}
+											href={href}
+											target={isLink ? linkTarget : undefined}
+											rel={isLink ? linkRel : undefined}
+										>
+											{label && <code>{label}</code>}
+											<p>{describeItem(item)}</p>
+											{kind === 'skill' && (
+												<span class="skill__read">→</span>
+											)}
+										</Tag>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				))
+			)
+		}
+	</div>
+</section>

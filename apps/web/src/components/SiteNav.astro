@@ -89,15 +89,15 @@ const drawerLinks = [
 				<a class="nav__link" href={l.href} data-nav-key={l.key}>{l.label}</a>
 			))}
 			<span class="nav__divider" aria-hidden="true"></span>
-			{/* "More" dropdown (x124 S4). Replaces the previous native
-			    <details> with a button + panel that we drive ourselves.
-			    A <details> closes only when the *same* trigger is
-			    clicked again, not on outside click, and the browser
-			    provides no animation. Driving the open state from a
-			    small script gives us outside-click close, Escape
-			    close, ArrowDown focus into the panel, and a smooth
-			    open/close animation that respects prefers-reduced-motion. */}
-			<div class="nav__more" set:html={renderDropdown({
+			{/* "More" dropdown. The chrome (trigger + menu + ids) is
+			    emitted by the shared `renderDropdown` so the runtime
+			    in `Base.astro` (which already drives every other
+			    dropdown in the site) can manage open/close +
+			    outside-click + Esc from one place. We pass
+			    `classPrefix: 'nav__more'` so the BEM shape stays
+			    aligned with the existing `_nav.scss` rules instead
+			    of forcing a parallel `mv-dropdown__*` style layer. */}
+			<Fragment set:html={renderDropdown({
 				id: 'nav-more',
 				idPrefix: 'nav-more',
 				classPrefix: 'nav__more',
@@ -106,6 +106,7 @@ const drawerLinks = [
 				items: navCore.map((l) => ({
 					id: l.key,
 					label: l.label,
+					href: l.href,
 				})),
 			})} />
 			{/* GitHub: icon-only link to keep the row compact. The accessible
@@ -240,87 +241,14 @@ const drawerLinks = [
 	setupDrawer();
 	document.addEventListener('astro:page-load', setupDrawer);
 
-	// "More" dropdown (x124 S4). Open/close on trigger click, outside
-	// click, or Escape; ArrowDown moves focus into the panel. Re-runs
-	// after every View Transition so the listeners don't accumulate.
-	let moreAbort: AbortController | undefined;
-	const setupMore = () => {
-		moreAbort?.abort();
-		moreAbort = new AbortController();
-		const { signal } = moreAbort;
-
-		const trigger = document.getElementById('nav-more-trigger');
-		const panel = document.getElementById('nav-more-menu');
-		if (!trigger || !panel) return;
-		// The wrapper carries the `.is-open` class so the SCSS can
-		// drive the scaleY/opacity transition without using
-		// `:has([aria-expanded=...])` (the linter rejects attribute
-		// selectors in `:has()` chains). `aria-expanded` is kept on
-		// the trigger for screen readers and as a second source of
-		// truth for the open state.
-		const wrapper = trigger.closest<HTMLElement>('.nav__more');
-		if (!wrapper) return;
-
-		const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
-		const open = () => {
-			trigger.setAttribute('aria-expanded', 'true');
-			wrapper.classList.add('nav__more--open');
-			panel.removeAttribute('hidden');
-			// Move focus to the first menu item so keyboard users can
-			// continue with ArrowDown / Enter.
-			const first = panel.querySelector<HTMLElement>('.nav__more__item');
-			first?.focus();
-		};
-		const close = ({ restoreFocus = true } = {}) => {
-			if (!isOpen()) return;
-			trigger.setAttribute('aria-expanded', 'false');
-			wrapper.classList.remove('nav__more--open');
-			// Wait for the open/close transition to end before hiding the
-			// panel — the panel uses `visibility: hidden` via
-			// `.is-open` (rather than `display: none`) so the CSS
-			// transition can play; the `hidden` attribute is the
-			// belt-and-braces removal from the a11y tree.
-			window.setTimeout(() => {
-				if (!isOpen()) panel.setAttribute('hidden', '');
-			}, 200);
-			if (restoreFocus) trigger.focus();
-		};
-		const toggle = () => (isOpen() ? close() : open());
-
-		trigger.addEventListener('click', (e) => {
-			e.preventDefault();
-			toggle();
-		}, { signal });
-		trigger.addEventListener('keydown', (e) => {
-			if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-				e.preventDefault();
-				open();
-			}
-		}, { signal });
-		// Outside click: close when the user clicks anywhere outside the
-		// trigger or the panel. `pointerdown` is more responsive than
-		// `click` (the menu doesn't flash closed-then-open on tap).
-		document.addEventListener('pointerdown', (e) => {
-			if (!isOpen()) return;
-			const target = e.target as Node | null;
-			if (target && !trigger.contains(target) && !panel.contains(target)) {
-				close({ restoreFocus: false });
-			}
-		}, { signal });
-		// Escape closes and returns focus to the trigger.
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && isOpen()) {
-				e.preventDefault();
-				close();
-			}
-		}, { signal });
-		// Close after a menu item is activated (a normal left-click
-		// would follow the anchor; this is the user gesture firing
-		// before navigation starts).
-		for (const link of panel.querySelectorAll<HTMLAnchorElement>('.nav__more__item')) {
-			link.addEventListener('click', () => close({ restoreFocus: false }), { signal });
-		}
-	};
-	setupMore();
-	document.addEventListener('astro:page-load', setupMore);
+	// "More" dropdown. The runtime injected by `Base.astro` (the
+	// `componentScript` from `@mcp-vertex/ui-extension`) drives every
+	// `[data-mv-toggle="dropdown"]` panel on the page: click toggles,
+	// outside click closes, Esc closes. We delegate open/close to that
+	// single source of truth so a future dropdown added anywhere on
+	// the site automatically picks up the same behaviour with zero
+	// JS in this file. The items are already rendered as `<a>` (see
+	// the `items` passed to `renderDropdown` above), so left-clicks
+	// navigate normally and the runtime's anchor path closes the panel
+	// on click without intercepting navigation.
 </script>

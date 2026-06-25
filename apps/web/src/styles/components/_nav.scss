@@ -62,7 +62,7 @@
 }
 .nav__link--new {
 	&::after {
-		content: "·";
+		content: '·';
 		margin-left: 0.4rem;
 		color: var(--accent);
 		font-weight: 700;
@@ -164,7 +164,17 @@
 		outline-offset: 2px;
 	}
 }
-.nav__more--open {
+// Open state. The shared `componentScript` (from
+// `@mcp-vertex/ui-extension`) toggles `aria-expanded` on the trigger
+// in lockstep with the wrapper's `data-open` attribute. We use the
+// wrapper attribute as the CSS source of truth (it's set on the same
+// element that owns `--nav-more-menu-transform`, so the custom
+// properties cascade into the panel without a descendant selector).
+// The `nav__more--open` class is kept as a backward-compat alias for
+// any host that still toggles it directly.
+.nav__more[data-open],
+.nav__more--open,
+[data-mv-dropdown='nav-more'][data-open] {
 	--nav-more-trigger-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 	--nav-more-trigger-color: var(--fg);
 	--nav-more-caret-transform: rotate(180deg);
@@ -226,13 +236,19 @@
 		outline: none;
 	}
 }
-// Respect users who have asked for less motion: open / close
-// becomes instant (no scale / fade) and the menu snaps in.
+// Respect users who have asked for less motion: open / close becomes
+// instant (no scale / fade) and the menu snaps in. The open state
+// itself is unchanged — `--nav-more-menu-transform: scaleY(1)` must
+// still win so the panel is visible after the trigger is activated.
+// (Earlier revisions set `--nav-more-menu-transform: none` here, which
+// lost the cascade inside `.nav__more--open` and left the menu at
+// `scaleY(0)` even when the wrapper carried the modifier — see the
+// 2026-06 web-repaso review.)
 @media (prefers-reduced-motion: reduce) {
-	.nav__more__menu,
-	.nav__more--open {
+	.nav__more[data-open],
+	.nav__more--open,
+	[data-mv-dropdown='nav-more'][data-open] {
 		--nav-more-menu-transition: none;
-		--nav-more-menu-transform: none;
 	}
 }
 
@@ -273,7 +289,7 @@
 	&:hover {
 		border-color: var(--accent);
 	}
-	&[aria-expanded="true"] {
+	&[aria-expanded='true'] {
 		background: color-mix(in srgb, var(--accent) 14%, var(--card));
 		border-color: var(--accent);
 	}

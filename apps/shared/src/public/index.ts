@@ -36,3 +36,13 @@ export type { Theme } from '../i18n/shared';
 // dropdown.ts` for the implementation and `tests/components/dropdown
 // .spec.ts` for the contract.
 export { renderDropdown } from '@mcp-vertex/ui-extension';
+
+// `renderRuntime` is the `<script>` that drives every `mv-dropdown`
+// (and other `[data-mv-toggle]` / `[data-mv-action]` host gestures)
+// on the page. Hosts (the docs site, the VS Code webview) inject it
+// once per page; without it, dropdowns render as markup but never
+// open. It is the same string whether the host is a webview or a
+// plain HTML page — the only host-specific piece is
+// `window.__MV_HOST__`, which the docs site leaves as the no-op
+// default since menu items now carry real `href`s.
+export { renderRuntime } from '@mcp-vertex/ui-extension';

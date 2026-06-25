@@ -24,7 +24,8 @@ import logsPlugin from '@mcp-vertex/logs';
  * change regresses them.
  *
  * Rough token estimate: ~4 bytes/token, so the budgets below are roughly
- * overview-full < ~1.5k tokens, overview-compact < ~400 tokens.
+ * overview-full < ~1.5k tokens, overview-compact < ~400 tokens,
+ * agent-catalog-compact < ~325 tokens and agent-catalog-full < ~1.7k tokens.
  */
 const BUDGET_BYTES = {
 	// Full overview lists every tool's summary, so it grows as the toolset does
@@ -36,6 +37,8 @@ const BUDGET_BYTES = {
 	// real promise and remains at 1477B (well under 1600).
 	overviewFull: 8_000,
 	overviewCompact: 1_600,
+	agentCatalogCompact: 1_300,
+	agentCatalogFull: 6_800,
 	autoWork: 1_600,
 	search: 3_000,
 	docsList: 2_500,
@@ -100,6 +103,53 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			join(workspace, 'src', 'app.ts'),
 			['export const proposal = "compact search baseline";'].join('\n'),
 		);
+		mkdirSync(join(workspace, 'docs', 'proposals'), { recursive: true });
+		mkdirSync(join(workspace, 'skills'), { recursive: true });
+		writeFileSync(
+			join(workspace, 'skills', 'manifest.json'),
+			JSON.stringify({
+				generatedAt: '2026-06-25T00:00:00.000Z',
+				skills: [
+					{
+						id: 'token-budget-playbook',
+						version: '1.0.0',
+						minCoreVersion: '0.1.0',
+						bodyPath: 'skills/token-budget-playbook/SKILL.md',
+						tags: ['metrics', 'compact'],
+					},
+				],
+			}),
+		);
+		writeFileSync(
+			join(workspace, 'docs', 'proposals', 'index.json'),
+			JSON.stringify({
+				generated_at: '2026-06-25T00:00:00.000Z',
+				count: 3,
+				proposals: [
+					{
+						id: 'f00056',
+						title: 'Agent discovery catalog',
+						track: 'host+extension+skills+docs',
+						status: 'ready',
+						date: '2026-06-25',
+					},
+					{
+						id: 'c00002',
+						title: 'Pause npm publish',
+						track: 'docs+release',
+						status: 'paused',
+						date: '2026-06-21',
+					},
+					{
+						id: 'a00001',
+						title: 'Repository audit',
+						track: 'archive',
+						status: 'done',
+						date: '2026-06-15',
+					},
+				],
+			}),
+		);
 		({ client, close } = await connectClient('proposals,memory'));
 	});
 
@@ -132,6 +182,40 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(compact).toBeLessThan(BUDGET_BYTES.overviewCompact);
 		// Compact must be a real saving, not cosmetic.
 		expect(compact).toBeLessThan(full * 0.7);
+	});
+
+	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
+		const catalogOnly = await connectClient('');
+		const catalogTextBytes = async (
+			name: string,
+			args: Record<string, unknown>,
+		): Promise<number> => {
+			const res = await catalogOnly.client.callTool({
+				name,
+				arguments: args,
+			});
+			const text = (
+				res.content as Array<{ type: string; text: string }>
+			)[0]?.text;
+			return Buffer.byteLength(text ?? '', 'utf8');
+		};
+		try {
+			const compact = await catalogTextBytes('mcp-vertex_agent_catalog', {
+				mode: 'compact',
+			});
+			const full = await catalogTextBytes('mcp-vertex_agent_catalog', {
+				mode: 'full',
+			});
+
+			expect(
+				compact,
+				`agent catalog compact = ${compact}B, full = ${full}B`,
+			).toBeLessThan(BUDGET_BYTES.agentCatalogCompact);
+			expect(full).toBeLessThan(BUDGET_BYTES.agentCatalogFull);
+			expect(compact).toBeLessThan(full);
+		} finally {
+			await catalogOnly.close();
+		}
 	});
 
 	it('auto_work returns a tight action plan, not prose', async () => {
