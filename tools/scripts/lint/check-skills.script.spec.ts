@@ -38,6 +38,7 @@ describe('checkSkillsManifest', async () => {
 					minCoreVersion: '0.1.0',
 					bodyPath: 'skills/ghost-skill/SKILL.md',
 					tags: [],
+					appliesTo: ['@mcp-vertex/*'],
 				},
 			]),
 			[],
@@ -73,6 +74,7 @@ describe('checkSkillsManifest', async () => {
 					minCoreVersion: '0.1.0',
 					bodyPath: 'skills/bad-version/SKILL.md',
 					tags: [],
+					appliesTo: ['@mcp-vertex/*'],
 				},
 			]),
 			['skills/bad-version/SKILL.md'],
@@ -95,7 +97,7 @@ describe('checkSkillsManifest', async () => {
 					version: '1.0.0',
 					minCoreVersion: 'latest',
 					bodyPath: 'skills/bad-min-core/SKILL.md',
-					tags: [],
+					appliesTo: ['@mcp-vertex/*'],
 				},
 			]),
 			['skills/bad-min-core/SKILL.md'],
@@ -105,6 +107,54 @@ describe('checkSkillsManifest', async () => {
 			issues.some(
 				(i) =>
 					i.kind === 'malformed-entry' &&
+					i.detail.includes('minCoreVersion'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a manifest entry with no appliesTo (f00057 S5)', async () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'no-applies',
+					version: '1.0.0',
+					minCoreVersion: '0.1.0',
+					bodyPath: 'skills/no-applies/SKILL.md',
+					tags: [],
+					appliesTo: [],
+				},
+			]),
+			['skills/no-applies/SKILL.md'],
+		);
+
+		expect(
+			issues.some(
+				(i) =>
+					i.kind === 'missing-applies-to' &&
+					i.detail.includes('no-applies'),
+			),
+		).toBe(true);
+	});
+
+	it('flags a manifest entry whose appliesTo is missing (f00057 S5)', async () => {
+		const issues = checkSkillsManifest(
+			manifest([
+				{
+					id: 'missing-applies-field',
+					version: '1.0.0',
+					minCoreVersion: '0.1.0',
+					bodyPath: 'skills/missing-applies-field/SKILL.md',
+					tags: [],
+				} as unknown as ISkillManifest['skills'][number],
+			]),
+			['skills/missing-applies-field/SKILL.md'],
+		);
+
+		expect(
+			issues.some(
+				(i) =>
+					i.kind === 'missing-applies-to' &&
+					i.detail.includes('missing-applies-field
 					i.detail.includes('minCoreVersion'),
 			),
 		).toBe(true);

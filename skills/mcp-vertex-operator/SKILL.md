@@ -1,5 +1,6 @@
 ---
 name: mcp-vertex-operator
+appliesTo: ['@mcp-vertex/*']
 description: How an agent (or human operator) should orient itself in a fresh mcp-vertex session — which preset to load, which tool to call first, and how to read the overview payload before doing anything else. Use at the start of every session, before touching any plugin-specific tool.
 ---
 

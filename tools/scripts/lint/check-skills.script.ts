@@ -18,6 +18,14 @@ export interface ISkillManifestEntry {
 	readonly minCoreVersion: string;
 	readonly bodyPath: string;
 	readonly tags: readonly string[];
+	/**
+	 * Plugin namespaces this skill applies to. Either a concrete plugin
+	 * id (e.g. `@mcp-vertex/proposals`) or the wildcard `@mcp-vertex/*`
+	 * for transversal skills. Enforced by `check-skills` (f00057 S5)
+	 * so downstream catalogs (f00056) can resolve skills per plugin
+	 * without parsing bodies.
+	 */
+	readonly appliesTo: readonly string[];
 }
 
 export interface ISkillManifest {
@@ -29,7 +37,9 @@ export interface ICheckSkillsIssue {
 	readonly kind:
 		| 'missing-on-disk'
 		| 'missing-in-manifest'
-		| 'malformed-entry';
+		| 'malformed-entry'
+		| 'missing-applies-to'
+		| 'unknown-applies-to-target';
 	readonly detail: string;
 }
 
@@ -81,6 +91,12 @@ export const checkSkillsManifest = (
 			issues.push({
 				kind: 'missing-on-disk',
 				detail: `"${skill.id}" declares bodyPath "${skill.bodyPath}" but the file does not exist`,
+			});
+		}
+		if (!Array.isArray(skill.appliesTo) || skill.appliesTo.length === 0) {
+			issues.push({
+				kind: 'missing-applies-to',
+				detail: `"${skill.id}" declares no appliesTo (use ["@mcp-vertex/*"] for transversal skills or ["@mcp-vertex/<plugin>"] for plugin-specific ones)`,
 			});
 		}
 	}

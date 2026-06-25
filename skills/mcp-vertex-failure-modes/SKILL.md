@@ -1,5 +1,6 @@
 ---
 name: mcp-vertex-failure-modes
+appliesTo: ['@mcp-vertex/*']
 description: What to do when an mcp-vertex tool returns a failure envelope — lock conflict, corrupt file, state inconsistency, command-policy block, or a timeout. Use when a tool reports ok:false or a swarm gets stuck.
 ---
 

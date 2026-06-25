@@ -1,9 +1,10 @@
 ---
 /**
- * pages/[lang]/knowledge.astro — translated `/<lang>/knowledge` index.
- * See `tools.astro` for the shell recipe.
+ * pages/[lang]/plugins.astro — translated `/<lang>/plugins` index.
+ *
+ * See `tools.astro` for the same shell recipe.
  */
-import KnowledgeSection from '#COMPONENTS/KnowledgeSection.astro';
+import PluginsSection from '#COMPONENTS/PluginsSection.astro';
 import PageShell from '#COMPONENTS/PageShell.astro';
 import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
 import { useTranslations } from '#I18N/ui';
@@ -16,9 +17,9 @@ const t = useTranslations(lang);
 
 <PageShell
 	lang={lang}
-	title={t.knowledge.title}
+	title={t.plugins.title}
 	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
-	crumbs={[{ label: t.nav.knowledge, href: localePath(lang, 'knowledge') }]}
+	crumbs={[{ label: t.nav.plugins, href: localePath(lang, 'plugins') }]}
 >
-	<KnowledgeSection lang={lang} heading={t.knowledge.title} />
+	<PluginsSection lang={lang} heading={t.plugins.title} />
 </PageShell>

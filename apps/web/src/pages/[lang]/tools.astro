@@ -1,30 +1,33 @@
 ---
+/**
+ * pages/[lang]/tools.astro — translated `/<lang>/tools` index (f00057).
+ *
+ * One entry in the i18n matrix: the English copy lives at the root
+ * `/tools.astro`, every other locale at `/<lang>/tools.astro`. The
+ * `<PageShell>` helper owns the lang guard, the lang-prefixed base
+ * path, the page title and the breadcrumb; this file just wires the
+ * shell to the body (`ToolsSection`).
+ *
+ * Adding a new translated page follows the same recipe: copy this file,
+ * swap `t.<pageKey>` and the Section component, and add the
+ * corresponding translations to each `src/i18n/langs/*.ts` file.
+ */
 import ToolsSection from '#COMPONENTS/ToolsSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { languages, useTranslations, type Lang } from '#I18N/ui';
-import capabilities from '#MANIFESTS/capabilities.json';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-/** All non-English locales get their own /<lang>/tools. The English copy
- * lives in the root /tools.astro (so the project-site URL stays clean). */
-export function getStaticPaths() {
-	return languages
-		.filter((l) => l.code !== 'en')
-		.map((l) => ({ params: { lang: l.code } }));
-}
+export const getStaticPaths = langStaticPaths;
 
-const { lang } = Astro.params;
-// Runtime guard: never render lang="undefined" (was the root cause of
-// "switching language only translates the home page" — Astro fell back
-// to English silently). Same pattern as index.astro, guide.astro and
-// plugins/[plugin].astro.
-const langCode: Lang = (
-	lang && languages.some((l) => l.code === lang) ? lang : 'en'
-) as Lang;
-const t = useTranslations(langCode);
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const homeHref = `${base}/${langCode}/`;
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
 ---
 
-<Base lang={langCode} title={`${t.tools.title} — @mcp-vertex/core`}>
-	<ToolsSection lang={langCode} heading={t.tools.title} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.tools.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.tools, href: localePath(lang, 'tools') }]}
+>
+	<ToolsSection lang={lang} heading={t.tools.title} />
+</PageShell>

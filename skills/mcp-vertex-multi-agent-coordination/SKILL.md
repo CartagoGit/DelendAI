@@ -1,5 +1,6 @@
 ---
 name: mcp-vertex-multi-agent-coordination
+appliesTo: ['@mcp-vertex/proposals', '@mcp-vertex/notification']
 description: How to coordinate several agents safely in this repo: when to use agent_lock vs agent_worktree, how to wait on lock-released instead of polling, and how to keep repeated MCP reads under control with round_context digests.
 ---
 
