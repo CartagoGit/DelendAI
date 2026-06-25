@@ -32,7 +32,7 @@ VS Code client for a local `mcp-vertex` MCP server.
 
 ## Screenshots (placeholder)
 
-> Coming soon — see `docs/IDE-EXTENSION.md` for the data flow and
+> Coming soon — see `docs/mcp-vertex/IDE-EXTENSION.md` for the data flow and
 > the 9-panel reference.
 
 ## Development
@@ -54,7 +54,7 @@ seam. New IDE hosts (JetBrains, Zed, Cursor, Antigravity) ship the
 **same dashboard** by implementing a thin adapter against the
 interface declared in
 [`apps/ide/src/host-adapter.types.ts`](../../apps/ide/src/host-adapter.types.ts).
-See [`docs/CROSS-IDE.md`](../../docs/CROSS-IDE.md) for the full
+See [`docs/mcp-vertex/CROSS-IDE.md`](../../docs/mcp-vertex/CROSS-IDE.md) for the full
 guide.
 
 ## Commands
@@ -78,7 +78,7 @@ guide.
 `mcp-vertex.setupGithub` opens a multi-step webview that walks you through
 wiring the GitHub `issues` plugin into the current repository. It mirrors the
 web wizard and the canonical 7-step guide in
-[`docs/CROSS-PROJECT-SETUP.md`](../../docs/CROSS-PROJECT-SETUP.md): detect the
+[`docs/mcp-vertex/CROSS-PROJECT-SETUP.md`](../../docs/mcp-vertex/CROSS-PROJECT-SETUP.md): detect the
 repo, confirm `owner/name`, pick the auth tier (`gh` / `GITHUB_TOKEN` /
 anonymous), write `plugins.issues.options.repo`, verify the tier, print the
 exact launch invocation, and optionally mark the repo configured. Each step

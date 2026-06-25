@@ -3,7 +3,7 @@
  *
  * The VS Code `mcp-vertex.setupGithub` webview mirrors the web wizard
  * (`apps/web/src/pages/setup.astro`) and the canonical 7-step guide in
- * `docs/CROSS-PROJECT-SETUP.md`. The command *title* lives in the shared
+ * `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`. The command *title* lives in the shared
  * dictionary (`@mcp-vertex/shared/i18n` → `extension.setupGithub`) so it
  * passes the extension i18n gate; the multi-step webview body is here, in
  * one self-contained typed table, so the wizard copy stays cohesive and
