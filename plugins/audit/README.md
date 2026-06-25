@@ -28,7 +28,7 @@ El brief incluye:
 
 ### `audit_consolidate { auditDir?, topActions? }` — consolida N auditorías
 
-Lee cada `*.md` de `auditDir` (default `docs/proposals/audits`), los
+Lee cada `*.md` de `auditDir` (default `docs/mcp-vertex/proposals/done/audits`), los
 parsea con `parseAuditBody`, deduplica los hallazgos por **título +
 archivo citado**, promedia las puntuaciones por dimensión, y devuelve:
 
@@ -93,7 +93,7 @@ Sin opciones hoy. Futuras opciones: `auditDir`, `dimensions`,
 
 ## Ver también
 
-- [`docs/proposals/l99-feat-multi-model-audit-plugin.md`](../../docs/proposals/l99-feat-multi-model-audit-plugin.md)
+- [`docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md`](../../docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md)
   — la propuesta completa.
-- `docs/proposals/audits/` — los archivos `.md` de auditorías individuales
+- `docs/mcp-vertex/proposals/done/audits/` — los archivos `.md` de auditorías individuales
   que este plugin parsea.

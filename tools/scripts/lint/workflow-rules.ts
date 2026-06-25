@@ -55,7 +55,7 @@ export interface IWorkflowRule {
 	readonly detect: (ctx: IWorkflowContext) => readonly IWorkflowFinding[];
 }
 
-const PROPOSAL_INDEX_PATH = 'docs/proposals/index.json';
+const PROPOSAL_INDEX_PATH = 'docs/mcp-vertex/proposals/index.json';
 const WORKFLOW_LINT_ENFORCEMENT_EPOCH_MS = Date.parse(
 	'2026-06-24T00:00:00+02:00',
 );
@@ -70,7 +70,7 @@ const isBeforeWorkflowLintEnforcement = (commit: ICommitInfo): boolean => {
 	return Number.isFinite(ms) && ms < WORKFLOW_LINT_ENFORCEMENT_EPOCH_MS;
 };
 
-/** Rule 1 — no mixed commit may touch `docs/proposals/index.json`.
+/** Rule 1 — no mixed commit may touch `docs/mcp-vertex/proposals/index.json`.
  *  Dedicated generated refresh commits are allowed; mixed edits are
  *  the risky workflow shape because reviewers cannot tell whether the
  *  index was regenerated after the proposal change or hand-edited.
@@ -89,7 +89,7 @@ export const HandEditedIndexRule: IWorkflowRule = {
 			) {
 				findings.push({
 					rule: 'hand-edited-index',
-					detail: `commit ${commit.hash.slice(0, 12)} by ${commit.author} touched docs/proposals/index.json with other changes — regenerate the index in a dedicated refresh commit`,
+					detail: `commit ${commit.hash.slice(0, 12)} by ${commit.author} touched docs/mcp-vertex/proposals/index.json with other changes — regenerate the index in a dedicated refresh commit`,
 				});
 				break;
 			}

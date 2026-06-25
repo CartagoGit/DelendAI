@@ -150,8 +150,8 @@ keeps `git diff` out of the hot path.
   - `queSeHaAuditado` describes the audited scope (e.g., `repositorio`, `plugins`, `apps`, `web`, `extensionvscode`).
 - **Audit Proposal Lifecycle**:
   - An audit is modeled as a proposal.
-  - If the audit has pending tasks or slices to be executed within its own scope, the proposal must be created under `docs/proposals/ready/` with `status: ready` and all slices set to `pending`.
-  - If the audit has no internal tasks (e.g. all findings are deferred to separate proposals), the audit is created directly under `docs/proposals/done/audits/` with `status: done` and must reference the deferred proposals.
+  - If the audit has pending tasks or slices to be executed within its own scope, the proposal must be created under `docs/mcp-vertex/proposals/ready/` with `status: ready` and all slices set to `pending`.
+  - If the audit has no internal tasks (e.g. all findings are deferred to separate proposals), the audit is created directly under `docs/mcp-vertex/proposals/done/audits/` with `status: done` and must reference the deferred proposals.
 
 ## Repo root layout (keep it ordered — f00054)
 
@@ -160,8 +160,9 @@ The root is intentionally minimal. Before adding a file to it, check this:
 - **Caches/build artefacts never clutter the root.** All caches live under
   `.cache/<tool>/` (our own state is `.cache/mcp-vertex/`; vitest coverage is
   `.cache/coverage/`). Build *outputs* go to `build/` (gitignored). Tool-owned
-  dirs we cannot relocate (Astro's `.astro/`, the `/verify` skill's
-  `.verify-tmp/`) stay gitignored — do not commit them, do not add more.
+  dirs we cannot relocate (Astro's `.astro/`) stay gitignored — do not commit
+  them, do not add more. The local plugin verification probe writes under
+  `.cache/mcp-vertex/verify/`.
 - **Relocatable tool configs live in `configs/`.** A tool config moves to
   `configs/` only if (a) the tool accepts an explicit config path AND (b) the
   VS Code editor integration is unaffected. Today that is `configs/typedoc.json`
@@ -191,7 +192,7 @@ The root is intentionally minimal. Before adding a file to it, check this:
 - New persisted state → mutex + atomic write + a corruption test.
 
 See `skills/` for task-specific playbooks (plugin authoring, failure modes) and
-`docs/proposals/audits/` for the living master audit (the roadmap).
+`docs/mcp-vertex/proposals/done/audits/` for the living master audit (the roadmap).
 
 ## When you run an audit
 

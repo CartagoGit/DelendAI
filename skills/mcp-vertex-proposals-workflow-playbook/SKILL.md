@@ -52,7 +52,7 @@ owns the files, wait for `notification_await_lock` or the
 2. Do not push from a shared checkout without `agent_worktree` (when the host
    has enabled it; if `agentWorktree` is `false`/unset, commit to the active
    branch instead — the tool is disabled by host configuration).
-3. Do not edit `docs/proposals/index.json` by hand.
+3. Do not edit `docs/mcp-vertex/proposals/index.json` by hand.
 4. Do not run `proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.
 

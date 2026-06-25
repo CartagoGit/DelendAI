@@ -2,7 +2,7 @@
  * Parse one audit document into an {@link IAuditDocument}.
  *
  * The parser is intentionally **permissive**: it accepts the variant
- * shapes the existing audits in `docs/proposals/done/` use (different
+ * shapes the existing audits in `docs/mcp-vertex/proposals/done/` use (different
  * host conventions, with/without frontmatter, with/without a scoring
  * table). When it cannot recognise a section it leaves the field empty
  * rather than throwing — the consolidator handles missing fields

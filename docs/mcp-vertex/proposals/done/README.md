@@ -1,4 +1,4 @@
-# `docs/proposals/done/`
+# `docs/mcp-vertex/proposals/done/`
 
 This folder holds proposals whose status is `done` (approved and shipped)
 plus session summaries. The 7-status root layout (`ready/`,
@@ -39,9 +39,9 @@ not proposals:
 > (`n00001..n00006`). The carve-out line above is the surviving entry for
 > the AUDITORIA-UNIFICADA only.
 
-## Why this folder lives at `docs/proposals/`, not `docs/mcp-vertex/proposals/`
+## Why this folder lives at `docs/mcp-vertex/proposals/`
 
-This is the recurring question this README answers once and for all.
+This repo dogfoods the same project layout it recommends to consumers.
 
 **The CLI default** (`packages/core/src/lib/plugins/parse-cli-args.ts` +
 `DEFAULT_PATH_LAYOUT` in
@@ -50,31 +50,20 @@ is `docsDir = "docs/mcp-vertex"`. A fresh project that runs
 `bunx @mcp-vertex/core --check` with no `mcp-vertex.config.json` gets
 proposals under `docs/mcp-vertex/proposals/`.
 
-**This repo (`@mcp-vertex/core` itself) overrides that** in
-[`mcp-vertex.config.json`](../../../mcp-vertex.config.json):
+**This repo (`@mcp-vertex/core` itself) uses that same default-shaped
+layout** in [`mcp-vertex.config.json`](../../../../mcp-vertex.config.json):
 
 ```json
 {
   "cacheDir": ".cache/mcp-vertex",
-  "docsDir": "docs"
+  "docsDir": "docs/mcp-vertex"
 }
 ```
 
-…so proposals live at `docs/proposals/` (the repo IS mcp-vertex; the
-extra `mcp-vertex/` sub-folder would be redundant). The override is
-intentional and documented.
-
-**A consumer project** that adopts mcp-vertex via
-`proposals_proposal_adopt` (or by writing a fresh config) has two
-equally valid choices:
-
-1. Keep the default → `docs/mcp-vertex/proposals/`.
-2. Override `docsDir` in `mcp-vertex.config.json` → whatever you like.
-
-Both are supported. The proposals plugin never assumes the layout — it
-reads `docsDir` from the resolved config and writes everything
-relative to it. `proposals_proposal_adopt` reports the actual folder
-and recommends canonicalisation if it sees an ad-hoc shape.
+The project used to override `docsDir` to `docs`, which put proposals
+under `docs/proposals/`. That made this repository diverge from the
+architecture it asks downstream projects to use. The live store is now
+the canonical `docs/mcp-vertex/proposals/` tree.
 
 ## Rules
 

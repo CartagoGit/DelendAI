@@ -1,7 +1,7 @@
 /**
  * `<prefix>_issues_ingest` — idempotently persists a GitHub issue as a
  * scaffold file under `scaffoldDirAbs`
- * (`docs/proposals/retired/issues/github#<n>-<slug>.md`).
+ * (`docs/mcp-vertex/proposals/retired/issues/github#<n>-<slug>.md`).
  *
  * Single Responsibility: this is the only tool module that *writes* a
  * fresh scaffold from GitHub data. `issues_analyze` and `issues_resolve`
@@ -248,7 +248,7 @@ export const buildIngestIssueRegistration = (
 			{
 				outputSchema: INGEST_ISSUE_OUTPUT_SCHEMA,
 				description:
-					'REQUIRES proposals plugin. Idempotently persists a GitHub issue as a scaffold file under docs/proposals/retired/issues/. force:true re-fetches and rewrites.',
+					'REQUIRES proposals plugin. Idempotently persists a GitHub issue as a scaffold file under docs/mcp-vertex/proposals/retired/issues/. force:true re-fetches and rewrites.',
 				inputSchema: z.object({
 					number: z.number(),
 					force: z.boolean().optional(),

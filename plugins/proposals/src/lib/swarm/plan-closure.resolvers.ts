@@ -87,9 +87,9 @@ export const buildInMemoryResolver = (
 // ---------------------------------------------------------------------------
 
 export interface IDiskPlanResolverOptions {
-	/** Absolute path to `docs/proposals/index.json` (the registry). */
+	/** Absolute path to `docs/mcp-vertex/proposals/index.json` (the registry). */
 	readonly indexPathAbs: string;
-	/** Absolute path to the `docs/proposals/` directory. */
+	/** Absolute path to the `docs/mcp-vertex/proposals/` directory. */
 	readonly proposalsDirAbs: string;
 	/**
 	 * Optional Map of own-slice statuses, typically produced by

@@ -141,7 +141,7 @@ export const KNOWN_PROBE_INPUTS: ProbeInputBuilder = (id) => {
 			return { path: 'plugins/audit/README.md' };
 		case 'fs_write':
 			return {
-				path: '.verify-tmp/probe.txt',
+				path: '.cache/mcp-vertex/verify/probe.txt',
 				content: 'plugin-tool-verify probe',
 			};
 		case 'scaffold':

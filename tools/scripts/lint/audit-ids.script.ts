@@ -3,7 +3,7 @@
  * audit-ids.script.ts — f00050 S3.
  *
  * Hard rule (AGENTS.md §"Audits File Naming"): every audit file under
- * `docs/proposals/done/audits/` must follow the exact name structure
+ * `docs/mcp-vertex/proposals/done/audits/` must follow the exact name structure
  *   {numAuditoria}-{DD}-{MM}-{YYYY}-{controladorModelo}-{modelo}-{queSeHaAuditado}.md
  * and every `numAuditoria` (`a00001`..`a99999`) must be unique across the folder.
  *
@@ -19,7 +19,7 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const REPO_ROOT = process.cwd();
-const AUDITS_DIR = 'docs/proposals/done/audits';
+const AUDITS_DIR = 'docs/mcp-vertex/proposals/done/audits';
 const ID_RE = /^a(\d{4,5})-/;
 
 interface IAuditFile {

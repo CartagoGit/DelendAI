@@ -4,7 +4,7 @@
  * `tools/scripts/lint/audit-ids.script.ts`.
  *
  * The script enforces the AGENTS.md §"Audits File Naming" uniqueness
- * half: every audit file under `docs/proposals/done/audits/` must carry
+ * half: every audit file under `docs/mcp-vertex/proposals/done/audits/` must carry
  * a unique `aNNNNN` id. The pure engine (`detectCollisions`) and the
  * pure parser (`parseIdFromFilename`) are tested in isolation here;
  * the I/O shell (`listAuditFiles`, `main`) is exercised via the CLI
@@ -82,19 +82,15 @@ describe('detectCollisions', async () => {
 
 describe('collectAuditCollisions (integration: real filesystem under a temp dir)', async () => {
 	it('returns zero collisions for a fresh, all-unique folder', async () => {
-		const dir = await mkdtemp(join(tmpdir(), 'audit-ids-spec-'));
+		const fixtureRoot = await mkdtemp(join(tmpdir(), 'audit-ids-root-'));
 		try {
-			await writeFile(join(dir, 'a00001-14-06-2026-x-y-z.md'), 'body');
-			await writeFile(join(dir, 'a00002-14-06-2026-x-y-z.md'), 'body');
 			// Use the audit-ids "root" semantics: it appends AUDITS_DIR
 			// internally, so we point the script at the parent of a fake
-			// `docs/proposals/done/audits/` layout.
-			const fixtureRoot = await mkdtemp(
-				join(tmpdir(), 'audit-ids-root-'),
-			);
+			// `docs/mcp-vertex/proposals/done/audits/` layout.
 			const auditsDir = join(
 				fixtureRoot,
 				'docs',
+				'mcp-vertex',
 				'proposals',
 				'done',
 				'audits',
@@ -112,7 +108,7 @@ describe('collectAuditCollisions (integration: real filesystem under a temp dir)
 			);
 			expect(await collectAuditCollisions(fixtureRoot)).toEqual([]);
 		} finally {
-			await rm(dir, { recursive: true, force: true });
+			await rm(fixtureRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -122,6 +118,7 @@ describe('collectAuditCollisions (integration: real filesystem under a temp dir)
 			const auditsDir = join(
 				fixtureRoot,
 				'docs',
+				'mcp-vertex',
 				'proposals',
 				'done',
 				'audits',

@@ -55,7 +55,7 @@ const ConsolidationOutputSchema = z.object({
 const ConsolidateInputSchema = z.object({
 	/**
 	 * Workspace-relative directory containing the individual audit
-	 * `*.md` files. Default: `docs/proposals/audits`.
+	 * `*.md` files. Default: `docs/mcp-vertex/proposals/done/audits`.
 	 */
 	auditDir: z.string().optional(),
 	/** How many top actions to surface. Default: 5. */
@@ -72,7 +72,7 @@ export interface IConsolidateToolOptions {
 	 * Default audits directory (workspace-relative). Used when the
 	 * tool call does not pass `auditDir`. The host wires this from
 	 * `ctx.options.auditDir` when present, defaulting to
-	 * `docs/proposals/audits`.
+	 * `docs/mcp-vertex/proposals/done/audits`.
 	 */
 	readonly defaultAuditDir: string;
 	/**
@@ -110,7 +110,7 @@ export const buildConsolidateRegistration = (
 				`${prefix}_audit_consolidate`,
 				{
 					description:
-						'Read every `*.md` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with `seenBy`) and the rendered master markdown. Default dir: `docs/proposals/audits`.',
+						'Read every `*.md` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with `seenBy`) and the rendered master markdown. Default dir: `docs/mcp-vertex/proposals/done/audits`.',
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},

@@ -1,10 +1,7 @@
 node_modules/
 
-# Plugin tool verification harness (tools/scripts/verify/) scratch dir.
-# The harness exercises fs_write with a real payload to prove the
-# outputSchema matches; the file is intentionally placed under
-# `.verify-tmp/` so it never collides with source files and is easy
-# to bulk-remove. Always gitignored.
+# Legacy plugin tool verification scratch dir. Current probes write under
+# `.cache/mcp-vertex/verify/`; keep this ignore for old local runs.
 .verify-tmp/
 
 # Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
@@ -43,7 +40,6 @@ apps/web/src/data/manifests/
 # Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
 # apps/web dev/build). Do NOT commit the symlink itself.
 apps/web/public/api
-docs/mcp-vertex/
 *.tsbuildinfo
 .DS_Store
 pack/
@@ -75,7 +71,7 @@ plugins/*/src/**/*.d.ts
 #
 # NOTE (2026-06-21, n007): the broader `*session*.md` glob was removed.
 # Cross-session handoff summaries are now first-class proposals of kind
-# `resume` (prefix `n`) living under `docs/proposals/done/resumes/` and
+# `resume` (prefix `n`) living under `docs/mcp-vertex/proposals/done/resumes/` and
 # MUST be tracked. The narrower `mcp-vertex-session-*.md` glob below
 # still catches the ad-hoc transient notes that show up at the repo root.
 mcp-vertex-session-*.md

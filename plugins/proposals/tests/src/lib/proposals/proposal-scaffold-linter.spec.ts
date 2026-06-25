@@ -64,7 +64,7 @@ const doc = (
 describe('lintProposalMarkdown — happy paths', async () => {
 	it('accepts a minimal valid proposal with terse slices', async () => {
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00114-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 			markdown: doc(),
 		});
 		expect(result.ok).toBe(true);
@@ -73,7 +73,7 @@ describe('lintProposalMarkdown — happy paths', async () => {
 
 	it('accepts the narrative slice form (Gate + excl-files heading)', async () => {
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00114-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 			markdown: doc({}, NARRATIVE_SLICE()),
 		});
 		expect(result.ok).toBe(true);
@@ -84,7 +84,7 @@ describe('lintProposalMarkdown — happy paths', async () => {
 			.replace('## Goal', '## 0. Goal')
 			.replace('## Why\n', '## 1. Why\n');
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00114-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 			markdown: numbered,
 		});
 		expect(result.ok).toBe(true);
@@ -132,7 +132,7 @@ p.
 p.
 `;
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00114-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 			markdown: withOptional,
 		});
 		expect(result.ok).toBe(true);
@@ -140,7 +140,7 @@ p.
 
 	it('resolves filename/folder/kind/status consistently', async () => {
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/in-progress/x00042-fix-the-bug.md',
+			path: 'docs/mcp-vertex/proposals/in-progress/x00042-fix-the-bug.md',
 			markdown: doc({ id: 'x00042', kind: 'fix', status: 'in-progress' }),
 		});
 		expect(result.ok).toBe(true);
@@ -148,7 +148,7 @@ p.
 
 	it('resolves the retired legacy "p" prefix against kind: legacy', async () => {
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/done/p00099-old-thing.md',
+			path: 'docs/mcp-vertex/proposals/done/p00099-old-thing.md',
 			markdown: doc({ id: 'p00099', kind: 'legacy', status: 'done' }),
 		});
 		expect(result.ok).toBe(true);
@@ -187,7 +187,7 @@ ${TERSE_SLICE}
 - [ ] done.
 `;
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00114-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 			markdown: withExampleFence,
 		});
 		expect(result.ok).toBe(true);
@@ -197,7 +197,7 @@ ${TERSE_SLICE}
 describe('lintProposalMarkdown — negative cases', async () => {
 	const lint = (
 		markdown: string,
-		path = 'docs/proposals/ready/f00114-do-the-thing.md',
+		path = 'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 	) => lintProposalMarkdown({ path, markdown });
 
 	it('flags a missing required section', async () => {
@@ -314,7 +314,7 @@ ${TERSE_SLICE}
 	it('flags a filename prefix that disagrees with frontmatter kind', async () => {
 		const result = lint(
 			doc({ kind: 'fix' }),
-			'docs/proposals/ready/f00114-do-the-thing.md',
+			'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 		);
 		expect(
 			result.issues.some((i) => i.message.includes('frontmatter.kind')),
@@ -324,7 +324,7 @@ ${TERSE_SLICE}
 	it('flags a folder that disagrees with frontmatter status', async () => {
 		const result = lint(
 			doc({ status: 'done' }),
-			'docs/proposals/ready/f00114-do-the-thing.md',
+			'docs/mcp-vertex/proposals/ready/f00114-do-the-thing.md',
 		);
 		expect(
 			result.issues.some((i) =>
@@ -340,7 +340,7 @@ ${TERSE_SLICE}
 		it('accepts done/audits/foo.md with status: done', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
-				'docs/proposals/done/audits/a00001-15-06-2026-foo.md',
+				'docs/mcp-vertex/proposals/done/audits/a00001-15-06-2026-foo.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -350,7 +350,7 @@ ${TERSE_SLICE}
 		it('accepts done/feats/foo.md with status: done', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
-				'docs/proposals/done/feats/f00114-do-the-thing.md',
+				'docs/mcp-vertex/proposals/done/feats/f00114-do-the-thing.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -360,7 +360,7 @@ ${TERSE_SLICE}
 		it('accepts done/audits/2024/q1/foo.md (deeply nested)', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
-				'docs/proposals/done/audits/2024/q1/a00001-foo.md',
+				'docs/mcp-vertex/proposals/done/audits/2024/q1/a00001-foo.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -370,7 +370,7 @@ ${TERSE_SLICE}
 		it('accepts retired/foo.md with status: retired', async () => {
 			const result = lint(
 				doc({ status: 'retired' }),
-				'docs/proposals/retired/x00001-foo.md',
+				'docs/mcp-vertex/proposals/retired/x00001-foo.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -380,7 +380,7 @@ ${TERSE_SLICE}
 		it('rejects ready/audits/foo.md with status: done (non-terminal)', async () => {
 			const result = lint(
 				doc({ status: 'done' }),
-				'docs/proposals/ready/audits/f00114-foo.md',
+				'docs/mcp-vertex/proposals/ready/audits/f00114-foo.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -392,7 +392,7 @@ ${TERSE_SLICE}
 			// status ancestor is `ready`, not `done`. status: ready matches.
 			const result = lint(
 				doc({ status: 'ready' }),
-				'docs/proposals/ready/audits/done/f00114-foo.md',
+				'docs/mcp-vertex/proposals/ready/audits/done/f00114-foo.md',
 			);
 			expect(
 				result.issues.some((i) => i.message.includes('expects folder')),
@@ -461,7 +461,7 @@ p.
 	it('flags an unknown filename prefix', async () => {
 		const result = lint(
 			doc(),
-			'docs/proposals/ready/z00114-do-the-thing.md',
+			'docs/mcp-vertex/proposals/ready/z00114-do-the-thing.md',
 		);
 		expect(
 			result.issues.some((i) =>
@@ -531,7 +531,7 @@ Table of dimensions.
 
 	it('accepts a minimal valid audit proposal', async () => {
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/a00021-audit-report.md',
+			path: 'docs/mcp-vertex/proposals/ready/a00021-audit-report.md',
 			markdown: auditDoc(),
 		});
 		expect(result.ok).toBe(true);
@@ -544,7 +544,7 @@ Table of dimensions.
 			'## Unused',
 		);
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/a00021-audit-report.md',
+			path: 'docs/mcp-vertex/proposals/ready/a00021-audit-report.md',
 			markdown: missingScoreboard,
 		});
 		expect(result.ok).toBe(false);
@@ -561,7 +561,7 @@ Table of dimensions.
 			.replace('## Verified State', '## Findings')
 			.replace('## Temp', '## Verified State');
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/a00021-audit-report.md',
+			path: 'docs/mcp-vertex/proposals/ready/a00021-audit-report.md',
 			markdown: swapped,
 		});
 		expect(result.ok).toBe(false);
@@ -617,7 +617,7 @@ p.
 			'cascadeOverride: -1\ncascadeOverrideReason: urgent customer escalation',
 		);
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 			markdown,
 		});
 		expect(
@@ -628,7 +628,7 @@ p.
 	it('flags cascadeOverride without cascadeOverrideReason', async () => {
 		const markdown = rawDoc('cascadeOverride: -1');
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 			markdown,
 		});
 		expect(result.ok).toBe(false);
@@ -644,7 +644,7 @@ p.
 			'cascadeOverrideReason: this reason has no override',
 		);
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 			markdown,
 		});
 		expect(result.ok).toBe(false);
@@ -660,7 +660,7 @@ p.
 			"cascadeOverride: '-1'\ncascadeOverrideReason: bad type",
 		);
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 			markdown,
 		});
 		expect(result.ok).toBe(false);
@@ -679,7 +679,7 @@ p.
 		]) {
 			const markdown = rawDoc(`cascadeBoost: ${boost}`);
 			const result = lintProposalMarkdown({
-				path: 'docs/proposals/ready/f00024-do-the-thing.md',
+				path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 				markdown,
 			});
 			expect(
@@ -691,7 +691,7 @@ p.
 	it('flags an unknown cascadeBoost (would silently no-op at runtime)', async () => {
 		const markdown = rawDoc('cascadeBoost: urgent-please');
 		const result = lintProposalMarkdown({
-			path: 'docs/proposals/ready/f00024-do-the-thing.md',
+			path: 'docs/mcp-vertex/proposals/ready/f00024-do-the-thing.md',
 			markdown,
 		});
 		expect(result.ok).toBe(false);

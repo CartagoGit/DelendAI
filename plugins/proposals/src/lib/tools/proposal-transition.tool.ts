@@ -60,11 +60,11 @@ import type { IGitRunner } from '../shared/git-runner';
 
 export interface IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
-	/** Absolute path to `docs/proposals/` (the 7 status folders live here). */
+	/** Absolute path to `docs/mcp-vertex/proposals/` (the 7 status folders live here). */
 	readonly proposalsDirAbs: string;
 	readonly workspaceRoot: string;
 	/**
-	 * f00016 + q00001: absolute path to `docs/proposals/index.json`. Used by
+	 * f00016 + q00001: absolute path to `docs/mcp-vertex/proposals/index.json`. Used by
 	 * the q00001 plan-closure guard to look up child proposal statuses
 	 * when the caller transitions a `type: plan` proposal to `done`.
 	 * Optional — when absent, the plan-closure guard is skipped (legacy

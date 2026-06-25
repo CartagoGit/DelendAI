@@ -71,7 +71,7 @@ A diferencia de \`persistQueue\` (que usa \`tmp + rename\` correctamente).
 describe('parseAuditBody', async () => {
 	it('extracts the source identity from a conventional filename', async () => {
 		const doc = parseAuditBody(
-			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.source.host).toBe('Antigravity');
@@ -82,7 +82,7 @@ describe('parseAuditBody', async () => {
 
 	it('captures the executive summary (first non-empty paragraph block)', async () => {
 		const doc = parseAuditBody(
-			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.summary).toContain('arquitectónicamente sólido');
@@ -91,7 +91,7 @@ describe('parseAuditBody', async () => {
 
 	it('classifies findings by their section header severity', async () => {
 		const doc = parseAuditBody(
-			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		const fatals = doc.findings.filter(
@@ -110,7 +110,7 @@ describe('parseAuditBody', async () => {
 
 	it('extracts the per-dimension scoring table', async () => {
 		const doc = parseAuditBody(
-			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		const arch = doc.scores.find(
@@ -129,7 +129,7 @@ describe('parseAuditBody', async () => {
 
 	it('captures the final note', async () => {
 		const doc = parseAuditBody(
-			'docs/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
+			'docs/mcp-vertex/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
 		expect(doc.note).toContain('8/10');

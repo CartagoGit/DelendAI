@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/proposals/`
+ * lint-proposals.ts — f00016 S3: walk every `.md` under `docs/mcp-vertex/proposals/`
  * and run `lintProposalMarkdown` (S2) against it.
  *
  * The legacy proposals — `pNNN-*.md` (pre-S11), `lNNN-*.md` (post-
@@ -32,7 +32,7 @@ const isLegacyFilename = (filename: string, absPath: string): boolean => {
 
 // Only files shaped like a proposal with the canonical padded id are
 // proposals at all.
-// `docs/proposals/` also holds non-proposal documents this linter must
+// `docs/mcp-vertex/proposals/` also holds non-proposal documents this linter must
 // never touch: audit session reports under `audits/` (and some loose
 // ones that ended up in `done/`), `n00001-*` session notes,
 // `index.json`, READMEs. Those aren't "legacy proposals that need
@@ -121,7 +121,7 @@ export const lintProposalsDir = async (
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
 	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-	const proposalsDirAbs = join(repoRoot, 'docs', 'proposals');
+	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
 	const summary = await lintProposalsDir(proposalsDirAbs);
 	console.log(
 		`\n${summary.filesChecked} files checked, ${summary.legacySkipped} legacy file(s) skipped, ${summary.fatalErrors} fatal error(s).`,

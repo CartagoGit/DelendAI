@@ -28,7 +28,7 @@ import { buildPlanRegistration } from './lib/tools/audit-plan.tool';
  * network calls (no API fan-out, no keys, no telemetry). For the
  * network-enabled scope (l99 B), a separate opt-in plugin would own that.
  *
- * See `docs/proposals/l99-feat-multi-model-audit-plugin.md` for the
+ * See `docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md` for the
  * design rationale and the 3-enfoque analysis.
  */
 
@@ -84,7 +84,7 @@ agnóstico y portable a cualquier modelo en cualquier sesión.
       "options": {
         "projectName": "<your project name>",
         "configFileName": "<your config file>",
-        "auditDir": "docs/proposals/audits",
+        "auditDir": "docs/mcp-vertex/proposals/done/audits",
         "topActions": 5,
         "dimensions": ["Arquitectura", "Tests", "Documentación", "Genericidad"],
         "crossCuttingAdditions": [
@@ -150,7 +150,7 @@ const OptionsSchema = z
 		/**
 		 * Workspace-relative directory where individual audits land
 		 * (the `*.md` outputs of `audit_plan` per model). Default:
-		 * `docs/proposals/audits`. Used by `audit_consolidate` as the
+		 * `docs/mcp-vertex/proposals/done/audits`. Used by `audit_consolidate` as the
 		 * fallback when the tool call does not pass `auditDir`.
 		 */
 		auditDir: z.string().min(1).optional(),
@@ -213,7 +213,7 @@ const OptionsSchema = z
  * fallback values without risk of drift.
  */
 const DEFAULT_OPTIONS = {
-	auditDir: 'docs/proposals/audits',
+	auditDir: 'docs/mcp-vertex/proposals/done/audits',
 	topActions: 5,
 	dimensions: SCORE_DIMENSIONS,
 } as const;

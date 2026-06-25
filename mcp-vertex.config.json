@@ -1,7 +1,7 @@
 {
 	"$schema": "./packages/core/schema/mcp-vertex.config.schema.json",
 	"cacheDir": ".cache/mcp-vertex",
-	"docsDir": "docs",
+	"docsDir": "docs/mcp-vertex",
 	"agentWorktree": true,
 	"keepLegacy": false,
 	"plugins": {
@@ -27,7 +27,7 @@
 		"issues": { "options": { "repo": "<owner>/<name>" } },
 		"audit": {
 			"options": {
-				"auditDir": "docs/proposals/audits",
+				"auditDir": "docs/mcp-vertex/proposals/done/audits",
 				"topActions": 5,
 				"layers": [
 					{

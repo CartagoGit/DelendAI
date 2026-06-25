@@ -5,7 +5,10 @@ import { DEFAULT_KIND_ORDER } from '../../../../src/lib/cascade/cascade-priority
 import { PROPOSAL_KINDS } from '../../../../src/lib/contracts/constants/proposal-glossary.constant';
 
 describe('buildProposalWorkflow (f00024 cascade families)', async () => {
-	const workflow = buildProposalWorkflow('docs/proposals', 'index.json');
+	const workflow = buildProposalWorkflow(
+		'docs/mcp-vertex/proposals',
+		'index.json',
+	);
 
 	it('returns exactly 13 families: 12 active kinds + the legacy `p` alias', async () => {
 		expect(workflow.families).toHaveLength(13);
@@ -39,7 +42,9 @@ describe('buildProposalWorkflow (f00024 cascade families)', async () => {
 	});
 
 	it('preserves the public signature: (proposalsDir, indexFile) -> IProposalWorkflow', async () => {
-		expect(workflow.locations.proposalsDir).toBe('docs/proposals');
+		expect(workflow.locations.proposalsDir).toBe(
+			'docs/mcp-vertex/proposals',
+		);
 		expect(workflow.locations.indexFile).toBe('index.json');
 		expect(typeof workflow.naming).toBe('string');
 		expect(Array.isArray(workflow.rules)).toBe(true);

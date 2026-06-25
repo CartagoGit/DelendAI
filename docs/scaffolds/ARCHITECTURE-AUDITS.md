@@ -1,5 +1,5 @@
 ---
-applies-to: docs/proposals/**/a*.md
+applies-to: docs/mcp-vertex/proposals/**/a*.md
 ---
 
 # Architecture: audits
@@ -65,8 +65,8 @@ Every finding in `## Findings` must declare a **Resolution Track**:
 
 ### Lifecycle & Status Rules
 
-- **Pending Tasks**: If the audit has tasks or slices to be executed within its own scope, the proposal must be created under `docs/proposals/ready/` with `status: ready` and all slices set to `pending`.
-- **No Internal Tasks**: If the audit has no internal tasks (e.g., all findings are deferred to separate proposals, or there are no findings), the audit should be created directly under `docs/proposals/done/audits/` with `status: done` and reference/link the deferred proposals.
+- **Pending Tasks**: If the audit has tasks or slices to be executed within its own scope, the proposal must be created under `docs/mcp-vertex/proposals/ready/` with `status: ready` and all slices set to `pending`.
+- **No Internal Tasks**: If the audit has no internal tasks (e.g., all findings are deferred to separate proposals, or there are no findings), the audit should be created directly under `docs/mcp-vertex/proposals/done/audits/` with `status: done` and reference/link the deferred proposals.
 
 ---
 
@@ -202,7 +202,7 @@ acceptance:
 - global_gate: lint
 
 ### s1 — Execute audit and document findings
-- files: docs/proposals/in-progress/aNNN-auditoria-[slug].md
+- files: docs/mcp-vertex/proposals/in-progress/aNNN-auditoria-[slug].md
 - gate: lint
 - status: pending
 

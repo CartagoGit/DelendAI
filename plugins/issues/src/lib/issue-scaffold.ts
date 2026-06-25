@@ -1,7 +1,7 @@
 /**
  * Builds, serializes and parses the durable scaffold file persisted for
  * every analysed GitHub issue
- * (`docs/proposals/retired/issues/github#<n>-<slug>.md`).
+ * (`docs/mcp-vertex/proposals/retired/issues/github#<n>-<slug>.md`).
  *
  * Single Responsibility: this module only knows the scaffold's *shape* —
  * how an `IGithubIssueDetail` + its comments become an `IIssueScaffold`,

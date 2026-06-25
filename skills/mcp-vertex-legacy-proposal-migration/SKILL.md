@@ -8,7 +8,7 @@ description: The strict 3-script + 1-tool order for migrating pre-f00016 legacy 
 
 ## Decision tree
 
-1. Found a `pNNN-*.md` file directly under `docs/proposals/` (not yet
+1. Found a `pNNN-*.md` file directly under `docs/mcp-vertex/proposals/` (not yet
    migrated)? -> this skill applies; otherwise (ordinary proposal work) it
    does not.
 2. Dry-run first, always: run each script with NO flags before `--apply` —
@@ -36,7 +36,7 @@ bun tools/scripts/proposals/normalize-legacy.script.ts --apply    # backfill kin
 ```
 
 Then, as an MCP tool call (NOT a script): `proposals_sync_proposals` to
-rebuild `docs/proposals/index.json` from the migrated files.
+rebuild `docs/mcp-vertex/proposals/index.json` from the migrated files.
 
 Order matters because `rewrite-refs.script.ts` imports `planMigration` from
 `migrate-legacy.script.ts` to know which `pNNN -> lNNN` renames are real (so
@@ -97,7 +97,7 @@ a stricter one.
   has actually moved the files — its rewrite plan is derived from
   `planMigration`'s output, which assumes the rename already happened (or is
   about to, in dry-run preview mode only).
-- Never hand-edit `docs/proposals/index.json` after migrating — always
+- Never hand-edit `docs/mcp-vertex/proposals/index.json` after migrating — always
   finish with `proposals_sync_proposals` (the tool, not a script).
 - Never try to "fix" the `l`-prefix lint warning by rewriting a legacy
   proposal's body into the modern scaffold — that's explicitly out of scope
@@ -110,6 +110,6 @@ a stricter one.
 ```
 bun tools/scripts/proposals/migrate-legacy.script.ts
 ```
-With zero `pNNN-*.md` files left under `docs/proposals/` (already migrated
+With zero `pNNN-*.md` files left under `docs/mcp-vertex/proposals/` (already migrated
 repo), prints `0 proposal(s) planned.` and exits 0 — confirms the script is
 idempotent and safe to re-run as a no-op check.

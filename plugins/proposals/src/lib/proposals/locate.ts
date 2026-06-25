@@ -5,7 +5,7 @@
  * proposals plugin. Two strategies, one interface:
  *
  *   - `locateByIndex(indexPathAbs, proposalId)` — fast O(1) lookup via
- *     `docs/proposals/index.json`. Preferred when the index is fresh
+ *     `docs/mcp-vertex/proposals/index.json`. Preferred when the index is fresh
  *     (most callers run `sync_proposals` at boot).
  *   - `locateByScan(proposalsDirAbs, proposalId)` — fallback that walks
  *     the 7 status folders. Useful when the index is stale or missing

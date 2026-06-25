@@ -25,8 +25,8 @@ describe('createWorkspacePathProvider', async () => {
 
 	it('memoises repeated resolutions', async () => {
 		const provider = createWorkspacePathProvider('/tmp/spec-root');
-		const first = provider.resolve('docs/proposals/index.json');
-		const second = provider.resolve('docs/proposals/index.json');
+		const first = provider.resolve('docs/mcp-vertex/proposals/index.json');
+		const second = provider.resolve('docs/mcp-vertex/proposals/index.json');
 		expect(second).toBe(first);
 	});
 });

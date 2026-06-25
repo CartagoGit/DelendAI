@@ -19,7 +19,7 @@
  * The detector only flags `exact-repeat`. Near-repeat (Levenshtein
  * similarity) is s2-bis per l103 §5.1.
  *
- * @see docs/proposals/l103-loop-detection-and-handoff.md §5 s1.
+ * @see docs/mcp-vertex/proposals/l103-loop-detection-and-handoff.md §5 s1.
  */
 import { createHash } from 'node:crypto';
 

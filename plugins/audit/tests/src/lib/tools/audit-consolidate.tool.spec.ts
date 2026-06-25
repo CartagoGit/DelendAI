@@ -44,7 +44,14 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		workspaceRoot = await mkdtemp(join(tmpdir(), 'audit-consolidate-'));
 		// A real, in-workspace audits dir with one valid audit file so the
 		// happy-path case has something to consolidate.
-		const auditsDir = join(workspaceRoot, 'docs', 'proposals', 'audits');
+		const auditsDir = join(
+			workspaceRoot,
+			'docs',
+			'mcp-vertex',
+			'proposals',
+			'done',
+			'audits',
+		);
 		await mkdir(auditsDir, { recursive: true });
 		await writeFile(
 			join(auditsDir, 'sample.md'),
@@ -79,12 +86,14 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		buildConsolidateRegistration({
 			namespacePrefix: 'audit',
 			workspaceRoot,
-			defaultAuditDir: 'docs/proposals/audits',
+			defaultAuditDir: 'docs/mcp-vertex/proposals/done/audits',
 		});
 
 	it('accepts a normal relative path inside the workspace', async () => {
 		const out = parse(
-			await invoke(buildReg(), { auditDir: 'docs/proposals/audits' }),
+			await invoke(buildReg(), {
+				auditDir: 'docs/mcp-vertex/proposals/done/audits',
+			}),
 		);
 		expect(out.auditsFound).toBe(1);
 	});
@@ -104,7 +113,8 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 	it('rejects a deep "../" escape that would otherwise resolve outside the workspace', async () => {
 		const out = parse(
 			await invoke(buildReg(), {
-				auditDir: 'docs/proposals/audits/../../../../outside-fixture',
+				auditDir:
+					'docs/mcp-vertex/proposals/done/audits/../../../../../../outside-fixture',
 			}),
 		);
 		// Either rejected by containment (escape) or surfaced as a read

@@ -8,7 +8,7 @@ proposal — without ever embedding an LLM client in the MCP server itself.
 > **Hard dependency: requires the `proposals` plugin.**
 > `@mcp-vertex/issues` cannot run without `@mcp-vertex/proposals` loaded in
 > the same process — every `issues_*` tool reads/writes scaffold files under
-> `docs/proposals/retired/issues/**`, which is part of the `proposals`
+> `docs/mcp-vertex/proposals/retired/issues/**`, which is part of the `proposals`
 > plugin's managed namespace. Loading `issues` without `proposals` fails the
 > **entire** plugin load (no partial registration, exit code ≠ 0):
 >
@@ -36,11 +36,11 @@ need it.
 |---|---|---|
 | `issues_list` | List issues filtered by `state` / `labels` / `assignee`. | `src/lib/tools/list-issues.tool.ts` |
 | `issues_fetch` | Fetch a single issue (cached, redacted). | `src/lib/tools/fetch-issue.tool.ts` |
-| `issues_ingest` | Fetch + write a scaffold file under `docs/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
+| `issues_ingest` | Fetch + write a scaffold file under `docs/mcp-vertex/proposals/retired/issues/`. | `src/lib/tools/ingest-issue.tool.ts` |
 | `issues_analyze` | Mechanical pre-analysis (labels, linked PRs, comments count). | `src/lib/tools/analyze-issue.tool.ts` |
 | `issues_resolve` | Mark an ingested issue as resolved (move/remove the scaffold file). | `src/lib/tools/resolve-issue.tool.ts` |
 
-See `docs/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
+See `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md`
 for the full design.
 
 ## Load it
@@ -108,7 +108,7 @@ or read it from `mcp-vertex_overview` (which lists knowledge ids).
     "issues": {
       "options": {
         "repo": "owner/name",            // required for the 5 tools to register
-        "scaffoldDir": "docs/proposals/retired/issues" // optional override
+        "scaffoldDir": "docs/mcp-vertex/proposals/retired/issues" // optional override
       }
     }
   }
@@ -118,7 +118,7 @@ or read it from `mcp-vertex_overview` (which lists knowledge ids).
 | Option | Type | Default | Purpose |
 |---|---|---|---|
 | `repo` | `string` (e.g. `"CartagoGit/mcp-vertex"`) | — | The GitHub repo to fetch issues from. **Without it, the plugin registers zero tools + emits an `issues-needs-repo-config` knowledge entry** (discoverable via `mcp-vertex_overview` and `mcp-vertex_knowledge`). |
-| `scaffoldDir` | workspace-relative path | `docs/proposals/retired/issues` | Where `issues_ingest` / `issues_resolve` write scaffold files. Must stay inside the workspace (validated by `resolveWorkspaceContained`). |
+| `scaffoldDir` | workspace-relative path | `docs/mcp-vertex/proposals/retired/issues` | Where `issues_ingest` / `issues_resolve` write scaffold files. Must stay inside the workspace (validated by `resolveWorkspaceContained`). |
 
 ## Tools in detail
 
@@ -180,6 +180,6 @@ Returns `{ removed: boolean, movedTo?: string }`.
 
 ## See also
 
-- `docs/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md` — the original design proposal.
-- `docs/proposals/ready/f00030-cross-project-setup-and-github-config.md` — `setup-github` subcommand + cross-project setup guide.
+- `docs/mcp-vertex/proposals/done/feats/f00029-github-issues-plugin-ingest-and-propose.md` — the original design proposal.
+- `docs/mcp-vertex/proposals/ready/f00030-cross-project-setup-and-github-config.md` — `setup-github` subcommand + cross-project setup guide.
 - `docs/CROSS-PROJECT-SETUP.md` — canonical cross-project setup.

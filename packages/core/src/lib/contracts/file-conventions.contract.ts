@@ -138,14 +138,14 @@ const GeneratedRule: IRoleRule = rule(
 		/\.generated\./.test(basename(rel)),
 );
 
-/** 2. Configuration files — package-local tool/test/build config. */
-const ConfigRule: IRoleRule = rule('config', (rel) =>
-	/\.config\.ts$/.test(basename(rel)),
-);
-
-/** 3. Tests — test suffix wins over role suffix when both apply. */
+/** 2. Tests — test suffix wins over role suffix when both apply. */
 const TestRule: IRoleRule = rule('test', (rel) =>
 	/(?:\.e2e)?\.spec\.tsx?$/.test(basename(rel)),
+);
+
+/** 3. Configuration files — package-local tool/test/build config. */
+const ConfigRule: IRoleRule = rule('config', (rel) =>
+	/\.config\.ts$/.test(basename(rel)),
 );
 
 /** 4. Script entrypoints and script-local helper modules. */
@@ -290,26 +290,39 @@ const ToolRule: IRoleRule = rule(
 );
 
 /** 21. Registry tables — under `registry/`/`registries/` or `.registry.ts`. */
-const RegistryRule: IRoleRule = rule('registry', (rel) =>
-	endsWithBasename(rel, 'registry.ts'),
+const RegistryRule: IRoleRule = rule(
+	'registry',
+	(rel) =>
+		hasSegment(rel, 'registry') ||
+		hasSegment(rel, 'registries') ||
+		endsWithBasename(rel, 'registry.ts'),
 );
 
 /** 22. Tool registration modules. */
 const RegisterRule: IRoleRule = rule(
 	'register',
 	(rel) =>
+		hasSegment(rel, 'register') ||
 		endsWithBasename(rel, 'register.ts') ||
 		endsWithBasename(rel, 'tools.ts'),
 );
 
 /** 23. Factory functions. */
-const FactoryRule: IRoleRule = rule('factory', (rel) =>
-	endsWithBasename(rel, 'factory.ts'),
+const FactoryRule: IRoleRule = rule(
+	'factory',
+	(rel) =>
+		hasSegment(rel, 'factory') ||
+		hasSegment(rel, 'factories') ||
+		endsWithBasename(rel, 'factory.ts'),
 );
 
 /** 24. Builder aggregates. */
-const BuilderRule: IRoleRule = rule('builder', (rel) =>
-	endsWithBasename(rel, 'builder.ts'),
+const BuilderRule: IRoleRule = rule(
+	'builder',
+	(rel) =>
+		hasSegment(rel, 'builder') ||
+		hasSegment(rel, 'builders') ||
+		endsWithBasename(rel, 'builder.ts'),
 );
 
 /**
@@ -320,8 +333,8 @@ const BuilderRule: IRoleRule = rule('builder', (rel) =>
  */
 export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	GeneratedRule,
-	ConfigRule,
 	TestRule,
+	ConfigRule,
 	ScriptRule,
 	CommandRule,
 	ProviderRule,
@@ -333,10 +346,20 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	DevRule,
 	WebviewRule,
 	TransportRule,
+	BarrelRule,
+	InterfaceRule,
+	ConstantRule,
+	TypeRule,
+	ServiceRule,
+	ToolRule,
+	RegistryRule,
+	RegisterRule,
+	FactoryRule,
+	BuilderRule,
 	BootstrapRule,
 	SwarmRule,
-	ProposalRule,
 	AgentRule,
+	ProposalRule,
 	DashboardRule,
 	FrameworkRule,
 	SharedRule,
@@ -362,16 +385,6 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	IssueRule,
 	MarkerRule,
 	ConventionRule,
-	BarrelRule,
-	InterfaceRule,
-	ConstantRule,
-	TypeRule,
-	ServiceRule,
-	ToolRule,
-	RegistryRule,
-	RegisterRule,
-	FactoryRule,
-	BuilderRule,
 ];
 
 /**
@@ -392,7 +405,11 @@ export const classifyPath = (
 ): Role => {
 	if (typeof relPath !== 'string' || relPath === '') return 'other';
 	for (const rule of rules) {
-		if (rule.match(relPath)) return rule.name;
+		try {
+			if (rule.match(relPath)) return rule.name;
+		} catch {
+			continue;
+		}
 	}
 	return 'other';
 };

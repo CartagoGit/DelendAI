@@ -572,8 +572,8 @@ export async function syncProposalRegistry(
 			proposals: entries,
 			errors: warnings,
 		};
-		// `docs/proposals/index.json` is a tracked, Biome-linted file
-		// (unlike lock/handoff packets under `.mcp-vertex/`), so it must
+		// `docs/mcp-vertex/proposals/index.json` is a tracked, Biome-linted file
+		// (unlike lock/handoff packets under `.cache/mcp-vertex/`), so it must
 		// match `biome.json#json.formatter.indentWidth` (4 spaces) — a
 		// tab-indented write here makes `bun run lint` red on every
 		// regeneration until someone re-formats it by hand.

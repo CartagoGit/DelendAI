@@ -34,7 +34,7 @@ export interface IGithubIssueDetail extends IGithubIssueSummary {
 
 /**
  * The well-known frontmatter keys persisted on every ingested issue
- * scaffold under `docs/proposals/retired/issues/github#<n>-<slug>.md`.
+ * scaffold under `docs/mcp-vertex/proposals/retired/issues/github#<n>-<slug>.md`.
  * `status`/`resolution` track the host-driven lifecycle described in
  * the proposal's `## architecture` section; `proposals` records every
  * proposal id this issue was promoted into (zero, one, or many).

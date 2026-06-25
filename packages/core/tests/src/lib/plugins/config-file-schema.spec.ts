@@ -75,7 +75,7 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 								},
 							],
 							recommendedPlugins: ['deps'],
-							knowledgeHints: ['docs/proposals'],
+							knowledgeHints: ['docs/mcp-vertex/proposals'],
 						},
 					},
 				},

@@ -110,7 +110,7 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 		'multi_replace_string_in_file',
 		'replace_string_in_file',
 	],
-	handoffDir: '.mcp-vertex/handoff',
+	handoffDir: '.cache/mcp-vertex/handoff',
 	handoffTtlDays: 7,
 	notifyOnDetect: true,
 	// Universal host-session shapes — Copilot, Cursor, Windsurf and

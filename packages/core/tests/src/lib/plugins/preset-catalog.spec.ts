@@ -16,8 +16,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[0]?.members.length).toBe(2);
 		// standard: adds 5 on top of minimal
 		expect(PRESET_CATALOG[1]?.members.length).toBe(5);
-		// swarm: adds 5 on top of standard
-		expect(PRESET_CATALOG[2]?.members.length).toBe(5);
+		// swarm: adds 6 on top of standard
+		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
 	});

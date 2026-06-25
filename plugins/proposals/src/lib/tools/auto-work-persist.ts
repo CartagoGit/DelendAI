@@ -124,7 +124,7 @@ const DEFAULT_PUSH_TARGET = 'origin HEAD';
  *
  * - `plugins/proposals/src/lib/foo.ts` → `plugins`
  * - `apps/web/src/pages/index.astro`   → `apps`
- * - `docs/proposals/l99.md`           → `docs`
+ * - `docs/mcp-vertex/proposals/l99.md`           → `docs`
  * - `package.json` (no segments)      → `chore`
  *
  * The lookup is intentionally dumb (no allowlist) — it does not try to

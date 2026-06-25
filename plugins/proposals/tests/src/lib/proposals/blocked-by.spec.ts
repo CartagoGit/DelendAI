@@ -38,7 +38,7 @@ const ENTRY: IProposalIndexEntry = {
 	status: 'in-progress',
 };
 
-const INDEX_PATH_ABS = '/fake/docs/proposals/index.json';
+const INDEX_PATH_ABS = '/fake/docs/mcp-vertex/proposals/index.json';
 
 /** Build a markdown string with a YAML frontmatter block. */
 const wrap = (frontmatter: string, body = ''): string =>
