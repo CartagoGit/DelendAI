@@ -14,20 +14,16 @@
  */
 import { execFile } from 'node:child_process';
 
-/**
- * Result of running a git subcommand. `ok` is true only when git ran
- * and exited 0; otherwise `reason` explains why (git missing, timeout,
- * stderr) so a caller can distinguish "clean repo" from "git unavailable"
- * instead of treating both as an empty string.
- */
-export interface IGitRunResult {
-	readonly ok: boolean;
-	readonly output: string;
-	readonly reason?: string;
-}
-
-/** Runs a git subcommand asynchronously. Injectable for tests. */
-export type IGitRunner = (args: readonly string[]) => Promise<IGitRunResult>;
+// The git-runner contract is single-sourced (f00065 slice F). Re-exported here
+// so existing importers of `git-write` keep their import path unchanged.
+export type {
+	IGitRunResult,
+	IGitRunner,
+} from '../contracts/interfaces/git-runner.interface';
+import type {
+	IGitRunResult,
+	IGitRunner,
+} from '../contracts/interfaces/git-runner.interface';
 
 /**
  * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
