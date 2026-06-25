@@ -1,41 +1,45 @@
 ---
-title: Predefinições de lint e verificação de tipos por framework
+title: "Framework-aware lint and type-check presets [Português — needs translation]"
 plugin: rules
-audience: agente que precisa aplicar regras de lint/tipo
+audience: any agent that needs cross-session continuity
 order: 1
 lang: pt
+auto-translated: true
+needs-human-review: true
+source: plugins/rules/tutorials/en/framework-presets.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Predefinições de lint e verificação de tipos por framework
+# Framework-aware lint and type-check presets
 
-O plugin `rules` responde a uma pergunta: "quais regras de lint e
-verificação de tipos devo aplicar a este projeto, este arquivo, esta
-pasta?" A resposta é derivada do **framework** que o projeto usa e de
-**qual área do projeto** um arquivo reside. A configuração do próprio
-projeto sempre prevalece.
+The `rules` plugin answers one question: "which lint and
+type-check rules should I apply to this project, this file, this
+folder?" The answer is derived from the **framework** the
+project uses and **which project area** a file lives in. The
+project's own config always wins.
 
-## 0. O modelo mental
+## 0. The mental model
 
-Uma **área do projeto** é um diretório de nível superior com seu próprio
-`package.json` (ou equivalente). Cada área recebe um framework detectado
-a partir do seu `package.json` / `requirements.txt` / `Cargo.toml` /
-`pubspec.yaml` / `go.mod` — o plugin fornece uma pequena biblioteca de
-mapeamentos "vejo X, padrão para Y".
+A **project area** is a top-level directory with its own
+`package.json` (or equivalent). Each area gets a framework
+detected from its `package.json` / `requirements.txt` /
+`Cargo.toml` / `pubspec.yaml` / `go.mod` — the plugin ships a
+small library of "I see X, default to Y" mappings.
 
-Uma **predefinição** é um pacote de (regras de lint, config de verificação
-de tipos) para um determinado framework. O plugin tem predefinições para
-`ts-eslint`, `ts-prettier`, `py-ruff`, `rs-clippy`, `go-vet`, `kt-detekt`,
-… (somente os que mapeiam para ferramentas instaladas no host).
+A **preset** is a bundle of (lint rules, type-check config) for
+a given framework. The plugin has presets for `ts-eslint`,
+`ts-prettier`, `py-ruff`, `rs-clippy`, `go-vet`, `kt-detekt`, …
+(only the ones that map to tools the host has installed).
 
-O plugin pode funcionar em três modos (definido com `--rules-mode=`):
+The plugin can run in three modes (set with `--rules-mode=`):
 
-| Modo | Comportamento |
+| Mode | Behaviour |
 |---|---|
-| `strict` | Falha se o projeto não tem config de regras e nenhuma predefinição o cobre. |
-| `mixed` (padrão) | Aplicar a predefinição se o projeto não tem config; nunca falhar. |
-| `advisory` | Não escrever nada; apenas reportar o que *seria* aplicado. |
+| `strict` | Fail if the project has no rules config and no preset covers it. |
+| `mixed` (default) | Apply the preset if the project has no config; never fail. |
+| `advisory` | Don't write anything; only report what *would* be applied. |
 
-## 1. Aplicar uma predefinição a uma área do projeto
+## 1. Apply a preset to a project area
 
 ```json
 {
@@ -47,7 +51,7 @@ O plugin pode funcionar em três modos (definido com `--rules-mode=`):
 }
 ```
 
-A resposta é uma lista de arquivos escritos + um resumo:
+The response is a list of files written + a summary:
 
 ```json
 {
@@ -61,21 +65,21 @@ A resposta é uma lista de arquivos escritos + um resumo:
 }
 ```
 
-Se o projeto já tem um `.eslintrc.json`, o plugin o deixa em paz e
-reporta `preset: "user-override"`. A config do projeto **sempre
-prevalece** — esse é o contrato.
+If the project already has an `.eslintrc.json`, the plugin leaves
+it alone and reports `preset: "user-override"`. The project's own
+config **always wins** — that's the contract.
 
-## 2. Listar as predefinições disponíveis
+## 2. List available presets
 
 ```json
 { "tool": "rules_get_presets", "args": { "framework": "ts-react" } }
 ```
 
-Retorna o nome da predefinição, os arquivos que escreveria e um link
-para a config upstream de que herda. A lista é o que o host tem
-instalado em `node_modules` — sem fetch de rede.
+Returns the preset name, the files it would write, and a link to
+the upstream config it inherits from. The list is what the host
+has installed in `node_modules` — there is no network fetch.
 
-## 3. Verificar o que seria aplicado (simulação)
+## 3. Check what would be applied (dry run)
 
 ```json
 {
@@ -88,35 +92,47 @@ instalado em `node_modules` — sem fetch de rede.
 }
 ```
 
-Mesmo formato de resposta, mas o array `written` reflete o que **seria**
-escrito — nada é. Use em modo advisory ou para mostrar ao usuário um
-diff antes de confirmar.
+Same response shape, but the `written` array reflects what
+**would** be written — nothing is. Use this in advisory mode or
+to show the user a diff before committing.
 
-## 4. Mapear um projeto às suas áreas (amigável ao CI)
+## 4. Map a project to its areas (CI-friendly)
 
-`rules_resolve_map` é a ferramenta somente leitura que retorna o
-mapeamento detectado área do projeto → framework → predefinição. O
-plugin o armazena em cache em `.cache/mcp-vertex/rules/rules-map.json`
-para que uma execução CI não re-detecte em cada invocação.
+`rules_resolve_map` is the read-only tool that returns the
+detected mapping of project area → framework → preset. The
+plugin caches this in `.cache/mcp-vertex/rules/rules-map.json`
+so a CI run doesn't re-detect on every invocation.
 
 ```json
 { "tool": "rules_resolve_map", "args": {} }
 ```
 
-## Erros frequentes
+## Common pitfalls
 
-- **Dois `package.json` na mesma área** (workspace + aninhado): o plugin
-  pega o mais próximo ao arquivo. Se a detecção estiver errada, passe
-  `area` explicitamente.
-- **Framework personalizado**: passe `framework: "<seu-nome>"` e o plugin
-  não aplicará nenhuma predefinição (nenhum match no registro). A
-  ferramenta responderá com `preset: "no-preset"` e um aviso.
-- **Ferramenta não instalada localmente**: aplicar uma predefinição que
-  requer `ruff` em uma máquina sem `ruff` terá sucesso (o plugin apenas
-  escreve config), mas o `quality_run_quality` downstream falhará com
-  `code: 127`. Execute `rules_check` primeiro para simular toda a cadeia.
+- **Two `package.json` in the same area** (workspace + nested):
+  the plugin picks the closest one to the file. If the
+  detection is wrong, pass `area` explicitly.
+- **Custom framework**: pass `framework: "<your-name>"` and the
+  plugin will not apply a preset (no match in the registry).
+  The tool will respond with `preset: "no-preset"` and a warning.
+- **Tool not installed locally**: applying a preset that
+  requires `ruff` on a machine without `ruff` will succeed
+  (the plugin only writes config) but the downstream
+  `quality_run_quality` will fail with `code: 127`. Run
+  `rules_check` first to dry-run the full chain.
 
-## Próximo passo
+## Next step
 
-- [Como os plugins `rules` e `quality` colaboram](#)
-- [Personalizando uma predefinição sem bifurcá-la (a regra user-override)](#)
+- [How the `rules` and `quality` plugins collaborate](#)
+- [Customising a preset without forking it (the user-override rule)](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Português
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/rules/tutorials/en/framework-presets.md`

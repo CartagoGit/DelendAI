@@ -79,6 +79,23 @@ describe('log tools', async () => {
 		expect((tail.events as Array<{ outcome: string }>)[0]?.outcome).toBe(
 			'failed',
 		);
+		expect(
+			(tail.events as Array<{ meta: Record<string, unknown> }>)[0]?.meta,
+		).toEqual({});
+
+		const detailedTail = structured(
+			await handlers.get('logs_tail')?.({
+				outcomeFilter: 'failed',
+				includeMeta: true,
+			}),
+		);
+		expect(
+			(
+				detailedTail.events as Array<{
+					meta: Record<string, unknown>;
+				}>
+			)[0]?.meta.toolName,
+		).toBe('beta');
 
 		const sub = structured(
 			await handlers.get('logs_subscribe')?.({ limit: 2 }),

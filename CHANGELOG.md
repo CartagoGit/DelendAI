@@ -111,6 +111,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   new group.
 
 ### Changed
+- **Dogfooding worktree isolation**: this repo now enables
+  `agentWorktree` in `mcp-vertex.config.json`, and
+  `proposals_agent_worktree` creates disposable agent checkouts under the
+  resolved cache root (`.cache/mcp-vertex/.worktrees/`) instead of
+  cluttering the workspace root.
 - **l111 closed: post-closure audit hardening landed.** Five findings
   from the 16-06 master audit, plus two new ones discovered this
   session, are now fixed and pinned by tests: (s1) M45 — `auto_work`

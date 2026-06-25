@@ -6,6 +6,8 @@ const dict: LangDict = {
 	nav: {
 		concept: 'Khái niệm',
 		install: 'Cài đặt',
+		setup: 'Thiết lập',
+		capabilities: 'Khả năng',
 		tools: 'Công cụ',
 		benchmarks: 'Benchmark',
 		plugins: 'Plugin',

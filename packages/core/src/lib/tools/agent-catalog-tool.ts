@@ -189,7 +189,7 @@ export const buildAgentCatalogToolRegistration = (
 			}) => {
 				const base = buildCatalog(options.sources, {
 					mode: args.mode ?? 'compact',
-					now: options.now,
+					...(options.now !== undefined ? { now: options.now } : {}),
 					server: options.server,
 				});
 				const narrowed = applySection(base, args.section);

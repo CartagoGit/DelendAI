@@ -1,58 +1,62 @@
 ---
-title: Lưu và gọi lại ghi chú bộ nhớ
+title: "Saving and recalling memory notes [Tiếng Việt — needs translation]"
 plugin: memory
-audience: bất kỳ tác nhân nào cần tính liên tục giữa các phiên
+audience: any agent that needs cross-session continuity
 order: 1
 lang: vi
+auto-translated: true
+needs-human-review: true
+source: plugins/memory/tutorials/en/saving-and-recalling.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Lưu và gọi lại ghi chú bộ nhớ
+# Saving and recalling memory notes
 
-Hướng dẫn này cho thấy bốn công cụ `memory_*` hoạt động thực tế.
-Ghi chú là các bản ghi JSON nhỏ dưới `.cache/mcp-vertex/memory/notes.json`
-— đủ nhỏ để xuất toàn bộ, được lập chỉ mục theo id, có thể lấy theo
-thẻ hoặc truy vấn toàn văn bản.
+This walkthrough shows the four `memory_*` tools in action. Notes
+are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
+— small enough to dump in full, indexed by id, retrievable by
+tag or full-text query.
 
-## 0. Mô hình tư duy
+## 0. The mental model
 
-**Ghi chú** là `{ id, title, body, tags, createdAt, updatedAt }`.
-Tiêu đề là duy nhất (không phân biệt chữ hoa/thường) — `memory_save`
-thực hiện upsert theo tiêu đề. Không có schema cho `body`; hãy coi
-nó như một trường văn bản tự do ngắn. Bí mật được tự động biên tập
-bởi `redactSecrets` trước khi ghi chú được lưu trữ (xem
+A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
+Titles are unique (case-insensitive) — `memory_save` upserts by
+title. There is no schema for `body`; treat it as a short
+free-text field. Secrets are auto-redacted by `redactSecrets`
+before the note is persisted (see
 `packages/core/src/lib/shared/redact.ts`).
 
-## 1. Lưu ghi chú
+## 1. Save a note
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "thứ tự xuất bản monorepo",
-    "body": "core trước, sau đó các plugin cùng lúc. derive-version.ts đọc Conventional Commits kể từ tag vX.Y.Z cuối cùng.",
+    "title": "monorepo publish order",
+    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-Phản hồi: `{ id: "<uuid>", createdAt: "..." }`. Save trả về id để bạn
-có thể `forget` sau.
+Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
+so you can `forget` it later.
 
-## 2. Gọi lại theo truy vấn
+## 2. Recall by query
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "thứ tự xuất bản",
+    "query": "publish order",
     "limit": 5
   }
 }
 ```
 
-Trả về tối đa `limit` ghi chú khớp với truy vấn (khớp chuỗi con trên
-tiêu đề + body, được sắp xếp theo độ gần đây). Sử dụng `tags` thay vì
-(hoặc cùng với) `query` để thu hẹp:
+Returns up to `limit` notes that match the query (substring match
+on title + body, ranked by recency). Use `tags` instead of (or
+alongside) `query` to narrow:
 
 ```json
 {
@@ -61,38 +65,50 @@ tiêu đề + body, được sắp xếp theo độ gần đây). Sử dụng `t
 }
 ```
 
-## 3. Liệt kê ít tốn kém
+## 3. List cheaply
 
-`memory_list` chỉ trả về `{ id, title, tags }` — chỉ mục. Sử dụng khi
-bạn chưa muốn lấy body:
+`memory_list` returns just `{ id, title, tags }` — the index. Use
+it when you don't want to fetch the bodies yet:
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. Quên
+## 4. Forget
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` là xóa cứng — không có xóa mềm / lưu trữ. id biến mất;
-tiêu đề được giải phóng cho `memory_save` trong tương lai.
+`memory_forget` is hard-delete — there is no soft-delete / archive.
+The id is gone; the title is freed for a future `memory_save`.
 
-## Những lỗi thường gặp
+## Common pitfalls
 
-- **Bí mật trong `body`**: ngay cả khi plugin biên tập khi lưu, đừng
-  dán các token thô hoặc giá trị kiểu `.env` — quá trình biên tập là
-  heuristic, không hoàn hảo.
-- **Xung đột tiêu đề**: `memory_save` thực hiện upsert theo tiêu đề.
-  Nếu hai tác nhân lưu cùng tiêu đề song song, người viết thứ hai thắng
-  và người đầu tiên bị mất. Sử dụng tiêu đề duy nhất cho mỗi slice /
-  vấn đề.
-- **Recall trả về quá nhiều kết quả**: ưu tiên `tags` hơn `query` rộng.
-  Truy vấn `""` trả về mọi thứ sắp xếp theo độ gần đây — hữu ích cho
-  "tôi đã lưu gì trong phiên trước?" nhưng tốn kém trên store đầy đủ.
+- **Secrets in `body`**: even though the plugin redacts on save,
+  do not paste raw tokens or `.env`-style values — the redaction
+  is heuristic, not perfect.
+- **Title collisions**: `memory_save` upserts by title. If two
+  agents save the same title in parallel, the second writer wins
+  and the first is lost. Use unique titles per slice / per
+  problem.
+- **Recall gets too many hits**: prefer `tags` over a broad
+  `query`. A query of `""` returns everything sorted by recency
+  — useful for "what did I save last session?" but expensive on a
+  full store.
 
-## Bước tiếp theo
+## Next step
 
-- [round_context (proposals) liên kết ghi chú bộ nhớ với đề xuất đang hoạt động như thế nào](../../proposals/tutorials/vi/getting-started.md)
-- [Hợp đồng biên tập bí mật](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
+- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Tiếng Việt
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`

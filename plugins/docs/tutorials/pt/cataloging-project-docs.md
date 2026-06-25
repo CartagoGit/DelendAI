@@ -1,25 +1,30 @@
 ---
-title: Catalogar a documentação do projeto
+title: "Cataloguing project docs [Português — needs translation]"
 plugin: docs
-audience: qualquer agente que precise encontrar um doc por tópico
+audience: any agent that needs cross-session continuity
 order: 1
 lang: pt
+auto-translated: true
+needs-human-review: true
+source: plugins/docs/tutorials/en/cataloging-project-docs.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Catalogar a documentação do projeto
+# Cataloguing project docs
 
-O plugin `docs` responde a uma pergunta pequena e frequente: "quais docs
-este projeto tem, e qual estou procurando?" Em vez de fazer grep, o
-agente pergunta ao plugin. Este tutorial mostra como ativar, listar e ler.
+The `docs` plugin answers a small, frequent question: "what docs
+does this project have, and which one am I looking for?" Instead
+of grepping, the agent asks the plugin. This walkthrough shows
+how to enable, list, and read.
 
-## 0. O modelo mental
+## 0. The mental model
 
-Um **doc** é qualquer arquivo `.md` sob as `roots` configuradas. O
-plugin os enumera uma vez, extrai o título (do primeiro `# heading`
-ou frontmatter `title:`), e serve um índice de baixo token. O body é
-buscado apenas sob demanda.
+A **doc** is any `.md` file under the configured `roots`. The
+plugin enumerates them once, extracts the title (from the first
+`# heading` or frontmatter `title:`), and serves a low-token
+index. The body is only fetched on demand.
 
-A configuração fica em `mcp-vertex.config.json`:
+Configuration lives in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -33,17 +38,17 @@ A configuração fica em `mcp-vertex.config.json`:
 }
 ```
 
-`roots` é um array de caminhos (arquivos ou diretórios). Diretórios
-são percorridos recursivamente. **Caminhos fora do workspace são
-recusados** — sem travessia `..`.
+`roots` is an array of paths (files or directories). Directories
+are walked recursively. **Paths outside the workspace are
+refused** — no `..` traversal.
 
-## 1. Listar (índice de baixo token)
+## 1. List (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Resposta (truncada):
+Response (truncated):
 
 ```json
 {
@@ -58,8 +63,8 @@ Resposta (truncada):
 }
 ```
 
-A lista é ordenada por caminho. Passe `roots` para limitar a lista a
-um subconjunto (ex. apenas `["docs/proposals"]`):
+The list is sorted by path. Pass `roots` to scope the list to a
+subset (e.g. just `["docs/proposals"]`):
 
 ```json
 {
@@ -68,7 +73,7 @@ um subconjunto (ex. apenas `["docs/proposals"]`):
 }
 ```
 
-## 2. Ler um doc
+## 2. Read one doc
 
 ```json
 {
@@ -77,51 +82,63 @@ um subconjunto (ex. apenas `["docs/proposals"]`):
 }
 ```
 
-Resposta:
+Response:
 
 ```json
 {
   "path": "docs/ARCHITECTURE.md",
   "title": "Architecture",
-  "content": "# Architecture\n\n…corpo completo…",
+  "content": "# Architecture\n\n…full body…",
   "truncated": false,
   "found": true
 }
 ```
 
-`content` é limitado a 256 KiB. Se o doc for maior, `truncated: true`
-e o body são os primeiros 256 KiB. Se o caminho não corresponder a
-nenhum doc sob as roots configuradas, `found: false`.
+`content` is capped at 256 KiB. If the doc is bigger, `truncated:
+true` and the body is the first 256 KiB. If the path doesn't
+match any doc under the configured roots, `found: false`.
 
-## 3. Por que dois tools e não um
+## 3. Why two tools and not one
 
-`list` é barato (alguns centenas de bytes por doc, 18 docs ≈ 4 KiB).
-`read` é caro (potencialmente megabytes por doc). Separá-los permite ao
-agente fazer `list` primeiro, depois `read` apenas os relevantes —
-economizando tokens em cada etapa de descoberta.
+`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
+`read` is expensive (potentially megabytes per doc). Splitting
+them means the agent can `list` first, then `read` only the ones
+that look relevant — saving tokens on every discovery step.
 
-## 4. Contenção de caminho (segurança)
+## 4. Path containment (security)
 
-`docs_read` resolve o caminho com `resolveWorkspaceContained` — caminhos
-absolutos, travessia `..`, e symlinks apontando fora do workspace são
-todos recusados. A resposta `found: false` é o sinal do agente de que
-o caminho foi rejeitado; o plugin não distingue intencionalmente
-"ausente" de "fora do workspace" (para evitar vazar o layout do
-sistema de arquivos).
+`docs_read` resolves the path with `resolveWorkspaceContained` —
+absolute paths, `..` traversal, and symlinks pointing outside the
+workspace are all refused. The `found: false` response is the
+agent's signal that the path was rejected; the plugin does not
+distinguish "missing" from "outside-workspace" on purpose (to
+avoid leaking filesystem layout).
 
-## Erros frequentes
+## Common pitfalls
 
-- **Root não existe**: `docs_list` retorna `{ count: 0,
-  truncated: false, docs: [] }`. O plugin não avisa.
-- **Doc ainda não commitado**: arquivos não rastreados ainda são
-  servidos (o plugin lê do sistema de arquivos, não do git). O `path`
-  retornado é relativo ao workspace.
-- **Inferência de título falha**: se o primeiro heading não é `# ` (sem
-  espaço, nível errado) e não há frontmatter `title:`, o plugin usa
-  o basename do arquivo (ex. `CHANGELOG.md` → `CHANGELOG.md`).
-  Execute novamente após corrigir o heading.
+- **Root doesn't exist**: `docs_list` returns `{ count: 0,
+  truncated: false, docs: [] }`. The plugin does not warn.
+- **Doc not yet committed**: untracked files are still served
+  (the plugin reads from the filesystem, not from git). The
+  `path` you get back is workspace-relative.
+- **Title inference fails**: if the first heading is not `# ` (no
+  space, wrong level) and there's no frontmatter `title:`, the
+  plugin uses the filename basename (e.g. `CHANGELOG.md` →
+  `CHANGELOG.md`). Re-run after fixing the heading.
 
-## Próximo passo
+## Next step
 
-- [Como `docs_list` se integra com `memory_recall` para "o que salvei + onde estava documentado?"](#)
-- [Curando um índice de conhecimento com o plugin `knowledge`](#)
+- [How `docs_list` integrates with `memory_recall` for "what
+  did I save last session + where was it documented?"](#)
+- [Curating a knowledge index with the `knowledge` plugin](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Português
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`

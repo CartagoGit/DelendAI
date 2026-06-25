@@ -1,20 +1,30 @@
 ---
-title: "Catalogación de documentos del proyecto"
+title: "Cataloguing project docs [Español — needs translation]"
 plugin: docs
-audience: cualquier agente que necesite encontrar un documento por tema
+audience: any agent that needs cross-session continuity
 order: 1
 lang: es
+auto-translated: true
+needs-human-review: true
+source: plugins/docs/tutorials/en/cataloging-project-docs.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Catalogación de documentos del proyecto
+# Cataloguing project docs
 
-El plugin `docs` responde a una pregunta pequeña pero frecuente: "¿qué documentos tiene este proyecto y cuál de ellos estoy buscando?". En lugar de hacer grep, el agente le pregunta al plugin. Esta guía muestra cómo activarlo, listarlo y leerlo.
+The `docs` plugin answers a small, frequent question: "what docs
+does this project have, and which one am I looking for?" Instead
+of grepping, the agent asks the plugin. This walkthrough shows
+how to enable, list, and read.
 
-## 0. El modelo mental
+## 0. The mental model
 
-Un **documento** es cualquier archivo `.md` bajo las rutas configuradas en `roots`. El plugin los enumera una vez, extrae el título (de la primera cabecera `#` o del frontmatter `title:`) y ofrece un índice de bajo consumo de tokens. El cuerpo solo se recupera bajo demanda.
+A **doc** is any `.md` file under the configured `roots`. The
+plugin enumerates them once, extracts the title (from the first
+`# heading` or frontmatter `title:`), and serves a low-token
+index. The body is only fetched on demand.
 
-La configuración se almacena en `mcp-vertex.config.json`:
+Configuration lives in `mcp-vertex.config.json`:
 
 ```jsonc
 {
@@ -28,15 +38,17 @@ La configuración se almacena en `mcp-vertex.config.json`:
 }
 ```
 
-`roots` es un array de rutas (archivos o directorios). Los directorios se recorren recursivamente. **Se rechazan las rutas fuera del espacio de trabajo** — no hay recorrido `..`.
+`roots` is an array of paths (files or directories). Directories
+are walked recursively. **Paths outside the workspace are
+refused** — no `..` traversal.
 
-## 1. Listar (índice de bajo token)
+## 1. List (low-token index)
 
 ```json
 { "tool": "docs_list", "args": {} }
 ```
 
-Respuesta (truncada):
+Response (truncated):
 
 ```json
 {
@@ -51,7 +63,8 @@ Respuesta (truncada):
 }
 ```
 
-La lista se ordena por ruta. Pasa `roots` para limitar la lista a un subconjunto (p. ej. solo `["docs/proposals"]`):
+The list is sorted by path. Pass `roots` to scope the list to a
+subset (e.g. just `["docs/proposals"]`):
 
 ```json
 {
@@ -60,7 +73,7 @@ La lista se ordena por ruta. Pasa `roots` para limitar la lista a un subconjunto
 }
 ```
 
-## 2. Leer un documento
+## 2. Read one doc
 
 ```json
 {
@@ -69,7 +82,7 @@ La lista se ordena por ruta. Pasa `roots` para limitar la lista a un subconjunto
 }
 ```
 
-Respuesta:
+Response:
 
 ```json
 {
@@ -81,23 +94,51 @@ Respuesta:
 }
 ```
 
-El campo `content` tiene un límite de 256 KiB. Si el documento es más grande, se devuelve `truncated: true` y el contenido corresponderá a los primeros 256 KiB. Si la ruta no coincide con ningún documento bajo las raíces configuradas, se devuelve `found: false`.
+`content` is capped at 256 KiB. If the doc is bigger, `truncated:
+true` and the body is the first 256 KiB. If the path doesn't
+match any doc under the configured roots, `found: false`.
 
-## 3. Por qué dos herramientas y no una
+## 3. Why two tools and not one
 
-La herramienta `list` es muy económica (unos cientos de bytes por documento, 18 documentos ≈ 4 KiB). La herramienta `read` es costosa (potencialmente megabytes por documento). Separarlas permite que el agente ejecute `list` primero, y luego lea (`read`) únicamente los documentos que parezcan relevantes — ahorrando tokens en cada paso del proceso de descubrimiento.
+`list` is cheap (a few hundred bytes per doc, 18 docs ≈ 4 KiB).
+`read` is expensive (potentially megabytes per doc). Splitting
+them means the agent can `list` first, then `read` only the ones
+that look relevant — saving tokens on every discovery step.
 
-## 4. Contención de rutas (seguridad)
+## 4. Path containment (security)
 
-`docs_read` resuelve la ruta utilizando `resolveWorkspaceContained` — se rechazan las rutas absolutas, el recorrido con `..` y los enlaces simbólicos que apunten fuera del espacio de trabajo. La respuesta `found: false` es la señal del agente de que la ruta fue rechazada; el plugin no distingue entre "no encontrado" y "fuera del workspace" a propósito (para evitar filtrar la estructura del sistema de archivos).
+`docs_read` resolves the path with `resolveWorkspaceContained` —
+absolute paths, `..` traversal, and symlinks pointing outside the
+workspace are all refused. The `found: false` response is the
+agent's signal that the path was rejected; the plugin does not
+distinguish "missing" from "outside-workspace" on purpose (to
+avoid leaking filesystem layout).
 
-## Errores comunes
+## Common pitfalls
 
-- **La raíz no existe**: `docs_list` devuelve `{ count: 0, truncated: false, docs: [] }`. El plugin no muestra advertencias.
-- **Documento aún no commiteado**: se siguen sirviendo los archivos no rastreados (el plugin lee directamente del sistema de archivos, no de git). La ruta (`path`) devuelta es relativa al espacio de trabajo.
-- **Falla la inferencia del título**: si la primera cabecera no es `# ` (sin espacio o nivel incorrecto) y no hay `title:` en el frontmatter, el plugin utiliza el nombre base del archivo (p. ej. `CHANGELOG.md` → `CHANGELOG.md`). Vuelve a ejecutar la herramienta después de corregir la cabecera.
+- **Root doesn't exist**: `docs_list` returns `{ count: 0,
+  truncated: false, docs: [] }`. The plugin does not warn.
+- **Doc not yet committed**: untracked files are still served
+  (the plugin reads from the filesystem, not from git). The
+  `path` you get back is workspace-relative.
+- **Title inference fails**: if the first heading is not `# ` (no
+  space, wrong level) and there's no frontmatter `title:`, the
+  plugin uses the filename basename (e.g. `CHANGELOG.md` →
+  `CHANGELOG.md`). Re-run after fixing the heading.
 
-## Siguiente paso
+## Next step
 
-- [Cómo `docs_list` se integra con `memory_recall` para "qué guardé en la última sesión + dónde estaba documentado?"](#)
-- [Curar un índice de conocimiento con el plugin `knowledge`](#)
+- [How `docs_list` integrates with `memory_recall` for "what
+  did I save last session + where was it documented?"](#)
+- [Curating a knowledge index with the `knowledge` plugin](#)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Español
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/docs/tutorials/en/cataloging-project-docs.md`

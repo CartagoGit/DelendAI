@@ -37,7 +37,9 @@ export const buildAgentCatalogResourceRegistration = (
 						text: JSON.stringify(
 							buildCatalog(options.sources, {
 								mode: options.mode,
-								now: options.now,
+								...(options.now !== undefined
+									? { now: options.now }
+									: {}),
 								server: options.server,
 							}),
 						),

@@ -1,57 +1,62 @@
 ---
-title: メモリノートの保存と呼び出し
+title: "Saving and recalling memory notes [日本語 — needs translation]"
 plugin: memory
-audience: セッション間の継続性が必要なすべてのエージェント
+audience: any agent that needs cross-session continuity
 order: 1
 lang: ja
+auto-translated: true
+needs-human-review: true
+source: plugins/memory/tutorials/en/saving-and-recalling.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# メモリノートの保存と呼び出し
+# Saving and recalling memory notes
 
-このチュートリアルでは4つの `memory_*` ツールを実際に動かします。
-ノートは `.cache/mcp-vertex/memory/notes.json` 下の小さなJSONレコード
-です——全体をダンプできるほど小さく、idでインデックス付けされ、タグや
-全文クエリで取得できます。
+This walkthrough shows the four `memory_*` tools in action. Notes
+are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
+— small enough to dump in full, indexed by id, retrievable by
+tag or full-text query.
 
-## 0. メンタルモデル
+## 0. The mental model
 
-**ノート**は `{ id, title, body, tags, createdAt, updatedAt }` です。
-タイトルは一意です（大文字小文字を区別しない）——`memory_save` は
-タイトルでupsertします。`body` にはスキーマがありません；短い自由テキスト
-フィールドとして扱ってください。シークレットはノートが保存される前に
-`redactSecrets` によって自動的に編集されます（`packages/core/src/lib/shared/redact.ts` 参照）。
+A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
+Titles are unique (case-insensitive) — `memory_save` upserts by
+title. There is no schema for `body`; treat it as a short
+free-text field. Secrets are auto-redacted by `redactSecrets`
+before the note is persisted (see
+`packages/core/src/lib/shared/redact.ts`).
 
-## 1. ノートを保存する
+## 1. Save a note
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "monorepo公開順序",
-    "body": "coreを最初に、次にプラグインをロックステップで。derive-version.tsは最後のvX.Y.Zタグ以降のConventional Commitsを読み取る。",
+    "title": "monorepo publish order",
+    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-レスポンス: `{ id: "<uuid>", createdAt: "..." }`。Saveはidを返し、
-後で `forget` できます。
+Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
+so you can `forget` it later.
 
-## 2. クエリで呼び出す
+## 2. Recall by query
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "公開順序",
+    "query": "publish order",
     "limit": 5
   }
 }
 ```
 
-クエリに一致する最大 `limit` 件のノートを返します（タイトル + bodyの
-部分文字列マッチ、最新順）。絞り込みに `query` の代わりに（または
-一緒に）`tags` を使用：
+Returns up to `limit` notes that match the query (substring match
+on title + body, ranked by recency). Use `tags` instead of (or
+alongside) `query` to narrow:
 
 ```json
 {
@@ -60,37 +65,50 @@ lang: ja
 }
 ```
 
-## 3. 安価にリストする
+## 3. List cheaply
 
-`memory_list` は `{ id, title, tags }` のみを返します——インデックス。
-まだbodyを取得したくない場合に使用：
+`memory_list` returns just `{ id, title, tags }` — the index. Use
+it when you don't want to fetch the bodies yet:
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. 忘れる
+## 4. Forget
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` はハード削除——ソフト削除/アーカイブはありません。
-idは消えます；タイトルは将来の `memory_save` のために解放されます。
+`memory_forget` is hard-delete — there is no soft-delete / archive.
+The id is gone; the title is freed for a future `memory_save`.
 
-## よくある落とし穴
+## Common pitfalls
 
-- **`body` のシークレット**: プラグインが保存時に編集しても、生のトークン
-  や `.env` スタイルの値を貼り付けないでください——編集はヒューリスティックで
-  完璧ではありません。
-- **タイトルの衝突**: `memory_save` はタイトルでupsertします。2つのエージェント
-  が同じタイトルを並行して保存すると、2番目の書き込みが勝ち、最初のが失われます。
-  スライス/問題ごとに一意のタイトルを使用してください。
-- **Recallのヒットが多すぎる**: 幅広い `query` より `tags` を優先してください。
-  `""` のクエリは最新順にすべてを返します——「前のセッションで何を保存したか?」
-  には便利ですが、完全なストアでは高コストです。
+- **Secrets in `body`**: even though the plugin redacts on save,
+  do not paste raw tokens or `.env`-style values — the redaction
+  is heuristic, not perfect.
+- **Title collisions**: `memory_save` upserts by title. If two
+  agents save the same title in parallel, the second writer wins
+  and the first is lost. Use unique titles per slice / per
+  problem.
+- **Recall gets too many hits**: prefer `tags` over a broad
+  `query`. A query of `""` returns everything sorted by recency
+  — useful for "what did I save last session?" but expensive on a
+  full store.
 
-## 次のステップ
+## Next step
 
-- [round_context (proposals) がメモリノートをアクティブな提案にリンクする方法](../../proposals/tutorials/ja/getting-started.md)
-- [シークレット編集コントラクト](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
+- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper 日本語
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`

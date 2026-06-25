@@ -1,0 +1,159 @@
+---
+id: f00063
+status: ready
+type: proposal
+track: i18n+l10n+utils
+date: 2026-06-25
+kind: refactor
+title: Locale-aware date/time formatting via `Intl.DateTimeFormat` + `Intl.RelativeTimeFormat`
+shipped-in: []
+recan: []
+related:
+    - a00040 # audit that surfaced this finding (H17)
+    - f00059 # sibling (i18n thread; this is its pure-formatting half)
+ownership:
+    - { agent: proposal_guardian,    task: 'S1: replace `formatRelativeTime` with `Intl.RelativeTimeFormat` honoring `locale` (H17)' }
+    - { agent: implementation_runner, task: 'S2: add `formatDate` / `formatTime` wrappers around `Intl.DateTimeFormat`; cover all 12 locales in spec' }
+    - { agent: implementation_runner, task: 'S3: snapshot test against Node 18 + Bun 1.x — assert identical output for the same (date, now, locale) input' }
+globalGate: validate
+acceptance:
+    - { command: bun run typecheck, expect: exit0 }
+    - { command: bun run test,      expect: exit0 }
+    - { command: bun run validate,  expect: exit0 }
+---
+
+# f00063 — Locale-aware date/time formatting via `Intl.*`
+
+## goal
+
+Close audit `a00040` finding **H17** by replacing the non-deterministic, locale-blind
+[`formatRelativeTime`](packages/ui-extension/src/utils/format-relative-time.ts ) with a
+pure, locale-aware implementation backed by `Intl.RelativeTimeFormat` and
+`Intl.DateTimeFormat`.
+
+The 3 slices are dependency-ordered.
+
+## why
+
+`a00040` read [`packages/ui-extension/src/utils/format-relative-time.ts`](packages/ui-extension/src/utils/format-relative-time.ts )
+and found:
+
+- **H17** — The function accepts a `locale` argument and **ignores it**. It returns
+  English strings (`'just now'`, `'2 minutes ago'`, `'in 3 days'`) regardless of
+  locale, and appends the locale in parens (`'(es)'`). The result is a Frankenstein
+  string — not localized, but also not locale-agnostic.
+
+The fix is the platform-native `Intl.RelativeTimeFormat`, which ships in Node 18+,
+Bun 1.x, and every browser, supports 100+ locales, and produces the expected output
+without a dependency.
+
+## why this design
+
+**No dependency.** `Intl.RelativeTimeFormat` and `Intl.DateTimeFormat` are runtime
+APIs, not libraries. The proposal adds zero `dependencies` to `package.json`.
+
+**Pure functions.** `formatRelativeTime(date, now, locale)` is `(Date | number, Date, string) => string`.
+Spec covers determinism: same inputs → same output. Snapshot test across runtimes
+(Node + Bun) catches drift.
+
+**Bundle of two utilities.** S1 closes H17; S2 adds `formatDate` / `formatTime` so the
+whole project has one consistent date layer. The audit didn't flag H17 in any other
+file, but `formatDate` already exists as inline `toLocaleDateString()` calls in 3
+places — the proposal unifies them.
+
+## non-goals
+
+- Adding calendar support (Hijri, Buddhist, etc.). `Intl` supports them via
+  `calendar: 'islamic'`; out of scope.
+- Time-zone math beyond what `Intl` provides. Hosts already pass a `locale`; we
+  defer `timeZone` to a follow-up.
+
+## architecture
+
+```
+packages/ui-extension/src/utils/
+  format-relative-time.ts        # REWRITE: Intl.RelativeTimeFormat
+  format-date.ts                 # NEW: Intl.DateTimeFormat wrapper
+  format-time.ts                 # NEW: same
+  format.ts                      # NEW: barrel re-export
+```
+
+## slices
+
+### S1 — rewrite `formatRelativeTime` (H17)
+
+**File:** [`packages/ui-extension/src/utils/format-relative-time.ts`](packages/ui-extension/src/utils/format-relative-time.ts )
+
+```typescript
+export type Locale = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'zh' | 'ar' | 'hi' | 'th' | 'vi';
+
+export function formatRelativeTime(
+  date: Date | number,
+  now: Date = new Date(),
+  locale: Locale = 'en',
+): string {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  const diffMs = date.valueOf() - now.valueOf();
+  const absSec = Math.round(Math.abs(diffMs) / 1000);
+
+  const pick = (value: number, unit: Intl.RelativeTimeFormatUnit): string => rtf.format(value, unit);
+
+  if (absSec < 45) return pick(Math.round(diffMs / 1000), 'second');
+  if (absSec < 3600) return pick(Math.round(diffMs / 60_000), 'minute');
+  if (absSec < 86_400) return pick(Math.round(diffMs / 3_600_000), 'hour');
+  return pick(Math.round(diffMs / 86_400_000), 'day');
+}
+```
+
+**Acceptance:** spec covers 6 inputs × 12 locales = 72 cases. With `locale='es'`,
+`formatRelativeTime(now - 2*60_000, now, 'es')` returns `'hace 2 minutos'`. With
+`locale='en'`, the same input returns `'2 minutes ago'`. The function never appends
+the locale in parens.
+
+### S2 — `formatDate` / `formatTime` wrappers
+
+**File:** [`packages/ui-extension/src/utils/format-date.ts`](packages/ui-extension/src/utils/format-date.ts )
+
+```typescript
+export function formatDate(date: Date | number, locale: Locale = 'en'): string {
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
+}
+```
+
+Same shape for `format-time.ts`. Both are pure `(date, locale) => string`.
+
+### S3 — cross-runtime snapshot
+
+**File:** [`packages/ui-extension/src/utils/format-relative-time.spec.ts`](packages/ui-extension/src/utils/format-relative-time.spec.ts )
+
+The snapshot is generated on **both** Node 18 and Bun 1.x; the CI runs both. If they
+diverge, the build fails. (They shouldn't — both embed ICU — but the audit found
+subtle `Intl` differences historically.)
+
+## dependency graph
+
+```
+S1 (relative time) ─ independent ──┐
+S2 (date + time)   ─ independent ──┤
+S3 (snapshot)      ─ depends on S1 + S2 ──┘
+```
+
+## acceptance
+
+`bun run validate` exits 0. The spec covers 72 locale × input combinations. The
+project no longer has any call to `formatRelativeTime` that ignores `locale`
+(`grep -RIn formatRelativeTime packages/` shows every call passes a locale).
+
+## risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Node 18 vs Bun 1.x ICU data drift | S3 catches it. We pin Node 18.17+ (the cutoff for stable `Intl.RelativeTimeFormat`). |
+| `Intl.RelativeTimeFormat` returns `'now'` for zero diff (varies by locale) | We special-case `diffMs === 0` → return `rtf.format(0, 'second')` and assert the output in the spec. |
+| Web targets lack `Intl.RelativeTimeFormat` | All evergreen browsers (Chrome 71+, Firefox 78+, Safari 14+) support it; the audit verified the project's browser baseline. |
+
+## notes
+
+The existing `formatRelativeTime` is exported from
+[`packages/ui-extension/src/public/index.ts`](packages/ui-extension/src/public/index.ts ).
+S1 keeps the export name; the change is a pure rewrite of the body.

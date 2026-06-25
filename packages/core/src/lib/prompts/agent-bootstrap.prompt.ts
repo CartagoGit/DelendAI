@@ -26,7 +26,7 @@ export const buildAgentBootstrapPromptRegistration = (
 			async () => {
 				const catalog = buildCatalog(options.sources, {
 					mode: 'compact',
-					now: options.now,
+					...(options.now !== undefined ? { now: options.now } : {}),
 					server: options.server,
 				});
 				const actionable =

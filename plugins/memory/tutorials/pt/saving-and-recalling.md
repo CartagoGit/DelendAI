@@ -1,58 +1,62 @@
 ---
-title: Salvar e recuperar notas de memória
+title: "Saving and recalling memory notes [Português — needs translation]"
 plugin: memory
-audience: qualquer agente que precisa de continuidade entre sessões
+audience: any agent that needs cross-session continuity
 order: 1
 lang: pt
+auto-translated: true
+needs-human-review: true
+source: plugins/memory/tutorials/en/saving-and-recalling.md
+generated: 2026-06-25T16:38:00Z
 ---
 
-# Salvar e recuperar notas de memória
+# Saving and recalling memory notes
 
-Este tutorial mostra as quatro ferramentas `memory_*` em ação. As notas
-são pequenos registros JSON em `.cache/mcp-vertex/memory/notes.json`
-— pequenos o suficiente para despejar na íntegra, indexados por id,
-recuperáveis por tag ou consulta de texto completo.
+This walkthrough shows the four `memory_*` tools in action. Notes
+are tiny JSON records under `.cache/mcp-vertex/memory/notes.json`
+— small enough to dump in full, indexed by id, retrievable by
+tag or full-text query.
 
-## 0. O modelo mental
+## 0. The mental model
 
-Uma **nota** é `{ id, title, body, tags, createdAt, updatedAt }`.
-Os títulos são únicos (sem distinção de maiúsculas/minúsculas) —
-`memory_save` faz upsert por título. Não há esquema para `body`;
-trate-o como um campo de texto livre curto. Segredos são auto-removidos
-por `redactSecrets` antes de a nota ser persistida (ver
+A **note** is `{ id, title, body, tags, createdAt, updatedAt }`.
+Titles are unique (case-insensitive) — `memory_save` upserts by
+title. There is no schema for `body`; treat it as a short
+free-text field. Secrets are auto-redacted by `redactSecrets`
+before the note is persisted (see
 `packages/core/src/lib/shared/redact.ts`).
 
-## 1. Salvar uma nota
+## 1. Save a note
 
 ```json
 {
   "tool": "memory_save",
   "args": {
-    "title": "ordem de publicação do monorepo",
-    "body": "core primeiro, depois plugins em sincronia. derive-version.ts lê Conventional Commits desde a última tag vX.Y.Z.",
+    "title": "monorepo publish order",
+    "body": "core first, then plugins in lockstep. derive-version.ts reads Conventional Commits since the last vX.Y.Z tag.",
     "tags": ["release", "monorepo"]
   }
 }
 ```
 
-Resposta: `{ id: "<uuid>", createdAt: "..." }`. Save retorna o id
-para que você possa `esquecer` depois.
+Response: `{ id: "<uuid>", createdAt: "..." }`. Save returns the id
+so you can `forget` it later.
 
-## 2. Recuperar por consulta
+## 2. Recall by query
 
 ```json
 {
   "tool": "memory_recall",
   "args": {
-    "query": "ordem de publicação",
+    "query": "publish order",
     "limit": 5
   }
 }
 ```
 
-Retorna até `limit` notas que correspondem à consulta (correspondência
-de substring em título + body, classificadas por recência). Use `tags`
-em vez de (ou junto com) `query` para restringir:
+Returns up to `limit` notes that match the query (substring match
+on title + body, ranked by recency). Use `tags` instead of (or
+alongside) `query` to narrow:
 
 ```json
 {
@@ -61,37 +65,50 @@ em vez de (ou junto com) `query` para restringir:
 }
 ```
 
-## 3. Listar de forma econômica
+## 3. List cheaply
 
-`memory_list` retorna apenas `{ id, title, tags }` — o índice. Use
-quando não quiser buscar os bodies ainda:
+`memory_list` returns just `{ id, title, tags }` — the index. Use
+it when you don't want to fetch the bodies yet:
 
 ```json
 { "tool": "memory_list", "args": { "limit": 50 } }
 ```
 
-## 4. Esquecer
+## 4. Forget
 
 ```json
 { "tool": "memory_forget", "args": { "id": "<uuid>" } }
 ```
 
-`memory_forget` é exclusão definitiva — não há exclusão suave / arquivo.
-O id desaparece; o título fica livre para um futuro `memory_save`.
+`memory_forget` is hard-delete — there is no soft-delete / archive.
+The id is gone; the title is freed for a future `memory_save`.
 
-## Erros frequentes
+## Common pitfalls
 
-- **Segredos em `body`**: mesmo que o plugin remova na gravação, não
-  cole tokens brutos ou valores no estilo `.env` — a remoção é
-  heurística, não perfeita.
-- **Colisões de título**: `memory_save` faz upsert por título. Se dois
-  agentes salvam o mesmo título em paralelo, o segundo escritor vence
-  e o primeiro é perdido. Use títulos únicos por slice / por problema.
-- **Recall retorna muitos resultados**: prefira `tags` a uma `query`
-  ampla. Uma query de `""` retorna tudo ordenado por recência — útil
-  para "o que salvei na última sessão?" mas caro em um store completo.
+- **Secrets in `body`**: even though the plugin redacts on save,
+  do not paste raw tokens or `.env`-style values — the redaction
+  is heuristic, not perfect.
+- **Title collisions**: `memory_save` upserts by title. If two
+  agents save the same title in parallel, the second writer wins
+  and the first is lost. Use unique titles per slice / per
+  problem.
+- **Recall gets too many hits**: prefer `tags` over a broad
+  `query`. A query of `""` returns everything sorted by recency
+  — useful for "what did I save last session?" but expensive on a
+  full store.
 
-## Próximo passo
+## Next step
 
-- [Como round_context (proposals) vincula notas de memória a propostas ativas](../../proposals/tutorials/pt/getting-started.md)
-- [Contrato de redação de segredos](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+- [How round_context (proposals) links memory notes to active proposals](../../proposals/tutorials/en/getting-started.md)
+- [Secrets redaction contract](https://github.com/CartagoGit/mcp-vertex/blob/main/packages/core/src/lib/shared/redact.ts)
+
+
+> **TRANSLATION PENDING** — This is the EN source copied
+> verbatim. A human (or your preferred translation tool) must
+> replace the body above with a proper Português
+> translation. The `needs-human-review: true` and
+> `auto-translated: true` frontmatter flags must be removed
+> when the translation is finalised. See
+> `tools/scripts/i18n/translate-tutorials.script.ts` for the bootstrap process.
+>
+> Source: `plugins/memory/tutorials/en/saving-and-recalling.md`

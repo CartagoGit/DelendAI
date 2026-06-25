@@ -87,6 +87,7 @@ const waitForHostReady = async (
 describe('gracefulShutdown — unit', async () => {
 	let exitCalls: number[];
 	const originalExit = process.exit.bind(process);
+	const originalExitCode = process.exitCode;
 	let stderrSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
@@ -112,6 +113,7 @@ describe('gracefulShutdown — unit', async () => {
 
 	afterEach(() => {
 		process.exit = originalExit;
+		process.exitCode = originalExitCode ?? 0;
 		stderrSpy.mockRestore();
 	});
 
@@ -194,8 +196,14 @@ describe('gracefulShutdown — unit', async () => {
 		).rejects.toThrow('__test_exit__:9');
 		const elapsed = Date.now() - t0;
 
-		// Should not wait the full timeout + slack; just close to it.
-		expect(elapsed).toBeGreaterThanOrEqual(50);
+		// The timeout branch should run, but wall-clock granularity can
+		// report 49ms for a 50ms timer under load. Assert the diagnostic
+		// instead of treating one scheduler tick as a behaviour failure.
+		expect(
+			stderrSpy.mock.calls.some((call: readonly unknown[]) =>
+				String(call[0] ?? '').includes('within 50ms'),
+			),
+		).toBe(true);
 		expect(elapsed).toBeLessThan(2_000);
 		expect(exitCalls).toEqual([9]);
 	});

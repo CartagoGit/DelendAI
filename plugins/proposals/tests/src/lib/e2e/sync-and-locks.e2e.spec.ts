@@ -191,6 +191,9 @@ Seed for the sync e2e.
 			expect(res.structured.ok).toBe(true);
 			expect(res.structured.path).toBeDefined();
 			const wtPath = res.structured.path as string;
+			expect(wtPath).toBe(
+				join(ws, '.cache', 'mcp-vertex', '.worktrees', 'agent-a'),
+			);
 			expect(existsSync(wtPath)).toBe(true);
 
 			// Clean working tree and — critically — no origin remote.

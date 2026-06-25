@@ -1,12 +1,22 @@
 ---
+/**
+ * `/setup` — English setup page. See `pages/tools.astro` for the
+ * recipe.
+ */
 import Setup from '#COMPONENTS/Setup.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { useTranslations, type Lang } from '#I18N/ui';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-const lang: Lang = 'en';
+const lang = 'en' as const;
 const t = useTranslations(lang);
 ---
 
-<Base lang={lang} title={`${t.setup.title} — @mcp-vertex/core`}>
-	<Setup lang={lang} heading={t.setup.title} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.setup.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.setup, href: localePath(lang, 'setup') }]}
+>
+	<Setup lang={lang} />
+</PageShell>

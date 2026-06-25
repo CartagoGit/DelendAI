@@ -124,21 +124,21 @@
 //     <button aria-haspopup>, panel is role="menu").
 //
 // The JS in `SiteNav.astro` toggles a `.is-open` class on the
-// `.nav__more` wrapper (alongside `aria-expanded` on the trigger
+// `.nav-more` wrapper (alongside `aria-expanded` on the trigger
 // for a11y). We use the class instead of `:has(...)` so the
 // selectors stay BEM-compliant (the linter rejects `:has()` with
 // attribute selectors). The panel is mounted with the `hidden`
 // attribute; the class flip also drives the scaleY/opacity
 // transition. The JS removes the `hidden` attribute on open and
 // restores it 200ms after close so the close transition can play.
-.nav__more {
+.nav-more {
 	position: relative;
 
 	--nav-more-trigger-bg: transparent;
 	--nav-more-trigger-color: var(--muted);
 	--nav-more-caret-transform: none;
 }
-.nav__more__trigger {
+.nav-more__trigger {
 	list-style: none;
 	cursor: pointer;
 	display: inline-flex;
@@ -170,18 +170,17 @@
 // wrapper attribute as the CSS source of truth (it's set on the same
 // element that owns `--nav-more-menu-transform`, so the custom
 // properties cascade into the panel without a descendant selector).
-// The `nav__more--open` class is kept as a backward-compat alias for
+// The `nav-more--open` class is kept as a backward-compat alias for
 // any host that still toggles it directly.
-.nav__more[data-open],
-.nav__more--open,
-[data-mv-dropdown='nav-more'][data-open] {
+.nav-more[data-open],
+.nav-more--open {
 	--nav-more-trigger-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 	--nav-more-trigger-color: var(--fg);
 	--nav-more-caret-transform: rotate(180deg);
 	// The menu reads its open-state values from these custom
 	// properties so the descendant selector stays out of the BEM
 	// scope (the linter rejects `.block--mod .block__elem`).
-	// Defaults are set on `.nav__more__menu` below; this block
+	// Defaults are set on `.nav-more__menu` below; this block
 	// just overrides them when the wrapper carries the `--open`
 	// modifier.
 	--nav-more-menu-transform: scaleY(1);
@@ -192,11 +191,11 @@
 		opacity 0.16s ease,
 		visibility 0s linear 0s;
 }
-.nav__more__caret {
+.nav-more__caret {
 	transform: var(--nav-more-caret-transform);
 	transition: transform 0.18s ease;
 }
-.nav__more__menu {
+.nav-more__menu {
 	position: absolute;
 	top: calc(100% + 0.35rem);
 	right: 0;
@@ -211,7 +210,7 @@
 	gap: 1px;
 	z-index: 30;
 	transform-origin: top right;
-	// Closed-state defaults; `.nav__more--open` overrides these
+	// Closed-state defaults; `.nav-more--open` overrides these
 	// via the custom properties above so the menu's
 	// `transform` / `opacity` / `visibility` transition picks up
 	// the open values without a descendant selector.
@@ -220,7 +219,7 @@
 	visibility: var(--nav-more-menu-visibility, hidden);
 	transition: var(--nav-more-menu-transition);
 }
-.nav__more__item {
+.nav-more__item {
 	color: var(--muted);
 	font-size: 0.92rem;
 	padding: 0.45rem 0.6rem;
@@ -241,13 +240,12 @@
 // itself is unchanged — `--nav-more-menu-transform: scaleY(1)` must
 // still win so the panel is visible after the trigger is activated.
 // (Earlier revisions set `--nav-more-menu-transform: none` here, which
-// lost the cascade inside `.nav__more--open` and left the menu at
+// lost the cascade inside `.nav-more--open` and left the menu at
 // `scaleY(0)` even when the wrapper carried the modifier — see the
 // 2026-06 web-repaso review.)
 @media (prefers-reduced-motion: reduce) {
-	.nav__more[data-open],
-	.nav__more--open,
-	[data-mv-dropdown='nav-more'][data-open] {
+	.nav-more[data-open],
+	.nav-more--open {
 		--nav-more-menu-transition: none;
 	}
 }

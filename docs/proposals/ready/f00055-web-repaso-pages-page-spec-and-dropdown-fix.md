@@ -201,7 +201,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "Visually `/install` matches the previous page within the prose styles — the maintainer signs off in the PR."
 - **Status**: pending
 
-## Cross-cutting impact
+## Architecture
 
 - **`renderDropdown` consumers**: extensions/vscode keeps working byte-identically (S1's defaults). The 1-line `renderDropdown({idPrefix: 'nav-more', classPrefix: 'nav__more', ...})` change in SiteNav is the only caller-side edit.
 - **`@mcp-vertex/shared/styles`**: gains a new partial (`_dropdown.scss`) that is `@forward`ed, so anyone consuming the shared bundle gets the dropdown look for free (S2).
@@ -209,14 +209,14 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 - **Build chain**: `gen-pages.ts` slots into `gen:manifests` (called by `build`, `build:strict`, `dev`, `check`) so every existing entry point regenerates `pages.json` before the Astro build runs.
 - **Memory**: page audit + PageSpec decision lives in `memories/repo/pages-audit-and-pagespec.md` so future page work doesn't have to rediscover the contract.
 
-## Verification (the gate that proves this proposal worked)
+## Acceptance
 
 1. Visit `/` in a real browser at 1280 px — hero copy uses the full container width, "More" dropdown opens on click and closes on outside-click / Escape (S1+S2).
 2. Visit `/install` — visually identical to before, but the source is 12 markdown files instead of 1 astro file + 12 i18n entries (S6).
 3. Add a new page: drop `apps/web/src/data/pages/getting-started/{en,es,...}.md`, run `bun run gen:manifests`, the page exists at `/getting-started` and `/<lang>/getting-started` with zero code changes (S4+S5).
 4. `bun run validate` green; `bun run site:strict` green; `bun run check:i18n` green.
 
-## Dependencies on other work
+## Dependency graph
 
 - f00053 S1–S5 ship the canonical plugin catalog + plugin disclosures that the `/plugins` page consumes. This proposal does not touch that surface (the plugin cards/disclosures stay as-is). It only touches *non-plugin* pages.
 - f00049 S7 (de-host i18n) overlaps in spirit (one shared strings layer) but addresses chrome strings (nav labels, hero CTAs). This proposal addresses content strings (page bodies). They complement, not duplicate.
