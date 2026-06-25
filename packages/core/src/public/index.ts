@@ -41,6 +41,8 @@ export type {
 	IPromptRegistration,
 	IResourceRegistration,
 	IToolRegistration,
+	// f00065 slice F: canonical tool-effect union, shared with @mcp-vertex/client.
+	IToolEffect,
 } from '../lib/contracts/interfaces/tool-registration.interface';
 export type {
 	IValidationCommand,
