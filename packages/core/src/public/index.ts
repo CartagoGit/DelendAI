@@ -262,7 +262,17 @@ export type {
 	IOverviewToolEntry,
 	IOverviewPlugin,
 } from '../lib/tools/overview-tool';
+export type {
+	CatalogSection,
+	ICatalogSnapshot,
+	ICatalogSources,
+	IProposalSummary,
+	ISkillSummary,
+	IToolSummary,
+	ProposalStatus,
+} from '../lib/catalog/agent-discovery-types';
 export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
+export { buildAgentCatalogToolRegistration } from '../lib/tools/agent-catalog-tool';
 export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
 export {
 	buildStatusToolRegistration,
@@ -296,6 +306,8 @@ export type {
 } from '../lib/migrations/migrate-file';
 export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
 export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
+export { buildAgentCatalogResourceRegistration } from '../lib/resources/agent-catalog-resource';
+export { buildAgentBootstrapPromptRegistration } from '../lib/prompts/agent-bootstrap.prompt';
 
 // --- hybrid project analyzer (bootstrap) -----------------------------------
 export {

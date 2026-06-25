@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-25T00:00:00.000Z",
-	"count": 115,
+	"generated_at": "2026-06-25T12:00:00.000Z",
+	"count": 116,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -60,6 +60,30 @@
 					"{ agent: implementation_runner, task: 'S3: wire the catalog into the VS Code extension and shared client services so tools, skills, and proposals are discoverable from one entrypoint' }",
 					"{ agent: implementation_runner, task: 'S4: generate host hint fragments for Copilot, Claude Code, Cursor, and generic AGENTS consumers from the same catalog builder' }",
 					"{ agent: implementation_runner, task: 'S5: ship downstream bootstrap through packaged prompts/resources, scaffolded host hints, and worked examples in minimal and swarm' }"
+				]
+			}
+		},
+		{
+			"id": "f00057",
+			"file": "ready/f00057-skill-unification-plugin-coverage-script-wiring-and-doc-drift-repair.md",
+			"track": "skills+plugins+tools+scripts+docs+workflow",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: merge `proposal-swarm-runner` + `proposals-workflow-playbook` + plans-q into one canonical `proposals-canonical-workflow` skill (and remove `mcp-vertex-legacy-proposal-migration` from the agent-facing catalogue once superseded)' }",
+					"{ agent: implementation_runner, task: 'S2: merge `token-budget-playbook` + `mcp-vertex-token-budget-discipline` into one canonical `token-budget-discipline` skill (keep measured-budgets table + compact-first rule)' }",
+					"{ agent: implementation_runner, task: 'S3: merge `mcp-vertex-multi-agent-coordination` + `concurrency-patterns` into one canonical `multi-agent-coordination` skill (preserve 3-patterns examples + `withFileMutex` + agent_lock/agent_worktree + no-poll + lock-conflict)' }",
+					"{ agent: implementation_runner, task: 'S4: merge `audit-playbook` + `mcp-vertex-audit-runner` into one canonical `audit-end-to-end` skill (10 phases + consolidation + rubric in one body)' }",
+					"{ agent: implementation_runner, task: 'S5: add `appliesTo:` frontmatter consistently to every remaining skill (transversal ones use `@mcp-vertex/*`); bumps the skill manifest contract without touching f00056' }",
+					"{ agent: implementation_runner, task: 'S6: ship six new P1 plugin playbook skills — `plugins-git`, `plugins-deps`, `plugins-issues`, `plugins-test-convention`, `plugins-conventions`, `plugins-notification` (covers the 6 plugins that currently lack a skill and have real operational complexity)' }",
+					"{ agent: implementation_runner, task: 'S7: add `conventions` to the `swarm` preset in `preset-catalog.ts` (it is implemented but invisible to every default preset; `no-preset-drift` lint verifies the move)' }",
+					"{ agent: implementation_runner, task: 'S8: extract the TypeScript file-convention profile to `packages/core/src/lib/contracts/file-conventions.contract.ts` and rewrite both `plugins/conventions/src/lib/services/typescript-profile.service.ts` AND `tools/scripts/lint/file-conventions.ts` to import from there (parity spec proves no drift)' }",
+					"{ agent: implementation_runner, task: 'S9: synchronise the five stale plugin READMEs against the live registerTool surface — `git`, `deps`, `memory`, `quality`, `logs` — using a single template (header → Enable → Tools table → Configuration → Options → Hard deps)' }",
+					"{ agent: implementation_runner, task: 'S10: wire the four orphan scripts into `validate` — `tools/scripts/lint/check-skills.script.ts` (`lint:skills`), `tools/scripts/verify/plugin-tool-verify.script.ts` (`verify:tools`), `tools/scripts/metrics/collect-candidate.script.ts` + `diff-snapshots` + `get-baseline` (`metrics:gate`), `tools/scripts/astro/gen-section-pages.script.ts` + `i18n/translate-tutorials.script.ts` (`site:codegen`)' }",
+					"{ agent: implementation_runner, task: 'S11: deprecate `docs_search` (semantically subsumed by `search_search` with `roots:[\"docs\"]`; mark the tool deprecated in its registration, point callers at the wrapper, remove in a follow-up) and clarify `setup_github` (kept — it is a CLI-style helper distinct from `issues_*`, document its scope in the new `plugins-issues` skill)' }",
+					"{ agent: implementation_runner, task: 'S12: unify knowledge-entry naming to `<plugin>-<topic>`, force ≥1 per plugin, and backfill `conventions` + `proposals` (the two plugins that currently expose zero knowledge entries)' }"
 				]
 			}
 		},

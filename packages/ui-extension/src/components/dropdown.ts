@@ -14,6 +14,21 @@ export interface IDropdownItem {
 	readonly id: string;
 	readonly label: string;
 	readonly icon?: string;
+	/**
+	 * Optional link target. When set, the item is rendered as an
+	 * `<a role="menuitem">` instead of a `<button>` so a left-click
+	 * navigates to the URL directly (the runtime's `data-mv-action`
+	 * dispatcher only fires for buttons, so anchors transparently
+	 * bypass it). Hosts that still want a callback can omit `href`
+	 * and listen to `host.dispatch(actionId)` from the runtime.
+	 */
+	readonly href?: string;
+	/**
+	 * Optional `target` / `rel` for the rendered anchor. Ignored when
+	 * the item is rendered as a button.
+	 */
+	readonly target?: string;
+	readonly rel?: string;
 }
 
 export interface IDropdownOptions {
@@ -90,9 +105,33 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 		<span class="${classPrefix}__caret" aria-hidden="true">▾</span>
 	</button>`;
 	const items = opts.items
-		.map(
-			(item) =>
-				`<li role="none">
+		.map((item) => {
+			const icon = iconHtml(item.icon, classPrefix);
+			const label = `<span class="${classPrefix}__label">${escapeHtml(item.label)}</span>`;
+			// When an item carries an href, render an anchor so the
+			// browser navigates on click. The runtime's delegated
+			// click handler only acts on `[data-mv-action]`, so the
+			// anchor is left alone (its `data-mv-dropdown-id` is
+			// still set so the runtime can close the panel on click,
+			// see `runtime.ts`).
+			if (item.href) {
+				const target = item.target
+					? ` target="${escapeHtml(item.target)}"`
+					: '';
+				const rel = item.rel ? ` rel="${escapeHtml(item.rel)}"` : '';
+				return `<li role="none">
+					<a
+						role="menuitem"
+						class="${classPrefix}__item"
+						href="${escapeHtml(item.href)}"
+						data-mv-action="${escapeHtml(item.id)}"
+						data-mv-dropdown-id="${escapeHtml(baseId)}"${target}${rel}
+					>
+						${icon}${label}
+					</a>
+				</li>`;
+			}
+			return `<li role="none">
 				<button
 					type="button"
 					role="menuitem"
@@ -100,11 +139,10 @@ export const renderDropdown = (opts: IDropdownOptions): string => {
 					data-mv-action="${escapeHtml(item.id)}"
 					data-mv-dropdown-id="${escapeHtml(baseId)}"
 				>
-					${iconHtml(item.icon, classPrefix)}
-					<span class="${classPrefix}__label">${escapeHtml(item.label)}</span>
+					${icon}${label}
 				</button>
-			</li>`,
-		)
+			</li>`;
+		})
 		.join('');
 	const menu = `<ul
 		id="${escapeHtml(menuId)}"

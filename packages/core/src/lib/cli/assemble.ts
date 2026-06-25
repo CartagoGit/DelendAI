@@ -33,9 +33,19 @@ import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
+import {
+	deriveSkillSummary,
+	type IProposalSummary,
+	type ISkillSummary,
+	type IToolSummary,
+} from '../catalog/agent-discovery-types';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
+import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
+import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
+import { loadSkills } from '../skills/load-skills';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
+import { buildAgentCatalogToolRegistration } from '../tools/agent-catalog-tool';
 import type {
 	IOverviewSnapshot,
 	IOverviewToolEntry,
@@ -68,6 +78,95 @@ export interface IAssembleCliDeps {
 	/** Provide a custom plugin module importer (default: dynamic import()) */
 	import?: (specifier: string) => Promise<{ default: unknown }>;
 }
+
+interface IProposalIndexFileEntry {
+	readonly id?: string;
+	readonly title?: string;
+	readonly track?: string;
+	readonly status?: string;
+	readonly type?: string;
+	readonly kind?: string;
+	readonly date?: string;
+}
+
+interface IProposalIndexFile {
+	readonly proposals?: readonly IProposalIndexFileEntry[];
+}
+
+const namespaceFromToolName = (name: string): string => {
+	const idx = name.indexOf('_');
+	return idx === -1 ? name : name.slice(0, idx);
+};
+
+const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
+	const prefix = id[0]?.toLowerCase();
+	if (prefix === 'f') return 'feat';
+	if (prefix === 'r') return 'refactor';
+	if (prefix === 'c') return 'chore';
+	if (prefix === 'd') return 'docs';
+	if (prefix === 'q') return 'plan';
+	if (prefix === 'a') return 'audit';
+	if (prefix === 'x') return 'fix';
+	return 'unspecified';
+};
+
+const normalizeProposalStatus = (
+	status: string | undefined,
+): IProposalSummary['status'] => {
+	if (
+		status === 'ready' ||
+		status === 'in-progress' ||
+		status === 'review' ||
+		status === 'paused' ||
+		status === 'done' ||
+		status === 'blocked' ||
+		status === 'retired'
+	) {
+		return status;
+	}
+	return 'unspecified';
+};
+
+const readProposalsIndex = async (
+	workspaceRoot: string,
+	readWorkspaceFile: (absolutePath: string) => Promise<string | undefined>,
+): Promise<readonly IProposalSummary[]> => {
+	const raw = await readWorkspaceFile(
+		join(workspaceRoot, 'docs', 'proposals', 'index.json'),
+	);
+	if (raw === undefined) return [];
+	let parsed: IProposalIndexFile;
+	try {
+		parsed = JSON.parse(raw) as IProposalIndexFile;
+	} catch {
+		return [];
+	}
+	if (!Array.isArray(parsed.proposals)) return [];
+	return parsed.proposals
+		.filter(
+			(
+				entry,
+			): entry is Required<Pick<IProposalIndexFileEntry, 'id'>> &
+				IProposalIndexFileEntry => typeof entry.id === 'string',
+		)
+		.map((entry) => ({
+			id: entry.id,
+			title: entry.title ?? entry.id,
+			track: entry.track ?? 'unspecified',
+			status: normalizeProposalStatus(entry.status),
+			kind:
+				entry.kind === 'feat' ||
+				entry.kind === 'fix' ||
+				entry.kind === 'refactor' ||
+				entry.kind === 'chore' ||
+				entry.kind === 'docs' ||
+				entry.kind === 'plan' ||
+				entry.kind === 'audit'
+					? entry.kind
+					: proposalKindFromId(entry.id),
+			date: entry.date ?? '',
+		}));
+};
 
 /**
  * Build the full host config from parsed CLI args: resolve the
@@ -201,6 +300,23 @@ export const assembleCliConfig = async (
 	}
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
+	const skillSummaries: readonly ISkillSummary[] = (
+		await loadSkills(
+			join(args.workspace, 'skills', 'manifest.json'),
+			args.serverVersion,
+		)
+	).map((skill) => ({
+		id: skill.id,
+		version: skill.version,
+		minCoreVersion: skill.minCoreVersion,
+		summary: deriveSkillSummary(skill.id, undefined),
+		tags: [...skill.tags],
+		bodyPath: skill.bodyPath,
+	}));
+	const proposalSummaries = await readProposalsIndex(
+		args.workspace,
+		readFile,
+	);
 	const isLoaded = (name: string): boolean =>
 		loadResult.loaded.some((entry) => entry.plugin.name === name);
 	const hasProposals = isLoaded('proposals');
@@ -217,6 +333,12 @@ export const assembleCliConfig = async (
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
 	let coreTools: IToolRegistration[] = [];
+	let catalogToolEntries: readonly IToolSummary[] = [];
+	const catalogSources = {
+		tools: () => catalogToolEntries,
+		skills: () => skillSummaries,
+		proposals: () => proposalSummaries,
+	};
 	const buildSnapshot = (): IOverviewSnapshot => ({
 		server: { name: args.serverName, version: args.serverVersion },
 		namespacePrefix: corePrefix,
@@ -297,6 +419,14 @@ export const assembleCliConfig = async (
 
 	coreTools = [
 		buildOverviewToolRegistration(corePrefix, buildSnapshot),
+		buildAgentCatalogToolRegistration(corePrefix, {
+			sources: catalogSources,
+			server: {
+				name: args.serverName,
+				version: args.serverVersion,
+				namespacePrefix: corePrefix,
+			},
+		}),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
 		buildValidationMatrixToolRegistration(
 			corePrefix,
@@ -332,12 +462,54 @@ export const assembleCliConfig = async (
 	// Core tools keep their bare id (single namespace); plugin tools are
 	// already qualified above so the uniqueness check is per-namespace.
 	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
+	catalogToolEntries = tools.map((tool) => {
+		const name = tool.id.includes('_')
+			? tool.id
+			: `${corePrefix}_${tool.id}`;
+		return {
+			name,
+			plugin: namespaceFromToolName(name),
+			...(tool.summary !== undefined ? { summary: tool.summary } : {}),
+			...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
+			...(tool.effects !== undefined
+				? { effects: [...tool.effects] }
+				: {}),
+		};
+	});
 
 	// Surface knowledge as native MCP resources too (list/read/cache).
 	resources.push(...buildKnowledgeResourceRegistrations(knowledge));
+	resources.push(
+		buildAgentCatalogResourceRegistration({
+			mode: 'compact',
+			sources: catalogSources,
+			server: {
+				name: args.serverName,
+				version: args.serverVersion,
+				namespacePrefix: corePrefix,
+			},
+		}),
+		buildAgentCatalogResourceRegistration({
+			mode: 'full',
+			sources: catalogSources,
+			server: {
+				name: args.serverName,
+				version: args.serverVersion,
+				namespacePrefix: corePrefix,
+			},
+		}),
+	);
 
 	// A "start" workflow prompt for one-click orientation in clients.
 	prompts.unshift(
+		buildAgentBootstrapPromptRegistration(corePrefix, {
+			sources: catalogSources,
+			server: {
+				name: args.serverName,
+				version: args.serverVersion,
+				namespacePrefix: corePrefix,
+			},
+		}),
 		buildStartPromptRegistration(corePrefix, () => recommendedNextAction),
 	);
 

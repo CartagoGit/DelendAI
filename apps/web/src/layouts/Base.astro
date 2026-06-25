@@ -5,6 +5,7 @@ import Config from '#COMPONENTS/Config.astro';
 import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
+import { renderRuntime } from '@mcp-vertex/shared';
 import { rtlLangs, type Lang } from '#I18N/ui';
 
 interface Props {
@@ -41,6 +42,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		    modal are mounted once in this layout and persist across navigations
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
+		{/* Shared UI runtime from `@mcp-vertex/ui-extension`. Drives every
+		    `[data-mv-toggle="dropdown"]` and `[data-mv-action]` host
+		    gesture on the page (the "More" dropdown in the nav, any
+		    `[data-mv-toast-ttl]`, etc.). Without this, dropdowns are
+		    markup-only and never open. The script is idempotent and
+		    survives View Transitions because it binds once on
+		    `document`, not on the persisting element. */}
+		<Fragment set:html={renderRuntime()} />
 		<script>
 			// Apply the saved theme/motion before paint (no flash of default
 			// theme), and re-apply it after every View Transition. The original

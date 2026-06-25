@@ -1,0 +1,59 @@
+---
+/**
+ * LangNotice.astro — single source of truth for the "this page is in
+ * English" banner.
+ *
+ * Pages that are not yet translated (the long-form guide for now) use
+ * this component instead of inlining the copy. Keeps the notice text
+ * consistent across pages and gives i18n a single key to fill in
+ * later, when the underlying copy is translated.
+ */
+import { type Lang } from '#LIB/page';
+
+interface Props {
+	readonly lang: Lang;
+	/** Optional custom message — defaults to the i18n string. */
+	readonly message?: string;
+	/** When `true`, render the notice even on the English page (used
+	 * by pages that mix English + translated content). */
+	readonly alwaysShow?: boolean;
+}
+
+const { lang, message, alwaysShow = false } = Astro.props as Props;
+const show = alwaysShow || lang !== 'en';
+---
+
+{
+	show && (
+		<aside class="lang-notice" role="status">
+			<span class="lang-notice__icon" aria-hidden="true">⚠</span>
+			<p>
+				{message ?? `This page is currently available in English only. Other locales fall back to the English copy until this page is translated.`}
+			</p>
+		</aside>
+	)
+}
+
+<style>
+	.lang-notice {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.6rem;
+		align-items: start;
+		padding: 0.8rem 1rem;
+		margin: 0 0 1.5rem;
+		border: 1px solid color-mix(in srgb, #f59e0b 40%, var(--line));
+		background: color-mix(in srgb, #f59e0b 8%, var(--card));
+		border-radius: 8px;
+		font-size: 0.92rem;
+		color: var(--muted);
+	}
+	.lang-notice p {
+		margin: 0;
+	}
+	.lang-notice__icon {
+		font-size: 1rem;
+		color: #f59e0b;
+		padding-top: 0.1rem;
+	}
+</style>
