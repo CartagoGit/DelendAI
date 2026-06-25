@@ -38,7 +38,7 @@ const skills: readonly ISkillSummary[] = [
 		summary: 'Budget every response before it drifts.',
 		tags: ['metrics', 'compact'],
 		bodyPath:
-			'docs/mcp-vertex/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+			'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
 	},
 	{
 		id: 'mcp-vertex-audit-playbook',
@@ -46,7 +46,7 @@ const skills: readonly ISkillSummary[] = [
 		minCoreVersion: '0.1.0',
 		summary: 'Run exhaustive code audits.',
 		tags: ['audit'],
-		bodyPath: 'docs/mcp-vertex/skills/mcp-vertex-audit-playbook/SKILL.md',
+		bodyPath: 'plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md',
 	},
 ];
 

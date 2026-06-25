@@ -1,6 +1,6 @@
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
 import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
 import proposalsPlugin from '@mcp-vertex/proposals';
 import memoryPlugin from '@mcp-vertex/memory';
 import searchPlugin from '@mcp-vertex/search';
@@ -104,9 +105,13 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			['export const proposal = "compact search baseline";'].join('\n'),
 		);
 		mkdirSync(join(workspace, 'docs', 'proposals'), { recursive: true });
-		mkdirSync(join(workspace, 'skills'), { recursive: true });
+		const skillManifestAbs = join(
+			workspace,
+			...SKILL_MANIFEST_REL.split('/'),
+		);
+		mkdirSync(dirname(skillManifestAbs), { recursive: true });
 		writeFileSync(
-			join(workspace, 'skills', 'manifest.json'),
+			skillManifestAbs,
 			JSON.stringify({
 				generatedAt: '2026-06-25T00:00:00.000Z',
 				skills: [
@@ -115,7 +120,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 						version: '1.0.0',
 						minCoreVersion: '0.1.0',
 						bodyPath:
-							'docs/mcp-vertex/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+							'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
 						tags: ['metrics', 'compact'],
 					},
 				],

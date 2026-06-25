@@ -184,7 +184,7 @@ For every identified concurrent-write scenario, fill in:
 
 ### Skills alignment
 
-Open each file in `docs/mcp-vertex/skills/*/SKILL.md`:
+Open each owner skill file (`packages/core/skills/*/SKILL.md` and `plugins/*/skills/*/SKILL.md`):
 - Do tool names referenced still exist?
 - Do file paths referenced still exist?
 - Are there new tools that should be mentioned but aren't?
