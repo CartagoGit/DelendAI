@@ -4,7 +4,7 @@ status: in-progress
 type: proposal
 track: skills+plugins+tools+scripts+docs+workflow
 date: 2026-06-25
-kind: refactor
+kind: feat
 title: Skill unification + plugin coverage + script wiring + doc-drift repair
 shipped-in:
   - 451abe38 # fix(f00057 S5): sync skill manifest bodyPath to the renamed mcp-vertex-* dirs
@@ -26,6 +26,7 @@ slices-pending:
   - S9  # synchronise 5 plugin READMEs
   - S11 # deprecate docs_search; clarify setup_github
   - S12 # unify knowledge-entry naming to <plugin>-<topic>
+  - S13 # fix core compilation/validation issues (H1/H3/H4)
 
 related:
   - f00049 # conventions unification — f00057 owns S8's playbook merge + extends S4's per-plugin layout migration to the remaining plugins
@@ -34,6 +35,7 @@ related:
   - f00054 # repo root declutter — f00057 S8 docs end up under docs/skills/ but the root stays clean
   - f00052 # agent_worktree host-flag — f00057 S1 (proposals-canonical-workflow) must reference the flag awareness, not duplicate it
   - a00036 # a00036 findings — R-09 (manifest drift) is resolved by f00057 S3
+  - a00042 # audit that surfaced compilation and SDK drift findings
 ownership:
   - { agent: proposal_guardian,    task: 'S1: merge `proposal-swarm-runner` + `proposals-workflow-playbook` + plans-q into one canonical `proposals-canonical-workflow` skill (and remove `mcp-vertex-legacy-proposal-migration` from the agent-facing catalogue once superseded)' }
   - { agent: implementation_runner, task: 'S2: merge `token-budget-playbook` + `mcp-vertex-token-budget-discipline` into one canonical `token-budget-discipline` skill (keep measured-budgets table + compact-first rule)' }
@@ -47,6 +49,7 @@ ownership:
   - { agent: implementation_runner, task: 'S10: wire the four orphan scripts into `validate` — `tools/scripts/lint/check-skills.script.ts` (`lint:skills`), `tools/scripts/verify/plugin-tool-verify.script.ts` (`verify:tools`), `tools/scripts/metrics/collect-candidate.script.ts` + `diff-snapshots` + `get-baseline` (`metrics:gate`), `tools/scripts/astro/gen-section-pages.script.ts` + `i18n/translate-tutorials.script.ts` (`site:codegen`)' }
   - { agent: implementation_runner, task: 'S11: deprecate `docs_search` (semantically subsumed by `search_search` with `roots:["docs"]`; mark the tool deprecated in its registration, point callers at the wrapper, remove in a follow-up) and clarify `setup_github` (kept — it is a CLI-style helper distinct from `issues_*`, document its scope in the new `plugins-issues` skill)' }
   - { agent: implementation_runner, task: 'S12: unify knowledge-entry naming to `<plugin>-<topic>`, force ≥1 per plugin, and backfill `conventions` + `proposals` (the two plugins that currently expose zero knowledge entries)' }
+  - { agent: implementation_runner, task: 'S13: fix core compilation/validation issues by updating catalog/assemble (H1), regenerating tool outputs SDK (H3), and fixing proposal linter warnings (H4)' }
 globalGate: validate
 acceptance:
   - { command: bun run typecheck,         expect: exit0 }
@@ -90,6 +93,7 @@ already touched i18n and partial layout migration), [f00051](../ready/f00051-mul
 ### What is in scope
 
 - **4 skill fusions** that reduce 17 entries to 13 while gaining content.
+- **1 compilation & SDK fix slice (S13)** that resolves H1 (TS/Zod schema error on `appliesTo`), H3 (stale tool outputs), and H4 (proposal frontmatter kind warning).
 - **6 new plugin playbook skills** that bring the catalogue from 13 to 21
   entries with first-class coverage of `git`, `deps`, `issues`,
   `test-convention`, `conventions`, and `notification`.
@@ -323,13 +327,15 @@ the same gate + test discipline the code already has.
 - **S10 (wire 4 orphan scripts)**: 4 new entries in `package.json` + 4 spec companions where missing.
 - **S11 (deprecate docs_search)**: edit 3 files + 1 i18n mark + 1 site:strict gate.
 - **S12 (knowledge entries)**: 2 new knowledge modules + 1 entry in the verify gate.
+- **S13 (appliesTo fixes & SDK sync)**: update `agent-discovery-catalog.ts`, `assemble.ts`, and catalog tests in `packages/core` to include and support `appliesTo` (H1); regenerate stale tool outputs SDK using `bun run types:generate` (H3); align proposal kind to fix frontmatter validation warnings (H4).
 
 ### Cross-slice ordering
 
 Recommended execution order to keep `bun run validate` green at every step:
 
 1. **S5** (appliesTo everywhere) — pure frontmatter edits, no behaviour change; makes every later skill-related lint pass.
-2. **S10** (wire orphan scripts) — runs `check-skills` (now wired) + `plugin-tool-verify` on the existing manifest.
+2. **S13** (appliesTo fixes & SDK sync) — fixes compilation and validation issues immediately so that validation is green before proceeding with later steps.
+3. **S10** (wire orphan scripts) — runs `check-skills` (now wired) + `plugin-tool-verify` on the existing manifest.
 3. **S8** (extract file-conventions contract) — touches one plugin + one lint + adds a spec; no behaviour change.
 4. **S7** (conventions in swarm) — one-line edit; lint verifies.
 5. **S1 → S2 → S3 → S4** (skill fusions, in any order) — each removes manifest entries; verify:tools confirms no tool name disappears from `mcp-vertex_overview`.

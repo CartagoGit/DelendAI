@@ -354,6 +354,14 @@ export {
 	skillBodyPath,
 	skillOwnerRoots,
 } from '../lib/skills/skill-paths';
+export {
+	buildSkillCatalog,
+	extractSkillDescription,
+} from '../lib/skills/skill-catalog';
+export type {
+	ISkillCatalog,
+	ISkillCatalogEntry,
+} from '../lib/skills/skill-catalog';
 
 // --- cross-project setup engine (f00030 S2) -------------------------------
 export { buildGithubSetupSteps } from '../lib/setup/setup-steps';

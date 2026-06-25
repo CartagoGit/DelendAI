@@ -147,8 +147,18 @@ JSON, OpenRouter API, Artificial Analysis feeds).
 ### `mcp-vertex.config.json`
 The canonical configuration file for `@mcp-vertex/core`. Lives at the
 repo root. Today: cache, docs, plugins, validation matrix. **Future:**
-a `providers` block under each plugin's options, and possibly a
-top-level `providers` block for shared roster data.
+a top-level `providers` block (added in [`04`](04-recommended-approach.md)
+and ratified by [`f00066`](../../proposals/ready/f00066-multi-model-orchestrator.md)).
+
+### Cache root (`${corePaths.cacheDir}`)
+The single cache directory for the whole `mcp-vertex` instance.
+Default: `.cache/mcp-vertex` relative to the workspace root (NOT
+under `$HOME` — see AGENTS.md rule 5). Each plugin gets a subfolder
+named after the plugin slug (`${cacheDir}/<plugin>/`). For
+`orchestrator-runner` the relevant files are `roster.draft.json`,
+`quotas.json`, `healthcheck.json`, `sessions.json`. For
+`usage-tracking`: `invocations.jsonl`, `usage-summary.json`,
+`pricing.json`.
 
 ---
 

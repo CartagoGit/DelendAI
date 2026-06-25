@@ -116,7 +116,7 @@ const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
 
 **Problema:** Se ha añadido el campo obligatorio `appliesTo: readonly string[]` al tipo `ISkillSummary` en `agent-discovery-types.ts`, pero los mapeos y clonadores de habilidades en el catálogo, en el ensamblador y en los tests de catálogo no han sido actualizados para manejar este campo.
 **Impacto:** Fallo completo de compilación en `tsc --noEmit`. Además, el tool handler de `agent_catalog` falla en runtime al validar su salida frente a su `outputSchema` (que ahora exige `appliesTo: z.array(z.string())`), rompiendo la validación de herramientas en los 14 plugins del proyecto.
-**Resolution Track:** En desarrollo bajo propuesta `f00057` slice `S5`.
+**Resolution Track:** En desarrollo bajo propuesta `f00057` slice `S13` (para resolver typecheck/Zod).
 
 ---
 
@@ -144,7 +144,7 @@ const dict: LangDict = {
 
 **Problema:** Se agregaron las propiedades `homeQuickInstall` y `homeAtAGlance` a la interfaz `ITranslations` en `apps/web/src/i18n/shared.ts`, pero estas propiedades no fueron añadidas a los diccionarios de idiomas en los 12 archivos de localización bajo `langs/`.
 **Impacto:** El chequeo de Astro falla con 12 errores de tipo: `Type '{...}' is missing the following properties from type 'ITranslations': homeQuickInstall, homeAtAGlance`, bloqueando el build del sitio web Astro (`lint:web` en rojo). Viola la regla estricta #9 de `AGENTS.md`.
-**Resolution Track:** Diferido a la propuesta `f00059`.
+**Resolution Track:** Diferido a la propuesta `f00059` slice `S6` (para corregir anidamiento de llaves).
 
 ---
 
@@ -156,7 +156,7 @@ const dict: LangDict = {
 
 **Problema:** El archivo auto-generado que tipa las salidas de herramientas del SDK está desincronizado con respecto al estado actual de las firmas/schemas en el proyecto.
 **Impacto:** Provoca el fallo del test `checked-in src/generated/tool-outputs.ts match a fresh generation` en `packages/core/tests/tool-types-sdk.spec.ts`.
-**Resolution Track:** Diferido a la propuesta `f00057` slice `S10` (requiere ejecutar `bun run types:generate`).
+**Resolution Track:** Diferido a la propuesta `f00057` slice `S13` (requiere ejecutar `bun run types:generate`).
 
 ---
 
@@ -171,7 +171,7 @@ const dict: LangDict = {
 
 **Problema:** Varios archivos de propuestas en `ready/` e `in-progress/` contienen discrepancias detectadas por el linter `proposals.script.ts`. Por ejemplo, `f00062` y `f00058` tienen slices declarados sin los campos requeridos (`Status`, `Files`, `Command`/`Gate`), y `f00057` tiene una inconsistencia de nombre/tipo (`filename starts with "f" but frontmatter.kind = "refactor"`).
 **Impacto:** El linter de propuestas emite advertencias (`WARN`) y el pipeline no se encuentra en estado limpio y estricto.
-**Resolution Track:** Diferido a la propuesta `f00057` slice `S10`.
+**Resolution Track:** Diferido a la propuesta `f00057` slice `S13` (para f00057) y correcciones en `f00062` / `f00058`.
 
 ---
 
@@ -192,7 +192,7 @@ const dict: LangDict = {
 
 **Problema:** Aunque la firma del método `readFile` en `createWorkspaceFileReader` es asíncrona (`async`), la implementación interna delega en las llamadas síncronas `existsSync` y `readFileSync`.
 **Impacto:** Bloqueo del event loop de Node/Bun si se invoca frecuentemente. Dado que es una herramienta de bootstrap que corre típicamente una vez en la inicialización o diagnóstico, el impacto es muy bajo y entra dentro de la excepción de "boot-time one-shots", pero viola el espíritu de asincronía estricta de la regla #3.
-**Resolution Track:** Tracking-only.
+**Resolution Track:** Diferido a la propuesta `f00066` slice `S1` (para asincronizar bootstrap-tool).
 
 ---
 

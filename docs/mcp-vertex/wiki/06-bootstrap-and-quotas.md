@@ -40,11 +40,19 @@ It also includes the user's ratification on three earlier questions:
 
 ## 1. Cache vs config — the split
 
+> **Updated 2026-06-25 (audit fix, CRITICAL C1 + I10):** the cache
+> lives inside the workspace at `${corePaths.cacheDir}/${pluginName}/`
+> (per [`AGENTS.md` §"Repo root layout"](../../../../AGENTS.md) — "the
+> cache is ALWAYS the root cache — never per-folder"). No file in this
+> proposal escapes the workspace. The per-plugin subfolder convention
+> matches [`packages/core/src/lib/cli/assemble.ts:231`](../../../../packages/core/src/lib/cli/assemble.ts#L231)
+> (`pluginCacheDir: joinRel(corePaths.cacheDir, pluginName)`).
+
 Two storage locations, two purposes:
 
 | Location | Purpose | Versionado | Example |
 |---|---|---|---|
-| `~/.cache/mcp-vertex/` | Runtime state, regenerated, never edited by hand | **no** | `roster.draft.json`, `quotas.json`, `invocations.jsonl` |
+| `${corePaths.cacheDir}/<plugin>/` | Runtime state, regenerated, never edited by hand | **no** (gitignored) | `orchestrator-runner/roster.draft.json`, `orchestrator-runner/quotas.json`, `usage-tracking/invocations.jsonl` |
 | `mcp-vertex.config.json` | User-confirmed config, project-level | **sí** (en el repo) | `"providers": [...]`, `"plugins": {...}` |
 
 **The split maps to the user's "trust" gradient:**
@@ -56,24 +64,27 @@ Two storage locations, two purposes:
   cost preference, the role assignments) lives in the config. The
   user explicitly approves changes.
 
-### Files in `~/.cache/mcp-vertex/`
+### Files in the cache (per plugin)
 
-| File | Owner | Format | Purpose |
+| File | Owner (plugin) | Format | Purpose |
 |---|---|---|---|
-| `roster.draft.json` | orchestrator-runner | JSON | Auto-discovered providers from PATH probe + auth RPCs. Always overwritten. |
-| `quotas.json` | orchestrator-runner | JSON | Live quota state per provider (used, remaining, %, reset). TTL 5 min. |
-| `invocations.jsonl` | usage-tracking | NDJSON | Append-only log: one line per tool call with timestamps, tokens, costs. |
-| `healthcheck.json` | orchestrator-runner | JSON | Last healthcheck per provider (cli path, auth state, model availability). TTL 5 min. |
+| `orchestrator-runner/roster.draft.json` | orchestrator-runner | JSON | Auto-discovered providers from PATH probe + auth RPCs. Always overwritten. |
+| `orchestrator-runner/quotas.json` | orchestrator-runner | JSON | Live quota state per provider (used, remaining, %, reset). TTL 5 min. |
+| `orchestrator-runner/healthcheck.json` | orchestrator-runner | JSON | Last healthcheck per provider (cli path, auth state, model availability). TTL 5 min. |
+| `orchestrator-runner/sessions.json` | orchestrator-runner | JSON | `Map<sessionId, IRoutingDecision>` for stickiness. Pruned by TTL. |
+| `usage-tracking/invocations.jsonl` | usage-tracking | NDJSON | Append-only log: one line per tool call with timestamps, tokens, costs. |
+| `usage-tracking/usage-summary.json` | usage-tracking | JSON | Periodic rollups by agent/plugin/model/extension. Refreshed every 5 min. |
+| `usage-tracking/pricing.json` | usage-tracking | JSON | Pricing table refreshed from LiteLLM. TTL 24h. |
 
 ### The merge order at startup
 
 1. Read `mcp-vertex.config.json#providers` → `confirmedRoster`.
-2. Read `~/.cache/mcp-vertex/roster.draft.json` → `discoveredRoster`.
+2. Read `${cacheDir}/orchestrator-runner/roster.draft.json` → `discoveredRoster`.
 3. Merge: confirmed wins for any overlapping field; discovered fills
    in gaps (e.g. a new provider you installed since last config
    edit appears as `pending` — visible in `<prefix>_overview`).
-4. Apply healthcheck (`~/.cache/mcp-vertex/healthcheck.json`) to mark
-   each provider as `reachable: true | false`.
+4. Apply healthcheck (`${cacheDir}/orchestrator-runner/healthcheck.json`)
+   to mark each provider as `reachable: true | false`.
 
 The merged roster is what `<prefix>_advise_routing` sees.
 
@@ -130,6 +141,20 @@ shows the install command**. Examples:
 The hint is **i18n-aware** (12 languages, like the rest of the
 extension).
 
+> **CRITICAL I4 fix (2026-06-25):** two of these commands are
+> `curl | sh` pipes (Claude Code, Cursor Agent). This is a known
+> supply-chain risk and the user explicitly asked for
+> *"control o aviso al usuario sobre ello"*. The proposal adds:
+>
+> - Every install hint carries an `installHint.caveat` field with a
+>   localized warning (e.g. *"Review the script before piping into
+>   your shell. Prefer signed installers when available."*).
+> - The hint is structured (`{ tool: string, args: string[],
+>   pipeTo?: "sh" | "bash", dangerous: boolean }`), not a raw string,
+>   so the renderer can flag `pipeTo: "sh"` with a warning icon.
+> - Whenever the upstream supports a non-piped alternative
+>   (`brew install`, signed MSI, AppImage), the hint prefers it.
+
 ---
 
 ## 3. Bootstrap wizard — `<prefix>_bootstrap_providers`
@@ -157,8 +182,8 @@ Replaces the "edit JSON" requirement of Option D. End-to-end flow:
                               │
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
-│  orchestrator-runner writes ~/.cache/mcp-vertex/roster.draft  │
-│  .json (raw discovered state)                                  │
+│  orchestrator-runner writes ${cacheDir}/orchestrator-runner/  │
+│  roster.draft.json (raw discovered state)                      │
 └────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -177,8 +202,8 @@ Replaces the "edit JSON" requirement of Option D. End-to-end flow:
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
 │  orchestrator-runner translates answers to JSON, writes diff   │
-│  to ~/.cache/mcp-vertex/roster.draft.json (still draft)       │
-│  and shows the diff to the user:                               │
+│  to ${cacheDir}/orchestrator-runner/roster.draft.json (still  │
+│  draft) and shows the diff to the user:                        │
 │                                                                │
 │  @@ -0,0 +1,5 @@                                                │
 │  +{ "id": "claude-code-opus", "kind": "subscription", ...}    │
@@ -212,8 +237,9 @@ Two reasons:
    explicit at the filesystem level: `git status` shows config
    changes (reviewed), not cache changes (auto-regenerated).
 2. **Multiple drafts can coexist.** If the user is experimenting
-   with two rosters, both can sit in `~/.cache/mcp-vertex/drafts/`
-   without polluting the source-controlled config.
+   with two rosters, both can sit in
+   `${cacheDir}/orchestrator-runner/drafts/` without polluting the
+   source-controlled config.
 
 ---
 
@@ -255,7 +281,7 @@ is the only signal — and the user is told so.
 
 ### The data shape
 
-`~/.cache/mcp-vertex/quotas.json`:
+`${cacheDir}/orchestrator-runner/quotas.json`:
 
 ```jsonc
 {
@@ -263,31 +289,32 @@ is the only signal — and the user is told so.
   "providers": {
     "claude-code-opus": {
       "source": "auth-rpc",
+      "window": "monthly",
       "tier": "Max",
       "used": 432,
       "total": 1000,
       "usedPct": 43.2,
       "remaining": 568,
-      "window": "monthly",
       "resetAt": "2026-07-01T00:00:00Z",
       "resetIn": "5d 9h 27m"
     },
     "codex-gpt-5.5": {
       "source": "auth-rpc",
+      "window": "monthly",
       "tier": "Pro",
       "used": 187,
       "total": 500,
       "usedPct": 37.4,
       "remaining": 313,
-      "window": "monthly",
       "resetAt": "2026-07-01T00:00:00Z",
       "resetIn": "5d 9h 27m"
     },
     "openrouter-sonnet": {
       "source": "http-header",
+      "window": "hourly",
       "usedPct": 12.3,
       "remaining": 876,
-      "resetAt": "2026-06-25T15:00:00Z",  // hourly window
+      "resetAt": "2026-06-25T15:00:00Z",
       "resetIn": "27m"
     }
   }
@@ -295,7 +322,8 @@ is the only signal — and the user is told so.
 ```
 
 `usedPct` + `resetAt` are the two fields the LLM reasons about when
-advising the user.
+advising the user. **`window` is mandatory** (CRITICAL I3 — the LLM
+must not average a `usedPct` across hourly and monthly windows).
 
 ---
 
@@ -429,15 +457,17 @@ as routing advisor.
 
 - [`05-option-E-subprocess-mcp.md`](05-option-E-subprocess-mcp.md) §
   "Bootstrap from prose" — the wizard writes to
-  `~/.cache/mcp-vertex/roster.draft.json`, not directly to the
-  config. The user reviews and confirms. Updated.
+  `${cacheDir}/orchestrator-runner/roster.draft.json`, not directly
+  to the config. The user reviews and confirms. Updated.
 - [`04-recommended-approach.md`](04-recommended-approach.md) §1
   (Config schema) — the `providers` block lives at the **root** of
   `mcp-vertex.config.json`, not under each plugin. Updated.
 - [`02-our-infrastructure.md`](02-our-infrastructure.md) §3 (Secrets)
   — the env-var-only posture is unchanged; the addition is that
-  `~/.cache/mcp-vertex/` is the **observation** surface, and
+  `${cacheDir}/<plugin>/` is the **observation** surface, and
   `redactSecrets` is applied to anything that gets written there
-  too (paranoia is cheap).
+  too (paranoia is cheap). **All four writes**
+  (`bootstrap.ts`, `healthcheck.ts`, `quota.ts`, `record.ts`) pipe
+  through `redactSecrets` before `writeFileAtomic`.
 - New page: [`08-usage-tracking-plugin.md`](08-usage-tracking-plugin.md)
   covers the dedicated `usage-tracking` plugin the user asked for.

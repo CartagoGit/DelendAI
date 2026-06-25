@@ -58,7 +58,7 @@ probes against each model:
 - …
 
 It measures speed, cost, success rate, and stores the profile in a
-local cache (e.g. `~/.cache/mcp-vertex/provider-profiles.json`).
+local cache (e.g. `${cacheDir}/orchestrator-runner/provider-profiles.json`).
 Routing reads the cached profile.
 
 | Pros | Cons |

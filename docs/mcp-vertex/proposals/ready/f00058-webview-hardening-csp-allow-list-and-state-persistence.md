@@ -107,7 +107,9 @@ extensions/vscode/src/
 
 ### S1 — CSP default-deny + 7 webviews opt-in (closes H2)
 
-**File:** [`packages/ui-extension/src/webview/csp.ts`](packages/ui-extension/src/webview/csp.ts ) (NEW)
+- **Files**: [packages/ui-extension/src/webview/csp.ts](packages/ui-extension/src/webview/csp.ts)
+- **Status**: ready
+- **Gate**: bun run validate
 
 ```typescript
 export interface IWebviewCspPolicy {
@@ -144,7 +146,9 @@ inject the per-webview CSP via a `<meta http-equiv>` tag in the HTML it returns,
 
 ### S2 — `OPEN_TOOLBAR_COMMAND` action allow-list (closes H3)
 
-**File:** [`extensions/vscode/src/commands/open-toolbar.command.ts`](extensions/vscode/src/commands/open-toolbar.command.ts )
+- **Files**: [extensions/vscode/src/commands/open-toolbar.command.ts](extensions/vscode/src/commands/open-toolbar.command.ts)
+- **Status**: ready
+- **Gate**: bun run typecheck
 
 ```typescript
 const ALLOWED_ACTIONS: ReadonlySet<string> = new Set([
@@ -169,7 +173,9 @@ new test sends a crafted `{ action: 'workbench.action.openSettings' }` and expec
 
 ### S3 — `openSettings` persists to `globalState` (closes H4)
 
-**File:** [`extensions/vscode/src/commands/open-settings.command.ts`](extensions/vscode/src/commands/open-settings.command.ts )
+- **Files**: [extensions/vscode/src/commands/open-settings.command.ts](extensions/vscode/src/commands/open-settings.command.ts)
+- **Status**: ready
+- **Gate**: bun run typecheck
 
 Replace the in-memory `Map<string, unknown>` with `context.globalState` reads/writes.
 On `activate()` after construction, hydrate the in-memory cache from `globalState` so the
@@ -180,7 +186,9 @@ extension context), read it back — it must equal what was written.
 
 ### S4 — `McpVertexProposalsView` `TreeDataProvider` (closes H5)
 
-**File:** [`extensions/vscode/src/views/proposals-tree.ts`](extensions/vscode/src/views/proposals-tree.ts ) (NEW)
+- **Files**: [extensions/vscode/src/views/proposals-tree.ts](extensions/vscode/src/views/proposals-tree.ts)
+- **Status**: ready
+- **Gate**: bun run typecheck
 
 ```typescript
 export class McpVertexProposalsView implements vscode.TreeDataProvider<ProposalNode> {
@@ -210,7 +218,9 @@ correct labels and collapsible states.
 
 ### S5 — `OPEN_PROPOSAL_COMMAND` honors its argument (closes H6)
 
-**File:** [`extensions/vscode/src/commands/open-proposal.command.ts`](extensions/vscode/src/commands/open-proposal.command.ts )
+- **Files**: [extensions/vscode/src/commands/open-proposal.command.ts](extensions/vscode/src/commands/open-proposal.command.ts)
+- **Status**: ready
+- **Gate**: bun run validate
 
 ```typescript
 const PROPOSAL_ID_REGEX = /^\d{5}$/;

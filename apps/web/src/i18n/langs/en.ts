@@ -343,6 +343,35 @@ const dict: LangDict = {
 		tabsNext: 'Next',
 		tabsPrev: 'Previous',
 		stepsOf: 'of',
+
+	homeQuickInstall: {
+		title: 'Quick install',
+		lead: 'Pick your package manager. The same command works for Node, Deno and Bun — anything more advanced lives on the install page.',
+		tabsLabel: 'Package manager',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — bundled with Node.js.' },
+			{ id: 'pnpm', note: 'Fast, disk-efficient, strict dependency resolution.' },
+			{ id: 'yarn', note: 'Classic alternative to npm.' },
+			{ id: 'bun', note: 'All-in-one runtime + package manager — mcp-vertex itself is built with bun.' },
+			{ id: 'deno', note: 'Secure-by-default runtime with first-class TypeScript.' },
+		],
+		recommended: 'Recommended',
+		fullCta: 'Full install matrix',
+	},
+	homeAtAGlance: {
+		title: 'What can it do?',
+		lead: 'Pick a section. The home page only orients — every entry point has a dedicated page with the full story.',
+		tabsLabel: 'Sections',
+		openSection: 'Open',
+		panels: [
+			{ id: 'plugins', label: 'Plugins', summary: 'Published packages. Load only what you need; the core stays tiny.', href: 'plugins' },
+			{ id: 'tools', label: 'Tools', summary: 'Every tool the full plugin set exposes, grouped by namespace — from the live registry.', href: 'tools' },
+			{ id: 'bench', label: 'Benchmarks', summary: 'Token efficiency is a guarded invariant — measured, not claimed.', href: 'benchmarks' },
+			{ id: 'skills', label: 'Skills', summary: 'Domain playbooks the agent can load on demand.', href: 'skills' },
+			{ id: 'knowledge', label: 'Knowledge', summary: 'Catalogued documents the core can answer questions about.', href: 'knowledge' },
+			{ id: 'presets', label: 'Presets', summary: 'Pre-configured plugin sets for any workspace size.', href: 'presets' },
+			{ id: 'setup', label: 'Cross-project setup', summary: 'Wire mcp-vertex into any repo and get the issues plugin ready.', href: 'setup' },
+		],
 	},
 };
 

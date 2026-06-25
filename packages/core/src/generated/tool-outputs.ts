@@ -49,6 +49,7 @@ export interface McpVertexAgentCatalogOutput {
 		version: string;
 		minCoreVersion: string;
 		summary: string;
+		appliesTo: string[];
 		tags: string[];
 		bodyPath: string;
 	}[];
@@ -252,6 +253,17 @@ export interface McpVertexScaffoldOutput {
 	errors: string[];
 }
 
+export interface McpVertexSkillOutput {
+	skills?: {
+		id: string;
+		description: string;
+		appliesTo: string[];
+		tags: string[];
+	}[];
+	id?: string;
+	body?: string;
+}
+
 export interface McpVertexStatusOutput {
 	collectors: Record<string, unknown>;
 	errors: {
@@ -274,5 +286,6 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
 	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
+	"mcp-vertex_skill": McpVertexSkillOutput;
 	"mcp-vertex_status": McpVertexStatusOutput;
 }

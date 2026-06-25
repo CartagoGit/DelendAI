@@ -347,6 +347,35 @@ const dict: LangDict = {
 		tabsNext: 'Próximo',
 		tabsPrev: 'Anterior',
 		stepsOf: 'de',
+
+	homeQuickInstall: {
+		title: 'Instalação rápida',
+		lead: 'Escolha o seu gestor de pacotes. O mesmo comando funciona com Node, Deno e Bun — o resto está na página de instalação.',
+		tabsLabel: 'Gestor de pacotes',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — incluído com o Node.js.' },
+			{ id: 'pnpm', note: 'Rápido, eficiente em disco, resolução estrita de dependências.' },
+			{ id: 'yarn', note: 'Alternativa clássica ao npm.' },
+			{ id: 'bun', note: 'Runtime + gestor de pacotes tudo-em-um — o mcp-vertex é construído com bun.' },
+			{ id: 'deno', note: 'Runtime seguro por padrão com TypeScript de primeira classe.' },
+		],
+		recommended: 'Recomendado',
+		fullCta: 'Matriz de instalação completa',
+	},
+	homeAtAGlance: {
+		title: 'O que pode fazer?',
+		lead: 'Escolha uma secção. A página inicial só orienta — cada ponto de entrada tem uma página dedicada com o detalhe completo.',
+		tabsLabel: 'Secções',
+		openSection: 'Abrir',
+		panels: [
+			{ id: 'plugins', label: 'Plugins', summary: 'Pacotes publicados. Carregue só o que precisa; o núcleo mantém-se mínimo.', href: 'plugins' },
+			{ id: 'tools', label: 'Ferramentas', summary: 'Todas as ferramentas do conjunto completo de plugins, agrupadas por namespace — do registo vivo.', href: 'tools' },
+			{ id: 'bench', label: 'Benchmarks', summary: 'A eficiência de tokens é um invariante protegido — medida, não prometida.', href: 'benchmarks' },
+			{ id: 'skills', label: 'Skills', summary: 'Manuais de domínio que o agente pode carregar a pedido.', href: 'skills' },
+			{ id: 'knowledge', label: 'Conhecimento', summary: 'Documentos catalogados sobre os quais o núcleo pode responder.', href: 'knowledge' },
+			{ id: 'presets', label: 'Presets', summary: 'Conjuntos de plugins pré-configurados para qualquer tamanho de workspace.', href: 'presets' },
+			{ id: 'setup', label: 'Configuração entre projetos', summary: 'Integre o mcp-vertex em qualquer repositório e prepare o plugin de issues.', href: 'setup' },
+		],
 	},
 };
 

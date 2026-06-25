@@ -4,7 +4,7 @@ status: ready
 type: proposal
 track: types+solid+extension-ux
 date: 2026-06-25
-kind: refactor
+kind: feat
 title: Settings types unification + globalState migration (H4/H13)
 shipped-in: []
 recan: []
@@ -81,7 +81,9 @@ extensions/vscode/src/
 
 ### S1 — `IExtensionSettings` Zod schema (H13)
 
-**File:** [`packages/ui-extension/src/settings/settings-schema.ts`](packages/ui-extension/src/settings/settings-schema.ts ) (NEW)
+- **Files**: [packages/ui-extension/src/settings/settings-schema.ts](packages/ui-extension/src/settings/settings-schema.ts)
+- **Status**: ready
+- **Gate**: bun run typecheck
 
 ```typescript
 import { z } from 'zod';
@@ -105,7 +107,9 @@ export const DEFAULT_SETTINGS: IExtensionSettings = Object.freeze({
 
 ### S2 — `renderSettings` posts typed JSON (H13 + DIP)
 
-**File:** [`packages/ui-extension/src/renderers/render-settings.ts`](packages/ui-extension/src/renderers/render-settings.ts )
+- **Files**: [packages/ui-extension/src/renderers/render-settings.ts](packages/ui-extension/src/renderers/render-settings.ts)
+- **Status**: ready
+- **Gate**: bun run typecheck
 
 Replace every `value="${value}"` with the typed `value={String(setting.value)}` —
 but the **post** body uses `JSON.stringify({ setting, value })` and the receiving
@@ -113,7 +117,9 @@ command parses it with the Zod schema. Booleans stop being stringified.
 
 ### S3 — extension boundary parse + persist (H4 closure)
 
-**File:** [`extensions/vscode/src/commands/open-settings.command.ts`](extensions/vscode/src/commands/open-settings.command.ts )
+- **Files**: [extensions/vscode/src/commands/open-settings.command.ts](extensions/vscode/src/commands/open-settings.command.ts)
+- **Status**: ready
+- **Gate**: bun run validate
 
 ```typescript
 export async function executeOpenSettings(

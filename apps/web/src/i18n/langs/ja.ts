@@ -346,6 +346,35 @@ const dict: LangDict = {
 		tabsNext: '次へ',
 		tabsPrev: '前へ',
 		stepsOf: '/',
+
+	homeQuickInstall: {
+		title: 'クイックインストール',
+		lead: 'パッケージマネージャを選んでください。同じコマンドが Node、Deno、Bun で動作します — その他はインストールページにあります。',
+		tabsLabel: 'パッケージマネージャ',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — Node.js に同梱。' },
+			{ id: 'pnpm', note: '高速、ディスク効率、厳格な依存解決。' },
+			{ id: 'yarn', note: 'npm の古典的な代替。' },
+			{ id: 'bun', note: 'オールインワンのランタイム＋パッケージマネージャ — mcp-vertex 自体も bun で構築。' },
+			{ id: 'deno', note: 'デフォルトで安全なランタイムとファーストクラスの TypeScript。' },
+		],
+		recommended: '推奨',
+		fullCta: '完全なインストール表',
+	},
+	homeAtAGlance: {
+		title: '何ができる？',
+		lead: 'セクションを選んでください。ホームは案内だけ — 各エントリポイントには全詳細の専用ページがあります。',
+		tabsLabel: 'セクション',
+		openSection: '開く',
+		panels: [
+			{ id: 'plugins', label: 'プラグイン', summary: '公開パッケージ。必要なものだけ読み込む — コアは小さく保ちます。', href: 'plugins' },
+			{ id: 'tools', label: 'ツール', summary: 'フルプラグインセットが公開する全ツールを名前空間別に — ライブレジストリから。', href: 'tools' },
+			{ id: 'bench', label: 'ベンチマーク', summary: 'トークン効率は保護された不変条件 — 主張ではなく計測。', href: 'benchmarks' },
+			{ id: 'skills', label: 'スキル', summary: 'エージェントがオンデマンドで読み込めるドメインプレイブック。', href: 'skills' },
+			{ id: 'knowledge', label: 'ナレッジ', summary: 'コアが質問に答えられる文書群。', href: 'knowledge' },
+			{ id: 'presets', label: 'プリセット', summary: 'あらゆるワークスペースサイズ向けの事前構成プラグインセット。', href: 'presets' },
+			{ id: 'setup', label: 'クロスプロジェクト設定', summary: '任意のリポジトリに mcp-vertex を組み込み、issues プラグインを準備。', href: 'setup' },
+		],
 	},
 };
 

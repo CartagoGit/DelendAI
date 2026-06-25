@@ -5,11 +5,12 @@ type: proposal
 track: i18n+l10n+extension-ux+web
 date: 2026-06-25
 kind: feat
-title: i18n thread across the web/extension surface — close H8/H10/H12/H15/H17
+title: i18n thread across the web/extension surface — close H8/H10/H12/H15/H17/H2
 shipped-in: []
 recan: []
 related:
     - a00040 # audit that surfaced these findings
+    - a00042 # audit that surfaced Astro translation files braces nesting error
     - f00058 # sibling proposal (webview-hardening)
     - f00053 # unified web/extension UX (parent proposal)
     - f00047 # apps/shared i18n baseline
@@ -19,6 +20,7 @@ ownership:
     - { agent: implementation_runner, task: 'S3: `renderToolbar` awaits `bridge.listLoadedPlugins()` and gates plugin-bound actions on plugin presence (H12)' }
     - { agent: implementation_runner, task: 'S4: `STATUS_BAR_EVENTS` accept a `locale` argument + use the same keymap as the web `ui.ts` (H15)' }
     - { agent: implementation_runner, task: 'S5: `formatRelativeTime` switches to `Intl.RelativeTimeFormat` and honors `locale` (H17)' }
+    - { agent: web_runner, task: 'S6: fix Astro translation files braces nesting in langs/*.ts (H2)' }
 globalGate: validate
 acceptance:
     - { command: bun run typecheck,                  expect: exit0 }
@@ -66,9 +68,10 @@ and found:
 - **H17** — [`formatRelativeTime`](packages/ui-extension/src/utils/format-relative-time.ts )
   returns English strings (`'just now'`, `'2 minutes ago'`) and ignores the `locale`
   parameter (it's accepted and unused).
+- **H2 (from a00042)** — [`apps/web/src/i18n/langs/*.ts`](apps/web/src/i18n/langs/ ) has brace nesting errors where `homeQuickInstall` and `homeAtAGlance` are declared inside the `ui` object literal, breaking Astro check.
 
-These 5 cluster around i18n completeness — the same root cause (no enforcement beyond the
-shared dict) and the same fix surface (`t()` everywhere, `Intl.*` for time).
+These 6 cluster around i18n completeness — the same root cause (no enforcement beyond the
+shared dict) and the same fix surface (`t()` everywhere, `Intl.*` for time, correct braces nesting).
 
 ## why this design
 
@@ -102,6 +105,8 @@ extensions/vscode/src/
   i18n.ts                           # delegate to shared
 tools/scripts/lint/
   check-i18n.ts                     # MODIFY: walk nested keys; strict per-language completeness
+apps/web/src/i18n/langs/
+  *.ts                              # MODIFY: close ui dictionary block correctly to fix nesting
 packages/ui-extension/src/
   renderers/
     render-dashboard.ts             # MODIFY: every literal → t()
@@ -188,6 +193,14 @@ export function formatRelativeTime(
 **Acceptance:** with `locale='es'`, `'hace 2 minutos'`; with `locale='en'`, `'2 minutes ago'`.
 The function is pure and deterministic given `(date, now, locale)`.
 
+### S6 — fix Astro translation files braces nesting (closes H2)
+
+**Files:** `apps/web/src/i18n/langs/*.ts` (all 12 languages)
+
+Close the `ui` object literal with a closing brace `}` before the `homeQuickInstall` field, and remove one of the extra closing braces `}` at the end of each file, so that `homeQuickInstall` and `homeAtAGlance` are correct peer properties of `ui` under the main dictionary object.
+
+**Acceptance:** `bun run check` in `apps/web` passes typecheck successfully with no localization errors.
+
 ## dependency graph
 
 ```
@@ -195,12 +208,13 @@ S1 (renderers) ────────────┐
 S2 (check-i18n) ───────────┤
 S3 (plugin gating) ────────┤  independent of each other
 S4 (statusBar locale) ─────┤
-S5 (Intl.RelativeTime) ────┘
+S5 (Intl.RelativeTime) ────┤
+S6 (Astro brace nesting) ──┘
                                   ▼
                        all slices pass `bun run validate`
 ```
 
-All 5 are independent and can land in any order.
+All 6 are independent and can land in any order.
 
 ## acceptance
 

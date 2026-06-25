@@ -347,6 +347,35 @@ const dict: LangDict = {
 		tabsNext: 'Suivant',
 		tabsPrev: 'Précédent',
 		stepsOf: 'de',
+
+	homeQuickInstall: {
+		title: 'Installation rapide',
+		lead: 'Choisissez votre gestionnaire de paquets. La même commande fonctionne avec Node, Deno et Bun — tout le reste est sur la page d\'installation.',
+		tabsLabel: 'Gestionnaire de paquets',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — fourni avec Node.js.' },
+			{ id: 'pnpm', note: 'Rapide, économe en disque, résolution stricte des dépendances.' },
+			{ id: 'yarn', note: 'Alternative classique à npm.' },
+			{ id: 'bun', note: 'Runtime + gestionnaire de paquets tout-en-un — mcp-vertex est lui-même construit avec bun.' },
+			{ id: 'deno', note: 'Runtime sécurisé par défaut avec TypeScript de première classe.' },
+		],
+		recommended: 'Recommandé',
+		fullCta: 'Matrice d\'installation complète',
+	},
+	homeAtAGlance: {
+		title: 'Que peut-il faire ?',
+		lead: 'Choisissez une section. La page d\'accueil oriente seulement — chaque point d\'entrée a une page dédiée avec le détail complet.',
+		tabsLabel: 'Sections',
+		openSection: 'Ouvrir',
+		panels: [
+			{ id: 'plugins', label: 'Plugins', summary: 'Paquets publiés. Chargez uniquement ce dont vous avez besoin ; le noyau reste minimal.', href: 'plugins' },
+			{ id: 'tools', label: 'Outils', summary: 'Tous les outils exposés par l\'ensemble complet des plugins, groupés par namespace — depuis le registre vivant.', href: 'tools' },
+			{ id: 'bench', label: 'Benchmarks', summary: 'L\'efficacité en tokens est un invariant protégé — mesurée, pas promise.', href: 'benchmarks' },
+			{ id: 'skills', label: 'Skills', summary: 'Manuels de domaine que l\'agent peut charger à la demande.', href: 'skills' },
+			{ id: 'knowledge', label: 'Connaissance', summary: 'Documents catalogués sur lesquels le noyau peut répondre.', href: 'knowledge' },
+			{ id: 'presets', label: 'Presets', summary: 'Ensembles de plugins préconfigurés pour toute taille de workspace.', href: 'presets' },
+			{ id: 'setup', label: 'Configuration entre projets', summary: 'Branchez mcp-vertex dans n\'importe quel dépôt et préparez le plugin issues.', href: 'setup' },
+		],
 	},
 };
 
