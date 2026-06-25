@@ -72,7 +72,7 @@ const parseAcceptEntry = (raw: string): AcceptEntry | null => {
 	let q = 1;
 	for (const param of parts.slice(1)) {
 		const m = /^q=(-?[0-9.]+)$/.exec(param);
-		if (!m || !m[1]) continue;
+		if (!m?.[1]) continue;
 		const parsed = Number.parseFloat(m[1]);
 		if (Number.isFinite(parsed)) q = Math.max(0, Math.min(1, parsed));
 	}
