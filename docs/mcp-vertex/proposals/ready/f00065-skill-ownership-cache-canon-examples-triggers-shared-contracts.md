@@ -160,9 +160,17 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S2 — B: AI skill discoverability + token optimization
 
-- **Status**: pending
-- **Files**: packages/core/src/lib/skills/**, packages/core/src/lib/tools/**,
-  packages/core/src/lib/prompts/**, apps/web/src/data/manifests/**
+- **Status**: done
+- **Files**: packages/core/src/lib/skills/skill-catalog.ts (new),
+  packages/core/src/lib/tools/skill-tool.ts (new),
+  packages/core/src/lib/skills/load-skills.ts (appliesTo),
+  packages/core/src/lib/cli/assemble.ts (wire catalog + register skill tool),
+  packages/core/src/lib/catalog/agent-discovery-types.ts +
+  agent-discovery-catalog.ts + tools/agent-catalog-tool.ts (appliesTo on skill
+  summary), packages/core/src/lib/prompts/agent-bootstrap.prompt.ts (skill
+  step), packages/core/src/public/index.ts, packages/core/src/generated/
+  tool-outputs.ts, + specs (skill-catalog.spec.ts, agent-catalog.e2e.spec.ts,
+  agent-discovery-catalog.spec.ts)
 - **Gate**: bun run validate
 - **Depends on**: A
 - **Goal**: when a host loads mcp-vertex, the AI knows about and can use the
@@ -171,10 +179,28 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   the surface compact to minimize token cost.
 - **Acceptance**:
   - The active preset's skills (core + enabled plugins) are advertised through a
-    compact discovery surface the AI sees automatically.
+    compact discovery surface the AI sees automatically. ✓ — the bootstrap
+    prompt now tells the AI to call `mcp-vertex_skill`, and `agent_catalog`'s
+    skill section carries a real `description` (what + when to use) plus
+    `appliesTo`, instead of the old `"Skill <id>"` stub.
   - Either an existing tool covers usage, or a gap is identified and a minimal
-    tool/affordance is proposed (no redundant verbose surface).
-  - A token-budget regression check confirms the surface stays within budget.
+    tool/affordance is proposed (no redundant verbose surface). ✓ — gap closed:
+    there was NO way to load a skill body before. Added the `skill` tool
+    (mirrors `knowledge`): list compact rows without `id`, load one body with
+    `id`. Single source of truth = `skill-catalog.ts`, consumed by both the
+    catalog (assemble) and the `skill` tool; no duplicated manifest reads.
+  - A token-budget regression check confirms the surface stays within budget. ✓
+    — the existing `token-budget.e2e` gate stays green; the `skill` body is
+    lazy so cold-start payloads are unchanged.
+- **Token cost (measured, 17 repo skills)**: compact list of all skills ≈ 7.3 kB
+  (~1.8k tokens); dumping every SKILL.md body would be ≈ 83 kB (~20.8k tokens).
+  Default surface is the compact list → **~91% fewer tokens**; the AI loads only
+  the one body it needs (~1.2k tokens) on demand.
+- **Validate**: core slice green (typecheck, all lints incl. lint:skills/
+  lint:cache, all 2603 tests incl. token-budget + new skill e2e, verify:tools).
+  NOTE: `lint:web` currently fails on an UNRELATED concurrent-session change
+  (`homeQuickInstall` i18n keys missing from `IUiTranslations`); that is not part
+  of slice B and was left untouched per coordination rules.
 
 ### S3 — C: Single canonical root cache
 
