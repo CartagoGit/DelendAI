@@ -35,6 +35,7 @@ export default defineConfig({
 	// there instead of the legacy `apps/web/dist/`. `outDir` is relative
 	// to the Astro project root (apps/web/).
 	outDir: '../../build/apps/web',
+	cacheDir: '../../.cache/astro',
 	build: { format: 'directory' },
 	server: { port: 5000, host: true },
 	i18n: {

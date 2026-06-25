@@ -2,7 +2,7 @@
 
 All notable changes to `@mcp-vertex/core` and its plugins are documented
 here. The 10 packages are versioned **in lockstep** (`bun run release` bumps
-them together; see [docs/NPM_PUBLISH.md](docs/NPM_PUBLISH.md)). The format
+them together; see [docs/mcp-vertex/NPM_PUBLISH.md](docs/mcp-vertex/NPM_PUBLISH.md)). The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -25,7 +25,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   **centralized secret redaction** (`redactSecrets` in core) on proposal save;
   **canonical process-group teardown** (`killProcessGroup`).
 - **Self-dogfooding** artefacts (`AGENTS.md`, copilot-instructions, agents, `skills/`) +
-  `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`.
+  `docs/mcp-vertex/ARCHITECTURE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODEOWNERS`.
 - **Site**: logo + SVG favicon, 12 languages (real flag SVGs, RTL, i18n build gate),
   live-measured benchmark charts, and a detail page per plugin.
 - **CI**: a functional stdio smoke of the compiled CLI + a tarball install e2e.

@@ -159,10 +159,11 @@ The root is intentionally minimal. Before adding a file to it, check this:
 
 - **Caches/build artefacts never clutter the root.** All caches live under
   `.cache/<tool>/` (our own state is `.cache/mcp-vertex/`; vitest coverage is
-  `.cache/coverage/`). Build *outputs* go to `build/` (gitignored). Tool-owned
-  dirs we cannot relocate (Astro's `.astro/`) stay gitignored — do not commit
-  them, do not add more. The local plugin verification probe writes under
-  `.cache/mcp-vertex/verify/`.
+  `.cache/coverage/`; Astro's configurable `cacheDir` is `.cache/astro/`).
+  Build *outputs* go to `build/` (gitignored). Tool-owned dirs we cannot
+  relocate (Astro's root `.astro/` type metadata) stay gitignored — do not
+  commit them, do not add more. The local plugin verification probe writes
+  under `.cache/mcp-vertex/verify/`.
 - **Relocatable tool configs live in `configs/`.** A tool config moves to
   `configs/` only if (a) the tool accepts an explicit config path AND (b) the
   VS Code editor integration is unaffected. Today that is `configs/typedoc.json`
@@ -186,7 +187,7 @@ The root is intentionally minimal. Before adding a file to it, check this:
   `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` stay at root by convention/agent
   discovery.
 - A new root file must justify itself against the above; otherwise it belongs
-  in `.github/`, `docs/`, `tools/`, or under `.cache/`.
+  in `.github/`, `docs/mcp-vertex/`, `tools/`, `configs/`, or under `.cache/`.
 
 ## When you touch a plugin / add a tool
 
