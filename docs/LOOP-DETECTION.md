@@ -32,7 +32,7 @@ The loop detector tracks a sliding window of recent tool calls (default size: 50
 
 ## 3. The Handoff Packet Schema
 
-When an agent is flagged as stuck, a JSON file is written to `.mcp-vertex/handoff/<agent>-<timestamp>.json` with the following structure. Secrets (like Stripe keys, database passwords, or auth headers) are automatically redacted using `redactSecrets`.
+When an agent is flagged as stuck, a JSON file is written to `.cache/mcp-vertex/handoff/<agent>-<timestamp>.json` with the following structure. Secrets (like Stripe keys, database passwords, or auth headers) are automatically redacted using `redactSecrets`.
 
 ```json
 {
@@ -101,7 +101,7 @@ The detector is enabled by default. It can be configured globally in `mcp-vertex
       "multi_replace_string_in_file",
       "replace_string_in_file"
     ],
-    "handoffDir": ".mcp-vertex/handoff",
+    "handoffDir": ".cache/mcp-vertex/handoff",
     "handoffTtlDays": 7,
     "notifyOnDetect": true,
     "interactiveAgentPatterns": ["*-default", "default-*", "host", "interactive"]
@@ -159,7 +159,7 @@ When a loop detector fires:
      "event": "stuck-detected",
      "agent": "my-agent",
      "reason": "exact-repeat",
-     "handoffPath": ".mcp-vertex/handoff/my-agent-1234567.json"
+     "handoffPath": ".cache/mcp-vertex/handoff/my-agent-1234567.json"
    }
    ```
 3. **The Host Reaction**:

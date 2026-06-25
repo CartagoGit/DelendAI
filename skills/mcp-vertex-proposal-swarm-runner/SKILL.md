@@ -60,7 +60,7 @@ overview → recommendedNextAction mentions proposals
    disabled by host configuration: commit to the active branch instead. If
    `true`, a bare push from a shared checkout can overwrite a concurrent
    agent's branch; the worktree isolates your branch until you merge.
-3. **Never edit `docs/proposals/index.json` by hand.** It is a generated
+3. **Never edit `docs/mcp-vertex/proposals/index.json` by hand.** It is a generated
    index; hand edits drift from the `.md` files it indexes the moment
    anyone runs `proposals_sync_proposals`. Move/edit the proposal `.md`
    file and let sync regenerate the index entry.

@@ -130,7 +130,7 @@ Either wait, or take a different truly disjoint slice.
 ### Example A — Two doc slices, disjoint files
 
 - Agent A claims `skills/manifest.json` + one new `SKILL.md`
-- Agent B claims one unrelated proposal doc under `docs/proposals/`
+- Agent B claims one unrelated proposal doc under `docs/mcp-vertex/proposals/`
 - Both succeed immediately because the file sets are disjoint
 - No polling is needed; both validate and close independently
 

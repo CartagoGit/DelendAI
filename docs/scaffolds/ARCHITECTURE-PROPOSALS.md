@@ -1,5 +1,5 @@
 ---
-applies-to: docs/proposals/**/*.md
+applies-to: docs/mcp-vertex/proposals/**/*.md
 ---
 
 # Architecture: proposals

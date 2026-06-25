@@ -2,7 +2,7 @@
 /**
  * migrate-legacy-proposals.ts — f00016 S11.
  *
- * Moves every `pNNN-*.md` directly under `docs/proposals/` onto the new
+ * Moves every `pNNN-*.md` directly under `docs/mcp-vertex/proposals/` onto the new
  * state machine: renamed to `lNNN-<same-slug>.md` (the slug is kept
  * verbatim — an earlier draft of this script assumed a separable
  * "kind word" embedded in the slug to strip, but the 14 real filenames
@@ -181,7 +181,7 @@ const printPlan = (plans: readonly IMigrationPlan[]): void => {
 // CLI ------------------------------------------------------------------------
 if (import.meta.main) {
 	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-	const proposalsDirAbs = join(repoRoot, 'docs', 'proposals');
+	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
 	const plans = await planMigration(proposalsDirAbs);
 	const apply = process.argv.includes('--apply');
 	printPlan(plans);

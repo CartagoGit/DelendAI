@@ -113,7 +113,7 @@ project) > `'none'` (default):
   `claim.files`; it never runs `git add .` so a slice can't drag in
   unrelated changes.
 
-The full spec lives in [docs/proposals/l109-feat-auto-work-persist-modes.md](../../docs/proposals/l109-feat-auto-work-persist-modes.md).
+The full spec lives in [docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md](../../docs/mcp-vertex/proposals/l109-feat-auto-work-persist-modes.md).
 
 ## Paths
 

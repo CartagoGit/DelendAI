@@ -57,7 +57,8 @@ const narrativeProposal = [
 	'verified (narrative alias → acceptance).',
 	'',
 ].join('\n');
-const fixturePath = 'docs/proposals/ready/r99999-narrative-headings-fixture.md';
+const fixturePath =
+	'docs/mcp-vertex/proposals/ready/r99999-narrative-headings-fixture.md';
 
 describe('narrative pattern providers', async () => {
 	it('default provider carries the historical audit catalogue', async () => {

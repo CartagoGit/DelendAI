@@ -22,7 +22,7 @@
  *     linter validates pure structure.
  *   - The historical catalogue below stays available as an opt-in default
  *     (`createDefaultNarrativePatternProvider`) so this repo's own audits
- *     under `docs/proposals/done/audits/` keep linting clean.
+ *     under `docs/mcp-vertex/proposals/done/audits/` keep linting clean.
  *
  * The aliases map a normalised H2 heading to ONE OR MORE canonical section
  * names; the first entry is the canonical default. The list is a tuple

@@ -12,7 +12,7 @@ import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
-const DEFAULT_SCAFFOLD_DIR = 'docs/proposals/retired/issues';
+const DEFAULT_SCAFFOLD_DIR = 'docs/mcp-vertex/proposals/retired/issues';
 
 /** Adapts the real `fetchIssue`/`listIssues` free functions (S2) into the `IGithubClient` port the tools depend on. */
 const createGithubClient = (repo: string): IGithubClient => ({
@@ -62,7 +62,7 @@ const ISSUES_NEEDS_SETUP_BODY = [
  *
  * `dependsOn: ['proposals']` is a HARD requirement, not a soft
  * coupling — every `issues_*` tool reads/writes scaffold files under
- * `docs/proposals/retired/issues/**`, which is part of the `proposals`
+ * `docs/mcp-vertex/proposals/retired/issues/**`, which is part of the `proposals`
  * plugin's managed namespace (see the proposal's "why this design"
  * section). The loader
  * (`packages/core/src/lib/plugins/load-plugins.ts`) refuses to
@@ -84,7 +84,7 @@ export default definePlugin({
 	optionsSchema: z.object({
 		/** `'owner/name'`; required to register the 5 `issues_*` tools. */
 		repo: z.string().optional(),
-		/** Defaults to `docs/proposals/retired/issues`. */
+		/** Defaults to `docs/mcp-vertex/proposals/retired/issues`. */
 		scaffoldDir: z.string().optional(),
 	}),
 	register(ctx) {

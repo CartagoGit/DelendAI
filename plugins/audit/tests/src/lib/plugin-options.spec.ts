@@ -4,7 +4,7 @@
  *
  * 1. `optionsSchema` is `strict` — unknown fields are rejected.
  * 2. The plugin's defaults match the documented constants
- *    (`docs/proposals/audits`, 5, canonical dimensions).
+ *    (`docs/mcp-vertex/proposals/done/audits`, 5, canonical dimensions).
  * 3. Hosts that pass `options.dimensions: []` get the canonical
  *    dimensions back (explicit reset), not an empty rubric.
  * 4. Per-tool-call overrides on `audit_consolidate` win over the

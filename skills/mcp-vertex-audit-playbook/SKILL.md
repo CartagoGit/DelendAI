@@ -28,7 +28,7 @@ Automated tools (`bun run validate`, `biome ci`, test counts) answer
 - Is there dead code that creates false expectations?
 
 These questions require the LLM to *read and reason* about the code. Every audit
-in `docs/proposals/done/audits/a00001` through `a00003` used this approach and
+in `docs/mcp-vertex/proposals/done/audits/a00001` through `a00003` used this approach and
 produced actionable P0 findings that automated tools missed entirely. Every audit
 that skipped this step produced nothing of value.
 

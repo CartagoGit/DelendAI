@@ -17,7 +17,7 @@ description: The tool-level workflow for running and consolidating an mcp-vertex
    one orchestrating) — the brief is the contract that keeps multiple
    reviewers' outputs comparable.
 4. Save that session's output as a `.md` following the exact filename rule
-   (below) under `docs/proposals/in-progress/` (or wherever the brief says).
+   (below) under `docs/mcp-vertex/proposals/in-progress/` (or wherever the brief says).
 5. Have 2+ reports? -> `audit_consolidate { auditDir?, topActions? }` to
    dedupe findings by title+file and average per-dimension scores.
 6. Closing the audit -> internal slices exist? `ready/` with `status: ready`.
@@ -31,13 +31,13 @@ audit_plan { scope: "plugins" }
   -> { scope, markdown, dimensions }       # paste markdown into a fresh session
 # fresh session produces the audit report
 # save it as a .md with the canonical filename (see below)
-audit_consolidate { auditDir: "docs/proposals/audits", topActions: 5 }
+audit_consolidate { auditDir: "docs/mcp-vertex/proposals/done/audits", topActions: 5 }
   -> { auditsFound, skipped, consensus, findings, topActions, markdown }
 ```
 
 `audit_plan` is pure (no I/O) — same scope always returns the same brief.
 `audit_consolidate` reads every `*.md` (except `README.md`) under `auditDir`
-(default `docs/proposals/audits`), parses each as an audit document, and
+(default `docs/mcp-vertex/proposals/done/audits`), parses each as an audit document, and
 deduplicates findings across reviewers via `seenBy`.
 
 ## Filename convention (AGENTS.md rule)
@@ -86,10 +86,10 @@ you the exact set to fill in.
 ## Lifecycle: ready vs done/audits
 
 - **Has internal slices/tasks** (fixes resolvable within the audit's own
-  scope) -> create the proposal under `docs/proposals/ready/` with
+  scope) -> create the proposal under `docs/mcp-vertex/proposals/ready/` with
   `status: ready`, slices `pending`.
 - **No internal tasks** (every finding deferred to a separate proposal, or
-  no findings) -> create directly under `docs/proposals/done/audits/` with
+  no findings) -> create directly under `docs/mcp-vertex/proposals/done/audits/` with
   `status: done`, and link the deferred proposals in `## Findings`'
   Resolution Track column.
 
@@ -113,6 +113,6 @@ you the exact set to fill in.
 audit_plan { scope: "tokens" }
 ```
 Returns `{ scope: "tokens", markdown: "...", dimensions: [...9 items...] }`.
-Then drop ≥1 saved report under `docs/proposals/audits/` and call
+Then drop ≥1 saved report under `docs/mcp-vertex/proposals/done/audits/` and call
 `audit_consolidate {}` — it must return `auditsFound >= 1` and a non-empty
 `markdown`.

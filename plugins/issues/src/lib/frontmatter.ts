@@ -1,6 +1,6 @@
 /**
  * Pure YAML frontmatter serializer/deserializer for the `issues` plugin's
- * scaffold files (`docs/proposals/retired/issues/github#<n>-<slug>.md`).
+ * scaffold files (`docs/mcp-vertex/proposals/retired/issues/github#<n>-<slug>.md`).
  *
  * Single Responsibility: this module only knows how to turn an
  * `IIssueScaffoldFrontmatter` into a `---`-fenced YAML block and back. It

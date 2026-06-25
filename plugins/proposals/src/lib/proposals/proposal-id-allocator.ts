@@ -2,7 +2,7 @@
  * f00016 S13 — race-safe per-kind id allocation (f00016 §4.9).
  *
  * Each kind keeps its own sequence (`f00016` is independent from `a00011`
- * or `r042`). The naive approach — list `docs/proposals/`, filter by
+ * or `r042`). The naive approach — list `docs/mcp-vertex/proposals/`, filter by
  * prefix, take `max + 1` — races under concurrent agents: two agents
  * creating an `f`-kind proposal in the same instant can both read the
  * same stale directory listing and both compute `f00014`. This mirrors

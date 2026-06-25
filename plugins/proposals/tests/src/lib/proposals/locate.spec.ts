@@ -2,7 +2,7 @@
  * locate.spec.ts
  *
  * Tests for the shared proposal-locator (`proposals/locate.ts`):
- *   - `locateByIndex` reads `docs/proposals/index.json`
+ *   - `locateByIndex` reads `docs/mcp-vertex/proposals/index.json`
  *   - `locateByScan` walks the 7 status folders
  *   - `locateProposal` composes both (index-first, scan-fallback)
  *

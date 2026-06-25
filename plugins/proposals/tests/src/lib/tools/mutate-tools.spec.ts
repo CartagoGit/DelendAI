@@ -2,10 +2,10 @@
  * `proposals_edit` + `proposals_add_slice` (S10, f00020). Each tool's
  * pure handler is exercised directly via the `capture()` harness (same
  * pattern as `authoring.spec.ts`) against a temporary proposals
- * dir/index — never the real `docs/proposals/` tree. The golden test at
+ * dir/index — never the real `docs/mcp-vertex/proposals/` tree. The golden test at
  * the bottom re-parses the mutated `.md` with the real
  * `parseProposalDocument` loader against a COPY of
- * `docs/proposals/done/feats/f00023-plugins-depth-extension.md` (read as
+ * `docs/mcp-vertex/proposals/done/feats/f00023-plugins-depth-extension.md` (read as
  * a reference fixture only; the original is never modified).
  */
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -301,7 +301,7 @@ const REPO_ROOT = resolve(
 );
 const REFERENCE_FIXTURE_PATH = join(
 	REPO_ROOT,
-	'docs/proposals/done/feats/f00023-plugins-depth-extension.md',
+	'docs/mcp-vertex/proposals/done/feats/f00023-plugins-depth-extension.md',
 );
 
 describe('golden fixture: real-proposal shape stays parseable (reference only, never modified)', async () => {
@@ -314,7 +314,7 @@ describe('golden fixture: real-proposal shape stays parseable (reference only, n
 		const proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
 		await mkdir(proposalsDirAbs, { recursive: true });
 		const referenceRaw = await readFile(REFERENCE_FIXTURE_PATH, 'utf8');
-		// Work on a COPY — the real reference file under docs/proposals is
+		// Work on a COPY — the real reference file under docs/mcp-vertex/proposals is
 		// never written to by this test.
 		await writeFile(
 			join(proposalsDirAbs, 'f00023-plugins-depth-extension.md'),

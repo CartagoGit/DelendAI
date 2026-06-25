@@ -139,7 +139,7 @@ the current count.
 
 - `AGENTS.md` — repo-wide invariants and the `*.script.ts` tooling rule.
 - `f00037` proposal — the canonical source of truth for this convention.
-- `f00020` (`docs/proposals/ready/f00020-skills-and-tools-coverage.md`)
+- `f00020` (`docs/mcp-vertex/proposals/ready/f00020-skills-and-tools-coverage.md`)
   — the broader skills + tools coverage work that depends on this
   naming being stable.
 ## Shared design + i18n package (f00047)

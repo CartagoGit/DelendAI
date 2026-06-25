@@ -5,7 +5,7 @@
  * Runs every `IWorkflowRule` against the live tree and reports the
  * four "never do" patterns from `skills/mcp-vertex-proposal-swarm-runner/SKILL.md`:
  *
- *   1. Hand-edited `docs/proposals/index.json` (the regenerator owns it).
+ *   1. Hand-edited `docs/mcp-vertex/proposals/index.json` (the regenerator owns it).
  *   2. `main` local head diverges from upstream (push-from-main drift).
  *   3. `proposals_sync_proposals` invoked < 60 s after a slice close
  *      by a different agent (race heuristic — noop until MCP telemetry).

@@ -45,7 +45,7 @@ export type IEditableField =
  * Maps each editable field to the markdown heading regex that locates its
  * section. `acceptance` matches both the plain `## Acceptance` heading
  * and the `## Acceptance (global)` variant used by multi-slice proposals
- * (see `docs/proposals/ready/f00020-skills-and-tools-coverage.md`).
+ * (see `docs/mcp-vertex/proposals/ready/f00020-skills-and-tools-coverage.md`).
  */
 export const FIELD_HEADING_RE: Record<IEditableField, RegExp> = {
 	goal: /^## Goal\s*$/im,

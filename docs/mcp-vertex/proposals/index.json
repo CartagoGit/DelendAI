@@ -1,6 +1,6 @@
 {
-	"generated_at": "2026-06-25T12:00:00.000Z",
-	"count": 116,
+	"generated_at": "2026-06-25T19:20:15.943Z",
+	"count": 127,
 	"proposals": [
 		{
 			"id": "f00049",
@@ -47,6 +47,24 @@
 			}
 		},
 		{
+			"id": "f00055",
+			"file": "ready/f00055-web-repaso-pages-page-spec-and-dropdown-fix.md",
+			"track": "apps/web+packages/ui-extension+apps/shared+i18n+ux+tooling",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-24",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: fix the More dropdown — make renderDropdown accept an idPrefix so the web can produce the IDs its JS+CSS expect, and switch SiteNav to the prefixed form' }",
+					"{ agent: implementation_runner, task: 'S2: ship mv-dropdown__* styles in @mcp-vertex/shared so the dropdown works in any host (web + vscode) without per-host CSS duplication' }",
+					"{ agent: proposal_guardian,    task: 'S3: audit the 16 pages (apps/web/src/pages/) — produce a PAGES_AUDIT table with status (keep/shelve/rewrite/merge) for each, surfaced as docs/PAGES-AUDIT.md and a typed PAGES_AUDIT.json the build can consume' }",
+					"{ agent: implementation_runner, task: 'S4: define PageSpec = { frontmatter, body (markdown), translations: Record<Lang, {body, frontmatter}> } in apps/web/src/lib/page-spec/ as the canonical content contract for content-driven pages' }",
+					"{ agent: implementation_runner, task: 'S5: ship the MarkdownPage.astro renderer + i18n pipeline (read markdown per Lang, render via existing prose styles, register keys in apps/web/src/i18n/)' }",
+					"{ agent: implementation_runner, task: 'S6: convert /install as the pilot — install.<lang>.md under apps/web/src/data/pages/install/, regenerate via bun scripts/gen-pages.ts, add gen-pages.ts to the build chain (gen:manifests target)' }"
+				]
+			}
+		},
+		{
 			"id": "f00056",
 			"file": "ready/f00056-agent-discovery-tool-skill-catalog-and-extension-hints.md",
 			"track": "host+extension+skills+docs",
@@ -60,6 +78,122 @@
 					"{ agent: implementation_runner, task: 'S3: wire the catalog into the VS Code extension and shared client services so tools, skills, and proposals are discoverable from one entrypoint' }",
 					"{ agent: implementation_runner, task: 'S4: generate host hint fragments for Copilot, Claude Code, Cursor, and generic AGENTS consumers from the same catalog builder' }",
 					"{ agent: implementation_runner, task: 'S5: ship downstream bootstrap through packaged prompts/resources, scaffolded host hints, and worked examples in minimal and swarm' }"
+				]
+			}
+		},
+		{
+			"id": "f00058",
+			"file": "ready/f00058-webview-hardening-csp-allow-list-and-state-persistence.md",
+			"track": "security+webview+extension-ux",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: add `IWebviewCspPolicy` + CSP default-deny + `enableScripts: false` baseline in `packages/ui-extension/src/webview/csp.ts`; per-webview override map; wire all 7 webviews (H2)' }",
+					"{ agent: implementation_runner, task: 'S2: `OPEN_TOOLBAR_COMMAND` allow-list of derived command ids (action whitelist); reject unknown actions with an `unknownAction` result code (H3)' }",
+					"{ agent: implementation_runner, task: 'S3: `openSettings` persists to `globalState` (or workspaceState for project-scoped) instead of in-memory; restore on activation; document in settings UI (H4)' }",
+					"{ agent: implementation_runner, task: 'S4: implement `McpVertexProposalsView` `TreeDataProvider` and register it on activation; tree nodes mirror `mcp-vertex.proposals_status` shape (H5)' }",
+					"{ agent: implementation_runner, task: 'S5: `OPEN_PROPOSAL_COMMAND` reads its `{ proposalId }` argument, validates format (`^\\d{5}$`), and routes to the proposals TreeDataProvider node (H6)' }"
+				]
+			}
+		},
+		{
+			"id": "f00059",
+			"file": "ready/f00059-i18n-thread-across-the-web-extension-surface.md",
+			"track": "i18n+l10n+extension-ux+web",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: ship every renderer through `t()` — dashboard, settings, proposals, knowledge, tools, docs (H8)' }",
+					"{ agent: implementation_runner, task: 'S2: extend `check-i18n.ts` to walk nested keys + every-language check; tighten to 12-lang strict (H10)' }",
+					"{ agent: implementation_runner, task: 'S3: `renderToolbar` awaits `bridge.listLoadedPlugins()` and gates plugin-bound actions on plugin presence (H12)' }",
+					"{ agent: implementation_runner, task: 'S4: `STATUS_BAR_EVENTS` accept a `locale` argument + use the same keymap as the web `ui.ts` (H15)' }",
+					"{ agent: implementation_runner, task: 'S5: `formatRelativeTime` switches to `Intl.RelativeTimeFormat` and honors `locale` (H17)' }"
+				]
+			}
+		},
+		{
+			"id": "f00060",
+			"file": "ready/f00060-relocate-webview-host-css-into-componentcss-tokens.md",
+			"track": "design-tokens+css+extension-ux",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: define `IComponentCssTokens` interface + migration map in `packages/ui-extension/src/styles/component-css.ts` (H9)' }",
+					"{ agent: implementation_runner, task: 'S2: 2 webviews (dashboard + settings) switch from `--vscode-*` to `componentCss.*` (the `globals.css` injects the right values per host)' }",
+					"{ agent: implementation_runner, task: 'S3: ship a `tokens.spec.ts` snapshot that asserts the contract between `IComponentCssTokens` and the 2 webviews; fail the build on drift' }"
+				]
+			}
+		},
+		{
+			"id": "f00061",
+			"file": "ready/f00061-solid-refactor-of-dashboard-and-status-bar.md",
+			"track": "solid+architecture+extension-ux",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: split `renderDashboard` (820 LOC god function) into 5 single-responsibility builders (H29 SRP)' }",
+					"{ agent: implementation_runner, task: 'S2: `render-panel-tools.ts` sparkline is computed from per-tool latency series, not a constant (H22 OCP)' }",
+					"{ agent: implementation_runner, task: 'S3: `barChart` accepts an `ariaLabel` prop and renders `<svg role=\"img\" aria-label>` (H24 OCP)' }",
+					"{ agent: implementation_runner, task: 'S4: `Toast` sticky mode gets a close button + Esc handler + `aria-label` (H25 OCP)' }",
+					"{ agent: implementation_runner, task: 'S5: `kpiStrip` gets `flex-wrap: wrap` + min-width per KPI (H26 OCP)' }",
+					"{ agent: implementation_runner, task: 'S6: Tabs add `aria-controls`, roving tabindex, ArrowLeft/Right handler (H27 OCP)' }",
+					"{ agent: implementation_runner, task: 'S7: `McpVertexStatusBar` `STATUS_BAR_EVENTS` becomes a discriminated union keyed by event + locale (H30 OCP)' }"
+				]
+			}
+		},
+		{
+			"id": "f00062",
+			"file": "ready/f00062-settings-types-unification-and-globalstate-migration.md",
+			"track": "types+solid+extension-ux",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: define `IExtensionSettings` Zod schema in `packages/ui-extension/src/settings/settings-schema.ts`; replace 4 ad-hoc settings shapes (H13)' }",
+					"{ agent: implementation_runner, task: 'S2: `renderSettings` posts JSON-typed values; `openSettings` parses with the Zod schema and rejects malformed (H13 + DI)' }",
+					"{ agent: implementation_runner, task: 'S3: settings payload goes through `IExtensionSettings.parse(payload)` at the extension boundary (H4 H13 closure)' }"
+				]
+			}
+		},
+		{
+			"id": "f00063",
+			"file": "ready/f00063-locale-aware-date-and-time-formatting.md",
+			"track": "i18n+l10n+utils",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: replace `formatRelativeTime` with `Intl.RelativeTimeFormat` honoring `locale` (H17)' }",
+					"{ agent: implementation_runner, task: 'S2: add `formatDate` / `formatTime` wrappers around `Intl.DateTimeFormat`; cover all 12 locales in spec' }",
+					"{ agent: implementation_runner, task: 'S3: snapshot test against Node 18 + Bun 1.x — assert identical output for the same (date, now, locale) input' }"
+				]
+			}
+		},
+		{
+			"id": "f00064",
+			"file": "ready/f00064-dogfood-project-layout-contracts-web-and-agent-surface.md",
+			"track": "dogfood+repo-layout+contracts+web+agents",
+			"type": "proposal",
+			"status": "ready",
+			"date": "2026-06-25",
+			"extras": {
+				"ownership": [
+					"{ agent: implementation_runner, task: 'S1: move every safely relocatable root config into configs/ and wire package scripts/editor-safe explicit paths' }",
+					"{ agent: implementation_runner, task: 'S2: finish cache centralization under .cache/mcp-vertex and document every root exception with a tool constraint' }",
+					"{ agent: implementation_runner, task: 'S3: enforce contracts/{interfaces,constants} naming for interfaces, exported types, and constants in touched packages/plugins' }",
+					"{ agent: web_runner, task: 'S4: fix responsive header overlap and marquee layout across mobile/tablet/desktop screenshots' }",
+					"{ agent: web_runner, task: 'S5: complete the home plugins surface and remove incomplete/English-only page gaps through the PageSpec/i18n path' }",
+					"{ agent: host_runner, task: 'S6: expose loaded mcp-vertex tools, plugins, and skills as host-visible command/input affordances for Claude, Codex, Copilot, OpenCode, and VS Code' }"
 				]
 			}
 		},
@@ -563,6 +697,30 @@
 					"{ agent: implementation_runner, task: 'S1: Ejecutar la auditoría y documentar hallazgos' }"
 				]
 			}
+		},
+		{
+			"id": "a00039",
+			"file": "done/audits/a00039-24-06-2026-antigravity-deepmind-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-24T23:17:00Z"
+		},
+		{
+			"id": "a00040",
+			"file": "done/audits/a00040-25-06-2026-copilot-minimax-m3-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-25T08:00:00Z"
+		},
+		{
+			"id": "a00041",
+			"file": "done/audits/a00041-24-06-2026-antigravity-deepmind-repositorio.md",
+			"track": "archive",
+			"type": "unspecified",
+			"status": "done",
+			"date": "2026-06-24T21:20:00Z"
 		},
 		{
 			"id": "f00001",

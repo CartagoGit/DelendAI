@@ -1,7 +1,7 @@
 /**
  * index-reader.ts
  *
- * Pure async readers for the proposal index (`docs/proposals/index.json`)
+ * Pure async readers for the proposal index (`docs/mcp-vertex/proposals/index.json`)
  * and for arbitrary text/json files. Single source of truth for the
  * "read, parse if possible, return null on failure" pattern that the
  * tools repeat across the codebase.

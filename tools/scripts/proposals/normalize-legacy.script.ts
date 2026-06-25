@@ -50,7 +50,7 @@ export const normalizeLegacyMarkdown = (
 
 if (import.meta.main) {
 	const repoRoot = join(fileURLToPath(new URL('..', import.meta.url)));
-	const files = await walk(join(repoRoot, 'docs', 'proposals'));
+	const files = await walk(join(repoRoot, 'docs', 'mcp-vertex', 'proposals'));
 	const apply = process.argv.includes('--apply');
 	let changed = 0;
 	for (const file of files) {

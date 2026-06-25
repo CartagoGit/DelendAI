@@ -27,4 +27,4 @@ export {
 	hasSegment,
 	type IRoleRule,
 	type Role,
-} from '@mcp-vertex/core/public';
+} from '../../../packages/core/src/lib/contracts/file-conventions.contract';

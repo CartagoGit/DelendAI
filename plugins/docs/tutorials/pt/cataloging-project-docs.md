@@ -57,19 +57,19 @@ Response (truncated):
   "docs": [
     { "path": "README.md", "title": "@mcp-vertex/core" },
     { "path": "docs/ARCHITECTURE.md", "title": "Architecture" },
-    { "path": "docs/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
+    { "path": "docs/mcp-vertex/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }
   ]
 }
 ```
 
 The list is sorted by path. Pass `roots` to scope the list to a
-subset (e.g. just `["docs/proposals"]`):
+subset (e.g. just `["docs/mcp-vertex/proposals"]`):
 
 ```json
 {
   "tool": "docs_list",
-  "args": { "roots": ["docs/proposals"] }
+  "args": { "roots": ["docs/mcp-vertex/proposals"] }
 }
 ```
 

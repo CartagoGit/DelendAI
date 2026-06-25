@@ -605,7 +605,7 @@ describe('subscribe — returns digests for observed tasks', async () => {
 				taskId: 'p40c-t0',
 				closedAt: '2026-06-05T09:00:00.000Z',
 				agentName: 'root_agent',
-				filesOwned: ['docs/proposals/p40c.md'],
+				filesOwned: ['docs/mcp-vertex/proposals/p40c.md'],
 				diffSummary: 'Created p40c proposal',
 			},
 		];

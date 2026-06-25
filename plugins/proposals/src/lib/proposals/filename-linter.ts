@@ -124,7 +124,7 @@ const checkPrefixMatchesKind = (
  * That ancestor must equal the expected folder. This is robust
  * against future re-orderings of path segments, against any number of
  * nested sub-folders (e.g. `done/audits/2024/...`), and against paths
- * that don't start with `docs/proposals/` (e.g. absolute or
+ * that don't start with `docs/mcp-vertex/proposals/` (e.g. absolute or
  * relative-from-cwd).
  */
 const checkFolderMatchesStatus = (
@@ -154,7 +154,7 @@ const checkFolderMatchesStatus = (
 		{
 			line: 0,
 			message: `frontmatter status "${status}" expects folder "${expectedFolder}" but the nearest status ancestor is "${nearestStatusAncestor ?? '(none)'}" (immediate parent: "${immediateParent}")`,
-			fix: `Move the file to docs/proposals/${expectedFolder}/ (or to docs/proposals/${expectedFolder}/<kind-subfolder>/ for terminal statuses), or update status to match its current folder.`,
+			fix: `Move the file to docs/mcp-vertex/proposals/${expectedFolder}/ (or to docs/mcp-vertex/proposals/${expectedFolder}/<kind-subfolder>/ for terminal statuses), or update status to match its current folder.`,
 		},
 	];
 };

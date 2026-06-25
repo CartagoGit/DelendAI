@@ -256,7 +256,7 @@ describe('notification plugin', async () => {
 		expect(reg.knowledge?.[0]?.id).toBe('lock-notifications');
 
 		// Create handoff directory
-		const handoffDir = join(dir, '.mcp-vertex/handoff');
+		const handoffDir = join(dir, '.cache/mcp-vertex/handoff');
 		require('node:fs').mkdirSync(handoffDir, { recursive: true });
 
 		// Wire a fake server to capture logging notifications + the tool handler.
@@ -311,7 +311,7 @@ describe('notification plugin', async () => {
 		expect(stuckEvent?.level).toBe('warning');
 		expect(stuckEvent?.data?.agent).toBe('my-agent');
 		expect(stuckEvent?.data?.handoffPath).toBe(
-			'.mcp-vertex/handoff/stuck-agent.json',
+			'.cache/mcp-vertex/handoff/stuck-agent.json',
 		);
 
 		// stop the watcher via the server onclose hook (no leaked timer)

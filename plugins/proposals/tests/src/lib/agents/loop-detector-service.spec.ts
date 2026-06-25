@@ -98,7 +98,9 @@ describe('AgentLoopDetectorService', async () => {
 		);
 
 		// Check if the handoff packet was written to cache
-		const handoffDirAbs = mockCtx.workspace.resolve('.mcp-vertex/handoff');
+		const handoffDirAbs = mockCtx.workspace.resolve(
+			'.cache/mcp-vertex/handoff',
+		);
 		expect(existsSync(handoffDirAbs)).toBe(true);
 	});
 
@@ -122,7 +124,9 @@ describe('AgentLoopDetectorService', async () => {
 		expect(stuck).not.toBeNull();
 
 		// Read written handoff file
-		const handoffDirAbs = mockCtx.workspace.resolve('.mcp-vertex/handoff');
+		const handoffDirAbs = mockCtx.workspace.resolve(
+			'.cache/mcp-vertex/handoff',
+		);
 		const files = await import('node:fs/promises').then((fs) =>
 			fs.readdir(handoffDirAbs),
 		);
@@ -323,7 +327,7 @@ describe('AgentLoopDetectorService', async () => {
 			).toBeNull();
 			// And no handoff packet was written either.
 			const handoffDirAbs = mockCtx.workspace.resolve(
-				'.mcp-vertex/handoff',
+				'.cache/mcp-vertex/handoff',
 			);
 			if (existsSync(handoffDirAbs)) {
 				const { readdir } = await import('node:fs/promises');

@@ -16,7 +16,7 @@ export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 		'   - `metadata`: name/version/description of YOUR server.',
 		'   - `namespacePrefix`: your tool prefix (e.g. `myproj` → `myproj_*`).',
 		'   - `workspace`: `createWorkspacePathProvider(<workspace root>)`.',
-		'   - `pathLayout`: start from `DEFAULT_PATH_LAYOUT` (a `.cache/` scratch dir plus `docs/proposals/`); override any field.',
+		'   - `pathLayout`: start from `DEFAULT_PATH_LAYOUT` (a `.cache/` scratch dir plus `docs/mcp-vertex/proposals/`); override any field.',
 		'   - `proposalStore`: your proposal families, cascade order and folder names.',
 		'   - `closeMarkers`: the literal close markers your agents must emit.',
 		'   - `modelRouting`: your default model and per-role routes.',
