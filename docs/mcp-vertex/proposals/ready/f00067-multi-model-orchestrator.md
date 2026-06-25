@@ -2,7 +2,7 @@
 id: f00067
 status: ready
 type: proposal
-track: core+plugins+config+i18n+docs
+track: core+plugins+config+i18n+docs+ui-extension
 date: 2026-06-25
 kind: feat
 title: Multi-model orchestrator — provider roster, routing, quotas, subprocess invocation, usage tracking
@@ -51,9 +51,8 @@ user has access to**, automatically, while:
    which records every tool call (by agent, plugin, model, extension)
    and surfaces a `usage_report` to the user and to a future
    `advise_spend` LLM-as-cost-analyst tool.
-5. **Discovering what the user has** at first run: PATH probe + auth
-   RPCs + LLM-as-bootstrap-wizard that asks the user 2-3 questions
-   in prose and writes a `roster.draft.json` for the user to review.
+5. Discovering what the user has at first run: PATH probe + auth RPCs + LLM-as-bootstrap-wizard that asks the user 2-3 questions in prose and writes a `roster.draft.json` for the user to review.
+6. **Exposing real-time provider status and session spend** inside the Webview Dashboard (`packages/ui-extension`) with interactive controls.
 
 The wiki pages cited throughout this proposal are the **source of
 truth for design decisions**; this document only summarises and
@@ -198,11 +197,17 @@ plugins/usage-tracking/                         NEW · the eyes
   src/lib/rollup.ts                             5-min rollups
   src/lib/pricing.ts                            LiteLLM fetch + bundled snapshot fallback
   src/lib/detect-agent.ts                       clientInfo → kind/extension
+  src/lib/circuit-breaker.ts                    NEW · cost limit enforcer
   src/lib/tools/report.tool.ts
   src/lib/tools/clear.tool.ts
   src/public/index.ts                           barrel
   README.md
   tests/
+
+packages/ui-extension/src/                      EXT · dashboard views
+  renderers/
+    render-providers.ts                         NEW · Dashboard providers list
+    render-dashboard.ts                         EXT · wire providers & spend reports
 
 apps/web/src/i18n/tools/
   orchestrator-runner/                          NEW · 12 langs × 10 tools
@@ -272,7 +277,7 @@ highest-risk).
 ### S3 — usage-tracking plugin MVP (the eyes)
 
 - **Status**: ready
-- **Files**: `plugins/usage-tracking/` (NEW — full plugin scaffold), `apps/web/src/i18n/tools/usage-tracking/` (NEW — 12 langs × 2 tools).
+- **Files**: `plugins/usage-tracking/` (NEW — full plugin scaffold), `apps/web/src/i18n/tools/usage-tracking/` (NEW — 12 langs × 2 tools), `packages/cli/src/commands/groups/usage-tracking.ts` (NEW).
 - **Gate**: `bun run test plugins/usage-tracking && bun run typecheck && bun run lint:cli:i18n`
 - **Acceptance**:
   - "Plugin scaffold under `plugins/usage-tracking/` follows the same layout as `plugins/memory/` (package.json, tsconfig.json, vitest.config.ts, src/public/index.ts)."
@@ -285,6 +290,7 @@ highest-risk).
   - "Subscription providers use `{kind:'subscription', subscriptionUsd, marginalCostUsd:null, fixedCost:true}` — no fabricated per-call price (CRITICAL N4 fix)."
   - "`<prefix>_usage_report {groupBy, windowDays, filter, sortBy, limit}` returns rollup slice + top 10 expensive calls."
   - "`<prefix>_usage_clear` requires confirmation."
+  - "CLI commands added under `packages/cli/src/commands/groups/usage-tracking.ts` (consumes f00046 conventions): `mcpv usage-tracking report` and `mcpv usage-tracking clear` for cost visualization outside the extension."
   - "`agent.id/kind/extension` table covers at least: GitHub Copilot Chat, Claude Code, Codex CLI, Cursor, Aider, Continue, plus the `cli-doctor` / `cli-direct` host (CRITICAL N6 fix). Schema for user extension lives at `plugins.usage-tracking.options.clientMap: Record<string, {kind, extension}>`."
   - "12 languages × 2 tool summaries ship in `apps/web/src/i18n/tools/usage-tracking/`. `bun run lint:cli:i18n` passes."
 
@@ -392,6 +398,32 @@ highest-risk).
   - "`1000-calls-latency.e2e.spec.ts` fires 1000 tool calls and asserts p99 latency regression < 5ms vs the same scenario without `usage-tracking` subscribed."
   - "`fallback-chain.e2e.spec.ts` marks the top-scored provider as `quota-exceeded` and verifies the runner picks the next-best provider; then advances the clock past `resetAt` and verifies the runner retries the original."
   - "All e2e tests are CI-friendly: no network calls, no real API spend. Use `mocks/` directory under `tests/`."
+
+---
+
+### S11 — UI Extension Integration: Live Swarm Activity Dashboard & Cost Center
+
+- **Status**: ready
+- **Files**: `packages/ui-extension/src/renderers/render-providers.ts` (NEW), `packages/ui-extension/src/renderers/render-dashboard.ts` (EXT), `packages/ui-extension/src/renderers/render-swarm-trace.ts` (NEW).
+- **Gate**: bun run typecheck
+- **Acceptance**:
+  - "A new 'Providers & Quotas' section in the dashboard view renders a list of configured/detected providers, their current health status (green/red), active connection details, and remaining quotas."
+  - "A 'Usage Cost Analyst' card in the dashboard renders session USD costs bucketed by plugin and model using premium, responsive vanilla CSS styles."
+  - "A new **'Live Swarm Activity Stream'** panel is wired to listen to execution events from `orchestrator-runner` (starts, stops, stream chunks, costs). It displays in real time which LLM model (e.g. Claude, Codex, Copilot) is working on which specific task, what outputs are being obtained, and their live execution statistics."
+
+---
+
+### S12 — Loop Prevention, Configurable Timeouts, and Cost Circuit Breaker (Guardrails)
+
+- **Status**: ready
+- **Files**: `plugins/orchestrator-runner/src/lib/subprocess/pool.ts` (EXT), `plugins/usage-tracking/src/lib/circuit-breaker.ts` (NEW), `packages/core/schema/mcp-vertex.config.schema.json` (EXT), `plugins/orchestrator-runner/src/lib/router/loop-detector.ts` (NEW).
+- **Gate**: bun run validate
+- **Acceptance**:
+  - "The `usage-tracking` options support `maxSessionSpendUsd` and `maxMonthlySpendUsd` limits. If exceeded, the orchestrator blocks subsequent LLM tool calls and returns a `spend-limit-exceeded` error."
+  - "Configurable timeouts are passed to `SubprocessPool` on `invoke`, killing hung processes safely per cancellation semantics."
+  - "A **Loop & Deadlock Detector** is introduced in `loop-detector.ts`. It tracks consecutive duplicate calls (identical task descriptions routed to the same provider) and repository state stasis (if git status or file hashes remain unchanged for N consecutive invocations by the same agent). When detected, it aborts the loop with a clear recovery plan, preventing wasteful spending while maintaining agent autonomy."
+
+---
 
 ---
 
