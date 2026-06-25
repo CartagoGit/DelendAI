@@ -122,7 +122,7 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	/**
 	 * Host-scoped capability gate for `agent_worktree`. Default `false`.
 	 * When `false` (or unset) the proposals plugin's
-	 * `proposals_agent_worktree` tool stays registered but returns a
+	 * `mcp-vertex_proposals_agent_worktree` tool stays registered but returns a
 	 * structured `ok: false` error telling the caller how to enable it.
 	 * A host that needs multi-agent worktree isolation flips it to
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).

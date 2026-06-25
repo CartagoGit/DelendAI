@@ -346,7 +346,7 @@ export const registerAllCommands = async (): Promise<
 			const context =
 				contextRaw !== undefined ? Number(contextRaw) : undefined;
 			return data(
-				await request(ctx, 'search_search', {
+				await request(ctx, 'mcp-vertex_search_search', {
 					query,
 					maxResults: Number(scalarArg(args, 'max') ?? 20),
 					regex: hasFlag(args, 'regex'),
@@ -364,7 +364,7 @@ export const registerAllCommands = async (): Promise<
 		summary: 'List project documentation.',
 		async run(args, ctx) {
 			return data(
-				await request(ctx, 'docs_docs_list', {
+				await request(ctx, 'mcp-vertex_docs_docs_list', {
 					limit: Number(
 						scalarArg(args, 'limit') ??
 							scalarArg(args, 'max') ??
@@ -387,7 +387,7 @@ export const registerAllCommands = async (): Promise<
 				};
 			const result = await request<Record<string, unknown>>(
 				ctx,
-				'docs_docs_read',
+				'mcp-vertex_docs_docs_read',
 				{ path },
 			);
 			return data(

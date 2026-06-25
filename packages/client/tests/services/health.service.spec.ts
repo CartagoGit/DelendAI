@@ -28,9 +28,9 @@ describe('HealthService', async () => {
 		expect(snap.staleCount).toBe(0);
 		// 3 upstream tool calls (state_health, stale_list, agent_names).
 		const names = calls.map((c) => c.tool);
-		expect(names).toContain('proposals_state_health');
-		expect(names).toContain('proposals_proposal_stale_list');
-		expect(names).toContain('proposals_agent_names');
+		expect(names).toContain('mcp-vertex_proposals_state_health');
+		expect(names).toContain('mcp-vertex_proposals_proposal_stale_list');
+		expect(names).toContain('mcp-vertex_proposals_agent_names');
 	});
 
 	it('snapshot reports unhealthy when the queue has orphans', async () => {
@@ -51,7 +51,7 @@ describe('HealthService', async () => {
 		const { service, calls } = makeService(healthyFixture);
 		await service.snapshot({ includeStaleList: false });
 		const names = calls.map((c) => c.tool);
-		expect(names).not.toContain('proposals_proposal_stale_list');
+		expect(names).not.toContain('mcp-vertex_proposals_proposal_stale_list');
 	});
 
 	it('degrades gracefully when every tool is missing', async () => {

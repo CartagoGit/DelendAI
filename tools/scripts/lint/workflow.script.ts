@@ -7,7 +7,7 @@
  *
  *   1. Hand-edited `docs/mcp-vertex/proposals/index.json` (the regenerator owns it).
  *   2. `main` local head diverges from upstream (push-from-main drift).
- *   3. `proposals_sync_proposals` invoked < 60 s after a slice close
+ *   3. `mcp-vertex_proposals_sync_proposals` invoked < 60 s after a slice close
  *      by a different agent (race heuristic — noop until MCP telemetry).
  *   4. `auto_work` invoked > 3× in 60 s with no file change (orchestrator
  *      loop heuristic — noop until MCP telemetry).

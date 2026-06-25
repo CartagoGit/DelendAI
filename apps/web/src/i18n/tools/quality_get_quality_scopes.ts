@@ -1,4 +1,4 @@
-// i18n catalogue for `quality_get_quality_scopes`.
+// i18n catalogue for `mcp-vertex_quality_get_quality_scopes`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

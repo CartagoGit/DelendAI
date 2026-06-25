@@ -44,7 +44,7 @@ describe('McpVertexStatusBar', async () => {
 			},
 			McpStdioClient.fromTransport({
 				async callTool(input) {
-					if (input.name === 'proposals_proposal_board') {
+					if (input.name === 'mcp-vertex_proposals_proposal_board') {
 						return {
 							structuredContent: {
 								proposals: [{ id: 'f00014' }, { id: 'f00015' }],
@@ -64,7 +64,7 @@ describe('McpVertexStatusBar', async () => {
 							},
 						};
 					}
-					if (input.name === 'proposals_agent_names') {
+					if (input.name === 'mcp-vertex_proposals_agent_names') {
 						return {
 							structuredContent: {
 								agents: [
@@ -118,7 +118,7 @@ describe('McpVertexStatusBar', async () => {
 		let toolCount = 1;
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
-				if (input.name === 'proposals_proposal_board') {
+				if (input.name === 'mcp-vertex_proposals_proposal_board') {
 					return {
 						structuredContent: { proposals: [{ id: 'f00014' }] },
 					};
@@ -136,7 +136,7 @@ describe('McpVertexStatusBar', async () => {
 						},
 					};
 				}
-				if (input.name === 'proposals_agent_names') {
+				if (input.name === 'mcp-vertex_proposals_agent_names') {
 					return { structuredContent: { agents: [] } };
 				}
 				return { structuredContent: {} };

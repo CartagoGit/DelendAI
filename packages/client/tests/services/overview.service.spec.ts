@@ -15,7 +15,7 @@ const overviewFixture: IOverview = {
 	tools: [
 		'mcp-vertex_status',
 		{
-			name: 'proposals_proposal_board',
+			name: 'mcp-vertex_proposals_proposal_board',
 			summary: 'Show proposal board',
 			tags: ['workflow'],
 			effects: ['write'],
@@ -64,7 +64,7 @@ describe('OverviewService', async () => {
 				effects: [],
 			},
 			{
-				name: 'proposals_proposal_board',
+				name: 'mcp-vertex_proposals_proposal_board',
 				plugin: 'proposals',
 				summary: 'Show proposal board',
 				tags: ['workflow'],
@@ -76,8 +76,8 @@ describe('OverviewService', async () => {
 
 describe('normalizeTool', async () => {
 	it('supports compact string entries and object entries', async () => {
-		expect(normalizeTool('quality_run_quality')).toEqual({
-			name: 'quality_run_quality',
+		expect(normalizeTool('mcp-vertex_quality_run_quality')).toEqual({
+			name: 'mcp-vertex_quality_run_quality',
 			plugin: 'quality',
 			tags: [],
 			effects: [],

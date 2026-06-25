@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_agent_lock_release_orphan`.
+// i18n catalogue for `mcp-vertex_proposals_agent_lock_release_orphan`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

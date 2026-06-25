@@ -23,7 +23,7 @@ const fullFixture = {
 			{ id: 'mcp-vertex_metrics', title: 'Metrics' },
 			{ id: 'proposals_state_machine', title: 'Proposal state machine' },
 			{ id: 'proposals_lifecycle', title: 'Proposal lifecycle' },
-			{ id: 'memory_recall', title: 'Memory recall' },
+			{ id: 'mcp-vertex_memory_recall', title: 'Memory recall' },
 		],
 	},
 };
@@ -66,7 +66,7 @@ describe('KnowledgeService (f126 S3a)', async () => {
 		const entries = [
 			{ id: 'mcp-vertex_overview', title: 'Overview' },
 			{ id: 'proposals_state_machine', title: 'Proposal state machine' },
-			{ id: 'memory_recall', title: 'Memory recall' },
+			{ id: 'mcp-vertex_memory_recall', title: 'Memory recall' },
 		];
 
 		it('returns all entries when query is empty', async () => {
@@ -134,7 +134,7 @@ describe('categoryOf', async () => {
 	it('returns the plugin prefix (everything before the first _)', async () => {
 		expect(categoryOf('proposals_state_machine')).toBe('proposals');
 		expect(categoryOf('mcp-vertex_overview')).toBe('mcp-vertex');
-		expect(categoryOf('memory_recall')).toBe('memory');
+		expect(categoryOf('mcp-vertex_memory_recall')).toBe('memory');
 	});
 
 	it('returns "other" when the id has no underscore', async () => {

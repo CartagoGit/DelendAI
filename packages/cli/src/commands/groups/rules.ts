@@ -4,9 +4,9 @@
  * return — they never execute or modify anything).
  *
  * Tools mapped:
- *   - `rules_get_rules`   ({ area? })
- *   - `rules_check_rules` ({ area?, compact? })
- *   - `rules_apply_rules` ({ area?, files? })
+ *   - `mcp-vertex_rules_get_rules`   ({ area? })
+ *   - `mcp-vertex_rules_check_rules` ({ area?, compact? })
+ *   - `mcp-vertex_rules_apply_rules` ({ area?, files? })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, hasFlag, listArg, request, scalarArg } from './group-helpers';
@@ -17,7 +17,7 @@ const rulesGetCommand: ICliCommand = {
 	async run(args, ctx) {
 		const area = scalarArg(args, 'area');
 		return data(
-			await request(ctx, 'rules_get_rules', {
+			await request(ctx, 'mcp-vertex_rules_get_rules', {
 				...(area !== undefined ? { area } : {}),
 			}),
 		);
@@ -32,7 +32,7 @@ const rulesCheckCommand: ICliCommand = {
 		const area = scalarArg(args, 'area');
 		const compact = hasFlag(args, 'compact');
 		return data(
-			await request(ctx, 'rules_check_rules', {
+			await request(ctx, 'mcp-vertex_rules_check_rules', {
 				...(area !== undefined ? { area } : {}),
 				...(compact ? { compact: true } : {}),
 			}),
@@ -47,7 +47,7 @@ const rulesApplyCommand: ICliCommand = {
 		const area = scalarArg(args, 'area');
 		const files = listArg(args, 'files');
 		return data(
-			await request(ctx, 'rules_apply_rules', {
+			await request(ctx, 'mcp-vertex_rules_apply_rules', {
 				...(area !== undefined ? { area } : {}),
 				...(files !== undefined ? { files } : {}),
 			}),

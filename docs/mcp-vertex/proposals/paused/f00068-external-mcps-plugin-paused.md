@@ -252,6 +252,518 @@ For the seed configuration (filesystem + angular) the catalog
 adds ~80–100 tokens to the system prompt — well within the
 existing `overview` budget (a00032 S4).
 
+## Seed catalog policy — three tiers
+
+The LLM cannot be the only gatekeeper (a curated, defensible
+catalog protects against npm typosquatting and unmaintained
+forks), but a hand-maintained JSON cannot keep up with every
+framework a user might adopt. The compromise is **three tiers
+with different exposure and different cost**:
+
+| Tier | Symbol | Loaded into system prompt? | How the LLM learns it | Who curates |
+|---|---|---|---|---|
+| **Curated** | ⭐ | **Yes** — appears in `external_mcp_catalog` summary on every turn | Always visible (~30–50 tokens each) | The repo, via reviewed PR |
+| **Discoverable** | 🟡 | **No** — only when LLM calls `external_mcp_discover` | LLM opts in per turn, results are not in the prompt until asked | The repo, via reviewed PR |
+| **Live search** | ⛔ | **No** — only when `allowDiscoverySearch: true` AND human has acked | Runtime npm/GitHub fetch, gated by `external_mcp_ack` | The LLM, with mandatory human ack |
+
+**Defaults (recommended):**
+
+- `llmDecidesActivation: true` — LLM may activate within the declared set
+- `requireHumanAckWhenLlmDecides: true` — every LLM activation awaits ack
+- `allowDiscoverySearch: false` — live npm/GitHub is OFF until the user
+  explicitly enables it (kill switch)
+
+**Why this shape:**
+
+- The **curated tier** is the trust foundation. ~25 servers we
+  vetted personally — they appear in the prompt so the LLM
+  always knows they exist. Cost: bounded (~1 KB).
+- The **discoverable tier** is the breadth. ~60+ servers the LLM
+  can ask about on demand without any network call. Cost: only
+  what the LLM chooses to load.
+- The **live tier** is the escape hatch. When a workspace uses a
+  server nobody curated (e.g. `zig-mcp` for a niche language),
+  the LLM can propose one — but the human must ack every
+  candidate before it boots. Cost: a network roundtrip, plus the
+  ack overhead.
+
+The full candidate list lives in
+[`docs/mcp-vertex/skills/external-mcps-seed-catalog.md`](../../../skills/external-mcps-seed-catalog.md)
+(planned for unpause; the file ships empty + this proposal
+prescribes the structure so it can grow).
+
+### Curated tier (⭐ — always in the catalog summary)
+
+> **Criteria for "curated"**: maintained in the last 12 months,
+> semver-stable release available, has at least one sponsor who
+> is not the original author, no known supply-chain incidents.
+> Updated annually via `audit-curated-seeds` (f00068 P7).
+
+These ~25 servers appear in `external_mcp_catalog` on every turn:
+
+| Category | Server | `namespacePrefix` | Source |
+|---|---|---|---|
+| Filesystem & shell | `@modelcontextprotocol/server-filesystem` | `ext.fs` | Anthropic (official) |
+| Filesystem & shell | `@modelcontextprotocol/server-git` | `ext.gitops` | Anthropic (official) |
+| Languages & LSPs | `mcp-language-server` (isaacphi) | `ext.lsp` | Community (multi-LSP wrapper) |
+| Frontend frameworks | `angular-mcp` | `ext.angular` | Community (picks maintained fork) |
+| Frontend frameworks | `@react/mcp` | `ext.react` | Community (React docs + RSC) |
+| Frontend frameworks | `vue-mcp` | `ext.vue` | Community (Vue + Nuxt) |
+| Frontend frameworks | `svelte-mcp` | `ext.svelte` | Community (SvelteKit + runes) |
+| Frontend frameworks | `next-mcp` | `ext.nextjs` | Community (Next.js App Router) |
+| Backend frameworks | `@modelcontextprotocol/server-postgres` | `ext.pg` | Anthropic (official) |
+| Backend frameworks | `@modelcontextprotocol/server-sqlite` | `ext.sqlite` | Anthropic (official) |
+| Backend frameworks | `mcp-server-docker` | `ext.docker` | Anthropic community |
+| Cloud & DevOps | `@modelcontextprotocol/server-kubernetes` | `ext.k8s` | Anthropic community |
+| Cloud & DevOps | `mcp-aws` | `ext.aws` | Community (AWS SDK wrapper) |
+| Communication | `@modelcontextprotocol/server-slack` | `ext.slack` | Anthropic (official) |
+| Communication | `@modelcontextprotocol/server-github` | `ext.gh` | Anthropic (official) |
+| Communication | `@modelcontextprotocol/server-gitlab` | `ext.gitlab` | Anthropic (official) |
+| Communication | `mcp-linear` | `ext.linear` | Community |
+| Productivity | `@modelcontextprotocol/server-notion` | `ext.notion` | Anthropic community |
+| Productivity | `mcp-jira` | `ext.jira` | Community |
+| Documentation | `@modelcontextprotocol/server-fetch` | `ext.fetch` | Anthropic (official) |
+| Documentation | `@modelcontextprotocol/server-brave-search` | `ext.search` | Anthropic (official) |
+| Documentation | `@modelcontextprotocol/server-puppeteer` | `ext.puppet` | Anthropic (official) |
+| Testing & QA | `mcp-playwright` | `ext.pw` | Community (Microsoft Playwright) |
+| Build & package mgrs | `mcp-npm` | `ext.npm` | Community |
+| Build & package mgrs | `mcp-pypi` | `ext.pypi` | Community |
+
+### Discoverable tier (🟡 — load on demand)
+
+> **Criteria for "discoverable"**: actively maintained OR has a
+> well-known sponsor; LLM can ask the catalog for the full schema
+> and metadata without network cost; never loaded into the
+> system prompt.
+
+These ~60+ servers are available via `external_mcp_discover`
+without any npm call. The LLM sees them only when it asks
+specifically ("are there any Angular MCP servers?"). Each entry
+gets a one-line description and `ext.<namespacePrefix>`.
+
+#### Languages & LSPs (extended)
+
+| Server | Language | `namespacePrefix` |
+|---|---|---|
+| `python-mcp` (pyright + ruff) | Python | `ext.py` |
+| `pyright-mcp` | Python (types only) | `ext.pyright` |
+| `ruff-mcp` | Python (lint only) | `ext.ruff` |
+| `golang-mcp` | Go (gopls) | `ext.go` |
+| `gopls-mcp` | Go (gopls direct) | `ext.gopls` |
+| `rust-mcp` | Rust (rust-analyzer) | `ext.rs` |
+| `rust-analyzer-mcp` | Rust (direct) | `ext.rust-analyzer` |
+| `ruby-mcp` | Ruby (rubocop + sorbet) | `ext.rb` |
+| `sorbet-mcp` | Ruby (Sorbet) | `ext.sorbet` |
+| `mcp-java` | Java (jdtls) | `ext.java` |
+| `kotlin-mcp` | Kotlin | `ext.kotlin` |
+| `swift-mcp` | Swift (sourcekit-lsp) | `ext.swift` |
+| `csharp-mcp` | C# (omnisharp-roslyn) | `ext.cs` |
+| `fsharp-mcp` | F# (FCS) | `ext.fs` (collision with `fs` → renamed `ext.fsharp`) |
+| `elixir-mcp` | Elixir (elixir-ls) | `ext.ex` |
+| `phoenix-mcp` | Elixir (Phoenix framework) | `ext.phoenix` |
+| `zig-mcp` | Zig (zls) | `ext.zig` |
+| `php-mcp` | PHP (phpactor) | `ext.php` |
+| `dart-mcp` | Dart | `ext.dart` |
+| `flutter-mcp` | Flutter | `ext.flutter` |
+| `scala-mcp` | Scala (Metals) | `ext.scala` |
+| `haskell-mcp` | Haskell (hls) | `ext.hs` |
+| `clojure-mcp` | Clojure (clj-kondo + clojure-lsp) | `ext.clj` |
+| `ocaml-mcp` | OCaml (ocaml-lsp) | `ext.ml` |
+| `erlang-mcp` | Erlang (erlang_ls) | `ext.erl` |
+| `lua-mcp` | Lua (lua-language-server) | `ext.lua` |
+| `r-mcp` | R (languageserver) | `ext.r` |
+| `julia-mcp` | Julia (LanguageServer.jl) | `ext.jl` |
+| `nim-mcp` | Nim (nimlsp) | `ext.nim` |
+| `crystal-mcp` | Crystal (scry) | `ext.cr` |
+| `gleam-mcp` | Gleam | `ext.gleam` |
+| `elm-mcp` | Elm | `ext.elm` |
+| `purescript-mcp` | PureScript | `ext.purs` |
+| `vhdl-mcp` | VHDL | `ext.vhdl` |
+| `verilog-mcp` | Verilog | `ext.verilog` |
+| `terraform-mcp` | HCL/Terraform | `ext.tf` |
+| `nix-mcp` | Nix | `ext.nix` |
+| `dockerfile-mcp` | Dockerfile | `ext.dockerfile` |
+
+#### Frontend frameworks (extended)
+
+| Server | Framework | `namespacePrefix` |
+|---|---|---|
+| `nuxt-mcp` | Nuxt | `ext.nuxt` |
+| `astro-mcp` | Astro | `ext.astro` |
+| `remix-mcp` | Remix | `ext.remix` |
+| `solidjs-mcp` | Solid | `ext.solid` |
+| `qwik-mcp` | Qwik | `ext.qwik` |
+| `ember-mcp` | Ember | `ext.ember` |
+| `preact-mcp` | Preact | `ext.preact` |
+| `lit-mcp` | Lit | `ext.lit` |
+| `alpine-mcp` | Alpine.js | `ext.alpine` |
+| `stimulus-mcp` | Stimulus | `ext.stimulus` |
+| `marko-mcp` | Marko | `ext.marko` |
+| `meteor-mcp` | Meteor | `ext.meteor` |
+| `react-native-mcp` | React Native | `ext.rn` |
+| `expo-mcp` | Expo | `ext.expo` |
+| `ionic-mcp` | Ionic | `ext.ionic` |
+| `tailwind-mcp` | Tailwind | `ext.tw` |
+| `vite-mcp` | Vite | `ext.vite` |
+| `webpack-mcp` | webpack | `ext.webpack` |
+| `rollup-mcp` | Rollup | `ext.rollup` |
+| `parcel-mcp` | Parcel | `ext.parcel` |
+| `storybook-mcp` | Storybook | `ext.storybook` |
+| `cypress-mcp` | Cypress (component testing) | `ext.cy` |
+| `jest-mcp` | Jest | `ext.jest` |
+| `vitest-mcp` | Vitest | `ext.vitest` |
+| `playwright-component-mcp` | Playwright (component) | `ext.pwcomp` |
+
+#### Backend frameworks
+
+| Server | Framework | `namespacePrefix` |
+|---|---|---|
+| `nestjs-mcp` | NestJS | `ext.nestjs` |
+| `express-mcp` | Express | `ext.express` |
+| `fastify-mcp` | Fastify | `ext.fastify` |
+| `koa-mcp` | Koa | `ext.koa` |
+| `hapi-mcp` | Hapi | `ext.hapi` |
+| `django-mcp` | Django | `ext.django` |
+| `flask-mcp` | Flask | `ext.flask` |
+| `fastapi-mcp` | FastAPI | `ext.fastapi` |
+| `starlette-mcp` | Starlette | `ext.starlette` |
+| `tornado-mcp` | Tornado | `ext.tornado` |
+| `sanic-mcp` | Sanic | `ext.sanic` |
+| `spring-mcp` | Spring Boot | `ext.spring` |
+| `quarkus-mcp` | Quarkus | `ext.quarkus` |
+| `micronaut-mcp` | Micronaut | `ext.micronaut` |
+| `rails-mcp` | Rails | `ext.rails` |
+| `sinatra-mcp` | Sinatra | `ext.sinatra` |
+| `hanami-mcp` | Hanami | `ext.hanami` |
+| `actix-mcp` | Actix | `ext.actix` |
+| `axum-mcp` | Axum | `ext.axum` |
+| `rocket-mcp` | Rocket | `ext.rocket` |
+| `gin-mcp` | Gin | `ext.gin` |
+| `fiber-mcp` | Fiber | `ext.fiber` |
+| `echo-mcp` | Echo | `ext.echo` |
+| `chi-mcp` | Chi | `ext.chi` |
+| `laravel-mcp` | Laravel | `ext.laravel` |
+| `symfony-mcp` | Symfony | `ext.symfony` |
+| `lumen-mcp` | Lumen | `ext.lumen` |
+| `aspnet-mcp` | ASP.NET Core | `ext.aspnet` |
+| `blazor-mcp` | Blazor | `ext.blazor` |
+| `maud-mcp` | Maud (Rust) | `ext.maud` |
+
+#### Databases & data stores
+
+| Server | DB | `namespacePrefix` |
+|---|---|---|
+| `mcp-mysql` | MySQL / MariaDB | `ext.mysql` |
+| `mcp-mariadb` | MariaDB | `ext.mariadb` |
+| `mcp-redis` | Redis | `ext.redis` |
+| `mcp-mongo` | MongoDB | `ext.mongo` |
+| `mcp-cassandra` | Cassandra | `ext.cassandra` |
+| `mcp-elasticsearch` | Elasticsearch | `ext.es` (collision with `ext.es` → renamed `ext.elastic`) |
+| `mcp-opensearch` | OpenSearch | `ext.opensearch` |
+| `mcp-dynamodb` | DynamoDB | `ext.dynamo` |
+| `mcp-cosmosdb` | Cosmos DB | `ext.cosmos` |
+| `mcp-bigquery` | BigQuery | `ext.bq` |
+| `mcp-snowflake` | Snowflake | `ext.snowflake` |
+| `mcp-redshift` | Redshift | `ext.redshift` |
+| `mcp-databricks` | Databricks | `ext.databricks` |
+| `mcp-neo4j` | Neo4j | `ext.neo4j` |
+| `mcp-arangodb` | ArangoDB | `ext.arangodb` |
+| `mcp-chromadb` | ChromaDB | `ext.chroma` |
+| `mcp-qdrant` | Qdrant | `ext.qdrant` |
+| `mcp-pinecone` | Pinecone | `ext.pinecone` |
+| `mcp-weaviate` | Weaviate | `ext.weaviate` |
+| `mcp-milvus` | Milvus | `ext.milvus` |
+| `mcp-influxdb` | InfluxDB | `ext.influx` |
+| `mcp-timescaledb` | TimescaleDB | `ext.timescale` |
+| `mcp-clickhouse` | ClickHouse | `ext.clickhouse` |
+| `mcp-cockroachdb` | CockroachDB | `ext.crdb` |
+| `mcp-surreal` | SurrealDB | `ext.surreal` |
+| `mcp-firestore` | Firestore | `ext.firestore` |
+| `mcp-supabase` | Supabase | `ext.supabase` |
+| `mcp-planetscale` | PlanetScale | `ext.planetscale` |
+| `mcp-fauna` | Fauna | `ext.fauna` |
+| `mcp-rabbitmq` | RabbitMQ | `ext.rabbit` |
+| `mcp-kafka` | Kafka | `ext.kafka` |
+| `mcp-nats` | NATS | `ext.nats` |
+| `mcp-redis-streams` | Redis Streams | `ext.redis-streams` |
+| `mcp-sqs` | AWS SQS | `ext.sqs` |
+| `mcp-pulsar` | Pulsar | `ext.pulsar` |
+
+#### Cloud & DevOps
+
+| Server | Service | `namespacePrefix` |
+|---|---|---|
+| `mcp-azure` | Azure | `ext.azure` |
+| `mcp-gcp` | GCP | `ext.gcp` |
+| `mcp-oci` | Oracle Cloud | `ext.oci` |
+| `mcp-ibm-cloud` | IBM Cloud | `ext.ibmcloud` |
+| `mcp-digitalocean` | DigitalOcean | `ext.do` |
+| `mcp-linode` | Linode | `ext.linode` |
+| `mcp-hetzner` | Hetzner | `ext.hetzner` |
+| `mcp-vultr` | Vultr | `ext.vultr` |
+| `mcp-helm` | Helm | `ext.helm` |
+| `mcp-terraform` | Terraform | `ext.terraform` |
+| `mcp-pulumi` | Pulumi | `ext.pulumi` |
+| `mcp-ansible` | Ansible | `ext.ansible` |
+| `mcp-puppet` | Puppet | `ext.puppet` |
+| `mcp-chef` | Chef | `ext.chef` |
+| `mcp-argo` | Argo CD | `ext.argo` |
+| `mcp-flux` | Flux CD | `ext.flux` |
+| `mcp-spinnaker` | Spinnaker | `ext.spinnaker` |
+| `mcp-github-actions` | GitHub Actions | `ext.gh-actions` |
+| `mcp-circleci` | CircleCI | `ext.circleci` |
+| `mcp-jenkins` | Jenkins | `ext.jenkins` |
+| `mcp-gitlab-ci` | GitLab CI | `ext.gitlab-ci` |
+| `mcp-travis` | Travis CI | `ext.travis` |
+| `mcp-buildkite` | Buildkite | `ext.buildkite` |
+| `mcp-drone` | Drone CI | `ext.drone` |
+| `mcp-cloudflare` | Cloudflare | `ext.cf` |
+| `mcp-vercel` | Vercel | `ext.vercel` |
+| `mcp-netlify` | Netlify | `ext.netlify` |
+| `mcp-fly` | Fly.io | `ext.fly` |
+| `mcp-railway` | Railway | `ext.railway` |
+| `mcp-render` | Render | `ext.render` |
+| `mcp-heroku` | Heroku | `ext.heroku` |
+| `mcp-deno-deploy` | Deno Deploy | `ext.deno-deploy` |
+| `mcp-supabase-edge` | Supabase Edge Functions | `ext.sb-edge` |
+
+#### Observability
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mcp-sentry` | Sentry | `ext.sentry` |
+| `mcp-datadog` | Datadog | `ext.datadog` |
+| `mcp-grafana` | Grafana | `ext.grafana` |
+| `mcp-prometheus` | Prometheus | `ext.prom` |
+| `mcp-newrelic` | New Relic | `ext.nr` |
+| `mcp-loki` | Loki | `ext.loki` |
+| `mcp-tempo` | Tempo (tracing) | `ext.tempo` |
+| `mcp-jaeger` | Jaeger | `ext.jaeger` |
+| `mcp-opentelemetry` | OTel Collector | `ext.otel` |
+| `mcp-logflare` | Logflare | `ext.logflare` |
+| `mcp-betterstack` | Better Stack | `ext.betterstack` |
+| `mcp-rollbar` | Rollbar | `ext.rollbar` |
+| `mcp-bugsnag` | Bugsnag | `ext.bugsnag` |
+| `mcp-honeybadger` | Honeybadger | `ext.honeybadger` |
+| `mcp-pagerduty` | PagerDuty | `ext.pd` |
+| `mcp-opsgenie` | Opsgenie | `ext.opsgenie` |
+| `mcp-statuspage` | Statuspage | `ext.statuspage` |
+| `mcp-uptime` | Uptime monitoring | `ext.uptime` |
+| `mcp-pingdom` | Pingdom | `ext.pingdom` |
+
+#### Communication, productivity, business
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mcp-confluence` | Confluence | `ext.confluence` |
+| `mcp-airtable` | Airtable | `ext.airtable` |
+| `mcp-coda` | Coda | `ext.coda` |
+| `mcp-clickup` | ClickUp | `ext.clickup` |
+| `mcp-asana` | Asana | `ext.asana` |
+| `mcp-monday` | Monday.com | `ext.monday` |
+| `mcp-trello` | Trello | `ext.trello` |
+| `mcp-basecamp` | Basecamp | `ext.basecamp` |
+| `mcp-slack-enterprise` | Slack Enterprise | `ext.slack-ent` |
+| `mcp-discord` | Discord | `ext.discord` |
+| `mcp-teams` | MS Teams | `ext.teams` |
+| `mcp-zoom` | Zoom | `ext.zoom` |
+| `mcp-meet` | Google Meet | `ext.meet` |
+| `mcp-twilio` | Twilio | `ext.twilio` |
+| `mcp-sendgrid` | SendGrid | `ext.sendgrid` |
+| `mcp-mailgun` | Mailgun | `ext.mailgun` |
+| `mcp-postmark` | Postmark | `ext.postmark` |
+| `mcp-resend` | Resend | `ext.resend` |
+| `mcp-ses` | AWS SES | `ext.ses` |
+| `mcp-mailchimp` | Mailchimp | `ext.mailchimp` |
+| `mcp-stripe` | Stripe | `ext.stripe` |
+| `mcp-paypal` | PayPal | `ext.paypal` |
+| `mcp-square` | Square | `ext.square` |
+| `mcp-braintree` | Braintree | `ext.braintree` |
+| `mcp-adyen` | Adyen | `ext.adyen` |
+| `mcp-paddle` | Paddle | `ext.paddle` |
+| `mcp-chargebee` | Chargebee | `ext.chargebee` |
+| `mcp-quickbooks` | QuickBooks | `ext.quickbooks` |
+| `mcp-xero` | Xero | `ext.xero` |
+| `mcp-freshbooks` | FreshBooks | `ext.freshbooks` |
+| `mcp-zendesk` | Zendesk | `ext.zendesk` |
+| `mcp-intercom` | Intercom | `ext.intercom` |
+| `mcp-freshdesk` | Freshdesk | `ext.freshdesk` |
+| `mcp-helpscout` | Help Scout | `ext.helpscout` |
+| `mcp-zoho` | Zoho CRM | `ext.zoho` |
+| `mcp-hubspot` | HubSpot | `ext.hubspot` |
+| `mcp-salesforce` | Salesforce | `ext.sf` |
+| `mcp-pipedrive` | Pipedrive | `ext.pipedrive` |
+| `mcp-microsoft-dynamics` | MS Dynamics | `ext.dynamics` |
+| `mcp-zoom-info` | ZoomInfo | `ext.zoominfo` |
+| `mcp-clearbit` | Clearbit | `ext.clearbit` |
+| `mcp-typeform` | Typeform | `ext.typeform` |
+| `mcp-google-forms` | Google Forms | `ext.gforms` |
+| `mcp-survey-monkey` | SurveyMonkey | `ext.surveymk` |
+| `mcp-tally` | Tally | `ext.tally` |
+
+#### Testing & QA (extended)
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mcp-postman` | Postman / Newman | `ext.postman` |
+| `mcp-insomnia` | Insomnia | `ext.insomnia` |
+| `mcp-bruno` | Bruno | `ext.bruno` |
+| `mcp-hoppscotch` | Hoppscotch | `ext.hoppscotch` |
+| `mcp-k6` | k6 load testing | `ext.k6` |
+| `mcp-artillery` | Artillery | `ext.artillery` |
+| `mcp-locust` | Locust | `ext.locust` |
+| `mcp-jmeter` | JMeter | `ext.jmeter` |
+| `mcp-gatling` | Gatling | `ext.gatling` |
+| `mcp-selenium` | Selenium | `ext.selenium` |
+| `mcp-webdriverio` | WebdriverIO | `ext.wdio` |
+| `mcp-testcafe` | TestCafe | `ext.testcafe` |
+| `mcp-codecept` | CodeceptJS | `ext.codecept` |
+| `mcp-detox` | Detox (mobile) | `ext.detox` |
+| `mcp-appium` | Appium | `ext.appium` |
+| `mcp-maestro` | Maestro (mobile) | `ext.maestro` |
+| `mcp-pact` | Pact (contract testing) | `ext.pact` |
+| `mcp-wiremock` | WireMock | `ext.wiremock` |
+| `mcp-mountebank` | Mountebank | `ext.mountebank` |
+| `mcp-mock-server` | mock-server | `ext.mock` |
+
+#### Build tools & package managers
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mpn-pnpm` | pnpm | `ext.pnpm` |
+| `mcp-yarn` | Yarn | `ext.yarn` |
+| `mcp-bun` | Bun | `ext.bun` |
+| `mcp-deno` | Deno | `ext.deno` |
+| `mcp-pip` | pip | `ext.pip` |
+| `mcp-poetry` | Poetry | `ext.poetry` |
+| `mcp-uv` | uv | `ext.uv` |
+| `mcp-pdm` | PDM | `ext.pdm` |
+| `mcp-conda` | Conda | `ext.conda` |
+| `mcp-pipenv` | Pipenv | `ext.pipenv` |
+| `mcp-hatch` | Hatch | `ext.hatch` |
+| `mcp-rye` | Rye | `ext.rye` |
+| `mcp-cargo` | Cargo | `ext.cargo` |
+| `mcp-go-modules` | Go modules | `ext.gomod` |
+| `mcp-maven` | Maven | `ext.maven` |
+| `mcp-gradle` | Gradle | `ext.gradle` |
+| `mcp-sbt` | sbt (Scala) | `ext.sbt` |
+| `mcp-leiningen` | Leiningen (Clojure) | `ext.lein` |
+| `mcp-bundle` | Bundler (Ruby) | `ext.bundle` |
+| `mcp-composer` | Composer (PHP) | `ext.composer` |
+| `mcp-hex` | Hex (Elixir) | `ext.hex` |
+| `mcp-rebar3` | rebar3 (Erlang) | `ext.rebar` |
+| `mcp-cocoapods` | CocoaPods | `ext.cocoapods` |
+| `mcp-swift-pm` | SwiftPM | `ext.swiftpm` |
+| `mcp-nuget` | NuGet | `ext.nuget` |
+| `mcp-crates` | crates.io queries | `ext.crates` |
+| `mcp-homebrew` | Homebrew | `ext.brew` |
+| `mcp-winget` | winget | `ext.winget` |
+| `mcp-scoop` | Scoop | `ext.scoop` |
+| `mcp-chocolatey` | Chocolatey | `ext.choco` |
+| `mcp-apt` | apt | `ext.apt` |
+| `mcp-dnf` | dnf | `ext.dnf` |
+| `mcp-pacman` | pacman | `ext.pacman` |
+
+#### AI / ML / data
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mcp-huggingface` | Hugging Face | `ext.hf` |
+| `mcp-ollama` | Ollama | `ext.ollama` |
+| `mcp-openai` | OpenAI | `ext.openai` |
+| `mcp-anthropic` | Anthropic API | `ext.anthropic` |
+| `mcp-mistral` | Mistral | `ext.mistral` |
+| `mcp-gemini` | Gemini | `ext.gemini` |
+| `mcp-cohere` | Cohere | `ext.cohere` |
+| `mcp-replicate` | Replicate | `ext.replicate` |
+| `mcp-together` | Together | `ext.together` |
+| `mcp-groq` | Groq | `ext.groq` |
+| `mcp-perplexity` | Perplexity | `ext.perplexity` |
+| `mcp-langchain` | LangChain | `ext.langchain` |
+| `mcp-llamaindex` | LlamaIndex | `ext.llamaindex` |
+| `mcp-pytorch` | PyTorch | `ext.pytorch` |
+| `mcp-tensorflow` | TensorFlow | `ext.tensorflow` |
+| `mcp-jax` | JAX | `ext.jax` |
+| `mcp-sklearn` | scikit-learn | `ext.sklearn` |
+| `mcp-pandas` | pandas | `ext.pandas` |
+| `mcp-polars` | polars | `ext.polars` |
+| `mcp-dask` | Dask | `ext.dask` |
+| `mcp-ray` | Ray | `ext.ray` |
+| `mcp-spark` | Apache Spark | `ext.spark` |
+| `mcp-dbt` | dbt | `ext.dbt` |
+| `mcp-airflow` | Airflow | `ext.airflow` |
+| `mcp-prefect` | Prefect | `ext.prefect` |
+| `mcp-dagster` | Dagster | `ext.dagster` |
+| `mcp-kedro` | Kedro | `ext.kedro` |
+| `mcp-mlflow` | MLflow | `ext.mlflow` |
+| `mcp-weights-biases` | Weights & Biases | `ext.wb` |
+| `mcp-neptune` | Neptune.ai | `ext.neptune` |
+| `mcp-label-studio` | Label Studio | `ext.labelstudio` |
+| `mcp-argilla` | Argilla | `ext.argilla` |
+| `mcp-ragas` | Ragas (RAG eval) | `ext.ragas` |
+| `mcp-langsmith` | LangSmith | `ext.langsmith` |
+| `mcp-langfuse` | Langfuse | `ext.langfuse` |
+
+#### Security & secrets
+
+| Server | Tool | `namespacePrefix` |
+|---|---|---|
+| `mcp-vault` | HashiCorp Vault | `ext.vault` |
+| `mcp-1password` | 1Password | `ext.op` |
+| `mcp-bitwarden` | Bitwarden | `ext.bw` |
+| `mcp-lastpass` | LastPass | `ext.lastpass` |
+| `mcp-aws-secrets` | AWS Secrets Manager | `ext.aws-sm` |
+| `mcp-gcp-secrets` | GCP Secret Manager | `ext.gcp-sm` |
+| `mcp-azure-keyvault` | Azure Key Vault | `ext.akv` |
+| `mcp-snyk` | Snyk | `ext.snyk` |
+| `mcp-trivy` | Trivy | `ext.trivy` |
+| `mcp-grype` | Grype | `ext.grype` |
+| `mcp-dependabot` | Dependabot | `ext.depabot` |
+| `mcp-renovate` | Renovate | `ext.renovate` |
+| `mcp-sonarqube` | SonarQube | `ext.sonar` |
+| `mcp-codeql` | GitHub CodeQL | `ext.codeql` |
+| `mcp-semgrep` | Semgrep | `ext.semgrep` |
+| `mcp-trufflehog` | TruffleHog | `ext.truffle` |
+| `mcp-gitleaks` | gitleaks | `ext.gitleaks` |
+| `mcp-detect-secrets` | detect-secrets | `ext.detsec` |
+| `mcp-copacetic` | Copacetic | `ext.copa` |
+| `mcp-oras` | ORAS | `ext.oras` |
+| `mcp-cosign` | Sigstore Cosign | `ext.cosign` |
+| `mcp-sigstore` | Sigstore | `ext.sigstore` |
+| `mcp-in-toto` | in-toto | `ext.in-toto` |
+| `mcp-iam-policy` | IAM Policy Generator | `ext.iampoly` |
+| `mcp-cloudsploit` | CloudSploit | `ext.cloudsploit` |
+| `mcp-pacu` | Pacu (AWS pentest) | `ext.pacu` |
+| `mcp-nuclei` | Nuclei | `ext.nuclei` |
+| `mcp-zap` | OWASP ZAP | `ext.zap` |
+| `mcp-burp` | Burp Suite | `ext.burp` |
+| `mcp-mobsf` | MobSF (mobile) | `ext.mobsf` |
+
+> **The 🟡 catalog is illustrative**: each entry becomes
+> claimable as a discrete slice during unpause. The list is the
+> **policy intent**, not a frozen inventory; P1 confirms each
+> entry against the live ecosystem and removes the ones that no
+> longer exist or are abandoned.
+
+### Live tier (⛔ — runtime npm/GitHub fetch)
+
+Only enabled when the user explicitly sets
+`allowDiscoverySearch: true`. The runtime fetch consults the
+**npm registry's `/-/v1/search` endpoint** and the **GitHub
+topics API for `mcp-server`**, with hard limits:
+
+- Max 10 candidates per call.
+- Each candidate must have a pinned version before being added
+  to the config.
+- Every candidate goes through `external_mcp_validate_config`
+  before boot.
+- Every boot requires human ack via `external_mcp_ack`.
+- A rate-limit budget is enforced (10 npm calls / 10 min per
+  workspace).
+
+The user should never enable this unless they understand they
+are trusting the LLM's judgment about which packages to install.
+
 ## Slices
 
 ### S1 — Resume external-mcps plugin after the unpause gate is met
@@ -266,27 +778,42 @@ existing `overview` budget (a00032 S4).
   list below is confirmed by the user and recorded in this slice's
   `## Unpause gate` block:
 
-  1. **Decision: scope of the seed.** The user confirms the seed
-     servers (filesystem + angular) and the per-server
-     `namespacePrefix` values (`ext.fs`, `ext.angular`).
-  2. **Decision: discovery.** The user picks the default for
-     `allowDiscoverySearch` (recommended `false`; off until
-     explicitly enabled).
-  3. **Decision: ack surface.** The user picks how
+  1. **Decision: scope of the curated tier (⭐).** The user
+     approves the curated catalog (~25 servers) that ships in the
+     system prompt. The defaults are listed in the §"Curated tier"
+     table above; the user may add, remove, or reorder before
+     unpausing P2.
+  2. **Decision: scope of the discoverable tier (🟡).** The user
+     confirms the discoverable catalog (~200+ servers, across 9
+     categories). Each 🟡 entry becomes claimable as a discrete
+     slice after P2 lands; none enter the system prompt. The user
+     may trim categories before unpausing.
+  3. **Decision: live search policy (⛔).** The user picks the
+     default for `allowDiscoverySearch` (recommended `false`; off
+     until explicitly enabled). If enabled, the rate-limit budget
+     (10 calls / 10 min) and per-candidate ack requirement are
+     accepted as the cost of breadth.
+  4. **Decision: namespace prefix taxonomy.** The user confirms
+     the `ext.<category>.<tool>` contract and the
+     `namespacePrefix` value for each curated entry. Collisions
+     (e.g. `ext.fs` for filesystem vs `ext.fs` for F#) are
+     resolved here — see the discoverable tier for renames
+     already applied.
+  5. **Decision: ack surface.** The user picks how
      `external_mcp_ack` surfaces in the VS Code host:
      notification + dashboard action, or host-modal dialog.
-  4. **Token budget green.** A benchmark run of `overview` plus
-     `external_mcp_catalog` plus the two seed servers stays under
-     the existing budget envelope; the
+  6. **Token budget green.** A benchmark run of `overview` plus
+     `external_mcp_catalog` plus the curated tier (~25 entries)
+     stays under the existing budget envelope; the
      `packages/core/tests/src/lib/plugin-drift-budget.spec.ts`
      suite still passes.
-  5. **Security review.** The user (or a designated reviewer) signs
+  7. **Security review.** The user (or a designated reviewer) signs
      off on the
      [security risks table](#risks-and-mitigations) below and the
      proposed mitigations (workspace containment via
      `resolveWorkspaceContained`, `redactSecrets` middleware,
-     mandatory version pinning).
-  6. **No conflict with `f00067`.** The multi-model orchestrator's
+     mandatory version pinning, rate-limit budget for live tier).
+  8. **No conflict with `f00067`.** The multi-model orchestrator's
      `usage-tracking` plugin records the external tool calls; we
      confirm the cost-tracking shape accepts `ext.*` tool prefixes
      without changes.

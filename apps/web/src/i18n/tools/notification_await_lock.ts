@@ -1,4 +1,4 @@
-// i18n catalogue for `notification_await_lock`.
+// i18n catalogue for `mcp-vertex_notification_await_lock`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

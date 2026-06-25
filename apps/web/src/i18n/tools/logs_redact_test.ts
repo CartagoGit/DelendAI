@@ -1,4 +1,4 @@
-// i18n catalogue for `logs_redact_test`.
+// i18n catalogue for `mcp-vertex_logs_redact_test`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

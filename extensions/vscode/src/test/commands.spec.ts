@@ -104,7 +104,7 @@ describe('command wiring', async () => {
 
 		expect(calls).toEqual([
 			'mcp-vertex_get_validation_matrix',
-			'quality_run_quality',
+			'mcp-vertex_quality_run_quality',
 		]);
 		expect(panels[0]?.webview.html).toContain('mcp-vertex Validation');
 	});
@@ -134,7 +134,9 @@ describe('command wiring', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('proposals_proposal_board');
+					expect(input.name).toBe(
+						'mcp-vertex_proposals_proposal_board',
+					);
 					return {
 						structuredContent: {
 							proposals: [

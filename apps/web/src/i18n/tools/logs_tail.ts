@@ -1,4 +1,4 @@
-// i18n catalogue for `logs_tail`.
+// i18n catalogue for `mcp-vertex_logs_tail`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

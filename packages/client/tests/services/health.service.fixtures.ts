@@ -38,18 +38,18 @@ export const createFakeTransport = (
 };
 
 export const healthyFixture = {
-	proposals_state_health: {
+	mcp-vertex_proposals_state_health: {
 		healthy: true,
 		locks: { active: 3 },
 		queue: null,
 		registry: { orphans: 0, threshold: '1d' },
 	},
-	proposals_proposal_stale_list: { ok: true, count: 0, zombies: [] },
-	proposals_agent_names: { agents: [{ name: 'a1' }, { name: 'a2' }] },
+	mcp-vertex_proposals_proposal_stale_list: { ok: true, count: 0, zombies: [] },
+	mcp-vertex_proposals_agent_names: { agents: [{ name: 'a1' }, { name: 'a2' }] },
 };
 
 export const unhealthyFixture = {
-	proposals_state_health: {
+	mcp-vertex_proposals_state_health: {
 		healthy: false,
 		locks: { active: 7 },
 		queue: {
@@ -61,7 +61,7 @@ export const unhealthyFixture = {
 		},
 		registry: { orphans: 2, threshold: '1d' },
 	},
-	proposals_proposal_stale_list: {
+	mcp-vertex_proposals_proposal_stale_list: {
 		ok: true,
 		count: 1,
 		zombies: [
@@ -76,7 +76,7 @@ export const unhealthyFixture = {
 			},
 		],
 	},
-	proposals_agent_names: {
+	mcp-vertex_proposals_agent_names: {
 		agents: [{ name: 'a1' }, { name: 'a-stale' }],
 	},
 };

@@ -1,4 +1,4 @@
-// i18n catalogue for `logs_subscribe`.
+// i18n catalogue for `mcp-vertex_logs_subscribe`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

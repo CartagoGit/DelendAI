@@ -6,12 +6,12 @@ import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = () => {
 	const { transport, calls } = createFakeTransport({
-		memory_list: {
+		mcp-vertex_memory_list: {
 			notes: [{ id: 'n1', title: 'Decision', tags: ['proposal'] }],
 			total: 1,
 			offset: 0,
 		},
-		memory_recall: {
+		mcp-vertex_memory_recall: {
 			notes: [
 				{
 					id: 'n1',
@@ -23,7 +23,7 @@ const makeService = () => {
 				},
 			],
 		},
-		memory_save: {
+		mcp-vertex_memory_save: {
 			ok: true,
 			saved: {
 				id: 'n1',
@@ -35,7 +35,7 @@ const makeService = () => {
 			},
 			redactedSecrets: 0,
 		},
-		memory_forget: { ok: true, removed: 'n1' },
+		mcp-vertex_memory_forget: { ok: true, removed: 'n1' },
 	});
 	return {
 		service: new MemoryService(McpStdioClient.fromTransport(transport)),
@@ -49,7 +49,7 @@ describe('MemoryService', async () => {
 		const result = await service.list({ limit: 5 });
 		expect(result.total).toBe(1);
 		expect(result.notes[0]?.title).toBe('Decision');
-		expect(calls[0]).toEqual({ tool: 'memory_list', args: { limit: 5 } });
+		expect(calls[0]).toEqual({ tool: 'mcp-vertex_memory_list', args: { limit: 5 } });
 	});
 
 	it('recalls memory notes', async () => {
@@ -57,7 +57,7 @@ describe('MemoryService', async () => {
 		const result = await service.recall({ query: 'proposal' });
 		expect(result[0]?.body).toContain('proposal workflow');
 		expect(calls[0]).toEqual({
-			tool: 'memory_recall',
+			tool: 'mcp-vertex_memory_recall',
 			args: { query: 'proposal' },
 		});
 	});
@@ -72,8 +72,8 @@ describe('MemoryService', async () => {
 		const forgotten = await service.forget(saved.saved.id);
 		expect(forgotten.removed).toBe('n1');
 		expect(calls.map((c) => c.tool)).toEqual([
-			'memory_save',
-			'memory_forget',
+			'mcp-vertex_memory_save',
+			'mcp-vertex_memory_forget',
 		]);
 	});
 });

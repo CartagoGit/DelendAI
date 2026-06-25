@@ -69,7 +69,7 @@ export const GENERATED_REL_PATH = 'src/generated/tool-outputs.ts';
 
 const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
-/** PascalCase a snake/kebab tool name: `git_status` → `GitStatus`. */
+/** PascalCase a snake/kebab tool name: `mcp-vertex_git_status` → `GitStatus`. */
 export const pascalCase = (name: string): string =>
 	name
 		.split(/[_\-/]+/)
@@ -77,7 +77,7 @@ export const pascalCase = (name: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 
-/** Interface name for a tool's output, e.g. `git_status` → `GitStatusOutput`. */
+/** Interface name for a tool's output, e.g. `mcp-vertex_git_status` → `GitStatusOutput`. */
 export const outputInterfaceName = (toolName: string): string =>
 	`${pascalCase(toolName)}Output`;
 

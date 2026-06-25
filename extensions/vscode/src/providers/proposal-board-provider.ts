@@ -75,7 +75,7 @@ export class ProposalBoardProvider {
 			await this.client.request<
 				Record<string, never>,
 				IProposalBoardOutput
-			>('proposals_proposal_board', {})
+			>('mcp-vertex_proposals_proposal_board', {})
 		).proposals;
 		return this.cache;
 	}

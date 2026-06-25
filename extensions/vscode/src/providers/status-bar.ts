@@ -123,7 +123,7 @@ export class McpVertexStatusBar {
 			const board = await this.client.request<
 				Record<string, never>,
 				IProposalBoardSummary
-			>('proposals_proposal_board', {});
+			>('mcp-vertex_proposals_proposal_board', {});
 			return board.proposals.length;
 		} catch {
 			return '?';
@@ -151,7 +151,7 @@ export class McpVertexStatusBar {
 			const result = await this.client.request<
 				Record<string, never>,
 				{ readonly agents: readonly { readonly name: string }[] }
-			>('proposals_agent_names', {});
+			>('mcp-vertex_proposals_agent_names', {});
 			return result.agents.length;
 		} catch {
 			return undefined;

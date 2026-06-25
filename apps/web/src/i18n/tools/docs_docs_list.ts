@@ -1,4 +1,4 @@
-// i18n catalogue for `docs_docs_list`.
+// i18n catalogue for `mcp-vertex_docs_docs_list`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

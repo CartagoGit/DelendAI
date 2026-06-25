@@ -1,4 +1,4 @@
-// i18n catalogue for `git_status`.
+// i18n catalogue for `mcp-vertex_git_status`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

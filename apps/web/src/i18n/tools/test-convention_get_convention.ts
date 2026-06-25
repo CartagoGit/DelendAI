@@ -1,4 +1,4 @@
-// i18n catalogue for `test-convention_get_convention`.
+// i18n catalogue for `mcp-vertex_test-convention_get_convention`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

@@ -49,7 +49,7 @@ const TOP_LEVEL_EXEMPT: ReadonlySet<string> = new Set([
 	// the same single-token shape as `completion`.
 	'doctor',
 	// `web-fetch` is a 1:1 plugin command: the plugin maps to exactly
-	// one tool (`web-fetch_web_fetch`), so the command *is* the action.
+	// one tool (`mcp-vertex_web-fetch_web_fetch`), so the command *is* the action.
 	// Its namespace is already kebab-case; there is no second token to
 	// add without inventing a redundant `web-fetch fetch`.
 	'web-fetch',

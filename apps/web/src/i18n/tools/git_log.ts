@@ -1,4 +1,4 @@
-// i18n catalogue for `git_log`.
+// i18n catalogue for `mcp-vertex_git_log`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

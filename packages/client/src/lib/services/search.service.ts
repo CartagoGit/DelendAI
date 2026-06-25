@@ -1,5 +1,5 @@
 /**
- * `SearchService` — client wrapper around the `search_search` tool.
+ * `SearchService` — client wrapper around the `mcp-vertex_search_search` tool.
  * Adds two higher-level helpers that don't need a server round-trip:
  *
  * - `searchTools(query, tools)` — fuzzy-substring match over the live
@@ -18,7 +18,7 @@ import type {
 	IToolHit,
 } from '../contracts/interfaces/search.interface';
 
-const TOOL_SEARCH = 'search_search';
+const TOOL_SEARCH = 'mcp-vertex_search_search';
 
 export class SearchService {
 	constructor(private readonly client: McpStdioClient) {}

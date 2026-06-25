@@ -9,10 +9,10 @@ import type {
 	IMemorySaveResult,
 } from '../contracts/interfaces/memory.interface';
 
-const MEMORY_LIST = 'memory_list';
-const MEMORY_RECALL = 'memory_recall';
-const MEMORY_SAVE = 'memory_save';
-const MEMORY_FORGET = 'memory_forget';
+const MEMORY_LIST = 'mcp-vertex_memory_list';
+const MEMORY_RECALL = 'mcp-vertex_memory_recall';
+const MEMORY_SAVE = 'mcp-vertex_memory_save';
+const MEMORY_FORGET = 'mcp-vertex_memory_forget';
 
 export class MemoryService {
 	constructor(private readonly client: McpStdioClient) {}

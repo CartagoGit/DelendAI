@@ -1,7 +1,7 @@
 /**
  * `HealthService` — client-side aggregator for the Health panel
- * (S4 in f126). Calls `proposals_state_health`,
- * `proposals_proposal_stale_list` and `proposals_agent_names` and
+ * (S4 in f126). Calls `mcp-vertex_proposals_state_health`,
+ * `mcp-vertex_proposals_proposal_stale_list` and `mcp-vertex_proposals_agent_names` and
  * flattens them into a single `IHealthSnapshot` that the panel
  * renders without further processing.
  *
@@ -15,9 +15,9 @@ import type {
 	IStaleAgent,
 } from '../contracts/interfaces/health.interface';
 
-const TOOL_STATE_HEALTH = 'proposals_state_health';
-const TOOL_STALE_LIST = 'proposals_proposal_stale_list';
-const TOOL_AGENT_NAMES = 'proposals_agent_names';
+const TOOL_STATE_HEALTH = 'mcp-vertex_proposals_state_health';
+const TOOL_STALE_LIST = 'mcp-vertex_proposals_proposal_stale_list';
+const TOOL_AGENT_NAMES = 'mcp-vertex_proposals_agent_names';
 
 export class HealthService {
 	constructor(private readonly client: McpStdioClient) {}

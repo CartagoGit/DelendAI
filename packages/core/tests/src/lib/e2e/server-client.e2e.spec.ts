@@ -58,8 +58,8 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 		const { tools } = await client.listTools();
 		const names = tools.map((t) => t.name);
 		expect(names).toContain('mcp-vertex_overview');
-		expect(names).toContain('memory_save');
-		expect(names).toContain('memory_recall');
+		expect(names).toContain('mcp-vertex_memory_save');
+		expect(names).toContain('mcp-vertex_memory_recall');
 	});
 
 	it('overview (callTool) maps the loaded memory plugin', async () => {
@@ -77,14 +77,14 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 
 	it('round-trips a note through save → recall over the protocol', async () => {
 		const saved = await client.callTool({
-			name: 'memory_save',
+			name: 'mcp-vertex_memory_save',
 			arguments: {
 				title: 'E2E decision',
 				body: 'we ship via in-memory',
 				tags: ['e2e'],
 			},
 		});
-		// N16: memory_save declares an outputSchema, so the SDK validated the
+		// N16: mcp-vertex_memory_save declares an outputSchema, so the SDK validated the
 		// structuredContent on the way out, and a modern client reads it
 		// directly. A wrong schema would have thrown McpError here.
 		const savedStructured = saved.structuredContent as {
@@ -95,7 +95,7 @@ describe('e2e: real MCP client ↔ assembled server', async () => {
 		expect(savedStructured.saved.title).toBe('E2E decision');
 
 		const res = await client.callTool({
-			name: 'memory_recall',
+			name: 'mcp-vertex_memory_recall',
 			arguments: { query: 'in-memory' },
 		});
 		const text = (res.content as Array<{ type: string; text: string }>)[0]

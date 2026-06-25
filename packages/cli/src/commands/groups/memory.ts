@@ -5,12 +5,12 @@
  * itself (the plugin owns `withFileMutex` + `writeFileAtomic`).
  *
  * Tools mapped:
- *   - `memory_save`   ({ title, body, tags?, ttlSeconds? })
- *   - `memory_recall` ({ query?, tags?, limit? })
- *   - `memory_list`   ({ limit?, offset? })
- *   - `memory_forget` ({ id })
- *   - `memory_export` ({ format?, includeExpired? })
- *   - `memory_import` ({ payload, format?, mode?, conflict? })
+ *   - `mcp-vertex_memory_save`   ({ title, body, tags?, ttlSeconds? })
+ *   - `mcp-vertex_memory_recall` ({ query?, tags?, limit? })
+ *   - `mcp-vertex_memory_list`   ({ limit?, offset? })
+ *   - `mcp-vertex_memory_forget` ({ id })
+ *   - `mcp-vertex_memory_export` ({ format?, includeExpired? })
+ *   - `mcp-vertex_memory_import` ({ payload, format?, mode?, conflict? })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -38,7 +38,7 @@ const memorySaveCommand: ICliCommand = {
 		const tags = listArg(args, 'tags');
 		const ttl = numberArg(args, 'ttl') ?? numberArg(args, 'ttlSeconds');
 		return data(
-			await request(ctx, 'memory_save', {
+			await request(ctx, 'mcp-vertex_memory_save', {
 				title,
 				body,
 				...(tags !== undefined ? { tags } : {}),
@@ -56,7 +56,7 @@ const memoryRecallCommand: ICliCommand = {
 		const tags = listArg(args, 'tags');
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		return data(
-			await request(ctx, 'memory_recall', {
+			await request(ctx, 'mcp-vertex_memory_recall', {
 				...(query !== undefined ? { query } : {}),
 				...(tags !== undefined ? { tags } : {}),
 				...(limit !== undefined ? { limit } : {}),
@@ -72,7 +72,7 @@ const memoryListCommand: ICliCommand = {
 		const limit = numberArg(args, 'limit') ?? numberArg(args, 'max');
 		const offset = numberArg(args, 'offset');
 		return data(
-			await request(ctx, 'memory_list', {
+			await request(ctx, 'mcp-vertex_memory_list', {
 				...(limit !== undefined ? { limit } : {}),
 				...(offset !== undefined ? { offset } : {}),
 			}),
@@ -86,7 +86,7 @@ const memoryForgetCommand: ICliCommand = {
 	async run(args, ctx) {
 		const id = positionalArg(args);
 		if (id === undefined) return usage('memory forget <id>');
-		return data(await request(ctx, 'memory_forget', { id }));
+		return data(await request(ctx, 'mcp-vertex_memory_forget', { id }));
 	},
 };
 
@@ -97,7 +97,7 @@ const memoryExportCommand: ICliCommand = {
 		const format = scalarArg(args, 'format');
 		const includeExpired = hasFlag(args, 'include-expired');
 		return data(
-			await request(ctx, 'memory_export', {
+			await request(ctx, 'mcp-vertex_memory_export', {
 				...(format !== undefined ? { format } : {}),
 				...(includeExpired ? { includeExpired: true } : {}),
 			}),
@@ -119,7 +119,7 @@ const memoryImportCommand: ICliCommand = {
 		const mode = scalarArg(args, 'mode');
 		const conflict = scalarArg(args, 'conflict');
 		return data(
-			await request(ctx, 'memory_import', {
+			await request(ctx, 'mcp-vertex_memory_import', {
 				payload,
 				...(format !== undefined ? { format } : {}),
 				...(mode !== undefined ? { mode } : {}),

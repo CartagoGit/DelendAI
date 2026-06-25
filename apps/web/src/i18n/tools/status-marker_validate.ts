@@ -1,4 +1,4 @@
-// i18n catalogue for `status-marker_validate`.
+// i18n catalogue for `mcp-vertex_status-marker_validate`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

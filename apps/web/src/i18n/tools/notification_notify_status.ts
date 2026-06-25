@@ -1,4 +1,4 @@
-// i18n catalogue for `notification_notify_status`.
+// i18n catalogue for `mcp-vertex_notification_notify_status`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

@@ -1,4 +1,4 @@
-// i18n catalogue for `deps_deps_check`.
+// i18n catalogue for `mcp-vertex_deps_deps_check`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

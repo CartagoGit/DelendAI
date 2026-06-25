@@ -118,7 +118,7 @@ export const PushFromMainRule: IWorkflowRule = {
 };
 
 /** Rule 3 — placeholder for the sync-race heuristic. The real
- *  enforcement requires cross-referencing `proposals_sync_proposals`
+ *  enforcement requires cross-referencing `mcp-vertex_proposals_sync_proposals`
  *  MCP invocations against slice-close timestamps; that telemetry is
  *  not yet exported by the proposals plugin (post-f00049 follow-up).
  *

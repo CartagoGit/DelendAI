@@ -1,9 +1,9 @@
 /**
- * f00046 S8 — web-fetch command. Delegates 1:1 to `web-fetch_web_fetch`,
+ * f00046 S8 — web-fetch command. Delegates 1:1 to `mcp-vertex_web-fetch_web_fetch`,
  * the opt-in, allow-listed, fail-closed URL fetcher.
  *
  * Tools mapped:
- *   - `web-fetch_web_fetch` ({ url, maxBytes?, timeoutMs? })
+ *   - `mcp-vertex_web-fetch_web_fetch` ({ url, maxBytes?, timeoutMs? })
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import {
@@ -27,7 +27,7 @@ const webFetchCommand: ICliCommand = {
 		const timeoutMs =
 			numberArg(args, 'timeout') ?? numberArg(args, 'timeoutMs');
 		return data(
-			await request(ctx, 'web-fetch_web_fetch', {
+			await request(ctx, 'mcp-vertex_web-fetch_web_fetch', {
 				url,
 				...(maxBytes !== undefined ? { maxBytes } : {}),
 				...(timeoutMs !== undefined ? { timeoutMs } : {}),

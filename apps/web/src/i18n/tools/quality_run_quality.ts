@@ -1,4 +1,4 @@
-// i18n catalogue for `quality_run_quality`.
+// i18n catalogue for `mcp-vertex_quality_run_quality`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

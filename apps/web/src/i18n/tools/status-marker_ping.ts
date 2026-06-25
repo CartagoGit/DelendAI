@@ -1,4 +1,4 @@
-// i18n catalogue for `status-marker_ping`.
+// i18n catalogue for `mcp-vertex_status-marker_ping`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

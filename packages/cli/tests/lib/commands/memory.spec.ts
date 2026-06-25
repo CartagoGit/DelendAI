@@ -62,7 +62,7 @@ describe('memory group (f00046 S2)', async () => {
 		]);
 	});
 
-	it('memory save maps title/body/tags/ttl to memory_save', async () => {
+	it('memory save maps title/body/tags/ttl to mcp-vertex_memory_save', async () => {
 		const { ctx, calls } = buildStubContext();
 		const res = await find('memory save').run(
 			['my-note', '--body=hello', '--tags=a,b', '--ttl=60'],
@@ -70,7 +70,7 @@ describe('memory group (f00046 S2)', async () => {
 		);
 		expect(res.code).toBe(EXIT_CODE.OK);
 		expect(calls[0]).toEqual({
-			tool: 'memory_save',
+			tool: 'mcp-vertex_memory_save',
 			args: {
 				title: 'my-note',
 				body: 'hello',
@@ -94,7 +94,7 @@ describe('memory group (f00046 S2)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'memory_recall',
+			tool: 'mcp-vertex_memory_recall',
 			args: { query: 'needle', tags: ['x'], limit: 5 },
 		});
 	});
@@ -103,7 +103,7 @@ describe('memory group (f00046 S2)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('memory list').run(['--limit=10', '--offset=20'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'memory_list',
+			tool: 'mcp-vertex_memory_list',
 			args: { limit: 10, offset: 20 },
 		});
 	});
@@ -114,7 +114,7 @@ describe('memory group (f00046 S2)', async () => {
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
 		await find('memory forget').run(['note-123'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'memory_forget',
+			tool: 'mcp-vertex_memory_forget',
 			args: { id: 'note-123' },
 		});
 	});
@@ -126,7 +126,7 @@ describe('memory group (f00046 S2)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'memory_export',
+			tool: 'mcp-vertex_memory_export',
 			args: { format: 'ndjson', includeExpired: true },
 		});
 	});
@@ -145,7 +145,7 @@ describe('memory group (f00046 S2)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'memory_import',
+			tool: 'mcp-vertex_memory_import',
 			args: {
 				payload: '{"notes":[]}',
 				mode: 'merge',

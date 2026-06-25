@@ -99,7 +99,7 @@ export class NotificationsService {
 					readonly files: readonly string[];
 				}>;
 			}
-		>('notification_notify_status', {});
+		>('mcp-vertex_notification_notify_status', {});
 		const status = {
 			...output,
 			lastReleases: output.lastReleases.map((event) => ({
@@ -117,7 +117,7 @@ export class NotificationsService {
 		const output = await this.client.request<
 			IAwaitLockOptions,
 			IAwaitLockResult
-		>('notification_await_lock', options);
+		>('mcp-vertex_notification_await_lock', options);
 		if (output.released || output.alreadyFree) {
 			this.dispatch({
 				type: 'lock-released',

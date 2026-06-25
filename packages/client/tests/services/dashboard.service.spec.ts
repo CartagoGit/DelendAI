@@ -57,7 +57,9 @@ describe('DashboardService', async () => {
 		expect(model.tokensUsed).toBe(Math.ceil(7800 * 0.25));
 		expect(model.tokensSaved).toBe(Math.round(model.tokensUsed * 0.18));
 		expect(model.savingsPercent).toBe(18);
-		expect(model.topByTokens[0]?.tool).toBe('proposals_proposal_board');
+		expect(model.topByTokens[0]?.tool).toBe(
+			'mcp-vertex_proposals_proposal_board',
+		);
 	});
 
 	it('requests compact overview for dashboard totals', async () => {
@@ -87,8 +89,10 @@ describe('DashboardService', async () => {
 		expect(proposals).toBeDefined();
 		expect(proposals?.tools).toBe(2);
 		expect(proposals?.calls).toBe(
-			metricsFixture.tools.proposals_proposal_board.calls +
-				metricsFixture.tools.proposals_agent_names.calls,
+			metricsFixture.tools.mcp -
+				vertex_proposals_proposal_board.calls +
+				metricsFixture.tools.mcp -
+				vertex_proposals_agent_names.calls,
 		);
 		const total = model.rows.reduce((s, r) => s + r.tokens, 0);
 		expect(total).toBeGreaterThan(0);
@@ -113,7 +117,7 @@ describe('DashboardService', async () => {
 	it('getTimesModel returns p50/p95/histogram and slowest tool', async () => {
 		const { service } = makeService();
 		const model = await service.getTimesModel();
-		expect(model.slowestTool?.tool).toBe('quality_run_quality');
+		expect(model.slowestTool?.tool).toBe('mcp-vertex_quality_run_quality');
 		expect(model.slowestTool?.maxMs).toBe(1500);
 		expect(model.p50Ms).toBeGreaterThan(0);
 		expect(model.p95Ms).toBeGreaterThanOrEqual(model.p50Ms);
@@ -140,7 +144,9 @@ describe('DashboardService', async () => {
 		expect(all.tools.rows.length).toBeGreaterThan(0);
 		expect(all.plugins.rows.length).toBeGreaterThan(0);
 		expect(all.sessions.total).toBe(3);
-		expect(all.times.slowestTool?.tool).toBe('quality_run_quality');
+		expect(all.times.slowestTool?.tool).toBe(
+			'mcp-vertex_quality_run_quality',
+		);
 		expect(all.agents.totalActive).toBe(2);
 		expect(all.server.name).toBe('mcp-vertex');
 		// The four upstream tools were each called exactly once.
@@ -154,7 +160,7 @@ describe('DashboardService', async () => {
 		const { transport } = createFakeTransport({
 			'mcp-vertex_overview': overviewFixture,
 			'mcp-vertex_metrics': metricsFixture,
-			// proposals_proposal_board / proposals_agent_names are absent
+			// mcp-vertex_proposals_proposal_board / mcp-vertex_proposals_agent_names are absent
 		});
 		const client = McpStdioClient.fromTransport(transport);
 		const service = new DashboardService({ client });

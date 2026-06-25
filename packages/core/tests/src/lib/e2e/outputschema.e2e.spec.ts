@@ -109,30 +109,33 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		{ name: 'mcp-vertex_plan_mcp_project' },
 		// r00002 S2: dryRun defaults true — returns files without writing.
 		{ name: 'mcp-vertex_scaffold', args: { kind: 'tool', name: 'demo' } },
-		{ name: 'git_status' },
-		{ name: 'git_changed' },
-		{ name: 'git_diff' },
-		{ name: 'git_log' },
-		{ name: 'quality_get_quality_scopes' },
-		{ name: 'memory_list' },
-		{ name: 'search_search', args: { query: 'e2e' } },
-		{ name: 'notification_notify_status' },
-		{ name: 'docs_docs_list' },
-		{ name: 'docs_docs_read', args: { path: 'README.md' } },
-		{ name: 'deps_deps_list' },
-		{ name: 'deps_deps_check' },
-		{ name: 'proposals_state_health' },
-		{ name: 'proposals_proposal_board' },
-		{ name: 'proposals_compact_status' },
-		{ name: 'proposals_compact_status', args: { fields: ['locks'] } },
-		{ name: 'proposals_auto_work' },
+		{ name: 'mcp-vertex_git_status' },
+		{ name: 'mcp-vertex_git_changed' },
+		{ name: 'mcp-vertex_git_diff' },
+		{ name: 'mcp-vertex_git_log' },
+		{ name: 'mcp-vertex_quality_get_quality_scopes' },
+		{ name: 'mcp-vertex_memory_list' },
+		{ name: 'mcp-vertex_search_search', args: { query: 'e2e' } },
+		{ name: 'mcp-vertex_notification_notify_status' },
+		{ name: 'mcp-vertex_docs_docs_list' },
+		{ name: 'mcp-vertex_docs_docs_read', args: { path: 'README.md' } },
+		{ name: 'mcp-vertex_deps_deps_list' },
+		{ name: 'mcp-vertex_deps_deps_check' },
+		{ name: 'mcp-vertex_proposals_state_health' },
+		{ name: 'mcp-vertex_proposals_proposal_board' },
+		{ name: 'mcp-vertex_proposals_compact_status' },
+		{
+			name: 'mcp-vertex_proposals_compact_status',
+			args: { fields: ['locks'] },
+		},
+		{ name: 'mcp-vertex_proposals_auto_work' },
 		// action-multiplexed (read-only actions) — permissive object schema
-		{ name: 'proposals_task_queue', args: { action: 'report' } },
-		{ name: 'proposals_agent_names', args: { action: 'list' } },
-		{ name: 'proposals_agent_lock', args: { action: 'status' } },
-		{ name: 'proposals_round_context' },
-		{ name: 'proposals_sync_proposals' },
-		{ name: 'proposals_get_proposal_workflow' },
+		{ name: 'mcp-vertex_proposals_task_queue', args: { action: 'report' } },
+		{ name: 'mcp-vertex_proposals_agent_names', args: { action: 'list' } },
+		{ name: 'mcp-vertex_proposals_agent_lock', args: { action: 'status' } },
+		{ name: 'mcp-vertex_proposals_round_context' },
+		{ name: 'mcp-vertex_proposals_sync_proposals' },
+		{ name: 'mcp-vertex_proposals_get_proposal_workflow' },
 	];
 
 	it('every read-only tool returns schema-valid structuredContent', async () => {
@@ -167,15 +170,17 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		).tools;
 		const effOf = (name: string) =>
 			tools.find((t) => t.name === name)?.effects;
-		expect(effOf('memory_save')).toContain('write');
-		expect(effOf('memory_forget')).toEqual(
+		expect(effOf('mcp-vertex_memory_save')).toContain('write');
+		expect(effOf('mcp-vertex_memory_forget')).toEqual(
 			expect.arrayContaining(['write', 'destructive']),
 		);
-		expect(effOf('quality_run_quality')).toContain('spawn');
-		expect(effOf('proposals_create_proposal')).toContain('write');
+		expect(effOf('mcp-vertex_quality_run_quality')).toContain('spawn');
+		expect(effOf('mcp-vertex_proposals_create_proposal')).toContain(
+			'write',
+		);
 		// genuinely read-only tools advertise no effects
-		expect(effOf('git_status')).toBeUndefined();
-		expect(effOf('search_search')).toBeUndefined();
+		expect(effOf('mcp-vertex_git_status')).toBeUndefined();
+		expect(effOf('mcp-vertex_search_search')).toBeUndefined();
 		expect(effOf('mcp-vertex_overview')).toBeUndefined();
 	});
 
@@ -230,7 +235,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 
 	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
 		const created = await client.callTool({
-			name: 'proposals_create_proposal',
+			name: 'mcp-vertex_proposals_create_proposal',
 			arguments: {
 				id: 'p1',
 				title: 'demo',
@@ -243,7 +248,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(cs.file).toContain('p1');
 
 		const closed = await client.callTool({
-			name: 'proposals_close_slice',
+			name: 'mcp-vertex_proposals_close_slice',
 			arguments: { proposalId: 'p1', sliceId: 's1' },
 		});
 		expect(closed.isError, 'close_slice').toBeFalsy();

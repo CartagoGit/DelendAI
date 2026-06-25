@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_proposal_transition`.
+// i18n catalogue for `mcp-vertex_proposals_proposal_transition`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

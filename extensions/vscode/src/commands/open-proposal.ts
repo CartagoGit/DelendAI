@@ -22,7 +22,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 			const board = await deps.client.request<
 				Record<string, never>,
 				IProposalBoardOutput
-			>('proposals_proposal_board', {});
+			>('mcp-vertex_proposals_proposal_board', {});
 			const panel = deps.vscode.window.createWebviewPanel(
 				'mcpVertexProposals',
 				'mcp-vertex Proposals',

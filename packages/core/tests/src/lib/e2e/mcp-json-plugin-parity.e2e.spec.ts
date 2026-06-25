@@ -54,8 +54,8 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 	it('loads config-declared plugins even when mcp.json passes only workspace', async () => {
 		const { tools } = await client.listTools();
 		const names = tools.map((tool) => tool.name);
-		expect(names).toContain('memory_save');
-		expect(names).toContain('memory_recall');
+		expect(names).toContain('mcp-vertex_memory_save');
+		expect(names).toContain('mcp-vertex_memory_recall');
 
 		const res = await client.callTool({
 			name: 'mcp-vertex_overview',
@@ -127,7 +127,7 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 				const names = tools.map((tool) => tool.name);
 				// The host still boots and the plugin that DID resolve is fully
 				// usable — a missing plugin must not take down the surface.
-				expect(names).toContain('memory_save');
+				expect(names).toContain('mcp-vertex_memory_save');
 
 				const res = await badClient.callTool({
 					name: 'mcp-vertex_overview',

@@ -12,7 +12,7 @@ describe('NotificationsService', async () => {
 			McpStdioClient.fromTransport({
 				async callTool(input) {
 					expect(input).toEqual({
-						name: 'notification_notify_status',
+						name: 'mcp-vertex_notification_notify_status',
 						arguments: {},
 					});
 					return {
@@ -65,7 +65,7 @@ describe('NotificationsService', async () => {
 			McpStdioClient.fromTransport({
 				async callTool(input) {
 					expect(input).toEqual({
-						name: 'notification_await_lock',
+						name: 'mcp-vertex_notification_await_lock',
 						arguments: { taskId: 't2', timeoutMs: 10 },
 					});
 					return {

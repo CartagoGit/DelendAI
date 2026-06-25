@@ -56,7 +56,7 @@ describe('notification group (f00046 S8)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'notification_await_lock',
+			tool: 'mcp-vertex_notification_await_lock',
 			args: { taskId: 't1', timeoutMs: 5000 },
 		});
 	});
@@ -72,7 +72,7 @@ describe('web-fetch group (f00046 S8)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'web-fetch_web_fetch',
+			tool: 'mcp-vertex_web-fetch_web_fetch',
 			args: {
 				url: 'https://example.com',
 				maxBytes: 1000,
@@ -90,7 +90,7 @@ describe('status-marker group (f00046 S8)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'status-marker_close',
+			tool: 'mcp-vertex_status-marker_close',
 			args: { state: 'CAP', reason: 'out of budget' },
 		});
 	});
@@ -98,6 +98,9 @@ describe('status-marker group (f00046 S8)', async () => {
 	it('ping takes no args', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(statusMarkerCommands, 'status-marker ping').run([], ctx);
-		expect(calls[0]).toEqual({ tool: 'status-marker_ping', args: {} });
+		expect(calls[0]).toEqual({
+			tool: 'mcp-vertex_status-marker_ping',
+			args: {},
+		});
 	});
 });
