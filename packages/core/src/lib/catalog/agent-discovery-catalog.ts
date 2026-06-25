@@ -36,6 +36,7 @@ const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
 	version: skill.version,
 	minCoreVersion: skill.minCoreVersion,
 	summary: skill.summary,
+	appliesTo: [...skill.appliesTo],
 	tags: [...skill.tags],
 	bodyPath: skill.bodyPath,
 });

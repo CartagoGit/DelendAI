@@ -503,6 +503,48 @@ export interface ITranslations {
 	readonly presets: IPresetsTranslations;
 	readonly setup: ISetupTranslations;
 	readonly ui: IUiTranslations;
+	readonly homeQuickInstall: IHomeQuickInstallTranslations;
+	readonly homeAtAGlance: IHomeAtAGlanceTranslations;
+}
+
+/**
+ * Home page — simplified install strip (l123 S1). One tab per package
+ * manager, one command per tab, one short note + a link to the full
+ * install matrix. Keeps the home page self-contained while still
+ * nudging visitors toward `/install` for IDE-specific configs,
+ * presets, and `--check` self-diagnose.
+ */
+export interface IHomeQuickInstallTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly tabsLabel: string;
+	/** Per-PM copy: `{ id, note }`. `id` matches the `packageManagers`
+	 * ids in `apps/web/src/data/install.ts` (npm, pnpm, yarn, bun, deno). */
+	readonly pms: ReadonlyArray<{
+		readonly id: string;
+		readonly note: string;
+	}>;
+	readonly recommended: string;
+	readonly fullCta: string;
+}
+
+/**
+ * Home page — at-a-glance tab strip (l123 S1). One tab per main entry
+ * point on the site. Each panel has a one-sentence description and a
+ * single CTA link to the full page. The exhaustive content lives on
+ * the dedicated route — the home only orients.
+ */
+export interface IHomeAtAGlanceTranslations {
+	readonly title: string;
+	readonly lead: string;
+	readonly tabsLabel: string;
+	readonly openSection: string;
+	readonly panels: ReadonlyArray<{
+		readonly id: string;
+		readonly label: string;
+		readonly summary: string;
+		readonly href: string;
+	}>;
 }
 
 /** Per-language dictionary type. A language file must default-export a value assignable to this. */

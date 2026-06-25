@@ -19,8 +19,11 @@ a skill, or the code itself.
 | Compare what the outside world does | [`external/`](external/) — one page per tool |
 | Decide "should we build X?" | [`synthesis/comparison-table.md`](synthesis/comparison-table.md) → [`synthesis/patterns-to-borrow.md`](synthesis/patterns-to-borrow.md) |
 | See concrete usage examples | [`scenarios/`](scenarios/) — the user's "Copilot + M3 MiniMax" example and others |
-| Pick a model for a specific task right now | [`04-recommended-approach.md`](04-recommended-approach.md) — Option D (handoff) |
+| Pick a model for a specific task right now | [`04-recommended-approach.md`](04-recommended-approach.md) — Option D (handoff), v2 with root-level `providers` |
 | [`05-option-E-subprocess-mcp.md`](05-option-E-subprocess-mcp.md) — Option E (subprocess + MCP client) |
+| [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) — bootstrap wizard, quotas, fallback |
+| [`07-plugin-orchestrator-runner.md`](07-plugin-orchestrator-runner.md) — the plugin |
+| [`08-usage-tracking-plugin.md`](08-usage-tracking-plugin.md) — observability plugin |
 
 ---
 
@@ -33,8 +36,11 @@ a skill, or the code itself.
 - [`03-four-options-considered.md`](03-four-options-considered.md) — Options A / B / C / D, pros and cons
 - [`04-recommended-approach.md`](04-recommended-approach.md) — Option D as concrete design
 
-### 05 — Subprocess & MCP-server invocation (Option E)
+### 05–08 — Runtime concerns (built on top of 00–04)
 - [`05-option-E-subprocess-mcp.md`](05-option-E-subprocess-mcp.md) — spawn `claude -p` / `codex exec` / `codex mcp-server` as subprocesses; chain tools without the user pasting anything. **Supersedes Option D's execution model.**
+- [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) — wizard, cache/config split, healthcheck, quota tracking (3 sources + reset), fallback chains with TTL, LLM-as-cost-analyst.
+- [`07-plugin-orchestrator-runner.md`](07-plugin-orchestrator-runner.md) — the new plugin; tools, contracts, subprocess pool, MCP-client for Codex.
+- [`08-usage-tracking-plugin.md`](08-usage-tracking-plugin.md) — the dedicated observability plugin (per-agent / per-plugin / per-model / per-extension).
 
 ### `external/` — One page per tool in the wild
 - [`litellm.md`](external/litellm.md)

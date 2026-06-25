@@ -14,7 +14,10 @@ export interface ISkillSummary {
 	readonly id: string;
 	readonly version: string;
 	readonly minCoreVersion: string;
+	/** Compact "what + when to use" line, derived from the SKILL.md frontmatter. */
 	readonly summary: string;
+	/** Plugin namespaces this skill applies to (`@mcp-vertex/*` for transversal). */
+	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
 	readonly bodyPath: string;
 }

@@ -33,18 +33,19 @@ import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
-import {
-	deriveSkillSummary,
-	type IProposalSummary,
-	type ISkillSummary,
-	type IToolSummary,
+import type {
+	IProposalSummary,
+	ISkillSummary,
+	IToolSummary,
 } from '../catalog/agent-discovery-types';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
+import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { loadSkills } from '../skills/load-skills';
 import { SKILL_MANIFEST_REL } from '../skills/skill-paths';
+import { buildSkillCatalog } from '../skills/skill-catalog';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildAgentCatalogToolRegistration } from '../tools/agent-catalog-tool';
 import type {
@@ -324,14 +325,29 @@ export const assembleCliConfig = async (
 					join(args.workspace, 'skills', 'manifest.json'),
 					args.serverVersion,
 				);
-	const skillSummaries: readonly ISkillSummary[] = skillBundles.map(
-		(skill) => ({
-			id: skill.id,
-			version: skill.version,
-			minCoreVersion: skill.minCoreVersion,
-			summary: deriveSkillSummary(skill.id, undefined),
-			tags: [...skill.tags],
-			bodyPath: skill.bodyPath,
+	// Build the compact, actionable skill catalog once (f00065 slice-B): read
+	// each SKILL.md a single time to extract its frontmatter "what + when to
+	// use" line, then keep only compact rows. Bodies are loaded on demand via
+	// the `skill` tool, never pushed to context by default.
+	const skillCatalog = await buildSkillCatalog(
+		args.workspace,
+		skillBundles,
+		async (absPath) => {
+			const body = await readFile(absPath);
+			if (body === undefined)
+				throw new Error(`skill body not found: ${absPath}`);
+			return body;
+		},
+	);
+	const skillSummaries: readonly ISkillSummary[] = skillCatalog.entries.map(
+		(entry) => ({
+			id: entry.id,
+			version: entry.version,
+			minCoreVersion: entry.minCoreVersion,
+			summary: entry.description,
+			appliesTo: [...entry.appliesTo],
+			tags: [...entry.tags],
+			bodyPath: entry.bodyPath,
 		}),
 	);
 	const proposalSummaries = await readProposalsIndex(
@@ -449,6 +465,7 @@ export const assembleCliConfig = async (
 			},
 		}),
 		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
+		buildSkillToolRegistration(corePrefix, () => skillCatalog),
 		buildValidationMatrixToolRegistration(
 			corePrefix,
 			() => validationMatrix,

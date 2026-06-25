@@ -45,6 +45,7 @@ export const buildAgentBootstrapPromptRegistration = (
 									'1. Call `mcp-vertex_overview` first to map the server and confirm the loaded plugin surface.',
 									'2. Call `mcp-vertex_agent_catalog` with `{ "mode": "compact" }` to discover the canonical tools, skills, and actionable proposals available right now.',
 									'3. Narrow with `section` or `query` before doing work, then pick the matching proposal or skill instead of rereading docs broadly.',
+									'4. To use a skill: call `mcp-vertex_skill` (no args) for the compact list of what each skill is and when to use it, then `mcp-vertex_skill { "id": "<skill-id>" }` to load that one skill body only when you are about to apply it (keeps token cost low).',
 									`Actionable proposals: ${actionable}`,
 								].join('\n'),
 							},

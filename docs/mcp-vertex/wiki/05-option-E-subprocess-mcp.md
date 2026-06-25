@@ -167,14 +167,22 @@ bootstrap wizard that reads your disk."*
 > *"El usuario no va a saber valorarlo ni configurarlo, para eso
 > está la IA."*
 
-One tool call: `<prefix>_bootstrap_providers`. Behaviour:
+> **Updated 2026-06-25 (turn 5):** the LLM writes to
+> `~/.cache/mcp-vertex/roster.draft.json` (cache, never edited by
+> hand), the user reviews the diff, and on confirm the orchestrator
+> copies the relevant subset to `mcp-vertex.config.json#providers`
+> (versionado). See [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) §3
+> for the full flow including the cache/config split.
+
+One tool call: `orchestrator_runner_bootstrap_providers`. Behaviour:
 
 1. Run the PATH probe (`command -v claude codex copilot aider cn
    agent`).
 2. For each found tool, run the cheapest "tell me about yourself"
    command (`claude auth status`, `codex mcp-server` + `model/list`,
    `copilot help providers`, `aider --list-models`, etc.).
-3. Present a **prose summary** to the LLM of the caller:
+3. Write raw discovery to `~/.cache/mcp-vertex/roster.draft.json`.
+4. Present a **prose summary** to the LLM of the caller:
 
    > *"The user has installed: Claude Code (logged in, Pro tier),
    > Codex CLI (logged in, Pro tier), GitHub Copilot CLI (default
@@ -185,12 +193,15 @@ One tool call: `<prefix>_bootstrap_providers`. Behaviour:
    > to determine their cost preference and which subscription
    > capabilities they want exposed, then propose a roster."*
 
-4. The LLM asks the user 2-3 questions in natural language.
-5. The orchestrator converts the LLM's prose answer to the JSON
-   roster and persists it.
+5. The LLM asks the user 2-3 questions in natural language.
+6. The orchestrator converts the LLM's prose answer to the JSON
+   roster, updates the **draft** (still in cache), and shows the
+   diff to the user.
+7. User confirms → orchestrator copies the relevant subset to
+   `mcp-vertex.config.json#providers` (versionado).
 
-**The user never touches JSON.** The LLM does. The orchestrator
-enforces the schema.
+**The user never types JSON.** The LLM does. The orchestrator
+enforces the schema. The diff is the review surface.
 
 ---
 

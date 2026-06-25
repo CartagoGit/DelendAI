@@ -9,15 +9,22 @@ build it, this is the spec.
 
 ---
 
-## 1. Config schema (additive)
+## 1. Config schema (additive, **root-level**)
+
+> **Updated 2026-06-25 (turn 5):** the `providers` block lives at the
+> **root** of `mcp-vertex.config.json`, not under any plugin. Plugins
+> that need provider-aware options (orchestrator-runner, proposals,
+> audit) read from this root block; they don't add to it. The config
+> grows in **sections**, not in lines per plugin. See
+> [`06-bootstrap-and-quotas.md`](06-bootstrap-and-quotas.md) §1 for
+> the cache/config split.
 
 ```jsonc
 // mcp-vertex.config.json — top-level extension
 {
   "$schema": "...",
-  "plugins": { /* ... existing ... */ },
-
-  "providers": [
+  "cacheDir": ".cache/mcp-vertex",     // existing
+  "providers": [                        // NEW, root-level
     {
       "id": "copilot-m3",
       "kind": "subscription",
@@ -48,7 +55,8 @@ build it, this is the spec.
       "strengths": ["balanced", "code-edit"],
       "weaknesses": []
     }
-  ]
+  ],
+  "plugins": { /* ... existing ... */ }
 }
 ```
 
