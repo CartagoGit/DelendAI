@@ -1,5 +1,6 @@
 ---
 name: state-repair-playbook
+appliesTo: ['@mcp-vertex/proposals']
 description: How to diagnose and heal inconsistent swarm state (stale locks, queue backpressure, orphaned agent assignments) with state_health and state_repair. Use when a tool reports a state-inconsistency failure, or proactively after a crashed/killed agent session.
 ---
 

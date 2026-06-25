@@ -1,5 +1,6 @@
 ---
 name: proposals-workflow-playbook
+appliesTo: ['@mcp-vertex/proposals']
 description: Canonical compact workflow for agents working through the proposals plugin: orient, select work, claim files, implement, validate, close, and sync without polling or hand-editing generated state.
 ---
 

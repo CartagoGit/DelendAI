@@ -1,5 +1,6 @@
 ---
 name: proposal-swarm-runner
+appliesTo: ['@mcp-vertex/proposals']
 description: The proposals-plugin workflow for an agent that is implementing a slice — claim, implement, validate, close — without polling locks or editing the index by hand. Use whenever overview's recommendedNextAction points at a proposals_* tool.
 ---
 

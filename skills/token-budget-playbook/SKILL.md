@@ -1,5 +1,6 @@
 ---
 name: token-budget-playbook
+appliesTo: ['@mcp-vertex/*']
 description: How to keep an agent session's token cost low — which tools are compact-native, which to delegate to a subagent instead of calling from the main thread, and how the repo's own metrics/regression gate measures cost. Use before calling a verbose tool, or when a session feels like it is burning context too fast.
 ---
 

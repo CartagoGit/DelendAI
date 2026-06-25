@@ -1,5 +1,6 @@
 ---
 name: mcp-vertex-rules-solid-architecture
+appliesTo: ['@mcp-vertex/rules']
 description: How the `@mcp-vertex/rules` plugin applies SOLID — the contracts (ISP), the registries (DIP), the adapters (OCP), the data (S), the validators (OCP), the renderers (DIP), and the priority resolver (S). Use when adding a new language preset, refactoring a tool, or auditing a slice.
 ---
 

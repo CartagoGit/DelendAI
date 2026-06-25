@@ -1,21 +1,24 @@
 ---
+/**
+ * pages/[lang]/first-5-minutes.astro — translated onboarding.
+ * See `tools.astro` for the shell recipe.
+ */
 import FirstFiveMinutesSection from '#COMPONENTS/FirstFiveMinutesSection.astro';
-import Base from '#LAYOUTS/Base.astro';
-import { languages, useTranslations, type Lang } from '#I18N/ui';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
 
-export function getStaticPaths() {
-	return languages
-		.filter((l) => l.code !== 'en')
-		.map((l) => ({ params: { lang: l.code } }));
-}
+export const getStaticPaths = langStaticPaths;
 
-const { lang } = Astro.params;
-const langCode: Lang = (
-	lang && languages.some((l) => l.code === lang) ? lang : 'en'
-) as Lang;
-const t = useTranslations(langCode);
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
 ---
 
-<Base lang={langCode} title={`${t.firstFiveMinutes.title} — @mcp-vertex/core`}>
-	<FirstFiveMinutesSection lang={langCode} />
-</Base>
+<PageShell
+	lang={lang}
+	title={t.firstFiveMinutes.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.firstFiveMinutes, href: localePath(lang, 'first-5-minutes') }]}
+>
+	<FirstFiveMinutesSection lang={lang} />
+</PageShell>
