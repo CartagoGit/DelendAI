@@ -6,7 +6,7 @@
  * The webview is intentionally minimal: 7 steps, one per screen, each with a
  * Back / Next pair and a "Copy command" button. All state (the current step)
  * lives in the webview itself — closing it forgets the state; nothing is
- * persisted beyond what `issues_setup_github` writes to disk.
+ * persisted beyond what `mcp-vertex_issues_setup_github` writes to disk.
  *
  * This module is a pure HTML producer: strings + step commands in, a single
  * self-contained HTML document out (no `vscode` API, no I/O), so it is fully

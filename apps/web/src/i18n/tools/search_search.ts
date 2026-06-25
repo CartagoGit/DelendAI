@@ -1,4 +1,4 @@
-// i18n catalogue for `search_search`.
+// i18n catalogue for `mcp-vertex_search_search`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

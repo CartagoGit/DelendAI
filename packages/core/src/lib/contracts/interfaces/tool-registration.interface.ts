@@ -43,7 +43,7 @@ export interface IToolRegistration {
 	 * contract and lets tools opt in incrementally.
 	 *
 	 * Convention: namespace-qualified (`<plugin>_<tool>`), e.g.
-	 * `proposals_auto_work`. Underscore-separated; matches the
+	 * `mcp-vertex_proposals_auto_work`. Underscore-separated; matches the
 	 * `IToolI18n` catalogue layout.
 	 */
 	readonly descriptionKey?: string | undefined;

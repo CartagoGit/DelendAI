@@ -10,7 +10,7 @@ describe('ProposalBoardProvider', async () => {
 			McpStdioClient.fromTransport({
 				async callTool(input) {
 					expect(input).toEqual({
-						name: 'proposals_proposal_board',
+						name: 'mcp-vertex_proposals_proposal_board',
 						arguments: {},
 					});
 					return {

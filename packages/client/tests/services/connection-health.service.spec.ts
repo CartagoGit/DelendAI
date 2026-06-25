@@ -9,7 +9,7 @@ const makeService = async (
 ) => {
 	const client = McpStdioClient.fromTransport({
 		async callTool(input: { name: string }) {
-			if (input.name === 'status-marker_ping') {
+			if (input.name === 'mcp-vertex_status-marker_ping') {
 				const value = await pingImpl();
 				return { structuredContent: value ?? {}, content: [] };
 			}

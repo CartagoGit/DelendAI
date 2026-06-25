@@ -1,6 +1,6 @@
 /**
  * Typed models for the search service (S2 in f00023).
- * Wraps the `search_search` tool + provides a higher-level
+ * Wraps the `mcp-vertex_search_search` tool + provides a higher-level
  * "search the live tool registry" helper that doesn't need a server
  * round-trip.
  */

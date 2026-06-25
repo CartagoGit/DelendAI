@@ -1,4 +1,4 @@
-// i18n catalogue for `logs_correlate`.
+// i18n catalogue for `mcp-vertex_logs_correlate`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

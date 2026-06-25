@@ -6,7 +6,7 @@ import { createFakeTransport } from './logs.service.fixtures';
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {
-		search_search: {
+		mcp-vertex_search_search: {
 			query: 'test',
 			count: 1,
 			truncated: false,
@@ -26,7 +26,7 @@ describe('SearchService', async () => {
 		const out = await service.search({ query: 'overview', maxResults: 5 });
 		expect(out.count).toBe(1);
 		expect(out.hits[0]?.text).toBe('test hit');
-		expect(calls[0]?.tool).toBe('search_search');
+		expect(calls[0]?.tool).toBe('mcp-vertex_search_search');
 		expect(calls[0]?.args).toEqual({ query: 'overview', maxResults: 5 });
 	});
 
@@ -38,8 +38,8 @@ describe('SearchService', async () => {
 				tags: ['observability'],
 				summary: 'Per-tool call metrics',
 			},
-			{ name: 'proposals_proposal_board', tags: ['proposals'] },
-			{ name: 'memory_recall' },
+			{ name: 'mcp-vertex_proposals_proposal_board', tags: ['proposals'] },
+			{ name: 'mcp-vertex_memory_recall' },
 		];
 
 		it('returns exact match first with score 100', async () => {
@@ -59,7 +59,7 @@ describe('SearchService', async () => {
 		it('substring match scores 40', async () => {
 			const { service } = makeService();
 			const hits = service.searchTools('proposal', tools);
-			expect(hits[0]?.name).toBe('proposals_proposal_board');
+			expect(hits[0]?.name).toBe('mcp-vertex_proposals_proposal_board');
 		});
 
 		it('tag match scores 20', async () => {

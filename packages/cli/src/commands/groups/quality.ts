@@ -6,10 +6,10 @@
  * full structured report for parsing.
  *
  * Tools mapped:
- *   - `quality_get_quality_scopes` (no args)
- *   - `quality_run_quality`        ({ scope? })
- *   - `quality_quality_cancel`     ({ pid? })
- *   - `quality_quality_run_all`    (no args)
+ *   - `mcp-vertex_quality_get_quality_scopes` (no args)
+ *   - `mcp-vertex_quality_run_quality`        ({ scope? })
+ *   - `mcp-vertex_quality_quality_cancel`     ({ pid? })
+ *   - `mcp-vertex_quality_quality_run_all`    (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -40,7 +40,9 @@ const qualityScopesCommand: ICliCommand = {
 	name: 'quality scopes',
 	summary: 'List the quality-gate scopes and the commands each runs.',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'quality_get_quality_scopes', {}));
+		return data(
+			await request(ctx, 'mcp-vertex_quality_get_quality_scopes', {}),
+		);
 	},
 };
 
@@ -49,7 +51,7 @@ const qualityRunCommand: ICliCommand = {
 	summary: "Execute a quality scope's commands and report pass/fail.",
 	async run(args, ctx) {
 		const scope = scalarArg(args, 'scope');
-		const report = await request(ctx, 'quality_run_quality', {
+		const report = await request(ctx, 'mcp-vertex_quality_run_quality', {
 			...(scope !== undefined ? { scope } : {}),
 		});
 		return data(report, codeFor(report));
@@ -62,7 +64,7 @@ const qualityCancelCommand: ICliCommand = {
 	async run(args, ctx) {
 		const pid = numberArg(args, 'pid');
 		return data(
-			await request(ctx, 'quality_quality_cancel', {
+			await request(ctx, 'mcp-vertex_quality_quality_cancel', {
 				...(pid !== undefined ? { pid } : {}),
 			}),
 		);
@@ -73,7 +75,11 @@ const qualityRunAllCommand: ICliCommand = {
 	name: 'quality run-all',
 	summary: 'Run every configured quality scope and aggregate the report.',
 	async run(_args, ctx) {
-		const report = await request(ctx, 'quality_quality_run_all', {});
+		const report = await request(
+			ctx,
+			'mcp-vertex_quality_quality_run_all',
+			{},
+		);
 		return data(report, codeFor(report));
 	},
 };

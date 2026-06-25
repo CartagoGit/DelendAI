@@ -17,7 +17,7 @@ const server = {
 
 const tools: readonly IToolSummary[] = [
 	{
-		name: 'search_search',
+		name: 'mcp-vertex_search_search',
 		plugin: 'search',
 		summary: 'Find symbols and files',
 		tags: ['find', 'lookup'],
@@ -132,7 +132,7 @@ describe('buildCatalog', async () => {
 
 		expect(snapshot.tools.map((entry) => entry.name)).toEqual([
 			'mcp-vertex_agent_catalog',
-			'search_search',
+			'mcp-vertex_search_search',
 		]);
 		expect(snapshot.skills.map((entry) => entry.id)).toEqual([
 			'mcp-vertex-audit-playbook',

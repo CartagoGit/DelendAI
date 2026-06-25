@@ -8,7 +8,7 @@
 // proposals populate the catalogue entry by entry.
 //
 // Lookup convention:
-//   describeTool('deps_deps_check', 'es') → es → en → '' (never throws)
+//   describeTool('mcp-vertex_deps_deps_check', 'es') → es → en → '' (never throws)
 
 import type { Lang } from '#I18N/shared';
 import type {
@@ -18,24 +18,24 @@ import type {
 	IToolI18n,
 } from '#I18N/tools/_shape';
 import { mcpVertexOverviewI18n } from '#I18N/tools/mcp-vertex_overview';
-import { proposalsAutoWorkI18n } from '#I18N/tools/proposals_auto_work';
-import { memorySaveI18n } from '#I18N/tools/memory_save';
+import { proposalsAutoWorkI18n } from '#I18N/tools/mcp-vertex_proposals_auto_work';
+import { memorySaveI18n } from '#I18N/tools/mcp-vertex_memory_save';
 import { auditPlanI18n } from '#I18N/tools/audit_plan';
 import { auditConsolidateI18n } from '#I18N/tools/audit_consolidate';
-import { depsDepsListI18n } from '#I18N/tools/deps_deps_list';
-import { depsDepsCheckI18n } from '#I18N/tools/deps_deps_check';
+import { depsDepsListI18n } from '#I18N/tools/mcp-vertex_deps_deps_list';
+import { depsDepsCheckI18n } from '#I18N/tools/mcp-vertex_deps_deps_check';
 import { depsDepsOutdatedI18n } from '#I18N/tools/deps_deps_outdated';
-import { docsDocsListI18n } from '#I18N/tools/docs_docs_list';
-import { docsDocsReadI18n } from '#I18N/tools/docs_docs_read';
-import { gitChangedI18n } from '#I18N/tools/git_changed';
-import { gitDiffI18n } from '#I18N/tools/git_diff';
-import { gitLogI18n } from '#I18N/tools/git_log';
-import { gitStatusI18n } from '#I18N/tools/git_status';
-import { logsCorrelateI18n } from '#I18N/tools/logs_correlate';
-import { logsQueryI18n } from '#I18N/tools/logs_query';
-import { logsRedactTestI18n } from '#I18N/tools/logs_redact_test';
-import { logsSubscribeI18n } from '#I18N/tools/logs_subscribe';
-import { logsTailI18n } from '#I18N/tools/logs_tail';
+import { docsDocsListI18n } from '#I18N/tools/mcp-vertex_docs_docs_list';
+import { docsDocsReadI18n } from '#I18N/tools/mcp-vertex_docs_docs_read';
+import { gitChangedI18n } from '#I18N/tools/mcp-vertex_git_changed';
+import { gitDiffI18n } from '#I18N/tools/mcp-vertex_git_diff';
+import { gitLogI18n } from '#I18N/tools/mcp-vertex_git_log';
+import { gitStatusI18n } from '#I18N/tools/mcp-vertex_git_status';
+import { logsCorrelateI18n } from '#I18N/tools/mcp-vertex_logs_correlate';
+import { logsQueryI18n } from '#I18N/tools/mcp-vertex_logs_query';
+import { logsRedactTestI18n } from '#I18N/tools/mcp-vertex_logs_redact_test';
+import { logsSubscribeI18n } from '#I18N/tools/mcp-vertex_logs_subscribe';
+import { logsTailI18n } from '#I18N/tools/mcp-vertex_logs_tail';
 import { mcpVertexAnalyzeProjectI18n } from '#I18N/tools/mcp-vertex_analyze_project';
 import { mcpVertexCreateProjectI18n } from '#I18N/tools/mcp-vertex_create_project';
 import { mcpVertexGetValidationMatrixI18n } from '#I18N/tools/mcp-vertex_get_validation_matrix';
@@ -44,46 +44,46 @@ import { mcpVertexMetricsI18n } from '#I18N/tools/mcp-vertex_metrics';
 import { mcpVertexPlanMcpProjectI18n } from '#I18N/tools/mcp-vertex_plan_mcp_project';
 import { mcpVertexScaffoldI18n } from '#I18N/tools/mcp-vertex_scaffold';
 import { mcpVertexStatusI18n } from '#I18N/tools/mcp-vertex_status';
-import { memoryForgetI18n } from '#I18N/tools/memory_forget';
-import { memoryListI18n } from '#I18N/tools/memory_list';
-import { memoryRecallI18n } from '#I18N/tools/memory_recall';
-import { notificationAwaitLockI18n } from '#I18N/tools/notification_await_lock';
-import { notificationNotifyStatusI18n } from '#I18N/tools/notification_notify_status';
-import { proposalsAgentLockI18n } from '#I18N/tools/proposals_agent_lock';
-import { proposalsAgentLockReleaseOrphanI18n } from '#I18N/tools/proposals_agent_lock_release_orphan';
-import { proposalsAgentNamesI18n } from '#I18N/tools/proposals_agent_names';
-import { proposalsAgentWorktreeI18n } from '#I18N/tools/proposals_agent_worktree';
-import { proposalsCloseSliceI18n } from '#I18N/tools/proposals_close_slice';
-import { proposalsCompactStatusI18n } from '#I18N/tools/proposals_compact_status';
-import { proposalsContinueProposalI18n } from '#I18N/tools/proposals_continue_proposal';
-import { proposalsCreateProposalI18n } from '#I18N/tools/proposals_create_proposal';
-import { proposalsDelegateI18n } from '#I18N/tools/proposals_delegate';
-import { proposalsGetProposalWorkflowI18n } from '#I18N/tools/proposals_get_proposal_workflow';
+import { memoryForgetI18n } from '#I18N/tools/mcp-vertex_memory_forget';
+import { memoryListI18n } from '#I18N/tools/mcp-vertex_memory_list';
+import { memoryRecallI18n } from '#I18N/tools/mcp-vertex_memory_recall';
+import { notificationAwaitLockI18n } from '#I18N/tools/mcp-vertex_notification_await_lock';
+import { notificationNotifyStatusI18n } from '#I18N/tools/mcp-vertex_notification_notify_status';
+import { proposalsAgentLockI18n } from '#I18N/tools/mcp-vertex_proposals_agent_lock';
+import { proposalsAgentLockReleaseOrphanI18n } from '#I18N/tools/mcp-vertex_proposals_agent_lock_release_orphan';
+import { proposalsAgentNamesI18n } from '#I18N/tools/mcp-vertex_proposals_agent_names';
+import { proposalsAgentWorktreeI18n } from '#I18N/tools/mcp-vertex_proposals_agent_worktree';
+import { proposalsCloseSliceI18n } from '#I18N/tools/mcp-vertex_proposals_close_slice';
+import { proposalsCompactStatusI18n } from '#I18N/tools/mcp-vertex_proposals_compact_status';
+import { proposalsContinueProposalI18n } from '#I18N/tools/mcp-vertex_proposals_continue_proposal';
+import { proposalsCreateProposalI18n } from '#I18N/tools/mcp-vertex_proposals_create_proposal';
+import { proposalsDelegateI18n } from '#I18N/tools/mcp-vertex_proposals_delegate';
+import { proposalsGetProposalWorkflowI18n } from '#I18N/tools/mcp-vertex_proposals_get_proposal_workflow';
 import { proposalsPlanI18n } from '#I18N/tools/proposals_plan';
-import { proposalsProposalAdoptI18n } from '#I18N/tools/proposals_proposal_adopt';
-import { proposalsProposalBoardI18n } from '#I18N/tools/proposals_proposal_board';
-import { proposalsProposalDiagnoseI18n } from '#I18N/tools/proposals_proposal_diagnose';
-import { proposalsProposalForceTransitionI18n } from '#I18N/tools/proposals_proposal_force_transition';
-import { proposalsProposalReconcileFolderI18n } from '#I18N/tools/proposals_proposal_reconcile_folder';
-import { proposalsProposalReviewI18n } from '#I18N/tools/proposals_proposal_review';
-import { proposalsProposalStaleListI18n } from '#I18N/tools/proposals_proposal_stale_list';
-import { proposalsProposalTransitionI18n } from '#I18N/tools/proposals_proposal_transition';
-import { proposalsRoundContextI18n } from '#I18N/tools/proposals_round_context';
-import { proposalsStateHealthI18n } from '#I18N/tools/proposals_state_health';
-import { proposalsStateRepairI18n } from '#I18N/tools/proposals_state_repair';
-import { proposalsSyncProposalsI18n } from '#I18N/tools/proposals_sync_proposals';
-import { proposalsTaskQueueI18n } from '#I18N/tools/proposals_task_queue';
-import { qualityGetQualityScopesI18n } from '#I18N/tools/quality_get_quality_scopes';
-import { qualityQualityCancelI18n } from '#I18N/tools/quality_quality_cancel';
-import { qualityRunQualityI18n } from '#I18N/tools/quality_run_quality';
-import { rulesApplyRulesI18n } from '#I18N/tools/rules_apply_rules';
-import { rulesCheckRulesI18n } from '#I18N/tools/rules_check_rules';
-import { rulesGetRulesI18n } from '#I18N/tools/rules_get_rules';
-import { searchSearchI18n } from '#I18N/tools/search_search';
-import { statusMarkerCloseI18n } from '#I18N/tools/status-marker_close';
-import { statusMarkerPingI18n } from '#I18N/tools/status-marker_ping';
-import { statusMarkerValidateI18n } from '#I18N/tools/status-marker_validate';
-import { testConventionGetConventionI18n } from '#I18N/tools/test-convention_get_convention';
+import { proposalsProposalAdoptI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_adopt';
+import { proposalsProposalBoardI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_board';
+import { proposalsProposalDiagnoseI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_diagnose';
+import { proposalsProposalForceTransitionI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_force_transition';
+import { proposalsProposalReconcileFolderI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_reconcile_folder';
+import { proposalsProposalReviewI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_review';
+import { proposalsProposalStaleListI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_stale_list';
+import { proposalsProposalTransitionI18n } from '#I18N/tools/mcp-vertex_proposals_proposal_transition';
+import { proposalsRoundContextI18n } from '#I18N/tools/mcp-vertex_proposals_round_context';
+import { proposalsStateHealthI18n } from '#I18N/tools/mcp-vertex_proposals_state_health';
+import { proposalsStateRepairI18n } from '#I18N/tools/mcp-vertex_proposals_state_repair';
+import { proposalsSyncProposalsI18n } from '#I18N/tools/mcp-vertex_proposals_sync_proposals';
+import { proposalsTaskQueueI18n } from '#I18N/tools/mcp-vertex_proposals_task_queue';
+import { qualityGetQualityScopesI18n } from '#I18N/tools/mcp-vertex_quality_get_quality_scopes';
+import { qualityQualityCancelI18n } from '#I18N/tools/mcp-vertex_quality_quality_cancel';
+import { qualityRunQualityI18n } from '#I18N/tools/mcp-vertex_quality_run_quality';
+import { rulesApplyRulesI18n } from '#I18N/tools/mcp-vertex_rules_apply_rules';
+import { rulesCheckRulesI18n } from '#I18N/tools/mcp-vertex_rules_check_rules';
+import { rulesGetRulesI18n } from '#I18N/tools/mcp-vertex_rules_get_rules';
+import { searchSearchI18n } from '#I18N/tools/mcp-vertex_search_search';
+import { statusMarkerCloseI18n } from '#I18N/tools/mcp-vertex_status-marker_close';
+import { statusMarkerPingI18n } from '#I18N/tools/mcp-vertex_status-marker_ping';
+import { statusMarkerValidateI18n } from '#I18N/tools/mcp-vertex_status-marker_validate';
+import { testConventionGetConventionI18n } from '#I18N/tools/mcp-vertex_test-convention_get_convention';
 import { testConventionScanDriftI18n } from '#I18N/tools/test-convention_scan_drift';
 import { testConventionSuggestSpecPathI18n } from '#I18N/tools/test-convention_suggest_spec_path';
 
@@ -124,30 +124,30 @@ export const registerKnowledgeI18n = (
 // stale entry (key changed without updating the catalogue) is harmless: the
 // runtime description still renders.
 registerToolI18n('mcp-vertex_overview', mcpVertexOverviewI18n);
-registerToolI18n('proposals_auto_work', proposalsAutoWorkI18n);
-registerToolI18n('memory_save', memorySaveI18n);
-// The audit plugin registers its tools as `${prefix}_audit_plan` and
-// `${prefix}_audit_consolidate` (see plugins/audit/src/lib/tools/*-tool.ts),
-// which yields the namespaced identifiers `audit_audit_plan` /
-// `audit_audit_consolidate` (default namespace prefix `audit`). The
-// catalogue is keyed on the full MCP tool name, not the plugin's internal
-// slug, so we register under the namespaced form.
-registerToolI18n('audit_audit_plan', auditPlanI18n);
-registerToolI18n('audit_audit_consolidate', auditConsolidateI18n);
-registerToolI18n('deps_deps_list', depsDepsListI18n);
-registerToolI18n('deps_deps_check', depsDepsCheckI18n);
-registerToolI18n('deps_deps_outdated', depsDepsOutdatedI18n);
-registerToolI18n('docs_docs_list', docsDocsListI18n);
-registerToolI18n('docs_docs_read', docsDocsReadI18n);
-registerToolI18n('git_changed', gitChangedI18n);
-registerToolI18n('git_diff', gitDiffI18n);
-registerToolI18n('git_log', gitLogI18n);
-registerToolI18n('git_status', gitStatusI18n);
-registerToolI18n('logs_correlate', logsCorrelateI18n);
-registerToolI18n('logs_query', logsQueryI18n);
-registerToolI18n('logs_redact_test', logsRedactTestI18n);
-registerToolI18n('logs_subscribe', logsSubscribeI18n);
-registerToolI18n('logs_tail', logsTailI18n);
+registerToolI18n('mcp-vertex_proposals_auto_work', proposalsAutoWorkI18n);
+registerToolI18n('mcp-vertex_memory_save', memorySaveI18n);
+// Every MCP tool exposed by a plugin is qualified in `assemble.ts` as
+// `${corePrefix}_${pluginPrefix}_${toolId}` — e.g. `mcp-vertex_audit_audit_plan`.
+// The catalogue is keyed on that full MCP tool name, not the plugin's
+// internal slug, so we register under the namespaced form. The plugin
+// sources stay agnostic of the host's core prefix; the qualification
+// happens once, at boot, in `packages/core/src/lib/cli/assemble.ts`.
+registerToolI18n('mcp-vertex_audit_audit_plan', auditPlanI18n);
+registerToolI18n('mcp-vertex_audit_audit_consolidate', auditConsolidateI18n);
+registerToolI18n('mcp-vertex_deps_deps_list', depsDepsListI18n);
+registerToolI18n('mcp-vertex_deps_deps_check', depsDepsCheckI18n);
+registerToolI18n('mcp-vertex_deps_deps_outdated', depsDepsOutdatedI18n);
+registerToolI18n('mcp-vertex_docs_docs_list', docsDocsListI18n);
+registerToolI18n('mcp-vertex_docs_docs_read', docsDocsReadI18n);
+registerToolI18n('mcp-vertex_git_changed', gitChangedI18n);
+registerToolI18n('mcp-vertex_git_diff', gitDiffI18n);
+registerToolI18n('mcp-vertex_git_log', gitLogI18n);
+registerToolI18n('mcp-vertex_git_status', gitStatusI18n);
+registerToolI18n('mcp-vertex_logs_correlate', logsCorrelateI18n);
+registerToolI18n('mcp-vertex_logs_query', logsQueryI18n);
+registerToolI18n('mcp-vertex_logs_redact_test', logsRedactTestI18n);
+registerToolI18n('mcp-vertex_logs_subscribe', logsSubscribeI18n);
+registerToolI18n('mcp-vertex_logs_tail', logsTailI18n);
 registerToolI18n('mcp-vertex_analyze_project', mcpVertexAnalyzeProjectI18n);
 registerToolI18n('mcp-vertex_create_project', mcpVertexCreateProjectI18n);
 registerToolI18n(
@@ -159,65 +159,104 @@ registerToolI18n('mcp-vertex_metrics', mcpVertexMetricsI18n);
 registerToolI18n('mcp-vertex_plan_mcp_project', mcpVertexPlanMcpProjectI18n);
 registerToolI18n('mcp-vertex_scaffold', mcpVertexScaffoldI18n);
 registerToolI18n('mcp-vertex_status', mcpVertexStatusI18n);
-registerToolI18n('memory_forget', memoryForgetI18n);
-registerToolI18n('memory_list', memoryListI18n);
-registerToolI18n('memory_recall', memoryRecallI18n);
-registerToolI18n('notification_await_lock', notificationAwaitLockI18n);
-registerToolI18n('notification_notify_status', notificationNotifyStatusI18n);
-registerToolI18n('proposals_agent_lock', proposalsAgentLockI18n);
+registerToolI18n('mcp-vertex_memory_forget', memoryForgetI18n);
+registerToolI18n('mcp-vertex_memory_list', memoryListI18n);
+registerToolI18n('mcp-vertex_memory_recall', memoryRecallI18n);
 registerToolI18n(
-	'proposals_agent_lock_release_orphan',
+	'mcp-vertex_notification_await_lock',
+	notificationAwaitLockI18n,
+);
+registerToolI18n(
+	'mcp-vertex_notification_notify_status',
+	notificationNotifyStatusI18n,
+);
+registerToolI18n('mcp-vertex_proposals_agent_lock', proposalsAgentLockI18n);
+registerToolI18n(
+	'mcp-vertex_proposals_agent_lock_release_orphan',
 	proposalsAgentLockReleaseOrphanI18n,
 );
-registerToolI18n('proposals_agent_names', proposalsAgentNamesI18n);
-registerToolI18n('proposals_agent_worktree', proposalsAgentWorktreeI18n);
-registerToolI18n('proposals_close_slice', proposalsCloseSliceI18n);
-registerToolI18n('proposals_compact_status', proposalsCompactStatusI18n);
-registerToolI18n('proposals_continue_proposal', proposalsContinueProposalI18n);
-registerToolI18n('proposals_create_proposal', proposalsCreateProposalI18n);
-registerToolI18n('proposals_delegate', proposalsDelegateI18n);
+registerToolI18n('mcp-vertex_proposals_agent_names', proposalsAgentNamesI18n);
 registerToolI18n(
-	'proposals_get_proposal_workflow',
+	'mcp-vertex_proposals_agent_worktree',
+	proposalsAgentWorktreeI18n,
+);
+registerToolI18n('mcp-vertex_proposals_close_slice', proposalsCloseSliceI18n);
+registerToolI18n(
+	'mcp-vertex_proposals_compact_status',
+	proposalsCompactStatusI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_continue_proposal',
+	proposalsContinueProposalI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_create_proposal',
+	proposalsCreateProposalI18n,
+);
+registerToolI18n('mcp-vertex_proposals_delegate', proposalsDelegateI18n);
+registerToolI18n(
+	'mcp-vertex_proposals_get_proposal_workflow',
 	proposalsGetProposalWorkflowI18n,
 );
 registerToolI18n('proposals_plan', proposalsPlanI18n);
-registerToolI18n('proposals_proposal_adopt', proposalsProposalAdoptI18n);
-registerToolI18n('proposals_proposal_board', proposalsProposalBoardI18n);
-registerToolI18n('proposals_proposal_diagnose', proposalsProposalDiagnoseI18n);
 registerToolI18n(
-	'proposals_proposal_force_transition',
+	'mcp-vertex_proposals_proposal_adopt',
+	proposalsProposalAdoptI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_proposal_board',
+	proposalsProposalBoardI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_proposal_diagnose',
+	proposalsProposalDiagnoseI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_proposal_force_transition',
 	proposalsProposalForceTransitionI18n,
 );
 registerToolI18n(
-	'proposals_proposal_reconcile_folder',
+	'mcp-vertex_proposals_proposal_reconcile_folder',
 	proposalsProposalReconcileFolderI18n,
 );
-registerToolI18n('proposals_proposal_review', proposalsProposalReviewI18n);
 registerToolI18n(
-	'proposals_proposal_stale_list',
+	'mcp-vertex_proposals_proposal_review',
+	proposalsProposalReviewI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_proposal_stale_list',
 	proposalsProposalStaleListI18n,
 );
 registerToolI18n(
-	'proposals_proposal_transition',
+	'mcp-vertex_proposals_proposal_transition',
 	proposalsProposalTransitionI18n,
 );
-registerToolI18n('proposals_round_context', proposalsRoundContextI18n);
-registerToolI18n('proposals_state_health', proposalsStateHealthI18n);
-registerToolI18n('proposals_state_repair', proposalsStateRepairI18n);
-registerToolI18n('proposals_sync_proposals', proposalsSyncProposalsI18n);
-registerToolI18n('proposals_task_queue', proposalsTaskQueueI18n);
-registerToolI18n('quality_get_quality_scopes', qualityGetQualityScopesI18n);
-registerToolI18n('quality_quality_cancel', qualityQualityCancelI18n);
-registerToolI18n('quality_run_quality', qualityRunQualityI18n);
-registerToolI18n('rules_apply_rules', rulesApplyRulesI18n);
-registerToolI18n('rules_check_rules', rulesCheckRulesI18n);
-registerToolI18n('rules_get_rules', rulesGetRulesI18n);
-registerToolI18n('search_search', searchSearchI18n);
-registerToolI18n('status-marker_close', statusMarkerCloseI18n);
-registerToolI18n('status-marker_ping', statusMarkerPingI18n);
-registerToolI18n('status-marker_validate', statusMarkerValidateI18n);
 registerToolI18n(
-	'test-convention_get_convention',
+	'mcp-vertex_proposals_round_context',
+	proposalsRoundContextI18n,
+);
+registerToolI18n('mcp-vertex_proposals_state_health', proposalsStateHealthI18n);
+registerToolI18n('mcp-vertex_proposals_state_repair', proposalsStateRepairI18n);
+registerToolI18n(
+	'mcp-vertex_proposals_sync_proposals',
+	proposalsSyncProposalsI18n,
+);
+registerToolI18n('mcp-vertex_proposals_task_queue', proposalsTaskQueueI18n);
+registerToolI18n(
+	'mcp-vertex_quality_get_quality_scopes',
+	qualityGetQualityScopesI18n,
+);
+registerToolI18n('mcp-vertex_quality_quality_cancel', qualityQualityCancelI18n);
+registerToolI18n('mcp-vertex_quality_run_quality', qualityRunQualityI18n);
+registerToolI18n('mcp-vertex_rules_apply_rules', rulesApplyRulesI18n);
+registerToolI18n('mcp-vertex_rules_check_rules', rulesCheckRulesI18n);
+registerToolI18n('mcp-vertex_rules_get_rules', rulesGetRulesI18n);
+registerToolI18n('mcp-vertex_search_search', searchSearchI18n);
+registerToolI18n('mcp-vertex_status-marker_close', statusMarkerCloseI18n);
+registerToolI18n('mcp-vertex_status-marker_ping', statusMarkerPingI18n);
+registerToolI18n('mcp-vertex_status-marker_validate', statusMarkerValidateI18n);
+registerToolI18n(
+	'mcp-vertex_test-convention_get_convention',
 	testConventionGetConventionI18n,
 );
 registerToolI18n('test-convention_scan_drift', testConventionScanDriftI18n);

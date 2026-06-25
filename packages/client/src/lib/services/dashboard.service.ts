@@ -443,7 +443,7 @@ export class DashboardService {
 						readonly track?: string;
 					}[];
 				}
-			>('proposals_proposal_board', {});
+			>('mcp-vertex_proposals_proposal_board', {});
 			return result.proposals.map((p) => ({
 				id: p.id,
 				title: p.title ?? '',
@@ -462,7 +462,7 @@ export class DashboardService {
 				{
 					readonly agents: readonly { readonly name: string }[];
 				}
-			>('proposals_agent_names', {});
+			>('mcp-vertex_proposals_agent_names', {});
 			return result.agents.map((a) => a.name);
 		} catch {
 			return [];

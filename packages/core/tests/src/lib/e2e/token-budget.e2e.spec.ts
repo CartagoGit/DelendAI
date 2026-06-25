@@ -225,7 +225,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	});
 
 	it('auto_work returns a tight action plan, not prose', async () => {
-		const bytes = await textBytes('proposals_auto_work', {});
+		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
 	});
 
@@ -242,29 +242,31 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			return Buffer.byteLength(text ?? '', 'utf8');
 		};
 		try {
-			// Prime a few events so logs_tail has real output.
+			// Prime a few events so mcp-vertex_logs_tail has real output.
 			await extra.client.callTool({
-				name: 'search_search',
+				name: 'mcp-vertex_search_search',
 				arguments: { query: 'proposal', maxResults: 5, context: 0 },
 			});
 			await extra.client.callTool({
-				name: 'docs_docs_list',
+				name: 'mcp-vertex_docs_docs_list',
 				arguments: { limit: 10 },
 			});
 
-			const search = await extraTextBytes('search_search', {
+			const search = await extraTextBytes('mcp-vertex_search_search', {
 				query: 'proposal',
 				maxResults: 5,
 				context: 0,
 			});
-			const docsList = await extraTextBytes('docs_docs_list', {
+			const docsList = await extraTextBytes('mcp-vertex_docs_docs_list', {
 				limit: 10,
 			});
 			const roundContext = await extraTextBytes(
-				'proposals_round_context',
+				'mcp-vertex_proposals_round_context',
 				{},
 			);
-			const logsTail = await extraTextBytes('logs_tail', { limit: 10 });
+			const logsTail = await extraTextBytes('mcp-vertex_logs_tail', {
+				limit: 10,
+			});
 
 			expect(search, `search = ${search}B`).toBeLessThan(
 				BUDGET_BYTES.search,
@@ -276,9 +278,10 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				roundContext,
 				`round_context = ${roundContext}B`,
 			).toBeLessThan(BUDGET_BYTES.roundContext);
-			expect(logsTail, `logs_tail = ${logsTail}B`).toBeLessThan(
-				BUDGET_BYTES.logsTail,
-			);
+			expect(
+				logsTail,
+				`mcp-vertex_logs_tail = ${logsTail}B`,
+			).toBeLessThan(BUDGET_BYTES.logsTail);
 		} finally {
 			await extra.close();
 		}

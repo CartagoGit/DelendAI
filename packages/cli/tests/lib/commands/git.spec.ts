@@ -75,17 +75,17 @@ describe('git group (f00046 S1)', async () => {
 		expect(new Set(names).size).toBe(names.length);
 	});
 
-	it('git status delegates to git_status with no args', async () => {
+	it('git status delegates to mcp-vertex_git_status with no args', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await findCommand('git status')!.run([], ctx);
-		expect(calls).toEqual([{ tool: 'git_status', args: {} }]);
+		expect(calls).toEqual([{ tool: 'mcp-vertex_git_status', args: {} }]);
 		expect(result.code).toBe(EXIT_CODE.OK);
 	});
 
-	it('git changed delegates to git_changed with no args', async () => {
+	it('git changed delegates to mcp-vertex_git_changed with no args', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await findCommand('git changed')!.run([], ctx);
-		expect(calls).toEqual([{ tool: 'git_changed', args: {} }]);
+		expect(calls).toEqual([{ tool: 'mcp-vertex_git_changed', args: {} }]);
 		expect(result.code).toBe(EXIT_CODE.OK);
 	});
 
@@ -96,7 +96,10 @@ describe('git group (f00046 S1)', async () => {
 			ctx,
 		);
 		expect(calls).toEqual([
-			{ tool: 'git_diff', args: { staged: true, path: 'src/server.ts' } },
+			{
+				tool: 'mcp-vertex_git_diff',
+				args: { staged: true, path: 'src/server.ts' },
+			},
 		]);
 		expect(result.code).toBe(EXIT_CODE.OK);
 	});
@@ -104,13 +107,15 @@ describe('git group (f00046 S1)', async () => {
 	it('git diff without flags sends an empty args object', async () => {
 		const { ctx, calls } = buildStubContext();
 		await findCommand('git diff')!.run([], ctx);
-		expect(calls).toEqual([{ tool: 'git_diff', args: {} }]);
+		expect(calls).toEqual([{ tool: 'mcp-vertex_git_diff', args: {} }]);
 	});
 
 	it('git log forwards --limit as a number', async () => {
 		const { ctx, calls } = buildStubContext();
 		await findCommand('git log')!.run(['--limit=5'], ctx);
-		expect(calls).toEqual([{ tool: 'git_log', args: { limit: 5 } }]);
+		expect(calls).toEqual([
+			{ tool: 'mcp-vertex_git_log', args: { limit: 5 } },
+		]);
 	});
 
 	it('git blame requires a positional path', async () => {
@@ -131,7 +136,7 @@ describe('git group (f00046 S1)', async () => {
 		);
 		expect(calls).toEqual([
 			{
-				tool: 'git_blame',
+				tool: 'mcp-vertex_git_blame',
 				args: { path: 'src/server.ts', startLine: 10, endLine: 20 },
 			},
 		]);
@@ -145,16 +150,16 @@ describe('git group (f00046 S1)', async () => {
 		);
 		expect(calls).toEqual([
 			{
-				tool: 'git_show',
+				tool: 'mcp-vertex_git_show',
 				args: { ref: 'HEAD~1', path: 'src/server.ts' },
 			},
 		]);
 	});
 
-	it('git worktree delegates to git_worktree with no args', async () => {
+	it('git worktree delegates to mcp-vertex_git_worktree with no args', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await findCommand('git worktree')!.run([], ctx);
-		expect(calls).toEqual([{ tool: 'git_worktree', args: {} }]);
+		expect(calls).toEqual([{ tool: 'mcp-vertex_git_worktree', args: {} }]);
 		expect(result.code).toBe(EXIT_CODE.OK);
 	});
 });

@@ -3,8 +3,8 @@
  * receives one of these; no `any`, no `unknown` escapes this surface.
  *
  * Derived from the existing MCP tool outputs (`mcp-vertex_overview`,
- * `mcp-vertex_metrics`, `proposals_proposal_board`,
- * `proposals_compact_status`, `proposals_agent_names`,
+ * `mcp-vertex_metrics`, `mcp-vertex_proposals_proposal_board`,
+ * `mcp-vertex_proposals_compact_status`, `mcp-vertex_proposals_agent_names`,
  * `mcp-vertex_knowledge`) — never invent fields that aren't already on
  * the server.
  */
@@ -128,7 +128,7 @@ export interface IDashboardTimesModel {
 	}[];
 }
 
-/** Active agents (from `proposals_agent_names`). */
+/** Active agents (from `mcp-vertex_proposals_agent_names`). */
 export interface IDashboardAgentsModel {
 	readonly agents: readonly {
 		readonly name: string;

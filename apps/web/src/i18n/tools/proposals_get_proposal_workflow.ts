@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_get_proposal_workflow`.
+// i18n catalogue for `mcp-vertex_proposals_get_proposal_workflow`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

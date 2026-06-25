@@ -1,6 +1,6 @@
 /**
  * `ConnectionHealthService` — pings the MCP server every N seconds
- * with the cheapest available tool (`status-marker_ping`) and emits
+ * with the cheapest available tool (`mcp-vertex_status-marker_ping`) and emits
  * `up` / `down` / `retrying` events via an `EventTarget`-style API.
  *
  * Used by the VS Code extension to:
@@ -18,7 +18,7 @@ import type {
 	IConnectionState,
 } from '../contracts/interfaces/connection-health.interface';
 
-const TOOL_PING = 'status-marker_ping';
+const TOOL_PING = 'mcp-vertex_status-marker_ping';
 
 export type IConnectionHealthListener = (event: IConnectionHealthEvent) => void;
 

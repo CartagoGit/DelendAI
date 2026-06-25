@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_close_slice`.
+// i18n catalogue for `mcp-vertex_proposals_close_slice`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

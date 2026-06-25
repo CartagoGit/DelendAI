@@ -9,14 +9,14 @@ describe('ToolTreeDataProvider', async () => {
 			async listTools() {
 				return [
 					{
-						name: 'proposals_proposal_board',
+						name: 'mcp-vertex_proposals_proposal_board',
 						plugin: 'proposals',
 						summary: 'Show proposals',
 						tags: ['workflow'],
 						effects: [],
 					},
 					{
-						name: 'quality_run_quality',
+						name: 'mcp-vertex_quality_run_quality',
 						plugin: 'quality',
 						summary: 'Run quality',
 						tags: ['quality'],
@@ -52,7 +52,7 @@ describe('ToolTreeDataProvider', async () => {
 		const proposalTools = await provider.getChildren(plugins[0]);
 		expect(proposalTools.map((tool) => tool.label)).toEqual([
 			'proposals_continue',
-			'proposals_proposal_board',
+			'mcp-vertex_proposals_proposal_board',
 		]);
 		expect(proposalTools[1]).toMatchObject({
 			description: 'Show proposals',

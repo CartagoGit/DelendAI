@@ -3,9 +3,9 @@
  * Pure 1:1 delegation. Read-only, offline (no network / CVE database).
  *
  * Tools mapped:
- *   - `deps_deps_list`     ({ manifest? })
- *   - `deps_deps_check`    ({ manifest? })
- *   - `deps_deps_polyglot` (no args)
+ *   - `mcp-vertex_deps_deps_list`     ({ manifest? })
+ *   - `mcp-vertex_deps_deps_check`    ({ manifest? })
+ *   - `mcp-vertex_deps_deps_polyglot` (no args)
  */
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request, scalarArg } from './group-helpers';
@@ -16,7 +16,7 @@ const depsListCommand: ICliCommand = {
 	async run(args, ctx) {
 		const manifest = scalarArg(args, 'manifest');
 		return data(
-			await request(ctx, 'deps_deps_list', {
+			await request(ctx, 'mcp-vertex_deps_deps_list', {
 				...(manifest !== undefined ? { manifest } : {}),
 			}),
 		);
@@ -30,7 +30,7 @@ const depsCheckCommand: ICliCommand = {
 	async run(args, ctx) {
 		const manifest = scalarArg(args, 'manifest');
 		return data(
-			await request(ctx, 'deps_deps_check', {
+			await request(ctx, 'mcp-vertex_deps_deps_check', {
 				...(manifest !== undefined ? { manifest } : {}),
 			}),
 		);
@@ -42,7 +42,7 @@ const depsPolyglotCommand: ICliCommand = {
 	summary:
 		'List declared deps from pyproject/Cargo/go.mod (non-npm ecosystems).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'deps_deps_polyglot', {}));
+		return data(await request(ctx, 'mcp-vertex_deps_deps_polyglot', {}));
 	},
 };
 

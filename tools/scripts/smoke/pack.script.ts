@@ -67,20 +67,20 @@ const PLUGIN_IDS = PACKED_PACKAGE_DIRS.filter((dir) =>
 ).map((dir) => dir.slice('plugins/'.length));
 
 const REQUIRED_PLUGIN_TOOLS: Record<string, string> = {
-	audit: 'audit_audit_plan',
-	deps: 'deps_deps_list',
-	docs: 'docs_docs_list',
-	git: 'git_status',
-	logs: 'logs_query',
-	memory: 'memory_save',
-	notification: 'notification_notify_status',
-	proposals: 'proposals_auto_work',
-	quality: 'quality_get_quality_scopes',
-	rules: 'rules_get_rules',
-	search: 'search_search',
-	'status-marker': 'status-marker_ping',
-	'test-convention': 'test-convention_get_convention',
-	'web-fetch': 'web-fetch_web_fetch',
+	audit: 'mcp-vertex_audit_audit_plan',
+	deps: 'mcp-vertex_deps_deps_list',
+	docs: 'mcp-vertex_docs_docs_list',
+	git: 'mcp-vertex_git_status',
+	logs: 'mcp-vertex_logs_query',
+	memory: 'mcp-vertex_memory_save',
+	notification: 'mcp-vertex_notification_notify_status',
+	proposals: 'mcp-vertex_proposals_auto_work',
+	quality: 'mcp-vertex_quality_get_quality_scopes',
+	rules: 'mcp-vertex_rules_get_rules',
+	search: 'mcp-vertex_search_search',
+	'status-marker': 'mcp-vertex_status-marker_ping',
+	'test-convention': 'mcp-vertex_test-convention_get_convention',
+	'web-fetch': 'mcp-vertex_web-fetch_web_fetch',
 };
 
 const REQUIRED_TOOLS = [

@@ -55,7 +55,7 @@ describe('proposals group (f00046 S7)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals auto-work').run(['--mode=commit-and-push'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'proposals_auto_work',
+			tool: 'mcp-vertex_proposals_auto_work',
 			args: { persist: 'commit-and-push' },
 		});
 	});
@@ -72,7 +72,7 @@ describe('proposals group (f00046 S7)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'proposals_proposal_transition',
+			tool: 'mcp-vertex_proposals_proposal_transition',
 			args: { id: 'f1', to: 'in-progress', reason: 'start' },
 		});
 	});
@@ -81,7 +81,7 @@ describe('proposals group (f00046 S7)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals close-slice').run(['f1', 'S2'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'proposals_close_slice',
+			tool: 'mcp-vertex_proposals_close_slice',
 			args: { proposalId: 'f1', sliceId: 'S2' },
 		});
 	});
@@ -93,7 +93,7 @@ describe('proposals group (f00046 S7)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'proposals_agent_lock',
+			tool: 'mcp-vertex_proposals_agent_lock',
 			args: {
 				action: 'claim',
 				agent: 'a',
@@ -112,7 +112,7 @@ describe('proposals group (f00046 S7)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'proposals_delegate',
+			tool: 'mcp-vertex_proposals_delegate',
 			args: {
 				taskId: 't1',
 				slot: 'implementation_runner',

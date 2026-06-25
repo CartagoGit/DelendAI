@@ -27,7 +27,7 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 			const quality = await deps.client.request<
 				{ scope: string; dryRun: boolean },
 				IQualityRunOutput
-			>('quality_run_quality', { scope: 'all', dryRun: true });
+			>('mcp-vertex_quality_run_quality', { scope: 'all', dryRun: true });
 			const panel = deps.vscode.window.createWebviewPanel(
 				'mcpVertexValidation',
 				'mcp-vertex Validation',

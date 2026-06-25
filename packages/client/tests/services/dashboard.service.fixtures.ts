@@ -58,9 +58,9 @@ export const overviewFixture = {
 	tools: [
 		{ name: 'mcp-vertex_overview', tags: ['orientation'] },
 		{ name: 'mcp-vertex_metrics', tags: ['observability'] },
-		{ name: 'proposals_proposal_board', tags: ['proposals'] },
-		{ name: 'memory_recall', tags: ['memory'] },
-		{ name: 'quality_run_quality', tags: ['quality'] },
+		{ name: 'mcp-vertex_proposals_proposal_board', tags: ['proposals'] },
+		{ name: 'mcp-vertex_memory_recall', tags: ['memory'] },
+		{ name: 'mcp-vertex_quality_run_quality', tags: ['quality'] },
 	],
 	knowledge: [
 		{ id: 'overview', title: 'Overview' },
@@ -85,21 +85,21 @@ export const metricsFixture = {
 			maxMs: 20,
 			totalBytes: 1600,
 		},
-		proposals_proposal_board: {
+		mcp-vertex_proposals_proposal_board: {
 			calls: 4,
 			errors: 1,
 			totalMs: 320,
 			maxMs: 200,
 			totalBytes: 3200,
 		},
-		proposals_agent_names: {
+		mcp-vertex_proposals_agent_names: {
 			calls: 2,
 			errors: 0,
 			totalMs: 20,
 			maxMs: 10,
 			totalBytes: 200,
 		},
-		quality_run_quality: {
+		mcp-vertex_quality_run_quality: {
 			calls: 1,
 			errors: 0,
 			totalMs: 1500,
@@ -145,6 +145,6 @@ export const agentsFixture = {
 export const allResponsesFixture: ResponseMap = {
 	'mcp-vertex_overview': overviewFixture,
 	'mcp-vertex_metrics': metricsFixture,
-	proposals_proposal_board: proposalsFixture,
-	proposals_agent_names: agentsFixture,
+	mcp-vertex_proposals_proposal_board: proposalsFixture,
+	mcp-vertex_proposals_agent_names: agentsFixture,
 };

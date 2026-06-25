@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_auto_work`.
+// i18n catalogue for `mcp-vertex_proposals_auto_work`.
 //
 // Second entry of the per-tool i18n catalogue (apps/web/src/i18n/tools/).
 // 12-lang invariant is enforced by `check-i18n.ts` (l100 s3-bis).

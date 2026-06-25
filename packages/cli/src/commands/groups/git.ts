@@ -4,13 +4,13 @@
  * the CLI, all options come from the public MCP `inputSchema`.
  *
  * Tools mapped:
- *   - `git_status`   (no args)
- *   - `git_changed`  (no args)
- *   - `git_diff`     ({ staged?, path? })
- *   - `git_log`      ({ limit? })
- *   - `git_blame`    ({ path, startLine?, endLine? })
- *   - `git_show`     ({ ref?, path? })
- *   - `git_worktree` (no args)
+ *   - `mcp-vertex_git_status`   (no args)
+ *   - `mcp-vertex_git_changed`  (no args)
+ *   - `mcp-vertex_git_diff`     ({ staged?, path? })
+ *   - `mcp-vertex_git_log`      ({ limit? })
+ *   - `mcp-vertex_git_blame`    ({ path, startLine?, endLine? })
+ *   - `mcp-vertex_git_show`     ({ ref?, path? })
+ *   - `mcp-vertex_git_worktree` (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -50,7 +50,7 @@ export const gitStatusCommand: ICliCommand = {
 	name: 'git status',
 	summary: 'Working-tree status (branch + clean flag + entries).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'git_status', {}));
+		return data(await request(ctx, 'mcp-vertex_git_status', {}));
 	},
 };
 
@@ -58,7 +58,7 @@ export const gitChangedCommand: ICliCommand = {
 	name: 'git changed',
 	summary: 'List of changed file paths in the working tree.',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'git_changed', {}));
+		return data(await request(ctx, 'mcp-vertex_git_changed', {}));
 	},
 };
 
@@ -69,7 +69,7 @@ export const gitDiffCommand: ICliCommand = {
 		const staged = hasFlag(args, 'staged');
 		const path = scalarArg(args, 'path');
 		return data(
-			await request(ctx, 'git_diff', {
+			await request(ctx, 'mcp-vertex_git_diff', {
 				...(staged ? { staged: true } : {}),
 				...(path !== undefined ? { path } : {}),
 			}),
@@ -83,7 +83,7 @@ export const gitLogCommand: ICliCommand = {
 	async run(args, ctx) {
 		const limit = scalarArg(args, 'limit') ?? scalarArg(args, 'max');
 		return data(
-			await request(ctx, 'git_log', {
+			await request(ctx, 'mcp-vertex_git_log', {
 				...(limit !== undefined ? { limit: Number(limit) } : {}),
 			}),
 		);
@@ -107,7 +107,7 @@ export const gitBlameCommand: ICliCommand = {
 		const endLine =
 			scalarArg(args, 'end-line') ?? scalarArg(args, 'endLine');
 		return data(
-			await request(ctx, 'git_blame', {
+			await request(ctx, 'mcp-vertex_git_blame', {
 				path: positional,
 				...(startLine !== undefined
 					? { startLine: Number(startLine) }
@@ -125,7 +125,7 @@ export const gitShowCommand: ICliCommand = {
 		const positional = args.find((arg) => !arg.startsWith('-'));
 		const path = scalarArg(args, 'path');
 		return data(
-			await request(ctx, 'git_show', {
+			await request(ctx, 'mcp-vertex_git_show', {
 				...(positional !== undefined ? { ref: positional } : {}),
 				...(path !== undefined ? { path } : {}),
 			}),
@@ -137,7 +137,7 @@ export const gitWorktreeCommand: ICliCommand = {
 	name: 'git worktree',
 	summary: 'List existing git worktrees for this repo (read-only).',
 	async run(_args, ctx) {
-		return data(await request(ctx, 'git_worktree', {}));
+		return data(await request(ctx, 'mcp-vertex_git_worktree', {}));
 	},
 };
 

@@ -5,7 +5,7 @@
  * - `query(filter)` — paginated log query.
  * - `tail(n, filter)` — most recent N events.
  * - `subscribe(opts)` — `AsyncIterable<ILogEvent>` that polls
- *   `logs_subscribe` every `pollIntervalMs` (default 2s) until the
+ *   `mcp-vertex_logs_subscribe` every `pollIntervalMs` (default 2s) until the
  *   `AbortSignal` fires. Yields each event **once**.
  * - `correlate(filter)` — chronological chain for one task or agent.
  * - `redactTest(payload)` — audit the redactor against a sample.
@@ -28,11 +28,11 @@ import type {
 	ILogTailResult,
 } from '../contracts/interfaces/logs.interface';
 
-const TOOL_QUERY = 'logs_query';
-const TOOL_TAIL = 'logs_tail';
-const TOOL_SUBSCRIBE = 'logs_subscribe';
-const TOOL_CORRELATE = 'logs_correlate';
-const TOOL_REDACT_TEST = 'logs_redact_test';
+const TOOL_QUERY = 'mcp-vertex_logs_query';
+const TOOL_TAIL = 'mcp-vertex_logs_tail';
+const TOOL_SUBSCRIBE = 'mcp-vertex_logs_subscribe';
+const TOOL_CORRELATE = 'mcp-vertex_logs_correlate';
+const TOOL_REDACT_TEST = 'mcp-vertex_logs_redact_test';
 
 const DEFAULT_POLL_INTERVAL_MS = 2_000;
 const MAX_EVENTS = 1_000;
@@ -92,7 +92,7 @@ export class LogsService {
 	}
 
 	/**
-	 * Poll `logs_subscribe` every `pollIntervalMs` and yield new
+	 * Poll `mcp-vertex_logs_subscribe` every `pollIntervalMs` and yield new
 	 * events. Stops on `signal.abort`. Deduplicates by `ts + summary`
 	 * so a slow consumer doesn't see the same event twice. Caps at
 	 * `maxEvents` events (default 1000) to avoid runaway memory.

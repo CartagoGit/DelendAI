@@ -74,7 +74,7 @@ describe('mcp-vertex.toolSearch', async () => {
 										tags: ['orientation'],
 									},
 									{
-										name: 'proposals_proposal_board',
+										name: 'mcp-vertex_proposals_proposal_board',
 										tags: ['proposals'],
 									},
 								],

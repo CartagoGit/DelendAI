@@ -1,7 +1,7 @@
 /**
  * Typed models for the Health panel (S4 in f126).
- * Wraps `proposals_state_health`, `proposals_proposal_stale_list`,
- * `proposals_agent_names` and `mcp-vertex_status` into a single
+ * Wraps `mcp-vertex_proposals_state_health`, `mcp-vertex_proposals_proposal_stale_list`,
+ * `mcp-vertex_proposals_agent_names` and `mcp-vertex_status` into a single
  * client-side aggregate.
  */
 import type {
@@ -46,7 +46,7 @@ export interface IHealthSnapshot {
 
 export interface IHealthOptions {
 	/**
-	 * If `true`, also call `proposals_proposal_stale_list` (extra
+	 * If `true`, also call `mcp-vertex_proposals_proposal_stale_list` (extra
 	 * round-trip; default `true` because the user almost always
 	 * wants the stale list when they open the Health panel).
 	 */

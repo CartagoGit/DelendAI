@@ -1,4 +1,4 @@
-// i18n catalogue for `quality_quality_cancel`.
+// i18n catalogue for `mcp-vertex_quality_quality_cancel`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

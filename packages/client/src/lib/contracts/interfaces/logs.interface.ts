@@ -67,7 +67,7 @@ export interface ILogSubscribeOptions {
 	readonly pollIntervalMs?: number;
 	/** Stop after this many events (capped at 1000). */
 	readonly maxEvents?: number;
-	/** Filter passed to the underlying `logs_subscribe` tool. */
+	/** Filter passed to the underlying `mcp-vertex_logs_subscribe` tool. */
 	readonly filter?: ILogQueryFilter;
 }
 

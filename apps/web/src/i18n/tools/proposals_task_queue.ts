@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_task_queue`.
+// i18n catalogue for `mcp-vertex_proposals_task_queue`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

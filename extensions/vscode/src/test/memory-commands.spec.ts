@@ -53,7 +53,7 @@ describe('memory commands', async () => {
 			vscode,
 			client: McpStdioClient.fromTransport({
 				async callTool(input) {
-					expect(input.name).toBe('memory_save');
+					expect(input.name).toBe('mcp-vertex_memory_save');
 					return {
 						structuredContent: {
 							ok: true,

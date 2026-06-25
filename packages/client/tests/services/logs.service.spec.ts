@@ -14,11 +14,11 @@ import {
 
 const makeService = (
 	responses: Parameters<typeof createFakeTransport>[0] = {
-		logs_query: queryFixture,
-		logs_tail: tailFixture,
-		logs_subscribe: subscribeFixture,
-		logs_correlate: correlateFixture,
-		logs_redact_test: redactTestFixture,
+		mcp-vertex_logs_query: queryFixture,
+		mcp-vertex_logs_tail: tailFixture,
+		mcp-vertex_logs_subscribe: subscribeFixture,
+		mcp-vertex_logs_correlate: correlateFixture,
+		mcp-vertex_logs_redact_test: redactTestFixture,
 	},
 ) => {
 	const { transport, calls } = createFakeTransport(responses);
@@ -27,9 +27,9 @@ const makeService = (
 };
 
 describe('LogsService', async () => {
-	it('query calls logs_query and redacts secrets in summary + meta', async () => {
+	it('query calls mcp-vertex_logs_query and redacts secrets in summary + meta', async () => {
 		const { service, calls } = makeService({
-			logs_query: {
+			mcp-vertex_logs_query: {
 				events: [
 					{
 						...sampleEvent,
@@ -47,14 +47,14 @@ describe('LogsService', async () => {
 		expect(out.events).toHaveLength(1);
 		expect(out.events[0]?.summary).not.toContain('AKIAIOSFODNN7EXAMPLE');
 		expect(out.events[0]?.meta.token).not.toContain('ghp_');
-		expect(calls[0]?.tool).toBe('logs_query');
+		expect(calls[0]?.tool).toBe('mcp-vertex_logs_query');
 	});
 
 	it('tail respects limit and passes filter through', async () => {
 		const { service, calls } = makeService();
 		await service.tail(7, { kind: 'tool-call' });
 		const last = calls[calls.length - 1];
-		expect(last?.tool).toBe('logs_tail');
+		expect(last?.tool).toBe('mcp-vertex_logs_tail');
 		expect(last?.args).toEqual({ limit: 7, kind: 'tool-call' });
 	});
 
@@ -65,7 +65,7 @@ describe('LogsService', async () => {
 			since: '2026-06-21T00:00:00Z',
 		});
 		const last = calls[calls.length - 1];
-		expect(last?.tool).toBe('logs_correlate');
+		expect(last?.tool).toBe('mcp-vertex_logs_correlate');
 		expect(last?.args).toEqual({
 			taskId: 'f00023',
 			since: '2026-06-21T00:00:00Z',

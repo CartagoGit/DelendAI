@@ -50,7 +50,7 @@ describe('quality group (f00046 S4)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(qualityCommands, 'quality run').run(['--scope=lint'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'quality_run_quality',
+			tool: 'mcp-vertex_quality_run_quality',
 			args: { scope: 'lint' },
 		});
 	});
@@ -75,7 +75,7 @@ describe('audit group (f00046 S4)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find(auditCommands, 'audit plan').run(['--kind=security'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'audit_audit_plan',
+			tool: 'mcp-vertex_audit_audit_plan',
 			args: { scope: 'security' },
 		});
 	});
@@ -87,7 +87,7 @@ describe('audit group (f00046 S4)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'audit_audit_consolidate',
+			tool: 'mcp-vertex_audit_audit_consolidate',
 			args: { auditDir: 'docs/audits', topActions: 5 },
 		});
 	});
@@ -101,7 +101,7 @@ describe('logs group (f00046 S4)', async () => {
 			ctx,
 		);
 		expect(calls[0]).toEqual({
-			tool: 'logs_query',
+			tool: 'mcp-vertex_logs_query',
 			args: { taskId: 't1', outcome: 'failed', limit: 10 },
 		});
 	});
@@ -115,7 +115,7 @@ describe('logs group (f00046 S4)', async () => {
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
 		await find(logsCommands, 'logs redact-test').run(['sk-secret'], ctx);
 		expect(calls[0]).toEqual({
-			tool: 'logs_redact_test',
+			tool: 'mcp-vertex_logs_redact_test',
 			args: { text: 'sk-secret' },
 		});
 	});

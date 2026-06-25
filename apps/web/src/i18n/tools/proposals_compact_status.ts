@@ -1,4 +1,4 @@
-// i18n catalogue for `proposals_compact_status`.
+// i18n catalogue for `mcp-vertex_proposals_compact_status`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 

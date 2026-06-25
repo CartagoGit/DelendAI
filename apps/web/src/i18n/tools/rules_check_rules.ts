@@ -1,4 +1,4 @@
-// i18n catalogue for `rules_check_rules`.
+// i18n catalogue for `mcp-vertex_rules_check_rules`.
 
 import type { IToolI18n } from '#I18N/tools/_shape';
 
