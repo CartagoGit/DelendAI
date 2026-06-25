@@ -1,0 +1,75 @@
+---
+/**
+ * `HomeAtAGlanceSection.astro` — at-a-glance tab strip on the home
+ * page (l123 S1).
+ *
+ * One tab per main entry point on the site (Plugins, Tools,
+ * Benchmarks, Skills, Knowledge, Presets, Cross-project setup).  Each
+ * panel shows a single-sentence summary and a single CTA to the
+ * dedicated page; the exhaustive content lives there.  This is the
+ * "orient, don't exhaust" half of the home page.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import Tabs from '#UI/Tabs.astro';
+
+interface Props {
+	readonly lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const sectionHref = (section: string) =>
+	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
+
+const tabs = t.homeAtAGlance.panels.map((p) => ({
+	id: p.id,
+	label: p.label,
+}));
+const defaultId = t.homeAtAGlance.panels[0]?.id ?? '';
+---
+
+<section id="at-a-glance" class="section section--at-a-glance">
+	<div class="container">
+		<h2>{t.homeAtAGlance.title}</h2>
+		<p class="lead">{t.homeAtAGlance.lead}</p>
+
+		<Tabs
+			tabs={tabs}
+			defaultTab={defaultId}
+			label={t.homeAtAGlance.tabsLabel}
+		>
+			{
+				t.homeAtAGlance.panels.map((p) => (
+					<section
+						data-tab-panel={p.id}
+						id={`ui-panel-${p.id}`}
+						hidden={p.id !== defaultId}
+					>
+						<p class="at-a-glance__summary">{p.summary}</p>
+						<p class="at-a-glance__cta">
+							<a href={sectionHref(p.href)}>
+								{t.homeAtAGlance.openSection} {p.label} →
+							</a>
+						</p>
+					</section>
+				))
+			}
+		</Tabs>
+	</div>
+</section>
+
+<style>
+	.section--at-a-glance {
+		padding-block: clamp(2.5rem, 5vw, 4rem);
+	}
+	.at-a-glance__summary {
+		margin: 0 0 1rem;
+		font-size: clamp(1rem, 1.5vw, 1.1rem);
+		max-width: 60ch;
+	}
+	.at-a-glance__cta {
+		margin: 0;
+		font-weight: 500;
+	}
+</style>

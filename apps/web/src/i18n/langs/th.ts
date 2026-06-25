@@ -336,6 +336,7 @@ const dict: LangDict = {
 		tabsNext: 'ถัดไป',
 		tabsPrev: 'ก่อนหน้า',
 		stepsOf: 'จาก',
+	},
 
 	homeQuickInstall: {
 		title: 'ติดตั้งด่วน',
@@ -345,8 +346,14 @@ const dict: LangDict = {
 			{ id: 'npm', note: 'Node Package Manager — มาพร้อม Node.js' },
 			{ id: 'pnpm', note: 'เร็ว ประหยัดดิสก์ แก้ไข dependency เข้มงวด' },
 			{ id: 'yarn', note: 'ทางเลือกคลาสสิกของ npm' },
-			{ id: 'bun', note: 'runtime + ตัวจัดการแพ็กเกจแบบครบวงจร — mcp-vertex สร้างด้วย bun' },
-			{ id: 'deno', note: 'runtime ปลอดภัยโดยค่าเริ่มต้น พร้อม TypeScript ชั้นนำ' },
+			{
+				id: 'bun',
+				note: 'runtime + ตัวจัดการแพ็กเกจแบบครบวงจร — mcp-vertex สร้างด้วย bun',
+			},
+			{
+				id: 'deno',
+				note: 'runtime ปลอดภัยโดยค่าเริ่มต้น พร้อม TypeScript ชั้นนำ',
+			},
 		],
 		recommended: 'แนะนำ',
 		fullCta: 'เมทริกซ์การติดตั้งฉบับเต็ม',
@@ -357,13 +364,49 @@ const dict: LangDict = {
 		tabsLabel: 'ส่วน',
 		openSection: 'เปิด',
 		panels: [
-			{ id: 'plugins', label: 'ปลั๊กอิน', summary: 'แพ็กเกจที่เผยแพร่ โหลดเฉพาะที่ต้องการ แกนยังคงเล็ก', href: 'plugins' },
-			{ id: 'tools', label: 'เครื่องมือ', summary: 'ทุกเครื่องมือจากชุดปลั๊กอินเต็ม จัดกลุ่มตาม namespace — จากรีจิสทรีที่มีชีวิต', href: 'tools' },
-			{ id: 'bench', label: 'เกณฑ์วัด', summary: 'ประสิทธิภาพโทเคนเป็นค่าคงที่ที่ปกป้อง — วัดจริง ไม่ใช่อ้าง', href: 'benchmarks' },
-			{ id: 'skills', label: 'สกิล', summary: 'คู่มือเฉพาะโดเมนที่เอเจนต์โหลดได้ตามต้องการ', href: 'skills' },
-			{ id: 'knowledge', label: 'ความรู้', summary: 'เอกสารที่จัดทำดัชนีซึ่งแกนตอบคำถามได้', href: 'knowledge' },
-			{ id: 'presets', label: 'พรีเซ็ต', summary: 'ชุดปลั๊กอินที่ตั้งค่าไว้ล่วงหน้าสำหรับทุกขนาดเวิร์กสเปซ', href: 'presets' },
-			{ id: 'setup', label: 'ตั้งค่าข้ามโปรเจกต์', summary: 'เสียบ mcp-vertex เข้ากับรีโปใดก็ได้และเตรียมปลั๊กอิน issues', href: 'setup' },
+			{
+				id: 'plugins',
+				label: 'ปลั๊กอิน',
+				summary: 'แพ็กเกจที่เผยแพร่ โหลดเฉพาะที่ต้องการ แกนยังคงเล็ก',
+				href: 'plugins',
+			},
+			{
+				id: 'tools',
+				label: 'เครื่องมือ',
+				summary:
+					'ทุกเครื่องมือจากชุดปลั๊กอินเต็ม จัดกลุ่มตาม namespace — จากรีจิสทรีที่มีชีวิต',
+				href: 'tools',
+			},
+			{
+				id: 'bench',
+				label: 'เกณฑ์วัด',
+				summary: 'ประสิทธิภาพโทเคนเป็นค่าคงที่ที่ปกป้อง — วัดจริง ไม่ใช่อ้าง',
+				href: 'benchmarks',
+			},
+			{
+				id: 'skills',
+				label: 'สกิล',
+				summary: 'คู่มือเฉพาะโดเมนที่เอเจนต์โหลดได้ตามต้องการ',
+				href: 'skills',
+			},
+			{
+				id: 'knowledge',
+				label: 'ความรู้',
+				summary: 'เอกสารที่จัดทำดัชนีซึ่งแกนตอบคำถามได้',
+				href: 'knowledge',
+			},
+			{
+				id: 'presets',
+				label: 'พรีเซ็ต',
+				summary: 'ชุดปลั๊กอินที่ตั้งค่าไว้ล่วงหน้าสำหรับทุกขนาดเวิร์กสเปซ',
+				href: 'presets',
+			},
+			{
+				id: 'setup',
+				label: 'ตั้งค่าข้ามโปรเจกต์',
+				summary: 'เสียบ mcp-vertex เข้ากับรีโปใดก็ได้และเตรียมปลั๊กอิน issues',
+				href: 'setup',
+			},
 		],
 	},
 };

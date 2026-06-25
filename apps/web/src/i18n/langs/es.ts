@@ -347,6 +347,7 @@ const dict: LangDict = {
 		tabsNext: 'Siguiente',
 		tabsPrev: 'Anterior',
 		stepsOf: 'de',
+	},
 
 	homeQuickInstall: {
 		title: 'Instalación rápida',
@@ -354,10 +355,19 @@ const dict: LangDict = {
 		tabsLabel: 'Gestor de paquetes',
 		pms: [
 			{ id: 'npm', note: 'Node Package Manager — viene con Node.js.' },
-			{ id: 'pnpm', note: 'Rápido, eficiente en disco, resolución estricta de dependencias.' },
+			{
+				id: 'pnpm',
+				note: 'Rápido, eficiente en disco, resolución estricta de dependencias.',
+			},
 			{ id: 'yarn', note: 'Alternativa clásica a npm.' },
-			{ id: 'bun', note: 'Runtime + gestor de paquetes todo-en-uno — mcp-vertex está hecho con bun.' },
-			{ id: 'deno', note: 'Runtime seguro por defecto con TypeScript de primera clase.' },
+			{
+				id: 'bun',
+				note: 'Runtime + gestor de paquetes todo-en-uno — mcp-vertex está hecho con bun.',
+			},
+			{
+				id: 'deno',
+				note: 'Runtime seguro por defecto con TypeScript de primera clase.',
+			},
 		],
 		recommended: 'Recomendado',
 		fullCta: 'Matriz de instalación completa',
@@ -368,13 +378,55 @@ const dict: LangDict = {
 		tabsLabel: 'Secciones',
 		openSection: 'Abrir',
 		panels: [
-			{ id: 'plugins', label: 'Plugins', summary: 'Paquetes publicados. Carga solo lo que necesites; el núcleo se mantiene mínimo.', href: 'plugins' },
-			{ id: 'tools', label: 'Herramientas', summary: 'Todas las herramientas del set completo de plugins, agrupadas por namespace — del registro vivo.', href: 'tools' },
-			{ id: 'bench', label: 'Benchmarks', summary: 'La eficiencia de tokens es un invariante protegido — medido, no prometido.', href: 'benchmarks' },
-			{ id: 'skills', label: 'Skills', summary: 'Manuales de dominio que el agente puede cargar bajo demanda.', href: 'skills' },
-			{ id: 'knowledge', label: 'Conocimiento', summary: 'Documentos catalogados sobre los que el núcleo puede responder.', href: 'knowledge' },
-			{ id: 'presets', label: 'Presets', summary: 'Conjuntos de plugins preconfigurados para cualquier tamaño de workspace.', href: 'presets' },
-			{ id: 'setup', label: 'Configuración entre proyectos', summary: 'Integra mcp-vertex en cualquier repo y deja listo el plugin de issues.', href: 'setup' },
+			{
+				id: 'plugins',
+				label: 'Plugins',
+				summary:
+					'Paquetes publicados. Carga solo lo que necesites; el núcleo se mantiene mínimo.',
+				href: 'plugins',
+			},
+			{
+				id: 'tools',
+				label: 'Herramientas',
+				summary:
+					'Todas las herramientas del set completo de plugins, agrupadas por namespace — del registro vivo.',
+				href: 'tools',
+			},
+			{
+				id: 'bench',
+				label: 'Benchmarks',
+				summary:
+					'La eficiencia de tokens es un invariante protegido — medido, no prometido.',
+				href: 'benchmarks',
+			},
+			{
+				id: 'skills',
+				label: 'Skills',
+				summary:
+					'Manuales de dominio que el agente puede cargar bajo demanda.',
+				href: 'skills',
+			},
+			{
+				id: 'knowledge',
+				label: 'Conocimiento',
+				summary:
+					'Documentos catalogados sobre los que el núcleo puede responder.',
+				href: 'knowledge',
+			},
+			{
+				id: 'presets',
+				label: 'Presets',
+				summary:
+					'Conjuntos de plugins preconfigurados para cualquier tamaño de workspace.',
+				href: 'presets',
+			},
+			{
+				id: 'setup',
+				label: 'Configuración entre proyectos',
+				summary:
+					'Integra mcp-vertex en cualquier repo y deja listo el plugin de issues.',
+				href: 'setup',
+			},
 		],
 	},
 };

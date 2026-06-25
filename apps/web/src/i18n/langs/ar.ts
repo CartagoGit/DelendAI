@@ -339,6 +339,7 @@ const dict: LangDict = {
 		tabsNext: 'التالي',
 		tabsPrev: 'السابق',
 		stepsOf: 'من',
+	},
 
 	homeQuickInstall: {
 		title: 'تثبيت سريع',
@@ -348,8 +349,14 @@ const dict: LangDict = {
 			{ id: 'npm', note: 'Node Package Manager — يأتي مع Node.js.' },
 			{ id: 'pnpm', note: 'سريع، موفّر للقرص، حلّ صارم للاعتماديات.' },
 			{ id: 'yarn', note: 'البديل الكلاسيكي لـ npm.' },
-			{ id: 'bun', note: 'وقت تشغيل + مدير حزم شامل — mcp-vertex نفسه مبنيّ بـ bun.' },
-			{ id: 'deno', note: 'وقت تشغيل آمن افتراضيًا مع TypeScript من الدرجة الأولى.' },
+			{
+				id: 'bun',
+				note: 'وقت تشغيل + مدير حزم شامل — mcp-vertex نفسه مبنيّ بـ bun.',
+			},
+			{
+				id: 'deno',
+				note: 'وقت تشغيل آمن افتراضيًا مع TypeScript من الدرجة الأولى.',
+			},
 		],
 		recommended: 'موصى به',
 		fullCta: 'مصفوفة التثبيت الكاملة',
@@ -360,13 +367,50 @@ const dict: LangDict = {
 		tabsLabel: 'الأقسام',
 		openSection: 'افتح',
 		panels: [
-			{ id: 'plugins', label: 'الإضافات', summary: 'الحزم المنشورة. حمّل ما تحتاجه فقط؛ تبقى النواة صغيرة.', href: 'plugins' },
-			{ id: 'tools', label: 'الأدوات', summary: 'كل أداة يعرضها مجمع الإضافات الكامل، مجمّعة حسب النطاق — من السجل الحي.', href: 'tools' },
-			{ id: 'bench', label: 'المقاييس', summary: 'كفاءة الـ tokens ثابت محمي — مَقيس لا مَدّعى.', href: 'benchmarks' },
-			{ id: 'skills', label: 'المهارات', summary: 'أدلة نطاق يمكن للوكيل تحميلها عند الطلب.', href: 'skills' },
-			{ id: 'knowledge', label: 'المعرفة', summary: 'وثائق مفهرسة يمكن للنواة الإجابة عنها.', href: 'knowledge' },
-			{ id: 'presets', label: 'الإعدادات المسبقة', summary: 'مجموعات إضافات مهيّأة مسبقًا لأي حجم مساحة عمل.', href: 'presets' },
-			{ id: 'setup', label: 'الإعداد عبر المشاريع', summary: 'ادمج mcp-vertex في أي مستودع وجهّز إضافة issues.', href: 'setup' },
+			{
+				id: 'plugins',
+				label: 'الإضافات',
+				summary:
+					'الحزم المنشورة. حمّل ما تحتاجه فقط؛ تبقى النواة صغيرة.',
+				href: 'plugins',
+			},
+			{
+				id: 'tools',
+				label: 'الأدوات',
+				summary:
+					'كل أداة يعرضها مجمع الإضافات الكامل، مجمّعة حسب النطاق — من السجل الحي.',
+				href: 'tools',
+			},
+			{
+				id: 'bench',
+				label: 'المقاييس',
+				summary: 'كفاءة الـ tokens ثابت محمي — مَقيس لا مَدّعى.',
+				href: 'benchmarks',
+			},
+			{
+				id: 'skills',
+				label: 'المهارات',
+				summary: 'أدلة نطاق يمكن للوكيل تحميلها عند الطلب.',
+				href: 'skills',
+			},
+			{
+				id: 'knowledge',
+				label: 'المعرفة',
+				summary: 'وثائق مفهرسة يمكن للنواة الإجابة عنها.',
+				href: 'knowledge',
+			},
+			{
+				id: 'presets',
+				label: 'الإعدادات المسبقة',
+				summary: 'مجموعات إضافات مهيّأة مسبقًا لأي حجم مساحة عمل.',
+				href: 'presets',
+			},
+			{
+				id: 'setup',
+				label: 'الإعداد عبر المشاريع',
+				summary: 'ادمج mcp-vertex في أي مستودع وجهّز إضافة issues.',
+				href: 'setup',
+			},
 		],
 	},
 };

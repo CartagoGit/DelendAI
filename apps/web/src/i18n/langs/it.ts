@@ -348,6 +348,7 @@ const dict: LangDict = {
 		tabsNext: 'Avanti',
 		tabsPrev: 'Indietro',
 		stepsOf: 'di',
+	},
 
 	homeQuickInstall: {
 		title: 'Installazione rapida',
@@ -355,10 +356,19 @@ const dict: LangDict = {
 		tabsLabel: 'Gestore di pacchetti',
 		pms: [
 			{ id: 'npm', note: 'Node Package Manager — incluso con Node.js.' },
-			{ id: 'pnpm', note: 'Veloce, efficiente su disco, risoluzione stretta delle dipendenze.' },
+			{
+				id: 'pnpm',
+				note: 'Veloce, efficiente su disco, risoluzione stretta delle dipendenze.',
+			},
 			{ id: 'yarn', note: 'Alternativa classica a npm.' },
-			{ id: 'bun', note: 'Runtime + gestore di pacchetti tutto-in-uno — mcp-vertex è costruito con bun.' },
-			{ id: 'deno', note: 'Runtime sicuro per impostazione predefinita con TypeScript di prima classe.' },
+			{
+				id: 'bun',
+				note: 'Runtime + gestore di pacchetti tutto-in-uno — mcp-vertex è costruito con bun.',
+			},
+			{
+				id: 'deno',
+				note: 'Runtime sicuro per impostazione predefinita con TypeScript di prima classe.',
+			},
 		],
 		recommended: 'Consigliato',
 		fullCta: 'Matrice di installazione completa',
@@ -369,13 +379,55 @@ const dict: LangDict = {
 		tabsLabel: 'Sezioni',
 		openSection: 'Apri',
 		panels: [
-			{ id: 'plugins', label: 'Plugin', summary: 'Pacchetti pubblicati. Carica solo ciò che ti serve; il nucleo resta minimo.', href: 'plugins' },
-			{ id: 'tools', label: 'Strumenti', summary: 'Tutti gli strumenti dell\'insieme completo di plugin, raggruppati per namespace — dal registro vivo.', href: 'tools' },
-			{ id: 'bench', label: 'Benchmark', summary: 'L\'efficienza dei token è un invariante protetto — misurata, non promessa.', href: 'benchmarks' },
-			{ id: 'skills', label: 'Skill', summary: 'Manuali di dominio che l\'agente può caricare su richiesta.', href: 'skills' },
-			{ id: 'knowledge', label: 'Conoscenza', summary: 'Documenti catalogati sui quali il nucleo può rispondere.', href: 'knowledge' },
-			{ id: 'presets', label: 'Preset', summary: 'Set di plugin preconfigurati per qualsiasi dimensione di workspace.', href: 'presets' },
-			{ id: 'setup', label: 'Setup tra progetti', summary: 'Integra mcp-vertex in qualsiasi repo e prepara il plugin issues.', href: 'setup' },
+			{
+				id: 'plugins',
+				label: 'Plugin',
+				summary:
+					'Pacchetti pubblicati. Carica solo ciò che ti serve; il nucleo resta minimo.',
+				href: 'plugins',
+			},
+			{
+				id: 'tools',
+				label: 'Strumenti',
+				summary:
+					"Tutti gli strumenti dell'insieme completo di plugin, raggruppati per namespace — dal registro vivo.",
+				href: 'tools',
+			},
+			{
+				id: 'bench',
+				label: 'Benchmark',
+				summary:
+					"L'efficienza dei token è un invariante protetto — misurata, non promessa.",
+				href: 'benchmarks',
+			},
+			{
+				id: 'skills',
+				label: 'Skill',
+				summary:
+					"Manuali di dominio che l'agente può caricare su richiesta.",
+				href: 'skills',
+			},
+			{
+				id: 'knowledge',
+				label: 'Conoscenza',
+				summary:
+					'Documenti catalogati sui quali il nucleo può rispondere.',
+				href: 'knowledge',
+			},
+			{
+				id: 'presets',
+				label: 'Preset',
+				summary:
+					'Set di plugin preconfigurati per qualsiasi dimensione di workspace.',
+				href: 'presets',
+			},
+			{
+				id: 'setup',
+				label: 'Setup tra progetti',
+				summary:
+					'Integra mcp-vertex in qualsiasi repo e prepara il plugin issues.',
+				href: 'setup',
+			},
 		],
 	},
 };

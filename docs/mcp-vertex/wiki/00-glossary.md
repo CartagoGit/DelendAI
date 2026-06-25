@@ -148,7 +148,7 @@ JSON, OpenRouter API, Artificial Analysis feeds).
 The canonical configuration file for `@mcp-vertex/core`. Lives at the
 repo root. Today: cache, docs, plugins, validation matrix. **Future:**
 a top-level `providers` block (added in [`04`](04-recommended-approach.md)
-and ratified by [`f00066`](../../proposals/ready/f00066-multi-model-orchestrator.md)).
+and ratified by [`f00067`](../../proposals/ready/f00067-multi-model-orchestrator.md)).
 
 ### Cache root (`${corePaths.cacheDir}`)
 The single cache directory for the whole `mcp-vertex` instance.
