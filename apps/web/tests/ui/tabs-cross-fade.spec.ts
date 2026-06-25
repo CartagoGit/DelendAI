@@ -38,9 +38,10 @@ interface FakeClassList {
 	contains: (name: string) => boolean;
 }
 
-interface FakeListener {
-	(event: { key?: string; preventDefault: () => void }): void;
-}
+type FakeListener = (event: {
+	key?: string;
+	preventDefault: () => void;
+}) => void;
 
 /**
  * Purpose-built DOM fake used by every test in this file. We declare
