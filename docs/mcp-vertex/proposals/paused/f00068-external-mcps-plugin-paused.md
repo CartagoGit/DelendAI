@@ -869,6 +869,9 @@ shape of the work before approving.
 - ✅ No reference to `externalServers` exists yet in
   `extensions/vscode/src/host-config.ts` or in any other host
   config (verified via `grep -r externalServers extensions/`).
+- ✅ The §"Seed catalog policy" lists at least 1 ⭐ entry, at
+  least 50 🟡 entries across ≥5 categories, and an explicit
+  ⛔ policy. Counts at the moment of writing: 25 ⭐ entries, 200+ 🟡 entries across 9 categories (Languages & LSPs, Frontend frameworks, Backend frameworks, Databases, Cloud & DevOps, Observability, Communication/productivity, Testing & QA, Build tools, AI/ML/data, Security & secrets).
 
 ## Risks and mitigations
 
@@ -879,16 +882,27 @@ shape of the work before approving.
 | External tool returns secrets into memory/proposals | Medium | `redactSecrets` runs on every external tool result before persisting anywhere durable. |
 | Lazy first-call latency | Medium | Optional `eager: true` per server for hot paths; future P7 may add a `preload: ["filesystem"]` warmup. |
 | Schema drift in external server (`toolSchemaVersion` mismatch) | Medium | Manifest carries `toolSchemaVersion`; `external_mcp_status` fails loud on drift; CLI command documented. |
-| LLM suggests installing an unknown/malicious npm package (only when `allowDiscoverySearch: true`) | High | Discovery stays off by default; on, results still require human ack via `external_mcp_ack` before install. |
+| LLM suggests installing an unknown/malicious npm package (live tier only) | High | Live tier stays off by default; on, results still require human ack via `external_mcp_ack` before install; rate-limit budget enforced. |
 | Native-vs-external tool confusion for the LLM | Low | Skill `external-mcps` documents when to prefer which; `external_mcp_discover` returns the exact answer. |
 | Boot explosion when many servers declared | Low | Lazy boot defers cost; cap `maxBootedServers` per session is a future P7. |
-| Token budget regression from the catalog | Low | Catalog is summary-only (~80–100 tokens per seed); `external_mcp_discover` is the opt-in for full schema. |
+| Token budget regression from a large curated tier | Low | Catalog is summary-only (~30–50 tokens per entry); ~25 ⭐ entries ≈ 1 KB. Discoverable tier is opt-in per turn. |
+| `namespacePrefix` collisions across tiers (e.g. `ext.fs` for filesystem vs F#) | Medium | Three-tier taxonomy `ext.<category>.<tool>` with explicit rename policy documented in the 🟡 table (F# → `ext.fsharp`); collisions are surfaced at unpause time. |
+| Live tier DoSes npm registry on misuse | Medium | Hard cap: 10 calls / 10 min per workspace; budget visible in `external_mcp_status`; reset requires host restart. |
+| Curated tier grows stale (server abandoned upstream) | Low | Annual `audit-curated-seeds` slice (P7) re-validates every ⭐ entry; entries with `lastSeenGoodAt` > 12 months move to 🟡 or get retired. |
+| Discoverable tier (~200 entries) becomes a maintenance liability | Low | The 🟡 table is **policy intent**, not a frozen inventory. P1 trims against the live ecosystem; only ⭐ entries are gated by adoption. |
+| LLM mis-selects a server from the 🟡 tier that doesn't exist anymore | Medium | `external_mcp_discover` runs a `npm view <name>` ping before returning the schema; non-existent packages return `{ found: false, fallbackSuggestion: <closest alive> }`. |
 
 ## Notes
 
-- **Seed server URLs:**
-  - `@modelcontextprotocol/server-filesystem` (Anthropic, official)
-  - `angular-mcp` (community; pick a maintained fork at P4)
+- **Seed catalog tiers** (full table in §"Seed catalog policy"):
+  - **Curated (⭐, ~25 entries)**: Anthropic-official servers +
+    highest-signal community servers. Always in the system
+    prompt via `external_mcp_catalog`.
+  - **Discoverable (🟡, ~200+ entries)**: language/framework/DB/
+    cloud/AI/security catalogs. LLM asks via
+    `external_mcp_discover`; no network cost.
+  - **Live (⛔)**: npm/GitHub search, off by default, ack-gated,
+    rate-limited.
 - **Cross-references:**
   - `f00067` (multi-model orchestrator) sets the
     `toolSchemaVersion` precedent this proposal reuses.
