@@ -11,7 +11,7 @@
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
-import type { OverviewService } from './overview.service';
+import { type OverviewService, pluginFromToolName } from './overview.service';
 import type { IOverview } from '../contracts/interfaces/tool-descriptor.interface';
 import type {
 	IDashboardAgentsModel,
@@ -32,11 +32,6 @@ export interface IDashboardServiceOptions {
 	readonly overview?: OverviewService;
 	readonly metrics?: MetricsService;
 }
-
-const pluginFromToolName = (tool: string): string => {
-	const ix = tool.indexOf('_');
-	return ix === -1 ? tool : tool.slice(0, ix);
-};
 
 const TOKENS_PER_BYTE = 0.25; // 1 token ≈ 4 chars
 

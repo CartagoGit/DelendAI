@@ -45,13 +45,21 @@ export const normalizeTool = (tool: IOverviewTool): IToolDescriptor => {
 	};
 };
 
+const HOST_NAMESPACE = 'mcp-vertex';
+const HOST_PREFIX = `${HOST_NAMESPACE}_`;
+
 export const pluginFromToolName = (toolName: string): string => {
-	// Strip the host's core namespace prefix first if present, so the
-	// returned plugin is the plugin prefix (e.g. `quality`), not the
-	// host prefix (e.g. `mcp-vertex`).
-	const stripped = toolName.startsWith('mcp-vertex_')
-		? toolName.slice('mcp-vertex_'.length)
-		: toolName;
+	// Tools are namespaced by the host as `mcp-vertex_<rest>`. A core
+	// meta-tool has no further segment (e.g. `mcp-vertex_overview`,
+	// `mcp-vertex_status`) and keeps the host namespace (`mcp-vertex`);
+	// a plugin tool (e.g. `mcp-vertex_quality_run_quality`) returns its
+	// plugin prefix (`quality`).
+	if (!toolName.startsWith(HOST_PREFIX)) {
+		const [prefix] = toolName.split('_', 1);
+		return prefix ?? toolName;
+	}
+	const stripped = toolName.slice(HOST_PREFIX.length);
+	if (!stripped.includes('_')) return HOST_NAMESPACE;
 	const [prefix] = stripped.split('_', 1);
 	return prefix ?? toolName;
 };

@@ -181,8 +181,21 @@ interface ICollected {
 	readonly benchmarks: IBenchmark[];
 }
 
-const namespaceOf = (toolName: string): string =>
-	toolName.includes('_') ? (toolName.split('_')[0] as string) : 'core';
+const namespaceOf = (toolName: string): string => {
+	// Tools are host-namespaced as `mcp-vertex_<rest>`. A core meta-tool
+	// has no further segment (e.g. `mcp-vertex_overview`) and belongs to
+	// the core namespace (`core`, mapped back to the server name by
+	// `namespaceFor`); a plugin tool (`mcp-vertex_proposals_…`) returns
+	// its plugin prefix (`proposals`).
+	const HOST_PREFIX = 'mcp-vertex_';
+	if (toolName.startsWith(HOST_PREFIX)) {
+		const stripped = toolName.slice(HOST_PREFIX.length);
+		return stripped.includes('_')
+			? (stripped.split('_')[0] as string)
+			: 'core';
+	}
+	return toolName.includes('_') ? (toolName.split('_')[0] as string) : 'core';
+};
 
 /**
  * Distil a harvest failure into a short, operator-friendly reason.

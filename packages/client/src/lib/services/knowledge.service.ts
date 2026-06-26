@@ -26,15 +26,21 @@ export type IKnowledgeFullEntry = IKnowledgeEntry;
  * Entries that don't contain `_` fall back to `other`.
  */
 export const categoryOf = (id: string): string => {
-	// Strip the host's core namespace prefix first if present, so the
-	// returned category is the plugin prefix (e.g. `proposals`), not
-	// the host prefix (e.g. `mcp-vertex`).
-	const stripped = id.startsWith('mcp-vertex_')
-		? id.slice('mcp-vertex_'.length)
-		: id;
-	const ix = stripped.indexOf('_');
+	// Host-namespaced ids are `mcp-vertex_<rest>`. A core meta-tool has
+	// no further segment (e.g. `mcp-vertex_overview`) and keeps the host
+	// namespace (`mcp-vertex`); a plugin tool (e.g. `mcp-vertex_memory_recall`)
+	// returns its plugin prefix (`memory`). Non-host ids fall back to the
+	// prefix before the first `_`, or `other` when there is none.
+	const HOST_PREFIX = 'mcp-vertex_';
+	if (id.startsWith(HOST_PREFIX)) {
+		const stripped = id.slice(HOST_PREFIX.length);
+		const ix = stripped.indexOf('_');
+		if (ix < 0) return 'mcp-vertex';
+		return stripped.slice(0, ix);
+	}
+	const ix = id.indexOf('_');
 	if (ix < 0) return 'other';
-	return stripped.slice(0, ix);
+	return id.slice(0, ix);
 };
 
 export class KnowledgeService {
