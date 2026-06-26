@@ -42,6 +42,7 @@ import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resource
 import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildAgentBootstrapPromptRegistration } from '../prompts/agent-bootstrap.prompt';
+import { buildSkillPromptRegistrations } from '../prompts/skill-prompts';
 import { buildAgentCatalogResourceRegistration } from '../resources/agent-catalog-resource';
 import { loadSkills } from '../skills/load-skills';
 import { SKILL_MANIFEST_REL } from '../skills/skill-paths';
@@ -563,6 +564,13 @@ export const assembleCliConfig = async (
 			},
 		}),
 		buildStartPromptRegistration(corePrefix, () => recommendedNextAction),
+	);
+
+	// f00065 S5 (E): expose every advertised skill as a `/`-invocable prompt
+	// (`<prefix>_skill_<id>`), so MCP hosts list skills under their trigger
+	// character. Bodies load lazily via the catalog, so this stays cheap.
+	prompts.push(
+		...buildSkillPromptRegistrations(corePrefix, () => skillCatalog),
 	);
 
 	const config: IMcpVertexHostConfig = {

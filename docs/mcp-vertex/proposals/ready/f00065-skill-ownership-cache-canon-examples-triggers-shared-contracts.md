@@ -139,7 +139,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S1 — A: Skill ownership (SOLID): move skills to their owners
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/core/src/lib/skills/**, packages/core/skills/** (new),
   plugins/*/skills/** (new), apps/web/scripts/gen-skills.ts,
   tools/scripts/lint/check-skills.script.ts,
@@ -250,7 +250,13 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S5 — E: Slash / trigger-character surface across hosts
 
-- **Status**: pending
+- **Status**: done — core registers one MCP prompt per skill
+  (`<prefix>_skill_<id>`, `packages/core/src/lib/prompts/skill-prompts.ts`,
+  wired in `assemble.ts`, bodies loaded lazily via the slice-B catalog). Tools
+  and authored prompts already surfaced via MCP `prompts/list`/`tools/list`;
+  this closes the skills gap so every skill of the active preset/plugins is
+  `/`-invocable in any MCP host (Claude/Codex/Copilot/OpenCode). Per-host
+  trigger-character mapping for non-MCP discovery remains a doc follow-up.
 - **Files**: packages/core/src/lib/prompts/**, packages/core/src/lib/tools/**,
   packages/client/**, extensions/**, configs/external/**
 - **Gate**: bun run validate
