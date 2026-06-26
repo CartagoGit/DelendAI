@@ -18,6 +18,7 @@ recan:
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S6, drift-count-delta: -5, slices-grew: [], slices-removed: [], rule-changes: 4, summary: "S6 shipped: 4 new roles added to file-conventions.contract (catalog/prompt/resource/strings) to absorb the 5 residual unmatched files; lint:file-conventions switched from --report to --strict; baseline 5→0" }
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S7, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S7 shipped: load-tools-i18n.ts resolves namespace from config; tools/index.ts catalogue keys use the resolved namespace (no hardcoded literal); auditDir corrected; token-budget-discipline skill uses dynamic prefix. Catalogue count was 69 (not 7 as the original audit claimed) — mass-rename deferred in favour of namespace resolution; bun run --cwd apps/web check:i18n green" }
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S8, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S8 shipped (85573adf, 21 files, +176/-309): 15 skill directories renamed across packages/core/skills and plugins/*/skills; manifest bodyPaths updated; 3 merges landed (token-budget-discipline → token-budget-playbook, audit-runner → audit-playbook, proposal-swarm-runner → proposals-workflow-playbook). New lint: tools/scripts/lint/skills-script.ts asserts every manifest bodyPath resolves on disk and every id is unique; wired as lint:skills. Validate only red on the pre-existing pickedFromPaused typecheck gap" }
+    - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S9, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S9 shipped (eee5717d, 9 files, +173/-209): AGENTS.md gained 'Proposal ID prefixes' and 'Type-suffix convention' sections; tools/scripts/lint/proposal-id-prefix.script.ts added and wired as lint:proposals; emit-tool-types.ts → emit-tool-types.script.ts rename; orphan rename-audit-engine.ts + rename-audit-tool.ts deleted; host-server.script.ts cleaned of dead rename_audit wiring. lint:tools and lint:proposals green; validate only red on the pre-existing pickedFromPaused gap. f00049 is now complete (S5..S9) plus S1..S4 + S10 already done from earlier recans — the proposal is ready to be shelved into done/" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
@@ -493,7 +494,7 @@ their own commit lands.
 
 ### S9 — Document proposal-ID prefix taxonomy + type-suffix convention + clean orphan scripts
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `AGENTS.md` — new section "Proposal ID prefixes" documenting the
     `f|x|r|c|d|t|l|a|n` table (feat, fix, refactor, chore, docs, test, legacy, audit,
@@ -502,11 +503,14 @@ their own commit lands.
     AGENTS.md will define.
   - `AGENTS.md` — new section "Type-suffix convention" (the table in §Dimension 11).
   - `tools/scripts/host/rename-audit-engine.ts`, `rename-audit-tool.ts` — removed (work done).
-  - `tools/scripts/lint/migrate-s6.ts` — removed (historical; tracked in f00037 S6 commit).
+  - `tools/scripts/lint/migrate-s6.ts` — already absent (historical; tracked in f00037 S6 commit).
   - `tools/scripts/types/emit-tool-types.ts` → `emit-tool-types.script.ts` (entrypoint pattern).
   - Lint that asserts `id:` prefix matches the parent folder.
 - **Gate**: `bun run lint:tools` exits 0; orphan files removed; AGENTS.md updated.
 - **Commit**: `docs+chore: document proposal-id prefixes + type-suffix convention + clean orphan scripts`
+- **Shipped**: commit `eee5717d` (9 files, +173/-209). `bun run lint:tools` green;
+  `bun run lint:proposals` includes the new prefix check. `host-server.script.ts`
+  cleaned of dead `rename_audit` wiring.
 
 ### S10 — CLI command-shape lint + workflow / working-form lints
 
