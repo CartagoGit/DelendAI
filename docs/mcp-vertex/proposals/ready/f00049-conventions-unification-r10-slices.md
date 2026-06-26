@@ -17,6 +17,7 @@ recan:
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S5, drift-count-delta: -4, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S5 shipped on agent/copilot-f00057-slices (4 commits: status-marker 1→3, quality 1→3, logs 1→5, rules 1→3; 177/177 tests green across the four plugins). Implemented in worktree agent/s5-split-per-tool and merged back via git fetch + merge --no-ff. The remaining f00037-baseline plugins were already split before this recan, so S5 was the final tail" }
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S6, drift-count-delta: -5, slices-grew: [], slices-removed: [], rule-changes: 4, summary: "S6 shipped: 4 new roles added to file-conventions.contract (catalog/prompt/resource/strings) to absorb the 5 residual unmatched files; lint:file-conventions switched from --report to --strict; baseline 5→0" }
     - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S7, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S7 shipped: load-tools-i18n.ts resolves namespace from config; tools/index.ts catalogue keys use the resolved namespace (no hardcoded literal); auditDir corrected; token-budget-discipline skill uses dynamic prefix. Catalogue count was 69 (not 7 as the original audit claimed) — mass-rename deferred in favour of namespace resolution; bun run --cwd apps/web check:i18n green" }
+    - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S8, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S8 shipped (85573adf, 21 files, +176/-309): 15 skill directories renamed across packages/core/skills and plugins/*/skills; manifest bodyPaths updated; 3 merges landed (token-budget-discipline → token-budget-playbook, audit-runner → audit-playbook, proposal-swarm-runner → proposals-workflow-playbook). New lint: tools/scripts/lint/skills-script.ts asserts every manifest bodyPath resolves on disk and every id is unique; wired as lint:skills. Validate only red on the pre-existing pickedFromPaused typecheck gap" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
@@ -458,7 +459,7 @@ their own commit lands.
 
 ### S8 — Skill prefix unification + merge 3 overlapping playbooks
 
-- **Status**: ready
+- **Status**: done
 - **Decision**: drop the `mcp-vertex-` prefix on skill directory names (the manifest `id`
   keeps the prefix for backwards compatibility; only the directory basename changes).
 - **Files**: [`skills/`](../../../skills),
@@ -484,6 +485,11 @@ their own commit lands.
 - **Gate**: `bun run validate` green; `bun tools/scripts/lint/skills-script.ts` (new, asserts
   every manifest `bodyPath` resolves on disk and every `id` is unique).
 - **Commit**: `refactor(skills): unify prefix + merge 3 overlapping playbooks`
+- **Shipped**: commit `85573adf` (21 files, +176 / -309). The skill homes were not at
+  `skills/` but at `packages/core/skills/` and `plugins/<plugin>/skills/` — all 15 live
+  directories renamed in lock-step with the manifest. `bun tools/scripts/lint/skills-script.ts`
+  new lint passes; `lint:skills` script wired in `package.json`. The only red in `bun run
+  validate` is the pre-existing `pickedFromPaused` typecheck gap (out of scope for S8).
 
 ### S9 — Document proposal-ID prefix taxonomy + type-suffix convention + clean orphan scripts
 
