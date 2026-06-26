@@ -380,6 +380,7 @@ const dict: LangDict = {
 				summary:
 					'公開パッケージ。必要なものだけ読み込む — コアは小さく保ちます。',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -387,6 +388,7 @@ const dict: LangDict = {
 				summary:
 					'フルプラグインセットが公開する全ツールを名前空間別に — ライブレジストリから。',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -394,6 +396,7 @@ const dict: LangDict = {
 				summary:
 					'トークン効率は保護された不変条件 — 主張ではなく計測。',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
@@ -401,12 +404,14 @@ const dict: LangDict = {
 				summary:
 					'エージェントがオンデマンドで読み込めるドメインプレイブック。',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
 				label: 'ナレッジ',
 				summary: 'コアが質問に答えられる文書群。',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
@@ -414,6 +419,7 @@ const dict: LangDict = {
 				summary:
 					'あらゆるワークスペースサイズ向けの事前構成プラグインセット。',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -421,6 +427,7 @@ const dict: LangDict = {
 				summary:
 					'任意のリポジトリに mcp-vertex を組み込み、issues プラグインを準備。',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},

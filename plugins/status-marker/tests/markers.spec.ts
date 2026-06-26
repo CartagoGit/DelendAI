@@ -6,10 +6,12 @@ import {
 	EMOJI_TO_STATE,
 	formatCloseMarker,
 	formatLxAppCloseMarker,
-	MAX_LINE_LEN,
 	MARKERS,
+	MARKERS_BY_LOCALE,
+	MAX_LINE_LEN,
 	REASON_MISSING_TOKEN,
 	type CloseMarker,
+	type CloseMarkerLocale,
 } from '../src/lib/markers';
 
 describe('markers — canonical table', async () => {
@@ -156,4 +158,109 @@ describe('markers — every state closes its bracket', async () => {
 			expect(withReason.endsWith('sample reason')).toBe(true);
 		});
 	}
+});
+
+/**
+ * Bilingual rendering for `formatCloseMarker`. Proposal `f00070` adds an
+ * optional `opts.locale` parameter that selects between the canonical
+ * Spanish-bracket text (default) and the shorter English tokens. The
+ * validator is intentionally locale-agnostic — it parses by emoji + the
+ * `<emoji> [<bracket-text>]` shape — so both renderings validate cleanly.
+ */
+describe('markers — bilingual rendering (f00070)', async () => {
+	// One assertion per state, EN locale, no reason supplied. For the 5
+	// reason-required states, the helper still inserts `<reason-missing>`
+	// but the BRACKET text is what we lock in here.
+	const EN_TOKEN_BY_STATE: Record<CloseMarker, string> = {
+		HECHO: '🟩 [DONE]',
+		CAP: '🟨 [HANDOFF]',
+		'RE-PIVOT': '🟧 [REPIVOT]',
+		'CHECKPOINT-REQUIRED': '🟦 [CHECKPOINT]',
+		'REPAIR-NEEDED': '🟫 [REPAIR]',
+		BLOQUEADO: '🟥 [BLOCKED]',
+		'SIN PROPUESTAS LIBRES': '🟪 [NO_FREE_PROPOSALS]',
+		'SIN PROPUESTA DE NINGUN TIPO': '⬜ [NO_WORK]',
+	};
+
+	for (const state of CLOSE_MARKER_STATES) {
+		it(`[${state}] renders the EN token when locale="en" and no reason is supplied`, async () => {
+			const line = formatCloseMarker(state, undefined, { locale: 'en' });
+			if (MARKERS[state].requiresReason) {
+				// Required-reason + missing reason: EN bracket + separator + placeholder.
+				expect(line).toBe(
+					`${EN_TOKEN_BY_STATE[state]}${CLOSE_SEPARATOR}${REASON_MISSING_TOKEN}`,
+				);
+			} else {
+				// Optional-reason + missing reason: bare EN token.
+				expect(line).toBe(EN_TOKEN_BY_STATE[state]);
+			}
+		});
+	}
+
+	it('keeps the canonical ES bracket by default (opts omitted)', async () => {
+		expect(formatCloseMarker('HECHO')).toBe('🟩 [HECHO]');
+		expect(formatCloseMarker('CAP', 'en revisión')).toBe(
+			`🟨 [CAP]${CLOSE_SEPARATOR}en revisión`,
+		);
+	});
+
+	it('keeps the canonical ES bracket when opts.locale is explicitly "es"', async () => {
+		expect(formatCloseMarker('HECHO', undefined, { locale: 'es' })).toBe(
+			'🟩 [HECHO]',
+		);
+		expect(formatCloseMarker('CAP', 'en revisión', { locale: 'es' })).toBe(
+			`🟨 [CAP]${CLOSE_SEPARATOR}en revisión`,
+		);
+	});
+
+	it('preserves the "[STATE] — <reason>" shape in EN when a reason is supplied', async () => {
+		expect(
+			formatCloseMarker('CAP', 'slice handed off', { locale: 'en' }),
+		).toBe(`🟨 [HANDOFF]${CLOSE_SEPARATOR}slice handed off`);
+		expect(
+			formatCloseMarker('RE-PIVOT', 'new direction chosen', {
+				locale: 'en',
+			}),
+		).toBe(`🟧 [REPIVOT]${CLOSE_SEPARATOR}new direction chosen`);
+	});
+
+	it('preserves the "[STATE] — <reason>" shape in ES when a reason is supplied', async () => {
+		expect(formatCloseMarker('CAP', 'slice handed off')).toBe(
+			`🟨 [CAP]${CLOSE_SEPARATOR}slice handed off`,
+		);
+		expect(formatCloseMarker('RE-PIVOT', 'new direction chosen')).toBe(
+			`🟧 [RE-PIVOT]${CLOSE_SEPARATOR}new direction chosen`,
+		);
+	});
+
+	it('truncates EN lines that overflow MAX_LINE_LEN exactly like ES', async () => {
+		const long = 'x'.repeat(200);
+		const es = formatCloseMarker('CAP', long);
+		const en = formatCloseMarker('CAP', long, { locale: 'en' });
+		expect(es.length).toBeLessThanOrEqual(MAX_LINE_LEN);
+		expect(en.length).toBeLessThanOrEqual(MAX_LINE_LEN);
+		expect(es.endsWith('…')).toBe(true);
+		expect(en.endsWith('…')).toBe(true);
+	});
+
+	it('exposes every locale × state pair in MARKERS_BY_LOCALE', async () => {
+		const locales: CloseMarkerLocale[] = ['es', 'en'];
+		for (const locale of locales) {
+			const table = MARKERS_BY_LOCALE[locale];
+			for (const state of CLOSE_MARKER_STATES) {
+				expect(
+					typeof table[state],
+					`${locale}.${state} must be a string`,
+				).toBe('string');
+				expect(table[state].length).toBeGreaterThan(0);
+			}
+		}
+	});
+
+	it('routes EN rendering through formatLxAppCloseMarker identically', async () => {
+		const a = formatCloseMarker('HECHO', undefined, { locale: 'en' });
+		const b = formatLxAppCloseMarker('HECHO', undefined, { locale: 'en' });
+		expect(a).toBe(b);
+		expect(a).toBe('🟩 [DONE]');
+	});
 });

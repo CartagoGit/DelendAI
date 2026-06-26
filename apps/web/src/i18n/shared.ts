@@ -544,6 +544,14 @@ export interface IHomeAtAGlanceTranslations {
 		readonly label: string;
 		readonly summary: string;
 		readonly href: string;
+		/**
+		 * f00069 S4 — optional brand-mark path rendered before the
+		 * tab label in the at-a-glance strip. Resolved at Astro
+		 * build time via `brandLogo()` (or a static string when
+		 * the mark lives under `/logos/<bare>.png` / `.svg` and
+		 * is not a plugin family).
+		 */
+		readonly icon?: string;
 	}>;
 }
 

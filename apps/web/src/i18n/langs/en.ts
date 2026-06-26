@@ -380,6 +380,7 @@ const dict: LangDict = {
 				summary:
 					'Published packages. Load only what you need; the core stays tiny.',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -387,6 +388,7 @@ const dict: LangDict = {
 				summary:
 					'Every tool the full plugin set exposes, grouped by namespace — from the live registry.',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -394,12 +396,14 @@ const dict: LangDict = {
 				summary:
 					'Token efficiency is a guarded invariant — measured, not claimed.',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
 				label: 'Skills',
 				summary: 'Domain playbooks the agent can load on demand.',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
@@ -407,12 +411,14 @@ const dict: LangDict = {
 				summary:
 					'Catalogued documents the core can answer questions about.',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
 				label: 'Presets',
 				summary: 'Pre-configured plugin sets for any workspace size.',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -420,6 +426,7 @@ const dict: LangDict = {
 				summary:
 					'Wire mcp-vertex into any repo and get the issues plugin ready.',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},

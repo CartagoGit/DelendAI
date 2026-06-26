@@ -15,6 +15,7 @@
  */
 import { useTranslations, type Lang } from '#I18N/ui';
 import { describeTool } from '#I18N/tools';
+import { brandLogo } from '#LIB/brand-logos';
 import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
@@ -109,18 +110,29 @@ const ordered = [...packages].sort((a, b) =>
 						pkgResources.length +
 						pkgKnowledge.length;
 					if (total === 0) return null;
+					// f00069 S5 — funnel every brand-mark lookup through `brandLogo()`
+					// so the component never hardcodes `/logos/plugin-*.svg`.
+					const pluginIcon = brandLogo(slug, 'plugin');
+					const onIconError =
+						"this.replaceWith(Object.assign(document.createElement('span'),{className:'pd__icon-fallback',textContent:(this.dataset.slug||'').charAt(0)}))";
 					return (
 						<details class="pd__row" name="plugin-capabilities">
 							<summary class="pd__summary">
 								<span class="pd__icon" aria-hidden="true">
-									<img
-										src={`/logos/plugin-${slug}.svg`}
-										alt=""
-										width="22"
-										height="22"
-										loading="lazy"
-										onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'pd__icon-fallback',textContent:this.alt||''}))"
-									/>
+									{pluginIcon && (
+										<img
+											src={pluginIcon}
+											alt=""
+											data-slug={slug}
+											width="22"
+											height="22"
+											loading="lazy"
+											onerror={onIconError}
+										/>
+									)}
+									{!pluginIcon && (
+										<span class="pd__icon-fallback">{slug.charAt(0)}</span>
+									)}
 								</span>
 								<span class="pd__title">
 									<code class="pd__title-code">{pkg.name}</code>

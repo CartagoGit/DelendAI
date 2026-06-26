@@ -65,6 +65,7 @@ describe('close-tools — handler', async () => {
 		expect(parsed).toEqual({
 			ok: true,
 			state: 'HECHO',
+			locale: 'es',
 			line: formatCloseMarker('HECHO'),
 		});
 	});
@@ -79,6 +80,19 @@ describe('close-tools — handler', async () => {
 		const parsed = JSON.parse(out.content[0]!.text);
 		expect(parsed.line).toBe(formatCloseMarker('CAP', 'todo lo posible'));
 		expect(parsed.reason).toBe('todo lo posible');
+		expect(parsed.locale).toBe('es');
+	});
+
+	it('close renders the EN locale when locale="en"', async () => {
+		const calls = await captureRegister();
+		const close = calls.find((c) => c.name === 'sm_close')!;
+		const out = (await close.handler({
+			state: 'HECHO',
+			locale: 'en',
+		})) as { content: Array<{ text: string }> };
+		const parsed = JSON.parse(out.content[0]!.text);
+		expect(parsed.line).toBe('🟩 [DONE]');
+		expect(parsed.locale).toBe('en');
 	});
 
 	it('validate reports ok:true for a valid response', async () => {

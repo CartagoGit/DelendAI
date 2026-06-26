@@ -70,6 +70,17 @@ exactly one line from the canonical 8-state table.
 5. If unsure whether a draft response is compliant, run
    `<prefix>_validate { text: <full draft> }` first and check `ok`.
 
-Full table and helper signature: read
-[`plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`](../plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md)
+### Bilingual rendering toggle
+
+The close marker supports two bracket-text locales: `'es'` (default —
+`[HECHO]`, `[CAP]`, …, byte-identical to legacy) and `'en'` (shorter
+English tokens — `[DONE]`, `[HANDOFF]`, `[REPIVOT]`, `[CHECKPOINT]`,
+`[REPAIR]`, `[BLOCKED]`, `[NO_FREE_PROPOSALS]`, `[NO_WORK]`). Pass
+`locale: "en"` to `<prefix>_close` (or to `formatCloseMarker` directly)
+to switch. The validator and the 8-state semantics are unchanged — only
+the bracket text differs; pick whichever locale matches the host's UI.
+The detailed contract lives in
+[`plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`](../plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md).
+
+Full table and helper signature: read that same skill
 on first encounter or whenever the table changes.

@@ -384,6 +384,7 @@ const dict: LangDict = {
 				summary:
 					'Paquets publiés. Chargez uniquement ce dont vous avez besoin ; le noyau reste minimal.',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -391,6 +392,7 @@ const dict: LangDict = {
 				summary:
 					"Tous les outils exposés par l'ensemble complet des plugins, groupés par namespace — depuis le registre vivant.",
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -398,6 +400,7 @@ const dict: LangDict = {
 				summary:
 					"L'efficacité en tokens est un invariant protégé — mesurée, pas promise.",
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
@@ -405,6 +408,7 @@ const dict: LangDict = {
 				summary:
 					"Manuels de domaine que l'agent peut charger à la demande.",
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
@@ -412,6 +416,7 @@ const dict: LangDict = {
 				summary:
 					'Documents catalogués sur lesquels le noyau peut répondre.',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
@@ -419,6 +424,7 @@ const dict: LangDict = {
 				summary:
 					'Ensembles de plugins préconfigurés pour toute taille de workspace.',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -426,6 +432,7 @@ const dict: LangDict = {
 				summary:
 					"Branchez mcp-vertex dans n'importe quel dépôt et préparez le plugin issues.",
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},

@@ -13,6 +13,7 @@
  * from a raw i18n key here, so the disclosure can never leak `plugin.<slug>`.
  */
 import { capabilityToolsFor, resolvePluginPurpose } from '#DATA/plugin-catalog';
+import { brandLogo } from '#LIB/brand-logos';
 
 interface Props {
 	/** Plugin slug / route id (e.g. `proposals`). */
@@ -32,24 +33,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const purpose = resolvePluginPurpose(slug);
 const tools = capabilityToolsFor(slug);
 const count = tools.length;
-const iconSrc = `${base}/logos/plugin-${slug}.svg`;
+// f00069 S5 — funnel every brand-mark lookup through `brandLogo()`. The
+// fallback to a missing file is the same shared first-letter badge that
+// `Tabs.astro` uses (`.plugin-card__icon--fallback` already styles it as
+// a coloured circular badge sized to the 36×36 icon container).
+const iconSrc = brandLogo(slug, 'plugin');
 const onIconError =
-	"this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:this.dataset.slug||''}))";
+	"this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:(this.dataset.slug||'').charAt(0)}))";
 ---
 
 <details class="plugin-disc card">
 	<summary class="plugin-disc__summary">
 		<div class="plugin-card__head">
-			<img
-				class="plugin-card__icon"
-				src={iconSrc}
-				alt=""
-				data-slug={slug}
-				width="36"
-				height="36"
-				loading="lazy"
-				onerror={onIconError}
-			/>
+			{iconSrc && (
+				<img
+					class="plugin-card__icon"
+					src={iconSrc}
+					alt=""
+					data-slug={slug}
+					width="36"
+					height="36"
+					loading="lazy"
+					onerror={onIconError}
+				/>
+			)}
+			{!iconSrc && (
+				<span
+					class="plugin-card__icon plugin-card__icon--fallback"
+					aria-hidden="true">{slug.charAt(0)}</span>
+			)}
 			<div class="plugin-card__title">
 				<code>{name}</code>
 				<span class="plugin-card__version">v{version}</span>

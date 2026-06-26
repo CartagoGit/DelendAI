@@ -71,7 +71,7 @@ Hosts that serve English-speaking audiences (or non-Spanish LLM prompts) want
 `🟩 [DONE]` instead of `🟩 [HECHO]`. Today they can't get it without forking
 the plugin.
 
-## design
+## why this design
 
 ### Mapping table
 
@@ -123,15 +123,55 @@ load** on the LLM, not raw tokens. We expect this to be visible only in the
 LLM's adherence to the marker (fewer "creative" mis-format attempts) rather
 than in token counts.
 
-## scope
+## architecture
 
-| Slice | File(s) | Risk |
-|---|---|---|
-| S1 — `MARKERS_EN` table | [markers.ts](plugins/status-marker/src/lib/markers.ts ) | none (additive) |
-| S2 — `formatCloseMarker` opts | [markers.ts](plugins/status-marker/src/lib/markers.ts ) | low; ES path bit-identical |
-| S3 — `close` / `validate` plumbing | [close-tools.ts](plugins/status-marker/src/lib/tools/close-tools.ts ), [validate.ts](plugins/status-marker/src/lib/validate.ts ) | low; validator extension is opt-in |
-| S4 — generated types + spec coverage | [tool-outputs.ts](plugins/status-marker/src/generated/tool-outputs.ts ), [markers.spec.ts](plugins/status-marker/tests/markers.spec.ts ) | none (regenerate) |
-| S5 — docs: skill + copilot-instructions | [SKILL.md](plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md ), [.github/copilot-instructions.md](.github/copilot-instructions.md ) | none (additive table) |
+The change is additive and small: a new per-locale bracket-text table, an
+optional `{ locale }` argument on `formatCloseMarker`, and a small validator
+extension that accepts either rendering while still looking up state by emoji.
+The architecture is split into five slices below; each is independent and
+gated by the same `bun run validate` gate.
+
+## slices
+
+### S1 — `MARKERS_EN` table
+
+- **Files**: [`plugins/status-marker/src/lib/markers.ts`](plugins/status-marker/src/lib/markers.ts )
+- **Command**: `bun run --cwd plugins/status-marker test -- markers`
+- **Expect**: existing ES spec still passes; new ES-only renders remain
+  byte-identical.
+- **Status**: done
+
+### S2 — `formatCloseMarker` opts
+
+- **Files**: [`plugins/status-marker/src/lib/markers.ts`](plugins/status-marker/src/lib/markers.ts )
+- **Command**: `bun run --cwd plugins/status-marker test -- markers`
+- **Expect**: `formatCloseMarker("HECHO")` byte-identical to today;
+  `formatCloseMarker("HECHO", undefined, { locale: "en" })` emits `🟩 [DONE]`.
+- **Status**: done
+
+### S3 — `close` / `validate` plumbing
+
+- **Files**: [`plugins/status-marker/src/lib/tools/close-tools.ts`](plugins/status-marker/src/lib/tools/close-tools.ts ), [`plugins/status-marker/src/lib/validate.ts`](plugins/status-marker/src/lib/validate.ts )
+- **Command**: `bun run --cwd plugins/status-marker test -- validate`
+- **Expect**: `validate` accepts both renderings and resolves the state from
+  the emoji alone.
+- **Status**: done
+
+### S4 — generated types + spec coverage
+
+- **Files**: [`plugins/status-marker/src/generated/tool-outputs.ts`](plugins/status-marker/src/generated/tool-outputs.ts ), [`plugins/status-marker/tests/markers.spec.ts`](plugins/status-marker/tests/markers.spec.ts )
+- **Command**: `bun run types:generate && bun run --cwd plugins/status-marker test`
+- **Expect**: regenerated types unchanged (the public `state` enum stays
+  Spanish); new spec covers both renderings.
+- **Status**: done
+
+### S5 — docs: skill + copilot-instructions
+
+- **Files**: [`plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`](plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md ), [`.github/copilot-instructions.md`](.github/copilot-instructions.md )
+- **Command**: `bun run site:strict`
+- **Expect**: docs site mentions both ES (default) and EN renderings and the
+  state-emit table is byte-identical to the legacy.
+- **Status**: done
 
 ## non-goals
 
@@ -145,7 +185,7 @@ than in token counts.
   (`opts.locale`), but the table ships only `es` and `en`. Add more when a
   consumer asks for them.
 
-## rollout
+## notes
 
 1. Land S1–S5 as a single `feat:` commit (no version bump — additive).
 2. Update [apps/web/src/i18n/ui.ts](apps/web/src/i18n/ui.ts ) so the docs site
@@ -153,3 +193,69 @@ than in token counts.
 3. Watch the `status-marker_metrics` event stream for 7 days; if more than
    10% of close events use `{ locale: 'en' }`, fold the EN map into the
    default schema registration so future plugins inherit it for free.
+
+## acceptance
+
+All five slices close when:
+
+- `bun run --cwd plugins/status-marker typecheck` exits 0.
+- `bun run test --cwd plugins/status-marker markers.spec.ts` exits 0.
+- `bun run validate` exits 0.
+- The `MARKERS_BY_LOCALE.en.HECHO` rendering matches `🟩 [DONE]` in a
+  manual smoke (`bun -e "import('@mcp-vertex/core/public').then(m => console.log(m.formatCloseMarker('HECHO', undefined, { locale: 'en' })))"`).
+- The host-side docs site (`apps/web`) renders both ES and EN spellings
+  side-by-side in the plugin table.
+
+## Slices
+
+### S1 — `MARKERS_BY_LOCALE` table + `CloseMarkerLocale` type
+
+**File**: [plugins/status-marker/src/lib/markers.ts](../../plugins/status-marker/src/lib/markers.ts )
+
+Add the `MARKERS_BY_LOCALE` map (ES re-uses the protocol state name; EN
+maps each state to its short token) and the `CloseMarkerLocale` union
+(`'es' | 'en'`). Touch no other file. Acceptance: `bun run --cwd
+plugins/status-marker typecheck` exits 0; `MARKERS_BY_LOCALE['en'].HECHO`
+is `'DONE'`.
+
+### S2 — `formatCloseMarker` accepts `opts.locale`
+
+**File**: [plugins/status-marker/src/lib/markers.ts](../../plugins/status-marker/src/lib/markers.ts )
+
+Add the `IFormatCloseMarkerOptions` interface and thread `locale`
+through `formatCloseMarker`. ES path must stay byte-identical to the
+legacy output (default `opts.locale === 'es'`). Acceptance: existing
+tests in [markers.spec.ts](../../plugins/status-marker/tests/markers.spec.ts )
+still pass without modification; `formatCloseMarker('HECHO')` returns
+`'🟩 [HECHO]'` (no regression).
+
+### S3 — `<prefix>_close` accepts `locale` and propagates it
+
+**File**: [plugins/status-marker/src/lib/tools/close-tools.ts](../../plugins/status-marker/src/lib/tools/close-tools.ts )
+
+Extend `CloseInputSchema` with `locale: z.enum(['es', 'en']).optional()`,
+thread it through the handler, and include `locale` in the JSON output
+envelope. The validator already accepts both renderings (it matches by
+emoji), so `validate.ts` does not change. Acceptance: invoking
+`<prefix>_close { state: 'HECHO', locale: 'en' }` returns
+`{ ok: true, state: 'HECHO', locale: 'en', line: '🟩 [DONE]' }`.
+
+### S4 — regenerate `tool-outputs.ts` and add spec coverage
+
+**Files**: [plugins/status-marker/src/generated/tool-outputs.ts](../../plugins/status-marker/src/generated/tool-outputs.ts ),
+[plugins/status-marker/tests/markers.spec.ts](../../plugins/status-marker/tests/markers.spec.ts )
+
+Run `bun run types:generate` and add 8 tests asserting
+`formatCloseMarker(state, undefined, { locale: 'en' })` for every state.
+Acceptance: `bun run --cwd plugins/status-marker test` passes (currently
+36 tests; target 36 + 8 = 44) and `bun run types:generate` is a no-op on
+the second run (drift-free).
+
+### S5 — skill + `.github/copilot-instructions.md` docs
+
+**Files**: [plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md](../../plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md ),
+[.github/copilot-instructions.md](../../.github/copilot-instructions.md )
+
+Document the bilingual rendering in the skill's decision tree and in
+the always-loaded instructions. Acceptance: an agent reading only the
+skill can correctly emit `🟩 [DONE]` when asked for EN rendering.

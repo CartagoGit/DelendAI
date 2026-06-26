@@ -137,6 +137,14 @@
 			"bodyPath": "plugins/proposals/skills/mcp-vertex-legacy-proposal-migration/SKILL.md",
 			"tags": ["legacy", "migration", "proposals"],
 			"appliesTo": ["@mcp-vertex/proposals"]
+		},
+		{
+			"id": "tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md",
+			"tags": ["tabs", "brand-logo", "iconography", "f00069"],
+			"appliesTo": ["@mcp-vertex/*"]
 		}
 	]
 }

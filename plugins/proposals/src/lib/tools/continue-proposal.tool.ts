@@ -49,6 +49,20 @@ export interface IContinueProposalToolOptions {
 	 * and never touch the real glossary or disk.
 	 */
 	readonly cascadeResolver?: ICascadePriorityResolver;
+	/**
+	 * Engine-internal flag for `mode: "auto"`: when true, if the
+	 * normal cascade finds no actionable proposal (no entries in the
+	 * standard actionable folders, or every actionable entry is
+	 * covered by an active lock / has no claimable slices), fall back
+	 * to a second cascade pass over entries living in `paused/`.
+	 *
+	 * Paused proposals are NEVER interleaved with the primary cascade
+	 * — they only enter the pick when nothing else is actionable, so
+	 * the default contract is preserved. Surfaced through
+	 * `auto_work { includePaused: true }` (default false); not part
+	 * of the public `continue_proposal` arg surface, by design.
+	 */
+	readonly includePausedFallback?: boolean;
 }
 
 export interface IContinueProposalArgs {
@@ -154,6 +168,15 @@ const CONTINUE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	cascadeTrace: CASCADE_TRACE_SCHEMA.optional(),
 	error: z.string().optional(),
 	blockedBy: z.array(z.string()).optional(),
+	/**
+	 * True when this `next-proposal` pick came from the `paused/`
+	 * fallback pass (only reachable when the caller passed
+	 * `includePausedFallback: true` AND the primary cascade had
+	 * nothing actionable to return). Lets the UI/orchestrator render
+	 * a "this was a paused proposal" hint without `auto_work` having
+	 * to introspect the path. Always undefined otherwise.
+	 */
+	pickedFromPaused: z.boolean().optional(),
 });
 
 // f00016 S4: a proposal already on the new state machine is actionable by

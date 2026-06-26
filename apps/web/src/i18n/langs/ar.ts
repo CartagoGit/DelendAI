@@ -373,6 +373,7 @@ const dict: LangDict = {
 				summary:
 					'الحزم المنشورة. حمّل ما تحتاجه فقط؛ تبقى النواة صغيرة.',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -380,36 +381,42 @@ const dict: LangDict = {
 				summary:
 					'كل أداة يعرضها مجمع الإضافات الكامل، مجمّعة حسب النطاق — من السجل الحي.',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
 				label: 'المقاييس',
 				summary: 'كفاءة الـ tokens ثابت محمي — مَقيس لا مَدّعى.',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
 				label: 'المهارات',
 				summary: 'أدلة نطاق يمكن للوكيل تحميلها عند الطلب.',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
 				label: 'المعرفة',
 				summary: 'وثائق مفهرسة يمكن للنواة الإجابة عنها.',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
 				label: 'الإعدادات المسبقة',
 				summary: 'مجموعات إضافات مهيّأة مسبقًا لأي حجم مساحة عمل.',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
 				label: 'الإعداد عبر المشاريع',
 				summary: 'ادمج mcp-vertex في أي مستودع وجهّز إضافة issues.',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},
