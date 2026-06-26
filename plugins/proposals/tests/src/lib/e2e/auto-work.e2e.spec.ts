@@ -268,4 +268,61 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		const work = await callAutoWork(harness);
 		expect(work.text).toBe(JSON.stringify(work.structured));
 	});
+
+	it('includePaused: true falls back to a paused/ proposal (f00057)', async () => {
+		// Seed ONLY a paused proposal under
+		// `docs/mcp-vertex/proposals/paused/`. Without the flag the
+		// standard cascade has nothing actionable (paused/ is not in
+		// the standard actionable folder set), so `auto_work` returns
+		// idle. With `includePaused: true`, the engine runs the
+		// paused-fallback pass and returns it as a work plan, tagged
+		// with `pickedFromPaused: true`.
+		const { writeFileSync } = await import('node:fs');
+		const pausedDir = join(
+			harness.workspace,
+			'docs/mcp-vertex/proposals/paused',
+		);
+		mkdirSync(pausedDir, { recursive: true });
+		const relPath =
+			'docs/mcp-vertex/proposals/paused/f00057-paused-demo.md';
+		const file = join(harness.workspace, relPath);
+		writeFileSync(
+			file,
+			`---
+id: f00057-paused-demo
+status: paused
+type: proposal
+date: 2026-06-26
+kind: feat
+title: paused demo for auto_work fallback
+---
+
+# f00057-paused-demo — paused demo
+
+## goal
+
+Seed for the auto_work includePaused e2e harness.
+`,
+			'utf8',
+		);
+		const sync = await harness.callTool<{ ok: boolean }>(
+			'proposals_sync_proposals',
+			{},
+		);
+		expect(sync.ok).toBe(true);
+
+		// Default (no flag): idle, no paused pick.
+		const idle = await callAutoWork(harness);
+		expect(idle.structured.state).toBe('idle');
+		expect(idle.structured.pickedFromPaused).toBeUndefined();
+
+		// With the flag: the paused proposal is picked, tagged.
+		const picked = await callAutoWork(harness, { includePaused: true });
+		expect(picked.structured.state).toBe('work');
+		expect(picked.structured.proposalId).toBe('f00057-paused-demo');
+		expect(picked.structured.file).toMatch(
+			/paused\/f00057-paused-demo\.md$/,
+		);
+		expect(picked.structured.pickedFromPaused).toBe(true);
+	});
 });
