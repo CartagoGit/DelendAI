@@ -373,6 +373,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'bootstrap',
 			'builder',
 			'cascade',
+			'catalog',
 			'cli',
 			'command',
 			'component',
@@ -400,9 +401,11 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'plugin',
 			'provider',
 			'project',
+			'prompt',
 			'proposal',
 			'register',
 			'registry',
+			'resource',
 			'scaffold',
 			'script',
 			'service',
@@ -410,6 +413,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'shared',
 			'skill',
 			'setting',
+			'strings',
 			'swarm',
 			'test',
 			'test-support',
@@ -422,7 +426,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'workspace',
 		].sort();
 		expect(names).toEqual(expected);
-		expect(names.length).toBe(53);
+		expect(names.length).toBe(57);
 	});
 
 	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {
