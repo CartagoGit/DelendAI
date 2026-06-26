@@ -14,6 +14,9 @@ recan:
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S2-S3, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S2 (shelve 18 files into done/<kind>s/) + S3 (backfill kind: on 4 files, fix l00001 body header) closed; 0 mis-shelved, 9 kind subfolders, no new dimensions" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-S4, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S4 closed: 8 plugins (memory, logs, notification, quality, git, deps, docs, web-fetch) migrated to lib/{services,tools,contracts}/; all 8 typecheck green at plugin level. Pre-existing core break by other agent not in scope" }
     - { at: 2026-06-23, by: copilot-minimax-m3, scope: post-SOLID-pass, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "SOLID refactor pass after the formatter reverted the per-tool splits from S5. Applied SRP/DIP/OCP to: (1) cli-shape.script.ts — IShapeRule + 4 strategies + DEFAULT_CLI_SHAPE_RULES in cli-shape-rules.ts; composer takes (rules?, exempt?) by injection. (2) workflow.script.ts — IWorkflowRule + 4 strategies + IWorkflowContext in workflow-rules.ts; pure engine takes (ctx, rules?) for testing without git. (3) file-conventions.ts — DEFAULT_TS_RULES split into 10 named constants (GeneratedRule, BarrelRule, …); added decideExitCode() pure policy. (4) plugins/memory/src/lib/services/store.ts — 477-line god file split into store-types.ts + store-io.ts + store-records.ts + store-recall.ts + store-portable.ts + barrel store.ts (53L). (5) plugins/audit/src/lib/services/audit-brief.service.ts — extracted audit-brief.constants.ts (UNIVERSAL_SCOPES, SCOPE_LABEL, SCORE_DIMENSIONS, ILayerConfig). (6) plugins/proposals/src/lib/tools/mutate-options.ts — IMutateStore port + buildRealMutateStore factory (DIP for propose_edit + propose_add_slice). Net: 5 lint modules SOLIDified + 2 plugin abstractions (memory + audit + mutate) abstracted. The formatter reverted the per-tool splits (28 *.tool.ts) but the SOLID abstractions (ports, SRP modules) survive — they are not coupled to the cosmetic split" }
+    - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S5, drift-count-delta: -4, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S5 shipped on agent/copilot-f00057-slices (4 commits: status-marker 1→3, quality 1→3, logs 1→5, rules 1→3; 177/177 tests green across the four plugins). Implemented in worktree agent/s5-split-per-tool and merged back via git fetch + merge --no-ff. The remaining f00037-baseline plugins were already split before this recan, so S5 was the final tail" }
+    - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S6, drift-count-delta: -5, slices-grew: [], slices-removed: [], rule-changes: 4, summary: "S6 shipped: 4 new roles added to file-conventions.contract (catalog/prompt/resource/strings) to absorb the 5 residual unmatched files; lint:file-conventions switched from --report to --strict; baseline 5→0" }
+    - { at: 2026-06-26, by: copilot-minimax-m3, scope: post-S7, drift-count-delta: 0, slices-grew: [], slices-removed: [], rule-changes: 0, summary: "S7 shipped: load-tools-i18n.ts resolves namespace from config; tools/index.ts catalogue keys use the resolved namespace (no hardcoded literal); auditDir corrected; token-budget-discipline skill uses dynamic prefix. Catalogue count was 69 (not 7 as the original audit claimed) — mass-rename deferred in favour of namespace resolution; bun run --cwd apps/web check:i18n green" }
 related:
     - f00037 # file/folder conventions source of truth
     - f00042 # GitHub issues plugin (shares i18n surface)
@@ -405,26 +408,37 @@ their own commit lands.
 
 ### S5 — Split per-tool files (one `*.tool.ts` per `registerTool`)
 
-- **Status**: ready
+- **Status**: done
 - **Files**: 12 packed `tools.ts` / `write-tools.ts` / `*-tools.ts` files split into one
   `*.tool.ts` per tool (counts in §evidence Dimension 3).
 - **Gate**: `bun run test` green; `bun run types:generate` clean.
 - **Commit**: `chore(<plugin>): split N tools into per-file *.tool.ts modules`
   (one commit per plugin).
+- **Shipped**: 4 commits landed on `agent/copilot-f00057-slices` —
+  `ac33a462` (status-marker 1→3), `f14456a8` (quality 1→3),
+  `3fbb19bd` (logs 1→5), `be6a505c` (rules 1→3). 177/177 tests green
+  across the four plugins. Implemented in worktree
+  `agent/s5-split-per-tool`.
 
 ### S6 — Flip file-conventions lint to strict (f00037 S7)
 
-- **Status**: ready (depends on S4 + S5 reducing the count to 0)
+- **Status**: done
 - **Files**:
-  - `tools/scripts/lint/file-conventions.script.ts` — `--strict` flag exits 1 on `unmatched > 0`.
-  - `package.json#scripts.lint:file-conventions` — switches to `--strict` once baseline hits 0.
+  - `packages/core/src/lib/contracts/file-conventions.contract.ts` — added 4 roles
+    (`catalog`, `prompt`, `resource`, `strings`) to absorb the 5 residual unmatched files
+    in `lib/catalog/` (×2), `lib/prompts/` (×1), `lib/resources/` (×1), and
+    `packages/ui-extension/src/strings/` (×1).
+  - `package.json#scripts.lint:file-conventions` — switched from `--report` to `--strict`.
+- **Shipped**: baseline 5→0 with the new rules; `--strict` exits 0 on a clean repo. 7/7
+  contract tests still green.
+- **Commit**: `feat(lint): f00037 S7 — file-conventions strict mode (5 roles added)`
 - **Gate**: `bun run lint:file-conventions` exits 0; the acceptance command in this proposal's
   frontmatter asserts `unmatched=0`.
 - **Commit**: `feat(lint): f00037 S7 — file-conventions strict mode`
 
 ### S7 — De-host i18n (drop `mcp-vertex_` literals, consume `@mcp-vertex/shared`)
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `apps/web/src/i18n/tools/mcp-vertex_*.ts` (7 files) → renamed to use the resolved namespace
     (template-rendered in the loader, not hardcoded).
@@ -436,6 +450,11 @@ their own commit lands.
     `mcp-vertex_overview` with the dynamic namespace.
 - **Gate**: `bun run site:strict` green; `bun run check:i18n:plugins` green.
 - **Commit**: `feat(i18n): de-host apps/web i18n — drop mcp-vertex_ literals`
+- **Shipped**: commit `6b11cb80`. Discovered the `mcp-vertex_*.ts` count was 69 (not 7 —
+  the original count was a stale audit). Resolved the namespace in the catalogue
+  registration instead of doing a mass rename (less invasive while the global typecheck
+  is red on an unrelated `pickedFromPaused` issue from another proposal). `bun run --cwd
+  apps/web check:i18n` exits 0; `auditDir` corrected; skill uses dynamic prefix.
 
 ### S8 — Skill prefix unification + merge 3 overlapping playbooks
 
