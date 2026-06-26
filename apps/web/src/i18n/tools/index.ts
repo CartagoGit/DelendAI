@@ -17,6 +17,7 @@ import type {
 	IResourceI18n,
 	IToolI18n,
 } from '#I18N/tools/_shape';
+import { resolveToolsNamespacePrefix } from '../../../scripts/load-tools-i18n';
 import { mcpVertexOverviewI18n } from '#I18N/tools/mcp-vertex_overview';
 import { proposalsAutoWorkI18n } from '#I18N/tools/mcp-vertex_proposals_auto_work';
 import { memorySaveI18n } from '#I18N/tools/mcp-vertex_memory_save';
@@ -98,9 +99,17 @@ const tools = new Map<string, IToolI18n>();
 const prompts = new Map<string, IPromptI18n>();
 const resources = new Map<string, IResourceI18n>();
 const knowledge = new Map<string, IKnowledgeI18n>();
+const namespacePrefix = resolveToolsNamespacePrefix();
+const namespacedToolName = (name: string): string => {
+	if (name.startsWith(`${namespacePrefix}_`)) return name;
+	if (name.startsWith('mcp-vertex_')) {
+		return `${namespacePrefix}_${name.slice('mcp-vertex_'.length)}`;
+	}
+	return `${namespacePrefix}_${name}`;
+};
 
 export const registerToolI18n = (name: string, dict: IToolI18n): void => {
-	tools.set(name, dict);
+	tools.set(namespacedToolName(name), dict);
 };
 export const registerPromptI18n = (name: string, dict: IPromptI18n): void => {
 	prompts.set(name, dict);

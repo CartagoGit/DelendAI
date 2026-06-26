@@ -8,7 +8,7 @@ description: Which mcp-vertex tools are cheap to call from the root/orchestratin
 
 ## Decision tree
 
-1. About to orient at the start of a session? -> `mcp-vertex_overview { compact: true }`,
+1. About to orient at the start of a session? -> `<namespace>_overview { compact: true }`,
    not the full form.
 2. About to check proposal state? -> `proposals_auto_work` /
    `proposals_compact_status`, not `proposals_proposal_board` verbose.
@@ -43,7 +43,7 @@ Additional surfaces tracked (not yet hard-gated, but bounded):
 
 | Verbose | Compact-native equivalent |
 |---|---|
-| `mcp-vertex_overview` (default) | `mcp-vertex_overview { compact: true }` |
+| `<namespace>_overview` (default) | `<namespace>_overview { compact: true }` |
 | `proposals_proposal_board` | `proposals_auto_work` / `proposals_compact_status` |
 | `proposals_state_health` (full dump) | `proposals_compact_status` for routine checks |
 | `audit_audit_consolidate` (no scope) | `audit_audit_consolidate { auditDir: <narrow> }` |
