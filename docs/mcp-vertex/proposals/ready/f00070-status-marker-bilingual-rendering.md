@@ -131,48 +131,6 @@ extension that accepts either rendering while still looking up state by emoji.
 The architecture is split into five slices below; each is independent and
 gated by the same `bun run validate` gate.
 
-## slices
-
-### S1 — `MARKERS_EN` table
-
-- **Files**: [`plugins/status-marker/src/lib/markers.ts`](plugins/status-marker/src/lib/markers.ts )
-- **Command**: `bun run --cwd plugins/status-marker test -- markers`
-- **Expect**: existing ES spec still passes; new ES-only renders remain
-  byte-identical.
-- **Status**: done
-
-### S2 — `formatCloseMarker` opts
-
-- **Files**: [`plugins/status-marker/src/lib/markers.ts`](plugins/status-marker/src/lib/markers.ts )
-- **Command**: `bun run --cwd plugins/status-marker test -- markers`
-- **Expect**: `formatCloseMarker("HECHO")` byte-identical to today;
-  `formatCloseMarker("HECHO", undefined, { locale: "en" })` emits `🟩 [DONE]`.
-- **Status**: done
-
-### S3 — `close` / `validate` plumbing
-
-- **Files**: [`plugins/status-marker/src/lib/tools/close-tools.ts`](plugins/status-marker/src/lib/tools/close-tools.ts ), [`plugins/status-marker/src/lib/validate.ts`](plugins/status-marker/src/lib/validate.ts )
-- **Command**: `bun run --cwd plugins/status-marker test -- validate`
-- **Expect**: `validate` accepts both renderings and resolves the state from
-  the emoji alone.
-- **Status**: done
-
-### S4 — generated types + spec coverage
-
-- **Files**: [`plugins/status-marker/src/generated/tool-outputs.ts`](plugins/status-marker/src/generated/tool-outputs.ts ), [`plugins/status-marker/tests/markers.spec.ts`](plugins/status-marker/tests/markers.spec.ts )
-- **Command**: `bun run types:generate && bun run --cwd plugins/status-marker test`
-- **Expect**: regenerated types unchanged (the public `state` enum stays
-  Spanish); new spec covers both renderings.
-- **Status**: done
-
-### S5 — docs: skill + copilot-instructions
-
-- **Files**: [`plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`](plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md ), [`.github/copilot-instructions.md`](.github/copilot-instructions.md )
-- **Command**: `bun run site:strict`
-- **Expect**: docs site mentions both ES (default) and EN renderings and the
-  state-emit table is byte-identical to the legacy.
-- **Status**: done
-
 ## non-goals
 
 - **Do not rename the `state` token**. The protocol identifier stays Spanish.

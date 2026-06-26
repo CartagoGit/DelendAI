@@ -289,6 +289,104 @@ const resolveDoc = async (
 // q00001 helper extracted to `proposals/blocked-by.ts` (SRP).
 
 /**
+ * Engine-internal paused-fallback pass for `mode: "auto"`. Runs the
+ * same kind-based cascade over the entries that physically live in
+ * `paused/` (so `paused` is the operative folder, not just the
+ * status string — mirrors S5's reconciliation semantics) and returns
+ * the highest-priority candidate, with `pickedFromPaused: true` so
+ * `auto_work` can render a "this came from `paused/`" hint.
+ *
+ * Constraints:
+ *  - Only entries on the new state machine (`isNewSystemEntry`) are
+ *    eligible. Legacy `p`-prefixed entries are skipped, same as the
+ *    primary cascade.
+ *  - Entries currently held under an active lock are skipped: the
+ *    cascade's anti-loop guarantee (don't reopen work in flight)
+ *    applies equally here.
+ *  - Returns `null` if no eligible paused proposal exists; the caller
+ *    then renders the standard `no-proposal` / `all-claimed` idle.
+ *
+ * Exported for unit testing only; not part of the public surface.
+ */
+export const pickFromPausedFallback = async (
+	entries: readonly IProposalIndexEntry[],
+	options: IContinueProposalToolOptions,
+): Promise<IToolTextResult | null> => {
+	const pausedEntries = entries.filter((entry) => {
+		if (!isNewSystemEntry(entry)) return false;
+		const folder = folderOf(entry.file);
+		return folder === 'paused';
+	});
+	if (pausedEntries.length === 0) return null;
+	const proposalIdOf = (value: string): string =>
+		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
+	const lockedProposalIds = new Set(
+		(await readActiveLocks(options.lockPathAbs)).map((lock) =>
+			proposalIdOf(lock.taskId),
+		),
+	);
+	const unlocked = pausedEntries.filter(
+		(entry) => !lockedProposalIds.has(proposalIdOf(entry.id)),
+	);
+	if (unlocked.length === 0) return null;
+	const resolver: ICascadePriorityResolver =
+		options.cascadeResolver ?? buildDefaultCascadeChain();
+	const summaries = await Promise.all(
+		unlocked.map((entry) =>
+			buildCascadeSummary(entry, options.indexPathAbs),
+		),
+	);
+	const summaryById = new Map(summaries.map((s) => [s.id, s]));
+	const next = [...unlocked].sort((a, b) => {
+		const priorityA = resolver.resolve(
+			summaryById.get(a.id) as IProposalSummary,
+		);
+		const priorityB = resolver.resolve(
+			summaryById.get(b.id) as IProposalSummary,
+		);
+		const byPriority = priorityA - priorityB;
+		return byPriority !== 0 ? byPriority : a.id.localeCompare(b.id);
+	})[0];
+	if (next === undefined) return null;
+	const nextSummary = summaryById.get(next.id);
+	const nextPriority =
+		nextSummary === undefined ? undefined : resolver.resolve(nextSummary);
+	return json({
+		kind: 'next-proposal',
+		proposalId: next.id,
+		file: next.file,
+		status: next.status,
+		relaunchCommand: `${options.namespacePrefix}_continue_proposal { proposalId: "${next.id}", mode: "plan" }`,
+		cascadeTrace:
+			nextSummary === undefined
+				? undefined
+				: {
+						...(nextPriority !== undefined &&
+						Number.isFinite(nextPriority)
+							? { priority: nextPriority }
+							: {}),
+						...(nextSummary.cascadeOverrideReason
+							? {
+									cascadeOverrideReason:
+										nextSummary.cascadeOverrideReason,
+								}
+							: {}),
+						...(nextSummary.cascadeBoost
+							? { cascadeBoost: nextSummary.cascadeBoost }
+							: {}),
+					},
+		pickedFromPaused: true,
+		guide: [
+			'Open the proposal file and do the next atomic slice.',
+			'For parallel work, call mode:"plan" then mode:"claim".',
+			'Claim files with agent_lock before editing; release when done.',
+			'This proposal lives in `paused/`: it was picked only because the standard cascade had no actionable candidates (paused-fallback).',
+		],
+		blockedBy: await blockedByFor(next, options.indexPathAbs),
+	});
+};
+
+/**
  * Resolve the next proposal to work on. `mode: "auto"` (default) reads
  * the index and returns the next actionable proposal by family cascade
  * (`f` before `p` by default). `mode: "plan"` returns the parsed
@@ -405,13 +503,18 @@ export const runContinueProposal = async (
 	// mode === 'auto' (serial): next actionable proposal by cascade.
 	const entries = await readProposalIndex(options.indexPathAbs);
 	const actionable = entries.filter(isActionable);
-	if (actionable.length === 0)
+	if (actionable.length === 0) {
+		if (options.includePausedFallback === true) {
+			const pausedPick = await pickFromPausedFallback(entries, options);
+			if (pausedPick !== null) return pausedPick;
+		}
 		return json({
 			kind: 'no-proposal',
 			reason: 'no actionable proposal in the index',
 			nextAction:
 				'Create a proposal under the proposals dir and run sync_proposals.',
 		});
+	}
 	// Anti-loop: an `in_progress`/`in-progress` proposal already covered
 	// by an active lock is being worked by someone. Selecting it again only
 	// produces a claim→lock-conflict→auto_work→same-proposal mini-loop, so
@@ -428,12 +531,17 @@ export const runContinueProposal = async (
 		(entry.status === 'in_progress' || entry.status === 'in-progress') &&
 		lockedProposalIds.has(proposalIdOf(entry.id));
 	const free = actionable.filter((entry) => !isClaimedElsewhere(entry));
-	if (free.length === 0)
+	if (free.length === 0) {
+		if (options.includePausedFallback === true) {
+			const pausedPick = await pickFromPausedFallback(entries, options);
+			if (pausedPick !== null) return pausedPick;
+		}
 		return json({
 			kind: 'all-claimed',
 			reason: 'every actionable proposal is in_progress under an active lock (being worked elsewhere)',
 			nextAction: `Do NOT retry auto mode in a loop. Either pick a disjoint slice with mode:"plan"/"claim", or wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry the claim path.`,
 		});
+	}
 	// f00024: kind-based cascade (+ frontmatter override/boost) — the host
 	// may inject a custom resolver (DIP, for tests), otherwise the full
 	// 13-family cascade plus the break-glass override is used.
@@ -462,12 +570,17 @@ export const runContinueProposal = async (
 	const seriallyFree = free.filter(
 		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
 	);
-	if (seriallyFree.length === 0)
+	if (seriallyFree.length === 0) {
+		if (options.includePausedFallback === true) {
+			const pausedPick = await pickFromPausedFallback(entries, options);
+			if (pausedPick !== null) return pausedPick;
+		}
 		return json({
 			kind: 'all-claimed',
 			reason: 'every actionable proposal is currently covered by live slice claims or ownership overlap',
 			nextAction: `Do NOT retry auto mode in a loop. Wait once with ${options.namespacePrefix}_await_lock / a lock-released notification, then retry auto mode or the exact claim path.`,
 		});
+	}
 	const priorityById = new Map<string, number>();
 	const next = [...seriallyFree].sort((a, b) => {
 		const priorityA = resolver.resolve(

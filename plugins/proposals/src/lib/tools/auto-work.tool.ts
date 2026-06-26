@@ -66,6 +66,17 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * `sync_proposals` retried, etc.).
 	 */
 	readonly loopDetectorDisableFor?: readonly string[];
+	/**
+	 * Default for the per-call `includePaused` arg: when true, the
+	 * auto_work plan falls back to a paused-proposals cascade when
+	 * the standard cascade has no actionable candidates. Default false
+	 * — paused proposals never interrupt the normal pick. Configurable
+	 * per workspace via `mcp-vertex.config.json#plugins.proposals.
+	 * autoWork.includePaused` so a single-agent session that is happy
+	 * to reopen paused work can default-on it without re-typing the
+	 * arg on every call.
+	 */
+	readonly defaultIncludePaused?: boolean;
 }
 
 /**
@@ -133,6 +144,15 @@ export const buildAutoWorkOrchestrationPolicy = (options: {
 export const runAutoWork = async (
 	options: IAutoWorkToolOptions & {
 		inputPersist?: IAutoWorkPersistMode | undefined;
+		/**
+		 * Per-call override for the paused-fallback behaviour. Resolved
+		 * with priority `input` > `options.defaultIncludePaused` > false.
+		 * When true, the engine's `runContinueProposal` runs a second
+		 * cascade over `paused/` if the primary cascade has nothing
+		 * actionable. The flag is engine-internal — it never reaches
+		 * the public `continue_proposal` tool surface.
+		 */
+		inputIncludePaused?: boolean | undefined;
 	},
 ): Promise<IToolTextResult> => {
 	if (options.loopDetector) {
@@ -163,15 +183,23 @@ export const runAutoWork = async (
 		}
 	}
 
+	const includePausedFallback =
+		options.inputIncludePaused ?? options.defaultIncludePaused ?? false;
+
 	const next = JSON.parse(
-		(await runContinueProposal({ mode: 'auto' }, options)).content[0]
-			?.text ?? '{}',
+		(
+			await runContinueProposal(
+				{ mode: 'auto' },
+				{ ...options, includePausedFallback },
+			)
+		).content[0]?.text ?? '{}',
 	) as {
 		kind: string;
 		proposalId?: string;
 		file?: string;
 		reason?: string;
 		nextAction?: string;
+		pickedFromPaused?: boolean;
 	};
 
 	if (next.kind !== 'next-proposal') {
@@ -264,6 +292,9 @@ export const runAutoWork = async (
 			? { validationCommand: options.validationCommand }
 			: {}),
 		persist: persistOut,
+		...(next.pickedFromPaused === true
+			? { pickedFromPaused: true as const }
+			: {}),
 		steps,
 	});
 };
@@ -276,6 +307,15 @@ const INPUT_SCHEMA = z
 		 * See l109 §2 "Prioridad de resolución".
 		 */
 		persist: z.enum(['none', 'commit', 'commit-and-push']).optional(),
+		/**
+		 * When true, fall back to a paused-proposals cascade if the
+		 * standard cascade has no actionable candidates. Default false.
+		 * Resolved with priority `args.includePaused` >
+		 * `config.autoWork.defaultIncludePaused` > false. Paused
+		 * proposals are NEVER interleaved with the primary cascade —
+		 * they only enter when nothing else is actionable.
+		 */
+		includePaused: z.boolean().optional(),
 	})
 	.strict();
 
