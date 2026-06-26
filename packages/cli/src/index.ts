@@ -28,22 +28,31 @@ const findCommand = (
 const consumedPathParts = (command: ICliCommand): number =>
 	command.name.split(' ').length;
 
+const twoPartPrefixes = (
+	commands: readonly ICliCommand[],
+): ReadonlySet<string> =>
+	new Set(
+		commands
+			.filter((command) => command.name.includes(' '))
+			.map((command) => command.name.split(' ')[0] ?? ''),
+	);
+
 export const runHumanCli = async (
 	argv: readonly string[],
 	cwd = process.cwd(),
 ): Promise<number> => {
-	const commands = registerAllCommands();
-	const parsed = parseCliInvocation(argv, cwd);
+	const commands = await registerAllCommands();
+	const parsed = parseCliInvocation(argv, cwd, twoPartPrefixes(commands));
 	if (parsed.version) {
 		process.stdout.write(`${CLI_VERSION}\n`);
 		return EXIT_CODE.OK;
 	}
 	if (parsed.help) {
-		process.stdout.write(renderHelp(await commands, parsed.globals.lang));
+		process.stdout.write(renderHelp(commands, parsed.globals.lang));
 		return EXIT_CODE.OK;
 	}
 
-	const command = findCommand(await commands, parsed.commandPath);
+	const command = findCommand(commands, parsed.commandPath);
 	if (command === undefined) {
 		process.stderr.write(
 			`Unknown command: ${parsed.commandPath.join(' ')}\n`,

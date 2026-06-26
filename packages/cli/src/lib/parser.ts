@@ -15,7 +15,11 @@ const GLOBAL_FLAGS_WITH_VALUE = new Set([
 	'config',
 ]);
 const VALUE_FLAGS = GLOBAL_FLAGS_WITH_VALUE;
-const TWO_PART_COMMANDS = new Set(['plugin', 'config', 'docs', 'git']);
+// Fallback set of command groups whose names are two words. The real CLI
+// derives this from the live command registry (see `index.ts`) so every
+// group (`proposals`, `memory`, `audit`, …) resolves; this literal only
+// keeps unit-test call sites that omit the argument working as before.
+const DEFAULT_TWO_PART_COMMANDS = new Set(['plugin', 'config', 'docs', 'git']);
 
 const takeFlagValue = (
 	argv: readonly string[],
@@ -54,6 +58,7 @@ const splitList = (value: string | undefined): readonly string[] =>
 export const parseCliInvocation = (
 	argv: readonly string[],
 	cwd: string,
+	twoPartCommands: ReadonlySet<string> = DEFAULT_TWO_PART_COMMANDS,
 ): IParsedCliInvocation => {
 	const tokens: Record<string, string> = {};
 	const command: string[] = [];
@@ -87,7 +92,7 @@ export const parseCliInvocation = (
 			command.push(token);
 		} else if (
 			command.length === 1 &&
-			TWO_PART_COMMANDS.has(command[0] ?? '') &&
+			twoPartCommands.has(command[0] ?? '') &&
 			!token.startsWith('-')
 		) {
 			command.push(token);
