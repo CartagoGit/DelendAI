@@ -27,7 +27,7 @@
 		"sync:logo": "cd extensions/vscode && bun scripts/sync-logo.ts",
 		"lint:cross-ide": "bun run --cwd packages/ui-extension type && bun run --cwd packages/ui-extension test && bun run --cwd packages/client typecheck && bun run --cwd packages/client test -- --exclude='**/e2e/**'",
 		"lint:fix": "biome lint --write",
-		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts",
+		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts",
 		"lint:cli-imports": "bun tools/scripts/lint/no-internal-core-imports.script.ts",

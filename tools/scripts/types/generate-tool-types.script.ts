@@ -5,11 +5,11 @@
  * harvests each tool's Zod `outputSchema`, converts it to JSON Schema
  * via `z.toJSONSchema` (Zod v4, zero extra deps) and writes one
  * `src/generated/tool-outputs.ts` per package using the pure emitter in
- * `emit-tool-types.ts`.
+ * `emit-tool-types.script.ts`.
  *
  *     bun run types:generate          # write the files
  *
- * The pure routing/emitting lives in `emit-tool-types.ts`; the only
+ * The pure routing/emitting lives in `emit-tool-types.script.ts`; the only
  * impure parts here are assembling the server and writing files. The
  * harvester is exported so the drift-guard test can compare the
  * checked-in files against a fresh in-memory generation.
@@ -42,7 +42,10 @@ import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
 import webFetchPlugin from '@mcp-vertex/web-fetch';
 
-import { buildPackageModules, type IHarvestedTool } from './emit-tool-types';
+import {
+	buildPackageModules,
+	type IHarvestedTool,
+} from './emit-tool-types.script';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 

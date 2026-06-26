@@ -12,7 +12,7 @@ import {
 	emitToolOutputsModule,
 	outputInterfaceName,
 	pascalCase,
-} from '../../../tools/scripts/types/emit-tool-types';
+} from '../../../tools/scripts/types/emit-tool-types.script';
 import { generateToolOutputModules } from '../../../tools/scripts/types/generate-tool-types.script';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');

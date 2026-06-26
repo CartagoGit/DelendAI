@@ -202,6 +202,49 @@ The root is intentionally minimal. Before adding a file to it, check this:
   through explicit workspace/tsconfig globs instead of a root `examples/`
   directory.
 
+## Proposal ID prefixes
+
+Proposal documents use a one-letter family prefix in the frontmatter `id:`.
+The active work families are:
+
+| Prefix | Meaning | Notes |
+|---|---|---|
+| `f` | feat | New feature work (`kind: feat`). |
+| `x` | fix | Bug fix work (`kind: fix`). |
+| `r` | refactor | Behaviour-preserving refactor work (`kind: refactor`). |
+| `c` | chore | Build / lint / CI / maintenance work (`kind: chore`). |
+| `d` | docs | Docs-only work (`kind: docs`). |
+| `t` | test | Tests-only work (`kind: test`). |
+| `l` | legacy | Pre-f00016 `pNNN` proposals migrated into the legacy tier; permanent warning, never fail. |
+| `a` | audit | Audit-finding lifecycle (`kind: audit`). |
+| `n` | note | Resume / note records kept as permanent history. |
+
+`u` is intentionally unassigned here: this proposal uses `f` because the work is a `kind: feat`, and the `u` slot is reserved for a future prefix whose meaning this file will define.
+
+## Type-suffix convention
+
+The TypeScript file-convention table mirrors the role suffixes encoded in
+`packages/core/src/lib/contracts/file-conventions.contract.ts`. The suffix is
+singular; the folder is plural.
+
+| Suffix | Role | Typical location | Example |
+|---|---|---|---|
+| `*.interface.ts` | interface | `contracts/interfaces/` | `tool-descriptor.interface.ts` |
+| `*.constant.ts` | constant | `contracts/constants/` | `proposal-glossary.constant.ts` |
+| `*.service.ts` | service | `services/` | `search-service.ts` |
+| `*.tool.ts` | tool | `tools/` | `git-commit.tool.ts` |
+| `*.registry.ts` | registry | `registry/` or `registries/` | `tool-registry.ts` |
+| `*.register.ts` | register | `register/` or a feature-local folder | `plugin.register.ts` |
+| `*.factory.ts` | factory | `factories/` | `client-factory.ts` |
+| `*.builder.ts` | builder | `builders/` | `query-builder.ts` |
+| `*.generated.ts` | generated | `generated/` | `api.generated.ts` |
+| `index.ts` | barrel | `src/public/` or package `src/` | `src/public/index.ts` |
+
+The convention also keeps the exception shapes explicit: `*.types.ts` stays a
+feature-private type companion, `*.spec.ts` / `*.e2e.spec.ts` stay tests, and
+`*.config.ts` stays configuration. Folder-native roles still win when a path is
+already more specific than the suffix.
+
 ## When you touch a plugin / add a tool
 
 - Add/keep its `outputSchema`; run `bun run types:generate` if the surface changed.

@@ -1,13 +1,8 @@
 #!/usr/bin/env bun
 /**
- * This repo's own MCP host entrypoint (M44). Until now `.mcp.json` ran the
- * generic CLI directly (`cli.ts --preset=swarm`), which only assembles
- * plugins — a host that wants its own tool (not a generic plugin everyone
- * else installs) has no way to add one. This script reuses every bit of the
- * CLI's assembly (`parseCliArgs` + `assembleCliConfig`, same `--preset=swarm`
- * this repo always used) and layers one host-only `extraTools` entry on top:
- * `rename_audit`, which used to be a manual `grep` repeated every session.
- *
+ * This repo's own MCP host entrypoint (M44). It reuses the CLI's assembly
+ * path (`parseCliArgs` + `assembleCliConfig`) and defaults to
+ * `--preset=swarm` when the caller did not explicitly choose a plugin surface.
  * Equivalent to `cli.ts`'s own `runCli`, minus the `init`/`--check`/`--doctor`
  * branches a long-running server process never needs.
  */
@@ -18,8 +13,6 @@ import {
 	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
 } from '@mcp-vertex/core/public';
-
-import { buildRenameAuditToolRegistration } from './rename-audit-tool';
 
 const run = async (): Promise<void> => {
 	const cwd = process.cwd();
@@ -39,19 +32,7 @@ const run = async (): Promise<void> => {
 		process.stderr.write(`[mcp-vertex] plugin error: ${error.message}\n`);
 	}
 
-	const namespacePrefix = config.namespacePrefix ?? 'mcp-vertex';
-	const extended = {
-		...config,
-		extraTools: [
-			...(config.extraTools ?? []),
-			buildRenameAuditToolRegistration({
-				namespacePrefix,
-				workspace: config.workspace,
-			}),
-		],
-	};
-
-	const assembled = await createMcpProject(extended);
+	const assembled = await createMcpProject(config);
 
 	// Install signal handlers BEFORE `await assembled.start()`. The
 	// `start()` call can take several seconds on a cold start (loading
