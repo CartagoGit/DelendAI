@@ -66,7 +66,7 @@ const callContinue = async (
 	args: Record<string, unknown> = {},
 ): Promise<IAssembledToolResult<ContinueProposalOutput>> =>
 	server.callTool<ContinueProposalOutput>(
-		'proposals_continue_proposal',
+		'mcp-vertex_proposals_continue_proposal',
 		args,
 	);
 
@@ -129,7 +129,7 @@ ${slicesBlock}`,
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'proposals_sync_proposals',
+		'mcp-vertex_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);

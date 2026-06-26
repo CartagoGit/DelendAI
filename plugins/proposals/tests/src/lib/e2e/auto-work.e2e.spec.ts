@@ -43,6 +43,7 @@ interface AutoWorkOutput {
 	// work-only fields
 	readonly proposalId?: string;
 	readonly file?: string;
+	readonly pickedFromPaused?: true;
 	readonly orchestration?: {
 		readonly lane: 'inspect-then-delegate';
 		readonly delegateAfterToolCalls: number;
@@ -62,7 +63,7 @@ const callAutoWork = async (
 	server: IAssembledProposalsServer,
 	args: Record<string, unknown> = {},
 ): Promise<IAssembledToolResult<AutoWorkOutput>> =>
-	server.callTool<AutoWorkOutput>('proposals_auto_work', args);
+	server.callTool<AutoWorkOutput>('mcp-vertex_proposals_auto_work', args);
 
 /**
  * Drop a fresh proposal under `<tmpdir>/docs/mcp-vertex/proposals/ready/`
@@ -106,7 +107,7 @@ Seed for the auto_work e2e harness.
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'proposals_sync_proposals',
+		'mcp-vertex_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);
@@ -223,7 +224,10 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		for (const entry of entries) {
 			await fs.rm(join(readyDir, entry), { force: true });
 		}
-		await harness.callTool<{ ok: boolean }>('proposals_sync_proposals', {});
+		await harness.callTool<{ ok: boolean }>(
+			'mcp-vertex_proposals_sync_proposals',
+			{},
+		);
 
 		const idle = await callAutoWork(harness);
 		expect(idle.structured.state).toBe('idle');
@@ -246,7 +250,7 @@ describe('e2e: proposals_auto_work over the real MCP protocol', async () => {
 		const res = await callAutoWork(harness);
 		expect(res.structured.state).toBe('work');
 		expect(res.structured.orchestration?.next).toMatch(
-			/^proposals_continue_proposal/,
+			/^mcp-vertex_proposals_continue_proposal/,
 		);
 		expect(res.structured.persist?.mode).toBe('none');
 	});
@@ -306,7 +310,7 @@ Seed for the auto_work includePaused e2e harness.
 			'utf8',
 		);
 		const sync = await harness.callTool<{ ok: boolean }>(
-			'proposals_sync_proposals',
+			'mcp-vertex_proposals_sync_proposals',
 			{},
 		);
 		expect(sync.ok).toBe(true);

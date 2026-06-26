@@ -752,6 +752,7 @@ export interface McpVertexProposalsAutoWorkOutput {
 	nextAction?: string;
 	proposalId?: string;
 	file?: string;
+	pickedFromPaused?: true;
 	orchestration?: {
 		lane: "inspect-then-delegate";
 		delegateAfterToolCalls: number;
@@ -852,6 +853,7 @@ export interface McpVertexProposalsContinueProposalOutput {
 	};
 	error?: string;
 	blockedBy?: string[];
+	pickedFromPaused?: boolean;
 }
 
 export interface McpVertexProposalsCreateProposalOutput {
