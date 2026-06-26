@@ -109,19 +109,6 @@ export interface IFormatCloseMarkerOptions {
 	readonly locale?: CloseMarkerLocale;
 }
 
-/** Ordered list of all states (stable order = declaration order). */
-export const CLOSE_MARKER_STATES: readonly CloseMarker[] = Object.keys(
-	MARKERS,
-) as CloseMarker[];
-
-/** Reverse lookup: emoji → state. Used by the validator. */
-export const EMOJI_TO_STATE: ReadonlyMap<string, CloseMarker> = new Map(
-	Object.entries(MARKERS).map(([state, def]) => [
-		def.emoji,
-		state as CloseMarker,
-	]),
-);
-
 /**
  * Format a canonical close-marker line.
  *

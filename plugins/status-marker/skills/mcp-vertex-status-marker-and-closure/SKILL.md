@@ -92,3 +92,41 @@ line is compliant — cheaper than a human catching it after the fact.
 Must return `{ ok: true, state: "HECHO", line: "🟩 [HECHO]" }` (no reason
 required, no `<reason-missing>` token). Then
 `<prefix>_validate { text: "...\n🟩 [HECHO]" }` must return `{ ok: true }`.
+
+## Bilingual rendering (proposal `f00070`)
+
+The bracket text inside `<emoji> [<bracket>]` is locale-aware. The
+underlying `CloseMarker` enum (the protocol state name) is unchanged —
+locales only change how the bracket is rendered for the human reading
+the line.
+
+- **Supported locales**: `'es'` (default) and `'en'`. Adding a new
+  locale is a pure-presentation change: extend `MARKERS_BY_LOCALE` in
+  `markers.ts` and add the locale to `CloseMarkerLocale`. Nothing else
+  (Zod enums, the `CloseMarker` type, the validator) needs to move.
+- **`es`** (default, byte-identical to legacy): bracket text re-uses the
+  protocol state name verbatim — `🟩 [HECHO]`, `🟨 [CAP]`,
+  `🟧 [RE-PIVOT]`, `🟦 [CHECKPOINT-REQUIRED]`, `🟫 [REPAIR-NEEDED]`,
+  `🟥 [BLOQUEADO]`, `🟪 [SIN PROPUESTAS LIBRES]`,
+  `⬜ [SIN PROPUESTA DE NINGUN TIPO]`.
+- **`en`**: shorter, English-rendered tokens — `🟩 [DONE]`,
+  `🟨 [HANDOFF]`, `🟧 [REPIVOT]`, `🟦 [CHECKPOINT]`, `🟫 [REPAIR]`,
+  `🟥 [BLOCKED]`, `🟪 [NO_FREE_PROPOSALS]`, `⬜ [NO_WORK]`.
+- **API**:
+  - Tool: `<prefix>_close { state, reason?, locale? }` — pass
+    `locale: "en"` to render the English token. The response envelope
+    echoes `locale` alongside `state`/`reason`/`line` so callers can
+    audit which rendering was emitted.
+  - Helper: `formatCloseMarker(state, reason?, { locale?: 'es' | 'en' })`
+    (importable from `@mcp-vertex/status-marker/public`). The
+    `formatLxAppCloseMarker` alias accepts the same options.
+- **Validator**: `<prefix>_validate` is locale-agnostic by design — it
+  matches `<emoji> [<bracket>]` by emoji + the `[...]` shape and never
+  inspects the bracket text directly. Both renderings validate cleanly,
+  so an EN-rendered line is just as compliant as the ES one.
+- **Reason shape is preserved across locales**: the separator ` — ` and
+  reason payload are emitted identically; only the bracket text inside
+  `[...]` changes.
+- **Length budget is identical**: the `<reason-missing>` placeholder, the
+  120-char truncation rule (`MAX_LINE_LEN`) and the `…` ellipsis all
+  apply the same way to both locales.

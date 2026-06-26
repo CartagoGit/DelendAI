@@ -25,6 +25,10 @@ const sectionHref = (section: string) =>
 const tabs = t.homeAtAGlance.panels.map((p) => ({
 	id: p.id,
 	label: p.label,
+	// f00069 S4 — forward the optional `icon` (per-panel, set by
+	// `apps/web/src/i18n/langs/*.ts`) so the section tab renders
+	// a brand mark when one is provided.
+	...(p.icon !== undefined ? { icon: p.icon } : {}),
 }));
 const defaultId = t.homeAtAGlance.panels[0]?.id ?? '';
 ---

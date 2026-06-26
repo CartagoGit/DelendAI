@@ -380,6 +380,7 @@ const dict: LangDict = {
 				summary:
 					'Các gói đã phát hành. Chỉ tải những gì bạn cần; lõi vẫn nhỏ gọn.',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -387,6 +388,7 @@ const dict: LangDict = {
 				summary:
 					'Mọi công cụ của bộ plugin đầy đủ, nhóm theo namespace — từ registry sống.',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -394,24 +396,28 @@ const dict: LangDict = {
 				summary:
 					'Hiệu quả token là một bất biến được bảo vệ — được đo, không tuyên bố.',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
 				label: 'Kỹ năng',
 				summary: 'Cẩm nang miền mà tác tử có thể tải theo yêu cầu.',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
 				label: 'Tri thức',
 				summary: 'Tài liệu đã lập chỉ mục mà lõi có thể trả lời.',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
 				label: 'Preset',
 				summary: 'Bộ plugin cấu hình sẵn cho mọi kích thước workspace.',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -419,6 +425,7 @@ const dict: LangDict = {
 				summary:
 					'Cắm mcp-vertex vào bất kỳ repo nào và chuẩn bị plugin issues.',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},

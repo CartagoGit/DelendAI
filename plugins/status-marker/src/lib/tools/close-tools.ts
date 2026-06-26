@@ -11,6 +11,7 @@ import {
 	CLOSE_MARKER_STATES,
 	formatCloseMarker,
 	type CloseMarker,
+	type CloseMarkerLocale,
 } from '../markers';
 import {
 	validateCloseMarker,
@@ -26,6 +27,12 @@ const CloseOkSchema = z.object({
 		CLOSE_MARKER_STATES as readonly [CloseMarker, ...CloseMarker[]],
 	),
 	reason: z.string().optional(),
+	/**
+	 * Locale the rendered `line` was emitted with. Default is `'es'`
+	 * (legacy canonical state name); `'en'` renders shorter English
+	 * tokens. See proposal `f00070` for rationale.
+	 */
+	locale: z.enum(['es', 'en']).optional(),
 	line: z.string(),
 });
 
@@ -56,6 +63,12 @@ const CloseInputSchema = z.object({
 		CLOSE_MARKER_STATES as readonly [CloseMarker, ...CloseMarker[]],
 	),
 	reason: z.string().max(160, 'reason too long (max 160 chars)').optional(),
+	/**
+	 * Locale for the rendered bracket text. `'es'` (default) keeps the
+	 * canonical state name verbatim; `'en'` renders the shorter English
+	 * token (e.g. `[DONE]` instead of `[HECHO]`). See proposal `f00070`.
+	 */
+	locale: z.enum(['es', 'en']).optional(),
 });
 
 const ValidateInputSchema = z.object({
@@ -94,8 +107,12 @@ export const buildCloseRegistration = (
 				async (args: {
 					state: CloseMarker;
 					reason?: string | undefined;
+					locale?: CloseMarkerLocale | undefined;
 				}): Promise<IToolTextResult> => {
-					const line = formatCloseMarker(args.state, args.reason);
+					const locale: CloseMarkerLocale = args.locale ?? 'es';
+					const line = formatCloseMarker(args.state, args.reason, {
+						locale,
+					});
 					const audit = validateCloseMarker(line);
 					if (!audit.ok) {
 						return toolError(
@@ -109,6 +126,7 @@ export const buildCloseRegistration = (
 						...(args.reason !== undefined
 							? { reason: args.reason }
 							: {}),
+						locale,
 						line,
 					});
 				},

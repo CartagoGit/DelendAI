@@ -97,12 +97,137 @@ export interface McpVertexAnalyzeProjectOutput {
 	};
 }
 
+export interface McpVertexAuditAuditConsolidateOutput {
+	auditsFound: number;
+	skipped: {
+		path: string;
+		reason: string;
+	}[];
+	consensus: Array<{
+		dimension: string;
+		scores: Array<{
+			model: string;
+			score: number | null;
+		}>;
+		average: number | null;
+	}>;
+	findings: Array<{
+		id: string;
+		titles: string[];
+		worstSeverity: "FATAL" | "MUY_MAL" | "MEJORABLE" | "OK" | "MUY_BIEN" | "PERFECTO";
+		files: string[];
+		seenBy: string[];
+	}>;
+	topActions: string[];
+	markdown: string;
+}
+
+export interface McpVertexAuditAuditPlanOutput {
+	scope: string;
+	markdown: string;
+	dimensions: string[];
+	availableScopes: Array<{
+		name: string;
+		label: string;
+		kind: "universal" | "layer";
+	}>;
+}
+
 export interface McpVertexCreateProjectOutput {
 	kind: "host" | "plugin" | "client";
 	files: {
 		path: string;
 		content: string;
 	}[];
+}
+
+export interface McpVertexDepsDepsCheckOutput {
+	manifest: string;
+	lockfile: {
+		present: boolean;
+		kind: string | null;
+	};
+	findings: {
+		kind: string;
+		dep?: string;
+		detail: string;
+	}[];
+	healthy: boolean;
+}
+
+export interface McpVertexDepsDepsListOutput {
+	manifest: string;
+	found: boolean;
+	counts: {
+		dependencies: number;
+		devDependencies: number;
+		peerDependencies: number;
+		optionalDependencies: number;
+	};
+	deps: {
+		name: string;
+		range: string;
+		section: string;
+	}[];
+}
+
+export interface McpVertexDepsDepsOutdatedOutput {
+	manifest: string;
+	checked: number;
+	outdatedCount: number;
+	entries: Array<{
+		name: string;
+		range: string;
+		section: string;
+		wanted: string | null;
+		latest: string | null;
+		outdated: boolean;
+		error?: string;
+	}>;
+	truncated: boolean;
+}
+
+export interface McpVertexDepsDepsPolyglotOutput {
+	manifests: {
+		ecosystem: string;
+		manifest: string;
+		deps: {
+			ecosystem: string;
+			name: string;
+			range: string;
+			section: string;
+		}[];
+	}[];
+}
+
+export interface McpVertexDocsDocsListOutput {
+	count: number;
+	total: number;
+	offset: number;
+	nextOffset?: number;
+	truncated: boolean;
+	docs: {
+		path: string;
+		title: string;
+	}[];
+}
+
+export interface McpVertexDocsDocsReadOutput {
+	path: string;
+	title: string;
+	content: string;
+	truncated: boolean;
+	found: boolean;
+}
+
+export interface McpVertexDocsDocsSearchOutput {
+	hits: {
+		path: string;
+		title: string;
+		score: number;
+		snippet: string;
+	}[];
+	truncated: boolean;
 }
 
 export interface McpVertexDriftCheckOutput {
@@ -138,6 +263,58 @@ export interface McpVertexGetValidationMatrixOutput {
 	}[]>;
 }
 
+export interface McpVertexGitBlameOutput {
+	lines: {
+		line: number;
+		hash: string;
+		author: string;
+		date: string;
+		content: string;
+	}[];
+}
+
+export interface McpVertexGitChangedOutput {
+	changed: string[];
+}
+
+export interface McpVertexGitDiffOutput {
+	stat: string;
+}
+
+export interface McpVertexGitLogOutput {
+	commits: {
+		hash: string;
+		subject: string;
+	}[];
+}
+
+export interface McpVertexGitShowOutput {
+	hash: string;
+	author: string;
+	date: string;
+	subject: string;
+	stat: string;
+}
+
+export interface McpVertexGitStatusOutput {
+	branch?: string;
+	clean: boolean;
+	entries: {
+		status: string;
+		path: string;
+	}[];
+}
+
+export interface McpVertexGitWorktreeOutput {
+	worktrees: {
+		path: string;
+		head: string;
+		branch?: string;
+		bare?: boolean;
+		locked?: boolean;
+	}[];
+}
+
 export interface McpVertexKnowledgeOutput {
 	entries?: {
 		id: string;
@@ -146,6 +323,134 @@ export interface McpVertexKnowledgeOutput {
 	id?: string;
 	title?: string;
 	body?: string;
+}
+
+export interface McpVertexLogsCorrelateOutput {
+	chain: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	firstTs: string | null;
+	lastTs: string | null;
+	gaps: {
+		startTs: string;
+		endTs: string;
+		durationMs: number;
+	}[];
+}
+
+export interface McpVertexLogsQueryOutput {
+	events: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	cursor: string | null;
+	hasMore: boolean;
+}
+
+export interface McpVertexLogsRedactTestOutput {
+	detected: string[];
+	redacted: string;
+}
+
+export interface McpVertexLogsSubscribeOutput {
+	events: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	stream: "logs";
+}
+
+export interface McpVertexLogsTailOutput {
+	events: Array<{
+		ts: string;
+		kind: string;
+		agent: string | null;
+		taskId: string | null;
+		outcome: "ok" | "failed" | "timed-out" | "cancelled" | "dead" | "idle" | "unknown";
+		files: string[];
+		summary: string;
+		meta: Record<string, unknown>;
+	}>;
+	oldestTs: string | null;
+	newestTs: string | null;
+}
+
+export interface McpVertexMemoryExportOutput {
+	ok: true;
+	format: "json" | "ndjson";
+	payload: string;
+	count: number;
+}
+
+export interface McpVertexMemoryForgetOutput {
+	ok: true;
+	removed: string;
+}
+
+export interface McpVertexMemoryImportOutput {
+	ok: true;
+	imported: number;
+	skipped: number;
+	overwritten: number;
+	merged: number;
+	total: number;
+	redactedSecrets: number;
+}
+
+export interface McpVertexMemoryListOutput {
+	notes: {
+		id: string;
+		title: string;
+		tags: string[];
+	}[];
+	total: number;
+	offset: number;
+	nextOffset?: number;
+}
+
+export interface McpVertexMemoryRecallOutput {
+	notes: {
+		id: string;
+		title: string;
+		body: string;
+		tags: string[];
+		createdAt: string;
+		updatedAt: string;
+		expiresAt?: string;
+	}[];
+}
+
+export interface McpVertexMemorySaveOutput {
+	ok: true;
+	saved: {
+		id: string;
+		title: string;
+		body: string;
+		tags: string[];
+		createdAt: string;
+		updatedAt: string;
+		expiresAt?: string;
+	};
+	redactedSecrets: number;
 }
 
 export interface McpVertexMetricsOutput {
@@ -164,6 +469,25 @@ export interface McpVertexMetricsOutput {
 	};
 	persistedTo?: string;
 	snapshots?: number;
+}
+
+export interface McpVertexNotificationAwaitLockOutput {
+	taskId: string;
+	released: boolean;
+	timedOut: boolean;
+	alreadyFree: boolean;
+	waitedMs: number;
+}
+
+export interface McpVertexNotificationNotifyStatusOutput {
+	watching: string;
+	emitted: number;
+	lastReleases: {
+		taskId: string;
+		agent: string;
+		files: string[];
+	}[];
+	agentEvents: number;
 }
 
 export interface McpVertexOverviewOutput {
@@ -239,6 +563,883 @@ export interface McpVertexPlanMcpProjectOutput {
 	}[];
 }
 
+export interface McpVertexProposalsAgentLockOutput {
+	tool?: string;
+	action?: "claim" | "release" | "status" | "gc";
+	path?: string;
+	lock_path?: string;
+	task_id?: string;
+	agent?: string;
+	error?: string | {
+		reason: string;
+		nextAction?: string;
+	};
+	blockerType?: string;
+	nextAction?: string;
+	summary?: string;
+	refreshed?: boolean;
+	ownership_count?: number;
+	blocked?: boolean;
+	blocked_reason?: string;
+	conflicting_task?: string;
+	conflicting_agent?: string;
+	overlapping_files?: string[];
+	claimed?: boolean;
+	removed?: number;
+	exists?: boolean;
+	active_write_lanes?: number;
+	dropped?: number;
+	version?: number;
+	stale_after_minutes?: number;
+	in_flight?: {
+		task_id: string;
+		agent: string;
+		ownership: string[];
+		started_at: string;
+		last_seen: string;
+		parent_task_id?: string;
+	}[];
+	ok?: boolean;
+}
+
+export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
+}
+
+export interface McpVertexProposalsAgentNamesOutput {
+	error?: string;
+	backup?: string | null;
+	nextAction?: string;
+	summary?: {
+		active: number;
+		cooldown: number;
+		orphan: number;
+		adopted: number;
+	};
+	assignments?: Array<{
+		task_id: string;
+		agent_name: string;
+		agent_slot: string;
+		parent_task_id: string | null;
+		depth: number;
+		topic: string;
+		adopted: boolean;
+		assigned_at: string;
+		last_seen: string;
+		cooldown_until: string | null;
+		status: "active" | "cooldown" | "orphan";
+		children?: unknown[];
+	}>;
+	adopted?: {
+		name: string;
+		task_id: string;
+	}[];
+	tree?: Array<{
+		task_id: string;
+		agent_name: string;
+		agent_slot: string;
+		parent_task_id: string | null;
+		depth: number;
+		topic: string;
+		adopted: boolean;
+		assigned_at: string;
+		last_seen: string;
+		cooldown_until: string | null;
+		status: "active" | "cooldown" | "orphan";
+		children?: unknown[];
+	}>;
+	agent?: string;
+	status?: string;
+	in_cooldown?: boolean;
+	task_id?: string;
+	released?: string[];
+	promoted?: number;
+	freed?: number;
+	blocked?: boolean;
+	blockerType?: string;
+	reason?: string;
+	depth?: number;
+	max_depth?: number;
+	allowed?: string[];
+	pool_size?: number;
+	agent_name?: string;
+	agent_slot?: string;
+	parent_task_id?: string | null;
+	topic?: string;
+	assigned_at?: string;
+	last_seen?: string;
+	cooldown_until?: string | null;
+	scannedAt?: string;
+	staleAfterMinutes?: number;
+	orphans?: Array<{
+		agentName: string;
+		taskId: string;
+		agentSlot: string;
+		lastSeen: string;
+		ageMinutes: number;
+		reason: "cooldown_null" | "stale_no_lock" | "stale_with_orphaned_lock";
+		recommendedAction: "force_release" | "extend_cooldown" | "escalate";
+	}>;
+	threshold?: "green" | "yellow" | "red";
+	recommendation?: string;
+}
+
+export interface McpVertexProposalsAgentWorktreeOutput {
+	ok: boolean;
+	action: "create" | "list" | "remove";
+	reason?: string;
+	path?: string;
+	branch?: string;
+	created?: boolean;
+	removed?: boolean;
+	worktrees?: {
+		path: string;
+		head: string;
+		branch?: string;
+		detached: boolean;
+		locked: boolean;
+	}[];
+}
+
+export interface McpVertexProposalsAutoWorkOutput {
+	state: "idle" | "work";
+	idleStreak?: number;
+	reason?: string;
+	stop?: true;
+	handoffPath?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	orchestration?: {
+		lane: "inspect-then-delegate";
+		delegateAfterToolCalls: number;
+		next: string;
+		policy: string;
+	};
+	validationCommand?: string;
+	persist?: {
+		mode: "none" | "commit" | "commit-and-push";
+		messageTemplate?: string;
+		pushTarget?: string;
+	};
+	steps?: string[];
+}
+
+export interface McpVertexProposalsCloseSliceOutput {
+	ok: true;
+	proposalId: string;
+	sliceId: string;
+	closed: boolean;
+	lockReleased: boolean;
+}
+
+export interface McpVertexProposalsCompactStatusOutput {
+	locks?: {
+		active: number;
+	};
+	queue?: {
+		queued: number;
+		promoted: number;
+		waiterOrphans: number;
+		threshold: string;
+	};
+	proposals?: {
+		total: number;
+		actionable: number;
+		byStatus: Record<string, number>;
+	};
+}
+
+export interface McpVertexProposalsContinueProposalOutput {
+	kind: "next-proposal" | "no-proposal" | "all-claimed" | "slice-mode-error" | "slice-plan" | "slice-claim-rejected" | "slice-claim";
+	reason?: string;
+	nextAction?: string;
+	proposalId?: string;
+	file?: string;
+	status?: string;
+	relaunchCommand?: string;
+	guide?: string[];
+	plan?: {
+		proposalId: string;
+		slices: Array<{
+			proposalId: string;
+			sliceId: string;
+			title: string;
+			owner: string | null;
+			files: string[];
+			dependsOn: string[];
+			gate: "lint" | "type" | "e2e" | "none";
+			status: "pending" | "in-progress" | "done" | "blocked";
+			acceptanceCriteria: string[];
+		}>;
+		globalGate: "lint" | "type" | "e2e" | "none";
+	};
+	disjointnessIssues?: {
+		first: string;
+		second: string;
+		file: string;
+	}[];
+	claimableSliceIds?: string[];
+	sliceId?: string;
+	validation?: {
+		ok: boolean;
+		reason: string;
+		blockerType: "none" | "unknown-slice" | "deps-not-done" | "overlap-in-progress" | "already-done" | "already-in-progress";
+	};
+	slice?: {
+		proposalId: string;
+		sliceId: string;
+		title: string;
+		owner: string | null;
+		files: string[];
+		dependsOn: string[];
+		gate: "lint" | "type" | "e2e" | "none";
+		status: "pending" | "in-progress" | "done" | "blocked";
+		acceptanceCriteria: string[];
+	} | null;
+	executionGuide?: {
+		files: string[];
+		acceptanceCriteria: string[];
+		gate: "lint" | "type" | "e2e" | "none";
+		rules: string[];
+	};
+	cascadeTrace?: {
+		priority?: number;
+		cascadeOverrideReason?: string;
+		cascadeBoost?: "shipped-blocking" | "customer-reported" | "security";
+	};
+	error?: string;
+	blockedBy?: string[];
+}
+
+export interface McpVertexProposalsCreateProposalOutput {
+	ok: true;
+	file: string;
+	path: string;
+	disjointnessIssues: {
+		first: string;
+		second: string;
+		file: string;
+	}[];
+	indexCount: number;
+}
+
+export interface McpVertexProposalsDelegateOutput {
+	ok: boolean;
+	stage?: "assign" | "lock";
+	detail?: Record<string, unknown>;
+	agent?: string;
+	reason?: string;
+	taskId?: string;
+	slot?: string;
+	files?: string[];
+	locked?: boolean;
+	instruction?: string;
+}
+
+export interface McpVertexProposalsGetProposalWorkflowOutput {
+	families: {
+		prefix: string;
+		kind?: string;
+		description: string;
+		cascadePriority: number;
+	}[];
+	locations: Record<string, string>;
+	naming: string;
+	rules: string[];
+	template: string;
+}
+
+export interface McpVertexProposalsPlanOutput {
+	plan: unknown;
+	disjointnessIssues: unknown[];
+	claimableSliceIds: string[];
+}
+
+export interface McpVertexProposalsProposalAdoptOutput {
+	ok: true;
+	root: string;
+	layout: {
+		root: string;
+		files: Record<string, string>;
+		folders: Record<string, string>;
+	};
+	scan: {
+		proposals: Array<{
+			file: string;
+			id: string;
+			kind: "proposal" | "fix";
+			status: string;
+		}>;
+		folders: string[];
+		hasIndex: boolean;
+		hasReadme: boolean;
+		unrecognized: string[];
+		other: string[];
+	};
+	plan: string[];
+	ready: boolean;
+}
+
+export interface McpVertexProposalsProposalBoardOutput {
+	proposals: Array<{
+		id: string;
+		status: string;
+		slices: Array<{
+			sliceId: string;
+			status: string;
+			owner: string | null;
+		}>;
+		claimableSliceIds?: string[];
+	}>;
+}
+
+export interface McpVertexProposalsProposalDiagnoseOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
+}
+
+export interface McpVertexProposalsProposalForceTransitionOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
+}
+
+export interface McpVertexProposalsProposalReconcileFolderOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
+}
+
+export interface McpVertexProposalsProposalReviewOutput {
+	ok: true;
+	proposalId: string;
+	sliceId: string;
+	action: string;
+	status: "none" | "in_review" | "changes_requested" | "done";
+	implementer: string | null;
+	reviewer: string | null;
+	rounds: Array<{
+		verdict: "requested_changes" | "approved";
+		agent: string;
+		note: string;
+	}>;
+	lockReleased: boolean;
+}
+
+export interface McpVertexProposalsProposalStaleListOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	count?: number;
+	zombies?: Array<{
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+		suggestedActions: string[];
+	}>;
+	taskId?: string;
+	agent?: string;
+	released?: boolean;
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	lockReleased?: boolean;
+	movedTo?: string;
+	warning?: string;
+	changed?: boolean;
+	path?: string;
+	dryRun?: boolean;
+	file?: string;
+	folder?: string;
+	status?: string;
+	lockOwners?: string[];
+	lastHeartbeat?: string;
+	lastAgentDeadEvent?: {
+		kind: "agent-alive" | "agent-idle" | "agent-dead";
+		agent: string;
+		taskId: string;
+		ts: string;
+		lastSeen: string;
+		missedBeats: number;
+	};
+	inconsistencies?: string[];
+	suggestedActions?: string[];
+}
+
+export interface McpVertexProposalsProposalTransitionOutput {
+	ok: boolean;
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+	id?: string;
+	from?: string;
+	to?: string;
+	reason?: string;
+	movedFrom?: string;
+	movedTo?: string;
+	warning?: string;
+}
+
+export interface McpVertexProposalsProposalsClosePlanOutput {
+	ok: boolean;
+	planId: string;
+	dryRun: boolean;
+	closable: boolean;
+	blockers: Array<{
+		ref: string;
+		kind: "proposal" | "plan" | "slice";
+		code: "not-done" | "not-peer-reviewed" | "self-cycle" | "unknown-ref";
+		message: string;
+	}>;
+	preview?: {
+		from: string;
+		to: string;
+		movedFrom?: string;
+		movedTo?: string;
+	};
+	error?: {
+		reason: string;
+		nextAction?: string;
+	};
+}
+
+export interface McpVertexProposalsRoundContextOutput {
+	digest: {
+		roundId: string;
+		activeProposalId: string;
+		currentTaskId: string;
+		activeLocks: {
+			taskId: string;
+			agent: string;
+			ownershipCount: number;
+			filesPreview: string[];
+			lastSeen: string;
+			parentTaskId?: string;
+		}[];
+		activeAgents: {
+			agent: string;
+			taskId: string;
+			slot: string;
+			depth: number;
+			lastSeen: string;
+			adopted: boolean;
+		}[];
+		coreDocHashes: Record<string, string>;
+		sources: {
+			chatContext: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			checkpoint: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			lock: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+			registry: {
+				state: "ok" | "missing" | "corrupt";
+				fingerprint: string;
+				timestamp: string | null;
+				ageMinutes: number | null;
+				temporallyStale: boolean;
+			};
+		};
+		chatContext: {
+			proposalIds: string[];
+			topic?: string;
+			lastUpdated?: string;
+		};
+		checkpoint: {
+			proposalId?: string;
+			status?: string;
+			selectedTask?: string;
+			nextAction?: string;
+			updatedAt?: string;
+		};
+		proposalPortfolio: {
+			sourceState: "ok" | "missing" | "corrupt";
+			strategy: "index" | "fallback-scan";
+			activeIds: string[];
+			activeOverflowCount: number;
+			activeCount: number;
+			pendingCount: number;
+			inProgressCount: number;
+		};
+		resumeHint: {
+			mode: "resume" | "next" | "unknown";
+			proposalId: string;
+			reason: string;
+			taskId?: string;
+		};
+		createdAt: string;
+		digestVersion: 1;
+	} | null;
+	stale: boolean;
+	recomputedAt: string;
+	digestPath: string;
+}
+
+export interface McpVertexProposalsStateHealthOutput {
+	locks: {
+		active: number;
+	};
+	queue: {
+		queueLength: number;
+		queuedCount: number;
+		waiterOrphans: number;
+		oldestAgeMinutes: number;
+		threshold: string;
+	} | null;
+	registry: {
+		orphans: number;
+		threshold: string;
+	};
+	healthy: boolean;
+}
+
+export interface McpVertexProposalsStateRepairOutput {
+	mode: "dry-run" | "execute";
+	diagnosis: {
+		locks: {
+			active: number;
+		};
+		queue: {
+			queueLength: number;
+			queuedCount: number;
+			waiterOrphans: number;
+			oldestAgeMinutes: number;
+			threshold: string;
+		} | null;
+		registry: {
+			orphans: number;
+			threshold: string;
+		};
+		healthy: boolean;
+	};
+	wouldRepair?: {
+		staleLocks: number;
+		dueQueueEntries: number;
+		orphanAssignments: number;
+	};
+	repaired?: {
+		staleLocks: number;
+		expiredQueueEntries: number;
+		orphanAssignments: number;
+	};
+	nextAction?: string;
+}
+
+export interface McpVertexProposalsSyncProposalsOutput {
+	changed: boolean;
+	count: number;
+	indexPath: string;
+	errors: string[];
+}
+
+export interface McpVertexProposalsTaskQueueOutput {
+	error?: string;
+	taskId?: string;
+	status?: string;
+	queueLength?: number;
+	position?: number;
+	consumedAt?: string;
+	digest?: {
+		digests: {
+			taskId: string;
+			closedAt: string;
+			diffSummary?: string;
+		}[];
+	};
+	digests?: {
+		taskId: string;
+		closedAt: string;
+		diffSummary?: string;
+	}[];
+	pendingTargets?: string[];
+	queuedCount?: number;
+	promotedCount?: number;
+	consumedCount?: number;
+	cancelledCount?: number;
+	expiredCount?: number;
+	waiterOrphans?: number;
+	oldestAgeMinutes?: number;
+	releaseSignalBacklog?: number;
+	threshold?: string;
+	recommendation?: string;
+}
+
+export interface McpVertexQualityGetQualityScopesOutput {
+	scopes: Record<string, {
+		command: string;
+		expect?: string;
+	}[]>;
+}
+
+export interface McpVertexQualityQualityCancelOutput {
+	cancelled: number[];
+	count: number;
+}
+
+export interface McpVertexQualityQualityRunAllOutput {
+	results: {
+		scope: string;
+		ok: boolean;
+		duration: number;
+		errors: string[];
+	}[];
+	summary: {
+		ok: boolean;
+		scopes: number;
+	};
+}
+
+export interface McpVertexQualityRunQualityOutput {
+	scope: string;
+	ok: boolean;
+	results: {
+		command: string;
+		ok: boolean;
+		code: number;
+		timedOut: boolean;
+		tail: string;
+	}[];
+}
+
+export interface McpVertexRulesApplyRulesOutput {
+	mode: string;
+	modeGuidance: string;
+	area: string;
+	framework: string;
+	eslintConfigs: string[];
+	command: string;
+	fixCommand: string;
+	steps: string[];
+}
+
+export interface McpVertexRulesCheckRulesOutput {
+	compact: boolean;
+	checks: {
+		project: string;
+		area: string;
+		framework: string;
+		eslintConfigs?: string[];
+		typecheckConfigs?: string[];
+		command: string;
+		typecheckCommand?: string;
+		missingEslintDeps: string[];
+	}[];
+	findings: {
+		code: "missing-eslint-deps";
+		severity: "warning";
+		project: string;
+		area: string;
+		framework: string;
+		message: string;
+		missing: string[];
+		nextAction: string;
+	}[];
+}
+
+export interface McpVertexRulesGetRulesOutput {
+	mode: string;
+	modeGuidance: string;
+	supported: string[];
+	areas: {
+		project: string;
+		area: string;
+		rules: {
+			framework: string;
+			presetId: string;
+			eslint: string[];
+			typecheck: string[];
+			reason: string;
+		};
+	}[];
+	conventions: Record<string, string[]>;
+}
+
 export interface McpVertexScaffoldOutput {
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
@@ -251,6 +1452,22 @@ export interface McpVertexScaffoldOutput {
 	moved: string[];
 	kept: string[];
 	errors: string[];
+}
+
+export interface McpVertexSearchSearchOutput {
+	query: string;
+	count: number;
+	truncated: boolean;
+	scanned: number;
+	usedRg: boolean;
+	rgFallbackReason?: string;
+	hits: {
+		file: string;
+		line: number;
+		text: string;
+		before?: string[];
+		after?: string[];
+	}[];
 }
 
 export interface McpVertexSkillOutput {
@@ -272,20 +1489,172 @@ export interface McpVertexStatusOutput {
 	}[];
 }
 
+export interface McpVertexStatusMarkerCloseOutput {
+	ok: true;
+	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	reason?: string;
+	locale?: "es" | "en";
+	line: string;
+}
+
+export interface McpVertexStatusMarkerPingOutput {
+	plugin: "status-marker";
+	cacheDir: string;
+	docsDir: string;
+}
+
+export type McpVertexStatusMarkerValidateOutput = {
+	ok: true;
+	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	reason?: string;
+	line: string;
+} | {
+	ok: false;
+	state?: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	reason?: string;
+	line?: string;
+	violation?: string;
+	violations?: string[];
+};
+
+export interface McpVertexTestConventionGetConventionOutput {
+	convention: {
+		specExtension: string;
+		specLayout: "colocate" | "tests-mirror" | "tests-flat";
+		runners: string[];
+		mockStyle: "vi" | "jest" | "auto";
+		requireDescribe: boolean;
+		coverageThreshold: {
+			lines: number;
+			functions: number;
+			branches: number;
+			statements: number;
+		};
+		forbiddenPatterns: string[];
+		languages: string[];
+	};
+	markdown: string;
+}
+
+export interface McpVertexTestConventionScanDriftOutput {
+	ok: boolean;
+	counts: {
+		error: number;
+		warning: number;
+		info: number;
+	};
+	violations: Array<{
+		id: string;
+		file: string;
+		severity: "error" | "warning" | "info";
+		hint: string;
+		line?: number;
+		excerpt?: string;
+	}>;
+	scannedFiles: number;
+}
+
+export interface McpVertexTestConventionSuggestSpecPathOutput {
+	specPath: string;
+	rationale: string;
+	skeleton: string;
+}
+
+export interface McpVertexWebFetchWebFetchOutput {
+	ok: boolean;
+	url?: string;
+	status?: number;
+	contentType?: string | null;
+	body?: string;
+	truncated?: boolean;
+	reason?: "blocked-host" | "invalid-url" | "redirect-blocked" | "too-many-redirects" | "timeout" | "fetch-error";
+	detail?: string;
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface McpVertexToolOutputs {
 	"mcp-vertex_agent_catalog": McpVertexAgentCatalogOutput;
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
+	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
+	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
+	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
+	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
+	"mcp-vertex_deps_deps_outdated": McpVertexDepsDepsOutdatedOutput;
+	"mcp-vertex_deps_deps_polyglot": McpVertexDepsDepsPolyglotOutput;
+	"mcp-vertex_docs_docs_list": McpVertexDocsDocsListOutput;
+	"mcp-vertex_docs_docs_read": McpVertexDocsDocsReadOutput;
+	"mcp-vertex_docs_docs_search": McpVertexDocsDocsSearchOutput;
 	"mcp-vertex_drift_check": McpVertexDriftCheckOutput;
 	"mcp-vertex_fs_read": McpVertexFsReadOutput;
 	"mcp-vertex_fs_write": McpVertexFsWriteOutput;
 	"mcp-vertex_get_validation_matrix": McpVertexGetValidationMatrixOutput;
+	"mcp-vertex_git_blame": McpVertexGitBlameOutput;
+	"mcp-vertex_git_changed": McpVertexGitChangedOutput;
+	"mcp-vertex_git_diff": McpVertexGitDiffOutput;
+	"mcp-vertex_git_log": McpVertexGitLogOutput;
+	"mcp-vertex_git_show": McpVertexGitShowOutput;
+	"mcp-vertex_git_status": McpVertexGitStatusOutput;
+	"mcp-vertex_git_worktree": McpVertexGitWorktreeOutput;
 	"mcp-vertex_knowledge": McpVertexKnowledgeOutput;
+	"mcp-vertex_logs_correlate": McpVertexLogsCorrelateOutput;
+	"mcp-vertex_logs_query": McpVertexLogsQueryOutput;
+	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
+	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
+	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
+	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
+	"mcp-vertex_memory_forget": McpVertexMemoryForgetOutput;
+	"mcp-vertex_memory_import": McpVertexMemoryImportOutput;
+	"mcp-vertex_memory_list": McpVertexMemoryListOutput;
+	"mcp-vertex_memory_recall": McpVertexMemoryRecallOutput;
+	"mcp-vertex_memory_save": McpVertexMemorySaveOutput;
 	"mcp-vertex_metrics": McpVertexMetricsOutput;
+	"mcp-vertex_notification_await_lock": McpVertexNotificationAwaitLockOutput;
+	"mcp-vertex_notification_notify_status": McpVertexNotificationNotifyStatusOutput;
 	"mcp-vertex_overview": McpVertexOverviewOutput;
 	"mcp-vertex_plan_mcp_project": McpVertexPlanMcpProjectOutput;
+	"mcp-vertex_proposals_agent_lock": McpVertexProposalsAgentLockOutput;
+	"mcp-vertex_proposals_agent_lock_release_orphan": McpVertexProposalsAgentLockReleaseOrphanOutput;
+	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
+	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
+	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
+	"mcp-vertex_proposals_close_slice": McpVertexProposalsCloseSliceOutput;
+	"mcp-vertex_proposals_compact_status": McpVertexProposalsCompactStatusOutput;
+	"mcp-vertex_proposals_continue_proposal": McpVertexProposalsContinueProposalOutput;
+	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
+	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
+	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
+	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
+	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;
+	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
+	"mcp-vertex_proposals_proposal_diagnose": McpVertexProposalsProposalDiagnoseOutput;
+	"mcp-vertex_proposals_proposal_force_transition": McpVertexProposalsProposalForceTransitionOutput;
+	"mcp-vertex_proposals_proposal_reconcile_folder": McpVertexProposalsProposalReconcileFolderOutput;
+	"mcp-vertex_proposals_proposal_review": McpVertexProposalsProposalReviewOutput;
+	"mcp-vertex_proposals_proposal_stale_list": McpVertexProposalsProposalStaleListOutput;
+	"mcp-vertex_proposals_proposal_transition": McpVertexProposalsProposalTransitionOutput;
+	"mcp-vertex_proposals_proposals_close_plan": McpVertexProposalsProposalsClosePlanOutput;
+	"mcp-vertex_proposals_round_context": McpVertexProposalsRoundContextOutput;
+	"mcp-vertex_proposals_state_health": McpVertexProposalsStateHealthOutput;
+	"mcp-vertex_proposals_state_repair": McpVertexProposalsStateRepairOutput;
+	"mcp-vertex_proposals_sync_proposals": McpVertexProposalsSyncProposalsOutput;
+	"mcp-vertex_proposals_task_queue": McpVertexProposalsTaskQueueOutput;
+	"mcp-vertex_quality_get_quality_scopes": McpVertexQualityGetQualityScopesOutput;
+	"mcp-vertex_quality_quality_cancel": McpVertexQualityQualityCancelOutput;
+	"mcp-vertex_quality_quality_run_all": McpVertexQualityQualityRunAllOutput;
+	"mcp-vertex_quality_run_quality": McpVertexQualityRunQualityOutput;
+	"mcp-vertex_rules_apply_rules": McpVertexRulesApplyRulesOutput;
+	"mcp-vertex_rules_check_rules": McpVertexRulesCheckRulesOutput;
+	"mcp-vertex_rules_get_rules": McpVertexRulesGetRulesOutput;
 	"mcp-vertex_scaffold": McpVertexScaffoldOutput;
+	"mcp-vertex_search_search": McpVertexSearchSearchOutput;
 	"mcp-vertex_skill": McpVertexSkillOutput;
 	"mcp-vertex_status": McpVertexStatusOutput;
+	"mcp-vertex_status-marker_close": McpVertexStatusMarkerCloseOutput;
+	"mcp-vertex_status-marker_ping": McpVertexStatusMarkerPingOutput;
+	"mcp-vertex_status-marker_validate": McpVertexStatusMarkerValidateOutput;
+	"mcp-vertex_test-convention_get_convention": McpVertexTestConventionGetConventionOutput;
+	"mcp-vertex_test-convention_scan_drift": McpVertexTestConventionScanDriftOutput;
+	"mcp-vertex_test-convention_suggest_spec_path": McpVertexTestConventionSuggestSpecPathOutput;
+	"mcp-vertex_web-fetch_web_fetch": McpVertexWebFetchWebFetchOutput;
 }

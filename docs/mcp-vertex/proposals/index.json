@@ -1,5 +1,5 @@
 {
-	"generated_at": "2026-06-25T23:15:36.779Z",
+	"generated_at": "2026-06-25T23:29:34.952Z",
 	"count": 134,
 	"proposals": [
 		{
@@ -133,7 +133,7 @@
 		},
 		{
 			"id": "f00061",
-			"file": "ready/f00061-solid-refactor-of-dashboard-and-status-bar.md",
+			"file": "ready/r00061-solid-refactor-of-dashboard-and-status-bar.md",
 			"track": "solid+architecture+extension-ux",
 			"type": "proposal",
 			"status": "ready",

@@ -46,8 +46,18 @@ Two visible home/UI improvements, shipped as one small feature proposal:
    IDE (5/5) and the GitHub/Node/TypeScript set. Hook the existing
    `apps/web/src/lib/brand-logos.ts` resolver up to `<Tabs>` (new
    `icon?` prop), wire it in `HomeQuickInstallSection`, `Install`,
-   `HomeAtAGlanceSection`, and tighten the `PluginDisclosure` icon
-   fallback (initial letter instead of raw slug).
+   `HomeAtAGlanceSection`, and **extend the resolver itself** with
+   three new kinds (`'plugin'`, `'lang'`, `'section'`) so every
+   consumer — including the existing `PluginDisclosure.astro` and
+   `PluginCapabilities.astro`, both of which currently hardcode
+   `/logos/plugin-${slug}.svg` — funnels through one helper. The
+   fallback in `PluginDisclosure` becomes the same first-letter
+   circular badge that `Tabs.astro` uses for missing logos.
+
+The reuse rule (`AGENTS.md` §Hard rules §2 and §4: "no `process.cwd()`"
+and "durable writes through the primitives") generalises: any
+component that needs a brand mark goes through `brandLogo(id, kind)`
+— never hardcodes the path. S5 turns this into a hard contract.
 
 The two changes are independent in code but ship together because
 they share the same set of touch-files (Tabs + Home) and the same
@@ -105,11 +115,21 @@ Touched files (file-disjoint slices below):
 - `apps/web/src/components/HomeAtAGlanceSection.astro` — forwards
   `p.icon` to `<Tabs>`.
 - `apps/web/src/components/Install.astro` — passes `icon` on the PM row.
-- `apps/web/src/components/PluginDisclosure.astro` — icon fallback
-  becomes first-letter badge.
-- `apps/web/src/components/PluginCapabilities.astro` — icon consistency.
-- `apps/web/src/lib/brand-logos.ts` — no public-API change; verifies the
-  `pm` lookup works for `bun` / `deno`.
+- `apps/web/src/components/PluginDisclosure.astro` — replaces
+  hardcoded `/logos/plugin-${slug}.svg` + bespoke `onerror` with a
+  single `brandLogo(slug, 'plugin')` call (S5).
+- `apps/web/src/components/PluginCapabilities.astro` — same reuse
+  refactor as `PluginDisclosure.astro` (S5).
+- `apps/web/src/lib/brand-logos.ts` — **extended**, not just verified.
+  S5 adds three new kinds (`'plugin'`, `'lang'`, `'section'`) and one
+  `'lib'` kind so every `/logos/<prefix>-<id>.<ext>` file in
+  `public/logos/` resolves through the single helper. Today the
+  module only knows `'pm'` (no prefix) and `'ide'` (`ide-` prefix);
+  all 16 `plugin-*.svg`, the `lang-` family (see S5 for the inventory),
+  and any future `section-*.svg` go through this one function.
+  The contract stays the same: `brandLogo(id, kind)` returns the
+  public URL or `null`. Backward-compatible — existing `'pm'` and
+  `'ide'` callers are unchanged.
 - `apps/web/src/i18n/shared.ts` — adds `icon?: string` to
   `IHomeAtAGlanceTranslations.panels[number]`.
 - `apps/web/src/i18n/langs/*.ts` (12 languages) — adds `icon:` to
@@ -119,8 +139,48 @@ Touched files (file-disjoint slices below):
 - `apps/web/src/styles/styles.scss` — registers the new partial.
 - `apps/web/tests/ui/tabs-cross-fade.spec.ts` — new spec covering the
   cross-fade + `plugin` variant merge.
+- `apps/web/tests/lib/brand-logos.spec.ts` — new spec covering the
+  three new kinds (S5).
 - `docs/mcp-vertex/skills/tabs-component/SKILL.md` — new SKILL
   documenting the API.
+
+### Why a single resolver (the reuse rule)
+
+`apps/web/public/logos/` already ships 43 brand marks:
+
+- **5 package managers** (npm, pnpm, yarn, bun, deno) — `bun.svg`,
+  `deno.svg`, `npm.svg`, `pnpm.svg`, `yarn.svg`.
+- **5+ IDEs** (vscode, cursor, windsurf, zed, antigravity, claude-code,
+  claude-desktop) — `ide-*.svg|png|ico`.
+- **16 plugins** (proposals, memory, quality, …) — `plugin-*.svg`.
+- **5 libraries/runtime marks** (github, node, typescript, git,
+  modelcontextprotocol) — `<bare>.png/svg`.
+
+Adding **more** kinds (language, framework, section, …) without
+funneling them through `brand-logo.ts` would mean every consumer
+hardcodes `/logos/<prefix>-${id}.<ext>` again — that's the reuse
+violation we explicitly want to avoid. S5 turns `brand-logo.ts` into
+**the** single helper every Astro component reaches for, with a `Kinds`
+map so the prefix scheme is data-driven (not a 4-way `if`):
+
+```ts
+// new in brand-logo.ts (S5)
+type LogoKind = 'pm' | 'ide' | 'plugin' | 'lang' | 'section' | 'lib';
+const KIND_PREFIX: Record<LogoKind, string> = {
+  pm: '',
+  ide: 'ide-',
+  plugin: 'plugin-',
+  lang: 'lang-',
+  section: 'section-',
+  lib: '',
+};
+export const brandLogo = (id: string, kind: LogoKind = 'pm'): string | null => { … };
+```
+
+Adding a new kind is one line. The `EXTS` priority list (`svg, png,
+ico`) keeps the format fallback. The inventory helper
+(`brandLogosInventory()`) becomes the source of truth for what
+exists.
 
 ## Slices
 
@@ -158,7 +218,7 @@ slice-level gate is per-slice (see below).
 
 ### S3 — Tab `icon?` prop + wire PM logos into `HomeQuickInstallSection`
 
-- **Status**: pending
+- **Status**: done
 - **Owner**: `implementation_runner`
 - **Files**: `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/HomeQuickInstallSection.astro`, `apps/web/src/components/Install.astro`, `apps/web/src/lib/brand-logos.ts`, `apps/web/src/styles/components/_tabs.scss`
 - **Gate**: `bun run typecheck`
@@ -172,7 +232,7 @@ slice-level gate is per-slice (see below).
 
 ### S4 — Section icons in `HomeAtAGlanceSection` + 12-lang i18n
 
-- **Status**: pending
+- **Status**: done
 - **Owner**: `implementation_runner`
 - **Files**: `apps/web/src/i18n/shared.ts`, `apps/web/src/i18n/langs/en.ts`, `apps/web/src/i18n/langs/es.ts`, `apps/web/src/i18n/langs/fr.ts`, `apps/web/src/i18n/langs/de.ts`, `apps/web/src/i18n/langs/it.ts`, `apps/web/src/i18n/langs/pt.ts`, `apps/web/src/i18n/langs/ar.ts`, `apps/web/src/i18n/langs/hi.ts`, `apps/web/src/i18n/langs/ja.ts`, `apps/web/src/i18n/langs/zh.ts`, `apps/web/src/i18n/langs/th.ts`, `apps/web/src/i18n/langs/vi.ts`, `apps/web/src/components/HomeAtAGlanceSection.astro`
 - **Gate**: `bun run check:i18n`
@@ -184,17 +244,21 @@ slice-level gate is per-slice (see below).
   - On `/`, the "What can it do?" row shows: 📦 Plugins · 🔧 Tools · 📊 Benchmarks · 📚 Skills · 📖 Knowledge · 🎛 Presets · 🛠 Cross-project setup — each with the icon chosen by the i18n author.
   - Icons re-use existing files in `apps/web/public/logos/` (no new assets).
 
-### S5 — Tighter `PluginDisclosure` icon fallback + author a SKILL
+### S5 — Extend `brand-logos.ts` + refactor `PluginDisclosure`/`PluginCapabilities` to reuse it + author a SKILL
 
-- **Status**: pending
+- **Status**: done
 - **Owner**: `implementation_runner`
-- **Files**: `apps/web/src/components/PluginDisclosure.astro`, `apps/web/src/components/PluginCapabilities.astro`, `docs/mcp-vertex/skills/tabs-component/SKILL.md` (new)
-- **Gate**: `bun run lint:skills && bun run typecheck`
-- **Command**: `bun run lint:skills && bun run typecheck`
+- **Files**: `apps/web/src/lib/brand-logos.ts`, `apps/web/src/components/PluginDisclosure.astro`, `apps/web/src/components/PluginCapabilities.astro`, `apps/web/tests/lib/brand-logos.spec.ts` (new), `docs/mcp-vertex/skills/tabs-component/SKILL.md` (new)
+- **Gate**: `bun run typecheck && bun run test apps/web/tests/lib/brand-logos.spec.ts && bun run lint:skills`
+- **Command**: `bun run typecheck && bun run test apps/web/tests/lib/brand-logos.spec.ts && bun run lint:skills`
 - **Expect**: exit0
 - **Acceptance:**
-  - When `/logos/plugin-<slug>.svg` 404s (e.g. for a not-yet-shipped plugin), the user sees a coloured circular badge with the first letter of the slug (`P` for `proposals`, `M` for `memory`, …) instead of the raw slug text.
-  - `SKILL.md` exists under `docs/mcp-vertex/skills/tabs-component/`, references both `Tabs.astro` and `brand-logos.ts`, and is included by the build's skill index.
+  - `brand-logo.ts` exports `type LogoKind = 'pm' | 'ide' | 'plugin' | 'lang' | 'section' | 'lib'` and a `KIND_PREFIX` map. The existing `brandLogo(id, 'pm' | 'ide')` callers are unchanged (backward-compatible).
+  - For each new kind, the function walks `apps/web/public/logos/<prefix><id>.{svg,png,ico}` and returns the first hit (same `EXTS` priority order). All 16 `plugin-*.svg` resolve; the existing 5 PMs + 5+ IDEs continue to resolve.
+  - `PluginDisclosure.astro` and `PluginCapabilities.astro` stop hardcoding `/logos/plugin-${slug}.svg` + a bespoke `onerror`. They call `brandLogo(slug, 'plugin')` (or the centralised `<PluginIcon slug={…} />` primitive if the SKILL prescribes one) and get the same URL — the diff between the two files for icon handling is now ≤ 3 lines (the fallback `onerror`).
+  - When the plugin icon 404s, the user sees a coloured circular badge with the first letter of the slug (`P` for `proposals`, `M` for `memory`, …) instead of the raw slug text — same rule as S3's PM tabs.
+  - `apps/web/tests/lib/brand-logos.spec.ts` exists and covers at minimum: (a) every existing PM id resolves; (b) every existing IDE id resolves; (c) every existing `plugin-*.svg` resolves through `'plugin'`; (d) unknown id returns `null`; (e) `KIND_PREFIX` map covers all six kinds and `lang` / `section` kinds degrade to `null` cleanly because no `lang-*.svg` / `section-*.svg` files exist yet (the resolver must not crash on an empty result).
+  - `docs/mcp-vertex/skills/tabs-component/SKILL.md` documents the **unified** Tabs + brand-logo API: how to pick a tab variant, when to use `icon?`, how to call `brandLogo()` for any kind, and the rule "no hardcoded `/logos/...` strings — always go through `brandLogo()`".
   - `bun run lint:skills` exits 0 (the gate that verifies every skill is referenced + complete).
 
 ## dependency graph

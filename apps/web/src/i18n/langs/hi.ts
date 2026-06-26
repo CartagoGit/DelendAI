@@ -375,6 +375,7 @@ const dict: LangDict = {
 				summary:
 					'प्रकाशित पैकेज। बस जितना चाहिए उतना लोड करें; कोर छोटा रहता है।',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -382,6 +383,7 @@ const dict: LangDict = {
 				summary:
 					'पूर्ण प्लगइन सेट द्वारा उजागर हर टूल, namespace के अनुसार — जीवित रजिस्ट्री से।',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -389,24 +391,28 @@ const dict: LangDict = {
 				summary:
 					'टोकन दक्षता एक संरक्षित अपरिवर्तनीय है — मापी गई, दावा नहीं।',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
 				label: 'स्किल्स',
 				summary: 'डोमेन प्लेबुक जिन्हें एजेंट माँग पर लोड कर सकता है।',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
 				label: 'ज्ञान',
 				summary: 'सूचीबद्ध दस्तावेज़ जिन पर कोर प्रश्नों का उत्तर दे सकता है।',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
 				label: 'प्रीसेट्स',
 				summary: 'किसी भी वर्कस्पेस आकार के लिए पूर्व-कॉन्फ़िगर प्लगइन सेट।',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -414,6 +420,7 @@ const dict: LangDict = {
 				summary:
 					'mcp-vertex को किसी भी रेपो में जोड़ें और issues प्लगइन तैयार करें।',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},

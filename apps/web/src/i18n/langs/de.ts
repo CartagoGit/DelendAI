@@ -385,6 +385,7 @@ const dict: LangDict = {
 				summary:
 					'Veröffentlichte Pakete. Lade nur, was du brauchst; der Kern bleibt winzig.',
 				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
 			},
 			{
 				id: 'tools',
@@ -392,6 +393,7 @@ const dict: LangDict = {
 				summary:
 					'Alle Tools des vollen Plugin-Sets, gruppiert nach Namespace — aus dem Live-Registry.',
 				href: 'tools',
+				icon: '/logos/plugin-core.svg',
 			},
 			{
 				id: 'bench',
@@ -399,6 +401,7 @@ const dict: LangDict = {
 				summary:
 					'Token-Effizienz ist eine geschützte Invariante — gemessen, nicht behauptet.',
 				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
 			},
 			{
 				id: 'skills',
@@ -406,6 +409,7 @@ const dict: LangDict = {
 				summary:
 					'Domain-Playbooks, die der Agent bei Bedarf laden kann.',
 				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
 			},
 			{
 				id: 'knowledge',
@@ -413,6 +417,7 @@ const dict: LangDict = {
 				summary:
 					'Katalogisierte Dokumente, zu denen der Kern Fragen beantworten kann.',
 				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
 			},
 			{
 				id: 'presets',
@@ -420,6 +425,7 @@ const dict: LangDict = {
 				summary:
 					'Vorkonfigurierte Plugin-Sets für jede Workspace-Größe.',
 				href: 'presets',
+				icon: '/logos/plugin-search.svg',
 			},
 			{
 				id: 'setup',
@@ -427,6 +433,7 @@ const dict: LangDict = {
 				summary:
 					'Binde mcp-vertex in ein beliebiges Repo ein und bereite das Issues-Plugin vor.',
 				href: 'setup',
+				icon: '/logos/github.png',
 			},
 		],
 	},
