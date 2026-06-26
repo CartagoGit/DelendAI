@@ -34,10 +34,13 @@ const BUDGET_BYTES = {
 	// path (well under budget) — agents use it when there are many tools.
 	// Bumped 7000 → 8000 (2026-06-22) after f00029-S2 (github-issues plugin,
 	// 5 tools) + f00030 (setup-github) + f00047 (ui-extension toolbar) raised
-	// the baseline from 6700B to 7244B measured; the compact path is the
-	// real promise and remains at 1477B (well under 1600).
-	overviewFull: 8_000,
-	overviewCompact: 1_600,
+	// the baseline from 6700B to 7244B measured.
+	// Bumped 8000 → 8500 / 1600 → 2100 (2026-06-26): the host-namespace tool
+	// rename (`mcp-vertex_` prefix on every tool) added ~11B per listed tool,
+	// raising full to 8015B and compact to 1944B measured. Compact is still
+	// the real promise — < 30% of full.
+	overviewFull: 8_500,
+	overviewCompact: 2_100,
 	agentCatalogCompact: 1_300,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,
