@@ -23,7 +23,7 @@ describe('ToolTreeDataProvider', async () => {
 						effects: ['spawn'],
 					},
 					{
-						name: 'proposals_continue',
+						name: 'mcp-vertex_proposals_continue',
 						plugin: 'proposals',
 						tags: [],
 						effects: [],
@@ -51,7 +51,7 @@ describe('ToolTreeDataProvider', async () => {
 
 		const proposalTools = await provider.getChildren(plugins[0]);
 		expect(proposalTools.map((tool) => tool.label)).toEqual([
-			'proposals_continue',
+			'mcp-vertex_proposals_continue',
 			'mcp-vertex_proposals_proposal_board',
 		]);
 		expect(proposalTools[1]).toMatchObject({
