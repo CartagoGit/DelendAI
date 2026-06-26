@@ -37,7 +37,7 @@
 		"lint:audit-ids": "bun tools/scripts/lint/audit-ids.script.ts",
 		"lint:setup": "bun tools/scripts/lint/no-preset-drift.script.ts",
 		"lint:conventions": "bun tools/scripts/lint/file-conventions.script.ts --roots=plugins/search,plugins/audit,plugins/conventions",
-		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --report",
+		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --strict",
 		"lint:cli-shape": "bun tools/scripts/lint/cli-shape.script.ts",
 		"lint:workflow": "bun tools/scripts/lint/workflow.script.ts --report",
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",

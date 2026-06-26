@@ -93,6 +93,10 @@ export type Role =
 	| 'convention'
 	| 'type'
 	| 'barrel'
+	| 'catalog'
+	| 'prompt'
+	| 'resource'
+	| 'strings'
 	| 'other';
 
 /** A single rule in the classification chain. */
@@ -194,6 +198,27 @@ const TransportRule: IRoleRule = rule('transport', (rel) =>
 );
 
 const BootstrapRule = folderRule('bootstrap', 'bootstrap');
+
+/** Catalog tables — read-only enumerations surfaced to the host (agent
+ *  discovery catalog, plugin capabilities, etc). f00049 S6 added this
+ *  to absorb the residual 2 `.ts` files in `lib/catalog/`. */
+const CatalogRule = folderRule('catalog', 'catalog');
+
+/** Prompt modules — inline prompt text surfaced to MCP `prompts/*`
+ *  resources. Matches the `prompts/` folder and the `.prompt.ts`
+ *  suffix (covered by `BootstrapRule` for the `bootstrap/` folder). */
+const PromptRule: IRoleRule = rule(
+	'prompt',
+	(rel) => hasSegment(rel, 'prompts') || endsWithBasename(rel, 'prompt.ts'),
+);
+
+/** MCP resource handlers — surfaced via `server.resource(...)`. */
+const ResourceRule = folderRule('resource', 'resources');
+
+/** Localised UI strings bundles — surfaced by `packages/ui-extension`
+ *  to every host. The `strings/` folder is shared with other UI
+ *  assets; the role asserts intent (i18n data, not view). */
+const StringsRule = folderRule('strings', 'strings');
 const SwarmRule = folderRule('swarm', 'swarm');
 const ProposalRule = folderRule('proposal', 'proposals');
 const AgentRule = folderRule('agent', 'agents');
@@ -360,6 +385,10 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	SwarmRule,
 	AgentRule,
 	ProposalRule,
+	CatalogRule,
+	PromptRule,
+	ResourceRule,
+	StringsRule,
 	DashboardRule,
 	FrameworkRule,
 	SharedRule,
