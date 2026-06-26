@@ -132,10 +132,13 @@ const normalizeProposalStatus = (
 
 const readProposalsIndex = async (
 	workspaceRoot: string,
+	docsDir: string,
 	readWorkspaceFile: (absolutePath: string) => Promise<string | undefined>,
 ): Promise<readonly IProposalSummary[]> => {
+	// Honour the configured docsDir (e.g. `docs/mcp-vertex`); the index lives
+	// at `<docsDir>/proposals/index.json`, NOT the legacy `docs/proposals`.
 	const raw = await readWorkspaceFile(
-		join(workspaceRoot, 'docs', 'proposals', 'index.json'),
+		join(workspaceRoot, docsDir, 'proposals', 'index.json'),
 	);
 	if (raw === undefined) return [];
 	let parsed: IProposalIndexFile;
@@ -367,6 +370,7 @@ export const assembleCliConfig = async (
 	);
 	const proposalSummaries = await readProposalsIndex(
 		args.workspace,
+		docsDir,
 		readFile,
 	);
 	const isLoaded = (name: string): boolean =>
