@@ -77,7 +77,10 @@ describe('assembleCliConfig + config file', async () => {
 				}),
 		});
 		const known = config.knowledge?.find((entry) => entry.id === 'seen');
-		expect(known?.title).toBe('dd');
+		// After the host-namespace rename a plugin's ctx.namespacePrefix is
+		// host-qualified (`mcp-vertex_<prefix>`) so tools register as
+		// `mcp-vertex_<plugin>_<tool>`; the fake plugin echoes it as the title.
+		expect(known?.title).toBe('mcp-vertex_dd');
 		expect(JSON.parse(known?.body ?? '{}')).toEqual({
 			options: { k: 'v' },
 			keepLegacy: false,
@@ -145,7 +148,10 @@ describe('assembleCliConfig + config file', async () => {
 			'demo',
 		]);
 		const known = config.knowledge?.find((entry) => entry.id === 'seen');
-		expect(known?.title).toBe('dd');
+		// After the host-namespace rename a plugin's ctx.namespacePrefix is
+		// host-qualified (`mcp-vertex_<prefix>`) so tools register as
+		// `mcp-vertex_<plugin>_<tool>`; the fake plugin echoes it as the title.
+		expect(known?.title).toBe('mcp-vertex_dd');
 	});
 
 	it('applies exclude-plugins to config-file plugins too', async () => {
