@@ -27,7 +27,7 @@
 		"issues": { "options": { "repo": "<owner>/<name>" } },
 		"audit": {
 			"options": {
-				"auditDir": "docs/mcp-vertex/proposals/done/audits",
+				"auditDir": "docs/proposals/done/audits",
 				"topActions": 5,
 				"layers": [
 					{
