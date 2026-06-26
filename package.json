@@ -41,7 +41,7 @@
 		"lint:cli-shape": "bun tools/scripts/lint/cli-shape.script.ts",
 		"lint:workflow": "bun tools/scripts/lint/workflow.script.ts --report",
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",
-		"lint:skills": "bun tools/scripts/lint/check-skills.script.ts",
+		"lint:skills": "bun tools/scripts/lint/skills-script.ts",
 		"lint:cache": "bun tools/scripts/lint/check-cache.script.ts",
 		"verify:tools": "bun tools/scripts/verify/plugin-tool-verify.script.ts",
 		"site:codegen": "bun tools/scripts/astro/gen-section-pages.script.ts && bun tools/scripts/i18n/translate-tutorials.script.ts",
