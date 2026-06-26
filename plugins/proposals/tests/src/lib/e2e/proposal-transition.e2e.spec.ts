@@ -47,7 +47,10 @@ const callTransition = async (
 	server: IAssembledProposalsServer,
 	args: { id: string; to: string; reason: string },
 ): Promise<IAssembledToolResult<TransitionOutput>> =>
-	server.callTool<TransitionOutput>('proposals_proposal_transition', args);
+	server.callTool<TransitionOutput>(
+		'mcp-vertex_proposals_proposal_transition',
+		args,
+	);
 
 /** Seed a feat proposal in `ready/` and rebuild the index. */
 const seedReady = async (
@@ -83,7 +86,7 @@ Seed for the proposal_transition e2e harness.
 		'utf8',
 	);
 	const sync = await server.callTool<{ ok: boolean }>(
-		'proposals_sync_proposals',
+		'mcp-vertex_proposals_sync_proposals',
 		{},
 	);
 	expect(sync.ok).toBe(true);

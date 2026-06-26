@@ -341,6 +341,7 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	nextAction: z.string().optional(),
 	proposalId: z.string().optional(),
 	file: z.string().optional(),
+	pickedFromPaused: z.literal(true).optional(),
 	orchestration: AUTO_WORK_ORCHESTRATION_OUTPUT_SCHEMA.optional(),
 	validationCommand: z.string().optional(),
 	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
@@ -365,10 +366,14 @@ export const buildAutoWorkRegistration = (
 					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
 				inputSchema: INPUT_SCHEMA,
 			},
-			async (args: { persist?: IAutoWorkPersistMode | undefined }) =>
+			async (args: {
+				persist?: IAutoWorkPersistMode | undefined;
+				includePaused?: boolean | undefined;
+			}) =>
 				runAutoWork({
 					...options,
 					inputPersist: args.persist,
+					inputIncludePaused: args.includePaused,
 				}),
 		);
 	},
