@@ -1,5 +1,5 @@
 /**
- * emit-tool-types.ts — pure JSON-Schema → TypeScript emitter for the
+ * emit-tool-types.script.ts — pure JSON-Schema → TypeScript emitter for the
  * generated tool-output SDK (N23). No filesystem, no MCP, no deps: it
  * turns the JSON Schema produced by `z.toJSONSchema` (Zod v4) for each
  * tool's `outputSchema` into a `.ts` module of `export interface`s plus
