@@ -1,16 +1,25 @@
 #!/usr/bin/env bun
 /**
- * render-host-hints.script.ts - render deterministic host-instruction
- * fragments for Copilot Chat, Claude Code, Cursor, and generic AGENTS
- * consumers from the same agent-catalog artifact produced by
- * generate-agent-catalog.script.ts.
+ * render-host-hints.script.ts — render the canonical host-instruction
+ * fragments that the hand-edited host files (`.github/copilot-instructions.md`,
+ * `CLAUDE.md`, `AGENTS.md`) reference by path.
  *
- * Why it exists: S4 of f00056. Hosts that still rely on checked-in
- * instruction files (Copilot, Claude Code, generic AGENTS consumers) need
- * routing hints that stay in lock-step with the live catalog. We do NOT
- * rewrite the host's narrative - we only emit a small, byte-stable
- * "discovery" block. Human-edited files keep their own voice and just
- * reference the generated block by path.
+ * The contract this script enforces (the "agnostic bootstrap" model):
+ *
+ *   1. Every host file MUST point at `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
+ *      (the single source of truth for orient / discover / close / invariants).
+ *   2. The fragments this script writes DO NOT enumerate tools, skills, or
+ *      proposal ids. The server is the only source of truth for that — the
+ *      agent asks `mcp-vertex_agent_catalog` instead of reading a stale list.
+ *   3. The fragments exist so a downstream project that copies the host-file
+ *      shape still gets a deterministic, drift-detectable include. The
+ *      host-file templates still include the bootstrap by reference; this
+ *      generator only emits the fragments under `docs/mcp-vertex/host-hints/`.
+ *
+ * The script is intentionally minimal. It does NOT read the catalog
+ * artifact (the old design did, and the result was a hand-maintained list
+ * of ids that drifted every week). All it does is write a constant
+ * fragment per host that says "follow the bootstrap, ask the server".
  *
  * Usage:
  *   bun tools/scripts/catalog/render-host-hints.script.ts
@@ -18,413 +27,212 @@
  *   bun tools/scripts/catalog/render-host-hints.script.ts --root /abs/path
  *
  * Exit codes:
- *   0 - fragments written or already up to date
- *   1 - fragments are stale under --check
- *   2 - invocation or load error
+ *   0 — fragments written or already up to date
+ *   1 — fragments are stale under --check
+ *   2 — invocation or load error
  */
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
-import type {
-	IArtifactProposalSummary,
-	IGeneratedAgentCatalogArtifact,
-} from './generate-agent-catalog.script.ts';
-
-export const DEFAULT_INPUT_PATH =
-	'docs/mcp-vertex/agent-catalog.generated.json';
 export const DEFAULT_OUTPUT_DIR = 'docs/mcp-vertex/host-hints';
-export const DEFAULT_WARNINGS_PATH =
-	'docs/mcp-vertex/host-hints/.lint-warnings.txt';
+export const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
 
-export const MAX_PROPOSALS_PER_FRAGMENT = 8;
-export const MAX_SKILLS_PER_FRAGMENT = 10;
-export const MAX_FRAGMENT_BYTES = 3_000;
+export const MAX_FRAGMENT_BYTES = 1_500;
 
-export interface IArtifactLike {
-	readonly generatedAt: string;
-	readonly tools: ReadonlyArray<{
-		readonly name: string;
-		readonly plugin: string;
-	}>;
-	readonly skills: ReadonlyArray<{
-		readonly id: string;
-		readonly tags: readonly string[];
-		readonly summary: string;
-		readonly appliesTo: readonly string[];
-	}>;
-	readonly proposals: {
-		readonly actionable: readonly IArtifactProposalSummary[];
-		readonly byStatus: Readonly<Record<string, number>>;
-	};
-}
+export type HostId = 'copilot' | 'claude' | 'agents';
 
-export interface IRenderInput {
-	readonly artifact: IArtifactLike;
-	readonly generatedAt: string;
-}
-
-export interface IHostHint {
-	readonly id: 'copilot' | 'claude' | 'agents';
+export interface IHostFragment {
+	readonly id: HostId;
 	readonly filename: string;
-	readonly render: (input: IRenderInput) => string;
+	readonly render: () => string;
 }
 
-export interface IRenderOutput {
-	readonly id: IHostHint['id'];
-	readonly filename: string;
-	readonly text: string;
-}
-
-export interface IRenderHostHintsOptions {
-	readonly artifact: IArtifactLike;
-	readonly generatedAt?: string;
-	readonly hosts?: readonly IHostHint[];
-}
-
-export interface IRenderHostHintsResult {
-	readonly fragments: readonly IRenderOutput[];
-	readonly warnings: readonly string[];
-	readonly bytes: number;
-}
-
-export interface IRenderIo {
-	readonly readText: (absPath: string) => Promise<string | undefined>;
-	readonly writeText: (absPath: string, text: string) => Promise<void>;
-	readonly removeFile: (absPath: string) => Promise<void>;
-	readonly ensureDir: (absPath: string) => Promise<void>;
-	readonly warn: (message: string) => void;
-	readonly info: (message: string) => void;
-	readonly error: (message: string) => void;
-	readonly fixedGeneratedAt?: string;
-}
-
-const escapeMarkdownPipe = (value: string): string =>
-	value.replace(/\|/gu, '\\|');
-
-const truncateSummary = (summary: string, max: number): string =>
-	summary.length <= max
-		? summary
-		: `${summary.slice(0, max - 1).trimEnd()}...`;
-
-const backtickId = (id: string): string => `\`${id}\``;
-
-const renderCommonBlock = (input: IRenderInput): string => {
-	const { artifact, generatedAt } = input;
-	const overviewTool = 'mcp-vertex_overview';
-	const catalogTool = 'mcp-vertex_agent_catalog';
-	const orientationTag = `${overviewTool} { compact: true } -> ${catalogTool}`;
-	const actionable = artifact.proposals.actionable.slice(
-		0,
-		MAX_PROPOSALS_PER_FRAGMENT,
-	);
-	const skills = artifact.skills.slice(0, MAX_SKILLS_PER_FRAGMENT);
-	const proposalRows = actionable
-		.map(
-			(proposal) =>
-				`| ${backtickId(proposal.id)} | ${escapeMarkdownPipe(
-					truncateSummary(proposal.title, 56),
-				)} | ${proposal.kind} | ${proposal.status} |`,
-		)
-		.join('\n');
-	const skillRows = skills
-		.map(
-			(skill) =>
-				`| ${backtickId(skill.id)} | ${escapeMarkdownPipe(
-					truncateSummary(skill.summary, 88),
-				)} |`,
-		)
-		.join('\n');
-	const beginMarker =
-		'{/* BEGIN GENERATED: f00056 S4 - regenerate with `bun run catalog:hints`. Do not edit by hand. */}';
-	const generatedAtComment = `{/* Generated at: ${generatedAt}. Source: ${DEFAULT_INPUT_PATH}. */}`;
-	const endMarker = '{/* END GENERATED: f00056 S4 */}';
-	const orientation = `Canonical first move: call ${backtickId(
-		orientationTag,
-	)} whenever you need to`;
-	return [
-		beginMarker,
-		generatedAtComment,
+const SHARED_HEADER = (hostLabel: string): string =>
+	[
+		`<!-- Auto-generated discovery fragment for ${hostLabel}. -->`,
+		`<!-- Regenerate with \`bun run catalog:hints\`. Do not edit by hand. -->`,
 		'',
-		'## Discovery (canonical, generated)',
-		'',
-		orientation,
-		'route work to a tool, a skill, or an actionable proposal. The catalog',
-		'snapshot is byte-identical across reruns and is regenerated whenever',
-		'the live registry, the skill manifest, or the proposal index drift.',
-		'',
-		'### Actionable proposals',
-		'',
-		'| id | title | kind | status |',
-		'| --- | --- | --- | --- |',
-		proposalRows.length > 0 ? proposalRows : '| _(none yet)_ | | | |',
-		'',
-		'### Top skills (from skills/manifest.json)',
-		'',
-		'| skill id | when to use |',
-		'| --- | --- |',
-		skillRows.length > 0 ? skillRows : '| _(none yet)_ | |',
-		'',
-		endMarker,
-		'',
+		`<!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->`,
 	].join('\n');
+
+const SHARED_FOOTER = [
+	`<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->`,
+	'',
+	`> This fragment is intentionally minimal. The universal agent rules live`,
+	`> in [\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). Host files reference that`,
+	`> file and add only the rules the server cannot enforce (e.g. the`,
+	`> status-marker close contract on Copilot, the keep-main-thread-cheap`,
+	`> rule on Claude Code). Tools, skills, and proposal ids are NEVER`,
+	`> enumerated here — they are served live by \`mcp-vertex_agent_catalog\`.`,
+].join('\n');
+
+const CANONICAL_FIRST_MOVE_LINE_1 = 'Follow the universal bootstrap at';
+const CANONICAL_FIRST_MOVE_LINE_2 =
+	'`mcp-vertex_overview { compact: true }` followed by';
+const CANONICAL_FIRST_MOVE_LINE_3 =
+	'`mcp-vertex_agent_catalog` whenever routing to a tool, skill, or';
+const CANONICAL_FIRST_MOVE_LINE_4 = 'actionable proposal.';
+
+const HOST_FOOTNOTE: Readonly<Record<HostId, string>> = {
+	copilot:
+		'- Bootstrap appendix 8.1 (Copilot close-marker contract) is in effect.',
+	claude: '- Bootstrap appendix 8.2 (keep the main thread cheap) is in effect.',
+	agents: '- Bootstrap section 7 (repo-level rules) is in effect.',
 };
 
-const HOSTS: readonly IHostHint[] = [
+const renderFragment = (id: HostId, hostLabel: string): string =>
+	[
+		SHARED_HEADER(hostLabel),
+		'',
+		'## Discovery',
+		'',
+		CANONICAL_FIRST_MOVE_LINE_1,
+		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). The canonical first move is`,
+		CANONICAL_FIRST_MOVE_LINE_2,
+		CANONICAL_FIRST_MOVE_LINE_3,
+		CANONICAL_FIRST_MOVE_LINE_4,
+		'',
+		'## Host-specific footnote',
+		'',
+		HOST_FOOTNOTE[id],
+		SHARED_FOOTER,
+	].join('\n');
+
+const renderCopilotFragment = (): string =>
+	renderFragment('copilot', 'GitHub Copilot Chat');
+const renderClaudeFragment = (): string =>
+	renderFragment('claude', 'Claude Code');
+const renderAgentsFragment = (): string =>
+	renderFragment(
+		'agents',
+		'AGENTS-compatible hosts (Cursor, Aider, generic)',
+	);
+
+export const HOST_FRAGMENTS: readonly IHostFragment[] = [
 	{
 		id: 'copilot',
 		filename: 'copilot-instructions.generated.md',
-		render: (input) =>
-			[
-				'{/* Auto-generated discovery fragment for GitHub Copilot Chat. */}',
-				'{/* Regenerate with `bun run catalog:hints`. Do not edit by hand. */}',
-				'',
-				renderCommonBlock(input),
-				'',
-				'> Drop this fragment into `.github/copilot-instructions.md` by',
-				'> referencing it (or by copying the discovery block above into the',
-				'> bottom of the human-edited file). The host file keeps the',
-				'> status-marker / orchestration prose; only the discovery surface',
-				'> is generated.',
-			].join('\n'),
+		render: renderCopilotFragment,
 	},
 	{
 		id: 'claude',
 		filename: 'claude.generated.md',
-		render: (input) =>
-			[
-				'{/* Auto-generated discovery fragment for Claude Code. */}',
-				'{/* Regenerate with `bun run catalog:hints`. Do not edit by hand. */}',
-				'',
-				renderCommonBlock(input),
-				'',
-				'> Drop this fragment into `CLAUDE.md` by referencing it. Keep the',
-				'> keep-the-main-thread-cheap narrative in the human-edited file;',
-				'> only the discovery surface is generated.',
-			].join('\n'),
+		render: renderClaudeFragment,
 	},
 	{
 		id: 'agents',
 		filename: 'agents.generated.md',
-		render: (input) =>
-			[
-				'{/* Auto-generated discovery fragment for AGENTS.md-compatible hosts (Cursor, Aider, generic). */}',
-				'{/* Regenerate with `bun run catalog:hints`. Do not edit by hand. */}',
-				'',
-				renderCommonBlock(input),
-				'',
-				'> Drop this fragment into `AGENTS.md` by referencing it (or by',
-				'> copying the discovery block). The host file keeps the invariants',
-				'> and conventions narrative; only the discovery surface is',
-				'> generated.',
-			].join('\n'),
+		render: renderAgentsFragment,
 	},
 ];
 
-const resolveGeneratedAt = (
-	artifactGeneratedAt: string,
-	io: IRenderIo,
-): string => {
-	const fixed =
-		io.fixedGeneratedAt ??
-		process.env.AGENT_CATALOG_FIXED_NOW ??
-		artifactGeneratedAt;
-	const parsed = new Date(fixed);
-	if (Number.isNaN(parsed.getTime())) {
-		throw new Error(
-			`render-host-hints: fixedGeneratedAt is not a valid ISO date: ${fixed}`,
-		);
-	}
-	return parsed.toISOString();
-};
-
-export const renderHostHints = (
-	options: IRenderHostHintsOptions,
-): IRenderHostHintsResult => {
-	const hosts = options.hosts ?? HOSTS;
-	const warnings: string[] = [];
-	const generatedAt = options.generatedAt ?? options.artifact.generatedAt;
-	const input: IRenderInput = {
-		artifact: options.artifact,
-		generatedAt,
-	};
-	const fragments: IRenderOutput[] = [];
-	let totalBytes = 0;
-	for (const host of hosts) {
-		const body = host.render(input);
-		const text = body.endsWith('\n') ? body : `${body}\n`;
-		if (text.length > MAX_FRAGMENT_BYTES) {
-			warnings.push(
-				`fragment ${host.id} exceeds ${MAX_FRAGMENT_BYTES}B (${text.length}B); trim MAX_* constants`,
-			);
-		}
-		totalBytes += text.length;
-		fragments.push({ id: host.id, filename: host.filename, text });
-	}
-	return { fragments, warnings, bytes: totalBytes };
-};
-
-const defaultIo = (): IRenderIo => ({
-	readText: async (absPath) => {
-		const file = Bun.file(absPath);
-		return (await file.exists()) ? await file.text() : undefined;
-	},
-	writeText: async (absPath, text) => {
-		await Bun.write(absPath, text);
-	},
-	removeFile: async (absPath) => {
-		await rm(absPath, { force: true });
-	},
-	ensureDir: async (absPath) => {
-		await mkdir(absPath, { recursive: true });
-	},
-	warn: (message) => console.warn(message),
-	info: (message) => console.log(message),
-	error: (message) => console.error(message),
-});
-
-const parseJsonArtifact = async (
-	inputPath: string,
-	readText: IRenderIo['readText'],
-): Promise<IArtifactLike> => {
-	const raw = await readText(inputPath);
-	if (raw === undefined) {
-		throw new Error(
-			`render-host-hints: catalog artifact missing: ${inputPath}`,
-		);
-	}
-	try {
-		return JSON.parse(raw) as IArtifactLike;
-	} catch (error) {
-		throw new Error(
-			`render-host-hints: catalog artifact is not valid JSON: ${
-				error instanceof Error ? error.message : String(error)
-			}`,
-		);
-	}
-};
-
-export interface IRunHostHintsResult {
-	readonly exitCode: number;
-	readonly fragments: readonly IRenderOutput[];
-	readonly warnings: readonly string[];
-	readonly outputDir: string;
-	readonly inputPath: string;
-	readonly changed: boolean;
+export interface IRenderHostHintsOptions {
+	readonly outputDir?: string;
 }
 
-export const parseRenderArgs = (
+export interface IRenderedFragment {
+	readonly id: HostId;
+	readonly filename: string;
+	readonly text: string;
+}
+
+export const renderHostHints = (
+	_options: IRenderHostHintsOptions = {},
+): readonly IRenderedFragment[] =>
+	HOST_FRAGMENTS.map((fragment) => ({
+		id: fragment.id,
+		filename: fragment.filename,
+		text: `${fragment.render()}\n`,
+	}));
+
+const parseArgs = (
 	argv: readonly string[],
-	cwd: string,
-): { readonly root: string; readonly check: boolean } => {
-	let root = cwd;
+): { check: boolean; root: string } => {
 	let check = false;
-	for (let index = 0; index < argv.length; index += 1) {
-		const arg = argv[index];
+	let root = process.cwd();
+	for (const arg of argv) {
 		if (arg === '--check') {
 			check = true;
 			continue;
 		}
-		if (arg === '--root') {
-			const next = argv[index + 1];
-			if (next === undefined) {
-				throw new Error('--root requires a path argument');
-			}
-			root = resolve(next);
-			index += 1;
+		if (arg.startsWith('--root=')) {
+			root = arg.slice('--root='.length);
 			continue;
 		}
-		if (arg?.startsWith('--root=')) {
-			root = resolve(arg.slice('--root='.length));
-			continue;
+		if (arg === '--help' || arg === '-h') {
+			console.log(
+				'Usage: bun render-host-hints.script.ts [--check] [--root=<path>]',
+			);
+			process.exit(0);
 		}
-		throw new Error(`unknown argument: ${arg}`);
 	}
-	return { root, check };
+	return { check, root };
 };
 
-export const runHostHintsCli = async (
-	argv: readonly string[],
-	ioOverrides: Partial<IRenderIo> = {},
-): Promise<IRunHostHintsResult> => {
-	const io = { ...defaultIo(), ...ioOverrides } satisfies IRenderIo;
-	const { root, check } = parseRenderArgs(argv, process.cwd());
-	const inputPath = join(root, DEFAULT_INPUT_PATH);
-	const outputDir = join(root, DEFAULT_OUTPUT_DIR);
-	const warningsPath = join(root, DEFAULT_WARNINGS_PATH);
-	const artifact = await parseJsonArtifact(inputPath, io.readText);
-	const generatedAt = resolveGeneratedAt(artifact.generatedAt, io);
-	const result = renderHostHints({ artifact, generatedAt });
-	let changed = false;
-	for (const fragment of result.fragments) {
+const compareText = (a: string, b: string): boolean => {
+	if (a.length !== b.length) return false;
+	let diff = 0;
+	for (let i = 0; i < a.length; i += 1) {
+		diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+	}
+	return diff === 0;
+};
+
+const readUtf8 = async (path: string): Promise<string> => {
+	const file = Bun.file(path);
+	if (!(await file.exists())) return '';
+	return file.text();
+};
+
+const main = async (): Promise<number> => {
+	const { check, root } = parseArgs(process.argv.slice(2));
+	const outputDir = resolve(root, DEFAULT_OUTPUT_DIR);
+
+	const rendered = renderHostHints({});
+
+	let allOk = true;
+	if (!check) {
+		await rm(outputDir, { recursive: true, force: true });
+		await mkdir(outputDir, { recursive: true });
+	}
+	for (const fragment of rendered) {
 		const target = join(outputDir, fragment.filename);
-		const existing = await io.readText(target);
-		if (existing !== fragment.text) {
-			changed = true;
-			if (!check) {
-				await io.ensureDir(dirname(target));
-				await io.writeText(target, fragment.text);
-			}
-		}
-	}
-	if (result.warnings.length === 0) {
-		await io.removeFile(warningsPath);
-	} else {
-		await io.ensureDir(dirname(warningsPath));
-		await io.writeText(
-			warningsPath,
-			`${result.warnings.map((line) => `- ${line}`).join('\n')}\n`,
-		);
-		for (const warning of result.warnings) io.warn(warning);
-	}
-	if (check) {
-		if (changed) {
-			io.error(
-				'host hints are stale - run `bun run catalog:hints` and commit the regenerated fragments.',
+		const existing = await readUtf8(target);
+		if (compareText(existing, fragment.text)) {
+			console.log(
+				`${fragment.id}: up to date (${fragment.text.length} bytes)`,
 			);
-			return {
-				exitCode: 1,
-				fragments: result.fragments,
-				warnings: result.warnings,
-				outputDir,
-				inputPath,
-				changed: true,
-			};
+			continue;
 		}
-		io.info('host hints up to date.');
-		return {
-			exitCode: 0,
-			fragments: result.fragments,
-			warnings: result.warnings,
-			outputDir,
-			inputPath,
-			changed: false,
-		};
+		if (check) {
+			console.error(
+				`${fragment.id}: stale (existing ${existing.length}B, would be ${fragment.text.length}B at ${target})`,
+			);
+			allOk = false;
+			continue;
+		}
+		await Bun.write(target, fragment.text);
+		console.log(
+			`${fragment.id}: wrote ${target} (${fragment.text.length} bytes)`,
+		);
 	}
-	io.info(
-		changed
-			? `regenerated host hints under ${outputDir}`
-			: `host hints already up to date under ${outputDir}`,
-	);
-	return {
-		exitCode: 0,
-		fragments: result.fragments,
-		warnings: result.warnings,
-		outputDir,
-		inputPath,
-		changed,
-	};
+
+	if (check && !allOk) {
+		console.error(
+			'host hints are stale — run `bun run catalog:hints` and commit.',
+		);
+		return 1;
+	}
+	if (!check) console.log('host hints regenerated.');
+	return 0;
 };
 
 if (import.meta.main) {
-	try {
-		const result = await runHostHintsCli(process.argv.slice(2));
-		process.exit(result.exitCode);
-	} catch (error) {
-		console.error(
-			`render-host-hints: ${
-				error instanceof Error ? error.message : String(error)
-			}`,
-		);
-		process.exit(2);
-	}
+	const code = await main();
+	process.exit(code);
 }
+
+export const _internal = { parseArgs, compareText, main };
+export type { IHostFragment as _IHostFragment };
+// dirname import kept for downstream type compatibility
+export const _dirname = dirname;
