@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import {
+	redactSecrets,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -116,6 +117,7 @@ export const buildProposalsEditRegistration = (
 					ok: z.literal(true),
 					proposalId: z.string(),
 					field: z.string(),
+					redactedSecrets: z.number().int().nonnegative(),
 				}),
 			},
 			async (args: {
@@ -137,6 +139,29 @@ export const buildProposalsEditRegistration = (
 						'Run sync_proposals first, or pass an existing id.',
 					);
 				}
+				// x00055 S1: redact the user-supplied `value` before it
+				// lands in the on-disk markdown. AGENTS.md hard rule:
+				// "Secrets never get persisted. Durable stores (memory,
+				// proposals) run user text through redactSecrets
+				// before writing." `proposal_create` already does this
+				// for its `body`; the peer tools (edit, add_slice,
+				// review) were skipping it. This is the edit half of
+				// that fix.
+				const redactedValue =
+					typeof args.value === 'string'
+						? redactSecrets(args.value)
+						: (() => {
+								const lines = args.value.map((v) =>
+									redactSecrets(v),
+								);
+								return {
+									text: lines.map((l) => l.text),
+									redactions: lines.reduce(
+										(s, l) => s + l.redactions,
+										0,
+									),
+								};
+							})();
 				const result = await withFileMutex(
 					located.docPath,
 					async () => {
@@ -151,7 +176,7 @@ export const buildProposalsEditRegistration = (
 							md,
 							FIELD_HEADING_RE[field],
 							FIELD_CANONICAL_HEADING[field],
-							renderSectionBody(args.value),
+							renderSectionBody(redactedValue.text),
 						);
 						await writeFileAtomic(located.docPath, next);
 						return { ok: true as const };
@@ -161,7 +186,11 @@ export const buildProposalsEditRegistration = (
 					return toolError(result.reason ?? 'edit failed');
 				}
 				await resync(options);
-				return toolOk({ proposalId: located.entry.id, field });
+				return toolOk({
+					proposalId: located.entry.id,
+					field,
+					redactedSecrets: redactedValue.redactions,
+				});
 			},
 		);
 	},
@@ -251,6 +280,7 @@ export const buildProposalsAddSliceRegistration = (
 					ok: z.literal(true),
 					proposalId: z.string(),
 					sliceId: z.string(),
+					redactedSecrets: z.number().int().nonnegative(),
 				}),
 			},
 			async (args: {
@@ -349,13 +379,30 @@ export const buildProposalsAddSliceRegistration = (
 								status: 409,
 							};
 						}
-
+						// x00055: redact user text in the slice fields before
+						// persisting. `title`, `sliceId` (if the user
+						// chose to encode metadata in it), `files`, and
+						// `acceptanceCriteria` all flow into the markdown.
+						const redTitle = args.slice.title
+							? redactSecrets(args.slice.title)
+							: { text: args.slice.sliceId, redactions: 0 };
+						const redCriteria = (
+							args.slice.acceptanceCriteria ?? []
+						).map((c) => redactSecrets(c));
+						const redactionsCount =
+							(args.slice.title ? redTitle.redactions : 0) +
+							redCriteria.reduce((s, c) => s + c.redactions, 0);
+						const redactedSlice = {
+							...args.slice,
+							title: redTitle.text,
+							acceptanceCriteria: redCriteria.map((c) => c.text),
+						};
 						const next = appendSliceToSection(
 							md,
-							renderNewSlice(args.slice),
+							renderNewSlice(redactedSlice),
 						);
 						await writeFileAtomic(located.docPath, next);
-						return { ok: true as const };
+						return { ok: true as const, redactionsCount };
 					},
 				);
 
@@ -366,6 +413,7 @@ export const buildProposalsAddSliceRegistration = (
 				return toolOk({
 					proposalId: located.entry.id,
 					sliceId: args.slice.sliceId,
+					redactedSecrets: result.ok ? result.redactionsCount : 0,
 				});
 			},
 		);

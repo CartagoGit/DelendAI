@@ -400,3 +400,95 @@ describe('golden fixture: real-proposal shape stays parseable (reference only, n
 		expect(md).toContain('### S5 — S5');
 	});
 });
+describe('x00055: redactSecrets on user text in mutate tools', () => {
+	let root = '';
+	let opts: IMutateToolOptions;
+	let docPath: string;
+	let edit: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+	let addSlice: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'x00055-mutate-'));
+		const proposalsDirAbs = join(root, 'docs/mcp-vertex/proposals');
+		await mkdir(proposalsDirAbs, { recursive: true });
+		// FIXTURE declares `id: f900` — use the matching filename so
+		// the sync registry indexes it under that id and
+		// resolveDocPath finds the entry.
+		await writeFile(
+			join(proposalsDirAbs, 'f900-redact-target.md'),
+			FIXTURE,
+			'utf8',
+		);
+		opts = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs,
+		};
+		await syncProposalRegistry(root);
+		docPath = await resolveDocPath(
+			opts.indexPathAbs,
+			'f900',
+			opts.proposalsDirAbs,
+		);
+
+		edit = await capture(buildProposalsEditRegistration(opts));
+		addSlice = await capture(buildProposalsAddSliceRegistration(opts));
+	});
+
+	it('proposal_edit redacts secrets in the value before persisting', async () => {
+		const result = parse(
+			await edit({
+				id: 'f900',
+				field: 'goal',
+				value: 'Use api_key = "s3cr3tValue123" to call the service',
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.redactedSecrets).toBeGreaterThan(0);
+		const md = await readFile(docPath, 'utf8');
+		expect(md).not.toContain('s3cr3tValue123');
+		expect(md).toContain('[REDACTED]');
+	});
+
+	it('proposal_edit redacts secrets in string[] values, summing the counts', async () => {
+		const result = parse(
+			await edit({
+				id: 'f900',
+				field: 'nonGoals',
+				value: [
+					'Never commit the api_key = "s3cr3tValue123"',
+					'Do not paste sk_test_abcdef0123456789 anywhere',
+				],
+			}),
+		);
+		expect(result.ok).toBe(true);
+		// Two strings, each containing a redaction ⇒ >= 2.
+		expect(result.redactedSecrets).toBeGreaterThanOrEqual(2);
+		const md = await readFile(docPath, 'utf8');
+		expect(md).not.toContain('s3cr3tValue123');
+		expect(md).not.toContain('sk_test_abcdef0123456789');
+	});
+
+	it('proposal_add_slice redacts secrets in slice title and acceptanceCriteria', async () => {
+		const result = parse(
+			await addSlice({
+				id: 'f900',
+				slice: {
+					sliceId: 's-new',
+					title: 'Plug api_key = "s3cr3tValue123" into the widget',
+					files: ['src/widget.ts'],
+					acceptanceCriteria: [
+						'Returns 200 when given a Bearer sk_test_abcdef0123456789',
+					],
+				},
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.redactedSecrets).toBeGreaterThanOrEqual(2);
+		const md = await readFile(docPath, 'utf8');
+		expect(md).not.toContain('s3cr3tValue123');
+		expect(md).not.toContain('sk_test_abcdef0123456789');
+		expect(md).toContain('[REDACTED]');
+	});
+});
