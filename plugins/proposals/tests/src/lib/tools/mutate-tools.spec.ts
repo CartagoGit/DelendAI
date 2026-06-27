@@ -60,6 +60,7 @@ const parse = (r: { content: Array<{ text: string }> }): any =>
 const resolveDocPath = async (
 	indexPathAbs: string,
 	id: string,
+	proposalsDirAbs?: string,
 ): Promise<string> => {
 	const index = JSON.parse(await readFile(indexPathAbs, 'utf8')) as {
 		proposals: Array<{ id: string; file: string }>;
@@ -68,7 +69,10 @@ const resolveDocPath = async (
 	if (entry === undefined) {
 		throw new Error(`fixture setup error: "${id}" not found in index`);
 	}
-	return join(dirname(indexPathAbs), entry.file);
+	// x00052: `entry.file` is `proposalsDir`-relative (was implicitly
+	// `dirname(indexPathAbs)`-relative). Use `proposalsDirAbs` when
+	// present, fall back to the legacy behaviour otherwise.
+	return join(proposalsDirAbs ?? dirname(indexPathAbs), entry.file);
 };
 
 const FIXTURE = `---
@@ -133,14 +137,23 @@ describe('proposals_edit / proposals_add_slice (S10)', async () => {
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			indexPathAbs: join(proposalsDirAbs, 'index.json'),
+			// x00052: the registry index now lives under
+			// `<cacheDir>/proposals/index.json`. The proposalsDir is
+			// still `docs/mcp-vertex/proposals` — only the index path
+			// moved.
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
 		};
 		// Build the index the same way the rest of the plugin does. This
 		// also reconciles the file into the folder matching its
 		// frontmatter `status` (here: `ready/`) — resolve the final path
 		// from the index rather than assuming the folder.
 		await syncProposalRegistry(root);
-		docPath = await resolveDocPath(opts.indexPathAbs, 'f900');
+		docPath = await resolveDocPath(
+			opts.indexPathAbs,
+			'f900',
+			opts.proposalsDirAbs,
+		);
 	});
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));
@@ -324,13 +337,21 @@ describe('golden fixture: real-proposal shape stays parseable (reference only, n
 		opts = {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
-			indexPathAbs: join(proposalsDirAbs, 'index.json'),
+			// x00052: see the matching `proposalsDirAbs` in the other
+			// describe block — the index moved under cacheDir but
+			// `proposalsDirAbs` is unchanged.
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
 		};
 		// Reconciles the copy into the folder matching its frontmatter
 		// `status: done` (here: `done/feats/`) — resolve the final path
 		// from the index rather than assuming the folder.
 		await syncProposalRegistry(root);
-		docPath = await resolveDocPath(opts.indexPathAbs, 'f00023');
+		docPath = await resolveDocPath(
+			opts.indexPathAbs,
+			'f00023',
+			opts.proposalsDirAbs,
+		);
 	});
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));

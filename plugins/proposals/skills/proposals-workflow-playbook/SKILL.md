@@ -33,6 +33,16 @@ rare case where the orchestrator wants a sidecar worktree without delegating
 create` yourself before `delegate` — `delegate` does it for you when the
 host gate is enabled.
 
+> **Where the registry index lives (x00052).** The proposals
+> registry index is a regenerable cache artefact, not a
+> human-edited source file. Since x00052 it lives at
+> `<cacheDir>/proposals/index.json` (default
+> `.cache/mcp-vertex/proposals/index.json`), not under
+> `docs/mcp-vertex/proposals/`. When an agent debugs "why is my
+> proposal not appearing in the cascade", the answer is
+> `proposals_sync_proposals` regenerates the index — it lives in
+> the cache root, which is gitignored.
+
 ## Persist Modes
 
 `auto_work` can plan persistence, but the default is still manual review:
@@ -68,7 +78,10 @@ owns the files, wait for `notification_await_lock` or the
 2. Do not push from a shared checkout without `agent_worktree` (when the host
    has enabled it; if `agentWorktree` is `false`/unset, commit to the active
    branch instead — the tool is disabled by host configuration).
-3. Do not edit `docs/mcp-vertex/proposals/index.json` by hand.
+3. Do not edit `<cacheDir>/proposals/index.json` by hand (x00052 —
+   used to be `docs/mcp-vertex/proposals/index.json`; moved to the
+   cache root because it is a regenerable cache artefact, not a
+   source file).
 4. Do not run `proposals_sync_proposals` as a substitute for closing the
    current slice or moving the proposal file.
 

@@ -37,7 +37,8 @@ describe('proposal authoring (create → board → close)', async () => {
 			namespacePrefix: 'proposals',
 			workspaceRoot: root,
 			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
-			indexPathAbs: join(root, 'docs/mcp-vertex/proposals/index.json'),
+			// x00052: indexPathAbs moved to the cache root.
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		};

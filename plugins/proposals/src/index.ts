@@ -227,11 +227,13 @@ export default definePlugin({
 				buildContinueProposalRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
 				}),
 				buildAutoWorkRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
 					loopDetector,
 					...(typeof ctx.options.validationCommand === 'string'
@@ -301,6 +303,7 @@ export default definePlugin({
 					queuePathAbs: abs(layout.taskQueueFile),
 					closedTasksPathAbs: abs(layout.closedTasksFile),
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
 				}),
 				...buildRecoveryToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,

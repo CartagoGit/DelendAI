@@ -16,6 +16,13 @@ export interface ICompactStatusOptions {
 	readonly queuePathAbs: string;
 	readonly closedTasksPathAbs: string;
 	readonly indexPathAbs: string;
+	/**
+	 * x00052: absolute path of the proposals directory. Optional —
+	 * `compact_status` does not currently need to read proposal files
+	 * but the wiring forwards it for consistency with the rest of the
+	 * tool surface (see `continue-proposal.tool.ts`).
+	 */
+	readonly proposalsDirAbs?: string;
 }
 
 type IField = 'locks' | 'queue' | 'proposals';

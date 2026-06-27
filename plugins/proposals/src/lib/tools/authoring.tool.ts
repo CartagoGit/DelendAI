@@ -300,7 +300,10 @@ export const buildCloseSliceRegistration = (
 						'Pass an existing proposalId.',
 					);
 				}
-				const docPath = join(dirname(options.indexPathAbs), entry.file);
+				const docPath = join(
+					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+					entry.file,
+				);
 				const md = await readTextOrNull(docPath);
 				if (md === null) {
 					return toolError(`proposal file missing: ${docPath}`);
@@ -435,7 +438,10 @@ export const buildReviewRegistration = (
 						'Pass an existing proposalId.',
 					);
 				}
-				const docPath = join(dirname(options.indexPathAbs), entry.file);
+				const docPath = join(
+					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+					entry.file,
+				);
 				const md = await readTextOrNull(docPath);
 				if (md === null)
 					return toolError(`proposal file missing: ${docPath}`);
@@ -583,7 +589,8 @@ export const buildProposalBoardRegistration = (
 				const board = await Promise.all(
 					actionable.map(async (p) => {
 						const docPath = join(
-							dirname(options.indexPathAbs),
+							options.proposalsDirAbs ??
+								dirname(options.indexPathAbs),
 							p.file,
 						);
 						const md = (await readTextOrNull(docPath)) ?? '';

@@ -42,6 +42,16 @@ export interface IContinueProposalToolOptions {
 	/** Absolute path of the agent lock file. */
 	readonly lockPathAbs: string;
 	/**
+	 * x00052: absolute path of the proposals directory (`<docsDir>/proposals`).
+	 * Required so `folderOf(entry.file)` and `join(proposalsDir, entry.file)`
+	 * stay anchored to the content root now that the index lives under
+	 * `cacheDir` (no longer a sibling of the proposals). Production
+	 * wirings in `plugins/proposals/src/index.ts` always pass this; tests
+	 * that pre-date x00052 may omit it and rely on the legacy
+	 * `dirname(indexPathAbs)` fallback in `proposal-paths.ts`.
+	 */
+	readonly proposalsDirAbs?: string;
+	/**
 	 * f00024: priority resolver for `mode: "auto"`. Defaults to
 	 * `buildDefaultCascadeChain()` (kind-based cascade decorated with the
 	 * frontmatter `cascadeOverride` break-glass). Injectable for tests
@@ -207,10 +217,21 @@ const isNewSystemEntry = (entry: IProposalIndexEntry): boolean => {
 	);
 };
 
-/** The folder a registry `file` path lives in, or `null` for a flat (root) file. */
-const folderOf = (file: string): string | null => {
+/** The folder a registry `file` path lives in, or `null` for a flat (root) file.
+ *  x00052: when `proposalsDirAbs` is provided, the result is normalised
+ *  to a `proposalsDir`-relative segment (e.g. `'paused'`), which is
+ *  what every caller compares against `NEW_SYSTEM_ACTIONABLE_FOLDERS`
+ *  / `'paused'`. Without `proposalsDirAbs` we fall back to the raw
+ *  slice — the pre-x00052 behaviour that legacy test fixtures still
+ *  rely on. */
+const folderOf = (file: string, proposalsDirAbs?: string): string | null => {
 	const idx = file.lastIndexOf('/');
-	return idx === -1 ? null : file.slice(0, idx);
+	if (idx === -1) return null;
+	const dir = file.slice(0, idx);
+	if (proposalsDirAbs === undefined) return dir;
+	return dir.startsWith(proposalsDirAbs + '/')
+		? dir.slice(proposalsDirAbs.length + 1)
+		: dir;
 };
 
 /**
@@ -271,6 +292,7 @@ const readActiveLocks = async (
 const resolveDoc = async (
 	indexPath: string,
 	proposalId: string,
+	proposalsDirAbs?: string,
 ): Promise<
 	{ id: string; markdown: string } | { error: string; nextAction: string }
 > => {
@@ -290,7 +312,7 @@ const resolveDoc = async (
 			error: `proposal "${proposalId}" not found in the index`,
 			nextAction: 'Pass an existing proposalId.',
 		};
-	const docPath = join(dirname(indexPath), entry.file);
+	const docPath = join(proposalsDirAbs ?? dirname(indexPath), entry.file);
 	const md = await readTextOrNull(docPath);
 	if (md === null)
 		return {
@@ -328,7 +350,7 @@ export const pickFromPausedFallback = async (
 ): Promise<IToolTextResult | null> => {
 	const pausedEntries = entries.filter((entry) => {
 		if (!isNewSystemEntry(entry)) return false;
-		const folder = folderOf(entry.file);
+		const folder = folderOf(entry.file, options.proposalsDirAbs);
 		return folder === 'paused';
 	});
 	if (pausedEntries.length === 0) return null;
@@ -419,7 +441,11 @@ export const runContinueProposal = async (
 				reason: 'slice modes require an explicit proposalId',
 				nextAction: 'Call mode:"plan" with a proposalId.',
 			});
-		const doc = await resolveDoc(options.indexPathAbs, args.proposalId);
+		const doc = await resolveDoc(
+			options.indexPathAbs,
+			args.proposalId,
+			options.proposalsDirAbs,
+		);
 		if ('error' in doc) return json({ kind: 'slice-mode-error', ...doc });
 		const parsed = parseProposalSlicePlan(doc.id, doc.markdown);
 		if (parsed === null)
@@ -568,7 +594,10 @@ export const runContinueProposal = async (
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
 	const claimableById = new Map<string, number>();
 	for (const entry of free) {
-		const docPath = join(dirname(options.indexPathAbs), entry.file);
+		const docPath = join(
+			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+			entry.file,
+		);
 		const markdown = await readTextOrNull(docPath);
 		if (markdown === null) continue;
 		const parsedPlan = parseProposalSlicePlan(entry.id, markdown);

@@ -33,12 +33,11 @@
  * children all happen to be `done` already.
  */
 
-import { dirname, join } from 'node:path';
-
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import type { IYamlValue } from './frontmatter-parser';
 import { readProposalIndex, readTextOrNull } from './index-reader';
 import type { IProposalIndexEntry } from './index-reader';
+import { proposalDocPath } from './proposal-paths';
 
 // ---------------------------------------------------------------------------
 // DIP — readers are injected.
@@ -100,7 +99,7 @@ export const blockedByFor = async (
 		...defaultBlockedByReaders,
 		...readers,
 	};
-	const docPath = join(dirname(indexPathAbs), entry.file);
+	const docPath = proposalDocPath(indexPathAbs, entry.file);
 	const markdown = await resolvedReaders.readTextOrNull(docPath);
 	if (markdown === null) return [];
 	const block = extractYamlBlock(markdown);

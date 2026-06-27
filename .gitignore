@@ -36,6 +36,14 @@ site/
 coverage/
 apps/web/src/data/capabilities.json
 apps/web/src/data/manifests/
+# x00052: proposals/index.json — regenerable cache artefact. Lives under
+# .cache/mcp-vertex/proposals/index.json (see plugins/proposals/src/lib/
+# contracts/constants/default-path-layout.constant.ts#proposalIndexFile);
+# the legacy docs/ path is ignored here so an old checkout cannot
+# accidentally re-commit it. The on-disk copy in docs/ is harmless
+# (no longer written by proposals_sync_proposals) and can be deleted
+# manually.
+docs/mcp-vertex/proposals/index.json
 # Generated symlink: apps/web/public/api -> ../../../build/docs-api.
 # Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
 # apps/web dev/build). Do NOT commit the symlink itself.
