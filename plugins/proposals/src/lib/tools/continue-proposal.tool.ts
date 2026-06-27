@@ -229,7 +229,7 @@ const folderOf = (file: string, proposalsDirAbs?: string): string | null => {
 	if (idx === -1) return null;
 	const dir = file.slice(0, idx);
 	if (proposalsDirAbs === undefined) return dir;
-	return dir.startsWith(proposalsDirAbs + '/')
+	return dir.startsWith(`${proposalsDirAbs}/`)
 		? dir.slice(proposalsDirAbs.length + 1)
 		: dir;
 };

@@ -198,7 +198,12 @@ const extractExtras = (
 
 const readProposalFile = async (
 	absFilepath: string,
-	indexPath: string,
+	// x00052 used to read `indexPath` here to build `entry.file` relative
+	// to it. The field is now anchored to `proposalsDir` (passed as the
+	// third arg) so `indexPath` is no longer needed; rename the
+	// parameter to `_indexPath` to mark it intentionally unused
+	// without triggering biome's noUnusedFunctionParameters rule.
+	_indexPath: string,
 	proposalsDir: string,
 ): Promise<{ entry: IProposalEntry; warning?: string }> => {
 	const rawStr = await readFile(absFilepath, 'utf8');
