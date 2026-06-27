@@ -15,13 +15,13 @@
  *      placeholder used the slug's first letter as a glyph; x126
  *      replaced that with semantic stroke icons so the user can tell
  *      the plugins apart at a glance.
- *   2. `<pm>.svg` (npm, pnpm, yarn, bun, deno) — 64×64, used in
- *      `Install.astro` for the package-manager tab strip. These had
- *      been 404s on every fresh dev server (x126 S4) and are now
- *      generated as part of the same script.
+ *   2. `<pm>.svg` (npm, pnpm, yarn, bun, deno) — 64×64, used by the
+ *      markdown-backed /install page (f00055 S6) for the package-manager
+ *      tab strip. These had been 404s on every fresh dev server (x126 S4)
+ *      and are now generated as part of the same script.
  *   3. `ide-<id>.svg` (vscode, cursor, windsurf, antigravity, zed,
- *      claude-code, claude-desktop) — 64×64, used in the same
- *      `Install.astro` for the IDE tab strip.
+ *      claude-code, claude-desktop) — 64×64, used by the same
+ *      markdown-backed /install page for the IDE tab strip.
  *
  * The output is checked in to `apps/web/public/logos/` so the dev
  * server serves them without a generator round-trip. The build does

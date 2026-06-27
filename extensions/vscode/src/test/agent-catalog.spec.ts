@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -43,8 +44,10 @@ interface IArtifactShape {
 }
 
 const loadArtifact = async (): Promise<IArtifactShape> => {
+	const here = dirname(fileURLToPath(import.meta.url));
+	const repoRoot = resolve(here, '../../../..');
 	const raw = await readFile(
-		resolve(process.cwd(), 'docs/mcp-vertex/agent-catalog.generated.json'),
+		resolve(repoRoot, 'docs/mcp-vertex/agent-catalog.generated.json'),
 		'utf8',
 	);
 	return JSON.parse(raw) as IArtifactShape;

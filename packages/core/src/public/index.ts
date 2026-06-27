@@ -314,7 +314,7 @@ export type {
 	ProposalStatus,
 } from '../lib/catalog/agent-discovery-types';
 export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
-export type { IBuildCatalogOptions } from '../lib/catalog/agent-discovery-catalog';
+export type { IBuildCatalogOptions } from '../lib/catalog/agent-discovery-types';
 export {
 	ACTIONABLE_PROPOSAL_STATUSES,
 	PROPOSAL_STATUS_VALUES,

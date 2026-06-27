@@ -188,11 +188,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   to 20s across all packages (a real hang still fails — the wait is just scheduling).
 - Double tool-id prefixes (`memory_memory_*` → `memory_*`, `git_git_*` →
   `git_*`) and two `outputSchema` mismatches surfaced by the strict e2e net.
+- **`<Tabs variant="plugin" | "pill" | "underline">`** (f00069 S1) replaces the
+  deleted `PluginTabs.astro`; `PluginPage.astro` now consumes the new variant
+  and the cross-fade controller lives in
+  `apps/web/src/components/ui/_tabs-controller.ts` (13/13 specs green).
 
 ### Removed
 - 36 stray `.d.ts` declaration files accidentally committed inside `src/`
   trees (the build emits declarations to `dist/`); a `.gitignore` rule now
   prevents the recurrence.
+- `apps/web/src/components/PluginTabs.astro` (107 lines) — folded into
+  `Tabs.astro`'s `plugin` variant; the old tab shape (`role="tablist"` /
+  `aria-selected` / `tabindex`) is preserved verbatim by the new
+  `.ui-tabs--plugin` selector and verified by `apps/web/tests/ui/tabs-cross-fade.spec.ts`.
 
 ## [0.1.0] — unreleased
 
