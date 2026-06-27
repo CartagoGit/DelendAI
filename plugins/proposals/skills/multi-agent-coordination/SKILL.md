@@ -115,6 +115,34 @@ Do not spin on `proposals_agent_lock { action: "status" }`.
 That burns tokens and adds no new information faster than the holder can
 finish work.
 
+## When you see unexpected changes (c00012)
+
+In a shared repo with several agents, **expect** the working tree, the
+index, and the active branch to change under you between writes. That is
+the normal state, not a failure. The rule (codified in `AGENTS.md` §
+"Coexistence with parallel work"):
+
+1. **Do not panic.**
+2. **Do not redo the work** — read what is there *now*.
+3. **Read the commit** — one `git log -1` explains it cheaply.
+4. **Do not widen scope** — wait, take a disjoint slice, or close with
+   "blocked by external change".
+5. **Trust `git diff` over memory** — the working tree is the source of
+   truth.
+
+Canonical micro-pattern when `git status --porcelain` shows something you
+did not write:
+
+```text
+git log -1 -- <path>          # what changed?
+git diff HEAD~1 -- <path>     # full diff if needed
+# accept and proceed, OR surgical follow-up. NEVER re-plan.
+```
+
+This applies symmetrically to peer agents, CI, humans, the catalog
+regenerator, the worktree's own pre-commit hooks, and stale worktrees
+sharing `.git`. Same answer in every case: keep working.
+
 ## `round_context` is a digest cache, not a reason to re-read everything
 
 `proposals_round_context` is for cheap orientation:
