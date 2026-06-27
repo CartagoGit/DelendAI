@@ -1,6 +1,6 @@
 ---
 id: f00049
-status: ready
+status: done
 type: proposal
 track: lint+architecture+repo-layout+i18n+workflow
 date: 2026-06-23
@@ -350,7 +350,7 @@ their own commit lands.
 
 ### S1 — Renumber duplicate a00034 + regenerate index
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `docs/proposals/done/audits/a00036-23-06-2026-antigravity-deepmind-repositorio.md`
     (renamed from `a00034-...-deepmind-…`).
@@ -361,7 +361,7 @@ their own commit lands.
 
 ### S2 — Re-shelve `done/*.md` into `done/<kind>s/` subfolders
 
-- **Status**: ready
+- **Status**: done
 - **Files**: 22 misplaced files in `docs/proposals/done/` → `done/feats/`, `done/fixes/`,
   `done/refactors/`, `done/chores/`, `done/docs/`, `done/tests/`, `done/migrations/`.
   Subfolders that don't exist are created (4: `done/refactors/`, `done/chores/`, `done/docs/`,
@@ -372,7 +372,7 @@ their own commit lands.
 
 ### S3 — Zod schema for proposal frontmatter + backfill
 
-- **Status**: ready
+- **Status**: done
 - **Files**:
   - `packages/core/src/lib/schemas/proposal-frontmatter.schema.ts`
   - `tools/scripts/lint/proposal-frontmatter.script.ts` (new lint)
@@ -385,7 +385,7 @@ their own commit lands.
 
 ### S4 — Migrate 8 plugins to `lib/{services,tools,contracts}/`
 
-- **Status**: ready
+- **Status**: done
 - **Files**: [`plugins/memory/src/lib`](../../../plugins/memory/src/lib),
   [`plugins/logs/src/lib`](../../../plugins/logs/src/lib),
   [`plugins/notification/src/lib`](../../../plugins/notification/src/lib),

@@ -135,10 +135,10 @@ export const buildManifestViaComposition = async (
 				? `forced via config (${forced})`
 				: (detected?.reason ?? 'no language adapter claimed the area');
 
-		const eslint: string[] = [];
+		const configs: string[] = [];
 		const projectEslint = await findProjectEslint(reader, areaDir);
-		if (projectEslint !== undefined) eslint.push(projectEslint);
-		eslint.push(`${cacheRelDir}/${preset.linterConfigFile}`);
+		if (projectEslint !== undefined) configs.push(projectEslint);
+		configs.push(`${cacheRelDir}/${preset.linterConfigFile}`);
 
 		const typecheck: string[] = [];
 		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
@@ -150,7 +150,8 @@ export const buildManifestViaComposition = async (
 		areas[areaKey(areaDir)] = {
 			framework: preset.framework,
 			presetId: preset.id,
-			eslint,
+			configs,
+			eslint: configs,
 			typecheck,
 			reason,
 		};

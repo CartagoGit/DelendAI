@@ -1,29 +1,7 @@
 {
-	"generated_at": "2026-06-26T07:16:55.134Z",
+	"generated_at": "2026-06-26T23:18:01.185Z",
 	"count": 135,
 	"proposals": [
-		{
-			"id": "f00049",
-			"file": "ready/f00049-conventions-unification-r10-slices.md",
-			"track": "lint+architecture+repo-layout+i18n+workflow",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-23",
-			"extras": {
-				"ownership": [
-					"{ agent: proposal_guardian,    task: 'S1: renumber duplicate a00034 + refresh docs/proposals/index.json' }",
-					"{ agent: implementation_runner, task: 'S2: re-shelve done/ into done/<kind>s/ subfolders' }",
-					"{ agent: implementation_runner, task: 'S3: Zod schema for proposal frontmatter + backfill kind/title on 6 files' }",
-					"{ agent: implementation_runner, task: 'S4: migrate 8 plugins to lib/{services,tools,contracts}/ layout' }",
-					"{ agent: implementation_runner, task: 'S5: split per-tool files (one *.tool.ts per registerTool)' }",
-					"{ agent: implementation_runner, task: 'S6: flip file-conventions lint to strict (f00037 S7)' }",
-					"{ agent: implementation_runner, task: 'S7: de-host i18n (drop mcp-vertex_ literals, consume @mcp-vertex/shared)' }",
-					"{ agent: implementation_runner, task: 'S8: skill prefix unification + merge 3 overlapping playbooks' }",
-					"{ agent: implementation_runner, task: 'S9: document proposal-ID prefix taxonomy + clean orphan one-shot scripts' }",
-					"{ agent: implementation_runner, task: 'S10: CLI command-shape lint + workflow / working-form lints' }"
-				]
-			}
-		},
 		{
 			"id": "f00051",
 			"file": "ready/f00051-multilanguage-rules-presets.md",
@@ -303,6 +281,28 @@
 					"{ agent: implementation_runner, task: 'S11: deprecate `docs_search` (semantically subsumed by `search_search` with `roots:[\"docs\"]`; mark the tool deprecated in its registration, point callers at the wrapper, remove in a follow-up) and clarify `setup_github` (kept — it is a CLI-style helper distinct from `issues_*`, document its scope in the new `plugins-issues` skill)' }",
 					"{ agent: implementation_runner, task: 'S12: unify knowledge-entry naming to `<plugin>-<topic>`, force ≥1 per plugin, and backfill `conventions` + `proposals` (the two plugins that currently expose zero knowledge entries)' }",
 					"{ agent: implementation_runner, task: 'S13: fix core compilation/validation issues by updating catalog/assemble (H1), regenerating tool outputs SDK (H3), and fixing proposal linter warnings (H4)' }"
+				]
+			}
+		},
+		{
+			"id": "f00049",
+			"file": "done/f00049-conventions-unification-r10-slices.md",
+			"track": "lint+architecture+repo-layout+i18n+workflow",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: renumber duplicate a00034 + refresh docs/proposals/index.json' }",
+					"{ agent: implementation_runner, task: 'S2: re-shelve done/ into done/<kind>s/ subfolders' }",
+					"{ agent: implementation_runner, task: 'S3: Zod schema for proposal frontmatter + backfill kind/title on 6 files' }",
+					"{ agent: implementation_runner, task: 'S4: migrate 8 plugins to lib/{services,tools,contracts}/ layout' }",
+					"{ agent: implementation_runner, task: 'S5: split per-tool files (one *.tool.ts per registerTool)' }",
+					"{ agent: implementation_runner, task: 'S6: flip file-conventions lint to strict (f00037 S7)' }",
+					"{ agent: implementation_runner, task: 'S7: de-host i18n (drop mcp-vertex_ literals, consume @mcp-vertex/shared)' }",
+					"{ agent: implementation_runner, task: 'S8: skill prefix unification + merge 3 overlapping playbooks' }",
+					"{ agent: implementation_runner, task: 'S9: document proposal-ID prefix taxonomy + clean orphan one-shot scripts' }",
+					"{ agent: implementation_runner, task: 'S10: CLI command-shape lint + workflow / working-form lints' }"
 				]
 			}
 		},

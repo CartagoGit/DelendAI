@@ -822,7 +822,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "`buildRulesManifest` still returns the same `IRulesManifest` shape (with `projects` / `mode` / `fingerprint` / `generatedAt`); only the per-area shape widens"
     - "`PRESET_BY_ID` / `SUPPORTED_PRESET_IDS` keep their lookup behaviour; new presets are added in S3, not S1"
     - "`bun run typecheck` exits 0"
-
+- status: done
 ### S2 — Language-aware area detection
 
 - **Status**: done
