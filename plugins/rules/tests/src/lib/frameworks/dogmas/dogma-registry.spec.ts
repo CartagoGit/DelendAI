@@ -47,8 +47,8 @@ const isLanguageSpecific = (bullets: readonly string[]): boolean =>
 	});
 
 describe('f00051 S3 — DogmaRegistry serves the priority families', () => {
-	it('registers exactly the 9 priority-family languages', () => {
-		expect(registry.supportedLanguages).toEqual([
+	it('registers the priority-family languages and long-tail languages', () => {
+		const priority = [
 			'cs',
 			'ex',
 			'go',
@@ -58,7 +58,11 @@ describe('f00051 S3 — DogmaRegistry serves the priority families', () => {
 			'rb',
 			'rs',
 			'swift',
-		]);
+		];
+		for (const lang of priority) {
+			expect(registry.supportedLanguages).toContain(lang);
+		}
+		expect(registry.supportedLanguages.length).toBeGreaterThanOrEqual(80);
 	});
 
 	const CASES = [
