@@ -195,6 +195,67 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(persistSteps[0]).toContain('refuses to push to `main`');
 	});
 
+	it("x00051 S3: persist mode 'commit' prepends an explicit agent_worktree create step", async () => {
+		const commitOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit' },
+		};
+		writeFileSync(
+			commitOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(commitOptions));
+		// The worktree step must appear BEFORE the persist step in the
+		// plan, otherwise the persist push could race a worktree that
+		// does not exist yet.
+		const wtIdx = out.steps.findIndex(
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
+		);
+		const persistIdx = out.steps.findIndex((s: string) =>
+			s.includes('Persist the slice'),
+		);
+		expect(wtIdx).toBeGreaterThanOrEqual(0);
+		expect(persistIdx).toBeGreaterThanOrEqual(0);
+		expect(wtIdx).toBeLessThan(persistIdx);
+		expect(out.steps[wtIdx]).toContain('action: "create"');
+		expect(out.steps[wtIdx]).toContain('idempotent');
+	});
+
+	it("x00051 S3: persist mode 'commit-and-push' prepends the worktree step and references it in the push target", async () => {
+		const pushOptions: IAutoWorkToolOptions = {
+			...options,
+			persist: { mode: 'commit-and-push', pushTarget: 'origin agent/p1' },
+		};
+		writeFileSync(
+			pushOptions.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(pushOptions));
+		const wtStep = out.steps.find(
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
+		);
+		expect(wtStep).toBeDefined();
+		expect(wtStep).toContain('commit-and-push');
+	});
+
+	it("x00051 S3: persist mode 'none' omits the worktree step (no push ⇒ no isolation needed)", async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+		const out = parse(await runAutoWork(options));
+		const wtSteps = out.steps.filter(
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
+		);
+		expect(wtSteps).toHaveLength(0);
+	});
+
 	it('input.persist overrides config.persist.mode (priority chain, l109 §2)', async () => {
 		const commitOptions: IAutoWorkToolOptions = {
 			...options,

@@ -16,12 +16,22 @@ background.
 mcp-vertex_overview { compact: true }
   -> proposals_auto_work {}
   -> proposals_continue_proposal { id, mode: "plan" }
-  -> proposals_agent_lock { action: "claim", files }
-  -> edit only the claimed files
+  -> proposals_delegate { taskId, slot, files }    # when the slice is non-trivial
+     (delegate assigns a name, claims the lock, and — when the host
+      gate `agentWorktree: true` is on — creates the per-agent worktree
+      + branch `agent/<assigned-name>` atomically; x00051)
+  -> edit only the claimed files (inside the worktree path when present)
   -> run the slice gate, usually bun run validate
   -> proposals_close_slice { id, sliceId }
   -> proposals_sync_proposals after the final slice/status move
 ```
+
+The canonical path to spawn a subagent with isolation is
+`auto_work → delegate`. Manual `proposals_agent_worktree` is reserved for the
+rare case where the orchestrator wants a sidecar worktree without delegating
+(e.g. read-mostly investigation). You should **not** call `agent_worktree
+create` yourself before `delegate` — `delegate` does it for you when the
+host gate is enabled.
 
 ## Persist Modes
 
@@ -32,10 +42,16 @@ CLI flag). If `false`/unset — do not call `proposals_agent_worktree`; commit
 to the active branch instead. The `agent_worktree` path below applies only
 when the host has enabled the capability.
 
-- `none`: default for CI, audits, and any shared worktree.
-- `commit`: local single-agent work after a focused diff review.
+- `none`: default for CI, audits, and any shared worktree. The plan does
+  **not** include a worktree step — nothing is being pushed.
+- `commit`: local single-agent work after a focused diff review. When
+  `agentWorktree: true`, `delegate` already created the worktree; the
+  plan still surfaces an explicit `agent_worktree create` step as a
+  safety net for solo runs.
 - `commit-and-push`: only inside a disposable `agent_worktree` (requires the
-  host gate enabled).
+  host gate enabled). The plan prepends the `agent_worktree create` step
+  and the persist step pushes to `origin agent/<branch>` — the branch
+  the worktree owns.
 
 Do not infer a commit mode from enthusiasm. Pick the cheapest mode that
 preserves ownership.

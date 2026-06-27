@@ -1,12 +1,17 @@
 ---
 id: f00051
-status: ready
+status: done
 type: proposal
 track: plugins/rules+lint+architecture+multi-language
 date: 2026-06-23
+closed: 2026-06-27
 kind: feat
 title: Multi-language rules plugin — add Python, Go, Rust, Ruby, Java/Kotlin, Swift, C#/.NET, Elixir presets and a project-agnostic core
-shipped-in: []
+shipped-in:
+    - 5405309a # feat: implement comprehensive multi-language support, framework detection, and dogma registry validation with extensive polyglot test fixtures (S2–S9)
+    - 542ce574 # feat(rules): f00051 S1 contract decomposition + S10 e2e polyglot + S11 policy resolver
+    - a6ca68ed # feat(rules): s1 generalise core to Linter×Language model (contracts barrel fix + H6 meta-framework detector)
+    - 41ceb73d # docs(f00051): mark S1/S9/S10/S11 as done; lint labels are stale
 related:
     - l00008 # original rules plugin durable-write fix (l00008 s2/s4) — the architecture this proposal generalises
     - a00032 # the universal-scopes refactor that proved the plugin could already be hosted outside mcp-vertex
@@ -804,7 +809,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S1 — Project-agnostic core: Linter×Language×Dogma model
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/frameworks/types.ts
 - **Files**: plugins/rules/src/lib/frameworks/presets.ts
 - **Files**: plugins/rules/src/lib/frameworks/manifest.ts
@@ -823,6 +828,8 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "`PRESET_BY_ID` / `SUPPORTED_PRESET_IDS` keep their lookup behaviour; new presets are added in S3, not S1"
     - "`bun run typecheck` exits 0"
 - status: done
+- review-state: in_review
+- review-implementer: copilot-minimax-m3
 ### S2 — Language-aware area detection
 
 - **Status**: done
@@ -957,7 +964,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 - status: done
 ### S9 — Tests: per-language detect/manifest/tool/dogma coverage
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
 - **Files**: plugins/rules/tests/src/lib/frameworks/manifest.spec.ts
 - **Files**: plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
@@ -975,7 +982,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 - status: done
 ### S10 — E2E: synthetic polyglot workspace
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/tests/fixtures/polyglot/
 - **Files**: plugins/rules/tests/src/lib/e2e-polyglot.spec.ts
 - **Gate**: test
@@ -987,7 +994,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S11 — Policy resolver + dogma-priority skill
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/tools/policy-resolution.contract.ts (NEW)
 - **Files**: plugins/rules/src/lib/tools/dogma-policy.provider.ts (NEW)
 - **Files**: plugins/rules/src/lib/tools/policy-resolver.ts (NEW)

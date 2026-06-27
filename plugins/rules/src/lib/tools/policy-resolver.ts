@@ -1,73 +1,66 @@
-import type { ICommandSet } from '../frameworks/contracts';
+import type { IPolicyResolver } from './policy-resolution.contract';
+import type { IResolvedCommand } from './policy-resolution.contract';
+
+// Re-export the contract so existing consumers can keep
+// importing from `policy-resolver.ts` while new code is
+// steered at `policy-resolution.contract.ts`. This is a
+// one-release compatibility shim — the proposal f00051 S11
+// commits to retiring the re-export after the next minor.
+export type {
+	PolicyLayer,
+	IResolvedCommand,
+	IPolicyResolutionInput,
+	IPolicyResolver,
+} from './policy-resolution.contract';
 
 /**
- * Dependency Inversion: the seam S11 of f00051 will implement
- * for real. The interface declares the *contract* today so the
- * 3 tools (`get_rules`, `check_rules`, `apply_rules`) can be
- * written against the abstraction without waiting for the
- * implementation. A test or a future slice can drop in a real
- * `IPolicyResolver` without touching the tools.
+ * f00051 / S11 — `policy-resolver.ts`
  *
- * Single Responsibility: the priority order (`project >
- * dogma > default`) is **encoded once**, in the implementation
- * of this interface. The tools never branch on the priority
- * themselves; they call `resolveCommand(area)` and read the
- * result.
+ * The default `IPolicyResolver` implementation.
+ *
+ * Single Responsibility: this file is the **only** place the
+ * priority order (`project > dogma > default`) is encoded.
+ * The tools never branch on the priority themselves; they call
+ * `resolveCommand(input)` and read the structured result.
+ *
+ * Dependency Inversion: tools depend on the
+ * `IPolicyResolver` interface (in
+ * `policy-resolution.contract.ts`), not on this concrete
+ * constant. A host can swap in a different policy (e.g. a
+ * "treat dogma as advisory" policy for projects that opt in
+ * via `mcp-vertex.config.json#plugins.rules.policy`) without
+ * touching the tools.
+ *
+ * The default rationale strings are deliberately
+ * agent-facing: the resolved command's `rationale` is what
+ * `apply_rules` echoes back to the user, and it must explain
+ * *why* the lower layers were ignored, not just announce the
+ * winner.
  */
-export type PolicyLayer = 'project' | 'dogma' | 'default';
-
-export interface IResolvedCommand {
-	/** Which layer the *effective* command came from. */
-	readonly effective: PolicyLayer;
-	/** The command the agent should run. */
-	readonly command: string;
-	/**
-	 * Human-readable explanation of *why* this command was chosen
-	 * and *why* the lower layers were ignored. Surfaced in
-	 * `check_rules.evidence` and `apply_rules.steps` so the
-	 * agent can render the decision to the user.
-	 */
-	readonly rationale: string;
-	/** The check / fix / typecheck triples per layer (for the
-	 *  `evidence` field of `check_rules`). */
-	readonly fromProject?: ICommandSet;
-	readonly fromDogma?: ICommandSet;
-	readonly fromDefault: ICommandSet;
-}
 
 /**
- * One area + its full resolution. Interface Segregation: the
- * resolver depends on the narrow shape it needs (the three
- * command sets, one per layer), not on the full `IAreaRules`
- * domain shape.
- */
-export interface IPolicyResolutionInput {
-	readonly areaDir: string;
-	readonly fromProject?: ICommandSet;
-	readonly fromDogma?: ICommandSet;
-	readonly fromDefault: ICommandSet;
-}
-
-export interface IPolicyResolver {
-	resolveCommand(input: IPolicyResolutionInput): IResolvedCommand;
-}
-
-/**
- * The default policy: project config wins, then dogma, then the
- * plugin's vendored default. Encodes the f00051 priority order
- * in one place. Today's tools will use this implementation; a
- * future slice can swap it (e.g. a "treat dogma as advisory"
- * policy for projects that opt in via
- * `mcp-vertex.config.json#plugins.rules.policy`).
+ * The f00051 priority order: project config wins, then
+ * language dogma, then the plugin's vendored default.
+ *
+ * This is the **single source of truth** for the priority
+ * order across all three tools. Adding a new layer (e.g. a
+ * "user override via config") means adding one branch here —
+ * no tool changes.
  */
 export const PROJECT_OVER_DOGMA_OVER_DEFAULT: IPolicyResolver = {
-	resolveCommand({ fromProject, fromDogma, fromDefault }): IResolvedCommand {
+	resolveCommand({
+		areaDir,
+		fromProject,
+		fromDogma,
+		fromDefault,
+	}): IResolvedCommand {
 		if (fromProject !== undefined) {
 			return {
 				effective: 'project',
 				command: fromProject.checkCommand,
 				rationale:
-					'Project ships its own linter config; project wins (priority: project > dogma > default). The dogma is your guide for NEW code, not for running the existing toolchain.',
+					`Project ships its own linter config for "${areaDir}"; project wins (priority: project > dogma > default). ` +
+					`The dogma is your guide for NEW code, not for running the existing toolchain.`,
 				fromProject,
 				fromDefault,
 				...(fromDogma !== undefined ? { fromDogma } : {}),
@@ -78,7 +71,8 @@ export const PROJECT_OVER_DOGMA_OVER_DEFAULT: IPolicyResolver = {
 				effective: 'dogma',
 				command: fromDogma.checkCommand,
 				rationale:
-					'No project config; falling back to the language dogma. The dogma is opinionated and aligned with the most-mainstream community conventions for this language.',
+					`No project linter config for "${areaDir}"; falling back to the language dogma. ` +
+					`The dogma is opinionated and aligned with the most-mainstream community conventions for this language.`,
 				fromDogma,
 				fromDefault,
 			};
@@ -86,9 +80,22 @@ export const PROJECT_OVER_DOGMA_OVER_DEFAULT: IPolicyResolver = {
 		return {
 			effective: 'default',
 			command: fromDefault.checkCommand,
-			rationale:
-				'No project config, no dogma match; running the plugin vendored default.',
+			rationale: `No project config, no dogma match for "${areaDir}"; running the plugin vendored default.`,
 			fromDefault,
 		};
 	},
 };
+
+/**
+ * Build a policy resolver at boot. Today this just returns
+ * the default constant; the function exists so a future slice
+ * (a host-supplied override) can swap implementations
+ * without changing call sites. Tests can pass any
+ * `IPolicyResolver` directly via `IRulesToolOptions`.
+ *
+ * Prefer passing `IPolicyResolver` via
+ * `IRulesToolOptions.policyResolver` (DIP) over a runtime
+ * factory call. Kept for callers that have not migrated yet.
+ */
+export const buildDefaultPolicyResolver = (): IPolicyResolver =>
+	PROJECT_OVER_DOGMA_OVER_DEFAULT;
