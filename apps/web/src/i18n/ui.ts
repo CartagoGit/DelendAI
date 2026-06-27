@@ -22,7 +22,6 @@ export type {
 	IMarqueeTranslations,
 	IConceptTranslations,
 	IFeature,
-	IInstallTranslations,
 	IToolsTranslations,
 	IBenchTranslations,
 	IPluginsTranslations,
