@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
-import { listDocs, readDoc, searchDocs } from '../services/engine';
+import { listDocs, readDoc } from '../services/engine';
 import type { IDocsOptions } from '../services/engine';
 
 export interface IDocsToolOptions {
@@ -115,51 +115,62 @@ export const buildDocsToolRegistrations = (
 		},
 		{
 			id: 'docs_search',
+			// f00057 S11: docs_search is deprecated in favour of
+			// `search_search` with `roots: ['docs']`. The registration
+			// stays so callers learn the replacement at runtime; the
+			// engine call below is removed and the handler returns the
+			// typed deprecation envelope unconditionally.
 			summary:
-				'Search the project markdown docs by free text — ranked hits with snippets.',
-			tags: ['docs', 'orientation', 'lazy'],
+				'[deprecated] Use search_search { roots: ["docs"] } instead.',
+			tags: ['docs', 'orientation', 'lazy', 'deprecated'],
+			deprecated: {
+				since: '0.x.y',
+				replacement: 'search_search',
+				replacementArgs: { roots: ['docs'] },
+				note: 'docs_search is superseded by the workspace search plugin; pass roots: ["docs"] to scope it to the docs tree.',
+			},
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_docs_search`,
 					{
 						description:
-							'Search the project documentation by free text. Scores hits by (titleHits * 3) + bodyHits over the same catalogue as docs_list (same roots/containment guard). Returns ranked {path,title,score,snippet} entries (snippet ≤ 200 chars around the first match). Read-only.',
+							'[deprecated since 0.x.y] Use search_search { roots: ["docs"] } for the same hits. This tool returns a typed deprecation envelope and never executes the original search.',
 						inputSchema: z.object({
 							query: z.string(),
 							limit: z.number().optional(),
 							include: z.array(z.string()).optional(),
 						}),
 						outputSchema: z.object({
-							hits: z.array(
-								z.object({
-									path: z.string(),
-									title: z.string(),
-									score: z.number(),
-									snippet: z.string(),
-								}),
-							),
-							truncated: z.boolean(),
+							ok: z.literal(false),
+							error: z.object({
+								reason: z.literal('deprecated'),
+								replacement: z.string(),
+								since: z.string(),
+								note: z.string().optional(),
+							}),
 						}),
 					},
-					async (args: {
-						query: string;
-						limit?: number | undefined;
-						include?: string[] | undefined;
-					}) => {
-						const { hits, truncated } = await searchDocs(
-							options.workspaceRootAbs,
-							args.query,
-							{
-								...defaults,
-								...(args.include
-									? { roots: args.include }
-									: {}),
-								...(args.limit !== undefined
-									? { limit: args.limit }
-									: {}),
+					async () => {
+						const envelope = {
+							ok: false as const,
+							error: {
+								reason: 'deprecated' as const,
+								replacement: 'search_search',
+								replacementArgs: { roots: ['docs'] },
+								since: '0.x.y',
+								note: 'docs_search is superseded by the workspace search plugin; pass roots: ["docs"] to scope it to the docs tree.',
 							},
-						);
-						return toolJson({ hits, truncated });
+						};
+						return {
+							content: [
+								{
+									type: 'text' as const,
+									text: JSON.stringify(envelope),
+								},
+							],
+							structuredContent: envelope,
+							isError: true,
+						};
 					},
 				);
 			},

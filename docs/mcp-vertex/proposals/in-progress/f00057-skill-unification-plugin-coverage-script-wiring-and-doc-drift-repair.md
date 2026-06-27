@@ -17,14 +17,14 @@ slices-done:
   - S7  # conventions added to swarm preset (resolvePresetMembers('swarm') -> 13 plugins)
   - S8  # TypeScript file-convention profile extracted to packages/core/src/lib/contracts/file-conventions.contract.ts
   - S10 # lint:skills + verify:tools wired into validate; site:codegen + metrics:gate as opt-in; fix-fb88376-imports archived
+  - S11 # docs_search deprecated with replacement: search_search; setup_github clarified in plugins/docs/README.md
 slices-pending:
   - S1  # proposals-canonical-workflow skill fusion
   - S2  # token-budget-discipline skill fusion
   - S3  # multi-agent-coordination skill fusion
   - S4  # audit-end-to-end skill fusion
-  - S6  # 6 new plugin playbook skills (git, deps, issues, test-convention, conventions, notification)
+  - S6  # 6 new P1 plugin playbook skills (git, deps, issues, test-convention, conventions, notification)
   - S9  # synchronise 5 plugin READMEs
-  - S11 # deprecate docs_search; clarify setup_github
   - S12 # unify knowledge-entry naming to <plugin>-<topic>
   - S13 # fix core compilation/validation issues (H1/H3/H4)
 
@@ -276,7 +276,7 @@ the same gate + test discipline the code already has.
 ### S11 — Deprecate `docs_search` and clarify `setup_github`
 
 - **Files**: `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/src/index.ts`, `plugins/docs/README.md`, `plugins/docs/tests/src/lib/tools/docs-pagination.spec.ts` (or whichever tests cover the tool), `apps/web/src/i18n/tools/docs_docs_search.ts` (delete or mark deprecated in 12 languages)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run validate + bun run site:strict
 - **Acceptance**:
   - "`docs_docs_search` is registered with `{ deprecated: true, since: '<version>', replacement: 'search_search', replacementArgs: { roots: ['docs'] } }` in its metadata; calling it returns `{ ok: false, error: { reason: 'deprecated', replacement: '...', since: '...' } }`. A migration comment in the registration points at the wrapper recipe."

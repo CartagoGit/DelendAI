@@ -43,6 +43,10 @@ export type {
 	IToolRegistration,
 	// f00065 slice F: canonical tool-effect union, shared with @mcp-vertex/client.
 	IToolEffect,
+	// f00057 S11: deprecation marker for tools that have a documented
+	// replacement (e.g. docs_search → search_search). Plugins attach it
+	// to the registration and the handler returns a typed envelope.
+	IToolDeprecationMarker,
 } from '../lib/contracts/interfaces/tool-registration.interface';
 export type {
 	IValidationCommand,
