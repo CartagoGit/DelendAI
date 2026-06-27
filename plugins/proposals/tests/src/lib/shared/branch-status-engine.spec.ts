@@ -45,7 +45,13 @@ describe('parseBranchList', () => {
 			parseBranchList(
 				'  agent/orion\n* agent/main-current\n  agent/vela',
 			),
-		).toEqual(['agent/orion', 'agent/vela']);
+		).toEqual(['agent/orion', 'agent/main-current', 'agent/vela']);
+	});
+
+	it('keeps branches marked as checked-out in another worktree (`+ ` prefix)', () => {
+		expect(
+			parseBranchList('+ agent/orion\n+ agent/vela\n* develop'),
+		).toEqual(['agent/orion', 'agent/vela', 'develop']);
 	});
 
 	it('drops detached HEAD lines', () => {
