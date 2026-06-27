@@ -1,4 +1,4 @@
-import type { Lang } from '#I18N/ui';
+import type { Lang } from '../../i18n/ui';
 
 export interface IPageFrontmatter {
 	readonly title: string;

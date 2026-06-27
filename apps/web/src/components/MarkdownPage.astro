@@ -32,7 +32,7 @@ const renderedBody = markdown.render(translation.body);
 		</p>
 	)}
 	<header class="md-page__header">
-		<h1>{translation.frontmatter.title}</h1>
+		<h1 class="md-page__title">{translation.frontmatter.title}</h1>
 		<p class="md-page__description">{translation.frontmatter.description}</p>
 	</header>
 	<div class="md-page__body markdown-body" set:html={renderedBody}></div>

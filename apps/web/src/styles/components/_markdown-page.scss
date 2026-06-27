@@ -24,7 +24,7 @@
 	margin-bottom: 2rem;
 }
 
-.md-page__header h1 {
+.md-page__title {
 	margin: 0;
 	font-size: clamp(2.4rem, 5vw, 4rem);
 	line-height: 1.05;
@@ -41,6 +41,7 @@
 	text-wrap: pretty;
 }
 
+/* stylelint-disable scoped-bem/selector -- markdown-it emits bare HTML tags inside this BEM-owned container. */
 .md-page__body {
 	font-size: 1rem;
 	line-height: 1.8;
@@ -175,3 +176,4 @@
 .md-page__body tr:last-child td {
 	border-bottom: 0;
 }
+/* stylelint-enable scoped-bem/selector */

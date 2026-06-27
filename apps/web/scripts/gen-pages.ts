@@ -6,8 +6,8 @@ import {
 	readPages,
 	type IPageSpecError,
 	type IReadPagesOptions,
-} from '#LIB/page-spec/reader';
-import type { PageSpec } from '#LIB/page-spec/types';
+} from '../src/lib/page-spec/reader';
+import type { PageSpec } from '../src/lib/page-spec/types';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
