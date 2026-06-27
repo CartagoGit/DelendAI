@@ -217,12 +217,38 @@ const mergedInto = async (
 	branch: string,
 	base: string,
 ): Promise<boolean> => {
-	const result = await run(['branch', '--list', '--merged', base, branch]);
-	if (!result.ok) return false;
-	return result.output
-		.split('\n')
-		.map((line) => line.trim().replace(/^\*\s*/u, ''))
-		.some((line) => line === branch);
+	// Two complementary checks. Both must agree before we declare the branch
+	// "safely merged":
+	//   (1) `git branch --list --merged <base> <branch>` — git's reachability
+	//       answer. Returns true even when the tip has unique commits that
+	//       merely descend from a previously-merged ancestor.
+	//   (2) `git rev-list --count <base>..<branch>` — strict *gap*: how many
+	//       commits are in `branch` not yet in `base`. `ahead === 0` is the
+	//       signal that no work is unique to the branch tip.
+	// The intersection prevents the f00057-S11 trap: a branch that was merged
+	// earlier can still have unique commits at its tip that `branch --merged`
+	// happily reports as merged. Without check (2) `branch_gc` would happily
+	// delete such a worktree.
+	const branchMergedResult = await run([
+		'branch',
+		'--list',
+		'--merged',
+		base,
+		branch,
+	]);
+	const branchMerged =
+		branchMergedResult.ok &&
+		branchMergedResult.output
+			.split('\n')
+			.map((line) => line.trim().replace(/^\*\s*/u, ''))
+			.some((line) => line === branch);
+	if (!branchMerged) return false;
+
+	const aheadResult = await run(['rev-list', '--count', `${base}..${branch}`]);
+	if (!aheadResult.ok) return false;
+	const ahead = Number.parseInt(aheadResult.output.trim(), 10);
+	if (!Number.isFinite(ahead)) return false;
+	return ahead === 0;
 };
 
 /** Resolve canonical worktrees dir from workspaceRoot + cacheDirRel. */

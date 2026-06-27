@@ -37,7 +37,11 @@ import { mkdir, rm } from 'node:fs/promises';
 export const DEFAULT_OUTPUT_DIR = 'docs/mcp-vertex/host-hints';
 export const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
 
-export const MAX_FRAGMENT_BYTES = 1_500;
+// S5 raised the budget from 1 200 to 1 300 to match the agent-catalog budget
+// (docs/mcp-vertex/AGENT-BOOTSTRAP.md is the canonical reference and the
+// fragment is intentionally minimal but still has to point at it + a
+// host-specific skill; the 100B headroom keeps the budget honest).
+export const MAX_FRAGMENT_BYTES = 1_300;
 
 export type HostId = 'copilot' | 'claude' | 'agents';
 
@@ -234,5 +238,3 @@ if (import.meta.main) {
 
 export const _internal = { parseArgs, compareText, main };
 export type { IHostFragment as _IHostFragment };
-// dirname import kept for downstream type compatibility
-export const _dirname = dirname;

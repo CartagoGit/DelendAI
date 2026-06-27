@@ -174,6 +174,24 @@ export { joinRel } from '../lib/shared/paths';
 export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
 
+// --- ephemeral exec paths (f00058) -----------------------------------------
+// Canonical home for artefacts a plugin or agent creates, runs (or
+// parses), and then deletes. Resolves through `IMcpPluginContext` so the
+// path is derived, never hardcoded. See `docs/mcp-vertex/proposals/
+// in-progress/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md`.
+export {
+	EXEC_SUBDIR_NAME,
+	execDirRelative,
+	pruneExpiredExec,
+	resolveExecPath,
+	withEphemeralExec,
+} from '../lib/shared/exec-path';
+export type {
+	IResolvedExecPath,
+	IPruneExpiredResult,
+	IResolveExecPathOptions,
+} from '../lib/shared/exec-path';
+
 // --- cache eviction (f00068 slice A) ---------------------------------------
 // Declarative policy layer over the shared `<cacheDir>` root. Plugins
 // contribute rules via `ctx.cacheEvictionRegistry.register(rule)`; the
