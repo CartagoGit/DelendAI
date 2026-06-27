@@ -108,6 +108,17 @@ keeps `git diff` out of the hot path.
     `.github/copilot-instructions.md`, anything written for Cursor/Aider/
     Continue/etc.) **include** that file by reference and add only the
     repo-/host-specific rules the server cannot enforce.
+12. **Ephemeral exec paths live in `<pluginCacheDir>/exec/`** (f00058).
+    Runtime code under `packages/core/src/` and `plugins/*/src/` MUST NOT
+    call `os.tmpdir()`, `mkdtempSync(join(tmpdir(), …))`,
+    `writeFile('/tmp/…')`, or write under `/var/tmp/` or any path outside
+    the workspace. Use `resolveExecPath(ctx, name)` or
+    `withEphemeralExec(ctx, name, fn)` (exported from
+    `@mcp-vertex/core/public`) so the artefact lands inside the canonical
+    cache root. The `check-ephemeral-paths` lint enforces this rule
+    (wired into `bun run validate`) and the `plugin-tool-verify` scratch
+    lives under `<cacheDir>/.scratch/verify/<pid>/`. Test fixtures
+    (`*.spec.ts`) and CLI tooling under `tools/scripts/` are exempt.
 
 ## Conventions
 
