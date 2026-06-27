@@ -14,6 +14,7 @@ export default defineConfig({
 			'plugins/*',
 			'docs/mcp-vertex/examples/custom-plugin',
 			'apps/web',
+			'apps/shared',
 			'packages/ui-extension',
 			'extensions/vscode',
 			'tools/scripts',
