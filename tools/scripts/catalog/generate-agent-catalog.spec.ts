@@ -5,8 +5,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import type { IToolSummary } from '../../../packages/core/src/public/index';
-import { ACTIONABLE_PROPOSAL_STATUSES } from '../../../packages/core/src/lib/catalog/agent-discovery-types';
+import { ACTIONABLE_PROPOSAL_STATUSES } from '@mcp-vertex/core/public';
+import type { IToolSummary } from '@mcp-vertex/core/public';
 import {
 	buildAgentCatalogArtifact,
 	DEFAULT_OUTPUT_PATH,

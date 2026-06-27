@@ -192,9 +192,7 @@ export type {
 	ICacheEvictionSkipped,
 	ICacheEvictionWhen,
 } from '../lib/contracts/interfaces/cache-eviction.interface';
-export {
-	createCacheEvictionRegistry,
-} from '../lib/cache/eviction-registry';
+export { createCacheEvictionRegistry } from '../lib/cache/eviction-registry';
 export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
 export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
 export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files';
@@ -314,6 +312,12 @@ export type {
 	ISkillSummary,
 	IToolSummary,
 	ProposalStatus,
+} from '../lib/catalog/agent-discovery-types';
+export { buildCatalog } from '../lib/catalog/agent-discovery-catalog';
+export type { IBuildCatalogOptions } from '../lib/catalog/agent-discovery-catalog';
+export {
+	ACTIONABLE_PROPOSAL_STATUSES,
+	PROPOSAL_STATUS_VALUES,
 } from '../lib/catalog/agent-discovery-types';
 export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
 export { buildAgentCatalogToolRegistration } from '../lib/tools/agent-catalog-tool';
