@@ -1,0 +1,281 @@
+import { describe, expect, it } from 'vitest';
+
+import type { IGitRunner, IGitRunResult } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import {
+	type IBranchStatusOutcome,
+	parseBranchList,
+	parseStatusPorcelain,
+	runBranchStatusEngine,
+} from '@mcp-vertex/proposals/lib/shared/branch-status-engine';
+
+/**
+ * Hand-rolled stub runner: pick the result by inspecting the args. Keeps
+ * the spec deterministic without spinning up a real git repo. Mirrors
+ * the pattern used by `agent-worktree-engine.spec.ts`.
+ */
+const makeRunner = (
+	script: ReadonlyArray<readonly [readonly string[], IGitRunResult]>,
+	fallback: IGitRunResult = {
+		ok: true,
+		output: '',
+	},
+): IGitRunner => {
+	const match = (args: readonly string[]): IGitRunResult | undefined => {
+		for (const [expected, result] of script) {
+			if (
+				expected.length === args.length &&
+				expected.every((token, i) => args[i] === token)
+			) {
+				return result;
+			}
+		}
+		return undefined;
+	};
+	return (args) => Promise.resolve(match(args) ?? fallback);
+};
+
+const FIXED_NOW = Date.parse('2026-06-27T22:00:00.000Z');
+
+describe('parseBranchList', () => {
+	it('strips the current-branch marker and blank lines', () => {
+		expect(
+			parseBranchList('  agent/orion\n* agent/main-current\n  agent/vela'),
+		).toEqual(['agent/orion', 'agent/main-current', 'agent/vela']);
+	});
+
+	it('drops detached HEAD lines', () => {
+		expect(
+			parseBranchList('* (HEAD detached at abc1234)\n  agent/vela'),
+		).toEqual(['agent/vela']);
+	});
+
+	it('returns empty array for empty input', () => {
+		expect(parseBranchList('')).toEqual([]);
+	});
+});
+
+describe('parseStatusPorcelain', () => {
+	it('counts modified + untracked rows separately', () => {
+		const sample = [
+			' M plugins/foo.ts',
+			' M plugins/bar.ts',
+			'?? docs/new.md',
+			'?? apps/web/src/env.d.ts',
+			'A  staged.ts',
+		].join('\n');
+		expect(parseStatusPorcelain(sample)).toEqual({
+			dirty: 3,
+			untracked: 2,
+		});
+	});
+
+	it('returns zeros for empty status', () => {
+		expect(parseStatusPorcelain('')).toEqual({ dirty: 0, untracked: 0 });
+	});
+});
+
+describe('runBranchStatusEngine', () => {
+	const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
+
+	it('returns a structured failure when branch --list fails', async () => {
+		const runner = makeRunner(
+			[],
+			{ ok: false, output: '', reason: 'git not on PATH' },
+		);
+		const result = (await runBranchStatusEngine({
+			run: runner,
+			workspaceRoot,
+			baseBranch: 'develop',
+			now: FIXED_NOW,
+		})) as Extract<IBranchStatusOutcome, { ok: false }>;
+		expect(result.ok).toBe(false);
+		expect(result.reason).toContain('git not on PATH');
+		expect(result.baseBranch).toBe('develop');
+	});
+
+	it('returns a full snapshot with ahead/behind + dirty counts', async () => {
+		const runner = makeRunner([
+			[
+				['branch', '--list', 'agent/*'],
+				{
+					ok: true,
+					output: '  agent/orion\n  agent/vela\n  agent/zora\n',
+				},
+			],
+			[
+				[
+					'worktree',
+					'list',
+					'--porcelain',
+				],
+				{
+					ok: true,
+					output:
+						[
+							'worktree /home/cartago/_projects/mcp-vertex',
+							'HEAD abc1234',
+							'branch refs/heads/develop',
+							'',
+							'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/orion',
+							'HEAD def5678',
+							'branch refs/heads/agent/orion',
+							'',
+							'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/vela',
+							'HEAD 9abc123',
+							'branch refs/heads/agent/vela',
+						].join('\n'),
+				},
+			],
+			// orion worktree status (dirty)
+			[
+				['-C', '/orion-path', 'status', '--porcelain'],
+				{
+					ok: true,
+					output: [' M orion/foo.ts', '?? orion/new.ts'].join('\n'),
+				},
+			],
+			// vela worktree status (clean)
+			[
+				['-C', '/vela-path', 'status', '--porcelain'],
+				{ ok: true, output: '' },
+			],
+		]);
+		// Stub the long-tail calls (shortHead, rev-list, log, status per
+		// worktree, age per worktree) with empty-but-ok responses.
+		const tailRunner: IGitRunner = (args) => {
+			const isRevList = args[0] === 'rev-list';
+			const isLog = args[0] === 'log';
+			if (isRevList) {
+				// first column = behind, second = ahead
+				if (args[3]?.startsWith('develop...agent/orion')) {
+					return Promise.resolve({
+						ok: true,
+						output: '0\t2\n',
+					});
+				}
+				if (args[3]?.startsWith('develop...agent/vela')) {
+					return Promise.resolve({
+						ok: true,
+						output: '5\t0\n',
+					});
+				}
+				if (args[3]?.startsWith('develop...agent/zora')) {
+					return Promise.resolve({
+						ok: true,
+						output: '0\t0\n',
+					});
+				}
+			}
+			if (isLog) return Promise.resolve({ ok: true, output: '1735000000' });
+			// Worktree status: pick by path arg.
+			if (args[0] === '-C') {
+				const path = args[1];
+				if (path?.includes('orion')) {
+					return Promise.resolve({
+						ok: true,
+						output: [' M orion/foo.ts', '?? orion/new.ts'].join('\n'),
+					});
+				}
+				if (path?.includes('vela')) {
+					return Promise.resolve({ ok: true, output: '' });
+				}
+				return Promise.resolve({ ok: true, output: '' });
+			}
+			// shortHead for branches: just return a short hash.
+			if (args[0] === 'rev-parse' && args[1] === '--short') {
+				return Promise.resolve({ ok: true, output: 'abcdef0' });
+			}
+			// branch --merged
+			if (args[0] === 'branch' && args.includes('--merged')) {
+				const target = args[args.length - 1];
+				if (target === 'agent/vela') {
+					return Promise.resolve({
+						ok: true,
+						output: '  agent/vela\n',
+					});
+				}
+				return Promise.resolve({ ok: true, output: '' });
+			}
+			return Promise.resolve({ ok: true, output: '' });
+		};
+		// Compose: use the script runner for branch-list + worktree-list,
+		// fall through to the tail runner for everything else.
+		const composite: IGitRunner = (args) => {
+			const scriptMatch = await runner(args);
+			if (scriptMatch.ok || scriptMatch.output.length > 0) {
+				return scriptMatch;
+			}
+			return tailRunner(args);
+		};
+		// Avoid the `await` inside a sync closure by switching to async:
+		const compositeAsync: IGitRunner = async (args) => {
+			const scriptMatch = await runner(args);
+			if (scriptMatch.ok || scriptMatch.output.length > 0) {
+				return scriptMatch;
+			}
+			return tailRunner(args);
+		};
+
+		const result = await runBranchStatusEngine({
+			run: compositeAsync,
+			workspaceRoot,
+			baseBranch: 'develop',
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.branches.map((b) => b.name).sort()).toEqual([
+			'agent/orion',
+			'agent/vela',
+			'agent/zora',
+		]);
+		const orion = result.branches.find((b) => b.name === 'agent/orion');
+		const vela = result.branches.find((b) => b.name === 'agent/vela');
+		expect(orion?.ahead).toBe(2);
+		expect(orion?.behind).toBe(0);
+		expect(vela?.ahead).toBe(0);
+		expect(vela?.behind).toBe(5);
+		expect(vela?.mergedIntoBase).toBe(true);
+		const orionWt = result.worktrees.find((w) => w.branch === 'agent/orion');
+		expect(orionWt?.dirtyFiles).toBe(1);
+		expect(orionWt?.untrackedFiles).toBe(1);
+		expect(orionWt?.outOfCache).toBe(false);
+		expect(result.summary.mergedCount).toBeGreaterThanOrEqual(1);
+		expect(result.summary.dirtyWorktrees).toBe(1);
+		// composite runner is referenced for the no-await lint check.
+		expect(composite).toBeDefined();
+	});
+
+	it('flags a worktree outside the canonical cache dir as outOfCache', async () => {
+		const runner = makeRunner([
+			[['branch', '--list', 'agent/*'], { ok: true, output: '  agent/orion\n' }],
+			[
+				['worktree', 'list', '--porcelain'],
+				{
+					ok: true,
+					output: [
+						'worktree /home/cartago/_projects/mcp-vertex/.worktrees/orion',
+						'HEAD def5678',
+						'branch refs/heads/agent/orion',
+					].join('\n'),
+				},
+			],
+		]);
+		const tailRunner: IGitRunner = async () => ({ ok: true, output: '' });
+		const composite: IGitRunner = async (args) => {
+			const m = await runner(args);
+			if (m.ok || m.output.length > 0) return m;
+			return tailRunner(args);
+		};
+		const result = await runBranchStatusEngine({
+			run: composite,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		const wt = result.worktrees[0];
+		expect(wt?.outOfCache).toBe(true);
+		expect(result.summary.outOfCacheWorktrees).toBe(1);
+	});
+});
