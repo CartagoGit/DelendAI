@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
  * These are *text* assertions over the raw SCSS files. We deliberately
  * do not compile the SCSS (no sass runtime needed) — the contract the
  * downstream hosts depend on is "the partial exists, is forwarded by
- * `_index.scss`, and contains the expected class selectors + the
+ * `styles.scss`, and contains the expected class selectors + the
  * open-state rule". A sass-compile check would belong in a visual
  * snapshot suite and is out of scope here.
  *
@@ -26,14 +26,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const stylesRoot = here; // spec sits next to the partials
 const partialPath = join(stylesRoot, '_dropdown.scss');
-// `_index.scss` is the canonical composition root for `@mcp-vertex/shared/styles`
-// (see `apps/web/astro.config.mjs#SHARED_STYLES` and
-// `apps/shared/package.json#exports["./styles"]`). Forwarding `dropdown` only
-// from the non-public `styles.scss` (a stale scaffolding file from before
-// f00047 S6 wired the production surface) would not make the partial visible
-// to any real consumer; this assertion is what makes the S2 acceptance
-// checkable end-to-end.
-const indexPath = join(stylesRoot, '_index.scss');
+const indexPath = join(stylesRoot, 'styles.scss');
 
 const readText = async (p: string): Promise<string> => {
 	try {
@@ -63,7 +56,7 @@ describe('f00055 S2 — shared dropdown styles (@mcp-vertex/shared/styles)', () 
 		expect(partial.length).toBeGreaterThan(0);
 	});
 
-	it('is @forwarded by apps/shared/src/styles/_index.scss', async () => {
+	it('is @forwarded by apps/shared/src/styles/styles.scss', async () => {
 		const index = await readText(indexPath);
 		// Token-level: exactly the line that brings the partial into
 		// the public surface. Whitespace-tolerant so a future

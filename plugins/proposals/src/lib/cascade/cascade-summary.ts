@@ -24,6 +24,8 @@
  * stale or partially-synced index.
  */
 
+import { join, dirname } from 'node:path';
+
 import { PROPOSAL_KIND_BY_PREFIX } from '../contracts/constants/proposal-glossary.constant';
 import { LEGACY_ALIAS_PREFIX } from './cascade-priority';
 import type {

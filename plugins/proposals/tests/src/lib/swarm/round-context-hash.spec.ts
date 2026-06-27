@@ -56,11 +56,11 @@ describe('round-context CORE_DOCS default (x00053 S1)', () => {
 		mkdirSync(dir, { recursive: true });
 		writeFileSync(
 			join(root, INDEX_REL),
-			`${JSON.stringify(
+			JSON.stringify(
 				{ generated_at: 'x', count: 0, proposals: [] },
 				null,
 				4,
-			)}\n`,
+			) + '\n',
 		);
 		// Also create README.md so the default `CORE_DOCS` has two
 		// resolvable files; the assertion only cares about the index.
