@@ -61,6 +61,12 @@ import { buildMetricsToolRegistration } from '../metrics/metrics-tool';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import type { IStatusCollector } from '../contracts/interfaces/status-collector.interface';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
+import type {
+	ICacheEvictionReport,
+	ICacheEvictionRegistry,
+} from '../contracts/interfaces/cache-eviction.interface';
+import { createCacheEvictionRegistry } from '../cache/eviction-registry';
+import { resolveWorkspaceContained } from '../shared/contain-path';
 
 export interface IAssembledCliConfig {
 	readonly config: IMcpVertexHostConfig;
@@ -73,6 +79,15 @@ export interface IAssembledCliConfig {
 	};
 	/** Absolute path of the resolved config file. */
 	readonly configPath: string;
+	/**
+	 * f00068 slice A: the cache eviction registry handed to every
+	 * plugin via `IMcpPluginContext.cacheEvictionRegistry`. Exposed
+	 * here so the doctor and CLI tests can run / inspect it without
+	 * spinning up a plugin. Last boot-sweep report (always dryRun by
+	 * default — slice C turns this into an opt-in `apply`).
+	 */
+	readonly cacheEvictionRegistry: ICacheEvictionRegistry;
+	readonly cacheEvictionBootReport: ICacheEvictionReport;
 }
 
 export interface IAssembleCliDeps {
@@ -225,6 +240,31 @@ export const assembleCliConfig = async (
 	const agentWorktreeEnabled =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
+	// f00068 slice A: the cache eviction registry is a single shared
+	// instance every plugin receives via its context. We create it
+	// BEFORE loadPlugins so a plugin's `register()` can call
+	// `ctx.cacheEvictionRegistry.register(rule)`. The boot sweep that
+	// runs AFTER loadPlugins uses the same instance, so plugin rules
+	// are picked up automatically. Default mode is `dryRun: true`
+	// (matches the rest of the repo's "preview first" posture — slice
+	// C introduces the opt-in `apply` mode from the config file).
+	const cacheDirContained = resolveWorkspaceContained(
+		workspace.root,
+		cacheDir,
+	);
+	if (!cacheDirContained.ok) {
+		// Should never happen — CLI flag > config > default are all
+		// validated upstream — but a hard error here is better than
+		// silently letting a rule with a bad cacheDir escape.
+		throw new Error(
+			`cacheDir escapes workspace: ${cacheDir} (${cacheDirContained.reason})`,
+		);
+	}
+	const cacheEvictionRegistry = createCacheEvictionRegistry({
+		workspaceRootAbs: workspace.root,
+		cacheDirAbs: cacheDirContained.abs,
+	});
+
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
 		return {
@@ -239,6 +279,7 @@ export const assembleCliConfig = async (
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
 			options: pluginConfig.options ?? {},
 			args: args.extra,
+			cacheEvictionRegistry,
 		};
 	};
 
@@ -636,7 +677,24 @@ export const assembleCliConfig = async (
 			: {}),
 	};
 
-	return { config, loadResult, configDiagnostic, configPath };
+	// f00068 slice A: boot sweep. Runs once, AFTER every plugin has
+	// registered its rules. The result is surfaced in
+	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
+	// (and CLI tests) can assert what the sweep would have done.
+	// `dryRun: true` is the default — slice C introduces the
+	// `runOnBoot: "apply"` config-file opt-in.
+	const cacheEvictionBootReport = await cacheEvictionRegistry.run({
+		dryRun: true,
+	});
+
+	return {
+		config,
+		loadResult,
+		configDiagnostic,
+		configPath,
+		cacheEvictionRegistry,
+		cacheEvictionBootReport,
+	};
 };
 
 export interface IDoctorReport {

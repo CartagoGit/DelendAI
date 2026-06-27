@@ -1095,6 +1095,7 @@ export interface McpVertexProposalsProposalReviewOutput {
 		note: string;
 	}>;
 	lockReleased: boolean;
+	redactedSecrets: number;
 }
 
 export interface McpVertexProposalsProposalStaleListOutput {

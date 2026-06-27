@@ -173,6 +173,29 @@ export {
 export { joinRel } from '../lib/shared/paths';
 export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+
+// --- cache eviction (f00068 slice A) ---------------------------------------
+// Declarative policy layer over the shared `<cacheDir>` root. Plugins
+// contribute rules via `ctx.cacheEvictionRegistry.register(rule)`; the
+// core boot sweep runs a dry-run after every plugin has loaded.
+export type {
+	ICacheEvictionCustom,
+	ICacheEvictionErrored,
+	ICacheEvictionKeepLastN,
+	ICacheEvictionOlderThan,
+	ICacheEvictionOlderThanMtime,
+	ICacheEvictionRegistry,
+	ICacheEvictionRemoved,
+	ICacheEvictionReport,
+	ICacheEvictionRule,
+	ICacheEvictionRunOptions,
+	ICacheEvictionSkipped,
+	ICacheEvictionWhen,
+} from '../lib/contracts/interfaces/cache-eviction.interface';
+export {
+	createCacheEvictionRegistry,
+} from '../lib/cache/eviction-registry';
+export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
 export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
 export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files';
 export { redactSecrets } from '../lib/shared/redact';
