@@ -31,6 +31,8 @@ describe('@mcp-vertex/proposals plugin', async () => {
 		expect(registrations.tools?.map((tool) => tool.id)).toEqual([
 			'agent_lock',
 			'agent_worktree',
+			'branch_status',
+			'branch_gc',
 			'task_queue',
 			'sync_proposals',
 			'get_proposal_workflow',
@@ -82,6 +84,8 @@ describe('@mcp-vertex/proposals plugin', async () => {
 		expect(names).toEqual([
 			'work_agent_lock',
 			'work_agent_worktree',
+			'work_branch_status',
+			'work_branch_gc',
 			'work_task_queue',
 			'work_sync_proposals',
 			'work_get_proposal_workflow',

@@ -7,6 +7,8 @@ import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import { createCallbackLockListener } from './lib/locks/lock-change-listener';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
+import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
+import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
@@ -192,6 +194,26 @@ export default definePlugin({
 					worktreesDirRel: layout.worktreesDir,
 					enabled: ctx.agentWorktreeEnabled === true,
 				}),
+				// f00073: read-only branch + worktree snapshot. Lets every
+				// agent answer "what is everyone else doing right now?"
+				// without grep.
+				buildBranchStatusRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultAgentPrefix: 'agent/',
+					canonicalWorktreesDirRel: layout.worktreesDir
+						? `.cache/mcp-vertex/${layout.worktreesDir}`
+						: '.cache/mcp-vertex/.worktrees',
+				}),
+				// f00073: idempotent cleanup of orphan worktrees. dryRun by
+				// default; unmerged branches are sacred.
+				buildBranchGcRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultStaleMinutes: 60,
+				}),
 				buildTaskQueueRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					paths: {
@@ -232,6 +254,7 @@ export default definePlugin({
 				}),
 				buildAutoWorkRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					indexPathAbs: abs(layout.proposalIndexFile),
 					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),

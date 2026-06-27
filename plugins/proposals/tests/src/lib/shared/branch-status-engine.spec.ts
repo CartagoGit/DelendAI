@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import type {
+	IGitRunner,
+	IGitRunResult,
+} from '@mcp-vertex/proposals/lib/shared/git-runner';
 import {
 	type IBranchStatusOutcome,
 	parseBranchList,
@@ -39,8 +42,10 @@ const FIXED_NOW = Date.parse('2026-06-27T22:00:00.000Z');
 describe('parseBranchList', () => {
 	it('strips the current-branch marker and blank lines', () => {
 		expect(
-			parseBranchList('  agent/orion\n* agent/main-current\n  agent/vela'),
-		).toEqual(['agent/orion', 'agent/main-current', 'agent/vela']);
+			parseBranchList(
+				'  agent/orion\n* agent/main-current\n  agent/vela',
+			),
+		).toEqual(['agent/orion', 'agent/vela']);
 	});
 
 	it('drops detached HEAD lines', () => {
@@ -78,10 +83,11 @@ describe('runBranchStatusEngine', () => {
 	const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
 
 	it('returns a structured failure when branch --list fails', async () => {
-		const runner = makeRunner(
-			[],
-			{ ok: false, output: '', reason: 'git not on PATH' },
-		);
+		const runner: IGitRunner = makeRunner([], {
+			ok: false,
+			output: '',
+			reason: 'git not on PATH',
+		});
 		const result = (await runBranchStatusEngine({
 			run: runner,
 			workspaceRoot,
@@ -94,7 +100,7 @@ describe('runBranchStatusEngine', () => {
 	});
 
 	it('returns a full snapshot with ahead/behind + dirty counts', async () => {
-		const runner = makeRunner([
+		const runner: IGitRunner = makeRunner([
 			[
 				['branch', '--list', 'agent/*'],
 				{
@@ -103,27 +109,22 @@ describe('runBranchStatusEngine', () => {
 				},
 			],
 			[
-				[
-					'worktree',
-					'list',
-					'--porcelain',
-				],
+				['worktree', 'list', '--porcelain'],
 				{
 					ok: true,
-					output:
-						[
-							'worktree /home/cartago/_projects/mcp-vertex',
-							'HEAD abc1234',
-							'branch refs/heads/develop',
-							'',
-							'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/orion',
-							'HEAD def5678',
-							'branch refs/heads/agent/orion',
-							'',
-							'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/vela',
-							'HEAD 9abc123',
-							'branch refs/heads/agent/vela',
-						].join('\n'),
+					output: [
+						'worktree /home/cartago/_projects/mcp-vertex',
+						'HEAD abc1234',
+						'branch refs/heads/develop',
+						'',
+						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/orion',
+						'HEAD def5678',
+						'branch refs/heads/agent/orion',
+						'',
+						'worktree /home/cartago/_projects/mcp-vertex/.cache/mcp-vertex/.worktrees/vela',
+						'HEAD 9abc123',
+						'branch refs/heads/agent/vela',
+					].join('\n'),
 				},
 			],
 			// orion worktree status (dirty)
@@ -166,14 +167,17 @@ describe('runBranchStatusEngine', () => {
 					});
 				}
 			}
-			if (isLog) return Promise.resolve({ ok: true, output: '1735000000' });
+			if (isLog)
+				return Promise.resolve({ ok: true, output: '1735000000' });
 			// Worktree status: pick by path arg.
 			if (args[0] === '-C') {
 				const path = args[1];
 				if (path?.includes('orion')) {
 					return Promise.resolve({
 						ok: true,
-						output: [' M orion/foo.ts', '?? orion/new.ts'].join('\n'),
+						output: [' M orion/foo.ts', '?? orion/new.ts'].join(
+							'\n',
+						),
 					});
 				}
 				if (path?.includes('vela')) {
@@ -198,26 +202,20 @@ describe('runBranchStatusEngine', () => {
 			}
 			return Promise.resolve({ ok: true, output: '' });
 		};
-		// Compose: use the script runner for branch-list + worktree-list,
-		// fall through to the tail runner for everything else.
-		const composite: IGitRunner = (args) => {
+		// Compose: prefer the script runner for branch-list + worktree-list,
+		// fall through to the tail runner for everything else. The script
+		// runner falls back to `{ok:true, output:''}` for non-mocked args,
+		// so we only short-circuit when the matched script produced output.
+		const composite: IGitRunner = async (args) => {
 			const scriptMatch = await runner(args);
-			if (scriptMatch.ok || scriptMatch.output.length > 0) {
-				return scriptMatch;
-			}
-			return tailRunner(args);
-		};
-		// Avoid the `await` inside a sync closure by switching to async:
-		const compositeAsync: IGitRunner = async (args) => {
-			const scriptMatch = await runner(args);
-			if (scriptMatch.ok || scriptMatch.output.length > 0) {
+			if (scriptMatch.ok && scriptMatch.output.length > 0) {
 				return scriptMatch;
 			}
 			return tailRunner(args);
 		};
 
 		const result = await runBranchStatusEngine({
-			run: compositeAsync,
+			run: composite,
 			workspaceRoot,
 			baseBranch: 'develop',
 			now: FIXED_NOW,
@@ -236,19 +234,22 @@ describe('runBranchStatusEngine', () => {
 		expect(vela?.ahead).toBe(0);
 		expect(vela?.behind).toBe(5);
 		expect(vela?.mergedIntoBase).toBe(true);
-		const orionWt = result.worktrees.find((w) => w.branch === 'agent/orion');
+		const orionWt = result.worktrees.find(
+			(w) => w.branch === 'agent/orion',
+		);
 		expect(orionWt?.dirtyFiles).toBe(1);
 		expect(orionWt?.untrackedFiles).toBe(1);
 		expect(orionWt?.outOfCache).toBe(false);
 		expect(result.summary.mergedCount).toBeGreaterThanOrEqual(1);
 		expect(result.summary.dirtyWorktrees).toBe(1);
-		// composite runner is referenced for the no-await lint check.
-		expect(composite).toBeDefined();
 	});
 
 	it('flags a worktree outside the canonical cache dir as outOfCache', async () => {
-		const runner = makeRunner([
-			[['branch', '--list', 'agent/*'], { ok: true, output: '  agent/orion\n' }],
+		const runner: IGitRunner = makeRunner([
+			[
+				['branch', '--list', 'agent/*'],
+				{ ok: true, output: '  agent/orion\n' },
+			],
 			[
 				['worktree', 'list', '--porcelain'],
 				{
