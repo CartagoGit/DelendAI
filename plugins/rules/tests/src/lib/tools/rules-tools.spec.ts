@@ -97,4 +97,26 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 			'typecheck',
 		]);
 	});
+
+	it('returns dogmas in the response', async () => {
+		const reg = buildGetRulesRegistration({
+			namespacePrefix: 'rules',
+			workspace,
+			reader: emptyReader,
+			projectName: 'demo',
+			cacheRelDir: '.cache/mcp-vertex/rules',
+			manifestRelPath: '.cache/mcp-vertex/rules/rules-map.json',
+			mode: 'mixed',
+		});
+
+		const result = await invoke(reg, {});
+		const out = result.structuredContent as {
+			dogmas: Record<string, any>;
+		};
+
+		expect(out.dogmas).toBeDefined();
+		expect(out.dogmas.root).toBeDefined();
+		expect(out.dogmas.root.language).toBe('js');
+		expect(out.dogmas.root.ownership).toBe('gc');
+	});
 });

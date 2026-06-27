@@ -26,6 +26,7 @@ actually need the extra detail:
 | `proposals_state_health` (full)     | `proposals_compact_status` for routine orientation; reserve `proposals_state_health` for suspected drift |
 | `mcp-vertex_overview` (default) | `mcp-vertex_overview { compact: true }` |
 | `audit_audit_consolidate` with no scope | `audit_audit_consolidate { scope: <narrow> }` |
+| `get_rules` (dogmas) | Cache dogmas in memory; avoid repeatedly fetching all dogmas from the workspace |
 
 ## Tools to delegate, not call from the main thread
 

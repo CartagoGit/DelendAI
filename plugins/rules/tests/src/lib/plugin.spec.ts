@@ -112,7 +112,7 @@ describe('@mcp-vertex/rules plugin', async () => {
 		expect(out.compact).toBe(true);
 		expect(out.checks[0].eslintConfigs).toBeUndefined();
 		expect(out.findings[0]).toMatchObject({
-			code: 'missing-eslint-deps',
+			code: 'missing-linter-deps',
 			severity: 'warning',
 			framework: 'react',
 		});
