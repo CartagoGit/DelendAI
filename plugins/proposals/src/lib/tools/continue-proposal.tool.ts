@@ -232,15 +232,29 @@ const readActiveLocks = async (
 	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
+		stale_after_minutes?: number;
 		in_flight?: Array<{
 			task_id?: string;
 			agent?: string;
 			ownership?: string[];
+			started_at?: string;
+			last_seen?: string;
 		}>;
 	}>(lockPath);
 	if (lock === null) return [];
+	const staleMinutes = lock.stale_after_minutes ?? 10;
+	const now = Date.now();
 	return (lock.in_flight ?? [])
-		.filter((entry) => typeof entry.task_id === 'string')
+		.filter((entry) => {
+			if (typeof entry.task_id !== 'string') return false;
+			if (entry.last_seen) {
+				const t = new Date(entry.last_seen).getTime();
+				if (!Number.isNaN(t) && now - t > staleMinutes * 60_000) {
+					return false;
+				}
+			}
+			return true;
+		})
 		.map((entry) => ({
 			taskId: entry.task_id ?? '',
 			agent: entry.agent ?? 'unknown',

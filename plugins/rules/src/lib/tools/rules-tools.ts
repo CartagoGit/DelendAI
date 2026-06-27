@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { join } from 'node:path';
+import { stat } from 'node:fs/promises';
 
 import type {
 	IFileReader,
@@ -7,7 +9,8 @@ import type {
 } from '@mcp-vertex/core/public';
 import { toolError, toolJson } from '@mcp-vertex/core/public';
 
-import { buildRulesManifest } from '../frameworks/manifest';
+import { buildManifestViaComposition } from '../frameworks/manifest-via-composition';
+import { buildDefaultComposition } from '../frameworks/registry/factory';
 import {
 	PRESET_BY_ID,
 	REQUIRED_ESLINT_DEPS,
@@ -19,6 +22,8 @@ import type {
 	IRulesMode,
 } from '../frameworks/types';
 import { RULES_MODE_GUIDANCE } from '../frameworks/types';
+import { DogmaRegistry } from '../registry/dogma-registry';
+import { DEFAULT_DOGMA_ADAPTERS } from '../frameworks/dogmas';
 
 export interface IRulesToolOptions {
 	readonly namespacePrefix: string;
@@ -31,17 +36,31 @@ export interface IRulesToolOptions {
 	readonly overrides?: Readonly<Record<string, string>>;
 }
 
-// l00008 s4 — mirrors `IAreaRules` (frameworks/types.ts) field-for-field,
-// replacing the residual `z.object({}).catchall(z.unknown())`.
+const DOGMA_ADAPTER_SCHEMA = z.object({
+	language: z.string(),
+	displayName: z.string().optional(),
+	version: z.string(),
+	packageManager: z.string(),
+	ownership: z.string(),
+	errorModel: z.string(),
+	nullSafety: z.string(),
+	naming: z.string(),
+	async: z.string(),
+	visibility: z.string(),
+	immutability: z.string(),
+	testing: z.string(),
+	bullets: z.array(z.string()),
+});
+
 const AREA_RULES_SCHEMA = z.object({
 	framework: z.string(),
 	presetId: z.string(),
 	eslint: z.array(z.string()),
+	configs: z.array(z.string()).optional(),
 	typecheck: z.array(z.string()),
 	reason: z.string(),
 });
 
-/** Read the manifest from cache, or build it in-memory if absent. */
 const loadManifest = async (
 	options: IRulesToolOptions,
 ): Promise<IRulesManifest> => {
@@ -53,13 +72,15 @@ const loadManifest = async (
 			// fall through to a freshly-built manifest
 		}
 	}
-	return await buildRulesManifest({
-		reader: options.reader,
-		projectName: options.projectName,
-		cacheRelDir: options.cacheRelDir,
-		mode: options.mode,
-		...(options.overrides ? { overrides: options.overrides } : {}),
-	});
+	const composition = buildDefaultComposition();
+	return await buildManifestViaComposition(
+		options.reader,
+		options.projectName,
+		options.cacheRelDir,
+		options.mode,
+		composition,
+		options.overrides ?? {},
+	);
 };
 
 const areasOf = (
@@ -85,29 +106,21 @@ const conventionsFor = (
 	return out;
 };
 
-/** The area's lint target: `.` at the workspace root, else its dir. */
 const areaTarget = (areaDir: string): string =>
 	areaDir === 'root' ? '.' : areaDir;
 
-/** Substitute the `{target}` placeholder in a preset command template. */
 const renderCommand = (template: string, areaDir: string): string =>
 	template.replace(/\{target\}/g, areaTarget(areaDir));
 
 const eslintCommand = (areaDir: string, rules: IAreaRules): string => {
 	const target = areaTarget(areaDir);
-	// First eslint entry is the project's own config when present; if our
-	// cache default is the only one, point ESLint at it explicitly.
-	const projectOwns = rules.eslint.length > 1;
+	const configsList = rules.configs ?? rules.eslint;
+	const projectOwns = configsList.length > 1;
 	return projectOwns
 		? `eslint ${target}`
-		: `eslint ${target} --config ${rules.eslint[0]}`;
+		: `eslint ${target} --config ${configsList[0]}`;
 };
 
-/**
- * Lint check command. f00051 S4: each preset carries its own command
- * template (`checkCommand`); only the JS/TS (`eslint`) and PHP (`pint`)
- * presets fall through to the legacy hardcoded branches, byte-for-byte.
- */
 const lintCheckCommand = (areaDir: string, rules: IAreaRules): string => {
 	const preset = PRESET_BY_ID.get(rules.presetId);
 	if (preset?.checkCommand !== undefined) {
@@ -116,6 +129,7 @@ const lintCheckCommand = (areaDir: string, rules: IAreaRules): string => {
 	if (preset?.linter === 'pint') return './vendor/bin/pint --test';
 	return eslintCommand(areaDir, rules);
 };
+
 const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
 	const preset = PRESET_BY_ID.get(rules.presetId);
 	if (preset?.fixCommand !== undefined) {
@@ -126,7 +140,7 @@ const lintFixCommand = (areaDir: string, rules: IAreaRules): string => {
 };
 
 const readDeps = async (
-	reader: IRulesToolOptions['reader'],
+	reader: IFileReader,
 	areaDir: string,
 ): Promise<Record<string, string>> => {
 	const out: Record<string, string> = {};
@@ -154,26 +168,54 @@ const readDeps = async (
 	return out;
 };
 
-/** Required ESLint packages the area is missing (so check won't run). */
-const missingEslintDeps = async (
-	reader: IRulesToolOptions['reader'],
+const commandExists = async (cmd: string): Promise<boolean> => {
+	if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+		return true;
+	}
+	const pathEnv = process.env.PATH || '';
+	const dirs = pathEnv.split(':');
+	for (const dir of dirs) {
+		try {
+			await stat(join(dir, cmd));
+			return true;
+		} catch {
+			// ignore
+		}
+	}
+	return false;
+};
+
+const missingLinterDeps = async (
+	reader: IFileReader,
 	areaDir: string,
 	presetId: string,
 ): Promise<readonly string[]> => {
-	const required = REQUIRED_ESLINT_DEPS[presetId] ?? [];
+	const preset = PRESET_BY_ID.get(presetId);
+	const required =
+		preset?.requiredLinterDeps ?? REQUIRED_ESLINT_DEPS[presetId] ?? [];
 	if (required.length === 0) return [];
-	const deps = await readDeps(reader, areaDir);
-	return required.filter((d) => !(d in deps));
+	const linter = preset?.linter ?? 'eslint';
+	if (linter === 'eslint' || linter === 'pint') {
+		const deps = await readDeps(reader, areaDir);
+		return required.filter((d) => !(d in deps));
+	}
+	const missing: string[] = [];
+	for (const binary of required) {
+		if (!(await commandExists(binary))) {
+			missing.push(binary);
+		}
+	}
+	return missing;
 };
 
-const missingEslintFinding = (input: {
+const missingLinterFinding = (input: {
 	readonly project: string;
 	readonly area: string;
 	readonly framework: string;
 	readonly command: string;
 	readonly missing: readonly string[];
 }): {
-	readonly code: 'missing-eslint-deps';
+	readonly code: 'missing-linter-deps';
 	readonly severity: 'warning';
 	readonly project: string;
 	readonly area: string;
@@ -184,24 +226,36 @@ const missingEslintFinding = (input: {
 } | null => {
 	if (input.missing.length === 0) return null;
 	return {
-		code: 'missing-eslint-deps',
+		code: 'missing-linter-deps',
 		severity: 'warning',
 		project: input.project,
 		area: input.area,
 		framework: input.framework,
-		message: `The ESLint command cannot run until ${input.missing.join(', ')} ${input.missing.length === 1 ? 'is' : 'are'} installed.`,
+		message: `The linter command cannot run until ${input.missing.join(', ')} ${input.missing.length === 1 ? 'is' : 'are'} installed.`,
 		missing: input.missing,
-		nextAction: `Install the missing dev dependencies, then run \`${input.command}\`.`,
+		nextAction: `Install the missing dependencies, then run \`${input.command}\`.`,
 	};
 };
 
-/**
- * Typecheck command for an area, or undefined when the language has no
- * separate typecheck step. f00051 S4: a preset's own `typecheckCommand`
- * template (e.g. `cargo check --workspace`, `go vet ./...`, `basedpyright`)
- * takes precedence; JS/TS presets fall through to the `tsc` path keyed off
- * the resolved tsconfig list.
- */
+const getInstallHint = (presetId: string): string => {
+	const preset = PRESET_BY_ID.get(presetId);
+	const linter = preset?.linter ?? 'eslint';
+	if (linter === 'eslint') return 'npm install --save-dev eslint';
+	if (linter === 'pint') return 'composer require laravel/pint --dev';
+	if (linter === 'ruff') return 'pip install ruff basedpyright';
+	if (linter === 'golangci-lint')
+		return 'go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest';
+	if (linter === 'clippy') return 'rustup component add clippy';
+	if (linter === 'rubocop') return 'gem install rubocop';
+	if (linter === 'checkstyle') return 'brew install checkstyle';
+	if (linter === 'ktlint') return 'brew install ktlint';
+	if (linter === 'swiftlint') return 'brew install swiftlint';
+	if (linter === 'hlint') return 'cabal install hlint';
+	if (linter === 'shellcheck') return 'apt install shellcheck';
+	if (linter === 'buf') return 'npm install -g @buf/buf';
+	return `install ${linter}`;
+};
+
 const typecheckCommand = (
 	areaDir: string,
 	rules: IAreaRules,
@@ -211,25 +265,23 @@ const typecheckCommand = (
 		return renderCommand(preset.typecheckCommand, areaDir);
 	}
 	if (rules.typecheck.length === 0) return undefined;
-	// Prefer the project's own tsconfig (entries not under the cache dir).
 	const projectTsconfig = rules.typecheck.find((p) => !p.includes('.cache/'));
 	return `tsc --noEmit -p ${projectTsconfig ?? rules.typecheck[0]}`;
 };
 
-/** get_rules — the map of which rules apply where, + mode + conventions. */
 export const buildGetRulesRegistration = (
 	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'get_rules',
 	summary:
-		'Returns the rules map (per area: framework, eslint+typecheck configs project-first), the mode and conventions.',
+		'Returns the rules map (per area: framework, configs+typecheck configs project-first), the mode, conventions, and language dogmas.',
 	tags: ['rules', 'orientation'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_get_rules`,
 			{
 				description:
-					'Returns the lint/type rules map: per project area its framework, the ESLint and typecheck configs in priority order (the project’s own config first, our default behind), the enforcement mode, the supported presets and the per-framework conventions. Read-only.',
+					'Returns the lint/type rules map: per project area its framework, configs, enforcement mode, supported presets, per-framework conventions, and language dogmas. Read-only.',
 				inputSchema: z.object({ area: z.string().optional() }),
 				outputSchema: z.object({
 					mode: z.string(),
@@ -243,6 +295,7 @@ export const buildGetRulesRegistration = (
 						}),
 					),
 					conventions: z.record(z.string(), z.array(z.string())),
+					dogmas: z.record(z.string(), DOGMA_ADAPTER_SCHEMA),
 				}),
 			},
 			async (args: { area?: string | undefined }) => {
@@ -252,32 +305,45 @@ export const buildGetRulesRegistration = (
 					args.area !== undefined
 						? all.filter((entry) => entry.area === args.area)
 						: all;
+
+				const dogmaRegistry = new DogmaRegistry(DEFAULT_DOGMA_ADAPTERS);
+				const dogmas: Record<string, any> = {};
+				for (const entry of selected) {
+					const preset = PRESET_BY_ID.get(entry.rules.presetId);
+					if (preset) {
+						const dogma = dogmaRegistry.resolve(preset.language);
+						if (dogma) {
+							dogmas[entry.area] = dogma;
+						}
+					}
+				}
+
 				return toolJson({
 					mode: manifest.mode,
 					modeGuidance: RULES_MODE_GUIDANCE[manifest.mode],
 					supported: SUPPORTED_PRESET_IDS,
 					areas: selected,
 					conventions: conventionsFor(manifest),
+					dogmas,
 				});
 			},
 		);
 	},
 });
 
-/** check_rules — how to validate an area (resolved configs + command). */
 export const buildCheckRulesRegistration = (
 	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'check_rules',
 	summary:
-		'Returns, per area, the ESLint command and resolved configs to validate compliance (run it yourself).',
+		'Returns, per area, the linter command and resolved configs to validate compliance.',
 	tags: ['rules'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_check_rules`,
 			{
 				description:
-					'Returns how to check each area against its rules: the resolved ESLint configs (project first) and the exact command to run. Advisory and agnostic — you run the command; it does not execute or modify anything.',
+					'Returns how to check each area against its rules: the resolved linter configs, the installHint, and the exact command to run. Advisory and agnostic.',
 				inputSchema: z.object({
 					area: z.string().optional(),
 					compact: z.boolean().optional(),
@@ -290,15 +356,22 @@ export const buildCheckRulesRegistration = (
 							area: z.string(),
 							framework: z.string(),
 							eslintConfigs: z.array(z.string()).optional(),
+							linterConfigs: z.array(z.string()).optional(),
 							typecheckConfigs: z.array(z.string()).optional(),
 							command: z.string(),
 							typecheckCommand: z.string().optional(),
 							missingEslintDeps: z.array(z.string()),
+							missingLinterDeps: z.array(z.string()),
+							linter: z.string(),
+							installHint: z.string(),
 						}),
 					),
 					findings: z.array(
 						z.object({
-							code: z.literal('missing-eslint-deps'),
+							code: z.enum([
+								'missing-linter-deps',
+								'missing-eslint-deps',
+							]),
 							severity: z.literal('warning'),
 							project: z.string(),
 							area: z.string(),
@@ -333,11 +406,15 @@ export const buildCheckRulesRegistration = (
 							entry.area,
 							entry.rules,
 						);
-						const missing = await missingEslintDeps(
+						const missing = await missingLinterDeps(
 							options.reader,
 							entry.area,
 							entry.rules.presetId,
 						);
+						const preset = PRESET_BY_ID.get(entry.rules.presetId);
+						const linterName = preset?.linter ?? 'eslint';
+						const configsList =
+							entry.rules.configs ?? entry.rules.eslint;
 						return {
 							project: entry.project,
 							area: entry.area,
@@ -346,6 +423,7 @@ export const buildCheckRulesRegistration = (
 								? {}
 								: {
 										eslintConfigs: entry.rules.eslint,
+										linterConfigs: configsList,
 										typecheckConfigs: entry.rules.typecheck,
 									}),
 							command,
@@ -353,7 +431,10 @@ export const buildCheckRulesRegistration = (
 								entry.area,
 								entry.rules,
 							),
-							missingEslintDeps: missing,
+							missingEslintDeps: Array.from(missing),
+							missingLinterDeps: Array.from(missing),
+							linter: linterName,
+							installHint: getInstallHint(entry.rules.presetId),
 						};
 					}),
 				);
@@ -361,15 +442,20 @@ export const buildCheckRulesRegistration = (
 					compact,
 					checks,
 					findings: checks
-						.map((check) =>
-							missingEslintFinding({
+						.map((check) => {
+							const finding = missingLinterFinding({
 								project: check.project,
 								area: check.area,
 								framework: check.framework,
 								command: check.command,
-								missing: check.missingEslintDeps,
-							}),
-						)
+								missing: check.missingLinterDeps,
+							});
+							if (finding === null) return null;
+							return {
+								...finding,
+								code: 'missing-linter-deps' as const,
+							};
+						})
 						.filter((finding) => finding !== null),
 				});
 			},
@@ -377,20 +463,18 @@ export const buildCheckRulesRegistration = (
 	},
 });
 
-/** apply_rules — a mode-aware plan to bring an area into compliance. */
 export const buildApplyRulesRegistration = (
 	options: IRulesToolOptions,
 ): IToolRegistration => ({
 	id: 'apply_rules',
-	summary:
-		'Returns a mode-aware plan (strict/mixed/none/proposal) to make code comply; you execute the steps.',
+	summary: 'Returns a mode-aware plan to make code comply.',
 	tags: ['rules'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_apply_rules`,
 			{
 				description:
-					'Returns a plan to bring an area into compliance, shaped by the enforcement mode: strict (fix everything), mixed (only touched files), none (report only), proposal (create proposals). Advisory — you run the steps. The project’s own config always wins.',
+					'Returns a plan to bring an area into compliance. The project’s own config always wins.',
 				inputSchema: z.object({
 					area: z.string().optional(),
 					files: z.array(z.string()).optional(),
@@ -401,6 +485,7 @@ export const buildApplyRulesRegistration = (
 					area: z.string(),
 					framework: z.string(),
 					eslintConfigs: z.array(z.string()),
+					linterConfigs: z.array(z.string()),
 					command: z.string(),
 					fixCommand: z.string(),
 					steps: z.array(z.string()),
@@ -451,12 +536,14 @@ export const buildApplyRulesRegistration = (
 										`For the files you touched (${scope}): run \`${fixCommand}\`.`,
 										'Align only those files; leave untouched files as-is.',
 									];
+				const configsList = entry.rules.configs ?? entry.rules.eslint;
 				return toolJson({
 					mode,
 					modeGuidance: RULES_MODE_GUIDANCE[mode],
 					area: entry.area,
 					framework: entry.rules.framework,
 					eslintConfigs: entry.rules.eslint,
+					linterConfigs: configsList,
 					command,
 					fixCommand,
 					steps,

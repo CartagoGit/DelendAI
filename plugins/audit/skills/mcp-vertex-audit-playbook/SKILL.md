@@ -100,6 +100,11 @@ deps, git, notification, status-marker, test-convention…):
    - `zombie-reconcile.ts` — GC classification complete?
    - `proposal-parallelism.ts` — `IProposalTrack` open or closed union?
    - `proposal-scaffold-linter.ts` — ID format enforced (5-digit `\d{5}`)?
+5. For the `rules` plugin specifically, also read:
+   - `rules-tools.ts` — check that get/check/apply rules consume the composition root (`buildManifestViaComposition`) instead of the legacy `buildRulesManifest`.
+   - `online-preset.ts` — ensure flat dependency checks support all 25+ registries correctly.
+   - Dogmas and adapters — check that all 12 priority-family dogmas and language adapters are mapped, tested, and correct.
+   - PATH binary checking — verify that check_rules searches PATH asynchronously without spawning shell subprocesses.
 
 ---
 

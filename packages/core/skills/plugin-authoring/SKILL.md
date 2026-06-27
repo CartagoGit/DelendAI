@@ -41,6 +41,23 @@ export default definePlugin({
 - Persisting user text → run it through `redactSecrets` first.
 - Keep engines pure over injected readers so tests don't touch the real FS.
 
+## Adding a new language + dogma
+
+To support a new language in the rules plugin under the SOLID architecture, you must add its adapter, dogma, preset, and registry entries:
+
+1. **Dogma Interface & Adapter** (`plugins/rules/src/lib/contracts/dogma-adapter.interface.ts` & `plugins/rules/src/lib/frameworks/dogmas/<lang>.dogma.ts`):
+   Define the language's core guidelines (ownership, naming, error model, null-safety, async, immutability, testing, packageManager, bullets).
+2. **Language Adapter** (`plugins/rules/src/lib/frameworks/languages/<lang>.adapter.ts`):
+   Implement `ILanguageAdapter` to detect the language's manifest files in the directory.
+3. **Base Linter Provider** (`plugins/rules/src/lib/frameworks/languages/base/<family>-base.provider.ts`):
+   Provide check/fix/typecheck command builders for the linter tool.
+4. **Preset Data** (`plugins/rules/src/lib/frameworks/presets/data/<family>.ts`):
+   Define the default preset carrying linter configs, conventions, and required packages.
+5. **Registry Entry** (`plugins/rules/src/lib/frameworks/registry/factory.ts`):
+   Import and append the new adapter to the default adapters array, and include the preset data in the presets list.
+6. **Online Preset Mapping** (`plugins/rules/src/lib/frameworks/online-preset.ts`):
+   Register the new language preset and packages for freshness checks.
+
 ## Checklist before you commit
 
 1. Tests next to the code (`*.spec.ts`); protocol behaviour → e2e with a real

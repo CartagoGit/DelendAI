@@ -839,7 +839,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S3 — Add the language presets + the dogma adapters
 
-- **Status**: S3 partial: priority families (Rust + Python, Go, Ruby, Java, Kotlin, Swift, C#, Elixir) done in the SOLID `dogmas/` + `presets/data/`; ~60 long-tail languages pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/frameworks/presets/data/  (~18 new files, ~70 new IRulePreset entries)
 - **Files**: plugins/rules/src/lib/frameworks/dogmas/        (~35 new files, ~70 IDogmaAdapter entries)
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
@@ -855,7 +855,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "Each `IDogmaAdapter` is registered in `dogmas/index.ts`; `DEFAULT_DOGMA_ADAPTERS` is a `ReadonlyMap<TPresetLanguage, IDogmaAdapter>` exposed through `DogmaRegistry`."
     - "At least one `bullets` array per language is **specific** to that language (not generic ESLint-style advice). The spec verifies this for a sample of 12 languages."
     - "The `f00052` follow-up proposal is responsible for curating the bullets to expert quality for the top 12; here we ship *enough* to demonstrate the architecture and prove the contract."
-
+- status: done
 ### S4 — Per-preset check/fix/typecheck commands
 
 - **Status**: done
@@ -871,7 +871,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S5 — Online-preset registry: every package index
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/frameworks/online-preset.ts
 - **Files**: plugins/rules/tests/src/lib/online-preset.spec.ts
 - **Gate**: test
@@ -906,10 +906,10 @@ happens in S7 (outputSchema) with one release of back-compat.
         - `winget → https://winget.run/api/v2/packages?query={pkg}`
     - "`fetchOnlinePresetInfo` dispatches by registry, normalises the version field, and preserves the same `{ ok: true, package, version, homepage? } | { ok: false, package, reason }` contract — never throws, never blocks, 5s timeout per request"
     - "Tests stub each registry with the existing `IOnlineFetcher` mock pattern; **≥ 20 new fixtures** (one per major registry) prove the contract end-to-end"
-
+- status: done
 ### S6 — Rebalance linter vs typecheck + dogmas in `rules-tools`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
 - **Files**: plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
 - **Gate**: test
@@ -920,10 +920,10 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "Existing JS/TS/PHP tests stay green (no regression); new tests assert the per-language command strings"
     - "`get_rules` joins the `DogmaRegistry` into the response: `dogmas: Record<area, IDogmaAdapter>`. An agent that calls `get_rules` for a Rust area now sees the borrow-checker, Result/Option, snake_case, cargo, table-driven conventions **alongside** the linter command — so the agent learns *how to write Rust*, not just *what to run on it*"
     - "`check_rules` returns `missingLinterDeps` keyed by linter binary name (not by package.json entry) so the project's install command matches the language's package manager: e.g. `pip install ruff basedpyright` for Python, `cargo install cargo-clippy` for Rust, `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest` for Go, `brew install ormolu` for Haskell, `apt install shellcheck shfmt` for Bash, `npm install -g @buf/buf` for Protobuf, `cargo install --locked --git https://github.com/foundry-rs/foundry` for Solidity"
-
+- status: done
 ### S7 — Language-aware `get_rules` outputSchema (+ dogmas)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/tools/rules-tools.ts
 - **Files**: plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
 - **Files**: plugins/rules/src/generated/tool-outputs.ts
@@ -937,7 +937,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "Existing l00008 s4 `get_rules` golden-shape spec still passes (the new `dogmas` field is additive; the pre-existing shape is unchanged)"
     - "New specs: **one golden outputSchema test per language family** (≥ 20 fixtures: jvm, dotnet, c-family, rust-flavour, functional, beam, lisp, scripting, mobile, data-stats, shell, docs, data-config, web-dsl, schema, smart-contracts, notebooks, build, misc). Each fixture asserts the structured payload's `linter` discriminator + `linterConfigs` + `typecheckCommand` triple **and** the `dogmas[area]` block has the expected ownership/error/naming fields for that language."
     - "The `dogmas` field is documented in `plugins/rules/README.md` with a worked example for each of the 12 most-used languages"
-
+- status: done
 ### S8 — Docs and skills
 
 - **Status**: partial — `plugins/rules/README.md` updated to document the shipped multi-language support (manifest-based detection across 11 manifests; JS/TS + PHP + the 9 language families from S3 with per-preset check/fix/typecheck commands; the dogma concept; open/closed extension). The full 70-language enumeration + the skill subsections await the long-tail. FINDING (next step for S1 convergence): the SOLID core (`frameworks/registry/`, `composition-root.ts`, `command-resolver.ts`, `policy-resolver.ts`, `dogmas/`, `manifest-via-composition.ts`) is built + unit-tested but is NOT wired into the live plugin — `tools/rules-tools.ts` still imports the legacy `frameworks/manifest.ts` (`buildRulesManifest`) + `frameworks/types.ts`. Converging means the live tools consume the composition root (`buildManifestViaComposition(reader, projectName, cacheRelDir, mode, root, overrides)` vs the legacy `(options)`), proven behavior-identical by the existing rules tests + a golden-output equivalence test. Sizeable + touches the critical rules plugin → do it with a subagent + a behavior-equivalence gate, not ad-hoc.
@@ -954,7 +954,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "`audit-playbook` skill adds a **"Multi-language rules audit"** dimension: does the manifest correctly detect each area's language? does each preset ship a `conventions` array? is each preset's `requiredLinterDeps` non-empty (except for the no-deps case like Laravel's `[]`)? does each `IDogmaAdapter` ship a `bullets` array of ≥ 3 items? does the per-language `installHint` match the actual install command?"
     - "`applying-rules` knowledge body mentions the linter **and dogma** per family (`ruff` / `clippy` / `swiftlint` / `ormolu` / `credo` / …) and the mode guidance, not ESLint specifically"
     - "`bun run lint:proposals` and `bun run lint:tools` exit 0"
-
+- status: done
 ### S9 — Tests: per-language detect/manifest/tool/dogma coverage
 
 - **Status**: pending
@@ -972,7 +972,7 @@ happens in S7 (outputSchema) with one release of back-compat.
     - "**≥ 20 new `online-preset` tests** with stubbed fetchers (one per registry)"
     - "**≥ 35 new `DogmaRegistry` tests** (one per language): each `*.dogma.ts` returns the expected `ownership/error/null/naming/async/visibility/immutability/testing/packageManager` triple + a non-empty `bullets` array. The bullets are language-specific (Rust mentions `?`/`unwrap`, Python mentions `from __future__`, Haskell mentions purity, Bash mentions `set -euo pipefail`, SQL mentions CTEs, Nix mentions `nixpkgs` — generic ESLint-style advice fails the spec)"
     - "All pre-existing rules-plugin tests still pass (no regression on l00008 s2/s4 specs)"
-
+- status: done
 ### S10 — E2E: synthetic polyglot workspace
 
 - **Status**: pending

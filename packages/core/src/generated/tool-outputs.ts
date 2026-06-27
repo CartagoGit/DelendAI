@@ -1395,6 +1395,7 @@ export interface McpVertexRulesApplyRulesOutput {
 	area: string;
 	framework: string;
 	eslintConfigs: string[];
+	linterConfigs: string[];
 	command: string;
 	fixCommand: string;
 	steps: string[];
@@ -1407,13 +1408,17 @@ export interface McpVertexRulesCheckRulesOutput {
 		area: string;
 		framework: string;
 		eslintConfigs?: string[];
+		linterConfigs?: string[];
 		typecheckConfigs?: string[];
 		command: string;
 		typecheckCommand?: string;
 		missingEslintDeps: string[];
+		missingLinterDeps: string[];
+		linter: string;
+		installHint: string;
 	}[];
-	findings: {
-		code: "missing-eslint-deps";
+	findings: Array<{
+		code: "missing-linter-deps" | "missing-eslint-deps";
 		severity: "warning";
 		project: string;
 		area: string;
@@ -1421,7 +1426,7 @@ export interface McpVertexRulesCheckRulesOutput {
 		message: string;
 		missing: string[];
 		nextAction: string;
-	}[];
+	}>;
 }
 
 export interface McpVertexRulesGetRulesOutput {
@@ -1435,11 +1440,27 @@ export interface McpVertexRulesGetRulesOutput {
 			framework: string;
 			presetId: string;
 			eslint: string[];
+			configs?: string[];
 			typecheck: string[];
 			reason: string;
 		};
 	}[];
 	conventions: Record<string, string[]>;
+	dogmas: Record<string, {
+		language: string;
+		displayName?: string;
+		version: string;
+		packageManager: string;
+		ownership: string;
+		errorModel: string;
+		nullSafety: string;
+		naming: string;
+		async: string;
+		visibility: string;
+		immutability: string;
+		testing: string;
+		bullets: string[];
+	}>;
 }
 
 export interface McpVertexScaffoldOutput {
