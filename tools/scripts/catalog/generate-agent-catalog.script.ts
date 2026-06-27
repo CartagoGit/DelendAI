@@ -331,7 +331,9 @@ const loadLiveToolSummaries = async (
 		);
 	}
 	return (config.extraTools ?? []).map((tool) => {
-		const name = tool.id.includes('_') ? tool.id : `mcp-vertex_${tool.id}`;
+		const name = tool.id.startsWith('mcp-vertex_')
+			? tool.id
+			: `mcp-vertex_${tool.id}`;
 		return {
 			name,
 			plugin: namespaceFromToolName(name),

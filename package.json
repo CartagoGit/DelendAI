@@ -43,6 +43,7 @@
 		"lint:brand-hex": "bun tools/scripts/lint/no-duplicate-brand-hex.script.ts",
 		"lint:skills": "bun tools/scripts/lint/skills-script.ts",
 		"lint:cache": "bun tools/scripts/lint/check-cache.script.ts",
+		"catalog:check": "bun tools/scripts/catalog/generate-agent-catalog.script.ts --check",
 		"verify:tools": "bun tools/scripts/verify/plugin-tool-verify.script.ts",
 		"site:codegen": "bun tools/scripts/astro/gen-section-pages.script.ts && bun tools/scripts/i18n/translate-tutorials.script.ts",
 		"metrics:gate": "bun tools/scripts/metrics/collect-candidate.script.ts && bun tools/scripts/metrics/diff-snapshots.script.ts",
