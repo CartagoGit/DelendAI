@@ -80,7 +80,7 @@ export interface IAssembledCliConfig {
 	/** Absolute path of the resolved config file. */
 	readonly configPath: string;
 	/**
-	 * f00068 slice A: the cache eviction registry handed to every
+	 * f00072 slice S1: the cache eviction registry handed to every
 	 * plugin via `IMcpPluginContext.cacheEvictionRegistry`. Exposed
 	 * here so the doctor and CLI tests can run / inspect it without
 	 * spinning up a plugin. Last boot-sweep report (always dryRun by
@@ -240,7 +240,7 @@ export const assembleCliConfig = async (
 	const agentWorktreeEnabled =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
-	// f00068 slice A: the cache eviction registry is a single shared
+	// f00072 slice S1: the cache eviction registry is a single shared
 	// instance every plugin receives via its context. We create it
 	// BEFORE loadPlugins so a plugin's `register()` can call
 	// `ctx.cacheEvictionRegistry.register(rule)`. The boot sweep that
@@ -677,7 +677,7 @@ export const assembleCliConfig = async (
 			: {}),
 	};
 
-	// f00068 slice A: boot sweep. Runs once, AFTER every plugin has
+	// f00072 slice S1: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
