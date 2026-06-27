@@ -1,11 +1,15 @@
-import type { IToolDescriptor, OverviewService } from '@mcp-vertex/client';
+import type {
+	AgentCatalogService,
+	IToolDescriptor,
+	OverviewService,
+} from '@mcp-vertex/client';
 
 import {
 	pluginNode,
 	serverNode,
 	toolNode,
 	type IToolTreeNode,
-	type TreeItemCollapsibleState,
+	TreeItemCollapsibleState,
 } from './tool-tree-node';
 
 export interface IDisposable {
@@ -25,9 +29,19 @@ export interface IFileSystemWatcher {
 export class ToolTreeDataProvider {
 	private readonly listeners = new Set<ITreeChangeListener>();
 	private toolsCache: readonly IToolDescriptor[] | undefined;
+	private skillsCache:
+		| Awaited<ReturnType<AgentCatalogService['getSkills']>>
+		| undefined;
+	private proposalsCache:
+		| Awaited<ReturnType<AgentCatalogService['getProposals']>>
+		| undefined;
 
 	constructor(
 		private readonly overview: Pick<OverviewService, 'listTools'>,
+		private readonly catalog?: Pick<
+			AgentCatalogService,
+			'getSkills' | 'getProposals'
+		>,
 	) {}
 
 	readonly onDidChangeTreeData = (
@@ -47,7 +61,57 @@ export class ToolTreeDataProvider {
 
 	async getChildren(element?: IToolTreeNode): Promise<IToolTreeNode[]> {
 		if (element === undefined) {
-			return [serverNode()];
+			const nodes: IToolTreeNode[] = [];
+			const skills = await this.skills();
+			if (skills.length > 0) {
+				nodes.push({
+					kind: 'plugin',
+					id: 'plugin:__skills__',
+					label: 'Skills',
+					description: `${skills.length} skills`,
+					collapsibleState: TreeItemCollapsibleState.Collapsed,
+					contextValue: 'mcpVertexSkillGroup',
+					plugin: '__skills__',
+				});
+			}
+			const proposals = await this.proposals();
+			if (proposals.length > 0) {
+				nodes.push({
+					kind: 'plugin',
+					id: 'plugin:__actionable_proposals__',
+					label: 'Actionable proposals',
+					description: `${proposals.length} proposals`,
+					collapsibleState: TreeItemCollapsibleState.Collapsed,
+					contextValue: 'mcpVertexProposalGroup',
+					plugin: '__actionable_proposals__',
+				});
+			}
+			nodes.push(serverNode());
+			return nodes;
+		}
+		if (element.id === 'plugin:__skills__') {
+			return (await this.skills()).map((skill) => ({
+				kind: 'tool',
+				id: `skill:${skill.id}`,
+				label: skill.id,
+				description: skill.summary,
+				tooltip: skill.summary,
+				collapsibleState: TreeItemCollapsibleState.None,
+				contextValue: 'mcpVertexSkill',
+				plugin: '__skills__',
+			}));
+		}
+		if (element.id === 'plugin:__actionable_proposals__') {
+			return (await this.proposals()).map((proposal) => ({
+				kind: 'tool',
+				id: `proposal:${proposal.id}`,
+				label: proposal.id,
+				description: `${proposal.status} · ${proposal.title}`,
+				tooltip: proposal.title,
+				collapsibleState: TreeItemCollapsibleState.None,
+				contextValue: 'mcpVertexProposal',
+				plugin: '__actionable_proposals__',
+			}));
 		}
 		if (element.kind === 'server') {
 			const byPlugin = await this.toolsByPlugin();
@@ -67,6 +131,8 @@ export class ToolTreeDataProvider {
 
 	refresh(): void {
 		this.toolsCache = undefined;
+		this.skillsCache = undefined;
+		this.proposalsCache = undefined;
 		for (const listener of this.listeners) {
 			listener(undefined);
 		}
@@ -101,6 +167,22 @@ export class ToolTreeDataProvider {
 	private async tools(): Promise<readonly IToolDescriptor[]> {
 		this.toolsCache ??= await this.overview.listTools();
 		return this.toolsCache;
+	}
+
+	private async skills(): Promise<
+		Awaited<ReturnType<AgentCatalogService['getSkills']>>
+	> {
+		if (this.catalog === undefined) return [];
+		this.skillsCache ??= await this.catalog.getSkills();
+		return this.skillsCache;
+	}
+
+	private async proposals(): Promise<
+		Awaited<ReturnType<AgentCatalogService['getProposals']>>
+	> {
+		if (this.catalog === undefined) return [];
+		this.proposalsCache ??= await this.catalog.getProposals();
+		return this.proposalsCache;
 	}
 }
 

@@ -17,16 +17,6 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		"onView:mcp-vertex.tools",
-		"onView:mcp-vertex.proposals",
-		"onView:mcp-vertex.memory",
-		"onCommand:mcp-vertex.openDashboard",
-		"onCommand:mcp-vertex.showOverview",
-		"onCommand:mcp-vertex.refresh",
-		"onCommand:mcp-vertex.openToolbar",
-		"onCommand:mcp-vertex.setupGithub"
-	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
@@ -56,6 +46,10 @@
 			]
 		},
 		"commands": [
+			{
+				"command": "mcp-vertex.openAgentCatalog",
+				"title": "mcp-vertex: Open the unified agent catalog"
+			},
 			{
 				"command": "mcp-vertex.openDashboard",
 				"title": "mcp-vertex: Open Dashboard"
@@ -120,7 +114,22 @@
 				"command": "mcp-vertex.setupGithub",
 				"title": "mcp-vertex: Set up GitHub issues"
 			}
-		]
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "mcp-vertex.openAgentCatalog",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "mcp-vertex.openAgentCatalog",
+					"when": "true"
+				}
+			]
+		}
 	},
 	"configuration": {
 		"title": "MCP Vertex server",
