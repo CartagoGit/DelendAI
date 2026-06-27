@@ -4,6 +4,9 @@ import type { IToolRegistration } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
+import { createGitRunner } from '../shared/git-runner';
+import type { IGitRunner } from '../shared/git-runner';
 import {
 	planDisjointnessIssues,
 	validateClaim,
@@ -102,11 +105,29 @@ export interface IDelegateToolOptions {
 	readonly namespacePrefix: string;
 	readonly agentNames: IAgentNamesToolOptions;
 	readonly lockPathAbs: string;
+	/**
+	 * x00051: when present and `enabled`, `delegate` creates a per-agent
+	 * `git worktree` + branch (`agent/<assigned-name>`) before claiming
+	 * the file lock — so a subagent spawned through delegation never
+	 * inherits the orchestrator's branch. Back-compat: omitted or
+	 * `enabled: false` ⇒ behaviour unchanged (no worktree step).
+	 *
+	 * The host gate (`agentWorktreeEnabled`) lives in `ctx`; the
+	 * registrations in `plugins/proposals/src/index.ts` only forward
+	 * this option when the gate is on, so the tool itself does not
+	 * double-check the gate.
+	 */
+	readonly worktree?: {
+		readonly enabled: boolean;
+		readonly workspaceRoot: string;
+		/** Override the git runner (tests); defaults to the real `git` binary. */
+		readonly run?: IGitRunner;
+	};
 }
 
 const DELEGATE_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
-	stage: z.enum(['assign', 'lock']).optional(),
+	stage: z.enum(['assign', 'worktree', 'lock']).optional(),
 	detail: z.record(z.string(), z.unknown()).optional(),
 	agent: z.string().optional(),
 	reason: z.string().optional(),
@@ -114,6 +135,13 @@ const DELEGATE_OUTPUT_SCHEMA = z.object({
 	slot: z.string().optional(),
 	files: z.array(z.string()).optional(),
 	locked: z.boolean().optional(),
+	worktree: z
+		.object({
+			path: z.string(),
+			branch: z.string(),
+			created: z.boolean(),
+		})
+		.optional(),
 	instruction: z.string().optional(),
 });
 
@@ -178,6 +206,47 @@ export const buildDelegateRegistration = (
 						detail: assigned,
 					});
 				}
+				// x00051 S1: when the host has enabled the worktree gate,
+				// create the per-agent worktree + branch BEFORE claiming
+				// the file lock. Failure here is a hard prerequisite —
+				// the lock must not be claimed against a branch that
+				// does not exist yet.
+				let worktreeInfo:
+					| { path: string; branch: string; created: boolean }
+					| undefined;
+				if (options.worktree?.enabled === true) {
+					const run =
+						options.worktree.run ??
+						createGitRunner(options.worktree.workspaceRoot);
+					const wt = await runAgentWorktreeEngine(
+						{
+							action: 'create',
+							agent: assigned.agent_name,
+						},
+						{
+							run,
+							workspaceRoot: options.worktree.workspaceRoot,
+						},
+					);
+					if (!wt.ok) {
+						return toolJson({
+							ok: false,
+							stage: 'worktree',
+							agent: assigned.agent_name,
+							reason:
+								wt.reason ??
+								'agent_worktree create failed; lock not claimed',
+							detail: wt,
+						});
+					}
+					if (wt.action === 'create') {
+						worktreeInfo = {
+							path: wt.path,
+							branch: wt.branch,
+							created: wt.created,
+						};
+					}
+				}
 				const lockResult = await runAgentLockEngine(
 					{
 						action: 'claim',
@@ -204,6 +273,9 @@ export const buildDelegateRegistration = (
 						detail: lock,
 					});
 				}
+				const whereClause = worktreeInfo
+					? `Edit files in \`${worktreeInfo.path}\` (branch \`${worktreeInfo.branch}\`); commit there. `
+					: '';
 				return toolJson({
 					ok: true,
 					agent: assigned.agent_name,
@@ -211,7 +283,8 @@ export const buildDelegateRegistration = (
 					slot: args.slot,
 					files: args.files,
 					locked: true,
-					instruction: `You are "${assigned.agent_name}". Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
+					...(worktreeInfo ? { worktree: worktreeInfo } : {}),
+					instruction: `You are "${assigned.agent_name}". ${whereClause}Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
 				});
 			},
 		);
