@@ -57,7 +57,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 
 ### S1 - Canonical agent-discovery builder + MCP surface
 - **Files**: packages/core/src/lib/catalog/agent-discovery-catalog.ts, packages/core/src/lib/tools/agent-catalog-tool.ts, packages/core/src/lib/resources/agent-catalog-resource.ts, packages/core/src/lib/prompts/agent-bootstrap.prompt.ts, packages/core/src/public/index.ts, packages/core/tests/src/lib/e2e/agent-catalog.e2e.spec.ts, packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run validate
 - **Acceptance**:
   - "One pure builder derives the loaded tool catalog from the live plugin registry, the skill catalog from skills/manifest.json, and the proposal catalog from docs/proposals/index.json; no host keeps a second hand-maintained list of tools, skills, or proposal ids."
