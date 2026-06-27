@@ -199,6 +199,7 @@ const extractExtras = (
 const readProposalFile = async (
 	absFilepath: string,
 	indexPath: string,
+	proposalsDir: string,
 ): Promise<{ entry: IProposalEntry; warning?: string }> => {
 	const rawStr = await readFile(absFilepath, 'utf8');
 	const fm = parseFrontmatter(rawStr);
@@ -213,7 +214,14 @@ const readProposalFile = async (
 		: undefined;
 	const entry: IProposalEntry = {
 		id,
-		file: relative(dirname(indexPath), absFilepath),
+		// x00052: `file` is `proposalsDir`-relative (was implicitly
+		// `dirname(indexPath)`-relative, which used to be the same
+		// directory but is no longer now that the index lives under
+		// `cacheDir`). Keeping the field anchored to the *content* root
+		// (where the proposal files live) means every downstream
+		// `join(proposalsDir, entry.file)` and `folderOf(entry.file)`
+		// stays correct regardless of where the index itself is stored.
+		file: relative(proposalsDir, absFilepath),
 		track: fm.track ?? 'unspecified',
 		type: fm.type ?? 'unspecified',
 		status,
@@ -232,6 +240,7 @@ const readProposalFile = async (
 const scanSubtree = async (
 	absDir: string,
 	indexPath: string,
+	proposalsDir: string,
 ): Promise<{ entries: IProposalEntry[]; warnings: string[] }> => {
 	const entries: IProposalEntry[] = [];
 	const warnings: string[] = [];
@@ -251,6 +260,7 @@ const scanSubtree = async (
 		const { entry, warning } = await readProposalFile(
 			join(absDir, name),
 			indexPath,
+			proposalsDir,
 		);
 		entries.push(entry);
 		if (warning) warnings.push(warning);
@@ -561,7 +571,11 @@ export async function syncProposalRegistry(
 		const entries: IProposalEntry[] = [];
 		const warnings: string[] = [];
 		for (const subtree of subtrees) {
-			const result = await scanSubtree(subtree.absolute, indexPath);
+			const result = await scanSubtree(
+				subtree.absolute,
+				indexPath,
+				proposalsDir,
+			);
 			result.entries.sort((a, b) => a.id.localeCompare(b.id));
 			entries.push(...result.entries);
 			warnings.push(...result.warnings);

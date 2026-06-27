@@ -18,7 +18,11 @@ describe('buildSwarmPaths', async () => {
 	it('roots human-edited proposals under the given docsDir', async () => {
 		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
 		expect(layout.proposalsDir).toBe('docs/x/proposals');
-		expect(layout.proposalIndexFile).toBe('docs/x/proposals/index.json');
+		// x00052: proposalIndexFile moved under cacheDir — it is a
+		// regenerable cache artefact, not human-edited state.
+		expect(layout.proposalIndexFile).toBe(
+			'.cache/x/swarm/proposals/index.json',
+		);
 	});
 });
 

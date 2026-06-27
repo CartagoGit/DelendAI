@@ -35,6 +35,7 @@ import type {
 } from './cascade-priority';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import { readTextOrNull } from '../proposals/index-reader';
+import { proposalDocPath } from '../proposals/proposal-paths';
 import { parseProposalFrontmatter } from '../shared/proposal-frontmatter';
 
 // ---------------------------------------------------------------------------
@@ -61,7 +62,7 @@ export const buildCascadeSummary = async (
 ): Promise<IProposalSummary> => {
 	const prefix = familyOf(entry.id);
 	const kind = PROPOSAL_KIND_BY_PREFIX[prefix] ?? LEGACY_ALIAS_PREFIX;
-	const docPath = join(dirname(indexPath), entry.file);
+	const docPath = proposalDocPath(indexPath, entry.file);
 	const markdown = await readTextOrNull(docPath);
 	if (markdown === null) return { id: entry.id, kind };
 	const frontmatter = parseProposalFrontmatter(markdown);

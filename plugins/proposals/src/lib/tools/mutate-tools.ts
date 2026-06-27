@@ -31,6 +31,12 @@ export interface IMutateToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRoot: string;
 	readonly indexPathAbs: string;
+	/**
+	 * x00052: absolute path of the proposals directory. Optional —
+	 * legacy call-sites omit it and fall back to
+	 * `dirname(indexPathAbs)`.
+	 */
+	readonly proposalsDirAbs?: string;
 	readonly layout?: Pick<
 		IHostPathLayout,
 		'proposalsDir' | 'proposalIndexFile'
@@ -56,7 +62,10 @@ const locateProposalFile = async (
 	);
 	if (entry === undefined) return null;
 	return {
-		docPath: join(dirname(options.indexPathAbs), entry.file),
+		docPath: join(
+			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+			entry.file,
+		),
 		entry,
 	};
 };

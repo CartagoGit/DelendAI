@@ -101,8 +101,12 @@ describe('F3 — engines honor a relocated path layout', async () => {
 
 		const result = await syncProposalRegistry(root);
 
+		// x00052: DEFAULT_PATH_LAYOUT now points the index at
+		// `<cacheDir>/proposals/index.json` instead of
+		// `<docsDir>/proposals/index.json` (the index is a
+		// regenerable cache artefact, not a human-edited source).
 		expect(result.indexPath).toBe(
-			join(root, 'docs/mcp-vertex/proposals/index.json'),
+			join(root, '.cache/mcp-vertex/proposals/index.json'),
 		);
 	});
 });

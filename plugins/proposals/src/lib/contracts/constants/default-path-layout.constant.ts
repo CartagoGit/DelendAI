@@ -6,8 +6,9 @@ import { joinRel } from '@mcp-vertex/core/public';
  * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
  * and `--docsDir` (default `docs/mcp-vertex`) and hands the proposals
  * plugin those resolved roots. Cache artefacts (locks, queue,
- * checkpoints, worktrees) live under `cacheDir`; human-edited proposals
- * live under `docsDir`.
+ * checkpoints, worktrees, **and** the proposals registry index — see
+ * x00052) live under `cacheDir`; human-edited proposals live under
+ * `docsDir`.
  */
 export const buildSwarmPaths = (
 	cacheDir: string,
@@ -31,7 +32,7 @@ export const buildSwarmPaths = (
 	finishDayReportFile: joinRel(cacheDir, 'agent/finish-day/last-report.json'),
 	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
 	proposalsDir: joinRel(docsDir, 'proposals'),
-	proposalIndexFile: joinRel(docsDir, 'proposals/index.json'),
+	proposalIndexFile: joinRel(cacheDir, 'proposals/index.json'),
 	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),
 	worktreesDir: joinRel(cacheDir, '.worktrees'),
 	scratchDir: cacheDir,

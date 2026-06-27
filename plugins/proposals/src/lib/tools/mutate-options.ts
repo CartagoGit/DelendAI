@@ -37,6 +37,14 @@ export interface IMutateToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRoot: string;
 	readonly indexPathAbs: string;
+	/**
+	 * x00052: absolute path of the proposals directory. Required so
+	 * `join(proposalsDir, entry.file)` stays anchored to the content
+	 * root after the index moved under `cacheDir`. Optional for legacy
+	 * test fixtures — the `proposal-paths` helper falls back to
+	 * `dirname(indexPathAbs)` when absent.
+	 */
+	readonly proposalsDirAbs?: string;
 	readonly layout?: Pick<
 		IHostPathLayout,
 		'proposalsDir' | 'proposalIndexFile'
