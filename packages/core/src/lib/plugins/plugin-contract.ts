@@ -10,6 +10,7 @@ import type {
 	IToolRegistration,
 } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import type { ICacheEvictionRegistry } from '../contracts/interfaces/cache-eviction.interface';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -60,6 +61,19 @@ export interface IMcpPluginContext {
 	readonly options: Readonly<Record<string, unknown>>;
 	/** Extra global CLI args not consumed by the core, e.g. `--foo=x`. */
 	readonly args: Readonly<Record<string, string>>;
+	/**
+	 * Cache eviction registry — f00068 slice A. Plugins contribute
+	 * rules via `ctx.cacheEvictionRegistry.register(rule)` during their
+	 * `register()` hook; the core boot sweep runs a dry-run after every
+	 * plugin has loaded (see `assemble.ts`). The registry is the same
+	 * instance every plugin receives within a single boot, so two
+	 * plugins can collaborate without each owning a separate scheduler.
+	 *
+	 * Optional on the contract for backward-compatibility with existing
+	 * test fixtures that build a context literal by hand. Production
+	 * hosts always supply it.
+	 */
+	readonly cacheEvictionRegistry?: ICacheEvictionRegistry | undefined;
 }
 
 /**
