@@ -154,7 +154,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "`docs/PAGES-AUDIT.md` lists every file under `apps/web/src/pages/**/*.astro` (the 16 top-level + the `[lang]/` mirrors) with one row per page: `path`, `lang coverage` (which languages render it), `kind` (content / chrome / dynamic), `last meaningful edit` (heuristic — `git log -1 --format=%ci` on the file), `verdict` (keep / shelve / rewrite / merge-into-<other>), `why` (one sentence)."
   - "`apps/web/src/data/pages-audit.ts` exports `PAGES_AUDIT` typed as `readonly IPageAuditEntry[]` so the build can warn (not fail) on `rewrite` / `merge` entries that haven't been acted on yet. A spec asserts the count matches the on-disk page count and that every entry has a verdict."
   - "The audit surfaces at minimum: duplicate pages (`tools.astro` vs `tools/[plugin]/...` vs `tools/[plugin]/[tool].astro`), pages with no real content (404, knowledge — content lives elsewhere), pages whose copy is now stale (`setup.astro` — pre-f00053), and pages that have a clean PageSpec migration target (`install.astro`, `guide.astro`, `first-5-minutes.astro`, `cli.astro`)."
-- **Status**: pending
+- **Status**: done
 
 ### S4 — Define `PageSpec` as the canonical content contract for content-driven pages
 
