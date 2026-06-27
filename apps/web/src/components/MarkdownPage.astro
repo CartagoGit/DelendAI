@@ -1,0 +1,43 @@
+---
+import MarkdownIt from 'markdown-it';
+
+import type { Lang } from '#I18N/ui';
+import type { IPageTranslation, PageSpec } from '#LIB/page-spec/types';
+
+interface Props {
+	page: PageSpec;
+	lang: Lang;
+}
+
+const markdown = new MarkdownIt({
+	html: false,
+	linkify: true,
+});
+
+const { page, lang } = Astro.props;
+const requestedTranslation = (
+	page.translations as Partial<Record<Lang, IPageTranslation>>
+)[lang];
+// Future migrations may temporarily ship a slug before every locale exists.
+// When that happens we render the English source and show an in-page notice.
+const translation = requestedTranslation ?? page.translations.en;
+const isFallback = lang !== 'en' && requestedTranslation === undefined;
+const renderedBody = markdown.render(translation.body);
+---
+
+<article class="md-page">
+	{isFallback && (
+		<p class="md-page__notice" role="status">
+			This page is not translated into {lang} yet. Showing the English version.
+		</p>
+	)}
+	<header class="md-page__header">
+		<h1>{translation.frontmatter.title}</h1>
+		<p class="md-page__description">{translation.frontmatter.description}</p>
+	</header>
+	<div class="md-page__body markdown-body" set:html={renderedBody}></div>
+</article>
+
+<style is:global lang="scss">
+	@use '../styles/components/markdown-page';
+</style>

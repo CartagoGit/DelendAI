@@ -1,0 +1,177 @@
+.md-page {
+	width: min(100% - 2rem, 72rem);
+	margin: 0 auto;
+	padding: clamp(2.5rem, 4vw, 4rem) 0 5rem;
+	color: var(--fg);
+}
+
+.md-page__notice {
+	margin: 0 0 1.5rem;
+	padding: 0.875rem 1rem;
+	border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+	border-radius: 0.9rem;
+	background: color-mix(
+		in srgb,
+		var(--surface, var(--card)) 84%,
+		var(--accent) 16%
+	);
+	color: var(--muted, var(--fg));
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.md-page__header {
+	margin-bottom: 2rem;
+}
+
+.md-page__header h1 {
+	margin: 0;
+	font-size: clamp(2.4rem, 5vw, 4rem);
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	text-wrap: balance;
+}
+
+.md-page__description {
+	max-width: 70ch;
+	margin: 1rem 0 0;
+	font-size: 1.1rem;
+	line-height: 1.7;
+	color: var(--muted, var(--fg));
+	text-wrap: pretty;
+}
+
+.md-page__body {
+	font-size: 1rem;
+	line-height: 1.8;
+	color: var(--fg);
+}
+
+.md-page__body > :first-child {
+	margin-top: 0;
+}
+
+.md-page__body > :last-child {
+	margin-bottom: 0;
+}
+
+.md-page__body :where(h2, h3, h4, h5, h6) {
+	margin: 2.5rem 0 1rem;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.md-page__body h2 {
+	font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.md-page__body h3 {
+	font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+}
+
+.md-page__body :where(p, ul, ol, blockquote, table, pre) {
+	margin: 1.1rem 0;
+}
+
+.md-page__body :where(ul, ol) {
+	padding-inline-start: 1.5rem;
+}
+
+.md-page__body li + li {
+	margin-top: 0.35rem;
+}
+
+.md-page__body a {
+	color: var(--accent);
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.18em;
+	word-break: break-word;
+}
+
+.md-page__body a:hover {
+	text-decoration-thickness: 0.12em;
+}
+
+.md-page__body strong {
+	color: var(--fg);
+	font-weight: 700;
+}
+
+.md-page__body code {
+	padding: 0.15rem 0.4rem;
+	border-radius: 0.45rem;
+	background: color-mix(in srgb, var(--card) 82%, black 18%);
+	font-size: 0.94em;
+	font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+	word-break: break-word;
+}
+
+.md-page__body pre {
+	overflow-x: auto;
+	padding: 1rem 1.15rem;
+	border: 1px solid
+		color-mix(in srgb, var(--border, var(--fg)) 45%, transparent);
+	border-radius: 1rem;
+	background: color-mix(in srgb, var(--card) 88%, black 12%);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.md-page__body pre code {
+	padding: 0;
+	background: transparent;
+	border-radius: 0;
+	word-break: normal;
+	font-size: 0.95rem;
+	line-height: 1.65;
+}
+
+.md-page__body blockquote {
+	padding: 0.2rem 0 0.2rem 1rem;
+	border-inline-start: 4px solid var(--accent);
+	color: var(--muted, var(--fg));
+	background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+.md-page__body hr {
+	margin: 2rem 0;
+	border: 0;
+	border-top: 1px solid
+		color-mix(in srgb, var(--border, var(--fg)) 42%, transparent);
+}
+
+.md-page__body img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin: 1.5rem auto;
+	border-radius: 1rem;
+}
+
+.md-page__body table {
+	width: 100%;
+	border-collapse: collapse;
+	overflow: hidden;
+	border: 1px solid
+		color-mix(in srgb, var(--border, var(--fg)) 40%, transparent);
+	border-radius: 1rem;
+	font-size: 0.96rem;
+}
+
+.md-page__body th,
+.md-page__body td {
+	padding: 0.8rem 0.9rem;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border, var(--fg)) 34%, transparent);
+	text-align: left;
+	vertical-align: top;
+}
+
+.md-page__body th {
+	background: color-mix(in srgb, var(--card) 82%, transparent);
+	font-weight: 700;
+}
+
+.md-page__body tr:last-child td {
+	border-bottom: 0;
+}
