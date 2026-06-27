@@ -54,6 +54,8 @@ import { proposalsAgentLockI18n } from '#I18N/tools/mcp-vertex_proposals_agent_l
 import { proposalsAgentLockReleaseOrphanI18n } from '#I18N/tools/mcp-vertex_proposals_agent_lock_release_orphan';
 import { proposalsAgentNamesI18n } from '#I18N/tools/mcp-vertex_proposals_agent_names';
 import { proposalsAgentWorktreeI18n } from '#I18N/tools/mcp-vertex_proposals_agent_worktree';
+import { proposalsBranchGcI18n } from '#I18N/tools/mcp-vertex_proposals_branch_gc';
+import { proposalsBranchStatusI18n } from '#I18N/tools/mcp-vertex_proposals_branch_status';
 import { proposalsCloseSliceI18n } from '#I18N/tools/mcp-vertex_proposals_close_slice';
 import { proposalsCompactStatusI18n } from '#I18N/tools/mcp-vertex_proposals_compact_status';
 import { proposalsContinueProposalI18n } from '#I18N/tools/mcp-vertex_proposals_continue_proposal';
@@ -188,6 +190,11 @@ registerToolI18n('mcp-vertex_proposals_agent_names', proposalsAgentNamesI18n);
 registerToolI18n(
 	'mcp-vertex_proposals_agent_worktree',
 	proposalsAgentWorktreeI18n,
+);
+registerToolI18n('mcp-vertex_proposals_branch_gc', proposalsBranchGcI18n);
+registerToolI18n(
+	'mcp-vertex_proposals_branch_status',
+	proposalsBranchStatusI18n,
 );
 registerToolI18n('mcp-vertex_proposals_close_slice', proposalsCloseSliceI18n);
 registerToolI18n(

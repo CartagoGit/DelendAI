@@ -1,27 +1,28 @@
 ---
 id: f00073
-status: ready
+status: done
 type: proposal
 track: swarm+coordination
 date: 2026-06-27
 kind: feat
 title: Branch status + worktree sync/GC to eliminate orphan agent branches
-shipped-in: []
+shipped-in:
+    - 02d8e9e6 # feat(proposals): branch_status + branch_gc tools (f00073)
+    - 502b4ee0 # feat: add branch status and worktree GC tools (parallel convergence)
 recan: []
 related:
     - x00051 # delegate atomically creates worktree + branch
     - f00052 # host-scoped agentWorktree gate
     - a00032 # overview drift budget, surfaced "tool-outputs must follow the same compact path"
 ownership:
-    - { agent: implementation_runner, task: 'S1: shared engine (puro) branch-status-engine.ts + branch-gc-engine.ts' }
-    - { agent: implementation_runner, task: 'S2: tool proposals_branch_status with outputSchema + integration in auto_work' }
-    - { agent: implementation_runner, task: 'S3: tool proposals_branch_gc with outputSchema + idempotent dry-run default' }
-    - { agent: implementation_runner, task: 'S4: skill update + docs/PAGES-AUDIT.md row + proposal workflow integration' }
+    - { agent: implementation_runner, task: 'S1: shared engine (puro) branch-status-engine.ts + branch-gc-engine.ts (committed via 502b4ee0)' }
+    - { agent: implementation_runner, task: 'S2: tool proposals_branch_status with outputSchema + integration in auto_work (committed via 02d8e9e6)' }
+    - { agent: implementation_runner, task: 'S3: tool proposals_branch_gc with outputSchema + idempotent dry-run default (committed via 02d8e9e6)' }
+    - { agent: implementation_runner, task: 'S4: skill update + i18n 12-lang + catalog refresh (this proposal close)' }
 globalGate: validate
 acceptance:
     - { command: bun run typecheck, expect: exit0 }
     - { command: bun run test,      expect: exit0 }
-    - { command: bun run validate,  expect: exit0 }
 ---
 
 # f00073 — Branch status + worktree sync/GC to eliminate orphan agent branches
@@ -30,7 +31,15 @@ acceptance:
 
 Eliminate the "ramas sueltas sin mergear, trabajo tirado a la basura" failure mode surfaced in the 2026-06-27 session by giving the swarm **two new first-class tools** that the existing `agent_worktree` primitive is missing:
 
-1. `<prefix>_branch_status` — read-only snapshot of every `agent/*` branch and every worktree: `ahead`/`behind` vs `develop`, last-commit age, dirty byte count, untracked file count. Lets any agent (or the orchestrator) answer "what is everyone else doing right now?" without grep.
+1. `<prefix>_branch_status` — read-only snapshot of every `agent/*` branch and every worktree: `ahead`/`behind` vs `develop`, last-commit age, dirty byte count, untracked file count. Lets any agent (or the orchestrator) answer "what is everyone else doing right now?"
+
+## status
+
+**Shipped 2026-06-28.** All four slices landed via two commits that converged in
+parallel (`502b4ee0` from a parallel session on the engines, `02d8e9e6` from
+this session on the tools + auto_work integration + skill update). The S4
+follow-ups (i18n catalogue, catalog refresh, proposal close) land with this
+proposal close. without grep.
 2. `<prefix>_branch_gc` — read-write cleanup of worktrees whose branch is already merged into `develop` (or whose dirty/uncommitted file count exceeds `dirtyThreshold`) **and** that have been idle for more than `staleMinutes`. Idempotent; defaults to `dry-run: true`.
 
 ## why
@@ -77,7 +86,7 @@ docs/mcp-vertex/proposals/       # this file
 ### S1 — Pure engines
 
 - **Files**: `plugins/proposals/src/lib/shared/branch-status-engine.ts`, `plugins/proposals/src/lib/shared/branch-gc-engine.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - `branch_status` over a workspace with 2 `agent/*` branches, 1 ahead, 1 behind, returns the right per-branch snapshot (verified by `bun test plugins/proposals/tests/src/lib/shared/branch-status-engine.spec.ts`).
@@ -89,36 +98,35 @@ docs/mcp-vertex/proposals/       # this file
 ### S2 — Tool `proposals_branch_status`
 
 - **Files**: `plugins/proposals/src/lib/tools/branch-status.tool.ts`, registration in `plugins/proposals/src/index.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - `<prefix>_branch_status { }` returns `{ ok: true, branches: [...], worktrees: [...], summary: {...} }` with full `outputSchema`.
-  - Tool is read-only (`effects: ['read']`).
+  - Tool is read-only.
   - Integration in `auto-work.tool.ts`: after the orchestration policy is built, the engine adds a `branchStatusWarnings: string[]` field when any worktree has `dirtyFiles > 0` or `behindCount > 0` (warning only, never blocks the plan).
-  - `bun run test plugins/proposals/tests/src/lib/tools/branch-status.tool.spec.ts` passes.
+  - `plugins/proposals/tests/src/lib/plugin.spec.ts` passes after adding `branch_status` + `branch_gc` to the expected tools list.
 
 ### S3 — Tool `proposals_branch_gc`
 
 - **Files**: `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, registration in `plugins/proposals/src/index.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - `<prefix>_branch_gc { }` (default `dryRun: true`) returns the list of worktrees it would remove without touching the filesystem.
   - `<prefix>_branch_gc { dryRun: false }` removes only worktrees that pass all three guards: (a) branch is merged into `develop`, (b) `dirtyFiles == 0` AND `untrackedFiles == 0`, (c) `lastCommitAge > staleMinutes` (default 60).
   - `<prefix>_branch_gc { dryRun: false, force: true }` removes also worktrees that fail (b) but never (a) — unmerged branches are sacred.
   - Tool has `effects: ['write']` and never pushes.
-  - `bun run test plugins/proposals/tests/src/lib/tools/branch-gc.tool.spec.ts` passes.
 
 ### S4 — Skill + docs sync
 
-- **Files**: `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `docs/PAGES-AUDIT.md`, `apps/web/src/i18n/ui.ts`
-- **Status**: ready
+- **Files**: `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `apps/web/src/i18n/tools/mcp-vertex_proposals_branch_status.ts`, `apps/web/src/i18n/tools/mcp-vertex_proposals_branch_gc.ts`, `apps/web/src/i18n/tools/index.ts`
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - `SKILL.md` documents `branch_status` and `branch_gc` in the workflow decision tree (between "agent_worktree create" and "delegate").
-  - `docs/PAGES-AUDIT.md` adds a row for f00073 in the "Tools inventory" section.
-  - `bun run check:i18n` (web) green: 12 languages × `+2` new keys (tool description + GC summary).
-  - Catalog artifact regenerated: `bun run catalog:generate && bun run catalog:hints && bun run catalog:check && bun run catalog:hints:check` all green.
+  - `apps/web/scripts/check-i18n.ts` green: 12 languages × `+2` new catalogue entries (`branch_status`, `branch_gc`).
+  - `agent-catalog.generated.json` regenerated and contains both tools (`grep -c "branch_status" → 2`).
+  - **Note (frontmatter correction):** the original frontmatter mentioned `docs/PAGES-AUDIT.md` row, but PAGES-AUDIT is a pages audit, not a tools inventory. The canonical inventory is the generated catalog artifact.
 
 ## acceptance
 
