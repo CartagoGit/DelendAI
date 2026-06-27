@@ -85,6 +85,19 @@ export const reviewTransition = (
 			reason: 'a reviewer must be a different agent than the implementer under review (independent verification)',
 		};
 	}
+	// Chain-of-distinct-reviewers rule (x00056): the SAME reviewer cannot
+	// verify two consecutive rounds. After a `request_changes`, the next
+	// reviewer must be a fresh agent — never the previous one who already
+	// weighed in. This keeps the loop honest: every round of changes
+	// gets a fresh pair of eyes, never a rubber-stamp by the same agent
+	// who already objected (or approved an earlier round).
+	const lastRound = state.rounds.at(-1);
+	if (lastRound !== undefined && lastRound.agent === who) {
+		return {
+			ok: false,
+			reason: `a reviewer must be a different agent than the previous reviewer (${who} already reviewed the prior round); call a fresh agent to verify this fix`,
+		};
+	}
 
 	if (action === 'approve') {
 		return {
