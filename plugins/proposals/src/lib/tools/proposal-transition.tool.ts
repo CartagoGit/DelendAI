@@ -64,11 +64,13 @@ export interface IProposalTransitionToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly workspaceRoot: string;
 	/**
-	 * f00016 + q00001: absolute path to `docs/mcp-vertex/proposals/index.json`. Used by
-	 * the q00001 plan-closure guard to look up child proposal statuses
-	 * when the caller transitions a `type: plan` proposal to `done`.
-	 * Optional — when absent, the plan-closure guard is skipped (legacy
-	 * hosts that have not yet adopted the index file keep working).
+	 * f00016 + q00001: absolute path to `<cacheDir>/proposals/index.json`
+	 * (the regenerable registry index — see x00052 for the move from
+	 * `docs/mcp-vertex/proposals/index.json`). Used by the q00001
+	 * plan-closure guard to look up child proposal statuses when the
+	 * caller transitions a `type: plan` proposal to `done`. Optional —
+	 * when absent, the plan-closure guard is skipped (legacy hosts
+	 * that have not yet adopted the index file keep working).
 	 */
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */

@@ -586,11 +586,12 @@ export async function syncProposalRegistry(
 			proposals: entries,
 			errors: warnings,
 		};
-		// `docs/mcp-vertex/proposals/index.json` is a tracked, Biome-linted file
-		// (unlike lock/handoff packets under `.cache/mcp-vertex/`), so it must
-		// match `biome.json#json.formatter.indentWidth` (4 spaces) — a
-		// tab-indented write here makes `bun run lint` red on every
-		// regeneration until someone re-formats it by hand.
+		// x00052: the registry index moved under
+		// `<cacheDir>/proposals/index.json` (it is a regenerable cache
+		// artefact, not a human-edited source file). The JSON is still
+		// formatted with 4-space indent to match the pre-x00052 wire
+		// format — a host that diffs two regenerations would notice a
+		// tab vs space drift otherwise.
 		const nextText = `${JSON.stringify(index, null, 4)}\n`;
 		let changed = true;
 		try {

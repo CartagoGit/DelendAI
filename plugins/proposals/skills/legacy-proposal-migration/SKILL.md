@@ -36,7 +36,9 @@ bun tools/scripts/proposals/normalize-legacy.script.ts --apply    # backfill kin
 ```
 
 Then, as an MCP tool call (NOT a script): `proposals_sync_proposals` to
-rebuild `docs/mcp-vertex/proposals/index.json` from the migrated files.
+rebuild `<cacheDir>/proposals/index.json` (the regenerable registry
+index — see x00052 for the move from
+`docs/mcp-vertex/proposals/index.json`) from the migrated files.
 
 Order matters because `rewrite-refs.script.ts` imports `planMigration` from
 `migrate-legacy.script.ts` to know which `pNNN -> lNNN` renames are real (so
@@ -97,8 +99,12 @@ a stricter one.
   has actually moved the files — its rewrite plan is derived from
   `planMigration`'s output, which assumes the rename already happened (or is
   about to, in dry-run preview mode only).
-- Never hand-edit `docs/mcp-vertex/proposals/index.json` after migrating — always
-  finish with `proposals_sync_proposals` (the tool, not a script).
+- Never hand-edit `<cacheDir>/proposals/index.json` after migrating
+  — always finish with `proposals_sync_proposals` (the tool, not a
+  script). (x00052: the index moved from
+  `docs/mcp-vertex/proposals/index.json`; the legacy path is
+  gitignored and the registry is regenerated under
+  `<cacheDir>/proposals/index.json`.)
 - Never try to "fix" the `l`-prefix lint warning by rewriting a legacy
   proposal's body into the modern scaffold — that's explicitly out of scope
   for `normalize-legacy.script.ts` and would lose historical meaning.

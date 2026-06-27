@@ -4,7 +4,10 @@
  *
  * `git worktree add` mutates `.git` (it writes `.git/worktrees/<name>` and
  * touches the index/refs) at the same time the proposals registry sync
- * (`syncProposalRegistry.run()`) reads + rewrites `docs/mcp-vertex/proposals/index.json`.
+ * (`syncProposalRegistry.run()`) reads + rewrites
+ * `<cacheDir>/proposals/index.json` (the regenerable registry
+ * index — see x00052 for the move from
+ * `docs/mcp-vertex/proposals/index.json`).
  * When the two run concurrently, the registry sync can read a half-updated
  * view (a worktree dir that exists but whose branch ref is not yet visible)
  * and persist a stale index.
