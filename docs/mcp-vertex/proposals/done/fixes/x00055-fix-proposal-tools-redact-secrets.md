@@ -24,7 +24,7 @@ acceptance:
     - { command: grep -rn "redactSecrets" plugins/proposals/src/lib/tools/ | wc -l, expect: ">= 5 (loop-detector handoff, proposal_create body, proposal_edit value, proposal_review note, the redaction module itself)" }
 ---
 
-# x00055 — `proposal_edit.value` and `proposal_review.note` skip `redactSecrets`
+# x00055 — `proposal_edit.value`, `proposal_add_slice.{title,acceptanceCriteria}` and `proposal_review.note` skip `redactSecrets`
 
 ## goal
 
@@ -35,7 +35,7 @@ AGENTS.md hard rule:
 
 `proposal_create` already honours the rule — the body it persists
 is `redactSecrets(body)` (see `authoring.tool.ts:227` and the
-existing regression test at `authoring.spec.ts:152-165`). **Two
+existing regression test at `authoring.spec.ts:152-165`). **Three
 peer tools do not**:
 
 - **`proposal_edit`** (`mutate-tools.ts:154`) — receives a
@@ -45,6 +45,12 @@ peer tools do not**:
   Bearer token into a `goal:` / `why:` / `acceptance:` section
   commits the secret into the proposal file and pushes it with
   the rest of the diff.
+- **`proposal_add_slice`** (`mutate-tools.ts:355`) — receives a
+  slice object with `title: string` and `acceptanceCriteria: string[]`
+  from the user, threads them through `renderNewSlice`, and
+  persists via `writeFileAtomic` with no redaction. A user who
+  titles a slice "Plug api_key = `sk_live_…` into the widget"
+  commits the secret into the proposal file.
 - **`proposal_review`** (`authoring.tool.ts:480`) — receives
   `note: string` from the reviewer, threads it through
   `reviewTransition(state, action, agent, note)`, and finally
@@ -53,7 +59,7 @@ peer tools do not**:
   pattern: a reviewer writing "I see a leaked `sk_live_…` in
   src/x.ts" persists the secret into the proposal file.
 
-Both are the same family of bug as x00051–x00054: an AGENTS.md
+All three are the same family of bug as x00051–x00054: an AGENTS.md
 hard rule was assumed to be enforced at the **call site of
 persistence**, but only the tool that *creates* the file
 (`proposal_create`) actually invokes `redactSecrets`. The peer
@@ -88,6 +94,12 @@ already closes).
 - **No change to the `proposal_transition` tool's other fields.**
   `proposal_edit` accepts `value` and the fix only touches that
   field. `field: enum` is metadata, not user text.
+- **No new redaction rules** beyond `proposal_add_slice`. The
+  `sliceId` field is metadata (a programmatic id), not user text;
+  the `files: string[]` field is a list of workspace-relative
+  paths that go through `resolveWorkspaceContained` upstream and
+  are not candidates for secret redaction. `title` and
+  `acceptanceCriteria` *are* redacted (S2 in the slices).
 
 ## slices
 
@@ -121,7 +133,25 @@ File: `plugins/proposals/src/lib/tools/authoring.tool.ts`
    - the `args.note` field echoed back in any error responses.
 3. The `rounds[]` array inside the state still receives the
    **already-redacted** note, so `renderReviewLines` produces
-   sanitised bullets.
+   sa2b — `proposal_add_slice` redacts `title` and `acceptanceCriteria`
+
+File: `plugins/proposals/src/lib/tools/mutate-tools.ts`
+(the `proposal_add_slice` handler around line 386).
+
+1. Import `redactSecrets` (added in S1 above; same file).
+2. Before `renderNewSlice(args.slice)`, run the user-supplied
+   `title` and each `acceptanceCriteria` entry through
+   `redactSecrets`:
+   - `title: string` → `{ text: redactSecrets(title).text, redactions: redactSecrets(title).redactions }`
+   - `acceptanceCriteria: string[]` → map each, sum the
+     `redactions` counts.
+3. Persist the redacted slice via `renderNewSlice(redactedSlice)`.
+4. Add `redactedSecrets: number` to the `outputSchema` of
+   `proposal_add_slice` and to the success response. The
+   `withFileMutex` callback now returns `{ ok, redactionsCount }`
+   so the outer `toolOk` can surface the count.
+
+### Snitised bullets.
 4. Add `redactedSecrets: number` to the success response of
    `action=submit`, `action=request_changes`, and
    `action=approve`. `action=status` is read-only and does not
@@ -149,16 +179,32 @@ Two new tests, mirroring the existing `proposal_create` test at
   - assert the file does **not** contain `sk_live_abcdef0123456789`
   - assert the file **does** contain `[REDACTED]`
   - assert the response includes `redactedSecrets > 0`
+- `mutate-tools.spec.ts > proposal_add_slice redacts secrets in
+  slice title and acceptanceCriteria`:
+  - call `proposals_add_slice` with a slice whose `title`
+    contains `api_key = "..."` and `acceptanceCriteria` contains
+    a `Bearer` token.
+  - read the proposal file from disk.
+  - assert both secrets are absent, `[REDACTED]` is present.
+  - assert the response includes `redactedSecrets >= 2`.
+- `mutate-tools.spec.ts > proposal_edit redacts secrets in
+  string[] values, summing the counts`:
+  - call `proposals_edit` with `field: 'nonGoals', value:
+    [<string with api_key>, <string with sk_test_…>]`.
+  - assert the response includes `redactedSecrets >= 2`.
 
 ## acceptance criteria
 
 - `bun run validate` is green.
-- The new tests pass.
+- The new tests pass (4 in total: 1 for `proposal_edit` value,
+  1 for `proposal_edit` string[], 1 for `proposal_add_slice`,
+  1 for `proposal_review`).
 - A `grep -rn "redactSecrets" plugins/proposals/src/lib/tools/`
-  returns at least 5 hits (the existing `proposal_create` + new
-  `proposal_edit` + new `proposal_review` + the
-  `loop-detector-service` handoff writer + the redaction module
-  itself, depending on what the count treats as a "tool" hit).
+  returns at least 5 hits: the existing `proposal_create` +
+  new `proposal_edit` + new `proposal_add_slice` + new
+  `proposal_review` + the redaction module's own re-export
+  (5 hits in `mutate-tools.ts` and `authoring.tool.ts` plus the
+  import site in `proposal_review.ts`).
 - Manual smoke: open a real proposal, paste
   `sk_live_abcdef0123456789` into a reviewer note, `bun run
   sync_proposals` and `git diff` — the on-disk file contains
