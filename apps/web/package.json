@@ -3,16 +3,6 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"imports": {
-		"#MANIFESTS/*": "./src/data/manifests/*",
-		"#DATA/*": "./src/data/*",
-		"#COMPONENTS/*": "./src/components/*",
-		"#LAYOUTS/*": "./src/layouts/*",
-		"#I18N/*": "./src/i18n/*.ts",
-		"#LIB/*": "./src/lib/*.ts",
-		"#SCRIPTS/*": "./scripts/*",
-		"#UI/*": "./src/components/ui/*"
-	},
 	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
 		"sync:public-api": "bun scripts/sync-public-api.ts",
