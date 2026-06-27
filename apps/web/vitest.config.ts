@@ -30,6 +30,7 @@ export default defineConfig({
 		include: [
 			'scripts/__tests__/**/*.spec.ts',
 			// f00030 S3 — pure helpers under `src/lib/` are unit-tested here.
+			'src/**/*.spec.ts',
 			'tests/**/*.spec.ts',
 		],
 		exclude: ['**/node_modules/**', '**/dist/**'],
