@@ -53,6 +53,16 @@ pre-commit:
       run: bun run lint:scss || true
       stage_fixed: false
 
+    catalog-drift-check:
+      glob_filter:
+        items:
+          - "packages/core/skills/manifest.json"
+          - "docs/mcp-vertex/proposals/index.json"
+          - "packages/core/src/generated/tool-outputs.ts"
+          - "docs/mcp-vertex/agent-catalog.generated.json"
+      run: bun run catalog:check || true
+      stage_fixed: false
+
 pre-push:
   parallel: false
   commands:

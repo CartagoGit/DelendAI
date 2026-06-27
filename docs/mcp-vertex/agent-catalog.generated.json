@@ -3,32 +3,12 @@
 	"mode": "compact",
 	"tools": [
 		{
-			"name": "agent_catalog",
-			"plugin": "agent"
+			"name": "mcp-vertex_agent_catalog",
+			"plugin": "mcp-vertex"
 		},
 		{
-			"name": "analyze_project",
-			"plugin": "analyze"
-		},
-		{
-			"name": "create_project",
-			"plugin": "create"
-		},
-		{
-			"name": "drift_check",
-			"plugin": "drift"
-		},
-		{
-			"name": "fs_read",
-			"plugin": "fs"
-		},
-		{
-			"name": "fs_write",
-			"plugin": "fs"
-		},
-		{
-			"name": "get_validation_matrix",
-			"plugin": "get"
+			"name": "mcp-vertex_analyze_project",
+			"plugin": "mcp-vertex"
 		},
 		{
 			"name": "mcp-vertex_audit_audit_consolidate",
@@ -44,6 +24,10 @@
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_classify",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_create_project",
 			"plugin": "mcp-vertex"
 		},
 		{
@@ -68,6 +52,22 @@
 		},
 		{
 			"name": "mcp-vertex_docs_docs_search",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_drift_check",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_fs_read",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_fs_write",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_get_validation_matrix",
 			"plugin": "mcp-vertex"
 		},
 		{
@@ -184,6 +184,10 @@
 		},
 		{
 			"name": "mcp-vertex_overview",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_plan_mcp_project",
 			"plugin": "mcp-vertex"
 		},
 		{
@@ -361,10 +365,6 @@
 		{
 			"name": "mcp-vertex_web-fetch_web_fetch",
 			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "plan_mcp_project",
-			"plugin": "plan"
 		}
 	],
 	"skills": [
