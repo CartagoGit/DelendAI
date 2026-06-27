@@ -55,7 +55,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 
 ## Slices
 
-### S1 - Canonical agent-discovery builder + MCP surface
+### S1 — Canonical agent-discovery builder + MCP surface
 - **Files**: packages/core/src/lib/catalog/agent-discovery-catalog.ts, packages/core/src/lib/tools/agent-catalog-tool.ts, packages/core/src/lib/resources/agent-catalog-resource.ts, packages/core/src/lib/prompts/agent-bootstrap.prompt.ts, packages/core/src/public/index.ts, packages/core/tests/src/lib/e2e/agent-catalog.e2e.spec.ts, packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts
 - **Status**: done
 - **Gate**: bun run validate
@@ -65,7 +65,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
   - "The compact default payload stays within a measured ceiling of 1 300 bytes on the fixture workspace, which mirrors roughly 325 tokens; the regression test fails if the budget or the compact-vs-full saving is broken."
   - "The compact mode returns actionable proposals plus per-status counts, while full or paginated mode can enumerate the complete proposal registry without changing the compact budget contract."
 
-### S2 - Skill summary contract + checked-in generated artifact + drift guards
+### S2 — Skill summary contract + checked-in generated artifact + drift guards
 - **Files**: skills/manifest.json, tools/scripts/catalog/generate-agent-catalog.script.ts, tools/scripts/catalog/generate-agent-catalog.spec.ts, docs/mcp-vertex/agent-catalog.generated.json, lefthook.yml
 - **Status**: ready
 - **Gate**: bun run validate
@@ -75,7 +75,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
   - "A focused test and a pre-commit hook fail when the generated catalog, the skill manifest, the live registry, or the proposal index drift apart."
   - "No SKILL body is copied wholesale into the artifact; only the compact summary, version, tags, and bodyPath metadata are surfaced."
 
-### S3 - VS Code extension and shared client integration
+### S3 — VS Code extension and shared client integration
 - **Files**: packages/client/src/lib/services/agent-catalog-service.ts, extensions/vscode/package.json, extensions/vscode/src/commands/tool-search.ts, extensions/vscode/src/commands/open-agent-catalog.ts, extensions/vscode/src/providers/tool-tree-data-provider.ts, extensions/vscode/src/views/agent-catalog-webview.ts, extensions/vscode/src/test/agent-catalog.spec.ts, extensions/vscode/src/test/tool-search.spec.ts
 - **Status**: ready
 - **Gate**: bun run validate
@@ -85,7 +85,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
   - "If the host supports MCP prompts or chat slash surfaces, the extension exposes the bootstrap prompt there; if not, the fallback command still opens the same catalog and inserts or copies the canonical starter invocation without divergent prose."
   - "The extension tests prove that the UI surface reflects the live catalog and that removing or renaming a skill/tool/proposal breaks the test instead of silently drifting."
 
-### S4 - Generated host hints for Copilot, Claude Code, Cursor, and generic AGENTS consumers
+### S4 — Generated host hints for Copilot, Claude Code, Cursor, and generic AGENTS consumers
 - **Files**: tools/scripts/catalog/render-host-hints.script.ts, docs/mcp-vertex/host-hints/copilot-instructions.generated.md, docs/mcp-vertex/host-hints/claude.generated.md, docs/mcp-vertex/host-hints/agents.generated.md, .github/copilot-instructions.md, CLAUDE.md, AGENTS.md, docs/CROSS-IDE.md
 - **Status**: ready
 - **Gate**: bun run validate
@@ -95,7 +95,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
   - "The human-edited instruction files keep only stable narrative and include generated discovery sections instead of duplicating catalog facts manually."
   - "A golden test proves that the generated host fragments remain consistent with the catalog artifact and fail when a skill or tool is added without the host output changing."
 
-### S5 - Downstream bootstrap and worked examples
+### S5 — Downstream bootstrap and worked examples
 - **Files**: packages/cli/src/public/index.ts, packages/core/src/lib/scaffolds/host-hints.ts, docs/CROSS-PROJECT-SETUP.md, examples/minimal/README.md, examples/swarm/README.md, examples/minimal/mcp-vertex.config.json, docs/README-MCP-VERTEX.md
 - **Status**: ready
 - **Gate**: bun run validate

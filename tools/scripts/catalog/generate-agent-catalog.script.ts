@@ -24,19 +24,19 @@
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
+import {
+	ACTIONABLE_PROPOSAL_STATUSES,
+	PROPOSAL_STATUS_VALUES,
+	assembleCliConfig,
+	buildCatalog,
+	parseCliArgs,
+} from '@mcp-vertex/core/public';
 import type {
 	ICatalogSources,
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-} from '../../../packages/core/src/public/index';
-import { buildCatalog } from '../../../packages/core/src/lib/catalog/agent-discovery-catalog';
-import {
-	ACTIONABLE_PROPOSAL_STATUSES,
-	PROPOSAL_STATUS_VALUES,
-} from '../../../packages/core/src/lib/catalog/agent-discovery-types';
-import { assembleCliConfig } from '../../../packages/core/src/lib/cli/assemble';
-import { parseCliArgs } from '../../../packages/core/src/lib/plugins/parse-cli-args';
+} from '@mcp-vertex/core/public';
 
 export const DEFAULT_OUTPUT_PATH =
 	'docs/mcp-vertex/agent-catalog.generated.json';
