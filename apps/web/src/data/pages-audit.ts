@@ -47,6 +47,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The root 404 only wraps NotFound inside Base, so it is pure chrome and does not carry durable product content.',
 	},
 	{
+		path: 'apps/web/src/pages/[lang]/[page].astro',
+		langCoverage: NON_EN_LOCALES,
+		kind: 'dynamic',
+		lastMeaningfulEdit: '2026-06-27',
+		verdict: 'keep',
+		why: 'This localized PageSpec route is the canonical mirror for markdown-backed prose pages and deliberately falls back to the English source when a locale has not shipped yet.',
+	},
+	{
 		path: 'apps/web/src/pages/[lang]/404.astro',
 		langCoverage: NON_EN_LOCALES,
 		kind: 'chrome',
@@ -405,5 +413,13 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'The English troubleshooting index remains the canonical landing page for incident docs and is backed by the live troubleshooting catalog.',
+	},
+	{
+		path: 'apps/web/src/pages/[page].astro',
+		langCoverage: EN_ONLY,
+		kind: 'dynamic',
+		lastMeaningfulEdit: '2026-06-27',
+		verdict: 'keep',
+		why: 'This English PageSpec route is the canonical markdown-backed prose endpoint, generated from pages.json for any slug dropped into the page-spec content tree.',
 	},
 ]);

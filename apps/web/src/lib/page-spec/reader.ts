@@ -1,5 +1,5 @@
-import type { Lang } from '#I18N/ui';
-import { languageCodes } from '#I18N/shared';
+import type { Lang } from '../../i18n/ui';
+import { languageCodes } from '../../i18n/shared';
 import { z, type ZodError } from 'zod';
 
 import type { IPageFrontmatter, IPageTranslation, PageSpec } from './types';
