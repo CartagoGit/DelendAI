@@ -124,7 +124,7 @@ docs/mcp-vertex/proposals/       # this file
 
 `bun run validate` exits 0 and the live host (`scripts/host-server.ts --preset=swarm`) exposes both new tools with full `outputSchema` and a description that an LLM can route to.
 
-## Failure modes addressed
+## risks and mitigations
 
 | Symptom today | After this proposal |
 |---|---|

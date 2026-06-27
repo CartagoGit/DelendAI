@@ -9,9 +9,9 @@ description: How to coordinate several agents safely in this repo: when to use a
 Use this when more than one agent is active in the repo, or when a slice
 may overlap another agent's file set.
 
-## `agent_lock` vs `agent_worktree`
+## `agent_lock` vs `agent_worktree` vs `branch_status` vs `branch_gc`
 
-These two tools solve different problems and are usually used together,
+These four tools solve different problems and are usually used together,
 not interchangeably.
 
 ### `agent_lock`
@@ -56,6 +56,49 @@ Use only `agent_lock` when:
 Use only `agent_worktree` rarely:
 - mainly for read-mostly investigation or pre-isolated work where the
   file set is already guaranteed disjoint by another mechanism
+
+### `branch_status` — visibility (f00073)
+
+`<prefix>_branch_status` is **read-only**. It answers "what is every other
+agent doing right now?" without grep, by inspecting every `agent/*` local
+branch and every `git worktree` in the workspace. Reports ahead/behind
+counts vs `develop`, last-commit age, merged flag, and per-worktree
+dirty + untracked file counts. Worktrees whose path lives outside
+`<cacheDir>/mcp-vertex/.worktrees` are flagged `outOfCache: true` (AGENTS.md
+invariant violation).
+
+The orchestrator's `auto_work` plan already carries a `branchStatusWarnings`
+field populated from this snapshot — worktrees with dirty/untracked files,
+branches ahead-of-base that are unmerged, and branches that fell behind
+`develop` while another agent was working.
+
+Use it when:
+- you are about to merge or rebase and want to know what is in flight
+- a slice reports `branchStatusWarnings` and you need the raw numbers
+- you are debugging "where did that worktree come from?" / "is this
+  branch still alive?"
+
+### `branch_gc` — cleanup (f00073)
+
+`<prefix>_branch_gc` is **read-write** and idempotent. Removes worktrees
+that have decayed into orphan state: branch merged into base, clean
+working tree, idle longer than `staleMinutes` (default 60). Defaults to
+`dryRun: true` so the orchestrator always sees the plan first.
+
+Use it when:
+- `branch_status` reports worktrees with `dirty == 0` and
+  `mergedIntoBase: true` older than `staleMinutes`
+- a `git worktree list` shows ghost worktrees pointing at merged
+  branches you do not want to clean up by hand
+
+Two safety nets:
+- **Unmerged branches are sacred.** `branch_gc` never removes a worktree
+  whose branch is ahead of base, even with `force: true`. Pass a real
+  `git push origin agent/<name> --force-with-lease` if you want to
+  rebase and lose history; `branch_gc` will not do it for you.
+- **Dirty worktrees are warned.** Without `force: true`, a worktree with
+  modified or untracked files is reported as `skipped: dirty` (or
+  `untracked`) and never removed.
 
 ## Wait-for-notification, don't poll
 

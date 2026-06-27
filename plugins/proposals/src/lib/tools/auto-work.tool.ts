@@ -9,6 +9,8 @@ import { toolJson } from '@mcp-vertex/core/public';
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';
 import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
+import { createGitRunner } from '../shared/git-runner';
+import { runBranchStatusEngine } from '../shared/branch-status-engine';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -45,6 +47,8 @@ export interface IAutoWorkOrchestrationConfig {
 }
 
 export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
+	/** f00073: absolute workspace root, used by the branch-status warning pass. */
+	readonly workspaceRoot?: string;
 	/** Quality-gate command to run before closing a slice, if any. */
 	readonly validationCommand?: string;
 	/**
@@ -310,6 +314,14 @@ export const runAutoWork = async (
 			? { pickedFromPaused: true as const }
 			: {}),
 		steps,
+		// f00073: branch + worktree warnings, fire-and-forget. Never
+		// blocks the plan. Lets the orchestrator surface "agent X has
+		// 8 dirty files" / "Y is 5 commits behind" without a second
+		// tool call. Failures are swallowed — the status snapshot is
+		// advisory, not gating.
+		branchStatusWarnings: await collectBranchStatusWarnings(
+			options.workspaceRoot ?? '',
+		),
 	});
 };
 
@@ -360,7 +372,56 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	validationCommand: z.string().optional(),
 	persist: AUTO_WORK_PERSIST_OUTPUT_SCHEMA.optional(),
 	steps: z.array(z.string()).optional(),
+	// f00073: optional array of warnings about other agents' branch /
+	// worktree state. Empty when the swarm is clean.
+	branchStatusWarnings: z.array(z.string()).optional(),
 });
+
+/**
+ * f00073: build a list of warnings from the branch + worktree snapshot.
+ * Empty array on failure or when nothing is wrong — never blocks the
+ * plan. Mirrors the "fail soft" contract used elsewhere in
+ * `auto-work.tool.ts` (the loop detector, etc.).
+ */
+const collectBranchStatusWarnings = async (
+	workspaceRoot: string,
+): Promise<string[]> => {
+	try {
+		const snapshot = await runBranchStatusEngine({
+			run: createGitRunner(workspaceRoot),
+			workspaceRoot,
+		});
+		if (!snapshot.ok) return [];
+		const warnings: string[] = [];
+		for (const wt of snapshot.worktrees) {
+			if (wt.dirtyFiles > 0 || wt.untrackedFiles > 0) {
+				warnings.push(
+					`worktree ${wt.path} (${wt.branch}): ${wt.dirtyFiles} dirty + ${wt.untrackedFiles} untracked (${wt.ageLabel})`,
+				);
+			}
+			if (wt.outOfCache) {
+				warnings.push(
+					`worktree ${wt.path} lives outside the canonical cache dir (AGENTS.md violation)`,
+				);
+			}
+		}
+		for (const branch of snapshot.branches) {
+			if (branch.behind > 0) {
+				warnings.push(
+					`branch ${branch.name} is ${branch.behind} commit(s) behind develop`,
+				);
+			}
+			if (branch.ahead > 0 && !branch.mergedIntoBase) {
+				warnings.push(
+					`branch ${branch.name} has ${branch.ahead} unmerged commit(s) ahead of develop`,
+				);
+			}
+		}
+		return warnings;
+	} catch {
+		return [];
+	}
+};
 
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (

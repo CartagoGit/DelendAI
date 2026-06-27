@@ -154,6 +154,11 @@ export type {
 	IScaffoldPluginOptions,
 	IScaffoldedFile,
 } from '../lib/scaffold/scaffold-host';
+export type {
+	IScaffoldHostHintsOptions,
+	IScaffoldHostHintsResult,
+} from '../lib/scaffolds/host-hints';
+export { scaffoldHostHints } from '../lib/scaffolds/host-hints';
 export {
 	SCAFFOLD_INPUT_SCHEMA,
 	buildScaffoldReport,

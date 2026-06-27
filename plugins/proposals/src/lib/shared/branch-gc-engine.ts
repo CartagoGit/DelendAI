@@ -202,29 +202,28 @@ export const planGc = (
 			branch.lastCommitMinutesAgo,
 			0,
 		);
-		// Skip worktrees whose last commit is fresher than the stale
-		// threshold, OR whose branch is still ahead of base (not yet
-		// merged). `now` parameter is honoured when label parsing fails.
-		const isFresh =
-			ageMin < staleMinutes &&
-			now - branch.lastCommitMinutesAgo * 60_000 < staleMinutes * 60_000;
-		if (isFresh && !branch.mergedIntoBase) {
-			skipped.push({
-				path: wt.path,
-				branch: wt.branch,
-				reason: 'fresh',
-				detail: `age ${wt.ageLabel} < staleMinutes ${staleMinutes} and not merged`,
-			});
-			continue;
-		}
-		if (!branch.mergedIntoBase && branch.ahead > 0) {
-			skipped.push({
-				path: wt.path,
-				branch: wt.branch,
-				reason: 'unmerged',
-				detail: `${branch.ahead} commit(s) ahead of ${snapshot.baseBranch}; pass force:true to override (still refused — unmerged is sacred)`,
-			});
-			continue;
+		// Branch not merged into base. Two reasons to skip before dirty checks:
+		//   (a) fresh — the worktree is younger than staleMinutes (sacred).
+		//   (b) ahead — the branch carries commits not yet in base (sacred).
+		if (!branch.mergedIntoBase) {
+			if (ageMin < staleMinutes) {
+				skipped.push({
+					path: wt.path,
+					branch: wt.branch,
+					reason: 'fresh',
+					detail: `age ${wt.ageLabel} < staleMinutes ${staleMinutes} and not merged into ${snapshot.baseBranch}`,
+				});
+				continue;
+			}
+			if (branch.ahead > 0) {
+				skipped.push({
+					path: wt.path,
+					branch: wt.branch,
+					reason: 'unmerged',
+					detail: `${branch.ahead} commit(s) ahead of ${snapshot.baseBranch}; unmerged is sacred even with force:true`,
+				});
+				continue;
+			}
 		}
 		if (
 			(wt.dirtyFiles > 0 || wt.untrackedFiles > 0) &&
