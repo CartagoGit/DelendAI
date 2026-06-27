@@ -1,6 +1,6 @@
 ---
 id: f00066
-status: ready
+status: done
 type: proposal
 track: core+refactor+async
 date: 2026-06-25
