@@ -87,7 +87,9 @@ export const buildInMemoryResolver = (
 // ---------------------------------------------------------------------------
 
 export interface IDiskPlanResolverOptions {
-	/** Absolute path to `docs/mcp-vertex/proposals/index.json` (the registry). */
+	/** Absolute path to `<cacheDir>/proposals/index.json` (the
+	 * regenerable registry — see x00052 for the move from
+	 * `docs/mcp-vertex/proposals/index.json`). */
 	readonly indexPathAbs: string;
 	/** Absolute path to the `docs/mcp-vertex/proposals/` directory. */
 	readonly proposalsDirAbs: string;
