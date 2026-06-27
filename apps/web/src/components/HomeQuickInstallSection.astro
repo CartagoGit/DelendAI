@@ -9,9 +9,10 @@
  * (IDE configs, presets, `--check` self-diagnose) live on the full
  * install page, with a CTA linking there.
  *
- * The exhaustive matrix lives in `Install.astro` (f00048 S2); this
- * component only orients and is intentionally shorter so the hero
- * keeps the home page focused.
+ * The exhaustive matrix lives on the markdown-backed `/install` page
+ * (`apps/web/src/data/pages/install/*.md`, rendered through
+ * `MarkdownPage.astro`; f00055 S6). This component only orients and is
+ * intentionally shorter so the hero keeps the home page focused.
  */
 import { useTranslations, type Lang } from '#I18N/ui';
 import { packageManagers } from '#DATA/install';

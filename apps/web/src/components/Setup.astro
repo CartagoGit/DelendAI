@@ -5,8 +5,10 @@
  * Renders the 7 canonical steps from `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` as an
  * ordered list, each with a copy-pasteable command (via the shared
  * `CodeBlock`, which already owns the `navigator.clipboard` copy button used
- * across the site — same pattern as `Install.astro`). The step list and the
- * commands come from the pure, tested `setup-wizard.ts` helper, which mirrors
+ * across the site — same pattern as the markdown-backed `/install` page
+ * (`apps/web/src/data/pages/install/*.md`, served through `MarkdownPage`).
+ * The step list and the commands come from the pure, tested
+ * `setup-wizard.ts` helper, which mirrors
  * `packages/core/src/lib/setup/setup-steps.ts`. Every visible string is i18n
  * (12 languages); the page links back to the canonical guide.
  */

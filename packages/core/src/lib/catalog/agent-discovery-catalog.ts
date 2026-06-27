@@ -95,4 +95,3 @@ export const buildCatalog = (
 		proposals,
 	};
 };
-export type { IBuildCatalogOptions } from './agent-discovery-types';

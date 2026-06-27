@@ -15,14 +15,7 @@
  *
  * The boot-sweep integration lives in `eviction-registry.boot.spec.ts`.
  */
-import {
-	mkdtemp,
-	mkdir,
-	rm,
-	stat,
-	utimes,
-	writeFile,
-} from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -147,7 +140,9 @@ describe('createCacheEvictionRegistry', () => {
 
 			const applied = await registry.run({ dryRun: false, now: NOW });
 			expect(applied.removed).toHaveLength(1);
-			await expect(stat(join(logsDir, '2026-06-01.jsonl'))).rejects.toThrow();
+			await expect(
+				stat(join(logsDir, '2026-06-01.jsonl')),
+			).rejects.toThrow();
 		});
 
 		it('falls back to mtime when the name has no date', async () => {
@@ -165,7 +160,9 @@ describe('createCacheEvictionRegistry', () => {
 			});
 
 			const report = await registry.run({ dryRun: false, now: NOW });
-			expect(report.removed.map((r) => r.path)).toContain('snapshots/no-date.json');
+			expect(report.removed.map((r) => r.path)).toContain(
+				'snapshots/no-date.json',
+			);
 		});
 
 		it('skips targets that are within the TTL', async () => {
@@ -344,7 +341,9 @@ describe('createCacheEvictionRegistry', () => {
 			});
 			const report = await registry.run({ dryRun: false, now: NOW });
 			expect(report.removed).toHaveLength(0);
-			expect(report.skipped.some((s) => /no targets/.test(s.reason))).toBe(true);
+			expect(
+				report.skipped.some((s) => /no targets/.test(s.reason)),
+			).toBe(true);
 			expect(report.errors).toHaveLength(0);
 		});
 	});
@@ -364,7 +363,9 @@ describe('createCacheEvictionRegistry', () => {
 			expect(first.removed).toHaveLength(1);
 			const second = await registry.run({ dryRun: false, now: NOW });
 			expect(second.removed).toHaveLength(0);
-			expect(second.skipped.some((s) => /no targets/.test(s.reason))).toBe(true);
+			expect(
+				second.skipped.some((s) => /no targets/.test(s.reason)),
+			).toBe(true);
 		});
 	});
 
