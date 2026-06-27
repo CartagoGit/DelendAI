@@ -61,7 +61,7 @@ export const proposalFolderOf = (
 	// shared prefix so the result is the canonical folder name. When
 	// the two are unrelated (legacy caller without proposalsDirAbs)
 	// the caller falls back to `dir` via the undefined branch above.
-	const rel = dir.startsWith(proposalsDirAbs + '/')
+	const rel = dir.startsWith(`${proposalsDirAbs}/`)
 		? dir.slice(proposalsDirAbs.length + 1)
 		: dir;
 	return rel;
