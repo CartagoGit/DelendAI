@@ -10,7 +10,7 @@ import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
 import type { IToolCall as IDetectorToolCall } from './agent-loop-detector';
 import {
-	LOOP_DETECTOR_DEFAULTS,
+	LOOP_DETECTOR_DEFAULTS_FOR,
 	createFsConfigFileReader,
 	parseLoopDetectorCliOverrides,
 	resolveLoopDetectorConfig,
@@ -78,8 +78,14 @@ export class AgentLoopDetectorService {
 		// Solid-SRP: config resolution lives in `loop-detector-config.ts`.
 		// Start with defaults + CLI synchronously for the core's sync
 		// `isAgentStuck` contract; on-disk config loads async on first use.
+		// x00054: the default handoffDir is derived from the host's
+		// `cacheDir` via `LOOP_DETECTOR_DEFAULTS_FOR(ctx.cacheDir)`, so
+		// a host that reconfigures the cache root gets the handoff
+		// under that root (not the historical `.cache/mcp-vertex/handoff`
+		// literal). Tests that need the legacy default pass an
+		// explicit `ctx.cacheDir` in the mock.
 		this.options = {
-			...LOOP_DETECTOR_DEFAULTS,
+			...LOOP_DETECTOR_DEFAULTS_FOR(ctx.cacheDir),
 			...parseLoopDetectorCliOverrides(ctx.args),
 		};
 		// this.configReader = createFsConfigFileReader(ctx.workspace);
@@ -96,6 +102,7 @@ export class AgentLoopDetectorService {
 			return resolveLoopDetectorConfig({
 				configReader: this.configReader,
 				cliArgs: this.ctx.args,
+				cacheDir: this.ctx.cacheDir,
 			});
 		})().then((options) => {
 			this.options = options;
