@@ -18,6 +18,21 @@ The convention is **language-aware**: TypeScript gets a strict profile,
 non-TS consumer projects are detected and left untouched unless the
 user explicitly selects a compatible profile.
 
+### Runtime scratch (f00058)
+
+For artefacts a plugin or agent creates in order to *do something and
+then throw away* (a runnable script the harness executes once, a JSON
+blob the agent parses and then deletes, a sidecar a CLI tool expects
+for one call), there is exactly one canonical home:
+`<pluginCacheDir>/exec/`. Resolve it through `resolveExecPath(ctx, name)`
+(or `withEphemeralExec(ctx, name, fn)` for the write → run → unlink
+shape), exported from `@mcp-vertex/core/public`. Do **not** reach for
+`os.tmpdir()` or hand-roll a `.verify-tmp/` next to the script that
+created it — the `check-ephemeral-paths` lint will fail the slice, and
+the artefact will be stranded outside the cache the next session cannot
+find. Test fixtures and CLI tooling under `tools/scripts/` are exempt
+because they run once and exit.
+
 ## The table
 
 The suffix is **singular** (it describes the file role). The folder is

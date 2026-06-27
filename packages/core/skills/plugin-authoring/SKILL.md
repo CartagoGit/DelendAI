@@ -39,6 +39,13 @@ export default definePlugin({
 - Durable state → `withFileMutex` + `writeFileAtomic`; treat corrupt ≠ empty with
   `quarantineCorruptFile`.
 - Persisting user text → run it through `redactSecrets` first.
+- Ephemeral artefacts the agent will unlink must live under
+  `ctx.pluginCacheDir/exec/`. Use `resolveExecPath(ctx, name)` (or
+  `withEphemeralExec(ctx, name, fn)` for the write → run → unlink
+  shape). The `check-ephemeral-paths` lint refuses `os.tmpdir()`,
+  `mkdtempSync(join(tmpdir(), …))`, and `writeFile('/tmp/…')` inside
+  runtime code; test fixtures (`*.spec.ts`) and CLI tooling under
+  `tools/scripts/` are exempt.
 - Keep engines pure over injected readers so tests don't touch the real FS.
 
 ## Adding a new language + dogma
