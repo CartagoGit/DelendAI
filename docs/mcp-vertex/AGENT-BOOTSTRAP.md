@@ -160,19 +160,22 @@ restates the rule for swarm context.
   file, agent answer, or generated fragment.** The server is the only
   source. If you find yourself wanting to list them, **stop** and call
   `mcp-vertex_agent_catalog` instead.
-- **Agents and tools invoke shell through `bash`, never the user's
-  interactive `zsh`.** The user keeps `zsh` for their own sessions
-  (Powerlevel10k, oh-my-zsh, completions, prompt). Any agent-driven
-  shell call — direct `run_in_terminal`, subagent shell, CI bridge,
-  MCP tool handler that shells out — must launch `/bin/bash -c
-  '<cmd>'` (or `bash --noprofile --norc -c '<cmd>'` for stricter
-  isolation). Reasons: p10k instant prompt opens the alternate screen
-  buffer during zsh init, which silently breaks wrappers that detect
-  TTY state and report "El comando abrió el búfer alternativo" instead
-  of returning stdout. Bash has no init scripts by default and never
-  touches the TTY layout, so it cannot deadlock the wrapper. This
-  rule applies to every host (Copilot, Claude Code, Cursor, Aider,
-  subagents, swarm runners).
+- **Agents and tools invoke shell through `bash`, never `zsh` or
+  `sh`.** The user keeps `zsh` for their own sessions (Powerlevel10k,
+  oh-my-zsh, completions, prompt). Any agent-driven shell call —
+  direct `run_in_terminal`, subagent shell, CI bridge, MCP tool
+  handler that shells out — must launch `/bin/bash -c '<cmd>'` (or
+  `bash --noprofile --norc -c '<cmd>'` for stricter isolation).
+  Reasons: p10k instant prompt opens the alternate screen buffer
+  during zsh init, which silently breaks wrappers that detect TTY
+  state and report "El comando abrió el búfer alternativo" instead of
+  returning stdout. `sh` is not a stable target either: it is `dash`
+  on Debian/Ubuntu/WSL, `ash` on Alpine, and old `bash` on macOS, so
+  agents would have to second-guess which shell dialect they are in on
+  every invocation. Bash has no init scripts by default, never touches
+  the TTY layout, and supports the POSIX-plus-extensions syntax agents
+  generate by reflex. This rule applies to every host (Copilot,
+  Claude Code, Cursor, Aider, subagents, swarm runners).
 
 ## 7. Repo-level rules (only when the host reads `AGENTS.md`)
 
