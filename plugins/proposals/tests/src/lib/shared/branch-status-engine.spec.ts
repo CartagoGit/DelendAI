@@ -192,13 +192,27 @@ describe('runBranchStatusEngine', () => {
 			// branch --merged
 			if (args[0] === 'branch' && args.includes('--merged')) {
 				const target = args[args.length - 1];
-				if (target === 'agent/vela') {
+				if (target === 'agent/vela' || target === 'agent/zora') {
 					return Promise.resolve({
 						ok: true,
-						output: '  agent/vela\n',
+						output: `  ${target}\n`,
 					});
 				}
 				return Promise.resolve({ ok: true, output: '' });
+			}
+			// rev-list --count <base>..<branch> — second mergedIntoBase check.
+			if (args[0] === 'rev-list' && args[1] === '--count') {
+				const range = args[2] ?? '';
+				if (range.startsWith('develop..agent/vela')) {
+					return Promise.resolve({ ok: true, output: '0\n' });
+				}
+				if (range.startsWith('develop..agent/zora')) {
+					return Promise.resolve({ ok: true, output: '0\n' });
+				}
+				if (range.startsWith('develop..agent/orion')) {
+					return Promise.resolve({ ok: true, output: '2\n' });
+				}
+				return Promise.resolve({ ok: true, output: '0\n' });
 			}
 			return Promise.resolve({ ok: true, output: '' });
 		};
@@ -278,5 +292,99 @@ describe('runBranchStatusEngine', () => {
 		const wt = result.worktrees[0];
 		expect(wt?.outOfCache).toBe(true);
 		expect(result.summary.outOfCacheWorktrees).toBe(1);
+	});
+
+	it('marks a branch as NOT merged when its tip has unique commits ahead of base, even if git branch --merged says otherwise (f00057-S11 trap)', async () => {
+		const runner = makeRunner([
+			[
+				['branch', '--list', 'agent/*'],
+				{ ok: true, output: '  agent/copilot-minimax-m3-s57\n' },
+			],
+			[
+				[
+					'branch',
+					'--list',
+					'--merged',
+					'develop',
+					'agent/copilot-minimax-m3-s57',
+				],
+				{ ok: true, output: '  agent/copilot-minimax-m3-s57\n' },
+			],
+			[
+				['rev-list', '--count', 'develop..agent/copilot-minimax-m3-s57'],
+				{ ok: true, output: '2\n' },
+			],
+			[
+				[
+					'rev-list',
+					'--left-right',
+					'--count',
+					'develop...agent/copilot-minimax-m3-s57',
+				],
+				{ ok: true, output: '0\t2\n' },
+			],
+			[
+				['rev-parse', '--short', 'agent/copilot-minimax-m3-s57'],
+				{ ok: true, output: '649b941' },
+			],
+			[
+				['log', '-1', '--format=%ct', 'agent/copilot-minimax-m3-s57'],
+				{ ok: true, output: '1735056000' },
+			],
+		]);
+
+		const result = await runBranchStatusEngine({
+			run: runner,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		const branch = result.branches[0];
+		expect(branch?.ahead).toBe(2);
+		expect(branch?.mergedIntoBase).toBe(false);
+	});
+
+	it('marks a branch as merged only when BOTH git --merged AND ahead==0 agree', async () => {
+		const runner = makeRunner([
+			[
+				['branch', '--list', 'agent/*'],
+				{ ok: true, output: '  agent/clean\n' },
+			],
+			[
+				['branch', '--list', '--merged', 'develop', 'agent/clean'],
+				{ ok: true, output: '  agent/clean\n' },
+			],
+			[
+				['rev-list', '--count', 'develop..agent/clean'],
+				{ ok: true, output: '0\n' },
+			],
+			[
+				[
+					'rev-list',
+					'--left-right',
+					'--count',
+					'develop...agent/clean',
+				],
+				{ ok: true, output: '0\t0\n' },
+			],
+			[
+				['rev-parse', '--short', 'agent/clean'],
+				{ ok: true, output: '1234567' },
+			],
+			[
+				['log', '-1', '--format=%ct', 'agent/clean'],
+				{ ok: true, output: '1734566400' },
+			],
+		]);
+
+		const result = await runBranchStatusEngine({
+			run: runner,
+			workspaceRoot,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.branches[0]?.mergedIntoBase).toBe(true);
 	});
 });

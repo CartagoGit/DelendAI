@@ -211,6 +211,14 @@
             "plugin": "mcp-vertex"
         },
         {
+            "name": "mcp-vertex_proposals_branch_gc",
+            "plugin": "mcp-vertex"
+        },
+        {
+            "name": "mcp-vertex_proposals_branch_status",
+            "plugin": "mcp-vertex"
+        },
+        {
             "name": "mcp-vertex_proposals_close_slice",
             "plugin": "mcp-vertex"
         },

@@ -47,8 +47,8 @@ describe('renderHostHints (agnostic bootstrap)', () => {
 	it('no fragment enumerates tool names', () => {
 		for (const fragment of renderHostHints()) {
 			const tools = fragment.text.match(TOOL_NAME_PATTERN) ?? [];
-			// The bootstrap path includes the 3 routing entry points —
-			// allowed because they are the routing surface, not a list.
+			// The bootstrap path includes "mcp-vertex_agent_catalog" — that one
+			// is allowed because it is the routing entry point, not a list.
 			const nonBootstrapTools = tools.filter(
 				(name) =>
 					name !== '`mcp-vertex_agent_catalog`' &&
@@ -100,7 +100,7 @@ describe('renderHostHints (agnostic bootstrap)', () => {
 		expect(second).toEqual(first);
 	});
 
-	it('host-specific footnote points at the right bootstrap section', () => {
+	it('host-specific footnote lines exist for each host', () => {
 		const rendered = renderHostHints();
 		const copilot = rendered.find((f) => f.id === 'copilot')!.text;
 		const claude = rendered.find((f) => f.id === 'claude')!.text;

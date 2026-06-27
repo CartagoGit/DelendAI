@@ -112,4 +112,31 @@ describe('proposal review state machine (M35)', async () => {
 			note: 'note here',
 		});
 	});
+
+	it('after request_changes, the SAME reviewer cannot approve the fix (chain-of-distinct-reviewers, x00056)', async () => {
+		let s: IReviewState = EMPTY_REVIEW;
+		s = reviewTransition(s, 'submit', 'falcon').next!;
+		s = reviewTransition(s, 'request_changes', 'eagle', 'fix A').next!;
+		s = reviewTransition(s, 'submit', 'falcon').next!; // falcon fixes & resubmits
+		// eagle already weighed in on the previous round — must NOT be allowed to verify the fix
+		const sameReviewerApprove = reviewTransition(s, 'approve', 'eagle');
+		expect(sameReviewerApprove.ok).toBe(false);
+		expect(sameReviewerApprove.reason).toMatch(/different agent than the previous reviewer/i);
+		// a fresh reviewer verifies
+		const freshApprove = reviewTransition(s, 'approve', 'owl');
+		expect(freshApprove.ok).toBe(true);
+		expect(freshApprove.next?.status).toBe('done');
+		expect(freshApprove.next?.rounds.at(-1)).toMatchObject({
+			verdict: 'approved',
+			agent: 'owl',
+		});
+	});
+
+	it('first-round approve by a fresh reviewer is allowed (no prior round to conflict with)', async () => {
+		const submitted = reviewTransition(EMPTY_REVIEW, 'submit', 'falcon')
+			.next!;
+		const approved = reviewTransition(submitted, 'approve', 'eagle');
+		expect(approved.ok).toBe(true);
+		expect(approved.next?.rounds).toHaveLength(1);
+	});
 });
