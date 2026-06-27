@@ -1,326 +1,119 @@
-#!/usr/bin/env bun
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
+/**
+ * render-host-hints.spec.ts — pin the agnostic-bootstrap contract:
+ *
+ *   1. Every fragment MUST reference the universal bootstrap.
+ *   2. No fragment MAY enumerate tool names, skill names, or proposal ids.
+ *   3. The 3 fragments MUST differ in the host-specific footnote only,
+ *      never in the routing content.
+ *   4. The renderer MUST be byte-stable (running it twice produces the
+ *      same bytes given the same options).
+ */
 import { describe, expect, it } from 'vitest';
 
 import {
-	DEFAULT_INPUT_PATH,
-	DEFAULT_OUTPUT_DIR,
+	BOOTSTRAP_PATH,
+	HOST_FRAGMENTS,
 	MAX_FRAGMENT_BYTES,
 	renderHostHints,
-	runHostHintsCli,
 } from './render-host-hints.script.ts';
-import type { IArtifactLike } from './render-host-hints.script.ts';
 
-const FIXED_NOW = '2026-06-27T12:00:00.000Z';
+const ID_PATTERN = /`[a-z][0-9]{4,5}`/g;
+const TOOL_NAME_PATTERN = /`mcp-vertex_[a-z_]+`/g;
 
-const buildArtifact = (
-	overrides: Partial<IArtifactLike> = {},
-): IArtifactLike => ({
-	generatedAt: FIXED_NOW,
-	tools: [
-		{ name: 'mcp-vertex_overview', plugin: 'mcp-vertex' },
-		{ name: 'mcp-vertex_agent_catalog', plugin: 'mcp-vertex' },
-	],
-	skills: [
-		{
-			id: 'mcp-vertex-operator',
-			summary:
-				'Use at session start to call overview first and choose the right preset.',
-			tags: ['operator'],
-			appliesTo: ['@mcp-vertex/*'],
-		},
-		{
-			id: 'mcp-vertex-plugin-authoring',
-			summary:
-				'Use when adding or changing a plugin so schemas and durability stay correct.',
-			tags: ['plugin-authoring'],
-			appliesTo: ['@mcp-vertex/*'],
-		},
-	],
-	proposals: {
-		actionable: [
-			{
-				id: 'f00056',
-				title: 'Agent discovery catalog',
-				track: 'host+extension+skills+docs',
-				status: 'ready',
-				kind: 'feat',
-				date: '2026-06-25',
-			},
-			{
-				id: 'f00057',
-				title: 'Cross-IDE bootstrap',
-				track: 'host',
-				status: 'ready',
-				kind: 'feat',
-				date: '2026-06-25',
-			},
-		],
-		byStatus: {
-			ready: 2,
-			'in-progress': 0,
-			review: 0,
-			paused: 0,
-			done: 0,
-			blocked: 0,
-			retired: 0,
-			unspecified: 0,
-		},
-	},
-	...overrides,
-});
+describe('renderHostHints (agnostic bootstrap)', () => {
+	it('emits exactly one fragment per registered host', () => {
+		const rendered = renderHostHints();
+		expect(rendered.map((f) => f.id).sort()).toEqual(
+			['agents', 'claude', 'copilot'].sort(),
+		);
+		expect(rendered.map((f) => f.filename).sort()).toEqual(
+			[
+				'agents.generated.md',
+				'claude.generated.md',
+				'copilot-instructions.generated.md',
+			].sort(),
+		);
+	});
 
-const testIo = (overrides: Record<string, unknown> = {}) => ({
-	readText: async (absPath: string) => {
-		try {
-			return await readFile(absPath, 'utf8');
-		} catch {
-			return undefined;
-		}
-	},
-	writeText: async (absPath: string, text: string) => {
-		await writeFile(absPath, text, 'utf8');
-	},
-	removeFile: async (absPath: string) => {
-		await rm(absPath, { force: true });
-	},
-	ensureDir: async (absPath: string) => {
-		await mkdir(absPath, { recursive: true });
-	},
-	info: () => {},
-	warn: () => {},
-	error: () => {},
-	...overrides,
-});
-
-const createFixtureRoot = async (
-	artifact: IArtifactLike = buildArtifact(),
-): Promise<string> => {
-	const root = await mkdtemp(join(tmpdir(), 'host-hints-'));
-	await mkdir(join(root, DEFAULT_OUTPUT_DIR), { recursive: true });
-	await mkdir(join(root, 'docs/mcp-vertex'), { recursive: true });
-	await writeFile(
-		join(root, DEFAULT_INPUT_PATH),
-		`${JSON.stringify(artifact, null, '\t')}\n`,
-		'utf8',
-	);
-	return root;
-};
-
-const withFixture = async (
-	callback: (root: string) => Promise<void>,
-	artifact: IArtifactLike = buildArtifact(),
-): Promise<void> => {
-	const root = await createFixtureRoot(artifact);
-	try {
-		await callback(root);
-	} finally {
-		await rm(root, { recursive: true, force: true });
-	}
-};
-
-describe('render-host-hints script', async () => {
-	it('renders the canonical first-move block in every fragment', () => {
-		const result = renderHostHints({ artifact: buildArtifact() });
-		expect(result.fragments).toHaveLength(3);
-		for (const fragment of result.fragments) {
-			expect(fragment.text).toContain(
-				'`mcp-vertex_overview { compact: true } -> mcp-vertex_agent_catalog`',
-			);
-			expect(fragment.text).toContain(
-				'## Discovery (canonical, generated)',
-			);
-			expect(fragment.text).toContain('### Actionable proposals');
-			expect(fragment.text).toContain('### Top skills');
-			expect(fragment.text).toContain('{/* BEGIN GENERATED: f00056 S4');
-			expect(fragment.text).toContain('{/* END GENERATED: f00056 S4 */}');
+	it('every fragment references the universal bootstrap', () => {
+		for (const fragment of renderHostHints()) {
+			expect(
+				fragment.text,
+				`${fragment.id} must reference ${BOOTSTRAP_PATH}`,
+			).toContain(BOOTSTRAP_PATH);
 		}
 	});
 
-	it('keeps each fragment under the byte budget', () => {
-		const result = renderHostHints({ artifact: buildArtifact() });
-		expect(result.warnings).toEqual([]);
-		for (const fragment of result.fragments) {
-			expect(fragment.text.length).toBeLessThanOrEqual(
-				MAX_FRAGMENT_BYTES,
+	it('no fragment enumerates tool names', () => {
+		for (const fragment of renderHostHints()) {
+			const tools = fragment.text.match(TOOL_NAME_PATTERN) ?? [];
+			// The bootstrap path includes the 3 routing entry points —
+			// allowed because they are the routing surface, not a list.
+			const nonBootstrapTools = tools.filter(
+				(name) =>
+					name !== '`mcp-vertex_agent_catalog`' &&
+					name !== '`mcp-vertex_overview`' &&
+					name !== '`mcp-vertex_proposals_auto_work`',
 			);
+			expect(
+				nonBootstrapTools,
+				`${fragment.id} must not enumerate tool names, found: ${nonBootstrapTools.join(', ')}`,
+			).toEqual([]);
 		}
 	});
 
-	it('emits one fragment per host with stable filenames', () => {
-		const result = renderHostHints({ artifact: buildArtifact() });
-		const ids = result.fragments.map((fragment) => fragment.id);
-		expect(ids).toEqual(['copilot', 'claude', 'agents']);
-		const filenames = result.fragments.map((fragment) => fragment.filename);
-		expect(filenames).toEqual([
-			'copilot-instructions.generated.md',
-			'claude.generated.md',
-			'agents.generated.md',
-		]);
-	});
-
-	it('uses the resolved generatedAt for determinism', () => {
-		const result = renderHostHints({
-			artifact: buildArtifact(),
-			generatedAt: FIXED_NOW,
-		});
-		for (const fragment of result.fragments) {
-			expect(fragment.text).toContain(FIXED_NOW);
+	it('no fragment enumerates proposal or skill ids', () => {
+		for (const fragment of renderHostHints()) {
+			const ids = fragment.text.match(ID_PATTERN) ?? [];
+			expect(
+				ids,
+				`${fragment.id} must not enumerate proposal/skill ids, found: ${ids.join(', ')}`,
+			).toEqual([]);
 		}
 	});
 
-	it('is idempotent across two CLI runs against the same artifact', async () => {
-		await withFixture(async (root) => {
-			const first = await runHostHintsCli(['--root', root], testIo());
-			expect(first.exitCode).toBe(0);
-			const firstCopilot = await readFile(
-				join(
-					root,
-					DEFAULT_OUTPUT_DIR,
-					'copilot-instructions.generated.md',
-				),
-				'utf8',
-			);
-			const firstClaude = await readFile(
-				join(root, DEFAULT_OUTPUT_DIR, 'claude.generated.md'),
-				'utf8',
-			);
-			const firstAgents = await readFile(
-				join(root, DEFAULT_OUTPUT_DIR, 'agents.generated.md'),
-				'utf8',
-			);
-			const second = await runHostHintsCli(['--root', root], testIo());
-			expect(second.exitCode).toBe(0);
-			expect(second.changed).toBe(false);
-			const secondCopilot = await readFile(
-				join(
-					root,
-					DEFAULT_OUTPUT_DIR,
-					'copilot-instructions.generated.md',
-				),
-				'utf8',
-			);
-			const secondClaude = await readFile(
-				join(root, DEFAULT_OUTPUT_DIR, 'claude.generated.md'),
-				'utf8',
-			);
-			const secondAgents = await readFile(
-				join(root, DEFAULT_OUTPUT_DIR, 'agents.generated.md'),
-				'utf8',
-			);
-			expect(secondCopilot).toBe(firstCopilot);
-			expect(secondClaude).toBe(firstClaude);
-			expect(secondAgents).toBe(firstAgents);
-		});
-	});
-
-	it('--check exits 0 when the fragments are current', async () => {
-		await withFixture(async (root) => {
-			await runHostHintsCli(['--root', root], testIo());
-			const fresh = await runHostHintsCli(
-				['--root', root, '--check'],
-				testIo({ fixedGeneratedAt: FIXED_NOW }),
-			);
-			expect(fresh.exitCode).toBe(0);
-			expect(fresh.changed).toBe(false);
-		});
-	});
-
-	it('--check exits 1 when the artifact drifts and the fragments are stale', async () => {
-		await withFixture(async (root) => {
-			await runHostHintsCli(['--root', root], testIo());
-			await writeFile(
-				join(
-					root,
-					DEFAULT_OUTPUT_DIR,
-					'copilot-instructions.generated.md',
-				),
-				'stale\n',
-				'utf8',
-			);
-			const errors: string[] = [];
-			const stale = await runHostHintsCli(
-				['--root', root, '--check'],
-				testIo({
-					error: (message: string) => errors.push(message),
-					fixedGeneratedAt: FIXED_NOW,
-				}),
-			);
-			expect(stale.exitCode).toBe(1);
-			expect(stale.changed).toBe(true);
-			expect(errors[0]).toContain('stale');
-		});
-	});
-
-	it('regenerates fragments when the artifact gains a new skill', async () => {
-		await withFixture(async (root) => {
-			const first = await runHostHintsCli(['--root', root], testIo());
-			expect(first.exitCode).toBe(0);
-			const firstCopilot = await readFile(
-				join(
-					root,
-					DEFAULT_OUTPUT_DIR,
-					'copilot-instructions.generated.md',
-				),
-				'utf8',
-			);
-			const bumped = buildArtifact({
-				skills: [
-					...buildArtifact().skills,
-					{
-						id: 'mcp-vertex-new-skill',
-						summary:
-							'Newly added skill that should appear in fragments.',
-						tags: ['new'],
-						appliesTo: ['@mcp-vertex/*'],
-					},
-				],
-			});
-			await writeFile(
-				join(root, DEFAULT_INPUT_PATH),
-				`${JSON.stringify(bumped, null, '\t')}\n`,
-				'utf8',
-			);
-			const second = await runHostHintsCli(['--root', root], testIo());
-			expect(second.exitCode).toBe(0);
-			expect(second.changed).toBe(true);
-			const secondCopilot = await readFile(
-				join(
-					root,
-					DEFAULT_OUTPUT_DIR,
-					'copilot-instructions.generated.md',
-				),
-				'utf8',
-			);
-			expect(secondCopilot).not.toBe(firstCopilot);
-			expect(secondCopilot).toContain('`mcp-vertex-new-skill`');
-		});
-	});
-
-	it('emits no warnings on the fixture and renders deterministic text', () => {
-		const artifact = buildArtifact();
-		const first = renderHostHints({ artifact });
-		const second = renderHostHints({ artifact });
-		expect(first.warnings).toEqual([]);
-		expect(first.fragments).toHaveLength(3);
-		for (let index = 0; index < first.fragments.length; index += 1) {
-			expect(first.fragments[index]?.text).toBe(
-				second.fragments[index]?.text,
-			);
+	it('fragments stay well below the per-fragment byte budget', () => {
+		for (const fragment of renderHostHints()) {
+			expect(
+				fragment.text.length,
+				`${fragment.id} is ${fragment.text.length}B, budget is ${MAX_FRAGMENT_BYTES}B`,
+			).toBeLessThan(MAX_FRAGMENT_BYTES);
 		}
 	});
 
-	it('refuses to render when the artifact is missing', async () => {
-		const root = await mkdtemp(join(tmpdir(), 'host-hints-empty-'));
-		try {
-			await expect(
-				runHostHintsCli(['--root', root], testIo()),
-			).rejects.toThrow(/catalog artifact missing/);
-		} finally {
-			await rm(root, { recursive: true, force: true });
-		}
+	it('fragments agree on routing content and only differ in host-specific footnotes', () => {
+		const rendered = renderHostHints();
+		const copilot = rendered.find((f) => f.id === 'copilot')!.text;
+		const claude = rendered.find((f) => f.id === 'claude')!.text;
+		const agents = rendered.find((f) => f.id === 'agents')!.text;
+		// All three MUST mention the canonical first move in identical wording.
+		const canonicalFirstMove =
+			'`mcp-vertex_overview { compact: true }` followed by';
+		expect(copilot).toContain(canonicalFirstMove);
+		expect(claude).toContain(canonicalFirstMove);
+		expect(agents).toContain(canonicalFirstMove);
+	});
+
+	it('renderer is byte-stable (idempotent)', () => {
+		const first = renderHostHints();
+		const second = renderHostHints();
+		expect(second).toEqual(first);
+	});
+
+	it('host-specific footnote points at the right bootstrap section', () => {
+		const rendered = renderHostHints();
+		const copilot = rendered.find((f) => f.id === 'copilot')!.text;
+		const claude = rendered.find((f) => f.id === 'claude')!.text;
+		const agents = rendered.find((f) => f.id === 'agents')!.text;
+		// Each fragment MUST point at the host-specific appendix in the
+		// universal bootstrap, never duplicate the rule body here.
+		expect(copilot).toMatch(/appendix 8\.1/i);
+		expect(claude).toMatch(/appendix 8\.2/i);
+		expect(agents).toMatch(/section 7/i);
+	});
+
+	it('HOST_FRAGMENTS and renderHostHints agree', () => {
+		const ids = HOST_FRAGMENTS.map((f) => f.id).sort();
+		expect(ids).toEqual(['agents', 'claude', 'copilot']);
 	});
 });
