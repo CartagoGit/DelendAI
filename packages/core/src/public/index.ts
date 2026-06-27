@@ -178,7 +178,7 @@ export type { IContainedPath } from '../lib/shared/contain-path';
 // Canonical home for artefacts a plugin or agent creates, runs (or
 // parses), and then deletes. Resolves through `IMcpPluginContext` so the
 // path is derived, never hardcoded. See `docs/mcp-vertex/proposals/
-// in-progress/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md`.
+// done/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md`.
 export {
 	EXEC_SUBDIR_NAME,
 	execDirRelative,
