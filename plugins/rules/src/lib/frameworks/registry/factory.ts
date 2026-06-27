@@ -1,4 +1,5 @@
 import { eslintCommandSetProvider } from '../languages/base/eslint-base.provider';
+import { pythonAdapter } from '../languages/python.adapter';
 import { rustAdapter } from '../languages/rust/rust.adapter';
 import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
 import { ALL_PRESET_DATA } from '../presets/data';
@@ -15,6 +16,7 @@ import type {
 } from '../../contracts';
 import type { IAreaRulesLite } from './preset-registry';
 import type { IPresetValidator } from './validator';
+import type { IDogmaPolicyProvider } from '../../tools/dogma-policy.provider';
 import type { IPolicyResolver } from '../../tools/policy-resolver';
 
 import {
@@ -55,24 +57,6 @@ export type { ICompositionRoot };
  * adding one field to `ICompositionRoot` and one parameter
  * to `composeRoot` — no other file changes.
  */
-const pythonAdapter: ILanguageAdapter = {
-	id: 'python-adapter',
-	priority: 30,
-	detect: async (reader: IFileReader, areaDir: string) => {
-		const rel =
-			areaDir === '' || areaDir === 'root'
-				? 'pyproject.toml'
-				: `${areaDir}/pyproject.toml`;
-		if (await reader.exists(rel)) {
-			return {
-				presetId: 'python-ruff',
-				reason: 'Python (pyproject.toml)',
-			};
-		}
-		return undefined;
-	},
-};
-
 const goAdapter: ILanguageAdapter = {
 	id: 'go-adapter',
 	priority: 30,
@@ -395,6 +379,13 @@ export const buildDefaultComposition = (
 		 * advisory only") can pass a different implementation.
 		 */
 		readonly policyResolver?: IPolicyResolver;
+		/**
+		 * Optional override for the dogma policy provider
+		 * (S11). Defaults to `StringDogmaPolicyProvider`. A host
+		 * can swap to a `ToolUseDogmaPolicyProvider` (future
+		 * slice) without touching the tools.
+		 */
+		readonly dogmaPolicyProvider?: IDogmaPolicyProvider;
 	} = {},
 ): ICompositionRoot => {
 	// The vanilla-js fallback is always present (S — the
@@ -449,6 +440,9 @@ export const buildDefaultComposition = (
 		validators,
 		renderers,
 		policyResolver,
+		...(overrides.dogmaPolicyProvider !== undefined
+			? { dogmaPolicyProvider: overrides.dogmaPolicyProvider }
+			: {}),
 	});
 
 	// The public factory overrides the registry/detector/dogmas
