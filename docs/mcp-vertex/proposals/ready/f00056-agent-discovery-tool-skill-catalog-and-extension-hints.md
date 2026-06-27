@@ -71,10 +71,10 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 - **Shipped in**: 08e0e872, 07b75476, 942916a6, ae3a0bf9, f32f40a3, 80c27c7a
 - **Gate**: bun run validate
 - **Acceptance**:
-  - "Each skill contributes one compact summary through skills/manifest.json; if a summary is absent, the generator deterministically falls back to the first paragraph of the SKILL body and emits a lint failure so the repo converges back to explicit summaries."
-  - "A checked-in generated artifact is produced from exactly three inputs - live tool registry, skills/manifest.json, and docs/proposals/index.json - and the generator is idempotent: rerunning it without input changes produces a byte-identical file."
-  - "A focused test and a pre-commit hook fail when the generated catalog, the skill manifest, the live registry, or the proposal index drift apart."
-  - "No SKILL body is copied wholesale into the artifact; only the compact summary, version, tags, and bodyPath metadata are surfaced."
+  - "Each skill contributes one compact summary through packages/core/skills/manifest.json; if a summary is absent, the generator deterministically falls back to the first paragraph of the SKILL body and emits a lint failure so the repo converges back to explicit summaries." [done]
+  - "A checked-in generated artifact is produced from exactly three inputs - live tool registry (assembleCliConfig swarm preset), packages/core/skills/manifest.json, and docs/proposals/index.json - and the generator is idempotent: rerunning it without input changes produces a byte-identical file." [done]
+  - "A focused test (tools/scripts/catalog/generate-agent-catalog.spec.ts) and a lefthook pre-commit hook (catalog:check) fail when the generated catalog, the skill manifest, the live registry, or the proposal index drift apart." [done]
+  - "No SKILL body is copied wholesale into the artifact; only the compact summary, version, tags, and bodyPath metadata are surfaced." [done] 
 
 ### S3 — VS Code extension and shared client integration
 - **Files**: packages/client/src/lib/services/agent-catalog-service.ts, extensions/vscode/package.json, extensions/vscode/src/commands/tool-search.ts, extensions/vscode/src/commands/open-agent-catalog.ts, extensions/vscode/src/providers/tool-tree-data-provider.ts, extensions/vscode/src/views/agent-catalog-webview.ts, extensions/vscode/src/test/agent-catalog.spec.ts, extensions/vscode/src/test/tool-search.spec.ts

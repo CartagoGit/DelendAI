@@ -63,6 +63,17 @@ pre-commit:
       run: bun run catalog:check || true
       stage_fixed: false
 
+    host-hints-drift-check:
+      glob_filter:
+        items:
+          - "docs/mcp-vertex/agent-catalog.generated.json"
+          - "tools/scripts/catalog/render-host-hints.script.ts"
+          - "docs/mcp-vertex/host-hints/copilot-instructions.generated.md"
+          - "docs/mcp-vertex/host-hints/claude.generated.md"
+          - "docs/mcp-vertex/host-hints/agents.generated.md"
+      run: bun run catalog:hints:check || true
+      stage_fixed: false
+
 pre-push:
   parallel: false
   commands:

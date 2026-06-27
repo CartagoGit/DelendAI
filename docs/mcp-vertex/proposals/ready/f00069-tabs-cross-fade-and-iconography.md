@@ -11,6 +11,8 @@ related:
     - f00055 # web pages review — the home page re-layout feeds this proposal
     - f00059 # i18n thread across the web/extension surface — S3 adds an `icon` field to `IHomeAtAGlanceTranslations.panels`
     - f00060 # webview host CSS into component / tokens — S2 touches `_view-transitions.scss`
+shipped-in:
+    - c4178209 # feat(tabs): cross-fade in Tabs.astro + delete PluginTabs.astro + wire PluginPage to <Tabs variant="plugin"> (S1, also shipped the external MCP docs bundle)
 globalGate: validate
 acceptance:
     - { command: bun run typecheck,                 expect: exit0 }
@@ -45,7 +47,7 @@ Two visible home/UI improvements, shipped as one small feature proposal:
    ships the brand mark for each PM (5/5), each plugin (16/16), each
    IDE (5/5) and the GitHub/Node/TypeScript set. Hook the existing
    `apps/web/src/lib/brand-logos.ts` resolver up to `<Tabs>` (new
-   `icon?` prop), wire it in `HomeQuickInstallSection`, `Install`,
+   `icon?` prop), wire it in `HomeQuickInstallSection`,
    `HomeAtAGlanceSection`, and **extend the resolver itself** with
    three new kinds (`'plugin'`, `'lang'`, `'section'`) so every
    consumer — including the existing `PluginDisclosure.astro` and
@@ -53,6 +55,16 @@ Two visible home/UI improvements, shipped as one small feature proposal:
    `/logos/plugin-${slug}.svg` — funnels through one helper. The
    fallback in `PluginDisclosure` becomes the same first-letter
    circular badge that `Tabs.astro` uses for missing logos.
+
+   > **Note (2026-06-27):** S3 of this proposal was planned against
+   > `apps/web/src/components/Install.astro`, but f00055 S6 migrated
+   > `/install` to a PageSpec served by `[page].astro` /
+   > `[lang]/[page].astro` from
+   > `apps/web/src/data/pages/install/*.md`. `Install.astro` no longer
+   > exists, so the "On `/install`" acceptance line in S3 must be
+   > re-scoped (icons inside the markdown, or skip and rely on the
+   > home page's `HomeQuickInstallSection`). S3 is marked
+   > `pending` again until that re-scoping lands.
 
 The reuse rule (`AGENTS.md` §Hard rules §2 and §4: "no `process.cwd()`"
 and "durable writes through the primitives") generalises: any
@@ -114,7 +126,9 @@ Touched files (file-disjoint slices below):
   `icon: brandLogo(pm.id, 'pm')` for each PM.
 - `apps/web/src/components/HomeAtAGlanceSection.astro` — forwards
   `p.icon` to `<Tabs>`.
-- `apps/web/src/components/Install.astro` — passes `icon` on the PM row.
+- `apps/web/src/data/pages/install/*.md` — (S3, deferred) the markdown
+  PM rows would need a custom renderer or shortcode to render icons;
+  tracked in the S3 follow-up note above.
 - `apps/web/src/components/PluginDisclosure.astro` — replaces
   hardcoded `/logos/plugin-${slug}.svg` + bespoke `onerror` with a
   single `brandLogo(slug, 'plugin')` call (S5).
@@ -201,7 +215,7 @@ slice-level gate is per-slice (see below).
   - On tab change, the controller adds `.is-leaving` to the previous panel and `.is-entering` to the new one; both run for 220 ms (`cubic-bezier(0.2, 0.7, 0.2, 1)`); `aria-selected` + roving tabindex unchanged.
   - `prefers-reduced-motion: reduce` short-circuits the animation (panels toggle instantly, no flicker — verified by the spec).
   - `PluginTabs.astro` is deleted; `PluginPage.astro` compiles and renders the same look.
-  - `_tabs-controller.ts` keeps its existing public surface (`initTabs`, `bindOne`) so other consumers (`FirstFiveMinutesSection`, `Install`, `HomeQuickInstallSection`, `HomeAtAGlanceSection`) need no edit.
+  - `_tabs-controller.ts` keeps its existing public surface (`initTabs`, `bindOne`) so other consumers (`FirstFiveMinutesSection`, `HomeQuickInstallSection`, `HomeAtAGlanceSection`) need no edit.
 
 ### S2 — Extract tabs CSS into a component partial
 
@@ -218,16 +232,16 @@ slice-level gate is per-slice (see below).
 
 ### S3 — Tab `icon?` prop + wire PM logos into `HomeQuickInstallSection`
 
-- **Status**: done
+- **Status**: pending
 - **Owner**: `implementation_runner`
-- **Files**: `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/HomeQuickInstallSection.astro`, `apps/web/src/components/Install.astro`, `apps/web/src/lib/brand-logos.ts`, `apps/web/src/styles/components/_tabs.scss`
+- **Files**: `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/HomeQuickInstallSection.astro`, `apps/web/src/lib/brand-logos.ts`, `apps/web/src/styles/components/_tabs.scss`, and (deferred) a markdown-side hook for `apps/web/src/data/pages/install/*.md`
 - **Gate**: `bun run typecheck`
 - **Command**: `bun run typecheck`
 - **Expect**: exit0
 - **Acceptance:**
   - `Tabs` renders an `<img class="ui-tabs__icon" width="18" height="18" alt="" loading="lazy">` before the label when `tabs[i].icon` is truthy; nothing renders when it isn't.
   - On `/`, the "Instalación rápida" row shows: 🟥 npm · 🟧 pnpm · 🟪 yarn · 🟫 bun · ⚫ deno (their actual brand marks).
-  - On `/install`, the "Package manager" row shows the same 5 icons.
+  - On `/install` (markdown-backed since f00055 S6): the PM rows show the same 5 icons — implementation deferred until a markdown-side renderer or shortcode is decided; tracked in the S3 follow-up note above.
   - Fallback for missing logos: a 1-letter placeholder (`n`, `p`, `y`, `b`, `d`) in the same slot — implemented as `onerror` on the `<img>` (same pattern as `PluginDisclosure.astro`).
 
 ### S4 — Section icons in `HomeAtAGlanceSection` + 12-lang i18n
