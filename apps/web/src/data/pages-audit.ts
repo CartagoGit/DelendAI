@@ -47,6 +47,14 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The root 404 only wraps NotFound inside Base, so it is pure chrome and does not carry durable product content.',
 	},
 	{
+		path: 'apps/web/src/pages/[lang]/[page].astro',
+		langCoverage: NON_EN_LOCALES,
+		kind: 'dynamic',
+		lastMeaningfulEdit: '2026-06-27',
+		verdict: 'keep',
+		why: 'This localized PageSpec route is the canonical mirror for markdown-backed prose pages and deliberately falls back to the English source when a locale has not shipped yet.',
+	},
+	{
 		path: 'apps/web/src/pages/[lang]/404.astro',
 		langCoverage: NON_EN_LOCALES,
 		kind: 'chrome',
@@ -101,14 +109,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-21',
 		verdict: 'keep',
 		why: 'The localized home route is part of the locale-negotiated landing flow and remains the canonical entry point for non-English visitors.',
-	},
-	{
-		path: 'apps/web/src/pages/[lang]/install.astro',
-		langCoverage: NON_EN_LOCALES,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'rewrite',
-		why: 'The localized install matrix is one of the explicit PageSpec migration candidates in the proposal and still carries content-heavy prose in Astro.',
 	},
 	{
 		path: 'apps/web/src/pages/[lang]/knowledge.astro',
@@ -271,14 +271,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The root landing page owns Accept-Language negotiation, hreflang tags, and canonical root-path behavior that no other page can absorb.',
 	},
 	{
-		path: 'apps/web/src/pages/install.astro',
-		langCoverage: EN_ONLY,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'rewrite',
-		why: 'The English install matrix is explicitly called out in the proposal as a clean PageSpec migration target and still carries heavy prose inside Astro.',
-	},
-	{
 		path: 'apps/web/src/pages/knowledge.astro',
 		langCoverage: EN_ONLY,
 		kind: 'chrome',
@@ -405,5 +397,13 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'The English troubleshooting index remains the canonical landing page for incident docs and is backed by the live troubleshooting catalog.',
+	},
+	{
+		path: 'apps/web/src/pages/[page].astro',
+		langCoverage: EN_ONLY,
+		kind: 'dynamic',
+		lastMeaningfulEdit: '2026-06-27',
+		verdict: 'keep',
+		why: 'This English PageSpec route is the canonical markdown-backed prose endpoint, generated from pages.json for any slug dropped into the page-spec content tree.',
 	},
 ]);
