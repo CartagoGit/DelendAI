@@ -9,6 +9,15 @@
 // `_tokens.scss`), but consumers may want to read brand colours without
 // the palette defaults — both files expose independent `:root` blocks
 // so load order does not affect outcome.
+//
+// f00055 / S2 — also `@forward` the `mv-dropdown__*` component partial
+// so any host that consumes `@mcp-vertex/shared/styles` (a new IDE
+// extension, a future product surface) gets a working dropdown without
+// duplicating SCSS. The docs site (`apps/web`) deliberately does NOT
+// pick this up — its own `_nav.scss` carries the matching `.nav__more*`
+// rules because the web passes `classPrefix: 'nav__more'` to
+// `renderDropdown`. One helper, two presets, zero fork.
 
 @forward 'tokens';
 @forward 'themes';
+@forward 'dropdown';
