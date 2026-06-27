@@ -804,7 +804,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S1 — Project-agnostic core: Linter×Language×Dogma model
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/frameworks/types.ts
 - **Files**: plugins/rules/src/lib/frameworks/presets.ts
 - **Files**: plugins/rules/src/lib/frameworks/manifest.ts
@@ -957,7 +957,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 - status: done
 ### S9 — Tests: per-language detect/manifest/tool/dogma coverage
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/tests/src/lib/rules.spec.ts
 - **Files**: plugins/rules/tests/src/lib/frameworks/manifest.spec.ts
 - **Files**: plugins/rules/tests/src/lib/tools/rules-tools.spec.ts
@@ -975,7 +975,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 - status: done
 ### S10 — E2E: synthetic polyglot workspace
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/tests/fixtures/polyglot/
 - **Files**: plugins/rules/tests/src/lib/e2e-polyglot.spec.ts
 - **Gate**: test
@@ -987,7 +987,7 @@ happens in S7 (outputSchema) with one release of back-compat.
 
 ### S11 — Policy resolver + dogma-priority skill
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/rules/src/lib/tools/policy-resolution.contract.ts (NEW)
 - **Files**: plugins/rules/src/lib/tools/dogma-policy.provider.ts (NEW)
 - **Files**: plugins/rules/src/lib/tools/policy-resolver.ts (NEW)
