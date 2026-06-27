@@ -3,6 +3,7 @@ import type { IMcpVertexConfigFile } from '@mcp-vertex/core/public';
 
 import {
 	LOOP_DETECTOR_DEFAULTS,
+	LOOP_DETECTOR_DEFAULTS_FOR,
 	createFsConfigFileReader,
 	parseLoopDetectorCliOverrides,
 	resolveLoopDetectorConfig,
@@ -72,8 +73,11 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
+				cacheDir: '.cache/mcp-vertex',
 			});
-			expect(out).toEqual(LOOP_DETECTOR_DEFAULTS);
+			expect(out).toEqual(
+				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex'),
+			);
 		});
 
 		it('file overrides defaults', async () => {
@@ -82,11 +86,13 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					loopDetector: { repeatThreshold: 99 },
 				}),
 				cliArgs: {},
+				cacheDir: '.cache/mcp-vertex',
 			});
 			expect(out.repeatThreshold).toBe(99);
 			// Other keys still come from defaults
 			expect(out.nearRepeatThreshold).toBe(
-				LOOP_DETECTOR_DEFAULTS.nearRepeatThreshold,
+				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex')
+					.nearRepeatThreshold,
 			);
 		});
 
@@ -96,6 +102,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					loopDetector: { repeatThreshold: 50, enabled: false },
 				}),
 				cliArgs: { 'loop-detector.repeat-threshold': '7' },
+				cacheDir: '.cache/mcp-vertex',
 			});
 			expect(out.repeatThreshold).toBe(7); // CLI wins
 			expect(out.enabled).toBe(false); // file wins over default (CLI did not set enabled)
@@ -108,6 +115,7 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 					'loop-detector.enabled': 'false',
 					'loop-detector.handoff-ttl-days': '30',
 				},
+				cacheDir: '.cache/mcp-vertex',
 			});
 			expect(out.enabled).toBe(false);
 			expect(out.handoffTtlDays).toBe(30);
@@ -121,8 +129,49 @@ describe('loop-detector-config (Solid SRP extraction)', async () => {
 			const out = await resolveLoopDetectorConfig({
 				configReader: stubReader({}),
 				cliArgs: {},
+				cacheDir: '.cache/mcp-vertex',
 			});
-			expect(out).toEqual(LOOP_DETECTOR_DEFAULTS);
+			expect(out).toEqual(
+				LOOP_DETECTOR_DEFAULTS_FOR('.cache/mcp-vertex'),
+			);
+		});
+
+		it('x00054: default handoffDir is anchored to the host cacheDir, not .cache/mcp-vertex/handoff', async () => {
+			// Regression pin: before x00054, the default was a hardcoded
+			// '.cache/mcp-vertex/handoff' literal. Hosts that set
+			// `cacheDir: .cache/custom-cache` would get handoffs at the
+			// historical default, stranded outside the cache root. The
+			// default now derives from cacheDir.
+			const out = await resolveLoopDetectorConfig({
+				configReader: stubReader({}),
+				cliArgs: {},
+				cacheDir: '.cache/custom-cache',
+			});
+			expect(out.handoffDir).toBe('.cache/custom-cache/handoff');
+			expect(out.handoffDir).not.toBe('.cache/mcp-vertex/handoff');
+		});
+
+		it('x00054: explicit handoffDir in the file config still wins over the cacheDir-derived default', async () => {
+			const out = await resolveLoopDetectorConfig({
+				configReader: stubReader({
+					loopDetector: { handoffDir: '/tmp/explicit-handoff' },
+				}),
+				cliArgs: {},
+				cacheDir: '.cache/custom-cache',
+			});
+			expect(out.handoffDir).toBe('/tmp/explicit-handoff');
+		});
+
+		it('x00054: LOOP_DETECTOR_DEFAULTS_FOR builds defaults anchored to the given cacheDir', async () => {
+			const out = LOOP_DETECTOR_DEFAULTS_FOR('.cache/alt');
+			expect(out.handoffDir).toBe('.cache/alt/handoff');
+			// The non-path fields are unchanged from the base defaults.
+			expect(out.repeatThreshold).toBe(
+				LOOP_DETECTOR_DEFAULTS.repeatThreshold,
+			);
+			expect(out.interactiveAgentPatterns).toEqual(
+				LOOP_DETECTOR_DEFAULTS.interactiveAgentPatterns,
+			);
 		});
 	});
 

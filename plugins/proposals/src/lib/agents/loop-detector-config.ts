@@ -22,6 +22,7 @@
 import { readFile } from 'node:fs/promises';
 
 import {
+	joinRel,
 	parseConfigFile,
 	type IMcpVertexConfigFile,
 	type IWorkspacePathProvider,
@@ -89,6 +90,14 @@ export interface IResolveLoopDetectorConfigInput {
 	readonly configReader: IConfigFileReader;
 	/** CLI args bag (`ctx.args`). May be empty. */
 	readonly cliArgs: Readonly<Record<string, string>>;
+	/**
+	 * x00054: workspace-relative `cacheDir` used to derive the
+	 * fallback `handoffDir` so it stays under the host's configured
+	 * cache root, not at the historical `.cache/mcp-vertex/handoff`
+	 * literal. Tests inject `'.cache/mcp-vertex'` to preserve the
+	 * pre-fix fixture.
+	 */
+	readonly cacheDir: string;
 }
 
 /** Default option values shipped with the plugin. */
@@ -110,6 +119,12 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 		'multi_replace_string_in_file',
 		'replace_string_in_file',
 	],
+	// x00054: the handoff path is now a function `defaultHandoffDir`
+	// that derives from the host-resolved `cacheDir` — see
+	// `LOOP_DETECTOR_DEFAULTS_FOR(cacheDir)` below. Keeping the literal
+	// default in this const would silently strand handoffs at
+	// `.cache/mcp-vertex/handoff` whenever a host reconfigures the
+	// cache root (the same family of bug as x00052).
 	handoffDir: '.cache/mcp-vertex/handoff',
 	handoffTtlDays: 7,
 	notifyOnDetect: true,
@@ -119,6 +134,20 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 	// list from the config file (`loopDetector.interactiveAgentPatterns`).
 	interactiveAgentPatterns: ['*-default', 'default-*', 'host', 'interactive'],
 };
+
+/**
+ * x00054: build a default options object whose `handoffDir` is
+ * anchored to the host-resolved `cacheDir` (not the historical
+ * `.cache/mcp-vertex` default). Hosts that pass an explicit
+ * `handoffDir` via the config file or CLI still win — this only
+ * affects the fallback.
+ */
+export const LOOP_DETECTOR_DEFAULTS_FOR = (
+	cacheDir: string,
+): ILoopDetectorServiceOptions => ({
+	...LOOP_DETECTOR_DEFAULTS,
+	handoffDir: joinRel(cacheDir, 'handoff'),
+});
 
 /**
  * Parse CLI overrides from the args bag. Exported so the spec can pin
@@ -193,7 +222,7 @@ export const parseLoopDetectorCliOverrides = (
 };
 
 /**
- * Solid: pure over its inputs (configReader + cliArgs + defaults).
+ * Solid: pure over its inputs (configReader + cliArgs + cacheDir + defaults).
  * Precedence: CLI > on-disk config > defaults. The boot-time fs read
  * lives inside `configReader` — the resolver itself never imports
  * `node:fs`.
@@ -207,64 +236,62 @@ export const resolveLoopDetectorConfig = (
 			resolveLoopDetectorConfigFromFileConfig(
 				globalConfig,
 				input.cliArgs,
+				input.cacheDir,
 			),
 		);
 
 export const resolveLoopDetectorConfigFromFileConfig = (
 	globalConfig: IMcpVertexConfigFile,
 	cliArgs: Readonly<Record<string, string>>,
+	cacheDir: string,
 ): ILoopDetectorServiceOptions => {
 	const cliConfig = parseLoopDetectorCliOverrides(cliArgs);
 	const loop = globalConfig.loopDetector;
+	// x00054: the default `handoffDir` is anchored to the host's
+	// `cacheDir`. The CLI / on-disk config overrides still win via
+	// the precedence chain below.
+	const defaults = LOOP_DETECTOR_DEFAULTS_FOR(cacheDir);
 
 	return {
-		enabled:
-			cliConfig.enabled ??
-			loop?.enabled ??
-			LOOP_DETECTOR_DEFAULTS.enabled,
+		enabled: cliConfig.enabled ?? loop?.enabled ?? defaults.enabled,
 		repeatThreshold:
 			cliConfig.repeatThreshold ??
 			loop?.repeatThreshold ??
-			LOOP_DETECTOR_DEFAULTS.repeatThreshold,
+			defaults.repeatThreshold,
 		nearRepeatThreshold:
 			cliConfig.nearRepeatThreshold ??
 			loop?.nearRepeatThreshold ??
-			LOOP_DETECTOR_DEFAULTS.nearRepeatThreshold,
+			defaults.nearRepeatThreshold,
 		similarityThreshold:
 			cliConfig.similarityThreshold ??
 			loop?.similarityThreshold ??
-			LOOP_DETECTOR_DEFAULTS.similarityThreshold,
+			defaults.similarityThreshold,
 		idleThreshold:
 			cliConfig.idleThreshold ??
 			loop?.idleThreshold ??
-			LOOP_DETECTOR_DEFAULTS.idleThreshold,
+			defaults.idleThreshold,
 		noProgressThreshold:
 			cliConfig.noProgressThreshold ??
 			loop?.noProgressThreshold ??
-			LOOP_DETECTOR_DEFAULTS.noProgressThreshold,
-		ringSize:
-			cliConfig.ringSize ??
-			loop?.ringSize ??
-			LOOP_DETECTOR_DEFAULTS.ringSize,
+			defaults.noProgressThreshold,
+		ringSize: cliConfig.ringSize ?? loop?.ringSize ?? defaults.ringSize,
 		gitCheckTools:
 			cliConfig.gitCheckTools ??
 			loop?.gitCheckTools ??
-			LOOP_DETECTOR_DEFAULTS.gitCheckTools,
+			defaults.gitCheckTools,
 		handoffDir:
-			cliConfig.handoffDir ??
-			loop?.handoffDir ??
-			LOOP_DETECTOR_DEFAULTS.handoffDir,
+			cliConfig.handoffDir ?? loop?.handoffDir ?? defaults.handoffDir,
 		handoffTtlDays:
 			cliConfig.handoffTtlDays ??
 			loop?.handoffTtlDays ??
-			LOOP_DETECTOR_DEFAULTS.handoffTtlDays,
+			defaults.handoffTtlDays,
 		notifyOnDetect:
 			cliConfig.notifyOnDetect ??
 			loop?.notifyOnDetect ??
-			LOOP_DETECTOR_DEFAULTS.notifyOnDetect,
+			defaults.notifyOnDetect,
 		interactiveAgentPatterns:
 			cliConfig.interactiveAgentPatterns ??
 			loop?.interactiveAgentPatterns ??
-			LOOP_DETECTOR_DEFAULTS.interactiveAgentPatterns,
+			defaults.interactiveAgentPatterns,
 	};
 };
