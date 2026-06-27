@@ -119,19 +119,13 @@ finish work.
 
 In a shared repo with several agents, **expect** the working tree, the
 index, and the active branch to change under you between writes. That is
-the normal state, not a failure. The rule (codified in `AGENTS.md` §
-"Coexistence with parallel work"):
+the normal state, not a failure.
 
-1. **Do not panic.**
-2. **Do not redo the work** — read what is there *now*.
-3. **Read the commit** — one `git log -1` explains it cheaply.
-4. **Do not widen scope** — wait, take a disjoint slice, or close with
-   "blocked by external change".
-5. **Trust `git diff` over memory** — the working tree is the source of
-   truth.
-
-Canonical micro-pattern when `git status --porcelain` shows something you
-did not write:
+The full five-point rule lives in
+[`docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b "Coexistence with parallel
+work"](../../../docs/mcp-vertex/AGENT-BOOTSTRAP.md) — that is the
+single source of truth, always loaded by every host. This skill restates
+the swarm-specific micro-pattern:
 
 ```text
 git log -1 -- <path>          # what changed?
@@ -139,7 +133,7 @@ git diff HEAD~1 -- <path>     # full diff if needed
 # accept and proceed, OR surgical follow-up. NEVER re-plan.
 ```
 
-This applies symmetrically to peer agents, CI, humans, the catalog
+Applies symmetrically to peer agents, CI, humans, the catalog
 regenerator, the worktree's own pre-commit hooks, and stale worktrees
 sharing `.git`. Same answer in every case: keep working.
 
