@@ -6,7 +6,9 @@
 	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
 	"scripts": {
 		"sync:public-api": "bun scripts/sync-public-api.ts",
-		"gen:manifests": "bun scripts/gen-capabilities.ts",
+		"gen:pages": "bun scripts/gen-pages.ts",
+		"gen:manifests": "bun run gen:pages && bun run gen:capabilities",
+		"gen:manifests:strict": "bun run gen:pages --strict && bun run gen:capabilities --strict",
 		"dev": "bun run sync:public-api && bun run gen:manifests && bun run dev:api & PAGES_BASE='' astro dev",
 		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
 		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
@@ -17,16 +19,18 @@
 		"gen:logos": "bun scripts/gen-plugin-logos.ts",
 		"fetch:logos": "bun scripts/fetch-brand-logos.ts",
 		"index:search": "pagefind --site ../../build/apps/web",
-		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
-		"build:strict": "bun scripts/check-i18n.ts && bun run sync:public-api && bun scripts/gen-capabilities.ts --strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
+		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
+		"build:strict": "bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
 	},
 	"dependencies": {
 		"astro": "^6.4.8",
+		"markdown-it": "^14.2.0",
 		"sass": "^1.101.0",
 		"simple-icons": "^16.24.0"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",
+		"@types/markdown-it": "^14.1.2",
 		"@mcp-vertex/core": "workspace:*",
 		"@mcp-vertex/deps": "workspace:*",
 		"@mcp-vertex/docs": "workspace:*",
