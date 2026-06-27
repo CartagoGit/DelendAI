@@ -10,6 +10,8 @@ export const SOL_PRESET: IRulePreset = {
 	linter: 'solhint',
 	linterConfigFile: 'sol-solhint.config.sol',
 	linterConfigContent: `# Default solhint configuration for Solidity\n`,
+	eslintConfigFile: 'sol-solhint.config.sol',
+	eslintConfigContent: `# Default solhint configuration for Solidity\n`,
 	conventions: [
 		'Follow standard Solidity coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const MOVE_PRESET: IRulePreset = {
 	linter: 'forge',
 	linterConfigFile: 'move-forge.config.move',
 	linterConfigContent: `# Default forge configuration for Move\n`,
+	eslintConfigFile: 'move-forge.config.move',
+	eslintConfigContent: `# Default forge configuration for Move\n`,
 	conventions: [
 		'Follow standard Move coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const CAIRO_PRESET: IRulePreset = {
 	linter: 'forge',
 	linterConfigFile: 'cairo-forge.config.cairo',
 	linterConfigContent: `# Default forge configuration for Cairo\n`,
+	eslintConfigFile: 'cairo-forge.config.cairo',
+	eslintConfigContent: `# Default forge configuration for Cairo\n`,
 	conventions: [
 		'Follow standard Cairo coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const VYPER_PRESET: IRulePreset = {
 	linter: 'solhint',
 	linterConfigFile: 'vyper-solhint.config.vy',
 	linterConfigContent: `# Default solhint configuration for Vyper\n`,
+	eslintConfigFile: 'vyper-solhint.config.vy',
+	eslintConfigContent: `# Default solhint configuration for Vyper\n`,
 	conventions: [
 		'Follow standard Vyper coding style.',
 		'Keep functions and modules focused and reusable.',

@@ -10,6 +10,8 @@ export const PROTO_PRESET: IRulePreset = {
 	linter: 'buf',
 	linterConfigFile: 'proto-buf.config.proto',
 	linterConfigContent: `# Default buf configuration for Protobuf\n`,
+	eslintConfigFile: 'proto-buf.config.proto',
+	eslintConfigContent: `# Default buf configuration for Protobuf\n`,
 	conventions: [
 		'Follow standard Protobuf coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const GRAPHQL_PRESET: IRulePreset = {
 	linter: 'prettier',
 	linterConfigFile: 'graphql-prettier.config.graphql',
 	linterConfigContent: `# Default prettier configuration for GraphQL\n`,
+	eslintConfigFile: 'graphql-prettier.config.graphql',
+	eslintConfigContent: `# Default prettier configuration for GraphQL\n`,
 	conventions: [
 		'Follow standard GraphQL coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const OPENAPI_PRESET: IRulePreset = {
 	linter: 'actionlint',
 	linterConfigFile: 'openapi-actionlint.config.yaml',
 	linterConfigContent: `# Default actionlint configuration for OpenAPI\n`,
+	eslintConfigFile: 'openapi-actionlint.config.yaml',
+	eslintConfigContent: `# Default actionlint configuration for OpenAPI\n`,
 	conventions: [
 		'Follow standard OpenAPI coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const AVSC_PRESET: IRulePreset = {
 	linter: 'jsonlint',
 	linterConfigFile: 'avsc-jsonlint.config.avsc',
 	linterConfigContent: `# Default jsonlint configuration for Avro Schema\n`,
+	eslintConfigFile: 'avsc-jsonlint.config.avsc',
+	eslintConfigContent: `# Default jsonlint configuration for Avro Schema\n`,
 	conventions: [
 		'Follow standard Avro Schema coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const THRIFT_PRESET: IRulePreset = {
 	linter: 'jsonlint',
 	linterConfigFile: 'thrift-jsonlint.config.thrift',
 	linterConfigContent: `# Default jsonlint configuration for Thrift\n`,
+	eslintConfigFile: 'thrift-jsonlint.config.thrift',
+	eslintConfigContent: `# Default jsonlint configuration for Thrift\n`,
 	conventions: [
 		'Follow standard Thrift coding style.',
 		'Keep functions and modules focused and reusable.',

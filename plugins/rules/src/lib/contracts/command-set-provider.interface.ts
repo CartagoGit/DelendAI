@@ -1,5 +1,11 @@
 import type { ICommandSet } from './command-set.interface';
 
 export interface ICommandSetProvider {
-	resolveCommandSet(areaDir: string): ICommandSet;
+	buildCommandSet(
+		areaDir: string,
+		rules: Readonly<{
+			readonly linterConfigs: readonly string[];
+			readonly typecheckConfigs: readonly string[];
+		}>,
+	): ICommandSet;
 }

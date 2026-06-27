@@ -10,6 +10,8 @@ export const CLJ_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'clj-coq-lint.config.clj',
 	linterConfigContent: `# Default coq-lint configuration for Clojure\n`,
+	eslintConfigFile: 'clj-coq-lint.config.clj',
+	eslintConfigContent: `# Default coq-lint configuration for Clojure\n`,
 	conventions: [
 		'Follow standard Clojure coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const CLJS_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'cljs-coq-lint.config.cljs',
 	linterConfigContent: `# Default coq-lint configuration for ClojureScript\n`,
+	eslintConfigFile: 'cljs-coq-lint.config.cljs',
+	eslintConfigContent: `# Default coq-lint configuration for ClojureScript\n`,
 	conventions: [
 		'Follow standard ClojureScript coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const SCM_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'scm-coq-lint.config.scm',
 	linterConfigContent: `# Default coq-lint configuration for Scheme\n`,
+	eslintConfigFile: 'scm-coq-lint.config.scm',
+	eslintConfigContent: `# Default coq-lint configuration for Scheme\n`,
 	conventions: [
 		'Follow standard Scheme coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const RKT_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'rkt-coq-lint.config.rkt',
 	linterConfigContent: `# Default coq-lint configuration for Racket\n`,
+	eslintConfigFile: 'rkt-coq-lint.config.rkt',
+	eslintConfigContent: `# Default coq-lint configuration for Racket\n`,
 	conventions: [
 		'Follow standard Racket coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const EL_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'el-coq-lint.config.el',
 	linterConfigContent: `# Default coq-lint configuration for Emacs Lisp\n`,
+	eslintConfigFile: 'el-coq-lint.config.el',
+	eslintConfigContent: `# Default coq-lint configuration for Emacs Lisp\n`,
 	conventions: [
 		'Follow standard Emacs Lisp coding style.',
 		'Keep functions and modules focused and reusable.',

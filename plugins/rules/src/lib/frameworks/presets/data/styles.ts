@@ -10,6 +10,8 @@ export const HTML_PRESET: IRulePreset = {
 	linter: 'htmllint',
 	linterConfigFile: 'html-htmllint.config.html',
 	linterConfigContent: `# Default htmllint configuration for HTML\n`,
+	eslintConfigFile: 'html-htmllint.config.html',
+	eslintConfigContent: `# Default htmllint configuration for HTML\n`,
 	conventions: [
 		'Follow standard HTML coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const CSS_PRESET: IRulePreset = {
 	linter: 'stylelint',
 	linterConfigFile: 'css-stylelint.config.css',
 	linterConfigContent: `# Default stylelint configuration for CSS\n`,
+	eslintConfigFile: 'css-stylelint.config.css',
+	eslintConfigContent: `# Default stylelint configuration for CSS\n`,
 	conventions: [
 		'Follow standard CSS coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const SCSS_PRESET: IRulePreset = {
 	linter: 'stylelint',
 	linterConfigFile: 'scss-stylelint.config.scss',
 	linterConfigContent: `# Default stylelint configuration for SCSS\n`,
+	eslintConfigFile: 'scss-stylelint.config.scss',
+	eslintConfigContent: `# Default stylelint configuration for SCSS\n`,
 	conventions: [
 		'Follow standard SCSS coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const SASS_PRESET: IRulePreset = {
 	linter: 'stylelint',
 	linterConfigFile: 'sass-stylelint.config.sass',
 	linterConfigContent: `# Default stylelint configuration for Sass\n`,
+	eslintConfigFile: 'sass-stylelint.config.sass',
+	eslintConfigContent: `# Default stylelint configuration for Sass\n`,
 	conventions: [
 		'Follow standard Sass coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const LESS_PRESET: IRulePreset = {
 	linter: 'stylelint',
 	linterConfigFile: 'less-stylelint.config.less',
 	linterConfigContent: `# Default stylelint configuration for Less\n`,
+	eslintConfigFile: 'less-stylelint.config.less',
+	eslintConfigContent: `# Default stylelint configuration for Less\n`,
 	conventions: [
 		'Follow standard Less coding style.',
 		'Keep functions and modules focused and reusable.',

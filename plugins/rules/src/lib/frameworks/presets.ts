@@ -1,5 +1,31 @@
 import type { IRulePreset } from './types';
 
+type TLegacyRulePreset = Omit<
+	IRulePreset,
+	'linterConfigFile' | 'linterConfigContent' | 'eslintConfigContent'
+> & {
+	linterConfigFile?: string | undefined;
+	linterConfigContent?: string | undefined;
+	eslintConfigContent?: string | undefined;
+};
+
+const mapLegacyPreset = (preset: TLegacyRulePreset): IRulePreset => {
+	const eslintConfigFile =
+		preset.eslintConfigFile ?? preset.linterConfigFile ?? '';
+	const eslintConfigContent =
+		preset.eslintConfigContent ?? preset.linterConfigContent ?? '';
+	return {
+		...preset,
+		linterConfigFile: preset.linterConfigFile ?? eslintConfigFile,
+		linterConfigContent: preset.linterConfigContent ?? eslintConfigContent,
+		eslintConfigFile,
+		eslintConfigContent,
+		typecheckConfigFile: preset.typecheckConfigFile ?? preset.tsconfigFile,
+		typecheckConfigContent:
+			preset.typecheckConfigContent ?? preset.tsconfigContent,
+	};
+};
+
 // Shared strict tsconfig for TS presets (materialised to cache; the
 // project's own tsconfig is layered on top and wins).
 const STRICT_TSCONFIG = `${JSON.stringify(
@@ -51,7 +77,7 @@ const ANGULAR_TSCONFIG = `${JSON.stringify(
  * a flat-config file the project's ESLint consumes; this plugin never
  * imports those ESLint packages itself (stays dependency-light).
  */
-const BASE_PRESETS: readonly IRulePreset[] = [
+const BASE_PRESETS: readonly TLegacyRulePreset[] = [
 	{
 		id: 'vanilla-js',
 		framework: 'vanilla',
@@ -346,10 +372,10 @@ export default [
 const base = (id: string): IRulePreset => {
 	const p = BASE_PRESETS.find((preset) => preset.id === id);
 	if (p === undefined) throw new Error(`base preset "${id}" not found`);
-	return p;
+	return mapLegacyPreset(p);
 };
 
-const META_PRESETS: readonly IRulePreset[] = [
+const META_PRESETS: readonly TLegacyRulePreset[] = [
 	{
 		id: 'next-ts',
 		framework: 'next',
@@ -435,7 +461,7 @@ const META_PRESETS: readonly IRulePreset[] = [
 // the PROJECT's own toolchain consumes). `conventions` are language-specific
 // (NOT ESLint-style advice); `requiredEslintDeps` names the binaries the
 // project must install. Curated bullet quality lands in f00052.
-const LANGUAGE_PRESETS: readonly IRulePreset[] = [
+const LANGUAGE_PRESETS: readonly TLegacyRulePreset[] = [
 	{
 		id: 'python-ruff',
 		framework: 'python',
@@ -777,7 +803,7 @@ export const RULE_PRESETS: readonly IRulePreset[] = [
 	...BASE_PRESETS,
 	...META_PRESETS,
 	...LANGUAGE_PRESETS,
-];
+].map(mapLegacyPreset);
 
 /** npm packages each preset's materialised ESLint config imports. */
 export const REQUIRED_ESLINT_DEPS: Readonly<Record<string, readonly string[]>> =

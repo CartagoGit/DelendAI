@@ -10,6 +10,8 @@ export const VIM_PRESET: IRulePreset = {
 	linter: 'prettier',
 	linterConfigFile: 'vim-prettier.config.vim',
 	linterConfigContent: `# Default prettier configuration for Vimscript\n`,
+	eslintConfigFile: 'vim-prettier.config.vim',
+	eslintConfigContent: `# Default prettier configuration for Vimscript\n`,
 	conventions: [
 		'Follow standard Vimscript coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const RON_PRESET: IRulePreset = {
 	linter: 'prettier',
 	linterConfigFile: 'ron-prettier.config.ron',
 	linterConfigContent: `# Default prettier configuration for RON\n`,
+	eslintConfigFile: 'ron-prettier.config.ron',
+	eslintConfigContent: `# Default prettier configuration for RON\n`,
 	conventions: [
 		'Follow standard RON coding style.',
 		'Keep functions and modules focused and reusable.',

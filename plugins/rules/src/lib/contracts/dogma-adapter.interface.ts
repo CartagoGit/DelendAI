@@ -20,6 +20,8 @@ export interface IDogmaAdapter {
 	readonly visibility: IVisibilityDogma;
 	readonly immutability: IImmutabilityDogma;
 	readonly testing: ITestingDogma;
+	readonly displayName?: string;
+	readonly version: string;
 	readonly packageManager: string;
 	readonly bullets: readonly string[];
 }

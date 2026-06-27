@@ -10,6 +10,8 @@ export const FS_PRESET: IRulePreset = {
 	linter: 'dotnet-format',
 	linterConfigFile: 'fs-dotnet-format.config.fs',
 	linterConfigContent: `# Default dotnet-format configuration for F#\n`,
+	eslintConfigFile: 'fs-dotnet-format.config.fs',
+	eslintConfigContent: `# Default dotnet-format configuration for F#\n`,
 	conventions: [
 		'Follow standard F# coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const VB_PRESET: IRulePreset = {
 	linter: 'dotnet-format',
 	linterConfigFile: 'vb-dotnet-format.config.vb',
 	linterConfigContent: `# Default dotnet-format configuration for Visual Basic\n`,
+	eslintConfigFile: 'vb-dotnet-format.config.vb',
+	eslintConfigContent: `# Default dotnet-format configuration for Visual Basic\n`,
 	conventions: [
 		'Follow standard Visual Basic coding style.',
 		'Keep functions and modules focused and reusable.',

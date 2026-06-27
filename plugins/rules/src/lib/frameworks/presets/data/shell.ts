@@ -10,6 +10,8 @@ export const SH_PRESET: IRulePreset = {
 	linter: 'shellcheck',
 	linterConfigFile: 'sh-shellcheck.config.sh',
 	linterConfigContent: `# Default shellcheck configuration for Shell\n`,
+	eslintConfigFile: 'sh-shellcheck.config.sh',
+	eslintConfigContent: `# Default shellcheck configuration for Shell\n`,
 	conventions: [
 		'Follow standard Shell coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const PWSH_PRESET: IRulePreset = {
 	linter: 'shellcheck',
 	linterConfigFile: 'pwsh-shellcheck.config.ps1',
 	linterConfigContent: `# Default shellcheck configuration for PowerShell\n`,
+	eslintConfigFile: 'pwsh-shellcheck.config.ps1',
+	eslintConfigContent: `# Default shellcheck configuration for PowerShell\n`,
 	conventions: [
 		'Follow standard PowerShell coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const NU_PRESET: IRulePreset = {
 	linter: 'shellcheck',
 	linterConfigFile: 'nu-shellcheck.config.nu',
 	linterConfigContent: `# Default shellcheck configuration for Nushell\n`,
+	eslintConfigFile: 'nu-shellcheck.config.nu',
+	eslintConfigContent: `# Default shellcheck configuration for Nushell\n`,
 	conventions: [
 		'Follow standard Nushell coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const FISH_PRESET: IRulePreset = {
 	linter: 'shellcheck',
 	linterConfigFile: 'fish-shellcheck.config.fish',
 	linterConfigContent: `# Default shellcheck configuration for Fish\n`,
+	eslintConfigFile: 'fish-shellcheck.config.fish',
+	eslintConfigContent: `# Default shellcheck configuration for Fish\n`,
 	conventions: [
 		'Follow standard Fish coding style.',
 		'Keep functions and modules focused and reusable.',

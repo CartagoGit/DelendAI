@@ -10,6 +10,8 @@ export const R_PRESET: IRulePreset = {
 	linter: 'luacheck',
 	linterConfigFile: 'r-luacheck.config.r',
 	linterConfigContent: `# Default luacheck configuration for R\n`,
+	eslintConfigFile: 'r-luacheck.config.r',
+	eslintConfigContent: `# Default luacheck configuration for R\n`,
 	conventions: [
 		'Follow standard R coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const M_PRESET: IRulePreset = {
 	linter: 'luacheck',
 	linterConfigFile: 'm-luacheck.config.m',
 	linterConfigContent: `# Default luacheck configuration for MATLAB\n`,
+	eslintConfigFile: 'm-luacheck.config.m',
+	eslintConfigContent: `# Default luacheck configuration for MATLAB\n`,
 	conventions: [
 		'Follow standard MATLAB coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const SAS_PRESET: IRulePreset = {
 	linter: 'luacheck',
 	linterConfigFile: 'sas-luacheck.config.sas',
 	linterConfigContent: `# Default luacheck configuration for SAS\n`,
+	eslintConfigFile: 'sas-luacheck.config.sas',
+	eslintConfigContent: `# Default luacheck configuration for SAS\n`,
 	conventions: [
 		'Follow standard SAS coding style.',
 		'Keep functions and modules focused and reusable.',
