@@ -1,6 +1,6 @@
 ---
 id: x00051
-status: ready
+status: done
 type: proposal
 track: plugins/proposals+git+orchestration
 date: 2026-06-27
