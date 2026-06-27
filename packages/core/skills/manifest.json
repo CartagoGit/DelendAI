@@ -131,6 +131,20 @@
 			"appliesTo": ["@mcp-vertex/rules"]
 		},
 		{
+			"id": "mcp-vertex-rules-dogma-priority",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"bodyPath": "plugins/rules/skills/mcp-vertex-rules-dogma-priority/SKILL.md",
+			"tags": [
+				"rules",
+				"dogma",
+				"priority",
+				"f00051-s11",
+				"contributor-guide"
+			],
+			"appliesTo": ["@mcp-vertex/rules"]
+		},
+		{
 			"id": "mcp-vertex-legacy-proposal-migration",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",

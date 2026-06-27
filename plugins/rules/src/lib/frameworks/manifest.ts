@@ -143,15 +143,17 @@ export const buildRulesManifest = async (
 		configs.push(
 			joinRel(
 				cacheRelDir,
-				preset.eslintConfigFile ?? preset.linterConfigFile,
+				preset.linterConfigFile ?? preset.eslintConfigFile,
 			),
 		);
 
 		const typecheck: string[] = [];
 		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
 		if (projectTsconfig !== undefined) typecheck.push(projectTsconfig);
-		if (preset.tsconfigFile !== undefined) {
-			typecheck.push(joinRel(cacheRelDir, preset.tsconfigFile));
+		const typecheckConfigFile =
+			preset.typecheckConfigFile ?? preset.tsconfigFile;
+		if (typecheckConfigFile !== undefined) {
+			typecheck.push(joinRel(cacheRelDir, typecheckConfigFile));
 		}
 
 		areas[areaKey(areaDir)] = {
@@ -220,11 +222,11 @@ export const ensureRulesCache = async (
 	for (const preset of RULE_PRESETS) {
 		const eslintRel = joinRel(
 			options.cacheRelDir,
-			preset.eslintConfigFile ?? preset.linterConfigFile,
+			preset.linterConfigFile ?? preset.eslintConfigFile,
 		);
 		await writeFileAtomic(
 			options.resolve(eslintRel),
-			preset.eslintConfigContent ?? preset.linterConfigContent,
+			preset.linterConfigContent ?? preset.eslintConfigContent,
 		);
 		materialized.push(eslintRel);
 

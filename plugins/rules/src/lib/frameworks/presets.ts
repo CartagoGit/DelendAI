@@ -26,7 +26,7 @@ const mapLegacyPreset = (preset: TLegacyRulePreset): IRulePreset => {
 	};
 };
 
-// Shared strict tsconfig for TS presets (materialised to cache; the
+// Shared strict typecheck config for TS presets (materialised to cache; the
 // project's own tsconfig is layered on top and wins).
 const STRICT_TSCONFIG = `${JSON.stringify(
 	{
@@ -73,18 +73,18 @@ const ANGULAR_TSCONFIG = `${JSON.stringify(
 )}\n`;
 
 /**
- * Default presets, one per framework+language. `eslintConfigContent` is
- * a flat-config file the project's ESLint consumes; this plugin never
+ * Default presets, one per framework+language. `linterConfigContent` is
+ * a flat-config file the project's linter consumes; this plugin never
  * imports those ESLint packages itself (stays dependency-light).
  */
-const BASE_PRESETS: readonly TLegacyRulePreset[] = [
+const BASE_PRESETS: readonly IRulePreset[] = [
 	{
 		id: 'vanilla-js',
 		framework: 'vanilla',
 		language: 'js',
 		linter: 'eslint',
-		eslintConfigFile: 'vanilla-js.eslint.config.mjs',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'vanilla-js.eslint.config.mjs',
+		linterConfigContent: `import js from '@eslint/js';
 
 // Default base for plain JavaScript. Project config is layered on top.
 export default [
@@ -110,9 +110,9 @@ export default [
 		framework: 'vanilla',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'vanilla-ts.eslint.config.mjs',
-		tsconfigFile: 'vanilla-ts.tsconfig.json',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'vanilla-ts.eslint.config.mjs',
+		typecheckConfigFile: 'vanilla-ts.tsconfig.json',
+		linterConfigContent: `import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 // Default base for TypeScript. Project config is layered on top.
@@ -136,7 +136,7 @@ export default [
 	},
 ];
 `,
-		tsconfigContent: STRICT_TSCONFIG,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Interfaces PascalCase with `I` prefix; type aliases PascalCase.',
 			'Prefer `import type` for type-only imports; avoid `any`.',
@@ -148,9 +148,9 @@ export default [
 		framework: 'angular',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'angular.eslint.config.mjs',
-		tsconfigFile: 'angular.tsconfig.json',
-		eslintConfigContent: `import tseslint from 'typescript-eslint';
+		linterConfigFile: 'angular.eslint.config.mjs',
+		typecheckConfigFile: 'angular.tsconfig.json',
+		linterConfigContent: `import tseslint from 'typescript-eslint';
 import angular from 'angular-eslint';
 
 // Default Angular base. Project config is layered on top.
@@ -178,7 +178,7 @@ export default [
 	},
 ];
 `,
-		tsconfigContent: ANGULAR_TSCONFIG,
+		typecheckConfigContent: ANGULAR_TSCONFIG,
 		conventions: [
 			'Components: kebab-case element selector, prefix `app-`.',
 			'Directives: camelCase attribute selector, prefix `app`.',
@@ -190,9 +190,9 @@ export default [
 		framework: 'react',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'react-ts.eslint.config.mjs',
-		tsconfigFile: 'react-ts.tsconfig.json',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'react-ts.eslint.config.mjs',
+		typecheckConfigFile: 'react-ts.tsconfig.json',
+		linterConfigContent: `import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -216,7 +216,7 @@ export default [
 	},
 ];
 `,
-		tsconfigContent: STRICT_TSCONFIG,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Function components; obey the Rules of Hooks; always key lists.',
 			'No need for React in scope (modern JSX transform).',
@@ -227,8 +227,8 @@ export default [
 		framework: 'react',
 		language: 'js',
 		linter: 'eslint',
-		eslintConfigFile: 'react-js.eslint.config.mjs',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'react-js.eslint.config.mjs',
+		linterConfigContent: `import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
@@ -258,9 +258,9 @@ export default [
 		framework: 'vue',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'vue.eslint.config.mjs',
-		tsconfigFile: 'vue.tsconfig.json',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'vue.eslint.config.mjs',
+		typecheckConfigFile: 'vue.tsconfig.json',
+		linterConfigContent: `import js from '@eslint/js';
 import vue from 'eslint-plugin-vue';
 import tseslint from 'typescript-eslint';
 
@@ -279,7 +279,7 @@ export default [
 	},
 ];
 `,
-		tsconfigContent: STRICT_TSCONFIG,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Multi-word component names; `<script setup>` + Composition API.',
 		],
@@ -289,9 +289,9 @@ export default [
 		framework: 'svelte',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'svelte.eslint.config.mjs',
-		tsconfigFile: 'svelte.tsconfig.json',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'svelte.eslint.config.mjs',
+		typecheckConfigFile: 'svelte.tsconfig.json',
+		linterConfigContent: `import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import tseslint from 'typescript-eslint';
 
@@ -306,7 +306,7 @@ export default [
 	},
 ];
 `,
-		tsconfigContent: STRICT_TSCONFIG,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: ['TS in `<script lang="ts">`; follow svelte recommended.'],
 	},
 	{
@@ -314,8 +314,8 @@ export default [
 		framework: 'laravel',
 		language: 'php',
 		linter: 'pint',
-		eslintConfigFile: 'laravel.pint.json',
-		eslintConfigContent: `${JSON.stringify(
+		linterConfigFile: 'laravel.pint.json',
+		linterConfigContent: `${JSON.stringify(
 			{
 				preset: 'laravel',
 				rules: {
@@ -337,8 +337,8 @@ export default [
 		framework: 'jquery',
 		language: 'js',
 		linter: 'eslint',
-		eslintConfigFile: 'jquery.eslint.config.mjs',
-		eslintConfigContent: `import js from '@eslint/js';
+		linterConfigFile: 'jquery.eslint.config.mjs',
+		linterConfigContent: `import js from '@eslint/js';
 import globals from 'globals';
 
 // Default jQuery (browser) base. Project config is layered on top.
@@ -372,19 +372,19 @@ export default [
 const base = (id: string): IRulePreset => {
 	const p = BASE_PRESETS.find((preset) => preset.id === id);
 	if (p === undefined) throw new Error(`base preset "${id}" not found`);
-	return mapLegacyPreset(p);
+	return p;
 };
 
-const META_PRESETS: readonly TLegacyRulePreset[] = [
+const META_PRESETS: readonly IRulePreset[] = [
 	{
 		id: 'next-ts',
 		framework: 'next',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'next-ts.eslint.config.mjs',
-		tsconfigFile: 'next-ts.tsconfig.json',
-		eslintConfigContent: base('react-ts').eslintConfigContent,
-		tsconfigContent: STRICT_TSCONFIG,
+		linterConfigFile: 'next-ts.eslint.config.mjs',
+		typecheckConfigFile: 'next-ts.tsconfig.json',
+		linterConfigContent: base('react-ts').linterConfigContent,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'App Router: Server Components by default; opt into client with `"use client"`.',
 			'Use `next/image` and `next/link` (no raw `<img>`/`<a>` for internal nav).',
@@ -397,10 +397,10 @@ const META_PRESETS: readonly TLegacyRulePreset[] = [
 		framework: 'remix',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'remix.eslint.config.mjs',
-		tsconfigFile: 'remix.tsconfig.json',
-		eslintConfigContent: base('react-ts').eslintConfigContent,
-		tsconfigContent: STRICT_TSCONFIG,
+		linterConfigFile: 'remix.eslint.config.mjs',
+		typecheckConfigFile: 'remix.tsconfig.json',
+		linterConfigContent: base('react-ts').linterConfigContent,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Data via `loader`/`action`; mutate with `<Form>`, not client fetch.',
 			'Nested routes + `useLoaderData`; keep components server-friendly.',
@@ -411,10 +411,10 @@ const META_PRESETS: readonly TLegacyRulePreset[] = [
 		framework: 'nuxt',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'nuxt.eslint.config.mjs',
-		tsconfigFile: 'nuxt.tsconfig.json',
-		eslintConfigContent: base('vue').eslintConfigContent,
-		tsconfigContent: STRICT_TSCONFIG,
+		linterConfigFile: 'nuxt.eslint.config.mjs',
+		typecheckConfigFile: 'nuxt.tsconfig.json',
+		linterConfigContent: base('vue').linterConfigContent,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Auto-imports for components/composables; `<script setup>` + Composition API.',
 			'Server routes under `server/`; data via `useFetch`/`useAsyncData`.',
@@ -426,10 +426,10 @@ const META_PRESETS: readonly TLegacyRulePreset[] = [
 		framework: 'astro',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'astro.eslint.config.mjs',
-		tsconfigFile: 'astro.tsconfig.json',
-		eslintConfigContent: base('vanilla-ts').eslintConfigContent,
-		tsconfigContent: STRICT_TSCONFIG,
+		linterConfigFile: 'astro.eslint.config.mjs',
+		typecheckConfigFile: 'astro.tsconfig.json',
+		linterConfigContent: base('vanilla-ts').linterConfigContent,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'HTML-first `.astro` components; ship zero JS by default.',
 			'Hydrate islands explicitly (`client:load`/`client:visible`).',
@@ -441,10 +441,10 @@ const META_PRESETS: readonly TLegacyRulePreset[] = [
 		framework: 'solid',
 		language: 'ts',
 		linter: 'eslint',
-		eslintConfigFile: 'solid-ts.eslint.config.mjs',
-		tsconfigFile: 'solid-ts.tsconfig.json',
-		eslintConfigContent: base('vanilla-ts').eslintConfigContent,
-		tsconfigContent: STRICT_TSCONFIG,
+		linterConfigFile: 'solid-ts.eslint.config.mjs',
+		typecheckConfigFile: 'solid-ts.tsconfig.json',
+		linterConfigContent: base('vanilla-ts').linterConfigContent,
+		typecheckConfigContent: STRICT_TSCONFIG,
 		conventions: [
 			'Reactivity is via signals/stores — NOT React hooks rules.',
 			'Components run once; put reactive reads inside JSX or effects.',
@@ -455,8 +455,9 @@ const META_PRESETS: readonly TLegacyRulePreset[] = [
 
 // --- per-language presets (f00051 S2/S3) ----------------------------------
 // One baseline preset per non-JS/TS language family wired into the live
-// detection path (detect-framework.ts). DATA only: the `eslintConfigFile`/
-// `eslintConfigContent` fields carry the language's *linter* config path +
+// detection path (detect-framework.ts). DATA only: the legacy
+// `eslintConfigFile`/`eslintConfigContent` aliases still carry the linter
+// config path +
 // text (the field name is historical; the value is the materialised config
 // the PROJECT's own toolchain consumes). `conventions` are language-specific
 // (NOT ESLint-style advice); `requiredEslintDeps` names the binaries the

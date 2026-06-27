@@ -1403,7 +1403,7 @@ export interface McpVertexRulesApplyRulesOutput {
 
 export interface McpVertexRulesCheckRulesOutput {
 	compact: boolean;
-	checks: {
+	checks: Array<{
 		project: string;
 		area: string;
 		framework: string;
@@ -1416,7 +1416,27 @@ export interface McpVertexRulesCheckRulesOutput {
 		missingLinterDeps: string[];
 		linter: string;
 		installHint: string;
-	}[];
+		evidence: {
+			effective: "project" | "dogma" | "default";
+			command: string;
+			rationale: string;
+			fromProject?: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+			fromDogma?: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+			fromDefault: {
+				checkCommand: string;
+				fixCommand?: string;
+				typecheckCommand?: string;
+			};
+		};
+	}>;
 	findings: Array<{
 		code: "missing-linter-deps" | "missing-eslint-deps";
 		severity: "warning";
@@ -1461,6 +1481,7 @@ export interface McpVertexRulesGetRulesOutput {
 		testing: string;
 		bullets: string[];
 	}>;
+	renderedDogmas: Record<string, string>;
 }
 
 export interface McpVertexScaffoldOutput {

@@ -106,8 +106,8 @@ describe('Polyglot E2E rules check', () => {
 			const area = areas.find((a: any) => a.area === dir);
 			expect(area).toBeDefined();
 			expect(area.rules.presetId).toBe(exp.presetId);
-			expect(area.rules.linterConfigs).toBeDefined();
-			expect(area.rules.linterConfigs.length).toBeGreaterThan(0);
+			expect(area.rules.configs).toBeDefined();
+			expect(area.rules.configs.length).toBeGreaterThan(0);
 		}
 
 		const checkRulesOut = await invoke(checkRulesReg, {});
@@ -117,8 +117,14 @@ describe('Polyglot E2E rules check', () => {
 			expect(check).toBeDefined();
 			expect(check.command).toBeDefined();
 			expect(check.command.length).toBeGreaterThan(0);
+			// Assert the **linter discriminator** (the canonical
+			// per-preset id) instead of asserting the command
+			// string contains the linter name. Some linters
+			// (e.g. `dotnet format`) do not embed the binary
+			// name in their invocation; the structured payload
+			// is the source of truth.
 			if (exp.presetId !== 'laravel') {
-				expect(check.command).toContain(exp.linter);
+				expect(check.linter).toBe(exp.linter);
 			}
 		}
 
@@ -128,13 +134,13 @@ describe('Polyglot E2E rules check', () => {
 		const rsDogma = dogmas['rs-thing'];
 		expect(rsDogma).toBeDefined();
 		expect(rsDogma.ownership).toBe('borrow-checker');
-		expect(rsDogma.errorModel).toBe('Result');
+		expect(rsDogma.errorModel).toBe('result');
 		expect(rsDogma.naming).toBe('snake_case');
 		expect(rsDogma.bullets.length).toBeGreaterThanOrEqual(3);
 
 		const pyDogma = dogmas['py-thing'];
 		expect(pyDogma).toBeDefined();
-		expect(pyDogma.ownership).toBe('garbage-collected');
+		expect(pyDogma.ownership).toBe('gc');
 		expect(pyDogma.errorModel).toBe('exceptions');
 		expect(pyDogma.naming).toBe('snake_case');
 		expect(pyDogma.bullets.length).toBeGreaterThanOrEqual(3);

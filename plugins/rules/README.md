@@ -292,6 +292,41 @@ In repositories containing multiple languages or frameworks (e.g., a Rust backen
 
 ---
 
+## Priority resolution (f00051 / S11)
+
+For every area the plugin must answer one question: *which linter command should the agent run, and why?* The answer is computed by an `IPolicyResolver` — declared in `src/lib/tools/policy-resolution.contract.ts` and implemented by the `PROJECT_OVER_DOGMA_OVER_DEFAULT` constant in `src/lib/tools/policy-resolver.ts`. The priority order is **codified in one place**; every tool depends on the interface, not the implementation, so a host can swap policies via `IRulesToolOptions.policyResolver` without touching the tools.
+
+| # | Layer | Wins when | Source |
+|---|---|---|---|
+| 1 | **project** | The area ships its own linter config (e.g. `apps/web/eslint.config.mjs`, `pyproject.toml [tool.ruff]`, `Cargo.toml [lints]`, `go.mod`'s `gofmt` directive, `build.zig` settings, `.editorconfig`, etc.). | `IAreaRules.configs[0]` (project's config is always first). |
+| 2 | **dogma** | No project config. The language's `IDogmaAdapter` is registered in the `DogmaRegistry` and resolves to a non-empty command set. | `dogmas/<lang>.dogma.ts`. |
+| 3 | **default** | Neither project nor dogma applies. | The preset's vendored config under `.cache/mcp-vertex/rules/`. |
+
+Every tool surfaces the full resolution:
+
+- `get_rules` lists `dogmas[area]` (the structured dogma) and `renderedDogmas[area]` (the agent-facing sentence rendered by the default `IDogmaPolicyProvider`, `StringDogmaPolicyProvider`).
+- `check_rules` adds an `evidence` field per check: `{ effective, command, rationale, fromProject?, fromDogma?, fromDefault }`. The `rationale` is a one-sentence explanation the agent can quote to the user.
+- `apply_rules` echoes `rationale` into each step so the plan is self-explanatory.
+
+### Worked example (Rust area)
+
+A repo with `services/rs-thing/Cargo.toml` (no project `clippy.toml`) and the shipped Rust dogma:
+
+```jsonc
+// check_rules { area: 'services/rs-thing' }.checks[0].evidence
+{
+  "effective": "dogma",
+  "command": "cargo clippy --workspace --all-targets -- -D warnings",
+  "rationale": "No project linter config for \"services/rs-thing\"; falling back to the language dogma. The dogma is opinionated and aligned with the most-mainstream community conventions for this language.",
+  "fromDogma":   { "checkCommand": "cargo clippy --workspace --all-targets -- -D warnings" },
+  "fromDefault": { "checkCommand": "cargo clippy --workspace --all-targets -- -D warnings" }
+}
+```
+
+Add a `services/rs-thing/clippy.toml` and the same call returns `effective: "project"` with the project-resolved command — the project layer wins without any tool change. See [`mcp-vertex-rules-dogma-priority`](./skills/mcp-vertex-rules-dogma-priority/SKILL.md) for the full per-language matrix and the contributor seam map.
+
+---
+
 ## Tools
 
 | Tool | Purpose |

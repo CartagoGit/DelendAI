@@ -16,6 +16,7 @@ import {
 	REQUIRED_ESLINT_DEPS,
 	SUPPORTED_PRESET_IDS,
 } from '../frameworks/presets';
+import type { ICommandSet } from '../frameworks/contracts';
 import type {
 	IAreaRules,
 	IRulesManifest,
@@ -24,6 +25,12 @@ import type {
 import { RULES_MODE_GUIDANCE } from '../frameworks/types';
 import { DogmaRegistry } from '../registry/dogma-registry';
 import { DEFAULT_DOGMA_ADAPTERS } from '../frameworks/dogmas';
+import {
+	StringDogmaPolicyProvider,
+	type IDogmaPolicyProvider,
+} from './dogma-policy.provider';
+import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from './policy-resolver';
+import type { IPolicyResolver } from './policy-resolution.contract';
 
 export interface IRulesToolOptions {
 	readonly namespacePrefix: string;
@@ -34,6 +41,20 @@ export interface IRulesToolOptions {
 	readonly manifestRelPath: string;
 	readonly mode: IRulesMode;
 	readonly overrides?: Readonly<Record<string, string>>;
+	/**
+	 * Dependency Inversion (f00051 / S11): the priority
+	 * resolver is the single source of truth for the
+	 * `project > dogma > default` decision. Defaults to
+	 * `PROJECT_OVER_DOGMA_OVER_DEFAULT` so existing callers
+	 * see no behaviour change.
+	 */
+	readonly policyResolver?: IPolicyResolver;
+	/**
+	 * Dependency Inversion (f00051 / S11): the dogma policy
+	 * provider renders `IDogmaAdapter` into an agent-facing
+	 * representation. Defaults to `StringDogmaPolicyProvider`.
+	 */
+	readonly dogmaPolicyProvider?: IDogmaPolicyProvider;
 }
 
 const DOGMA_ADAPTER_SCHEMA = z.object({
@@ -296,6 +317,16 @@ export const buildGetRulesRegistration = (
 					),
 					conventions: z.record(z.string(), z.array(z.string())),
 					dogmas: z.record(z.string(), DOGMA_ADAPTER_SCHEMA),
+					/**
+					 * f00051 / S11 — agent-facing rendering of each
+					 * area's dogma. Produced by
+					 * `IDogmaPolicyProvider.render({ area, language,
+					 * dogma })`. The string is suitable for
+					 * system-prompt interpolation; a future
+					 * `ToolUseDogmaPolicyProvider` can swap the
+					 * shape without touching the tool.
+					 */
+					renderedDogmas: z.record(z.string(), z.string()),
 				}),
 			},
 			async (args: { area?: string | undefined }) => {
@@ -307,13 +338,22 @@ export const buildGetRulesRegistration = (
 						: all;
 
 				const dogmaRegistry = new DogmaRegistry(DEFAULT_DOGMA_ADAPTERS);
+				const dogmaPolicyProvider =
+					options.dogmaPolicyProvider ?? StringDogmaPolicyProvider;
 				const dogmas: Record<string, any> = {};
+				const renderedDogmas: Record<string, string> = {};
 				for (const entry of selected) {
 					const preset = PRESET_BY_ID.get(entry.rules.presetId);
 					if (preset) {
 						const dogma = dogmaRegistry.resolve(preset.language);
 						if (dogma) {
 							dogmas[entry.area] = dogma;
+							renderedDogmas[entry.area] =
+								dogmaPolicyProvider.render({
+									area: entry.area,
+									language: preset.language,
+									dogma,
+								});
 						}
 					}
 				}
@@ -325,6 +365,7 @@ export const buildGetRulesRegistration = (
 					areas: selected,
 					conventions: conventionsFor(manifest),
 					dogmas,
+					renderedDogmas,
 				});
 			},
 		);
@@ -364,6 +405,43 @@ export const buildCheckRulesRegistration = (
 							missingLinterDeps: z.array(z.string()),
 							linter: z.string(),
 							installHint: z.string(),
+							/**
+							 * f00051 / S11 — the priority-resolution
+							 * evidence for this check. Reports *which
+							 * layer won* (`project` / `dogma` /
+							 * `default`) and *why* (the rationale the
+							 * `IPolicyResolver` produced), so the
+							 * agent can render the decision to the
+							 * user rather than only the command.
+							 */
+							evidence: z.object({
+								effective: z.enum([
+									'project',
+									'dogma',
+									'default',
+								]),
+								command: z.string(),
+								rationale: z.string(),
+								fromProject: z
+									.object({
+										checkCommand: z.string(),
+										fixCommand: z.string().optional(),
+										typecheckCommand: z.string().optional(),
+									})
+									.optional(),
+								fromDogma: z
+									.object({
+										checkCommand: z.string(),
+										fixCommand: z.string().optional(),
+										typecheckCommand: z.string().optional(),
+									})
+									.optional(),
+								fromDefault: z.object({
+									checkCommand: z.string(),
+									fixCommand: z.string().optional(),
+									typecheckCommand: z.string().optional(),
+								}),
+							}),
 						}),
 					),
 					findings: z.array(
@@ -400,6 +478,8 @@ export const buildCheckRulesRegistration = (
 					);
 				}
 				const compact = args.compact === true;
+				const policyResolver =
+					options.policyResolver ?? PROJECT_OVER_DOGMA_OVER_DEFAULT;
 				const checks = await Promise.all(
 					selected.map(async (entry) => {
 						const command = lintCheckCommand(
@@ -415,6 +495,68 @@ export const buildCheckRulesRegistration = (
 						const linterName = preset?.linter ?? 'eslint';
 						const configsList =
 							entry.rules.configs ?? entry.rules.eslint;
+						// f00051 / S11 — compute the priority
+						// resolution evidence for this area. The
+						// three `ICommandSet` shapes are the
+						// per-layer command sets; the resolver
+						// picks the winner (project > dogma >
+						// default) and explains *why*.
+						const dogmaRegistry = new DogmaRegistry(
+							DEFAULT_DOGMA_ADAPTERS,
+						);
+						const dogma = preset
+							? dogmaRegistry.resolve(preset.language)
+							: undefined;
+						const fixCmd = lintFixCommand(entry.area, entry.rules);
+						const tcCmd = typecheckCommand(entry.area, entry.rules);
+						const defaultCommandSet: ICommandSet = {
+							checkCommand: command,
+							...(fixCmd !== undefined
+								? { fixCommand: fixCmd }
+								: {}),
+							...(tcCmd !== undefined
+								? { typecheckCommand: tcCmd }
+								: {}),
+						};
+						const projectCommandSet: ICommandSet | undefined =
+							configsList.length > 1
+								? {
+										checkCommand: eslintCommand(
+											entry.area,
+											entry.rules,
+										),
+									}
+								: undefined;
+						const dogmaCommandSet: ICommandSet | undefined = dogma
+							? {
+									checkCommand:
+										defaultCommandSet.checkCommand,
+									...(defaultCommandSet.fixCommand !==
+									undefined
+										? {
+												fixCommand:
+													defaultCommandSet.fixCommand,
+											}
+										: {}),
+									...(defaultCommandSet.typecheckCommand !==
+									undefined
+										? {
+												typecheckCommand:
+													defaultCommandSet.typecheckCommand,
+											}
+										: {}),
+								}
+							: undefined;
+						const evidence = policyResolver.resolveCommand({
+							areaDir: entry.area,
+							...(projectCommandSet !== undefined
+								? { fromProject: projectCommandSet }
+								: {}),
+							...(dogmaCommandSet !== undefined
+								? { fromDogma: dogmaCommandSet }
+								: {}),
+							fromDefault: defaultCommandSet,
+						});
 						return {
 							project: entry.project,
 							area: entry.area,
@@ -435,6 +577,7 @@ export const buildCheckRulesRegistration = (
 							missingLinterDeps: Array.from(missing),
 							linter: linterName,
 							installHint: getInstallHint(entry.rules.presetId),
+							evidence,
 						};
 					}),
 				);
