@@ -409,6 +409,7 @@ export const buildReviewRegistration = (
 						}),
 					),
 					lockReleased: z.boolean(),
+					redactedSecrets: z.number().int().nonnegative(),
 				}),
 			},
 			async (args: {
@@ -470,14 +471,29 @@ export const buildReviewRegistration = (
 						reviewer: state.reviewer,
 						rounds: state.rounds,
 						lockReleased: false,
+						// status is read-only — no redaction was performed.
+						redactedSecrets: 0,
 					});
 				}
+
+				// x00055 S2: redact the reviewer note before it flows
+				// into `reviewTransition` and the persisted review-log
+				// bullet (see `renderReviewLines` in
+				// `proposal-review.ts:156-167`). Without this, a
+				// reviewer writing "I see a leaked `sk_live_…` in
+				// src/x.ts" persists the secret into the proposal
+				// file. AGENTS.md hard rule: "Secrets never get
+				// persisted. Durable stores (memory, proposals) run
+				// user text through redactSecrets before writing."
+				const redactedNote = args.note
+					? redactSecrets(args.note)
+					: { text: '', redactions: 0 };
 
 				const result = reviewTransition(
 					state,
 					args.action,
 					args.agent,
-					args.note ?? '',
+					redactedNote.text,
 				);
 				if (!result.ok || result.next === undefined) {
 					return toolError(
@@ -530,6 +546,7 @@ export const buildReviewRegistration = (
 					reviewer: next.reviewer,
 					rounds: next.rounds,
 					lockReleased,
+					redactedSecrets: redactedNote.redactions,
 				});
 			},
 		);

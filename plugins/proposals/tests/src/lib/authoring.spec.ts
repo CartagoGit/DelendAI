@@ -305,3 +305,63 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(out.error.reason).toMatch(/share files/);
 	});
 });
+
+describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
+	let root = '';
+	let opts: IAuthoringToolOptions;
+	let review: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+
+	beforeEach(async () => {
+		root = mkdtempSync(join(tmpdir(), 'x00055-review-'));
+		opts = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			proposalsDirAbs: join(root, 'docs/mcp-vertex/proposals'),
+			indexPathAbs: join(root, '.cache/mcp-vertex/proposals/index.json'),
+			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+		};
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'p1',
+			title: 'Review me',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		review = await capture(buildReviewRegistration(opts));
+	});
+
+	it('redacts a secret pasted into the reviewer note before persisting the review-log bullet', async () => {
+		// The review state machine requires the slice to be in_review
+		// before a request_changes can land (the implementer must
+		// have submitted first). Mirror the flow the existing M35
+		// test uses.
+		const submitted = parse(
+			await review({
+				proposalId: 'p1',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'falcon',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+
+		const result = parse(
+			await review({
+				proposalId: 'p1',
+				sliceId: 's1',
+				action: 'request_changes',
+				agent: 'eagle',
+				note: 'I see a leaked sk_live_abcdef0123456789 in src/x.ts',
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.redactedSecrets).toBeGreaterThan(0);
+		const doc = readFileSync(
+			join(opts.proposalsDirAbs, 'p1-review-me.md'),
+			'utf8',
+		);
+		expect(doc).not.toContain('sk_live_abcdef0123456789');
+		expect(doc).toContain('[REDACTED]');
+	});
+});
