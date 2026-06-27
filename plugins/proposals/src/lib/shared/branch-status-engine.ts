@@ -144,9 +144,24 @@ export const parseBranchList = (raw: string): readonly string[] =>
 	raw
 		.split('\n')
 		.map((line) => line.trim())
-		.filter((line) => line.length > 0 && !line.startsWith('*'))
-		.map((line) => (line.startsWith('(HEAD detached at ') ? '' : line))
-		.filter((line) => line.length > 0);
+		// Strip the two-column annotation prefixes that `git branch --list`
+		// prepends:
+		//   `* ` — current branch (we still want the name)
+		//   `+ ` — checked out in another worktree (we still want the name)
+		// and skip detached HEAD lines entirely (no usable branch name).
+		// The previous version dropped `* `-prefixed lines, which silently
+		// dropped the current branch whenever it was an agent/* branch.
+		// The follow-up "also drop `+ `" was a bug — it dropped the very
+		// branches the user cares about (any agent/* checked out in a
+		// worktree). We now strip both prefixes and keep the name.
+		.map((line) =>
+			line.startsWith('* ')
+				? line.slice(2)
+				: line.startsWith('+ ')
+					? line.slice(2)
+					: line,
+		)
+		.filter((line) => line.length > 0 && !line.startsWith('('));
 
 /** Parse `git status --porcelain` into (dirty, untracked) counts. */
 export const parseStatusPorcelain = (
