@@ -54,7 +54,42 @@ export interface IToolRegistration {
 	 * by `overview` so a host can warn on / gate write/spawn/destructive tools.
 	 */
 	readonly effects?: readonly IToolEffect[] | undefined;
+	/**
+	 * When present, the registration is for a tool that has been deprecated
+	 * (f00057 S11): the registration's handler still runs but must return a
+	 * `{ ok: false, error: { reason: 'deprecated', replacement, since } }`
+	 * envelope with `isError: true` so any caller learns the deprecation
+	 * before the tool is removed in a follow-up release.
+	 *
+	 * Hosts that surface tool metadata (the docs site, `mcp-vertex_overview`)
+	 * read this marker and render a strikethrough + replacement link instead
+	 * of treating the tool as a first-class entry. The replacement is the
+	 * unprefixed `id` of the recommended substitute (e.g. `search_search`); a
+	 * caller passes `replacementArgs` to it as-is.
+	 *
+	 * Contract additive — existing registrations stay valid (the field is
+	 * optional). Removal of a deprecated tool is a separate proposal that
+	 * follows the standard slice flow.
+	 */
+	readonly deprecated?: IToolDeprecationMarker | undefined;
 	register(server: McpServer): Promise<void>;
+}
+
+/**
+ * f00057 S11: metadata for a deprecated tool registration. The handler
+ * must still return a typed envelope so the deprecation is enforced at
+ * runtime; this marker is the static metadata that surfaces in
+ * overviews, docs sites and IDE renderings.
+ */
+export interface IToolDeprecationMarker {
+	/** First release that ships the deprecation (e.g. `0.x.y`). */
+	readonly since: string;
+	/** Unprefixed id of the recommended replacement tool. */
+	readonly replacement: string;
+	/** Argument shape to pass to the replacement. Omit when none. */
+	readonly replacementArgs?: Readonly<Record<string, unknown>> | undefined;
+	/** Optional free-form note shown in docs and the runtime envelope. */
+	readonly note?: string | undefined;
 }
 
 export interface IPromptRegistration {
