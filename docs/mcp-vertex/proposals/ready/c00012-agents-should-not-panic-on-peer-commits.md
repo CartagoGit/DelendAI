@@ -10,9 +10,11 @@ shipped-in: []
 recan: []
 related:
   - f00002 # derive site manifests and local aliases (where the rule first appeared)
+  - f00057 # skill unification — compacted AGENTS.md / copilot-instructions.md to point at AGENT-BOOTSTRAP.md; this proposal re-anchored the rule there
 ownership:
-  - { agent: implementation_runner, task: 'S1: promote the five-point rule to AGENTS.md, the multi-agent skill, and copilot-instructions.md; ensure `bun run validate` is green' }
-  - { agent: delivery_verifier, task: 'V1: confirm the rule appears in all three locations and the catalog check is unaffected' }
+  - { agent: implementation_runner, task: 'S1: surface the five-point rule in AGENTS.md, the multi-agent skill, and copilot-instructions.md (initial landing, commit 6481b0e8)' }
+  - { agent: implementation_runner, task: 'S2: post f00057 refactor, move the canonical rule to docs/mcp-vertex/AGENT-BOOTSTRAP.md § 4.b and shrink the SKILL to a pointer + micro-pattern' }
+  - { agent: delivery_verifier, task: 'V1: confirm the rule appears in the bootstrap and the SKILL, `bun run validate` is green, and the catalog check is unaffected' }
 globalGate: validate
 acceptance:
   - { command: bun run typecheck, expect: exit0 }
@@ -131,44 +133,62 @@ git diff HEAD~1 -- <path>     # full diff if needed
 
 ### Where the rule lives in the prompt
 
-- `AGENTS.md` "Coexistence with parallel work" — full rule, always
-  loaded by every agent that reads the AGENTS contract.
-- `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
-  "When you see unexpected changes" — restated for the swarm
-  coordination skill, which the proposals plugin auto-loads.
-- `.github/copilot-instructions.md` "Don't panic when other agents
-  (or humans) commit" — one bullet, always loaded by the Copilot
-  Chat host.
+After the f00057 refactor, `AGENTS.md` and `.github/copilot-instructions.md`
+collapsed to single pointers to `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
+That file is now the **single source of truth** for repo-wide agent
+rules, always loaded by every host.
 
-Three locations, one rule. Each agent's prompt context hits at least
-one of them on every turn.
+- `docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b "Coexistence with parallel
+  work" — full five-point rule + micro-pattern. Loaded every turn by
+  every host. **Single source of truth.**
+- `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
+  "When you see unexpected changes" — short pointer to the bootstrap
+  plus the swarm-specific micro-pattern. Loaded on demand by the
+  proposals plugin when an agent enters swarm context.
+
+The previous S1 surfaces (`AGENTS.md` body, `copilot-instructions.md`
+bullet) were valid before the f00057 compaction but became dead weight
+after it. S2 collapsed them into the bootstrap so the rule survives any
+future refactor of `AGENTS.md` / `copilot-instructions.md`.
 
 ## slices
 
 ### S1 — promote the "don't panic on peer commits" rule to AGENTS.md, the multi-agent skill, and copilot-instructions.md
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `AGENTS.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `.github/copilot-instructions.md`, `docs/mcp-vertex/proposals/ready/c00012-agents-should-not-panic-on-peer-commits.md`
 - **Gate**: `bun run validate` (exit 0). Catalog regeneration is not
   affected because the catalog generator does not read these files.
+- **Commit**: `6481b0e8 chore(governance): agents should not panic on peer commits (c00012)`.
+
+### S2 — post f00057 refactor: re-anchor the rule to AGENT-BOOTSTRAP.md
+
+After f00057 compacted `AGENTS.md` and `.github/copilot-instructions.md`
+to single pointers, the S1 surfaces became dead weight. S2 moves the
+canonical rule into `docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b and
+shrinks the SKILL to a pointer + micro-pattern. This makes the rule
+survive any future compaction of the host-pointers.
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `docs/mcp-vertex/proposals/ready/c00012-agents-should-not-panic-on-peer-commits.md`
+- **Gate**: `bun run validate` (exit 0).
 
 ## dependency graph
 
-S1 has no dependencies and is the only slice. Once S1 lands and
-validates green, the proposal moves to `done/` per the AGENTS.md
-audit-style proposal convention. No downstream consumers need to be
-notified because the change is purely doc-level; agents pick it up on
-their next turn automatically when they reload the prompt context.
+S1 is done (commit `6481b0e8`). S2 is the follow-up after the f00057
+refactor — it depends on S1's intent (the rule itself) but not on its
+exact text. S2 lands the canonical rule in the always-loaded bootstrap
+so future compactions of `AGENTS.md` / `copilot-instructions.md` cannot
+silently delete it.
 
 ## acceptance
 
-- The five-point rule appears verbatim (or near-verbatim) in
-  `AGENTS.md`.
+- The five-point rule appears verbatim in
+  `docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b.
 - The new section in
   `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
-  contains the `git log -1` micro-pattern.
-- `.github/copilot-instructions.md` references the rule with a one-line
-  bullet so Copilot Chat sees it on every turn.
+  contains the `git log -1` micro-pattern (and is now a pointer to the
+  bootstrap, not a duplicate of the rule).
 - `bun run validate` is green.
 - `bun run catalog:check` is green (catalog is unaffected but the
   check must still pass).
