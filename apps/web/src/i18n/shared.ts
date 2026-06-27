@@ -152,47 +152,6 @@ export interface IConceptTranslations {
 	readonly f4: IFeature;
 }
 
-export interface IInstallTranslations {
-	readonly title: string;
-	readonly lead: string;
-	readonly verify: string;
-	readonly addto: string;
-	readonly presets: string;
-	readonly oneCmd: string;
-	readonly oneCmdNote: string;
-	readonly config: string;
-	readonly excludeHelp: string;
-	/** f00048 — expanded install matrix. */
-	readonly tabsPackageManager: string;
-	readonly tabsIde: string;
-	readonly tabsPreset: string;
-	readonly pmStep1Title: string;
-	readonly pmStep1Body: string;
-	readonly pmStep2Title: string;
-	readonly pmStep2Body: string;
-	readonly pmRecommend: string;
-	readonly ideFileLabel: string;
-	readonly ideScopeLabel: string;
-	readonly ideScopeProject: string;
-	readonly ideScopeGlobal: string;
-	readonly ideScopeBoth: string;
-	readonly ideWhyLabel: string;
-	readonly ideWhyBody: string;
-	readonly presetSizeLabel: string;
-	readonly presetUseLabel: string;
-	readonly presetPluginsLabel: string;
-	readonly presetFoot: string;
-	readonly copy: string;
-	readonly copied: string;
-	readonly faqTitle: string;
-	readonly faqQ1: string;
-	readonly faqA1: string;
-	readonly faqQ2: string;
-	readonly faqA2: string;
-	readonly faqQ3: string;
-	readonly faqA3: string;
-}
-
 /**
  * Cross-project setup wizard (`/setup`, f00030 S3). Mirrors the 7 canonical
  * steps in `docs/mcp-vertex/CROSS-PROJECT-SETUP.md`; one `*Title`/`*Body` pair per step.
@@ -480,7 +439,6 @@ export interface ITranslations {
 	readonly hero: IHeroTranslations;
 	readonly marquee: IMarqueeTranslations;
 	readonly concept: IConceptTranslations;
-	readonly install: IInstallTranslations;
 	readonly tools: IToolsTranslations;
 	readonly bench: IBenchTranslations;
 	readonly plugins: IPluginsTranslations;
