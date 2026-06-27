@@ -88,8 +88,9 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
   - "The extension tests prove that the UI surface reflects the live catalog and that removing or renaming a skill/tool/proposal breaks the test instead of silently drifting."
 
 ### S4 — Generated host hints for Copilot, Claude Code, Cursor, and generic AGENTS consumers
-- **Files**: tools/scripts/catalog/render-host-hints.script.ts, docs/mcp-vertex/host-hints/copilot-instructions.generated.md, docs/mcp-vertex/host-hints/claude.generated.md, docs/mcp-vertex/host-hints/agents.generated.md, .github/copilot-instructions.md, CLAUDE.md, AGENTS.md, docs/CROSS-IDE.md
-- **Status**: ready
+- **Files**: tools/scripts/catalog/render-host-hints.script.ts, docs/mcp-vertex/host-hints/copilot-instructions.generated.md, docs/mcp-vertex/host-hints/claude.generated.md, docs/mcp-vertex/host-hints/agents.generated.md, .github/copilot-instructions.md, CLAUDE.md, AGENTS.md, docs/mcp-vertex/CROSS-IDE.md
+- **Status**: done
+- **Shipped in**: f52dcba4 (WIP Salvage landed render-host-hints.spec.ts + the four human-edited instruction-file wiring) + this commit wires `catalog:check` and `catalog:hints:check` into `bun run validate` and flips the proposal status to done.
 - **Gate**: bun run validate
 - **Acceptance**:
   - "Copilot, Claude Code, Cursor or generic AGENTS consumers each receive a generated hint fragment derived from the same catalog builder; only host syntax differs, never the routing content."
