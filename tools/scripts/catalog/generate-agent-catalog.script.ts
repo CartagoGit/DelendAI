@@ -432,7 +432,7 @@ export const buildAgentCatalogArtifact = async (
 		},
 	});
 	const artifact = buildArtifact(snapshot, generatedAt);
-	const text = `${JSON.stringify(artifact, null, '\t')}\n`;
+	const text = `${JSON.stringify(artifact, null, 4)}\n`;
 	const outputPath = join(options.root, DEFAULT_OUTPUT_PATH);
 	const warningsPath = outputPath.replace(
 		/\.json$/u,
