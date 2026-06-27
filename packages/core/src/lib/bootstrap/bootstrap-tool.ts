@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFile, readdir, stat } from 'node:fs/promises';
 
 import { z } from 'zod';
 
@@ -40,21 +40,52 @@ export interface IBootstrapToolOptions {
 	readonly patternOverrides?: IPatternOverrides;
 }
 
-/** A read-only reader backed by the workspace filesystem. */
+/**
+ * A read-only reader backed by the workspace filesystem.
+ *
+ * f00066 (closes a00042 H5): the three primitives are now fully
+ * async — no `existsSync` / `readFileSync` / `readdirSync` on the hot
+ * path. The interface contract is unchanged (Promise-returning,
+ * `listDir` never throws); the implementation moves to
+ * `node:fs/promises` so the bootstrap phase does not block the
+ * node/bun event loop. `readFile` returns `undefined` on `ENOENT`
+ * to preserve the previous "missing file ⇒ undefined contents"
+ * behaviour that consumers (`analyzeProject`, `driftCheck`, the
+ * rules) rely on.
+ */
 export const createWorkspaceFileReader = (
 	workspace: IWorkspacePathProvider,
 ): IFileReader => ({
 	readFile: async (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
-		return existsSync(absolute)
-			? readFileSync(absolute, 'utf8')
-			: undefined;
+		try {
+			return await readFile(absolute, 'utf8');
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				return undefined;
+			}
+			throw error;
+		}
 	},
-	exists: async (relativePath) => existsSync(workspace.resolve(relativePath)),
+	exists: async (relativePath) => {
+		try {
+			await stat(workspace.resolve(relativePath));
+			return true;
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				return false;
+			}
+			// Surface any other error (EACCES, ENOTDIR, …) as "not
+			// exists" rather than crashing the bootstrap phase —
+			// matches the pre-fix `existsSync` behaviour, which
+			// also returns false for unreadable paths.
+			return false;
+		}
+	},
 	listDir: async (relativePath) => {
 		const absolute = workspace.resolve(relativePath);
 		try {
-			return readdirSync(absolute);
+			return await readdir(absolute);
 		} catch {
 			return [];
 		}
