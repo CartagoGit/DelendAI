@@ -89,6 +89,7 @@ describe('get_rules — areas[].rules outputSchema (l00008 s4)', async () => {
 		// No stray keys beyond the 5 IAreaRules fields — confirms the
 		// catchall is gone, not just hidden behind a wider record.
 		expect(Object.keys(root?.rules ?? {}).sort()).toEqual([
+			'configs',
 			'eslint',
 			'framework',
 			'presetId',

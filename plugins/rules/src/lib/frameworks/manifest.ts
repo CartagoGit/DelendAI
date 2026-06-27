@@ -137,10 +137,10 @@ export const buildRulesManifest = async (
 				? `forced via config (${forced})`
 				: (await detected).reason;
 
-		const eslint: string[] = [];
+		const configs: string[] = [];
 		const projectEslint = await findProjectEslint(reader, areaDir);
-		if (projectEslint !== undefined) eslint.push(projectEslint);
-		eslint.push(joinRel(cacheRelDir, preset.eslintConfigFile));
+		if (projectEslint !== undefined) configs.push(projectEslint);
+		configs.push(joinRel(cacheRelDir, preset.eslintConfigFile));
 
 		const typecheck: string[] = [];
 		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
@@ -152,7 +152,8 @@ export const buildRulesManifest = async (
 		areas[areaKey(areaDir)] = {
 			framework: preset.framework,
 			presetId: preset.id,
-			eslint,
+			configs,
+			eslint: configs,
 			typecheck,
 			reason,
 		};
