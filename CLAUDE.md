@@ -4,6 +4,15 @@ Canonical rules live in [`AGENTS.md`](AGENTS.md) — read that first for the
 repo's invariants, commands, and conventions. This file adds session-level
 guidance for whichever agent is driving the main thread.
 
+## Discovery
+
+For tool / skill / proposal routing, follow `mcp-vertex_overview { compact: true }`
+with `mcp-vertex_agent_catalog`. The canonical discovery surface is regenerated
+by `bun run catalog:generate`; the Claude-specific fragment lives at
+[`docs/mcp-vertex/host-hints/claude.generated.md`](docs/mcp-vertex/host-hints/claude.generated.md).
+Treat that fragment as the source of truth for actionable proposals and skill
+routing — do not duplicate the catalog facts in this file.
+
 ## Keep the main thread cheap
 
 This repo's MCP host (`scripts/host-server.ts`) runs `--preset=swarm`, which
