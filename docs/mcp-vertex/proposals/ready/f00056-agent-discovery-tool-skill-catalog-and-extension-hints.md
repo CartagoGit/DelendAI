@@ -67,7 +67,8 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 
 ### S2 — Skill summary contract + checked-in generated artifact + drift guards
 - **Files**: skills/manifest.json, tools/scripts/catalog/generate-agent-catalog.script.ts, tools/scripts/catalog/generate-agent-catalog.spec.ts, docs/mcp-vertex/agent-catalog.generated.json, lefthook.yml
-- **Status**: ready
+- **Status**: done
+- **Shipped in**: 08e0e872, 07b75476, 942916a6, ae3a0bf9, f32f40a3, 80c27c7a
 - **Gate**: bun run validate
 - **Acceptance**:
   - "Each skill contributes one compact summary through skills/manifest.json; if a summary is absent, the generator deterministically falls back to the first paragraph of the SKILL body and emits a lint failure so the repo converges back to explicit summaries."
@@ -77,7 +78,8 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 
 ### S3 — VS Code extension and shared client integration
 - **Files**: packages/client/src/lib/services/agent-catalog-service.ts, extensions/vscode/package.json, extensions/vscode/src/commands/tool-search.ts, extensions/vscode/src/commands/open-agent-catalog.ts, extensions/vscode/src/providers/tool-tree-data-provider.ts, extensions/vscode/src/views/agent-catalog-webview.ts, extensions/vscode/src/test/agent-catalog.spec.ts, extensions/vscode/src/test/tool-search.spec.ts
-- **Status**: ready
+- **Status**: done
+- **Shipped in**: 00bf4410, 9640aa0d, 5cadb5c0
 - **Gate**: bun run validate
 - **Acceptance**:
   - "The VS Code extension adds one first-class discovery entrypoint backed by AgentCatalogService and resolves tools, skills, and actionable proposals from the same MCP catalog surface instead of keeping separate hard-coded arrays."
