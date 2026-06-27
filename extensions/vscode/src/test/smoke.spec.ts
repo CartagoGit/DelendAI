@@ -92,7 +92,9 @@ describe('VS Code extension smoke', async () => {
 		//   which is now wired even when `deps.vscode` is injected (the
 		//   smoke test injects vscode → dashboard now shows up here).
 		// f00053 S6: +1 for the new mcp-vertex.openDocsApi command.
-		expect(subscriptions).toHaveLength(18);
+		// f00056 S3: +1 for the new mcp-vertex.openAgentCatalog command
+		//   that drives the AgentCatalogService-backed webview.
+		expect(subscriptions).toHaveLength(19);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
