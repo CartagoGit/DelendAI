@@ -1,0 +1,715 @@
+{
+	"generatedAt": "2026-06-27T11:23:44.275Z",
+	"mode": "compact",
+	"tools": [
+		{
+			"name": "agent_catalog",
+			"plugin": "agent"
+		},
+		{
+			"name": "analyze_project",
+			"plugin": "analyze"
+		},
+		{
+			"name": "create_project",
+			"plugin": "create"
+		},
+		{
+			"name": "drift_check",
+			"plugin": "drift"
+		},
+		{
+			"name": "fs_read",
+			"plugin": "fs"
+		},
+		{
+			"name": "fs_write",
+			"plugin": "fs"
+		},
+		{
+			"name": "get_validation_matrix",
+			"plugin": "get"
+		},
+		{
+			"name": "mcp-vertex_audit_audit_consolidate",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_audit_audit_plan",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_conventions_conventions_check",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_conventions_conventions_classify",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_check",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_list",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_deps_deps_polyglot",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_docs_docs_list",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_docs_docs_read",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_docs_docs_search",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_blame",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_changed",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_diff",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_log",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_show",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_status",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_git_worktree",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_issues_analyze",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_issues_fetch",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_issues_ingest",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_issues_list",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_issues_resolve",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_issues_setup_github",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_knowledge",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_logs_correlate",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_logs_query",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_logs_redact_test",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_logs_subscribe",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_logs_tail",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_export",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_forget",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_import",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_list",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_recall",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_memory_save",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_metrics",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_notification_await_lock",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_notification_notify_status",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_overview",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_agent_lock",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_agent_lock_release_orphan",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_agent_names",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_agent_worktree",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_auto_work",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_close_slice",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_compact_status",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_continue_proposal",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_create_proposal",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_delegate",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_get_proposal_workflow",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_plan",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_adopt",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_board",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_diagnose",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_force_transition",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_reconcile_folder",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_review",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_stale_list",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposal_transition",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_proposals_close_plan",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_round_context",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_state_health",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_state_repair",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_sync_proposals",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_proposals_task_queue",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_quality_get_quality_scopes",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_quality_quality_cancel",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_quality_quality_run_all",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_quality_run_quality",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_rules_apply_rules",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_rules_check_rules",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_rules_get_rules",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_scaffold",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_search_search",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_skill",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_status",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_status-marker_close",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_status-marker_ping",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_status-marker_validate",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_test-convention_get_convention",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_test-convention_scan_drift",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_test-convention_suggest_spec_path",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "mcp-vertex_web-fetch_web_fetch",
+			"plugin": "mcp-vertex"
+		},
+		{
+			"name": "plan_mcp_project",
+			"plugin": "plan"
+		}
+	],
+	"skills": [
+		{
+			"id": "mcp-vertex-audit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
+			"appliesTo": ["@mcp-vertex/audit"],
+			"tags": ["audit", "methodology", "qualitative-analysis"],
+			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-audit-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
+			"appliesTo": ["@mcp-vertex/audit"],
+			"tags": ["audit", "lifecycle", "rubric"],
+			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-concurrency-patterns",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
+			"appliesTo": ["@mcp-vertex/notification", "@mcp-vertex/proposals"],
+			"tags": ["concurrency", "locking", "mutex"],
+			"bodyPath": "plugins/proposals/skills/concurrency-patterns/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-conventional-commits-and-release",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
+			"appliesTo": ["@mcp-vertex/core"],
+			"tags": ["conventional-commits", "release", "versioning"],
+			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-failure-modes",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
+			"appliesTo": ["@mcp-vertex/*"],
+			"tags": ["failure-modes", "recovery", "swarm"],
+			"bodyPath": "packages/core/skills/failure-modes/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-legacy-proposal-migration",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
+			"appliesTo": ["@mcp-vertex/proposals"],
+			"tags": ["legacy", "migration", "proposals"],
+			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-multi-agent-coordination",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
+			"appliesTo": ["@mcp-vertex/notification", "@mcp-vertex/proposals"],
+			"tags": ["coordination", "locking", "multi-agent"],
+			"bodyPath": "plugins/proposals/skills/multi-agent-coordination/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-operator",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
+			"appliesTo": ["@mcp-vertex/*"],
+			"tags": ["operator", "orientation", "presets"],
+			"bodyPath": "packages/core/skills/operator/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-plugin-authoring",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding or changing an mcp-vertex plugin so tools, schemas, state, path containment, and durability rules stay correct.",
+			"appliesTo": ["@mcp-vertex/*"],
+			"tags": ["contract", "core", "plugin-authoring"],
+			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-proposal-swarm-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
+			"appliesTo": ["@mcp-vertex/proposals"],
+			"tags": ["multi-agent", "proposals", "swarm"],
+			"bodyPath": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-proposals-workflow-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
+			"appliesTo": ["@mcp-vertex/proposals"],
+			"tags": ["compact", "proposals", "workflow"],
+			"bodyPath": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-quality-and-rules-gates",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
+			"appliesTo": ["@mcp-vertex/quality", "@mcp-vertex/rules"],
+			"tags": ["gates", "quality", "rules"],
+			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-rules-dogma-priority",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
+			"appliesTo": ["@mcp-vertex/rules"],
+			"tags": [
+				"contributor-guide",
+				"dogma",
+				"f00051-s11",
+				"priority",
+				"rules"
+			],
+			"bodyPath": "plugins/rules/skills/mcp-vertex-rules-dogma-priority/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-rules-solid-architecture",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
+			"appliesTo": ["@mcp-vertex/rules"],
+			"tags": ["architecture", "contributor-guide", "rules", "solid"],
+			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-state-repair-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
+			"appliesTo": ["@mcp-vertex/proposals"],
+			"tags": ["recovery", "state-health", "state-repair"],
+			"bodyPath": "plugins/proposals/skills/state-repair-playbook/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-status-marker-and-closure",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
+			"appliesTo": ["@mcp-vertex/status-marker"],
+			"tags": ["audit-trail", "closure", "status-marker"],
+			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-token-budget-discipline",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
+			"appliesTo": ["@mcp-vertex/core"],
+			"tags": ["compact", "delegation", "token-budget"],
+			"bodyPath": "packages/core/skills/token-budget-discipline/SKILL.md"
+		},
+		{
+			"id": "mcp-vertex-token-budget-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
+			"appliesTo": ["@mcp-vertex/*"],
+			"tags": ["compact", "metrics", "token-budget"],
+			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md"
+		},
+		{
+			"id": "tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
+			"appliesTo": ["@mcp-vertex/*"],
+			"tags": ["brand-logo", "f00069", "iconography", "tabs"],
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md"
+		}
+	],
+	"proposals": {
+		"actionable": [
+			{
+				"id": "c00002",
+				"title": "c00002",
+				"track": "docs+release",
+				"status": "paused",
+				"kind": "chore",
+				"date": "2026-06-21"
+			},
+			{
+				"id": "f00050",
+				"title": "f00050",
+				"track": "lint+architecture+i18n+workflow+release",
+				"status": "paused",
+				"kind": "feat",
+				"date": "2026-06-23"
+			},
+			{
+				"id": "f00055",
+				"title": "f00055",
+				"track": "apps/web+packages/ui-extension+apps/shared+i18n+ux+tooling",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-24"
+			},
+			{
+				"id": "f00056",
+				"title": "f00056",
+				"track": "host+extension+skills+docs",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00057",
+				"title": "f00057",
+				"track": "skills+plugins+tools+scripts+docs+workflow",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00058",
+				"title": "f00058",
+				"track": "security+webview+extension-ux",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00059",
+				"title": "f00059",
+				"track": "i18n+l10n+extension-ux+web",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00060",
+				"title": "f00060",
+				"track": "design-tokens+css+extension-ux",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00061",
+				"title": "f00061",
+				"track": "solid+architecture+extension-ux",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00062",
+				"title": "f00062",
+				"track": "types+solid+extension-ux",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00063",
+				"title": "f00063",
+				"track": "i18n+l10n+utils",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00064",
+				"title": "f00064",
+				"track": "dogfood+repo-layout+contracts+web+agents",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00065",
+				"title": "f00065",
+				"track": "umbrella+skills-ownership+cache+web-examples+slash-triggers+shared-contracts",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00066",
+				"title": "f00066",
+				"track": "core+refactor+async",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00067",
+				"title": "f00067",
+				"track": "core+plugins+config+i18n+docs+ui-extension",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00068",
+				"title": "f00068",
+				"track": "core+plugins+host+config+i18n+docs+web+extensions/vscode",
+				"status": "paused",
+				"kind": "feat",
+				"date": "2026-06-26"
+			},
+			{
+				"id": "f00069",
+				"title": "f00069",
+				"track": "web+ui-extension+components+design-tokens+i18n+docs",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-26"
+			},
+			{
+				"id": "f00070",
+				"title": "f00070",
+				"track": "i18n+l10n+plugins/status-marker+token-budget",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-26"
+			},
+			{
+				"id": "f00071",
+				"title": "f00071",
+				"track": "plugins/status-marker+configuration+i18n+agent-contract",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-26"
+			}
+		],
+		"byStatus": {
+			"ready": 15,
+			"in-progress": 1,
+			"review": 0,
+			"paused": 3,
+			"done": 116,
+			"blocked": 0,
+			"retired": 0,
+			"unspecified": 0
+		}
+	}
+}
