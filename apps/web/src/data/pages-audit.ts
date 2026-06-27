@@ -111,14 +111,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		why: 'The localized home route is part of the locale-negotiated landing flow and remains the canonical entry point for non-English visitors.',
 	},
 	{
-		path: 'apps/web/src/pages/[lang]/install.astro',
-		langCoverage: NON_EN_LOCALES,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'rewrite',
-		why: 'The localized install matrix is one of the explicit PageSpec migration candidates in the proposal and still carries content-heavy prose in Astro.',
-	},
-	{
 		path: 'apps/web/src/pages/[lang]/knowledge.astro',
 		langCoverage: NON_EN_LOCALES,
 		kind: 'chrome',
@@ -277,14 +269,6 @@ export const PAGES_AUDIT: readonly IPageAuditEntry[] = Object.freeze([
 		lastMeaningfulEdit: '2026-06-25',
 		verdict: 'keep',
 		why: 'The root landing page owns Accept-Language negotiation, hreflang tags, and canonical root-path behavior that no other page can absorb.',
-	},
-	{
-		path: 'apps/web/src/pages/install.astro',
-		langCoverage: EN_ONLY,
-		kind: 'content',
-		lastMeaningfulEdit: '2026-06-25',
-		verdict: 'rewrite',
-		why: 'The English install matrix is explicitly called out in the proposal as a clean PageSpec migration target and still carries heavy prose inside Astro.',
 	},
 	{
 		path: 'apps/web/src/pages/knowledge.astro',
