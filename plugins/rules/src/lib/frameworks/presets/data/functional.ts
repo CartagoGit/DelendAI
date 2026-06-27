@@ -10,6 +10,8 @@ export const HS_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'hs-hlint.config.hs',
 	linterConfigContent: `# Default hlint configuration for Haskell\n`,
+	eslintConfigFile: 'hs-hlint.config.hs',
+	eslintConfigContent: `# Default hlint configuration for Haskell\n`,
 	conventions: [
 		'Follow standard Haskell coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const ML_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'ml-hlint.config.ml',
 	linterConfigContent: `# Default hlint configuration for OCaml\n`,
+	eslintConfigFile: 'ml-hlint.config.ml',
+	eslintConfigContent: `# Default hlint configuration for OCaml\n`,
 	conventions: [
 		'Follow standard OCaml coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const PURESCRIPT_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'purescript-hlint.config.purs',
 	linterConfigContent: `# Default hlint configuration for PureScript\n`,
+	eslintConfigFile: 'purescript-hlint.config.purs',
+	eslintConfigContent: `# Default hlint configuration for PureScript\n`,
 	conventions: [
 		'Follow standard PureScript coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const ELM_PRESET: IRulePreset = {
 	linter: 'elm-analyse',
 	linterConfigFile: 'elm-elm-analyse.config.elm',
 	linterConfigContent: `# Default elm-analyse configuration for Elm\n`,
+	eslintConfigFile: 'elm-elm-analyse.config.elm',
+	eslintConfigContent: `# Default elm-analyse configuration for Elm\n`,
 	conventions: [
 		'Follow standard Elm coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const IDRIS_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'idris-hlint.config.idr',
 	linterConfigContent: `# Default hlint configuration for Idris\n`,
+	eslintConfigFile: 'idris-hlint.config.idr',
+	eslintConfigContent: `# Default hlint configuration for Idris\n`,
 	conventions: [
 		'Follow standard Idris coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -95,6 +105,8 @@ export const AGDA_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'agda-hlint.config.agda',
 	linterConfigContent: `# Default hlint configuration for Agda\n`,
+	eslintConfigFile: 'agda-hlint.config.agda',
+	eslintConfigContent: `# Default hlint configuration for Agda\n`,
 	conventions: [
 		'Follow standard Agda coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -112,6 +124,8 @@ export const LEAN_PRESET: IRulePreset = {
 	linter: 'hlint',
 	linterConfigFile: 'lean-hlint.config.lean',
 	linterConfigContent: `# Default hlint configuration for Lean\n`,
+	eslintConfigFile: 'lean-hlint.config.lean',
+	eslintConfigContent: `# Default hlint configuration for Lean\n`,
 	conventions: [
 		'Follow standard Lean coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -129,6 +143,8 @@ export const COQ_PRESET: IRulePreset = {
 	linter: 'coq-lint',
 	linterConfigFile: 'coq-coq-lint.config.v',
 	linterConfigContent: `# Default coq-lint configuration for Coq\n`,
+	eslintConfigFile: 'coq-coq-lint.config.v',
+	eslintConfigContent: `# Default coq-lint configuration for Coq\n`,
 	conventions: [
 		'Follow standard Coq coding style.',
 		'Keep functions and modules focused and reusable.',

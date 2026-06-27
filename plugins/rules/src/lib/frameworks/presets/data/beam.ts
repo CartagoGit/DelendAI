@@ -10,6 +10,8 @@ export const ERL_PRESET: IRulePreset = {
 	linter: 'credo',
 	linterConfigFile: 'erl-credo.config.erl',
 	linterConfigContent: `# Default credo configuration for Erlang\n`,
+	eslintConfigFile: 'erl-credo.config.erl',
+	eslintConfigContent: `# Default credo configuration for Erlang\n`,
 	conventions: [
 		'Follow standard Erlang coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const GLEAM_PRESET: IRulePreset = {
 	linter: 'credo',
 	linterConfigFile: 'gleam-credo.config.gleam',
 	linterConfigContent: `# Default credo configuration for Gleam\n`,
+	eslintConfigFile: 'gleam-credo.config.gleam',
+	eslintConfigContent: `# Default credo configuration for Gleam\n`,
 	conventions: [
 		'Follow standard Gleam coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const LFE_PRESET: IRulePreset = {
 	linter: 'credo',
 	linterConfigFile: 'lfe-credo.config.lfe',
 	linterConfigContent: `# Default credo configuration for LFE\n`,
+	eslintConfigFile: 'lfe-credo.config.lfe',
+	eslintConfigContent: `# Default credo configuration for LFE\n`,
 	conventions: [
 		'Follow standard LFE coding style.',
 		'Keep functions and modules focused and reusable.',

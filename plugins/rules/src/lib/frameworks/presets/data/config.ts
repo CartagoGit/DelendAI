@@ -10,6 +10,8 @@ export const SQL_PRESET: IRulePreset = {
 	linter: 'sqlfluff',
 	linterConfigFile: 'sql-sqlfluff.config.sql',
 	linterConfigContent: `# Default sqlfluff configuration for SQL\n`,
+	eslintConfigFile: 'sql-sqlfluff.config.sql',
+	eslintConfigContent: `# Default sqlfluff configuration for SQL\n`,
 	conventions: [
 		'Follow standard SQL coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const TOML_PRESET: IRulePreset = {
 	linter: 'yamllint',
 	linterConfigFile: 'toml-yamllint.config.toml',
 	linterConfigContent: `# Default yamllint configuration for TOML\n`,
+	eslintConfigFile: 'toml-yamllint.config.toml',
+	eslintConfigContent: `# Default yamllint configuration for TOML\n`,
 	conventions: [
 		'Follow standard TOML coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const YAML_PRESET: IRulePreset = {
 	linter: 'yamllint',
 	linterConfigFile: 'yaml-yamllint.config.yaml',
 	linterConfigContent: `# Default yamllint configuration for YAML\n`,
+	eslintConfigFile: 'yaml-yamllint.config.yaml',
+	eslintConfigContent: `# Default yamllint configuration for YAML\n`,
 	conventions: [
 		'Follow standard YAML coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const JSON_PRESET: IRulePreset = {
 	linter: 'jsonlint',
 	linterConfigFile: 'json-jsonlint.config.json',
 	linterConfigContent: `# Default jsonlint configuration for JSON\n`,
+	eslintConfigFile: 'json-jsonlint.config.json',
+	eslintConfigContent: `# Default jsonlint configuration for JSON\n`,
 	conventions: [
 		'Follow standard JSON coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const JSON5_PRESET: IRulePreset = {
 	linter: 'jsonlint',
 	linterConfigFile: 'json5-jsonlint.config.json5',
 	linterConfigContent: `# Default jsonlint configuration for JSON5\n`,
+	eslintConfigFile: 'json5-jsonlint.config.json5',
+	eslintConfigContent: `# Default jsonlint configuration for JSON5\n`,
 	conventions: [
 		'Follow standard JSON5 coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -95,6 +105,8 @@ export const HCL_PRESET: IRulePreset = {
 	linter: 'tflint',
 	linterConfigFile: 'hcl-tflint.config.hcl',
 	linterConfigContent: `# Default tflint configuration for HCL\n`,
+	eslintConfigFile: 'hcl-tflint.config.hcl',
+	eslintConfigContent: `# Default tflint configuration for HCL\n`,
 	conventions: [
 		'Follow standard HCL coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -112,6 +124,8 @@ export const NIX_PRESET: IRulePreset = {
 	linter: 'nixfmt',
 	linterConfigFile: 'nix-nixfmt.config.nix',
 	linterConfigContent: `# Default nixfmt configuration for Nix\n`,
+	eslintConfigFile: 'nix-nixfmt.config.nix',
+	eslintConfigContent: `# Default nixfmt configuration for Nix\n`,
 	conventions: [
 		'Follow standard Nix coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -129,6 +143,8 @@ export const DHALL_PRESET: IRulePreset = {
 	linter: 'nixfmt',
 	linterConfigFile: 'dhall-nixfmt.config.dhall',
 	linterConfigContent: `# Default nixfmt configuration for Dhall\n`,
+	eslintConfigFile: 'dhall-nixfmt.config.dhall',
+	eslintConfigContent: `# Default nixfmt configuration for Dhall\n`,
 	conventions: [
 		'Follow standard Dhall coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -146,6 +162,8 @@ export const CUE_PRESET: IRulePreset = {
 	linter: 'nixfmt',
 	linterConfigFile: 'cue-nixfmt.config.cue',
 	linterConfigContent: `# Default nixfmt configuration for CUE\n`,
+	eslintConfigFile: 'cue-nixfmt.config.cue',
+	eslintConfigContent: `# Default nixfmt configuration for CUE\n`,
 	conventions: [
 		'Follow standard CUE coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -163,6 +181,8 @@ export const KDL_PRESET: IRulePreset = {
 	linter: 'nixfmt',
 	linterConfigFile: 'kdl-nixfmt.config.kdl',
 	linterConfigContent: `# Default nixfmt configuration for KDL\n`,
+	eslintConfigFile: 'kdl-nixfmt.config.kdl',
+	eslintConfigContent: `# Default nixfmt configuration for KDL\n`,
 	conventions: [
 		'Follow standard KDL coding style.',
 		'Keep functions and modules focused and reusable.',

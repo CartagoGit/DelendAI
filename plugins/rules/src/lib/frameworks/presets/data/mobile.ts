@@ -10,6 +10,8 @@ export const DART_PRESET: IRulePreset = {
 	linter: 'dart-analyze',
 	linterConfigFile: 'dart-dart-analyze.config.dart',
 	linterConfigContent: `# Default dart-analyze configuration for Dart\n`,
+	eslintConfigFile: 'dart-dart-analyze.config.dart',
+	eslintConfigContent: `# Default dart-analyze configuration for Dart\n`,
 	conventions: [
 		'Follow standard Dart coding style.',
 		'Keep functions and modules focused and reusable.',

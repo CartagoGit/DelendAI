@@ -140,7 +140,12 @@ export const buildRulesManifest = async (
 		const configs: string[] = [];
 		const projectEslint = await findProjectEslint(reader, areaDir);
 		if (projectEslint !== undefined) configs.push(projectEslint);
-		configs.push(joinRel(cacheRelDir, preset.eslintConfigFile));
+		configs.push(
+			joinRel(
+				cacheRelDir,
+				preset.eslintConfigFile ?? preset.linterConfigFile,
+			),
+		);
 
 		const typecheck: string[] = [];
 		const projectTsconfig = await findProjectTsconfig(reader, areaDir);
@@ -213,18 +218,22 @@ export const ensureRulesCache = async (
 ): Promise<IEnsureCacheResult> => {
 	const materialized: string[] = [];
 	for (const preset of RULE_PRESETS) {
-		const eslintRel = joinRel(options.cacheRelDir, preset.eslintConfigFile);
+		const eslintRel = joinRel(
+			options.cacheRelDir,
+			preset.eslintConfigFile ?? preset.linterConfigFile,
+		);
 		await writeFileAtomic(
 			options.resolve(eslintRel),
-			preset.eslintConfigContent,
+			preset.eslintConfigContent ?? preset.linterConfigContent,
 		);
 		materialized.push(eslintRel);
-		if (preset.tsconfigFile !== undefined && preset.tsconfigContent) {
-			const tsRel = joinRel(options.cacheRelDir, preset.tsconfigFile);
-			await writeFileAtomic(
-				options.resolve(tsRel),
-				preset.tsconfigContent,
-			);
+
+		const tsFile = preset.tsconfigFile ?? preset.typecheckConfigFile;
+		const tsContent =
+			preset.tsconfigContent ?? preset.typecheckConfigContent;
+		if (tsFile !== undefined && tsContent !== undefined) {
+			const tsRel = joinRel(options.cacheRelDir, tsFile);
+			await writeFileAtomic(options.resolve(tsRel), tsContent);
 			materialized.push(tsRel);
 		}
 	}

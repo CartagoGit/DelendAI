@@ -19,6 +19,8 @@ export type INullSafetyDogma =
 	| 'no-null'
 	| 'nil-pointer'
 	| 'undefined'
+	| 'null'
+	| 'optional'
 	| 'n/a';
 export type INamingStyleDogma =
 	| 'snake_case'
@@ -29,6 +31,7 @@ export type INamingStyleDogma =
 	| 'dot.case'
 	| 'lowerCamelCase'
 	| 'ATX'
+	| 'mixed'
 	| 'n/a';
 export type IAsyncModelDogma =
 	| 'promises'
@@ -37,6 +40,8 @@ export type IAsyncModelDogma =
 	| 'callbacks'
 	| 'effects'
 	| 'actors'
+	| 'futures'
+	| 'coroutines'
 	| 'none'
 	| 'n/a';
 export type IVisibilityDogma =

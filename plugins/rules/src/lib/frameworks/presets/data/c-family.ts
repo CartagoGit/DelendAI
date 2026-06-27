@@ -10,6 +10,8 @@ export const C_PRESET: IRulePreset = {
 	linter: 'clang-tidy',
 	linterConfigFile: 'c-clang-tidy.config.c',
 	linterConfigContent: `# Default clang-tidy configuration for C\n`,
+	eslintConfigFile: 'c-clang-tidy.config.c',
+	eslintConfigContent: `# Default clang-tidy configuration for C\n`,
 	conventions: [
 		'Follow standard C coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const CPP_PRESET: IRulePreset = {
 	linter: 'clang-tidy',
 	linterConfigFile: 'cpp-clang-tidy.config.cpp',
 	linterConfigContent: `# Default clang-tidy configuration for C++\n`,
+	eslintConfigFile: 'cpp-clang-tidy.config.cpp',
+	eslintConfigContent: `# Default clang-tidy configuration for C++\n`,
 	conventions: [
 		'Follow standard C++ coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const OBJC_PRESET: IRulePreset = {
 	linter: 'clang-tidy',
 	linterConfigFile: 'objc-clang-tidy.config.m',
 	linterConfigContent: `# Default clang-tidy configuration for Objective-C\n`,
+	eslintConfigFile: 'objc-clang-tidy.config.m',
+	eslintConfigContent: `# Default clang-tidy configuration for Objective-C\n`,
 	conventions: [
 		'Follow standard Objective-C coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const OBJCPP_PRESET: IRulePreset = {
 	linter: 'clang-tidy',
 	linterConfigFile: 'objcpp-clang-tidy.config.mm',
 	linterConfigContent: `# Default clang-tidy configuration for Objective-C++\n`,
+	eslintConfigFile: 'objcpp-clang-tidy.config.mm',
+	eslintConfigContent: `# Default clang-tidy configuration for Objective-C++\n`,
 	conventions: [
 		'Follow standard Objective-C++ coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const CARBON_PRESET: IRulePreset = {
 	linter: 'clang-tidy',
 	linterConfigFile: 'carbon-clang-tidy.config.carbon',
 	linterConfigContent: `# Default clang-tidy configuration for Carbon\n`,
+	eslintConfigFile: 'carbon-clang-tidy.config.carbon',
+	eslintConfigContent: `# Default clang-tidy configuration for Carbon\n`,
 	conventions: [
 		'Follow standard Carbon coding style.',
 		'Keep functions and modules focused and reusable.',

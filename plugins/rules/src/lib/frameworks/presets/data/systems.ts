@@ -10,6 +10,8 @@ export const ZIG_PRESET: IRulePreset = {
 	linter: 'zig-fmt',
 	linterConfigFile: 'zig-zig-fmt.config.zig',
 	linterConfigContent: `# Default zig-fmt configuration for Zig\n`,
+	eslintConfigFile: 'zig-zig-fmt.config.zig',
+	eslintConfigContent: `# Default zig-fmt configuration for Zig\n`,
 	conventions: [
 		'Follow standard Zig coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const NIM_PRESET: IRulePreset = {
 	linter: 'zig-fmt',
 	linterConfigFile: 'nim-zig-fmt.config.nim',
 	linterConfigContent: `# Default zig-fmt configuration for Nim\n`,
+	eslintConfigFile: 'nim-zig-fmt.config.nim',
+	eslintConfigContent: `# Default zig-fmt configuration for Nim\n`,
 	conventions: [
 		'Follow standard Nim coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const CRYSTAL_PRESET: IRulePreset = {
 	linter: 'zig-fmt',
 	linterConfigFile: 'crystal-zig-fmt.config.cr',
 	linterConfigContent: `# Default zig-fmt configuration for Crystal\n`,
+	eslintConfigFile: 'crystal-zig-fmt.config.cr',
+	eslintConfigContent: `# Default zig-fmt configuration for Crystal\n`,
 	conventions: [
 		'Follow standard Crystal coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -61,6 +67,8 @@ export const V_PRESET: IRulePreset = {
 	linter: 'zig-fmt',
 	linterConfigFile: 'v-zig-fmt.config.v',
 	linterConfigContent: `# Default zig-fmt configuration for V\n`,
+	eslintConfigFile: 'v-zig-fmt.config.v',
+	eslintConfigContent: `# Default zig-fmt configuration for V\n`,
 	conventions: [
 		'Follow standard V coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -78,6 +86,8 @@ export const PONY_PRESET: IRulePreset = {
 	linter: 'zig-fmt',
 	linterConfigFile: 'pony-zig-fmt.config.pony',
 	linterConfigContent: `# Default zig-fmt configuration for Pony\n`,
+	eslintConfigFile: 'pony-zig-fmt.config.pony',
+	eslintConfigContent: `# Default zig-fmt configuration for Pony\n`,
 	conventions: [
 		'Follow standard Pony coding style.',
 		'Keep functions and modules focused and reusable.',

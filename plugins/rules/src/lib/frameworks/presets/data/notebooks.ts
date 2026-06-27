@@ -10,6 +10,8 @@ export const IPYNB_PRESET: IRulePreset = {
 	linter: 'ruff',
 	linterConfigFile: 'ipynb-ruff.config.ipynb',
 	linterConfigContent: `# Default ruff configuration for Jupyter Notebook\n`,
+	eslintConfigFile: 'ipynb-ruff.config.ipynb',
+	eslintConfigContent: `# Default ruff configuration for Jupyter Notebook\n`,
 	conventions: [
 		'Follow standard Jupyter Notebook coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -27,6 +29,8 @@ export const RMD_PRESET: IRulePreset = {
 	linter: 'ruff',
 	linterConfigFile: 'rmd-ruff.config.rmd',
 	linterConfigContent: `# Default ruff configuration for R Markdown\n`,
+	eslintConfigFile: 'rmd-ruff.config.rmd',
+	eslintConfigContent: `# Default ruff configuration for R Markdown\n`,
 	conventions: [
 		'Follow standard R Markdown coding style.',
 		'Keep functions and modules focused and reusable.',
@@ -44,6 +48,8 @@ export const QMD_PRESET: IRulePreset = {
 	linter: 'ruff',
 	linterConfigFile: 'qmd-ruff.config.qmd',
 	linterConfigContent: `# Default ruff configuration for Quarto\n`,
+	eslintConfigFile: 'qmd-ruff.config.qmd',
+	eslintConfigContent: `# Default ruff configuration for Quarto\n`,
 	conventions: [
 		'Follow standard Quarto coding style.',
 		'Keep functions and modules focused and reusable.',
