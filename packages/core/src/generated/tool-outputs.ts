@@ -870,7 +870,7 @@ export interface McpVertexProposalsCreateProposalOutput {
 
 export interface McpVertexProposalsDelegateOutput {
 	ok: boolean;
-	stage?: "assign" | "lock";
+	stage?: "assign" | "worktree" | "lock";
 	detail?: Record<string, unknown>;
 	agent?: string;
 	reason?: string;
@@ -878,6 +878,11 @@ export interface McpVertexProposalsDelegateOutput {
 	slot?: string;
 	files?: string[];
 	locked?: boolean;
+	worktree?: {
+		path: string;
+		branch: string;
+		created: boolean;
+	};
 	instruction?: string;
 }
 

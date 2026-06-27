@@ -103,15 +103,20 @@ This is the cheapest path for one small slice in one shared tree.
 ```text
 auto_work
 -> continue_proposal mode:"plan"
--> agent_worktree create
--> agent_lock claim files:[...]
--> implement in the worktree
+-> proposals_delegate { taskId, slot, files }
+   (assigns the agent name, claims the files, and — when the host
+    gate `agentWorktree: true` is on — creates the per-agent worktree
+    + branch `agent/<assigned-name>` atomically; x00051)
+-> implement in the worktree path
 -> validate
 -> close_slice
--> persist/commit-and-push
+-> maybePersistAfterSlice { mode: "commit-and-push", pushTarget: "origin agent/<branch>" }
 ```
 
 This is the safe path when more than one agent may commit concurrently.
+The orchestrator no longer has to remember the `agent_worktree create`
+step — `delegate` does it. Manual `agent_worktree` is still the right tool
+for sidecar worktrees that do not need a delegated agent.
 
 ### Pattern 3 — Claimed file conflict
 

@@ -253,7 +253,21 @@ export const runAutoWork = async (
 						'Persist the slice (commit + push): call `maybePersistAfterSlice(<claim.files>, <proposalId>, <sliceId>, { mode: "commit-and-push", pushTarget: "origin agent/<branch>" })` after `sync_proposals` and before `release`. The helper refuses to push to `main` automatically.',
 					];
 
+	// x00051 S3: when persist is enabled, the plan must surface the
+	// `agent_worktree create` step explicitly so a host that runs
+	// `auto_work` solo (without going through `delegate`) still
+	// produces the per-agent branch before the persist push. When
+	// persist is `none`, no worktree step is needed — the orchestrator
+	// is not pushing.
+	const worktreeStep =
+		resolvedMode === 'none'
+			? []
+			: [
+					`Ensure per-agent worktree exists before persisting: ${prefix}_agent_worktree { action: "create", agent: "<pending>" } (idempotent — returns the existing worktree if one is present; required when persist mode is "${resolvedMode}"). When the slice is delegated via ${prefix}_delegate this is handled for you; keep the step as a safety net for solo runs.`,
+				];
+
 	const steps = [
+		...worktreeStep,
 		`Open ${next.file} and pick the next atomic slice.`,
 		`If non-trivial: ${orchestration.next}; then ${prefix}_delegate one claimable slice to a subagent.`,
 		`Claim its files: ${prefix}_agent_lock { action: "claim", task_id, files }. On lock-conflict or all-claimed work, use ${prefix}_await_lock once (or wait for a lock-released notification) — do NOT poll status in a loop.`,
