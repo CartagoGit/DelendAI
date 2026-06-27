@@ -1,0 +1,42 @@
+---
+import MarkdownPage from '#COMPONENTS/MarkdownPage.astro';
+import Base from '#LAYOUTS/Base.astro';
+import pagesManifest from '#MANIFESTS/pages.json';
+
+import type { PageSpec } from '#LIB/page-spec/types';
+
+interface IPagesManifest {
+	readonly generatedAt: string;
+	readonly pages: readonly PageSpec[];
+}
+
+const manifest = pagesManifest as IPagesManifest;
+
+export function getStaticPaths() {
+	return manifest.pages.map((page) => ({ params: { page: page.slug } }));
+}
+
+const pageSpec = manifest.pages.find(
+	(entry) => entry.slug === Astro.params.page,
+);
+if (!pageSpec) {
+	throw new Error(
+		`Unknown page slug '${Astro.params.page ?? ''}' — pages.json may be stale, re-run bun run gen:pages.`,
+	);
+}
+
+const translation = pageSpec.translations.en;
+---
+
+<Base
+	lang="en"
+	title={translation.frontmatter.title}
+	description={translation.frontmatter.description}
+>
+	{translation.frontmatter.noindex === true && (
+		<Fragment slot="head">
+			<meta name="robots" content="noindex" />
+		</Fragment>
+	)}
+	<MarkdownPage page={pageSpec} lang="en" />
+</Base>
