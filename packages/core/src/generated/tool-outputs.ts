@@ -766,6 +766,70 @@ export interface McpVertexProposalsAutoWorkOutput {
 		pushTarget?: string;
 	};
 	steps?: string[];
+	branchStatusWarnings?: string[];
+}
+
+export interface McpVertexProposalsBranchGcOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	dryRun?: boolean;
+	staleMinutes?: number;
+	removed?: Array<{
+		path: string;
+		branch: string;
+		reason: "merged-and-clean" | "merged-and-clean-with-force" | "behind-only" | "no-branch";
+		dirtyFiles: number;
+		untrackedFiles: number;
+		outOfCache: boolean;
+		ageLabel: string;
+	}>;
+	skipped?: Array<{
+		path: string;
+		branch: string;
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch";
+		detail: string;
+	}>;
+	summary?: {
+		removedCount: number;
+		skippedCount: number;
+		dryRunRemovedCount: number;
+	};
+}
+
+export interface McpVertexProposalsBranchStatusOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	branches?: {
+		name: string;
+		head: string;
+		ahead: number;
+		behind: number;
+		mergedIntoBase: boolean;
+		lastCommitMinutesAgo: number;
+		worktreePath: string;
+	}[];
+	worktrees?: {
+		path: string;
+		head: string;
+		branch: string;
+		outOfCache: boolean;
+		dirtyFiles: number;
+		untrackedFiles: number;
+		ageLabel: string;
+	}[];
+	summary?: {
+		totalBranches: number;
+		totalWorktrees: number;
+		mergedCount: number;
+		aheadOfBaseCount: number;
+		behindBaseCount: number;
+		dirtyWorktrees: number;
+		untrackedWorktrees: number;
+		outOfCacheWorktrees: number;
+	};
+	generatedAt?: string;
 }
 
 export interface McpVertexProposalsCloseSliceOutput {
@@ -1668,6 +1732,8 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_agent_names": McpVertexProposalsAgentNamesOutput;
 	"mcp-vertex_proposals_agent_worktree": McpVertexProposalsAgentWorktreeOutput;
 	"mcp-vertex_proposals_auto_work": McpVertexProposalsAutoWorkOutput;
+	"mcp-vertex_proposals_branch_gc": McpVertexProposalsBranchGcOutput;
+	"mcp-vertex_proposals_branch_status": McpVertexProposalsBranchStatusOutput;
 	"mcp-vertex_proposals_close_slice": McpVertexProposalsCloseSliceOutput;
 	"mcp-vertex_proposals_compact_status": McpVertexProposalsCompactStatusOutput;
 	"mcp-vertex_proposals_continue_proposal": McpVertexProposalsContinueProposalOutput;

@@ -42,6 +42,20 @@ export interface IAuthoringToolOptions {
 	 * post-mutation sync should also scan, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
+	/**
+	 * Peer-review gate (default: true). When on, `close_slice` refuses
+	 * to mark a slice `done` unless the slice has gone through the
+	 * `proposal_review` loop and reached `review-state: done`. A
+	 * reviewer must differ from the implementer AND from the previous
+	 * reviewer across rounds, so every fix gets a fresh pair of eyes
+	 * until a reviewer has no objection (x00056).
+	 *
+	 * Hosts opt out by setting `proposals.options.requirePeerReview:
+	 * false` in mcp-vertex.config.json. The default-on mirrors the
+	 * plan-of-plans policy (`closureGate.requirePeerReview: true`),
+	 * extending the same gate to every slice of every proposal kind.
+	 */
+	readonly requirePeerReview?: boolean;
 }
 
 /** Async file helper (H2): never block the event loop on a tool call.
