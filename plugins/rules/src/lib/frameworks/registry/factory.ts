@@ -212,17 +212,29 @@ const jsTsAdapter: ILanguageAdapter = {
 		if ('@angular/core' in deps) {
 			return { presetId: 'angular', reason: 'dependency @angular/core' };
 		}
-		const nextConfig =
-			areaDir === '' || areaDir === 'root'
-				? 'next.config.js'
-				: `${areaDir}/next.config.js`;
+		const hasConfig = async (name: string): Promise<boolean> => {
+			for (const extension of ['js', 'mjs', 'ts', 'cjs']) {
+				const rel =
+					areaDir === '' || areaDir === 'root'
+						? `${name}.${extension}`
+						: `${areaDir}/${name}.${extension}`;
+				if (await reader.exists(rel)) return true;
+			}
+			return false;
+		};
 		const hasTs =
 			(await reader.exists(
 				areaDir === '' || areaDir === 'root'
 					? 'tsconfig.json'
 					: `${areaDir}/tsconfig.json`,
-			)) || 'typescript' in deps;
-		if ('next' in deps || (await reader.exists(nextConfig))) {
+			)) ||
+			(await reader.exists(
+				areaDir === '' || areaDir === 'root'
+					? 'tsconfig.app.json'
+					: `${areaDir}/tsconfig.app.json`,
+			)) ||
+			'typescript' in deps;
+		if ('next' in deps || (await hasConfig('next.config'))) {
 			return hasTs
 				? {
 						presetId: 'next-ts',
@@ -231,6 +243,43 @@ const jsTsAdapter: ILanguageAdapter = {
 				: {
 						presetId: 'react-js',
 						reason: 'Next.js (JS) → react-js base',
+					};
+		}
+		if (
+			'@remix-run/react' in deps ||
+			'@remix-run/node' in deps ||
+			(await hasConfig('remix.config'))
+		) {
+			return hasTs
+				? { presetId: 'remix', reason: 'Remix (@remix-run/*)' }
+				: {
+						presetId: 'react-js',
+						reason: 'Remix (JS) → react-js base',
+					};
+		}
+		if ('nuxt' in deps || (await hasConfig('nuxt.config'))) {
+			return {
+				presetId: 'nuxt',
+				reason: 'Nuxt (nuxt dep / nuxt.config)',
+			};
+		}
+		if ('astro' in deps || (await hasConfig('astro.config'))) {
+			return hasTs
+				? {
+						presetId: 'astro',
+						reason: 'Astro (astro dep / astro.config)',
+					}
+				: {
+						presetId: 'vanilla-js',
+						reason: 'Astro (JS) → vanilla-js base',
+					};
+		}
+		if ('solid-js' in deps) {
+			return hasTs
+				? { presetId: 'solid-ts', reason: 'SolidJS (solid-js)' }
+				: {
+						presetId: 'vanilla-js',
+						reason: 'SolidJS (JS) → vanilla-js base',
 					};
 		}
 		if ('react' in deps) {
@@ -244,6 +293,9 @@ const jsTsAdapter: ILanguageAdapter = {
 		}
 		if ('svelte' in deps) {
 			return { presetId: 'svelte', reason: 'dependency svelte' };
+		}
+		if ('jquery' in deps) {
+			return { presetId: 'jquery', reason: 'dependency jquery' };
 		}
 		const hasPackageJson = await reader.exists(
 			areaDir === '' || areaDir === 'root'

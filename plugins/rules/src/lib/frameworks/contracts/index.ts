@@ -1,17 +1,30 @@
-export type { ICommandSet } from './command-set.interface';
-export type { ICommandSetProvider } from './command-set-provider.interface';
+// `frameworks/contracts/` re-exports the canonical plugin contract surface
+// (defined in `plugins/rules/src/lib/contracts/`) so internal callers can
+// keep importing from a single relative path (`../contracts`) regardless of
+// which directory they live in. The locally-mirrored `*.interface.ts` files
+// in this folder are kept for backward compatibility with any code that
+// imported them directly; new code should import from `../../contracts`.
 export type {
+	IAsyncModelDogma,
+	ICommandSet,
+	ICommandSetProvider,
 	IDetectResult,
+	IDogmaAdapter,
+	IErrorModelDogma,
+	IImmutabilityDogma,
 	ILanguageAdapter,
 	ILanguageDetection,
-} from './language-adapter.interface';
-export type { IRulePreset } from './preset.interface';
-export type { IPresetCommands } from './preset-commands.interface';
-export type { IPresetConfigs } from './preset-configs.interface';
-export type { IPresetConventions } from './preset-conventions.interface';
-export type {
+	INamingStyleDogma,
+	INullSafetyDogma,
+	IOwnershipDogma,
+	IPresetCommands,
+	IPresetConfigs,
+	IPresetConventions,
 	IPresetIdentity,
+	IPresetToolchain,
+	IRulePreset,
+	ITestingDogma,
+	IVisibilityDogma,
 	TPresetLanguage,
 	TPresetLinter,
-} from './preset-identity.interface';
-export type { IPresetToolchain } from './preset-toolchain.interface';
+} from '../../contracts';
