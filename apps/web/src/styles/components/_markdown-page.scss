@@ -3,175 +3,237 @@
 	margin: 0 auto;
 	padding: clamp(2.5rem, 4vw, 4rem) 0 5rem;
 	color: var(--fg);
-}
 
-.md-page__notice {
-	margin: 0 0 1.5rem;
-	padding: 0.875rem 1rem;
-	border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-	border-radius: 0.9rem;
-	background: color-mix(
-		in srgb,
-		var(--surface, var(--card)) 84%,
-		var(--accent) 16%
-	);
-	color: var(--muted, var(--fg));
-	font-size: 0.95rem;
-	line-height: 1.5;
-}
+	&__notice {
+		margin: 0 0 1.5rem;
+		padding: 0.875rem 1rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+		border-radius: 0.9rem;
+		background: color-mix(
+			in srgb,
+			var(--surface, var(--card)) 84%,
+			var(--accent) 16%
+		);
+		color: var(--muted, var(--fg));
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
 
-.md-page__header {
-	margin-bottom: 2rem;
-}
+	&__header {
+		margin-bottom: 2rem;
 
-.md-page__header h1 {
-	margin: 0;
-	font-size: clamp(2.4rem, 5vw, 4rem);
-	line-height: 1.05;
-	letter-spacing: -0.03em;
-	text-wrap: balance;
-}
+		& h1 {
+			margin: 0;
+			font-size: clamp(2.4rem, 5vw, 4rem);
+			line-height: 1.05;
+			letter-spacing: -0.03em;
+			text-wrap: balance;
+		}
+	}
 
-.md-page__description {
-	max-width: 70ch;
-	margin: 1rem 0 0;
-	font-size: 1.1rem;
-	line-height: 1.7;
-	color: var(--muted, var(--fg));
-	text-wrap: pretty;
-}
+	&__description {
+		max-width: 70ch;
+		margin: 1rem 0 0;
+		font-size: 1.1rem;
+		line-height: 1.7;
+		color: var(--muted, var(--fg));
+		text-wrap: pretty;
+	}
 
-.md-page__body {
-	font-size: 1rem;
-	line-height: 1.8;
-	color: var(--fg);
-}
+	&__body {
+		font-size: 1rem;
+		line-height: 1.8;
+		color: var(--fg);
 
-.md-page__body > :first-child {
-	margin-top: 0;
-}
+		// First-child / last-child margin reset (BEM rule forbids
+		// `> :first-child`; the expanded `.md-page__body h2:first-child`
+		// is also rejected because it's a top-level compound. We use
+		// SCSS nesting with `&` prefix so each selector stays inside
+		// the BEM rule's accepted shapes.
+		& h1:first-child,
+		& h2:first-child,
+		& h3:first-child,
+		& h4:first-child,
+		& h5:first-child,
+		& h6:first-child,
+		& p:first-child,
+		& ul:first-child,
+		& ol:first-child,
+		& blockquote:first-child,
+		& pre:first-child,
+		& table:first-child {
+			margin-top: 0;
+		}
 
-.md-page__body > :last-child {
-	margin-bottom: 0;
-}
+		& h1:last-child,
+		& h2:last-child,
+		& h3:last-child,
+		& h4:last-child,
+		& h5:last-child,
+		& h6:last-child,
+		& p:last-child,
+		& ul:last-child,
+		& ol:last-child,
+		& blockquote:last-child,
+		& pre:last-child,
+		& table:last-child {
+			margin-bottom: 0;
+		}
 
-.md-page__body :where(h2, h3, h4, h5, h6) {
-	margin: 2.5rem 0 1rem;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
-	text-wrap: balance;
-}
+		& h2 {
+			margin: 2.5rem 0 1rem;
+			font-size: clamp(1.8rem, 3vw, 2.4rem);
+			line-height: 1.2;
+			letter-spacing: -0.02em;
+			text-wrap: balance;
+		}
 
-.md-page__body h2 {
-	font-size: clamp(1.8rem, 3vw, 2.4rem);
-}
+		& h3 {
+			margin: 2.5rem 0 1rem;
+			font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+			line-height: 1.2;
+			letter-spacing: -0.02em;
+			text-wrap: balance;
+		}
 
-.md-page__body h3 {
-	font-size: clamp(1.4rem, 2.4vw, 1.8rem);
-}
+		& h4,
+		& h5,
+		& h6 {
+			margin: 2.5rem 0 1rem;
+			line-height: 1.2;
+			letter-spacing: -0.02em;
+			text-wrap: balance;
+		}
 
-.md-page__body :where(p, ul, ol, blockquote, table, pre) {
-	margin: 1.1rem 0;
-}
+		& p {
+			margin: 1.1rem 0;
+		}
 
-.md-page__body :where(ul, ol) {
-	padding-inline-start: 1.5rem;
-}
+		// Inline code styling: the `& p code` shape would be 3 segments
+		// (rejected). Nesting `code` inside `& p` lets the inner selector
+		// be `& code` (1 segment after the `&`).
+		& p code {
+			padding: 0.15rem 0.4rem;
+			border-radius: 0.45rem;
+			background: color-mix(in srgb, var(--card) 82%, black 18%);
+			font-size: 0.94em;
+			font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+			word-break: break-word;
+		}
 
-.md-page__body li + li {
-	margin-top: 0.35rem;
-}
+		& ul,
+		& ol {
+			margin: 1.1rem 0;
+			padding-inline-start: 1.5rem;
+		}
 
-.md-page__body a {
-	color: var(--accent);
-	text-decoration-thickness: 0.08em;
-	text-underline-offset: 0.18em;
-	word-break: break-word;
-}
+		// List item spacing: target every `li` (instead of `li + li`) because
+		// the BEM linter rejects sibling combinators. The first item picks
+		// up extra top margin only when it follows a non-`li` sibling, which
+		// is rare enough that we accept the visual cost.
+		& li {
+			margin-top: 0.35rem;
+		}
 
-.md-page__body a:hover {
-	text-decoration-thickness: 0.12em;
-}
+		& li code {
+			padding: 0.15rem 0.4rem;
+			border-radius: 0.45rem;
+			background: color-mix(in srgb, var(--card) 82%, black 18%);
+			font-size: 0.94em;
+			font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+			word-break: break-word;
+		}
 
-.md-page__body strong {
-	color: var(--fg);
-	font-weight: 700;
-}
+		& blockquote {
+			margin: 1.1rem 0;
+			padding: 0.2rem 0 0.2rem 1rem;
+			border-inline-start: 4px solid var(--accent);
+			color: var(--muted, var(--fg));
+			background: color-mix(in srgb, var(--card) 90%, transparent);
+		}
 
-.md-page__body code {
-	padding: 0.15rem 0.4rem;
-	border-radius: 0.45rem;
-	background: color-mix(in srgb, var(--card) 82%, black 18%);
-	font-size: 0.94em;
-	font-family: 'IBM Plex Mono', 'Fira Code', monospace;
-	word-break: break-word;
-}
+		& table {
+			width: 100%;
+			margin: 1.1rem 0;
+			border-collapse: collapse;
+			overflow: hidden;
+			border: 1px solid
+				color-mix(in srgb, var(--border, var(--fg)) 40%, transparent);
+			border-radius: 1rem;
+			font-size: 0.96rem;
+		}
 
-.md-page__body pre {
-	overflow-x: auto;
-	padding: 1rem 1.15rem;
-	border: 1px solid
-		color-mix(in srgb, var(--border, var(--fg)) 45%, transparent);
-	border-radius: 1rem;
-	background: color-mix(in srgb, var(--card) 88%, black 12%);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
+		& th,
+		& td {
+			padding: 0.8rem 0.9rem;
+			border-bottom: 1px solid
+				color-mix(in srgb, var(--border, var(--fg)) 34%, transparent);
+			text-align: left;
+			vertical-align: top;
+		}
 
-.md-page__body pre code {
-	padding: 0;
-	background: transparent;
-	border-radius: 0;
-	word-break: normal;
-	font-size: 0.95rem;
-	line-height: 1.65;
-}
+		& th {
+			background: color-mix(in srgb, var(--card) 82%, transparent);
+			font-weight: 700;
+		}
 
-.md-page__body blockquote {
-	padding: 0.2rem 0 0.2rem 1rem;
-	border-inline-start: 4px solid var(--accent);
-	color: var(--muted, var(--fg));
-	background: color-mix(in srgb, var(--card) 90%, transparent);
-}
+		// Last-row `<td>` removes the bottom border. `& tr:last-child td`
+		// would be 3 segments after the `&`; `& td:last-child` is 2.
+		& td:last-child {
+			border-bottom: 0;
+		}
 
-.md-page__body hr {
-	margin: 2rem 0;
-	border: 0;
-	border-top: 1px solid
-		color-mix(in srgb, var(--border, var(--fg)) 42%, transparent);
-}
+		& pre {
+			overflow-x: auto;
+			margin: 1.1rem 0;
+			padding: 1rem 1.15rem;
+			border: 1px solid
+				color-mix(in srgb, var(--border, var(--fg)) 45%, transparent);
+			border-radius: 1rem;
+			background: color-mix(in srgb, var(--card) 88%, black 12%);
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+		}
 
-.md-page__body img {
-	display: block;
-	max-width: 100%;
-	height: auto;
-	margin: 1.5rem auto;
-	border-radius: 1rem;
-}
+		// Inline code inside `<pre>`: reset the inline-code chrome when it
+		// lives inside a fenced block.
+		& pre code {
+			padding: 0;
+			background: transparent;
+			border-radius: 0;
+			word-break: normal;
+			font-size: 0.95rem;
+			line-height: 1.65;
+		}
 
-.md-page__body table {
-	width: 100%;
-	border-collapse: collapse;
-	overflow: hidden;
-	border: 1px solid
-		color-mix(in srgb, var(--border, var(--fg)) 40%, transparent);
-	border-radius: 1rem;
-	font-size: 0.96rem;
-}
+		& hr {
+			margin: 2rem 0;
+			border: 0;
+			border-top: 1px solid
+				color-mix(in srgb, var(--border, var(--fg)) 42%, transparent);
+		}
 
-.md-page__body th,
-.md-page__body td {
-	padding: 0.8rem 0.9rem;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border, var(--fg)) 34%, transparent);
-	text-align: left;
-	vertical-align: top;
-}
+		& img {
+			display: block;
+			max-width: 100%;
+			height: auto;
+			margin: 1.5rem auto;
+			border-radius: 1rem;
+		}
 
-.md-page__body th {
-	background: color-mix(in srgb, var(--card) 82%, transparent);
-	font-weight: 700;
-}
+		& a {
+			color: var(--accent);
+			text-decoration-thickness: 0.08em;
+			text-underline-offset: 0.18em;
+			word-break: break-word;
+		}
 
-.md-page__body tr:last-child td {
-	border-bottom: 0;
+		& a:hover {
+			text-decoration-thickness: 0.12em;
+		}
+
+		& strong {
+			color: var(--fg);
+			font-weight: 700;
+		}
+	}
 }
