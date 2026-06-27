@@ -1,29 +1,7 @@
 {
-	"generated_at": "2026-06-27T08:07:17.024Z",
+	"generated_at": "2026-06-27T11:23:44.275Z",
 	"count": 135,
 	"proposals": [
-		{
-			"id": "f00051",
-			"file": "ready/f00051-multilanguage-rules-presets.md",
-			"track": "plugins/rules+lint+architecture+multi-language",
-			"type": "proposal",
-			"status": "ready",
-			"date": "2026-06-23",
-			"extras": {
-				"ownership": [
-					"{ agent: proposal_guardian,    task: 'S1: generalise the core to a project-agnostic Linter×Language model (IRulePreset, IRuleManifest, linter registry, language registry)' }",
-					"{ agent: implementation_runner, task: 'S2: extend detect-framework with per-language manifest + lockfile readers (pyproject, go.mod, Cargo.toml, Gemfile, pom.xml/build.gradle.kts, Package.swift, *.csproj/*.sln, mix.exs)' }",
-					"{ agent: implementation_runner, task: 'S3: add Python (ruff+basedpyright), Go (golangci-lint), Rust (clippy+rustfmt), Ruby (rubocop), Java (checkstyle/spotless+error-prone), Kotlin (ktlint+detekt), Swift (swiftlint+swift-format), C#/.NET (dotnet format+Roslyn analyzers), Elixir (credo+formatter) presets' }",
-					"{ agent: implementation_runner, task: 'S4: extend the IRulePreset / IAreaRules contracts so each preset carries its own check + fix commands (not hardcoded `eslint` / `pint` branches)' }",
-					"{ agent: implementation_runner, task: 'S5: update online-preset to look up each language upstream (PyPI, crates.io, proxy.golang.org, RubyGems, Maven Central, NuGet, Hex.pm) behind the same never-throws-never-blocks contract' }",
-					"{ agent: implementation_runner, task: 'S6: rebalance linter vs typecheck in rules-tools — emit the right per-language commands and surface \"typecheck\" semantically (mypy/pyright/tsc/go vet/cargo check/kotlinc/swiftc/dotnet build)' }",
-					"{ agent: implementation_runner, task: 'S7: language-aware get_rules outputSchema (mode/modeGuidance/supported/areas/conventions stay; the per-area shape gains a per-language `checkCommand`/`typecheckCommand`/`fixCommand` triple)' }",
-					"{ agent: implementation_runner, task: 'S8: docs + skills — update plugins/rules/README.md, mcp-vertex-plugin-authoring, audit-playbook, token-budget-playbook, applying-rules knowledge' }",
-					"{ agent: implementation_runner, task: 'S9: tests — per-language detect/manifest/tool tests (Python, Go, Rust, Ruby, Java, Kotlin, Swift, C#, Elixir) + per-language golden outputSchema specs + online-preset registry tests with stubbed fetchers' }",
-					"{ agent: implementation_runner, task: 'S10: e2e — spin up a tiny synthetic polyglot workspace (one area per language) and run check_rules + apply_rules end-to-end via the existing MCP harness' }"
-				]
-			}
-		},
 		{
 			"id": "f00055",
 			"file": "ready/f00055-web-repaso-pages-page-spec-and-dropdown-fix.md",
@@ -1381,6 +1359,28 @@
 			"type": "proposal",
 			"status": "done",
 			"date": "2026-06-22"
+		},
+		{
+			"id": "f00051",
+			"file": "done/feats/f00051-multilanguage-rules-presets.md",
+			"track": "plugins/rules+lint+architecture+multi-language",
+			"type": "proposal",
+			"status": "done",
+			"date": "2026-06-23",
+			"extras": {
+				"ownership": [
+					"{ agent: proposal_guardian,    task: 'S1: generalise the core to a project-agnostic Linter×Language model (IRulePreset, IRuleManifest, linter registry, language registry)' }",
+					"{ agent: implementation_runner, task: 'S2: extend detect-framework with per-language manifest + lockfile readers (pyproject, go.mod, Cargo.toml, Gemfile, pom.xml/build.gradle.kts, Package.swift, *.csproj/*.sln, mix.exs)' }",
+					"{ agent: implementation_runner, task: 'S3: add Python (ruff+basedpyright), Go (golangci-lint), Rust (clippy+rustfmt), Ruby (rubocop), Java (checkstyle/spotless+error-prone), Kotlin (ktlint+detekt), Swift (swiftlint+swift-format), C#/.NET (dotnet format+Roslyn analyzers), Elixir (credo+formatter) presets' }",
+					"{ agent: implementation_runner, task: 'S4: extend the IRulePreset / IAreaRules contracts so each preset carries its own check + fix commands (not hardcoded `eslint` / `pint` branches)' }",
+					"{ agent: implementation_runner, task: 'S5: update online-preset to look up each language upstream (PyPI, crates.io, proxy.golang.org, RubyGems, Maven Central, NuGet, Hex.pm) behind the same never-throws-never-blocks contract' }",
+					"{ agent: implementation_runner, task: 'S6: rebalance linter vs typecheck in rules-tools — emit the right per-language commands and surface \"typecheck\" semantically (mypy/pyright/tsc/go vet/cargo check/kotlinc/swiftc/dotnet build)' }",
+					"{ agent: implementation_runner, task: 'S7: language-aware get_rules outputSchema (mode/modeGuidance/supported/areas/conventions stay; the per-area shape gains a per-language `checkCommand`/`typecheckCommand`/`fixCommand` triple)' }",
+					"{ agent: implementation_runner, task: 'S8: docs + skills — update plugins/rules/README.md, mcp-vertex-plugin-authoring, audit-playbook, token-budget-playbook, applying-rules knowledge' }",
+					"{ agent: implementation_runner, task: 'S9: tests — per-language detect/manifest/tool tests (Python, Go, Rust, Ruby, Java, Kotlin, Swift, C#, Elixir) + per-language golden outputSchema specs + online-preset registry tests with stubbed fetchers' }",
+					"{ agent: implementation_runner, task: 'S10: e2e — spin up a tiny synthetic polyglot workspace (one area per language) and run check_rules + apply_rules end-to-end via the existing MCP harness' }"
+				]
+			}
 		},
 		{
 			"id": "x00001",

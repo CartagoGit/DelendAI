@@ -11,6 +11,7 @@ import {
 	buildPlanRegistration,
 } from '@mcp-vertex/proposals/lib/tools/orchestration.tool';
 import type { IAgentNamesToolOptions } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
+import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
 
 const capture = async (
 	reg: IToolRegistration,

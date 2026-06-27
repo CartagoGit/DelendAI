@@ -1,4 +1,5 @@
 import { eslintCommandSetProvider } from '../languages/base/eslint-base.provider';
+import { pythonAdapter } from '../languages/python.adapter';
 import { rustAdapter } from '../languages/rust/rust.adapter';
 import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
 import { ALL_PRESET_DATA } from '../presets/data';
@@ -15,6 +16,7 @@ import type {
 } from '../../contracts';
 import type { IAreaRulesLite } from './preset-registry';
 import type { IPresetValidator } from './validator';
+import type { IDogmaPolicyProvider } from '../../tools/dogma-policy.provider';
 import type { IPolicyResolver } from '../../tools/policy-resolver';
 
 import {
@@ -55,24 +57,6 @@ export type { ICompositionRoot };
  * adding one field to `ICompositionRoot` and one parameter
  * to `composeRoot` — no other file changes.
  */
-const pythonAdapter: ILanguageAdapter = {
-	id: 'python-adapter',
-	priority: 30,
-	detect: async (reader: IFileReader, areaDir: string) => {
-		const rel =
-			areaDir === '' || areaDir === 'root'
-				? 'pyproject.toml'
-				: `${areaDir}/pyproject.toml`;
-		if (await reader.exists(rel)) {
-			return {
-				presetId: 'python-ruff',
-				reason: 'Python (pyproject.toml)',
-			};
-		}
-		return undefined;
-	},
-};
-
 const goAdapter: ILanguageAdapter = {
 	id: 'go-adapter',
 	priority: 30,
@@ -228,17 +212,29 @@ const jsTsAdapter: ILanguageAdapter = {
 		if ('@angular/core' in deps) {
 			return { presetId: 'angular', reason: 'dependency @angular/core' };
 		}
-		const nextConfig =
-			areaDir === '' || areaDir === 'root'
-				? 'next.config.js'
-				: `${areaDir}/next.config.js`;
+		const hasConfig = async (name: string): Promise<boolean> => {
+			for (const extension of ['js', 'mjs', 'ts', 'cjs']) {
+				const rel =
+					areaDir === '' || areaDir === 'root'
+						? `${name}.${extension}`
+						: `${areaDir}/${name}.${extension}`;
+				if (await reader.exists(rel)) return true;
+			}
+			return false;
+		};
 		const hasTs =
 			(await reader.exists(
 				areaDir === '' || areaDir === 'root'
 					? 'tsconfig.json'
 					: `${areaDir}/tsconfig.json`,
-			)) || 'typescript' in deps;
-		if ('next' in deps || (await reader.exists(nextConfig))) {
+			)) ||
+			(await reader.exists(
+				areaDir === '' || areaDir === 'root'
+					? 'tsconfig.app.json'
+					: `${areaDir}/tsconfig.app.json`,
+			)) ||
+			'typescript' in deps;
+		if ('next' in deps || (await hasConfig('next.config'))) {
 			return hasTs
 				? {
 						presetId: 'next-ts',
@@ -247,6 +243,43 @@ const jsTsAdapter: ILanguageAdapter = {
 				: {
 						presetId: 'react-js',
 						reason: 'Next.js (JS) → react-js base',
+					};
+		}
+		if (
+			'@remix-run/react' in deps ||
+			'@remix-run/node' in deps ||
+			(await hasConfig('remix.config'))
+		) {
+			return hasTs
+				? { presetId: 'remix', reason: 'Remix (@remix-run/*)' }
+				: {
+						presetId: 'react-js',
+						reason: 'Remix (JS) → react-js base',
+					};
+		}
+		if ('nuxt' in deps || (await hasConfig('nuxt.config'))) {
+			return {
+				presetId: 'nuxt',
+				reason: 'Nuxt (nuxt dep / nuxt.config)',
+			};
+		}
+		if ('astro' in deps || (await hasConfig('astro.config'))) {
+			return hasTs
+				? {
+						presetId: 'astro',
+						reason: 'Astro (astro dep / astro.config)',
+					}
+				: {
+						presetId: 'vanilla-js',
+						reason: 'Astro (JS) → vanilla-js base',
+					};
+		}
+		if ('solid-js' in deps) {
+			return hasTs
+				? { presetId: 'solid-ts', reason: 'SolidJS (solid-js)' }
+				: {
+						presetId: 'vanilla-js',
+						reason: 'SolidJS (JS) → vanilla-js base',
 					};
 		}
 		if ('react' in deps) {
@@ -260,6 +293,9 @@ const jsTsAdapter: ILanguageAdapter = {
 		}
 		if ('svelte' in deps) {
 			return { presetId: 'svelte', reason: 'dependency svelte' };
+		}
+		if ('jquery' in deps) {
+			return { presetId: 'jquery', reason: 'dependency jquery' };
 		}
 		const hasPackageJson = await reader.exists(
 			areaDir === '' || areaDir === 'root'
@@ -395,6 +431,13 @@ export const buildDefaultComposition = (
 		 * advisory only") can pass a different implementation.
 		 */
 		readonly policyResolver?: IPolicyResolver;
+		/**
+		 * Optional override for the dogma policy provider
+		 * (S11). Defaults to `StringDogmaPolicyProvider`. A host
+		 * can swap to a `ToolUseDogmaPolicyProvider` (future
+		 * slice) without touching the tools.
+		 */
+		readonly dogmaPolicyProvider?: IDogmaPolicyProvider;
 	} = {},
 ): ICompositionRoot => {
 	// The vanilla-js fallback is always present (S — the
@@ -449,6 +492,9 @@ export const buildDefaultComposition = (
 		validators,
 		renderers,
 		policyResolver,
+		...(overrides.dogmaPolicyProvider !== undefined
+			? { dogmaPolicyProvider: overrides.dogmaPolicyProvider }
+			: {}),
 	});
 
 	// The public factory overrides the registry/detector/dogmas

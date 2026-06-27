@@ -5,8 +5,10 @@ import type {
 } from '../contracts';
 import { DogmaRendererRegistry, stringDogmaRenderer } from '../dogmas/renderer';
 
+import type { IDogmaPolicyProvider } from '../../tools/dogma-policy.provider';
 import type { IPolicyResolver } from '../../tools/policy-resolver';
 import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from '../../tools/policy-resolver';
+import { StringDogmaPolicyProvider } from '../../tools/dogma-policy.provider';
 
 import { DogmaRegistry } from './dogma-registry';
 import { PresetDetector } from './detector';
@@ -39,6 +41,8 @@ export interface ICompositionRoot {
 	readonly renderers: DogmaRendererRegistry;
 	/** S — the priority order (`project > dogma > default`) lives in this single field. */
 	readonly policyResolver: IPolicyResolver;
+	/** D — the agent-facing rendering of a dogma policy decision (S11 seam). */
+	readonly dogmaPolicyProvider: IDogmaPolicyProvider;
 }
 
 /**
@@ -55,6 +59,7 @@ export const composeRoot = (options: {
 	readonly validators: IValidatorRegistry;
 	readonly renderers: DogmaRendererRegistry;
 	readonly policyResolver: IPolicyResolver;
+	readonly dogmaPolicyProvider?: IDogmaPolicyProvider;
 }): ICompositionRoot => {
 	const registry = new PresetRegistry({
 		presets: options.presets,
@@ -72,6 +77,8 @@ export const composeRoot = (options: {
 		validators: options.validators,
 		renderers: options.renderers,
 		policyResolver: options.policyResolver,
+		dogmaPolicyProvider:
+			options.dogmaPolicyProvider ?? StringDogmaPolicyProvider,
 	};
 };
 

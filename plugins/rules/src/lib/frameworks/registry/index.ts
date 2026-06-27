@@ -12,6 +12,10 @@ export { PresetRegistry, type IAreaRulesLite } from './preset-registry';
 export { DogmaRegistry } from './dogma-registry';
 export { PresetDetector } from './detector';
 export {
+	buildDefaultRegistry,
+	type ICompositionRoot as IDefaultRegistryCompositionRoot,
+} from './default-registry';
+export {
 	buildDefaultComposition,
 	type ICompositionRoot,
 } from './factory';

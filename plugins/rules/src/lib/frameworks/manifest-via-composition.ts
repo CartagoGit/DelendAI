@@ -72,26 +72,50 @@ const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
  * **DIP — Dependency Inversion**: the discovery is driven by
  * the composition root's `detector`, not by a hardcoded
  * "is this a JS project?" heuristic. A directory is an
- * area if (a) it is the root (`''`), or (b) it is an
- * immediate child of one of the canonical groups AND at
- * least one adapter in the composition root claims it.
+ * area if (a) it is the root (`''`), (b) it is an immediate
+ * child of one of the canonical groups, or (c) it is an
+ * immediate child of the workspace root, AND at least one
+ * adapter in the composition root claims it.
  *
  * This is what makes the manifest writer *language-agnostic*
  * (S): adding a new language = adding one adapter; the
  * manifest writer picks up the new area automatically
  * (the OCP hinge at the manifest layer).
+ *
+ * The workspace-root walk is what makes the polyglot fixture
+ * (`py-thing/`, `go-thing/`, `web/`, …) discoverable. The
+ * legacy `manifest.ts` only walked `apps/libs/packages/projects`,
+ * which leaves polyglot monorepos with a flat layout unable
+ * to be detected. S1 generalises this: a directory is an
+ * area wherever an adapter claims it.
  */
 const discoverAreas = async (
 	reader: IFileReader,
 	root: Pick<import('./registry').ICompositionRoot, 'detector'>,
 ): Promise<readonly string[]> => {
 	const areas: string[] = [''];
+	const candidateDirs: string[] = [];
+	// Walk the workspace root (flat layouts: `py-thing/`,
+	// `go-thing/`, `web/`, … alongside a root package.json).
+	for (const child of await reader.listDir('')) {
+		// Skip the canonical group dirs; we handle those below
+		// (and including them here would duplicate the entry
+		// `apps/foo` AND `foo`).
+		if ((GROUP_DIRS as readonly string[]).includes(child)) continue;
+		candidateDirs.push(child);
+	}
+	// Walk the canonical monorepo group dirs.
 	for (const group of GROUP_DIRS) {
 		for (const child of await reader.listDir(group)) {
-			const dir = `${group}/${child}`;
-			if ((await root.detector.detect(reader, dir)) !== undefined) {
-				areas.push(dir);
-			}
+			candidateDirs.push(`${group}/${child}`);
+		}
+	}
+	// De-duplicate (defence in depth: a workspace root might
+	// happen to be named `apps` in a flat fixture).
+	const unique = [...new Set(candidateDirs)];
+	for (const dir of unique) {
+		if ((await root.detector.detect(reader, dir)) !== undefined) {
+			areas.push(dir);
 		}
 	}
 	return areas;

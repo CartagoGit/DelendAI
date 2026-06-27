@@ -262,6 +262,19 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					agentNames: agentNamesOptions,
 					lockPathAbs: abs(layout.lockFile),
+					// x00051 S2: when the host gate is on, forward the
+					// worktree option so `delegate` creates a per-agent
+					// branch before claiming the lock. The gate is the
+					// same `enabled` flag the `agent_worktree` tool
+					// reads — single source of truth.
+					...(ctx.agentWorktreeEnabled === true
+						? {
+								worktree: {
+									enabled: true,
+									workspaceRoot: ctx.workspace.root,
+								},
+							}
+						: {}),
 				}),
 				buildProposalTransitionRegistration({
 					namespacePrefix: ctx.namespacePrefix,
