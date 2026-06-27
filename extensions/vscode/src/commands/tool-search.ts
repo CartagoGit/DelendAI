@@ -17,15 +17,107 @@
  * pre-filtered by the server instead of by an imaginary `onDidChangeValue`.
  */
 import {
+	AgentCatalogService,
 	KnowledgeService,
 	OverviewService,
 	SearchService,
 } from '@mcp-vertex/client';
 import type { IQuickPickItem } from '@mcp-vertex/ui-extension/public';
 
+import { openProposalPreview, openSkillPreview } from './open-agent-catalog';
 import type { ICommandDeps } from './types';
 
 export const TOOL_SEARCH_COMMAND = 'mcp-vertex.toolSearch';
+
+const toolItemsOf = (
+	tools: ReadonlyArray<{
+		readonly name: string;
+		readonly plugin: string;
+		readonly summary?: string;
+	}>,
+): IQuickPickItem[] =>
+	tools.map((tool) => ({
+		id: `tool:${tool.name}`,
+		label: tool.name,
+		description: `Tools · ${tool.plugin}`,
+		...(tool.summary === undefined ? {} : { detail: tool.summary }),
+	}));
+
+const skillItemsOf = (
+	skills: ReadonlyArray<{
+		readonly id: string;
+		readonly summary: string;
+		readonly tags: readonly string[];
+	}>,
+): IQuickPickItem[] =>
+	skills.map((skill) => ({
+		id: `skill:${skill.id}`,
+		label: skill.id,
+		description: `Skills · ${skill.tags.join(', ')}`,
+		detail: skill.summary,
+	}));
+
+const proposalItemsOf = (
+	proposals: ReadonlyArray<{
+		readonly id: string;
+		readonly title: string;
+		readonly status: string;
+	}>,
+): IQuickPickItem[] =>
+	proposals.map((proposal) => ({
+		id: `proposal:${proposal.id}`,
+		label: proposal.id,
+		description: `Proposals · ${proposal.status}`,
+		detail: proposal.title,
+	}));
+
+const fallbackItems = async (
+	deps: ICommandDeps,
+	query: string,
+): Promise<IQuickPickItem[]> => {
+	const overview = new OverviewService(deps.client);
+	const knowledge = new KnowledgeService(deps.client);
+	const search = new SearchService(deps.client);
+
+	const ov = await overview.getOverview({ compact: true });
+	const knowledgeList = await knowledge.listKnowledge().catch(() => []);
+	const allTools = (ov.tools ?? []).map((tool) =>
+		typeof tool === 'string'
+			? { name: tool, tags: [] as readonly string[] }
+			: {
+					name: tool.name,
+					tags: tool.tags ?? [],
+					...(tool.summary === undefined
+						? {}
+						: { summary: tool.summary }),
+				},
+	);
+
+	const toolItems: IQuickPickItem[] =
+		query.length === 0
+			? allTools.map((tool) => ({
+					id: `tool:${tool.name}`,
+					label: tool.name,
+					description: `tool · ${tool.name.split('_', 1)[0] ?? ''}`,
+				}))
+			: search.searchTools(query, allTools, 200).map((hit) => ({
+					id: `tool:${hit.name}`,
+					label: hit.name,
+					description: `tool · ${hit.plugin}`,
+					...(hit.source === 'description'
+						? { detail: 'matched in description' }
+						: {}),
+				}));
+
+	const knowledgeItems: IQuickPickItem[] = knowledgeList.map((entry) => ({
+		id: `knowledge:${entry.id}`,
+		label: entry.title,
+		description: 'knowledge',
+		detail: entry.id,
+	}));
+
+	return [...toolItems, ...knowledgeItems];
+};
 
 /** Extract an optional initial query from the command's args payload. */
 const initialQueryOf = (raw: unknown): string => {
@@ -41,51 +133,23 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(
 		TOOL_SEARCH_COMMAND,
 		async (rawArgs?: unknown) => {
-			const overview = new OverviewService(deps.client);
-			const knowledge = new KnowledgeService(deps.client);
-			const search = new SearchService(deps.client);
-
-			const ov = await overview.getOverview({ compact: true });
-			const knowledgeList = await knowledge
-				.listKnowledge()
-				.catch(() => []);
-
-			const allTools = (ov.tools ?? []).map((t) =>
-				typeof t === 'string'
-					? { name: t, tags: [] as readonly string[] }
-					: { name: t.name, tags: t.tags ?? [] },
-			);
 			const query = initialQueryOf(rawArgs);
+			const catalog = new AgentCatalogService(deps.client);
+			let items: IQuickPickItem[] = [];
+			try {
+				const results = await catalog.search(query);
+				items = [
+					...toolItemsOf(results.tools),
+					...skillItemsOf(results.skills),
+					...proposalItemsOf(results.proposals),
+				];
+			} catch {
+				items = [];
+			}
 
-			// When the caller provided a query we pre-filter with the
-			// server-side `search.searchTools` (the canonical MCP search
-			// tool); when they did not, we show the full list so the user
-			// can still pick from the overview without typing.
-			const toolItems: IQuickPickItem[] =
-				query.length === 0
-					? allTools.map((t) => ({
-							id: `tool:${t.name}`,
-							label: t.name,
-							description: `tool · ${t.name.split('_', 1)[0] ?? ''}`,
-						}))
-					: search.searchTools(query, allTools, 200).map((h) => ({
-							id: `tool:${h.name}`,
-							label: h.name,
-							description: `tool · ${h.plugin}`,
-							detail:
-								h.source === 'description'
-									? 'matched in description'
-									: undefined,
-						}));
-
-			const knowledgeItems: IQuickPickItem[] = knowledgeList.map((k) => ({
-				id: `knowledge:${k.id}`,
-				label: k.title,
-				description: 'knowledge',
-				detail: k.id,
-			}));
-
-			const items: IQuickPickItem[] = [...toolItems, ...knowledgeItems];
+			if (items.length === 0) {
+				items = await fallbackItems(deps, query);
+			}
 
 			if (items.length === 0) {
 				await deps.vscode.window.showInformationMessage?.(
@@ -107,7 +171,23 @@ export const registerToolSearchCommand = (deps: ICommandDeps) =>
 				);
 				return;
 			}
+			if (picked.startsWith('skill:')) {
+				await openSkillPreview(
+					deps,
+					catalog,
+					picked.slice('skill:'.length),
+				);
+				return;
+			}
+			if (picked.startsWith('proposal:')) {
+				await openProposalPreview(
+					deps,
+					picked.slice('proposal:'.length),
+				);
+				return;
+			}
 			if (picked.startsWith('knowledge:')) {
+				const knowledge = new KnowledgeService(deps.client);
 				const id = picked.slice('knowledge:'.length);
 				const entry = await knowledge.getKnowledge(id);
 				await deps.vscode.window.showInformationMessage?.(

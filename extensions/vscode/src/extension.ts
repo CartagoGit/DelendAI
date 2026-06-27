@@ -1,4 +1,5 @@
 import {
+	AgentCatalogService,
 	McpStdioClient,
 	MemoryService,
 	NotificationsService,
@@ -27,6 +28,7 @@ import {
 	registerOpenDocsCommand,
 } from './commands/open-docs';
 import { registerOpenDocsApiCommand } from './commands/open-docs-api';
+import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import {
 	OPEN_KNOWLEDGE_COMMAND,
 	registerOpenKnowledgeCommand,
@@ -228,8 +230,9 @@ export const activate = async (
 	};
 
 	const overview = new OverviewService(client);
+	const catalog = new AgentCatalogService(client);
 	const notifications = new NotificationsService(client);
-	const toolTree = new ToolTreeDataProvider(overview);
+	const toolTree = new ToolTreeDataProvider(overview, catalog);
 	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
 	// Fix #4: wrap `createStatusBarItem` in try/catch — a strict host can
 	// throw when no workbench is ready, and we do not want a failed
@@ -295,6 +298,7 @@ export const activate = async (
 	track(registerOpenDocsCommand({ vscode }));
 	// f00053 S6: surface the canonical docs/how-to-use/API from the IDE.
 	track(registerOpenDocsApiCommand({ vscode }));
+	track(registerOpenAgentCatalogCommand({ vscode, client }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client }));
 	track(registerRestartServerCommand(vscode));

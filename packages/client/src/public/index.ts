@@ -27,6 +27,7 @@ export { NotificationsService } from '../lib/services/notifications.service';
 export { LogsService } from '../lib/services/logs.service';
 export { NotificationLogsBridge } from '../lib/services/notification-logs-bridge';
 export { SearchService } from '../lib/services/search.service';
+export { AgentCatalogService } from '../lib/services/agent-catalog-service';
 export { MemoryService } from '../lib/services/memory.service';
 export {
 	DEFAULT_EXTENSION_SETTINGS,
@@ -56,6 +57,10 @@ export type {
 	ISearchResult,
 	IToolHit,
 } from '../lib/contracts/interfaces/search.interface';
+export type {
+	IAgentCatalogSearchResult,
+	IAgentCatalogServiceOptions,
+} from '../lib/services/agent-catalog-service';
 export type {
 	IMemoryEntry,
 	IMemoryForgetResult,
