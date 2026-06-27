@@ -134,15 +134,15 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 ### S2 — Ship `mv-dropdown__*` styles in `@mcp-vertex/shared/styles` for non-web hosts
 
 - **Files**: apps/shared/src/styles/_dropdown.scss
-- **Files**: apps/shared/src/styles/styles.scss
+- **Files**: apps/shared/src/styles/_index.scss
 - **Files**: apps/shared/src/styles/_dropdown.spec.ts (visual snapshot via vitest + playwright is overkill; assert CSS text + class coverage)
 - **DependsOn**: [S1]
 - **Gate**: type
 - acceptance:
   - "`@mcp-vertex/shared/styles` `@forward`s a new `_dropdown.scss` partial that ships the `.mv-dropdown`, `.mv-dropdown__trigger`, `.mv-dropdown__menu`, `.mv-dropdown__menu--left/right`, `.mv-dropdown__item`, `.mv-dropdown__label`, `.mv-dropdown__icon` styles + the `[aria-expanded='true']` open-state variant + the `prefers-reduced-motion` opt-out."
   - "The web keeps using its own `_nav.scss` (the dropdown lives inside `.nav__more` and must match the nav chrome) but the styles are available to any future host that wants the default look."
-  - "`apps/shared/src/styles/_dropdown.spec.ts` asserts the partial is `@forward`ed by `styles.scss` and contains at minimum the seven class selectors above + the open-state rule."
-- **Status**: pending
+  - "`apps/shared/src/styles/_dropdown.spec.ts` asserts the partial is `@forward`ed by `_index.scss` (the canonical entry per `apps/web/astro.config.mjs#SHARED_STYLES` and `apps/shared/package.json#exports["./styles"]`) and contains at minimum the seven class selectors above + the open-state rule."
+- **Status**: done
 
 ### S3 — Page audit: classify every existing page as keep / shelve / rewrite / merge
 
@@ -167,7 +167,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "`reader.ts` enumerates `apps/web/src/data/pages/<slug>/` directories and returns one `PageSpec` per slug, validating that (a) at least the English translation exists, (b) frontmatter is parseable, (c) every language the page advertises actually has a file, (d) a `check-i18n`-style parity check on the frontmatter keys."
   - "A spec asserts the reader rejects pages with missing-en, rejects unknown frontmatter keys (Zod schema), and accepts the install pilot (S6) end-to-end."
   - "`reader.ts` is pure (no I/O at the top level — files are read through an injected `readFile` so the spec can run with an in-memory fs)."
-- **Status**: pending
+- **Status**: done
 
 ### S5 — Ship `MarkdownPage.astro` renderer + i18n pipeline for PageSpec pages
 
@@ -176,6 +176,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 - **Files**: apps/web/src/pages/[page].astro (the dynamic route that serves `PageSpec` pages)
 - **Files**: apps/web/src/pages/[lang]/[page].astro
 - **Files**: apps/web/scripts/gen-pages.ts
+- **Files**: apps/web/scripts/gen-pages.spec.ts (idempotency + missing-en assertions)
 - **DependsOn**: [S4]
 - **Gate**: type
 - acceptance:
@@ -183,7 +184,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "`[page].astro` is a `getStaticPaths()` route that emits one URL per `PageSpec` slug, one per language; missing-language fallback to English is documented in the route and asserted in the spec."
   - "`scripts/gen-pages.ts` regenerates `apps/web/src/data/manifests/pages.json` from the live `data/pages/**` tree and runs as part of `bun run build` (added to the `gen:manifests` chain — see `apps/web/package.json`)."
   - "A spec asserts `gen-pages.ts` is idempotent, that running it twice produces a byte-identical `pages.json`, and that the script fails (non-zero exit) when a page has no English translation."
-- **Status**: pending
+- **Status**: done
 
 ### S6 — Pilot: convert `/install` to PageSpec + regenerate
 
