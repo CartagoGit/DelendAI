@@ -129,7 +129,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "Existing callers (extensions/vscode, anything that didn't pass options) see byte-identical HTML to before — the defaults preserve the current `mv-dropdown__*` shape."
   - "`SiteNav.astro` passes `idPrefix: 'nav-more'`, `classPrefix: 'nav__more'` (so the existing `.nav__more-*` SCSS keeps applying) and the existing `#nav-more-trigger` / `#nav-more-panel` JS keeps binding without edits."
   - "A spec asserts the default behavior unchanged and that the prefixed form produces the IDs the web's JS expects."
-- **Status**: pending
+- **Status**: done
 
 ### S2 — Ship `mv-dropdown__*` styles in `@mcp-vertex/shared/styles` for non-web hosts
 
