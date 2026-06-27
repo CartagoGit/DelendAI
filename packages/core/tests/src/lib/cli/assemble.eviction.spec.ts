@@ -11,13 +11,7 @@
  * The plugin records the context it received and the rules it
  * registered so the test can assert the wiring end-to-end.
  */
-import {
-	mkdtemp,
-	mkdir,
-	rm,
-	stat,
-	writeFile,
-} from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -35,7 +29,8 @@ interface IPluginSink {
 	registry?: ICacheEvictionRegistry | undefined;
 }
 
-const capturingImport = (sink: IPluginSink) =>
+const capturingImport =
+	(sink: IPluginSink) =>
 	async (_specifier: string): Promise<{ default: unknown }> => ({
 		default: {
 			name: 'capture',
@@ -59,10 +54,15 @@ const capturingImport = (sink: IPluginSink) =>
 	});
 
 const baseArgs = (workspace: string, extra: readonly string[] = []) =>
-	parseCliArgs(['--workspace', workspace, '--plugins=capture', ...extra], workspace);
+	parseCliArgs(
+		['--workspace', workspace, '--plugins=capture', ...extra],
+		workspace,
+	);
 
-const fileReader = (file: string | undefined) =>
-	async (_path: string): Promise<string | undefined> => file;
+const fileReader =
+	(file: string | undefined) =>
+	async (_path: string): Promise<string | undefined> =>
+		file;
 
 describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 	let workspace: string;
@@ -82,10 +82,7 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		// Plant a file the rule will flag. The rule's path is
 		// `capture/*` so the file lives at `<cacheDir>/capture/`.
 		await mkdir(join(cacheDir, 'capture'), { recursive: true });
-		await writeFile(
-			join(cacheDir, 'capture', '2026-06-01.jsonl'),
-			'old\n',
-		);
+		await writeFile(join(cacheDir, 'capture', '2026-06-01.jsonl'), 'old\n');
 
 		const sink: IPluginSink = {};
 		const assembled = await assembleCliConfig(baseArgs(workspace), {

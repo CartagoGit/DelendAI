@@ -83,8 +83,8 @@ export const createCacheEvictionRegistry = (
 		// Containment: the rule's path is resolved under cacheDir, so
 		// we verify the result stays inside the workspace. `dir/*` is
 		// normalised to `dir` for the check.
-		const checkPath = SINGLE_STAR_RE.exec(rule.path)?.groups?.base ??
-			rule.path;
+		const checkPath =
+			SINGLE_STAR_RE.exec(rule.path)?.groups?.base ?? rule.path;
 		const tentativeAbs = join(deps.cacheDirAbs, checkPath);
 		const contained = resolveWorkspaceContained(
 			deps.workspaceRootAbs,
@@ -150,8 +150,11 @@ export const createCacheEvictionRegistry = (
 
 	const toRel = (abs: string): string => {
 		if (!abs.startsWith(deps.cacheDirAbs)) return abs;
-		const rel = abs.slice(deps.cacheDirAbs.length)
-			.split(sep).join('/').replace(/^\//, '');
+		const rel = abs
+			.slice(deps.cacheDirAbs.length)
+			.split(sep)
+			.join('/')
+			.replace(/^\//, '');
 		return rel === '' ? '.' : rel;
 	};
 
@@ -170,9 +173,10 @@ export const createCacheEvictionRegistry = (
 	): Promise<readonly ICacheEvictionRemoved[]> => {
 		const fileName = target.abs.split(sep).pop() ?? target.abs;
 		const nameMatch = DATE_NAME_RE.exec(fileName);
-		const timestamp = nameMatch?.[1] !== undefined
-			? new Date(nameMatch[1]).getTime()
-			: (await stat(target.abs)).mtimeMs;
+		const timestamp =
+			nameMatch?.[1] !== undefined
+				? new Date(nameMatch[1]).getTime()
+				: (await stat(target.abs)).mtimeMs;
 		const threshold = now.getTime() - when.days * 24 * 60 * 60 * 1000;
 		if (timestamp >= threshold) return [];
 		const bytes = await sizeOf(target.abs);
@@ -226,7 +230,11 @@ export const createCacheEvictionRegistry = (
 			if (survivors.has(entry.abs)) continue;
 			const bytes = await sizeOf(entry.abs);
 			if (!dryRun) await removeAbs(entry.abs);
-			out.push({ id: rule.id, path: `${target.rel}/${entry.name}`, bytes });
+			out.push({
+				id: rule.id,
+				path: `${target.rel}/${entry.name}`,
+				bytes,
+			});
 		}
 		return out;
 	};
@@ -240,7 +248,11 @@ export const createCacheEvictionRegistry = (
 		const removedAbs = await when.run(target.abs, dryRun);
 		const out: ICacheEvictionRemoved[] = [];
 		for (const abs of removedAbs) {
-			out.push({ id: rule.id, path: toRel(abs), bytes: await sizeOf(abs) });
+			out.push({
+				id: rule.id,
+				path: toRel(abs),
+				bytes: await sizeOf(abs),
+			});
 		}
 		return out;
 	};
@@ -306,7 +318,13 @@ export const createCacheEvictionRegistry = (
 
 		for (const target of targets) {
 			try {
-				const result = await runStrategy(rule, target, now, dryRun, rule.when);
+				const result = await runStrategy(
+					rule,
+					target,
+					now,
+					dryRun,
+					rule.when,
+				);
 				removed.push(...result);
 			} catch (error) {
 				errors.push({
@@ -335,9 +353,10 @@ export const createCacheEvictionRegistry = (
 			const dryRun = options.dryRun ?? true;
 			const now = options.now ?? new Date();
 			const allRules = [...rules.values()];
-			const filtered = options.onlyOwner !== undefined
-				? allRules.filter((r) => r.owner === options.onlyOwner)
-				: allRules;
+			const filtered =
+				options.onlyOwner !== undefined
+					? allRules.filter((r) => r.owner === options.onlyOwner)
+					: allRules;
 
 			const settled = await Promise.all(
 				filtered.map((rule) => applyRule(rule, dryRun, now)),
