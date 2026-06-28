@@ -1,27 +1,33 @@
 /**
- * `agent-loop-detector` — pure module for l103 s1.
+ * `agent-loop-detector` — pure module for l103 s1 + x00074 s1/s2/s3.
  *
  * Given a sliding window of recent tool calls per agent, returns
  * a verdict describing whether the agent is stuck in an exact-repeat
  * loop. Pure function: same input ⇒ same output, no I/O.
  *
- * Why pure first (s1), then I/O later (s2 git diff, s3 handoff packet):
- * - SOLID: one responsibility per slice. This module decides "is
- *   the agent stuck?"; downstream modules decide what to do about
- *   it (write a handoff packet, emit a notification, etc.).
- * - Testability: 6 specs run in milliseconds with no mocks. The
- *   integration with `auto_work` / git / handoff packets gets its
- *   own spec layer when it lands in s2/s3/s4.
- * - Cheap retry semantics: an upstream change (e.g. a different
- *   hash function, or adding Levenshtein in s2-bis) is a single
- *   function signature change with no caller-side blast radius.
+ * x00074 added four guards to suppress false positives on legitimate
+ * re-intents while keeping the detector strict for real stuck loops:
  *
- * The detector only flags `exact-repeat`. Near-repeat (Levenshtein
- * similarity) is s2-bis per l103 §5.1.
+ *   S1 (outcome-aware sliding window): a call with `outcome: 'ok'`
+ *       does not count toward the repeat counter.
+ *   S2 (timestamp-cooldown): repeats must be consecutive within
+ *       `cooldownMs` (default 30s). Spread-out re-intents are
+ *       legitimate backoff.
+ *   S3 (progress-aware filter): `agent_lock` / `proposal_transition`
+ *       / `auto_work` calls without a `progressHash` change between
+ *       consecutive calls do not count.
+ *   S4 (regression specs): 8-claim false positive is suppressed.
  *
- * @see docs/mcp-vertex/proposals/l103-loop-detection-and-handoff.md §5 s1.
+ * @see docs/mcp-vertex/proposals/x00074-loop-detector-distinguish-backoff-from-stuck.md
  */
 import { createHash } from 'node:crypto';
+
+/** Per-call outcome. Optional for backwards compatibility. */
+export type IToolCallOutcome =
+	| 'ok'
+	| 'retryable-error'
+	| 'permanent-error'
+	| 'unknown';
 
 /** One tool call observed by the detector. Caller fills these in. */
 export interface IToolCall {
@@ -48,16 +54,11 @@ export interface IToolCall {
 }
 
 /** x00074 S1: coarse classification of a tool call's result.
- *  - `ok`               — the call succeeded (returned useful data or no error).
- *  - `retryable-error`  — transient failure (rate-limit, lock conflict, network blip).
- *  - `permanent-error`  — permanent failure (validation error, unknown tool, bad args).
- *  - `unknown`          — caller did not provide an outcome; detector falls back to legacy.
+ *  Reuses `IToolCallOutcome` (declared above) — the two names were
+ *  duplicates of the same union, kept as aliases so older imports
+ *  (`TCallOutcome`) keep compiling while new code uses `IToolCallOutcome`.
  */
-export type TCallOutcome =
-	| 'ok'
-	| 'retryable-error'
-	| 'permanent-error'
-	| 'unknown';
+export type TCallOutcome = IToolCallOutcome;
 
 /** What the detector knows about the loop. Future signals (s2+) add
  *  more `pattern` variants without breaking this shape. */

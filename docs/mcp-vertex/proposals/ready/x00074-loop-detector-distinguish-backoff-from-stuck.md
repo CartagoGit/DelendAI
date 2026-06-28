@@ -179,15 +179,16 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 ## slices
 
 ### S1 — outcome-aware sliding window
-- **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts`
-- **Status**: done (code on disk; commit pending — formatter reverted the slice-body flip in turns 5/7, but the code itself survived this time)
-- **Gate**: `bun run validate` (the next agent with shell should run it)
+- **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts`, `plugins/proposals/tests/src/lib/agents/loop-detector-service.spec.ts`
+- **Status**: code on disk; commit + `proposal_transition → done` pending — shell wedged in this session, can't run `bun run validate` or `git commit` from MCP. The formatter has NOT reverted these changes across turns 9 and 11, so the working tree is the right one to commit.
+- **Gate**: `bun run validate` (next agent with shell)
 - **Acceptance**:
-  - `IToolCall.outcome` is now an optional field, populated by `loop-detector-service#onToolCall` (when the caller does not set it, defaults to `'unknown'` and behaviour is identical to pre-S1). [done — `agent-loop-detector.ts:33` defines `TCallOutcome` and `agent-loop-detector.ts:30-44` adds the optional `outcome` field to `IToolCall`]
-  - `detectAgentLoop` filters out groups whose every call has `outcome: 'ok'` (suppression controlled by the new `suppressSuccessfulReintents` option, default `true`). [done — `agent-loop-detector.ts:121-145`]
-  - Spec: 8 successful `agent_lock claim` calls do not trigger `isStuck` (regression fixture). [done — `agent-loop-detector.spec.ts:180-260` includes 4 new tests including the 2026-06-27 regression fixture]
-  - No change to the public `IMcpVertexHostConfig.isAgentStuck` signature. [done — no public surface change]
-  - **Caveat**: `loop-detector-service.ts` was NOT modified to populate `outcome` in this turn. The pure detector accepts the field, but the service still creates `IExtendedToolCall` without it. That means in production the `'unknown'` default kicks in for every call and the new behaviour is dormant. A follow-up turn (or this commit's next slice) needs to wire `outcome` from `onToolCall`. **The detector itself is correct; the wiring is the next step.**
+  - `IToolCall.outcome` is now an optional field, populated by `loop-detector-service#onToolCall` via `deriveOutcomeFromResult(_result, _error)`. When the caller does not set it, the pure detector defaults to `'unknown'` and the legacy "count every repeat" behaviour is preserved. [done — `agent-loop-detector.ts:30-44` defines the optional field; `loop-detector-service.ts:210` derives it on every `onToolCall`]
+  - `detectAgentLoop` filters out groups whose every call has `outcome: 'ok'` (suppression controlled by the new `suppressSuccessfulReintents` option, default `true`). [done — `agent-loop-detector.ts:165-185`]
+  - Spec: 8 successful `agent_lock claim` calls do not trigger `isStuck` (regression fixture). [done — `agent-loop-detector.spec.ts` has 4 new tests including the 2026-06-27 regression fixture; `loop-detector-service.spec.ts` has 2 new end-to-end tests]
+  - No change to the public `IMcpVertexHostConfig.isAgentStuck` signature. [done — sync path only reads from `stuckAgents.get(agent)`, no detection logic]
+  - **Wiring complete**: `loop-detector-service.ts:210` calls `deriveOutcomeFromResult(_result, _error)`, the result populates `callRecord.outcome` at line 258, and `detectorCalls` mapping propagates `outcome: c.outcome` at line 274. The pure detector's outcome-aware filter now runs in production, not just in unit tests. [done]
+  - **`deriveOutcomeFromResult` exported** at `loop-detector-service.ts:575` with the `RETRYABLE_ERROR_CODES` constant (ENOENT, ETIMEDOUT, ECONNRESET, EAGAIN, EBUSY, ELOCKFAIL). Pure function — easy to test in isolation.
 
 ### S2 — timestamp-cooldown
 - **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/src/lib/agents/loop-detector-config.ts`
