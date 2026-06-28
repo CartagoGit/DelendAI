@@ -66,7 +66,9 @@ if (problems.length > 0) {
 	console.error('\u2717 vscode i18n incomplete');
 	for (const problem of problems) console.error(`  ${problem}`);
 	if (strictMode) process.exit(1);
-	console.warn(`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`);
+	console.warn(
+		`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`,
+	);
 }
 
 console.log(
