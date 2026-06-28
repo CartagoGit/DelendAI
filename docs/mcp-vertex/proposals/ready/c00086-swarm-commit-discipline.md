@@ -1,15 +1,35 @@
 ---
-id: f00086
-kind: chore
-track: [swarm, coordination, governance]
+id: c00086
 status: ready
-priority: high
-created: 2026-06-28
-agent: copilot-minimax-m3
-title: swarm commit discipline (worktree isolation + conventional guards)
+type: proposal
+track: swarm+coordination+governance
+date: 2026-06-28
+kind: chore
+title: swarm commit discipline - worktree-only commits + conventional guards
+shipped-in:
+  - ec6eaedf # S1+S2+S3+S4: 3 lints + lefthook + package.json wire-up
+recan: []
+related:
+  - f00075 # swarm hygiene routine (front-hook in auto_work, S4 enforcement at the orchestrator level)
+  - f00082 # commit author policy (closes the loop on the author side)
+  - f00083 # anti-duplication guard (host-instructions lint; S1 already shipped)
+ownership:
+  - { agent: implementation_runner, task: 'S1: pre-commit guard - commit-branch-discipline lint refuses substantive commits to develop' }
+  - { agent: implementation_runner, task: 'S2: pre-push guard - push-to-develop-discipline lint refuses `git push origin develop` from develop' }
+  - { agent: implementation_runner, task: 'S3: commit-msg guard - commit-msg-conventional lint validates conventional commit format' }
+  - { agent: implementation_runner, task: 'S4: wire into lefthook + package.json - the 3 hooks BLOCK (no `|| true`); commit-msg stays hook-only to avoid breaking `validate` for past offenders' }
+  - { agent: delivery_verifier, task: 'V1: confirm `bun run validate` is green, the 3 new specs pass (81/81), and a develop-direct commit that touches `packages/` is BLOCKED by the pre-commit hook' }
+globalGate: validate
+acceptance:
+  - { command: bun run typecheck,        expect: exit0 }
+  - { command: bun run lint:tools,       expect: exit0 }
+  - { command: bun run lint:proposals,   expect: exit0 }
+  - { command: bun run lint:host-instructions, expect: exit0 }
+  - { command: bun test tools/scripts/lint/, expect: exit0 }
+  - { command: bun run validate,         expect: exit0 }
 ---
 
-# f00086 — swarm commit discipline
+# c00086 — swarm commit discipline
 
 ## Goal
 
@@ -54,7 +74,26 @@ The user explicitly asked for the hooks to **enforce**, not warn:
 
 ## Architecture
 
-### 1. Pre-commit guard — `commit-branch-discipline`
+The discipline is enforced by three pure lint engines wired into
+lefthook as BLOCKING hooks (no `|| true`). All three engines are
+pure functions over their inputs and never throw.
+
+### S0 — Proposal
+
+- **Status**: done
+- **Shipped in**: ec6eaedf (initial landing of this proposal alongside the lints)
+- **Files**: `docs/mcp-vertex/proposals/ready/c00086-swarm-commit-discipline.md`
+- **Gate**: `bun tools/scripts/lint/proposals.script.ts`
+
+This slice is the proposal itself. Closed when the proposal lints
+clean and the slice file lives in `ready/`.
+
+### S1 — Pre-commit guard — `commit-branch-discipline`
+
+- **Status**: done
+- **Shipped in**: ec6eaedf
+- **Files**: `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
+- **Gate**: `bun test tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 
 Lives in
 [`tools/scripts/lint/commit-branch-discipline.script.ts`](../../../tools/scripts/lint/commit-branch-discipline.script.ts).
@@ -92,7 +131,12 @@ The CLI shell reads `git rev-parse --abbrev-ref HEAD` and
 `git diff --staged --name-only --diff-filter=ACMR`; the test
 injects both inputs so the engine stays pure.
 
-### 2. Pre-push guard — `push-to-develop-discipline`
+### S2 — Pre-push guard — `push-to-develop-discipline`
+
+- **Status**: done
+- **Shipped in**: ec6eaedf
+- **Files**: `tools/scripts/lint/push-to-develop-discipline.script.ts`, `tools/scripts/lint/push-to-develop-discipline.script.spec.ts`
+- **Gate**: `bun test tools/scripts/lint/push-to-develop-discipline.script.spec.ts`
 
 Lives in
 [`tools/scripts/lint/push-to-develop-discipline.script.ts`](../../../tools/scripts/lint/push-to-develop-discipline.script.ts).
@@ -116,7 +160,11 @@ The hook parses lefthook's positional args
 (`{1} {2} {3} = remote remote_url refs`) and resolves
 `refs/heads/<local>:<remote>` to the local + remote branch names.
 
-### 3. Commit-msg guard — `commit-msg-conventional`
+### S3 — Commit-msg guard — `commit-msg-conventional`
+
+- **Status**: done
+- **Shipped in**: ec6eaedf
+- **Files**: `tools/scripts/lint/commit-msg-conventional.script.ts`, `tools/scripts/lint/commit-msg-conventional.script.spec.ts`
 
 Lives in
 [`tools/scripts/lint/commit-msg-conventional.script.ts`](../../../tools/scripts/lint/commit-msg-conventional.script.ts).
@@ -140,7 +188,11 @@ The hook reads the message file passed by lefthook as `{1}`. In
 smoke test) it falls back to `git log -1 --pretty=format:%B` so
 the validate chain can sanity-check the most recent commit.
 
-### 4. Wiring — `package.json` + `lefthook.yml`
+### S4 — Wiring — `package.json` + `lefthook.yml`
+
+- **Status**: done
+- **Shipped in**: ec6eaedf
+- **Files**: `package.json`, `lefthook.yml`
 
 - 3 new scripts in `package.json#scripts`:
   `lint:commit-branch`, `lint:push-to-develop`, `lint:commit-msg`.
@@ -174,7 +226,7 @@ genuinely block.
 
 | Slice | Description | Files | Tests |
 |---|---|---|---|
-| S0 | Proposal | `docs/mcp-vertex/proposals/ready/f00086-swarm-commit-discipline.md` | — |
+| S0 | Proposal | `docs/mcp-vertex/proposals/ready/c00086-swarm-commit-discipline.md` | — |
 | S1 | `commit-branch-discipline` lint | `tools/scripts/lint/commit-branch-discipline.script.{ts,spec.ts}` | 18 |
 | S2 | `push-to-develop-discipline` lint | `tools/scripts/lint/push-to-develop-discipline.script.{ts,spec.ts}` | 15 |
 | S3 | `commit-msg-conventional` lint | `tools/scripts/lint/commit-msg-conventional.script.{ts,spec.ts}` | 48 |
@@ -216,7 +268,7 @@ Total: 81 tests across 3 spec files, all green.
 ## Notes
 
 - This slice was authored in a session where the work was wiped
-  three times by a parallel agent before landing. The f00086
+  three times by a parallel agent before landing. The c00086
   commit is the proof that the discipline it implements
   applies to itself: the work lands on a feature branch and
   reaches `develop` only via push from the feature branch.
