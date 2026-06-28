@@ -223,8 +223,8 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 
 ## acceptance
 
-- The detector still fires on a real stuck loop (S4 spec pin). [done]
-- The detector does **not** fire on the 2026-06-27 session shape (S4 spec pin). [done]
+- The detector still fires on a real stuck loop (S4 spec pin).
+- The detector does **not** fire on the 2026-06-27 session shape (S4 spec pin).
 - The detector does **not** fire on legitimate re-intent patterns (S1, S2, S3 specs). [done]
 - The detector catches a swarm-coordination stall earlier via S3 progress-aware filter. [done — `progressHashGate` defaults to `true` in service]
 - `bun run validate` exits 0 at the end of every slice. [PENDING — needs shell]
@@ -238,24 +238,6 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 | `outcome: 'ok'` filter weakens detection of genuine repeat-then-succeed patterns (e.g. agent retries a flaky read) | S1 spec pins both directions: success-only repeats do not fire, tight mixed-outcome loops still fire. |
 | Cooldown window of 30s is wrong for some hosts | Made it configurable per-host via `mcp-vertex.config.json#plugins.proposals.loopDetector.cooldownMs`. Default 30s, host can shrink to 5s or grow to 5min. |
 | `PROGRESS_REQUIRED_TOOLS` list gets stale as new tools land | Follow-up: lint spec that walks the proposals plugin's tool registrations and asserts every `proposals_*` tool that mutates the lock file appears in `PROGRESS_REQUIRED_TOOLS`. |
-
-## acceptance
-
-- The detector still fires on a real stuck loop (S4 spec pin).
-- The detector does **not** fire on the 2026-06-27 session shape (S4 spec pin).
-- The detector does **not** fire on legitimate re-intent patterns (S1, S2 specs).
-- The detector catches a swarm-coordination stall earlier via `noProgressStuck` (S3 spec).
-- `bun run validate` exits 0 at the end of every slice.
-- The handoff packet schema (`mcp-vertex/handoff/1`) is unchanged.
-- No public API breakage: `IMcpVertexHostConfig.isAgentStuck` signature unchanged; core host config consumers unchanged.
-
-## risks and mitigations
-
-| Risk | Mitigation |
-|---|---|
-| `outcome: 'ok'` filter weakens detection of genuine repeat-then-succeed patterns (e.g. agent retries a flaky read) | S4 spec pins both directions: success-only repeats do not fire, tight mixed-outcome loops still fire. |
-| Cooldown window of 30s is wrong for some hosts | Make it configurable per-host via `mcp-vertex.config.json#plugins.proposals.loopDetector.cooldownMs`. Default 30s, host can shrink to 5s or grow to 5min. |
-| `SWARM_COORDINATION_TOOLS` list gets stale as new tools land | Add a lint spec that walks the proposals plugin's tool registrations and asserts every `proposals_*` tool appears in `SWARM_COORDINATION_TOOLS` (or has an explicit `isCoordination: false` marker). |
 | Backwards-compat with the existing handoff packet consumers (the "next agent must read this packet" workflow) | Packet schema unchanged; we only write fewer of them. Existing consumers (none in-repo today, only the `implementation_runner` subagent which already reads them) keep working. |
 
 ## notes
