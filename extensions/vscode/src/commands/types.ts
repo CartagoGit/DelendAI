@@ -77,6 +77,11 @@ export interface ICommandDeps {
 		get<T>(key: string): T | undefined;
 		update(key: string, value: unknown): Thenable<void> | Promise<void>;
 	};
+	/** Plugin names the host actually loaded at activation (f00059 S3).
+	 * The toolbar uses this to drop action cards whose `requires` lists a
+	 * plugin that is NOT in the set, so users only see actions that
+	 * resolve. Omitted → every action is shown (legacy behaviour). */
+	readonly loadedPlugins?: readonly string[];
 }
 
 export const showCommandError = async (

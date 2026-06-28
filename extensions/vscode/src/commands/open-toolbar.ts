@@ -62,15 +62,12 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 			host: 'vscode',
 			lang: dict,
 			version,
-			// loadedPlugins is filled by the host's plugin manifest at
-			// activation time; the toolbar uses defaultQuickActions + the
-			// loaded-plugin filter to drop actions whose `requires` is
-			// unmet. For now we pass the empty list (every action shown)
-			// because plugin-load-state wiring is owned by the host's
-			// bootstrap and the toolbar gracefully shows actions that
-			// 404 (their command isn't registered) — the runtime
-			// surfaces a toast.
-			loadedPlugins: [],
+			// f00059 S3: pull the live loaded-plugin set from deps so the
+			// toolbar drops action cards whose `requires` is unmet. When
+			// the host has not populated the bag (legacy / older build)
+			// the toolbar falls back to "show everything" — the runtime
+			// surfaces a toast on the missing command.
+			loadedPlugins: deps.loadedPlugins ?? [],
 		});
 		const panel = deps.vscode.window.createWebviewPanel(
 			TOOLBAR_VIEW_TYPE,
