@@ -88,19 +88,46 @@ describe('formatRelativeTime', async () => {
 	it('returns the original ISO when invalid', async () => {
 		expect(formatRelativeTime('not-a-date')).toBe('not-a-date');
 	});
-	it('renders seconds/minutes/hours/days', async () => {
+	it('renders seconds/minutes/hours/days in the requested locale', async () => {
 		const now = Date.now();
-		expect(formatRelativeTime(new Date(now - 5_000).toISOString())).toMatch(
-			/s ago/,
-		);
+		// en-US: "5 seconds ago", "5 minutes ago", "5 hours ago", "5 days ago"
 		expect(
-			formatRelativeTime(new Date(now - 5 * 60_000).toISOString()),
-		).toMatch(/m ago/);
+			formatRelativeTime(new Date(now - 5_000).toISOString(), 'en'),
+		).toMatch(/5 seconds? ago/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 3_600_000).toISOString()),
-		).toMatch(/h ago/);
+			formatRelativeTime(new Date(now - 5 * 60_000).toISOString(), 'en'),
+		).toMatch(/5 minutes? ago/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 86_400_000).toISOString()),
-		).toMatch(/d ago/);
+			formatRelativeTime(new Date(now - 5 * 3_600_000).toISOString(), 'en'),
+		).toMatch(/5 hours? ago/);
+		expect(
+			formatRelativeTime(new Date(now - 5 * 86_400_000).toISOString(), 'en'),
+		).toMatch(/5 days? ago/);
+	});
+	it('renders localized relative time for es', async () => {
+		const now = Date.now();
+		// es: "hace 5 segundos" / "hace 5 minutos" / "hace 5 horas" / "hace 5 días"
+		expect(
+			formatRelativeTime(new Date(now - 5_000).toISOString(), 'es'),
+		).toMatch(/hace 5 segundos/);
+		expect(
+			formatRelativeTime(new Date(now - 5 * 60_000).toISOString(), 'es'),
+		).toMatch(/hace 5 minutos/);
+		expect(
+			formatRelativeTime(new Date(now - 5 * 3_600_000).toISOString(), 'es'),
+		).toMatch(/hace 5 horas/);
+		expect(
+			formatRelativeTime(new Date(now - 5 * 86_400_000).toISOString(), 'es'),
+		).toMatch(/hace 5 días/);
+	});
+	it('uses "yesterday" / "ayer" for ±1 day with numeric: auto', async () => {
+		const now = Date.now();
+		// 1 day ago → "yesterday" (en) / "ayer" (es)
+		expect(
+			formatRelativeTime(new Date(now - 86_400_000).toISOString(), 'en'),
+		).toBe('yesterday');
+		expect(
+			formatRelativeTime(new Date(now - 86_400_000).toISOString(), 'es'),
+		).toBe('ayer');
 	});
 });

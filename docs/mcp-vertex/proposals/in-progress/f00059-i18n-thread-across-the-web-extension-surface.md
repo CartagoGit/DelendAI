@@ -169,6 +169,12 @@ the developer hardcoded at table-build time.
 
 ### S5 — `Intl.RelativeTimeFormat` (closes H17)
 
+- **Status**: done
+- **Files**: [`packages/ui-extension/src/dashboard/format.ts`](packages/ui-extension/src/dashboard/format.ts ), [`packages/ui-extension/tests/dashboard/format.spec.ts`](packages/ui-extension/tests/dashboard/format.spec.ts )
+- **Command**: `bunx vitest run packages/ui-extension/tests/dashboard/format.spec.ts`
+- **Expect**: exit0
+- **Commit**: `3e07855b feat(ui-extension): locale-aware formatRelativeTime via Intl.RelativeTimeFormat (f00059 S5)`
+
 **File:** [`packages/ui-extension/src/utils/format-relative-time.ts`](packages/ui-extension/src/utils/format-relative-time.ts )
 
 ```typescript
