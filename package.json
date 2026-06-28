@@ -49,6 +49,7 @@
 		"lint:stray-cache-files": "bun tools/scripts/lint/check-stray-cache-files.script.ts",
 		"lint:host-instructions": "bun tools/scripts/lint/host-instructions.script.ts",
 		"lint:bootstrap-canonical": "bun tools/scripts/lint/bootstrap-canonical.script.ts",
+		"lint:host-hints-fragments": "bun tools/scripts/lint/host-hints-fragments.script.ts",
 		"lint:commit-branch": "bun tools/scripts/lint/commit-branch-discipline.script.ts",
 		"lint:push-to-develop": "bun tools/scripts/lint/push-to-develop-discipline.script.ts",
 		"lint:commit-msg": "bun tools/scripts/lint/commit-msg-conventional.script.ts",

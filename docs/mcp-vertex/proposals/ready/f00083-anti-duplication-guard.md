@@ -22,6 +22,7 @@ acceptance:
   - { command: bun run lint:host-instructions, expect: exit0 }
   - { command: bun run lint:bootstrap-canonical, expect: exit0 }
   - { command: bun run lint:host-hints-fragments, expect: exit0 }
+  - { command: bun run test tools/scripts/lint/host-hints-fragments.script.spec.ts, expect: exit0 }
   - { command: bun run validate, expect: exit0 }
 ---
 
@@ -105,7 +106,7 @@ Observed drift in the 2026-06-28 session (this proposal's own session):
 
 ### S3 — host-hints fragments lint
 - **Files**: `tools/scripts/lint/host-hints-fragments.script.ts`, `tools/scripts/lint/host-hints-fragments.script.spec.ts`, `package.json`
-- **Status**: ready
+- **Status**: done (this turn)
 - **Gate**: `bun run lint:host-hints-fragments`
 - **Acceptance**:
   - The lint walks `docs/mcp-vertex/host-hints/{copilot-instructions,claude,agents}.generated.md`.
@@ -113,14 +114,18 @@ Observed drift in the 2026-06-28 session (this proposal's own session):
   - The lint is read-only: it does not call the renderer, just verifies the output. This makes it cheap to run on every validate.
   - Spec covers: clean fragments (pass), a fragment whose regeneration was forgotten (fails with "stale: run `bun run catalog:hints`"), a fragment that has drifted (fails with the offending line).
 
-### S4 — wire into validate + lefthook
-- **Files**: `package.json`, `lefthook.yml`
-- **Status**: ready
-- **Gate**: `bun run validate` exits 0
+### S4 — wire into lefthook (not validate)
+- **Files**: `lefthook.yml`, `package.json`
+- **Status**: done (this turn)
+- **Gate**: `bun run validate` exits 0; `lefthook run pre-commit` runs the 3 new hooks
 - **Acceptance**:
-  - `bun run validate` runs the three new lints after the existing `lint:proposals` and before `bun run test`.
-  - `lefthook.yml` has a `pre-commit` step that runs all three lints on changed host files. The step is opt-in via a label (`agent-host-instructions`); a peer agent that touches `AGENTS.md` triggers the check.
-  - The three lints are also added to the `lint` aggregator so `bun run lint` (without args) catches them.
+  - `lefthook.yml` has three new `pre-commit` commands wired as **BLOCKING** (no `|| true`):
+    - `bootstrap-canonical-discipline` — `glob_filter` matches `docs/mcp-vertex/AGENT-BOOTSTRAP.md` only; runs `bun run lint:bootstrap-canonical`.
+    - `host-hints-fragments-discipline` — `glob_filter` matches the 3 host-hint fragments; runs `bun run lint:host-hints-fragments`.
+    - `host-instructions-discipline` is **not** added: `lint:host-instructions` is already in the `bun run validate` chain (kept there for the slow full-tree walk), and the lefthook design prefers the file-scoped check for the bootstrap/fragment pair.
+  - Each hook prints a clear `next-action` (e.g. "Run `bun run catalog:hints` to regenerate" or "Move the rule to the bootstrap") so the agent sees what to fix.
+  - The 3 lints are exposed as `bun run lint:<name>` scripts (so a developer can invoke them ad hoc) but are NOT added to the `bun run validate` aggregator (per f00086's discipline: file-specific lints belong in lefthook, not in the universal validate chain).
+  - Bypass: `LEFTHOOK_BYPASS=1 git commit ...` is documented in each hook's blocker text.
 
 ## acceptance
 
