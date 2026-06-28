@@ -312,6 +312,15 @@ export type {
 	IGitRunner,
 	IGitRunResult,
 } from '../lib/contracts/interfaces/git-runner.interface';
+// f00082: composite agent identity contract. Plugins that produce or
+// consume the four-field identity (proposals worktree engine, handoff
+// packets, swarm tools) import from here so the contract has one
+// source of truth.
+export type {
+	AgentHost,
+	IAgentIdentity,
+} from '../lib/contracts/interfaces/agent-identity.interface';
+export { AGENT_IDENTITY_LIMITS } from '../lib/contracts/interfaces/agent-identity.interface';
 export {
 	CorruptFileError,
 	quarantineCorruptFile,

@@ -75,12 +75,29 @@ export const buildAgentWorktreeRegistration = (
 				{
 					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
 					description:
-						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`.',
+						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
 					inputSchema: z.object({
 						action: z.enum(['create', 'list', 'remove']),
 						agent: z.string().optional(),
 						base_branch: z.string().optional(),
 						force: z.boolean().optional(),
+						// f00082 S4: composite identity. All optional; when
+						// all three are set the engine composes a four-field
+						// branch name. The numeric collision suffix is
+						// applied automatically.
+						host: z
+							.enum([
+								'vscode-copilot',
+								'claude-code',
+								'codex-cli',
+								'cursor',
+								'aider',
+								'continue',
+								'unknown',
+							])
+							.optional(),
+						model: z.string().optional(),
+						task_id: z.string().optional(),
 					}),
 				},
 				async (args: {
@@ -88,6 +105,24 @@ export const buildAgentWorktreeRegistration = (
 					agent?: string | undefined;
 					base_branch?: string | undefined;
 					force?: boolean | undefined;
+					// f00082 S4: optional composite-identity fields. When
+					// all three are set, the engine builds the branch
+					// name as `agent/<host>-<model>-<agent_name>-<task_id>`.
+					// When unset, the engine falls back to the historical
+					// `agent/<agent_name>` layout. The numeric suffix
+					// (`-1`, `-2`, …) is appended automatically when the
+					// composite branch already exists.
+					host?:
+						| 'vscode-copilot'
+						| 'claude-code'
+						| 'codex-cli'
+						| 'cursor'
+						| 'aider'
+						| 'continue'
+						| 'unknown'
+						| undefined;
+					model?: string | undefined;
+					task_id?: string | undefined;
 				}) => {
 					// f00052: host-scoped gate. Disabled (default) ⇒ return a
 					// structured error that echoes the action and explains how

@@ -24,7 +24,20 @@ const recordingRunner = (
 		calls,
 		run: async (args) => {
 			calls.push(args);
-			return handler(args);
+			// f00082 S4: try the handler first (so S4 tests can
+			// override the collision-suffix enumeration with a
+			// non-empty `git branch --list` response). When the
+			// handler throws (i.e. the call is unexpected), fall
+			// back to "no branches" for `branch --list --format=`
+			// and re-throw otherwise.
+			try {
+				return handler(args);
+			} catch (err) {
+				if (args[0] === 'branch' && args[1] === '--list') {
+					return ok('');
+				}
+				throw err;
+			}
 		},
 	};
 };
@@ -370,5 +383,132 @@ describe('runAgentWorktreeEngine — sync coordinator (CONC-1)', async () => {
 		);
 		expect(result).toMatchObject({ ok: true, created: true });
 		expect(calls.some((c) => c[1] === 'add')).toBe(true);
+	});
+});
+
+describe('runAgentWorktreeEngine — f00082 S4 composite identity', async () => {
+	it('emits `agent/<host>-<model>-<agent_name>-<task_id>` when all fields are set', async () => {
+		const { run, calls } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const result = await runAgentWorktreeEngine(
+			{
+				action: 'create',
+				agent: 'orion',
+				host: 'vscode-copilot',
+				model: 'm3',
+				task_id: 'f00078',
+			},
+			{ run, workspaceRoot: '/repo' },
+		);
+		expect(result).toMatchObject({
+			ok: true,
+			action: 'create',
+			branch: 'agent/copilot-m3-orion-f00078',
+			created: true,
+		});
+		// The `worktree add -b` call must use the composite branch.
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toContain('agent/copilot-m3-orion-f00078');
+	});
+
+	it('falls back to `agent/<agent_name>` when host/model/task_id are all absent', async () => {
+		const { run, calls } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const result = await runAgentWorktreeEngine(
+			{ action: 'create', agent: 'copilot-minimax-m3' },
+			{ run, workspaceRoot: '/repo' },
+		);
+		expect(result).toMatchObject({
+			ok: true,
+			action: 'create',
+			branch: 'agent/copilot-minimax-m3',
+			created: true,
+		});
+		// Backwards compat: the historical single-arg shape is preserved.
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toContain('agent/copilot-minimax-m3');
+	});
+
+	it('appends `-1` when the composite branch already exists', async () => {
+		const { run, calls } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			if (
+				args[0] === 'branch' &&
+				args[1] === '--list' &&
+				args[2] === '--format=%(refname:short)'
+			) {
+				// The composite is already taken; the engine must
+				// append `-1` and pick the next free slot.
+				return ok('agent/copilot-m3-orion-f00078\n');
+			}
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const result = await runAgentWorktreeEngine(
+			{
+				action: 'create',
+				agent: 'orion',
+				host: 'vscode-copilot',
+				model: 'm3',
+				task_id: 'f00078',
+			},
+			{ run, workspaceRoot: '/repo' },
+		);
+		expect(result).toMatchObject({
+			ok: true,
+			action: 'create',
+			branch: 'agent/copilot-m3-orion-f00078-1',
+			created: true,
+		});
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toContain('agent/copilot-m3-orion-f00078-1');
+	});
+
+	it('gap-fills: skips -1 when taken and returns -2', async () => {
+		const { run } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			if (
+				args[0] === 'branch' &&
+				args[1] === '--list' &&
+				args[2] === '--format=%(refname:short)'
+			) {
+				return ok(
+					'agent/copilot-m3-orion-f00078\nagent/copilot-m3-orion-f00078-1\n',
+				);
+			}
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+		const result = await runAgentWorktreeEngine(
+			{
+				action: 'create',
+				agent: 'orion',
+				host: 'vscode-copilot',
+				model: 'm3',
+				task_id: 'f00078',
+			},
+			{ run, workspaceRoot: '/repo' },
+		);
+		expect(result).toMatchObject({
+			ok: true,
+			action: 'create',
+			branch: 'agent/copilot-m3-orion-f00078-2',
+		});
 	});
 });
