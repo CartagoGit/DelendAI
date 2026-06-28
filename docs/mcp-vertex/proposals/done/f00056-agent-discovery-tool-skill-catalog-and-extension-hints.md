@@ -1,6 +1,6 @@
 ---
 id: f00056
-status: in-progress
+status: done
 type: proposal
 track: host+extension+skills+docs
 date: 2026-06-25
