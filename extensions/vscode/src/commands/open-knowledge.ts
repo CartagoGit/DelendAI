@@ -5,18 +5,29 @@
  * without reloading the webview.
  */
 import { KnowledgeService } from '@mcp-vertex/client';
+import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderKnowledgeNavigator } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
+import { HOST_LANG_KEY } from './setup-github';
 
 export const OPEN_KNOWLEDGE_COMMAND = 'mcp-vertex.openKnowledge';
 
+const resolveLang = (deps: ICommandDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
+
 export const registerOpenKnowledgeCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(OPEN_KNOWLEDGE_COMMAND, async () => {
+		const lang = resolveLang(deps);
 		const knowledge = new KnowledgeService(deps.client);
 		const grouped = await knowledge.listByCategory();
 		const html = renderKnowledgeNavigator({
 			categories: grouped,
+			lang: dictsByLang[lang],
 			onOpenEntry: OPEN_KNOWLEDGE_COMMAND,
 			onSearch: 'mcp-vertex.searchKnowledge',
 		});

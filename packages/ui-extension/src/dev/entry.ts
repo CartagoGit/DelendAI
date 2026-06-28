@@ -32,6 +32,7 @@
  */
 import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 import type { IDashboardAllModels } from '@mcp-vertex/client';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 const mockModel: IDashboardAllModels = {
 	overview: {
@@ -337,6 +338,7 @@ try {
 		docsUrl: 'https://cartagogit.github.io/mcp-vertex/',
 		refreshCommand: 'mcp-vertex.refresh',
 		openDocsCommand: 'mcp-vertex.openDocs',
+		lang: dictsByLang.en,
 	});
 	// `renderDashboard` returns a complete <html> document; the landing
 	// page already has its own <html>/<head>/<body>, so we extract the

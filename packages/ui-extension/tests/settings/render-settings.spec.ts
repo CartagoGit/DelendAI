@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderSettings } from '../../src/settings/render-settings';
 
@@ -14,6 +15,7 @@ describe('renderSettings', async () => {
 			},
 			saveCommand: 'mcp-vertex.saveSettings',
 			resetCommand: 'mcp-vertex.resetSettings',
+			lang: dictsByLang.en,
 		});
 		expect(html).toContain('mcp-vertex Settings');
 		expect(html).toContain('https://example.com/docs');

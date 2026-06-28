@@ -267,7 +267,15 @@ const listBranchNames = async (
 	const names = result.output
 		.split('\n')
 		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
+		.filter((line) => line.length > 0)
+		// f00082 S4: strip the `agent/` prefix so the collision
+		// check works against the bare composite
+		// (`copilot-m3-orion-f00078` instead of
+		// `agent/copilot-m3-orion-f00078`). Branches without the
+		// prefix pass through unchanged.
+		.map((name) =>
+			name.startsWith('agent/') ? name.slice('agent/'.length) : name,
+		);
 	return new Set(names);
 };
 

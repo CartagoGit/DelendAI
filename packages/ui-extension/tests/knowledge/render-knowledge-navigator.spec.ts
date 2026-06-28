@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderKnowledgeNavigator } from '../../src/knowledge/render-knowledge-navigator';
 
@@ -17,6 +18,7 @@ describe('renderKnowledgeNavigator', async () => {
 	it('renders a category for every key', async () => {
 		const html = renderKnowledgeNavigator({
 			categories,
+			lang: dictsByLang.en,
 			onOpenEntry: 'mcp-vertex.openKnowledgeEntry',
 			onSearch: 'mcp-vertex.searchKnowledge',
 		});
@@ -35,6 +37,7 @@ describe('renderKnowledgeNavigator', async () => {
 					{ id: 'evil_id', title: '<img onerror=alert(1)>' },
 				],
 			},
+			lang: dictsByLang.en,
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
@@ -45,6 +48,7 @@ describe('renderKnowledgeNavigator', async () => {
 	it('shows a count badge per category', async () => {
 		const html = renderKnowledgeNavigator({
 			categories,
+			lang: dictsByLang.en,
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
@@ -54,6 +58,7 @@ describe('renderKnowledgeNavigator', async () => {
 	it('renders a preview pane, even when empty', async () => {
 		const empty = renderKnowledgeNavigator({
 			categories: {},
+			lang: dictsByLang.en,
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 		});
@@ -62,6 +67,7 @@ describe('renderKnowledgeNavigator', async () => {
 
 		const previewed = renderKnowledgeNavigator({
 			categories: { p: [{ id: 'p_x', title: 'X' }] },
+			lang: dictsByLang.en,
 			onOpenEntry: 'cmd',
 			onSearch: 'cmd',
 			preview: {
