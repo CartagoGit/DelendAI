@@ -22,6 +22,16 @@ export interface IAgentLockToolOptions {
 	 * audit hook, etc.).
 	 */
 	readonly lockChangeListener?: ILockChangeListener;
+	/**
+	 * f00078 S4: when `true`, the engine refuses `action: 'claim'`
+	 * unless the active branch is `agent/<name>`. This is the
+	 * hard-runtime gate that prevents an agent from bypassing
+	 * per-agent worktree isolation by going directly through
+	 * `agent_lock` without first calling `agent_worktree create`.
+	 * Defaults to `false` so solo hosts (the default) are
+	 * unaffected.
+	 */
+	readonly agentWorktreeEnabled?: boolean;
 }
 
 const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
@@ -112,6 +122,11 @@ export const buildAgentLockRegistration = (
 						lockPath: options.lockPathAbs,
 						toolName,
 						lockFileLabel: options.lockFileLabel,
+						// f00078 S4: needs-worktree gate. When the host
+						// has the gate on, claims are refused unless
+						// the active branch is `agent/<name>`.
+						agentWorktreeEnabled:
+							options.agentWorktreeEnabled === true,
 					});
 					// Solid-ISP: fire the change listener ONLY for actions
 					// that actually mutate the file. `status` is excluded —
