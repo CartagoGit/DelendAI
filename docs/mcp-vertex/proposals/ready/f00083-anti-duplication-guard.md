@@ -14,7 +14,7 @@ related:
   - f00074 # loop detector (cross-agent safety net)
 ownership:
   - { agent: implementation_runner, task: 'S1: host-instructions lint — verify the 3 host files (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md) all point at AGENT-BOOTSTRAP.md and never enumerate tool / skill / proposal ids' }
-  - { agent: implementation_runner, task: 'S2: bootstrap-canonical lint — verify docs/mcp-vertex/AGENT-BOOTSTRAP.md has the canonical section ordering and no duplicate sections' }
+  - { agent: implementation_runner, task: 'S2: bootstrap-canonical lint — verify docs/mcp-vertex/AGENT-BOOTSTRAP.md has the canonical 9-section ordering, the anchor preamble, and no duplicate H2s' }
   - { agent: implementation_runner, task: 'S3: host-hints fragments lint — verify the 3 generated fragments under docs/mcp-vertex/host-hints/ also point at the bootstrap and never enumerate content' }
   - { agent: implementation_runner, task: 'S4: wire the new lints into bun run validate and lefthook pre-commit; close the gate' }
 globalGate: validate
@@ -78,7 +78,7 @@ Observed drift in the 2026-06-28 session (this proposal's own session):
 
 ### S1 — host-instructions lint
 - **Files**: `tools/scripts/lint/host-instructions.script.ts`, `tools/scripts/lint/host-instructions.script.spec.ts`, `package.json`
-- **Status**: ready
+- **Status**: done (commit `90655db4` + `6ae31ac7`)
 - **Gate**: `bun run lint:host-instructions`
 - **Acceptance**:
   - The lint walks the three host files: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`. (Host files in `configs/external/<host>/` are out of scope — those are user-installed and not part of the canonical contract.)
@@ -92,15 +92,16 @@ Observed drift in the 2026-06-28 session (this proposal's own session):
 
 ### S2 — bootstrap-canonical lint
 - **Files**: `tools/scripts/lint/bootstrap-canonical.script.ts`, `tools/scripts/lint/bootstrap-canonical.script.spec.ts`, `package.json`
-- **Status**: ready
+- **Status**: done (this turn)
 - **Gate**: `bun run lint:bootstrap-canonical`
 - **Acceptance**:
   - The lint walks `docs/mcp-vertex/AGENT-BOOTSTRAP.md` and asserts:
-    - Section ordering follows the canonical scaffold: `goal → why → why this design → non-goals → architecture → slices → dependency graph → acceptance → risks and mitigations → notes`.
-    - No `## ` heading is duplicated.
-    - The "This file is the only place agent rules live" preamble is present (anchor string).
-  - The lint reuses the same canonical-scaffold knowledge as `lintProposalMarkdown` (the proposal plugin's own lint). It does not duplicate the heading list.
-  - Spec covers: a clean bootstrap (passes), a bootstrap with sections in the wrong order (fails), a bootstrap with a duplicate `## goal` (fails), a bootstrap missing the anchor (fails).
+    - The preamble anchor string is present: `This file is the only place agent rules live`.
+    - The H2 sections appear in the canonical order defined in the lint's `CANONICAL_SECTIONS` constant: `Table of contents → 1 Orient first → 2 Route work → 3 Bootstrap prompt → 4 Workflow loop → 5 Definition of done → 6 Invariants → 7 Repo rules → 8 Host appendices`.
+    - No `## ` heading is duplicated (the table of contents and the per-host appendix anchors would collapse on a duplicate).
+  - The lint does **not** reuse the proposal-plugin scaffold: the bootstrap has its own 9-section structure (orient → route → prompt → loop → DoD → invariants → repo rules → host appendices + a table of contents), which is different from the proposal's `goal → why → ...` scaffold. The two files have different contracts; they are not the same scaffold.
+  - Sub-headings inside the last canonical section (e.g. `## 8.1 Copilot`, `## 8.2 Claude`, `## 8.3 generic`) do not break the order check — they are not in the canonical list, so the lint walks past them.
+  - Spec covers: a clean bootstrap (passes), a bootstrap with a missing canonical section (fails with `missing-section`), a bootstrap with sections in the wrong order (fails with `out-of-order` and the canonical index), a bootstrap with a duplicate H2 (fails with `duplicate-section` and the two line numbers), a bootstrap missing the anchor (fails with `missing-anchor`).
 
 ### S3 — host-hints fragments lint
 - **Files**: `tools/scripts/lint/host-hints-fragments.script.ts`, `tools/scripts/lint/host-hints-fragments.script.spec.ts`, `package.json`
