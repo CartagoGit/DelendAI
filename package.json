@@ -49,7 +49,7 @@
 		"lint:stray-cache-files": "bun tools/scripts/lint/check-stray-cache-files.script.ts",
 		"lint:host-instructions": "bun tools/scripts/lint/host-instructions.script.ts",
 		"sync:counters": "bun tools/scripts/proposals/sync-proposal-counters.script.ts",
-		"catalog:check": "bun tools/scripts/catalog/generate-agent-catalog.script.ts --check",
+		"catalog:check": "bun tools/scripts/catalog/generate-agent-catalog.script.ts --check --mode=compact",
 		"catalog:generate": "bun tools/scripts/catalog/generate-agent-catalog.script.ts && bun tools/scripts/catalog/render-host-hints.script.ts",
 		"catalog:hints": "bun tools/scripts/catalog/render-host-hints.script.ts",
 		"catalog:hints:check": "bun tools/scripts/catalog/render-host-hints.script.ts --check",
