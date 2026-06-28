@@ -273,6 +273,19 @@ export default definePlugin({
 					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
 					loopDetector,
+					// f00078 S1 + S3: pass the gate flag and the
+					// loop-detector window so the front-hook can run the
+					// `needs-worktree` and `loop-blocked` gates before
+					// returning a plan. Hosts with the gate off (the
+					// default) pass `false` and the front-hook is a no-op.
+					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+					// The loop-detector service stores per-agent windows
+					// privately. We snapshot the current agent's window
+					// when one is registered; otherwise we leave the field
+					// undefined and the front-hook skips the S3 check.
+					loopDetectorWindow: undefined,
+					loopDetectorCooldownMs: 30_000,
+					loopDetectorProgressGate: false,
 					...(typeof ctx.options.validationCommand === 'string'
 						? {
 								validationCommand: ctx.options
