@@ -317,7 +317,11 @@ describe('runBranchStatusEngine', () => {
 				{ ok: true, output: '  agent/copilot-minimax-m3-s57\n' },
 			],
 			[
-				['rev-list', '--count', 'develop..agent/copilot-minimax-m3-s57'],
+				[
+					'rev-list',
+					'--count',
+					'develop..agent/copilot-minimax-m3-s57',
+				],
 				{ ok: true, output: '2\n' },
 			],
 			[

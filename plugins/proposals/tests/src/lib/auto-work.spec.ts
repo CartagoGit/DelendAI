@@ -407,6 +407,9 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		execFileSync('git', ['init', '--initial-branch=main', root], {
 			stdio: 'ignore',
 		});
+		execFileSync('git', ['-C', root, 'config', 'commit.gpgsign', 'false'], {
+			stdio: 'ignore',
+		});
 		execFileSync('git', ['-C', root, 'config', 'user.email', 'fh@test'], {
 			stdio: 'ignore',
 		});
@@ -434,7 +437,10 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		}
 		// Write the proposals index (one pending proposal so the
 		// slice-selection cascade has something to fall back to IF the
-		// front-hook lets it through).
+		// front-hook lets it through). The index and the proposal
+		// markdown are committed in the repo so a `git stash -u` later
+		// in the test does NOT sweep them away — only the dedicated
+		// stash entry stays as the "fixture" the front-hook detects.
 		options = {
 			namespacePrefix: 'proposals',
 			indexPathAbs: join(root, 'index.json'),
@@ -452,9 +458,6 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		// `dirname(indexPathAbs)/<entry.file>` (proposalsDirAbs fallback).
 		// Without a real file on disk the cascade drops the entry as
 		// `all-claimed` and the plan falls into the idle branch. The
-		// front-hook in S4 is BEFORE the cascade, so a stash fixture is
-		// enough to exercise the block — but the bypass test
-		// (forceHygieneBypass:true) needs the cascade to find a real
 		// proposal, so write a markdown file with one actionable slice
 		// and commit it so `git stash push -u` later does not sweep
 		// it away.
@@ -473,6 +476,8 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 				'',
 			].join('\n'),
 		);
+		// tracked ones). The commit is empty of any other change — the
+		// init commit already exists on `develop`.
 		execFileSync('git', ['-C', root, 'add', 'index.json', 'p1.md'], {
 			stdio: 'ignore',
 		});

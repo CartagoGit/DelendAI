@@ -221,7 +221,8 @@ describe('f00074 S1 — outcome-aware sliding window', async () => {
 				'agent_lock',
 				{ action: 'claim', i },
 				'a1',
-				1_700_000_000_000 + i * 60_000,
+				1_700_000_000_000 + i * 1_000, // 1s apart — inside the
+				// 30s cooldown so S2 does not reset the count.
 				'unknown',
 			),
 		);
@@ -236,7 +237,8 @@ describe('f00074 S1 — outcome-aware sliding window', async () => {
 				'agent_lock',
 				{ action: 'claim', i },
 				'a1',
-				1_700_000_000_000 + i * 60_000,
+				1_700_000_000_000 + i * 1_000, // 1s apart — inside the
+				// 30s cooldown so S2 does not reset the count.
 				'ok',
 			),
 		);
