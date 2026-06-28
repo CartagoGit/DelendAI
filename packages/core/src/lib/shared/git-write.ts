@@ -81,19 +81,33 @@ export const gitAdd = async (
 export interface ICommitOptions {
 	/** When true, runs `git commit --amend` instead of a plain commit. */
 	readonly amend?: boolean;
+	/**
+	 * Optional `Name <email>` override passed as `git commit --author=`.
+	 * When omitted, the commit uses the active git config (the default
+	 * most users want — see `commit-author.ts` for the configured
+	 * modes). Falsy / whitespace-only values are ignored so a buggy
+	 * resolver cannot accidentally produce a commit with no author.
+	 */
+	readonly authorFlag?: string;
 }
 
-/** `git commit -m <message>` (optionally `--amend`). */
+/** `git commit -m <message>` (optionally `--amend`, optionally `--author=`). */
 export const gitCommit = async (
 	run: IGitRunner,
 	message: string,
 	options: ICommitOptions = {},
-): Promise<IGitRunResult> =>
-	run(
+): Promise<IGitRunResult> => {
+	const trimmed = options.authorFlag?.trim();
+	const authorArgs: readonly string[] =
+		trimmed !== undefined && trimmed.length > 0
+			? [`--author=${trimmed}`]
+			: [];
+	return run(
 		options.amend === true
-			? ['commit', '--amend', '-m', message]
-			: ['commit', '-m', message],
+			? ['commit', '--amend', ...authorArgs, '-m', message]
+			: ['commit', ...authorArgs, '-m', message],
 	);
+};
 
 /** `git rev-parse --short HEAD`. Returns `undefined` when the lookup fails. */
 export const gitHeadShortHash = async (
@@ -153,6 +167,14 @@ export interface ICommitAndPushOptions {
 	readonly skipAdd?: boolean;
 	readonly message: string;
 	readonly amend?: boolean;
+	/**
+	 * Optional `Name <email>` override passed as `git commit --author=`.
+	 * When omitted, the commit uses the active git config. See
+	 * `commit-author.ts` for the configurable modes (`git`/`agent`/
+	 * `bot`/`named`); `commitAndPush` accepts the already-resolved
+	 * value so callers do not have to import the resolver themselves.
+	 */
+	readonly authorFlag?: string;
 	/** When set, also pushes after a successful commit. */
 	readonly push?: IPushOptions;
 	readonly git: IGitRunner;
@@ -210,6 +232,9 @@ export const commitAndPush = async (
 
 	const commitResult = await gitCommit(run, options.message, {
 		...(options.amend !== undefined ? { amend: options.amend } : {}),
+		...(options.authorFlag !== undefined
+			? { authorFlag: options.authorFlag }
+			: {}),
 	});
 	if (!commitResult.ok) {
 		const reason = commitResult.reason ?? 'unknown';

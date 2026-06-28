@@ -253,6 +253,86 @@ describe('maybePersistAfterSlice', async () => {
 		expect(result.reason).toBe('no files to commit (empty slice)');
 		expect(runner.calls).toHaveLength(0);
 	});
+
+	describe('commitAuthor policy (f00082)', () => {
+		it('threads --author=<flag> into the git commit call', async () => {
+			const runner = fakeRunner([
+				{ match: (a) => a[0] === 'add', output: '' },
+				{ match: (a) => a[0] === 'commit', output: '' },
+				{ match: (a) => a[0] === 'rev-parse', output: 'deadbee' },
+			]);
+			const result = await maybePersistAfterSlice(
+				['plugins/proposals/src/lib/foo.ts'],
+				'l109',
+				's2',
+				{
+					mode: 'commit',
+					git: runner,
+					commitAuthor: {
+						authorFlag: '"Cartago (M3)" <cartago@local>',
+						label: 'named (Cartago (M3) <cartago@local>)',
+					},
+				},
+			);
+			expect(result.committed).toBe(true);
+			expect(result.hash).toBe('deadbee');
+			const commitCall = runner.calls.find(
+				(calls) => calls[0] === 'commit',
+			);
+			expect(commitCall).toBeDefined();
+			expect(commitCall).toContain(
+				'--author="Cartago (M3)" <cartago@local>',
+			);
+		});
+
+		it('refuses the persist step when the policy carries a reason', async () => {
+			const runner = fakeRunner([
+				{
+					match: () => true,
+					output: 'should not be called',
+				},
+			]);
+			const result = await maybePersistAfterSlice(
+				['plugins/proposals/src/lib/foo.ts'],
+				'l109',
+				's2',
+				{
+					mode: 'commit',
+					git: runner,
+					commitAuthor: {
+						authorFlag: '',
+						label: 'git',
+						reason: 'mode "git" requires `git config user.name` and `user.email`',
+					},
+				},
+			);
+			expect(result.committed).toBe(false);
+			expect(result.reason).toContain('mode "git" requires');
+			// No git invocations: the refusal happens BEFORE `git add`.
+			expect(runner.calls).toHaveLength(0);
+		});
+
+		it('omits --author when commitAuthor is absent (default preserved)', async () => {
+			const runner = fakeRunner([
+				{ match: (a) => a[0] === 'add', output: '' },
+				{ match: (a) => a[0] === 'commit', output: '' },
+				{ match: (a) => a[0] === 'rev-parse', output: 'cafef00' },
+			]);
+			await maybePersistAfterSlice(
+				['plugins/proposals/src/lib/foo.ts'],
+				'l109',
+				's2',
+				{ mode: 'commit', git: runner },
+			);
+			const commitCall = runner.calls.find(
+				(calls) => calls[0] === 'commit',
+			);
+			expect(commitCall).toBeDefined();
+			expect(commitCall?.some((arg) => arg.startsWith('--author='))).toBe(
+				false,
+			);
+		});
+	});
 });
 
 describe('renderCommitMessage', async () => {

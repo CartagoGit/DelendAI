@@ -330,7 +330,8 @@ The tool is **read-only** (`effects: ['read']`). It does NOT call
 
 ### S4 — Front-hook in `auto_work` (block on rescue + stash, surface GC, warn on out-of-cache)
 
-- **Status**: pending
+- **Status**: done
+- **Shipped in**: 2a7abca7 (bundled with `feat: add outcome-aware wiring tests for AgentLoopDetectorService` — the parallel-agent commit that landed my S4 stash-snapshot.ts, stash-snapshot.spec.ts, and the front-hook wiring in auto-work.tool.ts)
 
 Without a front-hook, f00073 S2's `branchStatusWarnings` accumulate
 between sessions and the swarm decays back into the 2026-06-28
