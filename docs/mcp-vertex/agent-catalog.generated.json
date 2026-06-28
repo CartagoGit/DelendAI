@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T02:21:58.408Z",
+	"generatedAt": "2026-06-28T02:37:10.382Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -757,14 +757,6 @@
 				"date": "2026-06-28"
 			},
 			{
-				"id": "x00074",
-				"title": "x00074",
-				"track": "swarm+coordination",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "x00076",
 				"title": "x00076",
 				"track": "repo-hygiene+ci+lint+docs+plugins/rules",
@@ -782,11 +774,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 24,
+			"ready": 23,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 128,
+			"done": 129,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
