@@ -11,6 +11,7 @@ import type { IContinueProposalToolOptions } from './continue-proposal.tool';
 import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
 import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
+import { runBranchGcEngine } from '../shared/branch-gc-engine';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -301,6 +302,15 @@ export const runAutoWork = async (
 		persistOut.pushTarget = options.persist.pushTarget;
 	}
 
+	const branchStatusWarnings = await collectBranchStatusWarnings(
+		options.workspaceRoot ?? '',
+	);
+	const branchHygieneHints =
+		branchStatusWarnings.length > 0
+			? ((await collectBranchHygieneHints(options.workspaceRoot ?? '')) ??
+				[])
+			: undefined;
+
 	return json({
 		state: 'work',
 		proposalId: next.proposalId,
@@ -319,9 +329,12 @@ export const runAutoWork = async (
 		// 8 dirty files" / "Y is 5 commits behind" without a second
 		// tool call. Failures are swallowed — the status snapshot is
 		// advisory, not gating.
-		branchStatusWarnings: await collectBranchStatusWarnings(
-			options.workspaceRoot ?? '',
-		),
+		branchStatusWarnings,
+		// f00075 S1: hygiene hints ride along only when there is
+		// already something to flag. Cheap (reuses the same git
+		// runner, no extra round-trip to a separate tool) and bounded
+		// (≤3 lines + 1 footer). undefined when nothing is eligible.
+		...(branchHygieneHints !== undefined ? { branchHygieneHints } : {}),
 	});
 };
 
@@ -420,6 +433,42 @@ const collectBranchStatusWarnings = async (
 		return warnings;
 	} catch {
 		return [];
+	}
+};
+
+/**
+ * f00075 S1: when the f00073 warnings are non-empty, also surface a
+ * short GC dry-run summary so the orchestrator can decide whether to
+ * call `branch_gc({ dryRun: false })`. Always fire-and-forget; never
+ * blocks. Capped at 3 lines so the plan stays cheap.
+ */
+const collectBranchHygieneHints = async (
+	workspaceRoot: string,
+): Promise<string[] | undefined> => {
+	if (workspaceRoot.length === 0) return undefined;
+	try {
+		const result = await runBranchGcEngine({
+			run: createGitRunner(workspaceRoot),
+			workspaceRoot,
+			dryRun: true,
+		});
+		if (!result.ok) return undefined;
+		const eligible = result.removed.slice(0, 3);
+		if (eligible.length === 0) return undefined;
+		const lines: string[] = [
+			`branch_gc dry-run: ${result.summary.dryRunRemovedCount} worktree(s) eligible`,
+		];
+		for (const entry of eligible) {
+			lines.push(
+				`  · ${entry.path} (${entry.branch}) — ${entry.reason}, ${entry.dirtyFiles} dirty / ${entry.untrackedFiles} untracked, age ${entry.ageLabel}`,
+			);
+		}
+		lines.push(
+			'  run proposals_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).',
+		);
+		return lines;
+	} catch {
+		return undefined;
 	}
 };
 

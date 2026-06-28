@@ -8,6 +8,7 @@ import { createCallbackLockListener } from './lib/locks/lock-change-listener';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
 import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
+import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
 import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
@@ -209,6 +210,14 @@ export default definePlugin({
 				// f00073: idempotent cleanup of orphan worktrees. dryRun by
 				// default; unmerged branches are sacred.
 				buildBranchGcRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultStaleMinutes: 60,
+				}),
+				// f00075: read-only swarm hygiene snapshot — rescue
+				// candidates + GC-eligible + out-of-cache. Never mutates.
+				buildSwarmHygieneRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRoot: ctx.workspace.root,
 					defaultBaseBranch: 'develop',

@@ -115,6 +115,25 @@ Do not spin on `proposals_agent_lock { action: "status" }`.
 That burns tokens and adds no new information faster than the holder can
 finish work.
 
+## Hygiene routine (f00075)
+
+The swarm hygiene loop is **observation first, mutation only on confirmation**:
+
+1. `proposals_branch_status { }` → raw snapshot.
+2. `proposals_swarm_hygiene { }` → rescue candidates (ahead>0 and not
+   merged), GC-eligible orphans (dry-run), out-of-cache worktrees.
+3. `proposals_branch_gc { dryRun: true }` → confirm the GC plan.
+4. **Human/orchestrator reviews** `diffStat` and `cherryPickHint` before
+   cherry-pick; reviews the GC list before `dryRun: false`.
+
+Use it when:
+- `auto_work` plan carries `branchHygieneHints` (non-empty).
+- A session is about to close and you want to confirm no work is stranded.
+- You are debugging "where did that branch come from?".
+
+Never auto-execute `branch_gc({ dryRun: false })` from a hook without
+human confirmation. The plan exists to be reviewed.
+
 ## When you see unexpected changes (c00012)
 
 In a shared repo with several agents, **expect** the working tree, the

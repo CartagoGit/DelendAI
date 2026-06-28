@@ -9,33 +9,43 @@ import {
 import type { ILayerConfig } from './lib/services/audit-brief.service';
 import { buildConsolidateRegistration } from './lib/tools/audit-consolidate.tool';
 import { buildPlanRegistration } from './lib/tools/audit-plan.tool';
+import { buildRunRegistration } from './lib/tools/audit-run.tool';
 
 /**
- * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A).
+ * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A + B).
  *
- * The plugin ships with two tools:
+ * The plugin ships with three tools:
  *
  * - `<prefix>_audit_plan { scope? }` — returns the canonical brief an
  *   agent pastes into a fresh model session. No I/O, no secrets.
  * - `<prefix>_audit_consolidate { auditDir?, topActions? }` — reads
  *   every `*.md` in the audits directory, parses + deduplicates + averages
  *   scores, returns the structured view + the master markdown.
+ * - `<prefix>_audit_run { scope, targets, … }` — Alcance B (f00077):
+ *   dispatches the brief to one or more LLM targets in parallel, saves
+ *   the markdown reports, consolidates the findings, and scaffolds
+ *   ready-to-run proposal files for every actionable severity band.
  *
  * Plus one knowledge entry that documents the brief contract for agents
  * that want to read it on demand instead of calling the tool.
  *
- * Activation is opt-in: `mcp-vertex --plugins=audit`. The plugin makes no
- * network calls (no API fan-out, no keys, no telemetry). For the
- * network-enabled scope (l99 B), a separate opt-in plugin would own that.
+ * Activation is opt-in: `mcp-vertex --plugins=audit`. The `audit_plan`
+ * and `audit_consolidate` tools make no network calls (no API fan-out,
+ * no keys, no telemetry). `audit_run` DOES contact the configured LLM
+ * providers — callers MUST supply API keys in the request. The plugin
+ * never reads `process.env`; the host owns credential wiring.
  *
- * See `docs/mcp-vertex/proposals/l99-feat-multi-model-audit-plugin.md` for the
- * design rationale and the 3-enfoque analysis.
+ * See `docs/mcp-vertex/proposals/f00077-automated-audit-run-tool.md` for
+ * the Alcance B design and `l99-feat-multi-model-audit-plugin.md` for
+ * Alcance A.
  */
 
-const KNOWLEDGE_BRIEF = `# Plugin @mcp-vertex/audit (l99 alcance A)
+const KNOWLEDGE_BRIEF = `# Plugin @mcp-vertex/audit (l99 alcance A + B)
 
-Sin red, sin secretos. Genera briefs de auditoría adaptados a la estructura
-del repo y consolida N auditorías en una sola hoja de ruta.
+Genera briefs de auditoría adaptados a la estructura del repo, consolida
+N auditorías en una sola hoja de ruta, y (alcance B / f00077) automatiza
+el ciclo: dispatches paralelos a múltiples LLMs, persistencia de
+reportes, consolidación, y scaffold de propuestas de fix.
 
 ## Qué hace
 
@@ -51,6 +61,13 @@ del repo y consolida N auditorías en una sola hoja de ruta.
    \`*.md\` de la carpeta de auditorías, parsea + deduplica + promedia
    las puntuaciones, y devuelve la vista estructurada más el maestro
    en markdown.
+3. \`<prefix>_audit_run { scope, targets, … }\` (alcance B) cierra el
+   bucle: envía el brief a 1–4 LLMs en paralelo (OpenRouter /
+   Anthropic / Google / OpenAI), guarda los reportes como
+   \`DD-MM-YYYY- <provider>(<model>).md\`, los consolida, y scaffoldea
+   un archivo de propuesta por hallazgo actionable (FATAL / MUY_MAL /
+   MEJORABLE) en \`docs/mcp-vertex/proposals/ready/\`. Las claves se
+   reciben en la llamada — el plugin NO consulta variables de entorno.
 
 ## Modelo de scopes (project-agnostic)
 
@@ -73,6 +90,19 @@ agnóstico y portable a cualquier modelo en cualquier sesión.
   el \`.md\` resultante en el directorio de auditorías.
 - La consolidación es automática: el plugin deduplica por título + archivo
   citado, promedia las 9 dimensiones canónicas, y emite una tabla resumen.
+
+## Alcance B (audit_run)
+
+- **Sí contacta la red**: el usuario (o el host) pasa las API keys
+  explícitamente. El plugin no consulta \`process.env\` (regla 2 de
+  AGENTS.md).
+- 1–8 targets por llamada; el fan-out interno capa la concurrencia
+  a 4 para evitar rate-limits de cold-start.
+- Timeout por defecto 90 s, configurable vía \`timeoutMs\`.
+- El scaffolder asigna IDs nuevos (\`x\` por defecto) caminando el
+  \`knownProposalIds\` del registry; los ids que ya existen no se
+  reutilizan. El orquestador del host puede pasar \`auditId\` para
+  enlazar el batch con la auditoría madre (\`related: [aNNNNN]\`).
 
 ## Configuración (host-agnostic)
 
@@ -154,6 +184,13 @@ const OptionsSchema = z
 		 * fallback when the tool call does not pass `auditDir`.
 		 */
 		auditDir: z.string().min(1).optional(),
+		/**
+		 * Workspace-relative directory where `audit_run` writes
+		 * scaffolded fix proposals. Default:
+		 * `docs/mcp-vertex/proposals/ready`. The tool validates the
+		 * path against the workspace root before any write happens.
+		 */
+		proposalsDir: z.string().min(1).optional(),
 		/**
 		 * How many top actions to surface in `audit_consolidate`'s
 		 * output. 1–50, default 5 (the engine's own default). Per-call
@@ -259,8 +296,22 @@ export default definePlugin({
 			defaultTopActions: topActions,
 			...(projectName !== undefined ? { projectName } : {}),
 		});
+		const run = buildRunRegistration({
+			namespacePrefix: ctx.namespacePrefix,
+			workspaceRoot: ctx.workspace.root,
+			defaultAuditDir: auditDir,
+			defaultProposalsDir:
+				pluginOptions.proposalsDir ?? 'docs/mcp-vertex/proposals/ready',
+			dimensions,
+			layers,
+			...(projectName !== undefined ? { projectName } : {}),
+			...(configFileName !== undefined ? { configFileName } : {}),
+			...(crossCuttingAdditions !== undefined
+				? { crossCuttingAdditions }
+				: {}),
+		});
 		return {
-			tools: [plan, consolidate],
+			tools: [plan, consolidate, run],
 			knowledge: [
 				{
 					id: 'audit-overview',

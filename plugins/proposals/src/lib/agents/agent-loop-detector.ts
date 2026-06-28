@@ -31,7 +31,33 @@ export interface IToolCall {
 	readonly args: unknown;
 	readonly agent: string;
 	readonly timestamp: number;
+	/**
+	 * x00074 S1: outcome of the call as observed by the host. Optional
+	 * because older callers (and the existing specs) do not provide it;
+	 * when absent the detector treats the call as `outcome: 'unknown'`
+	 * and falls back to the legacy "count all repeats" behaviour. When
+	 * ALL calls in a repeat group have `outcome: 'ok'`, the group is
+	 * dropped — successful re-intent chains (idempotent retries,
+	 * post-release re-claims, etc.) are not loops.
+	 *
+	 * Defaults to 'unknown' so the existing pure-function contract
+	 * (`{ tool, args, agent, timestamp }`) stays valid; the
+	 * loop-detector-service populates this field for new calls.
+	 */
+	readonly outcome?: TCallOutcome;
 }
+
+/** x00074 S1: coarse classification of a tool call's result.
+ *  - `ok`               — the call succeeded (returned useful data or no error).
+ *  - `retryable-error`  — transient failure (rate-limit, lock conflict, network blip).
+ *  - `permanent-error`  — permanent failure (validation error, unknown tool, bad args).
+ *  - `unknown`          — caller did not provide an outcome; detector falls back to legacy.
+ */
+export type TCallOutcome =
+	| 'ok'
+	| 'retryable-error'
+	| 'permanent-error'
+	| 'unknown';
 
 /** What the detector knows about the loop. Future signals (s2+) add
  *  more `pattern` variants without breaking this shape. */
@@ -54,6 +80,11 @@ export interface ILoopDetectorOptions {
 	/** Exact-repeat threshold: same (tool, args-hash) called this many
 	 *  times in the window ⇒ stuck. Default 3. */
 	readonly exactRepeatThreshold?: number;
+	/** x00074 S1: when `true`, groups whose every call has
+	 *  `outcome: 'ok'` are dropped from the stuck-counter. Default
+	 *  `true`. Hosts that want the legacy "count every repeat" semantics
+	 *  for compatibility can set this to `false`. */
+	readonly suppressSuccessfulReintents?: boolean;
 }
 
 /** Stable JSON stringify: object keys sorted recursively so equal
@@ -98,6 +129,12 @@ export const detectAgentLoop = (
 ): ILoopVerdict => {
 	const ringSize = options.ringSize ?? 50;
 	const threshold = options.exactRepeatThreshold ?? 3;
+	// x00074 S1: defaults to `true` so successful re-intent chains
+	// (e.g. 8 successful `agent_lock claim` calls after rate-limit
+	// recovery) do NOT trip the detector. Hosts needing strict
+	// legacy semantics can pass `false`.
+	const suppressSuccessfulReintents =
+		options.suppressSuccessfulReintents ?? true;
 
 	// Trim to the most-recent ringSize calls. Older entries are
 	// forgotten by definition (sliding window).
@@ -117,6 +154,33 @@ export const detectAgentLoop = (
 			existing.count += 1;
 		} else {
 			groups.set(key, { count: 1, call, hash });
+		}
+	}
+
+	// x00074 S1: drop groups whose EVERY call has `outcome: 'ok'`.
+	// A successful re-intent chain is not a loop. Mixed or unknown
+	// outcomes fall through to the legacy counting path, so callers
+	// that never set `outcome` (older tests, simple hosts) keep
+	// their existing behaviour bit-for-bit.
+	if (suppressSuccessfulReintents) {
+		for (const [key, entry] of [...groups]) {
+			let allOk = true;
+			let sawAny = false;
+			for (const c of window) {
+				if (
+					c.agent === entry.call.agent &&
+					c.tool === entry.call.tool &&
+					hashCall(c) === entry.hash
+				) {
+					sawAny = true;
+					const outcome = c.outcome ?? 'unknown';
+					if (outcome !== 'ok') {
+						allOk = false;
+						break;
+					}
+				}
+			}
+			if (sawAny && allOk) groups.delete(key);
 		}
 	}
 

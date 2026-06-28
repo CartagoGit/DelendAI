@@ -57,6 +57,7 @@ import { proposalsAgentNamesI18n } from '#I18N/tools/mcp-vertex_proposals_agent_
 import { proposalsAgentWorktreeI18n } from '#I18N/tools/mcp-vertex_proposals_agent_worktree';
 import { proposalsBranchGcI18n } from '#I18N/tools/mcp-vertex_proposals_branch_gc';
 import { proposalsBranchStatusI18n } from '#I18N/tools/mcp-vertex_proposals_branch_status';
+import { proposalsSwarmHygieneI18n } from '#I18N/tools/mcp-vertex_proposals_swarm_hygiene';
 import { proposalsCloseSliceI18n } from '#I18N/tools/mcp-vertex_proposals_close_slice';
 import { proposalsCompactStatusI18n } from '#I18N/tools/mcp-vertex_proposals_compact_status';
 import { proposalsContinueProposalI18n } from '#I18N/tools/mcp-vertex_proposals_continue_proposal';
@@ -197,6 +198,10 @@ registerToolI18n('mcp-vertex_proposals_branch_gc', proposalsBranchGcI18n);
 registerToolI18n(
 	'mcp-vertex_proposals_branch_status',
 	proposalsBranchStatusI18n,
+);
+registerToolI18n(
+	'mcp-vertex_proposals_swarm_hygiene',
+	proposalsSwarmHygieneI18n,
 );
 registerToolI18n('mcp-vertex_proposals_close_slice', proposalsCloseSliceI18n);
 registerToolI18n(
