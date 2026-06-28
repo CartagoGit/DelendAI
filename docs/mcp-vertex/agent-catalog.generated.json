@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T16:30:26.913Z",
+	"generatedAt": "2026-06-28T16:53:08.092Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -699,7 +699,7 @@
 				"id": "f00060",
 				"title": "f00060",
 				"track": "design-tokens+css+extension-ux",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-06-25"
 			},
@@ -833,8 +833,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
-			"in-progress": 0,
+			"ready": 15,
+			"in-progress": 1,
 			"review": 0,
 			"paused": 3,
 			"done": 136,
