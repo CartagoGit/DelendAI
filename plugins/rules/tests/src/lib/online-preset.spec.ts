@@ -228,11 +228,13 @@ synopsis:           Source code suggestions
 
 	it('resolves hex registry info successfully', async () => {
 		const fetcher: IOnlineFetcher = async (url) => {
-			expect(url).toBe('https://repo.hex.pm/tarballs/credo-1.0.0.tar');
+			expect(url).toBe('https://hex.pm/api/packages/credo');
 			return {
 				ok: true,
 				status: 200,
-				body: 'fake tarball body',
+				body: JSON.stringify({
+					releases: [{ version: '1.7.5' }],
+				}),
 			};
 		};
 
@@ -240,7 +242,7 @@ synopsis:           Source code suggestions
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.package).toBe('credo');
-			expect(result.version).toBe('1.0.0');
+			expect(result.version).toBe('1.7.5');
 		}
 	});
 
@@ -358,6 +360,50 @@ synopsis:           Source code suggestions
 		if (result.ok) {
 			expect(result.package).toBe('vlang/v');
 			expect(result.version).toBe('0.4.5');
+		}
+	});
+
+	it('resolves composer registry info successfully', async () => {
+		const fetcher: IOnlineFetcher = async (url) => {
+			expect(url).toBe(
+				'https://repo.packagist.org/p2/phpstan/phpstan.json',
+			);
+			return {
+				ok: true,
+				status: 200,
+				body: JSON.stringify({
+					packages: {
+						'phpstan/phpstan': [{ version: '1.11.5' }],
+					},
+				}),
+			};
+		};
+
+		const result = await fetchOnlinePresetInfo('php-phpstan', fetcher);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.package).toBe('phpstan/phpstan');
+			expect(result.version).toBe('1.11.5');
+		}
+	});
+
+	it('resolves luarocks registry info successfully', async () => {
+		const fetcher: IOnlineFetcher = async (url) => {
+			expect(url).toBe('https://luarocks.org/api/1/luacheck');
+			return {
+				ok: true,
+				status: 200,
+				body: JSON.stringify({
+					version: '0.27.0',
+				}),
+			};
+		};
+
+		const result = await fetchOnlinePresetInfo('lua-luacheck', fetcher);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.package).toBe('luacheck');
+			expect(result.version).toBe('0.27.0');
 		}
 	});
 });

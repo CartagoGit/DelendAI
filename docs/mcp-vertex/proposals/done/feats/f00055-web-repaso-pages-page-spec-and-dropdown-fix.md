@@ -1,6 +1,6 @@
 ---
 id: f00055
-status: ready
+status: done
 type: proposal
 track: apps/web+packages/ui-extension+apps/shared+i18n+ux+tooling
 date: 2026-06-24
@@ -201,7 +201,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "`bun run check:i18n` still passes (the `install.*` keys removed from `i18n/*.ts` were only referenced from the deleted page; the spec asserts no orphan references remain)."
   - "Visually `/install` matches the previous page within the prose styles — the maintainer signs off in the PR."
 - **Status**: pending
-
+- status: done
 ## Architecture
 
 - **`renderDropdown` consumers**: extensions/vscode keeps working byte-identically (S1's defaults). The 1-line `renderDropdown({idPrefix: 'nav-more', classPrefix: 'nav__more', ...})` change in SiteNav is the only caller-side edit.
