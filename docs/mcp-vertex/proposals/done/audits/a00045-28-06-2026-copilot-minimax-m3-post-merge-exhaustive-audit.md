@@ -5,7 +5,7 @@ title: "Auditoría exahustiva post-merge — 6 agentes en paralelo, código y li
 status: done
 date: 2026-06-28T19:30:00Z
 track: code-quality+concurrency+i18n+lifecycle+governance
-shipped-in: []
+shipped-in: ["e6429054"]
 recan: []
 related:
     - a00043 # audit Gemini 3.5 Flash — hallazgos que ya cerraron
