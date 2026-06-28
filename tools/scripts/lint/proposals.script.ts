@@ -63,10 +63,75 @@ const walkMarkdown = async (root: string): Promise<string[]> => {
 	return out;
 };
 
+/**
+ * Group of proposal files that share the same `id:` in their frontmatter.
+ * `a00044` H5 (a00044 robustness audit): the previous lint only ever checked
+ * each file in isolation, so two `.md` files claiming `id: f00058` (one in
+ * `done/`, one in `ready/`) sailed through `bun run validate` without a
+ * single warning. This struct is the per-id collision payload surfaced by
+ * {@link detectDuplicateProposalIds}.
+ */
+export interface IDuplicateProposalIdGroup {
+	readonly id: string;
+	readonly absPaths: readonly string[];
+}
+
+/**
+ * Walk `files` and group them by the `id:` field in their frontmatter.
+ * Returns only the groups that have >= 2 members — a single-occurrence
+ * `id:` is the expected case and is omitted from the result.
+ *
+ * Pure over its inputs (filesystem + the list of abs paths); does NOT
+ * recurse into subdirectories — pass an already-walked list. Reads
+ * each file's first ~4 KiB because frontmatter always lives in the
+ * first 100 lines or so.
+ */
+export const detectDuplicateProposalIds = async (
+	files: readonly string[],
+	proposalsDirAbs: string,
+): Promise<readonly IDuplicateProposalIdGroup[]> => {
+	const idPattern = /^id:\s*([a-z]\d{5})\s*$/m;
+	const byId = new Map<string, string[]>();
+	for (const abs of files) {
+		const markdown = await readFile(abs, 'utf8').catch(() => '');
+		// Only inspect the frontmatter block (between the leading `---`
+		// markers) so a `id:` mention in the body never trips the check.
+		const fenceEnd = markdown.indexOf('\n---', 3);
+		const head =
+			fenceEnd === -1
+				? markdown.slice(0, 4096)
+				: markdown.slice(0, fenceEnd);
+		const match = idPattern.exec(head);
+		if (match === null) continue;
+		// `idPattern` always captures exactly one group; with
+		// `noUncheckedIndexedAccess` TS still types it as `string | undefined`.
+		// The regex above guarantees presence, so narrow with `??`.
+		const id = match[1] ?? '';
+		if (id.length === 0) continue;
+		const list = byId.get(id) ?? [];
+		list.push(abs);
+		byId.set(id, list);
+	}
+	const out: IDuplicateProposalIdGroup[] = [];
+	for (const [id, absPaths] of byId) {
+		if (absPaths.length < 2) continue;
+		// Sort so the output is deterministic across machines — important
+		// for snapshot-style gates and for humans comparing two runs.
+		const sorted = [...absPaths].sort((a, b) => a.localeCompare(b));
+		out.push({
+			id,
+			absPaths: sorted.map((p) => relative(proposalsDirAbs, p)),
+		});
+	}
+	out.sort((a, b) => a.id.localeCompare(b.id));
+	return out;
+};
+
 export interface ILintProposalsSummary {
 	readonly filesChecked: number;
 	readonly legacySkipped: number;
 	readonly fatalErrors: number;
+	readonly duplicateIds: readonly IDuplicateProposalIdGroup[];
 	readonly ok: boolean;
 }
 
@@ -110,10 +175,33 @@ export const lintProposalsDir = async (
 		if (fatal) fatalErrors += 1;
 	}
 
+	// a00044 H5: duplicate-id check. Runs after the per-file lint so the
+	// per-file errors appear first in the output. The check walks every
+	// file again (cheap: only reads the first 4 KiB of each) and groups
+	// by the `id:` field. Every group with >= 2 members is fatal because
+	// it would corrupt the canonical `proposals/index.json` registry.
+	const duplicateIds = await detectDuplicateProposalIds(
+		files,
+		proposalsDirAbs,
+	);
+	for (const group of duplicateIds) {
+		fatalErrors += 1;
+		console.log(
+			`\nERROR duplicate proposal id "${group.id}" in ${group.absPaths.length} files:`,
+		);
+		for (const p of group.absPaths) {
+			console.log(`  - ${p}`);
+		}
+		console.log(
+			'  fix: rename one of them (next free id) or merge them into a single proposal.',
+		);
+	}
+
 	return {
 		filesChecked: files.length,
 		legacySkipped,
 		fatalErrors,
+		duplicateIds,
 		ok: fatalErrors === 0,
 	};
 };
@@ -123,8 +211,12 @@ if (import.meta.main) {
 	const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 	const proposalsDirAbs = join(repoRoot, 'docs', 'mcp-vertex', 'proposals');
 	const summary = await lintProposalsDir(proposalsDirAbs);
+	const duplicateNote =
+		summary.duplicateIds.length === 0
+			? ''
+			: `, ${summary.duplicateIds.length} duplicate id(s)`;
 	console.log(
-		`\n${summary.filesChecked} files checked, ${summary.legacySkipped} legacy file(s) skipped, ${summary.fatalErrors} fatal error(s).`,
+		`\n${summary.filesChecked} files checked, ${summary.legacySkipped} legacy file(s) skipped, ${summary.fatalErrors} fatal error(s)${duplicateNote}.`,
 	);
 	if (!summary.ok) process.exit(1);
 }
