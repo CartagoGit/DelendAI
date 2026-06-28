@@ -370,6 +370,31 @@ const dict: LangDict = {
 			},
 		],
 	},
+	cli: {
+		title: 'CLI 指南',
+		description:
+			'如何使用 mcpv / @mcp-vertex/core CLI：全局标志、每个插件的命令组以及常见工作流。',
+	},
+	guide: {
+		title: '指南',
+		description:
+			'@mcp-vertex/core 项目的详细演练：概念、安装、配置、插件、质量门禁、扩展、常见问题解答。',
+		toc: [
+			'1. 介绍',
+			'2. 概念',
+			'3. 安装',
+			'4. 配置',
+			'5. 插件',
+			'6. 工具 / 提示词 / 资源 / 知识库',
+			'7. 技能',
+			'8. 国际化 (i18n)',
+			'9. 质量门禁与多语言',
+			'10. 扩展 mcp-vertex',
+			'11. Token 预算',
+			'12. 视图过渡',
+			'13. 常见问题解答',
+		],
+	},
 };
 
 export default dict;

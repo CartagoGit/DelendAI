@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T11:26:43.416Z",
+	"generatedAt": "2026-06-28T11:37:35.590Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -859,7 +859,7 @@
 				"id": "x00079",
 				"title": "x00079",
 				"track": "plugins/proposals+lint+i18n+tools+scripts",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": "2026-06-28"
 			},
@@ -873,8 +873,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 21,
-			"in-progress": 0,
+			"ready": 20,
+			"in-progress": 1,
 			"review": 0,
 			"paused": 3,
 			"done": 132,

@@ -12,16 +12,15 @@ interface IPagesManifest {
 	readonly pages: readonly PageSpec[];
 }
 
-const manifest = pagesManifest as IPagesManifest;
-
 export function getStaticPaths() {
 	return langStaticPaths().flatMap(({ params }) =>
-		manifest.pages.map((page) => ({
+		(pagesManifest as IPagesManifest).pages.map((page) => ({
 			params: { lang: params.lang, page: page.slug },
 		})),
 	);
 }
 
+const manifest = pagesManifest as IPagesManifest;
 const lang = resolveLang(Astro.params.lang);
 const pageSpec = manifest.pages.find(
 	(entry) => entry.slug === Astro.params.page,

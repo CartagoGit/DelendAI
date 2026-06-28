@@ -25,7 +25,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import type {
 	IPersistentTaskEntry,
@@ -47,54 +47,6 @@ export interface IPromoteOnReleaseResult {
 	readonly promotedTaskIds: readonly string[];
 	readonly skippedCount: number;
 }
-
-// ---------------------------------------------------------------------------
-// In-process mutex (keyed by queuePath)
-// ---------------------------------------------------------------------------
-
-interface IMutex {
-	readonly queuePath: string;
-	current: Promise<void>;
-}
-
-const mutexRegistry = new Map<string, IMutex>();
-
-const withMutex = async <T>(
-	queuePath: string,
-	fn: () => Promise<T>,
-): Promise<T> => {
-	const existing = mutexRegistry.get(queuePath);
-	if (existing) {
-		const prev = existing.current;
-		let release!: () => void;
-		existing.current = new Promise<void>((resolve) => {
-			release = resolve;
-		});
-		await prev;
-		try {
-			return await fn();
-		} finally {
-			release();
-		}
-	}
-
-	let release!: () => void;
-	const next = new Promise<void>((resolve) => {
-		release = resolve;
-	});
-	mutexRegistry.set(queuePath, { queuePath, current: next });
-	try {
-		return await fn();
-	} finally {
-		release();
-		// Only delete if we're still the current entry; otherwise a
-		// newer mutex may have been installed.
-		const latest = mutexRegistry.get(queuePath);
-		if (latest && latest.current === next) {
-			mutexRegistry.delete(queuePath);
-		}
-	}
-};
 
 // ---------------------------------------------------------------------------
 // Atomic persist
@@ -142,7 +94,7 @@ const loadOrEmptyQueue = async (
 export const promoteOnRelease = async (
 	params: IPromoteOnReleaseParams,
 ): Promise<IPromoteOnReleaseResult> => {
-	return withMutex(params.queuePath, async () => {
+	return withFileMutex(params.queuePath, async () => {
 		const queue = await loadOrEmptyQueue(params.queuePath);
 		if (queue.entries.length === 0) {
 			return { promotedCount: 0, promotedTaskIds: [], skippedCount: 0 };

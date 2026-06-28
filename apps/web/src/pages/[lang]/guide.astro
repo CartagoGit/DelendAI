@@ -1,7 +1,7 @@
 ---
 import Base from '#LAYOUTS/Base.astro';
 import PageHeader from '#COMPONENTS/PageHeader.astro';
-import { languages, type Lang } from '#I18N/ui';
+import { languages, useTranslations, type Lang } from '#I18N/ui';
 
 /** All non-English locales get their own /<lang>/guide. The English copy
  * lives in the root /guide.astro. */
@@ -17,26 +17,27 @@ const langCode: Lang = (
 ) as Lang;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const homeHref = `${base}/${langCode}/`;
+const t = useTranslations(langCode);
 
 const sections = [
-	{ id: 'intro', title: '1. Introduction' },
-	{ id: 'concepts', title: '2. Concepts' },
-	{ id: 'install', title: '3. Install' },
-	{ id: 'config', title: '4. Configuration' },
-	{ id: 'plugins', title: '5. Plugins' },
-	{ id: 'capabilities', title: '6. Tools / Prompts / Resources / Knowledge' },
-	{ id: 'skills', title: '7. Skills' },
-	{ id: 'i18n', title: '8. i18n' },
-	{ id: 'quality', title: '9. Quality gates & multi-language' },
-	{ id: 'extending', title: '10. Extending mcp-vertex' },
-	{ id: 'tokens', title: '11. Token budgets' },
-	{ id: 'transitions', title: '12. View transitions' },
-	{ id: 'faq', title: '13. FAQ' },
+	{ id: 'intro', title: t.guide.toc[0] ?? '' },
+	{ id: 'concepts', title: t.guide.toc[1] ?? '' },
+	{ id: 'install', title: t.guide.toc[2] ?? '' },
+	{ id: 'config', title: t.guide.toc[3] ?? '' },
+	{ id: 'plugins', title: t.guide.toc[4] ?? '' },
+	{ id: 'capabilities', title: t.guide.toc[5] ?? '' },
+	{ id: 'skills', title: t.guide.toc[6] ?? '' },
+	{ id: 'i18n', title: t.guide.toc[7] ?? '' },
+	{ id: 'quality', title: t.guide.toc[8] ?? '' },
+	{ id: 'extending', title: t.guide.toc[9] ?? '' },
+	{ id: 'tokens', title: t.guide.toc[10] ?? '' },
+	{ id: 'transitions', title: t.guide.toc[11] ?? '' },
+	{ id: 'faq', title: t.guide.toc[12] ?? '' },
 ];
 ---
 
-<Base lang={langCode} title={`Guide — @mcp-vertex/core`} description="A detailed walkthrough of the @mcp-vertex/core project: concepts, install, config, plugins, quality gates, extending, FAQ.">
-	<PageHeader lang={langCode} title="Guide" />
+<Base lang={langCode} title={`${t.guide.title} — @mcp-vertex/core`} description={t.guide.description}>
+	<PageHeader lang={langCode} title={t.guide.title} />
 	<section class="section">
 		<div class="container guide">
 			<aside class="guide__toc" aria-label="Table of contents">

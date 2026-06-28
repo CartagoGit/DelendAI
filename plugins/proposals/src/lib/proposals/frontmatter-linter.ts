@@ -102,6 +102,7 @@ export const lintFrontmatter = (markdown: string): ILintFrontmatterResult => {
 	checkTitleLength(frontmatter, issues);
 	checkCascadeOverrideConsistency(frontmatter, issues);
 	checkCascadeBoostKnown(frontmatter, issues);
+	checkPausedReason(frontmatter, issues);
 
 	return { issues, frontmatter };
 };
@@ -248,5 +249,22 @@ const checkCascadeBoostKnown = (
 			message: `frontmatter cascadeBoost "${String(boost)}" is not one of the allowed values`,
 			fix: `Use one of: ${[...CASCADE_BOOST_VALUES].join(', ')}. Unknown values silently no-op at runtime.`,
 		});
+	}
+};
+
+const checkPausedReason = (
+	fm: Readonly<Record<string, unknown>>,
+	issues: ILintIssue[],
+): void => {
+	if (fm.status === 'paused') {
+		const reason = fm['paused-reason'] ?? fm.pausedReason;
+		if (typeof reason !== 'string' || reason.trim() === '') {
+			issues.push({
+				line: 0,
+				message:
+					'frontmatter status is "paused" but "paused-reason" is missing or empty',
+				fix: 'Add `paused-reason: <explanation of why the proposal is paused>` to the frontmatter.',
+			});
+		}
 	}
 };

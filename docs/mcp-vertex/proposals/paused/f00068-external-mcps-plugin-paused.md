@@ -1,6 +1,7 @@
 ---
 id: f00068
 status: paused
+paused-reason: Blocked on multi-model orchestrator and dependency prerequisites
 type: proposal
 track: core+plugins+host+config+i18n+docs+web+extensions/vscode
 date: 2026-06-26

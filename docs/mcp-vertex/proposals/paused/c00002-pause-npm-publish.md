@@ -1,6 +1,7 @@
 ---
 id: c00002
 status: paused
+paused-reason: Blocked on NPM_TOKEN and develop->main merge
 type: proposal
 track: docs+release
 date: 2026-06-21

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,8 +17,24 @@ type IConfigFile = {
 };
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(HERE, '..', '..', '..');
-const CONFIG_PATH = resolve(ROOT, 'mcp-vertex.config.json');
+
+const findConfigPath = (startDir: string): string => {
+	let cur = startDir;
+	while (true) {
+		const candidate = resolve(cur, 'mcp-vertex.config.json');
+		if (existsSync(candidate)) {
+			return candidate;
+		}
+		const parent = dirname(cur);
+		if (parent === cur) {
+			break;
+		}
+		cur = parent;
+	}
+	return resolve(startDir, '..', '..', '..', 'mcp-vertex.config.json');
+};
+
+const CONFIG_PATH = findConfigPath(HERE);
 
 const readConfig = (): IConfigFile =>
 	JSON.parse(readFileSync(CONFIG_PATH, 'utf8')) as IConfigFile;

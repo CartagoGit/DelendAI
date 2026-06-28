@@ -10,12 +10,13 @@ interface IPagesManifest {
 	readonly pages: readonly PageSpec[];
 }
 
-const manifest = pagesManifest as IPagesManifest;
-
 export function getStaticPaths() {
-	return manifest.pages.map((page) => ({ params: { page: page.slug } }));
+	return (pagesManifest as IPagesManifest).pages.map((page) => ({
+		params: { page: page.slug },
+	}));
 }
 
+const manifest = pagesManifest as IPagesManifest;
 const pageSpec = manifest.pages.find(
 	(entry) => entry.slug === Astro.params.page,
 );
