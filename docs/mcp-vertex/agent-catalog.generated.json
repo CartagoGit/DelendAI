@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T16:53:08.092Z",
+	"generatedAt": "2026-06-28T17:03:07.433Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -696,14 +696,6 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00060",
-				"title": "f00060",
-				"track": "design-tokens+css+extension-ux",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00061",
 				"title": "f00061",
 				"track": "solid+architecture+extension-ux",
@@ -834,10 +826,10 @@
 		],
 		"byStatus": {
 			"ready": 15,
-			"in-progress": 1,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 136,
+			"done": 138,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
