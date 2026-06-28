@@ -1,5 +1,5 @@
 ---
-id: f00061
+id: r00006
 status: ready
 type: proposal
 track: solid+architecture+extension-ux
@@ -28,7 +28,7 @@ acceptance:
     - { command: bun run validate,  expect: exit0 }
 ---
 
-# f00061 — SOLID refactor of dashboard renderer and status bar
+# r00006 — SOLID refactor of dashboard renderer and status bar
 
 ## goal
 

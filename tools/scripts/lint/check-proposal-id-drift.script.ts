@@ -90,6 +90,20 @@ const STATUS_FOLDERS: readonly string[] = [
 	'paused',
 	'blocked',
 	'retired',
+	'retired/issues',
+	'done/feats',
+	'done/fixes',
+	'done/refactors',
+	'done/audits',
+	'done/chores',
+	'done/docs',
+	'done/tests',
+	'done/plans',
+	'done/resumes',
+	'done/breakings',
+	'done/perfs',
+	'done/infras',
+	'done/spikes',
 ];
 
 /**

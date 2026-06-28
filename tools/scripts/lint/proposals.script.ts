@@ -163,9 +163,7 @@ export const lintProposalsDir = async (
 		// sections in semantic order) are downgraded to warnings so the
 		// tool surfaces them without blocking CI.
 		const hasFatalIssue = result.issues.some((i) =>
-			/unrecognized|missing required|duplicate|expects folder|paused-reason/i.test(
-				i.message,
-			),
+			!i.message.includes('out of canonical order'),
 		);
 		const fatal = hasFatalIssue;
 		const label = fatal ? 'ERROR' : 'WARN';

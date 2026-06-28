@@ -13,7 +13,7 @@ related:
   - f00064 # dogfood layout, cache centralization S2, contracts split S3, web S5, host surface S6 (this umbrella tightens and re-owns)
   - f00057 # skill unification and plugin coverage wiring
   - f00020 # skills manifest as canonical skill index
-  - f00054 # root declutter and cache consolidation
+  - r00004 # root declutter and cache consolidation
 ownership:
   - { agent: implementation_runner, task: 'A: move skills out of docs/mcp-vertex/skills into their owners (packages/core for core skills, plugins/<x> for plugin skills); docs becomes documentation only; rewire load-skills, assemble, gen-skills, lint:skills' }
   - { agent: implementation_runner, task: 'B: make project + active-plugin skills auto-discoverable and usable by the AI with no manual instruction; close any gap left by f00056; optimize for token cost (compact surface)' }

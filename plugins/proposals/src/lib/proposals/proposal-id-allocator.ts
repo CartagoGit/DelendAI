@@ -49,6 +49,19 @@ const seedFromDisk = async (
 		'paused',
 		'blocked',
 		'retired',
+		'done/feats',
+		'done/fixes',
+		'done/refactors',
+		'done/audits',
+		'done/chores',
+		'done/docs',
+		'done/tests',
+		'done/plans',
+		'done/resumes',
+		'done/breakings',
+		'done/perfs',
+		'done/infras',
+		'done/spikes',
 	];
 	for (const folder of folders) {
 		const dirAbs =

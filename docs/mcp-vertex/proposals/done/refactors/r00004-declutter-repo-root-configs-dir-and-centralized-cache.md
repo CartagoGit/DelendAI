@@ -1,5 +1,5 @@
 ---
-id: f00054
+id: r00004
 status: done
 type: proposal
 kind: refactor
@@ -8,7 +8,7 @@ track: repo-layout+build+tooling+dx
 date: 2026-06-24
 ---
 
-# f00054 — Declutter the repo root: configs/ + centralized .cache/
+# r00004 — Declutter the repo root: configs/ + centralized .cache/
 
 ## Goal
 

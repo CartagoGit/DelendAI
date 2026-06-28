@@ -10,7 +10,7 @@ shipped-in: []
 recan: []
 related:
     - f00059 # sibling i18n thread across web/extension surface
-    - f00063 # locale-aware date/time formatting
+    - r00005 # locale-aware date/time formatting
 ownership:
     - { agent: proposal_guardian,    task: 'S1: extend `MARKERS` with a parallel `MARKERS_EN` map; keep `CloseMarker` type untouched' }
     - { agent: implementation_runner, task: 'S2: `formatCloseMarker(state, reason?, opts?: { locale?: "es"|"en" })` — ES is the default and matches the legacy output bit-for-bit' }

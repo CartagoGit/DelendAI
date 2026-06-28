@@ -161,4 +161,4 @@ S1 (tokens) → S2 (webviews) → S3 (snapshot)
 
 The audit also flagged H22 (`render-panel-tools.ts` sparkline is a constant value, not a
 trend) and H24 (`barChart` no aria-label). Those are deferred to the dashboard refactor
-proposal (f00061).
+proposal (r00006).

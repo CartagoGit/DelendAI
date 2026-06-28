@@ -32,7 +32,7 @@ related:
   - f00049 # conventions unification — f00057 owns S8's playbook merge + extends S4's per-plugin layout migration to the remaining plugins
   - f00051 # multi-language rules presets — f00057 must coordinate S8 docs that cross with skill merging
   - f00056 # agent-discovery catalog — f00057 feeds it via `appliesTo:` enrichment on every skill; does NOT create a parallel catalog
-  - f00054 # repo root declutter — f00057 S8 docs end up under docs/skills/ but the root stays clean
+  - r00004 # repo root declutter — f00057 S8 docs end up under docs/skills/ but the root stays clean
   - f00052 # agent_worktree host-flag — f00057 S1 (proposals-canonical-workflow) must reference the flag awareness, not duplicate it
   - a00036 # a00036 findings — R-09 (manifest drift) is resolved by f00057 S3
   - a00042 # audit that surfaced compilation and SDK drift findings
