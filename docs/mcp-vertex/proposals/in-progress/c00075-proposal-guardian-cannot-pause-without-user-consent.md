@@ -1,6 +1,6 @@
 ---
 id: c00075
-status: ready
+status: in-progress
 type: proposal
 track: governance
 date: 2026-06-28
@@ -71,23 +71,6 @@ That is the rule this proposal codifies. The DFA already supports
 resolves to `ready` when `blocked-by` empties). What is missing is
 the **discipline** that prevents an autonomous slot from using
 `paused` as a soft-delete / parking-lot move.
-
-## non-goals
-
-- This proposal does **not** add a `proposal_resume` tool. The DFA
-  already permits `paused → ready` via `proposal-transition` with a
-  reason. The existing transition is sufficient.
-- This proposal does **not** change the meaning of `paused` —
-  "do later, by human intent" stays the canonical semantics.
-- This proposal does **not** require the user to write a reason
-  every time they want to pause. `paused-reason` is **required
-  when an autonomous agent pauses**; a human pausing via the chat
-  surface (where the user is explicitly present) may not need it
-  (though it is encouraged).
-- This proposal does **not** retroactively punish the guardian for
-  the 2026-06-28 pause. The migration (S4) treats each existing
-  paused file as evidence: if there is a clear `blocked-by`, move
-  to `blocked/`; otherwise, ask the user.
 
 ## why this design
 
@@ -169,11 +152,28 @@ external made it impossible)`. The mapping:
 
 `paused` is reserved for the first row only.
 
+## non-goals
+
+- This proposal does **not** add a `proposal_resume` tool. The DFA
+  already permits `paused → ready` via `proposal-transition` with a
+  reason. The existing transition is sufficient.
+- This proposal does **not** change the meaning of `paused` —
+  "do later, by human intent" stays the canonical semantics.
+- This proposal does **not** require the user to write a reason
+  every time they want to pause. `paused-reason` is **required
+  when an autonomous agent pauses**; a human pausing via the chat
+  surface (where the user is explicitly present) may not need it
+  (though it is encouraged).
+- This proposal does **not** retroactively punish the guardian for
+  the 2026-06-28 pause. The migration (S4) treats each existing
+  paused file as evidence: if there is a clear `blocked-by`, move
+  to `blocked/`; otherwise, ask the user.
+
 ## slices
 
 ### S1 — paused-reason field + linter failure
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-frontmatter-types.ts` (or equivalent), `tools/scripts/lint/proposals.script.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-scaffold-linter.spec.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - Frontmatter schema accepts optional `paused-reason: string`.
@@ -186,7 +186,7 @@ external made it impossible)`. The mapping:
 
 ### S2 — guardian slot discipline
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-guardian.ts` (or equivalent), `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - The guardian slot calls `proposal-transition to: paused` only
@@ -200,7 +200,7 @@ external made it impossible)`. The mapping:
 
 ### S3 — spec coverage
 - **Files**: `plugins/proposals/tests/src/lib/proposals/lint-proposals.spec.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-guardian-slot.spec.ts`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - `lint-proposals.spec.ts`: paused-without-reason → fails;
@@ -210,7 +210,7 @@ external made it impossible)`. The mapping:
 
 ### S4 — migration
 - **Files**: every `.md` under `docs/mcp-vertex/proposals/paused/`
-- **Status**: ready
+- **Status**: done
 - **Gate**: `bun run validate`
 - **Acceptance**:
   - Every existing paused file either (a) has `paused-reason`
