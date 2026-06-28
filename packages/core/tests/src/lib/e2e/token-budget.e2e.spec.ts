@@ -39,7 +39,8 @@ const BUDGET_BYTES = {
 	// rename (`mcp-vertex_` prefix on every tool) added ~11B per listed tool,
 	// raising full to 8015B and compact to 1944B measured. Compact is still
 	// the real promise — < 30% of full.
-	overviewFull: 8_500,
+	// Bumped 8500 → 8700 (2026-06-28): added commitAuthor options.
+	overviewFull: 8_700,
 	overviewCompact: 2_100,
 	agentCatalogCompact: 1_300,
 	agentCatalogFull: 6_800,

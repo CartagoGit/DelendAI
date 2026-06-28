@@ -133,6 +133,40 @@ export interface McpVertexAuditAuditPlanOutput {
 	}>;
 }
 
+export interface McpVertexAuditAuditRunOutput {
+	scope: string;
+	date: string;
+	saved: {
+		provider: string;
+		model: string;
+		path: string;
+		bytes: number;
+		elapsedMs: number;
+	}[];
+	failed: {
+		provider: string;
+		model: string;
+		error: string;
+		elapsedMs: number;
+	}[];
+	consolidation: {
+		auditsFound: number;
+		skipped: {
+			path: string;
+			reason: string;
+		}[];
+		findings: unknown[];
+		topActions: string[];
+		markdown: string;
+	};
+	scaffolded: {
+		id: string;
+		filename: string;
+		severity: string;
+		files: string[];
+	}[];
+}
+
 export interface McpVertexCreateProjectOutput {
 	kind: "host" | "plugin" | "client";
 	files: {
@@ -221,13 +255,13 @@ export interface McpVertexDocsDocsReadOutput {
 }
 
 export interface McpVertexDocsDocsSearchOutput {
-	hits: {
-		path: string;
-		title: string;
-		score: number;
-		snippet: string;
-	}[];
-	truncated: boolean;
+	ok: false;
+	error: {
+		reason: "deprecated";
+		replacement: string;
+		since: string;
+		note?: string;
+	};
 }
 
 export interface McpVertexDriftCheckOutput {
@@ -767,6 +801,28 @@ export interface McpVertexProposalsAutoWorkOutput {
 	};
 	steps?: string[];
 	branchStatusWarnings?: string[];
+	executionMode?: "normal" | "confirm-required" | "blocked";
+	hygieneBlockers?: string[];
+	hygieneActions?: string[];
+	hygieneWarnings?: string[];
+	stashes?: Array<{
+		index: number;
+		ref: string;
+		branch: string | null;
+		message: string;
+		date: string | null;
+	}>;
+	rescueCandidates?: {
+		branch: string;
+		ahead: number;
+		behind: number;
+		lastCommitMinutesAgo: number;
+		worktreePath: string;
+		diffStat: string;
+		cherryPickHint: string;
+	}[];
+	ok?: boolean;
+	blockers?: string[];
 }
 
 export interface McpVertexProposalsBranchGcOutput {
@@ -1383,6 +1439,42 @@ export interface McpVertexProposalsStateRepairOutput {
 	nextAction?: string;
 }
 
+export interface McpVertexProposalsSwarmHygieneOutput {
+	ok: boolean;
+	reason?: string;
+	baseBranch?: string;
+	generatedAt?: string;
+	rescueCandidates?: {
+		branch: string;
+		ahead: number;
+		behind: number;
+		lastCommitMinutesAgo: number;
+		worktreePath: string;
+		diffStat: string;
+		cherryPickHint: string;
+	}[];
+	gcEligible?: Array<{
+		path: string;
+		branch: string;
+		reason: "merged-and-clean" | "merged-and-clean-with-force" | "behind-only" | "no-branch";
+		dirtyFiles: number;
+		untrackedFiles: number;
+		outOfCache: boolean;
+		ageLabel: string;
+	}>;
+	outOfCache?: {
+		path: string;
+		branch: string;
+		head: string;
+		lastCommitMinutesAgo: number;
+	}[];
+	summary?: {
+		rescueCandidatesCount: number;
+		gcEligibleCount: number;
+		outOfCacheCount: number;
+	};
+}
+
 export interface McpVertexProposalsSyncProposalsOutput {
 	changed: boolean;
 	count: number;
@@ -1691,6 +1783,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_analyze_project": McpVertexAnalyzeProjectOutput;
 	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
+	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;
@@ -1753,6 +1846,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_round_context": McpVertexProposalsRoundContextOutput;
 	"mcp-vertex_proposals_state_health": McpVertexProposalsStateHealthOutput;
 	"mcp-vertex_proposals_state_repair": McpVertexProposalsStateRepairOutput;
+	"mcp-vertex_proposals_swarm_hygiene": McpVertexProposalsSwarmHygieneOutput;
 	"mcp-vertex_proposals_sync_proposals": McpVertexProposalsSyncProposalsOutput;
 	"mcp-vertex_proposals_task_queue": McpVertexProposalsTaskQueueOutput;
 	"mcp-vertex_quality_get_quality_scopes": McpVertexQualityGetQualityScopesOutput;

@@ -119,7 +119,12 @@ describe('withFileMutex — cross-process critical section', async () => {
 		});
 
 		// Wait until A has acquired (sidecar written), then simulate B stealing.
-		while (!existsSync(sidecar)) await new Promise((r) => setTimeout(r, 5));
+		while (
+			!existsSync(sidecar) ||
+			readFileSync(sidecar, 'utf8').trim() === ''
+		) {
+			await new Promise((r) => setTimeout(r, 5));
+		}
 		const stolenToken = '12345\n0\nb-owns-this-now';
 		writeFileSync(sidecar, stolenToken);
 

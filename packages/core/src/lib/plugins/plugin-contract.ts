@@ -75,6 +75,8 @@ export interface IMcpPluginContext {
 	 * hosts always supply it.
 	 */
 	readonly cacheEvictionRegistry?: ICacheEvictionRegistry | undefined;
+	/** Resolved commit-author policy (f00082). */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
 /**

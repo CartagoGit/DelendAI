@@ -23,6 +23,7 @@ import {
 	gitLastCommitAuthor,
 	toolError,
 	toolOk,
+	type ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
 
 import { checkRepo } from '../services/git';
@@ -45,6 +46,8 @@ export interface IGitWriteToolOptions {
 	 * loop on main"; `master` covers the older default branch name).
 	 */
 	readonly protectedBranches?: readonly string[];
+	/** f00082: resolved commit-author policy. */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
 const DEFAULT_PROTECTED_BRANCHES: readonly string[] = ['main', 'master'];
@@ -111,6 +114,7 @@ export interface IGitCommitArgs {
 export const runGitCommit = async (
 	run: IGitRunner,
 	args: IGitCommitArgs,
+	commitAuthor?: ICommitAuthorResolution,
 ): Promise<IToolTextResult> => {
 	const repo = await checkRepo(run);
 	if (!repo.ok) return NOT_A_REPO(repo.reason);
@@ -145,11 +149,21 @@ export const runGitCommit = async (
 		}
 	}
 
+	if (commitAuthor?.reason) {
+		return toolError(
+			commitAuthor.reason,
+			'Please configure user.name and user.email first.',
+		);
+	}
+
 	const files = args.files ?? [];
 	const result = await commitAndPush({
 		message,
 		amend,
 		git: run,
+		...(commitAuthor?.authorFlag
+			? { authorFlag: commitAuthor.authorFlag }
+			: {}),
 		...(files.length > 0
 			? { files }
 			: // No explicit files: assume the caller already staged what
@@ -254,7 +268,7 @@ export const buildGitWriteToolRegistrations = (
 						}),
 					},
 					async (args: IGitCommitArgs) =>
-						runGitCommit(options.run, args),
+						runGitCommit(options.run, args, options.commitAuthor),
 				);
 			},
 		},

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type {
 	IToolRegistration,
 	IToolTextResult,
+	ICommitAuthorResolution,
 } from '@mcp-vertex/core/public';
 import { toolJson } from '@mcp-vertex/core/public';
 
@@ -109,6 +110,8 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	readonly loopDetectorCooldownMs?: number;
 	/** x00074 S3: opt-in; when true, the progressHash gate runs. */
 	readonly loopDetectorProgressGate?: boolean;
+	/** f00082: resolved commit-author policy. */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
 /**

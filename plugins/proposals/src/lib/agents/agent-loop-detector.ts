@@ -284,7 +284,10 @@ export const detectAgentLoop = (
 			suggestHandoff: false,
 			offendingHash: null,
 			triggeredGuards: [],
-			effectiveCount: 0,
+			effectiveCount: Math.max(
+				...[...buckets.values()].map((b) => b.effectiveCount),
+				0,
+			),
 		};
 	}
 

@@ -289,7 +289,6 @@ export default definePlugin({
 					// privately. We snapshot the current agent's window
 					// when one is registered; otherwise we leave the field
 					// undefined and the front-hook skips the S3 check.
-					loopDetectorWindow: undefined,
 					loopDetectorCooldownMs: 30_000,
 					loopDetectorProgressGate: false,
 					...(typeof ctx.options.validationCommand === 'string'

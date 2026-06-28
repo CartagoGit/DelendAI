@@ -47,6 +47,8 @@ describe('detectAgentLoop', async () => {
 			offendingAgent: null,
 			suggestHandoff: false,
 			offendingHash: null,
+			triggeredGuards: [],
+			effectiveCount: 0,
 		});
 	});
 
@@ -219,7 +221,7 @@ describe('f00074 S1 — outcome-aware sliding window', async () => {
 		const calls = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', i },
+				{ action: 'claim' },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart — inside the
 				// 30s cooldown so S2 does not reset the count.
@@ -235,7 +237,7 @@ describe('f00074 S1 — outcome-aware sliding window', async () => {
 		const calls = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', i },
+				{ action: 'claim' },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart — inside the
 				// 30s cooldown so S2 does not reset the count.
@@ -276,7 +278,7 @@ describe('x00074 S2 — timestamp-cooldown', async () => {
 		const calls = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', task_id: 'f00056-S5', i },
+				{ action: 'claim', task_id: 'f00056-S5' },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart — tight loop
 				// Use 'unknown' so the S1 outcome filter does not drop
@@ -293,11 +295,9 @@ describe('x00074 S2 — timestamp-cooldown', async () => {
 		const calls = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', i },
+				{ action: 'claim' },
 				'a1',
-				1_700_000_000_000 + i * 10_000, // 10s apart
-				// Use 'unknown' so the S1 outcome filter does not drop
-				// the bucket.
+				1_700_000_000_000 + i * 10_000, // 10s gap
 				'unknown',
 			),
 		);
@@ -321,13 +321,9 @@ describe('x00074 S3 — progress-aware filter', async () => {
 		const calls = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', i },
+				{ action: 'claim' },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart (within cooldown)
-				// Use 'unknown' (not 'ok') so the S1 outcome filter does
-				// not drop the entire bucket BEFORE the S3 progress-aware
-				// filter has a chance to run. We want to test S3 in
-				// isolation here.
 				'unknown',
 			),
 		);
@@ -347,7 +343,7 @@ describe('x00074 S3 — progress-aware filter', async () => {
 		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'agent_lock',
-				{ action: 'claim', i },
+				{ action: 'claim' },
 				'a1',
 				1_700_000_000_000 + i * 1_000,
 				// Use 'unknown' so the S1 outcome filter does not drop
@@ -366,7 +362,7 @@ describe('x00074 S3 — progress-aware filter', async () => {
 		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
 				'read_file',
-				{ path: 'x.ts', i },
+				{ path: 'x.ts' },
 				'a1',
 				1_700_000_000_000 + i * 1_000,
 				// Use 'retryable-error' so the S1 outcome filter does not
@@ -388,11 +384,11 @@ describe('x00074 S3 — progress-aware filter', async () => {
 				// Use 'unknown' so the S1 outcome filter does not drop
 				// the bucket. We want the S3 gate to be the only filter
 				// gating here.
-				'unknownent_lock',
-				{ action: 'claim', i },
+				'agent_lock',
+				{ action: 'claim' },
 				'a1',
 				1_700_000_000_000 + i * 1_000,
-				'ok',
+				'unknown',
 			),
 		).map((c) => ({ ...c, progressHash: 'same' }));
 		// Default: progressHashGate: false → S3 skipped.
