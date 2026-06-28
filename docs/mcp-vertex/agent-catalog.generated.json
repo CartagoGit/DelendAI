@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T11:56:46.857Z",
+	"generatedAt": "2026-06-28T12:22:11.378Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -854,22 +854,14 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-28"
-			},
-			{
-				"id": "x00080",
-				"title": "x00080",
-				"track": "core+agents+governance+plugins/proposals",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-06-28"
 			}
 		],
 		"byStatus": {
 			"ready": 19,
-			"in-progress": 1,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 133,
+			"done": 134,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
