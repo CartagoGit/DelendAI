@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T12:22:11.378Z",
+	"generatedAt": "2026-06-28T12:53:02.139Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -688,14 +688,6 @@
 				"date": "2026-06-21"
 			},
 			{
-				"id": "c00012",
-				"title": "c00012",
-				"track": "governance",
-				"status": "ready",
-				"kind": "chore",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "c00075",
 				"title": "c00075",
 				"track": "governance",
@@ -857,11 +849,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 19,
+			"ready": 18,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 134,
+			"done": 135,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
