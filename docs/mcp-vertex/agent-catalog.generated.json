@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T12:57:08.067Z",
+	"generatedAt": "2026-06-28T15:17:03.618Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -688,6 +688,14 @@
 				"date": "2026-06-21"
 			},
 			{
+				"id": "c00086",
+				"title": "c00086",
+				"track": "swarm+coordination+governance",
+				"status": "ready",
+				"kind": "chore",
+				"date": "2026-06-28"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -841,11 +849,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
+			"ready": 17,
 			"in-progress": 1,
 			"review": 0,
 			"paused": 3,
-			"done": 136,
+			"done": 134,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
