@@ -1,8 +1,23 @@
 #!/usr/bin/env bun
 /**
- * check-stray-cache-files.script.ts — f00081 (the "scripts dropped in the
- * wrong place" lint). The repo's cache root is `.cache/mcp-vertex/` and
- * every artefact under it is meant to fall into a sanctioned subdir:
+ * check-stray-cache-files.script.ts — f00081 + f00082.
+ *
+ * f00081: any executable-looking file (`*.ts`, `*.mjs`, `*.sh`, `*.py`,
+ * …) under `.cache/mcp-vertex/<weird>/` is a stray — the cache root is
+ * for engine state, not for agent-authored code. Real scripts live
+ * under `tools/scripts/`.
+ *
+ * f00082: extends the same defence to the repo root. The root
+ * contains 19 legitimate files (AGENTS.md, package.json, biome.json,
+ * lefthook.yml, mcp-vertex.config.json, …) but **none of them has an
+ * executable extension**. A file like `-la` (output of `ls -la`),
+ * `tmp.sh`, `probe.py`, `experiment.ts` at the root is almost always
+ * an agent whose shell mis-redirection landed in the wrong place. The
+ * root-level check flags every executable-extension file in the
+ * top-level entry of the repo (NOT recursive — subdirs like
+ * `tools/scripts/*.ts` are legitimate source code).
+ *
+ * Sanctioned cache layout (f00081, for reference):
  *
  *   .cache/mcp-vertex/
  *     bootstrap/      (engine boot snapshots)
@@ -17,19 +32,11 @@
  *     <pluginCacheDir>/exec/ (f00080 ephemeral exec paths per plugin)
  *     .worktrees/<agent>/    (per-agent git worktrees, NOT code)
  *
- * Anything ELSE under `.cache/mcp-vertex/` that looks like source
- * (`*.ts`, `*.mjs`, `*.js`, `*.sh`, `*.py`, `*.mjs` with shebang) or is
- * a top-level entry that is neither a sanctioned subdir nor a known
- * cache artefact is a stray — it almost always means an agent wrote
- * source code into the cache root because the shell cwd was wrong or
- * the convention was unknown. The lint fails loudly so the operator
- * can either move the file to `tools/scripts/` (real driver code) or
- * delete it (one-shot artefact).
- *
  * The previous lints only checked *what runtime code wrote* (os.tmpdir,
  * /tmp, homedir) and *where the cache root lived* (only `.cache/`
  * itself). Neither caught agents writing driver scripts directly to
- * `.cache/mcp-vertex/<weird>/`. This closes that gap.
+ * `.cache/mcp-vertex/<weird>/` or stray files at the repo root. This
+ * closes both gaps.
  */
 
 import { readdir, stat } from 'node:fs/promises';
@@ -230,6 +237,80 @@ export const findStrayCacheFiles = async (
 	};
 };
 
+export interface IStrayRootFile {
+	readonly absPath: string;
+	readonly relPath: string;
+	readonly reason: 'root-executable-extension' | 'root-without-extension';
+	readonly extension: string;
+}
+
+export interface IStrayRootFilesSummary {
+	readonly repoRoot: string;
+	readonly strays: readonly IStrayRootFile[];
+	readonly ok: boolean;
+}
+
+const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
+	'AGENTS.md',
+	'CLAUDE.md',
+	'CHANGELOG.md',
+	'LICENSE',
+	'README.md',
+	'package.json',
+	'biome.json',
+	'bunfig.toml',
+	'bun.lock',
+	'lefthook.yml',
+	'mcp-vertex.config.json',
+	'stylelint.config.mjs',
+	'tsconfig.base.json',
+	'tsconfig.json',
+	'vitest.config.ts',
+	'vitest.shared.ts',
+	'.gitignore',
+	'.mcp.json',
+]);
+
+export const findStrayRootFiles = async (
+	repoRootAbs: string,
+): Promise<IStrayRootFilesSummary> => {
+	const strays: IStrayRootFile[] = [];
+	const entries = await readdir(repoRootAbs, { withFileTypes: true }).catch(
+		() => [],
+	);
+	for (const entry of entries) {
+		if (!entry.isFile()) continue;
+		if (SANCTIONED_ROOT_FILES.has(entry.name)) continue;
+		const abs = join(repoRootAbs, entry.name);
+		const dotIndex = entry.name.lastIndexOf('.');
+		const ext =
+			dotIndex === -1 ? '' : entry.name.slice(dotIndex).toLowerCase();
+		if (STRAY_EXECUTABLE_EXTENSIONS.has(ext)) {
+			strays.push({
+				absPath: abs,
+				relPath: entry.name,
+				reason: 'root-executable-extension',
+				extension: ext,
+			});
+			continue;
+		}
+		if (ext === '' && entry.name !== 'LICENSE') {
+			strays.push({
+				absPath: abs,
+				relPath: entry.name,
+				reason: 'root-without-extension',
+				extension: '',
+			});
+		}
+	}
+	strays.sort((a, b) => a.relPath.localeCompare(b.relPath));
+	return {
+		repoRoot: repoRootAbs,
+		strays,
+		ok: strays.length === 0,
+	};
+};
+
 const isMainModule = (): boolean => {
 	const entry = process.argv[1];
 	return entry !== undefined && import.meta.url === `file://${entry}`;
@@ -238,27 +319,48 @@ const isMainModule = (): boolean => {
 if (isMainModule()) {
 	void (async () => {
 		const root = repoRoot();
-		// Mirrors `cacheRoot()` in tools/scripts/lib/monorepo-paths.ts —
-		// kept duplicated rather than imported so this script can also
-		// run from a tool-context where monorepo-paths.ts may not be on
-		// the require path.
 		const cacheRootAbs = join(root, '.cache', 'mcp-vertex');
-		const summary = await findStrayCacheFiles(cacheRootAbs);
-		if (!summary.ok) {
+		const cacheSummary = await findStrayCacheFiles(cacheRootAbs);
+		const rootSummary = await findStrayRootFiles(root);
+
+		let hadFailure = false;
+
+		if (!cacheSummary.ok) {
+			hadFailure = true;
 			console.error(
-				`✖ check-stray-cache-files: ${summary.strays.length} stray file(s) under ${summary.cacheRoot}:`,
+				`✖ check-stray-cache-files: ${cacheSummary.strays.length} stray file(s) under ${cacheSummary.cacheRoot}:`,
 			);
-			for (const s of summary.strays) {
+			for (const s of cacheSummary.strays) {
 				console.error(`  ${s.reason}: ${s.relPath}`);
 			}
 			console.error(
 				'  fix: move the source code to tools/scripts/ (if real) or delete it (if it was a one-shot).',
 			);
-			process.exit(1);
-			return;
+		} else {
+			console.log(
+				`✓ check-stray-cache-files: ${relative(root, cacheSummary.cacheRoot)} contains no stray source files.`,
+			);
 		}
-		console.log(
-			`✓ check-stray-cache-files: ${relative(root, summary.cacheRoot)} contains no stray source files.`,
-		);
+
+		if (!rootSummary.ok) {
+			hadFailure = true;
+			console.error(
+				`✖ check-stray-root-files: ${rootSummary.strays.length} stray file(s) at the repo root:`,
+			);
+			for (const s of rootSummary.strays) {
+				console.error(
+					`  ${s.reason}: ${s.relPath} (ext=${s.extension || '∅'})`,
+				);
+			}
+			console.error(
+				'  fix: move the file to tools/scripts/ (if it is a real script) or delete it (if it was a mis-redirection).',
+			);
+		} else {
+			console.log(
+				'✓ check-stray-root-files: repo root has no stray executable files.',
+			);
+		}
+
+		if (hadFailure) process.exit(1);
 	})();
 }

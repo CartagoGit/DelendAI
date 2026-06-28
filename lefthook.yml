@@ -74,6 +74,14 @@ pre-commit:
       run: bun run catalog:hints:check || true
       stage_fixed: false
 
+    # f00082: catch stray executable files at the repo root and under
+    # .cache/mcp-vertex/ before they sneak in. Advisory like the
+    # other drift checks — `bun run validate` is the source of truth
+    # and will fail the CI run. The hook is here so the agent
+    # authoring the commit sees the violation immediately.
+    stray-files-check:
+      run: bun run lint:stray-cache-files || true
+
 pre-push:
   parallel: false
   commands:

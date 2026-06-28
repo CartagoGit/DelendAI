@@ -46,6 +46,22 @@ the shell `cwd` was wrong or the convention was unknown — the
 `tools/scripts/` (real code) or delete it (one-shot). The cache
 layout itself is documented in `AGENTS.md` rule #13.
 
+### No executable files at the repo root (f00082)
+
+The repo root is reserved for **19 whitelisted files** (AGENTS.md,
+CLAUDE.md, CHANGELOG.md, LICENSE, README.md, package.json, biome.json,
+bunfig.toml, bun.lock, lefthook.yml, mcp-vertex.config.json,
+stylelint.config.mjs, tsconfig.base.json, tsconfig.json,
+vitest.config.ts, vitest.shared.ts, .gitignore, .mcp.json).
+None of them has an executable extension — a file like `-la`
+(output of `ls -la`), `probe.sh`, `tmp.py`, or `experiment.ts` at
+the root is almost always an agent whose shell mis-redirection
+landed in the wrong place. The `check-stray-cache-files` lint
+(extended by f00082) also walks the repo root and fails on any
+executable-extension file, plus any extensionless file other than
+`LICENSE`. The fix is `rm` it (or move it to `tools/scripts/` if
+it is a real script).
+
 ## The table
 
 The suffix is **singular** (it describes the file role). The folder is

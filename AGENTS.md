@@ -131,6 +131,18 @@ keeps `git diff` out of the hot path.
     directories, hand-written `.ts`/`.sh`/`.py` dropped in cache
     subdirs, and orphan `bun build` `.mjs` bundles left at the cache
     root — all three are silently consumed by `bun run validate`.
+14. **No executable files or shell-mis-redirection debris at the repo
+    root** (f00082). The 19 legitimate root files (AGENTS.md, LICENSE,
+    package.json, biome.json, bun.lock, lefthook.yml, tsconfig*.json,
+    vitest*.ts, …) are explicitly whitelisted; NONE of them has an
+    executable extension. A file like `-la` (output of `ls -la`),
+    `probe.sh`, `tmp.py`, `experiment.ts` at the root is almost
+    always an agent whose shell mis-redirection landed in the wrong
+    place. The `check-stray-cache-files` lint (same one as rule #13)
+    also walks the repo root (not recursive) and fails on any
+    executable-extension file or any extensionless file other than
+    `LICENSE`. The fix is `rm` it (or move it to `tools/scripts/`
+    if it is a real script).
 
 ## Conventions
 
