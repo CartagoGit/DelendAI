@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T17:07:42.392Z",
+	"generatedAt": "2026-06-28T23:04:32.048Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -696,25 +696,9 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00061",
-				"title": "f00061",
-				"track": "solid+architecture+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00062",
 				"title": "f00062",
 				"track": "types+solid+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00063",
-				"title": "f00063",
-				"track": "i18n+l10n+utils",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-25"
@@ -822,6 +806,22 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-28"
+			},
+			{
+				"id": "r00005",
+				"title": "r00005",
+				"track": "i18n+l10n+utils",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "r00006",
+				"title": "r00006",
+				"track": "solid+architecture+extension-ux",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-06-25"
 			}
 		],
 		"byStatus": {
@@ -829,7 +829,7 @@
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 138,
+			"done": 139,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
