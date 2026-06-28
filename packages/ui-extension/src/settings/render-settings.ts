@@ -1,11 +1,14 @@
 import type { IExtensionSettings } from '@mcp-vertex/client';
+import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
+import { extensionText } from '../i18n/extension-text';
 
 export interface IRenderSettingsOptions {
 	readonly settings: IExtensionSettings;
 	readonly saveCommand: string;
 	readonly resetCommand: string;
+	readonly lang: ILangDict;
 }
 
 const selected = (actual: string, expected: string): string =>
@@ -23,7 +26,9 @@ const selected = (actual: string, expected: string): string =>
  * defaults. We also surface a brief inline confirmation so the user
  * knows the action took effect.
  */
-const CLIENT_SCRIPT = `
+const quoted = (value: string): string => JSON.stringify(value);
+
+const clientScript = (savedMessage: string, resetMessage: string): string => `
 (function () {
   'use strict';
   const vscode = (typeof window.acquireVsCodeApi === 'function')
@@ -59,7 +64,7 @@ const CLIENT_SCRIPT = `
       evt.preventDefault();
       const settings = readForm(form);
       if (vscode) vscode.postMessage({ command: 'save', settings: settings });
-      flash('Saved.');
+			flash(${quoted(savedMessage)});
     });
     form.addEventListener('reset', function (evt) {
       // Defer to native reset so the form fields visibly clear,
@@ -67,7 +72,7 @@ const CLIENT_SCRIPT = `
       // \`renderSettings\` call that overrides the visual state.
       setTimeout(function () {
         if (vscode) vscode.postMessage({ command: 'reset' });
-        flash('Reset to defaults.');
+				flash(${quoted(resetMessage)});
       }, 0);
     });
   }
@@ -76,12 +81,13 @@ const CLIENT_SCRIPT = `
 
 export const renderSettings = (options: IRenderSettingsOptions): string => {
 	const { settings } = options;
+	const text = (key: string) => extensionText(options.lang, key);
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Settings</title>
+	<title>${escapeHtml(text('settings.title'))}</title>
 	<style>
 		body {
 			font-family: var(--vscode-font-family, system-ui);
@@ -157,40 +163,40 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 	</style>
 </head>
 <body>
-	<h1>mcp-vertex Settings</h1>
+	<h1>${escapeHtml(text('settings.title'))}</h1>
 	<form data-save-command="${escapeHtml(options.saveCommand)}" data-reset-command="${escapeHtml(options.resetCommand)}">
-		<label>Docs URL
+		<label>${escapeHtml(text('settings.docsUrl'))}
 			<input name="docsUrl" type="url" value="${escapeHtml(settings.docsUrl)}" />
 		</label>
 		<label>
 			<input type="checkbox" name="allowLocalhost"${settings.allowLocalhost ? ' checked' : ''} />
-			Allow localhost docs URL
+			${escapeHtml(text('settings.allowLocalhostDocsUrl'))}
 		</label>
 		<label>
 			<input type="checkbox" name="allowPrivateIps"${settings.allowPrivateIps ? ' checked' : ''} />
-			Allow private IP docs URL
+			${escapeHtml(text('settings.allowPrivateIpsDocsUrl'))}
 		</label>
-		<label>Log level
+		<label>${escapeHtml(text('settings.logLevel'))}
 			<select name="logLevel">
-				<option value="debug"${selected(settings.logLevel, 'debug')}>debug</option>
-				<option value="info"${selected(settings.logLevel, 'info')}>info</option>
-				<option value="warn"${selected(settings.logLevel, 'warn')}>warn</option>
-				<option value="error"${selected(settings.logLevel, 'error')}>error</option>
+				<option value="debug"${selected(settings.logLevel, 'debug')}>${escapeHtml(text('settings.logLevel.debug'))}</option>
+				<option value="info"${selected(settings.logLevel, 'info')}>${escapeHtml(text('settings.logLevel.info'))}</option>
+				<option value="warn"${selected(settings.logLevel, 'warn')}>${escapeHtml(text('settings.logLevel.warn'))}</option>
+				<option value="error"${selected(settings.logLevel, 'error')}>${escapeHtml(text('settings.logLevel.error'))}</option>
 			</select>
 		</label>
-		<label>Theme
+		<label>${escapeHtml(text('settings.theme'))}
 			<select name="theme">
-				<option value="system"${selected(settings.theme, 'system')}>system</option>
-				<option value="light"${selected(settings.theme, 'light')}>light</option>
-				<option value="dark"${selected(settings.theme, 'dark')}>dark</option>
+				<option value="system"${selected(settings.theme, 'system')}>${escapeHtml(text('settings.theme.system'))}</option>
+				<option value="light"${selected(settings.theme, 'light')}>${escapeHtml(text('settings.theme.light'))}</option>
+				<option value="dark"${selected(settings.theme, 'dark')}>${escapeHtml(text('settings.theme.dark'))}</option>
 			</select>
 		</label>
 		<div class="mv-actions">
-			<button type="submit">Save</button>
-			<button type="reset">Reset</button>
+			<button type="submit">${escapeHtml(text('settings.save'))}</button>
+			<button type="reset">${escapeHtml(text('settings.reset'))}</button>
 		</div>
 	</form>
-	<script>${CLIENT_SCRIPT}</script>
+	<script>${clientScript(text('settings.saved'), text('settings.resetToDefaults'))}</script>
 </body>
 </html>`;
 };

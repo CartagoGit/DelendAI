@@ -38,17 +38,25 @@ import th from './langs/th';
 import vi from './langs/vi';
 import zh from './langs/zh';
 
+const withExtensionFallback = (dict: ILangDict): ILangDict => ({
+	...dict,
+	extension: {
+		...en.extension,
+		...dict.extension,
+	},
+});
+
 export const dictsByLang: LangDictByLang = {
-	ar,
-	de,
+	ar: withExtensionFallback(ar),
+	de: withExtensionFallback(de),
 	en,
-	es,
-	fr,
-	hi,
-	it,
-	ja,
-	pt,
-	th,
-	vi,
-	zh,
+	es: withExtensionFallback(es),
+	fr: withExtensionFallback(fr),
+	hi: withExtensionFallback(hi),
+	it: withExtensionFallback(it),
+	ja: withExtensionFallback(ja),
+	pt: withExtensionFallback(pt),
+	th: withExtensionFallback(th),
+	vi: withExtensionFallback(vi),
+	zh: withExtensionFallback(zh),
 } as Record<Lang, ILangDict> as LangDictByLang;

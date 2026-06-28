@@ -4,10 +4,17 @@
  * proposal/slice (when known) and last heartbeat.
  */
 import type { IDashboardAgentsModel } from '@mcp-vertex/client';
+import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
+import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatNumber, formatRelativeTime } from './format';
 
-export const renderPanelAgents = (model: IDashboardAgentsModel): string => {
+export const renderPanelAgents = (
+	model: IDashboardAgentsModel,
+	lang: ILangDict,
+): string => {
+	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
+		extensionText(lang, key, vars);
 	const rows = model.agents
 		.map((a) => {
 			const proposal = a.currentProposal
@@ -29,12 +36,12 @@ export const renderPanelAgents = (model: IDashboardAgentsModel): string => {
 		.join('');
 	return `
 <section class="mv-panel" id="panel-agents" role="tabpanel" aria-labelledby="tab-agents">
-	<h2 class="mv-panel__title">Agents</h2>
-	<p>${formatNumber(model.totalActive)} active agents</p>
+	<h2 class="mv-panel__title">${escapeHtml(text('tabAgents'))}</h2>
+	<p>${escapeHtml(text('dashboard.agents.active', { count: formatNumber(model.totalActive) }))}</p>
 	<div class="mv-card">
 		<table class="mv-table">
-			<thead><tr><th>Agent</th><th>Current proposal</th><th>Slice</th><th>Last heartbeat</th></tr></thead>
-			<tbody>${rows || '<tr><td colspan="4" class="mv-fg-muted">No active agents.</td></tr>'}</tbody>
+			<thead><tr><th>${escapeHtml(text('common.agent'))}</th><th>${escapeHtml(text('dashboard.agents.currentProposal'))}</th><th>${escapeHtml(text('dashboard.agents.slice'))}</th><th>${escapeHtml(text('dashboard.agents.lastHeartbeat'))}</th></tr></thead>
+			<tbody>${rows || `<tr><td colspan="4" class="mv-fg-muted">${escapeHtml(text('dashboard.agents.none'))}</td></tr>`}</tbody>
 		</table>
 	</div>
 </section>

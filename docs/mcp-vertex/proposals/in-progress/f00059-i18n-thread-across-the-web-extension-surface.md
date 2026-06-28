@@ -201,11 +201,11 @@ The function is pure and deterministic given `(date, now, locale)`.
 
 ### S6 — fix Astro translation files braces nesting (closes H2)
 
-**Files:** `apps/web/src/i18n/langs/*.ts` (all 12 languages)
-
-Close the `ui` object literal with a closing brace `}` before the `homeQuickInstall` field, and remove one of the extra closing braces `}` at the end of each file, so that `homeQuickInstall` and `homeAtAGlance` are correct peer properties of `ui` under the main dictionary object.
-
-**Acceptance:** `bun run check` in `apps/web` passes typecheck successfully with no localization errors.
+- **Status**: done
+- **Files**: `apps/web/src/i18n/langs/*.ts` (all 12 languages — pre-existing nesting already correct on the current tree)
+- **Command**: `bunx astro check --root apps/web`
+- **Expect**: exit0
+- **Verification**: 2026-06-28 — `astro check` ran against 240 files, returned **0 errors, 0 warnings, 8 hints** (all hints pre-existing: `document.execCommand` deprecation, `ZodIssueCode` deprecation, unused `relative` in Base.astro, `var BASE = base || ''` in index.astro). `homeQuickInstall` and `homeAtAGlance` are already peer properties of `ui` in `en.ts:303+`; the S2/S6 path migrations (`tools/scripts/lint/check-i18n.ts` → `apps/web/scripts/check-i18n.ts` + `extensions/vscode/scripts/check-i18n.ts`) and refactors that landed since the proposal was filed already resolved the brace nesting. No code change required; this slice closes on evidence.
 
 ## dependency graph
 

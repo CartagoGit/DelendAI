@@ -230,6 +230,26 @@ export const activate = async (
 	};
 
 	const overview = new OverviewService(client);
+	// f00059 S3: capture the host's actually-loaded plugin set so the
+	// toolbar can drop action cards whose `requires` is unmet. A
+	// failed overview call (server not yet booted) leaves the set
+	// undefined, and the toolbar's `deps.loadedPlugins ?? []` fallback
+	// then shows every action — same legacy behaviour. The compact
+	// overview projects `plugins: string[]` (one entry per loaded
+	// plugin name) which is exactly what the toolbar's filter needs.
+	let loadedPlugins: readonly string[] | undefined;
+	try {
+		const snap = await overview.getOverview({ compact: true });
+		const raw = (snap as { plugins?: unknown })?.plugins;
+		if (Array.isArray(raw)) {
+			loadedPlugins = raw.filter(
+				(entry): entry is string =>
+					typeof entry === 'string' && entry.length > 0,
+			);
+		}
+	} catch {
+		loadedPlugins = undefined;
+	}
 	const catalog = new AgentCatalogService(client);
 	const notifications = new NotificationsService(client);
 	const toolTree = new ToolTreeDataProvider(overview, catalog);
@@ -327,6 +347,7 @@ export const activate = async (
 			vscode,
 			client,
 			globalState: context.globalState,
+			...(loadedPlugins !== undefined ? { loadedPlugins } : {}),
 		}),
 	);
 	track(

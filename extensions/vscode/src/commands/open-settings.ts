@@ -4,9 +4,11 @@ import {
 	type IExtensionSettingsPatch,
 	type ISettingsStore,
 } from '@mcp-vertex/client';
+import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderSettings } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
+import { HOST_LANG_KEY } from './setup-github';
 import { showCommandError } from './types';
 
 export const OPEN_SETTINGS_COMMAND = 'mcp-vertex.openSettings';
@@ -16,6 +18,13 @@ export const SAVE_SETTINGS_COMMAND = 'mcp-vertex.saveSettings';
 
 /** Reset handler — wired to the `renderSettings` webview in f00047 S6. */
 export const RESET_SETTINGS_COMMAND = 'mcp-vertex.resetSettings';
+
+const resolveLang = (deps: ICommandDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
 
 const createInMemorySettingsStore = (): ISettingsStore => {
 	let value: unknown = { extension: DEFAULT_EXTENSION_SETTINGS };
@@ -44,6 +53,7 @@ export const registerOpenSettingsCommand = (
 	store: ISettingsStore = createInMemorySettingsStore(),
 ) =>
 	deps.vscode.commands.registerCommand(OPEN_SETTINGS_COMMAND, async () => {
+		const lang = resolveLang(deps);
 		const service = new SettingsService(store);
 		const settings = await service.get();
 		const panel = deps.vscode.window.createWebviewPanel(
@@ -56,6 +66,7 @@ export const registerOpenSettingsCommand = (
 			settings,
 			saveCommand: SAVE_SETTINGS_COMMAND,
 			resetCommand: RESET_SETTINGS_COMMAND,
+			lang: dictsByLang[lang],
 		});
 		// FIX (S1): the webview posts `{command:'save', settings}` and
 		// `{command:'reset'}` from its client script. Previously the
@@ -86,6 +97,7 @@ export const registerOpenSettingsCommand = (
 					settings: fresh,
 					saveCommand: SAVE_SETTINGS_COMMAND,
 					resetCommand: RESET_SETTINGS_COMMAND,
+					lang: dictsByLang[lang],
 				});
 			}
 		});
