@@ -8,6 +8,7 @@ import {
 	toolError,
 	toolJson,
 	toolOk,
+	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
@@ -304,28 +305,46 @@ export const buildCloseSliceRegistration = (
 					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
 					entry.file,
 				);
-				const md = await readTextOrNull(docPath);
-				if (md === null) {
-					return toolError(`proposal file missing: ${docPath}`);
-				}
-				// Flip the slice block's status to done (add or replace).
-				const blockRe = new RegExp(
-					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-					'm',
-				);
-				const m = md.match(blockRe);
-				if (m === null) {
+				let next: string;
+				try {
+					next = await withFileMutex(docPath, async () => {
+						const md = await readTextOrNull(docPath);
+						if (md === null) {
+							throw new Error(
+								`proposal file missing: ${docPath}`,
+							);
+						}
+						// Flip the slice block's status to done (add or replace).
+						const blockRe = new RegExp(
+							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							'm',
+						);
+						const m = md.match(blockRe);
+						if (m === null) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						let block = m[2] ?? '';
+						block = /^[-*]\s*status:/m.test(block)
+							? block.replace(
+									/^[-*]\s*status:.*$/m,
+									'- status: done',
+								)
+							: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+						const nextContent = md.replace(
+							blockRe,
+							`${m[1]}${block}`,
+						);
+						await writeFileAtomic(docPath, nextContent);
+						return nextContent;
+					});
+				} catch (err: any) {
 					return toolError(
-						`slice "${args.sliceId}" not found in ${entry.file}`,
+						err.message,
 						'Call proposal_board to list slices.',
 					);
 				}
-				let block = m[2] ?? '';
-				block = /^[-*]\s*status:/m.test(block)
-					? block.replace(/^[-*]\s*status:.*$/m, '- status: done')
-					: `${block.replace(/\s*$/, '')}\n- status: done\n`;
-				const next = md.replace(blockRe, `${m[1]}${block}`);
-				await writeFileAtomic(docPath, next);
 
 				let lockReleased = false;
 				if (args.releaseLock !== false) {
@@ -443,25 +462,28 @@ export const buildReviewRegistration = (
 					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
 					entry.file,
 				);
-				const md = await readTextOrNull(docPath);
-				if (md === null)
-					return toolError(`proposal file missing: ${docPath}`);
-
-				const blockRe = new RegExp(
-					`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-					'm',
-				);
-				const m = md.match(blockRe);
-				if (m === null) {
-					return toolError(
-						`slice "${args.sliceId}" not found in ${entry.file}`,
-						'Call proposal_board to list slices.',
-					);
-				}
-				const body = m[2] ?? '';
-				const state = parseReviewState(body);
+				// x00055 S2: redact the reviewer note...
+				const redactedNote = args.note
+					? redactSecrets(args.note)
+					: { text: '', redactions: 0 };
 
 				if (args.action === 'status') {
+					const md = await readTextOrNull(docPath);
+					if (md === null)
+						return toolError(`proposal file missing: ${docPath}`);
+					const blockRe = new RegExp(
+						`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+						'm',
+					);
+					const m = md.match(blockRe);
+					if (m === null) {
+						return toolError(
+							`slice "${args.sliceId}" not found in ${entry.file}`,
+							'Call proposal_board to list slices.',
+						);
+					}
+					const body = m[2] ?? '';
+					const state = parseReviewState(body);
 					return toolOk({
 						proposalId: entry.id,
 						sliceId: args.sliceId,
@@ -471,57 +493,87 @@ export const buildReviewRegistration = (
 						reviewer: state.reviewer,
 						rounds: state.rounds,
 						lockReleased: false,
-						// status is read-only — no redaction was performed.
 						redactedSecrets: 0,
 					});
 				}
 
-				// x00055 S2: redact the reviewer note before it flows
-				// into `reviewTransition` and the persisted review-log
-				// bullet (see `renderReviewLines` in
-				// `proposal-review.ts:156-167`). Without this, a
-				// reviewer writing "I see a leaked `sk_live_…` in
-				// src/x.ts" persists the secret into the proposal
-				// file. AGENTS.md hard rule: "Secrets never get
-				// persisted. Durable stores (memory, proposals) run
-				// user text through redactSecrets before writing."
-				const redactedNote = args.note
-					? redactSecrets(args.note)
-					: { text: '', redactions: 0 };
+				let nextStatus!:
+					| 'none'
+					| 'in_review'
+					| 'changes_requested'
+					| 'done';
+				let nextImplementer!: string | null;
+				let nextReviewer!: string | null;
+				let nextRounds!: readonly any[];
 
-				const result = reviewTransition(
-					state,
-					args.action,
-					args.agent,
-					redactedNote.text,
-				);
-				if (!result.ok || result.next === undefined) {
+				try {
+					await withFileMutex(docPath, async () => {
+						const md = await readTextOrNull(docPath);
+						if (md === null)
+							throw new Error(
+								`proposal file missing: ${docPath}`,
+							);
+
+						const blockRe = new RegExp(
+							`(^### ${escapeRegExp(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+							'm',
+						);
+						const m = md.match(blockRe);
+						if (m === null) {
+							throw new Error(
+								`slice "${args.sliceId}" not found in ${entry.file}`,
+							);
+						}
+						const body = m[2] ?? '';
+						const state = parseReviewState(body);
+
+						const result = reviewTransition(
+							state,
+							args.action as any,
+							args.agent,
+							redactedNote.text,
+						);
+						if (!result.ok || result.next === undefined) {
+							throw new Error(
+								result.reason ?? 'invalid review transition',
+							);
+						}
+						const next = result.next;
+						nextStatus = next.status;
+						nextImplementer = next.implementer;
+						nextReviewer = next.reviewer;
+						nextRounds = next.rounds;
+
+						// Rewrite the slice block: replace the review lines, and on approval
+						// also flip `- status: done`.
+						let block = body.replace(
+							/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
+							'',
+						);
+						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
+						if (next.status === 'done') {
+							block = /^[-*]\s*status:/m.test(block)
+								? block.replace(
+										/^[-*]\s*status:.*$/m,
+										'- status: done',
+									)
+								: `${block.replace(/\s*$/, '')}\n- status: done\n`;
+						}
+						const updated = md.replace(blockRe, `${m[1]}${block}`);
+						await writeFileAtomic(docPath, updated);
+					});
+				} catch (err: any) {
 					return toolError(
-						result.reason ?? 'invalid review transition',
+						err.message,
+						'Call proposal_board to list slices.',
 					);
 				}
-				const next = result.next;
-
-				// Rewrite the slice block: replace the review lines, and on approval
-				// also flip `- status: done`.
-				let block = body.replace(
-					/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
-					'',
-				);
-				block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
-				if (next.status === 'done') {
-					block = /^[-*]\s*status:/m.test(block)
-						? block.replace(/^[-*]\s*status:.*$/m, '- status: done')
-						: `${block.replace(/\s*$/, '')}\n- status: done\n`;
-				}
-				const updated = md.replace(blockRe, `${m[1]}${block}`);
-				await writeFileAtomic(docPath, updated);
 
 				// approve/request_changes free the slice (done, or reworkable).
 				let lockReleased = false;
 				if (
-					next.status === 'done' ||
-					next.status === 'changes_requested'
+					nextStatus === 'done' ||
+					nextStatus === 'changes_requested'
 				) {
 					await runAgentLockEngine(
 						{ action: 'release', task_id: args.sliceId },
@@ -541,10 +593,10 @@ export const buildReviewRegistration = (
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					action: args.action,
-					status: next.status,
-					implementer: next.implementer,
-					reviewer: next.reviewer,
-					rounds: next.rounds,
+					status: nextStatus,
+					implementer: nextImplementer,
+					reviewer: nextReviewer,
+					rounds: nextRounds as any,
 					lockReleased,
 					redactedSecrets: redactedNote.redactions,
 				});

@@ -1,6 +1,6 @@
 ---
 id: x00079
-status: ready
+status: in-progress
 type: proposal
 track: plugins/proposals+lint+i18n+tools+scripts
 date: 2026-06-28
@@ -56,7 +56,7 @@ Wrap the read → check → write cycle in `withFileMutex` so concurrent closure
     - `plugins/proposals/tests/src/lib/agents/closed-tasks-log.spec.ts` [MODIFY — add concurrency spec]
 - **Gate**: `bun run test`
 - **Closes**: a00045 H1 (P0)
-
+- status: done
 ### S2 — `promoteOnRelease` cross-process mutex
 
 Replace the in-process `mutexRegistry` with `withFileMutex(queuePath, ...)` from `packages/core/src/lib/shared/file-mutex`. Remove `IMutex`, `mutexRegistry`, and the local `withMutex` function.
@@ -67,7 +67,7 @@ Replace the in-process `mutexRegistry` with `withFileMutex(queuePath, ...)` from
     - `plugins/proposals/tests/src/lib/agents/promote-on-release.spec.ts` [MODIFY — add cross-process spec or document that the test uses single-process and the engine delegates to withFileMutex]
 - **Gate**: `bun run test`
 - **Closes**: a00045 H2 (P0)
-
+- status: done
 ### S3 — Per-file `withFileMutex` bundle in `proposals`
 
 Wrap each of the 4 sites (authoring.tool.ts × 2, sync-proposal-registry.ts reconcileBlocked, round-context-digest.ts writeRoundContextDigest) in `withFileMutex(<target path>, ...)`.
@@ -80,7 +80,7 @@ Wrap each of the 4 sites (authoring.tool.ts × 2, sync-proposal-registry.ts reco
     - one new spec file under `plugins/proposals/tests/src/lib/` [CREATE] exercising concurrent calls with the same `docPath`
 - **Gate**: `bun run test`
 - **Closes**: a00045 H3 (P0)
-
+- status: done
 ### S4 — `lint:proposals` fails (not warns) on folder↔status mismatch and missing `paused-reason`
 
 Add 2 fatal checks:
@@ -96,6 +96,7 @@ Update existing tests and add 2 new specs (one per check).
 - **Gate**: `bun run lint:proposals` (must exit 1 on the 3 currently-paused proposals that lack `paused-reason`, and on `done/feats/f00055-...md` whose status is `ready`)
 - **Side effect**: this slice will turn the gate red until the 3 paused proposals are amended with `paused-reason` and `f00055` is moved or its status corrected. The slice's PR should include those amendments as drive-by edits, OR the implementer can stage them as separate in-progress fixes.
 - **Closes**: a00045 H4 (P1)
+- status: done
 
 ### S5 — i18n strings for `[lang]/cli.astro` and `[lang]/guide.astro`
 
@@ -111,6 +112,7 @@ Add `t.cli.title`, `t.cli.description`, `t.guide.title`, `t.guide.description`, 
     - `apps/web/package.json` [MODIFY — wire `bun run lint:web:jsx-literals` into `site:strict`]
 - **Gate**: `bun run site:strict`
 - **Closes**: a00045 H5 (P1)
+- status: done
 
 ### S6 — Host-vocab removal from issues / memory / quality knowledge text and error hints
 
@@ -148,14 +150,6 @@ Replace the silent `process.cwd()` fallback with a call to `repoRoot()` (canonic
 - **Shipped in**: 90655db4
 - **Closes**: a00045 H11 (P2)
 
-## acceptance
-
-- `bun run validate` exits 0.
-- `bun run lint:proposals` exits 0 (after S4 + the 3 paused-proposal amendments + the f00055 fix are merged).
-- `bun run test` exits 0 with new concurrency specs covering S1, S2, S3.
-- `bun run site:strict` exits 0 with all 12 locales showing translated chrome on `[lang]/cli` and `[lang]/guide`.
-- `a00045` is closed by setting `shipped-in: [<commit>]` once this proposal lands.
-
 ## dependency graph
 
 ```
@@ -175,3 +169,11 @@ S4 must include the `paused-reason` amendments as drive-by edits or the slice wi
 2. Move `done/feats/f00055-...md` to `ready/feats/` (folder ↔ status already correct there) OR set its `status: done`.
 
 If S4's PR is split from the data amendments, land the amendments FIRST, then enable the lint rule.
+
+## acceptance
+
+- `bun run validate` exits 0.
+- `bun run lint:proposals` exits 0 (after S4 + the 3 paused-proposal amendments + the f00055 fix are merged).
+- `bun run test` exits 0 with new concurrency specs covering S1, S2, S3.
+- `bun run site:strict` exits 0 with all 12 locales showing translated chrome on `[lang]/cli` and `[lang]/guide`.
+- `a00045` is closed by setting `shipped-in: [<commit>]` once this proposal lands.

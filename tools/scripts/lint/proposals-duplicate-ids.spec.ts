@@ -183,3 +183,70 @@ describe('lintProposalsDir — duplicate-id integration (a00044 H5)', () => {
 		expect(groups).toEqual([]);
 	});
 });
+
+describe('lintProposalsDir — folder mismatch and paused-reason (x00079 S4)', () => {
+	let root: string;
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'proposals-validation-'));
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	it('fails when status: paused has no paused-reason', async () => {
+		const abs = join(root, 'paused/f00010-paused.md');
+		mkdirSync(join(abs, '..'), { recursive: true });
+		const body = [
+			'---',
+			'id: f00010',
+			'status: paused',
+			'type: proposal',
+			'track: x',
+			'date: 2026-06-28',
+			'kind: feat',
+			'title: fixture f00010',
+			'---',
+			'# f00010',
+		].join('\n');
+		writeFileSync(abs, body, 'utf8');
+
+		const originalLog = console.log;
+		console.log = () => {};
+		try {
+			const summary = await lintProposalsDir(root);
+			expect(summary.fatalErrors).toBeGreaterThanOrEqual(1);
+			expect(summary.ok).toBe(false);
+		} finally {
+			console.log = originalLog;
+		}
+	});
+
+	it('fails when folder and status mismatch', async () => {
+		const abs = join(root, 'ready/f00010-paused.md');
+		mkdirSync(join(abs, '..'), { recursive: true });
+		const body = [
+			'---',
+			'id: f00010',
+			'status: paused',
+			'paused-reason: testing',
+			'type: proposal',
+			'track: x',
+			'date: 2026-06-28',
+			'kind: feat',
+			'title: fixture f00010',
+			'---',
+			'# f00010',
+		].join('\n');
+		writeFileSync(abs, body, 'utf8');
+
+		const originalLog = console.log;
+		console.log = () => {};
+		try {
+			const summary = await lintProposalsDir(root);
+			expect(summary.fatalErrors).toBeGreaterThanOrEqual(1);
+			expect(summary.ok).toBe(false);
+		} finally {
+			console.log = originalLog;
+		}
+	});
+});

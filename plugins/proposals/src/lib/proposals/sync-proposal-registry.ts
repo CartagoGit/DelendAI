@@ -514,28 +514,30 @@ export const reconcileBlocked = async (
 	for (const file of files) {
 		if (file.status !== 'blocked' || file.blockedBy.length === 0) continue;
 
-		const raw = await readFile(file.absPath, 'utf8');
-		const stillBlocked = file.blockedBy.some((token) => {
-			if (token.startsWith('self:')) {
-				const lint = lintProposalMarkdown({
-					path: file.absPath,
-					markdown: raw,
-				});
-				return !lint.ok;
-			}
-			return statusById.get(token) !== 'done';
-		});
-		if (stillBlocked) continue;
+		await withFileMutex(file.absPath, async () => {
+			const raw = await readFile(file.absPath, 'utf8');
+			const stillBlocked = file.blockedBy.some((token) => {
+				if (token.startsWith('self:')) {
+					const lint = lintProposalMarkdown({
+						path: file.absPath,
+						markdown: raw,
+					});
+					return !lint.ok;
+				}
+				return statusById.get(token) !== 'done';
+			});
+			if (stillBlocked) return;
 
-		const newAbsPath = join(
-			proposalsDirAbs,
-			STATUS_TO_FOLDER.ready,
-			file.filename,
-		);
-		const updated = setStatusLine(raw, 'ready');
-		await writeFileAtomic(file.absPath, updated);
-		await moveFile(gitRunner, file.absPath, newAbsPath);
-		resolved.push({ id: file.id });
+			const newAbsPath = join(
+				proposalsDirAbs,
+				STATUS_TO_FOLDER.ready,
+				file.filename,
+			);
+			const updated = setStatusLine(raw, 'ready');
+			await writeFileAtomic(file.absPath, updated);
+			await moveFile(gitRunner, file.absPath, newAbsPath);
+			resolved.push({ id: file.id });
+		});
 	}
 	return { resolved };
 };

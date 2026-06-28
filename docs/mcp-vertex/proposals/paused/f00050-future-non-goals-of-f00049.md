@@ -1,6 +1,7 @@
 ---
 id: f00050
 status: paused
+paused-reason: Deferred until prerequisites of f00049 land
 type: proposal
 track: lint+architecture+i18n+workflow+release
 date: 2026-06-23

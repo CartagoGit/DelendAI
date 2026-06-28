@@ -384,6 +384,31 @@ const dict: LangDict = {
 			},
 		],
 	},
+	cli: {
+		title: 'Hướng dẫn CLI',
+		description:
+			'Cách vận hành CLI mcpv / @mcp-vertex/core: các cờ toàn cục, nhóm lệnh theo từng plugin và luồng công việc phổ biến.',
+	},
+	guide: {
+		title: 'Hướng dẫn',
+		description:
+			'Bản hướng dẫn chi tiết về dự án @mcp-vertex/core: các khái niệm, cài đặt, cấu hình, plugin, cổng chất lượng, mở rộng, câu hỏi thường gặp.',
+		toc: [
+			'1. Giới thiệu',
+			'2. Khái niệm',
+			'3. Cài đặt',
+			'4. Cấu hình',
+			'5. Plugin',
+			'6. Công cụ / Lời nhắc / Tài nguyên / Kiến thức',
+			'7. Kỹ năng',
+			'8. i18n',
+			'9. Cổng chất lượng & Đa ngôn ngữ',
+			'10. Mở rộng mcp-vertex',
+			'11. Ngân sách token',
+			'12. Hiệu ứng chuyển cảnh',
+			'13. Câu hỏi thường gặp',
+		],
+	},
 };
 
 export default dict;

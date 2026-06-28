@@ -433,6 +433,17 @@ export type IPluginTranslations = {
 	};
 };
 
+export interface ICliTranslations {
+	readonly title: string;
+	readonly description: string;
+}
+
+export interface IGuideTranslations {
+	readonly title: string;
+	readonly description: string;
+	readonly toc: ReadonlyArray<string>;
+}
+
 /** Root shape — every per-language dictionary must satisfy this. */
 export interface ITranslations {
 	readonly nav: INavTranslations;
@@ -463,6 +474,8 @@ export interface ITranslations {
 	readonly ui: IUiTranslations;
 	readonly homeQuickInstall: IHomeQuickInstallTranslations;
 	readonly homeAtAGlance: IHomeAtAGlanceTranslations;
+	readonly cli: ICliTranslations;
+	readonly guide: IGuideTranslations;
 }
 
 /**

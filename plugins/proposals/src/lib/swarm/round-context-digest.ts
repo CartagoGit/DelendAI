@@ -20,7 +20,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
 import type {
@@ -116,5 +116,7 @@ export const writeRoundContextDigest = async (
 	digest: IRoundContextDigest,
 	path: string,
 ): Promise<void> => {
-	await writeFileAtomic(path, JSON.stringify(digest, null, 2));
+	await withFileMutex(path, async () => {
+		await writeFileAtomic(path, JSON.stringify(digest, null, 2));
+	});
 };

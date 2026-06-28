@@ -16,6 +16,7 @@ import { readFile } from 'node:fs/promises';
 
 import {
 	quarantineCorruptFile,
+	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 import { z } from 'zod';
@@ -105,20 +106,22 @@ export const appendToClosedTasks = async (
 	logPath: string,
 	record: IClosedTaskRecord,
 ): Promise<void> => {
-	const existing = await readClosedTasks(logPath);
+	await withFileMutex(logPath, async () => {
+		const existing = await readClosedTasks(logPath);
 
-	// Idempotency: skip if same taskId already present
-	if (existing.some((r) => r.taskId === record.taskId)) {
-		return;
-	}
+		// Idempotency: skip if same taskId already present
+		if (existing.some((r) => r.taskId === record.taskId)) {
+			return;
+		}
 
-	const updated = [...existing, record];
+		const updated = [...existing, record];
 
-	// FIFO eviction: keep only the last MAX_ENTRIES
-	const trimmed =
-		updated.length > MAX_ENTRIES
-			? updated.slice(updated.length - MAX_ENTRIES)
-			: updated;
+		// FIFO eviction: keep only the last MAX_ENTRIES
+		const trimmed =
+			updated.length > MAX_ENTRIES
+				? updated.slice(updated.length - MAX_ENTRIES)
+				: updated;
 
-	await writeFileAtomic(logPath, JSON.stringify(trimmed, null, 2));
+		await writeFileAtomic(logPath, JSON.stringify(trimmed, null, 2));
+	});
 };

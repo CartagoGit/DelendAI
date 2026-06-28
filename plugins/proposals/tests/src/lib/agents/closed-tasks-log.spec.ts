@@ -329,3 +329,27 @@ describe('appendToClosedTasks — FIFO order', async () => {
 		expect(result[result.length - 1]?.taskId).toBe('fresh');
 	});
 });
+
+// ---------------------------------------------------------------------------
+// Concurrency
+// ---------------------------------------------------------------------------
+describe('appendToClosedTasks — concurrency', async () => {
+	it('handles concurrent appends successfully without corruption', async () => {
+		const logPath = join(workDir, 'closed-tasks.json');
+		const promises = Array.from({ length: 10 }, (_, i) =>
+			appendToClosedTasks(
+				logPath,
+				makeRecord({ taskId: `concurrent-task-${i}` }),
+			),
+		);
+
+		await Promise.all(promises);
+
+		const result = await readClosedTasks(logPath);
+		expect(result).toHaveLength(10);
+		const ids = result.map((r) => r.taskId).sort();
+		expect(ids).toEqual(
+			Array.from({ length: 10 }, (_, i) => `concurrent-task-${i}`).sort(),
+		);
+	});
+});

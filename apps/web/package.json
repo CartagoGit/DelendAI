@@ -13,6 +13,7 @@
 		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
 		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
 		"check:i18n": "bun scripts/check-i18n.ts",
+		"lint:web:jsx-literals": "bun scripts/scan-jsx-literals.ts",
 		"check": "bun run sync:public-api && bun run gen:manifests && astro check",
 		"gen:capabilities": "bun scripts/gen-capabilities.ts",
 		"gen:skills": "bun scripts/gen-skills.ts",
@@ -20,7 +21,7 @@
 		"fetch:logos": "bun scripts/fetch-brand-logos.ts",
 		"index:search": "pagefind --site ../../build/apps/web",
 		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
-		"build:strict": "bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
+		"build:strict": "bun scripts/check-i18n.ts && bun run lint:web:jsx-literals && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
 	},
 	"dependencies": {
 		"astro": "^6.4.8",

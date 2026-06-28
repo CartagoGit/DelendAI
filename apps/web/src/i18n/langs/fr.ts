@@ -391,6 +391,31 @@ const dict: LangDict = {
 			},
 		],
 	},
+	cli: {
+		title: 'Guide CLI',
+		description:
+			'Comment piloter la CLI mcpv / @mcp-vertex/core : drapeaux globaux, groupes de commandes par plugin et flux de travail courants.',
+	},
+	guide: {
+		title: 'Guide',
+		description:
+			'Un guide détaillé du projet @mcp-vertex/core : concepts, installation, configuration, plugins, barrières de qualité, extension, FAQ.',
+		toc: [
+			'1. Introduction',
+			'2. Concepts',
+			'3. Installation',
+			'4. Configuration',
+			'5. Plugins',
+			'6. Outils / Prompts / Ressources / Connaissances',
+			'7. Skills',
+			'8. i18n',
+			'9. Barrières de qualité & multi-langue',
+			'10. Extension de mcp-vertex',
+			'11. Budgets de tokens',
+			'12. Transitions de vue',
+			'13. FAQ',
+		],
+	},
 };
 
 export default dict;
