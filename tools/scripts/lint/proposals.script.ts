@@ -162,8 +162,8 @@ export const lintProposalsDir = async (
 		// canonical order` on a proposal that already has all required
 		// sections in semantic order) are downgraded to warnings so the
 		// tool surfaces them without blocking CI.
-		const hasFatalIssue = result.issues.some((i) =>
-			!i.message.includes('out of canonical order'),
+		const hasFatalIssue = result.issues.some(
+			(i) => !i.message.includes('out of canonical order'),
 		);
 		const fatal = hasFatalIssue;
 		const label = fatal ? 'ERROR' : 'WARN';
