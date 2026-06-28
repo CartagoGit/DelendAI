@@ -91,6 +91,31 @@ pre-commit:
     commit-branch-discipline:
       run: bun run lint:commit-branch -- --staged {staged_files} || exit 1
 
+    # f00083: anti-duplication guard for the universal bootstrap.
+    # BLOCKING (no `|| true`). Runs the canonical-scaffold lint
+    # against docs/mcp-vertex/AGENT-BOOTSTRAP.md only when that
+    # file is staged — the lint is file-scoped, so we don't pay
+    # the cost on every commit. Bypass: LEFTHOOK_BYPASS=1
+    # git commit ... (documented in the blocker text).
+    bootstrap-canonical-discipline:
+      glob_filter:
+        items:
+          - "docs/mcp-vertex/AGENT-BOOTSTRAP.md"
+      run: bun run lint:bootstrap-canonical || exit 1
+
+    # f00083: anti-duplication guard for the auto-generated host-
+    # hint fragments. BLOCKING (no `|| true`). Runs the fragment
+    # content check only when one of the fragments is staged.
+    # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
+    # the blocker text).
+    host-hints-fragments-discipline:
+      glob_filter:
+        items:
+          - "docs/mcp-vertex/host-hints/agents.generated.md"
+          - "docs/mcp-vertex/host-hints/claude.generated.md"
+          - "docs/mcp-vertex/host-hints/copilot-instructions.generated.md"
+      run: bun run lint:host-hints-fragments || exit 1
+
 pre-push:
   parallel: false
   commands:
