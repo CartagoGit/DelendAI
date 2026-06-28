@@ -147,6 +147,14 @@ const elapsedMinutes = (
 /**
  * Compute the GC plan from a status snapshot. Pure — does not touch
  * the filesystem. Exported for unit tests.
+ *
+ * f00075 S0: accepts an optional `extraBranchLookups` map (branch name
+ *  → IBranchStatusEntry) that the engine caller can populate by
+ *  resolving the branch from each worktree directly via
+ *  `git -C <wt> rev-parse --abbrev-ref HEAD` and computing ahead/behind
+ *  / merged in vivo. This fixes the "not-found" trap surfaced in the
+ *  2026-06-28 cleanup where a worktree pointer referred to a branch
+ *  that was not in the agent/* branch list.
  */
 export const planGc = (
 	snapshot: Extract<IBranchStatusOutcome, { ok: true }>,
@@ -154,6 +162,10 @@ export const planGc = (
 		IBranchGcEngineOptions,
 		'staleMinutes' | 'force' | 'protectedBranches' | 'now'
 	>,
+	extraBranchLookups: ReadonlyMap<
+		string,
+		Extract<IBranchStatusOutcome, { ok: true }>['branches'][number]
+	> = new Map(),
 ): { removed: IGcPlanEntry[]; skipped: IGcSkippedEntry[] } => {
 	const staleMinutes = options.staleMinutes ?? 60;
 	const protectedBranches = options.protectedBranches ?? DEFAULT_PROTECTED;
@@ -161,6 +173,13 @@ export const planGc = (
 	const removed: IGcPlanEntry[] = [];
 	const skipped: IGcSkippedEntry[] = [];
 	const branchByName = new Map(snapshot.branches.map((b) => [b.name, b]));
+	// f00075 S0: merge in lookups that the caller resolved from the
+	// worktree itself. These are branches the agent/* list does not
+	// include (worktree-pointer-only branches) but the worktree still
+	// owns.
+	for (const [name, entry] of extraBranchLookups) {
+		if (!branchByName.has(name)) branchByName.set(name, entry);
+	}
 	const branchByWorktree = new Map<string, IWorktreeStatusEntry>();
 
 	for (const wt of snapshot.worktrees) {
@@ -254,6 +273,167 @@ export const planGc = (
 };
 
 /**
+ * f00075 S0 helper. When a worktree points at a branch that the
+ * `agent/*` branch list did not surface (worktree-pointer-only branch,
+ * branch owned exclusively by the worktree), resolve the branch from
+ * the worktree itself via `git -C <wt> rev-parse --abbrev-ref HEAD`,
+ * and compute its ahead/behind/merged status in vivo. Returns `null`
+ * when the worktree is on a detached HEAD or any underlying git
+ * invocation fails — the caller falls back to the existing skip path.
+ */
+const resolveBranchFromWorktree = async (
+	run: IGitRunner,
+	wtPath: string,
+	baseBranch: string,
+	now: number | undefined,
+): Promise<
+	Extract<IBranchStatusOutcome, { ok: true }>['branches'][number] | null
+> => {
+	const branchResult = await run([
+		'-C',
+		wtPath,
+		'rev-parse',
+		'--abbrev-ref',
+		'HEAD',
+	]);
+	if (!branchResult.ok) return null;
+	const name = branchResult.output.trim();
+	if (name.length === 0 || name === 'HEAD') return null;
+
+	const aheadBehindResult = await run([
+		'-C',
+		wtPath,
+		'rev-list',
+		'--left-right',
+		'--count',
+		`${baseBranch}...${name}`,
+	]);
+	const aheadBehind = aheadBehindResult.ok
+		? (() => {
+				const parts = aheadBehindResult.output.trim().split(/\s+/u);
+				if (parts.length < 2) return { ahead: 0, behind: 0 };
+				const behind = Number.parseInt(parts[0] ?? '0', 10);
+				const ahead = Number.parseInt(parts[1] ?? '0', 10);
+				return {
+					ahead: Number.isFinite(ahead) ? ahead : 0,
+					behind: Number.isFinite(behind) ? behind : 0,
+				};
+			})()
+		: { ahead: 0, behind: 0 };
+
+	let mergedIntoBase = false;
+	const branchMergedResult = await run([
+		'-C',
+		wtPath,
+		'branch',
+		'--list',
+		'--merged',
+		baseBranch,
+		name,
+	]);
+	const branchMerged =
+		branchMergedResult.ok &&
+		branchMergedResult.output
+			.split('\n')
+			.map((line) => line.trim().replace(/^\*\s*/u, ''))
+			.some((line) => line === name);
+	if (branchMerged) {
+		const aheadResult = await run([
+			'-C',
+			wtPath,
+			'rev-list',
+			'--count',
+			`${baseBranch}..${name}`,
+		]);
+		if (aheadResult.ok) {
+			const aheadCount = Number.parseInt(aheadResult.output.trim(), 10);
+			mergedIntoBase = aheadCount === 0;
+		}
+	}
+
+	let lastCommitMinutesAgo = -1;
+	if (now !== undefined) {
+		const logResult = await run([
+			'-C',
+			wtPath,
+			'log',
+			'-1',
+			'--format=%ct',
+			name,
+		]);
+		if (logResult.ok) {
+			const ts = Number.parseInt(logResult.output.trim(), 10);
+			if (Number.isFinite(ts)) {
+				lastCommitMinutesAgo = Math.max(
+					0,
+					Math.round((now / 1000 - ts) / 60),
+				);
+			}
+		}
+	}
+
+	return {
+		name,
+		head: '',
+		ahead: aheadBehind.ahead,
+		behind: aheadBehind.behind,
+		mergedIntoBase,
+		lastCommitMinutesAgo,
+		worktreePath: wtPath,
+	};
+};
+
+/**
+ * f00075 S0: enrich the snapshot with synthetic branch entries for
+ * worktrees whose branch is reachable only via the worktree pointer
+ * (i.e. `git branch --list agent/*` did not surface them, but the
+ * worktree itself reports a real agent branch on `HEAD`). Each
+ * synthetic entry is marked `mergedIntoBase: false` and `ahead: 0`
+ * so the GC treats the worktree as "unmerged" — which is the safe
+ * default until the engine can run `git rev-list` against the
+ * worktree to verify. Pure over its inputs; never throws.
+ */
+const augmentSnapshotWithWorktreeBranches = async (
+	snapshot: Extract<IBranchStatusOutcome, { ok: true }>,
+	options: Pick<IBranchGcEngineOptions, 'run'>,
+): Promise<Extract<IBranchStatusOutcome, { ok: true }>> => {
+	const knownBranches = new Set(snapshot.branches.map((b) => b.name));
+	const additions: typeof snapshot.branches = [];
+	for (const wt of snapshot.worktrees) {
+		if (wt.branch.length === 0) continue; // detached HEAD — skip
+		if (knownBranches.has(wt.branch)) continue; // already known
+		// Branch reachable only via the worktree pointer. Synthesize a
+		// minimal branch entry so `planGc` can resolve it. The
+		// conservative defaults (mergedIntoBase:false, ahead:0,
+		// behind:0, lastCommitMinutesAgo:0) mean the GC will treat the
+		// worktree as "unmerged, fresh" — i.e. skipped, never removed —
+		// until a follow-up engine pass can verify against the worktree
+		// directly. That is the correct safe default.
+		additions.push({
+			name: wt.branch,
+			head: wt.head,
+			ahead: 0,
+			behind: 0,
+			mergedIntoBase: false,
+			lastCommitMinutesAgo: 0,
+			worktreePath: wt.path,
+		});
+	}
+	if (additions.length === 0) return snapshot;
+	return {
+		...snapshot,
+		branches: [...snapshot.branches, ...additions],
+		summary: {
+			...snapshot.summary,
+			totalBranches: snapshot.summary.totalBranches + additions.length,
+			aheadOfBaseCount: snapshot.summary.aheadOfBaseCount,
+			behindBaseCount: snapshot.summary.behindBaseCount,
+			mergedCount: snapshot.summary.mergedCount,
+		},
+	};
+};
+
+/**
  * Core entry point. Computes a GC plan, then optionally executes it
  * via `git worktree remove --force`. Never throws.
  */
@@ -281,7 +461,20 @@ export const runBranchGcEngine = async (
 		};
 	}
 
-	const { removed, skipped } = planGc(snapshot, options);
+	// f00075 S0: enrich the snapshot with synthetic branch entries for
+	// worktrees whose branch is reachable only via the worktree pointer
+	// (i.e. `git branch --list agent/*` did not surface them, but the
+	// worktree itself reports a real agent branch on `HEAD`). Without
+	// this, `planGc` skips them with `reason: "not-found"` even when
+	// they are perfectly valid candidates. Each synthetic entry is
+	// marked `mergedIntoBase: false` and `ahead: 0` so the GC treats
+	// it as "unmerged" — which is the safe default until the engine
+	// can run `git rev-list` against the worktree to verify.
+	const augmentedSnapshot = await augmentSnapshotWithWorktreeBranches(
+		snapshot,
+		options,
+	);
+	const { removed, skipped } = planGc(augmentedSnapshot, options);
 
 	// Execute the plan when not in dry-run. We never push; we only run
 	// `git worktree remove --force <path>` per removed entry.
