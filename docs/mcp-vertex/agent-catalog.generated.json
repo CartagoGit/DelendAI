@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T12:53:02.139Z",
+	"generatedAt": "2026-06-28T12:55:47.894Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -688,14 +688,6 @@
 				"date": "2026-06-21"
 			},
 			{
-				"id": "c00075",
-				"title": "c00075",
-				"track": "governance",
-				"status": "ready",
-				"kind": "chore",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -849,11 +841,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 18,
+			"ready": 17,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 135,
+			"done": 136,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

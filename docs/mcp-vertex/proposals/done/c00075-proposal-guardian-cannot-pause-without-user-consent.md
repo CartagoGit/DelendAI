@@ -1,6 +1,6 @@
 ---
 id: c00075
-status: in-progress
+status: done
 type: proposal
 track: governance
 date: 2026-06-28
