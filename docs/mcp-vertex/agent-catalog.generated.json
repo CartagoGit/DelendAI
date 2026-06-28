@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T12:55:47.894Z",
+	"generatedAt": "2026-06-28T12:57:08.067Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -699,7 +699,7 @@
 				"id": "f00059",
 				"title": "f00059",
 				"track": "i18n+l10n+extension-ux+web",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": "2026-06-25"
 			},
@@ -841,8 +841,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 17,
-			"in-progress": 0,
+			"ready": 16,
+			"in-progress": 1,
 			"review": 0,
 			"paused": 3,
 			"done": 136,
