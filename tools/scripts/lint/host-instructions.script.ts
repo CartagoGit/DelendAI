@@ -116,12 +116,20 @@ const findAllMatches = (
 export const lintHostFile = async (
 	file: string,
 	workspaceRoot: string,
-	skillIds: ReadonlySet<string> = new Set(),
+	skillIds?: ReadonlySet<string>,
 ): Promise<readonly IHostViolation[]> => {
 	const abs = resolve(workspaceRoot, file);
 	const text = await readFile(abs, 'utf8').catch(() => '');
 	const violations: IHostViolation[] = [];
-	const effectiveSkillIds = skillIds;
+	// Auto-load the skill manifest when no explicit set is provided. The
+	// skill-id rule must narrow matches against the live manifest so lints
+	// with similar shapes (`check-ephemeral-paths`, `proposal-id-drift`, …)
+	// do not trigger false positives — that narrowing only works when the
+	// helper sees the real id set, so loading the manifest lazily is the
+	// right default for direct callers and tests. `lintAllHostFiles`
+	// pre-loads once and threads the set in explicitly to avoid the
+	// per-file disk hit.
+	const effectiveSkillIds = skillIds ?? (await loadSkillIds(workspaceRoot));
 
 	// Rule 1: must contain a link to the bootstrap. We accept either a
 	// bare path mention or a markdown link target.
