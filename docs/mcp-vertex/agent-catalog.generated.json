@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T10:17:45.536Z",
+	"generatedAt": "2026-06-28T11:26:43.416Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -389,8 +389,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
-			"appliesTo": ["@mcp-vertex/audit"],
-			"tags": ["audit", "methodology", "qualitative-analysis"],
+			"appliesTo": [
+				"@mcp-vertex/audit"
+			],
+			"tags": [
+				"audit",
+				"methodology",
+				"qualitative-analysis"
+			],
 			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md"
 		},
 		{
@@ -398,8 +404,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
-			"appliesTo": ["@mcp-vertex/audit"],
-			"tags": ["audit", "lifecycle", "rubric"],
+			"appliesTo": [
+				"@mcp-vertex/audit"
+			],
+			"tags": [
+				"audit",
+				"lifecycle",
+				"rubric"
+			],
 			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md"
 		},
 		{
@@ -407,8 +419,15 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
-			"appliesTo": ["@mcp-vertex/notification", "@mcp-vertex/proposals"],
-			"tags": ["concurrency", "locking", "mutex"],
+			"appliesTo": [
+				"@mcp-vertex/notification",
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"concurrency",
+				"locking",
+				"mutex"
+			],
 			"bodyPath": "plugins/proposals/skills/concurrency-patterns/SKILL.md"
 		},
 		{
@@ -416,8 +435,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
-			"appliesTo": ["@mcp-vertex/core"],
-			"tags": ["conventional-commits", "release", "versioning"],
+			"appliesTo": [
+				"@mcp-vertex/core"
+			],
+			"tags": [
+				"conventional-commits",
+				"release",
+				"versioning"
+			],
 			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
 		},
 		{
@@ -425,8 +450,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
-			"appliesTo": ["@mcp-vertex/*"],
-			"tags": ["failure-modes", "recovery", "swarm"],
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"failure-modes",
+				"recovery",
+				"swarm"
+			],
 			"bodyPath": "packages/core/skills/failure-modes/SKILL.md"
 		},
 		{
@@ -434,8 +465,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
-			"appliesTo": ["@mcp-vertex/proposals"],
-			"tags": ["legacy", "migration", "proposals"],
+			"appliesTo": [
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"legacy",
+				"migration",
+				"proposals"
+			],
 			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md"
 		},
 		{
@@ -443,8 +480,15 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
-			"appliesTo": ["@mcp-vertex/notification", "@mcp-vertex/proposals"],
-			"tags": ["coordination", "locking", "multi-agent"],
+			"appliesTo": [
+				"@mcp-vertex/notification",
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"coordination",
+				"locking",
+				"multi-agent"
+			],
 			"bodyPath": "plugins/proposals/skills/multi-agent-coordination/SKILL.md"
 		},
 		{
@@ -452,8 +496,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
-			"appliesTo": ["@mcp-vertex/*"],
-			"tags": ["operator", "orientation", "presets"],
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"operator",
+				"orientation",
+				"presets"
+			],
 			"bodyPath": "packages/core/skills/operator/SKILL.md"
 		},
 		{
@@ -461,8 +511,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding or changing an mcp-vertex plugin so tools, schemas, state, path containment, and durability rules stay correct.",
-			"appliesTo": ["@mcp-vertex/*"],
-			"tags": ["contract", "core", "plugin-authoring"],
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"contract",
+				"core",
+				"plugin-authoring"
+			],
 			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md"
 		},
 		{
@@ -470,8 +526,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
-			"appliesTo": ["@mcp-vertex/proposals"],
-			"tags": ["multi-agent", "proposals", "swarm"],
+			"appliesTo": [
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"multi-agent",
+				"proposals",
+				"swarm"
+			],
 			"bodyPath": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md"
 		},
 		{
@@ -479,8 +541,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
-			"appliesTo": ["@mcp-vertex/proposals"],
-			"tags": ["compact", "proposals", "workflow"],
+			"appliesTo": [
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"compact",
+				"proposals",
+				"workflow"
+			],
 			"bodyPath": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md"
 		},
 		{
@@ -488,8 +556,15 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
-			"appliesTo": ["@mcp-vertex/quality", "@mcp-vertex/rules"],
-			"tags": ["gates", "quality", "rules"],
+			"appliesTo": [
+				"@mcp-vertex/quality",
+				"@mcp-vertex/rules"
+			],
+			"tags": [
+				"gates",
+				"quality",
+				"rules"
+			],
 			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md"
 		},
 		{
@@ -497,7 +572,9 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
-			"appliesTo": ["@mcp-vertex/rules"],
+			"appliesTo": [
+				"@mcp-vertex/rules"
+			],
 			"tags": [
 				"contributor-guide",
 				"dogma",
@@ -512,8 +589,15 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
-			"appliesTo": ["@mcp-vertex/rules"],
-			"tags": ["architecture", "contributor-guide", "rules", "solid"],
+			"appliesTo": [
+				"@mcp-vertex/rules"
+			],
+			"tags": [
+				"architecture",
+				"contributor-guide",
+				"rules",
+				"solid"
+			],
 			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md"
 		},
 		{
@@ -521,8 +605,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
-			"appliesTo": ["@mcp-vertex/proposals"],
-			"tags": ["recovery", "state-health", "state-repair"],
+			"appliesTo": [
+				"@mcp-vertex/proposals"
+			],
+			"tags": [
+				"recovery",
+				"state-health",
+				"state-repair"
+			],
 			"bodyPath": "plugins/proposals/skills/state-repair-playbook/SKILL.md"
 		},
 		{
@@ -530,8 +620,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
-			"appliesTo": ["@mcp-vertex/status-marker"],
-			"tags": ["audit-trail", "closure", "status-marker"],
+			"appliesTo": [
+				"@mcp-vertex/status-marker"
+			],
+			"tags": [
+				"audit-trail",
+				"closure",
+				"status-marker"
+			],
 			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md"
 		},
 		{
@@ -539,8 +635,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
-			"appliesTo": ["@mcp-vertex/core"],
-			"tags": ["compact", "delegation", "token-budget"],
+			"appliesTo": [
+				"@mcp-vertex/core"
+			],
+			"tags": [
+				"compact",
+				"delegation",
+				"token-budget"
+			],
 			"bodyPath": "packages/core/skills/token-budget-discipline/SKILL.md"
 		},
 		{
@@ -548,8 +650,14 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
-			"appliesTo": ["@mcp-vertex/*"],
-			"tags": ["compact", "metrics", "token-budget"],
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"compact",
+				"metrics",
+				"token-budget"
+			],
 			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md"
 		},
 		{
@@ -557,8 +665,15 @@
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
-			"appliesTo": ["@mcp-vertex/*"],
-			"tags": ["brand-logo", "f00069", "iconography", "tabs"],
+			"appliesTo": [
+				"@mcp-vertex/*"
+			],
+			"tags": [
+				"brand-logo",
+				"f00069",
+				"iconography",
+				"tabs"
+			],
 			"bodyPath": "packages/core/skills/tabs-component/SKILL.md"
 		}
 	],
@@ -595,14 +710,6 @@
 				"status": "paused",
 				"kind": "feat",
 				"date": "2026-06-23"
-			},
-			{
-				"id": "f00055",
-				"title": "f00055",
-				"track": "apps/web+packages/ui-extension+apps/shared+i18n+ux+tooling",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-24"
 			},
 			{
 				"id": "f00059",
@@ -749,14 +856,6 @@
 				"date": "2026-06-28"
 			},
 			{
-				"id": "x00076",
-				"title": "x00076",
-				"track": "repo-hygiene+ci+lint+docs+plugins/rules",
-				"status": "ready",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "x00079",
 				"title": "x00079",
 				"track": "plugins/proposals+lint+i18n+tools+scripts",
@@ -774,11 +873,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 23,
+			"ready": 21,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 130,
+			"done": 132,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

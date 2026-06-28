@@ -1,6 +1,6 @@
 ---
 id: x00076
-status: ready
+status: done
 type: proposal
 track: repo-hygiene+ci+lint+docs+plugins/rules
 date: 2026-06-28
@@ -49,7 +49,7 @@ Run type/schema generation to resolve the test failure in `tool-types-sdk.spec.t
 - **Files**:
     - `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: bun run validate
-
+- status: done
 ### S2 — Relocate shipped proposal f00058
 
 Move the completed proposal `f00058` to its canonical location under `done/feats/`.
@@ -59,7 +59,7 @@ Move the completed proposal `f00058` to its canonical location under `done/feats
     - `docs/mcp-vertex/proposals/done/feats/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md` [NEW]
     - `docs/mcp-vertex/proposals/in-progress/f00058-canonical-ephemeral-exec-paths-in-plugin-cache.md` [DELETE]
 - **Gate**: bun run lint:proposals
-
+- status: done
 ### S3 — Correct styling and folder alignment of warned proposals f00070 and x00074
 
 Reorder sections, add missing fields to slices, and move `x00074` to `paused/fixes/` folder to resolve all warnings from `lint:proposals`.
@@ -70,7 +70,7 @@ Reorder sections, add missing fields to slices, and move `x00074` to `paused/fix
     - `docs/mcp-vertex/proposals/paused/fixes/x00074-loop-detector-distinguish-backoff-from-stuck.md` [NEW]
     - `docs/mcp-vertex/proposals/ready/x00074-loop-detector-distinguish-backoff-from-stuck.md` [DELETE]
 - **Gate**: bun run lint:proposals
-
+- status: done
 ### S4 — Support Hex, Composer, and Luarocks registry parsing in online-preset
 
 Expand the JSON parsing logic in `fetchOnlinePresetInfo` to correctly extract the latest package version for Hex (Elixir Credo), Composer (PHP phpstan), and Luarocks (Lua luacheck), and update their specs to assert the actual returned version instead of the fallback '1.0.0'.
@@ -80,7 +80,7 @@ Expand the JSON parsing logic in `fetchOnlinePresetInfo` to correctly extract th
     - `plugins/rules/src/lib/frameworks/online-preset.ts`
     - `plugins/rules/tests/src/lib/online-preset.spec.ts`
 - **Gate**: bun run test
-
+- status: done
 ## acceptance
 
 - `bun run validate` passes successfully with no errors or warnings.

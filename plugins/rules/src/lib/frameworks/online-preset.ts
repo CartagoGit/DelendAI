@@ -138,7 +138,7 @@ export const REGISTRY_URL: Readonly<Record<string, string>> = {
 	maven: 'https://search.maven.org/solrsearch/select?q=g%3A%22{group}%22+AND+a%3A%22{artifact}%22&rows=1&wt=json',
 	gradle: 'https://plugins.gradle.org/m2/{path}',
 	nuget: 'https://api.nuget.org/v3-flatcontainer/{pkg}/index.json',
-	hex: 'https://repo.hex.pm/tarballs/{pkg}-{version}.tar',
+	hex: 'https://hex.pm/api/packages/{pkg}',
 	clojars: 'https://clojars.org/api/artifacts/{pkg}',
 	cpan: 'https://fastapi.metacpan.org/v1/release/{pkg}',
 	luarocks: 'https://luarocks.org/api/1/{pkg}',
@@ -358,6 +358,40 @@ export const fetchOnlinePresetInfo = async (
 				ok: true,
 				package: pkg,
 				version: Array.isArray(meta) ? meta[0] || '1.0.0' : '1.0.0',
+			};
+		}
+
+		if (registry === 'hex') {
+			const meta = JSON.parse(res.body) as {
+				releases?: Array<{ version?: string }>;
+			};
+			return {
+				ok: true,
+				package: pkg,
+				version: meta.releases?.[0]?.version || '1.0.0',
+			};
+		}
+		if (registry === 'composer') {
+			const meta = JSON.parse(res.body) as {
+				packages?: Record<string, Array<{ version?: string }>>;
+			};
+			return {
+				ok: true,
+				package: pkg,
+				version: meta.packages?.[pkg]?.[0]?.version || '1.0.0',
+			};
+		}
+		if (registry === 'luarocks') {
+			const meta = JSON.parse(res.body) as {
+				version?: string;
+				repository?: Record<string, Array<{ version?: string }>>;
+			};
+			const version =
+				meta.version || meta.repository?.[pkg]?.[0]?.version || '1.0.0';
+			return {
+				ok: true,
+				package: pkg,
+				version,
 			};
 		}
 
