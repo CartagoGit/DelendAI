@@ -33,6 +33,15 @@ export type PushToDevelopResult =
  * Parse `git push` argv into a `{ remote, remoteBranch }` pair.
  * Falls back to the current branch + `origin` when the args are
  * absent (mirrors git's own defaults for a bare `git push`).
+ *
+ * lefthook passes three positional args to the pre-push hook:
+ * `{1} {2} {3} = remote_name remote_url refspec`. The refspec
+ * is the third positional (`refs/heads/local:refs/heads/remote`
+ * or a bare branch name). A bare `git push` with no refspec
+ * passes two (`remote_name remote_url`) — we fall back to the
+ * current branch in that case. A unit test of `git push` from
+ * the shell (no lefthook) passes one (`remote_name` or a bare
+ * branch).
  */
 export const parseGitPushArgs = (
 	argv: readonly string[],
@@ -46,10 +55,20 @@ export const parseGitPushArgs = (
 		positional.push(arg);
 	}
 	if (positional[0]) remote = positional[0];
-	const ref = positional[1];
+	// The refspec is the LAST positional. With three args
+	// (`remote url refspec`) the URL is the middle one and must
+	// be skipped — its colons would otherwise be misread as the
+	// refspec's source:target separator.
+	const ref = positional.length >= 3 ? positional[2] : positional[1];
 	if (ref) {
 		const colonIdx = ref.indexOf(':');
-		remoteBranch = colonIdx >= 0 ? ref.slice(colonIdx + 1) : ref;
+		const raw = colonIdx >= 0 ? ref.slice(colonIdx + 1) : ref;
+		// Strip the `refs/heads/` prefix when present so the
+		// caller gets a bare branch name (e.g. `develop` instead
+		// of `refs/heads/develop`).
+		remoteBranch = raw.startsWith('refs/heads/')
+			? raw.slice('refs/heads/'.length)
+			: raw;
 	}
 	if (remoteBranch === undefined) {
 		remoteBranch = currentBranchFallback ?? DEVELOP_BRANCH;
@@ -179,13 +198,26 @@ const formatReport = (result: PushToDevelopResult): string => {
 };
 
 const main = async (): Promise<number> => {
-	const args = parseArgs(process.argv.slice(2));
+	const rawArgv = process.argv.slice(2);
+	// Smoke-test carve-out: when the CLI is invoked with NO
+	// positional args (e.g. `bun run validate` chains the lint
+	// outside of any real `git push`), there is no push in
+	// flight to discipline. Return a no-op success so the
+	// validate chain does not false-positive on every develop
+	// build. The discipline is still enforced by lefthook's
+	// pre-push hook, which always passes the real refspec
+	// (`{1} {2} {3} = remote remote_url refs`).
+	const positionals = rawArgv.filter((a) => !a.startsWith('-'));
+	if (positionals.length === 0) {
+		process.stdout.write(
+			'✓ push-to-develop-discipline: skipped (no push in flight)\n',
+		);
+		return 0;
+	}
+	const args = parseArgs(rawArgv);
 	const currentBranch =
 		args.currentBranch ?? readCurrentBranch(args.cwd);
-	const pushArgs = parseGitPushArgs(
-		process.argv.slice(2),
-		currentBranch,
-	);
+	const pushArgs = parseGitPushArgs(rawArgv, currentBranch);
 	const remote = args.remote || pushArgs.remote;
 	const remoteBranch = args.remoteBranch || pushArgs.remoteBranch;
 	const result = lintPushToDevelop({
