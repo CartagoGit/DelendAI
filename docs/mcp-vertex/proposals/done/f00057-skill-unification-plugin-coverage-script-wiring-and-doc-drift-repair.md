@@ -1,6 +1,6 @@
 ---
 id: f00057
-status: in-progress
+status: done
 type: proposal
 track: skills+plugins+tools+scripts+docs+workflow
 date: 2026-06-25
