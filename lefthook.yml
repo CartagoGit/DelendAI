@@ -82,6 +82,15 @@ pre-commit:
     stray-files-check:
       run: bun run lint:stray-cache-files || true
 
+    # f00086: worktree-isolation discipline. BLOCKING (no `|| true`).
+    # On `develop`, blocks any staged file under a deep path
+    # (proposals, packages sources, plugin sources,
+    # tools/scripts/) — the agent forgot to open a feature branch.
+    # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
+    # the blocker text).
+    commit-branch-discipline:
+      run: bun run lint:commit-branch -- --staged {staged_files} || exit 1
+
 pre-push:
   parallel: false
   commands:
@@ -95,6 +104,23 @@ pre-push:
     # Advisory: prints violations but does not block the push.
     lint-scss-all:
       run: bun run lint:scss || true
+
+    # f00086: worktree-isolation discipline. BLOCKING (no `|| true`).
+    # Blocks `develop → origin/develop` direct push. The PR-merge
+    # shape (`agent/x → origin/develop`) is allowed.
+    # Bypass: LEFTHOOK_BYPASS=1 git push ... (documented in the
+    # blocker text).
+    push-to-develop-discipline:
+      run: bun run lint:push-to-develop -- {1} {2} {3} || exit 1
+
+# f00086: commit-msg discipline. BLOCKING (no `|| true`). Enforces
+# Conventional Commits format on the first line of the commit
+# message. The merge / revert carve-out mirrors `derive-version.ts`.
+commit-msg:
+  parallel: false
+  commands:
+    commit-msg-conventional:
+      run: bun run lint:commit-msg -- {1} || exit 1
 
 # Manual hooks (run with `lefthook run <name>`).
 format_web:
