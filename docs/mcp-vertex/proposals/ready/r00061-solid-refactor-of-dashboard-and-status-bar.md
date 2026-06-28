@@ -108,7 +108,7 @@ packages/ui-extension/src/
     status-bar-events.ts       # REWRITE: discriminated union + locale-aware
 ```
 
-## slices
+## Slices
 
 ### S1 — split `renderDashboard` into builders (H29 SRP)
 
@@ -131,7 +131,7 @@ soup). Each has its own spec file.
 
 **Acceptance:** the new file is ≤ 100 LOC; `wc -l render-dashboard.ts` reports ≤ 100.
 `build-*.spec.ts` × 5 are ≥ 80% line coverage each.
-
+- status: done
 ### S2 — sparkline is a trend (H22)
 
 **File:** [`packages/ui-extension/src/renderers/dashboard/build-tools-panel.ts`](packages/ui-extension/src/renderers/dashboard/build-tools-panel.ts )
