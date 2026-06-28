@@ -48,12 +48,22 @@ export const escapeHtml = (raw: string): string =>
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#39;');
 
-export const formatRelativeTime = (iso: string, _locale = 'en'): string => {
+export const formatRelativeTime = (iso: string, locale = 'en'): string => {
 	const then = new Date(iso).getTime();
 	if (Number.isNaN(then)) return iso;
-	const diffMs = Date.now() - then;
-	if (diffMs < 60_000) return `${Math.round(diffMs / 1000)}s ago`;
-	if (diffMs < 3_600_000) return `${Math.round(diffMs / 60_000)}m ago`;
-	if (diffMs < 86_400_000) return `${Math.round(diffMs / 3_600_000)}h ago`;
-	return `${Math.round(diffMs / 86_400_000)}d ago`;
+	// `Intl.RelativeTimeFormat` ships in every runtime (Bun, Node 18+,
+	// every browser) and renders the same diff in 100+ locales with the
+	// correct unit grammar — `numeric: 'auto'` produces "yesterday" /
+	// "hace 2 minutos" instead of "1 day ago" / "hace 2 días" when the
+	// value is exactly ±1. f00059 S5.
+	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+	const diffMs = then - Date.now();
+	const seconds = Math.round(diffMs / 1000);
+	if (Math.abs(seconds) < 60) return rtf.format(seconds, 'second');
+	const minutes = Math.round(seconds / 60);
+	if (Math.abs(minutes) < 60) return rtf.format(minutes, 'minute');
+	const hours = Math.round(minutes / 60);
+	if (Math.abs(hours) < 24) return rtf.format(hours, 'hour');
+	const days = Math.round(hours / 24);
+	return rtf.format(days, 'day');
 };
