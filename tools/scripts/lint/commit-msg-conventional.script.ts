@@ -203,4 +203,6 @@ const main = async (): Promise<number> => {
 	return 1;
 };
 
-process.exit(await main());
+if (import.meta.main) {
+	process.exit(await main());
+}
