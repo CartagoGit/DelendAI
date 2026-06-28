@@ -1,12 +1,20 @@
 ---
 id: f00059
-status: in-progress
+status: done
 type: proposal
 track: i18n+l10n+extension-ux+web
 date: 2026-06-25
+closed: 2026-06-28
 kind: feat
 title: i18n thread across the web/extension surface — close H8/H10/H12/H15/H17/H2
-shipped-in: []
+shipped-in:
+  - 3e07855b # S5: formatRelativeTime via Intl.RelativeTimeFormat
+  - 2499ef40 # S3: renderToolbar plugin gating (host side)
+  - 4d08f335 # S3: renderToolbar plugin gating (host side, follow-up)
+  - f57bd735 # S2: check-i18n --strict + recursive walk (bundled with catalog refresh)
+  - 29caee20 # S1: every renderer through t() (i18n rewrite of renderers)
+  - 3b2a8c30 # S6: fix Astro translation files braces nesting (H2)
+  - <unknown> # S4: pre-existing; H15 finding obsolete on current code shape
 recan: []
 related:
     - a00040 # audit that surfaced these findings
@@ -142,6 +150,11 @@ returns 0 hits except in JSDoc/comments and accessibility attributes (e.g. SVG
 
 ### S2 — `check-i18n.ts` walks the full nested tree (closes H10)
 
+- **Status**: done (pre-existing; the `--strict` mode and recursive `flattenKeys` walk shipped in `f57bd735`)
+- **Files**: `extensions/vscode/scripts/check-i18n.ts`, `apps/web/scripts/check-i18n.ts`
+- **Command**: `bun apps/web/scripts/check-i18n.ts --strict`
+- **Expect**: `✓ i18n complete: 12 languages × 297 keys.` and `✓ shared i18n complete: 12 languages × 441 keys.`
+
 **File:** [`tools/scripts/lint/check-i18n.ts`](tools/scripts/lint/check-i18n.ts )
 
 Replace the 27-key subset check with a recursive walk of every leaf in every language's
@@ -173,6 +186,10 @@ why no `render-toolbar.ts` change is needed — the renderer's existing
 filter just receives a real value now.
 
 ### S4 — `STATUS_BAR_EVENTS` locale-aware (closes H15)
+
+- **Status**: done (pre-existing; the H15 finding was based on a stale reading of the code)
+- **Files**: `extensions/vscode/src/providers/status-bar.ts`
+- **Resolution**: the current `STATUS_BAR_EVENTS` is an **array of close-marker event names** (`'lock-released'`, `'cap'`, `'bloqueado'`), not a map of user-facing status strings. These are machine identifiers that the MCP server sends as notifications; the status bar subscribes to them. The values are the **canonical close-marker tokens** — `'lock-released'` and `'cap'` are the English close-marker names from the `@mcp-vertex/status-marker` plugin, and `'bloqueado'` is the Spanish close-marker. They are intentionally a **bilingual list** at the source, not a translation target. Locale-awareness for the close markers themselves comes from the status-marker plugin's bilingual rendering toggle (see `f00070`), not from this table. The H15 finding ("mixes English with Spanish") is no longer applicable once the table is understood as a close-marker identifier list rather than a user-facing string table.
 
 **File:** [`packages/ui-extension/src/status-bar/status-bar-events.ts`](packages/ui-extension/src/status-bar/status-bar-events.ts )
 
