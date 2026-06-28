@@ -232,8 +232,7 @@ export const runAutoWork = async (
 	if (options.loopDetectorWindow && options.loopDetectorWindow.length > 0) {
 		const verdict = detectAgentLoop(options.loopDetectorWindow, {
 			cooldownMs: options.loopDetectorCooldownMs ?? 30_000,
-			progressHashGate:
-				options.loopDetectorProgressGate === true,
+			progressHashGate: options.loopDetectorProgressGate === true,
 		});
 		if (verdict.isStuck) {
 			consecutiveIdle = 0;
@@ -258,12 +257,13 @@ export const runAutoWork = async (
 		}
 	}
 
-		// The detector is a safety net for actual loops (same
-		// `agent_lock claim` retried, same `sync_proposals` retried).
-		// For the `auto_work` no-args case the in-tool `consecutiveIdle`
-		// streak is the right brake — the detector would otherwise trap
-		// the orchestrator in a stop state when the cascade has work to
-		// return on the next call (see a00033 S3 / H1).
+	// Legacy fast-path detector (a00033 S3 / H1). The
+	// `isAgentStuck` check is the in-tool exact-repeat brake; the
+	// x00074 outcome-aware detector above is the precise post-fix
+	// detector. Both can run in the same call — the legacy one only
+	// fires when a host has injected a `loopDetector` instance AND
+	// the auto_work tool name is NOT in the disable list.
+	if (options.loopDetector) {
 		const autoWorkToolName = `${options.namespacePrefix}_auto_work`;
 		const disabled = options.loopDetectorDisableFor ?? [
 			...DEFAULT_LOOP_DETECTOR_DISABLE_FOR,
@@ -306,8 +306,12 @@ export const runAutoWork = async (
 			reason: 'hygiene-blocked',
 			executionMode: 'blocked',
 			hygieneBlockers: [...hygiene.hygieneBlockers],
-			hygieneActions: [...hygiene.hygieneActions],
-			hygieneWarnings: [...hygiene.hygieneWarnings],
+			...(hygiene.hygieneActions.length > 0
+				? { hygieneActions: [...hygiene.hygieneActions] }
+				: {}),
+			...(hygiene.hygieneWarnings.length > 0
+				? { hygieneWarnings: [...hygiene.hygieneWarnings] }
+				: {}),
 			stashes: [...hygiene.stashes],
 			rescueCandidates: [...hygiene.rescueCandidates],
 			blockers: [...hygiene.hygieneBlockers],
@@ -590,8 +594,7 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 const readCurrentBranchName = async (
 	workspaceRoot: string,
 ): Promise<
-	| { ok: true; branch: string; isAgentBranch: boolean }
-	| { ok: false }
+	{ ok: true; branch: string; isAgentBranch: boolean } | { ok: false }
 > => {
 	if (workspaceRoot.length === 0) return { ok: false };
 	try {
@@ -605,8 +608,7 @@ const readCurrentBranchName = async (
 			ok: true,
 			branch: branch.length === 0 ? 'HEAD' : branch,
 			isAgentBranch:
-				branch.startsWith('agent/') &&
-				branch.length > 'agent/'.length,
+				branch.startsWith('agent/') && branch.length > 'agent/'.length,
 		};
 	} catch {
 		return { ok: false };

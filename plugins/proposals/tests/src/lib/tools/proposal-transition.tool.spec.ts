@@ -187,4 +187,88 @@ describe('proposal_transition', async () => {
 			});
 		}
 	}
+
+	// f00042: `done/<kind>/` mirror. Closing a feat proposal must move the
+	// file to `done/feats/`, not `done/`. Same for every kind that has a
+	// sub-folder. This regression covers the original bug — previously
+	// the file ended up at `done/` directly. Source folder is `review`
+	// because `in-progress → done` is not a legal DFA edge (the engine
+	// routes every close through `review` first).
+	describe('done/<kind>/ sub-folder routing (f00042)', async () => {
+		const cases: ReadonlyArray<{
+			readonly kind: string;
+			readonly prefix: string;
+			readonly subfolder: string;
+		}> = [
+			{ kind: 'feat', prefix: 'f', subfolder: 'feats' },
+			{ kind: 'fix', prefix: 'x', subfolder: 'fixes' },
+			{ kind: 'refactor', prefix: 'r', subfolder: 'refactors' },
+			{ kind: 'audit', prefix: 'a', subfolder: 'audits' },
+			{ kind: 'chore', prefix: 'c', subfolder: 'chores' },
+			{ kind: 'docs', prefix: 'd', subfolder: 'docs' },
+			{ kind: 'test', prefix: 't', subfolder: 'tests' },
+			{ kind: 'plan', prefix: 'q', subfolder: 'plans' },
+			{ kind: 'resume', prefix: 'n', subfolder: 'resumes' },
+		];
+		for (const { kind, prefix, subfolder } of cases) {
+			it(`closes a kind:${kind} proposal into done/${subfolder}/`, async () => {
+				const id = `${prefix}70000`;
+				const filename = `${prefix}70000-subfolder-routing.md`;
+				await writeProposal(root, 'review', filename, {
+					id,
+					kind,
+					status: 'review',
+				});
+				const result = await runProposalTransition(
+					{ id, to: 'done', reason: 'shipping' },
+					options,
+				);
+				expect(result.isError).toBeUndefined();
+				const moved = await readFile(
+					join(root, 'done', subfolder, filename),
+					'utf8',
+				);
+				expect(moved).toContain('status: done');
+				// And it MUST NOT live at `done/` itself.
+				await expect(
+					readFile(join(root, 'done', filename), 'utf8'),
+				).rejects.toThrow();
+			});
+		}
+
+		it('falls back to `done/` (no sub-folder) when kind is missing', async () => {
+			await writeProposal(root, 'review', 'f70001-no-kind.md', {
+				id: 'f70001',
+				status: 'review',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f70001', to: 'done', reason: 'no kind declared' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'done', 'f70001-no-kind.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: done');
+		});
+
+		it('falls back to `done/` for kinds without a registered sub-folder', async () => {
+			await writeProposal(root, 'review', 'l70002-legacy.md', {
+				id: 'l70002',
+				kind: 'legacy',
+				status: 'review',
+			});
+			const result = await runProposalTransition(
+				{ id: 'l70002', to: 'done', reason: 'legacy' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'done', 'l70002-legacy.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: done');
+		});
+	});
 });

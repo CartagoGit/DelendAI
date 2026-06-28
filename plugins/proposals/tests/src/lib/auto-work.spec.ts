@@ -448,6 +448,15 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
 			}),
 		);
+		// The cascade reads the proposal markdown from
+		// `dirname(indexPathAbs)/<entry.file>` (proposalsDirAbs fallback).
+		// Without a real file on disk the cascade drops the entry as
+		// `all-claimed` and the plan falls into the idle branch. The
+		// front-hook in S4 is BEFORE the cascade, so a stash fixture is
+		// enough to exercise the block — but the bypass test
+		// (forceHygieneBypass:true) needs the cascade to find a real
+		// proposal, so write a minimal markdown file.
+		writeFileSync(join(root, 'p1.md'), '# p1-x\n\n## Slices\n\n');
 	});
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
