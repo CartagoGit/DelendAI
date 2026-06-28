@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T16:06:26.371Z",
+	"generatedAt": "2026-06-28T16:30:26.913Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -696,14 +696,6 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00059",
-				"title": "f00059",
-				"track": "i18n+l10n+extension-ux+web",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00060",
 				"title": "f00060",
 				"track": "design-tokens+css+extension-ux",
@@ -830,14 +822,22 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-28"
+			},
+			{
+				"id": "f00086",
+				"title": "f00086",
+				"track": "core+orchestration+metrics",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
 			}
 		],
 		"byStatus": {
-			"ready": 15,
-			"in-progress": 1,
+			"ready": 16,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 135,
+			"done": 136,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
