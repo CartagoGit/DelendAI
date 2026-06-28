@@ -17,6 +17,33 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"commitAuthor": {
+			"type": "object",
+			"properties": {
+				"mode": {
+					"type": "string",
+					"enum": [
+						"git",
+						"agent",
+						"bot",
+						"named"
+					]
+				},
+				"clientName": {
+					"type": "string"
+				},
+				"modelName": {
+					"type": "string"
+				},
+				"humanName": {
+					"type": "string"
+				},
+				"humanEmail": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false
+		},
 		"validationMatrix": {
 			"type": "object",
 			"properties": {

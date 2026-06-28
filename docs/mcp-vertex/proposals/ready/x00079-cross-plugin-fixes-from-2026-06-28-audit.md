@@ -116,33 +116,36 @@ Add `t.cli.title`, `t.cli.description`, `t.guide.title`, `t.guide.description`, 
 
 Replace literal `mcp-vertex.config.json` strings in user-visible text with the `<config-file>` placeholder, mirroring what a00032 S2 did for the `audit` plugin.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/issues/src/index.ts` [MODIFY — knowledge body line 44]
     - `plugins/memory/src/index.ts` [MODIFY — knowledge brief line 93]
     - `plugins/quality/src/lib/services/run-all.ts` [MODIFY — tool error hint line 130]
 - **Gate**: `bun run test`
+- **Shipped in**: a0f3900e
 - **Closes**: a00045 H6 (P2)
 
 ### S7 — Fix inverted `console.error` guard in `delivery-verifier.ts`
 
 Either invert the guard (only log in production) or route through the structured logger the rest of the plugin uses. Preferred: remove the log entirely — the synthetic green fallback is intentional and already documented in the function's contract; logging it is noise.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/proposals/src/lib/agents/delivery-verifier.ts` [MODIFY]
 - **Gate**: `bun run test`
+- **Shipped in**: caf49e15
 - **Closes**: a00045 H7 (P2)
 
 ### S8 — `sync-proposal-registry.script.ts` uses `repoRoot()` or fails
 
 Replace the silent `process.cwd()` fallback with a call to `repoRoot()` (canonical helper from `tools/scripts/lib/monorepo-paths.ts`). If `repoRoot()` returns null, fail with a clear error message naming the `--root` flag.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `tools/scripts/proposals/sync-proposal-registry.script.ts` [MODIFY]
     - `tools/scripts/tests/proposals/sync-proposal-registry.spec.ts` [CREATE or MODIFY]
 - **Gate**: `bun run test`
+- **Shipped in**: 90655db4
 - **Closes**: a00045 H11 (P2)
 
 ## acceptance
