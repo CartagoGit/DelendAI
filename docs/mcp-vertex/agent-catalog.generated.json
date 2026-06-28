@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T11:37:35.590Z",
+	"generatedAt": "2026-06-28T11:40:05.175Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -856,14 +856,6 @@
 				"date": "2026-06-28"
 			},
 			{
-				"id": "x00079",
-				"title": "x00079",
-				"track": "plugins/proposals+lint+i18n+tools+scripts",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "x00080",
 				"title": "x00080",
 				"track": "core+agents+governance+plugins/proposals",
@@ -874,10 +866,10 @@
 		],
 		"byStatus": {
 			"ready": 20,
-			"in-progress": 1,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 132,
+			"done": 133,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

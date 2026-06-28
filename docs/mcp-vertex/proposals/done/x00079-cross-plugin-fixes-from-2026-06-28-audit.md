@@ -1,6 +1,6 @@
 ---
 id: x00079
-status: in-progress
+status: done
 type: proposal
 track: plugins/proposals+lint+i18n+tools+scripts
 date: 2026-06-28
