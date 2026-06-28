@@ -260,7 +260,9 @@ describe('x00074 S2 — timestamp-cooldown', async () => {
 				{ action: 'claim', task_id: 'f00056-S5', i },
 				'a1',
 				1_700_000_000_000 + i * 60_000, // 60s apart
-				'ok',
+				// Use 'unknown' so the S1 outcome filter does not drop
+				// the bucket; we want to isolate the S2 cooldown logic.
+				'unknown',
 			),
 		);
 		const out = detectAgentLoop(calls);
@@ -275,7 +277,9 @@ describe('x00074 S2 — timestamp-cooldown', async () => {
 				{ action: 'claim', task_id: 'f00056-S5', i },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart — tight loop
-				'ok',
+				// Use 'unknown' so the S1 outcome filter does not drop
+				// the bucket; we want the cooldown to allow the count.
+				'unknown',
 			),
 		);
 		const out = detectAgentLoop(calls);
@@ -290,7 +294,9 @@ describe('x00074 S2 — timestamp-cooldown', async () => {
 				{ action: 'claim', i },
 				'a1',
 				1_700_000_000_000 + i * 10_000, // 10s apart
-				'ok',
+				// Use 'unknown' so the S1 outcome filter does not drop
+				// the bucket.
+				'unknown',
 			),
 		);
 		// 60s cooldown → all 10s-spaced calls fit within the cooldown
