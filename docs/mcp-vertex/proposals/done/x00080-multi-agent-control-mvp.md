@@ -1,6 +1,6 @@
 ---
 id: x00080
-status: in-progress
+status: done
 type: proposal
 track: core+agents+governance+plugins/proposals
 date: 2026-06-28
