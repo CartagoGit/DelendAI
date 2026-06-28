@@ -279,6 +279,12 @@ export default definePlugin({
 					// returning a plan. Hosts with the gate off (the
 					// default) pass `false` and the front-hook is a no-op.
 					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+					// f00082: thread the host-resolved commit-author
+					// policy through to the `auto_work` plan so an
+					// orchestrator can pass it to `maybePersistAfterSlice`
+					// when it actually runs the persist step. Absent →
+					// the engine falls back to git config.
+					commitAuthor: ctx.commitAuthor,
 					// The loop-detector service stores per-agent windows
 					// privately. We snapshot the current agent's window
 					// when one is registered; otherwise we leave the field

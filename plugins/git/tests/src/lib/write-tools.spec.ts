@@ -263,4 +263,74 @@ describe('git_commit / git_push (S9)', async () => {
 			).toContain('protected branch');
 		});
 	});
+
+	describe('commitAuthor policy (f00082)', () => {
+		it('passes --author=<flag> to git commit when policy is resolved', async () => {
+			await writeFile(join(repoDir, 'a.txt'), 'A\n', 'utf8');
+			const result = await runGitCommit(
+				runner,
+				{
+					message: 'feat: a',
+					files: ['a.txt'],
+				},
+				{
+					authorFlag: 'Cartago (MiniMax-M3) <cartago@local>',
+					label: 'named (Cartago (MiniMax-M3) <cartago@local>)',
+				},
+			);
+			expect(result.isError).toBeUndefined();
+			const { stdout } = await execFileAsync(
+				'git',
+				['log', '-1', '--pretty=format:%an <%ae>'],
+				{ cwd: repoDir },
+			);
+			// git drops the quotes around the name but keeps the parens;
+			// email comes through unchanged.
+			expect(stdout).toContain('<cartago@local>');
+		});
+
+		it('refuses the commit when the resolved policy carries a reason', async () => {
+			await writeFile(join(repoDir, 'b.txt'), 'B\n', 'utf8');
+			const result = await runGitCommit(
+				runner,
+				{
+					message: 'feat: b',
+					files: ['b.txt'],
+				},
+				{
+					authorFlag: '',
+					label: 'git',
+					reason: 'mode "git" requires `git config user.name` and `user.email`',
+				},
+			);
+			expect(result.isError).toBe(true);
+			expect(
+				(result.structuredContent as { error: { reason: string } })
+					.error.reason,
+			).toContain('mode "git" requires');
+			// Worktree must NOT have a second commit — the refusal
+			// happened BEFORE staging.
+			const { stdout: log } = await execFileAsync(
+				'git',
+				['log', '--oneline'],
+				{ cwd: repoDir },
+			);
+			expect(log.trim().split('\n').length).toBe(1); // just init
+		});
+
+		it('falls back to git config when no policy is supplied', async () => {
+			await writeFile(join(repoDir, 'c.txt'), 'C\n', 'utf8');
+			const result = await runGitCommit(runner, {
+				message: 'feat: c',
+				files: ['c.txt'],
+			});
+			expect(result.isError).toBeUndefined();
+			const { stdout } = await execFileAsync(
+				'git',
+				['log', '-1', '--pretty=format:%an'],
+				{ cwd: repoDir },
+			);
+			expect(stdout).toBe('agent-a');
+		});
+	});
 });
