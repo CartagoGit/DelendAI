@@ -5,6 +5,11 @@ import {
 	type IWorktreeSyncCoordinator,
 	resolveWorktreeSyncCoordinator,
 } from './worktree-sync-coordinator';
+import {
+	composeIdentity,
+	nextCollisionSuffix,
+	slugify,
+} from '../shared/agent-identity';
 
 /**
  * Isolates a concurrent agent into its own `git worktree` + branch, so two
@@ -43,6 +48,16 @@ export interface IAgentWorktreeArgs {
 	readonly base_branch?: string | undefined;
 	/** `remove` only: force-remove even with uncommitted changes. */
 	readonly force?: boolean | undefined;
+	/**
+	 * f00082 S4: composite identity. When host/model/task_id are
+	 * all set, the worktree branch is
+	 * `agent/<host>-<model>-<agent_name>-<task_id>` instead of the
+	 * historical `agent/<agent_name>`. Optional for backwards
+	 * compat — older callers that only pass `agent` keep working.
+	 */
+	readonly host?: import('@mcp-vertex/core/public').AgentHost | undefined;
+	readonly model?: string | undefined;
+	readonly task_id?: string | undefined;
 }
 
 export interface IWorktreeEntry {
@@ -178,9 +193,19 @@ const createWorktree = async (
 			reason: 'create requires "agent"',
 		};
 	}
+	// f00082 S4: build the composite branch slug from the optional
+	// host/model/task_id fields. The historical shape
+	// (`agent/<agent_name>`) is preserved when none of the new
+	// fields are set so older callers keep working.
+	const composite = composeIdentity({
+		agent_name: args.agent,
+		...(args.host !== undefined ? { host: args.host } : {}),
+		...(args.model !== undefined ? { model: args.model } : {}),
+		...(args.task_id !== undefined ? { task_id: args.task_id } : {}),
+	});
 	const agentSlug = slug(args.agent);
 	const path = dirFor(options, agentSlug);
-	const branch = `agent/${agentSlug}`;
+	let branch = `agent/${composite}`;
 
 	const existing = await listWorktrees(run);
 	if (existing.ok && existing.action === 'list') {
@@ -193,6 +218,18 @@ const createWorktree = async (
 				branch: already.branch ?? branch,
 				created: false,
 			};
+		}
+	}
+
+	// f00082 S4: when the composite branch already exists, pick the
+	// next numeric suffix. We enumerate via `git branch --list` so
+	// the engine stays a thin wrapper around git — no in-memory
+	// state to drift from the working tree.
+	const existingBranches = await listBranchNames(run);
+	if (existingBranches !== null) {
+		const suffix = nextCollisionSuffix(existingBranches, composite);
+		if (suffix !== null) {
+			branch = `${branch}-${suffix}`;
 		}
 	}
 
@@ -214,6 +251,32 @@ const createWorktree = async (
 		};
 	}
 	return { ok: true, action: 'create', path, branch, created: true };
+};
+
+/**
+ * Enumerate the local branch names known to git. Returns `null` when
+ * the lookup fails (e.g. not a git repo, git missing) — the engine
+ * then falls back to the bare composite without a numeric suffix.
+ * Pure against the runner: no I/O outside `git branch --list`.
+ */
+const listBranchNames = async (
+	run: IGitRunner,
+): Promise<ReadonlySet<string> | null> => {
+	const result = await run(['branch', '--list', '--format=%(refname:short)']);
+	if (!result.ok) return null;
+	const names = result.output
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0)
+		// f00082 S4: strip the `agent/` prefix so the collision
+		// check works against the bare composite
+		// (`copilot-m3-orion-f00078` instead of
+		// `agent/copilot-m3-orion-f00078`). Branches without the
+		// prefix pass through unchanged.
+		.map((name) =>
+			name.startsWith('agent/') ? name.slice('agent/'.length) : name,
+		);
+	return new Set(names);
 };
 
 const removeWorktree = async (

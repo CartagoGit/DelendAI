@@ -10,25 +10,39 @@ import {
 	EmbedService,
 	type McpStdioClient,
 } from '@mcp-vertex/client';
+import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderDashboard } from '@mcp-vertex/ui-extension/public';
 
 import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
 
 import { OPEN_PROPOSAL_COMMAND } from './open-proposal';
 import { REFRESH_COMMAND } from './refresh';
+import { HOST_LANG_KEY } from './setup-github';
 
 export const OPEN_DASHBOARD_COMMAND = 'mcp-vertex.openDashboard';
 
 export interface IOpenDashboardDeps {
 	readonly host: IHostAdapter;
 	readonly client: McpStdioClient;
+	readonly globalState?: {
+		get<T>(key: string): T | undefined;
+		update(key: string, value: unknown): Thenable<void> | Promise<void>;
+	};
 	readonly getConfig: () => {
 		readonly extension?: { readonly docsUrl?: string };
 	};
 }
 
+const resolveLang = (deps: IOpenDashboardDeps): Lang => {
+	const persisted = deps.globalState?.get<unknown>(HOST_LANG_KEY);
+	return typeof persisted === 'string' && persisted in dictsByLang
+		? (persisted as Lang)
+		: defaultLang;
+};
+
 export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 	deps.host.registerCommand(OPEN_DASHBOARD_COMMAND, async () => {
+		const lang = resolveLang(deps);
 		const dashboard = new DashboardService({ client: deps.client });
 		const embed = new EmbedService();
 		const models = await dashboard.getAllModels();
@@ -43,6 +57,7 @@ export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 			docsUrl,
 			refreshCommand: REFRESH_COMMAND,
 			openDocsCommand: OPEN_DASHBOARD_COMMAND,
+			lang: dictsByLang[lang],
 		});
 		const panel = deps.host.createWebviewPanel(
 			'mcpVertexDashboard',
