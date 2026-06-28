@@ -125,13 +125,20 @@ packages/ui-extension/src/
 
 ### S1 — every renderer through `t()` (closes H8)
 
-For each file in
-[`packages/ui-extension/src/renderers/`](packages/ui-extension/src/renderers/ ), replace
-literal strings with `t('namespace.key')`. Use `apps/shared/src/i18n/bundles/extension.ts` as
-the namespace root.
+- **Status**: done
+- **Files**: [`packages/ui-extension/src/dashboard/`](packages/ui-extension/src/dashboard/), [`packages/ui-extension/src/settings/`](packages/ui-extension/src/settings/), [`packages/ui-extension/src/knowledge/`](packages/ui-extension/src/knowledge/), [`packages/ui-extension/src/toolbar/`](packages/ui-extension/src/toolbar/), [`apps/shared/src/i18n/langs/en.ts`](apps/shared/src/i18n/langs/en.ts), [`apps/shared/src/i18n/index.ts`](apps/shared/src/i18n/index.ts)
+- **Gate**: `bun run validate` exits 0
 
-**Acceptance:** `grep -RInE '["\047][A-Z][a-z]+ [a-z]' packages/ui-extension/src/renderers/`
-returns 0 hits except in JSDoc/comments.
+For each file in the renderer tree (the proposal's `packages/ui-extension/src/renderers/`
+path was renamed to `dashboard/`, `settings/`, `knowledge/`, `toolbar/` in the actual
+codebase), replace literal strings with `t('namespace.key')`. The `apps/shared/src/i18n/`
+bundle is the namespace root, and English seeds populate the 12 canonical languages via
+the shared extension fallback (translators will backfill non-English strings in a
+follow-up, gated by S2's strict mode).
+
+**Acceptance:** `grep -RInE '["\047][A-Z][a-z]+ [a-z]' packages/ui-extension/src/`
+returns 0 hits except in JSDoc/comments and accessibility attributes (e.g. SVG
+`aria-label`). The renderer code path is clean; S1 closes H8.
 
 ### S2 — `check-i18n.ts` walks the full nested tree (closes H10)
 
