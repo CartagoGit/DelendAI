@@ -1,4 +1,5 @@
 import type { ICorePaths } from './core-paths.interface';
+import type { ICommitAuthorResolution } from '../../shared/commit-author';
 import type { IKnowledgeEntry, ISkillEntry } from './knowledge.interface';
 import type { IMcpVertexProjectMetadata } from './project-metadata.interface';
 import type { IStatusCollector } from './status-collector.interface';
@@ -65,6 +66,17 @@ export interface IHostPaths {
 	 * loader always sets a concrete boolean.
 	 */
 	readonly agentWorktreeEnabled?: boolean | undefined;
+	/**
+	 * f00082: the resolved commit-author policy, applied by the shared
+	 * git engine to every commit produced by `@mcp-vertex/git` and
+	 * `@mcp-vertex/proposals#auto_work`. The CLI loader builds this
+	 * from `mcp-vertex.config.json#commitAuthor` (mode + identity +
+	 * human-name/email) and the MCP `clientInfo` payload. Optional on
+	 * the interface so existing programmatic hosts keep compiling —
+	 * when absent, the engine falls back to the active git config
+	 * (the historical default).
+	 */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
 /** Solid-ISP: agent-facing static content the host wants to expose. */

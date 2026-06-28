@@ -1,3 +1,4 @@
+import type { CommitAuthorMode } from '../shared/commit-author';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
@@ -55,6 +56,35 @@ export interface IMcpVertexCorePathsConfig {
 	 * files under legacy/ before writing fresh templates.
 	 */
 	readonly keepLegacy?: boolean;
+}
+
+/**
+ * Solid-ISP: how every commit produced by the shared git engine
+ * (`packages/core/src/lib/shared/git-write.ts`) should be attributed.
+ *
+ * - `mode: 'git'` (DEFAULT): the agent's commits land under the
+ *   current `git config user.name` / `user.email` so the user does
+ *   not have to maintain two `git log --author` filters.
+ * - `mode: 'agent' | 'bot' | 'named'`: explicit attribution to the
+ *   driving agent (see `commit-author.ts` for the exact author flags
+ *   each mode produces).
+ *
+ * `identity` is host-supplied (MCP `clientInfo` + the active model).
+ * `named` is the only mode that consumes `humanName` / `humanEmail`
+ * — the other modes ignore them so a user can leave the fields
+ * unset.
+ */
+export interface IMcpVertexCommitAuthorConfig {
+	/** Which strategy to apply. Defaults to `'git'`. */
+	readonly mode?: CommitAuthorMode;
+	/** MCP `clientInfo.name` mapped through the host's extension table. */
+	readonly clientName?: string;
+	/** Active model identifier (e.g. `MiniMax-M3`). */
+	readonly modelName?: string;
+	/** Human display name for `mode: 'named'`. */
+	readonly humanName?: string;
+	/** Human email for `mode: 'named'`. */
+	readonly humanEmail?: string;
 }
 
 /**
@@ -129,6 +159,14 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).
 	 */
 	readonly agentWorktree?: boolean;
+	/**
+	 * f00082: how every commit produced by the shared git engine
+	 * should be attributed. Defaults to `'git'` (the current
+	 * `git config user.name` / `user.email`). See
+	 * `commit-author.ts` for the full mode matrix and
+	 * `IMcpVertexCommitAuthorConfig` for the schema.
+	 */
+	readonly commitAuthor?: IMcpVertexCommitAuthorConfig;
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
 	readonly validationMatrix?: IValidationMatrixConfig;
 	readonly loopDetector?: ILoopDetectorConfig;

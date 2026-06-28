@@ -149,6 +149,22 @@ keeps `git diff` out of the hot path.
 - **Conventional Commits.** Versioning is derived from commit type on push
   to `main` (`fix:` → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE:`
   → major). No manual version bumps; no commit-back loop.
+- **Commit author policy.** Every commit produced by the shared
+  git engine — `<prefix>_commit` (plugins/git) and `proposals_auto_work`'s
+  persist step (plugins/proposals) — carries a `git commit --author=…`
+  flag sourced from `mcp-vertex.config.json#commitAuthor`. Four modes:
+  `git` (DEFAULT — uses the repo's `git config user.name/email` so the
+  agent's commits land under your name without per-project config),
+  `agent` (`<clientName> <clientName@local>` from MCP `clientInfo`),
+  `bot` (`<clientName>-bot <…@users.noreply.github.com>`), and `named`
+  (`"<humanName> (<modelName>)" <humanEmail>` — useful when you want
+  your author identity AND a visible record of which model wrote the
+  patch). The CLI loader resolves the policy at boot and threads it
+  through `IMcpPluginContext.commitAuthor`; a half-configured policy
+  (e.g. `mode: 'git'` with no `user.email` in the repo) refuses the
+  commit BEFORE staging so a phantom commit with the OS hostname as
+  author is never produced. Programmatic hosts that omit the option
+  fall back to the active git config — the historical default.
 - **Swarm proposals workflow.** If a proposals task needs more than 3 tool
   calls, touches multiple files, or requires repeated MCP reads, delegate
   it instead of keeping it on the main thread. With 2+ agents in the same
