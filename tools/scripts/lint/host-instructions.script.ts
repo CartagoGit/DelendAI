@@ -121,6 +121,7 @@ export const lintHostFile = async (
 	const abs = resolve(workspaceRoot, file);
 	const text = await readFile(abs, 'utf8').catch(() => '');
 	const violations: IHostViolation[] = [];
+	const effectiveSkillIds = skillIds;
 
 	// Rule 1: must contain a link to the bootstrap. We accept either a
 	// bare path mention or a markdown link target.
@@ -142,7 +143,7 @@ export const lintHostFile = async (
 	)) {
 		const inner = match.match(/`([a-z][a-z0-9-]*-[a-z][a-z0-9-]+)`/);
 		const id = inner?.[1];
-		if (id && skillIds.has(id)) {
+		if (id && effectiveSkillIds.has(id)) {
 			violations.push({
 				file,
 				line,

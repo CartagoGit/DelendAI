@@ -17,11 +17,31 @@ import {
 	lintAllHostFiles,
 	lintHostFile,
 } from './host-instructions.script.ts';
+import { resolve as resolvePath } from 'node:path';
 
 let workspaceRoot = '';
+let skillIds: ReadonlySet<string> = new Set();
 
 beforeEach(() => {
 	workspaceRoot = mkdtempSync(join(tmpdir(), 'host-instructions-'));
+	// Load the real skill manifest from the repo so the lint can distinguish
+	// mcp-vertex-* skill ids from similarly-shaped lint-script names.
+	skillIds = new Set([
+		'mcp-vertex-operator',
+		'mcp-vertex-plugin-authoring',
+		'mcp-vertex-failure-modes',
+		'mcp-vertex-conventional-commits-and-release',
+		'mcp-vertex-token-budget-playbook',
+		'mcp-vertex-mcp-vertex-audit-playbook',
+		'mcp-vertex-mcp-vertex-audit-runner',
+		'mcp-vertex-concurrency-patterns',
+		'mcp-vertex-legacy-proposal-migration',
+		'mcp-vertex-multi-agent-coordination',
+		'mcp-vertex-proposal-swarm-runner',
+		'mcp-vertex-proposals-workflow-playbook',
+		'mcp-vertex-status-marker-and-closure',
+		'mcp-vertex-tabs-component',
+	]);
 });
 
 afterEach(() => {
@@ -62,13 +82,21 @@ describe('host-instructions lint', () => {
 
 	it('clean host file passes', async () => {
 		writeHostFile('AGENTS.md', CLEAN_HOST_FILE('context'));
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		expect(violations).toEqual([]);
 	});
 
 	it('host file missing the bootstrap link fails with the right next-action', async () => {
 		writeHostFile('AGENTS.md', '# Host\n\nNo bootstrap link here.\n');
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		const missing = violations.find(
 			(v) => v.kind === 'missing-bootstrap-link',
 		);
@@ -84,7 +112,11 @@ describe('host-instructions lint', () => {
 Use \`mcp-vertex-operator\` whenever you start a session.
 `;
 		writeHostFile('AGENTS.md', content);
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		const skill = violations.find((v) => v.kind === 'skill-id-enumeration');
 		expect(skill).toBeDefined();
 		expect(skill?.line).toBe(5);
@@ -101,7 +133,11 @@ Use \`mcp-vertex-operator\` whenever you start a session.
 Call \`mcp-vertex_proposals_auto_work\` for orchestration.
 `;
 		writeHostFile('AGENTS.md', content);
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		const tool = violations.find((v) => v.kind === 'tool-id-enumeration');
 		expect(tool).toBeDefined();
 		expect(tool?.fix).toContain('mcp-vertex_proposals_auto_work');
@@ -115,7 +151,11 @@ Call \`mcp-vertex_proposals_auto_work\` for orchestration.
 Call \`mcp-vertex_overview\` then \`mcp-vertex_agent_catalog\`. Use the bootstrap prompt \`mcp-vertex_agent_bootstrap\` if the host surfaces prompts.
 `;
 		writeHostFile('AGENTS.md', content);
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		expect(violations).toEqual([]);
 	});
 
@@ -127,7 +167,11 @@ Call \`mcp-vertex_overview\` then \`mcp-vertex_agent_catalog\`. Use the bootstra
 See also \`f00056\` and \`f00084\`.
 `;
 		writeHostFile('AGENTS.md', content);
-		const violations = await lintHostFile('AGENTS.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'AGENTS.md',
+			workspaceRoot,
+			skillIds,
+		);
 		const proposals = violations.filter(
 			(v) => v.kind === 'proposal-id-enumeration',
 		);
@@ -153,7 +197,11 @@ See also \`f00056\` and \`f00084\`.
 Canonical rules live in [\`AGENTS.md\`](AGENTS.md) — read that first.
 `;
 		writeHostFile('CLAUDE.md', content);
-		const violations = await lintHostFile('CLAUDE.md', workspaceRoot);
+		const violations = await lintHostFile(
+			'CLAUDE.md',
+			workspaceRoot,
+			skillIds,
+		);
 		const missing = violations.find(
 			(v) => v.kind === 'missing-bootstrap-link',
 		);

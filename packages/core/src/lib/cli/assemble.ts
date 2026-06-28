@@ -30,6 +30,11 @@ import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { createMcpProject } from '../project/create-mcp-project';
 import { joinRel } from '../shared/paths';
 import {
+	createGitConfigReader,
+	resolveCommitAuthor,
+} from '../shared/commit-author';
+import { createGitRunner } from '../shared/git-write';
+import {
 	createFileSystemBlueprintWriter,
 	type IBlueprintWriter,
 } from '../shared/blueprint-writer';
@@ -265,6 +270,40 @@ export const assembleCliConfig = async (
 		cacheDirAbs: cacheDirContained.abs,
 	});
 
+	// f00082: resolve the commit-author policy ONCE (the git lookup
+	// runs at boot, not per commit). The CLI loader fills the identity
+	// from MCP `clientInfo` (or `args.extra['agent-client']` / `agent-model`
+	// — the only two places a programmatic host can inject it today
+	// without plumbing a new channel); the named bits from the config
+	// file. Defaults: mode `'git'`, clientName `'agent'`.
+	const commitAuthorIdentity = {
+		clientName:
+			fileConfig.commitAuthor?.clientName ??
+			args.extra['agent-client'] ??
+			'agent',
+		modelName:
+			fileConfig.commitAuthor?.modelName ??
+			args.extra['agent-model'] ??
+			'unknown-model',
+	};
+	const commitAuthorNamed = {
+		humanName: fileConfig.commitAuthor?.humanName ?? '',
+		humanEmail: fileConfig.commitAuthor?.humanEmail ?? '',
+	};
+	const commitAuthorMode = fileConfig.commitAuthor?.mode ?? 'git';
+	// `git` mode needs a live `git config` read; the others are pure
+	// data. We always await the resolver so the result is a single
+	// concrete value (success or `reason`) — callers never have to
+	// re-resolve or branch on mode themselves.
+	const commitAuthorResolution = await resolveCommitAuthor(
+		{
+			mode: commitAuthorMode,
+			identity: commitAuthorIdentity,
+			named: commitAuthorNamed,
+		},
+		createGitConfigReader(createGitRunner(workspace.root)),
+	);
+
 	const buildContext = (pluginName: string): IMcpPluginContext => {
 		const pluginConfig = pluginConfigFor(fileConfig, pluginName);
 		return {
@@ -274,6 +313,7 @@ export const assembleCliConfig = async (
 			docsDir: corePaths.docsDir,
 			keepLegacy,
 			agentWorktreeEnabled,
+			commitAuthor: commitAuthorResolution,
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,

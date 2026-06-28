@@ -1,8 +1,12 @@
 # CLAUDE.md — working in `@mcp-vertex/core`
 
-Canonical rules live in [`AGENTS.md`](AGENTS.md) — read that first for the
-repo's invariants, commands, and conventions. This file adds session-level
-guidance for whichever agent is driving the main thread.
+Canonical rules live in
+[`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](docs/mcp-vertex/AGENT-BOOTSTRAP.md) —
+that file is the single source of truth for repo-wide agent rules, always loaded
+by every host. `AGENTS.md` adds the repo-/host-specific rules the bootstrap
+cannot enforce (root layout, commands, hard rules, conventions). Read both.
+This file adds session-level guidance for whichever agent is driving the main
+thread.
 
 ## Discovery
 
