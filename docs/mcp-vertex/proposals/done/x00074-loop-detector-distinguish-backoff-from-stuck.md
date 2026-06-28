@@ -1,6 +1,6 @@
 ---
 id: x00074
-status: ready
+status: done
 type: proposal
 track: swarm+coordination
 date: 2026-06-28
