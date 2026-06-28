@@ -1,6 +1,6 @@
 ---
 id: c00012
-status: ready
+status: in-progress
 type: proposal
 track: governance
 date: 2026-06-28
@@ -169,7 +169,7 @@ canonical rule into `docs/mcp-vertex/AGENT-BOOTSTRAP.md` § 4.b and
 shrinks the SKILL to a pointer + micro-pattern. This makes the rule
 survive any future compaction of the host-pointers.
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/AGENT-BOOTSTRAP.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `docs/mcp-vertex/proposals/ready/c00012-agents-should-not-panic-on-peer-commits.md`
 - **Gate**: `bun run validate` (exit 0).
 
