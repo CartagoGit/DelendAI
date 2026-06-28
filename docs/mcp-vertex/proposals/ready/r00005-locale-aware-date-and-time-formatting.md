@@ -78,32 +78,14 @@ packages/ui-extension/src/utils/
   format.ts                      # NEW: barrel re-export
 ```
 
-## slices
+## Slices
+
+- global_gate: validate
 
 ### S1 — rewrite `formatRelativeTime` (H17)
-
-**File:** [`packages/ui-extension/src/utils/format-relative-time.ts`](packages/ui-extension/src/utils/format-relative-time.ts )
-
-```typescript
-export type Locale = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ja' | 'zh' | 'ar' | 'hi' | 'th' | 'vi';
-
-export function formatRelativeTime(
-  date: Date | number,
-  now: Date = new Date(),
-  locale: Locale = 'en',
-): string {
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  const diffMs = date.valueOf() - now.valueOf();
-  const absSec = Math.round(Math.abs(diffMs) / 1000);
-
-  const pick = (value: number, unit: Intl.RelativeTimeFormatUnit): string => rtf.format(value, unit);
-
-  if (absSec < 45) return pick(Math.round(diffMs / 1000), 'second');
-  if (absSec < 3600) return pick(Math.round(diffMs / 60_000), 'minute');
-  if (absSec < 86_400) return pick(Math.round(diffMs / 3_600_000), 'hour');
-  return pick(Math.round(diffMs / 86_400_000), 'day');
-}
-```
+- **Status**: pending
+- **Files**: packages/ui-extension/src/utils/format-relative-time.ts
+- **Gate**: validate
 
 **Acceptance:** spec covers 6 inputs × 12 locales = 72 cases. With `locale='es'`,
 `formatRelativeTime(now - 2*60_000, now, 'es')` returns `'hace 2 minutos'`. With
@@ -111,20 +93,16 @@ export function formatRelativeTime(
 the locale in parens.
 
 ### S2 — `formatDate` / `formatTime` wrappers
-
-**File:** [`packages/ui-extension/src/utils/format-date.ts`](packages/ui-extension/src/utils/format-date.ts )
-
-```typescript
-export function formatDate(date: Date | number, locale: Locale = 'en'): string {
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
-}
-```
+- **Status**: pending
+- **Files**: packages/ui-extension/src/utils/format-date.ts
+- **Gate**: validate
 
 Same shape for `format-time.ts`. Both are pure `(date, locale) => string`.
 
 ### S3 — cross-runtime snapshot
-
-**File:** [`packages/ui-extension/src/utils/format-relative-time.spec.ts`](packages/ui-extension/src/utils/format-relative-time.spec.ts )
+- **Status**: pending
+- **Files**: packages/ui-extension/src/utils/format-relative-time.spec.ts
+- **Gate**: validate
 
 The snapshot is generated on **both** Node 18 and Bun 1.x; the CI runs both. If they
 diverge, the build fails. (They shouldn't — both embed ICU — but the audit found

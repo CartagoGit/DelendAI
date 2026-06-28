@@ -10,7 +10,7 @@ runner: copilot
 model: minimax-m3
 scope: plugin-infrastructure
 related:
-    - f00054 # declutter + centralized cache — the same "one source of truth" line; this proposal closes a remaining drift point
+    - r00004 # declutter + centralized cache — the same "one source of truth" line; this proposal closes a remaining drift point
     - x00052 # the previous move that exposed how many paths the host-cache contract is silently assumed in
 recan: []
 ownership:

@@ -110,31 +110,23 @@ packages/ui-extension/src/
 
 ## Slices
 
+- global_gate: validate
+
 ### S1 — split `renderDashboard` into builders (H29 SRP)
-
-**File:** [`packages/ui-extension/src/renderers/render-dashboard.ts`](packages/ui-extension/src/renderers/render-dashboard.ts )
-
-```typescript
-export function renderDashboard(bridge: IExtensionBridge): string {
-  return [
-    buildHeader(bridge),
-    buildKpiStrip(bridge),
-    buildToolsPanel(bridge),
-    buildKnowledgeNav(bridge),
-    buildFooter(bridge),
-  ].join('\n');
-}
-```
+- **Status**: done
+- **Files**: packages/ui-extension/src/dashboard/render-dashboard.ts
+- **Gate**: validate
 
 Each `build*` function is ≤ 200 LOC and accepts only the data it needs (no bridge
 soup). Each has its own spec file.
 
 **Acceptance:** the new file is ≤ 100 LOC; `wc -l render-dashboard.ts` reports ≤ 100.
 `build-*.spec.ts` × 5 are ≥ 80% line coverage each.
-- status: done
-### S2 — sparkline is a trend (H22)
 
-**File:** [`packages/ui-extension/src/renderers/dashboard/build-tools-panel.ts`](packages/ui-extension/src/renderers/dashboard/build-tools-panel.ts )
+### S2 — sparkline is a trend (H22)
+- **Status**: pending
+- **Files**: packages/ui-extension/src/dashboard/builders/build-panels.ts
+- **Gate**: validate
 
 Replace the constant sparkline `<polyline points="0,10 10,10 20,10 …" />` with
 `buildSparkline(toolSeries)` where `toolSeries: number[]` is read from
@@ -145,16 +137,9 @@ log a warning.
 10 distinct `y` values.
 
 ### S3 — `barChart` aria-label (H24)
-
-**File:** [`packages/ui-extension/src/components/bar-chart.ts`](packages/ui-extension/src/components/bar-chart.ts )
-
-```typescript
-export interface IBarChartOptions {
-  readonly data: readonly number[];
-  readonly ariaLabel: string;        // NEW: required
-  readonly title?: string;           // kept for backward compat, deprecated
-}
-```
+- **Status**: pending
+- **Files**: packages/ui-extension/src/dashboard/bar-chart.ts
+- **Gate**: validate
 
 Render: `<svg role="img" aria-label="${escape(ariaLabel)}">…</svg>`.
 
@@ -162,8 +147,9 @@ Render: `<svg role="img" aria-label="${escape(ariaLabel)}">…</svg>`.
 the escape.
 
 ### S4 — `Toast` sticky close + Esc (H25)
-
-**File:** [`packages/ui-extension/src/components/toast.ts`](packages/ui-extension/src/components/toast.ts )
+- **Status**: pending
+- **Files**: packages/ui-extension/src/components/toast.ts
+- **Gate**: validate
 
 In `sticky` mode, render a `<button class="toast__close" aria-label="Close">×</button>`
 and bind an Esc handler that fires a custom event the host listens to.
@@ -172,8 +158,9 @@ and bind an Esc handler that fires a custom event the host listens to.
 and the Esc handler fires the expected event.
 
 ### S5 — `kpiStrip` flex-wrap (H26)
-
-**File:** [`packages/ui-extension/src/components/kpi-strip.ts`](packages/ui-extension/src/components/kpi-strip.ts )
+- **Status**: pending
+- **Files**: packages/ui-extension/src/dashboard/builders/build-kpi-strip.ts
+- **Gate**: validate
 
 ```css
 .kpi-strip { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -183,16 +170,9 @@ and the Esc handler fires the expected event.
 **Acceptance:** spec asserts the rendered CSS contains `flex-wrap: wrap`.
 
 ### S6 — Tabs aria-controls + roving tabindex (H27)
-
-**File:** [`packages/ui-extension/src/components/tabs.ts`](packages/ui-extension/src/components/tabs.ts )
-
-```typescript
-export interface ITabSpec {
-  readonly id: string;
-  readonly label: string;
-  readonly panelId: string;     // NEW
-}
-```
+- **Status**: pending
+- **Files**: packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts
+- **Gate**: validate
 
 Render: `<button role="tab" aria-controls="${panelId}" aria-selected="…" tabindex="${selected ? 0 : -1}">…</button>`.
 Bind ArrowLeft/ArrowRight that move the roving tabindex.
@@ -201,21 +181,9 @@ Bind ArrowLeft/ArrowRight that move the roving tabindex.
 spec asserts ArrowLeft from tab 0 selects the last tab (wrapping).
 
 ### S7 — `STATUS_BAR_EVENTS` discriminated union (H30)
-
-**File:** [`packages/ui-extension/src/status-bar/status-bar-events.ts`](packages/ui-extension/src/status-bar/status-bar-events.ts )
-
-```typescript
-export type StatusBarEventKind =
-  | 'loading' | 'loaded' | 'error' | 'disconnected' | 'reconnecting';
-
-export interface IStatusBarEvent {
-  readonly kind: StatusBarEventKind;
-  readonly labelKey: `statusBar.${StatusBarEventKind}`;  // i18n key
-  readonly tooltipKey: `statusBar.${StatusBarEventKind}.tooltip`;
-}
-
-export const STATUS_BAR_EVENTS: ReadonlyMap<StatusBarEventKind, IStatusBarEvent> = new Map([…]);
-```
+- **Status**: pending
+- **Files**: extensions/vscode/src/providers/status-bar.ts
+- **Gate**: validate
 
 Adding a new event = add a member to the union + a map entry. No dispatcher edits.
 
