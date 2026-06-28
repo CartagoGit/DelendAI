@@ -92,7 +92,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			};
 			const rewireHrefs = () => {
 				const lang = document.documentElement.lang || 'en';
-				const relative = stripLocale(location.pathname);
 				const targets = document.querySelectorAll(
 					'.nav__links a, .sitefoot a[href]',
 				);

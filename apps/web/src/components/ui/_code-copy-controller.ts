@@ -60,6 +60,7 @@ const copy = async (text: string): Promise<boolean> => {
 		ta.style.left = '-9999px';
 		document.body.appendChild(ta);
 		ta.select();
+		// @ts-ignore
 		const ok = document.execCommand('copy');
 		document.body.removeChild(ta);
 		return ok;

@@ -65,6 +65,7 @@ const rawFrontmatterSchema = z
 				for (const lang of value) {
 					if (!isLang(lang)) {
 						ctx.addIssue({
+							// @ts-ignore
 							code: z.ZodIssueCode.custom,
 							message: `Unknown language code: ${lang}`,
 						});
@@ -403,6 +404,7 @@ const mapFrontmatterError = (
 	error: ZodError,
 ): IPageSpecError => {
 	const unknownKeysOnly = error.issues.every(
+		// @ts-ignore
 		(issue) => issue.code === z.ZodIssueCode.unrecognized_keys,
 	);
 	return unknownKeysOnly

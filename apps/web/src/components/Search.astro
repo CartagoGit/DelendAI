@@ -37,7 +37,7 @@ const t = useTranslations(lang);
 	</div>
 </div>
 
-<script define:vars={{ base: import.meta.env.BASE_URL.replace(/\/$/, ''), isDev: import.meta.env.DEV }}>
+<script is:inline define:vars={{ base: import.meta.env.BASE_URL.replace(/\/$/, ''), isDev: import.meta.env.DEV }}>
 	// Settings-modal pattern (Config.astro): re-runs after every Astro view
 	// transition, AbortController revokes the previous listener batch.
 	let searchAbort;

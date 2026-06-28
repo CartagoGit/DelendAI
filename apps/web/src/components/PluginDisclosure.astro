@@ -29,7 +29,6 @@ interface Props {
 }
 const { slug, name, version, href, requires } = Astro.props;
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const purpose = resolvePluginPurpose(slug);
 const tools = capabilityToolsFor(slug);
 const count = tools.length;
