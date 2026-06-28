@@ -88,6 +88,10 @@ apps/web/src/styles/globals.css # MODIFY: same bridge for the docs site (which a
 
 ### S1 — `IComponentCssTokens` interface + DEFAULT_TOKENS
 
+- **Status**: done
+- **Files**: `packages/ui-extension/src/styles/component-css.ts` (NEW)
+- **Implementation note**: the shipped interface is a minimal subset of the example below — only the two most-used tokens (`--mv-bg-primary`, `--mv-fg-primary`) and the `HOST_TOKEN_MIGRATION_MAP` that maps `--vscode-editor-background` / `--vscode-editor-foreground` to the new tokens. The full 6-token set (bg-secondary, fg-secondary, border-primary, accent) is reserved for S2/S3 work; the dashboard + settings webviews can be migrated incrementally once those tokens are added to the interface.
+
 **File:** [`packages/ui-extension/src/styles/component-css.ts`](packages/ui-extension/src/styles/component-css.ts ) (NEW)
 
 ```typescript
