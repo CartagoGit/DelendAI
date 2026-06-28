@@ -227,6 +227,58 @@ export const PROPOSAL_KIND_BY_PREFIX: Readonly<Record<string, IProposalKind>> =
 		p: 'legacy',
 	};
 
+/**
+ * `done/<kind-subfolder>/` mirror — f00042 + f00016 §4.1.
+ *
+ * Closed proposals for the kinds that ship in volume get grouped under
+ * a sub-folder of `done/`, so the closure view scales without becoming
+ * a flat dump. The convention is "add a sub-folder when the second
+ * file of that kind lands in `done/`" — `feat`, `fix`, `refactor`,
+ * `audit`, `chore`, `docs`, `test`, `plan`, `resume` all have one
+ * today (mirroring the live `done/feats/`, `done/fixes/`, etc. on
+ * disk). Less-common kinds (`breaking`, `perf`, `infra`, `spike`)
+ * also ship occasionally, so we pre-declare their buckets too. `legacy`
+ * stays at `done/` because its prefix is a synonym for "kind unknown /
+ * pre-f00016" — sub-foldering by kind would be a lie about its content.
+ *
+ * Missing entries fall back to `done` itself (no sub-folder) so the
+ * reconciler never crashes on a kind this table hasn't seen yet.
+ */
+export const KIND_TO_DONE_SUBFOLDER: Readonly<
+	Partial<Record<IProposalKind, string>>
+> = {
+	feat: 'feats',
+	fix: 'fixes',
+	refactor: 'refactors',
+	audit: 'audits',
+	chore: 'chores',
+	docs: 'docs',
+	test: 'tests',
+	plan: 'plans',
+	resume: 'resumes',
+	breaking: 'breakings',
+	perf: 'perfs',
+	infra: 'infras',
+	spike: 'spikes',
+};
+
+/**
+ * Compute the folder a closed proposal should live in given its kind.
+ *
+ * Defaults to `STATUS_TO_FOLDER.done` (i.e. just `done`) for kinds
+ * without a registered sub-folder, so this helper is safe to call for
+ * every transition — including for the `legacy` kind and for any
+ * future kind that hasn't shipped twice yet.
+ *
+ * Pure: no I/O, no globals.
+ */
+export const doneFolderFor = (kind: IProposalKind | undefined): string => {
+	const sub = kind === undefined ? undefined : KIND_TO_DONE_SUBFOLDER[kind];
+	return sub === undefined
+		? STATUS_TO_FOLDER.done
+		: `${STATUS_TO_FOLDER.done}/${sub}`;
+};
+
 export interface IProposalFlagInfo {
 	readonly label: string;
 }

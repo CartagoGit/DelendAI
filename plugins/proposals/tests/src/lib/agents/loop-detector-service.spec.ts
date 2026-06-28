@@ -326,14 +326,24 @@ describe('AgentLoopDetectorService', async () => {
 			for (let i = 0; i < 8; i++) {
 				await service.onToolCall(
 					'agent_lock',
-					{ action: 'claim', task_id: 'f00056-S5', i },
+					{
+						action: 'claim',
+						task_id: 'f00056-S5',
+						agent: 'swarm-worker-1',
+						i,
+					},
 					{ ok: true },
 					undefined,
 				);
 			}
 
+			// Pass agent explicitly in args to bypass the 50ms lock-cache
+			// TTL (avoids the cache-expired → 'default-agent' fallback
+			// which would be interactive-skipped and return null
+			// regardless of stuck state).
 			expect(
 				service.isAgentStuck('agent_lock', {
+					agent: 'swarm-worker-1',
 					action: 'claim',
 					task_id: 'f00056-S5',
 				}),
@@ -355,22 +365,28 @@ describe('AgentLoopDetectorService', async () => {
 			// First call: rate-limit error (retryable). Rest: success.
 			await service.onToolCall(
 				'agent_lock',
-				{ action: 'claim' },
+				{ action: 'claim', agent: 'swarm-worker-2' },
 				undefined,
 				{ code: 'ETIMEDOUT' },
 			);
 			for (let i = 0; i < 7; i++) {
 				await service.onToolCall(
 					'agent_lock',
-					{ action: 'claim' },
+					{ action: 'claim', agent: 'swarm-worker-2' },
 					{ ok: true },
 					undefined,
 				);
 			}
 
+			// The retryable-error call has outcome != 'ok', so the pure
+			// detector's filter does NOT drop the group; the full 8-call
+			// repeat trips isStuck.
 			expect(
-				service.isAgentStuck('agent_lock', { action: 'claim' }),
-			.not.toBeNull();
+				service.isAgentStuck('agent_lock', {
+					agent: 'swarm-worker-2',
+					action: 'claim',
+				}),
+			).not.toBeNull();
 		});
 	});
 

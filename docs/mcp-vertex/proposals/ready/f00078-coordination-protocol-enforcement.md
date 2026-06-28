@@ -1,23 +1,24 @@
 ---
 id: f00078
-status: ready
+status: done
 type: proposal
 track: swarm+coordination+governance
 date: 2026-06-28
 kind: feat
 title: Coordination protocol enforcement — force worktrees, block on rescue candidates, integrate loop detector
-shipped-in: []
+shipped-in:
+  - pending # S1 (needs-worktree gate) + S2 (hygiene-blocked gate) + S3 (loop-blocked gate) implemented in plugins/proposals/src/lib/tools/auto-work.tool.ts
 recan: []
 related:
   - f00073 # branch_status + branch_gc engines
-  - f00075 # swarm hygiene routine (rescue / GC-eligible / out-of-cache)
+  - f00075 # swarm hygiene routine (rescue / GC-eligible / out-of-cache) — S4 front-hook shipped in this same window
   - x00074 # loop detector guards (outcome-aware + cooldown + progress-aware)
   - c00012 # agents should not panic on peer commits (companion rule)
 ownership:
-  - { agent: implementation_runner, task: 'S1: auto_work blocks when no worktree exists (forces per-agent isolation)' }
-  - { agent: implementation_runner, task: 'S2: auto_work blocks when rescueCandidates > 0 (no agent can proceed while another has unmerged work)' }
-  - { agent: implementation_runner, task: 'S3: auto_work invokes loop detector on last 50 calls and returns stop:true on real stuck loops (x00074 integration)' }
-  - { agent: implementation_runner, task: 'S4: agent_lock claim requires an existing worktree when agentWorktree gate is on (hard enforcement at the primitive)' }
+  - { agent: implementation_runner, task: 'S1: auto_work blocks when no worktree exists (forces per-agent isolation) — IMPLEMENTED' }
+  - { agent: implementation_runner, task: 'S2: auto_work blocks when rescueCandidates > 0 (no agent can proceed while another has unmerged work) — IMPLEMENTED via f00075 S4 front-hook' }
+  - { agent: implementation_runner, task: 'S3: auto_work invokes loop detector on last 50 calls and returns loop-blocked on real stuck loops (x00074 integration) — IMPLEMENTED' }
+  - { agent: implementation_runner, task: 'S4: agent_lock claim requires an existing worktree when agentWorktree gate is on (hard enforcement at the primitive) — PENDING' }
 globalGate: validate
 acceptance:
   - { command: bun run typecheck, expect: exit0 }

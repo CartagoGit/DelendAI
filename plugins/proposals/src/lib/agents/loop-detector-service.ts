@@ -10,6 +10,7 @@ import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
 import type { IToolCall as IDetectorToolCall } from './agent-loop-detector';
 import type { TCallOutcome } from './agent-loop-detector';
+import { createHash } from 'node:crypto';
 import {
 	LOOP_DETECTOR_DEFAULTS_FOR,
 	createFsConfigFileReader,
@@ -39,6 +40,15 @@ export interface IExtendedToolCall {
 	 * explicitly set outcome on `IToolCall`.
 	 */
 	readonly outcome: TCallOutcome;
+	/**
+	 * x00074 S3: short hash of the observable state touched by this
+	 * call (lock file + proposal index). Two consecutive calls on a
+	 * PROGRESS_REQUIRED_TOOL with the same progressHash are
+	 * considered a no-op repeat and do not count. Optional —
+	 * defaults to `null` (legacy behaviour) so existing tests do
+	 * not break.
+	 */
+	readonly progressHash: string | null;
 }
 
 export class AgentLoopDetectorService {
@@ -209,6 +219,18 @@ export class AgentLoopDetectorService {
 
 		const outcome = deriveOutcomeFromResult(_result, _error);
 
+		// x00074 S3: compute progressHash from observable state.
+		// The hash is what the detector consults when the gate is
+		// enabled — two consecutive PROGRESS_REQUIRED_TOOL calls
+		// with the same progressHash are a no-op repeat. We hash
+		// the lock file content (cheap, frequently updated) plus
+		// the git dirty summary so a fresh commit clears the gate
+		// even if the lock file is unchanged.
+		const progressHash = await computeProgressHash(
+			this.lockPath,
+			this.gitRunner,
+		);
+
 		await this.initializeGitDiff();
 
 		// Determine agent: check if args contains agent, otherwise fetch from lock
@@ -256,6 +278,7 @@ export class AgentLoopDetectorService {
 			isModifying: isMod,
 			madeProgress,
 			outcome,
+			progressHash,
 		};
 
 		let window = this.windowMap.get(agent) ?? [];
@@ -272,11 +295,14 @@ export class AgentLoopDetectorService {
 			agent: c.agent,
 			timestamp: c.timestamp,
 			outcome: c.outcome,
+			progressHash: c.progressHash,
 		}));
 
 		const verdict = detectAgentLoop(detectorCalls, {
 			ringSize: this.options.ringSize,
 			exactRepeatThreshold: this.options.repeatThreshold,
+			cooldownMs: this.options.cooldownMs ?? 30_000,
+			progressHashGate: true,
 		});
 
 		// Check no-progress count
@@ -585,4 +611,38 @@ export const deriveOutcomeFromResult = (
 		}
 	}
 	return 'permanent-error';
+};
+
+/**
+ * x00074 S3: derive a short hash of the observable state touched by
+ * a call. Used as the `progressHash` on `IExtendedToolCall`; the
+ * detector's S3 progress-aware filter consults it when
+ * `progressHashGate: true`.
+ *
+ * Sources (cheap, frequently updated):
+ *  - lock file content (per-agent) — most swarm-coordination calls
+ *    change the lock file.
+ *  - git dirty summary (`git diff --stat`) — fresh commits clear
+ *    the hash even if the lock is unchanged.
+ *
+ * Both reads are best-effort: a transient I/O error returns
+ * `null`, which the detector treats as "no progress signal" (the
+ * call still counts toward the repeat threshold, so a real loop
+ * still trips).
+ */
+export const computeProgressHash = async (
+	lockPath: string,
+	gitRunner: IGitRunner,
+): Promise<string | null> => {
+	try {
+		const lockRaw = await readFile(lockPath, 'utf8').catch(() => '');
+		const diffRes = await gitRunner(['diff', '--stat']);
+		const diffSummary = diffRes.ok ? diffRes.output.trim() : '';
+		return createHash('sha256')
+			.update(`${lockRaw}|${diffSummary}`)
+			.digest('hex')
+			.slice(0, 16);
+	} catch {
+		return null;
+	}
 };

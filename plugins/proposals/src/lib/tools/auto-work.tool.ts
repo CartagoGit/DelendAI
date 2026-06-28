@@ -17,6 +17,7 @@ import {
 	type IRescueCandidate,
 } from '../shared/swarm-hygiene-engine';
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
+import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -87,6 +88,27 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	 * arg on every call.
 	 */
 	readonly defaultIncludePaused?: boolean;
+	/**
+	 * f00078 S1: when `true`, the auto_work front-hook refuses to
+	 * return a plan unless the active branch is `agent/<name>`.
+	 * Hosts that have the agentWorktree gate on (mcp-vertex.config.json
+	 * has `agentWorktree: true`) MUST pass `true` here. Hosts that
+	 * run solo without worktree isolation pass `false` (or omit).
+	 */
+	readonly agentWorktreeEnabled?: boolean;
+	/**
+	 * f00078 S3: sliding window of recent tool calls the host has
+	 * observed (typically populated by the lock-file change listener).
+	 * When present, auto_work runs the post-fix loop detector
+	 * (x00074) on this window before rendering the plan, and
+	 * returns `loop-blocked` if it fires. Omit the field (or pass
+	 * an empty array) to skip the check.
+	 */
+	readonly loopDetectorWindow?: readonly IToolCall[];
+	/** x00074 S2: window in ms; defaults to 30s. */
+	readonly loopDetectorCooldownMs?: number;
+	/** x00074 S3: opt-in; when true, the progressHash gate runs. */
+	readonly loopDetectorProgressGate?: boolean;
 }
 
 /**
@@ -174,7 +196,68 @@ export const runAutoWork = async (
 		inputForceHygieneBypass?: boolean | undefined;
 	},
 ): Promise<IToolTextResult> => {
-	if (options.loopDetector) {
+	// f00078 S1: needs-worktree gate. When the host gate is on AND the
+	// active branch is not `agent/<name>`, refuse the plan. The
+	// `agentWorktreeEnabled` flag is propagated via IAutoWorkToolOptions
+	// (the host passes it from the plugin context). The check is a
+	// no-op when the gate is off so solo hosts are unaffected.
+	if (options.agentWorktreeEnabled === true) {
+		const branchCheck = await readCurrentBranchName(
+			options.workspaceRoot ?? '',
+		);
+		if (branchCheck.ok && !branchCheck.isAgentBranch) {
+			consecutiveIdle = 0;
+			return json({
+				state: 'work',
+				ok: false,
+				reason: 'needs-worktree',
+				executionMode: 'blocked',
+				hygieneBlockers: [
+					`active branch is "${branchCheck.branch}"; per-agent isolation is required (agentWorktree gate is on)`,
+				],
+				hygieneActions: [
+					`proposals_agent_worktree { action: "create", agent: "<your-agent-name>" }`,
+				],
+				hygieneWarnings: [],
+				nextAction:
+					'Create a per-agent worktree before requesting a plan. The slice-selection cascade was NOT run.',
+			});
+		}
+	}
+
+	// f00078 S3: loop-blocked gate. Run the pure detector on the
+	// last 50 calls. x00074's outcome-aware + cooldown + progress-aware
+	// guards fire here. The `isAgentStuck` check above is the legacy
+	// fast-path; this one is the precise post-fix detector.
+	if (options.loopDetectorWindow && options.loopDetectorWindow.length > 0) {
+		const verdict = detectAgentLoop(options.loopDetectorWindow, {
+			cooldownMs: options.loopDetectorCooldownMs ?? 30_000,
+			progressHashGate:
+				options.loopDetectorProgressGate === true,
+		});
+		if (verdict.isStuck) {
+			consecutiveIdle = 0;
+			return json({
+				state: 'work',
+				ok: false,
+				reason: 'loop-blocked',
+				executionMode: 'blocked',
+				hygieneBlockers: [
+					`loop detector fired on ${verdict.offendingTool} (effectiveCount=${verdict.effectiveCount})`,
+				],
+				hygieneActions: [
+					'Read the handoff packet at the path returned by the previous auto_work response; resolve the stuck call (different args, different tool, or backoff); then proposals_continue_proposal { mode: "auto" }.',
+				],
+				hygieneWarnings: [],
+				offendingTool: verdict.offendingTool,
+				triggeredGuards: [...verdict.triggeredGuards],
+				effectiveCount: verdict.effectiveCount,
+				nextAction:
+					'The loop detector tripped; do not re-call auto_work until the stuck call is resolved.',
+			});
+		}
+	}
+
 		// The detector is a safety net for actual loops (same
 		// `agent_lock claim` retried, same `sync_proposals` retried).
 		// For the `auto_work` no-args case the in-tool `consecutiveIdle`
@@ -497,6 +580,38 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean().optional(),
 	blockers: z.array(z.string()).optional(),
 });
+
+/**
+ * f00078 S1: read the current branch name in 2 git calls. Returns
+ * the branch (or `HEAD` for detached) and a `isAgentBranch` boolean.
+ * Used by the `needs-worktree` gate. Fail-soft: any error returns
+ * `{ ok: false }` and the gate is skipped.
+ */
+const readCurrentBranchName = async (
+	workspaceRoot: string,
+): Promise<
+	| { ok: true; branch: string; isAgentBranch: boolean }
+	| { ok: false }
+> => {
+	if (workspaceRoot.length === 0) return { ok: false };
+	try {
+		const run = createGitRunner(workspaceRoot);
+		const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+		if (!result.ok) return { ok: false };
+		const branch = result.output.trim();
+		// Detached HEAD (or in a brand-new repo with no commits) reports
+		// 'HEAD' — never an agent branch, always blocked.
+		return {
+			ok: true,
+			branch: branch.length === 0 ? 'HEAD' : branch,
+			isAgentBranch:
+				branch.startsWith('agent/') &&
+				branch.length > 'agent/'.length,
+		};
+	} catch {
+		return { ok: false };
+	}
+};
 
 /**
  * f00073: build a list of warnings from the branch + worktree snapshot.

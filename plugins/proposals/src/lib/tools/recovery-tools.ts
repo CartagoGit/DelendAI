@@ -14,6 +14,7 @@ import {
 import {
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
+	doneFolderFor,
 	type IProposalStatus,
 } from '../contracts/constants/proposal-glossary.constant';
 import {
@@ -246,19 +247,57 @@ const releaseLock = async (
 		return changed;
 	});
 
+/**
+ * Resolve the folder a closed proposal should land in given its raw
+ * frontmatter. Used by both `runProposalForceTransition` (forward
+ * motion: status → done) and `runProposalReconcileFolder` (back-fill
+ * motion: misfiled → correct folder for the current status). The kind
+ * is read once from the markdown so both paths agree.
+ *
+ * Pure I/O (one read): safe to call from both entry points without
+ * trampling the frontmatter.
+ */
+const resolveDoneFolderFromRaw = async (
+	found: ILocatedProposal,
+	status: IProposalStatus,
+): Promise<string> => {
+	if (status !== 'done') return STATUS_TO_FOLDER[status];
+	const block = extractYamlBlock(found.raw);
+	const fm = block === null ? {} : parseFrontmatterBlock(block);
+	const kindRaw = typeof fm.kind === 'string' ? fm.kind : undefined;
+	const knownKinds = new Set([
+		'feat',
+		'breaking',
+		'fix',
+		'refactor',
+		'perf',
+		'audit',
+		'chore',
+		'docs',
+		'test',
+		'infra',
+		'spike',
+		'legacy',
+		'resume',
+		'plan',
+	]);
+	const kind =
+		kindRaw !== undefined && knownKinds.has(kindRaw)
+			? (kindRaw as Parameters<typeof doneFolderFor>[0])
+			: undefined;
+	return doneFolderFor(kind);
+};
+
 const moveProposal = async (
 	found: ILocatedProposal,
 	to: IProposalStatus,
+	targetFolder: string,
 	options: IRecoveryToolOptions,
 ): Promise<{ movedTo: string; warning?: string }> => {
 	const gitRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
 	const filename = found.relPath.split('/').pop() ?? found.relPath;
-	const newAbsPath = join(
-		options.proposalsDirAbs,
-		STATUS_TO_FOLDER[to],
-		filename,
-	);
+	const newAbsPath = join(options.proposalsDirAbs, targetFolder, filename);
 	const updated = setFrontmatterStatus(found.raw, to);
 	let warning: string | undefined;
 	await withFileMutex(found.absPath, async () => {
@@ -356,7 +395,8 @@ export const runProposalForceTransition = async (
 			args.taskId,
 		);
 	}
-	const moved = await moveProposal(found, args.to, options);
+	const targetFolder = await resolveDoneFolderFromRaw(found, args.to);
+	const moved = await moveProposal(found, args.to, targetFolder, options);
 	return toolOk({
 		id: args.id,
 		from: found.status,
@@ -380,7 +420,7 @@ export const runProposalReconcileFolder = async (
 			'Migrate legacy proposals first.',
 		);
 	}
-	const expectedFolder = STATUS_TO_FOLDER[found.status];
+	const expectedFolder = await resolveDoneFolderFromRaw(found, found.status);
 	if (found.folder === expectedFolder) {
 		return toolOk({ id: args.id, changed: false, path: found.relPath });
 	}
@@ -394,7 +434,12 @@ export const runProposalReconcileFolder = async (
 			to: `${expectedFolder}/${filename}`,
 		});
 	}
-	const moved = await moveProposal(found, found.status, options);
+	const moved = await moveProposal(
+		found,
+		found.status,
+		expectedFolder,
+		options,
+	);
 	return toolOk({ id: args.id, changed: true, ...moved });
 };
 
@@ -408,7 +453,7 @@ export const runProposalDiagnose = async (
 	const lock = await readLock(options.lockPathAbs);
 	const locks = lock.in_flight.filter((entry) => entry.task_id === args.id);
 	const expectedFolder = isKnownStatus(found.status)
-		? STATUS_TO_FOLDER[found.status]
+		? await resolveDoneFolderFromRaw(found, found.status)
 		: undefined;
 	const inconsistencies: string[] = [];
 	if (expectedFolder && found.folder !== expectedFolder) {

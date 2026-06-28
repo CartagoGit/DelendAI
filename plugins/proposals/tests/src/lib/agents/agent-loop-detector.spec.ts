@@ -248,6 +248,137 @@ describe('f00074 S1 — outcome-aware sliding window', async () => {
 	});
 });
 
+// x00074 S2: timestamp-cooldown. Repeats > cooldownMs apart are
+// legitimate backoff and reset the consecutive-run counter. Without
+// this guard, the 2026-06-27 false positive would also trip after
+// rate-limit recovery (agent waits >30s between attempts).
+describe('x00074 S2 — timestamp-cooldown', async () => {
+	it('does NOT flag 8 calls spaced 60s apart (default 30s cooldown)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', task_id: 'f00056-S5', i },
+				'a1',
+				1_700_000_000_000 + i * 60_000, // 60s apart
+				'ok',
+			),
+		);
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(false);
+		expect(out.repeatCount).toBe(0);
+	});
+
+	it('DOES flag 8 calls spaced 1s apart (tight backoff, < 30s cooldown)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', task_id: 'f00056-S5', i },
+				'a1',
+				1_700_000_000_000 + i * 1_000, // 1s apart — tight loop
+				'ok',
+			),
+		);
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(true);
+		expect(out.repeatCount).toBe(8);
+	});
+
+	it('honours a custom cooldownMs option', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 10_000, // 10s apart
+				'ok',
+			),
+		);
+		// 60s cooldown → all 10s-spaced calls fit within the cooldown
+		// and trip the detector.
+		expect(detectAgentLoop(calls, { cooldownMs: 60_000 }).isStuck).toBe(
+			true,
+		);
+		// 5s cooldown → every 10s gap breaks the chain → not stuck.
+		expect(detectAgentLoop(calls, { cooldownMs: 5_000 }).isStuck).toBe(
+			false,
+		);
+	});
+});
+
+// x00074 S3: progress-aware filter. PROGRESS_REQUIRED_TOOLS calls
+// without a progressHash change between consecutive counted calls are
+// no-op repeats. Opt-in via progressHashGate: true.
+describe('x00074 S3 — progress-aware filter', async () => {
+	it('does NOT flag 8 agent_lock calls with the same progressHash (no progress)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 1_000, // 1s apart (within cooldown)
+				'ok',
+			),
+		);
+		// Same progressHash on every call → all 8 are no-op repeats.
+		const withProgress: IToolCall[] = calls.map((c) => ({
+			...c,
+			progressHash: 'abc123',
+		}));
+		const out = detectAgentLoop(withProgress, {
+			progressHashGate: true,
+		});
+		expect(out.isStuck).toBe(false);
+		expect(out.effectiveCount).toBe(1); // first call counted, rest dropped
+	});
+
+	it('DOES flag when progressHash changes between consecutive calls', async () => {
+		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 1_000,
+				'ok',
+			),
+		).map((c, i) => ({ ...c, progressHash: `hash-${i}` }));
+		const out = detectAgentLoop(calls, { progressHashGate: true });
+		expect(out.isStuck).toBe(true);
+		expect(out.effectiveCount).toBe(8);
+	});
+
+	it('does NOT apply progressHash gate to non-PROGRESS_REQUIRED_TOOLS (e.g. read_file)', async () => {
+		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'read_file',
+				{ path: 'x.ts', i },
+				'a1',
+				1_700_000_000_000 + i * 1_000,
+				'ok',
+			),
+		).map((c) => ({ ...c, progressHash: 'same' }));
+		const out = detectAgentLoop(calls, { progressHashGate: true });
+		// read_file is not in PROGRESS_REQUIRED_TOOLS → progressHash
+		// is ignored → all 8 count → stuck.
+		expect(out.isStuck).toBe(true);
+	});
+
+	it('progressHashGate: false (default) skips the S3 filter entirely', async () => {
+		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 1_000,
+				'ok',
+			),
+		).map((c) => ({ ...c, progressHash: 'same' }));
+		// Default: progressHashGate: false → S3 skipped.
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(true);
+		expect(out.effectiveCount).toBe(8);
+	});
+});
+
 describe('buildWindow', async () => {
 	it('returns the last ringSize calls in chronological order', async () => {
 		const calls = Array.from({ length: 100 }, (_, i) =>
