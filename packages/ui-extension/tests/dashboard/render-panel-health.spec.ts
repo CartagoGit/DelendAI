@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IHealthSnapshot } from '@mcp-vertex/client';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderPanelHealth } from '../../src/dashboard/render-panel-health';
 
@@ -45,14 +46,14 @@ const baseUnhealthy: IHealthSnapshot = {
 
 describe('renderPanelHealth', async () => {
 	it('renders the healthy status with the locks count', async () => {
-		const html = renderPanelHealth(baseHealthy);
+		const html = renderPanelHealth(baseHealthy, dictsByLang.en);
 		expect(html).toContain('Healthy');
 		expect(html).toContain('3');
 		expect(html).toContain('panel-health');
 	});
 
 	it('renders Degraded + the queue table when unhealthy', async () => {
-		const html = renderPanelHealth(baseUnhealthy);
+		const html = renderPanelHealth(baseUnhealthy, dictsByLang.en);
 		expect(html).toContain('Degraded');
 		expect(html).toContain('Waiter orphans');
 		expect(html).toContain('Oldest age');
@@ -62,13 +63,13 @@ describe('renderPanelHealth', async () => {
 	});
 
 	it('shows the empty-state when no queue', async () => {
-		const html = renderPanelHealth(baseHealthy);
+		const html = renderPanelHealth(baseHealthy, dictsByLang.en);
 		expect(html).toContain('No queue configured.');
 	});
 
 	it('shows the empty-state when no active agents', async () => {
 		const empty = { ...baseHealthy, agents: [] };
-		const html = renderPanelHealth(empty);
+		const html = renderPanelHealth(empty, dictsByLang.en);
 		expect(html).toContain('No active agents.');
 	});
 
@@ -76,7 +77,7 @@ describe('renderPanelHealth', async () => {
 		const evil = renderPanelHealth({
 			...baseHealthy,
 			agents: ['<script>alert(1)</script>'],
-		});
+		}, dictsByLang.en);
 		expect(evil).not.toContain('<script>alert(1)</script>');
 		expect(evil).toContain('&lt;script&gt;');
 	});

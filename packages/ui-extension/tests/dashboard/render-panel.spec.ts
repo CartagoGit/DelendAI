@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IDashboardAllModels } from '@mcp-vertex/client';
+import { dictsByLang } from '@mcp-vertex/shared/i18n';
 
 import { renderDashboard } from '../../src/dashboard/render-dashboard';
 import { renderPanelAgents } from '../../src/dashboard/render-panel-agents';
@@ -176,11 +177,12 @@ const opts = {
 	docsUrl: 'https://mcp-vertex.dev',
 	refreshCommand: 'mcp-vertex.refresh',
 	openDocsCommand: 'mcp-vertex.openDocs',
+	lang: dictsByLang.en,
 };
 
 describe('renderPanelOverview', async () => {
 	it('renders the server name, version, and recommended next action', async () => {
-		const html = renderPanelOverview(baseOverview);
+		const html = renderPanelOverview(baseOverview, dictsByLang.en);
 		expect(html).toContain('mcp-vertex');
 		expect(html).toContain('v0.1.0');
 		expect(html).toContain('Call overview first.');
@@ -192,7 +194,7 @@ describe('renderPanelOverview', async () => {
 			...baseOverview,
 			plugins: [{ name: '<script>alert(1)</script>' }],
 		};
-		const html = renderPanelOverview(evil);
+		const html = renderPanelOverview(evil, dictsByLang.en);
 		expect(html).not.toContain('<script>alert(1)</script>');
 		expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
 	});
@@ -200,7 +202,7 @@ describe('renderPanelOverview', async () => {
 
 describe('renderPanelMetrics', async () => {
 	it('renders totals and the top-tools table', async () => {
-		const html = renderPanelMetrics(baseMetrics);
+		const html = renderPanelMetrics(baseMetrics, dictsByLang.en);
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('Total calls');
 		expect(html).toContain('27');
@@ -210,7 +212,7 @@ describe('renderPanelMetrics', async () => {
 
 describe('renderPanelTokens', async () => {
 	it('renders the savings percent and the top-tools table', async () => {
-		const html = renderPanelTokens(baseTokens);
+		const html = renderPanelTokens(baseTokens, dictsByLang.en);
 		expect(html).toContain('panel-tokens');
 		expect(html).toContain('18%');
 		expect(html).toContain('Tokens used');
@@ -219,7 +221,7 @@ describe('renderPanelTokens', async () => {
 
 describe('renderPanelTools', async () => {
 	it('renders a sortable table with data-* attributes for client-side sort', async () => {
-		const html = renderPanelTools(baseTools);
+		const html = renderPanelTools(baseTools, dictsByLang.en);
 		expect(html).toContain('mv-tools-table');
 		expect(html).toContain('data-calls="12"');
 		expect(html).toContain('data-calls="4"');
@@ -228,7 +230,7 @@ describe('renderPanelTools', async () => {
 
 describe('renderPanelPlugins', async () => {
 	it('renders the barchart and the rollup table', async () => {
-		const html = renderPanelPlugins(basePlugins);
+		const html = renderPanelPlugins(basePlugins, dictsByLang.en);
 		expect(html).toContain('panel-plugins');
 		expect(html).toContain('<svg');
 		expect(html).toContain('Token share by plugin');
@@ -237,7 +239,7 @@ describe('renderPanelPlugins', async () => {
 
 describe('renderPanelSessions', async () => {
 	it('groups proposals by status with a pill per row', async () => {
-		const html = renderPanelSessions(baseSessions);
+		const html = renderPanelSessions(baseSessions, dictsByLang.en);
 		expect(html).toContain('panel-sessions');
 		expect(html).toContain('in_progress');
 		expect(html).toContain('ready');
@@ -247,7 +249,7 @@ describe('renderPanelSessions', async () => {
 
 describe('renderPanelTimes', async () => {
 	it('renders total wall, p50/p95, and the histogram', async () => {
-		const html = renderPanelTimes(baseTimes);
+		const html = renderPanelTimes(baseTimes, dictsByLang.en);
 		expect(html).toContain('panel-times');
 		expect(html).toContain('Total wall');
 		expect(html).toContain('p50 latency');
@@ -258,13 +260,13 @@ describe('renderPanelTimes', async () => {
 
 describe('renderPanelAgents', async () => {
 	it('renders one row per active agent', async () => {
-		const html = renderPanelAgents(baseAgents);
+		const html = renderPanelAgents(baseAgents, dictsByLang.en);
 		expect(html).toContain('panel-agents');
 		expect(html).toContain('implementation_runner');
 	});
 
 	it('shows the empty-state row when no agents', async () => {
-		const html = renderPanelAgents({ agents: [], totalActive: 0 });
+		const html = renderPanelAgents({ agents: [], totalActive: 0 }, dictsByLang.en);
 		expect(html).toContain('No active agents.');
 	});
 });

@@ -10,12 +10,15 @@ import type {
 	IKnowledgeListEntry,
 	IKnowledgeFullEntry,
 } from '@mcp-vertex/client';
+import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
+import { extensionText } from '../i18n/extension-text';
 
 export interface IRenderKnowledgeNavigatorOptions {
 	readonly onOpenEntry: string; // command id for clicking an entry
 	readonly onSearch: string; // command id for the search box (informational)
+	readonly lang: ILangDict;
 	readonly categories: Readonly<
 		Record<string, readonly IKnowledgeListEntry[]>
 	>;
@@ -117,10 +120,13 @@ const renderCategory = (
 	</section>`;
 };
 
-const renderPreview = (entry: IKnowledgeFullEntry | undefined): string => {
+const renderPreview = (
+	entry: IKnowledgeFullEntry | undefined,
+	lang: ILangDict,
+): string => {
 	if (entry === undefined) {
 		return `<aside class="mv-kn-preview mv-kn-preview--empty">
-			<p>Select an entry on the left to preview it here.</p>
+			<p>${escapeHtml(extensionText(lang, 'knowledge.previewEmpty'))}</p>
 		</aside>`;
 	}
 	return `<aside class="mv-kn-preview">
@@ -135,6 +141,7 @@ const renderPreview = (entry: IKnowledgeFullEntry | undefined): string => {
 export const renderKnowledgeNavigator = (
 	options: IRenderKnowledgeNavigatorOptions,
 ): string => {
+	const text = (key: string) => extensionText(options.lang, key);
 	const categories = Object.entries(options.categories).sort(([a], [b]) =>
 		a.localeCompare(b),
 	);
@@ -148,7 +155,7 @@ export const renderKnowledgeNavigator = (
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Knowledge</title>
+	<title>${escapeHtml(text('knowledge.title'))}</title>
 	<style>
 		:root {
 			--mv-fg: var(--vscode-foreground, #c9d1d9);
@@ -257,13 +264,13 @@ export const renderKnowledgeNavigator = (
 </head>
 <body>
 	<header class="mv-kn-top">
-		<h1>mcp-vertex Knowledge</h1>
-		<input id="mv-kn-search" type="text" placeholder="Search entries (id or title)…" />
+		<h1>${escapeHtml(text('knowledge.title'))}</h1>
+		<input id="mv-kn-search" type="text" placeholder="${escapeHtml(text('knowledge.searchPlaceholder'))}" />
 	</header>
 	<aside class="mv-kn-list-pane">
-		${left || '<p>No knowledge entries.</p>'}
+		${left || `<p>${escapeHtml(text('knowledge.empty'))}</p>`}
 	</aside>
-	${renderPreview(options.preview)}
+	${renderPreview(options.preview, options.lang)}
 	<script>${CLIENT_SCRIPT}</script>
 </body>
 </html>`;

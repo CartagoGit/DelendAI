@@ -27,6 +27,7 @@ import {
 	defaultQuickActions,
 	filterByHost,
 } from './quick-actions';
+import { extensionText } from '../i18n/extension-text';
 
 export interface IRenderToolbarOptions {
 	readonly host: string; // 'vscode' | 'jetbrains' | 'web' | …
@@ -111,6 +112,7 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 		options.host,
 		options.loadedPlugins ?? [],
 	);
+	const text = (key: string) => extensionText(options.lang, key);
 	const grouped = groupByCategory(visible);
 	const header = renderHeaderBar({
 		brandName: 'mcp-vertex',
@@ -126,7 +128,7 @@ export const renderToolbar = (options: IRenderToolbarOptions): string => {
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Toolbar</title>
+	<title>${escapeHtml(text('toolbar.title'))}</title>
 	<style>${componentCss}
 	.mv-toolbar__host {
 		font-size: 11px; color: var(--mv-fg-muted, #9aa4b2);

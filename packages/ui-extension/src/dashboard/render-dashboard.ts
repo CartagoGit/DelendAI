@@ -8,8 +8,10 @@
  * `panel.webview.setHtml(...)`.
  */
 import type { IDashboardAllModels } from '@mcp-vertex/client';
+import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { renderHeaderBar, componentCss, renderRuntime } from '../components';
+import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';
 import { renderPanelAgents } from './render-panel-agents';
 import { renderPanelHealth } from './render-panel-health';
@@ -25,18 +27,19 @@ export interface IRenderDashboardOptions {
 	readonly docsUrl: string;
 	readonly refreshCommand: string;
 	readonly openDocsCommand: string;
+	readonly lang: ILangDict;
 }
 
 const TABS: ReadonlyArray<{ id: string; label: string }> = [
-	{ id: 'overview', label: 'Overview' },
-	{ id: 'metrics', label: 'Metrics' },
-	{ id: 'tokens', label: 'Tokens' },
-	{ id: 'tools', label: 'Tools' },
-	{ id: 'plugins', label: 'Plugins' },
-	{ id: 'sessions', label: 'Sessions' },
-	{ id: 'times', label: 'Times' },
-	{ id: 'agents', label: 'Agents' },
-	{ id: 'health', label: 'Health' },
+	{ id: 'overview', label: 'tabOverview' },
+	{ id: 'metrics', label: 'tabMetrics' },
+	{ id: 'tokens', label: 'tabTokens' },
+	{ id: 'tools', label: 'tabTools' },
+	{ id: 'plugins', label: 'tabPlugins' },
+	{ id: 'sessions', label: 'tabSessions' },
+	{ id: 'times', label: 'tabTimes' },
+	{ id: 'agents', label: 'tabAgents' },
+	{ id: 'health', label: 'tabHealth' },
 ];
 
 const CLIENT_SCRIPT = `
@@ -83,29 +86,31 @@ export const renderDashboard = (
 	model: IDashboardAllModels,
 	options: IRenderDashboardOptions,
 ): string => {
+	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
+		extensionText(options.lang, key, vars);
 	const t = model.overview.totals;
 	const tabsHtml = TABS.map(
 		(tab, ix) =>
-			`<button class="mv-tab" id="tab-${tab.id}" role="tab" aria-selected="${ix === 0 ? 'true' : 'false'}" data-target="${tab.id}">${escapeHtml(tab.label)}</button>`,
+			`<button class="mv-tab" id="tab-${tab.id}" role="tab" aria-selected="${ix === 0 ? 'true' : 'false'}" data-target="${tab.id}">${escapeHtml(text(tab.label))}</button>`,
 	).join('');
 
-	const tabsBar = `<div class="mv-tabs" role="tablist">${tabsHtml}<button class="mv-tab" id="tab-docs" role="tab" data-target="docs">Docs</button><button class="mv-tab" id="tab-refresh" role="tab" data-action="refresh" title="Refresh">⟳</button></div>`;
+	const tabsBar = `<div class="mv-tabs" role="tablist">${tabsHtml}<button class="mv-tab" id="tab-docs" role="tab" data-target="docs">${escapeHtml(text('tabDocs'))}</button><button class="mv-tab" id="tab-refresh" role="tab" data-action="refresh" title="${escapeHtml(text('refreshDashboard'))}">⟳</button></div>`;
 
-	const overviewPanel = renderPanelOverview(model.overview);
-	const metricsPanel = renderPanelMetrics(model.metrics);
-	const tokensPanel = renderPanelTokens(model.tokens);
-	const toolsPanel = renderPanelTools(model.tools);
-	const pluginsPanel = renderPanelPlugins(model.plugins);
-	const sessionsPanel = renderPanelSessions(model.sessions);
-	const timesPanel = renderPanelTimes(model.times);
-	const agentsPanel = renderPanelAgents(model.agents);
-	const healthPanel = renderPanelHealth(model.health);
+	const overviewPanel = renderPanelOverview(model.overview, options.lang);
+	const metricsPanel = renderPanelMetrics(model.metrics, options.lang);
+	const tokensPanel = renderPanelTokens(model.tokens, options.lang);
+	const toolsPanel = renderPanelTools(model.tools, options.lang);
+	const pluginsPanel = renderPanelPlugins(model.plugins, options.lang);
+	const sessionsPanel = renderPanelSessions(model.sessions, options.lang);
+	const timesPanel = renderPanelTimes(model.times, options.lang);
+	const agentsPanel = renderPanelAgents(model.agents, options.lang);
+	const healthPanel = renderPanelHealth(model.health, options.lang);
 
 	const docsPanel = `
 <section class="mv-panel" id="panel-docs" role="tabpanel" aria-labelledby="tab-docs">
-	<h2 class="mv-panel__title">Documentation</h2>
+	<h2 class="mv-panel__title">${escapeHtml(text('dashboard.documentation'))}</h2>
 	<iframe class="mv-docs-frame" src="${escapeHtml(options.docsUrl)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe>
-	<p class="mv-fg-muted">Embedded from <a href="${escapeHtml(options.docsUrl)}">${escapeHtml(options.docsUrl)}</a></p>
+	<p class="mv-fg-muted">${escapeHtml(text('dashboard.docsEmbeddedFrom'))} <a href="${escapeHtml(options.docsUrl)}">${escapeHtml(options.docsUrl)}</a></p>
 </section>
 `;
 
@@ -113,14 +118,14 @@ export const renderDashboard = (
 
 	const kpiStrip = `
 <div class="mv-kpis">
-	<div class="mv-kpi"><span class="mv-kpi__label">Tools</span><span class="mv-kpi__value">${formatNumber(t.tools)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Plugins</span><span class="mv-kpi__value">${formatNumber(t.plugins)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Proposals</span><span class="mv-kpi__value">${formatNumber(t.proposals)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Calls</span><span class="mv-kpi__value">${formatNumber(t.calls)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Tokens</span><span class="mv-kpi__value">${formatTokens(t.tokens)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Saved</span><span class="mv-kpi__value">${formatTokens(t.tokensSaved)}</span><span class="mv-kpi__hint">${t.savingsPercent}%</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Wall</span><span class="mv-kpi__value">${formatMs(t.totalMs)}</span></div>
-	<div class="mv-kpi"><span class="mv-kpi__label">Agents</span><span class="mv-kpi__value">${formatNumber(t.agents)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiTools'))}</span><span class="mv-kpi__value">${formatNumber(t.tools)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiPlugins'))}</span><span class="mv-kpi__value">${formatNumber(t.plugins)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiProposals'))}</span><span class="mv-kpi__value">${formatNumber(t.proposals)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiCalls'))}</span><span class="mv-kpi__value">${formatNumber(t.calls)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiTokens'))}</span><span class="mv-kpi__value">${formatTokens(t.tokens)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiSaved'))}</span><span class="mv-kpi__value">${formatTokens(t.tokensSaved)}</span><span class="mv-kpi__hint">${t.savingsPercent}%</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiWall'))}</span><span class="mv-kpi__value">${formatMs(t.totalMs)}</span></div>
+	<div class="mv-kpi"><span class="mv-kpi__label">${escapeHtml(text('kpiAgents'))}</span><span class="mv-kpi__value">${formatNumber(t.agents)}</span></div>
 </div>
 `;
 
@@ -157,7 +162,7 @@ export const renderDashboard = (
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>mcp-vertex Dashboard</title>
+	<title>${escapeHtml(text('dashboard.title'))}</title>
 	<style>${componentCss}</style>
 </head>
 <body>
@@ -168,11 +173,11 @@ export const renderDashboard = (
 		${panels}
 	</main>
 	<footer class="mv-footer">
-		<span>refresh: <code>${escapeHtml(options.refreshCommand)}</code></span>
+		<span>${escapeHtml(text('dashboard.footerRefresh'))}: <code>${escapeHtml(options.refreshCommand)}</code></span>
 		<span class="mv-footer__sep">·</span>
-		<span>docs: <code>${escapeHtml(options.docsUrl)}</code></span>
+		<span>${escapeHtml(text('dashboard.footerDocs'))}: <code>${escapeHtml(options.docsUrl)}</code></span>
 		<span class="mv-footer__sep">·</span>
-		<span>fetched: <code>${escapeHtml(model.server.fetchedAt)}</code></span>
+		<span>${escapeHtml(text('dashboard.footerFetched'))}: <code>${escapeHtml(model.server.fetchedAt)}</code></span>
 	</footer>
 	<script>${CLIENT_SCRIPT}</script>
 	${renderRuntime()}
