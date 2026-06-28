@@ -1,12 +1,15 @@
 ---
 id: f00075
-status: ready
+status: done
 type: proposal
 track: swarm+coordination+governance
 date: 2026-06-28
 kind: feat
 title: Swarm hygiene routine - auto-cleanup of orphan branches, rescued unmerged work, and bug fix in branch_gc
-shipped-in: []
+shipped-in:
+  - 86b543eb # S0: branch_gc "not-found" trap fix
+  - 757a4456 # S2 + S3: swarm_hygiene engine/tool + skill + i18n + catalog
+  - 2a7abca7 # S1 + S4: branchHygieneHints + front-hook in auto_work + tests
 recan: []
 related:
   - f00073 # branch_status + branch_gc (engines, S0 fixes a bug in f00073 S3)
@@ -226,7 +229,8 @@ fields that need ahead/behind/merged.
 
 ### S1 — `auto_work` surface hygiene hints
 
-- **Status**: pending
+- **Status**: done
+- **Shipped in**: 2a7abca7 (bundled with S4 — the parallel-agent commit that landed `branchHygieneHints` in the plan)
 
 After `collectBranchStatusWarnings` (already wired in f00073 S2),
 `auto-work.tool.ts` builds the orchestration plan. Add a follow-up
@@ -252,7 +256,8 @@ to call `branch_gc({ dryRun: false })` for real.
 
 ### S2 — `proposals_swarm_hygiene` tool
 
-- **Status**: pending
+- **Status**: done
+- **Shipped in**: 757a4456 (`feat: add swarm hygiene tool and engine for managing branch cleanup`)
 
 New pure engine + tool that returns three lists in one structured
 payload:
@@ -307,7 +312,8 @@ The tool is **read-only** (`effects: ['read']`). It does NOT call
 
 ### S3 — Skill + i18n + catalog refresh
 
-- **Status**: pending
+- **Status**: done
+- **Shipped in**: 757a4456 (bundled with S2 — same parallel-agent commit shipped the skill update, the 12-lang i18n entry, and the catalog refresh together)
 - **Files**:
   `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
   (new "Hygiene routine" section),
