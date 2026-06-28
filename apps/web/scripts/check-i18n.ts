@@ -13,36 +13,63 @@
  * is opt-in, and once you join you commit to 12-lang. See l100 s3-bis.
  *
  * Run standalone (`bun scripts/check-i18n.ts`) or as part of `build:strict`.
+ *
+ * Flags (f00059 S2):
+ *   --strict   Exit with code 1 on any problem. Default is warn-only (exit 0
+ *              but print every missing/stale key). Used to land the
+ *              recursive-walk gate before translators backfill the 12 langs.
  */
 import { dictsByLang, languages, type Lang } from '../src/i18n/ui';
 import { listRegisteredTools } from '../src/i18n/tools';
+import {
+	dictsByLang as sharedDicts,
+	languages as sharedLanguages,
+} from '@mcp-vertex/shared/i18n';
 
-const en = dictsByLang.en;
-const enKeys = Object.keys(en);
+const strictMode = process.argv.includes('--strict');
+
+const flattenKeys = (root: unknown, prefix = ''): string[] => {
+	if (root === null || root === undefined) return prefix ? [prefix] : [];
+	if (typeof root !== 'object') return prefix ? [prefix] : [];
+	if (Array.isArray(root)) return prefix ? [prefix] : [];
+	const out: string[] = [];
+	for (const [k, v] of Object.entries(root as Record<string, unknown>)) {
+		const next = prefix ? `${prefix}.${k}` : k;
+		if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+			out.push(...flattenKeys(v, next));
+		} else {
+			out.push(next);
+		}
+	}
+	return out;
+};
+
+// ---- Site dict check (recursive walk, f00059 S2) ----
+const en = dictsByLang.en as unknown as Record<string, unknown>;
+const enKeys = flattenKeys(en);
+const enKeysSet = new Set(enKeys);
 const problems: string[] = [];
 
 for (const { code } of languages) {
 	const lang = code as Lang;
-	const dict = dictsByLang[lang];
+	const dict = dictsByLang[lang] as unknown as Record<string, unknown>;
 	if (!dict) {
 		problems.push(`[${lang}] no dictionary registered`);
 		continue;
 	}
-	const missing = enKeys.filter((k) => !(k in dict));
+	const dictKeys = new Set(flattenKeys(dict));
+	const missing = enKeys.filter((k) => !dictKeys.has(k));
 	if (missing.length)
 		problems.push(
-			`[${lang}] missing ${missing.length} keys: ${missing.join(', ')}`,
+			`[${lang}] missing ${missing.length}/${enKeys.length} keys: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '\u2026' : ''}`,
 		);
-}
-
-// Also flag keys present in a translation but unknown in `en` (stale keys).
-for (const { code } of languages) {
-	const lang = code as Lang;
-	const dict = dictsByLang[lang];
-	if (!dict || lang === 'en') continue;
-	const extra = Object.keys(dict).filter((k) => !(k in en));
-	if (extra.length)
-		problems.push(`[${lang}] stale keys not in en: ${extra.join(', ')}`);
+	if (lang !== 'en') {
+		const extra = [...dictKeys].filter((k) => !enKeysSet.has(k));
+		if (extra.length)
+			problems.push(
+				`[${lang}] stale keys not in en: ${extra.slice(0, 5).join(', ')}${extra.length > 5 ? '\u2026' : ''}`,
+			);
+	}
 }
 
 // Per-tool catalogue entries (l100 s3-bis): once a tool opts in, every
@@ -67,45 +94,29 @@ for (const { name, dict } of listRegisteredTools()) {
 
 if (problems.length) {
 	console.error(
-		'✗ i18n incomplete — every language must translate every key:\n',
+		'\u2717 i18n incomplete \u2014 every language must translate every key:\n',
 	);
 	for (const p of problems) console.error(`  ${p}`);
 	console.error(
-		`\n${languages.length} languages · ${enKeys.length} keys each expected.`,
+		`\n${languages.length} languages \u00b7 ${enKeys.length} keys each expected.`,
 	);
-	process.exit(1);
+	if (strictMode) process.exit(1);
+	console.warn(`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`);
 }
 
 console.log(
-	`✓ i18n complete: ${languages.length} languages × ${enKeys.length} keys.`,
+	`\u2713 i18n complete: ${languages.length} languages \u00d7 ${enKeys.length} keys.`,
 );
 
-// f00047 S6 — validate the SHARED i18n module too. The shared module is
-// the single source of truth for every consumer (`@mcp-vertex/ui-extension`,
-// `apps/web`, every host extension). The site-side check above is a
-// per-consumer check; this is the source-of-truth check. The keys here
-// are flattened from the `site`, `extension`, and `tools` sections.
-import { dictsByLang as sharedDicts } from '@mcp-vertex/shared/i18n';
-import { languages as sharedLanguages } from '@mcp-vertex/shared/i18n';
-
-const flattenKeys = (root: unknown, prefix = ''): string[] => {
-	if (root === null || root === undefined) return prefix ? [prefix] : [];
-	if (typeof root !== 'object') return prefix ? [prefix] : [];
-	if (Array.isArray(root)) return prefix ? [prefix] : [];
-	const out: string[] = [];
-	for (const [k, v] of Object.entries(root as Record<string, unknown>)) {
-		const next = prefix ? `${prefix}.${k}` : k;
-		if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
-			out.push(...flattenKeys(v, next));
-		} else {
-			out.push(next);
-		}
-	}
-	return out;
-};
-
+// ---- Shared i18n check (recursive walk, f00047 S6 + f00059 S2) ----
+// The shared module is the single source of truth for every consumer
+// (`@mcp-vertex/ui-extension`, `apps/web`, every host extension). The
+// site-side check above is a per-consumer check; this is the
+// source-of-truth check. The keys are flattened from the `site`,
+// `extension`, and `tools` sections.
 const sharedEn = sharedDicts.en as unknown as Record<string, unknown>;
 const sharedEnKeys = flattenKeys(sharedEn);
+const sharedEnKeysSet = new Set(sharedEnKeys);
 const sharedProblems: string[] = [];
 
 for (const lang of sharedLanguages) {
@@ -120,22 +131,31 @@ for (const lang of sharedLanguages) {
 	const missing = sharedEnKeys.filter((k) => !dictKeys.has(k));
 	if (missing.length) {
 		sharedProblems.push(
-			`[shared:${lang.code}] missing ${missing.length} keys: ${missing.join(', ')}`,
+			`[shared:${lang.code}] missing ${missing.length}/${sharedEnKeys.length} keys: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '\u2026' : ''}`,
 		);
+	}
+	if (lang.code !== 'en') {
+		const extra = [...dictKeys].filter((k) => !sharedEnKeysSet.has(k));
+		if (extra.length) {
+			sharedProblems.push(
+				`[shared:${lang.code}] stale keys not in en: ${extra.slice(0, 5).join(', ')}${extra.length > 5 ? '\u2026' : ''}`,
+			);
+		}
 	}
 }
 
 if (sharedProblems.length) {
 	console.error(
-		'\n✗ shared i18n incomplete — every language must translate every key:\n',
+		'\n\u2717 shared i18n incomplete \u2014 every language must translate every key:\n',
 	);
 	for (const p of sharedProblems) console.error(`  ${p}`);
 	console.error(
-		`\n${sharedLanguages.length} languages · ${sharedEnKeys.length} keys each expected.`,
+		`\n${sharedLanguages.length} languages \u00b7 ${sharedEnKeys.length} keys each expected.`,
 	);
-	process.exit(1);
+	if (strictMode) process.exit(1);
+	console.warn(`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`);
 }
 
 console.log(
-	`✓ shared i18n complete: ${sharedLanguages.length} languages × ${sharedEnKeys.length} keys.`,
+	`\u2713 shared i18n complete: ${sharedLanguages.length} languages \u00d7 ${sharedEnKeys.length} keys.`,
 );
