@@ -68,6 +68,24 @@ export type IAgentLockDeps = {
 	mutexTimeoutMs?: number;
 	mutexStaleMs?: number;
 	mutexPollMs?: number;
+	/**
+	 * f00078 S4: when `true`, the engine refuses `action: 'claim'` if
+	 * the current branch (read from `git rev-parse --abbrev-ref HEAD`
+	 * in `cwd` if provided, or in `lockPath`'s directory otherwise) is
+	 * not of the form `agent/<name>`. This is the hard gate that
+	 * prevents any agent from bypassing the per-agent worktree
+	 * isolation by going directly through `agent_lock` without
+	 * calling `agent_worktree` first. Defaults to `false` so hosts
+	 * that run solo (no worktree gate in mcp-vertex.config.json) are
+	 * unaffected.
+	 */
+	agentWorktreeEnabled?: boolean;
+	/**
+	 * Optional override for the active branch check. When provided,
+	 * the engine skips the `git rev-parse` and uses this value. Tests
+	 * use this to exercise the gate without a real repo.
+	 */
+	currentBranchOverride?: string;
 };
 
 export type IAgentLockResponse = {
@@ -95,6 +113,49 @@ const getLockFileLabel = (deps: IAgentLockDeps = {}): string =>
 
 const getNow = (deps: IAgentLockDeps = {}): string =>
 	(deps.now ?? (() => new Date().toISOString()))();
+
+/**
+ * f00078 S4 helper: returns the active branch name, or `null` if it
+ * cannot be read. Honours `deps.currentBranchOverride` (tests) before
+ * shelling out. When `lockPath` lives inside a worktree, the parent's
+ * `.git` dir is queried (no checkout of a worktree file needed) — we
+ * pass `lockPath`'s parent as `cwd` so the rev-parse resolves against
+ * the worktree's HEAD.
+ */
+const readCurrentBranchName = async (
+	deps: IAgentLockDeps,
+): Promise<string | null> => {
+	if (deps.currentBranchOverride !== undefined) {
+		return deps.currentBranchOverride;
+	}
+	try {
+		const { execFile } = await import('node:child_process');
+		return await new Promise<string | null>((resolve) => {
+			const cwd = deps.lockPath
+				? deps.lockPath.replace(/\/[^/]+$/u, '')
+				: process.cwd();
+			execFile(
+				'git',
+				['rev-parse', '--abbrev-ref', 'HEAD'],
+				{ cwd, encoding: 'utf8', timeout: 5_000 },
+				(error, stdout) => {
+					if (error) {
+						resolve(null);
+						return;
+					}
+					const branch = stdout.trim();
+					resolve(branch.length === 0 ? 'HEAD' : branch);
+				},
+			);
+		});
+	} catch {
+		return null;
+	}
+};
+
+/** f00078 S4: is the branch of the form `agent/<non-empty-name>`? */
+const isAgentBranchName = (branch: string): boolean =>
+	branch.startsWith('agent/') && branch.length > 'agent/'.length;
 
 /** Async existence check (H2): never blocks the event loop. */
 const fileExists = async (path: string): Promise<boolean> => {
@@ -194,6 +255,60 @@ export async function runAgentLockEngine(
 			],
 			isError: true,
 		};
+	}
+
+	// f00078 S4: needs-worktree gate. When the host has the
+	// `agentWorktree` gate on, claims are refused unless the active
+	// branch is `agent/<name>`. This is the only way to prevent an
+	// agent from bypassing the per-agent worktree isolation by going
+	// directly through `agent_lock claim` without first calling
+	// `agent_worktree create`. The check is a no-op when
+	// `agentWorktreeEnabled !== true`, so solo hosts (the default)
+	// are unaffected.
+	if (args.action === 'claim' && deps.agentWorktreeEnabled === true) {
+		const branch = await readCurrentBranchName(deps);
+		if (branch === null) {
+			return {
+				content: [
+					{
+						type: 'text',
+						text: JSON.stringify({
+							tool: toolName,
+							action: args.action,
+							path: lockFileLabel,
+							error: 'agent_lock claim requires a per-agent worktree when the host gate is on, but the active branch could not be read',
+							blockerType: 'needs-worktree',
+							nextAction:
+								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+							summary:
+								'needs-worktree: active branch unreadable; create a worktree first',
+						}),
+					},
+				],
+				isError: true,
+			};
+		}
+		if (!isAgentBranchName(branch)) {
+			return {
+				content: [
+					{
+						type: 'text',
+						text: JSON.stringify({
+							tool: toolName,
+							action: args.action,
+							path: lockFileLabel,
+							activeBranch: branch,
+							error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected "agent/<name>"`,
+							blockerType: 'needs-worktree',
+							nextAction:
+								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+							summary: `needs-worktree: active branch is "${branch}"`,
+						}),
+					},
+				],
+				isError: true,
+			};
+		}
 	}
 
 	// Cross-process critical section: the whole read → mutate → write runs

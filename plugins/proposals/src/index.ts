@@ -179,6 +179,11 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
+					// f00078 S4: hard gate. When the host has the
+					// `agentWorktree` gate on, the engine refuses `claim`
+					// unless the active branch is `agent/<name>`. Solo
+					// hosts (the default) pass `false` and are unaffected.
+					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
 					// Solid-ISP: keep the loop detector's lock cache coherent
 					// with every successful claim/release/gc. The tool knows
 					// nothing about the loop detector; the adapter bridges

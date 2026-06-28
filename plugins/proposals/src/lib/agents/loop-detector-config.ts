@@ -42,6 +42,13 @@ export interface ILoopDetectorServiceOptions {
 	handoffTtlDays: number;
 	notifyOnDetect: boolean;
 	/**
+	 * x00074 S2: max gap (ms) between consecutive repeat calls for the
+	 * detector to still consider them a stuck chain. Repeats spaced
+	 * > cooldownMs apart are legitimate backoff (e.g. rate-limit
+	 * recovery) and reset the consecutive-run counter. Default 30s.
+	 */
+	cooldownMs: number;
+	/**
 	 * Agent names or glob patterns the detector MUST ignore. The
 	 * detector was originally tuned for swarm runs where the same
 	 * `edit_file` call 3 times in a row is unambiguous stuck. But
@@ -133,6 +140,10 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 	// whose interactive session is named differently can extend this
 	// list from the config file (`loopDetector.interactiveAgentPatterns`).
 	interactiveAgentPatterns: ['*-default', 'default-*', 'host', 'interactive'],
+	// x00074 S2: cooldown for the timestamp-aware loop filter. Matches
+	// the pure detector's default so wiring does not change behaviour
+	// unless a host explicitly tunes it.
+	cooldownMs: 30_000,
 };
 
 /**
@@ -208,6 +219,11 @@ export const parseLoopDetectorCliOverrides = (
 			subKey === 'notifyOnDetect'
 		) {
 			out.notifyOnDetect = val === 'true' || val === '1';
+		} else if (
+			subKey === 'cooldown-ms' ||
+			subKey === 'cooldownMs'
+		) {
+			out.cooldownMs = Number(val);
 		} else if (
 			subKey === 'interactive-agent-patterns' ||
 			subKey === 'interactiveAgentPatterns'
@@ -293,5 +309,7 @@ export const resolveLoopDetectorConfigFromFileConfig = (
 			cliConfig.interactiveAgentPatterns ??
 			loop?.interactiveAgentPatterns ??
 			defaults.interactiveAgentPatterns,
-	};
-};
+		cooldownMs:
+		cliConfig.cooldownMs ??
+		loop?.cooldownMs ??
+		defaults.cooldownMs,
