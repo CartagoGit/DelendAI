@@ -123,7 +123,7 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let cwd = process.cwd();
 	let remote = '';
 	let remoteBranch = '';
-	let currentBranch: string | null | undefined = undefined;
+	let currentBranch: string | null | undefined;
 	const positional: string[] = [];
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];
@@ -174,11 +174,10 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 };
 
 const readCurrentBranch = (cwd: string): string | null => {
-	const res = spawnSync(
-		'git',
-		['rev-parse', '--abbrev-ref', 'HEAD'],
-		{ cwd, encoding: 'utf8' },
-	);
+	const res = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+		cwd,
+		encoding: 'utf8',
+	});
 	if (res.status !== 0) return null;
 	const out = (res.stdout ?? '').trim();
 	if (out === 'HEAD' || out === '') return null;
@@ -215,8 +214,7 @@ const main = async (): Promise<number> => {
 		return 0;
 	}
 	const args = parseArgs(rawArgv);
-	const currentBranch =
-		args.currentBranch ?? readCurrentBranch(args.cwd);
+	const currentBranch = args.currentBranch ?? readCurrentBranch(args.cwd);
 	const pushArgs = parseGitPushArgs(rawArgv, currentBranch);
 	const remote = args.remote || pushArgs.remote;
 	const remoteBranch = args.remoteBranch || pushArgs.remoteBranch;

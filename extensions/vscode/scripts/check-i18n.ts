@@ -6,6 +6,7 @@
  * for every consumer (this extension, the docs site, every future host).
  * This gate validates that the shared `extension` section of `ILangDict`
  * is complete (12 langs \u00d7 N keys, zero missing, zero stale).
+ * is complete (12 langs \u00d7 N keys, zero missing, zero stale).
  *
  * Run with `bun run check:i18n` from `extensions/vscode/`.
  *
