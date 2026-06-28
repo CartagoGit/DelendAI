@@ -107,7 +107,7 @@ const testIo = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const createFixtureRoot = async (options?: {
-	readonly manifest?: typeof baseManifest;
+	readonly manifest?: any;
 	readonly proposals?: typeof baseProposals;
 	readonly skillBodies?: Readonly<Record<string, string>>;
 }): Promise<string> => {
@@ -136,6 +136,7 @@ const createFixtureRoot = async (options?: {
 	});
 	await mkdir(join(root, 'packages/core/skills'), { recursive: true });
 	await mkdir(join(root, 'docs/mcp-vertex/proposals'), { recursive: true });
+	await mkdir(join(root, '.cache/mcp-vertex/proposals'), { recursive: true });
 	for (const [relativePath, content] of Object.entries(skillBodies)) {
 		await mkdir(
 			join(root, relativePath.split('/').slice(0, -1).join('/')),
@@ -151,7 +152,7 @@ const createFixtureRoot = async (options?: {
 		'utf8',
 	);
 	await writeFile(
-		join(root, 'docs/mcp-vertex/proposals/index.json'),
+		join(root, '.cache/mcp-vertex/proposals/index.json'),
 		`${JSON.stringify(proposals, null, '\t')}\n`,
 		'utf8',
 	);
