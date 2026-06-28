@@ -24,6 +24,18 @@ const mkCall = (
 	timestamp = 0,
 ): IToolCall => ({ tool, args, agent, timestamp });
 
+// x00074 S1: extended mkCall with explicit outcome. Optional so the
+// legacy tests above keep passing — defaults to 'ok' here is wrong
+// (would change the test contract), so we require the caller to pass
+// it explicitly when they care.
+const mkCallWithOutcome = (
+	tool: string,
+	args: unknown,
+	agent: string,
+	timestamp: number,
+	outcome: 'ok' | 'retryable-error' | 'permanent-error' | 'unknown',
+): IToolCall => ({ tool, args, agent, timestamp, outcome });
+
 describe('detectAgentLoop', async () => {
 	it('returns isStuck=false on an empty window', async () => {
 		const out = detectAgentLoop([]);
@@ -159,6 +171,80 @@ describe('detectAgentLoop', async () => {
 		expect(out.isStuck).toBe(true);
 		expect(out.offendingTool).toBe('write_file');
 		expect(out.offendingHash).not.toBeNull();
+	});
+});
+
+// x00074 S1: outcome-aware sliding window. Successful re-intent chains
+// (e.g. 8 successful `agent_lock claim` calls after rate-limit recovery)
+// MUST NOT trip the detector — the 2026-06-27 false-positive case.
+describe('f00074 S1 — outcome-aware sliding window', async () => {
+	it('does NOT flag 8 successful calls (the 2026-06-27 regression fixture)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', task_id: 'f00056-S5', i },
+				'copilot-minimax-m3',
+				1_700_000_000_000 + i * 60_000,
+				'ok',
+			),
+		);
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(false);
+		expect(out.repeatCount).toBe(0);
+	});
+
+	it('DOES flag 8 mixed-outcome calls (1 retryable error in 7 successes is enough)', async () => {
+		const calls = [
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 1, 'ok'),
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim' },
+				'a1',
+				2,
+				'retryable-error',
+			),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 3, 'ok'),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 4, 'ok'),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 5, 'ok'),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 6, 'ok'),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 7, 'ok'),
+			mkCallWithOutcome('agent_lock', { action: 'claim' }, 'a1', 8, 'ok'),
+		];
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(true);
+		expect(out.repeatCount).toBe(8);
+	});
+
+	it('DOES flag 8 unknown-outcome calls (legacy compat)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 60_000,
+				'unknown',
+			),
+		);
+		const out = detectAgentLoop(calls);
+		expect(out.isStuck).toBe(true);
+		expect(out.repeatCount).toBe(8);
+	});
+
+	it('honours suppressSuccessfulReintents: false (legacy hosts)', async () => {
+		const calls = Array.from({ length: 8 }, (_, i) =>
+			mkCallWithOutcome(
+				'agent_lock',
+				{ action: 'claim', i },
+				'a1',
+				1_700_000_000_000 + i * 60_000,
+				'ok',
+			),
+		);
+		const out = detectAgentLoop(calls, {
+			suppressSuccessfulReintents: false,
+		});
+		expect(out.isStuck).toBe(true);
+		expect(out.repeatCount).toBe(8);
 	});
 });
 

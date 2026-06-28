@@ -19,6 +19,38 @@ export {
 	renderConsolidationMarkdown,
 } from '../lib/services/audit-consolidate.service';
 export type { IConsolidateOptions } from '../lib/services/audit-consolidate.service';
+export {
+	auditDateStamp,
+	auditFilename,
+	callLlm,
+	callLlmFanOut,
+	isoDate,
+	resolveTarget,
+} from '../lib/services/llm-client.service';
+export type {
+	ILlmCallError,
+	ILlmCallOutcome,
+	ILlmCallResult,
+	ILlmClientOptions,
+	IHttpTransport,
+	IModelTarget,
+	IResolvedTarget,
+	LlmProvider,
+} from '../lib/services/llm-client.service';
+export {
+	proposalFilenameFor,
+	scaffoldProposals,
+} from '../lib/services/proposal-scaffolder.service';
+export type {
+	IScaffoldedProposal,
+	IScaffoldOptions,
+} from '../lib/services/proposal-scaffolder.service';
+export {
+	buildRunRegistration,
+	probeAudits,
+	probeProposals,
+} from '../lib/tools/audit-run.tool';
+export type { IRunToolOptions } from '../lib/tools/audit-run.tool';
 export type {
 	AuditSeverity,
 	IAuditDocument,

@@ -194,7 +194,8 @@ docs/mcp-vertex/proposals/
 
 ### S0 — Fix `branch_gc` "not-found" trap
 
-- **Status**: pending
+- **Status**: done
+- **Shipped in**: 86b543eb (`fix(proposals): f00075 S0 - resolve worktree-only branches instead of reporting "not-found"`)
 
 `branch_gc`'s `planGc` builds `branchByName` from
 `snapshot.branches`, which only contains branches reported by
