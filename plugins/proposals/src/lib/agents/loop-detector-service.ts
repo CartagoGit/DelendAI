@@ -9,6 +9,7 @@ import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
 import type { IToolCall as IDetectorToolCall } from './agent-loop-detector';
+import type { TCallOutcome } from './agent-loop-detector';
 import {
 	LOOP_DETECTOR_DEFAULTS_FOR,
 	createFsConfigFileReader,
@@ -30,6 +31,14 @@ export interface IExtendedToolCall {
 	readonly timestamp: number;
 	readonly isModifying: boolean;
 	readonly madeProgress: boolean;
+	/**
+	 * x00074 S1: outcome derived from the tool call's `_result` /
+	 * `_error` at the time of the call. Always populated by
+	 * `onToolCall`; the pure detector treats `'unknown'` as the
+	 * legacy "count every repeat" fallback when callers do not
+	 * explicitly set outcome on `IToolCall`.
+	 */
+	readonly outcome: TCallOutcome;
 }
 
 export class AgentLoopDetectorService {
@@ -198,6 +207,8 @@ export class AgentLoopDetectorService {
 		await this.ensureConfigLoaded();
 		if (!this.options.enabled) return;
 
+		const outcome = deriveOutcomeFromResult(_result, _error);
+
 		await this.initializeGitDiff();
 
 		// Determine agent: check if args contains agent, otherwise fetch from lock
@@ -244,6 +255,7 @@ export class AgentLoopDetectorService {
 			timestamp: Date.now(),
 			isModifying: isMod,
 			madeProgress,
+			outcome,
 		};
 
 		let window = this.windowMap.get(agent) ?? [];
@@ -259,6 +271,7 @@ export class AgentLoopDetectorService {
 			args: c.args,
 			agent: c.agent,
 			timestamp: c.timestamp,
+			outcome: c.outcome,
 		}));
 
 		const verdict = detectAgentLoop(detectorCalls, {
@@ -531,3 +544,45 @@ export class AgentLoopDetectorService {
 		}
 	}
 }
+
+/**
+ * x00074 S1: classify a tool call's result into one of the four
+ * TCallOutcome values. Used by `onToolCall` to populate the
+ * `outcome` field on every `IExtendedToolCall` so the pure
+ * detector's outcome-aware sliding window can suppress successful
+ * re-intent chains.
+ *
+ * Heuristic (intentionally simple — richer classification belongs
+ * in the host-config layer, not here):
+ *   - `_error === undefined`  → `ok`
+ *   - `_error.code` is one of the retryable codes below → `retryable-error`
+ *   - any other non-undefined `_error` → `permanent-error`
+ *   - `_result === undefined` AND `_error === undefined` → `ok` (no
+ *     observable failure)
+ *
+ * Pure function; safe to test in isolation. Mirrors the level of
+ * detail that the core host config surfaces via `IMcpVertexHostConfig`.
+ */
+export const RETRYABLE_ERROR_CODES: readonly string[] = [
+	'ENOENT',
+	'ETIMEDOUT',
+	'ECONNRESET',
+	'EAGAIN',
+	'EBUSY',
+	'ELOCKFAIL',
+];
+
+export const deriveOutcomeFromResult = (
+	_result: unknown,
+	_error?: unknown,
+): TCallOutcome => {
+	if (_error === undefined) return 'ok';
+	if (_error === null) return 'permanent-error';
+	if (typeof _error === 'object') {
+		const code = (_error as { code?: unknown }).code;
+		if (typeof code === 'string' && RETRYABLE_ERROR_CODES.includes(code)) {
+			return 'retryable-error';
+		}
+	}
+	return 'permanent-error';
+};

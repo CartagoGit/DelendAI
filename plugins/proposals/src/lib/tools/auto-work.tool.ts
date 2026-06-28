@@ -12,6 +12,11 @@ import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
 import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
+import {
+	runSwarmHygieneEngine,
+	type IRescueCandidate,
+} from '../shared/swarm-hygiene-engine';
+import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 
 /**
  * Optional persistence step the orchestrator can opt into at slice
@@ -158,6 +163,15 @@ export const runAutoWork = async (
 		 * the public `continue_proposal` tool surface.
 		 */
 		inputIncludePaused?: boolean | undefined;
+		/**
+		 * f00075 S4: per-call override for the hygiene front-hook.
+		 * Resolved with priority `input` > false. When true, the
+		 * front-hook returns the empty payload (no rescue / stash /
+		 * gc / out-of-cache checks), so a session that has already
+		 * handled the blockers manually can proceed straight to slice
+		 * selection.
+		 */
+		inputForceHygieneBypass?: boolean | undefined;
 	},
 ): Promise<IToolTextResult> => {
 	if (options.loopDetector) {
@@ -190,6 +204,34 @@ export const runAutoWork = async (
 
 	const includePausedFallback =
 		options.inputIncludePaused ?? options.defaultIncludePaused ?? false;
+
+	// f00075 S4: front-hook runs BEFORE the slice-selection cascade.
+	// It is idempotent and side-effect free (read-only git commands
+	// only). If the snapshot reports rescue candidates OR stashes,
+	// the plan is BLOCKED — the orchestrator must surface the
+	// blockers and the human decides whether to pop / cherry-pick /
+	// merge. `forceHygieneBypass: true` skips the check.
+	const hygiene = await collectHygieneFrontHook(
+		options.workspaceRoot ?? '',
+		options.inputForceHygieneBypass === true,
+	);
+	if (hygiene.executionMode === 'blocked') {
+		consecutiveIdle = 0;
+		return json({
+			state: 'work',
+			ok: false,
+			reason: 'hygiene-blocked',
+			executionMode: 'blocked',
+			hygieneBlockers: [...hygiene.hygieneBlockers],
+			hygieneActions: [...hygiene.hygieneActions],
+			hygieneWarnings: [...hygiene.hygieneWarnings],
+			stashes: [...hygiene.stashes],
+			rescueCandidates: [...hygiene.rescueCandidates],
+			blockers: [...hygiene.hygieneBlockers],
+			nextAction:
+				'Resolve the hygiene blockers above (pop stashes, cherry-pick rescue branches, or pass forceHygieneBypass:true) and call auto_work again. The slice-selection cascade was NOT run.',
+		});
+	}
 
 	const next = JSON.parse(
 		(
@@ -335,6 +377,19 @@ export const runAutoWork = async (
 		// runner, no extra round-trip to a separate tool) and bounded
 		// (≤3 lines + 1 footer). undefined when nothing is eligible.
 		...(branchHygieneHints !== undefined ? { branchHygieneHints } : {}),
+		// f00075 S4: front-hook result rides on the work-plan too.
+		// `executionMode` is `'confirm-required'` when the GC dry-run
+		// has entries, `'normal'` otherwise; `'blocked'` was handled
+		// at the top of the function (returns early, never reaches
+		// here). The arrays are omitted when empty to keep the plan
+		// cheap.
+		executionMode: hygiene.executionMode,
+		...(hygiene.hygieneActions.length > 0
+			? { hygieneActions: [...hygiene.hygieneActions] }
+			: {}),
+		...(hygiene.hygieneWarnings.length > 0
+			? { hygieneWarnings: [...hygiene.hygieneWarnings] }
+			: {}),
 	});
 };
 
@@ -355,6 +410,19 @@ const INPUT_SCHEMA = z
 		 * they only enter when nothing else is actionable.
 		 */
 		includePaused: z.boolean().optional(),
+		/**
+		 * f00075 S4: when true, the auto_work front-hook skips the
+		 * four-state hygiene check (rescue / stash / gc / out-of-cache)
+		 * and proceeds straight to slice selection. Default false —
+		 * the orchestrator is strict by default because rescue
+		 * candidates and stashes represent work at risk of loss, which
+		 * is exactly the failure mode the user complained about.
+		 * Use this when the user has already handled the blockers
+		 * manually (e.g. they just popped the stash, or they already
+		 * cherry-picked the rescue branch) and want the plan to
+		 * continue.
+		 */
+		forceHygieneBypass: z.boolean().optional(),
 	})
 	.strict();
 
@@ -388,6 +456,46 @@ const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.
 	branchStatusWarnings: z.array(z.string()).optional(),
+	// f00075 S4: front-hook hygiene fields. `executionMode` is
+	// `'normal'` when nothing is wrong, `'confirm-required'` when the
+	// GC plan has entries, `'blocked'` when rescue candidates or
+	// stashes are pending. `ok: false` plus `reason: 'hygiene-blocked'`
+	// is the strict-mode reply when the orchestrator cannot proceed
+	// without human action.
+	executionMode: z.enum(['normal', 'confirm-required', 'blocked']).optional(),
+	hygieneBlockers: z.array(z.string()).optional(),
+	hygieneActions: z.array(z.string()).optional(),
+	hygieneWarnings: z.array(z.string()).optional(),
+	stashes: z
+		.array(
+			z.object({
+				index: z.number().int().nonnegative(),
+				ref: z.string(),
+				branch: z.string().nullable(),
+				message: z.string(),
+				date: z.string().nullable(),
+			}),
+		)
+		.optional(),
+	rescueCandidates: z
+		.array(
+			z.object({
+				branch: z.string(),
+				ahead: z.number().int().nonnegative(),
+				behind: z.number().int().nonnegative(),
+				lastCommitMinutesAgo: z.number().int(),
+				worktreePath: z.string(),
+				diffStat: z.string(),
+				cherryPickHint: z.string(),
+			}),
+		)
+		.optional(),
+	// Strict-mode envelope: when the front-hook blocks, the plan also
+	// sets `ok: false` and `reason: 'hygiene-blocked'`. The fields
+	// below are the structured payload so the orchestrator can render
+	// the exact branches/stashes that need human action.
+	ok: z.boolean().optional(),
+	blockers: z.array(z.string()).optional(),
 });
 
 /**
@@ -472,6 +580,195 @@ const collectBranchHygieneHints = async (
 	}
 };
 
+/**
+ * f00075 S4: front-hook decision payload. Combines the swarm-hygiene
+ * engine (`rescueCandidates` / `gcEligible` / `outOfCache`) with the
+ * stash snapshot (`stashes`) and computes the four-state
+ * `executionMode` plus the human-readable `hygieneBlockers` /
+ * `hygieneActions` / `hygieneWarnings` arrays.
+ *
+ * Pure over (workspaceRoot, run, forceBypass). Never throws: any
+ * internal failure collapses to `executionMode: 'normal'` with empty
+ * arrays so the plan proceeds (fail-soft — same contract as
+ * `collectBranchStatusWarnings`).
+ */
+export interface IHygieneFrontHook {
+	readonly executionMode: 'normal' | 'confirm-required' | 'blocked';
+	readonly hygieneBlockers: readonly string[];
+	readonly hygieneActions: readonly string[];
+	readonly hygieneWarnings: readonly string[];
+	readonly rescueCandidates: readonly IRescueCandidate[];
+	readonly gcEligibleCount: number;
+	readonly outOfCacheCount: number;
+	readonly stashes: readonly IStashEntry[];
+}
+
+const emptyHygieneFrontHook: IHygieneFrontHook = {
+	executionMode: 'normal',
+	hygieneBlockers: [],
+	hygieneActions: [],
+	hygieneWarnings: [],
+	rescueCandidates: [],
+	gcEligibleCount: 0,
+	outOfCacheCount: 0,
+	stashes: [],
+};
+
+/**
+ * Build the strict-mode `blockers` lines from rescue candidates. One
+ * line per candidate — short enough to stay cheap, structured enough
+ * to point the operator at the right `cherryPickHint` (rendered via
+ * `rescueCandidates[]` on the response payload, not duplicated here).
+ */
+const rescueBlockersFor = (
+	rescueCandidates: readonly IRescueCandidate[],
+): string[] => {
+	if (rescueCandidates.length === 0) return [];
+	const blockers: string[] = [
+		`${rescueCandidates.length} rescue candidate(s) ahead of develop and not merged — cherry-pick to develop or merge before starting new work`,
+	];
+	for (const r of rescueCandidates) {
+		blockers.push(
+			`  · ${r.branch} is ahead by ${r.ahead} commit(s) on ${r.worktreePath.length > 0 ? r.worktreePath : '(no worktree)'}`,
+		);
+	}
+	return blockers;
+};
+
+/**
+ * Build the strict-mode `blockers` lines from the stash list. One
+ * line per stash, capped at 5 to keep the plan cheap. The full
+ * `stashes[]` array rides on the response so the operator can render
+ * the dates and refs from the structured payload.
+ */
+const stashBlockersFor = (stashes: readonly IStashEntry[]): string[] => {
+	if (stashes.length === 0) return [];
+	const lines: string[] = [
+		`${stashes.length} stash(es) present — pop + commit, apply, or drop before starting new work`,
+	];
+	for (const stash of stashes.slice(0, 5)) {
+		const branchLabel = stash.branch ?? '(detached HEAD)';
+		lines.push(`  · ${stash.ref} on ${branchLabel}: ${stash.message}`);
+	}
+	if (stashes.length > 5) {
+		lines.push(
+			`  · ...and ${stashes.length - 5} more (see stashes[] on the response)`,
+		);
+	}
+	return lines;
+};
+
+/**
+ * Build the GC dry-run summary lines. One-line summary plus the top 3
+ * paths so the orchestrator can decide whether to escalate to
+ * `proposals_branch_gc { dryRun: false }`. The full list of entries
+ * already rides on `swarm_hygiene.gcEligible` — we don't duplicate
+ * it here, just summarise.
+ */
+const gcActionsFor = (
+	gcEligible: readonly { readonly path: string; readonly branch: string }[],
+): string[] => {
+	if (gcEligible.length === 0) return [];
+	const top = gcEligible.slice(0, 3);
+	const lines: string[] = [
+		`branch_gc dry-run would remove ${gcEligible.length} worktree(s) (review and run proposals_branch_gc { dryRun: false } or pass forceHygieneBypass:true)`,
+	];
+	for (const entry of top) {
+		lines.push(`  · ${entry.path} (${entry.branch})`);
+	}
+	if (gcEligible.length > 3) {
+		lines.push(
+			`  · ...and ${gcEligible.length - 3} more (see swarm_hygiene.gcEligible)`,
+		);
+	}
+	return lines;
+};
+
+/**
+ * Build the out-of-cache warning lines. One summary line — the full
+ * list rides on `swarm_hygiene.outOfCache`.
+ */
+const outOfCacheWarningsFor = (
+	outOfCache: readonly { readonly path: string }[],
+): string[] => {
+	if (outOfCache.length === 0) return [];
+	return [
+		`${outOfCache.length} worktree(s) outside the canonical cache dir (AGENTS.md violation) — review and remove manually (see swarm_hygiene.outOfCache)`,
+	];
+};
+
+/**
+ * f00075 S4: front-hook that runs BEFORE slice selection. Returns the
+ * computed `executionMode` plus the arrays that the plan surfaces.
+ *
+ * Decision matrix (per the proposal):
+ *
+ * | Snapshot state                | executionMode      | Effect on auto_work |
+ * |-------------------------------|--------------------|---------------------|
+ * | rescueCandidates.length > 0   | `'blocked'`        | Returns `{ ok: false, reason: 'hygiene-blocked', ... }` |
+ * | stashes.length > 0            | `'blocked'`        | Same envelope.      |
+ * | gcEligible.length > 0 (only)  | `'confirm-required'` | Plan proceeds with hygieneActions. |
+ * | outOfCache.length > 0 (only)  | `'warning'`        | Plan proceeds with hygieneWarnings. |
+ * | otherwise                     | `'normal'`         | Plan proceeds unchanged. |
+ *
+ * `forceBypass` skips the entire check and returns the empty
+ * `IHygieneFrontHook`. The caller can still surface the bypass
+ * decision via `executionMode: 'normal'` (no special "bypassed"
+ * sentinel — the input echo already proves the intent).
+ *
+ * Idempotent and side-effect free: only runs read-only git commands
+ * (`branch_status`, `branch_gc --dry-run`, `stash list`).
+ */
+export const collectHygieneFrontHook = async (
+	workspaceRoot: string,
+	forceBypass: boolean,
+): Promise<IHygieneFrontHook> => {
+	if (forceBypass) return emptyHygieneFrontHook;
+	if (workspaceRoot.length === 0) return emptyHygieneFrontHook;
+	try {
+		const run = createGitRunner(workspaceRoot);
+		const [hygiene, stashes] = await Promise.all([
+			runSwarmHygieneEngine({ run, workspaceRoot }),
+			runStashSnapshot({ run, workspaceRoot }),
+		]);
+		const rescueCandidates = hygiene.ok ? hygiene.rescueCandidates : [];
+		const gcEligible = hygiene.ok ? hygiene.gcEligible : [];
+		const outOfCache = hygiene.ok ? hygiene.outOfCache : [];
+
+		const rescueBlocked = rescueCandidates.length > 0;
+		const stashBlocked = stashes.length > 0;
+		const executionMode: IHygieneFrontHook['executionMode'] =
+			rescueBlocked || stashBlocked
+				? 'blocked'
+				: gcEligible.length > 0
+					? 'confirm-required'
+					: 'normal';
+
+		const hygieneBlockers = [
+			...rescueBlockersFor(rescueCandidates),
+			...stashBlockersFor(stashes),
+		];
+		const hygieneActions = gcActionsFor(gcEligible);
+		const hygieneWarnings = outOfCacheWarningsFor(outOfCache);
+
+		return {
+			executionMode,
+			hygieneBlockers,
+			hygieneActions,
+			hygieneWarnings,
+			rescueCandidates,
+			gcEligibleCount: gcEligible.length,
+			outOfCacheCount: outOfCache.length,
+			stashes,
+		};
+	} catch {
+		// Fail-soft: never let the front-hook kill the plan. If git
+		// misbehaves, surface it as a warning and let the orchestrator
+		// decide whether to retry or bypass.
+		return emptyHygieneFrontHook;
+	}
+};
+
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
 	options: IAutoWorkToolOptions,
@@ -493,11 +790,13 @@ export const buildAutoWorkRegistration = (
 			async (args: {
 				persist?: IAutoWorkPersistMode | undefined;
 				includePaused?: boolean | undefined;
+				forceHygieneBypass?: boolean | undefined;
 			}) =>
 				runAutoWork({
 					...options,
 					inputPersist: args.persist,
 					inputIncludePaused: args.includePaused,
+					inputForceHygieneBypass: args.forceHygieneBypass,
 				}),
 		);
 	},

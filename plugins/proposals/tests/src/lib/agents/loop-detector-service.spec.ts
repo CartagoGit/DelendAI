@@ -300,6 +300,80 @@ describe('AgentLoopDetectorService', async () => {
 		});
 	});
 
+	// x00074 S1: end-to-end wiring test for outcome-aware sliding window.
+	// The service must populate `outcome` on every `IExtendedToolCall` so
+	// the pure detector can suppress successful re-intent chains. Without
+	// this wiring, every call defaults to `'unknown'` and the new
+	// behaviour is dormant in production.
+	describe('x00074 S1 — outcome-aware wiring', async () => {
+		it('does NOT flag 8 successful calls as stuck (regression for 2026-06-27)', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			// Lock file with a fixed agent so the service doesn't fall back
+			// to 'default-agent' which is interactive-skipped in some configs.
+			writeFileSync(
+				mockCtx.workspace.resolve('agents.lock.json'),
+				JSON.stringify({
+					version: 1,
+					in_flight: [
+						{ agent: 'swarm-worker-1', task_id: 't-regression' },
+					],
+				}),
+			);
+
+			// 8 successful calls in a row. With outcome: 'ok' propagated
+			// to the detector, the pure filter drops the entire group —
+			// the service should NOT mark the agent as stuck.
+			for (let i = 0; i < 8; i++) {
+				await service.onToolCall(
+					'agent_lock',
+					{ action: 'claim', task_id: 'f00056-S5', i },
+					{ ok: true },
+					undefined,
+				);
+			}
+
+			expect(
+				service.isAgentStuck('agent_lock', {
+					action: 'claim',
+					task_id: 'f00056-S5',
+				}),
+			).toBeNull();
+		});
+
+		it('DOES flag 8 mixed-outcome calls as stuck (1 retryable + 7 ok)', async () => {
+			const service = new AgentLoopDetectorService(mockCtx);
+			writeFileSync(
+				mockCtx.workspace.resolve('agents.lock.json'),
+				JSON.stringify({
+					version: 1,
+					in_flight: [
+						{ agent: 'swarm-worker-2', task_id: 't-mixed' },
+					],
+				}),
+			);
+
+			// First call: rate-limit error (retryable). Rest: success.
+			await service.onToolCall(
+				'agent_lock',
+				{ action: 'claim' },
+				undefined,
+				{ code: 'ETIMEDOUT' },
+			);
+			for (let i = 0; i < 7; i++) {
+				await service.onToolCall(
+					'agent_lock',
+					{ action: 'claim' },
+					{ ok: true },
+					undefined,
+				);
+			}
+
+			expect(
+				service.isAgentStuck('agent_lock', { action: 'claim' }),
+			.not.toBeNull();
+		});
+	});
+
 	// Regression coverage for the copilot-default false-positive:
 	// interactive host sessions (Copilot chat, Cursor tab, etc.) were
 	// flagged as stuck after 3 orient calls because the detector had no
