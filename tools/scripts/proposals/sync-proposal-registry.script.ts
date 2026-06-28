@@ -25,6 +25,7 @@ import { resolve } from 'node:path';
 
 import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
+import { repoRoot } from '../lib/monorepo-paths';
 
 const parseRoot = (): string => {
 	const argv = process.argv.slice(2);
@@ -41,7 +42,13 @@ const parseRoot = (): string => {
 			return resolve(arg.slice('--root='.length));
 		}
 	}
-	return resolve(process.cwd());
+	// x00079 S8: the previous fallback used `process.cwd()`, which can
+	// mint a phantom cache when the script is run from outside the repo
+	// root (e.g. a worktree or a downloaded tarball). `repoRoot()` resolves
+	// the actual worktree toplevel via `git rev-parse --show-toplevel`,
+	// with a safe fallback to the script's own location when git is not
+	// on PATH.
+	return resolve(repoRoot());
 };
 
 const main = async (): Promise<void> => {
