@@ -167,10 +167,14 @@ describe('proposal_transition', async () => {
 				const folder =
 					STATUS_TO_FOLDER[from as keyof typeof STATUS_TO_FOLDER];
 				const filename = `f200-${from}-${to}.md`;
-				await writeProposal(root, folder, filename, {
+				const frontmatter: Record<string, string> = {
 					id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
 					status: from,
-				});
+				};
+				if (to === 'paused') {
+					frontmatter['paused-reason'] = 'matrix test pause reason';
+				}
+				await writeProposal(root, folder, filename, frontmatter);
 				const result = await runProposalTransition(
 					{
 						id: `f200${from}${to}`.replace(/[^a-z0-9]/g, ''),
@@ -269,6 +273,78 @@ describe('proposal_transition', async () => {
 				'utf8',
 			);
 			expect(moved).toContain('status: done');
+		});
+	});
+
+	describe('c00075 paused-reason and blocked redirection', () => {
+		it('allows transition to paused when paused-reason is set', async () => {
+			await writeProposal(root, 'ready', 'f80001-paused.md', {
+				id: 'f80001',
+				status: 'ready',
+				'paused-reason': 'deferred by user request',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f80001', to: 'paused', reason: 'pause it' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'paused', 'f80001-paused.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: paused');
+		});
+
+		it('rejects transition to paused when paused-reason is missing and no dependency is present', async () => {
+			await writeProposal(root, 'ready', 'f80002-nopause.md', {
+				id: 'f80002',
+				status: 'ready',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f80002', to: 'paused', reason: 'pause it' },
+				options,
+			);
+			expect(result.isError).toBe(true);
+			expect(result.content?.[0]?.text).toContain(
+				'paused requires a paused-reason field or a blocked-by dependency',
+			);
+		});
+
+		it('redirects transition to blocked when paused-reason is missing but reason names a dependency', async () => {
+			await writeProposal(root, 'ready', 'f80003-redirect.md', {
+				id: 'f80003',
+				status: 'ready',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f80003', to: 'paused', reason: 'blocked by f00078' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'blocked', 'f80003-redirect.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: blocked');
+			expect(moved).toContain('blocked-by: [f00078]');
+		});
+
+		it('redirects transition to blocked when paused-reason is missing but blocked-by is present in frontmatter', async () => {
+			await writeProposal(root, 'ready', 'f80004-redirect-fm.md', {
+				id: 'f80004',
+				status: 'ready',
+				'blocked-by': '[f00057]',
+			});
+			const result = await runProposalTransition(
+				{ id: 'f80004', to: 'paused', reason: 'trying to pause' },
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const moved = await readFile(
+				join(root, 'blocked', 'f80004-redirect-fm.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: blocked');
+			expect(moved).toContain('blocked-by: [f00057]');
 		});
 	});
 });

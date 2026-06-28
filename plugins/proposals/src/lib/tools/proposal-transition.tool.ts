@@ -59,6 +59,7 @@ import type { ILocatedProposal } from '../proposals/locate';
 import {
 	readFrontmatterField,
 	setFrontmatterStatus,
+	setFrontmatterField,
 } from '../proposals/proposal-frontmatter-writer';
 import { isPlanProposal } from '../proposals/proposal-type-detector';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
@@ -187,7 +188,37 @@ export const runProposalTransition = async (
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
 
-	const dfaRejection = validateTransition(args.id, from, to);
+	let finalTo = to;
+	let depId: string | undefined;
+
+	if (to === 'paused') {
+		const raw = await readFile(found.absPath, 'utf8');
+		const pausedReason = readFrontmatterField(raw, 'paused-reason');
+		if (!pausedReason || pausedReason.trim() === '') {
+			const PROPOSAL_ID_PATTERN = /[a-z]\d{5}/;
+			const match = PROPOSAL_ID_PATTERN.exec(args.reason);
+			const hasDepInReason = match !== null;
+			if (match) depId = match[0];
+
+			const blockedByRaw = readFrontmatterField(raw, 'blocked-by');
+			const hasDepInFrontmatter = blockedByRaw && blockedByRaw.trim() !== '' && blockedByRaw.trim() !== '[]';
+
+			if (hasDepInReason || hasDepInFrontmatter) {
+				finalTo = 'blocked';
+				if (!depId && blockedByRaw) {
+					const fmMatch = PROPOSAL_ID_PATTERN.exec(blockedByRaw);
+					if (fmMatch) depId = fmMatch[0];
+				}
+			} else {
+				return toolError(
+					'paused requires a paused-reason field or a blocked-by dependency',
+					'Add `paused-reason: <text>` to the frontmatter and retry, OR transition to `blocked` with `blocked-by: [X]`',
+				);
+			}
+		}
+	}
+
+	const dfaRejection = validateTransition(args.id, from, finalTo);
 	if (dfaRejection !== null) return dfaRejection;
 
 	const guardRejection = await maybeApplyPlanClosureGuard(
@@ -198,9 +229,10 @@ export const runProposalTransition = async (
 	if (guardRejection !== null) return guardRejection;
 
 	return await applyTransition(
-		{ id: args.id, from, to, reason: args.reason },
+		{ id: args.id, from, to: finalTo, reason: args.reason },
 		found,
 		options,
+		depId,
 	);
 };
 
@@ -308,6 +340,7 @@ const applyTransition = async (
 	args: IApplyArgs,
 	found: ILocatedProposal,
 	options: IProposalTransitionToolOptions,
+	depId?: string,
 ) => {
 	const gitRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
@@ -323,7 +356,10 @@ const applyTransition = async (
 	let gitWarning: string | undefined;
 	await withFileMutex(found.absPath, async () => {
 		const current = await readFile(found.absPath, 'utf8');
-		const updated = setFrontmatterStatus(current, args.to);
+		let updated = setFrontmatterStatus(current, args.to);
+		if (args.to === 'blocked' && depId) {
+			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
+		}
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
