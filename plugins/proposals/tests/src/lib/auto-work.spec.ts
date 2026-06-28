@@ -455,8 +455,32 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		// front-hook in S4 is BEFORE the cascade, so a stash fixture is
 		// enough to exercise the block — but the bypass test
 		// (forceHygieneBypass:true) needs the cascade to find a real
-		// proposal, so write a minimal markdown file.
-		writeFileSync(join(root, 'p1.md'), '# p1-x\n\n## Slices\n\n');
+		// proposal, so write a markdown file with one actionable slice
+		// and commit it so `git stash push -u` later does not sweep
+		// it away.
+		writeFileSync(
+			join(root, 'p1.md'),
+			[
+				'# p1-x',
+				'',
+				'## Slices',
+				'',
+				'### S1 — fixture slice',
+				'',
+				'- **Status**: pending',
+				'- **Files**: p1.md',
+				'- **Gate**: bun run validate',
+				'',
+			].join('\n'),
+		);
+		execFileSync('git', ['-C', root, 'add', 'index.json', 'p1.md'], {
+			stdio: 'ignore',
+		});
+		execFileSync(
+			'git',
+			['-C', root, 'commit', '-m', 'add fixture proposals'],
+			{ stdio: 'ignore' },
+		);
 	});
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -464,19 +488,18 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 	itGit(
 		'f00075 S4: a present stash BLOCKS the plan (hygiene-blocked envelope, no slice selected)',
 		async () => {
-			// Drop a stash on the working tree. The stash's existence is
-			// what the front-hook should detect and refuse to ignore.
+			// Make a tracked-file edit so `git stash push` has
+			// something to stash. p1.md is already committed in
+			// beforeEach.
+			writeFileSync(
+				join(root, 'p1.md'),
+				'# p1-x\n\nWIP on S4 stash fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n',
+			);
+			// Drop a stash on the working tree. The stash's existence
+			// is what the front-hook should detect and refuse to ignore.
 			execFileSync(
 				'git',
-				[
-					'-C',
-					root,
-					'stash',
-					'push',
-					'-u',
-					'-m',
-					'WIP on S4 stash fixture',
-				],
+				['-C', root, 'stash', 'push', '-m', 'WIP on S4 stash fixture'],
 				{ stdio: 'ignore' },
 			);
 			// Sanity check: the stash is actually there.
@@ -518,17 +541,16 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 	itGit(
 		'f00075 S4: forceHygieneBypass:true overrides the stash block and proceeds to slice selection',
 		async () => {
+			// Make a tracked-file edit so `git stash push` has
+			// something to stash. p1.md is already committed in
+			// beforeEach, so we touch it here.
+			writeFileSync(
+				join(root, 'p1.md'),
+				'# p1-x\n\nWIP on S4 bypass fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n',
+			);
 			execFileSync(
 				'git',
-				[
-					'-C',
-					root,
-					'stash',
-					'push',
-					'-u',
-					'-m',
-					'WIP on S4 bypass fixture',
-				],
+				['-C', root, 'stash', 'push', '-m', 'WIP on S4 bypass fixture'],
 				{ stdio: 'ignore' },
 			);
 
