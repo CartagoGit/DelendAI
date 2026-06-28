@@ -214,6 +214,12 @@ agent_lock claim files:[plugins/x/src/a.ts]
 Do not widen the claim to unrelated files just to "make progress".
 Either wait, or take a different truly disjoint slice.
 
+### Closing a slice
+
+After implementing and verifying a slice, follow the standard close path:
+1. Commit the changes.
+2. Call `proposals_force_transition` (or `proposals_proposal_transition`) with `to: "done"` and specify the commit SHA in the `reason` so that the registry reflects the new state without waiting for the next sync cycle.
+
 ## Three condensed session examples
 
 ### Example A — Two doc slices, disjoint files
