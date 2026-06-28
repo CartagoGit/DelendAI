@@ -128,7 +128,7 @@ export const buildRunAllToolRegistration = (
 				if (names.length === 0) {
 					return toolError(
 						'no quality scopes configured',
-						'Add scripts to package.json, a validationMatrix to mcp-vertex.config.json, or `scopes` to the plugin options.',
+						'Add scripts to package.json, a validationMatrix to `<config-file>`, or `scopes` to the plugin options.',
 					);
 				}
 				return toolJson(

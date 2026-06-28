@@ -90,7 +90,7 @@ export default definePlugin({
 						'- Recall only what you need (query/tags) — keep context small.',
 						`- Notes persist in \`${joinRel(ctx.pluginCacheDir, 'notes.json')}\`.`,
 						'- BM25 ranking parameters (k1, b, titleWeight) and the store',
-						'  size limit (maxNotes) are configurable via `mcp-vertex.config.json`',
+						'  size limit (maxNotes) are configurable via `<config-file>`',
 						'  under `plugins.memory.options` — defaults match the classic',
 						'  Robertson/Zaragoza BM25.',
 					].join('\n'),

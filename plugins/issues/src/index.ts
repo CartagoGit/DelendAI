@@ -41,7 +41,7 @@ const ISSUES_NEEDS_SETUP_BODY = [
 	'   mcp-vertex setup-github',
 	'   ```',
 	'',
-	'2. **Manual**: edit `mcp-vertex.config.json` and add',
+	'2. **Manual**: edit `<config-file>` and add',
 	'',
 	'   ```jsonc',
 	'   {',
