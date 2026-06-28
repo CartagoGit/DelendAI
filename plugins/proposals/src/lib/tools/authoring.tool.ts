@@ -18,6 +18,7 @@ import {
 	allocateNextProposalId,
 	prefixForKind,
 } from '../proposals/proposal-id-allocator';
+import { PROPOSAL_KIND_BY_PREFIX } from '../contracts/constants/proposal-glossary.constant';
 import { readJsonOrNull, readTextOrNull } from '../proposals/index-reader';
 import { escapeRegExp, kebab } from '../shared/string-helpers';
 import {
@@ -143,6 +144,20 @@ export const buildCreateProposalRegistration = (
 				let id: string;
 				if (args.id !== undefined) {
 					id = args.id;
+					const prefix = id[0] ?? '';
+					const inferredKind = PROPOSAL_KIND_BY_PREFIX[prefix];
+					if (inferredKind === undefined) {
+						return toolError(
+							`invalid id prefix "${prefix}"`,
+							'ID prefix must correspond to a known proposal kind.',
+						);
+					}
+					if (args.kind !== undefined && args.kind !== inferredKind) {
+						return toolError(
+							`id prefix "${prefix}" (kind=${inferredKind}) does not match specified kind "${args.kind}"`,
+							'Ensure the ID prefix matches the specified kind.',
+						);
+					}
 				} else if (args.kind !== undefined) {
 					const prefix = prefixForKind(args.kind);
 					if (prefix === null) {
@@ -193,10 +208,12 @@ export const buildCreateProposalRegistration = (
 						'Make each slice edit a disjoint set of files.',
 					);
 				}
+				const inferredKind = args.kind ?? (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
 				const date = new Date().toISOString().slice(0, 10);
 				const body = [
 					'---',
 					`id: ${id}`,
+					`kind: ${inferredKind}`,
 					`status: ${args.status ?? 'ready'}`,
 					'type: proposal',
 					`track: ${args.track ?? 'general'}`,

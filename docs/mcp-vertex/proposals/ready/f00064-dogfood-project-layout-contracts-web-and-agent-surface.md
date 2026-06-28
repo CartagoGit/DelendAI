@@ -9,7 +9,7 @@ title: Dogfood real — project layout, contracts split, web completeness, and a
 shipped-in: []
 recan: []
 related:
-    - f00054 # root declutter and cache consolidation
+    - r00004 # root declutter and cache consolidation
     - f00055 # web page audit and responsive fixes
     - f00056 # agent discovery tool/skill catalog
     - f00057 # skill unification and plugin coverage wiring

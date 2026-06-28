@@ -10,7 +10,7 @@ runner: copilot
 model: minimax-m3
 scope: repo-hygiene
 related:
-    - f00054 # declutter repo root + configs/ + centralized cache — the same line of "cache stays in .cache/"; x00052 finishes the loop on the proposals plugin side
+    - r00004 # declutter repo root + configs/ + centralized cache — the same line of "cache stays in .cache/"; x00052 finishes the loop on the proposals plugin side
 ownership:
     - { agent: implementation_runner, task: 'S1: change `buildSwarmPaths` in `plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts` so `proposalIndexFile` resolves under `cacheDir` (default `.cache/mcp-vertex/proposals/index.json`) instead of `docsDir`' }
     - { agent: implementation_runner, task: 'S2: add `docs/mcp-vertex/proposals/index.json` to `.gitignore` (and the equivalent path for any other host that sets a custom docsDir) so the old location cannot come back; document in the comment block next to the rule' }

@@ -9,7 +9,7 @@ title: Cache eviction policy - declarative per-plugin rules + opt-in cache plugi
 shipped-in: []
 recan: []
 related:
-  - f00054 # root declutter and cache consolidation
+  - r00004 # root declutter and cache consolidation
   - f00065 # umbrella (this proposal is slice C of that umbrella, promoted)
 ownership:
   - { agent: implementation_runner, task: 'A: define the ICacheEvictionRule contract + cache-eviction.registry interface in packages/core; add assembleCliConfig wiring that runs the registry on boot (idempotent, dryRun-aware)' }

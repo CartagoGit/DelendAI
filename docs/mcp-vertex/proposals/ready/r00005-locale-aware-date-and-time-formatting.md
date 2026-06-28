@@ -1,5 +1,5 @@
 ---
-id: f00063
+id: r00005
 status: ready
 type: proposal
 track: i18n+l10n+utils
@@ -22,7 +22,7 @@ acceptance:
     - { command: bun run validate,  expect: exit0 }
 ---
 
-# f00063 — Locale-aware date/time formatting via `Intl.*`
+# r00005 — Locale-aware date/time formatting via `Intl.*`
 
 ## goal
 

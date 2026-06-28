@@ -21,6 +21,7 @@ import {
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
 	doneFolderFor,
+	KIND_TO_DONE_SUBFOLDER,
 } from '../contracts/constants/proposal-glossary.constant';
 import type {
 	IProposalKind,
@@ -591,10 +592,9 @@ export async function syncProposalRegistry(
 			// top-level entries above when a project uses the canonical
 			// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
 			// dedup absorbs any overlap.
-			join(proposalsDir, 'done', 'audits'),
-			join(proposalsDir, 'done', 'feats'),
-			join(proposalsDir, 'done', 'fixes'),
-			join(proposalsDir, 'done', 'resumes'),
+			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+				join(proposalsDir, 'done', sub),
+			),
 			...extraFolders.map((folder) => join(proposalsDir, folder)),
 		];
 		const subtrees: ReadonlyArray<{ absolute: string }> = [

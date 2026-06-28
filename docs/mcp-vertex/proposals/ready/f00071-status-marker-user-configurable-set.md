@@ -11,7 +11,7 @@ recan: []
 related:
     - f00070 # sibling proposal (bilingual rendering, additive)
     - f00059 # sibling i18n thread across web/extension surface
-    - f00063 # locale-aware date/time formatting
+    - r00005 # locale-aware date/time formatting
 ownership:
     - { agent: proposal_guardian,    task: 'S1: design `IUserMarkerDefinition` Zod schema + merge semantics (built-in ⊕ user-set ⊕ overrides)' }
     - { agent: implementation_runner, task: 'S2: extend plugin `OptionsSchema` to accept `markers.add`, `markers.disable`, `markers.override` from `mcp-vertex.config.json`' }

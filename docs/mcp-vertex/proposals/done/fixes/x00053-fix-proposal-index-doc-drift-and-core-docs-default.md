@@ -12,7 +12,7 @@ scope: repo-hygiene
 recan:
     - x00052 # the move that exposed the drift; x00053 finishes the cleanup
 related:
-    - f00054 # declutter + centralized cache — same "one source of truth" line
+    - r00004 # declutter + centralized cache — same "one source of truth" line
 ownership:
     - { agent: implementation_runner, task: 'S1: in `plugins/proposals/src/lib/swarm/round-context-types.ts`, replace the hardcoded `docs/mcp-vertex/proposals/index.json` in `CORE_DOCS` with `.cache/mcp-vertex/proposals/index.json` and update the JSDoc block above it; add a unit test that builds the default `CORE_DOCS` against a fixture where the cache-path index exists and asserts no `rh-missing` value' }
     - { agent: implementation_runner, task: 'S2: in 6 source doc-comments, replace `docs/mcp-vertex/proposals/index.json` with the cache path: `sync-proposal-registry.ts` (the `tracked, Biome-linted file` block, line ~589), `proposal-transition.tool.ts` (line ~67), `plan-closure.resolvers.ts` (line ~90), `locate.ts` (header, line ~8), `index-reader.ts` (header, line ~4), `worktree-sync-coordinator.ts` (line ~7)' }
