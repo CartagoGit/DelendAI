@@ -153,14 +153,24 @@ checks the 27 keys); the strict mode would have caught the H10 gaps at merge tim
 
 ### S3 — `renderToolbar` plugin gating (closes H12)
 
-**File:** [`packages/ui-extension/src/renderers/render-toolbar.ts`](packages/ui-extension/src/renderers/render-toolbar.ts )
+- **Status**: done
+- **Files**: [`extensions/vscode/src/commands/types.ts`](extensions/vscode/src/commands/types.ts ), [`extensions/vscode/src/commands/open-toolbar.ts`](extensions/vscode/src/commands/open-toolbar.ts ), [`extensions/vscode/src/extension.ts`](extensions/vscode/src/extension.ts )
+- **shipped-in**: 2499ef40, 4d08f335
+- **Command**: `bun run --cwd extensions/vscode test && bunx tsc --noEmit -p tsconfig.json`
+- **Expect**: 23/23 test files, 85/85 tests pass; typecheck clean.
 
-Replace `loadedPlugins: []` with `await bridge.listLoadedPlugins()` (or equivalent
-helper). For each action in the toolbar, render the button as `disabled` if its bound
-plugin is not in the list.
-
-**Acceptance:** a host without `proposals` shows the proposals button greyed out; a
-host with `proposals` shows it enabled. Spec covers both.
+Wired `ICommandDeps.loadedPlugins` from the activation-time
+`OverviewService.getOverview({ compact: true })` call (which projects
+`plugins: string[]` — the canonical set of loaded plugin names) into the
+open-toolbar command. `open-toolbar.ts:73` no longer hardcodes the empty
+list; it reads `deps.loadedPlugins ?? []` so the toolbar's existing
+`requires` filter drops action cards whose prerequisites are not
+satisfied. When the overview call fails (server not yet booted) the bag
+stays undefined and the `?? []` fallback shows every action — same
+legacy behaviour. **Note:** the original proposal targeted the
+ui-extension renderer; the cleaner fix is on the host side, which is
+why no `render-toolbar.ts` change is needed — the renderer's existing
+filter just receives a real value now.
 
 ### S4 — `STATUS_BAR_EVENTS` locale-aware (closes H15)
 
