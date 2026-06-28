@@ -1,12 +1,17 @@
 ---
 id: f00083
-status: ready
+status: done
 type: proposal
 track: governance+lint+docs
 date: 2026-06-28
+closed: 2026-06-28
 kind: feat
 title: Anti-duplication guard — single source of truth for agent rules and proposals
-shipped-in: []
+shipped-in:
+  - 90655db4 # S1: host-instructions lint
+  - 6ae31ac7 # S1: pure lintHostFile refactor
+  - f7000791 # S2: bootstrap-canonical lint
+  - 1a489181 # S3 + S4: host-hints-fragments lint + lefthook wiring
 recan: []
 related:
   - f00056 # agent discovery catalog (renderer + bootstrap anchor)
