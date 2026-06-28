@@ -202,18 +202,6 @@ states. With this proposal it adds a 9th section:
 `instruction` is included so the LLM knows when to emit each marker.
 Without it, an LLM given a new state would not know the semantic.
 
-## architecture
-
-| Slice | File(s) | Risk |
-|---|---|---|
-| S1 — schema | new file in `plugins/status-marker/src/lib/markers-config.ts` | none (additive) |
-| S2 — plugin options | [plugins/status-marker/src/index.ts](../../plugins/status-marker/src/index.ts ) | low |
-| S3 — merge logic | [plugins/status-marker/src/lib/markers.ts](../../plugins/status-marker/src/lib/markers.ts ), new `mergeMarkerTable` | low (pure) |
-| S4 — runtime wiring | [close-tools.ts](../../plugins/status-marker/src/lib/tools/close-tools.ts ), [validate.ts](../../plugins/status-marker/src/lib/validate.ts ) | low |
-| S5 — locale fallback | `markers.ts` (extend `MARKERS_BY_LOCALE` reader) | low |
-| S6 — types regen + spec | generated `tool-outputs.ts`, `tests/markers.spec.ts`, `tests/close-tools.spec.ts` | low |
-| S7 — README + CI lint | [plugins/status-marker/README.md](../../plugins/status-marker/README.md ), new `tools/scripts/lint/user-markers.script.ts` | low |
-
 ## non-goals
 
 - **Do not auto-discover markers from disk**. The plugin does not walk
@@ -228,6 +216,94 @@ Without it, an LLM given a new state would not know the semantic.
   but not in scope; the JSON config is enough.
 - **Do not break the wire format.** Existing consumers of the
   `<prefix>_close` enum continue to work; new states are additive.
+
+## architecture
+
+| Slice | File(s) | Risk |
+|---|---|---|
+| S1 — schema | new file in `plugins/status-marker/src/lib/markers-config.ts` | none (additive) |
+| S2 — plugin options | [plugins/status-marker/src/index.ts](../../plugins/status-marker/src/index.ts ) | low |
+| S3 — merge logic | [plugins/status-marker/src/lib/markers.ts](../../plugins/status-marker/src/lib/markers.ts ), new `mergeMarkerTable` | low (pure) |
+| S4 — runtime wiring | [close-tools.ts](../../plugins/status-marker/src/lib/tools/close-tools.ts ), [validate.ts](../../plugins/status-marker/src/lib/validate.ts ) | low |
+| S5 — locale fallback | `markers.ts` (extend `MARKERS_BY_LOCALE` reader) | low |
+| S6 — types regen + spec | generated `tool-outputs.ts`, `tests/markers.spec.ts`, `tests/close-tools.spec.ts` | low |
+| S7 — README + CI lint | [plugins/status-marker/README.md](../../plugins/status-marker/README.md ), new `tools/scripts/lint/user-markers.script.ts` | low |
+
+## Slices
+
+- global_gate: validate
+
+### S1 — schema
+- **Status**: pending
+- **Files**: plugins/status-marker/src/lib/markers-config.ts
+- **Gate**: validate
+
+Design `IUserMarkerDefinition` Zod schema + merge semantics.
+
+### S2 — plugin options
+- **Status**: pending
+- **Files**: plugins/status-marker/src/index.ts
+- **Gate**: validate
+
+Extend plugin `OptionsSchema` to accept `markers.add`, `markers.disable`, `markers.override`.
+
+### S3 — merge logic
+- **Status**: pending
+- **Files**: plugins/status-marker/src/lib/markers.ts
+- **Gate**: validate
+
+`mergeMarkerTable(builtIn, userCfg)` returns the effective `MARKERS`.
+
+### S4 — runtime wiring
+- **Status**: pending
+- **Files**: plugins/status-marker/src/lib/tools/close-tools.ts, plugins/status-marker/src/lib/validate.ts
+- **Gate**: validate
+
+Thread the merged table through `formatCloseMarker` and `validateCloseMarker`.
+
+### S5 — locale fallback
+- **Status**: pending
+- **Files**: plugins/status-marker/src/lib/markers.ts
+- **Gate**: validate
+
+Extend `MARKERS_BY_LOCALE` reader.
+
+### S6 — types regen + spec
+- **Status**: pending
+- **Files**: plugins/status-marker/tests/markers.spec.ts, plugins/status-marker/tests/close-tools.spec.ts
+- **Gate**: validate
+
+Generated `tool-outputs.ts` and test specs.
+
+### S7 — README + CI lint
+- **Status**: pending
+- **Files**: plugins/status-marker/README.md, tools/scripts/lint/user-markers.script.ts
+- **Gate**: validate
+
+README examples + user-markers script.
+
+## dependency graph
+
+```
+S1 ──┐
+S2 ──┼─ S3 ── S4 ── S5 ── S6 ── S7
+```
+
+## acceptance
+
+All slices close when:
+
+- `bun run --cwd plugins/status-marker typecheck` exits 0.
+- `bun run test --cwd plugins/status-marker markers.spec.ts` exits 0.
+- `bun run validate` exits 0.
+- A host that adds a custom marker via `plugins.issues.options.markers.*`
+  has it rendered on `<prefix>_close` calls without rebuilding the host.
+
+## risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| User config violates JSON schema | OptionsSchema validation handles this on boot |
 
 ## notes
 
@@ -244,23 +320,3 @@ Without it, an LLM given a new state would not know the semantic.
 because it pulls the source of truth out of the host's config schema and
 makes drift invisible. A single JSON block in `mcp-vertex.config.json` is
 easier to lint, regenerate, and review.
-
-## acceptance
-
-All slices close when:
-
-- `bun run --cwd plugins/status-marker typecheck` exits 0.
-- `bun run test --cwd plugins/status-marker markers.spec.ts` exits 0.
-- `bun run validate` exits 0.
-- A host that adds a custom marker via `plugins.issues.options.markers.*`
-  has it rendered on `<prefix>_close` calls without rebuilding the host.
-
-## Slices
-
-This proposal is a single cross-cutting change organised as 7 file-disjoint
-slices; see the prose under `## notes` for the rollout order. The exact
-slice list will be expanded in a follow-up proposal that mirrors the
-shipped structure (slice ID, files, gate, command/expect, acceptance
-criteria) once S1 lands. The current `## Slices` section is intentionally
-sparse so the implementation_runner can claim each slice without
-collision.
