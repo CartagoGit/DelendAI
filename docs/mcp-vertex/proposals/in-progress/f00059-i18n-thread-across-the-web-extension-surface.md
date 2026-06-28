@@ -1,6 +1,6 @@
 ---
 id: f00059
-status: ready
+status: in-progress
 type: proposal
 track: i18n+l10n+extension-ux+web
 date: 2026-06-25
