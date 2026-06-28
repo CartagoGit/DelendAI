@@ -174,7 +174,8 @@ const walk = async (root: string): Promise<readonly string[]> => {
 					entry.name === 'dist' ||
 					entry.name === 'coverage' ||
 					entry.name === '.bun' ||
-					entry.name === '.cache'
+					entry.name === '.cache' ||
+					entry.name === 'proposals'
 				) {
 					continue;
 				}
