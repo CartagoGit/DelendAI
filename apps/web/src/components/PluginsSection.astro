@@ -21,10 +21,8 @@ interface Props {
 	lang: Lang;
 	/** Page title. Rendered as the section's <h1> (l122 S3). */
 	heading?: string;
-}
-const { lang, heading: headingProp } = Astro.props;
+const { lang } = Astro.props;
 const t = useTranslations(lang);
-const heading = headingProp ?? t.plugins.title;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const packages = capabilities.packages as Array<{

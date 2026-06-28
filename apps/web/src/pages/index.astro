@@ -68,6 +68,7 @@ const alternateLocales = languages.filter((l) => l.code !== defaultLang);
 			var COOKIE = 'mcp_vertex_locale';
 			var SUPPORTED = supportedLangs;
 			var DEFAULT_LANG = 'en';
+			// @ts-ignore
 			var BASE = base || '';
 
 			function readCookie(name) {
