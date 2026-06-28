@@ -316,7 +316,11 @@ describe('x00074 S3 — progress-aware filter', async () => {
 				{ action: 'claim', i },
 				'a1',
 				1_700_000_000_000 + i * 1_000, // 1s apart (within cooldown)
-				'ok',
+				// Use 'unknown' (not 'ok') so the S1 outcome filter does
+				// not drop the entire bucket BEFORE the S3 progress-aware
+				// filter has a chance to run. We want to test S3 in
+				// isolation here.
+				'unknown',
 			),
 		);
 		// Same progressHash on every call → all 8 are no-op repeats.
@@ -338,7 +342,11 @@ describe('x00074 S3 — progress-aware filter', async () => {
 				{ action: 'claim', i },
 				'a1',
 				1_700_000_000_000 + i * 1_000,
-				'ok',
+				// Use 'unknown' so the S1 outcome filter does not drop
+				// the bucket. The S3 progress-aware filter should let
+				// every call through (different progressHash) and the
+				// detector should trip.
+				'unknown',
 			),
 		).map((c, i) => ({ ...c, progressHash: `hash-${i}` }));
 		const out = detectAgentLoop(calls, { progressHashGate: true });
@@ -353,7 +361,11 @@ describe('x00074 S3 — progress-aware filter', async () => {
 				{ path: 'x.ts', i },
 				'a1',
 				1_700_000_000_000 + i * 1_000,
-				'ok',
+				// Use 'retryable-error' so the S1 outcome filter does not
+				// drop the bucket. We want the read_file calls to count
+				// and trip the detector (since the S3 gate does not
+				// apply to read_file).
+				'retryable-error',
 			),
 		).map((c) => ({ ...c, progressHash: 'same' }));
 		const out = detectAgentLoop(calls, { progressHashGate: true });
@@ -365,7 +377,10 @@ describe('x00074 S3 — progress-aware filter', async () => {
 	it('progressHashGate: false (default) skips the S3 filter entirely', async () => {
 		const calls: IToolCall[] = Array.from({ length: 8 }, (_, i) =>
 			mkCallWithOutcome(
-				'agent_lock',
+				// Use 'unknown' so the S1 outcome filter does not drop
+				// the bucket. We want the S3 gate to be the only filter
+				// gating here.
+				'unknownent_lock',
 				{ action: 'claim', i },
 				'a1',
 				1_700_000_000_000 + i * 1_000,

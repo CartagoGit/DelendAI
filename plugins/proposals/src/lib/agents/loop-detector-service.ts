@@ -295,7 +295,12 @@ export class AgentLoopDetectorService {
 			agent: c.agent,
 			timestamp: c.timestamp,
 			outcome: c.outcome,
-			progressHash: c.progressHash,
+			// `IExtendedToolCall.progressHash` is `string | null`
+			// (semantic distinction: hash vs no-hash). The detector's
+			// `IToolCall.progressHash` is `string | undefined` (treats
+			// both the same — "no progress signal"). Convert null to
+			// undefined at the boundary so the types align.
+			progressHash: c.progressHash ?? undefined,
 		}));
 
 		const verdict = detectAgentLoop(detectorCalls, {

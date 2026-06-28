@@ -119,6 +119,18 @@ keeps `git diff` out of the hot path.
     (wired into `bun run validate`) and the `plugin-tool-verify` scratch
     lives under `<cacheDir>/.scratch/verify/<pid>/`. Test fixtures
     (`*.spec.ts`) and CLI tooling under `tools/scripts/` are exempt.
+13. **Source code never lands in `.cache/mcp-vertex/`** (f00081). The
+    cache root is for engine state, not for agent-authored code. If an
+    agent writes a driver script, a slice helper, or a one-shot `.ts`
+    under `.cache/mcp-vertex/<anything>/`, it almost always means the
+    shell `cwd` was wrong or the convention was unknown. Real scripts
+    live under `tools/scripts/` (versioned, linted, named after the
+    proposal/slice they serve); ephemeral work lives under
+    `<pluginCacheDir>/exec/` (rule #12). The `check-stray-cache-files`
+    lint walks `.cache/mcp-vertex/` and fails on unknown top-level
+    directories, hand-written `.ts`/`.sh`/`.py` dropped in cache
+    subdirs, and orphan `bun build` `.mjs` bundles left at the cache
+    root — all three are silently consumed by `bun run validate`.
 
 ## Conventions
 

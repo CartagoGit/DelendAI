@@ -109,6 +109,98 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 			expect(result.moved).toEqual([]);
 			await readFile(join(root, 'p005-newly-created.md'), 'utf8');
 		});
+
+		// f00042: closing a proposal lands the file at `done/<kind>/`,
+		// not at `done/` itself. The reconciler must move a misfiled
+		// `done/<file>.md` (status: done) into its kind's sub-folder.
+		it('moves a done/ feat proposal into done/feats/', async () => {
+			await writeProposal(root, 'done', 'f600-misfiled.md', {
+				id: 'f600',
+				kind: 'feat',
+				status: 'done',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{ id: 'f600', from: 'done', to: 'done/feats' },
+			]);
+			const moved = await readFile(
+				join(root, 'done', 'feats', 'f600-misfiled.md'),
+				'utf8',
+			);
+			expect(moved).toContain('status: done');
+		});
+
+		it('moves a done/ fix proposal into done/fixes/', async () => {
+			await writeProposal(root, 'done', 'x601-misfiled.md', {
+				id: 'x601',
+				kind: 'fix',
+				status: 'done',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{ id: 'x601', from: 'done', to: 'done/fixes' },
+			]);
+			await readFile(
+				join(root, 'done', 'fixes', 'x601-misfiled.md'),
+				'utf8',
+			);
+		});
+
+		it('moves a done/ refactor proposal into done/refactors/', async () => {
+			await writeProposal(root, 'done', 'r602-misfiled.md', {
+				id: 'r602',
+				kind: 'refactor',
+				status: 'done',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{ id: 'r602', from: 'done', to: 'done/refactors' },
+			]);
+			await readFile(
+				join(root, 'done', 'refactors', 'r602-misfiled.md'),
+				'utf8',
+			);
+		});
+
+		it('moves a done/ plan proposal into done/plans/', async () => {
+			await writeProposal(root, 'done', 'q603-misfiled.md', {
+				id: 'q603',
+				kind: 'plan',
+				status: 'done',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{ id: 'q603', from: 'done', to: 'done/plans' },
+			]);
+			await readFile(
+				join(root, 'done', 'plans', 'q603-misfiled.md'),
+				'utf8',
+			);
+		});
+
+		it('keeps a legacy (l<NNN>) proposal at done/ when kind: legacy', async () => {
+			await writeProposal(root, 'done', 'l604-legacy.md', {
+				id: 'l604',
+				kind: 'legacy',
+				status: 'done',
+			});
+			const result = await reconcileFolders(root, FAKE_GIT_MV);
+			// `legacy` has no sub-folder, so the file stays where it was.
+			expect(result.moved).toEqual([]);
+			await readFile(join(root, 'done', 'l604-legacy.md'), 'utf8');
+		});
+
+		it('is idempotent: a done/<kind>/ proposal is left in place', async () => {
+			await writeProposal(root, 'done/feats', 'f605-already-fine.md', {
+				id: 'f605',
+				kind: 'feat',
+				status: 'done',
+			});
+			const first = await reconcileFolders(root, FAKE_GIT_MV);
+			const second = await reconcileFolders(root, FAKE_GIT_MV);
+			expect(first.moved).toEqual([]);
+			expect(second.moved).toEqual([]);
+		});
 	});
 
 	describe('reconcileBlocked', async () => {

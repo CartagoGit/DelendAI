@@ -33,6 +33,19 @@ the artefact will be stranded outside the cache the next session cannot
 find. Test fixtures and CLI tooling under `tools/scripts/` are exempt
 because they run once and exit.
 
+### Source code never lives in `.cache/mcp-vertex/` (f00081)
+
+The cache root is for engine state, not for agent-authored code. Real
+driver scripts, slice helpers, and one-shot tooling live under
+`tools/scripts/` (versioned, linted by `biome` + `lint:tools`,
+named after the proposal or slice they serve). If an agent writes a
+script under `.cache/mcp-vertex/<weird>/`, it almost always means
+the shell `cwd` was wrong or the convention was unknown — the
+`check-stray-cache-files` lint catches it on the next
+`bun run validate`, and the fix is to move the file to
+`tools/scripts/` (real code) or delete it (one-shot). The cache
+layout itself is documented in `AGENTS.md` rule #13.
+
 ## The table
 
 The suffix is **singular** (it describes the file role). The folder is
