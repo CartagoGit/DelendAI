@@ -1,6 +1,6 @@
 ---
 id: f00060
-status: in-progress
+status: done
 type: proposal
 track: design-tokens+css+extension-ux
 date: 2026-06-25
