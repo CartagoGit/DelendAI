@@ -21,6 +21,7 @@ interface Props {
 	lang: Lang;
 	/** Page title. Rendered as the section's <h1> (l122 S3). */
 	heading?: string;
+}
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
