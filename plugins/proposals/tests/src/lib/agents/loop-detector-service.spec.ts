@@ -390,6 +390,94 @@ describe('AgentLoopDetectorService', async () => {
 		});
 	});
 
+	// x00074 helpers: pure-function coverage for the exported
+	// `deriveOutcomeFromResult` and `computeProgressHash` helpers.
+	// These power the service's wiring of outcome + progressHash;
+	// unit tests here pin their contract independent of the
+	// service's I/O.
+	describe('x00074 helpers — pure functions', async () => {
+		it('deriveOutcomeFromResult returns ok when _error is undefined', async () => {
+			const { deriveOutcomeFromResult } = await import(
+				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+			);
+			expect(deriveOutcomeFromResult({ ok: true })).toBe('ok');
+			expect(deriveOutcomeFromResult({ ok: true }, undefined)).toBe('ok');
+			expect(deriveOutcomeFromResult(undefined, undefined)).toBe('ok');
+		});
+
+		it('deriveOutcomeFromResult returns retryable-error for known retryable codes', async () => {
+			const { deriveOutcomeFromResult } = await import(
+				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+			);
+			expect(deriveOutcomeFromResult(undefined, { code: 'ENOENT' })).toBe(
+				'retryable-error',
+			);
+			expect(
+				deriveOutcomeFromResult(undefined, { code: 'ETIMEDOUT' }),
+			).toBe('retryable-error');
+			expect(
+				deriveOutcomeFromResult(undefined, { code: 'ECONNRESET' }),
+			).toBe('retryable-error');
+			expect(deriveOutcomeFromResult(undefined, { code: 'EAGAIN' })).toBe(
+				'retryable-error',
+			);
+			expect(deriveOutcomeFromResult(undefined, { code: 'EBUSY' })).toBe(
+				'retryable-error',
+			);
+			expect(
+				deriveOutcomeFromResult(undefined, { code: 'ELOCKFAIL' }),
+			).toBe('retryable-error');
+		});
+
+		it('deriveOutcomeFromResult returns permanent-error for unknown error shapes', async () => {
+			const { deriveOutcomeFromResult } = await import(
+				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+			);
+			expect(
+				deriveOutcomeFromResult(undefined, { code: 'EUNKNOWN' }),
+			).toBe('permanent-error');
+			expect(deriveOutcomeFromResult(undefined, 'a string error')).toBe(
+				'permanent-error',
+			);
+			expect(deriveOutcomeFromResult(undefined, null)).toBe(
+				'permanent-error',
+			);
+		});
+
+		it('computeProgressHash returns a stable 16-char hex hash', async () => {
+			const { computeProgressHash } = await import(
+				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+			);
+			// Fake git runner returns the same diff summary every time.
+			const fakeGit = (() => ({
+				ok: true,
+				output: ' 1 file changed, 1 insertion(+)',
+			})) as unknown as Parameters<typeof computeProgressHash>[1];
+			const h1 = await computeProgressHash('/tmp/lock.json', fakeGit);
+			const h2 = await computeProgressHash('/tmp/lock.json', fakeGit);
+			expect(h1).not.toBeNull();
+			expect(h1).toBe(h2); // deterministic
+			expect(h1).toMatch(/^[0-9a-f]{16}$/);
+		});
+
+		it('computeProgressHash returns null on transient I/O errors', async () => {
+			const { computeProgressHash } = await import(
+				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+			);
+			const fakeGit = (() => ({
+				ok: false,
+				output: '',
+			})) as unknown as Parameters<typeof computeProgressHash>[1];
+			// Lock file path is non-existent; readFile rejects; the
+			// helper catches and returns null.
+			const h = await computeProgressHash(
+				'/this/does/not/exist/anywhere',
+				fakeGit,
+			);
+			expect(h).toBeNull();
+		});
+	});
+
 	// Regression coverage for the copilot-default false-positive:
 	// interactive host sessions (Copilot chat, Cursor tab, etc.) were
 	// flagged as stuck after 3 orient calls because the detector had no

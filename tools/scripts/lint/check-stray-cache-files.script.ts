@@ -237,6 +237,9 @@ export const findStrayCacheFiles = async (
 	};
 };
 
+/**
+ * A single stray file detected at the repo root.
+ */
 export interface IStrayRootFile {
 	readonly absPath: string;
 	readonly relPath: string;
@@ -244,18 +247,27 @@ export interface IStrayRootFile {
 	readonly extension: string;
 }
 
+/** Summary returned to the CLI for the root-level scan. */
 export interface IStrayRootFilesSummary {
 	readonly repoRoot: string;
 	readonly strays: readonly IStrayRootFile[];
 	readonly ok: boolean;
 }
 
+/**
+ * Whitelist of legitimate top-level files at the repo root. None of
+ * these has an executable extension — they're all `.md`, `.json`,
+ * `.ts`/`.mjs` config, `.yml`/`.toml`/`.lock`. Add to this list when
+ * a new legitimate root file is introduced (e.g. a new `*.config.ts`).
+ */
 const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
+	// Human-edited docs and licenses.
 	'AGENTS.md',
 	'CLAUDE.md',
 	'CHANGELOG.md',
 	'LICENSE',
 	'README.md',
+	// Build / config / lockfiles.
 	'package.json',
 	'biome.json',
 	'bunfig.toml',
@@ -267,10 +279,19 @@ const SANCTIONED_ROOT_FILES: ReadonlySet<string> = new Set([
 	'tsconfig.json',
 	'vitest.config.ts',
 	'vitest.shared.ts',
+	// Dotfile config — auto-discovered by their respective tools.
 	'.gitignore',
 	'.mcp.json',
 ]);
 
+/**
+ * Walk the repo root (NOT recursive — subdirs are scanned by the
+ * targeted lints, e.g. `tools/scripts/` is legitimate source code).
+ * Flags any file with an executable-looking extension. Returns a
+ * summary the CLI can pretty-print.
+ *
+ * Pure over the filesystem; pass an injected root for tests.
+ */
 export const findStrayRootFiles = async (
 	repoRootAbs: string,
 ): Promise<IStrayRootFilesSummary> => {
@@ -294,6 +315,10 @@ export const findStrayRootFiles = async (
 			});
 			continue;
 		}
+		// Files at the root with no extension (e.g. `-la`, `output`,
+		// `tmp`) almost always mean an agent's shell mis-redirection
+		// landed in the root. We flag them too — they have no business
+		// being there.
 		if (ext === '' && entry.name !== 'LICENSE') {
 			strays.push({
 				absPath: abs,

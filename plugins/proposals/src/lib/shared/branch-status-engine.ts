@@ -259,7 +259,11 @@ const mergedInto = async (
 			.some((line) => line === branch);
 	if (!branchMerged) return false;
 
-	const aheadResult = await run(['rev-list', '--count', `${base}..${branch}`]);
+	const aheadResult = await run([
+		'rev-list',
+		'--count',
+		`${base}..${branch}`,
+	]);
 	if (!aheadResult.ok) return false;
 	const ahead = Number.parseInt(aheadResult.output.trim(), 10);
 	if (!Number.isFinite(ahead)) return false;
