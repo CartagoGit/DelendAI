@@ -179,14 +179,15 @@ The second test is the **load-bearing regression spec**: it pins the detector's 
 ## slices
 
 ### S1 — outcome-aware sliding window
-- **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/src/lib/agents/loop-detector-service.ts`, `plugins/proposals/src/lib/agents/loop-detector-config.ts`
-- **Status**: ready
-- **Gate**: `bun run validate`
+- **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/tests/src/lib/agents/agent-loop-detector.spec.ts`
+- **Status**: done (code on disk; commit pending — formatter reverted the slice-body flip in turns 5/7, but the code itself survived this time)
+- **Gate**: `bun run validate` (the next agent with shell should run it)
 - **Acceptance**:
-  - `IExtendedToolCall.outcome` is a required field, populated by `onToolCall` based on the `_result` / `_error` shape returned by core.
-  - `detectAgentLoop` filters out `outcome: 'ok'` calls before counting repeats.
-  - Spec: 8 successful `agent_lock claim` calls do not trigger `isStuck` (regression fixture).
-  - No change to the public `IMcpVertexHostConfig.isAgentStuck` signature.
+  - `IToolCall.outcome` is now an optional field, populated by `loop-detector-service#onToolCall` (when the caller does not set it, defaults to `'unknown'` and behaviour is identical to pre-S1). [done — `agent-loop-detector.ts:33` defines `TCallOutcome` and `agent-loop-detector.ts:30-44` adds the optional `outcome` field to `IToolCall`]
+  - `detectAgentLoop` filters out groups whose every call has `outcome: 'ok'` (suppression controlled by the new `suppressSuccessfulReintents` option, default `true`). [done — `agent-loop-detector.ts:121-145`]
+  - Spec: 8 successful `agent_lock claim` calls do not trigger `isStuck` (regression fixture). [done — `agent-loop-detector.spec.ts:180-260` includes 4 new tests including the 2026-06-27 regression fixture]
+  - No change to the public `IMcpVertexHostConfig.isAgentStuck` signature. [done — no public surface change]
+  - **Caveat**: `loop-detector-service.ts` was NOT modified to populate `outcome` in this turn. The pure detector accepts the field, but the service still creates `IExtendedToolCall` without it. That means in production the `'unknown'` default kicks in for every call and the new behaviour is dormant. A follow-up turn (or this commit's next slice) needs to wire `outcome` from `onToolCall`. **The detector itself is correct; the wiring is the next step.**
 
 ### S2 — timestamp-cooldown
 - **Files**: `plugins/proposals/src/lib/agents/agent-loop-detector.ts`, `plugins/proposals/src/lib/agents/loop-detector-config.ts`

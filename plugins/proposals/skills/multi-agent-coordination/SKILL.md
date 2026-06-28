@@ -245,6 +245,28 @@ Either wait, or take a different truly disjoint slice.
 4. Do not push from a shared checkout when a disposable worktree is the
    intended safety boundary.
 
+## Protocol enforcement (f00078)
+
+The swarm protocol is **enforced at the primitives**, not just documented.
+When `agentWorktree: true` in `mcp-vertex.config.json`, the following
+gates fire:
+
+| `auto_work` state     | Means                                                            | Action                                                                    |
+| --------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `needs-worktree`      | Your active branch is not `agent/<name>` and the gate is on.     | Run `proposals_agent_worktree { action: "create", agent: "<name>" }`.     |
+| `hygiene-blocked`     | Rescue candidates exist; your slice would orphan them.           | Acknowledge each rescue + cherry-pick before proceeding.                  |
+| `loop-blocked`        | The loop detector fired (x00074). You are repeating yourself.    | Read the handoff packet; resolve the stuck call; do not re-call auto_work.|
+| `work`                | Everything clean. Proceed with the plan.                          | (the existing path)                                                        |
+
+`agent_lock claim` (S4) **refuses** with `blockerType: 'needs-worktree'`
+when the active branch is not `agent/*` and the gate is on. There is no
+escape hatch: the claim is not taken until the worktree exists.
+
+These states are not warnings. They are `stop: true` blocks with a
+`nextAction` you must follow before the next call. Ignoring them is
+the same as ignoring `proposal_transition`'s blockers — it will land
+in a loop, which the loop detector will then fire on.
+
 ## Smoke
 
 A minimal healthy multi-agent flow looks like this:

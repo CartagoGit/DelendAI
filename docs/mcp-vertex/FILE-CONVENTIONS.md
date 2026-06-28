@@ -18,7 +18,7 @@ The convention is **language-aware**: TypeScript gets a strict profile,
 non-TS consumer projects are detected and left untouched unless the
 user explicitly selects a compatible profile.
 
-### Runtime scratch (f00058)
+### Runtime scratch (f00079)
 
 For artefacts a plugin or agent creates in order to *do something and
 then throw away* (a runnable script the harness executes once, a JSON

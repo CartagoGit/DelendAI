@@ -20,6 +20,7 @@
  */
 import type { IGitRunner } from './git-runner';
 import {
+	type IBranchStatusEntry,
 	type IBranchStatusOutcome,
 	type IWorktreeStatusEntry,
 	runBranchStatusEngine,
@@ -398,7 +399,7 @@ const augmentSnapshotWithWorktreeBranches = async (
 	options: Pick<IBranchGcEngineOptions, 'run'>,
 ): Promise<Extract<IBranchStatusOutcome, { ok: true }>> => {
 	const knownBranches = new Set(snapshot.branches.map((b) => b.name));
-	const additions: typeof snapshot.branches = [];
+	const additions: IBranchStatusEntry[] = [];
 	for (const wt of snapshot.worktrees) {
 		if (wt.branch.length === 0) continue; // detached HEAD — skip
 		if (knownBranches.has(wt.branch)) continue; // already known
