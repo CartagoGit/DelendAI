@@ -41,7 +41,7 @@ import type {
 export const DEFAULT_OUTPUT_PATH =
 	'docs/mcp-vertex/agent-catalog.generated.json';
 export const DEFAULT_PROPOSALS_INDEX_PATH =
-	'docs/mcp-vertex/proposals/index.json';
+	'.cache/mcp-vertex/proposals/index.json';
 export const DEFAULT_SKILL_MANIFEST_PATH = 'packages/core/skills/manifest.json';
 export const DEFAULT_WARNINGS_SUFFIX = '.lint-warnings.txt';
 
@@ -432,7 +432,7 @@ export const buildAgentCatalogArtifact = async (
 		},
 	});
 	const artifact = buildArtifact(snapshot, generatedAt);
-	const text = `${JSON.stringify(artifact, null, 4)}\n`;
+	const text = `${JSON.stringify(artifact, null, '\t')}\n`;
 	const outputPath = join(options.root, DEFAULT_OUTPUT_PATH);
 	const warningsPath = outputPath.replace(
 		/\.json$/u,

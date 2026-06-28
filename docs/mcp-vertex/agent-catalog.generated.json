@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-27T11:23:44.275Z",
+	"generatedAt": "2026-06-28T02:21:58.408Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -573,6 +573,22 @@
 				"date": "2026-06-21"
 			},
 			{
+				"id": "c00012",
+				"title": "c00012",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "c00075",
+				"title": "c00075",
+				"track": "governance",
+				"status": "ready",
+				"kind": "chore",
+				"date": "2026-06-28"
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -587,30 +603,6 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-24"
-			},
-			{
-				"id": "f00056",
-				"title": "f00056",
-				"track": "host+extension+skills+docs",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00057",
-				"title": "f00057",
-				"track": "skills+plugins+tools+scripts+docs+workflow",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00058",
-				"title": "f00058",
-				"track": "security+webview+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
 			},
 			{
 				"id": "f00059",
@@ -669,14 +661,6 @@
 				"date": "2026-06-25"
 			},
 			{
-				"id": "f00066",
-				"title": "f00066",
-				"track": "core+refactor+async",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00067",
 				"title": "f00067",
 				"track": "core+plugins+config+i18n+docs+ui-extension",
@@ -715,14 +699,94 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-26"
+			},
+			{
+				"id": "f00072",
+				"title": "f00072",
+				"track": "infra+cache-eviction",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-27"
+			},
+			{
+				"id": "f00075",
+				"title": "f00075",
+				"track": "swarm+coordination+governance",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "f00079",
+				"title": "f00079",
+				"track": "security+webview+extension-ux",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-25"
+			},
+			{
+				"id": "f00081",
+				"title": "f00081",
+				"track": "packages/client+host-integration",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "f00082",
+				"title": "f00082",
+				"track": "swarm+coordination+governance+observability",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "f00083",
+				"title": "f00083",
+				"track": "governance+lint+docs",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "f00085",
+				"title": "f00085",
+				"track": "core+agents+ci",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "x00074",
+				"title": "x00074",
+				"track": "swarm+coordination",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "x00076",
+				"title": "x00076",
+				"track": "repo-hygiene+ci+lint+docs+plugins/rules",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-06-28"
+			},
+			{
+				"id": "x00079",
+				"title": "x00079",
+				"track": "plugins/proposals+lint+i18n+tools+scripts",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-06-28"
 			}
 		],
 		"byStatus": {
-			"ready": 15,
-			"in-progress": 1,
+			"ready": 24,
+			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 116,
+			"done": 128,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
