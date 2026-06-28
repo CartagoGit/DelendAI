@@ -51,6 +51,14 @@ export interface IToolCall {
 	 * loop-detector-service populates this field for new calls.
 	 */
 	readonly outcome?: TCallOutcome;
+	/**
+	 * x00074 S3: short hash of the observable state touched by this
+	 * call (e.g. lock file content + mtime). Two consecutive calls on
+	 * a `PROGRESS_REQUIRED_TOOL` with the same `progressHash` are
+	 * considered a no-op repeat. Only consulted when the caller
+	 * passes `progressHashGate: true`.
+	 */
+	readonly progressHash?: string;
 }
 
 /** x00074 S1: coarse classification of a tool call's result.
@@ -72,6 +80,15 @@ export interface ILoopVerdict {
 	/** Args hash of the offending call. Useful for the handoff packet
 	 *  (s3) to identify the exact stuck call. */
 	readonly offendingHash: string | null;
+	/** x00074: which guards fired (empty when not stuck). The handoff
+	 *  packet narrates *why* the detector tripped so the next agent
+	 *  can debug instead of guessing. */
+	readonly triggeredGuards: readonly string[];
+	/** x00074: the effective count AFTER the S1/S2/S3 guards ran.
+	 *  Always equal to `repeatCount`; surfaced separately for
+	 *  observability so the next agent can see both the raw and the
+	 *  guarded counts. */
+	readonly effectiveCount: number;
 }
 
 /** Tunable knobs. Defaults match l103 §5.1. */
@@ -86,6 +103,17 @@ export interface ILoopDetectorOptions {
 	 *  `true`. Hosts that want the legacy "count every repeat" semantics
 	 *  for compatibility can set this to `false`. */
 	readonly suppressSuccessfulReintents?: boolean;
+	/** x00074 S2: max gap (ms) between consecutive repeats to still
+	 *  count as a stuck loop. Repeats > cooldownMs apart are
+	 *  legitimate backoff and reset the consecutive-run counter.
+	 *  Default 30_000 (30s). */
+	readonly cooldownMs?: number;
+	/** x00074 S3: opt-in gate. When `true`, calls on
+	 *  PROGRESS_REQUIRED_TOOLS that share the same `progressHash`
+	 *  with the previous counted call do NOT count. Hosts that
+	 *  compute progressHash get this protection; hosts that don't
+	 *  keep the legacy "count every repeat" behaviour. */
+	readonly progressHashGate?: boolean;
 }
 
 /** Stable JSON stringify: object keys sorted recursively so equal
@@ -130,72 +158,119 @@ export const detectAgentLoop = (
 ): ILoopVerdict => {
 	const ringSize = options.ringSize ?? 50;
 	const threshold = options.exactRepeatThreshold ?? 3;
-	// x00074 S1: defaults to `true` so successful re-intent chains
-	// (e.g. 8 successful `agent_lock claim` calls after rate-limit
-	// recovery) do NOT trip the detector. Hosts needing strict
-	// legacy semantics can pass `false`.
 	const suppressSuccessfulReintents =
-		options.suppressSuccessfulReintents ?? true;
+		options.suppressSuccessfulReintents !== false;
+	const cooldownMs = options.cooldownMs ?? 30_000;
+	const checkProgress = options.progressHashGate === true;
 
 	// Trim to the most-recent ringSize calls. Older entries are
 	// forgotten by definition (sliding window).
 	const window = recentCalls.slice(-ringSize);
 
-	// Group by (agent, tool, argsHash). Counter starts at 1 because
-	// each occurrence in the window counts itself.
-	const groups = new Map<
-		string,
-		{ count: number; call: IToolCall; hash: string }
-	>();
+	// Per-bucket state so S2 (cooldown) and S3 (progressHash) can
+	// decide whether each call extends a stuck run or starts a new
+	// legitimate one.
+	type Bucket = {
+		agent: string;
+		tool: string;
+		hash: string;
+		rawCalls: readonly IToolCall[];
+		effectiveCount: number;
+		lastCountedTimestamp: number;
+		lastProgressHash: string | null;
+		worstCall: IToolCall;
+		guards: Set<string>;
+	};
+	const buckets = new Map<string, Bucket>();
+
+	// Tools whose only observable effect is via `progressHash`. Without
+	// the progressHash change between repeats, the call is a no-op
+	// repeat and does not count (S3).
+	const PROGRESS_REQUIRED_TOOLS = new Set([
+		'agent_lock',
+		'proposal_transition',
+		'auto_work',
+	]);
+
 	for (const call of window) {
 		const hash = hashCall(call);
 		const key = `${call.agent}|${call.tool}|${hash}`;
-		const existing = groups.get(key);
-		if (existing) {
-			existing.count += 1;
-		} else {
-			groups.set(key, { count: 1, call, hash });
+		let bucket = buckets.get(key);
+		if (!bucket) {
+			bucket = {
+				agent: call.agent,
+				tool: call.tool,
+				hash,
+				rawCalls: [],
+				effectiveCount: 0,
+				lastCountedTimestamp: Number.NEGATIVE_INFINITY,
+				lastProgressHash: null,
+				worstCall: call,
+				guards: new Set<string>(),
+			};
+			buckets.set(key, bucket);
 		}
+		bucket.rawCalls = [...bucket.rawCalls, call];
+
+		// x00074 S3: a PROGRESS_REQUIRED_TOOL call without a
+		// progressHash change between consecutive counted calls is a
+		// no-op repeat. The progressHash gate is opt-in because it
+		// requires the host to compute the hash.
+		if (
+			checkProgress &&
+			PROGRESS_REQUIRED_TOOLS.has(call.tool) &&
+			bucket.effectiveCount > 0 &&
+			bucket.lastProgressHash !== null &&
+			bucket.lastProgressHash === (call.progressHash ?? null)
+		) {
+			bucket.guards.add('progress-unchanged');
+			bucket.lastCountedTimestamp = call.timestamp;
+			bucket.worstCall = call;
+			continue;
+		}
+
+		// x00074 S2: timestamp cooldown. A repeat whose previous
+		// counted call was > cooldownMs ago is a new legitimate retry.
+		const sinceLast = call.timestamp - bucket.lastCountedTimestamp;
+		if (bucket.effectiveCount > 0 && sinceLast > cooldownMs) {
+			bucket.effectiveCount = 1;
+			bucket.guards.add('cooldown-broken');
+		} else {
+			bucket.effectiveCount += 1;
+		}
+		bucket.lastCountedTimestamp = call.timestamp;
+		bucket.lastProgressHash = call.progressHash ?? null;
+		bucket.worstCall = call;
 	}
 
 	// x00074 S1: drop groups whose EVERY call has `outcome: 'ok'`.
-	// A successful re-intent chain is not a loop. Mixed or unknown
-	// outcomes fall through to the legacy counting path, so callers
-	// that never set `outcome` (older tests, simple hosts) keep
-	// their existing behaviour bit-for-bit.
 	if (suppressSuccessfulReintents) {
-		for (const [key, entry] of [...groups]) {
+		for (const [key, bucket] of [...buckets]) {
 			let allOk = true;
 			let sawAny = false;
-			for (const c of window) {
-				if (
-					c.agent === entry.call.agent &&
-					c.tool === entry.call.tool &&
-					hashCall(c) === entry.hash
-				) {
-					sawAny = true;
-					const outcome = c.outcome ?? 'unknown';
-					if (outcome !== 'ok') {
-						allOk = false;
-						break;
-					}
+			for (const c of bucket.rawCalls) {
+				sawAny = true;
+				const outcome = c.outcome ?? 'unknown';
+				if (outcome !== 'ok') {
+					allOk = false;
+					break;
 				}
 			}
-			if (sawAny && allOk) groups.delete(key);
+			if (sawAny && allOk) buckets.delete(key);
 		}
 	}
 
-	// Find the worst offender (highest count, then most-recent).
-	let worst: { count: number; call: IToolCall; hash: string } | null = null;
-	for (const entry of groups.values()) {
-		if (entry.count < threshold) continue;
+	// Find the worst offender (highest effective count, then most-recent).
+	let worst: Bucket | null = null;
+	for (const bucket of buckets.values()) {
+		if (bucket.effectiveCount < threshold) continue;
 		if (
 			!worst ||
-			entry.count > worst.count ||
-			(entry.count === worst.count &&
-				entry.call.timestamp > worst.call.timestamp)
+			bucket.effectiveCount > worst.effectiveCount ||
+			(bucket.effectiveCount === worst.effectiveCount &&
+				bucket.worstCall.timestamp > worst.worstCall.timestamp)
 		) {
-			worst = entry;
+			worst = bucket;
 		}
 	}
 
@@ -208,17 +283,21 @@ export const detectAgentLoop = (
 			offendingAgent: null,
 			suggestHandoff: false,
 			offendingHash: null,
+			triggeredGuards: [],
+			effectiveCount: 0,
 		};
 	}
 
 	return {
 		isStuck: true,
 		pattern: 'exact-repeat',
-		repeatCount: worst.count,
-		offendingTool: worst.call.tool,
-		offendingAgent: worst.call.agent,
+		repeatCount: worst.effectiveCount,
+		offendingTool: worst.tool,
+		offendingAgent: worst.agent,
 		suggestHandoff: true,
 		offendingHash: worst.hash,
+		triggeredGuards: [...worst.guards].sort(),
+		effectiveCount: worst.effectiveCount,
 	};
 };
 

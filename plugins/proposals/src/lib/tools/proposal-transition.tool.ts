@@ -48,11 +48,18 @@ import {
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
+	doneFolderFor,
 } from '../contracts/constants/proposal-glossary.constant';
-import type { IProposalStatus } from '../contracts/constants/proposal-glossary.constant';
+import type {
+	IProposalKind,
+	IProposalStatus,
+} from '../contracts/constants/proposal-glossary.constant';
 import { locateProposal } from '../proposals/locate';
 import type { ILocatedProposal } from '../proposals/locate';
-import { setFrontmatterStatus } from '../proposals/proposal-frontmatter-writer';
+import {
+	readFrontmatterField,
+	setFrontmatterStatus,
+} from '../proposals/proposal-frontmatter-writer';
 import { isPlanProposal } from '../proposals/proposal-type-detector';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
@@ -85,6 +92,55 @@ export interface IProposalTransitionArgs {
 
 const isKnownStatus = (value: string): value is IProposalStatus =>
 	value in PROPOSAL_STATUSES;
+
+const KNOWN_KINDS: ReadonlySet<string> = new Set([
+	'feat',
+	'breaking',
+	'fix',
+	'refactor',
+	'perf',
+	'audit',
+	'chore',
+	'docs',
+	'test',
+	'infra',
+	'spike',
+	'legacy',
+	'resume',
+	'plan',
+]);
+
+const isKnownKind = (value: string): value is IProposalKind =>
+	KNOWN_KINDS.has(value);
+
+/**
+ * Resolve the folder a transition should land in.
+ *
+ * For terminal `done`, the convention (f00042 + f00016 §4.1) is
+ * `done/<kind-subfolder>/` — `done/feats/`, `done/fixes/`, … — so the
+ * closure view scales. For every other status the folder is the plain
+ * status folder. The kind is read from the file's frontmatter on disk
+ * (not from the index snapshot) because the index entry may predate a
+ * kind field added later, and the on-disk source of truth is the file
+ * itself. A missing or unknown kind falls back to `done/` itself — same
+ * safe behaviour the engine had before f00042 landed.
+ *
+ * Pure I/O: reads the file once, no other side effects.
+ */
+const resolveTargetFolder = async (
+	to: IProposalStatus,
+	found: ILocatedProposal,
+	proposalsDirAbs: string,
+): Promise<string> => {
+	if (to !== 'done') return STATUS_TO_FOLDER[to];
+	const raw = await readFile(found.absPath, 'utf8').catch(() => '');
+	const kindRaw = readFrontmatterField(raw, 'kind');
+	const kind =
+		kindRaw !== undefined && isKnownKind(kindRaw) ? kindRaw : undefined;
+	const folder = doneFolderFor(kind);
+	void proposalsDirAbs;
+	return folder;
+};
 
 const TOOL_ERROR_SCHEMA = z.object({
 	reason: z.string(),
@@ -255,7 +311,11 @@ const applyTransition = async (
 ) => {
 	const gitRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
-	const newFolder = STATUS_TO_FOLDER[args.to];
+	const newFolder = await resolveTargetFolder(
+		args.to,
+		found,
+		options.proposalsDirAbs,
+	);
 	const filename = found.absPath.split('/').pop() ?? found.absPath;
 	const newAbsPath = join(options.proposalsDirAbs, newFolder, filename);
 	const moved = newAbsPath !== found.absPath;

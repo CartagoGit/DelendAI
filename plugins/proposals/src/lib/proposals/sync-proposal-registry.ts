@@ -20,8 +20,12 @@ import {
 	PROPOSAL_KIND_BY_PREFIX,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
+	doneFolderFor,
 } from '../contracts/constants/proposal-glossary.constant';
-import type { IProposalStatus as IGlossaryStatus } from '../contracts/constants/proposal-glossary.constant';
+import type {
+	IProposalKind,
+	IProposalStatus as IGlossaryStatus,
+} from '../contracts/constants/proposal-glossary.constant';
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
@@ -371,6 +375,14 @@ interface INewSystemFile {
 	readonly id: string;
 	readonly status: IGlossaryStatus;
 	readonly blockedBy: readonly string[];
+	/**
+	 * Kind inferred from the filename prefix (f00016 §4.1 — the
+	 * filename's first character is the canonical kind prefix).
+	 * Optional: a prefix that is not in `PROPOSAL_KIND_BY_PREFIX` yields
+	 * `undefined`, and the reconciler stays graceful by falling back to
+	 * the status folder (no sub-folder).
+	 */
+	readonly kind: IProposalKind | undefined;
 }
 
 /** Collects every `.md` under the proposalsDir tree whose frontmatter status is on the new state machine. */
@@ -419,6 +431,8 @@ const scanNewSystemFiles = async (
 			const blockedBy = Array.isArray(blockedByRaw)
 				? blockedByRaw.filter((v): v is string => typeof v === 'string')
 				: [];
+			const prefix = dirent.name[0] ?? '';
+			const kind = PROPOSAL_KIND_BY_PREFIX[prefix];
 			out.push({
 				absPath,
 				folder,
@@ -426,6 +440,7 @@ const scanNewSystemFiles = async (
 				id: typeof fm.id === 'string' ? fm.id : dirent.name,
 				status,
 				blockedBy,
+				kind,
 			});
 		}
 	}
@@ -448,6 +463,13 @@ const setStatusLine = setFrontmatterStatus;
  * Moves every new-system file whose actual folder disagrees with what
  * its frontmatter `status` implies. Idempotent: a file already in the
  * right place is a no-op (the comparison is structural, not a write).
+ *
+ * For terminal `done` statuses, f00042 + f00016 §4.1 require the file
+ * to live under `done/<kind-subfolder>/` (`done/feats/`, `done/fixes/`,
+ * …). The kind is inferred from the filename prefix, mirroring what
+ * `proposal_transition` resolves from the frontmatter at write time —
+ * both paths must agree so a freshly closed proposal lands in the same
+ * place `reconcileFolders` would move it back to.
  */
 export const reconcileFolders = async (
 	proposalsDirAbs: string,
@@ -458,7 +480,10 @@ export const reconcileFolders = async (
 	const files = await scanNewSystemFiles(proposalsDirAbs);
 	const moved: Array<{ id: string; from: string; to: string }> = [];
 	for (const file of files) {
-		const expectedFolder = STATUS_TO_FOLDER[file.status];
+		const expectedFolder =
+			file.status === 'done'
+				? doneFolderFor(file.kind)
+				: STATUS_TO_FOLDER[file.status];
 		if (file.folder === expectedFolder) continue;
 		const newAbsPath = join(proposalsDirAbs, expectedFolder, file.filename);
 		await moveFile(gitRunner, file.absPath, newAbsPath);

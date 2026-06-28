@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -375,4 +376,173 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 		expect(third.idleStreak).toBe(3);
 		expect(third.reason).not.toBe('stuck-detected');
 	});
+});
+
+// f00075 S4: front-hook blocks the plan when rescue candidates OR
+// stashes are present. The engine composes `swarm_hygiene` +
+// `stash_snapshot` at the top of `runAutoWork`, before slice
+// selection. Tests below exercise the real-git path (init a temp
+// repo, create a stash, run auto_work) so the contract is enforced
+// end-to-end. Skip the suite when git is not on PATH.
+describe('auto_work + front-hook (f00075 S4)', () => {
+	const hasGit = (() => {
+		try {
+			execFileSync('git', ['--version'], { stdio: 'ignore' });
+			return true;
+		} catch {
+			return false;
+		}
+	})();
+	const itGit = hasGit ? it : it.skip;
+
+	let root = '';
+	let options: IAutoWorkToolOptions;
+
+	beforeEach(() => {
+		__resetIdleStreakForTesting();
+		root = mkdtempSync(join(tmpdir(), 'auto-fh-'));
+		// Initialise a real git repo with one commit on `develop` so
+		// `runSwarmHygieneEngine` and `runStashSnapshot` can talk to a
+		// repo, not just an empty tmpdir.
+		execFileSync('git', ['init', '--initial-branch=main', root], {
+			stdio: 'ignore',
+		});
+		execFileSync('git', ['-C', root, 'config', 'user.email', 'fh@test'], {
+			stdio: 'ignore',
+		});
+		execFileSync('git', ['-C', root, 'config', 'user.name', 'fh'], {
+			stdio: 'ignore',
+		});
+		execFileSync(
+			'git',
+			['-C', root, 'commit', '--allow-empty', '-m', 'init'],
+			{ stdio: 'ignore' },
+		);
+		// Rename the default branch to `develop` so branch-status uses
+		// the canonical base (runSwarmHygieneEngine defaults to
+		// `develop` when none is supplied).
+		try {
+			execFileSync(
+				'git',
+				['-C', root, 'branch', '-m', 'main', 'develop'],
+				{ stdio: 'ignore' },
+			);
+		} catch {
+			// Some git versions already use `main` as the default; we
+			// don't care about the name when there are no agent
+			// branches — branch_status falls back to whatever it sees.
+		}
+		// Write the proposals index (one pending proposal so the
+		// slice-selection cascade has something to fall back to IF the
+		// front-hook lets it through).
+		options = {
+			namespacePrefix: 'proposals',
+			indexPathAbs: join(root, 'index.json'),
+			lockPathAbs: join(root, 'lock.json'),
+			validationCommand: 'bun run validate',
+			workspaceRoot: root,
+		};
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
+			}),
+		);
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	itGit(
+		'f00075 S4: a present stash BLOCKS the plan (hygiene-blocked envelope, no slice selected)',
+		async () => {
+			// Drop a stash on the working tree. The stash's existence is
+			// what the front-hook should detect and refuse to ignore.
+			execFileSync(
+				'git',
+				[
+					'-C',
+					root,
+					'stash',
+					'push',
+					'-u',
+					'-m',
+					'WIP on S4 stash fixture',
+				],
+				{ stdio: 'ignore' },
+			);
+			// Sanity check: the stash is actually there.
+			const stashList = execFileSync(
+				'git',
+				['-C', root, 'stash', 'list'],
+				{
+					encoding: 'utf8',
+				},
+			);
+			expect(stashList).toContain('stash@{0}');
+
+			const out = parse(await runAutoWork(options));
+			// Strict-mode envelope.
+			expect(out.state).toBe('work');
+			expect(out.ok).toBe(false);
+			expect(out.reason).toBe('hygiene-blocked');
+			expect(out.executionMode).toBe('blocked');
+			// Stash rides on the response payload.
+			expect(Array.isArray(out.stashes)).toBe(true);
+			expect((out.stashes as unknown[]).length).toBe(1);
+			expect((out.stashes as Array<{ ref: string }>)[0]?.ref).toBe(
+				'stash@{0}',
+			);
+			// Blockers + rescueCandidates are surfaced in the response.
+			expect(Array.isArray(out.hygieneBlockers)).toBe(true);
+			expect((out.hygieneBlockers as string[])[0]).toMatch(/stash/i);
+			// The slice-selection cascade was NEVER run — the plan does
+			// not carry `proposalId` (the front-hook short-circuits
+			// before `runContinueProposal` is called).
+			expect(out.proposalId).toBeUndefined();
+			expect(out.steps).toBeUndefined();
+			// Hygiene actions/warnings should NOT fire when stashes are the
+			// sole reason for blocking (no GC plan in this fixture).
+			expect(out.hygieneActions).toBeUndefined();
+		},
+	);
+
+	itGit(
+		'f00075 S4: forceHygieneBypass:true overrides the stash block and proceeds to slice selection',
+		async () => {
+			execFileSync(
+				'git',
+				[
+					'-C',
+					root,
+					'stash',
+					'push',
+					'-u',
+					'-m',
+					'WIP on S4 bypass fixture',
+				],
+				{ stdio: 'ignore' },
+			);
+
+			const out = parse(
+				await runAutoWork({
+					...options,
+					inputForceHygieneBypass: true,
+				}),
+			);
+			// The bypass unsnarls the front-hook; the cascade picks the
+			// pending proposal and renders the normal work plan.
+			expect(out.state).toBe('work');
+			expect(out.reason).toBeUndefined();
+			expect(out.ok).toBeUndefined();
+			expect(out.executionMode).toBe('normal');
+			expect(out.proposalId).toBe('p1-x');
+			expect(Array.isArray(out.steps)).toBe(true);
+			// Bypass is silent — no hygieneBlockers / hygieneActions /
+			// hygieneWarnings on the response.
+			expect(out.hygieneBlockers).toBeUndefined();
+			expect(out.hygieneActions).toBeUndefined();
+			expect(out.hygieneWarnings).toBeUndefined();
+			expect(out.stashes).toBeUndefined();
+		},
+	);
 });

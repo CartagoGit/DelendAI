@@ -164,12 +164,7 @@ export const buildOverviewToolRegistration = (
 					plugins: snap.plugins.map((plugin) =>
 						plugin.version === undefined
 							? plugin.name
-							: {
-									name: plugin.name,
-									...(plugin.version === undefined
-										? {}
-										: { version: plugin.version }),
-								},
+							: { name: plugin.name, version: plugin.version },
 					),
 					tools: tools.map((tool) =>
 						tool.summary === undefined &&
