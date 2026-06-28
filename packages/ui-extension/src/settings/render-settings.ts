@@ -3,6 +3,7 @@ import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
 import { extensionText } from '../i18n/extension-text';
+import { renderComponentCssTokenRootCss } from '../styles/component-css';
 
 export interface IRenderSettingsOptions {
 	readonly settings: IExtensionSettings;
@@ -89,17 +90,18 @@ export const renderSettings = (options: IRenderSettingsOptions): string => {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('settings.title'))}</title>
 	<style>
+		${renderComponentCssTokenRootCss()}
 		body {
 			font-family: var(--vscode-font-family, system-ui);
 			padding: 16px;
-			color: var(--vscode-foreground, #c9d1d9);
-			background: var(--vscode-editor-background, #0d1117);
+			color: var(--mv-fg-primary);
+			background: var(--mv-bg-primary);
 		}
 		h1 { font-size: 16px; margin: 0 0 16px; }
 		label {
 			display: block;
 			margin: 0 0 12px;
-			color: var(--vscode-foreground, #c9d1d9);
+			color: var(--mv-fg-primary);
 			font-size: 12px;
 		}
 		/* FIX (S2): inputs and selects previously inherited the

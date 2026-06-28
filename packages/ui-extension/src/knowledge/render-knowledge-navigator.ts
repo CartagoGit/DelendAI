@@ -14,6 +14,7 @@ import type { ILangDict } from '@mcp-vertex/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
 import { extensionText } from '../i18n/extension-text';
+import { renderComponentCssTokenRootCss } from '../styles/component-css';
 
 export interface IRenderKnowledgeNavigatorOptions {
 	readonly onOpenEntry: string; // command id for clicking an entry
@@ -157,9 +158,10 @@ export const renderKnowledgeNavigator = (
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>${escapeHtml(text('knowledge.title'))}</title>
 	<style>
+		${renderComponentCssTokenRootCss()}
 		:root {
-			--mv-fg: var(--vscode-foreground, #c9d1d9);
-			--mv-bg: var(--vscode-editor-background, #0d1117);
+			--mv-fg: var(--mv-fg-primary);
+			--mv-bg: var(--mv-bg-primary);
 			--mv-border: var(--vscode-widget-border, #30363d);
 			--mv-surface: var(--vscode-side-bar-background, #161b22);
 			/* FIX (K5): --mv-brand-purple was undefined inside this
