@@ -16,7 +16,10 @@ export const DEFAULT_TOKENS: IComponentCssTokens = Object.freeze({
 export const renderComponentCssTokenRootCss = (
 	tokens: IComponentCssTokens = DEFAULT_TOKENS,
 ): string => `:root {
-	${Object.entries(tokens)
-		.map(([name, value]) => `${name}: ${value};`)
+	${Object.entries(HOST_TOKEN_MIGRATION_MAP)
+		.map(
+			([hostName, componentName]) =>
+				`${componentName}: var(${hostName}, ${tokens[componentName]});`,
+		)
 		.join('\n\t')}
 }`;
