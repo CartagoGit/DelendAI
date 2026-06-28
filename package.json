@@ -48,6 +48,7 @@
 		"lint:proposal-id-drift": "bun tools/scripts/lint/check-proposal-id-drift.script.ts",
 		"lint:stray-cache-files": "bun tools/scripts/lint/check-stray-cache-files.script.ts",
 		"lint:host-instructions": "bun tools/scripts/lint/host-instructions.script.ts",
+		"lint:worktree-location": "bun tools/scripts/lint/check-worktree-location.script.ts",
 		"lint:bootstrap-canonical": "bun tools/scripts/lint/bootstrap-canonical.script.ts",
 		"lint:host-hints-fragments": "bun tools/scripts/lint/host-hints-fragments.script.ts",
 		"lint:commit-branch": "bun tools/scripts/lint/commit-branch-discipline.script.ts",

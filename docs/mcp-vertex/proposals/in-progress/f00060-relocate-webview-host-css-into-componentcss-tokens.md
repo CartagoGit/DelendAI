@@ -1,12 +1,12 @@
 ---
 id: f00060
-status: ready
+status: in-progress
 type: proposal
 track: design-tokens+css+extension-ux
 date: 2026-06-25
 kind: refactor
 title: Relocate `--vscode-*` CSS custom properties from webviews into `componentCss` tokens
-shipped-in: []
+shipped-in: [c7419269]
 recan: []
 related:
     - a00040 # audit that surfaced this finding (H9)
