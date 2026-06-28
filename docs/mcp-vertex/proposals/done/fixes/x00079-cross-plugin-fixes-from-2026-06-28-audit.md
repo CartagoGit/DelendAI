@@ -9,7 +9,11 @@ title: Cross-plugin fixes from the 2026-06-28 audit — concurrency races, lint 
 runner: unknown
 model: unknown
 scope: cross-plugin-quick-wins
-shipped-in: []
+shipped-in:
+    - e6429054 # S1+S2+S3+S4+S5 (cross-plugin fixes + i18n) — bundled in one commit
+    - a0f3900e # S6 host-vocab removal
+    - caf49e15 # S7 inverted console.error guard
+    - 90655db4 # S8 process.cwd() → repoRoot() in sync-proposal-registry
 related:
     - a00045 # audit post-merge que originó los hallazgos
     - a00044 # audit de robustez sistémica (overlap parcial con H4)
@@ -50,29 +54,30 @@ The 2026-06-28 post-merge audit (`a00045`) found:
 
 Wrap the read → check → write cycle in `withFileMutex` so concurrent closure reports serialize.
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: e6429054
 - **Files**:
     - `plugins/proposals/src/lib/agents/closed-tasks-log.ts` [MODIFY]
     - `plugins/proposals/tests/src/lib/agents/closed-tasks-log.spec.ts` [MODIFY — add concurrency spec]
 - **Gate**: `bun run test`
 - **Closes**: a00045 H1 (P0)
-- status: done
 ### S2 — `promoteOnRelease` cross-process mutex
 
 Replace the in-process `mutexRegistry` with `withFileMutex(queuePath, ...)` from `packages/core/src/lib/shared/file-mutex`. Remove `IMutex`, `mutexRegistry`, and the local `withMutex` function.
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: e6429054
 - **Files**:
     - `plugins/proposals/src/lib/agents/promote-on-release.ts` [MODIFY]
     - `plugins/proposals/tests/src/lib/agents/promote-on-release.spec.ts` [MODIFY — add cross-process spec or document that the test uses single-process and the engine delegates to withFileMutex]
 - **Gate**: `bun run test`
 - **Closes**: a00045 H2 (P0)
-- status: done
 ### S3 — Per-file `withFileMutex` bundle in `proposals`
 
 Wrap each of the 4 sites (authoring.tool.ts × 2, sync-proposal-registry.ts reconcileBlocked, round-context-digest.ts writeRoundContextDigest) in `withFileMutex(<target path>, ...)`.
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: e6429054
 - **Files**:
     - `plugins/proposals/src/lib/tools/authoring.tool.ts` [MODIFY]
     - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts` [MODIFY]
@@ -80,7 +85,6 @@ Wrap each of the 4 sites (authoring.tool.ts × 2, sync-proposal-registry.ts reco
     - one new spec file under `plugins/proposals/tests/src/lib/` [CREATE] exercising concurrent calls with the same `docPath`
 - **Gate**: `bun run test`
 - **Closes**: a00045 H3 (P0)
-- status: done
 ### S4 — `lint:proposals` fails (not warns) on folder↔status mismatch and missing `paused-reason`
 
 Add 2 fatal checks:
@@ -89,20 +93,21 @@ Add 2 fatal checks:
 
 Update existing tests and add 2 new specs (one per check).
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: e6429054
 - **Files**:
     - `tools/scripts/lint/proposals.script.ts` [MODIFY]
     - `tools/scripts/lint/proposals.spec.ts` [MODIFY or CREATE if absent]
 - **Gate**: `bun run lint:proposals` (must exit 1 on the 3 currently-paused proposals that lack `paused-reason`, and on `done/feats/f00055-...md` whose status is `ready`)
 - **Side effect**: this slice will turn the gate red until the 3 paused proposals are amended with `paused-reason` and `f00055` is moved or its status corrected. The slice's PR should include those amendments as drive-by edits, OR the implementer can stage them as separate in-progress fixes.
 - **Closes**: a00045 H4 (P1)
-- status: done
 
 ### S5 — i18n strings for `[lang]/cli.astro` and `[lang]/guide.astro`
 
 Add `t.cli.title`, `t.cli.description`, `t.guide.title`, `t.guide.description`, `t.guide.toc` (array of 13 entries) to `apps/web/src/i18n/ui.ts` for all 12 languages. Pipe them through `<PageHeader>` and `<Base>`. Add a small scanner (Node script) that greps `.astro` files in `apps/web/src/pages/[lang]/` for `<PageHeader title=` and `<Base.* title=` with literal English strings, exit 1 on any match. Wire into `bun run site:strict`.
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: e6429054
 - **Files**:
     - `apps/web/src/i18n/ui.ts` [MODIFY — add the 5 keys × 12 langs]
     - `apps/web/src/pages/[lang]/cli.astro` [MODIFY — pipe `t.cli.*`]
@@ -112,7 +117,6 @@ Add `t.cli.title`, `t.cli.description`, `t.guide.title`, `t.guide.description`, 
     - `apps/web/package.json` [MODIFY — wire `bun run lint:web:jsx-literals` into `site:strict`]
 - **Gate**: `bun run site:strict`
 - **Closes**: a00045 H5 (P1)
-- status: done
 
 ### S6 — Host-vocab removal from issues / memory / quality knowledge text and error hints
 
