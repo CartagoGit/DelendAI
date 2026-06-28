@@ -176,6 +176,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `plugins/docs` engine moved to `fs/promises` (M4).
 
 ### Fixed
+- **`done/` closure routing** (f00042 engine wire-up): closing a proposal
+  (`proposal_transition → done` and `reconcileFolders`) now lands the
+  file under `done/<kind>/` (`done/feats/`, `done/fixes/`,
+  `done/refactors/`, `done/audits/`, `done/chores/`, `done/docs/`,
+  `done/tests/`, `done/plans/`, `done/resumes/`), matching the convention
+  the `filename-linter` was already validating. A new
+  `KIND_TO_DONE_SUBFOLDER` glossary + `doneFolderFor(kind)` helper
+  centralises the mapping; kinds without a registered sub-folder
+  (`legacy`, future kinds) still land at `done/` root. Sweep moves 12
+  closed proposals to their correct sub-folder.
 - **Blueprint cacheDir drift** (M15/H5): the one-time server blueprint now lands
   under the resolved `cacheDir` (CLI flag → `mcp-vertex.config.json` → default),
   matching the rest of the store; previously a config-only `cacheDir` was ignored
