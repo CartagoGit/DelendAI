@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T09:51:07.989Z",
+	"generatedAt": "2026-06-28T10:04:14.358Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -709,14 +709,6 @@
 				"date": "2026-06-27"
 			},
 			{
-				"id": "f00075",
-				"title": "f00075",
-				"track": "swarm+coordination+governance",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "f00079",
 				"title": "f00079",
 				"track": "security+webview+extension-ux",
@@ -774,11 +766,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 23,
+			"ready": 22,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 129,
+			"done": 130,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
