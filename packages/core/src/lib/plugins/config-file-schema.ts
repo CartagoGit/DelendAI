@@ -20,6 +20,7 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import { z } from 'zod';
+import { COMMIT_AUTHOR_MODES } from '../shared/commit-author';
 
 /** Structural schema for the config file (used by `--check`). */
 export const CONFIG_FILE_SCHEMA = z
@@ -29,6 +30,18 @@ export const CONFIG_FILE_SCHEMA = z
 		docsDir: z.string().optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		commitAuthor: z
+			.object({
+				// The mode list is sourced from `commit-author.ts` so
+				// the schema, the type and the resolver never drift.
+				mode: z.enum(COMMIT_AUTHOR_MODES).optional(),
+				clientName: z.string().optional(),
+				modelName: z.string().optional(),
+				humanName: z.string().optional(),
+				humanEmail: z.string().optional(),
+			})
+			.strict()
+			.optional(),
 		validationMatrix: z
 			.object({
 				scopes: z.record(
