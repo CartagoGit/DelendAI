@@ -18,7 +18,8 @@ ownership:
   - { agent: implementation_runner, task: 'S1: make auto_work call branch_gc dry-run when branchStatusWarnings is non-empty and surface the plan; cherry-pick policy S2 in the same hand-off' }
   - { agent: implementation_runner, task: 'S2: add proposals_swarm_hygiene tool that lists `ahead && !merged && ahead > 0` branches as "rescue candidates" with the diff stat vs develop, so the orchestrator can surface them to the human' }
   - { agent: implementation_runner, task: 'S3: skill + i18n + catalog refresh (multi-agent-coordination SKILL hygiene-loop section + 12-lang ui keys)' }
-  - { agent: delivery_verifier, task: 'V1: confirm branch_gc dry-run reports the merged worktree as removable, auto_work carries hygiene hints, swarm_hygiene surfaces the unmerged branch, bun run validate green' }
+  - { agent: implementation_runner, task: 'S4: front-hook in auto_work - run swarm_hygiene at the start of every plan; block plan if rescue candidates > 0 OR stashes > 0; surface gc-eligible plan and wait for forceHygieneBypass; warn on out-of-cache worktrees' }
+  - { agent: delivery_verifier, task: 'V1: confirm branch_gc dry-run reports the merged worktree as removable, auto_work front-hook blocks on rescue/stash and surfaces the right plan, swarm_hygiene surfaces the unmerged branch, bun run validate green' }
 globalGate: validate
 acceptance:
   - { command: bun run typecheck,           expect: exit0 }
@@ -114,11 +115,20 @@ close succession during the 2026-06-27 / 2026-06-28 sessions in
   stat and the cherry-pick commands so the operator does not have to
   re-discover `git log develop..agent/<name>` and `git diff --stat`.
 
-- **`auto_work` integration is opt-in.** `branchStatusWarnings` is
-  already in the plan (S2 of f00073). This proposal adds a
-  `branchHygieneHints: string[]` field that the orchestrator surfaces
-  to the user. The plan is never blocked by hygiene hints; the
-  orchestrator decides when to act.
+- **`auto_work` front-hook is the enforcer.** Hygiene runs at the
+  **start** of every plan, not as a follow-up after warnings. Without
+  this, the warnings from f00073 S2 accumulate silently between
+  sessions and the swarm decays back into the 2026-06-28 state. With
+  the front-hook, `auto_work` cannot start a new slice while there is
+  orphan work waiting to be rescued, and the orchestrator surfaces
+  the exact blockers to the user instead of letting them rot.
+
+- **Rescue and stash are blocking; GC is confirm-required;
+  out-of-cache is warning only.** This is the four-state decision the
+  orchestrator needs. Blocking GC would auto-delete work; blocking
+  out-of-cache would interrupt live sessions. Blocking rescue
+  candidates and stashes, on the other hand, prevents the actual loss
+  the user complained about.
 
 ## Non-goals
 
@@ -134,6 +144,14 @@ close succession during the 2026-06-27 / 2026-06-28 sessions in
   decides whether the work in them is recoverable.
 - Networking. The routine is local-only, like every other coordination
   primitive in the repo.
+- Auto-executing `branch_gc({ dryRun: false })`. The front-hook
+  surfaces the plan and waits for `forceHygieneBypass: true` (or for
+  the user to confirm). The hygiene loop is **observation first,
+  mutation only on confirmation**.
+- Auto-popping stashes. A stash is a deliberate checkpoint; `git stash
+  pop` can fail and leave the tree mid-merge. The front-hook blocks
+  new work and asks the user to `git stash pop && <commit>`, `git
+  stash show -p | git apply`, or `git stash drop`.
 
 ## Architecture
 
@@ -176,6 +194,8 @@ docs/mcp-vertex/proposals/
 
 ### S0 — Fix `branch_gc` "not-found" trap
 
+- **Status**: pending
+
 `branch_gc`'s `planGc` builds `branchByName` from
 `snapshot.branches`, which only contains branches reported by
 `git branch --list agent/*`. Worktrees whose branch tip is reachable
@@ -205,6 +225,8 @@ fields that need ahead/behind/merged.
 
 ### S1 — `auto_work` surface hygiene hints
 
+- **Status**: pending
+
 After `collectBranchStatusWarnings` (already wired in f00073 S2),
 `auto-work.tool.ts` builds the orchestration plan. Add a follow-up
 that, when `branchStatusWarnings.length > 0`, runs
@@ -228,6 +250,8 @@ to call `branch_gc({ dryRun: false })` for real.
   - `auto-work.spec.ts` adds a regression test for the new field.
 
 ### S2 — `proposals_swarm_hygiene` tool
+
+- **Status**: pending
 
 New pure engine + tool that returns three lists in one structured
 payload:
@@ -282,6 +306,7 @@ The tool is **read-only** (`effects: ['read']`). It does NOT call
 
 ### S3 — Skill + i18n + catalog refresh
 
+- **Status**: pending
 - **Files**:
   `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
   (new "Hygiene routine" section),
@@ -302,10 +327,83 @@ The tool is **read-only** (`effects: ['read']`). It does NOT call
   - `site:strict` is green.
   - `catalog:check` is green after regeneration.
 
+### S4 — Front-hook in `auto_work` (block on rescue + stash, surface GC, warn on out-of-cache)
+
+- **Status**: pending
+
+Without a front-hook, f00073 S2's `branchStatusWarnings` accumulate
+between sessions and the swarm decays back into the 2026-06-28
+state — the same orphan-branch / orphan-stash mess that motivated
+this whole proposal. S4 makes the orchestrator run the hygiene
+snapshot **at the start of every plan** and decide execution mode
+based on a four-state policy:
+
+| Snapshot state | Execution mode | Effect on `auto_work` |
+|---|---|---|
+| `rescueCandidates.length > 0` | **`blocked`** | `{ ok: false, reason: 'hygiene-blocked', blockers: ['<branch> is ahead by N; cherry-pick to develop or merge first', ...] }`. The orchestrator surfaces the blockers and the `cherryPickHint` for each. |
+| `stashes.length > 0` (from `git stash list`) | **`blocked`** | Same envelope, `blockers: ['N stashes present; pop+commit, apply, or drop before starting new work']`. The orchestrator asks the user which. |
+| `gcEligible.length > 0` (merged + clean + stale) | **`confirm-required`** | Plan proceeds; `plan.hygieneActions = ['branch_gc dry-run would remove N worktrees: <list>']`. The orchestrator / user passes `forceHygieneBypass: true` for `branch_gc` to execute, or false to skip. |
+| `outOfCache.length > 0` | **`warning`** | Plan proceeds; `plan.hygieneWarnings = ['N worktrees outside <cacheDir>/mcp-vertex/.worktrees (AGENTS.md violation)']`. Out-of-cache is never blocking because live sessions in `/tmp` or anywhere else would otherwise self-block. |
+
+The user (or host) can always pass `forceHygieneBypass: true` to skip
+all four states. The default is **strict**: rescue candidates and
+stashes are blocking because they represent **work at risk of loss**,
+which is exactly the failure mode the user described.
+
+The front-hook runs **after** the existing f00073 S2
+`collectBranchStatusWarnings` and **before** the orchestrator selects
+the next slice. It also runs **before** `proposals_pick_proposal`
+returns the next proposal id — so a hygiene-blocked session never
+claims a new slice, never opens an `agent_lock`, and never pushes.
+
+- **Files**:
+  `plugins/proposals/src/lib/tools/auto-work.tool.ts`,
+  `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`
+  (extends engine with `stashes` field via `git stash list`),
+  `plugins/proposals/src/lib/shared/stash-snapshot.ts` (NEW: pure
+  engine for `git stash list` parsing),
+  `plugins/proposals/tests/src/lib/auto-work.spec.ts`,
+  `plugins/proposals/tests/src/lib/shared/stash-snapshot.spec.ts`
+- **Gate**: `bun run validate`
+- **Acceptance**:
+  - `auto_work { }` with `rescueCandidates.length === 0 &&
+    stashes.length === 0` returns the plan unchanged (no
+    `hygieneBlockers`, no `hygieneActions`, no `hygieneWarnings`).
+  - `auto_work { }` with `rescueCandidates.length > 0` returns
+    `{ ok: false, reason: 'hygiene-blocked', blockers: [...],
+    rescueCandidates: [...] }` — never executes the slice selection.
+  - `auto_work { }` with `stashes.length > 0` returns
+    `{ ok: false, reason: 'hygiene-blocked', blockers: [...],
+    stashes: [...] }`.
+  - `auto_work { }` with `gcEligible.length > 0 &&
+    rescueCandidates.length === 0 && stashes.length === 0` returns
+    the plan with `hygieneActions: ['branch_gc dry-run would remove
+    N worktrees...']`. The orchestrator then decides whether to
+    execute.
+  - `auto_work { forceHygieneBypass: true }` ignores all four states
+    and runs the slice selection as today.
+  - The plan outputSchema adds `hygieneBlockers?: string[]`,
+    `hygieneActions?: string[]`, `hygieneWarnings?: string[]`,
+    `stashes?: IStashEntry[]`, `rescueCandidates?: IRescueEntry[]`
+    (all optional). `executionMode` becomes `'normal' |
+    'confirm-required' | 'blocked'`.
+  - The front-hook is **idempotent and side-effect free**: it never
+    runs `git stash pop`, `git stash drop`, `git cherry-pick`,
+    `git merge`, or `git worktree remove`. Those remain explicit
+    operator actions.
+  - Two regression tests in `auto-work.spec.ts`:
+    (a) hygiene-blocked plan returns `{ ok: false }` and never
+    selects a slice,
+    (b) forceHygieneBypass overrides the block.
+
 ### V1 — Delivery verification
 
+- **Status**: pending
 - **Acceptance**:
-  - All S0..S3 acceptance criteria hold.
+  - All S0..S4 acceptance criteria hold.
+
+The acceptance section above is the running list; this slice
+documents the verification chain (run on the final land).
   - `bun run validate` is green end-to-end.
   - Manual dry-run on a fixture workspace with two agent worktrees
     (one merged, one ahead) confirms:
@@ -321,11 +419,15 @@ The tool is **read-only** (`effects: ['read']`). It does NOT call
 S0 ──> S1 (auto_work reads branch_gc result)
 S0 ──> S2 (swarm_hygiene mirrors GC eligibility)
 S2 ──> S3 (skill + i18n document the new tool)
+S2 ──> S4 (auto_work front-hook consumes swarm_hygiene + stash snapshot)
 S3 ──> V1 (verification)
+S4 ──> V1 (verification)
 ```
 
-S0 is independent of S1/S2 (it fixes a bug) and can land first. S1
-and S2 are independent of each other. S3 unblocks V1.
+S0 is independent of S1/S2/S4 (it fixes a bug) and can land first.
+S1 and S2 are independent of each other. S4 depends on S2 (uses
+`swarm_hygiene` payload) and on a new `stash-snapshot.ts` helper.
+S3 unblocks V1.
 
 ## Acceptance
 
@@ -337,6 +439,12 @@ and S2 are independent of each other. S3 unblocks V1.
   as `not-found`.
 - `auto_work`'s plan carries `branchHygieneHints` whenever
   `branchStatusWarnings` is non-empty.
+- `auto_work`'s plan returns `{ ok: false, reason:
+  'hygiene-blocked' }` whenever rescue candidates > 0 OR
+  stashes > 0. With `forceHygieneBypass: true`, it proceeds.
+- A stale-stash fixture test confirms the front-hook blocks a
+  pretend session; with `forceHygieneBypass: true`, the same
+  fixture returns a normal plan.
 - `bun run validate`, `bun run site:strict`, `bun run catalog:check`
   all green.
 
