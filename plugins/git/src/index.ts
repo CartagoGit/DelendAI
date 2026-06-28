@@ -51,6 +51,7 @@ export default definePlugin({
 			? buildGitWriteToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
 					run,
+					commitAuthor: ctx.commitAuthor,
 				})
 			: [];
 		return {

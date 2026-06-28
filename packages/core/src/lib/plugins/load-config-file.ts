@@ -94,6 +94,7 @@ export interface ILoopDetectorConfig {
 	readonly handoffDir?: string;
 	readonly handoffTtlDays?: number;
 	readonly notifyOnDetect?: boolean;
+	readonly cooldownMs?: number;
 	/**
 	 * Agent names (or glob patterns) the detector MUST ignore. Designed
 	 * for interactive host sessions (e.g. `copilot-default`,

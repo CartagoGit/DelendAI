@@ -289,19 +289,19 @@ export class AgentLoopDetectorService {
 		this.windowMap.set(agent, window);
 
 		// Run detection
-		const detectorCalls: IDetectorToolCall[] = window.map((c) => ({
-			tool: c.tool,
-			args: c.args,
-			agent: c.agent,
-			timestamp: c.timestamp,
-			outcome: c.outcome,
-			// `IExtendedToolCall.progressHash` is `string | null`
-			// (semantic distinction: hash vs no-hash). The detector's
-			// `IToolCall.progressHash` is `string | undefined` (treats
-			// both the same — "no progress signal"). Convert null to
-			// undefined at the boundary so the types align.
-			progressHash: c.progressHash ?? undefined,
-		}));
+		const detectorCalls: IDetectorToolCall[] = window.map((c) => {
+			const call: IDetectorToolCall = {
+				tool: c.tool,
+				args: c.args,
+				agent: c.agent,
+				timestamp: c.timestamp,
+				outcome: c.outcome,
+			};
+			if (c.progressHash) {
+				return { ...call, progressHash: c.progressHash };
+			}
+			return call;
+		});
 
 		const verdict = detectAgentLoop(detectorCalls, {
 			ringSize: this.options.ringSize,
@@ -640,9 +640,12 @@ export const computeProgressHash = async (
 	gitRunner: IGitRunner,
 ): Promise<string | null> => {
 	try {
-		const lockRaw = await readFile(lockPath, 'utf8').catch(() => '');
+		const lockRaw = await readFile(lockPath, 'utf8');
 		const diffRes = await gitRunner(['diff', '--stat']);
-		const diffSummary = diffRes.ok ? diffRes.output.trim() : '';
+		if (!diffRes.ok) {
+			throw new Error('git diff failed');
+		}
+		const diffSummary = diffRes.output.trim();
 		return createHash('sha256')
 			.update(`${lockRaw}|${diffSummary}`)
 			.digest('hex')

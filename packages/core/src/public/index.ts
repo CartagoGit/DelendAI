@@ -291,6 +291,21 @@ export type {
 	ICommitAndPushOptions,
 	ICommitAndPushResult,
 } from '../lib/shared/git-write';
+// --- commit author policy (f00082) ---
+export {
+	resolveCommitAuthor,
+	COMMIT_AUTHOR_MODES,
+	createGitConfigReader,
+} from '../lib/shared/commit-author';
+export type {
+	CommitAuthorMode,
+	ICommitAuthorIdentity,
+	ICommitAuthorNamed,
+	ICommitAuthorInput,
+	ICommitAuthorResolution,
+	IGitConfigReader,
+} from '../lib/shared/commit-author';
+
 // f00065 slice F: the canonical shared git-runner contract. Plugins that used
 // to redefine this type (git, proposals) import it from here instead.
 export type {

@@ -86,16 +86,6 @@ Add a section explaining the prefix flow:
 - **Gate**: `bun run site:strict` (docs must not have broken links)
 - **Closes**: feature completion for documentation
 
-## acceptance
-
-- A host that sets `--prefix=acme` at boot can call `OverviewService({ namespacePrefix: 'acme_' }).request(...)` and receive the correct `acme_overview` response.
-- The default constructor `OverviewService()` continues to call `mcp-vertex_overview` (no behaviour change for existing consumers).
-- `bun run validate` exits 0; existing tests still pass; new tests cover at least:
-    - Default prefix produces `mcp-vertex_overview`.
-    - Custom prefix produces `<custom>_overview`.
-    - Missing prefix is treated as default.
-- Docs are updated; no broken links.
-
 ## dependency graph
 
 ```

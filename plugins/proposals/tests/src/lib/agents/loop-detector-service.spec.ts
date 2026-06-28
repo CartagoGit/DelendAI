@@ -86,7 +86,8 @@ describe('AgentLoopDetectorService', async () => {
 			await service.onToolCall(
 				'read_file',
 				{ path: 'foo.ts', agent: 'a1' },
-				{ ok: true },
+				undefined,
+				new Error('loop'),
 			);
 		}
 
@@ -116,7 +117,8 @@ describe('AgentLoopDetectorService', async () => {
 					agent: 'a1',
 					key: 'sk_test_1234567890abcdef12345',
 				},
-				{ ok: true },
+				undefined,
+				new Error('loop'),
 			);
 		}
 
@@ -199,7 +201,8 @@ describe('AgentLoopDetectorService', async () => {
 			await service.onToolCall(
 				'search_search',
 				{ query: 'x' },
-				{ ok: true },
+				undefined,
+				new Error('loop'),
 			);
 
 			// Confirm via observable behaviour: repeat the same call past
@@ -208,7 +211,8 @@ describe('AgentLoopDetectorService', async () => {
 				await service.onToolCall(
 					'search_search',
 					{ query: 'x' },
-					{ ok: true },
+					undefined,
+					new Error('loop'),
 				);
 			}
 			const stuck = service.isAgentStuck('search_search', {});
@@ -271,7 +275,8 @@ describe('AgentLoopDetectorService', async () => {
 				await service.onToolCall(
 					'read_file',
 					{ path: 'foo.ts', agent: 'a2' },
-					{ ok: true },
+					undefined,
+					new Error('loop'),
 				);
 			}
 			const stuck = service.isAgentStuck('read_file', { agent: 'a2' });
@@ -453,8 +458,12 @@ describe('AgentLoopDetectorService', async () => {
 				ok: true,
 				output: ' 1 file changed, 1 insertion(+)',
 			})) as unknown as Parameters<typeof computeProgressHash>[1];
-			const h1 = await computeProgressHash('/tmp/lock.json', fakeGit);
-			const h2 = await computeProgressHash('/tmp/lock.json', fakeGit);
+			const { writeFileSync } = await import('node:fs');
+			const { join } = await import('node:path');
+			const lockPath = join(dir, 'lock.json');
+			writeFileSync(lockPath, 'lock content');
+			const h1 = await computeProgressHash(lockPath, fakeGit);
+			const h2 = await computeProgressHash(lockPath, fakeGit);
 			expect(h1).not.toBeNull();
 			expect(h1).toBe(h2); // deterministic
 			expect(h1).toMatch(/^[0-9a-f]{16}$/);
@@ -527,7 +536,8 @@ describe('AgentLoopDetectorService', async () => {
 				await service.onToolCall(
 					'edit_file',
 					{ path: 'foo.ts', agent: 'falcon' },
-					{ ok: true },
+					undefined,
+					new Error('loop'),
 				);
 			}
 			const stuck = service.isAgentStuck('edit_file', {
@@ -617,7 +627,8 @@ describe('AgentLoopDetectorService', async () => {
 					await service.onToolCall(
 						'read_file',
 						{ path: 'x.ts', agent: 'copilot-default' },
-						{ ok: true },
+						undefined,
+						new Error('loop'),
 					);
 				}
 				expect(
@@ -645,7 +656,8 @@ describe('AgentLoopDetectorService', async () => {
 				await service.onToolCall(
 					'read_file',
 					{ path: 'x.ts', agent: 'copilot-default' },
-					{ ok: true },
+					undefined,
+					new Error('loop'),
 				);
 			}
 			expect(

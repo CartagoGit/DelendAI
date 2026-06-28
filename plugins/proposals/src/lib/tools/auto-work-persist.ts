@@ -35,7 +35,10 @@
  * if (!result.committed) console.warn('persist skipped:', result.reason);
  * ```
  */
-import { commitAndPush } from '@mcp-vertex/core/public';
+import {
+	commitAndPush,
+	type ICommitAuthorResolution,
+} from '@mcp-vertex/core/public';
 
 import type { IGitRunner } from '../shared/git-runner';
 
@@ -73,6 +76,8 @@ export interface IAutoWorkPersistOptions {
 	 * `execFile`). Tests always pass a mock to keep the helper pure.
 	 */
 	readonly git?: IGitRunner;
+	/** f00082: resolved commit-author policy. */
+	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 }
 
 /**
@@ -222,6 +227,12 @@ export const maybePersistAfterSlice = async (
 	const area = inferArea(files);
 	const message = renderCommitMessage(template, area, proposalId, sliceId);
 
+	if (options.commitAuthor?.reason) {
+		return persistResult(false, false, mode, {
+			reason: options.commitAuthor.reason,
+		});
+	}
+
 	// `mode === 'commit-and-push'` with a `pushTarget` that would hit
 	// `main` is special-cased BEFORE calling the shared engine: the
 	// commit still happens, but the push step is skipped entirely (the
@@ -236,6 +247,9 @@ export const maybePersistAfterSlice = async (
 		files,
 		message,
 		git: run,
+		...(options.commitAuthor?.authorFlag
+			? { authorFlag: options.commitAuthor.authorFlag }
+			: {}),
 		...(mode === 'commit-and-push' && !wouldHitMain
 			? {
 					push: {

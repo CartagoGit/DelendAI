@@ -53,6 +53,7 @@ export interface ILoopDetectorServiceOptions {
 	 * set to `[]` in the config to opt back into universal monitoring.
 	 */
 	interactiveAgentPatterns: readonly string[];
+	cooldownMs: number;
 }
 
 /**
@@ -133,6 +134,7 @@ export const LOOP_DETECTOR_DEFAULTS: ILoopDetectorServiceOptions = {
 	// whose interactive session is named differently can extend this
 	// list from the config file (`loopDetector.interactiveAgentPatterns`).
 	interactiveAgentPatterns: ['*-default', 'default-*', 'host', 'interactive'],
+	cooldownMs: 30_000,
 };
 
 /**
@@ -216,6 +218,8 @@ export const parseLoopDetectorCliOverrides = (
 			// is treated as "explicit opt-out of all ignore rules".
 			out.interactiveAgentPatterns =
 				val === '' ? [] : val.split(',').map((p) => p.trim());
+		} else if (subKey === 'cooldownMs' || subKey === 'cooldown-ms') {
+			out.cooldownMs = Number(val);
 		}
 	}
 	return out;
@@ -293,5 +297,7 @@ export const resolveLoopDetectorConfigFromFileConfig = (
 			cliConfig.interactiveAgentPatterns ??
 			loop?.interactiveAgentPatterns ??
 			defaults.interactiveAgentPatterns,
+		cooldownMs:
+			cliConfig.cooldownMs ?? loop?.cooldownMs ?? defaults.cooldownMs,
 	};
 };
