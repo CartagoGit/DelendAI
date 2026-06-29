@@ -229,10 +229,10 @@ The root is intentionally minimal. Before adding a file to it, check:
   `tools/scripts/lib/monorepo-paths.ts` in tooling — never a hardcoded
   folder-relative `.cache`. `bun run lint:cache` FAILS if any `.cache`
   appears outside the root.
-- **Relocatable tool configs live in `configs/`.** A tool config moves to
-  `configs/` only if (a) the tool accepts an explicit config path AND
+- **Relocatable tool configs live in `config/`.** A tool config moves to
+  `config/` only if (a) the tool accepts an explicit config path AND
   (b) the VS Code editor integration is unaffected.
-- **External agent/IDE configs may use `configs/external/<tool>/`** as the
+- **External agent/IDE configs may use `config/external/<tool>/`** as the
   canonical source only when the tool's root auto-discovery keeps working
   via a tested stub, include, symlink, or explicit path. Do not move
   `.github/`, `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, `.continue/`,
@@ -246,5 +246,5 @@ The root is intentionally minimal. Before adding a file to it, check:
   `SECURITY.md`) — GitHub discovers them there. `README.md`, `LICENSE`,
   `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` stay at root by convention.
 - A new root file must justify itself against the above; otherwise it
-  belongs in `.github/`, `docs/mcp-vertex/`, `tools/`, `configs/`, or
+  belongs in `.github/`, `docs/mcp-vertex/`, `tools/`, `config/`, or
   under `.cache/`.

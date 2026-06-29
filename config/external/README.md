@@ -9,9 +9,9 @@ If the host ignores the bridge, the root file stays as the integration boundary.
 
 Current symlink bridges:
 
-- `.aider.conf.yml` -> `configs/external/aider/aider.conf.yml`
-- `.cursorrules` -> `configs/external/cursor/cursorrules`
-- `.mcp.json` -> `configs/external/mcp/mcp.json`
+- `.aider.conf.yml` -> `config/external/aider/aider.conf.yml`
+- `.cursorrules` -> `config/external/cursor/cursorrules`
+- `.mcp.json` -> `config/external/mcp/mcp.json`
 
 Current root-discovered configs:
 
