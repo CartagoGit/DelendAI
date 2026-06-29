@@ -195,6 +195,30 @@ export const collectInitAnswers = async (
 		`\n${brand('mcp-vertex')} ${hint('›')} ${heading('workspace bootstrap')}\n\n`,
 	);
 
+	// f00088 S1: surface the detection summary at the top of the
+	// prompt flow so the operator sees what was detected before any
+	// question renders. Falls back to a neutral line when detection
+	// did not run (older code paths).
+	if (overrides.detected !== undefined) {
+		const d = overrides.detected;
+		const parts: string[] = [d.language];
+		if (d.framework !== undefined) parts.push(d.framework);
+		parts.push(d.packageManager);
+		if (d.monorepoTool !== undefined) parts.push(d.monorepoTool);
+		process.stderr.write(
+			`${success('detected')} ${hint('›')} ${brand(parts.join(' + '))}\n`,
+		);
+		if (d.hasMcpProject) {
+			process.stderr.write(
+				`${hint('  existing MCP evidence: ')} ${brand(d.mcpEvidence.join(', ') || 'unknown')}\n`,
+			);
+		}
+		process.stderr.write(
+			`${hint('  plugin paths root: ')} ${brand(d.pluginPathsRoot)}${hint(' (override with --plugin-paths-root=<path>)')}\n`,
+		);
+		process.stderr.write('\n');
+	}
+
 	const rl = openRl();
 	try {
 		const preset = await askChoice<

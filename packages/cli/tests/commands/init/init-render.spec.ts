@@ -290,3 +290,87 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 		}
 	});
 });
+
+describe('plugin defaults (f00087 S1 preview)', () => {
+	it('audit initialises with auditDir and topActions', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers(
+				{
+					preset: 'swarm',
+					extraPlugins: ['audit'],
+				},
+				'/tmp/defaults-test',
+			),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: {
+				audit: { options: { auditDir?: string; topActions?: number } };
+			};
+		};
+		expect(parsed.plugins.audit.options.auditDir).toBe(
+			'docs/proposals/done/audits',
+		);
+		expect(parsed.plugins.audit.options.topActions).toBe(5);
+	});
+
+	it('memory initialises with bm25 defaults', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'swarm' }),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: {
+				memory: { options: { bm25K1?: number; bm25B?: number } };
+			};
+		};
+		expect(parsed.plugins.memory.options.bm25K1).toBe(1.5);
+		expect(parsed.plugins.memory.options.bm25B).toBe(0.75);
+	});
+
+	it('search initialises with sensible roots and extensions', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'swarm' }),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: {
+				search: {
+					options: { roots?: string[]; extensions?: string[] };
+				};
+			};
+		};
+		expect(parsed.plugins.search.options.roots).toContain('packages');
+		expect(parsed.plugins.search.options.extensions).toContain('.ts');
+	});
+
+	it('web-fetch is empty by default (fail closed)', async () => {
+		const bundle = await renderInitBundle(parseAnswers({ preset: 'full' }));
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
+		};
+		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([]);
+	});
+
+	it('unknown plugins produce an empty options object', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'minimal' }),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: { git: { options: Record<string, unknown> } };
+		};
+		expect(parsed.plugins.git.options).toEqual({});
+	});
+});

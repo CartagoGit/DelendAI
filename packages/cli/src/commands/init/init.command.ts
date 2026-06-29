@@ -15,17 +15,32 @@ import type {
 	ICliCommand,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
+import { detectTargetProject, withDetection } from './init-detection';
 import { collectInitAnswers } from './init-prompts';
 import { renderInitBundle } from './init-render';
 import { writeMcpVertexConfig, writeWorkspaceText } from './init-writers';
 
 const parseFlags = (
 	args: readonly string[],
-): { dryRun: boolean; force: boolean } => {
-	const out = { dryRun: false, force: false };
+): {
+	dryRun: boolean;
+	force: boolean;
+	mcpVertexRoot?: string;
+	pluginPathsRoot?: string;
+} => {
+	const out: {
+		dryRun: boolean;
+		force: boolean;
+		mcpVertexRoot?: string;
+		pluginPathsRoot?: string;
+	} = { dryRun: false, force: false };
 	for (const arg of args) {
 		if (arg === '--dry-run') out.dryRun = true;
 		else if (arg === '--force') out.force = true;
+		else if (arg.startsWith('--mcp-vertex-root='))
+			out.mcpVertexRoot = arg.slice('--mcp-vertex-root='.length);
+		else if (arg.startsWith('--plugin-paths-root='))
+			out.pluginPathsRoot = arg.slice('--plugin-paths-root='.length);
 	}
 	return out;
 };
@@ -35,10 +50,40 @@ export const initCommand: ICliCommand = {
 	summary: 'Interactive workspace bootstrap for mcp-vertex.',
 	usage: 'init [--dry-run] [--force]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
-		const { dryRun, force } = parseFlags(args);
+		const { dryRun, force, mcpVertexRoot, pluginPathsRoot } =
+			parseFlags(args);
+		// f00088 S1: detect the target project shape BEFORE the
+		// prompts run, so the operator sees "✓ detected: typescript +
+		// angular + bun + yarn-workspaces" at the top of the prompt
+		// flow. The detection is wrapped in `try/catch` so an analyzer
+		// failure never aborts the bootstrap — we fall through with
+		// `detected: undefined` and the legacy greenfield path runs.
+		let preAnswers;
+		try {
+			preAnswers = await withDetection(
+				{
+					preset: 'swarm',
+					extraPlugins: [],
+					excludedPlugins: [],
+					hostInstructions: 'append',
+					copyCoreSkills: true,
+					generateAgentMd: true,
+					migrateFromLegacy: true,
+					force,
+					workspaceRoot: ctx.cwd,
+				},
+				ctx.cwd,
+				pluginPathsRoot !== undefined
+					? { explicitPluginPathsRoot: pluginPathsRoot }
+					: {},
+			);
+		} catch {
+			preAnswers = undefined;
+		}
 		const answers = await collectInitAnswers(ctx.cwd, {
 			force,
 			workspaceRoot: ctx.cwd,
+			detected: preAnswers?.detected,
 		});
 		const bundle = await renderInitBundle(answers);
 
