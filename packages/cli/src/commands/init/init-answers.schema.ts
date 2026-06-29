@@ -89,6 +89,33 @@ export const InitAnswers = z.object({
 
 	/** Workspace root resolved by the CLI context. */
 	workspaceRoot: z.string().default(process.cwd()),
+
+	/**
+	 * f00088 S1: detection result from `analyzeProject`. Populated
+	 * by `withDetection` BEFORE the prompt flow runs; never asked
+	 * of the operator. Every field is documented in
+	 * `init-detection.ts#IInitDetection`.
+	 */
+	detected: z
+		.object({
+			language: z.string(),
+			framework: z.string().optional(),
+			packageManager: z.string(),
+			monorepoTool: z.string().optional(),
+			hasMcpProject: z.boolean(),
+			mcpEvidence: z.array(z.string()),
+			pluginPathsRoot: z.string(),
+			sourceRoot: z.enum(['libs', 'packages', 'plugins', 'src']),
+			hostEntryPath: z.string().optional(),
+			hostEntrySource: z.enum([
+				'flag',
+				'node_modules',
+				'sibling',
+				'npm_dist',
+				'unresolved',
+			]),
+		})
+		.optional(),
 });
 
 export type IInitAnswers = z.infer<typeof InitAnswers>;

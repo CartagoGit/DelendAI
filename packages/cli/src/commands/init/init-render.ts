@@ -12,6 +12,7 @@ import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
 } from './init-host-instructions';
+import { resolvePluginOptions } from './plugin-defaults';
 import { renderMigrationProposal } from './init-migrate-offer';
 import type { IInitAnswers } from './init-answers.schema';
 
@@ -82,7 +83,7 @@ export const renderMcpVertexConfig = (
 	const pluginsBlock: Record<string, { options: Record<string, unknown> }> =
 		{};
 	for (const plugin of resolvedPlugins) {
-		pluginsBlock[plugin] = { options: {} };
+		pluginsBlock[plugin] = { options: resolvePluginOptions(plugin) };
 	}
 	const config = {
 		$schema:
