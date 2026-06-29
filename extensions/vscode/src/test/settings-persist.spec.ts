@@ -68,13 +68,17 @@ describe('settings save / reset commands', async () => {
 
 		expect(commands.has(SAVE_SETTINGS_COMMAND)).toBe(true);
 
+		// f00062 S3: the wire payload is the FLAT `IExtensionSettings`
+		// shape (the schema is the single source of truth). The previous
+		// handler looked for `{ extension: { ... } }` and silently
+		// dropped saves that did not match. The host now `safeParse`s
+		// the top-level object, so the test must send all five fields.
 		await commands.get(SAVE_SETTINGS_COMMAND)?.({
-			extension: {
-				docsUrl: 'https://example.com/docs',
-				allowLocalhost: true,
-				logLevel: 'debug',
-				theme: 'light',
-			},
+			docsUrl: 'https://example.com/docs',
+			allowLocalhost: true,
+			allowPrivateIps: false,
+			logLevel: 'debug',
+			theme: 'light',
 		});
 
 		const stored = (await store.read()) as {

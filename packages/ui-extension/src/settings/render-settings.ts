@@ -39,11 +39,12 @@ const clientScript = (savedMessage: string, resetMessage: string): string => `
   function readForm(form) {
     const out = {};
     new FormData(form).forEach(function (value, key) { out[key] = value; });
-    // Booleans (checkboxes): if the box is unchecked the field is
-    // missing from FormData, so default it to 'false'. The host
-    // reconciles these strings with the typed model.
-    out.allowLocalhost = form.querySelector('[name="allowLocalhost"]').checked ? 'true' : 'false';
-    out.allowPrivateIps = form.querySelector('[name="allowPrivateIps"]').checked ? 'true' : 'false';
+    // f00062 H13: post booleans as booleans, not 'true' / 'false' strings.
+    // The host's Zod parse (ExtensionSettingsSchema) rejects strings where
+    // booleans are declared — emitting 'true' / 'false' would round-trip
+    // back as a malformed payload. The schema is the single source of truth.
+    out.allowLocalhost = form.querySelector('[name="allowLocalhost"]').checked;
+    out.allowPrivateIps = form.querySelector('[name="allowPrivateIps"]').checked;
     return out;
   }
 
