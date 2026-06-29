@@ -24,7 +24,7 @@ const makeService = (
 
 describe('DashboardService', async () => {
 	it('getOverviewModel returns totals derived from metrics + proposals', async () => {
-		const { service } = makeService();
+		const { service, calls } = makeService();
 		const model = await service.getOverviewModel();
 		expect(model.serverName).toBe(overviewFixture.server.name);
 		expect(model.serverVersion).toBe(overviewFixture.server.version);
@@ -35,7 +35,11 @@ describe('DashboardService', async () => {
 		expect(model.totals.errors).toBe(metricsFixture.totals.errors);
 		expect(model.totals.tokens).toBe(Math.ceil(7800 * 0.25));
 		expect(model.totals.proposals).toBe(proposalsFixture.proposals.length);
-		expect(model.totals.agents).toBe(agentsFixture.agents.length);
+		expect(model.totals.agents).toBe(agentsFixture.assignments.length);
+		expect(
+			calls.find((c) => c.tool === 'mcp-vertex_proposals_agent_names')
+				?.args,
+		).toEqual({ action: 'list' });
 	});
 
 	it('getMetricsModel sorts rows by calls desc and computes avgMs', async () => {

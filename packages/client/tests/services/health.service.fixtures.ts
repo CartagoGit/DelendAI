@@ -50,7 +50,10 @@ export const healthyFixture = {
 		zombies: [],
 	},
 	'mcp-vertex_proposals_agent_names': {
-		agents: [{ name: 'a1' }, { name: 'a2' }],
+		assignments: [
+			{ agent_name: 'a1', status: 'active' },
+			{ agent_name: 'a2', status: 'active' },
+		],
 	},
 };
 
@@ -83,6 +86,9 @@ export const unhealthyFixture = {
 		],
 	},
 	'mcp-vertex_proposals_agent_names': {
-		agents: [{ name: 'a1' }, { name: 'a-stale' }],
+		assignments: [
+			{ agent_name: 'a1', status: 'active' },
+			{ agent_name: 'a-stale', status: 'active' },
+		],
 	},
 };

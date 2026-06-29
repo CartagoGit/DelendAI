@@ -67,9 +67,15 @@ describe('McpVertexStatusBar', async () => {
 					if (input.name === 'mcp-vertex_proposals_agent_names') {
 						return {
 							structuredContent: {
-								agents: [
-									{ name: 'implementation_runner' },
-									{ name: 'delivery_verifier' },
+								assignments: [
+									{
+										agent_name: 'implementation_runner',
+										status: 'active',
+									},
+									{
+										agent_name: 'delivery_verifier',
+										status: 'active',
+									},
 								],
 							},
 						};
@@ -137,7 +143,7 @@ describe('McpVertexStatusBar', async () => {
 					};
 				}
 				if (input.name === 'mcp-vertex_proposals_agent_names') {
-					return { structuredContent: { agents: [] } };
+					return { structuredContent: { assignments: [] } };
 				}
 				return { structuredContent: {} };
 			},

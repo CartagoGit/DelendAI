@@ -31,6 +31,10 @@ describe('HealthService', async () => {
 		expect(names).toContain('mcp-vertex_proposals_state_health');
 		expect(names).toContain('mcp-vertex_proposals_proposal_stale_list');
 		expect(names).toContain('mcp-vertex_proposals_agent_names');
+		expect(
+			calls.find((c) => c.tool === 'mcp-vertex_proposals_agent_names')
+				?.args,
+		).toEqual({ action: 'list' });
 	});
 
 	it('snapshot reports unhealthy when the queue has orphans', async () => {
