@@ -57,6 +57,46 @@ export const splitLastLine = (
 };
 
 /**
+ * Dash characters an agent might emit as the marker↔reason separator. The
+ * canonical renderer (`formatCloseMarker`) always uses the em-dash
+ * (U+2014), but an LLM hand-typing or copy-editing the line frequently
+ * substitutes an ASCII hyphen-minus (`-`), an en-dash (U+2013), a
+ * horizontal bar (U+2015), or a double-hyphen (`--`). Treating only the
+ * em-dash as the separator made validation pass "only sometimes": the
+ * exact same reason was reported as `reason-missing` whenever the model
+ * picked a different dash. We normalise all of them.
+ */
+const SEPARATOR_DASHES = ['—', '–', '―', '--', '-'] as const;
+
+/**
+ * Extract the reason from the text that follows the `]` bracket. Tolerant
+ * of the dash variants in {@link SEPARATOR_DASHES} as well as a reason
+ * placed directly after the bracket with no dash at all (a colon is also
+ * accepted). Returns `undefined` when there is no reason text.
+ *
+ * Pure and deterministic: the same input always yields the same reason,
+ * regardless of which separator glyph the agent chose.
+ */
+const extractReason = (tail: string): string | undefined => {
+	const trimmed = tail.trim();
+	if (trimmed === '') return undefined;
+	for (const dash of SEPARATOR_DASHES) {
+		if (trimmed.startsWith(dash)) {
+			const reason = trimmed.slice(dash.length).trim();
+			return reason === '' ? undefined : reason;
+		}
+	}
+	if (trimmed.startsWith(':')) {
+		const reason = trimmed.slice(1).trim();
+		return reason === '' ? undefined : reason;
+	}
+	// No recognised separator, but there IS text after the bracket — treat
+	// it as the reason. This is the "missing dash" case (`[CAP] turno
+	// agotado`): the agent supplied a reason, just without a separator.
+	return trimmed;
+};
+
+/**
  * Validate a single line as a canonical close-marker line. Returns an
  * `ok: true` result only when every rule is satisfied.
  */
@@ -83,11 +123,7 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 	}
 
 	const tail = afterEmoji.slice(bracketEnd + 1).trim();
-	let reason: string | undefined;
-	if (tail.startsWith('—')) {
-		reason = tail.slice(1).trim();
-		if (reason === '') reason = undefined;
-	}
+	const reason = extractReason(tail);
 
 	const violations: Violation[] = [];
 
