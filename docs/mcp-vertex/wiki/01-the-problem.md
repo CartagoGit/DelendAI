@@ -92,7 +92,7 @@ code. Mitigations:
 | Strategy | Lives where | Survives weekly churn |
 |---|---|---|
 | Hardcoded in `mcp-vertex` source | `packages/core/src/...` | ❌ worst |
-| YAML file in our repo | `configs/providers.yaml` | ⚠️ needs PRs |
+| YAML file in our repo | `config/providers.yaml` | ⚠️ needs PRs |
 | User's `mcp-vertex.config.json` | at project root | ✅ user-maintained |
 | Subscribed upstream feed (LiteLLM JSON, OpenRouter API) | external | ✅ auto |
 | LLM-as-advisor interprets declared roster | user's config + LLM | ✅ most resilient |

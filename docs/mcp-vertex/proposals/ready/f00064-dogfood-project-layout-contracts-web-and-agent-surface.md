@@ -14,7 +14,7 @@ related:
     - f00056 # agent discovery tool/skill catalog
     - f00057 # skill unification and plugin coverage wiring
 ownership:
-    - { agent: implementation_runner, task: 'S1: move every safely relocatable root config into configs/ and wire package scripts/editor-safe explicit paths' }
+    - { agent: implementation_runner, task: 'S1: move every safely relocatable root config into config/ and wire package scripts/editor-safe explicit paths' }
     - { agent: implementation_runner, task: 'S2: finish cache centralization under .cache/mcp-vertex and document every root exception with a tool constraint' }
     - { agent: implementation_runner, task: 'S3: enforce contracts/{interfaces,constants} naming for interfaces, exported types, and constants in touched packages/plugins' }
     - { agent: web_runner, task: 'S4: fix responsive header overlap and marquee layout across mobile/tablet/desktop screenshots' }
@@ -68,7 +68,7 @@ The target dogfood layout is:
   .worktrees/
   handoff/
   verify/
-configs/
+config/
   <only configs whose tools accept explicit paths without breaking editor integration>
   external/
     <tool>/
@@ -83,7 +83,7 @@ Runtime-generated state belongs under `.cache/mcp-vertex/**`. Human-authored mcp
 External agent/IDE configs are evaluated per host:
 
 - `.github/` workflows, community health files, `CODEOWNERS`, Dependabot config, Copilot instructions, and GitHub agent files are root-discovered by GitHub/GitHub Copilot; they stay at `.github/**` unless a tested root bridge preserves GitHub behavior.
-- `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, and `.continue/` may move their canonical authored source to `configs/external/<tool>/` only if the root path remains a working discovery point through a tested include/stub/symlink or explicit host setting. `.continue/` is the Continue.dev workspace assistant config, not mcp-vertex runtime state.
+- `.vscode/`, `.cursor/`, `.claude/`, `.codex/`, and `.continue/` may move their canonical authored source to `config/external/<tool>/` only if the root path remains a working discovery point through a tested include/stub/symlink or explicit host setting. `.continue/` is the Continue.dev workspace assistant config, not mcp-vertex runtime state.
 - If a host does not support includes and ignores symlinks, the root file is not clutter; it is the integration boundary.
 - Astro's configurable `cacheDir` belongs in `.cache/astro/`; its root `.astro/`
   generated type metadata remains gitignored unless Astro supports relocating it
@@ -96,12 +96,12 @@ External agent/IDE configs are evaluated per host:
 ### S1 — Root config relocation audit and safe moves
 
 - **Status**: pending
-- **Files**: AGENTS.md, package.json, configs/**
+- **Files**: AGENTS.md, package.json, config/**
 - **Gate**: bun run validate
 - **Acceptance**:
   - Every root config is classified as `must-stay-root`, `moved-to-configs`, or `blocked-by-tool`.
   - Any moved config has all package scripts updated to pass an explicit config path.
-  - External-agent configs use `configs/external/<tool>/` as canonical source only when the root discovery bridge is verified for that host.
+  - External-agent configs use `config/external/<tool>/` as canonical source only when the root discovery bridge is verified for that host.
   - Editor-discovered configs stay at root unless an extension-safe override or bridge exists.
 
 ### S2 — Cache centralization cleanup

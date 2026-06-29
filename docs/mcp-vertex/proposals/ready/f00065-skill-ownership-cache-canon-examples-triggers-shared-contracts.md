@@ -258,7 +258,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   `/`-invocable in any MCP host (Claude/Codex/Copilot/OpenCode). Per-host
   trigger-character mapping for non-MCP discovery remains a doc follow-up.
 - **Files**: packages/core/src/lib/prompts/**, packages/core/src/lib/tools/**,
-  packages/client/**, extensions/**, configs/external/**
+  packages/client/**, extensions/**, config/external/**
 - **Gate**: bun run validate
 - **Depends on**: B
 - **Goal**: typing `/` (and the prompt/skill trigger character) in any AI host
