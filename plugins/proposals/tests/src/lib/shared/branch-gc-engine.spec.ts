@@ -134,6 +134,40 @@ describe('planGc', () => {
 		expect(skipped[0]?.reason).toBe('unmerged');
 	});
 
+	it('never removes a stale unmerged worktree whose ahead count is 0 (external-commit resilience)', () => {
+		// FASE 0 thread 3. `branch-status-engine`'s `aheadBehind` returns
+		// `ahead: 0` whenever the underlying `git rev-list` FAILS — which is
+		// exactly what a concurrent external commit/push, an index lock, or
+		// an unresolvable base ref produces. Combined with
+		// `mergedIntoBase: false`, the worktree must stay SACRED: the
+		// positive `mergedIntoBase` signal is the only thing that authorises
+		// removal. The old code mislabelled this `merged-and-clean` and
+		// DELETED the worktree.
+		const snapshot = status(
+			[
+				{
+					name: 'agent/orion',
+					head: 'abc1234',
+					ahead: 0, // unverifiable — rev-list failed under the external commit
+					behind: 0,
+					mergedIntoBase: false,
+					lastCommitMinutesAgo: 60 * 24 * 5, // stale (5 days)
+					worktreePath: '/cache/.worktrees/orion',
+				},
+			],
+			[wt({ dirtyFiles: 0, untrackedFiles: 0 })],
+		);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			force: true, // even with force, unmerged is sacred
+			now: FIXED_NOW,
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped).toHaveLength(1);
+		expect(skipped[0]?.reason).toBe('unmerged');
+		expect(skipped[0]?.detail).toContain('unverifiable');
+	});
+
 	it('skips fresh worktrees that have not yet aged past staleMinutes', () => {
 		const snapshot = status(
 			[

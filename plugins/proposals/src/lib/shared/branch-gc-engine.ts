@@ -221,9 +221,23 @@ export const planGc = (
 			branch.lastCommitMinutesAgo,
 			0,
 		);
-		// Branch not merged into base. Two reasons to skip before dirty checks:
-		//   (a) fresh — the worktree is younger than staleMinutes (sacred).
-		//   (b) ahead — the branch carries commits not yet in base (sacred).
+		// Branch not merged into base ⇒ NEVER GC-eligible. Two distinct
+		// skip reasons, but the rule is unconditional:
+		//   (a) fresh  — the worktree is younger than staleMinutes (sacred).
+		//   (b) unmerged — the branch is not reachable from base (sacred,
+		//       even with force:true).
+		//
+		// FASE 0 thread 3 (external-commit resilience): the previous code
+		// only skipped when `branch.ahead > 0`, then fell through to
+		// removal when `ahead === 0`. But `ahead` defaults to 0 whenever
+		// the underlying `git rev-list --left-right --count base...branch`
+		// FAILS (branch-status-engine `aheadBehind`) — which is exactly
+		// what a concurrent external commit/push, a transient index lock,
+		// or an unresolvable base ref causes. The combination
+		// `mergedIntoBase === false && ahead === 0` was therefore being
+		// mislabelled `merged-and-clean` and the worktree DELETED. We now
+		// gate solely on the positive `mergedIntoBase` signal: an unmerged
+		// branch is sacred regardless of the (untrustworthy) ahead count.
 		if (!branch.mergedIntoBase) {
 			if (ageMin < staleMinutes) {
 				skipped.push({
@@ -234,15 +248,16 @@ export const planGc = (
 				});
 				continue;
 			}
-			if (branch.ahead > 0) {
-				skipped.push({
-					path: wt.path,
-					branch: wt.branch,
-					reason: 'unmerged',
-					detail: `${branch.ahead} commit(s) ahead of ${snapshot.baseBranch}; unmerged is sacred even with force:true`,
-				});
-				continue;
-			}
+			skipped.push({
+				path: wt.path,
+				branch: wt.branch,
+				reason: 'unmerged',
+				detail:
+					branch.ahead > 0
+						? `${branch.ahead} commit(s) ahead of ${snapshot.baseBranch}; unmerged is sacred even with force:true`
+						: `not reachable from ${snapshot.baseBranch} (ahead/behind unverifiable — base may have moved under an external commit); unmerged is sacred`,
+			});
+			continue;
 		}
 		if (
 			(wt.dirtyFiles > 0 || wt.untrackedFiles > 0) &&
