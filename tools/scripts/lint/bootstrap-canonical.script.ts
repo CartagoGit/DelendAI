@@ -89,7 +89,11 @@ export interface IBootstrapLintResult {
  */
 export const lintBootstrap = (
 	content: string,
-	options: { file?: string; anchor?: string; canonical?: readonly string[] } = {}
+	options: {
+		file?: string;
+		anchor?: string;
+		canonical?: readonly string[];
+	} = {},
 ): IBootstrapLintResult => {
 	const file = options.file ?? '<inline>';
 	const anchor = options.anchor ?? ANCHOR;
@@ -203,7 +207,9 @@ const lineOf = (content: string, charIndex: number): number => {
  * Read the bootstrap from disk and lint it. Convenience wrapper used
  * by the CLI entry point and by the spec.
  */
-export const lintBootstrapFromDisk = (filePath: string): IBootstrapLintResult => {
+export const lintBootstrapFromDisk = (
+	filePath: string,
+): IBootstrapLintResult => {
 	const content = readFileSync(filePath, 'utf8');
 	return lintBootstrap(content, { file: filePath });
 };
@@ -214,7 +220,7 @@ export const lintBootstrapFromDisk = (filePath: string): IBootstrapLintResult =>
  * bootstrap does not exist on disk — let the caller decide.
  */
 export const lintBootstrapForWorkspace = (
-	workspaceRoot: string
+	workspaceRoot: string,
 ): readonly IBootstrapLintResult[] => {
 	const absPath = resolve(workspaceRoot, BOOTSTRAP_PATH);
 	if (!existsSync(absPath)) {
@@ -249,12 +255,14 @@ const main = (): number => {
 
 	const results = lintBootstrapForWorkspace(workspaceRoot);
 	const allViolations = results.flatMap((r) =>
-		r.violations.map((v) => ({ ...v, file: r.file }))
+		r.violations.map((v) => ({ ...v, file: r.file })),
 	);
 
 	if (allViolations.length === 0) {
 		const headingSummary = results
-			.map((r) => `${pathBasename(r.file)}: ${r.headingCount} H2 sections`)
+			.map(
+				(r) => `${pathBasename(r.file)}: ${r.headingCount} H2 sections`,
+			)
 			.join(', ');
 		console.log(`✓ bootstrap-canonical: ${headingSummary}; all canonical.`);
 		return 0;
@@ -267,7 +275,7 @@ const main = (): number => {
 		console.error(`    next-action: ${v.nextAction}`);
 	}
 	console.error(
-		`\nbootstrap-canonical: ${allViolations.length} violation(s) across ${results.length} file(s).`
+		`\nbootstrap-canonical: ${allViolations.length} violation(s) across ${results.length} file(s).`,
 	);
 	return isCheck ? 0 : 1;
 };

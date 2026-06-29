@@ -189,7 +189,9 @@ const main = async (): Promise<number> => {
 	}
 
 	const pluginCount = new Set(
-		enTutorials.map((p: string) => relative(REPO_ROOT, p).split(/[\\/]/u)[1]),
+		enTutorials.map(
+			(p: string) => relative(REPO_ROOT, p).split(/[\\/]/u)[1],
+		),
 	).size;
 	console.log(
 		`Created/refreshed ${created} tutorial skeletons across ${pluginCount} plugins × ${LANGS.length} languages.`,

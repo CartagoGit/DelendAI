@@ -5,10 +5,7 @@ import {
 	type IWorktreeSyncCoordinator,
 	resolveWorktreeSyncCoordinator,
 } from './worktree-sync-coordinator';
-import {
-	composeIdentity,
-	nextCollisionSuffix,
-} from '../shared/agent-identity';
+import { composeIdentity, nextCollisionSuffix } from '../shared/agent-identity';
 
 /**
  * Isolates a concurrent agent into its own `git worktree` + branch, so two

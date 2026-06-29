@@ -208,7 +208,9 @@ export const buildCreateProposalRegistration = (
 						'Make each slice edit a disjoint set of files.',
 					);
 				}
-				const inferredKind = args.kind ?? (PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
+				const inferredKind =
+					args.kind ??
+					(PROPOSAL_KIND_BY_PREFIX[id[0] ?? ''] || 'feat');
 				const date = new Date().toISOString().slice(0, 10);
 				const body = [
 					'---',

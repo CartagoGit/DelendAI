@@ -60,7 +60,7 @@ export const lintWorktreeLocations = (
 		// canonical-prefix check is stable across hosts (the
 		// absolute path can differ in `/private/...` vs `/...`
 		// shenanigans on macOS).
-				const rel = wt.startsWith(`${workspaceRoot}/`)
+		const rel = wt.startsWith(`${workspaceRoot}/`)
 			? wt.slice(workspaceRoot.length + 1)
 			: wt;
 
@@ -119,11 +119,10 @@ const parseWorktreeList = (raw: string): readonly IWorktreeListEntry[] => {
 };
 
 const readWorktreePaths = (cwd: string): readonly string[] => {
-	const res = spawnSync(
-		'git',
-		['worktree', 'list', '--porcelain'],
-		{ cwd, encoding: 'utf8' },
-	);
+	const res = spawnSync('git', ['worktree', 'list', '--porcelain'], {
+		cwd,
+		encoding: 'utf8',
+	});
 	if (res.status !== 0) return [];
 	return parseWorktreeList(res.stdout ?? '').map((e) => e.path);
 };

@@ -89,8 +89,8 @@ export const checkAgentClaims = (
 	const unclaimed: string[] = [];
 
 	for (const file of modifiedFiles) {
-		const isClaimed = inFlight.some(
-			(entry) => entry.ownership?.includes(file),
+		const isClaimed = inFlight.some((entry) =>
+			entry.ownership?.includes(file),
 		);
 		if (!isClaimed) {
 			unclaimed.push(file);
