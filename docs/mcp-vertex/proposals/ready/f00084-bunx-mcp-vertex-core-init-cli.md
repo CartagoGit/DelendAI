@@ -356,3 +356,136 @@ asserts that `mcp-vertex_overview { compact: true }` returns
   runs, the generated `.agent.md` files reference tools that do not exist.
   Mitigation: S3 invokes `bun run catalog:generate` first; if generation
   fails, S3 exits with a typed error and writes nothing.
+
+## appendix A — using `init` from another project (no npm, no install there)
+
+**Rule:** the destination project (e.g. `azur-lx`) **must not be
+touched** by `init`. Nothing is added to its `package.json`,
+`bunfig.toml`, `node_modules` or any other file. The CLI lives in
+`/home/cartago/_proyectos/propios/mcp-vertex` and is invoked from
+outside; only the bundle it emits lands inside the target project.
+
+Three call shapes satisfy the rule. All three produce an identical
+bundle; the only difference is convenience and iteration speed.
+
+### A.1 — direct script invocation (zero install, zero build)
+
+The CLI is `packages/cli/src/index.ts`. From the destination
+project, run it with `bun` and pass the absolute path explicitly:
+
+```bash
+# 1. cd into the project you want to bootstrap
+cd /home/cartago/_proyectos/propios/azur-lx
+
+# 2. invoke init through the local repo
+bun /home/cartago/_proyectos/propios/mcp-vertex/packages/cli/src/index.ts init --dry-run
+bun /home/cartago/_proyectos/propios/mcp-vertex/packages/cli/src/index.ts init --force
+```
+
+Pros: zero install, zero build, no env. The destination project
+is completely untouched before, during and after the call.
+Cons: long path; every invocation pays the parser boot.
+
+### A.2 — pre-built bin on `PATH` (one-time build, short command)
+
+Build the package once, then symlink the dist into a `PATH`
+directory in your home:
+
+```bash
+# 1. build the dist (one-time, in the mcp-vertex repo)
+cd /home/cartago/_proyectos/propios/mcp-vertex
+bun run build           # produces packages/cli/dist/index.js
+
+# 2. symlink the bin into ~/.local/bin (in your HOME, not the project)
+ln -sf /home/cartago/_proyectos/propios/mcp-vertex/packages/cli/dist/index.js \
+       ~/.local/bin/mcpv
+
+# 3. invoke from any destination project
+cd /home/cartago/_proyectos/propios/azur-lx
+mcpv init --dry-run
+mcpv init --force
+```
+
+Pros: short command; works in any shell. Cons: requires the
+`mcp-vertex` repo to stay at the same absolute path; if you move it,
+re-create the symlinks.
+
+### A.3 — skip the build with `bun --bun` (fastest iteration)
+
+If you are iterating on the init command itself, skip the `build`
+step entirely. `bun --bun` forces Bun to use itself as the runtime
+(no node fallback) and parses the TypeScript on the fly:
+
+```bash
+cd /home/cartago/_proyectos/propios/azur-lx
+bun --bun /home/cartago/_proyectos/propios/mcp-vertex/packages/cli/src/index.ts init --dry-run
+```
+
+Pros: no build, immediate feedback on changes to the CLI source.
+Cons: every invocation re-parses the TS.
+
+### A.4 — `.vscode/mcp.json` boot shape (the only file that lands)
+
+`init` writes exactly **one** file inside the destination project
+that points back to the mcp-vertex repo: `.vscode/mcp.json`. The
+`command` is `bun` and the first `args` entry is the absolute path
+to the local `host-server.script.ts`:
+
+```jsonc
+// /home/cartago/_proyectos/propios/azur-lx/.vscode/mcp.json
+{
+  "servers": {
+    "mcp-vertex": {
+      "type": "stdio",
+      "command": "bun",
+      "args": [
+        "/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts",
+        "--workspace=${workspaceFolder}",
+        "--config=${workspaceFolder}/mcp-vertex.config.json",
+        "--preset=swarm"
+      ]
+    }
+  }
+}
+```
+
+When the package is eventually published to npm, the diff is two
+lines: `command` becomes `bunx` and the `args` array drops the
+absolute script path:
+
+```jsonc
+{
+  "servers": {
+    "mcp-vertex": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["@mcp-vertex/core", "--workspace=${workspaceFolder}", "--preset=swarm"]
+    }
+  }
+}
+```
+
+### A.5 — verification
+
+Whichever install shape you use, sanity-check the wiring before
+trusting the bundle:
+
+```bash
+# 1. confirm the CLI is callable
+mcpv --version                     # or `bun .../index.ts --version`
+
+# 2. confirm the server boots in the project
+cd /home/cartago/_proyectos/propios/azur-lx
+mcpv init --dry-run                # prints the planned bundle, writes nothing
+mcpv init --force                  # writes the bundle
+
+# 3. confirm the host can load it
+# (in VS Code) Ctrl+Shift+P → "MCP: Restart Server" on mcp-vertex
+# then in the chat:
+mcp-vertex_overview { compact: true }
+# expect pluginDiagnostic.loaded.length >= 13 (swarm)
+```
+
+If `pluginDiagnostic.loaded` is empty, the most common cause is that
+`--workspace` resolved to a different directory than expected — see
+`docs/mcp-vertex/CROSS-PROJECT-SETUP.md` § "Quick parity check".
