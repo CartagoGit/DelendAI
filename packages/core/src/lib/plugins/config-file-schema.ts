@@ -61,6 +61,11 @@ export const CONFIG_FILE_SCHEMA = z
 				z.object({
 					prefix: z.string().optional(),
 					options: z.record(z.string(), z.unknown()).optional(),
+					// f00087 S1: explicit module path for a local plugin.
+					// Relative paths resolve against the workspace root;
+					// absolute paths and `file:`/`./`/`/`-prefixed values
+					// are forwarded verbatim to `loadPlugins`.
+					path: z.string().optional(),
 				}),
 			)
 			.optional(),

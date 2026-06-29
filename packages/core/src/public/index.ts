@@ -114,8 +114,10 @@ export {
 	DEFAULT_CONFIG_FILENAME,
 	CONFIG_FILE_SCHEMA,
 	diagnoseConfigFile,
+	diagnosePluginPathConfig,
 	parseConfigFile,
 	pluginConfigFor,
+	resolveConfigPluginSpecifiers,
 } from '../lib/plugins/load-config-file';
 export {
 	assembleCliConfig,

@@ -18,8 +18,10 @@ import type {
 import {
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
+	diagnosePluginPathConfig,
 	parseConfigFile,
 	pluginConfigFor,
+	resolveConfigPluginSpecifiers,
 } from '../plugins/load-config-file';
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
@@ -224,7 +226,18 @@ export const assembleCliConfig = async (
 		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
 	const rawConfig = await readFile(configPath);
 	const fileConfig = parseConfigFile(rawConfig);
-	const configDiagnostic = diagnoseConfigFile(rawConfig);
+	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
+	// f00087 S1: layer the semantic plugin-path warnings on top of the
+	// schema-only diagnostic. Schema validation can't catch the
+	// "looks-like-a-bare-name" case (a bare string is still valid), so
+	// we run a separate guard for every plugin entry that sets `path`.
+	const pluginPathIssues = Object.entries(fileConfig.plugins ?? {}).flatMap(
+		([name, entry]) => diagnosePluginPathConfig(entry ?? {}, name),
+	);
+	const configDiagnostic = {
+		present: baseConfigDiagnostic.present,
+		issues: [...baseConfigDiagnostic.issues, ...pluginPathIssues],
+	};
 	const configPluginNames = Object.keys(fileConfig.plugins ?? {});
 
 	// Precedence for roots: explicit CLI flag > config file > default.
@@ -324,9 +337,32 @@ export const assembleCliConfig = async (
 	};
 
 	const excludedPlugins = new Set(args.excludePlugins);
+	// f00087 S1: replace each plugin entry's bare name with its resolved
+	// `path` when the config declares one. Entries without `path`
+	// contribute their key as-is, preserving the historical behaviour
+	// (`loadPlugins` runs the scoped-name fallback chain against it).
+	const resolvedConfigSpecifiers = resolveConfigPluginSpecifiers(
+		fileConfig,
+		args.workspace,
+	);
 	const effectivePlugins = [
-		...new Set([...args.plugins, ...configPluginNames]),
-	].filter((name) => !excludedPlugins.has(name));
+		...new Set([...args.plugins, ...resolvedConfigSpecifiers]),
+	].filter((specifier) => {
+		// Exclude by the entry KEY (the canonical plugin name in the
+		// config file). A plugin loaded via a custom path still resolves
+		// to `IMcpPlugin.name` after register, so excluding by the
+		// config key matches what the user wrote in --exclude-plugins.
+		const keys = Object.keys(fileConfig.plugins ?? {});
+		const matchedKey = keys.find((key) => {
+			const entry = fileConfig.plugins?.[key];
+			return entry?.path === specifier || key === specifier;
+		});
+		if (matchedKey === undefined) {
+			// CLI-only specifier — cannot match any config key.
+			return !excludedPlugins.has(specifier);
+		}
+		return !excludedPlugins.has(matchedKey);
+	});
 
 	const loadResult = await loadPlugins({
 		specifiers: effectivePlugins,
