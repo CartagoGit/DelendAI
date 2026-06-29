@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-29T11:18:02.610Z",
+	"generatedAt": "2026-06-29T13:55:04.801Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -816,6 +816,14 @@
 				"date": "2026-06-29"
 			},
 			{
+				"id": "f00088",
+				"title": "f00088",
+				"track": "cli+bootstrap+onboarding+conventions",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-29"
+			},
+			{
 				"id": "r00005",
 				"title": "r00005",
 				"track": "i18n+l10n+utils",
@@ -833,7 +841,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 16,
+			"ready": 17,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
