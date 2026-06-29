@@ -1,19 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	scaffoldPluginFiles,
-	writeScaffoldedFiles,
-} from '@mcp-vertex/core/public';
+import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
+import { writeScaffoldedFiles } from '@mcp-vertex/client';
 
 /**
- * f00087 S2 smoke spec. We do not spawn the script as a child process
- * (that would require bun on PATH and a tmp workspace setup); instead
- * we exercise the same code path the script uses, proving that the
- * generator + writer pair produces the four expected files for a
- * minimal plugin.
+ * f00087 S2 smoke spec for `tools/scripts/create-plugin.ts`.
  *
- * The companion end-to-end check is `bun run tools/scripts/create-plugin.ts`
- * in a temp directory — exercised manually in the validate cycle.
+ * We do not spawn the script as a child process (that would require
+ * bun on PATH and a tmp workspace setup); instead we exercise the
+ * same code path the script uses, proving that the generator +
+ * writer pair produces the four expected files for a minimal plugin.
+ *
+ * Lives in the `client` package because both APIs the script
+ * consumes (`scaffoldPluginFiles` from core, `writeScaffoldedFiles`
+ * from client) are workspace-resolved there; the original
+ * `tools/scripts/tests/` location could not resolve the
+ * `@mcp-vertex/core/public` subpath.
  */
 
 describe('tools/scripts/create-plugin.ts (f00087 S2 smoke)', () => {

@@ -87,7 +87,10 @@ bun run plugin:create demo -- "A demo plugin"
 ```
 
 The script writes the four canonical files (`package.json`,
-`src/index.ts`, `tsconfig.json`, `README.md`) under
-`./libs/plugins/demo/` relative to the current working directory. Pass
+`src/index.ts`, `tsconfig.json`, `README.md`) flat under
+`./libs/plugins/demo/` relative to the current working directory
+(`scaffoldPluginFiles` produces `plugins/<name>/...` paths because it
+assumes a workspace-root install; the script strips that prefix so
+the CLI output is the cleaner `libs/plugins/demo/` shape). Pass
 `--keep-legacy` to move existing files aside instead of refusing to
 overwrite them.

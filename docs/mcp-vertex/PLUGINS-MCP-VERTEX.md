@@ -161,11 +161,11 @@ mcp-vertex_scaffold  { "kind": "plugin", "pluginName": "myfeature", "description
 bun run plugin:create myfeature -- "What myfeature adds"
 ```
 
-Both produce `plugins/myfeature/` (or `libs/plugins/myfeature/`
-when driven by the script) with `package.json`, `tsconfig.json`,
-`src/index.ts` (a working `IMcpPlugin` with a `_ping` tool) and a
-`README.md`. The script honours `--keep-legacy` so existing files
-are moved aside instead of refused.
+Both produce `plugins/myfeature/` (the MCP scaffold) or
+`libs/plugins/myfeature/` (the script) with `package.json`,
+`tsconfig.json`, `src/index.ts` (a working `IMcpPlugin` with a
+`_ping` tool) and a `README.md`. The script honours `--keep-legacy`
+so existing files are moved aside instead of refused.
 
 For programmatic scaffolding from a build/test script, import the
 pure generators directly:
