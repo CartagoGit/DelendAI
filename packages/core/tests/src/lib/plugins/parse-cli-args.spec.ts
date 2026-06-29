@@ -35,6 +35,17 @@ describe('parseCliArgs', async () => {
 		expect(args.docsDir).toBe('d');
 	});
 
+	it('preserves explicit path specifiers passed via --plugins', async () => {
+		const args = parseCliArgs(
+			['--plugins=./plugins/local/index.js,/abs/plugin.js'],
+			'/cwd',
+		);
+		expect(args.plugins).toEqual([
+			'./plugins/local/index.js',
+			'/abs/plugin.js',
+		]);
+	});
+
 	it('supports --key value form and forwards unknown flags to extra', async () => {
 		const args = parseCliArgs(
 			['--workspace', '/ws', '--proposalsDir', 'docs/p'],

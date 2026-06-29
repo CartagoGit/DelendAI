@@ -31,12 +31,16 @@ describe('InitAnswers schema (f00084 S1)', () => {
 			generateAgentMd: false,
 			migrateFromLegacy: false,
 			force: true,
+			issuesRepo: 'octo/example',
+			webFetchAllowList: ['api.github.com'],
 			workspaceRoot: '/tmp/x',
 		});
 		expect(parsed.preset).toBe('full');
 		expect(parsed.extraPlugins).toEqual(['audit']);
 		expect(parsed.excludedPlugins).toEqual(['issues']);
 		expect(parsed.hostInstructions).toBe('overwrite');
+		expect(parsed.issuesRepo).toBe('octo/example');
+		expect(parsed.webFetchAllowList).toEqual(['api.github.com']);
 	});
 
 	it('rejects unknown plugin ids in extraPlugins', () => {

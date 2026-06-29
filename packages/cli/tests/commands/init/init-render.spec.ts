@@ -11,7 +11,10 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { MockInstance } from 'vitest';
+import { vi } from 'vitest';
 
+import { initCommand } from '../../../src/commands/init/init.command';
 import {
 	InitAnswers,
 	type IInitAnswers,
@@ -106,6 +109,117 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		};
 		expect(parsed.plugins.proposals).toBeDefined();
 		expect(parsed.plugins.git).toBeDefined();
+	});
+});
+
+describe('initCommand extraOptions (f00084 S8)', () => {
+	let workspace: string;
+	let stderrWrite: MockInstance<typeof process.stderr.write>;
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-command-'));
+		stderrWrite = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
+		process.stdin.isTTY = false;
+	});
+
+	afterEach(async () => {
+		stderrWrite.mockRestore();
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('merges CLI plugin option overrides on top of rendered defaults before writing', async () => {
+		const result = await initCommand.run(
+			[
+				'--mcp-vertex-root=/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			],
+			{
+			cwd: workspace,
+			globals: {
+				workspace,
+				remote: undefined,
+				json: false,
+				format: 'text',
+				lang: 'en',
+				noColor: false,
+				plugins: [],
+				extraOptions: {
+					memory: { maxNotes: '500' },
+					proposals: { proposalDir: 'docs/proposals/custom' },
+				},
+			},
+			request: async () => {
+				throw new Error('not used');
+			},
+			listTools: async () => [],
+			close: async () => {},
+			},
+		);
+
+		expect(result.code).toBe(0);
+		const onDisk = await readFile(
+			join(workspace, 'mcp-vertex.config.json'),
+			'utf8',
+		);
+		const parsed = JSON.parse(onDisk) as {
+			plugins: {
+				memory?: { options: { maxNotes?: string } };
+				proposals?: { options: { proposalDir?: string } };
+			};
+		};
+		expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
+		expect(parsed.plugins.proposals?.options.proposalDir).toBe(
+			'docs/proposals/custom',
+		);
+	});
+
+	it('warns and skips when a CLI override targets a plugin outside the resolved set', async () => {
+		const result = await initCommand.run(
+			[
+				'--mcp-vertex-root=/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			],
+			{
+				cwd: workspace,
+				globals: {
+					workspace,
+					remote: undefined,
+					json: false,
+					format: 'text',
+					lang: 'en',
+					noColor: false,
+					plugins: [],
+					extraOptions: {
+						memory: { maxNotes: '500' },
+						audit: { auditDir: 'docs/audits' },
+						'web-fetch': { userAgent: 'custom' },
+					},
+				},
+				request: async () => {
+					throw new Error('not used');
+				},
+				listTools: async () => [],
+				close: async () => {},
+			},
+		);
+
+		expect(result.code).toBe(0);
+		expect(stderrWrite).toHaveBeenCalledWith(
+			'warning: init override ignored for unresolved plugin "audit"\n',
+		);
+		expect(stderrWrite).toHaveBeenCalledWith(
+			'warning: init override ignored for unresolved plugin "web-fetch"\n',
+		);
+		const onDisk = await readFile(
+			join(workspace, 'mcp-vertex.config.json'),
+			'utf8',
+		);
+		const parsed = JSON.parse(onDisk) as {
+			plugins: Record<string, { options: Record<string, unknown> }>;
+		};
+		expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
+		expect(parsed.plugins.audit).toBeUndefined();
+		expect(parsed.plugins['web-fetch']).toBeUndefined();
 	});
 });
 
@@ -359,6 +473,41 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
 		};
 		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([]);
+	});
+
+	it('issues repo answer overrides the issues plugin repo option', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({
+				preset: 'full',
+				issuesRepo: 'octo/example',
+			}),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: { issues: { options: { repo?: string } } };
+		};
+		expect(parsed.plugins.issues.options.repo).toBe('octo/example');
+	});
+
+	it('web-fetch allow-list answer overrides the default empty allow-list', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({
+				preset: 'full',
+				webFetchAllowList: ['api.github.com', 'example.com'],
+			}),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
+		};
+		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([
+			'api.github.com',
+			'example.com',
+		]);
 	});
 
 	it('unknown plugins produce an empty options object', async () => {

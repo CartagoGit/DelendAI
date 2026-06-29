@@ -7,12 +7,13 @@
  */
 import { join } from 'node:path';
 
+import { resolvePluginOptions } from '@mcp-vertex/core/public';
+
 import { loadAgentDescriptors } from './init-catalog';
 import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
 } from './init-host-instructions';
-import { resolvePluginOptions } from './plugin-defaults';
 import { renderMigrationProposal } from './init-migrate-offer';
 import type { IInitAnswers } from './init-answers.schema';
 
@@ -69,6 +70,29 @@ const ORDERED_RESOLVED_PRESET_PLUGINS: Record<
 const dedupe = (items: readonly string[]): readonly string[] =>
 	Array.from(new Set(items));
 
+const resolvePluginOptionsWithAnswers = (
+	pluginId: string,
+	answers: IInitAnswers,
+	resolvedPlugins: ReadonlySet<string>,
+): Record<string, unknown> => {
+	const resolved = resolvePluginOptions(pluginId);
+	if (
+		pluginId === 'issues' &&
+		resolvedPlugins.has('issues') &&
+		answers.issuesRepo !== undefined
+	) {
+		resolved.repo = answers.issuesRepo;
+	}
+	if (
+		pluginId === 'web-fetch' &&
+		resolvedPlugins.has('web-fetch') &&
+		answers.webFetchAllowList !== undefined
+	) {
+		resolved.allowList = [...answers.webFetchAllowList];
+	}
+	return resolved;
+};
+
 export const resolvePluginSet = (answers: IInitAnswers): readonly string[] => {
 	const presetMembers = ORDERED_RESOLVED_PRESET_PLUGINS[answers.preset];
 	const merged = dedupe([...presetMembers, ...answers.extraPlugins]);
@@ -80,18 +104,40 @@ export const renderMcpVertexConfig = (
 	answers: IInitAnswers,
 	resolvedPlugins: readonly string[],
 ): IRenderedFile => {
+	const resolvedPluginSet = new Set(resolvedPlugins);
 	const pluginsBlock: Record<string, { options: Record<string, unknown> }> =
 		{};
 	for (const plugin of resolvedPlugins) {
-		pluginsBlock[plugin] = { options: resolvePluginOptions(plugin) };
+		pluginsBlock[plugin] = {
+			options: resolvePluginOptionsWithAnswers(
+				plugin,
+				answers,
+				resolvedPluginSet,
+			),
+		};
 	}
-	const config = {
+	const config: Record<string, unknown> = {
 		$schema:
 			'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
 		plugins: pluginsBlock,
 	};
+	// f00088 S4: when the S1 detector picked a non-default
+	// `pluginPathsRoot`, record it in a `convention` block so
+	// `tools/scripts/create-plugin.ts` (f00087 S2) and any
+	// downstream tool that wants to scaffold code under the
+	// project's natural root can read it. The block is advisory
+	// only — the loader ignores it.
+	if (
+		answers.detected !== undefined &&
+		answers.detected.pluginPathsRoot !== 'plugins'
+	) {
+		config.convention = {
+			pluginPathsRoot: answers.detected.pluginPathsRoot,
+			sourceRoot: answers.detected.sourceRoot,
+		};
+	}
 	return {
 		relPath: 'mcp-vertex.config.json',
 		content: `${JSON.stringify(config, null, '\t')}\n`,
@@ -99,9 +145,9 @@ export const renderMcpVertexConfig = (
 };
 
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
-export const renderVscodeMcpJson = (): IRenderedFile => {
+export const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => {
 	const args = [
-		'/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+		hostEntryPath,
 		'--workspace=${workspaceFolder}',
 		'--config=${workspaceFolder}/mcp-vertex.config.json',
 	];
@@ -142,8 +188,9 @@ const renderAgentFile = (descriptor: {
 /** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
+	options: { readonly namespacePrefix?: string; readonly locale?: string } = {},
 ): Promise<readonly IRenderedFile[]> => {
-	const descriptors = await loadAgentDescriptors(workspaceRoot);
+	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	return descriptors.map(renderAgentFile);
 };
 
@@ -206,14 +253,19 @@ export const renderMigrationProposalIfRequested = (
 /** Top-level orchestrator. Reads catalog live; pure on the rest of the inputs. */
 export const renderInitBundle = async (
 	answers: IInitAnswers,
+	options: { readonly hostEntryPath: string } = { hostEntryPath: '' },
 ): Promise<IRenderedBundle> => {
 	const resolvedPlugins = resolvePluginSet(answers);
 	const files: IRenderedFile[] = [
 		renderMcpVertexConfig(answers, resolvedPlugins),
-		renderVscodeMcpJson(),
+		renderVscodeMcpJson(options.hostEntryPath),
 	];
 	if (answers.generateAgentMd) {
-		files.push(...(await renderAgentFiles(answers.workspaceRoot)));
+		files.push(
+			...(await renderAgentFiles(answers.workspaceRoot, {
+				locale: 'en',
+			})),
+		);
 	}
 	files.push(
 		...(await renderHostInstructionsBlocks(

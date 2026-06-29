@@ -366,6 +366,7 @@ export const assembleCliConfig = async (
 
 	const loadResult = await loadPlugins({
 		specifiers: effectivePlugins,
+		workspaceRoot: args.workspace,
 		buildContext,
 		import: deps.import ?? nodeDynamicImport,
 	});

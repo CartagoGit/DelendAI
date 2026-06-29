@@ -23,6 +23,35 @@ describe('parseCliInvocation', async () => {
 		expect(parsed.commandArgs).toEqual(['needle', '--max=5']);
 	});
 
+	it('parses --options-<plugin>=<key>=<value> into globals.extraOptions', async () => {
+		const parsed = parseCliInvocation(
+			['init', '--options-audit=auditDir=docs/audits'],
+			'/tmp',
+		);
+		expect(parsed.globals.extraOptions).toEqual({
+			audit: { auditDir: 'docs/audits' },
+		});
+		expect(parsed.commandArgs).toEqual([]);
+	});
+
+	it('merges multiple --options-* flags by plugin and key', async () => {
+		const parsed = parseCliInvocation(
+			[
+				'--options-audit=auditDir=docs/audits',
+				'init',
+				'--options-memory=maxNotes=500',
+				'--options-audit=topActions=7',
+			],
+			'/tmp',
+		);
+		expect(parsed.globals.extraOptions).toEqual({
+			audit: { auditDir: 'docs/audits', topActions: '7' },
+			memory: { maxNotes: '500' },
+		});
+		expect(parsed.commandPath).toEqual(['init']);
+		expect(parsed.commandArgs).toEqual([]);
+	});
+
 	// f00052 S3 — host-scoped --agent-worktree (tri-state)
 	describe('--agent-worktree', () => {
 		it('is undefined when the flag is absent', () => {

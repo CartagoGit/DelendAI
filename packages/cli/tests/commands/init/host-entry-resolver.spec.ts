@@ -1,0 +1,102 @@
+/**
+ * host-entry-resolver.spec.ts — f00088 S2.
+ *
+ * Exercises every resolution branch against a fake `IPathProbe`
+ * so the test is deterministic and doesn't touch the disk.
+ */
+import { describe, expect, it } from 'vitest';
+
+import {
+	HostEntryNotFoundError,
+	resolveHostEntryPath,
+	type IPathProbe,
+} from '../../../src/commands/init/host-entry-resolver';
+
+const probeWith = (existing: ReadonlySet<string>): IPathProbe => ({
+	exists: (path) => existing.has(path),
+});
+
+describe('resolveHostEntryPath (f00088 S2)', () => {
+	it('honours the explicit override when set and the file exists', () => {
+		const probe = probeWith(new Set(['/opt/mcp-vertex/host.ts']));
+		const resolved = resolveHostEntryPath('/workspace', {
+			explicitRoot: '/opt/mcp-vertex/host.ts',
+			probe,
+		});
+		expect(resolved.path).toBe('/opt/mcp-vertex/host.ts');
+		expect(resolved.source).toBe('flag');
+	});
+
+	it('falls through to node_modules/@mcp-vertex/core/tools/scripts/host', () => {
+		const probe = probeWith(
+			new Set([
+				'/workspace/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts',
+			]),
+		);
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('node_modules');
+		expect(resolved.path).toBe(
+			'/workspace/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts',
+		);
+	});
+
+	it('falls back to npm dist when the script-style entry is missing', () => {
+		const probe = probeWith(
+			new Set([
+				'/workspace/node_modules/@mcp-vertex/core/dist/host/host-server.js',
+			]),
+		);
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('npm_dist');
+	});
+
+	it('falls back to ../mcp-vertex/ sibling checkout', () => {
+		const probe = probeWith(
+			new Set([
+				'/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			]),
+		);
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('sibling');
+		expect(resolved.path).toBe(
+			'/mcp-vertex/tools/scripts/host/host-server.script.ts',
+		);
+	});
+
+	it('falls back to ../mcp-vertex-core/ alternate sibling name', () => {
+		const probe = probeWith(
+			new Set([
+				'/mcp-vertex-core/tools/scripts/host/host-server.script.ts',
+			]),
+		);
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('sibling_alt');
+		expect(resolved.path).toBe(
+			'/mcp-vertex-core/tools/scripts/host/host-server.script.ts',
+		);
+	});
+
+	it('throws HostEntryNotFoundError listing every attempt when none match', () => {
+		const probe = probeWith(new Set());
+		expect(() => resolveHostEntryPath('/workspace', { probe })).toThrowError(
+			HostEntryNotFoundError,
+		);
+	});
+
+	it('includes the explicit override in the error attempts when it does not exist', () => {
+		const probe = probeWith(new Set());
+		try {
+			resolveHostEntryPath('/workspace', {
+				explicitRoot: '/nope/missing.ts',
+				probe,
+			});
+			throw new Error('expected to throw');
+		} catch (error) {
+			expect(error).toBeInstanceOf(HostEntryNotFoundError);
+			const e = error as HostEntryNotFoundError;
+			expect(e.attempted).toContain('/nope/missing.ts');
+			expect(e.attempted.length).toBeGreaterThan(4);
+			expect(e.message).toMatch(/bun add @mcp-vertex\/core/);
+		}
+	});
+});

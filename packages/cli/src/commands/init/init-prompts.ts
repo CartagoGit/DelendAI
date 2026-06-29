@@ -154,6 +154,28 @@ const collectPluginList = async (
 	return dedupe(out);
 };
 
+const collectStringList = async (
+	rl: RLInterface,
+	firstQuestion: string,
+	nextQuestion: string,
+	itemLabel: string,
+): Promise<readonly string[]> => {
+	const out: string[] = [];
+	for (let i = 0; i < 32; i += 1) {
+		const prompt = i === 0 ? firstQuestion : nextQuestion;
+		const next = await ask(rl, prompt, '');
+		if (next.length === 0) break;
+		if (/^n(o)?$/i.test(next)) break;
+		out.push(next);
+	}
+	if (out.length > 0) {
+		process.stderr.write(
+			`${success(`${itemLabel} collected`)} ${hint(`(${brand(String(out.length))})`)}\n`,
+		);
+	}
+	return dedupe(out);
+};
+
 const askChoice = async <T extends string>(
 	rl: RLInterface,
 	question: string,
@@ -308,6 +330,31 @@ export const collectInitAnswers = async (
 				)
 			: false;
 
+		const resolvedAfterExclusions = resolved.filter(
+			(plugin) => !excludedPlugins.includes(plugin),
+		);
+
+		const issuesRepo =
+			resolvedAfterExclusions.includes('issues') &&
+			overrides.issuesRepo === undefined
+				? await ask(
+						rl,
+						'GitHub issues repo (owner/name) — leave blank to skip:',
+						'',
+					)
+				: overrides.issuesRepo;
+
+		const webFetchAllowList =
+			resolvedAfterExclusions.includes('web-fetch') &&
+			overrides.webFetchAllowList === undefined
+				? await collectStringList(
+						rl,
+						'Add web-fetch hostname to allow-list? (blank or "n" to finish)',
+						'Add another hostname? (blank or "n" to finish)',
+						'hostnames',
+					)
+				: overrides.webFetchAllowList;
+
 		const answers = InitAnswers.parse({
 			preset,
 			extraPlugins,
@@ -316,6 +363,8 @@ export const collectInitAnswers = async (
 			copyCoreSkills,
 			generateAgentMd,
 			migrateFromLegacy,
+			issuesRepo: issuesRepo === '' ? undefined : issuesRepo,
+			webFetchAllowList,
 			workspaceRoot,
 			...overrides,
 		});

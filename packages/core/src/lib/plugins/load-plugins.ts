@@ -3,6 +3,18 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import { resolve as resolvePath } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		const fs = await import('node:fs/promises');
+		await fs.access(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
 
 export interface ILoadedPlugin {
 	/** The specifier the user passed (`--plugins=<this>`). */
@@ -29,6 +41,8 @@ export interface IMissingPluginDependency {
 
 export interface ILoadPluginsOptions {
 	readonly specifiers: readonly string[];
+	/** Absolute workspace root used to resolve relative plugin paths. */
+	readonly workspaceRoot?: string | undefined;
 	/** Build the per-plugin context once the plugin's name is known. */
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
 	/**
@@ -59,12 +73,17 @@ export interface ILoadPluginsOptions {
  * uses Node's `require` for activation-time loads.
  */
 export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
-	dynamicImport(specifier);
+	dynamicImport(normalizeImportSpecifier(specifier));
 
 const dynamicImport = new Function(
 	'specifier',
 	'return import(specifier);',
 ) as (specifier: string) => Promise<unknown>;
+
+const normalizeImportSpecifier = (specifier: string): string => {
+	if (!specifier.startsWith('/')) return specifier;
+	return pathToFileURL(specifier).href;
+};
 
 const withTimeout = async <T>(
 	promise: Promise<T>,
@@ -101,6 +120,22 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 	}
 	if (specifier.includes('/')) return [specifier];
 	return [`@mcp-vertex/${specifier}`, `mcp-${specifier}`, specifier];
+};
+
+const isPathLikeSpecifier = (specifier: string): boolean =>
+	specifier.startsWith('.') ||
+	specifier.startsWith('/') ||
+	specifier.startsWith('file:');
+
+const resolveFilesystemSpecifier = (
+	specifier: string,
+	workspaceRoot: string | undefined,
+): string => {
+	if (!specifier.startsWith('.')) return specifier;
+	if (workspaceRoot === undefined || workspaceRoot.length === 0) {
+		return specifier;
+	}
+	return resolvePath(workspaceRoot, specifier);
 };
 
 const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
@@ -196,7 +231,11 @@ export const loadPlugins = async (
 			continue;
 		}
 		seenSpecifiers.add(specifier);
-		const candidates = resolvePluginSpecifier(specifier);
+		const normalizedSpecifier = resolveFilesystemSpecifier(
+			specifier,
+			options.workspaceRoot,
+		);
+		const candidates = resolvePluginSpecifier(normalizedSpecifier);
 		let plugin: IMcpPlugin | undefined;
 		let resolved = '';
 		const attemptErrors: string[] = [];
@@ -223,6 +262,17 @@ export const loadPlugins = async (
 			}
 		}
 		if (!plugin) {
+			if (
+				isPathLikeSpecifier(normalizedSpecifier) &&
+				normalizedSpecifier.startsWith('/') &&
+				!(await fileExists(normalizedSpecifier))
+			) {
+				errors.push({
+					specifier,
+					message: `plugin path does not exist: ${normalizedSpecifier}`,
+				});
+				continue;
+			}
 			errors.push({
 				specifier,
 				message: `could not load plugin "${specifier}" (tried ${candidates.join(', ')}). ${attemptErrors.join('; ')}`,
