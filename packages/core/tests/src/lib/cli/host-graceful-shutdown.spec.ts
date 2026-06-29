@@ -1,7 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -42,6 +43,11 @@ const resolveBunBinary = (): string => {
 };
 
 const BUN_BIN = resolveBunBinary();
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
+const HOST_SERVER_ENTRY = join(
+	REPO_ROOT,
+	'tools/scripts/host/host-server.script.ts',
+);
 
 /**
  * Wait until the spawned child has installed its signal handlers
@@ -249,11 +255,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		const child = spawn(
 			BUN_BIN,
 			[
-				resolve('tools/scripts/host/host-server.script.ts'),
+				HOST_SERVER_ENTRY,
 				`--workspace=${workspace}`,
 			],
 			{
-				cwd: process.cwd(),
+				cwd: REPO_ROOT,
 				// stdout/stderr ignored: this test asserts only on the
 				// exit code + signal, not on what the child logs. The
 				// child writes to stderr during normal startup
@@ -291,11 +297,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		const child = spawn(
 			BUN_BIN,
 			[
-				resolve('tools/scripts/host/host-server.script.ts'),
+				HOST_SERVER_ENTRY,
 				`--workspace=${workspace}`,
 			],
 			{
-				cwd: process.cwd(),
+				cwd: REPO_ROOT,
 				// See SIGTERM test for rationale: drop stdout/stderr
 				// so the child does not pollute the validate output.
 				stdio: ['ignore', 'ignore', 'ignore'],
@@ -327,11 +333,11 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		const child = spawn(
 			BUN_BIN,
 			[
-				resolve('tools/scripts/host/host-server.script.ts'),
+				HOST_SERVER_ENTRY,
 				`--workspace=${workspace}`,
 			],
 			{
-				cwd: process.cwd(),
+				cwd: REPO_ROOT,
 				// stderr is piped because the assertion at the end of
 				// the test inspects it (it must NOT contain the SDK's
 				// "McpServer already closed" error). stdout is ignored

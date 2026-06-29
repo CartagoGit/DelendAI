@@ -49,12 +49,14 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const docs = resolve(workspaceRoot, 'plugins/docs/src');
 	const deps = resolve(workspaceRoot, 'plugins/deps/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
+	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const notification = resolve(workspaceRoot, 'plugins/notification/src');
 	const statusMarker = resolve(workspaceRoot, 'plugins/status-marker/src');
 	const testConvention = resolve(
 		workspaceRoot,
 		'plugins/test-convention/src',
 	);
+	const webFetch = resolve(workspaceRoot, 'plugins/web-fetch/src');
 	const client = resolve(workspaceRoot, 'packages/client/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
 	return [
@@ -200,6 +202,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(logs, 'index.ts'),
 		},
 		{
+			find: '@mcp-vertex/audit/public',
+			replacement: resolve(audit, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/audit\/lib\/(.*)$/,
+			replacement: `${resolve(audit, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/audit',
+			replacement: resolve(audit, 'index.ts'),
+		},
+		{
 			find: '@mcp-vertex/status-marker/public',
 			replacement: resolve(statusMarker, 'public/index.ts'),
 		},
@@ -222,6 +236,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@mcp-vertex/test-convention',
 			replacement: resolve(testConvention, 'index.ts'),
+		},
+		{
+			find: '@mcp-vertex/web-fetch/public',
+			replacement: resolve(webFetch, 'public/index.ts'),
+		},
+		{
+			find: /^@mcp-vertex\/web-fetch\/lib\/(.*)$/,
+			replacement: `${resolve(webFetch, 'lib')}/$1`,
+		},
+		{
+			find: '@mcp-vertex/web-fetch',
+			replacement: resolve(webFetch, 'index.ts'),
 		},
 		{
 			find: '@mcp-vertex/client/public',
