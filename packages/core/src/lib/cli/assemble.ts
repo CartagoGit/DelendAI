@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import {
 	analyzeProject,
@@ -250,6 +250,14 @@ export const assembleCliConfig = async (
 	const corePaths = { cacheDir, docsDir };
 	const corePrefix = args.namespacePrefix ?? 'mcp-vertex';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
+	// f00089 U5: native authorized-roots filesystem allowlist. The config
+	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`
+	// beyond the workspace; a relative entry is resolved against the
+	// workspace root so the value handed to the containment helper is always
+	// absolute. Default `[]` keeps the single-root behaviour unchanged.
+	const fsAuthorizedRoots = (fileConfig.filesystem?.authorizedRoots ?? []).map(
+		(root) => resolve(workspace.root, root),
+	);
 	// f00052: host-scoped agent_worktree gate. Resolution order is host
 	// CLI flag > config file > `false` default. The CLI value is already a
 	// tri-state boolean (`undefined` when the flag is absent), so a simple
@@ -626,6 +634,7 @@ export const assembleCliConfig = async (
 		...buildFsToolRegistrations({
 			namespacePrefix: corePrefix,
 			workspaceRootAbs: workspace.root,
+			authorizedRoots: fsAuthorizedRoots,
 		}),
 		buildScaffoldToolRegistration({
 			namespacePrefix: corePrefix,

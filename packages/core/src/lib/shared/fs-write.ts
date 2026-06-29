@@ -13,7 +13,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { resolveWorkspaceContained } from './contain-path';
+import { resolveAgainstRoots } from './contain-path';
 import { writeFileAtomic } from './atomic-write';
 import { withFileMutex } from './with-file-mutex';
 import type { IFsWriteOptions, IFsWriteResult } from './fs-tools-options';
@@ -26,14 +26,24 @@ import type { IFsWriteOptions, IFsWriteResult } from './fs-tools-options';
  * `writeFileAtomic` so concurrent writers can't tear or lose each
  * other's update; `atomic:false` writes directly (still after
  * containment + optional `mkdir`).
+ *
+ * `authorizedRoots` (f00089 U5) defaults to `[]`, in which case the
+ * containment is byte-identical to the single-root, reject-absolute
+ * behaviour. When the operator authorizes extra roots, an absolute or
+ * escaping path is accepted iff it falls inside one of them.
  */
 export const fsWrite = async (
 	workspaceRootAbs: string,
 	relativePath: string,
 	content: string,
 	options: IFsWriteOptions = {},
+	authorizedRoots: readonly string[] = [],
 ): Promise<IFsWriteResult> => {
-	const contained = resolveWorkspaceContained(workspaceRootAbs, relativePath);
+	const contained = resolveAgainstRoots(
+		workspaceRootAbs,
+		authorizedRoots,
+		relativePath,
+	);
 	if (!contained.ok) {
 		return {
 			path: relativePath,

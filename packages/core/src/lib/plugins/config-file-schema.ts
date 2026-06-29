@@ -30,6 +30,18 @@ export const CONFIG_FILE_SCHEMA = z
 		docsDir: z.string().optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		// f00089 U5 — native authorized-roots filesystem allowlist.
+		// Extra absolute roots the operator authorizes for `fs_read` /
+		// `fs_write` beyond the workspace root. Default `[]` (off): with
+		// no entries the native fs tools keep their single-root,
+		// reject-absolute behaviour. Authorization is explicit, durable
+		// and reviewable because it lives in the committed config file.
+		filesystem: z
+			.object({
+				authorizedRoots: z.array(z.string()).optional(),
+			})
+			.strict()
+			.optional(),
 		commitAuthor: z
 			.object({
 				// The mode list is sourced from `commit-author.ts` so

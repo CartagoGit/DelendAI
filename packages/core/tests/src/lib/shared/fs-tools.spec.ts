@@ -77,6 +77,82 @@ describe('fsRead / fsWrite', async () => {
 });
 
 /**
+ * f00089 U5 — native authorized-roots filesystem allowlist. With no
+ * authorized roots (default), behaviour is unchanged (covered above).
+ * With an authorized root, an absolute path inside it is readable /
+ * writable; an absolute path outside every root stays rejected.
+ */
+describe('fsRead / fsWrite — authorized-roots allowlist (f00089 U5)', async () => {
+	let workspace = '';
+	let external = '';
+	beforeEach(() => {
+		workspace = mkdtempSync(join(tmpdir(), 'fs-ws-'));
+		external = mkdtempSync(join(tmpdir(), 'fs-ext-'));
+	});
+	afterEach(() => {
+		rmSync(workspace, { recursive: true, force: true });
+		rmSync(external, { recursive: true, force: true });
+	});
+
+	it('reads inside the workspace unchanged when an authorized root is present', async () => {
+		writeFileSync(join(workspace, 'in.txt'), 'inside', 'utf8');
+		const result = await fsRead(workspace, 'in.txt', undefined, [external]);
+		expect(result.found).toBe(true);
+		expect(result.content).toBe('inside');
+	});
+
+	it('rejects an external absolute path when it is NOT authorized', async () => {
+		writeFileSync(join(external, 'secret.txt'), 'nope', 'utf8');
+		// No authorized roots → today's reject-absolute behaviour.
+		const result = await fsRead(workspace, join(external, 'secret.txt'));
+		expect(result.found).toBe(false);
+	});
+
+	it('reads an absolute path INSIDE an authorized root', async () => {
+		writeFileSync(join(external, 'data.txt'), 'shared', 'utf8');
+		const result = await fsRead(workspace, join(external, 'data.txt'), undefined, [
+			external,
+		]);
+		expect(result.found).toBe(true);
+		expect(result.content).toBe('shared');
+	});
+
+	it('writes an absolute path INSIDE an authorized root', async () => {
+		const target = join(external, 'out.txt');
+		const result = await fsWrite(workspace, target, 'hello', {}, [external]);
+		expect(result.ok).toBe(true);
+		expect(readFileSync(target, 'utf8')).toBe('hello');
+	});
+
+	it('rejects an absolute path OUTSIDE every authorized root', async () => {
+		const other = mkdtempSync(join(tmpdir(), 'fs-other-'));
+		try {
+			const result = await fsRead(workspace, join(other, 'x.txt'), undefined, [
+				external,
+			]);
+			expect(result.found).toBe(false);
+			const w = await fsWrite(workspace, join(other, 'x.txt'), 'nope', {}, [
+				external,
+			]);
+			expect(w.ok).toBe(false);
+			expect(existsSync(join(other, 'x.txt'))).toBe(false);
+		} finally {
+			rmSync(other, { recursive: true, force: true });
+		}
+	});
+
+	it('still rejects a `..` escape even with an authorized root present', async () => {
+		const result = await fsRead(workspace, '../outside.txt', undefined, [
+			external,
+		]);
+		expect(result.found).toBe(false);
+		const w = await fsWrite(workspace, '../outside.txt', 'nope', {}, [external]);
+		expect(w.ok).toBe(false);
+		expect(w.error).toContain('escapes workspace');
+	});
+});
+
+/**
  * r00003 S3 (F-003, L + I): the PUBLIC `fs_write` tool must not expose
  * `atomic`. Durability is not a switch a caller can flip off through the
  * tool surface — a public `atomic:false` would be a write variant that

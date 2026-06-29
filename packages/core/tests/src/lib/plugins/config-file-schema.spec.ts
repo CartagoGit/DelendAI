@@ -4,6 +4,7 @@ import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/lib/plugins/config-file-sch
 import type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
+	IFilesystemConfig,
 	ILoopDetectorConfig,
 	IMcpVertexConfigFile,
 	IMcpVertexCorePathsConfig,
@@ -81,6 +82,27 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 				},
 			});
 			expect(res.success).toBe(true);
+		});
+
+		it('accepts a config with filesystem.authorizedRoots (f00089 U5)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				filesystem: {
+					authorizedRoots: ['/data/shared', '/srv/docs'],
+				},
+			});
+			expect(res.success).toBe(true);
+		});
+
+		it('accepts an empty filesystem block (allowlist off by default)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({ filesystem: {} });
+			expect(res.success).toBe(true);
+		});
+
+		it('rejects unknown keys inside filesystem (.strict)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				filesystem: { unknownFsField: true },
+			});
+			expect(res.success).toBe(false);
 		});
 
 		it('rejects unknown keys at the root (.strict)', async () => {
@@ -171,6 +193,12 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 		};
 		expect(asConfig.plugins?.proposals?.prefix).toBe('work');
 		expect(asConfig.plugins?.proposals?.options).toEqual({ docsDir: '/x' });
+	});
+
+	it('IFilesystemConfig narrows the filesystem.authorizedRoots field (f00089 U5)', async () => {
+		const fs: IFilesystemConfig = { authorizedRoots: ['/data/shared'] };
+		const asConfig: IMcpVertexConfigFile = { filesystem: fs };
+		expect(asConfig.filesystem?.authorizedRoots).toEqual(['/data/shared']);
 	});
 });
 
