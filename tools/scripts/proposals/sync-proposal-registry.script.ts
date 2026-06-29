@@ -56,7 +56,7 @@ const main = async (): Promise<void> => {
 	const layout = DEFAULT_PATH_LAYOUT;
 	const result = await syncProposalRegistry(root, layout, []);
 	process.stdout.write(
-		JSON.stringify(
+		`${JSON.stringify(
 			{
 				root,
 				indexPath: result.indexPath,
@@ -68,7 +68,7 @@ const main = async (): Promise<void> => {
 			},
 			null,
 			2,
-		) + '\n',
+		)}\n`,
 	);
 	if (result.errors.length > 0) process.exit(1);
 };

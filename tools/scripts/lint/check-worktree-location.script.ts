@@ -60,7 +60,7 @@ export const lintWorktreeLocations = (
 		// canonical-prefix check is stable across hosts (the
 		// absolute path can differ in `/private/...` vs `/...`
 		// shenanigans on macOS).
-		const rel = wt.startsWith(workspaceRoot + '/')
+				const rel = wt.startsWith(`${workspaceRoot}/`)
 			? wt.slice(workspaceRoot.length + 1)
 			: wt;
 

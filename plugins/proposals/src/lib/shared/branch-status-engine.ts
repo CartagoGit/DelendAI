@@ -181,12 +181,6 @@ export const parseStatusPorcelain = (
 	return { dirty, untracked };
 };
 
-const countLines = (raw: string): number => {
-	const trimmed = raw.trim();
-	if (trimmed.length === 0) return 0;
-	return trimmed.split('\n').length;
-};
-
 const commitMinutesAgo = async (
 	run: IGitRunner,
 	branch: string,

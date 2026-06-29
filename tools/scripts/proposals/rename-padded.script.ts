@@ -33,6 +33,7 @@
  *   bun scripts/rename-proposals-padded.ts --apply    # git mv + rewrite
  */
 import { readFile, readdir, writeFile } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { dirname, join, relative } from 'node:path';
@@ -118,9 +119,12 @@ const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 	const proposalsRoot = join(root, 'docs', 'mcp-vertex', 'proposals');
 
 	const visit = async (dirAbs: string): Promise<void> => {
-		let entries: Awaited<ReturnType<typeof readdir>>;
+		let entries: Dirent<string>[];
 		try {
-			entries = await readdir(dirAbs, { withFileTypes: true });
+			entries = (await readdir(dirAbs, {
+				withFileTypes: true,
+				encoding: 'utf8',
+			})) as Dirent<string>[];
 		} catch {
 			return;
 		}

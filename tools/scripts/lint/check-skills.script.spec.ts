@@ -100,6 +100,7 @@ describe('checkSkillsManifest', async () => {
 					minCoreVersion: 'latest',
 					bodyPath: 'skills/bad-min-core/SKILL.md',
 					appliesTo: ['@mcp-vertex/*'],
+					tags: [],
 				},
 			]),
 			['skills/bad-min-core/SKILL.md'],

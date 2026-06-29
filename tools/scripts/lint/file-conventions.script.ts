@@ -108,7 +108,8 @@ export const formatReport = (
 	const lines: string[] = [header];
 	const limit = 50;
 	for (let i = 0; i < Math.min(findings.length, limit); i++) {
-		lines.push(`  ${findings[i].relPath}`);
+		const f = findings[i];
+		if (f) lines.push(`  ${f.relPath}`);
 	}
 	if (findings.length > limit) {
 		lines.push(`  …and ${findings.length - limit} more`);

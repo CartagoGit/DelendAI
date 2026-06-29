@@ -14,10 +14,10 @@ if (!existsSync(HOOKS_DIR)) {
 	mkdirSync(HOOKS_DIR, { recursive: true });
 }
 
-const sourcePreCommit = join(ROOT, 'tools/scripts/hooks/pre-commit.js');
+const sourcePreCommit = join(ROOT, 'tools/scripts/hooks/pre-commit.ts');
 const targetPreCommit = join(HOOKS_DIR, 'pre-commit');
 
-const sourcePrePush = join(ROOT, 'tools/scripts/hooks/pre-push.js');
+const sourcePrePush = join(ROOT, 'tools/scripts/hooks/pre-push.ts');
 const targetPrePush = join(HOOKS_DIR, 'pre-push');
 
 try {

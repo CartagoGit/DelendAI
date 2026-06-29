@@ -17,7 +17,7 @@ export default defineConfig({
 			'apps/shared',
 			'packages/ui-extension',
 			'extensions/vscode',
-			'tools/scripts',
+			'tools',
 		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain

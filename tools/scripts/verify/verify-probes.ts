@@ -119,7 +119,7 @@ export const runEmptyInputProbe = async (
 		tool: tool.id,
 		outcome,
 		handlerReturned,
-		detail: invocationError,
+		...(invocationError !== undefined && { detail: invocationError }),
 	};
 };
 

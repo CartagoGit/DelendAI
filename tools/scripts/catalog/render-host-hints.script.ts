@@ -31,7 +31,7 @@
  *   1 — fragments are stale under --check
  *   2 — invocation or load error
  */
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { mkdir, rm } from 'node:fs/promises';
 
 export const DEFAULT_OUTPUT_DIR = 'docs/mcp-vertex/host-hints';

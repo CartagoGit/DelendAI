@@ -29,15 +29,15 @@ describe('componentCss token contract', async () => {
 				),
 			).toMatchInlineSnapshot(`
 				"{
-				  \"tokenKeys\": [
-				    \"--mv-bg-primary\",
-				    \"--mv-fg-primary\"
+				  "tokenKeys": [
+				    "--mv-bg-primary",
+				    "--mv-fg-primary"
 				  ],
-				  \"migrationMap\": {
-				    \"--vscode-editor-background\": \"--mv-bg-primary\",
-				    \"--vscode-editor-foreground\": \"--mv-fg-primary\"
+				  "migrationMap": {
+				    "--vscode-editor-background": "--mv-bg-primary",
+				    "--vscode-editor-foreground": "--mv-fg-primary"
 				  },
-				  \"rootCss\": \":root {\\n\\t--mv-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--mv-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}\"
+				  "rootCss": ":root {\\n\\t--mv-bg-primary: var(--vscode-editor-background, #0d1117);\\n\\t--mv-fg-primary: var(--vscode-editor-foreground, #c9d1d9);\\n}"
 				}"
 			`);
 	});
@@ -69,10 +69,10 @@ describe('componentCss token contract', async () => {
 				),
 			).toMatchInlineSnapshot(`
 				"{
-				  \"settingsUsesComponentTokens\": true,
-				  \"settingsHasDirectVscodeEditorTokens\": false,
-				  \"knowledgeUsesComponentTokens\": true,
-				  \"knowledgeHasDirectVscodeEditorTokens\": false
+				  "settingsUsesComponentTokens": true,
+				  "settingsHasDirectVscodeEditorTokens": false,
+				  "knowledgeUsesComponentTokens": true,
+				  "knowledgeHasDirectVscodeEditorTokens": false
 				}"
 			`);
 	});

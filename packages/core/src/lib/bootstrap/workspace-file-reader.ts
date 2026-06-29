@@ -9,7 +9,6 @@
 // analyser testable with a fake reader.
 
 import { promises as fs } from 'node:fs';
-import { existsSync, readdirSync } from 'node:fs';
 
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import type { IFileReader } from './analyze-project';

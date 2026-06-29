@@ -119,7 +119,7 @@ interface ICliArgs {
 const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let cwd = process.cwd();
 	const staged: string[] = [];
-	let branch: string | null | undefined = undefined;
+		let branch: string | null | undefined;
 	let listOnly = false;
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];

@@ -159,6 +159,7 @@ const parseCommits = (raw: string): readonly ICommitInfo[] => {
 		);
 		if (!headerMatch) continue;
 		const [, hash, author, iso, subject] = headerMatch;
+		if (!hash || !author || !iso || !subject) continue;
 		const files = block
 			.split('\n')
 			.slice(1)

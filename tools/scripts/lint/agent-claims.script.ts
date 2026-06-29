@@ -8,7 +8,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { cacheRoot, repoRoot } from '../lib/monorepo-paths';
 
 export interface ILockEntry {
@@ -37,7 +37,9 @@ export const getModifiedTrackedFiles = (root: string): string[] => {
 			.split('\n')
 			.map((f) => f.trim())
 			.filter(Boolean)
-			.forEach((f) => files.add(f));
+			.forEach((f) => {
+				files.add(f);
+			});
 	}
 
 	// Staged modifications
@@ -50,7 +52,9 @@ export const getModifiedTrackedFiles = (root: string): string[] => {
 			.split('\n')
 			.map((f) => f.trim())
 			.filter(Boolean)
-			.forEach((f) => files.add(f));
+			.forEach((f) => {
+				files.add(f);
+			});
 	}
 
 	return [...files].sort((a, b) => a.localeCompare(b));
@@ -86,7 +90,7 @@ export const checkAgentClaims = (
 
 	for (const file of modifiedFiles) {
 		const isClaimed = inFlight.some(
-			(entry) => entry.ownership && entry.ownership.includes(file),
+			(entry) => entry.ownership?.includes(file),
 		);
 		if (!isClaimed) {
 			unclaimed.push(file);
