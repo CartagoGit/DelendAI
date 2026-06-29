@@ -357,7 +357,9 @@ asserts that `mcp-vertex_overview { compact: true }` returns
   Mitigation: S3 invokes `bun run catalog:generate` first; if generation
   fails, S3 exits with a typed error and writes nothing.
 
-## appendix A — using `init` from another project (no npm, no install there)
+## 1. notes
+
+_Using `init` from another project (no npm, no install there)._
 
 **Rule:** the destination project (e.g. `azur-lx`) **must not be
 touched** by `init`. Nothing is added to its `package.json`,
@@ -368,7 +370,7 @@ outside; only the bundle it emits lands inside the target project.
 Three call shapes satisfy the rule. All three produce an identical
 bundle; the only difference is convenience and iteration speed.
 
-### A.1 — direct script invocation (zero install, zero build)
+### 1.1 — direct script invocation (zero install, zero build)
 
 The CLI is `packages/cli/src/index.ts`. From the destination
 project, run it with `bun` and pass the absolute path explicitly:
@@ -386,7 +388,7 @@ Pros: zero install, zero build, no env. The destination project
 is completely untouched before, during and after the call.
 Cons: long path; every invocation pays the parser boot.
 
-### A.2 — pre-built bin on `PATH` (one-time build, short command)
+### 1.2 — pre-built bin on `PATH` (one-time build, short command)
 
 Build the package once, then symlink the dist into a `PATH`
 directory in your home:
@@ -410,7 +412,7 @@ Pros: short command; works in any shell. Cons: requires the
 `mcp-vertex` repo to stay at the same absolute path; if you move it,
 re-create the symlinks.
 
-### A.3 — skip the build with `bun --bun` (fastest iteration)
+### 1.3 — skip the build with `bun --bun` (fastest iteration)
 
 If you are iterating on the init command itself, skip the `build`
 step entirely. `bun --bun` forces Bun to use itself as the runtime
@@ -424,7 +426,7 @@ bun --bun /home/cartago/_proyectos/propios/mcp-vertex/packages/cli/src/index.ts 
 Pros: no build, immediate feedback on changes to the CLI source.
 Cons: every invocation re-parses the TS.
 
-### A.4 — `.vscode/mcp.json` boot shape (the only file that lands)
+### 1.4 — `.vscode/mcp.json` boot shape (the only file that lands)
 
 `init` writes exactly **one** file inside the destination project
 that points back to the mcp-vertex repo: `.vscode/mcp.json`. The
@@ -465,7 +467,7 @@ absolute script path:
 }
 ```
 
-### A.5 — verification
+### 1.5 — verification
 
 Whichever install shape you use, sanity-check the wiring before
 trusting the bundle:
