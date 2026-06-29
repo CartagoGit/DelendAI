@@ -406,3 +406,50 @@ consumer-facing surface.
   bundle as today (detection falls back to defaults). No breaking
   change to `mcp-vertex.config.json` consumers — the new `convention`
   block is optional.
+
+### vision (f00089 U2+U3) — adoption-plan content: skills, tools, one source of truth
+
+> Added by the f00089 umbrella. Scopes **U2 and U3 only**; the landed S1–S4
+> detection/resolution surface is unchanged. U2's output is consumed by the
+> adoption-plan proposal that f00084 §vision U1 emits.
+
+**U2 — skill migration + tool-namespace unification plan.** The expanded vision
+wants the adoption plan to cover (a) migrate our skills into the target,
+(b) absorb the target's existing skills, (c) unify tools (ours + theirs) with no
+collision, (d) organise like this repo. U2 produces the *plan sections*, not an
+in-place rewrite:
+
+- **Skill inventory** (`init-skill-inventory.ts`, new): list mcp-vertex's own
+  skills (from `docs/mcp-vertex/skills/`) and scan the target for existing
+  skills (folders matching the skill convention from f00065). Output: a
+  reconciliation table — `{ ours, theirs, overlaps, absorbInto }`.
+- **Tool-namespace map** (`init-adoption-plan.ts`, new): list the resolved
+  mcp-vertex tool ids (already namespaced via the prefix from S3) and the
+  target's existing tool ids (from any detected config). Emit a
+  collision-resolution *plan* using the existing prefix-per-plugin contract —
+  no new runtime resolver. Output is a markdown section embedded into U1's
+  proposal.
+- **Layout section**: reuse the convention root from S4 (`pluginPathsRoot`,
+  `sourceRoot`) to describe where migrated skills/plugins land in the target.
+- **U2 files**: `packages/cli/src/commands/init/init-adoption-plan.ts` (new),
+  `packages/cli/src/commands/init/init-skill-inventory.ts` (new),
+  `packages/cli/tests/commands/init/init-adoption-plan.spec.ts`. Depends on
+  f00084 §vision U1 (U2 fills sections of U1's emitted proposal).
+
+**U3 — collapse target agent instructions to one source of truth.** Today the
+host-instructions centralizer (f00084 S4) *copies fragments* into
+`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`. The vision wants
+init to *collapse the target's existing, scattered agent instructions* into a
+single canonical pair (AGENT-BOOTSTRAP + AGENTS style):
+
+- Detect existing agent-instruction files in the target (`.cursorrules`,
+  `.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`, `.windsurfrules`,
+  ad-hoc `*.agent.md`).
+- Produce **one canonical source of truth** (the bootstrap doc) plus thin host
+  pointers, preserving the target's custom rules inside the
+  `<!-- mcp-vertex:begin -->`/`end` block already used by the centralizer.
+- Default mode stays `append` (non-destructive); the consolidation is *offered*,
+  never forced. Init reports what it found and what the single source would be.
+- **U3 files**: `packages/cli/src/commands/init/init-host-instructions.ts`
+  (extend), `packages/cli/tests/commands/init/init-host-instructions.spec.ts`.
+  Depends on nothing (touches only the centralizer; parallel with U4/U5).

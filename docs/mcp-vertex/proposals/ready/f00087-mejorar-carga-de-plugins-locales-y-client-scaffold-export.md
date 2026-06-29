@@ -388,6 +388,37 @@ this proposal and remain tracked separately.
 
 ## Notes
 
+### vision (f00089 U4) — a CLIENT tool that authors AND registers a plugin
+
+> Added by the f00089 umbrella. Scopes **U4 only**; the landed S1
+> (`config.plugins.<name>.path` loader) and S2 (operator script + client
+> scaffold export) are unchanged and are the substrate U4 builds on.
+
+The expanded vision wants the **target project's LLM** to author plugins
+*without inspecting how mcp-vertex or its internal plugins are wired*. Today the
+only path is the operator-facing `tools/scripts/create-plugin.ts` (a bun script)
+plus the manual step of adding a `plugins.<name>.path` entry to
+`mcp-vertex.config.json`. U4 lifts both into one client-callable action:
+
+- **`authorPlugin` (new, `packages/client/src/lib/scaffold/author-plugin.ts`)**:
+  takes `{ name, description, root? }`, calls the existing `scaffoldPluginFiles`
+  (S2) to generate a *correct, complete* `IMcpPlugin`, writes it via
+  `writeScaffoldedFiles` under the convention root (f00088 `pluginPathsRoot`),
+  AND **registers it by PATH** — appends `plugins.<name>.path` to the target's
+  `mcp-vertex.config.json` (the loader from S1 then picks it up on next host
+  boot). One call; the LLM never reads the core.
+- **Exposure**: expose `authorPlugin` from the client public surface and (U4
+  design choice) optionally as an MCP tool so the target LLM can invoke it
+  in-session. Pick client-export vs. plugin-tool in U4's design note; both reuse
+  the same pure generator.
+- **Multiple project-specific plugins**: each call registers an independent
+  `path` entry; names are namespaced by prefix (f00088 S3), so several
+  project-owned plugins with their own tools coexist without collision.
+- **U4 files**: `packages/client/src/lib/scaffold/author-plugin.ts` (new),
+  `packages/client/src/public/index.ts` (extend),
+  `packages/client/src/tests/author-plugin.spec.ts`. Depends on f00087 S1+S2
+  (landed); parallel with U3/U5.
+
 - The two changes are **additive**. No existing config file or
   consumer breaks.
 - The static JSON Schema adds `path` to the `plugins` entry; tools
