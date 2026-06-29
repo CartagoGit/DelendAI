@@ -208,9 +208,18 @@ export default definePlugin({
 					workspaceRoot: ctx.workspace.root,
 					defaultBaseBranch: 'develop',
 					defaultAgentPrefix: 'agent/',
-					canonicalWorktreesDirRel: layout.worktreesDir
-						? `.cache/mcp-vertex/${layout.worktreesDir}`
-						: '.cache/mcp-vertex/.worktrees',
+					// `layout.worktreesDir` is ALREADY the cache-rooted
+					// workspace-relative path (default
+					// `.cache/mcp-vertex/.worktrees`). The previous
+					// `.cache/mcp-vertex/${layout.worktreesDir}` double-prefixed
+					// it to `.cache/mcp-vertex/.cache/mcp-vertex/.worktrees`,
+					// which can never match a real worktree path — so
+					// branch-status / swarm-hygiene flagged EVERY
+					// correctly-placed worktree as `outOfCache: true`. The
+					// agent_worktree engine resolves the same
+					// `layout.worktreesDir`, so both must agree byte-for-byte.
+					canonicalWorktreesDirRel:
+						layout.worktreesDir || '.cache/mcp-vertex/.worktrees',
 				}),
 				// f00073: idempotent cleanup of orphan worktrees. dryRun by
 				// default; unmerged branches are sacred.
