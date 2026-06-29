@@ -82,6 +82,41 @@ describe('validate — single line', async () => {
 		const line = formatCloseMarker('HECHO');
 		expect(validateCloseMarker(`  \t${line}\r\n`).ok).toBe(true);
 	});
+
+	it('accepts the reason regardless of which dash the agent emitted (determinism)', async () => {
+		// FASE 0 thread 2: the validator must not pass "only sometimes"
+		// depending on whether the model chose an em-dash, en-dash, ASCII
+		// hyphen, horizontal bar or double-hyphen as the separator. Every
+		// variant carries the SAME reason and must validate identically.
+		const separators = ['—', '–', '―', '-', '--'];
+		for (const sep of separators) {
+			const line = `🟨 [CAP] ${sep} turno agotado`;
+			const result = validateCloseMarker(line);
+			expect(
+				result.ok,
+				`CAP with separator ${JSON.stringify(sep)} should validate`,
+			).toBe(true);
+			expect(result.reason).toBe('turno agotado');
+		}
+	});
+
+	it('accepts a reason placed after the bracket with no dash separator', async () => {
+		// `[CAP] turno agotado` — the agent supplied a reason but dropped
+		// the separator. The reason is present, so the required-reason rule
+		// is satisfied (no `reason-missing`).
+		const result = validateCloseMarker('🟨 [CAP] turno agotado');
+		expect(result.ok).toBe(true);
+		expect(result.reason).toBe('turno agotado');
+	});
+
+	it('still reports reason-missing when there is genuinely no reason text', async () => {
+		// A bare required-reason marker (no trailing text at all) must still
+		// fail — tolerance of dash variants must NOT mask a truly absent
+		// reason.
+		const result = validateCloseMarker('🟨 [CAP]');
+		expect(result.ok).toBe(false);
+		expect(result.violations).toContain('reason-missing');
+	});
 });
 
 describe('validate — full response', async () => {
