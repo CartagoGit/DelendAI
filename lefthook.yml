@@ -82,14 +82,20 @@ pre-commit:
     stray-files-check:
       run: bun run lint:stray-cache-files || true
 
-    # f00086: worktree-isolation discipline. BLOCKING (no `|| true`).
-    # On `develop`, blocks any staged file under a deep path
-    # (proposals, packages sources, plugin sources,
-    # tools/scripts/) — the agent forgot to open a feature branch.
+    # f00086: worktree-isolation discipline. ADVISORY (wrapped with `|| true`).
+    # On `develop`, warns when any staged file is under a deep path
+    # (proposals, packages sources, plugin sources, tools/scripts/)
+    # — the agent probably forgot to open a feature branch. Matches
+    # the top-of-file policy: hooks WARN but never BLOCK commit/push.
+    # Real enforcement still happens via:
+    #   - `bun run validate` in CI, which runs `lint:commit-branch`
+    #     and fails the pipeline on a develop-deep-path violation
+    #   - `push-to-develop-discipline` (pre-push), which still blocks
+    #     `develop → origin/develop` direct pushes
     # Bypass: LEFTHOOK_BYPASS=1 git commit ... (documented in
-    # the blocker text).
+    # the warning text).
     commit-branch-discipline:
-      run: bun run lint:commit-branch -- --staged {staged_files} || exit 1
+      run: bun run lint:commit-branch -- --staged {staged_files} || true
 
     # f00083: anti-duplication guard for the universal bootstrap.
     # BLOCKING (no `|| true`). Runs the canonical-scaffold lint
