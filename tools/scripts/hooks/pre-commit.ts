@@ -12,10 +12,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const LOCK_FILE = join(
-	process.cwd(),
-	'.cache/mcp-vertex/agents.lock.json',
-);
+const LOCK_FILE = join(process.cwd(), '.cache/mcp-vertex/agents.lock.json');
 
 interface ILockEntry {
 	readonly task_id?: string;
@@ -34,7 +31,9 @@ if (!existsSync(LOCK_FILE)) {
 let committer = process.env.GIT_AUTHOR_EMAIL;
 if (!committer) {
 	try {
-		committer = execSync('git config user.email', { encoding: 'utf8' }).trim();
+		committer = execSync('git config user.email', {
+			encoding: 'utf8',
+		}).trim();
 	} catch {
 		// git user.email is unset; fall through to the empty-check below.
 	}

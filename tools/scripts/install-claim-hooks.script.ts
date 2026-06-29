@@ -5,7 +5,9 @@ const ROOT = resolve(__dirname, '../..');
 const GIT_DIR = join(ROOT, '.git');
 
 if (!existsSync(GIT_DIR)) {
-	console.log('install-claim-hooks: No .git directory found. Skipping hook installation.');
+	console.log(
+		'install-claim-hooks: No .git directory found. Skipping hook installation.',
+	);
 	process.exit(0);
 }
 

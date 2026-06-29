@@ -52,9 +52,7 @@ export type CommitBranchResult =
 export const findDeepPathViolations = (
 	stagedFiles: readonly string[],
 ): readonly string[] =>
-	stagedFiles.filter((f) =>
-		DEEP_PATH_PATTERNS.some((re) => re.test(f)),
-	);
+	stagedFiles.filter((f) => DEEP_PATH_PATTERNS.some((re) => re.test(f)));
 
 /** Pure decision engine. No I/O, no side effects. */
 export const lintCommitBranch = (
@@ -119,7 +117,7 @@ interface ICliArgs {
 const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let cwd = process.cwd();
 	const staged: string[] = [];
-		let branch: string | null | undefined;
+	let branch: string | null | undefined;
 	let listOnly = false;
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];
@@ -153,11 +151,10 @@ const parseArgs = (argv: readonly string[]): ICliArgs => {
 };
 
 const readCurrentBranch = (cwd: string): string | null => {
-	const res = spawnSync(
-		'git',
-		['rev-parse', '--abbrev-ref', 'HEAD'],
-		{ cwd, encoding: 'utf8' },
-	);
+	const res = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+		cwd,
+		encoding: 'utf8',
+	});
 	if (res.status !== 0) return null; // detached HEAD or non-git cwd
 	const out = (res.stdout ?? '').trim();
 	if (out === 'HEAD' || out === '') return null;

@@ -182,9 +182,9 @@ const lastFlagValue = (
 	argv: readonly string[],
 	prefix: string,
 ): string | undefined => {
-	const arg = [...argv].reverse().find((a: string): boolean =>
-		a.startsWith(prefix),
-	);
+	const arg = [...argv]
+		.reverse()
+		.find((a: string): boolean => a.startsWith(prefix));
 	return arg !== undefined ? arg.slice(prefix.length) : undefined;
 };
 

@@ -17,17 +17,17 @@ const readSource = async (relativePath: string): Promise<string> =>
 
 describe('componentCss token contract', async () => {
 	it('matches the expected host migration snapshot', async () => {
-			expect(
-				JSON.stringify(
-					{
-						tokenKeys: Object.keys(DEFAULT_TOKENS).sort(),
-						migrationMap: HOST_TOKEN_MIGRATION_MAP,
-						rootCss: renderComponentCssTokenRootCss(),
-					},
-					null,
-					2,
-				),
-			).toMatchInlineSnapshot(`
+		expect(
+			JSON.stringify(
+				{
+					tokenKeys: Object.keys(DEFAULT_TOKENS).sort(),
+					migrationMap: HOST_TOKEN_MIGRATION_MAP,
+					rootCss: renderComponentCssTokenRootCss(),
+				},
+				null,
+				2,
+			),
+		).toMatchInlineSnapshot(`
 				"{
 				  "tokenKeys": [
 				    "--mv-bg-primary",
@@ -48,26 +48,34 @@ describe('componentCss token contract', async () => {
 			readSource('../../src/knowledge/render-knowledge-navigator.ts'),
 		]);
 
-			expect(
-				JSON.stringify(
-					{
-						settingsUsesComponentTokens:
-							settingsSource.includes('var(--mv-bg-primary)') &&
-							settingsSource.includes('var(--mv-fg-primary)'),
-						settingsHasDirectVscodeEditorTokens:
-							settingsSource.includes('var(--vscode-editor-background') ||
-							settingsSource.includes('var(--vscode-editor-foreground'),
-						knowledgeUsesComponentTokens:
-							knowledgeSource.includes('var(--mv-bg-primary)') &&
-							knowledgeSource.includes('var(--mv-fg-primary)'),
-						knowledgeHasDirectVscodeEditorTokens:
-							knowledgeSource.includes('var(--vscode-editor-background') ||
-							knowledgeSource.includes('var(--vscode-editor-foreground'),
-					},
-					null,
-					2,
-				),
-			).toMatchInlineSnapshot(`
+		expect(
+			JSON.stringify(
+				{
+					settingsUsesComponentTokens:
+						settingsSource.includes('var(--mv-bg-primary)') &&
+						settingsSource.includes('var(--mv-fg-primary)'),
+					settingsHasDirectVscodeEditorTokens:
+						settingsSource.includes(
+							'var(--vscode-editor-background',
+						) ||
+						settingsSource.includes(
+							'var(--vscode-editor-foreground',
+						),
+					knowledgeUsesComponentTokens:
+						knowledgeSource.includes('var(--mv-bg-primary)') &&
+						knowledgeSource.includes('var(--mv-fg-primary)'),
+					knowledgeHasDirectVscodeEditorTokens:
+						knowledgeSource.includes(
+							'var(--vscode-editor-background',
+						) ||
+						knowledgeSource.includes(
+							'var(--vscode-editor-foreground',
+						),
+				},
+				null,
+				2,
+			),
+		).toMatchInlineSnapshot(`
 				"{
 				  "settingsUsesComponentTokens": true,
 				  "settingsHasDirectVscodeEditorTokens": false,

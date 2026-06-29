@@ -357,9 +357,8 @@ export const runBranchGcEngine = async (
 	// marked `mergedIntoBase: false` and `ahead: 0` so the GC treats
 	// it as "unmerged" — which is the safe default until the engine
 	// can run `git rev-list` against the worktree to verify.
-	const augmentedSnapshot = await augmentSnapshotWithWorktreeBranches(
-		snapshot,
-	);
+	const augmentedSnapshot =
+		await augmentSnapshotWithWorktreeBranches(snapshot);
 	const { removed, skipped } = planGc(augmentedSnapshot, options);
 
 	// Execute the plan when not in dry-run. We never push; we only run
