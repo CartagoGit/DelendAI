@@ -138,7 +138,9 @@ const collectPluginList = async (
 	candidates: readonly string[],
 ): Promise<readonly string[]> => {
 	if (candidates.length > 0) {
-		process.stderr.write(`  addable plugins: ${candidates.join(', ')}\n`);
+		process.stderr.write(
+			`  ${hint('addable plugins:')} ${brand(candidates.join(', '))}\n`,
+		);
 	}
 	const out: string[] = [];
 	for (let i = 0; i < 32; i += 1) {
@@ -161,7 +163,7 @@ const askChoice = async <T extends string>(
 	for (let i = 0; i < choices.length; i += 1) {
 		const c = choices[i];
 		if (c === undefined) continue;
-		process.stderr.write(`  ${i + 1}) ${c.label}\n`);
+		process.stderr.write(`  ${numbered(i + 1, c.label)}\n`);
 	}
 	const answer = await ask(
 		rl,
@@ -186,6 +188,12 @@ export const collectInitAnswers = async (
 	if (!isInteractive()) {
 		return InitAnswers.parse({ ...overrides, workspaceRoot });
 	}
+
+	// Brand banner — non-fatal if the user has `NO_COLOR` set, the
+	// helpers are passthroughs in that mode.
+	process.stderr.write(
+		`\n${brand('mcp-vertex')} ${hint('›')} ${heading('workspace bootstrap')}\n\n`,
+	);
 
 	const rl = openRl();
 	try {
@@ -276,7 +284,7 @@ export const collectInitAnswers = async (
 				)
 			: false;
 
-		return InitAnswers.parse({
+		const answers = InitAnswers.parse({
 			preset,
 			extraPlugins,
 			excludedPlugins,
@@ -287,6 +295,14 @@ export const collectInitAnswers = async (
 			workspaceRoot,
 			...overrides,
 		});
+
+		process.stderr.write(
+			`\n${success('answers collected')} ${hint(
+				`(${brand(answers.preset)} · ${answers.extraPlugins.length} extra · host-instructions: ${answers.hostInstructions})`,
+			)}\n\n`,
+		);
+
+		return answers;
 	} finally {
 		rl.close();
 	}

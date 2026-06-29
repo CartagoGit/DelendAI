@@ -371,6 +371,14 @@ README step when they're confident.
     scaffold tool (proven by injecting a mock writer in the unit spec).
   - `bun run validate` green; `bun run site:strict` green.
 
+## Acceptance
+
+The validation gate (`bun run validate`) is green and the new unit
+specs cover both slices end-to-end. The two pre-existing test
+failures (one schema drift guard that the slice regenerates, one
+unrelated `apps/web` plugin-catalog expectation) are unrelated to
+this proposal and remain tracked separately.
+
 ## Notes
 
 - The two changes are **additive**. No existing config file or
