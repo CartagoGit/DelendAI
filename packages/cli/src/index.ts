@@ -8,6 +8,7 @@ import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
 import { renderHelp } from './lib/help';
 import { parseCliInvocation } from './lib/parser';
 import { createStdioContext } from './lib/stdio-context';
+import { createNoopContext } from './lib/noop-context';
 import { formatJson } from './lib/stable-json';
 import { asScalarText } from './lib/text-format';
 
@@ -66,9 +67,12 @@ export const runHumanCli = async (
 		: command.name.startsWith('docs ')
 			? ['docs']
 			: [];
+	const isOffline = command.name === 'init';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
-		ctx = await createStdioContext(cwd, parsed.globals, extraPlugins);
+		ctx = isOffline
+			? createNoopContext(cwd, parsed.globals)
+			: await createStdioContext(cwd, parsed.globals, extraPlugins);
 		const result = await command.run(
 			[
 				...parsed.commandPath.slice(consumedPathParts(command)),
