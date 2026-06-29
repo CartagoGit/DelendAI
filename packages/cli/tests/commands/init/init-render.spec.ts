@@ -10,7 +10,8 @@ import {
 	writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { MockInstance } from 'vitest';
 import { vi } from 'vitest';
 
@@ -113,6 +114,16 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 });
 
 describe('initCommand extraOptions (f00084 S8)', () => {
+	// The CLI requires the explicit `--mcp-vertex-root` to point at a file
+	// that exists on disk. Resolve the host entry script relative to this
+	// spec file so the test is portable across checkouts (it used to
+	// hardcode the author's `/home/cartago/_proyectos/propios/...` path,
+	// which broke in any other developer's environment).
+	const HOST_ENTRY_PATH = join(
+		dirname(fileURLToPath(import.meta.url)),
+		'../../../../../tools/scripts/host/host-server.script.ts',
+	);
+
 	let workspace: string;
 	let stderrWrite: MockInstance<typeof process.stderr.write>;
 
@@ -132,7 +143,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	it('merges CLI plugin option overrides on top of rendered defaults before writing', async () => {
 		const result = await initCommand.run(
 			[
-				'--mcp-vertex-root=/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
 			],
 			{
 			cwd: workspace,
@@ -177,7 +188,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	it('warns and skips when a CLI override targets a plugin outside the resolved set', async () => {
 		const result = await initCommand.run(
 			[
-				'--mcp-vertex-root=/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
 			],
 			{
 				cwd: workspace,
