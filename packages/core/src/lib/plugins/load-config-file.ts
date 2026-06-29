@@ -59,6 +59,24 @@ export interface IMcpVertexCorePathsConfig {
 }
 
 /**
+ * Solid-ISP: f00089 U5 — native default filesystem configuration.
+ *
+ * `authorizedRoots` lists absolute roots the operator has explicitly
+ * authorized for the native `fs_read` / `fs_write` tools, in addition
+ * to the workspace root. A path (relative or absolute) is allowed when
+ * it falls inside the workspace root OR inside one of these roots.
+ *
+ * Default `[]` (or omitted): the native fs tools keep their single-root,
+ * reject-absolute behaviour — every user already reads their own project;
+ * external paths stay off until explicitly authorized here. Because the
+ * list lives in the committed `mcp-vertex.config.json`, authorization is
+ * durable and reviewable, never LLM-expanded.
+ */
+export interface IFilesystemConfig {
+	readonly authorizedRoots?: readonly string[];
+}
+
+/**
  * Solid-ISP: how every commit produced by the shared git engine
  * (`packages/core/src/lib/shared/git-write.ts`) should be attributed.
  *
@@ -179,6 +197,11 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	 */
 	readonly commitAuthor?: IMcpVertexCommitAuthorConfig;
 	readonly plugins?: Readonly<Record<string, IMcpVertexPluginConfig>>;
+	/**
+	 * f00089 U5: native default filesystem allowlist (authorized roots).
+	 * See {@link IFilesystemConfig}.
+	 */
+	readonly filesystem?: IFilesystemConfig;
 	readonly validationMatrix?: IValidationMatrixConfig;
 	readonly loopDetector?: ILoopDetectorConfig;
 	/**

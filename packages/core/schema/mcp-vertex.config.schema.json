@@ -17,6 +17,18 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"filesystem": {
+			"type": "object",
+			"properties": {
+				"authorizedRoots": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			},
+			"additionalProperties": false
+		},
 		"commitAuthor": {
 			"type": "object",
 			"properties": {

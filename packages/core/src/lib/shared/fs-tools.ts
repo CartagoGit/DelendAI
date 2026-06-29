@@ -62,6 +62,10 @@ export const buildFsToolRegistrations = (
 	options: IFsToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
+	// f00089 U5 — extra operator-authorized roots. Empty by default, in
+	// which case both primitives keep the single-root, reject-absolute
+	// behaviour byte-for-byte.
+	const authorizedRoots = options.authorizedRoots ?? [];
 	return [
 		{
 			id: 'fs_read',
@@ -94,6 +98,7 @@ export const buildFsToolRegistrations = (
 							options.workspaceRootAbs,
 							args.path,
 							args.range,
+							authorizedRoots,
 						);
 						if (!result.found) {
 							return toolError(
@@ -163,6 +168,7 @@ export const buildFsToolRegistrations = (
 										? { createDirs: args.createDirs }
 										: {}),
 								},
+								authorizedRoots,
 							),
 						);
 					},

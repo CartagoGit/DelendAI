@@ -13,21 +13,32 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from './contain-path';
+import { resolveAgainstRoots } from './contain-path';
 import type { IFsReadResult } from './fs-tools-options';
 
 /**
  * Read a workspace-contained file, optionally a 1-indexed inclusive
  * line range `[start, end]`. Returns `found:false` (never throws)
- * when the path escapes the workspace or the file doesn't exist /
- * can't be read.
+ * when the path escapes the workspace (and every authorized root) or
+ * the file doesn't exist / can't be read.
+ *
+ * `authorizedRoots` (f00089 U5) defaults to `[]`, in which case the
+ * containment is byte-identical to the single-root, reject-absolute
+ * behaviour: only paths inside `workspaceRootAbs` are read. When the
+ * operator authorizes extra roots, an absolute or escaping path is
+ * accepted iff it falls inside one of them.
  */
 export const fsRead = async (
 	workspaceRootAbs: string,
 	relativePath: string,
 	range?: readonly [number, number],
+	authorizedRoots: readonly string[] = [],
 ): Promise<IFsReadResult> => {
-	const contained = resolveWorkspaceContained(workspaceRootAbs, relativePath);
+	const contained = resolveAgainstRoots(
+		workspaceRootAbs,
+		authorizedRoots,
+		relativePath,
+	);
 	if (!contained.ok) {
 		return {
 			path: relativePath,

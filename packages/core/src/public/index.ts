@@ -136,6 +136,7 @@ export type {
 export type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
+	IFilesystemConfig,
 	ILoopDetectorConfig,
 	IMcpVertexConfigFile,
 	IMcpVertexCorePathsConfig,
@@ -181,7 +182,10 @@ export {
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
 export { joinRel } from '../lib/shared/paths';
-export { resolveWorkspaceContained } from '../lib/shared/contain-path';
+export {
+	resolveAgainstRoots,
+	resolveWorkspaceContained,
+} from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
 // f00087 S2: batch atomic writer for consumers that want to apply
 // scaffolded files outside an MCP session.
