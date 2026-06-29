@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-29T06:39:26.905Z",
+	"generatedAt": "2026-06-29T11:18:02.610Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -784,6 +784,14 @@
 				"date": "2026-06-28"
 			},
 			{
+				"id": "f00084",
+				"title": "f00084",
+				"track": "cli+bootstrap+onboarding",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-29"
+			},
+			{
 				"id": "f00085",
 				"title": "f00085",
 				"track": "core+agents+ci",
@@ -798,6 +806,14 @@
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-28"
+			},
+			{
+				"id": "f00087",
+				"title": "f00087",
+				"track": "dogfood+plugins+scaffold+client",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-29"
 			},
 			{
 				"id": "r00005",
@@ -817,7 +833,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 14,
+			"ready": 16,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,

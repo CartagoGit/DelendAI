@@ -283,20 +283,27 @@ slice can extract that helper if the duplication grows).
 ```ts
 #!/usr/bin/env bun
 /**
- * Run `bun run tools/scripts/create-plugin.ts lx-app -- "…"  to
+ * Run `bun run tools/scripts/create-plugin.ts lx-app -- "…"` to
  * generate a minimal IMcpPlugin package under
  * libs/plugins/lx-app/ relative to the current workspace.
+ *
+ * `scaffoldPluginFiles` always produces paths under
+ * `plugins/<name>/…` (it assumes the consumer's workspace root IS
+ * the plugin root). The script strips that leading prefix so the
+ * output lands flat at `libs/plugins/<name>/…` instead of
+ * `libs/plugins/<name>/plugins/<name>/…`.
  */
-import { writeScaffoldedFiles } from '@mcp-vertex/client';
+import { writeScaffoldedFilesOrThrow } from '@mcp-vertex/client';
 import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
 
-const name = process.argv[2];
-if (!name) throw new Error('usage: create-plugin <name>');
-const description = process.argv[3] ?? `TODO: describe ${name}.`;
-const target = path.resolve(process.cwd(), `libs/plugins/${name}`);
-const files = scaffoldPluginFiles({ pluginName: name, description });
-const result = await writeScaffoldedFiles(target, files);
-console.log(JSON.stringify(result, null, 2));
+const [name, _sep, ...rest] = process.argv.slice(2);
+const description = rest.join(' ');
+const idPrefix = `plugins/${name}/`;
+const files = scaffoldPluginFiles({ pluginName: name, description })
+  .flatMap((f) => f.path.startsWith(idPrefix)
+    ? [{ path: f.path.slice(idPrefix.length), content: f.content }]
+    : []);
+await writeScaffoldedFilesOrThrow(`libs/plugins/${name}`, files);
 ```
 
 Documented in the README of `@mcp-vertex/client` and in
@@ -357,7 +364,7 @@ README step when they're confident.
   - `packages/client/src/lib/scaffold/write-scaffolded-files.ts` (new)
   - `tools/scripts/create-plugin.ts` (new consumer-facing script)
   - `packages/client/src/tests/write-scaffolded-files.spec.ts` (unit)
-  - `tools/scripts/tests/create-plugin.spec.ts` (smoke)
+  - `packages/client/src/tests/create-plugin-script.spec.ts` (smoke)
   - `packages/client/README.md` (updated API section)
   - `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` (example)
 - **Gate**: bun run validate

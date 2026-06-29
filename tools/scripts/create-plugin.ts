@@ -72,7 +72,23 @@ const main = async (): Promise<void> => {
 		pluginName,
 		description,
 	};
-	const files = scaffoldPluginFiles(options);
+	const generated = scaffoldPluginFiles(options);
+	// `scaffoldPluginFiles` always produces paths under
+	// `plugins/<name>/...` (it assumes the consumer's workspace root
+	// IS the plugin root). This script writes under
+	// `libs/plugins/<name>/`, so we strip the leading `plugins/<name>/`
+	// segment to avoid the double-nesting `libs/plugins/<name>/plugins/<name>/`.
+	const idPrefix = `plugins/${pluginName}/`;
+	const files = generated.flatMap((file: IScaffoldedFile) =>
+		file.path.startsWith(idPrefix)
+			? [
+					{
+						path: file.path.slice(idPrefix.length),
+						content: file.content,
+					},
+				]
+			: [],
+	);
 	const targetDir = resolve(process.cwd(), `libs/plugins/${pluginName}`);
 	const result: IWriteScaffoldedFilesResult =
 		await writeScaffoldedFilesOrThrow(targetDir, files, { keepLegacy });
