@@ -23,4 +23,29 @@ describe('renderSettings', async () => {
 		expect(html).toContain('value="dark" selected');
 		expect(html).toContain('mcp-vertex.saveSettings');
 	});
+
+	it('f00062: client script posts booleans as booleans, not strings (H13)', async () => {
+		const html = renderSettings({
+			settings: {
+				docsUrl: 'https://example.com/docs',
+				allowLocalhost: true,
+				allowPrivateIps: false,
+				logLevel: 'debug',
+				theme: 'dark',
+			},
+			saveCommand: 'mcp-vertex.saveSettings',
+			resetCommand: 'mcp-vertex.resetSettings',
+			lang: dictsByLang.en,
+		});
+		// The renderer must NOT stringify booleans to 'true' / 'false' anymore —
+		// the host's Zod parse rejects strings where booleans are declared.
+		expect(html).not.toMatch(/\.checked\s*\?\s*'true'\s*:\s*'false'/);
+		// The renderer reads the checkbox state directly into the value.
+		expect(html).toMatch(
+			/out\.allowLocalhost\s*=\s*form\.querySelector\([^)]*allowLocalhost[^)]*\)\.checked\s*;/,
+		);
+		expect(html).toMatch(
+			/out\.allowPrivateIps\s*=\s*form\.querySelector\([^)]*allowPrivateIps[^)]*\)\.checked\s*;/,
+		);
+	});
 });

@@ -1,9 +1,10 @@
 import {
 	DEFAULT_EXTENSION_SETTINGS,
 	SettingsService,
-	type IExtensionSettingsPatch,
+	type IExtensionSettings,
 	type ISettingsStore,
 } from '@mcp-vertex/client';
+import { ExtensionSettingsSchema } from '@mcp-vertex/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderSettings } from '@mcp-vertex/ui-extension/public';
 
@@ -155,14 +156,18 @@ export const registerResetSettingsCommand = (
 		return settings;
 	});
 
-const parseSettingsInput = (
-	raw: unknown,
-): IExtensionSettingsPatch | undefined => {
-	if (raw === null || typeof raw !== 'object') return undefined;
-	const candidate = raw as { extension?: unknown };
-	const extension = candidate.extension;
-	if (extension === null || typeof extension !== 'object') return undefined;
-	return extension as IExtensionSettingsPatch;
+/**
+ * Parse the settings payload at the extension boundary. Closes the
+ * schema half of H4 (f00062 S3): a malformed wire payload (wrong
+ * types, missing fields, an invalid `logLevel` or `theme` enum) is
+ * rejected BEFORE it reaches the `ISettingsStore`. The previous
+ * loose cast (`as IExtensionSettingsPatch`) let any object through;
+ * the new `safeParse` produces a typed `IExtensionSettings` on
+ * success and `undefined` on failure.
+ */
+const parseSettingsInput = (raw: unknown): IExtensionSettings | undefined => {
+	const parsed = ExtensionSettingsSchema.safeParse(raw);
+	return parsed.success ? parsed.data : undefined;
 };
 
 /** `showCommandError` re-export so this module owns the settings chain. */

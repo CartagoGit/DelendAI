@@ -52,6 +52,12 @@ export type { IRenderKnowledgeNavigatorOptions } from '../knowledge/render-knowl
 export { renderSettings } from '../settings/render-settings';
 export type { IRenderSettingsOptions } from '../settings/render-settings';
 export {
+	ExtensionSettingsSchema,
+	LogLevelSchema,
+	ThemeSchema,
+} from '../settings/settings-schema';
+export type { ExtensionSettings } from '../settings/settings-schema';
+export {
 	renderHeaderBar,
 	renderDropdown,
 	renderDisclosure,

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-28T23:04:32.048Z",
+	"generatedAt": "2026-06-29T06:39:26.905Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -696,14 +696,6 @@
 				"date": "2026-06-23"
 			},
 			{
-				"id": "f00062",
-				"title": "f00062",
-				"track": "types+solid+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
 				"id": "f00064",
 				"title": "f00064",
 				"track": "dogfood+repo-layout+contracts+web+agents",
@@ -825,11 +817,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 15,
+			"ready": 14,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 139,
+			"done": 152,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
