@@ -84,17 +84,104 @@ All optional: `tools`, `prompts`, `resources`, `knowledge`, `skills`.
 2. `@scope/pkg` (contains `/`) → used verbatim.
 3. bare `name` → `@mcp-vertex/<name>`, then `mcp-<name>`, then `name`.
 
+The same chain applies to every entry under `plugins.<name>` in
+`mcp-vertex.config.json` — when an entry has no `path` field the
+resolver treats the entry key as a bare name.
+
+## Loading a local plugin (f00087)
+
+Three supported paths, in increasing order of intrusiveness:
+
+1. **`path` in `mcp-vertex.config.json`** (recommended). The entry
+   declares an explicit module path that survives across hosts
+   (VS Code, Cursor, Claude Code, Cline, …):
+
+   ```jsonc
+   {
+     "plugins": {
+       "lx-app": {
+         "path": "libs/plugins/lx-app/dist/index.js",
+         "prefix": "lx"
+       }
+     }
+   }
+   ```
+
+   Relative paths resolve against the workspace root; absolute paths
+   and `file:`/`./`/`/`-prefixed values pass through verbatim. This
+   is the only form that lets you commit the load declaration to
+   version control without touching host-specific files.
+
+2. **`--plugins=<path>` CLI flag**. Pass the absolute or
+   workspace-relative path to the host entry-point (e.g. in
+   `.vscode/mcp.json`'s `args`):
+
+   ```jsonc
+   {
+     "servers": {
+       "mcp-vertex": {
+         "command": "bun",
+         "args": [
+           "/abs/path/to/mcp-vertex/tools/scripts/host/host-server.script.ts",
+           "--workspace=${workspaceFolder}",
+           "--config=${workspaceFolder}/mcp-vertex.config.json",
+           "--plugins=${workspaceFolder}/libs/plugins/lx-app/dist/index.js"
+         ]
+       }
+     }
+   }
+   ```
+
+   Host-specific — every host has its own MCP config file — but
+   useful when the path is genuinely host-scoped.
+
+3. **Symlink under `node_modules`**. The historical workaround:
+   `ln -s ../libs/plugins/lx-app node_modules/@mcp-vertex/lx-app`
+   makes the bare-name fallback chain resolve. Works, but fragile
+   (gets wiped by `bun install --force`) and not portable across
+   hosts.
+
+When the same plugin name appears in both `--plugins=<bare-name>`
+and `mcp-vertex.config.json#plugins.<name>`, both contribute
+specifiers — and `--exclude-plugins=<name>` matches the resolved
+`IMcpPlugin.name` after `register()`, so excluding a `path`-loaded
+plugin by its config key still works.
+
 ## Generate a plugin skeleton
 
-Let mcp-vertex write the boilerplate for you:
+Let mcp-vertex write the boilerplate for you, either through the MCP
+scaffold tool or through the standalone CLI script that uses the
+same generator:
 
 ```bash
-# via the scaffold tool (kind: plugin) or:
-mcp-vertex_create_server  { "kind": "plugin", "pluginName": "myfeature", "description": "…" }
+# via the MCP scaffold tool (kind: plugin):
+mcp-vertex_scaffold  { "kind": "plugin", "pluginName": "myfeature", "description": "…" }
+
+# via the standalone script (works without an MCP host):
+bun run plugin:create myfeature -- "What myfeature adds"
 ```
 
-It produces `plugins/myfeature/` with `package.json`, `tsconfig.json`,
-`src/index.ts` (a working `IMcpPlugin` with a `_ping` tool) and a `README.md`.
+Both produce `plugins/myfeature/` (or `libs/plugins/myfeature/`
+when driven by the script) with `package.json`, `tsconfig.json`,
+`src/index.ts` (a working `IMcpPlugin` with a `_ping` tool) and a
+`README.md`. The script honours `--keep-legacy` so existing files
+are moved aside instead of refused.
+
+For programmatic scaffolding from a build/test script, import the
+pure generators directly:
+
+```ts
+import {
+  scaffoldPluginFiles,
+  writeScaffoldedFilesOrThrow,
+} from '@mcp-vertex/client';
+
+const files = scaffoldPluginFiles({
+  pluginName: 'myfeature',
+  description: 'What myfeature adds',
+});
+await writeScaffoldedFilesOrThrow('./libs/plugins/myfeature', files);
+```
 
 ## Presets
 

@@ -6,15 +6,13 @@
  * ids are rejected at the boundary by `init-answers.schema.ts` BEFORE the
  * prompt returns, so we never propagate a typo to the file system.
  *
- * Implementation notes:
- *
- *   - Uses Node's `readline` so the dependency surface stays at zero
- *     added packages. TTY-only; non-TTY runs (CI, piped) take the schema
- *     defaults path.
- *   - The module is pure (no IO, no `process.cwd()`); the resolved
- *     answers carry `workspaceRoot` from the caller.
+ * The plugin menu is derived live from `PRESET_CATALOG` via
+ * `resolvePresetMembers` — adding or removing a plugin in the core
+ * catalog re-shapes the prompts automatically, no code change here.
  */
 import { createInterface, type Interface as RLInterface } from 'node:readline';
+
+import { PRESET_KIND, resolvePresetMembers } from '@mcp-vertex/core/public';
 
 import {
 	INIT_VALID_PLUGIN_IDS,
@@ -22,55 +20,59 @@ import {
 	type IInitAnswers,
 } from './init-answers.schema';
 
-const RESOLVED_PRESET_PLUGINS = new Map<string, readonly string[]>([
-	['minimal', ['git', 'search']],
-	[
-		'standard',
-		['git', 'search', 'memory', 'docs', 'rules', 'quality', 'deps'],
-	],
-	[
-		'swarm',
-		[
-			'git',
-			'search',
-			'memory',
-			'docs',
-			'rules',
-			'quality',
-			'deps',
-			'proposals',
-			'notification',
-			'logs',
-			'status-marker',
-			'test-convention',
-			'conventions',
-		],
-	],
-	[
-		'full',
-		[
-			'git',
-			'search',
-			'memory',
-			'docs',
-			'rules',
-			'quality',
-			'deps',
-			'proposals',
-			'notification',
-			'logs',
-			'status-marker',
-			'test-convention',
-			'conventions',
-			'web-fetch',
-			'issues',
-		],
-	],
-]);
+/**
+ * Minimal ANSI palette. Disabled when `NO_COLOR` is set, when
+ * `FORCE_COLOR=0`, or when `process.stdout.isTTY` is false. The
+ * helpers below are pure passthroughs in those modes so logs stay
+ * greppable. See https://no-color.org/ for the convention.
+ */
+const COLOR_ENABLED = (): boolean => {
+	if (process.env.NO_COLOR !== undefined && process.env.NO_COLOR !== '') {
+		return false;
+	}
+	if (process.env.FORCE_COLOR === '0') return false;
+	return Boolean(process.stdout.isTTY);
+};
+const COLOR = COLOR_ENABLED();
 
-const resolvedPluginsFor = (
-	preset: IInitAnswers['preset'],
-): readonly string[] => RESOLVED_PRESET_PLUGINS.get(preset) ?? [];
+const ansi = (open: number, close: number) =>
+	COLOR
+		? (text: string): string => `\x1b[${open}m${text}\x1b[${close}m`
+		: (text: string): string => text;
+
+const c = {
+	bold: ansi(1, 22),
+	dim: ansi(2, 22),
+	cyan: ansi(36, 39),
+	green: ansi(32, 39),
+	yellow: ansi(33, 39),
+	red: ansi(31, 39),
+	magenta: ansi(35, 39),
+	gray: ansi(90, 39),
+};
+
+const heading = (text: string): string => c.bold(c.cyan(text));
+const hint = (text: string): string => c.dim(c.gray(text));
+const brand = (text: string): string => c.magenta(text);
+const success = (text: string): string => `${c.green('✓')} ${text}`;
+const failure = (text: string): string => `${c.red('✗')} ${text}`;
+const numbered = (n: number, text: string): string =>
+	`${c.cyan(`${n})`)} ${text}`;
+const bullet = (text: string): string => `${c.gray('›')} ${text}`;
+
+const ALL_PRESET_PLUGINS: ReadonlySet<string> = (() => {
+	const ids = new Set<string>();
+	for (const preset of PRESET_KIND) {
+		for (const id of resolvePresetMembers(preset)) ids.add(id);
+	}
+	return ids;
+})();
+
+const PLUGINS_ADDABLE: ReadonlySet<string> = (() => {
+	const out = new Set(ALL_PRESET_PLUGINS);
+	out.add('audit');
+	return out;
+})();
 
 const dedupe = (items: readonly string[]): readonly string[] =>
 	Array.from(new Set(items));
@@ -124,7 +126,7 @@ const askPlugin = async (
 	const answer = await ask(rl, question, '');
 	const err = validatePluginId(answer);
 	if (err !== null) {
-		process.stderr.write(`✗ ${err}\n`);
+		process.stderr.write(`${failure(err)}\n`);
 		return askPlugin(rl, question);
 	}
 	return answer.length === 0 ? null : answer;
@@ -133,7 +135,11 @@ const askPlugin = async (
 const collectPluginList = async (
 	rl: RLInterface,
 	firstQuestion: string,
+	candidates: readonly string[],
 ): Promise<readonly string[]> => {
+	if (candidates.length > 0) {
+		process.stderr.write(`  addable plugins: ${candidates.join(', ')}\n`);
+	}
 	const out: string[] = [];
 	for (let i = 0; i < 32; i += 1) {
 		const prompt =
@@ -170,6 +176,9 @@ const askChoice = async <T extends string>(
 	return defaultValue;
 };
 
+const diff = <T>(a: readonly T[], b: ReadonlySet<T>): readonly T[] =>
+	a.filter((x) => !b.has(x));
+
 export const collectInitAnswers = async (
 	workspaceRoot: string,
 	overrides: Partial<IInitAnswers> = {},
@@ -200,22 +209,34 @@ export const collectInitAnswers = async (
 			'swarm',
 		);
 
+		// Dynamic menu: the catalog-wide union minus the preset's own
+		// members. `audit` is always addable (opt-in, outside the
+		// canonical chain).
+		const presetMembers = resolvePresetMembers(preset);
+		const addable = dedupe([
+			...diff([...PLUGINS_ADDABLE], new Set(presetMembers)),
+			'audit',
+		]);
+
 		const extraPlugins = await collectPluginList(
 			rl,
-			'Add plugin? (e.g. "audit", blank or "n" to finish)',
+			'Add plugin? (e.g. one of the addable plugins below, blank or "n" to finish)',
+			addable,
 		);
 
-		const basePlugins = resolvedPluginsFor(preset);
-		const exclusionCandidates = basePlugins.filter(
-			(p) => !extraPlugins.includes(p),
+		// Exclusions: only the opt-in additions are real choices to
+		// exclude. Preset members are implicit and cannot be turned off
+		// without changing the preset itself.
+		const addedByUser = extraPlugins.filter(
+			(id) => !presetMembers.includes(id),
 		);
-
 		const excludedPlugins =
-			exclusionCandidates.length === 0
+			addedByUser.length === 0
 				? []
 				: await collectPluginList(
 						rl,
-						`Exclude any of: ${exclusionCandidates.join(', ')}? (blank to skip)`,
+						'Exclude any of the opt-in plugins you just added? (blank to skip)',
+						addedByUser,
 					);
 
 		const hostInstructions = await askChoice<
@@ -246,15 +267,14 @@ export const collectInitAnswers = async (
 			true,
 		);
 
-		const migrateFromLegacy =
-			basePlugins.includes('proposals') ||
-			extraPlugins.includes('proposals')
-				? await askConfirm(
-						rl,
-						'Scaffold the first migration proposal (f00001-migrate-legacy-*.md)?',
-						true,
-					)
-				: false;
+		const resolved = dedupe([...presetMembers, ...extraPlugins]);
+		const migrateFromLegacy = resolved.includes('proposals')
+			? await askConfirm(
+					rl,
+					'Scaffold the first migration proposal (f00001-migrate-legacy-*.md)?',
+					true,
+				)
+			: false;
 
 		return InitAnswers.parse({
 			preset,

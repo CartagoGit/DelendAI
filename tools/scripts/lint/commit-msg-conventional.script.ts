@@ -9,10 +9,17 @@
  * Policy (f00086):
  *   - First line MUST match
  *       /^(feat|fix|chore|docs|refactor|test|build|ci|perf|style)
- *         (\([a-z0-9_-]+\))?!?: /
+ *         (\([^)]+\))?!?: /
  *     OR start with `Merge ` / `Revert ` (git-generated merge
  *     / revert commits that should not be reformatted by the
  *     agent).
+ *   - The scope (the part in parens) accepts any character except
+ *     `)` — kept in lockstep with the scope regex in
+ *     `derive-version.ts` so multi-scope subjects like
+ *     `feat(core,client): ...` (which `derive-version.ts` already
+ *     classifies as `feat`) are not blocked at commit-msg time.
+ *     The scope is still decorative: the version bump only
+ *     depends on the type and the `!` breaking marker.
  *   - The subject after the colon is NOT validated for length,
  *     case, or punctuation. Only the prefix matters.
  *   - Empty / whitespace-only / body-only messages are blocked.
@@ -39,9 +46,14 @@ export const CONVENTIONAL_PREFIXES: readonly string[] = [
 	'style',
 ];
 
-/** First line: Conventional Commits with optional scope and `!` marker. */
+/**
+ * First line: Conventional Commits with optional scope and `!` marker.
+ * Scope is `[^)]+` to mirror `derive-version.ts` (which also accepts
+ * any non-`)` chars in the scope) so multi-scope subjects are not
+ * silently downgraded by a stricter commit-msg guard.
+ */
 export const CONVENTIONAL_RE =
-	/^(feat|fix|chore|docs|refactor|test|build|ci|perf|style)(\([a-z0-9_-]+\))?!?: /;
+	/^(feat|fix|chore|docs|refactor|test|build|ci|perf|style)(\([^)]+\))?!?: /;
 
 /** Merge / revert commits are git-generated and exempt. */
 export const MERGE_REVERT_RE = /^(Merge |Revert )/;
@@ -111,11 +123,10 @@ export const readMessageFile = async (path: string): Promise<string> => {
  * already-committed state.
  */
 export const readLastCommitMessage = (cwd: string): string | null => {
-	const res = spawnSync(
-		'git',
-		['log', '-1', '--pretty=format:%B'],
-		{ cwd, encoding: 'utf8' },
-	);
+	const res = spawnSync('git', ['log', '-1', '--pretty=format:%B'], {
+		cwd,
+		encoding: 'utf8',
+	});
 	if (res.status !== 0) return null;
 	return res.stdout ?? '';
 };

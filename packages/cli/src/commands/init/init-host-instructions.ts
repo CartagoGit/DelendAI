@@ -18,8 +18,10 @@ export type IHostInstructionsTarget = {
 const BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
 const END_MARKER = '<!-- mcp-vertex:end -->';
 
-const wrapBlock = (body: string): string =>
-	`${BEGIN_MARKER}\n\n${body.trim()}\n\n${END_MARKER}\n`;
+const wrapBlock = (body: string, withTrailingNewline: boolean): string => {
+	const base = `${BEGIN_MARKER}\n\n${body.trim()}\n\n${END_MARKER}`;
+	return withTrailingNewline ? `${base}\n` : base;
+};
 
 /**
  * Pure computation: given the current file contents (or `undefined` when
@@ -29,6 +31,11 @@ const wrapBlock = (body: string): string =>
  *   - `append`   — replace existing block in place, or append.
  *   - `overwrite` — replace the whole file with the block.
  *   - `skip`     — return `undefined` (caller writes nothing).
+ *
+ * Idempotency: when the input is exactly what we wrote in a previous
+ * run, the output is byte-identical. The key invariant is that
+ * `wrapBlock` does NOT add a trailing newline on its own — the caller
+ * controls the terminator based on what the existing file ends with.
  */
 export const computeHostInstructionsWrite = (
 	current: string | undefined,
@@ -36,18 +43,20 @@ export const computeHostInstructionsWrite = (
 	mode: 'append' | 'overwrite' | 'skip',
 ): string | undefined => {
 	if (mode === 'skip') return undefined;
-	const block = wrapBlock(body);
-	if (mode === 'overwrite') return block;
-	if (current === undefined) return block;
+	if (mode === 'overwrite') return wrapBlock(body, true);
+	if (current === undefined) return wrapBlock(body, true);
 	const begin = current.indexOf(BEGIN_MARKER);
 	const end = current.indexOf(END_MARKER);
 	if (begin >= 0 && end > begin) {
 		const before = current.slice(0, begin);
 		const after = current.slice(end + END_MARKER.length);
-		return `${before}${block}${after.replace(/^\n+/, '\n')}`;
+		// Strip the line of leading newlines after the end marker so
+		// the surrounding context collapses to a single blank line.
+		const collapsedAfter = after.replace(/^\n+/, '\n');
+		return `${before}${wrapBlock(body, false)}${collapsedAfter}`;
 	}
-	const separator = current.endsWith('\n') ? '\n' : '\n\n';
-	return `${current}${separator}${block}`;
+	const separator = current.endsWith('\n') ? '' : '\n';
+	return `${current}${separator}\n${wrapBlock(body, true)}`;
 };
 
 export const readHostInstructionsFile = async (

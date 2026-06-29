@@ -201,6 +201,21 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		expect(next).toContain('hello');
 	});
 
+	it('is idempotent: a second call with the previous output produces the same bytes', () => {
+		const first = computeHostInstructionsWrite(
+			undefined,
+			'first body',
+			'append',
+		);
+		expect(first).toBeDefined();
+		const second = computeHostInstructionsWrite(
+			first,
+			'first body',
+			'append',
+		);
+		expect(second).toBe(first);
+	});
+
 	it('replaces the whole file in overwrite mode', () => {
 		const current = '# Existing\n';
 		const next = computeHostInstructionsWrite(

@@ -82,6 +82,7 @@
 		"release": "bun tools/scripts/release/release.script.ts",
 		"smoke": "bun tools/scripts/smoke/cli.script.ts",
 		"smoke:pack": "bun tools/scripts/smoke/pack.script.ts",
+		"plugin:create": "bun tools/scripts/create-plugin.ts",
 		"docs:api": "typedoc --options configs/typedoc.json",
 		"docs:api:watch": "typedoc --options configs/typedoc.json --watch",
 		"site": "bun run build && bun run docs:api && cd apps/web && bun run build",

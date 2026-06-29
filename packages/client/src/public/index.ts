@@ -152,3 +152,17 @@ export type {
 } from '../lib/contracts/interfaces/tool-descriptor.interface';
 
 export type * from '@mcp-vertex/core/public';
+
+// --- scaffolding helpers (f00087 S2) ----------------------------------------
+// f00087 S2: re-export the pure scaffold generators from the core
+// plus the client-side writer helper. A consumer that wants to
+// scaffold a plugin/tool/skill outside an MCP session can call these
+// directly without spinning up a host.
+export {
+	writeScaffoldedFiles,
+	writeScaffoldedFilesOrThrow,
+} from '../lib/scaffold/write-scaffolded-files';
+export type {
+	IWriteScaffoldedFilesOptions,
+	IWriteScaffoldedFilesResult,
+} from '../lib/scaffold/write-scaffolded-files';
