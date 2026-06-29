@@ -59,17 +59,40 @@ describe('lintCommitMessage', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows a Merge commit (git-generated, exempt)', () => {
+	it('allows a multi-scope subject (`core,client`) — aligned with derive-version.ts', () => {
+		// derive-version.ts parses `type(scope)` with `[^)]*`, so
+		// `feat(core,client): ...` is already classified as `feat`
+		// for the semver bump. The commit-msg guard must not block
+		// the same subject on stricter scope characters.
 		const result = lintCommitMessage(
-			"Merge branch 'agent/x' into develop",
+			'feat(core,client): f00087 S2 add script-based plugin scaffolder',
 		);
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows a Revert commit (git-generated, exempt)', () => {
+	it('allows a multi-scope subject with a breaking marker', () => {
 		const result = lintCommitMessage(
-			'Revert "feat(core): add a thing"',
+			'feat(core,client)!: rename scaffolder entry point',
 		);
+		expect(result.ok).toBe(true);
+	});
+
+	it('still rejects a scope that contains a closing paren', () => {
+		// Unbalanced parens are not a scope, so the prefix itself
+		// becomes unparseable and the commit must be rejected.
+		const result = lintCommitMessage(
+			'feat(core)broken): nested paren subject',
+		);
+		expect(result.ok).toBe(false);
+	});
+
+	it('allows a Merge commit (git-generated, exempt)', () => {
+		const result = lintCommitMessage("Merge branch 'agent/x' into develop");
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows a Revert commit (git-generated, exempt)', () => {
+		const result = lintCommitMessage('Revert "feat(core): add a thing"');
 		expect(result.ok).toBe(true);
 	});
 
@@ -108,7 +131,8 @@ describe('lintCommitMessage', () => {
 			'feat(scope): first-line subject\n\nbody line 1\nbody line 2',
 		);
 		expect(result.ok).toBe(true);
-		if (result.ok) expect(result.firstLine).toBe('feat(scope): first-line subject');
+		if (result.ok)
+			expect(result.firstLine).toBe('feat(scope): first-line subject');
 	});
 
 	it('blocks when the conventional prefix is on a non-first line (whole message matters)', () => {

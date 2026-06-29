@@ -118,7 +118,7 @@ documented, externally-callable interfaces.
 
 ## Architecture
 
-### S1 — `mcp-vertex.config.json#plugins.<name>.path`
+### S1 sub-section — `mcp-vertex.config.json#plugins.<name>.path`
 
 The current per-plugin entry:
 
@@ -222,7 +222,7 @@ silently failing later inside the loader.
   + a README) that the consumer can `bun run …` to confirm their
   local plugin loads.
 
-### S2 — `@mcp-vertex/client` exposes `scaffoldPluginFiles`
+### S2 sub-section — `@mcp-vertex/client` exposes `scaffoldPluginFiles`
 
 **Core export** (`packages/core/src/public/index.ts`):
 
@@ -328,30 +328,12 @@ no new gate needed. The proposal adds two new commands to the
 This lets a consumer of mcp-vertex (the operator) skip the explanatory
 README step when they're confident.
 
-## Why now
-
-Both fixes are pure convenience — they don't enable any new product
-behaviour — but a sibling project hit both pain points in a single
-afternoon and the operator asked for a real fix instead of a symlink
-workaround. The work is small, both slices fit in one PR each, and
-they dogfood the existing scaffolder + loader without rippling the
-plugin contract. Doing it now keeps the next consumer from filing the
-same bug as a GitHub issue.
-
 ## Slices
 
 ### S1 — `mcp-vertex.config.json#plugins.<name>.path`
 
 - **Status**: pending
-- **Files**:
-  - `packages/core/schema/mcp-vertex.config.schema.json` (static schema)
-  - `packages/core/src/lib/plugins/config-file-schema.ts` (Zod schema)
-  - `packages/core/src/lib/plugins/load-config-file.ts` (`IMcpVertexPluginConfig`)
-  - `packages/core/src/lib/cli/assemble.ts` (rewrite specifier set)
-  - `packages/cli/src/contracts/constants/help-translation.constant.ts` (help text)
-  - `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` (worked examples)
-  - `docs/mcp-vertex/examples/local-plugin/` (new example workspace)
-  - `packages/core/tests/**/*plugin*.spec.ts` (unit + e2e tests)
+- **Files**: packages/core/schema/mcp-vertex.config.schema.json, packages/core/src/lib/plugins/config-file-schema.ts, packages/core/src/lib/plugins/load-config-file.ts, packages/core/src/lib/cli/assemble.ts, packages/cli/src/contracts/constants/help-translation.constant.ts, docs/mcp-vertex/PLUGINS-MCP-VERTEX.md, packages/core/tests/src/lib/plugins/plugin-path.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
   - New schema field passes Zod + the published JSON Schema.
@@ -389,7 +371,7 @@ same bug as a GitHub issue.
     scaffold tool (proven by injecting a mock writer in the unit spec).
   - `bun run validate` green; `bun run site:strict` green.
 
-## Migration
+## Notes
 
 - The two changes are **additive**. No existing config file or
   consumer breaks.
@@ -400,9 +382,6 @@ same bug as a GitHub issue.
   `config-file-schema.ts`).
 - A consumer upgrading should not need to do anything; they MAY add
   `path` to their entries to declare a local plugin explicitly.
-
-## Rollout
-
 - Land S1 and S2 in a single PR (both touch scaffold/assemble; same
   boot path; one full `bun run validate` cycle covers both).
 - Tag the release with `feat:` prefix so semver bumps the minor of
@@ -412,7 +391,7 @@ same bug as a GitHub issue.
   to use `plugins.lx-app.path`, then commit `mcp-vertex.config.json`
   with the change.
 
-## Open questions for the orchestrator
+Open questions for the orchestrator:
 
 1. **Should `path` accept a directory or only an entry file?** A
    consumer might reasonably write `libs/plugins/lx-app/` and expect

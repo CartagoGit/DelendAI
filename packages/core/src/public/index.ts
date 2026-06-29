@@ -179,6 +179,15 @@ export {
 export { joinRel } from '../lib/shared/paths';
 export { resolveWorkspaceContained } from '../lib/shared/contain-path';
 export type { IContainedPath } from '../lib/shared/contain-path';
+// f00087 S2: batch atomic writer for consumers that want to apply
+// scaffolded files outside an MCP session.
+export { createFileSystemBatchWriter } from '../lib/shared/batch-atomic-writer';
+export type {
+	IBatchAtomicWriter,
+	IBatchOperation,
+	IBatchOperationError,
+	IBatchWriteResult,
+} from '../lib/shared/batch-atomic-writer';
 
 // --- ephemeral exec paths (f00080) -----------------------------------------
 // Canonical home for artefacts a plugin or agent creates, runs (or

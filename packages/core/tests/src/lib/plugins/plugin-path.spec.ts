@@ -194,9 +194,13 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 					plugins: { memory: { options: { maxBytes: 1024 } } },
 				}),
 		});
-		// Bare-name path: the entry key is forwarded verbatim so
-		// `resolvePluginSpecifier` can run its fallback chain.
-		expect(importCalls[0]).toBe('memory');
+		// Bare-name path: the entry key is forwarded verbatim to
+		// `resolvePluginSpecifier`, whose fallback chain tries
+		// `@mcp-vertex/memory` first, then `mcp-memory`, then
+		// `memory`. The fake importer returns successfully on the
+		// first attempt, so only one import call fires — that
+		// proves the resolver ran its chain.
+		expect(importCalls).toEqual(['@mcp-vertex/memory']);
 	});
 
 	it('surfaces a config-typo warning for a bare-name-shaped path', async () => {

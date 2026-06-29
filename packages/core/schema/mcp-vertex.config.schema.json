@@ -97,8 +97,7 @@
 						"additionalProperties": {}
 					},
 					"path": {
-						"type": "string",
-						"description": "f00087 S1: explicit module path for a local plugin. Relative paths resolve against the workspace root; absolute and file:///./-prefixed values pass through verbatim."
+						"type": "string"
 					}
 				},
 				"additionalProperties": false

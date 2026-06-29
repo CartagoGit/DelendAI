@@ -54,3 +54,40 @@ documented method per use case instead of raw `request` calls.
 See [`src/public/index.ts`](./src/public/index.ts) for the full exported
 surface — that barrel is the only stable import path; everything under
 `src/lib` may change without notice.
+
+## Scaffold a plugin from a script (f00087)
+
+For projects that want to scaffold a new `IMcpPlugin` outside an MCP
+session — for example, to bootstrap a private plugin without spinning
+up a host — the client re-exports the pure generators from
+`@mcp-vertex/core/public` plus a `writeScaffoldedFiles` helper that
+applies them atomically with the same `keepLegacy` semantics the MCP
+scaffold tool uses:
+
+```ts
+import {
+  scaffoldPluginFiles,
+  writeScaffoldedFilesOrThrow,
+} from '@mcp-vertex/client';
+
+const files = scaffoldPluginFiles({
+  pluginName: 'demo',
+  description: 'A demo plugin',
+});
+const result = await writeScaffoldedFilesOrThrow(
+  './libs/plugins/demo',
+  files,
+);
+```
+
+For a one-shot CLI flow, run the root-level helper instead:
+
+```sh
+bun run plugin:create demo -- "A demo plugin"
+```
+
+The script writes the four canonical files (`package.json`,
+`src/index.ts`, `tsconfig.json`, `README.md`) under
+`./libs/plugins/demo/` relative to the current working directory. Pass
+`--keep-legacy` to move existing files aside instead of refusing to
+overwrite them.
