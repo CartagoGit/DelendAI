@@ -40,7 +40,7 @@ export const initCommand: ICliCommand = {
 			force,
 			workspaceRoot: ctx.cwd,
 		});
-		const bundle = renderInitBundle(answers);
+		const bundle = await renderInitBundle(answers);
 
 		if (dryRun) {
 			return {
@@ -69,10 +69,7 @@ export const initCommand: ICliCommand = {
 				written.push({ path: result.path, kind: result.kind });
 				continue;
 			}
-			const mode =
-				answers.hostInstructions === 'skip'
-					? 'skip'
-					: answers.hostInstructions;
+			const mode = answers.hostInstructions;
 			const result = await writeWorkspaceText(
 				answers.workspaceRoot,
 				file.relPath,
