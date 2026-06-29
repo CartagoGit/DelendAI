@@ -87,6 +87,12 @@ export const InitAnswers = z.object({
 	/** Overwrite existing `mcp-vertex.config.json` without prompting. */
 	force: z.boolean().default(false),
 
+	/** Optional `owner/name` repo for the `issues` plugin. */
+	issuesRepo: z.string().optional(),
+
+	/** Optional hostname allow-list for the `web-fetch` plugin. */
+	webFetchAllowList: z.array(z.string()).optional(),
+
 	/** Workspace root resolved by the CLI context. */
 	workspaceRoot: z.string().default(process.cwd()),
 

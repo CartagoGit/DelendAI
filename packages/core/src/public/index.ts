@@ -100,6 +100,10 @@ export {
 } from '../lib/plugins/parse-cli-args';
 export type { IMcpVertexCliArgs } from '../lib/plugins/parse-cli-args';
 export {
+	PLUGIN_DEFAULTS,
+	resolvePluginOptions,
+} from '../lib/plugins/plugin-defaults';
+export {
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,

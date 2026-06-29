@@ -39,7 +39,6 @@
       "name": "@mcp-vertex/web",
       "version": "0.1.0",
       "dependencies": {
-        "@types/markdown-it": "^14.1.2",
         "astro": "^6.4.8",
         "markdown-it": "^14.2.0",
         "sass": "^1.101.0",
@@ -60,6 +59,7 @@
         "@mcp-vertex/search": "workspace:*",
         "@mcp-vertex/status-marker": "workspace:*",
         "@modelcontextprotocol/sdk": "1.29.0",
+        "@types/markdown-it": "^14.1.2",
         "pagefind": "^1.5.2",
         "typescript": "^6.0.3",
       },
@@ -138,6 +138,7 @@
       "dependencies": {
         "@mcp-vertex/client": "workspace:*",
         "@mcp-vertex/shared": "workspace:*",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "@biomejs/biome": "2.5.0",

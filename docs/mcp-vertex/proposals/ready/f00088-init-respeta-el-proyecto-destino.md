@@ -137,7 +137,7 @@ detected value is the default.
 
 ## architecture
 
-### S1 — detect the target project
+### Architecture S1 — detect the target project
 
 **New module** `packages/cli/src/commands/init/init-detection.ts`:
 
@@ -192,7 +192,7 @@ export const InitAnswers = z.object({
 After `detectTargetProject` runs, render a one-line summary so the operator
 sees what was detected (`✓ detected: typescript + Angular 18 + bun + yarn-workspaces`). The "copy core skills" and "migration offer" prompts are gated on the detection: when `hasMcpProject === true`, the migration offer is skipped (a migration is unnecessary on a greenfield); when `language === 'python' | 'go' | 'rust'`, the "copy core skills" prompt is skipped with a hint that the convention docs don't apply yet.
 
-### S2 — resolve the host entry path
+### Architecture S2 — resolve the host entry path
 
 **New module** `packages/cli/src/commands/init/host-entry-resolver.ts`:
 
@@ -241,7 +241,7 @@ const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => ({
 The hardcoded path goes away; `renderInitBundle` threads the resolved
 `hostEntryPath` from `IInitAnswers.detected`.
 
-### S3 — locale-aware agent fallback + namespace propagation
+### Architecture S3 — locale-aware agent fallback + namespace propagation
 
 **Refactor** ([init-catalog.ts](packages/cli/src/commands/init/init-catalog.ts)):
 
@@ -275,7 +275,7 @@ Every `tools: ['mcp-vertex_proposals_auto_work']` in the fallback becomes
 already returns its own tool lists correctly namespaced; the fix is on
 the fallback path only.
 
-### S4 — convention-aware plugin paths root
+### Architecture S4 — convention-aware plugin paths root
 
 **Detection** (S1) produces `sourceRoot` from the table above.
 
@@ -353,6 +353,19 @@ consumer-facing surface.
   - `tools/scripts/create-plugin.ts` accepts `--root=<path>` and defaults to `pluginPathsRoot` when the current directory contains a `mcp-vertex.config.json` with a `convention` block.
   - Existing specs still green (the default for an empty workspace is still `plugins/`, preserving f00084 behaviour).
 
+## acceptance
+
+- The validation gate (`bun run validate`) is green for the four slices
+  above.
+- `bun run cli -- init --help` exits 0 and the new `--mcp-vertex-root`
+  and `--plugin-paths-root` flags appear.
+- A fixture project that simulates an Angular workspace gets the right
+  `pluginPathsRoot: 'libs'` and the right `hostEntryPath` after S2.
+- `lint:cli:i18n` flags the new locale keys as missing for every locale
+  that does not yet ship a translation (English and Spanish pass, the
+  rest are explicit TODOs in the i18n table — captured by the next
+  translation pass).
+
 ## risks and mitigations
 
 1. **`analyzeProject` is async and IO-heavy.** S1 calls it once at boot,
@@ -393,16 +406,3 @@ consumer-facing surface.
   bundle as today (detection falls back to defaults). No breaking
   change to `mcp-vertex.config.json` consumers — the new `convention`
   block is optional.
-
-## acceptance
-
-- The validation gate (`bun run validate`) is green for the four slices
-  above.
-- `bun run cli -- init --help` exits 0 and the new `--mcp-vertex-root`
-  and `--plugin-paths-root` flags appear.
-- A fixture project that simulates an Angular workspace gets the right
-  `pluginPathsRoot: 'libs'` and the right `hostEntryPath` after S2.
-- `lint:cli:i18n` flags the new locale keys as missing for every locale
-  that does not yet ship a translation (English and Spanish pass, the
-  rest are explicit TODOs in the i18n table — captured by the next
-  translation pass).

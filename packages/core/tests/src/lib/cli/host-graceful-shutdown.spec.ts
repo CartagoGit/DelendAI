@@ -230,7 +230,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		// to start, not to serve real tools for this test).
 		writeFileSync(
 			join(workspace, 'mcp-vertex.config.json'),
-			`{ "name": "gs-test", "version": "0.0.0", "plugins": [] }\n`,
+			`{ "plugins": {} }\n`,
 		);
 		cleanup = () => {
 			try {

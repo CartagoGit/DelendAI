@@ -55,12 +55,37 @@ const splitList = (value: string | undefined): readonly string[] =>
 				.map((entry) => entry.trim())
 				.filter(Boolean);
 
+const OPTIONS_FLAG_PREFIX = 'options-';
+
+const parseExtraOptionFlag = (
+	body: string,
+): {
+	readonly pluginId: string;
+	readonly key: string;
+	readonly value: string;
+} | null => {
+	if (!body.startsWith(OPTIONS_FLAG_PREFIX)) return null;
+	const rest = body.slice(OPTIONS_FLAG_PREFIX.length);
+	const firstEquals = rest.indexOf('=');
+	if (firstEquals <= 0) return null;
+	const pluginId = rest.slice(0, firstEquals);
+	const keyValue = rest.slice(firstEquals + 1);
+	const secondEquals = keyValue.indexOf('=');
+	if (secondEquals <= 0) return null;
+	return {
+		pluginId,
+		key: keyValue.slice(0, secondEquals),
+		value: keyValue.slice(secondEquals + 1),
+	};
+};
+
 export const parseCliInvocation = (
 	argv: readonly string[],
 	cwd: string,
 	twoPartCommands: ReadonlySet<string> = DEFAULT_TWO_PART_COMMANDS,
 ): IParsedCliInvocation => {
 	const tokens: Record<string, string> = {};
+	const extraOptions: Record<string, Record<string, unknown>> = {};
 	const command: string[] = [];
 	const commandArgs: string[] = [];
 	let readingCommand = false;
@@ -69,7 +94,16 @@ export const parseCliInvocation = (
 		const token = argv[index];
 		if (token === undefined) break;
 		if (!readingCommand && token.startsWith('--')) {
-			const parsed = takeFlagValue(argv, index, token.slice(2));
+			const body = token.slice(2);
+			const optionOverride = parseExtraOptionFlag(body);
+			if (optionOverride !== null) {
+				const pluginOptions =
+					(extraOptions[optionOverride.pluginId] ??= {});
+				pluginOptions[optionOverride.key] = optionOverride.value;
+				index += 1;
+				continue;
+			}
+			const parsed = takeFlagValue(argv, index, body);
 			tokens[parsed.key] = parsed.value;
 			index += parsed.consumed;
 			continue;
@@ -106,6 +140,15 @@ export const parseCliInvocation = (
 		const token = commandArgs[index];
 		if (!token?.startsWith('--')) continue;
 		const body = token.slice(2);
+		const optionOverride = parseExtraOptionFlag(body);
+		if (optionOverride !== null) {
+			const pluginOptions =
+				(extraOptions[optionOverride.pluginId] ??= {});
+			pluginOptions[optionOverride.key] = optionOverride.value;
+			commandArgs.splice(index, 1);
+			index -= 1;
+			continue;
+		}
 		const key = body.includes('=')
 			? body.slice(0, body.indexOf('='))
 			: body;
@@ -144,6 +187,8 @@ export const parseCliInvocation = (
 		plugins: splitList(tokens.plugins),
 		preset: tokens.preset,
 		config: tokens.config,
+		extraOptions:
+			Object.keys(extraOptions).length === 0 ? undefined : extraOptions,
 		agentWorktree,
 	};
 

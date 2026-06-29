@@ -15,10 +15,43 @@ import type {
 	ICliCommand,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
+import {
+	HostEntryNotFoundError,
+	resolveHostEntryPath,
+} from './host-entry-resolver';
 import { detectTargetProject, withDetection } from './init-detection';
 import { collectInitAnswers } from './init-prompts';
 import { renderInitBundle } from './init-render';
 import { writeMcpVertexConfig, writeWorkspaceText } from './init-writers';
+
+const applyExtraOptions = (
+	config: Record<string, unknown>,
+	extraOptions: Record<string, Record<string, unknown>>,
+): Record<string, unknown> => {
+	const plugins = config.plugins;
+	if (plugins === undefined || typeof plugins !== 'object' || plugins === null) {
+		return config;
+	}
+	for (const [pluginId, overrides] of Object.entries(extraOptions)) {
+		const pluginConfig = (plugins as Record<string, unknown>)[pluginId];
+		if (
+			pluginConfig === undefined ||
+			typeof pluginConfig !== 'object' ||
+			pluginConfig === null
+		) {
+			process.stderr.write(
+				`warning: init override ignored for unresolved plugin "${pluginId}"\n`,
+			);
+			continue;
+		}
+		const typedPluginConfig = pluginConfig as { options?: Record<string, unknown> };
+		typedPluginConfig.options ??= {};
+		for (const [key, value] of Object.entries(overrides)) {
+			typedPluginConfig.options[key] = value;
+		}
+	}
+	return config;
+};
 
 const parseFlags = (
 	args: readonly string[],
@@ -85,7 +118,35 @@ export const initCommand: ICliCommand = {
 			workspaceRoot: ctx.cwd,
 			detected: preAnswers?.detected,
 		});
-		const bundle = await renderInitBundle(answers);
+		// f00088 S2: resolve the host entry path before rendering.
+		// When `--mcp-vertex-root` is set, it wins; otherwise we
+		// probe the consumer's workspace in priority order
+		// (`node_modules/@mcp-vertex/core/...`, `dist/host/...`,
+		// `../mcp-vertex/...`). A typed error surfaces the hint when
+		// nothing matches.
+		let hostEntryPath: string;
+		try {
+			const resolved = resolveHostEntryPath(
+				ctx.cwd,
+				mcpVertexRoot !== undefined
+					? { explicitRoot: mcpVertexRoot }
+					: {},
+			);
+			hostEntryPath = resolved.path;
+		} catch (error) {
+			if (error instanceof HostEntryNotFoundError) {
+				return {
+					code: EXIT_CODE.NOT_FOUND,
+					data: {
+						ok: false,
+						error: { reason: error.message, nextAction: 'retry' },
+						attempted: error.attempted,
+					},
+				};
+			}
+			throw error;
+		}
+		const bundle = await renderInitBundle(answers, { hostEntryPath });
 
 		if (dryRun) {
 			return {
@@ -106,9 +167,13 @@ export const initCommand: ICliCommand = {
 					string,
 					unknown
 				>;
+				const withOverrides =
+					ctx.globals.extraOptions === undefined
+						? parsed
+						: applyExtraOptions(parsed, ctx.globals.extraOptions);
 				const result = await writeMcpVertexConfig(
 					answers.workspaceRoot,
-					parsed,
+					withOverrides,
 					force,
 				);
 				written.push({ path: result.path, kind: result.kind });
