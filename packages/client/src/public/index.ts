@@ -166,3 +166,21 @@ export type {
 	IWriteScaffoldedFilesOptions,
 	IWriteScaffoldedFilesResult,
 } from '../lib/scaffold/write-scaffolded-files';
+
+// --- plugin authoring (f00089 U4) -------------------------------------------
+// f00089 U4: one client-callable action that authors a complete, correct
+// `IMcpPlugin` from a declarative spec AND registers it on the host by PATH
+// (`plugins.<name>.path` in mcp-vertex.config.json). The target project's
+// LLM calls this to add project-specific plugins without ever reading the
+// mcp-vertex core or its internal plugins. Reuses the f00087 scaffold +
+// writer machinery.
+export { authorPlugin } from '../lib/scaffold/author-plugin';
+export type {
+	IAuthorPluginOptions,
+	IAuthorPluginRegistration,
+	IAuthorPluginResult,
+	IAuthorPluginSpec,
+	IPluginFieldSpec,
+	IPluginFieldType,
+	IPluginToolSpec,
+} from '../lib/scaffold/author-plugin';
