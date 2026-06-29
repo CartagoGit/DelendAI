@@ -81,7 +81,7 @@ export const lintCommitBranch = (
 			`on \`develop\`, these staged files need a feature branch: ${deep.join(', ')}`,
 			'',
 			'next-action:',
-			'  create a branch:  git switch -c agent/<your-name>-<id>',
+			'  create a branch:  git switch -c agent/<your-name>-<id>-<id-proposals>-<id-agent>',
 			'  then commit there. push to develop only via PR.',
 			'',
 			'  if this is a true emergency (CI follow-up, release hotfix),',
@@ -96,7 +96,7 @@ export const lintCommitBranch = (
 			`on \`develop\`, more than ${MAX_RESIDUAL_FILES} files are staged (${stagedFiles.length}). even when none of them are in a deep path, this is too much for a direct develop commit.`,
 			'',
 			'next-action:',
-			'  create a branch:  git switch -c agent/<your-name>-<id>',
+			'  create a branch:  git switch -c agent/<your-name>-<id>-<id-proposals>-<id-agent>',
 			'  push there and open a PR.',
 		);
 		return { ok: false, blockers };
