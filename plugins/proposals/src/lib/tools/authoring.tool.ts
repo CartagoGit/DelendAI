@@ -322,9 +322,8 @@ export const buildCloseSliceRegistration = (
 					options.proposalsDirAbs ?? dirname(options.indexPathAbs),
 					entry.file,
 				);
-				let next: string;
 				try {
-					next = await withFileMutex(docPath, async () => {
+					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
 						if (md === null) {
 							throw new Error(
@@ -354,7 +353,6 @@ export const buildCloseSliceRegistration = (
 							`${m[1]}${block}`,
 						);
 						await writeFileAtomic(docPath, nextContent);
-						return nextContent;
 					});
 				} catch (err: any) {
 					return toolError(

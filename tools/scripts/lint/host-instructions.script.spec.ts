@@ -8,7 +8,7 @@
  *     right line number and next-action message
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -17,7 +17,6 @@ import {
 	lintAllHostFiles,
 	lintHostFile,
 } from './host-instructions.script.ts';
-import { resolve as resolvePath } from 'node:path';
 
 let workspaceRoot = '';
 let skillIds: ReadonlySet<string> = new Set();
@@ -56,7 +55,7 @@ const writeHostFile = (file: string, contents: string): void => {
 		for (let i = 0; i < parts.length - 1; i += 1) {
 			dir = join(dir, parts[i] ?? '');
 		}
-		require('node:fs').mkdirSync(dir, { recursive: true });
+		mkdirSync(dir, { recursive: true });
 	}
 	writeFileSync(join(workspaceRoot, file), contents, 'utf8');
 };

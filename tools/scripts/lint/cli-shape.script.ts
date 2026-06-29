@@ -62,8 +62,10 @@ const TOP_LEVEL_EXEMPT: ReadonlySet<string> = new Set([
 const extractName = (source: string): { name: string; line: number } | null => {
 	const lines = source.split('\n');
 	for (let i = 0; i < lines.length; i++) {
-		const m = lines[i].match(/^\s*name:\s*['"]([^'"]+)['"]/);
-		if (m) return { name: m[1], line: i + 1 };
+		const m = lines[i]?.match(/^\s*name:\s*['"]([^'"]+)['"]/);
+		if (m && m[1] !== undefined) {
+			return { name: m[1], line: i + 1 };
+		}
 	}
 	return null;
 };

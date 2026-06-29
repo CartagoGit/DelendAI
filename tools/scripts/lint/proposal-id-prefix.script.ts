@@ -96,7 +96,7 @@ export const lintProposalIdPrefixes = async (
 			continue;
 		}
 		if (status === 'ready' || STATUS_WITH_FREE_PREFIX.has(status)) {
-			continue;
+			// handled above; nothing to do here.
 		}
 		// Unknown top-level folder: do not fail this lint; other gates own the lifecycle map.
 	}

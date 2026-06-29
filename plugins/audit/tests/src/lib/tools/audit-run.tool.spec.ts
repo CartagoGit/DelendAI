@@ -366,7 +366,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 			),
 			'utf8',
 		);
-		expect(body).toContain('id: ' + proposal?.id);
+		expect(body).toContain(`id: ${proposal?.id}`);
 		expect(body).toContain('kind: fix');
 		expect(body).toContain('Plugins read process.cwd at boot');
 	});

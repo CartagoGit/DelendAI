@@ -170,7 +170,6 @@ export const planGc = (
 ): { removed: IGcPlanEntry[]; skipped: IGcSkippedEntry[] } => {
 	const staleMinutes = options.staleMinutes ?? 60;
 	const protectedBranches = options.protectedBranches ?? DEFAULT_PROTECTED;
-	const now = options.now ?? Date.now();
 	const removed: IGcPlanEntry[] = [];
 	const skipped: IGcSkippedEntry[] = [];
 	const branchByName = new Map(snapshot.branches.map((b) => [b.name, b]));
@@ -274,129 +273,16 @@ export const planGc = (
 };
 
 /**
- * f00075 S0 helper. When a worktree points at a branch that the
- * `agent/*` branch list did not surface (worktree-pointer-only branch,
- * branch owned exclusively by the worktree), resolve the branch from
- * the worktree itself via `git -C <wt> rev-parse --abbrev-ref HEAD`,
- * and compute its ahead/behind/merged status in vivo. Returns `null`
- * when the worktree is on a detached HEAD or any underlying git
- * invocation fails — the caller falls back to the existing skip path.
- */
-const resolveBranchFromWorktree = async (
-	run: IGitRunner,
-	wtPath: string,
-	baseBranch: string,
-	now: number | undefined,
-): Promise<
-	Extract<IBranchStatusOutcome, { ok: true }>['branches'][number] | null
-> => {
-	const branchResult = await run([
-		'-C',
-		wtPath,
-		'rev-parse',
-		'--abbrev-ref',
-		'HEAD',
-	]);
-	if (!branchResult.ok) return null;
-	const name = branchResult.output.trim();
-	if (name.length === 0 || name === 'HEAD') return null;
-
-	const aheadBehindResult = await run([
-		'-C',
-		wtPath,
-		'rev-list',
-		'--left-right',
-		'--count',
-		`${baseBranch}...${name}`,
-	]);
-	const aheadBehind = aheadBehindResult.ok
-		? (() => {
-				const parts = aheadBehindResult.output.trim().split(/\s+/u);
-				if (parts.length < 2) return { ahead: 0, behind: 0 };
-				const behind = Number.parseInt(parts[0] ?? '0', 10);
-				const ahead = Number.parseInt(parts[1] ?? '0', 10);
-				return {
-					ahead: Number.isFinite(ahead) ? ahead : 0,
-					behind: Number.isFinite(behind) ? behind : 0,
-				};
-			})()
-		: { ahead: 0, behind: 0 };
-
-	let mergedIntoBase = false;
-	const branchMergedResult = await run([
-		'-C',
-		wtPath,
-		'branch',
-		'--list',
-		'--merged',
-		baseBranch,
-		name,
-	]);
-	const branchMerged =
-		branchMergedResult.ok &&
-		branchMergedResult.output
-			.split('\n')
-			.map((line) => line.trim().replace(/^\*\s*/u, ''))
-			.some((line) => line === name);
-	if (branchMerged) {
-		const aheadResult = await run([
-			'-C',
-			wtPath,
-			'rev-list',
-			'--count',
-			`${baseBranch}..${name}`,
-		]);
-		if (aheadResult.ok) {
-			const aheadCount = Number.parseInt(aheadResult.output.trim(), 10);
-			mergedIntoBase = aheadCount === 0;
-		}
-	}
-
-	let lastCommitMinutesAgo = -1;
-	if (now !== undefined) {
-		const logResult = await run([
-			'-C',
-			wtPath,
-			'log',
-			'-1',
-			'--format=%ct',
-			name,
-		]);
-		if (logResult.ok) {
-			const ts = Number.parseInt(logResult.output.trim(), 10);
-			if (Number.isFinite(ts)) {
-				lastCommitMinutesAgo = Math.max(
-					0,
-					Math.round((now / 1000 - ts) / 60),
-				);
-			}
-		}
-	}
-
-	return {
-		name,
-		head: '',
-		ahead: aheadBehind.ahead,
-		behind: aheadBehind.behind,
-		mergedIntoBase,
-		lastCommitMinutesAgo,
-		worktreePath: wtPath,
-	};
-};
-
-/**
  * f00075 S0: enrich the snapshot with synthetic branch entries for
  * worktrees whose branch is reachable only via the worktree pointer
  * (i.e. `git branch --list agent/*` did not surface them, but the
  * worktree itself reports a real agent branch on `HEAD`). Each
  * synthetic entry is marked `mergedIntoBase: false` and `ahead: 0`
  * so the GC treats the worktree as "unmerged" — which is the safe
- * default until the engine can run `git rev-list` against the
- * worktree to verify. Pure over its inputs; never throws.
+ * default. Pure over its inputs; never throws.
  */
 const augmentSnapshotWithWorktreeBranches = async (
 	snapshot: Extract<IBranchStatusOutcome, { ok: true }>,
-	options: Pick<IBranchGcEngineOptions, 'run'>,
 ): Promise<Extract<IBranchStatusOutcome, { ok: true }>> => {
 	const knownBranches = new Set(snapshot.branches.map((b) => b.name));
 	const additions: IBranchStatusEntry[] = [];
@@ -473,7 +359,6 @@ export const runBranchGcEngine = async (
 	// can run `git rev-list` against the worktree to verify.
 	const augmentedSnapshot = await augmentSnapshotWithWorktreeBranches(
 		snapshot,
-		options,
 	);
 	const { removed, skipped } = planGc(augmentedSnapshot, options);
 

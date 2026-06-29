@@ -84,6 +84,9 @@ export const captureToolRegistration = async (
 		inputSchema,
 		outputSchema,
 		invoke: async (a: unknown) => {
+			if (!invoke) {
+				throw new Error(`tool ${tool.id} did not register a handler`);
+			}
 			const out = (await invoke(a)) as {
 				content?: Array<{ text?: string }>;
 			};

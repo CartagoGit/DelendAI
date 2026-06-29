@@ -109,13 +109,14 @@ export const lintBootstrap = (
 	// Walk H2 lines, recording their order.
 	const h2Regex = /^## .+$/gm;
 	const h2Hits: Array<{ heading: string; line: number }> = [];
-	let m: RegExpExecArray | null;
-	while ((m = h2Regex.exec(content)) !== null) {
+	for (;;) {
+		const m = h2Regex.exec(content);
+		if (m === null) break;
 		const heading = m[0];
 		// Defensive: `m[0]` for the `^## .+$` pattern always has length > 0
 		// when the regex matches; the cast keeps noUncheckedIndexedAccess
 		// happy without an `as` escape hatch.
-		const line = (m.index ?? 0) >= 0 ? lineOf(content, m.index) : 0;
+		const line = m.index >= 0 ? lineOf(content, m.index) : 0;
 		h2Hits.push({ heading, line });
 	}
 

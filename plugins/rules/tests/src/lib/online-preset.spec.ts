@@ -269,7 +269,7 @@ synopsis:           Source code suggestions
 	});
 
 	it('resolves cpan registry info successfully', async () => {
-		const fetcher: IOnlineFetcher = async (url) => {
+		const fetcher: IOnlineFetcher = async (_url) => {
 			return {
 				ok: true,
 				status: 200,

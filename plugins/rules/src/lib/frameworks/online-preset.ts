@@ -401,7 +401,7 @@ export const fetchOnlinePresetInfo = async (
 			registry === 'r_github'
 		) {
 			const match = res.body.match(/^[vV]ersion:\s*["']?([^"'\s]+)/im);
-			if (match && match[1]) {
+			if (match?.[1]) {
 				return { ok: true, package: pkg, version: match[1] };
 			}
 		}

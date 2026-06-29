@@ -137,9 +137,9 @@ const buildSkeleton = (params: {
 };
 
 const main = async (): Promise<number> => {
-	const enTutorials = (
-		await findEnTutorials(join(REPO_ROOT, 'plugins'))
-	).sort();
+	const enTutorials = [
+		...(await findEnTutorials(join(REPO_ROOT, 'plugins'))),
+	].sort();
 	if (enTutorials.length === 0) {
 		console.error(
 			'No EN tutorials found under plugins/*/tutorials/en/. Aborting.',
@@ -189,7 +189,7 @@ const main = async (): Promise<number> => {
 	}
 
 	const pluginCount = new Set(
-		enTutorials.map((p) => relative(REPO_ROOT, p).split(/[\\/]/u)[1]),
+		enTutorials.map((p: string) => relative(REPO_ROOT, p).split(/[\\/]/u)[1]),
 	).size;
 	console.log(
 		`Created/refreshed ${created} tutorial skeletons across ${pluginCount} plugins × ${LANGS.length} languages.`,

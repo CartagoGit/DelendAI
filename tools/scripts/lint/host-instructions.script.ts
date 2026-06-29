@@ -267,7 +267,6 @@ const parseArgs = (
 		}
 		if (arg.startsWith('--root=')) {
 			root = arg.slice('--root='.length);
-			continue;
 		}
 	}
 	return { check, root };

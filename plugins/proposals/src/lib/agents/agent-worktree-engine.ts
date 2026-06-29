@@ -8,7 +8,6 @@ import {
 import {
 	composeIdentity,
 	nextCollisionSuffix,
-	slugify,
 } from '../shared/agent-identity';
 
 /**

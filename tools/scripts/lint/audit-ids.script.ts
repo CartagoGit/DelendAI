@@ -22,7 +22,7 @@ const REPO_ROOT = process.cwd();
 const AUDITS_DIR = 'docs/mcp-vertex/proposals/done/audits';
 const ID_RE = /^a(\d{4,5})-/;
 
-interface IAuditFile {
+export interface IAuditFile {
 	readonly file: string;
 	readonly id: string;
 }

@@ -64,7 +64,7 @@ describe('narrative pattern providers', async () => {
 	it('default provider carries the historical audit catalogue', async () => {
 		const provider = createDefaultNarrativePatternProvider();
 		// A representative historical narrative heading resolves to `notes`.
-		expect(provider.aliases['estado']).toContain('notes');
+			expect(provider.aliases.estado).toContain('notes');
 		expect(Object.keys(provider.aliases).length).toBeGreaterThan(50);
 	});
 
