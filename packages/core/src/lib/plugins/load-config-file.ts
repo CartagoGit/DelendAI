@@ -105,6 +105,17 @@ export interface IMcpVertexCommitAuthorConfig {
 export interface IMcpVertexPluginConfig {
 	readonly prefix?: string;
 	readonly options?: Readonly<Record<string, unknown>>;
+	/**
+	 * f00087 S1: explicit module path for a local plugin.
+	 *
+	 * When set, `assembleCliConfig` rewrites the specifier from the
+	 * entry's bare name to this resolved path before handing it to
+	 * `loadPlugins`. Relative paths are resolved against the workspace
+	 * root; absolute paths and `file:`/`./`/`/`-prefixed values are
+	 * forwarded verbatim (the existing `resolvePluginSpecifier` chain
+	 * accepts all of those forms already).
+	 */
+	readonly path?: string;
 }
 
 /**
@@ -244,3 +255,80 @@ export const pluginConfigFor = (
 	config: IMcpVertexConfigFile,
 	pluginName: string,
 ): IMcpVertexPluginConfig => config.plugins?.[pluginName] ?? {};
+
+/** A path that `resolvePluginSpecifier` already accepts verbatim. */
+const isAbsoluteOrSchemeSpec = (value: string): boolean =>
+	value.startsWith('/') ||
+	value.startsWith('./') ||
+	value.startsWith('../') ||
+	value.startsWith('file:');
+
+/**
+ * f00087 S1: build the list of module specifiers the loader should
+ * try, replacing each entry that declares `path` with that resolved
+ * path. Relative paths resolve against `workspaceRoot` (the absolute
+ * workspace root the host handed us, NOT the cwd of the server
+ * process); absolute paths and scheme-prefixed values pass through
+ * verbatim because `resolvePluginSpecifier` already handles them.
+ *
+ * Pure — the function never imports or touches the filesystem beyond
+ * the `isAbsolute` check, and `resolvePluginSpecifier` only string-
+ * transforms the path.
+ */
+export const resolveConfigPluginSpecifiers = (
+	config: IMcpVertexConfigFile,
+	workspaceRoot: string,
+): readonly string[] => {
+	const plugins = config.plugins ?? {};
+	const out: string[] = [];
+	for (const [name, entry] of Object.entries(plugins)) {
+		const path = entry.path;
+		if (path === undefined || path.length === 0) {
+			// Bare-name fallback: `loadPlugins` will try
+			// `@mcp-vertex/<name>` then `mcp-<name>` then `<name>`.
+			out.push(name);
+			continue;
+		}
+		if (isAbsoluteOrSchemeSpec(path)) {
+			out.push(path);
+			continue;
+		}
+		// Relative path: resolve against the workspace root. We use a
+		// string join + path.resolve semantics (Node's `path` is not
+		// available here, but workspaceRoot is already absolute).
+		const normalised = path.replace(/\\/g, '/');
+		out.push(
+			workspaceRoot.endsWith('/')
+				? `${workspaceRoot}${normalised}`
+				: `${workspaceRoot}/${normalised}`,
+		);
+	}
+	return out;
+};
+
+/**
+ * f00087 S1: report config-typo guards for the new `path` field.
+ * A `path` value that has no filesystem separator AND is not absolute
+ * AND not scheme-prefixed is almost certainly a typo (`"path": "lx-app"`
+ * when the user meant `"./dist/index.js"`); surface that at boot
+ * instead of letting the loader fail later with a less obvious error.
+ */
+export const diagnosePluginPathConfig = (
+	entry: IMcpVertexPluginConfig,
+	pluginName: string,
+): readonly string[] => {
+	const issues: string[] = [];
+	const path = entry.path;
+	if (path === undefined) return issues;
+	if (path.length === 0) {
+		issues.push(`plugins.${pluginName}.path: must not be empty`);
+		return issues;
+	}
+	if (isAbsoluteOrSchemeSpec(path)) return issues;
+	if (!path.includes('/') && !path.includes('\\')) {
+		issues.push(
+			`plugins.${pluginName}.path: "${path}" looks like a bare name; expected a path with a separator (e.g. "./dist/index.js")`,
+		);
+	}
+	return issues;
+};
