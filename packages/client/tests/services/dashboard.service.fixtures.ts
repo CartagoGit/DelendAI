@@ -139,7 +139,10 @@ export const proposalsFixture = {
 };
 
 export const agentsFixture = {
-	agents: [{ name: 'implementation_runner' }, { name: 'delivery_verifier' }],
+	assignments: [
+		{ agent_name: 'implementation_runner', status: 'active' },
+		{ agent_name: 'delivery_verifier', status: 'active' },
+	],
 };
 
 export const allResponsesFixture: ResponseMap = {

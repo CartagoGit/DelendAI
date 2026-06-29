@@ -46,6 +46,7 @@
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.9",
+        "@mcp-vertex/audit": "workspace:*",
         "@mcp-vertex/core": "workspace:*",
         "@mcp-vertex/deps": "workspace:*",
         "@mcp-vertex/docs": "workspace:*",
@@ -58,6 +59,7 @@
         "@mcp-vertex/rules": "workspace:*",
         "@mcp-vertex/search": "workspace:*",
         "@mcp-vertex/status-marker": "workspace:*",
+        "@mcp-vertex/test-convention": "workspace:*",
         "@modelcontextprotocol/sdk": "1.29.0",
         "@types/markdown-it": "^14.1.2",
         "pagefind": "^1.5.2",

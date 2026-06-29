@@ -4,15 +4,37 @@
  * `mcp-vertex_proposals_agent_names` and `mcp-vertex_status` into a single
  * client-side aggregate.
  */
-import type {
-	ProposalsAgentNamesOutput,
-	ProposalsProposalStaleListOutput,
-	ProposalsStateHealthOutput,
-} from '@mcp-vertex/proposals/public';
 
-export type IServerStateHealth = ProposalsStateHealthOutput;
-export type IServerProposalStaleList = ProposalsProposalStaleListOutput;
-export type IServerAgentNames = ProposalsAgentNamesOutput;
+export interface IServerStateHealth {
+	readonly locks: {
+		readonly active: number;
+	};
+	readonly queue: {
+		readonly queueLength: number;
+		readonly queuedCount: number;
+		readonly waiterOrphans: number;
+		readonly oldestAgeMinutes: number;
+		readonly threshold: string;
+	} | null;
+	readonly registry: {
+		readonly orphans: number;
+		readonly threshold: string;
+	};
+	readonly healthy: boolean;
+}
+
+export interface IServerProposalStaleList {
+	readonly ok: boolean;
+	readonly zombies?: readonly IStaleAgent[];
+}
+
+export interface IServerAgentNames {
+	readonly agents?: readonly { readonly name: string }[];
+	readonly assignments?: readonly {
+		readonly agent_name: string;
+		readonly status?: 'active' | 'cooldown' | 'orphan';
+	}[];
+}
 
 export type IStaleKind = 'agent-alive' | 'agent-idle' | 'agent-dead';
 

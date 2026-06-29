@@ -149,10 +149,22 @@ export class McpVertexStatusBar {
 	private async agentCount(): Promise<number | undefined> {
 		try {
 			const result = await this.client.request<
-				Record<string, never>,
-				{ readonly agents: readonly { readonly name: string }[] }
-			>('mcp-vertex_proposals_agent_names', {});
-			return result.agents.length;
+				{ readonly action: 'list' },
+				{
+					readonly agents?: readonly { readonly name: string }[];
+					readonly assignments?: readonly {
+						readonly agent_name: string;
+						readonly status?: 'active' | 'cooldown' | 'orphan';
+					}[];
+				}
+			>('mcp-vertex_proposals_agent_names', { action: 'list' });
+			if (Array.isArray(result.agents)) return result.agents.length;
+			if (Array.isArray(result.assignments)) {
+				return result.assignments.filter(
+					(a) => a.status === undefined || a.status === 'active',
+				).length;
+			}
+			return 0;
 		} catch {
 			return undefined;
 		}

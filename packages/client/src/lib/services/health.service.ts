@@ -12,6 +12,9 @@ import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {
 	IHealthOptions,
 	IHealthSnapshot,
+	IServerAgentNames,
+	IServerProposalStaleList,
+	IServerStateHealth,
 	IStaleAgent,
 } from '../contracts/interfaces/health.interface';
 
@@ -29,7 +32,7 @@ export class HealthService {
 			includeStaleList
 				? this.callSafe(TOOL_STALE_LIST, {})
 				: Promise.resolve(null),
-			this.callSafe(TOOL_AGENT_NAMES, {}),
+			this.callSafe(TOOL_AGENT_NAMES, { action: 'list' }),
 		]);
 
 		const stale: IStaleAgent[] = [];
@@ -38,33 +41,16 @@ export class HealthService {
 			(staleList as { ok?: boolean }).ok === true &&
 			Array.isArray((staleList as { zombies?: unknown[] }).zombies)
 		) {
-			for (const z of (staleList as { zombies: readonly IStaleAgent[] })
-				.zombies) {
+			for (const z of (staleList as IServerProposalStaleList).zombies ??
+				[]) {
 				stale.push(z);
 			}
 		}
 
-		const agents: string[] = [];
-		if (Array.isArray((agentNames as { agents?: unknown[] })?.agents)) {
-			for (const a of (
-				agentNames as { agents: readonly { name: string }[] }
-			).agents) {
-				agents.push(a.name);
-			}
-		}
-
-		const sh = stateHealth as {
-			healthy?: boolean;
-			locks?: { active?: number };
-			queue?: {
-				queueLength?: number;
-				queuedCount?: number;
-				waiterOrphans?: number;
-				oldestAgeMinutes?: number;
-				threshold?: string;
-			} | null;
-			registry?: { orphans?: number; threshold?: string };
-		} | null;
+		const agents = extractAgentNames(
+			agentNames as IServerAgentNames | null,
+		);
+		const sh = stateHealth as Partial<IServerStateHealth> | null;
 
 		return {
 			healthy: sh?.healthy === true,
@@ -96,3 +82,16 @@ export class HealthService {
 		}
 	}
 }
+
+const extractAgentNames = (
+	result: IServerAgentNames | null,
+): readonly string[] => {
+	if (result === null) return [];
+	if (Array.isArray(result.agents)) return result.agents.map((a) => a.name);
+	if (Array.isArray(result.assignments)) {
+		return result.assignments
+			.filter((a) => a.status === undefined || a.status === 'active')
+			.map((a) => a.agent_name);
+	}
+	return [];
+};

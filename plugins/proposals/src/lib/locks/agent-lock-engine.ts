@@ -131,9 +131,11 @@ const readCurrentBranchName = async (
 	try {
 		const { execFile } = await import('node:child_process');
 		return await new Promise<string | null>((resolve) => {
-			const cwd = deps.lockPath
-				? deps.lockPath.replace(/\/[^/]+$/u, '')
-				: process.cwd();
+			if (!deps.lockPath) {
+				resolve(null);
+				return;
+			}
+			const cwd = deps.lockPath.replace(/\/[^/]+$/u, '');
 			execFile(
 				'git',
 				['rev-parse', '--abbrev-ref', 'HEAD'],

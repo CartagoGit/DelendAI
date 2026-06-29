@@ -49,6 +49,17 @@ afterEach(() => {
 });
 
 describe('runAgentLockEngine — claim', async () => {
+	it('requires an injected lock path instead of guessing the workspace', async () => {
+		await expect(
+			runAgentLockEngine({
+				action: 'claim',
+				task_id: 'task-A',
+				agent: 'agent-A',
+				files: ['src/a.ts'],
+			}),
+		).rejects.toThrow('deps.lockPath is required');
+	});
+
 	it('records a new claim with its file ownership', async () => {
 		const res = await run({
 			action: 'claim',
