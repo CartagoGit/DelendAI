@@ -310,23 +310,16 @@ export const registerAllCommands = async (): Promise<
 	},
 	{
 		name: 'init',
-		summary: 'Create a minimal mcp-vertex config file.',
+		summary:
+			'Interactive workspace bootstrap for mcp-vertex (f00084 S2). Writes config, .vscode/mcp.json, .agent.md, host-instructions.',
+		usage: 'init [--dry-run] [--force]',
 		async run(args, ctx) {
-			const raw = await readConfigText(ctx.globals.workspace);
-			if (raw !== undefined && !hasFlag(args, 'force')) {
-				return {
-					code: EXIT_CODE.VALIDATION,
-					error: `${configPathFor(ctx.globals.workspace)} already exists; pass --force to overwrite`,
-				};
-			}
-			const path = await writeConfigSafely(ctx.globals.workspace, {
-				plugins: {},
-			});
-			return data({
-				path,
-				created: raw === undefined,
-				overwritten: raw !== undefined,
-			});
+			// f00084 S2: forward to the new interactive command while keeping
+			// the same `init` name and --force / --dry-run flag semantics.
+			// The legacy minimal-config path is preserved as a no-prompt
+			// fallback when stdin is not a TTY.
+			const { initCommand } = await import('./init/init.command');
+			return initCommand.run(args, ctx);
 		},
 	},
 	{

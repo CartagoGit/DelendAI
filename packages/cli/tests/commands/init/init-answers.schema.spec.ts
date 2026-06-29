@@ -1,0 +1,64 @@
+/**
+ * f00084 S1 — `IInitAnswers` Zod schema acceptance spec.
+ */
+import { describe, expect, it } from 'vitest';
+
+import {
+	InitAnswers,
+	INIT_VALID_PLUGIN_IDS,
+} from '../../../src/commands/init/init-answers.schema';
+
+describe('InitAnswers schema (f00084 S1)', () => {
+	it('accepts the canonical defaults', () => {
+		const parsed = InitAnswers.parse({});
+		expect(parsed.preset).toBe('swarm');
+		expect(parsed.extraPlugins).toEqual([]);
+		expect(parsed.excludedPlugins).toEqual([]);
+		expect(parsed.hostInstructions).toBe('append');
+		expect(parsed.copyCoreSkills).toBe(true);
+		expect(parsed.generateAgentMd).toBe(true);
+		expect(parsed.migrateFromLegacy).toBe(true);
+		expect(parsed.force).toBe(false);
+	});
+
+	it('accepts a fully specified answer set', () => {
+		const parsed = InitAnswers.parse({
+			preset: 'full',
+			extraPlugins: ['audit'],
+			excludedPlugins: ['issues'],
+			hostInstructions: 'overwrite',
+			copyCoreSkills: false,
+			generateAgentMd: false,
+			migrateFromLegacy: false,
+			force: true,
+			workspaceRoot: '/tmp/x',
+		});
+		expect(parsed.preset).toBe('full');
+		expect(parsed.extraPlugins).toEqual(['audit']);
+		expect(parsed.excludedPlugins).toEqual(['issues']);
+		expect(parsed.hostInstructions).toBe('overwrite');
+	});
+
+	it('rejects unknown plugin ids in extraPlugins', () => {
+		expect(() =>
+			InitAnswers.parse({ extraPlugins: ['bogus-plugin'] }),
+		).toThrow(/Unknown plugin/);
+	});
+
+	it('rejects unknown plugin ids in excludedPlugins', () => {
+		expect(() =>
+			InitAnswers.parse({ excludedPlugins: ['not-a-plugin'] }),
+		).toThrow(/Unknown plugin/);
+	});
+
+	it('rejects an invalid preset', () => {
+		expect(() => InitAnswers.parse({ preset: 'extreme' })).toThrow();
+	});
+
+	it('exports the valid plugin id set including audit', () => {
+		expect(INIT_VALID_PLUGIN_IDS.has('audit')).toBe(true);
+		expect(INIT_VALID_PLUGIN_IDS.has('proposals')).toBe(true);
+		expect(INIT_VALID_PLUGIN_IDS.has('git')).toBe(true);
+		expect(INIT_VALID_PLUGIN_IDS.has('web-fetch')).toBe(true);
+	});
+});
