@@ -1,12 +1,18 @@
 /**
- * f00084 S2 + S3 + S4 — render the bootstrap bundle.
+ * f00084 S2 + S3 + S4 + S5 — render the bootstrap bundle.
  *
- * Pure functions: each `render*` takes the answers and returns a list of
- * `{ path, content }` pairs ready to feed `init-writers.ts`. The command
- * is the only place that touches the file system.
+ * Pure functions: each `render*` takes the answers and returns a list
+ * of `{ path, content }` pairs ready to feed `init-writers.ts`. The
+ * command is the only place that touches the file system.
  */
 import { join } from 'node:path';
 
+import { loadAgentDescriptors } from './init-catalog';
+import {
+	computeHostInstructionsWrite,
+	readHostInstructionsFile,
+} from './init-host-instructions';
+import { renderMigrationProposal } from './init-migrate-offer';
 import type { IInitAnswers } from './init-answers.schema';
 
 export type IRenderedFile = {
@@ -113,139 +119,108 @@ export const renderVscodeMcpJson = (): IRenderedFile => {
 	};
 };
 
-const AGENT_ROLES: ReadonlyArray<{
+const renderAgentFile = (descriptor: {
 	role: string;
 	description: string;
 	tools: readonly string[];
 	body: string;
-}> = [
-	{
-		role: 'orchestrator',
-		description: 'Orquestador multi-agente de mcp-vertex',
-		tools: [
-			'mcp-vertex_proposals_auto_work',
-			'mcp-vertex_proposals_compact_status',
-			'mcp-vertex_proposals_proposal_board',
-		],
-		body:
-			'Para tareas de implementación, delega a mcp-vertex usando auto_work.\n' +
-			'Para ver el estado del swarm, usa compact_status o proposal_board.',
-	},
-	{
-		role: 'proposal-guardian',
-		description: 'Higiene y planificación de propuestas',
-		tools: [
-			'mcp-vertex_proposals_create_proposal',
-			'mcp-vertex_proposals_plan',
-			'mcp-vertex_proposals_proposal_adopt',
-		],
-		body:
-			'Crea propuestas antes de implementar. Ejecuta plan para validar\n' +
-			'disjointness de slices. Usa proposal_adopt para dar de alta carpetas existentes.',
-	},
-	{
-		role: 'technical-investigator',
-		description: 'Investigación técnica focalizada',
-		tools: [
-			'mcp-vertex_proposals_delegate',
-			'mcp-vertex_search_search',
-			'mcp-vertex_docs_docs_read',
-		],
-		body:
-			'Investiga código del workspace usando las tools de mcp-vertex.\n' +
-			'Para análisis profundo, prefiere delegate con agent=technical_investigator.',
-	},
-	{
-		role: 'implementation-runner',
-		description: 'Ejecutor de slices (escritura atómica con locks)',
-		tools: [
-			'mcp-vertex_fs_write',
-			'mcp-vertex_fs_read',
-			'mcp-vertex_search_search',
-		],
-		body:
-			'Implementa slices aislados. Antes de escribir, verifica que ningún\n' +
-			'otro agente tiene el lock del archivo. Usa fs_write con createDirs=true.',
-	},
-	{
-		role: 'delivery-verifier',
-		description: 'Verificador de aceptación y gates',
-		tools: [
-			'mcp-vertex_quality_run_quality',
-			'mcp-vertex_proposals_proposal_review',
-		],
-		body:
-			'Verifica acceptance criteria de cada slice. Ejecuta quality_run_quality\n' +
-			'antes de aprobar. Usa proposal_review con approve solo si el slice pasa gates.',
-	},
-];
+}): IRenderedFile => {
+	const frontmatter = [
+		'---',
+		`name: mcp-vertex-${descriptor.role}`,
+		`description: ${descriptor.description}`,
+		`tools: [${descriptor.tools.map((t) => `"${t}"`).join(', ')}]`,
+		'---',
+	].join('\n');
+	return {
+		relPath: `.github/agents/mcp-vertex-${descriptor.role}.agent.md`,
+		content: `${frontmatter}\n\n${descriptor.body}\n`,
+	};
+};
 
-/** S3 — render `.github/agents/mcp-vertex-<role>.agent.md`. */
-export const renderAgentFiles = (): readonly IRenderedFile[] =>
-	AGENT_ROLES.map(({ role, description, tools, body }) => {
-		const frontmatter = [
-			'---',
-			`name: mcp-vertex-${role}`,
-			`description: ${description}`,
-			`tools: [${tools.map((t) => `"${t}"`).join(', ')}]`,
-			'---',
-		].join('\n');
-		return {
-			relPath: `.github/agents/mcp-vertex-${role}.agent.md`,
-			content: `${frontmatter}\n\n${body}\n`,
-		};
-	});
+/** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
+export const renderAgentFiles = async (
+	workspaceRoot: string,
+): Promise<readonly IRenderedFile[]> => {
+	const descriptors = await loadAgentDescriptors(workspaceRoot);
+	return descriptors.map(renderAgentFile);
+};
 
 const HOST_INSTRUCTIONS_BLOCKS: ReadonlyArray<{
 	relPath: string;
-	begin: string;
-	end: string;
 	body: string;
 }> = [
 	{
 		relPath: 'AGENTS.md',
-		begin: '<!-- mcp-vertex:begin -->',
-		end: '<!-- mcp-vertex:end -->',
 		body:
 			'# mcp-vertex host hints (auto-generated)\n\n' +
 			'See `docs/mcp-vertex/host-hints/agents.generated.md` for the live agent catalog.',
 	},
 	{
 		relPath: 'CLAUDE.md',
-		begin: '<!-- mcp-vertex:begin -->',
-		end: '<!-- mcp-vertex:end -->',
 		body:
 			'# mcp-vertex host hints (auto-generated)\n\n' +
 			'See `docs/mcp-vertex/host-hints/claude.generated.md` for the live agent catalog.',
 	},
 	{
 		relPath: '.github/copilot-instructions.md',
-		begin: '<!-- mcp-vertex:begin -->',
-		end: '<!-- mcp-vertex:end -->',
 		body:
 			'# mcp-vertex host hints (auto-generated)\n\n' +
 			'See `docs/mcp-vertex/host-hints/copilot-instructions.generated.md` for the live agent catalog.',
 	},
 ];
 
-/** S4 — render host-instructions centralizer blocks (append mode). */
-export const renderHostInstructionsBlocks = (): readonly IRenderedFile[] =>
-	HOST_INSTRUCTIONS_BLOCKS.map(({ relPath, begin, end, body }) => ({
-		relPath,
-		content: `${begin}\n\n${body}\n\n${end}\n`,
-	}));
+/**
+ * S4 — render host-instructions blocks honouring idempotent append.
+ * When the file already has a `<!-- mcp-vertex:begin -->` /
+ * `<!-- mcp-vertex:end -->` block, the block is replaced in place;
+ * otherwise the block is appended.
+ */
+export const renderHostInstructionsBlocks = async (
+	workspaceRoot: string,
+	mode: 'append' | 'overwrite' | 'skip',
+): Promise<readonly IRenderedFile[]> => {
+	if (mode === 'skip') return [];
+	const out: IRenderedFile[] = [];
+	for (const target of HOST_INSTRUCTIONS_BLOCKS) {
+		const current = await readHostInstructionsFile(
+			workspaceRoot,
+			target.relPath,
+		);
+		const next = computeHostInstructionsWrite(current, target.body, mode);
+		if (next === undefined) continue;
+		out.push({ relPath: target.relPath, content: next });
+	}
+	return out;
+};
 
-/** Top-level orchestrator. Pure: returns the bundle, never writes. */
-export const renderInitBundle = (answers: IInitAnswers): IRenderedBundle => {
+/** S5 — render the first migration proposal when the user opted in. */
+export const renderMigrationProposalIfRequested = (
+	answers: IInitAnswers,
+): readonly IRenderedFile[] => {
+	if (!answers.migrateFromLegacy) return [];
+	return [renderMigrationProposal(answers)];
+};
+
+/** Top-level orchestrator. Reads catalog live; pure on the rest of the inputs. */
+export const renderInitBundle = async (
+	answers: IInitAnswers,
+): Promise<IRenderedBundle> => {
 	const resolvedPlugins = resolvePluginSet(answers);
 	const files: IRenderedFile[] = [
 		renderMcpVertexConfig(answers, resolvedPlugins),
 		renderVscodeMcpJson(),
 	];
-	if (answers.generateAgentMd) files.push(...renderAgentFiles());
-	if (answers.hostInstructions !== 'skip') {
-		files.push(...renderHostInstructionsBlocks());
+	if (answers.generateAgentMd) {
+		files.push(...(await renderAgentFiles(answers.workspaceRoot)));
 	}
+	files.push(
+		...(await renderHostInstructionsBlocks(
+			answers.workspaceRoot,
+			answers.hostInstructions,
+		)),
+	);
+	files.push(...renderMigrationProposalIfRequested(answers));
 	const summary = [
 		`preset: ${answers.preset}`,
 		`resolved plugins (${resolvedPlugins.length}): ${resolvedPlugins.join(', ')}`,

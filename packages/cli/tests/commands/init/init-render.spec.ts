@@ -2,7 +2,13 @@
  * f00084 S2 — `renderInitBundle` and writers acceptance spec.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import {
+	mkdtemp,
+	mkdir,
+	readFile,
+	rm,
+	writeFile as fsWriteFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -10,28 +16,41 @@ import {
 	InitAnswers,
 	type IInitAnswers,
 } from '../../../src/commands/init/init-answers.schema';
+import { computeHostInstructionsWrite } from '../../../src/commands/init/init-host-instructions';
+import {
+	deriveScope,
+	renderMigrationProposal,
+} from '../../../src/commands/init/init-migrate-offer';
 import {
 	renderInitBundle,
 	resolvePluginSet,
 } from '../../../src/commands/init/init-render';
 import { writeMcpVertexConfig } from '../../../src/commands/init/init-writers';
 
-const parseAnswers = (partial: Partial<IInitAnswers>): IInitAnswers =>
-	InitAnswers.parse({ workspaceRoot: '/tmp', ...partial });
+const parseAnswers = (
+	partial: Partial<IInitAnswers> = {},
+	workspaceRoot = '/tmp',
+): IInitAnswers => InitAnswers.parse({ workspaceRoot, ...partial });
 
-describe('renderInitBundle (f00084 S2)', () => {
-	it('produces config + .vscode/mcp.json + 5 .agent.md for swarm', () => {
-		const bundle = renderInitBundle(parseAnswers({ preset: 'swarm' }));
+describe('renderInitBundle (f00084 S2-S5)', () => {
+	it('produces config + .vscode/mcp.json + .agent.md + host-instructions + migration proposal for swarm', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'swarm' }, '/tmp/example-ws'),
+		);
 		const rels = bundle.files.map((f) => f.relPath);
 		expect(rels).toContain('mcp-vertex.config.json');
 		expect(rels).toContain('.vscode/mcp.json');
-		expect(
-			rels.filter((r) => r.startsWith('.github/agents/')),
-		).toHaveLength(5);
+		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
+		expect(rels).toContain('AGENTS.md');
+		expect(rels).toContain('CLAUDE.md');
+		expect(rels).toContain('.github/copilot-instructions.md');
+		expect(rels.some((r) => r.includes('f00001-migrate-legacy'))).toBe(
+			true,
+		);
 	});
 
-	it('skips .agent.md when generateAgentMd=false', () => {
-		const bundle = renderInitBundle(
+	it('skips .agent.md when generateAgentMd=false', async () => {
+		const bundle = await renderInitBundle(
 			parseAnswers({ generateAgentMd: false }),
 		);
 		expect(
@@ -39,8 +58,8 @@ describe('renderInitBundle (f00084 S2)', () => {
 		).toBe(false);
 	});
 
-	it('skips host-instructions blocks when hostInstructions=skip', () => {
-		const bundle = renderInitBundle(
+	it('skips host-instructions blocks when hostInstructions=skip', async () => {
+		const bundle = await renderInitBundle(
 			parseAnswers({ hostInstructions: 'skip' }),
 		);
 		expect(bundle.files.some((f) => f.relPath === 'AGENTS.md')).toBe(false);
@@ -48,6 +67,17 @@ describe('renderInitBundle (f00084 S2)', () => {
 		expect(
 			bundle.files.some(
 				(f) => f.relPath === '.github/copilot-instructions.md',
+			),
+		).toBe(false);
+	});
+
+	it('skips migration proposal when migrateFromLegacy=false', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ migrateFromLegacy: false }),
+		);
+		expect(
+			bundle.files.some((r) =>
+				r.relPath.includes('f00001-migrate-legacy'),
 			),
 		).toBe(false);
 	});
@@ -65,8 +95,8 @@ describe('renderInitBundle (f00084 S2)', () => {
 		expect(resolved).not.toContain('issues');
 	});
 
-	it('emits a valid JSON config payload', () => {
-		const bundle = renderInitBundle(parseAnswers({}));
+	it('emits a valid JSON config payload', async () => {
+		const bundle = await renderInitBundle(parseAnswers({}));
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'mcp-vertex.config.json',
 		);
@@ -141,5 +171,107 @@ describe('writeMcpVertexConfig (f00084 S2)', () => {
 			plugins: Record<string, unknown>;
 		};
 		expect(parsed.plugins.proposals).toBeDefined();
+	});
+});
+
+describe('computeHostInstructionsWrite (f00084 S4)', () => {
+	const BEGIN = '<!-- mcp-vertex:begin -->';
+	const END = '<!-- mcp-vertex:end -->';
+
+	it('returns the block when current is undefined', () => {
+		const next = computeHostInstructionsWrite(undefined, 'hello', 'append');
+		expect(next).toContain(BEGIN);
+		expect(next).toContain('hello');
+		expect(next).toContain(END);
+	});
+
+	it('replaces the block in place when markers are present', () => {
+		const current = `# Title\n\n${BEGIN}\nold\n${END}\n\n# Footer\n`;
+		const next = computeHostInstructionsWrite(current, 'new', 'append');
+		expect(next).toContain('# Title');
+		expect(next).toContain('# Footer');
+		expect(next).toContain('new');
+		expect(next).not.toContain('old');
+	});
+
+	it('appends when markers are absent', () => {
+		const current = '# Existing\n';
+		const next = computeHostInstructionsWrite(current, 'hello', 'append');
+		expect(next?.startsWith('# Existing')).toBe(true);
+		expect(next).toContain('hello');
+	});
+
+	it('replaces the whole file in overwrite mode', () => {
+		const current = '# Existing\n';
+		const next = computeHostInstructionsWrite(
+			current,
+			'fresh',
+			'overwrite',
+		);
+		expect(next?.startsWith(BEGIN)).toBe(true);
+		expect(next).toContain('fresh');
+		expect(next).not.toContain('# Existing');
+	});
+
+	it('returns undefined in skip mode', () => {
+		expect(
+			computeHostInstructionsWrite('# x', 'body', 'skip'),
+		).toBeUndefined();
+	});
+});
+
+describe('renderMigrationProposal (f00084 S5)', () => {
+	it('produces a valid frontmatter for the workspace scope', () => {
+		const out = renderMigrationProposal(
+			parseAnswers({ workspaceRoot: '/tmp/azur-lx' }),
+		);
+		expect(out.relPath).toContain('f00001-migrate-legacy-azur-lx');
+		expect(out.content).toMatch(/^---\nid: f00001/m);
+		expect(out.content).toMatch(/kind: feat/);
+		expect(out.content).toContain('mcp-vertex');
+	});
+
+	it('derives a slugified scope from the workspace basename', () => {
+		expect(deriveScope('/tmp/AZUR LX--develop')).toMatch(
+			/^azur-lx-develop/,
+		);
+		expect(deriveScope('/tmp/_weird_ name!')).toMatch(/^weird-name/);
+	});
+});
+
+describe('renderInitBundle end-to-end (f00084 S6)', () => {
+	let workspace: string;
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'mcpv-init-e2e-'));
+		await mkdir(`${workspace}/.github/agents`, { recursive: true });
+		await mkdir(`${workspace}/docs/mcp-vertex/proposals/ready`, {
+			recursive: true,
+		});
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('produces a self-consistent bundle and a second render is byte-identical (idempotent append)', async () => {
+		const answers = parseAnswers({ preset: 'swarm' }, workspace);
+		const first = await renderInitBundle(answers);
+
+		for (const file of first.files) {
+			const target = `${workspace}/${file.relPath}`;
+			await mkdir(join(target, '..'), { recursive: true });
+			await fsWriteFile(target, file.content, 'utf8');
+		}
+
+		const second = await renderInitBundle(answers);
+		for (const file of second.files) {
+			if (file.relPath === 'mcp-vertex.config.json') continue;
+			const onDisk = await readFile(
+				`${workspace}/${file.relPath}`,
+				'utf8',
+			);
+			expect(onDisk).toBe(file.content);
+		}
 	});
 });
