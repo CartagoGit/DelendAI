@@ -180,6 +180,14 @@ After unpause, this proposal still explicitly **does not**:
   `npx` invocations — the gate is the Zod schema, not the linter.
 - Replace the native `fs_read`/`fs_write` family — `ext.fs.*`
   is **additive**.
+- **Own the "default filesystem" story.** The f00089 umbrella decided that
+  "every user reads their own project + explicitly-authorized external paths by
+  default" is delivered **natively** by extending `fs_read`/`fs_write` with an
+  authorized-roots allowlist (f00089 U5), *not* by unpausing this plugin.
+  `ext.fs` therefore remains **additive breadth** (composing the upstream
+  `@modelcontextprotocol/server-filesystem`), never the default path. This
+  proposal stays paused on its existing 8-item unpause gate; U5 does not change
+  that gate.
 
 ## Architecture
 

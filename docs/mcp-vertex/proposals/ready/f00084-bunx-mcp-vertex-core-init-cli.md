@@ -359,6 +359,41 @@ asserts that `mcp-vertex_overview { compact: true }` returns
 
 ## 1. notes
 
+### vision (f00089 U1) — from a migration STUB to an adoption PLAN
+
+> Added by the f00089 umbrella. This section scopes **U1 only**; it does not
+> re-open the landed S1–S6 surface.
+
+Today `init-migrate-offer.ts` writes a **generic** proposal
+(`f00001-migrate-legacy-<scope>.md`) regardless of what the target project
+actually contains. The expanded vision wants `init` to *detect a foreign
+proposal system and emit a real migration plan*. U1 turns the stub into a
+generator:
+
+1. **Foreign-proposal detection** (`init-foreign-detect.ts`, new): scan the
+   target for an existing proposal convention (e.g. a `proposals/`,
+   `docs/proposals/`, `rfcs/`, `adr/` folder, or markdown with proposal-shaped
+   frontmatter). Reuse the proposals plugin `adopt` scanner shape rather than
+   re-implementing it. Output: `{ found: boolean, root?: string, count: number,
+   shape: 'mcp-vertex' | 'rfc' | 'adr' | 'ad-hoc' | 'none' }`.
+2. **Allocate, do not hardcode.** Replace the literal `f00001` with the next
+   free id in the *target* (scan the detected root; fall back to `f00001` only
+   when nothing exists). This removes the id-collision risk when the target
+   already has proposals.
+3. **Emit an adoption-plan proposal**, not a stub. Its slices embed the
+   skill-migration and tool-unification sections produced by f00088 §vision U2,
+   and the single-source-of-truth section from f00088 §vision U3. The emitted
+   proposal is *advisory output the target's own agents execute* — init never
+   rewrites the target's existing proposals/skills in place.
+
+**U1 files**: `packages/cli/src/commands/init/init-migrate-offer.ts` (extend),
+`packages/cli/src/commands/init/init-foreign-detect.ts` (new),
+`packages/cli/tests/commands/init/init-migrate-offer.spec.ts`.
+**Gate**: `bun run validate`. **Depends on**: f00088 detection (landed). U1
+lands before f00088 §vision U2 (which fills sections of U1's emitted proposal).
+
+### Using `init` from another project (no npm, no install there)
+
 _Using `init` from another project (no npm, no install there)._
 
 **Rule:** the destination project (e.g. `azur-lx`) **must not be
