@@ -193,11 +193,17 @@ sentinel detector (regex on the wrapper's stuck-state message) and
 the three-ring ladder. No integration with the wider codebase yet —
 just a pure module + a unit spec.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/agents/shell-fallback.ts` [NEW]
     - `packages/core/tests/src/lib/agents/shell-fallback.spec.ts` [NEW]
 - **Gate**: bun run test
+- **Done**: commit `ffefd8cd`. Module implements `STUCK_SHELL_SENTINELS`,
+  `detectStuckShell` (fires only on a sentinel with no exit code / no
+  terminal id, so intentional failures are not misread as stuck), and
+  the `withShellFallback` ladder over an injected `IShellFallbackDriver`
+  seam (sync → async+poll → file-tools, never retrying a stuck sync
+  call). 24 unit cases green.
 
 ### S2 — Public export + agent-contract integration
 
@@ -206,11 +212,20 @@ wire the multi-agent-coordination skill to mention it. The skill
 update is the smallest possible diff: a one-paragraph sub-section
 with a code example.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/public/index.ts`
     - `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
 - **Gate**: bun run validate
+- **Done**: re-exported `withShellFallback`, `detectStuckShell`,
+  `mapShellIntentToTool`, `STUCK_SHELL_SENTINELS`, `SHELL_INTENT_MAP`
+  and their types from `@mcp-vertex/core/public`. Added a "When the
+  shell is stuck (f00085)" sub-section to the multi-agent-coordination
+  skill with the `withShellFallback` driver-seam example. The proposal's
+  optional `agent-contract.ts` integration was NOT done: no
+  `packages/core/src/lib/agents/agent-contract.ts` exists in the tree
+  and that file is not listed in this slice's Files — the public-barrel
+  re-export is the integration seam every agent uses.
 
 ### S3 — File-tool adapter (Ring 3)
 
@@ -220,11 +235,21 @@ top-10 shell commands agents actually use: `cat`, `head`, `tail`,
 Anything not in the map falls through to a clear "use the explicit
 file tool" error so the agent can fix its plan.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/agents/shell-fallback.ts`
+    - `packages/core/src/lib/agents/shell-fallback-intent-map.ts` [NEW]
     - `packages/core/tests/src/lib/agents/shell-fallback.spec.ts`
 - **Gate**: bun run test
+- **Done**: commit `ffefd8cd`. The intent map was extracted into its own
+  SRP module `shell-fallback-intent-map.ts` (re-exported through
+  `shell-fallback.ts`, so the public surface still resolves
+  `mapShellIntentToTool` from the one barrel). Covers the top-10:
+  `cat`/`head`/`tail` → `read_file`, `grep` → `grep_search`,
+  `find`/`ls` → `file_search`, `mkdir` → `create_file`,
+  `git status|diff|log` → the git MCP tools. Uncovered commands and
+  uncovered git sub-commands fall through to `null` so the agent gets a
+  clear "use the explicit file tool" signal.
 
 ### S4 — Operator skill + bootstrap one-liner
 
@@ -233,11 +258,20 @@ and add a one-liner to `docs/mcp-vertex/AGENT-BOOTSTRAP.md` that
 points at it. The bootstrap edit is intentionally small: the
 bootstrap already links to many skills; this is one more.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `docs/mcp-vertex/skills/shell-fallback/SKILL.md` [NEW]
     - `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: bun run lint:proposals
+- **Done**: wrote the operator runbook (symptom, sentinel table, three
+  rings, intent-adapter table, code example, "never do this") and
+  anchored a one-liner pointer to it in AGENT-BOOTSTRAP § 6, directly
+  after the existing bash-vs-zsh invariant that already names the
+  "búfer alternativo" symptom. The runbook lives under `docs/` as
+  documentation (per the `docs/mcp-vertex/skills/README.md` note that
+  `docs/` is documentation-only); it is intentionally NOT added to
+  `packages/core/skills/manifest.json`, so the manifest-driven
+  `lint:skills` gate is unaffected.
 
 ## acceptance
 
