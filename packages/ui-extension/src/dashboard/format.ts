@@ -61,6 +61,11 @@ export const formatDate = (iso: string, locale = 'en'): string => {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
+		// Pin Latin digits: a runtime's default numbering system for some locales
+		// (e.g. `ar` → Arabic-Indic) varies between Node and Bun ICU builds, which
+		// breaks the r00005 S3 cross-runtime snapshot. Month names / ordering stay
+		// locale-aware; only the digit glyphs are normalized.
+		numberingSystem: 'latn',
 	}).format(date);
 };
 
@@ -75,6 +80,8 @@ export const formatTime = (iso: string, locale = 'en'): string => {
 	return new Intl.DateTimeFormat(locale, {
 		hour: '2-digit',
 		minute: '2-digit',
+		// See formatDate: pin Latin digits for cross-runtime stability (r00005 S3).
+		numberingSystem: 'latn',
 	}).format(date);
 };
 
