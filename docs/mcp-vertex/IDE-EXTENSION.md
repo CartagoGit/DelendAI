@@ -135,6 +135,36 @@ Defaults to `https://mcp-vertex.dev`. Localhost and private IPs are
 rejected by `EmbedService` unless `allowLocalhost` /
 `allowPrivateIps` is explicitly enabled.
 
+### Namespace-aware client (f00081)
+
+The host namespaces every tool as `<prefix><tool>` — `mcp-vertex_overview`,
+`mcp-vertex_metrics`, and so on. The default prefix is `mcp-vertex_`, but a
+server started with `--prefix=acme` namespaces every tool as `acme_overview`,
+`acme_metrics`, … The extension reads that prefix from
+`mcp-vertex.server.prefix` and threads it into every client service, so the
+status bar, toolbar, overview and dashboard all call the correctly-namespaced
+tools instead of silently failing on a non-default deployment.
+
+```json
+{
+  "mcp-vertex.server.command": "bun",
+  "mcp-vertex.server.args": ["run", "mcp-vertex", "--prefix=acme"],
+  "mcp-vertex.server.prefix": "acme"
+}
+```
+
+The prefix flow is:
+
+1. The server reports its prefix in `mcp-vertex_overview { compact: true }`
+   (the `namespacePrefix` field).
+2. `resolveNamespacePrefix` reads `mcp-vertex.server.prefix` at activation.
+3. Each service composes its tool names with `formatToolName(prefix, suffix)`.
+
+Leave `mcp-vertex.server.prefix` empty to keep the default `mcp-vertex_`
+namespace (existing deployments are unaffected). See
+[`packages/client/README.md`](../../packages/client/README.md) for the
+service-level API.
+
 ### Configure the issues plugin
 
 If this is a fresh repo or the extension loads `mcp-vertex` without the GitHub issues tools you expect, follow [CROSS-PROJECT-SETUP.md](./CROSS-PROJECT-SETUP.md). That guide is the canonical path for choosing `--preset=full` versus `--plugins=proposals,issues`, writing `plugins.issues.options.repo` in `mcp-vertex.config.json`, and verifying whether the host is running on `gh`, `rest-authed`, or anonymous GitHub access.

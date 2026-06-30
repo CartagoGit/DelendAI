@@ -55,6 +55,53 @@ See [`src/public/index.ts`](./src/public/index.ts) for the full exported
 surface — that barrel is the only stable import path; everything under
 `src/lib` may change without notice.
 
+## Namespace-aware services (f00081)
+
+The host namespaces every tool as `<prefix><suffix>` — `mcp-vertex_overview`,
+`mcp-vertex_metrics`, and so on. The default prefix is `mcp-vertex_`, but a
+deployment started with `--prefix=acme` (a valid `assemble` flag) namespaces
+every tool as `acme_overview`, `acme_metrics`, … If a service hardcoded the
+default prefix, every call against such a server would fail immediately.
+
+The prefix flows like this:
+
+1. The server reports its prefix via `mcp-vertex_overview { compact: true }`
+   (the `namespacePrefix` field of the result).
+2. The caller (host extension, IDE plugin, CLI) reads that prefix from its
+   own boot config and passes it to each service constructor.
+3. Every `request(...)` call is composed with `formatToolName(prefix, suffix)`,
+   so the tool name is always namespaced correctly.
+
+Pass the prefix as the second constructor argument (or, for
+`DashboardService`, as the `namespacePrefix` option). Omitting it keeps the
+default `mcp-vertex_` behaviour bit-for-bit:
+
+```ts
+import {
+  OverviewService,
+  DashboardService,
+  formatToolName,
+} from '@mcp-vertex/client';
+
+// Default prefix → calls `mcp-vertex_overview`.
+const overview = new OverviewService(client);
+
+// Custom prefix → calls `acme_overview`.
+const acmeOverview = new OverviewService(client, 'acme');
+
+// DashboardService takes the prefix as an option.
+const dashboard = new DashboardService({ client, namespacePrefix: 'acme' });
+
+// The shared helper that every service uses internally is also exported:
+formatToolName('acme', 'overview'); // → 'acme_overview'
+formatToolName(undefined, 'overview'); // → 'mcp-vertex_overview'
+```
+
+`OverviewService`, `NotificationsService`, `ConnectionHealthService` and
+`DashboardService` accept the prefix today; `formatToolName` and
+`parsePrefix` (which applies the `prefix ?? 'mcp-vertex_'` default) are
+exported for any consumer that needs to namespace a tool name by hand.
+
 ## Scaffold a plugin from a script (f00087)
 
 For projects that want to scaffold a new `IMcpPlugin` outside an MCP
