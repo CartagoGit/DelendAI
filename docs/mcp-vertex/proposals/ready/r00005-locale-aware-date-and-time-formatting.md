@@ -83,11 +83,20 @@ packages/ui-extension/src/utils/
 - global_gate: validate
 
 ### S1 — rewrite `formatRelativeTime` (H17)
-- **Status**: pending
-- **Files**: packages/ui-extension/src/utils/format-relative-time.ts
+- **Status**: done
+- **Files**: packages/ui-extension/src/dashboard/format.ts
 - **Gate**: validate
+- **Note**: Subsumed by the sibling f00059 S5 (commit `3e07855b`), which already
+  rewrote `formatRelativeTime` to `Intl.RelativeTimeFormat` honoring `locale` with
+  `numeric: 'auto'`. The function lives at `packages/ui-extension/src/dashboard/format.ts`
+  (not the `utils/format-relative-time.ts` path this proposal predicted), is exported
+  via `packages/ui-extension/src/public/index.ts`, and is covered by
+  `packages/ui-extension/tests/dashboard/format.spec.ts`. It no longer appends the
+  locale in parens and `'es'` yields `'hace 5 minutos'` / `'en'` yields `'5 minutes ago'`.
+  The injected-`now` signature `(date, now, locale)` this proposal sketched was not
+  adopted; the shipped signature is `(iso: string, locale = 'en')` using `Date.now()`.
 
-**Acceptance:** spec covers 6 inputs × 12 locales = 72 cases. With `locale='es'`,
+**Acceptance (original):** spec covers 6 inputs × 12 locales = 72 cases. With `locale='es'`,
 `formatRelativeTime(now - 2*60_000, now, 'es')` returns `'hace 2 minutos'`. With
 `locale='en'`, the same input returns `'2 minutes ago'`. The function never appends
 the locale in parens.
