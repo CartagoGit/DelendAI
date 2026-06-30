@@ -36,10 +36,12 @@ export { sparklinePath } from '../dashboard/sparkline';
 export {
 	escapeHtml,
 	formatBytes,
+	formatDate,
 	formatMs,
 	formatNumber,
 	formatPercent,
 	formatRelativeTime,
+	formatTime,
 	formatTokens,
 } from '../dashboard/format';
 export {

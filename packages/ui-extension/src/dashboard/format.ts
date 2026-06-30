@@ -48,6 +48,36 @@ export const escapeHtml = (raw: string): string =>
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#39;');
 
+/**
+ * Locale-aware absolute date. Pure `(iso, locale) => string` wrapper around
+ * `Intl.DateTimeFormat`. Returns the original input unchanged when it is not a
+ * parseable date, mirroring `formatRelativeTime`'s pass-through contract.
+ * r00005 S2.
+ */
+export const formatDate = (iso: string, locale = 'en'): string => {
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return iso;
+	return new Intl.DateTimeFormat(locale, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	}).format(date);
+};
+
+/**
+ * Locale-aware wall-clock time. Pure `(iso, locale) => string` wrapper around
+ * `Intl.DateTimeFormat`. Returns the original input unchanged for invalid dates.
+ * r00005 S2.
+ */
+export const formatTime = (iso: string, locale = 'en'): string => {
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return iso;
+	return new Intl.DateTimeFormat(locale, {
+		hour: '2-digit',
+		minute: '2-digit',
+	}).format(date);
+};
+
 export const formatRelativeTime = (iso: string, locale = 'en'): string => {
 	const then = new Date(iso).getTime();
 	if (Number.isNaN(then)) return iso;

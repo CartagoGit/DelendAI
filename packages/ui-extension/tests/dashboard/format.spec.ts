@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	escapeHtml,
 	formatBytes,
+	formatDate,
 	formatMs,
 	formatNumber,
 	formatPercent,
 	formatRelativeTime,
+	formatTime,
 	formatTokens,
 } from '../../src/dashboard/format';
 
@@ -81,6 +83,55 @@ describe('escapeHtml', async () => {
 		expect(escapeHtml('<a href="x">&\'</a>')).toBe(
 			'&lt;a href=&quot;x&quot;&gt;&amp;&#39;&lt;/a&gt;',
 		);
+	});
+});
+
+describe('formatDate', async () => {
+	// 2026-06-25T14:30:00Z — pick a UTC instant whose calendar day is stable
+	// across the runner's local zones used in CI (UTC).
+	const iso = '2026-06-25T14:30:00.000Z';
+
+	it('returns the original input when the date is invalid', async () => {
+		expect(formatDate('not-a-date')).toBe('not-a-date');
+	});
+
+	it('formats a localized absolute date for en', async () => {
+		// en-US: "Jun 25, 2026"
+		expect(formatDate(iso, 'en')).toMatch(/Jun 25, 2026/);
+	});
+
+	it('formats a localized absolute date for es', async () => {
+		// es: "25 jun 2026" (month abbreviation localized, lowercase)
+		const out = formatDate(iso, 'es');
+		expect(out).toContain('25');
+		expect(out).toContain('2026');
+		expect(out.toLowerCase()).toContain('jun');
+	});
+
+	it('differs between locales for the same instant', async () => {
+		expect(formatDate(iso, 'en')).not.toBe(formatDate(iso, 'es'));
+	});
+
+	it('is deterministic — same input yields same output', async () => {
+		expect(formatDate(iso, 'en')).toBe(formatDate(iso, 'en'));
+	});
+});
+
+describe('formatTime', async () => {
+	const iso = '2026-06-25T14:30:00.000Z';
+
+	it('returns the original input when the date is invalid', async () => {
+		expect(formatTime('not-a-date')).toBe('not-a-date');
+	});
+
+	it('renders hour and minute', async () => {
+		// 2-digit hour:minute; exact value depends on the runner zone, so we
+		// assert the shape (HH:MM, optionally with AM/PM) rather than a literal.
+		expect(formatTime(iso, 'en')).toMatch(/\d{1,2}:\d{2}/);
+	});
+
+	it('is deterministic — same input yields same output', async () => {
+		expect(formatTime(iso, 'en')).toBe(formatTime(iso, 'en'));
 	});
 });
 
