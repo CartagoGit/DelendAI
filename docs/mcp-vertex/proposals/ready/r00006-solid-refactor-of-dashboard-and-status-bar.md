@@ -136,6 +136,23 @@ log a warning.
 **Acceptance:** spec passes a 10-point series and asserts the rendered polyline has
 10 distinct `y` values.
 
+> **Held pending (serial run, 2026-06-30):** left unexecuted because the slice
+> is ambiguous against the landed code:
+> - The declared file `builders/build-panels.ts` renders **no** sparkline — the
+>   constant flat-line sparkline lives in `dashboard/render-panel-tools.ts`
+>   (`samples = [avgMs, avgMs, maxMs, …]`), which is outside this slice's file
+>   disjunction.
+> - The real per-tool latency series already exists, but as
+>   `IDashboardMetricsModel.sparklines: Record<string, readonly number[]>`
+>   (consumed correctly by `render-panel-metrics.ts`). The **tools** panel is
+>   fed `IDashboardToolsModel`, which has no `sparklines`. There is no
+>   `bridge.metrics(toolName)` API as the slice text assumes.
+> - Fixing H22 properly therefore needs `render-panel-tools.ts` to receive the
+>   metrics sparkline map (signature change) and/or a client-side
+>   `IDashboardToolsModel` extension in `@mcp-vertex/client` — both cross the
+>   ≤ 1-component, single-file boundary this slice declares. Re-scope the slice
+>   (file list + data source) before executing.
+
 ### S3 — `barChart` aria-label (H24)
 - **Status**: done
 - **Files**: packages/ui-extension/src/dashboard/bar-chart.ts
