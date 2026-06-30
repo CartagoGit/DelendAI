@@ -69,6 +69,7 @@ import {
 	ToolTreeDataProvider,
 } from './providers/tool-tree-data-provider';
 import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
+import { ProposalBoardProvider } from './providers/proposal-board-provider';
 import {
 	type IStatusBarItem,
 	McpVertexStatusBar,
@@ -83,6 +84,7 @@ export const CLIENT_STATE_KEY = 'mcp-vertex.client';
 export const SHOW_OVERVIEW_COMMAND = 'mcp-vertex.showOverview';
 export const TOOLS_VIEW_ID = 'mcp-vertex.tools';
 export const MEMORY_VIEW_ID = 'mcp-vertex.memory';
+export const PROPOSALS_VIEW_ID = 'mcp-vertex.proposals';
 
 export interface IDisposable {
 	dispose(): void;
@@ -132,7 +134,10 @@ export interface IVscodeApi {
 		createStatusBarItem?(): IStatusBarItem;
 		registerTreeDataProvider?(
 			viewId: string,
-			provider: ToolTreeDataProvider | MemoryTreeDataProvider,
+			provider:
+				| ToolTreeDataProvider
+				| MemoryTreeDataProvider
+				| ProposalBoardProvider,
 		): IDisposable;
 		createWebviewPanel(
 			viewType: string,
@@ -291,6 +296,19 @@ export const activate = async (
 	);
 	if (memoryRegistration !== undefined)
 		context.subscriptions.push(memoryRegistration);
+	// f00079 S4 (a00040 H5): `mcp-vertex.proposals` is declared in
+	// `contributes.views` but had no `TreeDataProvider`, so the view was
+	// permanently empty. Register the existing `ProposalBoardProvider`
+	// (it mirrors `mcp-vertex_proposals_proposal_board`) so the view
+	// renders the live board and each node can route to its proposal via
+	// `mcp-vertex.openProposal` (S5).
+	const proposalsTree = new ProposalBoardProvider(client);
+	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
+		PROPOSALS_VIEW_ID,
+		proposalsTree,
+	);
+	if (proposalsRegistration !== undefined)
+		context.subscriptions.push(proposalsRegistration);
 	// Fix #3: `createFileSystemWatcher` can be absent on stripped hosts
 	// (or in test fakes that omit `workspace`). Previously we silently
 	// skipped, leaving the tree permanently stale. Now we log and
