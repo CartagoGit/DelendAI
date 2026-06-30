@@ -40,7 +40,11 @@ const BUDGET_BYTES = {
 	// raising full to 8015B and compact to 1944B measured. Compact is still
 	// the real promise — < 30% of full.
 	// Bumped 8500 → 8700 (2026-06-28): added commitAuthor options.
-	overviewFull: 8_700,
+	// Bumped 8700 → 8900 (2026-06-30): f00090 S1 added the memory_compact tool
+	// (in-session context compaction). Its summary is the only thing the full
+	// overview lists; full measured 8755B. Compact path unchanged (2079B), still
+	// the real promise.
+	overviewFull: 8_900,
 	overviewCompact: 2_100,
 	agentCatalogCompact: 1_300,
 	agentCatalogFull: 6_800,
