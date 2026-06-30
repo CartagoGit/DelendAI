@@ -41,11 +41,11 @@ export const UNIVERSAL_SCOPES: readonly UniversalAuditScope[] = [
 
 /** Human-readable labels for universal scopes. */
 export const SCOPE_LABEL: Readonly<Record<UniversalAuditScope, string>> = {
-	full: 'Auditoría completa',
-	security: 'Seguridad operacional',
-	tokens: 'Eficiencia de tokens / presupuesto',
-	tests: 'Calidad y cobertura de tests',
-	docs: 'Documentación (README, AGENTS, skills)',
+	full: 'Full audit',
+	security: 'Operational security',
+	tokens: 'Token efficiency / budget',
+	tests: 'Test quality & coverage',
+	docs: 'Documentation (READMEs, AGENTS, skills)',
 };
 
 /**
@@ -85,15 +85,15 @@ export interface ILayerConfig {
 
 /** Sections that the brief asks the model to grade, in canonical order. */
 export const SCORE_DIMENSIONS: readonly string[] = [
-	'Arquitectura',
-	'Contratos e interfaces',
-	'Eficiencia de tokens',
-	'Anti-deadlock / concurrencia',
-	'Calidad de código fuente',
-	'Documentación',
-	'Tests (estructura, cobertura, calidad)',
-	'Seguridad operacional',
-	'Genericidad (project-agnostic)',
+	'Architecture',
+	'Contracts & interfaces',
+	'Token efficiency',
+	'Concurrency / anti-deadlock',
+	'Source code quality',
+	'Documentation',
+	'Tests (structure, coverage, quality)',
+	'Operational security',
+	'Genericity (project-agnostic)',
 ];
 
 // ---------------------------------------------------------------------------
@@ -120,44 +120,44 @@ export const SCORE_DIMENSIONS: readonly string[] = [
 export const UNIVERSAL_PHASES: Readonly<Record<UniversalAuditScope, string>> = {
 	full: '',
 	security: `
-### Fase — Seguridad operacional
+### Phase — Operational security
 
-- **Escrituras atómicas**: traza cada path de escritura durable y verifica que usa primitivas de escritura atómica (tmp-file + rename o equivalente del framework). Un \`writeFile\` desnudo en datos compartidos es hallazgo FATAL.
-- **Redacción de secretos**: ¿se aplica \`redactSecrets\` (o equivalente) antes de persistir cualquier texto del usuario?
-- **Contención de paths**: ¿todo input de path está validado contra el workspace root? Una ruta \`../\` que escape es FATAL.
-- **I/O síncrono en hot paths**: \`*Sync\` en handlers de tools/requests es MUY_MAL.
-- **\`@ts-ignore\` / supresiones de tipos**: cualquier ocurrencia en producción es hallazgo.
-- **Secrets hardcodeados**: API keys, tokens, endpoints privados en fuente.
+- **Atomic writes**: trace every durable write path and verify it uses atomic-write primitives (tmp-file + rename or framework equivalent). A bare \`writeFile\` on shared data = FATAL.
+- **Secret redaction**: is \`redactSecrets\` (or equivalent) applied before persisting any user text?
+- **Path containment**: is every path input validated against the workspace root? A \`../\` escape = FATAL.
+- **Sync I/O in hot paths**: \`*Sync\` calls inside tool/request handlers = BAD.
+- **\`@ts-ignore\` / type suppressions**: any occurrence in production code = finding.
+- **Hardcoded secrets**: API keys, tokens, private endpoints in source.
 `,
 	tokens: `
-### Fase — Eficiencia de tokens
+### Phase — Token efficiency
 
-- Confirma que el tool de orientación principal (\`overview\` o equivalente) se mantiene bajo el presupuesto documentado.
-- ¿Alguna descripción de tool con prosa redundante (explica lo mismo que el nombre del parámetro)?
-- ¿Instrucciones de sistema comprimibles sin perder semántica?
-- Traza el path frío de un agente nuevo: ¿cuántas llamadas necesita antes de poder trabajar? ¿Es el mínimo posible?
-- ¿El sistema evita re-lecturas innecesarias de recursos no modificados (hashing, digest, cache)?
+- Confirm the primary orientation tool (\`overview\` or equivalent) stays under the documented budget.
+- Any tool description with redundant prose (states what the parameter name already says)?
+- Are system instructions compressible without losing semantics?
+- Trace the cold-path of a fresh agent: how many calls before it can work? Is that minimum possible?
+- Does the system avoid re-reading unmodified resources (hashing, digest, cache)?
 `,
 	tests: `
-### Fase — Tests
+### Phase — Tests
 
-Lee los spec files de los engines más críticos:
-- ¿Paths de concurrencia cubiertos? (dos escritores simultáneos)
-- ¿Snapshots stale?
-- ¿Los specs testean contratos o detalles de implementación?
-- ¿Falta fuzzing / property-based testing en lógica de parsing con múltiples capas de validación?
+Read the spec files for the critical engines:
+- Are concurrency paths covered? (two concurrent writers)
+- Stale snapshots?
+- Do specs test contracts or implementation details?
+- Missing fuzzing / property-based testing in parsing logic with multiple validation layers?
 
-Flag: módulo con >300 LOC y <3 spec files = riesgo de undertest (hallazgo MEJORABLE).
-Patrón canónico: specs colocados junto al código; usan mocks/stubs inyectados, no globals.
+Flag: a module with >300 LOC and <3 spec files = under-test risk (MINOR finding).
+Canonical pattern: specs colocated with the source; they use injected mocks/stubs, not globals.
 `,
 	docs: `
-### Fase — Documentación
+### Phase — Documentation
 
-- **Guías de agente / AGENTS.md** (o equivalente: \`CONTRIBUTING.md\`, \`CONVENTIONS.md\`, \`docs/agent.md\`): para cada regla definida, ¿hay alguna violación en el código que la contradiga?
-- **Skills / runbooks / playbooks**: abre cada uno y verifica: ¿nombres de tools correctos? ¿Paths que aún existen? ¿Hay tools nuevas no mencionadas? ¿Algún ejemplo de output desactualizado?
-- **Scaffolds / plantillas / generators**: ¿describen correctamente la práctica actual o están desfasados?
-- **READMEs de módulos**: ¿actualizados tras los últimos cambios significativos?
-- **Reglas declaradas en código (lint, typecheck, scripts de CI)**: ¿están en sync con las reglas narradas en docs? Un doc que dice "no X" sin un lint que lo enforce es hallazgo MEJORABLE.
+- **Agent guides / AGENTS.md** (or equivalents: \`CONTRIBUTING.md\`, \`CONVENTIONS.md\`, \`docs/agent.md\`): for every declared rule, is there a violation in the code that contradicts it?
+- **Skills / runbooks / playbooks**: open each one and verify — correct tool names? Paths that still exist? Any new tools not mentioned? Any stale output example?
+- **Scaffolds / templates / generators**: do they accurately describe the current practice, or are they out of date?
+- **Module READMEs**: updated after the latest significant changes?
+- **Rules enforced in code (lint, typecheck, CI scripts)**: are they in sync with the rules narrated in docs? A doc that says "no X" without a lint that enforces it = MINOR finding.
 `,
 };
 
@@ -181,7 +181,7 @@ Patrón canónico: specs colocados junto al código; usan mocks/stubs inyectados
  * Hosts wire those via `crossCuttingAdditions` from `register()`.
  */
 export const CROSS_CUTTING_UNIVERSAL_DEFAULTS: readonly string[] = [
-	'- **Observabilidad**: identifica la primitiva canónica del proyecto (métricas, tracing, logs estructurados, lo que sea) y verifica que esté presente, que persista su estado entre llamadas, y que un snapshot-diff entre dos invocaciones refleje la actividad real del host. Si no existe, es hallazgo MEJORABLE; si existe pero miente, es FATAL.',
-	'- **Honoring de flags de configuración**: cada flag opt-in documentado (legacy, migración, dry-run, allow-list, etc.) debe estar **explícitamente honrado o explícitamente ignorado** en el código. Un flag mencionado en docs pero sin efecto verificable en código es hallazgo MEJORABLE.',
-	'- **Outputs tipados generados**: si el proyecto genera tipos a partir de schemas (typed SDK, JSON Schema, OpenAPI, etc.) los archivos generados deben estar commiteados y regenerarse como parte del gate de validación. Un `<generated>` ausente o desfasado respecto a su fuente es hallazgo.',
+	'- **Observability**: identify the project\'s canonical observability primitive (metrics, tracing, structured logs, whatever it is) and verify it is present, persists its state across calls, and that a snapshot-diff between two invocations reflects the host\'s real activity. If it does not exist = MINOR finding; if it exists but lies = FATAL.',
+	'- **Configuration flag honoring**: every documented opt-in flag (legacy, migration, dry-run, allow-list, etc.) must be **explicitly honoured or explicitly ignored** in code. A flag mentioned in docs but with no verifiable effect in code = MINOR finding.',
+	'- **Generated typed outputs**: if the project generates types from schemas (typed SDK, JSON Schema, OpenAPI, etc.) the generated files must be committed and regenerated as part of the validation gate. A `<generated>` that is missing or out of sync with its source = finding.',
 ];

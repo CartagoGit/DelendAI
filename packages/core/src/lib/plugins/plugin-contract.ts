@@ -77,6 +77,40 @@ export interface IMcpPluginContext {
 	readonly cacheEvictionRegistry?: ICacheEvictionRegistry | undefined;
 	/** Resolved commit-author policy (f00082). */
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
+	/**
+	 * Names of every plugin that successfully registered in the same
+	 * boot (the "peer plugins"). The value is **lazy**: at register
+	 * time this is `[]` (the load happens after register), but the
+	 * core mutates the underlying storage once every plugin has
+	 * finished so handler invocations see the final peer list. A
+	 * plugin that needs to make a runtime decision based on whether
+	 * a peer is loaded (e.g. an audit plugin deciding whether to
+	 * auto-scaffold proposals based on whether the proposals plugin
+	 * is available) MUST read this lazily — never snapshot it at
+	 * register time.
+	 *
+	 * Backed by {@link IPeerPluginRegistry} so the list is shared
+	 * across the same boot and stays `readonly` from the plugin's
+	 * perspective. Kept optional on the contract for backwards-compat
+	 * with test fixtures that build a context literal by hand —
+	 * treat absent as a no-op registry (always empty).
+	 */
+	readonly peerPlugins?: IPeerPluginRegistry | undefined;
+}
+
+/**
+ * Shared, mutable container for the names of every plugin that
+ * successfully registered in the current boot. Populated by the core
+ * once `loadPlugins()` completes. Plugins read it via
+ * `ctx.peerPlugins.list()` from inside their tool handlers so they
+ * see the final peer list — at register time the list is still
+ * empty because the load has not finished yet.
+ */
+export interface IPeerPluginRegistry {
+	/** Snapshot of the currently-loaded peer names. */
+	readonly list: () => readonly string[];
+	/** True iff the given plugin name is in the loaded peer set. */
+	readonly has: (name: string) => boolean;
 }
 
 /**

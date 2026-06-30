@@ -70,6 +70,24 @@ export type AuditScope = UniversalAuditScope;
 // Brief options
 // ---------------------------------------------------------------------------
 
+/**
+ * The three audit modes the brief supports. Every mode is reachable
+ * through the existing `scope` parameter — `mode` is an explicit
+ * declaration of intent that the host's API surface (`audit_plan` /
+ * `audit_run`) surfaces for human callers and that the brief can use
+ * to render a clearer header.
+ *
+ *  - `general`: whole-project audit (`scope` defaults to `'full'`,
+ *               every configured layer is included).
+ *  - `specific`: targeted audit of one dimension / one layer (`scope`
+ *               must point at a known universal scope or layer name).
+ *  - `monorepo`: subset-of-monorepo audit (`projects` filters the
+ *               configured layers to the names provided; if `projects`
+ *               is empty the whole layer set is included, identical to
+ *               `general`).
+ */
+export type AuditMode = 'general' | 'specific' | 'monorepo';
+
 /** Options that customise {@link buildBrief}'s output. */
 export interface IBriefOptions {
 	/** Custom scoring dimensions. Defaults to {@link SCORE_DIMENSIONS}. */
@@ -79,6 +97,21 @@ export interface IBriefOptions {
 	 * `ctx.options.layers`. Used when `scope` is a layer name or `'full'`.
 	 */
 	readonly layers?: readonly ILayerConfig[];
+	/**
+	 * Explicit audit mode. When omitted, the renderer infers it from
+	 * `scope` + `projects`: `monorepo` when `projects` is non-empty,
+	 * `specific` when `scope` is a non-`full` universal scope or a
+	 * layer name, `general` otherwise.
+	 */
+	readonly mode?: AuditMode;
+	/**
+	 * Monorepo project filter. When non-empty, only the named layers
+	 * are rendered into the brief's reading-phase section (and into
+	 * the `availableScopes` returned by the tool). Layer scopes that
+	 * are not in the list are dropped from this audit but stay
+	 * configured for future runs.
+	 */
+	readonly projects?: readonly string[];
 	/**
 	 * Human-readable project name, rendered in the brief header and in
 	 * the "no layers configured" fallback. Defaults to `"the project"`.
@@ -119,9 +152,9 @@ const renderCrossCutting = (additions: readonly string[]): string => {
 		'\n',
 	);
 	return `
-### ⚠️ Invariantes transversales (siempre, independientemente del alcance)
+### ⚠️ Cross-cutting invariants (always, regardless of scope)
 
-Estos puntos se verifican en **cualquier** alcance de auditoría:
+These points MUST be checked in **any** audit scope:
 
 ${bullets}
 `;
@@ -135,25 +168,25 @@ const buildLayerPhase = (layer: ILayerConfig): string => {
 	const pathsList = layer.paths.map((p) => `  - \`${p}\``).join('\n');
 	const extraChecks =
 		layer.checks && layer.checks.length > 0
-			? '\n\n**Checks adicionales específicos de esta capa:**\n' +
+			? '\n\n**Layer-specific checks:**\n' +
 				layer.checks.map((c) => `- ${c}`).join('\n')
 			: '';
 
 	return `
-### Fase — ${layer.label}
+### Phase — ${layer.label}
 
-Lee exhaustivamente los siguientes directorios/archivos:
+Read exhaustively the following directories/files:
 ${pathsList}
 
-Para cada fichero que toques, extrae el snippet exacto (≤ 15 líneas) y cita \`archivo:línea\`.
+For every file you touch, extract the exact snippet (≤ 15 lines) and cite \`file:line\`.
 
-Checklist genérico de capa:
-- **I/O síncrono en hot paths**: \`readFileSync\`, \`existsSync\`, etc. en handlers o rutas calientes = MUY_MAL.
-- **Globals mutables / \`process.cwd()\`**: paths y configuración deben venir de la inyección de contexto, no de variables globales.
-- **Escrituras sin protección**: cualquier \`writeFile\` / escritura de estado compartido sin mutex + write-atomic = FATAL.
-- **\`@ts-ignore\` / \`@ts-nocheck\` / \`console.log\`** en código de producción: cita la línea.
-- **Contratos públicos honrados**: ¿la capa respeta las interfaces que declara exponer?
-- **Duplicación de lógica**: ¿hay utilidades copiadas de otra capa que deberían estar en un módulo compartido?${extraChecks}
+Generic layer checklist:
+- **Sync I/O in hot paths**: \`readFileSync\`, \`existsSync\`, etc. in handlers or hot routes = BAD.
+- **Mutable globals / \`process.cwd()\`**: paths and configuration must come from context injection, not global variables.
+- **Unprotected writes**: any \`writeFile\` / shared-state write without mutex + write-atomic = FATAL.
+- **\`@ts-ignore\` / \`@ts-nocheck\` / \`console.log\`** in production code: cite the line.
+- **Honoured public contracts**: does the layer honour the interfaces it declares exposing?
+- **Logic duplication**: are utilities copy-pasted from another layer that should live in a shared module?${extraChecks}
 `;
 };
 
@@ -161,25 +194,128 @@ Checklist genérico de capa:
 // Brief builder
 // ---------------------------------------------------------------------------
 
+/** Severity bands the brief surfaces to the model (canonical 7-band
+ *  scale, pure English). Each row carries the canonical enum token
+ *  used in the structured `worstSeverity` field plus a short English
+ *  meaning. The full token IS the band label, so the model pastes
+ *  exactly what the parser will emit — no translation step. */
+const SEVERITY_TABLE_ROWS: ReadonlyArray<{
+	readonly band: string;
+	readonly enumToken: string;
+	readonly emoji: string;
+	readonly meaning: string;
+}> = [
+	{
+		band: 'FATAL',
+		enumToken: 'FATAL',
+		emoji: '🔴',
+		meaning: 'Critical: silent bug, security hole, or design error. Must fix.',
+	},
+	{
+		band: 'BAD',
+		enumToken: 'BAD',
+		emoji: '🟠',
+		meaning: 'Serious issue that degrades quality. Should fix soon.',
+	},
+	{
+		band: 'MINOR',
+		enumToken: 'MINOR',
+		emoji: '🟡',
+		meaning: 'A detail worth improving; non-urgent.',
+	},
+	{
+		band: 'OK',
+		enumToken: 'OK',
+		emoji: '🟢',
+		meaning: 'Above expectations; nothing to change.',
+	},
+	{
+		band: 'GOOD',
+		enumToken: 'GOOD',
+		emoji: '🌟',
+		meaning: 'Very good execution.',
+	},
+	{
+		band: 'PERFECT',
+		enumToken: 'PERFECT',
+		emoji: '💎',
+		meaning: 'Perfect implementation; zero defects.',
+	},
+	{
+		band: 'EXEMPLARY',
+		enumToken: 'EXEMPLARY',
+		emoji: '✨',
+		meaning:
+			'Reference-quality; worth copying into other projects.',
+	},
+];
+
+/**
+ * Infer the audit mode from the scope and the projects filter when the
+ * caller did not pass an explicit `mode`. Pure: same inputs always
+ * yield the same inferred mode.
+ */
+const inferMode = (
+	scope: string,
+	layers: readonly ILayerConfig[],
+	projects: readonly string[] | undefined,
+): AuditMode => {
+	if (projects && projects.length > 0) return 'monorepo';
+	if (scope === 'full') return 'general';
+	if (
+		scope in SCOPE_LABEL ||
+		layers.some((l) => l.name === scope)
+	) {
+		return 'specific';
+	}
+	return 'general';
+};
+
 /**
  * Build the audit brief in markdown.
  *
  * @param scope - Either a universal scope identifier or the `name` of a
  *   host-configured layer. Pass `'full'` for a complete audit.
  * @param options - Optional overrides for dimensions, layer definitions,
- *   project name, config-file hint, and host-specific cross-cutting
- *   invariants. Defaults are project-agnostic on purpose; pass options
- *   to brand the output for a specific host.
+ *   project name, config-file hint, host-specific cross-cutting
+ *   invariants, audit mode (`general` / `specific` / `monorepo`), and
+ *   the monorepo project filter. Defaults are project-agnostic on
+ *   purpose; pass options to brand the output for a specific host.
  */
 export const buildBrief = (
 	scope: string,
 	options: IBriefOptions = {},
 ): string => {
 	const dimensions = options.dimensions ?? SCORE_DIMENSIONS;
-	const layers = options.layers ?? [];
+	const configuredLayers = options.layers ?? [];
+	const projects = options.projects;
+	// Apply the monorepo project filter when provided. Empty/missing
+	// `projects` ⇒ keep the full configured layer set. Unknown names
+	// are kept too (the brief lists them so the model can flag the
+	// typo); the `audit_plan` tool rejects unknown project names
+	// BEFORE calling `buildBrief`.
+	const layers =
+		projects && projects.length > 0
+			? configuredLayers.filter((l) => projects.includes(l.name))
+			: configuredLayers;
+	const mode: AuditMode = options.mode ?? inferMode(scope, configuredLayers, projects);
 	const projectName = options.projectName ?? 'the project';
 	const configFileName = options.configFileName ?? '<config-file>';
 	const dimensionsTable = dimensions.map((d) => `| ${d} | /10 |`).join('\n');
+	const severityTable = SEVERITY_TABLE_ROWS.map(
+		(r) =>
+			`| **${r.band}** | ${r.emoji} | \`${r.enumToken}\` | ${r.meaning} |`,
+	).join('\n');
+	const modeLabel =
+		mode === 'general'
+			? 'general (whole project)'
+			: mode === 'specific'
+				? `specific (scope: ${scope})`
+				: `monorepo (projects: ${
+						projects && projects.length > 0
+							? projects.join(', ')
+							: '—'
+					})`;
 
 	// Resolve label: universal scope label, layer label, or raw scope string.
 	const universalLabel =
@@ -195,107 +331,120 @@ export const buildBrief = (
 		layers,
 		projectName,
 		configFileName,
+		mode,
+		projects: projects ?? [],
 		...(options.crossCuttingAdditions !== undefined
 			? { crossCuttingAdditions: options.crossCuttingAdditions }
 			: {}),
 	});
 
-	return `# 📋 Brief de auditoría (alcance: ${scopeLabel})
+	return `# 📋 Audit brief — mode ${modeLabel}
 
-> **Fecha**: <YYYY-MM-DD> · **Revisor**: <Modelo + Host> · **Metodología**: Lectura
-> exhaustiva del código del alcance indicado. **Los comandos automatizados son el
-> punto de partida, no el fin.** El modelo DEBE leer el código real, extraer snippets
-> con referencias \`archivo#Lnn\`, y justificar cada hallazgo con evidencia concreta.
-> Auditorías que solo resumen output de comandos son inválidas.
+> **Date**: <YYYY-MM-DD> · **Reviewer**: <Model + Host> · **Scope**: ${scopeLabel} · **Mode**: ${mode}.
+> **Methodology**: Exhaustive read of the indicated scope's source. **Automated commands are
+> the baseline, not the finish line.** The model MUST read the real source, extract
+> snippets with \`file#Lnn\` references, and justify each finding with concrete evidence.
+> Audits that only summarise command output are invalid.
 >
-> Si tu salida se aleja del formato, la herramienta \`audit_consolidate\` no podrá
-> deduplicar tus hallazgos contra los de otros revisores.
+> If your output drifts from the format, \`audit_consolidate\` will not be able to
+> deduplicate your findings against other reviewers'.
 
 ---
 
-## 🎯 Alcance
+## 🎯 Scope
 
-${scope === 'full' ? 'Audita el repo entero con la rúbrica completa. Todas las fases de lectura de código son obligatorias.' : `Enfócate en **${scopeLabel}**. Para el resto, basta con una nota si ves algo fuera de lugar.`}
+${scope === 'full' ? `Audit the entire repo${mode === 'monorepo' ? `, restricted to the selected projects (${(projects ?? []).join(', ')})` : ''} with the full rubric. All reading phases are mandatory.` : `Focus on **${scopeLabel}**. For everything else, a one-line note is enough.`}
+
+> **Available modes** (pass to the tool as \`mode\`, or derive from \`scope\` + \`projects\`):
+>
+> | Mode | When | \`scope\` | \`projects\` |
+> |---|---|---|---|
+> | \`general\` | Whole-project audit | \`full\` | _(omit)_ |
+> | \`specific\` | A single dimension or layer | any of \`security\` / \`tokens\` / \`tests\` / \`docs\` / a layer name | _(omit)_ |
+> | \`monorepo\` | Audit only selected monorepo packages | \`full\` _(or applicable)_ | list of layer names |
 
 ---
 
-## 📐 Rúbrica (bandas de severidad)
+## 📐 Rubric (7 severity bands — pure English)
 
-| Banda | Emoji | Significado |
-|---|---|---|
-| **FATAL** | 🔴 | Error crítico / bug silencioso / agujero de seguridad. Hay que corregir. |
-| **MUY MAL** | 🟠 | Problema serio que degrada calidad. |
-| **MEJORABLE** | 🟡 | Detalle a mejorar. |
-| **OK** | 🟢 | Por encima de lo esperado. |
-| **MUY BIEN** | 🌟 | Ejecución excelente. |
-| **PERFECTO** | 💎 | Referencia de la que enorgullecerse. |
+| Band | Emoji | Token | Meaning |
+|---|---|---|---|
+${severityTable}
 
-Para cada hallazgo usa el bloque:
+> The **token column is the canonical enum** used in the structured
+> \`worstSeverity\` field of \`audit_consolidate\` output. Always paste
+> one of those tokens literally (e.g. \`FATAL\`, \`BAD\`, \`MINOR\`,
+> \`OK\`, \`GOOD\`, \`PERFECT\`, \`EXEMPLARY\`). Old reports emitted the
+> Spanish variants (\`MUY_MAL\`, \`MEJORABLE\`, \`MUY_BIEN\`, \`PERFECTO\`,
+> \`ESPLÉNDIDO\`); the parser still accepts them and normalises to the
+> English canonical token, so old audits stay readable.
+
+For each finding use this block:
 
 \`\`\`
-### N. <título imperativo>
-**Fichero**: \`<archivo>#L<línea>\`
+### N. <imperative title>
+**File**: \`<file>#L<line>\`
 
 \`\`\`typescript
-// snippet exacto (≤ 15 líneas)
+// exact snippet (≤ 15 lines)
 \`\`\`
 
-**Problema**: explicación precisa de qué está mal y por qué.
-**Impacto**: qué se rompe, corrompe o degrada si no se arregla.
-**Resolution Track**: [Resuelto en slice \`sN\`] | [Diferido a propuesta \`xNNNNN\`]
+**Problem**: precise description of what is wrong and why.
+**Impact**: what breaks, corrupts, or degrades if left unfixed.
+**Resolution Track**: [Fixed in slice \`sN\`] | [Deferred to proposal \`xNNNNN\`]
 \`\`\`
 
-**Regla de oro**: un hallazgo sin snippet de código no es un hallazgo — es especulación.
-No escribas «podría» o «posiblemente» — o lo viste en el código, o no lo reportes.
+**Golden rule**: a finding without a code snippet is speculation — not a finding.
+Do not write "might" or "possibly" — either you saw it in the code, or you don't report it.
 
 ---
 
-## 🔬 Metodología de análisis (OBLIGATORIA)
+## 🔬 Analysis methodology (MANDATORY)
 
-### Fase 0 — Baseline cuantitativo (comandos permitidos)
+### Phase 0 — Quantitative baseline (allowed commands)
 
-Ejecuta y anota los resultados para la tabla \`## Verified State\`:
-- Tests: \`<comando de tests del repo>\` — cuenta y estado pass/fail.
-- Build: \`<comando de build>\` — output limpio o errores.
-- Linter: \`<comando de lint>\` — warnings/errors.
-- LOC aproximado del alcance.
+Execute and record the results in the \`## Verified State\` table:
+- Tests: \`<repo test command>\` — count and pass/fail.
+- Build: \`<build command>\` — clean output or errors.
+- Linter: \`<lint command>\` — warnings/errors.
+- Approximate LOC for the scope.
 
-**Esta fase es el suelo, no el techo.** Continúa con las fases de lectura de código.
+**This phase is the floor, not the ceiling.** Continue with the source-reading phases.
 
 ${readingPhases}
 
-### Fase final — Escribe el documento de auditoría
+### Final phase — Write the audit document
 
-Solo después de completar las fases de lectura anteriores, escribe el documento.
-Estructura: resumen ejecutivo → hallazgos (con snippets) → scoreboard → recomendaciones.
+Only after completing the reading phases, write the document.
+Structure: executive summary → findings (with snippets) → scoreboard → recommendations.
 
 ---
 
-## 📊 Tabla de puntuación final (obligatoria)
+## 📊 Final scoring table (mandatory)
 
-Termina SIEMPRE con esta tabla. Score 0–10 o \`?\` si no puedes evaluar.
-Una dimensión con un hallazgo FATAL no puede superar 6/10.
+Always end with this table. Score 0–10 or \`?\` when you cannot evaluate.
+A dimension with a FATAL finding cannot score above 6/10.
 
 ${dimensionsTable}
 
-Y un cierre: \`**Nota final: X/10 — <justificación de una línea>**\`.
+And a closing line: \`**Final note: X/10 — <one-line justification>**\`.
 
 ---
 
-## 📝 Recomendaciones prioritarias (al final)
+## 📝 Priority recommendations (at the end)
 
-Una tabla compacta \`| 🔴 P0 | <acción> | <archivo> |\` con las
-3–5 acciones más urgentes. Solo acciones concretas (no «mejorar la documentación»).
+A compact table \`| 🔴 P0 | <action> | <file> |\` listing the 3–5 most urgent
+actions. Only concrete actions (not "improve documentation").
 
 ---
 
-## 🪶 Estilo
+## 🪶 Style
 
-- Cita \`<archivo>#L<línea>\` siempre que puedas.
-- Snippets inline cuando aporten (≤ 15 líneas).
-- No infles: si una dimensión está bien, dilo en una línea y pasa.
-- Devuelve **un solo markdown** que empiece por el header de auditoría y
-  termine por la tabla de recomendaciones.
+- Always cite \`<file>#L<line>\`.
+- Inline snippets where they help (≤ 15 lines).
+- Do not inflate: if a dimension is fine, say so in one line and move on.
+- Return a **single markdown** starting at the audit header and ending at the
+  recommendations table.
 `;
 };
 
@@ -307,8 +456,27 @@ interface IBuildReadingPhasesOptions {
 	readonly layers: readonly ILayerConfig[];
 	readonly projectName: string;
 	readonly configFileName: string;
+	readonly mode: AuditMode;
+	readonly projects: readonly string[];
 	readonly crossCuttingAdditions?: readonly string[];
 }
+
+/**
+ * Render a small monorepo badge that the model pastes into its audit
+ * report so reviewers can see which slice of the monorepo was covered.
+ */
+const renderMonorepoBadge = (
+	projects: readonly string[],
+): string => {
+	if (projects.length === 0) return '';
+	return [
+		'',
+		'> **Monorepo mode active**: this brief covers ONLY the following projects/layers:',
+		'> ',
+		...projects.map((p) => `> - \`${p}\``),
+		'',
+	].join('\n');
+};
 
 /**
  * Assemble the reading-phase sections for the requested scope.
@@ -329,26 +497,30 @@ const buildReadingPhases = (
 		layers: [],
 		projectName: 'the project',
 		configFileName: '<config-file>',
+		mode: 'general',
+		projects: [],
 	},
 ): string => {
 	const crossCutting = renderCrossCutting(
 		options.crossCuttingAdditions ?? [],
 	);
+	const monorepoBadge = renderMonorepoBadge(options.projects);
 
 	if (scope === 'full') {
 		const layerPhases =
 			layers.length > 0
 				? layers.map(buildLayerPhase).join('\n')
 				: `
-### Fase — Código fuente de ${options.projectName}
+### Phase — ${options.projectName} source code
 
-No hay capas configuradas. Lee los directorios principales del proyecto:
-busca los mismos patrones del checklist genérico en todo el código fuente.
-Añade capas en la sección \`plugins.audit.options.layers\` de \`${options.configFileName}\`
-para obtener instrucciones de lectura específicas por capa en próximas auditorías.
+No layers configured. Read the project's top-level directories and look for the
+generic layer checklist patterns across the entire source tree.
+Add layers in the \`plugins.audit.options.layers\` section of \`${options.configFileName}\`
+to get layer-specific reading instructions on subsequent audits.
 `;
 		return (
 			crossCutting +
+			monorepoBadge +
 			layerPhases +
 			UNIVERSAL_PHASES.security +
 			UNIVERSAL_PHASES.tokens +
@@ -361,6 +533,7 @@ para obtener instrucciones de lectura específicas por capa en próximas auditor
 	if (scope in UNIVERSAL_PHASES && scope !== 'full') {
 		return (
 			crossCutting +
+			monorepoBadge +
 			UNIVERSAL_PHASES[scope as Exclude<UniversalAuditScope, 'full'>]
 		);
 	}
@@ -368,12 +541,13 @@ para obtener instrucciones de lectura específicas por capa en próximas auditor
 	// Layer scope
 	const layer = layers.find((l) => l.name === scope);
 	if (layer) {
-		return crossCutting + buildLayerPhase(layer);
+		return crossCutting + monorepoBadge + buildLayerPhase(layer);
 	}
 
 	// Unknown scope — safe fallback: all universal phases
 	return (
 		crossCutting +
+		monorepoBadge +
 		UNIVERSAL_PHASES.security +
 		UNIVERSAL_PHASES.tokens +
 		UNIVERSAL_PHASES.tests +

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { z } from 'zod';
 
+import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import {
 	resolveWorkspaceContained,
 	toolError,
@@ -14,6 +15,10 @@ import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
 } from '../services/audit-consolidate.service';
+import {
+	resolveAutoScaffold,
+	type IAutoScaffoldOptions,
+} from '../services/auto-scaffold-proposals.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 
 // --- output schemas --------------------------------------------------------
@@ -36,11 +41,12 @@ const ConsolidationOutputSchema = z.object({
 			titles: z.array(z.string()),
 			worstSeverity: z.enum([
 				'FATAL',
-				'MUY_MAL',
-				'MEJORABLE',
+				'BAD',
+				'MINOR',
 				'OK',
-				'MUY_BIEN',
-				'PERFECTO',
+				'GOOD',
+				'PERFECT',
+				'EXEMPLARY',
 			] as const),
 			files: z.array(z.string()),
 			seenBy: z.array(z.string()),
@@ -48,6 +54,30 @@ const ConsolidationOutputSchema = z.object({
 	),
 	topActions: z.array(z.string()),
 	markdown: z.string(),
+	/**
+	 * Proposal-scaffolding summary. Three possible shapes:
+	 *  - `{ scaffolded: [...] }` — the proposals plugin was loaded
+	 *    and the tool wrote the listed fix proposals.
+	 *  - `{ skipped: "proposals-not-loaded" }` — proposals is NOT
+	 *    loaded; the audit consolidated but the fix-loop was deferred.
+	 *  - `{ disabled: true }` — the caller opted out via
+	 *    `autoScaffoldProposals: false`.
+	 */
+	proposals: z.union([
+		z.object({
+			scaffolded: z.array(
+				z.object({
+					id: z.string(),
+					filename: z.string(),
+					severity: z.string(),
+					files: z.array(z.string()),
+				}),
+			),
+			reason: z.string().optional(),
+		}),
+		z.object({ skipped: z.string() }),
+		z.object({ disabled: z.literal(true) }),
+	]),
 });
 
 // --- input schema ----------------------------------------------------------

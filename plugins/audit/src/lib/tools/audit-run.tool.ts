@@ -49,6 +49,7 @@ import {
 	buildBrief,
 	SCORE_DIMENSIONS,
 	UNIVERSAL_SCOPES,
+	type AuditMode,
 	type ILayerConfig,
 } from '../services/audit-brief.service';
 import {
@@ -99,6 +100,7 @@ const ScaffoldedSchema = z.object({
 
 const RunOutputSchema = z.object({
 	scope: z.string(),
+	mode: z.enum(['general', 'specific', 'monorepo']),
 	date: z.string(),
 	saved: z.array(SavedFileSchema),
 	failed: z.array(FailedCallSchema),
@@ -110,6 +112,7 @@ const RunOutputSchema = z.object({
 		markdown: z.string(),
 	}),
 	scaffolded: z.array(ScaffoldedSchema),
+	projects: z.array(z.string()),
 });
 
 // ---------------------------------------------------------------------------
@@ -136,6 +139,23 @@ const RunInputSchema = z.object({
 	 * or any configured layer.
 	 */
 	scope: z.string().optional(),
+	/**
+	 * Audit mode. Mirrors `audit_plan`:
+	 *
+	 *  - `general` — whole-project audit.
+	 *  - `specific` — one dimension/layer.
+	 *  - `monorepo` — restrict to a subset via `projects`.
+	 *
+	 * Inferred from `scope` + `projects` when omitted.
+	 */
+	mode: z.enum(['general', 'specific', 'monorepo']).optional(),
+	/**
+	 * Monorepo project filter. Same semantics as `audit_plan`:
+	 * accepts a list of layer names; layers not in the list are
+	 * dropped from this audit (but stay configured for future runs).
+	 * Empty/missing ⇒ audit every configured layer.
+	 */
+	projects: z.array(z.string().min(1)).optional(),
 	/**
 	 * One or more LLM targets. Each is `(provider, model, apiKey)`.
 	 * At least one is required; the tool caps concurrency at 4 and
@@ -279,13 +299,14 @@ export const buildRunRegistration = (
 		...UNIVERSAL_SCOPES,
 		...configuredLayers.map((l) => l.name),
 	];
+	const configuredLayerNames = new Set(configuredLayers.map((l) => l.name));
 	const transport = options.transport;
 	const now = options.now ?? (() => new Date());
 
 	return {
 		id: 'audit_run',
 		summary:
-			'Alcance B: dispatch the audit brief to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/MUY_MAL/MEJORABLE).',
+			'Alcance B: dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings, and scaffold fix proposals for every actionable severity band (FATAL/MUY_MAL/MEJORABLE).',
 		descriptionKey: 'audit_run',
 		tags: ['audit', 'automation', 'fan-out'],
 		register: async (server) => {
@@ -293,12 +314,14 @@ export const buildRunRegistration = (
 				`${prefix}_audit_run`,
 				{
 					description:
-						'Run an end-to-end multi-model audit. Provide one or more `targets` (provider + model + API key) — the tool sends the brief to each, saves the markdown, deduplicates findings via `consolidateAudits`, and writes ready-to-run proposal files for every actionable severity. Workspace-contained: `auditDir` and `proposalsDir` are validated against the workspace root before any write happens.',
+						'Run an end-to-end multi-model audit. Provide one or more `targets` (provider + model + API key) and optionally `mode` (`general`/`specific`/`monorepo`) plus `projects` for the monorepo filter. The tool sends the brief to each target, saves the markdown, deduplicates findings via `consolidateAudits`, and writes ready-to-run proposal files for every actionable severity. Workspace-contained: `auditDir` and `proposalsDir` are validated against the workspace root before any write happens.',
 					inputSchema: RunInputSchema,
 					outputSchema: RunOutputSchema,
 				},
 				async (args: {
 					scope?: string | undefined;
+					mode?: AuditMode | undefined;
+					projects?: readonly string[] | undefined;
 					targets: ReadonlyArray<{
 						provider: LlmProvider;
 						model: string;
@@ -313,7 +336,7 @@ export const buildRunRegistration = (
 					date?: string | undefined;
 					timeoutMs?: number | undefined;
 				}) => {
-					// --- 1. Resolve scope ---------------------------------
+					// --- 1. Resolve scope + mode + projects --------------
 					const scope = args.scope ?? 'full';
 					if (!allAvailableScopes.includes(scope)) {
 						return toolError(
@@ -321,6 +344,25 @@ export const buildRunRegistration = (
 							`Available scopes: ${allAvailableScopes.join(', ')}.`,
 						);
 					}
+					const projects = args.projects ?? [];
+					if (projects.length > 0) {
+						const unknown = projects.filter(
+							(p) => !configuredLayerNames.has(p),
+						);
+						if (unknown.length > 0) {
+							return toolError(
+								`unknown project(s): ${unknown.join(', ')}`,
+								`Available layer projects for monorepo mode: ${[...configuredLayerNames].join(', ') || '(none configured)'}.`,
+							);
+						}
+					}
+					const mode: AuditMode =
+						args.mode ??
+						(projects.length > 0
+							? 'monorepo'
+							: scope === 'full'
+								? 'general'
+								: 'specific');
 
 					// --- 2. Resolve directories ---------------------------
 					const auditRel = sanitizeRel(
@@ -358,6 +400,8 @@ export const buildRunRegistration = (
 					const brief = buildBrief(scope, {
 						dimensions: defaultDimensions,
 						layers: configuredLayers,
+						mode,
+						projects,
 						...(options.projectName !== undefined
 							? { projectName: options.projectName }
 							: {}),
@@ -480,6 +524,7 @@ export const buildRunRegistration = (
 
 					return toolJson({
 						scope,
+						mode,
 						date,
 						saved,
 						failed,
@@ -502,6 +547,7 @@ export const buildRunRegistration = (
 							severity: r.severity,
 							files: [...r.files],
 						})),
+						projects: [...projects],
 					});
 				},
 			);

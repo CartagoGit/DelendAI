@@ -236,6 +236,16 @@ export type {
 	ICacheEvictionWhen,
 } from '../lib/contracts/interfaces/cache-eviction.interface';
 export { createCacheEvictionRegistry } from '../lib/cache/eviction-registry';
+
+// --- peer plugins (loaded-set introspection) ------------------------------
+// Plugins that need to gate runtime behaviour on whether another plugin
+// is loaded (e.g. an audit plugin deciding whether to scaffold
+// proposals via the `proposals` plugin) consult
+// `ctx.peerPlugins.list()` / `.has(name)`. The registry is populated
+// by the core AFTER `loadPlugins()` returns; at register time it is
+// empty.
+export type { IPeerPluginRegistry } from '../lib/plugins/plugin-contract';
+export { createPeerPluginRegistry } from '../lib/plugins/peer-plugin-registry';
 export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
 export { walkAllowedFiles } from '../lib/shared/walk-allowed-files';
 export type { IWalkAllowedFilesOptions } from '../lib/shared/walk-allowed-files';

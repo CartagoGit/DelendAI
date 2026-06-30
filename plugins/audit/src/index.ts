@@ -47,27 +47,81 @@ N auditorías en una sola hoja de ruta, y (alcance B / f00077) automatiza
 el ciclo: dispatches paralelos a múltiples LLMs, persistencia de
 reportes, consolidación, y scaffold de propuestas de fix.
 
+## Modos de auditoría (específico / general / monorepo)
+
+El plugin soporta tres modos que el host puede pedir explícitamente o
+que el tool infiere a partir del \`scope\` y de \`projects\`:
+
+| Modo | Cuándo usarlo | \`scope\` | \`projects\` |
+|---|---|---|---|
+| \`general\` | Auditoría completa del proyecto (default para \`scope: 'full'\`) | \`full\` _(default)_ | _(omitido)_ |
+| \`specific\` | Auditar un alcance puntual: una dimensión (security, tokens, tests, docs) o una capa concreta (p. ej. \`core\`) | el scope elegido | _(omitido)_ |
+| \`monorepo\` | Auditar solo ciertos paquetes/proyectos del monorepo (filtrado por nombre de capa) | \`full\` _(o el que aplique)_ | array con los nombres de capa a incluir |
+
+Ejemplos (sobre la herramienta \`audit_plan\`):
+
+\`\`\`jsonc
+// General: todo el repo
+{ "scope": "full" }
+
+// Specific: solo la dimensión de seguridad
+{ "scope": "security", "mode": "specific" }
+
+// Specific de una capa concreta
+{ "scope": "core", "mode": "specific" }
+
+// Monorepo: auditar solo los paquetes \`core\` y \`plugins\`
+{ "scope": "full", "mode": "monorepo", "projects": ["core", "plugins"] }
+\`\`\`
+
+El modo se infiere automáticamente cuando no se pasa: \`projects\` no
+vacío ⇒ \`monorepo\`, \`scope === 'full'\` ⇒ \`general\`, en otro caso
+\`specific\`. El modo explícito gana sobre la inferencia.
+
 ## Qué hace
 
-1. \`<prefix>_audit_plan { scope? }\` devuelve el brief que el agente pega
-   en cualquier modelo. Hay dos tipos de scopes:
+1. \`<prefix>_audit_plan { scope?, mode?, projects? }\` devuelve el
+   brief que el agente pega en cualquier modelo. Hay dos tipos de scopes:
    - **Universales** (siempre disponibles): \`full\`, \`security\`, \`tokens\`,
      \`tests\`, \`docs\`. Agnósticos, válidos para cualquier repo.
    - **Capas** (configuradas por el host): cualquier nombre definido en
      \`options.layers\` del config. Ej. \`core\`, \`api\`, \`frontend\`, \`database\`.
      Cada capa genera un brief con los paths específicos y checks propios.
-   La respuesta incluye \`availableScopes\` con la lista completa de scopes activos.
+   La respuesta incluye \`availableScopes\` (filtrado en monorepo mode
+   a los proyectos seleccionados) y \`projects\` (lo que pidió el caller).
 2. \`<prefix>_audit_consolidate { auditDir?, topActions? }\` lee cada
    \`*.md\` de la carpeta de auditorías, parsea + deduplica + promedia
    las puntuaciones, y devuelve la vista estructurada más el maestro
    en markdown.
-3. \`<prefix>_audit_run { scope, targets, … }\` (alcance B) cierra el
-   bucle: envía el brief a 1–4 LLMs en paralelo (OpenRouter /
-   Anthropic / Google / OpenAI), guarda los reportes como
+3. \`<prefix>_audit_run { scope, mode?, projects?, targets, … }\`
+   (alcance B) cierra el bucle: envía el brief a 1–4 LLMs en paralelo
+   (OpenRouter / Anthropic / Google / OpenAI), guarda los reportes como
    \`DD-MM-YYYY- <provider>(<model>).md\`, los consolida, y scaffoldea
    un archivo de propuesta por hallazgo actionable (FATAL / MUY_MAL /
    MEJORABLE) en \`docs/mcp-vertex/proposals/ready/\`. Las claves se
    reciben en la llamada — el plugin NO consulta variables de entorno.
+
+## Escala de severidad (7 bandas, inglés puro)
+
+El plugin usa internamente una escala de **7 bandas** (todos los tokens
+del enum `worstSeverity` están en **inglés**; el display humano en los
+reports sigue siendo español para mantener compat con el histórico):
+
+| Token \`worstSeverity\` | Emoji | Display humano | Significado |
+|---|---|---|---|
+| \`FATAL\` | 🔴 | FATAL | Crítico. Bug silencioso o agujero de seguridad. Hay que corregir. |
+| \`BAD\` | 🟠 | REGULAR | Problema serio que degrada calidad. |
+| \`MINOR\` | 🟡 | BIEN (lado débil) | Detalle a mejorar. |
+| \`OK\` | 🟢 | BIEN | Por encima de lo esperado. |
+| \`GOOD\` | 🌟 | MUY_BIEN | Ejecución excelente. |
+| \`PERFECT\` | 💎 | PERFECTO | Implementación perfecta, sin defectos. |
+| \`EXEMPLARY\` | ✨ | ESPLÉNDIDO | Referencia, digna de copiar en otros proyectos. |
+
+El parser de auditorías sigue aceptando las formas históricas en español
+(\`MUY_MAL\`, \`MEJORABLE\`, \`MUY_BIEN\`, \`PERFECTO\`, \`ESPLÉNDIDO\`,
+ASCII \`ESPLENDIDO\`) y las normaliza al token inglés canónico, así que
+los reports viejos siguen siendo parseables aunque el enum canónico esté
+todo en inglés.
 
 ## Modelo de scopes (project-agnostic)
 
@@ -104,10 +158,29 @@ agnóstico y portable a cualquier modelo en cualquier sesión.
   reutilizan. El orquestador del host puede pasar \`auditId\` para
   enlazar el batch con la auditoría madre (\`related: [aNNNNN]\`).
 
-## Configuración (host-agnostic)
+## Auto-scaffold proposals (when the \`proposals\` plugin is loaded)
+
+The audit plugin closes the loop end-to-end: every audit it consolidates
+or runs MUST yield ready-to-run fix proposals for its FATAL / BAD /
+MINOR findings — **but only when the \`proposals\` plugin is loaded in
+the same MCP server**. The audit plugin auto-detects via the registry
+(\`peer plugins\`) at boot.
+
+| Scenario | Behaviour |
+|---|---|
+| \`proposals\` is loaded (default — \`swarm\` preset includes it) | One proposal per actionable finding (FATAL / BAD / MINOR) is scaffolded to \`docs/mcp-vertex/proposals/ready/\` with a deterministic \`xNNNNN\` id and \`related: [aNNNNN]\`. |
+| \`proposals\` is NOT loaded | No proposals are written. The \`audit_run\` / \`audit_consolidate\` output returns \`proposals_skipped: "proposals plugin not loaded"\` so callers know what happened. |
+| \`--plugins=audit\` only (\`proposals\` absent) | Same as above: no scaffolding. The audit still works. |
+| Tool called inside a host that embeds the audit plugin without proposals | Same as above: no scaffolding. |
+
+Defaults to **enabled when proposals is available**. Set
+\`options.autoScaffoldProposals: false\` in \`plugins.audit.options\` or
+pass \`autoScaffoldProposals: false\` on the tool call to opt out.
+
+## Configuration (host-agnostic)
 
 \`\`\`jsonc
-// el config-file que use el host (p. ej. mcp-vertex.config.json, app.toml, settings.yaml)
+// the host config file (e.g. mcp-vertex.config.json, app.toml, settings.yaml)
 {
   "plugins": {
     "audit": {
@@ -116,23 +189,24 @@ agnóstico y portable a cualquier modelo en cualquier sesión.
         "configFileName": "<your config file>",
         "auditDir": "docs/mcp-vertex/proposals/done/audits",
         "topActions": 5,
-        "dimensions": ["Arquitectura", "Tests", "Documentación", "Genericidad"],
+        "autoScaffoldProposals": true,
+        "dimensions": ["Architecture", "Tests", "Documentation", "Genericity"],
         "crossCuttingAdditions": [
-          "- **Tu invariante 1**: descripción breve.",
-          "- **Tu invariante 2**: descripción breve."
+          "- **Your invariant 1**: short description.",
+          "- **Your invariant 2**: short description."
         ],
         "layers": [
           {
             "name": "core",
             "label": "Core packages",
             "paths": ["packages/core/src/", "packages/client/src/"],
-            "checks": ["¿Globals mutables en hot paths?", "¿Escrituras sin mutex?"]
+            "checks": ["Mutable globals in hot paths?", "Writes without mutex?"]
           },
           {
             "name": "api",
             "label": "API Layer",
             "paths": ["src/api/", "src/routes/"],
-            "checks": ["¿Rate limiting aplicado?", "¿Inputs validados contra schema?"]
+            "checks": ["Rate limiting applied?", "Inputs validated against schema?"]
           }
         ]
       }
@@ -141,14 +215,14 @@ agnóstico y portable a cualquier modelo en cualquier sesión.
 }
 \`\`\`
 
-Todos los campos son opcionales. Sin \`layers\`, el scope \`full\` genera una guía
-genérica de lectura de código. Con \`layers\`, cada capa aparece como scope y el
-brief de \`full\` incluye todas las capas con sus paths y checks específicos.
-\`projectName\` y \`configFileName\` solo cambian el branding del header y de la
-pista "no hay capas configuradas"; las rúbricas universales no los mencionan.
-\`crossCuttingAdditions\` se suma a las invariantes universales (observabilidad,
-honoring de flags, outputs tipados) para que el modelo chequee también lo propio
-del host.
+All fields are optional. Without \`layers\`, \`full\` scope produces a
+generic source-reading guide. With \`layers\`, each layer appears as a
+scope and the \`full\` brief includes all layers with their paths and
+checks. \`projectName\` and \`configFileName\` only change the header
+branding and the "no layers configured" hint; the universal rubrics do
+not mention them. \`crossCuttingAdditions\` is layered on top of the
+universal invariants (observability, flag honoring, typed outputs) so
+the model also checks host-specific rules.
 `;
 
 /**
@@ -236,11 +310,24 @@ const OptionsSchema = z
 		configFileName: z.string().min(1).optional(),
 		/**
 		 * Host-specific cross-cutting invariants rendered into the
-		 * brief's "Invariantes transversales" block (after the universal
+		 * brief's "Cross-cutting invariants" block (after the universal
 		 * defaults). Use this to inject project-specific "must check
 		 * this" rules without forking `buildBrief`.
 		 */
 		crossCuttingAdditions: z.array(z.string().min(1)).optional(),
+		/**
+		 * Whether the audit toolchain should automatically scaffold
+		 * fix proposals for the actionable findings of every audit
+		 * (FATAL / BAD / MINOR). The behaviour is gated on the
+		 * `proposals` peer plugin being loaded in the same MCP
+		 * server — when proposals is absent, the audit plugin
+		 * surfaces a `proposals_skipped` reason in the response and
+		 * skips the write. Default `true` so hosts that ship the
+		 * default `swarm` preset (which already includes proposals)
+		 * close the audit loop without extra config. Hosts that
+		 * prefer manual scaffolding pass `false`.
+		 */
+		autoScaffoldProposals: z.boolean().optional(),
 	})
 	.strict();
 
@@ -253,6 +340,9 @@ const DEFAULT_OPTIONS = {
 	auditDir: 'docs/mcp-vertex/proposals/done/audits',
 	topActions: 5,
 	dimensions: SCORE_DIMENSIONS,
+	// Default to auto-scaffolding when proposals is available. Hosts
+	// that want manual control pass `autoScaffoldProposals: false`.
+	autoScaffoldProposals: true,
 } as const;
 
 export default definePlugin({
@@ -279,6 +369,15 @@ export default definePlugin({
 		const projectName = pluginOptions.projectName;
 		const configFileName = pluginOptions.configFileName;
 		const crossCuttingAdditions = pluginOptions.crossCuttingAdditions;
+		const autoScaffoldProposals =
+			pluginOptions.autoScaffoldProposals ??
+			DEFAULT_OPTIONS.autoScaffoldProposals;
+		// Peer-plugins registry is forwarded to every tool so the
+		// handlers can gate work (auto-scaffold proposals / read-only
+		// mode) on whether a particular plugin is loaded in the same
+		// MCP server. Empty registry at register time (the load
+		// happens after) — handlers read it lazily on each call.
+		const peerPlugins = ctx.peerPlugins;
 		const plan = buildPlanRegistration({
 			namespacePrefix: ctx.namespacePrefix,
 			dimensions,
@@ -295,6 +394,12 @@ export default definePlugin({
 			defaultAuditDir: auditDir,
 			defaultTopActions: topActions,
 			...(projectName !== undefined ? { projectName } : {}),
+			...(configFileName !== undefined ? { configFileName } : {}),
+			...(crossCuttingAdditions !== undefined
+				? { crossCuttingAdditions }
+				: {}),
+			autoScaffoldProposals,
+			...(peerPlugins !== undefined ? { peerPlugins } : {}),
 		});
 		const run = buildRunRegistration({
 			namespacePrefix: ctx.namespacePrefix,
@@ -309,6 +414,8 @@ export default definePlugin({
 			...(crossCuttingAdditions !== undefined
 				? { crossCuttingAdditions }
 				: {}),
+			autoScaffoldProposals,
+			...(peerPlugins !== undefined ? { peerPlugins } : {}),
 		});
 		return {
 			tools: [plan, consolidate, run],

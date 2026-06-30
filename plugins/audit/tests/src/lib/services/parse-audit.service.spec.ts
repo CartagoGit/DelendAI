@@ -140,6 +140,44 @@ describe('parseAuditBody', async () => {
 		expect(doc.source.host).toBe('unknown');
 		expect(doc.source.model).toBe('unknown');
 	});
+
+	it('recognises the new EXEMPLARY severity band (English canonical + Spanish legacy forms)', async () => {
+		const body = `## ✨ EXEMPLARY — Findings worth copying
+
+### 1. Core contracts layer with impeccable SOLID
+**Fichero**: \`packages/core/src/lib/contracts/interfaces.ts\`
+
+Zero globals, zero process.cwd(), zero any.
+
+### 2. Universal atomic-write pattern
+**Fichero**: \`packages/core/src/lib/fs/write-file-atomic.ts\`
+
+The best implementation we have seen.
+`;
+		const docEnglish = parseAuditBody('test.md', body);
+		const exemplary = docEnglish.findings.filter(
+			(f: IAuditFinding) => f.severity === 'EXEMPLARY',
+		);
+		expect(exemplary).toHaveLength(2);
+		expect(exemplary[0]?.title).toContain('impeccable');
+
+		// Spanish legacy form must still normalise to the canonical
+		// English enum token …
+		const bodySpanish = body.replace(/EXEMPLARY/gu, 'ESPLÉNDIDO');
+		const docSpanish = parseAuditBody('test.md', bodySpanish);
+		const exemplaryEs = docSpanish.findings.filter(
+			(f: IAuditFinding) => f.severity === 'EXEMPLARY',
+		);
+		expect(exemplaryEs).toHaveLength(2);
+
+		// … and the ASCII fallback (some LLMs drop the accent).
+		const bodyAscii = body.replace(/EXEMPLARY/gu, 'ESPLENDIDO');
+		const docAscii = parseAuditBody('test.md', bodyAscii);
+		const exemplaryAscii = docAscii.findings.filter(
+			(f: IAuditFinding) => f.severity === 'EXEMPLARY',
+		);
+		expect(exemplaryAscii).toHaveLength(2);
+	});
 });
 
 describe('parseAuditFiles', async () => {

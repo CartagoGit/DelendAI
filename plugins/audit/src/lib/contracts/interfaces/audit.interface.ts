@@ -4,8 +4,8 @@
  * The audit pipeline has three shapes:
  *
  * - `IAuditFinding`  — one actionable item reported by a single model.
- *                       Severity comes from the canonical 5-band scale the
- *                       repo's prior audits use (FATAL → PERFECTO).
+ *                       Severity comes from the canonical 7-band scale the
+ *                       repo's prior audits use (FATAL → ESPLÉNDIDO).
  * - `IAuditScore`    — one row of the per-dimension scoring table the
  *                       model appends at the end of its report.
  * - `IAuditDocument` — the parsed representation of one audit file
@@ -15,26 +15,79 @@
  * the consolidation step needs (what was found? how was the model scored?
  * which file produced these answers?). Wider shapes would force the
  * consolidator to branch on `kind`-style discriminators.
+ *
+ * Severity scale (7 bands, ordered by urgency — index 0 is the most urgent).
+ * All enum tokens are ENGLISH so downstream code can switch on them
+ * without locale knowledge:
+ *
+ *  1. **FATAL** 🔴 — broken / silent bug / security hole. Must fix.
+ *  2. **BAD** 🟠 — serious problem that degrades quality.
+ *     (Parser also accepts the historical Spanish `MUY_MAL` / `MUY MAL`
+ *     forms so existing audits stay parseable.)
+ *  3. **MINOR** 🟡 — should be improved.
+ *     (Parser also accepts `MEJORABLE` / `MEJORA`.)
+ *  4. **OK** 🟢 — above expectations.
+ *  5. **GOOD** 🌟 — very good execution.
+ *     (Parser also accepts the historical `MUY_BIEN` / `MUY BIEN`.)
+ *  6. **PERFECT** 💎 — perfect, no flaws.
+ *     (Parser also accepts `PERFECTO`.)
+ *  7. **EXEMPLARY** ✨ — exemplary; reference-quality worth copying.
+ *     (Parser also accepts `ESPLÉNDIDO` / `ESPLENDIDO`.)
+ *
+ * The structured `worstSeverity` field returned by every tool carries
+ * the English canonical tokens so callers can switch on them without
+ * locale handling. The historical Spanish forms are still accepted
+ * by the parser so older audits stay parseable.
  */
 
-/** Severity bands the repo's audits use, in decreasing order of urgency. */
+/** Severity bands the repo's audits use, in decreasing order of urgency.
+ *  Tokens are ENGLISH; the parser normalises historical Spanish forms
+ *  (`MUY MAL`, `MEJORABLE`, `MUY BIEN`, `PERFECTO`, `ESPLÉNDIDO`,
+ *  ASCII fallback `ESPLENDIDO`) to these canonical values. */
 export type AuditSeverity =
 	| 'FATAL'
-	| 'MUY_MAL'
-	| 'MEJORABLE'
+	| 'BAD'
+	| 'MINOR'
 	| 'OK'
-	| 'MUY_BIEN'
-	| 'PERFECTO';
+	| 'GOOD'
+	| 'PERFECT'
+	| 'EXEMPLARY';
 
 /** Ordered list, used by the consolidator to rank tables. */
 export const SEVERITY_ORDER: readonly AuditSeverity[] = [
 	'FATAL',
-	'MUY_MAL',
-	'MEJORABLE',
+	'BAD',
+	'MINOR',
 	'OK',
-	'MUY_BIEN',
-	'PERFECTO',
+	'GOOD',
+	'PERFECT',
+	'EXEMPLARY',
 ];
+
+/**
+ * User-facing label per severity band. Pure English.
+ *
+ * | Display | Internal enum |
+ * |---|---|
+ * | FATAL 🔴 | `FATAL` |
+ * | BAD 🟠 | `BAD` |
+ * | MINOR 🟡 | `MINOR` |
+ * | OK 🟢 | `OK` |
+ * | GOOD 🌟 | `GOOD` |
+ * | PERFECT 💎 | `PERFECT` |
+ * | EXEMPLARY ✨ | `EXEMPLARY` |
+ */
+export const SEVERITY_USER_LABEL: Readonly<
+	Record<AuditSeverity, { level: string; emoji: string }>
+> = {
+	FATAL: { level: 'FATAL', emoji: '🔴' },
+	BAD: { level: 'BAD', emoji: '🟠' },
+	MINOR: { level: 'MINOR', emoji: '🟡' },
+	OK: { level: 'OK', emoji: '🟢' },
+	GOOD: { level: 'GOOD', emoji: '🌟' },
+	PERFECT: { level: 'PERFECT', emoji: '💎' },
+	EXEMPLARY: { level: 'EXEMPLARY', emoji: '✨' },
+};
 
 /** A single finding a model reports. */
 export interface IAuditFinding {
