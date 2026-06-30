@@ -46,7 +46,7 @@ export interface IPluginCatalogEntry {
 }
 
 /**
- * The 16 plugins shipped under `plugins/`. DATA only — adding a plugin
+ * The 17 plugins shipped under `plugins/`. DATA only — adding a plugin
  * is a new entry here (Open/Closed: no consumer needs to change).
  */
 export const PLUGIN_CATALOG: Readonly<Record<string, IPluginCatalogEntry>> = {
@@ -56,6 +56,13 @@ export const PLUGIN_CATALOG: Readonly<Record<string, IPluginCatalogEntry>> = {
 		purpose:
 			'Runs exhaustive, scored repository audits per scope (architecture, plugins, apps) and consolidates the findings into an actionable brief.',
 		category: 'quality',
+	},
+	cache: {
+		slug: 'cache',
+		displayName: 'Cache',
+		purpose:
+			'Makes the shared `.cache/mcp-vertex` root self-cleaning via declarative TTL/keep-last eviction rules and an opt-in `cache_gc` tool that previews or applies the sweep.',
+		category: 'observability',
 	},
 	conventions: {
 		slug: 'conventions',

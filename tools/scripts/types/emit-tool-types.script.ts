@@ -62,6 +62,9 @@ export const PACKAGE_ROUTES: Readonly<Record<string, IPackageRoute>> = {
 	// f00029 S3 — opt-in web/fetch plugin (not in any preset; harvested
 	// anyway so its outputSchema gets a typed SDK module, same as `audit`).
 	'web-fetch': { dir: 'plugins/web-fetch', label: 'WebFetch' },
+	// f00072 S2 — opt-in cache eviction plugin (not in any preset;
+	// harvested so `cache_gc`'s outputSchema gets a typed SDK module).
+	cache: { dir: 'plugins/cache', label: 'Cache' },
 };
 
 /** Relative path (from a package dir) of the generated module. */

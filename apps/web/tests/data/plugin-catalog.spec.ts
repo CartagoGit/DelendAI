@@ -19,9 +19,10 @@ import {
  * `scripts/__tests__/**`.
  */
 
-// The 16 plugins shipped under `plugins/`.
+// The 17 plugins shipped under `plugins/`.
 const EXPECTED_SLUGS = [
 	'audit',
+	'cache',
 	'conventions',
 	'deps',
 	'docs',
@@ -49,7 +50,7 @@ const VALID_CATEGORIES = new Set([
 ]);
 
 describe('PLUGIN_CATALOG', () => {
-	it('covers exactly the 16 shipped plugins', () => {
+	it('covers exactly the 17 shipped plugins', () => {
 		expect([...PLUGIN_SLUGS].sort()).toEqual([...EXPECTED_SLUGS].sort());
 	});
 

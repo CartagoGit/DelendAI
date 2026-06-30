@@ -80,7 +80,7 @@ const GLOBAL_FLAGS: readonly ICliFlag[] = [
 	},
 ];
 
-// Command groups: the 16 plugins (title/summary reused from the canonical
+// Command groups: the 17 plugins (title/summary reused from the canonical
 // catalog) plus the always-present core meta-tools and the doctor.
 const PLUGIN_COMMAND_GROUPS: readonly ICliCommandGroup[] = PLUGIN_SLUGS.map(
 	(slug) => ({

@@ -47,6 +47,7 @@ import {
 
 const PLUGIN_LIST = [
 	'audit',
+	'cache',
 	'deps',
 	'docs',
 	'git',
