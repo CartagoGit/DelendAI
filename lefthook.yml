@@ -9,6 +9,12 @@
 # that should be advisory is wrapped with `|| true`. The command's own
 # output (including errors) is still printed, so violations are visible
 # and `bun run validate` / CI are still the source of truth.
+#
+# x00088: the actual Biome formatter for staged files lives in the
+# REAL `.git/hooks/pre-commit` (installed by
+# `tools/scripts/install-formatter-hook.script.ts`, see `tools/scripts/hooks/pre-commit.ts`).
+# This file only carries the remaining drift/discipline checks; formatting
+# itself is no longer duplicated here.
 
 min_version: 1.7.0
 no_tty: false
@@ -17,31 +23,6 @@ colors: true
 pre-commit:
   parallel: true
   commands:
-    # Format the front surface for staged files only — surgical, fast.
-    # Runs Biome in write mode but only touches staged paths. Advisory:
-    # if Biome ever fails on an exotic file, the commit still goes
-    # through and CI / `bun run validate` catches it.
-    format-web-staged:
-      glob_filter:
-        items:
-          - "apps/web/src/**/*.{astro,ts,tsx,js,jsx,mjs,cjs,vue,svelte,scss,css,html,json,md,mdx}"
-          - "apps/web/scripts/**/*.{ts,mjs,cjs,json}"
-          - "apps/web/astro.config.mjs"
-      run: bun x @biomejs/biome format --write --no-errors-on-unmatched {staged_files} || true
-      stage_fixed: true
-
-    # Also lint/format the rest of the monorepo for any non-front staged files.
-    # (Biome ci already runs in `bun run lint`, but this catches formatting
-    # issues at commit time instead of waiting for CI.) Advisory, see above.
-    format-other-staged:
-      glob_filter:
-        exclude:
-          - "apps/web/src/**"
-          - "apps/web/scripts/**"
-          - "apps/web/astro.config.mjs"
-      run: bun x @biomejs/biome format --write --no-errors-on-unmatched {staged_files} || true
-      stage_fixed: true
-
     # Validate BEM + nested SCSS rules on staged SCSS files. Advisory:
     # violations are printed but do NOT block the commit; the same
     # check runs in `bun run validate` and CI.

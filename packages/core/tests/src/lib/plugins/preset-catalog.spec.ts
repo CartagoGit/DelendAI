@@ -7,7 +7,7 @@ import {
 } from '@mcp-vertex/core/lib/plugins/preset-catalog';
 
 describe('PRESET_CATALOG', async () => {
-	it('lists presets in ⊇ order: minimal, standard, swarm, full', async () => {
+	it('lists presets in ⊇ order: minimal, standard, swarm, full, vertex', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
 	});
 
@@ -20,6 +20,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
+		// vertex: 10 members, mirrors mcp-vertex.config.json (independent)
+		expect(PRESET_CATALOG[4]?.members.length).toBe(10);
 	});
 
 	it('marks every full-preset member as hostOnly', async () => {
@@ -37,6 +39,12 @@ describe('PRESET_CATALOG', async () => {
 				expect(member.hostOnly).toBeUndefined();
 			}
 		}
+	});
+
+	it('marks `vertex` as an independent preset', async () => {
+		const vertex = PRESET_CATALOG[4];
+		expect(vertex).toBeDefined();
+		expect(vertex?.independent).toBe(true);
 	});
 
 	it('every catalog plugin id corresponds to a real package on disk', async () => {
@@ -112,7 +120,34 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('preserves the ⊇ chain ordering', async () => {
+	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
+		const resolved = resolvePresetMembers('vertex');
+		expect(resolved.length).toBe(10);
+		for (const required of [
+			'conventions',
+			'docs',
+			'search',
+			'git',
+			'web-fetch',
+			'status-marker',
+			'test-convention',
+			'quality',
+			'issues',
+			'audit',
+		]) {
+			expect(resolved).toContain(required);
+		}
+		// Independent presets do NOT inherit swarm — those plugins
+		// are intentionally absent from mcp-vertex.config.json.
+		expect(resolved).not.toContain('memory');
+		expect(resolved).not.toContain('rules');
+		expect(resolved).not.toContain('deps');
+		expect(resolved).not.toContain('proposals');
+		expect(resolved).not.toContain('notification');
+		expect(resolved).not.toContain('logs');
+	});
+
+	it('preserves the ⊇ chain ordering for chain presets', async () => {
 		const full = resolvePresetMembers('full');
 		const swarm = resolvePresetMembers('swarm');
 		const standard = resolvePresetMembers('standard');

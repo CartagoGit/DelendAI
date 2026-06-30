@@ -9,20 +9,34 @@
  *
  * S5 (migration offer) and S6 (e2e) live in their own modules and are
  * scheduled in a follow-up slice; this command provides the hook for them.
+ *
+ * The shared render+write runner (`runInitWithAnswers`) is also
+ * consumed by `init:default` (f00103) — that command skips the
+ * interactive prompts and pre-bakes the operator's chosen defaults.
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
+	ICliCommandContext,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from './host-entry-resolver';
-import { detectTargetProject, withDetection } from './init-detection';
+import { detectTargetProject } from './init-detection';
 import { collectInitAnswers } from './init-prompts';
 import { renderInitBundle } from './init-render';
 import { writeMcpVertexConfig, writeWorkspaceText } from './init-writers';
+import { InitAnswers, type IInitAnswers } from './init-answers.schema';
+
+/** Flags shared by `init` and `init:default`. */
+export interface IInitFlags {
+	readonly dryRun: boolean;
+	readonly force: boolean;
+	readonly mcpVertexRoot?: string;
+	readonly pluginPathsRoot?: string;
+}
 
 const applyExtraOptions = (
 	config: Record<string, unknown>,
@@ -53,14 +67,7 @@ const applyExtraOptions = (
 	return config;
 };
 
-const parseFlags = (
-	args: readonly string[],
-): {
-	dryRun: boolean;
-	force: boolean;
-	mcpVertexRoot?: string;
-	pluginPathsRoot?: string;
-} => {
+export const parseFlags = (args: readonly string[]): IInitFlags => {
 	const out: {
 		dryRun: boolean;
 		force: boolean;
@@ -78,120 +85,163 @@ const parseFlags = (
 	return out;
 };
 
-export const initCommand: ICliCommand = {
-	name: 'init',
-	summary: 'Interactive workspace bootstrap for mcp-vertex.',
-	usage: 'init [--dry-run] [--force]',
-	run: async (args, ctx): Promise<ICliCommandResult> => {
-		const { dryRun, force, mcpVertexRoot, pluginPathsRoot } =
-			parseFlags(args);
-		// f00088 S1: detect the target project shape BEFORE the
-		// prompts run, so the operator sees "✓ detected: typescript +
-		// angular + bun + yarn-workspaces" at the top of the prompt
-		// flow. The detection is wrapped in `try/catch` so an analyzer
-		// failure never aborts the bootstrap — we fall through with
-		// `detected: undefined` and the legacy greenfield path runs.
-		let preAnswers;
-		try {
-			preAnswers = await withDetection(
-				{
-					preset: 'swarm',
-					extraPlugins: [],
-					excludedPlugins: [],
-					hostInstructions: 'append',
-					copyCoreSkills: true,
-					generateAgentMd: true,
-					migrateFromLegacy: true,
-					force,
-					workspaceRoot: ctx.cwd,
-				},
-				ctx.cwd,
-				pluginPathsRoot !== undefined
-					? { explicitPluginPathsRoot: pluginPathsRoot }
-					: {},
-			);
-		} catch {
-			preAnswers = undefined;
-		}
-		const answers = await collectInitAnswers(ctx.cwd, {
-			force,
-			workspaceRoot: ctx.cwd,
-			detected: preAnswers?.detected,
-		});
-		// f00088 S2: resolve the host entry path before rendering.
-		// When `--mcp-vertex-root` is set, it wins; otherwise we
-		// probe the consumer's workspace in priority order
-		// (`node_modules/@mcp-vertex/core/...`, `dist/host/...`,
-		// `../mcp-vertex/...`). A typed error surfaces the hint when
-		// nothing matches.
-		let hostEntryPath: string;
-		try {
-			const resolved = resolveHostEntryPath(
-				ctx.cwd,
-				mcpVertexRoot !== undefined
-					? { explicitRoot: mcpVertexRoot }
-					: {},
-			);
-			hostEntryPath = resolved.path;
-		} catch (error) {
-			if (error instanceof HostEntryNotFoundError) {
-				return {
-					code: EXIT_CODE.NOT_FOUND,
-					data: {
-						ok: false,
-						error: { reason: error.message, nextAction: 'retry' },
-						attempted: error.attempted,
-					},
-				};
-			}
-			throw error;
-		}
-		const bundle = await renderInitBundle(answers, { hostEntryPath });
+/**
+ * Run detection against the target workspace and decorate a partial
+ * answers object with the result. Pure-ish — only does IO through
+ * `detectTargetProject`, whose own surface already swallows analyzer
+ * failures. Used by both `init` (interactive) and `init:default`
+ * (non-interactive) so detection runs exactly once per invocation.
+ */
+export const detectAndDecorateAnswers = async (
+	workspaceRoot: string,
+	flags: IInitFlags,
+	partial: Partial<IInitAnswers>,
+): Promise<IInitAnswers> => {
+	let detected: IInitAnswers['detected'];
+	try {
+		const d = await detectTargetProject(
+			workspaceRoot,
+			flags.pluginPathsRoot !== undefined
+				? { explicitPluginPathsRoot: flags.pluginPathsRoot }
+				: {},
+		);
+		detected = {
+			language: d.language,
+			framework: d.framework,
+			packageManager: d.packageManager,
+			monorepoTool: d.monorepoTool,
+			hasMcpProject: d.hasMcpProject,
+			mcpEvidence: [...d.mcpEvidence],
+			pluginPathsRoot: d.pluginPathsRoot,
+			sourceRoot: d.sourceRoot,
+			hostEntryPath: d.hostEntryPath,
+			hostEntrySource: d.hostEntrySource,
+		};
+	} catch {
+		detected = undefined;
+	}
+	return InitAnswers.parse({
+		workspaceRoot,
+		force: flags.force,
+		...(detected !== undefined ? { detected } : {}),
+		...partial,
+	});
+};
 
-		if (dryRun) {
+/**
+ * Shared runner consumed by both `init` (interactive) and `init:default`
+ * (non-interactive). Takes pre-built answers (already merged with
+ * detection by `detectAndDecorateAnswers`) and runs:
+ *   1. Host-entry path resolution (S2, f00088).
+ *   2. Bundle render (S2-S5).
+ *   3. Dry-run / write dispatch (writers.ts).
+ *
+ * The function NEVER prompts — pure rendering + writing pipeline. The
+ * `ctx.globals.extraOptions` overrides (`--options-<plugin>-<k>=<v>`)
+ * are applied to the rendered config block before writing.
+ */
+export const runInitWithAnswers = async (
+	ctx: ICliCommandContext,
+	flags: IInitFlags,
+	answers: IInitAnswers,
+): Promise<ICliCommandResult> => {
+	// f00088 S2: resolve the host entry path before rendering. When
+	// `--mcp-vertex-root` is set, it wins; otherwise we probe the
+	// consumer's workspace in priority order (node_modules, dist,
+	// sibling mcp-vertex/, sibling mcp-vertex-core/). A typed error
+	// surfaces the hint when nothing matches.
+	let hostEntryPath: string;
+	try {
+		const resolved = resolveHostEntryPath(
+			ctx.cwd,
+			flags.mcpVertexRoot !== undefined
+				? { explicitRoot: flags.mcpVertexRoot }
+				: {},
+		);
+		hostEntryPath = resolved.path;
+	} catch (error) {
+		if (error instanceof HostEntryNotFoundError) {
 			return {
-				code: EXIT_CODE.OK,
+				code: EXIT_CODE.NOT_FOUND,
 				data: {
-					ok: true,
-					dryRun: true,
-					files: bundle.files,
-					summary: bundle.summary,
+					ok: false,
+					error: { reason: error.message, nextAction: 'retry' },
+					attempted: error.attempted,
 				},
 			};
 		}
+		throw error;
+	}
+	const bundle = await renderInitBundle(answers, { hostEntryPath });
 
-		const written: Array<{ path: string; kind: string }> = [];
-		for (const file of bundle.files) {
-			if (file.relPath === 'mcp-vertex.config.json') {
-				const parsed = JSON.parse(file.content) as Record<
-					string,
-					unknown
-				>;
-				const withOverrides =
-					ctx.globals.extraOptions === undefined
-						? parsed
-						: applyExtraOptions(parsed, ctx.globals.extraOptions);
-				const result = await writeMcpVertexConfig(
-					answers.workspaceRoot,
-					withOverrides,
-					force,
-				);
-				written.push({ path: result.path, kind: result.kind });
-				continue;
-			}
-			const mode = answers.hostInstructions;
-			const result = await writeWorkspaceText(
-				answers.workspaceRoot,
-				file.relPath,
-				file.content,
-				mode,
-			);
-			written.push({ path: result.path, kind: result.kind });
-		}
-
+	if (flags.dryRun) {
 		return {
 			code: EXIT_CODE.OK,
-			data: { ok: true, written, summary: bundle.summary },
+			data: {
+				ok: true,
+				dryRun: true,
+				files: bundle.files,
+				summary: bundle.summary,
+			},
 		};
+	}
+
+	const written: Array<{ path: string; kind: string }> = [];
+	for (const file of bundle.files) {
+		if (file.relPath === 'mcp-vertex.config.json') {
+			const parsed = JSON.parse(file.content) as Record<string, unknown>;
+			const withOverrides =
+				ctx.globals.extraOptions === undefined
+					? parsed
+					: applyExtraOptions(parsed, ctx.globals.extraOptions);
+			const result = await writeMcpVertexConfig(
+				answers.workspaceRoot,
+				withOverrides,
+				answers.force,
+			);
+			written.push({ path: result.path, kind: result.kind });
+			continue;
+		}
+		const mode = answers.hostInstructions;
+		const result = await writeWorkspaceText(
+			answers.workspaceRoot,
+			file.relPath,
+			file.content,
+			mode,
+		);
+		written.push({ path: result.path, kind: result.kind });
+	}
+
+	return {
+		code: EXIT_CODE.OK,
+		data: { ok: true, written, summary: bundle.summary },
+	};
+};
+
+export const initCommand: ICliCommand = {
+	name: 'init',
+	summary: 'Interactive workspace bootstrap for mcp-vertex.',
+	usage: 'init [--dry-run] [--force] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+	run: async (args, ctx): Promise<ICliCommandResult> => {
+		const flags = parseFlags(args);
+		// Detect first so the prompts can show the operator what was
+		// found before the first question renders.
+		const detectedAnswers = await detectAndDecorateAnswers(ctx.cwd, flags, {
+			preset: 'swarm',
+			extraPlugins: [],
+			excludedPlugins: [],
+			hostInstructions: 'append',
+			copyCoreSkills: true,
+			generateAgentMd: true,
+			migrateFromLegacy: true,
+		});
+		// Run the interactive prompts — the operator can override any
+		// default the detector populated.
+		const answers = await collectInitAnswers(ctx.cwd, {
+			...detectedAnswers,
+			force: flags.force,
+			workspaceRoot: ctx.cwd,
+		});
+		return runInitWithAnswers(ctx, flags, answers);
 	},
 };

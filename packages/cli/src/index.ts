@@ -67,7 +67,13 @@ export const runHumanCli = async (
 		: command.name.startsWith('docs ')
 			? ['docs']
 			: [];
-	const isOffline = command.name === 'init';
+	// `init` (f00084) and `init:default` (f00103) are local-bootstrap
+	// commands — they write files to the workspace and never call back
+	// into the MCP server. They run with a noop context to avoid
+	// spawning an stdio server for what is essentially a copy-paste
+	// pipeline.
+	const isOffline =
+		command.name === 'init' || command.name === 'init:default';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		ctx = isOffline

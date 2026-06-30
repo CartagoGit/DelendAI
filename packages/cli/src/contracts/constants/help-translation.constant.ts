@@ -27,7 +27,9 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'config get': 'Read one config dot path.',
 	'config doctor': 'Diagnose the config file.',
 	'config set': 'Safely set one config dot path.',
-	init: 'Create a minimal mcp-vertex config file.',
+	init: 'Interactive workspace bootstrap for mcp-vertex (writes config, .vscode/mcp.json, agent .md, host-instructions).',
+	'init:default':
+		'Non-interactive bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
 	search: 'Search workspace text files.',
 	'docs list': 'List project documentation.',
 	'docs read': 'Read one project documentation file.',
@@ -197,7 +199,9 @@ export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
 			overview: 'Muestra el mapa del servidor cargado.',
 			'plugin list': 'Lista los plugins cargados.',
 			'config doctor': 'Diagnostica el archivo de configuracion.',
-			init: 'Crea un mcp-vertex.config.json minimo.',
+			init: 'Bootstrap interactivo del workspace para mcp-vertex (escribe config, .vscode/mcp.json, agent .md, host-instructions).',
+			'init:default':
+				'Bootstrap no interactivo con los defaults del operador (swarm + overwrite + skills + agents + scaffold).',
 			search: 'Busca en archivos de texto del workspace.',
 			scaffold: 'Genera scaffolds a traves de la herramienta del core.',
 		},

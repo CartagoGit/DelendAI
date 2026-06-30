@@ -323,6 +323,24 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		// f00103: non-interactive counterpart of `init`. Same flag
+		// surface, pre-baked defaults (swarm + overwrite + skills +
+		// agents + scaffold + auto-yes), no prompts — safe to run
+		// from a fresh checkout or a shell script. The colon name is
+		// parsed by the CLI as a single token (no parser change).
+		name: 'init:default',
+		summary:
+			'Non-interactive workspace bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
+		usage:
+			'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+		async run(args, ctx) {
+			const { initDefaultCommand } = await import(
+				'./init/init-default.command'
+			);
+			return initDefaultCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'search',
 		summary: 'Search workspace text files.',
 		async run(args, ctx) {

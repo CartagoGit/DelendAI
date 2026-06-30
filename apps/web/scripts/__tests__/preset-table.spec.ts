@@ -15,6 +15,7 @@ describe('preset-table', () => {
 				'standard',
 				'swarm',
 				'full',
+				'vertex',
 			]);
 		});
 
@@ -26,12 +27,13 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// The last ids are host-only (full's deltas). `audit` is opt-in
-			// as of the a00032 S7 preset recalibration (logs moved to swarm,
-			// audit moved to opt-in), so the host-only tail is now just
-			// web-fetch + issues.
-			expect(ids.at(-2)).toBe('web-fetch');
-			expect(ids.at(-1)).toBe('issues');
+			// The last ids are vertex's declared members (host-only tail):
+			// vertex adds `audit` (opt-in) plus the 2 host-only (issues,
+			// web-fetch) that vertex also carries. The exact tail order
+			// depends on vertex's member order, so we assert the set is
+			// exactly { issues, web-fetch, audit }.
+			const tail = ids.slice(-3);
+			expect(new Set(tail)).toEqual(new Set(['issues', 'web-fetch', 'audit']));
 		});
 
 		it('row effective membership equals the ⊇ chain', () => {
@@ -39,15 +41,26 @@ describe('preset-table', () => {
 			const minimal = matrix.rows.find((r) => r.preset.id === 'minimal');
 			const swarm = matrix.rows.find((r) => r.preset.id === 'swarm');
 			const full = matrix.rows.find((r) => r.preset.id === 'full');
+			const vertex = matrix.rows.find((r) => r.preset.id === 'vertex');
 			expect(minimal?.effective).toEqual(['git', 'search']);
 			expect(swarm?.effective).toContain('proposals');
-			// `audit` is opt-in as of a00032 S7 — not in any preset.
+			// `audit` is opt-in as of a00032 S7 — not in any chain preset,
+			// but it IS in `vertex` (which mirrors the mcp-vertex project
+			// config that loads it directly).
 			expect(swarm?.effective).not.toContain('audit');
 			expect(full?.effective).not.toContain('audit');
 			// `logs` moved from full to swarm in a00032 S7.
 			expect(swarm?.effective).toContain('logs');
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
+			// `vertex` is independent — its effective membership equals
+			// its 10 declared members, NOT swarm + a delta.
+			expect(vertex?.effective.length).toBe(10);
+			expect(vertex?.effective).toContain('audit');
+			expect(vertex?.effective).toContain('issues');
+			expect(vertex?.effective).toContain('web-fetch');
+			expect(vertex?.effective).not.toContain('memory');
+			expect(vertex?.effective).not.toContain('proposals');
 		});
 	});
 

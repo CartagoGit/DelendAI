@@ -12,7 +12,11 @@
  */
 import { createInterface, type Interface as RLInterface } from 'node:readline';
 
-import { PRESET_KIND, resolvePresetMembers } from '@mcp-vertex/core/public';
+import {
+	PRESET_KIND,
+	resolvePresetMembers,
+	type IPresetKind,
+} from '@mcp-vertex/core/public';
 
 import {
 	INIT_VALID_PLUGIN_IDS,
@@ -243,9 +247,7 @@ export const collectInitAnswers = async (
 
 	const rl = openRl();
 	try {
-		const preset = await askChoice<
-			'minimal' | 'standard' | 'swarm' | 'full'
-		>(
+		const preset = await askChoice<IPresetKind>(
 			rl,
 			'Which preset?',
 			[
@@ -259,8 +261,12 @@ export const collectInitAnswers = async (
 					value: 'swarm',
 				},
 				{ label: 'full — swarm + web-fetch + issues', value: 'full' },
+				{
+					label: 'vertex — snapshot of mcp-vertex itself (recommended for your own projects)',
+					value: 'vertex',
+				},
 			],
-			'swarm',
+			'vertex',
 		);
 
 		// Dynamic menu: the catalog-wide union minus the preset's own
