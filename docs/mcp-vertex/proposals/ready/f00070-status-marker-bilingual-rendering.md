@@ -6,7 +6,8 @@ track: i18n+l10n+plugins/status-marker+token-budget
 date: 2026-06-26
 kind: feat
 title: status-marker bilingual rendering — keep state ES, render the closing line in EN when requested
-shipped-in: []
+shipped-in:
+    - 31dc2655 # S1-S5 bilingual rendering: MARKERS_BY_LOCALE, formatCloseMarker locale, close-tools schema, generated outputs + spec, skill/copilot docs
 recan: []
 related:
     - f00059 # sibling i18n thread across web/extension surface
@@ -149,7 +150,7 @@ gated by the same `bun run validate` gate.
 
 Add the `MARKERS_BY_LOCALE` map (ES re-uses the protocol state name; EN maps each state to its short token) and the `CloseMarkerLocale` union (`'es' | 'en'`). Touch no other file.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/status-marker/src/lib/markers.ts`
 - **Gate**: bun run --cwd plugins/status-marker typecheck
@@ -158,7 +159,7 @@ Add the `MARKERS_BY_LOCALE` map (ES re-uses the protocol state name; EN maps eac
 
 Add the `IFormatCloseMarkerOptions` interface and thread `locale` through `formatCloseMarker`. ES path must stay byte-identical to the legacy output (default `opts.locale === 'es'`).
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/status-marker/src/lib/markers.ts`
 - **Gate**: bun run test --cwd plugins/status-marker markers.spec.ts
@@ -167,7 +168,7 @@ Add the `IFormatCloseMarkerOptions` interface and thread `locale` through `forma
 
 Extend `CloseInputSchema` with `locale: z.enum(['es', 'en']).optional()`, thread it through the handler, and include `locale` in the JSON output envelope. The validator already accepts both renderings (it matches by emoji), so `validate.ts` does not change.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/status-marker/src/lib/tools/close-tools.ts`
 - **Gate**: bun run validate
@@ -176,7 +177,7 @@ Extend `CloseInputSchema` with `locale: z.enum(['es', 'en']).optional()`, thread
 
 Run `bun run types:generate` and add 8 tests asserting `formatCloseMarker(state, undefined, { locale: 'en' })` for every state.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `plugins/status-marker/src/generated/tool-outputs.ts`
     - `plugins/status-marker/tests/markers.spec.ts`
@@ -186,9 +187,9 @@ Run `bun run types:generate` and add 8 tests asserting `formatCloseMarker(state,
 
 Document the bilingual rendering in the skill's decision tree and in the always-loaded instructions.
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-    - `plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`
+    - `plugins/status-marker/skills/status-marker-and-closure/SKILL.md`
     - `.github/copilot-instructions.md`
 - **Gate**: bun run validate
 
