@@ -463,6 +463,16 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 	const tabsAstroPath = resolve(here, '../../src/components/ui/Tabs.astro');
 	const source = readFileSync(tabsAstroPath, 'utf8');
 
+	// f00069 S2 — the tab styling moved out of the component's `<style>`
+	// block into `apps/web/src/styles/components/_tabs.scss` (single source
+	// of truth, registered in `styles.scss`). The DOM-shape assertions stay
+	// on `Tabs.astro`; the CSS-contract assertions read the partial.
+	const tabsScssPath = resolve(
+		here,
+		'../../src/styles/components/_tabs.scss',
+	);
+	const styles = readFileSync(tabsScssPath, 'utf8');
+
 	it('declares the `plugin` variant in the union', () => {
 		expect(source).toMatch(/variant\?: 'underline' \| 'pill' \| 'plugin'/);
 	});
@@ -472,27 +482,37 @@ describe('Tabs.astro — plugin variant DOM shape', () => {
 		expect(source).toContain('data-tab-trigger={t.id}');
 	});
 
+	it('keeps the tab styling in the `_tabs.scss` partial, not a scoped <style>', () => {
+		// The component must not re-grow a `<style>` block; the partial owns
+		// every `.ui-tabs__*` rule.
+		expect(source).not.toContain('.ui-tabs__tab {');
+		expect(styles).toContain('.ui-tabs');
+	});
+
 	it('emits `.ui-tabs--plugin` selector with the deleted PluginTabs look', () => {
-		expect(source).toContain('.ui-tabs--plugin .ui-tabs__tab');
-		expect(source).toContain('padding: 0.5rem 0.9rem');
-		expect(source).toContain('border-bottom: 2px solid currentColor');
+		// Authored as a nested modifier (`&--plugin { .ui-tabs__tab { … } }`)
+		// so the resolved selector is `.ui-tabs--plugin .ui-tabs__tab`.
+		expect(styles).toMatch(/&--plugin[\s\S]{0,80}\.ui-tabs__tab/);
+		expect(styles).toContain('padding: 0.5rem 0.9rem');
+		expect(styles).toContain('border-bottom: 2px solid currentColor');
 		// Active label gets 600 weight in the plugin variant.
-		expect(source).toMatch(
-			/\.ui-tabs--plugin \.ui-tabs__tab\[aria-selected='true'\][\s\S]{0,200}font-weight: 600/,
+		expect(styles).toMatch(
+			/&--plugin[\s\S]{0,400}\[aria-selected='true'\][\s\S]{0,200}font-weight: 600/,
 		);
 	});
 
 	it('defines both `is-entering` and `is-leaving` panel classes for the cross-fade', () => {
-		expect(source).toContain('[data-tab-panel].is-entering');
-		expect(source).toContain('[data-tab-panel].is-leaving');
+		expect(styles).toContain('[data-tab-panel]');
+		expect(styles).toContain('.is-entering');
+		expect(styles).toContain('.is-leaving');
 		// 220 ms with cubic-bezier(0.2, 0.7, 0.2, 1) is the explicit S1 contract.
-		expect(source).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
-		expect(source).toContain('@keyframes ui-tab-fade-in');
-		expect(source).toContain('@keyframes ui-tab-fade-out');
+		expect(styles).toContain('220ms cubic-bezier(0.2, 0.7, 0.2, 1)');
+		expect(styles).toContain('@keyframes ui-tab-fade-in');
+		expect(styles).toContain('@keyframes ui-tab-fade-out');
 	});
 
 	it('disables the cross-fade under prefers-reduced-motion', () => {
-		expect(source).toMatch(
+		expect(styles).toMatch(
 			/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none/,
 		);
 	});

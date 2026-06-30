@@ -1,0 +1,202 @@
+// _tabs.scss — generic ARIA tab strip (`<Tabs>`/`Tabs.astro`).
+//
+// Extracted from the component's `<style>` block by f00069 S2 so the
+// 7-1 stylesheet owns every `.ui-tabs__*` rule (single source of truth)
+// and the component frontmatter stays markup-only.
+//
+// BEM root: `.ui-tabs` with `__bar`, `__list`, `__tab`, `__icon`,
+// `__label`, `__badge`, `__panels`, and the `--underline` / `--pill` /
+// `--plugin` variant modifiers.  Variant + state rules are nested with
+// `&` so the linter validates a single `.ui-tabs`-rooted scope (no leaked
+// cross-block descendant selectors).
+//
+// Cross-fade (f00069 S1): the controller toggles `.is-leaving` on the
+// outgoing panel and `.is-entering` on the incoming one; both animate
+// for 220 ms (`cubic-bezier(0.2, 0.7, 0.2, 1)`).  `prefers-reduced-motion:
+// reduce` short-circuits the animation so panels swap instantly.
+
+.ui-tabs {
+	&__bar {
+		position: relative;
+		margin-bottom: 1.5rem;
+	}
+
+	&__list {
+		display: flex;
+		gap: 0.25rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		flex-wrap: wrap;
+	}
+
+	&__tab {
+		appearance: none;
+		background: transparent;
+		border: 0;
+		color: inherit;
+		cursor: pointer;
+		font: inherit;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.6rem 1rem;
+		border-radius: var(--radius);
+		transition:
+			background-color 0.18s ease,
+			color 0.18s ease;
+
+		&:hover {
+			background: color-mix(in srgb, currentColor 8%, transparent);
+		}
+
+		&:focus-visible {
+			outline: 2px solid currentColor;
+			outline-offset: 2px;
+		}
+
+		&[aria-selected='true'] {
+			font-weight: 600;
+		}
+	}
+
+	// Underline variant: the bar carries a baseline rule the active tab
+	// sits on; tabs are square-cornered. Element rules nest inside the
+	// modifier so each resolved selector stays `.ui-tabs`-rooted.
+	&--underline {
+		.ui-tabs__bar {
+			border-bottom: 1px solid var(--line);
+		}
+
+		.ui-tabs__tab {
+			border-radius: 0;
+			border-bottom: 2px solid transparent;
+			margin-bottom: -1px;
+
+			&:hover {
+				background: transparent;
+				color: var(--fg);
+			}
+
+			&[aria-selected='true'] {
+				border-bottom-color: currentColor;
+			}
+		}
+	}
+
+	// Pill variant: the active tab gets a soft tinted fill.
+	&--pill {
+		.ui-tabs__tab[aria-selected='true'] {
+			background: color-mix(in srgb, currentColor 12%, transparent);
+		}
+	}
+
+	// `plugin` variant reproduces the look of the deleted PluginTabs.astro:
+	// rounded tab, no border-bottom on the bar, padding 0.5rem 0.9rem,
+	// active label at 600 weight (f00069 S1).
+	&--plugin {
+		.ui-tabs__tab {
+			padding: 0.5rem 0.9rem;
+			border-radius: var(--radius);
+
+			&[aria-selected='true'] {
+				border-bottom: 2px solid currentColor;
+				font-weight: 600;
+			}
+		}
+	}
+
+	// Optional brand-mark icon (f00069 S3 populates this for PM tabs and
+	// section tabs). 18×18, never grow/shrink.
+	&__icon {
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
+		display: block;
+
+		// Fallback badge (first letter of the tab id) when the brand-mark
+		// SVG 404s. The `onerror` handler swaps the <img> for a <span> with
+		// `--fallback`; sized identically so the label never reflows.
+		&--fallback {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 18px;
+			height: 18px;
+			border-radius: 999px;
+			background: color-mix(in srgb, currentColor 14%, transparent);
+			font-size: 0.7em;
+			font-weight: 600;
+			text-transform: uppercase;
+			line-height: 1;
+		}
+	}
+
+	&__badge {
+		font-size: 0.7em;
+		padding: 0.1rem 0.4rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, currentColor 14%, transparent);
+		color: inherit;
+		opacity: 0.8;
+	}
+
+	// Real cross-fade between panels (f00069 S1). The controller removes
+	// `hidden` from the incoming panel immediately and adds `.is-entering`;
+	// the outgoing panel keeps `.is-leaving` until `animationend` sets its
+	// `hidden` back. Panels are the `[data-tab-panel]` children authored by
+	// each `<Tabs>` consumer.
+	&__panels {
+		position: relative;
+
+		& [data-tab-panel] {
+			&.is-entering {
+				animation: ui-tab-fade-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+			}
+
+			&.is-leaving {
+				animation: ui-tab-fade-out 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+			}
+
+			&[hidden] {
+				display: none;
+			}
+		}
+	}
+
+	// Reduced-motion: panels swap instantly (no flicker, no animation).
+	// Kept as a separate `&__panels`-rooted block so the media query
+	// stays within the 3-level nesting budget.
+	&__panels {
+		@media (prefers-reduced-motion: reduce) {
+			& [data-tab-panel].is-entering,
+			& [data-tab-panel].is-leaving {
+				animation: none;
+			}
+		}
+	}
+}
+
+@keyframes ui-tab-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes ui-tab-fade-out {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	to {
+		opacity: 0;
+		transform: translateY(-2px);
+	}
+}
