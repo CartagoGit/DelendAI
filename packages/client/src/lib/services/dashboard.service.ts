@@ -12,6 +12,7 @@ import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
 import { type OverviewService, pluginFromToolName } from './overview.service';
+import { formatToolName } from './_namespace';
 import type { IOverview } from '../contracts/interfaces/tool-descriptor.interface';
 import type {
 	IDashboardAgentsModel,
@@ -31,6 +32,7 @@ export interface IDashboardServiceOptions {
 	readonly client: McpStdioClient;
 	readonly overview?: OverviewService;
 	readonly metrics?: MetricsService;
+	readonly namespacePrefix?: string;
 }
 
 const TOKENS_PER_BYTE = 0.25; // 1 token ≈ 4 chars
@@ -76,11 +78,13 @@ export class DashboardService {
 	private readonly client: McpStdioClient;
 	private readonly overview: OverviewService | undefined;
 	private readonly metrics: MetricsService | undefined;
+	private readonly namespacePrefix: string | undefined;
 
 	constructor(options: IDashboardServiceOptions) {
 		this.client = options.client;
 		this.overview = options.overview;
 		this.metrics = options.metrics;
+		this.namespacePrefix = options.namespacePrefix;
 	}
 
 	async getOverviewModel(): Promise<IDashboardOverviewModel> {
@@ -89,7 +93,9 @@ export class DashboardService {
 			: await this.client.request<
 					{ readonly compact: boolean },
 					IOverview
-				>('mcp-vertex_overview', { compact: true });
+				>(formatToolName(this.namespacePrefix, 'overview'), {
+					compact: true,
+				});
 		const metrics = await this.snapshotMetrics();
 		const proposals = await this.fetchProposalsSafe();
 		const agents = await this.fetchAgentsSafe();
@@ -378,7 +384,10 @@ export class DashboardService {
 		const raw =
 			this.metrics !== undefined
 				? await this.metrics.snapshot()
-				: await this.client.request('mcp-vertex_metrics', {});
+				: await this.client.request(
+						formatToolName(this.namespacePrefix, 'metrics'),
+						{},
+					);
 		const snap = raw as {
 			tools?: Record<
 				string,
@@ -438,7 +447,13 @@ export class DashboardService {
 						readonly track?: string;
 					}[];
 				}
-			>('mcp-vertex_proposals_proposal_board', {});
+			>(
+				formatToolName(
+					this.namespacePrefix,
+					'proposals_proposal_board',
+				),
+				{},
+			);
 			return result.proposals.map((p) => ({
 				id: p.id,
 				title: p.title ?? '',
@@ -461,7 +476,9 @@ export class DashboardService {
 						readonly status?: 'active' | 'cooldown' | 'orphan';
 					}[];
 				}
-			>('mcp-vertex_proposals_agent_names', { action: 'list' });
+			>(formatToolName(this.namespacePrefix, 'proposals_agent_names'), {
+				action: 'list',
+			});
 			if (Array.isArray(result.agents)) {
 				return result.agents.map((a) => a.name);
 			}

@@ -17,8 +17,9 @@ import type {
 	IConnectionHealthSnapshot,
 	IConnectionState,
 } from '../contracts/interfaces/connection-health.interface';
+import { formatToolName } from './_namespace';
 
-const TOOL_PING = 'mcp-vertex_status-marker_ping';
+const TOOL_PING_SUFFIX = 'status-marker_ping';
 
 export type IConnectionHealthListener = (event: IConnectionHealthEvent) => void;
 
@@ -33,14 +34,17 @@ export class ConnectionHealthService {
 	private nextRetryAt: string | null = null;
 	private timer: ReturnType<typeof setInterval> | null = null;
 	private readonly listeners = new Set<IConnectionHealthListener>();
+	private readonly pingTool: string;
 
 	constructor(
 		private readonly client: McpStdioClient,
 		options: IConnectionHealthOptions = {},
+		namespacePrefix?: string,
 	) {
 		this.pingIntervalMs = options.pingIntervalMs ?? 5_000;
 		this.failureThreshold = options.failureThreshold ?? 2;
 		this.pingTimeoutMs = options.pingTimeoutMs ?? 2_000;
+		this.pingTool = formatToolName(namespacePrefix, TOOL_PING_SUFFIX);
 	}
 
 	start(): void {
@@ -82,7 +86,7 @@ export class ConnectionHealthService {
 		const attempt = this.consecutiveFailures + 1;
 		try {
 			await this.withTimeout(
-				this.client.request(TOOL_PING, {}),
+				this.client.request(this.pingTool, {}),
 				this.pingTimeoutMs,
 			);
 			this.lastSeen = new Date().toISOString();

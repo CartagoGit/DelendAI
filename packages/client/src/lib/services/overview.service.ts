@@ -5,6 +5,7 @@ import type {
 	IToolDescriptor,
 	IToolEffect,
 } from '../contracts/interfaces/tool-descriptor.interface';
+import { formatToolName } from './_namespace';
 
 export interface IOverviewOptions {
 	readonly compact?: boolean;
@@ -12,11 +13,18 @@ export interface IOverviewOptions {
 }
 
 export class OverviewService {
-	constructor(private readonly client: McpStdioClient) {}
+	private readonly namespacePrefix: string | undefined;
+
+	constructor(
+		private readonly client: McpStdioClient,
+		namespacePrefix?: string,
+	) {
+		this.namespacePrefix = namespacePrefix;
+	}
 
 	async getOverview(options: IOverviewOptions = {}): Promise<IOverview> {
 		return this.client.request<IOverviewOptions, IOverview>(
-			'mcp-vertex_overview',
+			formatToolName(this.namespacePrefix, 'overview'),
 			options,
 		);
 	}

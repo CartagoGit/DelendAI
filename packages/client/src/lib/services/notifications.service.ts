@@ -1,4 +1,5 @@
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
+import { formatToolName } from './_namespace';
 
 export interface INotificationStatus {
 	readonly watching: string;
@@ -58,7 +59,14 @@ export class NotificationsService {
 		Set<IListenerState>
 	>();
 
-	constructor(private readonly client: McpStdioClient) {}
+	private readonly namespacePrefix: string | undefined;
+
+	constructor(
+		private readonly client: McpStdioClient,
+		namespacePrefix?: string,
+	) {
+		this.namespacePrefix = namespacePrefix;
+	}
 
 	addEventListener<TName extends INotificationEventName>(
 		type: TName,
@@ -99,7 +107,10 @@ export class NotificationsService {
 					readonly files: readonly string[];
 				}>;
 			}
-		>('mcp-vertex_notification_notify_status', {});
+		>(
+			formatToolName(this.namespacePrefix, 'notification_notify_status'),
+			{},
+		);
 		const status = {
 			...output,
 			lastReleases: output.lastReleases.map((event) => ({
@@ -117,7 +128,10 @@ export class NotificationsService {
 		const output = await this.client.request<
 			IAwaitLockOptions,
 			IAwaitLockResult
-		>('mcp-vertex_notification_await_lock', options);
+		>(
+			formatToolName(this.namespacePrefix, 'notification_await_lock'),
+			options,
+		);
 		if (output.released || output.alreadyFree) {
 			this.dispatch({
 				type: 'lock-released',
