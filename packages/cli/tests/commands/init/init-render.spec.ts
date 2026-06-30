@@ -48,9 +48,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
-		expect(rels.some((r) => r.includes('f00001-migrate-legacy'))).toBe(
-			true,
-		);
+		// f00089 U1: the migration offer now emits an adoption PLAN whose id
+		// is allocated against the canonical layout (empty here → f00001),
+		// not a hardcoded `f00001-migrate-legacy` stub.
+		expect(rels.some((r) => r.includes('adopt-mcp-vertex'))).toBe(true);
 	});
 
 	it('skips .agent.md when generateAgentMd=false', async () => {
@@ -80,9 +81,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			parseAnswers({ migrateFromLegacy: false }),
 		);
 		expect(
-			bundle.files.some((r) =>
-				r.relPath.includes('f00001-migrate-legacy'),
-			),
+			bundle.files.some((r) => r.relPath.includes('adopt-mcp-vertex')),
 		).toBe(false);
 	});
 
