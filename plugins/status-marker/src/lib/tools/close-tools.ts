@@ -8,15 +8,20 @@ import {
 } from '@mcp-vertex/core/public';
 
 import {
+	BUILTIN_MARKER_TABLE,
 	CLOSE_MARKER_STATES,
 	formatCloseMarker,
+	formatEffectiveMarker,
 	type CloseMarker,
 	type CloseMarkerLocale,
+	type IEffectiveMarkerTable,
 } from '../markers';
 import {
 	validateCloseMarker,
 	validateResponseClose,
+	validationTableFrom,
 	type IValidationResult,
+	type IValidationTable,
 } from '../validate';
 
 // --- output schemas (N16) --------------------------------------------------
@@ -76,10 +81,26 @@ const ValidateInputSchema = z.object({
 	text: z.string(),
 });
 
+// --- effective-table helpers (f00071) --------------------------------------
+
+/**
+ * Build the `state` enum for the input schema from an effective marker
+ * table. Falls back to the built-in 8-state enum when the table is the
+ * built-in one, so a host that declares no `markers` config keeps the exact
+ * same wire schema it always had.
+ */
+const stateEnum = (table: IEffectiveMarkerTable) =>
+	z.enum(table.states as [string, ...string[]]);
+
 // --- builders --------------------------------------------------------------
 
 export interface ICloseToolOptions {
 	readonly namespacePrefix: string;
+	/**
+	 * Effective marker table (built-in ⊕ host `markers` config, f00071).
+	 * Omitted ⇒ the built-in 8-state table, byte-identical to legacy.
+	 */
+	readonly markerTable?: IEffectiveMarkerTable;
 }
 
 /**
@@ -90,6 +111,17 @@ export const buildCloseRegistration = (
 	options: ICloseToolOptions,
 ): IToolRegistration => {
 	const prefix = options.namespacePrefix;
+	const table = options.markerTable ?? BUILTIN_MARKER_TABLE;
+	const isBuiltin = table === BUILTIN_MARKER_TABLE;
+	const validationTable: IValidationTable = validationTableFrom(table);
+	// Keep the built-in schema verbatim when no host markers are configured;
+	// otherwise widen the `state` enum to the merged set.
+	const closeInputSchema = isBuiltin
+		? CloseInputSchema
+		: CloseInputSchema.extend({ state: stateEnum(table) });
+	const closeOutputSchema = isBuiltin
+		? CloseOkSchema
+		: CloseOkSchema.extend({ state: stateEnum(table) });
 	return {
 		id: 'close',
 		summary:
@@ -101,8 +133,8 @@ export const buildCloseRegistration = (
 				{
 					description:
 						'Returns the exact line an agent must paste at the end of its response to honour the coloured close-marker convention. The reason is mandatory for CAP, RE-PIVOT, CHECKPOINT-REQUIRED, REPAIR-NEEDED and BLOQUEADO; otherwise it is optional.',
-					inputSchema: CloseInputSchema,
-					outputSchema: CloseOkSchema,
+					inputSchema: closeInputSchema,
+					outputSchema: closeOutputSchema,
 				},
 				async (args: {
 					state: CloseMarker;
@@ -110,10 +142,18 @@ export const buildCloseRegistration = (
 					locale?: CloseMarkerLocale | undefined;
 				}): Promise<IToolTextResult> => {
 					const locale: CloseMarkerLocale = args.locale ?? 'es';
-					const line = formatCloseMarker(args.state, args.reason, {
-						locale,
-					});
-					const audit = validateCloseMarker(line);
+					const line = isBuiltin
+						? formatCloseMarker(args.state, args.reason, { locale })
+						: formatEffectiveMarker(table, args.state, args.reason, {
+								locale,
+							});
+					if (line === undefined) {
+						return toolError(
+							'unknown close-marker state',
+							`state=${args.state} is not in the effective marker table`,
+						);
+					}
+					const audit = validateCloseMarker(line, validationTable);
 					if (!audit.ok) {
 						return toolError(
 							'formatCloseMarker produced an invalid line',
@@ -143,6 +183,8 @@ export const buildValidateRegistration = (
 	options: ICloseToolOptions,
 ): IToolRegistration => {
 	const prefix = options.namespacePrefix;
+	const table = options.markerTable ?? BUILTIN_MARKER_TABLE;
+	const validationTable: IValidationTable = validationTableFrom(table);
 	return {
 		id: 'validate',
 		summary:
@@ -163,6 +205,7 @@ export const buildValidateRegistration = (
 				async (args: { text: string }): Promise<IToolTextResult> => {
 					const result: IValidationResult = validateResponseClose(
 						args.text,
+						validationTable,
 					);
 					return toolJson(result);
 				},
@@ -183,6 +226,20 @@ export const buildPingRegistration = (
 	},
 ): IToolRegistration => {
 	const prefix = options.namespacePrefix;
+	const table = options.markerTable ?? BUILTIN_MARKER_TABLE;
+	// f00071: surface host-declared markers so the agent's in-context skill
+	// can teach them. Each entry carries the instruction (when supplied) so
+	// the LLM knows when to emit the state.
+	const userDefined = [...table.markers.entries()]
+		.filter(([, def]) => def.userDefined)
+		.map(([state, def]) => ({
+			state,
+			emoji: def.emoji,
+			requiresReason: def.requiresReason,
+			...(def.instruction !== undefined
+				? { instruction: def.instruction }
+				: {}),
+		}));
 	return {
 		id: 'ping',
 		summary: 'Health check for the status-marker plugin.',
@@ -198,6 +255,18 @@ export const buildPingRegistration = (
 						plugin: z.literal('status-marker'),
 						cacheDir: z.string(),
 						docsDir: z.string(),
+						markers: z
+							.object({
+								userDefined: z.array(
+									z.object({
+										state: z.string(),
+										emoji: z.string(),
+										requiresReason: z.boolean(),
+										instruction: z.string().optional(),
+									}),
+								),
+							})
+							.optional(),
 					}),
 				},
 				async () =>
@@ -205,6 +274,9 @@ export const buildPingRegistration = (
 						plugin: 'status-marker' as const,
 						cacheDir: options.cacheDir,
 						docsDir: options.docsDir,
+						...(userDefined.length > 0
+							? { markers: { userDefined } }
+							: {}),
 					}),
 			);
 		},

@@ -18,6 +18,7 @@ import {
 	MARKERS,
 	REASON_MISSING_TOKEN,
 	type CloseMarker,
+	type IEffectiveMarkerTable,
 } from './markers';
 
 export type Violation =
@@ -97,10 +98,43 @@ const extractReason = (tail: string): string | undefined => {
 };
 
 /**
+ * The subset of an {@link IEffectiveMarkerTable} the validator needs:
+ * an emoji→state reverse map and a `requiresReason` lookup per state. The
+ * built-in default (below) reuses the static {@link EMOJI_TO_STATE}/{@link
+ * MARKERS} so legacy callers get byte-identical behaviour.
+ */
+export interface IValidationTable {
+	readonly emojiToState: ReadonlyMap<string, string>;
+	readonly requiresReason: (state: string) => boolean;
+}
+
+/** Built-in validation table — the legacy, hard-coded behaviour. */
+export const BUILTIN_VALIDATION_TABLE: IValidationTable = {
+	emojiToState: EMOJI_TO_STATE,
+	requiresReason: (state) =>
+		MARKERS[state as CloseMarker]?.requiresReason ?? false,
+};
+
+/** Adapt an effective (merged) table to the validator's view (f00071). */
+export const validationTableFrom = (
+	table: IEffectiveMarkerTable,
+): IValidationTable => ({
+	emojiToState: table.emojiToState,
+	requiresReason: (state) => table.markers.get(state)?.requiresReason ?? false,
+});
+
+/**
  * Validate a single line as a canonical close-marker line. Returns an
  * `ok: true` result only when every rule is satisfied.
+ *
+ * `table` lets a host validate against its merged marker set (f00071);
+ * omitting it uses the built-in 8-state table for byte-identical legacy
+ * behaviour.
  */
-export const validateCloseMarker = (rawLine: string): IValidationResult => {
+export const validateCloseMarker = (
+	rawLine: string,
+	table: IValidationTable = BUILTIN_VALIDATION_TABLE,
+): IValidationResult => {
 	const line = rawLine.trim();
 	if (line === '') {
 		return { ok: false, violation: 'missing' };
@@ -110,12 +144,12 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 	if (emoji === undefined) {
 		return { ok: false, violation: 'missing', line };
 	}
-	const state = EMOJI_TO_STATE.get(emoji);
+	const state = table.emojiToState.get(emoji) as CloseMarker | undefined;
 	if (state === undefined) {
 		return { ok: false, violation: 'bad-format', line };
 	}
 
-	const def = MARKERS[state];
+	const requiresReason = table.requiresReason(state);
 	const afterEmoji = line.slice(emoji.length).trimStart();
 	const bracketEnd = afterEmoji.indexOf(']');
 	if (bracketEnd < 0 || !afterEmoji.startsWith('[')) {
@@ -127,7 +161,7 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 
 	const violations: Violation[] = [];
 
-	if (def.requiresReason && reason === undefined) {
+	if (requiresReason && reason === undefined) {
 		violations.push('reason-missing');
 	}
 	if (reason === REASON_MISSING_TOKEN) {
@@ -137,7 +171,7 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
 		violations.push('placeholder-reason');
 	}
 	if (
-		!def.requiresReason &&
+		!requiresReason &&
 		reason !== undefined &&
 		reason !== REASON_MISSING_TOKEN
 	) {
@@ -161,7 +195,10 @@ export const validateCloseMarker = (rawLine: string): IValidationResult => {
  * {@link validateCloseMarker} plus an `extra-prose` violation when the
  * marker is not the literal last line.
  */
-export const validateResponseClose = (text: string): IValidationResult => {
+export const validateResponseClose = (
+	text: string,
+	table: IValidationTable = BUILTIN_VALIDATION_TABLE,
+): IValidationResult => {
 	const normalised = text.replace(/\r\n/g, '\n');
 	if (normalised.trimEnd() === '') {
 		return { ok: false, violation: 'missing' };
@@ -171,7 +208,7 @@ export const validateResponseClose = (text: string): IValidationResult => {
 	const last = lines[lastIndex] ?? '';
 	const trimmedLast = last.trim();
 
-	const result = validateCloseMarker(trimmedLast);
+	const result = validateCloseMarker(trimmedLast, table);
 	if (!result.ok) return result;
 
 	// Marker is well-formed. The convention requires the marker to be the

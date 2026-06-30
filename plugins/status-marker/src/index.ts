@@ -1,6 +1,14 @@
 import { definePlugin } from '@mcp-vertex/core/public';
 
-import { CLOSE_MARKER_STATES } from './lib/markers';
+import { z } from 'zod';
+
+import {
+	BUILTIN_MARKER_TABLE,
+	mergeMarkerTable,
+	type IEffectiveMarkerTable,
+	type IMergeError,
+} from './lib/markers';
+import { UserMarkerConfigSchema } from './lib/markers-config';
 import { buildCloseTools } from './lib/tools/close-tools';
 
 /**
@@ -58,16 +66,65 @@ const KNOWLEDGE_BODY = [
 	'`{ ok: true, state }` o `{ ok: false, violations: [...] }`.',
 ].join('\n');
 
+/**
+ * `markers` block under `plugins.status-marker.options` (proposal f00071).
+ * Optional — a host that declares nothing gets the built-in 8-state table.
+ */
+const OptionsSchema = z.object({
+	markers: UserMarkerConfigSchema.optional(),
+});
+
+/** Type-guard for the structured merge-error envelope. */
+const isMergeError = (
+	value: IEffectiveMarkerTable | IMergeError,
+): value is IMergeError => 'ok' in value && value.ok === false;
+
 export default definePlugin({
 	name: 'status-marker',
 	version: '0.1.0',
 	describe:
-		'Cierre obligatorio coloreado: tabla canónica de 8 estados, herramientas close/validate/ping, knowledge entry.',
+		'Cierre obligatorio coloreado: tabla canónica de 8 estados (extensible por config), herramientas close/validate/ping, knowledge entry.',
+	optionsSchema: OptionsSchema,
+	configExample: {
+		summary:
+			'Extiende la tabla de marcadores sin forkear el plugin: añade, desactiva o sobrescribe estados de cierre.',
+		options: {
+			markers: {
+				add: [
+					{
+						id: 'REVIEW',
+						emoji: '🟪',
+						requiresReason: true,
+						locales: { es: 'REVISIÓN', en: 'REVIEW' },
+						instruction:
+							'Close after a successful code review pass.',
+					},
+				],
+			},
+		},
+	},
 	register(ctx) {
+		const parsed = OptionsSchema.safeParse(ctx.options);
+		const userMarkers = parsed.success ? parsed.data.markers : undefined;
+		const merged = mergeMarkerTable(userMarkers);
+		if (isMergeError(merged)) {
+			// A misconfigured `markers` block is a hard boot error: the host
+			// must fix its config rather than silently fall back to the
+			// built-in table (which would hide the typo).
+			throw new Error(
+				`status-marker: invalid markers config — ${merged.error}${
+					merged.detail !== undefined ? ` (${merged.detail})` : ''
+				}`,
+			);
+		}
+		const markerTable: IEffectiveMarkerTable =
+			userMarkers === undefined ? BUILTIN_MARKER_TABLE : merged;
+
 		const tools = buildCloseTools({
 			namespacePrefix: ctx.namespacePrefix,
 			cacheDir: ctx.pluginCacheDir,
 			docsDir: ctx.pluginDocsDir,
+			markerTable,
 		});
 		return {
 			tools,
@@ -80,7 +137,7 @@ export default definePlugin({
 				{
 					id: 'status-marker-states',
 					title: 'Lista de estados (machine-readable)',
-					body: JSON.stringify(CLOSE_MARKER_STATES, null, '\t'),
+					body: JSON.stringify(markerTable.states, null, '\t'),
 				},
 			],
 		};
