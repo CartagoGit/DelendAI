@@ -216,12 +216,24 @@ slice-level gate is per-slice (see below).
   - `prefers-reduced-motion: reduce` short-circuits the animation (panels toggle instantly, no flicker — verified by the spec).
   - `PluginTabs.astro` is deleted; `PluginPage.astro` compiles and renders the same look.
   - `_tabs-controller.ts` keeps its existing public surface (`initTabs`, `bindOne`) so other consumers (`FirstFiveMinutesSection`, `HomeQuickInstallSection`, `HomeAtAGlanceSection`) need no edit.
+- **Reconciliation note (2026-06-30):** S1's cross-fade controller, the
+  `variant: 'underline' | 'pill' | 'plugin'` union, the icon prop, and the
+  deletion of `PluginTabs.astro` were all already in the tree and
+  validate-green. One leftover bug from the merge was fixed during this drain:
+  `PluginPage.astro` closed the `<Tabs variant="plugin">` element with a stray
+  `</PluginTabs>` tag and dropped the closing `}` of the tutorial-panel
+  conditional. Astro tolerated the malformed markup so validate stayed green,
+  but it now closes with the matching `</Tabs>` and a well-formed `)}`
+  (commit `42e81af5`).
 
 ### S2 — Extract tabs CSS into a component partial
 
-- **Status**: pending
+- **Status**: done
 - **Owner**: `implementation_runner`
-- **Files**: `apps/web/src/styles/components/_tabs.scss` (new), `apps/web/src/styles/styles.scss`, `apps/web/src/components/ui/Tabs.astro`
+- **Shipped-in**:
+  - `172e4fd3` # refactor(web): extract tabs CSS into _tabs.scss partial (f00069 S2)
+  - `42e81af5` # fix(web): close PluginPage tabs with </Tabs> + missing JSX brace (S1 cleanup that this slice rode on top of)
+- **Files**: `apps/web/src/styles/components/_tabs.scss` (new), `apps/web/src/styles/styles.scss`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/tests/ui/tabs-cross-fade.spec.ts` (CSS-contract assertions re-pointed at the partial)
 - **Gate**: `bun run lint:scss && bun run lint:web`
 - **Command**: `bun run lint:scss && bun run lint:web`
 - **Expect**: exit0
@@ -229,6 +241,14 @@ slice-level gate is per-slice (see below).
   - All `.ui-tabs__*` selectors live in `_tabs.scss`. The component's `<style>` block shrinks to ≤ 5 lines (or is gone entirely).
   - The cross-fade `@keyframes` (`ui-tab-fade-in` + `ui-tab-fade-out`) and the `.is-leaving` / `.is-entering` rules land here, not in a `<style>` block inside the component.
   - No visual regression on `/install`, `/first-5-minutes`, `/`, or any `/plugins/<slug>` page.
+  - **Reconciliation note (2026-06-30):** all `.ui-tabs__*` rules now live in
+    `_tabs.scss`; `Tabs.astro` carries **no** `<style>` block (an HTML comment
+    points at the partial). The partial is authored as nested BEM
+    (`&--underline` / `&--pill` / `&--plugin` modifiers; `&`-rooted
+    `[data-tab-panel]` selectors; reduced-motion media query nested under
+    `&__panels`) to satisfy the `scoped-bem/selector` stylelint rule and the
+    `max-nesting-depth: 3` budget. The S1 cross-fade spec's three CSS-contract
+    assertions were re-pointed from `Tabs.astro` to `_tabs.scss`.
 
 ### S3 — Tab `icon?` prop + wire PM logos into `HomeQuickInstallSection`
 
@@ -243,6 +263,19 @@ slice-level gate is per-slice (see below).
   - On `/`, the "Instalación rápida" row shows: 🟥 npm · 🟧 pnpm · 🟪 yarn · 🟫 bun · ⚫ deno (their actual brand marks).
   - On `/install` (markdown-backed since f00055 S6): the PM rows show the same 5 icons — implementation deferred until a markdown-side renderer or shortcode is decided; tracked in the S3 follow-up note above.
   - Fallback for missing logos: a 1-letter placeholder (`n`, `p`, `y`, `b`, `d`) in the same slot — implemented as `onerror` on the `<img>` (same pattern as `PluginDisclosure.astro`).
+- **Reconciliation note (2026-06-30):** the home-page half of S3 is **already
+  in the tree** and validate-green — `Tabs.astro` renders the `ui-tabs__icon`
+  `<img>` with the `onerror` first-letter fallback when `tabs[i].icon` is set
+  (`apps/web/src/components/ui/Tabs.astro`), and `HomeQuickInstallSection.astro`
+  passes `icon: brandLogo(pm.id, 'pm') ?? undefined` for every PM
+  (`apps/web/src/components/HomeQuickInstallSection.astro:41`). The
+  `brand-logos.ts` resolver hook is present too. The **only** unmet acceptance
+  line is the `/install` markdown one: since f00055 S6 migrated `/install` to a
+  PageSpec markdown (`apps/web/src/data/pages/install/*.md`, which today carry
+  **no** icon support and no shortcode/renderer for them), wiring PM icons into
+  those markdown rows needs a markdown-side renderer decision that has not
+  landed. S3 therefore stays **pending** for that one deferred line; the rest is
+  done.
 
 ### S4 — Section icons in `HomeAtAGlanceSection` + 12-lang i18n
 
@@ -260,9 +293,9 @@ slice-level gate is per-slice (see below).
 
 ### S5 — Extend `brand-logos.ts` + refactor `PluginDisclosure`/`PluginCapabilities` to reuse it + author a SKILL
 
-- **Status**: done
+- **Status**: done (code) — **SKILL.md item deferred, see reconciliation note**
 - **Owner**: `implementation_runner`
-- **Files**: `apps/web/src/lib/brand-logos.ts`, `apps/web/src/components/PluginDisclosure.astro`, `apps/web/src/components/PluginCapabilities.astro`, `apps/web/tests/lib/brand-logos.spec.ts` (new), `docs/mcp-vertex/skills/tabs-component/SKILL.md` (new)
+- **Files**: `apps/web/src/lib/brand-logos.ts`, `apps/web/src/components/PluginDisclosure.astro`, `apps/web/src/components/PluginCapabilities.astro`, `apps/web/tests/lib/brand-logos.spec.ts` (new), `docs/mcp-vertex/skills/tabs-component/SKILL.md` (new — **deferred**, prescribed path is obsolete; see note)
 - **Gate**: `bun run typecheck && bun run test apps/web/tests/lib/brand-logos.spec.ts && bun run lint:skills`
 - **Command**: `bun run typecheck && bun run test apps/web/tests/lib/brand-logos.spec.ts && bun run lint:skills`
 - **Expect**: exit0
@@ -274,6 +307,33 @@ slice-level gate is per-slice (see below).
   - `apps/web/tests/lib/brand-logos.spec.ts` exists and covers at minimum: (a) every existing PM id resolves; (b) every existing IDE id resolves; (c) every existing `plugin-*.svg` resolves through `'plugin'`; (d) unknown id returns `null`; (e) `KIND_PREFIX` map covers all six kinds and `lang` / `section` kinds degrade to `null` cleanly because no `lang-*.svg` / `section-*.svg` files exist yet (the resolver must not crash on an empty result).
   - `docs/mcp-vertex/skills/tabs-component/SKILL.md` documents the **unified** Tabs + brand-logo API: how to pick a tab variant, when to use `icon?`, how to call `brandLogo()` for any kind, and the rule "no hardcoded `/logos/...` strings — always go through `brandLogo()`".
   - `bun run lint:skills` exits 0 (the gate that verifies every skill is referenced + complete).
+- **Reconciliation note (2026-06-30):** the **code** half of S5 is already in
+  the tree and validate-green: `brand-logos.ts` exports the six-kind `LogoKind`
+  union + the `KIND_PREFIX` map (`apps/web/src/lib/brand-logos.ts:71,82`);
+  `PluginDisclosure.astro` and `PluginCapabilities.astro` funnel through
+  `brandLogo(slug, 'plugin')` with the first-letter `--fallback` badge
+  (`PluginDisclosure.astro:39`, `PluginCapabilities.astro:115`); and
+  `apps/web/tests/lib/brand-logos.spec.ts` covers all six kinds + the
+  negative/`lib` paths (`bun run test` green).
+  - **SKILL.md is DEFERRED, not landed.** The prescribed path
+    `docs/mcp-vertex/skills/tabs-component/SKILL.md` is **obsolete**: as of
+    f00065 S1 (`docs/mcp-vertex/skills/README.md`), skills no longer live under
+    `docs/` — every skill lives with its owning package/plugin
+    (`packages/core/skills/<name>/SKILL.md` or
+    `plugins/<plugin>/skills/<name>/SKILL.md`) and is registered in
+    `packages/core/skills/manifest.json`. The `lint:skills` gate
+    (`tools/scripts/lint/skills-script.ts`) validates **only** that manifest's
+    `bodyPath`s + id-uniqueness — it does **not** scan `docs/`, so a `docs/`
+    SKILL would be invisible to its own acceptance gate.
+  - A `tabs-component` skill is a **web/UI documentation artifact**, not an MCP
+    runtime skill: it has no `appliesTo` namespace (`@mcp-vertex/*` or a
+    plugin), so it does not fit the manifest model without inventing a synthetic
+    owner. Authoring it as prescribed would be unsafe (wrong location, ungated);
+    re-scoping it (e.g. fold the Tabs + `brandLogo()` API guidance into an
+    existing core skill, or ship a dedicated web-docs page) needs a decision out
+    of scope for this drain. The brand-logo "single resolver" contract is
+    already enforced in code + spec, so the deferral does not leave the reuse
+    rule unprotected.
 
 ## dependency graph
 
