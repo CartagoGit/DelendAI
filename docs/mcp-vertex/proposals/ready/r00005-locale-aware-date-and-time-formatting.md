@@ -102,11 +102,18 @@ packages/ui-extension/src/utils/
 the locale in parens.
 
 ### S2 — `formatDate` / `formatTime` wrappers
-- **Status**: pending
-- **Files**: packages/ui-extension/src/utils/format-date.ts
+- **Status**: done
+- **Files**: packages/ui-extension/src/dashboard/format.ts, packages/ui-extension/src/public/index.ts, packages/ui-extension/tests/dashboard/format.spec.ts
 - **Gate**: validate
+- **Note**: Added `formatDate` and `formatTime` as pure `(iso: string, locale = 'en') => string`
+  wrappers around `Intl.DateTimeFormat`, co-located in `dashboard/format.ts` alongside
+  the existing `formatRelativeTime` / `formatNumber` layer (the real "one date layer"
+  home; the predicted standalone `utils/format-date.ts` / `format-time.ts` files were
+  not created to avoid an orphan `utils/` tree nothing imports). Both pass invalid input
+  through unchanged, mirroring `formatRelativeTime`. Exported via `public/index.ts`.
+  Covered in `tests/dashboard/format.spec.ts` (locale-difference + determinism cases).
 
-Same shape for `format-time.ts`. Both are pure `(date, locale) => string`.
+Same shape for the time wrapper. Both are pure `(date, locale) => string`.
 
 ### S3 — cross-runtime snapshot
 - **Status**: pending
