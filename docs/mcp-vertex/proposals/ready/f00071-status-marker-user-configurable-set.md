@@ -8,6 +8,7 @@ kind: feat
 title: status-marker user-configurable marker set — add / disable / override from host config
 shipped-in:
     - 73ba00f1 # S1-S6 feat(status-marker): user-configurable marker set
+    - 9c8cf1cd # S7 feat(status-marker,tools): README example + user-markers CI lint
 recan: []
 related:
     - f00070 # sibling proposal (bilingual rendering, additive)
@@ -277,7 +278,7 @@ Extend `MARKERS_BY_LOCALE` reader.
 Generated `tool-outputs.ts` and test specs.
 
 ### S7 — README + CI lint
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/README.md, tools/scripts/lint/user-markers.script.ts
 - **Gate**: validate
 
