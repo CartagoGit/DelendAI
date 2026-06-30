@@ -248,3 +248,26 @@ The root is intentionally minimal. Before adding a file to it, check:
 - A new root file must justify itself against the above; otherwise it
   belongs in `.github/`, `docs/mcp-vertex/`, `tools/`, `config/`, or
   under `.cache/`.
+
+### Root config classification (f00064 S1)
+
+Every root-level config is classified as `must-stay-root` (the tool/editor/
+host auto-discovers it there with no editor-safe override), `moved-to-config`
+(relocated under `config/` with an explicit path wired into the consumer), or
+`bridged` (canonical source under `config/external/<tool>/`, kept discoverable
+at root via a tested symlink).
+
+| Config | Class | Why |
+|---|---|---|
+| `package.json`, `bun.lock`, `bunfig.toml` | must-stay-root | Bun/npm root discovery. |
+| `tsconfig*.json` | must-stay-root | TS project root + editor type-check. |
+| `biome.json`, `stylelint.config.mjs` | must-stay-root | Linter root auto-discovery. |
+| `vitest.config.ts`, `vitest.shared.ts` | must-stay-root | Vitest root discovery. |
+| `lefthook.yml` | must-stay-root | Git-hooks manager root discovery. |
+| `.gitignore` | must-stay-root | Git root discovery. |
+| `mcp-vertex.config.json` | must-stay-root | Engine config; root by convention, no path override in editor MCP launch. |
+| `.mcp.json` | must-stay-root | Generic stdio MCP launch; root copy uses workspace-relative args (see `config/external/README.md`). |
+| `README.md`, `LICENSE`, `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md` | must-stay-root | GitHub/convention. |
+| `.github/**`, `.vscode/**`, `.cursor/**`, `.claude/**`, `.codex/**`, `.continue/**` | must-stay-root | Host/IDE root auto-discovery; no tested include/symlink bridge. |
+| `typedoc.json` | moved-to-config | `config/typedoc.json`, passed via `typedoc --options config/typedoc.json` in `package.json#scripts`. |
+| `.aider.conf.yml`, `.cursorrules` | bridged | Canonical under `config/external/<tool>/`; root symlink keeps tool discovery. |

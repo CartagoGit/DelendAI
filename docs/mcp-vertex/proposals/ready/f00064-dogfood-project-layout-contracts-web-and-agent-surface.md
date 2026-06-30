@@ -95,7 +95,7 @@ External agent/IDE configs are evaluated per host:
 
 ### S1 — Root config relocation audit and safe moves
 
-- **Status**: pending
+- **Status**: done
 - **Files**: AGENTS.md, package.json, config/**
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -103,6 +103,18 @@ External agent/IDE configs are evaluated per host:
   - Any moved config has all package scripts updated to pass an explicit config path.
   - External-agent configs use `config/external/<tool>/` as canonical source only when the root discovery bridge is verified for that host.
   - Editor-discovered configs stay at root unless an extension-safe override or bridge exists.
+- **Landed**: The mechanical relocation was already in the tree —
+  `config/typedoc.json` (wired via `package.json#scripts.docs:api`), and
+  `config/external/{aider,cursor,mcp}` with root symlink bridges for
+  `.aider.conf.yml` and `.cursorrules` (git mode 120000). This slice closed
+  the two remaining gaps: (1) `config/external/README.md` wrongly listed
+  `.mcp.json` as a symlink bridge — it is a real root file (git mode 100644,
+  `--workspace=.` relative args) intentionally divorced from the
+  `${workspaceFolder}` variant under `config/external/mcp/`; the README now
+  classifies it as root-discovered. (2) Added the explicit
+  `must-stay-root`/`moved-to-config`/`bridged` classification table to the
+  AGENTS.md "Repo root layout" section so every root config has a recorded
+  class. Reconciled with f00103 (no CLI/init/preset surface touched).
 
 ### S2 — Cache centralization cleanup
 
