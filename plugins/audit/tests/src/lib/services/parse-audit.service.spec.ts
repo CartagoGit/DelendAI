@@ -97,13 +97,15 @@ describe('parseAuditBody', async () => {
 		const fatals = doc.findings.filter(
 			(f: IAuditFinding) => f.severity === 'FATAL',
 		);
-		const muyMal = doc.findings.filter(
-			(f: IAuditFinding) => f.severity === 'MUY_MAL',
+		// The SAMPLE_AUDIT uses the legacy Spanish heading `🟠 MUY MAL`;
+		// the parser normalises it to the canonical English token `BAD`.
+		const bad = doc.findings.filter(
+			(f: IAuditFinding) => f.severity === 'BAD',
 		);
 		expect(fatals).toHaveLength(2);
-		expect(muyMal).toHaveLength(1);
+		expect(bad).toHaveLength(1);
 		expect(fatals[0]?.title).toContain('syncProposalRegistry');
-		expect(muyMal[0]?.files).toContain(
+		expect(bad[0]?.files).toContain(
 			'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
 		);
 	});
