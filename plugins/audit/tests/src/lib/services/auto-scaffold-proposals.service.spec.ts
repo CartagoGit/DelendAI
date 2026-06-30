@@ -5,17 +5,15 @@ import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
 import { resolveAutoScaffold } from '../../../../src/lib/services/auto-scaffold-proposals.service';
-import { createPeerPluginRegistry } from '../../../../src/public';
 
 // Tiny stub of IPeerPluginRegistry for tests. Mirrors the runtime
-// contract (list + has) so the helper can be exercised end-to-end.
-const makeRegistry = (
-	names: readonly string[],
-): ReturnType<typeof createPeerPluginRegistry>['registry'] => {
-	const built = createPeerPluginRegistry();
-	built.set(names);
-	return built.registry;
-};
+// contract (list + has) so the helper can be exercised end-to-end
+// without needing the core barrel to resolve in the test sandbox.
+const makeRegistry = (names: readonly string[]) =>
+	({
+		list: () => Object.freeze([...names]),
+		has: (n: string) => names.includes(n),
+	}) as unknown as Parameters<typeof resolveAutoScaffold>[1]['peerPlugins'];
 
 describe('resolveAutoScaffold — proposals availability', async () => {
 	const mkTmp = async (): Promise<string> =>
