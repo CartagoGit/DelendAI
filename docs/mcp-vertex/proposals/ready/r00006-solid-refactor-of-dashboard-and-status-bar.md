@@ -158,7 +158,7 @@ and bind an Esc handler that fires a custom event the host listens to.
 and the Esc handler fires the expected event.
 
 ### S5 — `kpiStrip` flex-wrap (H26)
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/ui-extension/src/dashboard/builders/build-kpi-strip.ts
 - **Gate**: validate
 

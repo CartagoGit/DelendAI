@@ -28,4 +28,14 @@ describe('buildKpiStrip', () => {
 		expect(html).toContain('2');
 		expect(html).toContain('50');
 	});
+
+	it('ships flex-wrap layout so the strip wraps in a narrow sidebar (H26)', () => {
+		const mockModel = {
+			overview: { totals: {} },
+		} as unknown as IDashboardAllModels;
+		const html = buildKpiStrip(mockModel, dictsByLang.en);
+		expect(html).toContain('flex-wrap:wrap');
+		expect(html).toContain('flex:1 1 120px');
+		expect(html).toContain('min-width:0');
+	});
 });
