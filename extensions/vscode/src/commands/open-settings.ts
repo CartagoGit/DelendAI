@@ -39,15 +39,66 @@ const createInMemorySettingsStore = (): ISettingsStore => {
 	};
 };
 
+/** Key under which the extension settings blob lives in `globalState`. */
+export const SETTINGS_STATE_KEY = 'mcp-vertex.settings';
+
+/**
+ * Minimal `globalState` surface this store needs. Mirrors
+ * `vscode.Memento` (`get`/`update`) so the real extension context and
+ * the test fakes both satisfy it.
+ */
+export interface ISettingsMemento {
+	get<T>(key: string): T | undefined;
+	update(key: string, value: unknown): Thenable<void> | Promise<void>;
+}
+
+/**
+ * f00079 S3 (closes a00040 H4): persist settings to `globalState`
+ * instead of module-scope memory, so the user's choices survive a
+ * window reload. We keep an in-memory cache hydrated from `globalState`
+ * at construction so the first `read()` is consistent even before any
+ * write; every `write()` updates both the cache and the durable
+ * `globalState` blob. The stored shape is `{ extension: IExtensionSettings }`
+ * — the same envelope the in-memory store used, so the rest of the
+ * settings chain (SettingsService) is unchanged.
+ */
+export const createGlobalStateSettingsStore = (
+	globalState: ISettingsMemento,
+): ISettingsStore => {
+	const seeded = globalState.get<unknown>(SETTINGS_STATE_KEY);
+	let cache: unknown =
+		seeded !== undefined
+			? seeded
+			: { extension: DEFAULT_EXTENSION_SETTINGS };
+	return {
+		async read() {
+			return cache;
+		},
+		async write(next) {
+			cache = next;
+			await globalState.update(SETTINGS_STATE_KEY, next);
+		},
+	};
+};
+
 /**
  * Exported factory so `extension.ts` can build the store ONCE and
  * share it across the open/save/reset registrations. Sharing matters:
  * the save handler writes to the same store the open handler will read
  * from on the next invocation — otherwise the user would see their
  * changes silently dropped on next open.
+ *
+ * When a `globalState` memento is supplied (the real activation path)
+ * the store is durable (f00079 S3 / a00040 H4); when omitted (unit
+ * tests that do not exercise persistence) it falls back to an in-memory
+ * store with identical semantics.
  */
-export const createExtensionSettingsStore = (): ISettingsStore =>
-	createInMemorySettingsStore();
+export const createExtensionSettingsStore = (
+	globalState?: ISettingsMemento,
+): ISettingsStore =>
+	globalState !== undefined
+		? createGlobalStateSettingsStore(globalState)
+		: createInMemorySettingsStore();
 
 export const registerOpenSettingsCommand = (
 	deps: ICommandDeps,

@@ -329,7 +329,10 @@ export const activate = async (
 	// handlers were never registered, so changes the user made in the
 	// webview were silently dropped. We now wire them to the same
 	// `SettingsService` + `ISettingsStore` used by `openSettings`.
-	const settingsStore = createExtensionSettingsStore();
+	// f00079 S3 (a00040 H4): back the settings store with
+	// `context.globalState` so the user's choices survive a window
+	// reload instead of living in module-scope memory.
+	const settingsStore = createExtensionSettingsStore(context.globalState);
 	const openSettingsReg = registerOpenSettingsCommand(
 		{ vscode, client },
 		settingsStore,

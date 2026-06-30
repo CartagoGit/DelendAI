@@ -22,9 +22,12 @@ import {
 import {
 	RESET_SETTINGS_COMMAND,
 	SAVE_SETTINGS_COMMAND,
+	SETTINGS_STATE_KEY,
 	createExtensionSettingsStore,
+	createGlobalStateSettingsStore,
 	registerResetSettingsCommand,
 	registerSaveSettingsCommand,
+	type ISettingsMemento,
 } from '../commands/open-settings';
 import type { ICommandVscodeApi } from '../commands/types';
 
@@ -130,5 +133,86 @@ describe('settings save / reset commands', async () => {
 			DEFAULT_EXTENSION_SETTINGS.allowLocalhost,
 		);
 		expect(stored.extension?.theme).toBe(DEFAULT_EXTENSION_SETTINGS.theme);
+	});
+});
+
+/**
+ * f00079 S3 (closes a00040 H4): settings must survive a window reload.
+ * We model `globalState` as a durable map and prove that a value written
+ * through one store instance is visible to a SECOND store instance built
+ * from the same backing map — i.e. the value outlives the module-scope
+ * cache the way a reload re-instantiates the extension.
+ */
+const createMemento = (
+	backing: Map<string, unknown> = new Map(),
+): ISettingsMemento => ({
+	get<T>(key: string): T | undefined {
+		return backing.get(key) as T | undefined;
+	},
+	async update(key: string, value: unknown): Promise<void> {
+		backing.set(key, value);
+	},
+});
+
+describe('settings persistence to globalState', async () => {
+	it('persists a written value to the backing globalState key', async () => {
+		const backing = new Map<string, unknown>();
+		const store = createGlobalStateSettingsStore(createMemento(backing));
+
+		await store.write({
+			extension: {
+				docsUrl: 'https://persisted.example',
+				allowLocalhost: true,
+				allowPrivateIps: false,
+				logLevel: 'warn',
+				theme: 'light',
+			},
+		});
+
+		const blob = backing.get(SETTINGS_STATE_KEY) as {
+			readonly extension?: Record<string, unknown>;
+		};
+		expect(blob.extension?.docsUrl).toBe('https://persisted.example');
+	});
+
+	it('survives a simulated window reload (new store, same globalState)', async () => {
+		const backing = new Map<string, unknown>();
+
+		// First "session": write a setting.
+		const first = createGlobalStateSettingsStore(createMemento(backing));
+		await first.write({
+			extension: {
+				docsUrl: 'https://reload.example',
+				allowLocalhost: false,
+				allowPrivateIps: true,
+				logLevel: 'error',
+				theme: 'dark',
+			},
+		});
+
+		// Second "session": a fresh store built from the SAME backing map
+		// (as a reload would re-instantiate the extension) must hydrate the
+		// previously written value.
+		const reloaded = createGlobalStateSettingsStore(createMemento(backing));
+		const value = (await reloaded.read()) as {
+			readonly extension?: Record<string, unknown>;
+		};
+		expect(value.extension?.docsUrl).toBe('https://reload.example');
+		expect(value.extension?.theme).toBe('dark');
+	});
+
+	it('createExtensionSettingsStore is durable when given a memento', async () => {
+		const backing = new Map<string, unknown>();
+		const store = createExtensionSettingsStore(createMemento(backing));
+		await store.write({
+			extension: {
+				docsUrl: 'https://factory.example',
+				allowLocalhost: true,
+				allowPrivateIps: true,
+				logLevel: 'info',
+				theme: 'system',
+			},
+		});
+		expect(backing.has(SETTINGS_STATE_KEY)).toBe(true);
 	});
 });
