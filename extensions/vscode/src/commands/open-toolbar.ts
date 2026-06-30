@@ -80,7 +80,7 @@ const resolveLang = (deps: ICommandDeps): Lang => {
  */
 const resolveVersion = async (deps: ICommandDeps): Promise<string> => {
 	try {
-		const overview = new OverviewService(deps.client);
+		const overview = new OverviewService(deps.client, deps.namespacePrefix);
 		const snap = await overview.getOverview({ compact: true });
 		const v = (snap as { server?: { version?: string } })?.server?.version;
 		if (typeof v === 'string' && v.length > 0) return v;

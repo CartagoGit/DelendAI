@@ -154,6 +154,11 @@
 				],
 				"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
 				"scope": "machine"
+			},
+			"mcp-vertex.server.prefix": {
+				"type": "string",
+				"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
+				"scope": "machine"
 			}
 		}
 	},

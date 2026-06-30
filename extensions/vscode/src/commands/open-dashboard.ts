@@ -31,6 +31,10 @@ export interface IOpenDashboardDeps {
 	readonly getConfig: () => {
 		readonly extension?: { readonly docsUrl?: string };
 	};
+	/** Host namespace prefix (f00081 S2). Threaded into the
+	 * `DashboardService` so a non-default `--prefix` deployment resolves
+	 * `<prefix>_*` tools. */
+	readonly namespacePrefix?: string;
 }
 
 const resolveLang = (deps: IOpenDashboardDeps): Lang => {
@@ -43,7 +47,12 @@ const resolveLang = (deps: IOpenDashboardDeps): Lang => {
 export const registerOpenDashboardCommand = (deps: IOpenDashboardDeps) =>
 	deps.host.registerCommand(OPEN_DASHBOARD_COMMAND, async () => {
 		const lang = resolveLang(deps);
-		const dashboard = new DashboardService({ client: deps.client });
+		const dashboard = new DashboardService({
+			client: deps.client,
+			...(deps.namespacePrefix === undefined
+				? {}
+				: { namespacePrefix: deps.namespacePrefix }),
+		});
 		const embed = new EmbedService();
 		const models = await dashboard.getAllModels();
 		const docsUrl = (() => {
