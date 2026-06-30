@@ -156,6 +156,31 @@ Applies symmetrically to peer agents, CI, humans, the catalog
 regenerator, the worktree's own pre-commit hooks, and stale worktrees
 sharing `.git`. Same answer in every case: keep working.
 
+## When the shell is stuck (f00085)
+
+Sometimes the `run_in_terminal { mode: "sync" }` wrapper claims the
+sub-shell opened an alternate buffer ("El comando abrió el búfer
+alternativo." / "open alternative buffer") and aborts with no output and
+no exit code. Re-issuing the same `sync` call does **not** help — the
+wrapper state is sticky. Do not burn turns retrying it. Instead drive the
+shell-fallback ladder from `@mcp-vertex/core/public`:
+
+```ts
+import { withShellFallback } from '@mcp-vertex/core/public';
+
+const outcome = await withShellFallback('bun run validate', {
+  runSync: (cmd) => runInTerminal(cmd, { mode: 'sync' }),
+  runAsync: (cmd) => runInTerminal(cmd, { mode: 'async' }),
+  pollAsync: (id) => getTerminalOutput(id),
+});
+// outcome.ring === 'async' when the stuck sync call auto-recovered.
+```
+
+Ring 1 detects the sentinel, Ring 2 re-issues as `mode: "async"` and
+polls (this resolves the case), Ring 3 falls back to file/MCP tools —
+use `mapShellIntentToTool({ command, args })` to map `cat`/`grep`/`git
+status`/… to `read_file`/`grep_search`/`mcp-vertex_git_status`/….
+
 ## `round_context` is a digest cache, not a reason to re-read everything
 
 `proposals_round_context` is for cheap orientation:
