@@ -177,6 +177,12 @@ restates the rule for swarm context.
   the TTY layout, and supports the POSIX-plus-extensions syntax agents
   generate by reflex. This rule applies to every host (Copilot,
   Claude Code, Cursor, Aider, subagents, swarm runners).
+  If the shell still gets stuck on that "búfer alternativo" symptom,
+  do not retry the same `mode: "sync"` call — follow the shell-fallback
+  ladder in
+  [`docs/mcp-vertex/skills/shell-fallback/SKILL.md`](skills/shell-fallback/SKILL.md)
+  (`withShellFallback` from `@mcp-vertex/core/public`: re-issue as
+  `mode: "async"` and poll, then fall back to file tools).
 
 ## 7. Repo-level rules (only when the host reads `AGENTS.md`)
 
