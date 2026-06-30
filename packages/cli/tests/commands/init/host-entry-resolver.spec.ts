@@ -76,6 +76,50 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
+	it('falls back to ../propios/mcp-vertex/ (operator\'s nested layout, f00103)', () => {
+		const probe = probeWith(
+			new Set([
+				'/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+			]),
+		);
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('sibling_nested');
+		expect(resolved.path).toBe(
+			'/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
+		);
+	});
+
+	it('recovers via sibling_walk when the checkout lives at an irregular path (f00103)', () => {
+		// The walk is the last-resort branch. It only fires when none
+		// of the explicit candidates match — here we omit them all
+		// and let the upward walk find the entry at
+		// `/worktrees/mcp-vertex` (a name containing `mcp-vertex`,
+		// adjacent to `/workspace`).
+		const entry =
+			'/worktrees/mcp-vertex/tools/scripts/host/host-server.script.ts';
+		const probe: IPathProbe = {
+			exists: (p) => p === entry,
+			readDirNames: (p) =>
+				p === '/workspace/..' ? ['worktrees', 'node_modules', 'README'] : [],
+		};
+		const resolved = resolveHostEntryPath('/workspace', { probe });
+		expect(resolved.source).toBe('sibling_walk');
+		expect(resolved.path).toBe(entry);
+	});
+
+	it('skips the sibling_walk when readDirNames is not implemented by the probe', () => {
+		// A probe that does not expose `readDirNames` (defensive:
+		// some host integrations inject a minimal probe) must not
+		// crash the resolver — the walk simply yields no match and
+		// the typed error surfaces.
+		const probe: IPathProbe = {
+			exists: () => false,
+		};
+		expect(() => resolveHostEntryPath('/workspace', { probe })).toThrowError(
+			HostEntryNotFoundError,
+		);
+	});
+
 	it('throws HostEntryNotFoundError listing every attempt when none match', () => {
 		const probe = probeWith(new Set());
 		expect(() => resolveHostEntryPath('/workspace', { probe })).toThrowError(

@@ -1,5 +1,5 @@
 /**
- * host-entry-resolver.ts — f00088 S2.
+ * host-entry-resolver.ts — f00088 S2 + f00103 sibling-walk.
  *
  * Resolve the absolute path to the mcp-vertex host-server entry
  * script (`tools/scripts/host/host-server.script.ts`) for the
@@ -16,14 +16,20 @@
  *      (sibling checkout — common dev workflow)
  *   5. `<workspace>/../mcp-vertex-core/tools/scripts/host/host-server.script.ts`
  *      (alternate sibling name)
+ *   6. `<workspace>/../propios/mcp-vertex/...` and a one-level
+ *      upward walk that probes every sibling directory which
+ *      contains `tools/scripts/host/host-server.script.ts` (last
+ *      resort — recovers the operator's common
+ *      `~/proyectos/propios/mcp-vertex` layout even when the
+ *      consumer lives at `~/proyectos/<consumer>/`).
  *
  * Returns the resolved path + a `source` tag (for diagnostics and
  * for the operator's `--json` output). When none of the candidates
  * exist, throws a typed error listing every attempt so the CLI can
  * surface a clear "did you forget `bun install`?" hint.
  */
-import { existsSync } from 'node:fs';
-import { isAbsolute, join, resolve } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 
 export type THostEntrySource =
 	| 'flag'
@@ -31,6 +37,8 @@ export type THostEntrySource =
 	| 'npm_dist'
 	| 'sibling'
 	| 'sibling_alt'
+	| 'sibling_nested'
+	| 'sibling_walk'
 	| 'unresolved';
 
 export interface IResolvedHostEntry {
@@ -41,14 +49,48 @@ export interface IResolvedHostEntry {
 /** A minimal reader interface so tests can inject a fake filesystem. */
 export interface IPathProbe {
 	exists(path: string): boolean;
+	/** Optional: enumerate immediate children of a directory. Defaults to
+	 * the real filesystem when omitted (used only by the upward walk). */
+	readDirNames?(path: string): readonly string[];
 }
 
 const realProbe: IPathProbe = {
 	exists: (path) => existsSync(path),
+	readDirNames: (path) => {
+		try {
+			return readdirSync(path);
+		} catch {
+			return [];
+		}
+	},
 };
 
 const HOST_SCRIPT_REL = 'tools/scripts/host/host-server.script.ts';
 const NPM_DIST_REL = 'dist/host/host-server.js';
+
+const upwardSiblingWalk = (
+	probe: IPathProbe,
+	workspace: string,
+): string | null => {
+	// Walk up to 3 levels above the workspace, probing every
+	// immediate child whose name contains `mcp-vertex` (catches
+	// both the canonical layout `../mcp-vertex/` and the operator's
+	// `../propios/mcp-vertex/` layout, plus symlinks and worktrees).
+	let cursor = resolve(workspace, '..');
+	for (let hop = 0; hop < 3; hop += 1) {
+		const reader = probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
+		const names = reader?.(cursor) ?? [];
+		for (const name of names) {
+			if (!name.includes('mcp-vertex')) continue;
+			const candidate = join(cursor, name, HOST_SCRIPT_REL);
+			if (probe.exists(candidate)) return candidate;
+		}
+		const parent = dirname(cursor);
+		if (parent === cursor) break; // filesystem root
+		cursor = parent;
+	}
+	return null;
+};
 
 /**
  * Probe every candidate location in priority order. The first
@@ -94,6 +136,10 @@ export const resolveHostEntryPath = (
 			path: resolve(workspace, `../mcp-vertex-core/${HOST_SCRIPT_REL}`),
 			source: 'sibling_alt',
 		},
+		{
+			path: resolve(workspace, `../propios/mcp-vertex/${HOST_SCRIPT_REL}`),
+			source: 'sibling_nested',
+		},
 	];
 
 	for (const candidate of candidates) {
@@ -102,7 +148,18 @@ export const resolveHostEntryPath = (
 		}
 	}
 
-	// Last-ditch: surface a typed error with every attempted path.
+	// Last-resort: an upward walk that probes every directory whose
+	// name contains `mcp-vertex`. Catches `propios/mcp-vertex`,
+	// `worktrees/mcp-vertex`, symlinks, and other irregular
+	// layouts — but only after the explicit candidate list above
+	// has been exhausted (so the common cases remain O(1)).
+	const walked = upwardSiblingWalk(probe, workspace);
+	if (walked !== null) {
+		return { path: walked, source: 'sibling_walk' };
+	}
+
+	// Surface a typed error with every attempted path so the CLI
+	// can show the operator what was probed.
 	const attempted = options.explicitRoot
 		? [
 				options.explicitRoot,
