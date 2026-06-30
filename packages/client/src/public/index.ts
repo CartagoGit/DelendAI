@@ -12,6 +12,12 @@ export type {
 	IMcpTransport,
 } from '../lib/contracts/interfaces/mcp-transport.interface';
 export {
+	DEFAULT_NAMESPACE_PREFIX,
+	formatToolName,
+	parsePrefix,
+} from '../lib/services/_namespace';
+export type { INamespacePrefix } from '../lib/services/_namespace';
+export {
 	OverviewService,
 	normalizeTool,
 	pluginFromToolName,
