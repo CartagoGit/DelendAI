@@ -6,7 +6,10 @@
  */
 import { KnowledgeService } from '@mcp-vertex/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
-import { renderKnowledgeNavigator } from '@mcp-vertex/ui-extension/public';
+import {
+	renderKnowledgeNavigator,
+	withCsp,
+} from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';
@@ -67,7 +70,8 @@ export const registerOpenKnowledgeCommand = (deps: ICommandDeps) =>
 				// user; nothing more to do here.
 			}
 		});
-		panel.webview.html = html;
+		// f00079 S1 (a00040 H2): inject the knowledge-navigator CSP.
+		panel.webview.html = withCsp('knowledge', html);
 		return panel;
 	});
 

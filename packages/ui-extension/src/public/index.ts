@@ -87,6 +87,15 @@ export {
 	filterByHost,
 	QUICK_ACTION_CATEGORIES,
 } from '../toolbar';
+export {
+	DEFAULT_DENY,
+	WEBVIEW_CSP_OVERRIDES,
+	resolveCspPolicy,
+	cspHeaderValue,
+	injectCspMeta,
+	withCsp,
+} from '../webview/csp';
+export type { IWebviewCspPolicy } from '../webview/csp';
 export type {
 	QuickAction,
 	QuickActionCategory,
