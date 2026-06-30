@@ -273,7 +273,9 @@ export const buildConsolidateRegistration = (
 						if (outcome.kind === 'scaffolded') {
 							proposalsSummary = {
 								scaffolded: outcome.records.map(
-									(r): {
+									(
+										r,
+									): {
 										id: string;
 										filename: string;
 										severity: string;
@@ -297,7 +299,9 @@ export const buildConsolidateRegistration = (
 						// proposals-dir escapes workspace AND opt-in is on:
 						// refuse to scaffold so the caller notices the path
 						// config bug, instead of silently writing outside.
-						proposalsSummary = { skipped: 'proposals-dir-out-of-workspace' };
+						proposalsSummary = {
+							skipped: 'proposals-dir-out-of-workspace',
+						};
 					}
 
 					return toolJson({

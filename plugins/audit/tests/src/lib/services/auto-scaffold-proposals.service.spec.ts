@@ -9,7 +9,9 @@ import { createPeerPluginRegistry } from '../../../../src/public';
 
 // Tiny stub of IPeerPluginRegistry for tests. Mirrors the runtime
 // contract (list + has) so the helper can be exercised end-to-end.
-const makeRegistry = (names: readonly string[]): ReturnType<typeof createPeerPluginRegistry>['registry'] => {
+const makeRegistry = (
+	names: readonly string[],
+): ReturnType<typeof createPeerPluginRegistry>['registry'] => {
 	const built = createPeerPluginRegistry();
 	built.set(names);
 	return built.registry;
