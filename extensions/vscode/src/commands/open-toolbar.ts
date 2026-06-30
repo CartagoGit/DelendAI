@@ -13,12 +13,48 @@
  */
 import { OverviewService } from '@mcp-vertex/client';
 import { dictsByLang, defaultLang, type Lang } from '@mcp-vertex/shared/i18n';
-import { renderToolbar } from '@mcp-vertex/ui-extension/public';
+import {
+	defaultQuickActions,
+	renderToolbar,
+} from '@mcp-vertex/ui-extension/public';
 
 import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';
 
 export const OPEN_TOOLBAR_COMMAND = 'mcp-vertex.openToolbar';
+
+/**
+ * f00079 S2 (closes a00040 H3): allow-list of command ids the toolbar
+ * webview may dispatch. The toolbar's host bridge posts an arbitrary
+ * `{ command: 'mvAction', action, commandId }` message; without this
+ * gate a crafted message (XSS or confused-deputy) could run ANY
+ * `vscode.commands.executeCommand(...)` with arbitrary arguments. We
+ * derive the set from the toolbar's own canonical action catalog
+ * (`defaultQuickActions`) so security review is a single `grep` and the
+ * allow-list cannot drift from the rendered cards. The two language
+ * persistence commands the bridge also emits are NOT executeCommand
+ * dispatches, so they are intentionally absent here.
+ */
+export const ALLOWED_TOOLBAR_COMMANDS: ReadonlySet<string> = new Set(
+	defaultQuickActions().map((action) => action.command),
+);
+
+/**
+ * Resolve the canonical command id the toolbar message wants to run.
+ * Prefers the renderer-embedded `commandId`; falls back to deriving
+ * `mcp-vertex.<action>` from the raw action id (legacy bridges). Returns
+ * `undefined` when neither yields a usable string.
+ */
+export const resolveToolbarCommandId = (
+	commandId: unknown,
+	action: unknown,
+): string | undefined => {
+	if (typeof commandId === 'string' && commandId.length > 0) return commandId;
+	if (typeof action === 'string' && action.length > 0) {
+		return `mcp-vertex.${action.replace(/\./g, '_')}`;
+	}
+	return undefined;
+};
 
 const TOOLBAR_VIEW_TYPE = 'mcpVertexToolbar';
 const TOOLBAR_TITLE = 'mcp-vertex Toolbar';
@@ -94,22 +130,30 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 				lang?: unknown;
 			};
 			if (m.command === 'mvAction') {
-				const commandId =
-					typeof m.commandId === 'string' && m.commandId.length > 0
-						? m.commandId
-						: typeof m.action === 'string'
-							? `mcp-vertex.${m.action.replace(/\./g, '_')}`
-							: undefined;
-				if (commandId !== undefined) {
-					try {
-						await deps.vscode.commands.executeCommand?.(commandId);
-					} catch (err) {
-						await deps.vscode.window.showErrorMessage?.(
-							`mcp-vertex: toolbar action "${commandId}" failed: ${
-								err instanceof Error ? err.message : String(err)
-							}`,
-						);
-					}
+				const commandId = resolveToolbarCommandId(
+					m.commandId,
+					m.action,
+				);
+				if (commandId === undefined) return;
+				// f00079 S2 (a00040 H3): refuse to dispatch any command id
+				// outside the toolbar's own canonical allow-list. A crafted
+				// webview message can name an arbitrary command (e.g.
+				// `workbench.action.*`); we surface it as a typed error toast
+				// instead of executing it.
+				if (!ALLOWED_TOOLBAR_COMMANDS.has(commandId)) {
+					await deps.vscode.window.showErrorMessage?.(
+						`mcp-vertex: toolbar action "${commandId}" is not allowed.`,
+					);
+					return;
+				}
+				try {
+					await deps.vscode.commands.executeCommand?.(commandId);
+				} catch (err) {
+					await deps.vscode.window.showErrorMessage?.(
+						`mcp-vertex: toolbar action "${commandId}" failed: ${
+							err instanceof Error ? err.message : String(err)
+						}`,
+					);
 				}
 				return;
 			}
