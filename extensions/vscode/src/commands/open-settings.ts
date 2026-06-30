@@ -6,7 +6,7 @@ import {
 } from '@mcp-vertex/client';
 import { ExtensionSettingsSchema } from '@mcp-vertex/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
-import { renderSettings } from '@mcp-vertex/ui-extension/public';
+import { renderSettings, withCsp } from '@mcp-vertex/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';
@@ -114,12 +114,16 @@ export const registerOpenSettingsCommand = (
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);
-		panel.webview.html = renderSettings({
-			settings,
-			saveCommand: SAVE_SETTINGS_COMMAND,
-			resetCommand: RESET_SETTINGS_COMMAND,
-			lang: dictsByLang[lang],
-		});
+		// f00079 S1 (a00040 H2): wrap the settings webview HTML in its CSP.
+		panel.webview.html = withCsp(
+			'settings',
+			renderSettings({
+				settings,
+				saveCommand: SAVE_SETTINGS_COMMAND,
+				resetCommand: RESET_SETTINGS_COMMAND,
+				lang: dictsByLang[lang],
+			}),
+		);
 		// FIX (S1): the webview posts `{command:'save', settings}` and
 		// `{command:'reset'}` from its client script. Previously the
 		// host never listened, so Save/Reset were visual-only. We now
@@ -145,12 +149,15 @@ export const registerOpenSettingsCommand = (
 				const svc = new SettingsService(store);
 				await svc.set(DEFAULT_EXTENSION_SETTINGS);
 				const fresh = await svc.get();
-				panel.webview.html = renderSettings({
-					settings: fresh,
-					saveCommand: SAVE_SETTINGS_COMMAND,
-					resetCommand: RESET_SETTINGS_COMMAND,
-					lang: dictsByLang[lang],
-				});
+				panel.webview.html = withCsp(
+					'settings',
+					renderSettings({
+						settings: fresh,
+						saveCommand: SAVE_SETTINGS_COMMAND,
+						resetCommand: RESET_SETTINGS_COMMAND,
+						lang: dictsByLang[lang],
+					}),
+				);
 			}
 		});
 		return panel;

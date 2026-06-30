@@ -1,4 +1,5 @@
 import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
+import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
 
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
@@ -119,10 +120,13 @@ export const showCommandError = async (
 	await vscode.window.showErrorMessage?.(message);
 };
 
-export const renderJsonHtml = (
-	title: string,
-	payload: object,
-): string => `<!DOCTYPE html>
+export const renderJsonHtml = (title: string, payload: object): string =>
+	// f00079 S1 (a00040 H2): every JSON webview is script-free, so the
+	// default-deny policy (`script-src 'none'`) applies as-is — closing
+	// the no-CSP gap for the overview / metrics / validation / proposals
+	// surfaces in one place.
+	injectCspMeta(
+		`<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
@@ -133,7 +137,9 @@ export const renderJsonHtml = (
 	<h1>${escapeHtml(title)}</h1>
 	<pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
 </body>
-</html>`;
+</html>`,
+		DEFAULT_DENY,
+	);
 
 export const escapeHtml = (value: string): string =>
 	value

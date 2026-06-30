@@ -16,6 +16,7 @@ import { dictsByLang, defaultLang, type Lang } from '@mcp-vertex/shared/i18n';
 import {
 	defaultQuickActions,
 	renderToolbar,
+	withCsp,
 } from '@mcp-vertex/ui-extension/public';
 
 import { HOST_LANG_KEY } from './setup-github';
@@ -111,7 +112,10 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 			deps.vscode.ViewColumn.One,
 			{ enableScripts: true },
 		);
-		panel.webview.html = html;
+		// f00079 S1 (a00040 H2): inject the toolbar CSP. The toolbar
+		// renders inline `<script>`, so its override permits
+		// `script-src 'unsafe-inline'` while still denying frames/connect.
+		panel.webview.html = withCsp('toolbar', html);
 		// FIX (T1): wire the host bridge so toolbar card clicks
 		// dispatch their `data-mv-command`. The toolbar's
 		// `renderHostBridge()` script posts
