@@ -72,24 +72,54 @@ const upwardSiblingWalk = (
 	probe: IPathProbe,
 	workspace: string,
 ): string | null => {
-	// Walk up to 3 levels above the workspace, probing every
-	// immediate child whose name contains `mcp-vertex` (catches
-	// both the canonical layout `../mcp-vertex/` and the operator's
-	// `../propios/mcp-vertex/` layout, plus symlinks and worktrees).
-	let cursor = resolve(workspace, '..');
-	for (let hop = 0; hop < 3; hop += 1) {
-		const reader = probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
-		const names = reader?.(cursor) ?? [];
-		for (const name of names) {
-			if (!name.includes('mcp-vertex')) continue;
-			const candidate = join(cursor, name, HOST_SCRIPT_REL);
-			if (probe.exists(candidate)) return candidate;
+	// Walk up at most 2 levels above the workspace. At the FIRST
+	// hop (the parent of the workspace) we probe one level deeper
+	// to recover layouts like `<parent>/propios/mcp-vertex/`,
+	// `<parent>/worktrees/mcp-vertex/`, and symlinks. The second
+	// hop only checks direct children (the common dev workflow is
+	// `<consumer>/../mcp-vertex/`, which is already covered by the
+	// explicit candidate list above).
+	//
+	// The walk is bounded so `/tmp/` (thousands of entries) does
+	// not blow up the call latency on a CI scratch dir.
+	const reader =
+		probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
+
+	const probeAt = (dir: string, depth: number): string | null => {
+		const queue: Array<{ dir: string; depth: number }> = [
+			{ dir, depth: 0 },
+		];
+		const seen = new Set<string>();
+		while (queue.length > 0) {
+			const head = queue.shift();
+			if (head === undefined) break;
+			if (seen.has(head.dir)) continue;
+			seen.add(head.dir);
+			const names = reader?.(head.dir) ?? [];
+			for (const name of names) {
+				if (!name.includes('mcp-vertex')) continue;
+				const candidate = join(head.dir, name, HOST_SCRIPT_REL);
+				if (probe.exists(candidate)) return candidate;
+			}
+			if (head.depth < depth) {
+				for (const name of names) {
+					queue.push({
+						dir: join(head.dir, name),
+						depth: head.depth + 1,
+					});
+				}
+			}
 		}
-		const parent = dirname(cursor);
-		if (parent === cursor) break; // filesystem root
-		cursor = parent;
-	}
-	return null;
+		return null;
+	};
+
+	const parent = resolve(workspace, '..');
+	const firstHop = probeAt(parent, 2);
+	if (firstHop !== null) return firstHop;
+
+	const grandParent = dirname(parent);
+	if (grandParent === parent) return null; // filesystem root
+	return probeAt(grandParent, 1);
 };
 
 /**
@@ -99,7 +129,10 @@ const upwardSiblingWalk = (
  */
 export const resolveHostEntryPath = (
 	workspace: string,
-	options: { readonly explicitRoot?: string; readonly probe?: IPathProbe } = {},
+	options: {
+		readonly explicitRoot?: string;
+		readonly probe?: IPathProbe;
+	} = {},
 ): IResolvedHostEntry => {
 	const probe = options.probe ?? realProbe;
 
@@ -121,11 +154,17 @@ export const resolveHostEntryPath = (
 		source: Exclude<THostEntrySource, 'flag' | 'unresolved'>;
 	}> = [
 		{
-			path: join(workspace, `node_modules/@mcp-vertex/core/${HOST_SCRIPT_REL}`),
+			path: join(
+				workspace,
+				`node_modules/@mcp-vertex/core/${HOST_SCRIPT_REL}`,
+			),
 			source: 'node_modules',
 		},
 		{
-			path: join(workspace, `node_modules/@mcp-vertex/core/${NPM_DIST_REL}`),
+			path: join(
+				workspace,
+				`node_modules/@mcp-vertex/core/${NPM_DIST_REL}`,
+			),
 			source: 'npm_dist',
 		},
 		{
@@ -137,7 +176,10 @@ export const resolveHostEntryPath = (
 			source: 'sibling_alt',
 		},
 		{
-			path: resolve(workspace, `../propios/mcp-vertex/${HOST_SCRIPT_REL}`),
+			path: resolve(
+				workspace,
+				`../propios/mcp-vertex/${HOST_SCRIPT_REL}`,
+			),
 			source: 'sibling_nested',
 		},
 	];
@@ -161,10 +203,7 @@ export const resolveHostEntryPath = (
 	// Surface a typed error with every attempted path so the CLI
 	// can show the operator what was probed.
 	const attempted = options.explicitRoot
-		? [
-				options.explicitRoot,
-				...candidates.map((c) => c.path),
-			]
+		? [options.explicitRoot, ...candidates.map((c) => c.path)]
 		: candidates.map((c) => c.path);
 	throw new HostEntryNotFoundError(workspace, attempted);
 };
