@@ -54,6 +54,60 @@ Prefix defaults to `status-marker`; override via `mcp-vertex.config.json`:
 { "plugins": { "status-marker": { "prefix": "close" } } }
 ```
 
+## Extend the marker set (no fork)
+
+A host can add, disable, or override close-markers from
+`mcp-vertex.config.json` — without forking the plugin (proposal `f00071`).
+The block lives under `plugins.status-marker.options.markers` and has three
+disjoint fields:
+
+```jsonc
+{
+	"plugins": {
+		"status-marker": {
+			"options": {
+				"markers": {
+					"add": [
+						{
+							"id": "REVIEW",
+							"emoji": "🔷",
+							"requiresReason": true,
+							"locales": { "es": "REVISIÓN", "en": "REVIEW" },
+							"instruction": "Close after a successful code review pass."
+						}
+					],
+					"disable": ["SIN PROPUESTA DE NINGUN TIPO"],
+					"override": {
+						"BLOQUEADO": {
+							"instruction": "Use when an external dependency (CI, registry, vault) blocks the slice."
+						}
+					}
+				}
+			}
+		}
+	}
+}
+```
+
+Merge rules:
+
+- **`add`** appends new states at the end of the iteration order. Both `id`
+  (`UPPER_SNAKE_CASE`) and `emoji` must be unique across the merged table —
+  a collision with a built-in is rejected at boot.
+- **`disable`** removes a built-in state. `HECHO` is the floor and is **not**
+  disablable; disabling an unknown id is rejected.
+- **`override`** patches a built-in's `instruction`, per-locale `locales`, or
+  `requiresReason`. The `emoji` is **never** overridable (it is part of the
+  wire contract with consumers that match by emoji).
+
+A user state that omits a locale falls back to its `id` for that locale
+(matching the built-in `es` behaviour). Host-declared markers surface on
+`<prefix>_ping` under `markers.userDefined`, including their `instruction`,
+so the agent's in-context skill learns when to emit them.
+
+The `bun run lint:user-markers` CI check (part of `bun run validate`)
+verifies the declared markers collide cleanly with the built-ins.
+
 ## Programmatic reuse
 
 ```typescript
@@ -71,6 +125,7 @@ const audit = validateCloseMarker(line);
 ## See also
 
 - Proposal [`l104`](../../docs/mcp-vertex/proposals/l104-feat-status-marker-plugin-de-cierre-obligatorio-coloreado.md).
+- Proposal [`f00071`](../../docs/mcp-vertex/proposals/ready/f00071-status-marker-user-configurable-set.md) — user-configurable marker set.
 - Plugin guide: [`docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`](../../docs/mcp-vertex/PLUGINS-MCP-VERTEX.md).
 
 BSD-3-Clause © Cartago
