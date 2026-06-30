@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	BUILTIN_MARKER_TABLE,
 	CLOSE_MARKER_STATES,
 	CLOSE_SEPARATOR,
 	EMOJI_TO_STATE,
 	formatCloseMarker,
+	formatEffectiveMarker,
 	formatLxAppCloseMarker,
+	type IEffectiveMarkerTable,
+	type IMergeError,
 	MARKERS,
 	MARKERS_BY_LOCALE,
 	MAX_LINE_LEN,
+	mergeMarkerTable,
 	REASON_MISSING_TOKEN,
 	type CloseMarker,
 	type CloseMarkerLocale,
@@ -262,5 +267,196 @@ describe('markers — bilingual rendering (f00070)', async () => {
 		const b = formatLxAppCloseMarker('HECHO', undefined, { locale: 'en' });
 		expect(a).toBe(b);
 		expect(a).toBe('🟩 [DONE]');
+	});
+});
+
+/**
+ * User-configurable marker set (proposal f00071). `mergeMarkerTable` is the
+ * pure heart: built-in ⊕ user-set ⊕ overrides. These tests lock the merge
+ * semantics and the structured-error envelope, plus the rendering through
+ * `formatEffectiveMarker`.
+ */
+const asTable = (
+	merged: IEffectiveMarkerTable | IMergeError,
+): IEffectiveMarkerTable => {
+	if ('ok' in merged && merged.ok === false) {
+		throw new Error(`expected a table, got error: ${merged.error}`);
+	}
+	return merged as IEffectiveMarkerTable;
+};
+
+describe('markers — mergeMarkerTable (f00071)', async () => {
+	it('returns the built-in 8-state table verbatim when no config is given', async () => {
+		const t = asTable(mergeMarkerTable(undefined));
+		expect(t.states).toEqual(CLOSE_MARKER_STATES);
+		expect([...t.emojiToState.entries()].length).toBe(8);
+		for (const s of CLOSE_MARKER_STATES) {
+			expect(t.markers.get(s)?.emoji).toBe(MARKERS[s].emoji);
+			expect(t.markers.get(s)?.requiresReason).toBe(
+				MARKERS[s].requiresReason,
+			);
+			expect(t.markers.get(s)?.userDefined).toBe(false);
+		}
+	});
+
+	it('BUILTIN_MARKER_TABLE matches a fresh merge with no config', async () => {
+		expect(BUILTIN_MARKER_TABLE.states).toEqual(CLOSE_MARKER_STATES);
+	});
+
+	it('appends a non-colliding marker after the built-ins', async () => {
+		const t = asTable(
+			mergeMarkerTable({
+				add: [
+					{
+						id: 'REVIEW',
+						emoji: '🔷',
+						requiresReason: true,
+						locales: { es: 'REVISIÓN', en: 'REVIEW' },
+						instruction: 'after a review',
+					},
+				],
+			}),
+		);
+		expect(t.states.at(-1)).toBe('REVIEW');
+		expect(t.states.length).toBe(9);
+		const def = t.markers.get('REVIEW');
+		expect(def?.userDefined).toBe(true);
+		expect(def?.emoji).toBe('🔷');
+		expect(def?.requiresReason).toBe(true);
+		expect(def?.instruction).toBe('after a review');
+		expect(t.emojiToState.get('🔷')).toBe('REVIEW');
+	});
+
+	it('falls back to the state name for locales a user marker omits', async () => {
+		const t = asTable(
+			mergeMarkerTable({
+				add: [
+					{
+						id: 'DEFERRED',
+						emoji: '⏸️',
+						requiresReason: true,
+						locales: { es: 'APLAZADO' },
+					},
+				],
+			}),
+		);
+		const def = t.markers.get('DEFERRED');
+		expect(def?.locales.es).toBe('APLAZADO');
+		// EN omitted → falls back to the state name.
+		expect(def?.locales.en).toBe('DEFERRED');
+	});
+
+	it('rejects an added marker that collides with a built-in emoji', async () => {
+		const merged = mergeMarkerTable({
+			add: [{ id: 'REVIEW', emoji: '🟩', requiresReason: false }],
+		});
+		expect('ok' in merged && merged.ok === false).toBe(true);
+		expect((merged as IMergeError).error).toMatch(/emoji/);
+	});
+
+	it('rejects an added marker that collides with a built-in id', async () => {
+		const merged = mergeMarkerTable({
+			add: [{ id: 'HECHO', emoji: '🔷', requiresReason: false }],
+		});
+		expect('ok' in merged && merged.ok === false).toBe(true);
+		expect((merged as IMergeError).error).toMatch(/collides|existing/);
+	});
+
+	it('disable removes a built-in state', async () => {
+		const t = asTable(
+			mergeMarkerTable({ disable: ['SIN PROPUESTA DE NINGUN TIPO'] }),
+		);
+		expect(t.states).not.toContain('SIN PROPUESTA DE NINGUN TIPO');
+		expect(t.states.length).toBe(7);
+		expect(t.emojiToState.get('⬜')).toBeUndefined();
+	});
+
+	it('refuses to disable the floor state HECHO', async () => {
+		const merged = mergeMarkerTable({ disable: ['HECHO'] });
+		expect('ok' in merged && merged.ok === false).toBe(true);
+		expect((merged as IMergeError).error).toMatch(/HECHO|floor/);
+	});
+
+	it('refuses to disable an unknown built-in id', async () => {
+		const merged = mergeMarkerTable({ disable: ['NOPE'] });
+		expect('ok' in merged && merged.ok === false).toBe(true);
+		expect((merged as IMergeError).error).toMatch(/unknown/);
+	});
+
+	it('override patches instruction / requiresReason but never emoji', async () => {
+		const t = asTable(
+			mergeMarkerTable({
+				override: {
+					BLOQUEADO: {
+						instruction: 'external dep blocks the slice',
+						requiresReason: false,
+					},
+				},
+			}),
+		);
+		const def = t.markers.get('BLOQUEADO');
+		expect(def?.instruction).toBe('external dep blocks the slice');
+		expect(def?.requiresReason).toBe(false);
+		// Emoji is part of the wire contract — unchanged.
+		expect(def?.emoji).toBe(MARKERS.BLOQUEADO.emoji);
+	});
+
+	it('override can patch per-locale bracket text', async () => {
+		const t = asTable(
+			mergeMarkerTable({
+				override: { CAP: { locales: { en: 'PAUSED' } } },
+			}),
+		);
+		expect(t.markers.get('CAP')?.locales.en).toBe('PAUSED');
+		// ES untouched.
+		expect(t.markers.get('CAP')?.locales.es).toBe('CAP');
+	});
+
+	it('rejects an override targeting an unknown built-in id', async () => {
+		const merged = mergeMarkerTable({ override: { NOPE: {} } });
+		expect('ok' in merged && merged.ok === false).toBe(true);
+		expect((merged as IMergeError).error).toMatch(/unknown/);
+	});
+});
+
+describe('markers — formatEffectiveMarker (f00071)', async () => {
+	it('renders a built-in state byte-identical to formatCloseMarker', async () => {
+		for (const s of CLOSE_MARKER_STATES) {
+			expect(formatEffectiveMarker(BUILTIN_MARKER_TABLE, s)).toBe(
+				formatCloseMarker(s),
+			);
+			expect(
+				formatEffectiveMarker(BUILTIN_MARKER_TABLE, s, undefined, {
+					locale: 'en',
+				}),
+			).toBe(formatCloseMarker(s, undefined, { locale: 'en' }));
+		}
+	});
+
+	it('renders a user-added state with its declared bracket + emoji', async () => {
+		const t = asTable(
+			mergeMarkerTable({
+				add: [
+					{
+						id: 'REVIEW',
+						emoji: '🔷',
+						requiresReason: true,
+						locales: { es: 'REVISIÓN', en: 'REVIEW' },
+					},
+				],
+			}),
+		);
+		expect(formatEffectiveMarker(t, 'REVIEW', 'lgtm')).toBe(
+			`🔷 [REVISIÓN]${CLOSE_SEPARATOR}lgtm`,
+		);
+		expect(
+			formatEffectiveMarker(t, 'REVIEW', 'lgtm', { locale: 'en' }),
+		).toBe(`🔷 [REVIEW]${CLOSE_SEPARATOR}lgtm`);
+	});
+
+	it('returns undefined for a state not in the table', async () => {
+		expect(
+			formatEffectiveMarker(BUILTIN_MARKER_TABLE, 'NOT_A_STATE'),
+		).toBeUndefined();
 	});
 });

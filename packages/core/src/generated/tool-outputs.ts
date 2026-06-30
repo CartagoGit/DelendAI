@@ -1726,6 +1726,14 @@ export interface McpVertexStatusMarkerPingOutput {
 	plugin: "status-marker";
 	cacheDir: string;
 	docsDir: string;
+	markers?: {
+		userDefined: {
+			state: string;
+			emoji: string;
+			requiresReason: boolean;
+			instruction?: string;
+		}[];
+	};
 }
 
 export type McpVertexStatusMarkerValidateOutput = {

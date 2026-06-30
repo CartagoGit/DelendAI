@@ -11,6 +11,14 @@
  * Action-multiplexed tools whose schema is intentionally permissive
  * surface as `Record<string, unknown>`.
  *
+ * --- User-configurable marker set (proposal f00071) ---
+ *
+ * The wire `state` enum grows additively when a host declares
+ * `plugins.status-marker.options.markers.add`. The built-in 8 states stay
+ * listed verbatim (so they still autocomplete), and `(string & {})` admits
+ * host-declared states without forcing a regenerate per host config. The 8
+ * built-ins are the floor; user states are the open tail.
+ *
  * --- Status-marker harvest gap (proposal f00070, S4 follow-up) ---
  *
  * The harvester in `tools/scripts/types/generate-tool-types.script.ts`
@@ -32,9 +40,19 @@
  *     this banner as "best-effort generated".
  */
 
+/**
+ * Built-in close-marker states. Hosts may extend this set additively via
+ * `plugins.status-marker.options.markers.add` (proposal f00071); the open
+ * tail `(string & {})` on the wire `state` field admits those.
+ */
+export type StatusMarkerBuiltinState = "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+
+/** Wire `state`: a built-in or a host-declared marker id. */
+export type StatusMarkerState = StatusMarkerBuiltinState | (string & {});
+
 export interface StatusMarkerCloseOutput {
 	ok: true;
-	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	state: StatusMarkerState;
 	reason?: string;
 	/**
 	 * Locale the rendered `line` was emitted with. Default is `'es'`
@@ -45,20 +63,32 @@ export interface StatusMarkerCloseOutput {
 	line: string;
 }
 
+/** One host-declared marker surfaced by `<prefix>_ping` (proposal f00071). */
+export interface StatusMarkerUserDefinedMarker {
+	state: string;
+	emoji: string;
+	requiresReason: boolean;
+	instruction?: string;
+}
+
 export interface StatusMarkerPingOutput {
 	plugin: "status-marker";
 	cacheDir: string;
 	docsDir: string;
+	/** Present only when the host declared `markers.add` entries. */
+	markers?: {
+		userDefined: StatusMarkerUserDefinedMarker[];
+	};
 }
 
 export type StatusMarkerValidateOutput = {
 	ok: true;
-	state: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	state: StatusMarkerState;
 	reason?: string;
 	line: string;
 } | {
 	ok: false;
-	state?: "HECHO" | "CAP" | "RE-PIVOT" | "CHECKPOINT-REQUIRED" | "REPAIR-NEEDED" | "BLOQUEADO" | "SIN PROPUESTAS LIBRES" | "SIN PROPUESTA DE NINGUN TIPO";
+	state?: StatusMarkerState;
 	reason?: string;
 	line?: string;
 	violation?: string;
