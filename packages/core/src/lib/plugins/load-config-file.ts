@@ -170,6 +170,46 @@ export interface ILoopDetectorConfig {
 }
 
 /**
+ * Solid-ISP: f00072 S3 — cache eviction policy.
+ *
+ * Governs the boot-time sweep run by `assembleCliConfig` over the
+ * shared `<cacheDir>` root and the rules contributed by the opt-in
+ * `@mcp-vertex/cache` plugin (plus any plugin that registers a rule
+ * against `ctx.cacheEvictionRegistry`).
+ *
+ * All fields are optional with safe defaults — an existing config
+ * without a `cache` block behaves exactly as before:
+ *
+ * - `runOnBoot` defaults to `'dry-run'`: the boot sweep only logs the
+ *   report (it removes nothing). `'apply'` is the only mode that
+ *   actually deletes; `'off'` skips the sweep entirely.
+ * - `maxAgeDays` is the upper cap applied to every `olderThanDays`
+ *   rule, so a host can shorten (never silently lengthen) the built-in
+ *   lifetimes without editing plugin code. Default 30.
+ * - `worktrees` tunes the orphan-worktree sweeper (f00072 S5): keep
+ *   the most-recent `keepLastN` crashed-agent worktrees under
+ *   `<cacheDir>/.worktrees/`, prune the rest. Default on, keep 3.
+ */
+export interface IMcpVertexCacheWorktreesConfig {
+	/** Default true. When false the worktree-orphan rule never applies. */
+	readonly enabled?: boolean;
+	/** Default 3. Keep the most-recent N worktrees by mtime. */
+	readonly keepLastN?: number;
+}
+
+export interface IMcpVertexCachePolicyConfig {
+	/**
+	 * Boot-sweep posture. `'dry-run'` (default) only logs a report;
+	 * `'apply'` deletes the evictable entries; `'off'` runs nothing.
+	 */
+	readonly runOnBoot?: 'dry-run' | 'apply' | 'off';
+	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
+	readonly maxAgeDays?: number;
+	/** Orphan-worktree sweeper tuning (f00072 S5). */
+	readonly worktrees?: IMcpVertexCacheWorktreesConfig;
+}
+
+/**
  * Composite config-file shape — every field of every sub-interface.
  * Kept exported because callers that legitimately want everything
  * (the parser, the doctor) need a single type. Callers that only
@@ -204,6 +244,13 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	readonly filesystem?: IFilesystemConfig;
 	readonly validationMatrix?: IValidationMatrixConfig;
 	readonly loopDetector?: ILoopDetectorConfig;
+	/**
+	 * f00072 S3: cache eviction policy. Governs the boot-time sweep over
+	 * `<cacheDir>` and the opt-in `@mcp-vertex/cache` plugin. Omitted ⇒
+	 * `runOnBoot: 'dry-run'` (safe: logs the report, deletes nothing).
+	 * See {@link IMcpVertexCachePolicyConfig}.
+	 */
+	readonly cache?: IMcpVertexCachePolicyConfig;
 	/**
 	 * Optional bootstrap layer configuration. Hosts use this to teach
 	 * the bootstrap blueprint about project types, tool lists and

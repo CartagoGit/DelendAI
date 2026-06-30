@@ -190,8 +190,8 @@ Defaults match the observed lifetimes in `.cache/`:
 
 ### S3 — Config schema block (backward-compatible additive)
 
-- **Status**: pending
-- **Files**: packages/core/src/lib/plugins/config-file-schema.ts, packages/core/src/lib/plugins/load-config-file.ts
+- **Status**: done
+- **Files**: packages/core/src/lib/plugins/config-file-schema.ts, packages/core/src/lib/plugins/load-config-file.ts, packages/core/src/public/index.ts, packages/core/schema/mcp-vertex.config.schema.json, packages/core/tests/src/lib/plugins/config-file-schema.spec.ts
 - **Gate**: bun run validate
 - **Command**: bun run typecheck
 - **Expect**: exit0

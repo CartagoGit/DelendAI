@@ -81,6 +81,23 @@ export const CONFIG_FILE_SCHEMA = z
 				}),
 			)
 			.optional(),
+		// f00072 S3 — cache eviction policy. Additive + backward
+		// compatible: a config without this block defaults to
+		// `runOnBoot: 'dry-run'` (the boot sweep only logs a report).
+		cache: z
+			.object({
+				runOnBoot: z.enum(['dry-run', 'apply', 'off']).optional(),
+				maxAgeDays: z.number().optional(),
+				worktrees: z
+					.object({
+						enabled: z.boolean().optional(),
+						keepLastN: z.number().optional(),
+					})
+					.strict()
+					.optional(),
+			})
+			.strict()
+			.optional(),
 		loopDetector: z
 			.object({
 				enabled: z.boolean().optional(),

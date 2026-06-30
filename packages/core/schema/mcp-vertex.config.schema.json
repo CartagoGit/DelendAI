@@ -115,6 +115,35 @@
 				"additionalProperties": false
 			}
 		},
+		"cache": {
+			"type": "object",
+			"properties": {
+				"runOnBoot": {
+					"type": "string",
+					"enum": [
+						"dry-run",
+						"apply",
+						"off"
+					]
+				},
+				"maxAgeDays": {
+					"type": "number"
+				},
+				"worktrees": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean"
+						},
+						"keepLastN": {
+							"type": "number"
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
 		"loopDetector": {
 			"type": "object",
 			"properties": {
