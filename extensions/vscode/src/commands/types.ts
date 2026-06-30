@@ -83,6 +83,11 @@ export interface ICommandDeps {
 	 * plugin that is NOT in the set, so users only see actions that
 	 * resolve. Omitted → every action is shown (legacy behaviour). */
 	readonly loadedPlugins?: readonly string[];
+	/** Host namespace prefix (f00081 S2). Resolved from
+	 * `mcp-vertex.server.prefix` at activation and threaded into every
+	 * service so a deployment started with `--prefix=acme` calls
+	 * `acme_*` tools. Omitted → the default `mcp-vertex_` is used. */
+	readonly namespacePrefix?: string;
 }
 
 export const showCommandError = async (

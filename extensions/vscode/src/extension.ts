@@ -192,6 +192,11 @@ export const activate = async (
 	// the next `activate()` starts from a clean slate.
 	const handle: IRuntimeHandle = createRuntimeHandle();
 	const vscode = deps.vscode ?? (await loadVscodeApi());
+	// f00081 S2: resolve the host's tool-name namespace from
+	// `mcp-vertex.server.prefix` once, and thread it into every service so
+	// a `--prefix=acme` deployment calls `acme_*` tools instead of silently
+	// failing. `undefined` keeps the default `mcp-vertex_` behaviour.
+	const namespacePrefix = resolveNamespacePrefix(vscode);
 	let client: McpStdioClient;
 	try {
 		client = await (deps.createClient ?? createDefaultClient)(vscode);
@@ -234,7 +239,7 @@ export const activate = async (
 		return disposable;
 	};
 
-	const overview = new OverviewService(client);
+	const overview = new OverviewService(client, namespacePrefix);
 	// f00059 S3: capture the host's actually-loaded plugin set so the
 	// toolbar can drop action cards whose `requires` is unmet. A
 	// failed overview call (server not yet booted) leaves the set
@@ -256,7 +261,7 @@ export const activate = async (
 		loadedPlugins = undefined;
 	}
 	const catalog = new AgentCatalogService(client);
-	const notifications = new NotificationsService(client);
+	const notifications = new NotificationsService(client, namespacePrefix);
 	const toolTree = new ToolTreeDataProvider(overview, catalog);
 	const memoryTree = new MemoryTreeDataProvider(new MemoryService(client));
 	// Fix #4: wrap `createStatusBarItem` in try/catch — a strict host can
@@ -274,6 +279,9 @@ export const activate = async (
 			overview,
 			client,
 			notifications,
+			undefined,
+			undefined,
+			namespacePrefix,
 		);
 		await statusBar.start();
 		context.subscriptions.push(statusBar);
@@ -324,7 +332,8 @@ export const activate = async (
 		toolTree.refresh();
 	}
 
-	track(registerShowOverviewCommand({ vscode, client }));
+	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
+	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
 	track(registerRefreshCommand({ vscode, client, toolTree }));
 	track(registerRunValidationCommand({ vscode, client }));
 	track(registerOpenProposalCommand({ vscode, client }));
@@ -338,7 +347,7 @@ export const activate = async (
 	track(registerOpenDocsApiCommand({ vscode }));
 	track(registerOpenAgentCatalogCommand({ vscode, client }));
 	track(registerOpenKnowledgeCommand({ vscode, client }));
-	track(registerToolSearchCommand({ vscode, client }));
+	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(registerRestartServerCommand(vscode));
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
@@ -369,6 +378,7 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 			...(loadedPlugins !== undefined ? { loadedPlugins } : {}),
+			...withPrefix,
 		}),
 	);
 	track(
@@ -395,6 +405,7 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				...withPrefix,
 				getConfig: () => {
 					try {
 						const section = host.getConfiguration<{
@@ -416,6 +427,7 @@ export const activate = async (
 			registerOpenDashboardCommand({
 				host,
 				client,
+				...withPrefix,
 				getConfig: () => {
 					try {
 						return (
@@ -491,6 +503,24 @@ const resolveServerCommand = (
 				? rawArgs.trim().split(/\s+/)
 				: defaults.args;
 	return { command, args };
+};
+
+/**
+ * Read `mcp-vertex.server.prefix` from the workspace configuration
+ * (f00081 S2). This is the host's tool-name namespace — the same value
+ * passed to the server's `--prefix` flag. When unset, the services fall
+ * back to the default `mcp-vertex_` prefix, so existing deployments are
+ * unaffected. Returns `undefined` (not the literal default) so each
+ * service applies its own `prefix ?? 'mcp-vertex_'` default.
+ */
+export const resolveNamespacePrefix = (
+	vscode: IVscodeApi,
+): string | undefined => {
+	const config = vscode.workspace?.getConfiguration?.('mcp-vertex.server');
+	const prefix = config?.get<string>('prefix');
+	return typeof prefix === 'string' && prefix.trim().length > 0
+		? prefix.trim()
+		: undefined;
 };
 
 export const createDefaultClient = async (

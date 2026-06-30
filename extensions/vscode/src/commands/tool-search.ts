@@ -75,7 +75,7 @@ const fallbackItems = async (
 	deps: ICommandDeps,
 	query: string,
 ): Promise<IQuickPickItem[]> => {
-	const overview = new OverviewService(deps.client);
+	const overview = new OverviewService(deps.client, deps.namespacePrefix);
 	const knowledge = new KnowledgeService(deps.client);
 	const search = new SearchService(deps.client);
 

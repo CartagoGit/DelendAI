@@ -1,8 +1,9 @@
-import type {
-	INotificationEventName,
-	McpStdioClient,
-	NotificationsService,
-	OverviewService,
+import {
+	type INotificationEventName,
+	type McpStdioClient,
+	type NotificationsService,
+	type OverviewService,
+	formatToolName,
 } from '@mcp-vertex/client';
 
 import { OPEN_DASHBOARD_COMMAND } from '../commands/open-dashboard';
@@ -95,6 +96,9 @@ export class McpVertexStatusBar {
 		private readonly notifications?: INotificationsLike,
 		private readonly openDashboardCommand: string = OPEN_DASHBOARD_COMMAND,
 		_showOverviewCommand: string = SHOW_OVERVIEW_COMMAND,
+		// f00081 S2: thread the host namespace prefix so the status-bar's
+		// own direct `client.request(...)` probes hit `<prefix>_*` tools.
+		private readonly namespacePrefix?: string,
 	) {}
 
 	async start(): Promise<void> {
@@ -154,7 +158,13 @@ export class McpVertexStatusBar {
 			const board = await this.client.request<
 				Record<string, never>,
 				IProposalBoardSummary
-			>('mcp-vertex_proposals_proposal_board', {});
+			>(
+				formatToolName(
+					this.namespacePrefix,
+					'proposals_proposal_board',
+				),
+				{},
+			);
 			return board.proposals.length;
 		} catch {
 			return '?';
@@ -168,7 +178,7 @@ export class McpVertexStatusBar {
 				{
 					readonly totals: { readonly totalBytes: number };
 				}
-			>('mcp-vertex_metrics', {});
+			>(formatToolName(this.namespacePrefix, 'metrics'), {});
 			const tokens = Math.ceil(snap.totals.totalBytes * 0.25);
 			if (tokens < 1000) return `${tokens} tok`;
 			return `${(tokens / 1000).toFixed(1)}k tok`;
@@ -188,7 +198,9 @@ export class McpVertexStatusBar {
 						readonly status?: 'active' | 'cooldown' | 'orphan';
 					}[];
 				}
-			>('mcp-vertex_proposals_agent_names', { action: 'list' });
+			>(formatToolName(this.namespacePrefix, 'proposals_agent_names'), {
+				action: 'list',
+			});
 			if (Array.isArray(result.agents)) return result.agents.length;
 			if (Array.isArray(result.assignments)) {
 				return result.assignments.filter(
