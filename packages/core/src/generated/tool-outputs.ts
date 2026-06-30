@@ -135,12 +135,35 @@ export interface McpVertexAuditAuditConsolidateOutput {
 	findings: Array<{
 		id: string;
 		titles: string[];
-		worstSeverity: "FATAL" | "MUY_MAL" | "MEJORABLE" | "OK" | "MUY_BIEN" | "PERFECTO" | "EXEMPLARY";
+		worstSeverity:
+			| "FATAL"
+			| "BAD"
+			| "MINOR"
+			| "OK"
+			| "GOOD"
+			| "PERFECT"
+			| "EXEMPLARY";
 		files: string[];
 		seenBy: string[];
 	}>;
 	topActions: string[];
 	markdown: string;
+	/**
+	 * Proposal-scaffolding summary. Three possible shapes — see the
+	 * generated audit leaf module for the full contract.
+	 */
+	proposals:
+		| {
+				scaffolded: Array<{
+					id: string;
+					filename: string;
+					severity: string;
+					files: string[];
+				}>;
+				reason?: string;
+			}
+		| { skipped: string }
+		| { disabled: true };
 }
 
 export interface McpVertexAuditAuditPlanOutput {
@@ -183,12 +206,20 @@ export interface McpVertexAuditAuditRunOutput {
 		topActions: string[];
 		markdown: string;
 	};
-	scaffolded: {
-		id: string;
-		filename: string;
-		severity: string;
-		files: string[];
-	}[];
+	/**
+	 * Same auto-scaffold summary shape as audit_consolidate.
+	 */
+	proposals:
+		| {
+				scaffolded: Array<{
+					id: string;
+					filename: string;
+					severity: string;
+					files: string[];
+				}>;
+			}
+		| { skipped: string }
+		| { disabled: true };
 	projects: string[];
 }
 

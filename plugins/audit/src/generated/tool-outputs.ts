@@ -37,12 +37,24 @@ export interface AuditAuditConsolidateOutput {
 	findings: Array<{
 		id: string;
 		titles: string[];
-		worstSeverity: "FATAL" | "MUY_MAL" | "MEJORABLE" | "OK" | "MUY_BIEN" | "PERFECTO" | "EXEMPLARY";
+		worstSeverity: "FATAL" | "BAD" | "MINOR" | "OK" | "GOOD" | "PERFECT" | "EXEMPLARY";
 		files: string[];
 		seenBy: string[];
 	}>;
 	topActions: string[];
 	markdown: string;
+	proposals:
+		| {
+				scaffolded: Array<{
+					id: string;
+					filename: string;
+					severity: string;
+					files: string[];
+				}>;
+				reason?: string;
+			}
+		| { skipped: string }
+		| { disabled: true };
 }
 
 export interface AuditAuditPlanOutput {
@@ -85,12 +97,17 @@ export interface AuditAuditRunOutput {
 		topActions: string[];
 		markdown: string;
 	};
-	scaffolded: Array<{
-		id: string;
-		filename: string;
-		severity: string;
-		files: string[];
-	}>;
+	proposals:
+		| {
+				scaffolded: Array<{
+					id: string;
+					filename: string;
+					severity: string;
+					files: string[];
+				}>;
+			}
+		| { skipped: string }
+		| { disabled: true };
 	projects: string[];
 }
 

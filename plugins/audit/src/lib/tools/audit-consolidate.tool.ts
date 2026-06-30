@@ -90,6 +90,18 @@ const ConsolidateInputSchema = z.object({
 	auditDir: z.string().optional(),
 	/** How many top actions to surface. Default: 5. */
 	topActions: z.number().int().min(1).max(50).optional(),
+	/**
+	 * Override the host's `autoScaffoldProposals` setting for this
+	 * call. Pass `false` to opt out of proposal scaffolding without
+	 * touching the config file.
+	 */
+	autoScaffoldProposals: z.boolean().optional(),
+	/**
+	 * Workspace-relative directory for the scaffolded proposals.
+	 * Default: `docs/mcp-vertex/proposals/ready`. Path is validated
+	 * against the workspace root like `auditDir`.
+	 */
+	proposalsDir: z.string().optional(),
 });
 
 // --- builders --------------------------------------------------------------
@@ -117,13 +129,27 @@ export interface IConsolidateToolOptions {
 	 * does not hardcode mcp-vertex vocabulary.
 	 */
 	readonly projectName?: string;
+	/**
+	 * Default for `autoScaffoldProposals`. Defaults from the plugin
+	 * options; the per-call argument overrides it.
+	 */
+	readonly autoScaffoldProposals?: boolean;
+	/**
+	 * Peer-plugin registry. Empty/missing at register time;
+	 * populated by the core once every plugin has loaded.
+	 */
+	readonly peerPlugins?: IPeerPluginRegistry;
+	/** Default `proposalsDir` (workspace-relative). */
+	readonly defaultProposalsDir?: string;
 }
 
 /**
  * `<prefix>_audit_consolidate { auditDir?, topActions? }` — read every
  * `*.md` in the audits dir, parse each as an {@link IAuditDocument},
  * deduplicate findings across documents, average per-dimension scores,
- * and return both the structured view and the master markdown.
+ * and (when the `proposals` peer plugin is loaded AND the host opts
+ * in via `autoScaffoldProposals: true`) scaffold fix proposals for
+ * every actionable finding.
  */
 export const buildConsolidateRegistration = (
 	options: IConsolidateToolOptions,
@@ -132,7 +158,7 @@ export const buildConsolidateRegistration = (
 	return {
 		id: 'audit_consolidate',
 		summary:
-			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown.',
+			'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. Auto-scaffolds fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
 		descriptionKey: 'audit_consolidate',
 		tags: ['audit', 'aggregate'],
 		register: async (server) => {
@@ -140,13 +166,15 @@ export const buildConsolidateRegistration = (
 				`${prefix}_audit_consolidate`,
 				{
 					description:
-						'Read every `*.md` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with `seenBy`) and the rendered master markdown. Default dir: `docs/mcp-vertex/proposals/done/audits`.',
+						'Read every `*.md` in the audits directory, parse + deduplicate + average per-dimension scores across N models, and return both the structured consolidation (per-dimension scores, deduplicated findings with `seenBy`) and the rendered master markdown. When the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled, also scaffold one fix proposal per actionable finding under the proposals directory. Default dir: `docs/mcp-vertex/proposals/done/audits`.',
 					inputSchema: ConsolidateInputSchema,
 					outputSchema: ConsolidationOutputSchema,
 				},
 				async (args: {
 					auditDir?: string | undefined;
 					topActions?: number | undefined;
+					autoScaffoldProposals?: boolean | undefined;
+					proposalsDir?: string | undefined;
 				}) => {
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
@@ -199,6 +227,79 @@ export const buildConsolidateRegistration = (
 								? { topActions: options.defaultTopActions }
 								: {}),
 					});
+
+					// Auto-scaffold proposals (gated on proposals availability
+					// + host opt-in). Resolve the proposals dir workspace-
+					// contained BEFORE writing; fall back to disabled if
+					// anything fails so we never write outside the workspace.
+					const enabled =
+						args.autoScaffoldProposals ??
+						options.autoScaffoldProposals ??
+						true;
+					const proposalsDir =
+						args.proposalsDir ??
+						options.defaultProposalsDir ??
+						'docs/mcp-vertex/proposals/ready';
+					const proposalsDirContained = resolveWorkspaceContained(
+						options.workspaceRoot,
+						proposalsDir,
+					);
+					let proposalsSummary:
+						| {
+								scaffolded: Array<{
+									id: string;
+									filename: string;
+									severity: string;
+									files: string[];
+								}>;
+								reason?: string;
+						  }
+						| { skipped: string }
+						| { disabled: true };
+					if (
+						proposalsDirContained.ok ||
+						path.isAbsolute(proposalsDir)
+					) {
+						const scaffoldOptions: IAutoScaffoldOptions = {
+							enabled,
+							peerPlugins: options.peerPlugins,
+							proposalsDir,
+							workspaceRoot: options.workspaceRoot,
+						};
+						const outcome = await resolveAutoScaffold(
+							result,
+							scaffoldOptions,
+						);
+						if (outcome.kind === 'scaffolded') {
+							proposalsSummary = {
+								scaffolded: outcome.records.map(
+									(r): {
+										id: string;
+										filename: string;
+										severity: string;
+										files: string[];
+									} => ({
+										id: r.id,
+										filename: r.filename,
+										severity: r.severity,
+										files: [...r.files],
+									}),
+								),
+							};
+						} else if (outcome.kind === 'skipped') {
+							proposalsSummary = { skipped: outcome.reason };
+						} else {
+							proposalsSummary = { disabled: true };
+						}
+					} else if (!enabled) {
+						proposalsSummary = { disabled: true };
+					} else {
+						// proposals-dir escapes workspace AND opt-in is on:
+						// refuse to scaffold so the caller notices the path
+						// config bug, instead of silently writing outside.
+						proposalsSummary = { skipped: 'proposals-dir-out-of-workspace' };
+					}
+
 					return toolJson({
 						...result,
 						markdown: renderConsolidationMarkdown(result, {
@@ -206,6 +307,7 @@ export const buildConsolidateRegistration = (
 								? { projectName: options.projectName }
 								: {}),
 						}),
+						proposals: proposalsSummary,
 					});
 				},
 			);

@@ -202,7 +202,8 @@ export const buildPlanRegistration = (
 						}
 					}
 					const mode =
-						args.mode ?? inferMode(scope, configuredLayers, projects);
+						args.mode ??
+						inferMode(scope, configuredLayers, projects);
 					const dimensions = defaultDimensions ?? [
 						'Arquitectura',
 						'Contratos e interfaces',
@@ -222,8 +223,8 @@ export const buildPlanRegistration = (
 							? allAvailable.filter(
 									(s) =>
 										s.kind === 'universal' ||
-										configuredLayerNames.has(s.name) &&
-											projects.includes(s.name),
+										(configuredLayerNames.has(s.name) &&
+											projects.includes(s.name)),
 								)
 							: allAvailable;
 					return toolJson({

@@ -181,7 +181,7 @@ Canonical pattern: specs colocated with the source; they use injected mocks/stub
  * Hosts wire those via `crossCuttingAdditions` from `register()`.
  */
 export const CROSS_CUTTING_UNIVERSAL_DEFAULTS: readonly string[] = [
-	'- **Observability**: identify the project\'s canonical observability primitive (metrics, tracing, structured logs, whatever it is) and verify it is present, persists its state across calls, and that a snapshot-diff between two invocations reflects the host\'s real activity. If it does not exist = MINOR finding; if it exists but lies = FATAL.',
+	"- **Observability**: identify the project's canonical observability primitive (metrics, tracing, structured logs, whatever it is) and verify it is present, persists its state across calls, and that a snapshot-diff between two invocations reflects the host's real activity. If it does not exist = MINOR finding; if it exists but lies = FATAL.",
 	'- **Configuration flag honoring**: every documented opt-in flag (legacy, migration, dry-run, allow-list, etc.) must be **explicitly honoured or explicitly ignored** in code. A flag mentioned in docs but with no verifiable effect in code = MINOR finding.',
 	'- **Generated typed outputs**: if the project generates types from schemas (typed SDK, JSON Schema, OpenAPI, etc.) the generated files must be committed and regenerated as part of the validation gate. A `<generated>` that is missing or out of sync with its source = finding.',
 ];

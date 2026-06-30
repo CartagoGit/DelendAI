@@ -68,9 +68,9 @@ import {
 } from '../services/audit-consolidate.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 import {
-	scaffoldProposals,
-	type IScaffoldedProposal,
-} from '../services/proposal-scaffolder.service';
+	resolveAutoScaffold,
+	type IAutoScaffoldOptions,
+} from '../services/auto-scaffold-proposals.service';
 
 // ---------------------------------------------------------------------------
 // Output schema
@@ -111,7 +111,18 @@ const RunOutputSchema = z.object({
 		topActions: z.array(z.string()),
 		markdown: z.string(),
 	}),
-	scaffolded: z.array(ScaffoldedSchema),
+	/**
+	 * Same proposal-scaffolding summary shape as `audit_consolidate`.
+	 * Three possible shapes:
+	 *  - `{ scaffolded: [...] }` — proposals plugin loaded + opt-in.
+	 *  - `{ skipped: "proposals-not-loaded" }` — proposals NOT loaded.
+	 *  - `{ disabled: true }` — caller passed `scaffoldProposals: false`.
+	 */
+	proposals: z.union([
+		z.object({ scaffolded: z.array(ScaffoldedSchema) }),
+		z.object({ skipped: z.string() }),
+		z.object({ disabled: z.literal(true) }),
+	]),
 	projects: z.array(z.string()),
 });
 
@@ -250,6 +261,21 @@ export interface IRunToolOptions {
 	 * pre-existing proposals if the host forgets to wire it).
 	 */
 	readonly knownProposalIds?: ReadonlySet<string>;
+	/**
+	 * Peer-plugin registry forwarded from
+	 * `IMcpPluginContext.peerPlugins`. Used by the auto-scaffolder
+	 * to detect whether the `proposals` plugin is loaded in the
+	 * same MCP server. Empty/missing at register time;
+	 * populated by the core once `loadPlugins()` returns.
+	 */
+	readonly peerPlugins?: import('@mcp-vertex/core/public').IPeerPluginRegistry;
+	/**
+	 * Default for the `autoScaffoldProposals` flag. Per-call
+	 * `scaffoldProposals: false` overrides it. When the proposals
+	 * plugin is loaded AND opt-in is on, every run also scaffolds
+	 * the dedup'd findings into fix proposals.
+	 */
+	readonly autoScaffoldProposals?: boolean;
 	/**
 	 * Transport for outbound HTTP. The default uses global
 	 * `fetch`; the e2e spec injects an in-memory mock.
@@ -495,31 +521,76 @@ export const buildRunRegistration = (
 					);
 
 					// --- 7. Scaffold proposals ----------------------------
-					const shouldScaffold = args.scaffoldProposals !== false;
-					let scaffoldedRecords: readonly IScaffoldedProposal[] = [];
-					if (shouldScaffold && consolidation.findings.length > 0) {
-						scaffoldedRecords = scaffoldProposals(consolidation, {
+					// The host opts in via `autoScaffoldProposals`
+					// (plugin options) or per-call `scaffoldProposals`.
+					// Actual scaffolding only happens when the
+					// `proposals` peer plugin is loaded in the same MCP
+					// server — auto-detection happens inside
+					// `resolveAutoScaffold` via the peer registry.
+					const enabled =
+						args.scaffoldProposals ??
+						options.autoScaffoldProposals ??
+						true;
+					let proposalsSummary:
+						| {
+								scaffolded: Array<{
+									id: string;
+									filename: string;
+									severity: string;
+									files: string[];
+								}>;
+						  }
+						| { skipped: string }
+						| { disabled: true };
+					if (enabled && consolidation.findings.length > 0) {
+						const scaffoldOptions: IAutoScaffoldOptions = {
+							enabled,
+							peerPlugins: options.peerPlugins,
+							proposalsDir: proposalsRel,
+							workspaceRoot: options.workspaceRoot,
 							...(options.knownProposalIds !== undefined
-								? { existingIds: options.knownProposalIds }
+								? { knownProposalIds: options.knownProposalIds }
 								: {}),
-							outputDir: proposalsRel,
 							...(args.auditId !== undefined
 								? { auditId: args.auditId }
 								: {}),
-							date, // ISO for proposal frontmatter
 							...(args.proposalStartAt !== undefined
 								? { startAt: args.proposalStartAt }
 								: {}),
 							...(args.proposalPrefix !== undefined
 								? { prefix: args.proposalPrefix }
 								: {}),
-						});
-						for (const record of scaffoldedRecords) {
-							await writeFileAtomic(
-								path.join(proposalsDirAbs, record.filename),
-								record.body,
-							);
+							date,
+						};
+						const outcome = await resolveAutoScaffold(
+							consolidation,
+							scaffoldOptions,
+						);
+						if (outcome.kind === 'scaffolded') {
+							proposalsSummary = {
+								scaffolded: outcome.records.map(
+									(r): {
+										id: string;
+										filename: string;
+										severity: string;
+										files: string[];
+									} => ({
+										id: r.id,
+										filename: r.filename,
+										severity: r.severity,
+										files: [...r.files],
+									}),
+								),
+							};
+						} else if (outcome.kind === 'skipped') {
+							proposalsSummary = { skipped: outcome.reason };
+						} else {
+							proposalsSummary = { disabled: true };
 						}
+					} else if (!enabled) {
+						proposalsSummary = { disabled: true };
+					} else {
+						proposalsSummary = { scaffolded: [] };
 					}
 
 					return toolJson({
@@ -541,12 +612,7 @@ export const buildRunRegistration = (
 							topActions: [...consolidation.topActions],
 							markdown,
 						},
-						scaffolded: scaffoldedRecords.map((r) => ({
-							id: r.id,
-							filename: r.filename,
-							severity: r.severity,
-							files: [...r.files],
-						})),
+						proposals: proposalsSummary,
 						projects: [...projects],
 					});
 				},
