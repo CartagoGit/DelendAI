@@ -261,7 +261,10 @@ export const renderMigrationProposalIfRequested = async (
 	options: { readonly reader: IFileReader },
 ): Promise<readonly IRenderedFile[]> => {
 	if (!answers.migrateFromLegacy) return [];
-	const plan = await renderAdoptionPlan(answers, { reader: options.reader });
+	const plan = await renderAdoptionPlan(answers, {
+		reader: options.reader,
+		ourPlugins: resolvePluginSet(answers),
+	});
 	return [{ relPath: plan.relPath, content: plan.content }];
 };
 
