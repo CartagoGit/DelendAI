@@ -209,7 +209,8 @@ const SEVERITY_TABLE_ROWS: ReadonlyArray<{
 		band: 'FATAL',
 		enumToken: 'FATAL',
 		emoji: '🔴',
-		meaning: 'Critical: silent bug, security hole, or design error. Must fix.',
+		meaning:
+			'Critical: silent bug, security hole, or design error. Must fix.',
 	},
 	{
 		band: 'BAD',
@@ -245,8 +246,7 @@ const SEVERITY_TABLE_ROWS: ReadonlyArray<{
 		band: 'EXEMPLARY',
 		enumToken: 'EXEMPLARY',
 		emoji: '✨',
-		meaning:
-			'Reference-quality; worth copying into other projects.',
+		meaning: 'Reference-quality; worth copying into other projects.',
 	},
 ];
 
@@ -262,10 +262,7 @@ const inferMode = (
 ): AuditMode => {
 	if (projects && projects.length > 0) return 'monorepo';
 	if (scope === 'full') return 'general';
-	if (
-		scope in SCOPE_LABEL ||
-		layers.some((l) => l.name === scope)
-	) {
+	if (scope in SCOPE_LABEL || layers.some((l) => l.name === scope)) {
 		return 'specific';
 	}
 	return 'general';
@@ -298,7 +295,8 @@ export const buildBrief = (
 		projects && projects.length > 0
 			? configuredLayers.filter((l) => projects.includes(l.name))
 			: configuredLayers;
-	const mode: AuditMode = options.mode ?? inferMode(scope, configuredLayers, projects);
+	const mode: AuditMode =
+		options.mode ?? inferMode(scope, configuredLayers, projects);
 	const projectName = options.projectName ?? 'the project';
 	const configFileName = options.configFileName ?? '<config-file>';
 	const dimensionsTable = dimensions.map((d) => `| ${d} | /10 |`).join('\n');
@@ -465,9 +463,7 @@ interface IBuildReadingPhasesOptions {
  * Render a small monorepo badge that the model pastes into its audit
  * report so reviewers can see which slice of the monorepo was covered.
  */
-const renderMonorepoBadge = (
-	projects: readonly string[],
-): string => {
+const renderMonorepoBadge = (projects: readonly string[]): string => {
 	if (projects.length === 0) return '';
 	return [
 		'',

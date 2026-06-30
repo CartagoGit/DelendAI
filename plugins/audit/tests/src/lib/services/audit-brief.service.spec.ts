@@ -103,19 +103,19 @@ describe('buildBrief — audit modes', async () => {
 		},
 	];
 
-	it('renders the new EXEMPLARY band as the 7th severity tier (English enum + Spanish display)', async () => {
+	it('renders the new EXEMPLARY band as the 7th severity tier (pure English)', async () => {
 		const md = buildBrief('full');
-		// Display label in the rubric table stays Spanish for
-		// backwards-compat with existing audits.
-		expect(md).toContain('ESPLÉNDIDO');
-		expect(md).toContain('✨');
-		// The brief should keep the 6-level user vocabulary footnote.
-		expect(md).toContain(
-			'FATAL → REGULAR → BIEN → MUY_BIEN → PERFECTO → ESPLÉNDIDO',
-		);
-		// The brief should also document the English canonical enum
-		// tokens used in `worstSeverity`.
+		// The brief header carries the EXEMPLARY label in the rubric
+		// table; everything in the brief is pure English (no Spanish
+		// vocabulary leaked into the table itself).
 		expect(md).toContain('EXEMPLARY');
+		expect(md).toContain('✨');
+		expect(md).toContain('FATAL');
+		expect(md).toContain('BAD');
+		expect(md).toContain('MINOR');
+		expect(md).toContain('OK');
+		expect(md).toContain('GOOD');
+		expect(md).toContain('PERFECT');
 	});
 
 	it('general mode (default) renders every configured layer phase', async () => {
@@ -123,7 +123,7 @@ describe('buildBrief — audit modes', async () => {
 		expect(md).toContain('Core packages');
 		expect(md).toContain('Plugin packages');
 		expect(md).toContain('IDE extension');
-		expect(md).toMatch(/modo general/i);
+		expect(md).toMatch(/mode general/i);
 	});
 
 	it('specific mode renders only the requested layer phase', async () => {
@@ -136,7 +136,7 @@ describe('buildBrief — audit modes', async () => {
 		// specific scope is requested.
 		expect(md).not.toContain('Plugin packages');
 		expect(md).not.toContain('IDE extension');
-		expect(md).toMatch(/modo espec[íi]fico/i);
+		expect(md).toMatch(/mode specific/i);
 	});
 
 	it('monorepo mode filters the layer phases to the named projects', async () => {
@@ -149,7 +149,7 @@ describe('buildBrief — audit modes', async () => {
 		expect(md).toContain('Plugin packages');
 		// The unselected layer must NOT be rendered.
 		expect(md).not.toContain('IDE extension');
-		expect(md).toMatch(/modo monorepo/i);
+		expect(md).toMatch(/mode monorepo/i);
 		expect(md).toContain('core');
 		expect(md).toContain('plugins');
 	});
@@ -160,30 +160,30 @@ describe('buildBrief — audit modes', async () => {
 			mode: 'monorepo',
 			projects: ['core', 'extensions'],
 		});
-		expect(md).toMatch(/modo monorepo activo[\s\S]*`core`/iu);
+		expect(md).toMatch(/Monorepo mode active[\s\S]*`core`/iu);
 		expect(md).toMatch(/`extensions`/u);
 		// 'plugins' is in the configured set but not selected; the
 		// badge must NOT include it.
-		expect(md).not.toMatch(/modo monorepo activo[\s\S]*`plugins`/iu);
+		expect(md).not.toMatch(/Monorepo mode active[\s\S]*`plugins`/iu);
 	});
 
 	it('infers monorepo mode when `projects` is non-empty even without explicit mode', async () => {
 		const md = buildBrief('full', { layers, projects: ['core'] });
-		expect(md).toMatch(/modo monorepo/i);
+		expect(md).toMatch(/mode monorepo/i);
 		expect(md).toContain('Core packages');
 		expect(md).not.toContain('Plugin packages');
 	});
 
 	it('infers specific mode when scope is a layer name (no projects, no explicit mode)', async () => {
 		const md = buildBrief('plugins', { layers });
-		expect(md).toMatch(/modo espec[íi]fico/i);
+		expect(md).toMatch(/mode specific/i);
 		expect(md).toContain('Plugin packages');
 		expect(md).not.toContain('Core packages');
 	});
 
 	it('infers general mode when scope is "full" (default)', async () => {
 		const md = buildBrief('full', { layers });
-		expect(md).toMatch(/modo general/i);
+		expect(md).toMatch(/mode general/i);
 	});
 
 	it('renders the three-mode legend so reviewers can see the contract', async () => {

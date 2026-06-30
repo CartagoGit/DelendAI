@@ -25,9 +25,7 @@ import path from 'node:path';
 import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
 import { writeFileAtomic } from '@mcp-vertex/core/public';
 
-import type {
-	IConsolidation,
-} from '../contracts/interfaces/audit.interface';
+import type { IConsolidation } from '../contracts/interfaces/audit.interface';
 
 import {
 	scaffoldProposals,
@@ -59,7 +57,10 @@ export interface IAutoScaffoldOptions {
 }
 
 export type AutoScaffoldOutcome =
-	| { readonly kind: 'scaffolded'; readonly records: readonly IScaffoldedProposal[] }
+	| {
+			readonly kind: 'scaffolded';
+			readonly records: readonly IScaffoldedProposal[];
+	  }
 	| { readonly kind: 'disabled' }
 	| {
 			readonly kind: 'skipped';
@@ -76,8 +77,7 @@ export const resolveAutoScaffold = async (
 	options: IAutoScaffoldOptions,
 ): Promise<AutoScaffoldOutcome> => {
 	if (!options.enabled) return { kind: 'disabled' };
-	const proposalsLoaded =
-		options.peerPlugins?.has('proposals') ?? false;
+	const proposalsLoaded = options.peerPlugins?.has('proposals') ?? false;
 	if (!proposalsLoaded) {
 		return { kind: 'skipped', reason: 'proposals-not-loaded' };
 	}
@@ -88,9 +88,7 @@ export const resolveAutoScaffold = async (
 		...(options.knownProposalIds !== undefined
 			? { existingIds: options.knownProposalIds }
 			: {}),
-		...(options.startAt !== undefined
-			? { startAt: options.startAt }
-			: {}),
+		...(options.startAt !== undefined ? { startAt: options.startAt } : {}),
 		...(options.prefix !== undefined ? { prefix: options.prefix } : {}),
 		outputDir: options.proposalsDir,
 		...(options.auditId !== undefined ? { auditId: options.auditId } : {}),
@@ -109,10 +107,7 @@ export const resolveAutoScaffold = async (
 		: path.join(options.workspaceRoot, options.proposalsDir);
 	await mkdir(absDir, { recursive: true });
 	for (const record of records) {
-		await writeFileAtomic(
-			path.join(absDir, record.filename),
-			record.body,
-		);
+		await writeFileAtomic(path.join(absDir, record.filename), record.body);
 	}
 	return { kind: 'scaffolded', records };
 };

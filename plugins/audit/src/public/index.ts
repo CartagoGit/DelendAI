@@ -48,9 +48,7 @@ export type {
 	IScaffoldedProposal,
 	IScaffoldOptions,
 } from '../lib/services/proposal-scaffolder.service';
-export {
-	resolveAutoScaffold,
-} from '../lib/services/auto-scaffold-proposals.service';
+export { resolveAutoScaffold } from '../lib/services/auto-scaffold-proposals.service';
 export type {
 	AutoScaffoldOutcome,
 	IAutoScaffoldOptions,
