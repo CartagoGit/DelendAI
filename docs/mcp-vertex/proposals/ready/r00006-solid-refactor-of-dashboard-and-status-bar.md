@@ -170,7 +170,7 @@ and the Esc handler fires the expected event.
 **Acceptance:** spec asserts the rendered CSS contains `flex-wrap: wrap`.
 
 ### S6 — Tabs aria-controls + roving tabindex (H27)
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/ui-extension/src/dashboard/builders/build-tabs-bar.ts
 - **Gate**: validate
 
