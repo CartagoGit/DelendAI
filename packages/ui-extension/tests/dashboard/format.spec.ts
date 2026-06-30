@@ -182,3 +182,68 @@ describe('formatRelativeTime', async () => {
 		).toBe('ayer');
 	});
 });
+
+/**
+ * r00005 S3 — cross-runtime snapshot.
+ *
+ * The proposal's intent is: for the same (date, now, locale) input, the output
+ * must be byte-identical across runtimes (Node 18+, Bun 1.x) — both embed ICU,
+ * so any divergence is a regression the build must catch. We encode that as an
+ * exact-string snapshot pinned to a fixed instant: `formatDate` is naturally
+ * deterministic for a midday-UTC instant (June 25 14:30Z stays "June 25" in
+ * every real time zone), and `formatRelativeTime` is driven from a `now`-relative
+ * input so the diff is exactly 2 minutes without depending on a timer shim (kept
+ * runtime-agnostic so the same spec is byte-identical under Vitest/Node and raw
+ * `bun test`). Whichever runtime executes the suite, these literals must match;
+ * ICU drift between runtimes fails the build. 12 locales each.
+ */
+describe('cross-runtime Intl snapshot (r00005 S3)', () => {
+	// Midday-UTC instant: its calendar day ("June 25, 2026") is stable for any
+	// UTC offset in (-14:30, +09:30), i.e. every real time zone.
+	const iso = '2026-06-25T14:30:00.000Z';
+
+	const DATE_SNAPSHOT: Record<string, string> = {
+		en: 'Jun 25, 2026',
+		es: '25 jun 2026',
+		de: '25. Juni 2026',
+		fr: '25 juin 2026',
+		ja: '2026年6月25日',
+		zh: '2026年6月25日',
+		ar: '25 يونيو 2026',
+		pt: '25 de jun. de 2026',
+		ru: '25 июн. 2026 г.',
+		it: '25 giu 2026',
+		ko: '2026년 6월 25일',
+		hi: '25 जून 2026',
+	};
+
+	const REL_SNAPSHOT: Record<string, string> = {
+		en: '2 minutes ago',
+		es: 'hace 2 minutos',
+		de: 'vor 2 Minuten',
+		fr: 'il y a 2 minutes',
+		ja: '2 分前',
+		zh: '2分钟前',
+		ar: 'قبل دقيقتين',
+		pt: 'há 2 minutos',
+		ru: '2 минуты назад',
+		it: '2 minuti fa',
+		ko: '2분 전',
+		hi: '2 मिनट पहले',
+	};
+
+	it('formatDate is byte-identical across runtimes for 12 locales', () => {
+		for (const [locale, expected] of Object.entries(DATE_SNAPSHOT)) {
+			expect(formatDate(iso, locale)).toBe(expected);
+		}
+	});
+
+	it('formatRelativeTime is byte-identical across runtimes for 12 locales', () => {
+		// Drive from `now` so the diff is exactly 2 minutes without a timer shim;
+		// the rounding boundaries make this stable across the sub-ms call gap.
+		const past = new Date(Date.now() - 2 * 60_000).toISOString();
+		for (const [locale, expected] of Object.entries(REL_SNAPSHOT)) {
+			expect(formatRelativeTime(past, locale)).toBe(expected);
+		}
+	});
+});

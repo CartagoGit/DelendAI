@@ -116,13 +116,21 @@ the locale in parens.
 Same shape for the time wrapper. Both are pure `(date, locale) => string`.
 
 ### S3 — cross-runtime snapshot
-- **Status**: pending
-- **Files**: packages/ui-extension/src/utils/format-relative-time.spec.ts
+- **Status**: done
+- **Files**: packages/ui-extension/tests/dashboard/format.spec.ts, packages/ui-extension/src/dashboard/format.ts
 - **Gate**: validate
-
-The snapshot is generated on **both** Node 18 and Bun 1.x; the CI runs both. If they
-diverge, the build fails. (They shouldn't — both embed ICU — but the audit found
-subtle `Intl` differences historically.)
+- **Note**: Added an exact-string snapshot (12 locales × `formatDate` + 12 ×
+  `formatRelativeTime`) in `tests/dashboard/format.spec.ts` (the real spec path; the
+  predicted `utils/format-relative-time.spec.ts` does not exist). The snapshot is
+  byte-pinned and runtime-agnostic: `formatDate` uses a midday-UTC instant (calendar
+  day stable in every real time zone) and `formatRelativeTime` is driven from a
+  `now`-relative input (no timer shim, so it passes under both Vitest/Node and raw
+  `bun test`). Running the suite under both runtimes surfaced a real divergence — Bun
+  ICU rendered `ar` dates with Arabic-Indic digits while Node rendered Latin digits.
+  Fixed by pinning `numberingSystem: 'latn'` in `formatDate`/`formatTime`
+  (`packages/ui-extension/src/dashboard/format.ts`), which is exactly the subtle-`Intl`
+  drift this slice's risk table predicted. Verified: 31/31 pass under both Vitest and
+  `bun test`.
 
 ## dependency graph
 
