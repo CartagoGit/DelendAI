@@ -331,8 +331,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'init:default',
 		summary:
 			'Non-interactive workspace bootstrap with operator defaults (swarm + overwrite + skills + agents + scaffold).',
-		usage:
-			'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+		usage: 'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
 		async run(args, ctx) {
 			const { initDefaultCommand } = await import(
 				'./init/init-default.command'

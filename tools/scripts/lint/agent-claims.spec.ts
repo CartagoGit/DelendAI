@@ -47,7 +47,9 @@ describe('checkAgentClaims (x00080 S2 + x00088 stale-skip)', () => {
 			],
 		});
 		expect(
-			checkAgentClaims(['file1.ts', 'file3.ts'], lockContent, { now: NOW }),
+			checkAgentClaims(['file1.ts', 'file3.ts'], lockContent, {
+				now: NOW,
+			}),
 		).toEqual([]);
 	});
 
@@ -80,7 +82,9 @@ describe('checkAgentClaims (x00080 S2 + x00088 stale-skip)', () => {
 				{
 					task_id: 'f00103-init-default-command',
 					agent: 'github-copilot@local',
-					ownership: ['packages/cli/src/commands/init/init-default.command.ts'],
+					ownership: [
+						'packages/cli/src/commands/init/init-default.command.ts',
+					],
 					last_seen: freshLastSeen(120), // 2h old
 				},
 			],
@@ -142,15 +146,21 @@ describe('isLockStale (x00088)', () => {
 	});
 
 	it('returns false when age is below the threshold', () => {
-		expect(isLockStale(entry(freshLastSeen(5)) as never, NOW, 10)).toBe(false);
+		expect(isLockStale(entry(freshLastSeen(5)) as never, NOW, 10)).toBe(
+			false,
+		);
 	});
 
 	it('returns true when age is above the threshold', () => {
-		expect(isLockStale(entry(freshLastSeen(15)) as never, NOW, 10)).toBe(true);
+		expect(isLockStale(entry(freshLastSeen(15)) as never, NOW, 10)).toBe(
+			true,
+		);
 	});
 
 	it('returns false at exactly the threshold (boundary is strict >)', () => {
-		expect(isLockStale(entry(freshLastSeen(10)) as never, NOW, 10)).toBe(false);
+		expect(isLockStale(entry(freshLastSeen(10)) as never, NOW, 10)).toBe(
+			false,
+		);
 	});
 });
 
@@ -169,13 +179,31 @@ describe('collectStaleClaims (x00088)', () => {
 		const lockContent = JSON.stringify({
 			stale_after_minutes: 10,
 			in_flight: [
-				{ task_id: 'fresh', agent: 'a', ownership: [], last_seen: freshLastSeen(2) },
-				{ task_id: 'stale1', agent: 'b', ownership: [], last_seen: freshLastSeen(120) },
-				{ task_id: 'stale2', agent: 'c', ownership: [], last_seen: freshLastSeen(11) },
+				{
+					task_id: 'fresh',
+					agent: 'a',
+					ownership: [],
+					last_seen: freshLastSeen(2),
+				},
+				{
+					task_id: 'stale1',
+					agent: 'b',
+					ownership: [],
+					last_seen: freshLastSeen(120),
+				},
+				{
+					task_id: 'stale2',
+					agent: 'c',
+					ownership: [],
+					last_seen: freshLastSeen(11),
+				},
 			],
 		});
 		const stale = collectStaleClaims(lockContent, { now: NOW });
-		expect(stale.map((e) => e.task_id).sort()).toEqual(['stale1', 'stale2']);
+		expect(stale.map((e) => e.task_id).sort()).toEqual([
+			'stale1',
+			'stale2',
+		]);
 	});
 
 	it('returns [] when lockFileContent is null', () => {

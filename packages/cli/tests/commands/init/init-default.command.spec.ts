@@ -227,7 +227,9 @@ describe('init:default (f00103)', () => {
 			attempted: string[];
 		};
 		expect(data.ok).toBe(false);
-		expect(data.error.reason).toMatch(/could not locate the mcp-vertex host entry script/);
+		expect(data.error.reason).toMatch(
+			/could not locate the mcp-vertex host entry script/,
+		);
 		expect(data.error.nextAction).toBe('retry');
 		expect(data.attempted.length).toBeGreaterThan(0);
 		// The hint must mention the override flag so the operator knows

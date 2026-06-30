@@ -33,7 +33,9 @@ describe('preset-table', () => {
 			// depends on vertex's member order, so we assert the set is
 			// exactly { issues, web-fetch, audit }.
 			const tail = ids.slice(-3);
-			expect(new Set(tail)).toEqual(new Set(['issues', 'web-fetch', 'audit']));
+			expect(new Set(tail)).toEqual(
+				new Set(['issues', 'web-fetch', 'audit']),
+			);
 		});
 
 		it('row effective membership equals the ⊇ chain', () => {
