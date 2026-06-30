@@ -23,6 +23,10 @@
  */
 import { basename } from 'node:path';
 
+import {
+	renderAdoptionSections,
+	type IAdoptionSections,
+} from './init-adoption-plan';
 import type { IInitAnswers } from './init-answers.schema';
 import type { IFileReader } from './init-detection';
 import {
@@ -116,8 +120,14 @@ export interface IAdoptionPlan {
 	readonly content: string;
 	/** The allocated id (`f00001`, `f00042`, …) — surfaced for `--json`. */
 	readonly id: string;
-	/** The inventory the plan was built from — consumed by f00089 U2. */
+	/** The foreign proposal inventory the plan was built from (U1). */
 	readonly inventory: IForeignProposalInventory;
+	/**
+	 * The U2 (A3 + A4) sections embedded in the plan: the skill inventory
+	 * and the tool-unification map, surfaced for `--json` without
+	 * re-parsing the markdown.
+	 */
+	readonly sections: IAdoptionSections;
 }
 
 /** Render the foreign-system section of the plan body (advisory mapping). */
@@ -194,10 +204,22 @@ const findExistingAdoptionId = async (
  */
 export const renderAdoptionPlan = async (
 	answers: IInitAnswers,
-	options: { readonly reader: IFileReader },
+	options: {
+		readonly reader: IFileReader;
+		/**
+		 * The resolved plugin set whose tool namespaces the A4 section maps.
+		 * Passed by the bundle orchestrator (which owns `resolvePluginSet`)
+		 * to avoid an import cycle; defaults to an empty set so the plan
+		 * still renders deterministically when a caller omits it.
+		 */
+		readonly ourPlugins?: readonly string[];
+	},
 ): Promise<IAdoptionPlan> => {
 	const scope = deriveScope(answers.workspaceRoot);
 	const inventory = await detectForeignProposals(options.reader);
+	const sections = await renderAdoptionSections(options.reader, {
+		ourPlugins: options.ourPlugins ?? [],
+	});
 	const id =
 		(await findExistingAdoptionId(options.reader, scope)) ??
 		(await allocateNextAdoptionId(options.reader, inventory));
@@ -253,17 +275,11 @@ export const renderAdoptionPlan = async (
 		`mcp-vertex layout (file naming, id space, status folders). The mapping\n` +
 		`is advisory; converting the foreign files is a later, explicit step the\n` +
 		`target's agents perform — \`init\` never converts them in place.\n\n` +
-		`### A3 — skill migration (filled by f00089 U2)\n\n` +
-		`<!-- f00089 U2 embeds the skill-migration section here: migrate our\n` +
-		`skills into the target AND absorb the target's existing skills. -->\n` +
-		`_Pending f00089 U2._\n\n` +
-		`### A4 — tool-namespace unification (filled by f00089 U2)\n\n` +
-		`<!-- f00089 U2 embeds the tool-namespace unification section here:\n` +
-		`inventory ours + theirs and document the no-collision mapping. -->\n` +
-		`_Pending f00089 U2._\n\n` +
+		sections.skillSection +
+		sections.toolSection +
 		`### A5 — single source of truth (filled by f00089 U3)\n\n` +
 		`<!-- f00089 U3 embeds the AGENT-BOOTSTRAP + AGENTS consolidation. -->\n` +
 		`_Pending f00089 U3._\n`;
 
-	return { relPath, content, id, inventory };
+	return { relPath, content, id, inventory, sections };
 };
