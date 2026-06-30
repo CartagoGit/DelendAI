@@ -138,13 +138,30 @@ External agent/IDE configs are evaluated per host:
 
 ### S3 — Contracts interfaces/constants split
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/**/src/lib/**, plugins/**/src/lib/**
 - **Gate**: bun run validate
 - **Acceptance**:
   - Exported interfaces live in `contracts/interfaces/*.interface.ts` where the local package/plugin already has a contracts boundary.
   - Shared constants live in `contracts/constants/*.constant.ts`.
   - Barrel exports preserve public imports; internal imports are updated without circular dependencies.
+- **Landed**: The split is in the tree wherever a contracts boundary exists.
+  `packages/core/src/lib/contracts/interfaces/` carries the cross-package
+  contracts (`core-paths`, `host-config`, `git-runner`, `cache-eviction`
+  (f00072), `quality-gate`, …); `packages/{client,cli,ui-extension}` and
+  `plugins/{audit,proposals,issues,rules}` each have their
+  `contracts/{interfaces,constants}` boundary with `.interface.ts` /
+  `.constant.ts` naming, and the public barrels re-export from those paths
+  (e.g. `plugins/proposals/src/public/index.ts` re-exports
+  `IProposalStore`, `IHostPathLayout`, the path-layout/glossary constants).
+  `bun run validate` is green, so the barrels preserve public imports with no
+  circular dependencies. Per the slice's own non-goal ("no noisy import
+  churn") the remaining un-split exports are service-private data modules
+  that never cross a package boundary (e.g.
+  `plugins/audit/src/lib/services/audit-brief.constants.ts`, imported only by
+  its sibling service); relocating them into a shared `contracts/` boundary
+  would be churn without a public-contract justification, so they correctly
+  stay co-located. No CLI/init/preset surface touched (clean of f00103).
 
 ### S4 — Header and marquee responsive repair
 
