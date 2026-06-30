@@ -92,6 +92,15 @@ export const componentScript: string = `
       if (id) { toggleDropdown(id); evt.preventDefault(); return; }
     }
 
+    // Sticky toast close button → dismiss + notify host.
+    var toastClose = target.closest('[data-mv-toast-close]');
+    if (toastClose) {
+      var closeId = toastClose.getAttribute('data-mv-toast-close');
+      dismissToast(document.getElementById(closeId));
+      evt.preventDefault();
+      return;
+    }
+
     // Dropdown item → dispatch + close.
     var item = target.closest('[data-mv-action]');
     if (item) {
@@ -108,9 +117,25 @@ export const componentScript: string = `
     if (!target.closest('[data-mv-dropdown]')) closeAllDropdowns(null);
   });
 
-  // Esc → close all dropdowns.
+  // Dismiss a toast: remove it from the DOM and fire a cancelable
+  // 'mv-toast-dismiss' custom event the host can listen to (e.g. to
+  // record that the user dismissed a sticky toast).
+  function dismissToast(el) {
+    if (!el || !el.parentNode) return;
+    var id = el.getAttribute('data-mv-toast');
+    document.dispatchEvent(new CustomEvent('mv-toast-dismiss', {
+      bubbles: true,
+      detail: { id: id },
+    }));
+    el.parentNode.removeChild(el);
+  }
+
+  // Esc → close all dropdowns, then dismiss the most recent sticky toast.
   document.addEventListener('keydown', function (evt) {
-    if (evt.key === 'Escape') closeAllDropdowns(null);
+    if (evt.key !== 'Escape') return;
+    closeAllDropdowns(null);
+    var stickies = document.querySelectorAll('[data-mv-toast-sticky="true"]');
+    if (stickies.length > 0) dismissToast(stickies[stickies.length - 1]);
   });
 
   // Language picker change.

@@ -117,6 +117,16 @@ export const componentCss: string = `
 	color: #fff; border: 0; border-radius: var(--mv-radius-sm, 4px);
 	font: inherit; cursor: pointer;
 }
+.mv-toast__close {
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 22px; height: 22px;
+	padding: 0; margin-left: 2px;
+	background: transparent;
+	color: var(--mv-fg-muted, #9aa4b2);
+	border: 0; border-radius: var(--mv-radius-sm, 4px);
+	font: inherit; font-size: 18px; line-height: 1; cursor: pointer;
+}
+.mv-toast__close:hover { color: var(--mv-fg, #e6edf3); background: var(--mv-bg, #0d1117); }
 @keyframes mv-toast-in {
 	from { opacity: 0; transform: translateY(8px); }
 	to { opacity: 1; transform: translateY(0); }

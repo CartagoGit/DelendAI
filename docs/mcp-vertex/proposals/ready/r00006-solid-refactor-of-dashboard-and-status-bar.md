@@ -147,7 +147,7 @@ Render: `<svg role="img" aria-label="${escape(ariaLabel)}">…</svg>`.
 the escape.
 
 ### S4 — `Toast` sticky close + Esc (H25)
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/ui-extension/src/components/toast.ts
 - **Gate**: validate
 
