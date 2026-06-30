@@ -95,7 +95,7 @@ export const buildCompactToolRegistration = (
 		id: 'compact',
 		effects: ['write'],
 		summary:
-			'Distil the carried working-state items into a compact session digest and drop the noisy tail (token-efficient).',
+			'Distil carried working-state into a compact session digest; drop the noisy tail.',
 		tags: ['memory', 'token-efficiency'],
 		register: async (server) => {
 			server.registerTool(
