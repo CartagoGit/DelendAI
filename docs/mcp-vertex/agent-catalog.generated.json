@@ -151,6 +151,10 @@
 			"plugin": "mcp-vertex"
 		},
 		{
+			"name": "mcp-vertex_memory_compact",
+			"plugin": "mcp-vertex"
+		},
+		{
 			"name": "mcp-vertex_memory_export",
 			"plugin": "mcp-vertex"
 		},
