@@ -31,6 +31,13 @@ export default definePlugin({
 		intervalMs: z.number().optional(),
 		/** Heartbeat interval (ms) for agent-alive/idle/dead classification. */
 		heartbeatMs: z.number().optional(),
+		/**
+		 * f00072 S4 — TTL (days) for stale handoff files. The plugin
+		 * registers an `olderThanDays` eviction rule for `handoff/*` so
+		 * crashed-agent handoff artefacts don't accumulate. Default 7
+		 * (matches the loop-detector's `handoffTtlDays`).
+		 */
+		handoffTtlDays: z.number().optional(),
 	}),
 	register(ctx) {
 		const lockRel =
@@ -54,6 +61,28 @@ export default definePlugin({
 				? { heartbeatMs: ctx.options.heartbeatMs as number }
 				: {}),
 		};
+
+		// f00072 S4: register a stale-handoff eviction rule against the
+		// shared cache registry. Handoff artefacts are owned by this
+		// plugin's watcher; nothing prunes them today. We only register
+		// when the handoff dir lives under the cache root (the default),
+		// so the rule's cache-relative `handoff/*` path stays contained;
+		// a host that points `watchHandoffDir` elsewhere opts out. The
+		// registry's `olderThanDays` strategy reads each entry's mtime
+		// (handoff files are not date-named), dry-run by default.
+		const defaultHandoffRel = joinRel(ctx.cacheDir, 'handoff');
+		if (handoffRel === defaultHandoffRel) {
+			const handoffTtlDays =
+				typeof ctx.options.handoffTtlDays === 'number'
+					? ctx.options.handoffTtlDays
+					: 7;
+			ctx.cacheEvictionRegistry?.register({
+				id: 'handoff-stale',
+				owner: 'notification',
+				path: 'handoff/*',
+				when: { kind: 'olderThanMtimeDays', days: handoffTtlDays },
+			});
+		}
 
 		return {
 			tools: [

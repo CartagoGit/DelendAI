@@ -14,6 +14,8 @@
  * the durable-memory contract. Moving redaction to a separate module
  * would risk a future caller forgetting to apply it.
  */
+import { readFile } from 'node:fs/promises';
+
 import { redactSecrets } from './redact';
 import { readStore, withStoreLock, writeStore } from './store-io';
 import { DEFAULT_MAX_NOTES, type INote, type ISaveResult } from './store-types';
@@ -105,4 +107,59 @@ export const removeNote = (absPath: string, id: string): Promise<boolean> =>
 		if (next.length === notes.length) return false;
 		await writeStore(absPath, next);
 		return true;
+	});
+
+/**
+ * Read the durable store WITHOUT the lazy-TTL filter `readStore`
+ * applies, so we can see (and count) the expired notes that are still
+ * physically on disk. Missing/empty/corrupt → empty list (a corrupt
+ * file is the read path's concern, not the sweeper's).
+ */
+const readNotesRaw = async (absPath: string): Promise<INote[]> => {
+	let raw: string;
+	try {
+		raw = await readFile(absPath, 'utf8');
+	} catch (err) {
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return [];
+		throw err;
+	}
+	if (!raw.trim()) return [];
+	try {
+		const parsed = JSON.parse(raw) as { notes?: INote[] };
+		return Array.isArray(parsed.notes) ? parsed.notes : [];
+	} catch {
+		return [];
+	}
+};
+
+/**
+ * f00072 S4 — durably prune expired notes. `readStore` already drops
+ * expired notes on read (lazy TTL), but they linger on disk until the
+ * next write; this is the scheduled sweep the cache-eviction registry
+ * invokes so a write-quiet store still shrinks.
+ *
+ * Returns the ids of the expired notes (the ones removed, or — on a
+ * dry-run — the ones that WOULD be removed). On a dry-run nothing is
+ * written. The whole read-modify-write runs under the store lock so it
+ * never races a concurrent `saveNote`.
+ */
+export const expireExpiredNotes = (
+	absPath: string,
+	options: { dryRun?: boolean; now?: () => string } = {},
+): Promise<readonly string[]> =>
+	withStoreLock(absPath, async () => {
+		const nowIso = (options.now ?? (() => new Date().toISOString()))();
+		const all = await readNotesRaw(absPath);
+		const expired = all.filter(
+			(note) => note.expiresAt !== undefined && note.expiresAt <= nowIso,
+		);
+		if (expired.length === 0) return [];
+		if (options.dryRun !== true) {
+			const live = all.filter(
+				(note) =>
+					note.expiresAt === undefined || note.expiresAt > nowIso,
+			);
+			await writeStore(absPath, live);
+		}
+		return expired.map((note) => note.id);
 	});

@@ -1,6 +1,7 @@
 import { definePlugin, joinRel } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
+import { expireExpiredNotes } from './lib/services/store';
 import { buildMemoryToolRegistrations } from './lib/tools';
 
 const OptionsSchema = z
@@ -67,6 +68,31 @@ export default definePlugin({
 		const storePathAbs = ctx.workspace.resolve(
 			joinRel(ctx.pluginCacheDir, 'notes.json'),
 		);
+
+		// f00072 S4: register the per-note TTL sweep as a `custom` rule
+		// against the shared cache-eviction registry. `readStore` already
+		// drops expired notes lazily on read, but they linger on disk
+		// until the next write; this rule prunes them durably on the boot
+		// sweep / `cache_gc`. The custom runner honours the registry's
+		// dryRun flag, so a dry-run reports the would-be removals without
+		// touching the store. Additive: no behaviour change for the
+		// existing tools, and a no-op when no registry is supplied.
+		// The plugin's private cache dir is `<cacheDir>/memory` (keyed by
+		// the plugin NAME, not the namespace prefix), so the store's
+		// cache-relative path is `memory/notes.json`. The custom runner
+		// operates on the resolved `storePathAbs` directly; `path` is used
+		// for containment validation + the eviction report.
+		ctx.cacheEvictionRegistry?.register({
+			id: 'memory-expired',
+			owner: 'memory',
+			path: 'memory/notes.json',
+			when: {
+				kind: 'custom',
+				run: async (_targetAbs, dryRun) =>
+					expireExpiredNotes(storePathAbs, { dryRun }),
+			},
+		});
+
 		return {
 			tools: buildMemoryToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,

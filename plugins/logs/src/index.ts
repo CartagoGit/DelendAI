@@ -16,11 +16,26 @@ export default definePlugin({
 	async register(ctx) {
 		const logsDir = ctx.workspace.resolve(joinRel(ctx.cacheDir, 'logs'));
 		const store = createLogStore(logsDir);
-		void (await store).gc({
-			olderThanDays:
-				typeof ctx.options.retentionDays === 'number'
-					? ctx.options.retentionDays
-					: 30,
+		const retentionDays =
+			typeof ctx.options.retentionDays === 'number'
+				? ctx.options.retentionDays
+				: 30;
+
+		// f00072 S4: register log retention as DATA against the shared
+		// cache-eviction registry instead of an inline one-shot `gc()`.
+		// The `logs/*.jsonl` files are date-named (`YYYY-MM-DD.jsonl`),
+		// so the registry's `olderThanDays` strategy reads the date from
+		// the filename — same 30-day default, now dry-run aware and run
+		// by the boot sweep / `cache_gc` rather than only once at boot.
+		// Backward compatible: hosts that DON'T load the `cache` plugin
+		// still get the sweep on boot (the core runs the registry once),
+		// and a host that wants the old eager behaviour keeps the same
+		// retention default.
+		ctx.cacheEvictionRegistry?.register({
+			id: 'logs-retention',
+			owner: 'logs',
+			path: 'logs/*',
+			when: { kind: 'olderThanDays', days: retentionDays },
 		});
 
 		return {
