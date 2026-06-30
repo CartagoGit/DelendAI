@@ -138,6 +138,8 @@ export type {
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
 	ILoopDetectorConfig,
+	IMcpVertexCachePolicyConfig,
+	IMcpVertexCacheWorktreesConfig,
 	IMcpVertexConfigFile,
 	IMcpVertexCorePathsConfig,
 	IMcpVertexPluginConfig,

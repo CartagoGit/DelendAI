@@ -6,6 +6,7 @@ import type {
 	IBootstrapPatternOverrides,
 	IFilesystemConfig,
 	ILoopDetectorConfig,
+	IMcpVertexCachePolicyConfig,
 	IMcpVertexConfigFile,
 	IMcpVertexCorePathsConfig,
 	IMcpVertexPluginConfig,
@@ -60,6 +61,43 @@ describe('config-file-schema (Solid SRP extraction)', async () => {
 				},
 			});
 			expect(res.success).toBe(true);
+		});
+
+		it('accepts a config with a cache policy block (f00072 S3)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				cache: {
+					runOnBoot: 'apply',
+					maxAgeDays: 14,
+					worktrees: { enabled: true, keepLastN: 3 },
+				},
+			});
+			expect(res.success).toBe(true);
+		});
+
+		it('accepts an empty cache block (defaults to dry-run)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({ cache: {} });
+			expect(res.success).toBe(true);
+		});
+
+		it('rejects an unknown runOnBoot mode in the cache block', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				cache: { runOnBoot: 'sometimes' },
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects unknown keys inside cache (.strict)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				cache: { unknownCacheField: true },
+			});
+			expect(res.success).toBe(false);
+		});
+
+		it('rejects unknown keys inside cache.worktrees (.strict)', async () => {
+			const res = CONFIG_FILE_SCHEMA.safeParse({
+				cache: { worktrees: { unknownWtField: true } },
+			});
+			expect(res.success).toBe(false);
 		});
 
 		it('accepts a config with bootstrap.patternOverrides', async () => {
@@ -199,6 +237,17 @@ describe('IMcpVertexConfigFile ISP segregation', async () => {
 		const fs: IFilesystemConfig = { authorizedRoots: ['/data/shared'] };
 		const asConfig: IMcpVertexConfigFile = { filesystem: fs };
 		expect(asConfig.filesystem?.authorizedRoots).toEqual(['/data/shared']);
+	});
+
+	it('IMcpVertexCachePolicyConfig narrows the cache field (f00072 S3)', async () => {
+		const cache: IMcpVertexCachePolicyConfig = {
+			runOnBoot: 'dry-run',
+			maxAgeDays: 30,
+			worktrees: { enabled: true, keepLastN: 3 },
+		};
+		const asConfig: IMcpVertexConfigFile = { cache };
+		expect(asConfig.cache?.runOnBoot).toBe('dry-run');
+		expect(asConfig.cache?.worktrees?.keepLastN).toBe(3);
 	});
 });
 
