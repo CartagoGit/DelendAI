@@ -104,7 +104,7 @@ vacío ⇒ \`monorepo\`, \`scope === 'full'\` ⇒ \`general\`, en otro caso
 ## Escala de severidad (7 bandas, inglés puro)
 
 El plugin usa internamente una escala de **7 bandas** (todos los tokens
-del enum `worstSeverity` están en **inglés**; el display humano en los
+del enum \`worstSeverity\` están en **inglés**; el display humano en los
 reports sigue siendo español para mantener compat con el histórico):
 
 | Token \`worstSeverity\` | Emoji | Display humano | Significado |
