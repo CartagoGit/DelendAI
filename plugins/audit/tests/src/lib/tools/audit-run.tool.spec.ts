@@ -143,14 +143,19 @@ const parse = (r: {
 const mockAudit = (
 	model: string,
 	findingTitle: string,
-	severity: 'FATAL' | 'MUY_MAL' | 'MEJORABLE' | 'OK' = 'FATAL',
+	severity: 'FATAL' | 'BAD' | 'MINOR' | 'OK' = 'FATAL',
 	files: string[] = ['src/example.ts'],
 ) => {
-	// The parser's severity regex (`/\bMUY\s*MAL\b/u`) only matches
-	// the heading when MUY/MAL are separated by whitespace. Map the
-	// internal underscore form to the canonical "MUY MAL" form before
-	// rendering the heading.
-	const heading = severity === 'MUY_MAL' ? 'MUY MAL' : severity;
+	// The parser accepts both the canonical English enum tokens
+	// (`BAD`, `MINOR`) and the historical Spanish heading form
+	// (`MUY MAL`, `MEJORABLE`). Use the Spanish form so the rendered
+	// audit reads like a real legacy report.
+	const heading =
+		severity === 'BAD'
+			? 'MUY MAL'
+			: severity === 'MINOR'
+				? 'MEJORABLE'
+				: severity;
 	return `# Audit (${model})
 
 ## Resumen Ejecutivo
@@ -385,7 +390,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 									content: mockAudit(
 										'gpt-4o',
 										'Bun lockfile drifts after npm installs',
-										'MUY_MAL',
+										'BAD',
 										['bun.lock'],
 									),
 								},
@@ -424,7 +429,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(out.failed?.[0]?.error).not.toContain('sk-bad');
 		// One MUY_MAL scaffolded proposal.
 		expect(out.scaffolded ?? []).toHaveLength(1);
-		expect(out.scaffolded?.[0]?.severity).toBe('MUY_MAL');
+		expect(out.scaffolded?.[0]?.severity).toBe('BAD');
 	});
 
 	// ---- no actionable findings: scaffold is empty -------------------
@@ -542,8 +547,8 @@ describe('audit_run (alcance B, f00077)', async () => {
 								{
 									text: mockAudit(
 										'gemini-2.5-pro',
-										'MEJORABLE: missing README section',
-										'MEJORABLE',
+										'MINOR: missing README section',
+										'MINOR',
 										['README.md'],
 									),
 								},
@@ -572,7 +577,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(transport.calls[0]?.url).toContain('gemini-2.5-pro');
 		expect(transport.calls[0]?.url).toContain('key=AIza-fixture-key');
 		expect(transport.calls[0]?.headers.authorization).toBeUndefined();
-		expect(out.scaffolded?.[0]?.severity).toBe('MEJORABLE');
+		expect(out.scaffolded?.[0]?.severity).toBe('MINOR');
 	});
 
 	// ---- proposalId allocation with existingIds ----------------------
@@ -587,7 +592,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 							content: mockAudit(
 								'gpt-4o',
 								'Tokens: avoid re-reading files in tight loops',
-								'MEJORABLE',
+								'MINOR',
 								['packages/core/src/lib/foo.ts'],
 							),
 						},

@@ -26,6 +26,7 @@ import {
 import { loadPlugins, nodeDynamicImport } from '../plugins/load-plugins';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import type { IMcpPluginContext } from '../plugins/plugin-contract';
+import { createPeerPluginRegistry } from '../plugins/peer-plugin-registry';
 import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpVertexCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
@@ -291,6 +292,12 @@ export const assembleCliConfig = async (
 		cacheDirAbs: cacheDirContained.abs,
 	});
 
+	// Peer-plugin registry: populated AFTER loadPlugins returns, so
+	// handlers can lazily consult `ctx.peerPlugins.list()` and see the
+	// final peer set. Created empty here; `peerPluginRegistrySet(...)`
+	// is called once we know which plugins loaded successfully.
+	const peerRegistry = createPeerPluginRegistry();
+
 	// f00082: resolve the commit-author policy ONCE (the git lookup
 	// runs at boot, not per commit). The CLI loader fills the identity
 	// from MCP `clientInfo` (or `args.extra['agent-client']` / `agent-model`
@@ -341,6 +348,7 @@ export const assembleCliConfig = async (
 			options: pluginConfig.options ?? {},
 			args: args.extra,
 			cacheEvictionRegistry,
+			peerPlugins: peerRegistry.registry,
 		};
 	};
 
@@ -378,6 +386,12 @@ export const assembleCliConfig = async (
 		buildContext,
 		import: deps.import ?? nodeDynamicImport,
 	});
+
+	// Populate the peer-plugin registry now that we know the final
+	// load outcome. Plugins running their `register()` see `[]`; tool
+	// handlers (which run later, after this call returns) see the
+	// canonical peer set.
+	peerRegistry.set(loadResult.loaded.map((entry) => entry.plugin.name));
 
 	const prompts: IPromptRegistration[] = [];
 	const resources: IResourceRegistration[] = [];

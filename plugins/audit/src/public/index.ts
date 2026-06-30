@@ -9,7 +9,10 @@ export {
 	ALL_SCOPES,
 	SCOPE_LABEL,
 } from '../lib/services/audit-brief.service';
-export type { AuditScope } from '../lib/services/audit-brief.service';
+export type {
+	AuditMode,
+	AuditScope,
+} from '../lib/services/audit-brief.service';
 export {
 	parseAuditBody,
 	parseAuditFiles,
@@ -46,6 +49,14 @@ export type {
 	IScaffoldOptions,
 } from '../lib/services/proposal-scaffolder.service';
 export {
+	resolveAutoScaffold,
+} from '../lib/services/auto-scaffold-proposals.service';
+export type {
+	AutoScaffoldOutcome,
+	IAutoScaffoldOptions,
+} from '../lib/services/auto-scaffold-proposals.service';
+
+export {
 	buildRunRegistration,
 	probeAudits,
 	probeProposals,
@@ -59,7 +70,10 @@ export type {
 	IAuditSource,
 	IConsolidation,
 } from '../lib/contracts/interfaces/audit.interface';
-export { SEVERITY_ORDER } from '../lib/contracts/interfaces/audit.interface';
+export {
+	SEVERITY_ORDER,
+	SEVERITY_USER_LABEL,
+} from '../lib/contracts/interfaces/audit.interface';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

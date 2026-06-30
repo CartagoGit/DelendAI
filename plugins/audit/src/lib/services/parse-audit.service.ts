@@ -20,17 +20,35 @@ import type {
 	IAuditSource,
 } from '../contracts/interfaces/audit.interface';
 
-/** Normalised severity tokens the parser maps onto the canonical set. */
+/** Normalised severity tokens the parser maps onto the canonical set.
+ *  The first match wins (FATAL → BAD → MINOR → OK → GOOD → PERFECT →
+ *  EXEMPLARY). Historical Spanish forms are accepted as fallbacks so
+ *  older audits stay parseable after the English rename. */
 const SEVERITY_PATTERNS: ReadonlyArray<{
 	readonly pattern: RegExp;
 	readonly mapsTo: AuditSeverity;
 }> = [
 	{ pattern: /\bFATAL\b/u, mapsTo: 'FATAL' },
-	{ pattern: /\bMUY\s*MAL\b/u, mapsTo: 'MUY_MAL' },
-	{ pattern: /\b(?:MEJORABLE|MEJORA)\b/u, mapsTo: 'MEJORABLE' },
-	{ pattern: /\b(?:OK|BIEN)\b/u, mapsTo: 'OK' },
-	{ pattern: /\bMUY\s*BIEN\b/u, mapsTo: 'MUY_BIEN' },
-	{ pattern: /\bPERFECTO\b/u, mapsTo: 'PERFECTO' },
+	// BAD replaces the historical `MUY MAL`. The regex accepts both
+	// forms (the canonical English `BAD` and the Spanish legacy
+	// `MUY MAL`) so existing audits still parse.
+	{ pattern: /\b(?:BAD|MUY\s*MAL)\b/iu, mapsTo: 'BAD' },
+	// MINOR replaces the historical `MEJORABLE`. Accepts both forms
+	// plus `MEJORA` (the verb form some early audits used).
+	{ pattern: /\b(?:MINOR|MEJORABLE|MEJORA)\b/iu, mapsTo: 'MINOR' },
+	// OK is unchanged.
+	{ pattern: /\b(?:OK|BIEN)\b/iu, mapsTo: 'OK' },
+	// GOOD replaces the historical `MUY BIEN`. Accepts both forms.
+	{ pattern: /\b(?:GOOD|MUY\s*BIEN)\b/iu, mapsTo: 'GOOD' },
+	// PERFECT replaces the historical `PERFECTO`. Accepts both forms.
+	{ pattern: /\bPERFECTO?\b/iu, mapsTo: 'PERFECT' },
+	// EXEMPLARY (canonical English) sits above PERFECT. Regex also
+	// matches the Spanish legacy `ESPLÉNDIDO` and the ASCII fallback
+	// `ESPLENDIDO` so older audits still resolve correctly. No `g`
+	// flag — the classifier calls `.test()` once per line and a `g`
+	// regex would carry `lastIndex` state across lines, masking
+	// later matches.
+	{ pattern: /\b(?:EXEMPLARY|ESPL[ÉE]NDIDO)\b/iu, mapsTo: 'EXEMPLARY' },
 ];
 
 /** Map the source file name to the source identity. */
