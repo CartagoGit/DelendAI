@@ -118,13 +118,23 @@ External agent/IDE configs are evaluated per host:
 
 ### S2 — Cache centralization cleanup
 
-- **Status**: pending
+- **Status**: done
 - **Files**: .gitignore, AGENTS.md, tools/scripts/verify/**, plugins/**/README.md
 - **Gate**: bun run validate
 - **Acceptance**:
   - New generated mcp-vertex state writes under `.cache/mcp-vertex/**`.
   - Legacy root scratch dirs remain ignored only as compatibility, not as documented active defaults.
   - The repo root layout documentation names every remaining root generated directory and why it cannot move.
+- **Landed**: The centralization itself was already in the tree —
+  `.cache/mcp-vertex/**` holds all engine state (`.worktrees/`, `handoff/`,
+  `verify/`, `memory/`, `proposals/`, `state/`, `logs/`, …); Astro is wired
+  to `cacheDir: ../../.cache/astro` and `outDir: ../../build/apps/web`
+  (`apps/web/astro.config.mjs`); `.gitignore` ignores `.cache/`,
+  `.worktrees/`, `.astro/`. `lint:cache` enforces a single root cache. This
+  slice closed the documentation gap: AGENTS.md now names every remaining
+  root generated directory (`.astro/` — Astro type metadata Astro will not
+  relocate; `.worktrees/` — empty gitignored legacy mount point) and why it
+  cannot move, so no generated root dir is an undocumented default.
 
 ### S3 — Contracts interfaces/constants split
 

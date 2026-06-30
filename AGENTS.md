@@ -249,6 +249,23 @@ The root is intentionally minimal. Before adding a file to it, check:
   belongs in `.github/`, `docs/mcp-vertex/`, `tools/`, `config/`, or
   under `.cache/`.
 
+### Remaining root generated directories (f00064 S2)
+
+All new generated mcp-vertex state writes under `.cache/mcp-vertex/**`
+(`.worktrees/`, `handoff/`, `verify/`, `memory/`, `proposals/`, `state/`,
+`logs/`, …). Astro's relocatable cache lives at `.cache/astro/` (`cacheDir`)
+and its build output at `build/apps/web/` (`outDir`). The only generated
+directories that remain at the repo root are gitignored compatibility/
+tooling artefacts that their tool cannot relocate cleanly:
+
+- `.astro/` — Astro's generated type metadata (`src/env.d.ts` references,
+  content-collection types). Astro emits this beside the project root for
+  editor/`astro check` integration and does not relocate it with `cacheDir`;
+  it stays gitignored. (`apps/web/.astro/` is the same for the web app.)
+- `.worktrees/` — empty legacy mount point kept only as a gitignored
+  compatibility path; live agent worktrees now write under
+  `.cache/mcp-vertex/.worktrees/`. It is not a documented active default.
+
 ### Root config classification (f00064 S1)
 
 Every root-level config is classified as `must-stay-root` (the tool/editor/
