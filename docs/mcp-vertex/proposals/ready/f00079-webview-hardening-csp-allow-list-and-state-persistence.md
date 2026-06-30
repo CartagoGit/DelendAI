@@ -6,7 +6,11 @@ track: security+webview+extension-ux
 date: 2026-06-25
 kind: feat
 title: Webview hardening — CSP, action allow-list, settings persistence, proposals TreeData
-shipped-in: []
+shipped-in:
+    - 9e61648d # S2 toolbar action allow-list (H3)
+    - d79e28a4 # S3 settings persist to globalState (H4)
+    - c3207c49 # S4+S5 proposals tree register + openProposal arg (H5/H6)
+    - fe608e47 # S1 webview CSP default-deny (H2, partial — see notes)
 recan: []
 related:
     - a00040 # audit that surfaced these findings (H2/H3/H4/H5/H6)
@@ -108,8 +112,21 @@ extensions/vscode/src/
 ### S1 — CSP default-deny + 7 webviews opt-in (closes H2)
 
 - **Files**: [packages/ui-extension/src/webview/csp.ts](packages/ui-extension/src/webview/csp.ts)
-- **Status**: ready
+- **Status**: done (partial — additive CSP landed; baseline `enableScripts: false` flip deferred)
 - **Gate**: bun run validate
+- **Shipped**: fe608e47. Landed `IWebviewCspPolicy` + `DEFAULT_DENY` (frozen) +
+  `WEBVIEW_CSP_OVERRIDES` + `resolveCspPolicy`/`injectCspMeta`/`withCsp` in
+  `packages/ui-extension/src/webview/csp.ts`. Wired CSP into every JSON webview via
+  `extensions/vscode/src/commands/types.ts:renderJsonHtml` (default-deny) and the
+  script-bearing toolbar/settings/knowledge webviews via `withCsp(...)` with their
+  reviewed `script-src 'unsafe-inline'` override. Tests: `tests/webview/csp.spec.ts`
+  (frozen shape, override-replaces, inject), `src/test/webview-csp.spec.ts`
+  (command-boundary CSP present). **Deferred** (security note): flipping
+  `enableScripts: false` as the baseline and a nonce pipeline to drop `'unsafe-inline'`
+  on the toolbar/settings/dashboard/knowledge surfaces — doing it safely needs
+  per-webview nonces and would otherwise regress the working inline scripts. The
+  dashboard webview (rendered through the host adapter, not `createWebviewPanel` here)
+  is also pending the same nonce work.
 
 ```typescript
 export interface IWebviewCspPolicy {
@@ -146,9 +163,16 @@ inject the per-webview CSP via a `<meta http-equiv>` tag in the HTML it returns,
 
 ### S2 — `OPEN_TOOLBAR_COMMAND` action allow-list (closes H3)
 
-- **Files**: [extensions/vscode/src/commands/open-toolbar.command.ts](extensions/vscode/src/commands/open-toolbar.command.ts)
-- **Status**: ready
-- **Gate**: bun run typecheck
+- **Files**: [extensions/vscode/src/commands/open-toolbar.ts](extensions/vscode/src/commands/open-toolbar.ts)
+  (real path; the proposal's `*.command.ts` name never existed)
+- **Status**: done
+- **Gate**: bun run validate
+- **Shipped**: 9e61648d. Added `ALLOWED_TOOLBAR_COMMANDS` (derived from the toolbar's
+  own `defaultQuickActions()` catalog so it cannot drift) and `resolveToolbarCommandId`;
+  the `mvAction` handler rejects any command id outside the set with a typed error toast
+  instead of dispatching it. Tests: `src/test/open-toolbar-allowlist.spec.ts` — every
+  canonical command is a member, an allow-listed id dispatches, and a crafted
+  `workbench.action.*` / derived id is rejected.
 
 ```typescript
 const ALLOWED_ACTIONS: ReadonlySet<string> = new Set([
@@ -173,9 +197,17 @@ new test sends a crafted `{ action: 'workbench.action.openSettings' }` and expec
 
 ### S3 — `openSettings` persists to `globalState` (closes H4)
 
-- **Files**: [extensions/vscode/src/commands/open-settings.command.ts](extensions/vscode/src/commands/open-settings.command.ts)
-- **Status**: ready
-- **Gate**: bun run typecheck
+- **Files**: [extensions/vscode/src/commands/open-settings.ts](extensions/vscode/src/commands/open-settings.ts)
+  (real path)
+- **Status**: done
+- **Gate**: bun run validate
+- **Shipped**: d79e28a4. Added `createGlobalStateSettingsStore(memento)` backed by
+  `context.globalState` under `SETTINGS_STATE_KEY`, hydrated from the durable blob at
+  construction; `createExtensionSettingsStore(globalState?)` now returns the durable
+  store when a memento is supplied (the real activation path in `extension.ts`) and the
+  in-memory store otherwise. Tests: `src/test/settings-persist.spec.ts` — a value written
+  through one store is visible to a fresh store built from the same backing map
+  (simulated window reload).
 
 Replace the in-memory `Map<string, unknown>` with `context.globalState` reads/writes.
 On `activate()` after construction, hydrate the in-memory cache from `globalState` so the
@@ -186,9 +218,16 @@ extension context), read it back — it must equal what was written.
 
 ### S4 — `McpVertexProposalsView` `TreeDataProvider` (closes H5)
 
-- **Files**: [extensions/vscode/src/views/proposals-tree.ts](extensions/vscode/src/views/proposals-tree.ts)
-- **Status**: ready
-- **Gate**: bun run typecheck
+- **Files**: [extensions/vscode/src/providers/proposal-board-provider.ts](extensions/vscode/src/providers/proposal-board-provider.ts)
+  (real path; `ProposalBoardProvider` already existed but was never registered)
+- **Status**: done
+- **Gate**: bun run validate
+- **Shipped**: c3207c49. `ProposalBoardProvider` (mirrors
+  `mcp-vertex_proposals_proposal_board`) is now registered against the
+  `mcp-vertex.proposals` view id in `extension.ts` (previously the view was declared in
+  `contributes.views` but had no provider, so it was empty). Test:
+  `src/test/proposals-view-registration.spec.ts` — `activate()` registers a provider
+  exposing `getChildren` for the proposals view.
 
 ```typescript
 export class McpVertexProposalsView implements vscode.TreeDataProvider<ProposalNode> {
@@ -218,9 +257,19 @@ correct labels and collapsible states.
 
 ### S5 — `OPEN_PROPOSAL_COMMAND` honors its argument (closes H6)
 
-- **Files**: [extensions/vscode/src/commands/open-proposal.command.ts](extensions/vscode/src/commands/open-proposal.command.ts)
-- **Status**: ready
+- **Files**: [extensions/vscode/src/commands/open-proposal.ts](extensions/vscode/src/commands/open-proposal.ts)
+  (real path)
+- **Status**: done
 - **Gate**: bun run validate
+- **Shipped**: c3207c49. `mcp-vertex.openProposal` now reads and validates its
+  `proposalId` argument via `checkProposalId` and scopes the rendered view to that
+  proposal; absent id keeps the legacy whole-board behaviour, malformed/unknown ids
+  surface a typed error. **Regex divergence**: the proposal text spelled the id
+  `^\d{5}$`, but the canonical repo id is `^[a-z]\d{5}$` (track prefix + 5 digits, the
+  shape the proposals linter enforces and the shape the board nodes actually emit, e.g.
+  `f00079`), so S5 uses `^[a-z]\d{5}$`. Test:
+  `src/test/open-proposal-argument.spec.ts` — undefined → board, valid → single
+  proposal, malformed → error, unknown well-formed → not-found error.
 
 ```typescript
 const PROPOSAL_ID_REGEX = /^\d{5}$/;
