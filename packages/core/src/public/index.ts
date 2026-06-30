@@ -474,5 +474,25 @@ export type {
 } from '../lib/setup/setup-steps';
 export { renderCrossProjectGuide } from '../lib/setup/cross-project-guide';
 
+// --- agent shell-fallback ladder (f00085) ---------------------------------
+// Self-healing recovery for the run_in_terminal wrapper's stuck-state
+// ("búfer alternativo") failure mode. Plugins and swarm agents import
+// `withShellFallback` and the Ring-3 intent adapter from here.
+export {
+	detectStuckShell,
+	mapShellIntentToTool,
+	SHELL_INTENT_MAP,
+	STUCK_SHELL_SENTINELS,
+	withShellFallback,
+} from '../lib/agents/shell-fallback';
+export type {
+	IShellFallbackDriver,
+	IShellFallbackOutcome,
+	IShellIntent,
+	IShellResult,
+	IShellToolPlan,
+	ShellFallbackRing,
+} from '../lib/agents/shell-fallback';
+
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';
