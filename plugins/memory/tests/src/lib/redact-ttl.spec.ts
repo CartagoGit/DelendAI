@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { redactSecrets } from '@mcp-vertex/memory/lib/services/redact';
 import {
+	expireExpiredNotes,
 	readStore,
 	recall,
 	saveNote,
@@ -113,5 +114,65 @@ describe('TTL expiry + redaction on save (M11)', async () => {
 			notes: INote[];
 		};
 		expect(raw.notes.map((n) => n.id)).toEqual(['fresh']);
+	});
+
+	it('expireExpiredNotes dry-run reports the expired ids without writing (f00072 S4)', async () => {
+		const expired: INote = {
+			id: 'stale',
+			title: 'stale',
+			body: 'x',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+			expiresAt: '2020-01-02T00:00:00.000Z',
+		};
+		const live: INote = {
+			id: 'keep',
+			title: 'keep',
+			body: 'y',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+		};
+		await writeStore(store, [expired, live]);
+
+		const previewed = await expireExpiredNotes(store, { dryRun: true });
+		expect(previewed).toEqual(['stale']);
+		// Dry-run wrote nothing: the expired note is still physically on disk.
+		const onDisk = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
+		expect(onDisk.notes.map((n) => n.id).sort()).toEqual(['keep', 'stale']);
+	});
+
+	it('expireExpiredNotes apply prunes expired notes and is idempotent (f00072 S4)', async () => {
+		const expired: INote = {
+			id: 'stale',
+			title: 'stale',
+			body: 'x',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+			expiresAt: '2020-01-02T00:00:00.000Z',
+		};
+		const live: INote = {
+			id: 'keep',
+			title: 'keep',
+			body: 'y',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+		};
+		await writeStore(store, [expired, live]);
+
+		const removed = await expireExpiredNotes(store);
+		expect(removed).toEqual(['stale']);
+		const after = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
+		expect(after.notes.map((n) => n.id)).toEqual(['keep']);
+
+		// Second sweep is a no-op.
+		expect(await expireExpiredNotes(store)).toEqual([]);
 	});
 });

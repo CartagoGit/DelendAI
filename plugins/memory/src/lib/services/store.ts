@@ -39,6 +39,7 @@ export { readStore, writeStore } from './store-io';
 
 export {
 	deriveNoteId,
+	expireExpiredNotes,
 	getMaxNotes,
 	removeNote,
 	saveNote,

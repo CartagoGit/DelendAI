@@ -215,8 +215,8 @@ default to `runOnBoot: 'dry-run'` (safe — only logs the report).
 
 ### S4 — Wire existing plugins to REGISTER rules (zero behavior change for them)
 
-- **Status**: pending
-- **Files**: plugins/logs/src/index.ts, plugins/memory/src/index.ts, plugins/notification/src/index.ts
+- **Status**: done
+- **Files**: plugins/logs/src/index.ts, plugins/memory/src/index.ts, plugins/memory/src/lib/services/store-records.ts, plugins/memory/src/lib/services/store.ts, plugins/notification/src/index.ts, plugins/memory/tests/src/lib/redact-ttl.spec.ts
 - **Gate**: bun run validate
 - **Command**: bun run typecheck
 - **Expect**: exit0
