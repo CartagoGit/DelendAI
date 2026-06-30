@@ -6,7 +6,17 @@ track: i18n+l10n+utils
 date: 2026-06-25
 kind: refactor
 title: Locale-aware date/time formatting via `Intl.DateTimeFormat` + `Intl.RelativeTimeFormat`
-shipped-in: []
+# All three slices are implemented, tested and committed (see shipped-in).
+# The final bookkeeping — flipping status to `done` and moving this file into
+# done/refactors/ — is deferred: that move trips `lint:commit-branch`
+# (commit-branch-discipline), which forbids committing a done/ proposal directly
+# on develop without a feature branch. This drain was mandated SERIAL on develop
+# with no feature branch, so the directory move + status flip is left for the
+# operator's integration/PR step.
+shipped-in:
+  - 3e07855b # S1: H17 closed upstream by f00059 S5 (formatRelativeTime via Intl.RelativeTimeFormat)
+  - 41ce6611 # S2: formatDate/formatTime wrappers around Intl.DateTimeFormat
+  - 50da6985 # S3: cross-runtime Intl snapshot + numberingSystem 'latn' fix
 recan: []
 related:
     - a00040 # audit that surfaced this finding (H17)
