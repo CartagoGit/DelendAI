@@ -1,4 +1,5 @@
 import type {
+	INotificationEventName,
 	McpStdioClient,
 	NotificationsService,
 	OverviewService,
@@ -33,8 +34,38 @@ export type INotificationsLike = Pick<
 	'addEventListener' | 'removeEventListener'
 >;
 
-/** Events the status bar subscribes to (kept explicit for grep-ability). */
-const STATUS_BAR_EVENTS = ['lock-released', 'cap', 'bloqueado'] as const;
+/**
+ * Why the status bar reacts to a notification — a locale-neutral key
+ * (the previous table mixed English `cap` with Spanish `bloqueado`
+ * literals, which is an i18n leak and an OCP hazard). The bar only
+ * needs to refresh, so the config stays minimal; richer per-event
+ * behaviour can be added here without touching the dispatcher.
+ */
+export interface IStatusBarEventConfig {
+	/** Stable, locale-independent reason code for this subscription. */
+	readonly reason: 'lock' | 'capacity' | 'blocked';
+}
+
+/**
+ * Events the status bar subscribes to, keyed by the canonical
+ * `INotificationEventName` discriminated union from the client.
+ * This map is exhaustive over the union: adding a new notification
+ * event name to the client without adding an entry here is a compile
+ * error (H30 — OCP). The dispatcher iterates the keys, so a new event
+ * needs only a map entry, never a dispatcher edit.
+ */
+const STATUS_BAR_EVENTS: Readonly<
+	Record<INotificationEventName, IStatusBarEventConfig>
+> = {
+	'lock-released': { reason: 'lock' },
+	cap: { reason: 'capacity' },
+	bloqueado: { reason: 'blocked' },
+};
+
+/** The event names the status bar subscribes to (derived from the map). */
+const STATUS_BAR_EVENT_NAMES = Object.keys(
+	STATUS_BAR_EVENTS,
+) as readonly INotificationEventName[];
 
 /**
  * `McpVertexStatusBar` — VS Code status bar summary, upgraded in f00022
@@ -69,7 +100,7 @@ export class McpVertexStatusBar {
 	async start(): Promise<void> {
 		this.item.command = this.openDashboardCommand;
 		this.item.tooltip = 'mcp-vertex Dashboard (click to open)';
-		for (const event of STATUS_BAR_EVENTS) {
+		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
 			};

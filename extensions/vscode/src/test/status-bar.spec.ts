@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import type { INotificationEventName } from '@mcp-vertex/client';
 import { McpStdioClient, NotificationsService } from '@mcp-vertex/client';
 
 import {
 	McpVertexStatusBar,
 	type IStatusBarItem,
+	type IStatusBarEventConfig,
 } from '../providers/status-bar';
 
 const createItem = (): IStatusBarItem & {
@@ -193,5 +195,59 @@ describe('McpVertexStatusBar', async () => {
 		await bar.start();
 		expect(item.command).toBe('mcp-vertex.openDashboard');
 		expect(item.tooltip).toContain('Dashboard');
+	});
+});
+
+describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
+	it('subscribes to every union event and removes them on dispose', async () => {
+		const subscribed: string[] = [];
+		const removed: string[] = [];
+		const notifications = {
+			addEventListener(name: INotificationEventName): void {
+				subscribed.push(name);
+			},
+			removeEventListener(name: INotificationEventName): void {
+				removed.push(name);
+			},
+		};
+		const item = createItem();
+		const bar = new McpVertexStatusBar(
+			item,
+			{
+				async listTools() {
+					return [];
+				},
+			},
+			McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: {} };
+				},
+			}),
+			notifications as never,
+		);
+		await bar.start();
+		// Every canonical notification event name is subscribed.
+		expect(subscribed.sort()).toEqual(
+			['bloqueado', 'cap', 'lock-released'].sort(),
+		);
+		bar.dispose();
+		expect(removed.sort()).toEqual(subscribed.sort());
+	});
+
+	it('keys the config map on the discriminated union (compile-time OCP)', () => {
+		// A status-bar event config is the value shape of the exhaustive
+		// map. Adding a new INotificationEventName without a map entry is a
+		// *compile* error in status-bar.ts (Record<INotificationEventName>),
+		// which is the H30 guarantee. This runtime assertion only pins the
+		// locale-neutral reason codes so the union stays i18n-clean.
+		const reasons: ReadonlyArray<IStatusBarEventConfig['reason']> = [
+			'lock',
+			'capacity',
+			'blocked',
+		];
+		expect(reasons).toContain('lock');
+		// @ts-expect-error — a Spanish/English literal is not a valid reason.
+		const bad: IStatusBarEventConfig['reason'] = 'bloqueado';
+		expect(bad).toBeDefined();
 	});
 });

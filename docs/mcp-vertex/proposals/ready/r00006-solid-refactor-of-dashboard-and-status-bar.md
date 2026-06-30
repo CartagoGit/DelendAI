@@ -181,7 +181,7 @@ Bind ArrowLeft/ArrowRight that move the roving tabindex.
 spec asserts ArrowLeft from tab 0 selects the last tab (wrapping).
 
 ### S7 — `STATUS_BAR_EVENTS` discriminated union (H30)
-- **Status**: pending
+- **Status**: done
 - **Files**: extensions/vscode/src/providers/status-bar.ts
 - **Gate**: validate
 
