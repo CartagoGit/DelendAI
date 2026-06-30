@@ -16,6 +16,7 @@ const EXPECTED_COMMANDS = [
 	'config doctor',
 	'config set',
 	'init',
+	'init:default',
 	'search',
 	'docs list',
 	'docs read',

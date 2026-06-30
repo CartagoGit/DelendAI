@@ -6,7 +6,7 @@ import {
 } from './preset-catalog';
 
 describe('PRESET_CATALOG', async () => {
-	it('lists presets in ⊇ order: minimal, standard, swarm, full', async () => {
+	it('lists presets in ⊇ order: minimal, standard, swarm, full, vertex', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual([...PRESET_KIND]);
 	});
 
@@ -19,6 +19,8 @@ describe('PRESET_CATALOG', async () => {
 		expect(PRESET_CATALOG[2]?.members.length).toBe(6);
 		// full: adds 2 host-only on top of swarm
 		expect(PRESET_CATALOG[3]?.members.length).toBe(2);
+		// vertex: 10 members, mirrors mcp-vertex.config.json (independent)
+		expect(PRESET_CATALOG[4]?.members.length).toBe(10);
 	});
 
 	it('marks every full-preset member as hostOnly', async () => {
@@ -38,10 +40,49 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
+	it('marks `vertex` as an independent preset', async () => {
+		const vertex = PRESET_CATALOG[4];
+		expect(vertex).toBeDefined();
+		expect(vertex?.independent).toBe(true);
+	});
+
+	it('vertex membership mirrors mcp-vertex.config.json (10 plugins, 2 hostOnly)', async () => {
+		const vertex = PRESET_CATALOG[4];
+		expect(vertex).toBeDefined();
+		if (vertex === undefined) return;
+		const ids = vertex.members.map((m) => m.plugin);
+		for (const required of [
+			'conventions',
+			'docs',
+			'search',
+			'git',
+			'web-fetch',
+			'status-marker',
+			'test-convention',
+			'quality',
+			'issues',
+			'audit',
+		]) {
+			expect(ids).toContain(required);
+		}
+		// Exactly two hostOnly (web-fetch + issues), matching mcp-vertex.config.json.
+		const hostOnly = vertex.members.filter((m) => m.hostOnly === true);
+		expect(hostOnly.length).toBe(2);
+		expect(hostOnly.map((m) => m.plugin).sort()).toEqual([
+			'issues',
+			'web-fetch',
+		]);
+	});
+
 	it('every catalog plugin id corresponds to a real package on disk', async () => {
 		const { readdir, stat } = await import('node:fs/promises');
 		const { join } = await import('node:path');
-		const repoRoot = join(import.meta.dir, '..', '..', '..', '..');
+		// Bun-test's `import.meta.dir` for THIS spec file resolves to
+		// `packages/core/src/lib/plugins/`, so the repo root is five
+		// hops up (the spec lives inside a Bun monorepo under
+		// `packages/core/src/`, not the conventional
+		// `packages/core/tests/src/`).
+		const repoRoot = join(import.meta.dir, '..', '..', '..', '..', '..');
 		const ids = new Set<string>();
 		for (const def of PRESET_CATALOG) {
 			for (const member of def.members) ids.add(member.plugin);
@@ -111,7 +152,35 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('preserves the ⊇ chain ordering', async () => {
+	it('resolves vertex to ONLY its declared members (independent, skips chain)', async () => {
+		const resolved = resolvePresetMembers('vertex');
+		// Exactly the 10 plugins the mcp-vertex.config.json ships.
+		expect(resolved.length).toBe(10);
+		for (const required of [
+			'conventions',
+			'docs',
+			'search',
+			'git',
+			'web-fetch',
+			'status-marker',
+			'test-convention',
+			'quality',
+			'issues',
+			'audit',
+		]) {
+			expect(resolved).toContain(required);
+		}
+		// Independent presets do NOT inherit swarm — those plugins
+		// are intentionally absent from mcp-vertex.config.json.
+		expect(resolved).not.toContain('memory');
+		expect(resolved).not.toContain('rules');
+		expect(resolved).not.toContain('deps');
+		expect(resolved).not.toContain('proposals');
+		expect(resolved).not.toContain('notification');
+		expect(resolved).not.toContain('logs');
+	});
+
+	it('preserves the ⊇ chain ordering for chain presets', async () => {
 		const full = resolvePresetMembers('full');
 		const swarm = resolvePresetMembers('swarm');
 		const standard = resolvePresetMembers('standard');

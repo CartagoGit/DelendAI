@@ -32,7 +32,7 @@ import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 
-const PRESET_KIND = ['minimal', 'standard', 'swarm', 'full'] as const;
+const PRESET_KIND = ['minimal', 'standard', 'swarm', 'full', 'vertex'] as const;
 
 const SCAN_ROOTS: readonly string[] = [
 	'docs',
@@ -75,6 +75,20 @@ const PRESET_MEMBERSHIPS: Readonly<Record<string, readonly string[]>> = {
 		'logs',
 		'web-fetch',
 		'issues',
+	],
+	// `vertex` is an independent preset (skips chain accumulation);
+	// its members mirror `mcp-vertex.config.json` exactly.
+	vertex: [
+		'conventions',
+		'docs',
+		'search',
+		'git',
+		'web-fetch',
+		'status-marker',
+		'test-convention',
+		'quality',
+		'issues',
+		'audit',
 	],
 };
 

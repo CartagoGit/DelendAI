@@ -99,7 +99,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 	});
 
 	it('emits a valid JSON config payload', async () => {
-		const bundle = await renderInitBundle(parseAnswers({}));
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'swarm' }),
+		);
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'mcp-vertex.config.json',
 		);
@@ -109,6 +111,45 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		};
 		expect(parsed.plugins.proposals).toBeDefined();
 		expect(parsed.plugins.git).toBeDefined();
+	});
+
+	it('renders the `vertex` preset as an independent plugin set (no swarm inheritance)', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'vertex' }, '/tmp/example-ws'),
+		);
+		const configFile = bundle.files.find(
+			(f) => f.relPath === 'mcp-vertex.config.json',
+		);
+		expect(configFile).toBeDefined();
+		const config = JSON.parse(configFile?.content ?? '{}') as {
+			plugins: Record<string, unknown>;
+		};
+		// Exactly the 10 vertex members, no swarm inheritance.
+		expect(Object.keys(config.plugins).length).toBe(10);
+		for (const required of [
+			'conventions',
+			'docs',
+			'search',
+			'git',
+			'web-fetch',
+			'status-marker',
+			'test-convention',
+			'quality',
+			'issues',
+			'audit',
+		]) {
+			expect(config.plugins[required]).toBeDefined();
+		}
+		for (const excluded of [
+			'memory',
+			'rules',
+			'deps',
+			'proposals',
+			'notification',
+			'logs',
+		]) {
+			expect(config.plugins[excluded]).toBeUndefined();
+		}
 	});
 });
 

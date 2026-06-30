@@ -7,7 +7,10 @@
  */
 import { join } from 'node:path';
 
-import { resolvePluginOptions } from '@mcp-vertex/core/public';
+import {
+	resolvePluginOptions,
+	resolvePresetMembers,
+} from '@mcp-vertex/core/public';
 
 import { loadAgentDescriptors } from './init-catalog';
 import {
@@ -32,45 +35,14 @@ export type IRenderedBundle = {
 	readonly summary: string;
 };
 
-const ORDERED_RESOLVED_PRESET_PLUGINS: Record<
-	IInitAnswers['preset'],
-	readonly string[]
-> = {
-	minimal: ['git', 'search'],
-	standard: ['git', 'search', 'memory', 'docs', 'rules', 'quality', 'deps'],
-	swarm: [
-		'git',
-		'search',
-		'memory',
-		'docs',
-		'rules',
-		'quality',
-		'deps',
-		'proposals',
-		'notification',
-		'logs',
-		'status-marker',
-		'test-convention',
-		'conventions',
-	],
-	full: [
-		'git',
-		'search',
-		'memory',
-		'docs',
-		'rules',
-		'quality',
-		'deps',
-		'proposals',
-		'notification',
-		'logs',
-		'status-marker',
-		'test-convention',
-		'conventions',
-		'web-fetch',
-		'issues',
-	],
-};
+// Single source of truth for preset membership lives in
+// `@mcp-vertex/core`'s preset catalog. We delegate to
+// `resolvePresetMembers` so adding a new preset (`vertex`, …)
+// only requires editing the catalog and the test specs — this
+// file stays free of plugin-name vocabulary.
+const resolveOrderedPresetPlugins = (
+	preset: IInitAnswers['preset'],
+): readonly string[] => resolvePresetMembers(preset);
 
 const dedupe = (items: readonly string[]): readonly string[] =>
 	Array.from(new Set(items));
@@ -99,7 +71,7 @@ const resolvePluginOptionsWithAnswers = (
 };
 
 export const resolvePluginSet = (answers: IInitAnswers): readonly string[] => {
-	const presetMembers = ORDERED_RESOLVED_PRESET_PLUGINS[answers.preset];
+	const presetMembers = resolveOrderedPresetPlugins(answers.preset);
 	const merged = dedupe([...presetMembers, ...answers.extraPlugins]);
 	return merged.filter((p) => !answers.excludedPlugins.includes(p));
 };

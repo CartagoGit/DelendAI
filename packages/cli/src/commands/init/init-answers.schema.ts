@@ -12,9 +12,9 @@
  *   - No `process.cwd()` — workspace paths come from the CLI context.
  *   - Pure Zod — no IO, no `Bun.spawn`, no `withFileMutex`. This file is
  *     safe to import from any layer (CLI, MCP, test) without side effects.
- *   - Defaults reflect the user's explicit ask: preset `swarm`, extras
- *     empty, host-instructions `append` (safe), skills + agent-md
- *     generated, migration offered.
+ *   - Defaults reflect the operator's chosen workflow: preset `vertex`
+ *     (snapshot of mcp-vertex.config.json), extras empty, host-instructions
+ *     `append` (safe), skills + agent-md generated, migration offered.
  */
 import { z } from 'zod';
 
@@ -54,8 +54,9 @@ const initPluginId = z
  * with Enter and still produce a valid bundle.
  */
 export const InitAnswers = z.object({
-	/** Resolved preset id. `swarm` is the recommended default. */
-	preset: z.enum(PRESET_KIND).default('swarm'),
+	/** Resolved preset id. `vertex` is the operator's recommended default
+	 * (snapshot of mcp-vertex.config.json — see `init:default`). */
+	preset: z.enum(PRESET_KIND).default('vertex'),
 
 	/** Plugins added on top of the preset (e.g. `audit`). */
 	extraPlugins: z.array(initPluginId).default([]),

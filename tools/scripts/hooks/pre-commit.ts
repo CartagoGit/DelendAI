@@ -1,97 +1,114 @@
 #!/usr/bin/env bun
 /**
- * pre-commit.ts — agent-claim guard.
+ * pre-commit.ts — staged-file formatter (Biome, prettier-like).
  *
- * Runs as a Git `pre-commit` hook (installed by
- * `tools/scripts/install-claim-hooks.script.ts`). Reads
- * `.cache/mcp-vertex/agents.lock.json` and refuses to proceed if a
- * staged file is already claimed by a different committer. Advisory
- * to `bun run validate`; see AGENTS.md rule §tools TypeScript-only.
+ * Runs as a real Git `pre-commit` hook (installed by
+ * `tools/scripts/install-formatter-hook.script.ts`). For every staged
+ * file supported by Biome, runs `biome format --write` and re-stages
+ * the formatted bytes back into the index so the commit always lands
+ * canonical formatting (indent, quotes, trailing commas, line endings).
+ *
+ * POLICY: this hook NEVER blocks a commit. If Biome fails on a file
+ * it prints the diagnostic and proceeds (Biome's CI mode runs in
+ * `bun run lint` and `bun run validate`, which are the actual
+ * quality gates). Bypass with `git commit --no-verify`.
+ *
+ * History: x00088 relaxed the previous "agent-claim guard" policy
+ * (x00080). Claims are now advisory only — see
+ * `bun run lint:agent-claims` and `docs/mcp-vertex/AGENT-BOOTSTRAP.md`.
  */
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
-const LOCK_FILE = join(process.cwd(), '.cache/mcp-vertex/agents.lock.json');
+const BIOME_EXTENSIONS = [
+	'ts',
+	'tsx',
+	'js',
+	'jsx',
+	'mjs',
+	'cjs',
+	'json',
+	'jsonc',
+	'css',
+	'scss',
+	'html',
+	'astro',
+	'md',
+	'mdx',
+	'vue',
+	'svelte',
+	'yaml',
+	'yml',
+	'toml',
+] as const;
 
-interface ILockEntry {
-	readonly task_id?: string;
-	readonly agent?: string;
-	readonly ownership?: readonly string[];
-}
-
-interface ILockFile {
-	readonly in_flight?: readonly ILockEntry[];
-}
-
-if (!existsSync(LOCK_FILE)) {
-	process.exit(0);
-}
-
-let committer = process.env.GIT_AUTHOR_EMAIL;
-if (!committer) {
-	try {
-		committer = execSync('git config user.email', {
-			encoding: 'utf8',
-		}).trim();
-	} catch {
-		// git user.email is unset; fall through to the empty-check below.
-	}
-}
-
-if (!committer) {
-	console.error(
-		'pre-commit: blocked — no committer email found. Please configure git user.email.',
-	);
-	process.exit(1);
-}
+const isBiomeSupported = (path: string): boolean => {
+	const lastDot = path.lastIndexOf('.');
+	if (lastDot === -1) return false;
+	const ext = path.slice(lastDot + 1).toLowerCase();
+	return (BIOME_EXTENSIONS as readonly string[]).includes(ext);
+};
 
 let stagedFilesStr = '';
 try {
-	stagedFilesStr = execSync('git diff --cached --name-only', {
-		encoding: 'utf8',
-	});
+	stagedFilesStr = execSync(
+		'git diff --cached --name-only --diff-filter=ACMR',
+		{ encoding: 'utf8' },
+	);
 } catch {
-	console.error('pre-commit: failed to run git diff.');
-	process.exit(1);
+	console.error(
+		'pre-commit: failed to run git diff --cached. Proceeding without formatting.',
+	);
+	process.exit(0);
 }
 
 const stagedFiles = stagedFilesStr
 	.split('\n')
 	.map((f) => f.trim())
 	.filter(Boolean);
-if (stagedFiles.length === 0) {
+
+const formattable = stagedFiles.filter(isBiomeSupported);
+
+if (formattable.length === 0) {
 	process.exit(0);
 }
 
-let lockData: ILockFile;
+console.log(
+	`pre-commit: formatting ${formattable.length} staged file${
+		formattable.length === 1 ? '' : 's'
+	} with Biome…`,
+);
+
+let biomeFailed = false;
 try {
-	lockData = JSON.parse(readFileSync(LOCK_FILE, 'utf8')) as ILockFile;
+	execSync(
+		[
+			'bun',
+			'x',
+			'@biomejs/biome',
+			'format',
+			'--write',
+			'--no-errors-on-unmatched',
+			...formattable,
+		].join(' '),
+		{ stdio: 'inherit' },
+	);
 } catch {
-	console.error(
-		'pre-commit: warning — agents.lock.json is corrupt or unreadable. Skipping checks.',
+	biomeFailed = true;
+	console.warn(
+		'pre-commit: Biome reported an error on at least one file. Proceeding with the commit; CI will re-check.',
 	);
-	process.exit(0);
 }
 
-const inFlight = lockData.in_flight ?? [];
-
-let blocked = false;
-for (const file of stagedFiles) {
-	const entry = inFlight.find((e) => e.ownership?.includes(file));
-	if (entry?.agent && entry.agent !== committer) {
-		console.error(
-			`pre-commit: blocked — '${file}' is claimed by '${entry.agent}', but you are '${committer}'.`,
+if (!biomeFailed) {
+	// Re-stage the formatted bytes so the commit carries them.
+	try {
+		execSync('git add --', formattable, { stdio: 'ignore' });
+	} catch (e) {
+		console.warn(
+			'pre-commit: failed to re-stage formatted files. Continuing — the commit may carry unformatted bytes.',
+			e instanceof Error ? e.message : '',
 		);
-		blocked = true;
 	}
-}
-
-if (blocked) {
-	console.error(
-		'  Please ask the lock holder to release the lock, or claim it after they release.',
-	);
-	process.exit(1);
 }
 
 process.exit(0);

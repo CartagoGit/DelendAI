@@ -11,7 +11,7 @@ import {
 describe('InitAnswers schema (f00084 S1)', () => {
 	it('accepts the canonical defaults', () => {
 		const parsed = InitAnswers.parse({});
-		expect(parsed.preset).toBe('swarm');
+		expect(parsed.preset).toBe('vertex');
 		expect(parsed.extraPlugins).toEqual([]);
 		expect(parsed.excludedPlugins).toEqual([]);
 		expect(parsed.hostInstructions).toBe('append');
