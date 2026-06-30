@@ -264,8 +264,8 @@ lock contention).
 
 ### S6 — Verification gate
 
-- **Status**: pending
-- **Files**: tools/scripts/verify/cache-eviction-verify.script.ts
+- **Status**: done
+- **Files**: tools/scripts/verify/cache-eviction-verify.script.ts, tools/scripts/verify/cache-eviction-verify.script.spec.ts, package.json (verify:cache wired into validate)
 - **Gate**: bun run validate
 - **Command**: bun run typecheck
 - **Expect**: exit0
