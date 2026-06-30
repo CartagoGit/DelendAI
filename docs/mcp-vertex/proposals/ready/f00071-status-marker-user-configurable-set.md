@@ -6,7 +6,8 @@ track: plugins/status-marker+configuration+i18n+agent-contract
 date: 2026-06-26
 kind: feat
 title: status-marker user-configurable marker set — add / disable / override from host config
-shipped-in: []
+shipped-in:
+    - 73ba00f1 # S1-S6 feat(status-marker): user-configurable marker set
 recan: []
 related:
     - f00070 # sibling proposal (bilingual rendering, additive)
@@ -234,42 +235,42 @@ Without it, an LLM given a new state would not know the semantic.
 - global_gate: validate
 
 ### S1 — schema
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/src/lib/markers-config.ts
 - **Gate**: validate
 
 Design `IUserMarkerDefinition` Zod schema + merge semantics.
 
 ### S2 — plugin options
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/src/index.ts
 - **Gate**: validate
 
 Extend plugin `OptionsSchema` to accept `markers.add`, `markers.disable`, `markers.override`.
 
 ### S3 — merge logic
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/src/lib/markers.ts
 - **Gate**: validate
 
 `mergeMarkerTable(builtIn, userCfg)` returns the effective `MARKERS`.
 
 ### S4 — runtime wiring
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/src/lib/tools/close-tools.ts, plugins/status-marker/src/lib/validate.ts
 - **Gate**: validate
 
 Thread the merged table through `formatCloseMarker` and `validateCloseMarker`.
 
 ### S5 — locale fallback
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/src/lib/markers.ts
 - **Gate**: validate
 
 Extend `MARKERS_BY_LOCALE` reader.
 
 ### S6 — types regen + spec
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/status-marker/tests/markers.spec.ts, plugins/status-marker/tests/close-tools.spec.ts
 - **Gate**: validate
 
