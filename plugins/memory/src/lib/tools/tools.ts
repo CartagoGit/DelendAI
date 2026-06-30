@@ -19,6 +19,7 @@ import {
 	removeNote,
 	saveNote,
 } from '../services/store';
+import { buildCompactToolRegistration } from './compact.tool';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
 // SDK validation (isError:true), so these describe only the success path.
@@ -98,6 +99,11 @@ export const buildMemoryToolRegistrations = (
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	return [
+		buildCompactToolRegistration({
+			namespacePrefix: prefix,
+			storePathAbs: options.storePathAbs,
+			maxNotes: options.maxNotes,
+		}),
 		{
 			id: 'save',
 			effects: ['write'],

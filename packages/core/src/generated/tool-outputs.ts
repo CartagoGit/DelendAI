@@ -428,6 +428,25 @@ export interface McpVertexLogsTailOutput {
 	newestTs: string | null;
 }
 
+export interface McpVertexMemoryCompactOutput {
+	digest: string;
+	sections: Array<{
+		kind: "decision" | "open" | "fact" | "pointer" | "output" | "exploration" | "superseded";
+		heading: string;
+		bullets: string[];
+	}>;
+	tokenAccounting: {
+		inputEstimate: number;
+		digestEstimate: number;
+		savedEstimate: number;
+		keptCount: number;
+		discardedCount: number;
+	};
+	persisted: boolean;
+	noteId?: string;
+	redactedSecrets: number;
+}
+
 export interface McpVertexMemoryExportOutput {
 	ok: true;
 	format: "json" | "ndjson";
@@ -1809,6 +1828,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_logs_redact_test": McpVertexLogsRedactTestOutput;
 	"mcp-vertex_logs_subscribe": McpVertexLogsSubscribeOutput;
 	"mcp-vertex_logs_tail": McpVertexLogsTailOutput;
+	"mcp-vertex_memory_compact": McpVertexMemoryCompactOutput;
 	"mcp-vertex_memory_export": McpVertexMemoryExportOutput;
 	"mcp-vertex_memory_forget": McpVertexMemoryForgetOutput;
 	"mcp-vertex_memory_import": McpVertexMemoryImportOutput;
