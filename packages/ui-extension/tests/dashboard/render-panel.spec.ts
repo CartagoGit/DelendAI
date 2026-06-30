@@ -323,6 +323,18 @@ describe('renderDashboard', async () => {
 	it('embeds the tab-switching client script', async () => {
 		const html = renderDashboard(fixture, opts);
 		expect(html).toContain('<script>');
-		expect(html).toContain("querySelectorAll('.mv-tab')");
+		expect(html).toContain('.mv-tabs [role="tab"]');
+	});
+
+	it('wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27)', async () => {
+		const html = renderDashboard(fixture, opts);
+		// ArrowRight advances (wrapping via modulo); ArrowLeft wraps to the
+		// last tab from tab 0 via (index - 1 + len) % len.
+		expect(html).toContain("evt.key === 'ArrowRight'");
+		expect(html).toContain("evt.key === 'ArrowLeft'");
+		expect(html).toContain('(index + 1) % tabs.length');
+		expect(html).toContain('(index - 1 + tabs.length) % tabs.length');
+		// Selecting a tab moves the roving tabindex (0 / -1).
+		expect(html).toContain("t.setAttribute('tabindex', on ? '0' : '-1')");
 	});
 });

@@ -26,13 +26,32 @@ export interface IRenderDashboardOptions {
 
 const CLIENT_SCRIPT = `
 (function () {
-  const tabs = document.querySelectorAll('.mv-tab');
   const panels = document.querySelectorAll('.mv-panel');
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-target');
-      tabs.forEach((t) => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
-      panels.forEach((p) => p.setAttribute('data-active', p.id === 'panel-' + target ? 'true' : 'false'));
+  // Only real tabs participate in selection + the roving tabindex; the
+  // refresh button is an action (no role="tab"), so it is excluded.
+  const tabs = Array.prototype.slice.call(
+    document.querySelectorAll('.mv-tabs [role="tab"]'),
+  );
+  function selectTab(tab, moveFocus) {
+    const target = tab.getAttribute('data-target');
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      // Roving tabindex: only the selected tab is in the tab order.
+      t.setAttribute('tabindex', on ? '0' : '-1');
+    });
+    panels.forEach((p) => p.setAttribute('data-active', p.id === 'panel-' + target ? 'true' : 'false'));
+    if (moveFocus && typeof tab.focus === 'function') tab.focus();
+  }
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab, false));
+    tab.addEventListener('keydown', (evt) => {
+      let next = -1;
+      if (evt.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (evt.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      else return;
+      evt.preventDefault();
+      selectTab(tabs[next], true);
     });
   });
   const toolsTable = document.querySelector('.mv-tools-table');
