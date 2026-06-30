@@ -52,9 +52,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 
 	it('falls back to ../mcp-vertex/ sibling checkout', () => {
 		const probe = probeWith(
-			new Set([
-				'/mcp-vertex/tools/scripts/host/host-server.script.ts',
-			]),
+			new Set(['/mcp-vertex/tools/scripts/host/host-server.script.ts']),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });
 		expect(resolved.source).toBe('sibling');
@@ -76,7 +74,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
-	it('falls back to ../propios/mcp-vertex/ (operator\'s nested layout, f00103)', () => {
+	it("falls back to ../propios/mcp-vertex/ (operator's nested layout, f00103)", () => {
 		const probe = probeWith(
 			new Set([
 				'/propios/mcp-vertex/tools/scripts/host/host-server.script.ts',
@@ -91,18 +89,27 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 
 	it('recovers via sibling_walk when the checkout lives at an irregular path (f00103)', () => {
 		// The walk is the last-resort branch. It only fires when none
-		// of the explicit candidates match — here we omit them all
-		// and let the upward walk find the entry at
-		// `/worktrees/mcp-vertex` (a name containing `mcp-vertex`,
-		// adjacent to `/workspace`).
+		// of the explicit candidates match. Workspace lives at
+		// `/parent/workspace` and the mcp-vertex checkout lives at
+		// `/parent/worktrees/mcp-vertex` — neither the canonical
+		// `../mcp-vertex/` nor `../mcp-vertex-core/` nor
+		// `../propios/mcp-vertex/` candidates exist, so the
+		// walk-up finds the entry at the irregular path.
 		const entry =
-			'/worktrees/mcp-vertex/tools/scripts/host/host-server.script.ts';
+			'/parent/worktrees/mcp-vertex/tools/scripts/host/host-server.script.ts';
 		const probe: IPathProbe = {
 			exists: (p) => p === entry,
-			readDirNames: (p) =>
-				p === '/workspace/..' ? ['worktrees', 'node_modules', 'README'] : [],
+			// The walk enumerates the parent of the workspace and then
+			// descends one level into its children. `worktrees` does
+			// not contain `mcp-vertex` itself — but its child
+			// `mcp-vertex` does, so the depth-2 walk finds it.
+			readDirNames: (dir) => {
+				if (dir === '/parent') return ['workspace', 'worktrees', 'README.md'];
+				if (dir === '/parent/worktrees') return ['mcp-vertex'];
+				return [];
+			},
 		};
-		const resolved = resolveHostEntryPath('/workspace', { probe });
+		const resolved = resolveHostEntryPath('/parent/workspace', { probe });
 		expect(resolved.source).toBe('sibling_walk');
 		expect(resolved.path).toBe(entry);
 	});
@@ -115,16 +122,16 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		const probe: IPathProbe = {
 			exists: () => false,
 		};
-		expect(() => resolveHostEntryPath('/workspace', { probe })).toThrowError(
-			HostEntryNotFoundError,
-		);
+		expect(() =>
+			resolveHostEntryPath('/workspace', { probe }),
+		).toThrowError(HostEntryNotFoundError);
 	});
 
 	it('throws HostEntryNotFoundError listing every attempt when none match', () => {
 		const probe = probeWith(new Set());
-		expect(() => resolveHostEntryPath('/workspace', { probe })).toThrowError(
-			HostEntryNotFoundError,
-		);
+		expect(() =>
+			resolveHostEntryPath('/workspace', { probe }),
+		).toThrowError(HostEntryNotFoundError);
 	});
 
 	it('includes the explicit override in the error attempts when it does not exist', () => {
