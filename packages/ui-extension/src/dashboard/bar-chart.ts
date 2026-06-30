@@ -9,11 +9,23 @@ export interface IBarDatum {
 	readonly value: number;
 }
 
+export interface IBarChartOptions {
+	/**
+	 * Accessible name for the chart. Rendered as `aria-label` on the
+	 * `role="img"` `<svg>` so screen readers announce the chart's intent
+	 * (H24). Required so every call site declares a meaningful label
+	 * instead of falling back to a generic "Bar chart" string.
+	 */
+	readonly ariaLabel: string;
+	readonly max?: number;
+	readonly padding?: number;
+}
+
 export const barChart = (
 	bars: readonly IBarDatum[],
 	width: number,
 	height: number,
-	options: { readonly max?: number; readonly padding?: number } = {},
+	options: IBarChartOptions,
 ): string => {
 	const max = options.max ?? Math.max(1, ...bars.map((b) => b.value));
 	const padding = options.padding ?? 8;
@@ -41,7 +53,7 @@ export const barChart = (
 		})
 		.join('');
 
-	return `<svg class="mv-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart">${barsSvg}</svg>`;
+	return `<svg class="mv-barchart" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(options.ariaLabel)}">${barsSvg}</svg>`;
 };
 
 const escapeXml = (raw: string): string =>

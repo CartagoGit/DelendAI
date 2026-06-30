@@ -137,7 +137,7 @@ log a warning.
 10 distinct `y` values.
 
 ### S3 — `barChart` aria-label (H24)
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/ui-extension/src/dashboard/bar-chart.ts
 - **Gate**: validate
 

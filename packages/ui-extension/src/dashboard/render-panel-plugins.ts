@@ -19,6 +19,7 @@ export const renderPanelPlugins = (
 		top.map((p) => ({ label: p.plugin, value: p.tokens })),
 		640,
 		140,
+		{ ariaLabel: text('tabPlugins') },
 	);
 	const rows = model.rows
 		.map(
