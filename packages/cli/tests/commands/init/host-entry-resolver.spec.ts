@@ -104,7 +104,8 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 			// not contain `mcp-vertex` itself — but its child
 			// `mcp-vertex` does, so the depth-2 walk finds it.
 			readDirNames: (dir) => {
-				if (dir === '/parent') return ['workspace', 'worktrees', 'README.md'];
+				if (dir === '/parent')
+					return ['workspace', 'worktrees', 'README.md'];
 				if (dir === '/parent/worktrees') return ['mcp-vertex'];
 				return [];
 			},

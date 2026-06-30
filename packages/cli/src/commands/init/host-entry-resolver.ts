@@ -82,8 +82,7 @@ const upwardSiblingWalk = (
 	//
 	// The walk is bounded so `/tmp/` (thousands of entries) does
 	// not blow up the call latency on a CI scratch dir.
-	const reader =
-		probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
+	const reader = probe.readDirNames?.bind(probe) ?? realProbe.readDirNames;
 
 	const probeAt = (dir: string, depth: number): string | null => {
 		const queue: Array<{ dir: string; depth: number }> = [
