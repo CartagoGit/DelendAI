@@ -6,7 +6,11 @@ track: infra+cache-eviction
 date: 2026-06-27
 kind: feat
 title: Cache eviction policy - declarative per-plugin rules + opt-in cache plugin
-shipped-in: []
+shipped-in:
+  - 812ab4cb # S3 cache eviction policy config block
+  - fc54f2ee # S2+S5 opt-in @mcp-vertex/cache plugin + worktree sweeper
+  - 84b2ebc9 # S4 logs/memory/notification register gc rules
+  - 30092fb3 # S6 cache-eviction verification gate
 recan: []
 related:
   - r00004 # root declutter and cache consolidation
