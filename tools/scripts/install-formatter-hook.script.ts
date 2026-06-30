@@ -15,7 +15,13 @@
  *
  * Bypass: `git commit --no-verify` skips the hook entirely.
  */
-import { copyFileSync, existsSync, mkdirSync, chmodSync, unlinkSync } from 'node:fs';
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	chmodSync,
+	unlinkSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(__dirname, '../..');
