@@ -167,6 +167,27 @@ export interface McpVertexAuditAuditRunOutput {
 	}[];
 }
 
+export interface McpVertexCacheCacheGcOutput {
+	dryRun: boolean;
+	appliedAt: string;
+	totalBytes: number;
+	rulesEvaluated: number;
+	removed: {
+		id: string;
+		path: string;
+		bytes: number;
+	}[];
+	skipped: {
+		id: string;
+		reason: string;
+	}[];
+	errors: {
+		id: string;
+		path: string;
+		error: string;
+	}[];
+}
+
 export interface McpVertexCreateProjectOutput {
 	kind: "host" | "plugin" | "client";
 	files: {
@@ -1811,6 +1832,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_audit_audit_consolidate": McpVertexAuditAuditConsolidateOutput;
 	"mcp-vertex_audit_audit_plan": McpVertexAuditAuditPlanOutput;
 	"mcp-vertex_audit_audit_run": McpVertexAuditAuditRunOutput;
+	"mcp-vertex_cache_cache_gc": McpVertexCacheCacheGcOutput;
 	"mcp-vertex_create_project": McpVertexCreateProjectOutput;
 	"mcp-vertex_deps_deps_check": McpVertexDepsDepsCheckOutput;
 	"mcp-vertex_deps_deps_list": McpVertexDepsDepsListOutput;

@@ -107,6 +107,85 @@ describe('assembleCliConfig — cache eviction boot wiring (f00068 A)', () => {
 		expect(info.isFile()).toBe(true);
 	});
 
+	it('applies (deletes) on boot when config.cache.runOnBoot=apply AND the cache plugin is loaded (f00072 S3)', async () => {
+		await mkdir(join(cacheDir, 'capture'), { recursive: true });
+		const victim = join(cacheDir, 'capture', '2026-06-01.jsonl');
+		await writeFile(victim, 'old\n');
+
+		// The plugin must be named `cache` for the apply gate to fire.
+		const cachePluginImport = async (
+			_specifier: string,
+		): Promise<{ default: unknown }> => ({
+			default: {
+				name: 'cache',
+				register: (ctx: IMcpPluginContext) => {
+					ctx.cacheEvictionRegistry?.register({
+						id: 'capture-old',
+						owner: 'cache',
+						path: 'capture/*',
+						when: { kind: 'olderThanDays', days: 7 },
+					});
+					return {};
+				},
+			},
+		});
+
+		const assembled = await assembleCliConfig(
+			parseCliArgs(
+				['--workspace', workspace, '--plugins=cache'],
+				workspace,
+			),
+			{
+				readFile: fileReader(
+					JSON.stringify({ cache: { runOnBoot: 'apply' } }),
+				),
+				import: cachePluginImport,
+			},
+		);
+
+		expect(assembled.cacheEvictionBootReport.dryRun).toBe(false);
+		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(1);
+		// The file is actually gone.
+		await expect(stat(victim)).rejects.toThrow();
+	});
+
+	it('does NOT delete on boot when runOnBoot=apply but the cache plugin is absent', async () => {
+		await mkdir(join(cacheDir, 'capture'), { recursive: true });
+		const survivor = join(cacheDir, 'capture', '2026-06-01.jsonl');
+		await writeFile(survivor, 'old\n');
+
+		const sink: IPluginSink = {};
+		const assembled = await assembleCliConfig(baseArgs(workspace), {
+			readFile: fileReader(
+				JSON.stringify({ cache: { runOnBoot: 'apply' } }),
+			),
+			import: capturingImport(sink),
+		});
+
+		// The contributing plugin is named `capture`, not `cache`, so the
+		// apply gate stays closed: dry-run, file survives.
+		expect(assembled.cacheEvictionBootReport.dryRun).toBe(true);
+		const info = await stat(survivor);
+		expect(info.isFile()).toBe(true);
+	});
+
+	it('skips the boot sweep entirely when runOnBoot=off (f00072 S3)', async () => {
+		await mkdir(join(cacheDir, 'capture'), { recursive: true });
+		await writeFile(join(cacheDir, 'capture', '2026-06-01.jsonl'), 'old\n');
+
+		const sink: IPluginSink = {};
+		const assembled = await assembleCliConfig(baseArgs(workspace), {
+			readFile: fileReader(
+				JSON.stringify({ cache: { runOnBoot: 'off' } }),
+			),
+			import: capturingImport(sink),
+		});
+
+		// The rule is registered, but `off` evaluates nothing.
+		expect(assembled.cacheEvictionBootReport.rulesEvaluated).toBe(0);
+		expect(assembled.cacheEvictionBootReport.removed).toHaveLength(0);
+	});
+
 	it('does NOT run the boot sweep if the registry has no rules', async () => {
 		const silentImport = async (
 			_specifier: string,

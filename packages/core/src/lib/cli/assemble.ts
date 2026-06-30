@@ -255,9 +255,9 @@ export const assembleCliConfig = async (
 	// beyond the workspace; a relative entry is resolved against the
 	// workspace root so the value handed to the containment helper is always
 	// absolute. Default `[]` keeps the single-root behaviour unchanged.
-	const fsAuthorizedRoots = (fileConfig.filesystem?.authorizedRoots ?? []).map(
-		(root) => resolve(workspace.root, root),
-	);
+	const fsAuthorizedRoots = (
+		fileConfig.filesystem?.authorizedRoots ?? []
+	).map((root) => resolve(workspace.root, root));
 	// f00052: host-scoped agent_worktree gate. Resolution order is host
 	// CLI flag > config file > `false` default. The CLI value is already a
 	// tri-state boolean (`undefined` when the flag is absent), so a simple
@@ -763,15 +763,36 @@ export const assembleCliConfig = async (
 			: {}),
 	};
 
-	// f00072 slice S1: boot sweep. Runs once, AFTER every plugin has
+	// f00072 slice S1/S3: boot sweep. Runs once, AFTER every plugin has
 	// registered its rules. The result is surfaced in
 	// `IAssembledCliConfig.cacheEvictionBootReport` so the doctor
 	// (and CLI tests) can assert what the sweep would have done.
-	// `dryRun: true` is the default — slice C introduces the
-	// `runOnBoot: "apply"` config-file opt-in.
-	const cacheEvictionBootReport = await cacheEvictionRegistry.run({
-		dryRun: true,
-	});
+	//
+	// Posture is governed by `config.cache.runOnBoot` (f00072 S3),
+	// defaulting to `'dry-run'` (safe: deletes nothing, only logs the
+	// report). The destructive `'apply'` mode is honoured ONLY when the
+	// opt-in `cache` plugin is loaded — without it no plugin contributes
+	// the static rules and a stray `apply` config would be a no-op
+	// anyway, but gating on the plugin keeps the core agnostic: a host
+	// that never loads `cache` can never trigger deletion. `'off'` skips
+	// the sweep entirely (empty report).
+	const cacheRunOnBoot = fileConfig.cache?.runOnBoot ?? 'dry-run';
+	const cachePluginLoaded = loadResult.loaded.some(
+		(entry) => entry.plugin.name === 'cache',
+	);
+	const cacheEvictionApply = cacheRunOnBoot === 'apply' && cachePluginLoaded;
+	const cacheEvictionBootReport: ICacheEvictionReport =
+		cacheRunOnBoot === 'off'
+			? {
+					dryRun: true,
+					appliedAt: new Date().toISOString(),
+					totalBytes: 0,
+					removed: [],
+					skipped: [],
+					errors: [],
+					rulesEvaluated: 0,
+				}
+			: await cacheEvictionRegistry.run({ dryRun: !cacheEvictionApply });
 
 	return {
 		config,

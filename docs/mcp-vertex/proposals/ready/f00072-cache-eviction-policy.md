@@ -153,8 +153,8 @@ exists, no plugin contributes rules, nothing happens.
 
 ### S2 — Opt-in @mcp-vertex/cache plugin (the new code)
 
-- **Status**: pending
-- **Files**: plugins/cache/package.json, plugins/cache/src/index.ts, plugins/cache/src/lib/registry.ts, plugins/cache/src/lib/static-rules.ts, plugins/cache/src/lib/tools/gc-tool.ts, plugins/cache/tests/registry.spec.ts
+- **Status**: done
+- **Files**: plugins/cache/package.json, plugins/cache/tsconfig.json, plugins/cache/tsconfig.dts.json, plugins/cache/vitest.config.ts, plugins/cache/README.md, plugins/cache/LICENSE, plugins/cache/src/index.ts, plugins/cache/src/public/index.ts, plugins/cache/src/generated/tool-outputs.ts, plugins/cache/src/lib/registry.ts, plugins/cache/src/lib/static-rules.ts, plugins/cache/src/lib/tools/gc-tool.ts, plugins/cache/tests/registry.spec.ts, packages/core/src/lib/cli/assemble.ts (runOnBoot wiring), packages/core/src/lib/cache/eviction-registry.ts (keepLastN ENOENT tolerance), tools/scripts/types/generate-tool-types.script.ts, tools/scripts/types/emit-tool-types.script.ts, tools/scripts/verify/plugin-tool-verify.script.ts, apps/web/src/data/plugin-catalog.ts, apps/web/src/data/cli-guide.ts, apps/web/tests/data/plugin-catalog.spec.ts, packages/core/src/generated/tool-outputs.ts, packages/core/tests/src/lib/cli/assemble.eviction.spec.ts
 - **Gate**: bun run validate
 - **Command**: bun run typecheck
 - **Expect**: exit0
@@ -238,7 +238,7 @@ This way the registry has every plugin's policy in one place (printed by
 
 ### S5 — Worktree orphan sweeper
 
-- **Status**: pending
+- **Status**: done
 - **Files**: plugins/cache/src/lib/static-rules.ts, plugins/cache/tests/registry.spec.ts
 - **Gate**: bun run validate
 - **Command**: bun run typecheck

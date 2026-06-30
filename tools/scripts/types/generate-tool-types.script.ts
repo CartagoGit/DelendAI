@@ -41,6 +41,7 @@ import auditPlugin from '@mcp-vertex/audit';
 import statusMarkerPlugin from '@mcp-vertex/status-marker';
 import testConventionPlugin from '@mcp-vertex/test-convention';
 import webFetchPlugin from '@mcp-vertex/web-fetch';
+import cachePlugin from '@mcp-vertex/cache';
 
 import {
 	buildPackageModules,
@@ -64,10 +65,11 @@ const PLUGIN_SPECIFIERS: Readonly<Record<string, unknown>> = {
 	'mcp-status-marker': statusMarkerPlugin,
 	'mcp-test-convention': testConventionPlugin,
 	'mcp-web-fetch': webFetchPlugin,
+	'mcp-cache': cachePlugin,
 };
 
 const PLUGIN_LIST =
-	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch';
+	'proposals,rules,memory,git,quality,search,notification,docs,deps,logs,audit,status-marker,test-convention,web-fetch,cache';
 
 /**
  * Assemble the reference server with every plugin and harvest each

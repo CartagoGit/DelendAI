@@ -205,7 +205,17 @@ export const createCacheEvictionRegistry = (
 		when: ICacheEvictionKeepLastN,
 		dryRun: boolean,
 	): Promise<readonly ICacheEvictionRemoved[]> => {
-		const info = await stat(target.abs);
+		let info: Awaited<ReturnType<typeof stat>>;
+		try {
+			info = await stat(target.abs);
+		} catch (error) {
+			// A keepLastN rule whose directory does not exist yet (e.g.
+			// `.worktrees/` before any agent worktree was created) is a
+			// no-op, not an error — same forgiving posture the glob
+			// expansion takes for ENOENT.
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+			throw error;
+		}
 		if (!info.isDirectory()) return [];
 		const entries = await readdir(target.abs);
 		const statByName = await Promise.all(
