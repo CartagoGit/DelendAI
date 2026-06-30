@@ -569,7 +569,9 @@ export const buildRunRegistration = (
 						if (outcome.kind === 'scaffolded') {
 							proposalsSummary = {
 								scaffolded: outcome.records.map(
-									(r): {
+									(
+										r,
+									): {
 										id: string;
 										filename: string;
 										severity: string;
