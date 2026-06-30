@@ -165,7 +165,10 @@ const renderAgentFile = (descriptor: {
 /** S3 — render `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog. */
 export const renderAgentFiles = async (
 	workspaceRoot: string,
-	options: { readonly namespacePrefix?: string; readonly locale?: string } = {},
+	options: {
+		readonly namespacePrefix?: string;
+		readonly locale?: string;
+	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
 	return descriptors.map(renderAgentFile);

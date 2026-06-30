@@ -62,8 +62,7 @@ export const initDefaultCommand: ICliCommand = {
 	name: 'init:default',
 	summary:
 		'Non-interactive bootstrap with the operator defaults (vertex preset + overwrite + skills + agents + scaffold).',
-	usage:
-		'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
+	usage: 'init:default [--dry-run] [--mcp-vertex-root=<path>] [--plugin-paths-root=<path>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		const flags = parseFlags(args);
 

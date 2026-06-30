@@ -182,29 +182,27 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 
 	it('merges CLI plugin option overrides on top of rendered defaults before writing', async () => {
 		const result = await initCommand.run(
-			[
-				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
-			],
+			[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
 			{
-			cwd: workspace,
-			globals: {
-				workspace,
-				remote: undefined,
-				json: false,
-				format: 'text',
-				lang: 'en',
-				noColor: false,
-				plugins: [],
-				extraOptions: {
-					memory: { maxNotes: '500' },
-					proposals: { proposalDir: 'docs/proposals/custom' },
+				cwd: workspace,
+				globals: {
+					workspace,
+					remote: undefined,
+					json: false,
+					format: 'text',
+					lang: 'en',
+					noColor: false,
+					plugins: [],
+					extraOptions: {
+						memory: { maxNotes: '500' },
+						proposals: { proposalDir: 'docs/proposals/custom' },
+					},
 				},
-			},
-			request: async () => {
-				throw new Error('not used');
-			},
-			listTools: async () => [],
-			close: async () => {},
+				request: async () => {
+					throw new Error('not used');
+				},
+				listTools: async () => [],
+				close: async () => {},
 			},
 		);
 
@@ -227,9 +225,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 
 	it('warns and skips when a CLI override targets a plugin outside the resolved set', async () => {
 		const result = await initCommand.run(
-			[
-				`--mcp-vertex-root=${HOST_ENTRY_PATH}`,
-			],
+			[`--mcp-vertex-root=${HOST_ENTRY_PATH}`],
 			{
 				cwd: workspace,
 				globals: {

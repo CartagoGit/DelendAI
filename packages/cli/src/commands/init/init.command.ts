@@ -43,7 +43,11 @@ const applyExtraOptions = (
 	extraOptions: Record<string, Record<string, unknown>>,
 ): Record<string, unknown> => {
 	const plugins = config.plugins;
-	if (plugins === undefined || typeof plugins !== 'object' || plugins === null) {
+	if (
+		plugins === undefined ||
+		typeof plugins !== 'object' ||
+		plugins === null
+	) {
 		return config;
 	}
 	for (const [pluginId, overrides] of Object.entries(extraOptions)) {
@@ -58,7 +62,9 @@ const applyExtraOptions = (
 			);
 			continue;
 		}
-		const typedPluginConfig = pluginConfig as { options?: Record<string, unknown> };
+		const typedPluginConfig = pluginConfig as {
+			options?: Record<string, unknown>;
+		};
 		typedPluginConfig.options ??= {};
 		for (const [key, value] of Object.entries(overrides)) {
 			typedPluginConfig.options[key] = value;
