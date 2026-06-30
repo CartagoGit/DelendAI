@@ -18,6 +18,7 @@ export const renderPanelTimes = (
 		model.histogram.map((b) => ({ label: b.bucket, value: b.count })),
 		640,
 		140,
+		{ ariaLabel: text('tabTimes') },
 	);
 	const slowest = model.slowestTool;
 	return `
