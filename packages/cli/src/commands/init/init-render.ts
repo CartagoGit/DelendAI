@@ -14,8 +14,13 @@ import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
 } from './init-host-instructions';
-import { renderMigrationProposal } from './init-migrate-offer';
+import { renderAdoptionPlan } from './init-migrate-offer';
 import type { IInitAnswers } from './init-answers.schema';
+import type { IFileReader } from './init-detection';
+import {
+	createWorkspaceFileReader,
+	createWorkspacePathProvider,
+} from '@mcp-vertex/core/public';
 
 export type IRenderedFile = {
 	readonly relPath: string;
@@ -242,19 +247,37 @@ export const renderHostInstructionsBlocks = async (
 	return out;
 };
 
-/** S5 — render the first migration proposal when the user opted in. */
-export const renderMigrationProposalIfRequested = (
+/**
+ * S5 + f00089 U1 — render the adoption-plan proposal when the user opted
+ * in. The generator detects the target's foreign proposal system and
+ * allocates the next free id (no hardcoded `f00001`); it is advisory and
+ * never rewrites the target's existing proposals in place.
+ *
+ * `reader` is injected so tests stay deterministic; the bundle
+ * orchestrator wires it to the workspace filesystem.
+ */
+export const renderMigrationProposalIfRequested = async (
 	answers: IInitAnswers,
-): readonly IRenderedFile[] => {
+	options: { readonly reader: IFileReader },
+): Promise<readonly IRenderedFile[]> => {
 	if (!answers.migrateFromLegacy) return [];
-	return [renderMigrationProposal(answers)];
+	const plan = await renderAdoptionPlan(answers, { reader: options.reader });
+	return [{ relPath: plan.relPath, content: plan.content }];
 };
 
 /** Top-level orchestrator. Reads catalog live; pure on the rest of the inputs. */
 export const renderInitBundle = async (
 	answers: IInitAnswers,
-	options: { readonly hostEntryPath: string } = { hostEntryPath: '' },
+	options: {
+		readonly hostEntryPath: string;
+		readonly reader?: IFileReader;
+	} = { hostEntryPath: '' },
 ): Promise<IRenderedBundle> => {
+	const reader: IFileReader =
+		options.reader ??
+		createWorkspaceFileReader(
+			createWorkspacePathProvider(answers.workspaceRoot),
+		);
 	const resolvedPlugins = resolvePluginSet(answers);
 	const files: IRenderedFile[] = [
 		renderMcpVertexConfig(answers, resolvedPlugins),
@@ -273,7 +296,9 @@ export const renderInitBundle = async (
 			answers.hostInstructions,
 		)),
 	);
-	files.push(...renderMigrationProposalIfRequested(answers));
+	files.push(
+		...(await renderMigrationProposalIfRequested(answers, { reader })),
+	);
 	const summary = [
 		`preset: ${answers.preset}`,
 		`resolved plugins (${resolvedPlugins.length}): ${resolvedPlugins.join(', ')}`,

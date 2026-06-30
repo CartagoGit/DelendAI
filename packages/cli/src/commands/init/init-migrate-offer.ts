@@ -1,15 +1,36 @@
 /**
- * f00084 S5 — render the first migration proposal.
+ * init-migrate-offer.ts — f00084 S5 + f00089 U1.
  *
- * When the user accepts the `migrateFromLegacy` offer, `init` writes
- * `docs/mcp-vertex/proposals/ready/f00001-migrate-legacy-<scope>.md`
- * with a templated frontmatter and two starter slices. The scope is
- * derived from the workspace root directory name so the file is unique
- * across workspaces without manual input.
+ * S5 (legacy): when the user accepts the `migrateFromLegacy` offer,
+ * `init` wrote a generic `f00001-migrate-legacy-<scope>.md` regardless of
+ * what the target actually contained.
+ *
+ * U1 turns that STUB into an adoption-PLAN generator:
+ *
+ *   - `detectForeignProposals` (init-foreign-detect.ts) inventories the
+ *     target's own proposal/plan convention (proposals/ rfcs/ adr/ …),
+ *   - `allocateNextAdoptionId` computes the next FREE id under our
+ *     canonical layout instead of the hardcoded `f00001`, and
+ *   - `renderAdoptionPlan` emits an ADVISORY migration proposal that maps
+ *     the foreign convention onto ours. It never rewrites, deletes, or
+ *     moves the target's existing proposals — the target's own agents
+ *     execute the plan.
+ *
+ * Invariants (AGENTS.md): no `process.cwd()` here; IO is the injected
+ * `IFileReader` the caller wires to the workspace; this module is pure
+ * data shaping over that reader. Idempotent: re-running emits a plan with
+ * the next free id, never overwriting a prior plan in place.
  */
 import { basename } from 'node:path';
 
 import type { IInitAnswers } from './init-answers.schema';
+import type { IFileReader } from './init-detection';
+import {
+	allocateNextAdoptionId,
+	describeConvention,
+	detectForeignProposals,
+	type IForeignProposalInventory,
+} from './init-foreign-detect';
 
 const slugify = (input: string): string =>
 	input
@@ -22,6 +43,12 @@ const slugify = (input: string): string =>
 export const deriveScope = (workspaceRoot: string): string =>
 	slugify(basename(workspaceRoot) || 'workspace');
 
+/**
+ * S5 legacy stub renderer — kept for the greenfield path (no foreign
+ * system, no prior proposals). It hardcodes `f00001` ON PURPOSE: it is
+ * only reached when nothing exists to collide with. New callers should
+ * prefer `renderAdoptionPlan`, which allocates the next free id.
+ */
 export const renderMigrationProposal = (
 	answers: IInitAnswers,
 ): {
@@ -81,4 +108,162 @@ export const renderMigrationProposal = (
 		`gate after every slice; \`delivery_verifier\` approves or requests\n` +
 		`changes independently.\n`;
 	return { relPath, content };
+};
+
+/** Result of the U1 adoption-plan generator. */
+export interface IAdoptionPlan {
+	readonly relPath: string;
+	readonly content: string;
+	/** The allocated id (`f00001`, `f00042`, …) — surfaced for `--json`. */
+	readonly id: string;
+	/** The inventory the plan was built from — consumed by f00089 U2. */
+	readonly inventory: IForeignProposalInventory;
+}
+
+/** Render the foreign-system section of the plan body (advisory mapping). */
+const renderForeignSection = (inventory: IForeignProposalInventory): string => {
+	if (!inventory.found) {
+		return (
+			`## foreign proposal system\n\n` +
+			`No existing proposal/plan convention was detected in this project.\n` +
+			`This plan adopts the canonical mcp-vertex layout from scratch under\n` +
+			`\`docs/mcp-vertex/proposals/\`.\n\n`
+		);
+	}
+	const lines = inventory.conventions
+		.map((c) => `- ${describeConvention(c)}`)
+		.join('\n');
+	const primary = inventory.primary;
+	return (
+		`## foreign proposal system\n\n` +
+		`\`init\` detected an existing proposal/plan convention in this project:\n\n` +
+		`${lines}\n\n` +
+		`This plan is **advisory output**: it maps the foreign convention onto the\n` +
+		`canonical mcp-vertex layout. \`init\` does **not** rewrite, delete, or move\n` +
+		`any of the files above — the target's own agents execute the mapping.\n\n` +
+		(primary
+			? `Primary source to migrate: \`${primary.location}\` ` +
+				`(${primary.documentCount} doc(s), id-scheme \`${primary.idScheme}\`).\n\n`
+			: '')
+	);
+};
+
+/**
+ * Idempotency guard: find the id of an adoption plan already scaffolded
+ * for `scope` in a prior `init` run, so re-running reuses that file
+ * instead of allocating a fresh id on every invocation (which would let
+ * `init` litter the target with `f00001`, `f00002`, … duplicates).
+ *
+ * Scans every canonical status folder for `<id>-adopt-mcp-vertex-<scope>.md`
+ * and returns the existing id, or `undefined` when none exists yet.
+ */
+const findExistingAdoptionId = async (
+	reader: IFileReader,
+	scope: string,
+): Promise<string | undefined> => {
+	const re = new RegExp(`^(f\\d+)-adopt-mcp-vertex-${scope}\\.md$`);
+	for (const dir of [
+		'docs/mcp-vertex/proposals/ready',
+		'docs/mcp-vertex/proposals/done',
+		'docs/mcp-vertex/proposals/paused',
+		'docs/mcp-vertex/proposals',
+	]) {
+		const entries = await reader.listDir(dir);
+		for (const name of entries) {
+			const m = name.match(re);
+			if (m) return m[1];
+		}
+	}
+	return undefined;
+};
+
+/**
+ * U1 — emit the adoption-plan proposal.
+ *
+ * `reader` is injected (DIP); the caller wires it to the workspace. The
+ * plan:
+ *   - detects the foreign proposal system (inventory),
+ *   - reuses an existing adoption plan's id for this scope when one was
+ *     already scaffolded (idempotent), otherwise allocates the next FREE
+ *     id (never hardcoded `f00001` when a collision is possible),
+ *   - and embeds advisory sections for the skill/tool migration that
+ *     f00089 U2 fills in (placeholders kept stable for U2 to consume).
+ *
+ * Returns the file plus the id + inventory so callers (and U2) can read
+ * the structured result without re-parsing the markdown.
+ */
+export const renderAdoptionPlan = async (
+	answers: IInitAnswers,
+	options: { readonly reader: IFileReader },
+): Promise<IAdoptionPlan> => {
+	const scope = deriveScope(answers.workspaceRoot);
+	const inventory = await detectForeignProposals(options.reader);
+	const id =
+		(await findExistingAdoptionId(options.reader, scope)) ??
+		(await allocateNextAdoptionId(options.reader, inventory));
+	const relPath = `docs/mcp-vertex/proposals/ready/${id}-adopt-mcp-vertex-${scope}.md`;
+	const date = new Date().toISOString().slice(0, 10);
+	const title = inventory.found
+		? `Adopt mcp-vertex: migrate the existing ${inventory.primary?.kind ?? 'proposal'} system (${scope})`
+		: `Adopt mcp-vertex workflow (${scope})`;
+
+	const content =
+		`---\n` +
+		`id: ${id}\n` +
+		`status: ready\n` +
+		`type: proposal\n` +
+		`track: adoption-migration\n` +
+		`date: ${date}\n` +
+		`kind: feat\n` +
+		`title: ${title}\n` +
+		`shipped-in: []\n` +
+		`recan: []\n` +
+		`related:\n` +
+		`    - f00084 # init command that scaffolded this proposal\n` +
+		`    - f00089 # adoption-plan umbrella\n` +
+		`ownership:\n` +
+		`    - { agent: technical_investigator, task: 'A1: inventory the foreign proposal/skill/tool surface (do not modify it)' }\n` +
+		`    - { agent: proposal_guardian, task: 'A2: map the foreign convention onto the canonical mcp-vertex layout' }\n` +
+		`globalGate: validate\n` +
+		`acceptance:\n` +
+		`    - { command: bun run typecheck, expect: exit0 }\n` +
+		`    - { command: bun run test, expect: exit0 }\n` +
+		`    - { command: bun run validate, expect: exit0 }\n` +
+		`---\n\n` +
+		`# ${id} — Adopt mcp-vertex (${scope})\n\n` +
+		`## goal\n\n` +
+		`Adopt the mcp-vertex workflow in this project: a single canonical\n` +
+		`proposals layout, namespace-prefixed tools, the \`{ ok, error }\` envelope,\n` +
+		`and a proposals-driven swarm. Where the project already has its own\n` +
+		`proposal/plan convention, **migrate** it onto ours rather than starting\n` +
+		`a parallel system.\n\n` +
+		`## why\n\n` +
+		`This proposal was scaffolded by \`mcpv init\` (f00089 U1). The id \`${id}\`\n` +
+		`was allocated as the next free id in this project's canonical proposals\n` +
+		`space — it is **not** a hardcoded \`f00001\`, so it cannot collide with a\n` +
+		`proposal that already exists here.\n\n` +
+		renderForeignSection(inventory) +
+		`## slices\n\n` +
+		`### A1 — inventory the foreign surface (read-only)\n\n` +
+		`Capture every existing proposal/record, skill, and tool the project\n` +
+		`declares. Save the structured output under\n` +
+		`\`docs/mcp-vertex/proposals/ready/${id}-a1-inventory.md\`. Touch nothing.\n\n` +
+		`### A2 — map foreign → canonical\n\n` +
+		`Produce the mapping from the foreign convention to the canonical\n` +
+		`mcp-vertex layout (file naming, id space, status folders). The mapping\n` +
+		`is advisory; converting the foreign files is a later, explicit step the\n` +
+		`target's agents perform — \`init\` never converts them in place.\n\n` +
+		`### A3 — skill migration (filled by f00089 U2)\n\n` +
+		`<!-- f00089 U2 embeds the skill-migration section here: migrate our\n` +
+		`skills into the target AND absorb the target's existing skills. -->\n` +
+		`_Pending f00089 U2._\n\n` +
+		`### A4 — tool-namespace unification (filled by f00089 U2)\n\n` +
+		`<!-- f00089 U2 embeds the tool-namespace unification section here:\n` +
+		`inventory ours + theirs and document the no-collision mapping. -->\n` +
+		`_Pending f00089 U2._\n\n` +
+		`### A5 — single source of truth (filled by f00089 U3)\n\n` +
+		`<!-- f00089 U3 embeds the AGENT-BOOTSTRAP + AGENTS consolidation. -->\n` +
+		`_Pending f00089 U3._\n`;
+
+	return { relPath, content, id, inventory };
 };
