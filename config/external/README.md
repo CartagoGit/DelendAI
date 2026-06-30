@@ -11,10 +11,15 @@ Current symlink bridges:
 
 - `.aider.conf.yml` -> `config/external/aider/aider.conf.yml`
 - `.cursorrules` -> `config/external/cursor/cursorrules`
-- `.mcp.json` -> `config/external/mcp/mcp.json`
 
 Current root-discovered configs:
 
+- `.mcp.json` — generic stdio MCP launch config. Stays a real root file
+  (not bridged): the root entry uses workspace-relative args
+  (`--workspace=.`), while `config/external/mcp/mcp.json` keeps the
+  `${workspaceFolder}` variant for hosts that expand that variable. A
+  symlink would force one path style on both consumers, so the root copy
+  is the integration boundary.
 - `.github/**` — GitHub workflows, community health files, CODEOWNERS,
   Dependabot, Copilot instructions, and GitHub agent definitions.
 - `.vscode/**` — VS Code workspace settings and MCP launch config.
