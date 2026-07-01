@@ -11,13 +11,7 @@
  * surface — the JSON envelope lives on stdout and the recap on
  * stderr) so `--help` is safe to use inside pipelines.
  */
-import {
-	c,
-	colorOn,
-	heading,
-	hint,
-	paint,
-} from '../../lib/color';
+import { c, colorOn, heading, hint, paint } from '../../lib/color';
 
 /**
  * Render the `--help` block honouring the shared palette.
@@ -49,7 +43,9 @@ export const renderInitDefaultHelp = (): string => {
 	const dim = (t: string): string => (enabled ? c.dim(t) : t);
 
 	const lines: string[] = [
-		enabled ? heading('mcp-vertex › init:default') : 'mcp-vertex › init:default',
+		enabled
+			? heading('mcp-vertex › init:default')
+			: 'mcp-vertex › init:default',
 		dim(horiz),
 		'',
 		`  Non-interactive bootstrap with the operator defaults`,

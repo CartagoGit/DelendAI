@@ -1,30 +1,65 @@
 /**
  * Shared ANSI palette for the CLI.
  *
- * Disabled when `NO_COLOR` is set, when `FORCE_COLOR=0`, or when
- * `process.stdout.isTTY` is false. The helpers below are pure
- * passthroughs in those modes so logs stay greppable. See
+ * Disabled when `NO_COLOR` is set, when `FORCE_COLOR=0`, when
+ * `process.stdout.isTTY` is false, OR when `process.stderr.isTTY`
+ * is false (the recap is printed to stderr — see
+ * `init-human-summary.ts`). The helpers below are pure passthroughs
+ * in those modes so logs stay greppable. See
  * https://no-color.org/ for the convention.
+ *
+ * `colorOn()` is **evaluated every call** (not module-load) so the
+ * decision is correct even when the CLI is spawned by a long-running
+ * process that captures stdout once (e.g. an MCP host or a shell
+ * redirector that turns off `isTTY` at spawn time but where the
+ * operator can still see the terminal). Callers that want a stable
+ * decision can use the `colorOn()` snapshot at the moment they print.
  *
  * Extracted from `init-prompts.ts` so every CLI surface (init,
  * init:default, future commands) shares one palette. Same palette
  * family as the prompts so `init` (interactive) and `init:default`
  * (non-interactive) look identical to the operator.
  */
-const COLOR_ENABLED = (): boolean => {
+export const colorOn = (
+	target: { isTTY?: boolean } = process.stderr,
+): boolean => {
 	if (process.env.NO_COLOR !== undefined && process.env.NO_COLOR !== '') {
 		return false;
 	}
 	if (process.env.FORCE_COLOR === '0') return false;
-	return Boolean(process.stdout.isTTY);
+	// Honour explicit opt-in even when the stream is not a TTY —
+	// the operator explicitly asked for colour.
+	if (
+		process.env.FORCE_COLOR !== undefined &&
+		process.env.FORCE_COLOR !== '' &&
+		process.env.FORCE_COLOR !== '0'
+	) {
+		return true;
+	}
+	return Boolean(target.isTTY);
 };
 
-export const COLOR_ON: boolean = COLOR_ENABLED();
+/**
+ * Convenience accessor: snapshot of `colorOn()` for callers that
+ * want to gate rendering once at the call site. New callers should
+ * prefer the dynamic `colorOn()` helper.
+ *
+ * Kept as an export so existing call sites and external plugins
+ * keep working.
+ */
+export const COLOR_ON: boolean = colorOn(process.stderr);
 
+/**
+ * Build a colorizer that re-evaluates `colorOn()` on every call. This
+ * way the decision honours the runtime environment at print time, not
+ * at module-load time (which is the bug the operator hit when the
+ * MCP host spawned the CLI with stdout piped but stderr attached).
+ */
 const ansi = (open: number, close: number) =>
-	COLOR_ON
-		? (text: string): string => `\x1b[${open}m${text}\x1b[${close}m`
-		: (text: string): string => text;
+	(text: string): string => {
+		if (!colorOn(process.stderr)) return text;
+		return `\x1b[${open}m${text}\x1b[${close}m`;
+	};
 
 export const c = {
 	bold: ansi(1, 22),
