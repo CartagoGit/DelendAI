@@ -1,25 +1,35 @@
 #!/usr/bin/env bun
 /**
  * render-host-hints.script.ts — render the canonical host-instruction
- * fragments that the hand-edited host files (`.github/copilot-instructions.md`,
+ * fragment that the hand-edited host files (`.github/copilot-instructions.md`,
  * `CLAUDE.md`, `AGENTS.md`) reference by path.
  *
  * The contract this script enforces (the "agnostic bootstrap" model):
  *
  *   1. Every host file MUST point at `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
  *      (the single source of truth for orient / discover / close / invariants).
- *   2. The fragments this script writes DO NOT enumerate tools, skills, or
+ *   2. The fragment this script writes DOES NOT enumerate tools, skills, or
  *      proposal ids. The server is the only source of truth for that — the
  *      agent asks `mcp-vertex_agent_catalog` instead of reading a stale list.
- *   3. The fragments exist so a downstream project that copies the host-file
+ *   3. The fragment exists so a downstream project that copies the host-file
  *      shape still gets a deterministic, drift-detectable include. The
  *      host-file templates still include the bootstrap by reference; this
- *      generator only emits the fragments under `docs/mcp-vertex/host-hints/`.
+ *      generator only emits the fragment under `docs/mcp-vertex/host-hints/`.
+ *
+ * f00092: there is EXACTLY ONE fragment. The 3-fragment model (copilot,
+ * claude, agents) collapsed because the only host-specific content was
+ * a 1-line footnote pointing at an appendix in the canonical bootstrap
+ * itself — that footnote now lives inline in each hand-edited host
+ * file (between the `<!-- mcp-vertex:begin -->` /
+ * `<!-- mcp-vertex:end -->` markers), where the rest of the host
+ * file already lives. The script guards the single-fragment invariant
+ * with a final directory walk that fails loudly if anyone tries to
+ * re-split it.
  *
  * The script is intentionally minimal. It does NOT read the catalog
  * artifact (the old design did, and the result was a hand-maintained list
  * of ids that drifted every week). All it does is write a constant
- * fragment per host that says "follow the bootstrap, ask the server".
+ * fragment that says "follow the bootstrap, ask the server".
  *
  * Usage:
  *   bun tools/scripts/catalog/render-host-hints.script.ts
@@ -27,127 +37,78 @@
  *   bun tools/scripts/catalog/render-host-hints.script.ts --root /abs/path
  *
  * Exit codes:
- *   0 — fragments written or already up to date
- *   1 — fragments are stale under --check
+ *   0 — fragment written or already up to date
+ *   1 — fragment is stale under --check, or single-fragment invariant violated
  *   2 — invocation or load error
  */
 import { join, resolve } from 'node:path';
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, readdir, rm } from 'node:fs/promises';
 
 export const DEFAULT_OUTPUT_DIR = 'docs/mcp-vertex/host-hints';
 export const BOOTSTRAP_PATH = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
 
 // S5 raised the budget from 1 200 to 1 300 to match the agent-catalog budget
 // (docs/mcp-vertex/AGENT-BOOTSTRAP.md is the canonical reference and the
-// fragment is intentionally minimal but still has to point at it + a
-// host-specific skill; the 100B headroom keeps the budget honest).
+// fragment is intentionally minimal but still has to point at it; the 100B
+// headroom keeps the budget honest). f00092: the single fragment is even
+// smaller than the old 3 fragments (~700B vs. ~1100B), so the 1300B budget
+// is naturally respected and was not lowered to avoid noisy churn.
 export const MAX_FRAGMENT_BYTES = 1_300;
 
-export type HostId = 'copilot' | 'claude' | 'agents';
-
-export interface IHostFragment {
-	readonly id: HostId;
-	readonly filename: string;
-	readonly render: () => string;
-}
-
-const SHARED_HEADER = (hostLabel: string): string =>
-	[
-		`<!-- Auto-generated discovery fragment for ${hostLabel}. -->`,
-		`<!-- Regenerate with \`bun run catalog:hints\`. Do not edit by hand. -->`,
-		'',
-		`<!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->`,
-	].join('\n');
-
-const SHARED_FOOTER = [
-	`<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->`,
-	'',
-	`> This fragment is intentionally minimal. The universal agent rules live`,
-	`> in [\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). Host files reference that`,
-	`> file and add only the rules the server cannot enforce (e.g. the`,
-	`> status-marker close contract on Copilot, the keep-main-thread-cheap`,
-	`> rule on Claude Code). Tools, skills, and proposal ids are NEVER`,
-	`> enumerated here — they are served live by \`mcp-vertex_agent_catalog\`.`,
-].join('\n');
-
-const CANONICAL_FIRST_MOVE_LINE_1 = 'Follow the universal bootstrap at';
-const CANONICAL_FIRST_MOVE_LINE_2 =
-	'`mcp-vertex_overview { compact: true }` followed by';
-const CANONICAL_FIRST_MOVE_LINE_3 =
-	'`mcp-vertex_agent_catalog` whenever routing to a tool, skill, or';
-const CANONICAL_FIRST_MOVE_LINE_4 = 'actionable proposal.';
-
-const HOST_FOOTNOTE: Readonly<Record<HostId, string>> = {
-	copilot:
-		'- Bootstrap appendix 8.1 (Copilot close-marker contract) is in effect.',
-	claude: '- Bootstrap appendix 8.2 (keep the main thread cheap) is in effect.',
-	agents: '- Bootstrap section 7 (repo-level rules) is in effect.',
-};
-
-const renderFragment = (id: HostId, hostLabel: string): string =>
-	[
-		SHARED_HEADER(hostLabel),
-		'',
-		'## Discovery',
-		'',
-		CANONICAL_FIRST_MOVE_LINE_1,
-		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). The canonical first move is`,
-		CANONICAL_FIRST_MOVE_LINE_2,
-		CANONICAL_FIRST_MOVE_LINE_3,
-		CANONICAL_FIRST_MOVE_LINE_4,
-		'',
-		'## Host-specific footnote',
-		'',
-		HOST_FOOTNOTE[id],
-		SHARED_FOOTER,
-	].join('\n');
-
-const renderCopilotFragment = (): string =>
-	renderFragment('copilot', 'GitHub Copilot Chat');
-const renderClaudeFragment = (): string =>
-	renderFragment('claude', 'Claude Code');
-const renderAgentsFragment = (): string =>
-	renderFragment(
-		'agents',
-		'AGENTS-compatible hosts (Cursor, Aider, generic)',
-	);
-
-export const HOST_FRAGMENTS: readonly IHostFragment[] = [
-	{
-		id: 'copilot',
-		filename: 'copilot-instructions.generated.md',
-		render: renderCopilotFragment,
-	},
-	{
-		id: 'claude',
-		filename: 'claude.generated.md',
-		render: renderClaudeFragment,
-	},
-	{
-		id: 'agents',
-		filename: 'agents.generated.md',
-		render: renderAgentsFragment,
-	},
-];
-
-export interface IRenderHostHintsOptions {
-	readonly outputDir?: string;
-}
+// f00092: the single canonical fragment. The old design carried
+// {id,filename,render} per host; the new design has one of each and
+// guards the invariant with a directory walk (see `findStrayFragments`).
+export const HOST_INSTRUCTIONS_FILENAME = 'agent-instructions.generated.md';
+export const HOST_INSTRUCTIONS_ID = 'agent-instructions';
 
 export interface IRenderedFragment {
-	readonly id: HostId;
-	readonly filename: string;
+	readonly id: typeof HOST_INSTRUCTIONS_ID;
+	readonly filename: typeof HOST_INSTRUCTIONS_FILENAME;
 	readonly text: string;
 }
 
+const SHARED_HEADER = [
+	'<!-- Auto-generated host-instructions fragment. -->',
+	'<!-- Regenerate with `bun run catalog:hints`. Do not edit by hand. -->',
+	'',
+	'<!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->',
+].join('\n');
+
+const SHARED_FOOTER = [
+	'<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->',
+	'',
+	'> This fragment is intentionally minimal. The universal agent rules live',
+	`> in [\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). Host files reference that`,
+	'> file and add only the rules the server cannot enforce (e.g. the',
+	'> status-marker close contract on Copilot, the keep-main-thread-cheap',
+	'> rule on Claude Code). Tools, skills, and proposal ids are NEVER',
+	'> enumerated here — they are served live by `mcp-vertex_agent_catalog`.',
+].join('\n');
+
+const renderFragment = (): string =>
+	[
+		SHARED_HEADER,
+		'',
+		'## Discovery',
+		'',
+		'Follow the universal bootstrap at',
+		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). The canonical first move is`,
+		'`mcp-vertex_overview { compact: true }` followed by',
+		'`mcp-vertex_agent_catalog` whenever routing to a tool, skill, or',
+		'actionable proposal.',
+		'',
+		SHARED_FOOTER,
+	].join('\n');
+
 export const renderHostHints = (
-	_options: IRenderHostHintsOptions = {},
-): readonly IRenderedFragment[] =>
-	HOST_FRAGMENTS.map((fragment) => ({
-		id: fragment.id,
-		filename: fragment.filename,
-		text: `${fragment.render()}\n`,
-	}));
+	_options: Record<string, never> = {},
+): readonly IRenderedFragment[] => [
+	{
+		id: HOST_INSTRUCTIONS_ID,
+		filename: HOST_INSTRUCTIONS_FILENAME,
+		text: `${renderFragment()}\n`,
+	},
+];
 
 const parseArgs = (
 	argv: readonly string[],
@@ -188,44 +149,86 @@ const readUtf8 = async (path: string): Promise<string> => {
 	return file.text();
 };
 
+/**
+ * f00092: enforce the single-fragment invariant. The output dir
+ * MUST hold exactly one `*.generated.md` file, and it MUST be the
+ * canonical `agent-instructions.generated.md`. This catches a
+ * hand-split (e.g. someone adding back `claude.generated.md` for
+ * the old per-host footnote) before the lint even has to.
+ *
+ * Returns the list of unexpected filenames. Empty list = ok.
+ */
+export const findStrayFragments = async (
+	outputDir: string,
+): Promise<readonly string[]> => {
+	const entries = await readdir(outputDir).catch(() => []);
+	return entries
+		.filter(
+			(name) =>
+				name.endsWith('.generated.md') &&
+				name !== HOST_INSTRUCTIONS_FILENAME,
+		)
+		.sort();
+};
+
 const main = async (): Promise<number> => {
 	const { check, root } = parseArgs(process.argv.slice(2));
 	const outputDir = resolve(root, DEFAULT_OUTPUT_DIR);
 
 	const rendered = renderHostHints({});
+	const fragment = rendered[0];
+	if (!fragment) {
+		console.error('render-host-hints: no fragment produced.');
+		return 2;
+	}
 
 	let allOk = true;
 	if (!check) {
 		await rm(outputDir, { recursive: true, force: true });
 		await mkdir(outputDir, { recursive: true });
 	}
-	for (const fragment of rendered) {
-		const target = join(outputDir, fragment.filename);
-		const existing = await readUtf8(target);
-		if (compareText(existing, fragment.text)) {
-			console.log(
-				`${fragment.id}: up to date (${fragment.text.length} bytes)`,
-			);
-			continue;
-		}
+	const target = join(outputDir, fragment.filename);
+	const existing = await readUtf8(target);
+	if (compareText(existing, fragment.text)) {
+		console.log(
+			`${fragment.id}: up to date (${fragment.text.length} bytes)`,
+		);
+	} else {
 		if (check) {
 			console.error(
 				`${fragment.id}: stale (existing ${existing.length}B, would be ${fragment.text.length}B at ${target})`,
 			);
 			allOk = false;
-			continue;
+		} else {
+			await Bun.write(target, fragment.text);
+			console.log(
+				`${fragment.id}: wrote ${target} (${fragment.text.length} bytes)`,
+			);
 		}
-		await Bun.write(target, fragment.text);
-		console.log(
-			`${fragment.id}: wrote ${target} (${fragment.text.length} bytes)`,
+	}
+
+	const strays = await findStrayFragments(outputDir);
+	if (strays.length > 0) {
+		console.error(
+			`${fragment.id}: stray fragments in ${outputDir}: ${strays.join(', ')}.`,
 		);
+		console.error(
+			'  f00092: the host-hints directory MUST hold exactly one *.generated.md file.',
+		);
+		console.error(
+			'  Delete the stray files, or migrate their content into the canonical fragment and the hand-edited host files (see f00092).',
+		);
+		allOk = false;
 	}
 
 	if (check && !allOk) {
 		console.error(
-			'host hints are stale — run `bun run catalog:hints` and commit.',
+			'host hints are stale or violate the single-fragment invariant — run `bun run catalog:hints` and commit.',
 		);
 		return 1;
+	}
+	if (!check && !allOk) {
+		return 3;
 	}
 	if (!check) console.log('host hints regenerated.');
 	return 0;
@@ -236,5 +239,4 @@ if (import.meta.main) {
 	process.exit(code);
 }
 
-export const _internal = { parseArgs, compareText, main };
-export type { IHostFragment as _IHostFragment };
+export const _internal = { parseArgs, compareText, main, findStrayFragments };

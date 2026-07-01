@@ -12,10 +12,12 @@ thread.
 
 For tool / skill / proposal routing, follow `mcp-vertex_overview { compact: true }`
 with `mcp-vertex_agent_catalog`. The canonical discovery surface is regenerated
-by `bun run catalog:generate`; the Claude-specific fragment lives at
-[`docs/mcp-vertex/host-hints/claude.generated.md`](docs/mcp-vertex/host-hints/claude.generated.md).
+by `bun run catalog:generate` and the single host-instructions fragment lives at
+[`docs/mcp-vertex/host-hints/agent-instructions.generated.md`](docs/mcp-vertex/host-hints/agent-instructions.generated.md).
 Treat that fragment as the source of truth for actionable proposals and skill
 routing — do not duplicate the catalog facts in this file.
+
+- **Host footnote:** Bootstrap appendix 8.2 (keep the main thread cheap) is in effect.
 
 ## Keep the main thread cheap
 
