@@ -64,7 +64,10 @@ export interface IPromptSizeBudget {
 export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 18_000 },
 	{ file: 'CLAUDE.md', maxBytes: 3_000 },
-	{ file: '.github/copilot-instructions.md', maxBytes: 3_400 },
+	// 2026-07-01: bumped from 3_400 to 3_600 to absorb the 8-state
+	// close-marker contract section (Bilingual rendering toggle) that
+	// the status-marker plugin now documents inline in the host file.
+	{ file: '.github/copilot-instructions.md', maxBytes: 3_600 },
 	{ file: 'docs/mcp-vertex/AGENT-BOOTSTRAP.md', maxBytes: 25_500 },
 ] as const;
 

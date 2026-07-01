@@ -387,6 +387,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'factory',
 			'framework',
 			'generated',
+			'helper',
 			'host',
 			'i18n',
 			'install',
@@ -426,7 +427,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'workspace',
 		].sort();
 		expect(names).toEqual(expected);
-		expect(names.length).toBe(57);
+		expect(names.length).toBe(58);
 	});
 
 	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {
