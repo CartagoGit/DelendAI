@@ -51,3 +51,11 @@ to switch. The validator and the 8-state semantics are unchanged — only
 the bracket text differs; pick whichever locale matches the host's UI.
 The detailed contract lives in
 [`plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md`](../plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/SKILL.md).
+
+<!-- mcp-vertex:begin -->
+
+# mcp-vertex host hints (auto-generated)
+
+See `docs/mcp-vertex/host-hints/copilot-instructions.generated.md` for the live agent catalog.
+
+<!-- mcp-vertex:end -->

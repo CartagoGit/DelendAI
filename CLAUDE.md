@@ -41,3 +41,11 @@ in context for the rest of the session, so how you call these tools matters:
 - **`/compact` between unrelated tasks.** Once a slice/proposal is closed and
   before starting unrelated work, compact — don't carry its tool output
   forward for the rest of the session.
+
+<!-- mcp-vertex:begin -->
+
+# mcp-vertex host hints (auto-generated)
+
+See `docs/mcp-vertex/host-hints/claude.generated.md` for the live agent catalog.
+
+<!-- mcp-vertex:end -->

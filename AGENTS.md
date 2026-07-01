@@ -288,3 +288,11 @@ at root via a tested symlink).
 | `.github/**`, `.vscode/**`, `.cursor/**`, `.claude/**`, `.codex/**`, `.continue/**` | must-stay-root | Host/IDE root auto-discovery; no tested include/symlink bridge. |
 | `typedoc.json` | moved-to-config | `config/typedoc.json`, passed via `typedoc --options config/typedoc.json` in `package.json#scripts`. |
 | `.aider.conf.yml`, `.cursorrules` | bridged | Canonical under `config/external/<tool>/`; root symlink keeps tool discovery. |
+
+<!-- mcp-vertex:begin -->
+
+# mcp-vertex host hints (auto-generated)
+
+See `docs/mcp-vertex/host-hints/agents.generated.md` for the live agent catalog.
+
+<!-- mcp-vertex:end -->
