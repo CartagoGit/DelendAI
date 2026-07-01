@@ -1,5 +1,4 @@
 /**
-import type { IAutoForwardKind } from '../contracts/interfaces/server-args.interface';
  * server-args.service.ts — f00046 + a00036 F-001 (merged in S2 follow-up).
  *
  * Translates `ICliGlobalOptions` (the human CLI's parsed state) into the
@@ -39,6 +38,11 @@ import type { IAutoForwardKind } from '../contracts/interfaces/server-args.inter
  */
 
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
+
+import type {
+	IAutoForwardKind,
+	IAutoForwardRule,
+} from '../contracts/interfaces/server-args.interface';
 
 /** Discriminator for the shape of a forwarding rule. */
 
