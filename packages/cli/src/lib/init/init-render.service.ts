@@ -10,6 +10,9 @@ import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/
 import {
 	resolvePluginOptions,
 	resolvePresetMembers,
+	type IFileReader,
+	createWorkspaceFileReader,
+	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
 
 import { loadAgentDescriptors } from './init-catalog.constant';
@@ -17,13 +20,9 @@ import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
 } from './init-host-instructions.service';
+import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
 import type { IInitAnswers } from './init-answers.types';
-import type { IFileReader } from './init-detection.service';
-import {
-	createWorkspaceFileReader,
-	createWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
 
 ;
 
@@ -365,6 +364,21 @@ export const renderInitBundle = async (
 			answers.hostInstructions,
 		)),
 	);
+	// f00093: snapshot pre-overwrite host-instructions into a `ready`
+	// proposal whenever overwrite would replace non-canonical content.
+	// Skipped for `append` / `skip` modes (the existing semantics) and
+	// for empty workspaces (no audit trail for a no-op). Failures are
+	// swallowed; the canonical overwrite always wins.
+	try {
+		const snapshot = await renderSnapshotHostInstructionsProposal(answers, {
+			reader,
+		});
+		files.push(...snapshot);
+	} catch (err) {
+		process.stderr.write(
+			`mcp-vertex › host-instructions snapshot skipped: ${(err as Error).message ?? err}\n`,
+		);
+	}
 	// f00016: seed the canonical 7 status folders with `.gitkeep`
 	// whenever the bootstrap is going to *touch* the proposals tree
 	// at all. Two triggers qualify:
