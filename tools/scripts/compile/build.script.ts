@@ -21,6 +21,7 @@ import {
 	mkdtempSync,
 	mkdirSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -88,8 +89,22 @@ const buildPackage = (rel: string): void => {
 		entries.push('src/public/index.ts');
 	if (existsSync(join(dir, 'src/cli.ts'))) entries.push('src/cli.ts');
 
+	// ESM-only entrypoints (packages whose package.json has a `bin` block)
+	// must be built with `--target bun` — `--target node` rewrites the
+	// source's `import.meta.main` entrypoint check into a CJS shim
+	// (`if (__require.main == __require.module)`), and that shim is
+	// undefined when bun loads the bundle as ESM (type: "module").
+	// Library packages (no `bin`) keep `--target node` so they remain
+	// portable across Node/Deno/bun.
+	const pkgJsonPath = join(dir, 'package.json');
+	const hasBin = existsSync(pkgJsonPath)
+		? (JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as { bin?: unknown })
+				.bin !== undefined
+		: false;
+	const target = hasBin ? 'bun' : 'node';
+
 	console.log(
-		`\n• ${rel} → dist (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'})`,
+		`\n• ${rel} → dist (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}, target=${target}${hasBin ? ', bin detected' : ''})`,
 	);
 	rmSync(join(dir, 'dist'), { recursive: true, force: true });
 
@@ -100,7 +115,7 @@ const buildPackage = (rel: string): void => {
 			'build',
 			...entries,
 			'--target',
-			'node',
+			target,
 			'--format',
 			'esm',
 			'--packages',
