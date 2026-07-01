@@ -17,6 +17,22 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"convention": {
+			"type": "object",
+			"properties": {
+				"pluginPathsRoot": {
+					"type": "string"
+				},
+				"sourceRoot": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"pluginPathsRoot",
+				"sourceRoot"
+			],
+			"additionalProperties": false
+		},
 		"filesystem": {
 			"type": "object",
 			"properties": {
