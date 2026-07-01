@@ -13,7 +13,9 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import type { IGitRunner } from '../shared/git-runner';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import {
 	allocateNextProposalId,

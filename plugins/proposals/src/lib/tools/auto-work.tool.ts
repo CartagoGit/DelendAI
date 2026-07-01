@@ -13,10 +13,8 @@ import type { IAutoWorkPersistMode } from '../tools/auto-work-persist';
 import { createGitRunner } from '../shared/git-runner';
 import { runBranchStatusEngine } from '../shared/branch-status-engine';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
-import {
-	runSwarmHygieneEngine,
-	type IRescueCandidate,
-} from '../shared/swarm-hygiene-engine';
+import { runSwarmHygieneEngine } from '../shared/swarm-hygiene-engine';
+import type { IRescueCandidate } from '../contracts/interfaces/swarm-hygiene.interface';
 import { runStashSnapshot, type IStashEntry } from '../shared/stash-snapshot';
 import { detectAgentLoop, type IToolCall } from '../agents/agent-loop-detector';
 

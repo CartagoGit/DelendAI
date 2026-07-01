@@ -33,24 +33,11 @@ import {
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
 
-/** One branch that finished a slice and awaits deliberate integration. */
-export interface IPendingIntegrationEntry {
-	/** The agent branch that carries the finished slice (e.g. `agent/orion-f00091`). */
-	readonly branch: string;
-	/** Absolute worktree path that owns the branch, or `''` when unknown. */
-	readonly worktreePath: string;
-	/** The slice that was closed on the branch. */
-	readonly sliceId: string;
-	/** The proposal the slice belongs to. */
-	readonly proposalId: string;
-	/** ISO-8601 instant the entry was recorded. */
-	readonly recordedAt: string;
-}
-
-export interface IPendingIntegrationState {
-	readonly version: number;
-	readonly entries: readonly IPendingIntegrationEntry[];
-}
+import type {
+	IPendingIntegrationEntry,
+	IPendingIntegrationState,
+	IPendingIntegrationStore,
+} from '../contracts/interfaces/pending-integration.interface';
 
 const PENDING_INTEGRATION_VERSION = 1;
 
@@ -75,25 +62,6 @@ const normalize = (raw: unknown): IPendingIntegrationState => {
 		entries,
 	};
 };
-
-export interface IPendingIntegrationStore {
-	readonly path: string;
-	read(): Promise<IPendingIntegrationState>;
-	/**
-	 * Upsert one pending entry, keyed on `branch`. Idempotent: recording
-	 * the same branch twice replaces the previous entry rather than
-	 * appending a duplicate. Returns the entry list after the write.
-	 */
-	record(
-		entry: IPendingIntegrationEntry,
-	): Promise<readonly IPendingIntegrationEntry[]>;
-	/**
-	 * Drop every entry whose branch appears in `integratedBranches`
-	 * (branches `swarm_hygiene` observed as `mergedIntoBase`). Returns
-	 * `true` when at least one entry was removed.
-	 */
-	prune(integratedBranches: ReadonlySet<string>): Promise<boolean>;
-}
 
 export const createPendingIntegrationStore = (
 	path: string,
