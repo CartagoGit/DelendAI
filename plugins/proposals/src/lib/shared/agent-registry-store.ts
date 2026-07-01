@@ -7,7 +7,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 } from '@mcp-vertex/core/public';
-import type { IMigrator } from '@mcp-vertex/core/public';
+import type { AgentHost, IMigrator } from '@mcp-vertex/core/public';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 
@@ -25,6 +25,15 @@ export type IAgentAssignment = {
 	last_seen: string;
 	cooldown_until: string | null;
 	status: IAgentAssignmentStatus;
+	/**
+	 * f00082 S2: composite-identity fields. All optional/nullable so
+	 * pre-f00082 entries (version 1) coexist with newer ones. The
+	 * v1→v2 migrator backfills these with `null`; the tools fill them
+	 * in when a host passes them (f00082 S3). `task_id` above already
+	 * carries the "which proposal" part of the composite identity.
+	 */
+	host?: AgentHost | null;
+	model?: string | null;
 };
 
 export type IAgentAdoption = {
@@ -54,7 +63,29 @@ const emptyRegistry = (): IAgentRegistry => ({
 	assignments: [],
 });
 
-const AGENT_REGISTRY_MIGRATORS: Readonly<Record<number, IMigrator>> = {};
+/**
+ * v1→v2 (f00082 S2): backfill the composite-identity fields on every
+ * existing assignment. `host`/`model` default to `null` so old entries
+ * stay valid and the on-disk shape is uniform. Never destroys data:
+ * an assignment that already carries the fields keeps them.
+ */
+const migrateV1toV2: IMigrator = (data) => {
+	const assignments = Array.isArray(data.assignments)
+		? (data.assignments as Array<Record<string, unknown>>)
+		: [];
+	return {
+		...data,
+		assignments: assignments.map((a) => ({
+			...a,
+			host: a.host ?? null,
+			model: a.model ?? null,
+		})),
+	};
+};
+
+const AGENT_REGISTRY_MIGRATORS: Readonly<Record<number, IMigrator>> = {
+	1: migrateV1toV2,
+};
 
 const normalizeVersionedRegistry = (
 	raw: unknown,
