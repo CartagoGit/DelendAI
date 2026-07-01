@@ -1,9 +1,10 @@
 ---
 id: f00072
-status: ready
+status: done
 type: proposal
 track: infra+cache-eviction
 date: 2026-06-27
+closed: 2026-07-01
 kind: feat
 title: Cache eviction policy - declarative per-plugin rules + opt-in cache plugin
 shipped-in:

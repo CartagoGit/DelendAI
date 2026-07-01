@@ -1,9 +1,10 @@
 ---
 id: f00071
-status: ready
+status: done
 type: proposal
 track: plugins/status-marker+configuration+i18n+agent-contract
 date: 2026-06-26
+closed: 2026-07-01
 kind: feat
 title: status-marker user-configurable marker set — add / disable / override from host config
 shipped-in:

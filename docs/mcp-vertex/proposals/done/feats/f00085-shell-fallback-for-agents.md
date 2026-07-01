@@ -1,9 +1,10 @@
 ---
 id: f00085
-status: ready
+status: done
 type: proposal
 track: core+agents+ci
 date: 2026-06-28
+closed: 2026-07-01
 kind: feat
 title: Shell-fallback ladder for agents — auto-recover from "búfer alternativo" and other terminal stuck states
 runner: unknown
