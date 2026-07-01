@@ -969,6 +969,7 @@ export interface McpVertexProposalsCloseSliceOutput {
 	sliceId: string;
 	closed: boolean;
 	lockReleased: boolean;
+	pendingIntegrationBranch: string | null;
 }
 
 export interface McpVertexProposalsCompactStatusOutput {
@@ -1543,10 +1544,33 @@ export interface McpVertexProposalsSwarmHygieneOutput {
 		head: string;
 		lastCommitMinutesAgo: number;
 	}[];
+	pendingIntegration?: {
+		branch: string;
+		worktreePath: string;
+		sliceId: string;
+		proposalId: string;
+		recordedAt: string;
+	}[];
+	nonConformingBranches?: {
+		path: string;
+		branch: string;
+		head: string;
+		reason: "non-agent-prefix";
+	}[];
+	staleUnmerged?: {
+		path: string;
+		branch: string;
+		ahead: number;
+		behind: number;
+		lastCommitMinutesAgo: number;
+	}[];
 	summary?: {
 		rescueCandidatesCount: number;
 		gcEligibleCount: number;
 		outOfCacheCount: number;
+		pendingIntegrationCount: number;
+		nonConformingBranchesCount: number;
+		staleUnmergedCount: number;
 	};
 }
 

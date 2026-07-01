@@ -21,89 +21,16 @@
  * outside of git, never throws.
  */
 import type { IGitRunner } from './git-runner';
-import { runBranchGcEngine, type IGcPlanEntry } from './branch-gc-engine';
+import { runBranchGcEngine } from './branch-gc-engine';
 import { runBranchStatusEngine } from './branch-status-engine';
-import type { IPendingIntegrationEntry } from './pending-integration-store';
-
-export interface IRescueCandidate {
-	readonly branch: string;
-	readonly ahead: number;
-	readonly behind: number;
-	readonly lastCommitMinutesAgo: number;
-	readonly worktreePath: string;
-	readonly diffStat: string;
-	readonly cherryPickHint: string;
-}
-
-export interface IOutOfCacheWorktree {
-	readonly path: string;
-	readonly branch: string;
-	readonly head: string;
-	readonly lastCommitMinutesAgo: number;
-}
-
-/**
- * f00091 S4a: a worktree branch whose name does not follow the swarm
- * convention (`agent/<...>`). The swarm m3 incident created `feat/*`,
- * `claude/*` branches on worktrees; those escape `agent/`-filtered
- * tooling (branch-status, branch-gc) and become invisible. Read-only —
- * we only report so a human can rename/integrate deliberately.
- */
-export interface INonConformingBranch {
-	readonly path: string;
-	readonly branch: string;
-	readonly head: string;
-	readonly reason: 'non-agent-prefix';
-}
-
-/**
- * f00091 S4b: a worktree whose branch is unmerged into base AND has
- * fallen far behind it (`behind > staleBehindThreshold`). Such a branch
- * diverged long ago and carries work that base does not; pruning it
- * would lose that work. Read-only rescue signal.
- */
-export interface IStaleUnmergedWorktree {
-	readonly path: string;
-	readonly branch: string;
-	readonly ahead: number;
-	readonly behind: number;
-	readonly lastCommitMinutesAgo: number;
-}
-
-export interface ISwarmHygieneResult {
-	readonly ok: true;
-	readonly baseBranch: string;
-	readonly generatedAt: string;
-	readonly rescueCandidates: readonly IRescueCandidate[];
-	readonly gcEligible: readonly IGcPlanEntry[];
-	readonly outOfCache: readonly IOutOfCacheWorktree[];
-	/**
-	 * f00091 S2: branches `close_slice` recorded as finished-but-not-yet
-	 * -integrated. Entries whose branch has since merged into base are
-	 * pruned out (the caller passes a `pruneIntegrated` callback).
-	 */
-	readonly pendingIntegration: readonly IPendingIntegrationEntry[];
-	/** f00091 S4a: worktree branches that break the `agent/` convention. */
-	readonly nonConformingBranches: readonly INonConformingBranch[];
-	/** f00091 S4b: unmerged worktrees that have fallen stale behind base. */
-	readonly staleUnmerged: readonly IStaleUnmergedWorktree[];
-	readonly summary: {
-		readonly rescueCandidatesCount: number;
-		readonly gcEligibleCount: number;
-		readonly outOfCacheCount: number;
-		readonly pendingIntegrationCount: number;
-		readonly nonConformingBranchesCount: number;
-		readonly staleUnmergedCount: number;
-	};
-}
-
-export interface ISwarmHygieneFailure {
-	readonly ok: false;
-	readonly reason: string;
-	readonly baseBranch?: string;
-}
-
-export type ISwarmHygieneOutcome = ISwarmHygieneResult | ISwarmHygieneFailure;
+import type { IPendingIntegrationEntry } from '../contracts/interfaces/pending-integration.interface';
+import type {
+	INonConformingBranch,
+	IOutOfCacheWorktree,
+	IRescueCandidate,
+	IStaleUnmergedWorktree,
+	ISwarmHygieneOutcome,
+} from '../contracts/interfaces/swarm-hygiene.interface';
 
 export interface ISwarmHygieneEngineOptions {
 	readonly run: IGitRunner;
