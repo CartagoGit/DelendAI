@@ -56,6 +56,9 @@ export interface IAgentNamesArgs {
 	readonly now?: string | undefined;
 	readonly dry_run?: boolean | undefined;
 	readonly stale_after_minutes?: number | undefined;
+	/** f00082 S3: composite-identity fields, persisted on assign. */
+	readonly host?: string | undefined;
+	readonly model?: string | undefined;
 }
 
 // Delegates to the shared `toolJson` (M45: a hand-rolled duplicate of this
@@ -78,8 +81,36 @@ const AGENT_ASSIGNMENT_SCHEMA = z.object({
 	last_seen: z.string(),
 	cooldown_until: z.string().nullable(),
 	status: z.enum(['active', 'cooldown', 'orphan']),
+	host: z.string().nullable().optional(),
+	model: z.string().nullable().optional(),
 	children: z.array(z.unknown()).optional(),
 });
+
+/** f00082 S3: the closed set of known hosts (mirrors core AgentHost). */
+const KNOWN_HOSTS = [
+	'vscode-copilot',
+	'claude-code',
+	'codex-cli',
+	'cursor',
+	'aider',
+	'continue',
+	'unknown',
+] as const;
+
+/**
+ * Coerce a caller-supplied host string into the closed `AgentHost`
+ * union, falling back to `'unknown'` (lossy-friendly, matching the
+ * parser in `agent-identity.ts`). Returns `null` when the caller
+ * passed nothing, so the registry stores an explicit `null`.
+ */
+const coerceHost = (
+	host: string | undefined,
+): NonNullable<IAgentAssignment['host']> | null => {
+	if (host === undefined) return null;
+	return (KNOWN_HOSTS as readonly string[]).includes(host)
+		? (host as NonNullable<IAgentAssignment['host']>)
+		: 'unknown';
+};
 
 const AGENT_ADOPTION_SCHEMA = z.object({
 	name: z.string(),
@@ -136,6 +167,8 @@ const AGENT_NAMES_OUTPUT_SCHEMA = z.object({
 	assigned_at: z.string().optional(),
 	last_seen: z.string().optional(),
 	cooldown_until: z.string().nullable().optional(),
+	host: z.string().nullable().optional(),
+	model: z.string().nullable().optional(),
 	scannedAt: z.string().optional(),
 	staleAfterMinutes: z.number().optional(),
 	orphans: z.array(ZOMBIE_ORPHAN_SCHEMA).optional(),
@@ -481,6 +514,8 @@ const runAgentNamesImpl = async (
 				last_seen: at,
 				cooldown_until: null,
 				status: 'active',
+				host: coerceHost(args.host),
+				model: args.model ?? null,
 			};
 			await store.upsert(assignment);
 			return json(assignment);
@@ -526,6 +561,18 @@ export const buildAgentNamesRegistration = (
 					now: z.string().optional(),
 					dry_run: z.boolean().optional(),
 					stale_after_minutes: z.number().optional(),
+					host: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: host/IDE driving the agent (e.g. "vscode-copilot"). Unknown values are stored as "unknown".',
+						),
+					model: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: LLM model name (free-form, e.g. "m3"). Recorded for forensics; not authenticated.',
+						),
 				}),
 			},
 			async (args: IAgentNamesArgs) => runAgentNames(args, options),

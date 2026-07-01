@@ -82,6 +82,32 @@ describe('delegate tool', async () => {
 		expect(typeof out.agent).toBe('string');
 		expect(out.instruction).toContain('src/x.ts');
 	});
+
+	it('f00082 S3: propagates host/model into the assigned registry entry', async () => {
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 't-id',
+				slot: 'implementation_runner',
+				files: ['src/y.ts'],
+				host: 'vscode-copilot',
+				model: 'm3',
+			}),
+		);
+		expect(out.ok).toBe(true);
+		const registry = JSON.parse(readFileSync(opts.registryPathAbs, 'utf8'));
+		const entry = registry.assignments.find(
+			(a: { task_id: string }) => a.task_id === 't-id',
+		);
+		expect(entry.host).toBe('vscode-copilot');
+		expect(entry.model).toBe('m3');
+	});
 });
 
 describe('delegate tool — x00051 per-agent worktree wiring', () => {
@@ -164,6 +190,36 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		// Instruction must surface the worktree path so the subagent
 		// knows where to commit.
 		expect(out.instruction).toContain(out.worktree.path);
+	});
+
+	it('f00082 S3/S4: composite branch when host/model are delegated', async () => {
+		const runner = recordingRunner(false);
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+				worktree: { enabled: true, workspaceRoot: root, run: runner },
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 'f00078',
+				slot: 'implementation_runner',
+				files: ['src/x.ts'],
+				host: 'vscode-copilot',
+				model: 'm3',
+			}),
+		);
+		expect(out.ok).toBe(true);
+		// branch is agent/<host>-<model>-<agent>-<task>
+		expect(out.worktree.branch).toBe(
+			`agent/copilot-m3-${out.agent}-f00078`,
+		);
+		const addCall = runner.calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toContain(`agent/copilot-m3-${out.agent}-f00078`);
 	});
 
 	it('returns stage "worktree" without claiming the lock when worktree create fails', async () => {

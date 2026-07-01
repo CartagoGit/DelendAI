@@ -697,6 +697,12 @@ export interface McpVertexProposalsAgentLockOutput {
 		parent_task_id?: string;
 	}[];
 	ok?: boolean;
+	identity?: {
+		host?: string;
+		model?: string;
+		agent_name?: string;
+		task_id?: string;
+	};
 }
 
 export interface McpVertexProposalsAgentLockReleaseOrphanOutput {
@@ -767,6 +773,8 @@ export interface McpVertexProposalsAgentNamesOutput {
 		last_seen: string;
 		cooldown_until: string | null;
 		status: "active" | "cooldown" | "orphan";
+		host?: string | null;
+		model?: string | null;
 		children?: unknown[];
 	}>;
 	adopted?: {
@@ -785,6 +793,8 @@ export interface McpVertexProposalsAgentNamesOutput {
 		last_seen: string;
 		cooldown_until: string | null;
 		status: "active" | "cooldown" | "orphan";
+		host?: string | null;
+		model?: string | null;
 		children?: unknown[];
 	}>;
 	agent?: string;
@@ -808,6 +818,8 @@ export interface McpVertexProposalsAgentNamesOutput {
 	assigned_at?: string;
 	last_seen?: string;
 	cooldown_until?: string | null;
+	host?: string | null;
+	model?: string | null;
 	scannedAt?: string;
 	staleAfterMinutes?: number;
 	orphans?: Array<{
