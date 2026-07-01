@@ -12,7 +12,10 @@ import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_REGISTRY = 'packages/cli/src/commands/registry.ts';
-const DEFAULT_TEST_ROOT = 'packages/cli/tests';
+// f00037 relocated CLI specs from packages/cli/tests/ to co-located
+// packages/cli/src/**/*.spec.ts. The coverage gate walks the source tree
+// so every registered command still has to be named by a spec.
+const DEFAULT_TEST_ROOT = 'packages/cli/src';
 
 export interface ICliCoverageFinding {
 	readonly command: string;
@@ -106,7 +109,7 @@ export const detectCliCoverage = async (
 		if (!containsCommand(testsText, command)) {
 			findings.push({
 				command,
-				reason: `registered command "${command}" is not named in packages/cli/tests`,
+				reason: `registered command "${command}" is not named in packages/cli/src specs`,
 			});
 		}
 	}
@@ -131,7 +134,7 @@ export const formatReport = (report: ICliCoverageReport): string => {
 	}
 	lines.push(
 		'',
-		'Add or update packages/cli/tests/*.spec.ts so every registered command is named by the test suite.',
+		'Add or update packages/cli/src/**/*.spec.ts so every registered command is named by the test suite.',
 	);
 	return `${lines.join('\n')}\n`;
 };
