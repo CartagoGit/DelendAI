@@ -295,7 +295,20 @@ highest-risk).
 
 ### S2 — Slice contract extension + slice parser regex
 
-- **Status**: ready
+- **Status**: done
+- **Landed (2026-07-01)**: `IProposalSliceContract` gained the three
+  readonly optional fields `requiresCapability?: ReadonlyArray<CapabilityTag>`
+  (imported from the S1 core contract), `preferredProvider?: string`,
+  `maxCostTier?: ISliceCostTier` (`1|2|3|4|5`). `parseProposalSlicePlan`
+  now parses `requires_capability` (YAML-list `[a, b]`, bracketless
+  `a, b`, or a single bare token), `preferred_provider`, and
+  `max_cost_tier` in both plain (`- field:`) and narrative-bold
+  (`- **Field**:`) forms. Unknown capability tags and out-of-range cost
+  tiers are dropped. 5 new tests + full 160-test swarm suite green; zero
+  regression on the legacy corpus fixture.
+- **Known limitation**: only the single-line list form is parsed; a
+  multi-line indented YAML sub-bullet form (`requires_capability:` then
+  `  - tag` on following lines) is not. No live proposal uses that form.
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts` (EXT), `plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts` (EXT).
 - **Gate**: `bun run test plugins/proposals && bun run typecheck`
 - **Acceptance**:
