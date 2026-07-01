@@ -20,7 +20,6 @@ import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfac
  *
  * Pure functions — no IO, no env reads outside the call site.
  */
-import type { IInitAnswers } from './init-answers.types';
 import {
 	arrow,
 	brand,

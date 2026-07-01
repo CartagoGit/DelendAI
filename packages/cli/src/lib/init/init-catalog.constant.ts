@@ -20,7 +20,9 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-;
+import type { IAgentDescriptor } from '../../contracts/interfaces/agent-descriptor.interface';
+
+export type { IAgentDescriptor };
 
 /**
  * f00088 S3: locale-keyed fallback agents. Adding a new locale is one

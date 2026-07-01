@@ -26,7 +26,6 @@ import { basename } from 'node:path';
 
 import {
 	renderAdoptionSections,
-	type IAdoptionSections,
 } from './init-adoption-plan.builder';
 import type { IInitAnswers } from './init-answers.types';
 import type { IFileReader } from './init-detection.service';
