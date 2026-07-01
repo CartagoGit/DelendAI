@@ -17,6 +17,7 @@
  */
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
+import type { IGitRunner } from '../shared/git-runner';
 import { readJsonOrNull } from '../proposals/index-reader';
 
 export interface IAuthoringToolOptions {
@@ -56,6 +57,28 @@ export interface IAuthoringToolOptions {
 	 * extending the same gate to every slice of every proposal kind.
 	 */
 	readonly requirePeerReview?: boolean;
+	/**
+	 * f00091 S2: the non-destructive **branch-integration step**. When
+	 * `agentWorktree` is enabled AND the slice was closed on a per-agent
+	 * `agent/*` branch, `close_slice` records that branch into the
+	 * pending-integration store so `swarm_hygiene` surfaces it as a
+	 * rescue candidate. The record is pure bookkeeping — `close_slice`
+	 * runs no git write.
+	 *
+	 * The whole step is gated on `agentWorktreeEnabled`: when it is off
+	 * (the default), `close_slice` records nothing and behaviour is
+	 * byte-identical to pre-f00091.
+	 */
+	readonly agentWorktreeEnabled?: boolean;
+	/** f00091 S2: absolute path of the pending-integration store. */
+	readonly pendingIntegrationPathAbs?: string;
+	/**
+	 * f00091 S2: read-only git runner used ONLY to resolve the current
+	 * branch + worktree path when recording the pending-integration
+	 * entry. `close_slice` never mutates through it. Tests inject a stub
+	 * that fails the assertion if any write-shaped git verb is invoked.
+	 */
+	readonly run?: IGitRunner;
 }
 
 /** Async file helper (H2): never block the event loop on a tool call.
