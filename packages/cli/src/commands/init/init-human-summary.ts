@@ -77,7 +77,13 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	const horiz = '─'.repeat(64);
 
 	// Header
-	lines.push(enabled ? heading(`mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`) : `mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`);
+	lines.push(
+		enabled
+			? heading(
+					`mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
+				)
+			: `mcp-vertex › ${dryRun ? 'dry-run preview' : 'bootstrap complete'}`,
+	);
 	lines.push(enabled ? hint(horiz) : horiz);
 
 	// Settings block — concise recap of what we just decided.
@@ -167,7 +173,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		nextActions.push(
 			`review ${brand('mcp-vertex.config.json')} (cacheDir, docsDir, plugin set)`,
 		);
-		nextActions.push(`run ${brand('bun run validate')} to gate the workspace`);
+		nextActions.push(
+			`run ${brand('bun run validate')} to gate the workspace`,
+		);
 	}
 	if (written.some((w) => w.path.endsWith('.vscode/mcp.json'))) {
 		nextActions.push(
@@ -175,7 +183,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 	if (
-		written.some((w) => w.path.includes('/docs/mcp-vertex/proposals/ready/'))
+		written.some((w) =>
+			w.path.includes('/docs/mcp-vertex/proposals/ready/'),
+		)
 	) {
 		const f = written.find((w) =>
 			w.path.includes('/docs/mcp-vertex/proposals/ready/'),
@@ -196,7 +206,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		lines.push(enabled ? hint('  nothing pending.') : '  nothing pending.');
 	} else {
 		nextActions.forEach((line, idx) => {
-			const text = enabled ? arrow(`${idx + 1}. ${line}`) : `  ${idx + 1}. ${line}`;
+			const text = enabled
+				? arrow(`${idx + 1}. ${line}`)
+				: `  ${idx + 1}. ${line}`;
 			lines.push(text);
 		});
 	}
@@ -211,7 +223,9 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 	} else {
 		lines.push(
 			enabled
-				? hint('Pass --json to get the machine-readable envelope on stdout.')
+				? hint(
+						'Pass --json to get the machine-readable envelope on stdout.',
+					)
 				: 'Pass --json to get the machine-readable envelope on stdout.',
 		);
 	}
@@ -237,7 +251,9 @@ export const renderInitFailureSummary = (
 ): string => {
 	const enabled = true;
 	const lines: string[] = [
-		enabled ? heading('mcp-vertex › bootstrap failed') : 'mcp-vertex › bootstrap failed',
+		enabled
+			? heading('mcp-vertex › bootstrap failed')
+			: 'mcp-vertex › bootstrap failed',
 	];
 	lines.push(failure(reason));
 	if (hintText !== undefined && hintText.length > 0) {
