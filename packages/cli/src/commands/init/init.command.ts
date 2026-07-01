@@ -35,7 +35,7 @@ import {
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
-import { COLOR_ON } from '../../lib/color';
+import { COLOR_ON } from '../../lib/color.service';
 import { join } from 'node:path';
 
 /** Flags shared by `init` and `init:default`. */

@@ -26,9 +26,9 @@ import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 // one statement (the re-export does NOT bring the symbols into
 // scope for the body of this file, which is why we need the value
 // import alongside it).
-import { scalarArg } from '../../lib/cli-helpers';
+import { scalarArg } from '../../lib/cli-helpers.service';
 
-export { data, hasFlag, isRecord, request } from '../../lib/cli-helpers';
+export { data, hasFlag, isRecord, request } from '../../lib/cli-helpers.service';
 // `scalarArg` is re-exported here so consumers get every base helper
 // in a single import statement.
 export { scalarArg };
