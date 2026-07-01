@@ -5,12 +5,12 @@ import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
-import { renderHelp } from './lib/help';
-import { parseCliInvocation } from './lib/parser';
-import { createStdioContext } from './lib/stdio-context';
-import { createNoopContext } from './lib/noop-context';
-import { formatJson } from './lib/stable-json';
-import { asScalarText } from './lib/text-format';
+import { renderHelp } from './lib/help.service';
+import { parseCliInvocation } from './lib/parser.service';
+import { createStdioContext } from './lib/stdio-context.factory';
+import { createNoopContext } from './lib/noop-context.factory';
+import { formatJson } from './lib/stable-json.service';
+import { asScalarText } from './lib/text-format.service';
 
 const commandMatches = (
 	command: ICliCommand,
