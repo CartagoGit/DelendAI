@@ -289,8 +289,8 @@ export const scaffoldProposals = (
 	for (const finding of consolidation.findings) {
 		if (
 			finding.worstSeverity !== 'FATAL' &&
-			finding.worstSeverity !== 'MUY_MAL' &&
-			finding.worstSeverity !== 'MEJORABLE'
+			finding.worstSeverity !== 'BAD' &&
+			finding.worstSeverity !== 'MINOR'
 		) {
 			continue;
 		}
