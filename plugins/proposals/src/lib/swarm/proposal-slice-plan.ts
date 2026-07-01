@@ -6,9 +6,14 @@
 // an explicit `- status: done` line in the doc — no sidecar files, no
 // index.json changes (non-goal).
 
+import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
+
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
 
 export type ISliceStatus = 'pending' | 'in-progress' | 'done' | 'blocked';
+
+/** The cost tier a slice is willing to spend on, 1 (cheapest) … 5. */
+export type ISliceCostTier = 1 | 2 | 3 | 4 | 5;
 
 export interface IProposalSliceContract {
 	readonly proposalId: string;
@@ -21,6 +26,15 @@ export interface IProposalSliceContract {
 	readonly gate: ISliceGate;
 	readonly status: ISliceStatus;
 	readonly acceptanceCriteria: readonly string[];
+	/**
+	 * f00067 S2 (routing hints, all optional — default "no preference").
+	 * A slice can steer the multi-model orchestrator toward a provider
+	 * that covers the given capabilities, a named provider, or a cost cap.
+	 * `readonly` to match the existing idiom (CRITICAL I1).
+	 */
+	readonly requiresCapability?: ReadonlyArray<CapabilityTag>;
+	readonly preferredProvider?: string;
+	readonly maxCostTier?: ISliceCostTier;
 }
 
 export interface IProposalSlicePlan {
@@ -54,6 +68,68 @@ const asGate = (value: string | undefined): ISliceGate =>
 		? ((value ?? 'none') as ISliceGate)
 		: 'none';
 
+const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
+
+/**
+ * Read a single slice-body field's raw right-hand side. Accepts both the
+ * plain (`- field: value`) and narrative-bold (`- **Field**: value`) forms,
+ * mirroring the files/gate/status readers above. The bold label is the
+ * snake_case field turned Title Case (e.g. `requires_capability` →
+ * `Requires Capability`). Returns the trimmed value or undefined.
+ */
+const readSliceField = (body: string, field: string): string | undefined => {
+	const boldLabel = field
+		.split('_')
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(' ');
+	const escapedBold = boldLabel.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+	const re = new RegExp(
+		`^[-*]\\s*(?:${field}|\\*\\*${escapedBold}\\*\\*):\\s*(.+)$`,
+		'm',
+	);
+	const raw = body.match(re)?.[1]?.trim();
+	return raw !== undefined && raw.length > 0 ? raw : undefined;
+};
+
+/**
+ * Parse a capability-hint value into a deduped list of known
+ * `CapabilityTag`s. Accepts the YAML-list form `[a, b]`, the bracketless
+ * comma form `a, b`, and a single bare token `a`. Unknown tokens are
+ * dropped (the contract's closed union is the source of truth).
+ */
+const parseCapabilityHints = (
+	raw: string | undefined,
+): ReadonlyArray<CapabilityTag> => {
+	if (raw === undefined) return [];
+	const inner = raw.replace(/^\[/u, '').replace(/\]$/u, '');
+	const seen = new Set<CapabilityTag>();
+	for (const token of inner.split(',')) {
+		const tag = token
+			.trim()
+			.replace(/^["'`]+|["'`]+$/gu, '')
+			.trim();
+		if (CAPABILITY_TAG_SET.has(tag)) seen.add(tag as CapabilityTag);
+	}
+	return [...seen];
+};
+
+const parsePreferredProvider = (
+	raw: string | undefined,
+): string | undefined => {
+	if (raw === undefined) return undefined;
+	const value = raw
+		.replace(/^["'`]+|["'`]+$/gu, '')
+		.replace(/[.,;:]+$/u, '')
+		.trim();
+	return /^[a-z][a-z0-9-]+$/u.test(value) ? value : undefined;
+};
+
+const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
+	if (raw === undefined) return undefined;
+	const n = Number.parseInt(raw.trim(), 10);
+	return n >= 1 && n <= 5 ? (n as ISliceCostTier) : undefined;
+};
+
 /**
  * Parse the `## Slices` section of a proposal markdown. Returns null
  * when the section is absent — the proposal is then a legacy
@@ -65,6 +141,10 @@ const asGate = (value: string | undefined): ISliceGate =>
  *   - `- gate: lint|type|e2e|none` or `- **Gate**: ...`
  *   - `- status: done` or `- **Status**: done` (set by the executor when the slice closes)
  *   - `- acceptance:` followed by indented `- "command"` lines
+ *   - `- requires_capability: [code-edit, fast-iteration]` (or a single
+ *     bare token `code-edit`; f00067 S2 routing hint)
+ *   - `- preferred_provider: openrouter-minimax` (f00067 S2)
+ *   - `- max_cost_tier: 3` (1..5; f00067 S2)
  */
 export const parseProposalSlicePlan = (
 	proposalId: string,
@@ -116,6 +196,15 @@ export const parseProposalSlicePlan = (
 		]
 			.map((m) => m[1] ?? '')
 			.filter((c) => c.length > 0);
+		const requiresCapability = parseCapabilityHints(
+			readSliceField(body, 'requires_capability'),
+		);
+		const preferredProvider = parsePreferredProvider(
+			readSliceField(body, 'preferred_provider'),
+		);
+		const maxCostTier = parseCostTier(
+			readSliceField(body, 'max_cost_tier'),
+		);
 		slices.push({
 			proposalId,
 			sliceId,
@@ -126,6 +215,9 @@ export const parseProposalSlicePlan = (
 			gate,
 			status: docDone ? 'done' : 'pending',
 			acceptanceCriteria,
+			...(requiresCapability.length > 0 ? { requiresCapability } : {}),
+			...(preferredProvider !== undefined ? { preferredProvider } : {}),
+			...(maxCostTier !== undefined ? { maxCostTier } : {}),
 		});
 	}
 	if (slices.length === 0) return null;

@@ -157,6 +157,82 @@ describe('parseProposalSlicePlan', async () => {
 	});
 });
 
+const DOC_WITH_ROUTING_HINTS = `---
+id: f00099
+---
+
+# f00099
+
+## Slices
+
+### S1 — list form
+
+- files: libs/a/a.ts
+- requires_capability: [code-edit, fast-iteration]
+- preferred_provider: openrouter-minimax
+- max_cost_tier: 3
+
+### S2 — single bare token + bold labels
+
+- **Files**: libs/b/b.ts
+- **Requires Capability**: reasoning
+- **Max Cost Tier**: 5
+
+### S3 — backward compat (no routing hints)
+
+- files: libs/c/c.ts
+- gate: type
+
+### S4 — unknown capability tokens are dropped
+
+- files: libs/d/d.ts
+- requires_capability: [code-edit, not-a-real-tag]
+- max_cost_tier: 9
+`;
+
+describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
+	const plan = parseProposalSlicePlan('f00099', DOC_WITH_ROUTING_HINTS)!;
+
+	it('parses the YAML-list capability form + provider + cost tier', async () => {
+		const s1 = plan.slices[0];
+		expect(s1?.requiresCapability).toEqual(['code-edit', 'fast-iteration']);
+		expect(s1?.preferredProvider).toBe('openrouter-minimax');
+		expect(s1?.maxCostTier).toBe(3);
+	});
+
+	it('parses a single bare capability token via bold field labels', async () => {
+		const s2 = plan.slices[1];
+		expect(s2?.requiresCapability).toEqual(['reasoning']);
+		expect(s2?.maxCostTier).toBe(5);
+		expect(s2?.preferredProvider).toBeUndefined();
+	});
+
+	it('leaves the fields undefined for slices with no routing hints (backward compat)', async () => {
+		const s3 = plan.slices[2];
+		expect(s3?.requiresCapability).toBeUndefined();
+		expect(s3?.preferredProvider).toBeUndefined();
+		expect(s3?.maxCostTier).toBeUndefined();
+		// existing fields still parse
+		expect(s3?.files).toEqual(['libs/c/c.ts']);
+		expect(s3?.gate).toBe('type');
+	});
+
+	it('drops unknown capability tags and out-of-range cost tiers', async () => {
+		const s4 = plan.slices[3];
+		expect(s4?.requiresCapability).toEqual(['code-edit']);
+		expect(s4?.maxCostTier).toBeUndefined();
+	});
+
+	it('does not regress the legacy corpus fixture (zero new fields on DOC)', async () => {
+		const legacy = parseProposalSlicePlan('pX', DOC)!;
+		for (const slice of legacy.slices) {
+			expect(slice.requiresCapability).toBeUndefined();
+			expect(slice.preferredProvider).toBeUndefined();
+			expect(slice.maxCostTier).toBeUndefined();
+		}
+	});
+});
+
 describe('deriveSliceStatuses + validateClaim', async () => {
 	const plan = parseProposalSlicePlan('pX', DOC)!;
 
