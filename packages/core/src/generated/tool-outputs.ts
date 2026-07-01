@@ -1,36 +1,15 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  *
- * Typed `structuredContent` shapes for EVERY tool registered by EVERY
- * plugin in the `@mcp-vertex/core` reference server (umbrella module).
- * This is the cross-plugin registry: each interface is keyed by the
- * fully-qualified tool name (`mcp-vertex_<plugin>_<tool>`) and is the
- * single source of truth consumed by `packages/client`,
- * `extensions/vscode`, and other host packages via
- * `import type { McpVertexToolOutputs } from '@mcp-vertex/core/public'`.
- *
- * Per-plugin "leaf" variants of this file live next to each plugin's
- * `src/generated/tool-outputs.ts` (e.g. `plugins/audit/src/generated/
- * tool-outputs.ts`). The leaf only contains the plugin's own tools
- * (3 entries for `audit`); the umbrella contains all of them (196
- * entries across 16 plugins). Both are produced by the same
- * `bun run types:generate` step; the generator iterates
- * `PACKAGE_ROUTES` (see `tools/scripts/types/emit-tool-types.script.ts`)
- * and emits one file per package.
- *
- * If you want to look up a single tool's type, prefer importing the
- * leaf module (`@mcp-vertex/audit/public`) — smaller, no resolution
- * cost. To power type lookups across the whole tool registry, import
- * this umbrella module.
- *
- * Regenerate with:
+ * Typed `structuredContent` shapes for this package's MCP tools,
+ * generated from each tool's Zod `outputSchema` by:
  *
  *     bun run types:generate
  *
- * The drift guard in the test suite fails if this file is stale, so
- * any change to a tool's `outputSchema` must be accompanied by a
- * regenerate. Action-multiplexed tools whose schema is intentionally
- * permissive surface as `Record<string, unknown>`.
+ * The drift guard in the test suite fails if this file is stale, so any
+ * change to a tool's `outputSchema` must be accompanied by a regenerate.
+ * Action-multiplexed tools whose schema is intentionally permissive
+ * surface as `Record<string, unknown>`.
  */
 
 export interface McpVertexAgentCatalogOutput {
@@ -135,35 +114,25 @@ export interface McpVertexAuditAuditConsolidateOutput {
 	findings: Array<{
 		id: string;
 		titles: string[];
-		worstSeverity:
-			| "FATAL"
-			| "BAD"
-			| "MINOR"
-			| "OK"
-			| "GOOD"
-			| "PERFECT"
-			| "EXEMPLARY";
+		worstSeverity: "FATAL" | "BAD" | "MINOR" | "OK" | "GOOD" | "PERFECT" | "EXEMPLARY";
 		files: string[];
 		seenBy: string[];
 	}>;
 	topActions: string[];
 	markdown: string;
-	/**
-	 * Proposal-scaffolding summary. Three possible shapes — see the
-	 * generated audit leaf module for the full contract.
-	 */
-	proposals:
-		| {
-				scaffolded: Array<{
-					id: string;
-					filename: string;
-					severity: string;
-					files: string[];
-				}>;
-				reason?: string;
-			}
-		| { skipped: string }
-		| { disabled: true };
+	proposals: {
+		scaffolded: {
+			id: string;
+			filename: string;
+			severity: string;
+			files: string[];
+		}[];
+		reason?: string;
+	} | {
+		skipped: string;
+	} | {
+		disabled: true;
+	};
 }
 
 export interface McpVertexAuditAuditPlanOutput {
@@ -206,20 +175,18 @@ export interface McpVertexAuditAuditRunOutput {
 		topActions: string[];
 		markdown: string;
 	};
-	/**
-	 * Same auto-scaffold summary shape as audit_consolidate.
-	 */
-	proposals:
-		| {
-				scaffolded: Array<{
-					id: string;
-					filename: string;
-					severity: string;
-					files: string[];
-				}>;
-			}
-		| { skipped: string }
-		| { disabled: true };
+	proposals: {
+		scaffolded: {
+			id: string;
+			filename: string;
+			severity: string;
+			files: string[];
+		}[];
+	} | {
+		skipped: string;
+	} | {
+		disabled: true;
+	};
 	projects: string[];
 }
 
