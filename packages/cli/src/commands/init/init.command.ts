@@ -23,17 +23,19 @@ import type {
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
-} from './host-entry-resolver';
-import { detectTargetProject } from './init-detection';
-import { collectInitAnswers } from './init-prompts';
-import { renderInitBundle } from './init-render';
+} from '../../lib/init/host-entry-resolver.service';
+import { detectTargetProject } from '../../lib/init/init-detection.service';
+import { collectInitAnswers } from '../../lib/init/init-prompts.service';
+import { renderInitBundle } from '../../lib/init/init-render.service';
 import {
 	writeMcpVertexConfig,
 	writeVscodeMcpJson,
 	writeWorkspaceText,
-} from './init-writers';
-import { InitAnswers, type IInitAnswers } from './init-answers.schema';
-import { printInitHumanSummary } from './init-human-summary';
+} from '../../lib/init/init-writers.factory';
+import type { IInitAnswers } from '../../lib/init/init-answers.types';
+import { InitAnswers } from '../../lib/init/init-answers.schema';
+import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
+import { COLOR_ON } from '../../lib/color';
 import { join } from 'node:path';
 
 /** Flags shared by `init` and `init:default`. */
@@ -232,9 +234,10 @@ export const runInitWithAnswers = async (
 		// entry, and preserves everything else. See the writer for
 		// the three-way outcome (`written` / `merged` / `exists`).
 		if (file.relPath === '.vscode/mcp.json') {
+			const hostEntryPath = answers.detected?.hostEntryPath ?? '';
 			const result = await writeVscodeMcpJson(
 				answers.workspaceRoot,
-				options.hostEntryPath,
+				hostEntryPath,
 				answers.hostInstructions,
 			);
 			written.push({ path: result.path, kind: result.kind });

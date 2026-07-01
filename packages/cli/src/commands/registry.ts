@@ -18,8 +18,9 @@ import {
 	setDotPath,
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
-} from '../lib/config-file';
-import { formatRows } from '../lib/text-format';
+} from '../lib/config-file.service';
+import { data, hasFlag, isRecord, request, scalarArg } from '../lib/cli-helpers';
+import { formatRows } from '../lib/text-format.service';
 import {
 	gitBlameCommand,
 	gitChangedCommand,
@@ -50,20 +51,6 @@ const text = (body: string, code = EXIT_CODE.OK): ICliCommandResult => ({
 	text: body.endsWith('\n') ? body : `${body}\n`,
 });
 
-const data = (
-	value: unknown,
-	code: ICliCommandResult['code'] = EXIT_CODE.OK,
-): ICliCommandResult => ({
-	code,
-	data: value,
-});
-
-const request = <TOut>(
-	ctx: ICliCommandContext,
-	tool: string,
-	args: object = {},
-): Promise<TOut> => ctx.request<TOut>(tool, args);
-
 const overview = async (ctx: ICliCommandContext, compact = false) =>
 	request<Record<string, unknown>>(ctx, 'mcp-vertex_overview', { compact });
 
@@ -93,22 +80,6 @@ const runProcess = async (
 			});
 		});
 	});
-
-const scalarArg = (
-	args: readonly string[],
-	name: string,
-): string | undefined => {
-	const inline = args.find((arg) => arg.startsWith(`--${name}=`));
-	if (inline !== undefined) return inline.slice(name.length + 3);
-	const index = args.indexOf(`--${name}`);
-	return index >= 0 ? args[index + 1] : undefined;
-};
-
-const hasFlag = (args: readonly string[], name: string): boolean =>
-	args.includes(`--${name}`);
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const scaffoldFilesOf = (
 	report: unknown,

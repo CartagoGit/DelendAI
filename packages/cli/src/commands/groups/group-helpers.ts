@@ -1,39 +1,37 @@
 /**
- * group-helpers.ts — shared argument/response helpers for CLI command
- * groups (f00046). Each `groups/<plugin>.ts` is a thin 1:1 delegation to
- * the matching MCP tools; these helpers keep the per-command code to the
- * flag→tool-input mapping without re-declaring the same `data`/arg
- * parsers in every file (DRY / single source of truth).
+ * group-helpers.ts — single import site for command-group authors
+ * (f00046). Each `groups/<plugin>.ts` is a thin 1:1 delegation to the
+ * matching MCP tools; this module re-exports the shared base helpers
+ * from `lib/cli-helpers.ts` plus the thin group-only extensions
+ * (`positionalArg`, `listArg`, `numberArg`, `usage`) so every group
+ * file keeps a single import statement.
+ *
+ * The shared base (`data`, `scalarArg`, `hasFlag`, `request`,
+ * `isRecord`) lives in `lib/cli-helpers.ts` so non-group surfaces
+ * (`commands/registry.ts`, the legacy `git.ts`) reuse the same code
+ * without importing across layers.
+ *
+ * SOLID:
+ *   - Single source of truth: every helper has exactly one definition.
+ *   - Open/closed: adding a new helper means adding it to
+ *     `cli-helpers.ts` and optionally re-exporting it here.
+ *   - Interface segregation: each helper is a pure function with a
+ *     minimal signature.
  */
+import type { ICliCommandResult } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
-import type {
-	ICliCommandContext,
-	ICliCommandResult,
-} from '../../contracts/interfaces/cli-command.interface';
+// `scalarArg` is imported as a value binding so the local
+// `listArg` / `numberArg` definitions below can call it; the
+// `export { … } from` re-exports the rest of the shared base in
+// one statement (the re-export does NOT bring the symbols into
+// scope for the body of this file, which is why we need the value
+// import alongside it).
+import { scalarArg } from '../../lib/cli-helpers';
 
-/** Wrap a tool payload as a successful (or coded) CLI data result. */
-export const data = (
-	value: unknown,
-	code: ICliCommandResult['code'] = EXIT_CODE.OK,
-): ICliCommandResult => ({ code, data: value });
-
-/**
- * Read a `--name=value` (inline) or `--name value` (spaced) scalar flag.
- * Returns `undefined` when the flag is absent.
- */
-export const scalarArg = (
-	args: readonly string[],
-	name: string,
-): string | undefined => {
-	const inline = args.find((arg) => arg.startsWith(`--${name}=`));
-	if (inline !== undefined) return inline.slice(name.length + 3);
-	const index = args.indexOf(`--${name}`);
-	return index >= 0 ? args[index + 1] : undefined;
-};
-
-/** True when a boolean `--name` flag is present. */
-export const hasFlag = (args: readonly string[], name: string): boolean =>
-	args.includes(`--${name}`);
+export { data, hasFlag, isRecord, request } from '../../lib/cli-helpers';
+// `scalarArg` is re-exported here so consumers get every base helper
+// in a single import statement.
+export { scalarArg };
 
 /** First non-flag positional argument, or `undefined`. */
 export const positionalArg = (args: readonly string[]): string | undefined =>
@@ -62,13 +60,6 @@ export const numberArg = (
 	const value = Number(raw);
 	return Number.isFinite(value) ? value : undefined;
 };
-
-/** Delegate to a registered MCP tool through the CLI transport. */
-export const request = <TOut>(
-	ctx: ICliCommandContext,
-	tool: string,
-	args: object = {},
-): Promise<TOut> => ctx.request<TOut>(tool, args);
 
 /** A USAGE-coded error result with a one-line usage string. */
 export const usage = (line: string): ICliCommandResult => ({
