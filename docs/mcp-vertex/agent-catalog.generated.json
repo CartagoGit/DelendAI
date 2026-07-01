@@ -11,18 +11,6 @@
 			"plugin": "mcp-vertex"
 		},
 		{
-			"name": "mcp-vertex_audit_audit_consolidate",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_audit_audit_plan",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_audit_audit_run",
-			"plugin": "mcp-vertex"
-		},
-		{
 			"name": "mcp-vertex_conventions_conventions_check",
 			"plugin": "mcp-vertex"
 		},
@@ -100,30 +88,6 @@
 		},
 		{
 			"name": "mcp-vertex_git_worktree",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_issues_analyze",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_issues_fetch",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_issues_ingest",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_issues_list",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_issues_resolve",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_issues_setup_github",
 			"plugin": "mcp-vertex"
 		},
 		{
@@ -380,10 +344,6 @@
 		},
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
-			"plugin": "mcp-vertex"
-		},
-		{
-			"name": "mcp-vertex_web-fetch_web_fetch",
 			"plugin": "mcp-vertex"
 		}
 	],

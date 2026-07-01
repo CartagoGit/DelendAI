@@ -59,7 +59,10 @@ export {
 	probeAudits,
 	probeProposals,
 } from '../lib/tools/audit-run.tool';
-export type { IRunToolOptions } from '../lib/tools/audit-run.tool';
+// `IRunToolOptions` lives in a sibling file (x00091 / s2); the
+// public barrel just re-routes the existing export — no new public
+// surface is added.
+export type { IRunToolOptions } from '../lib/tools/audit-run.tool-options';
 export type {
 	AuditSeverity,
 	IAuditDocument,
