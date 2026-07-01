@@ -1,5 +1,4 @@
 /**
-import type { IPathProbe, THostEntrySource } from '../../contracts/interfaces/host-entry.interface';
  * host-entry-resolver.ts — f00088 S2 + f00103 sibling-walk.
  *
  * Resolve the absolute path to the mcp-vertex host-server entry

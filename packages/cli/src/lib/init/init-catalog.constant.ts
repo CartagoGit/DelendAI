@@ -214,7 +214,10 @@ const asStringArray = (v: unknown): readonly string[] =>
  */
 export const loadAgentDescriptors = async (
 	workspace: string,
-	options: { readonly namespacePrefix?: string; readonly locale?: string } = {},
+	options: {
+		readonly namespacePrefix?: string;
+		readonly locale?: string;
+	} = {},
 ): Promise<readonly IAgentDescriptor[]> => {
 	const namespacePrefix = options.namespacePrefix ?? 'mcp-vertex';
 	const locale = options.locale ?? 'en';

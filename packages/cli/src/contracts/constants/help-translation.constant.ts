@@ -1,4 +1,6 @@
-export type { IHelpTranslation } from '../interfaces/help-translation.interface';
+import type { IHelpTranslation } from '../interfaces/help-translation.interface';
+
+export type { IHelpTranslation };
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	status: 'Show runtime status collectors.',

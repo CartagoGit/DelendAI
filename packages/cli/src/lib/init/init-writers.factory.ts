@@ -13,11 +13,12 @@ import {
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
 import { mergeMcpVertexServerEntry } from './init-render.service';
+import type {
+	IInitWrite,
+	IMcpJsonWriteResult,
+} from '../../contracts/interfaces/init.interface';
 
-export type IInitWrite = {
-	readonly path: string;
-	readonly content: string;
-};
+export type { IInitWrite, IMcpJsonWriteResult };
 
 /**
  * Writes the canonical `mcp-vertex.config.json` for the workspace. Refuses to
@@ -58,12 +59,12 @@ export const writeMcpVertexConfig = async (
  *     touch it again. Surfaced in the recap as `[exists]`.
  *   - `skipped`: the operator passed `--host-instructions=skip`
  *     or otherwise opted out; nothing was written.
+ *
+ * `IMcpJsonWriteResult` is defined in
+ * `contracts/interfaces/init.interface.ts`; this file re-exports it so
+ * the call sites (`init.command.ts`, `init-default.command.ts`,
+ * `init-render.service.ts`) keep importing it from here.
  */
-export type IMcpJsonWriteResult =
-	| { kind: 'written'; path: string }
-	| { kind: 'merged'; path: string; preserved: readonly string[] }
-	| { kind: 'exists'; path: string }
-	| { kind: 'skipped'; path: string };
 
 /**
  * Write `.vscode/mcp.json` preserving every other server entry.
