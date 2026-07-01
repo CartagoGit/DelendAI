@@ -138,8 +138,31 @@ export interface IInitWrite {
 	readonly content: string;
 }
 
-/** Outcome of writing the MCP server entry into `.vscode/mcp.json`. */
-export type IMcpJsonWriteResult = { kind: 'written'; path: string };
+/**
+ * Outcome of writing the MCP server entry into `.vscode/mcp.json`.
+ *
+ * Four terminal states:
+ *
+ *   - `written` — fresh install, the canonical `mcp-vertex`
+ *     bundle landed on disk.
+ *   - `merged`  — existing `.vscode/mcp.json` was updated via
+ *     merge; every other server entry the operator had wired
+ *     (`filesystem`, `github`, `docker`, …) is preserved and
+ *     `preserved` lists their names so the recap can surface
+ *     them. The runner / recap distinguishes this from a
+ *     `written` to make the upsert visible.
+ *   - `exists`  — the file existed but was left untouched
+ *     because its content is not parseable as a JSON object;
+ *     the operator must hand-edit before `init` will touch it
+ *     again.
+ *   - `skipped` — the operator passed a host-instructions mode
+ *     of `skip` or otherwise opted out; nothing was written.
+ */
+export type IMcpJsonWriteResult =
+	| { kind: 'written'; path: string }
+	| { kind: 'exists'; path: string }
+	| { kind: 'skipped'; path: string }
+	| { kind: 'merged'; path: string; preserved: readonly string[] };
 
 // ----------------------------------------------------------------
 // Foreign-detect inventory (f00089 U1)

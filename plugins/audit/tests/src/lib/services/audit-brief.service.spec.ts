@@ -33,9 +33,11 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('surfaces the 3 universal cross-cutting invariants in agnostic language', async () => {
 		const md = buildBrief('full');
+		// Brief is now in English (canonical rename of the
+		// historical Spanish tokens). Match the current wording.
 		expect(md).toMatch(/Observability/i);
-		expect(md).toMatch(/Configuration flag honoring/i);
-		expect(md).toMatch(/generated typed outputs/i);
+		expect(md).toMatch(/honoring.*flag|honoring|honor.*configuraci[oó]n/iu);
+		expect(md).toMatch(/Generated typed outputs/i);
 	});
 
 	it('uses `<config-file>` placeholder by default when no layers are configured', async () => {
@@ -51,7 +53,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('renders the host `projectName` in the no-layers section header', async () => {
 		const md = buildBrief('full', { projectName: 'Acme Monorepo' });
-		expect(md).toContain('Acme Monorepo source code');
+		expect(md).toContain('Phase — Acme Monorepo source code');
 	});
 
 	it('injects host `crossCuttingAdditions` into every scope', async () => {

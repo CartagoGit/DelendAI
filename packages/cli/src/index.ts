@@ -10,7 +10,6 @@ import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
 import { formatJson } from './lib/stable-json.service';
-import { asScalarText } from './lib/text-format.service';
 
 const commandMatches = (
 	command: ICliCommand,
@@ -89,11 +88,30 @@ export const runHumanCli = async (
 		if (result.error !== undefined)
 			process.stderr.write(`${result.error}\n`);
 		if (result.data !== undefined) {
-			process.stdout.write(
-				parsed.globals.json
-					? formatJson(result.data)
-					: asScalarText(result.data),
-			);
+			// Stdout policy (f00103 follow-up + the operator's report):
+			//   - `--json` (or `--format=json`)  → structured envelope
+			//     to stdout (pipe-safe, machine-readable).
+			//   - everything else                → nothing on stdout.
+			//     The command is expected to print its own
+			//     human-facing recap to stderr (e.g. `init` writes
+			//     `printInitHumanSummary` from `runInitWithAnswers`).
+			//     The previous behaviour (`asScalarText(result.data)`)
+			//     duplicated the recap with a full JSON dump on stdout
+			//     — that is the bug the operator reported for `init`
+			//     and `init:default` after a successful bootstrap.
+			//
+			// Note: `result.text` below still writes to stdout because
+			// some commands (`--version`, `--help`, simple scalar
+			// commands) return their output via `result.text` rather
+			// than `result.data`. The runner policy is "if the
+			// command handed us structured data, only surface it on
+			// stdout when JSON mode is explicit". Plain-text commands
+			// are unaffected.
+			const emitStructured =
+				parsed.globals.json || parsed.globals.format === 'json';
+			if (emitStructured) {
+				process.stdout.write(formatJson(result.data));
+			}
 		} else if (result.text !== undefined) {
 			process.stdout.write(result.text);
 		}

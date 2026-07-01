@@ -75,7 +75,11 @@ export interface IHostViolation {
 		| 'missing-bootstrap-link'
 		| 'skill-id-enumeration'
 		| 'tool-id-enumeration'
-		| 'proposal-id-enumeration';
+		| 'proposal-id-enumeration'
+		// f00092: hand-split attempt — a *.generated.md sibling of the
+		// canonical single fragment under docs/mcp-vertex/host-hints/.
+		// Only `host-hints-fragments.script.ts` emits this kind.
+		| 'stray-fragment';
 	readonly snippet: string;
 	readonly fix: string;
 }
