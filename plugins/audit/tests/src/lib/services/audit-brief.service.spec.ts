@@ -33,9 +33,9 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('surfaces the 3 universal cross-cutting invariants in agnostic language', async () => {
 		const md = buildBrief('full');
-		expect(md).toMatch(/Observabilidad/i);
-		expect(md).toMatch(/Honoring.*flags|honoring.*configuraci[oó]n/iu);
-		expect(md).toMatch(/Outputs? tipados?|generated typed outputs/i);
+		expect(md).toMatch(/Observability/i);
+		expect(md).toMatch(/Configuration flag honoring/i);
+		expect(md).toMatch(/generated typed outputs/i);
 	});
 
 	it('uses `<config-file>` placeholder by default when no layers are configured', async () => {
@@ -51,7 +51,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('renders the host `projectName` in the no-layers section header', async () => {
 		const md = buildBrief('full', { projectName: 'Acme Monorepo' });
-		expect(md).toContain('Código fuente de Acme Monorepo');
+		expect(md).toContain('Acme Monorepo source code');
 	});
 
 	it('injects host `crossCuttingAdditions` into every scope', async () => {
@@ -74,9 +74,9 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('universal defaults render even when no `crossCuttingAdditions` are passed', async () => {
 		const md = buildBrief('full');
-		expect(md).toContain('Invariantes transversales');
+		expect(md).toContain('Cross-cutting invariants');
 		// Universal defaults must be present in their agnostic form.
-		expect(md).toMatch(/Observabilidad/i);
+		expect(md).toMatch(/Observability/i);
 	});
 });
 

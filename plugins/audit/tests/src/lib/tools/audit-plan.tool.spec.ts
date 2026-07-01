@@ -13,13 +13,13 @@ describe('buildBrief', async () => {
 		for (const scope of ALL_SCOPES) {
 			const md = buildBrief(scope);
 			expect(md.length).toBeGreaterThan(200);
-			expect(md).toContain('# 📋 Brief de auditoría');
+			expect(md).toContain('# 📋 Audit brief');
 		}
 	});
 
 	it('embeds the scope label in the header', async () => {
 		const md = buildBrief('security');
-		expect(md).toContain('Seguridad operacional');
+		expect(md).toContain('Operational security');
 	});
 
 	it('lists every score dimension as a table row', async () => {
