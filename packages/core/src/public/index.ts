@@ -352,6 +352,25 @@ export type {
 	IAgentIdentity,
 } from '../lib/contracts/interfaces/agent-identity.interface';
 export { AGENT_IDENTITY_LIMITS } from '../lib/contracts/interfaces/agent-identity.interface';
+// f00067 S1: the canonical multi-model provider contract. Wiki pages
+// 04/05/06/07/08 and both consuming plugins (orchestrator-runner,
+// usage-tracking) import the provider vocabulary from this single file so
+// there is no drift between the design text and the code.
+export type {
+	CapabilityTag,
+	CostTier,
+	IProviderAvailability,
+	IProviderCapabilities,
+	IProviderInvoke,
+	IProviderSummary,
+	IRoutingDecision,
+	IRoutingScoreEntry,
+	ProviderKind,
+	ProviderState,
+	RoutingMode,
+	RoutingStrategy,
+} from '../lib/contracts/interfaces/provider-capabilities.interface';
+export { CAPABILITY_TAGS } from '../lib/contracts/interfaces/provider-capabilities.interface';
 export {
 	CorruptFileError,
 	quarantineCorruptFile,

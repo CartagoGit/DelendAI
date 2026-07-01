@@ -263,7 +263,25 @@ highest-risk).
 
 ### S1 — Canonical provider contract + schema extension (the foundation)
 
-- **Status**: ready
+- **Status**: in-progress
+- **Landed (2026-07-01)**: the canonical contract file
+  `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`
+  exports `CapabilityTag` (+ `CAPABILITY_TAGS`), `ProviderKind`,
+  `IProviderInvoke` (discriminated on `kind`, CRITICAL C6),
+  `IProviderCapabilities`, `IProviderSummary`, `ProviderState`,
+  `IProviderAvailability`, `RoutingStrategy`, `RoutingMode`,
+  `IRoutingScoreEntry`, `IRoutingDecision`, `CostTier`. Re-exported from
+  `packages/core/src/public/index.ts`. Guard spec
+  `packages/core/tests/src/lib/contracts/interfaces/provider-capabilities.spec.ts`
+  (14 tests) pins the closed unions. This unblocks S2's typing.
+- **Deferred (own follow-up)**: the *schema + catalog* half of S1 —
+  root-level `providers` block in `mcp-vertex.config.schema.json` + Zod
+  mirror in `config-file-schema.ts` + `ICatalogSnapshot.providers` wiring
+  into `agent-discovery-catalog.ts`/`overview`/`agent_catalog` + the
+  `config:schema` regen. Deferred because it is cross-cutting into the
+  catalog snapshot (which other work regenerates concurrently) and needs a
+  schema regen that risks collision. Track as a sub-proposal
+  `f00067a-provider-schema-catalog`.
 - **Files**: `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts` (NEW), `packages/core/schema/mcp-vertex.config.schema.json` (EXT), `packages/core/src/lib/plugins/config-file-schema.ts` (EXT, Zod mirror), `packages/core/src/lib/catalog/agent-discovery-types.ts` (EXT), `packages/core/src/lib/catalog/agent-discovery-catalog.ts` (EXT), `packages/core/tests/src/lib/contracts/interfaces/provider-capabilities.spec.ts` (NEW), `packages/core/tests/src/lib/catalog/agent-discovery-catalog.spec.ts` (EXT).
 - **Gate**: `bun run test packages/core && bun run typecheck && bun run config:schema && bun run lint`
 - **Acceptance**:
