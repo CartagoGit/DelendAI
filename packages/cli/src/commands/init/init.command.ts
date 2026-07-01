@@ -35,16 +35,9 @@ import {
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
-import { COLOR_ON } from '../../lib/color.service';
+import { COLOR_ON } from '../../lib/helpers/cli-color.helper';
+import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import { join } from 'node:path';
-
-/** Flags shared by `init` and `init:default`. */
-export interface IInitFlags {
-	readonly dryRun: boolean;
-	readonly force: boolean;
-	readonly mcpVertexRoot?: string;
-	readonly pluginPathsRoot?: string;
-}
 
 const applyExtraOptions = (
 	config: Record<string, unknown>,
@@ -210,7 +203,19 @@ export const runInitWithAnswers = async (
 		};
 	}
 
-	const written: Array<{ path: string; kind: string }> = [];
+	// Narrow union for the `written` accumulator: `kind` is the
+	// string-literal union across every writer (writeMcpVertexConfig
+	// → 'written' | 'exists'; writeVscodeMcpJson → also 'merged' and
+	// 'skipped'; writeWorkspaceText → also 'skipped'), and
+	// `preserved` is only populated on the merge branch. Casting
+	// each push site to `string` (the previous type) forced us to
+	// re-narrow later in the recap map; declaring the union here
+	// once lets every push be checked without a cast.
+	const written: Array<{
+		path: string;
+		kind: 'written' | 'exists' | 'merged' | 'skipped';
+		preserved?: readonly string[];
+	}> = [];
 	for (const file of bundle.files) {
 		if (file.relPath === 'mcp-vertex.config.json') {
 			const parsed = JSON.parse(file.content) as Record<string, unknown>;
@@ -249,7 +254,24 @@ export const runInitWithAnswers = async (
 				hostEntryPath,
 				answers.hostInstructions,
 			);
-			written.push({ path: result.path, kind: result.kind });
+			// The merge writer can return a `preserved` list alongside
+			// `kind: 'merged'`. We MUST carry it forward to both the
+			// recap (so the operator sees "preserved 2 server(s): …")
+			// and the JSON envelope (so `--json` consumers can decide
+			// whether a merge was a no-op or actually rewrote the
+			// file). The branch discriminates by `kind` to keep the
+			// push object narrow enough that other writers (whose
+			// `IMcpJsonWriteResult` shape doesn't include `preserved`)
+			// don't accidentally leak fields.
+			if (result.kind === 'merged') {
+				written.push({
+					path: result.path,
+					kind: result.kind,
+					preserved: result.preserved,
+				});
+			} else {
+				written.push({ path: result.path, kind: result.kind });
+			}
 			continue;
 		}
 		const mode = answers.hostInstructions;
@@ -263,12 +285,12 @@ export const runInitWithAnswers = async (
 	}
 
 	if (!ctx.globals.json) {
+		// The `written` accumulator is already typed with the
+		// recap-side union (path/kind/preserved), so the recap
+		// accepts it directly without a remap.
 		printInitHumanSummary({
 			answers,
-			written: written.map((w) => ({
-				path: w.path,
-				kind: w.kind as 'written' | 'exists' | 'skipped',
-			})),
+			written,
 			dryRun: false,
 		});
 	}

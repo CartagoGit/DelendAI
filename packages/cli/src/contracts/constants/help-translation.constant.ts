@@ -1,18 +1,4 @@
-export interface IHelpTranslation {
-	readonly usage: string;
-	readonly globalFlags: string;
-	readonly commands: string;
-	readonly flagWorkspace: string;
-	readonly flagRemote: string;
-	readonly flagPlugins: string;
-	readonly flagPreset: string;
-	readonly flagConfig: string;
-	readonly flagAgentWorktree: string;
-	readonly flagJson: string;
-	readonly flagHelp: string;
-	readonly flagVersion: string;
-	readonly commandSummaries: Readonly<Record<string, string>>;
-}
+export type { IHelpTranslation } from '../interfaces/help-translation.interface';
 
 const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	status: 'Show runtime status collectors.',

@@ -32,7 +32,7 @@ import {
 	subheading,
 	success,
 	warn,
-} from '../color.service';
+} from '../helpers/cli-color.helper';
 
 export interface IInitWrittenFile {
 	readonly path: string;

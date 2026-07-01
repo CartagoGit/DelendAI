@@ -14,7 +14,7 @@
  */
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 
-export type IPluginDefaults = Readonly<Record<string, Record<string, unknown>>>;
+export type { IPluginDefaults } from '../interfaces/plugin-defaults.interface';
 
 /**
  * Canonical defaults, kept in sync with the plugin sources. If a plugin

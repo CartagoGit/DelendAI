@@ -1,23 +1,19 @@
 /**
- * completion.ts — shell-completion script generators (f00046 S10).
+ * completion.service.ts — shell-completion script generators (f00046 S10).
  *
  * Derived dynamically from the command-name list so the completion can
  * never drift from `registerAllCommands()`. Commands are multi-word
  * (e.g. `git status`, `memory save`); we expose the set of first words
  * (top-level groups) and, per group, its second words (verbs), plus the
  * single-word commands. Pure string builders — no I/O.
+ *
+ * Type contracts (`Shell`, `ICompletionModel`) live in
+ * `contracts/interfaces/completion.interface.ts` per f00037.
  */
 
-export type Shell = 'bash' | 'zsh' | 'fish';
+import type { ICompletionModel, Shell } from '../../contracts/interfaces/completion.interface';
 
-export interface ICompletionModel {
-	/** Single-word commands (e.g. `status`, `overview`, `web-fetch`). */
-	readonly leaves: readonly string[];
-	/** group → its verbs (e.g. `git` → [`status`, `changed`, ...]). */
-	readonly groups: ReadonlyMap<string, readonly string[]>;
-	/** All first words (groups + single-word commands), sorted unique. */
-	readonly firstWords: readonly string[];
-}
+export type { ICompletionModel, Shell } from '../../contracts/interfaces/completion.interface';
 
 /** Build the completion model from the flat list of command names. */
 export const buildCompletionModel = (

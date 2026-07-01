@@ -8,4 +8,4 @@ export const EXIT_CODE = {
 	INTERNAL: 70,
 } as const;
 
-export type IExitCode = (typeof EXIT_CODE)[keyof typeof EXIT_CODE];
+export type { IExitCode } from '../interfaces/exit-code.interface';
