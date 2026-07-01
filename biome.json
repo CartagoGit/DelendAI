@@ -114,7 +114,8 @@
 				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "off"
+				"noExplicitAny": "off",
+				"noTemplateCurlyInString": "off"
 			}
 		}
 	},

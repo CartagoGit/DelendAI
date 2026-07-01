@@ -6,7 +6,6 @@ import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/
  * of `{ path, content }` pairs ready to feed `init-writers.ts`. The
  * command is the only place that touches the file system.
  */
-import { join } from 'node:path';
 
 import {
 	resolvePluginOptions,
