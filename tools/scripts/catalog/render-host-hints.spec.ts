@@ -1,10 +1,11 @@
 /**
  * render-host-hints.spec.ts — pin the agnostic-bootstrap contract:
  *
- *   1. Every fragment MUST reference the universal bootstrap.
- *   2. No fragment MAY enumerate tool names, skill names, or proposal ids.
- *   3. The 3 fragments MUST differ in the host-specific footnote only,
- *      never in the routing content.
+ *   1. The fragment MUST reference the universal bootstrap.
+ *   2. The fragment MUST NOT enumerate tool names, skill names, or
+ *      proposal ids.
+ *   3. f00092: there is exactly one fragment; the renderer is the
+ *      single source of truth for `agent-instructions.generated.md`.
  *   4. The renderer MUST be byte-stable (running it twice produces the
  *      same bytes given the same options).
  */
@@ -12,7 +13,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	BOOTSTRAP_PATH,
-	HOST_FRAGMENTS,
+	HOST_INSTRUCTIONS_FILENAME,
+	HOST_INSTRUCTIONS_ID,
 	MAX_FRAGMENT_BYTES,
 	renderHostHints,
 } from './render-host-hints.script.ts';
@@ -20,18 +22,18 @@ import {
 const ID_PATTERN = /`[a-z][0-9]{4,5}`/g;
 const TOOL_NAME_PATTERN = /`mcp-vertex_[a-z_]+`/g;
 
-describe('renderHostHints (agnostic bootstrap)', () => {
-	it('emits exactly one fragment per registered host', () => {
+describe('renderHostHints (agnostic bootstrap, f00092 single fragment)', () => {
+	it('emits exactly one canonical fragment', () => {
 		const rendered = renderHostHints();
-		expect(rendered.map((f) => f.id).sort()).toEqual(
-			['agents', 'claude', 'copilot'].sort(),
-		);
-		expect(rendered.map((f) => f.filename).sort()).toEqual(
-			[
-				'agents.generated.md',
-				'claude.generated.md',
-				'copilot-instructions.generated.md',
-			].sort(),
+		expect(rendered).toHaveLength(1);
+		expect(rendered[0]?.id).toBe(HOST_INSTRUCTIONS_ID);
+		expect(rendered[0]?.filename).toBe(HOST_INSTRUCTIONS_FILENAME);
+	});
+
+	it('the canonical fragment id and filename are exported constants', () => {
+		expect(HOST_INSTRUCTIONS_ID).toBe('agent-instructions');
+		expect(HOST_INSTRUCTIONS_FILENAME).toBe(
+			'agent-instructions.generated.md',
 		);
 	});
 
@@ -81,39 +83,26 @@ describe('renderHostHints (agnostic bootstrap)', () => {
 		}
 	});
 
-	it('fragments agree on routing content and only differ in host-specific footnotes', () => {
+	it('fragment carries the canonical first move', () => {
 		const rendered = renderHostHints();
-		const copilot = rendered.find((f) => f.id === 'copilot')!.text;
-		const claude = rendered.find((f) => f.id === 'claude')!.text;
-		const agents = rendered.find((f) => f.id === 'agents')!.text;
-		// All three MUST mention the canonical first move in identical wording.
+		const text = rendered[0]?.text ?? '';
 		const canonicalFirstMove =
 			'`mcp-vertex_overview { compact: true }` followed by';
-		expect(copilot).toContain(canonicalFirstMove);
-		expect(claude).toContain(canonicalFirstMove);
-		expect(agents).toContain(canonicalFirstMove);
+		expect(text).toContain(canonicalFirstMove);
+	});
+
+	it('f00092: fragment does NOT carry any host-specific footnote (those live in the hand-edited host files now)', () => {
+		const text = renderHostHints()[0]?.text ?? '';
+		// The 1-line footnote used to live here; it MUST be gone so
+		// the single fragment is host-agnostic by construction.
+		expect(text).not.toMatch(/appendix 8\./i);
+		expect(text).not.toMatch(/section 7/i);
+		expect(text).not.toMatch(/Host-specific footnote/i);
 	});
 
 	it('renderer is byte-stable (idempotent)', () => {
 		const first = renderHostHints();
 		const second = renderHostHints();
 		expect(second).toEqual(first);
-	});
-
-	it('host-specific footnote lines exist for each host', () => {
-		const rendered = renderHostHints();
-		const copilot = rendered.find((f) => f.id === 'copilot')!.text;
-		const claude = rendered.find((f) => f.id === 'claude')!.text;
-		const agents = rendered.find((f) => f.id === 'agents')!.text;
-		// Each fragment MUST point at the host-specific appendix in the
-		// universal bootstrap, never duplicate the rule body here.
-		expect(copilot).toMatch(/appendix 8\.1/i);
-		expect(claude).toMatch(/appendix 8\.2/i);
-		expect(agents).toMatch(/section 7/i);
-	});
-
-	it('HOST_FRAGMENTS and renderHostHints agree', () => {
-		const ids = HOST_FRAGMENTS.map((f) => f.id).sort();
-		expect(ids).toEqual(['agents', 'claude', 'copilot']);
 	});
 });

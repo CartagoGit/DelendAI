@@ -42,8 +42,8 @@ describe('scanConventions', async () => {
 		expect(res.counts.tool).toBe(1);
 		expect(res.counts.service).toBe(1);
 		expect(res.counts.barrel).toBe(1); // pkg/src/index.ts
-		expect(res.counts.other).toBe(1); // helper.ts
-		expect(res.unmatched).toEqual(['pkg/src/lib/helper.ts']);
+		expect(res.counts.helper).toBe(1); // helper.ts now classified as `helper` (was `other` before f00037 S-helper)
+		expect(res.unmatched).toEqual([]);
 	});
 
 	it('skips node_modules, dist, .git, .cache and build', async () => {

@@ -13,7 +13,7 @@ describe('buildBrief', async () => {
 		for (const scope of ALL_SCOPES) {
 			const md = buildBrief(scope);
 			expect(md.length).toBeGreaterThan(200);
-			expect(md).toContain('# 📋 Audit brief');
+			expect(md).toContain('# 📋 Audit brief — mode');
 		}
 	});
 
