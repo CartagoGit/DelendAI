@@ -77,6 +77,25 @@ difference is the **scope tag** at the top of `## inventory`:
    The slices section is byte-identical; only the inventory preamble
    and the title differ.
 
+## why this design
+
+- **Same body as f00093, on-demand.** The proposal format mirrors
+  f00093 (frontmatter + inventory + S1/S2 slices) so a reviewer who
+  knows f00093 already knows this file. The single, intentional
+  difference is the `scope` switch (`'repo'` default, `'all'` opt-in)
+  that gates user-home paths; everything else is identical.
+- **No automatic writes to host files.** The tool only reads; the
+  destination of every captured rule is decided by the LLM during
+  the review slices, exactly like f00093.
+- **Mirror f00089 U1's id allocation.** `allocateNextProposalId` is
+  shared with f00093 and `renderAdoptionPlan`, so two `init` runs
+  plus one `inherit_host_instructions` call never spawn colliding
+  ids. The counter increases monotonically across all three.
+- **Workspace containment is already solved.** The user-home paths
+  are explicit opt-ins with a hand-maintained allow-list. The
+  in-repo paths are bounded by the AGENTS.md hard rule. No new
+  safety primitive required.
+
 ## non-goals
 
 - **No automatic write to any host file.** The tool only reads. The
