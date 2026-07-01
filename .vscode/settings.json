@@ -1,4 +1,20 @@
 {
+	"terminal.integrated.profiles.linux": {
+		"Bash (login)": {
+			"path": "/bin/bash",
+			"args": ["--login"]
+		}
+	},
+
+	// Por defecto (para todo lo que abra terminal: Copilot incluido) → Bash
+	"terminal.integrated.defaultProfile.linux": "Bash (login)",
+
+	// Habilitar prompt files de GitHub Copilot
+	"chat.promptFiles": true,
+
+	// TypeScript y JavaScript: usar la versión del workspace
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
 	// Format-on-save for the front surface (apps/web/**).
 	// The repo formatter is Biome — see /biome.json.
 	// Bun is the package manager and runner.
@@ -7,8 +23,10 @@
 
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "biomejs.biome",
+	// Evitar “organize imports” automático (puede variar por versión de TS)
 	"editor.codeActionsOnSave": {
-		"source.fixAll.biome": "explicit"
+		"source.fixAll.biome": "explicit",
+		"source.organizeImports": "explicit"
 	},
 
 	// Scope format-on-save to the front (Astro site). Backend packages keep
