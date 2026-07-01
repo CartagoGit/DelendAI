@@ -13,8 +13,9 @@
  * constant (search the plugin source for the canonical values).
  */
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
+import type { IPluginDefaults } from '../interfaces/plugin-defaults.interface';
 
-export type { IPluginDefaults } from '../interfaces/plugin-defaults.interface';
+export type { IPluginDefaults };
 
 /**
  * Canonical defaults, kept in sync with the plugin sources. If a plugin
