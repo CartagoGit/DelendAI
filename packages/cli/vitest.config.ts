@@ -12,7 +12,11 @@ export default defineConfig({
 		alias: workspaceAliases(workspaceRoot),
 	},
 	test: {
-		include: ['tests/**/*.spec.ts'],
+		// f00037 S5: tests are co-located next to the source they cover
+		// (`*.spec.ts` next to the implementation). The historical
+		// `tests/src/**` mirror was retired by the S4 slice (every
+		// test moved next to its source); the directory was removed.
+		include: ['src/**/*.spec.ts'],
 		setupFiles: sharedSetupFiles(workspaceRoot),
 	},
 });
