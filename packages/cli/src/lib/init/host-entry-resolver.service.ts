@@ -31,10 +31,28 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
+export type THostEntrySource =
+	| 'flag'
+	| 'node_modules'
+	| 'npm_dist'
+	| 'sibling'
+	| 'sibling_alt'
+	| 'sibling_nested'
+	| 'sibling_walk'
+	| 'unresolved';
 
+export interface IResolvedHostEntry {
+	readonly path: string;
+	readonly source: THostEntrySource;
+}
 
 /** A minimal reader interface so tests can inject a fake filesystem. */
-
+export interface IPathProbe {
+	exists(path: string): boolean;
+	/** Optional: enumerate immediate children of a directory. Defaults to
+	 * the real filesystem when omitted (used only by the upward walk). */
+	readDirNames?(path: string): readonly string[];
+}
 
 const realProbe: IPathProbe = {
 	exists: (path) => existsSync(path),

@@ -44,6 +44,10 @@ import type {
 	IAutoForwardRule,
 } from '../contracts/interfaces/server-args.interface';
 
+// f00037/f00093: canonical home is contracts/interfaces/server-args.interface.ts.
+// Re-exported here for the spec that imports the rule type from this module.
+export type { IAutoForwardRule } from '../contracts/interfaces/server-args.interface';
+
 /** Discriminator for the shape of a forwarding rule. */
 
 

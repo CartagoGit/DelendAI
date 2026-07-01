@@ -1,11 +1,12 @@
 /**
-import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/init.interface';
  * f00084 S2 + S3 + S4 + S5 — render the bootstrap bundle.
  *
  * Pure functions: each `render*` takes the answers and returns a list
  * of `{ path, content }` pairs ready to feed `init-writers.ts`. The
  * command is the only place that touches the file system.
  */
+
+import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/init.interface';
 
 import {
 	resolvePluginOptions,

@@ -1,5 +1,4 @@
 /**
-import type { IForeignIdScheme, IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
  * init-foreign-detect.ts — f00089 U1.
  *
  * When `init` runs inside a FOREIGN project, the migration offer must
@@ -24,7 +23,13 @@ import type { IForeignIdScheme, IForeignProposalInventory } from '../../contract
  *   - Pure data shaping over the reader; deterministic given a reader.
  *   - Advisory only: detection NEVER writes, deletes, or moves anything.
  */
+
+import type { IForeignConvention, IForeignConventionKind, IForeignIdScheme, IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for migrate-offer + specs that import from the detector.
+export type { IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
 
 /**
  * Canonical id-numbering schemes a foreign proposal system can use.

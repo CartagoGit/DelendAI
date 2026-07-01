@@ -1,5 +1,4 @@
 /**
-import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../contracts/interfaces/init.interface';
  * init-adoption-plan.ts — f00089 U2 (slice U2, point 2c + A3/A4 renderers).
  *
  * This module owns:
@@ -24,6 +23,8 @@ import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../
  *     timestamps) so the bundle re-render stays byte-identical.
  *   - Advisory only: never rewrites the target's tools or config.
  */
+
+import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
 import {
 	detectSkillInventory,
