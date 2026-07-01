@@ -1,5 +1,4 @@
 /**
-import type { IAgentInstructionSourceSpec, IConsolidationPlan, IConsolidationWrite, IDiscoveredInstructionSource, IHostInstructionsTarget } from '../../contracts/interfaces/init.interface';
  * f00084 S4 — host-instructions centralizer with idempotent append.
  *
  * The block is delimited by `<!-- mcp-vertex:begin -->` and
@@ -29,6 +28,13 @@ import type { IAgentInstructionSourceSpec, IConsolidationPlan, IConsolidationWri
  * the pointers are byte-stable, and a location that is already nothing
  * but a pointer is not collapsed a second time.
  */
+
+import type { IAgentInstructionSourceSpec, IConsolidationPlan, IConsolidationWrite, IDiscoveredInstructionSource, IHostInstructionsTarget } from '../../contracts/interfaces/init.interface';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for specs that import the plan type from this module.
+export type { IConsolidationPlan } from '../../contracts/interfaces/init.interface';
+
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 

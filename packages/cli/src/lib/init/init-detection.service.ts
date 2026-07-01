@@ -1,5 +1,4 @@
 /**
-import type { ISourceRoot } from '../../contracts/interfaces/init.interface';
  * init-detection.ts — f00088 S1.
  *
  * Re-uses the core `analyzeProject` to detect the target workspace's
@@ -22,6 +21,8 @@ import type { ISourceRoot } from '../../contracts/interfaces/init.interface';
  * `analyzeProject` already does. Tests pass an in-memory
  * `IFileReader` so every branch is deterministic.
  */
+
+import type { IInitDetection, ISourceRoot } from '../../contracts/interfaces/init.interface';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';

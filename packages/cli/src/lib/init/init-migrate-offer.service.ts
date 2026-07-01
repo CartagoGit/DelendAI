@@ -1,5 +1,4 @@
 /**
-import type { IAdoptionPlan } from '../../contracts/interfaces/init.interface';
  * init-migrate-offer.ts — f00084 S5 + f00089 U1.
  *
  * S5 (legacy): when the user accepts the `migrateFromLegacy` offer,
@@ -22,6 +21,8 @@ import type { IAdoptionPlan } from '../../contracts/interfaces/init.interface';
  * data shaping over that reader. Idempotent: re-running emits a plan with
  * the next free id, never overwriting a prior plan in place.
  */
+
+import type { IAdoptionPlan } from '../../contracts/interfaces/init.interface';
 import { basename } from 'node:path';
 
 import {

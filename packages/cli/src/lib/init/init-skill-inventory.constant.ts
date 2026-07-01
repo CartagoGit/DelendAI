@@ -1,5 +1,4 @@
 /**
-import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory } from '../../contracts/interfaces/init.interface';
  * init-skill-inventory.ts — f00089 U2 (slice U2, points 2a + 2b).
  *
  * The adoption plan's `A3` section answers two questions:
@@ -26,7 +25,14 @@ import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory } from '../
  *     no ordering by disk enumeration that the renderer can't sort).
  *   - Advisory only: detection NEVER writes, deletes, or moves a skill.
  */
+
+import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory, ITargetSkill } from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for consumers (adoption-plan builder + specs) that import
+// these types from the module that produces them.
+export type { ISkillInventory, ITargetSkill } from '../../contracts/interfaces/init.interface';
 
 /**
  * The convention family a detected skill location belongs to. Coarser

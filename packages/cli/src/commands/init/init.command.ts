@@ -37,6 +37,11 @@ import { InitAnswers } from '../../lib/init/init-answers.schema';
 import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { COLOR_ON } from '../../lib/helpers/cli-color.helper';
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
+
+// f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
+// Re-exported here for the init-default spec that imports the flag type.
+export type { IInitFlags } from '../../contracts/interfaces/init.interface';
+
 import { join } from 'node:path';
 
 const applyExtraOptions = (

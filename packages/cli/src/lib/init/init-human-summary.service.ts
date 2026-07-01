@@ -1,5 +1,4 @@
 /**
-import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfaces/init.interface';
  * f00103 / f00088 — coloured human-readable summary for the
  * `init` and `init:default` commands.
  *
@@ -20,6 +19,8 @@ import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfac
  *
  * Pure functions — no IO, no env reads outside the call site.
  */
+
+import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfaces/init.interface';
 import {
 	arrow,
 	brand,
