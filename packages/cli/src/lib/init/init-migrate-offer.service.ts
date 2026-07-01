@@ -118,14 +118,19 @@ export const renderMigrationProposal = (
 /** Result of the U1 adoption-plan generator. */
 
 
-/** Render the foreign-system section of the plan body (advisory mapping). */
+/**
+ * Render the foreign-system prose of the plan body (advisory mapping).
+ *
+ * Folded into the `## why` section as a bolded lead-in rather than its own
+ * `## foreign proposal system` H2 — that heading is not part of the
+ * canonical proposal scaffold and would fail `lint:proposals`.
+ */
 const renderForeignSection = (inventory: IForeignProposalInventory): string => {
 	if (!inventory.found) {
 		return (
-			`## foreign proposal system\n\n` +
-			`No existing proposal/plan convention was detected in this project.\n` +
-			`This plan adopts the canonical mcp-vertex layout from scratch under\n` +
-			`\`docs/mcp-vertex/proposals/\`.\n\n`
+			`**Foreign proposal system.** No existing proposal/plan convention was\n` +
+			`detected in this project. This plan adopts the canonical mcp-vertex\n` +
+			`layout from scratch under \`docs/mcp-vertex/proposals/\`.\n\n`
 		);
 	}
 	const lines = inventory.conventions
@@ -133,8 +138,8 @@ const renderForeignSection = (inventory: IForeignProposalInventory): string => {
 		.join('\n');
 	const primary = inventory.primary;
 	return (
-		`## foreign proposal system\n\n` +
-		`\`init\` detected an existing proposal/plan convention in this project:\n\n` +
+		`**Foreign proposal system.** \`init\` detected an existing proposal/plan\n` +
+		`convention in this project:\n\n` +
 		`${lines}\n\n` +
 		`This plan is **advisory output**: it maps the foreign convention onto the\n` +
 		`canonical mcp-vertex layout. \`init\` does **not** rewrite, delete, or move\n` +
@@ -253,21 +258,45 @@ export const renderAdoptionPlan = async (
 		`space — it is **not** a hardcoded \`f00001\`, so it cannot collide with a\n` +
 		`proposal that already exists here.\n\n` +
 		renderForeignSection(inventory) +
+		`## non-goals\n\n` +
+		`- **No in-place conversion of foreign files.** The mapping and skill\n` +
+		`  migration below are advisory: \`init\` never writes, deletes, or moves\n` +
+		`  a foreign proposal, skill, or tool. The target's own agents execute\n` +
+		`  the migration.\n` +
+		`- **No runtime tool renaming.** The namespace-unification slice is\n` +
+		`  plan output; the host enforces prefixing when the server boots.\n` +
+		`- **No hardcoded ids.** Ids are allocated as the next free id in the\n` +
+		`  target's canonical proposals space, never a fixed \`f00001\`.\n\n` +
 		`## slices\n\n` +
-		`### A1 — inventory the foreign surface (read-only)\n\n` +
+		`### S1 — inventory the foreign surface (read-only)\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`docs/mcp-vertex/proposals/ready/${id}-a1-inventory.md\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Capture every existing proposal/record, skill, and tool the project\n` +
 		`declares. Save the structured output under\n` +
 		`\`docs/mcp-vertex/proposals/ready/${id}-a1-inventory.md\`. Touch nothing.\n\n` +
-		`### A2 — map foreign → canonical\n\n` +
+		`### S2 — map foreign → canonical\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`docs/mcp-vertex/proposals/\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Produce the mapping from the foreign convention to the canonical\n` +
 		`mcp-vertex layout (file naming, id space, status folders). The mapping\n` +
 		`is advisory; converting the foreign files is a later, explicit step the\n` +
 		`target's agents perform — \`init\` never converts them in place.\n\n` +
 		sections.skillSection +
 		sections.toolSection +
-		`### A5 — single source of truth (filled by f00089 U3)\n\n` +
+		`### S5 — single source of truth (filled by f00089 U3)\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`AGENTS.md\`, \`docs/mcp-vertex/AGENT-BOOTSTRAP.md\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`<!-- f00089 U3 embeds the AGENT-BOOTSTRAP + AGENTS consolidation. -->\n` +
-		`_Pending f00089 U3._\n`;
+		`_Pending f00089 U3._\n\n` +
+		`## acceptance\n\n` +
+		`- \`bun run typecheck\` → exit 0.\n` +
+		`- \`bun run test\` → exit 0.\n` +
+		`- \`bun run validate\` → exit 0.\n` +
+		`- The adoption plan is advisory only: no foreign proposal, skill, or\n` +
+		`  tool is written, deleted, or moved by \`init\`.\n`;
 
 	return { relPath, content, id, inventory, sections };
 };
