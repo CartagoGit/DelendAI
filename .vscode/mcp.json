@@ -4,7 +4,7 @@
 			"type": "stdio",
 			"command": "bun",
 			"args": [
-				"/home/cartago/_projects/mcp-vertex/tools/scripts/host/host-server.script.ts",
+				"${workspaceFolder}/tools/scripts/host/host-server.script.ts",
 				"--workspace=${workspaceFolder}",
 				"--config=${workspaceFolder}/mcp-vertex.config.json"
 			]

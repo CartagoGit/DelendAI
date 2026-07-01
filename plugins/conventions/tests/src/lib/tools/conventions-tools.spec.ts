@@ -30,10 +30,10 @@ describe('runClassifyPaths', async () => {
 		expect(out.ok).toBe(true);
 		expect(out.results).toEqual([
 			{ path: 'pkg/src/lib/tools/a.tool.ts', role: 'tool' },
-			{ path: 'pkg/src/lib/helper.ts', role: 'other' },
+			{ path: 'pkg/src/lib/helper.ts', role: 'helper' },
 			{ path: 'pkg/src/index.ts', role: 'barrel' },
 		]);
-		expect(out.unmatched).toEqual(['pkg/src/lib/helper.ts']);
+		expect(out.unmatched).toEqual([]);
 	});
 
 	it('handles an empty path list', async () => {
