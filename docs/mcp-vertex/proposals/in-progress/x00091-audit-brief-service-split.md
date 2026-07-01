@@ -1,6 +1,6 @@
 ---
 id: x00091
-status: ready
+status: in-progress
 type: proposal
 track: refactor
 date: 2026-07-01
@@ -11,7 +11,7 @@ title: "Refactor: split audit-brief.service.ts into severity-table + brief-modes
 
 ### s1 — Service split: `audit-brief.service.ts`
 
-- **Status**: pending
+- **Status**: done (commit `67bf02ff`)
 - **Files**:
     - `plugins/audit/src/lib/services/audit-brief.service.ts`
     - `plugins/audit/src/lib/services/audit-brief.constants.ts` (existing, keep as the data table)
