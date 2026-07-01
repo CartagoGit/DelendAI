@@ -1,9 +1,10 @@
 ---
 id: f00079
-status: ready
+status: done
 type: proposal
 track: security+webview+extension-ux
 date: 2026-06-25
+closed: 2026-07-01
 kind: feat
 title: Webview hardening — CSP, action allow-list, settings persistence, proposals TreeData
 shipped-in:
