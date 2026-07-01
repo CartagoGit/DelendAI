@@ -233,8 +233,17 @@ export const runInitWithAnswers = async (
 		// reads the existing document, upserts the `mcp-vertex`
 		// entry, and preserves everything else. See the writer for
 		// the three-way outcome (`written` / `merged` / `exists`).
+		//
+		// `hostEntryPath` is the local resolved at the top of this
+		// function (the result of `resolveHostEntryPath`) — using
+		// the same name avoids the shadowing bug we hit when an
+		// earlier revision declared a separate local with the same
+		// name. We intentionally reuse the resolved launcher path
+		// (which honours `--mcp-vertex-root` and the priority chain
+		// in `host-entry-resolver`) rather than the detection-only
+		// `answers.detected?.hostEntryPath`, which can be undefined
+		// when detection fails.
 		if (file.relPath === '.vscode/mcp.json') {
-			const hostEntryPath = answers.detected?.hostEntryPath ?? '';
 			const result = await writeVscodeMcpJson(
 				answers.workspaceRoot,
 				hostEntryPath,
