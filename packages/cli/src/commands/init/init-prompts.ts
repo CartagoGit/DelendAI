@@ -23,43 +23,15 @@ import {
 	InitAnswers,
 	type IInitAnswers,
 } from './init-answers.schema';
+import {
+	c,
+	heading,
+	hint,
+	brand,
+	success,
+	failure,
+} from '../../lib/color';
 
-/**
- * Minimal ANSI palette. Disabled when `NO_COLOR` is set, when
- * `FORCE_COLOR=0`, or when `process.stdout.isTTY` is false. The
- * helpers below are pure passthroughs in those modes so logs stay
- * greppable. See https://no-color.org/ for the convention.
- */
-const COLOR_ENABLED = (): boolean => {
-	if (process.env.NO_COLOR !== undefined && process.env.NO_COLOR !== '') {
-		return false;
-	}
-	if (process.env.FORCE_COLOR === '0') return false;
-	return Boolean(process.stdout.isTTY);
-};
-const COLOR = COLOR_ENABLED();
-
-const ansi = (open: number, close: number) =>
-	COLOR
-		? (text: string): string => `\x1b[${open}m${text}\x1b[${close}m`
-		: (text: string): string => text;
-
-const c = {
-	bold: ansi(1, 22),
-	dim: ansi(2, 22),
-	cyan: ansi(36, 39),
-	green: ansi(32, 39),
-	yellow: ansi(33, 39),
-	red: ansi(31, 39),
-	magenta: ansi(35, 39),
-	gray: ansi(90, 39),
-};
-
-const heading = (text: string): string => c.bold(c.cyan(text));
-const hint = (text: string): string => c.dim(c.gray(text));
-const brand = (text: string): string => c.magenta(text);
-const success = (text: string): string => `${c.green('✓')} ${text}`;
-const failure = (text: string): string => `${c.red('✗')} ${text}`;
 const numbered = (n: number, text: string): string =>
 	`${c.cyan(`${n})`)} ${text}`;
 const bullet = (text: string): string => `${c.gray('›')} ${text}`;

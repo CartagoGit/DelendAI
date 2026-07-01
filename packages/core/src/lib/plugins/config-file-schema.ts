@@ -30,6 +30,21 @@ export const CONFIG_FILE_SCHEMA = z
 		docsDir: z.string().optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		// f00088 S4 — operator-chosen source/conventions block.
+		// The `init` command emits this when its S1 detector picks
+		// a non-default `pluginPathsRoot` (e.g. `libs/` for Angular
+		// or Nx, `packages/` for workspaces). Downstream tooling
+		// (`tools/scripts/create-plugin.ts`, host-entry resolver
+		// hints) reads it instead of having to re-discover the
+		// project's layout. The loader ignores it; the schema
+		// accepts it for the strict-config validator.
+		convention: z
+			.object({
+				pluginPathsRoot: z.string(),
+				sourceRoot: z.string(),
+			})
+			.strict()
+			.optional(),
 		// f00089 U5 — native authorized-roots filesystem allowlist.
 		// Extra absolute roots the operator authorizes for `fs_read` /
 		// `fs_write` beyond the workspace root. Default `[]` (off): with

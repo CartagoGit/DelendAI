@@ -40,6 +40,8 @@ import {
 	parseFlags,
 	runInitWithAnswers,
 } from './init.command';
+import { printInitHumanSummary } from './init-human-summary';
+import { COLOR_ON } from '../../lib/color';
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 	preset: 'vertex',
@@ -68,6 +70,8 @@ export const initDefaultCommand: ICliCommand = {
 
 		// Brief operator-facing banner — written to stderr so it does
 		// not corrupt the JSON envelope when `--json` is the global mode.
+		// (The structured, coloured recap is rendered AFTER the run
+		// returns, see below; this banner is just a heartbeat.)
 		process.stderr.write(
 			'mcp-vertex › workspace bootstrap (defaults: vertex preset + overwrite + skills + agents + scaffold)\n',
 		);
@@ -77,6 +81,64 @@ export const initDefaultCommand: ICliCommand = {
 			flags,
 			INIT_DEFAULT_ANSWERS,
 		);
-		return runInitWithAnswers(ctx, flags, answers);
+		const result = await runInitWithAnswers(ctx, flags, answers);
+
+		// Render a coloured human recap on stderr — stdout keeps the
+		// pipe-safe JSON envelope (`{ ok, written, summary }`) so
+		// `--json` and shell pipelines still work end-to-end.
+		//
+		// Print it whenever `--json` is off and the run succeeded. The
+		// palette inside `lib/color.ts` decides whether ANSI escapes
+		// are emitted (NO_COLOR / FORCE_COLOR=0 / !isTTY → plain text);
+		// we no longer gate the print itself on TTY because some
+		// terminals (e.g. VS Code's integrated terminal) report
+		// `process.stdout.isTTY === false` even when the operator can
+		// see colours. Piped output always works because the palette
+		// strips itself when stdout is not a TTY.
+		if (!ctx.globals.json && result.data !== undefined) {
+			const data = result.data as {
+				ok?: boolean;
+				written?: ReadonlyArray<{ path: string; kind: string }>;
+				files?: ReadonlyArray<{ relPath: string; content: string }>;
+				dryRun?: boolean;
+			};
+			// Suppress the recap only on the ok:false branch — the
+			// command already prints a useful error via `result.error`.
+			if (data.ok !== false) {
+				const written = (data.written ?? data.files ?? []).map(
+					(f) => {
+						const path =
+							'path' in f
+								? f.path
+								: joinPath(ctx.cwd, f.relPath);
+						return {
+							path,
+							kind:
+								'kind' in f
+									? (f.kind as
+											| 'written'
+											| 'exists'
+											| 'skipped')
+									: ('written' as const),
+						};
+					},
+				);
+				printInitHumanSummary({
+					answers,
+					written,
+					dryRun: data.dryRun ?? flags.dryRun,
+					enabled: COLOR_ON,
+				});
+			}
+		}
+
+		return result;
 	},
+};
+
+/** Tiny helper so we don't pull in `node:path` just for one join. */
+const joinPath = (cwd: string, rel: string): string => {
+	if (rel.startsWith('/')) return rel;
+	const sep = cwd.endsWith('/') ? '' : '/';
+	return `${cwd}${sep}${rel}`;
 };

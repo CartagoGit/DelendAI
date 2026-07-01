@@ -29,6 +29,9 @@ import { collectInitAnswers } from './init-prompts';
 import { renderInitBundle } from './init-render';
 import { writeMcpVertexConfig, writeWorkspaceText } from './init-writers';
 import { InitAnswers, type IInitAnswers } from './init-answers.schema';
+import { printInitHumanSummary } from './init-human-summary';
+import { COLOR_ON } from '../../lib/color';
+import { join } from 'node:path';
 
 /** Flags shared by `init` and `init:default`. */
 export interface IInitFlags {
@@ -181,6 +184,17 @@ export const runInitWithAnswers = async (
 	const bundle = await renderInitBundle(answers, { hostEntryPath });
 
 	if (flags.dryRun) {
+		if (!ctx.globals.json) {
+			printInitHumanSummary({
+				answers,
+				written: bundle.files.map((f) => ({
+					path: join(answers.workspaceRoot, f.relPath),
+					kind: 'written' as const,
+				})),
+				dryRun: true,
+				enabled: COLOR_ON,
+			});
+		}
 		return {
 			code: EXIT_CODE.OK,
 			data: {
@@ -216,6 +230,18 @@ export const runInitWithAnswers = async (
 			mode,
 		);
 		written.push({ path: result.path, kind: result.kind });
+	}
+
+	if (!ctx.globals.json) {
+		printInitHumanSummary({
+			answers,
+			written: written.map((w) => ({
+				path: w.path,
+				kind: w.kind as 'written' | 'exists' | 'skipped',
+			})),
+			dryRun: false,
+			enabled: COLOR_ON,
+		});
 	}
 
 	return {

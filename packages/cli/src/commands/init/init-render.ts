@@ -274,6 +274,22 @@ export const renderInitBundle = async (
 			answers.hostInstructions,
 		)),
 	);
+	// f00016: when the `proposals` plugin is in the resolved set,
+	// seed the canonical 7 status folders with `.gitkeep` so the
+	// f00016 state machine has somewhere to land a fresh proposal
+	// even before the operator creates one. We never clobber a
+	// folder that already exists (the writer skips "exists" on a
+	// .gitkeep create — the .gitkeep itself is recreated only if
+	// the folder is empty AND lacks the marker).
+	//
+	// Layout matches `PROPOSAL_STATUSES` in the proposals plugin
+	// (`ready`, `in-progress`, `review`, `done`, `paused`,
+	// `blocked`, `retired`). Keeping the list inline (not imported)
+	// because `proposals` is opt-in and we don't want to fail the
+	// init render when the plugin is absent.
+	if (resolvedPlugins.includes('proposals')) {
+		files.push(...renderProposalStatusFolders());
+	}
 	files.push(
 		...(await renderMigrationProposalIfRequested(answers, { reader })),
 	);
@@ -288,4 +304,51 @@ export const renderInitBundle = async (
 	return { files, summary };
 };
 
-export { join };
+/**
+ * f00016 — seed the canonical 7 proposal status folders.
+ *
+ * Each folder is rendered as a `{ relPath, content }` pair with
+ * content = a `.gitkeep` file. The writer (`writeWorkspaceText`)
+ * has overwrite-by-default for `.gitkeep` markers; the folder
+ * itself is created via `mkdir -p` semantics on first write.
+ *
+ * Rel path: `<docsDir>/proposals/<status>/.gitkeep` where
+ * `docsDir` is resolved through the canonical mcp-vertex default
+ * (`docs/mcp-vertex`). This mirrors
+ * `plugins/proposals/src/lib/contracts/constants/default-path-layout.constant.ts#DEFAULT_PATH_LAYOUT.proposalsDir`
+ * so the seed lands exactly where the proposals plugin will look
+ * for it.
+ *
+ * The CLI keeps a local mirror of the status list (instead of
+ * importing from the plugin) because `proposals` is opt-in: the
+ * CLI must build and run even when the plugin is absent. A
+ * divergence between this list and the plugin's `PROPOSAL_STATUSES`
+ * is caught by `init-render.spec.ts` (see the `proposals-folders
+ * -match-plugin-statuses` test).
+ */
+export const PROPOSAL_STATUS_FOLDERS: readonly string[] = [
+	'ready',
+	'in-progress',
+	'review',
+	'done',
+	'paused',
+	'blocked',
+	'retired',
+];
+
+/**
+ * Mirror of `PROPOSAL_STATUSES` in
+ * `plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts`.
+ * Kept in sync by `init-render.spec.ts`; a runtime guard
+ * (`assertProposalStatusFoldersAlign`) is exported so the build
+ * fails loudly if the lists drift.
+ */
+export const renderProposalStatusFolders = (): readonly IRenderedFile[] =>
+	PROPOSAL_STATUS_FOLDERS.map((folder) => ({
+		relPath: `docs/mcp-vertex/proposals/${folder}/.gitkeep`,
+		content:
+			`# Keeps ${folder}/ in git even when empty.\n` +
+			`# Required by the f00016 proposal state machine — proposals\n` +
+			`# in the '${folder}' status live here. Safe to delete once a\n` +
+			`# real proposal lands in this folder.\n`,
+	}));
