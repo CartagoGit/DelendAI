@@ -10,6 +10,7 @@ import {
 	type AuditMode,
 	type ILayerConfig,
 } from '../services/audit-brief.service';
+import { inferMode } from '../services/brief/brief-modes.service';
 
 import { z } from 'zod';
 
@@ -56,7 +57,7 @@ const PlanInputSchema = z.object({
 	 *    slice of the monorepo was covered.
 	 *
 	 * When omitted, the tool infers the mode from `scope` + `projects`
-	 * (see `inferMode` in `audit-brief.service`).
+	 * (see `inferMode` in `brief/brief-modes.service`).
 	 */
 	mode: z.enum(['general', 'specific', 'monorepo']).optional(),
 	/**
@@ -105,29 +106,6 @@ export interface IPlanToolOptions {
 	 */
 	readonly crossCuttingAdditions?: readonly string[];
 }
-
-/**
- * Infer the audit mode from the tool inputs when the caller did not
- * pass an explicit `mode`. Pure: same inputs always yield the same
- * inferred mode. Mirrors `inferMode` in `audit-brief.service` so the
- * tool layer can short-circuit invalid combinations BEFORE building
- * the markdown.
- */
-const inferMode = (
-	scope: string,
-	layers: readonly ILayerConfig[],
-	projects: readonly string[] | undefined,
-): AuditMode => {
-	if (projects && projects.length > 0) return 'monorepo';
-	if (scope === 'full') return 'general';
-	if (
-		scope in (UNIVERSAL_SCOPES as readonly string[]) ||
-		layers.some((l) => l.name === scope)
-	) {
-		return 'specific';
-	}
-	return 'general';
-};
 
 /**
  * `<prefix>_audit_plan { scope?, mode?, projects? }` — return the
