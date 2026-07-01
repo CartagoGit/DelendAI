@@ -1,5 +1,5 @@
 ---
-id: f00093
+id: f00096
 status: ready
 type: proposal
 track: repo-layout+contracts
@@ -23,9 +23,9 @@ acceptance:
     - { command: bunx vitest run --config packages/cli/vitest.config.ts, expect: "26 files / 214 tests / 100% green" }
 ---
 
-# f00093 — Add `helper` role to the f00037 file-convention contract
+# f00096 — Add `helper` role to the f00037 file-convention contract
 
-## Goal
+## goal
 
 Two changes land together because they share the same root cause — the
 f00037 contract was being honoured literally but violated in spirit:
@@ -51,7 +51,7 @@ f00037 contract was being honoured literally but violated in spirit:
    feature-private structural helpers (no `export`) stay where they
    are, as the contract already prescribes.
 
-## Why
+## why
 
 The refactor that aligned `packages/cli/` with f00037 (c9a531ba + da311611 +
 fcd63b50) produced two files that satisfy the contract letter but misrepresent
@@ -78,7 +78,7 @@ Forcing helpers into the `.service.ts` shape has three concrete costs:
    the vocabulary instead of forcing every helper into the `.service.ts`
    shape aligns the contract with how the codebase already talks.
 
-## Why this design
+## why this design
 
 - **Role name `helper`** (not `util`) — three reasons:
     1. The repo's own contracts file uses "helper" 4 times and "util" 0
@@ -96,18 +96,7 @@ Forcing helpers into the `.service.ts` shape has three concrete costs:
 - **HelperRule placed BEFORE ServiceRule** in `DEFAULT_TS_RULES` so a
   `*.helper.ts` file never falls through to the service classifier.
 
-## Why not split `color.service.ts` into `contracts/constants/` + a service
-
-Considered. Rejected because:
-
-- The palette (`c`, `paint`) and the formatters (`heading`, `brand`,
-  `success`, …) are one feature: "colourful CLI output". Splitting them
-  would force every consumer to import from two paths for a single concern.
-- The palette can stay encapsulated as a `private const` of the helper
-  module — SOLID single responsibility, no public surface for the
-  palette alone.
-
-## Non-goals
+## non-goals
 
 - No migration of every helper-shaped file in the monorepo in this slice.
   The CLI migration demonstrates the pattern; downstream plugins and
@@ -116,29 +105,18 @@ Considered. Rejected because:
 - No change to the `Role` discriminator for tools (`tool`, `provider`,
   `view`, `component`, `page`, `i18n`, `data`, `dev`, `webview`) — those
   are already specialised.
+- **Not splitting `color.service.ts` into `contracts/constants/` + a
+  service.** Considered and rejected: the palette (`c`, `paint`) and the
+  formatters (`heading`, `brand`, `success`, …) are one feature —
+  "colourful CLI output". Splitting them would force every consumer to
+  import from two paths for a single concern. The palette stays
+  encapsulated as a `private const` of the helper module (SOLID single
+  responsibility, no public surface for the palette alone).
 
-## Migration (in this commit)
+## architecture
 
-### Slice B — helper role + 2 file moves
-
-The two CLI files that the previous refactor placed under
-`*.service.ts` are renamed and moved:
-
-| Before                                            | After                                                           |
-|---------------------------------------------------|-----------------------------------------------------------------|
-| `lib/cli-helpers.service.ts`                      | `lib/helpers/cli-command.helper.ts`                             |
-| `lib/color.service.ts`                            | `lib/helpers/cli-color.helper.ts`                               |
-
-The `commands/groups/group-helpers.ts` shim (re-exports `data`,
-`hasFlag`, `isRecord`, `request`, `scalarArg`) is updated to point at
-the new location.
-
-### Slice C — 35 exported types lifted to `contracts/interfaces/`
-
-Every exported `interface` / `type` that is consumed by another
-module is lifted out of its service/helper file and given its own
-`*interface.ts` module under `contracts/interfaces/`. The grouping
-is by domain concern (ISP):
+The migration lifts 35 exported types into `contracts/interfaces/`,
+grouped by domain concern (ISP):
 
 | File under `contracts/interfaces/` | Types it owns (count) | Lifted from |
 |------------------------------------|----------------------:|-------------|
@@ -163,47 +141,60 @@ Types that are **only used inside their declaring module** (no
 verbatim: `*.types.ts` are feature-private and live next to the
 source.
 
-### Verification
+## slices
 
-- `bunx tsc --noEmit -p tsconfig.json` → 140 errors (down from 145
-  baseline; 5 errors disappear because the lifted types now resolve
-  via the contracts surface). The remaining 140 are all pre-existing
-  from `980d8179` (committed before this slice).
-- `bunx vitest run --config packages/cli/vitest.config.ts` →
-  26 files / 214 tests / 100% green.
-- `classifyPath` →
-  - `lib/helpers/cli-command.helper.ts` → `helper` ✓
-  - `lib/helpers/cli-color.helper.ts` → `helper` ✓
-  - `contracts/interfaces/*.interface.ts` → `interface` ✓
+### S1 — Add the `helper` role to the file-convention contract
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/contracts/file-conventions.contract.ts`
+- **Gate**: typecheck
+- **Acceptance**:
+  - "`Role` union exposes the `'helper'` literal; `HelperRule` is added
+    to `DEFAULT_TS_RULES` ordered BEFORE `ServiceRule` (no rule bleed)."
+
+### S2 — Migrate the two CLI helpers + lift 35 exported types
+
+- **Status**: pending
+- **Files**: `packages/cli/src/lib/cli-helpers.service.ts` →
+  `packages/cli/src/lib/helpers/cli-command.helper.ts`,
+  `packages/cli/src/lib/color.service.ts` →
+  `packages/cli/src/lib/helpers/cli-color.helper.ts`,
+  `packages/cli/src/commands/groups/group-helpers.ts`,
+  `packages/cli/src/contracts/interfaces/*.interface.ts`
+- **Gate**: typecheck
+- **Acceptance**:
+  - "The two CLI files that the previous refactor placed under
+    `*.service.ts` are renamed and moved; the `group-helpers.ts` shim
+    (re-exports `data`, `hasFlag`, `isRecord`, `request`, `scalarArg`)
+    points at the new location; `classifyPath` returns `helper` for both
+    moved files and `interface` for each lifted `*.interface.ts`."
+
+### S3 — Lock the new role in the contract + parity specs
+
+- **Status**: pending
+- **Files**:
+  `packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`,
+  `plugins/conventions/src/lib/services/typescript-profile.service.ts`
+  (parity `classifyPath`)
+- **Gate**: validate
+- **Acceptance**:
+  - "A new `describe('helper role (f00096)')` block locks the six
+    assertions below; the plugin-side parity spec re-imports the same six
+    so both consumers stay byte-identical on the new role."
+
+## dependency graph
+
+- **Upstream (already shipped)**: f00037 (the file-convention contract
+  this extends), c9a531ba + da311611 + fcd63b50 (the CLI alignment refactor
+  that surfaced the misclassification).
+- **No new plugin / no new tool / no new i18n key.**
+
+## acceptance
+
+- `bun run typecheck` → exit 0 for files touched by this slice.
+- `bun run lint:tools` → exit 0.
 - `bun tools/scripts/lint/file-conventions.script.ts` →
   4 unmatched files, all outside `packages/cli/` (baseline unchanged).
-
-## Contract spec
-
-The spec companion at
-`packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`
-gets a new `describe('helper role (f00093)')` block that locks the
-six assertions:
-
-1. `Role` union exposes the `'helper'` literal.
-2. `lib/helpers/*.helper.ts` → `helper` (folder rule).
-3. A nested `helpers/x/foo.helper.ts` → `helper` (folder rule wins
-   at any depth).
-4. A bare `foo.helper.ts` (no folder) → `helper` (suffix rule).
-5. A `foo.service.ts` stays `service` (no rule bleed).
-6. `HelperRule` is ordered BEFORE `ServiceRule` in `DEFAULT_TS_RULES`
-   (chain invariant).
-
-The plugin-side parity spec
-(`plugins/conventions/src/lib/services/typescript-profile.service.ts`
-→ `classifyPath`) gets the same six assertions re-imported so both
-consumers stay byte-identical on the new role.
-
-## Verification
-
-- `bunx tsc --noEmit -p tsconfig.json` → 0 errors for files touched by
-  this slice; 140 errors remain on `develop` HEAD, all pre-existing
-  from `980d8179` and unrelated.
 - `bunx vitest run --config packages/cli/vitest.config.ts` →
   26 files / 214 tests / 100% green.
 - `classifyPath` →
@@ -212,14 +203,12 @@ consumers stay byte-identical on the new role.
   - `lib/help.service.ts` → `service` (unchanged) ✓
   - `commands/init/init.command.ts` → `command` (unchanged) ✓
   - `contracts/interfaces/init.interface.ts` → `interface` ✓
-- `bun tools/scripts/lint/file-conventions.script.ts` →
-  4 unmatched files, all outside `packages/cli/` (baseline unchanged).
 
-## Contract spec
+## notes
 
-The spec companion at
+The contract spec companion at
 `packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`
-gets a new `describe('helper role (f00093)')` block that locks the
+gets a new `describe('helper role (f00096)')` block that locks the
 six assertions:
 
 1. `Role` union exposes the `'helper'` literal.

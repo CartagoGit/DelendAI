@@ -38,28 +38,49 @@ was allocated as the next free id in this project's canonical proposals
 space — it is **not** a hardcoded `f00001`, so it cannot collide with a
 proposal that already exists here.
 
-## foreign proposal system
+**Foreign proposal system.** No existing proposal/plan convention was
+detected in this project. This plan adopts the canonical mcp-vertex
+layout from scratch under `docs/mcp-vertex/proposals/`.
 
-No existing proposal/plan convention was detected in this project.
-This plan adopts the canonical mcp-vertex layout from scratch under
-`docs/mcp-vertex/proposals/`.
+## non-goals
+
+- **No in-place conversion of foreign files.** The mapping and skill
+  migration below are advisory: `init` never writes, deletes, or moves
+  a foreign proposal, skill, or tool. The target's own agents execute
+  the migration.
+- **No runtime tool renaming.** The namespace-unification section is
+  plan output; the host enforces prefixing when the server boots.
+- **No hardcoded ids.** Ids are allocated as the next free id in the
+  target's canonical proposals space, never a fixed `f00001`.
 
 ## slices
 
-### A1 — inventory the foreign surface (read-only)
+### S1 — inventory the foreign surface (read-only)
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/proposals/ready/f00095-a1-inventory.md`
+- **Gate**: bun run validate
 
 Capture every existing proposal/record, skill, and tool the project
 declares. Save the structured output under
 `docs/mcp-vertex/proposals/ready/f00095-a1-inventory.md`. Touch nothing.
 
-### A2 — map foreign → canonical
+### S2 — map foreign → canonical
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/proposals/`
+- **Gate**: bun run validate
 
 Produce the mapping from the foreign convention to the canonical
 mcp-vertex layout (file naming, id space, status folders). The mapping
 is advisory; converting the foreign files is a later, explicit step the
 target's agents perform — `init` never converts them in place.
 
-### A3 — skill migration
+### S3 — skill migration
+
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/skills/`
+- **Gate**: bun run validate
 
 Bring the project's skill surface onto the canonical layout. This is **advisory**: `init` never writes, deletes, or moves a skill here — the target's own agents execute the migration.
 
@@ -90,7 +111,11 @@ Bring the project's skill surface onto the canonical layout. This is **advisory*
 
 These are **kept as-is**. `init` inventories them so the migration does not clobber or duplicate them; the target's agents decide whether to fold each one into the canonical `docs/mcp-vertex/skills/` layout.
 
-### A4 — tool-namespace unification
+### S4 — tool-namespace unification
+
+- **Status**: pending
+- **Files**: `.vscode/mcp.json`
+- **Gate**: bun run validate
 
 Unify the tool surface under the **prefix-per-plugin** contract: every mcp-vertex tool is exposed as `<prefix>_<plugin>_<tool>`, so plugins never collide with each other or with the target's own tools. This is **plan output**, not a runtime change — the host enforces the prefixing when the server boots.
 
@@ -114,7 +139,19 @@ No foreign MCP tool surface was detected in this project; only mcp-vertex tools 
 
 **No collisions.** Every namespace above is distinct, so ours and the target's tools coexist without renaming either side.
 
-### A5 — single source of truth (filled by f00089 U3)
+### S5 — single source of truth (filled by f00089 U3)
+
+- **Status**: pending
+- **Files**: `AGENTS.md`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
+- **Gate**: bun run validate
 
 <!-- f00089 U3 embeds the AGENT-BOOTSTRAP + AGENTS consolidation. -->
 _Pending f00089 U3._
+
+## acceptance
+
+- `bun run typecheck` → exit 0.
+- `bun run test` → exit 0.
+- `bun run validate` → exit 0.
+- The adoption plan is advisory only: no foreign proposal, skill, or
+  tool is written, deleted, or moved by `init`.
