@@ -1,9 +1,10 @@
 ---
 id: f00070
-status: ready
+status: done
 type: proposal
 track: i18n+l10n+plugins/status-marker+token-budget
 date: 2026-06-26
+closed: 2026-07-01
 kind: feat
 title: status-marker bilingual rendering — keep state ES, render the closing line in EN when requested
 shipped-in:

@@ -1,9 +1,10 @@
 ---
 id: f00081
-status: ready
+status: done
 type: proposal
 track: packages/client+host-integration
 date: 2026-06-28
+closed: 2026-07-01
 kind: feat
 title: Namespace-aware client services — make `packages/client` portable across `--prefix=...` deployments
 runner: unknown
