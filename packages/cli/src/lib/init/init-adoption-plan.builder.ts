@@ -168,7 +168,10 @@ export const renderSkillMigrationSection = (
 			`scratch.\n\n`;
 
 	return (
-		`### A3 — skill migration\n\n` +
+		`### S3 — skill migration\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`docs/mcp-vertex/skills/\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Bring the project's skill surface onto the canonical layout. This is ` +
 		`**advisory**: \`init\` never writes, deletes, or moves a skill here — the ` +
 		`target's own agents execute the migration.\n\n` +
@@ -210,7 +213,10 @@ export const renderToolUnificationSection = (
 				`the target's tools coexist without renaming either side.\n\n`;
 
 	return (
-		`### A4 — tool-namespace unification\n\n` +
+		`### S4 — tool-namespace unification\n\n` +
+		`- **Status**: pending\n` +
+		`- **Files**: \`.vscode/mcp.json\`\n` +
+		`- **Gate**: bun run validate\n\n` +
 		`Unify the tool surface under the **prefix-per-plugin** contract: every ` +
 		`mcp-vertex tool is exposed as \`<prefix>_<plugin>_<tool>\`, so plugins ` +
 		`never collide with each other or with the target's own tools. This is ` +

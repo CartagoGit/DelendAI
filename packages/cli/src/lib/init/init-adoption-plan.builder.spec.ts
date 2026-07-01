@@ -156,10 +156,11 @@ describe('buildToolUnification (f00089 U2)', () => {
 });
 
 describe('renderSkillMigrationSection (f00089 U2)', () => {
-	it('renders the A3 heading, our skills, and the absorb branch (no skills)', async () => {
+	it('renders the S3 heading, our skills, and the absorb branch (no skills)', async () => {
 		const inv = await detectSkillInventory(dirReader({ 'src/a.ts': '' }));
 		const md = renderSkillMigrationSection(inv);
-		expect(md).toContain('### A3 — skill migration');
+		expect(md).toContain('### S3 — skill migration');
+		expect(md).toContain('- **Status**: pending');
 		expect(md).toContain('advisory');
 		expect(md).toContain('mcp-vertex-operator');
 		expect(md).toContain('No existing skills were detected');
@@ -186,12 +187,13 @@ describe('renderSkillMigrationSection (f00089 U2)', () => {
 });
 
 describe('renderToolUnificationSection (f00089 U2)', () => {
-	it('renders the A4 heading, namespaces, and the no-collision assertion', async () => {
+	it('renders the S4 heading, namespaces, and the no-collision assertion', async () => {
 		const u = await buildToolUnification(dirReader({}), {
 			ourPlugins: ['git', 'proposals'],
 		});
 		const md = renderToolUnificationSection(u);
-		expect(md).toContain('### A4 — tool-namespace unification');
+		expect(md).toContain('### S4 — tool-namespace unification');
+		expect(md).toContain('- **Status**: pending');
 		expect(md).toContain('prefix-per-plugin');
 		expect(md).toContain('mcp-vertex_git');
 		expect(md).toContain('mcp-vertex_proposals');
@@ -215,8 +217,8 @@ describe('renderAdoptionSections (f00089 U2)', () => {
 		const out = await renderAdoptionSections(dirReader({}), {
 			ourPlugins: ['git'],
 		});
-		expect(out.skillSection).toContain('### A3');
-		expect(out.toolSection).toContain('### A4');
+		expect(out.skillSection).toContain('### S3');
+		expect(out.toolSection).toContain('### S4');
 		expect(out.skillInventory.canonicalSkills.length).toBeGreaterThan(0);
 		expect(out.toolUnification.ours[0]?.namespace).toBe('mcp-vertex_git');
 	});
@@ -226,7 +228,7 @@ describe('renderAdoptionPlan embeds U2 sections (f00089 U2)', () => {
 	const answers = (workspaceRoot: string) =>
 		InitAnswers.parse({ workspaceRoot, migrateFromLegacy: true });
 
-	it('replaces the U2 placeholders with real A3/A4 sections', async () => {
+	it('replaces the U2 placeholders with real S3/S4 sections', async () => {
 		const reader = dirReader({
 			'.claude/skills/foo/SKILL.md': '',
 			'docs/proposals/f00001-x.md': '',
@@ -236,16 +238,23 @@ describe('renderAdoptionPlan embeds U2 sections (f00089 U2)', () => {
 			ourPlugins: ['git', 'proposals'],
 		});
 		expect(plan.content).not.toContain('_Pending f00089 U2._');
-		expect(plan.content).toContain('### A3 — skill migration');
-		expect(plan.content).toContain('### A4 — tool-namespace unification');
+		expect(plan.content).toContain('### S3 — skill migration');
+		expect(plan.content).toContain('### S4 — tool-namespace unification');
 		expect(plan.content).toContain('mcp-vertex-operator');
 		expect(plan.content).toContain('mcp-vertex_proposals');
 		expect(plan.content).toContain('.claude/skills/foo');
-		// A5 (U3) untouched.
+		// S5 (U3) untouched.
 		expect(plan.content).toContain(
-			'### A5 — single source of truth (filled by f00089 U3)',
+			'### S5 — single source of truth (filled by f00089 U3)',
 		);
 		expect(plan.content).toContain('_Pending f00089 U3._');
+		// Canonical scaffold: lint-safe headings + slice bullets.
+		expect(plan.content).toContain('## non-goals');
+		expect(plan.content).toContain('## acceptance');
+		expect(plan.content).not.toContain('## foreign proposal system');
+		expect(plan.content).toContain('**Foreign proposal system.**');
+		expect(plan.content).toContain('### S1 — inventory the foreign surface');
+		expect(plan.content).toContain('### S2 — map foreign → canonical');
 		// Structured result surfaced.
 		expect(plan.sections.toolUnification.collisions).toHaveLength(0);
 	});
