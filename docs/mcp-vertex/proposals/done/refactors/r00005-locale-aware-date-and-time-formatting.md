@@ -1,9 +1,10 @@
 ---
 id: r00005
-status: ready
+status: done
 type: proposal
 track: i18n+l10n+utils
 date: 2026-06-25
+closed: 2026-07-01
 kind: refactor
 title: Locale-aware date/time formatting via `Intl.DateTimeFormat` + `Intl.RelativeTimeFormat`
 # All three slices are implemented, tested and committed (see shipped-in).
