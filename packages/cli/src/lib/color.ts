@@ -52,5 +52,4 @@ export const brand = (text: string): string => c.magenta(text);
 export const success = (text: string): string => `${c.green('✓')} ${text}`;
 export const failure = (text: string): string => `${c.red('✗')} ${text}`;
 export const warn = (text: string): string => `${c.yellow('!')} ${text}`;
-export const arrow = (text: string): string =>
-	`${c.cyan('›')} ${c.bold(text)}`;
+export const arrow = (text: string): string => `${c.cyan('›')} ${c.bold(text)}`;

@@ -23,14 +23,7 @@ import {
 	InitAnswers,
 	type IInitAnswers,
 } from './init-answers.schema';
-import {
-	c,
-	heading,
-	hint,
-	brand,
-	success,
-	failure,
-} from '../../lib/color';
+import { c, heading, hint, brand, success, failure } from '../../lib/color';
 
 const numbered = (n: number, text: string): string =>
 	`${c.cyan(`${n})`)} ${text}`;

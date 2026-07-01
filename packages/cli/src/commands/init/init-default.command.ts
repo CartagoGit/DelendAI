@@ -105,24 +105,17 @@ export const initDefaultCommand: ICliCommand = {
 			// Suppress the recap only on the ok:false branch — the
 			// command already prints a useful error via `result.error`.
 			if (data.ok !== false) {
-				const written = (data.written ?? data.files ?? []).map(
-					(f) => {
-						const path =
-							'path' in f
-								? f.path
-								: joinPath(ctx.cwd, f.relPath);
-						return {
-							path,
-							kind:
-								'kind' in f
-									? (f.kind as
-											| 'written'
-											| 'exists'
-											| 'skipped')
-									: ('written' as const),
-						};
-					},
-				);
+				const written = (data.written ?? data.files ?? []).map((f) => {
+					const path =
+						'path' in f ? f.path : joinPath(ctx.cwd, f.relPath);
+					return {
+						path,
+						kind:
+							'kind' in f
+								? (f.kind as 'written' | 'exists' | 'skipped')
+								: ('written' as const),
+					};
+				});
 				printInitHumanSummary({
 					answers,
 					written,
