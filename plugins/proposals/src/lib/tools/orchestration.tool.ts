@@ -173,6 +173,21 @@ export const buildDelegateRegistration = (
 					topic: z.string().optional(),
 					agentName: z.string().optional(),
 					parentTaskId: z.string().optional(),
+					// f00082 S3: the delegated subagent inherits the
+					// delegating orchestrator's host/model. Persisted in
+					// the registry and used for the worktree branch name.
+					host: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: host/IDE the subagent runs under; inherited from the orchestrator.',
+						),
+					model: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: LLM model the subagent runs; inherited from the orchestrator.',
+						),
 				}),
 			},
 			async (args: {
@@ -182,6 +197,8 @@ export const buildDelegateRegistration = (
 				topic?: string | undefined;
 				agentName?: string | undefined;
 				parentTaskId?: string | undefined;
+				host?: string | undefined;
+				model?: string | undefined;
 			}) => {
 				const assignResult = await runAgentNames(
 					{
@@ -193,6 +210,8 @@ export const buildDelegateRegistration = (
 						...(args.parentTaskId
 							? { parent_task_id: args.parentTaskId }
 							: {}),
+						...(args.host ? { host: args.host } : {}),
+						...(args.model ? { model: args.model } : {}),
 					},
 					options.agentNames,
 				);
@@ -218,10 +237,31 @@ export const buildDelegateRegistration = (
 					const run =
 						options.worktree.run ??
 						createGitRunner(options.worktree.workspaceRoot);
+					// f00082 S3/S4: only build the composite branch name
+					// when the caller supplies at least one of the new
+					// identity fields (host/model). Without them, keep the
+					// historical `agent/<agent_name>` layout (backwards
+					// compat) — passing task_id alone must NOT change the
+					// branch for legacy delegate callers.
+					const hasComposite =
+						args.host !== undefined || args.model !== undefined;
 					const wt = await runAgentWorktreeEngine(
 						{
 							action: 'create',
 							agent: assigned.agent_name,
+							...(hasComposite
+								? {
+										...(args.host
+											? {
+													host: args.host as import('@mcp-vertex/core/public').AgentHost,
+												}
+											: {}),
+										...(args.model
+											? { model: args.model }
+											: {}),
+										task_id: args.taskId,
+									}
+								: {}),
 						},
 						{
 							run,

@@ -83,6 +83,55 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 		expect(list.summary.active).toBe(2);
 	});
 
+	it('f00082 S3: persists host/model on assign (unknown host coerced)', async () => {
+		const known = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'k',
+					agent_slot: 'orchestrator',
+					host: 'vscode-copilot',
+					model: 'm3',
+				},
+				options,
+			),
+		) as { host: string; model: string };
+		expect(known.host).toBe('vscode-copilot');
+		expect(known.model).toBe('m3');
+
+		const coerced = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'u',
+					agent_slot: 'implementation_runner',
+					parent_task_id: 'k',
+					host: 'some-future-ide',
+					model: 'gpt-9',
+				},
+				options,
+			),
+		) as { host: string; model: string };
+		// unknown host coerces to 'unknown'; model is free-form
+		expect(coerced.host).toBe('unknown');
+		expect(coerced.model).toBe('gpt-9');
+	});
+
+	it('f00082 S3: assign without host/model stores null (backwards compat)', async () => {
+		const a = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'legacy',
+					agent_slot: 'orchestrator',
+				},
+				options,
+			),
+		) as { host: string | null; model: string | null };
+		expect(a.host).toBeNull();
+		expect(a.model).toBeNull();
+	});
+
 	it('honours a custom name pool from options', async () => {
 		const result = await runAgentNames(
 			{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },

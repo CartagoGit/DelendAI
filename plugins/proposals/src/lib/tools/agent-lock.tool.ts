@@ -78,6 +78,17 @@ const AGENT_LOCK_OUTPUT_SCHEMA = z.object({
 	stale_after_minutes: z.number().optional(),
 	in_flight: z.array(AGENT_LOCK_ENTRY_OUTPUT_SCHEMA).optional(),
 	ok: z.boolean().optional(),
+	// f00082 S3: the tool re-echoes the composite identity it was
+	// called with, so a caller can attribute the lock op to a
+	// (host, model, agent, task) without consulting the registry.
+	identity: z
+		.object({
+			host: z.string().optional(),
+			model: z.string().optional(),
+			agent_name: z.string().optional(),
+			task_id: z.string().optional(),
+		})
+		.optional(),
 });
 
 /**
@@ -115,6 +126,21 @@ export const buildAgentLockRegistration = (
 						 * instead of clobbering a slow-but-alive holder.
 						 */
 						onContention: z.enum(['steal', 'fail']).optional(),
+						// f00082 S3: composite-identity fields. Purely
+						// echoed back in the response `identity` block for
+						// attribution; they do not affect lock semantics.
+						host: z
+							.string()
+							.optional()
+							.describe(
+								'f00082: host/IDE driving the agent; re-echoed in the response identity.',
+							),
+						model: z
+							.string()
+							.optional()
+							.describe(
+								'f00082: LLM model name; re-echoed in the response identity.',
+							),
 					}),
 				},
 				async (args) => {
@@ -145,6 +171,20 @@ export const buildAgentLockRegistration = (
 							taskId: args.task_id,
 						});
 					}
+					// f00082 S3: build the echoed identity block from the
+					// fields the caller passed (omitting any absent).
+					// Purely informational — never affects the lock op.
+					const identity: Record<string, string> = {};
+					if (typeof args.host === 'string')
+						identity.host = args.host;
+					if (typeof args.model === 'string')
+						identity.model = args.model;
+					if (typeof args.agent === 'string')
+						identity.agent_name = args.agent;
+					if (typeof args.task_id === 'string')
+						identity.task_id = args.task_id;
+					const hasIdentity = Object.keys(identity).length > 0;
+
 					// The engine returns text-only; mirror its JSON payload into
 					// structuredContent so the declared outputSchema is satisfied
 					// (the SDK validates it on success).
@@ -158,12 +198,24 @@ export const buildAgentLockRegistration = (
 								parsed !== null &&
 								!Array.isArray(parsed)
 							) {
+								const merged = hasIdentity
+									? {
+											...(parsed as Record<
+												string,
+												unknown
+											>),
+											identity,
+										}
+									: (parsed as Record<string, unknown>);
 								return {
 									...res,
-									structuredContent: parsed as Record<
-										string,
-										unknown
-									>,
+									structuredContent: merged,
+									content: [
+										{
+											type: 'text' as const,
+											text: JSON.stringify(merged),
+										},
+									],
 								};
 							}
 						} catch {
