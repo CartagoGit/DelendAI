@@ -1,4 +1,5 @@
 /**
+import type { ICanonicalSkill, ISkillConventionKind, ISkillInventory } from '../../contracts/interfaces/init.interface';
  * init-skill-inventory.ts — f00089 U2 (slice U2, points 2a + 2b).
  *
  * The adoption plan's `A3` section answers two questions:
@@ -32,42 +33,13 @@ import type { IFileReader } from './init-detection.service';
  * than the directory itself so the plan can group "all `.claude/skills`
  * style" entries regardless of nesting depth.
  */
-export type ISkillConventionKind =
-	| 'skills-dir' // a top-level or nested `skills/` directory
-	| 'claude-skills' // `.claude/skills/` (Claude Code convention)
-	| 'docs-skills' // `docs/**/skills/` documentation skills
-	| 'skill-file'; // loose `*.skill.md` files anywhere scanned
 
-/** One detected skill in the TARGET project. */
-export interface ITargetSkill {
-	/** Convention family the skill was found under. */
-	readonly kind: ISkillConventionKind;
-	/** Workspace-relative path to the skill (dir or file). */
-	readonly location: string;
-	/**
-	 * A human-readable identifier for the skill: the skill directory
-	 * name, or the `*.skill.md` basename without the suffix.
-	 */
-	readonly name: string;
-}
 
 /** One of OUR canonical skills to migrate into the target (point 2a). */
-export interface ICanonicalSkill {
-	/** Canonical skill id (matches `packages/core/skills/manifest.json`). */
-	readonly id: string;
-	/** The plugin/scope the skill applies to (for the plan's prose). */
-	readonly appliesTo: string;
-}
+
 
 /** Full inventory consumed by the A3 renderer. */
-export interface ISkillInventory {
-	/** Skills already present in the target (absorb, never clobber). */
-	readonly targetSkills: readonly ITargetSkill[];
-	/** Our canonical skills the plan offers to migrate into the target. */
-	readonly canonicalSkills: readonly ICanonicalSkill[];
-	/** True when the target already ships at least one skill. */
-	readonly targetHasSkills: boolean;
-}
+
 
 /**
  * OUR canonical skills to migrate (point 2a). Embedded statically and

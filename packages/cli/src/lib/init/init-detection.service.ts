@@ -1,4 +1,5 @@
 /**
+import type { ISourceRoot } from '../../contracts/interfaces/init.interface';
  * init-detection.ts — f00088 S1.
  *
  * Re-uses the core `analyzeProject` to detect the target workspace's
@@ -36,43 +37,7 @@ import {
 import type { IInitAnswers } from './init-answers.types';
 
 /** Source-root kinds the rest of init branches on. */
-export type ISourceRoot = 'libs' | 'packages' | 'plugins' | 'src';
 
-/**
- * Compact detection summary the rest of `init` consumes. Every field
- * is populated for every project shape — `unknown`/`undefined` mean
- * the detector did not find a signal, never that the project lacks the
- * thing.
- */
-export interface IInitDetection {
-	readonly language: IProjectAnalysis['language'];
-	readonly framework: string | undefined;
-	readonly packageManager: IProjectAnalysis['packageManager'];
-	readonly monorepoTool: string | undefined;
-	readonly hasMcpProject: IProjectAnalysis['hasMcpProject'];
-	readonly mcpEvidence: readonly string[];
-	/**
-	 * Where the operator's plugin skeletons should land.
-	 * Derived from the table in the proposal (Angular/Nx → `libs`,
-	 * yarn/pnpm/bun workspaces with `packages/*` → `packages`, …).
-	 */
-	readonly pluginPathsRoot: string;
-	/** Source-root kind the operator's project uses. */
-	readonly sourceRoot: ISourceRoot;
-	/**
-	 * Resolved path to the mcp-vertex host-server entry script.
-	 * Populated by `resolveHostEntryPath` in S2; `undefined` here so
-	 * S1 stays decoupled from disk-side resolution.
-	 */
-	readonly hostEntryPath: string | undefined;
-	/** Which resolution branch S2 picked (debug aid; surfaced in `--json`). */
-	readonly hostEntrySource:
-		| 'flag'
-		| 'node_modules'
-		| 'sibling'
-		| 'npm_dist'
-		| 'unresolved';
-}
 
 /**
  * Map the analyzed shape onto the canonical convention table.

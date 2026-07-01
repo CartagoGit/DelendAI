@@ -1,4 +1,5 @@
 /**
+import type { IAgentDescriptor } from '../../contracts/interfaces/agent-descriptor.interface';
  * f00084 S3 + f00088 S3 — read the live `agent-catalog.generated.json`
  * and produce the canonical set of `.github/agents/mcp-vertex-<role>.agent.md`
  * files.
@@ -19,12 +20,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export type IAgentDescriptor = {
-	readonly role: string;
-	readonly description: string;
-	readonly tools: readonly string[];
-	readonly body: string;
-};
+;
 
 /**
  * f00088 S3: locale-keyed fallback agents. Adding a new locale is one

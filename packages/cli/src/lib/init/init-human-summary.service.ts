@@ -1,4 +1,5 @@
 /**
+import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfaces/init.interface';
  * f00103 / f00088 — coloured human-readable summary for the
  * `init` and `init:default` commands.
  *
@@ -34,28 +35,9 @@ import {
 	warn,
 } from '../helpers/cli-color.helper';
 
-export interface IInitWrittenFile {
-	readonly path: string;
-	readonly kind: 'written' | 'exists' | 'skipped' | 'merged';
-	/**
-	 * When `kind === 'merged'`, the names of the other MCP servers
-	 * the merge preserved in `.vscode/mcp.json`. The recap renders
-	 * these next to the merge stamp so the operator can confirm at
-	 * a glance that the merge did not silently drop a tool wiring.
-	 */
-	readonly preserved?: readonly string[];
-}
 
-export interface IInitHumanInput {
-	readonly answers: IInitAnswers;
-	readonly written: readonly IInitWrittenFile[];
-	readonly dryRun: boolean;
-	/** When `true`, force colour output regardless of TTY.
-	 * When `false`, force plain text.
-	 * When `undefined`, defer to the shared palette (TTY-aware +
-	 * respects `NO_COLOR` / `FORCE_COLOR`). */
-	readonly enabled?: boolean;
-}
+
+
 
 const pad = (text: string, width: number): string =>
 	text.length >= width ? text : text + ' '.repeat(width - text.length);

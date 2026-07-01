@@ -1,4 +1,5 @@
 /**
+import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/init.interface';
  * f00084 S2 + S3 + S4 + S5 — render the bootstrap bundle.
  *
  * Pure functions: each `render*` takes the answers and returns a list
@@ -25,15 +26,9 @@ import {
 	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
 
-export type IRenderedFile = {
-	readonly relPath: string;
-	readonly content: string;
-};
+;
 
-export type IRenderedBundle = {
-	readonly files: readonly IRenderedFile[];
-	readonly summary: string;
-};
+;
 
 // Single source of truth for preset membership lives in
 // `@mcp-vertex/core`'s preset catalog. We delegate to
