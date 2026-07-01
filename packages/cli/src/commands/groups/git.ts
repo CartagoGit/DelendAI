@@ -15,36 +15,9 @@
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
-	ICliCommandContext,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
-
-const data = (
-	value: unknown,
-	code: ICliCommandResult['code'] = EXIT_CODE.OK,
-): ICliCommandResult => ({
-	code,
-	data: value,
-});
-
-const scalarArg = (
-	args: readonly string[],
-	name: string,
-): string | undefined => {
-	const inline = args.find((arg) => arg.startsWith(`--${name}=`));
-	if (inline !== undefined) return inline.slice(name.length + 3);
-	const index = args.indexOf(`--${name}`);
-	return index >= 0 ? args[index + 1] : undefined;
-};
-
-const hasFlag = (args: readonly string[], name: string): boolean =>
-	args.includes(`--${name}`);
-
-const request = <TOut>(
-	ctx: ICliCommandContext,
-	tool: string,
-	args: object = {},
-): Promise<TOut> => ctx.request<TOut>(tool, args);
+import { data, hasFlag, request, scalarArg } from './group-helpers';
 
 export const gitStatusCommand: ICliCommand = {
 	name: 'git status',

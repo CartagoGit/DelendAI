@@ -17,7 +17,7 @@ import type {
 import {
 	generateCompletion,
 	type Shell,
-} from '../../lib/completion/completion';
+} from '../../lib/completion/completion.service';
 import { data, positionalArg, request, usage } from './group-helpers';
 
 type SectionStatus = 'ok' | 'warn' | 'error';

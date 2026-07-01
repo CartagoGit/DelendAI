@@ -35,13 +35,14 @@ import type {
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
-import type { IInitAnswers } from './init-answers.schema';
+import type { IInitAnswers } from '../../lib/init/init-answers.types';
+import { InitAnswers } from '../../lib/init/init-answers.schema';
 import {
 	detectAndDecorateAnswers,
 	parseFlags,
 	runInitWithAnswers,
 } from './init.command';
-import { printInitDefaultHelp } from './init-default-help';
+import { printInitDefaultHelp } from '../../lib/init/init-default-help.service';
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 	preset: 'vertex',
