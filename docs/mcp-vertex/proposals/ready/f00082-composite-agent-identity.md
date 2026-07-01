@@ -158,7 +158,11 @@ plugins/proposals/skills/multi-agent-coordination/SKILL.md  # UPDATE
 
 ### S1 — Identity contract + slug formatters
 
-- **Status**: pending
+- **Status**: done (landed in-tree before this drain; verified 2026-07-01).
+  Core `agent-identity.interface.ts` (`IAgentIdentity`, `AgentHost`,
+  `AGENT_IDENTITY_LIMITS`) + plugin `agent-identity.ts`
+  (`slugify*`/`composeIdentity`/`parseIdentity`/`nextCollisionSuffix`)
+  present with spec `agent-identity.spec.ts`.
 - **Files**:
   `packages/core/src/lib/contracts/interfaces/agent-identity.ts` (NEW),
   `plugins/proposals/src/lib/shared/agent-identity.ts` (NEW,
@@ -192,7 +196,11 @@ plugins/proposals/skills/multi-agent-coordination/SKILL.md  # UPDATE
 
 ### S2 — Extend `IAgentAssignment` with the new fields + migrate registry
 
-- **Status**: pending
+- **Status**: done (2026-07-01). `IAgentAssignment` gains `host?`/`model?`
+  (`task_id` already carried the "which proposal" part). Registry bumped to
+  `version: 2` with a `1→2` migrator that backfills `host/model = null`
+  without destroying data; `upsert` persists the fields when present.
+  Specs added to `agent-registry-store.spec.ts`.
 - **Files**:
   `plugins/proposals/src/lib/shared/agent-registry-store.ts` (MODIFY)
 - **Gate**: `bun run test`
@@ -212,13 +220,24 @@ plugins/proposals/skills/multi-agent-coordination/SKILL.md  # UPDATE
 ### S3 — Thread the identity through agent_names, agent_lock, delegate
 
 - **Status**: pending
+- **Status**: done (per-call threading; 2026-07-01). `index.ts` ctx-wiring
+  is **pending** — see the note below.
 - **Files**:
-  `plugins/proposals/src/lib/tools/agent-names.tool.ts` (MODIFY),
-  `plugins/proposals/src/lib/tools/agent-lock.tool.ts` (MODIFY),
-  `plugins/proposals/src/lib/tools/orchestration.tool.ts` (MODIFY),
+  `plugins/proposals/src/lib/tools/agent-names.tool.ts` (MODIFY, done),
+  `plugins/proposals/src/lib/tools/agent-lock.tool.ts` (MODIFY, done),
+  `plugins/proposals/src/lib/tools/orchestration.tool.ts` (MODIFY, done),
   `plugins/proposals/src/index.ts` (wire new host/model/task_id
-  from `ctx`)
+  from `ctx` — **PENDING**, see below)
 - **Gate**: `bun run test`
+- **Pending (index.ts ctx-wiring):** the plugin `ctx` (from the core
+  plugin-context contract) has **no** `host`/`model` field today. Wiring a
+  default identity "from `ctx`" would require adding a field to the core
+  plugin-context interface and to the host bootstrap — a cross-cutting core
+  change that risks colliding with the concurrent CLI/init/presets/hooks
+  work. Deferred deliberately. The useful, safe part of S3 (callers pass
+  host/model as explicit tool args and the registry/echo/branch pick them
+  up) is landed; the tools already fall back to `null`/legacy when absent,
+  so nothing regresses without the ctx default.
 - **Acceptance**:
   - `agent_names { action: "assign", host: "copilot", model: "m3", task_id: "f00078", ... }`
     is accepted; the registry stores the new fields.
@@ -235,7 +254,14 @@ plugins/proposals/skills/multi-agent-coordination/SKILL.md  # UPDATE
 
 ### S4 — Wire the composite into the worktree engine + tool inputSchema
 
-- **Status**: pending
+- **Status**: done (landed in-tree before this drain; verified 2026-07-01).
+  `agent-worktree-engine.ts` builds the composite via `composeIdentity` and
+  picks the next `nextCollisionSuffix` from `git branch --list`;
+  `agent-worktree.tool.ts` inputSchema has `host`/`model`/`task_id` and the
+  updated description. Covered by `agent-worktree-engine.spec.ts`
+  ("f00082 S4 composite identity", incl. the `-1` collision case).
+  This drain also wired `delegate` to pass the composite into the worktree
+  create (only when host/model present, preserving the legacy branch name).
 - **Files**:
   `plugins/proposals/src/lib/agents/agent-worktree-engine.ts` (MODIFY),
   `plugins/proposals/src/lib/tools/agent-worktree.tool.ts` (MODIFY
@@ -324,7 +350,11 @@ After landing S1..S4:
   documents the worktree branch convention
   (`agent/<assigned-name>`). f00082 S4 updates it to
   `agent/<host>-<model>-<agent_name>-<proposal_id>` and adds a
-  deprecation note for the old form.
+  deprecation note for the old form. **PENDING (2026-07-01):** the
+  SKILL still says `agent/<assigned-name>`; the doc update was left
+  pending in this drain to stay surgical (host-facing copy, not needed
+  for `validate`). Follow-up: add the "Agent identity (f00082)" section
+  and the branch-format update.
 - Cost attribution is a follow-up. The composite identity
   records `model`, which the user can map to their own cost
   data; we do not store or surface price.
