@@ -11,9 +11,15 @@
  * `contracts/interfaces/completion.interface.ts` per f00037.
  */
 
-import type { ICompletionModel, Shell } from '../../contracts/interfaces/completion.interface';
+import type {
+	ICompletionModel,
+	Shell,
+} from '../../contracts/interfaces/completion.interface';
 
-export type { ICompletionModel, Shell } from '../../contracts/interfaces/completion.interface';
+export type {
+	ICompletionModel,
+	Shell,
+} from '../../contracts/interfaces/completion.interface';
 
 /** Build the completion model from the flat list of command names. */
 export const buildCompletionModel = (

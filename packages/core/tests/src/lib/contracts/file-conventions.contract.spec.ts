@@ -115,9 +115,7 @@ describe('helper role (f00093)', async () => {
 	});
 
 	it('classifies a nested helpers/x/foo.helper.ts as `helper` (folder rule wins at any depth)', async () => {
-		expect(
-			classifyPath('a/b/c/helpers/foo.helper.ts'),
-		).toBe('helper');
+		expect(classifyPath('a/b/c/helpers/foo.helper.ts')).toBe('helper');
 	});
 
 	it('classifies a bare foo.helper.ts (no folder) as `helper` (suffix rule)', async () => {
