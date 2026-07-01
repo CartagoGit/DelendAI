@@ -1,110 +1,123 @@
 {
-	"$schema": "./packages/core/schema/mcp-vertex.config.schema.json",
-	"cacheDir": ".cache/mcp-vertex",
-	"docsDir": "docs/mcp-vertex",
-	"agentWorktree": true,
-	"keepLegacy": false,
-	"plugins": {
-		"conventions": { "options": {} },
-		"docs": { "options": { "roots": ["docs/mcp-vertex", "README.md"] } },
-		"search": { "options": {} },
-		"git": { "options": {} },
-		"web-fetch": {
-			"options": {
-				"allowList": [
-					"mcp-vertex.dev",
-					"github.com",
-					"raw.githubusercontent.com",
-					"docs.github.com",
-					"registry.npmjs.org",
-					"www.npmjs.com"
-				]
-			}
-		},
-		"status-marker": { "options": {} },
-		"test-convention": { "options": {} },
-		"quality": { "options": {} },
-		"issues": { "options": { "repo": "<owner>/<name>" } },
-		"audit": {
-			"options": {
-				"auditDir": "docs/proposals/done/audits",
-				"topActions": 5,
-				"layers": [
-					{
-						"name": "core",
-						"label": "Núcleo (`packages/core`, `packages/client`)",
-						"paths": ["packages/core/src/", "packages/client/src/"],
-						"checks": [
-							"¿`process.cwd()` usado como fallback en lugar de inyección de contexto?",
-							"¿Escrituras sin `withFileMutex` + `writeFileAtomic`?",
-							"¿`constants/` directory vacío o sin poblar?",
-							"¿`createMcpProject` con `coreToolRegistrations` vacío (placeholder)?",
-							"¿`overview-tool` declara `outputSchema` y está dentro del presupuesto de tokens?"
-						]
-					},
-					{
-						"name": "plugins",
-						"label": "Plugins (`plugins/*`)",
-						"paths": [
-							"plugins/proposals/src/",
-							"plugins/memory/src/",
-							"plugins/rules/src/",
-							"plugins/quality/src/",
-							"plugins/search/src/",
-							"plugins/docs/src/",
-							"plugins/deps/src/",
-							"plugins/git/src/",
-							"plugins/notification/src/",
-							"plugins/status-marker/src/",
-							"plugins/test-convention/src/",
-							"plugins/audit/src/"
-						],
-						"checks": [
-							"¿`ctx.keepLegacy` honrado o ignorado explícitamente en cada plugin?",
-							"¿`redactSecrets` aplicado antes de persistir texto del usuario (memory, proposals)?",
-							"¿`resolveWorkspaceContained` en todos los inputs de path?",
-							"¿Vocabulario del host (`'ui-demo'`, `paused/demos`) en contratos genéricos?",
-							"¿`tool-outputs.ts` generado y commiteado para cada plugin con `outputSchema`?"
-						]
-					},
-					{
-						"name": "extensions",
-						"label": "Extensiones (`extensions/vscode`, `packages/ui-extension`)",
-						"paths": [
-							"extensions/vscode/src/",
-							"packages/ui-extension/"
-						],
-						"checks": [
-							"¿`deactivate()` limpia todos los disposables?",
-							"¿Mensajes del webview validados antes de actuar (path traversal, injection)?",
-							"¿Algún `import vscode` fuera de `extensions/vscode/`?",
-							"¿Strings hardcodeados en `ui-extension` que deberían ser i18n keys?",
-							"¿Atributos ARIA faltantes en elementos interactivos del panel?"
-						]
-					},
-					{
-						"name": "web",
-						"label": "Web / docs site (`apps/web`)",
-						"paths": ["apps/web/src/"],
-						"checks": [
-							"¿Todas las keys de i18n presentes en los 12 idiomas (`check:i18n` verde)?",
-							"¿Anotaciones `data-pagefind-body` correctas y consistentes?",
-							"¿Docs de tools generados coinciden con el live tool registry?",
-							"¿`site:strict` construye sin errores?"
-						]
-					},
-					{
-						"name": "tools-scripts",
-						"label": "Tools y scripts internos (`tools/`, `scripts/`)",
-						"paths": ["tools/", "scripts/"],
-						"checks": [
-							"¿Algún archivo `.py`, `.sh`, `.bash`, `.zsh`? Viola la regla 10 de AGENTS.md.",
-							"¿Entrypoints con sufijo `*.script.ts` y módulos auxiliares sin él?",
-							"¿Scripts de generación de tipos/schema actualizados y funcionales?"
-						]
-					}
-				]
-			}
-		}
-	}
+  "$schema": "https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+  "cacheDir": ".cache/mcp-vertex",
+  "docsDir": "docs/mcp-vertex",
+  "convention": {
+    "pluginPathsRoot": "packages",
+    "sourceRoot": "packages"
+  },
+  "plugins": {
+    "git": {
+      "options": {}
+    },
+    "search": {
+      "options": {
+        "roots": [
+          "packages",
+          "plugins",
+          "extensions",
+          "apps",
+          "tools",
+          "scripts"
+        ],
+        "extensions": [
+          ".ts",
+          ".tsx",
+          ".js",
+          ".mjs",
+          ".cjs",
+          ".md",
+          ".json"
+        ],
+        "ignoreDirs": [
+          "node_modules",
+          ".cache",
+          "dist",
+          "build",
+          ".git"
+        ]
+      }
+    },
+    "memory": {
+      "options": {
+        "bm25K1": 1.5,
+        "bm25B": 0.75,
+        "titleWeight": 2,
+        "maxNotes": 1000
+      }
+    },
+    "docs": {
+      "options": {
+        "roots": [
+          "docs/mcp-vertex",
+          "README.md"
+        ],
+        "extensions": [
+          ".md",
+          ".mdx"
+        ],
+        "ignoreDirs": [
+          "node_modules",
+          ".cache",
+          "dist"
+        ]
+      }
+    },
+    "rules": {
+      "options": {}
+    },
+    "quality": {
+      "options": {}
+    },
+    "deps": {
+      "options": {
+        "manifest": "package.json",
+        "allowNetwork": false,
+        "allowWrite": false
+      }
+    },
+    "proposals": {
+      "options": {
+        "validationCommand": "bun run validate",
+        "namePool": [
+          "falcon",
+          "owl",
+          "crow",
+          "sparrow",
+          "finch"
+        ],
+        "orchestration": {
+          "delegateAfterToolCalls": 3
+        }
+      }
+    },
+    "notification": {
+      "options": {
+        "intervalMs": 2000,
+        "heartbeatMs": 30000
+      }
+    },
+    "logs": {
+      "options": {
+        "retentionDays": 30
+      }
+    },
+    "status-marker": {
+      "options": {}
+    },
+    "test-convention": {
+      "options": {}
+    },
+    "conventions": {
+      "options": {
+        "roots": [
+          "packages",
+          "plugins",
+          "extensions",
+          "apps",
+          "tools"
+        ]
+      }
+    }
+  }
 }
