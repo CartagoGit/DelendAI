@@ -76,13 +76,14 @@ const buildReg = (
 		defaultProposalsDir: 'docs/mcp-vertex/proposals/ready',
 		transport,
 		now,
-		// The auto-scaffolder gates on the `proposals` peer plugin being
-		// loaded (IPeerPluginRegistry). The real host wires this from
-		// `ctx.peerPlugins`; the test provides a registry that reports
-		// `proposals` as loaded so scaffolding is exercised.
+		// The auto-scaffolder only writes proposals when the
+		// `proposals` peer plugin reports it is loaded in the same
+		// MCP server. Tests that expect scaffolded output need a
+		// registry that says so.
 		peerPlugins: {
-			list: () => ['proposals'],
-			has: (name: string) => name === 'proposals',
+			list: () => ['proposals', 'audit'],
+			has: (name: string): boolean =>
+				name === 'proposals' || name === 'audit',
 		},
 	});
 
@@ -139,12 +140,16 @@ const parse = (r: {
 		topActions: string[];
 		markdown: string;
 	};
-	scaffolded?: Array<{
-		id: string;
-		filename: string;
-		severity: string;
-		files: string[];
-	}>;
+	proposals?: {
+		scaffolded?: Array<{
+			id: string;
+			filename: string;
+			severity: string;
+			files: string[];
+		}>;
+		skipped?: string;
+		disabled?: true;
+	};
 } => JSON.parse(r.content[0]?.text ?? '{}');
 
 /** A canonical mock audit markdown that the consolidator can parse. */
@@ -154,11 +159,16 @@ const mockAudit = (
 	severity: 'FATAL' | 'BAD' | 'MINOR' | 'OK' = 'FATAL',
 	files: string[] = ['src/example.ts'],
 ) => {
-	// Severity canonicalization landed the English enum tokens
-	// (`FATAL`, `BAD`, `MINOR`, `OK`, …) as the only recognized heading
-	// form; the historical Spanish headings (`MUY MAL`, `MEJORABLE`) were
-	// removed. Emit the canonical English token as the finding heading.
-	const heading = severity;
+	// The parser accepts both the canonical English enum tokens
+	// (`BAD`, `MINOR`) and the historical Spanish heading form
+	// (`MUY MAL`, `MEJORABLE`). Use the Spanish form so the rendered
+	// audit reads like a real legacy report.
+	const heading =
+		severity === 'BAD'
+			? 'MUY MAL'
+			: severity === 'MINOR'
+				? 'MEJORABLE'
+				: severity;
 	return `# Audit (${model})
 
 ## Resumen Ejecutivo
@@ -226,11 +236,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	// ---- happy path: 2 targets, shared finding, scaffold 1 proposal ----
 
-	// TODO(x00091 s2): audit-run scaffold integration is broken by the in-progress
-	// audit refactor (consolidation->scaffold wiring in audit-run.tool.ts). The
-	// service-level scaffolder works; the tool-level path is x00091 s2's scope.
-	// Un-skip when x00091 s2 (audit-run.tool.ts split) lands.
-	it.skip('dispatches the brief to N targets and scaffolds a deduplicated proposal', async () => {
+	it('dispatches the brief to N targets and scaffolds a deduplicated proposal', async () => {
 		const transport = makeTransport((url, body) => {
 			if (url.includes('api.openai.com')) {
 				// First model reports the finding.
@@ -321,7 +327,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		const openaiBody = JSON.parse(openaiCall?.body ?? '{}');
 		expect(openaiBody.messages[1].role).toBe('user');
 		expect(openaiBody.messages[1].content).toContain(
-			'# 📋 Audit brief',
+			'# 📋 Audit brief — mode',
 		);
 
 		// 2. Two markdown files were saved.
@@ -352,8 +358,8 @@ describe('audit_run (alcance B, f00077)', async () => {
 		]);
 
 		// 4. Exactly one scaffolded proposal was written (FATAL).
-		expect(out.scaffolded ?? []).toHaveLength(1);
-		const proposal = out.scaffolded?.[0];
+		expect(out.proposals?.scaffolded ?? []).toHaveLength(1);
+		const proposal = out.proposals?.scaffolded?.[0];
 		expect(proposal?.severity).toBe('FATAL');
 		expect(proposal?.id).toMatch(/^x\d{5}$/u);
 		const proposalsProbe = await probeProposals(
@@ -385,7 +391,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	// ---- partial failure: 1 success, 1 provider error ----------------
 
-	it.skip('records provider failures in `failed` and still scaffolds', async () => {
+	it('records provider failures in `failed` and still scaffolds', async () => {
 		const transport = makeTransport((url) => {
 			if (url.includes('api.openai.com')) {
 				return {
@@ -434,9 +440,9 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(out.failed?.[0]?.error).toContain('401');
 		// The openai key MUST be redacted out of the failure error.
 		expect(out.failed?.[0]?.error).not.toContain('sk-bad');
-		// One BAD scaffolded proposal.
-		expect(out.scaffolded ?? []).toHaveLength(1);
-		expect(out.scaffolded?.[0]?.severity).toBe('BAD');
+		// One MUY_MAL scaffolded proposal.
+		expect(out.proposals?.scaffolded ?? []).toHaveLength(1);
+		expect(out.proposals?.scaffolded?.[0]?.severity).toBe('BAD');
 	});
 
 	// ---- no actionable findings: scaffold is empty -------------------
@@ -468,7 +474,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 		);
 		expect(out.saved ?? []).toHaveLength(1);
 		// OK is not actionable; the scaffolder must skip it.
-		expect(out.scaffolded ?? []).toEqual([]);
+		expect(out.proposals?.scaffolded ?? []).toEqual([]);
 	});
 
 	// ---- scope rejection ---------------------------------------------
@@ -543,7 +549,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	// ---- google variant ----------------------------------------------
 
-	it.skip('uses the Google URL shape and query-string api key for google targets', async () => {
+	it('uses the Google URL shape and query-string api key for google targets', async () => {
 		const transport = makeTransport(() => ({
 			status: 200,
 			json: {
@@ -584,12 +590,12 @@ describe('audit_run (alcance B, f00077)', async () => {
 		expect(transport.calls[0]?.url).toContain('gemini-2.5-pro');
 		expect(transport.calls[0]?.url).toContain('key=AIza-fixture-key');
 		expect(transport.calls[0]?.headers.authorization).toBeUndefined();
-		expect(out.scaffolded?.[0]?.severity).toBe('MINOR');
+		expect(out.proposals?.scaffolded?.[0]?.severity).toBe('MINOR');
 	});
 
 	// ---- proposalId allocation with existingIds ----------------------
 
-	it.skip('skips ids already in `existingIds` when allocating proposals', async () => {
+	it('skips ids already in `existingIds` when allocating proposals', async () => {
 		const transport = makeTransport(() => ({
 			status: 200,
 			json: {
@@ -615,6 +621,11 @@ describe('audit_run (alcance B, f00077)', async () => {
 			transport,
 			now: () => new Date('2026-06-28T00:00:00Z'),
 			knownProposalIds: new Set(['x00001', 'x00002']),
+			peerPlugins: {
+				list: () => ['proposals', 'audit'],
+				has: (name: string): boolean =>
+					name === 'proposals' || name === 'audit',
+			},
 		});
 		const out = parse(
 			await invoke(reg, {
@@ -627,6 +638,6 @@ describe('audit_run (alcance B, f00077)', async () => {
 				],
 			}),
 		);
-		expect(out.scaffolded?.[0]?.id).toBe('x00003');
+		expect(out.proposals?.scaffolded?.[0]?.id).toBe('x00003');
 	});
 });
