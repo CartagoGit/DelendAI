@@ -93,6 +93,7 @@ export type Role =
 	| 'convention'
 	| 'type'
 	| 'barrel'
+	| 'helper'
 	| 'catalog'
 	| 'prompt'
 	| 'resource'
@@ -293,13 +294,31 @@ const ConstantRule: IRoleRule = rule(
 		hasSegment(rel, 'contracts/constants') || /\.constant\.ts$/.test(rel),
 );
 
-/** 18. Services — under `services/` or `.service.ts`. */
+/** 18. Helpers — pure functions that assist a specific consumer
+ *  contract (f00093). Distinct from services: helpers have NO state,
+ *  NO IO, NO business logic — they are reference-style wrappers and
+ *  parsers around the public surface. The repo already uses the term
+ *  "helper" as its primary domain noun (see
+ *  `group-helpers.ts`, `Local helper, not exported.` comments in this
+ *  file, the `rules-solid-architecture` skill); this role formalises
+ *  that vocabulary instead of forcing every helper into the
+ *  `.service.ts` shape (which inflates them into "stateful business
+ *  logic" — a category they do not satisfy).
+ *
+ *  Placed BEFORE ServiceRule in the chain so a `*.helper.ts` never
+ *  falls through to the service classifier. */
+const HelperRule: IRoleRule = rule(
+	'helper',
+	(rel) => hasSegment(rel, 'helpers') || endsWithBasename(rel, 'helper.ts'),
+);
+
+/** 19. Services — under `services/` or `.service.ts`. */
 const ServiceRule: IRoleRule = rule(
 	'service',
 	(rel) => hasSegment(rel, 'services') || endsWithBasename(rel, 'service.ts'),
 );
 
-/** 19. Type companions: feature-private structural helpers.
+/** 20. Type companions: feature-private structural helpers.
  *  MUST come after InterfaceRule + ConstantRule (which are more specific
  *  sub-paths of `contracts/`) so the generic `contracts` segment match
  *  does not steal them. */
@@ -375,6 +394,7 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	InterfaceRule,
 	ConstantRule,
 	TypeRule,
+	HelperRule,
 	ServiceRule,
 	ToolRule,
 	RegistryRule,

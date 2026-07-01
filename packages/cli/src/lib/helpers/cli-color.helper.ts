@@ -1,5 +1,6 @@
 /**
- * Shared ANSI palette for the CLI.
+ * cli-color.helper.ts — shared ANSI palette and formatters for every
+ * CLI surface that prints to a terminal (f00093 `helper` role).
  *
  * Disabled when `NO_COLOR` is set, when `FORCE_COLOR=0`, when
  * `process.stdout.isTTY` is false, OR when `process.stderr.isTTY`
@@ -55,7 +56,8 @@ export const COLOR_ON: boolean = colorOn(process.stderr);
  * at module-load time (which is the bug the operator hit when the
  * MCP host spawned the CLI with stdout piped but stderr attached).
  */
-const ansi = (open: number, close: number) =>
+const ansi =
+	(open: number, close: number) =>
 	(text: string): string => {
 		if (!colorOn(process.stderr)) return text;
 		return `\x1b[${open}m${text}\x1b[${close}m`;

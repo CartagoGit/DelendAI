@@ -99,3 +99,44 @@ describe('file-conventions.contract (f00057 S8)', async () => {
 		);
 	});
 });
+
+describe('helper role (f00093)', async () => {
+	it('exposes `helper` in the Role union', async () => {
+		// Compile-time check + runtime guard: a value of `Role` can be
+		// the literal `'helper'`. If the union regresses this throws.
+		const role: Role = 'helper';
+		expect(role).toBe('helper');
+	});
+
+	it('classifies lib/helpers/foo.helper.ts as `helper` (folder rule)', async () => {
+		expect(
+			classifyPath('packages/cli/src/lib/helpers/cli-command.helper.ts'),
+		).toBe('helper');
+	});
+
+	it('classifies a nested helpers/x/foo.helper.ts as `helper` (folder rule wins at any depth)', async () => {
+		expect(
+			classifyPath('a/b/c/helpers/foo.helper.ts'),
+		).toBe('helper');
+	});
+
+	it('classifies a bare foo.helper.ts (no folder) as `helper` (suffix rule)', async () => {
+		expect(classifyPath('pkg/src/lib/foo.helper.ts')).toBe('helper');
+	});
+
+	it('does NOT steal service-shaped files (foo.service.ts stays `service`)', async () => {
+		expect(classifyPath('pkg/src/lib/help.service.ts')).toBe('service');
+	});
+
+	it('HelperRule is ordered BEFORE ServiceRule in DEFAULT_TS_RULES (chain invariant)', async () => {
+		const helperIdx = DEFAULT_TS_RULES.findIndex(
+			(r: IRoleRule) => r.name === 'helper',
+		);
+		const serviceIdx = DEFAULT_TS_RULES.findIndex(
+			(r: IRoleRule) => r.name === 'service',
+		);
+		expect(helperIdx).toBeGreaterThanOrEqual(0);
+		expect(serviceIdx).toBeGreaterThanOrEqual(0);
+		expect(helperIdx).toBeLessThan(serviceIdx);
+	});
+});

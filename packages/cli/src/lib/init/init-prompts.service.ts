@@ -21,7 +21,7 @@ import {
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 import type { IInitAnswers } from './init-answers.types';
 import { InitAnswers } from './init-answers.schema';
-import { c, heading, hint, brand, success, failure } from '../color.service';
+import { c, heading, hint, brand, success, failure } from '../helpers/cli-color.helper';
 
 const numbered = (n: number, text: string): string =>
 	`${c.cyan(`${n})`)} ${text}`;
