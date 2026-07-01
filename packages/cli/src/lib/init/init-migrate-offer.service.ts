@@ -1,4 +1,5 @@
 /**
+import type { IAdoptionPlan } from '../../contracts/interfaces/init.interface';
  * init-migrate-offer.ts — f00084 S5 + f00089 U1.
  *
  * S5 (legacy): when the user accepts the `migrateFromLegacy` offer,
@@ -115,20 +116,7 @@ export const renderMigrationProposal = (
 };
 
 /** Result of the U1 adoption-plan generator. */
-export interface IAdoptionPlan {
-	readonly relPath: string;
-	readonly content: string;
-	/** The allocated id (`f00001`, `f00042`, …) — surfaced for `--json`. */
-	readonly id: string;
-	/** The foreign proposal inventory the plan was built from (U1). */
-	readonly inventory: IForeignProposalInventory;
-	/**
-	 * The U2 (A3 + A4) sections embedded in the plan: the skill inventory
-	 * and the tool-unification map, surfaced for `--json` without
-	 * re-parsing the markdown.
-	 */
-	readonly sections: IAdoptionSections;
-}
+
 
 /** Render the foreign-system section of the plan body (advisory mapping). */
 const renderForeignSection = (inventory: IForeignProposalInventory): string => {

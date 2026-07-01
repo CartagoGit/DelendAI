@@ -1,4 +1,5 @@
 /**
+import type { IAutoForwardKind } from '../contracts/interfaces/server-args.interface';
  * server-args.service.ts — f00046 + a00036 F-001 (merged in S2 follow-up).
  *
  * Translates `ICliGlobalOptions` (the human CLI's parsed state) into the
@@ -40,20 +41,7 @@
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 
 /** Discriminator for the shape of a forwarding rule. */
-export type IAutoForwardKind = 'flag' | 'option' | 'repeatable' | 'passthrough';
 
-export interface IAutoForwardRule {
-	/** Field name on `ICliGlobalOptions`. */
-	readonly key: keyof ICliGlobalOptions;
-	/** Shape of the rule (drives how the value renders to argv). */
-	readonly kind: IAutoForwardKind;
-	/**
-	 * Compute the argv fragment for this field.
-	 * @param key   the `keyof ICliGlobalOptions` rendered as `--${key}`
-	 * @param value the field value, narrowed by the renderer below
-	 */
-	readonly argv: (key: string, value: unknown) => readonly string[];
-}
 
 const option = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 	key,

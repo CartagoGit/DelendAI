@@ -1,4 +1,5 @@
 /**
+import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../contracts/interfaces/init.interface';
  * init-adoption-plan.ts — f00089 U2 (slice U2, point 2c + A3/A4 renderers).
  *
  * This module owns:
@@ -33,33 +34,10 @@ import {
 export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
 
 /** One tool namespace owned by a side of the unification (ours/theirs). */
-export interface IToolNamespace {
-	/** `ours` (mcp-vertex) or `theirs` (the target's own MCP tools). */
-	readonly origin: 'ours' | 'theirs';
-	/** The plugin/server id contributing the namespace. */
-	readonly plugin: string;
-	/**
-	 * The resolved tool-name prefix for the namespace, e.g.
-	 * `mcp-vertex_proposals` — every tool of the plugin is
-	 * `<namespace>_<tool>` at runtime.
-	 */
-	readonly namespace: string;
-}
+
 
 /** The collision-free unification map (point 2c). */
-export interface IToolUnification {
-	/** Our resolved plugin namespaces (prefix-per-plugin). */
-	readonly ours: readonly IToolNamespace[];
-	/** The target's own MCP tool namespaces, where detectable. */
-	readonly theirs: readonly IToolNamespace[];
-	/**
-	 * Namespaces that collide across the two sides (same string). Empty
-	 * under the prefix-per-plugin contract; surfaced so the plan can
-	 * assert the map is collision-free and flag the rare case where the
-	 * target also uses the literal `mcp-vertex` prefix.
-	 */
-	readonly collisions: readonly string[];
-}
+
 
 /**
  * Read the target's own MCP server/plugin ids from a pre-existing
@@ -245,16 +223,7 @@ export const renderToolUnificationSection = (
 };
 
 /** Result of composing the U2 sections for `renderAdoptionPlan`. */
-export interface IAdoptionSections {
-	/** Rendered `### A3 — skill migration` section (replaces the placeholder). */
-	readonly skillSection: string;
-	/** Rendered `### A4 — tool-namespace unification` section. */
-	readonly toolSection: string;
-	/** The skill inventory the A3 section was built from (surfaced for `--json`). */
-	readonly skillInventory: ISkillInventory;
-	/** The tool-unification map the A4 section was built from. */
-	readonly toolUnification: IToolUnification;
-}
+
 
 /**
  * Compose the U2 (A3 + A4) sections. Called by `renderAdoptionPlan`; the

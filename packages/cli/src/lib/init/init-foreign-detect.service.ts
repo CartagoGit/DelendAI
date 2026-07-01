@@ -1,4 +1,5 @@
 /**
+import type { IForeignIdScheme, IForeignProposalInventory } from '../../contracts/interfaces/init.interface';
  * init-foreign-detect.ts — f00089 U1.
  *
  * When `init` runs inside a FOREIGN project, the migration offer must
@@ -33,58 +34,10 @@ import type { IFileReader } from './init-detection.service';
  *   - `numeric`     — bare leading number with no recognised prefix.
  *   - `none`        — markdown present but no numbering signal found.
  */
-export type IForeignIdScheme =
-	| 'mcp-vertex'
-	| 'rfc'
-	| 'adr'
-	| 'numeric'
-	| 'none';
 
-/**
- * The shape/convention family a detected directory belongs to. This is
- * coarser than the id-scheme: a `docs/proposals/` folder is still the
- * `proposals` family even if it happens to number its files ADR-style.
- */
-export type IForeignConventionKind =
-	| 'proposals'
-	| 'rfcs'
-	| 'adr'
-	| 'plans'
-	| 'specs'
-	| 'changeset';
-
-/** One detected foreign proposal/plan location. */
-export interface IForeignConvention {
-	/** Convention family (proposals / rfcs / adr / …). */
-	readonly kind: IForeignConventionKind;
-	/** Workspace-relative directory where it was found. */
-	readonly location: string;
-	/** Inferred id/numbering scheme of the entries inside `location`. */
-	readonly idScheme: IForeignIdScheme;
-	/** Count of markdown documents that look like records/proposals. */
-	readonly documentCount: number;
-	/**
-	 * Highest numeric id observed across the entries (decimal), or 0
-	 * when no numbered entry was found. Used to allocate the next free
-	 * id without re-listing the directory.
-	 */
-	readonly maxNumericId: number;
-	/** A few example filenames (capped) for human-readable plan output. */
-	readonly sampleFiles: readonly string[];
-}
 
 /** Full inventory of every foreign proposal/plan convention found. */
-export interface IForeignProposalInventory {
-	/** True when at least one convention directory was found. */
-	readonly found: boolean;
-	/** Every detected convention, in detection order (first = primary). */
-	readonly conventions: readonly IForeignConvention[];
-	/**
-	 * The convention the migration plan should treat as the primary
-	 * source to migrate (the first non-empty one), or `undefined`.
-	 */
-	readonly primary: IForeignConvention | undefined;
-}
+
 
 /**
  * The extensible table of candidate directories. Order matters: the

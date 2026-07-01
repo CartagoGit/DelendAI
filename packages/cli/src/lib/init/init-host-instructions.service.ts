@@ -1,4 +1,5 @@
 /**
+import type { IAgentInstructionSourceSpec, IConsolidationPlan, IConsolidationWrite, IDiscoveredInstructionSource, IHostInstructionsTarget } from '../../contracts/interfaces/init.interface';
  * f00084 S4 — host-instructions centralizer with idempotent append.
  *
  * The block is delimited by `<!-- mcp-vertex:begin -->` and
@@ -31,10 +32,7 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
-export type IHostInstructionsTarget = {
-	readonly relPath: string;
-	readonly body: string;
-};
+;
 
 const BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
 const END_MARKER = '<!-- mcp-vertex:end -->';
@@ -119,11 +117,7 @@ const POINTER_MARKER = '<!-- mcp-vertex:pointer -->';
  *
  * The canonical doc itself is never treated as a source (it is the sink).
  */
-export interface IAgentInstructionSourceSpec {
-	readonly label: string;
-	readonly kind: 'file' | 'basename' | 'extension';
-	readonly match: string;
-}
+
 
 export const AGENT_INSTRUCTION_SOURCE_SPECS: readonly IAgentInstructionSourceSpec[] =
 	[
@@ -146,19 +140,7 @@ export const AGENT_INSTRUCTION_SOURCE_SPECS: readonly IAgentInstructionSourceSpe
 	];
 
 /** One discovered scattered agent-instruction source in the target. */
-export interface IDiscoveredInstructionSource {
-	readonly relPath: string;
-	readonly label: string;
-	/** Raw on-disk content of the source (verbatim, never mutated). */
-	readonly content: string;
-	/**
-	 * `true` when the file's body — outside of any mcp-vertex block — is
-	 * empty, i.e. it is already nothing but a pointer we wrote earlier. Such
-	 * a file carries no original prose to collapse and is skipped by the
-	 * canonical merge (idempotency).
-	 */
-	readonly isPointerOnly: boolean;
-}
+
 
 /**
  * Pure: does a target-relative path match a source spec?
@@ -318,19 +300,10 @@ export const renderLegacyPointerBody = (
 	].join('\n');
 
 /** A single planned write the consolidation produces. */
-export interface IConsolidationWrite {
-	readonly relPath: string;
-	readonly content: string;
-	/** `canonical` (the sink doc) or `pointer` (a legacy location). */
-	readonly role: 'canonical' | 'pointer';
-}
+
 
 /** The full advisory result of a consolidation pass. */
-export interface IConsolidationPlan {
-	readonly sources: readonly IDiscoveredInstructionSource[];
-	readonly canonicalRel: string;
-	readonly writes: readonly IConsolidationWrite[];
-}
+
 
 /**
  * Pure orchestrator: given the discovered sources and the current content of
