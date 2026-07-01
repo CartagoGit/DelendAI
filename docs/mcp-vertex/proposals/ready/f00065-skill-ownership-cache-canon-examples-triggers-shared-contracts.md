@@ -233,7 +233,25 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S4 — D: Junior-grade web examples with per-language packagers
 
-- **Status**: pending
+- **Status**: pending (data model landed; UI + i18n copy not built)
+- **Drain note (2026-07-01)**: the *data* half of this slice already landed on
+  develop in `feat: introduce language ecosystem selector with PHP, Python, and
+  Node.js support` (5e8306f3). `apps/web/src/data/install.ts:48` now models node
+  packagers (`packageManagers`), `apps/web/src/data/install.ts:108` adds
+  `IEcosystem` with node/python/php and their packagers (`pip`/`pipx`/`uv`/
+  `poetry`/`composer`/`artisan`), and each packager carries a `dummiesKey`
+  (`install.ts:26`, union at `install.ts:35`) pointing at a beginner-explanation
+  i18n key. **But the acceptance is not met**: `ecosystems`/`dummiesKey`/
+  `IEcosystem`/`EcosystemKey` are consumed by *no* component or page (only
+  self-referenced in `install.ts`); `ITranslations` (`apps/web/src/i18n/shared.ts`)
+  has **no** `install.dummies` / `install.ecosystems` block, so the beginner
+  copy the data model promises does not exist in any of the 12 language dicts and
+  nothing renders under `/` or an install page. Completing S4 = new i18n
+  interface + copy across all 12 langs + an Astro selector component wired into a
+  page + `site:strict` green. Left pending during this serial drain because it is
+  a full web_runner slice that edits `apps/web/src/i18n/**` — the exact surface a
+  concurrent session is actively changing (see S2 note re `homeQuickInstall`);
+  building it here risks clobbering that work. Hand to web_runner.
 - **Files**: apps/web/src/data/install.ts, apps/web/src/components/**,
   apps/web/src/pages/**, apps/web/src/i18n/**, apps/web/src/data/**
 - **Gate**: bun run site:strict
@@ -274,7 +292,20 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S6 — F: Shared cross-package contracts (SOLID/DRY)
 
-- **Status**: pending
+- **Status**: pending (not started)
+- **Drain note (2026-07-01)**: not implemented on develop — no root `contracts/`
+  and no `packages/contracts` package exist. The per-package `contracts/` dirs
+  (`packages/{cli,core,client}/**/contracts`, `plugins/{rules,proposals,issues,
+  audit}/**/contracts`) remain package-local; the mixed `*.types.ts` candidates
+  the umbrella flags (`plugins/issues/src/lib/contracts/issue.types.ts`,
+  `plugins/search/src/lib/services/search-engine.types.ts`,
+  `plugins/proposals/src/lib/swarm/plan-closure.types.ts`) are still present.
+  Left pending during this serial drain: creating a `@mcp-vertex/contracts`
+  boundary + moving shared types + tsconfig/barrel rewiring is a large
+  cross-package refactor with real circular-dep risk that must run under its own
+  scoped audit (per S7), and it overlaps packages the concurrent CLI/audit
+  session is editing. Promote to its own sub-proposal (S7) rather than draining
+  in-place.
 - **Files**: contracts/** (new shared boundary) or packages/contracts/**,
   packages/*/src/lib/contracts/**, plugins/*/src/lib/contracts/**, tsconfig.json
 - **Gate**: bun run validate
@@ -292,7 +323,16 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 
 ### S7 — G (meta): Sequenced sub-proposals
 
-- **Status**: pending (process, not code)
+- **Status**: pending (process; superseded in practice for S1-S3/S5)
+- **Drain note (2026-07-01)**: in practice S1, S2, S3, and S5 were drained
+  in-place within this umbrella (marked done inline) rather than each being
+  promoted to a standalone sub-proposal, because their implementations had
+  already landed on develop and only needed bookkeeping — a scoped audit per tiny
+  bookkeeping flip would have been ceremony without value. The sequencing intent
+  of S7 still stands for the two remaining code slices: **S4 (web) and S6
+  (contracts) should each become their own sub-proposal**, run their own scoped
+  audit, and land validate-green one at a time (S6 especially, given its
+  cross-package blast radius). S7 stays pending until those two are promoted.
 - **Files**: docs/mcp-vertex/proposals/**
 - **Gate**: bun run lint:proposals
 - **Goal**: each slice S1-S6 is promoted to its own sub-proposal at execution time,
