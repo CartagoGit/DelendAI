@@ -34,6 +34,13 @@ export interface IHostPathLayout {
 	readonly proposalIndexFile: string;
 	/** f00016 S13: per-kind sequential id counters (race-safe allocation). */
 	readonly proposalIdCountersFile: string;
+	/**
+	 * f00091: branches that finished a slice on their own `agent/*`
+	 * worktree and await deliberate integration. `close_slice` records
+	 * here; `swarm_hygiene` surfaces + prunes. Bookkeeping only — never
+	 * a git mutation.
+	 */
+	readonly pendingIntegrationFile: string;
 	/** Directory holding disposable per-agent git worktrees. */
 	readonly worktreesDir: string;
 	/** Scratch directory for transient agent artefacts. */

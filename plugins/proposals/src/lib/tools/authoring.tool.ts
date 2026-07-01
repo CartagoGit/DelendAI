@@ -13,6 +13,9 @@ import {
 } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import type { IGitRunner } from '../shared/git-runner';
+import { createPendingIntegrationStore } from '../shared/pending-integration-store';
+import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import {
 	allocateNextProposalId,
@@ -264,6 +267,28 @@ export const buildCreateProposalRegistration = (
 });
 
 /**
+ * f00091 S2: resolve the current branch and, if it is an `agent/*`
+ * branch, return it (else `null`). Read-only (`git rev-parse`); never a
+ * git mutation. Any failure degrades to `null` so `close_slice` never
+ * throws over a branch-integration detail.
+ */
+const resolveAgentBranch = async (
+	run: IGitRunner,
+): Promise<string | null> => {
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return null;
+	const branch = result.output.trim();
+	if (branch.length === 0 || branch === 'HEAD') return null;
+	return branch.startsWith(AGENT_BRANCH_PREFIX) ? branch : null;
+};
+
+/** f00091 S2: resolve the worktree top-level dir (read-only). */
+const resolveWorktreeTopLevel = async (run: IGitRunner): Promise<string> => {
+	const result = await run(['rev-parse', '--show-toplevel']);
+	return result.ok ? result.output.trim() : '';
+};
+
+/**
  * `close_slice` — mark a slice `done` in the proposal doc AND release its
  * agent lock, atomically. Closes the loop crisply so the next agent sees
  * accurate state.
@@ -286,9 +311,16 @@ export const buildCloseSliceRegistration = (
 					sliceId: z.string(),
 					closed: z.boolean(),
 					lockReleased: z.boolean(),
+					// f00091 S2: the branch (if any) recorded for deliberate
+					// integration by the non-destructive branch-integration
+					// step. `null` when agentWorktree is off, the active
+					// branch is not an `agent/*` branch, or the branch could
+					// not be resolved — in all those cases nothing is
+					// recorded and behaviour is byte-identical to pre-f00091.
+					pendingIntegrationBranch: z.string().nullable(),
 				}),
 				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Use it the moment a slice passes its acceptance.',
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write). Use it the moment a slice passes its acceptance.',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
@@ -363,6 +395,38 @@ export const buildCloseSliceRegistration = (
 					);
 				}
 
+				// f00091 S2: non-destructive branch-integration step. When
+				// per-agent worktrees are on and the slice was closed on an
+				// `agent/*` branch, record that branch for deliberate
+				// integration. This runs BEFORE releasing the lock so the
+				// finished-branch fact is captured while the agent is still
+				// the owner. It performs NO git write — it only *reads* the
+				// current branch (via `git rev-parse`) and writes a registry
+				// entry. When the gate is off it is a no-op (byte-identical).
+				let pendingIntegrationBranch: string | null = null;
+				if (
+					options.agentWorktreeEnabled === true &&
+					options.pendingIntegrationPathAbs !== undefined &&
+					options.run !== undefined
+				) {
+					const branch = await resolveAgentBranch(options.run);
+					if (branch !== null) {
+						const worktreePath = await resolveWorktreeTopLevel(
+							options.run,
+						);
+						await createPendingIntegrationStore(
+							options.pendingIntegrationPathAbs,
+						).record({
+							branch,
+							worktreePath,
+							sliceId: args.sliceId,
+							proposalId: entry.id,
+							recordedAt: new Date().toISOString(),
+						});
+						pendingIntegrationBranch = branch;
+					}
+				}
+
 				let lockReleased = false;
 				if (args.releaseLock !== false) {
 					await runAgentLockEngine(
@@ -384,6 +448,7 @@ export const buildCloseSliceRegistration = (
 					sliceId: args.sliceId,
 					closed: true,
 					lockReleased,
+					pendingIntegrationBranch,
 				});
 			},
 		);
