@@ -1,4 +1,4 @@
-<!-- Auto-generated discovery fragment for GitHub Copilot Chat. -->
+<!-- Auto-generated host-instructions fragment. -->
 <!-- Regenerate with `bun run catalog:hints`. Do not edit by hand. -->
 
 <!-- BEGIN GENERATED: f00056 S4 (agnostic bootstrap). -->
@@ -11,9 +11,6 @@ Follow the universal bootstrap at
 `mcp-vertex_agent_catalog` whenever routing to a tool, skill, or
 actionable proposal.
 
-## Host-specific footnote
-
-- Bootstrap appendix 8.1 (Copilot close-marker contract) is in effect.
 <!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->
 
 > This fragment is intentionally minimal. The universal agent rules live
