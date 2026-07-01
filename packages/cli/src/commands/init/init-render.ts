@@ -121,20 +121,108 @@ export const renderMcpVertexConfig = (
 	};
 };
 
-/** Renders `.vscode/mcp.json` with the canonical launch shape. */
-export const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => {
-	const args = [
+/**
+ * Render the canonical `mcp-vertex` server entry.
+ *
+ * Pure — no IO. The launcher args follow the same template that
+ * `.vscode/mcp.json` has shipped since f00093 S2: the host entry
+ * path is the first arg (resolved against the operator's
+ * `--mcp-vertex-root`); the remaining two args use VS Code's
+ * `${workspaceFolder}` substitution so the same launch line works
+ * for any consumer checkout.
+ */
+export const renderMcpVertexServerEntry = (
+	hostEntryPath: string,
+): { readonly type: 'stdio'; readonly command: 'bun'; readonly args: readonly string[] } => ({
+	type: 'stdio',
+	command: 'bun',
+	args: [
 		hostEntryPath,
 		'--workspace=${workspaceFolder}',
 		'--config=${workspaceFolder}/mcp-vertex.config.json',
-	];
+	],
+});
+
+/**
+ * Render the `mcp-vertex` server entry as a plain JSON-friendly
+ * object (mutable-typed for the merge step below).
+ */
+const renderMcpVertexServerEntryRaw = (
+	hostEntryPath: string,
+): { type: string; command: string; args: string[] } => ({
+	type: 'stdio',
+	command: 'bun',
+	args: [
+		hostEntryPath,
+		'--workspace=${workspaceFolder}',
+		'--config=${workspaceFolder}/mcp-vertex.config.json',
+	],
+});
+
+/**
+ * Merge the canonical `mcp-vertex` entry into an existing
+ * `.vscode/mcp.json` document. Returns the new document content
+ * (or `undefined` when the existing content is not parseable, in
+ * which case the writer leaves the file untouched).
+ *
+ * Rules:
+ *
+ *   - Existing `servers` map is preserved verbatim; the canonical
+ *     entry is upserted at `servers["mcp-vertex"]`. Every other
+ *     server the operator has configured (filesystem, github,
+ *     docker, …) stays as-is.
+ *   - Top-level non-`servers` keys are preserved (inputs,
+ *     `servers` references, IDE-specific extensions, etc.).
+ *   - If the existing content is missing the `servers` key, one
+ *     is created.
+ *   - If the existing content does not parse as a JSON object, the
+ *     merge is refused (the writer returns `kind: 'exists'` and
+ *     surfaces a hint in stderr via the recap).
+ *
+ * The merge is intentionally shallow on the `servers` map only —
+ * we don't try to interpret or rewrite any other field. Operators
+ * who want their server entries mutated should edit the file
+ * themselves; `init` should never silently destroy tool wiring.
+ */
+export const mergeMcpVertexServerEntry = (
+	hostEntryPath: string,
+	existingContent: string,
+): string | undefined => {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(existingContent);
+	} catch {
+		return undefined;
+	}
+	if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+		return undefined;
+	}
+	const doc = parsed as Record<string, unknown>;
+	const incoming = renderMcpVertexServerEntryRaw(hostEntryPath);
+	const existingServers = doc.servers;
+	const nextServers: Record<string, unknown> =
+		existingServers !== undefined &&
+		existingServers !== null &&
+		typeof existingServers === 'object' &&
+		!Array.isArray(existingServers)
+			? { ...(existingServers as Record<string, unknown>) }
+			: {};
+	// The canonical entry uses `${workspaceFolder}` which VS Code
+	// resolves per-workspace. If the existing entry already uses a
+	// different hostEntryPath (e.g. the operator pointed at a
+	// specific mcp-vertex checkout), we still overwrite it with the
+	// freshly-resolved path — that's the point of running `init`
+	// again: it brings the launcher up to date.
+	nextServers['mcp-vertex'] = incoming;
+	const next = { ...doc, servers: nextServers };
+	return `${JSON.stringify(next, null, '\t')}\n`;
+};
+
+/** Renders `.vscode/mcp.json` with the canonical launch shape. */
+export const renderVscodeMcpJson = (hostEntryPath: string): IRenderedFile => {
 	const content = {
 		servers: {
-			'mcp-vertex': {
-				type: 'stdio',
-				command: 'bun',
-				args,
-			},
+			'mcp-vertex': renderMcpVertexServerEntry(hostEntryPath),
 		},
 	};
 	return {
@@ -274,20 +362,40 @@ export const renderInitBundle = async (
 			answers.hostInstructions,
 		)),
 	);
-	// f00016: when the `proposals` plugin is in the resolved set,
-	// seed the canonical 7 status folders with `.gitkeep` so the
-	// f00016 state machine has somewhere to land a fresh proposal
-	// even before the operator creates one. We never clobber a
-	// folder that already exists (the writer skips "exists" on a
-	// .gitkeep create — the .gitkeep itself is recreated only if
-	// the folder is empty AND lacks the marker).
+	// f00016: seed the canonical 7 status folders with `.gitkeep`
+	// whenever the bootstrap is going to *touch* the proposals tree
+	// at all. Two triggers qualify:
+	//
+	//   1. The `proposals` plugin is in the resolved set (the
+	//      f00016 state machine will be live in this workspace).
+	//   2. `migrateFromLegacy` is on (we're going to write a
+	//      adoption-plan proposal into `proposals/ready/`, so the
+	//      sibling folders must exist for the migration to land
+	//      cleanly).
+	//
+	// Without this seed, projects using the `vertex` preset — which
+	// is `independent: true` and does NOT bundle `proposals` —
+	// would end up with a `proposals/ready/` directory full of
+	// proposals but no `done/`, `in-progress/`, etc. folders. The
+	// state machine would refuse to transition any proposal because
+	// its target folder doesn't exist on disk.
+	//
+	// We never clobber an existing folder: the writer
+	// (`writeWorkspaceText`) treats a `.gitkeep` overwrite as
+	// idempotent — only the marker content is refreshed when the
+	// folder is empty and lacks the marker.
 	//
 	// Layout matches `PROPOSAL_STATUSES` in the proposals plugin
 	// (`ready`, `in-progress`, `review`, `done`, `paused`,
-	// `blocked`, `retired`). Keeping the list inline (not imported)
+	// `blocked`, `retired`). The list is kept inline (not imported)
 	// because `proposals` is opt-in and we don't want to fail the
-	// init render when the plugin is absent.
-	if (resolvedPlugins.includes('proposals')) {
+	// init render when the plugin is absent. A drift between this
+	// list and the plugin's `PROPOSAL_STATUSES` is caught by
+	// `init-render.spec.ts`.
+	if (
+		resolvedPlugins.includes('proposals') ||
+		answers.migrateFromLegacy === true
+	) {
 		files.push(...renderProposalStatusFolders());
 	}
 	files.push(

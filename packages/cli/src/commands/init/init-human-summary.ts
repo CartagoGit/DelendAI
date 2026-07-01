@@ -24,6 +24,7 @@ import {
 	arrow,
 	brand,
 	c,
+	colorOn,
 	failure,
 	heading,
 	hint,
@@ -35,15 +36,24 @@ import {
 
 export interface IInitWrittenFile {
 	readonly path: string;
-	readonly kind: 'written' | 'exists' | 'skipped';
+	readonly kind: 'written' | 'exists' | 'skipped' | 'merged';
+	/**
+	 * When `kind === 'merged'`, the names of the other MCP servers
+	 * the merge preserved in `.vscode/mcp.json`. The recap renders
+	 * these next to the merge stamp so the operator can confirm at
+	 * a glance that the merge did not silently drop a tool wiring.
+	 */
+	readonly preserved?: readonly string[];
 }
 
 export interface IInitHumanInput {
 	readonly answers: IInitAnswers;
 	readonly written: readonly IInitWrittenFile[];
 	readonly dryRun: boolean;
-	/** When true, the renderer produces a stripped (no-color) line.
-	 * Defaults to the shared palette's `COLOR_ON` (TTY-aware). */
+	/** When `true`, force colour output regardless of TTY.
+	 * When `false`, force plain text.
+	 * When `undefined`, defer to the shared palette (TTY-aware +
+	 * respects `NO_COLOR` / `FORCE_COLOR`). */
 	readonly enabled?: boolean;
 }
 
@@ -62,7 +72,11 @@ const renderKeyValue = (
 };
 
 const white = (text: string): string =>
-	paint((t) => `\x1b[37m${t}\x1b[39m`)(text);
+	// Respect the shared palette's colour-on decision so piped
+	// output stays greppable. `c.white` already wraps the `\x1b[37m`
+	// / `\x1b[39m` pair via the central `ansi()` helper, which
+	// consults `colorOn(process.stderr)` on every call.
+	c.white(text);
 
 /**
  * Format a coloured, multi-line summary suitable for stderr. The
@@ -70,7 +84,7 @@ const white = (text: string): string =>
  * of written files, and a final "what's next" hint list.
  */
 export const renderInitHumanSummary = (input: IInitHumanInput): string => {
-	const enabled = input.enabled ?? true;
+	const enabled = input.enabled ?? colorOn();
 	const { answers, written, dryRun } = input;
 
 	const lines: string[] = [];
@@ -147,21 +161,44 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			const dirName = file.path.includes('/')
 				? file.path.slice(0, file.path.lastIndexOf('/'))
 				: '';
+			// Stamp per kind:
+			//   written → ✓ (green tick)
+			//   merged  → ↻ (cyan; with `preserved:` footnote when
+			//             the merge kept other MCP servers)
+			//   exists  → ! (yellow; file untouched)
+			//   skipped → · (dim)
 			const stamp =
 				file.kind === 'written'
 					? enabled
 						? success('')
 						: '[ok]'
-					: file.kind === 'exists'
+					: file.kind === 'merged'
 						? enabled
-							? warn('')
-							: '[exists]'
-						: enabled
-							? hint('·')
-							: '[skip]';
+							? `${c.cyan('↻')} `
+							: '[merged]'
+						: file.kind === 'exists'
+							? enabled
+								? warn('')
+								: '[exists]'
+							: enabled
+								? hint('·')
+								: '[skip]';
 			const tail = enabled ? c.gray(`  ${dirName}/`) : `  ${dirName}/`;
 			const main = enabled ? white(fileName) : fileName;
 			lines.push(`  ${stamp} ${main}${tail}`);
+			// When the merge preserved other MCP servers, surface
+			// them in a dim footnote so the operator can confirm the
+			// merge did not silently drop a tool wiring. The hint
+			// uses the same `hint()` colorizer as other grey notes
+			// in the recap so the visual hierarchy stays consistent.
+			if (file.kind === 'merged' && (file.preserved?.length ?? 0) > 0) {
+				const preservedList = (file.preserved ?? []).join(', ');
+				lines.push(
+					enabled
+						? `      ${hint(`preserved ${file.preserved?.length} server(s): ${preservedList}`)}`
+						: `      preserved ${file.preserved?.length} server(s): ${preservedList}`,
+				);
+			}
 		}
 	}
 
@@ -178,9 +215,27 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 	if (written.some((w) => w.path.endsWith('.vscode/mcp.json'))) {
-		nextActions.push(
-			`reload VS Code so ${brand('.vscode/mcp.json')} is picked up`,
+		// Distinguish between a fresh write and a merge so the next
+		// step is accurate: a fresh write needs a reload, a merge
+		// already preserves the operator's other servers so the
+		// hint is "review the preserved servers, then reload".
+		const mcpJson = written.find((w) =>
+			w.path.endsWith('.vscode/mcp.json'),
 		);
+		if (mcpJson !== undefined && mcpJson.kind === 'merged') {
+			const preserved = mcpJson.preserved ?? [];
+			const preservedSuffix =
+				preserved.length > 0
+					? ` (preserved: ${preserved.join(', ')})`
+					: '';
+			nextActions.push(
+				`review ${brand('.vscode/mcp.json')} merge${preservedSuffix} — reload VS Code afterwards`,
+			);
+		} else {
+			nextActions.push(
+				`reload VS Code so ${brand('.vscode/mcp.json')} is picked up`,
+			);
+		}
 	}
 	if (
 		written.some((w) =>
@@ -235,12 +290,12 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 
 /**
  * Convenience helper: write the human summary to stderr so stdout
- * keeps its pipe-safe JSON. No-op when `enabled` is false (callers
- * may pass `false` in tests or when piping to a file).
+ * keeps its pipe-safe JSON. Always prints (with or without colour
+ * depending on `enabled`); the only way to silence it is to not
+ * call this helper at all.
  */
 export const printInitHumanSummary = (input: IInitHumanInput): void => {
 	const block = renderInitHumanSummary(input);
-	if (input.enabled === false) return;
 	process.stderr.write(block);
 };
 

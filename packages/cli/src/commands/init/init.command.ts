@@ -27,10 +27,13 @@ import {
 import { detectTargetProject } from './init-detection';
 import { collectInitAnswers } from './init-prompts';
 import { renderInitBundle } from './init-render';
-import { writeMcpVertexConfig, writeWorkspaceText } from './init-writers';
+import {
+	writeMcpVertexConfig,
+	writeVscodeMcpJson,
+	writeWorkspaceText,
+} from './init-writers';
 import { InitAnswers, type IInitAnswers } from './init-answers.schema';
 import { printInitHumanSummary } from './init-human-summary';
-import { COLOR_ON } from '../../lib/color';
 import { join } from 'node:path';
 
 /** Flags shared by `init` and `init:default`. */
@@ -192,7 +195,6 @@ export const runInitWithAnswers = async (
 					kind: 'written' as const,
 				})),
 				dryRun: true,
-				enabled: COLOR_ON,
 			});
 		}
 		return {
@@ -222,6 +224,22 @@ export const runInitWithAnswers = async (
 			written.push({ path: result.path, kind: result.kind });
 			continue;
 		}
+		// `.vscode/mcp.json` is the only other file that needs a
+		// merge-aware writer: the operator may already have other
+		// MCP servers wired up (filesystem, github, docker, …) and
+		// we must not silently overwrite them. `writeVscodeMcpJson`
+		// reads the existing document, upserts the `mcp-vertex`
+		// entry, and preserves everything else. See the writer for
+		// the three-way outcome (`written` / `merged` / `exists`).
+		if (file.relPath === '.vscode/mcp.json') {
+			const result = await writeVscodeMcpJson(
+				answers.workspaceRoot,
+				options.hostEntryPath,
+				answers.hostInstructions,
+			);
+			written.push({ path: result.path, kind: result.kind });
+			continue;
+		}
 		const mode = answers.hostInstructions;
 		const result = await writeWorkspaceText(
 			answers.workspaceRoot,
@@ -240,7 +258,6 @@ export const runInitWithAnswers = async (
 				kind: w.kind as 'written' | 'exists' | 'skipped',
 			})),
 			dryRun: false,
-			enabled: COLOR_ON,
 		});
 	}
 
