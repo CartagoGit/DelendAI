@@ -1,0 +1,237 @@
+---
+import { useTranslations, type Lang } from '#I18N/ui';
+import { describeTool } from '#I18N/tools';
+import capabilities from '#MANIFESTS/capabilities.json';
+import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import Tabs from '#COMPONENTS/ui/Tabs.astro';
+import PluginInstall from '#COMPONENTS/PluginInstall.astro';
+import Tutorial from '#COMPONENTS/Tutorial.astro';
+
+interface Props {
+	lang: Lang;
+	slug: string;
+}
+const { lang, slug } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pluginsHref =
+	lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`;
+// Per-tool detail page (l030 S1) — each tool block in the "tools" tab links
+// out to its own routable page.
+const toolHref = (name: string) =>
+	lang === 'en'
+		? `${base}/tools/${slug}/${name}`
+		: `${base}/${lang}/tools/${slug}/${name}`;
+
+// Map a package short-name to its tool namespace (core → mcp-vertex).
+const nsFor = (s: string): string => (s === 'core' ? 'mcp-vertex' : s);
+
+type ITool = {
+	name: string;
+	namespace: string;
+	description: string;
+	effects?: string[];
+	inputSchema?: {
+		fields: ReadonlyArray<{
+			name: string;
+			type: string;
+			required: boolean;
+			description?: string;
+		}>;
+	};
+	/**
+	 * Precomputed 12-language description block. When present, SSR
+	 * renders the active language directly from this map and skips
+	 * the runtime `describeTool()` lookup. See l110 s1.
+	 */
+	i18n?: Record<string, string>;
+};
+type IPkg = {
+	name: string;
+	version: string;
+	configExample?: {
+		summary: string;
+		options: Record<string, unknown>;
+	};
+};
+
+const pkg = (capabilities.packages as IPkg[]).find(
+	(p) =>
+		p.name.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '') === slug,
+);
+const slugOf = (n: string): string => n.replace('@mcp-vertex/', '');
+// Filter tutorials for this plugin; empty when none exists.
+const pluginTutorials = (
+	(capabilities as { tutorials?: ITutorial[] }).tutorials ?? []
+).filter((t) => slugOf(t.plugin) === slug);
+const ns = nsFor(slug);
+const tools = (capabilities.tools as ITool[])
+	.filter((tool) => tool.namespace === ns)
+	.sort((a, b) => a.name.localeCompare(b.name));
+// Localized description with graceful English fallback.
+// SSR-fast path: use the precomputed `i18n` block when available. Falls
+// back to the runtime `describeTool()` lookup for tools not in the
+// catalogue, and finally to the SDK's English description.
+const toolDesc = (tool: ITool): string => {
+	if (tool.i18n) {
+		return tool.i18n[lang] ?? tool.i18n.en ?? tool.description;
+	}
+	return describeTool(tool.name, lang) ?? tool.description;
+};
+
+const title = pkg?.name ?? `@mcp-vertex/${slug}`;
+---
+
+<PageHeader
+	lang={lang}
+	title={title}
+	crumbs={[
+		{ label: t.nav.plugins, href: pluginsHref },
+	]}
+/>
+<section class="section">
+	<div class="container">
+		<Tabs
+			variant="plugin"
+			tabs={[
+				{ id: 'install', label: t.pluginpage.tabInstall },
+				{ id: 'tools', label: t.pluginpage.tabTools },
+				...(pkg?.configExample
+					? ([{ id: 'configuration', label: t.pluginpage.tabConfiguration }] as const)
+					: []),
+				...(pluginTutorials.length > 0
+					? ([{ id: 'tutorial', label: t.pluginpage.tabTutorial }] as const)
+					: []),
+			]}
+		>
+			<section data-tab-panel="install" id="panel-install">
+				<PluginInstall slug={slug} heading={t.pluginpage.install} />
+			</section>
+
+			<section data-tab-panel="tools" id="panel-tools" hidden>
+				<h2>{t.pluginpage.tools}</h2>
+				<div class="tools-grid">
+					{tools.map((tool) => (
+						<div class="tool card">
+							<div class="tool__head">
+								<a href={toolHref(tool.name)}><code>{tool.name}</code></a>
+								{(tool.effects ?? []).map((e) => (
+									<span class={`fx fx--${e}`}>{e}</span>
+								))}
+								{(tool.effects ?? []).length === 0 && <span class="fx fx--read">read-only</span>}
+							</div>
+							<p>{toolDesc(tool)}</p>
+							{(tool.inputSchema?.fields.length ?? 0) && (
+								<table class="args">
+									<caption>{tool.name} arguments</caption>
+									<thead>
+										<tr>
+											<th scope="col">Argument</th>
+											<th scope="col">Type</th>
+											<th scope="col">Required</th>
+											<th scope="col">Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										{(tool.inputSchema?.fields ?? []).map((field) => (
+											<tr>
+												<td><code>{field.name}</code></td>
+												<td><code>{field.type}</code></td>
+												<td>{field.required ? 'yes' : 'no'}</td>
+												<td>{field.description ?? '—'}</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							)}
+						</div>
+					))}
+				</div>
+			</section>
+
+			{pkg?.configExample && (
+				<section data-tab-panel="configuration" id="panel-configuration" hidden>
+					<h2>{t.pluginpage.tabConfiguration}</h2>
+					<p>{pkg.configExample.summary}</p>
+					<div class="config__snippet">
+						<button
+							type="button"
+							class="config__copy"
+							data-copy-target={`cfg-${slug}`}
+						>
+							Copy
+						</button>
+						<pre id={`cfg-${slug}`}><code>{
+							// The outer object mirrors the user's mcp-vertex.config.json
+							// so they can paste the whole block. The plugin key is the
+							// package short-name; `options` is what the plugin sees as
+							// `ctx.options` at registration time.
+							JSON.stringify(
+								{
+									plugins: {
+										[slug]: {
+											options: pkg.configExample.options,
+										},
+									},
+								},
+								null,
+								2,
+							)
+						}</code></pre>
+					</div>
+				</section>
+			)}
+
+			{pluginTutorials.length > 0 && (
+				<section data-tab-panel="tutorial" id="panel-tutorial" hidden>
+					<Tutorial tutorials={pluginTutorials} plugin={slug} lang={lang} />
+				</section>
+			)}
+		</Tabs>
+	</div>
+</section>
+
+{pkg?.configExample && (
+	<script is:inline>
+		// Minimal copy-to-clipboard handler for the config snippet. Inline so
+		// it works without a JS framework. Runs once per page; uses event
+		// delegation on the document so re-renders don't re-bind.
+		document.addEventListener('click', (event) => {
+			const target = event.target;
+			if (!(target instanceof HTMLElement)) return;
+			const btn = target.closest('button.config__copy');
+			if (!btn) return;
+			const id = btn.getAttribute('data-copy-target');
+			if (!id) return;
+			const pre = document.getElementById(id);
+			if (!pre) return;
+			const text = pre.innerText;
+			const finish = (ok) => {
+				btn.textContent = ok ? 'Copied!' : 'Press Ctrl+C';
+				setTimeout(() => {
+					btn.textContent = 'Copy';
+				}, 2000);
+			};
+			if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+				navigator.clipboard.writeText(text).then(
+					() => finish(true),
+					() => finish(false),
+				);
+			} else {
+				// Legacy fallback for older browsers / non-HTTPS.
+				const range = document.createRange();
+				range.selectNodeContents(pre);
+				const selection = window.getSelection();
+				if (selection) {
+					selection.removeAllRanges();
+					selection.addRange(range);
+					finish(true);
+				} else {
+					finish(false);
+				}
+			}
+		});
+	</script>
+)}

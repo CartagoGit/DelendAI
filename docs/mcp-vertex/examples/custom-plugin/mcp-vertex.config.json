@@ -1,0 +1,7 @@
+{
+	"$schema": "../../../../packages/core/schema/mcp-vertex.config.schema.json",
+	"keepLegacy": false,
+	"plugins": {
+		"example-wordcount": { "options": {} }
+	}
+}

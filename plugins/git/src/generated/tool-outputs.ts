@@ -12,6 +12,16 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface GitBlameOutput {
+	lines: {
+		line: number;
+		hash: string;
+		author: string;
+		date: string;
+		content: string;
+	}[];
+}
+
 export interface GitChangedOutput {
 	changed: string[];
 }
@@ -27,6 +37,14 @@ export interface GitLogOutput {
 	}[];
 }
 
+export interface GitShowOutput {
+	hash: string;
+	author: string;
+	date: string;
+	subject: string;
+	stat: string;
+}
+
 export interface GitStatusOutput {
 	branch?: string;
 	clean: boolean;
@@ -36,10 +54,23 @@ export interface GitStatusOutput {
 	}[];
 }
 
+export interface GitWorktreeOutput {
+	worktrees: {
+		path: string;
+		head: string;
+		branch?: string;
+		bare?: boolean;
+		locked?: boolean;
+	}[];
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface GitToolOutputs {
+	"git_blame": GitBlameOutput;
 	"git_changed": GitChangedOutput;
 	"git_diff": GitDiffOutput;
 	"git_log": GitLogOutput;
+	"git_show": GitShowOutput;
 	"git_status": GitStatusOutput;
+	"git_worktree": GitWorktreeOutput;
 }

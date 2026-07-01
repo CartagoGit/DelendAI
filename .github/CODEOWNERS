@@ -1,0 +1,18 @@
+# Code owners — reviewers auto-requested on matching paths.
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything.
+*                       @CartagoGit
+
+# Core runtime — the agnostic contract; change with care.
+/packages/core/         @CartagoGit
+
+# Release / CI / build scripts.
+/scripts/               @CartagoGit
+/.github/               @CartagoGit
+
+# Plugins.
+/plugins/               @CartagoGit
+
+# Public site.
+/apps/web/              @CartagoGit

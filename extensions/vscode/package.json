@@ -1,0 +1,182 @@
+{
+	"name": "mcp-vertex-vscode",
+	"displayName": "MCP Vertex for VS Code",
+	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
+	"version": "1.0.0",
+	"publisher": "cartago",
+	"type": "module",
+	"private": true,
+	"license": "BSD-3-Clause",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "mcp-vertex",
+					"title": "mcp-vertex",
+					"icon": "media/logo.svg"
+				}
+			]
+		},
+		"views": {
+			"mcp-vertex": [
+				{
+					"id": "mcp-vertex.tools",
+					"name": "Tools",
+					"icon": "media/logo.svg"
+				},
+				{
+					"id": "mcp-vertex.proposals",
+					"name": "Proposals"
+				},
+				{
+					"id": "mcp-vertex.memory",
+					"name": "Memory"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "mcp-vertex.openAgentCatalog",
+				"title": "mcp-vertex: Open the unified agent catalog"
+			},
+			{
+				"command": "mcp-vertex.openDashboard",
+				"title": "mcp-vertex: Open Dashboard"
+			},
+			{
+				"command": "mcp-vertex.showOverview",
+				"title": "mcp-vertex: Show Overview"
+			},
+			{
+				"command": "mcp-vertex.refresh",
+				"title": "mcp-vertex: Refresh"
+			},
+			{
+				"command": "mcp-vertex.runValidation",
+				"title": "mcp-vertex: Run Validation"
+			},
+			{
+				"command": "mcp-vertex.openProposal",
+				"title": "mcp-vertex: Open Proposal Board"
+			},
+			{
+				"command": "mcp-vertex.showMetrics",
+				"title": "mcp-vertex: Show Metrics"
+			},
+			{
+				"command": "mcp-vertex.openDocs",
+				"title": "mcp-vertex: Open Documentation"
+			},
+			{
+				"command": "mcp-vertex.openDocsApi",
+				"title": "mcp-vertex: Open Docs / API / How-to-use"
+			},
+			{
+				"command": "mcp-vertex.openKnowledge",
+				"title": "mcp-vertex: Open Knowledge Navigator"
+			},
+			{
+				"command": "mcp-vertex.toolSearch",
+				"title": "mcp-vertex: Search Tools"
+			},
+			{
+				"command": "mcp-vertex.restartServer",
+				"title": "mcp-vertex: Restart MCP Server"
+			},
+			{
+				"command": "mcp-vertex.openSettings",
+				"title": "mcp-vertex: Open Settings"
+			},
+			{
+				"command": "mcp-vertex.openToolbar",
+				"title": "mcp-vertex: Open Toolbar"
+			},
+			{
+				"command": "mcp-vertex.memorySave",
+				"title": "mcp-vertex: Save Memory Note"
+			},
+			{
+				"command": "mcp-vertex.memoryForget",
+				"title": "mcp-vertex: Forget Memory Note"
+			},
+			{
+				"command": "mcp-vertex.setupGithub",
+				"title": "mcp-vertex: Set up GitHub issues"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "mcp-vertex.openAgentCatalog",
+					"when": "view == mcp-vertex.tools",
+					"group": "navigation"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "mcp-vertex.openAgentCatalog",
+					"when": "true"
+				}
+			]
+		}
+	},
+	"configuration": {
+		"title": "MCP Vertex server",
+		"properties": {
+			"mcp-vertex.server.command": {
+				"type": "string",
+				"default": "bun",
+				"markdownDescription": "Executable used to spawn the MCP server. Override this when `bun` (or your replacement) is not on the `PATH` inherited by VS Code's extension host — e.g. WSL installs at `~/.bun/bin/bun`. Set to an absolute path to bypass `PATH` lookup entirely.",
+				"scope": "machine"
+			},
+			"mcp-vertex.server.args": {
+				"type": [
+					"array",
+					"string"
+				],
+				"items": {
+					"type": "string"
+				},
+				"default": [
+					"run",
+					"mcp-vertex"
+				],
+				"markdownDescription": "Arguments passed to `mcp-vertex.server.command`. Accepts either a JSON array of strings or a single space-separated string. Defaults to `[\"run\", \"mcp-vertex\"]`.",
+				"scope": "machine"
+			},
+			"mcp-vertex.server.prefix": {
+				"type": "string",
+				"markdownDescription": "Tool-name namespace prefix the server was started with (the value passed to the server's `--prefix` flag, e.g. `acme`). When set, every service call is namespaced as `<prefix>_<tool>`. Leave empty to use the default `mcp-vertex_` namespace.",
+				"scope": "machine"
+			}
+		}
+	},
+	"scripts": {
+		"type": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run",
+		"check:i18n": "bun scripts/check-i18n.ts",
+		"build": "bun build src/extension.ts --target=node --format=cjs --external=vscode --outdir=dist",
+		"package": "bun run build && bun scripts/package.script.ts"
+	},
+	"dependencies": {
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/ui-extension": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.90.0",
+		"@vscode/vsce": "^3.6.3",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	}
+}

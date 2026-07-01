@@ -1,0 +1,125 @@
+---
+/**
+ * pages/cli.astro — the CLI usage guide (f00053 S5).
+ *
+ * A dedicated, navigable page documenting the `mcpv` / `@mcp-vertex/core`
+ * CLI: global flags, per-plugin command groups, and common workflows. All
+ * content is driven by the `cli-guide` DATA module (open/closed: a new
+ * command is a data entry), whose plugin command groups are derived from
+ * the canonical plugin catalog so the CLI guide never contradicts /plugins.
+ */
+import Base from '#LAYOUTS/Base.astro';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import { type Lang } from '#I18N/ui';
+import { CLI_GUIDE } from '#DATA/cli-guide';
+
+const lang: Lang = 'en';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const g = CLI_GUIDE;
+---
+
+<Base
+	lang={lang}
+	title="CLI guide — @mcp-vertex/core"
+	description="How to drive the mcpv / @mcp-vertex/core CLI: global flags, per-plugin command groups, and common workflows."
+>
+	<PageHeader lang={lang} title="CLI guide" />
+	<section class="section">
+		<div class="container">
+			<p class="lead">
+				Drive the <code>{g.binary}</code> / <code>@mcp-vertex/core</code> CLI.
+				The server is stdio MCP; point any client at the command (see
+				<a href={`${base}/install`}>Install</a>) or run it directly.
+			</p>
+
+			<h2 id="flags">Global flags</h2>
+			<table class="args">
+				<thead>
+					<tr>
+						<th scope="col">Flag</th>
+						<th scope="col">What it does</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						g.globalFlags.map((flag) => (
+							<tr>
+								<td><code>{flag.flag}</code></td>
+								<td>
+									{flag.summary}
+									{flag.example && (
+										<div>
+											<code>{flag.example}</code>
+										</div>
+									)}
+								</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+
+			<h2 id="commands">Command groups</h2>
+			<p>
+				Each plugin contributes a command group; the core meta-tools and the
+				doctor are always available.
+			</p>
+			<div class="cli-groups">
+				{
+					g.commandGroups.map((group) => (
+						<div class="cli-group card">
+							<code class="cli-group__id">{group.id}</code>
+							<strong>{group.title}</strong>
+							<p>{group.summary}</p>
+						</div>
+					))
+				}
+			</div>
+
+			<h2 id="workflows">Common workflows</h2>
+			{
+				g.workflows.map((flow) => (
+					<section class="cli-workflow">
+						<h3>{flow.title}</h3>
+						<ol>
+							{flow.steps.map((step) => (
+								<li>{step}</li>
+							))}
+						</ol>
+					</section>
+				))
+			}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.cli-groups {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+		gap: 1rem;
+		margin: 1rem 0 2rem;
+	}
+	.cli-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 1rem 1.1rem;
+	}
+	.cli-group__id {
+		font-size: 0.78rem;
+		color: var(--accent);
+	}
+	.cli-group p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+	.cli-workflow {
+		padding: 0.5rem 0 1rem;
+	}
+	.cli-workflow ol {
+		line-height: 1.6;
+	}
+</style>

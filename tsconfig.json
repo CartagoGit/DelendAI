@@ -3,8 +3,15 @@
 	"include": [
 		"packages/*/src/**/*",
 		"packages/*/tests/**/*",
+		"packages/ui-extension/src/**/*",
+		"packages/ui-extension/tests/**/*",
+		"apps/shared/src/**/*",
+		"extensions/vscode/src/**/*",
 		"plugins/*/src/**/*",
 		"plugins/*/tests/**/*",
+		"docs/mcp-vertex/examples/*/src/**/*",
+		"docs/mcp-vertex/examples/*/tests/**/*",
 		"scripts/**/*"
-	]
+	],
+	"exclude": []
 }

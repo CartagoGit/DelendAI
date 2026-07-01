@@ -1,0 +1,123 @@
+{
+  "$schema": "https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+  "cacheDir": ".cache/mcp-vertex",
+  "docsDir": "docs/mcp-vertex",
+  "convention": {
+    "pluginPathsRoot": "packages",
+    "sourceRoot": "packages"
+  },
+  "plugins": {
+    "git": {
+      "options": {}
+    },
+    "search": {
+      "options": {
+        "roots": [
+          "packages",
+          "plugins",
+          "extensions",
+          "apps",
+          "tools",
+          "scripts"
+        ],
+        "extensions": [
+          ".ts",
+          ".tsx",
+          ".js",
+          ".mjs",
+          ".cjs",
+          ".md",
+          ".json"
+        ],
+        "ignoreDirs": [
+          "node_modules",
+          ".cache",
+          "dist",
+          "build",
+          ".git"
+        ]
+      }
+    },
+    "memory": {
+      "options": {
+        "bm25K1": 1.5,
+        "bm25B": 0.75,
+        "titleWeight": 2,
+        "maxNotes": 1000
+      }
+    },
+    "docs": {
+      "options": {
+        "roots": [
+          "docs/mcp-vertex",
+          "README.md"
+        ],
+        "extensions": [
+          ".md",
+          ".mdx"
+        ],
+        "ignoreDirs": [
+          "node_modules",
+          ".cache",
+          "dist"
+        ]
+      }
+    },
+    "rules": {
+      "options": {}
+    },
+    "quality": {
+      "options": {}
+    },
+    "deps": {
+      "options": {
+        "manifest": "package.json",
+        "allowNetwork": false,
+        "allowWrite": false
+      }
+    },
+    "proposals": {
+      "options": {
+        "validationCommand": "bun run validate",
+        "namePool": [
+          "falcon",
+          "owl",
+          "crow",
+          "sparrow",
+          "finch"
+        ],
+        "orchestration": {
+          "delegateAfterToolCalls": 3
+        }
+      }
+    },
+    "notification": {
+      "options": {
+        "intervalMs": 2000,
+        "heartbeatMs": 30000
+      }
+    },
+    "logs": {
+      "options": {
+        "retentionDays": 30
+      }
+    },
+    "status-marker": {
+      "options": {}
+    },
+    "test-convention": {
+      "options": {}
+    },
+    "conventions": {
+      "options": {
+        "roots": [
+          "packages",
+          "plugins",
+          "extensions",
+          "apps",
+          "tools"
+        ]
+      }
+    }
+  }
+}

@@ -24,6 +24,8 @@ export interface IObservedContinuity {
 	readonly newProposalsOpenedInSession?: number;
 	readonly agentSpawnsInSession?: number;
 	readonly toolRetriesForTool?: number;
+	/** true when the current task emitted a checkpoint before close/hand-off */
+	readonly checkpointPresent?: boolean;
 	/** true when the caller intends to re-read a doc whose digest is unchanged */
 	readonly willReReadUnchangedDoc?: boolean;
 }
@@ -73,7 +75,7 @@ const FIELD_DEFS: readonly IFieldDef[] = [
 
 const evaluateBooleanChecks = (
 	policy: IContinuityPolicy,
-	observed: IObservedContinuity
+	observed: IObservedContinuity,
 ): IContinuityViolation[] => {
 	const violations: IContinuityViolation[] = [];
 
@@ -100,6 +102,18 @@ const evaluateBooleanChecks = (
 		});
 	}
 
+	if (
+		policy.requireCheckpointAfterTask === true &&
+		observed.checkpointPresent !== true
+	) {
+		violations.push({
+			field: 'requireCheckpointAfterTask',
+			message:
+				'SESSION_COMPACTION_REQUIRED: continuityPolicy.requireCheckpointAfterTask is true but no checkpoint was emitted for the current task.',
+			severity: 'block',
+		});
+	}
+
 	return violations;
 };
 
@@ -117,7 +131,7 @@ const evaluateBooleanChecks = (
  */
 export const evaluateContinuityPolicy = (
 	policy: IContinuityPolicy,
-	observed: IObservedContinuity
+	observed: IObservedContinuity,
 ): IContinuityCheckResult => {
 	const violations: IContinuityViolation[] = [];
 

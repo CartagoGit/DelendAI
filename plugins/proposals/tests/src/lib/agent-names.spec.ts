@@ -15,12 +15,22 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentNames,
 	type IAgentNamesToolOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/agent-names.tool';
+} from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
-const parse = (result: { content: Array<{ text: string }> }): unknown =>
-	JSON.parse(result.content[0]?.text ?? '{}');
+// The tool declares an `outputSchema`, so the MCP SDK requires
+// `structuredContent` on every response (see M45 in the master audit:
+// a sibling tool's local json() helper omitted it and crashed at the
+// transport layer). Assert it here too so a regression fails the suite.
+const parse = (result: {
+	content: Array<{ text: string }>;
+	structuredContent?: unknown;
+}): unknown => {
+	const value = JSON.parse(result.content[0]?.text ?? '{}');
+	expect(result.structuredContent).toEqual(value);
+	return value;
+};
 
-describe('agent_names (covers the orchestrator, not only subagents)', () => {
+describe('agent_names (covers the orchestrator, not only subagents)', async () => {
 	let root = '';
 	let options: IAgentNamesToolOptions;
 
@@ -41,7 +51,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 	it('assigns a name to the root orchestrator (depth 0, no parent)', async () => {
 		const result = await runAgentNames(
 			{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },
-			options
+			options,
 		);
 		const assignment = parse(result) as {
 			agent_name: string;
@@ -56,7 +66,7 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 	it('assigns a distinct name to a child subagent and lists both', async () => {
 		await runAgentNames(
 			{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },
-			options
+			options,
 		);
 		await runAgentNames(
 			{
@@ -65,35 +75,90 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 				agent_slot: 'implementation_runner',
 				parent_task_id: 'root',
 			},
-			options
+			options,
 		);
 		const list = parse(
-			await runAgentNames({ action: 'list' }, options)
+			await runAgentNames({ action: 'list' }, options),
 		) as { summary: { active: number } };
 		expect(list.summary.active).toBe(2);
+	});
+
+	it('f00082 S3: persists host/model on assign (unknown host coerced)', async () => {
+		const known = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'k',
+					agent_slot: 'orchestrator',
+					host: 'vscode-copilot',
+					model: 'm3',
+				},
+				options,
+			),
+		) as { host: string; model: string };
+		expect(known.host).toBe('vscode-copilot');
+		expect(known.model).toBe('m3');
+
+		const coerced = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'u',
+					agent_slot: 'implementation_runner',
+					parent_task_id: 'k',
+					host: 'some-future-ide',
+					model: 'gpt-9',
+				},
+				options,
+			),
+		) as { host: string; model: string };
+		// unknown host coerces to 'unknown'; model is free-form
+		expect(coerced.host).toBe('unknown');
+		expect(coerced.model).toBe('gpt-9');
+	});
+
+	it('f00082 S3: assign without host/model stores null (backwards compat)', async () => {
+		const a = parse(
+			await runAgentNames(
+				{
+					action: 'assign',
+					task_id: 'legacy',
+					agent_slot: 'orchestrator',
+				},
+				options,
+			),
+		) as { host: string | null; model: string | null };
+		expect(a.host).toBeNull();
+		expect(a.model).toBeNull();
 	});
 
 	it('honours a custom name pool from options', async () => {
 		const result = await runAgentNames(
 			{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },
-			{ ...options, pool: ['solo'] }
+			{ ...options, pool: ['solo'] },
 		);
-		expect((parse(result) as { agent_name: string }).agent_name).toBe('solo');
+		expect((parse(result) as { agent_name: string }).agent_name).toBe(
+			'solo',
+		);
 	});
 
 	// M10: a corrupt registry must NOT read as empty — that would let the
 	// orchestrator hand out names already held by live agents.
-	describe('corrupt registry (M10)', () => {
+	describe('corrupt registry (M10)', async () => {
 		const backupExists = (): boolean =>
 			readdirSync(root).some((f) =>
-				f.startsWith(`${basename(options.registryPathAbs)}.corrupt-`)
+				f.startsWith(`${basename(options.registryPathAbs)}.corrupt-`),
 			);
 
 		it('returns a structured error naming the backup instead of assigning', async () => {
 			writeFileSync(options.registryPathAbs, '{ torn registry');
 			const res = await runAgentNames(
-				{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },
-				options
+				{
+					action: 'assign',
+					task_id: 'root',
+					agent_slot: 'orchestrator',
+				},
+				options,
 			);
 			const body = parse(res) as {
 				error?: string;
@@ -111,19 +176,27 @@ describe('agent_names (covers the orchestrator, not only subagents)', () => {
 			writeFileSync(options.registryPathAbs, 'not json');
 			const res = await runAgentNames({ action: 'list' }, options);
 			expect(res).toMatchObject({ isError: true });
-			expect((parse(res) as { error?: string }).error).toContain('corrupt');
+			expect((parse(res) as { error?: string }).error).toContain(
+				'corrupt',
+			);
 		});
 
 		it('recovers once the corrupt backup is moved aside', async () => {
 			writeFileSync(options.registryPathAbs, 'broken');
 			await runAgentNames({ action: 'list' }, options); // quarantines
 			const res = await runAgentNames(
-				{ action: 'assign', task_id: 'root', agent_slot: 'orchestrator' },
-				options
+				{
+					action: 'assign',
+					task_id: 'root',
+					agent_slot: 'orchestrator',
+				},
+				options,
 			);
-			expect((parse(res) as { agent_name?: string }).agent_name).toBeDefined();
 			expect(
-				JSON.parse(readFileSync(options.registryPathAbs, 'utf8'))
+				(parse(res) as { agent_name?: string }).agent_name,
+			).toBeDefined();
+			expect(
+				JSON.parse(readFileSync(options.registryPathAbs, 'utf8')),
 			).toMatchObject({ assignments: expect.any(Array) });
 		});
 	});

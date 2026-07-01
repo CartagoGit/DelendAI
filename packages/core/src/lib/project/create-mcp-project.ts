@@ -1,0 +1,260 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { estimateResultBytes } from '../metrics/metrics-registry';
+
+/**
+ * Compute the absolute path of today's JSONL log file the
+ * `logs` plugin writes to. Pure: no filesystem I/O. The path is
+ * resolved against the host workspace and `corePaths.cacheDir`.
+ * When either is missing, the hint is `null` and the wrapper
+ * simply skips the injection.
+ */
+const resolveLogFilePath = (
+	config: IMcpVertexHostConfig,
+	now: Date,
+): string | null => {
+	if (!config.corePaths) return null;
+	const cacheDir = config.workspace.resolve(config.corePaths.cacheDir);
+	if (!cacheDir) return null;
+	const dateStr = now.toISOString().slice(0, 10);
+	const sep = cacheDir.includes('\\') ? '\\' : '/';
+	return `${cacheDir}${sep}logs${sep}${dateStr}.jsonl`;
+};
+
+/**
+ * Inject a `logHint` into a failure result's `structuredContent` so
+ * the IDE can offer a clickable "Open log" affordance. Pure: only
+ * mutates the in-memory result object; never does filesystem I/O.
+ * No-op when the result is not an object, already carries a
+ * `logHint`, or the path cannot be resolved.
+ */
+const injectLogHintIntoResult = (
+	result: unknown,
+	logPath: string | null,
+	now: Date,
+): void => {
+	if (!result || typeof result !== 'object') return;
+	if (
+		!Array.isArray(result) &&
+		(result as { isError?: boolean }).isError !== true
+	)
+		return;
+	const resObj = result as Record<string, unknown>;
+	const structured = resObj.structuredContent;
+	if (
+		structured === null ||
+		typeof structured !== 'object' ||
+		Array.isArray(structured)
+	) {
+		return;
+	}
+	const structuredObj = structured as Record<string, unknown>;
+	if ('logHint' in structuredObj) return; // engine already set one
+	if (logPath === null) return;
+	structuredObj.logHint = {
+		path: logPath,
+		line: 0, // unknown without I/O — IDE renders path only
+		ts: now.toISOString(),
+	};
+};
+
+/**
+ * Wrap `server.registerTool` so every tool handler records latency, response
+ * bytes and error flag into the metrics registry. Transparent: the tool
+ * contract is unchanged; instrumentation is pure measurement around the call.
+ */
+const instrumentToolHandlers = (
+	server: McpServer,
+	config: IMcpVertexHostConfig,
+): void => {
+	type RegisterTool = McpServer['registerTool'];
+	const original = server.registerTool.bind(server) as RegisterTool;
+	const wrap = (name: string, handler: unknown): unknown => {
+		if (typeof handler !== 'function') return handler;
+		const fn = handler as (...args: unknown[]) => unknown;
+		return async (...args: unknown[]): Promise<unknown> => {
+			const start = performance.now();
+			let result: unknown;
+			let isError = false;
+			let error: unknown;
+			try {
+				if (config.onToolStart) {
+					try {
+						void Promise.resolve(
+							config.onToolStart(name, args[0]),
+						).catch(() => {});
+					} catch {
+						// Ignored
+					}
+				}
+				result = await fn(...args);
+				isError = (result as { isError?: boolean })?.isError === true;
+
+				// Inject __stuck_detected if agent is stuck
+				if (
+					config.isAgentStuck &&
+					result &&
+					typeof result === 'object'
+				) {
+					const stuckInfo = config.isAgentStuck(name, args[0]);
+					if (stuckInfo) {
+						const resObj = result as Record<string, unknown>;
+						const structured =
+							(resObj.structuredContent as Record<
+								string,
+								unknown
+							>) ?? {};
+						resObj.structuredContent = {
+							...structured,
+							__stuck_detected: true,
+							handoffPath: stuckInfo.handoffPath,
+							suggestedAction: stuckInfo.suggestedAction,
+						};
+					}
+				}
+
+				// On failure, inject a logHint so the IDE can offer an
+				// "Open log" affordance. Pure (no I/O): the actual
+				// log entry is written by the logs plugin's onToolCall
+				// in the finally block below.
+				if (isError) {
+					injectLogHintIntoResult(
+						result,
+						resolveLogFilePath(config, new Date()),
+						new Date(),
+					);
+				}
+
+				return result;
+			} catch (err) {
+				isError = true;
+				error = err;
+				throw err;
+			} finally {
+				const ms = performance.now() - start;
+				if (config.metricsRegistry) {
+					config.metricsRegistry.record(name, {
+						ms,
+						bytes: isError ? 0 : estimateResultBytes(result),
+						isError,
+					});
+				}
+				if (config.onToolCall) {
+					try {
+						void Promise.resolve(
+							config.onToolCall(name, args[0], result, error),
+						).catch(() => {});
+					} catch {
+						// Ignored
+					}
+				}
+			}
+		};
+	};
+	// registerTool is heavily overloaded; the handler is always the last arg.
+	(server as { registerTool: (...a: unknown[]) => unknown }).registerTool = (
+		...callArgs: unknown[]
+	) => {
+		const name = callArgs[0] as string;
+		const last = callArgs.length - 1;
+		callArgs[last] = wrap(name, callArgs[last]);
+		return (original as (...a: unknown[]) => unknown)(...callArgs);
+	};
+};
+
+/**
+ * An assembled (but not yet connected) MCP server. `start()` connects
+ * the stdio transport; `registrationOrder` exposes the exact tool
+ * registration sequence for audits and tests.
+ */
+export interface IMcpVertexProject {
+	readonly server: McpServer;
+	readonly registrationOrder: readonly string[];
+	start(): Promise<void>;
+}
+
+/**
+ * Compute the final registration sequence: core registrations first
+ * (in declared order), then each extra appended at the end — or, when
+ * `registerAfter` names an anchor, inserted immediately after it.
+ * Multiple extras anchored to the same id keep declaration order.
+ * Pure and deterministic; throws on duplicate ids and unknown anchors
+ * so a misconfigured host fails fast instead of drifting silently.
+ */
+export function planRegistrationOrder(
+	core: readonly IToolRegistration[],
+	extras: readonly IToolRegistration[],
+): readonly IToolRegistration[] {
+	const sequence: IToolRegistration[] = [...core];
+	const seen = new Set(core.map((registration) => registration.id));
+	if (seen.size !== core.length) {
+		throw new Error(
+			'[mcp-vertex] duplicate registration id in core sequence',
+		);
+	}
+	for (const extra of extras) {
+		if (seen.has(extra.id)) {
+			throw new Error(
+				`[mcp-vertex] duplicate registration id "${extra.id}"`,
+			);
+		}
+		seen.add(extra.id);
+		if (extra.registerAfter === undefined) {
+			sequence.push(extra);
+			continue;
+		}
+		const anchorIndex = sequence.findIndex(
+			(registration) => registration.id === extra.registerAfter,
+		);
+		if (anchorIndex < 0) {
+			throw new Error(
+				`[mcp-vertex] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`,
+			);
+		}
+		let insertIndex = anchorIndex + 1;
+		while (
+			insertIndex < sequence.length &&
+			sequence[insertIndex]?.registerAfter === extra.registerAfter
+		) {
+			insertIndex += 1;
+		}
+		sequence.splice(insertIndex, 0, extra);
+	}
+	return sequence;
+}
+
+/**
+ * Assemble an MCP server from a host config: deterministic tool
+ * registration (core + extras), then prompts, then resources. The
+ * caller starts the stdio transport via `start()`.
+ */
+export async function createMcpProject(
+	config: IMcpVertexHostConfig,
+): Promise<IMcpVertexProject> {
+	const server = new McpServer({
+		name: config.metadata.name,
+		version: config.metadata.version,
+	});
+	// Instrument BEFORE registering tools so every handler is wrapped.
+	instrumentToolHandlers(server, config);
+	const ordered = planRegistrationOrder([], config.extraTools ?? []);
+	for (const registration of ordered) {
+		await registration.register(server);
+	}
+	for (const prompt of config.extraPrompts ?? []) {
+		await prompt.register(server);
+	}
+	for (const resource of config.extraResources ?? []) {
+		await resource.register(server);
+	}
+	return {
+		server,
+		registrationOrder: ordered.map((registration) => registration.id),
+		async start(): Promise<void> {
+			await server.connect(new StdioServerTransport());
+		},
+	};
+}

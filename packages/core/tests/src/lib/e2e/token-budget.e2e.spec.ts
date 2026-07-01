@@ -1,16 +1,20 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import proposalsPlugin from '@cartago-git/mcp-proposals';
-import memoryPlugin from '@cartago-git/mcp-memory';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
+import proposalsPlugin from '@mcp-vertex/proposals';
+import memoryPlugin from '@mcp-vertex/memory';
+import searchPlugin from '@mcp-vertex/search';
+import docsPlugin from '@mcp-vertex/docs';
+import logsPlugin from '@mcp-vertex/logs';
 
 /**
  * Token budget benchmark [N23]. "Low-token" is a measurable promise, not
@@ -21,43 +25,146 @@ import memoryPlugin from '@cartago-git/mcp-memory';
  * change regresses them.
  *
  * Rough token estimate: ~4 bytes/token, so the budgets below are roughly
- * overview-full < ~1.5k tokens, overview-compact < ~400 tokens.
+ * overview-full < ~1.5k tokens, overview-compact < ~400 tokens,
+ * agent-catalog-compact < ~325 tokens and agent-catalog-full < ~1.7k tokens.
  */
 const BUDGET_BYTES = {
-	overviewFull: 6_000,
-	overviewCompact: 1_600,
+	// Full overview lists every tool's summary, so it grows as the toolset does
+	// (await_lock, proposal_review, proposal_adopt, …). The promise is the COMPACT
+	// path (well under budget) — agents use it when there are many tools.
+	// Bumped 7000 → 8000 (2026-06-22) after f00029-S2 (github-issues plugin,
+	// 5 tools) + f00030 (setup-github) + f00047 (ui-extension toolbar) raised
+	// the baseline from 6700B to 7244B measured.
+	// Bumped 8000 → 8500 / 1600 → 2100 (2026-06-26): the host-namespace tool
+	// rename (`mcp-vertex_` prefix on every tool) added ~11B per listed tool,
+	// raising full to 8015B and compact to 1944B measured. Compact is still
+	// the real promise — < 30% of full.
+	// Bumped 8500 → 8700 (2026-06-28): added commitAuthor options.
+	// Bumped 8700 → 8900 (2026-06-30): f00090 S1 added the memory_compact tool
+	// (in-session context compaction). Its summary is the only thing the full
+	// overview lists; full measured 8755B. Compact path unchanged (2079B), still
+	// the real promise.
+	overviewFull: 8_900,
+	overviewCompact: 2_100,
+	agentCatalogCompact: 1_300,
+	agentCatalogFull: 6_800,
 	autoWork: 1_600,
+	search: 3_000,
+	docsList: 2_500,
+	roundContext: 3_000,
+	logsTail: 6_000,
 } as const;
 
-describe('e2e: token budget (cold-start payloads)', () => {
+describe('e2e: token budget (cold-start payloads)', async () => {
 	let workspace = '';
 	let client: Client;
 	let close: () => Promise<void>;
 
-	beforeEach(async () => {
-		workspace = mkdtempSync(join(tmpdir(), 'tok-'));
+	const connectClient = async (
+		pluginList: string,
+	): Promise<{ client: Client; close: () => Promise<void> }> => {
 		const args = parseCliArgs(
-			['--plugins=proposals,memory', `--workspace=${workspace}`],
-			workspace
+			[`--plugins=${pluginList}`, `--workspace=${workspace}`],
+			workspace,
 		);
 		const plugins: Record<string, { default: unknown }> = {
-			'@cartago-git/mcp-proposals': { default: proposalsPlugin },
-			'@cartago-git/mcp-memory': { default: memoryPlugin },
+			'@mcp-vertex/proposals': { default: proposalsPlugin },
+			'@mcp-vertex/memory': { default: memoryPlugin },
+			'@mcp-vertex/search': { default: searchPlugin },
+			'@mcp-vertex/docs': { default: docsPlugin },
+			'@mcp-vertex/logs': { default: logsPlugin },
 		};
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier: string) => plugins[specifier]!,
-			readFile: () => undefined,
+			readFile: async () => undefined,
 		});
-		const assembled = await createMcpServer(config);
+		const assembled = await createMcpProject(config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
 		await assembled.server.connect(serverTransport);
-		client = new Client({ name: 'tok', version: '0' }, { capabilities: {} });
-		await client.connect(clientTransport);
-		close = async () => {
-			await client.close();
-			await assembled.server.close();
+		const connectedClient = new Client(
+			{ name: 'tok', version: '0' },
+			{ capabilities: {} },
+		);
+		await connectedClient.connect(clientTransport);
+		return {
+			client: connectedClient,
+			close: async () => {
+				await connectedClient.close();
+				await assembled.server.close();
+			},
 		};
+	};
+
+	beforeEach(async () => {
+		workspace = mkdtempSync(join(tmpdir(), 'tok-'));
+		mkdirSync(join(workspace, 'docs'), { recursive: true });
+		mkdirSync(join(workspace, 'src'), { recursive: true });
+		writeFileSync(
+			join(workspace, 'docs', 'README.md'),
+			[
+				'# Proposal workflow',
+				'',
+				'Use proposal slices and compact docs.',
+			].join('\n'),
+		);
+		writeFileSync(
+			join(workspace, 'src', 'app.ts'),
+			['export const proposal = "compact search baseline";'].join('\n'),
+		);
+		mkdirSync(join(workspace, 'docs', 'proposals'), { recursive: true });
+		const skillManifestAbs = join(
+			workspace,
+			...SKILL_MANIFEST_REL.split('/'),
+		);
+		mkdirSync(dirname(skillManifestAbs), { recursive: true });
+		writeFileSync(
+			skillManifestAbs,
+			JSON.stringify({
+				generatedAt: '2026-06-25T00:00:00.000Z',
+				skills: [
+					{
+						id: 'mcp-vertex-token-budget-playbook',
+						version: '1.0.0',
+						minCoreVersion: '0.1.0',
+						bodyPath:
+							'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
+						tags: ['metrics', 'compact'],
+					},
+				],
+			}),
+		);
+		writeFileSync(
+			join(workspace, 'docs', 'proposals', 'index.json'),
+			JSON.stringify({
+				generated_at: '2026-06-25T00:00:00.000Z',
+				count: 3,
+				proposals: [
+					{
+						id: 'f00056',
+						title: 'Agent discovery catalog',
+						track: 'host+extension+skills+docs',
+						status: 'ready',
+						date: '2026-06-25',
+					},
+					{
+						id: 'c00002',
+						title: 'Pause npm publish',
+						track: 'docs+release',
+						status: 'paused',
+						date: '2026-06-21',
+					},
+					{
+						id: 'a00001',
+						title: 'Repository audit',
+						track: 'archive',
+						status: 'done',
+						date: '2026-06-15',
+					},
+				],
+			}),
+		);
+		({ client, close } = await connectClient('proposals,memory'));
 	});
 
 	afterEach(async () => {
@@ -67,7 +174,7 @@ describe('e2e: token budget (cold-start payloads)', () => {
 
 	const textBytes = async (
 		name: string,
-		args: Record<string, unknown>
+		args: Record<string, unknown>,
 	): Promise<number> => {
 		const res = await client.callTool({ name, arguments: args });
 		const text = (res.content as Array<{ type: string; text: string }>)[0]
@@ -76,21 +183,115 @@ describe('e2e: token budget (cold-start payloads)', () => {
 	};
 
 	it('cold-start overview stays under budget; compact is much cheaper', async () => {
-		const full = await textBytes('mcpcore_overview', {});
-		const compact = await textBytes('mcpcore_overview', { compact: true });
+		const full = await textBytes('mcp-vertex_overview', {});
+		const compact = await textBytes('mcp-vertex_overview', {
+			compact: true,
+		});
 
 		// Documented baseline (printed for visibility on failures):
 		expect(
 			full,
-			`overview full = ${full}B, compact = ${compact}B`
+			`overview full = ${full}B, compact = ${compact}B`,
 		).toBeLessThan(BUDGET_BYTES.overviewFull);
 		expect(compact).toBeLessThan(BUDGET_BYTES.overviewCompact);
 		// Compact must be a real saving, not cosmetic.
 		expect(compact).toBeLessThan(full * 0.7);
 	});
 
+	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
+		const catalogOnly = await connectClient('');
+		const catalogTextBytes = async (
+			name: string,
+			args: Record<string, unknown>,
+		): Promise<number> => {
+			const res = await catalogOnly.client.callTool({
+				name,
+				arguments: args,
+			});
+			const text = (
+				res.content as Array<{ type: string; text: string }>
+			)[0]?.text;
+			return Buffer.byteLength(text ?? '', 'utf8');
+		};
+		try {
+			const compact = await catalogTextBytes('mcp-vertex_agent_catalog', {
+				mode: 'compact',
+			});
+			const full = await catalogTextBytes('mcp-vertex_agent_catalog', {
+				mode: 'full',
+			});
+
+			expect(
+				compact,
+				`agent catalog compact = ${compact}B, full = ${full}B`,
+			).toBeLessThan(BUDGET_BYTES.agentCatalogCompact);
+			expect(full).toBeLessThan(BUDGET_BYTES.agentCatalogFull);
+			expect(compact).toBeLessThan(full);
+		} finally {
+			await catalogOnly.close();
+		}
+	});
+
 	it('auto_work returns a tight action plan, not prose', async () => {
-		const bytes = await textBytes('proposals_auto_work', {});
+		const bytes = await textBytes('mcp-vertex_proposals_auto_work', {});
 		expect(bytes).toBeLessThan(BUDGET_BYTES.autoWork);
+	});
+
+	it('read-only long-session surfaces stay on bounded compact paths', async () => {
+		const extra = await connectClient('proposals,memory,search,docs,logs');
+		const extraTextBytes = async (
+			name: string,
+			args: Record<string, unknown>,
+		): Promise<number> => {
+			const res = await extra.client.callTool({ name, arguments: args });
+			const text = (
+				res.content as Array<{ type: string; text: string }>
+			)[0]?.text;
+			return Buffer.byteLength(text ?? '', 'utf8');
+		};
+		try {
+			// Prime a few events so mcp-vertex_logs_tail has real output.
+			await extra.client.callTool({
+				name: 'mcp-vertex_search_search',
+				arguments: { query: 'proposal', maxResults: 5, context: 0 },
+			});
+			await extra.client.callTool({
+				name: 'mcp-vertex_docs_docs_list',
+				arguments: { limit: 10 },
+			});
+
+			const search = await extraTextBytes('mcp-vertex_search_search', {
+				query: 'proposal',
+				maxResults: 5,
+				context: 0,
+			});
+			const docsList = await extraTextBytes('mcp-vertex_docs_docs_list', {
+				limit: 10,
+			});
+			const roundContext = await extraTextBytes(
+				'mcp-vertex_proposals_round_context',
+				{},
+			);
+			const logsTail = await extraTextBytes('mcp-vertex_logs_tail', {
+				limit: 10,
+			});
+
+			expect(search, `search = ${search}B`).toBeLessThan(
+				BUDGET_BYTES.search,
+			);
+			expect(docsList, `docs_list = ${docsList}B`).toBeLessThan(
+				BUDGET_BYTES.docsList,
+			);
+			expect(
+				roundContext,
+				`round_context = ${roundContext}B`,
+			).toBeLessThan(BUDGET_BYTES.roundContext);
+			expect(
+				logsTail,
+				`mcp-vertex_logs_tail = ${logsTail}B`,
+			).toBeLessThan(BUDGET_BYTES.logsTail);
+		} finally {
+			await extra.close();
+		}
 	});
 });

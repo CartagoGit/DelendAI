@@ -1,0 +1,51 @@
+// _prompt.scss — prompt card on the prompts grid (label + args + body).
+//
+// BEM root: .prompt with __req.  The `<p>`, `<summary>`, and `<details>`
+// are nested with `&` to keep the BEM scope.
+
+.prompts-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+.prompt {
+	// Composes with .card for background/border/hover.
+	min-width: 0;
+
+	& p {
+		margin: 0.6rem 0 0;
+		color: var(--fg);
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+	&__args {
+		margin: 0.6rem 0 0;
+
+		& summary {
+			cursor: pointer;
+			color: var(--muted);
+			font-size: 0.82rem;
+			padding: 0.2rem 0;
+			user-select: none;
+		}
+		& summary:hover {
+			color: var(--accent);
+		}
+		& ul {
+			margin: 0.5rem 0 0;
+			padding-left: 1.1rem;
+			color: var(--muted);
+			font-size: 0.85rem;
+		}
+		& li {
+			margin: 0.25rem 0;
+		}
+	}
+	&__req {
+		display: inline-block;
+		margin-left: 0.3rem;
+		color: var(--accent-2);
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+}

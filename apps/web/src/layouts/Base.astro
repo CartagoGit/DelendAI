@@ -1,0 +1,186 @@
+---
+import SiteNav from '#COMPONENTS/SiteNav.astro';
+import SiteFooter from '#COMPONENTS/SiteFooter.astro';
+import Config from '#COMPONENTS/Config.astro';
+import Search from '#COMPONENTS/Search.astro';
+import '../styles/styles.scss';
+import { ClientRouter } from 'astro:transitions';
+import { renderRuntime } from '@mcp-vertex/shared';
+import { rtlLangs, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+	title?: string;
+	description?: string;
+}
+
+const {
+	lang,
+	title = '@mcp-vertex/core — agnostic MCP server core',
+	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
+} = Astro.props;
+const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<!doctype html>
+<html lang={lang} dir={dir}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/logo.svg`} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta name="theme-color" content="#0d1117" />
+		{/* Named slot for per-page head injection (e.g. hreflang tags on the
+		    root negotiator). Pages that don't pass `slot="head"` content
+		    simply skip this — no marker element is rendered. */}
+		<slot name="head" />
+		{/* Enable the View Transitions API. The header, footer and settings
+		    modal are mounted once in this layout and persist across navigations
+		    via `transition:persist`, so they never remount and never "jump". */}
+		<ClientRouter />
+		{/* Shared UI runtime from `@mcp-vertex/ui-extension`. Drives every
+		    `[data-mv-toggle="dropdown"]` and `[data-mv-action]` host
+		    gesture on the page (the "More" dropdown in the nav, any
+		    `[data-mv-toast-ttl]`, etc.). Without this, dropdowns are
+		    markup-only and never open. The script is idempotent and
+		    survives View Transitions because it binds once on
+		    `document`, not on the persisting element. */}
+		<Fragment set:html={renderRuntime()} />
+		<script>
+			// Apply the saved theme/motion before paint (no flash of default
+			// theme), and re-apply it after every View Transition. The original
+			// `is:inline` shim only runs once because Astro cannot re-execute
+			// the same inline bytes after a swap; promoting it to a real
+			// `<script>` lets us register an `astro:after-swap` listener that
+			// re-runs the same restore on every navigation.
+			const KEY_THEME = 'mcpvertex-theme';
+			const KEY_MOTION = 'mcpvertex-motion';
+			const applyTheme = () => {
+				try {
+					const t = localStorage.getItem(KEY_THEME);
+					if (t) document.documentElement.dataset.theme = t;
+					const m = localStorage.getItem(KEY_MOTION);
+					if (m === 'off') document.documentElement.dataset.motion = 'off';
+					else document.documentElement.removeAttribute('data-motion');
+				} catch {}
+			};
+			applyTheme();
+			document.addEventListener('astro:after-swap', applyTheme);
+
+			// x124 S2 — Re-bind nav and footer hrefs after every view
+			// transition. The chrome is mounted once with
+			// `transition:persist`, so the SSR-rendered hrefs (in the
+			// original language) would otherwise stick around after a
+			// language change. We read the active locale from
+			// `<html lang>` and rewrite the href of every in-page link
+			// inside the nav and the footer so the user can keep
+			// navigating in the new locale from any persisted chrome
+			// surface.
+			const LOCALE_CODES = new Set([
+				'en', 'es', 'fr', 'de', 'pt', 'it', 'zh', 'hi', 'ar', 'ja', 'vi', 'th',
+			]);
+			const stripLocale = (path: string) => {
+				const segs = path.split('/').filter(Boolean);
+				if (segs[0] && LOCALE_CODES.has(segs[0]) && segs[0] !== 'en') {
+					return '/' + segs.slice(1).join('/');
+				}
+				return path || '/';
+			};
+			const rewireHrefs = () => {
+				const lang = document.documentElement.lang || 'en';
+				const targets = document.querySelectorAll(
+					'.nav__links a, .sitefoot a[href]',
+				);
+				for (const a of targets) {
+					const href = a.getAttribute('href') || '';
+					// Skip external / mailto / anchor / absolute URLs — only
+					// rewrite in-site relative links.
+					if (
+						!/^\/(?!\/)/.test(href) ||
+						href.startsWith('//') ||
+						href.startsWith('/api/') ||
+						href.startsWith('/flags/') ||
+						href.startsWith('/logos/')
+					) {
+						continue;
+					}
+					const cleanHref = href.split('#')[0] || '/';
+					// Extract the segment path (strip the locale prefix if
+					// present, then re-add the new locale's prefix).
+					const targetRel = stripLocale(cleanHref);
+					const next = lang === 'en' ? targetRel : `/${lang}${targetRel === '/' ? '/' : targetRel}`;
+					if (a.getAttribute('href') !== next) a.setAttribute('href', next);
+				}
+			};
+			rewireHrefs();
+			document.addEventListener('astro:after-swap', rewireHrefs);
+
+			// x126 S2 — Re-translate the persist-mounted chrome after every
+			// view transition. The canonical i18n strings live in
+			// `apps/web/src/lib/nav-refresh.ts`; this map is a 12-locale
+			// runtime safety net so the nav + footer never display a stale
+			// English label after a language swap. The `check-i18n` script
+			// will surface any drift between this map and the lang files.
+			const NAV = {
+				en: { home: 'Home', install: 'Install', tools: 'Tools', benchmarks: 'Benchmarks', plugins: 'Plugins', prompts: 'Prompts', resources: 'Resources', knowledge: 'Knowledge', guide: 'Guide', api: 'API', more: 'More', firstFiveMinutes: 'First 5 minutes', troubleshooting: 'Troubleshooting' },
+				es: { home: 'Inicio', install: 'Instalar', tools: 'Herramientas', benchmarks: 'Comparativas', plugins: 'Plugins', prompts: 'Prompts', resources: 'Recursos', knowledge: 'Conocimiento', guide: 'Guía', api: 'API', more: 'Más', firstFiveMinutes: 'Primeros 5 minutos', troubleshooting: 'Solución de problemas' },
+				fr: { home: 'Accueil', install: 'Installer', tools: 'Outils', benchmarks: 'Benchmarks', plugins: 'Extensions', prompts: 'Prompts', resources: 'Ressources', knowledge: 'Connaissances', guide: 'Guide', api: 'API', more: 'Plus', firstFiveMinutes: 'Les 5 premières minutes', troubleshooting: 'Dépannage' },
+				de: { home: 'Start', install: 'Installieren', tools: 'Werkzeuge', benchmarks: 'Benchmarks', plugins: 'Plugins', prompts: 'Prompts', resources: 'Ressourcen', knowledge: 'Wissen', guide: 'Leitfaden', api: 'API', more: 'Mehr', firstFiveMinutes: 'Die ersten 5 Minuten', troubleshooting: 'Fehlerbehebung' },
+				pt: { home: 'Início', install: 'Instalar', tools: 'Ferramentas', benchmarks: 'Benchmarks', plugins: 'Plugins', prompts: 'Prompts', resources: 'Recursos', knowledge: 'Conhecimento', guide: 'Guia', api: 'API', more: 'Mais', firstFiveMinutes: 'Primeiros 5 minutos', troubleshooting: 'Resolução de problemas' },
+				it: { home: 'Home', install: 'Installa', tools: 'Strumenti', benchmarks: 'Confronti', plugins: 'Plugin', prompts: 'Prompt', resources: 'Risorse', knowledge: 'Conoscenza', guide: 'Guida', api: 'API', more: 'Altro', firstFiveMinutes: 'I primi 5 minuti', troubleshooting: 'Risoluzione dei problemi' },
+				zh: { home: '首页', install: '安装', tools: '工具', benchmarks: '基准', plugins: '插件', prompts: '提示', resources: '资源', knowledge: '知识', guide: '指南', api: 'API', more: '更多', firstFiveMinutes: '最初5分钟', troubleshooting: '故障排查' },
+				hi: { home: 'मुखपृष्ठ', install: 'इंस्टॉल', tools: 'टूल', benchmarks: 'बेंचमार्क', plugins: 'प्लगइन', prompts: 'प्रॉम्प्ट', resources: 'संसाधन', knowledge: 'ज्ञान', guide: 'गाइड', api: 'API', more: 'और', firstFiveMinutes: 'पहले 5 मिनट', troubleshooting: 'समस्या निवारण' },
+				ar: { home: 'الرئيسية', install: 'التثبيت', tools: 'الأدوات', benchmarks: 'القياسات', plugins: 'الإضافات', prompts: 'المطالبات', resources: 'الموارد', knowledge: 'المعرفة', guide: 'الدليل', api: 'API', more: 'المزيد', firstFiveMinutes: 'أول 5 دقائق', troubleshooting: 'حل المشكلات' },
+				ja: { home: 'ホーム', install: 'インストール', tools: 'ツール', benchmarks: 'ベンチマーク', plugins: 'プラグイン', prompts: 'プロンプト', resources: 'リソース', knowledge: 'ナレッジ', guide: 'ガイド', api: 'API', more: 'その他', firstFiveMinutes: '最初の5分', troubleshooting: 'トラブルシューティング' },
+				vi: { home: 'Trang chủ', install: 'Cài đặt', tools: 'Công cụ', benchmarks: 'Đo điểm chuẩn', plugins: 'Plugin', prompts: 'Lời nhắc', resources: 'Tài nguyên', knowledge: 'Kiến thức', guide: 'Hướng dẫn', api: 'API', more: 'Thêm', firstFiveMinutes: '5 phút đầu tiên', troubleshooting: 'Khắc phục sự cố' },
+				th: { home: 'หน้าแรก', install: 'ติดตั้ง', tools: 'เครื่องมือ', benchmarks: 'เกณฑ์มาตรฐาน', plugins: 'ปลั๊กอิน', prompts: 'พรอมต์', resources: 'ทรัพยากร', knowledge: 'ความรู้', guide: 'คู่มือ', api: 'API', more: 'เพิ่มเติม', firstFiveMinutes: '5 นาทีแรก', troubleshooting: 'การแก้ไขปัญหา' },
+			};
+			const FOOTER = {
+				en: { tagline: 'A project-agnostic MCP server core + plugin loader.', madeBy: 'Made by Cartago · @CartagoGit on GitHub', sections: 'Sections', resources: 'Resources', creatorsRepo: 'Creator on GitHub', creatorsNpm: 'Creator on npm', built: 'Generated from the live tool registry.' },
+				es: { tagline: 'Un núcleo de servidor MCP agnóstico al proyecto + cargador de plugins.', madeBy: 'Hecho por Cartago · @CartagoGit en GitHub', sections: 'Secciones', resources: 'Recursos', creatorsRepo: 'Creador en GitHub', creatorsNpm: 'Creador en npm', built: 'Generado a partir del registro vivo de herramientas.' },
+				fr: { tagline: 'Un cœur de serveur MCP agnostique au projet + chargeur de plugins.', madeBy: 'Réalisé par Cartago · @CartagoGit sur GitHub', sections: 'Sections', resources: 'Ressources', creatorsRepo: 'Créateur sur GitHub', creatorsNpm: 'Créateur sur npm', built: 'Généré à partir du registre d\u2019outils en direct.' },
+				de: { tagline: 'Ein projektunabhängiger MCP-Server-Kern + Plugin-Lader.', madeBy: 'Erstellt von Cartago · @CartagoGit auf GitHub', sections: 'Bereiche', resources: 'Ressourcen', creatorsRepo: 'Ersteller auf GitHub', creatorsNpm: 'Ersteller auf npm', built: 'Aus der Live-Tool-Registry generiert.' },
+				pt: { tagline: 'Um núcleo de servidor MCP independente do projeto + carregador de plugins.', madeBy: 'Feito por Cartago · @CartagoGit no GitHub', sections: 'Secções', resources: 'Recursos', creatorsRepo: 'Criador no GitHub', creatorsNpm: 'Criador no npm', built: 'Gerado a partir do registro de ferramentas ao vivo.' },
+				it: { tagline: 'Un nucleo server MCP agnostico al progetto + caricatore di plugin.', madeBy: 'Realizzato da Cartago · @CartagoGit su GitHub', sections: 'Sezioni', resources: 'Risorse', creatorsRepo: 'Autore su GitHub', creatorsNpm: 'Autore su npm', built: 'Generato dal registro live degli strumenti.' },
+				zh: { tagline: '一个与项目无关的 MCP 服务器核心 + 插件加载器。', madeBy: '由 Cartago 制作 · @CartagoGit 在 GitHub', sections: '章节', resources: '资源', creatorsRepo: 'GitHub 上的创建者', creatorsNpm: 'npm 上的创建者', built: '从实时工具注册表生成。' },
+				hi: { tagline: 'एक प्रोजेक्ट-अज्ञेय MCP सर्वर कोर + प्लगइन लोडर।', madeBy: 'Cartago द्वारा बनाया गया · @CartagoGit GitHub पर', sections: 'अनुभाग', resources: 'संसाधन', creatorsRepo: 'GitHub पर निर्माता', creatorsNpm: 'npm पर निर्माता', built: 'लाइव टूल रजिस्ट्री से उत्पन्न।' },
+				ar: { tagline: 'نواة خادم MCP غير مرتبطة بمشروع + محمّل إضافات.', madeBy: 'من صنع Cartago · @CartagoGit على GitHub', sections: 'الأقسام', resources: 'الموارد', creatorsRepo: 'المطور على GitHub', creatorsNpm: 'المطور على npm', built: 'تم إنشاؤه من سجل الأدوات المباشرة.' },
+				ja: { tagline: 'プロジェクトに依存しない MCP サーバーコア + プラグインローダー。', madeBy: 'Cartago による · @CartagoGit on GitHub', sections: 'セクション', resources: 'リソース', creatorsRepo: 'GitHub の作者', creatorsNpm: 'npm の作者', built: 'ライブツールレジストリから生成。' },
+				vi: { tagline: 'Một lõi máy chủ MCP độc lập với dự án + trình tải plugin.', madeBy: 'Tạo bởi Cartago · @CartagoGit trên GitHub', sections: 'Mục', resources: 'Tài nguyên', creatorsRepo: 'Tác giả trên GitHub', creatorsNpm: 'Tác giả trên npm', built: 'Được tạo từ sổ đăng ký công cụ trực tiếp.' },
+				th: { tagline: 'แกนเซิร์ฟเวอร์ MCP ที่ไม่ขึ้นกับโปรเจ็กต์ + ตัวโหลดปลั๊กอิน', madeBy: 'สร้างโดย Cartago · @CartagoGit บน GitHub', sections: 'ส่วน', resources: 'ทรัพยากร', creatorsRepo: 'ผู้สร้างบน GitHub', creatorsNpm: 'ผู้สร้างบน npm', built: 'สร้างจากรีจิสทรีเครื่องมือสด' },
+			};
+			const refreshChrome = () => {
+				const lang = document.documentElement.lang || 'en';
+				const navTable = NAV[lang as keyof typeof NAV] ?? NAV.en;
+				const footerTable = FOOTER[lang as keyof typeof FOOTER] ?? FOOTER.en;
+				for (const el of document.querySelectorAll('[data-nav-key]')) {
+					const key = el.getAttribute('data-nav-key');
+					const value = key && navTable[key as keyof typeof navTable];
+					if (typeof value === 'string' && el.textContent !== value) {
+						el.textContent = value;
+					}
+				}
+				for (const el of document.querySelectorAll('[data-footer-key]')) {
+					const key = el.getAttribute('data-footer-key');
+					const value = key && footerTable[key as keyof typeof footerTable];
+					if (typeof value === 'string' && el.textContent !== value) {
+						el.textContent = value;
+					}
+				}
+			};
+			refreshChrome();
+			document.addEventListener('astro:after-swap', refreshChrome);
+		</script>
+	</head>
+	<body>
+		<SiteNav lang={lang} />
+		<main id="main" data-pagefind-body transition:animate="fade"><slot /></main>
+		<SiteFooter lang={lang} />
+		<Config lang={lang} />
+		<Search lang={lang} />
+	</body>
+</html>

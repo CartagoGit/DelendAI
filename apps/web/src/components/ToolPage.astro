@@ -1,0 +1,144 @@
+---
+/**
+ * ToolPage.astro — single-tool detail page (`/tools/<plugin>/<tool>`, l030 S1).
+ *
+ * Mirrors the per-tool block already rendered inside `PluginPage.astro`'s
+ * "tools" tab, but as its own routable, linkable page: a dedicated URL per
+ * tool that pagefind can index independently (each page is one
+ * `data-pagefind-body` document via `Base.astro` → `<main>`), with a
+ * breadcrumb back to its plugin.
+ *
+ * SSR-fast path: tools that ship a precomputed `i18n` block in
+ * `capabilities.json` render the active language directly, with no runtime
+ * lookup; tools without it fall back to the opt-in `describeTool()`
+ * catalogue, then to the SDK's English description — the same three-tier
+ * fallback `PluginPage.astro` uses, kept here so neither page can drift
+ * from the other.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import { describeTool } from '#I18N/tools';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+interface Props {
+	lang: Lang;
+	/** Tool's MCP name, e.g. `proposals_auto_work`. */
+	toolName: string;
+}
+const { lang, toolName } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
+
+type ITool = {
+	name: string;
+	namespace: string;
+	description: string;
+	effects?: string[];
+	inputSchema?: {
+		fields: ReadonlyArray<{
+			name: string;
+			type: string;
+			required: boolean;
+			description?: string;
+		}>;
+	};
+	i18n?: Record<string, string>;
+};
+type IPkg = { name: string; version: string };
+
+const tool = (capabilities.tools as ITool[]).find((x) => x.name === toolName);
+if (!tool) {
+	throw new Error(
+		`ToolPage: unknown tool "${toolName}" — capabilities.json may be stale, re-run \`bun run gen:capabilities\`.`,
+	);
+}
+
+// Map the tool's namespace back to its package slug (mcp-vertex → core).
+const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
+const slug = slugFor(tool.namespace);
+const pluginHref =
+	lang === 'en'
+		? `${base}/plugins/${slug}`
+		: `${base}/${lang}/plugins/${slug}`;
+const pkg = (capabilities.packages as IPkg[]).find(
+	(p) => p.name.replace('@mcp-vertex/', '') === slug,
+);
+
+const toolDesc = (): string => {
+	if (tool.i18n) return tool.i18n[lang] ?? tool.i18n.en ?? tool.description;
+	return describeTool(tool.name, lang) ?? tool.description;
+};
+
+const effects = tool.effects ?? [];
+const fields = tool.inputSchema?.fields ?? [];
+
+// Generic example payload — the exact transport differs per client, so we
+// show the tool-call shape every MCP client maps onto eventually.
+const exampleArgs: Record<string, string> = {};
+for (const f of fields) exampleArgs[f.name] = `<${f.type}>`;
+const examplePayload = JSON.stringify(
+	{ tool: tool.name, arguments: exampleArgs },
+	null,
+	2,
+);
+---
+
+<PageHeader
+	lang={lang}
+	title={tool.name}
+	homeHref={homeHref}
+	crumbs={[
+		{ label: t.nav.tools, href: toolsHref },
+		{ label: pkg?.name ?? slug, href: pluginHref },
+	]}
+/>
+<section class="section">
+	<div class="container">
+		<div class="tool__head">
+			<code>{tool.name}</code>
+			{effects.map((e) => <span class={`fx fx--${e}`}>{e}</span>)}
+			{effects.length === 0 && (
+				<span class="fx fx--read">{t.toolpage.effectReadOnly}</span>
+			)}
+		</div>
+		<p class="lead">{toolDesc()}</p>
+
+		<h2>{t.toolpage.arguments}</h2>
+		{fields.length > 0 ? (
+			<table class="args">
+				<caption>{`${tool.name} ${t.toolpage.arguments.toLowerCase()}`}</caption>
+				<thead>
+					<tr>
+						<th scope="col">{t.toolpage.argName}</th>
+						<th scope="col">{t.toolpage.argType}</th>
+						<th scope="col">{t.toolpage.argRequired}</th>
+						<th scope="col">{t.toolpage.argDescription}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{fields.map((field) => (
+						<tr>
+							<td><code>{field.name}</code></td>
+							<td><code>{field.type}</code></td>
+							<td>{field.required ? t.toolpage.argRequiredYes : t.toolpage.argRequiredNo}</td>
+							<td>{field.description ?? '—'}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		) : (
+			<p class="lead">{t.toolpage.noArguments}</p>
+		)}
+
+		<h2>{t.toolpage.example}</h2>
+		<pre><code>{examplePayload}</code></pre>
+		<p class="lead">{t.toolpage.exampleNote}</p>
+
+		<p>
+			<a href={pluginHref}>← {t.toolpage.backToPlugin}</a>
+		</p>
+	</div>
+</section>

@@ -1,0 +1,77 @@
+---
+/**
+ * TroubleshootingCase.astro — single troubleshooting case detail page
+ * (`/troubleshooting/<slug>`, l030 S4).
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import PageHeader from '#COMPONENTS/PageHeader.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+interface Props {
+	lang: Lang;
+	slug: string;
+}
+const { lang, slug } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const indexHref =
+	lang === 'en'
+		? `${base}/troubleshooting`
+		: `${base}/${lang}/troubleshooting`;
+
+type ICase = {
+	slug: string;
+	symptom: string;
+	cause: string;
+	fix: string;
+	tags: string[];
+	closedBy?: string;
+	body: string;
+};
+const cases = (capabilities.troubleshooting ?? []) as ICase[];
+const item = cases.find((c) => c.slug === slug);
+if (!item) {
+	throw new Error(
+		`TroubleshootingCase: unknown slug "${slug}" — docs/mcp-vertex/troubleshooting/ may be stale, re-run \`bun run gen:capabilities\`.`,
+	);
+}
+---
+
+<PageHeader
+	lang={lang}
+	title={item.symptom}
+	homeHref={homeHref}
+	crumbs={[{ label: t.troubleshooting.title, href: indexHref }]}
+/>
+<section class="section">
+	<div class="container">
+		<h2>{t.troubleshooting.symptom}</h2>
+		<p>{item.symptom}</p>
+
+		<h2>{t.troubleshooting.cause}</h2>
+		<p>{item.cause}</p>
+
+		<h2>{t.troubleshooting.fix}</h2>
+		<p>{item.fix}</p>
+
+		{item.body && <p class="lead">{item.body}</p>}
+
+		{item.tags.length > 0 && (
+			<p>
+				<strong>{t.troubleshooting.tags}:</strong>{' '}
+				{item.tags.map((tag) => `#${tag}`).join(' ')}
+			</p>
+		)}
+		{item.closedBy && (
+			<p class="lead">
+				{t.troubleshooting.closedBy}: {item.closedBy}
+			</p>
+		)}
+
+		<p>
+			<a href={indexHref}>← {t.troubleshooting.backToIndex}</a>
+		</p>
+	</div>
+</section>

@@ -1,0 +1,19 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [".astro/types.d.ts", "**/*"],
+	"exclude": ["dist", "public/api", "public/pagefind"],
+	"compilerOptions": {
+		"paths": {
+			"#MANIFESTS/*": ["./src/data/manifests/*"],
+			"#DATA/*": ["./src/data/*"],
+			"#COMPONENTS/*": ["./src/components/*"],
+			"#LAYOUTS/*": ["./src/layouts/*"],
+			"#I18N/*": ["./src/i18n/*"],
+			"#LIB/*": ["./src/lib/*"],
+			"#SCRIPTS/*": ["./scripts/*"],
+			"#UI/*": ["./src/components/ui/*"],
+			"@mcp-vertex/shared": ["../../apps/shared/src/public/index.ts"],
+			"@mcp-vertex/shared/*": ["../../apps/shared/src/*"]
+		}
+	}
+}

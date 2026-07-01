@@ -1,0 +1,25 @@
+---
+import LogTable from '#COMPONENTS/logs/LogTable.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title={`${t.logs.page_title} — @mcp-vertex/core`}>
+	<section class="section">
+		<div class="container">
+			<h1>{t.logs.page_title}</h1>
+			<p>{t.logs.lead}</p>
+			<LogTable labels={t.logs} />
+		</div>
+	</section>
+	<script>
+		const source = new EventSource('/api/events/logs');
+		source.addEventListener('logs', () => {
+			source.close();
+		});
+		source.onerror = () => source.close();
+	</script>
+</Base>

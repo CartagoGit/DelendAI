@@ -27,10 +27,10 @@
 
 /**
  * A proposal track (write lane). Mirrors the `track` field of
- * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-core is
+ * `IProposalFrontmatter`. The vocabulary is host-defined — mcp-vertex is
  * agnostic, so this is an open `string`, not a closed union baked with
  * one host's tracks. A host that wants typo-guarding passes its own set
- * of known tracks to `extractParallelismFromFrontmatter`. [M4]
+ * of known tracks to `extractParallelismFromFrontmatter`.
  */
 export type IProposalTrack = string;
 
@@ -89,7 +89,7 @@ const makeIsAuditLane =
  */
 export const evaluateParallelism = (
 	actives: readonly IProposalParallelism[],
-	auditLanes: ReadonlySet<string> = DEFAULT_AUDIT_LANES
+	auditLanes: ReadonlySet<string> = DEFAULT_AUDIT_LANES,
 ): IParallelismResult => {
 	if (actives.length === 0) {
 		return { withinPolicy: true, violations: [] };
@@ -150,7 +150,7 @@ export const evaluateParallelism = (
 				const nonAuditMembers = aIsAudit ? membersB : membersA;
 				const auditMembers = aIsAudit ? membersA : membersB;
 				const nonAuditPermitsAudit = nonAuditMembers.every((m) =>
-					m.parallelismLanes.includes('audit')
+					m.parallelismLanes.includes('audit'),
 				);
 				if (nonAuditPermitsAudit) {
 					continue;
@@ -231,8 +231,8 @@ import type { IYamlValue } from './frontmatter-parser';
 /**
  * A track is valid when it is a non-empty string. If the caller supplies
  * a `knownTracks` set, the track must also be a member (typo-guard for
- * hosts that enumerate their tracks); without it, mcp-core stays agnostic
- * and accepts any host track. [M4]
+ * hosts that enumerate their tracks); without it, mcp-vertex stays agnostic
+ * and accepts any host track.
  */
 const makeIsValidTrack =
 	(knownTracks?: ReadonlySet<string>) =>
@@ -295,8 +295,8 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
  *     proposal does not permit ANY parallel track).
  *   - `parallelismLanes` containing invalid tracks → those entries are
  *     silently dropped from the permission set.
- *   - `knownTracks` omitted → mcp-core is track-agnostic: any non-empty
- *     string is a valid track (the host owns the vocabulary). [M4]
+ *   - `knownTracks` omitted → mcp-vertex is track-agnostic: any non-empty
+ * string is a valid track (the host owns the vocabulary).
  *
  * This function is the single seam between the proposal's textual
  * representation and the runtime `evaluateParallelism` evaluator. It
@@ -307,7 +307,7 @@ const asStringArray = (v: IYamlValue | undefined): string[] => {
 export const extractParallelismFromFrontmatter = (
 	raw: string,
 	proposalId: string,
-	knownTracks?: ReadonlySet<string>
+	knownTracks?: ReadonlySet<string>,
 ): IProposalParallelism | null => {
 	const block = extractYamlBlock(raw);
 	if (block === null) {
@@ -319,9 +319,7 @@ export const extractParallelismFromFrontmatter = (
 	if (!isValidTrack(lane)) {
 		return null;
 	}
-	const permitted = asStringArray(fm.parallelismLanes).filter(
-		isValidTrack
-	);
+	const permitted = asStringArray(fm.parallelismLanes).filter(isValidTrack);
 	return {
 		proposalId,
 		mainWriteLane: lane,

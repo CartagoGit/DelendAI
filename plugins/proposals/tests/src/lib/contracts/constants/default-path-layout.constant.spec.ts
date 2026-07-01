@@ -3,31 +3,41 @@ import { describe, expect, it } from 'vitest';
 import {
 	DEFAULT_PATH_LAYOUT,
 	buildSwarmPaths,
-} from '@cartago-git/mcp-proposals/lib/contracts/constants/default-path-layout.constant';
+} from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
 
-describe('buildSwarmPaths', () => {
-	it('roots every cache artefact under the given cacheDir', () => {
+describe('buildSwarmPaths', async () => {
+	it('roots every cache artefact under the given cacheDir', async () => {
 		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
 		expect(layout.lockFile).toBe('.cache/x/swarm/agents.lock.json');
-		expect(layout.taskQueueFile).toBe('.cache/x/swarm/agent-queue/queue.json');
+		expect(layout.taskQueueFile).toBe(
+			'.cache/x/swarm/agent-queue/queue.json',
+		);
 		expect(layout.scratchDir).toBe('.cache/x/swarm');
 	});
 
-	it('roots human-edited proposals under the given docsDir', () => {
+	it('roots human-edited proposals under the given docsDir', async () => {
 		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
 		expect(layout.proposalsDir).toBe('docs/x/proposals');
-		expect(layout.proposalIndexFile).toBe('docs/x/proposals/index.json');
+		// x00052: proposalIndexFile moved under cacheDir — it is a
+		// regenerable cache artefact, not human-edited state.
+		expect(layout.proposalIndexFile).toBe(
+			'.cache/x/swarm/proposals/index.json',
+		);
 	});
 });
 
-describe('DEFAULT_PATH_LAYOUT', () => {
-	it('defaults to the conventional .cache + docs/proposals layout', () => {
-		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache');
-		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe('.cache/agents.lock.json');
-		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/proposals');
+describe('DEFAULT_PATH_LAYOUT', async () => {
+	it('defaults to the mcp-vertex layout (.cache/mcp-vertex + docs/mcp-vertex/proposals)', async () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-vertex');
+		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
+			'.cache/mcp-vertex/agents.lock.json',
+		);
+		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe(
+			'docs/mcp-vertex/proposals',
+		);
 	});
 
-	it('keeps every artefact inside the scratch or proposals dirs', () => {
+	it('keeps every artefact inside the scratch or proposals dirs', async () => {
 		const { proposalsDir, scratchDir, ...artefacts } = DEFAULT_PATH_LAYOUT;
 		for (const value of Object.values(artefacts)) {
 			const inScratch = value.startsWith(`${scratchDir}/`);

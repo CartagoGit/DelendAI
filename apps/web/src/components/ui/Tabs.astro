@@ -1,0 +1,115 @@
+---
+/**
+ * `Tabs.astro` — generic ARIA-correct tab strip with real transitions (f00048 S1).
+ *
+ * Behaviour:
+ *   - Renders an `<nav role="tablist">` with one `<button role="tab">` per entry.
+ *   - All panels (slot children) are rendered into the SSR output so no-JS users
+ *     see every section; the script just hides non-active panels on hydration.
+ *   - Cross-fade transition between panels uses a CSS `::view-transition-group`
+ *     workaround with opacity + transform (no View Transitions API needed; that
+ *     is reserved for page navigation in this app).
+ *   - Keyboard: ← / → moves focus + activation between tabs; Home / End jump to
+ *     first / last; roving tabindex is maintained automatically.
+ *   - State persists per `<Tabs>` root via `data-active` (no global).
+ *
+ * Props:
+ *   - tabs: ordered `{ id, label, badge?, icon? }` list. `icon` is
+ *     rendered as an 18×18 `<img>` before the label when present.
+ *   - defaultTab: id of the panel visible on first render (defaults to tabs[0].id).
+ *   - variant: 'pill' | 'underline' | 'plugin' (default underline —
+ *     matches the existing install page style; `plugin` reproduces the
+ *     look of the deleted `PluginTabs.astro`).
+ *   - label: accessible label for the tablist (aria-label).
+ *
+ * Consumers must wrap each panel in `<section data-tab-panel={id} hidden={...}>`.
+ */
+interface Props {
+	readonly tabs: ReadonlyArray<{
+		readonly id: string;
+		readonly label: string;
+		readonly badge?: string;
+		/**
+		 * Optional icon path (e.g. `/logos/plugin-proposals.svg`).
+		 * Rendered as an 18×18 `<img>` before the label when present.
+		 * f00069 S3 will start populating this from `brand-logos.ts`.
+		 */
+		readonly icon?: string;
+	}>;
+	readonly defaultTab?: string;
+	readonly variant?: 'underline' | 'pill' | 'plugin';
+	readonly label?: string;
+}
+
+const {
+	tabs,
+	defaultTab,
+	variant = 'underline',
+	label = 'Sections',
+} = Astro.props as Props;
+const initial = defaultTab ?? tabs[0]?.id ?? '';
+---
+
+<section
+	class:list={['ui-tabs', `ui-tabs--${variant}`]}
+	data-ui-tabs
+	data-default-tab={initial}
+>
+	<nav class="ui-tabs__bar" aria-label={label}>
+		<ul role="tablist" class="ui-tabs__list">
+			{
+				tabs.map((t) => (
+					<li role="presentation">
+						<button
+							type="button"
+							role="tab"
+							id={`ui-tab-${t.id}`}
+							class="ui-tabs__tab"
+							data-tab-trigger={t.id}
+							aria-selected={t.id === initial ? 'true' : 'false'}
+							aria-controls={`ui-panel-${t.id}`}
+							tabindex={t.id === initial ? 0 : -1}
+						>
+							{t.icon && (
+								<img
+									class="ui-tabs__icon"
+									src={t.icon}
+									width="18"
+									height="18"
+									alt=""
+									loading="lazy"
+									decoding="async"
+									data-tab-id={t.id}
+									onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ui-tabs__icon ui-tabs__icon--fallback',textContent:(this.dataset.tabId||'').charAt(0)}))"
+								/>
+							)}
+							<span class="ui-tabs__label">{t.label}</span>
+							{t.badge && <span class="ui-tabs__badge">{t.badge}</span>}
+						</button>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+	<div class="ui-tabs__panels">
+		<slot />
+	</div>
+</section>
+
+<!--
+	f00069 S2 — all `.ui-tabs__*` rules (variants, the brand-mark icon +
+	fallback badge, the cross-fade keyframes, and the reduced-motion
+	short-circuit) live in `apps/web/src/styles/components/_tabs.scss`,
+	registered via `styles.scss`. The component carries no scoped `<style>`
+	so there is a single source of truth for the tab styling.
+-->
+
+<script>
+	/**
+	 * Tabs controller — extracted so the activation / keyboard logic is
+	 * unit-testable (same pattern as `plugin-tabs-controller.ts`).
+	 * Idempotent: running twice on the same root is a no-op.
+	 */
+	import { initTabs } from './_tabs-controller';
+	initTabs(document);
+</script>

@@ -70,8 +70,28 @@ jobs:
 
       # The published CLI must run under plain Node (npx/npm/pnpm/yarn), not
       # only bun — guard that the compiled bin starts and resolves its deps.
+      # Use a literal block + JSON variable so the YAML parser doesn't read
+      # the inner `:` as a nested mapping key.
       - name: Smoke — Node runs the compiled CLI
-        run: node packages/core/dist/cli.js --check --plugins= | grep -q '"ok": true'
+        env:
+          EXPECTED: '"ok": true'
+        run: |
+          set -euo pipefail
+          output="$(node packages/core/dist/cli.js --check --plugins=)"
+          echo "$output"
+          echo "$output" | grep -qF "$EXPECTED"
+
+      # Functional smoke: connect an MCP client to the compiled CLI over stdio
+      # under Node and call a real tool (overview). Proves the published artifact
+      # serves the protocol, not just that the bin starts.
+      - name: Smoke — Node serves the compiled CLI over stdio
+        run: bun tools/scripts/smoke/cli.script.ts
+
+      # Tarball install e2e: pack core + two plugins, install into a clean project
+      # with npm, and drive the INSTALLED CLI under Node — proves the published
+      # packages resolve each other via plain node resolution (the M3 risk).
+      - name: Smoke — install from tarball and load plugins
+        run: bun tools/scripts/smoke/pack.script.ts
 
       # `npm pack --dry-run` resolves each package's `files`/`exports` and
       # fails if a published tarball would be missing or malformed — a cheap
@@ -86,3 +106,50 @@ jobs:
               echo "::endgroup::"
             fi
           done
+
+  metrics-gate:
+    name: metrics longitudinal regression gate (f00027)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build dist
+        run: bun run build
+
+      # Fetches the metrics snapshot attached to the previous GitHub
+      # release. Resolves gracefully (no failure) if this is the very
+      # first tagged release — the gate starts enforcing on the second one.
+      - name: Fetch baseline snapshot
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          METRICS_BASELINE_OUT: metrics-baseline.json
+        run: bun tools/scripts/metrics/get-baseline.script.ts
+
+      # Drives the compiled CLI over stdio, calls every read-only/compact
+      # tool 3 times to average out single-run jitter, and persists a
+      # candidate snapshot.
+      - name: Collect candidate snapshot
+        env:
+          METRICS_CANDIDATE_PATH: metrics-candidate.json
+        run: bun tools/scripts/metrics/collect-candidate.script.ts
+
+      # Diffs candidate vs baseline; fails the job (non-zero exit) if any
+      # tool regresses beyond the configured threshold (default +20%).
+      # Posts the markdown table as the job summary either way.
+      - name: Diff snapshots against threshold
+        env:
+          METRICS_BASELINE_PATH: metrics-baseline.json
+          METRICS_CANDIDATE_PATH: metrics-candidate.json
+          METRICS_TOKEN_DELTA_PCT: '20'
+          METRICS_LATENCY_DELTA_PCT: '20'
+          METRICS_BYTES_DELTA_PCT: '20'
+        run: bun tools/scripts/metrics/diff-snapshots.script.ts

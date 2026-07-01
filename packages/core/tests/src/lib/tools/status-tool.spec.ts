@@ -1,21 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectStatus } from '@cartago-git/mcp-core/lib/tools/status-tool';
-import type { IStatusCollector } from '@cartago-git/mcp-core/lib/contracts/interfaces/status-collector.interface';
+import { collectStatus } from '@mcp-vertex/core/lib/tools/status-tool';
+import type { IStatusCollector } from '@mcp-vertex/core/lib/contracts/interfaces/status-collector.interface';
 
 const collector = (
 	id: string,
-	collect: () => Promise<Record<string, unknown>>
+	collect: () => Promise<Record<string, unknown>>,
 ): IStatusCollector => ({ id, collect });
 
-describe('collectStatus (IStatusCollector, N23)', () => {
+describe('collectStatus (IStatusCollector, N23)', async () => {
 	it('aggregates every collector keyed by id', async () => {
 		const res = await collectStatus([
 			collector('engine', async () => ({ loop: 'running', fps: 60 })),
-			collector('mcp-core', async () => ({ loadedPlugins: ['git'] })),
+			collector('mcp-vertex', async () => ({ loadedPlugins: ['git'] })),
 		]);
 		expect(res.collectors.engine).toEqual({ loop: 'running', fps: 60 });
-		expect(res.collectors['mcp-core']).toEqual({ loadedPlugins: ['git'] });
+		expect(res.collectors['mcp-vertex']).toEqual({
+			loadedPlugins: ['git'],
+		});
 		expect(res.errors).toEqual([]);
 	});
 

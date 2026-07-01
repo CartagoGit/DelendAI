@@ -1,0 +1,20 @@
+---
+/**
+ * `/plugins/[plugin]` — per-plugin detail page (English).
+ *
+ * PluginPage owns the body (it already speaks i18n via
+ * `useTranslations`); this file just wires up the routing.
+ */
+import PluginPage from '#COMPONENTS/PluginPage.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+export function getStaticPaths() {
+	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const pkgs = capabilities.packages as Array<{ name: string }>;
+	return pkgs.map((p) => ({ params: { plugin: slugOf(p.name) } }));
+}
+
+const { plugin } = Astro.params;
+---
+
+<PluginPage lang="en" slug={plugin!} />

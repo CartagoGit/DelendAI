@@ -14,11 +14,15 @@ export class CorruptFileError extends Error {
 	/** Where the corrupt bytes were moved, or null if the rename failed. */
 	readonly backupPath: string | null;
 
-	constructor(originalPath: string, backupPath: string | null, detail: string) {
+	constructor(
+		originalPath: string,
+		backupPath: string | null,
+		detail: string,
+	) {
 		super(
 			backupPath
 				? `File "${originalPath}" is corrupt (${detail}); preserved at "${backupPath}".`
-				: `File "${originalPath}" is corrupt (${detail}); backup rename failed.`
+				: `File "${originalPath}" is corrupt (${detail}); backup rename failed.`,
 		);
 		this.name = 'CorruptFileError';
 		this.originalPath = originalPath;
@@ -41,7 +45,7 @@ const backupPathFor = (absolutePath: string): string =>
  * null if the rename failed (e.g. it vanished). Never throws.
  */
 export const quarantineCorruptFile = async (
-	absolutePath: string
+	absolutePath: string,
 ): Promise<string | null> => {
 	const backup = backupPathFor(absolutePath);
 	try {
@@ -52,8 +56,16 @@ export const quarantineCorruptFile = async (
 	}
 };
 
-/** Synchronous variant of {@link quarantineCorruptFile}. */
-export const quarantineCorruptFileSync = (absolutePath: string): string | null => {
+/**
+ * Synchronous variant of {@link quarantineCorruptFile}.
+ *
+ * Boot-time one-shot only — hot paths must use the async variant. No
+ * `*Sync` filesystem calls inside tool handlers or engines (AGENTS.md
+ * invariant 3).
+ */
+export const quarantineCorruptFileSync = (
+	absolutePath: string,
+): string | null => {
 	const backup = backupPathFor(absolutePath);
 	try {
 		renameSync(absolutePath, backup);

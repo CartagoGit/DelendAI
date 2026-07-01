@@ -1,0 +1,39 @@
+{
+	"name": "@mcp-vertex/ui-extension",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"license": "BSD-3-Clause",
+	"description": "Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @mcp-vertex extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.",
+	"scripts": {
+		"type": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest run",
+		"lint": "biome ci src tests"
+	},
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts"
+		},
+		"./public": {
+			"types": "./src/public/index.ts",
+			"import": "./src/public/index.ts"
+		},
+		"./legacy": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/shared": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.0",
+		"@types/bun": "latest",
+		"@types/node": "^20.11.0",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	}
+}

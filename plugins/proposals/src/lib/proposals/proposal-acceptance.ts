@@ -16,7 +16,7 @@
  * Runtime: `node:child_process.spawn` with `detached: true` so each
  * criterion is its own process group. That is what lets the timeout path
  * kill the WHOLE tree (`process.kill(-pid)`), not just the leader — a
- * pipeline like `a | b` must not leave `b` running as a zombie. [M8]
+ * pipeline like `a | b` must not leave `b` running as a zombie.
  * `bun` is resolved from PATH exactly as before (we keep the `Bun.which`
  * availability pre-check); commands with shell metacharacters (`|`, `>`,
  * `&&`, …) run through the shell, the rest are tokenised with a
@@ -45,6 +45,8 @@
 
 import { spawn } from 'node:child_process';
 
+import { killProcessGroup } from '@mcp-vertex/core/public';
+
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';
 
@@ -72,7 +74,7 @@ export interface IAcceptanceRunOptions {
 	/**
 	 * Working directory each criterion runs in. Inject the workspace root
 	 * so commands resolve paths against it rather than the server's cwd.
-	 * Omitted → inherits the current process cwd (back-compat). [M8]
+	 * Omitted → inherits the current process cwd (back-compat).
 	 */
 	readonly cwd?: string;
 }
@@ -96,7 +98,7 @@ const MAX_CAPTURED_BYTES = 64 * 1024; // 64 KiB per stream; truncate beyond.
  */
 export const runAcceptanceCriteria = async (
 	criteria: readonly IAcceptanceCriterion[],
-	options: IAcceptanceRunOptions = {}
+	options: IAcceptanceRunOptions = {},
 ): Promise<IAcceptanceRunResult> => {
 	const startedAt = Date.now();
 	const results: IAcceptanceResult[] = [];
@@ -112,7 +114,7 @@ export const runAcceptanceCriteria = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				'',
-				'runAcceptanceCriteria: command must be a non-empty string'
+				'runAcceptanceCriteria: command must be a non-empty string',
 			);
 		}
 		if (!isValidExpect(criterion.expect)) {
@@ -120,8 +122,8 @@ export const runAcceptanceCriteria = async (
 				'INVALID_CRITERION',
 				'',
 				`runAcceptanceCriteria: invalid expect value "${String(
-					criterion.expect
-				)}" (must be exit0 | pass | synchronized | contains:<substring>)`
+					criterion.expect,
+				)}" (must be exit0 | pass | synchronized | contains:<substring>)`,
 			);
 		}
 
@@ -150,7 +152,7 @@ export const runAcceptanceCriteria = async (
 // ---------------------------------------------------------------------------
 
 const isValidExpect = (
-	value: unknown
+	value: unknown,
 ): value is IAcceptanceCriterion['expect'] => {
 	if (typeof value !== 'string') return false;
 	if (value === 'exit0' || value === 'pass' || value === 'synchronized') {
@@ -173,7 +175,7 @@ const truncateCaptured = (raw: string): string => {
  * Tokenise a command line into argv, honouring single and double quotes
  * and backslash escapes — so `echo "a b"` yields `['echo', 'a b']`, not
  * `['echo', '"a', 'b"']`. Used for the non-shell path; pipelines and
- * redirects go through the shell instead. [M8]
+ * redirects go through the shell instead.
  */
 export const tokenizeArgv = (input: string): string[] => {
 	const tokens: string[] = [];
@@ -189,7 +191,10 @@ export const tokenizeArgv = (input: string): string[] => {
 		}
 		if (quote === '"') {
 			if (ch === '"') quote = null;
-			else if (ch === '\\' && (input[i + 1] === '"' || input[i + 1] === '\\')) {
+			else if (
+				ch === '\\' &&
+				(input[i + 1] === '"' || input[i + 1] === '\\')
+			) {
 				current += input[i + 1];
 				i += 1;
 			} else current += ch;
@@ -220,29 +225,10 @@ export const tokenizeArgv = (input: string): string[] => {
 /**
  * A command needs a real shell when it carries pipes, redirects, command
  * chaining or subshells. Quotes alone do NOT need a shell — the argv
- * tokenizer handles those. [M8]
+ * tokenizer handles those.
  */
 export const commandNeedsShell = (command: string): boolean =>
 	/[|&;<>`]|\$\(/.test(command);
-
-/**
- * Kill the criterion's whole process group (negative pid) so no child
- * outlives the timeout — e.g. the right-hand side of a pipe. Falls back
- * to killing just the leader if the group signal fails (already exited,
- * or a platform without POSIX process groups). [M8]
- */
-const killProcessGroup = (pid: number | undefined): void => {
-	if (pid === undefined) return;
-	try {
-		process.kill(-pid, 'SIGKILL');
-	} catch {
-		try {
-			process.kill(pid, 'SIGKILL');
-		} catch {
-			// already gone
-		}
-	}
-};
 
 /**
  * Runs a single criterion to completion (or timeout). Returns a structured
@@ -251,11 +237,14 @@ const killProcessGroup = (pid: number | undefined): void => {
  */
 const runOne = async (
 	criterion: IAcceptanceCriterion,
-	options: IAcceptanceRunOptions
+	options: IAcceptanceRunOptions,
 ): Promise<IAcceptanceResult> => {
 	const startedAt = Date.now();
 	const timeoutMs = criterion.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-	const fail = (reason: string, exitCode: number | null = null): IAcceptanceResult => ({
+	const fail = (
+		reason: string,
+		exitCode: number | null = null,
+	): IAcceptanceResult => ({
 		command: criterion.command,
 		expect: criterion.expect,
 		passed: false,
@@ -297,7 +286,7 @@ const runOne = async (
 		}
 	} catch (e) {
 		return fail(
-			`spawn failed: ${e instanceof Error ? e.message : String(e)}`
+			`spawn failed: ${e instanceof Error ? e.message : String(e)}`,
 		);
 	}
 
@@ -336,9 +325,7 @@ const runOne = async (
 	});
 
 	if (spawnError !== null) {
-		return fail(
-			`spawn failed: ${(spawnError as Error).message}`
-		);
+		return fail(`spawn failed: ${(spawnError as Error).message}`);
 	}
 
 	const stdoutText = truncateCaptured(stdout);

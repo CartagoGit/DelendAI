@@ -1,0 +1,93 @@
+// _reset.scss — global element resets and base typography.
+//
+// Keeps the BEM linter happy: these are tag-only selectors (html, body, *,
+// pre, code, footer) and are intentionally outside the BEM convention.  The
+// `scoped-bem/selector` rule in stylelint.config.mjs allow-lists them.
+
+* {
+	box-sizing: border-box;
+}
+html {
+	scroll-behavior: smooth;
+	// Firefox: themed scrollbar via the standard properties.
+	// `scrollbar-color` is supported since Firefox 64; `scrollbar-width`
+	// lets us opt out of the OS overlay so the bar stays visible in dark
+	// themes (where the default overlay becomes invisible on the dark
+	// track).
+	scrollbar-color: var(--muted) var(--bg-soft);
+	scrollbar-width: thin;
+}
+body {
+	margin: 0;
+	font:
+		16px/1.65
+		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	background: var(--bg);
+	color: var(--fg);
+	-webkit-font-smoothing: antialiased;
+	transition:
+		background 0.2s ease,
+		color 0.2s ease,
+		// Cross-fade the scrollbar palette with the theme tokens so the
+		// user-visible handoff matches the rest of the page.
+		scrollbar-color 0.2s ease;
+}
+
+// WebKit / Blink themed scrollbar. The track uses `--bg-soft` so it
+// blends with the page background; the thumb uses `--muted` so it stays
+// legible against every palette. On hover the thumb switches to
+// `--accent` so the affordance is visible without breaking the palette.
+// The `:hover` lives inside a single rule block (the BEM convention
+// allows one trailing pseudo per `&`-rooted selector) so stylelint
+// stays happy and the palette change is atomic.
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: var(--bg-soft);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--muted);
+	border-radius: 999px;
+	border: 2px solid var(--bg-soft);
+	transition: background 0.2s ease;
+
+	&:hover {
+		background: var(--accent);
+	}
+}
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+pre {
+	background: var(--bg-soft);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+	overflow: auto;
+	font-size: 0.88rem;
+}
+code {
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+}
+:not(pre) > code {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.85em;
+}
+
+footer {
+	border-top: 1px solid var(--line);
+	padding: 2rem 0;
+	color: var(--muted);
+	text-align: center;
+	font-size: 0.88rem;
+}

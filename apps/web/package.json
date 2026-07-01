@@ -1,0 +1,53 @@
+{
+	"name": "@mcp-vertex/web",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Product/documentation site for @mcp-vertex/core, generated from the live tool registry (tools + capabilities.json stay in sync with the code).",
+	"scripts": {
+		"sync:public-api": "bun scripts/sync-public-api.ts",
+		"gen:pages": "bun scripts/gen-pages.ts",
+		"gen:manifests": "bun run gen:pages && bun run gen:capabilities",
+		"gen:manifests:strict": "bun run gen:pages --strict && bun run gen:capabilities --strict",
+		"dev": "bun run sync:public-api && bun run gen:manifests && bun run dev:api & PAGES_BASE='' astro dev",
+		"dev:api": "bun run --cwd ../.. docs:api:watch >/tmp/mcp-vertex-typedoc.log 2>&1",
+		"preview": "bun run sync:public-api && bun run gen:manifests && astro preview",
+		"check:i18n": "bun scripts/check-i18n.ts",
+		"lint:web:jsx-literals": "bun scripts/scan-jsx-literals.ts",
+		"check": "bun run sync:public-api && bun run gen:manifests && astro check",
+		"gen:capabilities": "bun scripts/gen-capabilities.ts",
+		"gen:skills": "bun scripts/gen-skills.ts",
+		"gen:logos": "bun scripts/gen-plugin-logos.ts",
+		"fetch:logos": "bun scripts/fetch-brand-logos.ts",
+		"index:search": "pagefind --site ../../build/apps/web",
+		"build": "bun scripts/check-i18n.ts && bun run sync:public-api && bun run gen:manifests && bun scripts/gen-skills.ts && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search",
+		"build:strict": "bun scripts/check-i18n.ts && bun run lint:web:jsx-literals && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-skills.ts --strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
+	},
+	"dependencies": {
+		"astro": "^6.4.8",
+		"markdown-it": "^14.2.0",
+		"sass": "^1.101.0",
+		"simple-icons": "^16.24.0"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.9",
+		"@mcp-vertex/audit": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
+		"@mcp-vertex/deps": "workspace:*",
+		"@mcp-vertex/docs": "workspace:*",
+		"@mcp-vertex/git": "workspace:*",
+		"@mcp-vertex/logs": "workspace:*",
+		"@mcp-vertex/memory": "workspace:*",
+		"@mcp-vertex/notification": "workspace:*",
+		"@mcp-vertex/proposals": "workspace:*",
+		"@mcp-vertex/quality": "workspace:*",
+		"@mcp-vertex/rules": "workspace:*",
+		"@mcp-vertex/search": "workspace:*",
+		"@mcp-vertex/status-marker": "workspace:*",
+		"@mcp-vertex/test-convention": "workspace:*",
+		"@types/markdown-it": "^14.1.2",
+		"@modelcontextprotocol/sdk": "1.29.0",
+		"pagefind": "^1.5.2",
+		"typescript": "^6.0.3"
+	}
+}

@@ -17,29 +17,29 @@ import {
 	runAcceptanceCriteria,
 	tokenizeArgv,
 	commandNeedsShell,
-} from '@cartago-git/mcp-proposals/lib/proposals/proposal-acceptance';
+} from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
 
-describe('tokenizeArgv (M8 quote-aware parser)', () => {
-	it('keeps a double-quoted argument with spaces as one token', () => {
+describe('tokenizeArgv (M8 quote-aware parser)', async () => {
+	it('keeps a double-quoted argument with spaces as one token', async () => {
 		expect(tokenizeArgv('printf "a b" c')).toEqual(['printf', 'a b', 'c']);
 	});
-	it('keeps a single-quoted argument as one token', () => {
+	it('keeps a single-quoted argument as one token', async () => {
 		expect(tokenizeArgv("echo 'one two'")).toEqual(['echo', 'one two']);
 	});
-	it('handles backslash escapes outside quotes', () => {
+	it('handles backslash escapes outside quotes', async () => {
 		expect(tokenizeArgv('echo a\\ b')).toEqual(['echo', 'a b']);
 	});
-	it('collapses runs of whitespace', () => {
+	it('collapses runs of whitespace', async () => {
 		expect(tokenizeArgv('  echo    hi  ')).toEqual(['echo', 'hi']);
 	});
 });
 
-describe('commandNeedsShell (M8)', () => {
-	it('is false for a plain command (even with quotes)', () => {
+describe('commandNeedsShell (M8)', async () => {
+	it('is false for a plain command (even with quotes)', async () => {
 		expect(commandNeedsShell('echo "a b"')).toBe(false);
 		expect(commandNeedsShell('printf hi')).toBe(false);
 	});
-	it('is true for pipes, redirects, chaining and subshells', () => {
+	it('is true for pipes, redirects, chaining and subshells', async () => {
 		expect(commandNeedsShell('echo hi | grep hi')).toBe(true);
 		expect(commandNeedsShell('echo hi > /tmp/x')).toBe(true);
 		expect(commandNeedsShell('a && b')).toBe(true);
@@ -47,7 +47,7 @@ describe('commandNeedsShell (M8)', () => {
 	});
 });
 
-describe('runAcceptanceCriteria — M8 exec semantics', () => {
+describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 	let dir = '';
 	beforeEach(() => {
 		dir = mkdtempSync(join(tmpdir(), 'accept-exec-'));
@@ -58,7 +58,7 @@ describe('runAcceptanceCriteria — M8 exec semantics', () => {
 		const marker = dir.split('/').pop()!;
 		const res = await runAcceptanceCriteria(
 			[{ command: 'pwd', expect: `contains:${marker}` }],
-			{ cwd: dir }
+			{ cwd: dir },
 		);
 		expect(res.allPassed).toBe(true);
 		expect(res.results[0]?.actual).toContain(marker);

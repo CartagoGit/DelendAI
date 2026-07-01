@@ -1,0 +1,59 @@
+---
+/**
+ * ToolsSection.astro — body of the `/tools` index.
+ *
+ * Thin wrapper around `CapabilityGrid` that:
+ *   - emits the lead + stat-row (the grid itself only renders the
+ *     cards, not the intro),
+ *   - maps the `mcp-vertex` namespace to the `core` package slug used
+ *     by the `/tools/<plugin>/<tool>` route,
+ *   - localises tool descriptions via `describeTool`.
+ *
+ * The `<h1>` + breadcrumb come from `PageShell` via `PageHeader`; this
+ * component only owns the body.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
+import { describeTool } from '#I18N/tools';
+import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
+
+interface Props {
+	readonly lang: Lang;
+	readonly heading: string;
+}
+const { lang, heading: _heading } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const slugFor = (ns: string): string => (ns === 'mcp-vertex' ? 'core' : ns);
+const toolHref = (tool: { namespace: string; name: string }): string => {
+	const slug = slugFor(tool.namespace);
+	return lang === 'en'
+		? `${base}/tools/${slug}/${tool.name}`
+		: `${base}/${lang}/tools/${slug}/${tool.name}`;
+};
+
+type ITool = { name: string; namespace: string; description: string };
+const tools = (capabilities.tools ?? []) as ITool[];
+---
+
+<section id="tools" class="section">
+	<div class="container">
+		<p class="lead">{t.tools.lead}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{capabilities.counts.tools}</b><span>{t.tools.count}</span></div>
+			<div class="stat"><b>{capabilities.counts.packages}</b><span>{t.tools.packages}</span></div>
+		</div>
+		<CapabilityGrid
+			kind="tool"
+			items={tools}
+			labels={{ stat: t.tools.count, empty: t.tools.lead }}
+			describe={(tool) => {
+				const it = tool as ITool;
+				return describeTool(it.name, lang) ?? it.description;
+			}}
+			hrefFor={(item) => toolHref(item as ITool)}
+			sectionId="tools"
+		/>
+	</div>
+</section>

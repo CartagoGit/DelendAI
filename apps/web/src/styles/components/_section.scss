@@ -1,0 +1,41 @@
+// _section.scss — top-level page sections (alternating bands with h2 + lead).
+//
+// BEM root: .section.  The `.grid` utility container and `.feature` cards
+// are kept here because they only make sense inside a `.section`.
+
+.section {
+	padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+	border-top: 1px solid var(--line);
+
+	& h2 {
+		font-size: clamp(1.5rem, 4vw, 2rem);
+		margin: 0 0 0.5rem;
+		letter-spacing: -0.02em;
+	}
+	& .lead {
+		color: var(--muted);
+		max-width: 46rem;
+		margin: 0 0 2rem;
+	}
+}
+.grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.feature {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1.2rem;
+
+	& h3 {
+		margin: 0 0 0.4rem;
+		font-size: 1.05rem;
+	}
+	& p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.95rem;
+	}
+}

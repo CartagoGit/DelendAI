@@ -7,18 +7,18 @@ import {
 	classifyZombies,
 	gcZombies,
 	thresholdFromOrphans,
-} from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
-import { createAgentRegistryStore } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';
-import type { IAgentRegistry } from '@cartago-git/mcp-proposals/lib/shared/agent-registry-store';
+} from '@mcp-vertex/proposals/lib/agents/zombie-reconcile';
+import { createAgentRegistryStore } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
+import type { IAgentRegistry } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
 
 const TEMP_DIRS: string[] = [];
 
 const createTempPath = (
 	prefix: string,
 	filename: string,
-	content: string
+	content: string,
 ): string => {
-	const dir = mkdtempSync(join(tmpdir(), `affairs-test-${prefix}-`));
+	const dir = mkdtempSync(join(tmpdir(), `mcp-vertex-test-${prefix}-`));
 	TEMP_DIRS.push(dir);
 	const filePath = join(dir, filename);
 	writeFileSync(filePath, content, 'utf8');
@@ -31,11 +31,11 @@ afterEach(() => {
 	}
 });
 
-describe('zombie-reconcile', () => {
+describe('zombie-reconcile', async () => {
 	const now = new Date('2026-06-05T12:00:00.000Z');
 
 	// 1. Registry vacío + lock vacío
-	it('Case 1: Registry vacío + lock vacío', () => {
+	it('Case 1: Registry vacío + lock vacío', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [],
@@ -49,7 +49,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 2. Entry: adopted: true, status: 'cooldown', cooldown_until: null, last_seen > 10 min, sin entrada en lock
-	it('Case 2: Entry: adopted: true, status: "cooldown", cooldown_until: null, last_seen > 10 min, sin entrada en lock', () => {
+	it('Case 2: Entry: adopted: true, status: "cooldown", cooldown_until: null, last_seen > 10 min, sin entrada en lock', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -79,7 +79,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 3. Entry con entrada activa en lock.in_flight (mismo task_id)
-	it('Case 3: Entry con entrada activa en lock.in_flight (mismo task_id)', () => {
+	it('Case 3: Entry con entrada activa en lock.in_flight (mismo task_id)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -115,7 +115,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 4. Entry con status: 'active' and not stale -> NO clasificada como zombie
-	it('Case 4: Entry con status: "active" (not stale)', () => {
+	it('Case 4: Entry con status: "active" (not stale)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_active', task_id: 'task-2' }],
@@ -171,12 +171,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -200,7 +200,9 @@ describe('zombie-reconcile', () => {
 		const store = createAgentRegistryStore(registryPath);
 		const updatedRegistry = await store.read();
 		expect(
-			updatedRegistry.assignments.find((a: any) => a.task_id === 'task-1')
+			updatedRegistry.assignments.find(
+				(a: any) => a.task_id === 'task-1',
+			),
 		).toBeUndefined();
 	});
 
@@ -233,12 +235,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -296,12 +298,12 @@ describe('zombie-reconcile', () => {
 		const registryPath = createTempPath(
 			'reg',
 			'subagent-registry.json',
-			JSON.stringify(registryData)
+			JSON.stringify(registryData),
 		);
 		const lockPath = createTempPath(
 			'lock',
 			'agents.lock.json',
-			JSON.stringify(lockData)
+			JSON.stringify(lockData),
 		);
 		const queuePath = createTempPath('queue', 'queue.json', '{}');
 
@@ -318,29 +320,29 @@ describe('zombie-reconcile', () => {
 
 		expect(queueEmitter).toHaveBeenCalledWith(
 			expect.stringContaining('zombie-gc-event-'),
-			4
+			4,
 		);
 	});
 
 	// 8. Threshold verde: 0 orphans
-	it('Case 8: Threshold verde: 0 orphans', () => {
+	it('Case 8: Threshold verde: 0 orphans', async () => {
 		expect(thresholdFromOrphans(0)).toBe('green');
 	});
 
 	// 9. Threshold amarillo: 1–2 orphans
-	it('Case 9: Threshold amarillo: 1–2 orphans', () => {
+	it('Case 9: Threshold amarillo: 1–2 orphans', async () => {
 		expect(thresholdFromOrphans(1)).toBe('yellow');
 		expect(thresholdFromOrphans(2)).toBe('yellow');
 	});
 
 	// 10. Threshold rojo: >= 3 orphans
-	it('Case 10: Threshold rojo: >= 3 orphans', () => {
+	it('Case 10: Threshold rojo: >= 3 orphans', async () => {
 		expect(thresholdFromOrphans(3)).toBe('red');
 		expect(thresholdFromOrphans(10)).toBe('red');
 	});
 
 	// 11. Entry con adopted: false, cooldown_until: null
-	it('Case 11: Entry con adopted: false, cooldown_until: null', () => {
+	it('Case 11: Entry con adopted: false, cooldown_until: null', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [],
@@ -368,7 +370,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// 12. Entry con cooldown_until: null pero last_seen hace sólo 2 minutos
-	it('Case 12: Entry con cooldown_until: null pero last_seen hace sólo 2 minutos', () => {
+	it('Case 12: Entry con cooldown_until: null pero last_seen hace sólo 2 minutos', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -396,7 +398,7 @@ describe('zombie-reconcile', () => {
 	});
 
 	// Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)
-	it('Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)', () => {
+	it('Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],

@@ -1,0 +1,231 @@
+// _install.scss — package-manager install matrix.
+//
+// Two independent rows of animated tabs:
+//
+//   .tabs[data-tabs="pm"]   — package managers (npm, pnpm, yarn, bun, deno)
+//   .tabs[data-tabs="ide"]  — IDE targets
+//
+// Each tab has a small icon (.tabs__icon) + label (.tabs__label). The
+// active tab gets an accent underline via `::after` and an aria-pressed
+// state. The corresponding .panels__panel is the only one without the
+// `hidden` attribute. Panels cross-fade on swap via `panel-fade-in`.
+
+.install {
+	margin-top: 1.5rem;
+}
+
+// ────────────── Tabs row ──────────────
+.tabs {
+	position: relative;
+	display: inline-flex;
+	gap: 0.15rem;
+	padding: 0.25rem;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	margin-bottom: 1.1rem;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	max-width: 100%;
+
+	&--scroll {
+		display: flex;
+		max-width: 100%;
+	}
+}
+.tabs__track {
+	position: absolute;
+	bottom: 0.25rem;
+	left: 0.25rem;
+	height: calc(100% - 0.5rem);
+	width: 0;
+	background: color-mix(in srgb, var(--accent) 14%, transparent);
+	border-radius: 8px;
+	pointer-events: none;
+	transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1),
+		width 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tabs__tab {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.5rem 0.95rem;
+	border-radius: 8px;
+	background: transparent;
+	border: 0;
+	color: var(--muted);
+	cursor: pointer;
+	font: inherit;
+	font-weight: 600;
+	font-size: 0.86rem;
+	white-space: nowrap;
+	transition: color 0.18s ease, background 0.18s ease;
+
+	&:hover {
+		color: var(--fg);
+		background: color-mix(in srgb, var(--fg) 4%, transparent);
+	}
+	&[aria-pressed='true'] {
+		color: var(--accent);
+	}
+	&[aria-pressed='true']::after {
+		content: '';
+		position: absolute;
+		left: 0.7rem;
+		right: 0.7rem;
+		bottom: -0.05rem;
+		height: 2px;
+		background: var(--accent);
+		border-radius: 2px;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+.tabs__icon {
+	width: 20px;
+	height: 20px;
+	flex: 0 0 auto;
+	border-radius: 4px;
+	object-fit: contain;
+
+	&--fallback {
+		display: inline-grid;
+		place-items: center;
+		background: color-mix(in srgb, var(--accent) 25%, var(--card));
+		color: var(--fg);
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+}
+.tabs__label {
+	line-height: 1;
+}
+
+// ────────────── Panels ──────────────
+.panels {
+	position: relative;
+}
+.panels__panel {
+	animation: panel-fade-in 0.22s ease both;
+	min-height: 8rem;
+
+	&[hidden] {
+		display: none;
+	}
+}
+@keyframes panel-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.install__sub {
+	color: var(--muted);
+	font-size: 0.85rem;
+	margin: 0 0 0.4rem;
+}
+.install__note {
+	color: var(--accent-2);
+	font-size: 0.8rem;
+	margin: 0.35rem 0 0;
+}
+.install__h3 {
+	margin: 2rem 0 1rem;
+	font-size: 1.05rem;
+}
+.install__h3--first {
+	margin-top: 0.5rem;
+}
+.install__h3--top {
+	margin-top: 2.4rem;
+}
+.install__init {
+	border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+	background: color-mix(in srgb, var(--accent) 8%, var(--card));
+
+	& code {
+		color: var(--fg);
+		font-weight: 600;
+	}
+}
+.install__foot {
+	color: var(--muted);
+	font-size: 0.82rem;
+	margin-top: 1.5rem;
+
+	& code {
+		color: var(--accent);
+	}
+}
+
+// ────────────── IDE panel ──────────────
+.ide {
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background: var(--card);
+	padding: 0.9rem 1rem 1rem;
+	min-width: 0;
+}
+.ide__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.6rem;
+}
+.ide__name {
+	font-weight: 700;
+	display: block;
+}
+.ide__hint {
+	color: var(--muted);
+	font-size: 0.8rem;
+	margin-top: 0.15rem;
+	display: block;
+}
+.ide__file {
+	font-size: 0.74rem;
+	color: var(--muted);
+}
+.cfg {
+	margin: 0;
+}
+
+// Install command cards (plugin pages) — used by PluginPage.astro
+.install__cmd-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+	gap: 1rem;
+	margin: 1rem 0 2rem;
+}
+.install__cmd-card {
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background: var(--card);
+	padding: 1rem 1.1rem 1.1rem;
+	min-width: 0;
+
+	& pre {
+		margin: 0;
+		font-size: 0.85rem;
+	}
+}
+.install__cmd-label {
+	display: inline-block;
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--muted);
+	margin-bottom: 0.4rem;
+	font-weight: 700;
+}

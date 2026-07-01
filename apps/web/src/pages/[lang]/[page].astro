@@ -1,0 +1,53 @@
+---
+import MarkdownPage from '#COMPONENTS/MarkdownPage.astro';
+import { langStaticPaths, resolveLang } from '#LIB/page';
+import Base from '#LAYOUTS/Base.astro';
+import pagesManifest from '#MANIFESTS/pages.json';
+
+import { type Lang } from '#I18N/ui';
+import type { IPageTranslation, PageSpec } from '#LIB/page-spec/types';
+
+interface IPagesManifest {
+	readonly generatedAt: string;
+	readonly pages: readonly PageSpec[];
+}
+
+export function getStaticPaths() {
+	return langStaticPaths().flatMap(({ params }) =>
+		(pagesManifest as IPagesManifest).pages.map((page) => ({
+			params: { lang: params.lang, page: page.slug },
+		})),
+	);
+}
+
+const manifest = pagesManifest as IPagesManifest;
+const lang = resolveLang(Astro.params.lang);
+const pageSpec = manifest.pages.find(
+	(entry) => entry.slug === Astro.params.page,
+);
+if (!pageSpec) {
+	throw new Error(
+		`Unknown page slug '${Astro.params.page ?? ''}' — pages.json may be stale, re-run bun run gen:pages.`,
+	);
+}
+
+const requestedTranslation = (
+	pageSpec.translations as Partial<Record<Lang, IPageTranslation>>
+)[lang];
+const translation = requestedTranslation ?? pageSpec.translations.en;
+---
+
+<Base
+	lang={lang}
+	title={translation.frontmatter.title}
+	description={translation.frontmatter.description}
+>
+	{translation.frontmatter.noindex === true && (
+		<Fragment slot="head">
+			<meta name="robots" content="noindex" />
+		</Fragment>
+	)}
+	{/* When this locale is missing, MarkdownPage renders the English copy and
+	    shows the visible translation notice at the top of the article. */}
+	<MarkdownPage page={pageSpec} lang={lang} />
+</Base>

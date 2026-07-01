@@ -1,0 +1,58 @@
+---
+import Base from '#LAYOUTS/Base.astro';
+import { loopDetectorTranslations } from '#DATA/loop-detector-i18n';
+
+const lang = 'en';
+const t = loopDetectorTranslations[lang]!;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base lang={lang} title={`${t.title} — @mcp-vertex/core`} description={t.subtitle}>
+	<header class="page-header">
+		<div class="container">
+			<nav class="page-header__crumb" aria-label="breadcrumb">
+				<a href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>Plugins</a>
+				<span aria-hidden="true">›</span>
+				<span aria-current="page">{t.title}</span>
+			</nav>
+			<h1>{t.title}</h1>
+		</div>
+	</header>
+	<section class="section">
+		<div class="container guide">
+			<article class="guide__body">
+				<p class="lead">{t.subtitle}</p>
+
+				<h2>{t.overviewTitle}</h2>
+				<p>{t.overviewBody1}</p>
+				<p>{t.overviewBody2}</p>
+
+				<h2>{t.signalsTitle}</h2>
+				<h3>{t.signalsRepeatTitle}</h3>
+				<p>{t.signalsRepeatDesc}</p>
+				<h3>{t.signalsProgressTitle}</h3>
+				<p>{t.signalsProgressDesc}</p>
+
+				<h2>{t.configTitle}</h2>
+				<p>{t.configDesc}</p>
+				<pre><code>{`{
+  "loopDetector": {
+    "enabled": true,
+    "repeatThreshold": 3,
+    "noProgressThreshold": 3,
+    "handoffDir": ".mcp-vertex/handoff"
+  }
+}`}</code></pre>
+
+				<h2>{t.handoffTitle}</h2>
+				<p>{t.handoffDesc}</p>
+
+				<div style="margin-top: 2rem;">
+					<a href={lang === 'en' ? `${base}/plugins` : `${base}/${lang}/plugins`}>
+						← {t.backToPlugins}
+					</a>
+				</div>
+			</article>
+		</div>
+	</section>
+</Base>

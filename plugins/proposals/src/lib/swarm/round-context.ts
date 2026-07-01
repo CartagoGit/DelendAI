@@ -10,7 +10,7 @@
  *   - `round-context-digest`  digest build + staleness + atomic read/write
  *
  * This barrel re-exports them so existing consumers importing from
- * `./round-context` (and `@cartago-git/mcp-proposals/lib/swarm/round-context`)
+ * `./round-context` (and `@mcp-vertex/proposals/lib/swarm/round-context`)
  * are unaffected.
  */
 

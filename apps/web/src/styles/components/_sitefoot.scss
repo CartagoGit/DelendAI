@@ -1,0 +1,73 @@
+// _sitefoot.scss — multi-column site footer.
+//
+// BEM root: .sitefoot with __inner, __col (and --brand modifier), __base.
+
+.sitefoot {
+	border-top: 1px solid var(--line);
+	padding: 2.5rem 0 1.2rem;
+	color: var(--muted);
+	background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 4%, transparent));
+}
+.sitefoot__inner {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 2rem;
+}
+.sitefoot__col {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+
+	& strong {
+		color: var(--fg);
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 0.4rem;
+	}
+	& a {
+		color: var(--muted);
+		font-size: 0.92rem;
+	}
+	& a:hover {
+		color: var(--fg);
+		text-decoration: none;
+	}
+}
+.sitefoot__col--brand {
+	& p {
+		margin: 0.3rem 0 0;
+		max-width: 22rem;
+		font-size: 0.88rem;
+		line-height: 1.5;
+	}
+	& .sitefoot__credit {
+		margin-top: 0.7rem;
+		font-size: 0.78rem;
+		letter-spacing: 0.02em;
+		color: var(--fg);
+		opacity: 0.78;
+	}
+}
+.sitefoot__base {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 1.4rem;
+	margin-top: 1.6rem;
+	border-top: 1px solid var(--line);
+	color: var(--muted);
+	font-size: 0.78rem;
+}
+@media (max-width: 720px) {
+	.sitefoot__inner {
+		grid-template-columns: 1fr;
+		gap: 1.4rem;
+	}
+	.sitefoot__base {
+		flex-direction: column;
+		gap: 0.4rem;
+		text-align: center;
+	}
+}

@@ -1,0 +1,151 @@
+---
+/**
+ * Setup.astro — cross-project setup wizard (f00030 S3).
+ *
+ * Renders the 7 canonical steps from `docs/mcp-vertex/CROSS-PROJECT-SETUP.md` as an
+ * ordered list, each with a copy-pasteable command (via the shared
+ * `CodeBlock`, which already owns the `navigator.clipboard` copy button used
+ * across the site — same pattern as the markdown-backed `/install` page
+ * (`apps/web/src/data/pages/install/*.md`, served through `MarkdownPage`).
+ * The step list and the commands come from the pure, tested
+ * `setup-wizard.ts` helper, which mirrors
+ * `packages/core/src/lib/setup/setup-steps.ts`. Every visible string is i18n
+ * (12 languages); the page links back to the canonical guide.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import { buildSetupWizard } from '#LIB/setup-wizard';
+import CodeBlock from '#UI/CodeBlock.astro';
+import Callout from '#UI/Callout.astro';
+
+interface Props {
+	readonly lang: Lang;
+	/** Page title. Rendered as the section's <h1>. */
+	readonly heading?: string;
+}
+const { lang, heading: headingProp } = Astro.props as Props;
+const t = useTranslations(lang);
+const heading = headingProp ?? t.setup.title;
+
+const steps = buildSetupWizard({
+	detectRepoTitle: t.setup.detectRepoTitle,
+	detectRepoBody: t.setup.detectRepoBody,
+	confirmRepoTitle: t.setup.confirmRepoTitle,
+	confirmRepoBody: t.setup.confirmRepoBody,
+	pickAuthTierTitle: t.setup.pickAuthTierTitle,
+	pickAuthTierBody: t.setup.pickAuthTierBody,
+	writeConfigTitle: t.setup.writeConfigTitle,
+	writeConfigBody: t.setup.writeConfigBody,
+	verifyTierTitle: t.setup.verifyTierTitle,
+	verifyTierBody: t.setup.verifyTierBody,
+	printInvocationTitle: t.setup.printInvocationTitle,
+	printInvocationBody: t.setup.printInvocationBody,
+	markConfiguredTitle: t.setup.markConfiguredTitle,
+	markConfiguredBody: t.setup.markConfiguredBody,
+});
+
+// Canonical source-of-truth guide. The wizard is the onboarding path; the
+// docs are the reference every surface links back to (f00030 §"One guide,
+// four surfaces").
+const DOCS_GUIDE_URL =
+	'https://github.com/cv2mario/mcp-vertex/blob/main/docs/mcp-vertex/CROSS-PROJECT-SETUP.md';
+---
+
+<section id="setup" class="section">
+	<div class="container">
+		<h1>{heading}</h1>
+		<p class="lead">{t.setup.lead}</p>
+
+		<Callout variant="note" lang_label={lang}>
+			<a href={DOCS_GUIDE_URL} rel="noopener">{t.setup.docsLinkLabel}</a>
+		</Callout>
+
+		<h2 class="setup__h2">{t.setup.stepsTitle}</h2>
+		<ol class="setup__steps">
+			{
+				steps.map((step) => (
+					<li class="setup__step" id={`step-${step.id}`}>
+						<header class="setup__step-head">
+							<span class="setup__step-num" aria-hidden="true">
+								{step.index}
+							</span>
+							<h3 class="setup__step-title">
+								{step.title}
+								{step.optional && (
+									<span class="setup__step-optional">
+										{t.setup.optionalLabel}
+									</span>
+								)}
+							</h3>
+						</header>
+						<p class="setup__step-body">{step.body}</p>
+						<CodeBlock
+							code={step.command}
+							lang={step.commandLang}
+							filename={step.id}
+							lang_label={lang}
+						/>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.setup__h2 {
+		margin: 2rem 0 0.5rem;
+		font-size: clamp(1.25rem, 3vw, 1.5rem);
+		letter-spacing: -0.01em;
+	}
+	.setup__steps {
+		list-style: none;
+		counter-reset: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 1.5rem;
+	}
+	.setup__step {
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		padding: 1rem 1.25rem;
+		background: color-mix(in srgb, var(--card) 40%, transparent);
+	}
+	.setup__step-head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	.setup__step-num {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.9rem;
+		height: 1.9rem;
+		flex: none;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		font-weight: 600;
+		font-size: 0.95rem;
+	}
+	.setup__step-title {
+		margin: 0;
+		font-size: 1.05rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.setup__step-optional {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--muted);
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		padding: 0.1rem 0.5rem;
+	}
+	.setup__step-body {
+		margin: 0.6rem 0 0;
+		color: var(--muted);
+	}
+</style>

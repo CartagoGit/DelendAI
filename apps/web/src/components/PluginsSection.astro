@@ -1,0 +1,71 @@
+---
+/**
+ * PluginsSection.astro — the home-page / standalone /plugins index.
+ *
+ * f00053 S2: every plugin is now an expandable disclosure
+ * (`PluginDisclosure.astro`) that reveals exactly the tools it
+ * contributes. All copy + capabilities come from the canonical
+ * `plugin-catalog` (S1) — this component no longer resolves
+ * descriptions from scattered i18n keys / first-tool fallbacks.
+ *
+ * The grid lists the real loadable plugins (the 16 under `plugins/`,
+ * the catalog's `PLUGIN_SLUGS`); the core/cli/client/ui-extension
+ * packages are not plugins and are documented on their own pages.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import capabilities from '#MANIFESTS/capabilities.json';
+import { PLUGIN_CATALOG, PLUGIN_SLUGS } from '#DATA/plugin-catalog';
+import PluginDisclosure from '#COMPONENTS/PluginDisclosure.astro';
+
+interface Props {
+	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const packages = capabilities.packages as Array<{
+	name: string;
+	version: string;
+}>;
+const versionFor = (slug: string): string =>
+	packages.find((pkg) => pkg.name === `@mcp-vertex/${slug}`)?.version ??
+	capabilities.coreVersion;
+
+const pluginHref = (slug: string) =>
+	lang === 'en'
+		? `${base}/plugins/${slug}`
+		: `${base}/${lang}/plugins/${slug}`;
+---
+
+<section id="plugins" class="section">
+	<div class="container">
+		<p class="lead">{t.plugins.lead}</p>
+		<div class="plugins-grid">
+			{
+				PLUGIN_SLUGS.map((slug) => {
+					const entry = PLUGIN_CATALOG[slug];
+					const requires =
+						slug === 'issues'
+							? {
+									label: t.plugin.issues.requires,
+									href: pluginHref('proposals'),
+									name: 'proposals',
+								}
+							: undefined;
+					return (
+						<PluginDisclosure
+							slug={slug}
+							name={`@mcp-vertex/${entry.slug}`}
+							version={versionFor(slug)}
+							href={pluginHref(slug)}
+							requires={requires}
+						/>
+					);
+				})
+			}
+		</div>
+	</div>
+</section>

@@ -4,7 +4,7 @@
  * T3 slice of p34 (Proposal Budget + Execution Plan Tool).
  *
  * Integration spec for `runAcceptanceCriteria` (T3 deliverable in
- * `libs/mcp-server/src/lib/proposals/proposal-acceptance.ts`).
+ * `libs/mcp-project/src/lib/proposals/proposal-acceptance.ts`).
  *
  * The spec uses `Bun.spawn` for real (no mocks): acceptance criteria are
  * the gate between an `implementation_runner` slice and `delivery_verifier`
@@ -20,7 +20,7 @@
  *      → passed: false, reason: 'substring not found'.
  *   3. `runAcceptanceCriteria([{ command: 'exit 1', expect: 'exit0' }])`
  *      → passed: false, reason: 'exit code N'.
- *   4. `runAcceptanceCriteria([{ command: 'bun test libs/mcp-server -- --invalid-flag', expect: 'pass' }])`
+ *   4. `runAcceptanceCriteria([{ command: 'bun test libs/mcp-project -- --invalid-flag', expect: 'pass' }])`
  *      → passed: false, reason contains 'vitest exit code'.
  *   5. `runAcceptanceCriteria` with empty `command` → throws `INVALID_CRITERION`
  *      without spawning anything.
@@ -35,8 +35,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { runAcceptanceCriteria } from '@cartago-git/mcp-proposals/lib/proposals/proposal-acceptance';
-import { ProposalParseError } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';
+import { runAcceptanceCriteria } from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
+import { ProposalParseError } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
 
 // skipIf guard: when Bun is unavailable, the whole suite skips. The
 // vitest run still reports the file as 0/0 with `skipped: true` rather
@@ -52,15 +52,15 @@ const describeIfBun = BUN_AVAILABLE ? describe : describe.skip;
 const EXIT_ZERO_CMD = 'bun --version';
 
 // Per-test timeout for the vitest-suite spawn used in case 4. The
-// command runs a real `bun test libs/mcp-server -- --invalid-flag`
+// command runs a real `bun test libs/mcp-project -- --invalid-flag`
 // (the whole vitest suite as a subprocess), which can take 10-15s
 // in this workspace; the default vitest 5s timeout is not enough.
 // We only widen the timeout for that one test, leaving the rest at
 // the project default.
 const VITEST_SUITE_TIMEOUT_MS = 60_000;
 
-describe('runAcceptanceCriteria (integration, p34 T3)', () => {
-	describeIfBun('executable acceptance', () => {
+describe('runAcceptanceCriteria (integration, p34 T3)', async () => {
+	describeIfBun('executable acceptance', async () => {
 		it('case 1: bun --version matches contains:1. → passed: true', async () => {
 			const result = await runAcceptanceCriteria([
 				{ command: 'bun --version', expect: 'contains:1.' },
@@ -114,12 +114,12 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 				expect(r?.passed).toBe(false);
 				expect(r?.reason ?? '').toMatch(/exit code/);
 			},
-			VITEST_SUITE_TIMEOUT_MS
+			VITEST_SUITE_TIMEOUT_MS,
 		);
 
 		it('case 5: empty command throws INVALID_CRITERION without spawning', async () => {
 			await expect(
-				runAcceptanceCriteria([{ command: '', expect: 'exit0' }])
+				runAcceptanceCriteria([{ command: '', expect: 'exit0' }]),
 			).rejects.toBeInstanceOf(ProposalParseError);
 
 			try {
@@ -182,7 +182,7 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 		});
 	});
 
-	describe('non-Bun hosts (sanity)', () => {
+	describe('non-Bun hosts (sanity)', async () => {
 		// The pre-spawn check runs regardless of Bun availability. We
 		// assert the error path is type-safe even when the host has
 		// neither Bun nor Node.
@@ -195,7 +195,7 @@ describe('runAcceptanceCriteria (integration, p34 T3)', () => {
 						// runtime guard must still reject this.
 						expect: 'banana' as never,
 					},
-				])
+				]),
 			).rejects.toBeInstanceOf(ProposalParseError);
 		});
 	});

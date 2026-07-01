@@ -1,0 +1,213 @@
+// _dropdown.scss — `mv-dropdown__*` component styles for
+// `@mcp-vertex/shared/styles`.
+//
+// The shared `renderDropdown` helper (in
+// `packages/ui-extension/src/components/dropdown.ts`) emits HTML with
+// the BEM shape `.mv-dropdown`, `.mv-dropdown__trigger`,
+// `.mv-dropdown__menu`, `.mv-dropdown__menu--{left|right}`,
+// `.mv-dropdown__item`, `.mv-dropdown__label`, `.mv-dropdown__icon`,
+// `.mv-dropdown__caret`. This partial ships the matching CSS so any
+// host (a new IDE extension, a future product surface) can
+// `@use '@mcp-vertex/shared/styles';` and get a working dropdown
+// without duplicating the SCSS.
+//
+// The docs site (`apps/web`) does **not** consume this partial — its
+// own `apps/web/src/styles/components/_nav.scss` carries the matching
+// `.nav__more*` rules (the web passes `classPrefix: 'nav__more'` to
+// `renderDropdown`). The two surfaces share zero CSS by design: the
+// web's nav chrome is bespoke; every other host wants the default
+// look. This is the "one helper, two presets, zero fork" model the
+// S2 acceptance in f00055 commits to.
+//
+// Open/Closed: adding a new dropdown variant (e.g. an icon-only
+// trigger, a split-button variant) is one new selector here +
+// optionally one new class on the trigger in `dropdown.ts`. Nothing
+// else changes.
+
+@use 'tokens';
+
+// --- wrapper ------------------------------------------------------------
+//
+// `.mv-dropdown` is the positioned wrapper. `display: inline-block` keeps
+// the trigger inline with surrounding text; `position: relative` anchors
+// the absolutely-positioned menu below it.
+
+.mv-dropdown {
+	display: inline-block;
+	position: relative;
+
+	// Reset the `<ul role="menu">` defaults (browsers ship `list-style` +
+	// `padding-left` that conflict with the design).
+	.mv-dropdown__menu {
+		list-style: none;
+		margin: 0;
+		padding: var(--mv-s-1) 0;
+	}
+}
+
+// --- trigger ------------------------------------------------------------
+//
+// Native `<button>` reset + cursor + the focus ring. The chevron is a
+// separate `<span class="mv-dropdown__caret">` so hosts that want a
+// custom caret can hide this one and slot their own in.
+
+.mv-dropdown__trigger {
+	appearance: none;
+	background: transparent;
+	border: 1px solid transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	padding: var(--mv-s-1) var(--mv-s-2);
+	border-radius: var(--mv-radius);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--mv-s-1);
+	transition:
+		background var(--mv-transition-fast),
+		border-color var(--mv-transition-fast);
+
+	&:hover {
+		background: color-mix(in srgb, currentColor 8%, transparent);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--accent, currentColor);
+		outline-offset: 2px;
+	}
+}
+
+.mv-dropdown__caret {
+	display: inline-block;
+	font-size: 0.75em;
+	line-height: 1;
+	transform: translateY(0.05em);
+	transition: transform var(--mv-transition-base);
+
+	// Open-state: rotate the chevron 180°. The runtime sets
+	// `aria-expanded="true"` on the trigger when the panel opens, so
+	// the cascade lives here in CSS — no JS for the visual feedback.
+	.mv-dropdown__trigger[aria-expanded='true'] & {
+		transform: translateY(-0.05em) rotate(180deg);
+	}
+}
+
+// --- menu ---------------------------------------------------------------
+//
+// The `<ul role="menu">` is hidden by default and shown when the trigger
+// carries `aria-expanded="true"`. CSS-only open-state (the runtime sets
+// the attribute) keeps the JS contract narrow: it only flips the
+// attribute, not the visibility.
+//
+// `.mv-dropdown__menu--right` aligns the panel to the right edge of the
+// wrapper (used by the docs site's "More" dropdown).
+
+.mv-dropdown__menu {
+	position: absolute;
+	top: calc(100% + var(--mv-s-1));
+	left: 0;
+	min-width: 12rem;
+	background: var(--bg, #fff);
+	color: var(--fg, #111);
+	border: 1px solid var(--line, #d8dee4);
+	border-radius: var(--mv-radius);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	z-index: 50;
+	transform-origin: top left;
+	transform: scaleY(0);
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		transform var(--mv-transition-base),
+		opacity var(--mv-transition-base),
+		visibility 0s linear var(--mv-transition-base);
+
+	.mv-dropdown__trigger[aria-expanded='true'] ~ & {
+		transform: scaleY(1);
+		opacity: 1;
+		visibility: visible;
+		transition-delay: 0s;
+	}
+}
+
+.mv-dropdown__menu--right {
+	left: auto;
+	right: 0;
+	transform-origin: top right;
+
+	.mv-dropdown__trigger[aria-expanded='true'] ~ & {
+		transform: scaleY(1);
+	}
+}
+
+// `.mv-dropdown__menu--left` is the default alignment; explicitly
+// declared so the modifier class always exists (consumers can rely
+// on the runtime emitting `--{align}` for any value in the union).
+.mv-dropdown__menu--left {
+	left: 0;
+	right: auto;
+	transform-origin: top left;
+
+	.mv-dropdown__trigger[aria-expanded='true'] ~ & {
+		transform: scaleY(1);
+	}
+}
+
+// --- items --------------------------------------------------------------
+//
+// Items are either `<button>` or `<a role="menuitem">`. Both share the
+// same BEM class. Full-width click target, hover state, focus ring.
+
+.mv-dropdown__item {
+	display: flex;
+	align-items: center;
+	gap: var(--mv-s-2);
+	width: 100%;
+	padding: var(--mv-s-2) var(--mv-s-3);
+	background: transparent;
+	border: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background var(--mv-transition-fast);
+
+	&:hover,
+	&:focus-visible {
+		background: color-mix(in srgb, currentColor 8%, transparent);
+		outline: none;
+	}
+}
+
+.mv-dropdown__label {
+	flex: 1;
+	min-width: 0;
+}
+
+.mv-dropdown__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 1.1em;
+	font-size: 0.95em;
+	opacity: 0.85;
+}
+
+// --- reduced motion opt-out --------------------------------------------
+//
+// Honor the user's OS preference for reduced motion: collapse the
+// open/close transitions to 0ms. The token layer already does this for
+// `--mv-transition-{fast,base}`; the `visibility` transition needs an
+// explicit rule because `0s` + `0s` would leave it stuck hidden.
+
+@media (prefers-reduced-motion: reduce) {
+	.mv-dropdown__menu {
+		transition: transform 0s, opacity 0s, visibility 0s;
+	}
+
+	.mv-dropdown__caret {
+		transition: transform 0s;
+	}
+}

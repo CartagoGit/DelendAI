@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	collectCompactStatus,
 	type ICompactStatusOptions,
-} from '@cartago-git/mcp-proposals/lib/tools/compact-status.tool';
+} from '@mcp-vertex/proposals/lib/tools/compact-status.tool';
 
-describe('compact_status (N17) — aggregates the proposals plugin state', () => {
+describe('compact_status (N17) — aggregates the proposals plugin state', async () => {
 	let dir = '';
 	let opts: ICompactStatusOptions;
 	beforeEach(() => {
@@ -38,9 +38,14 @@ describe('compact_status (N17) — aggregates the proposals plugin state', () =>
 			JSON.stringify({
 				version: 1,
 				in_flight: [
-					{ task_id: 't1', agent: 'a', ownership: ['x'], started_at: 'now' },
+					{
+						task_id: 't1',
+						agent: 'a',
+						ownership: ['x'],
+						started_at: 'now',
+					},
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			opts.indexPathAbs,
@@ -50,7 +55,7 @@ describe('compact_status (N17) — aggregates the proposals plugin state', () =>
 					{ id: 'p2', status: 'done' },
 					{ id: 'p3', status: 'ready' },
 				],
-			})
+			}),
 		);
 		const s = await collectCompactStatus(opts);
 		expect(s.locks?.active).toBe(1);

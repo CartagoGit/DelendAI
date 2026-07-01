@@ -1,0 +1,89 @@
+name: Release
+
+# Auto-release on every push to main — el usuario no hace nada. `derive-version`
+# reads the Conventional Commits since the last `vX.Y.Z` tag and decides the next
+# version (feat→minor, fix/perf→patch, BREAKING→major; only docs/chore → no
+# release; non-conventional with content → patch). If there is something to
+# release it validates, builds, publishes the 10 packages to npm (in dependency
+# order) at the derived version, tags `vX.Y.Z` and opens a GitHub Release.
+#
+# Tag-driven: the bump is NOT committed back to main (no CI loop, no fight with
+# branch protection) — the tag is the source of truth for the next derivation.
+#
+# Requires the `NPM_TOKEN` repository secret (Granular access token with
+# Bypass 2FA enabled). Since November 2025, npm removed legacy/automation
+# tokens and caps write tokens at 90 days — rotate via
+# `.github/workflows/rotate-npm-token.yml`.
+
+on:
+  push:
+    branches: [main]
+
+# Allow tagging + creating releases, and npm provenance.
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: publish + tag + release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history + tags to derive the next version
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Derive next version from Conventional Commits
+        id: decide
+        run: bun tools/scripts/release/derive-version.script.ts --github-output
+
+      - name: Install dependencies
+        if: steps.decide.outputs.release == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Configure npm auth
+        if: steps.decide.outputs.release == 'true'
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Set version, validate, build and publish (10 packages, in order)
+        if: steps.decide.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        # --tool=npm --provenance: `id-token: write` (above) lets npm attach an
+        # OIDC-backed provenance attestation to each published tarball. Safe to
+        # switch from `bun publish`: every package's `workspace:*` reference to
+        # `@mcp-vertex/core` lives only in `devDependencies` (never published),
+        # and `peerDependencies` already carry a resolved `^X.Y.Z` range via
+        # `--write` (see scripts/release.ts header for the full rationale).
+        run: bun run release --set="$VERSION" --write --publish --tool=npm --provenance
+
+      - name: Tag the release commit
+        if: steps.decide.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Create GitHub Release
+        if: steps.decide.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes

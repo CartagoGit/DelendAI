@@ -1,6 +1,8 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IProjectAnalysis } from './analyze-project';
-import { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
+import { runnerFor } from './package-runners';
+import { resolvePatternCatalog } from './pattern-catalog-overrides';
+import type { IPatternOverrides } from './pattern-catalog-overrides';
 import type { IRecommendedTool } from './pattern-catalog';
 
 export interface IServerPlanOptions {
@@ -8,13 +10,19 @@ export interface IServerPlanOptions {
 	readonly namespacePrefix?: string;
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
+	 * `PROJECT_PATTERN_CATALOG` is used.
+	 */
+	readonly patternOverrides?: IPatternOverrides;
 }
 
 export interface IServerPlan {
 	readonly projectType: IProjectAnalysis['projectType'];
 	readonly serverName: string;
 	readonly namespacePrefix: string;
-	/** mcp-core plugins to load via `--plugins`. */
+	/** mcp-vertex plugins to load via `--plugins`. */
 	readonly plugins: readonly string[];
 	/** Project-specific tools to scaffold. */
 	readonly tools: readonly IRecommendedTool[];
@@ -39,23 +47,10 @@ const kebabHead = (name: string | undefined): string => {
 	return head && head.length > 0 ? head : 'app';
 };
 
-const runner = (analysis: IProjectAnalysis): string => {
-	switch (analysis.packageManager) {
-		case 'bun':
-			return 'bun run';
-		case 'pnpm':
-			return 'pnpm';
-		case 'yarn':
-			return 'yarn';
-		default:
-			return 'npm run';
-	}
-};
-
 const buildValidationCommands = (
-	analysis: IProjectAnalysis
+	analysis: IProjectAnalysis,
 ): Record<string, string> => {
-	const prefix = runner(analysis);
+	const prefix = runnerFor(analysis.packageManager);
 	const out: Record<string, string> = {};
 	for (const [role, script] of Object.entries(analysis.scripts)) {
 		out[role] = `${prefix} ${role}`.trim();
@@ -67,33 +62,35 @@ const buildValidationCommands = (
 /**
  * Turn an analysis into a concrete, editable server plan. Pure: the
  * agent reviews the plan, tweaks names/plugins if needed, then asks
- * `create_server` to materialise it. The plan is the "what an optimal
+ * `create_project` to materialise it. The plan is the "what an optimal
  * MCP server needs here" recommendation, derived from the pattern
  * catalog — no human had to spell it out.
  */
 export const recommendServerPlan = (
 	analysis: IProjectAnalysis,
-	options: IServerPlanOptions = {}
+	options: IServerPlanOptions = {},
 ): IServerPlan => {
-	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
-	const namespacePrefix =
-		options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-server-${namespacePrefix}`;
+	const catalog = resolvePatternCatalog(options.patternOverrides);
+	const pattern = catalog[analysis.projectType];
+	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
+	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
 	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
 	const plugins = pattern.recommendedPlugins;
 
-	const args = ['@cartago-git/mcp-core'];
+	const args = ['@mcp-vertex/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
-	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir) args.push(`--cacheDir=${cacheDir}`);
-	if (docsDir !== DEFAULT_CORE_PATHS.docsDir) args.push(`--docsDir=${docsDir}`);
+	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir)
+		args.push(`--cacheDir=${cacheDir}`);
+	if (docsDir !== DEFAULT_CORE_PATHS.docsDir)
+		args.push(`--docsDir=${docsDir}`);
 	if (options.namespacePrefix) args.push(`--prefix=${namespacePrefix}`);
 
 	const notes: string[] = [
 		...pattern.knowledgeHints,
-		analysis.hasMcpServer
+		analysis.hasMcpProject
 			? 'This project already has an MCP server: prefer adding the recommended tools to it over scaffolding a new one.'
-			: 'No MCP server found: scaffold a fresh one with `create_server`, then register it in mcp.json.',
+			: 'No MCP server found: scaffold a fresh one with `create_project`, then register it in mcp.json.',
 	];
 
 	return {

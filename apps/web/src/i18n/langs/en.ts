@@ -1,0 +1,415 @@
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
+
+const dict: LangDict = {
+	nav: {
+		concept: 'Concept',
+		install: 'Install',
+		setup: 'Setup',
+		capabilities: 'Capabilities',
+		tools: 'Tools',
+		benchmarks: 'Benchmarks',
+		plugins: 'Plugins',
+		presets: 'Presets',
+		github: 'GitHub',
+		menu: 'Menu',
+		knowledge: 'Knowledge',
+		prompts: 'Prompts',
+		resources: 'Resources',
+		skills: 'Skills',
+		guide: 'Guide',
+		more: 'More',
+		firstFiveMinutes: 'First 5 minutes',
+		troubleshooting: 'Troubleshooting',
+	},
+	hero: {
+		title: { a: 'The agnostic ', b: 'MCP Vertex', c: '' },
+		subheader: 'An MCP server core + plugin loader for any project.',
+		tagline:
+			'A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.',
+		ctaInstall: 'Get started',
+		ctaTools: 'Browse the tools',
+		runsOn: 'Runs under Node, Deno & bun · any package manager',
+	},
+	marquee: {
+		runtimes: 'Built with · runs under',
+		clients: 'MCP clients & models',
+	},
+	concept: {
+		title: 'One small core, many plugins',
+		body: 'mcp-vertex is the hermetic core: deterministic tool registration, injected workspace paths, a CLI plugin loader and a token-measured tool surface. Everything domain-specific is a plugin — load only what you need, under any host or model.',
+		f1: {
+			t: 'Project-agnostic',
+			b: 'No domain code in the core. The same plugin behaves identically under any host or model.',
+		},
+		f2: {
+			t: 'Low-token by design',
+			b: 'A single overview, lazy knowledge and compact JSON. A measured budget guards regressions in CI.',
+		},
+		f3: {
+			t: 'Safe concurrency',
+			b: 'Atomic writes, a cross-process mutex with ownership tokens, and corruption quarantine.',
+		},
+		f4: {
+			t: 'Multi-agent ready',
+			b: 'The proposals plugin coordinates a swarm: locks, a task queue, slice disjointness and push notifications.',
+		},
+	},
+	tools: {
+		title: 'Tools',
+		lead: 'Every tool the full plugin set exposes, grouped by namespace — harvested from the live registry, so this page never drifts from the code.',
+		count: 'tools',
+		packages: 'packages',
+	},
+	bench: {
+		title: 'Measured, not claimed',
+		lead: 'Token efficiency is a guarded invariant — a CI test fails if these ceilings regress.',
+		b1: {
+			t: 'cold-start',
+			b: 'overview (compact) + auto_work — full orientation under 300 tokens.',
+		},
+		b2: {
+			t: 'no polling',
+			b: 'lock-release is pushed (notification plugin), not polled in a loop.',
+		},
+		b3: {
+			t: 'drift-guarded',
+			b: 'a generated type SDK, token budgets and a strict e2e net over the real protocol.',
+		},
+		live: {
+			title: 'Orientation cost · measured live',
+			note: 'Tokens of the result text an agent sees (≈4 bytes/token), measured live over the protocol with proposals+memory. The baseline is an illustrative estimate of orienting by hand — not a measured third-party tool.',
+		},
+		baseline: 'without mcp-vertex (by hand · estimate)',
+	},
+	plugins: {
+		title: 'Plugins',
+		lead: 'The published packages. Load only what you need; the core stays tiny.',
+	},
+	cfg: {
+		title: 'Settings',
+		theme: 'Theme',
+		language: 'Language',
+		motion: 'Motion',
+		motionLabel: 'Animate the marquees',
+	},
+	search: {
+		title: 'Search',
+		placeholder: 'Search the site...',
+	},
+	footer: {
+		built: 'Generated from the live tool registry.',
+		tagline: 'A project-agnostic MCP server core + plugin loader.',
+		sections: 'Sections',
+		resources: 'Resources',
+		madeBy: 'Made by Cartago · @CartagoGit on GitHub',
+		creatorsRepo: 'Creator on GitHub',
+		creatorsNpm: 'Creator on npm',
+	},
+	pluginpage: {
+		back: 'Back',
+		tools: 'Tools',
+		install: 'Install',
+		tabInstall: 'Install',
+		tabTools: 'Tools',
+		tabConfiguration: 'Configuration',
+		tabTutorial: 'Tutorial',
+	},
+	plugin: {
+		proposals:
+			'Multi-agent coordination: locks, task queue, slices, round-context, state repair.',
+		git: 'Read-only repository inspection: status, changed files, diff, log.',
+		memory: 'Durable cross-session notes with BM25 recall, quotas, TTL and secret redaction.',
+		search: 'Low-token workspace search: substring or regex, glob include/exclude.',
+		rules: 'Framework detection + lint/convention guidance, project config wins.',
+		quality:
+			'Run quality gates (lint/test/build) with allow/deny command policy; cancellable.',
+		docs: 'Catalogue + read the project markdown docs, low-token curated navigation.',
+		deps: 'Offline dependency inventory + health (lockfile, loose ranges, duplicates).',
+		notification: 'Push lock-release events so agents stop polling.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
+		'status-marker':
+			'Mandatory coloured close marker for every agent response: 8 canonical states, helper + validator tools.',
+		core: 'The agnostic core: overview, scaffold, metrics, doctor and the plugin loader.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
+	},
+	toolpage: {
+		back: 'Back',
+		backToPlugin: 'Back to plugin',
+		arguments: 'Arguments',
+		argName: 'Argument',
+		argType: 'Type',
+		argRequired: 'Required',
+		argDescription: 'Description',
+		argRequiredYes: 'yes',
+		argRequiredNo: 'no',
+		noArguments: 'This tool takes no arguments.',
+		effects: 'Effects',
+		effectReadOnly: 'read-only',
+		example: 'Example call',
+		exampleNote:
+			'Shown as a generic MCP tool-call payload; the exact transport depends on your client.',
+		plugin: 'Plugin',
+	},
+	firstFiveMinutes: {
+		title: 'First 5 minutes',
+		lead: 'Three copy-pasteable quickstarts. Pick the one that matches how you run mcp-vertex.',
+		profileTabBunNode: 'Bun / Node',
+		profileTabVscode: 'VS Code / Copilot',
+		profileTabClaude: 'Claude Code',
+		bunNode: {
+			title: 'Bun / Node — run the server directly',
+			intro: 'No editor integration required: run the host server from a terminal and point any MCP client at its stdio transport.',
+			steps: [
+				'Install: `bun add @mcp-vertex/core` (or `npm install @mcp-vertex/core`).',
+				'Run: `bunx mcp-vertex --preset=standard` (or `npx mcp-vertex --preset=standard`).',
+				'Verify: the process prints the loaded plugin list and waits on stdio — Ctrl+C to stop.',
+				'Point your MCP client config at the binary with `--preset=minimal|standard|swarm|full` (see Install for the full flag list).',
+				'Call `mcp-vertex_overview { compact: true }` first — it tells you what to do next.',
+			],
+		},
+		vscode: {
+			title: 'VS Code / GitHub Copilot',
+			intro: 'The one-command installer detects VS Code and merges mcp-vertex into your MCP server list without touching existing servers.',
+			steps: [
+				'Run the one-command installer from the Install page (auto-detects your IDE).',
+				'Reload the window (`Developer: Reload Window`) so Copilot picks up the new server.',
+				'Open the Copilot chat panel and select the `mcp-vertex` agent from the agent picker.',
+				'Ask it to call `mcp-vertex_overview` — it should report the loaded preset and a recommended next action.',
+				'If the server does not appear, see Troubleshooting → "MCP server not detected".',
+			],
+		},
+		claude: {
+			title: 'Claude Code',
+			intro: 'Claude Code reads `.mcp.json` at the workspace root; the installer writes or merges that file for you.',
+			steps: [
+				'Run the one-command installer — it detects Claude Code and writes `.mcp.json`.',
+				'Restart Claude Code (or run `/mcp` to reload servers) so it picks up the new entry.',
+				'In a fresh session, the always-loaded `AGENTS.md` + `CLAUDE.md` already point at `mcp-vertex_overview` as the first call.',
+				'Confirm with `mcp-vertex_overview { compact: true }` — the `recommendedNextAction` field tells you what to do next.',
+				'For multi-agent sessions, read the `mcp-vertex-proposal-swarm-runner` skill before claiming a slice.',
+			],
+		},
+		nextSteps: 'Where to go next',
+		nextToolsCta: 'Browse every tool',
+		nextTroubleshootingCta: 'Something not working? Troubleshooting',
+	},
+	troubleshooting: {
+		title: 'Troubleshooting',
+		lead: 'Symptom → likely cause → fix, for the issues that have actually been reported.',
+		symptom: 'Symptom',
+		cause: 'Likely cause',
+		fix: 'Fix',
+		tags: 'Tags',
+		backToIndex: 'Back to troubleshooting',
+		closedBy: 'Closed by',
+		empty: 'No troubleshooting cases match this filter yet.',
+	},
+	knowledge: {
+		title: 'Knowledge',
+		lead: 'Catalogued documents the core can answer questions about.',
+		count: 'documents',
+	},
+	prompts: {
+		title: 'Prompts',
+		lead: 'Reusable prompt templates exposed by the core.',
+		count: 'prompts',
+		arg: 'arguments',
+	},
+	resources: {
+		title: 'Resources',
+		lead: 'Static resources bundled with the project (URI + MIME).',
+		count: 'resources',
+		uri: 'URI',
+		mime: 'MIME',
+	},
+	skills: {
+		title: 'Skills',
+		lead: 'Domain playbooks the agent can load on demand.',
+		count: 'skills',
+		body: 'Body',
+	},
+	notFound: {
+		code: '404',
+		title: 'Page not found',
+		lead: 'The page you are looking for does not exist or has moved. The core stays agnostic — even of broken URLs.',
+		homeCta: 'Back to home',
+		toolsCta: 'Browse the tools',
+		homeAria: 'Go to home',
+	},
+	proposals: proposalGlossaryByLang.en,
+	recovery: recoveryByLang.en,
+	logs: logsByLang.en,
+	presets: {
+		title: 'Presets',
+		lead: 'Pre-configured plugin sets for different workspace sizes.',
+		summary:
+			'This repository contains {count} unique plugins across presets.',
+		hostOnlyChip: 'host only',
+		installTitle: 'How to use',
+		installLead: 'Specify the --preset flag when starting the MCP server.',
+		table: {
+			preset: 'Preset',
+		},
+	},
+	setup: {
+		title: 'Cross-project setup',
+		lead: 'Wire mcp-vertex into any repository and get the GitHub issues plugin ready for that repo — the same 7 steps the setup-github command runs.',
+		stepsTitle: 'The 7 steps',
+		docsLinkLabel: 'Read the canonical cross-project setup guide',
+		detectRepoTitle: 'Detect repo',
+		detectRepoBody:
+			'Read the GitHub remote and normalize it to owner/name. The detected slug must point at the repo you expect.',
+		confirmRepoTitle: 'Confirm owner/name',
+		confirmRepoBody:
+			'Run the setup command and confirm (or override) the detected repo slug before any config is written.',
+		pickAuthTierTitle: 'Pick auth tier',
+		pickAuthTierBody:
+			'Use gh when gh auth status succeeds, rest-authed when GITHUB_TOKEN is set, or rest-anon otherwise (capped at 60 requests/hour).',
+		writeConfigTitle: 'Write config',
+		writeConfigBody:
+			'Write plugins.issues.options.repo into mcp-vertex.config.json without touching unrelated plugin settings.',
+		verifyTierTitle: 'Verify tier',
+		verifyTierBody:
+			'Launch the host with the issues plugin loaded so the chosen auth tier is exercised end-to-end.',
+		printInvocationTitle: 'Print invocation',
+		printInvocationBody:
+			'Add this server block to your host mcp.json. The shape is the same across VS Code, Cursor, and Claude Code.',
+		markConfiguredTitle: 'Mark configured',
+		markConfiguredBody:
+			'Optionally record that this repo was configured once, so later runs can skip the prompts.',
+		optionalLabel: 'optional',
+	},
+	ui: {
+		codeCopy: 'Copy',
+		codeCopied: 'Copied!',
+		codeCollapse: 'Collapse',
+		codeExpand: 'Expand',
+		calloutNote: 'Note',
+		calloutTip: 'Tip',
+		calloutWarn: 'Warning',
+		calloutDanger: 'Danger',
+		tabsNext: 'Next',
+		tabsPrev: 'Previous',
+		stepsOf: 'of',
+	},
+
+	homeQuickInstall: {
+		title: 'Quick install',
+		lead: 'Pick your package manager. The same command works for Node, Deno and Bun — anything more advanced lives on the install page.',
+		tabsLabel: 'Package manager',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — bundled with Node.js.' },
+			{
+				id: 'pnpm',
+				note: 'Fast, disk-efficient, strict dependency resolution.',
+			},
+			{ id: 'yarn', note: 'Classic alternative to npm.' },
+			{
+				id: 'bun',
+				note: 'All-in-one runtime + package manager — mcp-vertex itself is built with bun.',
+			},
+			{
+				id: 'deno',
+				note: 'Secure-by-default runtime with first-class TypeScript.',
+			},
+		],
+		recommended: 'Recommended',
+		fullCta: 'Full install matrix',
+	},
+	homeAtAGlance: {
+		title: 'What can it do?',
+		lead: 'Pick a section. The home page only orients — every entry point has a dedicated page with the full story.',
+		tabsLabel: 'Sections',
+		openSection: 'Open',
+		panels: [
+			{
+				id: 'plugins',
+				label: 'Plugins',
+				summary:
+					'Published packages. Load only what you need; the core stays tiny.',
+				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
+			},
+			{
+				id: 'tools',
+				label: 'Tools',
+				summary:
+					'Every tool the full plugin set exposes, grouped by namespace — from the live registry.',
+				href: 'tools',
+				icon: '/logos/plugin-core.svg',
+			},
+			{
+				id: 'bench',
+				label: 'Benchmarks',
+				summary:
+					'Token efficiency is a guarded invariant — measured, not claimed.',
+				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
+			},
+			{
+				id: 'skills',
+				label: 'Skills',
+				summary: 'Domain playbooks the agent can load on demand.',
+				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
+			},
+			{
+				id: 'knowledge',
+				label: 'Knowledge',
+				summary:
+					'Catalogued documents the core can answer questions about.',
+				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
+			},
+			{
+				id: 'presets',
+				label: 'Presets',
+				summary: 'Pre-configured plugin sets for any workspace size.',
+				href: 'presets',
+				icon: '/logos/plugin-search.svg',
+			},
+			{
+				id: 'setup',
+				label: 'Cross-project setup',
+				summary:
+					'Wire mcp-vertex into any repo and get the issues plugin ready.',
+				href: 'setup',
+				icon: '/logos/github.png',
+			},
+		],
+	},
+	cli: {
+		title: 'CLI guide',
+		description:
+			'How to drive the mcpv / @mcp-vertex/core CLI: global flags, per-plugin command groups, and common workflows.',
+	},
+	guide: {
+		title: 'Guide',
+		description:
+			'A detailed walkthrough of the @mcp-vertex/core project: concepts, install, config, plugins, quality gates, extending, FAQ.',
+		toc: [
+			'1. Introduction',
+			'2. Concepts',
+			'3. Install',
+			'4. Configuration',
+			'5. Plugins',
+			'6. Tools / Prompts / Resources / Knowledge',
+			'7. Skills',
+			'8. i18n',
+			'9. Quality gates & multi-language',
+			'10. Extending mcp-vertex',
+			'11. Token budgets',
+			'12. View transitions',
+			'13. FAQ',
+		],
+	},
+};
+
+export default dict;

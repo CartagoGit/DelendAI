@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { CorruptFileError } from '@cartago-git/mcp-core/public';
+import type {
+	IToolRegistration,
+	IToolTextResult,
+} from '@mcp-vertex/core/public';
+import { CorruptFileError, toolJson } from '@mcp-vertex/core/public';
 
 import {
 	enqueue,
@@ -17,7 +20,10 @@ import type { IAgentCanonicalRole } from '../shared/agent-conventions';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentAssignment } from '../shared/agent-registry-store';
 import { buildAgentTree } from '../shared/agent-tree';
-import { DEFAULT_AGENT_NAME_POOL, pickFromPool } from '../knowledge/agent-name-pool';
+import {
+	DEFAULT_AGENT_NAME_POOL,
+	pickFromPool,
+} from '../knowledge/agent-name-pool';
 
 export interface IAgentNamesToolOptions {
 	readonly namespacePrefix: string;
@@ -50,22 +56,124 @@ export interface IAgentNamesArgs {
 	readonly now?: string | undefined;
 	readonly dry_run?: boolean | undefined;
 	readonly stale_after_minutes?: number | undefined;
+	/** f00082 S3: composite-identity fields, persisted on assign. */
+	readonly host?: string | undefined;
+	readonly model?: string | undefined;
 }
 
-type IResult = {
-	content: Array<{ type: 'text'; text: string }>;
-	structuredContent?: Record<string, unknown>;
-	isError?: boolean;
+// Delegates to the shared `toolJson` (M45: a hand-rolled duplicate of this
+// helper across proposals tools is what omitted `structuredContent` and
+// crashed `auto_work`/`continue_proposal` on their outputSchema-declared
+// responses). Every call site here passes a plain object, so toolJson's
+// structuredContent derivation always applies.
+const json = (value: unknown, isError = false): IToolTextResult =>
+	isError ? { ...toolJson(value), isError: true } : toolJson(value);
+
+const AGENT_ASSIGNMENT_SCHEMA = z.object({
+	task_id: z.string(),
+	agent_name: z.string(),
+	agent_slot: z.string(),
+	parent_task_id: z.string().nullable(),
+	depth: z.number(),
+	topic: z.string(),
+	adopted: z.boolean(),
+	assigned_at: z.string(),
+	last_seen: z.string(),
+	cooldown_until: z.string().nullable(),
+	status: z.enum(['active', 'cooldown', 'orphan']),
+	host: z.string().nullable().optional(),
+	model: z.string().nullable().optional(),
+	children: z.array(z.unknown()).optional(),
+});
+
+/** f00082 S3: the closed set of known hosts (mirrors core AgentHost). */
+const KNOWN_HOSTS = [
+	'vscode-copilot',
+	'claude-code',
+	'codex-cli',
+	'cursor',
+	'aider',
+	'continue',
+	'unknown',
+] as const;
+
+/**
+ * Coerce a caller-supplied host string into the closed `AgentHost`
+ * union, falling back to `'unknown'` (lossy-friendly, matching the
+ * parser in `agent-identity.ts`). Returns `null` when the caller
+ * passed nothing, so the registry stores an explicit `null`.
+ */
+const coerceHost = (
+	host: string | undefined,
+): NonNullable<IAgentAssignment['host']> | null => {
+	if (host === undefined) return null;
+	return (KNOWN_HOSTS as readonly string[]).includes(host)
+		? (host as NonNullable<IAgentAssignment['host']>)
+		: 'unknown';
 };
 
-const json = (value: unknown, isError = false): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value) }],
-	// MCP modern structuredContent for object payloads (every json() call
-	// here passes an object).
-	...(typeof value === 'object' && value !== null && !Array.isArray(value)
-		? { structuredContent: value as Record<string, unknown> }
-		: {}),
-	...(isError ? { isError: true } : {}),
+const AGENT_ADOPTION_SCHEMA = z.object({
+	name: z.string(),
+	task_id: z.string(),
+});
+
+const ZOMBIE_ORPHAN_SCHEMA = z.object({
+	agentName: z.string(),
+	taskId: z.string(),
+	agentSlot: z.string(),
+	lastSeen: z.string(),
+	ageMinutes: z.number(),
+	reason: z.enum([
+		'cooldown_null',
+		'stale_no_lock',
+		'stale_with_orphaned_lock',
+	]),
+	recommendedAction: z.enum(['force_release', 'extend_cooldown', 'escalate']),
+});
+
+const AGENT_NAMES_OUTPUT_SCHEMA = z.object({
+	error: z.string().optional(),
+	backup: z.string().nullable().optional(),
+	nextAction: z.string().optional(),
+	summary: z
+		.object({
+			active: z.number(),
+			cooldown: z.number(),
+			orphan: z.number(),
+			adopted: z.number(),
+		})
+		.optional(),
+	assignments: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+	adopted: z.array(AGENT_ADOPTION_SCHEMA).optional(),
+	tree: z.array(AGENT_ASSIGNMENT_SCHEMA).optional(),
+	agent: z.string().optional(),
+	status: z.string().optional(),
+	in_cooldown: z.boolean().optional(),
+	task_id: z.string().optional(),
+	released: z.array(z.string()).optional(),
+	promoted: z.number().optional(),
+	freed: z.number().optional(),
+	blocked: z.boolean().optional(),
+	blockerType: z.string().optional(),
+	reason: z.string().optional(),
+	depth: z.number().optional(),
+	max_depth: z.number().optional(),
+	allowed: z.array(z.string()).optional(),
+	pool_size: z.number().optional(),
+	agent_name: z.string().optional(),
+	agent_slot: z.string().optional(),
+	parent_task_id: z.string().nullable().optional(),
+	topic: z.string().optional(),
+	assigned_at: z.string().optional(),
+	last_seen: z.string().optional(),
+	cooldown_until: z.string().nullable().optional(),
+	host: z.string().nullable().optional(),
+	model: z.string().nullable().optional(),
+	scannedAt: z.string().optional(),
+	staleAfterMinutes: z.number().optional(),
+	orphans: z.array(ZOMBIE_ORPHAN_SCHEMA).optional(),
+	threshold: z.enum(['green', 'yellow', 'red']).optional(),
+	recommendation: z.string().optional(),
 });
 
 const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
@@ -73,12 +181,14 @@ const isCanonicalRole = (value: string): value is IAgentCanonicalRole =>
 
 const activeNames = (assignments: readonly IAgentAssignment[]): Set<string> =>
 	new Set(
-		assignments.filter((a) => a.status === 'active').map((a) => a.agent_name)
+		assignments
+			.filter((a) => a.status === 'active')
+			.map((a) => a.agent_name),
 	);
 
 const cooldownNames = (
 	assignments: readonly IAgentAssignment[],
-	atIso: string
+	atIso: string,
 ): Set<string> =>
 	new Set(
 		assignments
@@ -86,9 +196,9 @@ const cooldownNames = (
 				(a) =>
 					a.status === 'cooldown' &&
 					a.cooldown_until !== null &&
-					a.cooldown_until > atIso
+					a.cooldown_until > atIso,
 			)
-			.map((a) => a.agent_name)
+			.map((a) => a.agent_name),
 	);
 
 /**
@@ -100,8 +210,8 @@ const cooldownNames = (
  */
 export const runAgentNames = async (
 	args: IAgentNamesArgs,
-	options: IAgentNamesToolOptions
-): Promise<IResult> => {
+	options: IAgentNamesToolOptions,
+): Promise<IToolTextResult> => {
 	try {
 		return await runAgentNamesImpl(args, options);
 	} catch (err) {
@@ -117,7 +227,7 @@ export const runAgentNames = async (
 						? `Corrupt registry preserved at "${err.backupPath}". Inspect or delete it, then retry.`
 						: 'Could not back up the corrupt registry; inspect it manually before retrying.',
 				},
-				true
+				true,
 			);
 		}
 		throw err;
@@ -126,8 +236,8 @@ export const runAgentNames = async (
 
 const runAgentNamesImpl = async (
 	args: IAgentNamesArgs,
-	options: IAgentNamesToolOptions
-): Promise<IResult> => {
+	options: IAgentNamesToolOptions,
+): Promise<IToolTextResult> => {
 	const store = createAgentRegistryStore(options.registryPathAbs);
 	const pool = options.pool ?? DEFAULT_AGENT_NAME_POOL;
 	const poolNames = new Set(pool);
@@ -138,7 +248,7 @@ const runAgentNamesImpl = async (
 			const queue = await parseQueue(
 				options.queuePathAbs,
 				options.closedTasksPathAbs,
-				options.workspaceRoot
+				options.workspaceRoot,
 			);
 			const updated = enqueue(queue, {
 				taskId,
@@ -166,8 +276,9 @@ const runAgentNamesImpl = async (
 				summary: {
 					active: r.assignments.filter((a) => a.status === 'active')
 						.length,
-					cooldown: r.assignments.filter((a) => a.status === 'cooldown')
-						.length,
+					cooldown: r.assignments.filter(
+						(a) => a.status === 'cooldown',
+					).length,
 					orphan: r.assignments.filter((a) => a.status === 'orphan')
 						.length,
 					adopted: r.adopted.length,
@@ -179,7 +290,7 @@ const runAgentNamesImpl = async (
 
 		case 'tree': {
 			const r = await store.read();
-			return json(buildAgentTree(r));
+			return json({ tree: buildAgentTree(r) });
 		}
 
 		case 'who_uses': {
@@ -187,7 +298,7 @@ const runAgentNamesImpl = async (
 			const r = await store.read();
 			if (poolNames.has(args.agent)) {
 				const active = r.assignments.find(
-					(a) => a.agent_name === args.agent && a.status === 'active'
+					(a) => a.agent_name === args.agent && a.status === 'active',
 				);
 				if (active)
 					return json({
@@ -201,7 +312,7 @@ const runAgentNamesImpl = async (
 						a.agent_name === args.agent &&
 						a.status === 'cooldown' &&
 						a.cooldown_until !== null &&
-						a.cooldown_until > at
+						a.cooldown_until > at,
 				);
 				if (held)
 					return json({
@@ -238,7 +349,7 @@ const runAgentNamesImpl = async (
 			if (!args.task_id) return json({ error: 'task_id required' }, true);
 			const cooldownUntil = new Date(
 				new Date(at).getTime() +
-					AGENT_CONVENTIONS.cooldown_days * 86_400_000
+					AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 			).toISOString();
 			await store.release(args.task_id, cooldownUntil);
 			const r = await store.read();
@@ -276,7 +387,7 @@ const runAgentNamesImpl = async (
 					a.status = 'orphan';
 					a.cooldown_until = new Date(
 						new Date(at).getTime() +
-							AGENT_CONVENTIONS.cooldown_days * 86_400_000
+							AGENT_CONVENTIONS.cooldown_days * 86_400_000,
 					).toISOString();
 					freed += 1;
 				}
@@ -293,7 +404,7 @@ const runAgentNamesImpl = async (
 							AGENT_CONVENTIONS.heartbeat_ttl_minutes,
 						now: new Date(at),
 						queueEmitter: emitQueueEvent,
-					}
+					},
 				);
 			} catch {
 				// graceful degradation
@@ -311,29 +422,26 @@ const runAgentNamesImpl = async (
 					staleAfterMinutes: args.stale_after_minutes,
 					now: new Date(at),
 					queueEmitter: emitQueueEvent,
-				}
+				},
 			);
 			return json(report);
 		}
 
 		case 'assign': {
 			if (!args.task_id || !args.agent_slot)
-				return json(
-					{ error: 'task_id and agent_slot required' },
-					true
-				);
+				return json({ error: 'task_id and agent_slot required' }, true);
 			if (!isCanonicalRole(args.agent_slot))
 				return json(
 					{
 						error: 'agent_slot must be a canonical role',
 						allowed: AGENT_CANONICAL_ROLES,
 					},
-					true
+					true,
 				);
 			const r = await store.read();
 			const parent = args.parent_task_id
 				? (r.assignments.find(
-						(a) => a.task_id === args.parent_task_id
+						(a) => a.task_id === args.parent_task_id,
 					) ?? null)
 				: null;
 			const depth = parent ? parent.depth + 1 : 0;
@@ -348,7 +456,7 @@ const runAgentNamesImpl = async (
 						nextAction:
 							'Continue as a root-level handoff or ask the orchestrator to reattach the child; do not retry the same parent/depth.',
 					},
-					true
+					true,
 				);
 
 			const taken = activeNames(r.assignments);
@@ -368,7 +476,7 @@ const runAgentNamesImpl = async (
 								nextAction:
 									'Assign without `agent` or choose another free pool name; do not retry the same requested name.',
 							},
-							true
+							true,
 						);
 					agentName = args.agent;
 				} else {
@@ -384,12 +492,12 @@ const runAgentNamesImpl = async (
 				const picked = pickFromPool(
 					pool,
 					new Set([...taken, ...inCooldown]),
-					args.task_id
+					args.task_id,
 				);
 				if (!picked)
 					return json(
 						{ error: 'pool_exhausted', pool_size: pool.length },
-						true
+						true,
 					);
 				agentName = picked;
 			}
@@ -406,6 +514,8 @@ const runAgentNamesImpl = async (
 				last_seen: at,
 				cooldown_until: null,
 				status: 'active',
+				host: coerceHost(args.host),
+				model: args.model ?? null,
 			};
 			await store.upsert(assignment);
 			return json(assignment);
@@ -418,9 +528,10 @@ const runAgentNamesImpl = async (
 
 /** Registration for `<prefix>_agent_names`. */
 export const buildAgentNamesRegistration = (
-	options: IAgentNamesToolOptions
+	options: IAgentNamesToolOptions,
 ): IToolRegistration => ({
 	id: 'agent_names',
+	effects: ['write'],
 	summary:
 		'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
 	tags: ['coordination'],
@@ -428,7 +539,7 @@ export const buildAgentNamesRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_agent_names`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: AGENT_NAMES_OUTPUT_SCHEMA,
 				description:
 					'Agent name registry for the whole agent tree — the root orchestrator (slot "orchestrator", depth 0) included, not only subagents. Actions: assign/release/heartbeat/list/tree/who_uses/gc/reconcile. Use for named/delegated agents, not normal single-slice work.',
 				inputSchema: z.object({
@@ -450,9 +561,21 @@ export const buildAgentNamesRegistration = (
 					now: z.string().optional(),
 					dry_run: z.boolean().optional(),
 					stale_after_minutes: z.number().optional(),
+					host: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: host/IDE driving the agent (e.g. "vscode-copilot"). Unknown values are stored as "unknown".',
+						),
+					model: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: LLM model name (free-form, e.g. "m3"). Recorded for forensics; not authenticated.',
+						),
 				}),
 			},
-			async (args: IAgentNamesArgs) => runAgentNames(args, options)
+			async (args: IAgentNamesArgs) => runAgentNames(args, options),
 		);
 	},
 });

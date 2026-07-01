@@ -18,9 +18,9 @@
  * `round-context-hash.ts` / `round-context-sources.ts` modules.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { mkdir, rename, rm } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
+import { writeFileAtomic, withFileMutex } from '@mcp-vertex/core/public';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
 import type {
@@ -37,7 +37,7 @@ import type {
  * filesystem access).
  */
 export const buildRoundContextDigest = (
-	input: IRoundContextDigestInput
+	input: IRoundContextDigestInput,
 ): IRoundContextDigest => ({
 	roundId: input.roundId,
 	activeProposalId: input.activeProposalId,
@@ -65,7 +65,7 @@ export const buildRoundContextDigest = (
 export const isDigestStale = (
 	digest: IRoundContextDigest,
 	currentHashes: Readonly<Record<string, string>>,
-	currentSources: IRoundContextSources = digest.sources
+	currentSources: IRoundContextSources = digest.sources,
 ): boolean => {
 	for (const [key, recorded] of Object.entries(digest.coreDocHashes)) {
 		const live = currentHashes[key];
@@ -93,40 +93,30 @@ export const isDigestStale = (
  * real corruption signal the caller should surface.
  */
 export const readRoundContextDigest = async (
-	path: string
+	path: string,
 ): Promise<IRoundContextDigest | null> => {
-	if (!existsSync(path)) return null;
-	const raw = readFileSync(path, 'utf8');
+	let raw: string;
+	try {
+		raw = await readFile(path, 'utf8');
+	} catch {
+		return null;
+	}
 	return JSON.parse(raw) as IRoundContextDigest;
 };
 
 /**
  * Write a digest to disk atomically.
  *
- * Strategy:
- *   1. Ensure the parent directory exists.
- *   2. Write the JSON to `<path>.tmp` synchronously.
- *   3. Rename the `.tmp` over the final path (single syscall, atomic
- *      on POSIX).
- *   4. Clean up the `.tmp` if rename fails for any reason.
+ * l00008 s7: delegates to the shared `writeFileAtomic` primitive (write a
+ * temp file in the same directory, then `rename` over the target) instead
+ * of a hand-rolled reimplementation — one fewer place to keep the
+ * crash-safety guarantee correct.
  */
 export const writeRoundContextDigest = async (
 	digest: IRoundContextDigest,
-	path: string
+	path: string,
 ): Promise<void> => {
-	const tmpPath = `${path}.tmp`;
-	await mkdir(dirname(path), { recursive: true });
-	writeFileSync(tmpPath, JSON.stringify(digest, null, 2), 'utf8');
-	try {
-		await rename(tmpPath, path);
-	} catch (err) {
-		// Best-effort cleanup of the tmp sidecar so we never leak
-		// half-written digests into the workspace.
-		try {
-			await rm(tmpPath, { force: true });
-		} catch {
-			// ignore
-		}
-		throw err;
-	}
+	await withFileMutex(path, async () => {
+		await writeFileAtomic(path, JSON.stringify(digest, null, 2));
+	});
 };

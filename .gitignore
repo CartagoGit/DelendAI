@@ -1,16 +1,94 @@
 node_modules/
-dist/
+
+# Legacy plugin tool verification scratch dir. Current probes write under
+# `.cache/mcp-vertex/verify/`; keep this ignore for old local runs.
+.verify-tmp/
+
+# Monorepo-wide artifact layout (see AGENTS.md → "Build / dist layout"):
+#   build/<group>/<name>/         — bundler/compiler outputs (typedoc, astrosite, vsce staging…)
+#   dist/<group>/<name>/<version>/ — final distributable packages (.vsix, .tgz…)
+# Per-package dist/ inside packages/*/ and plugins/*/ is intentionally kept
+# tracked — each package.json `main` / `exports` points there, and the
+# publishable surface is what consumers import. Those entries are NOT ignored.
 build/
+dist/
+
+# Legacy per-package build output name (pre-convention). Safe to remove.
+packages/*/build/
+apps/*/build/
+plugins/*/build/
+
+# Legacy: .vsix artefacts used to be dropped at extensions/vscode/<name>.vsix before
+# the monorepo-wide dist/ convention. Track only the staged
+# dist/extensions/vscode/<version>/<name>.vsix path; treat older top-level .vsix as
+# build artefacts. After the extensions/vscode → extensions/vscode move (f00035),
+# the same rule applies to extensions/*/*.vsix.
+apps/*/*.vsix
+extensions/*/*.vsix
+
 .cache/
+.mcp-vertex/
+.worktrees/
+site/
+.astro/
+# f00054 S1: root vitest coverage is centralized under .cache/coverage (see
+# vitest.config.ts); this also ignores any per-package coverage/ output.
 coverage/
+apps/web/src/data/capabilities.json
+apps/web/src/data/manifests/
+# x00052: proposals/index.json — regenerable cache artefact. Lives under
+# .cache/mcp-vertex/proposals/index.json (see plugins/proposals/src/lib/
+# contracts/constants/default-path-layout.constant.ts#proposalIndexFile);
+# the legacy docs/ path is ignored here so an old checkout cannot
+# accidentally re-commit it. The on-disk copy in docs/ is harmless
+# (no longer written by proposals_sync_proposals) and can be deleted
+# manually.
+docs/mcp-vertex/proposals/index.json
+# Generated symlink: apps/web/public/api -> ../../../build/docs-api.
+# Created by `apps/web/scripts/sync-public-api.ts` (run automatically by
+# apps/web dev/build). Do NOT commit the symlink itself.
+apps/web/public/api
 *.tsbuildinfo
 .DS_Store
 pack/
 
+# Track the text lockfile (bun.lock) for reproducible installs across machines
+# + CI --frozen-lockfile; ignore only the legacy binary form.
 bun.lockb
-bun.lock
 
 # Stray TypeScript declaration emits inside source trees. The build emits
 # declarations to dist/; a .d.ts next to a .ts source is always an accident.
 packages/*/src/**/*.d.ts
 plugins/*/src/**/*.d.ts
+
+# Personal-machine overrides of the shared agent config files. The shared
+# autopilot defaults live in `.vscode/settings.json`, `.claude/settings.json`,
+# `.continue/config.json`, `.cursor/rules/*.mdc` and `.aider.conf.yml`;
+# per-machine overrides use the `.local` suffix and MUST NOT be tracked
+# (they usually contain API keys, model choices, or stricter permission
+# settings).
+.vscode/settings.local.json
+.claude/settings.local.json
+.continue/config.local.json
+
+# Agent session notes dropped at the repo root. These are transient
+# per-session digests (consolidation steps, workarounds, lessons
+# learned) that belong in the agent's memory / notes system, not in
+# the public history. The `mcp-vertex-session-*.md` glob matches the
+# convention used by recent sessions.
+#
+# NOTE (2026-06-21, n007): the broader `*session*.md` glob was removed.
+# Cross-session handoff summaries are now first-class proposals of kind
+# `resume` (prefix `n`) living under `docs/mcp-vertex/proposals/done/resumes/` and
+# MUST be tracked. The narrower `mcp-vertex-session-*.md` glob below
+# still catches the ad-hoc transient notes that show up at the repo root.
+mcp-vertex-session-*.md
+!.agents/sessions/
+
+# f00065 S2: the repo has exactly ONE cache root — the root `.cache/`
+# (ignored above). There is no per-folder cache. The historical
+# `tools/scripts/.cache/` (rules plugin runtime snapshots, materialized when a
+# process was launched with cwd=tools/scripts) is no longer a documented
+# default: `bun run lint:cache` (tools/scripts/lint/check-cache.script.ts)
+# FAILS if any `.cache` appears outside the root, so a stray per-folder cache is
+# caught instead of silently ignored. Run mcp-vertex tools from the repo root.

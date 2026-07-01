@@ -1,0 +1,69 @@
+---
+/**
+ * `Home.astro` — landing page body (l123 S1).
+ *
+ * Sections, top to bottom:
+ *   1. `hero`            — title + tagline + CTAs (zero JS).
+ *   2. `marquees`        — runtime + client/model strip.
+ *   3. `quick install`   — one tab per PM with a single `… init`
+ *                          command and a link to the full matrix
+ *                          (see `HomeQuickInstallSection.astro`).
+ *   4. `concept`         — the 4-feature grid (one core, many
+ *                          plugins, low-token by design, …).
+ *                          See `ConceptSection.astro`.
+ *   5. `at a glance`     — tab strip with one tab per main entry
+ *                          point (Plugins / Tools / Benchmarks /
+ *                          Skills / Knowledge / Presets /
+ *                          Cross-project setup). Each panel is a
+ *                          one-line summary + CTA.
+ *                          See `HomeAtAGlanceSection.astro`.
+ *
+ * The previous "featured plugins" cards were retired in favour of the
+ * at-a-glance tab strip — they never rendered as equal columns
+ * because `.featured-grid` had no layout rules, and the new strip
+ * orients visitors to more entry points in the same vertical space.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+import { clients, runtimes } from '#DATA/marquees';
+import capabilities from '#MANIFESTS/capabilities.json';
+import ConceptSection from '#COMPONENTS/ConceptSection.astro';
+import HomeQuickInstallSection from '#COMPONENTS/HomeQuickInstallSection.astro';
+import HomeAtAGlanceSection from '#COMPONENTS/HomeAtAGlanceSection.astro';
+import Marquee from '#COMPONENTS/Marquee.astro';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const sectionHref = (section: string) =>
+	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
+---
+
+<header class="hero">
+	<div class="container">
+		<img class="hero__logo" src={`${base}/logo.svg`} width="76" height="76" alt="mcp-vertex" />
+		<a class="hero__pkg" href="https://www.npmjs.com/package/@mcp-vertex/core">@mcp-vertex</a>
+		<h1 transition:name="page-title" transition:animate="fade">{t.hero.title.a}<span class="grad">{t.hero.title.b}</span>{t.hero.title.c}</h1>
+		<p class="hero__sub">{t.hero.subheader}</p>
+		<p class="tagline">{t.hero.tagline}</p>
+		<div class="ctas">
+			<a class="btn btn--primary" href={sectionHref('install')}>{t.hero.ctaInstall}</a>
+			<a class="btn btn--ghost" href={sectionHref('tools')}>{t.hero.ctaTools}</a>
+		</div>
+		<p class="runs">{t.hero.runsOn} · v{capabilities.coreVersion}</p>
+	</div>
+</header>
+
+<section class="marquees container">
+	<Marquee items={runtimes} label={t.marquee.runtimes} />
+	<Marquee items={clients} label={t.marquee.clients} reverse />
+</section>
+
+<HomeQuickInstallSection lang={lang} />
+
+<ConceptSection lang={lang} />
+
+<HomeAtAGlanceSection lang={lang} />

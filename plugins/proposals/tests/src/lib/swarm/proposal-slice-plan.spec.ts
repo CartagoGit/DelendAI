@@ -5,7 +5,7 @@ import {
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
 	validateClaim,
-} from '@cartago-git/mcp-proposals/lib/swarm/proposal-slice-plan';
+} from '@mcp-vertex/proposals/lib/swarm/proposal-slice-plan';
 
 const DOC = `---
 id: pX
@@ -51,14 +51,61 @@ Prose.
 Prose after the section.
 `;
 
-describe('parseProposalSlicePlan (p81)', () => {
-	it('returns null for legacy proposals without a Slices section', () => {
+const DOC_WITH_BOLD_STATUS = DOC.replace(
+	'- status: done',
+	'- **Status**: done',
+);
+
+const DOC_WITH_SIMPLE_SLICE_IDS = `---
+id: f00020
+---
+
+# f00020
+
+## Slices
+
+### S1 — first
+
+- files: docs/a.md
+- status: done
+
+### S2 — second
+
+- files: docs/b.md
+
+### S3 — third
+
+- files: docs/c.md
+`;
+
+const DOC_WITH_BOLD_FIELDS = `---
+id: f00020
+---
+
+# f00020
+
+## Slices
+
+### S12 — aggregator
+
+- **Files**: \`packages/core/src/public/index.ts\`
+- **Files**: \`plugins/quality/src/lib/run-all.ts\`
+- **Gate**: type
+
+### S13 — hygiene
+
+- **Files**: \`packages/client/README.md\`
+- **Gate**: lint
+`;
+
+describe('parseProposalSlicePlan', async () => {
+	it('returns null for legacy proposals without a Slices section', async () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
-			null
+			null,
 		);
 	});
 
-	it('parses slices with files, deps, gates, acceptance and doc status', () => {
+	it('parses slices with files, deps, gates, acceptance and doc status', async () => {
 		const plan = parseProposalSlicePlan('pX', DOC);
 		expect(plan).not.toBeNull();
 		expect(plan?.globalGate).toBe('type');
@@ -80,10 +127,27 @@ describe('parseProposalSlicePlan (p81)', () => {
 		expect(plan?.slices[2]?.gate).toBe('none');
 	});
 
-	it('flags overlapping files between slices', () => {
+	it('also treats markdown bold status lines as done slices', async () => {
+		const plan = parseProposalSlicePlan('pX', DOC_WITH_BOLD_STATUS);
+		expect(plan?.slices[0]?.status).toBe('done');
+		expect(validateClaim(plan!, 'pX.S1').blockerType).toBe('already-done');
+	});
+
+	it('parses narrative bold field labels used by live proposal docs', async () => {
+		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS);
+		expect(plan?.slices[0]?.files).toEqual([
+			'packages/core/src/public/index.ts',
+			'plugins/quality/src/lib/run-all.ts',
+		]);
+		expect(plan?.slices[0]?.gate).toBe('type');
+		expect(plan?.slices[1]?.files).toEqual(['packages/client/README.md']);
+		expect(plan?.slices[1]?.gate).toBe('lint');
+	});
+
+	it('flags overlapping files between slices', async () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',
-			'- files: libs/a/tool.ts'
+			'- files: libs/a/tool.ts',
 		);
 		const plan = parseProposalSlicePlan('pX', doc);
 		const issues = planDisjointnessIssues(plan!);
@@ -93,10 +157,86 @@ describe('parseProposalSlicePlan (p81)', () => {
 	});
 });
 
-describe('deriveSliceStatuses + validateClaim (p81)', () => {
+const DOC_WITH_ROUTING_HINTS = `---
+id: f00099
+---
+
+# f00099
+
+## Slices
+
+### S1 — list form
+
+- files: libs/a/a.ts
+- requires_capability: [code-edit, fast-iteration]
+- preferred_provider: openrouter-minimax
+- max_cost_tier: 3
+
+### S2 — single bare token + bold labels
+
+- **Files**: libs/b/b.ts
+- **Requires Capability**: reasoning
+- **Max Cost Tier**: 5
+
+### S3 — backward compat (no routing hints)
+
+- files: libs/c/c.ts
+- gate: type
+
+### S4 — unknown capability tokens are dropped
+
+- files: libs/d/d.ts
+- requires_capability: [code-edit, not-a-real-tag]
+- max_cost_tier: 9
+`;
+
+describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
+	const plan = parseProposalSlicePlan('f00099', DOC_WITH_ROUTING_HINTS)!;
+
+	it('parses the YAML-list capability form + provider + cost tier', async () => {
+		const s1 = plan.slices[0];
+		expect(s1?.requiresCapability).toEqual(['code-edit', 'fast-iteration']);
+		expect(s1?.preferredProvider).toBe('openrouter-minimax');
+		expect(s1?.maxCostTier).toBe(3);
+	});
+
+	it('parses a single bare capability token via bold field labels', async () => {
+		const s2 = plan.slices[1];
+		expect(s2?.requiresCapability).toEqual(['reasoning']);
+		expect(s2?.maxCostTier).toBe(5);
+		expect(s2?.preferredProvider).toBeUndefined();
+	});
+
+	it('leaves the fields undefined for slices with no routing hints (backward compat)', async () => {
+		const s3 = plan.slices[2];
+		expect(s3?.requiresCapability).toBeUndefined();
+		expect(s3?.preferredProvider).toBeUndefined();
+		expect(s3?.maxCostTier).toBeUndefined();
+		// existing fields still parse
+		expect(s3?.files).toEqual(['libs/c/c.ts']);
+		expect(s3?.gate).toBe('type');
+	});
+
+	it('drops unknown capability tags and out-of-range cost tiers', async () => {
+		const s4 = plan.slices[3];
+		expect(s4?.requiresCapability).toEqual(['code-edit']);
+		expect(s4?.maxCostTier).toBeUndefined();
+	});
+
+	it('does not regress the legacy corpus fixture (zero new fields on DOC)', async () => {
+		const legacy = parseProposalSlicePlan('pX', DOC)!;
+		for (const slice of legacy.slices) {
+			expect(slice.requiresCapability).toBeUndefined();
+			expect(slice.preferredProvider).toBeUndefined();
+			expect(slice.maxCostTier).toBeUndefined();
+		}
+	});
+});
+
+describe('deriveSliceStatuses + validateClaim', async () => {
 	const plan = parseProposalSlicePlan('pX', DOC)!;
 
-	it('derives in-progress (and owner) from the live lock snapshot', () => {
+	it('derives in-progress (and owner) from the live lock snapshot', async () => {
 		const derived = deriveSliceStatuses(plan, [
 			{ taskId: 'pX.S2', agent: 'implementation_runner' },
 		]);
@@ -106,11 +246,38 @@ describe('deriveSliceStatuses + validateClaim (p81)', () => {
 		expect(derived.slices[0]?.status).toBe('done');
 	});
 
-	it('accepts a claim whose deps are done', () => {
+	it('treats grouped proposal task ids as covering each referenced slice', async () => {
+		const groupedPlan = parseProposalSlicePlan(
+			'f00020',
+			DOC_WITH_SIMPLE_SLICE_IDS,
+		)!;
+		const derived = deriveSliceStatuses(groupedPlan, [
+			{ taskId: 'f00020-S2-S3', agent: 'copilot' },
+		]);
+		expect(derived.slices[1]?.status).toBe('in-progress');
+		expect(derived.slices[1]?.owner).toBe('copilot');
+		expect(derived.slices[2]?.status).toBe('in-progress');
+		expect(derived.slices[2]?.owner).toBe('copilot');
+	});
+
+	it('treats ownership overlap as in-progress even when the grouped task id omits the exact slice id', async () => {
+		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS)!;
+		const derived = deriveSliceStatuses(plan, [
+			{
+				taskId: 'f00020-S11-S13',
+				agent: 'hydra',
+				ownership: ['plugins/quality/src/lib/run-all.ts'],
+			},
+		]);
+		expect(derived.slices[0]?.status).toBe('in-progress');
+		expect(derived.slices[0]?.owner).toBe('hydra');
+	});
+
+	it('accepts a claim whose deps are done', async () => {
 		expect(validateClaim(plan, 'pX.S2').ok).toBe(true);
 	});
 
-	it('rejects unknown, done, in-progress, missing-deps and overlap claims', () => {
+	it('rejects unknown, done, in-progress, missing-deps and overlap claims', async () => {
 		expect(validateClaim(plan, 'pX.S9').blockerType).toBe('unknown-slice');
 		expect(validateClaim(plan, 'pX.S1').blockerType).toBe('already-done');
 		expect(validateClaim(plan, 'pX.S3').blockerType).toBe('deps-not-done');
@@ -118,20 +285,20 @@ describe('deriveSliceStatuses + validateClaim (p81)', () => {
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(busy, 'pX.S2').blockerType).toBe(
-			'already-in-progress'
+			'already-in-progress',
 		);
 		const overlapping = parseProposalSlicePlan(
 			'pX',
 			DOC.replace(
 				'- files: docs/pX.md',
-				'- files: libs/a/tool.ts'
-			).replace('- depends_on: [pX.S2]', '- depends_on: []')
+				'- files: libs/a/tool.ts',
+			).replace('- depends_on: [pX.S2]', '- depends_on: []'),
 		)!;
 		const withBusy = deriveSliceStatuses(overlapping, [
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(withBusy, 'pX.S3').blockerType).toBe(
-			'overlap-in-progress'
+			'overlap-in-progress',
 		);
 	});
 });

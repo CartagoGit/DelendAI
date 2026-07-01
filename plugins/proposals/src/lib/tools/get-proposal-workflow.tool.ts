@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
 
@@ -15,7 +15,7 @@ export interface IGetProposalWorkflowToolOptions {
  * learn how this project's proposals work.
  */
 export const buildGetProposalWorkflowRegistration = (
-	options: IGetProposalWorkflowToolOptions
+	options: IGetProposalWorkflowToolOptions,
 ): IToolRegistration => ({
 	id: 'get_proposal_workflow',
 	summary:
@@ -25,13 +25,15 @@ export const buildGetProposalWorkflowRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,
 			{
-						outputSchema: z.object({
+				outputSchema: z.object({
 					families: z.array(
 						z.object({
 							prefix: z.string(),
+							/** f00024: proposal kind this family maps to (e.g. "fix", "feat"). */
+							kind: z.string().optional(),
 							description: z.string(),
 							cascadePriority: z.number(),
-						})
+						}),
 					),
 					locations: z.record(z.string(), z.string()),
 					naming: z.string(),
@@ -39,12 +41,12 @@ export const buildGetProposalWorkflowRegistration = (
 					template: z.string(),
 				}),
 				description:
-					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
+					'Returns the proposal workflow as structured JSON: families (prefix, kind, description and cascade priority — 12 active kinds + the legacy `p` alias), file locations, naming, rules and the canonical markdown template. Read-only.',
 			},
 			async () => {
 				const workflow = buildProposalWorkflow(
 					options.proposalsDir,
-					options.indexFile
+					options.indexFile,
 				);
 				return {
 					content: [
@@ -58,7 +60,7 @@ export const buildGetProposalWorkflowRegistration = (
 						unknown
 					>,
 				};
-			}
+			},
 		);
 	},
 });

@@ -12,13 +12,13 @@ import {
 	emitToolOutputsModule,
 	outputInterfaceName,
 	pascalCase,
-} from '../../../scripts/emit-tool-types';
-import { generateToolOutputModules } from '../../../scripts/generate-tool-types';
+} from '../../../tools/scripts/types/emit-tool-types.script';
+import { generateToolOutputModules } from '../../../tools/scripts/types/generate-tool-types.script';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
-describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
-	it('maps the primitive + object subset', () => {
+describe('emit-tool-types: pure JSON-Schema → TS emitter', async () => {
+	it('maps the primitive + object subset', async () => {
 		expect(jsonSchemaToTs({ type: 'string' })).toBe('string');
 		expect(jsonSchemaToTs({ type: 'number' })).toBe('number');
 		expect(jsonSchemaToTs({ type: 'boolean' })).toBe('boolean');
@@ -26,28 +26,28 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 		expect(jsonSchemaToTs({ const: true })).toBe('true');
 	});
 
-	it('renders unions (incl. nullable) and dedupes', () => {
+	it('renders unions (incl. nullable) and dedupes', async () => {
 		expect(
-			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'null' }] })
+			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'null' }] }),
 		).toBe('string | null');
 		expect(
-			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'string' }] })
+			jsonSchemaToTs({ anyOf: [{ type: 'string' }, { type: 'string' }] }),
 		).toBe('string');
 	});
 
-	it('parenthesises union element types in arrays', () => {
-		expect(jsonSchemaToTs({ type: 'array', items: { type: 'string' } })).toBe(
-			'string[]'
-		);
+	it('parenthesises union element types in arrays', async () => {
+		expect(
+			jsonSchemaToTs({ type: 'array', items: { type: 'string' } }),
+		).toBe('string[]');
 		expect(
 			jsonSchemaToTs({
 				type: 'array',
 				items: { anyOf: [{ type: 'string' }, { type: 'number' }] },
-			})
+			}),
 		).toBe('Array<string | number>');
 	});
 
-	it('renders the three additionalProperties shapes', () => {
+	it('renders the three additionalProperties shapes', async () => {
 		// closed object
 		expect(
 			jsonSchemaToTs({
@@ -55,11 +55,15 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 				properties: { a: { type: 'string' } },
 				required: ['a'],
 				additionalProperties: false,
-			})
+			}),
 		).toBe('{\n\ta: string;\n}');
 		// pure permissive record
 		expect(
-			jsonSchemaToTs({ type: 'object', properties: {}, additionalProperties: {} })
+			jsonSchemaToTs({
+				type: 'object',
+				properties: {},
+				additionalProperties: {},
+			}),
 		).toBe('Record<string, unknown>');
 		// record with a value schema
 		expect(
@@ -67,28 +71,28 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 				type: 'object',
 				properties: {},
 				additionalProperties: { type: 'number' },
-			})
+			}),
 		).toBe('Record<string, number>');
 	});
 
-	it('marks non-required properties optional', () => {
+	it('marks non-required properties optional', async () => {
 		expect(
 			jsonSchemaToTs({
 				type: 'object',
 				properties: { a: { type: 'string' }, b: { type: 'number' } },
 				required: ['a'],
 				additionalProperties: false,
-			})
+			}),
 		).toBe('{\n\ta: string;\n\tb?: number;\n}');
 	});
 
-	it('degrades unknown constructs to `unknown`, never invalid TS', () => {
+	it('degrades unknown constructs to `unknown`, never invalid TS', async () => {
 		expect(jsonSchemaToTs({ type: 'integer' })).toBe('number');
 		expect(jsonSchemaToTs({})).toBe('unknown');
 		expect(jsonSchemaToTs(true)).toBe('unknown');
 	});
 
-	it('emits a stable module with interfaces + a name→type map', () => {
+	it('emits a stable module with interfaces + a name→type map', async () => {
 		const module = emitToolOutputsModule('Demo', [
 			{
 				name: 'demo_ping',
@@ -109,7 +113,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', () => {
 	});
 });
 
-describe('tool-output SDK drift guard (N23)', () => {
+describe('tool-output SDK drift guard (N23)', async () => {
 	it('checked-in src/generated/tool-outputs.ts match a fresh generation', async () => {
 		const modules = await generateToolOutputModules();
 		expect(modules.size).toBeGreaterThan(0);
@@ -119,11 +123,15 @@ describe('tool-output SDK drift guard (N23)', () => {
 			try {
 				onDisk = readFileSync(resolve(REPO_ROOT, relPath), 'utf8');
 			} catch {
-				drift.push(`${relPath}: missing (run \`bun run types:generate\`)`);
+				drift.push(
+					`${relPath}: missing (run \`bun run types:generate\`)`,
+				);
 				continue;
 			}
 			if (onDisk !== expected) {
-				drift.push(`${relPath}: stale (run \`bun run types:generate\`)`);
+				drift.push(
+					`${relPath}: stale (run \`bun run types:generate\`)`,
+				);
 			}
 		}
 		expect(drift, 'generated tool-output modules out of sync').toEqual([]);

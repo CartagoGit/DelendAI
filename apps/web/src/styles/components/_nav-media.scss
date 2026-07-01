@@ -1,0 +1,27 @@
+// _nav-media.scss — responsive overrides for the top navigation.
+//
+// The base nav rules live in _nav.scss. Keep this file to media queries only
+// so stylelint does not re-lint a compiled copy of the base selectors.
+
+@media (max-width: 680px) {
+	.nav__links {
+		gap: 0.5rem;
+	}
+
+	.nav__link,
+	.nav__divider,
+	.nav-more,
+	.nav__github {
+		display: none;
+	}
+
+	.hamburger {
+		display: inline-grid;
+	}
+}
+
+@media (max-width: 420px) {
+	.nav__brand-text {
+		display: none;
+	}
+}

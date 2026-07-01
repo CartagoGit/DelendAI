@@ -1,0 +1,64 @@
+/* mcp-vertex VS Code host — extension overrides for the shared
+ * `@mcp-vertex/ui-extension` component runtime.
+ *
+ * This file contains ONLY:
+ *   1. `--vscode-*` fallbacks so the shared CSS picks up the host's theme.
+ *   2. VS Code-specific layout adjustments that have no equivalent on the
+ *      docs site.
+ *
+ * It MUST NOT contain:
+ *   - The brand hex literals (the canonical values live in
+ *     `apps/shared/src/styles/_themes.scss`; the
+ *     `tools/scripts/lint/no-duplicate-brand-hex.script.ts` lint fails the
+ *     build if they leak in here).
+ *   - Token redefinitions (radii, font stacks, spacing scale). Those
+ *     live in `apps/shared/src/styles/_tokens.scss`.
+ *
+ * The shared component CSS is injected by every webview via
+ * `componentCss` (from `@mcp-vertex/ui-extension/public`); this file
+ * wins on equal specificity for the host theme fallbacks.
+ */
+
+:root {
+	--mv-bg: var(--vscode-editor-background, #0d1117);
+	--mv-fg: var(--vscode-foreground, #c9d1d9);
+	--mv-fg-muted: var(--vscode-description-foreground, #8b949e);
+	--mv-line: var(--vscode-widget-border, #30363d);
+	--mv-bg-soft: var(--vscode-side-bar-background, #161b22);
+	--mv-card: var(--vscode-editorWidget-background, #1c2128);
+	--mv-font-prose: var(--vscode-font-family, system-ui, sans-serif);
+	--mv-font-mono: var(
+		--vscode-editor-font-family,
+		ui-monospace,
+		SFMono-Regular,
+		Menlo,
+		monospace
+	);
+}
+
+body {
+	margin: 0;
+	font-family: var(--vscode-font-family, system-ui, sans-serif);
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+a {
+	color: var(--vscode-textLink-foreground, var(--mv-brand-blue));
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+/* VS Code-specific: tabs use a translucent backdrop over the editor. */
+.mv-tabs {
+	background: var(
+		--vscode-editorGroupHeader-tabsBackground,
+		var(--mv-bg-soft)
+	);
+}
+.mv-tab[aria-selected='true'] {
+	color: var(--vscode-tab-activeForeground, var(--mv-fg));
+	border-bottom-color: var(--vscode-tab-activeBorderTop, var(--mv-accent));
+}

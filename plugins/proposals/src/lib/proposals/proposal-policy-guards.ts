@@ -36,7 +36,7 @@ export type ISwarmBudgetKey = (typeof SWARM_BUDGET_KEYS)[number];
 const SWARM_BUDGET_KEY_SET: ReadonlySet<string> = new Set(SWARM_BUDGET_KEYS);
 
 export function isProposalSwarmBudget(
-	value: unknown
+	value: unknown,
 ): value is Record<ISwarmBudgetKey, number> & Record<string, unknown> {
 	if (value === null || typeof value !== 'object') {
 		return false;
@@ -73,11 +73,11 @@ export const CONTINUITY_POLICY_KEYS = [
 export type IContinuityPolicyKey = (typeof CONTINUITY_POLICY_KEYS)[number];
 
 const CONTINUITY_POLICY_KEY_SET: ReadonlySet<string> = new Set(
-	CONTINUITY_POLICY_KEYS
+	CONTINUITY_POLICY_KEYS,
 );
 
 export function isProposalContinuityPolicy(
-	value: unknown
+	value: unknown,
 ): value is Record<IContinuityPolicyKey, boolean> & Record<string, unknown> {
 	if (value === null || typeof value !== 'object') {
 		return false;
@@ -114,7 +114,7 @@ export interface IProposalBudgetPolicy {
 }
 
 export function isProposalBudgetPolicy(
-	value: unknown
+	value: unknown,
 ): value is IProposalBudgetPolicy {
 	if (value === null || typeof value !== 'object') {
 		return false;
@@ -125,3 +125,20 @@ export function isProposalBudgetPolicy(
 		isProposalContinuityPolicy(record.continuityPolicy)
 	);
 }
+
+// ---------------------------------------------------------------------------
+// q00001 plan-closure guard
+// ---------------------------------------------------------------------------
+
+/**
+ * A proposal whose `type === 'plan'` carries an orchestration
+ * `contains:` block. A plan MUST NOT be transitioned to `done` until
+ * every contained proposal, sub-plan, and own slice is `done` (and
+ * peer-reviewed, when the index carries the field).
+ *
+ * This helper is the canonical place to ask "may I close this plan?".
+ * Both `proposal_transition` and `proposals_close_plan` consult it —
+ * keeping the rule in one place guarantees the two surfaces never
+ * disagree.
+ */
+export const PLAN_CLOSURE_BLOCKER_PREFIX = 'plan-closure-blocker:' as const;

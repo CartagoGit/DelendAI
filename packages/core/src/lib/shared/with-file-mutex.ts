@@ -41,6 +41,28 @@ export interface IFileMutexOptions {
 	readonly pollMs?: number;
 	/** How often the holder refreshes its lock mtime while `fn()` runs (ms). Default `staleMs / 3`. */
 	readonly heartbeatMs?: number;
+	/**
+	 * What to do when a **live** holder keeps the lock past `timeoutMs`:
+	 * - `'steal'` (default): reclaim the lock to avoid deadlock — the historical
+	 *   last-resort behaviour. Safe (the ownership token stops the old holder
+	 *   deleting ours) but it can clobber a slow-but-alive holder under heavy load.
+	 * - `'fail'`: throw `LockContentionError` instead, so the caller backs off
+	 *   (e.g. waits for a `lock-released` notification) rather than stealing.
+	 * An **abandoned** (stale) lock is always reclaimed regardless of this option.
+	 */
+	readonly onContention?: 'steal' | 'fail';
+}
+
+/** Thrown by `withFileMutex` under `onContention: 'fail'` when a live holder
+ * keeps the lock past `timeoutMs`. Lets a caller back off instead of stealing. */
+export class LockContentionError extends Error {
+	readonly code = 'lock-contention-budget-exceeded';
+	constructor(lockPath: string, timeoutMs: number) {
+		super(
+			`lock contention: "${lockPath}" held past ${timeoutMs}ms by a live holder`,
+		);
+		this.name = 'LockContentionError';
+	}
 }
 
 const sleep = (ms: number): Promise<void> =>
@@ -49,12 +71,14 @@ const sleep = (ms: number): Promise<void> =>
 export const withFileMutex = async <T>(
 	targetPath: string,
 	fn: () => Promise<T>,
-	options: IFileMutexOptions = {}
+	options: IFileMutexOptions = {},
 ): Promise<T> => {
 	const timeoutMs = options.timeoutMs ?? 5_000;
 	const staleMs = options.staleMs ?? 30_000;
+	const onContention = options.onContention ?? 'steal';
 	const pollMs = options.pollMs ?? 25;
-	const heartbeatMs = options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
+	const heartbeatMs =
+		options.heartbeatMs ?? Math.max(50, Math.floor(staleMs / 3));
 	const lockPath = `${targetPath}.mutex`;
 	// Unique per acquisition: identifies *this* holder so release never
 	// deletes a lock that was stolen and is now owned by someone else.
@@ -88,9 +112,13 @@ export const withFileMutex = async <T>(
 				continue;
 			}
 			if (Date.now() >= deadline) {
-				// Contention outlived the timeout: steal to avoid deadlock.
-				// Safe even if the holder is still alive — the ownership
-				// token guarantees it won't delete the lock we create next.
+				// A live holder outlived the timeout (a stale one was already
+				// reclaimed above). 'fail' lets the caller back off; 'steal'
+				// reclaims to avoid deadlock — safe because the ownership token
+				// stops the old holder deleting the lock we create next.
+				if (onContention === 'fail') {
+					throw new LockContentionError(lockPath, timeoutMs);
+				}
 				await rm(lockPath, { force: true }).catch(() => undefined);
 				continue;
 			}

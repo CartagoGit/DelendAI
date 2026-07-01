@@ -1,0 +1,183 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"generatedAt": "2026-06-25T12:00:00.000Z",
+	"skills": [
+		{
+			"id": "mcp-vertex-plugin-authoring",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding or changing an mcp-vertex plugin so tools, schemas, state, path containment, and durability rules stay correct.",
+			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md",
+			"tags": ["plugin-authoring", "contract", "core"],
+			"appliesTo": ["@mcp-vertex/*"]
+		},
+		{
+			"id": "mcp-vertex-failure-modes",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
+			"bodyPath": "packages/core/skills/failure-modes/SKILL.md",
+			"tags": ["failure-modes", "recovery", "swarm"],
+			"appliesTo": ["@mcp-vertex/*"]
+		},
+		{
+			"id": "mcp-vertex-operator",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
+			"bodyPath": "packages/core/skills/operator/SKILL.md",
+			"tags": ["operator", "orientation", "presets"],
+			"appliesTo": ["@mcp-vertex/*"]
+		},
+		{
+			"id": "mcp-vertex-proposal-swarm-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
+			"bodyPath": "plugins/proposals/skills/proposal-swarm-runner/SKILL.md",
+			"tags": ["proposals", "swarm", "multi-agent"],
+			"appliesTo": ["@mcp-vertex/proposals"]
+		},
+		{
+			"id": "mcp-vertex-proposals-workflow-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
+			"bodyPath": "plugins/proposals/skills/proposals-workflow-playbook/SKILL.md",
+			"tags": ["proposals", "workflow", "compact"],
+			"appliesTo": ["@mcp-vertex/proposals"]
+		},
+		{
+			"id": "mcp-vertex-multi-agent-coordination",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
+			"bodyPath": "plugins/proposals/skills/multi-agent-coordination/SKILL.md",
+			"tags": ["multi-agent", "coordination", "locking"],
+			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
+		},
+		{
+			"id": "mcp-vertex-state-repair-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
+			"bodyPath": "plugins/proposals/skills/state-repair-playbook/SKILL.md",
+			"tags": ["state-health", "state-repair", "recovery"],
+			"appliesTo": ["@mcp-vertex/proposals"]
+		},
+		{
+			"id": "mcp-vertex-token-budget-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
+			"bodyPath": "packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md",
+			"tags": ["metrics", "token-budget", "compact"],
+			"appliesTo": ["@mcp-vertex/*"]
+		},
+		{
+			"id": "mcp-vertex-concurrency-patterns",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
+			"bodyPath": "plugins/proposals/skills/concurrency-patterns/SKILL.md",
+			"tags": ["concurrency", "mutex", "locking"],
+			"appliesTo": ["@mcp-vertex/proposals", "@mcp-vertex/notification"]
+		},
+		{
+			"id": "mcp-vertex-audit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
+			"bodyPath": "plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md",
+			"tags": ["audit", "qualitative-analysis", "methodology"],
+			"appliesTo": ["@mcp-vertex/audit"]
+		},
+		{
+			"id": "mcp-vertex-conventional-commits-and-release",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
+			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md",
+			"tags": ["release", "conventional-commits", "versioning"],
+			"appliesTo": ["@mcp-vertex/core"]
+		},
+		{
+			"id": "mcp-vertex-token-budget-discipline",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
+			"bodyPath": "packages/core/skills/token-budget-discipline/SKILL.md",
+			"tags": ["token-budget", "compact", "delegation"],
+			"appliesTo": ["@mcp-vertex/core"]
+		},
+		{
+			"id": "mcp-vertex-status-marker-and-closure",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
+			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md",
+			"tags": ["status-marker", "closure", "audit-trail"],
+			"appliesTo": ["@mcp-vertex/status-marker"]
+		},
+		{
+			"id": "mcp-vertex-audit-runner",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
+			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md",
+			"tags": ["audit", "lifecycle", "rubric"],
+			"appliesTo": ["@mcp-vertex/audit"]
+		},
+		{
+			"id": "mcp-vertex-quality-and-rules-gates",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
+			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md",
+			"tags": ["quality", "rules", "gates"],
+			"appliesTo": ["@mcp-vertex/quality", "@mcp-vertex/rules"]
+		},
+		{
+			"id": "mcp-vertex-rules-solid-architecture",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
+			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md",
+			"tags": ["rules", "solid", "architecture", "contributor-guide"],
+			"appliesTo": ["@mcp-vertex/rules"]
+		},
+		{
+			"id": "mcp-vertex-rules-dogma-priority",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
+			"bodyPath": "plugins/rules/skills/mcp-vertex-rules-dogma-priority/SKILL.md",
+			"tags": [
+				"rules",
+				"dogma",
+				"priority",
+				"f00051-s11",
+				"contributor-guide"
+			],
+			"appliesTo": ["@mcp-vertex/rules"]
+		},
+		{
+			"id": "mcp-vertex-legacy-proposal-migration",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
+			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md",
+			"tags": ["legacy", "migration", "proposals"],
+			"appliesTo": ["@mcp-vertex/proposals"]
+		},
+		{
+			"id": "tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md",
+			"tags": ["tabs", "brand-logo", "iconography", "f00069"],
+			"appliesTo": ["@mcp-vertex/*"]
+		}
+	]
+}

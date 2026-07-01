@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
-import type { IToolRegistration } from '@cartago-git/mcp-core/lib/contracts/interfaces/tool-registration.interface';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
 
 const fakePlugin = {
 	name: 'demo',
@@ -15,6 +15,12 @@ const fakePlugin = {
 				summary: 'does the thing',
 				register: async () => {},
 			},
+			{
+				id: 'long',
+				summary:
+					'This summary is intentionally long enough to prove the overview keeps full payloads bounded while still surfacing a useful one-line description.',
+				register: async () => {},
+			},
 		],
 		knowledge: [{ id: 'demo-guide', title: 'Demo guide', body: 'BODY' }],
 	}),
@@ -22,7 +28,7 @@ const fakePlugin = {
 
 const callTool = async (
 	tool: IToolRegistration,
-	args: unknown = {}
+	args: unknown = {},
 ): Promise<any> => {
 	let handler: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await tool.register({
@@ -38,10 +44,12 @@ const assemble = async () => {
 	const args = parseCliArgs(['--plugins=demo', '--workspace=/ws'], '/cwd');
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
-		readFile: () =>
+		readFile: async () =>
 			JSON.stringify({
 				validationMatrix: {
-					scopes: { full: [{ command: 'bun test', expect: 'exit0' }] },
+					scopes: {
+						full: [{ command: 'bun test', expect: 'exit0' }],
+					},
 				},
 			}),
 	});
@@ -50,18 +58,20 @@ const assemble = async () => {
 	return { config, byId };
 };
 
-describe('core meta-tools', () => {
+describe('core meta-tools', async () => {
 	it('overview maps the server, plugins, tools (with summaries) and knowledge', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
-			'demo'
+			'demo',
 		);
-		expect(snap.tools.find((t: { name: string }) => t.name === 'demo_do')?.summary).toBe(
-			'does the thing'
-		);
+		expect(
+			snap.tools.find(
+				(t: { name: string }) => t.name === 'mcp-vertex_demo_do',
+			)?.summary,
+		).toBe('does the thing');
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 	});
@@ -70,7 +80,7 @@ describe('core meta-tools', () => {
 		const { byId } = await assemble();
 		const list = await callTool(byId('knowledge'));
 		expect(list.entries.map((e: { id: string }) => e.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		const got = await callTool(byId('knowledge'), { id: 'demo-guide' });
 		expect(got.body).toBe('BODY');
@@ -90,5 +100,15 @@ describe('core meta-tools', () => {
 		expect(Array.isArray(compact.tools)).toBe(true);
 		expect(typeof compact.tools[0]).toBe('string'); // names, not objects
 		expect(compact.plugins).toContain('demo');
+	});
+
+	it('overview full bounds long tool summaries', async () => {
+		const { byId } = await assemble();
+		const snap = await callTool(byId('overview'));
+		const summary = snap.tools.find(
+			(t: { name: string }) => t.name === 'mcp-vertex_demo_long',
+		)?.summary;
+		expect(summary).toHaveLength(96);
+		expect(summary.endsWith('...')).toBe(true);
 	});
 });

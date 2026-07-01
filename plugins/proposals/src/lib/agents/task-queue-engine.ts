@@ -2,7 +2,7 @@
  * task-queue-tool.ts
  *
  * <prefix>_task_queue — MCP tool with four actions: enqueue, dequeue, subscribe, report.
- * 
+ *
  *
  * This module exposes `runTaskQueueAction` (a pure function) and the
  * MCP-registration helper. The tool is registered in T3 (reserved: server.ts).
@@ -29,7 +29,7 @@ import {
 	quarantineCorruptFile,
 	withFileMutex,
 	writeFileAtomic,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 import {
 	enqueue,
@@ -229,13 +229,14 @@ const ensureQueueFile = async (queuePath: string): Promise<void> => {
  * Corrupt JSON → rename to .corrupt-<ts> backup and throw.
  */
 const loadOrEmptyQueue = async (
-	queuePath: string
+	queuePath: string,
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
 		raw = await readFile(queuePath, 'utf8');
 	} catch (err: unknown) {
-		if ((err as NodeJS.ErrnoException).code === 'ENOENT') return { version: 1, entries: [] };
+		if ((err as NodeJS.ErrnoException).code === 'ENOENT')
+			return { version: 1, entries: [] };
 		throw err;
 	}
 	if (!raw.trim()) return { version: 1, entries: [] };
@@ -246,7 +247,7 @@ const loadOrEmptyQueue = async (
 		const backup = await quarantineCorruptFile(queuePath);
 		throw new TaskQueueActionError(
 			'load',
-			`Queue file at "${queuePath}" has corrupt JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`
+			`Queue file at "${queuePath}" has corrupt JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`,
 		);
 	}
 	const p = parsed as { version?: number; entries?: unknown[] };
@@ -254,7 +255,7 @@ const loadOrEmptyQueue = async (
 		const backup = await quarantineCorruptFile(queuePath);
 		throw new TaskQueueActionError(
 			'load',
-			`Queue file at "${queuePath}" has invalid schema; preserved at "${backup ?? '<rename failed>'}".`
+			`Queue file at "${queuePath}" has invalid schema; preserved at "${backup ?? '<rename failed>'}".`,
 		);
 	}
 	return parsed as IPersistentTaskQueue;
@@ -262,7 +263,7 @@ const loadOrEmptyQueue = async (
 
 const computePosition = (
 	queue: IPersistentTaskQueue,
-	taskId: string
+	taskId: string,
 ): number => {
 	const idx = queue.entries.findIndex((e) => e.taskId === taskId);
 	return idx === -1 ? -1 : idx;
@@ -329,7 +330,11 @@ const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
 	try {
 		const parsed = JSON.parse(raw) as { delivered?: unknown };
 		if (Array.isArray(parsed.delivered)) {
-			return new Set(parsed.delivered.filter((k): k is string => typeof k === 'string'));
+			return new Set(
+				parsed.delivered.filter(
+					(k): k is string => typeof k === 'string',
+				),
+			);
 		}
 	} catch {
 		await quarantineCorruptFile(sidecarPath);
@@ -340,12 +345,12 @@ const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
 /** Atomically persist the delivered-keys set (kept readable on disk — N11). */
 const saveDeliveredSet = async (
 	sidecarPath: string,
-	set: ReadonlySet<string>
+	set: ReadonlySet<string>,
 ): Promise<void> => {
 	await mkdir(dirname(sidecarPath), { recursive: true });
 	await writeFileAtomic(
 		sidecarPath,
-		`${JSON.stringify({ delivered: [...set].sort() }, null, 2)}\n`
+		`${JSON.stringify({ delivered: [...set].sort() }, null, 2)}\n`,
 	);
 };
 
@@ -355,14 +360,14 @@ const saveDeliveredSet = async (
 
 export async function runTaskQueueAction(
 	action: ITaskQueueAction,
-	paths: ITaskQueuePaths
+	paths: ITaskQueuePaths,
 ): Promise<ITaskQueueResult> {
 	// Validate action with Zod (defense-in-depth; callers normally pre-validate)
 	const actionParse = IActionSchema.safeParse(action.action);
 	if (!actionParse.success) {
 		throw new TaskQueueActionError(
 			String(action.action),
-			`Unknown action: ${String(action.action)}; valid actions are: enqueue, dequeue, subscribe, report`
+			`Unknown action: ${String(action.action)}; valid actions are: enqueue, dequeue, subscribe, report`,
 		);
 	}
 
@@ -377,8 +382,9 @@ export async function runTaskQueueAction(
 		// so the (synchronous) Zod refine never blocks the event loop. Paths
 		// resolve against the injected workspace root — not the process cwd —
 		// so a host launched elsewhere does not see false missing files.
-		const rawWaitFor = (action.params as { waitFor?: Array<{ file: string }> })
-			.waitFor ?? [];
+		const rawWaitFor =
+			(action.params as { waitFor?: Array<{ file: string }> }).waitFor ??
+			[];
 		const missingWaitFor = new Set<string>();
 		await Promise.all(
 			rawWaitFor.map(async (wf) => {
@@ -387,7 +393,7 @@ export async function runTaskQueueAction(
 				} catch {
 					missingWaitFor.add(wf.file);
 				}
-			})
+			}),
 		);
 		let closedTaskIds = new Set<string>();
 		try {
@@ -408,7 +414,7 @@ export async function runTaskQueueAction(
 						});
 					}
 				}
-			}
+			},
 		).superRefine((value, ctx) => {
 			for (const target of value.observe ?? []) {
 				if (!closedTaskIds.has(target)) {
@@ -462,11 +468,13 @@ export async function runTaskQueueAction(
 			await ensureQueueFile(paths.queuePath);
 			const queue = await loadOrEmptyQueue(paths.queuePath);
 
-			const idx = queue.entries.findIndex((e) => e.taskId === params.taskId);
+			const idx = queue.entries.findIndex(
+				(e) => e.taskId === params.taskId,
+			);
 			if (idx === -1) {
 				throw new TaskQueueActionError(
 					'dequeue',
-					`task "${params.taskId}" not found in queue`
+					`task "${params.taskId}" not found in queue`,
 				);
 			}
 
@@ -546,7 +554,9 @@ export async function runTaskQueueAction(
 						taskId: c.taskId,
 						closedAt: c.closedAt,
 						...(c.filesOwned && c.filesOwned.length > 0
-							? { diffSummary: `Files: ${c.filesOwned.join(', ')}` }
+							? {
+									diffSummary: `Files: ${c.filesOwned.join(', ')}`,
+								}
 							: {}),
 					});
 					delivered.add(key);
@@ -568,7 +578,7 @@ export async function runTaskQueueAction(
 		const queue = await loadOrEmptyQueue(paths.queuePath);
 		const lock = await loadLockSnapshot(
 			paths.lockPath,
-			paths.closedTasksPath
+			paths.closedTasksPath,
 		);
 		const baseReport = reportBackpressure(queue, lock);
 		const recommendation = buildRecommendation(baseReport);
@@ -582,7 +592,7 @@ export async function runTaskQueueAction(
 	// Should never reach here
 	throw new TaskQueueActionError(
 		'unknown',
-		`Unreachable: action ${String((action as { action: unknown }).action)} fell through`
+		`Unreachable: action ${String((action as { action: unknown }).action)} fell through`,
 	);
 }
 
@@ -605,12 +615,12 @@ export interface ITaskQueueMcpArgs {
 
 export async function runTaskQueueMcp(
 	args: ITaskQueueMcpArgs,
-	paths: ITaskQueuePaths
+	paths: ITaskQueuePaths,
 ): Promise<IRunTaskQueueResponse> {
 	try {
 		const result = await runTaskQueueAction(
 			args as ITaskQueueAction,
-			paths
+			paths,
 		);
 		return {
 			content: [

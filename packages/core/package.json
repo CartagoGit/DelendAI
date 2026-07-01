@@ -1,5 +1,5 @@
 {
-	"name": "@cartago-git/mcp-core",
+	"name": "@mcp-vertex/core",
 	"version": "0.1.0",
 	"type": "module",
 	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
@@ -16,18 +16,22 @@
 	"main": "./dist/index.js",
 	"files": [
 		"dist",
+		"schema",
 		"README.md",
 		"LICENSE"
 	],
-	"bin": {
-		"mcp-core": "./dist/cli.js"
-	},
 	"exports": {
 		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		}
@@ -51,7 +55,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cartago-git/mcp-core"
+		"url": "https://github.com/CartagoGit/mcp-vertex"
 	},
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts"

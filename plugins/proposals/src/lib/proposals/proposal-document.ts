@@ -50,6 +50,39 @@ export interface IOwnershipEntry {
 	readonly files?: readonly string[];
 }
 
+/**
+ * A child referenced from a `plan` proposal's `contains:` block. The
+ * parser stores each entry as the raw key/value map (id, kind, required…)
+ * and normalises to this shape for the closure evaluator.
+ */
+export interface IPlanChild {
+	readonly id: string;
+	readonly kind?: string;
+	readonly required?: boolean;
+	readonly title?: string;
+}
+
+/**
+ * A plan's `contains:` block. Each list is optional; a plan may carry
+ * only proposals, only sub-plans, only its own slices, or any mix.
+ */
+export interface IPlanContains {
+	readonly proposals?: readonly IPlanChild[];
+	readonly plans?: readonly IPlanChild[];
+	readonly slices?: readonly IPlanChild[];
+}
+
+/**
+ * A plan's `closureGate:` block. All three flags default to `true`
+ * in the closure evaluator when the block is absent — the strictest
+ * closure is the safe default.
+ */
+export interface IPlanClosureGate {
+	readonly requirePeerReview?: boolean;
+	readonly requireAllSlicesDone?: boolean;
+	readonly requireAllChildrenDone?: boolean;
+}
+
 export interface IProposalFrontmatter {
 	readonly id: string;
 	readonly type: string;
@@ -63,6 +96,12 @@ export interface IProposalFrontmatter {
 	 */
 	readonly ownership?: readonly IOwnershipEntry[];
 	readonly reservedFiles?: readonly string[];
+	/**
+	 * Plan-of-plans children (q00001). Only set on `type: plan` proposals;
+	 * ignored otherwise by the cascade and the closure evaluator.
+	 */
+	readonly contains?: IPlanContains;
+	readonly closureGate?: IPlanClosureGate;
 }
 
 export interface IProposalBody {
@@ -105,7 +144,7 @@ const expectSchema = z
 		{
 			message:
 				'expect must be one of: exit0, pass, synchronized, contains:<substring>',
-		}
+		},
 	);
 
 const criterionSchema = z.object({
@@ -170,7 +209,7 @@ const parseBody = (raw: string): IProposalBody => {
 	// Extract the document goal: prefer paragraph directly after H1; fall back
 	// to the ## Description section when nothing sits between H1 and first ##.
 	const h1Match = bodyText.match(
-		/^#\s[^\n]*\n+([\s\S]*?)(?=^##|(?![\s\S]))/m
+		/^#\s[^\n]*\n+([\s\S]*?)(?=^##|(?![\s\S]))/m,
 	);
 	const h1Goal = h1Match ? (h1Match[1]?.trim() ?? '') : '';
 	const goal = h1Goal || extractSection(bodyText, 'Description').join(' ');
@@ -196,7 +235,7 @@ const parseBody = (raw: string): IProposalBody => {
  * @param absolutePath Absolute path to the `.md` file.
  */
 export const parseProposalDocument = async (
-	absolutePath: string
+	absolutePath: string,
 ): Promise<IProposalDocument> => {
 	const raw = await readFile(absolutePath, 'utf8');
 
@@ -205,7 +244,7 @@ export const parseProposalDocument = async (
 		throw new ProposalParseError(
 			'INVALID_FRONTMATTER',
 			absolutePath,
-			`No YAML frontmatter block found in: ${absolutePath}`
+			`No YAML frontmatter block found in: ${absolutePath}`,
 		);
 	}
 
@@ -222,7 +261,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_BUDGET',
 				absolutePath,
-				`Invalid budget in ${absolutePath}: ${result.error.message}`
+				`Invalid budget in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		// Safe cast: Zod has validated the shape; exactOptionalPropertyTypes
@@ -238,7 +277,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				absolutePath,
-				`acceptanceCriteria must be an array in: ${absolutePath}`
+				`acceptanceCriteria must be an array in: ${absolutePath}`,
 			);
 		}
 		const result = z
@@ -248,7 +287,7 @@ export const parseProposalDocument = async (
 			throw new ProposalParseError(
 				'INVALID_CRITERION',
 				absolutePath,
-				`Invalid acceptance criterion in ${absolutePath}: ${result.error.message}`
+				`Invalid acceptance criterion in ${absolutePath}: ${result.error.message}`,
 			);
 		}
 		// Safe cast: same reason as budget — Zod optional fields vs
@@ -261,7 +300,9 @@ export const parseProposalDocument = async (
 		? (parsed.ownership as IYamlValue[])
 				.filter(
 					(v): v is Record<string, IYamlValue> =>
-						typeof v === 'object' && v !== null && !Array.isArray(v)
+						typeof v === 'object' &&
+						v !== null &&
+						!Array.isArray(v),
 				)
 				.map((item) => ({
 					agent: String(item.agent ?? ''),
@@ -269,7 +310,7 @@ export const parseProposalDocument = async (
 					...(Array.isArray(item.files)
 						? {
 								files: (item.files as IYamlValue[]).filter(
-									(v): v is string => typeof v === 'string'
+									(v): v is string => typeof v === 'string',
 								),
 							}
 						: {}),
@@ -278,7 +319,7 @@ export const parseProposalDocument = async (
 
 	const reservedFiles = Array.isArray(parsed.reservedFiles)
 		? (parsed.reservedFiles as string[]).filter(
-				(v): v is string => typeof v === 'string'
+				(v): v is string => typeof v === 'string',
 			)
 		: undefined;
 

@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -9,26 +15,27 @@ import {
 	createWorkspacePathProvider,
 	scaffoldAgentFile,
 	scaffoldHostProject,
+	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
-} from '@cartago-git/mcp-core/public';
-import type { IScaffoldToolOptions } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
 
 const HOST = {
 	projectName: 'Acme Quest',
 	namespacePrefix: 'acme',
-	serverPackageName: '@acme/mcp-server',
+	projectPackageName: '@acme/mcp-project',
 } as const;
 
-describe('scaffold-host generators (p97)', () => {
+describe('scaffold-host generators', () => {
 	it('generates a registerable tool file in the host namespace', () => {
 		const file = scaffoldToolFile('acme', 'render stats', 'Stats only.');
 		expect(file.path).toBe(
-			'libs/mcp-server/src/lib/tools/acme-render-stats.tool.ts'
+			'libs/mcp-project/src/lib/tools/acme-render-stats.tool.ts',
 		);
 		expect(file.content).toContain("name: 'acme_render_stats'");
 		expect(file.content).toContain(
-			'export async function registerRenderStatsTool'
+			'export async function registerRenderStatsTool',
 		);
 	});
 
@@ -37,18 +44,53 @@ describe('scaffold-host generators (p97)', () => {
 			'Before editing rooms.',
 		]);
 		expect(file.path).toBe(
-			'libs/mcp-server/src/lib/skills/acme-level-design.md'
+			'libs/mcp-project/src/lib/skills/acme-level-design.md',
 		);
 		expect(file.content).toContain('id: acme-level-design');
 		expect(file.content).toContain('- Before editing rooms.');
 		expect(file.content).toContain('acme_overview');
 	});
 
+	it('prompts accept a body argument that becomes the user-facing text', () => {
+		const file = scaffoldPromptFile(
+			'acme',
+			'start',
+			'Orient and start working.',
+			'You are working in **Acme**. Call acme_overview first.',
+		);
+		expect(file.path).toBe(
+			'libs/mcp-project/src/lib/prompts/acme-start.prompt.ts',
+		);
+		expect(file.content).toContain('You are working in **Acme**');
+		expect(file.content).toContain('acme_overview');
+		// Body must not leak template-literal backticks: the implementation
+		// escapes them so a body containing `code` does not break the
+		// generated source file.
+		expect(file.content).not.toMatch(/text: `[^`]*\$\{/);
+	});
+
+	it('skills accept a body argument that becomes the skill body', () => {
+		const file = scaffoldSkillFile(
+			'acme',
+			'angular conventions',
+			'Angular idioms.',
+			['Before writing Angular code.'],
+			'## Angular idioms\n\n- Use standalone components.',
+		);
+		expect(file.content).toContain('## Angular idioms');
+		expect(file.content).toContain('Use standalone components');
+		// The TODO body fallback must NOT appear when a real body is given.
+		expect(file.content).not.toContain('TODO: the skill body.');
+	});
+
 	it('agent adapters always delegate to the HOST MCP server', () => {
 		const orchestrator = scaffoldAgentFile(HOST, 'orchestrator');
 		expect(orchestrator.path).toBe('.github/agents/orchestrator.agent.md');
-		expect(orchestrator.content).toContain('mcp-server-acme/*');
+		expect(orchestrator.content).toContain('mcp-project-acme/*');
 		expect(orchestrator.content).toContain('acme_overview');
+		expect(orchestrator.content).toContain('acme_auto_work');
+		expect(orchestrator.content).toContain('acme_delegate');
+		expect(orchestrator.content).toContain('more than 3 tool calls');
 		expect(orchestrator.content).toContain('user-invocable: true');
 		// M9: the proposal-workflow tools are shown as conditional on the
 		// plugin, never promised as always-present.
@@ -56,40 +98,45 @@ describe('scaffold-host generators (p97)', () => {
 		expect(orchestrator.content).not.toContain('acme_check_project_state');
 		const runner = scaffoldAgentFile(HOST, 'implementation_runner');
 		expect(runner.content).toContain('user-invocable: false');
-		expect(runner.content).not.toContain('affairs_');
+		expect(runner.content).not.toContain('mcp-vertex_');
 	});
 
 	it('scaffoldHostProject covers server, config, agents and docs', () => {
 		const files = scaffoldHostProject(HOST);
 		const paths = files.map((file) => file.path);
-		expect(paths).toContain('libs/mcp-server/src/server.ts');
+		expect(paths).toContain('libs/mcp-project/src/server.ts');
 		expect(paths).toContain(
-			'libs/mcp-server/src/lib/shared/host-config.ts'
+			'libs/mcp-project/src/lib/shared/host-config.ts',
 		);
 		expect(paths).toContain('.vscode/mcp.json');
 		expect(paths).toContain('.github/agents/orchestrator.agent.md');
 		expect(paths).toContain('.github/copilot-instructions.md');
 		expect(
-			paths.filter((path) => path.startsWith('.github/agents/'))
+			paths.filter((path) => path.startsWith('.github/agents/')),
 		).toHaveLength(5);
 		const config = files.find((file) =>
-			file.path.endsWith('host-config.ts')
+			file.path.endsWith('host-config.ts'),
 		);
 		expect(config?.content).toContain("namespacePrefix: 'acme'");
 		expect(config?.content).toContain('buildScaffoldToolRegistration');
-		// The generated project must not leak the Affairs host.
+		const instructions = files.find((file) =>
+			file.path.endsWith('copilot-instructions.md'),
+		);
+		expect(instructions?.content).toContain('acme_delegate');
+		expect(instructions?.content).toContain('Orchestration threshold');
+		// The generated project must not leak the host's own namespace.
 		for (const file of files) {
-			expect(file.content, file.path).not.toContain('affairs_');
+			expect(file.content, file.path).not.toContain('mcp-vertex_');
 		}
 	});
 });
 
-describe('scaffold tool report (p97)', () => {
+describe('scaffold tool report', () => {
 	let root = '';
 	let options: IScaffoldToolOptions;
 
 	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'mcp-core-scaffold-'));
+		root = mkdtempSync(join(tmpdir(), 'mcp-vertex-scaffold-'));
 		options = {
 			...HOST,
 			workspace: createWorkspacePathProvider(root),
@@ -100,8 +147,8 @@ describe('scaffold tool report (p97)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('dry-run returns the files without touching the disk', () => {
-		const report = buildScaffoldReport(options, {
+	it('dry-run returns the files without touching the disk', async () => {
+		const report = await buildScaffoldReport(options, {
 			kind: 'host',
 			dryRun: true,
 		});
@@ -110,23 +157,25 @@ describe('scaffold tool report (p97)', () => {
 		expect(existsSync(join(root, 'libs'))).toBe(false);
 	});
 
-	it('write mode creates files once and refuses overwrites', () => {
-		const first = buildScaffoldReport(options, {
+	it('write mode creates files once and refuses overwrites', async () => {
+		const first = await buildScaffoldReport(options, {
 			kind: 'skill',
 			name: 'combat',
 			description: 'Combat rules.',
 			dryRun: false,
 		});
 		expect(first.written).toEqual([
-			'libs/mcp-server/src/lib/skills/acme-combat.md',
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
+		expect(first.moved).toEqual([]);
+		expect(first.kept).toEqual([]);
 		expect(
 			readFileSync(
-				join(root, 'libs/mcp-server/src/lib/skills/acme-combat.md'),
-				'utf8'
-			)
+				join(root, 'libs/mcp-project/src/lib/skills/acme-combat.md'),
+				'utf8',
+			),
 		).toContain('id: acme-combat');
-		const second = buildScaffoldReport(options, {
+		const second = await buildScaffoldReport(options, {
 			kind: 'skill',
 			name: 'combat',
 			description: 'Combat rules.',
@@ -134,12 +183,77 @@ describe('scaffold tool report (p97)', () => {
 		});
 		expect(second.written).toEqual([]);
 		expect(second.skipped).toEqual([
-			'libs/mcp-server/src/lib/skills/acme-combat.md',
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
 		]);
+		expect(second.kept).toEqual(second.skipped);
+		expect(second.moved).toEqual([]);
 	});
 
-	it('reports input errors instead of writing partial artefacts', () => {
-		const report = buildScaffoldReport(options, {
+	it('keepLegacy moves the old target to legacy and writes the fresh scaffold', async () => {
+		const target = join(
+			root,
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		);
+		const first = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Combat rules.',
+			dryRun: false,
+		});
+		expect(first.written).toEqual([
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		]);
+		const oldContent = `${readFileSync(target, 'utf8')}\n# local edit\n`;
+		writeFileSync(target, oldContent);
+
+		const second = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Fresh combat rules.',
+			dryRun: false,
+			keepLegacy: true,
+		});
+
+		expect(second.skipped).toEqual([]);
+		expect(second.kept).toEqual([]);
+		expect(second.written).toEqual([
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		]);
+		expect(second.moved).toHaveLength(1);
+		expect(second.moved[0]).toMatch(/^legacy\/acme-combat-[a-z0-9]+\.md$/);
+		expect(readFileSync(join(root, second.moved[0] ?? ''), 'utf8')).toBe(
+			oldContent,
+		);
+		expect(readFileSync(target, 'utf8')).toContain('Fresh combat rules.');
+	});
+
+	it('dry-run with keepLegacy reports files without moving existing targets', async () => {
+		await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Combat rules.',
+			dryRun: false,
+		});
+		const target = join(
+			root,
+			'libs/mcp-project/src/lib/skills/acme-combat.md',
+		);
+		const before = readFileSync(target, 'utf8');
+		const report = await buildScaffoldReport(options, {
+			kind: 'skill',
+			name: 'combat',
+			description: 'Fresh combat rules.',
+			dryRun: true,
+			keepLegacy: true,
+		});
+		expect(report.written).toEqual([]);
+		expect(report.moved).toEqual([]);
+		expect(existsSync(join(root, 'legacy'))).toBe(false);
+		expect(readFileSync(target, 'utf8')).toBe(before);
+	});
+
+	it('reports input errors instead of writing partial artefacts', async () => {
+		const report = await buildScaffoldReport(options, {
 			kind: 'tool',
 			dryRun: false,
 		});
@@ -147,27 +261,27 @@ describe('scaffold tool report (p97)', () => {
 		expect(report.written).toEqual([]);
 	});
 
-	it('scaffolds a plugin and an MCP client', () => {
-		const plugin = buildScaffoldReport(options, {
+	it('scaffolds a plugin and an MCP client', async () => {
+		const plugin = await buildScaffoldReport(options, {
 			kind: 'plugin',
 			name: 'pepegrillo',
 			description: 'Conscience plugin.',
 			dryRun: true,
 		});
 		expect(plugin.files.map((f) => f.path)).toContain(
-			'plugins/pepegrillo/src/index.ts'
+			'plugins/pepegrillo/src/index.ts',
 		);
-		const client = buildScaffoldReport(options, {
+		const client = await buildScaffoldReport(options, {
 			kind: 'client',
 			name: 'acme',
 			description: 'Acme MCP client.',
 			dryRun: true,
 		});
 		expect(client.files.map((f) => f.path)).toContain(
-			'clients/acme/src/index.ts'
+			'clients/acme/src/index.ts',
 		);
 		const entry = client.files.find((f) =>
-			f.path.endsWith('clients/acme/src/index.ts')
+			f.path.endsWith('clients/acme/src/index.ts'),
 		);
 		expect(entry?.content).toContain('createAcmeClient');
 	});

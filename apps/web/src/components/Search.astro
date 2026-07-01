@@ -1,0 +1,214 @@
+---
+// Search.astro — site-wide search modal, backed by Pagefind.
+//
+// Pagefind indexes the static `dist/` output after `astro build`
+// (`bun run build`/`build:strict` → `pagefind --site dist`, see
+// package.json) and ships its own UI bundle (`pagefind-ui.js`/`.css`)
+// alongside the index. We lazy-load both on first open — no search JS/WASM
+// ships to a visitor who never opens the modal — and theme the widget via
+// its `--pagefind-ui-*` CSS variables so it matches the site instead of
+// looking like a foreign component. Pagefind reads `<html lang>` (set by
+// `Base.astro`) and scopes results to that language automatically.
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div
+	class="modal"
+	id="search-modal"
+	role="dialog"
+	aria-modal="true"
+	aria-label={t.search.title}
+	hidden
+	transition:persist
+>
+	<div class="modal__backdrop" data-search-close></div>
+	<div class="modal__panel modal__panel--search">
+		<div class="modal__head">
+			<h2>{t.search.title}</h2>
+			<button class="modal__close" data-search-close aria-label="Close">×</button>
+		</div>
+		<div id="search-pagefind" data-pf-lang={lang} data-pf-placeholder={t.search.placeholder}></div>
+	</div>
+</div>
+
+<script is:inline define:vars={{ base: import.meta.env.BASE_URL.replace(/\/$/, ''), isDev: import.meta.env.DEV }}>
+	// Settings-modal pattern (Config.astro): re-runs after every Astro view
+	// transition, AbortController revokes the previous listener batch.
+	let searchAbort;
+	let pagefindReady;
+	let searchWidget;
+	let devIndex;
+
+	const loadPagefind = () => {
+		if (pagefindReady) return pagefindReady;
+		pagefindReady = new Promise((resolve, reject) => {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = `${base}/pagefind/pagefind-ui.css`;
+			link.onerror = () => reject(new Error('pagefind-ui.css 404'));
+			document.head.appendChild(link);
+
+			const script = document.createElement('script');
+			script.src = `${base}/pagefind/pagefind-ui.js`;
+			script.onload = () => resolve();
+			script.onerror = () => reject(new Error('pagefind-ui.js 404'));
+			document.head.appendChild(script);
+		});
+		return pagefindReady;
+	};
+
+	// Dev fallback: fetch the curated index from `/api/dev-search.json`
+	// and render a small client-side widget (input + result list). This
+	// keeps the search modal functional in `astro dev`, where Pagefind
+	// has not been built yet (its assets live in `dist/pagefind/`). The
+	// endpoint returns `[]` in production (gated by `import.meta.env.DEV`),
+	// so this branch is a no-op at runtime in builds.
+	const loadDevIndex = async () => {
+		if (devIndex) return devIndex;
+		const res = await fetch(`${base}/api/dev-search.json`);
+		if (!res.ok) throw new Error(`dev-search ${res.status}`);
+		devIndex = await res.json();
+		return devIndex;
+	};
+
+	const renderDevResults = (mount, items) => {
+		// Replace any prior input + list with a fresh one so reopening
+		// the modal after a search doesn't accumulate DOM.
+		mount.innerHTML = '';
+		const input = document.createElement('input');
+		input.type = 'search';
+		input.className = 'dev-search__input';
+		input.placeholder = mount.dataset.pfPlaceholder || 'Search…';
+		const list = document.createElement('ul');
+		list.className = 'dev-search__list';
+
+		const draw = (q) => {
+			const needle = q.trim().toLowerCase();
+			list.innerHTML = '';
+			const lang = (mount.dataset.pfLang || 'en').toLowerCase();
+			const filtered = needle
+				? items.filter(
+						(i) =>
+							(i.lang === lang || (!i.lang && lang === 'en')) &&
+							(i.title.toLowerCase().includes(needle) ||
+								i.text.toLowerCase().includes(needle) ||
+								i.href.toLowerCase().includes(needle)),
+					)
+				: items.filter((i) => !i.lang || i.lang === lang).slice(0, 8);
+			for (const item of filtered.slice(0, 20)) {
+				const li = document.createElement('li');
+				li.className = 'dev-search__item';
+				const a = document.createElement('a');
+				a.href = item.href;
+				a.className = 'dev-search__link';
+				a.textContent = item.title;
+				const p = document.createElement('span');
+				p.className = 'dev-search__text';
+				p.textContent = item.text;
+				li.append(a, p);
+				list.append(li);
+			}
+			if (filtered.length === 0) {
+				const li = document.createElement('li');
+				li.className = 'dev-search__empty';
+				li.textContent = 'No matches.';
+				list.append(li);
+			}
+		};
+
+		input.addEventListener('input', () => draw(input.value));
+		mount.append(input, list);
+		draw('');
+		input.focus();
+	};
+
+	const setupSearch = () => {
+		searchAbort?.abort();
+		searchAbort = new AbortController();
+		const { signal } = searchAbort;
+
+		const modal = document.getElementById('search-modal');
+		const openBtn = document.getElementById('search-open');
+		const mount = document.getElementById('search-pagefind');
+
+		const open = async () => {
+			modal?.removeAttribute('hidden');
+			modal?.classList.add('modal--open');
+
+			// Production path: try Pagefind first. If the assets are
+			// missing (dev), fall through to the dev widget so the
+			// modal still has an input field.
+			if (!searchWidget) {
+				try {
+					await loadPagefind();
+					if (mount && window.PagefindUI) {
+						searchWidget = new window.PagefindUI({
+							element: mount,
+							language: mount.dataset.pfLang,
+							showSubResults: true,
+							translations: {
+								placeholder: mount.dataset.pfPlaceholder,
+							},
+						});
+						mount?.querySelector('input')?.focus();
+						return;
+					}
+				} catch {
+					// Fall through to dev widget below.
+				}
+			} else {
+				mount?.querySelector('input')?.focus();
+				return;
+			}
+
+			// Dev fallback.
+			if (isDev && mount) {
+				try {
+					const items = await loadDevIndex();
+					renderDevResults(mount, items);
+				} catch {
+					if (mount) {
+						mount.innerHTML =
+							'<p class="dev-search__empty">Search index not available.</p>';
+					}
+				}
+			} else if (mount) {
+				mount.innerHTML =
+					'<p class="dev-search__empty">Search is built at <code>bun run site</code>. Run the build to enable it.</p>';
+			}
+		};
+		const close = () => {
+			modal?.classList.remove('modal--open');
+			window.setTimeout(() => {
+				if (!modal?.classList.contains('modal--open')) {
+					modal?.setAttribute('hidden', '');
+				}
+			}, 240);
+		};
+
+		openBtn?.addEventListener('click', open, { signal });
+		for (const el of document.querySelectorAll('[data-search-close]')) {
+			el.addEventListener('click', close, { signal });
+		}
+		document.addEventListener(
+			'keydown',
+			(e) => {
+				if (e.key === 'Escape') close();
+				if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+					e.preventDefault();
+					void open();
+				}
+			},
+			{ signal },
+		);
+	};
+
+	setupSearch();
+	document.addEventListener('astro:page-load', setupSearch);
+</script>

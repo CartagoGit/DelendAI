@@ -34,7 +34,9 @@ export const AGENT_CONVENTIONS = {
 	heartbeat_ttl_minutes: 10,
 	max_depth: 3,
 	registry_filename: 'subagent-registry.json',
-	registry_version: 1,
+	// v2 (f00082 S2): assignments carry the composite-identity fields
+	// `host`/`model` (backfilled to `null` by the v1→v2 migrator).
+	registry_version: 2,
 } as const;
 
 export type IAgentConventions = typeof AGENT_CONVENTIONS;

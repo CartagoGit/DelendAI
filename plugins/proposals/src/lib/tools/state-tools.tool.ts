@@ -1,23 +1,27 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { stat } from 'node:fs/promises';
 
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolJson } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { readJsonOrNull } from '../proposals/index-reader';
+
+/** Async existence check (H2): never blocks the event loop. */
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
 
 /** In-flight claim count straight from the lock file (0 if missing/corrupt). */
-const rawInFlightCount = (lockPath: string): number => {
-	if (!existsSync(lockPath)) return 0;
-	try {
-		const parsed = JSON.parse(readFileSync(lockPath, 'utf8')) as {
-			in_flight?: unknown[];
-		};
-		return Array.isArray(parsed.in_flight) ? parsed.in_flight.length : 0;
-	} catch {
-		return 0;
-	}
+const rawInFlightCount = async (lockPath: string): Promise<number> => {
+	const parsed = await readJsonOrNull<{ in_flight?: unknown[] }>(lockPath);
+	return Array.isArray(parsed?.in_flight) ? parsed.in_flight.length : 0;
 };
 import {
 	expireSweep,
@@ -40,15 +44,13 @@ export interface IStateToolOptions {
 
 interface IStateDiagnosis {
 	readonly locks: { readonly active: number };
-	readonly queue:
-		| {
-				readonly queueLength: number;
-				readonly queuedCount: number;
-				readonly waiterOrphans: number;
-				readonly oldestAgeMinutes: number;
-				readonly threshold: string;
-		  }
-		| null;
+	readonly queue: {
+		readonly queueLength: number;
+		readonly queuedCount: number;
+		readonly waiterOrphans: number;
+		readonly oldestAgeMinutes: number;
+		readonly threshold: string;
+	} | null;
 	readonly registry: {
 		readonly orphans: number;
 		readonly threshold: string;
@@ -56,31 +58,71 @@ interface IStateDiagnosis {
 	readonly healthy: boolean;
 }
 
+const STATE_DIAGNOSIS_SCHEMA = z.object({
+	locks: z.object({ active: z.number() }),
+	queue: z
+		.object({
+			queueLength: z.number(),
+			queuedCount: z.number(),
+			waiterOrphans: z.number(),
+			oldestAgeMinutes: z.number(),
+			threshold: z.string(),
+		})
+		.nullable(),
+	registry: z.object({
+		orphans: z.number(),
+		threshold: z.string(),
+	}),
+	healthy: z.boolean(),
+});
+
+const STATE_REPAIR_OUTPUT_SCHEMA = z.object({
+	mode: z.enum(['dry-run', 'execute']),
+	diagnosis: STATE_DIAGNOSIS_SCHEMA,
+	wouldRepair: z
+		.object({
+			staleLocks: z.number(),
+			dueQueueEntries: z.number(),
+			orphanAssignments: z.number(),
+		})
+		.optional(),
+	repaired: z
+		.object({
+			staleLocks: z.number(),
+			expiredQueueEntries: z.number(),
+			orphanAssignments: z.number(),
+		})
+		.optional(),
+	nextAction: z.string().optional(),
+});
+
 /**
  * Read-only health snapshot of the swarm state: how many write lanes are
  * held, queue backpressure (waiter orphans / threshold), and orphaned
  * agent assignments. Pure over the injected paths; reuses the same
  * (tested) engines the repair tool calls in execute mode.
  */
-const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> => {
+const diagnose = async (
+	options: IStateToolOptions,
+): Promise<IStateDiagnosis> => {
 	const lockStatusRaw = await runAgentLockEngine(
 		{ action: 'status' },
-		{ lockPath: options.lockPathAbs }
+		{ lockPath: options.lockPathAbs },
 	);
 	const lockStatus = JSON.parse(lockStatusRaw.content[0]?.text ?? '{}') as {
 		active_write_lanes?: number;
 	};
 
 	let queue: IStateDiagnosis['queue'] = null;
-	if (existsSync(options.queuePathAbs)) {
+	if (await fileExists(options.queuePathAbs)) {
 		const loaded = await parseQueue(
 			options.queuePathAbs,
 			options.closedTasksPathAbs,
-			options.workspaceRoot
+			options.workspaceRoot,
 		);
 		const lockSnapshot = await loadLockSnapshot(
 			options.lockPathAbs,
-			options.closedTasksPathAbs
+			options.closedTasksPathAbs,
 		);
 		const report = reportBackpressure(loaded, lockSnapshot);
 		queue = {
@@ -96,7 +138,7 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 		options.registryPathAbs,
 		options.lockPathAbs,
 		options.queuePathAbs,
-		{ dryRun: true }
+		{ dryRun: true },
 	);
 
 	const healthy =
@@ -117,7 +159,7 @@ const diagnose = async (options: IStateToolOptions): Promise<IStateDiagnosis> =>
 
 /** `<prefix>_state_health` — read-only swarm state diagnosis. */
 export const buildStateHealthRegistration = (
-	options: IStateToolOptions
+	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_health',
 	summary:
@@ -127,24 +169,11 @@ export const buildStateHealthRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_health`,
 			{
-						outputSchema: z.object({
-					locks: z.object({ active: z.number() }),
-					queue: z
-						.object({
-							queueLength: z.number(),
-							queuedCount: z.number(),
-							waiterOrphans: z.number(),
-							oldestAgeMinutes: z.number(),
-							threshold: z.string(),
-						})
-						.nullable(),
-					registry: z.object({ orphans: z.number(), threshold: z.string() }),
-					healthy: z.boolean(),
-				}),
+				outputSchema: STATE_DIAGNOSIS_SCHEMA,
 				description:
 					'Diagnose swarm state without changing anything: active write lanes, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, queue, registry, healthy }. Run state_repair to heal.',
 			},
-			async () => toolJson(await diagnose(options))
+			async () => toolJson(await diagnose(options)),
 		);
 	},
 });
@@ -156,9 +185,10 @@ export const buildStateHealthRegistration = (
  * orphan assignments (each via the engine's own atomic/mutex write).
  */
 export const buildStateRepairRegistration = (
-	options: IStateToolOptions
+	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_repair',
+	effects: ['write'],
 	summary:
 		'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
 	tags: ['coordination'],
@@ -166,7 +196,7 @@ export const buildStateRepairRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_state_repair`,
 			{
-						outputSchema: z.object({}).catchall(z.unknown()),
+				outputSchema: STATE_REPAIR_OUTPUT_SCHEMA,
 				description:
 					'Auto-heal stale swarm state. mode:"dry-run" (default) reports what would be removed; mode:"execute" GCs stale locks, expires due queue entries and force-releases orphan assignments (atomic, mutex-guarded). Returns the diagnosis plus what was (or would be) removed.',
 				inputSchema: z.object({
@@ -192,26 +222,29 @@ export const buildStateRepairRegistration = (
 				// 1) GC stale write locks (engine drops entries past TTL). Count
 				// honestly via the on-disk file before/after, because the engine
 				// strips stale entries in-memory before its own `dropped` tally.
-				const lockedBefore = rawInFlightCount(options.lockPathAbs);
+				const lockedBefore = await rawInFlightCount(
+					options.lockPathAbs,
+				);
 				await runAgentLockEngine(
 					{ action: 'gc' },
-					{ lockPath: options.lockPathAbs }
+					{ lockPath: options.lockPathAbs },
 				);
 				const staleLocksCleaned =
-					lockedBefore - rawInFlightCount(options.lockPathAbs);
+					lockedBefore -
+					(await rawInFlightCount(options.lockPathAbs));
 
 				// 2) Expire due queue entries.
 				let expiredCount = 0;
-				if (existsSync(options.queuePathAbs)) {
+				if (await fileExists(options.queuePathAbs)) {
 					const loaded = await parseQueue(
 						options.queuePathAbs,
 						options.closedTasksPathAbs,
-						options.workspaceRoot
+						options.workspaceRoot,
 					);
 					const swept = await expireSweep(
 						loaded,
 						new Date().toISOString(),
-						options.queuePathAbs
+						options.queuePathAbs,
 					);
 					expiredCount = swept.expiredCount;
 				}
@@ -221,7 +254,7 @@ export const buildStateRepairRegistration = (
 					options.registryPathAbs,
 					options.lockPathAbs,
 					options.queuePathAbs,
-					{ dryRun: false }
+					{ dryRun: false },
 				);
 
 				return toolJson({
@@ -233,7 +266,7 @@ export const buildStateRepairRegistration = (
 					},
 					diagnosis: await diagnose(options),
 				});
-			}
+			},
 		);
 	},
 });

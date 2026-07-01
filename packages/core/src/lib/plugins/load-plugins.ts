@@ -3,6 +3,18 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from './plugin-contract';
+import { resolve as resolvePath } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		const fs = await import('node:fs/promises');
+		await fs.access(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
 
 export interface ILoadedPlugin {
 	/** The specifier the user passed (`--plugins=<this>`). */
@@ -21,26 +33,68 @@ export interface IPluginLoadResult {
 	}>;
 }
 
+/** One loaded plugin's unmet `dependsOn` entries. */
+export interface IMissingPluginDependency {
+	readonly plugin: string;
+	readonly missing: readonly string[];
+}
+
 export interface ILoadPluginsOptions {
 	readonly specifiers: readonly string[];
+	/** Absolute workspace root used to resolve relative plugin paths. */
+	readonly workspaceRoot?: string | undefined;
 	/** Build the per-plugin context once the plugin's name is known. */
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
-	/** Injectable importer (default: dynamic `import`). For tests. */
-	readonly import?: (specifier: string) => Promise<unknown>;
+	/**
+	 * Injectable importer. **Required** — the core never calls
+	 * `import(variable)` itself, so that Vite/Rollup can statically
+	 * analyse the bundle that ships in browser hosts (the web app and
+	 * the VS Code extension) without an "unanalysable dynamic import"
+	 * warning. CLI callers pass `nodeDynamicImport` from this package;
+	 * tests pass a fake.
+	 */
+	readonly import: (specifier: string) => Promise<unknown>;
 	/** Per-step timeout (ms) for import and register. Default 15000. */
 	readonly timeoutMs?: number;
 }
 
+/**
+ * Node-side dynamic import, suitable for CLI/runtime hosts.
+ *
+ * Built via `new Function(...)` so the literal `import(specifier)`
+ * source is never visible to a static analyser (Vite warns about
+ * unresolvable dynamic imports and downgrades tree-shaking). At
+ * runtime this is exactly equivalent to `import(specifier)`.
+ *
+ * Exported separately so it never lives inside the core's public
+ * bundle — browser hosts (web, VS Code) MUST provide their own
+ * loader instead. The web app's loader is a thin wrapper around the
+ * module-graph URL the dev server hands it; the VS Code extension
+ * uses Node's `require` for activation-time loads.
+ */
+export const nodeDynamicImport = (specifier: string): Promise<unknown> =>
+	dynamicImport(normalizeImportSpecifier(specifier));
+
+const dynamicImport = new Function(
+	'specifier',
+	'return import(specifier);',
+) as (specifier: string) => Promise<unknown>;
+
+const normalizeImportSpecifier = (specifier: string): string => {
+	if (!specifier.startsWith('/')) return specifier;
+	return pathToFileURL(specifier).href;
+};
+
 const withTimeout = async <T>(
 	promise: Promise<T>,
 	ms: number,
-	label: string
+	label: string,
 ): Promise<T> => {
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const timeout = new Promise<never>((_resolve, reject) => {
 		timer = setTimeout(
 			() => reject(new Error(`${label} timed out after ${ms}ms`)),
-			ms
+			ms,
 		);
 	});
 	try {
@@ -54,7 +108,7 @@ const withTimeout = async <T>(
  * Turn a short plugin name into the module specifiers to try, in
  * order. A relative/absolute path or an explicit package path is used
  * verbatim; a bare short name (`proposals`) expands to the scoped
- * convention first (`@cartago-git/mcp-proposals`), then the bare name.
+ * convention first (`@mcp-vertex/proposals`), then the bare name.
  */
 export const resolvePluginSpecifier = (specifier: string): string[] => {
 	if (
@@ -65,7 +119,23 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 		return [specifier];
 	}
 	if (specifier.includes('/')) return [specifier];
-	return [`@cartago-git/mcp-${specifier}`, `mcp-${specifier}`, specifier];
+	return [`@mcp-vertex/${specifier}`, `mcp-${specifier}`, specifier];
+};
+
+const isPathLikeSpecifier = (specifier: string): boolean =>
+	specifier.startsWith('.') ||
+	specifier.startsWith('/') ||
+	specifier.startsWith('file:');
+
+const resolveFilesystemSpecifier = (
+	specifier: string,
+	workspaceRoot: string | undefined,
+): string => {
+	if (!specifier.startsWith('.')) return specifier;
+	if (workspaceRoot === undefined || workspaceRoot.length === 0) {
+		return specifier;
+	}
+	return resolvePath(workspaceRoot, specifier);
 };
 
 const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
@@ -89,16 +159,62 @@ const asPlugin = (mod: unknown): IMcpPlugin | undefined => {
 };
 
 /**
+ * Pure, single-pass dependency check: for every loaded plugin whose
+ * `dependsOn` names a plugin id that is NOT also in the loaded set,
+ * collect a `{ plugin, missing }` entry. Order matches `loadedPlugins`.
+ * Does not mutate or import anything — a separate concern from the
+ * import/register loop in `loadPlugins`, so it can be unit-tested and
+ * reasoned about on its own (SOLID: one responsibility per function).
+ */
+export const checkPluginDependencies = (
+	loadedPlugins: readonly ILoadedPlugin[],
+): readonly IMissingPluginDependency[] => {
+	const loadedNames = new Set(
+		loadedPlugins.map((entry) => entry.plugin.name),
+	);
+	const result: IMissingPluginDependency[] = [];
+	for (const { plugin } of loadedPlugins) {
+		const missing = (plugin.dependsOn ?? []).filter(
+			(dep) => !loadedNames.has(dep),
+		);
+		if (missing.length > 0) {
+			result.push({ plugin: plugin.name, missing });
+		}
+	}
+	return result;
+};
+
+/** Render the combined dependency error for every plugin with missing deps. */
+const formatMissingDependenciesError = (
+	missing: readonly IMissingPluginDependency[],
+): string =>
+	missing
+		.map(
+			(entry) =>
+				`plugin "${entry.plugin}" requires ${entry.missing
+					.map((dep) => `"${dep}"`)
+					.join(', ')} (not in load set)`,
+		)
+		.join('; ');
+
+/**
  * Resolve, import and register each requested plugin. One bad plugin
  * never aborts the rest: failures are collected in `errors` and the
  * server still boots with whatever loaded. Deterministic: plugins are
  * processed in the order requested.
+ *
+ * After every plugin has attempted to load, a final dependency pass
+ * (`checkPluginDependencies`) runs over the loaded set. If any loaded
+ * plugin declares a `dependsOn` that is not satisfied by the rest of
+ * the load set, the WHOLE batch is refused — `loaded` comes back empty
+ * and a single combined error lists every missing dependency. This is
+ * deliberately stricter than the per-plugin error handling above: a
+ * plugin with an unmet hard dependency must never partially register.
  */
 export const loadPlugins = async (
-	options: ILoadPluginsOptions
+	options: ILoadPluginsOptions,
 ): Promise<IPluginLoadResult> => {
-	const importer =
-		options.import ?? ((specifier: string) => import(specifier));
+	const importer = options.import;
 	const timeoutMs = options.timeoutMs ?? 15_000;
 	const loaded: ILoadedPlugin[] = [];
 	const errors: Array<{ specifier: string; message: string }> = [];
@@ -115,7 +231,11 @@ export const loadPlugins = async (
 			continue;
 		}
 		seenSpecifiers.add(specifier);
-		const candidates = resolvePluginSpecifier(specifier);
+		const normalizedSpecifier = resolveFilesystemSpecifier(
+			specifier,
+			options.workspaceRoot,
+		);
+		const candidates = resolvePluginSpecifier(normalizedSpecifier);
 		let plugin: IMcpPlugin | undefined;
 		let resolved = '';
 		const attemptErrors: string[] = [];
@@ -124,7 +244,7 @@ export const loadPlugins = async (
 				const mod = await withTimeout(
 					Promise.resolve(importer(candidate)),
 					timeoutMs,
-					`import("${candidate}")`
+					`import("${candidate}")`,
 				);
 				const found = asPlugin(mod);
 				if (found) {
@@ -132,14 +252,27 @@ export const loadPlugins = async (
 					resolved = candidate;
 					break;
 				}
-				attemptErrors.push(`${candidate}: no default IMcpPlugin export`);
+				attemptErrors.push(
+					`${candidate}: no default IMcpPlugin export`,
+				);
 			} catch (error) {
 				attemptErrors.push(
-					`${candidate}: ${error instanceof Error ? error.message : String(error)}`
+					`${candidate}: ${error instanceof Error ? error.message : String(error)}`,
 				);
 			}
 		}
 		if (!plugin) {
+			if (
+				isPathLikeSpecifier(normalizedSpecifier) &&
+				normalizedSpecifier.startsWith('/') &&
+				!(await fileExists(normalizedSpecifier))
+			) {
+				errors.push({
+					specifier,
+					message: `plugin path does not exist: ${normalizedSpecifier}`,
+				});
+				continue;
+			}
 			errors.push({
 				specifier,
 				message: `could not load plugin "${specifier}" (tried ${candidates.join(', ')}). ${attemptErrors.join('; ')}`,
@@ -161,7 +294,7 @@ export const loadPlugins = async (
 				if (!parsed.success) {
 					errors.push({
 						specifier,
-						message: `plugin "${plugin.name}" rejected its options (mcp-core.config.json → plugins.${plugin.name}.options).`,
+						message: `plugin "${plugin.name}" rejected its options (mcp-vertex.config.json → plugins.${plugin.name}.options).`,
 					});
 					continue;
 				}
@@ -169,7 +302,7 @@ export const loadPlugins = async (
 			const registrations = await withTimeout(
 				Promise.resolve(plugin.register(ctx)),
 				timeoutMs,
-				`plugin "${plugin.name}" register()`
+				`plugin "${plugin.name}" register()`,
 			);
 			loaded.push({ specifier, resolved, plugin, registrations });
 			loadedNames.add(plugin.name);
@@ -179,6 +312,21 @@ export const loadPlugins = async (
 				message: `plugin "${plugin.name}" register() failed: ${error instanceof Error ? error.message : String(error)}`,
 			});
 		}
+	}
+
+	const missingDependencies = checkPluginDependencies(loaded);
+	if (missingDependencies.length > 0) {
+		return {
+			loaded: [],
+			errors: [
+				...errors,
+				{
+					specifier: '(dependsOn)',
+					message:
+						formatMissingDependenciesError(missingDependencies),
+				},
+			],
+		};
 	}
 
 	return { loaded, errors };

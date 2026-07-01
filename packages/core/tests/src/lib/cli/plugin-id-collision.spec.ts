@@ -9,9 +9,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@cartago-git/mcp-core/lib/cli/assemble';
-import { createMcpServer } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
-import { parseCliArgs } from '@cartago-git/mcp-core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
 
 const pluginWithPingTool = (name: string) => ({
 	name,
@@ -29,9 +29,12 @@ const pluginWithPingTool = (name: string) => ({
 });
 
 const assembleTwoPlugins = () => {
-	const args = parseCliArgs(['--plugins=alpha,beta', '--workspace=/ws'], '/cwd');
+	const args = parseCliArgs(
+		['--plugins=alpha,beta', '--workspace=/ws'],
+		'/cwd',
+	);
 	return assembleCliConfig(args, {
-		readFile: () => undefined,
+		readFile: async () => undefined,
 		import: async (specifier: string) => ({
 			default: specifier.includes('beta')
 				? pluginWithPingTool('beta')
@@ -40,22 +43,24 @@ const assembleTwoPlugins = () => {
 	});
 };
 
-describe('R12 — same internal tool id across plugins', () => {
+describe('R12 — same internal tool id across plugins', async () => {
 	it('assembles without an id collision and qualifies each id by namespace', async () => {
 		const { config, loadResult } = await assembleTwoPlugins();
 		expect(loadResult.errors).toEqual([]);
 
 		const ids = config.extraTools!.map((t) => t.id);
-		expect(ids).toContain('alpha_ping');
-		expect(ids).toContain('beta_ping');
+		expect(ids).toContain('mcp-vertex_alpha_ping');
+		expect(ids).toContain('mcp-vertex_beta_ping');
 		// The raw, ambiguous id must not survive into the global sequence.
 		expect(ids).not.toContain('ping');
+		expect(ids).not.toContain('alpha_ping');
+		expect(ids).not.toContain('beta_ping');
 	});
 
 	it('builds the real MCP server without throwing a duplicate-id error', async () => {
 		const { config } = await assembleTwoPlugins();
-		const assembled = await createMcpServer(config);
-		expect(assembled.registrationOrder).toContain('alpha_ping');
-		expect(assembled.registrationOrder).toContain('beta_ping');
+		const assembled = await createMcpProject(config);
+		expect(assembled.registrationOrder).toContain('mcp-vertex_alpha_ping');
+		expect(assembled.registrationOrder).toContain('mcp-vertex_beta_ping');
 	});
 });

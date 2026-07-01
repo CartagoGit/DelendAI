@@ -1,11 +1,19 @@
-import { definePlugin } from '@cartago-git/mcp-core/public';
+import { definePlugin } from '@mcp-vertex/core/public';
+import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import { createCallbackLockListener } from './lib/locks/lock-change-listener';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
+import { buildAgentWorktreeRegistration } from './lib/tools/agent-worktree.tool';
+import { buildBranchGcRegistration } from './lib/tools/branch-gc.tool';
+import { buildSwarmHygieneRegistration } from './lib/tools/swarm-hygiene.tool';
+import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
+import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
+import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
 import {
 	buildDelegateRegistration,
 	buildPlanRegistration,
@@ -14,8 +22,10 @@ import {
 	buildCloseSliceRegistration,
 	buildCreateProposalRegistration,
 	buildProposalBoardRegistration,
+	buildReviewRegistration,
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
+import { buildAdoptRegistration } from './lib/tools/adopt.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
@@ -27,13 +37,14 @@ import {
 } from './lib/tools/state-tools.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
+import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
 
 /**
- * The proposals workflow plugin. It turns mcp-core into a multi-agent
+ * The proposals workflow plugin. It turns mcp-vertex into a multi-agent
  * proposal runner: a file-based proposal store, file-level write locks
  * and a persistent task queue (the "swarm" coordination layer).
  *
- * Load it with `mcp-core --plugins=proposals`. Paths come from the
+ * Load it with `mcp-vertex --plugins=proposals`. Paths come from the
  * core's resolved roots: cache/state under `<cacheDir>/proposals`,
  * human-edited proposals under `<docsDir>/proposals`. Override the docs
  * root with `--docsDir`, the cache root with `--cacheDir`.
@@ -42,20 +53,74 @@ import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool'
  * and returns structured JSON so any agent or model consumes it the
  * same way.
  */
+/**
+ * r00003 S9 (F9, O + L + I): the proposals plugin's options schema, named
+ * so `register()` can `safeParse(ctx.options)` against the SAME contract
+ * the loader validates — the configured and validated plugin are one
+ * (LSP), and `proposalFolders` / `proposalNarrativePatterns` are typed
+ * fields, not `ctx.options.X as Y` casts.
+ */
+const PROPOSALS_OPTIONS_SCHEMA = z.object({
+	/** Custom symbolic agent-name pool. */
+	namePool: z.array(z.string()).optional(),
+	/** Quality-gate command surfaced by auto_work. */
+	validationCommand: z.string().optional(),
+	persist: z
+		.object({
+			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
+			messageTemplate: z.string().optional(),
+			pushTarget: z.string().optional(),
+		})
+		.optional(),
+	orchestration: z
+		.object({
+			delegateAfterToolCalls: z.number().int().positive().optional(),
+		})
+		.optional(),
+	/**
+	 * r00003 S9 (F9): host-specific proposal subfolders (relative to the
+	 * proposals dir), e.g. `['paused/demos']`. mcp-vertex bakes none.
+	 */
+	proposalFolders: z.array(z.string()).optional(),
+	/**
+	 * r00003 S7 + S9: host narrative-heading aliases for the proposal
+	 * scaffold linter, as `[heading, canonicalSection]` tuples.
+	 */
+	proposalNarrativePatterns: z
+		.array(z.tuple([z.string(), z.string()]))
+		.optional(),
+});
+
 export default definePlugin({
 	name: 'proposals',
 	version: '0.1.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
-	optionsSchema: z.object({
-		/** Custom symbolic agent-name pool. */
-		namePool: z.array(z.string()).optional(),
-		/** Family prefixes in cascade order, e.g. ["f","p"]. */
-		familyCascade: z.array(z.string()).optional(),
-		/** Quality-gate command surfaced by auto_work. */
-		validationCommand: z.string().optional(),
-	}),
+	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,
+	configExample: {
+		summary:
+			'Default swarm setup: bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
+		options: {
+			validationCommand: 'bun run validate',
+			namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
+			orchestration: { delegateAfterToolCalls: 3 },
+		},
+	},
 	register(ctx) {
+		// r00003 S9 (F9): validate ctx.options through the SAME schema the
+		// loader declares, so a host misconfig is a structured error here
+		// rather than a silent cast downstream. The narrow per-field casts
+		// below remain for the engines whose option contracts are not yet
+		// migrated; `proposalFolders` is read from the parsed, typed value.
+		const parsedOptions = PROPOSALS_OPTIONS_SCHEMA.safeParse(
+			ctx.options ?? {},
+		);
+		if (!parsedOptions.success) {
+			throw new Error(
+				`proposals plugin rejected its options: ${parsedOptions.error.message}`,
+			);
+		}
+		const loopDetector = new AgentLoopDetectorService(ctx);
 		// All path-bearing tools share ONE layout so locks, queue,
 		// round-context and the proposal store always agree. The layout
 		// is derived from the core's resolved roots (`--cacheDir` /
@@ -69,13 +134,9 @@ export default definePlugin({
 			ctx.workspace.resolve(relativePath);
 
 		// Host-specific proposal subfolders (relative to proposalsDir),
-		// e.g. `['paused/demos']`. mcp-core bakes none — the host injects
-		// its folder policy via ctx.options. [M5]
-		const extraProposalFolders = Array.isArray(
-			ctx.options.proposalFolders
-		)
-			? (ctx.options.proposalFolders as string[])
-			: [];
+		// e.g. `['paused/demos']`. mcp-vertex bakes none — the host injects
+		// its folder policy via ctx.options (now schema-validated, S9).
+		const extraProposalFolders = parsedOptions.data.proposalFolders ?? [];
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -104,6 +165,7 @@ export default definePlugin({
 			proposalsDirAbs: abs(layout.proposalsDir),
 			indexPathAbs: abs(layout.proposalIndexFile),
 			lockPathAbs: abs(layout.lockFile),
+			counterPathAbs: abs(layout.proposalIdCountersFile),
 			layout: {
 				proposalsDir: layout.proposalsDir,
 				proposalIndexFile: layout.proposalIndexFile,
@@ -117,6 +179,63 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
+					// f00078 S4: hard gate. When the host has the
+					// `agentWorktree` gate on, the engine refuses `claim`
+					// unless the active branch is `agent/<name>`. Solo
+					// hosts (the default) pass `false` and are unaffected.
+					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+					// Solid-ISP: keep the loop detector's lock cache coherent
+					// with every successful claim/release/gc. The tool knows
+					// nothing about the loop detector; the adapter bridges
+					// the typed `ILockChangeListener` event to the cache
+					// invalidation. Future consumers (drift counter, audit
+					// hooks, etc.) compose into the same multiplexer.
+					lockChangeListener: createCallbackLockListener(() =>
+						loopDetector.invalidateLockCache(),
+					),
+				}),
+				buildAgentWorktreeRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					worktreesDirRel: layout.worktreesDir,
+					enabled: ctx.agentWorktreeEnabled === true,
+				}),
+				// f00073: read-only branch + worktree snapshot. Lets every
+				// agent answer "what is everyone else doing right now?"
+				// without grep.
+				buildBranchStatusRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultAgentPrefix: 'agent/',
+					// `layout.worktreesDir` is ALREADY the cache-rooted
+					// workspace-relative path (default
+					// `.cache/mcp-vertex/.worktrees`). The previous
+					// `.cache/mcp-vertex/${layout.worktreesDir}` double-prefixed
+					// it to `.cache/mcp-vertex/.cache/mcp-vertex/.worktrees`,
+					// which can never match a real worktree path — so
+					// branch-status / swarm-hygiene flagged EVERY
+					// correctly-placed worktree as `outOfCache: true`. The
+					// agent_worktree engine resolves the same
+					// `layout.worktreesDir`, so both must agree byte-for-byte.
+					canonicalWorktreesDirRel:
+						layout.worktreesDir || '.cache/mcp-vertex/.worktrees',
+				}),
+				// f00073: idempotent cleanup of orphan worktrees. dryRun by
+				// default; unmerged branches are sacred.
+				buildBranchGcRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultStaleMinutes: 60,
+				}),
+				// f00075: read-only swarm hygiene snapshot — rescue
+				// candidates + GC-eligible + out-of-cache. Never mutates.
+				buildSwarmHygieneRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultBaseBranch: 'develop',
+					defaultStaleMinutes: 60,
 				}),
 				buildTaskQueueRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -153,25 +272,54 @@ export default definePlugin({
 				buildContinueProposalRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
-					...(Array.isArray(ctx.options.familyCascade)
-						? {
-								familyCascade: ctx.options.familyCascade as string[],
-							}
-						: {}),
 				}),
 				buildAutoWorkRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
 					lockPathAbs: abs(layout.lockFile),
-					...(Array.isArray(ctx.options.familyCascade)
-						? {
-								familyCascade: ctx.options.familyCascade as string[],
-							}
-						: {}),
+					loopDetector,
+					// f00078 S1 + S3: pass the gate flag and the
+					// loop-detector window so the front-hook can run the
+					// `needs-worktree` and `loop-blocked` gates before
+					// returning a plan. Hosts with the gate off (the
+					// default) pass `false` and the front-hook is a no-op.
+					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+					// f00082: thread the host-resolved commit-author
+					// policy through to the `auto_work` plan so an
+					// orchestrator can pass it to `maybePersistAfterSlice`
+					// when it actually runs the persist step. Absent →
+					// the engine falls back to git config.
+					commitAuthor: ctx.commitAuthor,
+					// The loop-detector service stores per-agent windows
+					// privately. We snapshot the current agent's window
+					// when one is registered; otherwise we leave the field
+					// undefined and the front-hook skips the S3 check.
+					loopDetectorCooldownMs: 30_000,
+					loopDetectorProgressGate: false,
 					...(typeof ctx.options.validationCommand === 'string'
 						? {
-								validationCommand: ctx.options.validationCommand as string,
+								validationCommand: ctx.options
+									.validationCommand as string,
+							}
+						: {}),
+					...(ctx.options.persist !== undefined
+						? {
+								persist: ctx.options.persist as {
+									mode: 'none' | 'commit' | 'commit-and-push';
+									messageTemplate?: string;
+									pushTarget?: string;
+								},
+							}
+						: {}),
+					...(ctx.options.orchestration !== undefined
+						? {
+								orchestration: ctx.options.orchestration as {
+									delegateAfterToolCalls?: number;
+								},
 							}
 						: {}),
 				}),
@@ -180,10 +328,37 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					agentNames: agentNamesOptions,
 					lockPathAbs: abs(layout.lockFile),
+					// x00051 S2: when the host gate is on, forward the
+					// worktree option so `delegate` creates a per-agent
+					// branch before claiming the lock. The gate is the
+					// same `enabled` flag the `agent_worktree` tool
+					// reads — single source of truth.
+					...(ctx.agentWorktreeEnabled === true
+						? {
+								worktree: {
+									enabled: true,
+									workspaceRoot: ctx.workspace.root,
+								},
+							}
+						: {}),
+				}),
+				buildProposalTransitionRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					workspaceRoot: ctx.workspace.root,
+					indexPathAbs: abs(layout.proposalIndexFile),
+				}),
+				buildClosePlanRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					workspaceRoot: ctx.workspace.root,
+					indexPathAbs: abs(layout.proposalIndexFile),
 				}),
 				buildCreateProposalRegistration(authoringOptions),
 				buildCloseSliceRegistration(authoringOptions),
+				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
+				buildAdoptRegistration(authoringOptions),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({
@@ -192,6 +367,14 @@ export default definePlugin({
 					queuePathAbs: abs(layout.taskQueueFile),
 					closedTasksPathAbs: abs(layout.closedTasksFile),
 					indexPathAbs: abs(layout.proposalIndexFile),
+					proposalsDirAbs: abs(layout.proposalsDir),
+				}),
+				...buildRecoveryToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					proposalsDirAbs: abs(layout.proposalsDir),
+					lockPathAbs: abs(layout.lockFile),
+					agentRegistryPathAbs: abs(layout.agentRegistryFile),
+					workspaceRoot: ctx.workspace.root,
 				}),
 			],
 			prompts: [
@@ -212,13 +395,14 @@ export default definePlugin({
 											type: 'text' as const,
 											text: [
 												`Call \`${ctx.namespacePrefix}_auto_work\` to get the next proposal and a step plan.`,
+												'If the returned orchestration policy says the slice is non-trivial, call `continue_proposal mode:"plan"` and `delegate` before doing the heavy inspection in the main thread.',
 												'Then: claim files with `agent_lock`, do one atomic slice, validate, `sync_proposals`, release the lock.',
 												'Report `lock-conflict` instead of retrying a blocked claim. Keep it small and low-token.',
 											].join('\n'),
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -276,6 +460,7 @@ export default definePlugin({
 						`Tools are namespaced \`${ctx.namespacePrefix}_*\`. Start with \`auto_work\`.`,
 						'',
 						'- `auto_work` — one call: the next proposal + an ordered action plan.',
+						'- `auto_work.orchestration` — context policy: keep the main thread compact; inspect plan/delegate for non-trivial slices.',
 						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
 						'- `agent_lock` — claim files before editing, release after (claim/release/status/gc).',
 						'- `get_proposal_workflow` — families, locations, naming, template.',
@@ -283,11 +468,14 @@ export default definePlugin({
 						'- `agent_names` — name the whole agent tree, orchestrator included.',
 						'- `task_queue` / `round_context` — multi-agent coordination & resumed rounds.',
 						'',
-						'Loop: claim → one atomic slice → validate → sync → release. Report `lock-conflict` instead of retrying a blocked claim.',
+						'Loop: claim → one atomic slice → validate → close_slice. If that was the last open slice, sync once; otherwise do not sync mid-flight. On blocked claims, await_lock or lock-released — never poll.',
 						`State under \`${layout.scratchDir}\`; proposals under \`${layout.proposalsDir}\`.`,
 					].join('\n'),
 				},
 			],
+			onToolCall: (name, args, result, error) =>
+				loopDetector.onToolCall(name, args, result, error),
+			isAgentStuck: (name, args) => loopDetector.isAgentStuck(name, args),
 		};
 	},
 });
