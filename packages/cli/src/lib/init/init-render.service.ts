@@ -256,29 +256,37 @@ export const renderAgentFiles = async (
 	return descriptors.map(renderAgentFile);
 };
 
-const HOST_INSTRUCTIONS_BLOCKS: ReadonlyArray<{
+// f00092: the 3-fragment model collapsed to a single canonical fragment.
+// The host-specific footnote now lives inline in each hand-edited host
+// file (between its `<!-- mcp-vertex:begin -->` / `<!-- mcp-vertex:end -->`
+// markers), so the same canonical body is written into the 3 host files
+// and the footnote is appended per host by `hostFootnoteFor()`.
+const HOST_INSTRUCTIONS_CANONICAL_BODY =
+	'# mcp-vertex host hints (auto-generated)\n\n' +
+	'See `docs/mcp-vertex/host-hints/agent-instructions.generated.md` for the live agent catalog.';
+
+const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
 	relPath: string;
-	body: string;
+	host: 'copilot' | 'claude' | 'agents';
 }> = [
-	{
-		relPath: 'AGENTS.md',
-		body:
-			'# mcp-vertex host hints (auto-generated)\n\n' +
-			'See `docs/mcp-vertex/host-hints/agents.generated.md` for the live agent catalog.',
-	},
-	{
-		relPath: 'CLAUDE.md',
-		body:
-			'# mcp-vertex host hints (auto-generated)\n\n' +
-			'See `docs/mcp-vertex/host-hints/claude.generated.md` for the live agent catalog.',
-	},
-	{
-		relPath: '.github/copilot-instructions.md',
-		body:
-			'# mcp-vertex host hints (auto-generated)\n\n' +
-			'See `docs/mcp-vertex/host-hints/copilot-instructions.generated.md` for the live agent catalog.',
-	},
+	{ relPath: '.github/copilot-instructions.md', host: 'copilot' },
+	{ relPath: 'CLAUDE.md', host: 'claude' },
+	{ relPath: 'AGENTS.md', host: 'agents' },
 ];
+
+// f00092: the 1-line footnote that used to live in each per-host fragment.
+// The footnote is host-specific by definition (it says "this appendix is
+// in effect for you") so it belongs in the hand-edited host file, where
+// the rest of the host file already lives.
+const HOST_FOOTNOTE: Readonly<Record<'copilot' | 'claude' | 'agents', string>> =
+	{
+		copilot: '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
+		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
+		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
+	};
+
+const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
+	`\n\n${HOST_FOOTNOTE[host]}`;
 
 /**
  * S4 — render host-instructions blocks honouring idempotent append.
@@ -292,12 +300,13 @@ export const renderHostInstructionsBlocks = async (
 ): Promise<readonly IRenderedFile[]> => {
 	if (mode === 'skip') return [];
 	const out: IRenderedFile[] = [];
-	for (const target of HOST_INSTRUCTIONS_BLOCKS) {
+	for (const target of HOST_INSTRUCTIONS_TARGETS) {
+		const body = `${HOST_INSTRUCTIONS_CANONICAL_BODY}${hostFootnoteFor(target.host)}`;
 		const current = await readHostInstructionsFile(
 			workspaceRoot,
 			target.relPath,
 		);
-		const next = computeHostInstructionsWrite(current, target.body, mode);
+		const next = computeHostInstructionsWrite(current, body, mode);
 		if (next === undefined) continue;
 		out.push({ relPath: target.relPath, content: next });
 	}

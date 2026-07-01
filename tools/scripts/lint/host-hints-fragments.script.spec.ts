@@ -17,8 +17,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	HOST_HINT_FRAGMENTS,
+	findStrayFragments,
 	lintAllHostHintFragments,
 	lintHostHintFragment,
+	lintStrayFragments,
 } from './host-hints-fragments.script.ts';
 
 let workspaceRoot = '';
@@ -54,17 +56,11 @@ afterEach(() => {
 	rmSync(workspaceRoot, { recursive: true, force: true });
 });
 
-describe('host-hints-fragments lint', () => {
-	it('HOST_HINT_FRAGMENTS lists the three canonical fragments', () => {
-		expect(HOST_HINT_FRAGMENTS).toHaveLength(3);
+describe('host-hints-fragments lint (f00092 single fragment)', () => {
+	it('HOST_HINT_FRAGMENTS lists exactly one canonical fragment', () => {
+		expect(HOST_HINT_FRAGMENTS).toHaveLength(1);
 		expect(HOST_HINT_FRAGMENTS).toContain(
-			'docs/mcp-vertex/host-hints/agents.generated.md',
-		);
-		expect(HOST_HINT_FRAGMENTS).toContain(
-			'docs/mcp-vertex/host-hints/claude.generated.md',
-		);
-		expect(HOST_HINT_FRAGMENTS).toContain(
-			'docs/mcp-vertex/host-hints/copilot-instructions.generated.md',
+			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
 		);
 	});
 
@@ -139,12 +135,59 @@ describe('host-hints-fragments lint', () => {
 		expect(out.violations[0]?.fix).toContain('catalog:hints');
 	});
 
-	it('lintAllHostHintFragments walks all three fragments against the real repo', async () => {
+	it('lintAllHostHintFragments walks the single fragment against the real repo', async () => {
 		const out = await lintAllHostHintFragments(REPO_ROOT);
-		expect(out).toHaveLength(3);
+		expect(out).toHaveLength(1);
 		for (const r of out) {
 			expect(r.exists).toBe(true);
 			expect(r.violations).toEqual([]);
 		}
+	});
+
+	it('findStrayFragments returns empty when only the canonical fragment exists', async () => {
+		writeFragment(
+			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			cleanFragment(),
+		);
+		const strays = await findStrayFragments(workspaceRoot);
+		expect(strays).toEqual([]);
+	});
+
+	it('findStrayFragments flags any sibling *.generated.md file', async () => {
+		writeFragment(
+			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			cleanFragment(),
+		);
+		writeFragment(
+			'docs/mcp-vertex/host-hints/claude.generated.md',
+			cleanFragment(),
+		);
+		const strays = await findStrayFragments(workspaceRoot);
+		expect(strays.map((s) => s.filename)).toEqual(['claude.generated.md']);
+	});
+
+	it('lintStrayFragments emits a stray-fragment violation with the f00092 fix', async () => {
+		writeFragment(
+			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+			cleanFragment(),
+		);
+		writeFragment(
+			'docs/mcp-vertex/host-hints/agents.generated.md',
+			cleanFragment(),
+		);
+		const violations = await lintStrayFragments(workspaceRoot);
+		expect(violations).toHaveLength(1);
+		expect(violations[0]?.kind).toBe('stray-fragment');
+		expect(violations[0]?.fix).toContain('f00092');
+	});
+
+	it('the real repo holds exactly one fragment on disk and zero strays', async () => {
+		const strays = await findStrayFragments(REPO_ROOT);
+		expect(strays).toEqual([]);
+		const out = await lintAllHostHintFragments(REPO_ROOT);
+		expect(out).toHaveLength(1);
+		expect(out[0]?.file).toBe(
+			'docs/mcp-vertex/host-hints/agent-instructions.generated.md',
+		);
 	});
 });
