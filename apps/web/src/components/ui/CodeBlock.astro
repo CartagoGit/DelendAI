@@ -1,0 +1,162 @@
+---
+/**
+ * `CodeBlock.astro` — accessible code block with optional header (filename,
+ * language chip) and a copy button (f00048 S1).
+ *
+ * Props:
+ *   - code: the source text. Rendered verbatim (no escape needed — Astro
+ *     HTML-encodes interpolation by default).
+ *   - lang: programming language for the chip + `data-lang` attribute.
+ *   - filename: optional filename shown in the header.
+ *   - caption: optional small line under the header.
+ *   - showCopy: defaults to true; set false for read-only snippets.
+ *   - label.copy / label.copied: i18n strings for the button states.
+ *   - inline: render as an inline chip instead of a block (cosmetic).
+ *
+ * The copy button uses `navigator.clipboard.writeText` and falls back to a
+ * hidden `<textarea>` + `document.execCommand('copy')` if the modern API
+ * is unavailable (older browsers / non-secure contexts).
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	readonly code: string;
+	readonly lang?: string;
+	readonly filename?: string;
+	readonly caption?: string;
+	readonly showCopy?: boolean;
+	readonly inline?: boolean;
+	readonly lang_label?: Lang;
+}
+
+const {
+	code,
+	lang = 'text',
+	filename,
+	caption,
+	showCopy = true,
+	inline = false,
+	lang_label = 'en',
+} = Astro.props as Props;
+const t = useTranslations(lang_label);
+const id = `cb-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<figure class:list={['ui-code', { 'ui-code--inline': inline }]} data-lang={lang}>
+	{(filename || lang || caption) && (
+		<header class="ui-code__head">
+			<div class="ui-code__head-l">
+				{filename && <span class="ui-code__file">{filename}</span>}
+				{!filename && lang && <span class="ui-code__lang">{lang}</span>}
+				{caption && <span class="ui-code__caption">{caption}</span>}
+			</div>
+			{showCopy && (
+				<button
+					type="button"
+					class="ui-code__copy"
+					data-copy-target={id}
+					aria-label={t.ui.codeCopy}
+				>
+					<span class="ui-code__copy-text" data-copy-label="idle">{t.ui.codeCopy}</span>
+				</button>
+			)}
+		</header>
+	)}
+	<pre class="ui-code__pre"><code id={id} class={`language-${lang}`}>{code}</code></pre>
+</figure>
+
+<style>
+	.ui-code {
+		position: relative;
+		margin: 1rem 0;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--card) 80%, transparent);
+		overflow: hidden;
+	}
+	.ui-code--inline {
+		display: inline-block;
+		margin: 0;
+		max-width: 100%;
+	}
+	.ui-code__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.45rem 0.6rem;
+		border-bottom: 1px solid var(--line);
+		background: color-mix(in srgb, var(--card) 50%, transparent);
+		font-size: 0.85rem;
+	}
+	.ui-code__head-l {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+	.ui-code__file {
+		font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+		color: var(--fg);
+	}
+	.ui-code__lang {
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-size: 0.7rem;
+		color: var(--muted);
+	}
+	.ui-code__caption {
+		color: var(--muted);
+	}
+	.ui-code__copy {
+		appearance: none;
+		border: 1px solid var(--line);
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-size: 0.78rem;
+		padding: 0.25rem 0.55rem;
+		border-radius: 6px;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		transition: background-color 0.18s ease;
+	}
+	.ui-code__copy:hover {
+		background: color-mix(in srgb, currentColor 8%, transparent);
+	}
+	.ui-code__copy:focus-visible {
+		outline: 2px solid currentColor;
+		outline-offset: 2px;
+	}
+	.ui-code__copy[data-state='copied'] {
+		color: color-mix(in srgb, var(--ok, #16a34a) 90%, transparent);
+		border-color: color-mix(in srgb, var(--ok, #16a34a) 40%, transparent);
+	}
+	.ui-code__pre {
+		margin: 0;
+		padding: 0.9rem 1rem;
+		overflow-x: auto;
+		font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+		font-size: 0.88rem;
+		line-height: 1.55;
+	}
+	.ui-code--inline .ui-code__pre {
+		padding: 0.2rem 0.5rem;
+		display: inline;
+		white-space: pre-wrap;
+	}
+	.ui-code__pre code {
+		background: transparent;
+		padding: 0;
+		font-family: inherit;
+		font-size: inherit;
+		color: inherit;
+	}
+</style>
+
+<script>
+	import { initCopyButtons } from './_code-copy-controller';
+	initCopyButtons(document);
+</script>

@@ -1,0 +1,60 @@
+---
+/**
+ * SkillsSection.astro — body of the `/skills` index.
+ *
+ * Skills live in the repo with their owner — `packages/core/skills/` for core
+ * and `plugins/<plugin>/skills/` for plugin skills (see `skill-paths.ts`);
+ * the build pipeline (`gen-skills.ts`) flattens them into `skills.json` so this
+ * page can render them as a static grid. Each card links to the source
+ * file on GitHub so the user can read the full SKILL.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
+import skillsData from '#MANIFESTS/skills.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
+
+interface Props {
+	readonly lang: Lang;
+	readonly heading: string;
+}
+const { lang, heading: _heading } = Astro.props;
+const t = useTranslations(lang);
+
+type ISkill = {
+	id: string;
+	name: string;
+	description: string;
+	plugin: string;
+	summary: string;
+	path: string;
+};
+const skills = (skillsData.skills ?? []) as unknown as Array<{
+	readonly id: string;
+	readonly name: string;
+	readonly namespace: string;
+	readonly description: string;
+}>;
+
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+---
+
+<section id="skills" class="section">
+	<div class="container">
+		<p class="lead">{t.skills.lead}</p>
+		<div class="stat-row">
+			<div class="stat"><b>{skills.length}</b><span>{t.skills.count}</span></div>
+		</div>
+		<CapabilityGrid
+			kind="skill"
+			items={skills}
+			labels={{ stat: t.skills.count, empty: t.skills.lead }}
+			describe={(s) => {
+				const it = s as unknown as ISkill;
+				return it.summary || it.description;
+			}}
+			hrefFor={(s) => `${repo}/blob/main/${(s as unknown as ISkill).path}`}
+			linkTarget="_blank"
+			linkRel="external noopener"
+			sectionId="skills"
+		/>
+	</div>
+</section>

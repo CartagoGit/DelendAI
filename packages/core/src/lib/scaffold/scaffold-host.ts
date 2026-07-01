@@ -1,13 +1,13 @@
 // host scaffolding kit: "tools to create tools". A project that
-// imports mcp-core calls these generators (directly or through the
+// imports mcp-vertex calls these generators (directly or through the
 // `<prefix>_scaffold` MCP tool) to create its OWN MCP server,
 // orchestrator and subagent adapters, instructions file, tools,
 // prompts and skills — all templated so every agent DELEGATES to the
 // project's own MCP server (`<prefix>_overview` first — the universal
-// mcp-core entry point), never to a hardcoded host. Templates only name
-// tools that exist: `overview` (always, via the mcp-core CLI) and the
+// mcp-vertex entry point), never to a hardcoded host. Templates only name
+// tools that exist: `overview` (always, via the mcp-vertex CLI) and the
 // generated scaffold tool; proposal-workflow tools are shown as
-// conditional on loading the `proposals` plugin. [M9]
+// conditional on loading the `proposals` plugin.
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -19,10 +19,18 @@ export interface IScaffoldHostOptions {
 	readonly projectName: string;
 	/** Tool namespace, e.g. `acme` → `acme_*` tools. */
 	readonly namespacePrefix: string;
-	/** Package that will hold the host server, e.g. `@acme/mcp-server`. */
-	readonly serverPackageName: string;
+	/** Package that will hold the host server, e.g. `@acme/mcp-project`. */
+	readonly projectPackageName: string;
 	/** Default agent model id. */
 	readonly defaultModel?: string;
+	/**
+	 * Namespaced ids of the bootstrap tools that the generated host should
+	 * reference from its agent/instructions files. Defaults to
+	 * `[\`<prefix>_analyze_project\`, \`<prefix>_plan_mcp_project\`,
+	 * \`<prefix>_create_project\`]`. Hosts that add a `drift_check` tool
+	 * should append it here so the orchestrator knows it exists.
+	 */
+	readonly bootstrapToolIds?: readonly string[];
 }
 
 const SUBAGENT_SLOTS = [
@@ -56,13 +64,13 @@ const pascal = (value: string): string =>
 export const scaffoldToolFile = (
 	prefix: string,
 	name: string,
-	description: string
+	description: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
 	const toolName = `${prefix}_${id.replace(/-/g, '_')}`;
 	return {
-		path: `libs/mcp-server/src/lib/tools/${prefix}-${id}.tool.ts`,
+		path: `libs/mcp-project/src/lib/tools/${prefix}-${id}.tool.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
@@ -105,31 +113,38 @@ export async function register${fn}Tool(server: McpServer): Promise<void> {
 export const scaffoldPromptFile = (
 	prefix: string,
 	name: string,
-	description: string
+	description: string,
+	body?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const fn = pascal(name);
 	const promptName = `${prefix}-${id}`;
+	const safeDescription = description.replace(/'/g, '');
+	const safeBody = (body ?? '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+	const userText =
+		body !== undefined && body.length > 0
+			? safeBody
+			: `Wrapper: call the ${prefix} MCP tools; the server is the source of truth.`;
 	return {
-		path: `libs/mcp-server/src/lib/prompts/${prefix}-${id}.prompt.ts`,
+		path: `libs/mcp-project/src/lib/prompts/${prefix}-${id}.prompt.ts`,
 		content: `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 export const ${prefix.toUpperCase()}_${id.replace(/-/g, '_').toUpperCase()}_PROMPT = {
 	name: '${promptName}',
-	description: '${description.replace(/'/g, '')}',
+	description: '${safeDescription}',
 } as const;
 
 export async function register${fn}Prompt(server: McpServer): Promise<void> {
 	server.registerPrompt(
 		'${promptName}',
-		{ description: '${description.replace(/'/g, '')}' },
+		{ description: '${safeDescription}' },
 		async () => ({
 			messages: [
 				{
 					role: 'user' as const,
 					content: {
 						type: 'text' as const,
-						text: 'Wrapper: call the ${prefix} MCP tools; the server is the source of truth.',
+						text: \`${userText}\`,
 					},
 				},
 			],
@@ -144,15 +159,20 @@ export const scaffoldSkillFile = (
 	prefix: string,
 	name: string,
 	description: string,
-	whenToUse: readonly string[] = []
+	whenToUse: readonly string[] = [],
+	body?: string,
 ): IScaffoldedFile => {
 	const id = kebab(name);
 	const bullets =
 		whenToUse.length > 0
 			? whenToUse.map((entry) => `- ${entry}`).join('\n')
 			: '- TODO: describe when an agent should read this skill.';
+	const bodySection =
+		body !== undefined && body.length > 0
+			? body
+			: '2. TODO: the skill body.';
 	return {
-		path: `libs/mcp-server/src/lib/skills/${prefix}-${id}.md`,
+		path: `libs/mcp-project/src/lib/skills/${prefix}-${id}.md`,
 		content: `---
 id: ${prefix}-${id}
 name: ${name}
@@ -168,7 +188,7 @@ ${bullets}
 ## Quick reference
 
 1. Call \`${prefix}_overview\` first; the MCP payload is the source of truth.
-2. TODO: the skill body.
+${bodySection}
 
 ## Checklist
 
@@ -179,14 +199,23 @@ ${bullets}
 
 export const scaffoldAgentFile = (
 	options: IScaffoldHostOptions,
-	slot: IScaffoldAgentSlot
+	slot: IScaffoldAgentSlot,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	const model = options.defaultModel ?? '<your-model>';
 	const isRoot = slot === 'orchestrator';
 	const tools = isRoot
-		? `[read, search, edit, execute, todo, agent, mcp-server-${prefix}/*]`
-		: `[read, search, edit, execute, todo, mcp-server-${prefix}/*]`;
+		? `[read, search, edit, execute, todo, agent, mcp-project-${prefix}/*]`
+		: `[read, search, edit, execute, todo, mcp-project-${prefix}/*]`;
+	const bootstrapTools = (
+		options.bootstrapToolIds ?? [
+			`${prefix}_analyze_project`,
+			`${prefix}_plan_mcp_project`,
+			`${prefix}_create_project`,
+		]
+	)
+		.map((id) => `\`${id}\``)
+		.join(', ');
 	return {
 		path: `.github/agents/${slot}.agent.md`,
 		content: `---
@@ -202,20 +231,22 @@ user-invocable: ${isRoot ? 'true' : 'false'}
 
 # ${slot}
 
-This file is only the Copilot adapter; the agent contract lives in \`mcp-server-${prefix}\`.
+This file is only the Copilot adapter; the agent contract lives in \`mcp-project-${prefix}\`.
 
 ## Compact lane
 
-1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-server-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-3. When the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
-4. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+1. First call \`${prefix}_overview\` once per turn (tool: \`mcp-project-${prefix}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
+2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+4. When the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis: ${isRoot ? '' : 'escalate to the root so '}the orchestrator can call ${bootstrapTools}. The first tool inspects; the second returns an exhaustive blueprint (tools + prompts + skills + agents + tests); the third materialises the files. The orchestrator (or a delegated runner) writes them.
 `,
 	};
 };
 
 export const scaffoldInstructionsFile = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
@@ -224,49 +255,51 @@ export const scaffoldInstructionsFile = (
 
 ## Source of truth
 
-The MCP server \`mcp-server-${prefix}\` rules. Do NOT re-derive workflow from docs:
+The MCP server \`mcp-project-${prefix}\` rules. Do NOT re-derive workflow from docs:
 
 - Entry point: \`${prefix}_overview\` (ALWAYS the first call) — it lists the server's tools, plugins and a \`recommendedNextAction\`.
-- The multi-agent proposal workflow (\`${prefix}_continue_proposal\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-core --plugins=proposals\`).
+- The multi-agent proposal workflow (\`${prefix}_auto_work\`, \`${prefix}_continue_proposal\`, \`${prefix}_delegate\`, \`${prefix}_agent_lock\`, quality gates via \`${prefix}_get_validation_matrix\`) is available when the server loads the \`proposals\` plugin (\`mcp-vertex --plugins=proposals\`).
 
 ## Lane
 
 - Default model: \`${options.defaultModel ?? '<your-model>'}\`.
 - MCP payload first, one atomic slice, minimal validation, serial continuity.
+- Orchestration threshold: keep the root chat to coordination calls. Delegate any slice that needs more than 3 tool calls, multiple files, or repeated MCP reads.
 - Every final message ends with ONE close marker line (see the close-markers constant of this host).
 `,
 	};
 };
 
 export const scaffoldHostConfigFile = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): IScaffoldedFile => {
 	const prefix = options.namespacePrefix;
 	return {
-		path: 'libs/mcp-server/src/lib/shared/host-config.ts',
+		path: 'libs/mcp-project/src/lib/shared/host-config.ts',
 		content: `import {
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
-} from '@cartago-git/mcp-core/public';
-import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
 
 // The core is project-agnostic. Add domain behaviour (e.g. a proposal
-// workflow) by loading a plugin via the mcp-core CLI
-// (\`mcp-core --plugins=proposals\`) rather than wiring it here.
+// workflow) by loading a plugin via the mcp-vertex CLI
+// (\`mcp-vertex --plugins=proposals\`) rather than wiring it here.
 // Hermetic: the workspace root is injected by the caller (the server
 // entry point), never read from \`process.cwd()\` here — a lib must not
 // guess where the project lives, so this stays correct under CI,
 // containers and tests.
-export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
+export const buildHostConfig = (workspaceRoot: string): IMcpVertexHostConfig => {
 	const workspace = createWorkspacePathProvider(workspaceRoot);
 	return {
 		metadata: {
-			name: 'mcp-server-${prefix}',
+			name: 'mcp-project-${prefix}',
 			version: '0.0.1',
-			description: '${options.projectName} workspace MCP server (built on mcp-core).',
+			description: '${options.projectName} workspace MCP server (built on mcp-vertex).',
 		},
 		namespacePrefix: '${prefix}',
 		workspace,
+		keepLegacy: false,
 		validationMatrix: { scopes: {} },
 		extraTools: [
 			// Your project tools register here. The scaffold tool lets
@@ -274,8 +307,9 @@ export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
 			buildScaffoldToolRegistration({
 				namespacePrefix: '${prefix}',
 				workspace,
+				keepLegacy: false,
 				projectName: '${options.projectName}',
-				serverPackageName: '${options.serverPackageName}',
+				projectPackageName: '${options.projectPackageName}',
 			}),
 		],
 	};
@@ -285,25 +319,25 @@ export const buildHostConfig = (workspaceRoot: string): IMcpCoreHostConfig => {
 };
 
 export const scaffoldServerEntryFiles = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => [
 	{
-		path: 'libs/mcp-server/src/server.ts',
-		content: `import { createMcpServer } from '@cartago-git/mcp-core/public';
+		path: 'libs/mcp-project/src/server.ts',
+		content: `import { createMcpProject } from '@mcp-vertex/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
 
 // The entry point is the ONE place allowed to read the launch directory
-// (like mcp-core's own CLI). It resolves the workspace root and injects
+// (like mcp-vertex's own CLI). It resolves the workspace root and injects
 // it into the (hermetic) host config.
 export async function startServer(workspaceRoot = process.cwd()): Promise<void> {
-	const assembled = await createMcpServer(buildHostConfig(workspaceRoot));
+	const assembled = await createMcpProject(buildHostConfig(workspaceRoot));
 	await assembled.start();
 }
 `,
 	},
 	{
-		path: 'libs/mcp-server/src/index.ts',
+		path: 'libs/mcp-project/src/index.ts',
 		content: `import { startServer } from './server';
 
 void startServer();
@@ -314,16 +348,16 @@ void startServer();
 		content: `${JSON.stringify(
 			{
 				servers: {
-					[`mcp-server-${options.namespacePrefix}`]: {
+					[`mcp-project-${options.namespacePrefix}`]: {
 						command: 'bun',
 						args: ['--watch', 'run', 'src/index.ts'],
 						// biome-ignore lint/suspicious/noTemplateCurlyInString: literal VSCode ${workspaceFolder} variable, not a JS template
-						cwd: '${workspaceFolder}/libs/mcp-server',
+						cwd: '${workspaceFolder}/libs/mcp-project',
 					},
 				},
 			},
 			null,
-			'\t'
+			'\t',
 		)}
 `,
 	},
@@ -335,7 +369,7 @@ void startServer();
  * a starter skill.
  */
 export const scaffoldHostProject = (
-	options: IScaffoldHostOptions
+	options: IScaffoldHostOptions,
 ): readonly IScaffoldedFile[] => [
 	scaffoldHostConfigFile(options),
 	...scaffoldServerEntryFiles(options),
@@ -345,12 +379,12 @@ export const scaffoldHostProject = (
 	scaffoldSkillFile(
 		options.namespacePrefix,
 		'project-standards',
-		`Closed stack and conventions of ${options.projectName}.`
+		`Closed stack and conventions of ${options.projectName}.`,
 	),
 ];
 
 // ---------------------------------------------------------------------------
-// Plugin generator — "mcp-core knows how to create plugins"
+// Plugin generator — "mcp-vertex knows how to create plugins"
 // ---------------------------------------------------------------------------
 
 export interface IScaffoldPluginOptions {
@@ -364,12 +398,12 @@ export interface IScaffoldPluginOptions {
 
 /**
  * Generate a ready-to-load plugin package implementing `IMcpPlugin`.
- * The result is loadable with `mcp-core --plugins=<pluginName>` once
+ * The result is loadable with `mcp-vertex --plugins=<pluginName>` once
  * published or linked. Tools are namespaced by the plugin name and
  * return structured JSON so any agent/model can consume them.
  */
 export const scaffoldPluginFiles = (
-	options: IScaffoldPluginOptions
+	options: IScaffoldPluginOptions,
 ): readonly IScaffoldedFile[] => {
 	const id = kebab(options.pluginName);
 	const scope = options.scope ?? '@cartago-git';
@@ -388,25 +422,25 @@ export const scaffoldPluginFiles = (
 					license: 'MIT',
 					main: './src/index.ts',
 					exports: { '.': './src/index.ts' },
-					peerDependencies: { '@cartago-git/mcp-core': '^0.1.0' },
+					peerDependencies: { '@mcp-vertex/core': '^0.1.0' },
 					dependencies: {
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
 					},
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
 			path: `plugins/${id}/src/index.ts`,
-			content: `import { definePlugin } from '@cartago-git/mcp-core/public';
+			content: `import { definePlugin } from '@mcp-vertex/core/public';
 import { z } from 'zod';
 
 /**
  * ${safeDescription}
  *
- * Loaded with \`mcp-core --plugins=${id}\`. Every tool is namespaced by
+ * Loaded with \`mcp-vertex --plugins=${id}\`. Every tool is namespaced by
  * the plugin name and returns structured JSON so any agent or model
  * can consume it deterministically.
  */
@@ -469,7 +503,7 @@ export default definePlugin({
 					include: ['src/**/*', 'tests/**/*'],
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -484,15 +518,15 @@ ${safeDescription}
 // .vscode/mcp.json
 {
 	"servers": {
-		"mcp-core": {
+		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@cartago-git/mcp-core", "--plugins=${id}"]
+			"args": ["@mcp-vertex/core", "--plugins=${id}"]
 		}
 	}
 }
 \`\`\`
 
-See \`PLUGINS-MCP-CORE.md\` at the docs folder for the full plugin guide.
+See \`PLUGINS-MCP-VERTEX.md\` at the docs folder for the full plugin guide.
 `,
 		},
 	];
@@ -511,7 +545,7 @@ export interface IScaffoldClientOptions {
 	readonly scope?: string;
 	/** Command the client spawns to reach the server (default `bunx`). */
 	readonly serverCommand?: string;
-	/** Args for that command (default loads mcp-core with no plugins). */
+	/** Args for that command (default loads mcp-vertex with no plugins). */
 	readonly serverArgs?: readonly string[];
 }
 
@@ -524,7 +558,7 @@ export interface IScaffoldClientOptions {
  * `kind:client`.
  */
 export const scaffoldClientFiles = (
-	options: IScaffoldClientOptions
+	options: IScaffoldClientOptions,
 ): readonly IScaffoldedFile[] => {
 	const id = kebab(options.clientName);
 	const scope = options.scope ?? '@cartago-git';
@@ -532,7 +566,7 @@ export const scaffoldClientFiles = (
 	const fn = pascal(id);
 	const safeDescription = options.description.replace(/'/g, '');
 	const command = options.serverCommand ?? 'bunx';
-	const args = options.serverArgs ?? ['@cartago-git/mcp-core'];
+	const args = options.serverArgs ?? ['@mcp-vertex/core'];
 	return [
 		{
 			path: `clients/${id}/package.json`,
@@ -548,7 +582,7 @@ export const scaffoldClientFiles = (
 					dependencies: { '@modelcontextprotocol/sdk': '^1.29.0' },
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -607,7 +641,7 @@ export const create${fn}Client = async (
 					include: ['src/**/*'],
 				},
 				null,
-				'\t'
+				'\t',
 			)}\n`,
 		},
 		{
@@ -621,7 +655,7 @@ import { create${fn}Client } from '${pkg}';
 
 const mcp = await create${fn}Client();
 const tools = await mcp.listTools();
-const result = await mcp.callTool('mcpcore_overview');
+const result = await mcp.callTool('mcp-vertex_overview');
 await mcp.close();
 \`\`\`
 `,

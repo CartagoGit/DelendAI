@@ -6,11 +6,33 @@ import {
 } from '../scaffold/scaffold-host';
 import type { IScaffoldedFile } from '../scaffold/scaffold-host';
 import type { IProjectAnalysis } from './analyze-project';
-import { PROJECT_PATTERN_CATALOG } from './pattern-catalog';
+import { matchPromptArtifacts } from './prompt-artifact-rules';
+import { resolvePatternCatalog } from './pattern-catalog-overrides';
+import { matchSkillArtifacts } from './skill-artifact-rules';
+import { matchNotes } from './note-rules';
 
 export interface IBlueprintArtifact {
 	readonly name: string;
 	readonly description: string;
+	/**
+	 * Body text for the generated artefact (prompt or skill). When present
+	 * it replaces the generic TODO placeholder that `scaffoldPromptFile`
+	 * / `scaffoldSkillFile` would otherwise emit. Optional so callers that
+	 * only know `name`+`description` keep working.
+	 */
+	readonly body?: string;
+	/**
+	 * Concrete "when to use" bullets for skills. Same contract as
+	 * `scaffoldSkillFile`'s fourth arg: overrides the TODO bullet when
+	 * present.
+	 */
+	readonly whenToUse?: readonly string[];
+}
+
+export interface IBlueprintDefaults {
+	readonly keepLegacy: boolean;
+	readonly reasons: readonly string[];
+	readonly warnings: readonly string[];
 }
 
 /**
@@ -31,6 +53,7 @@ export interface IServerBlueprint {
 	readonly agents: ReadonlyArray<{ slot: string; description: string }>;
 	readonly tests: boolean;
 	readonly hasExistingServer: boolean;
+	readonly defaults: IBlueprintDefaults;
 	readonly notes: readonly string[];
 }
 
@@ -38,6 +61,14 @@ export interface IBlueprintOptions {
 	readonly serverName?: string;
 	readonly namespacePrefix?: string;
 	readonly tests?: boolean;
+	/** Optional free-form user request used only for migration-safety hints. */
+	readonly intent?: string;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
+	 * `PROJECT_PATTERN_CATALOG` is used.
+	 */
+	readonly patternOverrides?: import('./pattern-catalog-overrides').IPatternOverrides;
 }
 
 const kebabHead = (name: string | undefined): string => {
@@ -52,7 +83,7 @@ const kebabHead = (name: string | undefined): string => {
 };
 
 const uniqueByName = (
-	items: readonly IBlueprintArtifact[]
+	items: readonly IBlueprintArtifact[],
 ): IBlueprintArtifact[] => {
 	const seen = new Set<string>();
 	const out: IBlueprintArtifact[] = [];
@@ -65,30 +96,82 @@ const uniqueByName = (
 };
 
 const SUBAGENT_SLOTS = [
-	{ slot: 'proposal_guardian', description: 'Curates and validates the backlog.' },
-	{ slot: 'implementation_runner', description: 'Executes one atomic slice.' },
-	{ slot: 'delivery_verifier', description: 'Verifies a closed slice/round.' },
-	{ slot: 'technical_investigator', description: 'Investigates without editing.' },
+	{
+		slot: 'proposal_guardian',
+		description: 'Curates and validates the backlog.',
+	},
+	{
+		slot: 'implementation_runner',
+		description: 'Executes one atomic slice.',
+	},
+	{
+		slot: 'delivery_verifier',
+		description: 'Verifies a closed slice/round.',
+	},
+	{
+		slot: 'technical_investigator',
+		description: 'Investigates without editing.',
+	},
 ] as const;
+
+const MIGRATION_INTENT_RE =
+	/\b(migrat(?:e|ion|ing)?|refactor|rewrite|replace|regen(?:erate)?|port)\b/i;
+
+const buildBlueprintDefaults = (
+	analysis: IProjectAnalysis,
+	options: IBlueprintOptions,
+): IBlueprintDefaults => {
+	const reasons: string[] = [];
+	const warnings: string[] = [];
+	if (analysis.signals.includes('host-config has custom extraTools')) {
+		reasons.push('host-config has custom extraTools');
+	}
+	if (
+		analysis.signals.includes(
+			'mcp-vertex.config.json has plugin or validation config',
+		)
+	) {
+		reasons.push('mcp-vertex.config.json has plugin or validation config');
+	}
+	if (
+		options.intent !== undefined &&
+		MIGRATION_INTENT_RE.test(options.intent)
+	) {
+		reasons.push('user request mentions migration/refactor work');
+	}
+	if (reasons.length === 0) {
+		return {
+			keepLegacy: false,
+			reasons: ['greenfield-safe default'],
+			warnings,
+		};
+	}
+	warnings.push(
+		'keepLegacy preserves existing scaffold targets under legacy/ before writing fresh templates; review those snapshots before deleting them.',
+	);
+	return { keepLegacy: true, reasons, warnings };
+};
 
 /** Build the exhaustive blueprint from a project analysis. */
 export const buildServerBlueprint = (
 	analysis: IProjectAnalysis,
-	options: IBlueprintOptions = {}
+	options: IBlueprintOptions = {},
 ): IServerBlueprint => {
-	const pattern = PROJECT_PATTERN_CATALOG[analysis.projectType];
-	const namespacePrefix =
-		options.namespacePrefix ?? kebabHead(analysis.name);
-	const serverName = options.serverName ?? `mcp-server-${namespacePrefix}`;
+	const pattern = resolvePatternCatalog(options.patternOverrides)[
+		analysis.projectType
+	];
+	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
+	const serverName = options.serverName ?? `mcp-project-${namespacePrefix}`;
 	const tests = options.tests ?? true;
 	const plugins = pattern.recommendedPlugins;
+	const defaults = buildBlueprintDefaults(analysis, options);
 
 	// Tools: catalog baseline + one runner per quality script the repo has.
 	const scriptTools: IBlueprintArtifact[] = Object.keys(analysis.scripts).map(
 		(role) => ({
 			name: `run_${role}`,
 			description: `Run the project's ${role} command and return a structured pass/fail report.`,
-		})
+		}),
 	);
 	const tools = uniqueByName([
 		...pattern.recommendedTools.map((tool) => ({
@@ -98,54 +181,30 @@ export const buildServerBlueprint = (
 		...scriptTools,
 	]);
 
-	const prompts: IBlueprintArtifact[] = [
-		{ name: 'start', description: 'Orient and start working in this project.' },
-	];
-	if (Object.keys(analysis.scripts).length > 0) {
-		prompts.push({
-			name: 'fix quality',
-			description: 'Run the gates and fix what fails.',
-		});
-	}
-	if (plugins.includes('proposals')) {
-		prompts.push({
-			name: 'continue proposal',
-			description: 'Resolve and execute the next proposal slice.',
-		});
-	}
+	const prompts = matchPromptArtifacts({
+		analysis,
+		namespacePrefix,
+		plugins,
+	});
 
-	const skills: IBlueprintArtifact[] = [
-		{
-			name: 'project standards',
-			description: `Closed stack and conventions of ${serverName}.`,
-		},
-	];
-	if (analysis.framework !== undefined) {
-		skills.push({
-			name: `${analysis.framework} conventions`,
-			description: `${analysis.framework} idioms and lint/type rules for this project.`,
-		});
-	}
+	const skills = matchSkillArtifacts({ analysis, serverName });
 
 	const agents = [
-		{ slot: 'orchestrator', description: 'Root orchestrator for this project.' },
+		{
+			slot: 'orchestrator',
+			description: 'Root orchestrator for this project.',
+		},
 		...(plugins.includes('proposals') ? SUBAGENT_SLOTS : []),
 	];
 
-	const notes: string[] = [
-		...pattern.knowledgeHints,
-		analysis.hasMcpServer
-			? `An MCP server already exists (${analysis.mcpEvidence.join('; ')}): analyze it and integrate it with mcp-core instead of replacing it — register it alongside, reuse its tools, and adopt mcp-core conventions incrementally.`
-			: 'No MCP server found: create one from this blueprint (scaffold the host project, then each tool/prompt/skill/agent).',
-		tests
-			? 'Generate a test alongside each tool.'
-			: 'Tests omitted (--mcp-server-tests=false).',
-	];
-	if (analysis.agentConfigs.length > 0) {
-		notes.push(
-			`Align with the existing agent config (${analysis.agentConfigs.join(', ')}).`
-		);
-	}
+	const notes = matchNotes({
+		analysis,
+		defaults,
+		tests,
+		...(options.patternOverrides !== undefined
+			? { patternOverrides: options.patternOverrides }
+			: {}),
+	});
 
 	return {
 		serverName,
@@ -157,22 +216,20 @@ export const buildServerBlueprint = (
 		skills,
 		agents,
 		tests,
-		hasExistingServer: analysis.hasMcpServer,
+		hasExistingServer: analysis.hasMcpProject,
+		defaults,
 		notes,
 	};
 };
 
-const toolTestFile = (
-	prefix: string,
-	toolName: string
-): IScaffoldedFile => {
+const toolTestFile = (prefix: string, toolName: string): IScaffoldedFile => {
 	const id = toolName.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 	const fn = id
 		.split('-')
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join('');
 	return {
-		path: `libs/mcp-server/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
+		path: `libs/mcp-project/tests/src/lib/tools/${prefix}-${id}.tool.spec.ts`,
 		content: `import { describe, expect, it } from 'vitest';
 
 import { build${fn}Response } from '../../../../src/lib/tools/${prefix}-${id}.tool';
@@ -194,15 +251,14 @@ describe('${prefix}_${id.replace(/-/g, '_')}', () => {
  */
 export const buildBlueprintFiles = (
 	blueprint: IServerBlueprint,
-	serverPackageName?: string
+	projectPackageName?: string,
 ): readonly IScaffoldedFile[] => {
 	const prefix = blueprint.namespacePrefix;
 	const files: IScaffoldedFile[] = [
 		...scaffoldHostProject({
 			projectName: blueprint.serverName,
 			namespacePrefix: prefix,
-			serverPackageName:
-				serverPackageName ?? `@${prefix}/mcp-server`,
+			projectPackageName: projectPackageName ?? `@${prefix}/mcp-project`,
 		}),
 	];
 	for (const tool of blueprint.tools) {
@@ -210,10 +266,25 @@ export const buildBlueprintFiles = (
 		if (blueprint.tests) files.push(toolTestFile(prefix, tool.name));
 	}
 	for (const prompt of blueprint.prompts) {
-		files.push(scaffoldPromptFile(prefix, prompt.name, prompt.description));
+		files.push(
+			scaffoldPromptFile(
+				prefix,
+				prompt.name,
+				prompt.description,
+				prompt.body,
+			),
+		);
 	}
 	for (const skill of blueprint.skills) {
-		files.push(scaffoldSkillFile(prefix, skill.name, skill.description));
+		files.push(
+			scaffoldSkillFile(
+				prefix,
+				skill.name,
+				skill.description,
+				skill.whenToUse ?? [],
+				skill.body,
+			),
+		);
 	}
 	// De-duplicate by path (host project already ships a starter skill).
 	const byPath = new Map<string, IScaffoldedFile>();

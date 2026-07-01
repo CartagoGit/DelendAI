@@ -1,0 +1,12 @@
+---
+import BenchmarksSection from '#COMPONENTS/BenchmarksSection.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { useTranslations, type Lang } from '#I18N/ui';
+
+const lang: Lang = 'en';
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title={`${t.bench.title} — @mcp-vertex/core`}>
+	<BenchmarksSection lang={lang} heading={t.bench.title} />
+</Base>

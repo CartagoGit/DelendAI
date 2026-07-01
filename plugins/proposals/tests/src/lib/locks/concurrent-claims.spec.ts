@@ -7,14 +7,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentLockEngine,
 	type ILockFile,
-} from '@cartago-git/mcp-proposals/lib/locks/agent-lock-engine';
+} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 
 /**
  * F4: the agent-lock engine runs its read → mutate → write under a file
  * mutex, so two agents claiming disjoint files at the same time can't
  * lose each other's claim (the classic last-writer-wins corruption).
  */
-describe('agent-lock — concurrent disjoint claims (mutex)', () => {
+describe('agent-lock — concurrent disjoint claims (mutex)', async () => {
 	let dir = '';
 	let lockPath = '';
 	beforeEach(() => {
@@ -28,8 +28,13 @@ describe('agent-lock — concurrent disjoint claims (mutex)', () => {
 	it('keeps both claims when fired concurrently', async () => {
 		const claim = (taskId: string, file: string): Promise<unknown> =>
 			runAgentLockEngine(
-				{ action: 'claim', task_id: taskId, agent: taskId, files: [file] },
-				{ lockPath }
+				{
+					action: 'claim',
+					task_id: taskId,
+					agent: taskId,
+					files: [file],
+				},
+				{ lockPath },
 			);
 
 		await Promise.all([

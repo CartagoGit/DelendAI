@@ -1,0 +1,17 @@
+---
+import ToolsPluginIndex from '#COMPONENTS/ToolsPluginIndex.astro';
+import Base from '#LAYOUTS/Base.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+export function getStaticPaths() {
+	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const pkgs = capabilities.packages as Array<{ name: string }>;
+	return pkgs.map((p) => ({ params: { plugin: slugOf(p.name) } }));
+}
+
+const { plugin } = Astro.params;
+---
+
+<Base lang="en">
+	<ToolsPluginIndex lang="en" slug={plugin!} />
+</Base>

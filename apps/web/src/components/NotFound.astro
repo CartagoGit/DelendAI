@@ -1,0 +1,46 @@
+---
+import { useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+const toolsHref = lang === 'en' ? `${base}/tools` : `${base}/${lang}/tools`;
+---
+
+<section class="notfound" aria-labelledby="notfound-title">
+	<div class="container notfound__inner">
+		{/* The project logo — the same SVG used in the nav brand and favicon,
+		    rendered large as the visual anchor so the page is unmistakably ours
+		    (Astro's default 404 uses its own logo). The gradient id matches
+		    `public/logo.svg` so the recolor is identical to the brand. */}
+		<img
+			class="notfound__logo"
+			src={`${base}/logo.svg`}
+			width="120"
+			height="120"
+			alt=""
+			aria-hidden="true"
+		/>
+		<p class="notfound__code" aria-hidden="true">{t.notFound.code}</p>
+		<h1
+			id="notfound-title"
+			class="notfound__title"
+			transition:name="page-title"
+			transition:animate="fade"
+		>
+			{t.notFound.title}
+		</h1>
+		<p class="notfound__lead">{t.notFound.lead}</p>
+		<div class="notfound__ctas">
+			<a class="btn btn--primary" href={homeHref} aria-label={t.notFound.homeAria}>
+				{t.notFound.homeCta}
+			</a>
+			<a class="btn btn--ghost" href={toolsHref}>{t.notFound.toolsCta} →</a>
+		</div>
+	</div>
+</section>

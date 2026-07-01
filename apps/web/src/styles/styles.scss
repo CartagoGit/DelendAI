@@ -1,0 +1,80 @@
+// styles.scss — composition root for the site stylesheet.
+//
+// 7-1 pattern: each partial owns ONE concern (single responsibility) and is
+// pulled in here in a deliberate order.  Partial order matters because
+// later rules win on equal specificity (e.g. components can override the
+// reset, but the reset must be defined first).
+//
+// To add a new component:
+//   1. Create `components/_<name>.scss` with one BEM block + nested children.
+//   2. Add a single `@use 'components/<name>';` line below, in the slot
+//      that makes sense (related components grouped together).
+//
+// To change a global (tokens, themes, reset), edit the corresponding
+// `_tokens.scss` / `_themes.scss` / `_reset.scss` — never inline values.
+
+// 1. Tokens & themes — define design variables first so everything below
+//    can reference them.
+//
+// The shared package (`apps/shared`) owns the brand tokens (`--mv-*`),
+// the brand hex literals and the canonical 5 palettes. We re-export them
+// here as the base layer; the local `tokens` / `themes` partials (right
+// below) keep the existing legacy names (`--bg`, `--fg`, `--accent`, …)
+// for the 7-1 components.
+@use "../../../shared/src/styles" as shared;
+
+// 1b. Local tokens — declare the legacy, un-prefixed custom properties
+//     that the 7-1 partials (`_layout.scss`, `_card.scss`, …) consume.
+//     This file is intentionally tiny: it only defines the layout
+//     invariants the shared package does not own (e.g. `--maxw`).
+//     Theme-dependent values stay in `_themes.scss` next to the shared
+//     `themes` forward; layout-dependent values live here.
+@use "tokens";
+
+// 2. Reset & base — global element styling, tag selectors, typography.
+@use "reset";
+
+// 3. Layout primitive — page shell, container, grid.
+@use "layout";
+
+// 4. Components — one BEM block per file.  Order inside this group is not
+//    semantically significant (BEM keeps specificity flat) but is grouped
+//    for human readability (chrome before content).
+@use "components/nav";
+@use "components/drawer";
+@use "components/btn";
+@use "components/hero";
+@use "components/page-header";
+@use "components/marquee";
+@use "components/chip";
+@use "components/install";
+@use "components/plugin-card";
+@use "components/plugin-details";
+@use "components/plugin-disclosure";
+@use "components/guide";
+@use "components/bench";
+@use "components/section";
+@use "components/tabs";
+@use "components/card";
+@use "components/tool";
+@use "components/pkg";
+@use "components/ns";
+@use "components/fx";
+@use "components/phead";
+@use "components/stat";
+@use "components/sitefoot";
+@use "components/modal";
+@use "components/swatch";
+@use "components/lang-opt";
+@use "components/toggle";
+@use "components/prompt";
+@use "components/resources-table";
+@use "components/notfound";
+@use "components/proposal-badge";
+
+// 5. Component-local responsive overrides (kept last so they always win).
+@use "components/nav-media";
+
+// 6. View Transitions — Astro ClientRouter pseudo-elements last so they
+//    override anything else.
+@use "view-transitions";

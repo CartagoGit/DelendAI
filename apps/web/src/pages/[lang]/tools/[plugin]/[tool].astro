@@ -1,0 +1,38 @@
+---
+/**
+ * `/[lang]/tools/[plugin]/[tool]` — per-tool detail page (localized).
+ *
+ * Same routing logic as the root `tools/[plugin]/[tool].astro` but
+ * emitting one path per non-English locale. `ToolPage` owns the body
+ * (it already speaks i18n via `useTranslations`).
+ */
+import ToolPage from '#COMPONENTS/ToolPage.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+import { languages, resolveLang } from '#LIB/page';
+
+export function getStaticPaths() {
+	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const nsFor = (s: string) => (s === 'core' ? 'mcp-vertex' : s);
+	const pkgs = capabilities.packages as Array<{ name: string }>;
+	const tools = capabilities.tools as Array<{
+		name: string;
+		namespace: string;
+	}>;
+	const langs = languages.map((l) => l.code).filter((c) => c !== 'en');
+	const entries = pkgs.flatMap((p) => {
+		const slug = slugOf(p.name);
+		const ns = nsFor(slug);
+		return tools
+			.filter((t) => t.namespace === ns)
+			.map((t) => ({ plugin: slug, tool: t.name }));
+	});
+	return langs.flatMap((lang) =>
+		entries.map(({ plugin, tool }) => ({ params: { lang, plugin, tool } })),
+	);
+}
+
+const { lang, tool } = Astro.params;
+const langCode = resolveLang(lang);
+---
+
+<ToolPage lang={langCode} toolName={tool!} />

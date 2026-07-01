@@ -64,7 +64,7 @@ const countIndent = (line: string): number => {
 // ---------------------------------------------------------------------------
 
 const parseBlockObject = (
-	childLines: readonly string[]
+	childLines: readonly string[],
 ): Record<string, IYamlValue> => {
 	const obj: Record<string, IYamlValue> = {};
 	for (const line of childLines) {
@@ -123,7 +123,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
 		} else if (itemContent.includes(':')) {
 			// Possible key: value item, possibly with sibling keys.
 			const m = itemContent.match(
-				/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/
+				/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)$/,
 			);
 			if (m) {
 				const obj: Record<string, IYamlValue> = {};
@@ -175,7 +175,7 @@ const parseBlockArray = (childLines: readonly string[]): IYamlValue[] => {
  * their native JS type (string | number | boolean | null).
  */
 export const parseFrontmatterBlock = (
-	block: string
+	block: string,
 ): Record<string, IYamlValue> => {
 	const lines = block.split('\n');
 	const result: Record<string, IYamlValue> = {};
@@ -240,6 +240,22 @@ export const parseFrontmatterBlock = (
 
 		if (inline === '[]') {
 			result[key] = [];
+			i++;
+		} else if (inline.startsWith('[') && inline.endsWith(']')) {
+			// Flow-sequence of scalars, e.g. `blocked_by: [self:goal-missing, f400]`.
+			// Tokens are split on top-level commas only — nested `[...]`/`{...}`
+			// aren't supported (none of this repo's frontmatter needs them);
+			// a colon inside a token (`self:goal-missing`) stays part of the
+			// scalar instead of being mistaken for a block-mapping key, which
+			// is exactly the ambiguity the block-array parser below has for
+			// the same token shape.
+			const inner = inline.slice(1, -1).trim();
+			result[key] =
+				inner === ''
+					? []
+					: inner
+							.split(',')
+							.map((token) => parseScalar(token.trim()));
 			i++;
 		} else if (inline !== '') {
 			result[key] = parseScalar(inline);

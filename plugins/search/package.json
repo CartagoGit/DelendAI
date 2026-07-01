@@ -1,8 +1,8 @@
 {
-	"name": "@cartago-git/mcp-search",
+	"name": "@mcp-vertex/search",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Textual workspace search plugin for @cartago-git/mcp-core: a grep-like `search` tool returning low-token {file,line,text} hits over allow-listed text files. Load with `mcp-core --plugins=search`.",
+	"description": "Textual workspace search plugin for @mcp-vertex/core: a grep-like `search` tool returning low-token {file,line,text} hits over allow-listed text files. Load with `mcp-vertex --plugins=search`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -23,10 +23,16 @@
 	],
 	"exports": {
 		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		}
@@ -37,14 +43,14 @@
 		"build": "bun ../../scripts/build.ts plugins/search"
 	},
 	"peerDependencies": {
-		"@cartago-git/mcp-core": "^0.1.0"
+		"@mcp-vertex/core": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cartago-git/mcp-core": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "6.0.3",
 		"vitest": "4.1.8"
@@ -54,7 +60,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cartago-git/mcp-core"
+		"url": "https://github.com/CartagoGit/mcp-vertex"
 	},
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts"

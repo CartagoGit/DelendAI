@@ -19,6 +19,24 @@ export interface QualityGetQualityScopesOutput {
 	}[]>;
 }
 
+export interface QualityQualityCancelOutput {
+	cancelled: number[];
+	count: number;
+}
+
+export interface QualityQualityRunAllOutput {
+	results: {
+		scope: string;
+		ok: boolean;
+		duration: number;
+		errors: string[];
+	}[];
+	summary: {
+		ok: boolean;
+		scopes: number;
+	};
+}
+
 export interface QualityRunQualityOutput {
 	scope: string;
 	ok: boolean;
@@ -34,5 +52,7 @@ export interface QualityRunQualityOutput {
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface QualityToolOutputs {
 	"quality_get_quality_scopes": QualityGetQualityScopesOutput;
+	"quality_quality_cancel": QualityQualityCancelOutput;
+	"quality_quality_run_all": QualityQualityRunAllOutput;
 	"quality_run_quality": QualityRunQualityOutput;
 }

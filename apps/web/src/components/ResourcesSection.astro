@@ -1,0 +1,55 @@
+---
+/**
+ * ResourcesSection.astro — body of the `/resources` index.
+ *
+ * Thin wrapper around `CapabilityGrid`. Resources render as a `<table>`
+ * (URI / MIME / title) — `CapabilityGrid` switches to the table shape
+ * when `kind="resource"`.
+ */
+import { type Lang, useTranslations } from '#I18N/ui';
+import { describeResource, describeResourceName } from '#I18N/tools';
+import capabilities from '#MANIFESTS/capabilities.json';
+import CapabilityGrid from '#COMPONENTS/CapabilityGrid.astro';
+
+interface Props {
+	readonly lang: Lang;
+	readonly heading: string;
+}
+const { lang, heading: _heading } = Astro.props;
+const t = useTranslations(lang);
+
+type IResource = {
+	uri: string;
+	name?: string;
+	description: string;
+	namespace: string;
+	mimeType?: string;
+};
+const resources = (capabilities.resources ?? []) as IResource[];
+---
+
+<section id="resources" class="section">
+	<div class="container">
+		<p class="lead">{t.resources.lead}</p>
+		<div class="stat-row">
+			<div class="stat">
+				<b>{capabilities.counts.resources ?? resources.length}</b>
+				<span>{t.resources.count}</span>
+			</div>
+		</div>
+		<CapabilityGrid
+			kind="resource"
+			items={resources}
+			labels={{ stat: t.resources.count, empty: t.resources.lead }}
+			describe={(r) => {
+				const it = r as IResource;
+				return describeResource(it.uri, lang) ?? it.description;
+			}}
+			displayName={(r) => {
+				const it = r as IResource;
+				return describeResourceName(it.uri, lang) ?? it.name ?? it.uri;
+			}}
+			sectionId="resources"
+		/>
+	</div>
+</section>

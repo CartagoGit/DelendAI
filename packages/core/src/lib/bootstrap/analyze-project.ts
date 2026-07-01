@@ -1,3 +1,25 @@
+// Re-exported for tests and consumers that want to extend the
+// policy (see script-rules.ts). The inline constants used to live
+// here; they were extracted to their own module to keep this file
+// focused on the analysis pipeline.
+import {
+	isBlacklistedScriptRole,
+	QUALITY_ROLES,
+	QUALITY_ROLE_ALIASES,
+} from './script-rules';
+import { matchProjectType } from './project-type-rules';
+import { isGameProject, matchFramework } from './framework-rules';
+import { matchCi } from './ci-rules';
+import { matchAgentConfigs } from './agent-config-rules';
+import { matchLanguage } from './language-rules';
+import { matchMonorepoTool } from './monorepo-rules';
+import { matchPackageManager } from './package-manager-rules';
+import { detectMcpEvidence } from './mcp-evidence-rules';
+import { matchTestRunner } from './test-runner-rules';
+import { matchHostConfig } from './host-config-rules';
+import { matchVertexConfigFromRaw } from './vertex-config-rules';
+import { matchSignals } from './signal-rules';
+
 /**
  * Read-only, injectable view of the target project. The default
  * implementation (in `bootstrap-tool.ts`) reads from disk relative to
@@ -5,11 +27,10 @@
  * behind this seam is what makes the analyzer pure and agnostic.
  */
 export interface IFileReader {
-	/** Returns file contents, or undefined if it does not exist. */
-	readFile(relativePath: string): string | undefined;
-	exists(relativePath: string): boolean;
-	/** Top-level entries of a directory (names only), or []. */
-	listDir(relativePath: string): readonly string[];
+	readFile(relativePath: string): Promise<string | undefined>;
+	exists(relativePath: string): Promise<boolean>;
+	/** Lists direct children of the directory (relative paths). Never throws. */
+	listDir(relativePath: string): Promise<readonly string[]>;
 }
 
 export type IProjectType =
@@ -39,8 +60,8 @@ export interface IProjectAnalysis {
 	/** Monorepo tool detected (e.g. `nx`, `turbo`, `bun-workspaces`). */
 	readonly monorepoTool: string | undefined;
 	/** True if the project already ships (or depends on) an MCP server. */
-	readonly hasMcpServer: boolean;
-	/** Evidence behind `hasMcpServer`. */
+	readonly hasMcpProject: boolean;
+	/** Evidence behind `hasMcpProject`. */
 	readonly mcpEvidence: readonly string[];
 	/** Detected CI systems (file evidence). */
 	readonly ci: readonly string[];
@@ -52,7 +73,12 @@ export interface IProjectAnalysis {
 	readonly signals: readonly string[];
 }
 
-interface IPackageJson {
+/**
+ * Subset of `package.json` the analyser actually reads. Exported
+ * because the language-rule table (and any other rule that
+ * inspects the manifest) needs the same shape.
+ */
+export interface IPackageJson {
 	name?: string;
 	bin?: unknown;
 	main?: string;
@@ -78,156 +104,162 @@ const allDeps = (pkg: IPackageJson | undefined): Record<string, string> => ({
 	...(pkg?.devDependencies ?? {}),
 });
 
-const detectFramework = (deps: Record<string, string>): string | undefined => {
-	if ('@angular/core' in deps) return 'angular';
-	if ('next' in deps) return 'next';
-	if ('react' in deps) return 'react';
-	if ('vue' in deps) return 'vue';
-	if ('svelte' in deps) return 'svelte';
-	if ('solid-js' in deps) return 'solid';
-	return undefined;
-};
+const detectFramework = (deps: Record<string, string>): string | undefined =>
+	// The framework rule table lives in `framework-rules.ts`; this
+	// function is a thin adapter.
+	matchFramework(deps);
 
 const detectGame = (deps: Record<string, string>): boolean =>
-	'phaser' in deps || 'three' in deps || 'pixi.js' in deps || 'babylonjs' in deps;
+	// Same idea: the engine list is data, not control flow.
+	isGameProject(deps);
 
-const detectPackageManager = (
-	reader: IFileReader
-): IProjectAnalysis['packageManager'] => {
-	if (reader.exists('bun.lock') || reader.exists('bun.lockb')) return 'bun';
-	if (reader.exists('pnpm-lock.yaml')) return 'pnpm';
-	if (reader.exists('yarn.lock')) return 'yarn';
-	if (reader.exists('package-lock.json')) return 'npm';
-	return 'unknown';
+const detectPackageManager = async (
+	reader: IFileReader,
+): Promise<IProjectAnalysis['packageManager']> => {
+	// The package-manager rule table lives in
+	// `package-manager-rules.ts`; this function is a thin
+	// adapter. Adding a manager is a one-line table entry, not
+	// an edit to this function.
+	return await matchPackageManager(reader);
 };
 
 const detectTestRunner = (
 	deps: Record<string, string>,
-	scripts: Record<string, string>
+	scripts: Record<string, string>,
 ): IProjectAnalysis['testRunner'] => {
-	if ('vitest' in deps) return 'vitest';
-	if ('jest' in deps) return 'jest';
-	const testScript = scripts.test ?? '';
-	if (/\bvitest\b/.test(testScript)) return 'vitest';
-	if (/\bjest\b/.test(testScript)) return 'jest';
-	if (/\bbun test\b/.test(testScript)) return 'bun';
-	if (/\bnode --test\b/.test(testScript)) return 'node';
-	return 'unknown';
+	// The test-runner rule table lives in `test-runner-rules.ts`;
+	// this function is a thin adapter. Adding a runner is a
+	// one-line table entry, not an edit to this function.
+	return matchTestRunner(deps, scripts);
 };
 
-const QUALITY_ROLES = ['lint', 'test', 'build', 'typecheck'] as const;
-
+/**
+ * Pick the scripts worth surfacing to the agent: any role that looks
+ * like a quality gate (lint, test, build, typecheck + common aliases)
+ * AND anything that doesn't look like a lifecycle hook. The agent
+ * uses the picked set to derive `run_<role>` tools and the drift
+ * detector uses it to flag new/removed scripts — see drift.ts.
+ *
+ * The policy (primary roles, aliases, lifecycle blacklist) lives in
+ * `script-rules.ts`; this function is pure pipeline.
+ */
 const pickScripts = (
-	scripts: Record<string, string>
+	scripts: Record<string, string>,
 ): Record<string, string> => {
 	const out: Record<string, string> = {};
 	for (const role of QUALITY_ROLES) {
 		if (scripts[role] !== undefined) out[role] = scripts[role] as string;
 	}
-	// common aliases
-	if (out.typecheck === undefined && scripts['type-check'] !== undefined) {
-		out.typecheck = scripts['type-check'] as string;
+	// Apply role aliases (e.g. `type-check` → `typecheck`).
+	for (const [alias, primary] of Object.entries(QUALITY_ROLE_ALIASES)) {
+		if (out[primary] === undefined && scripts[alias] !== undefined) {
+			out[primary] = scripts[alias] as string;
+		}
+	}
+	// Anything else that isn't a lifecycle hook is potentially a
+	// quality gate (e2e, format, docs, dev, start, …) and worth
+	// surfacing. This is the source of `run_e2e`, `run_format` etc.
+	for (const [role, command] of Object.entries(scripts)) {
+		if (isBlacklistedScriptRole(role)) continue;
+		if (out[role] !== undefined) continue;
+		out[role] = command;
 	}
 	return out;
 };
 
-const detectMonorepoTool = (
+const detectMonorepoTool = async (
 	reader: IFileReader,
-	pkg: IPackageJson | undefined
-): string | undefined => {
-	if (reader.exists('nx.json')) return 'nx';
-	if (reader.exists('turbo.json')) return 'turbo';
-	if (reader.exists('pnpm-workspace.yaml')) return 'pnpm-workspaces';
-	if (reader.exists('lerna.json')) return 'lerna';
-	if (pkg?.workspaces !== undefined) return 'bun/npm-workspaces';
-	return undefined;
+	pkg: IPackageJson | undefined,
+): Promise<string | undefined> => {
+	// The monorepo rule table lives in `monorepo-rules.ts`; this
+	// function is a thin adapter. Adding a monorepo tool is a
+	// one-line table entry, not an edit to this function.
+	return await matchMonorepoTool(reader, pkg);
 };
 
-const detectLanguage = (
+const detectLanguage = async (
 	reader: IFileReader,
-	pkg: IPackageJson | undefined
-): IProjectLanguage => {
-	if (reader.exists('tsconfig.json') || reader.exists('tsconfig.base.json')) {
-		return 'typescript';
-	}
-	if (pkg !== undefined) return 'javascript';
-	if (
-		reader.exists('pyproject.toml') ||
-		reader.exists('requirements.txt') ||
-		reader.exists('setup.py')
-	) {
-		return 'python';
-	}
-	if (reader.exists('go.mod')) return 'go';
-	if (reader.exists('Cargo.toml')) return 'rust';
-	return 'unknown';
+	pkg: IPackageJson | undefined,
+): Promise<IProjectLanguage> => {
+	// The language rule table lives in `language-rules.ts`; this
+	// function is a thin adapter. Adding a language is a one-line
+	// table entry, not an edit to this function.
+	return await matchLanguage(reader, pkg);
 };
 
-const detectCi = (reader: IFileReader): string[] => {
-	const ci: string[] = [];
-	if (reader.listDir('.github/workflows').length > 0) ci.push('github-actions');
-	if (reader.exists('.gitlab-ci.yml')) ci.push('gitlab-ci');
-	if (reader.exists('azure-pipelines.yml')) ci.push('azure-pipelines');
-	if (reader.exists('.circleci/config.yml')) ci.push('circleci');
-	if (reader.exists('Jenkinsfile')) ci.push('jenkins');
-	return ci;
+const detectCi = async (reader: IFileReader): Promise<readonly string[]> => {
+	// The CI rule table lives in `ci-rules.ts`; this function is a
+	// thin adapter. Adding a CI system is a one-line table entry,
+	// not an edit to this function.
+	return await matchCi(reader);
 };
 
-const detectAgentConfigs = (reader: IFileReader): string[] => {
-	const configs: string[] = [];
-	if (reader.exists('CLAUDE.md')) configs.push('CLAUDE.md');
-	if (reader.exists('AGENTS.md')) configs.push('AGENTS.md');
-	if (reader.exists('.cursorrules') || reader.listDir('.cursor').length > 0) {
-		configs.push('cursor');
-	}
-	if (reader.exists('.github/copilot-instructions.md')) {
-		configs.push('copilot-instructions');
-	}
-	if (reader.listDir('.github/agents').length > 0) configs.push('github-agents');
-	if (reader.exists('.windsurfrules')) configs.push('windsurf');
-	return configs;
+const detectAgentConfigs = async (
+	reader: IFileReader,
+): Promise<readonly string[]> => {
+	// The agent-config rule table lives in `agent-config-rules.ts`;
+	// this function is a thin adapter. Adding an editor is a
+	// one-line table entry, not an edit to this function.
+	return await matchAgentConfigs(reader);
 };
 
-const detectProjectType = (
+const detectProjectType = async (
 	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 	deps: Record<string, string>,
 	framework: string | undefined,
-	monorepoTool: string | undefined
-): IProjectType => {
-	if (monorepoTool !== undefined) return 'monorepo';
-	if (detectGame(deps)) return 'game';
-	if (framework !== undefined) return 'webapp';
-	if (pkg?.bin !== undefined) return 'cli';
-	if (pkg?.exports !== undefined || pkg?.main !== undefined) return 'library';
-	// Non-JS stacks.
-	if (reader.exists('Cargo.toml')) {
-		return reader.exists('src/main.rs') ? 'cli' : 'library';
-	}
-	if (reader.exists('go.mod')) {
-		return reader.exists('main.go') ? 'cli' : 'library';
-	}
-	if (reader.exists('pyproject.toml') || reader.exists('setup.py')) {
-		return 'library';
-	}
-	return 'generic';
+	monorepoTool: string | undefined,
+): Promise<IProjectType> => {
+	// The actual rule table lives in `project-type-rules.ts`; this
+	// function only translates the analysis inputs into the rule
+	// context. Adding a new project type is a one-line table entry,
+	// not an edit to this function.
+	return await matchProjectType({
+		reader,
+		hasBin: pkg?.bin !== undefined,
+		hasExports: pkg?.exports !== undefined,
+		hasMain: pkg?.main !== undefined,
+		framework,
+		monorepoTool,
+		isGame: detectGame(deps),
+	});
 };
 
-const detectMcp = (
+const detectMcp = async (
 	reader: IFileReader,
-	deps: Record<string, string>
-): { has: boolean; evidence: string[] } => {
-	const evidence: string[] = [];
-	if ('@modelcontextprotocol/sdk' in deps) {
-		evidence.push('depends on @modelcontextprotocol/sdk');
-	}
-	for (const path of ['.vscode/mcp.json', 'mcp.json', '.cursor/mcp.json']) {
-		if (reader.exists(path)) evidence.push(`found ${path}`);
-	}
-	for (const path of ['src/server.ts', 'src/mcp-server.ts', 'server.ts']) {
-		if (reader.exists(path)) evidence.push(`found ${path}`);
-	}
-	return { has: evidence.length > 0, evidence };
+	deps: Record<string, string>,
+): Promise<{ has: boolean; evidence: string[] }> => {
+	// The MCP-evidence rule table lives in `mcp-evidence-rules.ts`;
+	// this function is a thin adapter. Adding a new evidence kind
+	// (e.g. a corporate marker file) is a one-line table entry.
+	const result = await detectMcpEvidence(reader, deps);
+	return { has: result.has, evidence: [...result.evidence] };
+};
+
+const detectCustomExtraTools = async (
+	reader: IFileReader,
+): Promise<boolean> => {
+	// The host-config rule table lives in `host-config-rules.ts`;
+	// this function is a thin adapter. The current consumer
+	// only needs a boolean; the matcher returns a list of hit
+	// ids and we surface "any hit" as `true` for backward
+	// compatibility.
+	const hits = await matchHostConfig(reader);
+	return hits.length > 0;
+};
+
+const detectCustomVertexConfig = async (
+	reader: IFileReader,
+): Promise<boolean> => {
+	// The vertex-config rule table lives in
+	// `vertex-config-rules.ts`; this function is a thin adapter.
+	// The matcher parses the JSON internally and returns a list
+	// of hit ids; the boolean is `any hit` for backward
+	// compatibility with the boolean contract this function
+	// used to have.
+	const rawCfg = await reader.readFile('mcp-vertex.config.json');
+	const hits = matchVertexConfigFromRaw(rawCfg);
+	return hits.length > 0;
 };
 
 /**
@@ -235,59 +267,67 @@ const detectMcp = (
  * analysis. Never throws on malformed input — missing or invalid files
  * degrade to `unknown`/`generic` so the recommender always has data.
  */
-export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
-	const pkg = safeJson(reader.readFile('package.json'));
+export const analyzeProject = async (
+	reader: IFileReader,
+): Promise<IProjectAnalysis> => {
+	const pkgRaw = await reader.readFile('package.json');
+	const pkg = safeJson(pkgRaw);
 	const deps = allDeps(pkg);
 	const scripts = pkg?.scripts ?? {};
-	const framework = detectFramework(deps);
-	const language = detectLanguage(reader, pkg);
-	const monorepoTool = detectMonorepoTool(reader, pkg);
-	const mcp = detectMcp(reader, deps);
-	const projectType = detectProjectType(
+	const framework = await detectFramework(deps);
+	const language = await detectLanguage(reader, pkg);
+	const monorepoTool = await detectMonorepoTool(reader, pkg);
+	const mcp = await detectMcp(reader, deps);
+	const hasCustomExtraTools = await detectCustomExtraTools(reader);
+	const hasCustomVertexConfig = await detectCustomVertexConfig(reader);
+	const projectType = await detectProjectType(
 		reader,
 		pkg,
 		deps,
 		framework,
-		monorepoTool
+		monorepoTool,
 	);
-	const ci = detectCi(reader);
-	const agentConfigs = detectAgentConfigs(reader);
+	const ci = await detectCi(reader);
+	const agentConfigs = await detectAgentConfigs(reader);
+	const packageManager = await detectPackageManager(reader);
+	const testRunner = detectTestRunner(deps, scripts);
+	const scriptsPicked = pickScripts(scripts);
 
-	const signals: string[] = [];
-	if (pkg === undefined && language === 'unknown') {
-		signals.push('no recognised manifest — limited analysis');
-	}
-	signals.push(
-		mcp.has
-			? 'an MCP server already exists; recommend augmenting, not replacing'
-			: 'no MCP server detected; a fresh one can be scaffolded'
-	);
-	if (framework !== undefined) signals.push(`web framework: ${framework}`);
-	if (monorepoTool !== undefined) signals.push(`monorepo tool: ${monorepoTool}`);
-	if (language !== 'typescript' && language !== 'javascript') {
-		signals.push(`non-JS stack: ${language}`);
-	}
-	if (agentConfigs.length > 0) {
-		signals.push(
-			`existing agent config (${agentConfigs.join(', ')}); align with it`
-		);
-	}
-	if (ci.length > 0) signals.push(`CI: ${ci.join(', ')}`);
+	const signals = matchSignals({
+		analysis: {
+			hasPackageJson: pkg !== undefined,
+			name: pkg?.name,
+			projectType,
+			language,
+			packageManager,
+			framework,
+			testRunner,
+			monorepoTool,
+			hasMcpProject: mcp.has,
+			mcpEvidence: mcp.evidence,
+			ci,
+			agentConfigs,
+			scripts: scriptsPicked,
+			signals: [],
+		},
+		hasCustomExtraTools,
+		hasCustomVertexConfig,
+	});
 
 	return {
 		hasPackageJson: pkg !== undefined,
 		name: pkg?.name,
 		projectType,
 		language,
-		packageManager: detectPackageManager(reader),
+		packageManager,
 		framework,
-		testRunner: detectTestRunner(deps, scripts),
+		testRunner,
 		monorepoTool,
-		hasMcpServer: mcp.has,
+		hasMcpProject: mcp.has,
 		mcpEvidence: mcp.evidence,
 		ci,
 		agentConfigs,
-		scripts: pickScripts(scripts),
+		scripts: scriptsPicked,
 		signals,
 	};
 };

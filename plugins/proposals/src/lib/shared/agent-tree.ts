@@ -1,7 +1,4 @@
-import type {
-	IAgentAssignment,
-	IAgentRegistry,
-} from './agent-registry-store';
+import type { IAgentAssignment, IAgentRegistry } from './agent-registry-store';
 
 export type IAgentNode = IAgentAssignment & {
 	children?: IAgentNode[];
@@ -11,7 +8,7 @@ export type IAgentNodeInput = IAgentAssignment;
 
 const buildNode = (
 	a: IAgentAssignment,
-	byId: Map<string, IAgentNode>
+	byId: Map<string, IAgentNode>,
 ): IAgentNode => {
 	const existing = byId.get(a.task_id);
 	if (existing) return existing;
@@ -28,9 +25,7 @@ const buildNode = (
  * exist in the registry, it is treated as a root (defensive: registry
  * can be in an inconsistent state during a race; we still render it).
  */
-export const buildAgentTree = (
-	registry: IAgentRegistry
-): IAgentNode[] => {
+export const buildAgentTree = (registry: IAgentRegistry): IAgentNode[] => {
 	const byId = new Map<string, IAgentNode>();
 	const all = registry.assignments.map((a) => {
 		const node = buildNode(a, byId);

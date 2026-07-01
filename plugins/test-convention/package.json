@@ -1,0 +1,70 @@
+{
+	"name": "@mcp-vertex/test-convention",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Canonical test convention for any mcp-vertex project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `mcp-vertex --plugins=test-convention`.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"test",
+		"testing",
+		"convention",
+		"vitest",
+		"jest",
+		"agent",
+		"ai",
+		"cartago",
+		"plugin"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@mcp-vertex/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../scripts/build.ts plugins/test-convention"
+	},
+	"peerDependencies": {
+		"@mcp-vertex/core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@mcp-vertex/core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

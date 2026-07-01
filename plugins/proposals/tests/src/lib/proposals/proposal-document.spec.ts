@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { parseProposalDocument } from '@cartago-git/mcp-proposals/lib/proposals/proposal-document';
-import { ProposalParseError } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';
-import type { IProposalErrorCode } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';
+import { parseProposalDocument } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
+import { ProposalParseError } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
+import type { IProposalErrorCode } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
 
 let tmpDir: string;
 let tmpFile: string;
@@ -17,8 +17,8 @@ const write = (content: string): string => {
 };
 
 beforeEach(() => {
-	tmpDir = mkdtempSync(join(tmpdir(), 'affairs-proposal-doc-'));
-	tmpFile = join(tmpDir, 'p99-fixture.md');
+	tmpDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-proposal-doc-'));
+	tmpFile = join(tmpDir, 'l99-fixture.md');
 });
 
 afterEach(() => {
@@ -31,7 +31,7 @@ afterEach(() => {
  */
 const expectParseError = async (
 	promise: Promise<unknown>,
-	code: IProposalErrorCode
+	code: IProposalErrorCode,
 ): Promise<void> => {
 	let caught: unknown;
 	try {
@@ -41,7 +41,7 @@ const expectParseError = async (
 	}
 	expect(
 		caught,
-		`expected a ProposalParseError with code ${code}`
+		`expected a ProposalParseError with code ${code}`,
 	).toBeInstanceOf(ProposalParseError);
 	if (caught instanceof ProposalParseError) {
 		expect(caught.code).toBe(code);
@@ -49,7 +49,7 @@ const expectParseError = async (
 };
 
 const VALID_FIXTURE = `---
-id: p99-test
+id: l99-test
 type: meta
 status: pending
 track: meta
@@ -72,7 +72,7 @@ T1 spec verde
 none
 `;
 
-describe('parseProposalDocument', () => {
+describe('parseProposalDocument', async () => {
 	it('parses a valid fixture and returns IProposalDocument with expected shape', async () => {
 		const path = write(VALID_FIXTURE);
 		const doc = await parseProposalDocument(path);
@@ -80,7 +80,7 @@ describe('parseProposalDocument', () => {
 		expect(doc.path).toBe(path);
 
 		// frontmatter scalars
-		expect(doc.frontmatter.id).toBe('p99-test');
+		expect(doc.frontmatter.id).toBe('l99-test');
 		expect(doc.frontmatter.type).toBe('meta');
 		expect(doc.frontmatter.status).toBe('pending');
 		expect(doc.frontmatter.track).toBe('meta');
@@ -105,13 +105,13 @@ describe('parseProposalDocument', () => {
 		const path = write('# Just a heading\n\nNo frontmatter here.\n');
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_FRONTMATTER'
+			'INVALID_FRONTMATTER',
 		);
 	});
 
 	it('throws INVALID_BUDGET when budget.maxPremiumCalls is negative', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -125,7 +125,7 @@ budget:
 
 	it('throws INVALID_BUDGET when budget.maxIterations is a string', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -139,7 +139,7 @@ budget:
 
 	it('throws INVALID_CRITERION when acceptanceCriteria item has no expect field', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -150,13 +150,13 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
 	it('throws INVALID_CRITERION when expect is not in the closed union', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -168,13 +168,13 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
 	it('throws INVALID_CRITERION when command is empty', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -186,13 +186,13 @@ acceptanceCriteria:
 `);
 		await expectParseError(
 			parseProposalDocument(path),
-			'INVALID_CRITERION'
+			'INVALID_CRITERION',
 		);
 	});
 
 	it('accepts contains:<substring> as a valid expect value', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -204,13 +204,13 @@ acceptanceCriteria:
 `);
 		const doc = await parseProposalDocument(path);
 		expect(doc.frontmatter.acceptanceCriteria?.[0]?.expect).toBe(
-			'contains:1.3'
+			'contains:1.3',
 		);
 	});
 
 	it('accepts all three literal expect values (exit0, pass, synchronized)', async () => {
 		const path = write(`---
-id: p99
+id: l99
 type: meta
 status: pending
 track: meta
@@ -226,7 +226,7 @@ acceptanceCriteria:
 `);
 		const doc = await parseProposalDocument(path);
 		const expects = doc.frontmatter.acceptanceCriteria?.map(
-			(c) => c.expect
+			(c) => c.expect,
 		);
 		expect(expects).toEqual(['exit0', 'pass', 'synchronized']);
 	});

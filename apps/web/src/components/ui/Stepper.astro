@@ -1,0 +1,117 @@
+---
+/**
+ * `Stepper.astro` — ordered numbered list with a connected rail (f00048 S1).
+ *
+ * Each step is plain text (with inline `` `code` `` spans rendered as
+ * `<code>`). Steps are rendered as `<ol>` so the semantic order survives
+ * even when CSS hides the visual numbers.
+ *
+ * Props:
+ *   - steps: ordered list of strings. Each string may contain `` `code` ``
+ *     backticks that are split out and rendered as `<code>` chips.
+ *   - start: number for the first step (default 1).
+ */
+interface Props {
+	readonly steps: ReadonlyArray<string>;
+	readonly start?: number;
+}
+
+const { steps, start = 1 } = Astro.props as Props;
+
+/** Split `` `code` `` spans out of plain text so they render as `<code>`. */
+const renderText = (text: string): Array<string | { code: string }> =>
+	text
+		.split(/(`[^`]+`)/g)
+		.map((part) =>
+			part.startsWith('`') && part.endsWith('`')
+				? { code: part.slice(1, -1) }
+				: part,
+		);
+---
+
+<ol class="ui-stepper" start={start}>
+	{
+		steps.map((s, i) => (
+			<li class="ui-stepper__item">
+				<span class="ui-stepper__num" aria-hidden="true">
+					{start + i}
+				</span>
+				<div class="ui-stepper__body">
+					<p class="ui-stepper__text">
+						{renderText(s).map((part) =>
+							typeof part === 'string' ? (
+								<Fragment>{part}</Fragment>
+							) : (
+								<code>{part.code}</code>
+							),
+						)}
+					</p>
+				</div>
+			</li>
+		))
+	}
+</ol>
+
+<style>
+	.ui-stepper {
+		counter-reset: ui-step;
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0;
+		display: grid;
+		gap: 1rem;
+	}
+	.ui-stepper__item {
+		display: grid;
+		grid-template-columns: 2rem 1fr;
+		gap: 0.85rem;
+		position: relative;
+	}
+	.ui-stepper__item::before {
+		content: '';
+		position: absolute;
+		left: 0.95rem;
+		top: 1.8rem;
+		bottom: -1rem;
+		width: 2px;
+		background: color-mix(in srgb, currentColor 12%, transparent);
+		opacity: 0.5;
+	}
+	.ui-stepper__item:last-child::before {
+		display: none;
+	}
+	.ui-stepper__num {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, currentColor 14%, transparent);
+		color: inherit;
+		font-weight: 600;
+		font-size: 0.9rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.ui-stepper__body {
+		padding-top: 0.3rem;
+		min-width: 0;
+	}
+	.ui-stepper__text {
+		margin: 0 0 0.5rem;
+		line-height: 1.55;
+	}
+	.ui-stepper__text code {
+		font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+		font-size: 0.9em;
+		padding: 0.05em 0.35em;
+		background: color-mix(in srgb, currentColor 8%, transparent);
+		border-radius: 4px;
+	}
+	.ui-stepper__rich {
+		margin: 0.5rem 0;
+	}
+	.ui-stepper__rich :global(pre) {
+		margin: 0.5rem 0;
+	}
+</style>

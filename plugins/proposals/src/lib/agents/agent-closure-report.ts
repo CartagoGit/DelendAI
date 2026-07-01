@@ -88,7 +88,7 @@ export class AgentClosureReportParseError extends Error {
 		code: IAgentClosureReportErrorCode,
 		path: string,
 		message: string,
-		field?: string
+		field?: string,
 	) {
 		super(message);
 		this.name = 'AgentClosureReportParseError';
@@ -109,19 +109,18 @@ export class AgentClosureReportParseError extends Error {
 
 const hasOwn = <T extends string>(
 	value: object,
-	key: T
-): value is Record<T, unknown> =>
-	Object.hasOwn(value, key);
+	key: T,
+): value is Record<T, unknown> => Object.hasOwn(value, key);
 
 const ensureObject = (
 	value: unknown,
-	path: string
+	path: string,
 ): Record<string, unknown> => {
 	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
 		throw new AgentClosureReportParseError(
 			'INVALID_FRONTMATTER',
 			path,
-			`Agent closure report at ${path} must be a JSON object`
+			`Agent closure report at ${path} must be a JSON object`,
 		);
 	}
 
@@ -131,14 +130,14 @@ const ensureObject = (
 const requireField = <T extends string>(
 	record: Record<string, unknown>,
 	field: T,
-	path: string
+	path: string,
 ): unknown => {
 	if (!hasOwn(record, field) || record[field] === undefined) {
 		throw new AgentClosureReportParseError(
 			'MISSING_FIELD',
 			path,
 			`Missing required field ${field} in ${path}`,
-			field
+			field,
 		);
 	}
 
@@ -151,7 +150,7 @@ const ensureString = (value: unknown, field: string, path: string): string => {
 			'INVALID_FRONTMATTER',
 			path,
 			`Field ${field} in ${path} must be a string`,
-			field
+			field,
 		);
 	}
 
@@ -164,7 +163,7 @@ const ensureNumber = (value: unknown, field: string, path: string): number => {
 			'INVALID_FRONTMATTER',
 			path,
 			`Field ${field} in ${path} must be a finite number >= 0`,
-			field
+			field,
 		);
 	}
 
@@ -174,7 +173,7 @@ const ensureNumber = (value: unknown, field: string, path: string): number => {
 const ensureStringArray = (
 	value: unknown,
 	field: string,
-	path: string
+	path: string,
 ): readonly string[] => {
 	if (
 		!Array.isArray(value) ||
@@ -184,7 +183,7 @@ const ensureStringArray = (
 			'INVALID_FRONTMATTER',
 			path,
 			`Field ${field} in ${path} must be a string array`,
-			field
+			field,
 		);
 	}
 
@@ -194,7 +193,7 @@ const ensureStringArray = (
 const ensureTimestamp = (
 	value: unknown,
 	field: 'startedAt' | 'closedAt',
-	path: string
+	path: string,
 ): string | undefined => {
 	if (value === undefined) {
 		return undefined;
@@ -206,7 +205,7 @@ const ensureTimestamp = (
 			'INVALID_FRONTMATTER',
 			path,
 			`Field ${field} in ${path} must be an ISO timestamp`,
-			field
+			field,
 		);
 	}
 
@@ -216,7 +215,7 @@ const ensureTimestamp = (
 const optionalString = (
 	value: unknown,
 	field: string,
-	path: string
+	path: string,
 ): string | undefined => {
 	if (value === undefined || value === null) {
 		return undefined;
@@ -228,18 +227,18 @@ const optionalString = (
 
 const isAgentSlot = (
 	value: string,
-	vocabulary: IAgentClosureVocabulary
+	vocabulary: IAgentClosureVocabulary,
 ): value is IAgentClosureReport['agentSlot'] =>
 	vocabulary.slots.includes(value);
 
 const isSelfReview = (
-	value: string
+	value: string,
 ): value is IAgentClosureReport['selfReview'] =>
 	(SELF_REVIEW_VALUES as readonly string[]).includes(value);
 
 const isKnownModel = (
 	value: string,
-	vocabulary: IAgentClosureVocabulary
+	vocabulary: IAgentClosureVocabulary,
 ): boolean =>
 	vocabulary.validModels === undefined || vocabulary.validModels.has(value);
 
@@ -252,70 +251,66 @@ const readJson = async (absolutePath: string): Promise<unknown> => {
 		throw new AgentClosureReportParseError(
 			'INVALID_FRONTMATTER',
 			absolutePath,
-			`Unable to parse agent closure report ${absolutePath}: ${detail}`
+			`Unable to parse agent closure report ${absolutePath}: ${detail}`,
 		);
 	}
 };
 
 export const parseAgentClosureReport = async (
 	absolutePath: string,
-	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY
+	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY,
 ): Promise<IAgentClosureReport> => {
 	const parsed = ensureObject(await readJson(absolutePath), absolutePath);
 	const agentName = ensureString(
 		requireField(parsed, 'agentName', absolutePath),
 		'agentName',
-		absolutePath
+		absolutePath,
 	);
 	const agentSlot = ensureString(
 		requireField(parsed, 'agentSlot', absolutePath),
 		'agentSlot',
-		absolutePath
+		absolutePath,
 	);
 	const model = ensureString(
 		requireField(parsed, 'model', absolutePath),
 		'model',
-		absolutePath
+		absolutePath,
 	);
 	const selfReview = ensureString(
 		requireField(parsed, 'selfReview', absolutePath),
 		'selfReview',
-		absolutePath
+		absolutePath,
 	);
 	const filesReRead = ensureNumber(
 		requireField(parsed, 'filesReRead', absolutePath),
 		'filesReRead',
-		absolutePath
+		absolutePath,
 	);
 	const reviewEvidence = ensureStringArray(
 		requireField(parsed, 'reviewEvidence', absolutePath),
 		'reviewEvidence',
-		absolutePath
+		absolutePath,
 	);
 	const proposalId = optionalString(
 		parsed.proposalId,
 		'proposalId',
-		absolutePath
+		absolutePath,
 	);
 	const taskId = optionalString(parsed.taskId, 'taskId', absolutePath);
 	const summary = optionalString(parsed.summary, 'summary', absolutePath);
 	const startedAt = ensureTimestamp(
 		parsed.startedAt,
 		'startedAt',
-		absolutePath
+		absolutePath,
 	);
-	const closedAt = ensureTimestamp(
-		parsed.closedAt,
-		'closedAt',
-		absolutePath
-	);
+	const closedAt = ensureTimestamp(parsed.closedAt, 'closedAt', absolutePath);
 
 	if (!isAgentSlot(agentSlot, vocabulary)) {
 		throw new AgentClosureReportParseError(
 			'INVALID_SLOT',
 			absolutePath,
 			`agentSlot ${agentSlot} is not canonical`,
-			'agentSlot'
+			'agentSlot',
 		);
 	}
 
@@ -324,7 +319,7 @@ export const parseAgentClosureReport = async (
 			'INVALID_FRONTMATTER',
 			absolutePath,
 			`selfReview must be one of: ${SELF_REVIEW_VALUES.join(', ')}`,
-			'selfReview'
+			'selfReview',
 		);
 	}
 
@@ -333,7 +328,7 @@ export const parseAgentClosureReport = async (
 			'INVALID_MODEL',
 			absolutePath,
 			`model ${model} is not in hostModelInventory`,
-			'model'
+			'model',
 		);
 	}
 
@@ -342,7 +337,7 @@ export const parseAgentClosureReport = async (
 			'INCONSISTENT_REVIEW',
 			absolutePath,
 			`selfReview pass requires filesReRead >= 1 in ${absolutePath}`,
-			'filesReRead'
+			'filesReRead',
 		);
 	}
 
@@ -351,7 +346,7 @@ export const parseAgentClosureReport = async (
 			'INCONSISTENT_REVIEW',
 			absolutePath,
 			`selfReview pass requires reviewEvidence in ${absolutePath}`,
-			'reviewEvidence'
+			'reviewEvidence',
 		);
 	}
 
@@ -364,7 +359,7 @@ export const parseAgentClosureReport = async (
 			'TEMPORAL_INCONSISTENCY',
 			absolutePath,
 			`closedAt must be >= startedAt in ${absolutePath}`,
-			'closedAt'
+			'closedAt',
 		);
 	}
 
@@ -385,7 +380,7 @@ export const parseAgentClosureReport = async (
 
 export const evaluateSelfReviewGate = (
 	report: IAgentClosureReport,
-	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY
+	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY,
 ): IClosureDecision => {
 	if (report.agentName.trim().length === 0) {
 		return {
@@ -431,7 +426,7 @@ export const evaluateSelfReviewGate = (
 
 export const assertGate = (
 	report: IAgentClosureReport,
-	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY
+	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY,
 ): void => {
 	const decision = evaluateSelfReviewGate(report, vocabulary);
 	if (decision.closureDecision !== 'close') {
@@ -460,7 +455,7 @@ export interface IClosureHookParams {
 export const evaluateSelfReviewGateWithClosedTasksHook = async (
 	report: IAgentClosureReport,
 	hookParams: IClosureHookParams,
-	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY
+	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY,
 ): Promise<IClosureDecision> => {
 	// Reuse the pure gate; do not modify it (regression risk).
 	const decision = evaluateSelfReviewGate(report, vocabulary);

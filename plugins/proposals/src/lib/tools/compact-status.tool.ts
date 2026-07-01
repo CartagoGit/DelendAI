@@ -1,15 +1,14 @@
-import { existsSync, readFileSync } from 'node:fs';
-
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
-import { toolJson } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson } from '@mcp-vertex/core/public';
 
 import {
 	loadLockSnapshot,
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import type { IPersistentTaskQueue } from '../agents/persistent-task-queue';
+import { readJsonOrNull } from '../proposals/index-reader';
 
 export interface ICompactStatusOptions {
 	readonly namespacePrefix: string;
@@ -17,6 +16,13 @@ export interface ICompactStatusOptions {
 	readonly queuePathAbs: string;
 	readonly closedTasksPathAbs: string;
 	readonly indexPathAbs: string;
+	/**
+	 * x00052: absolute path of the proposals directory. Optional —
+	 * `compact_status` does not currently need to read proposal files
+	 * but the wiring forwards it for consistency with the rest of the
+	 * tool surface (see `continue-proposal.tool.ts`).
+	 */
+	readonly proposalsDirAbs?: string;
 }
 
 type IField = 'locks' | 'queue' | 'proposals';
@@ -37,16 +43,15 @@ export interface ICompactStatus {
 	};
 }
 
-const readQueueTolerant = (path: string): IPersistentTaskQueue => {
-	if (!existsSync(path)) return { version: 1, entries: [] };
-	try {
-		const p = JSON.parse(readFileSync(path, 'utf8')) as { entries?: unknown };
-		return Array.isArray(p.entries)
-			? (p as IPersistentTaskQueue)
-			: { version: 1, entries: [] };
-	} catch {
-		return { version: 1, entries: [] };
-	}
+// `readJsonOrNull` is provided by `proposals/index-reader.ts` (DRY).
+
+const readQueueTolerant = async (
+	path: string,
+): Promise<IPersistentTaskQueue> => {
+	const p = await readJsonOrNull<{ entries?: unknown }>(path);
+	return p && Array.isArray(p.entries)
+		? (p as IPersistentTaskQueue)
+		: { version: 1, entries: [] };
 };
 
 const ACTIONABLE = ['pending', 'ready', 'in_progress'];
@@ -55,12 +60,12 @@ const ACTIONABLE = ['pending', 'ready', 'in_progress'];
  * Aggregate ONLY the proposals plugin's own coordination state — locks,
  * task queue and the proposal board — into one tiny payload, so an agent
  * checks "where are we" in a single call instead of three. `fields`
- * narrows it further. mcp-core stays agnostic: core doesn't know about
- * proposals, so this aggregator lives in the plugin that owns the state. [N17]
+ * narrows it further. mcp-vertex stays agnostic: core doesn't know about
+ * proposals, so this aggregator lives in the plugin that owns the state.
  */
 export const collectCompactStatus = async (
 	options: ICompactStatusOptions,
-	fields: readonly IField[] = ALL_FIELDS
+	fields: readonly IField[] = ALL_FIELDS,
 ): Promise<ICompactStatus> => {
 	const want = new Set(fields);
 	const out: {
@@ -81,15 +86,15 @@ export const collectCompactStatus = async (
 	if (want.has('locks') || want.has('queue')) {
 		const snapshot = await loadLockSnapshot(
 			options.lockPathAbs,
-			options.closedTasksPathAbs
+			options.closedTasksPathAbs,
 		);
 		if (want.has('locks')) {
 			out.locks = { active: snapshot.in_flight.length };
 		}
 		if (want.has('queue')) {
 			const bp = reportBackpressure(
-				readQueueTolerant(options.queuePathAbs),
-				snapshot
+				await readQueueTolerant(options.queuePathAbs),
+				snapshot,
 			);
 			out.queue = {
 				queued: bp.queuedCount,
@@ -103,25 +108,22 @@ export const collectCompactStatus = async (
 	if (want.has('proposals')) {
 		let byStatus: Record<string, number> = {};
 		let total = 0;
-		if (existsSync(options.indexPathAbs)) {
-			try {
-				const index = JSON.parse(
-					readFileSync(options.indexPathAbs, 'utf8')
-				) as { proposals?: Array<{ status?: string }> };
-				const list = index.proposals ?? [];
-				total = list.length;
-				byStatus = list.reduce<Record<string, number>>((acc, p) => {
-					const k = p.status ?? 'unknown';
-					acc[k] = (acc[k] ?? 0) + 1;
-					return acc;
-				}, {});
-			} catch {
-				// torn index → zeros (state_health surfaces corruption)
-			}
+		// torn/missing index → zeros (state_health surfaces corruption)
+		const index = await readJsonOrNull<{
+			proposals?: Array<{ status?: string }>;
+		}>(options.indexPathAbs);
+		if (index !== null) {
+			const list = index.proposals ?? [];
+			total = list.length;
+			byStatus = list.reduce<Record<string, number>>((acc, p) => {
+				const k = p.status ?? 'unknown';
+				acc[k] = (acc[k] ?? 0) + 1;
+				return acc;
+			}, {});
 		}
 		const actionable = ACTIONABLE.reduce(
 			(n, s) => n + (byStatus[s] ?? 0),
-			0
+			0,
 		);
 		out.proposals = { total, actionable, byStatus };
 	}
@@ -130,7 +132,7 @@ export const collectCompactStatus = async (
 };
 
 export const buildCompactStatusRegistration = (
-	options: ICompactStatusOptions
+	options: ICompactStatusOptions,
 ): IToolRegistration => ({
 	id: 'compact_status',
 	summary:
@@ -143,7 +145,9 @@ export const buildCompactStatusRegistration = (
 				description:
 					'Aggregates the proposals plugin state in ONE low-token call: active locks, queue backpressure (queued/promoted/waiterOrphans/threshold) and proposal counts by status. Use `fields` (["locks","queue","proposals"]) to shrink it further. Read-only.',
 				inputSchema: z.object({
-					fields: z.array(z.enum(['locks', 'queue', 'proposals'])).optional(),
+					fields: z
+						.array(z.enum(['locks', 'queue', 'proposals']))
+						.optional(),
 				}),
 				outputSchema: z.object({
 					locks: z.object({ active: z.number() }).optional(),
@@ -172,7 +176,7 @@ export const buildCompactStatusRegistration = (
 						? args.fields
 						: ALL_FIELDS;
 				return toolJson(await collectCompactStatus(options, fields));
-			}
+			},
 		);
 	},
 });

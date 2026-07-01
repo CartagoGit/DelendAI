@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-git`. The default export (in
+ * Public surface of `@mcp-vertex/git`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * git helpers + tool builder for programmatic reuse.
  */
@@ -10,11 +10,16 @@ export {
 	checkRepo,
 	parseStatus,
 	parseLog,
+	parseBlamePorcelain,
+	parseWorktreeList,
 	gitStatus,
 	gitChanged,
 	gitDiffStat,
 	gitLog,
-} from '../lib/git';
+	gitBlame,
+	gitShow,
+	gitWorktreeList,
+} from '../lib/services/git';
 export type {
 	IGitRunner,
 	IGitRunResult,
@@ -22,9 +27,19 @@ export type {
 	IGitStatus,
 	IGitStatusEntry,
 	IGitCommit,
-} from '../lib/git';
+	IGitBlameLine,
+	IGitBlameResult,
+	IGitShowDetail,
+	IGitShowResult,
+	IGitWorktreeEntry,
+} from '../lib/services/git';
 export { buildGitToolRegistrations } from '../lib/tools';
 export type { IGitToolOptions } from '../lib/tools';
+export {
+	buildGitWriteToolRegistrations,
+	isConventionalCommitMessage,
+} from '../lib/tools/write-tools';
+export type { IGitWriteToolOptions } from '../lib/tools/write-tools';
 
 // --- generated tool-output types (N23, see scripts/generate-tool-types.ts) ---
 export type * from '../generated/tool-outputs';

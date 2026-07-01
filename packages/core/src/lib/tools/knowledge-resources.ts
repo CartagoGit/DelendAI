@@ -9,7 +9,7 @@ import type { IResourceRegistration } from '../contracts/interfaces/tool-registr
  * very different agents and clients.
  */
 export const buildKnowledgeResourceRegistrations = (
-	knowledge: readonly IKnowledgeEntry[]
+	knowledge: readonly IKnowledgeEntry[],
 ): readonly IResourceRegistration[] =>
 	knowledge.map((entry) => ({
 		id: `resource:${entry.id}`,
@@ -31,7 +31,7 @@ export const buildKnowledgeResourceRegistrations = (
 							text: entry.body,
 						},
 					],
-				})
+				}),
 			);
 		},
 	}));

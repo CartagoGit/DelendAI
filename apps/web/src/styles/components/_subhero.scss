@@ -1,0 +1,13 @@
+// _subhero.scss — REMOVED by p105 slice s12 (2026-06-19).
+//
+// The subhero block (breadcrumb + title + lead + meta + CTAs) was
+// duplicated across 17 pages and a partial. Proposal p105 found it
+// to be a noisy block that overlapped the page <h1> and the nav.
+// It has been replaced by a minimal <PageHeader /> component that
+// only carries the breadcrumb + h1 (with the transition:name morph
+// preserved).
+//
+// This file is kept empty (not deleted) so existing imports keep
+// resolving; the import was already removed from styles.scss.
+// It can be removed from git in a follow-up commit once the shell
+// is back to normal.

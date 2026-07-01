@@ -1,12 +1,13 @@
-import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 import {
 	CorruptFileError,
 	quarantineCorruptFile,
+	runMigrations,
 	withFileMutex,
 	writeFileAtomic,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
+import type { AgentHost, IMigrator } from '@mcp-vertex/core/public';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 
@@ -24,6 +25,15 @@ export type IAgentAssignment = {
 	last_seen: string;
 	cooldown_until: string | null;
 	status: IAgentAssignmentStatus;
+	/**
+	 * f00082 S2: composite-identity fields. All optional/nullable so
+	 * pre-f00082 entries (version 1) coexist with newer ones. The
+	 * v1→v2 migrator backfills these with `null`; the tools fill them
+	 * in when a host passes them (f00082 S3). `task_id` above already
+	 * carries the "which proposal" part of the composite identity.
+	 */
+	host?: AgentHost | null;
+	model?: string | null;
 };
 
 export type IAgentAdoption = {
@@ -53,7 +63,33 @@ const emptyRegistry = (): IAgentRegistry => ({
 	assignments: [],
 });
 
-const migrate = (raw: unknown): IAgentRegistry => {
+/**
+ * v1→v2 (f00082 S2): backfill the composite-identity fields on every
+ * existing assignment. `host`/`model` default to `null` so old entries
+ * stay valid and the on-disk shape is uniform. Never destroys data:
+ * an assignment that already carries the fields keeps them.
+ */
+const migrateV1toV2: IMigrator = (data) => {
+	const assignments = Array.isArray(data.assignments)
+		? (data.assignments as Array<Record<string, unknown>>)
+		: [];
+	return {
+		...data,
+		assignments: assignments.map((a) => ({
+			...a,
+			host: a.host ?? null,
+			model: a.model ?? null,
+		})),
+	};
+};
+
+const AGENT_REGISTRY_MIGRATORS: Readonly<Record<number, IMigrator>> = {
+	1: migrateV1toV2,
+};
+
+const normalizeVersionedRegistry = (
+	raw: unknown,
+): IAgentRegistry & Record<string, unknown> => {
 	if (typeof raw !== 'object' || raw === null) return emptyRegistry();
 	const r = raw as Partial<IAgentRegistry>;
 	return {
@@ -70,16 +106,21 @@ const migrate = (raw: unknown): IAgentRegistry => {
 	};
 };
 
-export const createAgentRegistryStore = (
-	path: string
-): IAgentRegistryStore => {
+const migrate = (raw: unknown): IAgentRegistry =>
+	runMigrations<IAgentRegistry>(
+		normalizeVersionedRegistry(raw),
+		AGENT_REGISTRY_MIGRATORS,
+		AGENT_CONVENTIONS.registry_version,
+	).data;
+
+export const createAgentRegistryStore = (path: string): IAgentRegistryStore => {
 	const read = async (): Promise<IAgentRegistry> => {
-		if (!existsSync(path)) return emptyRegistry();
 		let raw: string;
 		try {
 			raw = await readFile(path, 'utf8');
 		} catch (err: unknown) {
-			if ((err as NodeJS.ErrnoException).code === 'ENOENT') return emptyRegistry();
+			if ((err as NodeJS.ErrnoException).code === 'ENOENT')
+				return emptyRegistry();
 			throw err;
 		}
 		if (!raw.trim()) return emptyRegistry();
@@ -88,7 +129,11 @@ export const createAgentRegistryStore = (
 			parsed = JSON.parse(raw);
 		} catch (err) {
 			const backup = await quarantineCorruptFile(path);
-			throw new CorruptFileError(path, backup, `invalid JSON: ${String(err)}`);
+			throw new CorruptFileError(
+				path,
+				backup,
+				`invalid JSON: ${String(err)}`,
+			);
 		}
 		return migrate(parsed);
 	};
@@ -99,17 +144,17 @@ export const createAgentRegistryStore = (
 	const write = async (registry: IAgentRegistry): Promise<void> => {
 		await writeFileAtomic(
 			path,
-			`${JSON.stringify(registry, null, '    ')}\n`
+			`${JSON.stringify(registry, null, '    ')}\n`,
 		);
 	};
 
 	const upsert = async (
-		assignment: IAgentAssignment
+		assignment: IAgentAssignment,
 	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();
 			const idx = r.assignments.findIndex(
-				(a) => a.task_id === assignment.task_id
+				(a) => a.task_id === assignment.task_id,
 			);
 			if (idx >= 0) {
 				const prev = r.assignments[idx];
@@ -133,7 +178,7 @@ export const createAgentRegistryStore = (
 
 	const release = async (
 		task_id: string,
-		cooldown_until: string
+		cooldown_until: string,
 	): Promise<boolean> =>
 		withFileMutex(path, async () => {
 			const r = await read();
@@ -147,7 +192,7 @@ export const createAgentRegistryStore = (
 		});
 
 	const markAdopted = async (
-		adoption: IAgentAdoption
+		adoption: IAgentAdoption,
 	): Promise<IAgentRegistry> =>
 		withFileMutex(path, async () => {
 			const r = await read();

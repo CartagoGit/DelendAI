@@ -1,0 +1,178 @@
+/**
+ * redact-ttl.spec.ts (M11)
+ *
+ * Memory must never persist a credential, and notes can self-expire.
+ */
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { redactSecrets } from '@mcp-vertex/memory/lib/services/redact';
+import {
+	expireExpiredNotes,
+	readStore,
+	recall,
+	saveNote,
+	writeStore,
+	type INote,
+} from '@mcp-vertex/memory/lib/services/store';
+
+// Secret fixtures are assembled from split parts so the SOURCE never holds a
+// contiguous, real-looking token (otherwise GitHub push-protection blocks the
+// commit). `tok()` rebuilds the exact shape at runtime, which is what the
+// redaction regexes actually match against.
+const tok = (...parts: string[]): string => parts.join('');
+
+describe('redactSecrets (M11)', async () => {
+	it('redacts well-known secret shapes', async () => {
+		const samples = [
+			tok('AK', 'IA', 'IOSFODNN7EXAMPLE'),
+			tok('gh', 'p', '_', '0123456789abcdefghijklmnopqrstuvwxyz'),
+			tok('AI', 'za', 'a'.repeat(35)),
+			tok('xo', 'xb', '-123456789012-abcdefghijklmnop'),
+			tok('sk', '_live_', '0123456789abcdefghij'),
+			tok('ey', 'J', 'hbGci.payloadXYZ012.sigABC345'),
+		];
+		for (const s of samples) {
+			const r = redactSecrets(`value is ${s} end`);
+			expect(r.redactions).toBeGreaterThanOrEqual(1);
+			expect(r.text).not.toContain(s);
+			expect(r.text).toContain('[REDACTED]');
+		}
+	});
+
+	it('redacts secret-ish assignments but keeps the key', async () => {
+		const r = redactSecrets(
+			'api_key = "s3cr3tValue123" and password: hunter2hunter',
+		);
+		expect(r.redactions).toBe(2);
+		expect(r.text).toContain('api_key');
+		expect(r.text).toContain('password');
+		expect(r.text).not.toContain('s3cr3tValue123');
+		expect(r.text).not.toContain('hunter2hunter');
+	});
+
+	it('leaves ordinary prose untouched', async () => {
+		const prose = 'We decided to use mysql2 with a 30s connection timeout.';
+		expect(redactSecrets(prose)).toEqual({ text: prose, redactions: 0 });
+	});
+});
+
+describe('TTL expiry + redaction on save (M11)', async () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-ttl-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('saveNote scrubs secrets and reports the count', async () => {
+		const ghToken = tok(
+			'gh',
+			'p',
+			'_',
+			'0123456789abcdefghijklmnopqrstuvwxyz',
+		);
+		const { note, redactions } = await saveNote(store, {
+			title: 'creds',
+			body: `token=${ghToken} here`,
+		});
+		expect(redactions).toBe(1);
+		expect(note.body).not.toContain(ghToken);
+		expect(note.body).toContain('[REDACTED]');
+	});
+
+	it('saveNote with ttlSeconds sets a future expiresAt and the note survives', async () => {
+		const { note } = await saveNote(store, {
+			title: 'temp',
+			body: 'x',
+			ttlSeconds: 3600,
+		});
+		expect(note.expiresAt).toBeDefined();
+		expect(await recall(store, {})).toHaveLength(1);
+	});
+
+	it('expired notes are dropped on read (lazy TTL) and pruned on next write', async () => {
+		const expired: INote = {
+			id: 'old',
+			title: 'old',
+			body: 'x',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+			expiresAt: '2020-01-02T00:00:00.000Z',
+		};
+		await writeStore(store, [expired]);
+		expect(await readStore(store)).toHaveLength(0); // lazily filtered
+
+		// A subsequent save persists only the live set (expired pruned).
+		await saveNote(store, { title: 'fresh', body: 'y' });
+		const raw = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
+		expect(raw.notes.map((n) => n.id)).toEqual(['fresh']);
+	});
+
+	it('expireExpiredNotes dry-run reports the expired ids without writing (f00072 S4)', async () => {
+		const expired: INote = {
+			id: 'stale',
+			title: 'stale',
+			body: 'x',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+			expiresAt: '2020-01-02T00:00:00.000Z',
+		};
+		const live: INote = {
+			id: 'keep',
+			title: 'keep',
+			body: 'y',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+		};
+		await writeStore(store, [expired, live]);
+
+		const previewed = await expireExpiredNotes(store, { dryRun: true });
+		expect(previewed).toEqual(['stale']);
+		// Dry-run wrote nothing: the expired note is still physically on disk.
+		const onDisk = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
+		expect(onDisk.notes.map((n) => n.id).sort()).toEqual(['keep', 'stale']);
+	});
+
+	it('expireExpiredNotes apply prunes expired notes and is idempotent (f00072 S4)', async () => {
+		const expired: INote = {
+			id: 'stale',
+			title: 'stale',
+			body: 'x',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+			expiresAt: '2020-01-02T00:00:00.000Z',
+		};
+		const live: INote = {
+			id: 'keep',
+			title: 'keep',
+			body: 'y',
+			tags: [],
+			createdAt: '2020-01-01T00:00:00.000Z',
+			updatedAt: '2020-01-01T00:00:00.000Z',
+		};
+		await writeStore(store, [expired, live]);
+
+		const removed = await expireExpiredNotes(store);
+		expect(removed).toEqual(['stale']);
+		const after = JSON.parse(readFileSync(store, 'utf8')) as {
+			notes: INote[];
+		};
+		expect(after.notes.map((n) => n.id)).toEqual(['keep']);
+
+		// Second sweep is a no-op.
+		expect(await expireExpiredNotes(store)).toEqual([]);
+	});
+});

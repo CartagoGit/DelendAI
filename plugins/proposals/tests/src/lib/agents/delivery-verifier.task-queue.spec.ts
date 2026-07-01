@@ -3,8 +3,8 @@
  *
  * TDD specs for the p40c T3 deliverable: the new
  * `verifyClosure` entry point in
- * `libs/mcp-server/src/lib/agents/delivery-verifier.ts` that wires
- * the `affairs_task_queue report` into the verifier's verdict.
+ * `libs/mcp-project/src/lib/agents/delivery-verifier.ts` that wires
+ * the `mcp-vertex_task_queue report` into the verifier's verdict.
  *
  * 3 cases as enumerated in the proposal p40c T3:
  *   1. When the proposal declares `extras.taskQueue: true` AND
@@ -21,7 +21,7 @@
  * with `action: 'report'` and never `enqueue` / `dequeue` / `subscribe`.
  * We assert this by spying on the paths-resolver in a no-op scenario.
  *
- * Run: bun test libs/mcp-server -- delivery-verifier.task-queue
+ * Run: bun test libs/mcp-project -- delivery-verifier.task-queue
  */
 
 import { mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
@@ -30,8 +30,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { verifyClosure } from '@cartago-git/mcp-proposals/lib/agents/delivery-verifier';
-import type { IProposalExtras } from '@cartago-git/mcp-proposals/lib/agents/delivery-verifier';
+import { verifyClosure } from '@mcp-vertex/proposals/lib/agents/delivery-verifier';
+import type { IProposalExtras } from '@mcp-vertex/proposals/lib/agents/delivery-verifier';
 
 const TEMP_DIRS: string[] = [];
 
@@ -39,14 +39,14 @@ const createTempQueueDir = (): {
 	queuePath: string;
 	closedTasksPath: string;
 } => {
-	const dir = mkdtempSync(join(tmpdir(), 'affairs-dv-'));
+	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dv-'));
 	TEMP_DIRS.push(dir);
 	const queuePath = join(dir, 'queue.json');
 	const closedTasksPath = join(dir, 'closed-tasks.json');
 	writeFileSync(
 		queuePath,
 		JSON.stringify({ version: 1, entries: [] }, null, 2),
-		'utf8'
+		'utf8',
 	);
 	writeFileSync(closedTasksPath, JSON.stringify([], null, 2), 'utf8');
 	return { queuePath, closedTasksPath };
@@ -81,7 +81,7 @@ interface IMinimalProposalForVerifier {
 }
 
 const minimalProposalWithTaskQueue = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -91,7 +91,7 @@ const minimalProposalWithTaskQueue = (
 });
 
 const _minimalProposalWithoutTaskQueue = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -101,7 +101,7 @@ const _minimalProposalWithoutTaskQueue = (
 });
 
 const minimalProposalMissingExtras = (
-	proposalId: string
+	proposalId: string,
 ): IMinimalProposalForVerifier => ({
 	proposalId,
 	frontmatter: {
@@ -112,7 +112,7 @@ const minimalProposalMissingExtras = (
 // ---------------------------------------------------------------------------
 // Case 1: red threshold with non-empty queue ⇒ verified: false
 // ---------------------------------------------------------------------------
-describe('verifyClosure — red threshold + non-empty queue', () => {
+describe('verifyClosure — red threshold + non-empty queue', async () => {
 	it('returns verified=false with a clear blocker when taskQueue=true and threshold=red', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 
@@ -120,7 +120,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 		const queuedEntries = Array.from({ length: 17 }, (_, i) => ({
 			taskId: `smoke-${i}`,
 			enqueuedAt: new Date(
-				Date.now() - 1000 * 60 * (i + 1)
+				Date.now() - 1000 * 60 * (i + 1),
 			).toISOString(),
 			priority: 3 as const,
 			waitFor: [],
@@ -136,7 +136,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -161,7 +161,7 @@ describe('verifyClosure — red threshold + non-empty queue', () => {
 // Case 2: green / amber threshold ⇒ verified can proceed and the parsed
 // report is appended.
 // ---------------------------------------------------------------------------
-describe('verifyClosure — green / amber threshold', () => {
+describe('verifyClosure — green / amber threshold', async () => {
 	it('returns the parsed IBackpressureReport and accepts when threshold=green', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 		// Empty queue → green threshold
@@ -169,7 +169,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -187,7 +187,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		expect(result.taskQueueReport?.queueLength).toBe(0);
 		// Green threshold does NOT add a blocker
 		expect(
-			result.blockers.some((b) => /threshold/i.test(b) && /red/i.test(b))
+			result.blockers.some((b) => /threshold/i.test(b) && /red/i.test(b)),
 		).toBe(false);
 	});
 
@@ -197,7 +197,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		const queuedEntries = Array.from({ length: 10 }, (_, i) => ({
 			taskId: `amber-${i}`,
 			enqueuedAt: new Date(
-				Date.now() - 1000 * 60 * (i + 1)
+				Date.now() - 1000 * 60 * (i + 1),
 			).toISOString(),
 			priority: 3 as const,
 			waitFor: [],
@@ -213,7 +213,7 @@ describe('verifyClosure — green / amber threshold', () => {
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -237,7 +237,7 @@ describe('verifyClosure — green / amber threshold', () => {
 // ---------------------------------------------------------------------------
 // Case 3: proposal does NOT declare taskQueue ⇒ back-compat, taskQueueReport = null
 // ---------------------------------------------------------------------------
-describe('verifyClosure — back-compat when proposal does not declare taskQueue', () => {
+describe('verifyClosure — back-compat when proposal does not declare taskQueue', async () => {
 	it('returns taskQueueReport=null and ignores the report when extras.taskQueue is missing', async () => {
 		const { queuePath, closedTasksPath } = createTempQueueDir();
 		// Even with a populated queue, the verifier should ignore the report
@@ -258,7 +258,7 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 		writeClosedTasks(closedTasksPath, []);
 
 		const proposal = minimalProposalMissingExtras(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({
@@ -306,9 +306,9 @@ describe('verifyClosure — back-compat when proposal does not declare taskQueue
 // ---------------------------------------------------------------------------
 // Case 4: missing queue file is treated as green (empty queue, no throw)
 // ---------------------------------------------------------------------------
-describe('verifyClosure — missing queue file is treated as empty', () => {
+describe('verifyClosure — missing queue file is treated as empty', async () => {
 	it('returns taskQueueReport with queueLength=0 when the queue file does not exist', async () => {
-		const dir = mkdtempSync(join(tmpdir(), 'affairs-dv-noq-'));
+		const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-dv-noq-'));
 		TEMP_DIRS.push(dir);
 		const queuePath = join(dir, 'queue.json'); // intentionally not created
 		const closedTasksPath = join(dir, 'closed-tasks.json');
@@ -317,7 +317,7 @@ describe('verifyClosure — missing queue file is treated as empty', () => {
 		}
 
 		const proposal = minimalProposalWithTaskQueue(
-			'p40c'
+			'p40c',
 		) as unknown as Parameters<typeof verifyClosure>[0]['proposal'];
 
 		const result = await verifyClosure({

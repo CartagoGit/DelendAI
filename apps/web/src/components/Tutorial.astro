@@ -1,0 +1,35 @@
+---
+import type { Lang } from '#I18N/shared';
+import type { ITutorial } from '#SCRIPTS/lib/discover-tutorials';
+
+interface Props {
+	readonly tutorials: readonly ITutorial[];
+	readonly plugin: string;
+	readonly lang: Lang;
+}
+/**
+ * One plugin's tutorial section. Picks the first tutorial in the
+ * active language (falls back to English when none exists), shows
+ * its title and body in a styled `<pre>` block. The body is rendered
+ * verbatim — a full markdown renderer (marked / markdown-it) is a
+ * future slice; the plugin-side tutorial author can still use plain
+ * markdown because every dev tool reads it.
+ */
+const { tutorials, plugin, lang } = Astro.props;
+const active = tutorials.find((t) => t.lang === lang);
+const fallback = tutorials.find((t) => t.lang === 'en');
+const selected = active ?? fallback;
+---
+
+{selected && (
+	<section class="tutorial" data-tutorial={plugin}>
+		<h2>Tutorial</h2>
+		<p class="tutorial__meta">
+			<strong>{selected.title}</strong>
+			{selected.lang !== lang && (
+				<span class="tutorial__fallback">(showing English, not yet translated to {lang})</span>
+			)}
+		</p>
+		<pre class="tutorial__body"><code>{selected.body}</code></pre>
+	</section>
+)}

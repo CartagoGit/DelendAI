@@ -1,12 +1,17 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import type {
+	IToolEffect,
+	IToolRegistration,
+} from '../contracts/interfaces/tool-registration.interface';
 import { toolJson } from '../shared/tool-response';
 
 export interface IOverviewToolEntry {
 	readonly name: string;
 	readonly summary?: string | undefined;
 	readonly tags?: readonly string[] | undefined;
+	/** Side effects; absent ⇒ read-only. */
+	readonly effects?: readonly IToolEffect[] | undefined;
 }
 
 export interface IOverviewPlugin {
@@ -19,11 +24,33 @@ export interface IOverviewSnapshot {
 	readonly server: { readonly name: string; readonly version: string };
 	readonly namespacePrefix: string;
 	readonly corePaths: { readonly cacheDir: string; readonly docsDir: string };
+	readonly pluginDiagnostic?: IOverviewPluginDiagnostic | undefined;
 	readonly plugins: readonly IOverviewPlugin[];
 	readonly tools: readonly IOverviewToolEntry[];
-	readonly knowledge: ReadonlyArray<{ readonly id: string; readonly title: string }>;
+	readonly knowledge: ReadonlyArray<{
+		readonly id: string;
+		readonly title: string;
+	}>;
 	readonly recommendedNextAction: string;
 }
+
+export interface IOverviewPluginDiagnostic {
+	readonly requested: readonly string[];
+	readonly loaded: readonly string[];
+	readonly missing: readonly string[];
+	/** Why each `missing` entry didn't load. Omitted when `missing` is empty. */
+	readonly missingReasons?: Readonly<Record<string, string>> | undefined;
+	readonly configPlugins: readonly string[];
+	readonly errors: number;
+}
+
+const MAX_OVERVIEW_SUMMARY_CHARS = 96;
+
+const compactSummary = (summary: string | undefined): string | undefined => {
+	if (summary === undefined) return undefined;
+	if (summary.length <= MAX_OVERVIEW_SUMMARY_CHARS) return summary;
+	return `${summary.slice(0, MAX_OVERVIEW_SUMMARY_CHARS - 3)}...`;
+};
 
 /**
  * The single cold-start entry point. One call returns the whole map of
@@ -34,11 +61,12 @@ export interface IOverviewSnapshot {
  */
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
-	snapshot: () => IOverviewSnapshot
+	snapshot: () => IOverviewSnapshot,
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
 		'Cold-start map: server identity, plugins, all tools, knowledge ids and the recommended next action. Call this first.',
+	descriptionKey: 'mcp-vertex_overview',
 	tags: ['orientation'],
 	register: async (server) => {
 		server.registerTool(
@@ -50,15 +78,62 @@ export const buildOverviewToolRegistration = (
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),
 				}),
-					outputSchema: z.object({
-						server: z.object({ name: z.string(), version: z.string() }),
-						namespacePrefix: z.string(),
-						corePaths: z.object({ cacheDir: z.string(), docsDir: z.string() }).optional(),
-						plugins: z.array(z.union([z.string(), z.object({ name: z.string(), version: z.string().optional(), describe: z.string().optional() })])),
-						tools: z.array(z.union([z.string(), z.object({ name: z.string(), summary: z.string().optional(), tags: z.array(z.string()).optional() })])),
-						knowledge: z.array(z.union([z.string(), z.object({ id: z.string(), title: z.string() })])),
-						recommendedNextAction: z.string(),
-					}),
+				outputSchema: z.object({
+					server: z.object({ name: z.string(), version: z.string() }),
+					namespacePrefix: z.string(),
+					corePaths: z
+						.object({ cacheDir: z.string(), docsDir: z.string() })
+						.optional(),
+					pluginDiagnostic: z
+						.object({
+							requested: z.array(z.string()),
+							loaded: z.array(z.string()),
+							missing: z.array(z.string()),
+							missingReasons: z
+								.record(z.string(), z.string())
+								.optional(),
+							configPlugins: z.array(z.string()),
+							errors: z.number(),
+						})
+						.optional(),
+					plugins: z.array(
+						z.union([
+							z.string(),
+							z.object({
+								name: z.string(),
+								version: z.string().optional(),
+								describe: z.string().optional(),
+							}),
+						]),
+					),
+					tools: z.array(
+						z.union([
+							z.string(),
+							z.object({
+								name: z.string(),
+								summary: z.string().optional(),
+								tags: z.array(z.string()).optional(),
+								effects: z
+									.array(
+										z.enum([
+											'write',
+											'spawn',
+											'network',
+											'destructive',
+										]),
+									)
+									.optional(),
+							}),
+						]),
+					),
+					knowledge: z.array(
+						z.union([
+							z.string(),
+							z.object({ id: z.string(), title: z.string() }),
+						]),
+					),
+					recommendedNextAction: z.string(),
+				}),
 			},
 			async (args: {
 				compact?: boolean | undefined;
@@ -67,20 +142,59 @@ export const buildOverviewToolRegistration = (
 				const snap = snapshot();
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
-					tools = tools.filter((t) => (t.tags ?? []).includes(args.tag!));
+					tools = tools.filter((t) =>
+						(t.tags ?? []).includes(args.tag!),
+					);
 				}
 				if (args.compact === true) {
 					return toolJson({
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
+						pluginDiagnostic: snap.pluginDiagnostic,
 						plugins: snap.plugins.map((p) => p.name),
 						tools: tools.map((t) => t.name),
 						knowledge: snap.knowledge.map((k) => k.id),
 						recommendedNextAction: snap.recommendedNextAction,
 					});
 				}
-				return toolJson({ ...snap, tools });
-			}
+				return toolJson({
+					server: snap.server,
+					namespacePrefix: snap.namespacePrefix,
+					pluginDiagnostic: snap.pluginDiagnostic,
+					plugins: snap.plugins.map((plugin) =>
+						plugin.version === undefined
+							? plugin.name
+							: { name: plugin.name, version: plugin.version },
+					),
+					tools: tools.map((tool) =>
+						tool.summary === undefined &&
+						tool.tags === undefined &&
+						tool.effects === undefined
+							? tool.name
+							: {
+									name: tool.name,
+									...(tool.summary === undefined
+										? {}
+										: {
+												summary: compactSummary(
+													tool.summary,
+												),
+											}),
+									...(tool.tags === undefined
+										? {}
+										: { tags: tool.tags }),
+									...(tool.effects === undefined
+										? {}
+										: { effects: tool.effects }),
+								},
+					),
+					knowledge: snap.knowledge.map((entry) => ({
+						id: entry.id,
+						title: entry.title,
+					})),
+					recommendedNextAction: snap.recommendedNextAction,
+				});
+			},
 		);
 	},
 });

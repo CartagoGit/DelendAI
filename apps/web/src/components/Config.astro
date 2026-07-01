@@ -1,0 +1,251 @@
+---
+import { languages, themes, useTranslations, type Lang } from '#I18N/ui';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+// In-page language switch (x124 S5). The destination URL is computed
+// from `Astro.url.pathname` (the current SSR request path):
+//   1. Strip the leading `/<lang>` segment if present.
+//   2. Prepend the new locale's prefix (or `/` when the new locale
+//      is the default — `en` — to keep the project-site URL clean).
+// The result is the *equivalent page* in the new locale, not the
+// locale home, so switching from `/plugins` to Spanish lands on
+// `/es/plugins` and not `/es/`.
+const currentPath = Astro.url.pathname;
+const stripLocale = (p: string): string => {
+	const segs = p.split('/').filter(Boolean);
+	if (
+		segs[0] &&
+		languages.some((l) => l.code === segs[0] && l.code !== 'en')
+	) {
+		return `/${segs.slice(1).join('/')}`;
+	}
+	return p || '/';
+};
+const relative = stripLocale(currentPath);
+const hrefFor = (code: Lang) => {
+	if (code === 'en') return `${base}${relative === '/' ? '/' : relative}`;
+	return `${base}/${code}${relative === '/' ? '/' : relative}`;
+};
+
+const THEME_BG: Record<string, string> = {
+	dark: '#0d1117',
+	light: '#ffffff',
+	midnight: '#0b0f1a',
+	solarized: '#002b36',
+	nord: '#2e3440',
+};
+const THEME_ACCENT: Record<string, string> = {
+	dark: '#58a6ff',
+	light: '#0969da',
+	midnight: '#7c93ff',
+	solarized: '#2aa198',
+	nord: '#88c0d0',
+};
+---
+
+<div class="modal" id="cfg-modal" role="dialog" aria-modal="true" aria-label={t.cfg.title} hidden transition:persist>
+	<div class="modal__backdrop" data-cfg-close></div>
+	<div class="modal__panel">
+		<div class="modal__head">
+			<h2>{t.cfg.title}</h2>
+			<button class="modal__close" data-cfg-close aria-label="Close">×</button>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t.cfg.theme}</h3>
+			<div class="swatches" id="cfg-themes">
+				{
+					themes.map((th) => (
+						<button
+							class="swatch"
+							data-theme-value={th}
+							style={`background:${THEME_BG[th]}`}
+							title={th}
+							aria-label={th}
+						>
+							<span style={`background:${THEME_ACCENT[th]}`} />
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t.cfg.language}</h3>
+			<div class="langs">
+				{
+					languages.map((l) => (
+						<a
+							class="lang-opt"
+							href={hrefFor(l.code)}
+							aria-current={l.code === lang ? 'true' : undefined}
+						>
+							<img class="flag" src={`${base}/flags/${l.flag}.svg`} alt="" width="22" height="16" loading="lazy" />
+							{l.label}
+						</a>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="modal__group">
+			<h3>{t.cfg.motion}</h3>
+			<label class="toggle">
+				<span>{t.cfg.motionLabel}</span>
+				<input type="checkbox" id="cfg-motion" />
+			</label>
+		</div>
+	</div>
+</div>
+
+<script>
+	// Settings modal: theme + language + motion. Re-runs after every Astro view
+	// transition (the `astro:page-load` event) so listeners don't accumulate.
+	// We use an AbortController to revoke the previous batch cleanly.
+	const KEY_THEME = 'mcpvertex-theme';
+	const KEY_MOTION = 'mcpvertex-motion';
+	const root = document.documentElement;
+	let cfgAbort: AbortController | undefined;
+
+	// Live re-sync helpers. They are declared at script scope (not inside
+	// `setupConfig`) so the `astro:after-swap` listener registered at the
+	// bottom of the file can call them on every navigation without going
+	// through `setupConfig` (which rebuilds DOM listeners and would be
+	// wasteful for what is a pure visual sync).
+	const markActiveTheme = () => {
+		const current = root.dataset.theme || 'dark';
+		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+			el.setAttribute('aria-pressed', String(el.dataset.themeValue === current));
+		}
+	};
+
+	// Sync the language picker with the live <html lang>. The settings
+	// modal is mounted under `transition:persist`, so Astro does NOT
+	// re-render the SSR-rendered `aria-current` after a view transition.
+	// We keep the visual state in sync at three points: on initial
+	// setup, every `astro:page-load`, and every `astro:after-swap`
+	// (which fires before `astro:page-load` but after the new document
+	// is in the DOM, so the lang-opt anchors are already up to date).
+	const markActiveLang = () => {
+		const current =
+			document.documentElement.lang ||
+			(location.pathname === '/'
+				? 'en'
+				: location.pathname.replace(/^\/+/, '').split('/')[0]);
+		for (const el of document.querySelectorAll<HTMLAnchorElement>('#cfg-modal .lang-opt')) {
+			const href = el.getAttribute('href') || '';
+			// href is either `/<lang>/…` or `/` (the default-locale root).
+			// We compare against the current lang code so the highlight
+			// follows the live `html[lang]` rather than the persisted
+			// prop of the page that first mounted the modal.
+			const code = href === '/' ? 'en' : href.replace(/^\/+/, '').split('/')[0];
+			if (code === current) el.setAttribute('aria-current', 'true');
+			else el.removeAttribute('aria-current');
+		}
+	};
+
+	const setupConfig = () => {
+		cfgAbort?.abort();
+		cfgAbort = new AbortController();
+		const { signal } = cfgAbort;
+
+		const modal = document.getElementById('cfg-modal');
+		const openBtn = document.getElementById('cfg-open');
+		const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
+
+		const open = () => {
+			modal?.removeAttribute('hidden');
+			modal?.classList.add('modal--open');
+			if (motion) motion.checked = root.dataset.motion !== 'off';
+			markActiveTheme();
+			markActiveLang();
+		};
+		const close = () => {
+			modal?.classList.remove('modal--open');
+			// Keep the node in the DOM until the pop-out animation ends so the
+			// transition can play. Then hide it so it disappears from the a11y tree.
+			window.setTimeout(() => {
+				if (!modal?.classList.contains('modal--open')) {
+					modal?.setAttribute('hidden', '');
+				}
+			}, 240);
+		};
+
+		openBtn?.addEventListener('click', open, { signal });
+		for (const el of document.querySelectorAll('[data-cfg-close]')) {
+			el.addEventListener('click', close, { signal });
+		}
+		document.addEventListener(
+			'keydown',
+			(e) => {
+				if (e.key === 'Escape') close();
+			},
+			{ signal }
+		);
+
+		for (const el of document.querySelectorAll<HTMLElement>('#cfg-themes .swatch')) {
+			el.addEventListener(
+				'click',
+				() => {
+					const value = el.dataset.themeValue!;
+					root.dataset.theme = value;
+					localStorage.setItem(KEY_THEME, value);
+					markActiveTheme();
+				},
+				{ signal }
+			);
+		}
+
+		motion?.addEventListener(
+			'change',
+			() => {
+				if (motion.checked) {
+					root.removeAttribute('data-motion');
+					localStorage.setItem(KEY_MOTION, 'on');
+				} else {
+					root.dataset.motion = 'off';
+					localStorage.setItem(KEY_MOTION, 'off');
+				}
+			},
+			{ signal }
+		);
+
+		// x126 S1 — close the settings modal the moment a language option
+		// is activated so the crossfade of the new page happens without
+		// the open modal sitting on top of it. The default `<a>`
+		// navigation runs in the same microtask as the click and
+		// Astro's ClientRouter intercepts it; closing the modal *now*
+		// (before the next frame) is enough — the fade animation
+		// starts and the ClientRouter swaps the document in parallel.
+		// We listen on `click` (not just activation) so middle-click /
+		// right-click also close the modal, matching the user
+		// expectation that the modal goes away as soon as a flag is
+		// picked.
+		for (const a of document.querySelectorAll<HTMLAnchorElement>(
+			'#cfg-modal .lang-opt',
+		)) {
+			a.addEventListener('click', () => close(), { signal });
+		}
+	};
+
+	// Run on initial load AND after every Astro view transition.
+	setupConfig();
+	document.addEventListener('astro:page-load', setupConfig);
+
+	// The settings modal is mounted once and `transition:persist`-ed, so
+	// its SSR-rendered state (theme highlight, language `aria-current`,
+	// motion checkbox) is frozen at the first navigation. Re-sync both
+	// the theme swatch and the language flag on every swap so the picker
+	// always reflects the live `<html data-theme>` / `<html lang>`.
+	document.addEventListener('astro:after-swap', () => {
+		if (!document.getElementById('cfg-modal')) return;
+		markActiveTheme();
+		markActiveLang();
+	});
+</script>

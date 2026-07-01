@@ -10,7 +10,10 @@
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { quarantineCorruptFile, writeFileAtomic } from '@cartago-git/mcp-core/public';
+import {
+	quarantineCorruptFile,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import { z } from 'zod';
 
@@ -44,7 +47,7 @@ export class TaskQueueParseError extends Error {
 		code: ITaskQueueErrorCode,
 		path: string,
 		message: string,
-		field?: string
+		field?: string,
 	) {
 		super(message);
 		this.name = 'TaskQueueParseError';
@@ -249,7 +252,7 @@ const PersistentTaskQueueSchema = z.object({
 export const parseQueue = async (
 	absolutePath: string,
 	closedTasksPath: string,
-	workspaceRoot?: string
+	workspaceRoot?: string,
 ): Promise<IPersistentTaskQueue> => {
 	let raw: string;
 	try {
@@ -258,7 +261,7 @@ export const parseQueue = async (
 		throw new TaskQueueParseError(
 			'PARSE_ERROR',
 			absolutePath,
-			`Cannot read queue file: ${String(err)}`
+			`Cannot read queue file: ${String(err)}`,
 		);
 	}
 
@@ -274,7 +277,7 @@ export const parseQueue = async (
 		throw new TaskQueueParseError(
 			'PARSE_ERROR',
 			absolutePath,
-			`Cannot parse queue JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`
+			`Cannot parse queue JSON; preserved at "${backup ?? '<rename failed>'}": ${String(err)}`,
 		);
 	}
 
@@ -292,7 +295,7 @@ export const parseQueue = async (
 				'INVALID_PRIORITY',
 				absolutePath,
 				`Invalid priority in queue at ${absolutePath}: ${result.error.message}`,
-				'priority'
+				'priority',
 			);
 		}
 
@@ -300,7 +303,7 @@ export const parseQueue = async (
 			'INVALID_TASK_QUEUE',
 			absolutePath,
 			`Queue validation failed at ${absolutePath}: ${result.error.message}`,
-			field
+			field,
 		);
 	}
 
@@ -310,14 +313,14 @@ export const parseQueue = async (
 	for (const entry of queue.entries) {
 		if (
 			!VALID_PRIORITIES.includes(
-				entry.priority as (typeof VALID_PRIORITIES)[number]
+				entry.priority as (typeof VALID_PRIORITIES)[number],
 			)
 		) {
 			throw new TaskQueueParseError(
 				'INVALID_PRIORITY',
 				absolutePath,
 				`Entry ${entry.taskId} has invalid priority ${String(entry.priority)}`,
-				'priority'
+				'priority',
 			);
 		}
 	}
@@ -331,7 +334,7 @@ export const parseQueue = async (
 				'DUPLICATE_TASK_ID',
 				absolutePath,
 				`Duplicate taskId "${entry.taskId}" found at index ${i}`,
-				'taskId'
+				'taskId',
 			);
 		}
 		seenIds.add(entry.taskId);
@@ -342,7 +345,9 @@ export const parseQueue = async (
 	// launched from another directory does not abort on false misses.
 	for (const entry of queue.entries) {
 		for (const wf of entry.waitFor) {
-			const target = workspaceRoot ? resolve(workspaceRoot, wf.file) : wf.file;
+			const target = workspaceRoot
+				? resolve(workspaceRoot, wf.file)
+				: wf.file;
 			try {
 				await stat(target);
 			} catch {
@@ -350,7 +355,7 @@ export const parseQueue = async (
 					'WAIT_FOR_FILE_MISSING',
 					absolutePath,
 					`waitFor file "${wf.file}" in entry "${entry.taskId}" does not exist on disk`,
-					'waitFor'
+					'waitFor',
 				);
 			}
 		}
@@ -375,7 +380,7 @@ export const parseQueue = async (
 					'OBSERVE_TARGET_UNKNOWN',
 					absolutePath,
 					`observe target "${observeTarget}" in entry "${entry.taskId}" is not in closedTasks`,
-					'observe'
+					'observe',
 				);
 			}
 		}
@@ -391,7 +396,7 @@ export const parseQueue = async (
 					'TEMPORAL_INCONSISTENCY',
 					absolutePath,
 					`Entry "${entry.taskId}" has status "expired" but expiresAt (${entry.expiresAt}) is in the future`,
-					'expiresAt'
+					'expiresAt',
 				);
 			}
 		}
@@ -406,7 +411,7 @@ export const parseQueue = async (
 
 export const persistQueue = async (
 	queue: IPersistentTaskQueue,
-	absolutePath: string
+	absolutePath: string,
 ): Promise<void> => {
 	// Atomic write with the temp IN THE SAME DIRECTORY (never os.tmpdir),
 	// so `rename` can't fail with EXDEV across filesystems.
@@ -421,7 +426,7 @@ const DEFAULT_TTL_DAYS = 14;
 
 export const enqueue = (
 	queue: IPersistentTaskQueue,
-	entry: IPersistentTaskEntry
+	entry: IPersistentTaskEntry,
 ): IPersistentTaskQueue => {
 	// Compute default expiresAt if not set
 	const entryWithExpiry: IPersistentTaskEntry = entry.expiresAt
@@ -453,7 +458,7 @@ export const enqueue = (
 export const dequeue = async (
 	queue: IPersistentTaskQueue,
 	taskId: string,
-	queuePath: string
+	queuePath: string,
 ): Promise<{ queue: IPersistentTaskQueue; entry: IPersistentTaskEntry }> => {
 	const idx = queue.entries.findIndex((e) => e.taskId === taskId);
 	if (idx === -1) {
@@ -461,7 +466,7 @@ export const dequeue = async (
 			'TASK_NOT_FOUND',
 			queuePath,
 			`Task "${taskId}" not found in queue`,
-			'taskId'
+			'taskId',
 		);
 	}
 
@@ -499,7 +504,7 @@ export const promote = async (
 	queue: IPersistentTaskQueue,
 	taskId: string,
 	lockSnapshot: ILockSnapshot,
-	queuePath: string
+	queuePath: string,
 ): Promise<IPromoteResult> => {
 	const idx = queue.entries.findIndex((e) => e.taskId === taskId);
 	if (idx === -1) {
@@ -507,7 +512,7 @@ export const promote = async (
 			'TASK_NOT_FOUND',
 			queuePath,
 			`Task "${taskId}" not found in queue`,
-			'taskId'
+			'taskId',
 		);
 	}
 
@@ -515,7 +520,7 @@ export const promote = async (
 
 	// Check if any waitFor file is in the lock's in_flight
 	const inFlightFiles = new Set(
-		lockSnapshot.in_flight.flatMap((lockEntry) => lockEntry.ownership)
+		lockSnapshot.in_flight.flatMap((lockEntry) => lockEntry.ownership),
 	);
 
 	const blockedBy: Array<{ file: string; blockingTaskId: string | null }> =
@@ -524,7 +529,7 @@ export const promote = async (
 		if (inFlightFiles.has(wf.file)) {
 			// find which task holds it
 			const holder = lockSnapshot.in_flight.find((le) =>
-				le.ownership.includes(wf.file)
+				le.ownership.includes(wf.file),
 			);
 			blockedBy.push({
 				file: wf.file,
@@ -560,7 +565,7 @@ export const cancel = async (
 	queue: IPersistentTaskQueue,
 	taskId: string,
 	_reason: string,
-	queuePath: string
+	queuePath: string,
 ): Promise<{ queue: IPersistentTaskQueue; entry: IPersistentTaskEntry }> => {
 	const idx = queue.entries.findIndex((e) => e.taskId === taskId);
 	if (idx === -1) {
@@ -568,7 +573,7 @@ export const cancel = async (
 			'TASK_NOT_FOUND',
 			queuePath,
 			`Task "${taskId}" not found in queue`,
-			'taskId'
+			'taskId',
 		);
 	}
 
@@ -594,7 +599,7 @@ export const cancel = async (
 export const expireSweep = async (
 	queue: IPersistentTaskQueue,
 	now: string,
-	queuePath: string
+	queuePath: string,
 ): Promise<{ queue: IPersistentTaskQueue; expiredCount: number }> => {
 	const nowMs = Date.parse(now);
 	let expiredCount = 0;
@@ -625,24 +630,24 @@ export const expireSweep = async (
 export const reportBackpressure = (
 	queue: IPersistentTaskQueue,
 	lockSnapshot: ILockSnapshot,
-	now?: string
+	now?: string,
 ): IBackpressureReport => {
 	const nowMs = now ? Date.parse(now) : Date.now();
 	const queueLength = queue.entries.length;
 	const queuedCount = queue.entries.filter(
-		(e) => e.status === 'queued'
+		(e) => e.status === 'queued',
 	).length;
 	const promotedCount = queue.entries.filter(
-		(e) => e.status === 'promoted'
+		(e) => e.status === 'promoted',
 	).length;
 	const consumedCount = queue.entries.filter(
-		(e) => e.status === 'consumed'
+		(e) => e.status === 'consumed',
 	).length;
 	const cancelledCount = queue.entries.filter(
-		(e) => e.status === 'cancelled'
+		(e) => e.status === 'cancelled',
 	).length;
 	const expiredCount = queue.entries.filter(
-		(e) => e.status === 'expired'
+		(e) => e.status === 'expired',
 	).length;
 
 	// Oldest age in minutes (oldest queued entry)
@@ -650,10 +655,10 @@ export const reportBackpressure = (
 	let oldestAgeMinutes = 0;
 	if (queuedEntries.length > 0) {
 		const oldest = queuedEntries.reduce((acc, e) =>
-			Date.parse(e.enqueuedAt) < Date.parse(acc.enqueuedAt) ? e : acc
+			Date.parse(e.enqueuedAt) < Date.parse(acc.enqueuedAt) ? e : acc,
 		);
 		oldestAgeMinutes = Math.floor(
-			(nowMs - Date.parse(oldest.enqueuedAt)) / 60_000
+			(nowMs - Date.parse(oldest.enqueuedAt)) / 60_000,
 		);
 	}
 
@@ -661,24 +666,24 @@ export const reportBackpressure = (
 	// lockSnapshot.in_flight and not in recentReleases (i.e., the task that
 	// was supposed to release the file is gone)
 	const inFlightTaskIds = new Set(
-		lockSnapshot.in_flight.map((le) => le.task_id)
+		lockSnapshot.in_flight.map((le) => le.task_id),
 	);
 	const recentReleasedTaskIds = new Set(
-		lockSnapshot.recentReleases.map((r) => r.taskId)
+		lockSnapshot.recentReleases.map((r) => r.taskId),
 	);
 	const waiterOrphans = queuedEntries.filter((entry) => {
 		return entry.waitFor.some(
 			(wf) =>
 				wf.releasedBy !== null &&
 				!inFlightTaskIds.has(wf.releasedBy) &&
-				!recentReleasedTaskIds.has(wf.releasedBy)
+				!recentReleasedTaskIds.has(wf.releasedBy),
 		);
 	}).length;
 
 	// Release signal backlog: queued entries whose waitFor files are all free
 	// (not in any in_flight task)
 	const inFlightFiles = new Set(
-		lockSnapshot.in_flight.flatMap((le) => le.ownership)
+		lockSnapshot.in_flight.flatMap((le) => le.ownership),
 	);
 	const releaseSignalBacklog = queuedEntries.filter((entry) => {
 		if (entry.waitFor.length === 0) return false;
@@ -724,7 +729,7 @@ export const subscribe = (
 		agentName: string;
 		filesOwned: string[];
 		diffSummary?: string;
-	}>
+	}>,
 ): ISubscribeResult => {
 	const entry = queue.entries.find((e) => e.taskId === taskId);
 	if (!entry) {
@@ -785,7 +790,7 @@ const ClosedTaskEntrySchema = z.object({
 
 export const loadLockSnapshot = async (
 	lockPath: string,
-	closedTasksPath?: string
+	closedTasksPath?: string,
 ): Promise<ILockSnapshot> => {
 	let in_flight: ILockEntry[] = [];
 
@@ -818,7 +823,7 @@ export const loadLockSnapshot = async (
 									success: true;
 									data: z.infer<typeof ClosedTaskEntrySchema>;
 								}
-							).data
+							).data,
 					);
 
 				recentReleases = validated

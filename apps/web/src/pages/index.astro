@@ -1,0 +1,205 @@
+---
+/**
+ * Root landing (`/`) — Accept-Language negotiator.
+ *
+ * The site is fully static (`outDir: build/apps/web/`, GitHub Pages).
+ * We cannot issue a server-side 302, so the root renders the English
+ * default copy (canonical, no JS) and ships a small inline `<script>`
+ * that:
+ *
+ *   1. Reads `?lang=<code>` from the URL — explicit override wins.
+ *   2. Reads `mcp_vertex_locale` from `document.cookie` — sticky choice.
+ *   3. Parses `navigator.languages` (or `Accept-Language`) and picks
+ *      the best match against the 12 supported locales with RFC 4647
+ *      §3.4 prefix filtering and `q=` weighting.
+ *   4. If the resolved locale is non-English AND differs from the
+ *      current path, replaces the URL with `/<lang>/` and persists the
+ *      cookie for 1 year.
+ *   5. If the user already speaks English (or no match), does nothing
+ *      — no redirect, no flicker.
+ *
+ * SEO is unaffected: Googlebot does not execute JS, sees the English
+ * canonical copy; the `<link rel="alternate" hreflang="...">` tags
+ * explicitly enumerate every translated path so the indexer knows
+ * about all 12 locales. Each translated page emits its own canonical
+ * pointing to `/<lang>/`, so SERPs are stable.
+ */
+import Home from '#COMPONENTS/Home.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { languages, defaultLang } from '#I18N/ui';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/** Serialised for the inline negotiator — keeps the JS bundle free of imports. */
+const supportedLangs = JSON.stringify(languages.map((l) => l.code));
+
+// Only non-default locales get a `/<lang>/` URL — `prefixDefaultLocale:
+// false` in astro.config.mjs keeps the English home at the root.
+const alternateLocales = languages.filter((l) => l.code !== defaultLang);
+---
+
+<Base lang={defaultLang} title="@mcp-vertex/core — agnostic MCP server core">
+	{/* hreflang — one tag per supported locale, plus the x-default. */}
+	<link slot="head" rel="alternate" hreflang="x-default" href={`${base}/`} />
+	{
+		alternateLocales.map((l) => (
+			<link
+				slot="head"
+				rel="alternate"
+				hreflang={l.code}
+				href={`${base}/${l.code}/`}
+			/>
+		))
+	}
+	<link slot="head" rel="canonical" href={`${base}/`} />
+
+	<Home lang={defaultLang} />
+
+	{/*
+	  Inline negotiator — runs after first paint via `DOMContentLoaded`
+	  so it never blocks HTML parsing. Intentionally plain ES (no TS, no
+	  imports) so Astro inlines it without an extra request. The matching
+	  logic mirrors `scripts/lib/negotiate-locale.ts` and is covered by
+	  its spec.
+	*/}
+	<script is:inline define:vars={{ supportedLangs, base }}>
+		(function () {
+			'use strict';
+			var COOKIE = 'mcp_vertex_locale';
+			var SUPPORTED = supportedLangs;
+			var DEFAULT_LANG = 'en';
+			// @ts-ignore
+			var BASE = base || '';
+
+			function readCookie(name) {
+				var target = name + '=';
+				var parts = document.cookie ? document.cookie.split(';') : [];
+				for (var i = 0; i < parts.length; i++) {
+					var c = parts[i].replace(/^\s+/, '');
+					if (c.indexOf(target) === 0) return c.slice(target.length);
+				}
+				return null;
+			}
+
+			function writeCookie(name, value) {
+				document.cookie =
+					name +
+					'=' +
+					value +
+					'; path=/; max-age=31536000; SameSite=Lax';
+			}
+
+			function isSupported(code) {
+				return SUPPORTED.indexOf(code) !== -1;
+			}
+
+			function readQueryLang() {
+				try {
+					var params = new URLSearchParams(window.location.search);
+					var q = params.get('lang');
+					return q && q.length ? q : null;
+				} catch (_) {
+					return null;
+				}
+			}
+
+			function parseAccept(raw) {
+				if (!raw) return [];
+				var out = [];
+				var pieces = raw.split(',');
+				for (var i = 0; i < pieces.length; i++) {
+					var trimmed = pieces[i].trim();
+					if (!trimmed) continue;
+					var semi = trimmed.split(';');
+					var code = semi[0];
+					var q = 1;
+					for (var j = 1; j < semi.length; j++) {
+						var m = /^q=([0-9.]+)$/.exec(semi[j].trim());
+						if (!m) continue;
+						var n = parseFloat(m[1]);
+						if (!isNaN(n)) q = Math.max(0, Math.min(1, n));
+					}
+					out.push({ code: code, q: q, order: out.length });
+				}
+				return out;
+			}
+
+			function pickBest(entries) {
+				var best = null;
+				for (var i = 0; i < entries.length; i++) {
+					var e = entries[i];
+					if (e.q <= 0) continue;
+					var lower = e.code.toLowerCase();
+					var segs = lower.split('-');
+					for (var k = segs.length; k > 0; k--) {
+						var candidate = segs.slice(0, k).join('-');
+						if (!isSupported(candidate)) continue;
+						if (
+							best === null ||
+							e.q > best.q ||
+							(e.q === best.q && e.order < best.order)
+						) {
+							best = { lang: candidate, q: e.q, order: e.order };
+						}
+						break;
+					}
+				}
+				return best ? best.lang : null;
+			}
+
+			function navigatorAccept() {
+				var langs = navigator.languages && navigator.languages.length
+					? navigator.languages.slice()
+					: [navigator.language];
+				return langs.filter(Boolean).join(',');
+			}
+
+			function decide() {
+				var query = readQueryLang();
+				if (query && isSupported(query)) return query;
+				var cookie = readCookie(COOKIE);
+				if (cookie && isSupported(cookie)) return cookie;
+				var accept = navigatorAccept();
+				return pickBest(parseAccept(accept));
+			}
+
+			function redirectTo(lang) {
+				// `replace` (not `assign`) so the back button skips the negotiator.
+				var stripped = window.location.pathname
+					.replace(new RegExp('^' + BASE + '/?'), '')
+					.replace(/^\//, '');
+				var target = BASE + '/' + lang + '/' + stripped;
+				if (target.charAt(target.length - 1) !== '/') target += '/';
+				window.location.replace(target);
+			}
+
+			// `DOMContentLoaded` so the chrome paints first; the redirect
+			// (when it fires) replaces the URL before the user notices.
+			document.addEventListener('DOMContentLoaded', function () {
+				var resolved = decide();
+				if (!resolved || resolved === DEFAULT_LANG) return;
+				writeCookie(COOKIE, resolved);
+				redirectTo(resolved);
+			});
+		})();
+	</script>
+
+	<noscript>
+		{/* Fallback for JS-disabled visitors: render a small locale
+		    picker inline above the home. Crawlers see the canonical
+		    English copy underneath. */}
+		<div class="locale-picker">
+			<p>Choose your language:</p>
+			<ul>
+				<li><a href={`${base}/`}>English</a></li>
+				{
+					alternateLocales.map((l) => (
+						<li>
+							<a href={`${base}/${l.code}/`}>{l.label}</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</noscript>
+</Base>

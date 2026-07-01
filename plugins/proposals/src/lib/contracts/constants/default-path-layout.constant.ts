@@ -1,18 +1,18 @@
 import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
-import { joinRel } from '@cartago-git/mcp-core/public';
-
+import { joinRel } from '@mcp-vertex/core/public';
 
 /**
  * Derive the full swarm path layout from a cache root and a docs root.
- * The mcp-core CLI resolves `--cacheDir` (default `.cache/mcp-core`)
- * and `--docsDir` (default `docs/mcp-core`) and hands each plugin its
- * own namespaced sub-roots (`<cacheDir>/<plugin>`); the swarm plugin
- * passes those here. Cache artefacts (locks, queue, checkpoints) live
- * under `cacheDir`; human-edited proposals live under `docsDir`.
+ * The mcp-vertex CLI resolves `--cacheDir` (default `.cache/mcp-vertex`)
+ * and `--docsDir` (default `docs/mcp-vertex`) and hands the proposals
+ * plugin those resolved roots. Cache artefacts (locks, queue,
+ * checkpoints, worktrees, **and** the proposals registry index — see
+ * x00052) live under `cacheDir`; human-edited proposals live under
+ * `docsDir`.
  */
 export const buildSwarmPaths = (
 	cacheDir: string,
-	docsDir: string
+	docsDir: string,
 ): IHostPathLayout => ({
 	lockFile: joinRel(cacheDir, 'agents.lock.json'),
 	agentRegistryFile: joinRel(cacheDir, 'subagent-registry.json'),
@@ -23,28 +23,31 @@ export const buildSwarmPaths = (
 	closedTasksFile: joinRel(cacheDir, 'agent-queue/closed-tasks.json'),
 	orchestratorCheckpointFile: joinRel(
 		cacheDir,
-		'agent/orchestrator/checkpoint.json'
+		'agent/orchestrator/checkpoint.json',
 	),
 	orchestratorChatContextFile: joinRel(
 		cacheDir,
-		'agent/orchestrator/chat-context.json'
+		'agent/orchestrator/chat-context.json',
 	),
 	finishDayReportFile: joinRel(cacheDir, 'agent/finish-day/last-report.json'),
 	finishDayJournalFile: joinRel(cacheDir, 'agent/finish-day/journal.log'),
 	proposalsDir: joinRel(docsDir, 'proposals'),
-	proposalIndexFile: joinRel(docsDir, 'proposals/index.json'),
+	proposalIndexFile: joinRel(cacheDir, 'proposals/index.json'),
+	proposalIdCountersFile: joinRel(cacheDir, 'proposal-id-counters.json'),
+	worktreesDir: joinRel(cacheDir, '.worktrees'),
 	scratchDir: cacheDir,
 });
 
 /**
- * Default proposals layout: cache/state under `.cache`, human-edited
- * proposals under `docs/proposals` — the conventional layout. Every
- * engine in this package and the plugin's tools share this single
- * layout, so locks, queue, round-context and the proposal store always
- * agree on where state lives. Pass different roots to `buildSwarmPaths`
- * for a custom layout (programmatic use / relocating the store).
+ * Default proposals layout, aligned with the mcp-vertex CLI defaults so the
+ * fallback and the live server agree: cache/state under `.cache/mcp-vertex`,
+ * human-edited proposals under `docs/mcp-vertex/proposals`. Everything the
+ * project writes lives under the single `docs/mcp-vertex` root; override it
+ * with `--docsDir` (and `--cacheDir`) — the proposals dir always follows as
+ * `<docsDir>/proposals`. Every engine and tool shares this one layout, so
+ * locks, queue, round-context and the proposal store agree on where state lives.
  */
 export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
-	'.cache',
-	'docs'
+	'.cache/mcp-vertex',
+	'docs/mcp-vertex',
 );

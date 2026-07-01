@@ -15,9 +15,9 @@ import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	quarantineCorruptFileSync,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
-describe('quarantineCorruptFile', () => {
+describe('quarantineCorruptFile', async () => {
 	let dir = '';
 	let target = '';
 	beforeEach(() => {
@@ -28,7 +28,7 @@ describe('quarantineCorruptFile', () => {
 
 	const backups = (): string[] =>
 		readdirSync(dir).filter((f) =>
-			f.startsWith(`${basename(target)}.corrupt-`)
+			f.startsWith(`${basename(target)}.corrupt-`),
 		);
 
 	it('moves the file aside and returns the backup path (async)', async () => {
@@ -41,7 +41,7 @@ describe('quarantineCorruptFile', () => {
 		expect(backup).toContain('.corrupt-');
 	});
 
-	it('moves the file aside (sync)', () => {
+	it('moves the file aside (sync)', async () => {
 		writeFileSync(target, 'sync corrupt');
 		const backup = quarantineCorruptFileSync(target);
 
@@ -66,9 +66,13 @@ describe('quarantineCorruptFile', () => {
 	});
 });
 
-describe('CorruptFileError', () => {
-	it('names the preserved backup in the message', () => {
-		const err = new CorruptFileError('/x/state.json', '/x/state.json.corrupt-1', 'invalid JSON');
+describe('CorruptFileError', async () => {
+	it('names the preserved backup in the message', async () => {
+		const err = new CorruptFileError(
+			'/x/state.json',
+			'/x/state.json.corrupt-1',
+			'invalid JSON',
+		);
 		expect(err).toBeInstanceOf(Error);
 		expect(err.name).toBe('CorruptFileError');
 		expect(err.originalPath).toBe('/x/state.json');
@@ -77,7 +81,7 @@ describe('CorruptFileError', () => {
 		expect(err.message).toContain('preserved at');
 	});
 
-	it('reports a failed backup rename when backupPath is null', () => {
+	it('reports a failed backup rename when backupPath is null', async () => {
 		const err = new CorruptFileError('/x/state.json', null, 'invalid JSON');
 		expect(err.backupPath).toBeNull();
 		expect(err.message).toContain('backup rename failed');

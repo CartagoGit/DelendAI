@@ -1,0 +1,18 @@
+---
+import TroubleshootingCase from '#COMPONENTS/TroubleshootingCase.astro';
+import Base from '#LAYOUTS/Base.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+export function getStaticPaths() {
+	const cases = (capabilities.troubleshooting ?? []) as Array<{
+		slug: string;
+	}>;
+	return cases.map((c) => ({ params: { slug: c.slug } }));
+}
+
+const { slug } = Astro.params;
+---
+
+<Base lang="en" title={`${slug} — Troubleshooting — @mcp-vertex/core`}>
+	<TroubleshootingCase lang="en" slug={slug!} />
+</Base>

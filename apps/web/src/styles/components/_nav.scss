@@ -1,0 +1,294 @@
+// _nav.scss — top navigation bar (sticky, glassmorphic).
+//
+// BEM root: .nav (with __inner, __brand, __logo, __brand-text, __links,
+// __link--new).  Tag selectors (a) and attribute selectors are nested with
+// `&` to keep everything in the BEM scope.
+
+.nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	backdrop-filter: blur(10px);
+	background: color-mix(in srgb, var(--bg) 82%, transparent);
+	border-bottom: 1px solid var(--line);
+}
+.nav__inner {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	height: 60px;
+}
+.nav__brand {
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+	border-radius: 999px;
+	transition: background 0.18s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+		text-decoration: none;
+	}
+}
+.nav__logo {
+	display: block;
+	flex: 0 0 auto;
+}
+.nav__brand-text {
+	white-space: nowrap;
+}
+.nav__links {
+	display: flex;
+	gap: 1.1rem;
+	margin-left: auto;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.nav__link {
+	color: var(--muted);
+	font-size: 0.92rem;
+	padding: 0.3rem 0.4rem;
+	border-radius: 6px;
+	transition: color 0.18s ease, background 0.18s ease;
+
+	&:hover {
+		color: var(--fg);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+}
+.nav__link--new {
+	&::after {
+		content: '·';
+		margin-left: 0.4rem;
+		color: var(--accent);
+		font-weight: 700;
+		opacity: 0.7;
+	}
+}
+
+// Shared round icon-button box model (search trigger, settings gear). Each
+// keeps its own hover transform, so the shell is duplicated rather than
+// `@extend`-ed (no Sass inheritance precedent elsewhere in this codebase).
+.icon-btn,
+.gear {
+	display: inline-grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: var(--card);
+	color: var(--fg);
+	cursor: pointer;
+}
+
+.icon-btn {
+	transition: transform 0.2s ease, border-color 0.2s ease;
+
+	&:hover {
+		border-color: var(--accent);
+		transform: scale(1.06);
+	}
+}
+
+.gear {
+	transition: transform 0.4s ease, border-color 0.2s ease;
+
+	&:hover {
+		transform: rotate(90deg);
+		border-color: var(--accent);
+	}
+}
+
+// Visual separator between the primary sections and the "More" dropdown.
+// One subtle line so the eye reads the nav as [primary | more + github]
+// instead of one undifferentiated row.
+.nav__divider {
+	display: inline-block;
+	width: 1px;
+	height: 18px;
+	background: var(--line);
+	margin: 0 0.15rem;
+}
+
+// "More" dropdown (x124 S4). Replaces the previous native
+// <details>/<summary> with a custom button + panel so we can:
+//   - close on outside click (a native <details> only closes on
+//     re-toggle of the same trigger),
+//   - animate the open / close transition,
+//   - keep the panel fully keyboard-accessible (trigger is a
+//     <button aria-haspopup>, panel is role="menu").
+//
+// The JS in `SiteNav.astro` toggles a `.is-open` class on the
+// `.nav-more` wrapper (alongside `aria-expanded` on the trigger
+// for a11y). We use the class instead of `:has(...)` so the
+// selectors stay BEM-compliant (the linter rejects `:has()` with
+// attribute selectors). The panel is mounted with the `hidden`
+// attribute; the class flip also drives the scaleY/opacity
+// transition. The JS removes the `hidden` attribute on open and
+// restores it 200ms after close so the close transition can play.
+.nav-more {
+	position: relative;
+
+	--nav-more-trigger-bg: transparent;
+	--nav-more-trigger-color: var(--muted);
+	--nav-more-caret-transform: none;
+}
+.nav-more__trigger {
+	list-style: none;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	color: var(--nav-more-trigger-color);
+	background: var(--nav-more-trigger-bg);
+	font-size: 0.92rem;
+	padding: 0.3rem 0.55rem;
+	border-radius: 6px;
+	user-select: none;
+	border: none;
+	font-family: inherit;
+	transition: color 0.18s ease, background 0.18s ease;
+
+	&:hover,
+	&:focus-visible {
+		color: var(--fg);
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+	}
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+// Open state. The shared `componentScript` (from
+// `@mcp-vertex/ui-extension`) toggles `aria-expanded` on the trigger
+// in lockstep with the wrapper's `data-open` attribute. We use the
+// wrapper attribute as the CSS source of truth (it's set on the same
+// element that owns `--nav-more-menu-transform`, so the custom
+// properties cascade into the panel without a descendant selector).
+// The `nav-more--open` class is kept as a backward-compat alias for
+// any host that still toggles it directly.
+.nav-more[data-open],
+.nav-more--open {
+	--nav-more-trigger-bg: color-mix(in srgb, var(--accent) 9%, transparent);
+	--nav-more-trigger-color: var(--fg);
+	--nav-more-caret-transform: rotate(180deg);
+	// The menu reads its open-state values from these custom
+	// properties so the descendant selector stays out of the BEM
+	// scope (the linter rejects `.block--mod .block__elem`).
+	// Defaults are set on `.nav-more__menu` below; this block
+	// just overrides them when the wrapper carries the `--open`
+	// modifier.
+	--nav-more-menu-transform: scaleY(1);
+	--nav-more-menu-opacity: 1;
+	--nav-more-menu-visibility: visible;
+	--nav-more-menu-transition:
+		transform 0.18s ease,
+		opacity 0.16s ease,
+		visibility 0s linear 0s;
+}
+.nav-more__caret {
+	transform: var(--nav-more-caret-transform);
+	transition: transform 0.18s ease;
+}
+.nav-more__menu {
+	position: absolute;
+	top: calc(100% + 0.35rem);
+	right: 0;
+	min-width: 200px;
+	padding: 0.35rem;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	z-index: 30;
+	transform-origin: top right;
+	// Closed-state defaults; `.nav-more--open` overrides these
+	// via the custom properties above so the menu's
+	// `transform` / `opacity` / `visibility` transition picks up
+	// the open values without a descendant selector.
+	transform: var(--nav-more-menu-transform, scaleY(0));
+	opacity: var(--nav-more-menu-opacity, 0);
+	visibility: var(--nav-more-menu-visibility, hidden);
+	transition: var(--nav-more-menu-transition);
+}
+.nav-more__item {
+	color: var(--muted);
+	font-size: 0.92rem;
+	padding: 0.45rem 0.6rem;
+	border-radius: 6px;
+	white-space: nowrap;
+	text-align: left;
+
+	&:hover,
+	&:focus-visible {
+		color: var(--fg);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+		outline: none;
+	}
+}
+// Respect users who have asked for less motion: open / close becomes
+// instant (no scale / fade) and the menu snaps in. The open state
+// itself is unchanged — `--nav-more-menu-transform: scaleY(1)` must
+// still win so the panel is visible after the trigger is activated.
+// (Earlier revisions set `--nav-more-menu-transform: none` here, which
+// lost the cascade inside `.nav-more--open` and left the menu at
+// `scaleY(0)` even when the wrapper carried the modifier — see the
+// 2026-06 web-repaso review.)
+@media (prefers-reduced-motion: reduce) {
+	.nav-more[data-open],
+	.nav-more--open {
+		--nav-more-menu-transition: none;
+	}
+}
+
+// GitHub icon link — same height/gap as the other nav items but icon-only
+// so the row stays compact. `currentColor` makes it follow the theme.
+.nav__github {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	color: var(--muted);
+	transition: color 0.18s ease, background 0.18s ease;
+
+	&:hover {
+		color: var(--fg);
+		background: color-mix(in srgb, var(--accent) 9%, transparent);
+		text-decoration: none;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+
+// Mobile hamburger (only visible at <= 680px — see _nav-media queries below)
+.hamburger {
+	display: none;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: var(--card);
+	color: var(--fg);
+	cursor: pointer;
+
+	&:hover {
+		border-color: var(--accent);
+	}
+	&[aria-expanded='true'] {
+		background: color-mix(in srgb, var(--accent) 14%, var(--card));
+		border-color: var(--accent);
+	}
+}

@@ -4,12 +4,16 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { listDocs, readDoc, extractTitle } from '@cartago-git/mcp-docs/lib/engine';
-import plugin from '@cartago-git/mcp-docs';
+import {
+	listDocs,
+	readDoc,
+	extractTitle,
+} from '@mcp-vertex/docs/lib/services/engine';
+import plugin from '@mcp-vertex/docs';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@cartago-git/mcp-core/public';
+} from '@mcp-vertex/core/public';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);
@@ -17,22 +21,28 @@ const write = (root: string, rel: string, body: string): void => {
 	writeFileSync(abs, body, 'utf8');
 };
 
-describe('docs engine', () => {
+describe('docs engine', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'docs-'));
 		write(root, 'README.md', '# The Project\nintro\n');
 		write(root, 'docs/guide.md', '# Guide\nbody\n');
-		write(root, 'docs/sub/ref.md', '---\ntitle: Reference Manual\n---\n# x\n');
+		write(
+			root,
+			'docs/sub/ref.md',
+			'---\ntitle: Reference Manual\n---\n# x\n',
+		);
 		write(root, 'docs/notes.txt', 'not markdown\n');
 		write(root, 'src/code.ts', 'const x = 1;\n');
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('extractTitle prefers frontmatter title, then first heading, then fallback', () => {
+	it('extractTitle prefers frontmatter title, then first heading, then fallback', async () => {
 		expect(extractTitle('---\ntitle: A\n---\n# B', 'f')).toBe('A');
 		expect(extractTitle('# Heading here\ntext', 'f')).toBe('Heading here');
-		expect(extractTitle('no title at all', 'fallback.md')).toBe('fallback.md');
+		expect(extractTitle('no title at all', 'fallback.md')).toBe(
+			'fallback.md',
+		);
 	});
 
 	it('lists markdown under default roots (docs + README) with titles', async () => {
@@ -68,15 +78,19 @@ describe('docs engine', () => {
 	});
 });
 
-describe('docs plugin', () => {
-	it('registers docs_list + docs_read + knowledge', async () => {
+describe('docs plugin', async () => {
+	it('registers docs_list + docs_read + docs_search + knowledge', async () => {
 		const ctx = {
 			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
-			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
-			cacheDir: '.cache/mcp-core',
-			docsDir: 'docs/mcp-core',
-			pluginCacheDir: '.cache/mcp-core/docs',
-			pluginDocsDir: 'docs/mcp-core/docs',
+			corePaths: {
+				cacheDir: '.cache/mcp-vertex',
+				docsDir: 'docs/mcp-vertex',
+			},
+			cacheDir: '.cache/mcp-vertex',
+			docsDir: 'docs/mcp-vertex',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/mcp-vertex/docs',
+			pluginDocsDir: 'docs/mcp-vertex/docs',
 			namespacePrefix: 'docs',
 			options: {},
 			args: {},
@@ -85,6 +99,7 @@ describe('docs plugin', () => {
 		expect((reg.tools as IToolRegistration[]).map((t) => t.id)).toEqual([
 			'docs_list',
 			'docs_read',
+			'docs_search',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('docs-usage');
 	});

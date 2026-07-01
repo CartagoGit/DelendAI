@@ -1,7 +1,7 @@
 /**
  * closed-tasks-log.spec.ts
  *
- * TDD specs for closed-tasks-log.ts (p40c T1 step 5).
+ * TDD specs for closed-tasks-log.ts.
  * 5 cases as enumerated in the proposal:
  *   1. append
  *   2. max-size eviction (FIFO, max 256)
@@ -9,7 +9,7 @@
  *   4. parse defensivo (corrupted file → empty array, no throw)
  *   5. round-trip
  *
- * Run: bun test libs/mcp-server -- closed-tasks-log
+ * Run: bun test libs/mcp-project -- closed-tasks-log
  */
 
 import {
@@ -23,13 +23,19 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The proposals plugin emits "[proposals] closed-tasks log ... is
+// corrupt" via `console.error` whenever the on-disk log fails to
+// parse. The diagnostic is captured via a spy installed in
+// `beforeEach` so the validate stream stays clean; cases that
+// exercise this path assert on the spy's call log.
 
 import {
 	appendToClosedTasks,
 	readClosedTasks,
-} from '@cartago-git/mcp-proposals/lib/agents/closed-tasks-log';
-import type { IClosedTaskRecord } from '@cartago-git/mcp-proposals/lib/agents/closed-tasks-log';
+} from '@mcp-vertex/proposals/lib/agents/closed-tasks-log';
+import type { IClosedTaskRecord } from '@mcp-vertex/proposals/lib/agents/closed-tasks-log';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -41,28 +47,39 @@ afterEach(() => {
 	for (const dir of TEMP_DIRS.splice(0)) {
 		rmSync(dir, { recursive: true, force: true });
 	}
+	stderrSpy?.mockRestore();
+	consoleErrorSpy?.mockRestore();
 });
 
 let workDir: string;
+let stderrSpy: ReturnType<typeof vi.spyOn>;
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
 beforeEach(() => {
-	workDir = mkdtempSync(join(tmpdir(), 'affairs-ctl-'));
+	workDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ctl-'));
 	TEMP_DIRS.push(workDir);
+	// Capture the corruption diagnostic. Cases that need to assert on
+	// it inspect `stderrSpy.mock.calls` / `consoleErrorSpy.mock.calls`.
+	stderrSpy = vi
+		.spyOn(process.stderr, 'write')
+		.mockImplementation(() => true);
+	consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 const makeRecord = (
-	overrides: Partial<IClosedTaskRecord> = {}
+	overrides: Partial<IClosedTaskRecord> = {},
 ): IClosedTaskRecord => ({
 	taskId: 'p40c-t1',
 	closedAt: '2026-06-05T10:00:00.000Z',
 	agentName: 'observation_tower',
-	filesOwned: ['libs/mcp-server/src/lib/agents/closed-tasks-log.ts'],
+	filesOwned: ['libs/mcp-project/src/lib/agents/closed-tasks-log.ts'],
 	...overrides,
 });
 
 // ---------------------------------------------------------------------------
 // Case 1: append
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — append', () => {
+describe('appendToClosedTasks — append', async () => {
 	it('appends a new record to an empty log file', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const record = makeRecord();
@@ -96,7 +113,7 @@ describe('appendToClosedTasks — append', () => {
 // ---------------------------------------------------------------------------
 // Case 2: max-size eviction (FIFO, max 32 — p56 T2 reduced from 256)
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — max-size eviction', () => {
+describe('appendToClosedTasks — max-size eviction', async () => {
 	it('evicts the oldest entry when the log reaches 32 entries', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 
@@ -106,11 +123,11 @@ describe('appendToClosedTasks — max-size eviction', () => {
 			(_, i) => ({
 				taskId: `task-${i}`,
 				closedAt: new Date(
-					Date.parse('2026-06-05T10:00:00.000Z') + i * 1000
+					Date.parse('2026-06-05T10:00:00.000Z') + i * 1000,
 				).toISOString(),
 				agentName: 'agent',
 				filesOwned: [],
-			})
+			}),
 		);
 		writeFileSync(logPath, JSON.stringify(initial), 'utf8');
 
@@ -128,7 +145,7 @@ describe('appendToClosedTasks — max-size eviction', () => {
 // ---------------------------------------------------------------------------
 // Case 3: idempotency
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — idempotency', () => {
+describe('appendToClosedTasks — idempotency', async () => {
 	it('does not duplicate an entry when the same taskId is appended twice', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const record = makeRecord({ taskId: 'idempotent-task' });
@@ -138,7 +155,7 @@ describe('appendToClosedTasks — idempotency', () => {
 
 		const result = await readClosedTasks(logPath);
 		expect(
-			result.filter((r) => r.taskId === 'idempotent-task')
+			result.filter((r) => r.taskId === 'idempotent-task'),
 		).toHaveLength(1);
 	});
 });
@@ -146,7 +163,7 @@ describe('appendToClosedTasks — idempotency', () => {
 // ---------------------------------------------------------------------------
 // Case 4: parse defensivo (corrupted file → empty array, no throw)
 // ---------------------------------------------------------------------------
-describe('readClosedTasks — parse defensivo', () => {
+describe('readClosedTasks — parse defensivo', async () => {
 	it('returns an empty array when the log file contains invalid JSON', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		writeFileSync(logPath, '{ this is not json }', 'utf8');
@@ -176,9 +193,11 @@ describe('readClosedTasks — parse defensivo', () => {
 // coordination, so it still returns [] — but it PRESERVES the corrupt
 // bytes to a .corrupt-<ts> backup rather than letting them be overwritten.
 // ---------------------------------------------------------------------------
-describe('readClosedTasks — quarantine on corruption (M10)', () => {
+describe('readClosedTasks — quarantine on corruption (M10)', async () => {
 	const backupOf = (_logPath: string): string | undefined =>
-		readdirSync(workDir).find((f) => f.startsWith('closed-tasks.json.corrupt-'));
+		readdirSync(workDir).find((f) =>
+			f.startsWith('closed-tasks.json.corrupt-'),
+		);
 
 	it('preserves invalid JSON to a backup and removes the original', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
@@ -195,8 +214,10 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		writeFileSync(
 			logPath,
-			JSON.stringify([{ taskId: '', closedAt: 'x', agentName: 'a', filesOwned: [] }]),
-			'utf8'
+			JSON.stringify([
+				{ taskId: '', closedAt: 'x', agentName: 'a', filesOwned: [] },
+			]),
+			'utf8',
 		);
 
 		expect(await readClosedTasks(logPath)).toEqual([]);
@@ -208,7 +229,10 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 		writeFileSync(logPath, 'garbage', 'utf8');
 		await readClosedTasks(logPath); // quarantines
 
-		await appendToClosedTasks(logPath, makeRecord({ taskId: 'after-heal' }));
+		await appendToClosedTasks(
+			logPath,
+			makeRecord({ taskId: 'after-heal' }),
+		);
 		const result = await readClosedTasks(logPath);
 		expect(result).toHaveLength(1);
 		expect(result[0]?.taskId).toBe('after-heal');
@@ -218,7 +242,7 @@ describe('readClosedTasks — quarantine on corruption (M10)', () => {
 // ---------------------------------------------------------------------------
 // Case 5: round-trip
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — round-trip', () => {
+describe('appendToClosedTasks — round-trip', async () => {
 	it('produces the same records after append + read', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 		const r1 = makeRecord({ taskId: 'rt-task-1' });
@@ -247,7 +271,7 @@ describe('appendToClosedTasks — round-trip', () => {
 // priority field that the active queue uses, and entries are kept
 // in strict append order.
 // ---------------------------------------------------------------------------
-describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
+describe('appendToClosedTasks — FIFO order', async () => {
 	it('keeps entries in strict append order regardless of any external priority tag', async () => {
 		const logPath = join(workDir, 'closed-tasks.json');
 
@@ -256,15 +280,15 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 		// sequence, which is what eviction and tail diagnostics need.
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'a', closedAt: '2026-06-05T10:00:30.000Z' })
+			makeRecord({ taskId: 'a', closedAt: '2026-06-05T10:00:30.000Z' }),
 		);
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'b', closedAt: '2026-06-05T10:00:10.000Z' })
+			makeRecord({ taskId: 'b', closedAt: '2026-06-05T10:00:10.000Z' }),
 		);
 		await appendToClosedTasks(
 			logPath,
-			makeRecord({ taskId: 'c', closedAt: '2026-06-05T10:00:20.000Z' })
+			makeRecord({ taskId: 'c', closedAt: '2026-06-05T10:00:20.000Z' }),
 		);
 
 		const result = await readClosedTasks(logPath);
@@ -283,11 +307,11 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 			(_, i) => ({
 				taskId: `seed-${i}`,
 				closedAt: new Date(
-					Date.parse('2026-06-05T10:00:00.000Z') + (31 - i) * 1000
+					Date.parse('2026-06-05T10:00:00.000Z') + (31 - i) * 1000,
 				).toISOString(),
 				agentName: 'agent',
 				filesOwned: [],
-			})
+			}),
 		);
 		writeFileSync(logPath, JSON.stringify(initial), 'utf8');
 
@@ -296,12 +320,36 @@ describe('appendToClosedTasks — FIFO order (p56 T2)', () => {
 			makeRecord({
 				taskId: 'fresh',
 				closedAt: '2026-06-05T11:00:00.000Z',
-			})
+			}),
 		);
 
 		const result = await readClosedTasks(logPath);
 		expect(result).toHaveLength(32);
 		expect(result[0]?.taskId).toBe('seed-1'); // seed-0 evicted (first appended)
 		expect(result[result.length - 1]?.taskId).toBe('fresh');
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Concurrency
+// ---------------------------------------------------------------------------
+describe('appendToClosedTasks — concurrency', async () => {
+	it('handles concurrent appends successfully without corruption', async () => {
+		const logPath = join(workDir, 'closed-tasks.json');
+		const promises = Array.from({ length: 10 }, (_, i) =>
+			appendToClosedTasks(
+				logPath,
+				makeRecord({ taskId: `concurrent-task-${i}` }),
+			),
+		);
+
+		await Promise.all(promises);
+
+		const result = await readClosedTasks(logPath);
+		expect(result).toHaveLength(10);
+		const ids = result.map((r) => r.taskId).sort();
+		expect(ids).toEqual(
+			Array.from({ length: 10 }, (_, i) => `concurrent-task-${i}`).sort(),
+		);
 	});
 });

@@ -1,0 +1,54 @@
+---
+import type { IRecoveryTranslations } from '#I18N/shared';
+
+interface Zombie {
+	agent: string;
+	taskId: string;
+	lastSeen: string;
+	missedBeats: number;
+}
+
+interface Props {
+	labels: IRecoveryTranslations;
+	zombies?: Zombie[];
+}
+
+const { labels, zombies = [] } = Astro.props;
+---
+
+<section class="recovery-table" aria-live="polite">
+	{zombies.length === 0 ? (
+		<p class="recovery-table__empty">{labels.empty}</p>
+	) : (
+		<table class="resources-table">
+			<thead>
+				<tr>
+					<th>{labels.agent}</th>
+					<th>{labels.task}</th>
+					<th>{labels.lastSeen}</th>
+					<th>{labels.missedBeats}</th>
+					<th>{labels.actions}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{zombies.map((zombie) => (
+					<tr>
+						<td>{zombie.agent}</td>
+						<td><code>{zombie.taskId}</code></td>
+						<td>{zombie.lastSeen}</td>
+						<td>{zombie.missedBeats}</td>
+						<td>
+							<button class="btn btn--small" type="button" data-action="release-lock">
+								{labels.releaseLock}
+							</button>
+							<button class="btn btn--small" type="button" data-action="force-ready">
+								{labels.forceReady}
+							</button>
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	)}
+</section>
+

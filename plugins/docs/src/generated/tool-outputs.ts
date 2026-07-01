@@ -14,6 +14,9 @@
 
 export interface DocsDocsListOutput {
 	count: number;
+	total: number;
+	offset: number;
+	nextOffset?: number;
 	truncated: boolean;
 	docs: {
 		path: string;
@@ -29,8 +32,19 @@ export interface DocsDocsReadOutput {
 	found: boolean;
 }
 
+export interface DocsDocsSearchOutput {
+	hits: {
+		path: string;
+		title: string;
+		score: number;
+		snippet: string;
+	}[];
+	truncated: boolean;
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface DocsToolOutputs {
 	"docs_docs_list": DocsDocsListOutput;
 	"docs_docs_read": DocsDocsReadOutput;
+	"docs_docs_search": DocsDocsSearchOutput;
 }

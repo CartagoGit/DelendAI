@@ -1,55 +1,44 @@
-/** How aggressively the agent applies the rules. Default: `mixed`. */
-export type IRulesMode = 'strict' | 'mixed' | 'none' | 'proposal';
+import type { IRulesMode } from '../contracts/mode.interface';
 
-export const RULES_MODES: readonly IRulesMode[] = [
-	'strict',
-	'mixed',
-	'none',
-	'proposal',
-];
+export type {
+	TPresetLanguage,
+	TPresetLinter,
+	IPresetIdentity,
+} from '../contracts/preset-identity.interface';
+export type { IPresetConfigs } from '../contracts/preset-configs.interface';
+export type { IPresetConventions } from '../contracts/preset-conventions.interface';
+export type { IPresetCommands } from '../contracts/preset-commands.interface';
+export type { IPresetToolchain } from '../contracts/preset-toolchain.interface';
+export type { IRulePreset } from '../contracts/preset.interface';
+export type { ICommandSet } from '../contracts/command-set.interface';
+export type { ICommandSetProvider } from '../contracts/command-set-provider.interface';
+export type {
+	ILanguageAdapter,
+	IDetectResult,
+} from '../contracts/language-adapter.interface';
+export type {
+	IOwnershipDogma,
+	IErrorModelDogma,
+	INullSafetyDogma,
+	INamingStyleDogma,
+	IAsyncModelDogma,
+	IVisibilityDogma,
+	IImmutabilityDogma,
+	ITestingDogma,
+} from '../contracts/dogma.interface';
+export type { IDogmaAdapter } from '../contracts/dogma-adapter.interface';
+export { DogmaRegistry } from '../registry/dogma-registry';
 
-export const RULES_MODE_GUIDANCE: Readonly<Record<IRulesMode, string>> = {
-	strict:
-		'Actively bring code into full compliance: run the fixer and make manual edits until check_rules is clean.',
-	mixed: 'Only fix/align files you create or touch; leave untouched files as-is.',
-	none: 'Never auto-change code. Report violations only; let the human decide.',
-	proposal:
-		'Do not edit directly. Create proposals (proposals plugin) describing the changes needed to comply.',
-};
-
-/**
- * A default lint/type preset for one framework+language combination.
- * Shipped as DATA (config file contents as text) so this plugin has no
- * dependency on any framework's ESLint packages — the materialised
- * files are consumed by the PROJECT's own toolchain.
- */
-export interface IRulePreset {
-	/** Unique id, e.g. `angular`, `react-ts`, `vanilla-js`. */
-	readonly id: string;
-	/** Framework family, e.g. `angular`, `react`, `vue`, `vanilla`. */
-	readonly framework: string;
-	readonly language: 'ts' | 'js' | 'php';
-	/** The linter the preset targets (eslint for JS/TS, pint for PHP…). */
-	readonly linter: 'eslint' | 'pint';
-	/** Cache filename for the materialised ESLint config. */
-	readonly eslintConfigFile: string;
-	/** Cache filename for the materialised tsconfig (TS presets only). */
-	readonly tsconfigFile?: string;
-	/** ESLint flat-config file contents (text). */
-	readonly eslintConfigContent: string;
-	/** tsconfig contents (text), TS presets only. */
-	readonly tsconfigContent?: string;
-	/** Short, agent-facing convention bullets. */
-	readonly conventions: readonly string[];
-	/** npm packages the materialised ESLint config needs installed. */
-	readonly requiredEslintDeps?: readonly string[];
-}
+export type { IRulesMode };
+export { RULES_MODES, RULES_MODE_GUIDANCE } from '../contracts/mode.interface';
 
 /** Per-area resolution in the cache manifest. Arrays are priority-ordered. */
 export interface IAreaRules {
 	readonly framework: string;
 	readonly presetId: string;
-	/** ESLint configs, most-authoritative first (project, then our default). */
+	/** Configs (eslint, ruff, etc.), most-authoritative first (project, then our default). */
+	readonly configs: readonly string[];
+	/** Deprecated alias for configs, for backward compatibility. */
 	readonly eslint: readonly string[];
 	/** Typecheck configs, most-authoritative first. */
 	readonly typecheck: readonly string[];
@@ -59,12 +48,14 @@ export interface IAreaRules {
 
 /**
  * The generated `rules-map.json`: project → area → resolution. Tells any
- * agent exactly which ESLint/tsconfig apply where, project config first.
+ * agent exactly which linter/tsconfig apply where, project config first.
  */
 export interface IRulesManifest {
 	readonly generatedAt: string;
 	/** Hash of mode + overrides + detected presets; regenerate on change. */
 	readonly fingerprint: string;
 	readonly mode: IRulesMode;
-	readonly projects: Readonly<Record<string, Readonly<Record<string, IAreaRules>>>>;
+	readonly projects: Readonly<
+		Record<string, Readonly<Record<string, IAreaRules>>>
+	>;
 }

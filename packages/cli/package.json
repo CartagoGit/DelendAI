@@ -1,0 +1,57 @@
+{
+	"name": "@mcp-vertex/cli",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Human-facing mcp-vertex CLI with local and stdio transports.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"cli",
+		"mcp-vertex"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"bin": {
+		"mcp-vertex": "./dist/index.js",
+		"mcpv": "./dist/index.js"
+	},
+	"exports": {
+		".": {
+			"@mcp-vertex/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts"
+	},
+	"dependencies": {
+		"@mcp-vertex/client": "workspace:*",
+		"@mcp-vertex/core": "workspace:*",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "6.0.3",
+		"vitest": "4.1.8"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/mcp-vertex"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}

@@ -1,11 +1,16 @@
 /**
- * Public surface of `@cartago-git/mcp-deps`. The default export (in
+ * Public surface of `@mcp-vertex/deps`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * engine + tool builder for programmatic reuse.
  */
 export { default } from '../index';
 
-export { listDeps, checkDeps } from '../lib/engine';
+export {
+	listDeps,
+	checkDeps,
+	checkOutdated,
+	fetchLatestFromNpm,
+} from '../lib/services/engine';
 export type {
 	IDepEntry,
 	IDepSection,
@@ -13,7 +18,21 @@ export type {
 	IDepsFinding,
 	IDepsFindingKind,
 	IDepsHealth,
-} from '../lib/engine';
+	IDepsOutdatedReport,
+	IOutdatedEntry,
+	ILatestVersionFetcher,
+} from '../lib/services/engine';
+export {
+	listPolyglotDeps,
+	parseCargoToml,
+	parseGoMod,
+	parsePyprojectToml,
+} from '../lib/services/polyglot';
+export type {
+	IPolyglotDepEntry,
+	IPolyglotEcosystem,
+	IPolyglotManifest,
+} from '../lib/services/polyglot';
 export { buildDepsToolRegistrations } from '../lib/tools';
 export type { IDepsToolOptions } from '../lib/tools';
 

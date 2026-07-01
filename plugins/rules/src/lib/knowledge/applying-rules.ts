@@ -5,7 +5,7 @@ import { RULES_MODE_GUIDANCE } from '../frameworks/types';
 export const buildApplyingRulesKnowledge = (
 	namespacePrefix: string,
 	mode: IRulesMode,
-	cacheRelDir: string
+	cacheRelDir: string,
 ): { id: string; title: string; body: string } => ({
 	id: 'applying-rules',
 	title: 'Applying lint/type rules',
@@ -22,6 +22,24 @@ export const buildApplyingRulesKnowledge = (
 			cacheRelDir +
 			'/` (one ESLint config + tsconfig per framework). They are starting points; never edit them by hand — override in your project config.',
 		'- Different folders can use different frameworks (e.g. a Vue app next to a Laravel API); each area resolves independently.',
+		'',
+		'Priority order (project > dogma > default) — codified in `IPolicyResolver`:',
+		'- **project** wins when the area ships its own linter config (eslint.config.mjs, pyproject.toml [tool.ruff], Cargo.toml [lints], go.mod, build.zig, etc.).',
+		"- **dogma** wins when the project has no opinion; the language's `IDogmaAdapter` ships a baseline (Rust → clippy + Result/Option + snake_case; Python → ruff + EAFP; etc.).",
+		'- **default** wins only when neither project nor dogma applies; the vendored preset under `.cache/mcp-vertex/rules/` runs.',
+		'- `check_rules` reports the winning layer in `evidence.effective` plus a one-sentence `evidence.rationale`; quote the rationale when explaining the decision to the user.',
+		'',
+		'Linter & Dogma Family Mapping:',
+		'- Rust family (clippy): borrow-checker memory, Result error model, Option null-safety, snake_case.',
+		'- Python family (ruff): garbage-collected, exceptions error model, nullable null-safety, snake_case.',
+		'- Go family (golangci-lint): garbage-collected, explicit errors, nil null-safety, mixedCaps.',
+		'- JS/TS family (eslint): garbage-collected, exceptions, null-undefined safety, camelCase.',
+		'- .NET family (dotnet-format): garbage-collected, exceptions, nullable reference safety, PascalCase.',
+		'- JVM family (checkstyle/ktlint): garbage-collected, exceptions, nullable/null-safe type safety, camelCase.',
+		'- BEAM family (credo): garbage-collected, pattern-matching errors, nil null-safety, snake_case.',
+		'- Ruby family (rubocop): garbage-collected, exceptions, nullable, snake_case.',
+		'- PHP family (pint): garbage-collected, exceptions, nullable, camelCase.',
+		'- Mobile family (swiftlint/dart analyze): garbage-collected, exceptions/throws, optionals, camelCase.',
 		'',
 		'Loop for any agent/model:',
 		`1. \`${namespacePrefix}_get_rules\` once to learn each area's framework, conventions and mode.`,

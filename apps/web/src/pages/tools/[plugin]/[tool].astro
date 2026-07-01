@@ -1,0 +1,32 @@
+---
+/**
+ * `/tools/[plugin]/[tool]` — per-tool detail page (English).
+ *
+ * Emits one path per (plugin × tool) combination. The English copy
+ * lives at the root; every other locale lives at
+ * `/[lang]/tools/[plugin]/[tool].astro`. `ToolPage` owns the body.
+ */
+import ToolPage from '#COMPONENTS/ToolPage.astro';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+export function getStaticPaths() {
+	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const nsFor = (s: string) => (s === 'core' ? 'mcp-vertex' : s);
+	const pkgs = capabilities.packages as Array<{ name: string }>;
+	const tools = capabilities.tools as Array<{
+		name: string;
+		namespace: string;
+	}>;
+	return pkgs.flatMap((p) => {
+		const slug = slugOf(p.name);
+		const ns = nsFor(slug);
+		return tools
+			.filter((t) => t.namespace === ns)
+			.map((t) => ({ params: { plugin: slug, tool: t.name } }));
+	});
+}
+
+const { tool } = Astro.params;
+---
+
+<ToolPage lang="en" toolName={tool!} />

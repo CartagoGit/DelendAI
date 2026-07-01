@@ -1,5 +1,5 @@
 /**
- * Public surface of `@cartago-git/mcp-memory`. The default export (in
+ * Public surface of `@mcp-vertex/memory`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * note store + tool builder for programmatic reuse.
  */
@@ -11,10 +11,22 @@ export {
 	saveNote,
 	recall,
 	removeNote,
-} from '../lib/store';
-export type { INote } from '../lib/store';
-export { rankNotes, tokenize } from '../lib/rank';
-export type { IRankedNote } from '../lib/rank';
+	exportNotes,
+	importNotes,
+} from '../lib/services/store';
+export type {
+	INote,
+	ISaveResult,
+	IMemoryExportFormat,
+	IMemoryImportFormat,
+	IMemoryImportMode,
+	IMemoryImportConflict,
+	IMemoryImportResult,
+} from '../lib/services/store';
+export { redactSecrets } from '../lib/services/redact';
+export type { IRedactResult } from '../lib/services/redact';
+export { rankNotes, tokenize } from '../lib/services/rank';
+export type { IRankedNote } from '../lib/services/rank';
 export { buildMemoryToolRegistrations } from '../lib/tools';
 export type { IMemoryToolOptions } from '../lib/tools';
 

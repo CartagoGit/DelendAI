@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateParallelism } from '@cartago-git/mcp-proposals/lib/proposals/proposal-parallelism';
-import type { IProposalParallelism } from '@cartago-git/mcp-proposals/lib/proposals/proposal-parallelism';
+import { evaluateParallelism } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
+import type { IProposalParallelism } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
 
 // ---------------------------------------------------------------------------
 // a2-proposal-parallelism-enforcement T1
@@ -56,34 +56,34 @@ const CONFLICTING_EDITOR: IProposalParallelism = {
 	parallelismLanes: [],
 };
 
-describe('evaluateParallelism', () => {
-	it('returns withinPolicy:true and empty violations for the 5 mutually compatible actives', () => {
+describe('evaluateParallelism', async () => {
+	it('returns withinPolicy:true and empty violations for the 5 mutually compatible actives', async () => {
 		const result = evaluateParallelism(COMPATIBLE_LANES);
 		expect(result.withinPolicy).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('returns withinPolicy:false with a mainWriteLane block when two editor lanes are in flight', () => {
+	it('returns withinPolicy:false with a mainWriteLane block when two editor lanes are in flight', async () => {
 		const result = evaluateParallelism([
 			...COMPATIBLE_LANES,
 			CONFLICTING_EDITOR,
 		]);
 		expect(result.withinPolicy).toBe(false);
 		const blockViolations = result.violations.filter(
-			(v) => v.severity === 'block'
+			(v) => v.severity === 'block',
 		);
 		expect(blockViolations.length).toBeGreaterThanOrEqual(1);
 		const editorBucket = blockViolations.find(
 			(v) =>
 				v.field === 'mainWriteLane' &&
 				v.conflictingProposals.includes('p31') &&
-				v.conflictingProposals.includes('pxx-editor-conflict-fixture')
+				v.conflictingProposals.includes('pxx-editor-conflict-fixture'),
 		);
 		expect(editorBucket).toBeDefined();
 		expect(editorBucket?.message).toContain('editor');
 	});
 
-	it('treats audit lanes as universally parallel-friendly (no violation with any other track)', () => {
+	it('treats audit lanes as universally parallel-friendly (no violation with any other track)', async () => {
 		const auditOnly: IProposalParallelism = {
 			proposalId: 'a99-fixture',
 			mainWriteLane: 'audit',
@@ -98,7 +98,7 @@ describe('evaluateParallelism', () => {
 		const result = evaluateParallelism([
 			auditOnly,
 			{
-				proposalId: 'p99-fixture',
+				proposalId: 'l99-fixture',
 				mainWriteLane: 'editor',
 				parallelismLanes: ['audit'],
 			},
@@ -106,13 +106,13 @@ describe('evaluateParallelism', () => {
 		expect(result.withinPolicy).toBe(true);
 	});
 
-	it('returns empty result for an empty actives list (no proposals in flight)', () => {
+	it('returns empty result for an empty actives list (no proposals in flight)', async () => {
 		const result = evaluateParallelism([]);
 		expect(result.withinPolicy).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('emits at most one violation per conflicting lane (not O(n^2))', () => {
+	it('emits at most one violation per conflicting lane (not O(n^2))', async () => {
 		const threeEditors: IProposalParallelism[] = [
 			{ proposalId: 'e1', mainWriteLane: 'editor', parallelismLanes: [] },
 			{ proposalId: 'e2', mainWriteLane: 'editor', parallelismLanes: [] },
@@ -122,7 +122,7 @@ describe('evaluateParallelism', () => {
 		expect(result.violations.length).toBe(1);
 	});
 
-	it('emits a block when neither lane permits the other (mutual exclusion)', () => {
+	it('emits a block when neither lane permits the other (mutual exclusion)', async () => {
 		const strictEditor: IProposalParallelism = {
 			proposalId: 'p-strict',
 			mainWriteLane: 'editor',
@@ -137,8 +137,8 @@ describe('evaluateParallelism', () => {
 		expect(result.withinPolicy).toBe(false);
 		expect(
 			result.violations.some(
-				(v) => v.severity === 'block' && v.field === 'parallelismLanes'
-			)
+				(v) => v.severity === 'block' && v.field === 'parallelismLanes',
+			),
 		).toBe(true);
 	});
 });

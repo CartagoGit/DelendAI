@@ -2,30 +2,120 @@
 	"$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
 	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
 	"files": {
-		"includes": ["**", "!**/dist", "!**/node_modules", "!coverage"]
+		"includes": [
+			"**",
+			"!dist",
+			"!build",
+			"!coverage",
+			"!site",
+			"!.continue",
+			"!.astro",
+			"!.cache",
+			"!.worktrees",
+			"!node_modules",
+			"!apps/web/.astro",
+			"!apps/web/node_modules",
+			"!apps/web/public",
+			"!apps/web/src/data/capabilities.json",
+			"!apps/web/src/data/skills.json",
+			"!apps/web/src/data/manifests",
+			"!docs/mcp-vertex/examples/custom-plugin/node_modules",
+			"!packages/*/dist",
+			"!packages/*/node_modules",
+			"!plugins/*/dist",
+			"!plugins/*/node_modules"
+		]
 	},
 	"formatter": {
-		"enabled": false,
+		"enabled": true,
 		"indentStyle": "tab",
-		"lineWidth": 90
+		"indentWidth": 4,
+		"lineWidth": 80,
+		"lineEnding": "lf"
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "single",
+			"jsxQuoteStyle": "double",
 			"semicolons": "always",
 			"trailingCommas": "all",
-			"arrowParentheses": "always"
+			"arrowParentheses": "always",
+			"bracketSpacing": true,
+			"bracketSameLine": false
 		}
 	},
+	"json": {
+		"formatter": {
+			"indentWidth": 4,
+			"trailingCommas": "none"
+		}
+	},
+	"css": {
+		"formatter": {
+			"quoteStyle": "single",
+			"indentWidth": 4
+		}
+	},
+	"html": {
+		"formatter": {
+			"indentWidth": 4,
+			"selfCloseVoidElements": "always",
+			"whitespaceSensitivity": "ignore"
+		}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"apps/web/src/**",
+				"apps/web/scripts/**",
+				"apps/web/astro.config.mjs"
+			],
+			"formatter": {
+				"lineWidth": 80
+			}
+		},
+		{
+			"includes": ["**/*.astro"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedImports": "off",
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"apps/web/src/data/capabilities.json",
+				"apps/web/src/data/skills.json",
+				"docs/mcp-vertex/agent-catalog.generated.json"
+			],
+			"formatter": { "enabled": false }
+		},
+		{
+			"includes": [
+				"**/src/generated/tool-outputs.ts",
+				"packages/core/schema/mcp-vertex.config.schema.json"
+			],
+			"formatter": { "enabled": false }
+		},
+		{
+			"includes": ["packages/*/dist/**/*.d.ts"],
+			"formatter": { "enabled": false },
+			"linter": { "enabled": false }
+		}
+	],
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"style": {
 				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "off"
+				"noExplicitAny": "off",
+				"noTemplateCurlyInString": "off"
 			}
 		}
 	},

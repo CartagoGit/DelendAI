@@ -1,0 +1,11 @@
+---
+import NotFound from '#COMPONENTS/NotFound.astro';
+import Base from '#LAYOUTS/Base.astro';
+---
+
+{/* English 404: project-site URL stays clean at /404. Renders inside the
+    shared Base layout (logo in the nav brand + favicon) so the page is
+    unmistakably part of @mcp-vertex instead of Astro's stock 404. */}
+<Base lang="en" title="404 — @mcp-vertex" description="Page not found.">
+	<NotFound lang="en" />
+</Base>

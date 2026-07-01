@@ -1,9 +1,4 @@
-import {
-	mkdtempSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -12,12 +7,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentLockEngine,
 	type ILockFile,
-} from '@cartago-git/mcp-proposals/lib/locks/agent-lock-engine';
+} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
 import {
 	runTaskQueueMcp,
 	type ITaskQueuePaths,
-} from '@cartago-git/mcp-proposals/lib/agents/task-queue-engine';
-import { runAgentNames } from '@cartago-git/mcp-proposals/lib/tools/agent-names.tool';
+} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
+import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
 
 /**
  * N23 — chaos/adversarial. Stresses the reliability promise (atomic writes +
@@ -25,7 +20,7 @@ import { runAgentNames } from '@cartago-git/mcp-proposals/lib/tools/agent-names.
  * lock / queue / registry at once. The invariants that must hold are no
  * lost updates, mutual exclusion per file, and never a torn (corrupt) file.
  */
-describe('coordination chaos — heavy contention invariants (N23)', () => {
+describe('coordination chaos — heavy contention invariants (N23)', async () => {
 	let dir = '';
 	let lockPath = '';
 	let queuePath = '';
@@ -41,7 +36,8 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	const readJson = <T>(p: string): T => JSON.parse(readFileSync(p, 'utf8')) as T;
+	const readJson = <T>(p: string): T =>
+		JSON.parse(readFileSync(p, 'utf8')) as T;
 
 	it('40 concurrent disjoint claims: no lost updates, valid file', async () => {
 		const n = 40;
@@ -54,9 +50,9 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 						agent: `a${i}`,
 						files: [`src/f${i}.ts`],
 					},
-					{ lockPath }
-				)
-			)
+					{ lockPath },
+				),
+			),
 		);
 		const lock = readJson<ILockFile>(lockPath);
 		expect(lock.in_flight).toHaveLength(n); // none lost
@@ -68,10 +64,15 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 		const results = await Promise.all(
 			Array.from({ length: 20 }, (_, i) =>
 				runAgentLockEngine(
-					{ action: 'claim', task_id: `t${i}`, agent: `a${i}`, files: [file] },
-					{ lockPath }
-				)
-			)
+					{
+						action: 'claim',
+						task_id: `t${i}`,
+						agent: `a${i}`,
+						files: [file],
+					},
+					{ lockPath },
+				),
+			),
 		);
 		// File stays valid JSON, and exactly one entry owns the file.
 		const lock = readJson<ILockFile>(lockPath);
@@ -80,7 +81,7 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 		// Exactly one call reported a non-blocked claim for the file.
 		const notBlocked = results.filter((r) => {
 			const body = JSON.parse(
-				(r.content as Array<{ text: string }>)[0]?.text ?? '{}'
+				(r.content as Array<{ text: string }>)[0]?.text ?? '{}',
 			) as { blocked?: boolean };
 			return body.blocked !== true;
 		});
@@ -88,20 +89,31 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 	});
 
 	it('30 concurrent queue enqueues: all present, file never torn', async () => {
-		const paths: ITaskQueuePaths = { queuePath, closedTasksPath, lockPath, workspaceRoot: dir };
+		const paths: ITaskQueuePaths = {
+			queuePath,
+			closedTasksPath,
+			lockPath,
+			workspaceRoot: dir,
+		};
 		const n = 30;
 		await Promise.all(
 			Array.from({ length: n }, (_, i) =>
 				runTaskQueueMcp(
 					{
 						action: 'enqueue',
-						params: { taskId: `q${i}`, agentName: 'a', agentSlot: 'orchestrator' },
+						params: {
+							taskId: `q${i}`,
+							agentName: 'a',
+							agentSlot: 'orchestrator',
+						},
 					},
-					paths
-				)
-			)
+					paths,
+				),
+			),
 		);
-		const queue = readJson<{ entries: Array<{ taskId: string }> }>(queuePath);
+		const queue = readJson<{ entries: Array<{ taskId: string }> }>(
+			queuePath,
+		);
 		expect(queue.entries).toHaveLength(n);
 		expect(new Set(queue.entries.map((e) => e.taskId)).size).toBe(n);
 	});
@@ -125,13 +137,17 @@ describe('coordination chaos — heavy contention invariants (N23)', () => {
 		await Promise.all(
 			Array.from({ length: n }, (_, i) =>
 				runAgentNames(
-					{ action: 'assign', task_id: `task${i}`, agent_slot: 'implementation_runner' },
-					options
-				)
-			)
+					{
+						action: 'assign',
+						task_id: `task${i}`,
+						agent_slot: 'implementation_runner',
+					},
+					options,
+				),
+			),
 		);
 		const reg = readJson<{ assignments: Array<{ task_id: string }> }>(
-			registryPath
+			registryPath,
 		);
 		expect(reg.assignments).toHaveLength(n);
 		expect(new Set(reg.assignments.map((a) => a.task_id)).size).toBe(n);

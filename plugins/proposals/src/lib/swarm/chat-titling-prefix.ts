@@ -173,7 +173,7 @@ function buildPrefixTooLongReason(): string {
  * can surface a friendly diagnostic without try/catch.
  */
 export function parseChatTitlingPrefix(
-	input: string
+	input: string,
 ): IChatTitlingPrefixResult {
 	const raw = input.trim();
 
@@ -201,7 +201,7 @@ export function parseChatTitlingPrefix(
 		) {
 			return invalid(
 				raw,
-				'malformed proposal prefix: empty capture group'
+				'malformed proposal prefix: empty capture group',
 			);
 		}
 		const visiblePrefix = `[${proposalId}] ${taskId}`;
@@ -236,7 +236,7 @@ export function parseChatTitlingPrefix(
 		if (nonWhitespaceCount < FREE_SUMMARY_MIN_NON_WHITESPACE) {
 			return invalid(
 				raw,
-				`[FREE] summary must contain at least ${FREE_SUMMARY_MIN_NON_WHITESPACE} non-whitespace characters`
+				`[FREE] summary must contain at least ${FREE_SUMMARY_MIN_NON_WHITESPACE} non-whitespace characters`,
 			);
 		}
 		// The full `[FREE] <summary>` text must fit the cap.

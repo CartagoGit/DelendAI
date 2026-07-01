@@ -1,4 +1,4 @@
-// filepath: libs/mcp-server/src/lib/shared/proposal-frontmatter.ts
+// filepath: libs/mcp-project/src/lib/shared/proposal-frontmatter.ts
 // Tiny frontmatter parser for the orchestrator handoff metrics.
 //
 // the host project proposals use a flat YAML frontmatter with simple
@@ -63,12 +63,10 @@ export function parseProposalFrontmatter(source: string): IProposalFrontmatter {
  */
 export function proposalAgeHours(
 	frontmatter: IProposalFrontmatter,
-	now: number = Date.now()
+	now: number = Date.now(),
 ): number | null {
 	const raw =
-		frontmatter.opened ??
-		frontmatter.updated ??
-		frontmatter.created;
+		frontmatter.opened ?? frontmatter.updated ?? frontmatter.created;
 	if (raw === undefined) return null;
 	const ts = Date.parse(raw);
 	if (Number.isNaN(ts)) return null;

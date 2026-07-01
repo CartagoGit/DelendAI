@@ -2,13 +2,31 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	test: {
-		projects: ['packages/*', 'plugins/*'],
+		// Projects run as their own vitest instances; the root shell walks
+		// the listed globs to wire them up. Plugins that need to pause
+		// their own runtime tests temporarily (e.g. while still in
+		// `idea` status) should set `include: []` in their local
+		// `vitest.config.ts` AND add a short comment explaining why —
+		// see `plugins/audit/vitest.config.ts` for the historical
+		// l99 opt-out pattern.
+		projects: [
+			'packages/*',
+			'plugins/*',
+			'docs/mcp-vertex/examples/custom-plugin',
+			'apps/web',
+			'apps/shared',
+			'packages/ui-extension',
+			'extensions/vscode',
+			'tools',
+		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast. The thresholds are a no-regression gate set
 		// a few points under the current numbers — tighten them as coverage grows.
 		coverage: {
 			provider: 'v8',
+			// r00004 S1: keep coverage out of the root — write under .cache/.
+			reportsDirectory: '.cache/coverage',
 			all: true,
 			include: ['packages/*/src/**', 'plugins/*/src/**'],
 			exclude: ['**/*.spec.ts', '**/*.test.ts', '**/index.ts'],

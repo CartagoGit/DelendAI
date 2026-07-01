@@ -7,11 +7,11 @@ import {
 	extractTaskHint,
 	isStaleLock,
 	isStaleTimestamp,
-} from '@cartago-git/mcp-proposals/lib/swarm/continuity-recovery';
+} from '@mcp-vertex/proposals/lib/swarm/continuity-recovery';
 import type {
 	IContinuityCheckpointLike,
 	IContinuityLockLike,
-} from '@cartago-git/mcp-proposals/lib/swarm/continuity-recovery';
+} from '@mcp-vertex/proposals/lib/swarm/continuity-recovery';
 
 const NOW = new Date('2026-06-05T12:30:00.000Z').getTime();
 
@@ -19,19 +19,19 @@ function mockNow(value: number): void {
 	vi.spyOn(Date, 'now').mockReturnValue(value);
 }
 
-describe('continuity-recovery / isStaleTimestamp', () => {
+describe('continuity-recovery / isStaleTimestamp', async () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('returns false for a recent timestamp and true for an old one', () => {
+	it('returns false for a recent timestamp and true for an old one', async () => {
 		mockNow(NOW);
 
 		expect(isStaleTimestamp('2026-06-05T12:29:00.000Z')).toBe(false);
 		expect(isStaleTimestamp('2026-06-05T11:00:00.000Z')).toBe(true);
 	});
 
-	it('treats invalid or missing timestamps as non-stale', () => {
+	it('treats invalid or missing timestamps as non-stale', async () => {
 		mockNow(NOW);
 
 		expect(isStaleTimestamp(undefined)).toBe(false);
@@ -40,12 +40,12 @@ describe('continuity-recovery / isStaleTimestamp', () => {
 	});
 });
 
-describe('continuity-recovery / isStaleLock', () => {
+describe('continuity-recovery / isStaleLock', async () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('uses the lock last_seen to decide staleness', () => {
+	it('uses the lock last_seen to decide staleness', async () => {
 		mockNow(NOW);
 
 		const staleLock: IContinuityLockLike = {
@@ -63,23 +63,23 @@ describe('continuity-recovery / isStaleLock', () => {
 	});
 });
 
-describe('continuity-recovery / extractTaskHint', () => {
-	it('extracts a T-style task id from a free-form string', () => {
+describe('continuity-recovery / extractTaskHint', async () => {
+	it('extracts a T-style task id from a free-form string', async () => {
 		expect(extractTaskHint('Continue with p40-T1 next.')).toBe('T1');
 	});
 
-	it('uppercases the captured task id regardless of input case', () => {
+	it('uppercases the captured task id regardless of input case', async () => {
 		expect(extractTaskHint('jump to t2 directly')).toBe('T2');
 	});
 
-	it('returns undefined when no task id is present', () => {
+	it('returns undefined when no task id is present', async () => {
 		expect(extractTaskHint('no task here')).toBeUndefined();
 		expect(extractTaskHint(undefined)).toBeUndefined();
 	});
 });
 
-describe('continuity-recovery / extractCheckpointNextTaskHint', () => {
-	it('prefers nextAction when it carries a task id', () => {
+describe('continuity-recovery / extractCheckpointNextTaskHint', async () => {
+	it('prefers nextAction when it carries a task id', async () => {
 		const checkpoint: IContinuityCheckpointLike = {
 			nextAction: 'Siguiente task: p40-T2 al implementation_runner.',
 			handoffs: [{ message: 'old p40-T1 handoff' }],
@@ -87,7 +87,7 @@ describe('continuity-recovery / extractCheckpointNextTaskHint', () => {
 		expect(extractCheckpointNextTaskHint(checkpoint)).toBe('T2');
 	});
 
-	it('falls back to the first handoff message that carries a task id', () => {
+	it('falls back to the first handoff message that carries a task id', async () => {
 		const checkpoint: IContinuityCheckpointLike = {
 			handoffs: [
 				{ message: 'context only' },
@@ -97,7 +97,7 @@ describe('continuity-recovery / extractCheckpointNextTaskHint', () => {
 		expect(extractCheckpointNextTaskHint(checkpoint)).toBe('T3');
 	});
 
-	it('returns undefined when neither nextAction nor handoffs yield a task id', () => {
+	it('returns undefined when neither nextAction nor handoffs yield a task id', async () => {
 		const checkpoint: IContinuityCheckpointLike = {
 			nextAction: 'no task id here',
 			handoffs: [{ message: 'no task id either' }],
@@ -106,12 +106,12 @@ describe('continuity-recovery / extractCheckpointNextTaskHint', () => {
 	});
 });
 
-describe('continuity-recovery / evaluateContinuityRecovery', () => {
+describe('continuity-recovery / evaluateContinuityRecovery', async () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('returns shouldReset: false when there is no lock and no checkpoint', () => {
+	it('returns shouldReset: false when there is no lock and no checkpoint', async () => {
 		const decision = evaluateContinuityRecovery({
 			lock: undefined,
 			checkpoint: null,
@@ -121,7 +121,7 @@ describe('continuity-recovery / evaluateContinuityRecovery', () => {
 		expect(decision).toEqual({ shouldReset: false });
 	});
 
-	it('flags a stale lock and extracts the task hint from task_id', () => {
+	it('flags a stale lock and extracts the task hint from task_id', async () => {
 		mockNow(NOW);
 
 		const decision = evaluateContinuityRecovery({
@@ -139,7 +139,7 @@ describe('continuity-recovery / evaluateContinuityRecovery', () => {
 		expect(decision.reason).toContain('stale lock');
 	});
 
-	it('flags a stale checkpoint by repeatedCount >= threshold', () => {
+	it('flags a stale checkpoint by repeatedCount >= threshold', async () => {
 		const checkpoint: IContinuityCheckpointLike = {
 			status: 'in_progress',
 			updatedAt: '2026-06-05T12:29:00.000Z',
@@ -158,7 +158,7 @@ describe('continuity-recovery / evaluateContinuityRecovery', () => {
 		expect(decision.reason).toContain('stale checkpoint');
 	});
 
-	it('flags a stale checkpoint by timestamp', () => {
+	it('flags a stale checkpoint by timestamp', async () => {
 		mockNow(NOW);
 
 		const checkpoint: IContinuityCheckpointLike = {
@@ -176,7 +176,7 @@ describe('continuity-recovery / evaluateContinuityRecovery', () => {
 		expect(decision.reason).toContain('stale checkpoint');
 	});
 
-	it('does not reset when the checkpoint is in a closed status', () => {
+	it('does not reset when the checkpoint is in a closed status', async () => {
 		const checkpoint: IContinuityCheckpointLike = {
 			status: 'slice-complete',
 			updatedAt: '2026-06-05T12:00:00.000Z',
@@ -194,7 +194,7 @@ describe('continuity-recovery / evaluateContinuityRecovery', () => {
 		expect(decision.shouldReset).toBe(false);
 	});
 
-	it('does not reset for a fresh lock and fresh checkpoint', () => {
+	it('does not reset for a fresh lock and fresh checkpoint', async () => {
 		mockNow(NOW);
 
 		const decision = evaluateContinuityRecovery({

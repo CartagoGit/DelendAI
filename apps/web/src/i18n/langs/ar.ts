@@ -1,0 +1,406 @@
+import type { LangDict } from '#I18N/shared';
+import { logsByLang } from '#I18N/logs';
+import { proposalGlossaryByLang, recoveryByLang } from '#I18N/proposals';
+
+const dict: LangDict = {
+	nav: {
+		concept: 'المفهوم',
+		install: 'التثبيت',
+		setup: 'الإعداد',
+		capabilities: 'الإمكانيات',
+		tools: 'الأدوات',
+		benchmarks: 'القياسات',
+		plugins: 'الإضافات',
+		presets: 'الإعدادات المسبقة',
+		github: 'GitHub',
+		menu: 'القائمة',
+		knowledge: 'المعرفة',
+		prompts: 'المطالبات',
+		resources: 'الموارد',
+		skills: 'المهارات',
+		guide: 'الدليل',
+		more: 'المزيد',
+		firstFiveMinutes: 'أول 5 دقائق',
+		troubleshooting: 'حل المشكلات',
+	},
+	hero: {
+		title: { a: '', b: 'MCP Vertex', c: ' المحايد للمشروع' },
+		subheader: 'نواة خادم MCP + مُحمّل إضافات لأي مشروع.',
+		tagline:
+			'نواة خادم Model Context Protocol محايدة للمشروع. النواة لا تعرف شيئًا عن مجالك — تأتي القدرات كإضافات تُحمّلها عند الطلب، وكلها مُقاسة لتكلفة منخفضة من الـ tokens.',
+		ctaInstall: 'ابدأ الآن',
+		ctaTools: 'تصفّح الأدوات',
+		runsOn: 'يعمل على Node و Deno و bun · أي مدير حزم',
+	},
+	marquee: { runtimes: 'مبني بـ · يعمل على', clients: 'عملاء MCP والنماذج' },
+	concept: {
+		title: 'نواة صغيرة، إضافات كثيرة',
+		body: 'mcp-vertex هي النواة المُحكمة: تسجيل أدوات حتمي، مسارات workspace محقونة، مُحمّل إضافات عبر CLI، وسطح أدوات مُقاس بالـ tokens. كل ما هو خاص بالمجال هو إضافة — حمّل ما تحتاجه فقط، تحت أي مضيف أو نموذج.',
+		f1: {
+			t: 'محايد للمشروع',
+			b: 'لا كود مجال في النواة. الإضافة نفسها تتصرف بشكل متطابق تحت أي مضيف أو نموذج.',
+		},
+		f2: {
+			t: 'قليل الـ tokens بالتصميم',
+			b: 'overview واحد، معرفة كسولة، وJSON مُدمج. ميزانية مُقاسة تحمي من التراجع في الـ CI.',
+		},
+		f3: {
+			t: 'تزامن آمن',
+			b: 'كتابات ذرّية، وقفل متبادل عبر العمليات برموز ملكية، وحجر صحي للتلف.',
+		},
+		f4: {
+			t: 'جاهز لتعدد الوكلاء',
+			b: 'إضافة proposals تنسّق سربًا: أقفال، طابور مهام، انفصال الشرائح، وإشعارات دفع.',
+		},
+	},
+	tools: {
+		title: 'الأدوات',
+		lead: 'كل أداة تعرضها مجموعة الإضافات الكاملة، مُجمّعة حسب النطاق — مُستخرجة من السجل الحي، لذا لا تنحرف هذه الصفحة عن الكود أبدًا.',
+		count: 'أداة',
+		packages: 'حزمة',
+	},
+	bench: {
+		title: 'مُقاس، لا مُدّعى',
+		lead: 'كفاءة الـ tokens ثابتة محمية — يفشل اختبار CI إذا تراجعت هذه الحدود.',
+		b1: {
+			t: 'بدء بارد',
+			b: 'overview (مُدمج) + auto_work — توجيه كامل بأقل من 300 token.',
+		},
+		b2: {
+			t: 'بلا استطلاع',
+			b: 'تحرير القفل يُدفع (إضافة notification)، لا يُستطلع في حلقة.',
+		},
+		b3: {
+			t: 'محمي من الانحراف',
+			b: 'SDK أنواع مُولّد، وميزانيات tokens، وشبكة e2e صارمة على البروتوكول الحقيقي.',
+		},
+		live: {
+			title: 'تكلفة التوجيه · مُقاسة حيًّا',
+			note: 'عدد الـ tokens لنص النتيجة الذي يراه الوكيل (≈4 بايت/token)، مُقاس حيًّا عبر البروتوكول مع proposals+memory. خط الأساس تقدير توضيحي للتوجّه يدويًا — ليس قياسًا لأداة طرف ثالث.',
+		},
+		baseline: 'بدون mcp-vertex (يدويًا · تقدير)',
+	},
+	plugins: {
+		title: 'الإضافات',
+		lead: 'الحزم المنشورة. حمّل ما تحتاجه فقط؛ تبقى النواة صغيرة.',
+	},
+	cfg: {
+		title: 'الإعدادات',
+		theme: 'السمة',
+		language: 'اللغة',
+		motion: 'الحركة',
+		motionLabel: 'تحريك الأشرطة',
+	},
+	search: {
+		title: 'بحث',
+		placeholder: 'البحث في الموقع...',
+	},
+	footer: {
+		built: 'مُولّد من السجل الحي للأدوات.',
+		tagline: 'نواة خادم MCP لا تعرف عن المشروع + محمّل إضافات.',
+		sections: 'الأقسام',
+		resources: 'الموارد',
+		madeBy: 'من صنع Cartago · @CartagoGit على GitHub',
+		creatorsRepo: 'المُنشئ على GitHub',
+		creatorsNpm: 'المُنشئ على npm',
+	},
+	pluginpage: {
+		back: 'رجوع',
+		tools: 'الأدوات',
+		install: 'التثبيت',
+		tabInstall: 'التثبيت',
+		tabTools: 'الأدوات',
+		tabConfiguration: 'الإعداد',
+		tabTutorial: 'دليل',
+	},
+	plugin: {
+		proposals:
+			'تنسيق متعدد الوكلاء: أقفال، طابور مهام، شرائح، round-context، إصلاح الحالة.',
+		git: 'فحص مستودع للقراءة فقط: status، الملفات المتغيرة، diff، log.',
+		memory: 'ملاحظات دائمة عبر الجلسات مع استرجاع BM25، حصص، TTL، وإخفاء الأسرار.',
+		search: 'بحث منخفض التكلفة في الـ workspace: سلسلة فرعية أو regex، تضمين/استبعاد glob.',
+		rules: 'كشف إطار العمل + إرشاد lint/الأعراف؛ إعداد المشروع له الأولوية.',
+		quality:
+			'تشغيل بوابات الجودة (lint/test/build) بسياسة سماح/منع؛ قابل للإلغاء.',
+		docs: 'فهرسة وقراءة وثائق markdown للمشروع، تنقّل مُنسّق منخفض التكلفة.',
+		deps: 'جرد تبعيات دون اتصال + صحة (lockfile، نطاقات فضفاضة، تكرارات).',
+		notification: 'يدفع أحداث تحرير القفل ليتوقف الوكلاء عن الاستطلاع.',
+		logs: 'Append-only redacted event log with query, tail and correlation tools.',
+		'status-marker':
+			'علامة إغلاق ملوّنة إلزامية لكل ردّ وكيل: 8 حالات مرجعية، أدوات مساعدة ومُحقِّق.',
+		core: 'النواة المحايدة: overview، scaffold، مقاييس، doctor، ومُحمّل الإضافات.',
+		issues: {
+			description:
+				'GitHub issues plugin — ingest, analyse and (optionally) promote to a proposal.',
+			requires: 'requires',
+			installSnippet: 'mcp-vertex --plugins=proposals,issues',
+		},
+	},
+	toolpage: {
+		back: 'رجوع',
+		backToPlugin: 'العودة إلى الإضافة',
+		arguments: 'الوسائط',
+		argName: 'الوسيط',
+		argType: 'النوع',
+		argRequired: 'مطلوب',
+		argDescription: 'الوصف',
+		argRequiredYes: 'نعم',
+		argRequiredNo: 'لا',
+		noArguments: 'هذه الأداة لا تأخذ أي وسائط.',
+		effects: 'التأثيرات',
+		effectReadOnly: 'قراءة فقط',
+		example: 'مثال على الاستدعاء',
+		exampleNote:
+			'يُعرض كحمولة استدعاء أداة MCP عامة؛ النقل الفعلي يعتمد على عميلك.',
+		plugin: 'الإضافة',
+	},
+	firstFiveMinutes: {
+		title: 'أول 5 دقائق',
+		lead: 'ثلاثة بدايات سريعة قابلة للنسخ واللصق. اختر ما يطابق طريقة تشغيلك لـ mcp-vertex.',
+		profileTabBunNode: 'Bun / Node',
+		profileTabVscode: 'VS Code / Copilot',
+		profileTabClaude: 'Claude Code',
+		bunNode: {
+			title: 'Bun / Node — تشغيل الخادم مباشرة',
+			intro: 'لا حاجة لتكامل محرر: شغّل host server من الطرفية ووجّه أي عميل MCP إلى نقل stdio الخاص به.',
+			steps: [
+				'التثبيت: `bun add @mcp-vertex/core` (أو `npm install @mcp-vertex/core`).',
+				'التشغيل: `bunx mcp-vertex --preset=standard` (أو `npx mcp-vertex --preset=standard`).',
+				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
+				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',
+				'استدعِ `mcp-vertex_overview { compact: true }` أولًا — يخبرك بما يجب فعله بعد ذلك.',
+			],
+		},
+		vscode: {
+			title: 'VS Code / GitHub Copilot',
+			intro: 'يكتشف مُثبّت الأمر الواحد VS Code ويضيف mcp-vertex إلى قائمة خوادم MCP لديك دون لمس الخوادم الحالية.',
+			steps: [
+				'شغّل مُثبّت الأمر الواحد من صفحة التثبيت (يكتشف IDE تلقائيًا).',
+				'أعد تحميل النافذة (`Developer: Reload Window`) ليتعرف Copilot على الخادم الجديد.',
+				'افتح لوحة محادثة Copilot واختر وكيل `mcp-vertex` من منتقي الوكلاء.',
+				'اطلب منه استدعاء `mcp-vertex_overview` — يجب أن يُبلغ عن الإعداد المسبق المُحمّل وإجراء تالٍ موصى به.',
+				'إذا لم يظهر الخادم، راجع حل المشكلات → "MCP server not detected".',
+			],
+		},
+		claude: {
+			title: 'Claude Code',
+			intro: 'يقرأ Claude Code ملف `.mcp.json` في جذر مساحة العمل؛ يكتب المُثبّت أو يدمج هذا الملف لك.',
+			steps: [
+				'شغّل مُثبّت الأمر الواحد — يكتشف Claude Code ويكتب `.mcp.json`.',
+				'أعد تشغيل Claude Code (أو شغّل `/mcp` لإعادة تحميل الخوادم) ليتعرف على الإدخال الجديد.',
+				'في جلسة جديدة، يشير ملفا `AGENTS.md` + `CLAUDE.md` المُحمّلان دائمًا بالفعل إلى `mcp-vertex_overview` كأول استدعاء.',
+				'أكّد باستخدام `mcp-vertex_overview { compact: true }` — يخبرك حقل `recommendedNextAction` بما يجب فعله بعد ذلك.',
+				'في الجلسات متعددة الوكلاء، اقرأ مهارة `mcp-vertex-proposal-swarm-runner` قبل المطالبة بشريحة.',
+			],
+		},
+		nextSteps: 'إلى أين بعد ذلك',
+		nextToolsCta: 'تصفّح جميع الأدوات',
+		nextTroubleshootingCta: 'هل هناك شيء لا يعمل؟ حل المشكلات',
+	},
+	troubleshooting: {
+		title: 'حل المشكلات',
+		lead: 'العرض ← السبب المحتمل ← الحل، للمشكلات التي تم الإبلاغ عنها فعليًا.',
+		symptom: 'العرض',
+		cause: 'السبب المحتمل',
+		fix: 'الحل',
+		tags: 'الوسوم',
+		backToIndex: 'العودة إلى حل المشكلات',
+		closedBy: 'أُغلِق بواسطة',
+		empty: 'لا توجد حالة حل مشكلات تطابق هذا الفلتر حتى الآن.',
+	},
+	knowledge: {
+		title: 'المعرفة',
+		lead: 'وثائق مُفهرسة يمكن للنواة الإجابة عن أسئلة حولها.',
+		count: 'وثائق',
+	},
+	prompts: {
+		title: 'المطالبات',
+		lead: 'قوالب مطالبات قابلة لإعادة الاستخدام تطرحها النواة.',
+		count: 'مطالبات',
+		arg: 'وسائط',
+	},
+	resources: {
+		title: 'الموارد',
+		lead: 'موارد ثابتة مُجمَّعة مع المشروع (URI + MIME).',
+		count: 'موارد',
+		uri: 'URI',
+		mime: 'MIME',
+	},
+	skills: {
+		title: 'المهارات',
+		lead: 'كتيبات تشغيل في المجال يمكن للوكيل تحميلها عند الطلب.',
+		count: 'مهارات',
+		body: 'المتن',
+	},
+	notFound: {
+		code: '404',
+		title: 'الصفحة غير موجودة',
+		lead: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها. تبقى النواة محايدة — حتى تجاه روابط URL المعطّلة.',
+		homeCta: 'العودة إلى الرئيسية',
+		toolsCta: 'تصفّح الأدوات',
+		homeAria: 'الذهاب إلى الرئيسية',
+	},
+	proposals: proposalGlossaryByLang.ar,
+	recovery: recoveryByLang.ar,
+	logs: logsByLang.ar,
+	presets: {
+		title: 'الإعدادات المسبقة',
+		lead: 'مجموعات المكونات الإضافية المكونة مسبقًا لمساحات العمل بمختلف الأحجام.',
+		summary:
+			'يحتوي هذا المستودع على {count} من المكونات الإضافية الفريدة عبر الإعدادات المسبقة.',
+		hostOnlyChip: 'المضيف فقط',
+		installTitle: 'كيفية الاستخدام',
+		installLead: 'حدد علم --preset عند بدء تشغيل خادم MCP.',
+		table: {
+			preset: 'الإعداد المسبق',
+		},
+	},
+	setup: {
+		title: 'الإعداد عبر المشاريع',
+		lead: 'اربط mcp-vertex بأي مستودع وجهّز إضافة issues الخاصة بـ GitHub لذلك المستودع — نفس الخطوات السبع التي ينفّذها أمر setup-github.',
+		stepsTitle: 'الخطوات السبع',
+		docsLinkLabel: 'اقرأ الدليل المرجعي للإعداد عبر المشاريع',
+		detectRepoTitle: 'اكتشاف المستودع',
+		detectRepoBody:
+			'يقرأ ريموت GitHub ويحوّله إلى owner/name. يجب أن يشير المعرّف المكتشف إلى المستودع الذي تتوقعه.',
+		confirmRepoTitle: 'تأكيد owner/name',
+		confirmRepoBody:
+			'شغّل أمر الإعداد وأكّد (أو استبدل) المعرّف المكتشف قبل كتابة أي شيء.',
+		pickAuthTierTitle: 'اختيار مستوى المصادقة',
+		pickAuthTierBody:
+			'استخدم gh عندما ينجح gh auth status، وrest-authed عند ضبط GITHUB_TOKEN، وإلا rest-anon (محدود بـ 60 طلبًا في الساعة).',
+		writeConfigTitle: 'كتابة الإعدادات',
+		writeConfigBody:
+			'يكتب plugins.issues.options.repo في mcp-vertex.config.json دون المساس بإعدادات الإضافات الأخرى.',
+		verifyTierTitle: 'التحقق من المستوى',
+		verifyTierBody:
+			'شغّل المضيف مع تحميل إضافة issues لاختبار مستوى المصادقة المختار من البداية إلى النهاية.',
+		printInvocationTitle: 'طباعة أمر التشغيل',
+		printInvocationBody:
+			'أضف كتلة الخادم هذه إلى ملف mcp.json. الشكل نفسه في VS Code وCursor وClaude Code.',
+		markConfiguredTitle: 'وضع علامة كمُهيّأ',
+		markConfiguredBody:
+			'سجّل اختياريًا أن هذا المستودع تم إعداده مرة واحدة، حتى تتخطى عمليات التشغيل اللاحقة المطالبات.',
+		optionalLabel: 'اختياري',
+	},
+	ui: {
+		codeCopy: 'نسخ',
+		codeCopied: 'تم النسخ!',
+		codeCollapse: 'طيّ',
+		codeExpand: 'توسيع',
+		calloutNote: 'ملاحظة',
+		calloutTip: 'نصيحة',
+		calloutWarn: 'تحذير',
+		calloutDanger: 'خطر',
+		tabsNext: 'التالي',
+		tabsPrev: 'السابق',
+		stepsOf: 'من',
+	},
+
+	homeQuickInstall: {
+		title: 'تثبيت سريع',
+		lead: 'اختر مدير الحزم. نفس الأمر يعمل مع Node و Deno و Bun — كل شيء آخر في صفحة التثبيت.',
+		tabsLabel: 'مدير الحزم',
+		pms: [
+			{ id: 'npm', note: 'Node Package Manager — يأتي مع Node.js.' },
+			{ id: 'pnpm', note: 'سريع، موفّر للقرص، حلّ صارم للاعتماديات.' },
+			{ id: 'yarn', note: 'البديل الكلاسيكي لـ npm.' },
+			{
+				id: 'bun',
+				note: 'وقت تشغيل + مدير حزم شامل — mcp-vertex نفسه مبنيّ بـ bun.',
+			},
+			{
+				id: 'deno',
+				note: 'وقت تشغيل آمن افتراضيًا مع TypeScript من الدرجة الأولى.',
+			},
+		],
+		recommended: 'موصى به',
+		fullCta: 'مصفوفة التثبيت الكاملة',
+	},
+	homeAtAGlance: {
+		title: 'ماذا يمكنه أن يفعل؟',
+		lead: 'اختر قسمًا. الصفحة الرئيسية توجّه فقط — لكل نقطة دخول صفحة مخصصة بالتفاصيل الكاملة.',
+		tabsLabel: 'الأقسام',
+		openSection: 'افتح',
+		panels: [
+			{
+				id: 'plugins',
+				label: 'الإضافات',
+				summary:
+					'الحزم المنشورة. حمّل ما تحتاجه فقط؛ تبقى النواة صغيرة.',
+				href: 'plugins',
+				icon: '/logos/plugin-proposals.svg',
+			},
+			{
+				id: 'tools',
+				label: 'الأدوات',
+				summary:
+					'كل أداة يعرضها مجمع الإضافات الكامل، مجمّعة حسب النطاق — من السجل الحي.',
+				href: 'tools',
+				icon: '/logos/plugin-core.svg',
+			},
+			{
+				id: 'bench',
+				label: 'المقاييس',
+				summary: 'كفاءة الـ tokens ثابت محمي — مَقيس لا مَدّعى.',
+				href: 'benchmarks',
+				icon: '/logos/plugin-quality.svg',
+			},
+			{
+				id: 'skills',
+				label: 'المهارات',
+				summary: 'أدلة نطاق يمكن للوكيل تحميلها عند الطلب.',
+				href: 'skills',
+				icon: '/logos/plugin-docs.svg',
+			},
+			{
+				id: 'knowledge',
+				label: 'المعرفة',
+				summary: 'وثائق مفهرسة يمكن للنواة الإجابة عنها.',
+				href: 'knowledge',
+				icon: '/logos/plugin-memory.svg',
+			},
+			{
+				id: 'presets',
+				label: 'الإعدادات المسبقة',
+				summary: 'مجموعات إضافات مهيّأة مسبقًا لأي حجم مساحة عمل.',
+				href: 'presets',
+				icon: '/logos/plugin-search.svg',
+			},
+			{
+				id: 'setup',
+				label: 'الإعداد عبر المشاريع',
+				summary: 'ادمج mcp-vertex في أي مستودع وجهّز إضافة issues.',
+				href: 'setup',
+				icon: '/logos/github.png',
+			},
+		],
+	},
+	cli: {
+		title: 'دليل CLI',
+		description:
+			'كيفية تشغيل CLI mcpv / @mcp-vertex/core: الأعلام العامة، مجموعات الأوامر لكل مكون إضافي، وسير العمل المشترك.',
+	},
+	guide: {
+		title: 'الدليل',
+		description:
+			'شرح مفصل لمشروع @mcp-vertex/core: المفاهيم، التثبيت، التكوين، المكونات الإضافية، بوابات الجودة، التوسيع، الأسئلة الشائعة.',
+		toc: [
+			'1. مقدمة',
+			'2. مفاهيم',
+			'3. تثبيت',
+			'4. تكوين',
+			'5. مكونات إضافية',
+			'6. أدوات / مطالبات / موارد / معرفة',
+			'7. مهارات',
+			'8. تدويل (i18n)',
+			'9. بوابات الجودة ولغات متعددة',
+			'10. توسيع mcp-vertex',
+			'11. ميزانية الرموز',
+			'12. انتقالات العرض',
+			'13. الأسئلة الشائعة',
+		],
+	},
+};
+
+export default dict;

@@ -8,10 +8,14 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 
-import { writeFileAtomic, withFileMutex } from '@cartago-git/mcp-core/public';
+import {
+	LockContentionError,
+	toolError,
+	writeFileAtomic,
+	withFileMutex,
+} from '@mcp-vertex/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
@@ -23,6 +27,13 @@ export type IAgentLockArgs = {
 	agent?: string | undefined;
 	files?: string[] | undefined;
 	parent_task_id?: string | undefined;
+	/**
+	 * What `withFileMutex` should do when a **live** holder keeps the lock
+	 * file past its contention timeout: `'steal'` (default) reclaims
+	 * it as before; `'fail'` rejects instead of clobbering a slow-but-alive
+	 * holder. Forwarded as-is — see `IFileMutexOptions.onContention`.
+	 */
+	onContention?: 'steal' | 'fail' | undefined;
 };
 
 export type ILockEntry = {
@@ -49,6 +60,32 @@ export type IAgentLockDeps = {
 	toolName?: string;
 	/** Workspace-relative label echoed in payloads. */
 	lockFileLabel?: string;
+	/**
+	 * Internal `withFileMutex` timing overrides — NOT exposed on the tool's
+	 * inputSchema. Tests use these to exercise contention paths
+	 * without waiting out the production timeouts.
+	 */
+	mutexTimeoutMs?: number;
+	mutexStaleMs?: number;
+	mutexPollMs?: number;
+	/**
+	 * f00078 S4: when `true`, the engine refuses `action: 'claim'` if
+	 * the current branch (read from `git rev-parse --abbrev-ref HEAD`
+	 * in `cwd` if provided, or in `lockPath`'s directory otherwise) is
+	 * not of the form `agent/<name>`. This is the hard gate that
+	 * prevents any agent from bypassing the per-agent worktree
+	 * isolation by going directly through `agent_lock` without
+	 * calling `agent_worktree` first. Defaults to `false` so hosts
+	 * that run solo (no worktree gate in mcp-vertex.config.json) are
+	 * unaffected.
+	 */
+	agentWorktreeEnabled?: boolean;
+	/**
+	 * Optional override for the active branch check. When provided,
+	 * the engine skips the `git rev-parse` and uses this value. Tests
+	 * use this to exercise the gate without a real repo.
+	 */
+	currentBranchOverride?: string;
 };
 
 export type IAgentLockResponse = {
@@ -59,10 +96,10 @@ export type IAgentLockResponse = {
 const getLockPath = (deps: IAgentLockDeps = {}): string => {
 	// Hermetic: the absolute lock path must be injected from the host's
 	// `ctx.workspace`. No `process.cwd()` fallback — an engine never guesses
-	// where the workspace is. [N6]
+	// where the workspace is.
 	if (!deps.lockPath) {
 		throw new Error(
-			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.'
+			'agent-lock: deps.lockPath is required — inject the absolute lock path resolved from ctx.workspace.',
 		);
 	}
 	return deps.lockPath;
@@ -77,12 +114,69 @@ const getLockFileLabel = (deps: IAgentLockDeps = {}): string =>
 const getNow = (deps: IAgentLockDeps = {}): string =>
 	(deps.now ?? (() => new Date().toISOString()))();
 
+/**
+ * f00078 S4 helper: returns the active branch name, or `null` if it
+ * cannot be read. Honours `deps.currentBranchOverride` (tests) before
+ * shelling out. When `lockPath` lives inside a worktree, the parent's
+ * `.git` dir is queried (no checkout of a worktree file needed) — we
+ * pass `lockPath`'s parent as `cwd` so the rev-parse resolves against
+ * the worktree's HEAD.
+ */
+const readCurrentBranchName = async (
+	deps: IAgentLockDeps,
+): Promise<string | null> => {
+	if (deps.currentBranchOverride !== undefined) {
+		return deps.currentBranchOverride;
+	}
+	try {
+		const { execFile } = await import('node:child_process');
+		return await new Promise<string | null>((resolve) => {
+			if (!deps.lockPath) {
+				resolve(null);
+				return;
+			}
+			const cwd = deps.lockPath.replace(/\/[^/]+$/u, '');
+			execFile(
+				'git',
+				['rev-parse', '--abbrev-ref', 'HEAD'],
+				{ cwd, encoding: 'utf8', timeout: 5_000 },
+				(error, stdout) => {
+					if (error) {
+						resolve(null);
+						return;
+					}
+					const branch = stdout.trim();
+					resolve(branch.length === 0 ? 'HEAD' : branch);
+				},
+			);
+		});
+	} catch {
+		return null;
+	}
+};
+
+/** f00078 S4: is the branch of the form `agent/<non-empty-name>`? */
+const isAgentBranchName = (branch: string): boolean =>
+	branch.startsWith('agent/') && branch.length > 'agent/'.length;
+
+/** Async existence check (H2): never blocks the event loop. */
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const readLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 	const lockPath = getLockPath(deps);
-	if (!existsSync(lockPath)) {
+	let raw: string;
+	try {
+		raw = await readFile(lockPath, 'utf8');
+	} catch {
 		return { version: 1, stale_after_minutes: 10, in_flight: [] };
 	}
-	const raw = await readFile(lockPath, 'utf8');
 	const parsed = JSON.parse(raw) as ILockFile;
 	if (!Array.isArray(parsed.in_flight)) parsed.in_flight = [];
 	return parsed;
@@ -90,7 +184,7 @@ const readLock = async (deps: IAgentLockDeps = {}): Promise<ILockFile> => {
 
 const writeLock = async (
 	lock: ILockFile,
-	deps: IAgentLockDeps = {}
+	deps: IAgentLockDeps = {},
 ): Promise<void> => {
 	const lockPath = getLockPath(deps);
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
@@ -104,7 +198,7 @@ const isStale = (e: ILockEntry, thresholdMinutes: number): boolean => {
 
 const removeStale = (lock: ILockFile): ILockFile => {
 	lock.in_flight = lock.in_flight.filter(
-		(e) => !isStale(e, lock.stale_after_minutes)
+		(e) => !isStale(e, lock.stale_after_minutes),
 	);
 	return lock;
 };
@@ -115,7 +209,7 @@ const findOverlap = (a: string[], b: string[]): string[] => {
 };
 
 const validateArgs = (
-	args: IAgentLockArgs
+	args: IAgentLockArgs,
 ): { ok: true; value: IAgentLockArgs } | { ok: false; error: string } => {
 	if (args.action === 'claim') {
 		if (!args.task_id || !args.agent) {
@@ -138,7 +232,7 @@ const validateArgs = (
 
 export async function runAgentLockEngine(
 	args: IAgentLockArgs,
-	deps: IAgentLockDeps = {}
+	deps: IAgentLockDeps = {},
 ): Promise<IAgentLockResponse> {
 	const v = validateArgs(args);
 	const lockPath = getLockPath(deps);
@@ -149,33 +243,115 @@ export async function runAgentLockEngine(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: args.action,
-							path: lockFileLabel,
-							error: v.error,
-							blockerType: 'invalid-input',
-							nextAction:
-								'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
-							summary: `invalid-input: ${v.error}`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: args.action,
+						path: lockFileLabel,
+						error: v.error,
+						blockerType: 'invalid-input',
+						nextAction:
+							'Correct the missing lock arguments once; if the intended files are unclear, inspect the proposal ownership before retrying.',
+						summary: `invalid-input: ${v.error}`,
+					}),
 				},
 			],
 			isError: true,
 		};
 	}
 
+	// f00078 S4: needs-worktree gate. When the host has the
+	// `agentWorktree` gate on, claims are refused unless the active
+	// branch is `agent/<name>`. This is the only way to prevent an
+	// agent from bypassing the per-agent worktree isolation by going
+	// directly through `agent_lock claim` without first calling
+	// `agent_worktree create`. The check is a no-op when
+	// `agentWorktreeEnabled !== true`, so solo hosts (the default)
+	// are unaffected.
+	if (args.action === 'claim' && deps.agentWorktreeEnabled === true) {
+		const branch = await readCurrentBranchName(deps);
+		if (branch === null) {
+			return {
+				content: [
+					{
+						type: 'text',
+						text: JSON.stringify({
+							tool: toolName,
+							action: args.action,
+							path: lockFileLabel,
+							error: 'agent_lock claim requires a per-agent worktree when the host gate is on, but the active branch could not be read',
+							blockerType: 'needs-worktree',
+							nextAction:
+								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+							summary:
+								'needs-worktree: active branch unreadable; create a worktree first',
+						}),
+					},
+				],
+				isError: true,
+			};
+		}
+		if (!isAgentBranchName(branch)) {
+			return {
+				content: [
+					{
+						type: 'text',
+						text: JSON.stringify({
+							tool: toolName,
+							action: args.action,
+							path: lockFileLabel,
+							activeBranch: branch,
+							error: `agent_lock claim requires a per-agent worktree when the host gate is on; active branch is "${branch}", expected "agent/<name>"`,
+							blockerType: 'needs-worktree',
+							nextAction:
+								'proposals_agent_worktree { action: "create", agent: "<your-agent-name>" } and retry the claim.',
+							summary: `needs-worktree: active branch is "${branch}"`,
+						}),
+					},
+				],
+				isError: true,
+			};
+		}
+	}
+
 	// Cross-process critical section: the whole read → mutate → write runs
 	// under a file mutex so two concurrent agents can't lose each other's
 	// updates (atomic writes alone prevent torn files, not lost updates).
-	return withFileMutex(lockPath, () => executeLockAction(args, deps));
+	try {
+		return await withFileMutex(
+			lockPath,
+			() => executeLockAction(args, deps),
+			{
+				...(args.onContention !== undefined
+					? { onContention: args.onContention }
+					: {}),
+				...(deps.mutexTimeoutMs !== undefined
+					? { timeoutMs: deps.mutexTimeoutMs }
+					: {}),
+				...(deps.mutexStaleMs !== undefined
+					? { staleMs: deps.mutexStaleMs }
+					: {}),
+				...(deps.mutexPollMs !== undefined
+					? { pollMs: deps.mutexPollMs }
+					: {}),
+			},
+		);
+	} catch (error) {
+		if (error instanceof LockContentionError) {
+			// M28: under `onContention:'fail'` a live holder past the timeout
+			// rejects instead of being stolen — surface it as a clear tool
+			// error (not an uncaught exception) so the caller can back off.
+			return toolError(
+				error.message,
+				'Wait for the lock-released notification (or retry agent_lock status) instead of forcing a steal.',
+			);
+		}
+		throw error;
+	}
 }
 
 async function executeLockAction(
 	args: IAgentLockArgs,
-	deps: IAgentLockDeps
+	deps: IAgentLockDeps,
 ): Promise<IAgentLockResponse> {
 	const lockPath = getLockPath(deps);
 	const toolName = getToolName(deps);
@@ -195,18 +371,16 @@ async function executeLockAction(
 				content: [
 					{
 						type: 'text',
-						text: JSON.stringify(
-							{
-								tool: toolName,
-								action: 'claim',
-								task_id: taskId,
-								refreshed: true,
-								path: lockFileLabel,
-								lock_path: lockPath,
-								ownership_count: existing.ownership.length,
-								summary: `refreshed ${taskId}`,
-							},
-						),
+						text: JSON.stringify({
+							tool: toolName,
+							action: 'claim',
+							task_id: taskId,
+							refreshed: true,
+							path: lockFileLabel,
+							lock_path: lockPath,
+							ownership_count: existing.ownership.length,
+							summary: `refreshed ${taskId}`,
+						}),
 					},
 				],
 			};
@@ -219,24 +393,22 @@ async function executeLockAction(
 					content: [
 						{
 							type: 'text',
-							text: JSON.stringify(
-								{
-									tool: toolName,
-									action: 'claim',
-									task_id: taskId,
-									blocked: true,
-									blockerType: 'lock-conflict',
-									blocked_reason: `overlaps with ${e.task_id}`,
-									conflicting_task: e.task_id,
-									conflicting_agent: e.agent,
-									overlapping_files: overlap,
-									path: lockFileLabel,
-									lock_path: lockPath,
-									nextAction:
-										'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
-									summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
-								},
-							),
+							text: JSON.stringify({
+								tool: toolName,
+								action: 'claim',
+								task_id: taskId,
+								blocked: true,
+								blockerType: 'lock-conflict',
+								blocked_reason: `overlaps with ${e.task_id}`,
+								conflicting_task: e.task_id,
+								conflicting_agent: e.agent,
+								overlapping_files: overlap,
+								path: lockFileLabel,
+								lock_path: lockPath,
+								nextAction:
+									'Do not retry the same claim. Route another owned slice whose files do not overlap, enqueue/observe this slice, or ask the orchestrator to reclaim stale ownership after evidence.',
+								summary: `lock-conflict: ${taskId} overlaps ${e.task_id}`,
+							}),
 						},
 					],
 				};
@@ -258,19 +430,17 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'claim',
-							task_id: taskId,
-							agent,
-							path: lockFileLabel,
-							lock_path: lockPath,
-							ownership_count: files.length,
-							claimed: true,
-							summary: `claimed ${taskId} (${files.length} files)`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'claim',
+						task_id: taskId,
+						agent,
+						path: lockFileLabel,
+						lock_path: lockPath,
+						ownership_count: files.length,
+						claimed: true,
+						summary: `claimed ${taskId} (${files.length} files)`,
+					}),
 				},
 			],
 		};
@@ -286,20 +456,18 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'release',
-							task_id: taskId,
-							path: lockFileLabel,
-							lock_path: lockPath,
-							removed: dropped,
-							summary:
-								dropped > 0
-									? `released ${taskId}`
-									: `no active claim for ${taskId}`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'release',
+						task_id: taskId,
+						path: lockFileLabel,
+						lock_path: lockPath,
+						removed: dropped,
+						summary:
+							dropped > 0
+								? `released ${taskId}`
+								: `no active claim for ${taskId}`,
+					}),
 				},
 			],
 		};
@@ -310,18 +478,16 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'status',
-							path: lockFileLabel,
-							lock_path: lockPath,
-							exists: existsSync(lockPath),
-							active_write_lanes: lock.in_flight.length,
-							summary: `${lock.in_flight.length} active write lane(s)`,
-							...lock,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'status',
+						path: lockFileLabel,
+						lock_path: lockPath,
+						exists: await fileExists(lockPath),
+						active_write_lanes: lock.in_flight.length,
+						summary: `${lock.in_flight.length} active write lane(s)`,
+						...lock,
+					}),
 				},
 			],
 		};
@@ -330,7 +496,7 @@ async function executeLockAction(
 	if (args.action === 'gc') {
 		const before = lock.in_flight.length;
 		lock.in_flight = lock.in_flight.filter(
-			(e) => !isStale(e, lock.stale_after_minutes)
+			(e) => !isStale(e, lock.stale_after_minutes),
 		);
 		const dropped = before - lock.in_flight.length;
 		await writeLock(lock, deps);
@@ -338,16 +504,14 @@ async function executeLockAction(
 			content: [
 				{
 					type: 'text',
-					text: JSON.stringify(
-						{
-							tool: toolName,
-							action: 'gc',
-							path: lockFileLabel,
-							lock_path: lockPath,
-							dropped,
-							summary: `gc dropped ${dropped} stale claim(s)`,
-						},
-					),
+					text: JSON.stringify({
+						tool: toolName,
+						action: 'gc',
+						path: lockFileLabel,
+						lock_path: lockPath,
+						dropped,
+						summary: `gc dropped ${dropped} stale claim(s)`,
+					}),
 				},
 			],
 		};

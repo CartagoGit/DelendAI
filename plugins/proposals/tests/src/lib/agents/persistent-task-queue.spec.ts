@@ -1,10 +1,10 @@
 /**
  * persistent-task-queue.spec.ts
  *
- * TDD specs for IPersistentTaskQueue (p40c T1 step 1).
+ * TDD specs for IPersistentTaskQueue.
  * 14+ cases as enumerated in the proposal.
  *
- * Run: bun test libs/mcp-server -- persistent-task-queue
+ * Run: bun test libs/mcp-project -- persistent-task-queue
  */
 
 import {
@@ -31,13 +31,13 @@ import {
 	promote,
 	reportBackpressure,
 	subscribe,
-} from '@cartago-git/mcp-proposals/lib/agents/persistent-task-queue';
+} from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
 import type {
 	IPersistentTaskEntry,
 	IPersistentTaskQueue,
 	ILockEntry,
 	ILockSnapshot,
-} from '@cartago-git/mcp-proposals/lib/agents/persistent-task-queue';
+} from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,7 +46,7 @@ import type {
 const TEMP_DIRS: string[] = [];
 
 const createTempDir = (): string => {
-	const dir = mkdtempSync(join(tmpdir(), 'affairs-ptq-'));
+	const dir = mkdtempSync(join(tmpdir(), 'mcp-vertex-ptq-'));
 	TEMP_DIRS.push(dir);
 	return dir;
 };
@@ -63,7 +63,7 @@ beforeEach(() => {
 });
 
 const makeEntry = (
-	overrides: Partial<IPersistentTaskEntry> = {}
+	overrides: Partial<IPersistentTaskEntry> = {},
 ): IPersistentTaskEntry => ({
 	taskId: 'test-task-1',
 	enqueuedAt: '2026-06-05T10:00:00.000Z',
@@ -99,7 +99,7 @@ const emptyLock = (): ILockSnapshot => ({ in_flight: [], recentReleases: [] });
 // ---------------------------------------------------------------------------
 // Case 1: parseQueue happy path
 // ---------------------------------------------------------------------------
-describe('parseQueue — happy path', () => {
+describe('parseQueue — happy path', async () => {
 	it('returns a valid IPersistentTaskQueue with version 1 and entries array', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -118,7 +118,11 @@ describe('parseQueue — happy path', () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
 		const entry = makeEntry({
-			owner: { taskId: 'p40c-t1', agentName: 'ext', agentSlot: 'custom_reviewer' },
+			owner: {
+				taskId: 'p40c-t1',
+				agentName: 'ext',
+				agentSlot: 'custom_reviewer',
+			},
 		});
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
@@ -130,7 +134,7 @@ describe('parseQueue — happy path', () => {
 // ---------------------------------------------------------------------------
 // Case 2: taskId duplicate
 // ---------------------------------------------------------------------------
-describe('parseQueue — DUPLICATE_TASK_ID', () => {
+describe('parseQueue — DUPLICATE_TASK_ID', async () => {
 	it('throws TaskQueueParseError with code DUPLICATE_TASK_ID when two entries share a taskId', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -142,7 +146,7 @@ describe('parseQueue — DUPLICATE_TASK_ID', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry1, entry2] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'DUPLICATE_TASK_ID',
@@ -153,7 +157,7 @@ describe('parseQueue — DUPLICATE_TASK_ID', () => {
 // ---------------------------------------------------------------------------
 // Case 3: priority out of range
 // ---------------------------------------------------------------------------
-describe('parseQueue — INVALID_PRIORITY', () => {
+describe('parseQueue — INVALID_PRIORITY', async () => {
 	it('throws INVALID_PRIORITY for priority 0', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -161,7 +165,7 @@ describe('parseQueue — INVALID_PRIORITY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'INVALID_PRIORITY',
@@ -175,7 +179,7 @@ describe('parseQueue — INVALID_PRIORITY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'INVALID_PRIORITY',
@@ -186,7 +190,7 @@ describe('parseQueue — INVALID_PRIORITY', () => {
 // ---------------------------------------------------------------------------
 // Case 4: waitFor file missing
 // ---------------------------------------------------------------------------
-describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
+describe('parseQueue — WAIT_FOR_FILE_MISSING', async () => {
 	it('throws WAIT_FOR_FILE_MISSING when a waitFor file does not exist on disk', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -197,7 +201,7 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'WAIT_FOR_FILE_MISSING',
@@ -235,7 +239,7 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 
 		// Without the root, the relative path misses (resolved vs cwd).
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({ code: 'WAIT_FOR_FILE_MISSING' });
 	});
 });
@@ -243,7 +247,7 @@ describe('parseQueue — WAIT_FOR_FILE_MISSING', () => {
 // ---------------------------------------------------------------------------
 // Case 5: observe target unknown
 // ---------------------------------------------------------------------------
-describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
+describe('parseQueue — OBSERVE_TARGET_UNKNOWN', async () => {
 	it('throws OBSERVE_TARGET_UNKNOWN when observe references a taskId not in closedTasks', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -259,7 +263,7 @@ describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
 					filesOwned: [],
 				},
 			]),
-			'utf8'
+			'utf8',
 		);
 		const entry = makeEntry({ observe: ['p35c-t99'] });
 		writeQueue(queuePath, { version: 1, entries: [entry] });
@@ -284,7 +288,7 @@ describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
 					filesOwned: [],
 				},
 			]),
-			'utf8'
+			'utf8',
 		);
 		const entry = makeEntry({ observe: ['p35c-t1'] });
 		writeQueue(queuePath, { version: 1, entries: [entry] });
@@ -297,7 +301,7 @@ describe('parseQueue — OBSERVE_TARGET_UNKNOWN', () => {
 // ---------------------------------------------------------------------------
 // Case 6: temporal inconsistency
 // ---------------------------------------------------------------------------
-describe('parseQueue — TEMPORAL_INCONSISTENCY', () => {
+describe('parseQueue — TEMPORAL_INCONSISTENCY', async () => {
 	it('throws TEMPORAL_INCONSISTENCY when status is expired but expiresAt is in the future', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -306,7 +310,7 @@ describe('parseQueue — TEMPORAL_INCONSISTENCY', () => {
 		writeQueue(queuePath, { version: 1, entries: [entry] });
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'TEMPORAL_INCONSISTENCY',
@@ -317,8 +321,8 @@ describe('parseQueue — TEMPORAL_INCONSISTENCY', () => {
 // ---------------------------------------------------------------------------
 // Case 7: enqueue sorts by priority desc + enqueuedAt asc
 // ---------------------------------------------------------------------------
-describe('enqueue — sorts by priority desc + enqueuedAt asc', () => {
-	it('inserts new entry sorted by priority desc, then enqueuedAt asc', () => {
+describe('enqueue — sorts by priority desc + enqueuedAt asc', async () => {
+	it('inserts new entry sorted by priority desc, then enqueuedAt asc', async () => {
 		const queue = makeEmptyQueue();
 
 		const e1 = makeEntry({
@@ -346,7 +350,7 @@ describe('enqueue — sorts by priority desc + enqueuedAt asc', () => {
 		expect(q3.entries[2]?.taskId).toBe('low-prio');
 	});
 
-	it('breaks priority ties by enqueuedAt asc (older first)', () => {
+	it('breaks priority ties by enqueuedAt asc (older first)', async () => {
 		const queue = makeEmptyQueue();
 
 		const early = makeEntry({
@@ -369,7 +373,7 @@ describe('enqueue — sorts by priority desc + enqueuedAt asc', () => {
 // ---------------------------------------------------------------------------
 // Case 8: dequeue mutates to consumed
 // ---------------------------------------------------------------------------
-describe('dequeue — mutates status to consumed', () => {
+describe('dequeue — mutates status to consumed', async () => {
 	it('marks entry as consumed and sets consumedAt', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -379,7 +383,7 @@ describe('dequeue — mutates status to consumed', () => {
 		const { queue: updated, entry: consumed } = await dequeue(
 			queue,
 			'to-consume',
-			queuePath
+			queuePath,
 		);
 
 		expect(consumed.status).toBe('consumed');
@@ -395,7 +399,7 @@ describe('dequeue — mutates status to consumed', () => {
 // ---------------------------------------------------------------------------
 // Case 9: promote succeeds when lock is empty
 // ---------------------------------------------------------------------------
-describe('promote — succeeds when lock empty', () => {
+describe('promote — succeeds when lock empty', async () => {
 	it('promotes a queued entry to promoted when no in_flight conflicts', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -412,7 +416,7 @@ describe('promote — succeeds when lock empty', () => {
 			queue,
 			'promotable',
 			emptyLock(),
-			queuePath
+			queuePath,
 		);
 
 		expect(result.promoted).toBe(true);
@@ -426,7 +430,7 @@ describe('promote — succeeds when lock empty', () => {
 // ---------------------------------------------------------------------------
 // Case 10: promote blocked when file in use
 // ---------------------------------------------------------------------------
-describe('promote — blocked when file in use by in_flight', () => {
+describe('promote — blocked when file in use by in_flight', async () => {
 	it('returns promoted:false with blockedBy when in_flight holds the file', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -464,7 +468,7 @@ describe('promote — blocked when file in use by in_flight', () => {
 // ---------------------------------------------------------------------------
 // Case 11: cancel
 // ---------------------------------------------------------------------------
-describe('cancel — marks entry as cancelled', () => {
+describe('cancel — marks entry as cancelled', async () => {
 	it('marks an entry cancelled with cancelledAt and persists to disk', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -475,7 +479,7 @@ describe('cancel — marks entry as cancelled', () => {
 			queue,
 			'cancellable',
 			'test reason',
-			queuePath
+			queuePath,
 		);
 
 		expect(updated.entries[0]?.status).toBe('cancelled');
@@ -490,7 +494,7 @@ describe('cancel — marks entry as cancelled', () => {
 // ---------------------------------------------------------------------------
 // Case 12: expireSweep
 // ---------------------------------------------------------------------------
-describe('expireSweep — expires entries past expiresAt', () => {
+describe('expireSweep — expires entries past expiresAt', async () => {
 	it('marks expired entries and returns expiredCount', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -511,15 +515,15 @@ describe('expireSweep — expires entries past expiresAt', () => {
 		const { queue: swept, expiredCount } = await expireSweep(
 			queue,
 			now,
-			queuePath
+			queuePath,
 		);
 
 		expect(expiredCount).toBe(1);
 		const expiredEntry = swept.entries.find(
-			(e) => e.taskId === 'will-expire'
+			(e) => e.taskId === 'will-expire',
 		);
 		const activeEntry = swept.entries.find(
-			(e) => e.taskId === 'stays-queued'
+			(e) => e.taskId === 'stays-queued',
 		);
 		expect(expiredEntry?.status).toBe('expired');
 		expect(activeEntry?.status).toBe('queued');
@@ -529,15 +533,15 @@ describe('expireSweep — expires entries past expiresAt', () => {
 // ---------------------------------------------------------------------------
 // Case 13: reportBackpressure — red / amber / green thresholds
 // ---------------------------------------------------------------------------
-describe('reportBackpressure — threshold logic', () => {
+describe('reportBackpressure — threshold logic', async () => {
 	// Use a fixed "now" so tests are not sensitive to wall-clock time.
 	const NOW = '2026-06-05T20:00:00.000Z';
 	const recentEnqueuedAt = '2026-06-05T19:55:00.000Z'; // 5 min ago
 
-	it('returns green when queue is nearly empty', () => {
+	it('returns green when queue is nearly empty', async () => {
 		const queue = enqueue(
 			makeEmptyQueue(),
-			makeEntry({ taskId: 'single', enqueuedAt: recentEnqueuedAt })
+			makeEntry({ taskId: 'single', enqueuedAt: recentEnqueuedAt }),
 		);
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 
@@ -546,38 +550,44 @@ describe('reportBackpressure — threshold logic', () => {
 		expect(report.queuedCount).toBe(1);
 	});
 
-	it('returns red when queueLength >= 16', () => {
+	it('returns red when queueLength >= 16', async () => {
 		let queue = makeEmptyQueue();
 		for (let i = 0; i < 16; i++) {
 			queue = enqueue(
 				queue,
-				makeEntry({ taskId: `task-${i}`, enqueuedAt: recentEnqueuedAt })
+				makeEntry({
+					taskId: `task-${i}`,
+					enqueuedAt: recentEnqueuedAt,
+				}),
 			);
 		}
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 		expect(report.threshold).toBe('red');
 	});
 
-	it('returns amber when queueLength >= 8 and < 16', () => {
+	it('returns amber when queueLength >= 8 and < 16', async () => {
 		let queue = makeEmptyQueue();
 		for (let i = 0; i < 8; i++) {
 			queue = enqueue(
 				queue,
-				makeEntry({ taskId: `task-${i}`, enqueuedAt: recentEnqueuedAt })
+				makeEntry({
+					taskId: `task-${i}`,
+					enqueuedAt: recentEnqueuedAt,
+				}),
 			);
 		}
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 		expect(report.threshold).toBe('amber');
 	});
 
-	it('returns red when oldestAgeMinutes >= 240', () => {
+	it('returns red when oldestAgeMinutes >= 240', async () => {
 		// 241 minutes before NOW
 		const oldEnqueuedAt = new Date(
-			Date.parse(NOW) - 241 * 60 * 1000
+			Date.parse(NOW) - 241 * 60 * 1000,
 		).toISOString();
 		const queue = enqueue(
 			makeEmptyQueue(),
-			makeEntry({ taskId: 'old-task', enqueuedAt: oldEnqueuedAt })
+			makeEntry({ taskId: 'old-task', enqueuedAt: oldEnqueuedAt }),
 		);
 		const report = reportBackpressure(queue, emptyLock(), NOW);
 		expect(report.threshold).toBe('red');
@@ -588,14 +598,14 @@ describe('reportBackpressure — threshold logic', () => {
 // ---------------------------------------------------------------------------
 // Case 14: subscribe — returns digests for closed observe targets
 // ---------------------------------------------------------------------------
-describe('subscribe — returns digests for observed tasks', () => {
-	it('returns digests for closed observe targets', () => {
+describe('subscribe — returns digests for observed tasks', async () => {
+	it('returns digests for closed observe targets', async () => {
 		const closedTasks = [
 			{
 				taskId: 'p40c-t0',
 				closedAt: '2026-06-05T09:00:00.000Z',
 				agentName: 'root_agent',
-				filesOwned: ['docs/proposals/p40c.md'],
+				filesOwned: ['docs/mcp-vertex/proposals/p40c.md'],
 				diffSummary: 'Created p40c proposal',
 			},
 		];
@@ -612,7 +622,7 @@ describe('subscribe — returns digests for observed tasks', () => {
 		expect(result.pendingTargets).toHaveLength(0);
 	});
 
-	it('returns pendingTargets for observe targets not yet closed', () => {
+	it('returns pendingTargets for observe targets not yet closed', async () => {
 		const closedTasks: {
 			taskId: string;
 			closedAt: string;
@@ -636,7 +646,7 @@ describe('subscribe — returns digests for observed tasks', () => {
 // ---------------------------------------------------------------------------
 // Case 15: round-trip enqueue + persist + parse
 // ---------------------------------------------------------------------------
-describe('round-trip — enqueue + persist + reparse', () => {
+describe('round-trip — enqueue + persist + reparse', async () => {
 	it('produces Zod-equal queue after persist and reparse', async () => {
 		const dir = workDir;
 		const queuePath = join(dir, 'queue.json');
@@ -666,7 +676,7 @@ describe('round-trip — enqueue + persist + reparse', () => {
 // (that would let two agents re-claim the same slice). parseQueue throws a
 // PARSE_ERROR and preserves the bytes to a .corrupt-<ts> backup.
 // ---------------------------------------------------------------------------
-describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
+describe('parseQueue — quarantine on corrupt JSON (M10)', async () => {
 	const backupExists = (dir: string): boolean =>
 		readdirSync(dir).some((f) => f.startsWith('queue.json.corrupt-'));
 
@@ -676,7 +686,7 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 		writeFileSync(queuePath, '{ "version": 1, "entries": [', 'utf8');
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({
 			name: 'TaskQueueParseError',
 			code: 'PARSE_ERROR',
@@ -692,11 +702,14 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 		const queuePath = join(dir, 'queue.json');
 		writeQueue(queuePath, {
 			version: 1,
-			entries: [makeEntry({ taskId: 'dup' }), makeEntry({ taskId: 'dup' })],
+			entries: [
+				makeEntry({ taskId: 'dup' }),
+				makeEntry({ taskId: 'dup' }),
+			],
 		});
 
 		await expect(
-			parseQueue(queuePath, closedTasksPath(dir))
+			parseQueue(queuePath, closedTasksPath(dir)),
 		).rejects.toMatchObject({ code: 'DUPLICATE_TASK_ID' });
 		expect(existsSync(queuePath)).toBe(true);
 		expect(backupExists(dir)).toBe(false);
@@ -708,7 +721,7 @@ describe('parseQueue — quarantine on corrupt JSON (M10)', () => {
 // `<prefix>_agent_lock` writes (`ownership` + `started_at`). The old dual
 // `files`/`claimed_at` shape is no longer accepted (compat layer removed).
 // ---------------------------------------------------------------------------
-describe('loadLockSnapshot — canonical lock schema (M7)', () => {
+describe('loadLockSnapshot — canonical lock schema (M7)', async () => {
 	it('reads the canonical ownership/started_at shape', async () => {
 		const lockPath = join(workDir, 'agents.lock.json');
 		writeFileSync(
@@ -726,7 +739,7 @@ describe('loadLockSnapshot — canonical lock schema (M7)', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 
 		const snap = await loadLockSnapshot(lockPath);
@@ -750,7 +763,7 @@ describe('loadLockSnapshot — canonical lock schema (M7)', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 
 		// The legacy entry fails schema validation, so the whole file is

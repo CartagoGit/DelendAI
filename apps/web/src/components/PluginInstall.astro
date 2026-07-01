@@ -1,0 +1,41 @@
+---
+/**
+ * PluginInstall.astro — per-plugin install/run commands (f00053 S4).
+ *
+ * Renders, for one plugin, how to run the server with only that plugin
+ * loaded (`--plugins=<slug>`) across the SAME package managers as the
+ * core install page, in the same order. All commands are derived from
+ * the canonical install matrix (`plugin-install.ts` → `install.ts`), so
+ * the package name is never re-typed here.
+ */
+import { pluginInstallCommands } from '#DATA/plugin-install';
+
+interface Props {
+	/** Plugin slug (e.g. `proposals`). */
+	slug: string;
+	/** Optional heading override. */
+	heading?: string;
+}
+const { slug, heading } = Astro.props;
+const commands = pluginInstallCommands(slug);
+---
+
+<section class="plugin-install">
+	<h2>{heading ?? `Install the ${slug} plugin`}</h2>
+	<p>
+		Load only this plugin by adding <code>--plugins={slug}</code> to the
+		server command — same package managers, same order as the core
+		install:
+	</p>
+	<div class="install__cmd-grid">
+		{
+			commands.map((cmd) => (
+				<div class="install__cmd-card">
+					<span class="install__cmd-label">{cmd.label}</span>
+					<pre><code>{cmd.command}</code></pre>
+					{cmd.note && <small>{cmd.note}</small>}
+				</div>
+			))
+		}
+	</div>
+</section>

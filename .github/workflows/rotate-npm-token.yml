@@ -1,0 +1,128 @@
+# Recordatorio trimestral para renovar el NPM_TOKEN (los Granular tokens
+# caducan a los 90 días; renovamos a los ~75 días para tener margen).
+# El primer día del mes, cada 3 meses, a las 09:00 UTC.
+name: rotate-npm-token
+
+on:
+  schedule:
+    - cron: "0 9 1 */3 *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Forzar recordatorio aunque el secret parezca reciente"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-and-remind:
+    name: Avisar si toca renovar NPM_TOKEN
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detectar último recordatorio
+        id: last
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'npm-token-rotation',
+              state: 'all',
+              per_page: 1,
+              sort: 'created',
+              direction: 'desc',
+            });
+            const last = issues[0]?.created_at ?? null;
+            core.setOutput('last_iso', last ?? '');
+            core.setOutput('last_url', issues[0]?.html_url ?? '');
+            core.info(last
+              ? `Último recordatorio: ${last} (${issues[0].html_url})`
+              : 'Sin recordatorios previos.');
+
+      - name: Decidir si toca recordar
+        id: decide
+        env:
+          LAST_ISO: ${{ steps.last.outputs.last_iso }}
+          FORCE: ${{ inputs.force == 'true' }}
+        run: |
+          NOW_EPOCH=$(date -u +%s)
+          # Umbral: 75 días (los tokens caducan a 90, queremos 15 días de margen).
+          THRESHOLD_EPOCH=$(( NOW_EPOCH - 75 * 24 * 3600 ))
+          if [ -n "$LAST_ISO" ] && [ "$FORCE" != "true" ]; then
+            LAST_EPOCH=$(date -u -d "$LAST_ISO" +%s)
+            if [ "$LAST_EPOCH" -gt "$THRESHOLD_EPOCH" ]; then
+              echo "should_open=false" >> "$GITHUB_OUTPUT"
+              echo "Último recordatorio fue hace menos de 75 días; no hace falta otro."
+              exit 0
+            fi
+          fi
+          echo "should_open=true" >> "$GITHUB_OUTPUT"
+
+      - name: Abrir issue recordatorio
+        if: steps.decide.outputs.should_open == 'true'
+        uses: actions/github-script@v7
+        env:
+          LAST_URL: ${{ steps.last.outputs.last_url }}
+        with:
+          script: |
+            const lastUrl = process.env.LAST_URL || null;
+            const today = new Date().toISOString().slice(0, 10);
+            const expiresAt = new Date(Date.now() + 90 * 24 * 3600 * 1000)
+              .toISOString().slice(0, 10);
+            const body = [
+              '## Renovar `NPM_TOKEN`',
+              '',
+              `**Fecha del recordatorio:** ${today}`,
+              `**Caducidad estimada si se renueva hoy:** ${expiresAt} (90 días)`,
+              '',
+              '### Pasos',
+              '1. Abre https://www.npmjs.com/settings/~/tokens/new.',
+              '2. Crea un **Granular Access Token** con:',
+              '   - Name: `mcp-vertex-release-ci`',
+              '   - Packages/Scopes: `@cartago-git`',
+              '   - Permissions: *Read and write*',
+              '   - Organizations: *No access*',
+              '   - Expiration: 90 días (máximo permitido por npm desde nov-2025).',
+              '   - **Bypass 2FA**: ✅ activado (clave para que CI no pida OTP).',
+              '3. Copia el token (`npm_…`) **en el mismo segundo** en que aparece.',
+              '4. En este repo: *Settings → Secrets and variables → Actions →*',
+              '   *`NPM_TOKEN` → Update secret*. Pega el nuevo valor.',
+              '5. Revoca el token anterior en npm (mismo panel de tokens).',
+              '6. Cierra este issue.',
+              '',
+              '### Por qué',
+              '- Desde **noviembre 2025**, npm eliminó los *Legacy* y *Automation*',
+              '  tokens. **El único tipo de token es Granular**, y los de escritura',
+              '  caducan a los **90 días** como máximo legal (ver [docs npm](https://docs.npmjs.com/about-access-tokens)).',
+              '- El `Bypass 2FA` evita que GitHub Actions tenga que introducir un',
+              '  OTP en cada `npm publish`.',
+              lastUrl ? `- Recordatorio anterior: ${lastUrl}` : '',
+            ].filter(Boolean).join('\n');
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔑 Renovar NPM_TOKEN (${today})`,
+              body,
+              labels: ['npm-token-rotation', 'maintenance'],
+            });
+            core.setOutput('issue_url', issue.data.html_url);
+            core.notice(`Issue creado: ${issue.data.html_url}`);
+
+      - name: Resumen
+        if: always()
+        env:
+          SHOULD_OPEN: ${{ steps.decide.outputs.should_open }}
+        run: |
+          if [ "$SHOULD_OPEN" = "true" ]; then
+            echo "::notice::Se abrió un issue recordatorio para renovar NPM_TOKEN."
+          else
+            echo "::notice::Aún no toca renovar (último recordatorio < 75 días)."
+          fi

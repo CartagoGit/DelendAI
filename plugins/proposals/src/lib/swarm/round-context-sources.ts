@@ -11,7 +11,7 @@
  * lifecycle (atomic .tmp + rename) lives in `round-context-digest.ts`.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
@@ -25,9 +25,7 @@ import type { IAgentAssignment } from '../shared/agent-registry-store';
 import { AGENT_CONVENTIONS } from '../shared/agent-conventions';
 import { CONTINUITY_STALE_WINDOW_MS } from './runtime-recovery';
 import { computeAgeMinutes, computeFingerprint } from './round-context-hash';
-import {
-	ACTIVE_PROPOSAL_PREVIEW_LIMIT,
-} from './round-context-types';
+import { ACTIVE_PROPOSAL_PREVIEW_LIMIT } from './round-context-types';
 import type {
 	IRoundContextAgent,
 	IRoundContextChatContext,
@@ -99,12 +97,15 @@ export interface IRoundContextOperationalSnapshot {
 	readonly activeAgents: readonly IRoundContextAgent[];
 }
 
-const readJsonSource = <T>(
+const readJsonSource = async <T>(
 	path: string,
 	timestampSelector?: (value: T) => string | null,
-	staleAfterMinutes?: number
-): IJsonSourceRead<T> => {
-	if (!existsSync(path)) {
+	staleAfterMinutes?: number,
+): Promise<IJsonSourceRead<T>> => {
+	let raw: string;
+	try {
+		raw = await readFile(path, 'utf8');
+	} catch {
 		return {
 			state: 'missing',
 			fingerprint: 'rh-missing',
@@ -114,7 +115,6 @@ const readJsonSource = <T>(
 			value: null,
 		};
 	}
-	const raw = readFileSync(path, 'utf8');
 	const fingerprint = computeFingerprint(raw);
 	try {
 		const value = JSON.parse(raw) as T;
@@ -155,13 +155,13 @@ interface IScannedProposalEntry {
 	readonly status: string;
 }
 
-const scanLiveProposalEntries = (
+const scanLiveProposalEntries = async (
 	monorepoRoot: string,
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Host folder policy (e.g. `paused/demos`) is injected, not baked in:
-	// paths relative to `proposalsDir`. mcp-core stays agnostic. [M5]
-	extraFolders: readonly string[] = []
-): IScannedProposalEntry[] => {
+	// paths relative to `proposalsDir`. mcp-vertex stays agnostic.
+	extraFolders: readonly string[] = [],
+): Promise<IScannedProposalEntry[]> => {
 	const proposalsDir = join(monorepoRoot, layout.proposalsDir);
 	const roots = [
 		proposalsDir,
@@ -169,11 +169,17 @@ const scanLiveProposalEntries = (
 	];
 	const entries: IScannedProposalEntry[] = [];
 	for (const root of roots) {
-		if (!existsSync(root)) continue;
-		for (const name of readdirSync(root)) {
+		let names: string[];
+		try {
+			names = await readdir(root);
+		} catch {
+			continue;
+		}
+		for (const name of names) {
 			if (!name.endsWith('.md') || name === 'README.md') continue;
 			const abs = join(root, name);
-			const raw = readFileSync(abs, 'utf8');
+			const raw = await readFile(abs, 'utf8').catch(() => null);
+			if (raw === null) continue;
 			const block = extractYamlBlock(raw);
 			const parsed = block ? parseFrontmatterBlock(block) : {};
 			const parsedRecord = parsed as Record<string, IYamlValue>;
@@ -191,63 +197,63 @@ const scanLiveProposalEntries = (
 	return entries;
 };
 
-export const readChatContextSummary = (
-	monorepoRoot: string
-): IRoundContextChatContext =>
-	collectRoundContextSnapshot(monorepoRoot).chatContext;
+export const readChatContextSummary = async (
+	monorepoRoot: string,
+): Promise<IRoundContextChatContext> =>
+	(await collectRoundContextSnapshot(monorepoRoot)).chatContext;
 
-export const readCheckpointSummary = (
-	monorepoRoot: string
-): IRoundContextCheckpoint =>
-	collectRoundContextSnapshot(monorepoRoot).checkpoint;
+export const readCheckpointSummary = async (
+	monorepoRoot: string,
+): Promise<IRoundContextCheckpoint> =>
+	(await collectRoundContextSnapshot(monorepoRoot)).checkpoint;
 
-export const readProposalPortfolioSummary = (
-	monorepoRoot: string
-): IRoundContextProposalPortfolio =>
-	collectRoundContextSnapshot(monorepoRoot).proposalPortfolio;
+export const readProposalPortfolioSummary = async (
+	monorepoRoot: string,
+): Promise<IRoundContextProposalPortfolio> =>
+	(await collectRoundContextSnapshot(monorepoRoot)).proposalPortfolio;
 
-export const readLockSummary = (
-	monorepoRoot: string
-): {
+export const readLockSummary = async (
+	monorepoRoot: string,
+): Promise<{
 	readonly source: IRoundContextSourceMeta;
 	readonly locks: readonly IRoundContextLock[];
-} => {
-	const snapshot = collectRoundContextSnapshot(monorepoRoot);
+}> => {
+	const snapshot = await collectRoundContextSnapshot(monorepoRoot);
 	return {
 		source: snapshot.sources.lock,
 		locks: snapshot.activeLocks,
 	};
 };
 
-export const readAgentSummary = (
-	monorepoRoot: string
-): {
+export const readAgentSummary = async (
+	monorepoRoot: string,
+): Promise<{
 	readonly source: IRoundContextSourceMeta;
 	readonly agents: readonly IRoundContextAgent[];
-} => {
-	const snapshot = collectRoundContextSnapshot(monorepoRoot);
+}> => {
+	const snapshot = await collectRoundContextSnapshot(monorepoRoot);
 	return {
 		source: snapshot.sources.registry,
 		agents: snapshot.activeAgents,
 	};
 };
 
-export const buildOperationalSources = (
+export const buildOperationalSources = async (
 	monorepoRoot: string,
-	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT
-): IRoundContextSources => {
-	const chat = readJsonSource<IJsonChatContext>(
-		join(monorepoRoot, layout.orchestratorChatContextFile)
-	);
-	const checkpoint = readJsonSource<IJsonCheckpoint>(
-		join(monorepoRoot, layout.orchestratorCheckpointFile)
-	);
-	const lock = readJsonSource<IJsonLockFile>(
-		join(monorepoRoot, layout.lockFile)
-	);
-	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, layout.agentRegistryFile)
-	);
+	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
+): Promise<IRoundContextSources> => {
+	const [chat, checkpoint, lock, registry] = await Promise.all([
+		readJsonSource<IJsonChatContext>(
+			join(monorepoRoot, layout.orchestratorChatContextFile),
+		),
+		readJsonSource<IJsonCheckpoint>(
+			join(monorepoRoot, layout.orchestratorCheckpointFile),
+		),
+		readJsonSource<IJsonLockFile>(join(monorepoRoot, layout.lockFile)),
+		readJsonSource<IJsonRegistry>(
+			join(monorepoRoot, layout.agentRegistryFile),
+		),
+	]);
 	return {
 		chatContext: {
 			state: chat.state,
@@ -280,33 +286,35 @@ export const buildOperationalSources = (
 	};
 };
 
-export const collectRoundContextSnapshot = (
+export const collectRoundContextSnapshot = async (
 	monorepoRoot: string,
 	layout: IHostPathLayout = DEFAULT_PATH_LAYOUT,
 	// Extra host proposal folders (relative to proposalsDir) scanned when
-	// no index.json is present. Injected by the plugin from ctx.options. [M5]
-	extraFolders: readonly string[] = []
-): IRoundContextOperationalSnapshot => {
-	const chat = readJsonSource<IJsonChatContext>(
-		join(monorepoRoot, layout.orchestratorChatContextFile),
-		(value) => value.lastUpdated ?? null,
-		CONTINUITY_STALE_WINDOW_MS / 60_000
-	);
-	const checkpoint = readJsonSource<IJsonCheckpoint>(
-		join(monorepoRoot, layout.orchestratorCheckpointFile),
-		(value) => value.updatedAt ?? value.lastUpdated ?? null,
-		CONTINUITY_STALE_WINDOW_MS / 60_000
-	);
-	const lock = readJsonSource<IJsonLockFile>(
-		join(monorepoRoot, layout.lockFile)
-	);
-	const registry = readJsonSource<IJsonRegistry>(
-		join(monorepoRoot, layout.agentRegistryFile)
-	);
-	const proposalIndex = readJsonSource<IJsonProposalIndex>(
-		join(monorepoRoot, layout.proposalIndexFile),
-		extractProposalTimestamp,
-		CONTINUITY_STALE_WINDOW_MS / 60_000
+	// no index.json is present. Injected by the plugin from ctx.options.
+	extraFolders: readonly string[] = [],
+): Promise<IRoundContextOperationalSnapshot> => {
+	const [chat, checkpoint, lock, registry, proposalIndex] = await Promise.all(
+		[
+			readJsonSource<IJsonChatContext>(
+				join(monorepoRoot, layout.orchestratorChatContextFile),
+				(value) => value.lastUpdated ?? null,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+			readJsonSource<IJsonCheckpoint>(
+				join(monorepoRoot, layout.orchestratorCheckpointFile),
+				(value) => value.updatedAt ?? value.lastUpdated ?? null,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+			readJsonSource<IJsonLockFile>(join(monorepoRoot, layout.lockFile)),
+			readJsonSource<IJsonRegistry>(
+				join(monorepoRoot, layout.agentRegistryFile),
+			),
+			readJsonSource<IJsonProposalIndex>(
+				join(monorepoRoot, layout.proposalIndexFile),
+				extractProposalTimestamp,
+				CONTINUITY_STALE_WINDOW_MS / 60_000,
+			),
+		],
 	);
 	const activeLocks = (lock.value?.in_flight ?? []).map((entry) => ({
 		taskId: entry.task_id ?? 'unknown',
@@ -331,7 +339,7 @@ export const collectRoundContextSnapshot = (
 	const activePortfolioSource =
 		proposalIndex.state === 'ok' && proposalIndex.value !== null
 			? (proposalIndex.value.proposals ?? [])
-			: scanLiveProposalEntries(monorepoRoot, layout, extraFolders);
+			: await scanLiveProposalEntries(monorepoRoot, layout, extraFolders);
 	const activePortfolio = activePortfolioSource.filter((entry) => {
 		const status = entry.status;
 		return status !== 'done' && status !== 'retired' && status !== 'paused';
@@ -342,12 +350,12 @@ export const collectRoundContextSnapshot = (
 	const latestLockSeen = activeLocks.reduce<string | null>(
 		(latest, item) =>
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
-		null
+		null,
 	);
 	const latestAgentSeen = activeAgents.reduce<string | null>(
 		(latest, item) =>
 			latest === null || item.lastSeen > latest ? item.lastSeen : latest,
-		null
+		null,
 	);
 	return {
 		sources: {
@@ -374,8 +382,8 @@ export const collectRoundContextSnapshot = (
 						? Math.max(
 								...activeLocks.map(
 									(item) =>
-										computeAgeMinutes(item.lastSeen) ?? 0
-								)
+										computeAgeMinutes(item.lastSeen) ?? 0,
+								),
 							)
 						: null,
 				temporallyStale: activeLocks.some((item) => {
@@ -392,8 +400,8 @@ export const collectRoundContextSnapshot = (
 						? Math.max(
 								...activeAgents.map(
 									(item) =>
-										computeAgeMinutes(item.lastSeen) ?? 0
-								)
+										computeAgeMinutes(item.lastSeen) ?? 0,
+								),
 							)
 						: null,
 				temporallyStale: activeAgents.some((item) => {
@@ -445,14 +453,14 @@ export const collectRoundContextSnapshot = (
 			activeIds: activeIds.slice(0, ACTIVE_PROPOSAL_PREVIEW_LIMIT),
 			activeOverflowCount: Math.max(
 				activeIds.length - ACTIVE_PROPOSAL_PREVIEW_LIMIT,
-				0
+				0,
 			),
 			activeCount: activeIds.length,
 			pendingCount: activePortfolio.filter(
-				(entry) => entry.status === 'pending'
+				(entry) => entry.status === 'pending',
 			).length,
 			inProgressCount: activePortfolio.filter(
-				(entry) => entry.status === 'in_progress'
+				(entry) => entry.status === 'in_progress',
 			).length,
 		},
 		activeLocks,

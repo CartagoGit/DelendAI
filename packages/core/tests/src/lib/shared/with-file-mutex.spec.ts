@@ -1,13 +1,19 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { withFileMutex } from '@cartago-git/mcp-core/public';
+import { LockContentionError, withFileMutex } from '@mcp-vertex/core/public';
 
-describe('withFileMutex — cross-process critical section', () => {
+describe('withFileMutex — cross-process critical section', async () => {
 	let dir = '';
 	let target = '';
 	beforeEach(() => {
@@ -16,6 +22,49 @@ describe('withFileMutex — cross-process critical section', () => {
 	});
 	afterEach(() => {
 		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('onContention:fail throws LockContentionError on a live holder instead of stealing (M28)', async () => {
+		writeFileSync(target, '{}');
+		// Simulate a live holder: a fresh sidecar that is NOT stale.
+		const lockPath = `${target}.mutex`;
+		writeFileSync(lockPath, `${process.pid}\n${Date.now()}\nmanual`);
+
+		let ran = false;
+		await expect(
+			withFileMutex(
+				target,
+				async () => {
+					ran = true;
+				},
+				{
+					onContention: 'fail',
+					timeoutMs: 120,
+					staleMs: 30_000,
+					pollMs: 20,
+				},
+			),
+		).rejects.toBeInstanceOf(LockContentionError);
+		expect(ran).toBe(false);
+		// The live holder's lock was left intact (not stolen).
+		expect(existsSync(lockPath)).toBe(true);
+	});
+
+	it('default (steal) still reclaims a live lock past the timeout', async () => {
+		writeFileSync(target, '{}');
+		writeFileSync(
+			`${target}.mutex`,
+			`${process.pid}\n${Date.now()}\nmanual`,
+		);
+		let ran = false;
+		await withFileMutex(
+			target,
+			async () => {
+				ran = true;
+			},
+			{ timeoutMs: 120, staleMs: 30_000, pollMs: 20 },
+		);
+		expect(ran).toBe(true);
 	});
 
 	it('serializes concurrent read → mutate → write (no lost updates)', async () => {
@@ -50,7 +99,7 @@ describe('withFileMutex — cross-process critical section', () => {
 		await expect(
 			withFileMutex(target, async () => {
 				throw new Error('boom');
-			})
+			}),
 		).rejects.toThrow('boom');
 		expect(existsSync(sidecar)).toBe(false);
 	});
@@ -70,7 +119,12 @@ describe('withFileMutex — cross-process critical section', () => {
 		});
 
 		// Wait until A has acquired (sidecar written), then simulate B stealing.
-		while (!existsSync(sidecar)) await new Promise((r) => setTimeout(r, 5));
+		while (
+			!existsSync(sidecar) ||
+			readFileSync(sidecar, 'utf8').trim() === ''
+		) {
+			await new Promise((r) => setTimeout(r, 5));
+		}
 		const stolenToken = '12345\n0\nb-owns-this-now';
 		writeFileSync(sidecar, stolenToken);
 
@@ -89,11 +143,10 @@ describe('withFileMutex — cross-process critical section', () => {
 		const old = new Date(Date.now() - 60_000);
 		utimesSync(sidecar, old, old);
 
-		const result = await withFileMutex(
-			target,
-			async () => 'acquired',
-			{ staleMs: 1_000, timeoutMs: 200 }
-		);
+		const result = await withFileMutex(target, async () => 'acquired', {
+			staleMs: 1_000,
+			timeoutMs: 200,
+		});
 		expect(result).toBe('acquired');
 		expect(existsSync(sidecar)).toBe(false);
 	});

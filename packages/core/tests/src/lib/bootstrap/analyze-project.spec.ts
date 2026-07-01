@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@cartago-git/mcp-core/lib/bootstrap/analyze-project';
-import { recommendServerPlan } from '@cartago-git/mcp-core/lib/bootstrap/recommend-plan';
+import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
-	readFile: (p) => files[p],
-	exists: (p) => p in files,
-	listDir: () => [],
+	readFile: async (p) => files[p],
+	exists: async (p) => p in files,
+	listDir: async () => [],
 });
 
-describe('analyzeProject', () => {
-	it('detects a TypeScript library with vitest', () => {
-		const analysis = analyzeProject(
+describe('analyzeProject', async () => {
+	it('detects a TypeScript library with vitest', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: '@acme/widgets',
@@ -21,16 +21,16 @@ describe('analyzeProject', () => {
 					scripts: { test: 'vitest run', typecheck: 'tsc --noEmit' },
 				}),
 				'tsconfig.json': '{}',
-			})
+			}),
 		);
 		expect(analysis.projectType).toBe('library');
 		expect(analysis.language).toBe('typescript');
 		expect(analysis.testRunner).toBe('vitest');
-		expect(analysis.hasMcpServer).toBe(false);
+		expect(analysis.hasMcpProject).toBe(false);
 	});
 
-	it('detects a web app and an existing MCP server', () => {
-		const analysis = analyzeProject(
+	it('detects a web app and an existing MCP server', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'site',
@@ -40,27 +40,27 @@ describe('analyzeProject', () => {
 					},
 				}),
 				'.vscode/mcp.json': '{}',
-			})
+			}),
 		);
 		expect(analysis.projectType).toBe('webapp');
 		expect(analysis.framework).toBe('angular');
-		expect(analysis.hasMcpServer).toBe(true);
+		expect(analysis.hasMcpProject).toBe(true);
 	});
 
-	it('degrades gracefully without a package.json', () => {
-		const analysis = analyzeProject(reader({}));
+	it('degrades gracefully without a package.json', async () => {
+		const analysis = await analyzeProject(reader({}));
 		expect(analysis.hasPackageJson).toBe(false);
 		expect(analysis.projectType).toBe('generic');
 	});
 
-	it('detects non-JS stacks (rust cli) and CI + agent configs', () => {
-		const analysis = analyzeProject(
+	it('detects non-JS stacks (rust cli) and CI + agent configs', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'Cargo.toml': '[package]\nname="x"',
 				'src/main.rs': 'fn main() {}',
 				'.gitlab-ci.yml': 'stages: [test]',
 				'CLAUDE.md': '# guide',
-			})
+			}),
 		);
 		expect(analysis.language).toBe('rust');
 		expect(analysis.projectType).toBe('cli');
@@ -68,29 +68,29 @@ describe('analyzeProject', () => {
 		expect(analysis.agentConfigs).toContain('CLAUDE.md');
 	});
 
-	it('detects monorepo tooling (nx/turbo)', () => {
-		const analysis = analyzeProject(
-			reader({ 'package.json': '{"name":"r"}', 'turbo.json': '{}' })
+	it('detects monorepo tooling (nx/turbo)', async () => {
+		const analysis = await analyzeProject(
+			reader({ 'package.json': '{"name":"r"}', 'turbo.json': '{}' }),
 		);
 		expect(analysis.monorepoTool).toBe('turbo');
 		expect(analysis.projectType).toBe('monorepo');
 	});
 });
 
-describe('recommendServerPlan', () => {
-	it('recommends the proposals plugin for a monorepo and a mcp.json snippet', () => {
-		const analysis = analyzeProject(
+describe('recommendServerPlan', async () => {
+	it('recommends the proposals plugin for a monorepo and a mcp.json snippet', async () => {
+		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
 					name: 'big',
 					workspaces: ['packages/*'],
 				}),
-			})
+			}),
 		);
-		const plan = recommendServerPlan(analysis);
+		const plan = await recommendServerPlan(analysis);
 		expect(plan.projectType).toBe('monorepo');
 		expect(plan.plugins).toContain('proposals');
 		expect(plan.namespacePrefix).toBe('big');
-		expect(JSON.stringify(plan.mcpJson)).toContain('@cartago-git/mcp-core');
+		expect(JSON.stringify(plan.mcpJson)).toContain('@mcp-vertex/core');
 	});
 });

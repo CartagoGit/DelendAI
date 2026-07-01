@@ -1,7 +1,7 @@
 /**
  * Maps agent roles to model identifiers. The host decides which
  * models exist (in the host project the default is `MiniMax-M3
- * (customendpoint)`); mcp-core only serves the table.
+ * (customendpoint)`); mcp-vertex only serves the table.
  */
 export interface IModelRoute {
 	/** Host-defined role, e.g. `orchestrator`, `implementation_runner`. */

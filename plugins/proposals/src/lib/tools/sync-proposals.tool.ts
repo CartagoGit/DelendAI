@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+import type { IToolRegistration } from '@mcp-vertex/core/public';
 
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
@@ -12,10 +12,13 @@ export interface ISyncProposalsToolOptions {
 	 * Workspace-relative layout for the proposals dir + index file.
 	 * Defaults to `DEFAULT_PATH_LAYOUT` inside the engine when omitted.
 	 */
-	readonly layout?: Pick<IHostPathLayout, 'proposalsDir' | 'proposalIndexFile'>;
+	readonly layout?: Pick<
+		IHostPathLayout,
+		'proposalsDir' | 'proposalIndexFile'
+	>;
 	/**
 	 * Host-specific proposal subfolders (relative to proposalsDir) to scan
-	 * beyond the generic ones, e.g. `['paused/demos']`. [M5]
+	 * beyond the generic ones, e.g. `['paused/demos']`.
 	 */
 	readonly extraFolders?: readonly string[];
 }
@@ -27,9 +30,10 @@ export interface ISyncProposalsToolOptions {
  * dir. Thin adapter over the (tested) sync engine.
  */
 export const buildSyncProposalsRegistration = (
-	options: ISyncProposalsToolOptions
+	options: ISyncProposalsToolOptions,
 ): IToolRegistration => ({
 	id: 'sync_proposals',
+	effects: ['write'],
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],
@@ -37,7 +41,12 @@ export const buildSyncProposalsRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_sync_proposals`,
 			{
-						outputSchema: z.object({ changed: z.boolean(), count: z.number(), indexPath: z.string(), errors: z.array(z.string()) }),
+				outputSchema: z.object({
+					changed: z.boolean(),
+					count: z.number(),
+					indexPath: z.string(),
+					errors: z.array(z.string()),
+				}),
 				description:
 					'Regenerate the proposal index from the .md files under the proposals dir. Idempotent. Invoke after any create or rename under the proposals dir. Returns { changed, count, indexPath, errors }.',
 			},
@@ -45,7 +54,7 @@ export const buildSyncProposalsRegistration = (
 				const result = await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
-					options.extraFolders ?? []
+					options.extraFolders ?? [],
 				);
 				const payload = {
 					changed: result.changed,
@@ -62,7 +71,7 @@ export const buildSyncProposalsRegistration = (
 					],
 					structuredContent: payload,
 				};
-			}
+			},
 		);
 	},
 });

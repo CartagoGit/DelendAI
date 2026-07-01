@@ -1,0 +1,99 @@
+---
+/**
+ * `Callout.astro` — variant-coloured block for notes / tips / warnings (f00048 S1).
+ *
+ * Props:
+ *   - variant: 'note' | 'tip' | 'warn' | 'danger' (default 'note').
+ *   - title: optional heading. Falls back to the i18n label for the variant.
+ *   - lang: locale for the default title.
+ */
+import { useTranslations, type Lang } from '#I18N/ui';
+
+type CalloutVariant = 'note' | 'tip' | 'warn' | 'danger';
+
+interface Props {
+	readonly variant?: CalloutVariant;
+	readonly title?: string;
+	readonly lang_label?: Lang;
+}
+
+const { variant = 'note', title, lang_label = 'en' } = Astro.props as Props;
+const t = useTranslations(lang_label);
+const labelKey = {
+	note: t.ui.calloutNote,
+	tip: t.ui.calloutTip,
+	warn: t.ui.calloutWarn,
+	danger: t.ui.calloutDanger,
+} as const;
+const icon = {
+	note: 'ℹ',
+	tip: '★',
+	warn: '⚠',
+	danger: '✕',
+} as const;
+const heading = title ?? labelKey[variant];
+---
+
+<aside class:list={['ui-callout', `ui-callout--${variant}`]} role="note">
+	<div class="ui-callout__icon" aria-hidden="true">{icon[variant]}</div>
+	<div class="ui-callout__body">
+		<p class="ui-callout__title">{heading}</p>
+		<div class="ui-callout__content"><slot /></div>
+	</div>
+</aside>
+
+<style>
+	.ui-callout {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.75rem;
+		align-items: start;
+		padding: 0.9rem 1rem;
+		margin: 1rem 0;
+		border-radius: var(--radius);
+		border: 1px solid var(--line);
+		background: color-mix(in srgb, var(--card) 60%, transparent);
+	}
+	.ui-callout__icon {
+		font-size: 1.1rem;
+		line-height: 1;
+		padding-top: 0.15rem;
+		font-weight: 700;
+	}
+	.ui-callout__title {
+		margin: 0 0 0.2rem;
+		font-weight: 600;
+		font-size: 0.95rem;
+		letter-spacing: 0.01em;
+	}
+	.ui-callout__content :global(p) {
+		margin: 0.25rem 0;
+	}
+	.ui-callout__content :global(p + p) {
+		margin-top: 0.4rem;
+	}
+	.ui-callout--note {
+		border-color: color-mix(in srgb, var(--info, #3b82f6) 30%, var(--line));
+	}
+	.ui-callout--note .ui-callout__icon {
+		color: var(--info, #3b82f6);
+	}
+	.ui-callout--tip {
+		border-color: color-mix(in srgb, var(--ok, #16a34a) 35%, var(--line));
+	}
+	.ui-callout--tip .ui-callout__icon {
+		color: var(--ok, #16a34a);
+	}
+	.ui-callout--warn {
+		border-color: color-mix(in srgb, #f59e0b 40%, var(--line));
+	}
+	.ui-callout--warn .ui-callout__icon {
+		color: #f59e0b;
+	}
+	.ui-callout--danger {
+		border-color: color-mix(in srgb, #ef4444 40%, var(--line));
+	}
+	.ui-callout--danger .ui-callout__icon {
+		color: #ef4444;
+	}
+</style>

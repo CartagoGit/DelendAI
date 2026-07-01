@@ -1,0 +1,254 @@
+---
+import { useTranslations, type Lang } from '#I18N/ui';
+import { renderDropdown } from '@mcp-vertex/shared';
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const repo = 'https://github.com/CartagoGit/mcp-vertex';
+const homeHref = lang === 'en' ? `${base}/` : `${base}/${lang}/`;
+
+// One section = one page. Tabs (if any) live on the page itself, not in the
+// top nav. This keeps URLs shareable and the nav scannable.
+const sectionHref = (section: string) =>
+	lang === 'en' ? `${base}/${section}` : `${base}/${lang}/${section}`;
+
+// The desktop nav is split in 3 logical groups so it doesn't overflow
+// around 820–1280 px:
+//   - `sections` — primary destinations (visible from the start).
+//   - `core`     — core/plugin surfaces (collapsed into a <details> "More"
+//                  dropdown to keep the row on one line on tablet widths).
+//   - `external` — the GitHub link, shown as an icon-only button so it
+//                  doesn't compete for horizontal space with the labels.
+const navSections = [
+	{ key: 'install', href: sectionHref('install'), label: t.nav.install },
+	{ key: 'tools', href: sectionHref('tools'), label: t.nav.tools },
+	{
+		key: 'benchmarks',
+		href: sectionHref('benchmarks'),
+		label: t.nav.benchmarks,
+	},
+	{ key: 'plugins', href: sectionHref('plugins'), label: t.nav.plugins },
+];
+const navCore = [
+	{ key: 'prompts', href: sectionHref('prompts'), label: t.nav.prompts },
+	{
+		key: 'resources',
+		href: sectionHref('resources'),
+		label: t.nav.resources,
+	},
+	{
+		key: 'knowledge',
+		href: sectionHref('knowledge'),
+		label: t.nav.knowledge,
+	},
+	{ key: 'guide', href: sectionHref('guide'), label: t.nav.guide },
+	// Literal label (like `API` below): "CLI" is an acronym, not translated.
+	{ key: 'cli', href: sectionHref('cli'), label: 'CLI' },
+	{
+		key: 'firstFiveMinutes',
+		href: sectionHref('first-5-minutes'),
+		label: t.nav.firstFiveMinutes,
+	},
+	{
+		key: 'troubleshooting',
+		href: sectionHref('troubleshooting'),
+		label: t.nav.troubleshooting,
+	},
+	{ key: 'api', href: `${base}/api/`, label: 'API' },
+];
+
+// Drawer sections (mobile): same links as the desktop nav so users on a
+// phone can reach any section in one tap. Flat list — the dropdown
+// pattern only makes sense on desktop where horizontal space is scarce.
+const drawerLinks = [
+	{ key: 'home', href: homeHref, label: t.nav.concept },
+	...navSections,
+	...navCore,
+];
+---
+
+{/* `transition:persist` keeps the nav mounted across View Transitions so the
+    header stops "jumping". We intentionally do NOT set `transition:name`
+    here: the name would trigger a morph between the old and new nav state
+    on every navigation, and the nav contents (hrefs, labels) change with
+    the language, producing a visible flicker. The `aria-label` and the
+    script below are the accessibility + binding source of truth. */}
+<nav class="nav" transition:persist aria-label="Primary">
+	<div class="container nav__inner">
+		<a class="nav__brand" href={homeHref}>
+			<img class="nav__logo" src={`${base}/logo.svg`} width="26" height="26" alt="" />
+			<span class="nav__brand-text">@mcp-vertex</span>
+		</a>
+		<div class="nav__links" role="navigation">
+			{navSections.map((l) => (
+				<a class="nav__link" href={l.href} data-nav-key={l.key}>{l.label}</a>
+			))}
+			<span class="nav__divider" aria-hidden="true"></span>
+			{/* "More" dropdown. The chrome (trigger + menu + ids) is
+			    emitted by the shared `renderDropdown` so the runtime
+			    in `Base.astro` (which already drives every other
+			    dropdown in the site) can manage open/close +
+			    outside-click + Esc from one place. We pass
+			    `classPrefix: 'nav__more'` so the BEM shape stays
+			    aligned with the existing `_nav.scss` rules instead
+			    of forcing a parallel `mv-dropdown__*` style layer. */}
+			<Fragment set:html={renderDropdown({
+				id: 'nav-more',
+				idPrefix: 'nav-more',
+				classPrefix: 'nav__more',
+				label: t.nav.more,
+				align: 'right',
+				items: navCore.map((l) => ({
+					id: l.key,
+					label: l.label,
+					href: l.href,
+				})),
+			})} />
+			{/* GitHub: icon-only link to keep the row compact. The accessible
+			    name still comes from `aria-label` so screen readers say "GitHub",
+			    not "GitHub, link". */}
+			<a class="nav__github" href={repo} rel="external" aria-label={t.nav.github} title={t.nav.github}>
+				<svg
+					class="nav__github-icon"
+					viewBox="0 0 16 16"
+					width="20"
+					height="20"
+					fill="currentColor"
+					aria-hidden="true"
+				>
+					<path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.74-3.65 3.94.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+				</svg>
+			</a>
+			<button class="icon-btn" id="search-open" aria-label={t.search.title} title={`${t.search.title} (Ctrl/⌘+K)`}>
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.3-4.3"></path>
+				</svg>
+			</button>
+			<button class="gear" id="cfg-open" aria-label={t.cfg.title}>
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="3"></circle>
+					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+				</svg>
+			</button>
+			{/* Hamburger only on mobile; CSS hides it on >=680px. */}
+			<button class="hamburger" id="nav-open" aria-label={t.nav.menu} aria-expanded="false" aria-controls="nav-drawer">
+				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+					<path d="M3 6h18M3 12h18M3 18h18"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+</nav>
+
+{/* Drawer (mobile). Persists across navigations: its open/closed state is
+    managed per-page so a View Transition swap doesn't lose scroll-lock. */}
+<div
+	class="drawer"
+	id="nav-drawer"
+	role="dialog"
+	aria-modal="true"
+	aria-label={t.nav.menu}
+	hidden
+	transition:persist
+>
+	<div class="drawer__backdrop" data-drawer-close></div>
+	<aside class="drawer__panel">
+		<div class="drawer__head">
+			<img class="drawer__logo" src={`${base}/logo.svg`} width="28" height="28" alt="" />
+			<strong>@mcp-vertex</strong>
+			<button class="drawer__close" data-drawer-close aria-label={t.nav.menu}>
+				<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+					<path d="M6 6l12 12M18 6L6 18"></path>
+				</svg>
+			</button>
+		</div>
+		<nav class="drawer__links" aria-label={t.nav.menu}>
+			{drawerLinks.map((l) => (
+				<a href={l.href} data-drawer-link data-nav-key={l.key}>{l.label}</a>
+			))}
+			<a href={repo} rel="external" data-drawer-link>{t.nav.github}</a>
+		</nav>
+		<div class="drawer__foot">
+			<button class="btn btn--ghost drawer__cfg" id="drawer-cfg-open">{t.cfg.title}</button>
+		</div>
+	</aside>
+</div>
+
+<script>
+	// Drawer: open/close + Esc + backdrop + outside link click.
+	// Re-runs after every View Transition so listeners don't accumulate.
+	let drawerAbort: AbortController | undefined;
+	const setupDrawer = () => {
+		drawerAbort?.abort();
+		drawerAbort = new AbortController();
+		const { signal } = drawerAbort;
+
+		const drawer = document.getElementById('nav-drawer');
+		const openBtn = document.getElementById('nav-open');
+		const drawerCfg = document.getElementById('drawer-cfg-open');
+		const cfgOpen = document.getElementById('cfg-open');
+		if (!drawer || !openBtn) return;
+
+		const isOpen = () => drawer.getAttribute('data-open') === 'true';
+		const open = () => {
+			drawer.removeAttribute('hidden');
+			// next frame so the transition runs
+			requestAnimationFrame(() => drawer.setAttribute('data-open', 'true'));
+			openBtn.setAttribute('aria-expanded', 'true');
+			document.body.style.overflow = 'hidden';
+		};
+		const close = () => {
+			if (!isOpen()) return;
+			drawer.setAttribute('data-open', 'false');
+			openBtn.setAttribute('aria-expanded', 'false');
+			document.body.style.overflow = '';
+			// hide after the transition so it's removed from the accessibility tree
+			setTimeout(() => {
+				if (!isOpen()) drawer.setAttribute('hidden', '');
+			}, 240);
+		};
+
+		openBtn.addEventListener('click', open, { signal });
+		for (const el of document.querySelectorAll('[data-drawer-close]')) {
+			el.addEventListener('click', close, { signal });
+		}
+		for (const el of document.querySelectorAll('[data-drawer-link]')) {
+			el.addEventListener('click', close, { signal });
+		}
+		document.addEventListener(
+			'keydown',
+			(e) => {
+				if (e.key === 'Escape' && isOpen()) close();
+			},
+			{ signal }
+		);
+		drawerCfg?.addEventListener(
+			'click',
+			() => {
+				close();
+				// open the settings modal on the next frame so the drawer fade-out begins
+				requestAnimationFrame(() => cfgOpen?.click());
+			},
+			{ signal }
+		);
+	};
+	setupDrawer();
+	document.addEventListener('astro:page-load', setupDrawer);
+
+	// "More" dropdown. The runtime injected by `Base.astro` (the
+	// `componentScript` from `@mcp-vertex/ui-extension`) drives every
+	// `[data-mv-toggle="dropdown"]` panel on the page: click toggles,
+	// outside click closes, Esc closes. We delegate open/close to that
+	// single source of truth so a future dropdown added anywhere on
+	// the site automatically picks up the same behaviour with zero
+	// JS in this file. The items are already rendered as `<a>` (see
+	// the `items` passed to `renderDropdown` above), so left-clicks
+	// navigate normally and the runtime's anchor path closes the panel
+	// on click without intercepting navigation.
+</script>

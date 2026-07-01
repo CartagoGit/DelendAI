@@ -1,12 +1,19 @@
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import {
+	PRESET_CATALOG,
+	resolvePresetMembers,
+	type IPresetKind,
+} from './preset-catalog';
 
 /**
- * Parsed mcp-core CLI invocation. Pure data so the loader and tests
+ * Parsed mcp-vertex CLI invocation. Pure data so the loader and tests
  * never touch `process.argv` directly.
  */
-export interface IMcpCoreCliArgs {
+export interface IMcpVertexCliArgs {
 	/** Plugin specifiers from `--plugins=a,b` (comma or repeated flag). */
 	readonly plugins: readonly string[];
+	/** Plugins to subtract from the resolved set (`--exclude-plugins=a,b`). */
+	readonly excludePlugins: readonly string[];
 	/** Scratch/state root (`--cacheDir`). */
 	readonly cacheDir: string;
 	/** Human-edited docs root (`--docsDir`). */
@@ -23,11 +30,19 @@ export interface IMcpCoreCliArgs {
 	readonly configPath?: string | undefined;
 	/**
 	 * On first start, analyze the project and prepare a project-specific
-	 * MCP server blueprint. `--mcp-server-create=false` disables it.
+	 * MCP server blueprint. `--mcp-project-create=false` disables it.
 	 */
-	readonly mcpServerCreate: boolean;
-	/** Include tests in the blueprint. `--mcp-server-tests=false` to omit. */
-	readonly mcpServerTests: boolean;
+	readonly mcpProjectCreate: boolean;
+	/** Include tests in the blueprint. `--mcp-project-tests=false` to omit. */
+	readonly mcpProjectTests: boolean;
+	/**
+	 * Host-scoped gate for `agent_worktree` (`--agent-worktree[=true|false]`).
+	 * `undefined` when the flag is absent, so a downstream resolver can fall
+	 * back to the file config and finally the `false` default. A bare
+	 * `--agent-worktree` resolves to `true`; an unrecognised value
+	 * (`--agent-worktree=maybe`) throws a parse error.
+	 */
+	readonly agentWorktree?: boolean | undefined;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
 	/** The raw tokenized flags, so callers can detect what was explicit. */
@@ -37,13 +52,15 @@ export interface IMcpCoreCliArgs {
 export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
-	serverName: 'mcp-core',
+	serverName: 'mcp-vertex',
 	serverVersion: '0.1.0',
 } as const;
 
 const KNOWN_KEYS = new Set([
 	'plugins',
 	'preset',
+	'exclude-plugins',
+	'excludePlugins',
 	'cacheDir',
 	'docsDir',
 	'workspace',
@@ -54,33 +71,56 @@ const KNOWN_KEYS = new Set([
 	'check',
 	'doctor',
 	'verbose',
-	'mcp-server-create',
-	'mcp-server-tests',
+	'mcp-project-create',
+	'mcp-project-tests',
+	'agent-worktree',
 ]);
 
-// Curated plugin presets (additive). `--preset=standard` saves typing the
-// full `--plugins` list; it merges with any explicit `--plugins`. [N18]
-const STANDARD_PRESET = [
-	'git',
-	'search',
-	'memory',
-	'docs',
-	'rules',
-	'quality',
-	'deps',
-] as const;
-export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> = {
-	// read-only orientation, lightweight
-	minimal: ['git', 'search'],
-	// full single-agent toolkit
-	standard: STANDARD_PRESET,
-	// standard + multi-agent coordination
-	swarm: [...STANDARD_PRESET, 'proposals', 'notification'],
+/**
+ * Resolve a tri-state boolean CLI flag. `undefined` token ⇒ `undefined`
+ * (caller decides the default). A bare flag tokenizes to `'true'`.
+ * Recognised truthy/falsey strings map cleanly; anything else throws a
+ * clear parse error instead of silently collapsing to `false`.
+ */
+const parseTriStateFlag = (
+	flag: string,
+	value: string | undefined,
+): boolean | undefined => {
+	if (value === undefined) return undefined;
+	if (value === 'true' || value === '1' || value === 'yes') return true;
+	if (value === 'false' || value === '0' || value === 'no') return false;
+	throw new Error(
+		`Invalid value for ${flag}: "${value}". Use ${flag}=true or ${flag}=false.`,
+	);
 };
+
+// Curated plugin presets (additive). `--preset=standard` saves typing the
+// full `--plugins` list; it merges with any explicit `--plugins`.
+//
+// The canonical membership lives in `./preset-catalog.ts`. This map is a
+// thin projection consumed by the legacy `PLUGIN_PRESETS` export and by
+// `resolvePreset` — both kept stable so existing callers and tests don't
+// break. The web page (`apps/web/src/pages/presets.astro`) and any new
+// consumer MUST read `PRESET_CATALOG` directly.
+export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> =
+	Object.freeze(
+		Object.fromEntries(
+			PRESET_CATALOG.map((def) => [
+				def.id,
+				resolvePresetMembers(def.id as IPresetKind),
+			]),
+		),
+	) as Readonly<Record<string, readonly string[]>>;
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */
 export const resolvePreset = (name: string | undefined): readonly string[] =>
-	name === undefined ? [] : (PLUGIN_PRESETS[name] ?? []);
+	resolvePresetMembers(name);
+
+/** Whether the caller explicitly selected the plugin surface. */
+export const hasExplicitPluginSurfaceSelection = (
+	args: Pick<IMcpVertexCliArgs, 'tokens'>,
+): boolean =>
+	args.tokens.preset !== undefined || args.tokens.plugins !== undefined;
 
 const isFalse = (value: string | undefined): boolean =>
 	value === 'false' || value === '0' || value === 'no';
@@ -117,29 +157,37 @@ const splitList = (value: string | undefined): string[] =>
 				.filter((entry) => entry.length > 0);
 
 /**
- * Parse an mcp-core argv (without the `node script` prefix) against a
+ * Parse an mcp-vertex argv (without the `node script` prefix) against a
  * working directory. Unknown `--key=value` flags land in `extra` and
  * are forwarded to every plugin, so a plugin like proposals can read
  * `--proposalsDir` without the core knowing about it.
  */
 export const parseCliArgs = (
 	argv: readonly string[],
-	cwd: string
-): IMcpCoreCliArgs => {
+	cwd: string,
+): IMcpVertexCliArgs => {
 	const tokens = tokenize(argv);
 	const extra: Record<string, string> = {};
 	for (const [key, value] of Object.entries(tokens)) {
 		if (!KNOWN_KEYS.has(key)) extra[key] = value;
 	}
 	// Preset plugins first, then explicit --plugins; de-duped, order preserved.
+	// `--exclude-plugins` is subtracted AFTER the merge, so the user can
+	// strip a plugin from a preset (`--preset=swarm --exclude-plugins=notification`)
+	// or drop an explicit one they don't want.
+	const exclude = new Set([
+		...splitList(tokens['exclude-plugins']),
+		...splitList(tokens.excludePlugins),
+	]);
 	const plugins = [
 		...new Set([
 			...resolvePreset(tokens.preset),
 			...splitList(tokens.plugins),
 		]),
-	];
+	].filter((name) => !exclude.has(name));
 	return {
 		plugins,
+		excludePlugins: [...exclude],
 		cacheDir: tokens.cacheDir ?? DEFAULT_CLI_ARGS.cacheDir,
 		docsDir: tokens.docsDir ?? DEFAULT_CLI_ARGS.docsDir,
 		workspace: tokens.workspace ?? cwd,
@@ -147,8 +195,12 @@ export const parseCliArgs = (
 		serverVersion: tokens.serverVersion ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens.prefix,
 		configPath: tokens.config,
-		mcpServerCreate: !isFalse(tokens['mcp-server-create']),
-		mcpServerTests: !isFalse(tokens['mcp-server-tests']),
+		mcpProjectCreate: !isFalse(tokens['mcp-project-create']),
+		mcpProjectTests: !isFalse(tokens['mcp-project-tests']),
+		agentWorktree: parseTriStateFlag(
+			'--agent-worktree',
+			tokens['agent-worktree'],
+		),
 		extra,
 		tokens,
 	};

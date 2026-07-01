@@ -1,13 +1,19 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { syncProposalRegistry } from '@cartago-git/mcp-proposals/lib/proposals/sync-proposal-registry';
-import { collectRoundContextSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/round-context';
-import { buildSwarmPaths } from '@cartago-git/mcp-proposals/lib/contracts/constants/default-path-layout.constant';
+import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
+import { collectRoundContextSnapshot } from '@mcp-vertex/proposals/lib/swarm/round-context';
+import { buildSwarmPaths } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
 
 /**
  * F3: a relocated store (different `--cacheDir` / `--docsDir`) must stay
@@ -16,7 +22,7 @@ import { buildSwarmPaths } from '@cartago-git/mcp-proposals/lib/contracts/consta
  * roots, both the proposal index sync and the round-context snapshot
  * read/write under that layout — not under `.cache` / `docs`.
  */
-describe('F3 — engines honor a relocated path layout', () => {
+describe('F3 — engines honor a relocated path layout', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'layout-reloc-'));
@@ -31,27 +37,36 @@ describe('F3 — engines honor a relocated path layout', () => {
 	};
 
 	it('syncProposalRegistry writes the index under the custom docs root', async () => {
-		const layout = buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
+		const layout = buildSwarmPaths('.cache/relocated', 'docs/relocated');
 		writeFileEnsured(
 			join(root, layout.proposalsDir, 'p01-demo.md'),
-			['---', 'id: p01', 'type: feature', 'status: pending', '---', '# Demo'].join(
-				'\n'
-			)
+			[
+				'---',
+				'id: p01',
+				'type: feature',
+				'status: pending',
+				'---',
+				'# Demo',
+			].join('\n'),
 		);
 
 		const result = await syncProposalRegistry(root, layout);
 
 		// Index lands under the relocated docs root, NOT under docs/proposals.
 		expect(result.indexPath).toBe(join(root, layout.proposalIndexFile));
-		expect(existsSync(join(root, 'docs/proposals/index.json'))).toBe(false);
+		expect(
+			existsSync(join(root, 'docs/mcp-vertex/proposals/index.json')),
+		).toBe(false);
 		const index = JSON.parse(
-			readFileSync(join(root, layout.proposalIndexFile), 'utf8')
+			readFileSync(join(root, layout.proposalIndexFile), 'utf8'),
 		);
-		expect(index.proposals.map((p: { id: string }) => p.id)).toContain('p01');
+		expect(index.proposals.map((p: { id: string }) => p.id)).toContain(
+			'p01',
+		);
 	});
 
-	it('collectRoundContextSnapshot reads the lock under the custom cache root', () => {
-		const layout = buildSwarmPaths('.cache/mcp-core', 'docs/mcp-core');
+	it('collectRoundContextSnapshot reads the lock under the custom cache root', async () => {
+		const layout = buildSwarmPaths('.cache/relocated', 'docs/relocated');
 		writeFileEnsured(
 			join(root, layout.lockFile),
 			JSON.stringify({
@@ -63,24 +78,35 @@ describe('F3 — engines honor a relocated path layout', () => {
 						last_seen: new Date().toISOString(),
 					},
 				],
-			})
+			}),
 		);
 
-		const snapshot = collectRoundContextSnapshot(root, layout);
+		const snapshot = await collectRoundContextSnapshot(root, layout);
 
 		expect(snapshot.activeLocks.map((l) => l.taskId)).toContain('t1');
 	});
 
-	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (Affairs back-compat)', async () => {
+	it('defaults to DEFAULT_PATH_LAYOUT when no layout is passed (legacy host back-compat)', async () => {
 		writeFileEnsured(
-			join(root, 'docs/proposals/p02-default.md'),
-			['---', 'id: p02', 'type: feature', 'status: pending', '---', '# Def'].join(
-				'\n'
-			)
+			join(root, 'docs/mcp-vertex/proposals/p02-default.md'),
+			[
+				'---',
+				'id: p02',
+				'type: feature',
+				'status: pending',
+				'---',
+				'# Def',
+			].join('\n'),
 		);
 
 		const result = await syncProposalRegistry(root);
 
-		expect(result.indexPath).toBe(join(root, 'docs/proposals/index.json'));
+		// x00052: DEFAULT_PATH_LAYOUT now points the index at
+		// `<cacheDir>/proposals/index.json` instead of
+		// `<docsDir>/proposals/index.json` (the index is a
+		// regenerable cache artefact, not a human-edited source).
+		expect(result.indexPath).toBe(
+			join(root, '.cache/mcp-vertex/proposals/index.json'),
+		);
 	});
 });

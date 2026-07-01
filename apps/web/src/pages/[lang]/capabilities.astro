@@ -1,0 +1,25 @@
+---
+/**
+ * pages/[lang]/capabilities.astro — translated `/<lang>/capabilities`.
+ * See `tools.astro` for the shell recipe.
+ */
+import PluginCapabilities from '#COMPONENTS/PluginCapabilities.astro';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
+
+export const getStaticPaths = langStaticPaths;
+
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
+const capTitle = `${t.plugins.title} · ${t.tools.title}`;
+---
+
+<PageShell
+	lang={lang}
+	title={capTitle}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	description="A per-plugin breakdown of every tool, prompt, resource and knowledge entry exposed by the mcp-vertex core + plugins."
+>
+	<PluginCapabilities lang={lang} heading={capTitle} />
+</PageShell>

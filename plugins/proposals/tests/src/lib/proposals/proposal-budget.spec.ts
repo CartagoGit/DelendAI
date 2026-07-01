@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateBudget } from '@cartago-git/mcp-proposals/lib/proposals/proposal-budget';
+import { validateBudget } from '@mcp-vertex/proposals/lib/proposals/proposal-budget';
 
-describe('validateBudget', () => {
-	it('returns withinBudget:true and empty violations when all values within limits', () => {
+describe('validateBudget', async () => {
+	it('returns withinBudget:true and empty violations when all values within limits', async () => {
 		const result = validateBudget(
 			{
 				maxInputTokens: 250000,
@@ -18,13 +18,13 @@ describe('validateBudget', () => {
 				iterations: 2,
 				toolCalls: 10,
 				premiumCalls: 0,
-			}
+			},
 		);
 		expect(result.withinBudget).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('returns withinBudget:false with block violation when iterations exceed maxIterations', () => {
+	it('returns withinBudget:false with block violation when iterations exceed maxIterations', async () => {
 		const result = validateBudget({ maxIterations: 6 }, { iterations: 7 });
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations).toEqual([
@@ -37,10 +37,10 @@ describe('validateBudget', () => {
 		]);
 	});
 
-	it('returns block violation when premiumCalls exceed maxPremiumCalls', () => {
+	it('returns block violation when premiumCalls exceed maxPremiumCalls', async () => {
 		const result = validateBudget(
 			{ maxPremiumCalls: 1 },
-			{ premiumCalls: 2 }
+			{ premiumCalls: 2 },
 		);
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations[0]).toMatchObject({
@@ -51,10 +51,10 @@ describe('validateBudget', () => {
 		});
 	});
 
-	it('returns warn (not block) violation when inputTokens exceed maxInputTokens', () => {
+	it('returns warn (not block) violation when inputTokens exceed maxInputTokens', async () => {
 		const result = validateBudget(
 			{ maxInputTokens: 250000 },
-			{ inputTokens: 300000 }
+			{ inputTokens: 300000 },
 		);
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations[0]).toMatchObject({
@@ -65,10 +65,10 @@ describe('validateBudget', () => {
 		});
 	});
 
-	it('returns warn violation when outputTokens exceed maxOutputTokens', () => {
+	it('returns warn violation when outputTokens exceed maxOutputTokens', async () => {
 		const result = validateBudget(
 			{ maxOutputTokens: 40000 },
-			{ outputTokens: 50000 }
+			{ outputTokens: 50000 },
 		);
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations[0]).toMatchObject({
@@ -77,7 +77,7 @@ describe('validateBudget', () => {
 		});
 	});
 
-	it('returns warn (not block) violation when toolCalls exceed maxToolCalls', () => {
+	it('returns warn (not block) violation when toolCalls exceed maxToolCalls', async () => {
 		const result = validateBudget({ maxToolCalls: 80 }, { toolCalls: 81 });
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations[0]).toMatchObject({
@@ -86,16 +86,16 @@ describe('validateBudget', () => {
 		});
 	});
 
-	it('returns withinBudget:true with empty budget (no enforcement)', () => {
+	it('returns withinBudget:true with empty budget (no enforcement)', async () => {
 		const result = validateBudget({}, {});
 		expect(result.withinBudget).toBe(true);
 		expect(result.violations).toEqual([]);
 	});
 
-	it('collects multiple violations in a single call', () => {
+	it('collects multiple violations in a single call', async () => {
 		const result = validateBudget(
 			{ maxIterations: 3, maxPremiumCalls: 1 },
-			{ iterations: 5, premiumCalls: 3 }
+			{ iterations: 5, premiumCalls: 3 },
 		);
 		expect(result.withinBudget).toBe(false);
 		expect(result.violations).toHaveLength(2);
