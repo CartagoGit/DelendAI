@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-06-29T13:55:04.801Z",
+	"generatedAt": "2026-07-01T00:04:02.028Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -828,6 +828,22 @@
 				"date": "2026-06-29"
 			},
 			{
+				"id": "f00089",
+				"title": "f00089",
+				"track": "cli+bootstrap+onboarding+plugins+filesystem+migration",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-30"
+			},
+			{
+				"id": "f00090",
+				"title": "f00090",
+				"track": "memory+orchestration+token-efficiency",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-06-30"
+			},
+			{
 				"id": "r00005",
 				"title": "r00005",
 				"track": "i18n+l10n+utils",
@@ -842,14 +858,30 @@
 				"status": "ready",
 				"kind": "refactor",
 				"date": "2026-06-25"
+			},
+			{
+				"id": "r00007",
+				"title": "r00007",
+				"track": "repo-layout+tooling+dx",
+				"status": "ready",
+				"kind": "refactor",
+				"date": "2026-06-30"
+			},
+			{
+				"id": "x00091",
+				"title": "x00091",
+				"track": "refactor",
+				"status": "ready",
+				"kind": "fix",
+				"date": "2026-07-01"
 			}
 		],
 		"byStatus": {
-			"ready": 17,
+			"ready": 21,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 152,
+			"done": 141,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0
