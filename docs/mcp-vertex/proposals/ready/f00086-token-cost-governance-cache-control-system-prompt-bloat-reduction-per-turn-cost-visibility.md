@@ -49,36 +49,98 @@ S2, S3, S4, S5 are all claimable in parallel. S6 depends on S1 (warm-up requires
 - **Files**: [packages/core/src/lib/providers/cache-control.ts, packages/core/src/lib/providers/anthropic.ts, packages/core/src/lib/providers/openai.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: NOT IMPLEMENTABLE as written. mcp-vertex is an
+  MCP *server* library, not an LLM client — it has no provider layer
+  (`packages/core/src/lib/providers/` does not exist and never did). The model,
+  and therefore the `cache_control` request headers, belong to the HOST
+  (Copilot / Claude Code), not to mcp-vertex. The only Anthropic/OpenAI client
+  in the tree is `plugins/audit/src/lib/services/llm-client.service.ts`, which
+  is x00091 territory and out of scope (and does not set `cache_control`).
+  This slice is a category error for this repo; kept `pending`, not closed.
+  mcp-vertex's real cost lever is the *size of the tool payloads and static
+  system prompt it emits* — addressed by S3 (new) and S2/S5 (already shipped).
 
 ### S2 — mcp-vertex_cache_metrics tool for per-turn cost visibility
-- **Status**: pending
+- **Status**: done (superseded — already shipped before this proposal)
 - **Files**: [packages/core/src/lib/tools/cache-metrics-tool.ts, packages/core/src/lib/tools/registry.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: Per-turn cost visibility already exists as the
+  `mcp-vertex_metrics` tool — `packages/core/src/lib/metrics/metrics-tool.ts`
+  reports per-tool `calls / errors / latency / totalBytes` plus totals, with
+  `persist:true` snapshots under `<cacheDir>/metrics/` for longitudinal
+  comparison. `totalBytes` IS the per-turn payload cost this slice asked for.
+  It is wired in `packages/core/src/lib/cli/assemble.ts:635`. No separate
+  `cache_metrics` tool is warranted; adding one would duplicate the surface.
+  Marked done/superseded rather than implemented.
 
 ### S3 — System prompt size lint
-- **Status**: pending
-- **Files**: [tools/scripts/lint/system-prompt-size.script.ts, tools/scripts/lint/index.ts, package.json]
+- **Status**: done
+- **Files**: [tools/scripts/lint/system-prompt-size.script.ts, tools/scripts/lint/system-prompt-size.script.spec.ts, package.json]
 - **Gate**: bun run lint:prompt-size
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: Implemented. `tools/scripts/lint/index.ts`
+  does not exist in this repo (lint scripts are registered as individual
+  `package.json#scripts` keys, not an index barrel), so the spec sits next to
+  the script (`*.script.spec.ts`, the house convention) instead. The lint
+  imposes a per-file UTF-8 byte budget on the four static "system prompt"
+  files that every host loads on cold start: `AGENTS.md`, `CLAUDE.md`,
+  `.github/copilot-instructions.md`, and `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
+  (the bootstrap they all link to). It is complementary to — not a duplicate
+  of — the f00084 `host-instructions` content lint (no size rule) and the N23
+  `token-budget.e2e.spec.ts` runtime payload benchmark (no static-file rule).
+  Budgets carry the measured baseline with ~10% headroom; growth needs a dated
+  rationale bump. Wired as `lint:prompt-size` and into the `validate` chain.
+  Committed 8d9ee26c/e8e41baa.
 
 ### S4 — Lean preset (4 essential plugins only) + docs page
 - **Status**: pending
 - **Files**: [packages/core/src/lib/presets/lean.preset.ts, packages/core/src/lib/presets/registry.ts, apps/web/src/pages/docs/presets/lean.astro]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: Held `pending` — DELIBERATELY NOT implemented
+  during this drain to avoid colliding with a concurrent agent that owns the
+  CLI/init/presets surface. The proposal's paths are stale (r00007 rename):
+  presets live in `packages/core/src/lib/plugins/preset-catalog.ts`, a closed
+  DELTA-chain catalog whose membership is `PRESET_KIND = [minimal, standard,
+  swarm, full, vertex]` (no `lean`), guarded by `preset-catalog.spec.ts` and
+  `tools/scripts/lint/no-preset-drift.script.ts` (`lint:setup`). Adding `lean`
+  requires editing the `PRESET_KIND` tuple + catalog + the drift lint + init
+  UI + web `/presets` table + i18n keys — all owned by the concurrent CLI/init
+  work. Safe to implement once that lands; do it in `preset-catalog.ts`, NOT
+  the non-existent `presets/registry.ts`. Left `pending` with this note.
 
 ### S5 — Compact-by-default for mcp-vertex_overview and proposals_auto_work
-- **Status**: pending
+- **Status**: done (superseded — compact paths already ship; default-flip declined)
 - **Files**: [packages/core/src/lib/tools/overview-tool.ts, packages/core/src/lib/tools/auto-work-tool.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: The compact surfaces already exist.
+  `packages/core/src/lib/tools/overview-tool.ts` supports `compact:true`
+  (names-only, ~25% of the full payload) and `auto_work`
+  (`plugins/proposals/src/lib/tools/auto-work.tool.ts`) already returns a
+  tight, low-token action list by design (its description says "Low-token: a
+  tight action list, not prose"). Both are pinned by the N23 e2e
+  `token-budget.e2e.spec.ts` (overviewCompact < 2100B and `compact < full*0.7`;
+  autoWork < 1600B). Making `compact` the DEFAULT (i.e. changing the no-arg
+  return) is NOT done here: it would flip the documented `overviewFull`
+  baseline the e2e asserts and change a stable public contract many callers
+  rely on for the full map — a behavior change out of proportion to the token
+  win now that `compact:true` is one keystroke away and already the documented
+  recommendation. Marked done/superseded (compact shipped); default-flip
+  declined with rationale rather than left dangling.
 
 ### S6 — Cache warm-up on VS Code session start
 - **Status**: pending
 - **Files**: [extensions/vscode/src/services/cache-warm.ts, extensions/vscode/src/extension.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note (2026-07-01, drain)**: Blocked on S1. "Warm the cache on session
+  start" presupposes S1's provider `cache_control` headers, which are a
+  category error for this repo (mcp-vertex has no LLM provider — the model is
+  the host; see S1 note). The VS Code extension (`extensions/vscode/`) drives
+  the MCP server, it does not make model requests, so there is no request cache
+  for it to warm. Kept `pending`, not closed, pending a reframing of S1.
 
 ## acceptance
 
