@@ -19,7 +19,7 @@ import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../lib/config-file.service';
-import { data, hasFlag, isRecord, request, scalarArg } from '../lib/cli-helpers';
+import { data, hasFlag, isRecord, request, scalarArg } from '../lib/cli-helpers.service';
 import { formatRows } from '../lib/text-format.service';
 import {
 	gitBlameCommand,

@@ -11,7 +11,7 @@
  * surface — the JSON envelope lives on stdout and the recap on
  * stderr) so `--help` is safe to use inside pipelines.
  */
-import { c, colorOn, heading, hint, paint } from '../../lib/color';
+import { c, colorOn, heading, hint, paint } from '../../lib/color.service';
 
 /**
  * Render the `--help` block honouring the shared palette.
