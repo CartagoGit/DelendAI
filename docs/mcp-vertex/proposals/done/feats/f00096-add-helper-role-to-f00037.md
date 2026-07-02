@@ -1,12 +1,13 @@
 ---
 id: f00096
-status: ready
+status: done
 type: proposal
 track: repo-layout+contracts
 date: 2026-07-01
+closed: 2026-07-02
 kind: feat
 title: Add `helper` role + lift exported types into `contracts/interfaces/` (f00037 SRP fix)
-shipped-in: []
+shipped-in: [aa7f66b9, 0b9f7a1c, c9a531ba, da311611, fcd63b50]
 recan: []
 related:
     - f00037 # original file-convention proposal
@@ -24,6 +25,26 @@ acceptance:
 ---
 
 # f00096 — Add `helper` role to the f00037 file-convention contract
+
+> **Closed 2026-07-02 — all three slices verified landed.** The deliverable is
+> objectively present in the tree and validate is green:
+> - **S1**: `packages/core/src/lib/contracts/file-conventions.contract.ts` exposes
+>   `'helper'` in the `Role` union and `HelperRule` in `DEFAULT_TS_RULES`, ordered
+>   BEFORE `ServiceRule` (chain invariant).
+> - **S2**: `packages/cli/src/lib/cli-helpers.service.ts` → `lib/helpers/cli-command.helper.ts`
+>   and `color.service.ts` → `lib/helpers/cli-color.helper.ts` (old files gone; the
+>   `group-helpers.ts` shim points at the new location); the 7 lifted
+>   `contracts/interfaces/*.interface.ts` files (agent-descriptor, completion,
+>   exit-code, help-translation, init, plugin-defaults, server-args) all exist.
+> - **S3**: `file-conventions.contract.spec.ts` locks the six `helper`-role
+>   assertions; the conventions plugin re-imports `classifyPath`/`DEFAULT_TS_RULES`/
+>   `Role` directly from the core contract, so parity is structural (one source).
+>
+> **ID-collision note:** parts of this work were committed under an `f00093`
+> label before the numbering collision was resolved (commit `5a798d3d`), so some
+> code comments and the spec `describe('helper role (f00093)')` still carry the
+> old id. `f00093` is a *separate* proposal (init host-instruction snapshots) that
+> remains open; only this helper-role deliverable is closed here.
 
 ## goal
 
@@ -145,7 +166,7 @@ source.
 
 ### S1 — Add the `helper` role to the file-convention contract
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/file-conventions.contract.ts`
 - **Gate**: typecheck
 - **Acceptance**:
@@ -154,7 +175,7 @@ source.
 
 ### S2 — Migrate the two CLI helpers + lift 35 exported types
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/cli-helpers.service.ts` →
   `packages/cli/src/lib/helpers/cli-command.helper.ts`,
   `packages/cli/src/lib/color.service.ts` →
@@ -171,7 +192,7 @@ source.
 
 ### S3 — Lock the new role in the contract + parity specs
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`,
   `plugins/conventions/src/lib/services/typescript-profile.service.ts`
