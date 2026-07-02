@@ -94,21 +94,32 @@ S2, S3, S4, S5 are all claimable in parallel. S6 depends on S1 (warm-up requires
   Committed 8d9ee26c/e8e41baa.
 
 ### S4 — Lean preset (4 essential plugins only) + docs page
-- **Status**: pending
-- **Files**: [packages/core/src/lib/presets/lean.preset.ts, packages/core/src/lib/presets/registry.ts, apps/web/src/pages/docs/presets/lean.astro]
-- **Gate**: bun run typecheck
+- **Status**: done
+- **Files**: [packages/core/src/lib/plugins/preset-catalog.ts, packages/core/src/lib/plugins/preset-catalog.spec.ts, packages/core/tests/src/lib/plugins/preset-catalog.spec.ts, tools/scripts/lint/no-preset-drift.script.ts, packages/cli/src/lib/init/init-prompts.service.ts, apps/web/scripts/__tests__/preset-table.spec.ts]
+- **Gate**: bun run validate
 - **Expect**: exit0
-- **Note (2026-07-01, drain)**: Held `pending` — DELIBERATELY NOT implemented
-  during this drain to avoid colliding with a concurrent agent that owns the
-  CLI/init/presets surface. The proposal's paths are stale (r00007 rename):
-  presets live in `packages/core/src/lib/plugins/preset-catalog.ts`, a closed
-  DELTA-chain catalog whose membership is `PRESET_KIND = [minimal, standard,
-  swarm, full, vertex]` (no `lean`), guarded by `preset-catalog.spec.ts` and
-  `tools/scripts/lint/no-preset-drift.script.ts` (`lint:setup`). Adding `lean`
-  requires editing the `PRESET_KIND` tuple + catalog + the drift lint + init
-  UI + web `/presets` table + i18n keys — all owned by the concurrent CLI/init
-  work. Safe to implement once that lands; do it in `preset-catalog.ts`, NOT
-  the non-existent `presets/registry.ts`. Left `pending` with this note.
+- **Note (2026-07-02, landed)**: Implemented as an **independent** preset named
+  `lean` in `packages/core/src/lib/plugins/preset-catalog.ts` (NOT the stale
+  `presets/registry.ts`). Members are EXACTLY the 4 essentials, in order:
+  `git, search, memory, docs` — version control, code discovery, cross-session
+  continuity, documentation; nothing heavy. Placed in `PRESET_KIND` right after
+  `minimal` (`[minimal, lean, standard, swarm, full, vertex]`) with the catalog
+  entry in the same slot, marked `independent: true` so
+  `resolvePresetMembers('lean')` resolves to EXACTLY those 4 and never
+  accumulates the chain. Because it is independent it does NOT change the
+  resolved membership of `standard`/`swarm`/`full` (locked by spec). Ripple
+  updates: the `no-preset-drift` lint (`lint:setup`) `PRESET_KIND` +
+  `PRESET_MEMBERSHIPS` mirror; the init UI preset menu
+  (`init-prompts.service.ts`) — the `init` enum derives from `PRESET_KIND` so
+  `lean` is accepted automatically, matching how `vertex` is handled (no
+  special-casing). The web `/presets` table is DERIVED from `PRESET_CATALOG`
+  (title/summary read straight from the catalog), so no per-preset i18n keys
+  exist to add — only the derived-table spec row list was extended. The docs
+  page (`presets/lean.astro`) proposed in the stale Files list is unnecessary:
+  the single `/presets` page renders every catalog preset, including `lean`,
+  automatically. All other f00086 slices are already done/superseded except
+  S1/S6 (cache-header slices held `pending` as category errors), so the
+  proposal cannot yet be closed; file left in `ready/`.
 
 ### S5 — Compact-by-default for mcp-vertex_overview and proposals_auto_work
 - **Status**: done (superseded — compact paths already ship; default-flip declined)
