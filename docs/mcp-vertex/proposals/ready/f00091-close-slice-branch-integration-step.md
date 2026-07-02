@@ -6,7 +6,7 @@ kind: feat
 track: swarm+coordination+git-integration
 title: close_slice branch-integration step (non-destructive mark-for-integration)
 date: 2026-07-01
-shipped-in: []
+shipped-in: [027001d5, 84cfbe37]
 recan: []
 related:
     - f00082 # composite agent identity — the branch names close_slice would mark for integration
@@ -81,7 +81,7 @@ for a human/orchestrator to integrate deliberately.
 ## slices
 
 ### S1 — Inventory the close_slice + branch lifecycle (read-only)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`,
   `plugins/proposals/src/lib/agents/agent-worktree-engine.ts`,
   `plugins/proposals/src/lib/shared/branch-gc-engine.ts`,
@@ -93,7 +93,7 @@ for a human/orchestrator to integrate deliberately.
     `rescueCandidates`."
 
 ### S2 — Non-destructive mark-for-integration + surfacing
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`,
   the agent-registry store, `plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts`
 - **Gate**: validate
@@ -107,6 +107,7 @@ for a human/orchestrator to integrate deliberately.
 
 ### S3 — Verify non-destructiveness and accuracy
 - **Status**: pending
+- **Note**: S1/S2 implementation merged (swarm_hygiene now surfaces pendingIntegration + nonConformingBranches + staleUnmerged, all read-only); S3 is the remaining spec work (assert no destructive git + detection accuracy).
 - **Files**: specs under `plugins/proposals/tests/`
 - **Gate**: validate
 - **Acceptance**:
