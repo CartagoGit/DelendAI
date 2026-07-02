@@ -1,9 +1,10 @@
 ---
 id: r00006
-status: ready
+status: done
 type: proposal
 track: solid+architecture+extension-ux
 date: 2026-06-25
+closed: 2026-07-02
 kind: refactor
 title: SOLID refactor of dashboard renderer and status bar (SRP/OCP)
 shipped-in: []
