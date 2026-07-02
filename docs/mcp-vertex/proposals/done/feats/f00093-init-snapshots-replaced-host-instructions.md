@@ -1,12 +1,13 @@
 ---
 id: f00093
-status: ready
+status: done
 type: proposal
 kind: feat
 track: cli+bootstrap+proposals+host-discovery
 date: 2026-07-01
+closed: 2026-07-02
 title: init snapshots pre-overwrite host-instructions into a review proposal
-shipped-in: []
+shipped-in: [6ce784c1, 3687fddd]
 recan: []
 related:
     - f00084 # `init` command whose S4 host-instructions centralizer is the surface this slice extends
@@ -20,6 +21,12 @@ ownership:
     - { agent: implementation_runner, task: 'S4: bake the new step into `init:default` — it already passes `hostInstructions: "overwrite"` and `migrateFromLegacy: true`; verify the snapshot path is non-blocking (does not fail the bootstrap if the proposal write fails — log + continue, like the migration offer)' }
     - { agent: delivery_verifier,    task: 'S5: e2e spec: in a tmpdir with three non-empty host files, run `renderInitBundle({hostInstructions: "overwrite"})` and assert (a) the host files were overwritten, (b) the proposal exists with the three pre-overwrite payloads inside `<pre>` blocks, (c) the proposal is allocated the next free id (not a hardcoded `f00001` per f00088/f00089), (d) `bun run validate` is green' }
 globalGate: validate
+# Closed 2026-07-02 — verified landed (shipped 6ce784c1 + 3687fddd), validate green.
+# `renderSnapshotHostInstructionsProposal` lives in
+# packages/cli/src/lib/init/init-host-snapshot.service.ts (exported, line 377) and
+# is wired into the bundle orchestrator via init-render.service.ts (S3), with its
+# co-located spec (S2/S5). init:default routes through the same non-blocking path
+# (S4). All five slices delivered and specced.
 acceptance:
     - { command: bun run typecheck, expect: exit0 }
     - { command: bun run test,      expect: exit0 }
@@ -219,7 +226,7 @@ differences:
 
 ### S1 — Classify the snapshot trigger
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00093-init-snapshots-replaced-host-instructions.md`
 - **Gate**: typecheck
 - **Acceptance**:
@@ -232,7 +239,7 @@ differences:
 
 ### S2 — Implement the snapshot renderer
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/init-host-snapshot.service.ts`
   (new), `packages/cli/src/lib/init/init-host-snapshot.service.spec.ts`
   (new)
@@ -258,7 +265,7 @@ differences:
 
 ### S3 — Wire the snapshot step into the bundle orchestrator
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/init-render.service.ts`
 - **Gate**: typecheck
 - **Acceptance**:
@@ -271,7 +278,7 @@ differences:
 
 ### S4 — Verify `init:default` still passes
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/init-default.command.spec.ts`
   (extend)
 - **Gate**: test
@@ -286,7 +293,7 @@ differences:
 
 ### S5 — End-to-end gate
 
-- **Status**: pending
+- **Status**: done
 - **Files**: the 4 files above + this proposal
 - **Gate**: validate
 - **Acceptance**:
