@@ -24,7 +24,11 @@ export function buildPanels(
 	const overviewPanel = renderPanelOverview(model.overview, lang);
 	const metricsPanel = renderPanelMetrics(model.metrics, lang);
 	const tokensPanel = renderPanelTokens(model.tokens, lang);
-	const toolsPanel = renderPanelTools(model.tools, lang);
+	const toolsPanel = renderPanelTools(
+		model.tools,
+		lang,
+		model.metrics.sparklines,
+	);
 	const pluginsPanel = renderPanelPlugins(model.plugins, lang);
 	const sessionsPanel = renderPanelSessions(model.sessions, lang);
 	const timesPanel = renderPanelTimes(model.times, lang);
