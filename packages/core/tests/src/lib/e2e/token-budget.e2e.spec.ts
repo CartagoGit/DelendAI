@@ -44,8 +44,12 @@ const BUDGET_BYTES = {
 	// (in-session context compaction). Its summary is the only thing the full
 	// overview lists; full measured 8755B. Compact path unchanged (2079B), still
 	// the real promise.
-	overviewFull: 8_900,
-	overviewCompact: 2_100,
+	// Bumped 8900 → 9050 / 2100 → 2180 (2026-07-02): f00094 wired the
+	// inherit_host_instructions tool (host-instruction audit) into the proposals
+	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
+	// still the real promise at < 24% of full.
+	overviewFull: 9_050,
+	overviewCompact: 2_180,
 	agentCatalogCompact: 1_300,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,

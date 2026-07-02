@@ -1095,6 +1095,18 @@ export interface McpVertexProposalsGetProposalWorkflowOutput {
 	template: string;
 }
 
+export interface McpVertexProposalsInheritHostInstructionsOutput {
+	ok: true;
+	scope: "repo" | "all";
+	files: string[];
+	totalNonCanonical: number;
+	id: string | null;
+	file?: string;
+	path?: string;
+	indexCount?: number;
+	redactedSecrets?: number;
+}
+
 export interface McpVertexProposalsPlanOutput {
 	plan: unknown;
 	disjointnessIssues: unknown[];
@@ -1942,6 +1954,7 @@ export interface McpVertexToolOutputs {
 	"mcp-vertex_proposals_create_proposal": McpVertexProposalsCreateProposalOutput;
 	"mcp-vertex_proposals_delegate": McpVertexProposalsDelegateOutput;
 	"mcp-vertex_proposals_get_proposal_workflow": McpVertexProposalsGetProposalWorkflowOutput;
+	"mcp-vertex_proposals_inherit_host_instructions": McpVertexProposalsInheritHostInstructionsOutput;
 	"mcp-vertex_proposals_plan": McpVertexProposalsPlanOutput;
 	"mcp-vertex_proposals_proposal_adopt": McpVertexProposalsProposalAdoptOutput;
 	"mcp-vertex_proposals_proposal_board": McpVertexProposalsProposalBoardOutput;
