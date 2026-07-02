@@ -20,7 +20,7 @@
  * Pure functions — no IO, no env reads outside the call site.
  */
 
-import type { IInitHumanInput, IInitWrittenFile } from '../../contracts/interfaces/init.interface';
+import type { IInitHumanInput } from '../../contracts/interfaces/init.interface';
 import {
 	arrow,
 	brand,

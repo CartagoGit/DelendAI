@@ -1,12 +1,13 @@
 ---
 id: f00084
-status: ready
+status: done
 type: proposal
 track: cli+bootstrap+onboarding
 date: 2026-06-29
+closed: 2026-07-02
 kind: feat
 title: `bunx @mcp-vertex/core init` — interactive workspace bootstrap CLI
-shipped-in: []
+shipped-in: [f1ab5e0f, c0875e68]
 recan: []
 related:
     - f00081 # namespace-aware client services (cli consumes resolved prefix)
@@ -175,10 +176,22 @@ workspace (the cache stays for runtime state).
 
 ## slices
 
+> **Closed 2026-07-02 — all six slices verified landed** (shipped `f1ab5e0f`
+> = S1-S2, `c0875e68` = S3-S6), validate green. The file paths below predate the
+> f00037 convention refactor that moved the implementation from
+> `commands/init/init-*.ts` to `packages/cli/src/lib/init/*.service.ts`; the
+> actual files: S1 `init-answers.schema.ts` (+ spec); S2 `commands/init/init.command.ts`
+> + `lib/init/init-prompts.service.ts`; S3 `init-render.service.ts` renders
+> `.github/agents/mcp-vertex-<role>.agent.md` from the live catalog (gated on
+> `answers.generateAgentMd`); S4 `init-host-instructions.service.ts` (+ spec); S5
+> `init-migrate-offer.service.ts`; S6 `init-render.service.spec.ts` +
+> `init-default.command.spec.ts` (e2e). The S5 migration STUB is f00084's scope;
+> the full adoption-plan enhancement is U1 vision, tracked in the f00089 umbrella.
+
 ### S1 — `IInitAnswers` Zod schema (closed surface)
 
 - **Files**: [packages/cli/src/commands/init/init-answers.schema.ts](packages/cli/src/commands/init/init-answers.schema.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run typecheck
 
 ```typescript
@@ -211,7 +224,7 @@ written. The CLI never tries to load a plugin that is not in `PRESET_CATALOG`.
 
 - **Files**: [packages/cli/src/commands/init/init.command.ts](packages/cli/src/commands/init/init.command.ts),
   [packages/cli/src/commands/init/init-prompts.ts](packages/cli/src/commands/init/init-prompts.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run typecheck
 
 The command registers as `init` (single-token) in `commands/registry.ts`.
@@ -247,7 +260,7 @@ export const initCommand = defineCommand({
 ### S3 — `.github/agents/mcp-vertex-<role>.agent.md` generator
 
 - **Files**: [packages/cli/src/commands/init/init-render.ts](packages/cli/src/commands/init/init-render.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run typecheck
 
 Reads `docs/mcp-vertex/agent-catalog.generated.json` (regenerated on the fly
@@ -272,7 +285,7 @@ generator skips a role if its `.agent.md` already exists unless
 ### S4 — Host-instructions centralizer
 
 - **Files**: [packages/cli/src/commands/init/init-render.ts](packages/cli/src/commands/init/init-render.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run typecheck
 
 For each active host fragment:
@@ -292,7 +305,7 @@ block so future `init` runs are idempotent.
 ### S5 — Optional post-init auto-migration
 
 - **Files**: [packages/cli/src/commands/init/init-migrate-offer.ts](packages/cli/src/commands/init/init-migrate-offer.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run typecheck
 
 If `answers.migrateFromLegacy === true` and `proposals` is in the resolved set:
@@ -312,7 +325,7 @@ If `proposals` is NOT in the resolved set, this step is skipped silently.
 ### S6 — End-to-end spec
 
 - **Files**: [packages/cli/src/commands/init/init.spec.ts](packages/cli/src/commands/init/init.spec.ts)
-- **Status**: ready
+- **Status**: done
 - **Gate**: bun run test
 
 ```typescript
