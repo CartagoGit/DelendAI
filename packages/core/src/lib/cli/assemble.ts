@@ -455,6 +455,11 @@ export const assembleCliConfig = async (
 			const qualifiedId = `${corePrefix}_${ns}_${tool.id}`;
 			pluginToolEntries.push({
 				name: qualifiedId,
+				// plugin + unqualified id let the compact overview group tools
+				// by plugin without re-parsing the qualified name (plugin names
+				// may contain `-`, tool ids `_`).
+				plugin: ns,
+				id: tool.id,
 				summary: tool.summary,
 				tags: tool.tags,
 				...(tool.effects ? { effects: tool.effects } : {}),
@@ -577,6 +582,16 @@ export const assembleCliConfig = async (
 				.filter(
 					(entry): entry is [string, string] => entry !== undefined,
 				);
+			// Token economy: the diagnostic only earns its bytes when the
+			// requested plugin set diverged from what actually loaded. In the
+			// healthy case (nothing missing, no errors) it repeats the plugin
+			// name list three times (requested/loaded/configPlugins) on every
+			// cold-start `overview` — pure noise, since `plugins` already
+			// conveys the active set. Omit it when clean so the divergence, when
+			// it happens, is the ONLY reason this block appears.
+			if (missingPlugins.length === 0 && loadResult.errors.length === 0) {
+				return undefined;
+			}
 			return {
 				requested: effectivePlugins,
 				loaded: loadResult.loaded.map((entry) => entry.plugin.name),
@@ -600,6 +615,9 @@ export const assembleCliConfig = async (
 		tools: [
 			...coreTools.map((reg) => ({
 				name: `${corePrefix}_${reg.id}`,
+				// No plugin (core tool) → grouped under `core` in the compact
+				// overview; the stem is the unqualified id.
+				id: reg.id,
 				summary: reg.summary,
 				tags: reg.tags,
 				...(reg.effects ? { effects: reg.effects } : {}),

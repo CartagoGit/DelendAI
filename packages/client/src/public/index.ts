@@ -20,6 +20,7 @@ export type { INamespacePrefix } from '../lib/services/_namespace';
 export {
 	OverviewService,
 	normalizeTool,
+	normalizeCompactTools,
 	pluginFromToolName,
 } from '../lib/services/overview.service';
 export type { IOverviewOptions } from '../lib/services/overview.service';

@@ -7,6 +7,43 @@ import type {
 } from '../contracts/interfaces/tool-descriptor.interface';
 import { formatToolName } from './_namespace';
 
+/**
+ * Normalise an `overview.tools` payload into flat tool descriptors,
+ * accepting BOTH shapes the tool can return:
+ *   - full overview: an array of per-tool entries (string | object);
+ *   - compact overview: a record grouped by plugin
+ *     (`{ proposals: ['agent_lock', …], core: ['overview', …] }`), where
+ *     each entry is the unqualified stem and the full callable name is
+ *     `<namespacePrefix>_<plugin>_<stem>` (core: `<namespacePrefix>_<stem>`).
+ *
+ * The grouped form carries the plugin explicitly (as the group key), so
+ * it is MORE reliable than parsing the plugin out of a flat name.
+ */
+export const normalizeCompactTools = (
+	tools: IOverview['tools'],
+	namespacePrefix: string,
+): IToolDescriptor[] => {
+	if (Array.isArray(tools)) {
+		return tools.map((tool) => normalizeTool(tool));
+	}
+	const out: IToolDescriptor[] = [];
+	for (const [group, stems] of Object.entries(tools)) {
+		for (const stem of stems) {
+			const name =
+				group === 'core'
+					? `${namespacePrefix}_${stem}`
+					: `${namespacePrefix}_${group}_${stem}`;
+			out.push({
+				name,
+				plugin: group === 'core' ? namespacePrefix : group,
+				tags: [],
+				effects: [],
+			});
+		}
+	}
+	return out;
+};
+
 export interface IOverviewOptions {
 	readonly compact?: boolean;
 	readonly tag?: string;
@@ -31,7 +68,7 @@ export class OverviewService {
 
 	async listTools(): Promise<readonly IToolDescriptor[]> {
 		const overview = await this.getOverview({ compact: true });
-		return overview.tools.map((tool) => normalizeTool(tool));
+		return normalizeCompactTools(overview.tools, overview.namespacePrefix);
 	}
 }
 
