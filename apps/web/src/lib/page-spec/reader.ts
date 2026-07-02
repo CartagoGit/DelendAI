@@ -65,7 +65,6 @@ const rawFrontmatterSchema = z
 				for (const lang of value) {
 					if (!isLang(lang)) {
 						ctx.addIssue({
-							// @ts-ignore
 							code: z.ZodIssueCode.custom,
 							message: `Unknown language code: ${lang}`,
 						});
@@ -117,7 +116,7 @@ const readPageSlug = async (
 		: [];
 	const fileLangs = dirEntries.flatMap((entry) => {
 		const match = /^(?<lang>[a-z]{2})\.md$/u.exec(entry);
-		const lang = match?.groups?.['lang'];
+		const lang = match?.groups?.lang;
 		return lang && isLang(lang) ? [lang] : [];
 	});
 
@@ -332,12 +331,12 @@ const parseSimpleFrontmatter = (
 			/^(?<key>[A-Za-z][A-Za-z0-9_-]*):(?:\s+(?<value>.*))?$/u.exec(
 				rawLine,
 			);
-		if (!match?.groups?.['key']) {
+		if (!match?.groups?.key) {
 			return { error: `Unsupported frontmatter line: ${rawLine}` };
 		}
 
-		const key = match.groups['key'];
-		const value = match.groups['value'];
+		const key = match.groups.key;
+		const value = match.groups.value;
 		if (value !== undefined) {
 			result[key] = parseScalar(value.trim());
 			index += 1;
@@ -404,7 +403,6 @@ const mapFrontmatterError = (
 	error: ZodError,
 ): IPageSpecError => {
 	const unknownKeysOnly = error.issues.every(
-		// @ts-ignore
 		(issue) => issue.code === z.ZodIssueCode.unrecognized_keys,
 	);
 	return unknownKeysOnly

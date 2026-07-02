@@ -43,7 +43,10 @@ const resolveBunBinary = (): string => {
 };
 
 const BUN_BIN = resolveBunBinary();
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
+const REPO_ROOT = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	'../../../../../..',
+);
 const HOST_SERVER_ENTRY = join(
 	REPO_ROOT,
 	'tools/scripts/host/host-server.script.ts',
@@ -254,10 +257,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('exits with code 143 within 2s of SIGTERM (no zombie)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[
-				HOST_SERVER_ENTRY,
-				`--workspace=${workspace}`,
-			],
+			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
 			{
 				cwd: REPO_ROOT,
 				// stdout/stderr ignored: this test asserts only on the
@@ -296,10 +296,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('exits with code 130 within 2s of SIGINT (Ctrl+C)', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[
-				HOST_SERVER_ENTRY,
-				`--workspace=${workspace}`,
-			],
+			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
 			{
 				cwd: REPO_ROOT,
 				// See SIGTERM test for rationale: drop stdout/stderr
@@ -332,10 +329,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 	it('survives a double SIGTERM without crashing or double-closing', async () => {
 		const child = spawn(
 			BUN_BIN,
-			[
-				HOST_SERVER_ENTRY,
-				`--workspace=${workspace}`,
-			],
+			[HOST_SERVER_ENTRY, `--workspace=${workspace}`],
 			{
 				cwd: REPO_ROOT,
 				// stderr is piped because the assertion at the end of

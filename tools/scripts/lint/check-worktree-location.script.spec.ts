@@ -19,9 +19,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	lintWorktreeLocations,
-} from './check-worktree-location.script';
+import { lintWorktreeLocations } from './check-worktree-location.script';
 
 const WS = '/home/cartago/_projects/mcp-vertex';
 
@@ -62,10 +60,7 @@ describe('lintWorktreeLocations', () => {
 		// The exact violation from the 28-Jun incident.
 		const result = lintWorktreeLocations({
 			workspaceRoot: WS,
-			worktreePaths: [
-				WS,
-				`${WS}/.worktrees/lacerta`,
-			],
+			worktreePaths: [WS, `${WS}/.worktrees/lacerta`],
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -79,16 +74,11 @@ describe('lintWorktreeLocations', () => {
 	it('blocks a worktree outside BOTH the cache root AND the legacy dir', () => {
 		const result = lintWorktreeLocations({
 			workspaceRoot: WS,
-			worktreePaths: [
-				WS,
-				`${WS}/some/random/path/orion`,
-			],
+			worktreePaths: [WS, `${WS}/some/random/path/orion`],
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
-			expect(result.violations.join('\n')).toContain(
-				'AGENTS.md',
-			);
+			expect(result.violations.join('\n')).toContain('AGENTS.md');
 		}
 	});
 

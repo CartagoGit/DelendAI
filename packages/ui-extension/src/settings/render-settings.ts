@@ -29,7 +29,8 @@ const selected = (actual: string, expected: string): string =>
  */
 const quoted = (value: string): string => JSON.stringify(value);
 
-const clientScript = (savedMessage: string, resetMessage: string): string => `
+const clientScript = (savedMessage: string, resetMessage: string): string =>
+	`
 (function () {
   'use strict';
   const vscode = (typeof window.acquireVsCodeApi === 'function')

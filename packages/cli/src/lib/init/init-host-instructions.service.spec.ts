@@ -17,7 +17,6 @@ import {
 	collapseToCanonicalBody,
 	discoverInstructionSources,
 	extractOriginalProse,
-	planInstructionConsolidation,
 	renderLegacyPointerBody,
 	type IConsolidationPlan,
 } from './init-host-instructions.service';
@@ -49,7 +48,9 @@ describe('classifyInstructionSource (U3 detection)', () => {
 	});
 
 	it('matches nested CLAUDE.md / AGENTS.md and ad-hoc *.agent.md', () => {
-		expect(classifyInstructionSource('packages/x/CLAUDE.md')).toBe('Claude');
+		expect(classifyInstructionSource('packages/x/CLAUDE.md')).toBe(
+			'Claude',
+		);
 		expect(classifyInstructionSource('apps/web/AGENTS.md')).toBe('AGENTS');
 		expect(classifyInstructionSource('docs/onboarding.agent.md')).toBe(
 			'Ad-hoc agent doc',
@@ -59,7 +60,9 @@ describe('classifyInstructionSource (U3 detection)', () => {
 	it('does not match unrelated files or the canonical sink itself', () => {
 		expect(classifyInstructionSource('README.md')).toBeUndefined();
 		expect(classifyInstructionSource('MY-AGENTS.md')).toBeUndefined();
-		expect(classifyInstructionSource(CANONICAL_AGENT_DOC_REL)).toBeUndefined();
+		expect(
+			classifyInstructionSource(CANONICAL_AGENT_DOC_REL),
+		).toBeUndefined();
 	});
 
 	it('exposes an extensible, non-empty spec list', () => {
@@ -167,7 +170,9 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 		const canonical = consolidation.writes.filter(
 			(w) => w.role === 'canonical',
 		);
-		const pointers = consolidation.writes.filter((w) => w.role === 'pointer');
+		const pointers = consolidation.writes.filter(
+			(w) => w.role === 'pointer',
+		);
 		expect(canonical).toHaveLength(1);
 		expect(canonical[0]?.relPath).toBe(CANONICAL_AGENT_DOC_REL);
 		expect(pointers.map((p) => p.relPath).sort()).toEqual([
@@ -178,7 +183,9 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 	});
 
 	it('non-destruction: a pointer write preserves the user prose above the block', async () => {
-		const consolidation = await plan({ 'CLAUDE.md': '# Local rules\n\nkeep me' });
+		const consolidation = await plan({
+			'CLAUDE.md': '# Local rules\n\nkeep me',
+		});
 		const pointer = consolidation.writes.find((w) => w.role === 'pointer');
 		expect(pointer?.content).toContain('# Local rules');
 		expect(pointer?.content).toContain('keep me');
@@ -187,10 +194,12 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 
 	it('still emits the canonical doc when there is nothing to absorb', async () => {
 		const consolidation = await plan({});
-		expect(
-			consolidation.writes.some((w) => w.role === 'canonical'),
-		).toBe(true);
-		expect(consolidation.writes.some((w) => w.role === 'pointer')).toBe(false);
+		expect(consolidation.writes.some((w) => w.role === 'canonical')).toBe(
+			true,
+		);
+		expect(consolidation.writes.some((w) => w.role === 'pointer')).toBe(
+			false,
+		);
 	});
 
 	it('idempotency: re-running over already-consolidated files adds nothing new', async () => {
@@ -204,10 +213,13 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 		// The legacy files now carry their pointer block; re-read them as-is.
 		const afterFirstFull: Record<string, string> = {
 			'CLAUDE.md':
-				first.writes.find((w) => w.relPath === 'CLAUDE.md')?.content ?? '',
+				first.writes.find((w) => w.relPath === 'CLAUDE.md')?.content ??
+				'',
 			'AGENTS.md':
-				first.writes.find((w) => w.relPath === 'AGENTS.md')?.content ?? '',
-			[CANONICAL_AGENT_DOC_REL]: afterFirst[CANONICAL_AGENT_DOC_REL] ?? '',
+				first.writes.find((w) => w.relPath === 'AGENTS.md')?.content ??
+				'',
+			[CANONICAL_AGENT_DOC_REL]:
+				afterFirst[CANONICAL_AGENT_DOC_REL] ?? '',
 		};
 		const second = await plan(afterFirstFull);
 		// Canonical doc is byte-stable across runs.
@@ -219,7 +231,11 @@ describe('planInstructionConsolidation (U3 plan)', () => {
 	});
 
 	it('idempotency: collapse is byte-stable when fed the same sources twice', async () => {
-		const files = { 'CLAUDE.md': 'a', 'AGENTS.md': 'b', '.cursorrules': 'c' };
+		const files = {
+			'CLAUDE.md': 'a',
+			'AGENTS.md': 'b',
+			'.cursorrules': 'c',
+		};
 		const a = await plan(files);
 		const b = await plan(files);
 		expect(b).toEqual(a);

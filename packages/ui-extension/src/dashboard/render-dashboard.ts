@@ -86,8 +86,10 @@ export const renderDashboard = (
 	model: IDashboardAllModels,
 	options: IRenderDashboardOptions,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(options.lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(options.lang, key, vars);
 
 	const header = buildHeader(model);
 	const kpiStrip = buildKpiStrip(model, options.lang);

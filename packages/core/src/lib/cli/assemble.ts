@@ -317,8 +317,12 @@ export const assembleCliConfig = async (
 	const hostIdentity: IResolvedHostIdentity | undefined =
 		providedHost !== undefined || providedModel !== undefined
 			? {
-					...(providedHost !== undefined ? { host: providedHost } : {}),
-					...(providedModel !== undefined ? { model: providedModel } : {}),
+					...(providedHost !== undefined
+						? { host: providedHost }
+						: {}),
+					...(providedModel !== undefined
+						? { model: providedModel }
+						: {}),
 				}
 			: undefined;
 

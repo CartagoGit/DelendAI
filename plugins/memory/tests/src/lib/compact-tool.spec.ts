@@ -60,7 +60,11 @@ describe('memory_compact tool (f00090 S1)', () => {
 				topic: 'fase3',
 				items: [
 					{ kind: 'decision', label: 'extend memory plugin' },
-					{ kind: 'output', label: 'noisy dump', detail: 'z'.repeat(300) },
+					{
+						kind: 'output',
+						label: 'noisy dump',
+						detail: 'z'.repeat(300),
+					},
 				],
 			}),
 		);
@@ -74,7 +78,9 @@ describe('memory_compact tool (f00090 S1)', () => {
 		expect(notes[0]!.expiresAt).toBeDefined(); // self-expiring
 		expect(notes[0]!.tags).toContain('session-digest');
 		// Recallable by the session-digest tag.
-		expect(await recall(store, { tags: ['session-digest'] })).toHaveLength(1);
+		expect(await recall(store, { tags: ['session-digest'] })).toHaveLength(
+			1,
+		);
 	});
 
 	it('dry-run (persist:false) returns the digest without writing the store', async () => {
@@ -93,11 +99,18 @@ describe('memory_compact tool (f00090 S1)', () => {
 
 	it('redacts secrets in the digest before persisting', async () => {
 		const handler = await build();
-		const secret = tok('gh', 'p', '_', '0123456789abcdefghijklmnopqrstuvwxyz');
+		const secret = tok(
+			'gh',
+			'p',
+			'_',
+			'0123456789abcdefghijklmnopqrstuvwxyz',
+		);
 		const out = parse(
 			await handler({
 				topic: 'creds',
-				items: [{ kind: 'fact', label: 'token', detail: `key=${secret}` }],
+				items: [
+					{ kind: 'fact', label: 'token', detail: `key=${secret}` },
+				],
 			}),
 		);
 		expect(out.redactedSecrets).toBeGreaterThanOrEqual(1);

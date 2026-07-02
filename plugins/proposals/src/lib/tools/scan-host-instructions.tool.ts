@@ -143,7 +143,10 @@ export const createUserHomeReader = (
 				return undefined;
 			}
 			try {
-				return await fs.readFile(join(homeRoot, relativeToHome), 'utf8');
+				return await fs.readFile(
+					join(homeRoot, relativeToHome),
+					'utf8',
+				);
 			} catch {
 				return undefined;
 			}

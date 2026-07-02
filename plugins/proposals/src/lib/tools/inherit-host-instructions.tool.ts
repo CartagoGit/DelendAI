@@ -24,7 +24,11 @@ import { basename, join } from 'node:path';
 import { z } from 'zod';
 
 import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { redactSecrets, toolOk, writeFileAtomic } from '@mcp-vertex/core/public';
+import {
+	redactSecrets,
+	toolOk,
+	writeFileAtomic,
+} from '@mcp-vertex/core/public';
 
 import { allocateNextProposalId } from '../proposals/proposal-id-allocator';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
@@ -137,7 +141,7 @@ const renderHostInstructionsAuditProposal = (
 		'    - { command: bun run validate,  expect: exit0 }\n' +
 		'---\n\n';
 
-	const titleHeader = '# ' + id + EMDASH + title + '\n\n';
+	const titleHeader = `# ${id}${EMDASH}${title}\n\n`;
 
 	const goal =
 		'## goal\n\n' +
@@ -289,7 +293,8 @@ export const buildInheritHostInstructionsRegistration = (
 					proposalsDirAbs: options.proposalsDirAbs,
 					counterPathAbs: options.counterPathAbs,
 				});
-				const workspaceRoot = args.workspaceRoot || options.workspaceRoot;
+				const workspaceRoot =
+					args.workspaceRoot || options.workspaceRoot;
 				const workspaceHash = deriveWorkspaceHash(workspaceRoot);
 				const body = renderHostInstructionsAuditProposal(
 					id,

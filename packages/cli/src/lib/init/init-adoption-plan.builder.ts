@@ -24,7 +24,11 @@
  *   - Advisory only: never rewrites the target's tools or config.
  */
 
-import type { IAdoptionSections, IToolNamespace, IToolUnification } from '../../contracts/interfaces/init.interface';
+import type {
+	IAdoptionSections,
+	IToolNamespace,
+	IToolUnification,
+} from '../../contracts/interfaces/init.interface';
 import type { IFileReader } from './init-detection.service';
 import {
 	detectSkillInventory,
@@ -36,9 +40,7 @@ export const DEFAULT_TOOL_PREFIX = 'mcp-vertex';
 
 /** One tool namespace owned by a side of the unification (ours/theirs). */
 
-
 /** The collision-free unification map (point 2c). */
-
 
 /**
  * Read the target's own MCP server/plugin ids from a pre-existing
@@ -191,14 +193,20 @@ export const renderToolUnificationSection = (
 	unification: IToolUnification,
 ): string => {
 	const oursLines = unification.ours
-		.map((n) => `- ${code(n.namespace)}_* — mcp-vertex \`${n.plugin}\` plugin`)
+		.map(
+			(n) =>
+				`- ${code(n.namespace)}_* — mcp-vertex \`${n.plugin}\` plugin`,
+		)
 		.join('\n');
 
 	const theirsBlock =
 		unification.theirs.length > 0
 			? `**The target's own tools** (kept under their own namespace):\n\n` +
 				`${unification.theirs
-					.map((n) => `- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``)
+					.map(
+						(n) =>
+							`- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``,
+					)
 					.join('\n')}\n\n`
 			: `No foreign MCP tool surface was detected in this project; only ` +
 				`mcp-vertex tools are registered.\n\n`;
@@ -230,7 +238,6 @@ export const renderToolUnificationSection = (
 };
 
 /** Result of composing the U2 sections for `renderAdoptionPlan`. */
-
 
 /**
  * Compose the U2 (A3 + A4) sections. Called by `renderAdoptionPlan`; the

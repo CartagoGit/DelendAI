@@ -266,7 +266,10 @@ describe('renderPanelAgents', async () => {
 	});
 
 	it('shows the empty-state row when no agents', async () => {
-		const html = renderPanelAgents({ agents: [], totalActive: 0 }, dictsByLang.en);
+		const html = renderPanelAgents(
+			{ agents: [], totalActive: 0 },
+			dictsByLang.en,
+		);
 		expect(html).toContain('No active agents.');
 	});
 });

@@ -12,9 +12,7 @@ import {
 	createUserHomeReader,
 	scanHostInstructions,
 } from '@mcp-vertex/proposals/lib/tools/scan-host-instructions.tool';
-import type {
-	IFileReader,
-} from '@mcp-vertex/core/public';
+import type { IFileReader } from '@mcp-vertex/core/public';
 import type {
 	IHostInstructionFile,
 	IUserHomeReader,

@@ -42,7 +42,7 @@ export const gitDiffCommand: ICliCommand = {
 			await request(ctx, 'mcp-vertex_git_diff', {
 				...(staged ? { staged: true } : {}),
 				...(path !== undefined ? { path } : {}),
-			})
+			}),
 		);
 	},
 };
@@ -55,7 +55,7 @@ export const gitLogCommand: ICliCommand = {
 		return data(
 			await request(ctx, 'mcp-vertex_git_log', {
 				...(limit !== undefined ? { limit: Number(limit) } : {}),
-			})
+			}),
 		);
 	},
 };
@@ -83,7 +83,7 @@ export const gitBlameCommand: ICliCommand = {
 					? { startLine: Number(startLine) }
 					: {}),
 				...(endLine !== undefined ? { endLine: Number(endLine) } : {}),
-			})
+			}),
 		);
 	},
 };
@@ -98,7 +98,7 @@ export const gitShowCommand: ICliCommand = {
 			await request(ctx, 'mcp-vertex_git_show', {
 				...(positional !== undefined ? { ref: positional } : {}),
 				...(path !== undefined ? { path } : {}),
-			})
+			}),
 		);
 	},
 };

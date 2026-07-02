@@ -12,8 +12,10 @@ export const renderPanelOverview = (
 	model: IDashboardOverviewModel,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const pluginRows = model.plugins
 		.map(
 			(p) =>
