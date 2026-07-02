@@ -1,12 +1,13 @@
 ---
 id: r00007
-status: ready
+status: done
 type: proposal
 kind: refactor
 track: repo-layout+tooling+dx
 date: 2026-06-30
+closed: 2026-07-02
 title: Rename the relocatable-config home `configs/` → `config/` (singular), export surface included
-shipped-in: []
+shipped-in: [a10874c1, 1aab152b]
 recan: []
 related:
     - r00004 # originally introduced `configs/` as the home for relocatable tool configs; this flips the name to singular without changing its intent
