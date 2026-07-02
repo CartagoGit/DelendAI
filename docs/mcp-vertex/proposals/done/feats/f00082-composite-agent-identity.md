@@ -1,12 +1,13 @@
 ---
 id: f00082
-status: ready
+status: done
+closed: 2026-07-02
 type: proposal
 track: swarm+coordination+governance+observability
 date: 2026-06-28
 kind: feat
 title: Composite agent identity — every agent carries (host, model, agent_name, slot, proposal)
-shipped-in: []
+shipped-in: [f370d4aa, 55c60c0b, 8a28c751]
 recan: []
 related:
   - f00078 # coordination protocol enforcement — depends on a stable per-agent identity
@@ -219,25 +220,35 @@ plugins/proposals/skills/multi-agent-coordination/SKILL.md  # UPDATE
 
 ### S3 — Thread the identity through agent_names, agent_lock, delegate
 
-- **Status**: pending
-- **Status**: done (per-call threading; 2026-07-01). `index.ts` ctx-wiring
-  is **pending** — see the note below.
+- **Status**: done (per-call threading 2026-07-01; ctx-wiring 2026-07-02).
 - **Files**:
   `plugins/proposals/src/lib/tools/agent-names.tool.ts` (MODIFY, done),
   `plugins/proposals/src/lib/tools/agent-lock.tool.ts` (MODIFY, done),
   `plugins/proposals/src/lib/tools/orchestration.tool.ts` (MODIFY, done),
-  `plugins/proposals/src/index.ts` (wire new host/model/task_id
-  from `ctx` — **PENDING**, see below)
+  `plugins/proposals/src/index.ts` (ctx-wiring, done),
+  `packages/core/src/lib/contracts/interfaces/resolved-host-identity.interface.ts` (NEW),
+  `packages/core/src/lib/plugins/plugin-contract.ts` + `src/lib/cli/assemble.ts` + `src/public/index.ts` (core wiring)
 - **Gate**: `bun run test`
-- **Pending (index.ts ctx-wiring):** the plugin `ctx` (from the core
-  plugin-context contract) has **no** `host`/`model` field today. Wiring a
-  default identity "from `ctx`" would require adding a field to the core
-  plugin-context interface and to the host bootstrap — a cross-cutting core
-  change that risks colliding with the concurrent CLI/init/presets/hooks
-  work. Deferred deliberately. The useful, safe part of S3 (callers pass
-  host/model as explicit tool args and the registry/echo/branch pick them
-  up) is landed; the tools already fall back to `null`/legacy when absent,
-  so nothing regresses without the ctx default.
+- **ctx-wiring (2026-07-02, landed):** the earlier deferral note said the
+  plugin `ctx` had no `host`/`model` field and that adding one risked
+  colliding with the concurrent swarm work. The swarm is now quiescent, so
+  the field was added cleanly: `IMcpPluginContext.hostIdentity?:
+  IResolvedHostIdentity` is resolved ONCE in `assemble.ts` from the SAME
+  source as the commit-author policy (`mcp-vertex.config.json#commitAuthor`
+  or the `agent-client`/`agent-model` args) — no new CLI flag or config key.
+  It is populated **only when the host actually declared an identity** (never
+  the `'agent'`/`'unknown-model'` sentinels), so hosts that declare nothing
+  are byte-identical to before. `proposals/index.ts` threads it as
+  `defaultIdentity` into `agent_names` (→ registry `assign`, and via
+  `options.agentNames` into `delegate`) and `agent_lock` (→ echoed identity),
+  so a caller that omits `host`/`model` inherits the boot identity; an
+  explicit arg always overrides. **Conservative scope:** the default drives
+  the registry/echo attribution, NOT the worktree branch composition — the
+  historical `agent/<name>` layout stays stable for callers that don't pass
+  explicit composite fields (the proposal's "task_id alone must not change the
+  branch" caution). Covered by new specs in `assemble.spec.ts` (projection +
+  precedence + partial), `agent-names.spec.ts` (default/override/coerce) and
+  `agent-lock-identity.spec.ts` (default/override echo).
 - **Acceptance**:
   - `agent_names { action: "assign", host: "copilot", model: "m3", task_id: "f00078", ... }`
     is accepted; the registry stores the new fields.

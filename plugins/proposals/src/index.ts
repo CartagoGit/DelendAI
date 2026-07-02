@@ -148,6 +148,13 @@ export default definePlugin({
 			...(Array.isArray(ctx.options.namePool)
 				? { pool: ctx.options.namePool as string[] }
 				: {}),
+			// f00082 S3: the boot-resolved host identity becomes the default
+			// host/model on `assign` (and, via `options.agentNames`, on
+			// `delegate`), so an orchestrator that declared itself once at boot
+			// no longer repeats it on every call. Absent → `null` fallback.
+			...(ctx.hostIdentity !== undefined
+				? { defaultIdentity: ctx.hostIdentity }
+				: {}),
 		};
 
 		const stateOptions: IStateToolOptions = {
@@ -193,6 +200,11 @@ export default definePlugin({
 					lockChangeListener: createCallbackLockListener(() =>
 						loopDetector.invalidateLockCache(),
 					),
+					// f00082 S3: default the echoed identity block from the
+					// boot-resolved host identity when a caller omits host/model.
+					...(ctx.hostIdentity !== undefined
+						? { defaultIdentity: ctx.hostIdentity }
+						: {}),
 				}),
 				buildAgentWorktreeRegistration({
 					namespacePrefix: ctx.namespacePrefix,
