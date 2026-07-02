@@ -13,10 +13,7 @@
  *   - `mcp-vertex_git_worktree` (no args)
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
-import type {
-	ICliCommand,
-	ICliCommandResult,
-} from '../../contracts/interfaces/cli-command.interface';
+import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, hasFlag, request, scalarArg } from './group-helpers';
 
 export const gitStatusCommand: ICliCommand = {
@@ -45,7 +42,7 @@ export const gitDiffCommand: ICliCommand = {
 			await request(ctx, 'mcp-vertex_git_diff', {
 				...(staged ? { staged: true } : {}),
 				...(path !== undefined ? { path } : {}),
-			}),
+			})
 		);
 	},
 };
@@ -58,7 +55,7 @@ export const gitLogCommand: ICliCommand = {
 		return data(
 			await request(ctx, 'mcp-vertex_git_log', {
 				...(limit !== undefined ? { limit: Number(limit) } : {}),
-			}),
+			})
 		);
 	},
 };
@@ -86,7 +83,7 @@ export const gitBlameCommand: ICliCommand = {
 					? { startLine: Number(startLine) }
 					: {}),
 				...(endLine !== undefined ? { endLine: Number(endLine) } : {}),
-			}),
+			})
 		);
 	},
 };
@@ -101,7 +98,7 @@ export const gitShowCommand: ICliCommand = {
 			await request(ctx, 'mcp-vertex_git_show', {
 				...(positional !== undefined ? { ref: positional } : {}),
 				...(path !== undefined ? { path } : {}),
-			}),
+			})
 		);
 	},
 };
