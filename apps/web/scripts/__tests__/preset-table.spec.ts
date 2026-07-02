@@ -12,11 +12,19 @@ describe('preset-table', () => {
 			const matrix = buildPresetMatrix();
 			expect(matrix.rows.map((r) => r.preset.id)).toEqual([
 				'minimal',
+				'lean',
 				'standard',
 				'swarm',
 				'full',
 				'vertex',
 			]);
+		});
+
+		it('lean is independent and resolves to exactly its 4 essentials', () => {
+			const matrix = buildPresetMatrix();
+			const lean = matrix.rows.find((r) => r.preset.id === 'lean');
+			expect(lean?.preset.independent).toBe(true);
+			expect(lean?.effective).toEqual(['git', 'search', 'memory', 'docs']);
 		});
 
 		it('column ids are deduplicated and in catalog order', () => {
