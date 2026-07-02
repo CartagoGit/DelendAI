@@ -1,12 +1,13 @@
 ---
 id: f00088
-status: ready
+status: done
 type: proposal
 track: cli+bootstrap+onboarding+conventions
 date: 2026-06-29
+closed: 2026-07-02
 kind: feat
 title: init respects the target project's conventions and language
-shipped-in: []
+shipped-in: [82d9dc2e, 05912a9f, af5ca8d3]
 recan: []
 related:
     - f00084 # init command that this proposal amends
@@ -309,7 +310,7 @@ consumer-facing surface.
 
 ### S1 — detect the target project
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/cli/src/commands/init/init-detection.ts, packages/cli/src/commands/init/init-answers.schema.ts, packages/cli/src/commands/init/init-prompts.ts, packages/cli/src/commands/init/init.command.ts, packages/cli/tests/commands/init/init-detection.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -320,7 +321,7 @@ consumer-facing surface.
 
 ### S2 — resolve the host entry path
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/cli/src/commands/init/host-entry-resolver.ts, packages/cli/src/commands/init/init-render.ts, packages/cli/src/commands/init/init.command.ts, packages/cli/tests/commands/init/host-entry-resolver.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -333,7 +334,7 @@ consumer-facing surface.
 
 ### S3 — locale-aware agent fallback + namespace propagation
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/cli/src/commands/init/init-catalog.ts, packages/cli/src/commands/init/init-render.ts, packages/cli/src/commands/init/init-prompts.ts, packages/cli/tests/commands/init/init-catalog.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -344,7 +345,7 @@ consumer-facing surface.
 
 ### S4 — convention-aware plugin paths root
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/cli/src/commands/init/init-detection.ts, packages/cli/src/commands/init/init-render.ts, packages/cli/src/commands/init/init-answers.schema.ts, tools/scripts/create-plugin.ts, packages/cli/tests/commands/init/init-render.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -352,6 +353,17 @@ consumer-facing surface.
   - `renderMcpVertexConfig` writes a `convention` block with the discovered root and source root.
   - `tools/scripts/create-plugin.ts` accepts `--root=<path>` and defaults to `pluginPathsRoot` when the current directory contains a `mcp-vertex.config.json` with a `convention` block.
   - Existing specs still green (the default for an empty workspace is still `plugins/`, preserving f00084 behaviour).
+
+> **Closed 2026-07-02 — verified landed end-to-end** (shipped 82d9dc2e +
+> 05912a9f + af5ca8d3), validate green. Confirmed in-tree: S1 `init-detection.service.ts`
+> (returns `pluginPathsRoot: 'libs'` for Nx/Angular, `packages`/`plugins` otherwise)
+> + spec; S2 `host-entry-resolver.service.ts` + spec; the `--mcp-vertex-root` /
+> `--plugin-paths-root` flags are parsed in `init.command.ts` and documented in
+> `init-default.command.ts`; S3/S4 wiring (foreign-detect, adoption-plan builder,
+> host-instructions single-source, migrate-offer) all present and referenced from
+> the init commands. The i18n acceptance is a KNOWN deferred (English/Spanish pass,
+> other locales are explicit TODOs). f00088's own S1-S4 are self-contained; the
+> f00089 umbrella's "f00088 §vision U2/U3" are SEPARATE vision items it tracks.
 
 ## acceptance
 
