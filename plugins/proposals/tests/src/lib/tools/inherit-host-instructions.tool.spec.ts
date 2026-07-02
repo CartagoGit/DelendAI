@@ -116,7 +116,7 @@ describe('inherit_host_instructions', () => {
 		expect(res.ok).toBe(true);
 		expect(res.id).toMatch(/^f\d{5}$/);
 		expect(res.files).toHaveLength(1);
-		expect(res.file).toMatch(/^f\d{5}-inherit-host-instructions-.+\.md$/);
+		expect(res.file).toMatch(/^ready\/f\d{5}-inherit-host-instructions-.+\.md$/);
 
 		const body = readFileSync(join(root, proposalsRel, res.file), 'utf8');
 		expect(body).toContain('*scope*: `in-repo`');
