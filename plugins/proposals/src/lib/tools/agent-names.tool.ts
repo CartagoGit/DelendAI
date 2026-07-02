@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type {
+	IResolvedHostIdentity,
 	IToolRegistration,
 	IToolTextResult,
 } from '@mcp-vertex/core/public';
@@ -36,6 +37,14 @@ export interface IAgentNamesToolOptions {
 	readonly workspaceRoot: string;
 	/** Symbolic name pool (defaults to the constellation pool). */
 	readonly pool?: readonly string[];
+	/**
+	 * f00082 S3: the boot-resolved host identity from `ctx.hostIdentity`.
+	 * Used as the DEFAULT `host`/`model` on `assign` when the caller omits
+	 * them, so an orchestrator that declared itself once at boot no longer
+	 * repeats its identity on every call. Absent → the pre-f00082-S3
+	 * behaviour (host/model fall back to `null`).
+	 */
+	readonly defaultIdentity?: IResolvedHostIdentity;
 }
 
 export interface IAgentNamesArgs {
@@ -514,8 +523,8 @@ const runAgentNamesImpl = async (
 				last_seen: at,
 				cooldown_until: null,
 				status: 'active',
-				host: coerceHost(args.host),
-				model: args.model ?? null,
+				host: coerceHost(args.host ?? options.defaultIdentity?.host),
+				model: args.model ?? options.defaultIdentity?.model ?? null,
 			};
 			await store.upsert(assignment);
 			return json(assignment);
