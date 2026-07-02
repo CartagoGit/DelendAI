@@ -57,7 +57,14 @@ const BUDGET_BYTES = {
 	// 86-tool deployment (a00049 measured 4102B compact) benefits far more.
 	overviewFull: 8_900,
 	overviewCompact: 1_200,
-	agentCatalogCompact: 1_300,
+	// Bumped 1300 → 1450 (2026-07-03): CORRECTNESS fix in the catalog's
+	// tool-entry construction. Core tools whose id has an underscore
+	// (agent_catalog, fs_read, …) were advertised WITHOUT the `mcp-vertex_`
+	// prefix (a non-callable name), and every tool's `plugin` was mis-derived
+	// as the host segment. Now every name is fully qualified and `plugin` is
+	// the real owning plugin — both add bytes (compact 1290→1403B measured)
+	// but make the discovery catalog truthful.
+	agentCatalogCompact: 1_450,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,
 	search: 3_000,
