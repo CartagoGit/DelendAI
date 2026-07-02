@@ -84,6 +84,7 @@ export type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '../lib/plugins/plugin-contract';
+export type { IResolvedHostIdentity } from '../lib/contracts/interfaces/resolved-host-identity.interface';
 export {
 	loadPlugins,
 	nodeDynamicImport,
