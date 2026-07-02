@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type {
+	IResolvedHostIdentity,
+	IToolRegistration,
+} from '@mcp-vertex/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import type { ILockChangeListener } from '../locks/lock-change-listener';
@@ -32,6 +35,13 @@ export interface IAgentLockToolOptions {
 	 * unaffected.
 	 */
 	readonly agentWorktreeEnabled?: boolean;
+	/**
+	 * f00082 S3: boot-resolved host identity from `ctx.hostIdentity`. Used
+	 * as the DEFAULT `host`/`model` in the echoed identity block when the
+	 * caller omits them. Purely informational — never affects the lock op.
+	 * Absent → only caller-supplied fields are echoed (pre-S3 behaviour).
+	 */
+	readonly defaultIdentity?: IResolvedHostIdentity;
 }
 
 const AGENT_LOCK_ENTRY_OUTPUT_SCHEMA = z.object({
@@ -177,8 +187,12 @@ export const buildAgentLockRegistration = (
 					const identity: Record<string, string> = {};
 					if (typeof args.host === 'string')
 						identity.host = args.host;
+					else if (options.defaultIdentity?.host !== undefined)
+						identity.host = options.defaultIdentity.host;
 					if (typeof args.model === 'string')
 						identity.model = args.model;
+					else if (options.defaultIdentity?.model !== undefined)
+						identity.model = options.defaultIdentity.model;
 					if (typeof args.agent === 'string')
 						identity.agent_name = args.agent;
 					if (typeof args.task_id === 'string')
