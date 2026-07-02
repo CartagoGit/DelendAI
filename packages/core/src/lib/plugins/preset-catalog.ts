@@ -34,6 +34,7 @@
 
 export const PRESET_KIND = [
 	'minimal',
+	'lean',
 	'standard',
 	'swarm',
 	'full',
@@ -80,10 +81,12 @@ export interface IPresetDefinition {
 /**
  * Canonical preset catalog. Order is significant: presets are listed
  * from smallest to largest; the last entry in the chain (`full` /
- * `vertex`) is the largest. `vertex` is the second-to-last entry
- * with `independent: true` — it skips chain accumulation because it
- * mirrors the mcp-vertex project's own config (which is NOT a
- * superset of `swarm`).
+ * `vertex`) is the largest. Two presets are `independent: true` and
+ * skip chain accumulation: `lean` (right after `minimal`) and
+ * `vertex` (last). `lean` resolves to exactly its own 4 essentials;
+ * `vertex` mirrors the mcp-vertex project's own config (which is NOT
+ * a superset of `swarm`). Because both are independent, they do NOT
+ * alter the resolved membership of the chain presets around them.
  */
 export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 	{
@@ -92,6 +95,29 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = [
 		summary:
 			'Read-only orientation: git + search. Lightweight default for CI smoke tests.',
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
+	},
+	{
+		// `lean` is the 4-plugin essentials preset: version control
+		// (git), code discovery (search), cross-session continuity
+		// (memory), and documentation (docs) — nothing heavy. Marked
+		// `independent: true` so `resolvePresetMembers('lean')` resolves
+		// to EXACTLY those 4 members and never accumulates the chain.
+		// Because it is independent, its presence between `minimal` and
+		// `standard` does NOT change the resolved membership of
+		// `standard`/`swarm`/`full` (the accumulation loop skips
+		// independent defs that are not the target).
+		id: 'lean',
+		title: 'lean',
+		summary:
+			'The 4 essentials: git (version control), search (code discovery), memory (cross-session continuity), docs (documentation). ' +
+			'Independent preset (does NOT accumulate the chain); nothing heavy.',
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+		],
+		independent: true,
 	},
 	{
 		id: 'standard',

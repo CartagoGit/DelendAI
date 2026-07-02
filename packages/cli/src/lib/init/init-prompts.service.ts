@@ -218,6 +218,10 @@ export const collectInitAnswers = async (
 					label: 'minimal — git + search (read-only)',
 					value: 'minimal',
 				},
+				{
+					label: 'lean — the 4 essentials: git + search + memory + docs',
+					value: 'lean',
+				},
 				{ label: 'standard — single-agent toolkit', value: 'standard' },
 				{
 					label: 'swarm — multi-agent coordination (recommended)',
