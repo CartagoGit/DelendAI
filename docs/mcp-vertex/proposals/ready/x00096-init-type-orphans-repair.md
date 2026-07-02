@@ -6,7 +6,7 @@ kind: fix
 track: cli-init-types+audit-merge-conflicts
 date: 2026-07-01
 title: repair orphaned types + audit merge conflicts left over from f00037
-shipped-in: []
+shipped-in: [eba02b76]
 recan: []
 related:
     - f00037 # rename refactor that renamed .ts -> .service.ts and reshuffled contracts
@@ -139,7 +139,7 @@ file).
 
 ### S1 — Inventory every orphaned type reference
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/lib/init/`, `packages/cli/src/commands/init/`,
   `plugins/audit/tests/src/lib/tools/audit-{plan,run}.tool.spec.ts`
 - **Gate**: typecheck (read-only)
@@ -149,7 +149,7 @@ file).
 
 ### S2 — Re-define or re-export every orphaned type
 
-- **Status**: pending
+- **Status**: done
 - **Files**: 5 source files identified by S1 + the matching
   `contracts/interfaces/*.interface.ts` files
 - **Gate**: typecheck
@@ -158,7 +158,7 @@ file).
 
 ### S3 — Resolve the audit merge conflicts
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/audit/tests/src/lib/tools/audit-plan.tool.spec.ts`,
   `plugins/audit/tests/src/lib/tools/audit-run.tool.spec.ts`
 - **Gate**: typecheck
@@ -168,7 +168,7 @@ file).
 
 ### S4 — Re-run typecheck + test
 
-- **Status**: pending
+- **Status**: done
 - **Files**: nothing new
 - **Gate**: validate
 - **Acceptance**:
