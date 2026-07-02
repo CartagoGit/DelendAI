@@ -8,15 +8,15 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
+import type {
+	IInitWrite,
+	IMcpJsonWriteResult,
+} from '../../contracts/interfaces/init.interface';
 import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
 import { mergeMcpVertexServerEntry } from './init-render.service';
-import type {
-	IInitWrite,
-	IMcpJsonWriteResult,
-} from '../../contracts/interfaces/init.interface';
 
 export type { IInitWrite, IMcpJsonWriteResult };
 
@@ -140,7 +140,9 @@ export const writeVscodeMcpJson = async (
 	// hint like "preserved 2 server(s): filesystem, github".
 	let preserved: readonly string[] = [];
 	try {
-		const parsed = JSON.parse(merged) as { servers?: Record<string, unknown> };
+		const parsed = JSON.parse(merged) as {
+			servers?: Record<string, unknown>;
+		};
 		if (parsed.servers !== undefined) {
 			preserved = Object.keys(parsed.servers).filter(
 				(name) => name !== 'mcp-vertex',

@@ -306,12 +306,17 @@ export const buildInheritHostInstructionsRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				const syncEntry = sync.proposals.find((p) => p.id === id);
+				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+				const finalAbsPath = syncEntry
+					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+					: absPath;
 
 				return toolOk({
 					scope,
-					files: [fileRel],
-					file: fileRel,
-					path: absPath,
+					files: [finalFileRel],
+					file: finalFileRel,
+					path: finalAbsPath,
 					id,
 					totalNonCanonical: inventory.totalNonCanonical,
 					indexCount: sync.count,

@@ -20,11 +20,15 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../../contracts/interfaces/cli-command.interface';
+import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
+import { InitAnswers } from '../../lib/init/init-answers.schema';
+import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';
+import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
 import { collectInitAnswers } from '../../lib/init/init-prompts.service';
 import { renderInitBundle } from '../../lib/init/init-render.service';
 import {
@@ -32,10 +36,6 @@ import {
 	writeVscodeMcpJson,
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
-import type { IInitAnswers } from '../../lib/init/init-answers.types';
-import { InitAnswers } from '../../lib/init/init-answers.schema';
-import { printInitHumanSummary } from '../../lib/init/init-human-summary.service';
-import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 
 // f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
 // Re-exported here for the init-default spec that imports the flag type.
