@@ -107,7 +107,7 @@ for a human/orchestrator to integrate deliberately.
 
 ### S3 — Verify non-destructiveness and accuracy
 - **Status**: pending
-- **Note**: S1/S2 implementation merged (swarm_hygiene now surfaces pendingIntegration + nonConformingBranches + staleUnmerged, all read-only); S3 is the remaining spec work (assert no destructive git + detection accuracy).
+- **Note**: S1/S2 implementation merged (swarm_hygiene now surfaces pendingIntegration + nonConformingBranches + staleUnmerged, all read-only); S3 partial: pending-integration-store spec landed (idempotent record/prune, no git); the swarm_hygiene engine detection spec (fake IGitRunner) remains.
 - **Files**: specs under `plugins/proposals/tests/`
 - **Gate**: validate
 - **Acceptance**:
