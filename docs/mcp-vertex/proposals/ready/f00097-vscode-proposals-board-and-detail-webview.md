@@ -34,7 +34,7 @@ acceptance:
     - { command: bun run catalog:hints:check,       expect: exit0 }
 ---
 
-# f00096 — VS Code proposals board + detail webview (read-only observability)
+# f00097 — VS Code proposals board + detail webview (read-only observability)
 
 ## goal
 
@@ -63,7 +63,7 @@ state in the extension.
    `mcp-vertex.proposals` and the `mcp-vertex.openProposal` command.
    Operators who live in VS Code have a UI hook for "proposals" but
    no implementation behind it. Today the only path to "what is the
-   status of f00096?" is the terminal.
+   status of f00097?" is the terminal.
 2. **Proposals are already the single source of truth.** The proposals
    plugin owns the lifecycle, the locks, the diagnose pass, and the
    transition log. The host does not need to invent a parallel state
@@ -146,11 +146,20 @@ state in the extension.
 
 ## slices
 
-### S1 — Read-only tool whitelist (proposal_guardian)
+### S1 — Read-only tool whitelist
 
-Decide which proposals-plugin tools the host may call. The whitelist
-is the *contract* between this proposal and the proposals plugin:
-adding a tool to the whitelist requires an explicit decision here.
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/proposals/ready/f00097-vscode-proposals-board-and-detail-webview.md`
+  (this proposal), `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` (design note appended)
+- **Agent**: proposal_guardian
+- **Gate**: typecheck
+- **Acceptance**:
+  - "The design note in `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` documents
+    the read-only tool whitelist consumed by the VS Code host, with a
+    per-tool rationale."
+  - "The whitelist is mirrored as a TypeScript `const READ_ONLY_TOOLS`
+    in `extensions/vscode/src/views/proposals-board-view.ts`; mutating
+    tool names are not present."
 
 | Tool | Allowed in board | Allowed in detail | Notes |
 |---|---|---|---|
@@ -165,130 +174,124 @@ adding a tool to the whitelist requires an explicit decision here.
 | `close_slice` | **no** | **no** | Mutating |
 | `sync_proposals` | **no** | **no** | Mutating |
 
-Deliverable: a short design note appended to
-`docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` documenting the whitelist and
-the rationale per tool.
+### S2 — Sidebar board view
 
-### S2 — Sidebar board view (implementation_runner)
+- **Status**: pending
+- **Files**: `extensions/vscode/src/views/proposals-board-view.ts` (new),
+  `extensions/vscode/src/lib/proposals-snapshot.ts` (new, shared with S3 + S5),
+  `extensions/vscode/src/views/proposals-board.css` (new)
+- **Agent**: implementation_runner
+- **Gate**: typecheck
+- **Acceptance**:
+  - "`IProposalsBoardProvider` implements `vscode.TreeDataProvider` and
+    exposes status-group roots (`Ready`, `In progress`, `Paused`,
+    `Review`, `Done`, `Blocked`, `Retired`) plus non-collapsible header
+    chips (`Locks (n)`, `Stale (n)`, `Queue (backpressure yes/no)`,
+    `Health (ok|warn|crit)`)."
+  - "Leaf nodes project `IProposalSummary` through `outputSchema.safeParse`;
+    unknown fields pass through, missing fields surface a `recoverable`
+    banner with a **Copy error** action."
+  - "Refresh triggers: explicit `mcp-vertex.proposals.refresh`, window
+    state change to `active`, and cache TTL expiry (default 30 s).
+    Filter changes (status / text / tag) never refetch the snapshot."
+  - "Filters persist per-session in `context.globalState` under stable
+    keys (`mcp-vertex.proposals.filters.*`)."
 
-- `extensions/vscode/src/views/proposals-board-view.ts`:
-  - `IProposalsBoardProvider` implementing `vscode.TreeDataProvider`.
-  - Root nodes: status groups (`Ready`, `In progress`, `Paused`,
-    `Review`, `Done`, `Blocked`, `Retired`). Group order matches the
-    proposals folder cascade.
-  - Leaf nodes: `IProposalSummary` projection, fields: `id`, `title`,
-    `kind`, `track`, `tags`, `lastTransition`, `owner`.
-  - Top-level "header" nodes (non-collapsible): `Locks (n)`,
-    `Stale (n)`, `Queue (backpressure yes/no)`, `Health (ok|warn|crit)`.
-    Pulled from `compact_status` and `state_health`.
-- Cache key: `mcp-vertex.proposals.snapshot`.
-- Refresh triggers: explicit command (`mcp-vertex.proposals.refresh`),
-  window state change to `active`, cache TTL expiry.
-- Filters (sticky per-session, persisted in `globalState`):
-  - Status (multi-select, default: all).
-  - Text (substring on id + title, debounced 200 ms).
-  - Tag (multi-select; tags derived from a single snapshot, not a
-    separate tool call).
-- Validation: `outputSchema.safeParse` on every tool result; failures
-  produce a `recoverable` banner (not a crash) with a **Copy error**
-  action that puts the violation JSON in the clipboard.
+### S3 — Detail webview
 
-### S3 — Detail webview (implementation_runner)
+- **Status**: pending
+- **Files**: `extensions/vscode/src/views/proposal-detail-webview.ts` (new),
+  `extensions/vscode/src/views/proposals-detail.css` (new),
+  `extensions/vscode/src/lib/proposals-snapshot.ts` (shared with S2)
+- **Agent**: implementation_runner
+- **Gate**: typecheck
+- **Acceptance**:
+  - "Opens on click from the board; `proposalId` is passed via
+    `extensionUri.query`."
+  - "Renders four cards: **Header** (id, title, kind, track, status badge,
+    owner, related ids), **Slices** (table: `sliceId`, `title`, `status`,
+    `owner`, `gate`, `acceptance`; click → open file at slice heading),
+    **Diagnose** (`proposal_diagnose` output as key/value list),
+    **Logs** (`logs_tail` filtered by `taskId === proposalId` or by
+    `kind: 'proposal_transition'`; tool-side redacted, UI does not
+    re-redact)."
+  - "Reuses `render-output-schema.ts` and `escapeHtml` from
+    `agent-catalog-webview.ts`; no new helpers unless S2 + S3 share one
+    (then promote to `extensions/vscode/src/lib/`)."
+  - "CSP: `default-src 'self';` (matches the catalog webview)."
 
-- `extensions/vscode/src/views/proposal-detail-webview.ts`:
-  - Opens on click from the board; `proposalId` is passed via
-    `extensionUri.query`.
-  - Renders four cards:
-    1. **Header** — id, title, kind, track, status badge, owner,
-       related (clickable ids).
-    2. **Slices** — table: `sliceId`, `title`, `status`, `owner`,
-       `gate`, `acceptance`. Click a slice → opens the proposal file
-       in the editor at the slice heading.
-    3. **Diagnose** — output of `proposal_diagnose` rendered as a
-       key/value list with severity colors.
-    4. **Logs** — `logs_tail` filtered by `taskId === proposalId`
-       (or by `kind: 'proposal_transition'` when `taskId` is absent);
-       redacted (the tool already redacts, the UI does not
-       re-redact).
-- Reuses `render-output-schema.ts` and `escapeHtml` from
-  `agent-catalog-webview.ts`; no new helpers unless S2 + S3 share one
-  (then promote to `extensions/vscode/src/lib/`).
-- CSP: same as the catalog webview (`default-src 'self';`).
+### S4 — Command wiring
 
-### S4 — Command wiring (implementation_runner)
+- **Status**: pending
+- **Files**: `extensions/vscode/package.json`,
+  `extensions/vscode/src/extension.ts` (refresh handler)
+- **Agent**: implementation_runner
+- **Gate**: typecheck
+- **Acceptance**:
+  - "`mcp-vertex.openProposal` opens the proposal board view, focused,
+    with the existing selection."
+  - "`mcp-vertex.refresh` now also refreshes the proposals board snapshot
+    (calls into `proposals-snapshot.ts` invalidate)."
+  - "New command `mcp-vertex.proposals.refresh` is registered, bound to
+    the board's local refresh action; same handler as `mcp-vertex.refresh`
+    but scoped to the proposals cache key."
+  - "`package.json` `contributes.views['mcp-vertex.proposals'].icon`
+    matches the activitybar container (`media/logo.svg`)."
 
-- `mcp-vertex.openProposal` (already declared): now opens the
-  proposal board view, focused, with the existing selection.
-- `mcp-vertex.refresh` (already declared): now also refreshes the
-  proposals board snapshot.
-- New: `mcp-vertex.proposals.refresh` — bound to the board's local
-  refresh action; same handler as `mcp-vertex.refresh` but scoped to
-  the proposals cache key.
-- `package.json`: update the `mcp-vertex.proposals` view icon to
-  match the activitybar container (`media/logo.svg` — already
-  shipped; just explicit per view).
+### S5 — Web parity
 
-### S5 — Web parity (implementation_runner)
-
-- `apps/web/src/pages/[lang]/proposals/index.astro`:
-  - Server-side reads via the same read-only tool whitelist as S1.
-  - Projection identical to S2; cards identical to S3 (CSS via the
-    existing `_view-transitions.scss` patterns from f00069).
-  - Page registration in `apps/web/src/data/pages/proposals/*.md`
-    so `[page].astro` serves it.
-- i18n keys added to **every** language in
-  `apps/web/src/i18n/ui.ts`:
-  - `proposals.board.title`, `proposals.board.filter.status`,
+- **Status**: pending
+- **Files**: `apps/web/src/pages/[lang]/proposals/index.astro` (new),
+  `apps/web/src/data/pages/proposals/index.md` (new),
+  `apps/web/src/i18n/ui.ts` (9 new keys × 12 languages),
+  `apps/web/src/styles/_view-transitions.scss` (extend if needed)
+- **Agent**: implementation_runner
+- **Gate**: validate
+- **Acceptance**:
+  - "`apps/web/src/pages/[lang]/proposals/index.astro` reads via the
+    same read-only tool whitelist as S1 and projects through the same
+    TypeScript types as S2."
+  - "Cards match S3 (CSS via existing `_view-transitions.scss` patterns
+    from f00069)."
+  - "Page is served by `[page].astro` after registration in
+    `apps/web/src/data/pages/proposals/*.md`."
+  - "i18n keys added to every language in `apps/web/src/i18n/ui.ts`:
+    `proposals.board.title`, `proposals.board.filter.status`,
     `proposals.board.filter.text`, `proposals.board.filter.tag`,
     `proposals.board.recoverable`, `proposals.detail.diagnose`,
     `proposals.detail.slices`, `proposals.detail.logs`,
-    `proposals.detail.related`.
-- `bun run check:i18n` must remain green; the i18n thread
-  complements f00059.
+    `proposals.detail.related`."
+  - "`bun run check:i18n` remains green."
 
-### S6 — E2E + acceptance (delivery_verifier)
+### S6 — E2E + acceptance
 
-- `extensions/vscode/src/test/proposals-board.spec.ts`:
-  - Stub stdio client returns canned `proposal_board`,
-    `compact_status`, `state_health`, and `logs_tail` payloads.
-  - Asserts:
-    1. Board renders every status group exactly once when the
-       snapshot has one proposal per status.
-    2. Clicking a row dispatches `openProposal` with the correct
-       `proposalId`.
-    3. Refresh-on-focus produces a fresh snapshot but **does not**
-       refetch when only the search filter changes (debounce check).
-    4. `outputSchema` violations surface as a `recoverable` banner,
-       not a crash, and the **Copy error** action places valid JSON
-       in the clipboard.
-- `apps/web/tests/proposals-page.spec.ts`:
-  - Server-side render with the same canned stub; asserts the page
-    parses without runtime errors and the i18n keys resolve in all
-    12 languages.
-- `bun run validate` is green end-to-end.
+- **Status**: pending
+- **Files**: `extensions/vscode/src/test/proposals-board.spec.ts` (new),
+  `apps/web/tests/proposals-page.spec.ts` (new),
+  the 4 implementation files above + this proposal
+- **Agent**: delivery_verifier
+- **Gate**: validate
+- **Acceptance**:
+  - "`extensions/vscode/src/test/proposals-board.spec.ts` stubs the stdio
+    client with canned `proposal_board`, `compact_status`, `state_health`,
+    and `logs_tail` payloads; asserts: (1) the board renders every status
+    group exactly once when the snapshot has one per family, (2) clicking
+    a row dispatches `openProposal` with the correct `proposalId`,
+    (3) refresh-on-focus produces a fresh snapshot but does NOT refetch
+    on filter changes (debounce check), (4) `outputSchema` violations
+    surface as a `recoverable` banner, not a crash, and the **Copy
+    error** action places valid JSON in the clipboard."
+  - "`apps/web/tests/proposals-page.spec.ts` server-side renders with the
+    same canned stub; asserts the page parses without runtime errors and
+    the i18n keys resolve in all 12 languages."
+  - "`bun run validate` is green end-to-end."
 
-## deliverables
+## acceptance
 
-- `extensions/vscode/src/views/proposals-board-view.ts`
-  (~280 lines, plus a small `IProposalsBoardProvider.test.ts`).
-- `extensions/vscode/src/views/proposal-detail-webview.ts`
-  (~320 lines).
-- `extensions/vscode/src/views/proposals-board.css` +
-  `proposals-detail.css` (extends the catalog webview tokens, no
-  new color variables).
-- `extensions/vscode/src/lib/proposals-snapshot.ts`
-  (cache + refresh logic, ~80 lines; promoted out of S2 because
-  S3 and S5 share it).
-- `apps/web/src/pages/[lang]/proposals/index.astro`
-  (~120 lines).
-- `apps/web/src/data/pages/proposals/index.md` (page spec).
-- i18n keys added to `apps/web/src/i18n/ui.ts` in all 12 languages.
-- Design note appended to `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`
-  (read-only tool whitelist rationale).
-- Tests: `extensions/vscode/src/test/proposals-board.spec.ts`,
-  `apps/web/tests/proposals-page.spec.ts`.
-- No new mutation surface. No new persisted state in the proposals
-  plugin. No changes to `packages/core`.
+- `bun run typecheck` → exit 0.
+- `bun run test` → exit 0.
+- `bun run validate` → exit 0.
+- `bun run lint` remains clean without errors.
 
 ## risks
 
@@ -310,10 +313,43 @@ the rationale per tool.
   explicitly greps the implementation for the mutation tool names
   and fails if any are present.
 
-## status snapshot at end of slice S1
+## notes
 
-- The read-only tool whitelist is documented in
+### Deliverables
+
+- `extensions/vscode/src/views/proposals-board-view.ts`
+  (~280 lines, plus a small `IProposalsBoardProvider.test.ts`).
+- `extensions/vscode/src/views/proposal-detail-webview.ts`
+  (~320 lines).
+- `extensions/vscode/src/views/proposals-board.css` +
+  `proposals-detail.css` (extends the catalog webview tokens, no
+  new color variables).
+- `extensions/vscode/src/lib/proposals-snapshot.ts`
+  (cache + refresh logic, ~80 lines; promoted out of S2 because
+  S3 and S5 share it).
+- `apps/web/src/pages/[lang]/proposals/index.astro`
+  (~120 lines).
+- `apps/web/src/data/pages/proposals/index.md` (page spec).
+- i18n keys added to `apps/web/src/i18n/ui.ts` in all 12 languages.
+- Design note appended to `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md`
+  (read-only tool whitelist rationale).
+- Tests: `extensions/vscode/src/test/proposals-board.spec.ts`,
+  `apps/web/tests/proposals-page.spec.ts`.
+- No new mutation surface. No new persisted state in the proposals
+  plugin. No changes to `packages/core`.
+- The read-only tool whitelist is the **contract** between this
+  proposal and the proposals plugin. Adding a tool to the whitelist
+  requires an explicit decision in a follow-up proposal — S1's
+  design note is the canonical reference.
+- After S1 closes, the proposals plugin emits no new tools. Status
+  snapshot: the whitelist is documented in
   `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` and mirrored as a
-  TypeScript `const` in `extensions/vscode/src/views/proposals-board-view.ts`.
-- The proposals plugin emits no new tools.
-- `bun run validate` is green.
+  TypeScript `const READ_ONLY_TOOLS` in
+  `extensions/vscode/src/views/proposals-board-view.ts`; `bun run
+  validate` is green.
+- The detail webview surfaces the latest `status_marker_close` line
+  for the slice owner when available via `logs_tail`, so a reviewer
+  can audit "did the last agent close with the right state?" without
+  leaving VS Code. This is observational only — no parser, no
+  validation, no enforcement; the host appendix §8.1 contract
+  remains the agent's responsibility.
