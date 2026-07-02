@@ -164,9 +164,7 @@ export const consolidateAudits = (
 	// -- 3. Top actions ---------------------------------------------------
 	// Heuristic: findings the most models agree on AND that are most urgent.
 	const topActions = merged
-		.filter(
-			(m) => m.worstSeverity === 'FATAL' && m.seenBy.length >= 1,
-		)
+		.filter((m) => m.worstSeverity === 'FATAL' && m.seenBy.length >= 1)
 		.slice(0, topN)
 		.map((m) => {
 			const title = m.titles[0] ?? m.id;

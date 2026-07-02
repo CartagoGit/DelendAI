@@ -63,6 +63,7 @@ const alternateLocales = languages.filter((l) => l.code !== defaultLang);
 	  its spec.
 	*/}
 	<script is:inline define:vars={{ supportedLangs, base }}>
+		// @ts-nocheck
 		(function () {
 			'use strict';
 			var COOKIE = 'mcp_vertex_locale';

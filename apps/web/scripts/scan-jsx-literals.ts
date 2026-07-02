@@ -19,7 +19,7 @@ const walk = (dir: string): string[] => {
 	for (const file of list) {
 		const fullPath = join(dir, file);
 		const stat = statSync(fullPath);
-		if (stat && stat.isDirectory()) {
+		if (stat?.isDirectory()) {
 			results = results.concat(walk(fullPath));
 		} else if (file.endsWith('.astro')) {
 			results.push(fullPath);

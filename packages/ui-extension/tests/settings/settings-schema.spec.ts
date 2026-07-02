@@ -20,7 +20,9 @@ describe('ExtensionSettingsSchema (f00062 S1)', () => {
 	};
 
 	it('accepts the canonical DEFAULT_EXTENSION_SETTINGS shape', () => {
-		const result = ExtensionSettingsSchema.safeParse(DEFAULT_EXTENSION_SETTINGS);
+		const result = ExtensionSettingsSchema.safeParse(
+			DEFAULT_EXTENSION_SETTINGS,
+		);
 		expect(result.success).toBe(true);
 	});
 

@@ -23,10 +23,7 @@ import {
 	deriveScope,
 	renderMigrationProposal,
 } from './init-migrate-offer.service';
-import {
-	renderInitBundle,
-	resolvePluginSet,
-} from './init-render.service';
+import { renderInitBundle, resolvePluginSet } from './init-render.service';
 import { writeMcpVertexConfig } from './init-writers.factory';
 
 const parseAnswers = (

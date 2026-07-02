@@ -54,7 +54,10 @@ const DESTRUCTIVE_VERBS = new Set([
 
 const isDestructive = (args: readonly string[]): boolean => {
 	// A `worktree remove|prune|add` or a `branch -d|-D|--delete` mutates too.
-	if (args[0] === 'worktree' && ['remove', 'prune', 'add'].includes(args[1] ?? ''))
+	if (
+		args[0] === 'worktree' &&
+		['remove', 'prune', 'add'].includes(args[1] ?? '')
+	)
 		return true;
 	if (
 		args[0] === 'branch' &&
@@ -85,7 +88,11 @@ const makeRunner = (
 		calls.push([...args]);
 
 		// `git branch --list agent/*`  (agent-branch enumeration)
-		if (args[0] === 'branch' && args[1] === '--list' && args[2] !== '--merged') {
+		if (
+			args[0] === 'branch' &&
+			args[1] === '--list' &&
+			args[2] !== '--merged'
+		) {
 			return {
 				ok: true,
 				output: agentBranches.map((n) => `  ${n}`).join('\n'),
@@ -93,7 +100,11 @@ const makeRunner = (
 		}
 
 		// `git branch --list --merged <base> <branch>`  (merged reachability)
-		if (args[0] === 'branch' && args[1] === '--list' && args[2] === '--merged') {
+		if (
+			args[0] === 'branch' &&
+			args[1] === '--list' &&
+			args[2] === '--merged'
+		) {
 			const branch = args[4] ?? '';
 			const merged = fixtures[branch]?.merged ?? false;
 			return { ok: true, output: merged ? `  ${branch}` : '' };
@@ -121,7 +132,9 @@ const makeRunner = (
 			const f = fixtures[branch];
 			return {
 				ok: true,
-				output: f ? ` 2 files changed, ${f.ahead * 3} insertions(+)` : '',
+				output: f
+					? ` 2 files changed, ${f.ahead * 3} insertions(+)`
+					: '',
 			};
 		}
 
@@ -153,7 +166,10 @@ const makeRunner = (
 		// `git rev-parse --short <ref>`
 		if (args[0] === 'rev-parse') {
 			const ref = args[args.length - 1] ?? '';
-			return { ok: true, output: (fixtures[ref]?.head ?? 'deadbee').slice(0, 7) };
+			return {
+				ok: true,
+				output: (fixtures[ref]?.head ?? 'deadbee').slice(0, 7),
+			};
 		}
 
 		return { ok: true, output: '' };
@@ -225,12 +241,14 @@ describe('runSwarmHygieneEngine (f00091 S3 — non-destructive + accurate rescue
 			'agent/orion',
 		]);
 		// The merged branch is never a rescue candidate.
-		expect(result.rescueCandidates.some((r) => r.branch === 'agent/vega')).toBe(
-			false,
-		);
+		expect(
+			result.rescueCandidates.some((r) => r.branch === 'agent/vega'),
+		).toBe(false);
 		// Each candidate carries a copy-pasteable, read-only cherry-pick hint
 		// and a diffStat — but the hint is advisory text, not an executed op.
-		const orion = result.rescueCandidates.find((r) => r.branch === 'agent/orion');
+		const orion = result.rescueCandidates.find(
+			(r) => r.branch === 'agent/orion',
+		);
 		expect(orion?.ahead).toBe(3);
 		expect(orion?.cherryPickHint).toContain('cherry-pick');
 		expect(orion?.diffStat).toContain('files changed');
@@ -266,7 +284,9 @@ describe('runSwarmHygieneEngine (f00091 S3 — non-destructive + accurate rescue
 		expect(result.nonConformingBranches.map((b) => b.branch)).toContain(
 			'feat/rogue',
 		);
-		expect(result.staleUnmerged.map((b) => b.branch)).toContain('feat/rogue');
+		expect(result.staleUnmerged.map((b) => b.branch)).toContain(
+			'feat/rogue',
+		);
 	});
 
 	it('prunes pending-integration entries whose branch has merged, keeping the rest (self-healing, no git write)', async () => {

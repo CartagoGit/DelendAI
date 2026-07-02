@@ -135,8 +135,15 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 	it('f00082 S3: defaults host/model from options.defaultIdentity when the caller omits them', async () => {
 		const a = parse(
 			await runAgentNames(
-				{ action: 'assign', task_id: 'boot', agent_slot: 'orchestrator' },
-				{ ...options, defaultIdentity: { host: 'claude-code', model: 'opus' } },
+				{
+					action: 'assign',
+					task_id: 'boot',
+					agent_slot: 'orchestrator',
+				},
+				{
+					...options,
+					defaultIdentity: { host: 'claude-code', model: 'opus' },
+				},
 			),
 		) as { host: string; model: string };
 		expect(a.host).toBe('claude-code');
@@ -153,7 +160,10 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 					host: 'cursor',
 					model: 'sonnet',
 				},
-				{ ...options, defaultIdentity: { host: 'claude-code', model: 'opus' } },
+				{
+					...options,
+					defaultIdentity: { host: 'claude-code', model: 'opus' },
+				},
 			),
 		) as { host: string; model: string };
 		expect(a.host).toBe('cursor');
@@ -163,8 +173,15 @@ describe('agent_names (covers the orchestrator, not only subagents)', async () =
 	it('f00082 S3: an unknown default host coerces to `unknown` (same rule as an explicit arg)', async () => {
 		const a = parse(
 			await runAgentNames(
-				{ action: 'assign', task_id: 'coerce', agent_slot: 'orchestrator' },
-				{ ...options, defaultIdentity: { host: 'some-cli', model: 'x' } },
+				{
+					action: 'assign',
+					task_id: 'coerce',
+					agent_slot: 'orchestrator',
+				},
+				{
+					...options,
+					defaultIdentity: { host: 'some-cli', model: 'x' },
+				},
 			),
 		) as { host: string; model: string };
 		expect(a.host).toBe('unknown');

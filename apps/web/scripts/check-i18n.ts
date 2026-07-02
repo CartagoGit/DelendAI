@@ -101,7 +101,9 @@ if (problems.length) {
 		`\n${languages.length} languages \u00b7 ${enKeys.length} keys each expected.`,
 	);
 	if (strictMode) process.exit(1);
-	console.warn(`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`);
+	console.warn(
+		`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`,
+	);
 }
 
 console.log(
@@ -153,7 +155,9 @@ if (sharedProblems.length) {
 		`\n${sharedLanguages.length} languages \u00b7 ${sharedEnKeys.length} keys each expected.`,
 	);
 	if (strictMode) process.exit(1);
-	console.warn(`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`);
+	console.warn(
+		`\n\u26a0 warn-only mode (f00059 S2): pass --strict to fail the build.`,
+	);
 }
 
 console.log(

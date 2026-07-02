@@ -201,14 +201,14 @@ describe('init:default (f00103)', () => {
 		const configOnDisk = JSON.parse(
 			await readFile(join(tmp, 'mcp-vertex.config.json'), 'utf8'),
 		) as { plugins: Record<string, unknown> };
-		expect(configOnDisk.plugins['git']).toBeDefined();
-		expect(configOnDisk.plugins['audit']).toBeDefined();
-		expect(configOnDisk.plugins['issues']).toBeDefined();
+		expect(configOnDisk.plugins.git).toBeDefined();
+		expect(configOnDisk.plugins.audit).toBeDefined();
+		expect(configOnDisk.plugins.issues).toBeDefined();
 		expect(configOnDisk.plugins['web-fetch']).toBeDefined();
-		expect(configOnDisk.plugins['conventions']).toBeDefined();
+		expect(configOnDisk.plugins.conventions).toBeDefined();
 		// Swarm-only plugins MUST NOT have been written.
-		expect(configOnDisk.plugins['proposals']).toBeUndefined();
-		expect(configOnDisk.plugins['memory']).toBeUndefined();
+		expect(configOnDisk.plugins.proposals).toBeUndefined();
+		expect(configOnDisk.plugins.memory).toBeUndefined();
 
 		// Host-instructions centralizer wrote the canonical block under
 		// overwrite semantics.

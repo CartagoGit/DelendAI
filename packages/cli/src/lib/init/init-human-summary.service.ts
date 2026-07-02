@@ -263,7 +263,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 
-	return lines.join('\n') + '\n';
+	return `${lines.join('\n')}\n`;
 };
 
 /**
@@ -292,5 +292,5 @@ export const renderInitFailureSummary = (
 	if (hintText !== undefined && hintText.length > 0) {
 		lines.push(hint(hintText));
 	}
-	return lines.join('\n') + '\n';
+	return `${lines.join('\n')}\n`;
 };

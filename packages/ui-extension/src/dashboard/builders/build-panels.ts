@@ -19,8 +19,10 @@ export function buildPanels(
 	lang: ILangDict,
 	docsUrl: string,
 ): string {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const overviewPanel = renderPanelOverview(model.overview, lang);
 	const metricsPanel = renderPanelMetrics(model.metrics, lang);
 	const tokensPanel = renderPanelTokens(model.tokens, lang);

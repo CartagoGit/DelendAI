@@ -36,7 +36,9 @@ describe('toast runtime wiring (H25)', () => {
 	it('binds an Esc handler that dismisses the most recent sticky toast', () => {
 		expect(componentScript).toContain('data-mv-toast-sticky="true"');
 		expect(componentScript).toContain("evt.key !== 'Escape'");
-		expect(componentScript).toContain('dismissToast(stickies[stickies.length - 1]')
+		expect(componentScript).toContain(
+			'dismissToast(stickies[stickies.length - 1]',
+		);
 	});
 
 	it('dispatches a mv-toast-dismiss custom event the host can listen to', () => {

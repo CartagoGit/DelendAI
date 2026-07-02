@@ -136,7 +136,10 @@ const main = async (): Promise<number> => {
 	];
 	if (allViolations.length === 0) {
 		const summary = results
-			.map((r) => `${basename(r.file)}: ${r.exists ? 'present' : 'MISSING'}`)
+			.map(
+				(r) =>
+					`${basename(r.file)}: ${r.exists ? 'present' : 'MISSING'}`,
+			)
 			.join(', ');
 		console.log(`✓ host-hints-fragments: ${summary}; all canonical.`);
 		return 0;
@@ -185,8 +188,7 @@ export const lintStrayFragments = async (
 		line: 1,
 		kind: 'stray-fragment' as const,
 		snippet: `unexpected *.generated.md sibling: ${s.filename}`,
-		fix:
-			'f00092: delete the stray fragment and migrate its content into the canonical `agent-instructions.generated.md` and the hand-edited host files (see f00092-host-hints-single-fragment).',
+		fix: 'f00092: delete the stray fragment and migrate its content into the canonical `agent-instructions.generated.md` and the hand-edited host files (see f00092-host-hints-single-fragment).',
 	}));
 };
 

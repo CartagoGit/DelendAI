@@ -163,7 +163,9 @@ describe('renderAdoptionPlan (f00089 U1)', () => {
 			'docs/mcp-vertex/proposals/ready/f00051-adopt-mcp-vertex-acme-app.md',
 		);
 		expect(plan.content).toContain('advisory');
-		expect(plan.content).not.toMatch(/init.*(rewrite|delete|move).*in place/i);
+		expect(plan.content).not.toMatch(
+			/init.*(rewrite|delete|move).*in place/i,
+		);
 		expect(plan.inventory.found).toBe(true);
 	});
 

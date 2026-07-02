@@ -110,16 +110,21 @@ describe('fsRead / fsWrite — authorized-roots allowlist (f00089 U5)', async ()
 
 	it('reads an absolute path INSIDE an authorized root', async () => {
 		writeFileSync(join(external, 'data.txt'), 'shared', 'utf8');
-		const result = await fsRead(workspace, join(external, 'data.txt'), undefined, [
-			external,
-		]);
+		const result = await fsRead(
+			workspace,
+			join(external, 'data.txt'),
+			undefined,
+			[external],
+		);
 		expect(result.found).toBe(true);
 		expect(result.content).toBe('shared');
 	});
 
 	it('writes an absolute path INSIDE an authorized root', async () => {
 		const target = join(external, 'out.txt');
-		const result = await fsWrite(workspace, target, 'hello', {}, [external]);
+		const result = await fsWrite(workspace, target, 'hello', {}, [
+			external,
+		]);
 		expect(result.ok).toBe(true);
 		expect(readFileSync(target, 'utf8')).toBe('hello');
 	});
@@ -127,13 +132,20 @@ describe('fsRead / fsWrite — authorized-roots allowlist (f00089 U5)', async ()
 	it('rejects an absolute path OUTSIDE every authorized root', async () => {
 		const other = mkdtempSync(join(tmpdir(), 'fs-other-'));
 		try {
-			const result = await fsRead(workspace, join(other, 'x.txt'), undefined, [
-				external,
-			]);
+			const result = await fsRead(
+				workspace,
+				join(other, 'x.txt'),
+				undefined,
+				[external],
+			);
 			expect(result.found).toBe(false);
-			const w = await fsWrite(workspace, join(other, 'x.txt'), 'nope', {}, [
-				external,
-			]);
+			const w = await fsWrite(
+				workspace,
+				join(other, 'x.txt'),
+				'nope',
+				{},
+				[external],
+			);
 			expect(w.ok).toBe(false);
 			expect(existsSync(join(other, 'x.txt'))).toBe(false);
 		} finally {
@@ -146,7 +158,9 @@ describe('fsRead / fsWrite — authorized-roots allowlist (f00089 U5)', async ()
 			external,
 		]);
 		expect(result.found).toBe(false);
-		const w = await fsWrite(workspace, '../outside.txt', 'nope', {}, [external]);
+		const w = await fsWrite(workspace, '../outside.txt', 'nope', {}, [
+			external,
+		]);
 		expect(w.ok).toBe(false);
 		expect(w.error).toContain('escapes workspace');
 	});

@@ -107,7 +107,12 @@ export const buildCompactToolRegistration = (
 					inputSchema: z.object({
 						topic: z.string().min(1).max(120),
 						items: z.array(ContextItemSchema).max(MAX_ITEMS),
-						detailMaxChars: z.number().int().min(20).max(2000).optional(),
+						detailMaxChars: z
+							.number()
+							.int()
+							.min(20)
+							.max(2000)
+							.optional(),
 						persist: z.boolean().optional(),
 						ttlSeconds: z.number().int().positive().optional(),
 					}),
@@ -150,8 +155,12 @@ export const buildCompactToolRegistration = (
 							...(item.tokensEstimate !== undefined
 								? { tokensEstimate: item.tokensEstimate }
 								: {}),
-							...(item.pin !== undefined ? { pin: item.pin } : {}),
-							...(item.drop !== undefined ? { drop: item.drop } : {}),
+							...(item.pin !== undefined
+								? { pin: item.pin }
+								: {}),
+							...(item.drop !== undefined
+								? { drop: item.drop }
+								: {}),
 						}),
 					);
 					const result = distillContextDigest(
@@ -197,7 +206,8 @@ export const buildCompactToolRegistration = (
 								body: result.digest,
 								tags: ['session-digest'],
 								ttlSeconds:
-									args.ttlSeconds ?? DEFAULT_SESSION_TTL_SECONDS,
+									args.ttlSeconds ??
+									DEFAULT_SESSION_TTL_SECONDS,
 							},
 						);
 						return toolJson({

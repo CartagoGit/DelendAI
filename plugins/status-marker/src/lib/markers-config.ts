@@ -31,9 +31,7 @@ import { z } from 'zod';
  */
 export const UserMarkerSchema = z.object({
 	/** Uppercase ASCII identifier; used as the protocol `state` token. */
-	id: z
-		.string()
-		.regex(/^[A-Z][A-Z0-9_-]*$/, 'id must be UPPER_SNAKE_CASE'),
+	id: z.string().regex(/^[A-Z][A-Z0-9_-]*$/, 'id must be UPPER_SNAKE_CASE'),
 	/**
 	 * Single emoji or short symbol that prefixes the bracket. Must be unique
 	 * across the merged table.

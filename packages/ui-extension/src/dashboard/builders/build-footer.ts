@@ -8,8 +8,10 @@ export function buildFooter(
 	options: { readonly refreshCommand: string; readonly docsUrl: string },
 	lang: ILangDict,
 ): string {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	return `
 	<footer class="mv-footer">
 		<span>${escapeHtml(text('dashboard.footerRefresh'))}: <code>${escapeHtml(options.refreshCommand)}</code></span>

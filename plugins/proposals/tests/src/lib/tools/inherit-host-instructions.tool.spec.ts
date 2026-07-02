@@ -16,12 +16,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
 
 import { buildInheritHostInstructionsRegistration } from '@mcp-vertex/proposals/lib/tools/inherit-host-instructions.tool';
-import type {
-	IInheritHostInstructionsToolOptions,
-} from '@mcp-vertex/proposals/lib/contracts/interfaces/inherit-host-instructions-options.interface';
-import type {
-	IUserHomeReader,
-} from '@mcp-vertex/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
+import type { IInheritHostInstructionsToolOptions } from '@mcp-vertex/proposals/lib/contracts/interfaces/inherit-host-instructions-options.interface';
+import type { IUserHomeReader } from '@mcp-vertex/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -107,7 +103,9 @@ describe('inherit_host_instructions', () => {
 		const handler = await capture(
 			buildInheritHostInstructionsRegistration(
 				buildOptions(
-					fakeRepoReader({ 'CLAUDE.md': 'ALWAYS run the linter first' }),
+					fakeRepoReader({
+						'CLAUDE.md': 'ALWAYS run the linter first',
+					}),
 				),
 			),
 		);
@@ -116,7 +114,9 @@ describe('inherit_host_instructions', () => {
 		expect(res.ok).toBe(true);
 		expect(res.id).toMatch(/^f\d{5}$/);
 		expect(res.files).toHaveLength(1);
-		expect(res.file).toMatch(/^ready\/f\d{5}-inherit-host-instructions-.+\.md$/);
+		expect(res.file).toMatch(
+			/^ready\/f\d{5}-inherit-host-instructions-.+\.md$/,
+		);
 
 		const body = readFileSync(join(root, proposalsRel, res.file), 'utf8');
 		expect(body).toContain('*scope*: `in-repo`');
@@ -130,7 +130,9 @@ describe('inherit_host_instructions', () => {
 			await (
 				await capture(
 					buildInheritHostInstructionsRegistration(
-						buildOptions(fakeRepoReader({ 'CLAUDE.md': 'rule one' })),
+						buildOptions(
+							fakeRepoReader({ 'CLAUDE.md': 'rule one' }),
+						),
 					),
 				)
 			)({ workspaceRoot: '/ws' }),
@@ -139,7 +141,9 @@ describe('inherit_host_instructions', () => {
 			await (
 				await capture(
 					buildInheritHostInstructionsRegistration(
-						buildOptions(fakeRepoReader({ 'CLAUDE.md': 'rule two' })),
+						buildOptions(
+							fakeRepoReader({ 'CLAUDE.md': 'rule two' }),
+						),
 					),
 				)
 			)({ workspaceRoot: '/ws' }),

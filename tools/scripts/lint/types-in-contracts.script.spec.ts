@@ -39,10 +39,7 @@ describe('types-in-contracts lint', () => {
 			'packages/foo/src/contracts/interfaces/thing.interface.ts',
 			'export interface IThing { a: string }\n',
 		);
-		write(
-			'packages/foo/src/thing.constant.ts',
-			'export const MAX = 1;\n',
-		);
+		write('packages/foo/src/thing.constant.ts', 'export const MAX = 1;\n');
 		write(
 			'packages/foo/src/thing.spec.ts',
 			'export interface IFixture { a: string }\n',

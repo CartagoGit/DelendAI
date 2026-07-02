@@ -153,7 +153,7 @@ const serializeFrontmatterEntry = (
 	value: unknown,
 ): readonly string[] => {
 	if (Array.isArray(value)) {
-		return [key + ':', ...value.map((item) => `  - ${String(item)}`)];
+		return [`${key}:`, ...value.map((item) => `  - ${String(item)}`)];
 	}
 	return [`${key}: ${serializeScalar(value)}`];
 };

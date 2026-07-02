@@ -204,7 +204,9 @@ describe('close-tools — host marker table (f00071)', async () => {
 		const validate = calls.find((c) => c.name === 'sm_validate')!;
 		// ⬜ (SIN PROPUESTA DE NINGUN TIPO) was disabled, so its emoji is no
 		// longer in the reverse map.
-		const out = (await validate.handler({ text: '⬜ [SIN PROPUESTA]' })) as {
+		const out = (await validate.handler({
+			text: '⬜ [SIN PROPUESTA]',
+		})) as {
 			content: Array<{ text: string }>;
 		};
 		const parsed = JSON.parse(out.content[0]!.text);
