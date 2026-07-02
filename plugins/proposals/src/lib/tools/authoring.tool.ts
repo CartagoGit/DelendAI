@@ -254,9 +254,14 @@ export const buildCreateProposalRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				const syncEntry = sync.proposals.find((p) => p.id === id);
+				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
+				const finalAbsPath = syncEntry
+					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+					: absPath;
 				return toolOk({
-					file: fileRel,
-					path: absPath,
+					file: finalFileRel,
+					path: finalAbsPath,
 					disjointnessIssues: issues,
 					indexCount: sync.count,
 					redactedSecrets: redactions,

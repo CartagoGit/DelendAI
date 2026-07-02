@@ -6,16 +6,20 @@
  * command is the only place that touches the file system.
  */
 
-import type { IRenderedBundle, IRenderedFile } from '../../contracts/interfaces/init.interface';
+import type {
+	IRenderedBundle,
+	IRenderedFile,
+} from '../../contracts/interfaces/init.interface';
 
 import {
+	createWorkspaceFileReader,
+	createWorkspacePathProvider,
 	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
-	createWorkspaceFileReader,
-	createWorkspacePathProvider,
 } from '@mcp-vertex/core/public';
 
+import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
 import {
 	computeHostInstructionsWrite,
@@ -23,11 +27,6 @@ import {
 } from './init-host-instructions.service';
 import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
-import type { IInitAnswers } from './init-answers.types';
-
-;
-
-;
 
 // Single source of truth for preset membership lives in
 // `@mcp-vertex/core`'s preset catalog. We delegate to
@@ -127,7 +126,11 @@ export const renderMcpVertexConfig = (
  */
 export const renderMcpVertexServerEntry = (
 	hostEntryPath: string,
-): { readonly type: 'stdio'; readonly command: 'bun'; readonly args: readonly string[] } => ({
+): {
+	readonly type: 'stdio';
+	readonly command: 'bun';
+	readonly args: readonly string[];
+} => ({
 	type: 'stdio',
 	command: 'bun',
 	args: [
@@ -188,7 +191,11 @@ export const mergeMcpVertexServerEntry = (
 	} catch {
 		return undefined;
 	}
-	if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+	if (
+		parsed === null ||
+		typeof parsed !== 'object' ||
+		Array.isArray(parsed)
+	) {
 		return undefined;
 	}
 	const doc = parsed as Record<string, unknown>;
@@ -280,7 +287,8 @@ const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
 // the rest of the host file already lives.
 const HOST_FOOTNOTE: Readonly<Record<'copilot' | 'claude' | 'agents', string>> =
 	{
-		copilot: '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
+		copilot:
+			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
 		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
 		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
 	};

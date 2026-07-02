@@ -53,13 +53,13 @@ describe('proposal authoring (create → board → close)', async () => {
 			await create({ kind: 'feat', title: 'Auto allocated' }),
 		);
 		expect(created.ok).toBe(true);
-		expect(created.file).toBe('f00001-auto-allocated.md');
+		expect(created.file).toBe('ready/f00001-auto-allocated.md');
 
 		// A second call with the same kind continues the sequence, not f00001 again.
 		const second = parse(
 			await create({ kind: 'feat', title: 'Second one' }),
 		);
-		expect(second.file).toBe('f00002-second-one.md');
+		expect(second.file).toBe('ready/f00002-second-one.md');
 	});
 
 	it('errors clearly when neither id nor kind is provided', async () => {

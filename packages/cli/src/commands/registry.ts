@@ -19,8 +19,20 @@ import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,
 } from '../lib/config-file.service';
-import { data, hasFlag, isRecord, request, scalarArg } from '../lib/helpers/cli-command.helper';
+import {
+	data,
+	hasFlag,
+	isRecord,
+	request,
+	scalarArg,
+} from '../lib/helpers/cli-command.helper';
 import { formatRows } from '../lib/text-format.service';
+import { auditCommands } from './groups/audit';
+import { conventionsCommands } from './groups/conventions';
+import { coreExtraCommands } from './groups/core';
+import { depsCommands } from './groups/deps';
+import { docsCommands } from './groups/docs';
+import { doctorCommands } from './groups/doctor';
 import {
 	gitBlameCommand,
 	gitChangedCommand,
@@ -30,12 +42,6 @@ import {
 	gitStatusCommand,
 	gitWorktreeCommand,
 } from './groups/git';
-import { auditCommands } from './groups/audit';
-import { conventionsCommands } from './groups/conventions';
-import { coreExtraCommands } from './groups/core';
-import { depsCommands } from './groups/deps';
-import { docsCommands } from './groups/docs';
-import { doctorCommands } from './groups/doctor';
 import { logsCommands } from './groups/logs';
 import { memoryCommands } from './groups/memory';
 import { notificationCommands } from './groups/notification';

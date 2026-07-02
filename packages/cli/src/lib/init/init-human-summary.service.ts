@@ -35,10 +35,6 @@ import {
 	warn,
 } from '../helpers/cli-color.helper';
 
-
-
-
-
 const pad = (text: string, width: number): string =>
 	text.length >= width ? text : text + ' '.repeat(width - text.length);
 
