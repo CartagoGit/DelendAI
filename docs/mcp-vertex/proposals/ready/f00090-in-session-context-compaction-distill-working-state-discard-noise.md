@@ -218,4 +218,3 @@ the digest recallable because it is a normal note.
   judgement (which items, what labels); the engine does the structural
   distillation and the token accounting. This keeps the hot path free of an
   LLM call and the behaviour trivially testable.
-</content>
