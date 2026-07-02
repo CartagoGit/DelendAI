@@ -124,7 +124,8 @@ soup). Each has its own spec file.
 `build-*.spec.ts` × 5 are ≥ 80% line coverage each.
 
 ### S2 — sparkline is a trend (H22)
-- **Status**: pending
+- **Status**: done
+- **Note (2026-07-02)**: fixed — the tools panel now drives its per-tool sparkline from the real `IDashboardMetricsModel.sparklines` series (passed through `build-panels`), falling back to the avg/max approximation only when a tool has no series. No model change needed.
 - **Files**: packages/ui-extension/src/dashboard/builders/build-panels.ts
 - **Gate**: validate
 
