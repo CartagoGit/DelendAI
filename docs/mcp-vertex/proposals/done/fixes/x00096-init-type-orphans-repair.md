@@ -1,10 +1,11 @@
 ---
 id: x00096
-status: ready
+status: done
 type: proposal
 kind: fix
 track: cli-init-types+audit-merge-conflicts
 date: 2026-07-01
+closed: 2026-07-02
 title: repair orphaned types + audit merge conflicts left over from f00037
 shipped-in: [eba02b76]
 recan: []
