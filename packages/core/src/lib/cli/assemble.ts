@@ -120,11 +120,6 @@ interface IProposalIndexFile {
 	readonly proposals?: readonly IProposalIndexFileEntry[];
 }
 
-const namespaceFromToolName = (name: string): string => {
-	const idx = name.indexOf('_');
-	return idx === -1 ? name : name.slice(0, idx);
-};
-
 const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
 	const prefix = id[0]?.toLowerCase();
 	if (prefix === 'f') return 'feat';
@@ -697,20 +692,32 @@ export const assembleCliConfig = async (
 	// Core tools keep their bare id (single namespace); plugin tools are
 	// already qualified above so the uniqueness check is per-namespace.
 	const tools: IToolRegistration[] = [...coreTools, ...qualifiedPluginTools];
-	catalogToolEntries = tools.map((tool) => {
-		const name = tool.id.includes('_')
-			? tool.id
-			: `${corePrefix}_${tool.id}`;
-		return {
-			name,
-			plugin: namespaceFromToolName(name),
-			...(tool.summary !== undefined ? { summary: tool.summary } : {}),
-			...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
-			...(tool.effects !== undefined
-				? { effects: [...tool.effects] }
-				: {}),
-		};
-	});
+	// The discovery catalog reuses the SAME name+plugin the overview snapshot
+	// carries, rather than re-deriving them from the qualified id string. The
+	// old parse-the-name approach was doubly wrong: `id.includes('_')` treated
+	// every core tool with an underscore in its id (`agent_catalog`,
+	// `fs_read`, `get_validation_matrix`, …) as already-qualified and dropped
+	// the `mcp-vertex_` prefix — so the catalog advertised a NON-CALLABLE name
+	// — and `namespaceFromToolName` split on the FIRST `_`, reporting the host
+	// segment (`mcp-vertex`) as the plugin for every plugin tool. Carrying the
+	// values explicitly (core tools → the host prefix; plugin tools → their
+	// resolved `ns`) makes both correct by construction.
+	catalogToolEntries = [
+		...coreTools.map((reg) => ({
+			name: `${corePrefix}_${reg.id}`,
+			plugin: corePrefix,
+			...(reg.summary !== undefined ? { summary: reg.summary } : {}),
+			...(reg.tags !== undefined ? { tags: [...reg.tags] } : {}),
+			...(reg.effects !== undefined ? { effects: [...reg.effects] } : {}),
+		})),
+		...pluginToolEntries.map((entry) => ({
+			name: entry.name,
+			plugin: entry.plugin ?? corePrefix,
+			...(entry.summary !== undefined ? { summary: entry.summary } : {}),
+			...(entry.tags !== undefined ? { tags: [...entry.tags] } : {}),
+			...(entry.effects !== undefined ? { effects: [...entry.effects] } : {}),
+		})),
+	];
 
 	// Surface knowledge as native MCP resources too (list/read/cache).
 	resources.push(...buildKnowledgeResourceRegistrations(knowledge));
