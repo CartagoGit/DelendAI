@@ -615,7 +615,7 @@ export interface McpVertexOverviewOutput {
 		summary?: string;
 		tags?: string[];
 		effects?: Array<"write" | "spawn" | "network" | "destructive">;
-	}>;
+	}> | Record<string, string[]>;
 	knowledge: Array<string | {
 		id: string;
 		title: string;

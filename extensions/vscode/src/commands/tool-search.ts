@@ -19,6 +19,7 @@
 import {
 	AgentCatalogService,
 	KnowledgeService,
+	normalizeCompactTools,
 	OverviewService,
 	SearchService,
 } from '@mcp-vertex/client';
@@ -81,24 +82,21 @@ const fallbackItems = async (
 
 	const ov = await overview.getOverview({ compact: true });
 	const knowledgeList = await knowledge.listKnowledge().catch(() => []);
-	const allTools = (ov.tools ?? []).map((tool) =>
-		typeof tool === 'string'
-			? { name: tool, tags: [] as readonly string[] }
-			: {
-					name: tool.name,
-					tags: tool.tags ?? [],
-					...(tool.summary === undefined
-						? {}
-						: { summary: tool.summary }),
-				},
-	);
+	// Compact `tools` is grouped by plugin; the helper flattens it into
+	// qualified descriptors (and still accepts the full array form).
+	const descriptors = normalizeCompactTools(ov.tools, ov.namespacePrefix);
+	const allTools = descriptors.map((tool) => ({
+		name: tool.name,
+		tags: tool.tags,
+		plugin: tool.plugin,
+	}));
 
 	const toolItems: IQuickPickItem[] =
 		query.length === 0
 			? allTools.map((tool) => ({
 					id: `tool:${tool.name}`,
 					label: tool.name,
-					description: `tool · ${tool.name.split('_', 1)[0] ?? ''}`,
+					description: `tool · ${tool.plugin}`,
 				}))
 			: search.searchTools(query, allTools, 200).map((hit) => ({
 					id: `tool:${hit.name}`,

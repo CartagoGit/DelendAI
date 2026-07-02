@@ -45,7 +45,13 @@ describe('e2e: McpStdioClient over a real mcp-vertex stdio server', async () => 
 				McpVertexToolOutputs['mcp-vertex_overview']
 			>('mcp-vertex_overview', { compact: true });
 			expect(overview.server.name).toBe('mcp-vertex');
-			expect(overview.tools.length).toBeGreaterThan(0);
+			// compact `tools` is grouped by plugin ({ core: [...], … }); assert
+			// the groups exist and carry stems (the flat count comes via
+			// client.listTools() above).
+			expect(Array.isArray(overview.tools)).toBe(false);
+			const toolGroups = overview.tools as Record<string, string[]>;
+			expect(Object.keys(toolGroups).length).toBeGreaterThan(0);
+			expect(toolGroups.core).toContain('overview');
 		} finally {
 			await client.close();
 		}

@@ -94,11 +94,20 @@ describe('core meta-tools', async () => {
 		expect(matrix.scopes.full[0].command).toBe('bun test');
 	});
 
-	it('overview compact:true returns only names (low-token)', async () => {
+	it('overview compact:true groups tool stems by plugin (low-token)', async () => {
 		const { byId } = await assemble();
 		const compact = await callTool(byId('overview'), { compact: true });
-		expect(Array.isArray(compact.tools)).toBe(true);
-		expect(typeof compact.tools[0]).toBe('string'); // names, not objects
+		// Grouped record { <plugin>: [stem, …], core: [stem, …] }: the shared
+		// `<prefix>_<plugin>_` is stated once per group, not per tool.
+		expect(Array.isArray(compact.tools)).toBe(false);
+		expect(typeof compact.tools).toBe('object');
+		// core tools (e.g. overview) are grouped under `core` as bare stems.
+		expect(compact.tools.core).toContain('overview');
+		// the demo plugin's tools are stems (no `mcp-vertex_demo_` prefix).
+		expect(Array.isArray(compact.tools.demo)).toBe(true);
+		expect(
+			compact.tools.demo.every((s: string) => !s.includes('mcp-vertex_')),
+		).toBe(true);
 		expect(compact.plugins).toContain('demo');
 	});
 
