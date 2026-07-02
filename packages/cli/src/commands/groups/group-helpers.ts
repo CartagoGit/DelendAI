@@ -2,19 +2,20 @@
  * group-helpers.ts — single import site for command-group authors
  * (f00046). Each `groups/<plugin>.ts` is a thin 1:1 delegation to the
  * matching MCP tools; this module re-exports the shared base helpers
- * from `lib/cli-helpers.ts` plus the thin group-only extensions
- * (`positionalArg`, `listArg`, `numberArg`, `usage`) so every group
- * file keeps a single import statement.
+ * from `lib/helpers/cli-command.helper.ts` plus the thin group-only
+ * extensions (`positionalArg`, `listArg`, `numberArg`, `usage`) so every
+ * group file keeps a single import statement.
  *
  * The shared base (`data`, `scalarArg`, `hasFlag`, `request`,
- * `isRecord`) lives in `lib/cli-helpers.ts` so non-group surfaces
- * (`commands/registry.ts`, the legacy `git.ts`) reuse the same code
- * without importing across layers.
+ * `isRecord`) lives in `lib/helpers/cli-command.helper.ts` so non-group
+ * surfaces (`commands/registry.ts`, the legacy `git.ts`) reuse the same
+ * code without importing across layers. (f00096 renamed this module from
+ * the old `lib/cli-helpers.service.ts` to reflect its `helper` role.)
  *
  * SOLID:
  *   - Single source of truth: every helper has exactly one definition.
  *   - Open/closed: adding a new helper means adding it to
- *     `cli-helpers.ts` and optionally re-exporting it here.
+ *     `cli-command.helper.ts` and optionally re-exporting it here.
  *   - Interface segregation: each helper is a pure function with a
  *     minimal signature.
  */
