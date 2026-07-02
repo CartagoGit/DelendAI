@@ -1,12 +1,12 @@
 ---
 id: f00094
-status: ready
+status: done
 type: proposal
 kind: feat
 track: proposals+host-discovery+cli-onboarding
 date: 2026-07-01
 title: proposals plugin exposes on-demand audit of non-repo host-instructions
-shipped-in: []
+shipped-in: [fix/f00094-wiring-and-alias-consistency]
 recan: []
 related:
     - f00093 # init's snapshot path — the in-repo counterpart
@@ -175,7 +175,7 @@ it adds rows to the table; nothing else changes.
 
 ### S1 — Classify the scan surface
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/proposals/ready/f00094-proposals-audit-non-repo-host-instructions.md`
   (this proposal)
 - **Gate**: typecheck
@@ -186,7 +186,7 @@ it adds rows to the table; nothing else changes.
 
 ### S2 — Implement `scan_host_instructions`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/scan-host-instructions.tool.ts`
   (new), `plugins/proposals/src/lib/tools/scan-host-instructions.spec.ts`
   (new)
@@ -204,7 +204,7 @@ it adds rows to the table; nothing else changes.
 
 ### S3 — Add the `inherit_host_instructions` tool
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   `plugins/proposals/src/lib/tools/inherit-host-instructions.tool.ts`
   (new),
@@ -226,7 +226,7 @@ it adds rows to the table; nothing else changes.
 
 ### S4 — e2e + validate
 
-- **Status**: pending
+- **Status**: done
 - **Files**: the 3 files above + this proposal
 - **Gate**: validate
 - **Acceptance**:
