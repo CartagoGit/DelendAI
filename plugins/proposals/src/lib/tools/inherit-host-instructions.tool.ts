@@ -240,7 +240,7 @@ export const buildInheritHostInstructionsRegistration = (
 	id: 'inherit_host_instructions',
 	effects: ['write'],
 	summary:
-		'Audit the current host-instruction files (in-repo + opt-in user-home) into a ready proposal for review.',
+		'Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.',
 	tags: ['proposals', 'host-discovery'],
 	register: async (server) => {
 		server.registerTool(
