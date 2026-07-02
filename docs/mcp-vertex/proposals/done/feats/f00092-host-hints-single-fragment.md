@@ -1,12 +1,13 @@
 ---
 id: f00092
-status: ready
+status: done
 type: proposal
 kind: feat
 track: agent-discovery+host-bootstrap+lint
 date: 2026-07-01
+closed: 2026-07-02
 title: Collapse the three host-hint fragments to a single canonical fragment
-shipped-in: []
+shipped-in: [ae4a4901, 4fbefc92, 08dfc546]
 recan: []
 related:
     - f00056 # agent discovery catalog — the bootstrap is the canonical surface
@@ -28,6 +29,26 @@ acceptance:
 ---
 
 # f00092 — collapse the three host-hint fragments to a single fragment
+
+> **Closed 2026-07-02 — verified landed end-to-end** (shipped in `ae4a4901` +
+> `4fbefc92`), validate green. Confirmed in-tree:
+> - **S1**: `docs/mcp-vertex/host-hints/` holds ONLY
+>   `agent-instructions.generated.md`; the 3 host files (`.github/copilot-instructions.md`,
+>   `CLAUDE.md`, `AGENTS.md`) each reference it and carry their host-specific
+>   `> Host appendix in effect: §X` footnote inline between the markers.
+> - **S2**: `render-host-hints.script.ts` emits the single fragment
+>   (`HOST_INSTRUCTIONS_FILENAME`) and asserts the output dir holds exactly one
+>   `*.generated.md` (actionable f00092 error).
+> - **S3**: `host-hints-fragments.script.ts` uses a single-element
+>   `HOST_HINT_FRAGMENTS` and walks the dir, failing on any stray `*.generated.md`.
+>   **Deviation:** the optional script *rename* to `agent-instructions-fragment.script.ts`
+>   was intentionally NOT done — it is pure churn (package.json `lint:host-hints-fragments`
+>   key + lefthook + spec) with no functional gain; the single-fragment invariant is
+>   fully enforced under the current name.
+> - **S4**: `CROSS-IDE.md` and `lefthook.yml` reference the single path; the init
+>   host-instruction wiring points at the single fragment (now in
+>   `packages/cli/src/lib/init/init-render.service.ts` — the proposal's
+>   `commands/init/init-render.ts` path predates the f00037 convention move).
 
 ## goal
 
@@ -139,7 +160,7 @@ After this slice lands:
 
 ### S1 — collapse the fragments + inline the footnotes
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/host-hints/agent-instructions.generated.md` (new),
   `.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`
 - **Gate**: typecheck
@@ -156,7 +177,7 @@ After this slice lands:
 
 ### S2 — rewrite the renderer to a single fragment
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/catalog/render-host-hints.script.ts`,
   `tools/scripts/catalog/render-host-hints.spec.ts`
 - **Gate**: typecheck
@@ -173,7 +194,7 @@ After this slice lands:
 
 ### S3 — collapse the lint to a single-fragment guard
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/host-hints-fragments.script.ts`,
   `tools/scripts/lint/host-hints-fragments.script.spec.ts`
 - **Gate**: typecheck
@@ -193,7 +214,7 @@ After this slice lands:
 
 ### S4 — wire the new fragment into cross-IDE doc + lefthook + init
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/mcp-vertex/CROSS-IDE.md`,
   `lefthook.yml`,
   `packages/cli/src/commands/init/init-render.ts`
@@ -214,7 +235,7 @@ After this slice lands:
 
 ### S5 — verify end-to-end
 
-- **Status**: pending
+- **Status**: done
 - **Files**: the 8 files above + a single new fragment
 - **Gate**: validate
 - **Acceptance**:
