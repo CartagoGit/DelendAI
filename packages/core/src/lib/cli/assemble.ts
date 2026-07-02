@@ -8,6 +8,7 @@ import {
 	createWorkspaceFileReader,
 } from '../bootstrap/index';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IMcpVertexHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
@@ -304,15 +305,26 @@ export const assembleCliConfig = async (
 	// — the only two places a programmatic host can inject it today
 	// without plumbing a new channel); the named bits from the config
 	// file. Defaults: mode `'git'`, clientName `'agent'`.
+	// f00082 S3: the RAW host/model the host actually declared (config file
+	// first, then the programmatic `agent-client`/`agent-model` args). Kept
+	// separate from the sentinel-defaulted commit-author identity below so the
+	// plugin-context `hostIdentity` is populated ONLY when a real identity was
+	// provided — never the `'agent'`/`'unknown-model'` fallbacks.
+	const providedHost =
+		fileConfig.commitAuthor?.clientName ?? args.extra['agent-client'];
+	const providedModel =
+		fileConfig.commitAuthor?.modelName ?? args.extra['agent-model'];
+	const hostIdentity: IResolvedHostIdentity | undefined =
+		providedHost !== undefined || providedModel !== undefined
+			? {
+					...(providedHost !== undefined ? { host: providedHost } : {}),
+					...(providedModel !== undefined ? { model: providedModel } : {}),
+				}
+			: undefined;
+
 	const commitAuthorIdentity = {
-		clientName:
-			fileConfig.commitAuthor?.clientName ??
-			args.extra['agent-client'] ??
-			'agent',
-		modelName:
-			fileConfig.commitAuthor?.modelName ??
-			args.extra['agent-model'] ??
-			'unknown-model',
+		clientName: providedHost ?? 'agent',
+		modelName: providedModel ?? 'unknown-model',
 	};
 	const commitAuthorNamed = {
 		humanName: fileConfig.commitAuthor?.humanName ?? '',
@@ -342,6 +354,7 @@ export const assembleCliConfig = async (
 			keepLegacy,
 			agentWorktreeEnabled,
 			commitAuthor: commitAuthorResolution,
+			...(hostIdentity !== undefined ? { hostIdentity } : {}),
 			pluginCacheDir: joinRel(corePaths.cacheDir, pluginName),
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
 			namespacePrefix: `${corePrefix}_${pluginConfig.prefix ?? pluginName}`,
