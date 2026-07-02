@@ -23,13 +23,21 @@ agent whether to delegate expensive inspection.
 
 ## Enforced budgets (regression guard)
 
-The benchmark spec fails if a change regresses these ceilings:
+The benchmark spec fails if a change regresses these ceilings (measured against the standard test server baseline with `proposals,memory,search,docs,logs` plugins loaded):
 
 | Payload | Budget (bytes) |
 |---|---:|
-| `overview` full | 7 000 |
-| `overview` compact | 1 600 |
+| `overview` full | 8 900 |
+| `overview` compact | 2 100 |
 | `auto_work` | 1 600 |
+
+### Full Preset Scaling (13 plugins, 88 tools)
+
+In a live production workspace with all plugins loaded, the payloads scale due to the number of tool names and plugin registrations:
+* `overview` full: ~18,000 bytes (~4,500 tokens)
+* `overview` compact: ~4,100 bytes (~1,025 tokens)
+
+The compact mode still provides a **~4.4× saving** over the full mode, preserving the invariant that `compact < full × 0.7`.
 
 Plus an invariant: `compact < full × 0.7` (the compact mode must stay a real
 saving, not cosmetic).
