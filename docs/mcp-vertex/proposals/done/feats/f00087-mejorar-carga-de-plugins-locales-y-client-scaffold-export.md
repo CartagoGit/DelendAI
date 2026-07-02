@@ -1,13 +1,19 @@
 ---
 id: f00087
-status: ready
+status: done
 type: proposal
 track: dogfood+plugins+scaffold+client
 date: 2026-06-29
+closed: 2026-07-02
 kind: feat
 title: Local plugin loading from config + client scaffold export
-shipped-in: []
+shipped-in: [34a7e90d, 9c16abcd, 8763b84f, 4a164c02]
 recan: []
+# Closed 2026-07-02 — verified landed. S1: `load-config-file.ts` resolves
+# `plugins.<name>.path` (local module path, relative→workspace). S2: the client
+# public barrel re-exports `writeScaffoldedFiles`/`writeScaffoldedFilesOrThrow` +
+# `authorPlugin`, and `tools/scripts/create-plugin.ts` is the script scaffolder.
+# Shipped 34a7e90d + 9c16abcd + 8763b84f + 4a164c02, validate green.
 related:
     - f00064 # dogfood project layout
     - f00037 # conventions plugin
@@ -339,7 +345,7 @@ README step when they're confident.
 
 ### S1 — `mcp-vertex.config.json#plugins.<name>.path`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: packages/core/schema/mcp-vertex.config.schema.json, packages/core/src/lib/plugins/config-file-schema.ts, packages/core/src/lib/plugins/load-config-file.ts, packages/core/src/lib/cli/assemble.ts, packages/cli/src/contracts/constants/help-translation.constant.ts, docs/mcp-vertex/PLUGINS-MCP-VERTEX.md, packages/core/tests/src/lib/plugins/plugin-path.spec.ts
 - **Gate**: bun run validate
 - **Acceptance**:
@@ -357,7 +363,7 @@ README step when they're confident.
 
 ### S2 — Client scaffold export + writer helper + create-plugin script
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/core/src/public/index.ts` (scaffold re-exports)
   - `packages/client/src/public/index.ts` (client re-exports)
