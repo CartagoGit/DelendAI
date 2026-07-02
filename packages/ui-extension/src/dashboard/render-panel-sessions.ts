@@ -11,8 +11,10 @@ export const renderPanelSessions = (
 	model: IDashboardSessionsModel,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const byStatus = Object.entries(model.byStatus)
 		.map(([status, count]) => {
 			const pills = model.rows

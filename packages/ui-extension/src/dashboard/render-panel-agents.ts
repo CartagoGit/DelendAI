@@ -13,8 +13,10 @@ export const renderPanelAgents = (
 	model: IDashboardAgentsModel,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const rows = model.agents
 		.map((a) => {
 			const proposal = a.currentProposal

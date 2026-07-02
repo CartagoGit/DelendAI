@@ -97,8 +97,10 @@ export const parseCliInvocation = (
 			const body = token.slice(2);
 			const optionOverride = parseExtraOptionFlag(body);
 			if (optionOverride !== null) {
-				const pluginOptions =
-					(extraOptions[optionOverride.pluginId] ??= {});
+				if (extraOptions[optionOverride.pluginId] === undefined) {
+					extraOptions[optionOverride.pluginId] = {};
+				}
+				const pluginOptions = extraOptions[optionOverride.pluginId]!;
 				pluginOptions[optionOverride.key] = optionOverride.value;
 				index += 1;
 				continue;
@@ -142,8 +144,10 @@ export const parseCliInvocation = (
 		const body = token.slice(2);
 		const optionOverride = parseExtraOptionFlag(body);
 		if (optionOverride !== null) {
-			const pluginOptions =
-				(extraOptions[optionOverride.pluginId] ??= {});
+			if (extraOptions[optionOverride.pluginId] === undefined) {
+				extraOptions[optionOverride.pluginId] = {};
+			}
+			const pluginOptions = extraOptions[optionOverride.pluginId]!;
 			pluginOptions[optionOverride.key] = optionOverride.value;
 			commandArgs.splice(index, 1);
 			index -= 1;

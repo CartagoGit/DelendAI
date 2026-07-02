@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-07-01T00:04:02.028Z",
+	"generatedAt": "2026-07-02T18:49:28.042Z",
 	"mode": "compact",
 	"tools": [
 		{
@@ -700,92 +700,12 @@
 				"date": "2026-06-26"
 			},
 			{
-				"id": "f00070",
-				"title": "f00070",
-				"track": "i18n+l10n+plugins/status-marker+token-budget",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00071",
-				"title": "f00071",
-				"track": "plugins/status-marker+configuration+i18n+agent-contract",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-26"
-			},
-			{
-				"id": "f00072",
-				"title": "f00072",
-				"track": "infra+cache-eviction",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-27"
-			},
-			{
-				"id": "f00079",
-				"title": "f00079",
-				"track": "security+webview+extension-ux",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "f00081",
-				"title": "f00081",
-				"track": "packages/client+host-integration",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00082",
-				"title": "f00082",
-				"track": "swarm+coordination+governance+observability",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
-				"id": "f00084",
-				"title": "f00084",
-				"track": "cli+bootstrap+onboarding",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00085",
-				"title": "f00085",
-				"track": "core+agents+ci",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-28"
-			},
-			{
 				"id": "f00086",
 				"title": "f00086",
 				"track": "core+orchestration+metrics",
 				"status": "ready",
 				"kind": "feat",
 				"date": "2026-06-28"
-			},
-			{
-				"id": "f00087",
-				"title": "f00087",
-				"track": "dogfood+plugins+scaffold+client",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
-			},
-			{
-				"id": "f00088",
-				"title": "f00088",
-				"track": "cli+bootstrap+onboarding+conventions",
-				"status": "ready",
-				"kind": "feat",
-				"date": "2026-06-29"
 			},
 			{
 				"id": "f00089",
@@ -804,44 +724,36 @@
 				"date": "2026-06-30"
 			},
 			{
-				"id": "r00005",
-				"title": "r00005",
-				"track": "i18n+l10n+utils",
+				"id": "f00094",
+				"title": "f00094",
+				"track": "proposals+host-discovery+cli-onboarding",
 				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00006",
-				"title": "r00006",
-				"track": "solid+architecture+extension-ux",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-25"
-			},
-			{
-				"id": "r00007",
-				"title": "r00007",
-				"track": "repo-layout+tooling+dx",
-				"status": "ready",
-				"kind": "refactor",
-				"date": "2026-06-30"
-			},
-			{
-				"id": "x00091",
-				"title": "x00091",
-				"track": "refactor",
-				"status": "ready",
-				"kind": "fix",
+				"kind": "feat",
 				"date": "2026-07-01"
+			},
+			{
+				"id": "f00095",
+				"title": "f00095",
+				"track": "adoption-migration",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-01"
+			},
+			{
+				"id": "f00097",
+				"title": "f00097",
+				"track": "vscode-host+ui-extension+proposals+apps-web+i18n",
+				"status": "ready",
+				"kind": "feat",
+				"date": "2026-07-02"
 			}
 		],
 		"byStatus": {
-			"ready": 21,
+			"ready": 10,
 			"in-progress": 0,
 			"review": 0,
 			"paused": 3,
-			"done": 141,
+			"done": 173,
 			"blocked": 0,
 			"retired": 0,
 			"unspecified": 0

@@ -41,7 +41,10 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders an 'option' rule as --flag value when non-empty, [] otherwise", async () => {
 		const rule = ruleFor('config');
 		expect(rule.kind).toBe('option');
-		expect(rule.argv('config', 'cfg.json')).toEqual(['--config', 'cfg.json']);
+		expect(rule.argv('config', 'cfg.json')).toEqual([
+			'--config',
+			'cfg.json',
+		]);
 		expect(rule.argv('config', '')).toEqual([]);
 		expect(rule.argv('config', undefined)).toEqual([]);
 	});
@@ -49,7 +52,9 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders a 'flag' rule as bare --flag only when true", async () => {
 		const rule = ruleFor('mcpProjectCreate');
 		expect(rule.kind).toBe('flag');
-		expect(rule.argv('mcpProjectCreate', true)).toEqual(['--mcpProjectCreate']);
+		expect(rule.argv('mcpProjectCreate', true)).toEqual([
+			'--mcpProjectCreate',
+		]);
 		expect(rule.argv('mcpProjectCreate', false)).toEqual([]);
 		expect(rule.argv('mcpProjectCreate', undefined)).toEqual([]);
 	});
@@ -57,7 +62,10 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 	it("renders a 'repeatable' rule as a comma-joined, de-duplicated list", async () => {
 		const rule = ruleFor('plugins');
 		expect(rule.kind).toBe('repeatable');
-		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual(['--plugins', 'a,b']);
+		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual([
+			'--plugins',
+			'a,b',
+		]);
 		expect(rule.argv('plugins', [])).toEqual([]);
 	});
 

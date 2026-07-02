@@ -76,11 +76,12 @@ const END_MARKER = '<!-- mcp-vertex:end -->';
 const CANONICAL_HOST_BLOCK = (
 	host: 'copilot' | 'claude' | 'agents',
 ): string => {
-	const FOOTNOTE: Readonly<Record<typeof HOST_FILE_TARGETS[number]['host'], string>> = {
+	const FOOTNOTE: Readonly<
+		Record<(typeof HOST_FILE_TARGETS)[number]['host'], string>
+	> = {
 		copilot:
 			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
-		claude:
-			'- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
+		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
 		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
 	};
 	return (
@@ -202,13 +203,16 @@ export const captureHostFiles = async (
  */
 export const hasNonCanonicalContent = (
 	captures: readonly ICapturedHostFile[],
-): boolean =>
-	captures.some((c) => !c.missing && !c.alreadyCanonical);
+): boolean => captures.some((c) => !c.missing && !c.alreadyCanonical);
 
 /** Stable workspace hash, used in the proposal filename and title. */
 export const deriveWorkspaceHash = (workspaceRoot: string): string => {
-	const stem = basename(workspaceRoot || 'workspace').toLowerCase() || 'workspace';
-	const hash = createHash('sha1').update(workspaceRoot || 'workspace').digest('hex').slice(0, 8);
+	const stem =
+		basename(workspaceRoot || 'workspace').toLowerCase() || 'workspace';
+	const hash = createHash('sha1')
+		.update(workspaceRoot || 'workspace')
+		.digest('hex')
+		.slice(0, 8);
 	return `${stem}-${hash}`;
 };
 
@@ -219,145 +223,182 @@ export const deriveWorkspaceHash = (workspaceRoot: string): string => {
  * so a reviewer who knows f00089 already knows this file.
  */
 const renderProposalBody = (
-        id: string,
-        workspaceRoot: string,
-        workspaceHash: string,
-        captures: readonly ICapturedHostFile[],
+	id: string,
+	workspaceRoot: string,
+	workspaceHash: string,
+	captures: readonly ICapturedHostFile[],
 ): string => {
-        const date = new Date().toISOString().slice(0, 10);
+	const date = new Date().toISOString().slice(0, 10);
 
-        const sections = captures
-                .map(
-                        (c) =>
-                                "### " + c.relPath +
-                                "\n\n" +
-                                "*missing before overwrite*: " + (c.missing ? "yes" : "no") + "\n" +
-                                "*already canonical*: " + (c.alreadyCanonical ? "yes" : "no") + "\n" +
-                                "\n" +
-                                "**Pre-overwrite content** (verbatim):\n" +
-                                "\n" +
-                                "```md\n" +
-                                (c.preOverwrite.length > 0 ? c.preOverwrite : "<file did not exist>") +
-                                "\n```\n" +
-                                "\n" +
-                                "**Canonical replacement the next `init` would write**:\n" +
-                                "\n" +
-                                "```md\n" +
-                                c.canonicalReplacement +
-                                "\n```\n"
-                )
-                .join("\n\n");
+	const sections = captures
+		.map(
+			(c) =>
+				'### ' +
+				c.relPath +
+				'\n\n' +
+				'*missing before overwrite*: ' +
+				(c.missing ? 'yes' : 'no') +
+				'\n' +
+				'*already canonical*: ' +
+				(c.alreadyCanonical ? 'yes' : 'no') +
+				'\n' +
+				'\n' +
+				'**Pre-overwrite content** (verbatim):\n' +
+				'\n' +
+				'```md\n' +
+				(c.preOverwrite.length > 0
+					? c.preOverwrite
+					: '<file did not exist>') +
+				'\n```\n' +
+				'\n' +
+				'**Canonical replacement the next `init` would write**:\n' +
+				'\n' +
+				'```md\n' +
+				c.canonicalReplacement +
+				'\n```\n',
+		)
+		.join('\n\n');
 
-        const title = "Review replaced host-instructions (" + workspaceHash + ")";
+	const title = `Review replaced host-instructions (${workspaceHash})`;
 
-        const EMDASH = " — ";
+	const EMDASH = ' — ';
 
-        const frontmatter =
-                "---\n" +
-                "id: " + id + "\n" +
-                "status: ready\n" +
-                "type: proposal\n" +
-                "kind: feat\n" +
-                "track: cli+bootstrap+host-discovery\n" +
-                "date: " + date + "\n" +
-                "title: " + title + "\n" +
-                "shipped-in: []\n" +
-                "recan: []\n" +
-                "related:\n" +
-                "    - f00084 # init command whose S4 host-instructions centralizer triggered the snapshot\n" +
-                "    - f00093 # this proposal source slice\n" +
-                "    - f00092 # host-hints single fragment - the canonical block that replaced the captured content\n" +
-                "    - f00056 # universal bootstrap - the canonical rules the LLM already has in context\n" +
-                "ownership:\n" +
-                "    - { agent: implementation_runner, task: 'S1: classify each captured rule - drop (bootstrap covers it), port to bootstrap, port to a project-local convention file, or keep (rare)' }\n" +
-                "    - { agent: delivery_verifier,    task: 'S2: integrate the kept rules into their chosen destination; close the proposal when no carry-overs remain' }\n" +
-                "globalGate: validate\n" +
-                "acceptance:\n" +
-                "    - { command: bun run typecheck, expect: exit0 }\n" +
-                "    - { command: bun run test,      expect: exit0 }\n" +
-                "    - { command: bun run validate,  expect: exit0 }\n" +
-                "---\n\n";
+	const frontmatter =
+		'---\n' +
+		'id: ' +
+		id +
+		'\n' +
+		'status: ready\n' +
+		'type: proposal\n' +
+		'kind: feat\n' +
+		'track: cli+bootstrap+host-discovery\n' +
+		'date: ' +
+		date +
+		'\n' +
+		'title: ' +
+		title +
+		'\n' +
+		'shipped-in: []\n' +
+		'recan: []\n' +
+		'related:\n' +
+		'    - f00084 # init command whose S4 host-instructions centralizer triggered the snapshot\n' +
+		'    - f00093 # this proposal source slice\n' +
+		'    - f00092 # host-hints single fragment - the canonical block that replaced the captured content\n' +
+		'    - f00056 # universal bootstrap - the canonical rules the LLM already has in context\n' +
+		'ownership:\n' +
+		"    - { agent: implementation_runner, task: 'S1: classify each captured rule - drop (bootstrap covers it), port to bootstrap, port to a project-local convention file, or keep (rare)' }\n" +
+		"    - { agent: delivery_verifier,    task: 'S2: integrate the kept rules into their chosen destination; close the proposal when no carry-overs remain' }\n" +
+		'globalGate: validate\n' +
+		'acceptance:\n' +
+		'    - { command: bun run typecheck, expect: exit0 }\n' +
+		'    - { command: bun run test,      expect: exit0 }\n' +
+		'    - { command: bun run validate,  expect: exit0 }\n' +
+		'---\n\n';
 
-        const titleHeader = "# " + id + " " + EMDASH + " " + title + "\n\n";
+	const titleHeader = `# ${id} ${EMDASH} ${title}\n\n`;
 
-        const goal =
-                "## goal\n\n" +
-                "This proposal was scaffolded by `mcpv init` (f00093) because the\n" +
-                "last `init` run in this workspace was about to overwrite the\n" +
-                "three host files at ** `" + workspaceRoot + "` ** with the canonical\n" +
-                "mcp-vertex block (f00092).\n\n" +
-                "You already have the mcp-vertex bootstrap in context (via\n" +
-                "`mcp-vertex_overview`" + EMDASH + "the new rules) AND the freshly-overwritten\n" +
-                "host files (the new canonical block, with the host-specific\n" +
-                "footnote inline per f00092). Your job is to read each captured\n" +
-                "rule below and decide its destination.\n\n" +
-                "Decisions, per rule:\n\n" +
-                "- **drop** " + EMDASH + " the mcp-vertex bootstrap already covers the rule.\n" +
-                "- **port to bootstrap** " + EMDASH + " the rule is genuinely orthogonal to the\n" +
-                "  mcp-vertex conventions and belongs as a new appendix in\n" +
-                "`docs/mcp-vertex/AGENT-BOOTSTRAP.md` (open a follow-up slice to\n" +
-                "  propose the addition and route it through f00056 review).\n" +
-                "- **port to project-local** " + EMDASH + " the rule is project-specific. Move it to\n" +
-                "`README.md`, a `.editorconfig`, a `CONTRIBUTING.md`, or the\n" +
-                "  relevant plugin `pluginPathsRoot` per f00088 detection\n" +
-                "  result.\n" +
-                "- **keep in host file** " + EMDASH + " rare; only when the rule is genuinely\n" +
-                "  host-specific (e.g. a model-specific close-marker variant). In\n" +
-                "  that case, edit the host file canonical block region (between\n" +
-                "`<!-- mcp-vertex:begin -->` and `<!-- mcp-vertex:end -->`)\n" +
-                "  in place; the next `init` will preserve the change ONLY if the\n" +
-                "  future canonical block matches byte-for-byte (f00092 invariant).\n\n";
+	const goal =
+		'## goal\n\n' +
+		'This proposal was scaffolded by `mcpv init` (f00093) because the\n' +
+		'last `init` run in this workspace was about to overwrite the\n' +
+		'three host files at ** `' +
+		workspaceRoot +
+		'` ** with the canonical\n' +
+		'mcp-vertex block (f00092).\n\n' +
+		'You already have the mcp-vertex bootstrap in context (via\n' +
+		'`mcp-vertex_overview`' +
+		EMDASH +
+		'the new rules) AND the freshly-overwritten\n' +
+		'host files (the new canonical block, with the host-specific\n' +
+		'footnote inline per f00092). Your job is to read each captured\n' +
+		'rule below and decide its destination.\n\n' +
+		'Decisions, per rule:\n\n' +
+		'- **drop** ' +
+		EMDASH +
+		' the mcp-vertex bootstrap already covers the rule.\n' +
+		'- **port to bootstrap** ' +
+		EMDASH +
+		' the rule is genuinely orthogonal to the\n' +
+		'  mcp-vertex conventions and belongs as a new appendix in\n' +
+		'`docs/mcp-vertex/AGENT-BOOTSTRAP.md` (open a follow-up slice to\n' +
+		'  propose the addition and route it through f00056 review).\n' +
+		'- **port to project-local** ' +
+		EMDASH +
+		' the rule is project-specific. Move it to\n' +
+		'`README.md`, a `.editorconfig`, a `CONTRIBUTING.md`, or the\n' +
+		'  relevant plugin `pluginPathsRoot` per f00088 detection\n' +
+		'  result.\n' +
+		'- **keep in host file** ' +
+		EMDASH +
+		' rare; only when the rule is genuinely\n' +
+		'  host-specific (e.g. a model-specific close-marker variant). In\n' +
+		'  that case, edit the host file canonical block region (between\n' +
+		'`<!-- mcp-vertex:begin -->` and `<!-- mcp-vertex:end -->`)\n' +
+		'  in place; the next `init` will preserve the change ONLY if the\n' +
+		'  future canonical block matches byte-for-byte (f00092 invariant).\n\n';
 
-        const inventory =
-                "## inventory\n\n" +
-                "Three captured payloads, one per host file. Code fences are\n" +
-                "verbatim so wrapping is irrelevant.\n\n" +
-                sections + "\n\n";
+	const inventory =
+		'## inventory\n\n' +
+		'Three captured payloads, one per host file. Code fences are\n' +
+		'verbatim so wrapping is irrelevant.\n\n' +
+		sections +
+		'\n\n';
 
-        const nongoals =
-                "## non-goals\n\n" +
-                "- **Do not re-apply any captured rule to the canonical block.**\n" +
-                "  The canonical block is the f00092 single-fragment contract;\n" +
-                "  the only way to evolve it is a follow-up slice in this repo,\n" +
-                "  not by hand-editing the host file outside the markers.\n" +
-                "- **Do not delete this proposal when you close it.** It is the\n" +
-                "  audit log of what `init` replaced; closing it archives the\n" +
-                "  slice markers but keeps the proposal body on disk under\n" +
-                "`docs/mcp-vertex/proposals/done/`.\n\n";
+	const nongoals =
+		'## non-goals\n\n' +
+		'- **Do not re-apply any captured rule to the canonical block.**\n' +
+		'  The canonical block is the f00092 single-fragment contract;\n' +
+		'  the only way to evolve it is a follow-up slice in this repo,\n' +
+		'  not by hand-editing the host file outside the markers.\n' +
+		'- **Do not delete this proposal when you close it.** It is the\n' +
+		'  audit log of what `init` replaced; closing it archives the\n' +
+		'  slice markers but keeps the proposal body on disk under\n' +
+		'`docs/mcp-vertex/proposals/done/`.\n\n';
 
-        const slices =
-                "## slices\n\n" +
-                "### S1 " + EMDASH + " classify each captured rule\n\n" +
-                "- **Status**: pending\n" +
-                "- **Files**: this proposal (read-only)\n" +
-                "- **Gate**: typecheck (no code change yet)\n" +
-                "- **Acceptance**:\n" +
-                "  - \"Every captured rule has been classified as one of:\n" +
-                "    drop / port-to-bootstrap / port-to-project-local / keep.\"\n" +
-                "  - \"Rules classified as `drop` have a one-line rationale\n" +
-                "    pointing at the matching bootstrap section.\"\n\n" +
-                "### S2 " + EMDASH + " integrate the kept rules\n\n" +
-                "- **Status**: pending\n" +
-                "- **Files**: destination per the S1 decision (bootstrap appendix /\n" +
-                "  README.md / editor config / host file canonical region)\n" +
-                "- **Gate**: validate\n" +
-                "- **Acceptance**:\n" +
-                "  - \"Every rule with a non-`drop` destination has been written\n" +
-                "    to that destination.\"\n" +
-                "  - \"If no rule survives (`drop` was the only decision for every\n" +
-                "    captured rule), close the proposal with a one-line note.\"\n\n";
+	const slices =
+		'## slices\n\n' +
+		'### S1 ' +
+		EMDASH +
+		' classify each captured rule\n\n' +
+		'- **Status**: pending\n' +
+		'- **Files**: this proposal (read-only)\n' +
+		'- **Gate**: typecheck (no code change yet)\n' +
+		'- **Acceptance**:\n' +
+		'  - "Every captured rule has been classified as one of:\n' +
+		'    drop / port-to-bootstrap / port-to-project-local / keep."\n' +
+		'  - "Rules classified as `drop` have a one-line rationale\n' +
+		'    pointing at the matching bootstrap section."\n\n' +
+		'### S2 ' +
+		EMDASH +
+		' integrate the kept rules\n\n' +
+		'- **Status**: pending\n' +
+		'- **Files**: destination per the S1 decision (bootstrap appendix /\n' +
+		'  README.md / editor config / host file canonical region)\n' +
+		'- **Gate**: validate\n' +
+		'- **Acceptance**:\n' +
+		'  - "Every rule with a non-`drop` destination has been written\n' +
+		'    to that destination."\n' +
+		'  - "If no rule survives (`drop` was the only decision for every\n' +
+		'    captured rule), close the proposal with a one-line note."\n\n';
 
-        const acceptance =
-                "## acceptance\n\n" +
-                "- `bun run validate` is green.\n" +
-                "- For every captured rule: the LLM recorded a decision (drop /\n" +
-                "  port / keep) in the closure note.\n" +
-                "- No captured content has been silently re-applied to the host\n" +
-                "  file canonical block.\n";
+	const acceptance =
+		'## acceptance\n\n' +
+		'- `bun run validate` is green.\n' +
+		'- For every captured rule: the LLM recorded a decision (drop /\n' +
+		'  port / keep) in the closure note.\n' +
+		'- No captured content has been silently re-applied to the host\n' +
+		'  file canonical block.\n';
 
-        return frontmatter + titleHeader + goal + inventory + nongoals + slices + acceptance;
+	return (
+		frontmatter +
+		titleHeader +
+		goal +
+		inventory +
+		nongoals +
+		slices +
+		acceptance
+	);
 };
-
 
 /**
  * Render the snapshot proposal. Returns `[]` when the captured set
@@ -398,7 +439,12 @@ export const renderSnapshotHostInstructionsProposal = async (
 	};
 	const id = await allocateNextAdoptionId(options.reader, emptyInventory);
 
-	const content = renderProposalBody(id, answers.workspaceRoot, workspaceHash, captures);
+	const content = renderProposalBody(
+		id,
+		answers.workspaceRoot,
+		workspaceHash,
+		captures,
+	);
 	const relPath = `docs/mcp-vertex/proposals/ready/${id}-review-replaced-host-instructions-${workspaceHash}.md`;
 
 	return [{ relPath, content, id, captures }];

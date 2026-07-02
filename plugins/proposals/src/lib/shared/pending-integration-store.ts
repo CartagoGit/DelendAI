@@ -99,7 +99,9 @@ export const createPendingIntegrationStore = (
 	): Promise<readonly IPendingIntegrationEntry[]> =>
 		withFileMutex(path, async () => {
 			const state = await read();
-			const others = state.entries.filter((e) => e.branch !== entry.branch);
+			const others = state.entries.filter(
+				(e) => e.branch !== entry.branch,
+			);
 			const next: IPendingIntegrationState = {
 				version: PENDING_INTEGRATION_VERSION,
 				entries: [...others, entry],
@@ -117,7 +119,10 @@ export const createPendingIntegrationStore = (
 				(e) => !integratedBranches.has(e.branch),
 			);
 			if (kept.length === state.entries.length) return false;
-			await write({ version: PENDING_INTEGRATION_VERSION, entries: kept });
+			await write({
+				version: PENDING_INTEGRATION_VERSION,
+				entries: kept,
+			});
 			return true;
 		});
 

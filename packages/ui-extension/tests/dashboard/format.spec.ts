@@ -149,10 +149,16 @@ describe('formatRelativeTime', async () => {
 			formatRelativeTime(new Date(now - 5 * 60_000).toISOString(), 'en'),
 		).toMatch(/5 minutes? ago/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 3_600_000).toISOString(), 'en'),
+			formatRelativeTime(
+				new Date(now - 5 * 3_600_000).toISOString(),
+				'en',
+			),
 		).toMatch(/5 hours? ago/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 86_400_000).toISOString(), 'en'),
+			formatRelativeTime(
+				new Date(now - 5 * 86_400_000).toISOString(),
+				'en',
+			),
 		).toMatch(/5 days? ago/);
 	});
 	it('renders localized relative time for es', async () => {
@@ -165,10 +171,16 @@ describe('formatRelativeTime', async () => {
 			formatRelativeTime(new Date(now - 5 * 60_000).toISOString(), 'es'),
 		).toMatch(/hace 5 minutos/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 3_600_000).toISOString(), 'es'),
+			formatRelativeTime(
+				new Date(now - 5 * 3_600_000).toISOString(),
+				'es',
+			),
 		).toMatch(/hace 5 horas/);
 		expect(
-			formatRelativeTime(new Date(now - 5 * 86_400_000).toISOString(), 'es'),
+			formatRelativeTime(
+				new Date(now - 5 * 86_400_000).toISOString(),
+				'es',
+			),
 		).toMatch(/hace 5 días/);
 	});
 	it('uses "yesterday" / "ayer" for ±1 day with numeric: auto', async () => {

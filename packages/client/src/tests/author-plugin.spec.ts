@@ -130,8 +130,8 @@ describe('authorPlugin — multiple tools', () => {
 		// namespace prefix is applied to the registered names + config
 		expect(result.tools).toEqual(['mx_first', 'mx_second']);
 		const config = await readConfig();
-		expect(config.plugins?.['multi']?.prefix).toBe('mx');
-		expect(config.plugins?.['multi']?.path).toBe(
+		expect(config.plugins?.multi?.prefix).toBe('mx');
+		expect(config.plugins?.multi?.path).toBe(
 			'./plugins/multi/src/index.ts',
 		);
 	});
@@ -183,12 +183,12 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 
 		const config = await readConfig();
 		// existing entry untouched
-		expect(config.plugins?.['proposals']).toEqual({
+		expect(config.plugins?.proposals).toEqual({
 			prefix: 'work',
 			options: { x: 1 },
 		});
 		// top-level key preserved
-		expect(config['cacheDir']).toBe('.cache/mv');
+		expect(config.cacheDir).toBe('.cache/mv');
 		// new entry added alongside
 		expect(config.plugins?.['project-x']?.path).toBe(
 			'./plugins/project-x/src/index.ts',
@@ -227,7 +227,7 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 
 		const config = await readConfig();
 		// prefix + options preserved, only path rewritten
-		expect(config.plugins?.['widget']).toEqual({
+		expect(config.plugins?.widget).toEqual({
 			prefix: 'wg',
 			options: { k: 'v' },
 			path: './plugins/widget/src/index.ts',
@@ -248,12 +248,10 @@ describe('authorPlugin — idempotent, non-destructive registration', () => {
 			'alpha',
 			'beta',
 		]);
-		expect(config.plugins?.['alpha']?.path).toBe(
+		expect(config.plugins?.alpha?.path).toBe(
 			'./plugins/alpha/src/index.ts',
 		);
-		expect(config.plugins?.['beta']?.path).toBe(
-			'./plugins/beta/src/index.ts',
-		);
+		expect(config.plugins?.beta?.path).toBe('./plugins/beta/src/index.ts');
 	});
 });
 

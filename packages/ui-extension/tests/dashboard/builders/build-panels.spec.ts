@@ -14,19 +14,61 @@ describe('buildPanels', () => {
 				tools: [],
 				knowledgeIds: [],
 				recommendedNextAction: 'N/A',
-				totals: { tools: 0, plugins: 0, proposals: 0, calls: 0, errors: 0, totalMs: 0, tokens: 0, tokensSaved: 0, savingsPercent: 0, agents: 0 },
+				totals: {
+					tools: 0,
+					plugins: 0,
+					proposals: 0,
+					calls: 0,
+					errors: 0,
+					totalMs: 0,
+					tokens: 0,
+					tokensSaved: 0,
+					savingsPercent: 0,
+					agents: 0,
+				},
 			},
-			metrics: { totals: { calls: 0, errors: 0, totalMs: 0, totalBytes: 0 }, rows: [], sparklines: {}, collectedAt: '2026-06-21T07:00:00.000Z' },
-			tokens: { tokensUsed: 0, tokensSaved: 0, savingsPercent: 0, topByTokens: [], history: [] },
+			metrics: {
+				totals: { calls: 0, errors: 0, totalMs: 0, totalBytes: 0 },
+				rows: [],
+				sparklines: {},
+				collectedAt: '2026-06-21T07:00:00.000Z',
+			},
+			tokens: {
+				tokensUsed: 0,
+				tokensSaved: 0,
+				savingsPercent: 0,
+				topByTokens: [],
+				history: [],
+			},
 			tools: { rows: [], sortBy: 'calls', sortDir: 'desc' },
 			plugins: { rows: [] },
 			sessions: { total: 0, byStatus: {}, rows: [] },
-			times: { totalWallMs: 0, slowestTool: { tool: 'some_tool', maxMs: 100 }, p50Ms: 0, p95Ms: 0, histogram: [] },
+			times: {
+				totalWallMs: 0,
+				slowestTool: { tool: 'some_tool', maxMs: 100 },
+				p50Ms: 0,
+				p95Ms: 0,
+				histogram: [],
+			},
 			agents: { agents: [], totalActive: 0 },
-			health: { healthy: true, locksActive: 0, queue: null, orphans: 0, orphansThreshold: 'unknown', stale: [], staleCount: 0, agents: [], fetchedAt: '2026-06-21T07:00:00.000Z' },
+			health: {
+				healthy: true,
+				locksActive: 0,
+				queue: null,
+				orphans: 0,
+				orphansThreshold: 'unknown',
+				stale: [],
+				staleCount: 0,
+				agents: [],
+				fetchedAt: '2026-06-21T07:00:00.000Z',
+			},
 		} as unknown as IDashboardAllModels;
 
-		const html = buildPanels(mockModel, dictsByLang.en, 'https://docs.mcp.vertex');
+		const html = buildPanels(
+			mockModel,
+			dictsByLang.en,
+			'https://docs.mcp.vertex',
+		);
 		expect(html).toContain('panel-overview');
 		expect(html).toContain('panel-metrics');
 		expect(html).toContain('panel-tokens');

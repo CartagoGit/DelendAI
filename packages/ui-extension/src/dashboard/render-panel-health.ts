@@ -8,7 +8,10 @@ import type { ILangDict } from '@mcp-vertex/shared/i18n';
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber } from './format';
 
-const renderQueue = (queue: IHealthSnapshot['queue'], lang: ILangDict): string => {
+const renderQueue = (
+	queue: IHealthSnapshot['queue'],
+	lang: ILangDict,
+): string => {
 	const text = (key: string) => extensionText(lang, key);
 	if (queue === null) {
 		return `<p class="mv-fg-muted">${escapeHtml(text('dashboard.health.noneQueue'))}</p>`;
@@ -24,7 +27,7 @@ const renderQueue = (queue: IHealthSnapshot['queue'], lang: ILangDict): string =
 
 const renderStaleRows = (
 	stale: ReadonlyArray<IHealthSnapshot['stale'][number]>,
- 	lang: ILangDict,
+	lang: ILangDict,
 ): string => {
 	const text = (key: string) => extensionText(lang, key);
 	if (stale.length === 0) {

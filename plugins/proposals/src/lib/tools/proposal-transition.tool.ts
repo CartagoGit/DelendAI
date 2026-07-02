@@ -201,7 +201,10 @@ export const runProposalTransition = async (
 			if (match) depId = match[0];
 
 			const blockedByRaw = readFrontmatterField(raw, 'blocked-by');
-			const hasDepInFrontmatter = blockedByRaw && blockedByRaw.trim() !== '' && blockedByRaw.trim() !== '[]';
+			const hasDepInFrontmatter =
+				blockedByRaw &&
+				blockedByRaw.trim() !== '' &&
+				blockedByRaw.trim() !== '[]';
 
 			if (hasDepInReason || hasDepInFrontmatter) {
 				finalTo = 'blocked';

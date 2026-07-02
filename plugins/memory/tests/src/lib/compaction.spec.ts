@@ -14,12 +14,23 @@ import {
 } from '@mcp-vertex/memory/lib/services/compaction';
 
 const items: readonly IContextItem[] = [
-	{ kind: 'decision', label: 'Use memory plugin, not a new plugin', detail: 'reuse store + redaction' },
+	{
+		kind: 'decision',
+		label: 'Use memory plugin, not a new plugin',
+		detail: 'reuse store + redaction',
+	},
 	{ kind: 'open', label: 'wire trigger into overview', detail: 'S2 pending' },
 	{ kind: 'fact', label: 'counter is at f:90' },
-	{ kind: 'pointer', label: 'plugins/memory/src/lib/services/compaction.ts:1' },
+	{
+		kind: 'pointer',
+		label: 'plugins/memory/src/lib/services/compaction.ts:1',
+	},
 	{ kind: 'output', label: 'raw bun test dump', detail: 'x'.repeat(500) },
-	{ kind: 'exploration', label: 'tried a new plugin first', detail: 'dead end' },
+	{
+		kind: 'exploration',
+		label: 'tried a new plugin first',
+		detail: 'dead end',
+	},
 	{ kind: 'superseded', label: 'old plan v1' },
 ];
 

@@ -227,7 +227,7 @@ const buildTabsDom = (
 		makeEl('SECTION', {
 			id: `ui-panel-${t.id}`,
 			dataset: { tabPanel: t.id },
-			hidden: initialHidden.includes(t.id) ? false : true,
+			hidden: !initialHidden.includes(t.id),
 		}),
 	);
 	return makeEl('SECTION', {

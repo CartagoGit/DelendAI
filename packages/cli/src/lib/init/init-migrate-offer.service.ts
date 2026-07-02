@@ -25,9 +25,7 @@
 import type { IAdoptionPlan } from '../../contracts/interfaces/init.interface';
 import { basename } from 'node:path';
 
-import {
-	renderAdoptionSections,
-} from './init-adoption-plan.builder';
+import { renderAdoptionSections } from './init-adoption-plan.builder';
 import type { IInitAnswers } from './init-answers.types';
 import type { IFileReader } from './init-detection.service';
 import {
@@ -116,7 +114,6 @@ export const renderMigrationProposal = (
 };
 
 /** Result of the U1 adoption-plan generator. */
-
 
 /**
  * Render the foreign-system prose of the plan body (advisory mapping).

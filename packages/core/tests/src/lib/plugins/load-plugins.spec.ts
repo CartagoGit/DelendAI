@@ -96,7 +96,10 @@ describe('loadPlugins', async () => {
 	it('loads a plugin from an absolute path specifier', async () => {
 		const pluginDir = mkdtempSync(join(tmpdir(), 'mcp-vertex-plugin-'));
 		const pluginPath = join(pluginDir, 'index.js');
-		writeFileSync(pluginPath, 'export default { name: "local-demo", register: () => ({ tools: [] }) };');
+		writeFileSync(
+			pluginPath,
+			'export default { name: "local-demo", register: () => ({ tools: [] }) };',
+		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
 			specifiers: [pluginPath],
@@ -123,7 +126,10 @@ describe('loadPlugins', async () => {
 		const pluginDir = join(workspace, 'plugins', 'my-plugin');
 		mkdirSync(pluginDir, { recursive: true });
 		const pluginPath = join(pluginDir, 'index.js');
-		writeFileSync(pluginPath, 'export default { name: "my-plugin", register: () => ({ tools: [] }) };');
+		writeFileSync(
+			pluginPath,
+			'export default { name: "my-plugin", register: () => ({ tools: [] }) };',
+		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
 			specifiers: ['./plugins/my-plugin/index.js'],
@@ -156,6 +162,8 @@ describe('loadPlugins', async () => {
 		});
 		expect(result.loaded).toHaveLength(0);
 		expect(result.errors[0]?.message).toMatch(/plugin path does not exist/);
-		expect(result.errors[0]?.message).toMatch(/\/definitely\/missing\/plugin\.js/);
+		expect(result.errors[0]?.message).toMatch(
+			/\/definitely\/missing\/plugin\.js/,
+		);
 	});
 });

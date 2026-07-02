@@ -24,7 +24,12 @@ describe('preset-table', () => {
 			const matrix = buildPresetMatrix();
 			const lean = matrix.rows.find((r) => r.preset.id === 'lean');
 			expect(lean?.preset.independent).toBe(true);
-			expect(lean?.effective).toEqual(['git', 'search', 'memory', 'docs']);
+			expect(lean?.effective).toEqual([
+				'git',
+				'search',
+				'memory',
+				'docs',
+			]);
 		});
 
 		it('column ids are deduplicated and in catalog order', () => {

@@ -8,8 +8,10 @@ export const renderPanelMemory = (
 	model: IMemoryListResult,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const rows =
 		model.notes.length === 0
 			? `<tr><td colspan="3" class="mv-fg-muted">${escapeHtml(text('dashboard.memory.none'))}</td></tr>`

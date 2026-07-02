@@ -12,8 +12,10 @@ export const renderPanelTimes = (
 	model: IDashboardTimesModel,
 	lang: ILangDict,
 ): string => {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const chart = barChart(
 		model.histogram.map((b) => ({ label: b.bucket, value: b.count })),
 		640,

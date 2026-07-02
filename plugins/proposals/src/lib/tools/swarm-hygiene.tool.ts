@@ -181,7 +181,10 @@ export const buildSwarmHygieneRegistration = (
 							? { agentPrefix: options.agentPrefix }
 							: {}),
 						...(options.staleBehindThreshold !== undefined
-							? { staleBehindThreshold: options.staleBehindThreshold }
+							? {
+									staleBehindThreshold:
+										options.staleBehindThreshold,
+								}
 							: {}),
 						// f00091 S2: surface + self-heal the pending-integration
 						// list. Reading + pruning the store is the ONLY write
@@ -196,7 +199,9 @@ export const buildSwarmHygieneRegistration = (
 									pruneIntegrated: (
 										branches: ReadonlySet<string>,
 									) =>
-										pendingStore.prune(branches).then(() => {}),
+										pendingStore
+											.prune(branches)
+											.then(() => {}),
 								}
 							: {}),
 					};

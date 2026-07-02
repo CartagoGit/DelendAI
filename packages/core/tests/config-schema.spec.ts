@@ -11,7 +11,10 @@ import {
 
 describe('mcp-vertex.config.json JSON Schema (drift guard)', async () => {
 	it('the committed schema matches the Zod source of truth', async () => {
-		const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+		const repoRoot = resolve(
+			dirname(fileURLToPath(import.meta.url)),
+			'../../..',
+		);
 		const committed = readFileSync(
 			join(repoRoot, CONFIG_SCHEMA_PATH),
 			'utf8',

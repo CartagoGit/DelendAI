@@ -29,7 +29,12 @@
  * but a pointer is not collapsed a second time.
  */
 
-import type { IAgentInstructionSourceSpec, IConsolidationPlan, IConsolidationWrite, IDiscoveredInstructionSource, IHostInstructionsTarget } from '../../contracts/interfaces/init.interface';
+import type {
+	IAgentInstructionSourceSpec,
+	IConsolidationPlan,
+	IConsolidationWrite,
+	IDiscoveredInstructionSource,
+} from '../../contracts/interfaces/init.interface';
 
 // f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
 // Re-exported here for specs that import the plan type from this module.
@@ -37,8 +42,6 @@ export type { IConsolidationPlan } from '../../contracts/interfaces/init.interfa
 
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-
-;
 
 const BEGIN_MARKER = '<!-- mcp-vertex:begin -->';
 const END_MARKER = '<!-- mcp-vertex:end -->';
@@ -103,8 +106,7 @@ export const readHostInstructionsFile = async (
  * `docs/mcp-vertex/AGENT-BOOTSTRAP.md`. Kept under the mcp-vertex docs tree so
  * it never collides with a file the target already owns.
  */
-export const CANONICAL_AGENT_DOC_REL =
-	'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
+export const CANONICAL_AGENT_DOC_REL = 'docs/mcp-vertex/AGENT-BOOTSTRAP.md';
 
 /** Marker that flags a fully consolidated (pointer-only) legacy file. */
 const POINTER_MARKER = '<!-- mcp-vertex:pointer -->';
@@ -123,7 +125,6 @@ const POINTER_MARKER = '<!-- mcp-vertex:pointer -->';
  *
  * The canonical doc itself is never treated as a source (it is the sink).
  */
-
 
 export const AGENT_INSTRUCTION_SOURCE_SPECS: readonly IAgentInstructionSourceSpec[] =
 	[
@@ -146,7 +147,6 @@ export const AGENT_INSTRUCTION_SOURCE_SPECS: readonly IAgentInstructionSourceSpe
 	];
 
 /** One discovered scattered agent-instruction source in the target. */
-
 
 /**
  * Pure: does a target-relative path match a source spec?
@@ -263,11 +263,7 @@ export const collapseToCanonicalBody = (
 		.filter((s) => !s.isPointerOnly)
 		.map((s) => {
 			const prose = extractOriginalProse(s.content);
-			return [
-				`## From ${s.relPath} (${s.label})`,
-				'',
-				prose,
-			].join('\n');
+			return [`## From ${s.relPath} (${s.label})`, '', prose].join('\n');
 		});
 	if (absorbed.length === 0) {
 		return [
@@ -307,9 +303,7 @@ export const renderLegacyPointerBody = (
 
 /** A single planned write the consolidation produces. */
 
-
 /** The full advisory result of a consolidation pass. */
-
 
 /**
  * Pure orchestrator: given the discovered sources and the current content of
@@ -360,7 +354,11 @@ export const planInstructionConsolidation = (
 		if (next === undefined) continue;
 		// Skip a no-op (already byte-identical) so re-runs add nothing.
 		if (next === source.content) continue;
-		writes.push({ relPath: source.relPath, content: next, role: 'pointer' });
+		writes.push({
+			relPath: source.relPath,
+			content: next,
+			role: 'pointer',
+		});
 	}
 	return { sources, canonicalRel, writes };
 };

@@ -15,9 +15,14 @@ const KPI_STRIP_STYLE =
 	'<style>.mv-kpis{display:flex;flex-wrap:wrap;gap:8px;}' +
 	'.mv-kpis>.mv-kpi{flex:1 1 120px;min-width:0;}</style>';
 
-export function buildKpiStrip(model: IDashboardAllModels, lang: ILangDict): string {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+export function buildKpiStrip(
+	model: IDashboardAllModels,
+	lang: ILangDict,
+): string {
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	const t = model.overview.totals;
 	return `${KPI_STRIP_STYLE}
 <div class="mv-kpis">

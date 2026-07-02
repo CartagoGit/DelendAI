@@ -277,9 +277,7 @@ export const buildCreateProposalRegistration = (
  * git mutation. Any failure degrades to `null` so `close_slice` never
  * throws over a branch-integration detail.
  */
-const resolveAgentBranch = async (
-	run: IGitRunner,
-): Promise<string | null> => {
+const resolveAgentBranch = async (run: IGitRunner): Promise<string | null> => {
 	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
 	if (!result.ok) return null;
 	const branch = result.output.trim();

@@ -89,7 +89,11 @@ describe('captureHostFiles (f00093)', () => {
 			'AGENTS.md': '# agents legacy rule\n',
 		});
 		const captures = await captureHostFiles(reader);
-		expect(captures.map((c) => c.host)).toEqual(['copilot', 'claude', 'agents']);
+		expect(captures.map((c) => c.host)).toEqual([
+			'copilot',
+			'claude',
+			'agents',
+		]);
 		expect(captures[0]?.preOverwrite).toContain('copilot legacy rule');
 		expect(captures[1]?.preOverwrite).toContain('claude legacy rule');
 		expect(captures[2]?.preOverwrite).toContain('agents legacy rule');
@@ -149,7 +153,9 @@ describe('isCanonicalHostBlock (f00093)', () => {
 		'<!-- mcp-vertex:end -->';
 
 	it('accepts the exact canonical block for each host', () => {
-		expect(isCanonicalHostBlock(canonical('copilot'), 'copilot')).toBe(true);
+		expect(isCanonicalHostBlock(canonical('copilot'), 'copilot')).toBe(
+			true,
+		);
 		expect(isCanonicalHostBlock(canonical('claude'), 'claude')).toBe(true);
 		expect(isCanonicalHostBlock(canonical('agents'), 'agents')).toBe(true);
 	});
@@ -297,7 +303,8 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 
 	it('emits one proposal when at least one host file has non-canonical content', async () => {
 		const reader = dirReader({
-			'.github/copilot-instructions.md': '# custom copilot rule the user wants to keep\n',
+			'.github/copilot-instructions.md':
+				'# custom copilot rule the user wants to keep\n',
 			'CLAUDE.md': '# legacy claude rule\n',
 			'AGENTS.md': '# mcp-vertex:begin -->\n',
 		});
@@ -326,7 +333,8 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 	it('allocates the next FREE id against the shared adoption pool (no hardcoded f00001)', async () => {
 		const reader = dirReader({
 			// pre-existing proposal at f00007 pushes the counter forward
-			'docs/mcp-vertex/proposals/ready/f00007-prior-proposal.md': '# prior\n',
+			'docs/mcp-vertex/proposals/ready/f00007-prior-proposal.md':
+				'# prior\n',
 			'.github/copilot-instructions.md': '# legacy\n',
 		});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
@@ -342,12 +350,18 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		const reader = dirReader({
 			'.github/copilot-instructions.md': '# legacy\n',
 		});
-		const first = await renderSnapshotHostInstructionsProposal(baseAnswers, {
-			reader,
-		});
-		const second = await renderSnapshotHostInstructionsProposal(baseAnswers, {
-			reader,
-		});
+		const first = await renderSnapshotHostInstructionsProposal(
+			baseAnswers,
+			{
+				reader,
+			},
+		);
+		const second = await renderSnapshotHostInstructionsProposal(
+			baseAnswers,
+			{
+				reader,
+			},
+		);
 		// Both runs land in the same pool so they get the same shape of
 		// id against the SAME counter — but the proposal filename ends up
 		// identical because the proposal id is the next-free one and the

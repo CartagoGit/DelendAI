@@ -249,10 +249,7 @@ export const runSwarmHygieneEngine = async (
 
 		const conforms =
 			agentPrefix.length === 0 || wt.branch.startsWith(agentPrefix);
-		if (
-			!conforms &&
-			nonConformingBranches.length < maxNonConforming
-		) {
+		if (!conforms && nonConformingBranches.length < maxNonConforming) {
 			nonConformingBranches.push({
 				path: wt.path,
 				branch: wt.branch,
@@ -264,7 +261,10 @@ export const runSwarmHygieneEngine = async (
 		// S4b: a worktree whose branch is unmerged AND far behind base.
 		// Prefer the already-computed snapshot entry (agent/* branches);
 		// otherwise query git for the non-conforming branch.
-		if (staleBehindThreshold > 0 && staleUnmerged.length < maxStaleUnmerged) {
+		if (
+			staleBehindThreshold > 0 &&
+			staleUnmerged.length < maxStaleUnmerged
+		) {
 			const known = snapshot.branches.find((b) => b.name === wt.branch);
 			const stats = known
 				? {
@@ -291,9 +291,7 @@ export const runSwarmHygieneEngine = async (
 	// The prune is the only write and it is registry bookkeeping — never
 	// a git mutation.
 	const mergedBranches = new Set(
-		snapshot.branches
-			.filter((b) => b.mergedIntoBase)
-			.map((b) => b.name),
+		snapshot.branches.filter((b) => b.mergedIntoBase).map((b) => b.name),
 	);
 	let pendingIntegration: readonly IPendingIntegrationEntry[] = [];
 	if (options.readPendingIntegration !== undefined) {

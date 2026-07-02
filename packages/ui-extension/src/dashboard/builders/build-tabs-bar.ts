@@ -15,8 +15,10 @@ export const TABS: ReadonlyArray<{ id: string; label: string }> = [
 ];
 
 export function buildTabsBar(lang: ILangDict): string {
-	const text = (key: string, vars?: Readonly<Record<string, string | number>>) =>
-		extensionText(lang, key, vars);
+	const text = (
+		key: string,
+		vars?: Readonly<Record<string, string | number>>,
+	) => extensionText(lang, key, vars);
 	// WAI-ARIA tabs (H27): each tab points at the panel it controls via
 	// `aria-controls`, and the tablist uses a roving tabindex — only the
 	// selected tab is in the tab order (tabindex="0"); the rest are
@@ -24,11 +26,7 @@ export function buildTabsBar(lang: ILangDict): string {
 	// client script). The docs tab is a real tab (controls panel-docs);
 	// the refresh button is an action, not a tab, so it keeps the normal
 	// tab order and no aria-controls.
-	const tabButton = (
-		id: string,
-		label: string,
-		selected: boolean,
-	): string =>
+	const tabButton = (id: string, label: string, selected: boolean): string =>
 		`<button class="mv-tab" id="tab-${id}" role="tab" aria-controls="panel-${id}" aria-selected="${selected ? 'true' : 'false'}" tabindex="${selected ? '0' : '-1'}" data-target="${id}">${escapeHtml(label)}</button>`;
 
 	const tabsHtml = TABS.map((tab, ix) =>

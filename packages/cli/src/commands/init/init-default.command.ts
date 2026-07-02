@@ -36,7 +36,6 @@ import type {
 } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
-import { InitAnswers } from '../../lib/init/init-answers.schema';
 import {
 	detectAndDecorateAnswers,
 	parseFlags,

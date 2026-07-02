@@ -22,7 +22,10 @@
  * `IFileReader` so every branch is deterministic.
  */
 
-import type { IInitDetection, ISourceRoot } from '../../contracts/interfaces/init.interface';
+import type {
+	IInitDetection,
+	ISourceRoot,
+} from '../../contracts/interfaces/init.interface';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -38,7 +41,6 @@ import {
 import type { IInitAnswers } from './init-answers.types';
 
 /** Source-root kinds the rest of init branches on. */
-
 
 /**
  * Map the analyzed shape onto the canonical convention table.

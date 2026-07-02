@@ -44,9 +44,7 @@ const HOST_SLUGS: Readonly<Record<AgentHost, string>> = {
  */
 export const slugify = (value: string): string => {
 	const trimmed = value.trim().toLowerCase();
-	const slug = trimmed
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+	const slug = trimmed.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 	return slug.length > 0 ? slug : 'unknown';
 };
 
@@ -100,7 +98,10 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 	// Without any of the new fields, this is the historical
 	// single-arg shape — return just the agent_name so the
 	// worktree engine keeps emitting `agent/<agent_name>`.
-	if (fields.length === 1 && fields[0] === slugifyAgentName(identity.agent_name)) {
+	if (
+		fields.length === 1 &&
+		fields[0] === slugifyAgentName(identity.agent_name)
+	) {
 		return fields[0]!;
 	}
 
@@ -123,12 +124,14 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 	// First drop the task_id, then trim the model.
 	if (task.length > 0) {
 		composite = tryCompose(model, '');
-		if (composite.length <= AGENT_IDENTITY_LIMITS.composite) return composite;
+		if (composite.length <= AGENT_IDENTITY_LIMITS.composite)
+			return composite;
 	}
 	if (model.length > 0) {
 		const trimmedModel = capSlug(model).slice(0, 8);
 		composite = tryCompose(trimmedModel, task);
-		if (composite.length <= AGENT_IDENTITY_LIMITS.composite) return composite;
+		if (composite.length <= AGENT_IDENTITY_LIMITS.composite)
+			return composite;
 	}
 	// Last resort: trim the agent_name (the required field). The
 	// composite is then `<host>-<agent_short>-<task>` and stays

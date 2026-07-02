@@ -49,12 +49,14 @@ const dirReader = (files: Readonly<Record<string, string>>): IFileReader => ({
 
 describe('detectSkillInventory (f00089 U2)', () => {
 	it('always exposes our canonical skills to migrate (point 2a)', async () => {
-		const inv = await detectSkillInventory(dirReader({ 'src/index.ts': '' }));
+		const inv = await detectSkillInventory(
+			dirReader({ 'src/index.ts': '' }),
+		);
 		expect(inv.canonicalSkills).toBe(CANONICAL_SKILLS);
 		expect(inv.canonicalSkills.length).toBeGreaterThan(0);
-		expect(inv.canonicalSkills.some((s) => s.id === 'mcp-vertex-operator')).toBe(
-			true,
-		);
+		expect(
+			inv.canonicalSkills.some((s) => s.id === 'mcp-vertex-operator'),
+		).toBe(true);
 	});
 
 	it('detects skills across several conventions and de-dups by location', async () => {
@@ -203,7 +205,9 @@ describe('renderToolUnificationSection (f00089 U2)', () => {
 
 	it('renders the foreign-tool branch when a foreign server exists', async () => {
 		const u = await buildToolUnification(
-			dirReader({ '.mcp.json': JSON.stringify({ servers: { acme: {} } }) }),
+			dirReader({
+				'.mcp.json': JSON.stringify({ servers: { acme: {} } }),
+			}),
 			{ ourPlugins: ['git'] },
 		);
 		const md = renderToolUnificationSection(u);
@@ -253,7 +257,9 @@ describe('renderAdoptionPlan embeds U2 sections (f00089 U2)', () => {
 		expect(plan.content).toContain('## acceptance');
 		expect(plan.content).not.toContain('## foreign proposal system');
 		expect(plan.content).toContain('**Foreign proposal system.**');
-		expect(plan.content).toContain('### S1 — inventory the foreign surface');
+		expect(plan.content).toContain(
+			'### S1 — inventory the foreign surface',
+		);
 		expect(plan.content).toContain('### S2 — map foreign → canonical');
 		// Structured result surfaced.
 		expect(plan.sections.toolUnification.collisions).toHaveLength(0);

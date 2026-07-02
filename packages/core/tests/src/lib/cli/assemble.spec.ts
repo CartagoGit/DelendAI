@@ -104,7 +104,10 @@ describe('assembleCliConfig — hostIdentity projection (f00082 S3)', async () =
 			),
 			import: captureImport(sink),
 		});
-		expect(sink.ctx?.hostIdentity).toEqual({ host: 'copilot', model: 'm3' });
+		expect(sink.ctx?.hostIdentity).toEqual({
+			host: 'copilot',
+			model: 'm3',
+		});
 	});
 
 	it('projects hostIdentity from the agent-client/agent-model args', async () => {

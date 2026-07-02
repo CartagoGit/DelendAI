@@ -6,9 +6,7 @@ import {
 import { z } from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';
-import {
-	ensureRulesCache,
-} from './lib/frameworks/manifest';
+import { ensureRulesCache } from './lib/frameworks/manifest';
 import { buildManifestViaComposition } from './lib/frameworks/manifest-via-composition';
 import { buildDefaultComposition } from './lib/frameworks/registry/factory';
 import { PRESET_BY_ID } from './lib/frameworks/presets';

@@ -144,9 +144,14 @@ export const buildCloseRegistration = (
 					const locale: CloseMarkerLocale = args.locale ?? 'es';
 					const line = isBuiltin
 						? formatCloseMarker(args.state, args.reason, { locale })
-						: formatEffectiveMarker(table, args.state, args.reason, {
-								locale,
-							});
+						: formatEffectiveMarker(
+								table,
+								args.state,
+								args.reason,
+								{
+									locale,
+								},
+							);
 					if (line === undefined) {
 						return toolError(
 							'unknown close-marker state',
