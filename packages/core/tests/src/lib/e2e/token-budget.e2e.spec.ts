@@ -48,8 +48,15 @@ const BUDGET_BYTES = {
 	// inherit_host_instructions tool (host-instruction audit) into the proposals
 	// plugin; full measured 8964B, compact 2128B. Summary kept terse. Compact is
 	// still the real promise at < 24% of full.
-	overviewFull: 9_050,
-	overviewCompact: 2_180,
+	// TIGHTENED 9050 → 8900 / 2180 → 1200 (2026-07-03): two token wins. (1)
+	// `overview` now omits `pluginDiagnostic` on a clean boot (it repeated the
+	// plugin-name list 3× as pure noise) → full 8964→8833B. (2) compact `tools`
+	// is now grouped by plugin ({ proposals:[...], core:[...] }) so the shared
+	// `<prefix>_<plugin>_` is stated once per group instead of on every tool →
+	// compact 2128→1121B (−47%). Savings scale with the toolset: the real
+	// 86-tool deployment (a00049 measured 4102B compact) benefits far more.
+	overviewFull: 8_900,
+	overviewCompact: 1_200,
 	agentCatalogCompact: 1_300,
 	agentCatalogFull: 6_800,
 	autoWork: 1_600,

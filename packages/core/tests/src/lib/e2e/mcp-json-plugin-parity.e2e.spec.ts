@@ -72,14 +72,11 @@ describe('e2e: mcp.json launch path plugin parity', async () => {
 				readonly configPlugins: readonly string[];
 			};
 		};
+		// Healthy load: the plugin set is fully conveyed by `plugins`, so the
+		// diagnostic block is omitted to save cold-start tokens. It reappears
+		// only when the requested set diverges from what loaded (next test).
 		expect(overview.plugins).toContain('memory');
-		expect(overview.pluginDiagnostic).toEqual({
-			requested: ['memory'],
-			loaded: ['memory'],
-			missing: [],
-			configPlugins: ['memory'],
-			errors: 0,
-		});
+		expect(overview.pluginDiagnostic).toBeUndefined();
 	});
 
 	it('surfaces a structured diagnostic when a config-declared plugin fails to load', async () => {
