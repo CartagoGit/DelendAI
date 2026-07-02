@@ -32,7 +32,14 @@ import { isAbsolute, join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
 
-const PRESET_KIND = ['minimal', 'standard', 'swarm', 'full', 'vertex'] as const;
+const PRESET_KIND = [
+	'minimal',
+	'lean',
+	'standard',
+	'swarm',
+	'full',
+	'vertex',
+] as const;
 
 const SCAN_ROOTS: readonly string[] = [
 	'docs',
@@ -45,6 +52,9 @@ const FILE_GLOBS = /\.(md|mdx|astro|ts|tsx|js|mjs)$/;
 /** Effective preset memberships (mirrors `resolvePresetMembers`). */
 const PRESET_MEMBERSHIPS: Readonly<Record<string, readonly string[]>> = {
 	minimal: ['git', 'search'],
+	// `lean` is an independent preset (skips chain accumulation); its
+	// members are exactly the 4 essentials.
+	lean: ['git', 'search', 'memory', 'docs'],
 	standard: ['git', 'search', 'memory', 'docs', 'rules', 'quality', 'deps'],
 	swarm: [
 		'git',
