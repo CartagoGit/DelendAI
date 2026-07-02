@@ -1,11 +1,12 @@
 ---
 id: f00091
-status: ready
+status: done
 type: proposal
 kind: feat
 track: swarm+coordination+git-integration
 title: close_slice branch-integration step (non-destructive mark-for-integration)
 date: 2026-07-01
+closed: 2026-07-02
 shipped-in: [027001d5, 84cfbe37]
 recan: []
 related:
@@ -106,8 +107,8 @@ for a human/orchestrator to integrate deliberately.
   - "Idempotent: re-close does not duplicate; a merged branch drops off."
 
 ### S3 — Verify non-destructiveness and accuracy
-- **Status**: pending
-- **Note**: S1/S2 implementation merged (swarm_hygiene now surfaces pendingIntegration + nonConformingBranches + staleUnmerged, all read-only); S3 partial: pending-integration-store spec landed (idempotent record/prune, no git); the swarm_hygiene engine detection spec (fake IGitRunner) remains.
+- **Status**: done
+- **Note**: S1/S2 implementation merged (swarm_hygiene now surfaces pendingIntegration + nonConformingBranches + staleUnmerged, all read-only); S3 complete: pending-integration-store spec landed (idempotent record/prune, no git) **and** the swarm_hygiene engine detection spec (`plugins/proposals/tests/src/lib/shared/swarm-hygiene-engine.spec.ts`) now drives a fixture-backed fake `IGitRunner` that records every invocation, proving (a) the rescue list is exactly the `ahead>0 && !mergedIntoBase` set, (b) no destructive git verb is ever issued, (c) non-conforming/stale-unmerged worktrees surface, and (d) merged pending-integration entries self-prune.
 - **Files**: specs under `plugins/proposals/tests/`
 - **Gate**: validate
 - **Acceptance**:
