@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Clean mcp-vertex cache
+        run: rm -rf .cache/mcp-vertex
+
       - name: Typecheck
         run: bun run typecheck
 
