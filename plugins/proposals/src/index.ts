@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { createWorkspaceFileReader, definePlugin } from '@mcp-vertex/core/public';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
@@ -26,6 +26,7 @@ import {
 } from './lib/tools/authoring.tool';
 import type { IAuthoringToolOptions } from './lib/tools/authoring.tool';
 import { buildAdoptRegistration } from './lib/tools/adopt.tool';
+import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
@@ -371,6 +372,22 @@ export default definePlugin({
 				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
 				buildAdoptRegistration(authoringOptions),
+				// f00094: on-demand audit of the host-instruction files
+				// (in-repo always; opt-in user-home via `scope: 'all'`).
+				// Shares the authoring layout/allocator so an emitted audit
+				// proposal never collides with `create_proposal` or f00093.
+				buildInheritHostInstructionsRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					reader: createWorkspaceFileReader(ctx.workspace),
+					proposalsDirAbs: abs(layout.proposalsDir),
+					counterPathAbs: abs(layout.proposalIdCountersFile),
+					layout: {
+						proposalsDir: layout.proposalsDir,
+						proposalIndexFile: layout.proposalIndexFile,
+					},
+					extraFolders: extraProposalFolders,
+				}),
 				buildStateHealthRegistration(stateOptions),
 				buildStateRepairRegistration(stateOptions),
 				buildCompactStatusRegistration({

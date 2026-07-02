@@ -215,6 +215,10 @@
 			"plugin": "mcp-vertex"
 		},
 		{
+			"name": "mcp-vertex_proposals_inherit_host_instructions",
+			"plugin": "mcp-vertex"
+		},
+		{
 			"name": "mcp-vertex_proposals_plan",
 			"plugin": "mcp-vertex"
 		},
