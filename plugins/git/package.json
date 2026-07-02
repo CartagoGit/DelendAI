@@ -39,7 +39,7 @@
 	"scripts": {
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"build": "bun ../../scripts/build.ts plugins/git"
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/git"
 	},
 	"peerDependencies": {
 		"@mcp-vertex/core": "^0.1.0"
