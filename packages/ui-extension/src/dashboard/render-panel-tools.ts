@@ -15,18 +15,22 @@ const SPARK_H = 22;
 export const renderPanelTools = (
 	model: IDashboardToolsModel,
 	lang: ILangDict,
+	/**
+	 * r00006 S2: the real per-tool rolling latency series (from
+	 * `IDashboardMetricsModel.sparklines`, keyed by tool). When a tool
+	 * has a genuine series it drives the sparkline; otherwise we fall
+	 * back to the avg/max approximation so the column is never empty.
+	 */
+	sparklines: Readonly<Record<string, readonly number[]>> = {},
 ): string => {
 	const text = (key: string) => extensionText(lang, key);
 	const rows = model.rows
 		.map((r) => {
-			const samples = [
-				r.avgMs,
-				r.avgMs,
-				r.maxMs,
-				r.avgMs,
-				r.avgMs,
-				r.avgMs,
-			];
+			const series = sparklines[r.tool];
+			const samples =
+				series && series.length > 1
+					? series
+					: [r.avgMs, r.avgMs, r.maxMs, r.avgMs, r.avgMs, r.avgMs];
 			const d = sparklinePath(samples, SPARK_W, SPARK_H);
 			return `<tr data-tool="${escapeHtml(r.tool)}" data-plugin="${escapeHtml(r.plugin)}" data-calls="${r.calls}" data-errors="${r.errors}" data-avgms="${r.avgMs}" data-tokens="${r.tokens}">
 				<td><code>${escapeHtml(r.tool)}</code></td>
