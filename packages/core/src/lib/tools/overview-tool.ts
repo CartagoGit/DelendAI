@@ -12,6 +12,20 @@ export interface IOverviewToolEntry {
 	readonly tags?: readonly string[] | undefined;
 	/** Side effects; absent ⇒ read-only. */
 	readonly effects?: readonly IToolEffect[] | undefined;
+	/**
+	 * Owning plugin (e.g. `proposals`), or absent for core tools. Used by
+	 * the compact overview to group tools under their plugin so the shared
+	 * `<namespacePrefix>_<plugin>_` prefix is stated once per group instead
+	 * of repeated on every entry. Not surfaced by the full overview.
+	 */
+	readonly plugin?: string | undefined;
+	/**
+	 * Unqualified tool id (e.g. `agent_lock`), i.e. `name` without the
+	 * `<namespacePrefix>_<plugin>_` prefix. The compact overview lists this
+	 * stem under its plugin group; the full name reconstructs as
+	 * `<namespacePrefix>_<plugin>_<id>` (or `<namespacePrefix>_<id>` for core).
+	 */
+	readonly id?: string | undefined;
 }
 
 export interface IOverviewPlugin {
@@ -73,7 +87,7 @@ export const buildOverviewToolRegistration = (
 			`${namespacePrefix}_overview`,
 			{
 				description:
-					'Cold-start map of this MCP server: identity, loaded plugins, every tool with a one-line summary, available knowledge ids, resolved paths and a recommended next action. Read-only. Call this FIRST. Use compact:true (names only) or tag to shrink the payload when there are many tools.',
+					'Cold-start map of this MCP server: identity, loaded plugins, every tool with a one-line summary, available knowledge ids, resolved paths and a recommended next action. Read-only. Call this FIRST. Use compact:true or tag to shrink the payload when there are many tools. In compact mode, `tools` is grouped by plugin ({ proposals: ["agent_lock", …], core: ["overview", …] }); a tool\'s callable name is `<namespacePrefix>_<plugin>_<id>` (core tools: `<namespacePrefix>_<id>`).',
 				inputSchema: z.object({
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),
@@ -106,26 +120,34 @@ export const buildOverviewToolRegistration = (
 							}),
 						]),
 					),
-					tools: z.array(
-						z.union([
-							z.string(),
-							z.object({
-								name: z.string(),
-								summary: z.string().optional(),
-								tags: z.array(z.string()).optional(),
-								effects: z
-									.array(
-										z.enum([
-											'write',
-											'spawn',
-											'network',
-											'destructive',
-										]),
-									)
-									.optional(),
-							}),
-						]),
-					),
+					// Full overview: an array of per-tool entries (name +
+					// summary/tags/effects). Compact overview: a record keyed by
+					// plugin (`{ proposals: ['agent_lock', …], … }`, core tools
+					// under `core`) so the shared `<prefix>_<plugin>_` is stated
+					// once per group, not per tool.
+					tools: z.union([
+						z.array(
+							z.union([
+								z.string(),
+								z.object({
+									name: z.string(),
+									summary: z.string().optional(),
+									tags: z.array(z.string()).optional(),
+									effects: z
+										.array(
+											z.enum([
+												'write',
+												'spawn',
+												'network',
+												'destructive',
+											]),
+										)
+										.optional(),
+								}),
+							]),
+						),
+						z.record(z.string(), z.array(z.string())),
+					]),
 					knowledge: z.array(
 						z.union([
 							z.string(),
@@ -147,12 +169,38 @@ export const buildOverviewToolRegistration = (
 					);
 				}
 				if (args.compact === true) {
+					// Group tools by owning plugin so the shared
+					// `<prefix>_<plugin>_` is written once per group instead of
+					// repeated on every tool name. Core tools (no plugin) go
+					// under `core`. The stem is the unqualified id; the full
+					// callable name reconstructs as `<prefix>_<plugin>_<id>`.
+					const groupedTools: Record<string, string[]> = {};
+					for (const t of tools) {
+						const group = t.plugin ?? 'core';
+						const stem =
+							t.id ??
+							(t.plugin !== undefined
+								? t.name.slice(
+										`${snap.namespacePrefix}_${t.plugin}_`
+											.length,
+									)
+								: t.name.slice(
+										`${snap.namespacePrefix}_`.length,
+									));
+						const bucket = groupedTools[group] ?? [];
+						bucket.push(stem);
+						groupedTools[group] = bucket;
+					}
 					return toolJson({
 						server: snap.server,
 						namespacePrefix: snap.namespacePrefix,
-						pluginDiagnostic: snap.pluginDiagnostic,
+						// Only when the requested plugin set diverged from what
+						// loaded (assemble.ts omits it on a clean boot).
+						...(snap.pluginDiagnostic !== undefined
+							? { pluginDiagnostic: snap.pluginDiagnostic }
+							: {}),
 						plugins: snap.plugins.map((p) => p.name),
-						tools: tools.map((t) => t.name),
+						tools: groupedTools,
 						knowledge: snap.knowledge.map((k) => k.id),
 						recommendedNextAction: snap.recommendedNextAction,
 					});

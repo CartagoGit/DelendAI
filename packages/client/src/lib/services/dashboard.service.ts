@@ -11,7 +11,11 @@
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { HealthService } from './health.service';
 import type { MetricsService } from './metrics.service';
-import { type OverviewService, pluginFromToolName } from './overview.service';
+import {
+	normalizeCompactTools,
+	type OverviewService,
+	pluginFromToolName,
+} from './overview.service';
 import { formatToolName } from './_namespace';
 import type { IOverview } from '../contracts/interfaces/tool-descriptor.interface';
 import type {
@@ -100,9 +104,16 @@ export class DashboardService {
 		const proposals = await this.fetchProposalsSafe();
 		const agents = await this.fetchAgentsSafe();
 		const tokensSaved = this.estimateTokensSaved(overview, metrics);
+		// `overview.tools` is grouped by plugin in compact mode; flatten to a
+		// stable list of qualified tools (the helper also accepts the full
+		// array form, so this stays correct if the caller ever passes full).
+		const flatTools = normalizeCompactTools(
+			overview.tools,
+			overview.namespacePrefix,
+		);
 
 		const totals: IDashboardTotals = {
-			tools: overview.tools.length,
+			tools: flatTools.length,
 			plugins: overview.plugins.length,
 			proposals: proposals.length,
 			calls: metrics.totals.calls,
@@ -135,9 +146,9 @@ export class DashboardService {
 								: { version: p.version }),
 						},
 			),
-			tools: overview.tools.map((t) => ({
-				name: typeof t === 'string' ? t : t.name,
-				plugin: pluginFromToolName(typeof t === 'string' ? t : t.name),
+			tools: flatTools.map((t) => ({
+				name: t.name,
+				plugin: t.plugin,
 			})),
 			knowledgeIds: overview.knowledge.map((k) =>
 				typeof k === 'string' ? k : k.id,
