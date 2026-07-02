@@ -25,6 +25,7 @@ import {
 	type IContextItem,
 	type IContextItemKind,
 } from '../services/compaction';
+import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
 import { getMaxNotes, readStore, saveNote } from '../services/store';
 
 const CONTEXT_ITEM_KINDS = [
@@ -172,7 +173,7 @@ export const buildCompactToolRegistration = (
 					}
 
 					return guardCorrupt(async () => {
-						const title = `session-digest:${args.topic}`;
+						const title = `${SESSION_DIGEST_TITLE_PREFIX}${args.topic}`;
 						// Reuse the durable-store quota; a session digest is one
 						// upserted note per topic, so this only trips when the
 						// store is already full of OTHER notes.

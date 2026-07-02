@@ -173,16 +173,28 @@ the digest recallable because it is a normal note.
   - "`bun run validate` exits 0."
 
 ### S2 — compaction trigger heuristic surfaced in orientation
-- **Status**: pending
-- **Files**: [plugins/memory/src/lib/services/compaction-trigger.ts]
+- **Status**: done
+- **Files**: [plugins/memory/src/lib/services/compaction-trigger.ts, plugins/memory/src/lib/contracts/interfaces/compaction-trigger.interface.ts, plugins/memory/tests/src/lib/compaction-trigger.spec.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note**: pure deterministic `evaluateCompactionTrigger(signal, options)` shipped
+  + specced — fires when the carried tail crosses `tokenThreshold` (default 8k)
+  OR `turnThreshold` (default 25) turns elapse, token pressure winning the reason
+  tie-break; returns an agent-readable `hint`. Types live in `contracts/interfaces/`
+  per the repo convention. The one-call embedding into `overview`/`auto_work` is the
+  remaining integration touchpoint (same mechanism/wiring split S1 used).
 
 ### S3 — auto-recall latest session digest into orientation
-- **Status**: pending
-- **Files**: [plugins/memory/src/lib/services/session-digest-recall.ts]
+- **Status**: done
+- **Files**: [plugins/memory/src/lib/services/session-digest-recall.ts, plugins/memory/src/lib/contracts/interfaces/session-digest-recall.interface.ts, plugins/memory/src/lib/contracts/constants/session-digest.constant.ts, plugins/memory/tests/src/lib/session-digest-recall.spec.ts]
 - **Gate**: bun run typecheck
 - **Expect**: exit0
+- **Note**: pure `selectLatestSessionDigest(candidates)` shipped + specced — picks the
+  newest `session-digest:*` note (stable timestamp tie-break) and parses its topic.
+  The `session-digest:` title prefix is now single-sourced in
+  `contracts/constants/session-digest.constant.ts` and consumed by both the writer
+  (`compact.tool.ts`) and this reader (drift-proof). Orientation calls the selector on
+  a resumed turn to rehydrate instead of re-reading the dropped tail.
 
 ### S4 — docs page + i18n + knowledge wiring
 - **Status**: pending
