@@ -132,15 +132,19 @@ export class LogsService {
 const wait = async (ms: number, signal?: AbortSignal): Promise<void> => {
 	if (signal?.aborted) return;
 	await new Promise<void>((resolve) => {
-		const timer = setTimeout(resolve, ms);
-		signal?.addEventListener(
-			'abort',
-			() => {
-				clearTimeout(timer);
-				resolve();
-			},
-			{ once: true },
-		);
+		// Remove the abort listener on BOTH exits: `{ once: true }` only
+		// auto-removes on abort, so without the explicit removeEventListener
+		// each poll tick of `subscribe()` would leave a dead listener on the
+		// shared signal (unbounded EventTarget leak on long subscriptions).
+		const onAbort = (): void => {
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(() => {
+			signal?.removeEventListener('abort', onAbort);
+			resolve();
+		}, ms);
+		signal?.addEventListener('abort', onAbort, { once: true });
 	});
 };
 
