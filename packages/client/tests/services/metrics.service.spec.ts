@@ -77,4 +77,51 @@ describe('MetricsService', async () => {
 			1, 2,
 		]);
 	});
+
+	it('does not leak abort listeners across stream ticks', async () => {
+		const service = new MetricsService(
+			McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: firstSnapshot };
+				},
+			}),
+		);
+		// A minimal AbortSignal that honours `{ once: true }` and exposes how
+		// many listeners are still attached. If `wait()` forgot to remove its
+		// listener on the timeout path, each completed tick would leave one
+		// behind and `liveCount` would grow with the number of ticks.
+		const live = new Set<() => void>();
+		const once = new WeakSet<() => void>();
+		const signal = {
+			aborted: false,
+			addEventListener(
+				_type: string,
+				cb: () => void,
+				opts?: { once?: boolean },
+			): void {
+				live.add(cb);
+				if (opts?.once === true) once.add(cb);
+			},
+			removeEventListener(_type: string, cb: () => void): void {
+				live.delete(cb);
+			},
+			fire(): void {
+				this.aborted = true;
+				for (const cb of [...live]) {
+					if (once.has(cb)) live.delete(cb);
+					cb();
+				}
+			},
+		};
+
+		let ticks = 0;
+		for await (const _ of await service.stream(1, {
+			signal: signal as unknown as AbortSignal,
+		})) {
+			if (++ticks === 4) signal.fire();
+		}
+
+		expect(ticks).toBe(4);
+		expect(live.size).toBe(0);
+	});
 });
