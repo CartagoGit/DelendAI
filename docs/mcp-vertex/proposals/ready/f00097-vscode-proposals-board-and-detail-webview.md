@@ -176,7 +176,33 @@ state in the extension.
 
 ### S2 — Sidebar board view
 
-- **Status**: pending
+- **Status**: done
+- **Done note (2026-07-03)**: shipped by EVOLVING the existing
+  `providers/proposal-board-provider.ts` (not a parallel provider), with the
+  read-only data layer extracted to `lib/proposals-snapshot.ts`
+  (`ProposalsSnapshotSource`: parallel `Promise.all` fetch of
+  `proposal_board` + `compact_status` + `state_health` +
+  `proposal_stale_list`, tolerant hand-rolled projection — the extension has
+  no zod dep — TTL(30 s) cache + `invalidate()`). The provider now renders 4
+  header chips + dynamic status-group roots (in a canonical rank order, built
+  from the statuses the snapshot actually carries — `proposal_board` only
+  surfaces `pending`/`ready`/`in_progress`, so absent groups are omitted, which
+  is what S6 asserts) + leaves routing to `mcp-vertex.openProposal` + a
+  `recoverable` banner with a `mcp-vertex.proposals.copyError` command. Filters
+  (`status` + `text`) narrow WITHOUT refetching (served from cache) and persist
+  via `host/proposal-filter-store.ts` (globalState). Tool calls route through
+  S1's `READ_ONLY_TOOLS` + `formatToolName(namespacePrefix, …)`.
+  **Deviations, deliberate:** (1) `views/proposals-board.css` was NOT created —
+  a `TreeView` is theme-styled, not CSS-styled; the webview CSS lands in S3
+  where it is actually consumed (avoids a dead file). (2) The `tag` filter is
+  deferred: `proposal_board` carries no tags, so a tag filter would be inert;
+  it returns with a board projection that includes tags (separate concern).
+  (3) `refresh()` is exposed and fires `onDidChangeTreeData`; wiring it to
+  window-focus + the `mcp-vertex.proposals.refresh` command is S4 (command
+  wiring). Specs: rewrote `test/proposal-board-provider.spec.ts` (grouped
+  structure, chips, filter-no-refetch, TTL, banner, aux-failure) + new
+  `test/proposals-snapshot.spec.ts`; `proposals-view-registration.spec.ts`
+  stays green. `tsc -p extensions/vscode` exit 0; 130 vscode specs green.
 - **Reconciliation note (2026-07-03, S1 follow-up)**: this proposal's premise
   ("the activitybar container is reserved but empty") is now partly stale —
   **f00079 S4 already shipped** `extensions/vscode/src/providers/proposal-board-provider.ts`
