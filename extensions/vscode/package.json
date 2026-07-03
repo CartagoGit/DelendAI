@@ -37,7 +37,8 @@
 				},
 				{
 					"id": "mcp-vertex.proposals",
-					"name": "Proposals"
+					"name": "Proposals",
+					"icon": "media/logo.svg"
 				},
 				{
 					"id": "mcp-vertex.memory",
@@ -69,6 +70,15 @@
 			{
 				"command": "mcp-vertex.openProposal",
 				"title": "mcp-vertex: Open Proposal Board"
+			},
+			{
+				"command": "mcp-vertex.proposals.refresh",
+				"title": "mcp-vertex: Refresh Proposals",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "mcp-vertex.proposals.copyError",
+				"title": "mcp-vertex: Copy Proposals Error"
 			},
 			{
 				"command": "mcp-vertex.showMetrics",
@@ -121,12 +131,21 @@
 					"command": "mcp-vertex.openAgentCatalog",
 					"when": "view == mcp-vertex.tools",
 					"group": "navigation"
+				},
+				{
+					"command": "mcp-vertex.proposals.refresh",
+					"when": "view == mcp-vertex.proposals",
+					"group": "navigation"
 				}
 			],
 			"commandPalette": [
 				{
 					"command": "mcp-vertex.openAgentCatalog",
 					"when": "true"
+				},
+				{
+					"command": "mcp-vertex.proposals.copyError",
+					"when": "false"
 				}
 			]
 		}
