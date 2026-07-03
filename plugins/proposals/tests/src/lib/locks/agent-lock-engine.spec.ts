@@ -97,6 +97,61 @@ describe('runAgentLockEngine — claim', async () => {
 		).toHaveLength(1);
 	});
 
+	it('adds conflict-free new files on a re-claim (no silent drop)', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts'],
+		});
+		const res = await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts', 'src/b.ts'],
+		});
+		expect(body(res).refreshed).toBe(true);
+		expect(body(res).added_files).toEqual(['src/b.ts']);
+		const entry = readLockFile().in_flight.find(
+			(e) => e.task_id === 'task-A',
+		);
+		expect([...(entry?.ownership ?? [])].sort()).toEqual([
+			'src/a.ts',
+			'src/b.ts',
+		]);
+	});
+
+	it('surfaces (does not grant) re-claim files owned by another task', async () => {
+		await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts'],
+		});
+		await run({
+			action: 'claim',
+			task_id: 'task-B',
+			agent: 'agent-B',
+			files: ['src/b.ts'],
+		});
+		// task-A re-claims and tries to grab task-B's file: heartbeat still
+		// succeeds, but the contested file is reported, not swallowed.
+		const res = await run({
+			action: 'claim',
+			task_id: 'task-A',
+			agent: 'agent-A',
+			files: ['src/a.ts', 'src/b.ts'],
+		});
+		expect(body(res).refreshed).toBe(true);
+		expect(body(res).not_granted).toEqual([
+			{ file: 'src/b.ts', conflicting_task: 'task-B' },
+		]);
+		const entry = readLockFile().in_flight.find(
+			(e) => e.task_id === 'task-A',
+		);
+		expect(entry?.ownership).toEqual(['src/a.ts']);
+	});
+
 	it('blocks a claim whose files overlap another live task', async () => {
 		await run({
 			action: 'claim',
