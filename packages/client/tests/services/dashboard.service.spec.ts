@@ -66,6 +66,14 @@ describe('DashboardService', async () => {
 		);
 	});
 
+	it('reports the same savingsPercent in overview totals and tokens model', async () => {
+		const { service } = makeService();
+		const { overview, tokens } = await service.getAllModels();
+		// One shared `savingsPercentOf` — the two figures must never diverge
+		// (they once used different denominators: saved/used vs saved/(saved+used)).
+		expect(overview.totals.savingsPercent).toBe(tokens.savingsPercent);
+	});
+
 	it('requests compact overview for dashboard totals', async () => {
 		const { service, calls } = makeService();
 		await service.getOverviewModel();
