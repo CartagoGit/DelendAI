@@ -291,7 +291,28 @@ state in the extension.
 
 ### S4 — Command wiring
 
-- **Status**: pending
+- **Status**: done
+- **Done note (2026-07-03)**: new `commands/proposals-commands.ts` registers
+  the two commands the board owns — `mcp-vertex.proposals.refresh` (invalidates
+  the shared snapshot + repaints; also on the Proposals view title bar via a
+  `view/title` `$(refresh)` button) and `mcp-vertex.proposals.copyError`
+  (writes the banner's raw payload to `vscode.env.clipboard`; hidden from the
+  command palette with `when: false` since it needs an argument). The global
+  `mcp-vertex.refresh` now also calls `proposalsTree.refresh()`. `package.json`:
+  the `mcp-vertex.proposals` view gains `icon: media/logo.svg`, plus the two
+  command contributions + menus. Deps threaded: `ICommandDeps.proposalsTree`
+  (`Pick<…,'refresh'>`) and `ICommandVscodeApi.env.clipboard` (optional, real
+  `vscode` provides it; test seams stub it). **Deviations:** (1) the acceptance
+  line "`openProposal` opens the proposal board view, focused" predates S3 —
+  `openProposal(id)` now opens the read-only DETAIL webview (S3), while the
+  sidebar board is always registered + refreshed; a no-arg `openProposal`
+  still renders the board JSON. (2) Window-focus auto-refresh
+  (`onDidChangeWindowState`) is deferred: the 30 s TTL already bounds staleness
+  and explicit refresh (button/command/global) exists, so wiring a new event
+  onto the injected host surface was not worth the coupling. Specs: new
+  `test/proposals-commands.spec.ts`; `smoke.spec.ts` subscription count 19 → 21.
+  139 vscode specs green; `tsc -p extensions/vscode` exit 0; `package.json`
+  parses.
 - **Files**: `extensions/vscode/package.json`,
   `extensions/vscode/src/extension.ts` (refresh handler)
 - **Agent**: implementation_runner

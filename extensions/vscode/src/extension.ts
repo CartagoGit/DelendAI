@@ -38,6 +38,10 @@ import {
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
 import {
+	registerProposalsCopyErrorCommand,
+	registerProposalsRefreshCommand,
+} from './commands/proposals-commands';
+import {
 	RESTART_SERVER_COMMAND,
 	registerRestartServerCommand,
 } from './commands/restart-server';
@@ -346,7 +350,7 @@ export const activate = async (
 
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	track(registerShowOverviewCommand({ vscode, client, ...withPrefix }));
-	track(registerRefreshCommand({ vscode, client, toolTree }));
+	track(registerRefreshCommand({ vscode, client, toolTree, proposalsTree }));
 	track(registerRunValidationCommand({ vscode, client }));
 	track(
 		registerOpenProposalCommand({
@@ -356,6 +360,10 @@ export const activate = async (
 			...withPrefix,
 		}),
 	);
+	// f00097 S4: the board's own refresh (also on the view title bar) and the
+	// banner's "Copy error" action.
+	track(registerProposalsRefreshCommand({ vscode, client, proposalsTree }));
+	track(registerProposalsCopyErrorCommand({ vscode, client }));
 	track(registerShowMetricsCommand({ vscode, client }));
 	// Fix #6: `openDocs` was declared in package.json but never wired up
 	// in `activate()`, so the command was unreachable from the UI. It is
