@@ -193,8 +193,18 @@ the digest recallable because it is a normal note.
   newest `session-digest:*` note (stable timestamp tie-break) and parses its topic.
   The `session-digest:` title prefix is now single-sourced in
   `contracts/constants/session-digest.constant.ts` and consumed by both the writer
-  (`compact.tool.ts`) and this reader (drift-proof). Orientation calls the selector on
-  a resumed turn to rehydrate instead of re-reading the dropped tail.
+  (`compact.tool.ts`) and this reader (drift-proof).
+- **Integration wired (2026-07-04)**: the pure selector was previously UNWIRED
+  (zero live callers — a "unit-green ≠ integrated" gap). It is now embedded in
+  the live `memory_recall` tool (`plugins/memory/src/lib/tools/tools.ts`): every
+  recall additionally selects the newest `session-digest:*` note from the full
+  store and returns it as an optional `sessionDigest` output field (omitted when
+  none exists), so an orienting/resumed recall rehydrates the distilled state
+  instead of re-reading the dropped tail — without changing the recall INPUT
+  contract. Additive output field + description update; `catalog:check` +
+  `catalog:hints:check` stay green (no drift). New spec in
+  `tests/src/lib/memory.spec.ts` ("recall surfaces the latest session digest");
+  memory suite 71 green; `tsc -p plugins/memory` exit 0.
 
 ### S4 — docs page + i18n + knowledge wiring
 - **Status**: pending

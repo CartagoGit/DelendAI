@@ -19,6 +19,7 @@ import {
 	removeNote,
 	saveNote,
 } from '../services/store';
+import { selectLatestSessionDigest } from '../services/session-digest-recall';
 import { buildCompactToolRegistration } from './compact.tool';
 
 // MCP modern outputSchema shapes (N16). Error envelopes are exempt from
@@ -36,6 +37,15 @@ const NoteIndexEntrySchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	tags: z.array(z.string()),
+});
+// f00090 S3: the newest `session-digest:*` note, surfaced on recall so a
+// resumed turn rehydrates the distilled working state instead of re-reading
+// the dropped raw tail. Omitted when no digest note exists.
+const SessionDigestSchema = z.object({
+	title: z.string(),
+	topic: z.string(),
+	body: z.string(),
+	createdAt: z.string(),
 });
 
 /**
@@ -211,22 +221,29 @@ export const buildMemoryToolRegistrations = (
 					`${prefix}_recall`,
 					{
 						description:
-							'Recall durable notes by query and/or tags. Use this before re-reading docs when the fact is likely to be a previously distilled reusable note. Low-token: returns only matches, newest first.',
+							'Recall durable notes by query and/or tags. Use this before re-reading docs when the fact is likely to be a previously distilled reusable note. Low-token: returns only matches, newest first. Also returns `sessionDigest` — the newest `session-digest:*` note written by memory_compact — so a resumed turn rehydrates the distilled working state instead of re-reading the dropped tail.',
 						inputSchema: z.object({
 							query: z.string().optional(),
 							tags: z.array(z.string()).optional(),
 							limit: z.number().optional(),
 						}),
-						outputSchema: z.object({ notes: z.array(NoteSchema) }),
+						outputSchema: z.object({
+							notes: z.array(NoteSchema),
+							sessionDigest: SessionDigestSchema.optional(),
+						}),
 					},
 					async (args: {
 						query?: string | undefined;
 						tags?: string[] | undefined;
 						limit?: number | undefined;
 					}) =>
-						guardCorrupt(async () =>
-							toolJson({
-								notes: await recall(options.storePathAbs, {
+						guardCorrupt(async () => {
+							// Recall matches (query/tags-ranked) and the full store
+							// in parallel; the digest is selected from ALL notes so
+							// it surfaces on any recall, not only when it matches the
+							// query. One extra read of the same small JSON file.
+							const [notes, all] = await Promise.all([
+								recall(options.storePathAbs, {
 									...(args.query !== undefined
 										? { query: args.query }
 										: {}),
@@ -242,8 +259,22 @@ export const buildMemoryToolRegistrations = (
 										),
 									),
 								}),
-							}),
-						),
+								readStore(options.storePathAbs),
+							]);
+							const sessionDigest = selectLatestSessionDigest(
+								all.map((note) => ({
+									title: note.title,
+									body: note.body,
+									createdAt: note.createdAt,
+								})),
+							);
+							return toolJson({
+								notes,
+								...(sessionDigest === null
+									? {}
+									: { sessionDigest }),
+							});
+						}),
 				);
 			},
 		},
