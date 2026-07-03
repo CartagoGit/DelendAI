@@ -64,6 +64,26 @@ export interface IProposalsSnapshot {
 	readonly fetchedAt: number;
 }
 
+/** One redacted `logs_tail` event as projected for the detail webview (S3). */
+export interface IProposalLogEvent {
+	readonly ts: string;
+	readonly kind: string;
+	readonly agent: string | null;
+	readonly taskId: string | null;
+	readonly summary: string;
+}
+
+/** The per-proposal detail model rendered by the detail webview (S3). */
+export interface IProposalDetail {
+	readonly id: string;
+	/** Absent when the id is not on the (actionable) board. */
+	readonly summary?: IProposalSummary;
+	/** The tolerant `proposal_diagnose` bag; absent when the call failed. */
+	readonly diagnose?: Record<string, unknown>;
+	/** Redacted transition / owner log lines for this proposal. */
+	readonly logs: readonly IProposalLogEvent[];
+}
+
 const DEFAULT_TTL_MS = 30_000;
 
 const EMPTY_CHIPS: IProposalsHeaderChips = {
@@ -159,19 +179,46 @@ export class ProposalsSnapshotSource {
 	 */
 	private async call(
 		suffix: (typeof READ_ONLY_TOOLS)[number],
+		args: Record<string, unknown> = {},
 	): Promise<unknown> {
 		if (!isReadOnlyProposalTool(suffix)) {
 			throw new Error(`refusing non-read-only proposal tool: ${suffix}`);
 		}
 		const name = formatToolName(this.namespacePrefix, suffix);
 		try {
-			return await this.client.request<Record<string, never>, unknown>(
+			return await this.client.request<Record<string, unknown>, unknown>(
 				name,
-				{},
+				args,
 			);
 		} catch {
 			return undefined;
 		}
+	}
+
+	/**
+	 * Fetch the per-proposal detail model (S3): the board summary (from the
+	 * cached snapshot), the `proposal_diagnose` bag, and the redacted
+	 * `logs_tail` events narrowed client-side to this proposal — the tail tool
+	 * filters only by kind/outcome, so we keep events whose `taskId` is this
+	 * proposal or whose kind is a `proposal_transition`. Every call is
+	 * whitelisted read-only; the UI never re-redacts the tool-side output.
+	 */
+	async fetchProposalDetail(id: string): Promise<IProposalDetail> {
+		const snapshot = await this.get();
+		const summary = snapshot.proposals.find((p) => p.id === id);
+		const [diagnose, logs] = await Promise.all([
+			this.call('proposals_proposal_diagnose', { id }),
+			this.call('logs_tail', { limit: 200 }),
+		]);
+		const events = projectLogEvents(logs).filter(
+			(e) => e.taskId === id || e.kind === 'proposal_transition',
+		);
+		return {
+			id,
+			...(summary === undefined ? {} : { summary }),
+			...(isRecord(diagnose) ? { diagnose } : {}),
+			logs: events,
+		};
 	}
 }
 
@@ -237,6 +284,33 @@ const projectProposal = (entry: unknown): IProposalSummary | undefined => {
 			)
 		: [];
 	return { id, status, slices, claimableSliceIds };
+};
+
+/**
+ * Tolerant projection of `logs_tail.events` into the fields the detail webview
+ * shows. A non-array payload yields `[]` (the Logs card renders empty, never
+ * throws). The tool has already redacted each event; we never re-redact.
+ */
+export const projectLogEvents = (
+	logs: unknown,
+): readonly IProposalLogEvent[] => {
+	const events = isRecord(logs) ? logs.events : undefined;
+	if (!Array.isArray(events)) return [];
+	const out: IProposalLogEvent[] = [];
+	for (const event of events) {
+		if (!isRecord(event)) continue;
+		const ts = asString(event.ts);
+		const kind = asString(event.kind);
+		if (ts === undefined || kind === undefined) continue;
+		out.push({
+			ts,
+			kind,
+			agent: asString(event.agent) ?? null,
+			taskId: asString(event.taskId) ?? null,
+			summary: asString(event.summary) ?? '',
+		});
+	}
+	return out;
 };
 
 const projectSlice = (slice: unknown): IProposalSliceSummary | undefined => {
