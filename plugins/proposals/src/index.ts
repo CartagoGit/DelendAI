@@ -1,4 +1,7 @@
-import { createWorkspaceFileReader, definePlugin } from '@mcp-vertex/core/public';
+import {
+	createWorkspaceFileReader,
+	definePlugin,
+} from '@mcp-vertex/core/public';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 import { z } from 'zod';
 
@@ -156,6 +159,10 @@ export default definePlugin({
 			...(ctx.hostIdentity !== undefined
 				? { defaultIdentity: ctx.hostIdentity }
 				: {}),
+			// Solid-ISP adapter: when a name is released back to the pool, tell
+			// the loop detector to forget that name's window + stuck verdict so
+			// the next lease of the reusable name starts clean.
+			onAgentReleased: (name: string) => loopDetector.resetAgent(name),
 		};
 
 		const stateOptions: IStateToolOptions = {
