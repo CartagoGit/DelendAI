@@ -18,7 +18,10 @@ const CORRELATION_WINDOW_MS = 5_000;
 const MAX_BUFFER = 200;
 
 export interface INotificationLogsBridgeOptions {
-	readonly notifications: Pick<NotificationsService, 'addEventListener'>;
+	readonly notifications: Pick<
+		NotificationsService,
+		'addEventListener' | 'removeEventListener'
+	>;
 	readonly metrics: Pick<MetricsService, 'snapshot'>;
 }
 
@@ -52,6 +55,19 @@ export class NotificationLogsBridge {
 			void this.pollMetrics();
 		}, 1_000);
 		this.unsubscribe = (): void => {
+			// Detach the notification listeners too, not just the timer —
+			// otherwise `stop()` leaves `handler` bound and the bridge keeps
+			// emitting entries after it's stopped (and start/stop cycles pile
+			// up listeners on the shared NotificationsService).
+			this.options.notifications.removeEventListener(
+				'lock-released',
+				handler,
+			);
+			this.options.notifications.removeEventListener('cap', handler);
+			this.options.notifications.removeEventListener(
+				'bloqueado',
+				handler,
+			);
 			if (this.metricsTimer !== null) clearInterval(this.metricsTimer);
 			this.metricsTimer = null;
 			this.unsubscribe = null;

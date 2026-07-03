@@ -99,11 +99,18 @@ describe('NotificationLogsBridge', async () => {
 		bridge.stop();
 	});
 
-	it('stop() unsubscribes the timer and the notifications', async () => {
+	it('stop() detaches the notification listeners (no entries after stop)', async () => {
 		const { bridge, notifications } = makeBridge();
+		const received: unknown[] = [];
+		bridge.addEventListener((e) => received.push(e));
 		bridge.start();
+		notifications.emitStatus('cap', 'before stop');
+		expect(received).toHaveLength(1);
 		bridge.stop();
+		// After stop the bridge must no longer react — previously the
+		// handler stayed bound (only the timer was cleared) so this event
+		// still produced an entry.
 		notifications.emitStatus('cap', 'after stop');
-		// No listener registered → no error, just nothing happens.
+		expect(received).toHaveLength(1);
 	});
 });
