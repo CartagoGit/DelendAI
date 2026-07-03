@@ -89,6 +89,56 @@ describe('memory store', async () => {
 		writeFileSync(store, '   \n');
 		expect(await readStore(store)).toEqual([]);
 	});
+
+	// f00090 S3: recall surfaces the newest `session-digest:*` note so a
+	// resumed turn rehydrates the distilled state instead of re-reading the
+	// dropped tail. Wires the pure `selectLatestSessionDigest` into the live
+	// recall tool.
+	it('recall surfaces the latest session digest (f00090 S3)', async () => {
+		const regs = buildMemoryToolRegistrations({
+			namespacePrefix: 'memory',
+			storePathAbs: store,
+			bm25K1: 1.5,
+			bm25B: 0.75,
+			titleWeight: 2,
+			maxNotes: 1000,
+		});
+		const recallHandler = await captureHandler(
+			regs.find((r) => r.id === 'recall')!,
+		);
+		const parse = async (args: unknown) =>
+			JSON.parse(
+				(await recallHandler(args)).content[0]?.text ?? '{}',
+			) as {
+				notes: Array<{ title: string }>;
+				sessionDigest?: {
+					title: string;
+					topic: string;
+					body: string;
+				};
+			};
+
+		// No digest yet → the field is omitted entirely.
+		await saveNote(store, { title: 'A plain note', body: 'hello' });
+		expect((await parse({})).sessionDigest).toBeUndefined();
+
+		// Two digests → the newest (by createdAt) wins.
+		await saveNote(store, {
+			title: 'session-digest:old-topic',
+			body: 'stale digest',
+		});
+		await new Promise((r) => setTimeout(r, 5));
+		await saveNote(store, {
+			title: 'session-digest:current',
+			body: 'fresh working state',
+		});
+
+		const out = await parse({ query: 'plain' });
+		expect(out.sessionDigest?.topic).toBe('current');
+		expect(out.sessionDigest?.body).toBe('fresh working state');
+		// The digest surfaces even though the query matched a different note.
+		expect(out.notes.some((n) => n.title === 'A plain note')).toBe(true);
+	});
 });
 
 describe('memory recall — relevance ranking (N22)', async () => {
