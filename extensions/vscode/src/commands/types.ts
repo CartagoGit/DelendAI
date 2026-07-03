@@ -2,6 +2,7 @@ import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
 import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/public';
 
 import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
 
 import type { IDisposable, IWebviewPanel } from '../extension';
 import type { MemoryTreeDataProvider } from '../providers/memory-tree-data-provider';
@@ -52,6 +53,11 @@ export interface ICommandVscodeApi {
 			}>,
 		): Thenable<string | undefined>;
 	};
+	/** `vscode.env` subset — clipboard for the proposals "Copy error" action
+	 * (f00097 S4). Optional so test seams / alt hosts can omit it. */
+	readonly env?: {
+		readonly clipboard: { writeText(value: string): Thenable<void> };
+	};
 }
 
 /** Duck-typed log-hint guard — robust across the client package boundary. */
@@ -74,6 +80,9 @@ export interface ICommandDeps {
 	readonly client: McpStdioClient;
 	readonly toolTree?: Pick<ToolTreeDataProvider, 'refresh'>;
 	readonly memoryTree?: Pick<MemoryTreeDataProvider, 'refresh'>;
+	/** Proposals board provider (f00097 S4). `mcp-vertex.refresh` and
+	 * `mcp-vertex.proposals.refresh` invalidate its snapshot + repaint. */
+	readonly proposalsTree?: Pick<ProposalBoardProvider, 'refresh'>;
 	/** Optional host persistence layer (f00050 S7). Used by commands that
 	 * resolve the user's preferred language from `mv:lang`. */
 	readonly globalState?: {

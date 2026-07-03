@@ -94,8 +94,12 @@ describe('VS Code extension smoke', async () => {
 		// f00053 S6: +1 for the new mcp-vertex.openDocsApi command.
 		// f00056 S3: +1 for the new mcp-vertex.openAgentCatalog command
 		//   that drives the AgentCatalogService-backed webview.
-		expect(subscriptions).toHaveLength(19);
+		// f00097 S4: +2 for mcp-vertex.proposals.refresh and
+		//   mcp-vertex.proposals.copyError (the board's local commands).
+		expect(subscriptions).toHaveLength(21);
 		expect(commands.has(REFRESH_COMMAND)).toBe(true);
+		expect(commands.has('mcp-vertex.proposals.refresh')).toBe(true);
+		expect(commands.has('mcp-vertex.proposals.copyError')).toBe(true);
 		expect(commands.has(RUN_VALIDATION_COMMAND)).toBe(true);
 		expect(commands.has(OPEN_PROPOSAL_COMMAND)).toBe(true);
 		expect(commands.has(SHOW_METRICS_COMMAND)).toBe(true);
