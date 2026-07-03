@@ -242,7 +242,33 @@ state in the extension.
 
 ### S3 — Detail webview
 
-- **Status**: pending
+- **Status**: done
+- **Done note (2026-07-03)**: shipped as
+  `views/proposal-detail-webview.ts` (pure `renderProposalDetailHtml`, no
+  `vscode` import, no scripts) rendering the four cards — Header, Slices
+  (table), Diagnose (key/value list), Logs (table). It EVOLVES the existing
+  `commands/open-proposal.ts` (the valid-id branch now renders this detail
+  instead of a raw JSON dump; the absent-id/command-palette branch keeps the
+  script-free board JSON). The per-proposal model is built by a new
+  `ProposalsSnapshotSource.fetchProposalDetail(id)`: board summary (from the
+  shared TTL cache) + `proposal_diagnose {id}` + `logs_tail` narrowed
+  client-side to `taskId === id || kind === 'proposal_transition'` (the tail
+  tool filters only by kind/outcome). Reuses `escapeHtml` from
+  `render-output-schema.ts`. **CSP:** uses the shared `injectCspMeta` +
+  `DEFAULT_DENY` (`default-src 'none'; script-src 'none'; style-src 'self'
+  'unsafe-inline'`) — stricter than the proposal's aspirational `default-src
+  'self'` and consistent with every other webview. Styles are inlined
+  (self-contained, like the agent-catalog webview) so no `proposals-detail.css`
+  / `asWebviewUri` plumbing is needed — deliberate deviation from the Files
+  list. **Not-found** now honours `diagnose.ok === false` so done/retired
+  proposals (off the actionable board but still diagnosable) render, while a
+  genuinely-unknown id still shows the error toast. Extension wires ONE shared
+  `ProposalsSnapshotSource` into both the board provider and the open-proposal
+  command (cache sharing). Slice-click "open the markdown file" is deferred (it
+  needs `enableScripts` + command URIs; the card is observational per the
+  read-only contract). Specs: new `test/proposal-detail-webview.spec.ts` +
+  updated `open-proposal-argument.spec.ts` (per-tool stubs). 135 vscode specs
+  green; `tsc -p extensions/vscode` exit 0.
 - **Files**: `extensions/vscode/src/views/proposal-detail-webview.ts` (new),
   `extensions/vscode/src/views/proposals-detail.css` (new),
   `extensions/vscode/src/lib/proposals-snapshot.ts` (shared with S2)
