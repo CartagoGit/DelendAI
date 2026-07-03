@@ -350,6 +350,25 @@ describe('enqueue — sorts by priority desc + enqueuedAt asc', async () => {
 		expect(q3.entries[2]?.taskId).toBe('low-prio');
 	});
 
+	it('is idempotent by taskId: a re-enqueue replaces, never duplicates', async () => {
+		const queue = makeEmptyQueue();
+		const first = makeEntry({
+			taskId: 'dup',
+			priority: 1,
+			enqueuedAt: '2026-06-05T10:00:00.000Z',
+		});
+		const again = makeEntry({
+			taskId: 'dup',
+			priority: 5,
+			enqueuedAt: '2026-06-05T11:00:00.000Z',
+		});
+		const q = enqueue(enqueue(queue, first), again);
+		// Exactly one entry (parseQueue rejects duplicate taskIds), and it is
+		// the replacement (updated priority), not the original.
+		expect(q.entries.filter((e) => e.taskId === 'dup')).toHaveLength(1);
+		expect(q.entries[0]?.priority).toBe(5);
+	});
+
 	it('breaks priority ties by enqueuedAt asc (older first)', async () => {
 		const queue = makeEmptyQueue();
 
