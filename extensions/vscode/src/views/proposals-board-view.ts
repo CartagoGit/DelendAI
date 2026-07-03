@@ -18,8 +18,11 @@
  * `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` → "VS Code read-only proposals
  * surface". Keep the two in sync; S6 greps this module for the denied names.
  *
- * S2 adds the `IProposalsBoardProvider` (`vscode.TreeDataProvider`) to this
- * file; S3 the detail webview; both consume the whitelist below.
+ * S2 EVOLVES the existing `ProposalBoardProvider`
+ * (`providers/proposal-board-provider.ts`, shipped by f00079 S4) rather than
+ * adding a parallel provider here; the shared read-only data layer lives in
+ * `lib/proposals-snapshot.ts`. Both, and the S3 detail webview, route every
+ * tool call through the whitelist below.
  */
 
 /**
