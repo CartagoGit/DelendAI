@@ -329,7 +329,20 @@ export class AgentLoopDetectorService {
 		}
 
 		const isStuck = verdict.isStuck || noProgressStuck;
-		if (isStuck && !this.stuckAgents.has(agent)) {
+		if (!isStuck) {
+			// Falling edge: the live verdict no longer shows a loop, so the
+			// agent recovered (it made progress, or the offending repeats aged
+			// out of the ring). Clear the sticky flag — the verdict is a pure
+			// function of the current window, so a resolved loop must not keep
+			// reporting stuck. Without this the flag latched for the whole
+			// process lifetime and a later lease of this same (pooled,
+			// reusable) name inherited a false stuck verdict.
+			if (this.stuckAgents.delete(agent) && this.options.notifyOnDetect) {
+				process.stderr.write(
+					`[mcp-vertex] loop-detector: agent "${agent}" recovered; stuck flag cleared\n`,
+				);
+			}
+		} else if (!this.stuckAgents.has(agent)) {
 			// Trigger stuck flow: write handoff and store verdict
 			const _ts = new Date().toISOString();
 			const sanitizedAgent = agent.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -461,6 +474,22 @@ export class AgentLoopDetectorService {
 	 */
 	public invalidateLockCache(): void {
 		this.lockCache = undefined;
+	}
+
+	/**
+	 * Forget ALL detector state for an agent name: its sliding window, any
+	 * sticky stuck verdict, and the lock-cache entry if it points at this
+	 * name. Called when the name is released back to the pool (agent-names
+	 * `release`/`gc`) so the NEXT lease of the same reusable name starts from
+	 * a clean slate instead of inheriting the previous holder's window or a
+	 * stale stuck flag. Distinct from the falling-edge self-heal in
+	 * `onToolCall`: that clears on recovery; this clears on identity turnover.
+	 */
+	public resetAgent(agent: string): void {
+		if (!agent) return;
+		this.windowMap.delete(agent);
+		this.stuckAgents.delete(agent);
+		if (this.lockCache?.agent === agent) this.lockCache = undefined;
 	}
 
 	private async writeHandoffPacket(
