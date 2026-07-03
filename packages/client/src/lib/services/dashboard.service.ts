@@ -64,6 +64,15 @@ const tokensFromBytes = (bytes: number): number =>
 const estimateTokensSaved = (totalBytes: number): number =>
 	Math.round(tokensFromBytes(totalBytes) * 0.18);
 
+/**
+ * Savings as a percentage of the tokens actually used. Single source of
+ * truth so the overview totals and the tokens model never disagree on the
+ * same "Savings" figure (they diverged once — one used `saved/used`, the
+ * other `saved/(saved+used)`).
+ */
+const savingsPercentOf = (tokensSaved: number, tokensUsed: number): number =>
+	tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed);
+
 /** Resolve a tool name to its owning plugin. */
 type PluginOf = (toolName: string) => string;
 
@@ -175,10 +184,7 @@ const buildOverviewModel = (
 		totalMs: snap.totals.totalMs,
 		tokens,
 		tokensSaved,
-		savingsPercent:
-			tokensSaved + tokens === 0
-				? 0
-				: Math.round((100 * tokensSaved) / (tokensSaved + tokens)),
+		savingsPercent: savingsPercentOf(tokensSaved, tokens),
 		agents: agents.length,
 	};
 
@@ -229,8 +235,7 @@ const buildTokensModel = (
 	return {
 		tokensUsed,
 		tokensSaved,
-		savingsPercent:
-			tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed),
+		savingsPercent: savingsPercentOf(tokensSaved, tokensUsed),
 		topByTokens: rows.slice(0, 10),
 		history: [],
 	};
