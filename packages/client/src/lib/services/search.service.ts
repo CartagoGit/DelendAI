@@ -41,6 +41,14 @@ export class SearchService {
 			readonly name: string;
 			readonly tags?: readonly string[];
 			readonly summary?: string;
+			/**
+			 * Real owning plugin, when the caller already knows it (e.g. from
+			 * `normalizeCompactTools`). Preferred over deriving it from the
+			 * name: `name.split('_', 1)[0]` only ever yields the host segment
+			 * (`mcp-vertex`) because every tool name starts with the host
+			 * prefix — so the parsed fallback is a last resort, not the truth.
+			 */
+			readonly plugin?: string;
 		}>,
 		limit = 20,
 	): readonly IToolHit[] {
@@ -49,7 +57,7 @@ export class SearchService {
 		const hits: IToolHit[] = [];
 		for (const tool of tools) {
 			const lower = tool.name.toLowerCase();
-			const plugin = lower.split('_', 1)[0] ?? lower;
+			const plugin = tool.plugin ?? lower.split('_', 1)[0] ?? lower;
 			if (lower === q) {
 				hits.push({
 					name: tool.name,

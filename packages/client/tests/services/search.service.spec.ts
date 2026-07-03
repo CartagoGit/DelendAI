@@ -90,6 +90,28 @@ describe('SearchService', async () => {
 			const hits = service.searchTools('mcp-vertex', tools, 1);
 			expect(hits).toHaveLength(1);
 		});
+
+		it('prefers the caller-supplied plugin over parsing the name', async () => {
+			const { service } = makeService();
+			// A plugin tool AND a core tool with an underscore id: parsing the
+			// name would report `mcp-vertex` for both (split on the first `_`).
+			// When the caller passes the real owner, the hit must carry it.
+			const withPlugin = [
+				{
+					name: 'mcp-vertex_proposals_agent_lock',
+					plugin: 'proposals',
+				},
+				{ name: 'mcp-vertex_fs_read', plugin: 'mcp-vertex' },
+			];
+			const lock = service
+				.searchTools('agent_lock', withPlugin)
+				.find((h) => h.name === 'mcp-vertex_proposals_agent_lock');
+			expect(lock?.plugin).toBe('proposals');
+			const fsRead = service
+				.searchTools('fs_read', withPlugin)
+				.find((h) => h.name === 'mcp-vertex_fs_read');
+			expect(fsRead?.plugin).toBe('mcp-vertex');
+		});
 	});
 
 	describe('searchKnowledge', async () => {
