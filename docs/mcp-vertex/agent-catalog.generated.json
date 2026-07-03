@@ -12,11 +12,11 @@
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_check",
-			"plugin": "mcp-vertex"
+			"plugin": "conventions"
 		},
 		{
 			"name": "mcp-vertex_conventions_conventions_classify",
-			"plugin": "mcp-vertex"
+			"plugin": "conventions"
 		},
 		{
 			"name": "mcp-vertex_create_project",
@@ -24,27 +24,27 @@
 		},
 		{
 			"name": "mcp-vertex_deps_deps_check",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_list",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_deps_deps_polyglot",
-			"plugin": "mcp-vertex"
+			"plugin": "deps"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_list",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_read",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_docs_docs_search",
-			"plugin": "mcp-vertex"
+			"plugin": "docs"
 		},
 		{
 			"name": "mcp-vertex_drift_check",
@@ -64,31 +64,31 @@
 		},
 		{
 			"name": "mcp-vertex_git_blame",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_changed",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_diff",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_log",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_show",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_status",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_git_worktree",
-			"plugin": "mcp-vertex"
+			"plugin": "git"
 		},
 		{
 			"name": "mcp-vertex_knowledge",
@@ -96,51 +96,51 @@
 		},
 		{
 			"name": "mcp-vertex_logs_correlate",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_query",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_redact_test",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_subscribe",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_logs_tail",
-			"plugin": "mcp-vertex"
+			"plugin": "logs"
 		},
 		{
 			"name": "mcp-vertex_memory_compact",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_export",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_forget",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_import",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_list",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_recall",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_memory_save",
-			"plugin": "mcp-vertex"
+			"plugin": "memory"
 		},
 		{
 			"name": "mcp-vertex_metrics",
@@ -148,11 +148,11 @@
 		},
 		{
 			"name": "mcp-vertex_notification_await_lock",
-			"plugin": "mcp-vertex"
+			"plugin": "notification"
 		},
 		{
 			"name": "mcp-vertex_notification_notify_status",
-			"plugin": "mcp-vertex"
+			"plugin": "notification"
 		},
 		{
 			"name": "mcp-vertex_overview",
@@ -164,151 +164,151 @@
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_lock_release_orphan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_names",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_agent_worktree",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_auto_work",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_gc",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_branch_status",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_close_slice",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_compact_status",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_continue_proposal",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_create_proposal",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_delegate",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_get_proposal_workflow",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_inherit_host_instructions",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_plan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_adopt",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_board",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_diagnose",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_force_transition",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_reconcile_folder",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_review",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_stale_list",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposal_transition",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_proposals_close_plan",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_round_context",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_health",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_state_repair",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_swarm_hygiene",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_sync_proposals",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_proposals_task_queue",
-			"plugin": "mcp-vertex"
+			"plugin": "proposals"
 		},
 		{
 			"name": "mcp-vertex_quality_get_quality_scopes",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_cancel",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_quality_run_all",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_quality_run_quality",
-			"plugin": "mcp-vertex"
+			"plugin": "quality"
 		},
 		{
 			"name": "mcp-vertex_rules_apply_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_check_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_rules_get_rules",
-			"plugin": "mcp-vertex"
+			"plugin": "rules"
 		},
 		{
 			"name": "mcp-vertex_scaffold",
@@ -316,7 +316,7 @@
 		},
 		{
 			"name": "mcp-vertex_search_search",
-			"plugin": "mcp-vertex"
+			"plugin": "search"
 		},
 		{
 			"name": "mcp-vertex_skill",
@@ -328,27 +328,27 @@
 		},
 		{
 			"name": "mcp-vertex_status-marker_close",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_ping",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_status-marker_validate",
-			"plugin": "mcp-vertex"
+			"plugin": "status-marker"
 		},
 		{
 			"name": "mcp-vertex_test-convention_get_convention",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_scan_drift",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		},
 		{
 			"name": "mcp-vertex_test-convention_suggest_spec_path",
-			"plugin": "mcp-vertex"
+			"plugin": "test-convention"
 		}
 	],
 	"skills": [
