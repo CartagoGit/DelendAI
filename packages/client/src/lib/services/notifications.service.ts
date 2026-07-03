@@ -153,9 +153,20 @@ export class NotificationsService {
 		for (const state of bucket) {
 			if (state.busy) continue;
 			state.busy = true;
-			void Promise.resolve(state.callback(event)).finally(() => {
+			// `busy` is backpressure for SLOW ASYNC listeners: skip a listener
+			// that hasn't settled its previous promise. A synchronous listener
+			// is never really busy, so reset it inline — otherwise the reset
+			// (a microtask via `.finally`) can't run until the current sync
+			// dispatch loop ends, and every event after the first in that loop
+			// (e.g. the extra `lastReleases` replayed by `status()`) is dropped.
+			const result = state.callback(event);
+			if (result instanceof Promise) {
+				void result.finally(() => {
+					state.busy = false;
+				});
+			} else {
 				state.busy = false;
-			});
+			}
 		}
 	}
 }
