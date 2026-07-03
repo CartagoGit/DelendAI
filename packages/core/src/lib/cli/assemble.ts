@@ -97,6 +97,17 @@ export interface IAssembledCliConfig {
 	 */
 	readonly cacheEvictionRegistry: ICacheEvictionRegistry;
 	readonly cacheEvictionBootReport: ICacheEvictionReport;
+	/**
+	 * The discovery catalog's tool entries, each carrying its fully-qualified
+	 * callable `name` and its real owning `plugin` — the SAME authoritative
+	 * values the `agent_catalog` tool and the `overview` snapshot expose.
+	 * Surfaced so offline consumers (the static catalog generator, the web
+	 * capabilities page) reuse this single source of truth instead of
+	 * re-deriving the plugin by string-parsing the qualified name, which is
+	 * unreliable for core tools whose id contains an underscore
+	 * (`fs_read`, `agent_catalog`, …).
+	 */
+	readonly agentCatalogTools: readonly IToolSummary[];
 }
 
 export interface IAssembleCliDeps {
@@ -715,7 +726,9 @@ export const assembleCliConfig = async (
 			plugin: entry.plugin ?? corePrefix,
 			...(entry.summary !== undefined ? { summary: entry.summary } : {}),
 			...(entry.tags !== undefined ? { tags: [...entry.tags] } : {}),
-			...(entry.effects !== undefined ? { effects: [...entry.effects] } : {}),
+			...(entry.effects !== undefined
+				? { effects: [...entry.effects] }
+				: {}),
 		})),
 	];
 
@@ -857,6 +870,7 @@ export const assembleCliConfig = async (
 		configPath,
 		cacheEvictionRegistry,
 		cacheEvictionBootReport,
+		agentCatalogTools: catalogToolEntries,
 	};
 };
 

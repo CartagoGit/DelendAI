@@ -160,11 +160,6 @@ const defaultIo = (): IGeneratorIo => ({
 	error: (message) => console.error(message),
 });
 
-const namespaceFromToolName = (name: string): string => {
-	const idx = name.indexOf('_');
-	return idx === -1 ? name : name.slice(0, idx);
-};
-
 const collapseWhitespace = (value: string): string =>
 	value.replace(/\s+/gu, ' ').trim();
 
@@ -320,7 +315,7 @@ const loadLiveToolSummaries = async (
 	io: IGeneratorIo,
 ): Promise<readonly IToolSummary[]> => {
 	const args = parseCliArgs(['--preset=swarm'], root);
-	const { config, loadResult } = await assembleCliConfig(args, {
+	const { loadResult, agentCatalogTools } = await assembleCliConfig(args, {
 		readFile: io.readText,
 	});
 	if (loadResult.errors.length > 0) {
@@ -330,20 +325,11 @@ const loadLiveToolSummaries = async (
 				.join(' | ')}`,
 		);
 	}
-	return (config.extraTools ?? []).map((tool) => {
-		const name = tool.id.startsWith('mcp-vertex_')
-			? tool.id
-			: `mcp-vertex_${tool.id}`;
-		return {
-			name,
-			plugin: namespaceFromToolName(name),
-			...(tool.summary !== undefined ? { summary: tool.summary } : {}),
-			...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
-			...(tool.effects !== undefined
-				? { effects: [...tool.effects] }
-				: {}),
-		};
-	});
+	// Reuse the SAME authoritative name+plugin the running server exposes via
+	// `agent_catalog`, rather than re-deriving the plugin from the qualified
+	// name (which mis-attributes every core tool with an underscore id —
+	// fs_read→`fs`, agent_catalog→`agent`, … — to a fabricated plugin).
+	return agentCatalogTools;
 };
 
 const resolveGeneratedAt = (
