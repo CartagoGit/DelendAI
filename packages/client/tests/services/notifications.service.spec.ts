@@ -104,6 +104,28 @@ describe('NotificationsService', async () => {
 		]);
 	});
 
+	it('delivers every event to a synchronous listener (busy reset is inline)', () => {
+		const service = new NotificationsService(
+			McpStdioClient.fromTransport({
+				async callTool() {
+					return { structuredContent: {} };
+				},
+			}),
+		);
+		const seen: string[] = [];
+		// A synchronous listener finishes instantly, so it is never really
+		// "busy". Back-to-back synchronous dispatches (as `status()` does when
+		// replaying multiple lastReleases) must all reach it — a microtask
+		// reset would drop everything after the first.
+		service.addEventListener('cap', (event) => {
+			seen.push(event.message);
+		});
+		service.emitStatus('cap', 'a');
+		service.emitStatus('cap', 'b');
+		service.emitStatus('cap', 'c');
+		expect(seen).toEqual(['a', 'b', 'c']);
+	});
+
 	it('drops events for a slow subscriber instead of queueing unbounded work', async () => {
 		const service = new NotificationsService(
 			McpStdioClient.fromTransport({
